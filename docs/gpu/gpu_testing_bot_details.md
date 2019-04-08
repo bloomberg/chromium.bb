@@ -535,63 +535,55 @@ chrome-infra team if this doesn't work as expected.)
 [go/chromecals]: http://go/chromecals
 
 
-### How to add a new "optional" try bot
+### How to add a new try bot that runs a subset of tests or extra tests
 
-TODO(kbr): the naming of the "optional" try bots is confusing and
-unfortunate. They should probably be renamed to something like "extratests" or
-"extra_tests", so perhaps a new naming convention of "gpu_win_extratests_rel" or
-"win_gpu_extratests_rel". Unfortunately making this change at this point
-requires touching tons of files across many workspaces and is unlikely to happen
-unless someone highly motivated wants to pick up the task.
+Several projects (ANGLE, Dawn) run custom tests using the Chromium recipes. They
+use try bot bot configs that run subsets of Chromium or additional slower tests
+that can't be run on the main CQ.
 
-The "optional" GPU try bots are a concession to the reality that there are some
-long-running GPU test suites that simply can not run against every Chromium CL.
-They run some additional tests that are usually run only on the
-chromium.gpu.fyi waterfall. Some of these tests, like the WebGL 2.0 conformance
-suite, are intended to be run on the normal try bots once hardware capacity is
-available. Some are not intended to ever run on the normal try bots.
+These try bots are a little different because they mirror waterfall bots that
+don't actually exist. The waterfall bots' specifications exist only to tell
+these try bots which tests to run.
 
-The optional try bots are a little different because they mirror waterfall bots
-that don't actually exist. The waterfall bots' specifications exist only to
-tell the optional try bots which tests to run.
+Let's say that you intended to add a new such custom try bot on Windows. Call it
+`win-myproject-rel` for example. You will need to add a "fake" mirror bot for
+each GPU family the tests you will need to run. For a GPU type of
+"CoolNewGPUType" in this example you could add a "fake" bot named "MyProject GPU
+Win10 Release (CoolNewGPUType)".
 
-Let's say that you intended to add a new such optional try bot on Windows. Call
-it `win_new_optional_tests_rel` for example. Now, if you wanted to just add
-this GPU type to the existing `win_optional_gpu_tests_rel` try bot, you'd
-just follow the instructions above
-([How to start running tests on a new GPU type on an existing try bot](#How-to-start-running-tests-on-a-new-GPU-type-on-an-existing-try-bot)). The steps below describe how to spin up
-an entire new optional try bot.
-
+1.  Allocate new virtual machines for the bots as described in [How to set up
+    new virtual machine
+    instances](#How-to-set-up-new-virtual-machine-instances).
 1.  Make sure that you have some swarming capacity for the new GPU type. Since
     it's not running against all Chromium CLs you don't need the recommended 30
     minimum bots, though ~10 would be good.
-1.  Create a CL in the Chromium workspace:
-    1.  Add your new bot (for example, "Optional Win7 Release
+1.  Create a CL in the Chromium workspace the does the following. Here's an
+    [example CL](https://crrev.com/c/1554296).
+    1.  Add your new bot (for example, "MyProject GPU Win10 Release
         (CoolNewGPUType)") to the chromium.gpu.fyi waterfall in
-        [waterfalls.pyl]. (Note, this is a bad example: the
-        "optional" bots have special semantics in this script. You'd probably
-        want to define some new category of bot if you didn't intend to add
-        this to `win_optional_gpu_tests_rel`.)
-    1.  Re-run the script to regenerate the JSON files.
-1.  Land the above CL.
-1.  Create a CL in the tools/build workspace:
-    1.  Modify `masters/master.tryserver.chromium.win`'s [master.cfg] and
-        [slaves.cfg] to add the new tryserver. Follow the pattern for the
-        existing `win_optional_gpu_tests_rel` tryserver. Namely, add the new
-        entry to master.cfg, and add the new tryserver to the
-        `optional_builders` list in `slaves.cfg`.
-    1.  Modify [`chromium_gpu_fyi.py`][chromium_gpu_fyi.py] to add the new
-        "Optional Win7 Release (CoolNewGPUType)" entry.
-    1.  Modify [`trybots.py`][trybots.py] to add
-        the new `win_new_optional_tests_rel` try bot, mirroring "Optional
-        Win7 Release (CoolNewGPUType)".
-1.  Land the above CL and request an off-hours restart of the
-    tryserver.chromium.win waterfall.
-1.  Now you can send CLs to the new bot with:
-    `git cl try -m tryserver.chromium.win -b win_new_optional_tests_rel`
-
-[master.cfg]: https://chromium.googlesource.com/chromium/tools/build/+/master/masters/master.tryserver.chromium.win/master.cfg
-[slaves.cfg]: https://chromium.googlesource.com/chromium/tools/build/+/master/masters/master.tryserver.chromium.win/slaves.cfg
+        [waterfalls.pyl].
+    1.  Re-run [`src/testing/buildbot/generate_buildbot_json.py`][generate_buildbot_json.py] to regenerate the JSON files.
+    1.  Update [`cr-buildbucket.cfg`][cr-buildbucket.cfg] to add `win-myproject-rel`.
+    1.  Update [`luci-milo.cfg`][luci-milo.cfg] to include `win-myproject-rel`.
+    1.  Update [`luci-scheduler.cfg`][luci-scheduler.cfg] to include "MyProject GPU Win10 Release
+        (CoolNewGPUType)".
+    1.  Update [`src/tools/mb/mb_config.pyl`][mb_config.pyl] to include `win-myproject-rel`.
+    1.  Also add your fake bot to [`src/testing/buildbot/generate_buildbot_json.py`][generate_buildbot_json.py] in the list of `get_bots_that_do_not_actually_exist` section.
+1. *After* the Chromium-side CL lands and the bot is on the console, create a CL
+    in the [`tools/build`][tools/build] workspace which does the
+    following. Here's an [example CL](https://crrev.com/c/1554272).
+    1.  Adds "MyProject GPU Win10 Release
+        (CoolNewGPUType)" to [`chromium_gpu_fyi.py`][chromium_gpu_fyi.py] in
+        `scripts/slave/recipe_modules/chromium_tests/`. You can copy a similar
+        step.
+    1.  Adds `win-myproject-rel` to [`trybots.py`][trybots.py] in the same folder.
+        This is where you associate "MyProject GPU Win10 Release
+        (CoolNewGPUType)" with `win-myproject-rel`. See the sample CL for an example.
+    1.  Get this reviewed and landed. This step tells the Chromium recipe about
+        the newly-deployed waterfall bot, so it knows which JSON file to load
+        out of src/testing/buildbot and which entry to look at.
+1.  After your CLs land you should be able to find and run `win-myproject-rel` on CLs
+    using Choose Trybots in Gerrit.
 
 ### How to test and deploy a driver update
 
