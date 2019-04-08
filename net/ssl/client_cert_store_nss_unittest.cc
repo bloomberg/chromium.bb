@@ -122,8 +122,8 @@ TEST(ClientCertStoreNSSTest, BuildsCertificateChain) {
     scoped_refptr<SSLPrivateKey> ssl_private_key;
     base::RunLoop key_loop;
     selected_identities[0]->AcquirePrivateKey(
-        base::Bind(SavePrivateKeyAndQuitCallback, &ssl_private_key,
-                   key_loop.QuitClosure()));
+        base::BindOnce(SavePrivateKeyAndQuitCallback, &ssl_private_key,
+                       key_loop.QuitClosure()));
     key_loop.Run();
 
     ASSERT_TRUE(ssl_private_key);
@@ -159,8 +159,8 @@ TEST(ClientCertStoreNSSTest, BuildsCertificateChain) {
     scoped_refptr<SSLPrivateKey> ssl_private_key;
     base::RunLoop key_loop;
     selected_identities[0]->AcquirePrivateKey(
-        base::Bind(SavePrivateKeyAndQuitCallback, &ssl_private_key,
-                   key_loop.QuitClosure()));
+        base::BindOnce(SavePrivateKeyAndQuitCallback, &ssl_private_key,
+                       key_loop.QuitClosure()));
     key_loop.Run();
     ASSERT_TRUE(ssl_private_key);
     EXPECT_EQ(expected, ssl_private_key->GetAlgorithmPreferences());
@@ -232,7 +232,7 @@ TEST(ClientCertStoreNSSTest, SubjectPrintableStringContainingUTF8) {
 
   scoped_refptr<SSLPrivateKey> ssl_private_key;
   base::RunLoop key_loop;
-  selected_identities[0]->AcquirePrivateKey(base::Bind(
+  selected_identities[0]->AcquirePrivateKey(base::BindOnce(
       SavePrivateKeyAndQuitCallback, &ssl_private_key, key_loop.QuitClosure()));
   key_loop.Run();
 

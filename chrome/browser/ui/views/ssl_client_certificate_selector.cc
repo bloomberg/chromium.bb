@@ -53,8 +53,8 @@ class SSLClientCertificateSelector::SSLClientAuthObserverImpl
     net::X509Certificate* cert = identity->certificate();
     net::ClientCertIdentity::SelfOwningAcquirePrivateKey(
         std::move(identity),
-        base::Bind(&SSLClientAuthObserverImpl::GotPrivateKey,
-                   base::Passed(&self), base::Unretained(cert)));
+        base::BindOnce(&SSLClientAuthObserverImpl::GotPrivateKey,
+                       std::move(self), base::Unretained(cert)));
   }
 
   void GotPrivateKey(net::X509Certificate* cert,

@@ -1648,8 +1648,9 @@ class TestClientCertStore : public net::ClientCertStore {
 
   // net::ClientCertStore:
   void GetClientCerts(const net::SSLCertRequestInfo& cert_request_info,
-                      const ClientCertListCallback& callback) override {
-    callback.Run(FakeClientCertIdentityListFromCertificateList(certs_));
+                      ClientCertListCallback callback) override {
+    std::move(callback).Run(
+        FakeClientCertIdentityListFromCertificateList(certs_));
   }
 
  private:

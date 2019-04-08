@@ -2895,8 +2895,9 @@ void ChromeContentBrowserClient::SelectClientCertificate(
         auto_selected_identity->certificate();
     net::ClientCertIdentity::SelfOwningAcquirePrivateKey(
         std::move(auto_selected_identity),
-        base::Bind(&content::ClientCertificateDelegate::ContinueWithCertificate,
-                   base::Passed(&delegate), std::move(cert)));
+        base::BindOnce(
+            &content::ClientCertificateDelegate::ContinueWithCertificate,
+            std::move(delegate), std::move(cert)));
     LogClientAuthResult(ClientCertSelectionResult::kAutoSelect);
     return;
   }

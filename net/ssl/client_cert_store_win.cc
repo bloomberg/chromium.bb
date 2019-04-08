@@ -16,6 +16,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
@@ -47,18 +48,13 @@ class ClientCertIdentityWin : public ClientCertIdentity {
     CertFreeCertificateContext(cert_context_);
   }
 
-  void AcquirePrivateKey(
-      const base::Callback<void(scoped_refptr<SSLPrivateKey>)>&
-          private_key_callback) override {
-    if (base::PostTaskAndReplyWithResult(
-            key_task_runner_.get(), FROM_HERE,
-            base::Bind(&FetchClientCertPrivateKey,
+  void AcquirePrivateKey(base::OnceCallback<void(scoped_refptr<SSLPrivateKey>)>
+                             private_key_callback) override {
+    base::PostTaskAndReplyWithResult(
+        key_task_runner_.get(), FROM_HERE,
+        base::BindOnce(&FetchClientCertPrivateKey,
                        base::Unretained(certificate()), cert_context_),
-            private_key_callback)) {
-      return;
-    }
-    // If the task could not be posted, behave as if there was no key.
-    private_key_callback.Run(nullptr);
+        std::move(private_key_callback));
   }
 
  private:
@@ -223,31 +219,25 @@ ClientCertStoreWin::ClientCertStoreWin(HCERTSTORE cert_store) {
 
 ClientCertStoreWin::~ClientCertStoreWin() {}
 
-void ClientCertStoreWin::GetClientCerts(
-    const SSLCertRequestInfo& request,
-    const ClientCertListCallback& callback) {
+void ClientCertStoreWin::GetClientCerts(const SSLCertRequestInfo& request,
+                                        ClientCertListCallback callback) {
   if (cert_store_) {
     // Use the existing client cert store. Note: Under some situations,
     // it's possible for this to return certificates that aren't usable
     // (see below).
     // When using caller provided HCERTSTORE, assume that it should be accessed
     // on the current thread.
-    callback.Run(GetClientCertsImpl(cert_store_, request));
+    std::move(callback).Run(GetClientCertsImpl(cert_store_, request));
     return;
   }
 
-  if (base::PostTaskAndReplyWithResult(
-          GetSSLPlatformKeyTaskRunner().get(), FROM_HERE,
-          // Caller is responsible for keeping the |request| alive
-          // until the callback is run, so std::cref is safe.
-          base::Bind(&ClientCertStoreWin::GetClientCertsWithMyCertStore,
+  base::PostTaskAndReplyWithResult(
+      GetSSLPlatformKeyTaskRunner().get(), FROM_HERE,
+      // Caller is responsible for keeping the |request| alive
+      // until the callback is run, so std::cref is safe.
+      base::BindOnce(&ClientCertStoreWin::GetClientCertsWithMyCertStore,
                      std::cref(request)),
-          callback)) {
-    return;
-  }
-
-  // If the task could not be posted, behave as if there were no certificates.
-  callback.Run(ClientCertIdentityList());
+      std::move(callback));
 }
 
 // static

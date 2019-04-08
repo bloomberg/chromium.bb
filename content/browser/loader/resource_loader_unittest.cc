@@ -96,11 +96,12 @@ class ClientCertStoreStub : public net::ClientCertStore {
 
   // net::ClientCertStore:
   void GetClientCerts(const net::SSLCertRequestInfo& cert_request_info,
-                      const ClientCertListCallback& callback) override {
+                      ClientCertListCallback callback) override {
     *requested_authorities_ = cert_request_info.cert_authorities;
     ++(*request_count_);
 
-    callback.Run(net::FakeClientCertIdentityListFromCertificateList(response_));
+    std::move(callback).Run(
+        net::FakeClientCertIdentityListFromCertificateList(response_));
   }
 
  private:
@@ -122,15 +123,14 @@ class LoaderDestroyingCertStore : public net::ClientCertStore {
         on_loader_deleted_callback_(on_loader_deleted_callback) {}
 
   // net::ClientCertStore:
-  void GetClientCerts(
-      const net::SSLCertRequestInfo& cert_request_info,
-      const ClientCertListCallback& cert_selected_callback) override {
+  void GetClientCerts(const net::SSLCertRequestInfo& cert_request_info,
+                      ClientCertListCallback cert_selected_callback) override {
     // Don't destroy |loader_| while it's on the stack.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&LoaderDestroyingCertStore::DoCallback,
-                       base::Unretained(loader_), cert_selected_callback,
-                       on_loader_deleted_callback_));
+        FROM_HERE, base::BindOnce(&LoaderDestroyingCertStore::DoCallback,
+                                  base::Unretained(loader_),
+                                  std::move(cert_selected_callback),
+                                  on_loader_deleted_callback_));
   }
 
  private:
@@ -138,10 +138,10 @@ class LoaderDestroyingCertStore : public net::ClientCertStore {
   // LoaderDestroyingCertStore (ClientCertStores are actually handles, and not
   // global cert stores).
   static void DoCallback(std::unique_ptr<ResourceLoader>* loader,
-                         const ClientCertListCallback& cert_selected_callback,
+                         ClientCertListCallback cert_selected_callback,
                          const base::Closure& on_loader_deleted_callback) {
     loader->reset();
-    cert_selected_callback.Run(net::ClientCertIdentityList());
+    std::move(cert_selected_callback).Run(net::ClientCertIdentityList());
     on_loader_deleted_callback.Run();
   }
 
