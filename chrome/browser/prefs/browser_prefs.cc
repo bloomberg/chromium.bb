@@ -1016,4 +1016,9 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   profile_prefs->ClearPref(kDismissedAssetDownloadSuggestions);
   profile_prefs->ClearPref(kDismissedOfflinePageDownloadSuggestions);
 #endif  // defined(OS_ANDROID)
+
+#if defined(OS_CHROMEOS)
+  // Added 4/2019.
+  syncer::ClearObsoleteSyncSpareBootstrapToken(profile_prefs);
+#endif  // defined(OS_CHROMEOS)
 }

@@ -36,6 +36,11 @@ const char kSyncFirstSyncTime[] = "sync.first_sync_time";
 // Obsolete pref that used to store long poll intervals received by the server.
 const char kSyncLongPollIntervalSeconds[] = "sync.long_poll_interval";
 
+#if defined(OS_CHROMEOS)
+// Obsolete pref.
+const char kSyncSpareBootstrapToken[] = "sync.spare_bootstrap_token";
+#endif  // defined(OS_CHROMEOS)
+
 // Groups of prefs that always have the same value as a "master" pref.
 // For example, the APPS group has {APP_LIST, APP_SETTINGS}
 // (as well as APPS, but that is implied), so
@@ -166,10 +171,6 @@ void SyncPrefs::RegisterProfilePrefs(
                                std::string());
   registry->RegisterStringPref(prefs::kSyncKeystoreEncryptionBootstrapToken,
                                std::string());
-#if defined(OS_CHROMEOS)
-  // TODO(crbug.com/938869): Remove this pref.
-  registry->RegisterStringPref(prefs::kSyncSpareBootstrapToken, "");
-#endif
   registry->RegisterBooleanPref(prefs::kSyncPassphrasePrompted, false);
   registry->RegisterIntegerPref(prefs::kSyncMemoryPressureWarningCount, -1);
   registry->RegisterBooleanPref(prefs::kSyncShutdownCleanly, false);
@@ -187,6 +188,9 @@ void SyncPrefs::RegisterProfilePrefs(
   registry->RegisterBooleanPref(kSyncHasAuthError, false);
   registry->RegisterInt64Pref(kSyncFirstSyncTime, 0);
   registry->RegisterInt64Pref(kSyncLongPollIntervalSeconds, 0);
+#if defined(OS_CHROMEOS)
+  registry->RegisterStringPref(kSyncSpareBootstrapToken, "");
+#endif
 }
 
 void SyncPrefs::AddSyncPrefObserver(SyncPrefObserver* sync_pref_observer) {
@@ -436,18 +440,6 @@ const char* SyncPrefs::GetPrefNameForDataType(ModelType type) {
   return nullptr;
 }
 
-#if defined(OS_CHROMEOS)
-std::string SyncPrefs::GetSpareBootstrapToken() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return pref_service_->GetString(prefs::kSyncSpareBootstrapToken);
-}
-
-void SyncPrefs::SetSpareBootstrapToken(const std::string& token) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  pref_service_->SetString(prefs::kSyncSpareBootstrapToken, token);
-}
-#endif
-
 void SyncPrefs::OnSyncManagedPrefChanged() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (SyncPrefObserver& observer : sync_pref_observers_)
@@ -642,5 +634,11 @@ void ClearObsoleteFirstSyncTime(PrefService* pref_service) {
 void ClearObsoleteSyncLongPollIntervalSeconds(PrefService* pref_service) {
   pref_service->ClearPref(kSyncLongPollIntervalSeconds);
 }
+
+#if defined(OS_CHROMEOS)
+void ClearObsoleteSyncSpareBootstrapToken(PrefService* pref_service) {
+  pref_service->ClearPref(kSyncSpareBootstrapToken);
+}
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace syncer

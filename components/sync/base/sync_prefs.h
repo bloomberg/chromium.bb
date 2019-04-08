@@ -142,13 +142,6 @@ class SyncPrefs : public CryptoSyncPrefs,
   // Maps |type| to its corresponding preference name.
   static const char* GetPrefNameForDataType(ModelType type);
 
-#if defined(OS_CHROMEOS)
-  // Use this spare bootstrap token only when setting up sync for the first
-  // time.
-  std::string GetSpareBootstrapToken() const;
-  void SetSpareBootstrapToken(const std::string& token);
-#endif
-
   // Copy of various fields historically owned and persisted by the Directory.
   // This is a future-proof approach to ultimately replace the Directory once
   // most users have populated prefs and the Directory is about to be removed.
@@ -238,6 +231,9 @@ void ClearObsoleteClearServerDataPrefs(PrefService* pref_service);
 void ClearObsoleteAuthErrorPrefs(PrefService* pref_service);
 void ClearObsoleteFirstSyncTime(PrefService* pref_service);
 void ClearObsoleteSyncLongPollIntervalSeconds(PrefService* pref_service);
+#if defined(OS_CHROMEOS)
+void ClearObsoleteSyncSpareBootstrapToken(PrefService* pref_service);
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace syncer
 

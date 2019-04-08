@@ -208,14 +208,6 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
   if (identity_manager_)
     identity_manager_->AddObserver(this);
 
-#if defined(OS_CHROMEOS)
-  std::string bootstrap_token = sync_prefs_.GetEncryptionBootstrapToken();
-  if (bootstrap_token.empty()) {
-    sync_prefs_.SetEncryptionBootstrapToken(
-        sync_prefs_.GetSpareBootstrapToken());
-  }
-#endif
-
   memory_pressure_listener_ = std::make_unique<base::MemoryPressureListener>(
       base::BindRepeating(&ProfileSyncService::OnMemoryPressure,
                           sync_enabled_weak_factory_.GetWeakPtr()));
