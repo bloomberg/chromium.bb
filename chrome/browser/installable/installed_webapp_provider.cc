@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/installable/installed_webapp_bridge.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
+#include "components/content_settings/core/common/content_settings_pattern.h"
 #include "url/gurl.h"
 
 using content_settings::ResourceIdentifier;
@@ -47,8 +48,12 @@ class InstalledWebappIterator : public content_settings::RuleIterator {
 
 }  // namespace
 
-InstalledWebappProvider::InstalledWebappProvider() = default;
-InstalledWebappProvider::~InstalledWebappProvider() = default;
+InstalledWebappProvider::InstalledWebappProvider() {
+  InstalledWebappBridge::SetProviderInstance(this);
+}
+InstalledWebappProvider::~InstalledWebappProvider() {
+  InstalledWebappBridge::SetProviderInstance(nullptr);
+}
 
 std::unique_ptr<RuleIterator> InstalledWebappProvider::GetRuleIterator(
     ContentSettingsType content_type,
@@ -80,4 +85,12 @@ void InstalledWebappProvider::ClearAllContentSettingsRules(
 void InstalledWebappProvider::ShutdownOnUIThread() {
   DCHECK(CalledOnValidThread());
   RemoveAllObservers();
+}
+
+void InstalledWebappProvider::Notify() {
+  NotifyObservers(
+      ContentSettingsPattern(),
+      ContentSettingsPattern(),
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      std::string());
 }
