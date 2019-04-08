@@ -223,7 +223,8 @@ SQLTransactionState SQLTransaction::DeliverTransactionErrorCallback() {
           std::make_unique<SQLErrorData>(*backend_->TransactionError());
     }
     DCHECK(transaction_error_);
-    error_callback->OnError(SQLError::Create(*transaction_error_));
+    error_callback->OnError(
+        MakeGarbageCollected<SQLError>(*transaction_error_));
 
     transaction_error_ = nullptr;
   }
@@ -328,8 +329,8 @@ void SQLTransaction::ExecuteSQL(const String& sql_statement,
   else if (read_only_)
     permissions |= DatabaseAuthorizer::kReadOnlyMask;
 
-  SQLStatement* statement =
-      SQLStatement::Create(database_.Get(), callback, callback_error);
+  auto* statement = MakeGarbageCollected<SQLStatement>(
+      database_.Get(), callback, callback_error);
   backend_->ExecuteSQL(statement, sql_statement, arguments, permissions);
 }
 
