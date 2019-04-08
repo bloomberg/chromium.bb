@@ -26,6 +26,7 @@ class TabGridViewHolder extends RecyclerView.ViewHolder {
     public final ImageView thumbnail;
     public final ImageView closeButton;
     public final ButtonCompat createGroupButton;
+    public final View backgroundView;
     private int mTabId;
 
     private TabGridViewHolder(View itemView) {
@@ -37,6 +38,7 @@ class TabGridViewHolder extends RecyclerView.ViewHolder {
         DrawableCompat.setTint(this.closeButton.getDrawable(),
                 ApiCompatibilityUtils.getColor(itemView.getResources(), R.color.light_icon_color));
         this.createGroupButton = itemView.findViewById(R.id.create_group_button);
+        this.backgroundView = itemView.findViewById(R.id.background_view);
     }
 
     public static TabGridViewHolder create(ViewGroup parent, int itemViewType) {

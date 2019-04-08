@@ -8,11 +8,11 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.InsetDrawable;
+import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.View;
-import android.widget.FrameLayout;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.R;
@@ -44,12 +44,23 @@ class TabGridViewBinder {
                     R.string.accessibility_tabstrip_btn_close_tab, title));
         } else if (TabProperties.IS_SELECTED == propertyKey) {
             Resources res = holder.itemView.getResources();
-            Drawable drawable = new InsetDrawable(
-                    ResourcesCompat.getDrawable(res, R.drawable.selected_tab_background,
-                            holder.itemView.getContext().getTheme()),
-                    (int) res.getDimension(R.dimen.tab_list_selected_inset));
-            ((FrameLayout) holder.itemView)
-                    .setForeground(item.get(TabProperties.IS_SELECTED) ? drawable : null);
+            Resources.Theme theme = holder.itemView.getContext().getTheme();
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1) {
+                Drawable selectedDrawable = new InsetDrawable(
+                        ResourcesCompat.getDrawable(res, R.drawable.selected_tab_background, theme),
+                        (int) res.getDimension(R.dimen.tab_list_selected_inset_kitkat));
+                Drawable elevationDrawable =
+                        ResourcesCompat.getDrawable(res, R.drawable.popup_bg, theme);
+                holder.backgroundView.setVisibility(View.VISIBLE);
+                holder.backgroundView.setBackground(
+                        item.get(TabProperties.IS_SELECTED) ? selectedDrawable : elevationDrawable);
+            } else {
+                Drawable drawable = new InsetDrawable(
+                        ResourcesCompat.getDrawable(res, R.drawable.selected_tab_background, theme),
+                        (int) res.getDimension(R.dimen.tab_list_selected_inset));
+                holder.itemView.setForeground(
+                        item.get(TabProperties.IS_SELECTED) ? drawable : null);
+            }
         } else if (TabProperties.TAB_SELECTED_LISTENER == propertyKey) {
             holder.itemView.setOnClickListener(view -> {
                 item.get(TabProperties.TAB_SELECTED_LISTENER).run(holder.getTabId());
