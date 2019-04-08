@@ -139,7 +139,8 @@ IN_PROC_BROWSER_TEST_F(ChromeOsMirrorAccountConsistencyTest,
   ASSERT_EQ(3, signin::PROFILE_MODE_INCOGNITO_DISABLED |
                    signin::PROFILE_MODE_ADD_ACCOUNT_DISABLED);
   TestMirrorRequestForProfile(test_server_.get(), profile,
-                              "mode=3,enable_account_consistency=true");
+                              "mode=3,enable_account_consistency=true,"
+                              "consistency_enabled_by_default=false");
 }
 
 class ChromeOsMirrorAccountConsistencyTestWithAccountManagerEnabled
@@ -185,5 +186,6 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(
       AccountConsistencyModeManager::IsMirrorEnabledForProfile(profile));
   TestMirrorRequestForProfile(test_server_.get(), profile,
-                              "mode=0,enable_account_consistency=true");
+                              "mode=0,enable_account_consistency=true,"
+                              "consistency_enabled_by_default=false");
 }
