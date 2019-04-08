@@ -37,16 +37,8 @@ SlotId Port::AllocateSlot() {
 bool Port::AddSlotFromPeer(SlotId peer_slot_id) {
   if (state != kReceiving || (peer_slot_id & kPeerAllocatedSlotIdBit) != 0)
     return false;
-  auto result = slots.emplace(peer_slot_id | kPeerAllocatedSlotIdBit, Slot{});
-  result.first->second.can_signal = true;
-  return result.second;
+  return slots.emplace(peer_slot_id | kPeerAllocatedSlotIdBit, Slot{}).second;
 }
-
-Port::Slot::Slot() = default;
-
-Port::Slot::Slot(const Slot&) = default;
-
-Port::Slot::~Slot() = default;
 
 }  // namespace ports
 }  // namespace core
