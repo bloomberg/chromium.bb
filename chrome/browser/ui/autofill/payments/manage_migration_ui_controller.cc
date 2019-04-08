@@ -146,7 +146,8 @@ void ManageMigrationUiController::ShowFeedbackDialog() {
   if (!dialog_controller_)
     return;
 
-  DCHECK_EQ(flow_step_, LocalCardMigrationFlowStep::MIGRATION_FINISHED);
+  DCHECK(flow_step_ == LocalCardMigrationFlowStep::MIGRATION_FINISHED ||
+         flow_step_ == LocalCardMigrationFlowStep::MIGRATION_FAILED);
   flow_step_ = LocalCardMigrationFlowStep::FEEDBACK_DIALOG;
   dialog_controller_->ShowFeedbackDialog();
 }
