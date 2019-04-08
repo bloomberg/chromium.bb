@@ -9,12 +9,15 @@
 
 namespace blink {
 
+class GPURenderPipelineDescriptor;
+
 class GPURenderPipeline : public DawnObject<DawnRenderPipeline> {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static GPURenderPipeline* Create(GPUDevice* device,
-                                   DawnRenderPipeline render_pipeline);
+  static GPURenderPipeline* Create(
+      GPUDevice* device,
+      const GPURenderPipelineDescriptor* webgpu_desc);
   explicit GPURenderPipeline(GPUDevice* device,
                              DawnRenderPipeline render_pipeline);
   ~GPURenderPipeline() override;

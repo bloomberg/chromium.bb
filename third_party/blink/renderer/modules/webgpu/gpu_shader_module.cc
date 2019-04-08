@@ -9,9 +9,11 @@
 namespace blink {
 
 // static
-GPUShaderModule* GPUShaderModule::Create(GPUDevice* device,
-                                         DawnShaderModule shader_module) {
-  return MakeGarbageCollected<GPUShaderModule>(device, shader_module);
+GPUShaderModule* GPUShaderModule::Create(
+    GPUDevice* device,
+    const GPUShaderModuleDescriptor* webgpu_desc) {
+  NOTIMPLEMENTED();
+  return nullptr;
 }
 
 GPUShaderModule::GPUShaderModule(GPUDevice* device,

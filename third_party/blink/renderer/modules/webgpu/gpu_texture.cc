@@ -9,8 +9,10 @@
 namespace blink {
 
 // static
-GPUTexture* GPUTexture::Create(GPUDevice* device, DawnTexture texture) {
-  return MakeGarbageCollected<GPUTexture>(device, texture);
+GPUTexture* GPUTexture::Create(GPUDevice* device,
+                               const GPUTextureDescriptor* webgpu_desc) {
+  NOTIMPLEMENTED();
+  return nullptr;
 }
 
 GPUTexture::GPUTexture(GPUDevice* device, DawnTexture texture)

@@ -9,12 +9,15 @@
 
 namespace blink {
 
+class GPUCommandEncoderDescriptor;
+
 class GPUCommandEncoder : public DawnObject<DawnCommandEncoder> {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static GPUCommandEncoder* Create(GPUDevice* device,
-                                   DawnCommandEncoder command_encoder);
+  static GPUCommandEncoder* Create(
+      GPUDevice* device,
+      const GPUCommandEncoderDescriptor* webgpu_desc);
   explicit GPUCommandEncoder(GPUDevice* device,
                              DawnCommandEncoder command_encoder);
   ~GPUCommandEncoder() override;

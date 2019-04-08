@@ -9,11 +9,14 @@
 
 namespace blink {
 
+class GPUTextureDescriptor;
+
 class GPUTexture : public DawnObject<DawnTexture> {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static GPUTexture* Create(GPUDevice* device, DawnTexture texture);
+  static GPUTexture* Create(GPUDevice* device,
+                            const GPUTextureDescriptor* webgpu_desc);
   explicit GPUTexture(GPUDevice* device, DawnTexture texture);
   ~GPUTexture() override;
 

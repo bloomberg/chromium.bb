@@ -9,8 +9,10 @@
 namespace blink {
 
 // static
-GPUBuffer* GPUBuffer::Create(GPUDevice* device, DawnBuffer buffer) {
-  return MakeGarbageCollected<GPUBuffer>(device, buffer);
+GPUBuffer* GPUBuffer::Create(GPUDevice* device,
+                             const GPUBufferDescriptor* webgpu_desc) {
+  NOTIMPLEMENTED();
+  return nullptr;
 }
 
 GPUBuffer::GPUBuffer(GPUDevice* device, DawnBuffer buffer)
