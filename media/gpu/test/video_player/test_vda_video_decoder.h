@@ -36,10 +36,11 @@ class TestVDAVideoDecoder : public media::VideoDecoder,
   TestVDAVideoDecoder(AllocationMode allocation_mode,
                       const gfx::ColorSpace& target_color_space,
                       FrameRenderer* const frame_renderer);
+  ~TestVDAVideoDecoder() override;
 
   // media::VideoDecoder implementation
-  std::string GetDisplayName() const override { return "TestVDAVideoDecoder"; }
-  bool IsPlatformDecoder() const override { return true; }
+  std::string GetDisplayName() const override;
+  bool IsPlatformDecoder() const override;
   void Initialize(const VideoDecoderConfig& config,
                   bool low_delay,
                   CdmContext* cdm_context,
@@ -49,9 +50,9 @@ class TestVDAVideoDecoder : public media::VideoDecoder,
   void Decode(scoped_refptr<DecoderBuffer> buffer,
               const DecodeCB& decode_cb) override;
   void Reset(const base::RepeatingClosure& reset_cb) override;
-  bool NeedsBitstreamConversion() const override { return false; }
-  bool CanReadWithoutStalling() const override { return true; }
-  int GetMaxDecodeRequests() const override { return 4; }
+  bool NeedsBitstreamConversion() const override;
+  bool CanReadWithoutStalling() const override;
+  int GetMaxDecodeRequests() const override;
 
  private:
   void Destroy() override;

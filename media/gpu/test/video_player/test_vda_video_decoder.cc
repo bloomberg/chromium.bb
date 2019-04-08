@@ -43,6 +43,8 @@ TestVDAVideoDecoder::TestVDAVideoDecoder(
   weak_this_ = weak_this_factory_.GetWeakPtr();
 }
 
+TestVDAVideoDecoder::~TestVDAVideoDecoder() = default;
+
 void TestVDAVideoDecoder::Destroy() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(vda_wrapper_sequence_checker_);
 
@@ -53,6 +55,14 @@ void TestVDAVideoDecoder::Destroy() {
   frame_renderer_->AcquireGLContext();
   video_frames_.clear();
   frame_renderer_->ReleaseGLContext();
+}
+
+std::string TestVDAVideoDecoder::GetDisplayName() const {
+  return "TestVDAVideoDecoder";
+}
+
+bool TestVDAVideoDecoder::IsPlatformDecoder() const {
+  return true;
 }
 
 void TestVDAVideoDecoder::Initialize(const VideoDecoderConfig& config,
@@ -132,6 +142,18 @@ void TestVDAVideoDecoder::Reset(const base::RepeatingClosure& reset_cb) {
 
   reset_cb_ = reset_cb;
   decoder_->Reset();
+}
+
+bool TestVDAVideoDecoder::NeedsBitstreamConversion() const {
+  return false;
+}
+
+bool TestVDAVideoDecoder::CanReadWithoutStalling() const {
+  return true;
+}
+
+int TestVDAVideoDecoder::GetMaxDecodeRequests() const {
+  return 4;
 }
 
 void TestVDAVideoDecoder::ProvidePictureBuffers(

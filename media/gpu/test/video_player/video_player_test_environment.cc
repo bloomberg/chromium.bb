@@ -24,6 +24,8 @@ namespace test {
 VideoPlayerTestEnvironment::VideoPlayerTestEnvironment(const Video* video)
     : video_(video) {}
 
+VideoPlayerTestEnvironment::~VideoPlayerTestEnvironment() = default;
+
 void VideoPlayerTestEnvironment::SetUp() {
   // Using shared memory requires mojo to be initialized (crbug.com/849207).
   mojo::core::Init();

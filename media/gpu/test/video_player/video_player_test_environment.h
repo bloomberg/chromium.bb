@@ -27,6 +27,7 @@ class Video;
 class VideoPlayerTestEnvironment : public ::testing::Environment {
  public:
   explicit VideoPlayerTestEnvironment(const Video* video);
+  ~VideoPlayerTestEnvironment() override;
 
   // Set up the video decode test environment, only called once.
   void SetUp() override;
