@@ -856,8 +856,7 @@ void SplitViewController::OnOverviewModeEnding(
         // is unavailable to retrieve outside this function after
         // OnOverviewEnding is notified.
         overview_item->RestoreWindow(/*reset_transform=*/false);
-        overview_session->RemoveOverviewItem(overview_item.get(),
-                                             /*reposition=*/false);
+        overview_session->RemoveItem(overview_item.get());
         SnapWindow(window, (default_snap_position_ == LEFT) ? RIGHT : LEFT);
         // If ending overview causes a window to snap, also do not do exiting
         // overview animation.
@@ -1594,7 +1593,7 @@ void SplitViewController::RemoveWindowFromOverviewIfApplicable(
   // repositioned in this case as they have been positioned to the right place
   // during dragging.
   item->RestoreWindow(/*reset_transform=*/false);
-  overview_session->RemoveOverviewItem(item, /*reposition=*/false);
+  overview_session->RemoveItem(item);
 }
 
 void SplitViewController::UpdateSnappingWindowTransformedBounds(

@@ -147,14 +147,12 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // then added to the overview.
   void AddItem(aura::Window* window, bool reposition, bool animate);
 
-  // Removes the overview item from the overview grid. And if
-  // |reposition| is true, re-position all windows in the target overview grid.
-  // This may be called in two scenarioes: 1) when a user drags an overview item
-  // to snap to one side of the screen, the item should be removed from the
-  // overview grid; 2) when a window (not from overview) ends its dragging while
-  // overview is open, the drop target should be removed. Note in both cases,
-  // the windows in the window grid do not need to be repositioned.
-  void RemoveOverviewItem(OverviewItem* item, bool reposition);
+  // Removes |overview_item| from the corresponding overview grid. This may be
+  // called in two scenarioes: 1) when a user drags an overview item to snap to
+  // one side of the screen, the item should be removed from the overview grid;
+  // 2) when a window (not from overview) ends its dragging while overview is
+  // open, the drop target should be removed.
+  void RemoveItem(OverviewItem* overview_item);
 
   void InitiateDrag(OverviewItem* item, const gfx::PointF& location_in_screen);
   void Drag(OverviewItem* item, const gfx::PointF& location_in_screen);
