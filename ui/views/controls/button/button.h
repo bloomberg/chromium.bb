@@ -281,7 +281,7 @@ class VIEWS_EXPORT Button : public InkDropHostView,
 
   FocusRing* focus_ring() { return focus_ring_.get(); }
 
-  void SetButtonController(std::unique_ptr<ButtonController> handler);
+  void SetButtonController(std::unique_ptr<ButtonController> button_controller);
 
   // The button's listener. Notified when clicked.
   ButtonListener* listener_;

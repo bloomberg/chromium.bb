@@ -11,8 +11,6 @@
 
 namespace views {
 
-class MenuButtonController;
-
 // Handles logic not related to the visual aspects of a Button such as event
 // handling and state changes.
 class VIEWS_EXPORT ButtonController {
@@ -20,12 +18,6 @@ class VIEWS_EXPORT ButtonController {
   ButtonController(Button* button,
                    std::unique_ptr<ButtonControllerDelegate> delegate);
   virtual ~ButtonController();
-
-  // Convenience method for downcasting; the ButtonController implementation
-  // returns null.
-  // TODO(cyan): Remove this method and have MenuButton store a data member of
-  // concrete type MenuButtonController*.
-  virtual MenuButtonController* AsMenuButtonController();
 
   // Methods that parallel View::On<Event> handlers:
   virtual bool OnMousePressed(const ui::MouseEvent& event);

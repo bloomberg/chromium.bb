@@ -484,6 +484,9 @@ class Button::DefaultButtonControllerDelegate
     return button()->GetDragOperations(press_pt);
   }
   bool InDrag() override { return button()->InDrag(); }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DefaultButtonControllerDelegate);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -501,7 +504,7 @@ Button::Button(ButtonListener* listener)
   hover_animation_.SetSlideDuration(kHoverFadeDurationMs);
   SetInstallFocusRingOnFocus(PlatformStyle::kPreferFocusRings);
   button_controller_ = std::make_unique<ButtonController>(
-      this, std::make_unique<DefaultButtonControllerDelegate>(this));
+      this, CreateButtonControllerDelegate());
 }
 
 Button::KeyClickAction Button::GetKeyClickActionForEvent(
@@ -553,8 +556,9 @@ bool Button::IsTriggerableEvent(const ui::Event& event) {
   return button_controller_->IsTriggerableEvent(event);
 }
 
-void Button::SetButtonController(std::unique_ptr<ButtonController> handler) {
-  button_controller_ = std::move(handler);
+void Button::SetButtonController(
+    std::unique_ptr<ButtonController> button_controller) {
+  button_controller_ = std::move(button_controller);
 }
 
 bool Button::ShouldUpdateInkDropOnClickCanceled() const {
