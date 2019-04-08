@@ -48,6 +48,16 @@
   [self.unifiedConsentMediator start];
 }
 
+- (void)scrollToBottom {
+  [self.unifiedConsentViewController scrollToBottom];
+}
+
+- (void)resetSettingLinkTapped {
+  self.settingsLinkWasTapped = NO;
+}
+
+#pragma mark - Properties
+
 - (ChromeIdentity*)selectedIdentity {
   return self.unifiedConsentMediator.selectedIdentity;
 }
@@ -66,10 +76,6 @@
 
 - (const std::vector<int>&)consentStringIds {
   return [self.unifiedConsentViewController consentStringIds];
-}
-
-- (void)scrollToBottom {
-  [self.unifiedConsentViewController scrollToBottom];
 }
 
 - (BOOL)isScrolledToBottom {
