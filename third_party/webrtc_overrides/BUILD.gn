@@ -94,7 +94,6 @@ source_set("libjingle_webrtc_common") {
     ":webrtc",
     "//third_party/webrtc/media:rtc_media",
     "//third_party/webrtc/media:rtc_media_base",
-    "//third_party/webrtc/modules/video_capture",
     "//third_party/webrtc/pc:libjingle_peerconnection",
     "//third_party/webrtc/pc:rtc_pc",
     "//third_party/webrtc/system_wrappers",
