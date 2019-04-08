@@ -594,9 +594,9 @@ void ServiceWorkerGlobalScope::importScripts(
 SingleCachedMetadataHandler*
 ServiceWorkerGlobalScope::CreateWorkerScriptCachedMetadataHandler(
     const KURL& script_url,
-    const Vector<uint8_t>* meta_data) {
+    std::unique_ptr<Vector<uint8_t>> meta_data) {
   return ServiceWorkerScriptCachedMetadataHandler::Create(this, script_url,
-                                                          meta_data);
+                                                          std::move(meta_data));
 }
 
 ScriptPromise ServiceWorkerGlobalScope::fetch(ScriptState* script_state,

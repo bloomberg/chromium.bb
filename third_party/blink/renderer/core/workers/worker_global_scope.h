@@ -79,7 +79,7 @@ class CORE_EXPORT WorkerGlobalScope
   // Returns null if caching is not supported.
   virtual SingleCachedMetadataHandler* CreateWorkerScriptCachedMetadataHandler(
       const KURL& script_url,
-      const Vector<uint8_t>* meta_data) {
+      std::unique_ptr<Vector<uint8_t>> meta_data) {
     return nullptr;
   }
 
