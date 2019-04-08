@@ -230,17 +230,25 @@ void UkmPageLoadMetricsObserver::OnComplete(
   ReportLayoutStability(info);
 }
 
+void UkmPageLoadMetricsObserver::OnResourceDataUseObserved(
+    content::RenderFrameHost* content,
+    const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
+        resources) {
+  if (was_hidden_)
+    return;
+  for (auto const& resource : resources) {
+    network_bytes_ += resource->delta_bytes;
+    if (resource->is_complete && resource->was_fetched_via_cache) {
+      cache_bytes_ += resource->encoded_body_length;
+    }
+  }
+}
+
 void UkmPageLoadMetricsObserver::OnLoadedResource(
     const page_load_metrics::ExtraRequestCompleteInfo&
         extra_request_complete_info) {
   if (was_hidden_)
     return;
-  if (extra_request_complete_info.was_cached) {
-    cache_bytes_ += extra_request_complete_info.raw_body_bytes;
-  } else {
-    network_bytes_ += extra_request_complete_info.raw_body_bytes;
-  }
-
   if (extra_request_complete_info.resource_type ==
       content::RESOURCE_TYPE_MAIN_FRAME) {
     DCHECK(!main_frame_timing_.has_value());
@@ -357,7 +365,7 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
 
   // Use a bucket spacing factor of 1.3 for bytes.
   builder.SetNet_CacheBytes(ukm::GetExponentialBucketMin(cache_bytes_, 1.3));
-  builder.SetNet_NetworkBytes(
+  builder.SetNet_NetworkBytes2(
       ukm::GetExponentialBucketMin(network_bytes_, 1.3));
 
   if (main_frame_timing_)

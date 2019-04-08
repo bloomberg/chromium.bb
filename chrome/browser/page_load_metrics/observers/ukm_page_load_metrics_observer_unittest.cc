@@ -907,42 +907,27 @@ TEST_F(UkmPageLoadMetricsObserverTest, PageTransitionReload) {
   }
 }
 
-TEST_F(UkmPageLoadMetricsObserverTest, BodySizeMetrics) {
+TEST_F(UkmPageLoadMetricsObserverTest, PageSizeMetrics) {
   NavigateAndCommit(GURL(kTestUrl1));
 
-  page_load_metrics::ExtraRequestCompleteInfo resources[] = {
-      // Cached request.
-      {GURL(kResourceUrl),
-       net::IPEndPoint(),
-       -1 /* frame_tree_node_id */,
-       true /* was_cached */,
-       1024 * 20 /* raw_body_bytes */,
-       0 /* original_network_content_length */,
-       nullptr /* data_reduction_proxy_data */,
-       content::ResourceType::RESOURCE_TYPE_SCRIPT,
-       0,
-       {} /* load_timing_info */},
-      // Uncached non-proxied request.
-      {GURL(kResourceUrl),
-       net::IPEndPoint(),
-       -1 /* frame_tree_node_id */,
-       false /* was_cached */,
-       1024 * 40 /* raw_body_bytes */,
-       1024 * 40 /* original_network_content_length */,
-       nullptr /* data_reduction_proxy_data */,
-       content::ResourceType::RESOURCE_TYPE_SCRIPT,
-       0,
-       {} /* load_timing_info */},
-  };
+  std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr> resources;
+  // Cached resource.
+  resources.push_back(CreateResource(true /* was_cached */, 0 /* delta_bytes */,
+                                     20 * 1024 /* encoded_body_length */,
+                                     true /* is_complete */));
+  // Uncached resource.
+  resources.push_back(CreateResource(
+      false /* was_cached */, 40 * 1024 /* delta_bytes */,
+      40 * 1024 /* encoded_body_length */, true /* is_complete */));
+  SimulateResourceDataUseUpdate(resources);
 
   int64_t network_bytes = 0;
   int64_t cache_bytes = 0;
   for (const auto& request : resources) {
-    SimulateLoadedResource(request);
-    if (!request.was_cached) {
-      network_bytes += request.raw_body_bytes;
+    if (!request->was_fetched_via_cache) {
+      network_bytes += request->delta_bytes;
     } else {
-      cache_bytes += request.raw_body_bytes;
+      cache_bytes += request->encoded_body_length;
     }
   }
 
@@ -960,7 +945,7 @@ TEST_F(UkmPageLoadMetricsObserverTest, BodySizeMetrics) {
   for (const auto& kv : merged_entries) {
     test_ukm_recorder().ExpectEntrySourceHasUrl(kv.second.get(),
                                                 GURL(kTestUrl1));
-    test_ukm_recorder().ExpectEntryMetric(kv.second.get(), "Net.NetworkBytes",
+    test_ukm_recorder().ExpectEntryMetric(kv.second.get(), "Net.NetworkBytes2",
                                           bucketed_network_bytes);
     test_ukm_recorder().ExpectEntryMetric(kv.second.get(), "Net.CacheBytes",
                                           bucketed_cache_bytes);
