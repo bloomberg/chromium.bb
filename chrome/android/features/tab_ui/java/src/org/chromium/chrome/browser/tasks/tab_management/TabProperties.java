@@ -30,6 +30,9 @@ public class TabProperties {
     public static final WritableObjectPropertyKey<TabListMediator.ThumbnailFetcher>
             THUMBNAIL_FETCHER = new WritableObjectPropertyKey<>();
 
+    public static final WritableObjectPropertyKey<TabListMediator.IphProvider> IPH_PROVIDER =
+            new WritableObjectPropertyKey<>();
+
     public static final WritableObjectPropertyKey<String> TITLE = new WritableObjectPropertyKey<>();
 
     public static final WritableBooleanPropertyKey IS_SELECTED = new WritableBooleanPropertyKey();
@@ -40,9 +43,9 @@ public class TabProperties {
     public static final PropertyModel.WritableFloatPropertyKey ALPHA =
             new PropertyModel.WritableFloatPropertyKey();
 
-    public static final PropertyKey[] ALL_KEYS_TAB_GRID =
-            new PropertyKey[] {TAB_ID, TAB_SELECTED_LISTENER, TAB_CLOSED_LISTENER, FAVICON,
-                    THUMBNAIL_FETCHER, TITLE, IS_SELECTED, CREATE_GROUP_LISTENER, ALPHA};
+    public static final PropertyKey[] ALL_KEYS_TAB_GRID = new PropertyKey[] {TAB_ID,
+            TAB_SELECTED_LISTENER, TAB_CLOSED_LISTENER, FAVICON, THUMBNAIL_FETCHER, IPH_PROVIDER,
+            TITLE, IS_SELECTED, CREATE_GROUP_LISTENER, ALPHA};
 
     public static final PropertyKey[] ALL_KEYS_TAB_STRIP = new PropertyKey[] {
             TAB_ID, TAB_SELECTED_LISTENER, TAB_CLOSED_LISTENER, FAVICON, IS_SELECTED, TITLE};
