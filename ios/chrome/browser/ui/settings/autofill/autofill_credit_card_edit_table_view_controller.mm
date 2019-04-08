@@ -260,7 +260,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   cell.selectionStyle = UITableViewCellSelectionStyleNone;
 
   NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
-  AutofillEditCell* editCell = base::mac::ObjCCast<AutofillEditCell>(cell);
+  TableViewTextEditCell* editCell =
+      base::mac::ObjCCast<TableViewTextEditCell>(cell);
   editCell.textField.delegate = self;
   switch (itemType) {
     case ItemTypeCardholderName:
@@ -296,8 +297,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
   if (self.tableView.editing) {
     UITableViewCell* cell = [self.tableView cellForRowAtIndexPath:indexPath];
-    AutofillEditCell* textFieldCell =
-        base::mac::ObjCCastStrict<AutofillEditCell>(cell);
+    TableViewTextEditCell* textFieldCell =
+        base::mac::ObjCCastStrict<TableViewTextEditCell>(cell);
     [textFieldCell.textField becomeFirstResponder];
   }
 }
