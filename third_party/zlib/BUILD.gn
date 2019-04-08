@@ -10,6 +10,10 @@ config("zlib_config") {
   include_dirs = [ "." ]
 }
 
+config("zlib_internal_config") {
+  defines = [ "ZLIB_IMPLEMENTATION" ]
+}
+
 use_arm_neon_optimizations = false
 if (current_cpu == "arm" || current_cpu == "arm64") {
   if (arm_use_neon) {
@@ -55,6 +59,8 @@ source_set("zlib_adler32_simd") {
       configs += [ "//build/config/compiler:optimize_speed" ]
     }
   }
+
+  configs += [ ":zlib_internal_config" ]
 
   public_configs = [ ":zlib_adler32_simd_config" ]
 }
@@ -105,6 +111,8 @@ if (use_arm_neon_optimizations) {
       }
     }
 
+    configs += [ ":zlib_internal_config" ]
+
     public_configs = [ ":zlib_arm_crc32_config" ]
   }
 }
@@ -149,7 +157,10 @@ source_set("zlib_inflate_chunk_simd") {
   }
 
   configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
+  configs += [
+    ":zlib_internal_config",
+    "//build/config/compiler:no_chromium_code",
+  ]
 
   public_configs = [ ":zlib_inflate_chunk_simd_config" ]
 }
@@ -177,10 +188,12 @@ source_set("zlib_crc32_simd") {
     }
   }
 
+  configs += [ ":zlib_internal_config" ]
+
   public_configs = [ ":zlib_crc32_simd_config" ]
 }
 
-static_library("zlib_x86_simd") {
+source_set("zlib_x86_simd") {
   visibility = [ ":*" ]
 
   if (use_x86_x64_optimizations) {
@@ -202,7 +215,10 @@ static_library("zlib_x86_simd") {
   }
 
   configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
+  configs += [
+    ":zlib_internal_config",
+    "//build/config/compiler:no_chromium_code",
+  ]
 }
 
 config("zlib_warnings") {
@@ -211,7 +227,7 @@ config("zlib_warnings") {
   }
 }
 
-static_library("zlib") {
+component("zlib") {
   if (!is_win) {
     # Don't stomp on "libzlib" on other platforms.
     output_name = "chrome_zlib"
@@ -219,6 +235,7 @@ static_library("zlib") {
 
   sources = [
     "adler32.c",
+    "chromeconf.h",
     "compress.c",
     "crc32.c",
     "crc32.h",
@@ -236,7 +253,6 @@ static_library("zlib") {
     "inflate.h",
     "inftrees.c",
     "inftrees.h",
-    "names.h",
     "trees.c",
     "trees.h",
     "uncompr.c",
@@ -269,6 +285,7 @@ static_library("zlib") {
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
+    ":zlib_internal_config",
     "//build/config/compiler:no_chromium_code",
 
     # Must be after no_chromium_code for warning flags to be ordered correctly.

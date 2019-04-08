@@ -8,8 +8,9 @@
 #ifndef ZCONF_H
 #define ZCONF_H
 
-/* This include does prefixing as below, but with an updated set of names */
-#include "names.h"
+/* This include does prefixing as below, but with an updated set of names.  Also
+ * sets up export macros in component builds. */
+#include "chromeconf.h"
 
 /*
  * If you *really* need a unique prefix for all types and library functions,

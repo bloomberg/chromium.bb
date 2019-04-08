@@ -2,8 +2,20 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#ifndef THIRD_PARTY_ZLIB_NAMES_H_
-#define THIRD_PARTY_ZLIB_NAMES_H_
+#ifndef THIRD_PARTY_ZLIB_CHROMECONF_H_
+#define THIRD_PARTY_ZLIB_CHROMECONF_H_
+
+#if defined(COMPONENT_BUILD)
+#if defined(WIN32)
+#if defined(ZLIB_IMPLEMENTATION)
+#define ZEXTERN __declspec(dllexport)
+#else
+#define ZEXTERN __declspec(dllimport)
+#endif
+#elif defined(ZLIB_IMPLEMENTATION)
+#define ZEXPORT __attribute__((visibility("default")))
+#endif
+#endif
 
 /* Rename all zlib names with a Cr_z_ prefix. This is based on the Z_PREFIX
  * option from zconf.h, but with a custom prefix. Where zconf.h would rename
@@ -180,4 +192,4 @@
 #define arm_check_features Cr_z_arm_check_features
 #define armv8_crc32_little Cr_z_armv8_crc32_little
 
-#endif  /* THIRD_PARTY_ZLIB_NAMES_H_ */
+#endif /* THIRD_PARTY_ZLIB_CHROMECONF_H_ */
