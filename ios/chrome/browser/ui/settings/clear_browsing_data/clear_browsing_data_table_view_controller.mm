@@ -138,7 +138,7 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
   // Align cell separators with text label leading margin.
   [self.tableView
       setSeparatorInset:UIEdgeInsetsMake(0, kTableViewHorizontalSpacing, 0, 0)];
-
+  self.tableView.allowsMultipleSelection = YES;
   // Navigation controller configuration.
   self.title = l10n_util::GetNSString(IDS_IOS_CLEAR_BROWSING_DATA_TITLE);
   // Adds the "Done" button and hooks it up to |dismiss|.
@@ -160,7 +160,22 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
   [self.dataManager restartCounters:BrowsingDataRemoveMask::REMOVE_ALL];
+
   if (IsNewClearBrowsingDataUIEnabled()) {
+    // Select those cells correspond to a checked item.
+    NSArray* dataTypeItems = [self.tableViewModel
+        itemsInSectionWithIdentifier:SectionIdentifierDataTypes];
+    for (TableViewClearBrowsingDataItem* dataTypeItem in dataTypeItems) {
+      DCHECK(
+          [dataTypeItem isKindOfClass:[TableViewClearBrowsingDataItem class]]);
+      if (dataTypeItem.checked) {
+        [self.tableView selectRowAtIndexPath:[self.tableViewModel
+                                                 indexPathForItem:dataTypeItem]
+                                    animated:NO
+                              scrollPosition:UITableViewScrollPositionNone];
+      }
+    }
+
     // Showing toolbar here because parent class hides toolbar in
     // viewWillDisappear:.
     self.navigationController.toolbarHidden = NO;
@@ -237,18 +252,41 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
 
 - (void)tableView:(UITableView*)tableView
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
+  if (!IsNewClearBrowsingDataUIEnabled()) {
+    [self tableView:tableView legacyDidSelectRowAtIndexPath:indexPath];
+  } else {
+    TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
+    DCHECK(item);
+    switch (item.type) {
+      case ItemTypeTimeRange: {
+        UIViewController* controller =
+            [[TimeRangeSelectorTableViewController alloc]
+                initWithPrefs:self.browserState->GetPrefs()
+                     delegate:self.dataManager];
+        [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
+        [self.navigationController pushViewController:controller animated:YES];
+        break;
+      }
+      case ItemTypeDataTypeBrowsingHistory:
+      case ItemTypeDataTypeCookiesSiteData:
+      case ItemTypeDataTypeCache:
+      case ItemTypeDataTypeSavedPasswords:
+      case ItemTypeDataTypeAutofill: {
+        [self updateItemAndReconfigureCellFor:item setChecked:YES];
+        break;
+      }
+      default:
+        break;
+    }
+  }
+}
+
+- (void)tableView:(UITableView*)tableView
+    legacyDidSelectRowAtIndexPath:(NSIndexPath*)indexPath {
   [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
   TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
   DCHECK(item);
   switch (item.type) {
-    case ItemTypeTimeRange: {
-      UIViewController* controller =
-          [[TimeRangeSelectorTableViewController alloc]
-              initWithPrefs:self.browserState->GetPrefs()
-                   delegate:self.dataManager];
-      [self.navigationController pushViewController:controller animated:YES];
-      break;
-    }
     case ItemTypeDataTypeBrowsingHistory:
     case ItemTypeDataTypeCookiesSiteData:
     case ItemTypeDataTypeCache:
@@ -262,11 +300,27 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
       [self reconfigureCellsForItems:@[ clearBrowsingDataItem ]];
       break;
     }
-    case ItemTypeClearBrowsingDataButton:
-    case ItemTypeFooterGoogleAccount:
-    case ItemTypeFooterGoogleAccountAndMyActivity:
-    case ItemTypeFooterSavedSiteData:
-    case ItemTypeFooterClearSyncAndSavedSiteData:
+    default:
+      break;
+  }
+}
+
+- (void)tableView:(UITableView*)tableView
+    didDeselectRowAtIndexPath:(NSIndexPath*)indexPath {
+  if (!IsNewClearBrowsingDataUIEnabled()) {
+    return;
+  }
+  TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
+  DCHECK(item);
+  switch (item.type) {
+    case ItemTypeDataTypeBrowsingHistory:
+    case ItemTypeDataTypeCookiesSiteData:
+    case ItemTypeDataTypeCache:
+    case ItemTypeDataTypeSavedPasswords:
+    case ItemTypeDataTypeAutofill: {
+      [self updateItemAndReconfigureCellFor:item setChecked:NO];
+      break;
+    }
     default:
       break;
   }
@@ -296,6 +350,20 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
   // thus the cell height needs to adapt accordingly.
   [self reloadCellsForItems:@[ item ]
            withRowAnimation:UITableViewRowAnimationAutomatic];
+
+  // Restore a cell's seleted state potentially cleared by the above reload
+  // method.
+  if (IsNewClearBrowsingDataUIEnabled() &&
+      [item isKindOfClass:[TableViewClearBrowsingDataItem class]]) {
+    TableViewClearBrowsingDataItem* dataTypeItem =
+        base::mac::ObjCCastStrict<TableViewClearBrowsingDataItem>(item);
+    if (dataTypeItem.checked) {
+      [self.tableView selectRowAtIndexPath:[self.tableViewModel
+                                               indexPathForItem:dataTypeItem]
+                                  animated:NO
+                            scrollPosition:UITableViewScrollPositionNone];
+    }
+  }
 }
 
 - (void)removeBrowsingDataForBrowserState:(ios::ChromeBrowserState*)browserState
@@ -402,6 +470,23 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
   }
   self.actionSheetCoordinator = actionSheetCoordinator;
   [self.actionSheetCoordinator start];
+}
+
+// Helper of |tableView:didSelectRowAtIndexPath:| and
+// |tableView:didDeselectRowAtIndexPath:| for browsing data items.
+// Sets |item|'s |checked| to |flag|, which depends on whether it's a selection
+// or a deselection, then performs updates accordingly.
+- (void)updateItemAndReconfigureCellFor:(TableViewItem*)item
+                             setChecked:(BOOL)flag {
+  if (![item isKindOfClass:[TableViewClearBrowsingDataItem class]]) {
+    return;
+  }
+  TableViewClearBrowsingDataItem* clearBrowsingDataItem =
+      base::mac::ObjCCastStrict<TableViewClearBrowsingDataItem>(item);
+  clearBrowsingDataItem.checked = flag;
+  self.browserState->GetPrefs()->SetBoolean(clearBrowsingDataItem.prefName,
+                                            clearBrowsingDataItem.checked);
+  [self reconfigureCellsForItems:@[ clearBrowsingDataItem ]];
 }
 
 @end
