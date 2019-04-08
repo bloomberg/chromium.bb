@@ -924,6 +924,11 @@ void VariationsService::CancelCurrentRequestForTesting() {
   pending_seed_request_.reset();
 }
 
+void VariationsService::StartRepeatedVariationsSeedFetchForTesting() {
+  InitResourceRequestedAllowedNotifier();
+  return StartRepeatedVariationsSeedFetch();
+}
+
 std::string VariationsService::GetStoredPermanentCountry() {
   const base::ListValue* list_value =
       local_state_->GetList(prefs::kVariationsPermanentConsistencyCountry);
