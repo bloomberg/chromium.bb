@@ -682,6 +682,11 @@ void PeopleHandler::HandleShowSetupUI(const base::ListValue* args) {
     Observe(web_ui()->GetWebContents());
 
     PushSyncPrefs();
+
+    // Focus the web contents in case the location bar was focused before. This
+    // makes sure that page elements for resolving sync errors can be focused.
+    web_ui()->GetWebContents()->Focus();
+
     // Always let the page open when unified consent is enabled.
     return;
   }
