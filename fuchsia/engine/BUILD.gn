@@ -71,6 +71,7 @@ component("web_engine_core") {
     "//content/public/child",
     "//content/public/common",
     "//content/public/renderer",
+    "//fuchsia:web_fidl",
     "//fuchsia/base",
     "//fuchsia/base:modular",
     "//mojo/public/cpp/bindings",
@@ -78,6 +79,7 @@ component("web_engine_core") {
     "//services/service_manager/sandbox",
     "//skia/public/interfaces",
     "//third_party/blink/public/common",
+    "//third_party/fuchsia-sdk/sdk:web",
     "//ui/aura",
     "//ui/base/ime",
     "//ui/display",
@@ -91,10 +93,6 @@ component("web_engine_core") {
   ]
   data = [
     "$root_out_dir/webrunner.pak",
-  ]
-  public_deps = [
-    "//fuchsia:web_fidl",
-    "//third_party/fuchsia-sdk/sdk:web",
   ]
   configs += [ ":web_engine_implementation" ]
   sources = [
@@ -227,6 +225,7 @@ test("web_engine_unittests") {
     ":web_engine_core",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
+    "//fuchsia:web_fidl",
     "//testing/gmock",
     "//testing/gtest",
   ]
