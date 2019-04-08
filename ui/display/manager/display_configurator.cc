@@ -916,25 +916,23 @@ void DisplayConfigurator::OnContentProtectionApplied(uint64_t client_id,
       std::move(apply_protection_callbacks_.front());
   apply_protection_callbacks_.pop();
 
-  if (!success) {
-    std::move(callback).Run(false);
-    return;
-  }
+  if (success) {
+    if (protection_mask == CONTENT_PROTECTION_METHOD_NONE) {
+      auto it = content_protection_requests_.find(client_id);
+      if (it != content_protection_requests_.end()) {
+        ContentProtections& protections = it->second;
+        protections.erase(display_id);
 
-  if (protection_mask == CONTENT_PROTECTION_METHOD_NONE) {
-    auto it = content_protection_requests_.find(client_id);
-    if (it != content_protection_requests_.end()) {
-      ContentProtections& protections = it->second;
-      protections.erase(display_id);
-
-      if (protections.empty())
-        content_protection_requests_.erase(client_id);
+        if (protections.empty())
+          content_protection_requests_.erase(client_id);
+      }
+    } else {
+      content_protection_requests_[client_id][display_id] = protection_mask;
     }
-  } else {
-    content_protection_requests_[client_id][display_id] = protection_mask;
   }
 
-  std::move(callback).Run(true);
+  std::move(callback).Run(success);
+
   if (!content_protection_tasks_.empty())
     content_protection_tasks_.front().Run();
 }

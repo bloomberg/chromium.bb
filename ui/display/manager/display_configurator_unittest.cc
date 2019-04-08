@@ -993,6 +993,84 @@ TEST_F(DisplayConfiguratorTest, ContentProtection) {
             log_->GetActionsAndClear());
 }
 
+TEST_F(DisplayConfiguratorTest, ContentProtectionAsync) {
+  Init(false);
+  configurator_.ForceInitialConfigure();
+  EXPECT_NE(kNoActions, log_->GetActionsAndClear());
+
+  auto id = configurator_.RegisterContentProtectionClient();
+  EXPECT_TRUE(id);
+
+  UpdateOutputs(2, true);
+  EXPECT_NE(kNoActions, log_->GetActionsAndClear());
+
+  native_display_delegate_->set_run_async(true);
+
+  // Asynchronous tasks should be pending.
+  constexpr int kTaskCount = 3;
+  for (int i = 0; i < kTaskCount; ++i) {
+    configurator_.ApplyContentProtection(
+        id, outputs_[1]->display_id(), CONTENT_PROTECTION_METHOD_HDCP,
+        base::BindOnce(&DisplayConfiguratorTest::ApplyContentProtectionCallback,
+                       base::Unretained(this)));
+
+    configurator_.QueryContentProtection(
+        id, outputs_[1]->display_id(),
+        base::BindOnce(&DisplayConfiguratorTest::QueryContentProtectionCallback,
+                       base::Unretained(this)));
+  }
+
+  EXPECT_EQ(0, apply_content_protection_call_count_);
+  EXPECT_EQ(0, query_content_protection_call_count_);
+
+  native_display_delegate_->set_hdcp_state(HDCP_STATE_ENABLED);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(kTaskCount, apply_content_protection_call_count_);
+  EXPECT_TRUE(apply_content_protection_success_);
+
+  EXPECT_EQ(kTaskCount, query_content_protection_call_count_);
+  EXPECT_TRUE(query_content_protection_success_);
+  EXPECT_EQ(static_cast<uint32_t>(DISPLAY_CONNECTION_TYPE_HDMI),
+            query_content_protection_connection_mask_);
+  EXPECT_EQ(static_cast<uint32_t>(CONTENT_PROTECTION_METHOD_HDCP),
+            query_content_protection_protection_mask_);
+
+  EXPECT_EQ(GetSetHDCPStateAction(*outputs_[1], HDCP_STATE_DESIRED),
+            log_->GetActionsAndClear());
+
+  // Pending task should run even if previous task fails.
+  native_display_delegate_->set_set_hdcp_state_expectation(false);
+
+  configurator_.ApplyContentProtection(
+      id, outputs_[1]->display_id(), CONTENT_PROTECTION_METHOD_NONE,
+      base::BindOnce(&DisplayConfiguratorTest::ApplyContentProtectionCallback,
+                     base::Unretained(this)));
+
+  configurator_.QueryContentProtection(
+      id, outputs_[1]->display_id(),
+      base::BindOnce(&DisplayConfiguratorTest::QueryContentProtectionCallback,
+                     base::Unretained(this)));
+
+  EXPECT_EQ(kTaskCount, apply_content_protection_call_count_);
+  EXPECT_EQ(kTaskCount, query_content_protection_call_count_);
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(kTaskCount + 1, apply_content_protection_call_count_);
+  EXPECT_FALSE(apply_content_protection_success_);
+
+  EXPECT_EQ(kTaskCount + 1, query_content_protection_call_count_);
+  EXPECT_TRUE(query_content_protection_success_);
+  EXPECT_EQ(static_cast<uint32_t>(DISPLAY_CONNECTION_TYPE_HDMI),
+            query_content_protection_connection_mask_);
+  EXPECT_EQ(static_cast<uint32_t>(CONTENT_PROTECTION_METHOD_HDCP),
+            query_content_protection_protection_mask_);
+
+  EXPECT_EQ(GetSetHDCPStateAction(*outputs_[1], HDCP_STATE_UNDESIRED),
+            log_->GetActionsAndClear());
+}
+
 TEST_F(DisplayConfiguratorTest, DoNotConfigureWithSuspendedDisplays) {
   InitWithSingleOutput();
 
