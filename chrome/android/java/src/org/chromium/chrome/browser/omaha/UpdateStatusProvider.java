@@ -59,7 +59,7 @@ public class UpdateStatusProvider implements ActivityStateListener {
         int FROM_MENU = 0;
         int FROM_INFOBAR = 1;
 
-        int COUNT = 2;
+        int NUM_ENTRIES = 2;
     }
 
     /**
@@ -79,7 +79,7 @@ public class UpdateStatusProvider implements ActivityStateListener {
         int INLINE_UPDATE_READY = 5;
         int INLINE_UPDATE_FAILED = 6;
 
-        int COUNT = 7;
+        int NUM_ENTRIES = 7;
     }
 
     /** A set of properties that represent the current update state for Chrome. */
@@ -208,7 +208,7 @@ public class UpdateStatusProvider implements ActivityStateListener {
     public void startInlineUpdate(@UpdateInteractionSource int source, Activity activity) {
         if (mStatus == null || mStatus.updateState != UpdateState.INLINE_UPDATE_AVAILABLE) return;
         RecordHistogram.recordEnumeratedHistogram(
-                "GoogleUpdate.Inline.UI.Start.Source", source, UpdateInteractionSource.COUNT);
+                "GoogleUpdate.Inline.UI.Start.Source", source, UpdateInteractionSource.NUM_ENTRIES);
         mInlineController.startUpdate(activity);
     }
 
@@ -219,15 +219,15 @@ public class UpdateStatusProvider implements ActivityStateListener {
     public void retryInlineUpdate(@UpdateInteractionSource int source, Activity activity) {
         if (mStatus == null || mStatus.updateState != UpdateState.INLINE_UPDATE_AVAILABLE) return;
         RecordHistogram.recordEnumeratedHistogram(
-                "GoogleUpdate.Inline.UI.Retry.Source", source, UpdateInteractionSource.COUNT);
+                "GoogleUpdate.Inline.UI.Retry.Source", source, UpdateInteractionSource.NUM_ENTRIES);
         mInlineController.startUpdate(activity);
     }
 
     /** Finishes the inline update process, which may involve restarting the app. */
     public void finishInlineUpdate(@UpdateInteractionSource int source) {
         if (mStatus == null || mStatus.updateState != UpdateState.INLINE_UPDATE_READY) return;
-        RecordHistogram.recordEnumeratedHistogram(
-                "GoogleUpdate.Inline.UI.Install.Source", source, UpdateInteractionSource.COUNT);
+        RecordHistogram.recordEnumeratedHistogram("GoogleUpdate.Inline.UI.Install.Source", source,
+                UpdateInteractionSource.NUM_ENTRIES);
         mInlineController.completeUpdate();
     }
 
@@ -289,7 +289,7 @@ public class UpdateStatusProvider implements ActivityStateListener {
 
         if (!mRecordedInitialStatus) {
             RecordHistogram.recordEnumeratedHistogram(
-                    "GoogleUpdate.StartUp.State", mStatus.updateState, UpdateState.COUNT);
+                    "GoogleUpdate.StartUp.State", mStatus.updateState, UpdateState.NUM_ENTRIES);
             mRecordedInitialStatus = true;
         }
 

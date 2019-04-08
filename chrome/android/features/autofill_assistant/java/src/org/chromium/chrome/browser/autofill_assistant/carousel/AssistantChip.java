@@ -21,7 +21,7 @@ public class AssistantChip {
         int BUTTON_HAIRLINE = 2;
 
         /** The number of types. Increment this value if you add a type. */
-        int CHIP_TYPE_NUMBER = 3;
+        int NUM_ENTRIES = 3;
     }
 
     private final @Type int mType;
