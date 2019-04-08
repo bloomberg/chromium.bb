@@ -64,11 +64,10 @@ CC_FILE_END = """
 }  // namespace extensions
 """
 
-# Returns true if the list 'l' does not contain any strings that look like
-# extension ids.
-def ListDoesNotContainPlainExtensionIds(l):
-  # For now, let's just say anything 32 characters in length is an id.
-  return len(filter(lambda s: len(s) == 32, l)) == 0
+# Returns true if the list 'l' only contains strings that are a hex-encoded SHA1
+# hashes.
+def ListContainsOnlySha1Hashes(l):
+  return len(filter(lambda s: not re.match("^[A-F0-9]{40}$", s), l)) == 0
 
 # A "grammar" for what is and isn't allowed in the features.json files. This
 # grammar has to list all possible keys and the requirements for each. The
@@ -120,7 +119,7 @@ FEATURE_GRAMMAR = (
       list: {
         'subtype': unicode,
         'validators': [
-          (ListDoesNotContainPlainExtensionIds,
+          (ListContainsOnlySha1Hashes,
            'list should only have hex-encoded SHA1 hashes of extension ids')
         ]
       }
@@ -227,7 +226,7 @@ FEATURE_GRAMMAR = (
       list: {
         'subtype': unicode,
         'validators': [
-          (ListDoesNotContainPlainExtensionIds,
+          (ListContainsOnlySha1Hashes,
            'list should only have hex-encoded SHA1 hashes of extension ids')
         ]
       }

@@ -38,7 +38,10 @@ class FeatureCompilerTest(unittest.TestCase):
   def testFeature(self):
     # Test some basic feature parsing for a sanity check.
     f = self._parseFeature({
-      'blacklist': ['aaa', 'bbb'],
+      'blacklist': [
+        'ABCDEF0123456789ABCDEF0123456789ABCDEF01',
+        '10FEDCBA9876543210FEDCBA9876543210FEDCBA'
+      ],
       'channel': 'stable',
       'command_line_switch': 'switch',
       'component_extensions_auto_granted': False,
@@ -57,7 +60,10 @@ class FeatureCompilerTest(unittest.TestCase):
       'noparent': True,
       'platforms': ['mac', 'win'],
       'session_types': ['kiosk', 'regular'],
-      'whitelist': ['zzz', 'yyy']
+      'whitelist': [
+        '0123456789ABCDEF0123456789ABCDEF01234567',
+        '76543210FEDCBA9876543210FEDCBA9876543210'
+      ]
     })
     self.assertFalse(f.GetErrors())
 
