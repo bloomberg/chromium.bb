@@ -4,7 +4,6 @@
 
 package org.chromium.content.browser.input;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Color;
@@ -141,8 +140,6 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver, UserData
      * {@ResultReceiver} passed in InputMethodManager#showSoftInput}. We need this to scroll to the
      * editable node at the right timing, which is after input method window shows up.
      */
-    // TODO(crbug.com/635567): Fix this properly.
-    @SuppressLint("ParcelCreator")
     private static class ShowKeyboardResultReceiver extends ResultReceiver {
         // Unfortunately, the memory life cycle of ResultReceiver object, once passed in
         // showSoftInput(), is in the control of Android's input method framework and IME app,
