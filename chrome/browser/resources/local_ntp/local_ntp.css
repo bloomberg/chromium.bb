@@ -285,6 +285,7 @@ html[dir=rtl] #fakebox-text {
 
 #fakebox-cursor {
   background: #333;
+  /* Total 20px height: 44px fakebox height - 12px top - 12px bottom */
   bottom: 12px;
   left: 20px;
   position: absolute;
@@ -303,9 +304,10 @@ html[darkmode=true] body:not(.alternate-fakebox):not(.light-chip) #fakebox-curso
 }
 
 .alternate-fakebox #fakebox-cursor {
-  /* Total 16px height: 46px fakebox height - 15px top - 15px bottom */
-  bottom: 15px;
-  top: 15px;
+  /* Total 16px height: (46px fakebox height - 2px border) - 14px top - 14px
+   * bottom */
+  bottom: 14px;
+  top: 14px;
 }
 
 .show-fakebox-icon.alternate-fakebox #fakebox-cursor {
