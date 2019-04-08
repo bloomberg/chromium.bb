@@ -2034,13 +2034,7 @@ TEST_P(WebStateObserverTest, DownloadNavigation) {
 }
 
 // Tests failed load after the navigation is sucessfully finished.
-// TODO(crbug.com/845879): test is flaky (probably since crrev.com/1056203).
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_FailedLoad FailedLoad
-#else
-#define MAYBE_FailedLoad FLAKY_FailedLoad
-#endif
-TEST_P(WebStateObserverTest, FLAKY_FailedLoad) {
+TEST_P(WebStateObserverTest, FailedLoad) {
   GURL url = test_server_->GetURL("/exabyte_response");
 
   NavigationContext* context = nullptr;
