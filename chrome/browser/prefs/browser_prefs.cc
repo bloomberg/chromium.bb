@@ -56,6 +56,7 @@
 #include "chrome/browser/push_messaging/push_messaging_app_identifier.h"
 #include "chrome/browser/renderer_host/pepper/device_id_fetcher.h"
 #include "chrome/browser/rlz/chrome_rlz_tracker_delegate.h"
+#include "chrome/browser/search/local_ntp_first_run_field_trial_handler.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ssl/ssl_config_service_manager.h"
@@ -521,6 +522,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   gcm::GCMChannelStatusSyncer::RegisterPrefs(registry);
   gcm::RegisterPrefs(registry);
   metrics::TabStatsTracker::RegisterPrefs(registry);
+  ntp_first_run::RegisterLocalStatePrefs(registry);
   RegisterBrowserPrefs(registry);
   StartupBrowserCreator::RegisterLocalStatePrefs(registry);
   task_manager::TaskManagerInterface::RegisterPrefs(registry);

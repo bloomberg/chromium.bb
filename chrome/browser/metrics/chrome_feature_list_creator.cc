@@ -165,7 +165,8 @@ void ChromeFeatureListCreator::ConvertFlagsToSwitches() {
 }
 
 void ChromeFeatureListCreator::SetupFieldTrials() {
-  browser_field_trials_ = std::make_unique<ChromeBrowserFieldTrials>();
+  browser_field_trials_ =
+      std::make_unique<ChromeBrowserFieldTrials>(local_state_.get());
 
   // Initialize FieldTrialList to support FieldTrials. This is intentionally
   // leaked since it needs to live for the duration of the browser process and
