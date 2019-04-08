@@ -5,15 +5,35 @@
 #include "third_party/blink/renderer/modules/webgpu/gpu_shader_module.h"
 
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_shader_module_descriptor.h"
 
 namespace blink {
+
+namespace {
+
+DawnShaderModuleDescriptor AsDawnType(
+    const GPUShaderModuleDescriptor* webgpu_desc) {
+  DawnShaderModuleDescriptor dawn_desc;
+
+  dawn_desc.nextInChain = nullptr;
+  dawn_desc.code = webgpu_desc->code().View()->Data();
+  dawn_desc.codeSize = webgpu_desc->code().View()->length();
+
+  return dawn_desc;
+}
+
+}  // anonymous namespace
 
 // static
 GPUShaderModule* GPUShaderModule::Create(
     GPUDevice* device,
     const GPUShaderModuleDescriptor* webgpu_desc) {
-  NOTIMPLEMENTED();
-  return nullptr;
+  DCHECK(device);
+  DCHECK(webgpu_desc);
+  DawnShaderModuleDescriptor dawn_desc = AsDawnType(webgpu_desc);
+  return MakeGarbageCollected<GPUShaderModule>(
+      device, device->GetProcs().deviceCreateShaderModule(device->GetHandle(),
+                                                          &dawn_desc));
 }
 
 GPUShaderModule::GPUShaderModule(GPUDevice* device,
