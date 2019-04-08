@@ -353,6 +353,12 @@ MdTab::MdTab(TabbedPane* tabbed_pane,
 MdTab::~MdTab() = default;
 
 void MdTab::OnStateChanged() {
+  // kHighlight mode has different color theme.
+  if (tabbed_pane()->GetStyle() == TabbedPane::TabStripStyle::kHighlight) {
+    Tab::OnStateChanged();
+    return;
+  }
+
   ui::NativeTheme* theme = GetNativeTheme();
 
   SkColor font_color =
