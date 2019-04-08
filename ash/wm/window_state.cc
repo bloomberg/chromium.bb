@@ -365,7 +365,7 @@ void WindowState::OnWMEvent(const WMEvent* event) {
 }
 
 void WindowState::SaveCurrentBoundsForRestore() {
-  gfx::Rect bounds_in_screen = window_->bounds();
+  gfx::Rect bounds_in_screen = window_->GetTargetBounds();
   ::wm::ConvertRectToScreen(window_->parent(), &bounds_in_screen);
   SetRestoreBoundsInScreen(bounds_in_screen);
 }
