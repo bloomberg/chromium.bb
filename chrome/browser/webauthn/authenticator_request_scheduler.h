@@ -13,6 +13,7 @@ class ChromeAuthenticatorRequestDelegate;
 
 namespace content {
 class RenderFrameHost;
+class WebContents;
 }
 
 // Responsible for scheduling simultaneous Web Authentication API requests
@@ -30,6 +31,11 @@ class AuthenticatorRequestScheduler {
   // same WebContents.
   static std::unique_ptr<ChromeAuthenticatorRequestDelegate>
   CreateRequestDelegate(content::RenderFrameHost* render_frame_host);
+
+  // Returns the current request delegate associated to the |web_contents| or
+  // nullptr if there is none.
+  static ChromeAuthenticatorRequestDelegate* GetRequestDelegateForTest(
+      content::WebContents* web_contents);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorRequestScheduler);

@@ -58,3 +58,12 @@ AuthenticatorRequestScheduler::CreateRequestDelegate(
   active_request_holder->request() = request->AsWeakPtr();
   return request;
 }
+
+// static
+ChromeAuthenticatorRequestDelegate*
+AuthenticatorRequestScheduler::GetRequestDelegateForTest(
+    content::WebContents* web_contents) {
+  return ActiveRequestWeakHolder::EnsureForWebContents(web_contents)
+      ->request()
+      .get();
+}

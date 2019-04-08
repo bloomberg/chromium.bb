@@ -1030,3 +1030,54 @@ base::string16 AuthenticatorSelectAccountSheetModel::GetText(int row,
 
 void AuthenticatorSelectAccountSheetModel::SetObserver(
     ui::TableModelObserver* observer) {}
+
+// AttestationPermissionRequestSheetModel -------------------------------------
+
+AttestationPermissionRequestSheetModel::AttestationPermissionRequestSheetModel(
+    AuthenticatorRequestDialogModel* dialog_model)
+    : AuthenticatorSheetModelBase(dialog_model) {}
+
+AttestationPermissionRequestSheetModel::
+    ~AttestationPermissionRequestSheetModel() = default;
+
+void AttestationPermissionRequestSheetModel::OnAccept() {
+  dialog_model()->OnAttestationPermissionResponse(true);
+}
+
+void AttestationPermissionRequestSheetModel::OnCancel() {
+  dialog_model()->OnAttestationPermissionResponse(false);
+}
+
+gfx::ImageSkia* AttestationPermissionRequestSheetModel::GetStepIllustration()
+    const {
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_PERMISSION);
+}
+
+base::string16 AttestationPermissionRequestSheetModel::GetStepTitle() const {
+  return l10n_util::GetStringUTF16(
+      IDS_WEBAUTHN_REQUEST_ATTESTATION_PERMISSION_TITLE);
+}
+
+base::string16 AttestationPermissionRequestSheetModel::GetStepDescription()
+    const {
+  return l10n_util::GetStringFUTF16(
+      IDS_WEBAUTHN_REQUEST_ATTESTATION_PERMISSION_DESC,
+      GetRelyingPartyIdString());
+}
+
+bool AttestationPermissionRequestSheetModel::IsAcceptButtonVisible() const {
+  return true;
+}
+
+bool AttestationPermissionRequestSheetModel::IsAcceptButtonEnabled() const {
+  return true;
+}
+
+base::string16 AttestationPermissionRequestSheetModel::GetAcceptButtonLabel()
+    const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_ALLOW_ATTESTATION);
+}
+
+bool AttestationPermissionRequestSheetModel::IsCancelButtonVisible() const {
+  return true;
+}

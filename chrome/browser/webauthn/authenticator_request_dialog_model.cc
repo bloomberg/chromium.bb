@@ -473,6 +473,14 @@ void AuthenticatorRequestDialogModel::OnHavePIN(const std::string& pin) {
   has_attempted_pin_entry_ = true;
 }
 
+void AuthenticatorRequestDialogModel::OnAttestationPermissionResponse(
+    bool attestation_permission_granted) {
+  if (!attestation_callback_) {
+    return;
+  }
+  std::move(attestation_callback_).Run(attestation_permission_granted);
+}
+
 void AuthenticatorRequestDialogModel::AddAuthenticator(
     const device::FidoAuthenticator& authenticator) {
   if (!authenticator.AuthenticatorTransport()) {
@@ -567,4 +575,10 @@ void AuthenticatorRequestDialogModel::CollectPIN(
   } else {
     SetCurrentStep(Step::kClientPinSetup);
   }
+}
+
+void AuthenticatorRequestDialogModel::RequestAttestationPermission(
+    base::OnceCallback<void(bool)> callback) {
+  attestation_callback_ = std::move(callback);
+  SetCurrentStep(Step::kAttestationPermissionRequest);
 }

@@ -14,11 +14,8 @@
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/stl_util.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/permissions/attestation_permission_request.h"
-#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -110,6 +107,11 @@ ChromeAuthenticatorRequestDelegate::~ChromeAuthenticatorRequestDelegate() {
 base::WeakPtr<ChromeAuthenticatorRequestDelegate>
 ChromeAuthenticatorRequestDelegate::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
+}
+
+AuthenticatorRequestDialogModel*
+ChromeAuthenticatorRequestDelegate::WeakDialogModelForTesting() const {
+  return weak_dialog_model_;
 }
 
 content::BrowserContext* ChromeAuthenticatorRequestDelegate::browser_context()
@@ -204,29 +206,13 @@ void ChromeAuthenticatorRequestDelegate::ShouldReturnAttestation(
     return;
   }
 
-  // This does not use content::PermissionControllerDelegate because that only
-  // works with content settings, while this permission is a non-persisted,
-  // per-attested- registration consent.
-  auto* permission_request_manager = PermissionRequestManager::FromWebContents(
-      content::WebContents::FromRenderFrameHost(render_frame_host()));
-  if (!permission_request_manager) {
-    std::move(callback).Run(false);
-    return;
+  if (!IsWebAuthnUIEnabled()) {
+    // Enable the UI to show the user the permission dialog.
+    ShowAuthenticatorRequestDialog(
+        content::WebContents::FromRenderFrameHost(render_frame_host()),
+        std::move(transient_dialog_model_holder_));
   }
-
-  // The created AttestationPermissionRequest deletes itself once complete.
-  //
-  // |callback| is called via the |MessageLoop| because otherwise the
-  // permissions bubble will have focus and |AuthenticatorImpl| checks that the
-  // frame still has focus before returning any results.
-  permission_request_manager->AddRequest(NewAttestationPermissionRequest(
-      render_frame_host()->GetLastCommittedOrigin(),
-      base::BindOnce(
-          [](base::OnceCallback<void(bool)> callback, bool result) {
-            base::ThreadTaskRunnerHandle::Get()->PostTask(
-                FROM_HERE, base::BindOnce(std::move(callback), result));
-          },
-          std::move(callback))));
+  weak_dialog_model_->RequestAttestationPermission(std::move(callback));
 #endif
 }
 
