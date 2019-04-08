@@ -6,6 +6,7 @@
 #define NET_DNS_CONTEXT_HOST_RESOLVER_H_
 
 #include <memory>
+#include <unordered_set>
 #include <vector>
 
 #include "base/macros.h"
@@ -75,9 +76,19 @@ class NET_EXPORT ContextHostResolver : public HostResolver {
   void SetBaseDnsConfigForTesting(const DnsConfig& base_config);
   void SetTickClockForTesting(const base::TickClock* tick_clock);
 
+  size_t GetNumActiveRequestsForTesting() const {
+    return active_requests_.size();
+  }
+
  private:
+  class WrappedRequest;
+
   HostResolverManager* const manager_;
   std::unique_ptr<HostResolverManager> owned_manager_;
+
+  // Requests are expected to clear themselves from this set on destruction or
+  // cancellation.
+  std::unordered_set<WrappedRequest*> active_requests_;
 
   URLRequestContext* context_ = nullptr;
 

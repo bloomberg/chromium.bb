@@ -356,6 +356,7 @@ source_set("mdns_client") {
 source_set("tests") {
   testonly = true
   sources = [
+    "context_host_resolver_unittest.cc",
     "dns_config_service_unittest.cc",
     "dns_config_service_win_unittest.cc",
     "dns_hosts_unittest.cc",

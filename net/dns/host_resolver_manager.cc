@@ -490,7 +490,7 @@ const unsigned HostResolverManager::kMaximumDnsFailures = 16;
 // cancellation is initiated by the Job (OnJobCancelled) vs by the end user
 // (~RequestImpl).
 class HostResolverManager::RequestImpl
-    : public HostResolver::ResolveHostRequest,
+    : public CancellableRequest,
       public base::LinkNode<HostResolverManager::RequestImpl> {
  public:
   RequestImpl(const NetLogWithSource& source_net_log,
@@ -508,7 +508,12 @@ class HostResolverManager::RequestImpl
         resolver_(resolver),
         complete_(false) {}
 
-  ~RequestImpl() override;
+  ~RequestImpl() override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    Cancel();
+  }
+
+  void Cancel() override;
 
   int Start(CompletionOnceCallback callback) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -2252,7 +2257,7 @@ void HostResolverManager::SetDnsClient(std::unique_ptr<DnsClient> dns_client) {
   UpdateModeForHistogram(dns_config);
 }
 
-std::unique_ptr<HostResolver::ResolveHostRequest>
+std::unique_ptr<HostResolverManager::CancellableRequest>
 HostResolverManager::CreateRequest(
     const HostPortPair& host,
     const NetLogWithSource& net_log,
@@ -3133,10 +3138,14 @@ void HostResolverManager::UpdateModeForHistogram(const DnsConfig& dns_config) {
   }
 }
 
-HostResolverManager::RequestImpl::~RequestImpl() {
+void HostResolverManager::RequestImpl::Cancel() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (job_)
-    job_->CancelRequest(this);
+  if (!job_)
+    return;
+
+  job_->CancelRequest(this);
+  job_ = nullptr;
+  callback_.Reset();
 }
 
 void HostResolverManager::RequestImpl::ChangeRequestPriority(

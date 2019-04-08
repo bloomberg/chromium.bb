@@ -244,13 +244,13 @@ class ResolveHostResponseHelper {
 
   ResolveHostResponseHelper() {}
   explicit ResolveHostResponseHelper(
-      std::unique_ptr<HostResolver::ResolveHostRequest> request)
+      std::unique_ptr<HostResolverManager::CancellableRequest> request)
       : request_(std::move(request)) {
     result_error_ = request_->Start(base::BindOnce(
         &ResolveHostResponseHelper::OnComplete, base::Unretained(this)));
   }
   ResolveHostResponseHelper(
-      std::unique_ptr<HostResolver::ResolveHostRequest> request,
+      std::unique_ptr<HostResolverManager::CancellableRequest> request,
       Callback custom_callback)
       : request_(std::move(request)) {
     result_error_ = request_->Start(
@@ -265,7 +265,7 @@ class ResolveHostResponseHelper {
     return result_error_;
   }
 
-  HostResolver::ResolveHostRequest* request() { return request_.get(); }
+  HostResolverManager::CancellableRequest* request() { return request_.get(); }
 
   void CancelRequest() {
     DCHECK(request_);
@@ -291,7 +291,7 @@ class ResolveHostResponseHelper {
     DCHECK(complete());
   }
 
-  std::unique_ptr<HostResolver::ResolveHostRequest> request_;
+  std::unique_ptr<HostResolverManager::CancellableRequest> request_;
   int result_error_ = ERR_IO_PENDING;
   base::RunLoop run_loop_;
 
@@ -3991,6 +3991,57 @@ TEST_F(HostResolverManagerDnsTest, DeleteWithActiveTransactions) {
   for (auto& response : responses) {
     EXPECT_FALSE(response->complete());
   }
+}
+
+TEST_F(HostResolverManagerDnsTest, DeleteWithCompletedRequests) {
+  ChangeDnsConfig(CreateValidDnsConfig());
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("ok", 80), NetLogWithSource(), base::nullopt));
+
+  EXPECT_THAT(response.result_error(), IsOk());
+  EXPECT_THAT(response.request()->GetAddressResults().value().endpoints(),
+              testing::UnorderedElementsAre(CreateExpected("127.0.0.1", 80),
+                                            CreateExpected("::1", 80)));
+
+  resolver_.reset();
+
+  // Completed requests should be unaffected by manager destruction.
+  EXPECT_THAT(response.request()->GetAddressResults().value().endpoints(),
+              testing::UnorderedElementsAre(CreateExpected("127.0.0.1", 80),
+                                            CreateExpected("::1", 80)));
+}
+
+TEST_F(HostResolverManagerDnsTest, ExplicitCancel) {
+  ChangeDnsConfig(CreateValidDnsConfig());
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("4slow_4ok", 80), NetLogWithSource(), base::nullopt));
+
+  response.request()->Cancel();
+  dns_client_->CompleteDelayedTransactions();
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(response.complete());
+}
+
+TEST_F(HostResolverManagerDnsTest, ExplicitCancel_Completed) {
+  ChangeDnsConfig(CreateValidDnsConfig());
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("ok", 80), NetLogWithSource(), base::nullopt));
+
+  EXPECT_THAT(response.result_error(), IsOk());
+  EXPECT_THAT(response.request()->GetAddressResults().value().endpoints(),
+              testing::UnorderedElementsAre(CreateExpected("127.0.0.1", 80),
+                                            CreateExpected("::1", 80)));
+
+  response.request()->Cancel();
+
+  // Completed requests should be unaffected by cancellation.
+  EXPECT_THAT(response.request()->GetAddressResults().value().endpoints(),
+              testing::UnorderedElementsAre(CreateExpected("127.0.0.1", 80),
+                                            CreateExpected("::1", 80)));
 }
 
 // Cancel a request with only the IPv6 transaction active.
