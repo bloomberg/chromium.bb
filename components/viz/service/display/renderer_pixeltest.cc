@@ -3083,7 +3083,7 @@ TYPED_TEST(ExternalStencilPixelTest, RenderSurfacesIgnoreStencil) {
 template <typename RendererType>
 class RendererAAPixelTest : public RendererPixelTest<RendererType> {
  public:
-  void AntiAliasing() {
+  void AntiAliasing(const base::FilePath& filepath) {
     gfx::Rect rect(this->device_viewport_size_);
 
     int id = 1;
@@ -3115,12 +3115,11 @@ class RendererAAPixelTest : public RendererPixelTest<RendererType> {
     RenderPassList pass_list;
     pass_list.push_back(std::move(pass));
 
-    EXPECT_TRUE(this->RunPixelTest(
-        &pass_list, base::FilePath(FILE_PATH_LITERAL("anti_aliasing.png")),
-        cc::FuzzyPixelOffByOneComparator(true)));
+    EXPECT_TRUE(this->RunPixelTest(&pass_list, filepath,
+                                   cc::FuzzyPixelOffByOneComparator(true)));
   }
 
-  void AntiAliasingPerspective() {
+  void AntiAliasingPerspective(const base::FilePath& filepath) {
     gfx::Rect rect(this->device_viewport_size_);
 
     std::unique_ptr<RenderPass> pass = CreateTestRootRenderPass(1, rect);
@@ -3149,33 +3148,31 @@ class RendererAAPixelTest : public RendererPixelTest<RendererType> {
     RenderPassList pass_list;
     pass_list.push_back(std::move(pass));
 
-    EXPECT_TRUE(this->RunPixelTest(
-        &pass_list,
-        base::FilePath(FILE_PATH_LITERAL("anti_aliasing_perspective.png")),
-        cc::FuzzyPixelOffByOneComparator(true)));
+    EXPECT_TRUE(this->RunPixelTest(&pass_list, filepath,
+                                   cc::FuzzyPixelOffByOneComparator(true)));
   }
 };
 
-// TODO(crbug.com/939442): Combine these tests once they are passing on
-// SkiaRenderer.
 using GLRendererAAPixelTest = RendererAAPixelTest<GLRenderer>;
 using SkiaRendererAAPixelTest = RendererAAPixelTest<SkiaRenderer>;
 
 // Software renderer does not support anti-aliased edges.
 TEST_F(GLRendererAAPixelTest, AntiAliasing) {
-  AntiAliasing();
+  AntiAliasing(base::FilePath(FILE_PATH_LITERAL("anti_aliasing_gl.png")));
 }
 
-TEST_F(SkiaRendererAAPixelTest, DISABLED_AntiAliasing) {
-  AntiAliasing();
+TEST_F(SkiaRendererAAPixelTest, AntiAliasing) {
+  AntiAliasing(base::FilePath(FILE_PATH_LITERAL("anti_aliasing_skia.png")));
 }
 
 TEST_F(GLRendererAAPixelTest, AntiAliasingPerspective) {
-  AntiAliasingPerspective();
+  AntiAliasingPerspective(
+      base::FilePath(FILE_PATH_LITERAL("anti_aliasing_perspective_gl.png")));
 }
 
-TEST_F(SkiaRendererAAPixelTest, DISABLED_AntiAliasingPerspective) {
-  AntiAliasingPerspective();
+TEST_F(SkiaRendererAAPixelTest, AntiAliasingPerspective) {
+  AntiAliasingPerspective(
+      base::FilePath(FILE_PATH_LITERAL("anti_aliasing_perspective_skia.png")));
 }
 
 // This test tests that anti-aliasing works for axis aligned quads.
