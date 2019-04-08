@@ -28,6 +28,7 @@
 
 using testing::_;
 using testing::InvokeWithoutArgs;
+using testing::Return;
 
 namespace mirroring {
 
@@ -178,7 +179,8 @@ class CastMirroringServiceHostBrowserTest
   void RequestRefreshFrame() {
     base::RunLoop run_loop;
     EXPECT_CALL(*video_frame_receiver_, OnBufferReadyCall(_))
-        .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+        .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit))
+        .WillRepeatedly(Return());
     video_frame_receiver_->RequestRefreshFrame();
     run_loop.Run();
   }
