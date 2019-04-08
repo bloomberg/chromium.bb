@@ -75,13 +75,14 @@ class GPU_GLES2_EXPORT SharedImageFactory {
                     base::trace_event::ProcessMemoryDump* pmd,
                     int client_id,
                     uint64_t client_tracing_id);
-  bool RegisterBacking(std::unique_ptr<SharedImageBacking> backing,
-                       bool allow_legacy_mailbox);
+  MemoryTypeTracker* memory_tracker() const { return memory_tracker_.get(); }
 
  private:
   bool IsSharedBetweenThreads(uint32_t usage);
   SharedImageBackingFactory* GetFactoryByUsage(uint32_t usage,
                                                bool* allow_legacy_mailbox);
+  bool RegisterBacking(std::unique_ptr<SharedImageBacking> backing,
+                       bool allow_legacy_mailbox);
   MailboxManager* mailbox_manager_;
   SharedImageManager* shared_image_manager_;
   std::unique_ptr<MemoryTypeTracker> memory_tracker_;
