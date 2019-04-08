@@ -141,6 +141,7 @@ void FrameSinkVideoCapturerImpl::SetFormat(media::VideoPixelFormat format,
   }
 
   if (format_changed) {
+    frame_pool_.ClearFrameMarking();
     RefreshEntireSourceSoon();
   }
 }
@@ -297,7 +298,7 @@ base::TimeDelta FrameSinkVideoCapturerImpl::GetDelayBeforeNextRefreshAttempt()
 void FrameSinkVideoCapturerImpl::RefreshEntireSourceSoon() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  dirty_rect_ = kMaxRect;
+  InvalidateEntireSource();
   RefreshSoon();
 }
 
@@ -327,11 +328,11 @@ void FrameSinkVideoCapturerImpl::RefreshSoon() {
   }
   if (source_size != oracle_->source_size()) {
     oracle_->SetSourceSize(source_size);
-    dirty_rect_ = kMaxRect;
+    InvalidateEntireSource();
   }
 
-  MaybeCaptureFrame(VideoCaptureOracle::kRefreshRequest,
-                    gfx::Rect(oracle_->source_size()), clock_->NowTicks(),
+  MaybeCaptureFrame(VideoCaptureOracle::kRefreshRequest, gfx::Rect(),
+                    clock_->NowTicks(),
                     *resolved_target_->GetLastActivatedFrameMetadata());
 }
 
@@ -350,7 +351,7 @@ void FrameSinkVideoCapturerImpl::OnFrameDamaged(
     InvalidateRect(damage_rect);
   } else {
     oracle_->SetSourceSize(frame_size);
-    dirty_rect_ = kMaxRect;
+    InvalidateEntireSource();
   }
 
   MaybeCaptureFrame(VideoCaptureOracle::kCompositorUpdate, damage_rect,
@@ -369,6 +370,14 @@ void FrameSinkVideoCapturerImpl::InvalidateRect(const gfx::Rect& rect) {
   gfx::Rect positive_rect = rect;
   positive_rect.Intersect(kMaxRect);
   dirty_rect_.Union(positive_rect);
+  content_version_++;
+}
+
+void FrameSinkVideoCapturerImpl::InvalidateEntireSource() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  dirty_rect_ = kMaxRect;
+  content_version_++;
 }
 
 void FrameSinkVideoCapturerImpl::OnOverlayConnectionLost(
@@ -431,27 +440,19 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
     return;
   }
 
-  // Reserve a buffer from the pool for the next frame. Optimization: If there
-  // are no changes in the source that need to be captured AND there are no
-  // captures currently in-flight, attempt to resurrect the last frame from the
-  // pool (and there is no need to capture anything new into the frame).
+  // Reserve a buffer from the pool for the next frame.
   const OracleFrameNumber oracle_frame_number = oracle_->next_frame_number();
   const gfx::Size capture_size =
       AdjustSizeForPixelFormat(oracle_->capture_size());
 
+  const bool can_resurrect_content =
+      content_version_in_marked_frame_ == content_version_ &&
+      frame_pool_.HasMarkedFrameWithSize(capture_size);
   scoped_refptr<VideoFrame> frame;
-  bool using_resurrected_frame =
-      dirty_rect_.IsEmpty() &&
-      next_capture_frame_number_ == next_delivery_frame_number_;
-  if (using_resurrected_frame) {
-    frame = frame_pool_.ResurrectLastVideoFrame(pixel_format_, capture_size);
-    // If the resurrection failed, promote to a full frame capture.
-    if (!frame) {
-      TRACE_EVENT_INSTANT0("gpu.capture", "ResurrectionFailed",
-                           TRACE_EVENT_SCOPE_THREAD);
-      using_resurrected_frame = false;
-      frame = frame_pool_.ReserveVideoFrame(pixel_format_, capture_size);
-    }
+  if (can_resurrect_content) {
+    TRACE_EVENT_INSTANT0("gpu.capture", "UsingResurrectedFrame",
+                         TRACE_EVENT_SCOPE_THREAD);
+    frame = frame_pool_.ResurrectOrDuplicateContentFromMarkedFrame();
   } else {
     frame = frame_pool_.ReserveVideoFrame(pixel_format_, capture_size);
   }
@@ -564,16 +565,16 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
       frame->set_color_space(gfx::ColorSpace::CreateSRGB());
     }
     dirty_rect_ = gfx::Rect();
-    DidCaptureFrame(capture_frame_number, oracle_frame_number, gfx::Rect(),
-                    std::move(frame));
+    OnFrameReadyForDelivery(capture_frame_number, oracle_frame_number,
+                            gfx::Rect(), std::move(frame));
     return;
   }
 
   // If the frame is a resurrected one, just deliver it since it already
   // contains the most up-to-date capture of the source content.
-  if (using_resurrected_frame) {
-    DidCaptureFrame(capture_frame_number, oracle_frame_number, content_rect,
-                    std::move(frame));
+  if (can_resurrect_content) {
+    OnFrameReadyForDelivery(capture_frame_number, oracle_frame_number,
+                            content_rect, std::move(frame));
     return;
   }
 
@@ -584,7 +585,7 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
           : CopyOutputRequest::ResultFormat::RGBA_BITMAP,
       base::BindOnce(&FrameSinkVideoCapturerImpl::DidCopyFrame,
                      capture_weak_factory_.GetWeakPtr(), capture_frame_number,
-                     oracle_frame_number, content_rect,
+                     oracle_frame_number, content_version_, content_rect,
                      VideoCaptureOverlay::MakeCombinedRenderer(
                          GetOverlaysInOrder(), content_rect, frame->format()),
                      std::move(frame))));
@@ -599,16 +600,7 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
   request->set_result_selection(gfx::Rect(content_rect.size()));
 
   // Clear the |dirty_rect_|, to indicate all changes at the source are now
-  // being captured. This will also enable the "frame resurrection" optimization
-  // in future calls to this method. In other words, while the source content
-  // remains unchanged, there is no need to make any more CopyOutputRequests.
-  //
-  // Note that some optimistic assumptions are being made here: 1) that this
-  // |request| will succeed and it's image data successfully transferred to the
-  // VideoFrame; and 2) that delivery of the VideoFrame to the consumer will
-  // succeed. If, later in the pipeline, either of these assumptions is
-  // violated, the |dirty_rect_| will be changed to indicate that there might
-  // still be source changes requiring capture. See MaybeDeliverFrame().
+  // being captured.
   dirty_rect_ = gfx::Rect();
 
   resolved_target_->RequestCopyOfOutput(LocalSurfaceId(), std::move(request));
@@ -617,6 +609,7 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
 void FrameSinkVideoCapturerImpl::DidCopyFrame(
     int64_t capture_frame_number,
     OracleFrameNumber oracle_frame_number,
+    int64_t content_version,
     const gfx::Rect& content_rect,
     VideoCaptureOverlay::OnceRenderer overlay_renderer,
     scoped_refptr<VideoFrame> frame,
@@ -680,13 +673,18 @@ void FrameSinkVideoCapturerImpl::DidCopyFrame(
     media::LetterboxVideoFrame(
         frame.get(), gfx::Rect(content_rect.origin(),
                                AdjustSizeForPixelFormat(result->size())));
+
+    if (content_version > content_version_in_marked_frame_) {
+      frame_pool_.MarkFrame(*frame);
+      content_version_in_marked_frame_ = content_version;
+    }
   }
 
-  DidCaptureFrame(capture_frame_number, oracle_frame_number, content_rect,
-                  std::move(frame));
+  OnFrameReadyForDelivery(capture_frame_number, oracle_frame_number,
+                          content_rect, std::move(frame));
 }
 
-void FrameSinkVideoCapturerImpl::DidCaptureFrame(
+void FrameSinkVideoCapturerImpl::OnFrameReadyForDelivery(
     int64_t capture_frame_number,
     OracleFrameNumber oracle_frame_number,
     const gfx::Rect& content_rect,
@@ -732,12 +730,6 @@ void FrameSinkVideoCapturerImpl::MaybeDeliverFrame(
     // addition to the usual runtime tracing.
     TRACE_EVENT_ASYNC_END1("gpu.capture", "Capture", oracle_frame_number,
                            "success", false);
-
-    // Mark the whole source as dirty, since this frame may have contained
-    // updated content that will not be delivered. See the comment at the end of
-    // MaybeCaptureFrame() regarding "optimistic assumptions" for further
-    // discussion.
-    dirty_rect_ = kMaxRect;
 
     ScheduleRefreshFrame();
     return;
