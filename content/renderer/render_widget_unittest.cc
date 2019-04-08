@@ -15,13 +15,11 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
-#include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/trees/layer_tree_host.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
-#include "content/common/frame_replication_state.h"
 #include "content/common/input/input_handler.mojom.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input_messages.h"
@@ -33,7 +31,6 @@
 #include "content/renderer/compositor/layer_tree_view.h"
 #include "content/renderer/devtools/render_widget_screen_metrics_emulator.h"
 #include "content/renderer/input/widget_input_handler_manager.h"
-#include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_widget_delegate.h"
 #include "content/test/fake_compositor_dependencies.h"
 #include "content/test/mock_render_process.h"
@@ -553,41 +550,6 @@ class StubRenderWidgetDelegate : public RenderWidgetDelegate {
       bool enabled,
       const blink::WebDeviceEmulationParams& params) override {}
 };
-
-// Tests that the value of VisualProperties::is_pinch_gesture_active is
-// propagated to the LayerTreeHost when properties are synced, but only for
-// subframe widgets.
-TEST_F(RenderWidgetUnittest, ActivePinchGestureUpdatesLayerTreeHost) {
-  auto* layer_tree_host = widget()->layer_tree_view()->layer_tree_host();
-  EXPECT_FALSE(layer_tree_host->is_external_pinch_gesture_active_for_testing());
-  content::VisualProperties visual_properties;
-
-  // Sync visual properties on a child RenderWidget.
-  visual_properties.is_pinch_gesture_active = true;
-  widget()->OnSynchronizeVisualProperties(visual_properties);
-  // We expect the |is_pinch_gesture_active| value to propagate to the
-  // LayerTreeHost for sub-frames. Since GesturePinch events are handled
-  // directly in the main-frame's layer tree (and only there), information about
-  // whether or not we're in a pinch gesture must be communicated separately to
-  // sub-frame layer trees, via SynchronizeVisualProperties. This information
-  // is required to allow sub-frame compositors to throttle rastering while
-  // pinch gestures are active.
-  EXPECT_TRUE(layer_tree_host->is_external_pinch_gesture_active_for_testing());
-  visual_properties.is_pinch_gesture_active = false;
-  widget()->OnSynchronizeVisualProperties(visual_properties);
-  EXPECT_FALSE(layer_tree_host->is_external_pinch_gesture_active_for_testing());
-
-  // Repeat with a 'mainframe' widget.
-  widget()->set_delegate(std::make_unique<StubRenderWidgetDelegate>());
-  visual_properties.is_pinch_gesture_active = true;
-  widget()->OnSynchronizeVisualProperties(visual_properties);
-  // We do not expect the |is_pinch_gesture_active| value to propagate to the
-  // LayerTreeHost for the main-frame. Since GesturePinch events are handled
-  // directly by the layer tree for the main frame, it already knows whether or
-  // not a pinch gesture is active, and so we shouldn't propagate this
-  // information to the layer tree for a main-frame's widget.
-  EXPECT_FALSE(layer_tree_host->is_external_pinch_gesture_active_for_testing());
-}
 
 TEST_F(RenderWidgetPopupUnittest, EmulatingPopupRect) {
   blink::WebRect popup_screen_rect(200, 250, 100, 400);

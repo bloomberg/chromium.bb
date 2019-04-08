@@ -548,54 +548,6 @@ class RenderViewImplDisableZoomForDSFTest
   }
 };
 
-TEST_F(RenderViewImplTest, IsPinchGestureActivePropagatesToProxies) {
-  LoadHTML(
-      "<body style='min-height:1000px;'>"
-      "  <iframe src='data:text/html,frame 1'></iframe>"
-      "  <iframe src='data:text/html,frame 2'></iframe>"
-      "</body>");
-
-  // Verify child's proxy doesn't think we're pinching.
-  blink::WebFrame* root_web_frame = frame()->GetWebFrame();
-  ASSERT_TRUE(root_web_frame->FirstChild()->IsWebLocalFrame());
-  TestRenderFrame* child_frame_1 =
-      static_cast<TestRenderFrame*>(RenderFrame::FromWebFrame(
-          root_web_frame->FirstChild()->ToWebLocalFrame()));
-  ASSERT_TRUE(child_frame_1);
-  TestRenderFrame* child_frame_2 =
-      static_cast<TestRenderFrame*>(RenderFrame::FromWebFrame(
-          root_web_frame->FirstChild()->NextSibling()->ToWebLocalFrame()));
-  ASSERT_TRUE(child_frame_2);
-  child_frame_1->SwapOut(kProxyRoutingId, true,
-                         ReconstructReplicationStateForTesting(child_frame_1));
-  EXPECT_TRUE(root_web_frame->FirstChild()->IsWebRemoteFrame());
-  RenderFrameProxy* child_proxy_1 = RenderFrameProxy::FromWebFrame(
-      root_web_frame->FirstChild()->ToWebRemoteFrame());
-  ASSERT_TRUE(child_proxy_1);
-  EXPECT_FALSE(child_proxy_1->is_pinch_gesture_active_for_testing());
-
-  // Set the |is_pinch_gesture_active| flag.
-  view()->PageScaleFactorChanged(1.f, true);
-  EXPECT_TRUE(child_proxy_1->is_pinch_gesture_active_for_testing());
-
-  // Create a new remote child, and get its proxy. Swapping out will force
-  // creation and registering of a new RenderFrameProxy, which should pick up
-  // the existing setting.
-  child_frame_2->SwapOut(kProxyRoutingId + 1, true,
-                         ReconstructReplicationStateForTesting(child_frame_2));
-  EXPECT_TRUE(root_web_frame->FirstChild()->NextSibling()->IsWebRemoteFrame());
-  RenderFrameProxy* child_proxy_2 = RenderFrameProxy::FromWebFrame(
-      root_web_frame->FirstChild()->NextSibling()->ToWebRemoteFrame());
-
-  // Verify new child has the flag too.
-  EXPECT_TRUE(child_proxy_2->is_pinch_gesture_active_for_testing());
-
-  // Reset the flag, make sure both children respond.
-  view()->PageScaleFactorChanged(1.f, false);
-  EXPECT_FALSE(child_proxy_1->is_pinch_gesture_active_for_testing());
-  EXPECT_FALSE(child_proxy_2->is_pinch_gesture_active_for_testing());
-}
-
 // Test that we get form state change notifications when input fields change.
 TEST_F(RenderViewImplTest, OnNavStateChanged) {
   view()->set_send_content_state_immediately(true);

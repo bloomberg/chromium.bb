@@ -591,15 +591,6 @@ class CC_EXPORT LayerTreeHostImpl
   }
 
   bool pinch_gesture_active() const { return pinch_gesture_active_; }
-  // Used to set the pinch gesture active state when the pinch gesture is
-  // handled on another layer tree. In a page with OOPIFs, only the main
-  // frame's layer tree directly handles pinch events. But layer trees for
-  // sub-frames need to know when pinch gestures are active so they can
-  // throttle the re-rastering. This function allows setting this flag on
-  // OOPIF layer trees using information sent (initially) from the main-frame.
-  void set_pinch_gesture_active(bool external_pinch_gesture_active) {
-    pinch_gesture_active_ = external_pinch_gesture_active;
-  }
 
   void SetTreePriority(TreePriority priority);
   TreePriority GetTreePriority() const;
@@ -1015,15 +1006,6 @@ class CC_EXPORT LayerTreeHostImpl
   bool did_scroll_x_for_scroll_gesture_;
   bool did_scroll_y_for_scroll_gesture_;
 
-  // This value is used to allow the compositor to throttle re-rastering during
-  // pinch gestures, when the page scale factor may be changing frequently. It
-  // is set in one of two ways:
-  // i) In a layer tree serving the root of the frame/compositor tree, it is
-  // directly set during processing of GesturePinch events on the impl thread
-  // (only the root layer tree has access to these).
-  // ii) In a layer tree serving a sub-frame in the frame/compositor tree, it
-  // is set from the main thread during the commit process, using information
-  // sent from the root layer tree via IPC messaging.
   bool pinch_gesture_active_ = false;
   bool pinch_gesture_end_should_clear_scrolling_node_ = false;
 
