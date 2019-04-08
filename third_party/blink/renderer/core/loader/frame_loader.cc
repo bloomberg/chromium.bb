@@ -714,8 +714,8 @@ bool FrameLoader::PrepareRequestForThisFrame(FrameLoadRequest& request) {
       return false;
 
     if (frame_->Owner() &&
-        ((frame_->Owner()->GetSandboxFlags() & WebSandboxFlags::kOrigin) !=
-         WebSandboxFlags::kNone))
+        ((frame_->Owner()->GetFramePolicy().sandbox_flags &
+          WebSandboxFlags::kOrigin) != WebSandboxFlags::kNone))
       return false;
 
     frame_->GetDocument()->ProcessJavaScriptUrl(
@@ -1635,7 +1635,7 @@ void FrameLoader::DispatchDidClearWindowObjectInMainWorld() {
 SandboxFlags FrameLoader::EffectiveSandboxFlags() const {
   SandboxFlags flags = forced_sandbox_flags_;
   if (FrameOwner* frame_owner = frame_->Owner())
-    flags |= frame_owner->GetSandboxFlags();
+    flags |= frame_owner->GetFramePolicy().sandbox_flags;
   // Frames need to inherit the sandbox flags of their parent frame.
   if (Frame* parent_frame = frame_->Tree().Parent())
     flags |= parent_frame->GetSecurityContext()->GetSandboxFlags();

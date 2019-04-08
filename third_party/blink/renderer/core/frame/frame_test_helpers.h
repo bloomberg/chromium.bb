@@ -374,8 +374,7 @@ class TestWebFrameClient : public WebLocalFrameClient {
                                   WebTreeScopeType,
                                   const WebString& name,
                                   const WebString& fallback_name,
-                                  WebSandboxFlags,
-                                  const ParsedFeaturePolicy&,
+                                  const FramePolicy&,
                                   const WebFrameOwnerProperties&,
                                   FrameOwnerElementType) override;
   void DidStartLoading() override;

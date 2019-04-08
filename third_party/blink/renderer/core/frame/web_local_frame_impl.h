@@ -359,8 +359,7 @@ class CORE_EXPORT WebLocalFrameImpl final
                                               InterfaceRegistry*,
                                               mojo::ScopedMessagePipeHandle,
                                               WebFrame*,
-                                              WebSandboxFlags,
-                                              ParsedFeaturePolicy);
+                                              const FramePolicy&);
 
   WebLocalFrameImpl(WebTreeScopeType,
                     WebLocalFrameClient*,

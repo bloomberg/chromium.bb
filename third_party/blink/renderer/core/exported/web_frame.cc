@@ -159,14 +159,11 @@ WebSecurityOrigin WebFrame::GetSecurityOrigin() const {
       ToCoreFrame(*this)->GetSecurityContext()->GetSecurityOrigin());
 }
 
-void WebFrame::SetFrameOwnerPolicy(
-    WebSandboxFlags flags,
-    const blink::ParsedFeaturePolicy& container_policy) {
+void WebFrame::SetFrameOwnerPolicy(const FramePolicy& frame_policy) {
   // At the moment, this is only used to replicate sandbox flags and container
   // policy for frames with a remote owner.
-  auto* owner = To<RemoteFrameOwner>(ToCoreFrame(*this)->Owner());
-  owner->SetSandboxFlags(static_cast<SandboxFlags>(flags));
-  owner->SetContainerPolicy(container_policy);
+  To<RemoteFrameOwner>(ToCoreFrame(*this)->Owner())
+      ->SetFramePolicy(frame_policy);
 }
 
 WebInsecureRequestPolicy WebFrame::GetInsecureRequestPolicy() const {

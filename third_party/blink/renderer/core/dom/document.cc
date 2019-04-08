@@ -6216,7 +6216,7 @@ const ParsedFeaturePolicy Document::GetOwnerContainerPolicy() const {
   // If this frame is not the main frame, then get the container policy from its
   // owner.
   if (frame_ && frame_->Owner())
-    return frame_->Owner()->ContainerPolicy();
+    return frame_->Owner()->GetFramePolicy().container_policy;
   return ParsedFeaturePolicy();
 }
 

@@ -100,7 +100,7 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   void ClearContentFrame() final;
   void AddResourceTiming(const ResourceTimingInfo&) final;
   void DispatchLoad() final;
-  SandboxFlags GetSandboxFlags() const final { return sandbox_flags_; }
+  const FramePolicy& GetFramePolicy() const final { return frame_policy_; }
   bool CanRenderFallbackContent() const override { return false; }
   void RenderFallbackContent(Frame*) override {}
   void IntrinsicSizingInfoChanged() override {}
@@ -115,7 +115,6 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   bool AllowPaymentRequest() const override { return false; }
   bool IsDisplayNone() const override { return !embedded_content_view_; }
   AtomicString RequiredCsp() const override { return g_null_atom; }
-  const ParsedFeaturePolicy& ContainerPolicy() const override;
   bool ShouldLazyLoadChildren() const final;
 
   // For unit tests, manually trigger the UpdateContainerPolicy method.
@@ -177,9 +176,7 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
 
   Member<Frame> content_frame_;
   Member<EmbeddedContentView> embedded_content_view_;
-  SandboxFlags sandbox_flags_;
-
-  ParsedFeaturePolicy container_policy_;
+  FramePolicy frame_policy_;
 
   Member<LazyLoadFrameObserver> lazy_load_frame_observer_;
   bool should_lazy_load_children_;

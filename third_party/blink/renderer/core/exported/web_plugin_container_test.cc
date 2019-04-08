@@ -203,8 +203,7 @@ class TestPluginWebFrameClient : public frame_test_helpers::TestWebFrameClient {
                                   WebTreeScopeType scope,
                                   const WebString& name,
                                   const WebString& fallback_name,
-                                  WebSandboxFlags sandbox_flags,
-                                  const ParsedFeaturePolicy& container_policy,
+                                  const FramePolicy&,
                                   const WebFrameOwnerProperties&,
                                   FrameOwnerElementType owner_type) override {
     return CreateLocalChild(*parent, scope,

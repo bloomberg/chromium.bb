@@ -145,7 +145,6 @@ HTMLFrameOwnerElement::HTMLFrameOwnerElement(const QualifiedName& tag_name,
     : HTMLElement(tag_name, document),
       content_frame_(nullptr),
       embedded_content_view_(nullptr),
-      sandbox_flags_(WebSandboxFlags::kNone),
       should_lazy_load_children_(DoesParentAllowLazyLoadingChildren(document)) {
 }
 
@@ -246,16 +245,16 @@ DOMWindow* HTMLFrameOwnerElement::contentWindow() const {
 }
 
 void HTMLFrameOwnerElement::SetSandboxFlags(SandboxFlags flags) {
-  sandbox_flags_ = flags;
+  frame_policy_.sandbox_flags = flags;
   // Recalculate the container policy in case the allow-same-origin flag has
   // changed.
-  container_policy_ = ConstructContainerPolicy(nullptr);
+  frame_policy_.container_policy = ConstructContainerPolicy(nullptr);
 
   // Don't notify about updates if ContentFrame() is null, for example when
   // the subframe hasn't been created yet.
   if (ContentFrame()) {
-    GetDocument().GetFrame()->Client()->DidChangeFramePolicy(
-        ContentFrame(), sandbox_flags_, container_policy_);
+    GetDocument().GetFrame()->Client()->DidChangeFramePolicy(ContentFrame(),
+                                                             frame_policy_);
   }
 }
 
@@ -272,12 +271,12 @@ void HTMLFrameOwnerElement::DisposePluginSoon(WebPluginContainerImpl* plugin) {
 }
 
 void HTMLFrameOwnerElement::UpdateContainerPolicy(Vector<String>* messages) {
-  container_policy_ = ConstructContainerPolicy(messages);
+  frame_policy_.container_policy = ConstructContainerPolicy(messages);
   // Don't notify about updates if ContentFrame() is null, for example when
   // the subframe hasn't been created yet.
   if (ContentFrame()) {
-    GetDocument().GetFrame()->Client()->DidChangeFramePolicy(
-        ContentFrame(), sandbox_flags_, container_policy_);
+    GetDocument().GetFrame()->Client()->DidChangeFramePolicy(ContentFrame(),
+                                                             frame_policy_);
   }
 }
 
@@ -306,10 +305,6 @@ void HTMLFrameOwnerElement::DispatchLoad() {
     lazy_load_frame_observer_->RecordMetricsOnLoadFinished();
 
   DispatchScopedEvent(*Event::Create(event_type_names::kLoad));
-}
-
-const ParsedFeaturePolicy& HTMLFrameOwnerElement::ContainerPolicy() const {
-  return container_policy_;
 }
 
 Document* HTMLFrameOwnerElement::getSVGDocument(

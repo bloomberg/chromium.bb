@@ -115,6 +115,7 @@ class WebString;
 class WebURL;
 class WebURLResponse;
 class WebUserMediaClient;
+struct FramePolicy;
 struct WebConsoleMessage;
 struct WebContextMenuData;
 struct WebFullscreenOptions;
@@ -225,15 +226,13 @@ class BLINK_EXPORT WebLocalFrameClient {
   // to prevent the new child frame from being attached. Otherwise, embedders
   // should create a new WebLocalFrame, insert it into the frame tree, and
   // return the created frame.
-  virtual WebLocalFrame* CreateChildFrame(
-      WebLocalFrame* parent,
-      WebTreeScopeType,
-      const WebString& name,
-      const WebString& fallback_name,
-      WebSandboxFlags sandbox_flags,
-      const ParsedFeaturePolicy& container_policy,
-      const WebFrameOwnerProperties&,
-      FrameOwnerElementType) {
+  virtual WebLocalFrame* CreateChildFrame(WebLocalFrame* parent,
+                                          WebTreeScopeType,
+                                          const WebString& name,
+                                          const WebString& fallback_name,
+                                          const FramePolicy&,
+                                          const WebFrameOwnerProperties&,
+                                          FrameOwnerElementType) {
     return nullptr;
   }
 
@@ -283,10 +282,8 @@ class BLINK_EXPORT WebLocalFrameClient {
 
   // The sandbox flags or container policy have changed for a child frame of
   // this frame.
-  virtual void DidChangeFramePolicy(
-      WebFrame* child_frame,
-      WebSandboxFlags flags,
-      const ParsedFeaturePolicy& container_policy) {}
+  virtual void DidChangeFramePolicy(WebFrame* child_frame, const FramePolicy&) {
+  }
 
   // Called when a Feature-Policy or Content-Security-Policy HTTP header (for
   // sandbox flags) is encountered while loading the frame's document.

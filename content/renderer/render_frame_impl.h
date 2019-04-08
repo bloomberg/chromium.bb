@@ -695,8 +695,7 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebTreeScopeType scope,
       const blink::WebString& name,
       const blink::WebString& fallback_name,
-      blink::WebSandboxFlags sandbox_flags,
-      const blink::ParsedFeaturePolicy& container_policy,
+      const blink::FramePolicy& frame_policy,
       const blink::WebFrameOwnerProperties& frame_owner_properties,
       blink::FrameOwnerElementType frame_owner_element_type) override;
   std::pair<blink::WebRemoteFrame*, base::UnguessableToken> CreatePortal(
@@ -712,10 +711,8 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebInsecureRequestPolicy policy) override;
   void DidEnforceInsecureNavigationsSet(
       const std::vector<uint32_t>& set) override;
-  void DidChangeFramePolicy(
-      blink::WebFrame* child_frame,
-      blink::WebSandboxFlags flags,
-      const blink::ParsedFeaturePolicy& container_policy) override;
+  void DidChangeFramePolicy(blink::WebFrame* child_frame,
+                            const blink::FramePolicy& frame_policy) override;
   void DidSetFramePolicyHeaders(
       blink::WebSandboxFlags flags,
       const blink::ParsedFeaturePolicy& parsed_header) override;
