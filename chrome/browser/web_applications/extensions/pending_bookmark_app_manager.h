@@ -63,6 +63,8 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager {
                    const RepeatingInstallCallback& callback) override;
   void UninstallApps(std::vector<GURL> uninstall_urls,
                      const UninstallCallback& callback) override;
+  void ReinstallPlaceholderApp(web_app::InstallOptions install_options,
+                               OnceInstallCallback callback) override;
   std::vector<GURL> GetInstalledAppUrls(
       web_app::InstallSource install_source) const override;
   base::Optional<std::string> LookupAppId(const GURL& url) const override;
@@ -79,6 +81,9 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager {
   void MaybeStartNextInstallation();
 
   void StartInstallationTask(std::unique_ptr<TaskAndCallback> task);
+
+  void StartReinstallTask(web_app::InstallOptions install_options,
+                          OnceInstallCallback callback);
 
   void CreateWebContentsIfNecessary();
 

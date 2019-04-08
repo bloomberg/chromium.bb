@@ -50,6 +50,11 @@ class ExtensionIdsMap {
               const std::string& extension_id,
               InstallSource install_source);
   base::Optional<std::string> LookupExtensionId(const GURL& url) const;
+
+  // Returns an id if there is a placeholder app for |url|. Note that nullopt
+  // does not mean that there is no app for |url| just that there is no
+  // *placeholder app*.
+  base::Optional<std::string> LookupPlaceholderAppId(const GURL& url) const;
   void SetIsPlaceholder(const GURL& url, bool is_placeholder);
 
  private:

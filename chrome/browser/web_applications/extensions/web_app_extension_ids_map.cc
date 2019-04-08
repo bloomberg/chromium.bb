@@ -178,6 +178,23 @@ base::Optional<std::string> ExtensionIdsMap::LookupExtensionId(
   return base::nullopt;
 }
 
+base::Optional<std::string> ExtensionIdsMap::LookupPlaceholderAppId(
+    const GURL& url) const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  const base::Value* entry =
+      pref_service_->GetDictionary(prefs::kWebAppsExtensionIDs)
+          ->FindKey(url.spec());
+  if (!entry)
+    return base::nullopt;
+
+  base::Optional<bool> is_placeholder = entry->FindBoolKey(kIsPlaceholder);
+  if (!is_placeholder.has_value() || !is_placeholder.value())
+    return base::nullopt;
+
+  return *entry->FindStringKey(kExtensionId);
+}
+
 void ExtensionIdsMap::SetIsPlaceholder(const GURL& url, bool is_placeholder) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 

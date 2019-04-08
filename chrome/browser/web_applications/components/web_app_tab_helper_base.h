@@ -87,6 +87,9 @@ class WebAppTabHelperBase
   // Updates the audio focus group id based on the current web app.
   void UpdateAudioFocusGroupId();
 
+  // Triggers a reinstall of a placeholder app for |url|.
+  void ReinstallPlaceholderAppIfNecessary(const GURL& url);
+
   // WebApp associated with this tab. Empty string if no app associated.
   AppId app_id_;
 
