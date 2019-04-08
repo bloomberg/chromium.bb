@@ -7,6 +7,7 @@
 
 #include "base/base_export.h"
 #include "base/memory/ref_counted.h"
+#include "base/task/task_scheduler/can_schedule_sequence_observer.h"
 #include "base/task/task_scheduler/priority_queue.h"
 #include "base/task/task_scheduler/scheduler_lock.h"
 #include "base/task/task_scheduler/sequence.h"
@@ -19,8 +20,8 @@ namespace internal {
 
 class TaskTracker;
 
-// Interface and base implementation for a worker pool.
-class BASE_EXPORT SchedulerWorkerPool {
+// Interface for a worker pool.
+class BASE_EXPORT SchedulerWorkerPool : public CanScheduleSequenceObserver {
  public:
   // Delegate interface for SchedulerWorkerPool.
   class BASE_EXPORT Delegate {
@@ -43,7 +44,10 @@ class BASE_EXPORT SchedulerWorkerPool {
 #endif  // defined(OS_WIN)
   };
 
-  virtual ~SchedulerWorkerPool();
+  ~SchedulerWorkerPool() override;
+
+  // CanScheduleSequenceObserver:
+  void OnCanScheduleSequence(scoped_refptr<Sequence> sequence) final;
 
   // Posts |task| to be executed by this SchedulerWorkerPool as part of
   // the Sequence in |sequence_and_transaction|. This must only be called after
@@ -108,10 +112,6 @@ class BASE_EXPORT SchedulerWorkerPool {
   // Reports relevant metrics per implementation.
   virtual void ReportHeartbeatMetrics() const = 0;
 
-  // Wakes up workers as appropriate for the new CanRunPolicy policy. Must be
-  // called after an update to CanRunPolicy in TaskTracker.
-  virtual void DidUpdateCanRunPolicy() = 0;
-
  protected:
   // Derived classes must implement a ScopedWorkersExecutor that derives from
   // this to perform operations on workers at the end of a scope, when all locks
@@ -155,16 +155,6 @@ class BASE_EXPORT SchedulerWorkerPool {
 
   const TrackedRef<TaskTracker> task_tracker_;
   const TrackedRef<Delegate> delegate_;
-
-  // Returns the number of queued BEST_EFFORT sequences allowed to run by the
-  // current CanRunPolicy.
-  size_t GetNumQueuedCanRunBestEffortSequences() const
-      EXCLUSIVE_LOCKS_REQUIRED(lock_);
-
-  // Returns the number of queued USER_VISIBLE/USER_BLOCKING sequences allowed
-  // to run by the current CanRunPolicy.
-  size_t GetNumQueuedCanRunForegroundSequences() const
-      EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Ensures that there are enough workers to run queued sequences. |executor|
   // is forwarded from the one received in PushSequenceAndWakeUpWorkersImpl()

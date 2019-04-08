@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/sequence_checker.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/task/single_thread_task_runner_thread_mode.h"
@@ -79,8 +78,7 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler,
   void FlushForTesting() override;
   void FlushAsyncForTesting(OnceClosure flush_callback) override;
   void JoinForTesting() override;
-  void SetCanRun(bool can_run) override;
-  void SetCanRunBestEffort(bool can_run_best_effort) override;
+  void SetExecutionFenceEnabled(bool execution_fence_enabled) override;
 
   // TaskExecutor:
   bool PostDelayedTaskWithTraits(const Location& from_here,
@@ -104,10 +102,6 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler,
       const TaskTraits& traits);
 
  private:
-  // Invoked after |can_run_| or |can_run_best_effort_| is updated. Sets the
-  // CanRunPolicy in TaskTracker and wakes up workers as appropriate.
-  void UpdateCanRunPolicy();
-
   // Returns |traits|, with priority set to TaskPriority::USER_BLOCKING if
   // |all_tasks_user_blocking_| is set.
   TaskTraits SetUserBlockingPriorityIfNeeded(TaskTraits traits) const;
@@ -148,15 +142,6 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler,
   Optional<SchedulerWorkerPoolImpl> foreground_pool_;
   Optional<SchedulerWorkerPoolImpl> background_pool_;
 
-  // Whether this TaskScheduler was started. Access controlled by
-  // |sequence_checker_|.
-  bool started_ = false;
-
-  // Whether starting to run a Task with any/BEST_EFFORT priority is currently
-  // allowed. Access controlled by |sequence_checker_|.
-  bool can_run_ = true;
-  bool can_run_best_effort_;
-
 #if defined(OS_WIN)
   Optional<PlatformNativeWorkerPoolWin> native_foreground_pool_;
 #elif defined(OS_MACOSX)
@@ -172,9 +157,6 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler,
   // Provides COM initialization verification for supported builds.
   base::win::ComInitCheckHook com_init_check_hook_;
 #endif
-
-  // Asserts that operations occur in sequence with Start().
-  SEQUENCE_CHECKER(sequence_checker_);
 
   TrackedRefFactory<SchedulerWorkerPool::Delegate> tracked_ref_factory_;
 

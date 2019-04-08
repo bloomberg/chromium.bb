@@ -98,8 +98,7 @@ scoped_refptr<Sequence> CreateSequenceWithTask(
 // Caveat: this does not support ExecutionMode::SINGLE_THREADED.
 scoped_refptr<TaskRunner> CreateTaskRunnerWithExecutionMode(
     test::ExecutionMode execution_mode,
-    MockSchedulerTaskRunnerDelegate* mock_scheduler_task_runner_delegate,
-    const TaskTraits& traits = TaskTraits());
+    MockSchedulerTaskRunnerDelegate* mock_scheduler_task_runner_delegate);
 
 scoped_refptr<TaskRunner> CreateTaskRunnerWithTraits(
     const TaskTraits& traits,
@@ -110,9 +109,6 @@ scoped_refptr<SequencedTaskRunner> CreateSequencedTaskRunnerWithTraits(
     MockSchedulerTaskRunnerDelegate* mock_scheduler_task_runner_delegate);
 
 void WaitWithoutBlockingObserver(WaitableEvent* event);
-
-// Calls StartShutdown() and CompleteShutdown() on |task_tracker|.
-void ShutdownTaskTracker(TaskTracker* task_tracker);
 
 }  // namespace test
 }  // namespace internal
