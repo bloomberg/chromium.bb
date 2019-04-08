@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareT
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.native_page.NativePage;
 import org.chromium.chrome.browser.util.ViewUtils;
+import org.chromium.ui.base.DeviceFormFactor;
 
 /**
  * The native recent tabs page. Lists recently closed tabs, open windows and tabs from the user's
@@ -99,9 +100,13 @@ public class RecentTabsPage
         ApplicationStatus.registerStateListenerForActivity(this, activity);
         // {@link #mInForeground} will be updated once the view is attached to the window.
 
-        mFullscreenManager = activity.getFullscreenManager();
-        mFullscreenManager.addListener(this);
-        onBottomControlsHeightChanged(mFullscreenManager.getBottomControlsHeight());
+        if (!DeviceFormFactor.isNonMultiDisplayContextOnTablet(mActivity)) {
+            mFullscreenManager = activity.getFullscreenManager();
+            mFullscreenManager.addListener(this);
+            onBottomControlsHeightChanged(mFullscreenManager.getBottomControlsHeight());
+        } else {
+            mFullscreenManager = null;
+        }
 
         onUpdated();
     }
@@ -171,7 +176,7 @@ public class RecentTabsPage
 
         mView.removeOnAttachStateChangeListener(this);
         ApplicationStatus.unregisterActivityStateListener(this);
-        mFullscreenManager.removeListener(this);
+        if (mFullscreenManager != null) mFullscreenManager.removeListener(this);
     }
 
     @Override
