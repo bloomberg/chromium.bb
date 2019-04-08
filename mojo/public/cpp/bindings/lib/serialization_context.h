@@ -29,6 +29,14 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) SerializationContext {
   SerializationContext();
   ~SerializationContext();
 
+  void set_share_message_order_for_new_handles(bool share) {
+    share_message_order_for_new_handles_ = share;
+  }
+
+  bool has_handles_with_shared_message_order() const {
+    return has_handles_with_shared_message_order_;
+  }
+
   // Adds a handle to the handle list and outputs its serialized form in
   // |*out_data|.
   void AddHandle(mojo::ScopedHandle handle, Handle_Data* out_data);
@@ -53,6 +61,11 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) SerializationContext {
 
   const std::vector<mojo::ScopedHandle>* handles() { return &handles_; }
   std::vector<mojo::ScopedHandle>* mutable_handles() { return &handles_; }
+
+  const std::vector<MojoAppendMessageDataHandleOptions>* handle_options()
+      const {
+    return &handle_options_;
+  }
 
   const std::vector<ScopedInterfaceEndpointHandle>*
   associated_endpoint_handles() const {
@@ -81,10 +94,21 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) SerializationContext {
       const AssociatedEndpointHandle_Data& encoded_handle);
 
  private:
+  // Whenever this is |true|, newly added interface handles are marked for
+  // splicing into the sendng interface pipe upon message transmission.
+  bool share_message_order_for_new_handles_ = false;
+
+  // Indicates whether any handles were added to this context while
+  // |share_message_order_for_new_handles_| was |true|.
+  bool has_handles_with_shared_message_order_ = false;
+
   // Handles owned by this object. Used during serialization to hold onto
   // handles accumulated during pre-serialization, and used during
   // deserialization to hold onto handles extracted from a message.
   std::vector<mojo::ScopedHandle> handles_;
+
+  // Options for each of the attached handles.
+  std::vector<MojoAppendMessageDataHandleOptions> handle_options_;
 
   // Stashes ScopedInterfaceEndpointHandles encoded in a message by index.
   std::vector<ScopedInterfaceEndpointHandle> associated_endpoint_handles_;

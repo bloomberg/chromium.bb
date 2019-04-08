@@ -25,6 +25,16 @@ void SerializationContext::AddHandle(mojo::ScopedHandle handle,
     DCHECK_LT(handles_.size(), std::numeric_limits<uint32_t>::max());
     out_data->value = static_cast<uint32_t>(handles_.size());
     handles_.emplace_back(std::move(handle));
+
+    MojoAppendMessageDataHandleOptions options = {0};
+    options.struct_size = sizeof(options);
+    options.flags = share_message_order_for_new_handles_
+                        ? MOJO_APPEND_MESSAGE_DATA_HANDLE_FLAG_SPLICE
+                        : MOJO_APPEND_MESSAGE_DATA_HANDLE_FLAG_NONE;
+    handle_options_.push_back(options);
+
+    if (share_message_order_for_new_handles_)
+      has_handles_with_shared_message_order_ = true;
   }
 }
 
