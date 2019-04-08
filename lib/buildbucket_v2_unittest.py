@@ -234,6 +234,30 @@ class BuildbucketV2Test(cros_test_lib.MockTestCase):
     bbv2.GetChildStatuses(1234)
     get_build_status.assert_called_once_with(2341)
 
+  def testGetStageFailures(self):
+    """Test GetStageFailures logic."""
+    bbv2 = buildbucket_v2.BuildbucketV2()
+    fake_build_status = {'buildbucket_id': 1234,
+                         'status': 'Passed!!',
+                         'build_config': 'something-paladin',
+                         'important': True}
+    fake_stages = [
+        {'name': 'stage_1', 'status':constants.BUILDER_STATUS_PASSED},
+        {'name': 'stage_2', 'status':constants.BUILDER_STATUS_FAILED},
+        {'name': 'stage_3', 'status':constants.BUILDER_STATUS_FORGIVEN},
+    ]
+    self.PatchObject(bbv2, 'GetBuildStatus', return_value=fake_build_status)
+    self.PatchObject(bbv2, 'GetBuildStages', return_value=fake_stages)
+    expected_answer = [
+        {'stage_name': 'stage_2',
+         'stage_status': constants.BUILDER_STATUS_FAILED,
+         'buildbucket_id': 1234,
+         'build_config': 'something-paladin',
+         'build_status': 'Passed!!',
+         'important': True}
+    ]
+    self.assertEqual(bbv2.GetStageFailures(1234), expected_answer)
+
 
 class StaticFunctionsTest(cros_test_lib.MockTestCase):
   """Test static functions in lib/buildbucket_v2.py."""

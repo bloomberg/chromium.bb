@@ -14,6 +14,7 @@ from chromite.lib import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import buildstore
 from chromite.lib import buildbucket_v2
+from chromite.lib import failure_message_lib
 
 BuildStore = buildstore.BuildStore
 
@@ -436,17 +437,31 @@ class TestBuildStore(cros_test_lib.MockTestCase):
 
   def testGetBuildsFailures(self):
     """Tests the redirect for GetBuildsFailures function."""
+    # pylint: disable=protected-access
     init = self.PatchObject(BuildStore, 'InitializeClients',
                             return_value=True)
-    bs = BuildStore()
+    bs = BuildStore(_read_from_bb=False)
+    bs._transitioning_to_bb = False
     bs.cidb_conn = mock.MagicMock()
-    buildbucket_ids = ['bucket 1', 'bucket 2']
-    # Test for buildbucket_ids.
+    buildbucket_ids = [1234, 2341]
+    # Test for CIDB redirect.
     bs.GetBuildsFailures(buildbucket_ids=buildbucket_ids)
     bs.cidb_conn.GetBuildsFailures.assert_called_once_with(
         buildbucket_ids)
     # Test for empty argument.
     self.assertEqual(bs.GetBuildsFailures([]), [])
+    fake_return = [{'stage_name': 'stage_1',
+                    'stage_status': 'fail',
+                    'buildbucket_id': 1234,
+                    'build_config': 'something-paladin',
+                    'build_status': 'pass',
+                    'important': True}]
+    bs = BuildStore(_read_from_bb=True)
+    bs.bb_client = mock.MagicMock()
+    self.PatchObject(bs.bb_client, 'GetStageFailures', return_value=fake_return)
+    fail = bs.GetBuildsFailures(buildbucket_ids=[1234])
+    bs.bb_client.GetStageFailures.assert_called_with(1234)
+    self.assertTrue(isinstance(fail[0], failure_message_lib.StageFailure))
     init.return_value = False
     with self.assertRaises(buildstore.BuildStoreException):
       bs.GetBuildsFailures(buildbucket_ids=buildbucket_ids)

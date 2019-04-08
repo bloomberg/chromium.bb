@@ -17,6 +17,7 @@ import os
 from chromite.lib import buildbucket_v2
 from chromite.lib import cidb
 from chromite.lib import constants
+from chromite.lib import failure_message_lib
 from chromite.lib import fake_cidb
 
 
@@ -476,11 +477,21 @@ class BuildStore(object):
     """
     if not self.InitializeClients():
       raise BuildStoreException('BuildStore clients could not be initialized.')
-    if not self._read_from_bb:
-      if buildbucket_ids:
-        return self.cidb_conn.GetBuildsFailures(buildbucket_ids)
-      else:
-        return []
+    if not buildbucket_ids:
+      return []
+    elif self._read_from_bb or self._transitioning_to_bb:
+      failure_list = []
+      for buildbucket_id in buildbucket_ids:
+        bb_list = self.bb_client.GetStageFailures(int(buildbucket_id))
+        for stage in bb_list:
+          for key in failure_message_lib.FAILURE_KEYS:
+            if key not in stage:
+              stage[key] = None
+
+          failure_list.append(failure_message_lib.StageFailure(*stage))
+      return failure_list
+    else:
+      return self.cidb_conn.GetBuildsFailures(buildbucket_ids)
 
   def GetBuildsStages(self, buildbucket_ids):
     """Gets all the stages for all listed build_ids.

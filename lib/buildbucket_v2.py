@@ -384,3 +384,34 @@ class BuildbucketV2(object):
     child_builds = self.SearchBuild(build_predicate, page_size=200)
     return [self.GetBuildStatus(child_build.id)
             for child_build in child_builds.builds]
+
+  def GetStageFailures(self, buildbucket_id):
+    """Report on the failed stages of a build.
+
+    Args:
+      buildbucket_id: buildbucket_id of the build to query for.
+
+    Returns:
+      A list of dictionary corresponding to each failed stage with following
+      keys - stage_name, stage_status, buildbucket_id, build_config,
+      build_status, important.
+    """
+    build_status = self.GetBuildStatus(buildbucket_id)
+    stage_status = self.GetBuildStages(buildbucket_id)
+
+    build_info = {
+        'build_status': build_status['status'],
+        'build_config': build_status['build_config'],
+        'important': build_status['important'],
+        'buildbucket_id': buildbucket_id,
+    }
+
+    stage_failures = []
+    for stage in stage_status:
+      if stage['status'] == constants.BUILDER_STATUS_FAILED:
+        failed_stage_info = {'stage_status': constants.BUILDER_STATUS_FAILED}
+        failed_stage_info['stage_name'] = stage['name']
+        failed_stage_info.update(build_info)
+        stage_failures.append(failed_stage_info)
+
+    return stage_failures
