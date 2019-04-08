@@ -128,7 +128,7 @@ syncer::SyncCredentials SyncAuthManager::GetCredentials() const {
   syncer::SyncCredentials credentials;
   credentials.account_id = account_info.account_id;
   credentials.email = account_info.email;
-  credentials.sync_token = access_token_;
+  credentials.access_token = access_token_;
 
   return credentials;
 }

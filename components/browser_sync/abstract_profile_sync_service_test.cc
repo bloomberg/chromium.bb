@@ -80,7 +80,7 @@ void SyncEngineForProfileSyncTest::Initialize(InitParams params) {
           std::move(callback_),
           network::TestNetworkConnectionTracker::GetInstance());
   params.credentials.email = "testuser@gmail.com";
-  params.credentials.sync_token = "token";
+  params.credentials.access_token = "token";
   params.restored_key_for_bootstrapping.clear();
 
   // It'd be nice if we avoided creating the EngineComponentsFactory in the
