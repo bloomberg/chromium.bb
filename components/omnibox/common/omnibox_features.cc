@@ -171,8 +171,13 @@ const base::Feature kQueryInOmnibox{"QueryInOmnibox",
 // Feature used for showing the URL suggestion favicons as a UI experiment,
 // currently only used on desktop platforms.
 const base::Feature kUIExperimentShowSuggestionFavicons{
-    "OmniboxUIExperimentShowSuggestionFavicons",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+  "OmniboxUIExperimentShowSuggestionFavicons",
+#if defined(OS_ANDROID)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 // Feature used to always swap the title and URL.
 const base::Feature kUIExperimentSwapTitleAndUrl{

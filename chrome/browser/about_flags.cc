@@ -2723,7 +2723,8 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"omnibox-ui-show-suggestion-favicons",
      flag_descriptions::kOmniboxUIShowSuggestionFaviconsName,
-     flag_descriptions::kOmniboxUIShowSuggestionFaviconsDescription, kOsDesktop,
+     flag_descriptions::kOmniboxUIShowSuggestionFaviconsDescription,
+     kOsDesktop | kOsAndroid,
      FEATURE_VALUE_TYPE(omnibox::kUIExperimentShowSuggestionFavicons)},
 
     {"omnibox-ui-swap-title-and-url",
