@@ -1211,7 +1211,7 @@ ScriptPromise RTCPeerConnection::setLocalDescription(
                                  *session_description_init);
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
-  RTCVoidRequest* request = RTCVoidRequestPromiseImpl::Create(
+  auto* request = MakeGarbageCollected<RTCVoidRequestPromiseImpl>(
       GetRTCVoidRequestOperationType(SetSdpOperationType::kSetLocalDescription,
                                      *session_description_init),
       this, resolver, "RTCPeerConnection", "setLocalDescription");
@@ -1257,7 +1257,7 @@ ScriptPromise RTCPeerConnection::setLocalDescription(
 
   NoteCallSetupStateEventPending(SetSdpOperationType::kSetLocalDescription,
                                  *session_description_init);
-  RTCVoidRequest* request = RTCVoidRequestImpl::Create(
+  auto* request = MakeGarbageCollected<RTCVoidRequestImpl>(
       GetExecutionContext(),
       GetRTCVoidRequestOperationType(SetSdpOperationType::kSetLocalDescription,
                                      *session_description_init),
@@ -1312,7 +1312,7 @@ ScriptPromise RTCPeerConnection::setRemoteDescription(
                                  *session_description_init);
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
-  RTCVoidRequest* request = RTCVoidRequestPromiseImpl::Create(
+  auto* request = MakeGarbageCollected<RTCVoidRequestPromiseImpl>(
       GetRTCVoidRequestOperationType(SetSdpOperationType::kSetRemoteDescription,
                                      *session_description_init),
       this, resolver, "RTCPeerConnection", "setRemoteDescription");
@@ -1353,7 +1353,7 @@ ScriptPromise RTCPeerConnection::setRemoteDescription(
 
   NoteCallSetupStateEventPending(SetSdpOperationType::kSetRemoteDescription,
                                  *session_description_init);
-  RTCVoidRequest* request = RTCVoidRequestImpl::Create(
+  auto* request = MakeGarbageCollected<RTCVoidRequestImpl>(
       GetExecutionContext(),
       GetRTCVoidRequestOperationType(SetSdpOperationType::kSetRemoteDescription,
                                      *session_description_init),
@@ -1679,7 +1679,7 @@ ScriptPromise RTCPeerConnection::addIceCandidate(
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
-  RTCVoidRequest* request = RTCVoidRequestPromiseImpl::Create(
+  auto* request = MakeGarbageCollected<RTCVoidRequestPromiseImpl>(
       base::nullopt, this, resolver, "RTCPeerConnection", "addIceCandidate");
   scoped_refptr<WebRTCICECandidate> web_candidate = ConvertToWebRTCIceCandidate(
       ExecutionContext::From(script_state), candidate);
@@ -1712,9 +1712,9 @@ ScriptPromise RTCPeerConnection::addIceCandidate(
     return ScriptPromise();
   }
 
-  RTCVoidRequest* request =
-      RTCVoidRequestImpl::Create(GetExecutionContext(), base::nullopt, this,
-                                 success_callback, error_callback);
+  auto* request = MakeGarbageCollected<RTCVoidRequestImpl>(
+      GetExecutionContext(), base::nullopt, this, success_callback,
+      error_callback);
   scoped_refptr<WebRTCICECandidate> web_candidate = ConvertToWebRTCIceCandidate(
       ExecutionContext::From(script_state), candidate);
   bool implemented =
@@ -1975,7 +1975,7 @@ ScriptPromise RTCPeerConnection::LegacyCallbackBasedGetStats(
 
   UseCounter::Count(context,
                     WebFeature::kRTCPeerConnectionGetStatsLegacyNonCompliant);
-  RTCStatsRequest* stats_request = RTCStatsRequestImpl::Create(
+  auto* stats_request = MakeGarbageCollected<RTCStatsRequestImpl>(
       GetExecutionContext(), this, success_callback, selector);
   // FIXME: Add passing selector as part of the statsRequest.
   peer_handler_->GetStats(stats_request);
@@ -2292,7 +2292,7 @@ RTCDataChannel* RTCPeerConnection::createDataChannel(
                                       "RTCDataChannel creation failed");
     return nullptr;
   }
-  RTCDataChannel* channel = RTCDataChannel::Create(
+  auto* channel = MakeGarbageCollected<RTCDataChannel>(
       GetExecutionContext(), std::move(webrtc_channel), peer_handler_.get());
   has_data_channels_ = true;
 
@@ -2896,9 +2896,9 @@ void RTCPeerConnection::DidAddRemoteDataChannel(
       webrtc::PeerConnectionInterface::SignalingState::kClosed)
     return;
 
-  RTCDataChannel* blink_channel = RTCDataChannel::Create(
+  auto* blink_channel = MakeGarbageCollected<RTCDataChannel>(
       GetExecutionContext(), std::move(channel), peer_handler_.get());
-  ScheduleDispatchEvent(RTCDataChannelEvent::Create(
+  ScheduleDispatchEvent(MakeGarbageCollected<RTCDataChannelEvent>(
       event_type_names::kDatachannel, blink_channel));
   has_data_channels_ = true;
 }

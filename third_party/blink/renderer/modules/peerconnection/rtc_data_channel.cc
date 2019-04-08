@@ -197,15 +197,6 @@ void RTCDataChannel::Observer::OnMessageImpl(
     blink_channel_->OnMessage(std::move(buffer));
 }
 
-RTCDataChannel* RTCDataChannel::Create(
-    ExecutionContext* context,
-    scoped_refptr<webrtc::DataChannelInterface> channel,
-    WebRTCPeerConnectionHandler* peer_connection_handler) {
-  DCHECK(channel);
-  return MakeGarbageCollected<RTCDataChannel>(context, channel,
-                                              peer_connection_handler);
-}
-
 RTCDataChannel::RTCDataChannel(
     ExecutionContext* context,
     scoped_refptr<webrtc::DataChannelInterface> channel,

@@ -55,11 +55,6 @@ class MODULES_EXPORT RTCDataChannel final
   USING_PRE_FINALIZER(RTCDataChannel, Dispose);
 
  public:
-  static RTCDataChannel* Create(
-      ExecutionContext*,
-      scoped_refptr<webrtc::DataChannelInterface> channel,
-      WebRTCPeerConnectionHandler* peer_connection_handler);
-
   RTCDataChannel(ExecutionContext*,
                  scoped_refptr<webrtc::DataChannelInterface> channel,
                  WebRTCPeerConnectionHandler* peer_connection_handler);
