@@ -175,6 +175,15 @@ void NotifyRequestWithheld(const ExtensionId& extension_id,
 
 }  // namespace
 
+RulesetManager::Action::Action(Action::Type type) : type(type) {}
+RulesetManager::Action::~Action() = default;
+RulesetManager::Action::Action(Action&&) = default;
+RulesetManager::Action& RulesetManager::Action::operator=(Action&&) = default;
+
+bool RulesetManager::Action::operator==(const Action& that) const {
+  return type == that.type && redirect_url == that.redirect_url;
+}
+
 RulesetManager::RulesetManager(const InfoMap* info_map) : info_map_(info_map) {
   DCHECK(info_map_);
 
@@ -278,19 +287,17 @@ void RulesetManager::UpdateAllowedPages(const ExtensionId& extension_id,
 
 RulesetManager::Action RulesetManager::EvaluateRequest(
     const WebRequestInfo& request,
-    bool is_incognito_context,
-    GURL* redirect_url) const {
+    bool is_incognito_context) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(redirect_url);
 
   if (!ShouldEvaluateRequest(request))
-    return Action::NONE;
+    return Action(Action::Type::NONE);
 
   if (test_observer_)
     test_observer_->OnEvaluateRequest(request, is_incognito_context);
 
   if (rulesets_.empty())
-    return Action::NONE;
+    return Action(Action::Type::NONE);
 
   SCOPED_UMA_HISTOGRAM_TIMER(
       "Extensions.DeclarativeNetRequest.EvaluateRequestTime.AllExtensions2");
@@ -331,8 +338,8 @@ RulesetManager::Action RulesetManager::EvaluateRequest(
 
       if (ruleset_data->matcher->ShouldBlockRequest(params)) {
         return ShouldCollapseResourceType(params.element_type)
-                   ? Action::COLLAPSE
-                   : Action::BLOCK;
+                   ? Action(Action::Type::COLLAPSE)
+                   : Action(Action::Type::BLOCK);
       }
     }
   }
@@ -342,7 +349,7 @@ RulesetManager::Action RulesetManager::EvaluateRequest(
 
   // Redirecting WebSocket handshake request is prohibited.
   if (params.element_type == flat_rule::ElementType_WEBSOCKET)
-    return Action::NONE;
+    return Action(Action::Type::NONE);
 
   // This iterates in decreasing order of extension installation time. Hence
   // more recently installed extensions get higher priority in choosing the
@@ -368,13 +375,16 @@ RulesetManager::Action RulesetManager::EvaluateRequest(
         continue;
       }
 
-      if (ruleset_data->matcher->ShouldRedirectRequest(params, redirect_url)) {
-        return Action::REDIRECT;
+      GURL redirect_url;
+      if (ruleset_data->matcher->ShouldRedirectRequest(params, &redirect_url)) {
+        Action action(Action::Type::REDIRECT);
+        action.redirect_url = std::move(redirect_url);
+        return action;
       }
     }
   }
 
-  return Action::NONE;
+  return Action(Action::Type::NONE);
 }
 
 void RulesetManager::SetObserverForTest(TestObserver* observer) {
