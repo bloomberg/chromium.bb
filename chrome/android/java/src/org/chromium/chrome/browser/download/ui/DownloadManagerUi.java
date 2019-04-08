@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.download.ui;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Handler;
@@ -19,6 +20,7 @@ import android.view.ViewGroup;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.FileUtils;
+import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
@@ -150,6 +152,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
         }
     }
 
+    private static final String TAG = "DownloadManagerUi";
     private static final int PREFETCH_BUNDLE_OPEN_DELAY_MS = 500;
 
     private static BackendProvider sProviderForTests;
@@ -441,8 +444,12 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
     }
 
     private void startShareIntent(Intent intent) {
-        mActivity.startActivity(Intent.createChooser(
-                intent, mActivity.getString(R.string.share_link_chooser_title)));
+        try {
+            mActivity.startActivity(Intent.createChooser(
+                    intent, mActivity.getString(R.string.share_link_chooser_title)));
+        } catch (ActivityNotFoundException e) {
+            Log.e(TAG, "Cannot find activity for sharing");
+        }
     }
 
     private void deleteItems(List<DownloadHistoryItemWrapper> items) {
