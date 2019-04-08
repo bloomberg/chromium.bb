@@ -20,21 +20,15 @@ namespace {
 
 // Padding used between the icon and the text labels.
 const CGFloat kIconTrailingPadding = 12;
-
 // Size of the icon image.
 const CGFloat kIconImageSize = 28;
+// Proportion of Cell's textLabel/detailTextLabel. This guarantees that the
+// textLabel occupies 75% of the row space and detailTextLabel occupies 25%.
+const CGFloat kCellLabelsWidthProportion = 3.0f;
 
-// Minimum proportion of the available width to guarantee to the main and detail
-// labels.
-const CGFloat kMinTextWidthRatio = 0.75f;
-const CGFloat kMinDetailTextWidthRatio = 0.25f;
 }  // namespace
 
 @implementation TableViewDetailIconItem
-
-@synthesize iconImageName = _iconImageName;
-@synthesize text = _text;
-@synthesize detailText = _detailText;
 
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
@@ -83,8 +77,6 @@ const CGFloat kMinDetailTextWidthRatio = 0.25f;
   UILayoutGuide* _labelContainerGuide;
   NSLayoutConstraint* _iconHiddenConstraint;
   NSLayoutConstraint* _iconVisibleConstraint;
-  NSLayoutConstraint* _textLabelWidthConstraint;
-  NSLayoutConstraint* _detailTextLabelWidthConstraint;
 }
 
 @synthesize detailTextLabel = _detailTextLabel;
@@ -113,6 +105,7 @@ const CGFloat kMinDetailTextWidthRatio = 0.25f;
     _textLabel.adjustsFontForContentSizeCategory = YES;
     _textLabel.textColor = [UIColor blackColor];
     _textLabel.backgroundColor = [UIColor clearColor];
+    _textLabel.textAlignment = NSTextAlignmentLeft;
     [contentView addSubview:_textLabel];
 
     _detailTextLabel = [[UILabel alloc] init];
@@ -122,14 +115,8 @@ const CGFloat kMinDetailTextWidthRatio = 0.25f;
     _detailTextLabel.adjustsFontForContentSizeCategory = YES;
     _detailTextLabel.textColor = UIColorFromRGB(kSettingsCellsDetailTextColor);
     _detailTextLabel.backgroundColor = [UIColor clearColor];
+    _detailTextLabel.textAlignment = NSTextAlignmentRight;
     [contentView addSubview:_detailTextLabel];
-
-    // Set up the width constraints. They are activated here and updated in
-    // layoutSubviews.
-    _textLabelWidthConstraint =
-        [_textLabel.widthAnchor constraintEqualToConstant:0];
-    _detailTextLabelWidthConstraint =
-        [_detailTextLabel.widthAnchor constraintEqualToConstant:0];
 
     // Set up the constraints for when the icon is visible and hidden.  One of
     // these will be active at a time, defaulting to hidden.
@@ -140,17 +127,45 @@ const CGFloat kMinDetailTextWidthRatio = 0.25f;
         constraintEqualToAnchor:_iconImageView.trailingAnchor
                        constant:kIconTrailingPadding];
 
+    // Rules between |_textLabel| width and |_detailTextLabel| width:
+    //   1. Widths are represented by the percentage according to the
+    //      available space inside |_labelContainerGuide|;
+    //   2. |_textLabel| has a width quota of 75%;
+    //   3. |_detailTextLabe| has a width quota of 25%;
+    //   4. When label A fits in A's quota, rest of A's quota can be used by
+    //      the other label(i.e. B can exceed B's quota), and vice versa;
+    //   5. When both labels exceed their quota, they occupy their quotas.
+    //
+    // Expected space allocation result:
+    //   Rows are |_textLabel|'s quota.
+    //   Columns are |_detailTextLabel|'s quota.
+    //   Pairs are actual width for (|_textLabel|, |_detailTextLabel|).
+    //
+    //                20%             60%             90%
+    //
+    //   20%       (20%, 20%)      (20%, 60%)      (20%, 80%)
+    //   60%       (60%, 20%)      (60%, 40%)      (60%, 30%)
+    //   90%       (80%, 20%)      (75%, 25%)      (75%, 25%)
+    //
+    NSLayoutConstraint* widthConstraint = [_textLabel.widthAnchor
+        constraintEqualToAnchor:_detailTextLabel.widthAnchor
+                     multiplier:kCellLabelsWidthProportion];
+    // Set low priority to the proportion constraint between |_textLabel| and
+    // |_detailTextLabel|, so that it won't break other layouts.
+    widthConstraint.priority = UILayoutPriorityDefaultLow;
     _standardConstraints = @[
-      _textLabelWidthConstraint,
-      _detailTextLabelWidthConstraint,
       // Set up the vertical constraints and align the baselines of the two text
       // labels.
       [_textLabel.centerYAnchor
           constraintEqualToAnchor:contentView.centerYAnchor],
+      [_textLabel.trailingAnchor
+          constraintLessThanOrEqualToAnchor:_detailTextLabel.leadingAnchor
+                                   constant:-kTableViewHorizontalSpacing],
       [_detailTextLabel.firstBaselineAnchor
           constraintEqualToAnchor:_textLabel.firstBaselineAnchor],
       [_detailTextLabel.trailingAnchor
           constraintEqualToAnchor:_labelContainerGuide.trailingAnchor],
+      widthConstraint,
     ];
 
     _accessibilityConstraints = @[
@@ -235,24 +250,6 @@ const CGFloat kMinDetailTextWidthRatio = 0.25f;
   }
 }
 
-// Updates the layout constraints of the text labels and then calls the
-// superclass's implementation of layoutSubviews which can then take account of
-// the new constraints.
-- (void)layoutSubviews {
-  [super layoutSubviews];
-
-  // Size the labels in order to determine how much width they want.
-  [self.textLabel sizeToFit];
-  [self.detailTextLabel sizeToFit];
-
-  // Update the width constraints.
-  _textLabelWidthConstraint.constant = self.textLabelTargetWidth;
-  _detailTextLabelWidthConstraint.constant = self.detailTextLabelTargetWidth;
-
-  // Now invoke the layout.
-  [super layoutSubviews];
-}
-
 #pragma mark - UITableViewCell
 
 - (void)prepareForReuse {
@@ -279,34 +276,6 @@ const CGFloat kMinDetailTextWidthRatio = 0.25f;
     _detailTextLabel.numberOfLines = 1;
     _textLabel.numberOfLines = 1;
   }
-}
-
-- (CGFloat)textLabelTargetWidth {
-  CGFloat availableWidth = CGRectGetWidth(_labelContainerGuide.layoutFrame) -
-                           kTableViewHorizontalSpacing;
-  CGFloat textLabelWidth = self.textLabel.frame.size.width;
-  CGFloat detailTextLabelWidth = self.detailTextLabel.frame.size.width;
-
-  if (textLabelWidth + detailTextLabelWidth <= availableWidth)
-    return textLabelWidth;
-
-  return std::max(
-      availableWidth - detailTextLabelWidth,
-      std::min(availableWidth * kMinTextWidthRatio, textLabelWidth));
-}
-
-- (CGFloat)detailTextLabelTargetWidth {
-  CGFloat availableWidth = CGRectGetWidth(_labelContainerGuide.layoutFrame) -
-                           kTableViewHorizontalSpacing;
-  CGFloat textLabelWidth = self.textLabel.frame.size.width;
-  CGFloat detailTextLabelWidth = self.detailTextLabel.frame.size.width;
-
-  if (textLabelWidth + detailTextLabelWidth <= availableWidth)
-    return detailTextLabelWidth;
-
-  return std::max(availableWidth - textLabelWidth,
-                  std::min(availableWidth * kMinDetailTextWidthRatio,
-                           detailTextLabelWidth));
 }
 
 - (NSString*)accessibilityLabel {

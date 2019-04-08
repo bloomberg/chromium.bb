@@ -41,27 +41,6 @@
 // the full width of the cell.
 - (void)setIconImage:(UIImage*)image;
 
-// The amount of horizontal space to provide to each of the labels, Exposed for
-// testing. When the preferred ContentSize category chosen by the user isn't one
-// of the accessibility categories, these values are determined with the
-// following logic:
-//
-// - If there is sufficient room (after accounting for margins) for the full
-//   width of each label, use the current width of each label.
-// - If not, use the current width of the main label and a clipped width for the
-//   detail label.
-// - Unless the main label wants more than 75% of the available width and the
-//   detail label wants 25% or less of the available width, in which case use a
-//   clipped width for the main label and the current width of the detail label.
-// - If both labels want more width than their guaranteed minimums (75% and
-//   25%), use the guaranteed minimum amount for each.
-//
-// If the PreferredContentSizeCategory is an Accessibility category, those
-// values aren't used. The content is displayed on two labels, one above the
-// other, without limitation on the number of lines used by the labels.
-@property(nonatomic, readonly) CGFloat textLabelTargetWidth;
-@property(nonatomic, readonly) CGFloat detailTextLabelTargetWidth;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TABLE_VIEW_CELLS_TABLE_VIEW_DETAIL_ICON_ITEM_H_

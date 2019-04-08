@@ -181,11 +181,27 @@ typedef NS_ENUM(NSInteger, ItemType) {
   detailIconItem.detailText = @"Short";
   [model addItem:detailIconItem toSectionWithIdentifier:SectionIdentifierText];
 
-  TableViewDetailIconItem* detailIconItemLong =
+  TableViewDetailIconItem* detailIconItemLeftLong =
       [[TableViewDetailIconItem alloc] initWithType:ItemTypeTextSettingsDetail];
-  detailIconItemLong.text = @"Very long text eating the other detail label";
-  detailIconItemLong.detailText = @"A bit less short";
-  [model addItem:detailIconItemLong
+  detailIconItemLeftLong.text =
+      @"Left label is very very very very very very very long";
+  detailIconItemLeftLong.detailText = @"R";
+  [model addItem:detailIconItemLeftLong
+      toSectionWithIdentifier:SectionIdentifierText];
+
+  TableViewDetailIconItem* detailIconItemRightLong =
+      [[TableViewDetailIconItem alloc] initWithType:ItemTypeTextSettingsDetail];
+  detailIconItemRightLong.text = @"L";
+  detailIconItemRightLong.detailText =
+      @"Right label is very very very very very very very long";
+  [model addItem:detailIconItemRightLong
+      toSectionWithIdentifier:SectionIdentifierText];
+
+  TableViewDetailIconItem* detailIconItemBothLong =
+      [[TableViewDetailIconItem alloc] initWithType:ItemTypeTextSettingsDetail];
+  detailIconItemBothLong.text = @"Left label occupy 75% of row space";
+  detailIconItemBothLong.detailText = @"Right label occupy 25% of row space";
+  [model addItem:detailIconItemBothLong
       toSectionWithIdentifier:SectionIdentifierText];
 
   // SectionIdentifierSettings.
