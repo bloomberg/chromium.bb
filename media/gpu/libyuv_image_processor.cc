@@ -9,9 +9,42 @@
 #include "base/memory/ptr_util.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/gpu/macros.h"
-#include "third_party/libyuv/include/libyuv/convert_from.h"
+#include "third_party/libyuv/include/libyuv/convert.h"
 
 namespace media {
+
+namespace {
+
+enum class SupportResult {
+  Supported,
+  SupportedWithPivot,
+  Unsupported,
+};
+
+SupportResult IsFormatSupported(VideoPixelFormat input_format,
+                                VideoPixelFormat output_format) {
+  constexpr struct {
+    VideoPixelFormat input;
+    VideoPixelFormat output;
+    bool need_pivot;
+  } kSupportFormatConversionArray[] = {
+      {PIXEL_FORMAT_I420, PIXEL_FORMAT_NV12, false},
+      {PIXEL_FORMAT_YV12, PIXEL_FORMAT_NV12, false},
+      {PIXEL_FORMAT_RGB32, PIXEL_FORMAT_NV12, true},
+  };
+
+  for (auto* conv = std::cbegin(kSupportFormatConversionArray);
+       conv != std::cend(kSupportFormatConversionArray); conv++) {
+    if (conv->input == input_format && conv->output == output_format) {
+      return conv->need_pivot ? SupportResult::SupportedWithPivot
+                              : SupportResult::Supported;
+    }
+  }
+
+  return SupportResult::Unsupported;
+}
+
+}  // namespace
 
 LibYUVImageProcessor::LibYUVImageProcessor(
     const VideoFrameLayout& input_layout,
@@ -45,14 +78,6 @@ std::unique_ptr<LibYUVImageProcessor> LibYUVImageProcessor::Create(
     const ImageProcessor::OutputMode output_mode,
     ErrorCB error_cb) {
   VLOGF(2);
-
-  if (!IsFormatSupported(input_config.layout.format(),
-                         output_config.layout.format())) {
-    VLOGF(2) << "Conversion from " << input_config.layout.format() << " to "
-             << output_config.layout.format() << " is not supported";
-    return nullptr;
-  }
-
   // LibYUVImageProcessor supports only memory-based video frame for input.
   VideoFrame::StorageType input_storage_type = VideoFrame::STORAGE_UNKNOWN;
   for (auto input_type : input_config.preferred_storage_types) {
@@ -84,10 +109,29 @@ std::unique_ptr<LibYUVImageProcessor> LibYUVImageProcessor::Create(
     return nullptr;
   }
 
+  SupportResult res = IsFormatSupported(input_config.layout.format(),
+                                        output_config.layout.format());
+  if (res == SupportResult::Unsupported) {
+    VLOGF(2) << "Conversion from " << input_config.layout.format() << " to "
+             << output_config.layout.format() << " is not supported";
+    return nullptr;
+  }
+
   auto processor = base::WrapUnique(new LibYUVImageProcessor(
       input_config.layout, input_config.visible_size, input_storage_type,
       output_config.layout, output_config.visible_size, output_storage_type,
       media::BindToCurrentLoop(std::move(error_cb))));
+  if (res == SupportResult::SupportedWithPivot) {
+    processor->intermediate_frame_ =
+        VideoFrame::CreateFrame(PIXEL_FORMAT_I420, input_config.visible_size,
+                                gfx::Rect(input_config.visible_size),
+                                input_config.visible_size, base::TimeDelta());
+    if (!processor->intermediate_frame_) {
+      VLOGF(1) << "Failed to create intermediate frame";
+      return nullptr;
+    }
+  }
+
   if (!processor->process_thread_.Start()) {
     VLOGF(1) << "Failed to start processing thread";
     return nullptr;
@@ -158,28 +202,6 @@ void LibYUVImageProcessor::NotifyError() {
   error_cb_.Run();
 }
 
-// static
-bool LibYUVImageProcessor::IsFormatSupported(VideoPixelFormat input_format,
-                                             VideoPixelFormat output_format) {
-  constexpr struct {
-    VideoPixelFormat input;
-    VideoPixelFormat output;
-  } kSupportFormatConversionArray[] = {
-      {PIXEL_FORMAT_I420, PIXEL_FORMAT_NV12},
-      {PIXEL_FORMAT_YV12, PIXEL_FORMAT_NV12},
-  };
-
-  for (auto* conv = std::cbegin(kSupportFormatConversionArray);
-       conv != std::cend(kSupportFormatConversionArray); conv++) {
-    if (conv->input == input_format && conv->output == output_format)
-      return true;
-  }
-
-  VLOGF(2) << "Unsupported conversion: input=" << input_format
-           << ", output=" << output_format;
-  return false;
-}
-
 int LibYUVImageProcessor::DoConversion(const VideoFrame* const input,
                                        VideoFrame* const output) {
   DCHECK(process_thread_.task_runner()->BelongsToCurrentThread());
@@ -198,6 +220,9 @@ int LibYUVImageProcessor::DoConversion(const VideoFrame* const input,
   fr->data(VideoFrame::kYPlane), fr->stride(VideoFrame::kYPlane), \
       fr->data(VideoFrame::kUVPlane), fr->stride(VideoFrame::kUVPlane)
 
+#define RGB_DATA(fr) \
+  fr->data(VideoFrame::kARGBPlane), fr->stride(VideoFrame::kARGBPlane)
+
 #define LIBYUV_FUNC(func, i, o)                      \
   libyuv::func(i, o, output->visible_rect().width(), \
                output->visible_rect().height())
@@ -208,13 +233,27 @@ int LibYUVImageProcessor::DoConversion(const VideoFrame* const input,
         return LIBYUV_FUNC(I420ToNV12, Y_U_V_DATA(input), Y_UV_DATA(output));
       case PIXEL_FORMAT_YV12:
         return LIBYUV_FUNC(I420ToNV12, Y_V_U_DATA(input), Y_UV_DATA(output));
+
+      // RGB conversions. NOTE: Libyuv functions called here are named in
+      // little-endian manner.
+      case PIXEL_FORMAT_RGB32:
+        // There is no libyuv function to convert to RGBA to NV12. Therefore, we
+        // convert RGBA to I420 tentatively and thereafter convert the tentative
+        // one to NV12.
+        LIBYUV_FUNC(ABGRToI420, RGB_DATA(input),
+                    Y_U_V_DATA(intermediate_frame_));
+        return LIBYUV_FUNC(I420ToNV12, Y_U_V_DATA(intermediate_frame_),
+                           Y_UV_DATA(output));
       default:
         VLOGF(1) << "Unexpected input format: " << input->format();
         return -1;
     }
   }
+
 #undef Y_U_V_DATA
+#undef Y_V_U_DATA
 #undef Y_UV_DATA
+#undef RGB_DATA
 #undef LIBYUV_FUNC
 
   VLOGF(1) << "Unexpected output format: " << output->format();
