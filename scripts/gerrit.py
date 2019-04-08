@@ -41,7 +41,6 @@ GERRIT_APPROVAL_MAP = {
     'COMR': ['CQ', 'Commit Queue   ',],
     'CRVW': ['CR', 'Code Review    ',],
     'SUBM': ['S ', 'Submitted      ',],
-    'TRY':  ['T ', 'Trybot Ready   ',],
     'VRIF': ['V ', 'Verified       ',],
 }
 
@@ -362,25 +361,14 @@ UserActVerify.usage = '<CLs...> <-1|0|1>'
 
 
 def UserActReady(opts, *args):
-  """Mark CLs with a ready status"""
+  """Mark CLs with CQ dryrun (1) or ready (2) status"""
   num = args[-1]
   for arg in args[:-1]:
     helper, cl = GetGerrit(opts, arg)
     helper.SetReview(cl, labels={'Commit-Queue': num},
                      dryrun=opts.dryrun, notify=opts.notify)
 UserActReady.arg_min = 2
-UserActReady.usage = '<CLs...> <0|1>'
-
-
-def UserActTryready(opts, *args):
-  """Mark CLs with a CQ+1 try status"""
-  num = args[-1]
-  for arg in args[:-1]:
-    helper, cl = GetGerrit(opts, arg)
-    helper.SetReview(cl, labels={'Commit-Queue': num},
-                     dryrun=opts.dryrun, notify=opts.notify)
-UserActTryready.arg_min = 2
-UserActTryready.usage = '<CLs...> <0|1>'
+UserActReady.usage = '<CLs...> <0|1|2>'
 
 
 def UserActSubmit(opts, *args):
