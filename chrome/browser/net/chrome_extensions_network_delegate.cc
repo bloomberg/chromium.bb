@@ -197,22 +197,13 @@ int ChromeExtensionsNetworkDelegateImpl::OnBeforeURLRequest(
   return result;
 }
 
-namespace {
-void OnHeadersReceivedAdapter(net::CompletionOnceCallback callback,
-                              const std::set<std::string>& removed_headers,
-                              const std::set<std::string>& set_headers,
-                              int error_code) {
-  std::move(callback).Run(error_code);
-}
-}  // namespace
-
 int ChromeExtensionsNetworkDelegateImpl::OnBeforeStartTransaction(
     net::URLRequest* request,
     net::CompletionOnceCallback callback,
     net::HttpRequestHeaders* headers) {
   return ExtensionWebRequestEventRouter::GetInstance()->OnBeforeSendHeaders(
       profile_, extension_info_map_.get(), GetWebRequestInfo(request),
-      base::BindOnce(OnHeadersReceivedAdapter, std::move(callback)), headers);
+      std::move(callback), headers);
 }
 
 void ChromeExtensionsNetworkDelegateImpl::OnStartTransaction(
