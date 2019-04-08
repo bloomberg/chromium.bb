@@ -37,7 +37,7 @@ class SetBacklightBrightnessRequest;
 namespace chromeos {
 
 // PowerManagerClient is used to communicate with the power manager.
-class COMPONENT_EXPORT(CHROMEOS_DBUS) PowerManagerClient {
+class COMPONENT_EXPORT(DBUS_POWER) PowerManagerClient {
  public:
   using TimerId = int32_t;
 

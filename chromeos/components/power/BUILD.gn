@@ -9,10 +9,7 @@ component("power") {
   defines = [ "IS_CHROMEOS_POWER_IMPL" ]
   deps = [
     "//base",
-
-    # TODO(stevenjb): Replace this with //chromeos/dbus/power once extracted.
-    # https://crbug.com/644348.
-    "//chromeos/dbus",
+    "//chromeos/dbus/power",
     "//services/device/public/mojom",
     "//services/service_manager/public/cpp",
   ]
@@ -33,7 +30,7 @@ source_set("unit_tests") {
   deps = [
     ":power",
     "//base/test:test_support",
-    "//chromeos/dbus",
+    "//chromeos/dbus/power",
     "//services/device/public/cpp/test:test_support",
     "//services/device/public/mojom",
     "//services/service_manager/public/cpp/test:test_support",

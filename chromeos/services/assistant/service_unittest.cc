@@ -189,13 +189,16 @@ class AssistantServiceTest : public testing::Test {
         std::make_unique<FakeAssistantManagerServiceImpl>();
     fake_assistant_manager_ = fake_assistant_manager.get();
     service_->SetAssistantManagerForTesting(std::move(fake_assistant_manager));
-  }
 
-  void SetUp() override {
     GetPlatform()->Init(fake_assistant_client_.CreateInterfacePtrAndBind(),
                         fake_device_actions_.CreateInterfacePtrAndBind());
     platform_.FlushForTesting();
     base::RunLoop().RunUntilIdle();
+  }
+
+  ~AssistantServiceTest() override {
+    service_.reset();
+    PowerManagerClient::Shutdown();
   }
 
   mojom::AssistantPlatform* GetPlatform() {

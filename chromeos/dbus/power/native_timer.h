@@ -27,7 +27,7 @@ using OnStartNativeTimerCallback = base::OnceCallback<void(bool)>;
 
 // Sets timers that can also wake up the device from suspend by making D-Bus
 // calls to the power daemon.
-class COMPONENT_EXPORT(CHROMEOS_DBUS) NativeTimer {
+class COMPONENT_EXPORT(DBUS_POWER) NativeTimer {
  public:
   explicit NativeTimer(const std::string& tag);
 

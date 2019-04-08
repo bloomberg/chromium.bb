@@ -131,7 +131,7 @@ component("cpp") {
   deps = [
     "//ash/public/cpp/vector_icons",
     "//chromeos/constants",
-    "//chromeos/dbus:power_manager_proto",
+    "//chromeos/dbus/power:power_manager_proto",
     "//components/prefs",
     "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp",
