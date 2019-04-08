@@ -15085,6 +15085,7 @@
         'dynamic_refresh': False,
         'per_profile': True,
       },
+      'default_for_enterprise_users': True,
       'example_value': False,
       'id': 533,
       'caption': '''Allows a page to show popups during its unloading''',
