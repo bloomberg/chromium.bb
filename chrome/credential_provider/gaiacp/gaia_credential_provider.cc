@@ -388,7 +388,6 @@ HRESULT CGaiaCredentialProvider::SetUsageScenario(
 
 HRESULT CGaiaCredentialProvider::SetSerialization(
     const CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* pcpcs) {
-  LOGFN(ERROR);
   DCHECK(pcpcs);
 
   if (pcpcs->clsidCredentialProvider != CLSID_GaiaCredentialProvider)

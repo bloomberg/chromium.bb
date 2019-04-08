@@ -13,6 +13,7 @@
 #include "base/win/registry.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/associated_user_validator.h"
+#include "chrome/credential_provider/gaiacp/auth_utils.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
 #include "chrome/credential_provider/gaiacp/mdm_utils.h"
@@ -240,6 +241,107 @@ TEST_F(GcpCredentialProviderTest, AddPersonAfterUserRemove) {
     ASSERT_EQ(1u, count);
   }
 }
+
+// Tests auto logon enabled when set serialization is called.
+// Parameters:
+// 1. bool: are the users' token handles still valid.
+// 2. CREDENTIAL_PROVIDER_USAGE_SCENARIO - the usage scenario.
+class GcpCredentialProviderSetSerializationTest
+    : public GcpCredentialProviderTest,
+      public testing::WithParamInterface<
+          std::tuple<bool, CREDENTIAL_PROVIDER_USAGE_SCENARIO>> {};
+
+TEST_P(GcpCredentialProviderSetSerializationTest, CheckAutoLogon) {
+  FakeAssociatedUserValidator associated_user_validator;
+  FakeInternetAvailabilityChecker internet_checker;
+
+  const bool valid_token_handles = std::get<0>(GetParam());
+  const CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus = std::get<1>(GetParam());
+
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
+  GoogleMdmEnrolledStatusForTesting forced_status(true);
+
+  CComBSTR first_sid;
+  constexpr wchar_t first_username[] = L"username";
+  CreateGCPWUser(first_username, L"foo@gmail.com", L"password", L"Full Name",
+                 L"Comment", L"gaia-id", &first_sid);
+
+  CComBSTR second_sid;
+  constexpr wchar_t second_username[] = L"username2";
+  CreateGCPWUser(second_username, L"foo2@gmail.com", L"password", L"Full Name",
+                 L"Comment", L"gaia-id2", &second_sid);
+
+  // Token fetch result.
+  fake_http_url_fetcher_factory()->SetFakeResponse(
+      GURL(AssociatedUserValidator::kTokenInfoUrl),
+      FakeWinHttpUrlFetcher::Headers(),
+      valid_token_handles ? "{\"expires_in\":1}" : "{}");
+
+  // Start token handle refresh threads.
+  associated_user_validator.StartRefreshingTokenHandleValidity();
+
+  // Lock users as needed based on the validity of their token handles.
+  associated_user_validator.DenySigninForUsersWithInvalidTokenHandles(cpus);
+
+  // Build a dummy authentication buffer that can be passed to SetSerialization.
+  CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION cpcs;
+  base::string16 local_domain = OSUserManager::GetLocalDomain();
+  base::string16 serialization_username = second_username;
+  base::string16 serialization_password = L"password";
+  std::vector<wchar_t> dummy_domain(
+      local_domain.c_str(), local_domain.c_str() + local_domain.size() + 1);
+  std::vector<wchar_t> dummy_username(
+      serialization_username.c_str(),
+      serialization_username.c_str() + serialization_username.size() + 1);
+  std::vector<wchar_t> dummy_password(
+      serialization_password.c_str(),
+      serialization_password.c_str() + serialization_password.size() + 1);
+  ASSERT_EQ(S_OK, BuildCredPackAuthenticationBuffer(
+                      &dummy_domain[0], &dummy_username[0], &dummy_password[0],
+                      cpus, &cpcs));
+
+  cpcs.clsidCredentialProvider = CLSID_GaiaCredentialProvider;
+
+  CComPtr<ICredentialProviderSetUserArray> user_array;
+  ASSERT_EQ(
+      S_OK,
+      CComCreator<CComObject<CGaiaCredentialProvider>>::CreateInstance(
+          nullptr, IID_ICredentialProviderSetUserArray, (void**)&user_array));
+  CComPtr<ICredentialProvider> provider;
+  ASSERT_EQ(S_OK, user_array.QueryInterface(&provider));
+
+  ASSERT_EQ(S_OK, provider->SetUsageScenario(cpus, 0));
+
+  ASSERT_EQ(S_OK, provider->SetSerialization(&cpcs));
+
+  ::CoTaskMemFree(cpcs.rgbSerialization);
+
+  FakeCredentialProviderUserArray array;
+  array.AddUser(OLE2CW(first_sid), first_username);
+  array.AddUser(OLE2CW(second_sid), second_username);
+
+  ASSERT_EQ(S_OK, user_array->SetUserArray(&array));
+
+  // Check the correct number of credentials are created and whether autologon
+  // is enabled based on the token handle validity.
+  DWORD count;
+  DWORD default_index;
+  BOOL autologon;
+  ASSERT_EQ(S_OK,
+            provider->GetCredentialCount(&count, &default_index, &autologon));
+
+  bool should_autologon = !valid_token_handles;
+  EXPECT_EQ(valid_token_handles ? 0u : 2u, count);
+  EXPECT_EQ(autologon, should_autologon);
+  EXPECT_EQ(default_index,
+            should_autologon ? 1 : CREDENTIAL_PROVIDER_NO_DEFAULT);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    GcpCredentialProviderSetSerializationTest,
+    ::testing::Combine(::testing::Bool(),
+                       ::testing::Values(CPUS_UNLOCK_WORKSTATION, CPUS_LOGON)));
 
 // Tests the effect of the MDM settings on the credential provider.
 // Parameters:
