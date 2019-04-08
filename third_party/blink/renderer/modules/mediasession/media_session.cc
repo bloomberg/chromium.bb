@@ -115,10 +115,6 @@ MediaSession::MediaSession(ExecutionContext* execution_context)
       playback_state_(mojom::blink::MediaSessionPlaybackState::NONE),
       client_binding_(this) {}
 
-MediaSession* MediaSession::Create(ExecutionContext* execution_context) {
-  return MakeGarbageCollected<MediaSession>(execution_context);
-}
-
 void MediaSession::Dispose() {
   client_binding_.Close();
 }

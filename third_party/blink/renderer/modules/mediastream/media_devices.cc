@@ -32,10 +32,6 @@ namespace {
 
 class PromiseResolverCallbacks final : public UserMediaRequest::Callbacks {
  public:
-  static PromiseResolverCallbacks* Create(ScriptPromiseResolver* resolver) {
-    return MakeGarbageCollected<PromiseResolverCallbacks>(resolver);
-  }
-
   explicit PromiseResolverCallbacks(ScriptPromiseResolver* resolver)
       : resolver_(resolver) {}
   ~PromiseResolverCallbacks() override = default;
@@ -59,10 +55,6 @@ class PromiseResolverCallbacks final : public UserMediaRequest::Callbacks {
 };
 
 }  // namespace
-
-MediaDevices* MediaDevices::Create(ExecutionContext* context) {
-  return MakeGarbageCollected<MediaDevices>(context);
-}
 
 MediaDevices::MediaDevices(ExecutionContext* context)
     : ContextLifecycleObserver(context), stopped_(false), binding_(this) {}
@@ -110,8 +102,7 @@ ScriptPromise MediaDevices::SendUserMediaRequest(
     const MediaStreamConstraints* options,
     ExceptionState& exception_state) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  PromiseResolverCallbacks* callbacks =
-      PromiseResolverCallbacks::Create(resolver);
+  auto* callbacks = MakeGarbageCollected<PromiseResolverCallbacks>(resolver);
 
   Document* document = To<Document>(ExecutionContext::From(script_state));
   UserMediaController* user_media =
@@ -322,9 +313,9 @@ void MediaDevices::DevicesEnumerated(
         }
         media_devices.push_back(input_device_info);
       } else {
-        media_devices.push_back(
-            MediaDeviceInfo::Create(device_info->device_id, device_info->label,
-                                    device_info->group_id, device_type));
+        media_devices.push_back(MakeGarbageCollected<MediaDeviceInfo>(
+            device_info->device_id, device_info->label, device_info->group_id,
+            device_type));
       }
     }
   }

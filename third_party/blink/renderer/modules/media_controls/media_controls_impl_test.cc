@@ -97,10 +97,6 @@ class MockLayoutObject : public LayoutObject {
 
 class StubLocalFrameClientForImpl : public EmptyLocalFrameClient {
  public:
-  static StubLocalFrameClientForImpl* Create() {
-    return MakeGarbageCollected<StubLocalFrameClientForImpl>();
-  }
-
   std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
       HTMLMediaElement&,
       const WebMediaPlayerSource&,
@@ -194,7 +190,8 @@ class MediaControlsImplTest : public PageTestBase,
     Page::PageClients clients;
     FillWithEmptyClients(clients);
     clients.chrome_client = MakeGarbageCollected<MockChromeClientForImpl>();
-    SetupPageWithClients(&clients, StubLocalFrameClientForImpl::Create());
+    SetupPageWithClients(&clients,
+                         MakeGarbageCollected<StubLocalFrameClientForImpl>());
 
     GetDocument().write("<video controls>");
     HTMLVideoElement& video =

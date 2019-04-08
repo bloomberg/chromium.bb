@@ -37,8 +37,6 @@ class MODULES_EXPORT MediaDevices final
   USING_PRE_FINALIZER(MediaDevices, Dispose);
 
  public:
-  static MediaDevices* Create(ExecutionContext*);
-
   explicit MediaDevices(ExecutionContext*);
   ~MediaDevices() override;
 

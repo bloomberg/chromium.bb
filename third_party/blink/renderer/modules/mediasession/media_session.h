@@ -30,8 +30,6 @@ class MODULES_EXPORT MediaSession final
   USING_PRE_FINALIZER(MediaSession, Dispose);
 
  public:
-  static MediaSession* Create(ExecutionContext*);
-
   explicit MediaSession(ExecutionContext*);
 
   void Dispose();
