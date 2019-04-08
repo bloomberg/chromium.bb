@@ -5,8 +5,10 @@
 package org.chromium.chrome.browser.touchless;
 
 import android.graphics.Bitmap;
+import android.text.TextUtils;
 
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
+import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
@@ -25,9 +27,14 @@ class SiteSuggestionModel {
             new PropertyModel.WritableObjectPropertyKey<>();
 
     static PropertyModel getSiteSuggestionModel(SiteSuggestion suggestion) {
+        String title = UrlUtilities.getDomainAndRegistry(suggestion.url, false);
+        if (TextUtils.isEmpty(title)) {
+            // Fallback to title.
+            title = suggestion.title;
+        }
         return new PropertyModel
                 .Builder(TITLE_KEY, URL_KEY, ICON_KEY, SOURCE_KEY, WHITELIST_ICON_PATH_KEY)
-                .with(TITLE_KEY, suggestion.title)
+                .with(TITLE_KEY, title)
                 .with(URL_KEY, suggestion.url)
                 .with(SOURCE_KEY, suggestion.source)
                 .with(WHITELIST_ICON_PATH_KEY, suggestion.whitelistIconPath)
