@@ -33,11 +33,15 @@ class TaskRunnerImpl : public TaskRunner {
   void PostTask(Task task) override;
   void PostTaskWithDelay(Task task, Clock::duration delay) override;
 
-  // Tasks will only be executed if RunUntilStopped has been called, and Stop
-  // has not. Important note: TaskRunnerImpl does NOT do any threading, so
-  // calling "RunUntilStopped()" will block whatever thread you are calling it
-  // on.
+  // Tasks will only be executed if RunUntilStopped has been called, and
+  // RequestStopSoon has not. Important note: TaskRunnerImpl does NOT do any
+  // threading, so calling "RunUntilStopped()" will block whatever thread you
+  // are calling it on.
   void RunUntilStopped();
+
+  // Thread-safe method for requesting the TaskRunnerImpl to stop running. This
+  // sets a flag that will get checked in the run loop, typically after
+  // completing the current task.
   void RequestStopSoon();
 
   // Execute all tasks immediately, useful for testing only. Note: this method
@@ -47,31 +51,37 @@ class TaskRunnerImpl : public TaskRunner {
 
  private:
   struct DelayedTask {
-    DelayedTask(Task task_, Clock::time_point time_runnable_after_)
-        : task(std::move(task_)), time_runnable_after(time_runnable_after_) {}
+    DelayedTask(Task task_, Clock::time_point runnable_after_)
+        : task(std::move(task_)), runnable_after(runnable_after_) {}
 
     Task task;
-    Clock::time_point time_runnable_after;
+    Clock::time_point runnable_after;
 
     bool operator>(const DelayedTask& other) const {
-      return this->time_runnable_after > other.time_runnable_after;
+      return this->runnable_after > other.runnable_after;
     }
   };
 
-  // Run all tasks already in the task queue.
+  // Run all tasks already in the task queue. If the queue is empty, wait for
+  // either (1) a delayed task to become available, or (2) a task to be added
+  // to the queue.
   void RunCurrentTasksBlocking();
+
+  // Run tasks already in the queue, for testing. If the queue is empty, this
+  // method does not block but instead returns immediately.
   void RunCurrentTasksForTesting();
 
-  // Loop method that runs tasks in the current thread, until the Stop
-  // method is called.
+  // Loop method that runs tasks in the current thread, until the
+  // RequestStopSoon method is called.
   void RunTasksUntilStopped();
 
   // Look at all tasks in the delayed task queue, then schedule them if the
   // minimum delay time has elapsed.
   void ScheduleDelayedTasks();
 
-  // Puts the task running thread into a waiting state for a notify on the
-  // run loop wakeup condition variable, and returns the acquired lock.
+  // Takes the task_mutex_ lock, returning immediately if work is available. If
+  // no work is available, this places the task running thread into a waiting
+  // state until we stop running or work is available.
   std::unique_lock<std::mutex> WaitForWorkAndAcquireLock();
 
   const platform::ClockNowFunctionPtr now_function_;
