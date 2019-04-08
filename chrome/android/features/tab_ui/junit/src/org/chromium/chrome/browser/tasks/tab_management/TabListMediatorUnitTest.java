@@ -108,7 +108,9 @@ public class TabListMediatorUnitTest {
         List<TabModel> tabModelList = new ArrayList<>();
         tabModelList.add(mTabModel);
 
-        doNothing().when(mTabContentManager).getTabThumbnailWithCallback(any(), any());
+        doNothing()
+                .when(mTabContentManager)
+                .getTabThumbnailWithCallback(any(), any(), anyBoolean());
         doReturn(mTabModel).when(mTabModelSelector).getCurrentModel();
         doReturn(tabModelList).when(mTabModelSelector).getModels();
         doReturn(mTabModelFilterProvider).when(mTabModelSelector).getTabModelFilterProvider();

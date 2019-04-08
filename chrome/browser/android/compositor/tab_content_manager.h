@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "cc/layers/ui_resource_layer.h"
 #include "chrome/browser/android/thumbnail/thumbnail_cache.h"
+#include "content/public/browser/render_widget_host_view.h"
 
 using base::android::ScopedJavaLocalRef;
 
@@ -78,7 +79,8 @@ class TabContentManager : public ThumbnailCacheObserver {
   void CacheTab(JNIEnv* env,
                 const base::android::JavaParamRef<jobject>& obj,
                 const base::android::JavaParamRef<jobject>& tab,
-                jfloat thumbnail_scale);
+                jfloat thumbnail_scale,
+                const base::android::JavaParamRef<jobject>& j_callback);
   void CacheTabWithBitmap(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj,
                           const base::android::JavaParamRef<jobject>& tab,
@@ -115,11 +117,17 @@ class TabContentManager : public ThumbnailCacheObserver {
   using TabReadbackRequestMap =
       base::flat_map<int, std::unique_ptr<TabReadbackRequest>>;
 
-  void PutThumbnailIntoCache(int tab_id,
-                             float thumbnail_scale,
-                             const SkBitmap& bitmap);
+  content::RenderWidgetHostView* GetRwhvForTab(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& tab);
+  void PutThumbnailIntoCache(
+      int tab_id,
+      base::android::ScopedJavaGlobalRef<jobject> j_callback,
+      float thumbnail_scale,
+      const SkBitmap& bitmap);
 
-  void TabThumbnailAvailableFromDisk(
+  void TabThumbnailAvailable(
       base::android::ScopedJavaGlobalRef<jobject> j_callback,
       bool result,
       SkBitmap bitmap);

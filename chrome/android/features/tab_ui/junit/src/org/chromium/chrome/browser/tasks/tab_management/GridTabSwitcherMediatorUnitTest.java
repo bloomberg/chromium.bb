@@ -8,6 +8,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -124,7 +125,9 @@ public class GridTabSwitcherMediatorUnitTest {
         List<TabModel> tabModelList = new ArrayList<>();
         tabModelList.add(mTabModel);
 
-        doNothing().when(mTabContentManager).getTabThumbnailWithCallback(any(), any());
+        doNothing()
+                .when(mTabContentManager)
+                .getTabThumbnailWithCallback(any(), any(), anyBoolean());
         doReturn(mResources).when(mContext).getResources();
 
         doReturn(mTabModel).when(mTabModelSelector).getCurrentModel();
