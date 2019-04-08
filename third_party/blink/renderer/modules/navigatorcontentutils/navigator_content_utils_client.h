@@ -17,8 +17,6 @@ class WebLocalFrameImpl;
 class MODULES_EXPORT NavigatorContentUtilsClient
     : public GarbageCollectedFinalized<NavigatorContentUtilsClient> {
  public:
-  static NavigatorContentUtilsClient* Create(WebLocalFrameImpl*);
-
   explicit NavigatorContentUtilsClient(WebLocalFrameImpl*);
   virtual ~NavigatorContentUtilsClient() = default;
 
