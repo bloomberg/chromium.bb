@@ -47,6 +47,9 @@ Multiple tests may share one resource, or URI handler.
      Used by kinds of PPAPI tests for WebSocket, ExtensionApiTest.WebSocket,
      and WorkerTest.WebSocketSharedWorker.
 
+- close-immediately_wsh.py : A WebSocket URL handler that performs an immediate
+     clean close as soon as the connection is established.
+
 - close_wsh.py : A WebSocket URL handler for testing outgoing close code and
      reason.
      Used by kinds of PPAPI tests for WebSocket.
