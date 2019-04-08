@@ -170,12 +170,6 @@ void AwFeatureListCreator::SetUpFieldTrials() {
       std::vector<std::string>(), /*low_entropy_provider=*/nullptr,
       std::make_unique<base::FeatureList>(), aw_field_trials_.get(),
       &ignored_safe_seed_manager);
-
-  // Activate a study which exercises permanent-consistency, to test the launch
-  // of permanent-consistency support in WebView.
-  // TODO(crbug/917537): Remove this after m73.
-  base::FieldTrialList::FindFullName("AndroidWebViewConsistencyTest");
-  base::FieldTrialList::FindFullName("AndroidWebViewSessionConsistencyTest");
 }
 
 void AwFeatureListCreator::CreateFeatureListAndFieldTrials() {
