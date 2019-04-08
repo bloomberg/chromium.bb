@@ -284,7 +284,7 @@ int main(int argc, char** argv) {
   base::FilePath target_path = base::FilePath(args[0]);
 
   base::FilePath crlset_path = command_line.GetSwitchValuePath("crlset");
-  scoped_refptr<net::CRLSet> crl_set;
+  scoped_refptr<net::CRLSet> crl_set = net::CRLSet::BuiltinCRLSet();
   if (!crlset_path.empty()) {
     std::string crl_set_bytes;
     if (!ReadFromFile(crlset_path, &crl_set_bytes))
