@@ -272,7 +272,8 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                 }
             }
             if (FirstRunStatus.getFirstRunFlowComplete()) {
-                if (UrlUtilities.isDownloadableScheme(params.getLinkUrl())) {
+                if (!mDelegate.isIncognito()
+                        && UrlUtilities.isDownloadableScheme(params.getLinkUrl())) {
                     linkTab.add(new ChromeContextMenuItem(Item.SAVE_LINK_AS));
                 }
                 linkTab.add(new ShareContextMenuItem(R.drawable.ic_share_white_24dp,
