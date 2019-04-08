@@ -35,12 +35,6 @@ class ProcessMemoryDump;
 }
 }
 
-namespace chromecast {
-namespace shell {
-class URLRequestContextFactory;
-}
-}  // namespace chromecast
-
 namespace safe_browsing {
 class SafeBrowsingURLRequestContextGetter;
 }  // namespace safe_browsing
@@ -311,7 +305,6 @@ class NET_EXPORT URLRequestContext
   // Whitelist legacy usage of now-deprecated CopyFrom().
   friend class ::ChromeBrowserStateImplIOData;
   friend class ::ProfileImplIOData;
-  friend class chromecast::shell::URLRequestContextFactory;
   friend class safe_browsing::SafeBrowsingURLRequestContextGetter;
 
   // Copies the state from |other| into this context.
