@@ -174,7 +174,7 @@ static_assert(static_cast<int>(ColumnType::kBlob) == SQLITE_BLOB,
 static_assert(static_cast<int>(ColumnType::kNull) == SQLITE_NULL,
               "NULL mismatch");
 
-ColumnType Statement::ColumnType(int col) const {
+ColumnType Statement::GetColumnType(int col) const {
   return static_cast<enum ColumnType>(sqlite3_column_type(ref_->stmt(), col));
 }
 
