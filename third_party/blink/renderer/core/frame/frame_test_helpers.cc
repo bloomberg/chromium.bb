@@ -36,6 +36,7 @@
 #include "cc/test/test_ukm_recorder_factory.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
+#include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -227,7 +228,7 @@ WebLocalFrameImpl* CreateProvisional(WebRemoteFrame& old_frame,
   auto* frame = To<WebLocalFrameImpl>(WebLocalFrame::CreateProvisional(
       client, nullptr,
       mojo::MakeRequest(&document_interface_broker).PassMessagePipe(),
-      &old_frame, WebSandboxFlags::kNone, ParsedFeaturePolicy()));
+      &old_frame, FramePolicy()));
   client->Bind(frame, std::move(owned_client));
   std::unique_ptr<TestWebWidgetClient> widget_client;
   // Create a local root, if necessary.
@@ -269,10 +270,9 @@ WebLocalFrameImpl* CreateLocalChild(WebRemoteFrame& parent,
   client = CreateDefaultClientIfNeeded(client, owned_client);
   mojom::blink::DocumentInterfaceBrokerPtrInfo document_interface_broker;
   auto* frame = To<WebLocalFrameImpl>(parent.CreateLocalChild(
-      WebTreeScopeType::kDocument, name, WebSandboxFlags::kNone, client,
-      nullptr, mojo::MakeRequest(&document_interface_broker).PassMessagePipe(),
-      previous_sibling, ParsedFeaturePolicy(), properties,
-      FrameOwnerElementType::kIframe, nullptr));
+      WebTreeScopeType::kDocument, name, FramePolicy(), client, nullptr,
+      mojo::MakeRequest(&document_interface_broker).PassMessagePipe(),
+      previous_sibling, properties, FrameOwnerElementType::kIframe, nullptr));
   client->Bind(frame, std::move(owned_client));
 
   std::unique_ptr<TestWebWidgetClient> owned_widget_client;
@@ -299,8 +299,8 @@ WebRemoteFrameImpl* CreateRemoteChild(
   std::unique_ptr<TestWebRemoteFrameClient> owned_client;
   client = CreateDefaultClientIfNeeded(client, owned_client);
   auto* frame = ToWebRemoteFrameImpl(parent.CreateRemoteChild(
-      WebTreeScopeType::kDocument, name, WebSandboxFlags::kNone,
-      ParsedFeaturePolicy(), FrameOwnerElementType::kIframe, client, nullptr));
+      WebTreeScopeType::kDocument, name, FramePolicy(),
+      FrameOwnerElementType::kIframe, client, nullptr));
   client->Bind(frame, std::move(owned_client));
   if (!security_origin)
     security_origin = SecurityOrigin::CreateUniqueOpaque();
@@ -511,8 +511,7 @@ WebLocalFrame* TestWebFrameClient::CreateChildFrame(
     WebTreeScopeType scope,
     const WebString& name,
     const WebString& fallback_name,
-    WebSandboxFlags sandbox_flags,
-    const ParsedFeaturePolicy& container_policy,
+    const FramePolicy&,
     const WebFrameOwnerProperties& frame_owner_properties,
     FrameOwnerElementType owner_type) {
   return CreateLocalChild(*parent, scope);

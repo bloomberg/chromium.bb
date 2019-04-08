@@ -4712,8 +4712,7 @@ class ContextLifetimeTestWebFrameClient
                                   WebTreeScopeType scope,
                                   const WebString& name,
                                   const WebString& fallback_name,
-                                  WebSandboxFlags sandbox_flags,
-                                  const ParsedFeaturePolicy& container_policy,
+                                  const FramePolicy&,
                                   const WebFrameOwnerProperties&,
                                   FrameOwnerElementType) override {
     return CreateLocalChild(*parent, scope,
@@ -7453,8 +7452,7 @@ class TestCachePolicyWebFrameClient
       WebTreeScopeType scope,
       const WebString&,
       const WebString&,
-      WebSandboxFlags,
-      const ParsedFeaturePolicy&,
+      const FramePolicy&,
       const WebFrameOwnerProperties& frame_owner_properties,
       FrameOwnerElementType) override {
     auto child = std::make_unique<TestCachePolicyWebFrameClient>();
@@ -7775,8 +7773,7 @@ class TestHistoryWebFrameClient
                                   WebTreeScopeType scope,
                                   const WebString& name,
                                   const WebString& fallback_name,
-                                  WebSandboxFlags,
-                                  const ParsedFeaturePolicy&,
+                                  const FramePolicy&,
                                   const WebFrameOwnerProperties&,
                                   FrameOwnerElementType) override {
     return CreateLocalChild(*parent, scope, &child_client_);
@@ -7917,8 +7914,7 @@ class FailCreateChildFrame : public frame_test_helpers::TestWebFrameClient {
       WebTreeScopeType scope,
       const WebString& name,
       const WebString& fallback_name,
-      WebSandboxFlags sandbox_flags,
-      const ParsedFeaturePolicy& container_policy,
+      const FramePolicy&,
       const WebFrameOwnerProperties& frame_owner_properties,
       FrameOwnerElementType) override {
     ++call_count_;
@@ -10806,8 +10802,7 @@ class WebLocalFrameVisibilityChangeTest
                                   WebTreeScopeType scope,
                                   const WebString& name,
                                   const WebString& fallback_name,
-                                  WebSandboxFlags,
-                                  const ParsedFeaturePolicy&,
+                                  const FramePolicy&,
                                   const WebFrameOwnerProperties&,
                                   FrameOwnerElementType) override {
     return CreateLocalChild(*parent, scope, &child_client_);
@@ -12324,8 +12319,7 @@ TEST_F(WebFrameTest, NoLoadingCompletionCallbacksInDetach) {
                                     WebTreeScopeType scope,
                                     const WebString& name,
                                     const WebString& fallback_name,
-                                    WebSandboxFlags sandbox_flags,
-                                    const ParsedFeaturePolicy& container_policy,
+                                    const FramePolicy&,
                                     const WebFrameOwnerProperties&,
                                     FrameOwnerElementType) override {
       return CreateLocalChild(*parent, scope, &child_client_);
@@ -12589,8 +12583,7 @@ class TestFallbackWebFrameClient
       WebTreeScopeType scope,
       const WebString&,
       const WebString&,
-      WebSandboxFlags,
-      const ParsedFeaturePolicy& container_policy,
+      const FramePolicy&,
       const WebFrameOwnerProperties& frameOwnerProperties,
       FrameOwnerElementType) override {
     DCHECK(child_client_);

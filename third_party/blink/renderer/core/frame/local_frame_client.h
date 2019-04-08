@@ -342,9 +342,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual void DidEnforceInsecureRequestPolicy(WebInsecureRequestPolicy) {}
   virtual void DidEnforceInsecureNavigationsSet(const std::vector<unsigned>&) {}
 
-  virtual void DidChangeFramePolicy(Frame* child_frame,
-                                    SandboxFlags,
-                                    const ParsedFeaturePolicy&) {}
+  virtual void DidChangeFramePolicy(Frame* child_frame, const FramePolicy&) {}
 
   virtual void DidSetFramePolicyHeaders(
       SandboxFlags,

@@ -26,7 +26,7 @@ TEST_F(HTMLFrameElementTest, DefaultContainerPolicy) {
   frame_element->UpdateContainerPolicyForTests();
 
   const ParsedFeaturePolicy& container_policy =
-      frame_element->ContainerPolicy();
+      frame_element->GetFramePolicy().container_policy;
   EXPECT_EQ(1UL, container_policy.size());
   // Fullscreen should be disabled in this frame
   EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen,

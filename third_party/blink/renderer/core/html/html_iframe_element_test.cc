@@ -176,7 +176,7 @@ TEST_F(HTMLIFrameElementTest, DefaultContainerPolicy) {
   frame_element->UpdateContainerPolicyForTests();
 
   const ParsedFeaturePolicy& container_policy =
-      frame_element->ContainerPolicy();
+      frame_element->GetFramePolicy().container_policy;
   EXPECT_EQ(0UL, container_policy.size());
 }
 
@@ -195,7 +195,7 @@ TEST_F(HTMLIFrameElementTest, AllowAttributeContainerPolicy) {
   frame_element->UpdateContainerPolicyForTests();
 
   const ParsedFeaturePolicy& container_policy1 =
-      frame_element->ContainerPolicy();
+      frame_element->GetFramePolicy().container_policy;
 
   EXPECT_EQ(1UL, container_policy1.size());
   EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen,
@@ -209,7 +209,7 @@ TEST_F(HTMLIFrameElementTest, AllowAttributeContainerPolicy) {
   frame_element->UpdateContainerPolicyForTests();
 
   const ParsedFeaturePolicy& container_policy2 =
-      frame_element->ContainerPolicy();
+      frame_element->GetFramePolicy().container_policy;
   EXPECT_EQ(2UL, container_policy2.size());
   EXPECT_TRUE(container_policy2[0].feature ==
                   mojom::FeaturePolicyFeature::kFullscreen ||
@@ -243,7 +243,7 @@ TEST_F(HTMLIFrameElementTest, SandboxAttributeContainerPolicy) {
   frame_element->UpdateContainerPolicyForTests();
 
   const ParsedFeaturePolicy& container_policy =
-      frame_element->ContainerPolicy();
+      frame_element->GetFramePolicy().container_policy;
 
   EXPECT_EQ(expected_number_of_sandbox_features, container_policy.size());
 }
@@ -265,7 +265,7 @@ TEST_F(HTMLIFrameElementTest, CrossOriginSandboxAttributeContainerPolicy) {
   frame_element->UpdateContainerPolicyForTests();
 
   const ParsedFeaturePolicy& container_policy =
-      frame_element->ContainerPolicy();
+      frame_element->GetFramePolicy().container_policy;
 
   EXPECT_EQ(expected_number_of_sandbox_features + 1, container_policy.size());
   const auto& container_policy_item = std::find_if(
@@ -301,7 +301,7 @@ TEST_F(HTMLIFrameElementTest, SameOriginSandboxAttributeContainerPolicy) {
   frame_element->UpdateContainerPolicyForTests();
 
   const ParsedFeaturePolicy& container_policy =
-      frame_element->ContainerPolicy();
+      frame_element->GetFramePolicy().container_policy;
 
   EXPECT_EQ(expected_number_of_sandbox_features + 1, container_policy.size());
   const auto& container_policy_item = std::find_if(

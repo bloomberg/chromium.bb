@@ -154,8 +154,7 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
     web_frame = parent->web_frame()->CreateRemoteChild(
         replicated_state.scope,
         blink::WebString::FromUTF8(replicated_state.name),
-        replicated_state.frame_policy.sandbox_flags,
-        replicated_state.frame_policy.container_policy,
+        replicated_state.frame_policy,
         replicated_state.frame_owner_element_type, proxy.get(), opener);
     proxy->unique_name_ = replicated_state.unique_name;
     render_view = parent->render_view();
@@ -382,8 +381,7 @@ void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
 void RenderFrameProxy::OnDidUpdateFramePolicy(
     const blink::FramePolicy& frame_policy) {
   DCHECK(web_frame()->Parent());
-  web_frame_->SetFrameOwnerPolicy(frame_policy.sandbox_flags,
-                                  frame_policy.container_policy);
+  web_frame_->SetFrameOwnerPolicy(frame_policy);
 }
 
 // Update the proxy's SecurityContext with new sandbox flags or feature policy

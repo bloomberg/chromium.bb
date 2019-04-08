@@ -112,8 +112,7 @@ class WebLocalFrame : public WebFrame {
       blink::InterfaceRegistry*,
       mojo::ScopedMessagePipeHandle,
       WebFrame* previous_web_frame,
-      WebSandboxFlags,
-      ParsedFeaturePolicy);
+      const FramePolicy&);
 
   // Creates a new local child of this frame. Similar to the other methods that
   // create frames, the returned frame should be freed by calling Close() when

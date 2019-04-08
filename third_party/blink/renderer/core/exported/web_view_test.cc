@@ -3692,8 +3692,7 @@ class CreateChildCounterFrameClient
                                   WebTreeScopeType,
                                   const WebString& name,
                                   const WebString& fallback_name,
-                                  WebSandboxFlags,
-                                  const ParsedFeaturePolicy&,
+                                  const FramePolicy&,
                                   const WebFrameOwnerProperties&,
                                   FrameOwnerElementType) override;
 
@@ -3708,14 +3707,13 @@ WebLocalFrame* CreateChildCounterFrameClient::CreateChildFrame(
     WebTreeScopeType scope,
     const WebString& name,
     const WebString& fallback_name,
-    WebSandboxFlags sandbox_flags,
-    const ParsedFeaturePolicy& container_policy,
+    const FramePolicy& frame_policy,
     const WebFrameOwnerProperties& frame_owner_properties,
     FrameOwnerElementType frame_owner_element_type) {
   ++count_;
   return TestWebFrameClient::CreateChildFrame(
-      parent, scope, name, fallback_name, sandbox_flags, container_policy,
-      frame_owner_properties, frame_owner_element_type);
+      parent, scope, name, fallback_name, frame_policy, frame_owner_properties,
+      frame_owner_element_type);
 }
 
 TEST_F(WebViewTest, ChangeDisplayMode) {

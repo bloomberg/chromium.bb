@@ -1454,11 +1454,10 @@ void RenderFrameImpl::CreateFrame(
         replicated_state.unique_name);
     web_frame = parent_web_frame->CreateLocalChild(
         replicated_state.scope, WebString::FromUTF8(replicated_state.name),
-        replicated_state.frame_policy.sandbox_flags, render_frame,
+        replicated_state.frame_policy, render_frame,
         render_frame->blink_interface_registry_.get(),
         document_interface_broker_blink.PassInterface().PassHandle(),
         previous_sibling_web_frame,
-        replicated_state.frame_policy.container_policy,
         ConvertFrameOwnerPropertiesToWebFrameOwnerProperties(
             frame_owner_properties),
         replicated_state.frame_owner_element_type,
@@ -1494,8 +1493,7 @@ void RenderFrameImpl::CreateFrame(
     web_frame = blink::WebLocalFrame::CreateProvisional(
         render_frame, render_frame->blink_interface_registry_.get(),
         document_interface_broker_blink.PassInterface().PassHandle(),
-        proxy->web_frame(), replicated_state.frame_policy.sandbox_flags,
-        replicated_state.frame_policy.container_policy);
+        proxy->web_frame(), replicated_state.frame_policy);
     // The new |web_frame| is a main frame iff the proxy's frame was.
     DCHECK_EQ(proxy_is_main_frame, !web_frame->Parent());
   }
@@ -2697,8 +2695,7 @@ void RenderFrameImpl::OnUpdateOpener(int opener_routing_id) {
 
 void RenderFrameImpl::OnDidUpdateFramePolicy(
     const blink::FramePolicy& frame_policy) {
-  frame_->SetFrameOwnerPolicy(frame_policy.sandbox_flags,
-                              frame_policy.container_policy);
+  frame_->SetFrameOwnerPolicy(frame_policy);
 }
 
 void RenderFrameImpl::OnSetFrameOwnerProperties(
@@ -4193,8 +4190,7 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
     blink::WebTreeScopeType scope,
     const blink::WebString& name,
     const blink::WebString& fallback_name,
-    blink::WebSandboxFlags sandbox_flags,
-    const blink::ParsedFeaturePolicy& container_policy,
+    const blink::FramePolicy& frame_policy,
     const blink::WebFrameOwnerProperties& frame_owner_properties,
     blink::FrameOwnerElementType frame_owner_element_type) {
   DCHECK_EQ(frame_, parent);
@@ -4227,7 +4223,7 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
   params.frame_unique_name = unique_name_helper_.GenerateNameForNewChildFrame(
       params.frame_name.empty() ? fallback_name.Utf8() : params.frame_name,
       params.is_created_by_script);
-  params.frame_policy = {sandbox_flags, container_policy};
+  params.frame_policy = frame_policy;
   params.frame_owner_properties =
       ConvertWebFrameOwnerPropertiesToFrameOwnerProperties(
           frame_owner_properties);
@@ -4437,11 +4433,10 @@ void RenderFrameImpl::DidEnforceInsecureNavigationsSet(
 
 void RenderFrameImpl::DidChangeFramePolicy(
     blink::WebFrame* child_frame,
-    blink::WebSandboxFlags flags,
-    const blink::ParsedFeaturePolicy& container_policy) {
+    const blink::FramePolicy& frame_policy) {
   Send(new FrameHostMsg_DidChangeFramePolicy(
       routing_id_, RenderFrame::GetRoutingIdForWebFrame(child_frame),
-      {flags, container_policy}));
+      frame_policy));
 }
 
 void RenderFrameImpl::DidSetFramePolicyHeaders(

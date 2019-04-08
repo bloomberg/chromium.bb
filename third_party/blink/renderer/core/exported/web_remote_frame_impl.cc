@@ -141,12 +141,11 @@ void WebRemoteFrameImpl::StopLoading() {
 WebLocalFrame* WebRemoteFrameImpl::CreateLocalChild(
     WebTreeScopeType scope,
     const WebString& name,
-    WebSandboxFlags sandbox_flags,
+    const FramePolicy& frame_policy,
     WebLocalFrameClient* client,
     blink::InterfaceRegistry* interface_registry,
     mojo::ScopedMessagePipeHandle document_interface_broker_handle,
     WebFrame* previous_sibling,
-    const ParsedFeaturePolicy& container_policy,
     const WebFrameOwnerProperties& frame_owner_properties,
     FrameOwnerElementType frame_owner_element_type,
     WebFrame* opener) {
@@ -155,8 +154,7 @@ WebLocalFrame* WebRemoteFrameImpl::CreateLocalChild(
       std::move(document_interface_broker_handle), opener);
   InsertAfter(child, previous_sibling);
   auto* owner = MakeGarbageCollected<RemoteFrameOwner>(
-      static_cast<SandboxFlags>(sandbox_flags), container_policy,
-      frame_owner_properties, frame_owner_element_type);
+      frame_policy, frame_owner_properties, frame_owner_element_type);
   child->InitializeCoreFrame(*GetFrame()->GetPage(), owner, name);
   DCHECK(child->GetFrame());
   return child;
@@ -173,8 +171,7 @@ void WebRemoteFrameImpl::InitializeCoreFrame(Page& page,
 WebRemoteFrame* WebRemoteFrameImpl::CreateRemoteChild(
     WebTreeScopeType scope,
     const WebString& name,
-    WebSandboxFlags sandbox_flags,
-    const ParsedFeaturePolicy& container_policy,
+    const FramePolicy& frame_policy,
     FrameOwnerElementType frame_owner_element_type,
     WebRemoteFrameClient* client,
     WebFrame* opener) {
@@ -182,8 +179,7 @@ WebRemoteFrame* WebRemoteFrameImpl::CreateRemoteChild(
   child->SetOpener(opener);
   AppendChild(child);
   auto* owner = MakeGarbageCollected<RemoteFrameOwner>(
-      static_cast<SandboxFlags>(sandbox_flags), container_policy,
-      WebFrameOwnerProperties(), frame_owner_element_type);
+      frame_policy, WebFrameOwnerProperties(), frame_owner_element_type);
   child->InitializeCoreFrame(*GetFrame()->GetPage(), owner, name);
   return child;
 }
@@ -266,7 +262,7 @@ void WebRemoteFrameImpl::ApplyReplicatedFeaturePolicyHeader() {
   }
   ParsedFeaturePolicy container_policy;
   if (GetFrame()->Owner())
-    container_policy = GetFrame()->Owner()->ContainerPolicy();
+    container_policy = GetFrame()->Owner()->GetFramePolicy().container_policy;
   const FeaturePolicy::FeatureState& opener_feature_state =
       frame_->OpenerFeatureState();
   GetFrame()->GetSecurityContext()->InitializeFeaturePolicy(

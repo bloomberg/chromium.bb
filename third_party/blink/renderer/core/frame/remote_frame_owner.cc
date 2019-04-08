@@ -17,11 +17,10 @@
 namespace blink {
 
 RemoteFrameOwner::RemoteFrameOwner(
-    SandboxFlags flags,
-    const ParsedFeaturePolicy& container_policy,
+    const FramePolicy& frame_policy,
     const WebFrameOwnerProperties& frame_owner_properties,
     FrameOwnerElementType frame_owner_element_type)
-    : sandbox_flags_(flags),
+    : frame_policy_(frame_policy),
       browsing_context_container_name_(
           static_cast<String>(frame_owner_properties.name)),
       scrolling_(
@@ -33,7 +32,6 @@ RemoteFrameOwner::RemoteFrameOwner(
       is_display_none_(frame_owner_properties.is_display_none),
       needs_occlusion_tracking_(false),
       required_csp_(frame_owner_properties.required_csp),
-      container_policy_(container_policy),
       frame_owner_element_type_(frame_owner_element_type) {}
 
 void RemoteFrameOwner::Trace(blink::Visitor* visitor) {

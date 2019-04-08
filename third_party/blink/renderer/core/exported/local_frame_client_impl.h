@@ -206,9 +206,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void DidChangeName(const String&) override;
   void DidEnforceInsecureRequestPolicy(WebInsecureRequestPolicy) override;
   void DidEnforceInsecureNavigationsSet(const std::vector<unsigned>&) override;
-  void DidChangeFramePolicy(Frame* child_frame,
-                            SandboxFlags,
-                            const ParsedFeaturePolicy&) override;
+  void DidChangeFramePolicy(Frame* child_frame, const FramePolicy&) override;
   void DidSetFramePolicyHeaders(
       SandboxFlags,
       const ParsedFeaturePolicy& parsed_header) override;

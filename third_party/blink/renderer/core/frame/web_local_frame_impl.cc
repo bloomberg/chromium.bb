@@ -1615,11 +1615,10 @@ WebLocalFrame* WebLocalFrame::CreateProvisional(
     InterfaceRegistry* interface_registry,
     mojo::ScopedMessagePipeHandle document_interface_broker_handle,
     WebFrame* previous_frame,
-    WebSandboxFlags flags,
-    ParsedFeaturePolicy container_policy) {
+    const FramePolicy& frame_policy) {
   return WebLocalFrameImpl::CreateProvisional(
       client, interface_registry, std::move(document_interface_broker_handle),
-      previous_frame, flags, container_policy);
+      previous_frame, frame_policy);
 }
 
 WebLocalFrameImpl* WebLocalFrameImpl::Create(
@@ -1664,8 +1663,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
     blink::InterfaceRegistry* interface_registry,
     mojo::ScopedMessagePipeHandle document_interface_broker_handle,
     WebFrame* previous_web_frame,
-    WebSandboxFlags flags,
-    ParsedFeaturePolicy container_policy) {
+    const FramePolicy& frame_policy) {
   DCHECK(client);
   WebLocalFrameImpl* web_frame = MakeGarbageCollected<WebLocalFrameImpl>(
       previous_web_frame, client, interface_registry,
@@ -1692,13 +1690,12 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
   new_frame->SetOwner(previous_frame->Owner());
   if (auto* remote_frame_owner =
           DynamicTo<RemoteFrameOwner>(new_frame->Owner())) {
-    remote_frame_owner->SetSandboxFlags(static_cast<SandboxFlags>(flags));
-    remote_frame_owner->SetContainerPolicy(container_policy);
+    remote_frame_owner->SetFramePolicy(frame_policy);
   } else if (!new_frame->Owner()) {
     // Provisional main frames need to force sandbox flags.  This is necessary
     // to inherit sandbox flags when a sandboxed frame does a window.open()
     // which triggers a cross-process navigation.
-    new_frame->Loader().ForceSandboxFlags(static_cast<SandboxFlags>(flags));
+    new_frame->Loader().ForceSandboxFlags(frame_policy.sandbox_flags);
     // If there is an opener (even disowned), the opener policies must be
     // inherited the same way as sandbox flag.
     new_frame->SetOpenerFeatureState(previous_frame->OpenerFeatureState());
@@ -1817,14 +1814,12 @@ LocalFrame* WebLocalFrameImpl::CreateChildFrame(
   // solution. subResourceAttributeName returns just one attribute name. The
   // element might not have the attribute, and there might be other attributes
   // which can identify the element.
-  WebLocalFrameImpl* webframe_child =
-      To<WebLocalFrameImpl>(client_->CreateChildFrame(
-          this, scope, name,
-          owner_element->getAttribute(
-              owner_element->SubResourceAttributeName()),
-          static_cast<WebSandboxFlags>(owner_element->GetSandboxFlags()),
-          owner_element->ContainerPolicy(), owner_properties,
-          owner_element->OwnerType()));
+  WebLocalFrameImpl* webframe_child = To<WebLocalFrameImpl>(
+      client_->CreateChildFrame(this, scope, name,
+                                owner_element->getAttribute(
+                                    owner_element->SubResourceAttributeName()),
+                                owner_element->GetFramePolicy(),
+                                owner_properties, owner_element->OwnerType()));
   if (!webframe_child)
     return nullptr;
 
