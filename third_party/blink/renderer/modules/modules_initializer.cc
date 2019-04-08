@@ -234,7 +234,7 @@ void ModulesInitializer::InitInspectorAgentSession(
   session->Append(MakeGarbageCollected<InspectorAccessibilityAgent>(
       inspected_frames, dom_agent));
   if (allow_view_agents) {
-    session->Append(InspectorDatabaseAgent::Create(page));
+    session->Append(MakeGarbageCollected<InspectorDatabaseAgent>(page));
     session->Append(
         MakeGarbageCollected<InspectorCacheStorageAgent>(inspected_frames));
   }

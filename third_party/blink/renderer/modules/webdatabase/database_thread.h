@@ -44,10 +44,6 @@ class SQLTransactionCoordinator;
 
 class DatabaseThread : public GarbageCollectedFinalized<DatabaseThread> {
  public:
-  static DatabaseThread* Create() {
-    return MakeGarbageCollected<DatabaseThread>();
-  }
-
   DatabaseThread();
   ~DatabaseThread();
   void Trace(blink::Visitor*);

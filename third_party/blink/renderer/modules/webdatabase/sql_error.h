@@ -68,10 +68,6 @@ class SQLError final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SQLError* Create(const SQLErrorData& data) {
-    return MakeGarbageCollected<SQLError>(data);
-  }
-
   explicit SQLError(const SQLErrorData& data) : data_(data) {}
 
   unsigned code() const { return data_.Code(); }

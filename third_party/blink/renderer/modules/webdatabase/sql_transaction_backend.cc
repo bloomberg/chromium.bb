@@ -366,15 +366,6 @@
 
 namespace blink {
 
-SQLTransactionBackend* SQLTransactionBackend::Create(
-    Database* db,
-    SQLTransaction* frontend,
-    SQLTransactionWrapper* wrapper,
-    bool read_only) {
-  return MakeGarbageCollected<SQLTransactionBackend>(db, frontend, wrapper,
-                                                     read_only);
-}
-
 SQLTransactionBackend::SQLTransactionBackend(Database* db,
                                              SQLTransaction* frontend,
                                              SQLTransactionWrapper* wrapper,
@@ -563,8 +554,8 @@ void SQLTransactionBackend::ExecuteSQL(SQLStatement* statement,
                                        const Vector<SQLValue>& arguments,
                                        int permissions) {
   DCHECK(IsMainThread());
-  EnqueueStatementBackend(SQLStatementBackend::Create(statement, sql_statement,
-                                                      arguments, permissions));
+  EnqueueStatementBackend(MakeGarbageCollected<SQLStatementBackend>(
+      statement, sql_statement, arguments, permissions));
 }
 
 void SQLTransactionBackend::NotifyDatabaseThreadIsShuttingDown() {

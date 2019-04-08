@@ -82,15 +82,6 @@
 
 namespace blink {
 
-SQLStatementBackend* SQLStatementBackend::Create(
-    SQLStatement* frontend,
-    const String& statement,
-    const Vector<SQLValue>& arguments,
-    int permissions) {
-  return MakeGarbageCollected<SQLStatementBackend>(frontend, statement,
-                                                   arguments, permissions);
-}
-
 SQLStatementBackend::SQLStatementBackend(SQLStatement* frontend,
                                          const String& statement,
                                          const Vector<SQLValue>& arguments,
@@ -100,7 +91,7 @@ SQLStatementBackend::SQLStatementBackend(SQLStatement* frontend,
       arguments_(arguments),
       has_callback_(frontend_->HasCallback()),
       has_error_callback_(frontend_->HasErrorCallback()),
-      result_set_(SQLResultSet::Create()),
+      result_set_(MakeGarbageCollected<SQLResultSet>()),
       permissions_(permissions) {
   DCHECK(IsMainThread());
 
