@@ -47,6 +47,7 @@ const char kChromeUISignInInternalsHost[] = "signin-internals";
 const char kChromeUISuggestionsHost[] = "suggestions";
 const char kChromeUISyncInternalsHost[] = "sync-internals";
 const char kChromeUITermsHost[] = "terms";
+const char kChromeUITranslateInternalsHost[] = "translate-internals";
 const char kChromeUIURLKeyedMetricsHost[] = "ukm";
 const char kChromeUIUserActionsHost[] = "user-actions";
 const char kChromeUIVersionHost[] = "version";
