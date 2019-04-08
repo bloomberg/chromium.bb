@@ -69,7 +69,8 @@ void MediaNotificationController::OnFocusGained(
 
   notifications_.emplace(
       std::piecewise_construct, std::forward_as_tuple(id),
-      std::forward_as_tuple(id, std::move(controller),
+      std::forward_as_tuple(id, session->source_name.value_or(std::string()),
+                            std::move(controller),
                             std::move(session->session_info)));
 }
 

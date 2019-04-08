@@ -13,6 +13,7 @@
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/unguessable_token.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
@@ -72,8 +73,16 @@ class MediaNotificationControllerTest : public AshTestBase {
     return metadata;
   }
 
+  void ExpectHistogramSourceRecorded(MediaNotificationItem::Source source) {
+    histogram_tester_.ExpectUniqueSample(
+        MediaNotificationItem::kSourceHistogramName,
+        static_cast<base::HistogramBase::Sample>(source), 1);
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
+
+  base::HistogramTester histogram_tester_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaNotificationControllerTest);
 };
@@ -313,6 +322,86 @@ TEST_F(MediaNotificationControllerTest, MediaMetadataUpdated_MissingInfo) {
       ->MediaSessionMetadataChanged(media_session::MediaMetadata());
 
   ExpectNotificationCount(0);
+}
+
+TEST_F(MediaNotificationControllerTest, RecordHistogramSource_Unknown) {
+  base::UnguessableToken id = base::UnguessableToken::Create();
+
+  ExpectNotificationCount(0);
+
+  Shell::Get()->media_notification_controller()->OnFocusGained(
+      GetRequestStateWithId(id));
+
+  Shell::Get()
+      ->media_notification_controller()
+      ->GetItem(id.ToString())
+      ->MediaSessionMetadataChanged(BuildMediaMetadata());
+
+  ExpectNotificationCount(1);
+  ExpectHistogramSourceRecorded(MediaNotificationItem::Source::kUnknown);
+}
+
+TEST_F(MediaNotificationControllerTest, RecordHistogramSource_Web) {
+  base::UnguessableToken id = base::UnguessableToken::Create();
+
+  ExpectNotificationCount(0);
+
+  media_session::mojom::AudioFocusRequestStatePtr request =
+      GetRequestStateWithId(id);
+  request->source_name = "web";
+
+  Shell::Get()->media_notification_controller()->OnFocusGained(
+      std::move(request));
+
+  Shell::Get()
+      ->media_notification_controller()
+      ->GetItem(id.ToString())
+      ->MediaSessionMetadataChanged(BuildMediaMetadata());
+
+  ExpectNotificationCount(1);
+  ExpectHistogramSourceRecorded(MediaNotificationItem::Source::kWeb);
+}
+
+TEST_F(MediaNotificationControllerTest, RecordHistogramSource_Assistant) {
+  base::UnguessableToken id = base::UnguessableToken::Create();
+
+  ExpectNotificationCount(0);
+
+  media_session::mojom::AudioFocusRequestStatePtr request =
+      GetRequestStateWithId(id);
+  request->source_name = "assistant";
+
+  Shell::Get()->media_notification_controller()->OnFocusGained(
+      std::move(request));
+
+  Shell::Get()
+      ->media_notification_controller()
+      ->GetItem(id.ToString())
+      ->MediaSessionMetadataChanged(BuildMediaMetadata());
+
+  ExpectNotificationCount(1);
+  ExpectHistogramSourceRecorded(MediaNotificationItem::Source::kAssistant);
+}
+
+TEST_F(MediaNotificationControllerTest, RecordHistogramSource_Arc) {
+  base::UnguessableToken id = base::UnguessableToken::Create();
+
+  ExpectNotificationCount(0);
+
+  media_session::mojom::AudioFocusRequestStatePtr request =
+      GetRequestStateWithId(id);
+  request->source_name = "arc";
+
+  Shell::Get()->media_notification_controller()->OnFocusGained(
+      std::move(request));
+
+  Shell::Get()
+      ->media_notification_controller()
+      ->GetItem(id.ToString())
+      ->MediaSessionMetadataChanged(BuildMediaMetadata());
+
+  ExpectNotificationCount(1);
+  ExpectHistogramSourceRecorded(MediaNotificationItem::Source::kArc);
 }
 
 }  // namespace ash

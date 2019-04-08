@@ -29,7 +29,21 @@ class ASH_EXPORT MediaNotificationItem
   // The name of the histogram used when recording user actions.
   static const char kUserActionHistogramName[];
 
+  // The name of the histogram used when recording the source.
+  static const char kSourceHistogramName[];
+
+  // The source of the media session. This is used in metrics so new values must
+  // only be added to the end.
+  enum class Source {
+    kUnknown,
+    kWeb,
+    kAssistant,
+    kArc,
+    kMaxValue = kArc,
+  };
+
   MediaNotificationItem(const std::string& id,
+                        const std::string& source_name,
                         media_session::mojom::MediaControllerPtr controller,
                         media_session::mojom::MediaSessionInfoPtr session_info);
   ~MediaNotificationItem() override;
@@ -73,6 +87,9 @@ class ASH_EXPORT MediaNotificationItem
   // globally unique. It is also used as the id of the notification for this
   // media session.
   const std::string id_;
+
+  // The source of the media session (e.g. arc, web).
+  const Source source_;
 
   media_session::mojom::MediaControllerPtr media_controller_ptr_;
 

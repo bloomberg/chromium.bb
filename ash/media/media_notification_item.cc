@@ -31,7 +31,24 @@ namespace {
 constexpr base::TimeDelta kDefaultSeekTime =
     base::TimeDelta::FromSeconds(media_session::mojom::kDefaultSeekTimeSeconds);
 
+MediaNotificationItem::Source GetSource(const std::string& name) {
+  if (name == "web")
+    return MediaNotificationItem::Source::kWeb;
+
+  if (name == "arc")
+    return MediaNotificationItem::Source::kArc;
+
+  if (name == "assistant")
+    return MediaNotificationItem::Source::kAssistant;
+
+  return MediaNotificationItem::Source::kUnknown;
+}
+
 }  // namespace
+
+// static
+const char MediaNotificationItem::kSourceHistogramName[] =
+    "Media.Notification.Source";
 
 // static
 const char MediaNotificationItem::kUserActionHistogramName[] =
@@ -39,9 +56,11 @@ const char MediaNotificationItem::kUserActionHistogramName[] =
 
 MediaNotificationItem::MediaNotificationItem(
     const std::string& id,
+    const std::string& source_name,
     media_session::mojom::MediaControllerPtr controller,
     media_session::mojom::MediaSessionInfoPtr session_info)
     : id_(id),
+      source_(GetSource(source_name)),
       media_controller_ptr_(std::move(controller)),
       session_info_(std::move(session_info)) {
   if (media_controller_ptr_.is_bound()) {
@@ -180,6 +199,8 @@ void MediaNotificationItem::MaybeHideOrShowNotification() {
 
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));
+
+  UMA_HISTOGRAM_ENUMERATION(kSourceHistogramName, source_);
 }
 
 void MediaNotificationItem::HideNotification() {
