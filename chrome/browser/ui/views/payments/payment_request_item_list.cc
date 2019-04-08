@@ -124,14 +124,11 @@ void PaymentRequestItemList::Item::Init() {
 void PaymentRequestItemList::Item::SetSelected(bool selected, bool notify) {
   selected_ = selected;
 
-  (void)std::find_if(
-      children().cbegin(), children().cend(), [selected](views::View* child) {
-        bool found =
-            child->id() == static_cast<int>(DialogViewID::CHECKMARK_VIEW);
-        if (found)
-          child->SetVisible(selected);
-        return found;
-      });
+  for (views::View* child : children())
+    if (child->id() == static_cast<int>(DialogViewID::CHECKMARK_VIEW)) {
+      child->SetVisible(selected);
+      break;
+    }
 
   UpdateAccessibleName();
 
