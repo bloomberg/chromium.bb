@@ -200,6 +200,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &omnibox::kOmniboxNewAnswerLayout,
     &omnibox::kOmniboxRichEntitySuggestions,
     &omnibox::kQueryInOmnibox,
+    &omnibox::kUIExperimentShowSuggestionFavicons,
     &password_manager::features::kGooglePasswordManager,
     &password_manager::features::kPasswordsKeyboardAccessory,
     &previews::features::kDataSaverLiteModeRebranding,
