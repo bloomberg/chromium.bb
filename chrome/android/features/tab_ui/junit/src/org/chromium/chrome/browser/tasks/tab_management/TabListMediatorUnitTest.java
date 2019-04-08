@@ -45,12 +45,14 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -73,6 +75,8 @@ public class TabListMediatorUnitTest {
     TabModelSelectorImpl mTabModelSelector;
     @Mock
     TabModelFilterProvider mTabModelFilterProvider;
+    @Mock
+    TabModelFilter mTabModelFilter;
     @Mock
     TabModel mTabModel;
     @Mock
@@ -108,6 +112,7 @@ public class TabListMediatorUnitTest {
         doReturn(mTabModel).when(mTabModelSelector).getCurrentModel();
         doReturn(tabModelList).when(mTabModelSelector).getModels();
         doReturn(mTabModelFilterProvider).when(mTabModelSelector).getTabModelFilterProvider();
+        doReturn(mTabModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
         doReturn(mTab1).when(mTabModelSelector).getCurrentTab();
         doNothing()
                 .when(mTabModelFilterProvider)
@@ -205,18 +210,98 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
-    public void tabAddition() {
+    public void tabAddition_GTS() {
         initAndAssertAllProperties();
+        mMediator.setCloseAllRelatedTabsForTest(true);
 
         Tab newTab = prepareTab(TAB3_ID, TAB3_TITLE);
-        doReturn(newTab).when(mTabModel).getTabAt(2);
-        doReturn(3).when(mTabModel).getCount();
+        doReturn(mTab1).when(mTabModelFilter).getTabAt(0);
+        doReturn(mTab2).when(mTabModelFilter).getTabAt(1);
+        doReturn(newTab).when(mTabModelFilter).getTabAt(2);
+        doReturn(3).when(mTabModelFilter).getCount();
+        doReturn(Arrays.asList(newTab))
+                .when(mTabModelFilter)
+                .getRelatedTabList(eq(TAB3_ID));
 
         mTabModelObserverCaptor.getValue().didAddTab(newTab, TabLaunchType.FROM_CHROME_UI);
 
         assertThat(mModel.size(), equalTo(3));
         assertThat(mModel.get(2).get(TabProperties.TAB_ID), equalTo(TAB3_ID));
         assertThat(mModel.get(2).get(TabProperties.TITLE), equalTo(TAB3_TITLE));
+    }
+
+    @Test
+    public void tabAddition_GTS_Skip() {
+        initAndAssertAllProperties();
+        mMediator.setCloseAllRelatedTabsForTest(true);
+
+        // Add a new tab to the group with mTab2.
+        Tab newTab = prepareTab(TAB3_ID, TAB3_TITLE);
+        doReturn(mTab1).when(mTabModelFilter).getTabAt(0);
+        doReturn(mTab2).when(mTabModelFilter).getTabAt(1);
+        doReturn(2).when(mTabModelFilter).getCount();
+        doReturn(Arrays.asList(mTab2, newTab))
+                .when(mTabModelFilter)
+                .getRelatedTabList(eq(TAB3_ID));
+
+        mTabModelObserverCaptor.getValue().didAddTab(newTab, TabLaunchType.FROM_CHROME_UI);
+
+        assertThat(mModel.size(), equalTo(2));
+    }
+
+    @Test
+    public void tabAddition_GTS_Middle() {
+        initAndAssertAllProperties();
+        mMediator.setCloseAllRelatedTabsForTest(true);
+
+        Tab newTab = prepareTab(TAB3_ID, TAB3_TITLE);
+        doReturn(mTab1).when(mTabModelFilter).getTabAt(0);
+        doReturn(newTab).when(mTabModelFilter).getTabAt(1);
+        doReturn(mTab2).when(mTabModelFilter).getTabAt(2);
+        doReturn(3).when(mTabModelFilter).getCount();
+        doReturn(Arrays.asList(newTab))
+                .when(mTabModelFilter)
+                .getRelatedTabList(eq(TAB3_ID));
+
+        mTabModelObserverCaptor.getValue().didAddTab(newTab, TabLaunchType.FROM_CHROME_UI);
+
+        assertThat(mModel.size(), equalTo(3));
+        assertThat(mModel.get(1).get(TabProperties.TAB_ID), equalTo(TAB3_ID));
+        assertThat(mModel.get(1).get(TabProperties.TITLE), equalTo(TAB3_TITLE));
+    }
+
+    @Test
+    public void tabAdditionEnd() {
+        initAndAssertAllProperties();
+
+        Tab newTab = prepareTab(TAB3_ID, TAB3_TITLE);
+        doReturn(3).when(mTabModel).getCount();
+        doReturn(Arrays.asList(mTab1, mTab2, newTab))
+                .when(mTabModelFilter)
+                .getRelatedTabList(eq(TAB3_ID));
+
+        mTabModelObserverCaptor.getValue().didAddTab(newTab, TabLaunchType.FROM_CHROME_UI);
+
+        assertThat(mModel.size(), equalTo(3));
+        assertThat(mModel.get(2).get(TabProperties.TAB_ID), equalTo(TAB3_ID));
+        assertThat(mModel.get(2).get(TabProperties.TITLE), equalTo(TAB3_TITLE));
+    }
+
+    @Test
+    public void tabAdditionMiddle() {
+        initAndAssertAllProperties();
+
+        Tab newTab = prepareTab(TAB3_ID, TAB3_TITLE);
+        doReturn(3).when(mTabModel).getCount();
+        doReturn(Arrays.asList(mTab1, newTab, mTab2))
+                .when(mTabModelFilter)
+                .getRelatedTabList(eq(TAB3_ID));
+
+        mTabModelObserverCaptor.getValue().didAddTab(newTab, TabLaunchType.FROM_CHROME_UI);
+
+        assertThat(mModel.size(), equalTo(3));
+        assertThat(mModel.get(1).get(TabProperties.TAB_ID), equalTo(TAB3_ID));
+        assertThat(mModel.get(1).get(TabProperties.TITLE), equalTo(TAB3_TITLE));
     }
 
     @Test
@@ -236,8 +321,10 @@ public class TabListMediatorUnitTest {
         initAndAssertAllProperties();
 
         Tab newTab = prepareTab(TAB3_ID, TAB3_TITLE);
-        doReturn(newTab).when(mTabModel).getTabAt(2);
         doReturn(3).when(mTabModel).getCount();
+        doReturn(Arrays.asList(mTab1, mTab2, newTab))
+                .when(mTabModelFilter)
+                .getRelatedTabList(eq(TAB3_ID));
 
         mTabModelObserverCaptor.getValue().tabClosureUndone(newTab);
 

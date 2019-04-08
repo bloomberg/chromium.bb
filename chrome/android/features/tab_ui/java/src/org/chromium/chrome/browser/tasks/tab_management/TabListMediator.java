@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
+import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -87,6 +88,7 @@ class TabListMediator {
     private final TitleProvider mTitleProvider;
     private final CreateGroupButtonProvider mCreateGroupButtonProvider;
     private final String mComponentName;
+    private boolean mCloseAllRelatedTabs;
 
     private final TabActionListener mTabSelectedListener = new TabActionListener() {
         @Override
@@ -190,6 +192,7 @@ class TabListMediator {
         mComponentName = componentName;
         mTitleProvider = titleProvider != null ? titleProvider : Tab::getTitle;
         mCreateGroupButtonProvider = createGroupButtonProvider;
+        mCloseAllRelatedTabs = closeRelatedTabs;
 
         mTabModelObserver = new EmptyTabModelObserver() {
             @Override
@@ -205,21 +208,14 @@ class TabListMediator {
                 mModel.get(newIndex).set(TabProperties.IS_SELECTED, true);
             }
 
-            // TODO(meiliang): should not use index from tabmodel.
             @Override
             public void tabClosureUndone(Tab tab) {
-                int index = TabModelUtils.getTabIndexById(
-                        mTabModelSelector.getCurrentModel(), tab.getId());
-                addTabInfoToModel(tab, index, mTabModelSelector.getCurrentModel().index() == index);
+                onTabAdded(tab, !mCloseAllRelatedTabs);
             }
 
             @Override
             public void didAddTab(Tab tab, int type) {
-                int index = TabModelUtils.getTabIndexById(
-                        mTabModelSelector.getCurrentModel(), tab.getId());
-                if (index == TabModel.INVALID_TAB_INDEX) return;
-
-                addTabInfoToModel(tab, index, mTabModelSelector.getCurrentModel().index() == index);
+                onTabAdded(tab, !mCloseAllRelatedTabs);
             }
 
             @Override
@@ -235,10 +231,8 @@ class TabListMediator {
             @Override
             public void run(int tabId) {
                 RecordUserAction.record("MobileTabClosed." + mComponentName);
-                if (closeRelatedTabs) {
-                    List<Tab> related = mTabModelSelector.getTabModelFilterProvider()
-                                                .getCurrentTabModelFilter()
-                                                .getRelatedTabList(tabId);
+                if (mCloseAllRelatedTabs) {
+                    List<Tab> related = getRelatedTabsForId(tabId);
                     if (related.size() > 1) {
                         mTabModelSelector.getCurrentModel().closeMultipleTabs(related, true);
                         return;
@@ -251,9 +245,40 @@ class TabListMediator {
         };
     }
 
+    public void setCloseAllRelatedTabsForTest(boolean closeAllRelatedTabs) {
+        mCloseAllRelatedTabs = closeAllRelatedTabs;
+    }
+
+    private List<Tab> getRelatedTabsForId(int id) {
+        return mTabModelSelector.getTabModelFilterProvider()
+                .getCurrentTabModelFilter()
+                .getRelatedTabList(id);
+    }
+
+    private void onTabAdded(Tab tab, boolean onlyShowRelatedTabs) {
+        List<Tab> related = getRelatedTabsForId(tab.getId());
+        if (onlyShowRelatedTabs) {
+            int index = related.indexOf(tab);
+            assert index != -1;
+            addTabInfoToModel(tab, index, mTabModelSelector.getCurrentTab() == tab);
+        } else {
+            int index = TabModelUtils.getTabIndexById(
+                    mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter(),
+                    tab.getId());
+            if (related.size() > 1) {
+                // Skip all but one tab in a tab group.
+                if (index == TabList.INVALID_TAB_INDEX) return;
+                // TODO(wychen): the title (tab count in the group) is wrong when it's not the last
+                //  tab added in the group.
+            }
+            assert index != TabList.INVALID_TAB_INDEX;
+            addTabInfoToModel(tab, index, mTabModelSelector.getCurrentTab() == tab);
+        }
+    }
+
     /**
      * Initialize the component with a list of tabs to show in a grid.
-     * @param tabs
+     * @param tabs The list of tabs to be shown.
      */
     public void resetWithListOfTabs(@Nullable List<Tab> tabs) {
         mModel.set(new ArrayList<>());
