@@ -364,6 +364,9 @@ void ProcessedTrace::FillTableForPacket(Table* table,
       table->AddRow("Pacing rate",
                     FormatBandwidth(state.pacing_rate_bps(), 8000 * 1000));
     }
+    if (state.has_congestion_control_state()) {
+      table->AddRow("CC State", state.congestion_control_state());
+    }
   }
 }
 
