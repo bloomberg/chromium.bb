@@ -10880,6 +10880,17 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   RenderFrameSubmissionObserver observer_c(child_c);
   RenderFrameSubmissionObserver observer_d(child_d);
 
+  // Monitor visual sync messages coming from the mainframe to make sure
+  // |is_pinch_gesture_active| goes true during the pinch gesture.
+  scoped_refptr<SynchronizeVisualPropertiesMessageFilter> filter_mainframe =
+      new SynchronizeVisualPropertiesMessageFilter();
+  root->current_frame_host()->GetProcess()->AddFilter(filter_mainframe.get());
+  // Monitor frame sync messages coming from child_b as it will need to
+  // relay them to child_d.
+  scoped_refptr<SynchronizeVisualPropertiesMessageFilter> filter_child_b =
+      new SynchronizeVisualPropertiesMessageFilter();
+  child_b->current_frame_host()->GetProcess()->AddFilter(filter_child_b.get());
+
   // We need to observe a root frame submission to pick up the initial page
   // scale factor.
   observer_a.WaitForAnyFrameSubmission();
@@ -10923,6 +10934,17 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   observer_b.WaitForExternalPageScaleFactor(target_page_scale, kScaleTolerance);
   observer_c.WaitForExternalPageScaleFactor(target_page_scale, kScaleTolerance);
   observer_d.WaitForExternalPageScaleFactor(target_page_scale, kScaleTolerance);
+
+  // The change in |is_pinch_gesture_active| that signals the end of the pinch
+  // gesture will occur sometime after the ack for GesturePinchEnd, so we need
+  // to wait for it from each renderer. If it's never seen, the test fails by
+  // timing out.
+  filter_mainframe->WaitForPinchGestureEnd();
+  EXPECT_TRUE(filter_mainframe->pinch_gesture_active_set());
+  EXPECT_TRUE(filter_mainframe->pinch_gesture_active_cleared());
+  filter_child_b->WaitForPinchGestureEnd();
+  EXPECT_TRUE(filter_child_b->pinch_gesture_active_set());
+  EXPECT_TRUE(filter_child_b->pinch_gesture_active_cleared());
 }
 
 // Verify that sandbox flags specified by a CSP header are properly inherited by

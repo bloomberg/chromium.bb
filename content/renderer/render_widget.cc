@@ -860,10 +860,18 @@ void RenderWidget::OnSynchronizeVisualProperties(
         // the visual properties here. While blink doesn't need to know this
         // page scale factor outside the main frame, the compositor does in
         // order to produce its output at the correct scale.
-        layer_tree_view_->SetExternalPageScaleFactor(params.page_scale_factor);
+        layer_tree_view_->SetExternalPageScaleFactor(
+            params.page_scale_factor, params.is_pinch_gesture_active);
         // Store the value to give to any new RenderFrameProxy that is
         // registered.
         page_scale_factor_from_mainframe_ = params.page_scale_factor;
+        // Similarly, only the main frame knows when a pinch gesture is active,
+        // but this information is needed in subframes so they can throttle
+        // re-rastering in the same manner as the main frame.
+        // |is_pinch_gesture_active| follows the same path to the subframe
+        // compositor(s) as |page_scale_factor|.
+        is_pinch_gesture_active_from_mainframe_ =
+            params.is_pinch_gesture_active;
         // Push the page scale factor down to any child RenderWidgets via our
         // child proxy frames.
         // TODO(danakj): This ends up setting the page scale factor in the
@@ -872,8 +880,10 @@ void RenderWidget::OnSynchronizeVisualProperties(
         // global value per-page, we could instead store it once in the browser
         // (such as in RenderViewHost) and distribute it to each frame-hosted
         // RenderWidget from there.
-        for (auto& child_proxy : render_frame_proxies_)
-          child_proxy.OnPageScaleFactorChanged(params.page_scale_factor);
+        for (auto& child_proxy : render_frame_proxies_) {
+          child_proxy.OnPageScaleFactorChanged(params.page_scale_factor,
+                                               params.is_pinch_gesture_active);
+        }
       }
 
       gfx::Size old_visible_viewport_size = visible_viewport_size_;
@@ -3440,7 +3450,8 @@ void RenderWidget::RegisterRenderFrameProxy(RenderFrameProxy* proxy) {
   // frame trees). A new RenderFrameProxy means there is a new child
   // RenderWidget in another frame tree. In order for it to hear about
   // the page scale factor we pass along the last seen value here.
-  proxy->OnPageScaleFactorChanged(page_scale_factor_from_mainframe_);
+  proxy->OnPageScaleFactorChanged(page_scale_factor_from_mainframe_,
+                                  is_pinch_gesture_active_from_mainframe_);
 }
 
 void RenderWidget::UnregisterRenderFrameProxy(RenderFrameProxy* proxy) {
@@ -3587,21 +3598,16 @@ void RenderWidget::PageScaleFactorChanged(float page_scale_factor,
   // of which will be via proxy child frame). These will each in turn forward
   // the message to their child RenderWidgets (through their proxy child
   // frames).
-  // TODO(crbug.com/924336): This value is continuously propagated during a
-  // pinch-zoom, causing the child RenderWidgets to re-raster, while the main
-  // frame is able to throttle re-raster to powers of 2. We could find some way
-  // to throttle child RenderWidgets also, perhaps by informing them when the
-  // pinch-zoom gesture is started and stopped.
   DCHECK(!is_frozen_);
   DCHECK(delegate());
 
-  // TODO(wjmaclean): In the next CL, plumb |is_pinch_gesture_active| into the
-  // observer via observer.OnPageScaleFactorChanged() and allow it to trigger
-  // SynchronizeVisualProperties if needed.
-  for (auto& observer : render_frame_proxies_)
-    observer.OnPageScaleFactorChanged(page_scale_factor);
+  for (auto& observer : render_frame_proxies_) {
+    observer.OnPageScaleFactorChanged(page_scale_factor,
+                                      is_pinch_gesture_active);
+  }
   // Store the value to give to any new RenderFrameProxy that is registered.
   page_scale_factor_from_mainframe_ = page_scale_factor;
+  is_pinch_gesture_active_from_mainframe_ = is_pinch_gesture_active;
 }
 
 void RenderWidget::UseSynchronousResizeModeForTesting(bool enable) {
