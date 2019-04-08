@@ -549,14 +549,17 @@ are declared in tools/grit/grit_rule.gni.
           <message name="IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_BUBBLE_DISABLE" desc="The button text that disallows integrating the accessibility labels service of Google.">
             No thanks
           </message>
-          <message name="IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE" desc="The context-menu item that asks whether to integrate the spelling service of Google to Chrome. This text is also used as the title of a bubble which confirms it.">
+          <message name="IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE" desc="The context-menu item that asks whether to integrate the spelling service of Google to Chrome.">
             Use enhanced spell check
           </message>
+          <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_TITLE" desc="The title of the confirmation modal that pops up when the user turns on 'Use enhanced spell check'">
+            Turn on enhanced spell check
+          </message>
           <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_ENABLE" desc="The button text that allows integrating the spelling service of Google.">
-            Enable
+            Turn on
           </message>
           <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_DISABLE" desc="The button text that disallows integrating the spelling service of Google.">
-            No thanks
+            Cancel
           </message>
           <message name="IDS_CONTENT_CONTEXT_SPELLING_CHECKING" desc="The place-holder message shown while the Spelling service is checking text">
             Loading suggestion
@@ -782,8 +785,11 @@ are declared in tools/grit/grit_rule.gni.
           <message name="IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_BUBBLE_DISABLE" desc="The button text that disallows integrating the accessibility labels service of Google.">
             No Thanks
           </message>
-          <message name="IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE" desc="In Title Case: The context-menu item that asks whether to integrate the spelling service of Google to Chrome. This text is also used as the title of a bubble which confirms it.">
+          <message name="IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE" desc="In Title Case: The context-menu item that asks whether to integrate the spelling service of Google to Chrome.">
             Use Enhanced Spell Check
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_TITLE" desc="The title of the confirmation modal that pops up when the user turns on 'Use enhanced spell check'">
+            Turn On Enhanced Spell Check
           </message>
           <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_ENABLE" desc="In Title Case: The button text that allows integrating the spelling service of Google.">
             Enable

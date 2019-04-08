@@ -29,7 +29,7 @@ SpellingBubbleModel::~SpellingBubbleModel() {
 }
 
 base::string16 SpellingBubbleModel::GetTitle() const {
-  return l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE);
+  return l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_TITLE);
 }
 
 base::string16 SpellingBubbleModel::GetMessageText() const {
