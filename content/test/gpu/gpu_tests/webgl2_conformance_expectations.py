@@ -312,6 +312,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('deqp/functional/gles3/multisample.html',
         ['win', ('amd', 0x6613)], bug=687374)
 
+    # Failing on AMD RX 550
+    self.Skip('deqp/functional/gles3/fborender/shared_colorbuffer_02.html',
+              ['win', ('amd', 0x699f)], bug=3354) # ANGLE bug ID
+
     # Win / Intel
     self.Fail('conformance/rendering/rendering-stencil-large-viewport.html',
         ['win', 'intel', 'd3d11'], bug=782317)

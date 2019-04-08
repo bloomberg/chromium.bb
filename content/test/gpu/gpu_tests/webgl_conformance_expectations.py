@@ -338,9 +338,13 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/rendering/clipping-wide-points.html',
         ['win', 'amd', 'opengl'], bug=1506) # angle bug ID
     # AMD RX 550 Failures
+    self.Skip('conformance/glsl/bugs/gl-fragcoord-multisampling-bug.html',
+        ['win', ('amd', 0x699f), 'opengl'], bug=950123)
     self.Skip('conformance/glsl/misc/fragcolor-fragdata-invariant.html',
         ['win', ('amd', 0x699f), 'opengl'], bug=950123)
     self.Skip('conformance/glsl/samplers/glsl-function-texture2dprojlod.html',
+        ['win', ('amd', 0x699f), 'opengl'], bug=950123)
+    self.Skip('conformance/rendering/line-rendering-quality.html',
         ['win', ('amd', 0x699f), 'opengl'], bug=950123)
 
     # Mark ANGLE's OpenGL as flaky on Windows Amd
