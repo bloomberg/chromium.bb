@@ -114,8 +114,9 @@ class BundleEbuildLogsTest(BundleTestCase):
     self.assertEqual(
         [artifact.path for artifact in self.output_proto.artifacts],
         ['/tmp/artifacts/ebuild-logs.tar.gz'])
-    self.assertEqual(build_ebuild_logs_tarball.call_args_list,
-                     [mock.call('/cros', 'target', '/tmp/artifacts')])
+    self.assertEqual(
+        build_ebuild_logs_tarball.call_args_list,
+        [mock.call('/cros/chroot/build', 'target', '/tmp/artifacts')])
 
 
 class BundleTestUpdatePayloadsTest(cros_test_lib.MockTempDirTestCase):

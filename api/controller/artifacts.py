@@ -145,7 +145,10 @@ def BundleEbuildLogs(input_proto, output_proto):
   """
   target = input_proto.build_target.name
   output_dir = input_proto.output_dir
-  build_root = constants.SOURCE_ROOT
+
+  # commands.BuildEbuildLogsTarball conflates "buildroot" with sysroot.
+  # Adjust accordingly...
+  build_root = os.path.join(constants.SOURCE_ROOT, 'chroot', 'build')
 
   # TODO(saklein): Replace with a chromite/service implementation.
   archive = commands.BuildEbuildLogsTarball(build_root, target, output_dir)
