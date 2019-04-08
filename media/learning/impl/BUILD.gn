@@ -2,10 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//testing/libfuzzer/fuzzer_test.gni")
+
 component("impl") {
   output_name = "learning_impl"
   visibility = [
     "//media/learning/impl:unit_tests",
+    "//media/learning/impl:learning_fuzzer",
 
     # Actual clients.
     "//content/browser",
@@ -80,5 +83,16 @@ source_set("unit_tests") {
     "//media:test_support",
     "//media/learning/impl",
     "//testing/gtest",
+  ]
+}
+
+fuzzer_test("learning_fuzzer") {
+  sources = [
+    "learning_fuzzertest.cc",
+  ]
+  deps = [
+    ":impl",
+    "//base",
+    "//base/test:test_support",
   ]
 }

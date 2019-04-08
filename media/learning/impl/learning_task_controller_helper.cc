@@ -44,7 +44,8 @@ void LearningTaskControllerHelper::CompleteObservation(
     base::UnguessableToken id,
     const ObservationCompletion& completion) {
   auto iter = pending_examples_.find(id);
-  DCHECK(iter != pending_examples_.end());
+  if (iter == pending_examples_.end())
+    return;
 
   iter->second.example.target_value = completion.target_value;
   iter->second.example.weight = completion.weight;
@@ -55,8 +56,8 @@ void LearningTaskControllerHelper::CompleteObservation(
 void LearningTaskControllerHelper::CancelObservation(
     base::UnguessableToken id) {
   auto iter = pending_examples_.find(id);
-  // If the example has already been completed, then we shouldn't be called.
-  DCHECK(iter != pending_examples_.end());
+  if (iter == pending_examples_.end())
+    return;
 
   // This would have to check for pending predictions, if we supported them, and
   // defer destruction until the features arrive.

@@ -191,6 +191,7 @@ TEST_F(LearningTaskControllerImplTest, AddingExamplesTrainsModelAndReports) {
 TEST_F(LearningTaskControllerImplTest, FeatureProviderIsUsed) {
   // If a FeatureProvider factory is provided, make sure that it's used to
   // adjust new examples.
+  task_.feature_descriptions.push_back({"AddedByFeatureProvider"});
   SequenceBoundFeatureProvider feature_provider =
       base::SequenceBound<FakeFeatureProvider>(
           base::SequencedTaskRunnerHandle::Get());
