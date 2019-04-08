@@ -34,7 +34,6 @@ public class SendTabToSelfShareActivity extends ShareActivity {
     }
 
     public static boolean featureIsAvailable(Tab currentTab) {
-        return SendTabToSelfAndroidBridge.isFeatureAvailable(
-                currentTab.getProfile(), currentTab.getWebContents());
+        return SendTabToSelfAndroidBridge.isFeatureAvailable(currentTab.getWebContents());
     }
 }

@@ -9,6 +9,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/send_tab_to_self/desktop_notification_handler.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
@@ -22,10 +23,10 @@
 
 namespace send_tab_to_self {
 
-void CreateNewEntry(content::WebContents* tab, Profile* profile) {
+void CreateNewEntry(content::WebContents* tab, const GURL& link_url) {
   content::NavigationEntry* navigation_entry =
       tab->GetController().GetLastCommittedEntry();
-
+  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
   GURL url = navigation_entry->GetURL();
   std::string title = base::UTF16ToUTF8(navigation_entry->GetTitle());
   base::Time navigation_time = navigation_entry->GetTimestamp();
@@ -43,9 +44,14 @@ void CreateNewEntry(content::WebContents* tab, Profile* profile) {
     return;
   }
 
-  const SendTabToSelfEntry* entry =
-      model->AddEntry(url, title, navigation_time, target_device);
-
+  const SendTabToSelfEntry* entry;
+  if (link_url.is_valid()) {
+    // When share a link.
+    entry = model->AddEntry(link_url, "", base::Time(), target_device);
+  } else {
+    // When share a tab.
+    entry = model->AddEntry(url, title, navigation_time, target_device);
+  }
   if (entry) {
     DesktopNotificationHandler(profile).DisplaySendingConfirmation(*entry);
   } else {

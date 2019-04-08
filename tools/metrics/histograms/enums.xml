@@ -47695,6 +47695,7 @@ Called by update_net_trust_anchors.py.-->
       label="IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE_ONCE"/>
   <int value="101" label="IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS"/>
   <int value="102" label="IDC_SEND_TO_MY_DEVICES"/>
+  <int value="103" label="IDC_CONTENT_LINK_SEND_TAB_TO_SELF"/>
 </enum>
 
 <enum name="ReopenTabPromoStepAtDismissal">

@@ -1217,7 +1217,7 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
     case CommandSendTabToSelf: {
       send_tab_to_self::RecordSendTabToSelfClickResult(
           send_tab_to_self::kTabMenu, SendTabToSelfClickResult::kClickItem);
-      send_tab_to_self::CreateNewEntry(GetActiveWebContents(), profile_);
+      send_tab_to_self::CreateNewEntry(GetActiveWebContents());
       break;
     }
 

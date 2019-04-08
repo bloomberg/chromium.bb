@@ -81,7 +81,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientSendTabToSelfSyncTest, ShouldOfferFeature) {
   ASSERT_TRUE(SetupSync());
 
   EXPECT_FALSE(send_tab_to_self::ShouldOfferFeature(
-      GetBrowser(0)->profile(),
       GetBrowser(0)->tab_strip_model()->GetActiveWebContents()));
 }
 

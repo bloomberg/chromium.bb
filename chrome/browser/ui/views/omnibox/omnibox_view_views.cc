@@ -482,8 +482,7 @@ void OmniboxViewViews::ExecuteCommand(int command_id, int event_flags) {
     case IDC_SEND_TAB_TO_SELF:
       send_tab_to_self::RecordSendTabToSelfClickResult(
           send_tab_to_self::kOmniboxMenu, SendTabToSelfClickResult::kClickItem);
-      send_tab_to_self::CreateNewEntry(location_bar_view_->GetWebContents(),
-                                       location_bar_view_->profile());
+      send_tab_to_self::CreateNewEntry(location_bar_view_->GetWebContents());
       return;
 
     // These commands do invoke the popup.
@@ -1706,7 +1705,6 @@ int OmniboxViewViews::OnDrop(const ui::OSExchangeData& data) {
 void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
   // Only add this menu entry if SendTabToSelf feature is enabled.
   if (send_tab_to_self::ShouldOfferFeature(
-          location_bar_view_->profile(),
           location_bar_view_->GetWebContents())) {
     send_tab_to_self::RecordSendTabToSelfClickResult(
         send_tab_to_self::kOmniboxMenu, SendTabToSelfClickResult::kShowItem);

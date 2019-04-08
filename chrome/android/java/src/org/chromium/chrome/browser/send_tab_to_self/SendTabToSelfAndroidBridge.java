@@ -110,12 +110,11 @@ public class SendTabToSelfAndroidBridge {
      * Return whether the feature is available for the current user Profile and
      * the current WebContents.
      *
-     * @param profile Profile of the user.
      * @param WebContents The current WebContents.
      * @return Whether the feature is available.
      */
-    public static boolean isFeatureAvailable(Profile profile, WebContents webContents) {
-        return SendTabToSelfAndroidBridgeJni.get().isFeatureAvailable(profile, webContents);
+    public static boolean isFeatureAvailable(WebContents webContents) {
+        return SendTabToSelfAndroidBridgeJni.get().isFeatureAvailable(webContents);
     }
 
     @NativeMethods
@@ -133,6 +132,6 @@ public class SendTabToSelfAndroidBridge {
 
         SendTabToSelfEntry getEntryByGUID(Profile profile, String guid);
 
-        boolean isFeatureAvailable(Profile profile, WebContents webContents);
+        boolean isFeatureAvailable(WebContents webContents);
     }
 }

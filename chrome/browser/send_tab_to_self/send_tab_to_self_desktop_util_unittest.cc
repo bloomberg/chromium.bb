@@ -106,8 +106,13 @@ TEST_F(SendTabToSelfDesktopUtilTest, CreateNewEntry) {
   EXPECT_CALL(*model_mock, AddEntry(url, title, navigation_time,
                                     target_device_sync_cache_guid))
       .WillOnce(testing::Return(nullptr));
+  CreateNewEntry(tab);
 
-  CreateNewEntry(tab, profile());
+  GURL link_url = GURL("https://www.1112233.com");
+  EXPECT_CALL(*model_mock, AddEntry(link_url, "", base::Time(),
+                                    target_device_sync_cache_guid))
+      .WillOnce(testing::Return(nullptr));
+  CreateNewEntry(tab, link_url);
 }
 
 }  // namespace

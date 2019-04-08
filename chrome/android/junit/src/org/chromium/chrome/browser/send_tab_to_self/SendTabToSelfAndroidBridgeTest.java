@@ -133,9 +133,9 @@ public class SendTabToSelfAndroidBridgeTest {
     @SmallTest
     public void testIsFeatureAvailable() {
         boolean expected = true;
-        when(mNativeMock.isFeatureAvailable(eq(mProfile), eq(mWebContents))).thenReturn(expected);
+        when(mNativeMock.isFeatureAvailable(eq(mWebContents))).thenReturn(expected);
 
-        boolean actual = SendTabToSelfAndroidBridge.isFeatureAvailable(mProfile, mWebContents);
+        boolean actual = SendTabToSelfAndroidBridge.isFeatureAvailable(mWebContents);
         Assert.assertEquals(expected, actual);
     }
 }
