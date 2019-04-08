@@ -8,6 +8,13 @@
 #include "base/macros.h"
 #include "content/public/browser/web_ui_controller.h"
 
+class Profile;
+
+namespace content {
+class WebUI;
+class WebUIDataSource;
+}  // namespace content
+
 namespace chromeos {
 namespace settings {
 
@@ -16,6 +23,11 @@ class OSSettingsUI : public content::WebUIController {
  public:
   explicit OSSettingsUI(content::WebUI* web_ui);
   ~OSSettingsUI() override;
+
+  // Initializes the WebUI message handlers for OS-specific settings.
+  static void InitWebUIHandlers(Profile* profile,
+                                content::WebUI* web_ui,
+                                content::WebUIDataSource* html_source);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OSSettingsUI);
