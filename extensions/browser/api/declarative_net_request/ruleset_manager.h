@@ -10,13 +10,13 @@
 
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/url_pattern_set.h"
-
-class GURL;
+#include "url/gurl.h"
 
 namespace extensions {
 class InfoMap;
@@ -30,14 +30,30 @@ class CompositeMatcher;
 // same sequence.
 class RulesetManager {
  public:
-  enum class Action {
-    NONE,
-    // Block the network request.
-    BLOCK,
-    // Block the network request and collapse the corresponding DOM element.
-    COLLAPSE,
-    // Redirect the network request.
-    REDIRECT,
+  struct Action {
+    enum class Type {
+      NONE,
+      // Block the network request.
+      BLOCK,
+      // Block the network request and collapse the corresponding DOM element.
+      COLLAPSE,
+      // Redirect the network request.
+      REDIRECT,
+    };
+
+    explicit Action(Type type);
+    ~Action();
+    Action(Action&&);
+    Action& operator=(Action&&);
+
+    bool operator==(const Action&) const;
+
+    Type type = Type::NONE;
+
+    // Valid iff |type| is |REDIRECT|.
+    base::Optional<GURL> redirect_url;
+
+    DISALLOW_COPY_AND_ASSIGN(Action);
   };
 
   explicit RulesetManager(const InfoMap* info_map);
@@ -73,14 +89,12 @@ class RulesetManager {
   void UpdateAllowedPages(const ExtensionId& extension_id,
                           URLPatternSet allowed_pages);
 
-  // Returns the action to take for the given request. |redirect_url| will be
-  // populated if the returned action is |REDIRECT|. Blocking rules have higher
-  // priority than redirect rules. For determining the |redirect_url|, most
-  // recently installed extensions are given preference. |redirect_url| must not
-  // be null.
+  // Returns the action to take for the given request.
+  // Precedence order: Allow > Blocking > Redirect rules.
+  // For redirect rules, most recently installed extensions are given
+  // preference.
   Action EvaluateRequest(const WebRequestInfo& request,
-                         bool is_incognito_context,
-                         GURL* redirect_url) const;
+                         bool is_incognito_context) const;
 
   // Returns the number of CompositeMatchers currently being managed.
   size_t GetMatcherCountForTest() const { return rulesets_.size(); }

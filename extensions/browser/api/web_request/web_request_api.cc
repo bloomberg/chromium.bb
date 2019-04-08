@@ -1032,16 +1032,18 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
     using Action = declarative_net_request::RulesetManager::Action;
 
     Action action = extension_info_map->GetRulesetManager()->EvaluateRequest(
-        *request, is_incognito_context, new_url);
-    switch (action) {
-      case Action::NONE:
+        *request, is_incognito_context);
+    switch (action.type) {
+      case Action::Type::NONE:
         break;
-      case Action::BLOCK:
+      case Action::Type::BLOCK:
         return net::ERR_BLOCKED_BY_CLIENT;
-      case Action::COLLAPSE:
+      case Action::Type::COLLAPSE:
         *should_collapse_initiator = true;
         return net::ERR_BLOCKED_BY_CLIENT;
-      case Action::REDIRECT:
+      case Action::Type::REDIRECT:
+        DCHECK(action.redirect_url);
+        *new_url = action.redirect_url.value();
         return net::OK;
     }
   }
