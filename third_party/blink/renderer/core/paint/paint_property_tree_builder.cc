@@ -2030,14 +2030,20 @@ static LayoutRect BoundingBoxInPaginationContainer(
   // fragments of contents except for self-painting layers, because we initiate
   // fragment painting of contents from the layer.
   if (object.HasLayer() &&
-      ToLayoutBoxModelObject(object)
-          .Layer()
-          ->ShouldFragmentCompositedBounds() &&
       // Table section may repeat, and doesn't need the special layer path
       // because it doesn't have contents visual overflow.
       !object.IsTableSection()) {
-    return ToLayoutBoxModelObject(object).Layer()->PhysicalBoundingBox(
-        &enclosing_pagination_layer);
+    const auto* layer = ToLayoutBoxModelObject(object).Layer();
+    if (layer->ShouldFragmentCompositedBounds()) {
+      ClipRect clip;
+      layer->Clipper(PaintLayer::GeometryMapperOption::kDoNotUseGeometryMapper)
+          .CalculateBackgroundClipRect(
+              ClipRectsContext(&enclosing_pagination_layer, nullptr,
+                               kUncachedClipRects),
+              clip);
+      return Intersection(
+          clip.Rect(), layer->PhysicalBoundingBox(&enclosing_pagination_layer));
+    }
   }
 
   LayoutRect local_bounds;
