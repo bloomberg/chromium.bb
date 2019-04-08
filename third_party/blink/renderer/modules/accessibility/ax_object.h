@@ -996,7 +996,6 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // Text metrics. Most of these should be deprecated, needs major cleanup.
   virtual VisiblePosition VisiblePositionForIndex(int) const;
   virtual int Index(const VisiblePosition&) const { return -1; }
-  virtual void LineBreaks(Vector<int>&) const {}
 
   // Static helper functions.
   static bool IsARIAControl(ax::mojom::Role);
