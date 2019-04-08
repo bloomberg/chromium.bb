@@ -3014,9 +3014,9 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_300_seconds_20190314",
+                    "name": "Enabled_60_seconds_20190408",
                     "params": {
-                        "unused_idle_socket_timeout_seconds": "300"
+                        "unused_idle_socket_timeout_seconds": "60"
                     },
                     "enable_features": [
                         "NetUnusedIdleSocketTimeout"
