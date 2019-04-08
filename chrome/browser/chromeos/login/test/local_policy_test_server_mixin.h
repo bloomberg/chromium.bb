@@ -39,6 +39,13 @@ class LocalPolicyTestServerMixin : public InProcessBrowserTestMixin {
   // There should be at least one license type.
   void ExpectAvailableLicenseCount(int perpetual, int annual, int kiosk);
 
+  void SetUpdateDeviceAttributesPermission(bool allowed);
+
+  // Configures server to respond with particular error code during device
+  // registration.
+  // |net_error_code| - error code from device_management_service.cc.
+  void SetExpectedDeviceEnrollmentError(int net_error_code);
+
   // Set response for DeviceStateRetrievalRequest. Returns that if finds state
   // key passed in the request. State keys could be set by RegisterClient call
   // on policy test server.

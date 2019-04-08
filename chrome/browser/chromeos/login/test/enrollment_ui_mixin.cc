@@ -7,12 +7,15 @@
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/test_predicate_waiter.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
 namespace test {
 
 namespace ui {
 
+const char kEnrollmentStepSignin[] = "signin";
+const char kEnrollmentStepWorking[] = "working";
 const char kEnrollmentStepSuccess[] = "success";
 const char kEnrollmentStepError[] = "error";
 const char kEnrollmentStepLicenses[] = "license";
@@ -36,6 +39,7 @@ const char kLocation[] = "location";
 namespace {
 
 const char* const kAllSteps[] = {
+    ui::kEnrollmentStepSignin,   ui::kEnrollmentStepWorking,
     ui::kEnrollmentStepLicenses, ui::kEnrollmentStepDeviceAttributes,
     ui::kEnrollmentStepSuccess,  ui::kEnrollmentStepADJoin,
     ui::kEnrollmentStepError,    ui::kEnrollmentStepADJoinError};
@@ -44,6 +48,9 @@ std::string StepVisibleExpression(const std::string& step) {
   return "document.getElementsByClassName('oauth-enroll-state-" + step +
          "').length > 0";
 }
+
+const std::initializer_list<base::StringPiece> kEnrollmentErrorRetryButtonPath =
+    {"oauth-enroll-error-card", "submitButton"};
 
 }  // namespace
 
@@ -74,6 +81,25 @@ void EnrollmentUIMixin::SelectEnrollmentLicense(
 
 void EnrollmentUIMixin::UseSelectedLicense() {
   OobeJS().TapOnPath({"oauth-enroll-license-ui", "next"});
+}
+
+void EnrollmentUIMixin::ExpectErrorMessage(int error_message_id,
+                                           bool can_retry) {
+  const std::string element_path =
+      GetOobeElementPath({"oauth-enroll-error-card"});
+  const std::string message = OobeJS().GetString(element_path + ".textContent");
+  ASSERT_TRUE(std::string::npos !=
+              message.find(l10n_util::GetStringUTF8(error_message_id)));
+  if (can_retry) {
+    OobeJS().ExpectVisiblePath(kEnrollmentErrorRetryButtonPath);
+  } else {
+    OobeJS().ExpectHiddenPath(kEnrollmentErrorRetryButtonPath);
+  }
+}
+
+void EnrollmentUIMixin::RetryAfterError() {
+  OobeJS().TapOnPath(kEnrollmentErrorRetryButtonPath);
+  WaitForStep(ui::kEnrollmentStepSignin);
 }
 
 void EnrollmentUIMixin::SubmitDeviceAttributes(const std::string& asset_id,
