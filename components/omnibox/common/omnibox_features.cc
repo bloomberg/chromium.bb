@@ -114,11 +114,12 @@ const base::Feature kExperimentalKeywordMode{"OmniboxExperimentalKeywordMode",
 const base::Feature kOmniboxPedalSuggestions{"OmniboxPedalSuggestions",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature used to show a context menu for suggestions when the user
-// right-clicks a suggestion in the omnibox dropdown. It's currently disabled
-// by default during development, but will eventually be enabled by default.
-const base::Feature kOmniboxContextMenuForSuggestions{
-    "OmniboxContextMenuForSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
+// Feature used for UI that improves transparency of and control over omnibox
+// suggestions. This includes UI cues (like a clock icon for Search History
+// suggestions), as well as user controls to delete personalized suggestions.
+// This will be eventually enabled by default.
+const base::Feature kOmniboxSuggestionTransparencyOptions{
+    "OmniboxSuggestionTransparencyOptions", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Feature to enable clipboard provider to suggest copied text.
 const base::Feature kEnableClipboardProviderTextSuggestions{
