@@ -64,7 +64,7 @@ OmniboxResultView::OmniboxResultView(
   keyword_view_->icon()->SizeToPreferredSize();
 
   if (base::FeatureList::IsEnabled(
-          omnibox::kOmniboxContextMenuForSuggestions)) {
+          omnibox::kOmniboxSuggestionTransparencyOptions)) {
     // TODO(tommycli): Replace this with the real translated string from UX.
     context_menu_contents_.AddItem(COMMAND_REMOVE_SUGGESTION,
                                    base::ASCIIToUTF16("Remove suggestion..."));
