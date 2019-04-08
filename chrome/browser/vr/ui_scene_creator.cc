@@ -1873,11 +1873,21 @@ void UiSceneCreator::CreateBackground() {
 void UiSceneCreator::CreateViewportAwareRoot() {
   auto element = std::make_unique<ViewportAwareRoot>();
   element->SetName(kWebVrViewportAwareRoot);
+
+  // On Windows, allow the viewport-aware UI to translate as well as rotate, so
+  // it remains centered appropriately if the user moves.  Only enabled for
+  // OS_WIN, since it conflicts with browser UI that isn't shown on Windows.
+#if defined(OS_WIN)
+  element->SetRecenterOnRotate(true);
+#endif
   scene_->AddUiElement(kWebVrRoot, std::move(element));
 
   element = std::make_unique<ViewportAwareRoot>();
   element->SetName(k2dBrowsingViewportAwareRoot);
   element->set_contributes_to_parent_bounds(false);
+#if defined(OS_WIN)
+  element->SetRecenterOnRotate(true);
+#endif
   scene_->AddUiElement(k2dBrowsingRepositioner, std::move(element));
 }
 

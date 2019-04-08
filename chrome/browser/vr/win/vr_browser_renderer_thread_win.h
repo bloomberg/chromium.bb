@@ -102,6 +102,7 @@ class VR_EXPORT VRBrowserRendererThreadWin {
   DrawState draw_state_;
   bool started_ = false;
   bool webxr_presenting_ = false;
+  bool waiting_for_first_frame_ = true;
   int current_request_id_ = 0;
 
   device::mojom::ImmersiveOverlayPtr overlay_;

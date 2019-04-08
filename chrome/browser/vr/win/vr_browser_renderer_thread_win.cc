@@ -87,6 +87,7 @@ void VRBrowserRendererThreadWin::SetWebXrPresenting(bool presenting) {
 }
 
 void VRBrowserRendererThreadWin::StartWebXrTimeout() {
+  waiting_for_first_frame_ = true;
   overlay_->SetOverlayAndWebXRVisibility(draw_state_.ShouldDrawUI(),
                                          draw_state_.ShouldDrawWebXR());
 
@@ -115,6 +116,7 @@ void VRBrowserRendererThreadWin::StopWebXrTimeout() {
   if (!webxr_frame_timeout_closure_.IsCancelled())
     webxr_frame_timeout_closure_.Cancel();
   OnSpinnerVisibilityChanged(false);
+  waiting_for_first_frame_ = false;
 }
 
 int VRBrowserRendererThreadWin::GetNextRequestId() {
@@ -455,7 +457,7 @@ void VRBrowserRendererThreadWin::SubmitResult(bool success) {
   if (!success && graphics_) {
     graphics_->ResetMemoryBuffer();
   }
-  if (scheduler_ui_ && success)
+  if (scheduler_ui_ && success && !waiting_for_first_frame_)
     scheduler_ui_->OnWebXrFrameAvailable();
   if (draw_state_.ShouldDrawUI() && started_) {
     overlay_->RequestNextOverlayPose(
@@ -471,9 +473,9 @@ bool VRBrowserRendererThreadWin::DrawState::ShouldDrawUI() {
 }
 
 bool VRBrowserRendererThreadWin::DrawState::ShouldDrawWebXR() {
-  return (prompt_ == ExternalPromptNotificationType::kPromptNone &&
-          !spinner_visible_) ||
-         indicators_visible_;
+  return ((prompt_ == ExternalPromptNotificationType::kPromptNone ||
+           indicators_visible_) &&
+          !spinner_visible_);
 }
 
 bool VRBrowserRendererThreadWin::DrawState::SetPrompt(
