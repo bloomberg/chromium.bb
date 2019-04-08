@@ -56,6 +56,7 @@ class SyncEngineImpl : public SyncEngine, public InvalidationHandler {
 
   // SyncEngine implementation.
   void Initialize(InitParams params) override;
+  bool IsInitialized() const override;
   void TriggerRefresh(const ModelTypeSet& types) override;
   void UpdateCredentials(const SyncCredentials& credentials) override;
   void InvalidateCredentials() override;
@@ -170,9 +171,6 @@ class SyncEngineImpl : public SyncEngine, public InvalidationHandler {
   // thread components.
   void HandleSyncCycleCompletedOnFrontendLoop(
       const SyncCycleSnapshot& snapshot);
-
-  // For convenience, checks if initialization state is INITIALIZED.
-  bool initialized() const { return initialized_; }
 
   // Let the front end handle the actionable error event.
   void HandleActionableErrorEventOnFrontendLoop(

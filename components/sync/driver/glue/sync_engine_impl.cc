@@ -65,6 +65,10 @@ void SyncEngineImpl::Initialize(InitParams params) {
                                 std::move(params)));
 }
 
+bool SyncEngineImpl::IsInitialized() const {
+  return initialized_;
+}
+
 void SyncEngineImpl::TriggerRefresh(const ModelTypeSet& types) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sync_task_runner_->PostTask(
@@ -215,13 +219,13 @@ UserShare* SyncEngineImpl::GetUserShare() const {
 }
 
 SyncEngineImpl::Status SyncEngineImpl::GetDetailedStatus() {
-  DCHECK(initialized());
+  DCHECK(IsInitialized());
   return core_->sync_manager()->GetDetailedStatus();
 }
 
 void SyncEngineImpl::HasUnsyncedItemsForTest(
     base::OnceCallback<void(bool)> cb) const {
-  DCHECK(initialized());
+  DCHECK(IsInitialized());
   base::PostTaskAndReplyWithResult(
       sync_task_runner_.get(), FROM_HERE,
       base::BindOnce(&SyncBackendHostCore::HasUnsyncedItemsForTest, core_),
@@ -229,7 +233,7 @@ void SyncEngineImpl::HasUnsyncedItemsForTest(
 }
 
 void SyncEngineImpl::GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) const {
-  if (initialized()) {
+  if (IsInitialized()) {
     registrar_->GetModelSafeRoutingInfo(out);
   } else {
     NOTREACHED();
@@ -237,7 +241,7 @@ void SyncEngineImpl::GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) const {
 }
 
 void SyncEngineImpl::FlushDirectory() const {
-  DCHECK(initialized());
+  DCHECK(IsInitialized());
   sync_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&SyncBackendHostCore::SaveChanges, core_));
 }
@@ -258,7 +262,7 @@ void SyncEngineImpl::DisableProtocolEventForwarding() {
 }
 
 void SyncEngineImpl::EnableDirectoryTypeDebugInfoForwarding() {
-  DCHECK(initialized());
+  DCHECK(IsInitialized());
   sync_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -266,7 +270,7 @@ void SyncEngineImpl::EnableDirectoryTypeDebugInfoForwarding() {
 }
 
 void SyncEngineImpl::DisableDirectoryTypeDebugInfoForwarding() {
-  DCHECK(initialized());
+  DCHECK(IsInitialized());
   sync_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -347,7 +351,7 @@ void SyncEngineImpl::HandleSyncCycleCompletedOnFrontendLoop(
 
   // Process any changes to the datatypes we're syncing.
   // TODO(sync): add support for removing types.
-  if (initialized()) {
+  if (IsInitialized()) {
     host_->OnSyncCycleCompleted(snapshot);
   }
 }

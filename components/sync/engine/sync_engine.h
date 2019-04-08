@@ -101,6 +101,9 @@ class SyncEngine : public ModelTypeConfigurer {
   // engine instance. May be null.
   virtual void Initialize(InitParams params) = 0;
 
+  // Returns whether the asynchronous initialization process has finished.
+  virtual bool IsInitialized() const = 0;
+
   // Inform the engine to trigger a sync cycle for |types|.
   virtual void TriggerRefresh(const ModelTypeSet& types) = 0;
 

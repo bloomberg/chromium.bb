@@ -17,14 +17,20 @@ const char kTestBirthday[] = "1";
 
 }  // namespace
 
-FakeSyncEngine::FakeSyncEngine() : fail_initial_download_(false) {}
+FakeSyncEngine::FakeSyncEngine() {}
 FakeSyncEngine::~FakeSyncEngine() {}
 
 void FakeSyncEngine::Initialize(InitParams params) {
-  params.host->OnEngineInitialized(
-      ModelTypeSet(), WeakHandle<JsBackend>(),
-      WeakHandle<DataTypeDebugInfoListener>(), kTestCacheGuid, kTestSessionName,
-      kTestBirthday, /*bag_of_chips=*/"", !fail_initial_download_);
+  bool success = !fail_initial_download_;
+  initialized_ = success;
+  params.host->OnEngineInitialized(ModelTypeSet(), WeakHandle<JsBackend>(),
+                                   WeakHandle<DataTypeDebugInfoListener>(),
+                                   kTestCacheGuid, kTestSessionName,
+                                   kTestBirthday, /*bag_of_chips=*/"", success);
+}
+
+bool FakeSyncEngine::IsInitialized() const {
+  return initialized_;
 }
 
 void FakeSyncEngine::TriggerRefresh(const ModelTypeSet& types) {}
