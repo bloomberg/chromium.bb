@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_VOLUME_STATE_H_
-#define CHROMEOS_DBUS_VOLUME_STATE_H_
+#ifndef CHROMEOS_DBUS_AUDIO_VOLUME_STATE_H_
+#define CHROMEOS_DBUS_AUDIO_VOLUME_STATE_H_
 
 #include <stdint.h>
 
@@ -26,4 +26,4 @@ struct COMPONENT_EXPORT(CHROMEOS_DBUS) VolumeState {
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_VOLUME_STATE_H_
+#endif  // CHROMEOS_DBUS_AUDIO_VOLUME_STATE_H_

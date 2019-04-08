@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/cras_audio_client.h"
+#include "chromeos/dbus/audio/cras_audio_client.h"
 
 #include <memory>
 #include <string>
@@ -254,8 +254,8 @@ void ExpectAudioNodeListResult(bool* called,
 
 class CrasAudioClientTest : public testing::Test {
  public:
-  CrasAudioClientTest() : interface_name_(cras::kCrasControlInterface),
-                          response_(nullptr) {}
+  CrasAudioClientTest()
+      : interface_name_(cras::kCrasControlInterface), response_(nullptr) {}
 
   void SetUp() override {
     // Create a mock bus.
@@ -264,10 +264,9 @@ class CrasAudioClientTest : public testing::Test {
     mock_bus_ = new dbus::MockBus(options);
 
     // Create a mock cras proxy.
-    mock_cras_proxy_ = new dbus::MockObjectProxy(
-        mock_bus_.get(),
-        cras::kCrasServiceName,
-        dbus::ObjectPath(cras::kCrasServicePath));
+    mock_cras_proxy_ =
+        new dbus::MockObjectProxy(mock_bus_.get(), cras::kCrasServiceName,
+                                  dbus::ObjectPath(cras::kCrasServicePath));
 
     // Set an expectation so mock_cras_proxy's CallMethod() will use
     // OnCallMethod() to return responses.
@@ -370,8 +369,8 @@ class CrasAudioClientTest : public testing::Test {
 
  protected:
   // A callback to intercept and check the method call arguments.
-  typedef base::Callback<void(
-      dbus::MessageReader* reader)> ArgumentCheckCallback;
+  typedef base::Callback<void(dbus::MessageReader* reader)>
+      ArgumentCheckCallback;
 
   // Sets expectations for called method name and arguments, and sets response.
   void PrepareForMethodCall(const std::string& method_name,
@@ -413,7 +412,7 @@ class CrasAudioClientTest : public testing::Test {
   }
 
   // Send output node volume changed signal to the tested client.
-  void SendOutputNodeVolumeChangedSignal(dbus::Signal *signal) {
+  void SendOutputNodeVolumeChangedSignal(dbus::Signal* signal) {
     ASSERT_FALSE(output_node_volume_changed_handler_.is_null());
     output_node_volume_changed_handler_.Run(signal);
   }
@@ -605,8 +604,7 @@ TEST_F(CrasAudioClientTest, OutputMuteChanged) {
   const bool kSystemMuteOn = false;
   const bool kUserMuteOn = true;
   // Create a signal.
-  dbus::Signal signal(cras::kCrasControlInterface,
-                      cras::kOutputMuteChanged);
+  dbus::Signal signal(cras::kCrasControlInterface, cras::kOutputMuteChanged);
   dbus::MessageWriter writer(&signal);
   writer.AppendBool(kSystemMuteOn);
   writer.AppendBool(kUserMuteOn);
@@ -635,8 +633,7 @@ TEST_F(CrasAudioClientTest, OutputMuteChanged) {
 TEST_F(CrasAudioClientTest, InputMuteChanged) {
   const bool kInputMuteOn = true;
   // Create a signal.
-  dbus::Signal signal(cras::kCrasControlInterface,
-                      cras::kInputMuteChanged);
+  dbus::Signal signal(cras::kCrasControlInterface, cras::kInputMuteChanged);
   dbus::MessageWriter writer(&signal);
   writer.AppendBool(kInputMuteOn);
 
@@ -711,8 +708,7 @@ TEST_F(CrasAudioClientTest, NumberOfActiveStreamsChanged) {
 
 TEST_F(CrasAudioClientTest, NodesChanged) {
   // Create a signal.
-  dbus::Signal signal(cras::kCrasControlInterface,
-                      cras::kNodesChanged);
+  dbus::Signal signal(cras::kCrasControlInterface, cras::kNodesChanged);
   // Set expectations.
   MockObserver observer;
   EXPECT_CALL(observer, NodesChanged()).Times(1);
@@ -830,8 +826,7 @@ TEST_F(CrasAudioClientTest, GetNodes) {
   WriteNodesToResponse(expected_node_list, &writer);
 
   // Set expectations.
-  PrepareForMethodCall(cras::kGetNodes,
-                       base::Bind(&ExpectNoArgument),
+  PrepareForMethodCall(cras::kGetNodes, base::Bind(&ExpectNoArgument),
                        response.get());
   // Call method.
   bool called = false;
@@ -871,11 +866,10 @@ TEST_F(CrasAudioClientTest, SetOutputNodeVolume) {
   std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   // Set expectations.
-  PrepareForMethodCall(cras::kSetOutputNodeVolume,
-                       base::Bind(&ExpectUint64AndInt32Arguments,
-                                  kNodeId,
-                                  kVolume),
-                       response.get());
+  PrepareForMethodCall(
+      cras::kSetOutputNodeVolume,
+      base::Bind(&ExpectUint64AndInt32Arguments, kNodeId, kVolume),
+      response.get());
   // Call method.
   client()->SetOutputNodeVolume(kNodeId, kVolume);
   // Run the message loop.
@@ -904,11 +898,10 @@ TEST_F(CrasAudioClientTest, SetInputNodeGain) {
   std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   // Set expectations.
-  PrepareForMethodCall(cras::kSetInputNodeGain,
-                       base::Bind(&ExpectUint64AndInt32Arguments,
-                                  kNodeId,
-                                  kInputGain),
-                       response.get());
+  PrepareForMethodCall(
+      cras::kSetInputNodeGain,
+      base::Bind(&ExpectUint64AndInt32Arguments, kNodeId, kInputGain),
+      response.get());
   // Call method.
   client()->SetInputNodeGain(kNodeId, kInputGain);
   // Run the message loop.
@@ -1027,11 +1020,10 @@ TEST_F(CrasAudioClientTest, SwapLeftRight) {
   std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   // Set expectations.
-  PrepareForMethodCall(cras::kSwapLeftRight,
-                       base::Bind(&ExpectUint64AndBoolArguments,
-                                  kNodeId,
-                                  kSwap),
-                       response.get());
+  PrepareForMethodCall(
+      cras::kSwapLeftRight,
+      base::Bind(&ExpectUint64AndBoolArguments, kNodeId, kSwap),
+      response.get());
   // Call method.
   client()->SwapLeftRight(kNodeId, kSwap);
   // Run the message loop.
@@ -1045,11 +1037,10 @@ TEST_F(CrasAudioClientTest, SetGlobalOutputChannelRemix) {
   std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   // Set expectations.
-  PrepareForMethodCall(cras::kSetGlobalOutputChannelRemix,
-                       base::Bind(&ExpectInt32AndArrayOfDoublesArguments,
-                                  kChannels,
-                                  kMixer),
-                       response.get());
+  PrepareForMethodCall(
+      cras::kSetGlobalOutputChannelRemix,
+      base::Bind(&ExpectInt32AndArrayOfDoublesArguments, kChannels, kMixer),
+      response.get());
 
   // Call method.
   client()->SetGlobalOutputChannelRemix(kChannels, kMixer);

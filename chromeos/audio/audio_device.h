@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/component_export.h"
-#include "chromeos/dbus/audio_node.h"
+#include "chromeos/dbus/audio/audio_node.h"
 
 namespace chromeos {
 

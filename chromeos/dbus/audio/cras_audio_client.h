@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_CRAS_AUDIO_CLIENT_H_
-#define CHROMEOS_DBUS_CRAS_AUDIO_CLIENT_H_
+#ifndef CHROMEOS_DBUS_AUDIO_CRAS_AUDIO_CLIENT_H_
+#define CHROMEOS_DBUS_AUDIO_CRAS_AUDIO_CLIENT_H_
 
 #include <stdint.h>
 
@@ -14,10 +14,13 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "chromeos/dbus/audio_node.h"
-#include "chromeos/dbus/dbus_client.h"
+#include "chromeos/dbus/audio/audio_node.h"
+#include "chromeos/dbus/audio/volume_state.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
-#include "chromeos/dbus/volume_state.h"
+
+namespace dbus {
+class Bus;
+}
 
 namespace chromeos {
 
@@ -144,7 +147,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CrasAudioClient {
   virtual void SwapLeftRight(uint64_t node_id, bool swap) = 0;
 
   virtual void SetGlobalOutputChannelRemix(
-      int32_t channels, const std::vector<double>& mixer) = 0;
+      int32_t channels,
+      const std::vector<double>& mixer) = 0;
 
   // Runs the callback as soon as the service becomes available.
   virtual void WaitForServiceToBeAvailable(
@@ -162,4 +166,4 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CrasAudioClient {
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_CRAS_AUDIO_CLIENT_H_
+#endif  // CHROMEOS_DBUS_AUDIO_CRAS_AUDIO_CLIENT_H_

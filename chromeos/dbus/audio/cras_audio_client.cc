@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/cras_audio_client.h"
+#include "chromeos/dbus/audio/cras_audio_client.h"
 
 #include <stdint.h>
 
@@ -13,7 +13,7 @@
 #include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
-#include "chromeos/dbus/fake_cras_audio_client.h"
+#include "chromeos/dbus/audio/fake_cras_audio_client.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -160,8 +160,7 @@ class CrasAudioClientImpl : public CrasAudioClient {
   }
 
   void GetNodes(DBusMethodCallback<AudioNodeList> callback) override {
-    dbus::MethodCall method_call(cras::kCrasControlInterface,
-                                 cras::kGetNodes);
+    dbus::MethodCall method_call(cras::kCrasControlInterface, cras::kGetNodes);
     cras_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&CrasAudioClientImpl::OnGetNodes,
@@ -330,8 +329,7 @@ class CrasAudioClientImpl : public CrasAudioClient {
     dbus::MessageReader reader(signal);
     bool system_mute, user_mute;
     if (!reader.PopBool(&system_mute) || !reader.PopBool(&user_mute)) {
-      LOG(ERROR) << "Error reading signal from cras:"
-                 << signal->ToString();
+      LOG(ERROR) << "Error reading signal from cras:" << signal->ToString();
     }
     for (auto& observer : observers_)
       observer.OutputMuteChanged(user_mute);
@@ -342,8 +340,7 @@ class CrasAudioClientImpl : public CrasAudioClient {
     dbus::MessageReader reader(signal);
     bool mute;
     if (!reader.PopBool(&mute)) {
-      LOG(ERROR) << "Error reading signal from cras:"
-                 << signal->ToString();
+      LOG(ERROR) << "Error reading signal from cras:" << signal->ToString();
     }
     for (auto& observer : observers_)
       observer.InputMuteChanged(mute);
@@ -358,8 +355,7 @@ class CrasAudioClientImpl : public CrasAudioClient {
     dbus::MessageReader reader(signal);
     uint64_t node_id;
     if (!reader.PopUint64(&node_id)) {
-      LOG(ERROR) << "Error reading signal from cras:"
-                 << signal->ToString();
+      LOG(ERROR) << "Error reading signal from cras:" << signal->ToString();
     }
     for (auto& observer : observers_)
       observer.ActiveOutputNodeChanged(node_id);
@@ -369,8 +365,7 @@ class CrasAudioClientImpl : public CrasAudioClient {
     dbus::MessageReader reader(signal);
     uint64_t node_id;
     if (!reader.PopUint64(&node_id)) {
-      LOG(ERROR) << "Error reading signal from cras:"
-                 << signal->ToString();
+      LOG(ERROR) << "Error reading signal from cras:" << signal->ToString();
     }
     for (auto& observer : observers_)
       observer.ActiveInputNodeChanged(node_id);
@@ -559,7 +554,7 @@ class CrasAudioClientImpl : public CrasAudioClient {
       if (!array_reader->PopDictEntry(&dict_entry_reader) ||
           !dict_entry_reader.PopString(&key) ||
           !dict_entry_reader.PopVariant(&value_reader)) {
-         return false;
+        return false;
       }
 
       if (key == cras::kIsInputProperty) {

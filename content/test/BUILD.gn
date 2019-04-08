@@ -1250,7 +1250,7 @@ test("content_browsertests") {
     deps += [
       "//chromeos/audio",
 
-      # TODO(stevenjb): Replace with //chromeos/dbus/cras once extracted.
+      # TODO(stevenjb): Replace with //chromeos/dbus/audio once extracted.
       # https://crbug.com/940810.
       "//chromeos/dbus",
     ]
@@ -2156,7 +2156,7 @@ test("content_unittests") {
     deps += [
       "//chromeos/audio",
 
-      # TODO(stevenjb): Replace with //chromeos/dbus/cras once extracted.
+      # TODO(stevenjb): Replace with //chromeos/dbus/audio once extracted.
       # https://crbug.com/940810.
       "//chromeos/dbus",
     ]

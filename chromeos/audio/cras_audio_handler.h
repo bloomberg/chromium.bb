@@ -22,9 +22,9 @@
 #include "chromeos/audio/audio_device.h"
 #include "chromeos/audio/audio_devices_pref_handler.h"
 #include "chromeos/audio/audio_pref_observer.h"
-#include "chromeos/dbus/audio_node.h"
-#include "chromeos/dbus/cras_audio_client.h"
-#include "chromeos/dbus/volume_state.h"
+#include "chromeos/dbus/audio/audio_node.h"
+#include "chromeos/dbus/audio/cras_audio_client.h"
+#include "chromeos/dbus/audio/volume_state.h"
 #include "media/base/video_facing.h"
 
 namespace base {

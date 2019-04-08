@@ -13,7 +13,7 @@
 #include "build/build_config.h"
 #include "chromeos/audio/audio_devices_pref_handler_stub.h"
 #include "chromeos/audio/cras_audio_handler.h"
-#include "chromeos/dbus/fake_cras_audio_client.h"
+#include "chromeos/dbus/audio/fake_cras_audio_client.h"
 #include "extensions/common/features/feature_session_type.h"
 #include "extensions/common/switches.h"
 #include "extensions/shell/test/shell_apitest.h"

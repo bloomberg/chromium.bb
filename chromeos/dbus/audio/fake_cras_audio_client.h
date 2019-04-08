@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_FAKE_CRAS_AUDIO_CLIENT_H_
-#define CHROMEOS_DBUS_FAKE_CRAS_AUDIO_CLIENT_H_
+#ifndef CHROMEOS_DBUS_AUDIO_FAKE_CRAS_AUDIO_CLIENT_H_
+#define CHROMEOS_DBUS_AUDIO_FAKE_CRAS_AUDIO_CLIENT_H_
 
 #include <stdint.h>
 
@@ -11,7 +11,7 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/dbus/cras_audio_client.h"
+#include "chromeos/dbus/audio/cras_audio_client.h"
 
 namespace chromeos {
 
@@ -99,4 +99,4 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCrasAudioClient
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_FAKE_CRAS_AUDIO_CLIENT_H_
+#endif  // CHROMEOS_DBUS_AUDIO_FAKE_CRAS_AUDIO_CLIENT_H_

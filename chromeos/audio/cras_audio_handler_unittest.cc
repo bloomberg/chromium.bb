@@ -20,8 +20,8 @@
 #include "base/values.h"
 #include "chromeos/audio/audio_devices_pref_handler.h"
 #include "chromeos/audio/audio_devices_pref_handler_stub.h"
-#include "chromeos/dbus/audio_node.h"
-#include "chromeos/dbus/fake_cras_audio_client.h"
+#include "chromeos/dbus/audio/audio_node.h"
+#include "chromeos/dbus/audio/fake_cras_audio_client.h"
 #include "media/base/video_facing.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

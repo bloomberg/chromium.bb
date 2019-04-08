@@ -42,7 +42,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/audio/cras_audio_handler.h"
-#include "chromeos/dbus/cras_audio_client.h"
+#include "chromeos/dbus/audio/cras_audio_client.h"
 #endif
 
 using ::testing::_;
