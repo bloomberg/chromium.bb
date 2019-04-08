@@ -56,12 +56,18 @@ Polymer({
   },
 
   onItemsChanged_: function(items) {
+    // Pass selection handler to setupSelect only during initial setup -
+    // Otherwise, given that setupSelect does not remove previously registered
+    // listeners, each new item list change would cause additional 'select-item'
+    // events when selection changes.
+    let selectionCallback =
+        !this.idToItem_ ? this.onSelected_.bind(this) : null;
     this.idToItem_ = new Map();
     for (var i = 0; i < items.length; ++i) {
       var item = items[i];
       this.idToItem_.set(item.value, item);
     }
-    setupSelect(this.$.select, items, this.onSelected_.bind(this));
+    setupSelect(this.$.select, items, selectionCallback);
   },
 });
 })();
