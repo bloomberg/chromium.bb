@@ -146,7 +146,7 @@ bool GlassBrowserFrameView::CaptionButtonsOnLeadingEdge() const {
   return !ShouldCustomDrawSystemTitlebar() && base::i18n::IsRTL();
 }
 
-gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
+gfx::Rect GlassBrowserFrameView::GetBoundsForTabStripRegion(
     const views::View* tabstrip) const {
   const int x = CaptionButtonsOnLeadingEdge()
                     ? (width() - frame()->GetMinimizeButtonOffset())
@@ -604,7 +604,7 @@ void GlassBrowserFrameView::PaintTitlebar(gfx::Canvas* canvas) const {
 
   const int titlebar_height =
       browser_view()->IsTabStripVisible()
-          ? GetBoundsForTabStrip(browser_view()->tabstrip()).bottom()
+          ? GetBoundsForTabStripRegion(browser_view()->tabstrip()).bottom()
           : TitlebarHeight(false);
   const gfx::Rect titlebar_rect = gfx::ToEnclosingRect(
       gfx::RectF(0, y, width() * scale, titlebar_height * scale - y));

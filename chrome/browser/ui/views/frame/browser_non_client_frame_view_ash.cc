@@ -229,7 +229,7 @@ BrowserNonClientFrameViewAsh::CreateInterfacePtrForTesting() {
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserNonClientFrameView:
 
-gfx::Rect BrowserNonClientFrameViewAsh::GetBoundsForTabStrip(
+gfx::Rect BrowserNonClientFrameViewAsh::GetBoundsForTabStripRegion(
     const views::View* tabstrip) const {
   if (!tabstrip)
     return gfx::Rect();

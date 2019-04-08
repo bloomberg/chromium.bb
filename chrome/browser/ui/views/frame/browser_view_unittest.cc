@@ -33,14 +33,13 @@
 namespace {
 
 // Tab strip bounds depend on the window frame sizes.
-gfx::Point ExpectedTabStripOrigin(BrowserView* browser_view) {
-  gfx::Rect tabstrip_bounds(
-      browser_view->frame()->GetBoundsForTabStrip(browser_view->tabstrip()));
-  gfx::Point tabstrip_origin(tabstrip_bounds.origin());
-  views::View::ConvertPointToTarget(browser_view->parent(),
-                                    browser_view,
-                                    &tabstrip_origin);
-  return tabstrip_origin;
+gfx::Point ExpectedTabStripRegionOrigin(BrowserView* browser_view) {
+  gfx::Rect tabstrip_bounds(browser_view->frame()->GetBoundsForTabStripRegion(
+      browser_view->tabstrip()));
+  gfx::Point tabstrip_region_origin(tabstrip_bounds.origin());
+  views::View::ConvertPointToTarget(browser_view->parent(), browser_view,
+                                    &tabstrip_region_origin);
+  return tabstrip_region_origin;
 }
 
 // Helper function to take a printf-style format string and substitute the
@@ -80,6 +79,7 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
   Browser* browser = browser_view()->browser();
   TopContainerView* top_container = browser_view()->top_container();
   TabStrip* tabstrip = browser_view()->tabstrip();
+  views::View* tabstrip_region = browser_view()->tabstrip()->parent();
   ToolbarView* toolbar = browser_view()->toolbar();
   views::View* contents_container =
       browser_view()->GetContentsContainerForTest();
@@ -91,7 +91,8 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
   AddTab(browser, GURL("about:blank"));
 
   // Verify the view hierarchy.
-  EXPECT_EQ(top_container, browser_view()->tabstrip()->parent());
+  EXPECT_EQ(top_container, tabstrip_region->parent());
+  EXPECT_EQ(tabstrip_region, tabstrip->parent());
   EXPECT_EQ(top_container, browser_view()->toolbar()->parent());
   EXPECT_EQ(top_container, browser_view()->GetBookmarkBarView()->parent());
   EXPECT_EQ(browser_view(), browser_view()->infobar_container()->parent());
@@ -108,13 +109,14 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
   EXPECT_EQ(0, top_container->y());
   EXPECT_EQ(browser_view()->width(), top_container->width());
   // Tabstrip layout varies based on window frame sizes.
-  gfx::Point expected_tabstrip_origin = ExpectedTabStripOrigin(browser_view());
-  EXPECT_EQ(expected_tabstrip_origin.x(), tabstrip->x());
-  EXPECT_EQ(expected_tabstrip_origin.y(), tabstrip->y());
+  gfx::Point expected_tabstrip_region_origin =
+      ExpectedTabStripRegionOrigin(browser_view());
+  EXPECT_EQ(expected_tabstrip_region_origin.x(), tabstrip_region->x());
+  EXPECT_EQ(expected_tabstrip_region_origin.y(), tabstrip_region->y());
   EXPECT_EQ(0, toolbar->x());
-  EXPECT_EQ(
-      tabstrip->bounds().bottom() - GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP),
-      toolbar->y());
+  EXPECT_EQ(tabstrip_region->bounds().bottom() -
+                GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP),
+            toolbar->y());
   EXPECT_EQ(0, contents_container->x());
   EXPECT_EQ(toolbar->bounds().bottom(), contents_container->y());
   EXPECT_EQ(top_container->bounds().bottom(), contents_container->y());
@@ -150,7 +152,7 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
 
   // Bookmark bar layout on NTP.
   EXPECT_EQ(0, bookmark_bar->x());
-  EXPECT_EQ(tabstrip->bounds().bottom() + toolbar->height() -
+  EXPECT_EQ(tabstrip_region->bounds().bottom() + toolbar->height() -
                 GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP),
             bookmark_bar->y());
   EXPECT_EQ(bookmark_bar->height() + bookmark_bar->y(),

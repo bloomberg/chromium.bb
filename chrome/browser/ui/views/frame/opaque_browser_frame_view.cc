@@ -194,12 +194,13 @@ void OpaqueBrowserFrameView::InitViews() {
 ///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameView, BrowserNonClientFrameView implementation:
 
-gfx::Rect OpaqueBrowserFrameView::GetBoundsForTabStrip(
+gfx::Rect OpaqueBrowserFrameView::GetBoundsForTabStripRegion(
     const views::View* tabstrip) const {
   if (!tabstrip)
     return gfx::Rect();
 
-  return layout_->GetBoundsForTabStrip(tabstrip->GetPreferredSize(), width());
+  return layout_->GetBoundsForTabStripRegion(tabstrip->GetPreferredSize(),
+                                             width());
 }
 
 int OpaqueBrowserFrameView::GetTopInset(bool restored) const {
@@ -457,9 +458,10 @@ int OpaqueBrowserFrameView::GetTopAreaHeight() const {
   const int non_client_top_height = layout_->NonClientTopHeight(false);
   if (!browser_view()->IsTabStripVisible())
     return non_client_top_height;
-  return std::max(non_client_top_height,
-                  GetBoundsForTabStrip(browser_view()->tabstrip()).bottom() -
-                      GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP));
+  return std::max(
+      non_client_top_height,
+      GetBoundsForTabStripRegion(browser_view()->tabstrip()).bottom() -
+          GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP));
 }
 
 bool OpaqueBrowserFrameView::UseCustomFrame() const {
