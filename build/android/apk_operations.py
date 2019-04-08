@@ -331,8 +331,10 @@ def _LaunchUrl(devices, package_name, argv=None, command_line_flags_file=None,
 
     if url is None:
       # Simulate app icon click if no url is present.
-      cmd = ['monkey', '-p', package_name, '-c',
-             'android.intent.category.LAUNCHER', '1']
+      cmd = [
+          'am', 'start', '-p', package_name, '-c',
+          'android.intent.category.LAUNCHER', '-a', 'android.intent.action.MAIN'
+      ]
       device.RunShellCommand(cmd, check_return=True)
     else:
       launch_intent = intent.Intent(action='android.intent.action.VIEW',
