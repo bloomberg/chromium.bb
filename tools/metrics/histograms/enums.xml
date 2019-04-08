@@ -36466,6 +36466,13 @@ Called by update_use_counter_css.py.-->
   <int value="2" label="MediaFling"/>
 </enum>
 
+<enum name="MediaNotificationSource">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Web"/>
+  <int value="2" label="Assistant"/>
+  <int value="3" label="Arc"/>
+</enum>
+
 <enum name="MediaOutputProtectionStatus">
   <int value="0" label="Queried"/>
   <int value="1" label="No external link"/>
