@@ -178,6 +178,9 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       FireUiaPropertyChangedEvent(
           UIA_ExpandCollapseExpandCollapseStatePropertyId, node);
       break;
+    case ui::AXEventGenerator::Event::CONTROLS_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_ControllerForPropertyId, node);
+      break;
     case ui::AXEventGenerator::Event::DESCRIBED_BY_CHANGED:
       FireUiaPropertyChangedEvent(UIA_DescribedByPropertyId, node);
       break;

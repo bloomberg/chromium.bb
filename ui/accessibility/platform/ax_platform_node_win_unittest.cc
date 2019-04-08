@@ -3357,6 +3357,44 @@ TEST_F(AXPlatformNodeWinTest, TestUIAGetPropertyValue_Histogram) {
   }
 }
 
+TEST_F(AXPlatformNodeWinTest, TestUIAGetControllerForPropertyId) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.child_ids = {2, 3, 4};
+
+  AXNodeData tab;
+  tab.id = 2;
+  tab.role = ax::mojom::Role::kTab;
+  tab.SetName("tab");
+  std::vector<int32_t> controller_ids = {3, 4};
+  tab.AddIntListAttribute(ax::mojom::IntListAttribute::kControlsIds,
+                          controller_ids);
+
+  AXNodeData panel1;
+  panel1.id = 3;
+  panel1.role = ax::mojom::Role::kTabPanel;
+  panel1.SetName("panel1");
+
+  AXNodeData panel2;
+  panel2.id = 4;
+  panel2.role = ax::mojom::Role::kTabPanel;
+  panel2.SetName("panel2");
+
+  Init(root, tab, panel1, panel2);
+  TestAXNodeWrapper* root_wrapper =
+      TestAXNodeWrapper::GetOrCreate(tree_.get(), GetRootNode());
+  root_wrapper->BuildAllWrappers(tree_.get(), GetRootNode());
+
+  ComPtr<IRawElementProviderSimple> tab_node =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(
+          GetRootNode()->children()[0]);
+
+  std::vector<std::wstring> expected_names = {L"panel1", L"panel2"};
+  EXPECT_UIA_ELEMENT_ARRAY_BSTR_EQ(tab_node, UIA_ControllerForPropertyId,
+                                   UIA_NamePropertyId, expected_names);
+}
+
 TEST_F(AXPlatformNodeWinTest, TestUIAGetDescribedByPropertyId) {
   AXNodeData root;
   std::vector<int32_t> describedby_ids = {1, 2, 3};
