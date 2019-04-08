@@ -18,8 +18,8 @@
  *
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_DTOA_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_DTOA_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_DTOA_DTOA_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_DTOA_DTOA_H_
 
 #include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/dtoa/double-conversion.h"
@@ -77,10 +77,10 @@ inline double ParseDouble(const UChar* string,
 
 }  // namespace WTF
 
-using WTF::NumberToStringBuffer;
-using WTF::NumberToString;
 using WTF::NumberToFixedPrecisionString;
 using WTF::NumberToFixedWidthString;
+using WTF::NumberToString;
+using WTF::NumberToStringBuffer;
 using WTF::ParseDouble;
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_DTOA_H_
