@@ -31,6 +31,29 @@ class BundleTestCase(cros_test_lib.MockTestCase):
     self.PatchObject(constants, 'SOURCE_ROOT', new='/cros')
 
 
+class BundleImageZipTest(BundleTestCase):
+  """Unittests for BundleImageZip."""
+
+  def testBundleImageZip(self):
+    """BundleImageZip calls cbuildbot/commands with correct args."""
+    build_image_zip = self.PatchObject(
+        commands, 'BuildImageZip', return_value='image.zip')
+    self.PatchObject(os.path, 'exists', return_value=True)
+    artifacts.BundleImageZip(self.input_proto, self.output_proto)
+    self.assertEqual(
+        [artifact.path for artifact in self.output_proto.artifacts],
+        ['/tmp/artifacts/image.zip'])
+    self.assertEqual(
+        build_image_zip.call_args_list,
+        [mock.call('/tmp/artifacts', '/cros/src/build/images/target/latest')])
+
+  def testBundleImageZipNoImageDir(self):
+    """BundleImageZip dies when image dir does not exist."""
+    self.PatchObject(os.path, 'exists', return_value=False)
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      artifacts.BundleImageZip(self.input_proto, self.output_proto)
+
+
 class BundleAutotestFilesTest(BundleTestCase):
   """Unittests for BundleAutotestFiles."""
 
@@ -182,8 +205,15 @@ class BundleTestUpdatePayloadsTest(cros_test_lib.MockTempDirTestCase):
     self.assertEqual(self.generate_quick_provision_payloads.call_args_list,
                      [mock.call(image_path, mock.ANY)])
 
+  def testBundleTestUpdatePayloadsNoImageDir(self):
+    """BundleTestUpdatePayloads dies if no image dir is found."""
+    # Intentionally do not write image directory.
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      artifacts.BundleTestUpdatePayloads(self.input_proto, self.output_proto)
+
   def testBundleTestUpdatePayloadsNoImage(self):
     """BundleTestUpdatePayloads dies if no usable image is found for target."""
-    # Intentionally do not write image.
+    # Intentionally do not write image, but create the directory.
+    osutils.SafeMakedirs(self.image_root)
     with self.assertRaises(cros_build_lib.DieSystemExit):
       artifacts.BundleTestUpdatePayloads(self.input_proto, self.output_proto)

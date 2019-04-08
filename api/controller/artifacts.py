@@ -15,6 +15,40 @@ from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 
 
+def _GetImageDir(build_root, target):
+  """Return path containing images for the given build target.
+
+  Args:
+    build_root (str): Path to checkout where build occurs.
+    target (str): Name of the build target.
+
+  Returns:
+    Path to the directory containing target images.
+
+  Raises:
+    DieSystemExit: If the image dir does not exist.
+  """
+  image_dir = os.path.join(build_root, 'src/build/images', target, 'latest')
+  if not os.path.exists(image_dir):
+    cros_build_lib.Die('Expected to find image output for target %s at %s, '
+                       'but path does not exist' % (target, image_dir))
+  return image_dir
+
+
+def BundleImageZip(input_proto, output_proto):
+  """Bundle image.zip.
+
+  Args:
+    input_proto (BundleRequest): The input proto.
+    output_proto (BundleRequest): The output proto.
+  """
+  target = input_proto.build_target.name
+  output_dir = input_proto.output_dir
+  image_dir = _GetImageDir(constants.SOURCE_ROOT, target)
+  archive = commands.BuildImageZip(output_dir, image_dir)
+  output_proto.artifacts.add().path = os.path.join(output_dir, archive)
+
+
 def BundleTestUpdatePayloads(input_proto, output_proto):
   """Generate minimal update payloads for the build target for testing.
 
@@ -27,21 +61,21 @@ def BundleTestUpdatePayloads(input_proto, output_proto):
   build_root = constants.SOURCE_ROOT
 
   # Use the first available image to create the update payload.
-  img_root = os.path.join(build_root, 'src/build/images', target, 'latest')
+  img_dir = _GetImageDir(build_root, target)
   img_types = [
       constants.IMAGE_TYPE_TEST, constants.IMAGE_TYPE_DEV,
       constants.IMAGE_TYPE_BASE
   ]
   img_paths = []
   for img_type in img_types:
-    img_path = os.path.join(img_root, constants.IMAGE_TYPE_TO_NAME[img_type])
+    img_path = os.path.join(img_dir, constants.IMAGE_TYPE_TO_NAME[img_type])
     if os.path.exists(img_path):
       img_paths.append(img_path)
 
   if not img_paths:
     cros_build_lib.Die(
         'Expected to find an image of type among %r for target "%s" '
-        'at path %s.', img_types, target, img_root)
+        'at path %s.', img_types, target, img_dir)
   img = img_paths[0]
 
   # Unfortunately, the relevant commands.py functions do not return
