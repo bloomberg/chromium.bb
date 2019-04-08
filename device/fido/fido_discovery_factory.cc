@@ -19,7 +19,7 @@
 #if defined(OS_WIN)
 #include <Winuser.h>
 #include "device/fido/win/discovery.h"
-#include "device/fido/win/webauthn_api_adapter.h"
+#include "device/fido/win/webauthn_api.h"
 #endif  // defined(OS_WIN)
 
 namespace device {
@@ -94,7 +94,7 @@ std::unique_ptr<FidoDiscoveryBase> FidoDiscoveryFactory::CreateCable(
 std::unique_ptr<FidoDiscoveryBase>
 FidoDiscoveryFactory::MaybeCreateWinWebAuthnApiDiscovery() {
   if (!base::FeatureList::IsEnabled(device::kWebAuthUseNativeWinApi) ||
-      !WinWebAuthnApiAdapter::IsAvailable()) {
+      !WinWebAuthnApi::GetDefault()->IsAvailable()) {
     return nullptr;
   }
   return std::make_unique<WinWebAuthnApiAuthenticatorDiscovery>(
