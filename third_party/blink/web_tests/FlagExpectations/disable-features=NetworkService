@@ -18,6 +18,9 @@ crbug.com/933880 external/wpt/FileAPI/url/cross-global-revoke.sub.html [ Failure
 crbug.com/933880 external/wpt/FileAPI/url/url-with-fetch.any.html [ Failure ]
 crbug.com/933880 external/wpt/FileAPI/url/url-with-xhr.any.html [ Failure ]
 
+crbug.com/950412 [ Linux Debug ] http/tests/inspector-protocol/network/request-interception-request-id.js [ Failure ]
+crbug.com/950412 [ Linux Debug ] virtual/nobinary-for-http-inspector-protocol/http/tests/inspector-protocol/network/request-interception-request-id.js [ Failure ]
+
 # This passes in content_shell but not in chrome with network service disabled,
 # because content_shell does not add the about: handler. With network service
 # enabled this fails in both content_shell and chrome.
