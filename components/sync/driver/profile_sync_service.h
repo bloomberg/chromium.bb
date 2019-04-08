@@ -433,9 +433,6 @@ class ProfileSyncService : public SyncService,
   // is decremented back to zero, Sync setup is marked no longer in progress.
   int outstanding_setup_in_progress_handles_ = 0;
 
-  // Whether the SyncEngine has been initialized.
-  bool engine_initialized_;
-
   // Set when sync receives STOP_SYNC_FOR_DISABLED_ACCOUNT error from server.
   // Prevents ProfileSyncService from starting engine till browser restarted
   // or user signed out.

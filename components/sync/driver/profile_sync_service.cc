@@ -159,7 +159,6 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       url_loader_factory_(std::move(init_params.url_loader_factory)),
       network_connection_tracker_(init_params.network_connection_tracker),
       is_first_time_sync_configure_(false),
-      engine_initialized_(false),
       sync_disabled_by_admin_(false),
       unrecoverable_error_reason_(ERROR_REASON_UNSET),
       expect_sync_configuration_aborted_(false),
@@ -219,7 +218,7 @@ ProfileSyncService::~ProfileSyncService() {
     identity_manager_->RemoveObserver(this);
   sync_prefs_.RemoveSyncPrefObserver(this);
   // Shutdown() should have been called before destruction.
-  DCHECK(!engine_initialized_);
+  DCHECK(!engine_);
 }
 
 void ProfileSyncService::Initialize() {
@@ -618,7 +617,6 @@ void ProfileSyncService::ShutdownImpl(ShutdownReason reason) {
   // Clear various state.
   crypto_.Reset();
   expect_sync_configuration_aborted_ = false;
-  engine_initialized_ = false;
   last_snapshot_ = SyncCycleSnapshot();
   auth_manager_->ConnectionClosed();
 
@@ -698,7 +696,7 @@ SyncService::TransportState ProfileSyncService::GetTransportState() const {
     return TransportState::DISABLED;
   }
 
-  if (!engine_initialized_) {
+  if (!engine_ || !engine_->IsInitialized()) {
     switch (startup_controller_->GetState()) {
         // TODO(crbug.com/935523): If the engine is allowed to start, then we
         // should generally have kicked off the startup process already, so
@@ -810,14 +808,14 @@ void ProfileSyncService::OnUnrecoverableErrorImpl(
 
 void ProfileSyncService::ReenableDatatype(ModelType type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!engine_initialized_ || !data_type_manager_)
+  if (!engine_ || !engine_->IsInitialized() || !data_type_manager_)
     return;
   data_type_manager_->ReenableType(type);
 }
 
 void ProfileSyncService::ReadyForStartChanged(ModelType type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!engine_initialized_ || !data_type_manager_)
+  if (!engine_ || !engine_->IsInitialized() || !data_type_manager_)
     return;
   data_type_manager_->ReadyForStartChanged(type);
 }
@@ -870,8 +868,6 @@ void ProfileSyncService::OnEngineInitialized(
                              ERROR_REASON_ENGINE_INIT_FAILURE);
     return;
   }
-
-  engine_initialized_ = true;
 
   sync_js_controller_.AttachJsBackend(js_backend);
 
@@ -971,7 +967,8 @@ void ProfileSyncService::OnConnectionStatusChange(ConnectionStatus status) {
 
 void ProfileSyncService::OnMigrationNeededForTypes(ModelTypeSet types) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(engine_initialized_);
+  DCHECK(engine_);
+  DCHECK(engine_->IsInitialized());
   DCHECK(data_type_manager_);
 
   // Migrator must be valid, because we don't sync until it is created and this
@@ -1153,7 +1150,7 @@ bool ProfileSyncService::IsSetupInProgress() const {
 bool ProfileSyncService::QueryDetailedSyncStatusForDebugging(
     SyncStatus* result) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (engine_ && engine_initialized_) {
+  if (engine_ && engine_->IsInitialized()) {
     *result = engine_->GetDetailedStatus();
     return true;
   }
@@ -1204,8 +1201,9 @@ bool ProfileSyncService::IsLocalSyncEnabled() const {
 
 void ProfileSyncService::TriggerRefresh(const ModelTypeSet& types) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (engine_initialized_)
+  if (engine_ && engine_->IsInitialized()) {
     engine_->TriggerRefresh(types);
+  }
 }
 
 bool ProfileSyncService::IsSignedIn() const {
@@ -1397,7 +1395,7 @@ void ProfileSyncService::ConfigureDataTypeManager(ConfigureReason reason) {
 
 UserShare* ProfileSyncService::GetUserShare() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (engine_ && engine_initialized_) {
+  if (engine_ && engine_->IsInitialized()) {
     return engine_->GetUserShare();
   }
   NOTREACHED();
@@ -1418,7 +1416,7 @@ void ProfileSyncService::HasUnsyncedItemsForTest(
     base::OnceCallback<void(bool)> cb) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(engine_);
-  DCHECK(engine_initialized_);
+  DCHECK(engine_->IsInitialized());
   engine_->HasUnsyncedItemsForTest(std::move(cb));
 }
 
@@ -1432,7 +1430,7 @@ ProfileSyncService::GetTypeStatusMapForDebugging() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto result = std::make_unique<base::ListValue>();
 
-  if (!engine_ || !engine_initialized_) {
+  if (!engine_ || !engine_->IsInitialized()) {
     return std::move(result);
   }
 
@@ -1527,7 +1525,7 @@ void ProfileSyncService::OnSyncManagedPrefChange(bool is_sync_managed) {
 
 void ProfileSyncService::OnFirstSetupCompletePrefChange(
     bool is_first_setup_complete) {
-  if (engine_initialized_) {
+  if (engine_ && engine_->IsInitialized()) {
     ReconfigureDatatypeManager(/*bypass_setup_in_progress_check=*/false);
   }
 }
@@ -1536,7 +1534,7 @@ void ProfileSyncService::OnSyncRequestedPrefChange(bool is_sync_requested) {
   if (is_sync_requested) {
     // If the Sync engine was already initialized (probably running in transport
     // mode), just reconfigure.
-    if (engine_initialized_) {
+    if (engine_ && engine_->IsInitialized()) {
       ReconfigureDatatypeManager(/*bypass_setup_in_progress_check=*/false);
     } else {
       // Otherwise try to start up. Note that there might still be other disable
@@ -1573,7 +1571,7 @@ void ProfileSyncService::OnAccountsInCookieUpdatedWithCallback(
     const std::vector<gaia::ListedAccount>& signed_in_accounts,
     const base::Closure& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!engine_initialized_)
+  if (!engine_ || !engine_->IsInitialized())
     return;
 
   bool cookie_jar_mismatch = HasCookieJarMismatch(signed_in_accounts);
@@ -1617,8 +1615,8 @@ void ProfileSyncService::AddTypeDebugInfoObserver(
     TypeDebugInfoObserver* type_debug_info_observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   type_debug_info_observers_.AddObserver(type_debug_info_observer);
-  if (type_debug_info_observers_.might_have_observers() &&
-      engine_initialized_) {
+  if (type_debug_info_observers_.might_have_observers() && engine_ &&
+      engine_->IsInitialized()) {
     engine_->EnableDirectoryTypeDebugInfoForwarding();
   }
 }
@@ -1627,8 +1625,8 @@ void ProfileSyncService::RemoveTypeDebugInfoObserver(
     TypeDebugInfoObserver* type_debug_info_observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   type_debug_info_observers_.RemoveObserver(type_debug_info_observer);
-  if (!type_debug_info_observers_.might_have_observers() &&
-      engine_initialized_) {
+  if (!type_debug_info_observers_.might_have_observers() && engine_ &&
+      engine_->IsInitialized()) {
     engine_->DisableDirectoryTypeDebugInfoForwarding();
   }
 }
@@ -1701,7 +1699,7 @@ void ProfileSyncService::GetAllNodes(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // If the engine isn't initialized yet, then there are no nodes to return.
-  if (!engine_initialized_) {
+  if (!engine_ || !engine_->IsInitialized()) {
     callback.Run(std::make_unique<base::ListValue>());
     return;
   }
@@ -1747,8 +1745,9 @@ bool ProfileSyncService::IsAuthenticatedAccountPrimary() const {
 
 void ProfileSyncService::SetInvalidationsForSessionsEnabled(bool enabled) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (engine_initialized_)
+  if (engine_ && engine_->IsInitialized()) {
     engine_->SetInvalidationsForSessionsEnabled(enabled);
+  }
 }
 
 base::WeakPtr<JsController> ProfileSyncService::GetJsController() {
@@ -1784,7 +1783,7 @@ void ProfileSyncService::ReconfigureDatatypeManager(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // If we haven't initialized yet, don't configure the DTM as it could cause
   // association to start before a Directory has even been created.
-  if (engine_initialized_) {
+  if (engine_ && engine_->IsInitialized()) {
     DCHECK(engine_);
     // Don't configure datatypes if the setup UI is still on the screen - this
     // is to help multi-screen setting UIs (like iOS) where they don't want to
@@ -1857,10 +1856,9 @@ void ProfileSyncService::OverrideNetworkResourcesForTest(
 
 void ProfileSyncService::FlushDirectory() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // engine_initialized_ implies engine_ isn't null and the manager exists.
-  // If sync is not initialized yet, we fail silently.
-  if (engine_initialized_)
+  if (engine_ && engine_->IsInitialized()) {
     engine_->FlushDirectory();
+  }
 }
 
 bool ProfileSyncService::IsPassphrasePrompted() const {
@@ -1883,8 +1881,9 @@ ProfileSyncService::GetEncryptionObserverForTest() {
 }
 
 void ProfileSyncService::RemoveClientFromServer() const {
-  if (!engine_initialized_)
+  if (!engine_ || !engine_->IsInitialized()) {
     return;
+  }
   const std::string cache_guid = sync_prefs_.GetCacheGuid();
   DCHECK(!cache_guid.empty());
   std::string birthday;
@@ -1961,7 +1960,7 @@ void ProfileSyncService::OnSetupInProgressHandleDestroyed() {
 
   --outstanding_setup_in_progress_handles_;
 
-  if (engine_initialized_) {
+  if (engine_ && engine_->IsInitialized()) {
     // The user closed a setup UI, and will expect their changes to actually
     // take effect now. So we reconfigure here even if another setup UI happens
     // to be open right now.

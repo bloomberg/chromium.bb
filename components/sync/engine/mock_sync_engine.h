@@ -37,6 +37,7 @@ class MockSyncEngine : public SyncEngine {
 
   // SyncEngine:
   MOCK_METHOD1(Initialize, void(InitParams));
+  MOCK_CONST_METHOD0(IsInitialized, bool());
   MOCK_METHOD1(TriggerRefresh, void(const ModelTypeSet&));
   MOCK_METHOD1(UpdateCredentials, void(const SyncCredentials&));
   MOCK_METHOD0(InvalidateCredentials, void());
