@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
 #include "chrome/common/webui_url_constants.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "net/base/url_util.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
@@ -45,9 +46,34 @@ void InlineLoginHandlerDialogChromeOS::Show(const std::string& email) {
   dialog->ShowSystemDialog();
 }
 
+gfx::Size InlineLoginHandlerDialogChromeOS::GetMaximumDialogSize() {
+  gfx::Size size;
+  GetDialogSize(&size);
+  return size;
+}
+
+gfx::NativeView InlineLoginHandlerDialogChromeOS::GetHostView() const {
+  return dialog_window();
+}
+
+gfx::Point InlineLoginHandlerDialogChromeOS::GetDialogPosition(
+    const gfx::Size& size) {
+  gfx::Size host_size = GetHostView()->bounds().size();
+
+  // Show all sub-dialogs at center-top.
+  return gfx::Point(std::max(0, (host_size.width() - size.width()) / 2), 0);
+}
+
+void InlineLoginHandlerDialogChromeOS::AddObserver(
+    web_modal::ModalDialogHostObserver* observer) {}
+
+void InlineLoginHandlerDialogChromeOS::RemoveObserver(
+    web_modal::ModalDialogHostObserver* observer) {}
+
 InlineLoginHandlerDialogChromeOS::InlineLoginHandlerDialogChromeOS(
     const GURL& url)
-    : SystemWebDialogDelegate(url, base::string16() /* title */) {}
+    : SystemWebDialogDelegate(url, base::string16() /* title */),
+      delegate_(this) {}
 
 InlineLoginHandlerDialogChromeOS::~InlineLoginHandlerDialogChromeOS() {
   DCHECK_EQ(this, dialog);
@@ -67,6 +93,17 @@ std::string InlineLoginHandlerDialogChromeOS::GetDialogArgs() const {
 
 bool InlineLoginHandlerDialogChromeOS::ShouldShowDialogTitle() const {
   return false;
+}
+
+void InlineLoginHandlerDialogChromeOS::OnDialogShown(
+    content::WebUI* webui,
+    content::RenderViewHost* render_view_host) {
+  SystemWebDialogDelegate::OnDialogShown(webui, render_view_host);
+  web_modal::WebContentsModalDialogManager::CreateForWebContents(
+      webui->GetWebContents());
+  web_modal::WebContentsModalDialogManager::FromWebContents(
+      webui->GetWebContents())
+      ->SetDelegate(&delegate_);
 }
 
 }  // namespace chromeos
