@@ -111,7 +111,7 @@ class ServerConnectionManager {
 
     // Called to initialize and perform an HTTP POST.
     virtual bool Init(const char* path,
-                      const std::string& auth_token,
+                      const std::string& access_token,
                       const std::string& payload,
                       HttpResponse* response) = 0;
 
@@ -149,7 +149,7 @@ class ServerConnectionManager {
   virtual ~ServerConnectionManager();
 
   // POSTS buffer_in and reads a response into buffer_out. Uses our currently
-  // set auth token in our headers.
+  // set access token in our headers.
   //
   // Returns true if executed successfully.
   virtual bool PostBufferWithCachedAuth(PostBufferParams* params);
@@ -179,17 +179,12 @@ class ServerConnectionManager {
     client_id_.assign(client_id);
   }
 
-  // Sets a new auth token. If |auth_token| is empty, the current token is
+  // Sets a new access token. If |access_token| is empty, the current token is
   // invalidated and cleared. Returns false if the server is in authentication
   // error state.
-  bool SetAuthToken(const std::string& auth_token);
+  bool SetAccessToken(const std::string& access_token);
 
-  bool HasInvalidAuthToken() { return auth_token_.empty(); }
-
-  const std::string auth_token() const {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    return auth_token_;
-  }
+  bool HasInvalidAccessToken() { return access_token_.empty(); }
 
  protected:
   inline std::string proto_sync_path() const { return proto_sync_path_; }
@@ -202,9 +197,9 @@ class ServerConnectionManager {
   // Internal PostBuffer base function.
   virtual bool PostBufferToPath(PostBufferParams*,
                                 const std::string& path,
-                                const std::string& auth_token);
+                                const std::string& access_token);
 
-  void ClearAuthToken();
+  void ClearAccessToken();
 
   // Helper to check terminated flags and build a Connection object. If this
   // ServerConnectionManager has been terminated, this will return null.
@@ -228,8 +223,8 @@ class ServerConnectionManager {
   // The paths we post to.
   std::string proto_sync_path_;
 
-  // The auth token to use in authenticated requests.
-  std::string auth_token_;
+  // The access token to use in authenticated requests.
+  std::string access_token_;
 
   base::ObserverList<ServerConnectionEventListener>::Unchecked listeners_;
 

@@ -514,12 +514,12 @@ TEST_F(SyncSchedulerImplTest, ConfigWithStop) {
   ASSERT_EQ(0, ready_counter.times_called());
 }
 
-// Verify that in the absence of valid auth token the command will fail.
-TEST_F(SyncSchedulerImplTest, ConfigNoAuthToken) {
+// Verify that in the absence of valid access token the command will fail.
+TEST_F(SyncSchedulerImplTest, ConfigNoAccessToken) {
   SyncShareTimes times;
   const ModelTypeSet model_types(THEMES);
 
-  connection()->ResetAuthToken();
+  connection()->ResetAccessToken();
 
   StartSyncConfiguration();
 
@@ -532,14 +532,14 @@ TEST_F(SyncSchedulerImplTest, ConfigNoAuthToken) {
   ASSERT_EQ(0, ready_counter.times_called());
 }
 
-// Verify that in the absence of valid auth token the command will pass if local
-// sync backend is used.
-TEST_F(SyncSchedulerImplTest, ConfigNoAuthTokenLocalSync) {
+// Verify that in the absence of valid access token the command will pass if
+// local sync backend is used.
+TEST_F(SyncSchedulerImplTest, ConfigNoAccessTokenLocalSync) {
   SyncShareTimes times;
   const ModelTypeSet model_types(THEMES);
 
   NewSchedulerForLocalBackend();
-  connection()->ResetAuthToken();
+  connection()->ResetAccessToken();
 
   EXPECT_CALL(*syncer(), ConfigureSyncShare(_, _, _))
       .WillOnce(DoAll(Invoke(test_util::SimulateConfigureSuccess),

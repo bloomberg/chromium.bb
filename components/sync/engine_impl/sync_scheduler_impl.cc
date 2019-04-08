@@ -155,7 +155,7 @@ void SyncSchedulerImpl::OnServerConnectionErrorFixed() {
   //
   // 1. We're in exponential backoff.
   // 2. We're silenced / throttled.
-  // 3. A nudge was saved previously due to not having a valid auth token.
+  // 3. A nudge was saved previously due to not having a valid access token.
   // 4. A nudge was scheduled + saved while in configuration mode.
   //
   // In all cases except (2), we want to retry contacting the server. We
@@ -288,8 +288,8 @@ bool SyncSchedulerImpl::CanRunJobNow(JobPriority priority) {
   }
 
   if (!ignore_auth_credentials_ &&
-      cycle_context_->connection_manager()->HasInvalidAuthToken()) {
-    SDVLOG(1) << "Unable to run a job because we have no valid auth token.";
+      cycle_context_->connection_manager()->HasInvalidAccessToken()) {
+    SDVLOG(1) << "Unable to run a job because we have no valid access token.";
     return false;
   }
 
@@ -689,7 +689,7 @@ void SyncSchedulerImpl::TrySyncCycleJobImpl() {
     // We must be in an error state. Transitioning out of each of these
     // error states should trigger a canary job.
     DCHECK(IsGlobalThrottle() || IsGlobalBackoff() ||
-           cycle_context_->connection_manager()->HasInvalidAuthToken());
+           cycle_context_->connection_manager()->HasInvalidAccessToken());
   }
 
   RestartWaiting();

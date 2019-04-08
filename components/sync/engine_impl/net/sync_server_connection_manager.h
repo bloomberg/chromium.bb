@@ -30,7 +30,7 @@ class SyncBridgedConnection : public ServerConnectionManager::Connection,
   ~SyncBridgedConnection() override;
 
   bool Init(const char* path,
-            const std::string& auth_token,
+            const std::string& access_token,
             const std::string& payload,
             HttpResponse* response) override;
 

@@ -173,8 +173,6 @@ class SyncManagerImpl
 
   const SyncScheduler* scheduler() const;
 
-  bool GetHasInvalidAuthTokenForTest() const;
-
  protected:
   // Helper functions.  Virtual for testing.
   virtual void NotifyInitializationSuccess();
