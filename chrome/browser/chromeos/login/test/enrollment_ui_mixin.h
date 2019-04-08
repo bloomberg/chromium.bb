@@ -51,6 +51,9 @@ class EnrollmentUIMixin : public InProcessBrowserTestMixin {
   void WaitForStep(const std::string& step);
   bool IsStepDisplayed(const std::string& step);
 
+  void ExpectErrorMessage(int error_message_id, bool can_retry);
+  void RetryAfterError();
+
   // Fills out the UI with device attribute information and submits it.
   void SubmitDeviceAttributes(const std::string& asset_id,
                               const std::string& location);

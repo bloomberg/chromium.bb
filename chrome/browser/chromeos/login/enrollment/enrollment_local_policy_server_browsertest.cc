@@ -19,12 +19,14 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/policy/test/local_policy_test_server.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/attestation/mock_attestation_flow.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/policy/core/common/policy_switches.h"
+#include "components/strings/grit/components_strings.h"
 
 namespace chromeos {
 
@@ -55,6 +57,7 @@ class EnrollmentLocalPolicyServerBase : public OobeBaseTest {
     fake_gaia_.SetupFakeGaiaForLogin(FakeGaiaMixin::kFakeUserEmail,
                                      FakeGaiaMixin::kFakeUserGaiaId,
                                      FakeGaiaMixin::kFakeRefreshToken);
+    policy_server_.SetUpdateDeviceAttributesPermission(false);
     OobeBaseTest::SetUpOnMainThread();
   }
 
@@ -82,7 +85,16 @@ class EnrollmentLocalPolicyServerBase : public OobeBaseTest {
     return auto_enrollment_screen;
   }
 
-  LocalPolicyTestServerMixin local_policy_mixin_{&mixin_host_};
+  void TriggerEnrollmentAndSignInSuccessfully() {
+    host()->StartWizard(OobeScreen::SCREEN_OOBE_ENROLLMENT);
+    OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENROLLMENT).Wait();
+
+    ASSERT_FALSE(StartupUtils::IsDeviceRegistered());
+    enrollment_screen()->OnLoginDone(FakeGaiaMixin::kFakeUserEmail,
+                                     FakeGaiaMixin::kFakeAuthCode);
+  }
+
+  LocalPolicyTestServerMixin policy_server_{&mixin_host_};
   test::EnrollmentUIMixin enrollment_ui_{&mixin_host_};
   FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
 
@@ -129,12 +141,18 @@ class AutoEnrollmentLocalPolicyServer : public EnrollmentLocalPolicyServerBase {
 
 // Simple manual enrollment.
 IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase, ManualEnrollment) {
-  host()->StartWizard(OobeScreen::SCREEN_OOBE_ENROLLMENT);
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENROLLMENT).Wait();
+  TriggerEnrollmentAndSignInSuccessfully();
 
-  ASSERT_FALSE(StartupUtils::IsDeviceRegistered());
-  enrollment_screen()->OnLoginDone(FakeGaiaMixin::kFakeUserEmail,
-                                   FakeGaiaMixin::kFakeAuthCode);
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
+  EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
+}
+
+// Simple manual enrollment with device attributes prompt.
+IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
+                       ManualEnrollmentWithDeviceAttributes) {
+  policy_server_.SetUpdateDeviceAttributesPermission(true);
+
+  TriggerEnrollmentAndSignInSuccessfully();
 
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepDeviceAttributes);
   enrollment_ui_.SubmitDeviceAttributes(test::values::kAssetId,
@@ -148,18 +166,11 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase, ManualEnrollment) {
 // so no license selection UI should be displayed.
 IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
                        ManualEnrollmentWithSingleLicense) {
-  local_policy_mixin_.ExpectAvailableLicenseCount(
-      5 /* perpetual */, 0 /* annual */, 0 /* kiosk */);
-  host()->StartWizard(OobeScreen::SCREEN_OOBE_ENROLLMENT);
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENROLLMENT).Wait();
+  policy_server_.ExpectAvailableLicenseCount(5 /* perpetual */, 0 /* annual */,
+                                             0 /* kiosk */);
 
-  ASSERT_FALSE(StartupUtils::IsDeviceRegistered());
-  enrollment_screen()->OnLoginDone(FakeGaiaMixin::kFakeUserEmail,
-                                   FakeGaiaMixin::kFakeAuthCode);
+  TriggerEnrollmentAndSignInSuccessfully();
 
-  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepDeviceAttributes);
-  enrollment_ui_.SubmitDeviceAttributes(test::values::kAssetId,
-                                        test::values::kLocation);
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
 }
@@ -168,24 +179,150 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
 // Enrollment selection UI should be displayed during enrollment.
 IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
                        ManualEnrollmentWithMultipleLicenses) {
-  local_policy_mixin_.ExpectAvailableLicenseCount(
-      5 /* perpetual */, 5 /* annual */, 5 /* kiosk */);
-  host()->StartWizard(OobeScreen::SCREEN_OOBE_ENROLLMENT);
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENROLLMENT).Wait();
+  policy_server_.ExpectAvailableLicenseCount(5 /* perpetual */, 5 /* annual */,
+                                             5 /* kiosk */);
 
-  ASSERT_FALSE(StartupUtils::IsDeviceRegistered());
-  enrollment_screen()->OnLoginDone(FakeGaiaMixin::kFakeUserEmail,
-                                   FakeGaiaMixin::kFakeAuthCode);
+  TriggerEnrollmentAndSignInSuccessfully();
 
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepLicenses);
   enrollment_ui_.SelectEnrollmentLicense(test::values::kLicenseTypeAnnual);
   enrollment_ui_.UseSelectedLicense();
 
-  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepDeviceAttributes);
-  enrollment_ui_.SubmitDeviceAttributes(test::values::kAssetId,
-                                        test::values::kLocation);
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
+}
+
+// Negative scenarios: see different HTTP error codes in
+// device_management_service.cc
+
+// Error during enrollment : 402 - missing licenses.
+IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
+                       EnrollmentErrorNoLicenses) {
+  policy_server_.SetExpectedDeviceEnrollmentError(402);
+
+  TriggerEnrollmentAndSignInSuccessfully();
+
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
+  enrollment_ui_.ExpectErrorMessage(
+      IDS_ENTERPRISE_ENROLLMENT_MISSING_LICENSES_ERROR, /* can retry */ true);
+  enrollment_ui_.RetryAfterError();
+  EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
+}
+
+// Error during enrollment : 403 - management not allowed.
+IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
+                       EnrollmentErrorManagementNotAllowed) {
+  policy_server_.SetExpectedDeviceEnrollmentError(403);
+
+  TriggerEnrollmentAndSignInSuccessfully();
+
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
+  enrollment_ui_.ExpectErrorMessage(
+      IDS_ENTERPRISE_ENROLLMENT_AUTH_ACCOUNT_ERROR, /* can retry */ true);
+  enrollment_ui_.RetryAfterError();
+  EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
+}
+
+// Error during enrollment : 405 - invalid device serial.
+IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
+                       EnrollmentErrorInvalidDeviceSerial) {
+  policy_server_.SetExpectedDeviceEnrollmentError(405);
+
+  TriggerEnrollmentAndSignInSuccessfully();
+
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
+  // TODO (antrim, rsorokin): find out why it makes sense to retry here?
+  enrollment_ui_.ExpectErrorMessage(
+      IDS_POLICY_DM_STATUS_SERVICE_INVALID_SERIAL_NUMBER,
+      /* can retry */ true);
+  enrollment_ui_.RetryAfterError();
+  EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
+}
+
+// Error during enrollment : 406 - domain mismatch
+IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
+                       EnrollmentErrorDomainMismatch) {
+  policy_server_.SetExpectedDeviceEnrollmentError(406);
+
+  TriggerEnrollmentAndSignInSuccessfully();
+
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
+  enrollment_ui_.ExpectErrorMessage(
+      IDS_ENTERPRISE_ENROLLMENT_DOMAIN_MISMATCH_ERROR, /* can retry */ true);
+  enrollment_ui_.RetryAfterError();
+  EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
+}
+
+// Error during enrollment : 409 - Device ID is already in use
+IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
+                       EnrollmentErrorDeviceIDConflict) {
+  policy_server_.SetExpectedDeviceEnrollmentError(409);
+
+  TriggerEnrollmentAndSignInSuccessfully();
+
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
+  // TODO (antrim, rsorokin): find out why it makes sense to retry here?
+  enrollment_ui_.ExpectErrorMessage(
+      IDS_POLICY_DM_STATUS_SERVICE_DEVICE_ID_CONFLICT, /* can retry */ true);
+  enrollment_ui_.RetryAfterError();
+  EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
+}
+
+// Error during enrollment : 412 - Activation is pending
+IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
+                       EnrollmentErrorActivationIsPending) {
+  policy_server_.SetExpectedDeviceEnrollmentError(412);
+
+  TriggerEnrollmentAndSignInSuccessfully();
+
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
+  enrollment_ui_.ExpectErrorMessage(
+      IDS_POLICY_DM_STATUS_SERVICE_ACTIVATION_PENDING, /* can retry */ true);
+  enrollment_ui_.RetryAfterError();
+  EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
+}
+
+// Error during enrollment : 417 - Consumer account with packaged license.
+IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
+                       EnrollmentErrorConsumerAccountWithPackagedLicense) {
+  policy_server_.SetExpectedDeviceEnrollmentError(417);
+
+  TriggerEnrollmentAndSignInSuccessfully();
+
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
+  enrollment_ui_.ExpectErrorMessage(
+      IDS_ENTERPRISE_ENROLLMENT_CONSUMER_ACCOUNT_WITH_PACKAGED_LICENSE,
+      /* can retry */ true);
+  enrollment_ui_.RetryAfterError();
+  EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
+}
+
+// Error during enrollment : 500 - Consumer account with packaged license.
+IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
+                       EnrollmentErrorServerError) {
+  policy_server_.SetExpectedDeviceEnrollmentError(500);
+
+  TriggerEnrollmentAndSignInSuccessfully();
+
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
+  enrollment_ui_.ExpectErrorMessage(IDS_POLICY_DM_STATUS_TEMPORARY_UNAVAILABLE,
+                                    /* can retry */ true);
+  enrollment_ui_.RetryAfterError();
+  EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
+}
+
+// Error during enrollment : Strange HTTP response from server.
+IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
+                       EnrollmentErrorServerIsDrunk) {
+  policy_server_.SetExpectedDeviceEnrollmentError(12345);
+
+  TriggerEnrollmentAndSignInSuccessfully();
+
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
+  enrollment_ui_.ExpectErrorMessage(IDS_POLICY_DM_STATUS_HTTP_STATUS_ERROR,
+                                    /* can retry */ true);
+  enrollment_ui_.RetryAfterError();
+  EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
 }
 
 // No state keys on the server. Auto enrollment check should proceed to login.
@@ -196,7 +333,7 @@ IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer, AutoEnrollmentCheck) {
 
 // State keys are present but restore mode is not requested.
 IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer, ReenrollmentNone) {
-  EXPECT_TRUE(local_policy_mixin_.SetDeviceStateRetrievalResponse(
+  EXPECT_TRUE(policy_server_.SetDeviceStateRetrievalResponse(
       state_keys_broker(),
       enterprise_management::DeviceStateRetrievalResponse::RESTORE_MODE_NONE,
       kTestDomain));
@@ -206,7 +343,7 @@ IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer, ReenrollmentNone) {
 
 // Reenrollment requested. User can skip.
 IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer, ReenrollmentRequested) {
-  EXPECT_TRUE(local_policy_mixin_.SetDeviceStateRetrievalResponse(
+  EXPECT_TRUE(policy_server_.SetDeviceStateRetrievalResponse(
       state_keys_broker(),
       enterprise_management::DeviceStateRetrievalResponse::
           RESTORE_MODE_REENROLLMENT_REQUESTED,
@@ -219,7 +356,7 @@ IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer, ReenrollmentRequested) {
 
 // Reenrollment forced. User can not skip.
 IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer, ReenrollmentForced) {
-  EXPECT_TRUE(local_policy_mixin_.SetDeviceStateRetrievalResponse(
+  EXPECT_TRUE(policy_server_.SetDeviceStateRetrievalResponse(
       state_keys_broker(),
       enterprise_management::DeviceStateRetrievalResponse::
           RESTORE_MODE_REENROLLMENT_ENFORCED,
@@ -235,7 +372,7 @@ IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer, ReenrollmentForced) {
 
 // Device is disabled.
 IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer, DeviceDisabled) {
-  EXPECT_TRUE(local_policy_mixin_.SetDeviceStateRetrievalResponse(
+  EXPECT_TRUE(policy_server_.SetDeviceStateRetrievalResponse(
       state_keys_broker(),
       enterprise_management::DeviceStateRetrievalResponse::
           RESTORE_MODE_DISABLED,
@@ -247,14 +384,14 @@ IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer, DeviceDisabled) {
 // Attestation enrollment.
 IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer, Attestation) {
   SetFakeAttestationFlow();
-  EXPECT_TRUE(local_policy_mixin_.SetDeviceStateRetrievalResponse(
+  EXPECT_TRUE(policy_server_.SetDeviceStateRetrievalResponse(
       state_keys_broker(),
       enterprise_management::DeviceStateRetrievalResponse::
           RESTORE_MODE_REENROLLMENT_ZERO_TOUCH,
       kTestDomain));
 
   host()->StartWizard(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
-  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepDeviceAttributes);
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
 }
 

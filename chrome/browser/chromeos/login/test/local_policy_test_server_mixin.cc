@@ -77,6 +77,19 @@ void LocalPolicyTestServerMixin::ExpectAvailableLicenseCount(int perpetual,
   policy_test_server_->SetConfig(server_config_);
 }
 
+void LocalPolicyTestServerMixin::SetUpdateDeviceAttributesPermission(
+    bool allowed) {
+  server_config_.SetKey("allow_set_device_attributes", base::Value(allowed));
+  policy_test_server_->SetConfig(server_config_);
+}
+
+void LocalPolicyTestServerMixin::SetExpectedDeviceEnrollmentError(
+    int net_error_code) {
+  server_config_.SetKey("device_register_http_error",
+                        base::Value(net_error_code));
+  policy_test_server_->SetConfig(server_config_);
+}
+
 bool LocalPolicyTestServerMixin::UpdateDevicePolicy(
     const enterprise_management::ChromeDeviceSettingsProto& policy) {
   DCHECK(policy_test_server_);

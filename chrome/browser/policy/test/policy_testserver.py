@@ -58,6 +58,8 @@ Example:
       "token": "abcd-ef01-123123123",
       "username": "admin@example.com"
    },
+   "device_register_http_error" : 902,
+   "allow_set_device_attributes" : false,
 }
 
 """
@@ -427,6 +429,9 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     if not auth:
       return (403, 'No authorization')
 
+    if 'device_register_http_error' in policy:
+      return (policy['device_register_http_error'], 'Preconfigured error')
+
     if ('managed_users' not in policy):
       return (500, 'Error in config - no managed users')
     username = self.server.ResolveUser(auth)
@@ -716,8 +721,15 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       A tuple of HTTP status code and response data to send to the client.
     """
     response = dm.DeviceManagementResponse()
+    policy = self.server.GetPolicies()
+    update_allowed = True
+    if ('allow_set_device_attributes' in policy):
+      update_allowed = policy['allow_set_device_attributes']
+
     response.device_attribute_update_permission_response.result = (
-        dm.DeviceAttributeUpdatePermissionResponse.ATTRIBUTE_UPDATE_ALLOWED)
+        dm.DeviceAttributeUpdatePermissionResponse.ATTRIBUTE_UPDATE_ALLOWED
+        if update_allowed else
+        dm.DeviceAttributeUpdatePermissionResponse.ATTRIBUTE_UPDATE_DISALLOWED)
 
     return (200, response)
 
