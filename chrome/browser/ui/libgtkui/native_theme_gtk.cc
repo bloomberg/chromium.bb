@@ -77,6 +77,8 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
     case ui::NativeTheme::kColorId_DialogBackground:
     case ui::NativeTheme::kColorId_BubbleBackground:
       return GetBgColor("");
+    case ui::NativeTheme::kColorId_BubbleFooterBackground:
+      return GetBgColor("#statusbar");
 
     // FocusableBorder
     case ui::NativeTheme::kColorId_FocusedBorderColor:
