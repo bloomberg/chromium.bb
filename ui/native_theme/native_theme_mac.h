@@ -70,6 +70,9 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
                                         bool round_right,
                                         bool focus);
 
+  // Updates cached dark mode status and notifies observers if it has changed.
+  void UpdateDarkModeStatus();
+
  protected:
   friend class NativeTheme;
   friend class base::NoDestructor<NativeThemeMac>;
@@ -87,6 +90,8 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
   base::scoped_nsobject<NativeThemeEffectiveAppearanceObserver>
       appearance_observer_;
   id high_contrast_notification_token_;
+
+  bool is_dark_mode_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(NativeThemeMac);
 };
