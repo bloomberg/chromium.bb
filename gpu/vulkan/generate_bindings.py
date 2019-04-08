@@ -5,6 +5,7 @@
 
 """code generator for Vulkan function pointers."""
 
+import filecmp
 import optparse
 import os
 import platform
@@ -616,11 +617,22 @@ def main(argv):
   """This is the main function."""
 
   parser = optparse.OptionParser()
-  _, args = parser.parse_args(argv)
+  parser.add_option(
+      "--output-dir",
+      help="Output directory for generated files. Defaults to this script's "
+      "directory.")
+  parser.add_option(
+      "-c", "--check", action="store_true",
+      help="Check if output files match generated files in chromium root "
+      "directory. Use this in PRESUBMIT scripts with --output-dir.")
 
-  directory = SELF_LOCATION
-  if len(args) >= 1:
-    directory = args[0]
+  (options, _) = parser.parse_args(args=argv)
+
+  # Support generating files for PRESUBMIT.
+  if options.output_dir:
+    output_dir = options.output_dir
+  else:
+    output_dir = SELF_LOCATION
 
   def ClangFormat(filename):
     formatter = "clang-format"
@@ -628,8 +640,9 @@ def main(argv):
       formatter += ".bat"
     call([formatter, "-i", "-style=chromium", filename])
 
+  header_file_name = 'vulkan_function_pointers.h'
   header_file = open(
-      os.path.join(directory, 'vulkan_function_pointers.h'), 'wb')
+      os.path.join(output_dir, header_file_name), 'wb')
   GenerateHeaderFile(header_file, VULKAN_UNASSOCIATED_FUNCTIONS,
                      VULKAN_INSTANCE_FUNCTIONS,
                      VULKAN_PHYSICAL_DEVICE_FUNCTIONS, VULKAN_DEVICE_FUNCTIONS,
@@ -642,8 +655,9 @@ def main(argv):
   header_file.close()
   ClangFormat(header_file.name)
 
+  source_file_name = 'vulkan_function_pointers.cc'
   source_file = open(
-      os.path.join(directory, 'vulkan_function_pointers.cc'), 'wb')
+      os.path.join(output_dir, source_file_name), 'wb')
   GenerateSourceFile(source_file, VULKAN_UNASSOCIATED_FUNCTIONS,
                      VULKAN_INSTANCE_FUNCTIONS,
                      VULKAN_PHYSICAL_DEVICE_FUNCTIONS, VULKAN_DEVICE_FUNCTIONS,
@@ -655,6 +669,20 @@ def main(argv):
                      VULKAN_SWAPCHAIN_FUNCTIONS)
   source_file.close()
   ClangFormat(source_file.name)
+
+  check_failed_filenames = []
+  if options.check:
+    for filename in [header_file_name, source_file_name]:
+      if not filecmp.cmp(os.path.join(output_dir, filename),
+                         os.path.join(SELF_LOCATION, filename)):
+        check_failed_filenames.append(filename)
+
+  if len(check_failed_filenames) > 0:
+    print 'Please run gpu/vulkan/generate_bindings.py'
+    print 'Failed check on generated files:'
+    for filename in check_failed_filenames:
+      print filename
+    return 1
 
   return 0
 
