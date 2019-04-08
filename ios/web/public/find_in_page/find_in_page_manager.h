@@ -38,6 +38,7 @@ class FindInPageManager : public web::WebStateUserData<FindInPageManager> {
   // on |options|. |query| must not be null if |options| is |FindInPageSearch|.
   // |query| is ignored if |options| is not |FindInPageSearch|. If new search is
   // started before previous search finishes, old request will be discarded.
+  // Check CanSearchContent() before calling Find().
   //
   // FindInPageManagerDelegate::DidHighlightMatches() will be called to return
   // the total matches found if FindInPageSearch is passed, assuming it hasn't
@@ -49,6 +50,10 @@ class FindInPageManager : public web::WebStateUserData<FindInPageManager> {
   // Removes any highlighting. Does nothing if Find() with
   // FindInPageOptions::FindInPageSearch is never called.
   virtual void StopFinding() = 0;
+
+  // Returns false if page content can not be searched (for example: an image)
+  // or if search is not supported (for example: PDF files).
+  virtual bool CanSearchContent() = 0;
 
   virtual FindInPageManagerDelegate* GetDelegate() = 0;
   virtual void SetDelegate(FindInPageManagerDelegate* delegate) = 0;

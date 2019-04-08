@@ -591,4 +591,16 @@ TEST_F(FindInPageManagerImplTest, FindInPageUpdateMatchCountAfterFrameRemoved) {
   }));
 }
 
+// Tests that Find in Page SetContentIsHTML() returns true if the web state's
+// content is HTML and returns false if the web state's content is not HTML.
+TEST_F(FindInPageManagerImplTest, FindInPageCanSearchContent) {
+  test_web_state_->SetContentIsHTML(false);
+
+  EXPECT_FALSE(GetFindInPageManager()->CanSearchContent());
+
+  test_web_state_->SetContentIsHTML(true);
+
+  EXPECT_TRUE(GetFindInPageManager()->CanSearchContent());
+}
+
 }  // namespace web

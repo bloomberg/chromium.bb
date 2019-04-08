@@ -224,6 +224,8 @@ void FindInPageManagerImpl::WebStateDestroyed(WebState* web_state) {
 }
 
 void FindInPageManagerImpl::Find(NSString* query, FindInPageOptions options) {
+  DCHECK(CanSearchContent());
+
   switch (options) {
     case FindInPageOptions::FindInPageSearch:
       DCHECK(query);
@@ -276,6 +278,10 @@ void FindInPageManagerImpl::StartSearch(NSString* query) {
 }
 
 void FindInPageManagerImpl::StopFinding() {}
+
+bool FindInPageManagerImpl::CanSearchContent() {
+  return web_state_->ContentIsHTML();
+}
 
 void FindInPageManagerImpl::ProcessFindInPageResult(const std::string& frame_id,
                                                     const int unique_id,
