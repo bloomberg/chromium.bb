@@ -4,6 +4,8 @@
 
 #include "media/gpu/test/video_player/video_player_test_environment.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/test/test_timeouts.h"
 #include "media/gpu/buildflags.h"
@@ -21,8 +23,33 @@
 
 namespace media {
 namespace test {
-VideoPlayerTestEnvironment::VideoPlayerTestEnvironment(const Video* video)
-    : video_(video) {}
+
+// Default video to be used if no test video was specified.
+constexpr base::FilePath::CharType kDefaultTestVideoPath[] = "test-25fps.h264";
+
+// static
+VideoPlayerTestEnvironment* VideoPlayerTestEnvironment::Create(
+    const base::FilePath& video_path,
+    bool enable_validator,
+    bool output_frames) {
+  auto video = std::make_unique<media::test::Video>(
+      video_path.empty() ? base::FilePath(kDefaultTestVideoPath) : video_path);
+  if (!video->Load()) {
+    LOG(ERROR) << "Failed to load " << video_path;
+    return nullptr;
+  }
+
+  return new VideoPlayerTestEnvironment(std::move(video), enable_validator,
+                                        output_frames);
+}
+
+VideoPlayerTestEnvironment::VideoPlayerTestEnvironment(
+    std::unique_ptr<media::test::Video> video,
+    bool enable_validator,
+    bool output_frames)
+    : video_(std::move(video)),
+      enable_validator_(enable_validator),
+      output_frames_(output_frames) {}
 
 VideoPlayerTestEnvironment::~VideoPlayerTestEnvironment() = default;
 
@@ -70,5 +97,18 @@ void VideoPlayerTestEnvironment::SetUp() {
 void VideoPlayerTestEnvironment::TearDown() {
   task_environment_.reset();
 }
+
+const media::test::Video* VideoPlayerTestEnvironment::Video() const {
+  return video_.get();
+}
+
+bool VideoPlayerTestEnvironment::IsValidatorEnabled() const {
+  return enable_validator_;
+}
+
+bool VideoPlayerTestEnvironment::IsFramesOutputEnabled() const {
+  return output_frames_;
+}
+
 }  // namespace test
 }  // namespace media

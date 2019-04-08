@@ -162,7 +162,7 @@ class VideoDecoderTest : public ::testing::Test {
 // TODO(dstaessens@) Add a test to measure capped decode performance, measuring
 // the number of frames dropped.
 TEST_F(VideoDecoderTest, MeasureUncappedPerfomance) {
-  auto tvp = CreateVideoPlayer(g_env->video_);
+  auto tvp = CreateVideoPlayer(g_env->Video());
 
   performance_evaluator_->StartMeasuring();
   tvp->Play();
@@ -171,7 +171,7 @@ TEST_F(VideoDecoderTest, MeasureUncappedPerfomance) {
   performance_evaluator_->WriteMetricsToFile();
 
   EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
-  EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames());
+  EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->Video()->NumFrames());
 }
 
 }  // namespace test
@@ -181,14 +181,23 @@ int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
   base::CommandLine::Init(argc, argv);
 
+  // Check if a video was specified on the command line.
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  base::CommandLine::StringVector args = cmd_line->GetArgs();
+  base::FilePath video_path =
+      (args.size() >= 1) ? base::FilePath(args[0]) : base::FilePath();
+
   // Set the default test data path.
   media::test::Video::SetTestDataPath(media::GetTestDataPath());
 
-  // Set up our test environment
+  // Set up our test environment.
+  media::test::VideoPlayerTestEnvironment* test_environment =
+      media::test::VideoPlayerTestEnvironment::Create(video_path, false, false);
+  if (!test_environment)
+    return 0;
+
   media::test::g_env = static_cast<media::test::VideoPlayerTestEnvironment*>(
-      testing::AddGlobalTestEnvironment(
-          new media::test::VideoPlayerTestEnvironment(
-              &media::test::kDefaultTestVideoCollection[0])));
+      testing::AddGlobalTestEnvironment(test_environment));
 
   return RUN_ALL_TESTS();
 }
