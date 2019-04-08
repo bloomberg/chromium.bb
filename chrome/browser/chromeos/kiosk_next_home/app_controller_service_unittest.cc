@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/kiosk_next_home/app_controller_service.h"
 
+#include <limits>
 #include <map>
 #include <memory>
 #include <utility>
@@ -69,6 +70,12 @@ class AppControllerServiceTest : public testing::Test {
     arc_test_.app_instance()->SendAppAdded(app_info);
   }
 
+  void SetAndroidId(int64_t android_id) {
+    arc_test_.app_instance()->set_android_id(android_id);
+  }
+
+  void StopArc() { arc_test_.StopArcInstance(); }
+
   void AddAppDeltaToAppService(apps::mojom::AppPtr delta) {
     std::vector<apps::mojom::AppPtr> deltas;
     deltas.push_back(std::move(delta));
@@ -119,6 +126,21 @@ class AppControllerServiceTest : public testing::Test {
       // more fields that are not expected above.
       EXPECT_TRUE(expected_app.Equals(*returned_app));
     }
+  }
+
+  void ExpectArcAndroidIdResponse(bool success, const std::string& android_id) {
+    bool returned_success;
+    std::string returned_android_id;
+
+    app_controller_service_->GetArcAndroidId(base::BindLambdaForTesting(
+        [&returned_success, &returned_android_id](
+            bool success, const std::string& android_id) {
+          returned_success = success;
+          returned_android_id = android_id;
+        }));
+
+    EXPECT_EQ(returned_success, success);
+    EXPECT_EQ(returned_android_id, android_id);
   }
 
  private:
@@ -324,6 +346,22 @@ TEST_F(AppControllerServiceTest, AppsThatAreNotRelevantAreFiltered) {
 
   // Expect only the allowed app, all the other ones were filtered.
   ExpectApps({allowed_app});
+}
+
+TEST_F(AppControllerServiceTest, GetArcAndroidIdReturnsItWhenItHasIt) {
+  SetAndroidId(123456789L);
+  ExpectArcAndroidIdResponse(true, "75bcd15");  // 75bcd15 is 123456789 in hex.
+
+  // Make sure the returned Android ID doesn't get clipped when it's too large.
+  SetAndroidId(std::numeric_limits<int64_t>::max());
+  ExpectArcAndroidIdResponse(true, "7fffffffffffffff");
+}
+
+TEST_F(AppControllerServiceTest, GetArcAndroidIdFailureIsPropagated) {
+  // Stop the ARC instance to simulate a failure.
+  StopArc();
+
+  ExpectArcAndroidIdResponse(false, "0");
 }
 
 }  // namespace kiosk_next_home

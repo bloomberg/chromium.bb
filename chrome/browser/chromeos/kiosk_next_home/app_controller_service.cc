@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/kiosk_next_home/app_controller_service.h"
 
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -13,7 +14,6 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/optional.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/apps/app_service/app_icon_source.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -100,9 +100,9 @@ void AppControllerService::GetArcAndroidId(
       [](mojom::AppController::GetArcAndroidIdCallback callback, bool success,
          int64_t raw_android_id) {
         // The bridge expects the Android id as a hex string.
-        std::string android_id = base::NumberToString(raw_android_id);
-        std::move(callback).Run(
-            success, base::HexEncode(android_id.data(), android_id.size()));
+        std::stringstream android_id_stream;
+        android_id_stream << std::hex << raw_android_id;
+        std::move(callback).Run(success, android_id_stream.str());
       },
       std::move(callback)));
 }
