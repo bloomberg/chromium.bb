@@ -57,8 +57,7 @@ enum UTF8ConversionMode {
              ? op##IgnoringASCIICase args               \
              : op##IgnoringCase args)
 
-// You can find documentation about this class in this doc:
-// https://docs.google.com/document/d/1kOCUlJdh2WJMJGDf-WoEQhmnjKLaOYRbiHz5TiGJl14/edit?usp=sharing
+// You can find documentation about this class in README.md in this directory.
 class WTF_EXPORT String {
   USING_FAST_MALLOC(String);
 
