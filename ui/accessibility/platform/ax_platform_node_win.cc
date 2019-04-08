@@ -3593,7 +3593,7 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       break;
 
     case UIA_ControllerForPropertyId:
-      result->vt = VT_ARRAY;
+      result->vt = VT_ARRAY | VT_UNKNOWN;
       result->parray = CreateUIAElementsArrayForRelation(
           ax::mojom::IntListAttribute::kControlsIds);
       break;

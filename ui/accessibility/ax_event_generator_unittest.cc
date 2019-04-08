@@ -41,6 +41,9 @@ std::string DumpEvents(AXEventGenerator* generator) {
       case AXEventGenerator::Event::COLLAPSED:
         event_name = "COLLAPSED";
         break;
+      case AXEventGenerator::Event::CONTROLS_CHANGED:
+        event_name = "CONTROLS_CHANGED";
+        break;
       case AXEventGenerator::Event::DESCRIBED_BY_CHANGED:
         event_name = "DESCRIBED_BY_CHANGED";
         break;
@@ -764,11 +767,11 @@ TEST(AXEventGeneratorTest, OtherAttributeChanged) {
                                       ids);
   ASSERT_TRUE(tree.Unserialize(update));
   EXPECT_EQ(
+      "CONTROLS_CHANGED on 6, "
       "LANGUAGE_CHANGED on 2, "
       "OTHER_ATTRIBUTE_CHANGED on 3, "
       "OTHER_ATTRIBUTE_CHANGED on 4, "
       "OTHER_ATTRIBUTE_CHANGED on 5, "
-      "OTHER_ATTRIBUTE_CHANGED on 6, "
       "RELATED_NODE_CHANGED on 6",
       DumpEvents(&event_generator));
 }
@@ -1196,6 +1199,28 @@ TEST(AXEventGeneratorTest, FlowToChanged) {
       "FLOW_FROM_CHANGED on 6, "
       "FLOW_TO_CHANGED on 2, "
       "RELATED_NODE_CHANGED on 2",
+      DumpEvents(&event_generator));
+}
+
+TEST(AXEventGeneratorTest, ControlsChanged) {
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(2);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].child_ids.push_back(2);
+  initial_state.nodes[1].id = 2;
+
+  AXTree tree(initial_state);
+  AXEventGenerator event_generator(&tree);
+  AXTreeUpdate update = initial_state;
+
+  std::vector<int> ids = {2};
+  update.nodes[0].AddIntListAttribute(ax::mojom::IntListAttribute::kControlsIds,
+                                      ids);
+  EXPECT_TRUE(tree.Unserialize(update));
+  EXPECT_EQ(
+      "CONTROLS_CHANGED on 1, "
+      "RELATED_NODE_CHANGED on 1",
       DumpEvents(&event_generator));
 }
 

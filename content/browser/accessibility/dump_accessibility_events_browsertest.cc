@@ -241,6 +241,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaControlsChanged) {
+  RunEventTest(FILE_PATH_LITERAL("aria-controls-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsAriaTreeCollapse) {
   RunEventTest(FILE_PATH_LITERAL("aria-tree-collapse.html"));
 }

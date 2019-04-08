@@ -189,6 +189,7 @@ api::automation::EventType ToAutomationEvent(
       return api::automation::EVENT_TYPE_ARIAATTRIBUTECHANGED;
 
     case ui::AXEventGenerator::Event::ACCESS_KEY_CHANGED:
+    case ui::AXEventGenerator::Event::CONTROLS_CHANGED:
     case ui::AXEventGenerator::Event::CLASS_NAME_CHANGED:
     case ui::AXEventGenerator::Event::DESCRIBED_BY_CHANGED:
     case ui::AXEventGenerator::Event::DESCRIPTION_CHANGED:

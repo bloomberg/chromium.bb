@@ -591,4 +591,56 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,
   }
 }
 
+IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,
+                       AriaControlsChangedEvent) {
+  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ax::mojom::Event::kLoadComplete);
+  GURL url(
+      "data:text/html,"
+      "<body>"
+      "<script>"
+      "function setcontrols(ele, event) {"
+      "  ele.setAttribute('aria-controls', 'radio1 radio2');"
+      "}"
+      "</script>"
+      "<div id='radiogroup' role='radiogroup' aria-label='group'"
+      "     onclick='setcontrols(this, event)'>"
+      "<div id='radio1' role='radio'>radio1</div>"
+      "<div id='radio2' role='radio'>radio2</div>"
+      "</div>"
+      "</body>");
+  NavigateToURL(shell(), url);
+  waiter.WaitForNotification();
+
+  BrowserAccessibility* target =
+      FindNode(ax::mojom::Role::kRadioGroup, "group");
+  ASSERT_NE(nullptr, target);
+  BrowserAccessibility* radio1 =
+      FindNode(ax::mojom::Role::kRadioButton, "radio1");
+  ASSERT_NE(nullptr, radio1);
+  BrowserAccessibility* radio2 =
+      FindNode(ax::mojom::Role::kRadioButton, "radio2");
+  ASSERT_NE(nullptr, radio2);
+
+  AccessibilityNotificationWaiter waiter2(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ui::AXEventGenerator::Event::CONTROLS_CHANGED);
+  GetManager()->DoDefaultAction(*target);
+  waiter2.WaitForNotification();
+
+  auto&& control_list = target->GetData().GetIntListAttribute(
+      ax::mojom::IntListAttribute::kControlsIds);
+  EXPECT_EQ(2u, control_list.size());
+
+  auto find_radio1 =
+      std::find(control_list.cbegin(), control_list.cend(), radio1->GetId());
+  auto find_radio2 =
+      std::find(control_list.cbegin(), control_list.cend(), radio2->GetId());
+  EXPECT_NE(find_radio1, control_list.cend());
+  EXPECT_NE(find_radio2, control_list.cend());
+}
+
 }  // namespace content

@@ -369,6 +369,9 @@ void AXEventGenerator::OnIntListAttributeChanged(
   DCHECK_EQ(tree_, tree);
 
   switch (attr) {
+    case ax::mojom::IntListAttribute::kControlsIds:
+      AddEvent(node, Event::CONTROLS_CHANGED);
+      break;
     case ax::mojom::IntListAttribute::kDescribedbyIds:
       AddEvent(node, Event::DESCRIBED_BY_CHANGED);
       break;
