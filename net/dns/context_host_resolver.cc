@@ -4,6 +4,7 @@
 
 #include "net/dns/context_host_resolver.h"
 
+#include <string>
 #include <utility>
 
 #include "base/logging.h"
@@ -16,6 +17,67 @@
 #include "net/url_request/url_request_context.h"
 
 namespace net {
+
+// Wrapper of ResolveHostRequests that on destruction will remove itself from
+// |ContextHostResolver::active_requests_|.
+class ContextHostResolver::WrappedRequest
+    : public HostResolver::ResolveHostRequest {
+ public:
+  WrappedRequest(
+      std::unique_ptr<HostResolverManager::CancellableRequest> inner_request,
+      ContextHostResolver* resolver)
+      : inner_request_(std::move(inner_request)), resolver_(resolver) {}
+
+  ~WrappedRequest() override { Cancel(); }
+
+  void Cancel() {
+    // Cannot destroy |inner_request_| because it is still allowed to call
+    // Get...Results() methods if the request was already complete.
+    inner_request_->Cancel();
+
+    if (resolver_) {
+      resolver_->active_requests_.erase(this);
+      resolver_ = nullptr;
+    }
+  }
+
+  int Start(CompletionOnceCallback callback) override {
+    DCHECK(resolver_);
+    return inner_request_->Start(std::move(callback));
+  }
+
+  const base::Optional<AddressList>& GetAddressResults() const override {
+    return inner_request_->GetAddressResults();
+  }
+
+  const base::Optional<std::vector<std::string>>& GetTextResults()
+      const override {
+    return inner_request_->GetTextResults();
+  }
+
+  const base::Optional<std::vector<HostPortPair>>& GetHostnameResults()
+      const override {
+    return inner_request_->GetHostnameResults();
+  }
+
+  const base::Optional<HostCache::EntryStaleness>& GetStaleInfo()
+      const override {
+    return inner_request_->GetStaleInfo();
+  }
+
+  void ChangeRequestPriority(RequestPriority priority) override {
+    inner_request_->ChangeRequestPriority(priority);
+  }
+
+ private:
+  std::unique_ptr<HostResolverManager::CancellableRequest> inner_request_;
+
+  // Resolver is expected to call Cancel() on destruction, clearing the pointer
+  // before it becomes invalid.
+  ContextHostResolver* resolver_;
+
+  DISALLOW_COPY_AND_ASSIGN(WrappedRequest);
+};
 
 ContextHostResolver::ContextHostResolver(HostResolverManager* manager)
     : manager_(manager) {
@@ -31,6 +93,10 @@ ContextHostResolver::ContextHostResolver(
 ContextHostResolver::~ContextHostResolver() {
   if (owned_manager_)
     DCHECK_EQ(owned_manager_.get(), manager_);
+
+  // Silently cancel all requests associated with this resolver.
+  while (!active_requests_.empty())
+    (*active_requests_.begin())->Cancel();
 }
 
 std::unique_ptr<HostResolver::ResolveHostRequest>
@@ -39,7 +105,10 @@ ContextHostResolver::CreateRequest(
     const NetLogWithSource& source_net_log,
     const base::Optional<ResolveHostParameters>& optional_parameters) {
   // TODO(crbug.com/934402): DHCECK |context_| once universally set.
-  return manager_->CreateRequest(host, source_net_log, optional_parameters);
+  auto request = std::make_unique<WrappedRequest>(
+      manager_->CreateRequest(host, source_net_log, optional_parameters), this);
+  active_requests_.insert(request.get());
+  return request;
 }
 
 std::unique_ptr<HostResolver::MdnsListener>

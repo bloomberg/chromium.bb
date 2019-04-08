@@ -87,6 +87,14 @@ class NET_EXPORT HostResolverManager
   using ResolveHostRequest = HostResolver::ResolveHostRequest;
   using ResolveHostParameters = HostResolver::ResolveHostParameters;
 
+  class CancellableRequest : public ResolveHostRequest {
+   public:
+    // If running asynchronously, silently cancels the request as if destroyed.
+    // Callbacks will never be invoked. Noop if request is already complete or
+    // never started.
+    virtual void Cancel() = 0;
+  };
+
   // Creates a HostResolver as specified by |options|. Blocking tasks are run in
   // TaskScheduler.
   //
@@ -111,8 +119,7 @@ class NET_EXPORT HostResolverManager
   // NetworkChangeNotifier.
   void SetDnsClient(std::unique_ptr<DnsClient> dns_client);
 
-  // HostResolver methods:
-  std::unique_ptr<ResolveHostRequest> CreateRequest(
+  std::unique_ptr<CancellableRequest> CreateRequest(
       const HostPortPair& host,
       const NetLogWithSource& net_log,
       const base::Optional<ResolveHostParameters>& optional_parameters);
@@ -158,6 +165,15 @@ class NET_EXPORT HostResolverManager
   void SetMdnsClientForTesting(std::unique_ptr<MDnsClient> client);
 
   void SetBaseDnsConfigForTesting(const DnsConfig& base_config);
+
+  // Allows the tests to catch slots leaking out of the dispatcher.  One
+  // HostResolverManager::Job could occupy multiple PrioritizedDispatcher job
+  // slots.
+  size_t num_running_dispatcher_jobs_for_tests() const {
+    return dispatcher_->num_running_jobs();
+  }
+
+  size_t num_jobs_for_testing() const { return jobs_.size(); }
 
  protected:
   // Callback from HaveOnlyLoopbackAddresses probe.
@@ -331,13 +347,6 @@ class NET_EXPORT HostResolverManager
   void OnFallbackResolve(int dns_task_error);
 
   int GetOrCreateMdnsClient(MDnsClient** out_client);
-
-  // Allows the tests to catch slots leaking out of the dispatcher.  One
-  // HostResolverManager::Job could occupy multiple PrioritizedDispatcher job
-  // slots.
-  size_t num_running_dispatcher_jobs_for_tests() const {
-    return dispatcher_->num_running_jobs();
-  }
 
   // Update |mode_for_histogram_|. Called when DNS config changes. |dns_config|
   // is the current DNS config and is only used if !HaveDnsConfig().
