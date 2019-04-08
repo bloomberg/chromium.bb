@@ -4,6 +4,7 @@
 
 #include "third_party/blink/public/platform/web_rtc_offer_options.h"
 
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_offer_options_platform.h"
 
 namespace blink {
@@ -15,10 +16,11 @@ WebRTCOfferOptions::WebRTCOfferOptions(int32_t offer_to_receive_audio,
                                        int32_t offer_to_receive_video,
                                        bool voice_activity_detection,
                                        bool ice_restart)
-    : private_(RTCOfferOptionsPlatform::Create(offer_to_receive_audio,
-                                               offer_to_receive_video,
-                                               voice_activity_detection,
-                                               ice_restart)) {}
+    : private_(MakeGarbageCollected<RTCOfferOptionsPlatform>(
+          offer_to_receive_audio,
+          offer_to_receive_video,
+          voice_activity_detection,
+          ice_restart)) {}
 
 void WebRTCOfferOptions::Assign(const WebRTCOfferOptions& other) {
   private_ = other.private_;

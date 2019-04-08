@@ -53,6 +53,7 @@
 #include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
 #include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
 #include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "v8/include/v8.h"
 
@@ -163,7 +164,7 @@ bool WorkerOrWorkletScriptController::Initialize(const KURL& url_for_debugger) {
   if (context.IsEmpty())
     return false;
 
-  script_state_ = ScriptState::Create(context, world_);
+  script_state_ = MakeGarbageCollected<ScriptState>(context, world_);
 
   ScriptState::Scope scope(script_state_);
 

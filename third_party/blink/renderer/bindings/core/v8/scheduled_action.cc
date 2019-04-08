@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
@@ -85,16 +86,19 @@ ScheduledAction* ScheduledAction::Create(ScriptState* script_state,
 ScheduledAction::ScheduledAction(ScriptState* script_state,
                                  V8Function* function,
                                  const Vector<ScriptValue>& arguments)
-    : script_state_(ScriptStateProtectingContext::Create(script_state)),
+    : script_state_(
+          MakeGarbageCollected<ScriptStateProtectingContext>(script_state)),
       function_(function),
       arguments_(arguments) {}
 
 ScheduledAction::ScheduledAction(ScriptState* script_state, const String& code)
-    : script_state_(ScriptStateProtectingContext::Create(script_state)),
+    : script_state_(
+          MakeGarbageCollected<ScriptStateProtectingContext>(script_state)),
       code_(code) {}
 
 ScheduledAction::ScheduledAction(ScriptState* script_state)
-    : script_state_(ScriptStateProtectingContext::Create(script_state)) {}
+    : script_state_(
+          MakeGarbageCollected<ScriptStateProtectingContext>(script_state)) {}
 
 ScheduledAction::~ScheduledAction() {
   // Verify that owning DOMTimer has eagerly disposed.
