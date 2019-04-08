@@ -125,6 +125,12 @@ void FidoBleDiscovery::DeviceAddressChanged(BluetoothAdapter* adapter,
   if (it == authenticators_.end())
     return;
 
+  it = authenticators_.find(new_device_id);
+  // Don't proceed if new_device_id is already in the map, which indicates
+  // a collision in addresses.
+  if (it != authenticators_.end())
+    return;
+
   VLOG(2) << "Discovered FIDO BLE device address change from old address : "
           << old_address << " to new address : " << device->GetAddress();
 
