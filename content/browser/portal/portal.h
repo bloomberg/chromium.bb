@@ -88,6 +88,8 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
  private:
   explicit Portal(RenderFrameHostImpl* owner_render_frame_host);
 
+  void SetPortalContents(std::unique_ptr<WebContents> web_contents);
+
   RenderFrameHostImpl* owner_render_frame_host_;
 
   // Uniquely identifies the portal, this token is used by the browser process
