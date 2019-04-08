@@ -511,9 +511,16 @@ void ContentSettingsObserver::PersistClientHints(
   if (update_count == 0)
     return;
 
-  UMA_HISTOGRAM_CUSTOM_TIMES("ClientHints.PersistDuration", duration,
-                             base::TimeDelta::FromSeconds(1),
-                             base::TimeDelta::FromDays(365), 100);
+  UMA_HISTOGRAM_CUSTOM_TIMES(
+      "ClientHints.PersistDuration", duration, base::TimeDelta::FromSeconds(1),
+      // TODO(crbug.com/949034): Rename and fix this histogram to have some
+      // intended max value. We throw away the 32 most-significant bits of the
+      // 64-bit time delta in milliseconds. Before it happened silently in
+      // histogram.cc, now it is explicit here. The previous value of 365 days
+      // effectively turns into roughly 17 days when getting cast to int.
+      base::TimeDelta::FromMilliseconds(
+          static_cast<int>(base::TimeDelta::FromDays(365).InMilliseconds())),
+      100);
 
   UMA_HISTOGRAM_COUNTS_100("ClientHints.UpdateSize", update_count);
 
