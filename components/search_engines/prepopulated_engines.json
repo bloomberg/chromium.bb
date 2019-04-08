@@ -28,7 +28,7 @@
     // Increment this if you change the data in ways that mean users with
     // existing data should get a new version. Otherwise, existing data may
     // continue to be used and updates made here will not always appear.
-    "kCurrentDataVersion": 111
+    "kCurrentDataVersion": 112
   },
 
   // The following engines are included in country lists and are added to the
@@ -101,6 +101,7 @@
       "favicon_url": "https://duckduckgo.com/favicon.ico",
       "search_url": "https://duckduckgo.com/?q={searchTerms}",
       "suggest_url": "https://duckduckgo.com/ac/?q={searchTerms}&type=list",
+      "new_tab_url": "https://duckduckgo.com/chrome_newtab",
       "type": "SEARCH_ENGINE_DUCKDUCKGO",
       "id": 92
     },
