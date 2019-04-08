@@ -252,13 +252,16 @@ class TastTest(RemoteTest):
     # Coverage tests require some special pre-test setup, so use an
     # on_device_script in that case. For all other tests, use cros_run_test's
     # built-in '--tast' option. This gives us much better results reporting.
-    if self._llvm_profile_var:
+    # TODO(bpastene): s/True/self._llvm_profile_var/ once we parse Tast results.
+    if True:  # pylint: disable=using-constant-test
       # Build the shell script that will be used on the device to invoke the
       # test.
-      device_test_script_contents = self.BASIC_SHELL_SCRIPT[:] + [
-          'echo "LLVM_PROFILE_FILE=%s" >> /etc/chrome_dev.conf' % (
-              self._llvm_profile_var)
-      ]
+      device_test_script_contents = self.BASIC_SHELL_SCRIPT[:]
+      if self._llvm_profile_var:
+        device_test_script_contents += [
+            'echo "LLVM_PROFILE_FILE=%s" >> /etc/chrome_dev.conf' % (
+                self._llvm_profile_var)
+        ]
 
       local_test_runner_cmd = ['local_test_runner', '-waituntilready']
       if self._use_vm:
