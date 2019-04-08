@@ -112,8 +112,8 @@ class ControllerTest : public testing::Test {
           states_.emplace_back(state);
         }));
 
-    ON_CALL(*mock_web_controller_, OnElementCheck(_, _, _))
-        .WillByDefault(RunOnceCallback<2>(false));
+    ON_CALL(*mock_web_controller_, OnElementCheck(_, _))
+        .WillByDefault(RunOnceCallback<1>(false));
   }
 
  protected:
@@ -629,8 +629,8 @@ TEST_F(ControllerTest, KeepCheckingForElement) {
     EXPECT_EQ(AutofillAssistantState::STARTING, controller_->GetState());
   }
 
-  EXPECT_CALL(*mock_web_controller_, OnElementCheck(_, _, _))
-      .WillRepeatedly(RunOnceCallback<2>(true));
+  EXPECT_CALL(*mock_web_controller_, OnElementCheck(_, _))
+      .WillRepeatedly(RunOnceCallback<1>(true));
   thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   EXPECT_EQ(AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT,

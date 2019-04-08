@@ -104,10 +104,9 @@ class ScriptExecutor : public ActionDelegate {
   // Override ActionDelegate:
   void RunElementChecks(BatchElementChecker* checker,
                         base::OnceCallback<void()> all_done) override;
-  void ShortWaitForElement(ElementCheckType check_type,
-                           const Selector& selector,
+  void ShortWaitForElement(const Selector& selector,
                            base::OnceCallback<void(bool)> callback) override;
-  void WaitForElementVisible(
+  void WaitForElement(
       base::TimeDelta max_wait_time,
       bool allow_interrupt,
       const Selector& selector,
@@ -198,7 +197,6 @@ class ScriptExecutor : public ActionDelegate {
     // |main_script_| must not be null and outlive this instance.
     WaitWithInterrupts(ScriptExecutor* main_script,
                        base::TimeDelta max_wait_time,
-                       ElementCheckType check_type,
                        const Selector& selectors,
                        WaitWithInterrupts::Callback callback);
     ~WaitWithInterrupts() override;
@@ -236,7 +234,6 @@ class ScriptExecutor : public ActionDelegate {
 
     ScriptExecutor* main_script_;
     const base::TimeDelta max_wait_time_;
-    const ElementCheckType check_type_;
     const Selector selector_;
     WaitWithInterrupts::Callback callback_;
 
@@ -281,11 +278,9 @@ class ScriptExecutor : public ActionDelegate {
   void GetNextActions();
   void OnProcessedAction(std::unique_ptr<ProcessedActionProto> action);
   void WaitForElement(base::TimeDelta max_wait_time,
-                      ElementCheckType check_type,
                       const Selector& selectors,
                       base::OnceCallback<void(bool)> callback);
-  void CheckForElement(ElementCheckType check_type,
-                       const Selector& selectors,
+  void CheckForElement(const Selector& selectors,
                        base::OnceCallback<void(bool)> callback);
   void OnWaitForElementVisibleWithInterrupts(
       base::OnceCallback<void(ProcessedActionStatusProto)> callback,

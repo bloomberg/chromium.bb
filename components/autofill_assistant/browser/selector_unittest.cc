@@ -16,10 +16,12 @@ TEST(SelectorTest, FromProto) {
   proto.add_selectors("a");
   proto.add_selectors("b");
   proto.set_inner_text_pattern("c");
+  proto.set_visibility_requirement(MUST_BE_VISIBLE);
   proto.set_pseudo_type(PseudoType::BEFORE);
 
   Selector selector(proto);
   EXPECT_THAT(selector.selectors, testing::ElementsAre("a", "b"));
+  EXPECT_TRUE(selector.must_be_visible);
   EXPECT_EQ("c", selector.inner_text_pattern);
   EXPECT_EQ(PseudoType::BEFORE, selector.pseudo_type);
 }
@@ -36,6 +38,11 @@ TEST(SelectorTest, Comparison) {
   EXPECT_LT(Selector({"a"}, PseudoType::BEFORE), Selector({"b"}));
   EXPECT_TRUE(Selector({"a"}, PseudoType::BEFORE) ==
               Selector({"a"}, PseudoType::BEFORE));
+
+  EXPECT_FALSE(Selector({"a"}) == Selector({"a"}).MustBeVisible());
+  EXPECT_LT(Selector({"a"}), Selector({"a"}).MustBeVisible());
+  EXPECT_TRUE(Selector({"a"}).MustBeVisible() ==
+              Selector({"a"}).MustBeVisible());
 
   EXPECT_FALSE(Selector({"a"}).MatchingInnerText("a") ==
                Selector({"a"}).MatchingInnerText("b"));

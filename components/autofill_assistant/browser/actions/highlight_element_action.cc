@@ -22,16 +22,24 @@ HighlightElementAction::~HighlightElementAction() {}
 void HighlightElementAction::InternalProcessAction(
     ActionDelegate* delegate,
     ProcessActionCallback callback) {
-  DCHECK_GT(proto_.highlight_element().element().selectors_size(), 0);
+  Selector selector =
+      Selector(proto_.highlight_element().element()).MustBeVisible();
+  if (selector.empty()) {
+    DVLOG(1) << __func__ << ": empty selector";
+    UpdateProcessedAction(INVALID_SELECTOR);
+    std::move(callback).Run(std::move(processed_action_proto_));
+    return;
+  }
   delegate->ShortWaitForElement(
-      kVisibilityCheck, Selector(proto_.highlight_element().element()),
+      selector,
       base::BindOnce(&HighlightElementAction::OnWaitForElement,
                      weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
-                     std::move(callback)));
+                     std::move(callback), selector));
 }
 
 void HighlightElementAction::OnWaitForElement(ActionDelegate* delegate,
                                               ProcessActionCallback callback,
+                                              const Selector& selector,
                                               bool element_found) {
   if (!element_found) {
     UpdateProcessedAction(ELEMENT_RESOLUTION_FAILED);
@@ -40,7 +48,7 @@ void HighlightElementAction::OnWaitForElement(ActionDelegate* delegate,
   }
 
   delegate->HighlightElement(
-      Selector(proto_.highlight_element().element()),
+      selector,
       base::BindOnce(&HighlightElementAction::OnHighlightElement,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }

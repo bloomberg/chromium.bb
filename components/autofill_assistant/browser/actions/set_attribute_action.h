@@ -13,6 +13,7 @@
 #include "components/autofill_assistant/browser/actions/action.h"
 
 namespace autofill_assistant {
+
 // An action to set the attribute of an element.
 class SetAttributeAction : public Action {
  public:
@@ -26,6 +27,7 @@ class SetAttributeAction : public Action {
 
   void OnWaitForElement(ActionDelegate* delegate,
                         ProcessActionCallback callback,
+                        const Selector& selector,
                         bool element_found);
   void OnSetAttribute(ProcessActionCallback callback,
                       const ClientStatus& status);

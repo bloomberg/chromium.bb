@@ -22,15 +22,23 @@ SetAttributeAction::~SetAttributeAction() {}
 
 void SetAttributeAction::InternalProcessAction(ActionDelegate* delegate,
                                                ProcessActionCallback callback) {
+  Selector selector = Selector(proto_.set_attribute().element());
+  if (selector.empty()) {
+    DVLOG(1) << __func__ << ": empty selector";
+    UpdateProcessedAction(INVALID_SELECTOR);
+    std::move(callback).Run(std::move(processed_action_proto_));
+    return;
+  }
   delegate->ShortWaitForElement(
-      kExistenceCheck, Selector(proto_.set_attribute().element()),
+      selector,
       base::BindOnce(&SetAttributeAction::OnWaitForElement,
                      weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
-                     std::move(callback)));
+                     std::move(callback), selector));
 }
 
 void SetAttributeAction::OnWaitForElement(ActionDelegate* delegate,
                                           ProcessActionCallback callback,
+                                          const Selector& selector,
                                           bool element_found) {
   if (!element_found) {
     UpdateProcessedAction(ELEMENT_RESOLUTION_FAILED);
@@ -39,8 +47,7 @@ void SetAttributeAction::OnWaitForElement(ActionDelegate* delegate,
   }
 
   delegate->SetAttribute(
-      Selector(proto_.set_attribute().element()),
-      ExtractVector(proto_.set_attribute().attribute()),
+      selector, ExtractVector(proto_.set_attribute().attribute()),
       proto_.set_attribute().value(),
       base::BindOnce(&SetAttributeAction::OnSetAttribute,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));

@@ -466,15 +466,18 @@ enum ProcessedActionStatusProto {
   // Failed to get a stable position for the element, usually to click on it.
   ELEMENT_UNSTABLE = 14;
 
+  // A selector included into the current action is invalid.
+  INVALID_SELECTOR = 15;
+
   // The value passed to the select option action does not exist in the element.
   // This is usually a scripting error.
-  OPTION_VALUE_NOT_FOUND = 15;
+  OPTION_VALUE_NOT_FOUND = 16;
 
   // The client got an unexpected error from a JavaScript snippet executed
   // through devtools. This means that there's a bug in the client code.
   //
   // ProcessedActionProto.UnexpectedErrorInfoProto contains more details.
-  UNEXPECTED_JS_ERROR = 16;
+  UNEXPECTED_JS_ERROR = 17;
 }
 
 // The pseudo type values come from
@@ -515,10 +518,28 @@ message ElementReferenceProto {
   // trying to get the pseudo_type, if any was set.
   optional string inner_text_pattern = 4;
 
+  // Specifies whether the matched element(s) must be visible.
+  //
+  // Visibility applies to the element matched in selectors; the pseudo type is
+  // checked afterwards.
+  optional VisibilityRequirement visibility_requirement = 5;
+
   // An optional pseudo type. This pseudo type is associated to the final
   // element matched, which means that we currently don't handle matching an
   // element inside a pseudo element.
   optional PseudoType pseudo_type = 3;
+}
+
+enum VisibilityRequirement {
+  UNSPECIFIED_VISIBILITY = 0;
+
+  // Element must be visible. Visible elements are elements that have a box
+  // model. The box model is not checked at all, so an element with a zero size
+  // bounding box is considered visible.
+  MUST_BE_VISIBLE = 1;
+
+  // It's enough for the element to exist in the DOM tree for it to match.
+  MUST_EXIST = 2;
 }
 
 // Contain all arguments to perform a click.
@@ -634,13 +655,15 @@ message WaitForDomProto {
   // Fail after waiting this amount of time.
   optional int32 timeout_ms = 1;
 
-  // The element to wait for.
-  // TODO(crbug.com/806868): Use ElementReferenceProto instead.
-  repeated string selectors = 2;
+  // Wait until there exists at least one element that matches the given
+  // selector.
+  optional ElementReferenceProto wait_until = 5;
 
   // If true, run scripts flagged with 'interrupt=true' as soon as their
   // preconditions match.
   optional bool allow_interrupt = 3;
+
+  reserved 4;
 }
 
 // Volatile upload of a portion of the dom for backend analysis, does not store

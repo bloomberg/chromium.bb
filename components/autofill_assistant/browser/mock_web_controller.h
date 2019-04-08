@@ -42,15 +42,13 @@ class MockWebController : public WebController {
                void(const Selector& selector,
                     base::OnceCallback<void(const ClientStatus&)>& callback));
 
-  void ElementCheck(ElementCheckType check_type,
-                    const Selector& selector,
+  void ElementCheck(const Selector& selector,
                     bool strict,
                     base::OnceCallback<void(bool)> callback) override {
-    OnElementCheck(check_type, selector, callback);
+    OnElementCheck(selector, callback);
   }
-  MOCK_METHOD3(OnElementCheck,
-               void(ElementCheckType check_type,
-                    const Selector& selector,
+  MOCK_METHOD2(OnElementCheck,
+               void(const Selector& selector,
                     base::OnceCallback<void(bool)>& callback));
 
   void GetFieldValue(

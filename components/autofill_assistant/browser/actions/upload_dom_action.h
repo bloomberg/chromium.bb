@@ -25,6 +25,7 @@ class UploadDomAction : public Action {
 
   void OnWaitForElement(ActionDelegate* delegate,
                         ProcessActionCallback callback,
+                        const Selector& selector,
                         bool element_found);
   void OnGetOuterHtml(ProcessActionCallback callback,
                       const ClientStatus& status,

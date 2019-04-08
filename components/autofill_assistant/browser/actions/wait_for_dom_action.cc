@@ -27,10 +27,11 @@ WaitForDomAction::~WaitForDomAction() {}
 
 void WaitForDomAction::InternalProcessAction(ActionDelegate* delegate,
                                              ProcessActionCallback callback) {
-  DCHECK_GT(proto_.wait_for_dom().selectors_size(), 0);
-  Selector a_selector;
-  for (const auto& selector : proto_.wait_for_dom().selectors()) {
-    a_selector.selectors.emplace_back(selector);
+  Selector selector = Selector(proto_.wait_for_dom().wait_until());
+  if (selector.empty()) {
+    DVLOG(1) << __func__ << ": no selector specified for WaitForDom";
+    OnCheckDone(std::move(callback), INVALID_SELECTOR);
+    return;
   }
 
   base::TimeDelta max_wait_time = kDefaultCheckDuration;
@@ -38,8 +39,8 @@ void WaitForDomAction::InternalProcessAction(ActionDelegate* delegate,
   if (timeout_ms > 0)
     max_wait_time = base::TimeDelta::FromMilliseconds(timeout_ms);
 
-  delegate->WaitForElementVisible(
-      max_wait_time, proto_.wait_for_dom().allow_interrupt(), a_selector,
+  delegate->WaitForElement(
+      max_wait_time, proto_.wait_for_dom().allow_interrupt(), selector,
       base::BindOnce(&WaitForDomAction::OnCheckDone,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }

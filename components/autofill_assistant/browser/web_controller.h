@@ -162,19 +162,13 @@ class WebController {
   virtual void HasCookie(base::OnceCallback<void(bool)> callback);
   virtual void ClearCookie();
 
-  // Checks an element for:
+  // Checks whether an element matches the given selector.
   //
-  // kExistenceCheck: Checks whether at least one element given by |selector|
-  // exists on the web page.
-  //
-  // kVisibilityCheck: Checks whether at least on element given by |selector|
-  // is visible on the web page.
-  //
-  // If strict, there must be exactly one element.
+  // If strict, there must be exactly one matching element for the check to
+  // pass. Otherwise, there must be at least one.
   //
   // To check multiple elements, use a BatchElementChecker.
-  virtual void ElementCheck(ElementCheckType type,
-                            const Selector& selector,
+  virtual void ElementCheck(const Selector& selector,
                             bool strict,
                             base::OnceCallback<void(bool)> callback);
 
@@ -295,7 +289,6 @@ class WebController {
   // |selector| and if |strict_mode| is false, return the first one that is
   // found. Otherwise if |strict-mode| is true, do not return any.
   void FindElement(const Selector& selector,
-                   ElementCheckType check_type,
                    bool strict_mode,
                    FindElementCallback callback);
   void OnFindElementResult(ElementFinder* finder_to_release,

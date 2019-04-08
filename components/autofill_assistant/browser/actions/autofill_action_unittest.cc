@@ -120,8 +120,8 @@ class AutofillActionTest : public testing::Test {
                                      base::OnceCallback<void()> all_done) {
           checker->Run(&mock_web_controller_, std::move(all_done));
         }));
-    ON_CALL(mock_action_delegate_, OnShortWaitForElement(_, _, _))
-        .WillByDefault(RunOnceCallback<2>(true));
+    ON_CALL(mock_action_delegate_, OnShortWaitForElement(_, _))
+        .WillByDefault(RunOnceCallback<1>(true));
   }
 
  protected:

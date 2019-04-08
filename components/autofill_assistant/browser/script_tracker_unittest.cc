@@ -35,13 +35,11 @@ class ScriptTrackerTest : public testing::Test, public ScriptTracker::Listener {
   void SetUp() override {
     delegate_.SetCurrentURL(GURL("http://www.example.com/"));
 
+    ON_CALL(mock_web_controller_, OnElementCheck(Eq(Selector({"exists"})), _))
+        .WillByDefault(RunOnceCallback<1>(true));
     ON_CALL(mock_web_controller_,
-            OnElementCheck(kExistenceCheck, Eq(Selector({"exists"})), _))
-        .WillByDefault(RunOnceCallback<2>(true));
-    ON_CALL(
-        mock_web_controller_,
-        OnElementCheck(kExistenceCheck, Eq(Selector({"does_not_exist"})), _))
-        .WillByDefault(RunOnceCallback<2>(false));
+            OnElementCheck(Eq(Selector({"does_not_exist"})), _))
+        .WillByDefault(RunOnceCallback<1>(false));
 
     // Scripts run, but have no actions.
     ON_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
@@ -278,10 +276,9 @@ TEST_F(ScriptTrackerTest, CheckScriptsAgainAfterScriptEnd) {
 }
 
 TEST_F(ScriptTrackerTest, CheckScriptsAfterDOMChange) {
-  EXPECT_CALL(
-      mock_web_controller_,
-      OnElementCheck(kExistenceCheck, Eq(Selector({"maybe_exists"})), _))
-      .WillOnce(RunOnceCallback<2>(false));
+  EXPECT_CALL(mock_web_controller_,
+              OnElementCheck(Eq(Selector({"maybe_exists"})), _))
+      .WillOnce(RunOnceCallback<1>(false));
 
   AddScript("script name", "script path", "maybe_exists");
   SetAndCheckScripts();
@@ -290,10 +287,9 @@ TEST_F(ScriptTrackerTest, CheckScriptsAfterDOMChange) {
   EXPECT_THAT(runnable_scripts(), IsEmpty());
 
   // DOM has changed; OnElementExists now returns true.
-  EXPECT_CALL(
-      mock_web_controller_,
-      OnElementCheck(kExistenceCheck, Eq(Selector({"maybe_exists"})), _))
-      .WillOnce(RunOnceCallback<2>(true));
+  EXPECT_CALL(mock_web_controller_,
+              OnElementCheck(Eq(Selector({"maybe_exists"})), _))
+      .WillOnce(RunOnceCallback<1>(true));
   tracker_.CheckScripts();
 
   // The script can now run

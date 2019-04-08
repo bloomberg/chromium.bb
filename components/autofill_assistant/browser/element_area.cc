@@ -45,7 +45,7 @@ void ElementArea::SetFromProto(const ElementAreaProto& proto) {
     for (const auto& element_proto : rectangle_proto.elements()) {
       rectangle.positions.emplace_back();
       ElementPosition& position = rectangle.positions.back();
-      position.selector = Selector(element_proto);
+      position.selector = Selector(element_proto).MustBeVisible();
       DVLOG(3) << "  " << position.selector;
     }
   }

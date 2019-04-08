@@ -25,26 +25,23 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD2(RunElementChecks,
                void(BatchElementChecker*, base::OnceCallback<void()>));
 
-  void ShortWaitForElement(ElementCheckType check_type,
-                           const Selector& selector,
+  void ShortWaitForElement(const Selector& selector,
                            base::OnceCallback<void(bool)> callback) override {
-    OnShortWaitForElement(check_type, selector, callback);
+    OnShortWaitForElement(selector, callback);
   }
 
-  MOCK_METHOD3(OnShortWaitForElement,
-               void(ElementCheckType check_type,
-                    const Selector& selector,
-                    base::OnceCallback<void(bool)>&));
+  MOCK_METHOD2(OnShortWaitForElement,
+               void(const Selector& selector, base::OnceCallback<void(bool)>&));
 
-  void WaitForElementVisible(
+  void WaitForElement(
       base::TimeDelta max_wait_time,
       bool allow_interrupt,
       const Selector& selector,
       base::OnceCallback<void(ProcessedActionStatusProto)> callback) override {
-    OnWaitForElementVisible(max_wait_time, allow_interrupt, selector, callback);
+    OnWaitForElement(max_wait_time, allow_interrupt, selector, callback);
   }
 
-  MOCK_METHOD4(OnWaitForElementVisible,
+  MOCK_METHOD4(OnWaitForElement,
                void(base::TimeDelta,
                     bool,
                     const Selector&,
