@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/ui/omnibox/popup/image_retriever.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_truncating_label.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
+#import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
@@ -23,10 +24,7 @@
 #endif
 
 namespace {
-const CGFloat kLeadingMargin = 12;
-const CGFloat kLeadingMarginIpad = 183;
 const CGFloat kTextTopMargin = 6;
-const CGFloat kTextLeadingMargin = 10;
 const CGFloat kImageViewSize = 28;
 const CGFloat kImageViewCornerRadius = 7;
 const CGFloat kTrailingButtonSize = 24;
@@ -77,6 +75,7 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
         initWithArrangedSubviews:@[ _textTruncatingLabel ]];
     _textStackView.translatesAutoresizingMaskIntoConstraints = NO;
     _textStackView.axis = UILayoutConstraintAxisVertical;
+    _textStackView.alignment = UIStackViewAlignmentLeading;
 
     _detailTruncatingLabel =
         [[OmniboxPopupTruncatingLabel alloc] initWithFrame:CGRectZero];
@@ -115,6 +114,14 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
   return self;
 }
 
+- (void)didMoveToWindow {
+  [super didMoveToWindow];
+
+  if (self.window) {
+    [self attachToLayoutGuides];
+  }
+}
+
 #pragma mark - Layout
 
 // Setup the layout of the cell initially. This only adds the elements that are
@@ -127,23 +134,19 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
     // Row has a minimum height.
     [self.contentView.heightAnchor constraintGreaterThanOrEqualToConstant:48],
 
-    // Position leadingImageView at the leading edge of the view
+    // Position leadingImageView at the leading edge of the view.
+    // Leave the horizontal position unconstrained as that will be added via a
+    // layout guide once the cell has been added to the view hierarchy.
     [self.leadingImageView.heightAnchor
         constraintEqualToConstant:kImageViewSize],
     [self.leadingImageView.widthAnchor
         constraintEqualToConstant:kImageViewSize],
-    [self.leadingImageView.leadingAnchor
-        constraintEqualToAnchor:self.contentView.leadingAnchor
-                       constant:IsRegularXRegularSizeClass()
-                                    ? kLeadingMarginIpad
-                                    : kLeadingMargin],
     [self.leadingImageView.centerYAnchor
         constraintEqualToAnchor:self.contentView.centerYAnchor],
 
-    // Position textStackView after leadingImageView.
-    [self.textStackView.leadingAnchor
-        constraintEqualToAnchor:self.leadingImageView.trailingAnchor
-                       constant:kTextLeadingMargin],
+    // Position textStackView "after" leadingImageView. The leading constraint
+    // is actually left off because it will be added via a
+    // layout guide once the cell has been added to the view hierarchy.
     // Use greater than or equal constraints because there may be a trailing
     // view here.
     [self.contentView.trailingAnchor
@@ -192,6 +195,24 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
                        constant:kTrailingButtonTrailingMargin],
     [self.answerImageView.leadingAnchor
         constraintEqualToAnchor:self.textStackView.trailingAnchor],
+  ]];
+}
+
+- (void)attachToLayoutGuides {
+  NamedGuide* imageLayoutGuide =
+      [NamedGuide guideWithName:kOmniboxLeadingImageGuide view:self];
+  NamedGuide* textLayoutGuide = [NamedGuide guideWithName:kOmniboxTextFieldGuide
+                                                     view:self];
+
+  // Layout guides should both be setup
+  DCHECK(imageLayoutGuide.isConstrained);
+  DCHECK(textLayoutGuide.isConstrained);
+
+  [NSLayoutConstraint activateConstraints:@[
+    [self.leadingImageView.centerXAnchor
+        constraintEqualToAnchor:imageLayoutGuide.centerXAnchor],
+    [self.textStackView.leadingAnchor
+        constraintEqualToAnchor:textLayoutGuide.leadingAnchor],
   ]];
 }
 

@@ -6,6 +6,7 @@
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_base_view_controller+internal.h"
 
 #import "base/logging.h"
+#include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_row_cell.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -45,6 +46,11 @@
 
 - (CGFloat)tableView:(UITableView*)tableView
     heightForRowAtIndexPath:(NSIndexPath*)indexPath {
+  if (self.shortcutsEnabled && indexPath.row == 0 &&
+      self.currentResult.count == 0) {
+    return self.shortcutsViewController.collectionView.collectionViewLayout
+        .collectionViewContentSize.height;
+  }
   return UITableViewAutomaticDimension;
 }
 
