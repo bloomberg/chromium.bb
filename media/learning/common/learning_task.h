@@ -30,6 +30,9 @@ struct COMPONENT_EXPORT(LEARNING_COMMON) LearningTask {
   enum class Model {
     kExtraTrees,
     kLookupTable,
+
+    // For the fuzzer.
+    kMaxValue = kLookupTable
   };
 
   enum class Ordering {
@@ -44,6 +47,9 @@ struct COMPONENT_EXPORT(LEARNING_COMMON) LearningTask {
     // ints that represent the number of elapsed milliseconds are numerically
     // ordered in a meaningful way.
     kNumeric,
+
+    // For the fuzzer.
+    kMaxValue = kNumeric
   };
 
   enum class PrivacyMode {
@@ -53,6 +59,9 @@ struct COMPONENT_EXPORT(LEARNING_COMMON) LearningTask {
 
     // Value does not represent private information, such as video width.
     kPublic,
+
+    // For the fuzzer.
+    kMaxValue = kPublic
   };
 
   // Description of how a Value should be interpreted.

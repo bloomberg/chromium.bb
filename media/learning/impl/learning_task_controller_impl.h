@@ -91,6 +91,9 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningTaskControllerImpl
   // randomly chosen subset of features.
   std::set<int> feature_indices_;
 
+  // Number of features that we expect in each observation.
+  size_t expected_feature_count_;
+
   friend class LearningTaskControllerImplTest;
 };
 
