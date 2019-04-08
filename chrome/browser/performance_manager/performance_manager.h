@@ -15,7 +15,6 @@
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/performance_manager/graph/graph.h"
-#include "chrome/browser/performance_manager/graph/graph_introspector_impl.h"
 #include "chrome/browser/performance_manager/performance_manager.h"
 #include "chrome/browser/performance_manager/webui_graph_dump_impl.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
@@ -135,8 +134,6 @@ class PerformanceManager {
 
   // The registered graph observers.
   std::vector<std::unique_ptr<GraphObserver>> observers_;
-
-  CoordinationUnitIntrospectorImpl introspector_;
 
   // Provided to |graph_|.
   // TODO(siggi): This no longer needs to go through mojo.

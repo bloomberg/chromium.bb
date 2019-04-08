@@ -105,9 +105,7 @@ class ProcessMemoryMetricsEmitterFake : public ProcessMemoryMetricsEmitter {
     QuitIfFinished();
   }
 
-  void ReceivedProcessInfos(
-      std::vector<resource_coordinator::mojom::ProcessInfoPtr> process_infos)
-      override {
+  void ReceivedProcessInfos(std::vector<ProcessInfo> process_infos) override {
     ProcessMemoryMetricsEmitter::ReceivedProcessInfos(std::move(process_infos));
     finished_process_info_ = true;
     QuitIfFinished();

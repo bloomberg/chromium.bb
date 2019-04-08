@@ -41,8 +41,7 @@ PerformanceManager* PerformanceManager::GetInstance() {
   return g_performance_manager;
 }
 
-PerformanceManager::PerformanceManager()
-    : task_runner_(CreateTaskRunner()), introspector_(&graph_) {
+PerformanceManager::PerformanceManager() : task_runner_(CreateTaskRunner()) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -251,10 +250,6 @@ void PerformanceManager::CallOnGraphImpl(GraphCallback graph_callback) {
 void PerformanceManager::OnStartImpl(
     std::unique_ptr<service_manager::Connector> connector) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  interface_registry_.AddInterface(
-      base::BindRepeating(&CoordinationUnitIntrospectorImpl::BindToInterface,
-                          base::Unretained(&introspector_)));
 
   // Register new |GraphObserver| implementations here.
   auto page_signal_generator_impl = std::make_unique<PageSignalGeneratorImpl>();

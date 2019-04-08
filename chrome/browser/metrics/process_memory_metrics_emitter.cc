@@ -4,6 +4,8 @@
 
 #include "chrome/browser/metrics/process_memory_metrics_emitter.h"
 
+#include <set>
+
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/metrics/histogram_functions.h"
@@ -12,6 +14,10 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/tab_footprint_aggregator.h"
+#include "chrome/browser/performance_manager/graph/frame_node_impl.h"
+#include "chrome/browser/performance_manager/graph/graph.h"
+#include "chrome/browser/performance_manager/graph/page_node_impl.h"
+#include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/performance_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/audio_service_info.h"
@@ -398,14 +404,13 @@ void EmitBrowserMemoryMetrics(const GlobalMemoryDump::ProcessDump& pmd,
 
 void EmitRendererMemoryMetrics(
     const GlobalMemoryDump::ProcessDump& pmd,
-    const resource_coordinator::mojom::PageInfoPtr& page_info,
+    const ProcessMemoryMetricsEmitter::PageInfo* page_info,
     ukm::UkmRecorder* ukm_recorder,
     int number_of_extensions,
     const base::Optional<base::TimeDelta>& uptime,
     bool record_uma) {
-  ukm::SourceId ukm_source_id = page_info.is_null()
-                                    ? ukm::UkmRecorder::GetNewSourceID()
-                                    : page_info->ukm_source_id;
+  ukm::SourceId ukm_source_id =
+      page_info ? page_info->ukm_source_id : ukm::UkmRecorder::GetNewSourceID();
   Memory_Experimental builder(ukm_source_id);
   builder.SetProcessType(static_cast<int64_t>(
       memory_instrumentation::mojom::ProcessType::RENDERER));
@@ -414,7 +419,7 @@ void EmitRendererMemoryMetrics(
   const char* process = number_of_extensions == 0 ? "Renderer" : "Extension";
   EmitProcessUmaAndUkm(pmd, process, uptime, record_uma, &builder);
 
-  if (!page_info.is_null()) {
+  if (page_info) {
     builder.SetIsVisible(page_info->is_visible);
     builder.SetTimeSinceLastVisibilityChange(
         page_info->time_since_last_visibility_change.InSeconds());
@@ -494,10 +499,12 @@ void ProcessMemoryMetricsEmitter::FetchAndEmitProcessMemoryMetrics() {
   // The callback keeps this object alive until the callback is invoked.
   performance_manager::PerformanceManager* performance_manager =
       performance_manager::PerformanceManager::GetInstance();
-  performance_manager->BindInterface(mojo::MakeRequest(&introspector_));
   auto callback2 =
-      base::Bind(&ProcessMemoryMetricsEmitter::ReceivedProcessInfos, this);
-  introspector_->GetProcessToURLMap(callback2);
+      base::BindOnce(&ProcessMemoryMetricsEmitter::ReceivedProcessInfos, this);
+  performance_manager->CallOnGraph(
+      FROM_HERE,
+      base::BindOnce(&ProcessMemoryMetricsEmitter::GetProcessToPageInfoMap,
+                     std::move(callback2)));
 }
 
 void ProcessMemoryMetricsEmitter::MarkServiceRequestsInProgress() {
@@ -518,15 +525,14 @@ void ProcessMemoryMetricsEmitter::ReceivedMemoryDump(
 }
 
 void ProcessMemoryMetricsEmitter::ReceivedProcessInfos(
-    std::vector<resource_coordinator::mojom::ProcessInfoPtr> process_infos) {
+    std::vector<ProcessInfo> process_infos) {
   get_process_urls_in_progress_ = false;
   process_infos_.clear();
   process_infos_.reserve(process_infos.size());
 
   // If there are duplicate pids, keep the latest ProcessInfoPtr.
-  for (resource_coordinator::mojom::ProcessInfoPtr& process_info :
-       process_infos) {
-    base::ProcessId pid = process_info->pid;
+  for (ProcessInfo& process_info : process_infos) {
+    base::ProcessId pid = process_info.pid;
     process_infos_[pid] = std::move(process_info);
   }
   CollateResults();
@@ -582,8 +588,8 @@ base::Optional<base::TimeDelta> ProcessMemoryMetricsEmitter::GetProcessUptime(
     base::ProcessId pid) {
   auto process_info = process_infos_.find(pid);
   if (process_info != process_infos_.end()) {
-    if (process_info->second->launch_time)
-      return now - process_info->second->launch_time.value();
+    if (!process_info->second.launch_time.is_null())
+      return now - process_info->second.launch_time;
   }
   return base::Optional<base::TimeDelta>();
 }
@@ -621,24 +627,22 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
       }
       case memory_instrumentation::mojom::ProcessType::RENDERER: {
         renderer_private_footprint_total_kb += process_pmf_kb;
-        resource_coordinator::mojom::PageInfoPtr single_page_info;
+        const PageInfo* single_page_info = nullptr;
         auto iter = process_infos_.find(pmd.pid());
         if (iter != process_infos_.end()) {
-          const resource_coordinator::mojom::ProcessInfoPtr& process_info =
-              iter->second;
+          const ProcessInfo& process_info = iter->second;
 
           if (emit_metrics_for_all_processes) {
             // Renderer metrics-by-tab only make sense if we're visiting all
             // render processes.
-            for (const resource_coordinator::mojom::PageInfoPtr& page_info :
-                 process_info->page_infos) {
-              if (page_info->hosts_main_frame) {
-                per_tab_metrics.AssociateMainFrame(page_info->ukm_source_id,
-                                                   pmd.pid(), page_info->tab_id,
+            for (const PageInfo& page_info : process_info.page_infos) {
+              if (page_info.hosts_main_frame) {
+                per_tab_metrics.AssociateMainFrame(page_info.ukm_source_id,
+                                                   pmd.pid(), page_info.tab_id,
                                                    process_pmf_kb);
               } else {
-                per_tab_metrics.AssociateSubFrame(page_info->ukm_source_id,
-                                                  pmd.pid(), page_info->tab_id,
+                per_tab_metrics.AssociateSubFrame(page_info.ukm_source_id,
+                                                  pmd.pid(), page_info.tab_id,
                                                   process_pmf_kb);
               }
             }
@@ -648,8 +652,8 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
           // emit any per-renderer URLs. This is not ideal, but UKM does not
           // support multiple-URLs per entry, and we must have one entry per
           // process.
-          if (process_info->page_infos.size() == 1) {
-            single_page_info = std::move(process_info->page_infos[0]);
+          if (process_info.page_infos.size() == 1) {
+            single_page_info = &process_info.page_infos[0];
           }
         }
 
@@ -728,3 +732,67 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
     per_tab_metrics.RecordPmfs(GetUkmRecorder());
   }
 }
+
+namespace {
+
+// Returns true iff the given |process| is responsible for hosting the
+// main-frame of the given |page|.
+bool HostsMainFrame(performance_manager::ProcessNodeImpl* process,
+                    performance_manager::PageNodeImpl* page) {
+  performance_manager::FrameNodeImpl* main_frame = page->GetMainFrameNode();
+  if (main_frame == nullptr) {
+    // |process| can't host a frame that doesn't exist.
+    return false;
+  }
+
+  return main_frame->process_node() == process;
+}
+
+}  // namespace
+
+void ProcessMemoryMetricsEmitter::GetProcessToPageInfoMap(
+    GetProcessToPageInfoMapCallback callback,
+    performance_manager::Graph* graph) {
+  std::vector<ProcessInfo> process_infos;
+  std::vector<performance_manager::ProcessNodeImpl*> process_nodes =
+      graph->GetAllProcessNodes();
+  for (auto* process_node : process_nodes) {
+    if (process_node->process_id() == base::kNullProcessId)
+      continue;
+
+    ProcessInfo process_info;
+    process_info.pid = process_node->process_id();
+    process_info.launch_time = process_node->launch_time();
+
+    std::set<performance_manager::PageNodeImpl*> page_nodes =
+        process_node->GetAssociatedPageCoordinationUnits();
+    for (performance_manager::PageNodeImpl* page_node : page_nodes) {
+      if (page_node->ukm_source_id() == ukm::kInvalidSourceId)
+        continue;
+
+      PageInfo page_info;
+      page_info.ukm_source_id = page_node->ukm_source_id();
+      page_info.tab_id = page_node->id().id;
+      page_info.hosts_main_frame = HostsMainFrame(process_node, page_node);
+      page_info.is_visible = page_node->is_visible();
+      page_info.time_since_last_visibility_change =
+          page_node->TimeSinceLastVisibilityChange();
+      page_info.time_since_last_navigation =
+          page_node->TimeSinceLastNavigation();
+      process_info.page_infos.push_back(std::move(page_info));
+    }
+    process_infos.push_back(std::move(process_info));
+  }
+  std::move(callback).Run(std::move(process_infos));
+}
+
+ProcessMemoryMetricsEmitter::ProcessInfo::ProcessInfo() = default;
+
+ProcessMemoryMetricsEmitter::ProcessInfo::ProcessInfo(ProcessInfo&& other) =
+    default;
+
+ProcessMemoryMetricsEmitter::ProcessInfo::~ProcessInfo() = default;
+
+ProcessMemoryMetricsEmitter::ProcessInfo&
+ProcessMemoryMetricsEmitter::ProcessInfo::operator=(const ProcessInfo& other) =
+    default;

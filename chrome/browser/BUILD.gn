@@ -1060,8 +1060,6 @@ jumbo_split_static_library("browser") {
     "performance_manager/graph/frame_node_impl.h",
     "performance_manager/graph/graph.cc",
     "performance_manager/graph/graph.h",
-    "performance_manager/graph/graph_introspector_impl.cc",
-    "performance_manager/graph/graph_introspector_impl.h",
     "performance_manager/graph/node_attached_data.cc",
     "performance_manager/graph/node_attached_data.h",
     "performance_manager/graph/node_attached_data_impl.h",
