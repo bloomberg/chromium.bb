@@ -95,13 +95,13 @@ class PLATFORM_EXPORT Gradient : public RefCounted<Gradient> {
 
   struct ColorStop {
     DISALLOW_NEW();
-    float stop;
+    double stop;
     Color color;
 
-    ColorStop(float s, const Color& c) : stop(s), color(c) {}
+    ColorStop(double s, const Color& c) : stop(s), color(c) {}
   };
   void AddColorStop(const ColorStop&);
-  void AddColorStop(float value, const Color& color) {
+  void AddColorStop(double value, const Color& color) {
     AddColorStop(ColorStop(value, color));
   }
   void AddColorStops(const Vector<Gradient::ColorStop>&);
