@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_math.h"
@@ -29,11 +30,11 @@ namespace {
 
 const int kSparseData = 1;
 
-// Maximum size of a sparse entry is 2 to the power of this number.
-const int kMaxSparseEntryBits = 12;
+// Maximum size of a child of sparse entry is 2 to the power of this number.
+const int kMaxChildEntryBits = 12;
 
-// Sparse entry has maximum size of 4KB.
-const int kMaxSparseEntrySize = 1 << kMaxSparseEntryBits;
+// Sparse entry children have maximum size of 4KB.
+const int kMaxChildEntrySize = 1 << kMaxChildEntryBits;
 
 // This enum is used for histograms, so only append to the end.
 enum MemEntryWriteResult {
@@ -50,21 +51,21 @@ void RecordWriteResult(MemEntryWriteResult result) {
 }
 
 // Convert global offset to child index.
-int ToChildIndex(int64_t offset) {
-  return static_cast<int>(offset >> kMaxSparseEntryBits);
+int64_t ToChildIndex(int64_t offset) {
+  return offset >> kMaxChildEntryBits;
 }
 
 // Convert global offset to offset in child entry.
 int ToChildOffset(int64_t offset) {
-  return static_cast<int>(offset & (kMaxSparseEntrySize - 1));
+  return static_cast<int>(offset & (kMaxChildEntrySize - 1));
 }
 
 // Returns a name for a child entry given the base_name of the parent and the
 // child_id.  This name is only used for logging purposes.
 // If the entry is called entry_name, child entries will be named something
 // like Range_entry_name:YYY where YYY is the number of the particular child.
-std::string GenerateChildName(const std::string& base_name, int child_id) {
-  return base::StringPrintf("Range_%s:%i", base_name.c_str(), child_id);
+std::string GenerateChildName(const std::string& base_name, int64_t child_id) {
+  return base::StringPrintf("Range_%s:%" PRId64, base_name.c_str(), child_id);
 }
 
 // Returns NetLog parameters for the creation of a MemEntryImpl. A separate
@@ -104,7 +105,7 @@ MemEntryImpl::MemEntryImpl(base::WeakPtr<MemBackendImpl> backend,
 }
 
 MemEntryImpl::MemEntryImpl(base::WeakPtr<MemBackendImpl> backend,
-                           int child_id,
+                           int64_t child_id,
                            MemEntryImpl* parent,
                            net::NetLog* net_log)
     : MemEntryImpl(backend,
@@ -307,7 +308,7 @@ size_t MemEntryImpl::EstimateMemoryUsage() const {
 
 MemEntryImpl::MemEntryImpl(base::WeakPtr<MemBackendImpl> backend,
                            const ::std::string& key,
-                           int child_id,
+                           int64_t child_id,
                            MemEntryImpl* parent,
                            net::NetLog* net_log)
     : key_(key),
@@ -511,7 +512,7 @@ int MemEntryImpl::InternalWriteSparseData(int64_t offset,
       base::MakeRefCounted<net::DrainableIOBuffer>(buf, buf_len);
 
   // This loop walks through child entries continuously starting from |offset|
-  // and writes blocks of data (of maximum size kMaxSparseEntrySize) into each
+  // and writes blocks of data (of maximum size kMaxChildEntrySize) into each
   // child entry until all |buf_len| bytes are written. The write operation can
   // start in the middle of an entry.
   while (io_buf->BytesRemaining()) {
@@ -520,8 +521,8 @@ int MemEntryImpl::InternalWriteSparseData(int64_t offset,
 
     // Find the right amount to write, this evaluates the remaining bytes to
     // write and remaining capacity of this child entry.
-    int write_len = std::min(static_cast<int>(io_buf->BytesRemaining()),
-                             kMaxSparseEntrySize - child_offset);
+    int write_len =
+        std::min(io_buf->BytesRemaining(), kMaxChildEntrySize - child_offset);
 
     // Keep a record of the last byte position (exclusive) in the child.
     int data_size = child->GetDataSize(kSparseData);
@@ -626,7 +627,7 @@ bool MemEntryImpl::InitSparseInfo() {
 
 MemEntryImpl* MemEntryImpl::GetChild(int64_t offset, bool create) {
   DCHECK_EQ(PARENT_ENTRY, type());
-  int index = ToChildIndex(offset);
+  int64_t index = ToChildIndex(offset);
   auto i = children_->find(index);
   if (i != children_->end())
     return i->second;
@@ -642,7 +643,7 @@ net::Interval<int64_t> MemEntryImpl::ChildInterval(
   // The valid range in child is [child_first_pos_, DataSize), since the child
   // entry ops just use standard disk_cache::Entry API, so DataSize is
   // not aware of any hole in the beginning.
-  int64_t child_responsibility_start = (i->first) * kMaxSparseEntrySize;
+  int64_t child_responsibility_start = (i->first) * kMaxChildEntrySize;
   return net::Interval<int64_t>(
       child_responsibility_start + child->child_first_pos_,
       child_responsibility_start + child->GetDataSize(kSparseData));

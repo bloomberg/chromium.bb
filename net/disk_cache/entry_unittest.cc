@@ -75,7 +75,7 @@ class DiskCacheEntryTest : public DiskCacheTestWithCache {
   void DoomedEntry(int stream_index);
   void BasicSparseIO();
   void HugeSparseIO();
-  void GetAvailableRange();
+  void GetAvailableRangeTest();
   void CouldBeSparse();
   void UpdateSparseEntry();
   void DoomSparseEntry();
@@ -95,6 +95,7 @@ class DiskCacheEntryTest : public DiskCacheTestWithCache {
   void LastUsedTimePersists();
   void TruncateBackwards();
   void ZeroWriteBackwards();
+  void SparseOffset64Bit();
 };
 
 // This part of the test runs on the background thread.
@@ -1720,7 +1721,7 @@ TEST_F(DiskCacheEntryTest, MemoryOnlyHugeSparseIO) {
   HugeSparseIO();
 }
 
-void DiskCacheEntryTest::GetAvailableRange() {
+void DiskCacheEntryTest::GetAvailableRangeTest() {
   std::string key("the first key");
   disk_cache::Entry* entry;
   ASSERT_THAT(CreateEntry(key, &entry), IsOk());
@@ -1791,13 +1792,13 @@ void DiskCacheEntryTest::GetAvailableRange() {
 
 TEST_F(DiskCacheEntryTest, GetAvailableRange) {
   InitCache();
-  GetAvailableRange();
+  GetAvailableRangeTest();
 }
 
 TEST_F(DiskCacheEntryTest, MemoryOnlyGetAvailableRange) {
   SetMemoryOnlyMode();
   InitCache();
-  GetAvailableRange();
+  GetAvailableRangeTest();
 }
 
 TEST_F(DiskCacheEntryTest, GetAvailableRangeBlockFileDiscontinuous) {
@@ -2424,12 +2425,10 @@ void DiskCacheEntryTest::SparseInvalidArg() {
   EXPECT_EQ(net::ERR_INVALID_ARGUMENT, ReadSparseData(entry, 0, buf.get(), -1));
 
   int64_t start_out;
-  EXPECT_EQ(
-      net::ERR_INVALID_ARGUMENT,
-      DiskCacheTestWithCache::GetAvailableRange(entry, -1, kSize, &start_out));
-  EXPECT_EQ(
-      net::ERR_INVALID_ARGUMENT,
-      DiskCacheTestWithCache::GetAvailableRange(entry, 0, -1, &start_out));
+  EXPECT_EQ(net::ERR_INVALID_ARGUMENT,
+            GetAvailableRange(entry, -1, kSize, &start_out));
+  EXPECT_EQ(net::ERR_INVALID_ARGUMENT,
+            GetAvailableRange(entry, 0, -1, &start_out));
 
   entry->Close();
 }
@@ -4556,7 +4555,7 @@ TEST_F(DiskCacheEntryTest, SimpleCacheHugeSparseIO) {
 TEST_F(DiskCacheEntryTest, SimpleCacheGetAvailableRange) {
   SetSimpleCacheMode();
   InitCache();
-  GetAvailableRange();
+  GetAvailableRangeTest();
 }
 
 TEST_F(DiskCacheEntryTest, SimpleCacheUpdateSparseEntry) {
@@ -5204,6 +5203,60 @@ TEST_F(DiskCacheEntryTest, MemoryOnlyZeroWriteBackwards) {
   SetMemoryOnlyMode();
   InitCache();
   ZeroWriteBackwards();
+}
+
+void DiskCacheEntryTest::SparseOffset64Bit() {
+  // Offsets to sparse ops are 64-bit, make sure we keep track of all of them.
+  // (Or, as at least in case of blockfile, fail things cleanly, as it has a
+  //  cap of 64GiB for indexes).
+  bool blockfile = !memory_only_ && !simple_cache_mode_;
+  InitCache();
+
+  const char kKey[] = "a key";
+
+  disk_cache::Entry* entry = nullptr;
+  ASSERT_THAT(CreateEntry(kKey, &entry), IsOk());
+  ASSERT_TRUE(entry != nullptr);
+
+  const int kSize = 1024;
+  // One bit set very high, so intermediate truncations to 32-bit would drop it
+  // even if they happen after a bunch of shifting right.
+  const int64_t kOffset = (1ll << 61);
+
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<net::IOBuffer>(kSize);
+  CacheTestFillBuffer(buffer->data(), kSize, false);
+
+  EXPECT_EQ(blockfile ? net::ERR_CACHE_OPERATION_NOT_SUPPORTED : kSize,
+            WriteSparseData(entry, kOffset, buffer.get(), kSize));
+
+  int64_t start_out = -1;
+  EXPECT_EQ(0, GetAvailableRange(entry, /* offset = */ 0, kSize, &start_out));
+
+  start_out = -1;
+  EXPECT_EQ(blockfile ? net::ERR_CACHE_OPERATION_NOT_SUPPORTED : kSize,
+            GetAvailableRange(entry, kOffset, kSize, &start_out));
+  EXPECT_EQ(kOffset, start_out);
+
+  entry->Close();
+}
+
+TEST_F(DiskCacheEntryTest, SparseOffset64Bit) {
+  InitCache();
+  SparseOffset64Bit();
+}
+
+TEST_F(DiskCacheEntryTest, SimpleSparseOffset64Bit) {
+  SetSimpleCacheMode();
+  InitCache();
+  SparseOffset64Bit();
+}
+
+TEST_F(DiskCacheEntryTest, MemoryOnlySparseOffset64Bit) {
+  // https://crbug.com/946436
+  SetMemoryOnlyMode();
+  InitCache();
+  SparseOffset64Bit();
 }
 
 TEST_F(DiskCacheEntryTest, SimpleCacheCloseResurrection) {
