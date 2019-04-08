@@ -6996,7 +6996,7 @@ static void store_coding_context(MACROBLOCK *x, PICK_MODE_CONTEXT *ctx,
 
   // Take a snapshot of the coding context so it can be
   // restored if we decide to encode this way
-  ctx->skip = x->skip;
+  ctx->rd_stats.skip = x->skip;
   ctx->skippable = skippable;
   ctx->best_mode_index = mode_index;
   ctx->mic = *xd->mi[0];
@@ -10807,7 +10807,7 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
   int64_t dist_y = 0, dist_uv = 0;
   TX_SIZE max_uv_tx_size;
 
-  ctx->skip = 0;
+  ctx->rd_stats.skip = 0;
   mbmi->ref_frame[0] = INTRA_FRAME;
   mbmi->ref_frame[1] = NONE_FRAME;
   mbmi->use_intrabc = 0;
@@ -10858,7 +10858,7 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
   if (rd_cost->rate != INT_MAX && rd_cost->rdcost < best_rd)
     best_rd = rd_cost->rdcost;
   if (rd_pick_intrabc_mode_sb(cpi, x, rd_cost, bsize, best_rd) < best_rd) {
-    ctx->skip = x->skip;
+    ctx->rd_stats.skip = x->skip;
     memcpy(ctx->blk_skip, x->blk_skip,
            sizeof(x->blk_skip[0]) * ctx->num_4x4_blk);
     assert(rd_cost->rate != INT_MAX);

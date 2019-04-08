@@ -833,7 +833,7 @@ static void store_coding_context(MACROBLOCK *x, PICK_MODE_CONTEXT *ctx,
 
   // Take a snapshot of the coding context so it can be
   // restored if we decide to encode this way
-  ctx->skip = x->skip;
+  ctx->rd_stats.skip = x->skip;
   memcpy(ctx->blk_skip, x->blk_skip, sizeof(x->blk_skip[0]) * ctx->num_4x4_blk);
   ctx->skippable = x->skip;
   ctx->best_mode_index = mode_index;

@@ -38,8 +38,6 @@ enum {
 typedef struct {
   MB_MODE_INFO mic;
   MB_MODE_INFO_EXT mbmi_ext;
-  int64_t dist;
-  int64_t rdcost;
   uint8_t *color_index_map[2];
   uint8_t *blk_skip;
 
@@ -50,7 +48,6 @@ typedef struct {
   uint8_t *txb_entropy_ctx[MAX_MB_PLANE];
 
   int num_4x4_blk;
-  int skip;
   // For current partition, only if all Y, U, and V transform blocks'
   // coefficients are quantized to 0, skippable is set to 1.
   int skippable;
@@ -59,9 +56,7 @@ typedef struct {
   int comp_pred_diff;
   int single_pred_diff;
 
-  // TODO(jingning) Use RD_COST struct here instead. This involves a boarder
-  // scope of refactoring.
-  int rate;
+  RD_STATS rd_stats;
 
   int rd_mode_is_ready;  // Flag to indicate whether rd pick mode decision has
                          // been made.

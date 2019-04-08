@@ -357,7 +357,7 @@ static void update_state(const AV1_COMP *const cpi,
 
   memcpy(x->blk_skip, ctx->blk_skip, sizeof(x->blk_skip[0]) * ctx->num_4x4_blk);
 
-  x->skip = ctx->skip;
+  x->skip = ctx->rd_stats.skip;
 
   // If segmentation in use
   if (seg->enabled) {
@@ -373,7 +373,8 @@ static void update_state(const AV1_COMP *const cpi,
     // and then update the quantizer.
     if (cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ) {
       av1_cyclic_refresh_update_segment(cpi, mi_addr, mi_row, mi_col, bsize,
-                                        ctx->rate, ctx->dist, x->skip);
+                                        ctx->rd_stats.rate, ctx->rd_stats.dist,
+                                        x->skip);
     }
     if (mi_addr->uv_mode == UV_CFL_PRED && !is_cfl_allowed(xd))
       mi_addr->uv_mode = UV_DC_PRED;
@@ -527,8 +528,8 @@ static void pick_sb_modes(AV1_COMP *const cpi, TileDataEnc *tile_data,
 #endif
 
   if (best_rd < 0) {
-    ctx->rdcost = INT64_MAX;
-    ctx->skip = 0;
+    ctx->rd_stats.rdcost = INT64_MAX;
+    ctx->rd_stats.skip = 0;
     av1_invalid_rd_stats(rd_cost);
     return;
   }
@@ -543,9 +544,9 @@ static void pick_sb_modes(AV1_COMP *const cpi, TileDataEnc *tile_data,
     assert(ctx_mbmi->sb_type == bsize);
     assert(ctx_mbmi->partition == partition);
     *mbmi = *ctx_mbmi;
-    rd_cost->rate = ctx->rate;
-    rd_cost->dist = ctx->dist;
-    rd_cost->rdcost = ctx->rdcost;
+    rd_cost->rate = ctx->rd_stats.rate;
+    rd_cost->dist = ctx->rd_stats.dist;
+    rd_cost->rdcost = ctx->rd_stats.rdcost;
   } else {
     mbmi->sb_type = bsize;
     mbmi->partition = partition;
@@ -581,7 +582,7 @@ static void pick_sb_modes(AV1_COMP *const cpi, TileDataEnc *tile_data,
                            xd->plane[1].subsampling_y);
 
   if (ctx->rd_mode_is_ready) {
-    x->skip = ctx->skip;
+    x->skip = ctx->rd_stats.skip;
     *x->mbmi_ext = ctx->mbmi_ext;
     return;
   }
@@ -692,9 +693,9 @@ static void pick_sb_modes(AV1_COMP *const cpi, TileDataEnc *tile_data,
   // refactored to provide proper exit/return handle.
   if (rd_cost->rate == INT_MAX) rd_cost->rdcost = INT64_MAX;
 
-  ctx->rate = rd_cost->rate;
-  ctx->dist = rd_cost->dist;
-  ctx->rdcost = rd_cost->rdcost;
+  ctx->rd_stats.rate = rd_cost->rate;
+  ctx->rd_stats.dist = rd_cost->dist;
+  ctx->rd_stats.rdcost = rd_cost->rdcost;
 
 #if CONFIG_COLLECT_COMPONENT_TIMING
   end_timing(cpi, rd_pick_sb_modes_time);
@@ -2193,7 +2194,7 @@ static void rd_test_partition3(AV1_COMP *const cpi, ThreadData *td,
 static void reset_partition(PC_TREE *pc_tree, BLOCK_SIZE bsize) {
   pc_tree->partitioning = PARTITION_NONE;
   pc_tree->cb_search_range = SEARCH_FULL_PLANE;
-  pc_tree->none.skip = 0;
+  pc_tree->none.rd_stats.skip = 0;
 
   pc_tree->pc_tree_stats.valid = 0;
   pc_tree->pc_tree_stats.split = 0;
@@ -2252,8 +2253,8 @@ static void rd_pick_sqr_partition(AV1_COMP *const cpi, ThreadData *td,
   (void)split_rd;
 
   if (best_rd < 0) {
-    pc_tree->none.rdcost = INT64_MAX;
-    pc_tree->none.skip = 0;
+    pc_tree->none.rd_stats.rdcost = INT64_MAX;
+    pc_tree->none.rd_stats.skip = 0;
     av1_invalid_rd_stats(rd_cost);
     return;
   }
@@ -2334,8 +2335,8 @@ static void rd_pick_sqr_partition(AV1_COMP *const cpi, ThreadData *td,
     pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &this_rdc, PARTITION_NONE,
                   bsize, ctx_none, best_remain_rdcost, 0);
 
-    pc_tree->pc_tree_stats.rdcost = ctx_none->rdcost;
-    pc_tree->pc_tree_stats.skip = ctx_none->skip;
+    pc_tree->pc_tree_stats.rdcost = ctx_none->rd_stats.rdcost;
+    pc_tree->pc_tree_stats.skip = ctx_none->rd_stats.skip;
 
     if (none_rd) *none_rd = this_rdc.rdcost;
     if (this_rdc.rate != INT_MAX) {
@@ -2436,7 +2437,7 @@ static void rd_pick_sqr_partition(AV1_COMP *const cpi, ThreadData *td,
 
       pc_tree->pc_tree_stats.sub_block_rdcost[idx] = this_rdc.rdcost;
       pc_tree->pc_tree_stats.sub_block_skip[idx] =
-          pc_tree->split[idx]->none.skip;
+          pc_tree->split[idx]->none.rd_stats.skip;
 
       if (this_rdc.rate == INT_MAX) {
         sum_rdc.rdcost = INT64_MAX;
@@ -3056,8 +3057,8 @@ static void rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
   BLOCK_SIZE bsize2 = get_partition_subsize(bsize, PARTITION_SPLIT);
 
   if (best_rd < 0) {
-    pc_tree->none.rdcost = INT64_MAX;
-    pc_tree->none.skip = 0;
+    pc_tree->none.rd_stats.rdcost = INT64_MAX;
+    pc_tree->none.rd_stats.skip = 0;
     av1_invalid_rd_stats(rd_cost);
     return;
   }
