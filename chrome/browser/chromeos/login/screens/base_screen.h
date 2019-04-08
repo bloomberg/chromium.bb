@@ -55,12 +55,6 @@ class BaseScreen {
   virtual void OnConfigurationChanged();
 
  private:
-  friend class BaseWebUIHandler;
-  friend class EnrollmentScreenTest;
-  friend class NetworkScreenTest;
-  friend class ScreenManager;
-  friend class UpdateScreenTest;
-
   // Configuration itself is owned by WizardController and is accessible
   // to screen only between OnShow / OnHide calls.
   base::Value* configuration_ = nullptr;
