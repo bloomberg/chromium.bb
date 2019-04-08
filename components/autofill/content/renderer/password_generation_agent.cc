@@ -906,6 +906,9 @@ void PasswordGenerationAgent::MaybeCreateCurrentGenerationItem(
           ? password_agent_->GetPasswordFormFromUnownedInputElements()
           : password_agent_->GetPasswordFormFromWebForm(element.Form());
 
+  if (!password_form)
+    return;
+
   std::vector<blink::WebInputElement> passwords = {element};
 
   WebFormControlElement confirmation_password =
