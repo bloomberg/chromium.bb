@@ -49,6 +49,29 @@ PRETTY_XML = """
 </ukm-configuration>
 """.strip()
 
+CONFIG_EVENT_NAMES_SORTED = """
+<ukm-configuration>
+
+<event name="Event1"/>
+
+<event name="Event2"/>
+
+<event name="Event3"/>
+
+</ukm-configuration>
+""".strip()
+
+CONFIG_EVENT_NAMES_UNSORTED = """
+<ukm-configuration>
+
+<event name="Event2"/>
+
+<event name="Event3"/>
+
+<event name="Event1"/>
+
+</ukm-configuration>
+""".strip()
 
 class UkmXmlTest(unittest.TestCase):
 
@@ -70,6 +93,9 @@ class UkmXmlTest(unittest.TestCase):
     self.assertIn('Metric:1', str(context.exception))
     self.assertIn('does not match regex', str(context.exception))
 
+  def testSortByEventName(self):
+    result = ukm_model.UpdateXML(CONFIG_EVENT_NAMES_UNSORTED)
+    self.assertMultiLineEqual(CONFIG_EVENT_NAMES_SORTED, result.strip())
 
 if __name__ == '__main__':
   unittest.main()

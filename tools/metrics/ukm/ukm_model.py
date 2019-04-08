@@ -91,6 +91,7 @@ _EVENT_TYPE =  models.ObjectNodeType(
 
 _UKM_CONFIGURATION_TYPE = models.ObjectNodeType(
     'ukm-configuration',
+    alphabetization=[('event', _LOWERCASE_NAME_FN)],
     extra_newlines=(2, 1, 1),
     indent=False,
     children=[
