@@ -2844,29 +2844,6 @@ AXObject* AXLayoutObject::ErrorMessage() const {
   return AXObjectCache().ValidationMessageObjectIfInvalid();
 }
 
-void AXLayoutObject::LineBreaks(Vector<int>& line_breaks) const {
-  if (!IsTextControl())
-    return;
-
-  VisiblePosition visible_pos = VisiblePositionForIndex(0);
-  VisiblePosition prev_visible_pos = visible_pos;
-  visible_pos = NextLinePosition(visible_pos, LayoutUnit(), kHasEditableAXRole);
-  // nextLinePosition moves to the end of the current line when there are
-  // no more lines.
-  while (visible_pos.IsNotNull() &&
-         !InSameLine(prev_visible_pos, visible_pos)) {
-    line_breaks.push_back(IndexForVisiblePosition(visible_pos));
-    prev_visible_pos = visible_pos;
-    visible_pos =
-        NextLinePosition(visible_pos, LayoutUnit(), kHasEditableAXRole);
-
-    // Make sure we always make forward progress.
-    if (visible_pos.DeepEquivalent().CompareTo(
-            prev_visible_pos.DeepEquivalent()) < 0)
-      break;
-  }
-}
-
 // The following is a heuristic used to determine if a
 // <table> should be with ax::mojom::Role::kTable or
 // ax::mojom::Role::kLayoutTable.

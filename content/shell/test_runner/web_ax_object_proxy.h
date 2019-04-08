@@ -158,7 +158,6 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
   v8::Local<v8::Object> AriaOwnsElementAtIndex(unsigned index);
   std::string AllAttributes();
   std::string AttributesOfChildren();
-  int LineForIndex(int index);
   std::string BoundsForRange(int start, int end);
   v8::Local<v8::Object> ChildAtIndex(int index);
   v8::Local<v8::Object> ElementAtPoint(int x, int y);

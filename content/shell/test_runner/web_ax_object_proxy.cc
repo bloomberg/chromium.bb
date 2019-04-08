@@ -742,7 +742,6 @@ gin::ObjectTemplateBuilder WebAXObjectProxy::GetObjectTemplateBuilder(
                  &WebAXObjectProxy::AriaFlowToElementAtIndex)
       .SetMethod("ariaOwnsElementAtIndex",
                  &WebAXObjectProxy::AriaOwnsElementAtIndex)
-      .SetMethod("lineForIndex", &WebAXObjectProxy::LineForIndex)
       .SetMethod("boundsForRange", &WebAXObjectProxy::BoundsForRange)
       .SetMethod("childAtIndex", &WebAXObjectProxy::ChildAtIndex)
       .SetMethod("elementAtPoint", &WebAXObjectProxy::ElementAtPoint)
@@ -1484,17 +1483,6 @@ std::string WebAXObjectProxy::AttributesOfChildren() {
   for (unsigned i = 0; i < size; ++i)
     collector.CollectAttributes(accessibility_object_.ChildAt(i));
   return collector.attributes();
-}
-
-int WebAXObjectProxy::LineForIndex(int index) {
-  accessibility_object_.UpdateLayoutAndCheckValidity();
-  blink::WebVector<int> line_breaks;
-  accessibility_object_.LineBreaks(line_breaks);
-  int line = 0;
-  int vector_size = static_cast<int>(line_breaks.size());
-  while (line < vector_size && line_breaks[line] <= index)
-    line++;
-  return line;
 }
 
 std::string WebAXObjectProxy::BoundsForRange(int start, int end) {

@@ -1211,16 +1211,6 @@ bool WebAXObject::AccessibilityIsIgnored() const {
   return private_->AccessibilityIsIgnored();
 }
 
-bool WebAXObject::LineBreaks(WebVector<int>& result) const {
-  if (IsDetached())
-    return false;
-
-  Vector<int> line_breaks_vector;
-  private_->LineBreaks(line_breaks_vector);
-  result = line_breaks_vector;
-  return true;
-}
-
 int WebAXObject::AriaColumnCount() const {
   if (IsDetached())
     return 0;

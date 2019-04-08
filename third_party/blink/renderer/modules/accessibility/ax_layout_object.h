@@ -185,7 +185,6 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   // Text metrics. Most of these should be deprecated, needs major cleanup.
   int Index(const VisiblePosition&) const override;
   VisiblePosition VisiblePositionForIndex(int) const override;
-  void LineBreaks(Vector<int>&) const final;
 
   // For a table.
   bool IsDataTable() const override;
