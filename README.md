@@ -34,7 +34,7 @@ Linux, system SDL2 is used.
 
 Building trace renderer on Linux:
 
-1. Install SDL2 with headers (`libsd2-dev` on Debian and related systems).
+1. Install SDL2 with headers (`libsdl2-dev` on Debian and related systems).
 1. Install OpenGL headers (on Debian, `libsdl2-dev` pulls those in).
 1. Install Bazel from https://bazel.build
 1. Build the renderer by running `bazel build -c opt //tools/render/...`
