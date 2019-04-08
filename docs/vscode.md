@@ -154,23 +154,11 @@ The following extensions might be useful for you as well:
     If you do not plan to use VSCode for debugging, vscode-clangd is a great
     alternative to C/C++ IntelliSense. It knows about how to compile Chromium,
     enabling it to provide smarter autocomplete than C/C++ IntelliSense as well
-    as allowing you to jump from functions to their definitions. To set it up:
+    as allowing you to jump from functions to their definitions. See
+    [clangd.md](clangd.md) for details.
 
-    1. Install vscode-clangd
-    2. Disable C/C++ IntelliSense
-    3. Generate compilation database, from chromium/src:
-
-        ```
-        $ ninja -C out/Default -t compdb cc cxx objc objcxx > compile_commands.json
-        ```
-
-    4. Re-run the above command each time you gclient sync to stay updated.
-
-    If you need to debug, disable the vscode-clangd plugin, enable C/C++
+    If you need to debug, disable the vscode-clangd extension, enable C/C++
     Intellisense, and restart VSCode.
-
-    Read more about [clangd with VSCode](https://clang.llvm.org/extra/clangd/Installation.html#editor-plugins).
-    If you are a Googler, also see [go/clangd-chromium](go/clangd-chromium).
 
 
 Also be sure to take a look at the
