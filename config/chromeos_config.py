@@ -3479,6 +3479,7 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
   }
 
   _release_enable_skylab_cts_hwtest = frozenset([
+      'terra',
   ])
 
   def _get_skylab_settings(board_name):
