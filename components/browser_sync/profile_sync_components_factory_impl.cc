@@ -396,8 +396,7 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
         syncer::READING_LIST));
   }
 
-  if (!disabled_types.Has(syncer::USER_EVENTS) &&
-      FeatureList::IsEnabled(switches::kSyncUserEvents)) {
+  if (!disabled_types.Has(syncer::USER_EVENTS)) {
     controllers.push_back(CreateModelTypeControllerForModelRunningOnUIThread(
         syncer::USER_EVENTS));
   }

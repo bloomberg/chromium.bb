@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/feature_list.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
@@ -96,8 +95,7 @@ ModelTypeSyncBridge* UserEventServiceImpl::GetSyncBridge() {
 // static
 bool UserEventServiceImpl::MightRecordEvents(bool off_the_record,
                                              SyncService* sync_service) {
-  return !off_the_record && sync_service &&
-         base::FeatureList::IsEnabled(switches::kSyncUserEvents);
+  return !off_the_record && sync_service;
 }
 
 bool UserEventServiceImpl::CanRecordHistory() {
