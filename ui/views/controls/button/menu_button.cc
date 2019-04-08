@@ -19,14 +19,13 @@ MenuButton::MenuButton(const base::string16& text,
                        int button_context)
     : LabelButton(nullptr, text, button_context) {
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  SetButtonController(std::make_unique<MenuButtonController>(
-      this, menu_button_listener, CreateButtonControllerDelegate()));
+  std::unique_ptr<MenuButtonController> menu_button_controller =
+      std::make_unique<MenuButtonController>(this, menu_button_listener,
+                                             CreateButtonControllerDelegate());
+  menu_button_controller_ = menu_button_controller.get();
+  SetButtonController(std::move(menu_button_controller));
 }
 MenuButton::~MenuButton() = default;
-
-MenuButtonController* MenuButton::button_controller() const {
-  return Button::button_controller()->AsMenuButtonController();
-}
 
 bool MenuButton::Activate(const ui::Event* event) {
   return button_controller()->Activate(event);

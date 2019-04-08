@@ -366,6 +366,7 @@ class BookmarkFolderButton : public BookmarkMenuButtonBase {
       show_animation_->Show();
     }
 
+    // ui::EF_MIDDLE_MOUSE_BUTTON opens all bookmarked links in separate tabs.
     set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
                                 ui::EF_MIDDLE_MOUSE_BUTTON);
   }

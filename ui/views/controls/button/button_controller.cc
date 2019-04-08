@@ -17,10 +17,6 @@ ButtonController::ButtonController(
 
 ButtonController::~ButtonController() = default;
 
-MenuButtonController* ButtonController::AsMenuButtonController() {
-  return nullptr;
-}
-
 bool ButtonController::OnMousePressed(const ui::MouseEvent& event) {
   if (button_->state() == Button::STATE_DISABLED)
     return true;

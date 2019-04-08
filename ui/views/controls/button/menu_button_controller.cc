@@ -70,10 +70,6 @@ MenuButtonController::MenuButtonController(
 
 MenuButtonController::~MenuButtonController() = default;
 
-MenuButtonController* MenuButtonController::AsMenuButtonController() {
-  return this;
-}
-
 bool MenuButtonController::OnMousePressed(const ui::MouseEvent& event) {
   if (button()->request_focus_on_press())
     button()->RequestFocus();
