@@ -17,12 +17,8 @@ using media::learning::TargetValue;
 ValueDescription ConsumeValueDescription(base::FuzzedDataProvider* provider) {
   ValueDescription desc;
   desc.name = provider->ConsumeRandomLengthString(100);
-  desc.ordering = static_cast<LearningTask::Ordering>(
-      provider->ConsumeIntegralInRange<uint8_t>(
-          0, static_cast<uint8_t>(LearningTask::Ordering::kMaxValue)));
-  desc.privacy_mode = static_cast<LearningTask::PrivacyMode>(
-      provider->ConsumeIntegralInRange<uint8_t>(
-          0, static_cast<uint8_t>(LearningTask::PrivacyMode::kMaxValue)));
+  desc.ordering = provider->ConsumeEnum<LearningTask::Ordering>();
+  desc.privacy_mode = provider->ConsumeEnum<LearningTask::PrivacyMode>();
   return desc;
 }
 
@@ -49,9 +45,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   LearningTask task;
   task.name = provider.ConsumeRandomLengthString(100);
-  task.model =
-      static_cast<LearningTask::Model>(provider.ConsumeIntegralInRange<uint8_t>(
-          0, static_cast<uint8_t>(LearningTask::Model::kMaxValue)));
+  task.model = provider.ConsumeEnum<LearningTask::Model>();
   task.use_one_hot_conversion = provider.ConsumeBool();
   task.uma_hacky_confusion_matrix = provider.ConsumeRandomLengthString(10);
   int n_features = provider.ConsumeIntegralInRange(0, 100);
