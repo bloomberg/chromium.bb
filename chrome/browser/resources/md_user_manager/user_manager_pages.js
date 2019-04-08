@@ -56,7 +56,7 @@ Polymer({
    * This is to prevent events from propagating to the document element, which
    * erroneously triggers user-pod selections.
    *
-   * TODO(scottchen): re-examine if its necessary for user_pod_row.js to bind
+   * TODO(tangltom): re-examine if its necessary for user_pod_row.js to bind
    * listeners on the entire document element.
    *
    * @param {!Event} e
