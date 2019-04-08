@@ -29,11 +29,6 @@
 
 [
   {
-    "name": "AffiliationBasedMatching",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "BundledConnectionHelp",
     "owners": [ "carlosil" ],
     "expiry_milestone": 76

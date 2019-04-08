@@ -119,7 +119,6 @@ bool PasswordStore::FormDigest::operator==(const FormDigest& other) const {
 
 PasswordStore::PasswordStore()
     : observers_(new base::ObserverListThreadSafe<Observer>()),
-      is_propagating_password_changes_to_web_credentials_enabled_(false),
       shutdown_called_(false),
       init_status_(InitStatus::kUnknown) {}
 
@@ -872,10 +871,8 @@ std::unique_ptr<PasswordForm> PasswordStore::GetLoginImpl(
 
 void PasswordStore::FindAndUpdateAffiliatedWebLogins(
     const PasswordForm& added_or_updated_android_form) {
-  if (!affiliated_match_helper_ ||
-      !is_propagating_password_changes_to_web_credentials_enabled_) {
+  if (!affiliated_match_helper_)
     return;
-  }
   affiliated_match_helper_->GetAffiliatedWebRealms(
       PasswordStore::FormDigest(added_or_updated_android_form),
       base::Bind(&PasswordStore::ScheduleUpdateAffiliatedWebLoginsImpl, this,

@@ -122,12 +122,6 @@ class PasswordStore : protected PasswordStoreSync,
     return affiliated_match_helper_.get();
   }
 
-  // Toggles whether or not to propagate password changes in Android credentials
-  // to the affiliated Web credentials.
-  void enable_propagating_password_changes_to_web_credentials(bool enabled) {
-    is_propagating_password_changes_to_web_credentials_enabled_ = enabled;
-  }
-
   // Adds the given PasswordForm to the secure password store asynchronously.
   virtual void AddLogin(const autofill::PasswordForm& form);
 
@@ -656,8 +650,6 @@ class PasswordStore : protected PasswordStoreSync,
   std::unique_ptr<PasswordStoreSigninNotifier> notifier_;
   HashPasswordManager hash_password_manager_;
 #endif
-
-  bool is_propagating_password_changes_to_web_credentials_enabled_;
 
   bool shutdown_called_;
 

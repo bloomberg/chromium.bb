@@ -640,104 +640,88 @@ TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
   const size_t kExpectedNumberOfPropagatedUpdates = 2u;
 
   const bool kFalseTrue[] = {false, true};
-  for (bool propagation_enabled : kFalseTrue) {
-    for (bool test_remove_and_add_login : kFalseTrue) {
-      SCOPED_TRACE(testing::Message("propagation_enabled: ")
-                   << propagation_enabled);
-      SCOPED_TRACE(testing::Message("test_remove_and_add_login: ")
-                   << test_remove_and_add_login);
+  for (bool test_remove_and_add_login : kFalseTrue) {
+    SCOPED_TRACE(testing::Message("test_remove_and_add_login: ")
+                 << test_remove_and_add_login);
 
-      scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-          std::make_unique<LoginDatabase>(test_login_db_file_path())));
-      store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
-      store->RemoveLoginsCreatedBetween(base::Time(), base::Time::Max(),
-                                        base::Closure());
+    scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
+        std::make_unique<LoginDatabase>(test_login_db_file_path())));
+    store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
+    store->RemoveLoginsCreatedBetween(base::Time(), base::Time::Max(),
+                                      base::Closure());
 
-      // Set up the initial test data set.
-      std::vector<std::unique_ptr<PasswordForm>> all_credentials;
-      for (size_t i = 0; i < base::size(kTestCredentials); ++i) {
-        all_credentials.push_back(
-            FillPasswordFormWithData(kTestCredentials[i]));
-        all_credentials.back()->date_synced =
-            all_credentials.back()->date_created;
-        store->AddLogin(*all_credentials.back());
-      }
-      WaitForPasswordStore();
-
-      // The helper must be injected after the initial test data is set up,
-      // otherwise it will already start propagating updates as new Android
-      // credentials are added.
-      store->enable_propagating_password_changes_to_web_credentials(
-          propagation_enabled);
-
-      // Calculate how the correctly updated test data set should look like.
-      size_t expected_number_of_propageted_updates =
-          propagation_enabled ? kExpectedNumberOfPropagatedUpdates : 0u;
-      std::vector<std::unique_ptr<PasswordForm>>
-          expected_credentials_after_update;
-      for (size_t i = 0; i < all_credentials.size(); ++i) {
-        expected_credentials_after_update.push_back(
-            std::make_unique<PasswordForm>(*all_credentials[i]));
-        if (i < 1 + expected_number_of_propageted_updates) {
-          expected_credentials_after_update.back()->password_value =
-              base::WideToUTF16(kTestNewPassword);
-        }
-      }
-
-      if (propagation_enabled) {
-        std::vector<std::string> affiliated_web_realms;
-        affiliated_web_realms.push_back(kTestWebRealm1);
-        affiliated_web_realms.push_back(kTestWebRealm2);
-        affiliated_web_realms.push_back(kTestWebRealm3);
-        affiliated_web_realms.push_back(kTestWebRealm5);
-
-        auto mock_helper = std::make_unique<MockAffiliatedMatchHelper>();
-        mock_helper->ExpectCallToGetAffiliatedWebRealms(
-            PasswordStore::FormDigest(*expected_credentials_after_update[0]),
-            affiliated_web_realms);
-        store->SetAffiliatedMatchHelper(std::move(mock_helper));
-      }
-
-      // Explicitly update the Android credential, wait until things calm down,
-      // then query all passwords and expect that:
-      //   1.) The positive samples in |kTestCredentials| have the new password,
-      //       but the negative samples do not.
-      //   2.) Change notifications are sent about the updates. Note that as the
-      //       test interacts with the (Update|Add)LoginSync methods, only the
-      //       derived changes should trigger notifications, the first one would
-      //       normally be trigger by Sync.
-      MockPasswordStoreObserver mock_observer;
-      store->AddObserver(&mock_observer);
-      if (propagation_enabled) {
-        EXPECT_CALL(mock_observer, OnLoginsChanged(testing::SizeIs(
-                                       expected_number_of_propageted_updates)));
-      }
-      if (test_remove_and_add_login) {
-        store->ScheduleTask(
-            base::BindOnce(IgnoreResult(&PasswordStore::RemoveLoginSync), store,
-                           *all_credentials[0]));
-        store->ScheduleTask(
-            base::BindOnce(IgnoreResult(&PasswordStore::AddLoginSync), store,
-                           *expected_credentials_after_update[0]));
-      } else {
-        store->ScheduleTask(
-            base::BindOnce(IgnoreResult(&PasswordStore::UpdateLoginSync), store,
-                           *expected_credentials_after_update[0]));
-      }
-      WaitForPasswordStore();
-      store->RemoveObserver(&mock_observer);
-
-      MockPasswordStoreConsumer mock_consumer;
-      EXPECT_CALL(mock_consumer, OnGetPasswordStoreResultsConstRef(
-                                     UnorderedPasswordFormElementsAre(
-                                         &expected_credentials_after_update)));
-      store->GetAutofillableLogins(&mock_consumer);
-      WaitForPasswordStore();
-      store->ShutdownOnUIThread();
-      store = nullptr;
-      // Finish processing so that the database isn't locked next iteration.
-      WaitForPasswordStore();
+    // Set up the initial test data set.
+    std::vector<std::unique_ptr<PasswordForm>> all_credentials;
+    for (size_t i = 0; i < base::size(kTestCredentials); ++i) {
+      all_credentials.push_back(
+          FillPasswordFormWithData(kTestCredentials[i]));
+      all_credentials.back()->date_synced =
+          all_credentials.back()->date_created;
+      store->AddLogin(*all_credentials.back());
     }
+    WaitForPasswordStore();
+
+    // Calculate how the correctly updated test data set should look like.
+    std::vector<std::unique_ptr<PasswordForm>>
+        expected_credentials_after_update;
+    for (size_t i = 0; i < all_credentials.size(); ++i) {
+      expected_credentials_after_update.push_back(
+          std::make_unique<PasswordForm>(*all_credentials[i]));
+      if (i < 1 + kExpectedNumberOfPropagatedUpdates) {
+        expected_credentials_after_update.back()->password_value =
+            base::WideToUTF16(kTestNewPassword);
+      }
+    }
+
+    std::vector<std::string> affiliated_web_realms;
+    affiliated_web_realms.push_back(kTestWebRealm1);
+    affiliated_web_realms.push_back(kTestWebRealm2);
+    affiliated_web_realms.push_back(kTestWebRealm3);
+    affiliated_web_realms.push_back(kTestWebRealm5);
+
+    auto mock_helper = std::make_unique<MockAffiliatedMatchHelper>();
+    mock_helper->ExpectCallToGetAffiliatedWebRealms(
+        PasswordStore::FormDigest(*expected_credentials_after_update[0]),
+        affiliated_web_realms);
+    store->SetAffiliatedMatchHelper(std::move(mock_helper));
+
+    // Explicitly update the Android credential, wait until things calm down,
+    // then query all passwords and expect that:
+    //   1.) The positive samples in |kTestCredentials| have the new password,
+    //       but the negative samples do not.
+    //   2.) Change notifications are sent about the updates. Note that as the
+    //       test interacts with the (Update|Add)LoginSync methods, only the
+    //       derived changes should trigger notifications, the first one would
+    //       normally be trigger by Sync.
+    MockPasswordStoreObserver mock_observer;
+    store->AddObserver(&mock_observer);
+    EXPECT_CALL(mock_observer, OnLoginsChanged(testing::SizeIs(
+                                   kExpectedNumberOfPropagatedUpdates)));
+    if (test_remove_and_add_login) {
+      store->ScheduleTask(
+          base::BindOnce(IgnoreResult(&PasswordStore::RemoveLoginSync), store,
+                         *all_credentials[0]));
+      store->ScheduleTask(
+          base::BindOnce(IgnoreResult(&PasswordStore::AddLoginSync), store,
+                         *expected_credentials_after_update[0]));
+    } else {
+      store->ScheduleTask(
+          base::BindOnce(IgnoreResult(&PasswordStore::UpdateLoginSync), store,
+                         *expected_credentials_after_update[0]));
+    }
+    WaitForPasswordStore();
+    store->RemoveObserver(&mock_observer);
+
+    MockPasswordStoreConsumer mock_consumer;
+    EXPECT_CALL(mock_consumer, OnGetPasswordStoreResultsConstRef(
+                                   UnorderedPasswordFormElementsAre(
+                                       &expected_credentials_after_update)));
+    store->GetAutofillableLogins(&mock_consumer);
+    WaitForPasswordStore();
+    store->ShutdownOnUIThread();
+    store = nullptr;
+    // Finish processing so that the database isn't locked next iteration.
+    WaitForPasswordStore();
   }
 }
 
