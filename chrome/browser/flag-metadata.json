@@ -2046,7 +2046,7 @@
   },
   {
     "name": "expensive-background-timer-throttling",
-    // "owners": [ "your-team" ],
+    "owners": [ "altimin" ],
     "expiry_milestone": 76
   },
   {
