@@ -115,6 +115,8 @@ BUILDER_ALL_STATUSES = (BUILDER_STATUS_FAILED,
 BUILDER_NON_FAILURE_STATUSES = (BUILDER_STATUS_PLANNED,
                                 BUILDER_STATUS_PASSED,
                                 BUILDER_STATUS_SKIPPED,
+                                # Quick fix for Buildbucket race problems.
+                                BUILDER_STATUS_INFLIGHT,
                                 BUILDER_STATUS_FORGIVEN)
 
 # CL status strings
