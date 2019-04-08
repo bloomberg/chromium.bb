@@ -636,13 +636,10 @@ bool FileMetricsProvider::ProvideIndependentMetricsOnTaskRunner(
     SystemProfileProto* system_profile_proto,
     base::HistogramSnapshotManager* snapshot_manager) {
   RecordEmbeddedProfileResult(EMBEDDED_PROFILE_ATTEMPT);
-  base::Time start_time = base::Time::Now();
   if (PersistentSystemProfile::GetSystemProfile(
           *source->allocator->memory_allocator(), system_profile_proto)) {
     system_profile_proto->mutable_stability()->set_from_previous_run(true);
     RecordHistogramSnapshotsFromSource(snapshot_manager, source);
-    UMA_HISTOGRAM_TIMES("UMA.FileMetricsProvider.EmbeddedProfile.RecordTime",
-                        base::Time::Now() - start_time);
     RecordEmbeddedProfileResult(EMBEDDED_PROFILE_FOUND);
 
     if (system_profile_proto->hardware().has_cpu()) {
