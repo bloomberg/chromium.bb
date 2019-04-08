@@ -328,12 +328,12 @@ tips for finding the problem.
       spacing or box sizes are often unimportant, especially around fonts and
       form controls. Differences in wording of JS error messages are also
       usually acceptable.
-    * `python run_web_tests.py path/to/your/test.html --full-results-html`
-      produces a page including links to the expected result, actual result,
-      and diff.
-    * Add the `--sources` option to `run_web_tests.py` to see exactly which
-      expected result it's comparing to (a file next to the test, something in
-      platform/mac/, something in platform/chromium-win/, etc.)
+    * `python run_web_tests.py path/to/your/test.html` produces a page listing
+      all test results. Those which fail their expectations will include links
+      to the expected result, actual result, and diff. These results are saved
+      to `$root_build_dir/layout-test-results`.
+        * Alternatively the `--results-directory=path/for/output/` option allows
+          you to specify an alternative directory for the output to be saved to.
     * If you're still sure it's correct, rebaseline the test (see below).
       Otherwise...
 * If you're lucky, your test is one that runs properly when you navigate to it

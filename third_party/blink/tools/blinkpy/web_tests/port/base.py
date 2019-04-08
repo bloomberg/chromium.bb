@@ -451,6 +451,11 @@ class Port(object):
         executable = self._path_to_image_diff()
         # Although we are handed 'old', 'new', image_diff wants 'new', 'old'.
         command = [executable, '--diff', actual_filename, expected_filename, diff_filename]
+        # Notifies image_diff to allow a tolerance when calculating the pixel
+        # diff. To account for variances when the tests are ran on an actual
+        # GPU.
+        if self.get_option('fuzzy_diff'):
+          command.append('--fuzzy-diff')
 
         result = None
         err_str = None
