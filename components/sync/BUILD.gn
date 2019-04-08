@@ -563,8 +563,6 @@ jumbo_static_library("sync") {
     "user_events/fake_user_event_service.h",
     "user_events/no_op_user_event_service.cc",
     "user_events/no_op_user_event_service.h",
-    "user_events/trial_recorder.cc",
-    "user_events/trial_recorder.h",
     "user_events/user_event_service.h",
     "user_events/user_event_service_impl.cc",
     "user_events/user_event_service_impl.h",
@@ -961,7 +959,6 @@ source_set("unit_tests") {
     "syncable/syncable_enum_conversions_unittest.cc",
     "syncable/syncable_id_unittest.cc",
     "syncable/syncable_unittest.cc",
-    "user_events/trial_recorder_unittest.cc",
     "user_events/user_event_service_impl_unittest.cc",
     "user_events/user_event_sync_bridge_unittest.cc",
   ]

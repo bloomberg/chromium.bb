@@ -66,8 +66,7 @@ UserEventServiceImpl::UserEventServiceImpl(
     std::unique_ptr<UserEventSyncBridge> bridge)
     : sync_service_(sync_service),
       bridge_(std::move(bridge)),
-      session_id_(base::RandUint64()),
-      trial_recorder_(this) {
+      session_id_(base::RandUint64()) {
   DCHECK(bridge_);
   DCHECK(sync_service_);
 }
