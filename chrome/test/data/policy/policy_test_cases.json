@@ -329,7 +329,7 @@
 
   "PrintingAllowedPinModes": {
     "os": ["chromeos"],
-    "test_policy": { "PrintingAllowedPinModes": "secure" },
+    "test_policy": { "PrintingAllowedPinModes": "pin" },
     "pref_mappings": [
       { "pref": "printing.allowed_pin_modes" }
     ]
@@ -361,7 +361,7 @@
 
   "PrintingPinDefault": {
     "os": ["chromeos"],
-    "test_policy": { "PrintingPinDefault": "secure" },
+    "test_policy": { "PrintingPinDefault": "pin" },
     "pref_mappings": [
       { "pref": "printing.pin_default" }
     ]

@@ -201,8 +201,8 @@ print_preview.DuplexModeRestriction = {
  */
 print_preview.PinModeRestriction = {
   NONE: 0,
-  SECURE: 1,
-  UNSECURE: 2
+  PIN: 1,
+  NO_PIN: 2
 };
 
 /**

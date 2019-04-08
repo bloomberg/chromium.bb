@@ -1002,7 +1002,7 @@ Polymer({
         !!duplexPolicy && setDuplexTypeByPolicy);
 
     const pinPolicy = this.destination.pinPolicy;
-    if (pinPolicy == print_preview.PinModeRestriction.UNSECURE) {
+    if (pinPolicy == print_preview.PinModeRestriction.NO_PIN) {
       this.set('settings.pin.available', false);
       this.set('settings.pinValue.available', false);
     }
@@ -1010,7 +1010,7 @@ Polymer({
     if (pinValue) {
       this.set(
           'settings.pin.value',
-          pinValue == print_preview.PinModeRestriction.SECURE);
+          pinValue == print_preview.PinModeRestriction.PIN);
     }
     this.set('settings.pin.setByPolicy', !!pinPolicy);
 

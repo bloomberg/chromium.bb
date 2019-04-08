@@ -35,8 +35,8 @@ enum class DuplexModeRestriction {
 // This is used in pref file and should never change.
 enum class PinModeRestriction {
   kNone,
-  kSecure,
-  kUnsecure,
+  kPin,
+  kNoPin,
 };
 
 struct PRINTING_EXPORT PrintingRestrictions {
