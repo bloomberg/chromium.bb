@@ -585,6 +585,7 @@ enum AuthenticationState {
     }
   } else {
     [self changeToState:IDENTITY_PICKER_STATE];
+    [_unifiedConsentCoordinator resetSettingLinkTapped];
   }
 }
 

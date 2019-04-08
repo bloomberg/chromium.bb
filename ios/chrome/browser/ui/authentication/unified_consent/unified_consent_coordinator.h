@@ -65,6 +65,9 @@
 // Scrolls the consent view to the bottom.
 - (void)scrollToBottom;
 
+// Resets settingsLinkWasTapped flag.
+- (void)resetSettingLinkTapped;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_AUTHENTICATION_UNIFIED_CONSENT_UNIFIED_CONSENT_COORDINATOR_H_
