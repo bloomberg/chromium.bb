@@ -27,6 +27,9 @@ interface ShellTestApi {
   // Enters or exits overview mode.
   ToggleOverviewMode() => ();
 
+  // Returns true if it is in overview selecting mode.
+  IsOverviewSelecting() => (bool is_selecting);
+
   // Used to emulate display change when run in a desktop environment instead
   // of on a device.
   AddRemoveDisplay();
@@ -38,4 +41,8 @@ interface ShellTestApi {
   // longer holding pointer events. See
   // |aura::WindowTreeHost::holding_pointer_moves_| for details.
   WaitForNoPointerHoldLock() => ();
+
+  // Runs the callback when the compositor of the primary display has presented
+  // a frame on screen.
+  WaitForNextFrame() => ();
 };

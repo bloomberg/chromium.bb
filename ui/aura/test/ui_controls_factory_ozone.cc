@@ -25,6 +25,7 @@
 #include "ui/display/screen.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/events_test_utils.h"
+#include "ui/gfx/geometry/point_conversions.h"
 
 namespace aura {
 namespace test {
@@ -129,7 +130,7 @@ class UIControlsOzone : public ui_controls::UIControlsAura,
   bool SendMouseMoveNotifyWhenDone(long screen_x,
                                    long screen_y,
                                    base::OnceClosure closure) override {
-    gfx::Point host_location(screen_x, screen_y);
+    gfx::PointF host_location(screen_x, screen_y);
     int64_t display_id = display::kInvalidDisplayId;
     if (!ScreenDIPToHostPixels(&host_location, &display_id))
       return false;
@@ -158,13 +159,14 @@ class UIControlsOzone : public ui_controls::UIControlsAura,
                                      int button_state,
                                      base::OnceClosure closure,
                                      int accelerator_state) override {
-    gfx::Point host_location;
+    gfx::PointF host_location;
     int64_t display_id = display::kInvalidDisplayId;
     if (last_mouse_location_.has_value()) {
       host_location = last_mouse_location_.value();
       display_id = last_mouse_display_id_;
     } else {
-      host_location = host_->window()->env()->last_mouse_location();
+      host_location =
+          gfx::PointF(host_->window()->env()->last_mouse_location());
       if (!ScreenDIPToHostPixels(&host_location, &display_id))
         return false;
     }
@@ -228,7 +230,7 @@ class UIControlsOzone : public ui_controls::UIControlsAura,
                                      int y,
                                      base::OnceClosure task) override {
     DCHECK_NE(0, action);
-    gfx::Point host_location(x, y);
+    gfx::PointF host_location(x, y);
     int64_t display_id = display::kInvalidDisplayId;
     if (!ScreenDIPToHostPixels(&host_location, &display_id))
       return false;
@@ -263,8 +265,24 @@ class UIControlsOzone : public ui_controls::UIControlsAura,
                        int64_t display_id,
                        base::OnceClosure closure) {
     if (event_injector_) {
+      auto event_to_inject = ui::Event::Clone(*event);
+
+      if (event_to_inject->IsLocatedEvent()) {
+        // EventInjector expects coordinates relative to host and in DIPs.
+        display::Display display;
+        CHECK(display::Screen::GetScreen()->GetDisplayWithDisplayId(display_id,
+                                                                    &display));
+
+        ui::LocatedEvent* located_event = event_to_inject->AsLocatedEvent();
+        gfx::PointF location_in_host_dip = gfx::ScalePoint(
+            located_event->location_f(), 1 / display.device_scale_factor(),
+            1 / display.device_scale_factor());
+        located_event->set_location_f(location_in_host_dip);
+        located_event->set_root_location_f(location_in_host_dip);
+      }
+
       event_injector_->InjectEvent(
-          display_id, ui::Event::Clone(*event),
+          display_id, std::move(event_to_inject),
           base::BindOnce(&OnWindowServiceProcessedEvent, std::move(closure)));
       return;
     }
@@ -304,7 +322,7 @@ class UIControlsOzone : public ui_controls::UIControlsAura,
   }
 
   void PostMouseEvent(ui::EventType type,
-                      const gfx::Point& host_location,
+                      const gfx::PointF& host_location,
                       int flags,
                       int changed_button_flags,
                       int64_t display_id,
@@ -317,7 +335,7 @@ class UIControlsOzone : public ui_controls::UIControlsAura,
   }
 
   void PostMouseEventTask(ui::EventType type,
-                          const gfx::Point& host_location,
+                          const gfx::PointF& host_location,
                           int flags,
                           int changed_button_flags,
                           int64_t display_id,
@@ -333,7 +351,7 @@ class UIControlsOzone : public ui_controls::UIControlsAura,
   }
 
   void PostTouchEvent(ui::EventType type,
-                      const gfx::Point& host_location,
+                      const gfx::PointF& host_location,
                       int id,
                       int64_t display_id,
                       base::OnceClosure closure) {
@@ -344,14 +362,14 @@ class UIControlsOzone : public ui_controls::UIControlsAura,
   }
 
   void PostTouchEventTask(ui::EventType type,
-                          const gfx::Point& host_location,
+                          const gfx::PointF& host_location,
                           int id,
                           int64_t display_id,
                           base::OnceClosure closure) {
     ui::PointerDetails details(ui::EventPointerType::POINTER_TYPE_TOUCH, id,
                                1.0f, 1.0f, 0.0f);
-    ui::TouchEvent touch_event(type, host_location, ui::EventTimeForNow(),
-                               details);
+    ui::TouchEvent touch_event(type, host_location, host_location,
+                               ui::EventTimeForNow(), details);
     SendEventToSink(&touch_event, display_id, std::move(closure));
   }
 
@@ -367,19 +385,18 @@ class UIControlsOzone : public ui_controls::UIControlsAura,
         ->BindInterface(ws::mojom::kServiceName, &event_injector_);
   }
 
-  bool ScreenDIPToHostPixels(gfx::Point* location, int64_t* display_id) {
+  bool ScreenDIPToHostPixels(gfx::PointF* location, int64_t* display_id) {
     // The location needs to be in display's coordinate.
     display::Display display =
-        display::Screen::GetScreen()->GetDisplayNearestPoint(*location);
+        display::Screen::GetScreen()->GetDisplayNearestPoint(
+            gfx::ToFlooredPoint(*location));
     if (!display.is_valid()) {
       LOG(ERROR) << "Failed to find the display for " << location->ToString();
       return false;
     }
     *display_id = display.id();
     *location -= display.bounds().OffsetFromOrigin();
-    *location =
-        gfx::ScaleToFlooredPoint(*location, display.device_scale_factor(),
-                                 display.device_scale_factor());
+    location->Scale(display.device_scale_factor());
     return true;
   }
 
@@ -389,7 +406,7 @@ class UIControlsOzone : public ui_controls::UIControlsAura,
   // The mouse location for the last SendMouseEventsNotifyWhenDone call. This is
   // used rather than Env::last_mouse_location() as Env::last_mouse_location()
   // is updated asynchronously with mus.
-  base::Optional<gfx::Point> last_mouse_location_;
+  base::Optional<gfx::PointF> last_mouse_location_;
 
   // The display ID where the last SendMouseEventsNotifyWhenDone occurred. This
   // is used along with |last_mouse_location_| to send the mouse event to the
