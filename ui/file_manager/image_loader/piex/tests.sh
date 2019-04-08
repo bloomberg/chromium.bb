@@ -13,13 +13,13 @@ node node_modules/http-server/bin/http-server -p ${PORT} > /dev/null 2>&1 &
 HTTP_SERVER_PID=$!
 
 # Extract preview thumbnails from the raw test images.
-rm -f tests.hash
+rm -f tests.result.txt
 node tests.js ${HTTP}/tests.html $* | tee -a tests.log | \
-  grep --text "^test: images/" > tests.hash
+  grep --text "^test: images/" > tests.result.txt
 kill ${HTTP_SERVER_PID} > /dev/null 2>&1
 
-# Compare their hash to the golden hash values.
-if [[ $(cmp tests.hash images.golden.hash 2>&1) ]]; then
+# Compare their properties to the golden file values.
+if [[ $(cmp tests.result.txt images.golden.txt 2>&1) ]]; then
   echo "tests FAIL" || exit 1
 else
   echo "tests PASS"

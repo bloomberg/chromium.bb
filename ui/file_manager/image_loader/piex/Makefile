@@ -33,4 +33,4 @@ piex.src.bc: $(PSRC) Makefile
 .PHONY: clean
 
 clean:
-	$(shell rm -f tests.hash tests.log package-lock* *.bc a.out.*)
+	$(shell rm -f tests.{result*,log} package-lock* *.bc a.out.*)
