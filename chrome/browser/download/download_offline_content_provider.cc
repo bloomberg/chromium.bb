@@ -233,6 +233,16 @@ void DownloadOfflineContentProvider::RemoveObserver(
 
 void DownloadOfflineContentProvider::ManagerGoingDown(
     DownloadManager* manager) {
+  DownloadManager::DownloadVector all_items;
+  GetAllDownloads(&all_items);
+
+  for (auto* item : all_items) {
+    if (!ShouldShowDownloadItem(item))
+      continue;
+    for (auto& observer : observers_)
+      observer.OnItemRemoved(ContentId(name_space_, item->GetGuid()));
+  }
+
   manager_ = nullptr;
 }
 
