@@ -8,15 +8,6 @@
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 
-namespace {
-
-int g_next_unique_model_id = 0;
-
-}  // namespace
-
-AppListModelUpdater::AppListModelUpdater()
-    : model_id_(g_next_unique_model_id++) {}
-
 // static
 syncer::StringOrdinal AppListModelUpdater::GetFirstAvailablePositionInternal(
     const std::vector<ChromeAppListItem*>& top_level_items) {
