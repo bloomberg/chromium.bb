@@ -89,11 +89,27 @@ void SetupSearchIllustrationView(views::View* illustration_view,
   illustration_view->AddChildView(text);
 }
 
-views::ScrollView* CreateScrollView(std::unique_ptr<views::View> content_view) {
-  views::ScrollView* const scroller = new views::ScrollView();
+class ShortcutsListScrollView : public views::ScrollView {
+ public:
+  ShortcutsListScrollView() = default;
+  ~ShortcutsListScrollView() override = default;
+
+  // views::View:
+  void OnFocus() override { SetHasFocusIndicator(true); }
+
+  void OnBlur() override { SetHasFocusIndicator(false); }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ShortcutsListScrollView);
+};
+
+ShortcutsListScrollView* CreateScrollView(
+    std::unique_ptr<views::View> content_view) {
+  ShortcutsListScrollView* const scroller = new ShortcutsListScrollView();
   scroller->set_draw_overflow_indicator(false);
   scroller->ClipHeightTo(0, 0);
   scroller->SetContents(std::move(content_view));
+  scroller->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   return scroller;
 }
 
