@@ -27,7 +27,7 @@ def BundleTestUpdatePayloads(input_proto, output_proto):
   build_root = constants.SOURCE_ROOT
 
   # Use the first available image to create the update payload.
-  img_root = os.path.join(build_root, 'src/build/images', target)
+  img_root = os.path.join(build_root, 'src/build/images', target, 'latest')
   img_types = [
       constants.IMAGE_TYPE_TEST, constants.IMAGE_TYPE_DEV,
       constants.IMAGE_TYPE_BASE

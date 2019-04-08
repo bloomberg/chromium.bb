@@ -130,7 +130,8 @@ class BundleTestUpdatePayloadsTest(cros_test_lib.MockTempDirTestCase):
     osutils.SafeMakedirs(self.archive_root)
 
     self.target = 'target'
-    self.image_root = os.path.join(self.source_root, 'src/build/images/target')
+    self.image_root = os.path.join(self.source_root,
+                                   'src/build/images/target/latest')
 
     self.input_proto = artifacts_pb2.BundleRequest()
     self.input_proto.build_target.name = self.target
