@@ -14,7 +14,7 @@ _OBSOLETE_TYPE = models.TextNodeType('obsolete')
 _OWNER_TYPE = models.TextNodeType('owner', single_line=True)
 _SUMMARY_TYPE = models.TextNodeType('summary')
 
-_LOWERCASE_NAME_FN = lambda n: n.attributes['name'].value.lower()
+_LOWERCASE_NAME_FN = lambda n: n.get('name').lower()
 
 _ENUMERATION_TYPE = models.ObjectNodeType(
     'enumeration',
