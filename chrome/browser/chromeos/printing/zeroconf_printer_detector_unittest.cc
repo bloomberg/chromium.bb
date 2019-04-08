@@ -285,8 +285,7 @@ class FakeServiceDiscoveryDeviceLister : public ServiceDiscoveryDeviceLister {
   DeferringDelegate deferring_delegate_;
 };
 
-class ZeroconfPrinterDetectorTest : public testing::Test,
-                                    public PrinterDetector::Observer {
+class ZeroconfPrinterDetectorTest : public testing::Test {
  public:
   ZeroconfPrinterDetectorTest() {
     auto* runner = scoped_task_environment_.GetMainThreadTaskRunner().get();
@@ -321,7 +320,8 @@ class ZeroconfPrinterDetectorTest : public testing::Test,
     // keep the lister fakes accessible after ownership is transferred into the
     // detector.
     listers_.clear();
-    detector_->AddObserver(this);
+    detector_->RegisterPrintersFoundCallback(base::BindRepeating(
+        &ZeroconfPrinterDetectorTest::OnPrintersFound, base::Unretained(this)));
     ipp_lister_->SetDelegate(detector_.get());
     ipps_lister_->SetDelegate(detector_.get());
     ippe_lister_->SetDelegate(detector_.get());
@@ -386,9 +386,9 @@ class ZeroconfPrinterDetectorTest : public testing::Test,
               actual.ppd_search_data.make_and_model);
   }
 
-  // PrinterDetector::Observer callback.
+  // PrinterDetector callback.
   void OnPrintersFound(
-      const std::vector<PrinterDetector::DetectedPrinter>& printers) override {
+      const std::vector<PrinterDetector::DetectedPrinter>& printers) {
     printers_found_callbacks_.push_back(printers);
   }
 

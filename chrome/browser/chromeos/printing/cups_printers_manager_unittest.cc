@@ -164,11 +164,8 @@ class FakePrinterDetector : public PrinterDetector {
   FakePrinterDetector() {}
   ~FakePrinterDetector() override = default;
 
-  void AddObserver(Observer* observer) override {
-    observers_.AddObserver(observer);
-  }
-  void RemoveObserver(Observer* observer) override {
-    observers_.RemoveObserver(observer);
+  void RegisterPrintersFoundCallback(OnPrintersFoundCallback cb) override {
+    on_printers_found_callback_ = std::move(cb);
   }
 
   std::vector<DetectedPrinter> GetPrinters() override { return detections_; }
@@ -177,9 +174,7 @@ class FakePrinterDetector : public PrinterDetector {
       const std::vector<PrinterDetector::DetectedPrinter>& new_detections) {
     detections_.insert(detections_.end(), new_detections.begin(),
                        new_detections.end());
-    for (Observer& observer : observers_) {
-      observer.OnPrintersFound(detections_);
-    }
+    on_printers_found_callback_.Run(detections_);
   }
 
   // Remove printers that have ids in ids.
@@ -195,7 +190,7 @@ class FakePrinterDetector : public PrinterDetector {
 
  private:
   std::vector<DetectedPrinter> detections_;
-  base::ObserverList<PrinterDetector::Observer>::Unchecked observers_;
+  OnPrintersFoundCallback on_printers_found_callback_;
 };
 
 // Fake PpdProvider backend.  This fake generates PpdReferences based on
