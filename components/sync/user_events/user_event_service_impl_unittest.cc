@@ -7,7 +7,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/metrics/field_trial.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/sync/base/model_type.h"
@@ -57,13 +56,6 @@ std::unique_ptr<UserEventSpecifics> WithNav(
   return specifics;
 }
 
-MATCHER_P(HasFieldTrialVariationIds, expected_variation_id, "") {
-  const UserEventSpecifics& specifics = arg->specifics.user_event();
-  return specifics.field_trial_event().variation_ids_size() == 1 &&
-         specifics.field_trial_event().variation_ids(0) ==
-             expected_variation_id;
-}
-
 class TestGlobalIdMapper : public GlobalIdMapper {
   void AddGlobalIdChangeObserver(GlobalIdChange callback) override {}
   int64_t GetLatestGlobalId(int64_t global_id) override { return global_id; }
@@ -71,7 +63,7 @@ class TestGlobalIdMapper : public GlobalIdMapper {
 
 class UserEventServiceImplTest : public testing::Test {
  protected:
-  UserEventServiceImplTest() : field_trial_list_(nullptr) {
+  UserEventServiceImplTest() {
     sync_service_.SetPreferredDataTypes(
         {HISTORY_DELETE_DIRECTIVES, USER_EVENTS});
     ON_CALL(mock_processor_, IsTrackingMetadata())
@@ -91,7 +83,6 @@ class UserEventServiceImplTest : public testing::Test {
 
  private:
   base::test::ScopedTaskEnvironment task_environment_;
-  base::FieldTrialList field_trial_list_;
   syncer::TestSyncService sync_service_;
   testing::NiceMock<MockModelTypeChangeProcessor> mock_processor_;
   TestGlobalIdMapper mapper_;
@@ -203,16 +194,6 @@ TEST_F(UserEventServiceImplTest, SessionIdIsDifferent) {
 
   ASSERT_EQ(2U, put_session_ids.size());
   EXPECT_NE(put_session_ids[0], put_session_ids[1]);
-}
-
-TEST_F(UserEventServiceImplTest, FieldTrial) {
-  variations::AssociateGoogleVariationID(variations::CHROME_SYNC_EVENT_LOGGER,
-                                         "trial", "group", 123);
-  base::FieldTrialList::CreateFieldTrial("trial", "group");
-  base::FieldTrialList::FindFullName("trial");
-
-  EXPECT_CALL(*mock_processor(), Put(_, HasFieldTrialVariationIds(123u), _));
-  UserEventServiceImpl service(sync_service(), MakeBridge());
 }
 
 TEST_F(UserEventServiceImplTest, ShouldNotRecordWhenEventsDatatypeIsDisabled) {
