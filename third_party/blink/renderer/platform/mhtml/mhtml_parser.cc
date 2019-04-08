@@ -31,6 +31,8 @@
 #include "third_party/blink/renderer/platform/mhtml/mhtml_parser.h"
 
 #include <stddef.h>
+
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/mhtml/archive_resource.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/network/parsed_content_type.h"
@@ -91,8 +93,6 @@ void QuotedPrintableDecode(const char* data,
 // files.
 class MIMEHeader : public GarbageCollectedFinalized<MIMEHeader> {
  public:
-  static MIMEHeader* Create() { return MakeGarbageCollected<MIMEHeader>(); }
-
   MIMEHeader();
 
   enum class Encoding {
@@ -179,7 +179,7 @@ static KeyValueMap RetrieveKeyValuePairs(SharedBufferChunkReader* buffer) {
 }
 
 MIMEHeader* MIMEHeader::ParseHeader(SharedBufferChunkReader* buffer) {
-  MIMEHeader* mime_header = MIMEHeader::Create();
+  auto* mime_header = MakeGarbageCollected<MIMEHeader>();
   KeyValueMap key_value_pairs = RetrieveKeyValuePairs(buffer);
   KeyValueMap::iterator mime_parameters_iterator =
       key_value_pairs.find("content-type");
@@ -452,10 +452,10 @@ ArchiveResource* MHTMLParser::ParseNextPart(
   // http://tools.ietf.org/html/rfc2557#section-5
   // IE and Firefox (UNMht) seem to generate only absolute URLs.
   KURL location = KURL(NullURL(), mime_header.ContentLocation());
-  return ArchiveResource::Create(content_buffer, location,
-                                 mime_header.ContentID(),
-                                 AtomicString(mime_header.ContentType()),
-                                 AtomicString(mime_header.Charset()));
+  return MakeGarbageCollected<ArchiveResource>(
+      content_buffer, location, mime_header.ContentID(),
+      AtomicString(mime_header.ContentType()),
+      AtomicString(mime_header.Charset()));
 }
 
 // static

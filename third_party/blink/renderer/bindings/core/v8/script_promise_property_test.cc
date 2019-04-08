@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -104,7 +105,7 @@ class ScriptPromisePropertyTestBase {
   ScriptPromisePropertyTestBase()
       : page_(std::make_unique<DummyPageHolder>(IntSize(1, 1))) {
     v8::HandleScope handle_scope(GetIsolate());
-    other_script_state_ = ScriptState::Create(
+    other_script_state_ = MakeGarbageCollected<ScriptState>(
         v8::Context::New(GetIsolate()),
         DOMWrapperWorld::EnsureIsolatedWorld(GetIsolate(), 1));
   }

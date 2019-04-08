@@ -194,7 +194,7 @@ bool IsIceCandidateMissingSdp(
 }
 
 WebRTCOfferOptions ConvertToWebRTCOfferOptions(const RTCOfferOptions* options) {
-  return WebRTCOfferOptions(RTCOfferOptionsPlatform::Create(
+  return WebRTCOfferOptions(MakeGarbageCollected<RTCOfferOptionsPlatform>(
       options->hasOfferToReceiveVideo()
           ? std::max(options->offerToReceiveVideo(), 0)
           : -1,
@@ -208,7 +208,7 @@ WebRTCOfferOptions ConvertToWebRTCOfferOptions(const RTCOfferOptions* options) {
 
 WebRTCAnswerOptions ConvertToWebRTCAnswerOptions(
     const RTCAnswerOptions* options) {
-  return WebRTCAnswerOptions(RTCAnswerOptionsPlatform::Create(
+  return WebRTCAnswerOptions(MakeGarbageCollected<RTCAnswerOptionsPlatform>(
       options->hasVoiceActivityDetection() ? options->voiceActivityDetection()
                                            : true));
 }
@@ -484,9 +484,10 @@ RTCOfferOptionsPlatform* ParseOfferOptions(const Dictionary& options,
                         voice_activity_detection);
   DictionaryHelper::Get(options, "iceRestart", ice_restart);
 
-  RTCOfferOptionsPlatform* rtc_offer_options = RTCOfferOptionsPlatform::Create(
-      offer_to_receive_video, offer_to_receive_audio, voice_activity_detection,
-      ice_restart);
+  RTCOfferOptionsPlatform* rtc_offer_options =
+      MakeGarbageCollected<RTCOfferOptionsPlatform>(
+          offer_to_receive_video, offer_to_receive_audio,
+          voice_activity_detection, ice_restart);
   return rtc_offer_options;
 }
 

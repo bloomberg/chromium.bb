@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
 #include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
 #include "third_party/blink/renderer/platform/bindings/v8_value_cache.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/unified_heap_controller.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/leak_annotations.h"
@@ -290,7 +291,7 @@ v8::Local<v8::Context> V8PerIsolateData::EnsureScriptRegexpContext() {
   if (!script_regexp_script_state_) {
     LEAK_SANITIZER_DISABLED_SCOPE;
     v8::Local<v8::Context> context(v8::Context::New(GetIsolate()));
-    script_regexp_script_state_ = ScriptState::Create(
+    script_regexp_script_state_ = MakeGarbageCollected<ScriptState>(
         context, DOMWrapperWorld::Create(GetIsolate(),
                                          DOMWrapperWorld::WorldType::kRegExp));
   }
