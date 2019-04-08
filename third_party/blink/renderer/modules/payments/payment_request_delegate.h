@@ -13,21 +13,11 @@ namespace blink {
 
 class ScriptValue;
 
-// The interface for updating the payment details (shopping cart, shipping
-// options, total) in response to shipping address or option change, or through
-// the promise passed into the PaymentRequest.show() method.
 class MODULES_EXPORT PaymentRequestDelegate : public GarbageCollectedMixin {
  public:
-  // Updates the payment details in response to a change in, e.g., shipping
-  // address. This stops the spinner in the UI.
   virtual void OnUpdatePaymentDetails(
       const ScriptValue& details_script_value) = 0;
-
-  // Called when the merchant failed to update the payment details in response
-  // to a change in, e.g., shipping address. This will abort the payment.
   virtual void OnUpdatePaymentDetailsFailure(const String& error) = 0;
-
-  // Whether the PaymentRequest.show() or PaymentResponse.retry() is ongoing.
   virtual bool IsInteractive() const = 0;
 
  protected:
