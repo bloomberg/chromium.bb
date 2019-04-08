@@ -66,6 +66,7 @@ class TabGridViewBinder {
             Callback<Bitmap> callback = result -> {
                 if (result == null) {
                     holder.thumbnail.setImageResource(0);
+                    holder.thumbnail.setMinimumHeight(holder.thumbnail.getWidth());
                 } else {
                     holder.thumbnail.setImageBitmap(result);
                 }
