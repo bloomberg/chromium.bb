@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
@@ -47,6 +48,7 @@
 #include "services/identity/public/cpp/primary_account_mutator.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -80,6 +82,13 @@ BadgedProfilePhoto::BadgeType GetProfileBadgeType(Profile* profile) {
     return BadgedProfilePhoto::BADGE_TYPE_SYNC_COMPLETE;
   }
   return BadgedProfilePhoto::BADGE_TYPE_NONE;
+}
+
+void NavigateToGoogleAccountPage(Profile* profile) {
+  NavigateParams params(profile, GURL(chrome::kGoogleAccountURL),
+                        ui::PAGE_TRANSITION_LINK);
+  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+  Navigate(&params);
 }
 
 }  // namespace
@@ -125,6 +134,7 @@ void ProfileChooserView::Reset() {
   credit_cards_button_ = nullptr;
   addresses_button_ = nullptr;
   signout_button_ = nullptr;
+  manage_google_account_button_ = nullptr;
 }
 
 void ProfileChooserView::Init() {
@@ -232,7 +242,9 @@ base::string16 ProfileChooserView::GetAccessibleWindowTitle() const {
 
 void ProfileChooserView::ButtonPressed(views::Button* sender,
                                        const ui::Event& event) {
-  if (sender == passwords_button_) {
+  if (sender == manage_google_account_button_) {
+    NavigateToGoogleAccountPage(browser()->profile());
+  } else if (sender == passwords_button_) {
     base::RecordAction(
         base::UserMetricsAction("ProfileChooser_PasswordsClicked"));
     NavigateToManagePasswordsPage(
@@ -371,15 +383,17 @@ void ProfileChooserView::AddProfileChooserView(AvatarMenu* avatar_menu) {
       AddGuestProfileView();
   }
 
+#if defined(GOOGLE_CHROME_BUILD)
+  if (dice_enabled_ && active_item->signed_in) {
+    AddManageGoogleAccountButton();
+  }
+#endif
+
   if (browser()->profile()->IsSupervised())
     AddSupervisedUserDisclaimerView();
 
-  // If the user is signed in, then the autofill data is a part of the
-  // account logically. Otherwise, add as a new group.
-  if (active_item) {
-    const bool add_as_new_group = !active_item->signed_in || sync_error;
-    AddAutofillHomeView(add_as_new_group);
-  }
+  if (active_item)
+    AddAutofillHomeView();
 
   const bool display_lock = active_item && active_item->signed_in &&
                             profiles::IsLockAvailable(browser()->profile());
@@ -832,7 +846,7 @@ void ProfileChooserView::AddSupervisedUserDisclaimerView() {
   AddMenuItems(menu_items, true);
 }
 
-void ProfileChooserView::AddAutofillHomeView(bool as_new_group) {
+void ProfileChooserView::AddAutofillHomeView() {
   if (browser()->profile()->IsGuestSession())
     return;
 
@@ -859,8 +873,32 @@ void ProfileChooserView::AddAutofillHomeView(bool as_new_group) {
   addresses_button_ = button.get();
   menu_items.push_back(std::move(button));
 
-  AddMenuItems(menu_items, as_new_group);
+  AddMenuItems(menu_items, /*new_group=*/true);
 }
+
+#if defined(GOOGLE_CHROME_BUILD)
+void ProfileChooserView::AddManageGoogleAccountButton() {
+  ProfileMenuViewBase::MenuItems menu_items;
+
+  SkColor icon_color =
+      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
+          ui::NativeTheme::kColorId_DefaultIconColor);
+  // |CreateVectorIcon()| doesn't override colors specified in the .icon file,
+  // therefore the image has to be colored manually with |CreateColorMask()|.
+  gfx::ImageSkia google_logo = gfx::CreateVectorIcon(
+      kGoogleGLogoIcon, GetDefaultIconSize(), gfx::kPlaceholderColor);
+  gfx::ImageSkia grey_google_logo =
+      gfx::ImageSkiaOperations::CreateColorMask(google_logo, icon_color);
+
+  std::unique_ptr<HoverButton> button = std::make_unique<HoverButton>(
+      this, grey_google_logo,
+      l10n_util::GetStringUTF16(IDS_SETTINGS_MANAGE_GOOGLE_ACCOUNT));
+  manage_google_account_button_ = button.get();
+  menu_items.push_back(std::move(button));
+
+  AddMenuItems(menu_items, /*new_group=*/false);
+}
+#endif
 
 void ProfileChooserView::PostActionPerformed(
     ProfileMetrics::ProfileDesktopMenu action_performed) {
