@@ -220,8 +220,8 @@ static const AutofillFieldDisplayInfo kFieldsToDisplay[] = {
 
   cell.selectionStyle = UITableViewCellSelectionStyleNone;
 
-  AutofillEditCell* textFieldCell =
-      base::mac::ObjCCastStrict<AutofillEditCell>(cell);
+  TableViewTextEditCell* textFieldCell =
+      base::mac::ObjCCastStrict<TableViewTextEditCell>(cell);
   textFieldCell.accessibilityIdentifier = textFieldCell.textLabel.text;
   textFieldCell.textField.delegate = self;
   return textFieldCell;
@@ -231,8 +231,8 @@ static const AutofillFieldDisplayInfo kFieldsToDisplay[] = {
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
   if (self.tableView.editing) {
     UITableViewCell* cell = [self.tableView cellForRowAtIndexPath:indexPath];
-    AutofillEditCell* textFieldCell =
-        base::mac::ObjCCastStrict<AutofillEditCell>(cell);
+    TableViewTextEditCell* textFieldCell =
+        base::mac::ObjCCastStrict<TableViewTextEditCell>(cell);
     [textFieldCell.textField becomeFirstResponder];
   }
 }

@@ -54,6 +54,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeURLNoMetadata,
   ItemTypeTextAccessoryImage,
   ItemTypeTextAccessoryNoImage,
+  ItemTypeTextEditItem,
   ItemTypeURLWithTimestamp,
   ItemTypeURLWithSize,
   ItemTypeURLWithSupplementalText,
@@ -66,7 +67,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeSettingsSwitch2,
   ItemTypeSyncSwitch,
   ItemTypeSettingsSyncError,
-  ItemTypeAutofillEditItem,
   ItemTypeAutofillData,
   ItemTypeAccount,
 };
@@ -204,6 +204,32 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addItem:detailIconItemBothLong
       toSectionWithIdentifier:SectionIdentifierText];
 
+  TableViewTextEditItem* textEditItem =
+      [[TableViewTextEditItem alloc] initWithType:ItemTypeTextEditItem];
+  textEditItem.textFieldName = @"Edit Text Item";
+  textEditItem.textFieldValue = @" with no icons";
+  textEditItem.hideEditIcon = YES;
+  textEditItem.textFieldEnabled = YES;
+  [model addItem:textEditItem toSectionWithIdentifier:SectionIdentifierText];
+
+  TableViewTextEditItem* textEditItemEditIcon =
+      [[TableViewTextEditItem alloc] initWithType:ItemTypeTextEditItem];
+  textEditItemEditIcon.textFieldName = @"Edit Text Item";
+  textEditItemEditIcon.textFieldValue = @" with edit icon";
+  textEditItemEditIcon.textFieldEnabled = YES;
+  [model addItem:textEditItemEditIcon
+      toSectionWithIdentifier:SectionIdentifierText];
+
+  TableViewTextEditItem* textEditItemBothIcons =
+      [[TableViewTextEditItem alloc] initWithType:ItemTypeTextEditItem];
+  textEditItemBothIcons.textFieldName = @"Edit Text Item";
+  textEditItemBothIcons.textFieldValue = @" with edit and custom icons";
+  textEditItemBothIcons.identifyingIcon =
+      [UIImage imageNamed:@"table_view_cell_check_mark"];
+  textEditItemBothIcons.textFieldEnabled = YES;
+  [model addItem:textEditItemBothIcons
+      toSectionWithIdentifier:SectionIdentifierText];
+
   // SectionIdentifierSettings.
   TableViewTextHeaderFooterItem* settingsHeader =
       [[TableViewTextHeaderFooterItem alloc] initWithType:ItemTypeTextHeader];
@@ -264,15 +290,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   autofillHeader.text = @"Autofill";
   [model setHeader:autofillHeader
       forSectionWithIdentifier:SectionIdentifierAutofill];
-
-  AutofillEditItem* autofillEditItem =
-      [[AutofillEditItem alloc] initWithType:ItemTypeAutofillEditItem];
-  autofillEditItem.textFieldName = @"Autofill field";
-  autofillEditItem.textFieldValue = @" with a value";
-  autofillEditItem.identifyingIcon =
-      [UIImage imageNamed:@"table_view_cell_check_mark"];
-  [model addItem:autofillEditItem
-      toSectionWithIdentifier:SectionIdentifierAutofill];
 
   AutofillDataItem* autofillItemWithMainLeading =
       [[AutofillDataItem alloc] initWithType:ItemTypeAutofillData];
