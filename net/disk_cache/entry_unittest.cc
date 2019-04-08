@@ -94,6 +94,7 @@ class DiskCacheEntryTest : public DiskCacheTestWithCache {
   void CloseSparseAfterBackendDestruction();
   void LastUsedTimePersists();
   void TruncateBackwards();
+  void ZeroWriteBackwards();
 };
 
 // This part of the test runs on the background thread.
@@ -5153,6 +5154,56 @@ TEST_F(DiskCacheEntryTest, MemoryOnlyTruncateBackwards) {
   SetMemoryOnlyMode();
   InitCache();
   TruncateBackwards();
+}
+
+void DiskCacheEntryTest::ZeroWriteBackwards() {
+  const char kKey[] = "a key";
+
+  disk_cache::Entry* entry = nullptr;
+  ASSERT_THAT(CreateEntry(kKey, &entry), IsOk());
+  ASSERT_TRUE(entry != nullptr);
+
+  const int kSize = 1024;
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<net::IOBuffer>(kSize);
+  CacheTestFillBuffer(buffer->data(), kSize, false);
+
+  // Offset here needs to be > blockfile's kMaxBlockSize to hit
+  // https://crbug.com/946538, as writes close to beginning are handled
+  // specially.
+  EXPECT_EQ(0, WriteData(entry, /* stream_index = */ 0,
+                         /* offset = */ 17000, buffer.get(),
+                         /* size = */ 0, /* truncate = */ true));
+
+  EXPECT_EQ(0, WriteData(entry, /* stream_index = */ 0,
+                         /* offset = */ 0, buffer.get(),
+                         /* size = */ 0, /* truncate = */ false));
+
+  EXPECT_EQ(kSize, ReadData(entry, /* stream_index = */ 0,
+                            /* offset = */ 0, buffer.get(),
+                            /* size = */ kSize));
+  for (int i = 0; i < kSize; ++i) {
+    EXPECT_EQ(0, buffer->data()[i]) << i;
+  }
+  entry->Close();
+}
+
+TEST_F(DiskCacheEntryTest, ZeroWriteBackwards) {
+  // https://crbug.com/946538/
+  InitCache();
+  ZeroWriteBackwards();
+}
+
+TEST_F(DiskCacheEntryTest, SimpleZeroWriteBackwards) {
+  SetSimpleCacheMode();
+  InitCache();
+  ZeroWriteBackwards();
+}
+
+TEST_F(DiskCacheEntryTest, MemoryOnlyZeroWriteBackwards) {
+  SetMemoryOnlyMode();
+  InitCache();
+  ZeroWriteBackwards();
 }
 
 TEST_F(DiskCacheEntryTest, SimpleCacheCloseResurrection) {

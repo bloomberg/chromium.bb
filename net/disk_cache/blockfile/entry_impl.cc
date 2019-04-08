@@ -183,6 +183,12 @@ void EntryImpl::UserBuffer::Write(int offset, IOBuffer* buf, int len) {
   DCHECK_GE(offset, 0);
   DCHECK_GE(len, 0);
   DCHECK_GE(offset + len, 0);
+
+  // 0-length writes that don't extend can just be ignored here, and are safe
+  // even if they're are before offset_, as truncates are handled elsewhere.
+  if (len == 0 && offset < End())
+    return;
+
   DCHECK_GE(offset, offset_);
   DVLOG(3) << "Buffer write at " << offset << " current " << offset_;
 
