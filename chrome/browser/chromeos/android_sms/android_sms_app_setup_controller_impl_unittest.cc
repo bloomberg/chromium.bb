@@ -234,6 +234,7 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
     fake_cookie_manager_->InvokePendingDeleteCookiesCallback(
         app_url, "cros_migrated_to" /* expected_cookie_name */,
         true /* success */);
+    base::RunLoop().RunUntilIdle();
 
     // If the PWA was not already installed at the URL, SetUpApp() should
     // install it.
@@ -287,6 +288,7 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
         app_url, install_url, migrated_to_app_url,
         base::BindOnce(&AndroidSmsAppSetupControllerImplTest::OnRemoveAppResult,
                        base::Unretained(this), run_loop.QuitClosure()));
+    base::RunLoop().RunUntilIdle();
 
     // If the PWA was already installed at the URL, RemoveApp() should uninstall
     // the it.
@@ -304,6 +306,7 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
       fake_cookie_manager_->InvokePendingDeleteCookiesCallback(
           app_url, "default_to_persist" /* expected_cookie_name */,
           true /* success */);
+      base::RunLoop().RunUntilIdle();
     }
 
     if (num_expected_app_uninstalls) {

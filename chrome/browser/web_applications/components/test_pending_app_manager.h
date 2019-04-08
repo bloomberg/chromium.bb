@@ -54,6 +54,7 @@ class TestPendingAppManager : public PendingAppManager {
   base::Optional<std::string> LookupAppId(const GURL& url) const override;
 
  private:
+  void DoInstall(InstallOptions install_options, OnceInstallCallback callback);
   std::vector<InstallOptions> install_requests_;
   std::vector<GURL> uninstall_requests_;
 

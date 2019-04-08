@@ -8,6 +8,10 @@
 #include <sstream>
 #include <vector>
 
+#include "base/bind_helpers.h"
+#include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "chrome/browser/web_applications/components/test_pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,8 +28,17 @@ class PendingAppManagerTest : public testing::Test {
       install_options_list.emplace_back(url, LaunchContainer::kWindow,
                                         InstallSource::kInternal);
     }
+
+    base::RunLoop run_loop;
     pending_app_manager_.SynchronizeInstalledApps(
-        std::move(install_options_list), InstallSource::kInternal);
+        std::move(install_options_list), InstallSource::kInternal,
+        base::BindLambdaForTesting(
+            [&run_loop](PendingAppManager::SynchronizeResult result) {
+              ASSERT_EQ(PendingAppManager::SynchronizeResult::kSuccess, result);
+              run_loop.Quit();
+            }));
+    // Wait for SynchronizeInstalledApps to finish.
+    run_loop.Run();
   }
 
   void Expect(int deduped_install_count,
@@ -42,6 +55,7 @@ class PendingAppManagerTest : public testing::Test {
     EXPECT_EQ(installed_app_urls, urls);
   }
 
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   TestPendingAppManager pending_app_manager_;
 };
 

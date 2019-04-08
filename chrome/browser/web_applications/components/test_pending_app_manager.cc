@@ -7,7 +7,11 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
+#include "base/sequenced_task_runner.h"
+#include "base/test/bind_test_util.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "url/gurl.h"
 
@@ -27,16 +31,19 @@ void TestPendingAppManager::SimulatePreviouslyInstalledApp(
 void TestPendingAppManager::Install(InstallOptions install_options,
                                     OnceInstallCallback callback) {
   // TODO(nigeltao): Add error simulation when error codes are added to the API.
-
-  auto i = installed_apps_.find(install_options.url);
-  if (i == installed_apps_.end()) {
-    installed_apps_[install_options.url] = install_options.install_source;
-    deduped_install_count_++;
-  }
-
-  install_requests_.push_back(std::move(install_options));
-  std::move(callback).Run(install_requests().back().url,
-                          InstallResultCode::kSuccess);
+  auto do_install = base::BindLambdaForTesting(
+      [this, install_options](OnceInstallCallback callback) {
+        auto i = installed_apps_.find(install_options.url);
+        if (i == installed_apps_.end()) {
+          installed_apps_[install_options.url] = install_options.install_source;
+          deduped_install_count_++;
+        }
+        install_requests_.push_back(install_options);
+        std::move(callback).Run(install_options.url,
+                                InstallResultCode::kSuccess);
+      });
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(do_install, std::move(callback)));
 }
 
 void TestPendingAppManager::InstallApps(
@@ -48,15 +55,20 @@ void TestPendingAppManager::InstallApps(
 
 void TestPendingAppManager::UninstallApps(std::vector<GURL> uninstall_urls,
                                           const UninstallCallback& callback) {
-  for (auto& url : uninstall_urls) {
-    auto i = installed_apps_.find(url);
-    if (i != installed_apps_.end()) {
-      installed_apps_.erase(i);
-      deduped_uninstall_count_++;
-    }
+  auto do_uninstall =
+      base::BindLambdaForTesting([&](UninstallCallback callback, GURL url) {
+        auto i = installed_apps_.find(url);
+        if (i != installed_apps_.end()) {
+          installed_apps_.erase(i);
+          deduped_uninstall_count_++;
+        }
 
-    uninstall_requests_.push_back(url);
-    callback.Run(url, true /* succeeded */);
+        uninstall_requests_.push_back(url);
+        callback.Run(url, true /* succeeded */);
+      });
+  for (const auto& url : uninstall_urls) {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(do_uninstall, callback, url));
   }
 }
 

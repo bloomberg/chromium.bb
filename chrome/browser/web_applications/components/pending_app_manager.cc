@@ -10,8 +10,23 @@
 
 #include "base/bind_helpers.h"
 #include "base/stl_util.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 
 namespace web_app {
+
+PendingAppManager::SynchronizeRequest::SynchronizeRequest(
+    SynchronizeCallback callback,
+    int remaining_requests)
+    : callback(std::move(callback)), remaining_requests(remaining_requests) {}
+
+PendingAppManager::SynchronizeRequest::~SynchronizeRequest() = default;
+
+PendingAppManager::SynchronizeRequest& PendingAppManager::SynchronizeRequest::
+operator=(PendingAppManager::SynchronizeRequest&&) = default;
+
+PendingAppManager::SynchronizeRequest::SynchronizeRequest(
+    SynchronizeRequest&& other) = default;
 
 PendingAppManager::PendingAppManager() = default;
 
@@ -19,7 +34,8 @@ PendingAppManager::~PendingAppManager() = default;
 
 void PendingAppManager::SynchronizeInstalledApps(
     std::vector<InstallOptions> desired_apps_install_options,
-    InstallSource install_source) {
+    InstallSource install_source,
+    SynchronizeCallback callback) {
   DCHECK(std::all_of(desired_apps_install_options.begin(),
                      desired_apps_install_options.end(),
                      [&install_source](const InstallOptions& install_options) {
@@ -35,10 +51,66 @@ void PendingAppManager::SynchronizeInstalledApps(
   }
   std::sort(desired_urls.begin(), desired_urls.end());
 
+  auto urls_to_remove =
+      base::STLSetDifference<std::vector<GURL>>(current_urls, desired_urls);
+
+  // Run callback immediately if there's no work to be done.
+  if (urls_to_remove.empty() && desired_apps_install_options.empty()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback), SynchronizeResult::kSuccess));
+    return;
+  }
+
+  // TODO(calamity): Move this to the top of the function once PolicyPrefsTest
+  // no longer crashes because of it.
+  // Only one concurrent SynchronizeInstalledApps() expected per InstallSource.
+  DCHECK(!base::ContainsKey(synchronize_requests_, install_source));
+
+  // Add the callback to a map and call once all installs/uninstalls finish.
+  synchronize_requests_.insert_or_assign(
+      install_source,
+      SynchronizeRequest(std::move(callback),
+                         urls_to_remove.size() + desired_urls.size()));
+
   UninstallApps(
-      base::STLSetDifference<std::vector<GURL>>(current_urls, desired_urls),
-      base::DoNothing());
-  InstallApps(std::move(desired_apps_install_options), base::DoNothing());
+      urls_to_remove,
+      base::BindRepeating(&PendingAppManager::UninstallForSynchronizeCallback,
+                          base::Unretained(this), install_source));
+  InstallApps(
+      std::move(desired_apps_install_options),
+      base::BindRepeating(&PendingAppManager::InstallForSynchronizeCallback,
+                          base::Unretained(this), install_source));
+}
+
+void PendingAppManager::InstallForSynchronizeCallback(InstallSource source,
+                                                      const GURL& app_url,
+                                                      InstallResultCode code) {
+  OnAppSynchronized(source, code == InstallResultCode::kSuccess ||
+                                code == InstallResultCode::kAlreadyInstalled);
+}
+
+void PendingAppManager::UninstallForSynchronizeCallback(InstallSource source,
+                                                        const GURL& app_url,
+                                                        bool succeeded) {
+  OnAppSynchronized(source, succeeded);
+}
+
+void PendingAppManager::OnAppSynchronized(InstallSource source,
+                                          bool succeeded) {
+  auto it = synchronize_requests_.find(source);
+  DCHECK(it != synchronize_requests_.end());
+
+  SynchronizeRequest& request = it->second;
+  if (!succeeded)
+    request.result = SynchronizeResult::kFailed;
+
+  DCHECK_GT(request.remaining_requests, 0);
+  if (--request.remaining_requests == 0) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(request.callback), request.result));
+    synchronize_requests_.erase(source);
+  }
 }
 
 }  // namespace web_app
