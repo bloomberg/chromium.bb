@@ -263,6 +263,8 @@ HistogramBase* Histogram::FactoryTimeGet(const std::string& name,
                                          TimeDelta maximum,
                                          uint32_t bucket_count,
                                          int32_t flags) {
+  DCHECK_LT(minimum.InMilliseconds(), std::numeric_limits<Sample>::max());
+  DCHECK_LT(maximum.InMilliseconds(), std::numeric_limits<Sample>::max());
   return FactoryGet(name, static_cast<Sample>(minimum.InMilliseconds()),
                     static_cast<Sample>(maximum.InMilliseconds()), bucket_count,
                     flags);
@@ -273,6 +275,8 @@ HistogramBase* Histogram::FactoryMicrosecondsTimeGet(const std::string& name,
                                                      TimeDelta maximum,
                                                      uint32_t bucket_count,
                                                      int32_t flags) {
+  DCHECK_LT(minimum.InMicroseconds(), std::numeric_limits<Sample>::max());
+  DCHECK_LT(maximum.InMicroseconds(), std::numeric_limits<Sample>::max());
   return FactoryGet(name, static_cast<Sample>(minimum.InMicroseconds()),
                     static_cast<Sample>(maximum.InMicroseconds()), bucket_count,
                     flags);
@@ -900,6 +904,8 @@ HistogramBase* LinearHistogram::FactoryTimeGet(const std::string& name,
                                                TimeDelta maximum,
                                                uint32_t bucket_count,
                                                int32_t flags) {
+  DCHECK_LT(minimum.InMilliseconds(), std::numeric_limits<Sample>::max());
+  DCHECK_LT(maximum.InMilliseconds(), std::numeric_limits<Sample>::max());
   return FactoryGet(name, static_cast<Sample>(minimum.InMilliseconds()),
                     static_cast<Sample>(maximum.InMilliseconds()), bucket_count,
                     flags);
