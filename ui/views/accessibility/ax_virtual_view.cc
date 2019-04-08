@@ -266,15 +266,20 @@ gfx::NativeViewAccessible AXVirtualView::GetParent() {
   return nullptr;
 }
 
-gfx::Rect AXVirtualView::GetClippedScreenBoundsRect() const {
-  // We could optionally add clipping here if ever needed.
-  // TODO(nektar): Implement bounds that are relative to the parent.
-  return gfx::ToEnclosingRect(custom_data_.relative_bounds.bounds);
-}
-
-gfx::Rect AXVirtualView::GetUnclippedScreenBoundsRect() const {
-  // TODO(nektar): Implement bounds that are relative to the parent.
-  return gfx::ToEnclosingRect(custom_data_.relative_bounds.bounds);
+gfx::Rect AXVirtualView::GetBoundsRect(
+    const ui::AXCoordinateSystem coordinate_system,
+    const ui::AXClippingBehavior clipping_behavior,
+    ui::AXOffscreenResult* offscreen_result) const {
+  switch (coordinate_system) {
+    case ui::AXCoordinateSystem::kScreen:
+      // We could optionally add clipping here if ever needed.
+      // TODO(nektar): Implement bounds that are relative to the parent.
+      return gfx::ToEnclosingRect(custom_data_.relative_bounds.bounds);
+    case ui::AXCoordinateSystem::kRootFrame:
+    case ui::AXCoordinateSystem::kFrame:
+      NOTIMPLEMENTED();
+      return gfx::Rect();
+  }
 }
 
 gfx::NativeViewAccessible AXVirtualView::HitTestSync(int x, int y) {

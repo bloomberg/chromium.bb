@@ -1517,7 +1517,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 - (NSPoint)origin {
   if (![self instanceActive])
     return NSMakePoint(0, 0);
-  gfx::Rect bounds = owner_->GetPageBoundsRect();
+  gfx::Rect bounds = owner_->GetClippedRootFrameBoundsRect();
   return NSMakePoint(bounds.x(), bounds.y());
 }
 
@@ -2063,7 +2063,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 - (NSValue*)size {
   if (![self instanceActive])
     return nil;
-  gfx::Rect bounds = owner_->GetPageBoundsRect();
+  gfx::Rect bounds = owner_->GetClippedRootFrameBoundsRect();
   return [NSValue valueWithSize:NSMakeSize(bounds.width(), bounds.height())];
 }
 
@@ -2675,7 +2675,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
       return nil;
     NSRange range = [(NSValue*)parameter rangeValue];
     gfx::Rect rect =
-        owner_->GetScreenBoundsForRange(range.location, range.length);
+        owner_->GetUnclippedScreenRangeBoundsRect(range.location, range.length);
     NSRect nsrect = [self rectInScreen:rect];
     return [NSValue valueWithRect:nsrect];
   }
@@ -2734,7 +2734,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     DCHECK_GE(startOffset, 0);
     DCHECK_GE(endOffset, 0);
 
-    gfx::Rect rect = BrowserAccessibilityManager::GetPageBoundsForRange(
+    gfx::Rect rect = BrowserAccessibilityManager::GetRootFrameRangeBoundsRect(
         *startObject, startOffset, *endObject, endOffset);
     NSRect nsrect = [self rectInScreen:rect];
     return [NSValue valueWithRect:nsrect];

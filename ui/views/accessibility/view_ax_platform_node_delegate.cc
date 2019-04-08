@@ -296,13 +296,19 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::GetParent() {
   return nullptr;
 }
 
-gfx::Rect ViewAXPlatformNodeDelegate::GetClippedScreenBoundsRect() const {
-  // We could optionally add clipping here if ever needed.
-  return view()->GetBoundsInScreen();
-}
-
-gfx::Rect ViewAXPlatformNodeDelegate::GetUnclippedScreenBoundsRect() const {
-  return view()->GetBoundsInScreen();
+gfx::Rect ViewAXPlatformNodeDelegate::GetBoundsRect(
+    const ui::AXCoordinateSystem coordinate_system,
+    const ui::AXClippingBehavior clipping_behavior,
+    ui::AXOffscreenResult* offscreen_result) const {
+  switch (coordinate_system) {
+    case ui::AXCoordinateSystem::kScreen:
+      // We could optionally add clipping here if ever needed.
+      return view()->GetBoundsInScreen();
+    case ui::AXCoordinateSystem::kRootFrame:
+    case ui::AXCoordinateSystem::kFrame:
+      NOTIMPLEMENTED();
+      return gfx::Rect();
+  }
 }
 
 gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::HitTestSync(int x,

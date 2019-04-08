@@ -414,8 +414,10 @@ SAFEARRAY* AXPlatformNodeWin::CreateUIAElementsArrayFromIdVector(
 
 SAFEARRAY* AXPlatformNodeWin::CreateClickablePointArray() {
   SAFEARRAY* clickable_point_array = SafeArrayCreateVector(VT_R8, 0, 2);
-  gfx::Point center =
-      GetDelegate()->GetUnclippedScreenBoundsRect().CenterPoint();
+  gfx::Point center = GetDelegate()
+                          ->GetBoundsRect(AXCoordinateSystem::kScreen,
+                                          AXClippingBehavior::kUnclipped)
+                          .CenterPoint();
 
   double* double_array;
   SafeArrayAccessData(clickable_point_array,
@@ -433,7 +435,8 @@ gfx::Vector2d AXPlatformNodeWin::CalculateUIAScrollPoint(
   if (!GetDelegate() || !IsScrollable())
     return {};
 
-  const gfx::Rect bounds = GetDelegate()->GetClippedScreenBoundsRect();
+  const gfx::Rect bounds = GetDelegate()->GetBoundsRect(
+      AXCoordinateSystem::kScreen, AXClippingBehavior::kClipped);
   const int large_horizontal_change = bounds.width();
   const int large_vertical_change = bounds.height();
 
@@ -591,7 +594,10 @@ IFACEMETHODIMP AXPlatformNodeWin::accHitTest(LONG x_left,
   COM_OBJECT_VALIDATE_1_ARG(child);
 
   gfx::Point point(x_left, y_top);
-  if (!GetDelegate()->GetClippedScreenBoundsRect().Contains(point)) {
+  if (!GetDelegate()
+           ->GetBoundsRect(AXCoordinateSystem::kScreen,
+                           AXClippingBehavior::kClipped)
+           .Contains(point)) {
     // Return S_FALSE and VT_EMPTY when outside the object's boundaries.
     child->vt = VT_EMPTY;
     return S_FALSE;
@@ -652,7 +658,8 @@ IFACEMETHODIMP AXPlatformNodeWin::accLocation(LONG* x_left,
   COM_OBJECT_VALIDATE_VAR_ID_4_ARGS_AND_GET_TARGET(var_id, x_left, y_top, width,
                                                    height, target);
 
-  gfx::Rect bounds = target->GetDelegate()->GetUnclippedScreenBoundsRect();
+  gfx::Rect bounds = target->GetDelegate()->GetBoundsRect(
+      AXCoordinateSystem::kScreen, AXClippingBehavior::kUnclipped);
   *x_left = bounds.x();
   *y_top = bounds.y();
   *width = bounds.width();
@@ -1372,7 +1379,8 @@ IFACEMETHODIMP AXPlatformNodeWin::scrollToPoint(
     if (GetParent()) {
       AXPlatformNodeBase* base = FromNativeViewAccessible(GetParent());
       scroll_to += base->GetDelegate()
-                       ->GetUnclippedScreenBoundsRect()
+                       ->GetBoundsRect(AXCoordinateSystem::kScreen,
+                                       AXClippingBehavior::kUnclipped)
                        .OffsetFromOrigin();
     }
   } else if (coordinate_type != IA2_COORDTYPE_SCREEN_RELATIVE) {
@@ -1791,7 +1799,8 @@ IFACEMETHODIMP AXPlatformNodeWin::get_HorizontalViewSize(double* result) {
     return S_OK;
   }
 
-  gfx::RectF clipped_bounds(GetDelegate()->GetClippedScreenBoundsRect());
+  gfx::RectF clipped_bounds(GetDelegate()->GetBoundsRect(
+      AXCoordinateSystem::kScreen, AXClippingBehavior::kClipped));
   float x_min = GetIntAttribute(ax::mojom::IntAttribute::kScrollXMin);
   float x_max = GetIntAttribute(ax::mojom::IntAttribute::kScrollXMax);
   float total_width = clipped_bounds.width() + x_max - x_min;
@@ -1824,7 +1833,8 @@ IFACEMETHODIMP AXPlatformNodeWin::get_VerticalViewSize(double* result) {
     return S_OK;
   }
 
-  gfx::RectF clipped_bounds(GetDelegate()->GetClippedScreenBoundsRect());
+  gfx::RectF clipped_bounds(GetDelegate()->GetBoundsRect(
+      AXCoordinateSystem::kScreen, AXClippingBehavior::kClipped));
   float y_min = GetIntAttribute(ax::mojom::IntAttribute::kScrollYMin);
   float y_max = GetIntAttribute(ax::mojom::IntAttribute::kScrollYMax);
   float total_height = clipped_bounds.height() + y_max - y_min;
@@ -3474,7 +3484,8 @@ IFACEMETHODIMP AXPlatformNodeWin::get_BoundingRectangle(
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_BOUNDINGRECTANGLE);
   UIA_VALIDATE_CALL_1_ARG(bounding_rectangle);
 
-  gfx::Rect bounds = delegate_->GetUnclippedScreenBoundsRect();
+  gfx::Rect bounds = delegate_->GetBoundsRect(AXCoordinateSystem::kScreen,
+                                              AXClippingBehavior::kUnclipped);
   bounding_rectangle->left = bounds.x();
   bounding_rectangle->top = bounds.y();
   bounding_rectangle->width = bounds.width();

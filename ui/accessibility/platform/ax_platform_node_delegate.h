@@ -9,9 +9,12 @@
 #include <utility>
 #include <vector>
 
+#include "ui/accessibility/ax_clipping_behavior.h"
+#include "ui/accessibility/ax_coordinate_system.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_node_position.h"
+#include "ui/accessibility/ax_offscreen_result.h"
 #include "ui/accessibility/ax_position.h"
 #include "ui/accessibility/ax_text_utils.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
@@ -78,34 +81,28 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // Get the child of a node given a 0-based index.
   virtual gfx::NativeViewAccessible ChildAtIndex(int index) = 0;
 
-  // Get the bounds of this node in screen coordinates, applying clipping
-  // to all bounding boxes so that the resulting rect is within the window.
-  virtual gfx::Rect GetClippedScreenBoundsRect() const = 0;
+  // Return the bounds of this node in the coordinate system indicated. If the
+  // clipping behavior is set to clipped, clipping is applied. If an offscreen
+  // result address is provided, it will be populated depending on whether the
+  // returned bounding box is onscreen or offscreen.
+  virtual gfx::Rect GetBoundsRect(
+      const AXCoordinateSystem coordinate_system,
+      const AXClippingBehavior clipping_behavior,
+      AXOffscreenResult* offscreen_result = nullptr) const = 0;
 
-  // Get the bounds of this node in screen coordinates without applying
-  // any clipping; it may be outside of the window or offscreen.
-  virtual gfx::Rect GetUnclippedScreenBoundsRect() const = 0;
-
-  // Returns the bounds of the given range in screen coordinates. Only valid
-  // when the role is WebAXRoleStaticText.
-  virtual gfx::Rect GetScreenBoundsForRange(int start,
-                                            int len,
-                                            bool clipped = false) const = 0;
-
-  // Get the bounds of the given text range in the given coordinate system.
-  // Screen gets these boundaries in screen coordinates, Window in coordinates
-  // relative to the parent window, and Parent relative to the parent node. The
-  // offsets refer to offsets within the text returned for this node when
-  // treated as a platform text node.
-  enum TextRangeBoundsCoordinateSystem {
-    Screen,
-    Window,
-    Parent,
-  };
-  virtual gfx::Rect GetTextRangeBoundsRect(
-      int start_offset,
-      int end_offset,
-      TextRangeBoundsCoordinateSystem coordinate_system) const = 0;
+  // Return the bounds of the text range given by text offsets in the coordinate
+  // system indicated. When determining the text offset of a node, the text of
+  // this node is included while descendant text may be accounted for with a
+  // single special character. If the clipping behavior is set to clipped,
+  // clipping is applied. If an offscreen result address is provided, it will be
+  // populated depending on whether the returned bounding box is onscreen or
+  // offscreen.
+  virtual gfx::Rect GetRangeBoundsRect(
+      const int start_offset,
+      const int end_offset,
+      const AXCoordinateSystem coordinate_system,
+      const AXClippingBehavior clipping_behavior,
+      AXOffscreenResult* offscreen_result = nullptr) const = 0;
 
   // Do a *synchronous* hit test of the given location in global screen
   // coordinates, and the node within this node's subtree (inclusive) that's

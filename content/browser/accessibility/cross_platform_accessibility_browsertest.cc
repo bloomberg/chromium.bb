@@ -19,6 +19,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -70,6 +71,26 @@ class CrossPlatformAccessibilityBrowserTest : public ContentBrowserTest {
   void TearDownOnMainThread() override;
 
  protected:
+  void LoadInitialAccessibilityTreeFromUrl(
+      const GURL& url,
+      ui::AXMode accessibility_mode = ui::kAXModeComplete) {
+    AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                           accessibility_mode,
+                                           ax::mojom::Event::kLoadComplete);
+    NavigateToURL(shell(), url);
+    waiter.WaitForNotification();
+  }
+
+  void LoadInitialAccessibilityTreeFromHtmlFilePath(
+      const std::string& html_file_path,
+      ui::AXMode accessibility_mode = ui::kAXModeComplete) {
+    if (!embedded_test_server()->Started())
+      ASSERT_TRUE(embedded_test_server()->Start());
+    ASSERT_TRUE(embedded_test_server()->Started());
+    LoadInitialAccessibilityTreeFromUrl(
+        embedded_test_server()->GetURL(html_file_path), accessibility_mode);
+  }
+
   BrowserAccessibilityManager* GetManager() {
     WebContentsImpl* web_contents =
         static_cast<WebContentsImpl*>(shell()->web_contents());
@@ -604,4 +625,109 @@ IN_PROC_BROWSER_TEST_F(
                GetAttr(input2, StringAttribute::kPlaceholder).c_str());
 }
 
+// On Android root scroll offset is handled by the Java layer. The final rect
+// bounds is device specific.
+#ifndef OS_ANDROID
+IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
+                       GetBoundsRectUnclippedRootFrameFromIFrame) {
+  // Start by loading a document with iframes.
+  LoadInitialAccessibilityTreeFromHtmlFilePath(
+      "/accessibility/html/iframe-padding.html");
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Second Button");
+
+  // Get the delegate for the iframe leaf of the top-level accessibility tree
+  // for the second iframe.
+  BrowserAccessibilityManager* browser_accessibility_manager = GetManager();
+  ASSERT_NE(nullptr, browser_accessibility_manager);
+  BrowserAccessibility* root_browser_accessibility =
+      browser_accessibility_manager->GetRoot();
+  ASSERT_NE(nullptr, root_browser_accessibility);
+  BrowserAccessibility* leaf_iframe_browser_accessibility =
+      root_browser_accessibility->InternalDeepestLastChild();
+  ASSERT_NE(nullptr, leaf_iframe_browser_accessibility);
+  ASSERT_EQ(ax::mojom::Role::kIframe,
+            leaf_iframe_browser_accessibility->GetRole());
+
+  // The frame coordinates of the iframe node within the top-level tree is
+  // relative to the top level frame. That is why the top-level default padding
+  // is included.
+  ASSERT_EQ(gfx::Rect(30, 230, 300, 100).ToString(),
+            leaf_iframe_browser_accessibility
+                ->GetBoundsRect(ui::AXCoordinateSystem::kRootFrame,
+                                ui::AXClippingBehavior::kUnclipped)
+                .ToString());
+
+  // Now get the root delegate of the iframe's accessibility tree.
+  AXTreeID iframe_tree_id = AXTreeID::FromString(
+      leaf_iframe_browser_accessibility->GetStringAttribute(
+          ax::mojom::StringAttribute::kChildTreeId));
+  BrowserAccessibilityManager* iframe_browser_accessibility_manager =
+      BrowserAccessibilityManager::FromID(iframe_tree_id);
+  ASSERT_NE(nullptr, iframe_browser_accessibility_manager);
+  BrowserAccessibility* root_iframe_browser_accessibility =
+      iframe_browser_accessibility_manager->GetRoot();
+  ASSERT_NE(nullptr, root_iframe_browser_accessibility);
+  ASSERT_EQ(ax::mojom::Role::kRootWebArea,
+            root_iframe_browser_accessibility->GetRole());
+
+  // The root frame bounds of the iframe are still relative to the top-level
+  // frame.
+  ASSERT_EQ(gfx::Rect(30, 230, 300, 100).ToString(),
+            root_iframe_browser_accessibility
+                ->GetBoundsRect(ui::AXCoordinateSystem::kRootFrame,
+                                ui::AXClippingBehavior::kUnclipped)
+                .ToString());
+}
+
+IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
+                       GetBoundsRectUnclippedFrameFromIFrame) {
+  // Start by loading a document with iframes.
+  LoadInitialAccessibilityTreeFromHtmlFilePath(
+      "/accessibility/html/iframe-padding.html");
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Second Button");
+
+  // Get the delegate for the iframe leaf of the top-level accessibility tree
+  // for the second iframe.
+  BrowserAccessibilityManager* browser_accessibility_manager = GetManager();
+  ASSERT_NE(nullptr, browser_accessibility_manager);
+  BrowserAccessibility* root_browser_accessibility =
+      browser_accessibility_manager->GetRoot();
+  ASSERT_NE(nullptr, root_browser_accessibility);
+  BrowserAccessibility* leaf_iframe_browser_accessibility =
+      root_browser_accessibility->InternalDeepestLastChild();
+  ASSERT_NE(nullptr, leaf_iframe_browser_accessibility);
+  ASSERT_EQ(ax::mojom::Role::kIframe,
+            leaf_iframe_browser_accessibility->GetRole());
+
+  // The frame coordinates of the iframe node within the top-level tree is
+  // relative to the top level frame.
+  ASSERT_EQ(gfx::Rect(30, 230, 300, 100).ToString(),
+            leaf_iframe_browser_accessibility
+                ->GetBoundsRect(ui::AXCoordinateSystem::kFrame,
+                                ui::AXClippingBehavior::kUnclipped)
+                .ToString());
+
+  // Now get the root delegate of the iframe's accessibility tree.
+  AXTreeID iframe_tree_id = AXTreeID::FromString(
+      leaf_iframe_browser_accessibility->GetStringAttribute(
+          ax::mojom::StringAttribute::kChildTreeId));
+  BrowserAccessibilityManager* iframe_browser_accessibility_manager =
+      BrowserAccessibilityManager::FromID(iframe_tree_id);
+  ASSERT_NE(nullptr, iframe_browser_accessibility_manager);
+  BrowserAccessibility* root_iframe_browser_accessibility =
+      iframe_browser_accessibility_manager->GetRoot();
+  ASSERT_NE(nullptr, root_iframe_browser_accessibility);
+  ASSERT_EQ(ax::mojom::Role::kRootWebArea,
+            root_iframe_browser_accessibility->GetRole());
+
+  // The frame bounds of the iframe are now relative to itself.
+  ASSERT_EQ(gfx::Rect(0, 0, 300, 100).ToString(),
+            root_iframe_browser_accessibility
+                ->GetBoundsRect(ui::AXCoordinateSystem::kFrame,
+                                ui::AXClippingBehavior::kUnclipped)
+                .ToString());
+}
+#endif
 }  // namespace content

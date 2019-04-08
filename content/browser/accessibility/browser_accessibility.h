@@ -159,33 +159,46 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // Returns nullptr if there are no children.
   BrowserAccessibility* InternalDeepestLastChild() const;
 
-  // Returns the bounds of this object in coordinates relative to this frame.
-  gfx::Rect GetFrameBoundsRect() const;
+  // Derivative utils for AXPlatformNodeDelegate::GetBoundsRect
+  gfx::Rect GetClippedScreenBoundsRect(
+      ui::AXOffscreenResult* offscreen_result = nullptr) const;
+  gfx::Rect GetUnclippedScreenBoundsRect(
+      ui::AXOffscreenResult* offscreen_result = nullptr) const;
+  gfx::Rect GetClippedRootFrameBoundsRect(
+      ui::AXOffscreenResult* offscreen_result = nullptr) const;
+  gfx::Rect GetUnclippedRootFrameBoundsRect(
+      ui::AXOffscreenResult* offscreen_result = nullptr) const;
+  gfx::Rect GetClippedFrameBoundsRect(
+      ui::AXOffscreenResult* offscreen_result = nullptr) const;
 
-  // Returns the bounds of this object in coordinates relative to the
-  // page (specifically, the top-left corner of the topmost web contents).
-  // Optionally updates |offscreen| to be true if the element is offscreen
-  // within its page. Clips bounds by default unless |clip_bounds| is false.
-  gfx::Rect GetPageBoundsRect(bool* offscreen = nullptr,
-                              bool clip_bounds = true) const;
+  // Derivative utils for AXPlatformNodeDelegate::GetRangeBoundsRect
+  gfx::Rect GetUnclippedScreenRangeBoundsRect(
+      const int start_offset,
+      const int end_offset,
+      ui::AXOffscreenResult* offscreen_result = nullptr) const;
+  gfx::Rect GetUnclippedRootFrameRangeBoundsRect(
+      const int start_offset,
+      const int end_offset,
+      ui::AXOffscreenResult* offscreen_result = nullptr) const;
+
+  // DEPRECATED: Prefer using the interfaces provided by AXPlatformNodeDelegate
+  // when writing new code.
+  gfx::Rect GetScreenRangeBoundsRect(
+      int start,
+      int len,
+      const ui::AXClippingBehavior clipping_behavior,
+      ui::AXOffscreenResult* offscreen_result = nullptr) const;
 
   // Returns the bounds of the given range in coordinates relative to the
-  // top-left corner of the overall web area. Only valid when the
-  // role is WebAXRoleStaticText.
-  gfx::Rect GetPageBoundsForRange(int start,
-                                  int len,
-                                  bool clipped = false) const;
-
-  // Convert a bounding rectangle from this node's coordinate system
-  // (which is relative to its nearest scrollable ancestor) to
-  // absolute bounds, either in page coordinates (when |frameOnly| is
-  // false), or in frame coordinates (when |frameOnly| is true).
-  // Updates optional |offscreen| to be true if the node is offscreen.
-  // If |clip_bounds| is set to false, will return unclipped bounds.
-  virtual gfx::Rect RelativeToAbsoluteBounds(gfx::RectF bounds,
-                                             bool frame_only,
-                                             bool* offscreen = nullptr,
-                                             bool clip_bounds = true) const;
+  // top-left corner of the overall web area. Only valid when the role is
+  // WebAXRoleStaticText.
+  // DEPRECATED (for public use): Prefer using the interfaces provided by
+  // AXPlatformNodeDelegate when writing new non-private code.
+  gfx::Rect GetRootFrameRangeBoundsRect(
+      int start,
+      int len,
+      const ui::AXClippingBehavior clipping_behavior,
+      ui::AXOffscreenResult* offscreen_result = nullptr) const;
 
   // This is to handle the cases such as ARIA textbox, where the value should
   // be calculated from the object's inner text.
@@ -355,16 +368,16 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   gfx::NativeViewAccessible GetParent() override;
   int GetChildCount() override;
   gfx::NativeViewAccessible ChildAtIndex(int index) override;
-  gfx::Rect GetClippedScreenBoundsRect() const override;
-  gfx::Rect GetUnclippedScreenBoundsRect() const override;
-  gfx::Rect GetScreenBoundsForRange(int start,
-                                    int len,
-                                    bool clipped = false) const override;
-  gfx::Rect GetTextRangeBoundsRect(
-      int start_offset,
-      int end_offset,
-      ui::AXPlatformNodeDelegate::TextRangeBoundsCoordinateSystem
-          coordinate_system) const override;
+  gfx::Rect GetBoundsRect(
+      const ui::AXCoordinateSystem coordinate_system,
+      const ui::AXClippingBehavior clipping_behavior,
+      ui::AXOffscreenResult* offscreen_result = nullptr) const override;
+  gfx::Rect GetRangeBoundsRect(
+      const int start_offset,
+      const int end_offset,
+      const ui::AXCoordinateSystem coordinate_system,
+      const ui::AXClippingBehavior clipping_behavior,
+      ui::AXOffscreenResult* offscreen_result = nullptr) const override;
   gfx::NativeViewAccessible HitTestSync(int x, int y) override;
   gfx::NativeViewAccessible GetFocus() override;
   ui::AXPlatformNode* GetFromNodeID(int32_t id) override;
@@ -457,7 +470,27 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // text, depending on the platform.
   base::string16 GetInnerText() const;
 
-  gfx::Rect GetPageBoundsPastEndOfText() const;
+  // Return the bounds after converting from this node's coordinate system
+  // (which is relative to its nearest scrollable ancestor) to the coordinate
+  // system specified. If the clipping behavior is set to clipped, clipping is
+  // applied to all bounding boxes so that the resulting rect is within the
+  // window. If the clipping behavior is unclipped, the resulting rect may be
+  // outside of the window or offscreen. If an offscreen result address is
+  // provided, it will be populated depending on whether the returned bounding
+  // box is onscreen or offscreen.
+  gfx::Rect RelativeToAbsoluteBounds(
+      gfx::RectF bounds,
+      const ui::AXCoordinateSystem coordinate_system,
+      const ui::AXClippingBehavior clipping_behavior,
+      ui::AXOffscreenResult* offscreen_result) const;
+
+  // Return a rect for a 1-width character past the end of text. This is what
+  // ATs expect when getting the character extents past the last character in a
+  // line, and equals what the caret bounds would be when past the end of the
+  // text.
+  gfx::Rect GetRootFrameBoundsPastEndOfText(
+      const ui::AXClippingBehavior clipping_behavior,
+      ui::AXOffscreenResult* offscreen_result = nullptr) const;
 
   // Given a set of node ids, return the nodes in this delegate's tree to
   // which they correspond.

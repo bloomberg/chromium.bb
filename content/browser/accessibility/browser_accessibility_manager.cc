@@ -1090,7 +1090,7 @@ base::string16 BrowserAccessibilityManager::GetTextForRange(
 }
 
 // static
-gfx::Rect BrowserAccessibilityManager::GetPageBoundsForRange(
+gfx::Rect BrowserAccessibilityManager::GetRootFrameRangeBoundsRect(
     const BrowserAccessibility& start_object,
     int start_offset,
     const BrowserAccessibility& end_object,
@@ -1107,8 +1107,9 @@ gfx::Rect BrowserAccessibilityManager::GetPageBoundsForRange(
       return gfx::Rect();
     }
 
-    return start_object.GetPageBoundsForRange(start_offset,
-                                              end_offset - start_offset);
+    return start_object.GetRootFrameRangeBoundsRect(
+        start_offset, end_offset - start_offset,
+        ui::AXClippingBehavior::kUnclipped);
   }
 
   gfx::Rect result;
@@ -1137,10 +1138,11 @@ gfx::Rect BrowserAccessibilityManager::GetPageBoundsForRange(
         start_char_index = start_offset;
       if (current == last)
         end_char_index = end_offset;
-      result.Union(current->GetPageBoundsForRange(
-          start_char_index, end_char_index - start_char_index));
+      result.Union(current->GetRootFrameRangeBoundsRect(
+          start_char_index, end_char_index - start_char_index,
+          ui::AXClippingBehavior::kUnclipped));
     } else {
-      result.Union(current->GetPageBoundsRect());
+      result.Union(current->GetClippedRootFrameBoundsRect());
     }
 
     if (current == last)
