@@ -26,11 +26,6 @@
 
 namespace extensions {
 
-WebRequestProxyingURLLoaderFactory::InProgressRequest::FollowRedirectParams::
-    FollowRedirectParams() = default;
-WebRequestProxyingURLLoaderFactory::InProgressRequest::FollowRedirectParams::
-    ~FollowRedirectParams() = default;
-
 WebRequestProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
     WebRequestProxyingURLLoaderFactory* factory,
     uint64_t request_id,
@@ -85,12 +80,7 @@ WebRequestProxyingURLLoaderFactory::InProgressRequest::~InProgressRequest() {
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::Restart() {
-  UpdateRequestInfo();
-  RestartInternal();
-}
-
-void WebRequestProxyingURLLoaderFactory::InProgressRequest::
-    UpdateRequestInfo() {
+  request_completed_ = false;
   // Derive a new WebRequestInfo value any time |Restart()| is called, because
   // the details in |request_| may have changed e.g. if we've been redirected.
   // |request_initiator| can be modified on redirects, but we keep the original
@@ -111,12 +101,6 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
       ExtensionWebRequestEventRouter::GetInstance()
           ->HasExtraHeadersListenerForRequest(
               factory_->browser_context_, factory_->info_map_, &info_.value());
-}
-
-void WebRequestProxyingURLLoaderFactory::InProgressRequest::RestartInternal() {
-  DCHECK_EQ(info_->url, request_.url)
-      << "UpdateRequestInfo must have been called first";
-  request_completed_ = false;
 
   // If the header client will be used, we start the request immediately, and
   // OnBeforeSendHeaders and OnSendHeaders will be handled there. Otherwise,
@@ -178,29 +162,11 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::FollowRedirect(
     request_.headers.RemoveHeader(header);
   request_.headers.MergeFrom(modified_headers);
 
-  // Call this before checking |current_request_uses_header_client_| as it
-  // calculates it.
-  UpdateRequestInfo();
-
   if (target_loader_.is_bound()) {
-    // If header_client_ is used, then we have to call FollowRedirect now as
-    // that's what triggers the network service calling back to
-    // OnBeforeSendHeaders(). Otherwise, don't call FollowRedirect now. Wait for
-    // the onBeforeSendHeaders callback(s) to run as these may modify request
-    // headers and if so we'll pass these modifications to FollowRedirect.
-    if (current_request_uses_header_client_) {
-      target_loader_->FollowRedirect(removed_headers, modified_headers,
-                                     new_url);
-    } else {
-      auto params = std::make_unique<FollowRedirectParams>();
-      params->removed_headers = removed_headers;
-      params->modified_headers = modified_headers;
-      params->new_url = new_url;
-      pending_follow_redirect_params_ = std::move(params);
-    }
+    target_loader_->FollowRedirect(removed_headers, modified_headers, new_url);
   }
 
-  RestartInternal();
+  Restart();
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::
@@ -481,8 +447,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     DCHECK_EQ(net::OK, result);
   }
 
-  ContinueToSendHeaders(std::set<std::string>(), std::set<std::string>(),
-                        net::OK);
+  ContinueToSendHeaders(net::OK);
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::
@@ -525,9 +490,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::
-    ContinueToSendHeaders(const std::set<std::string>& removed_headers,
-                          const std::set<std::string>& set_headers,
-                          int error_code) {
+    ContinueToSendHeaders(int error_code) {
   if (error_code != net::OK) {
     OnRequestError(network::URLLoaderCompletionStatus(error_code));
     return;
@@ -537,26 +500,6 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     DCHECK(on_before_send_headers_callback_);
     std::move(on_before_send_headers_callback_)
         .Run(error_code, request_.headers);
-  } else if (pending_follow_redirect_params_) {
-    pending_follow_redirect_params_->removed_headers.insert(
-        pending_follow_redirect_params_->removed_headers.end(),
-        removed_headers.begin(), removed_headers.end());
-
-    for (auto& set_header : set_headers) {
-      std::string header_value;
-      if (request_.headers.GetHeader(set_header, &header_value)) {
-        pending_follow_redirect_params_->modified_headers.SetHeader(
-            set_header, header_value);
-      } else {
-        NOTREACHED();
-      }
-    }
-
-    target_loader_->FollowRedirect(
-        pending_follow_redirect_params_->removed_headers,
-        pending_follow_redirect_params_->modified_headers,
-        pending_follow_redirect_params_->new_url);
-    pending_follow_redirect_params_.reset();
   }
 
   if (proxied_client_binding_.is_bound())
