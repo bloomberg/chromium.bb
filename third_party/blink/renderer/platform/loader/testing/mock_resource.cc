@@ -34,17 +34,10 @@ MockResource* MockResource::Fetch(FetchParameters& params,
       fetcher->RequestResource(params, MockResourceFactory(), client));
 }
 
-// static
-MockResource* MockResource::Create(const ResourceRequest& request) {
-  ResourceLoaderOptions options;
-  return MakeGarbageCollected<MockResource>(request, options);
-}
-
-MockResource* MockResource::Create(const KURL& url) {
-  ResourceRequest request(url);
-  return Create(request);
-}
-
+MockResource::MockResource(const KURL& url)
+    : MockResource(ResourceRequest(url)) {}
+MockResource::MockResource(const ResourceRequest& request)
+    : MockResource(request, ResourceLoaderOptions()) {}
 MockResource::MockResource(const ResourceRequest& request,
                            const ResourceLoaderOptions& options)
     : Resource(request, ResourceType::kMock, options) {}

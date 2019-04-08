@@ -65,7 +65,7 @@ void CreateTestResourceAndSetCachedMetadata(const ResourceResponse& response) {
   ResourceRequest request(response.CurrentRequestUrl());
   request.SetRequestorOrigin(
       SecurityOrigin::Create(response.CurrentRequestUrl()));
-  MockResource* resource = MockResource::Create(request);
+  auto* resource = MakeGarbageCollected<MockResource>(request);
   resource->SetResponse(response);
   resource->SendCachedMetadata(kTestData, sizeof(kTestData));
   return;
@@ -147,7 +147,7 @@ TEST(ResourceTest, RevalidateWithFragment) {
   KURL url("http://127.0.0.1:8000/foo.html");
   ResourceResponse response(url);
   response.SetHttpStatusCode(200);
-  MockResource* resource = MockResource::Create(url);
+  auto* resource = MakeGarbageCollected<MockResource>(url);
   resource->ResponseReceived(response);
   resource->FinishForTest();
 
@@ -166,7 +166,7 @@ TEST(ResourceTest, Vary) {
   ResourceResponse response(url);
   response.SetHttpStatusCode(200);
 
-  MockResource* resource = MockResource::Create(url);
+  auto* resource = MakeGarbageCollected<MockResource>(url);
   resource->ResponseReceived(response);
   resource->FinishForTest();
 
@@ -192,7 +192,7 @@ TEST(ResourceTest, Vary) {
   ResourceRequest old_request(url);
   old_request.SetHttpHeaderField(http_names::kUserAgent, "something");
   old_request.SetHttpHeaderField(http_names::kReferer, "http://foo.com");
-  resource = MockResource::Create(old_request);
+  resource = MakeGarbageCollected<MockResource>(old_request);
   resource->ResponseReceived(response);
   resource->FinishForTest();
 
@@ -220,7 +220,7 @@ TEST(ResourceTest, RevalidationFailed) {
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform_;
   const KURL url("http://test.example.com/");
-  MockResource* resource = MockResource::Create(ResourceRequest(url));
+  auto* resource = MakeGarbageCollected<MockResource>(url);
   ResourceResponse response(url);
   response.SetHttpStatusCode(200);
   resource->ResponseReceived(response);
@@ -268,7 +268,7 @@ TEST(ResourceTest, RevalidationSucceeded) {
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform_;
   const KURL url("http://test.example.com/");
-  MockResource* resource = MockResource::Create(ResourceRequest(url));
+  auto* resource = MakeGarbageCollected<MockResource>(url);
   ResourceResponse response(url);
   response.SetHttpStatusCode(200);
   resource->ResponseReceived(response);
@@ -310,7 +310,7 @@ TEST(ResourceTest, RevalidationSucceededForResourceWithoutBody) {
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform_;
   const KURL url("http://test.example.com/");
-  Resource* resource = MockResource::Create(ResourceRequest(url));
+  auto* resource = MakeGarbageCollected<MockResource>(url);
   ResourceResponse response(url);
   response.SetHttpStatusCode(200);
   resource->ResponseReceived(response);
@@ -342,7 +342,7 @@ TEST(ResourceTest, RevalidationSucceededUpdateHeaders) {
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform_;
   const KURL url("http://test.example.com/");
-  Resource* resource = MockResource::Create(ResourceRequest(url));
+  auto* resource = MakeGarbageCollected<MockResource>(url);
   ResourceResponse response(url);
   response.SetHttpStatusCode(200);
   response.AddHttpHeaderField("keep-alive", "keep-alive value");
@@ -420,7 +420,7 @@ TEST(ResourceTest, RedirectDuringRevalidation) {
   const KURL url("http://test.example.com/1");
   const KURL redirect_target_url("http://test.example.com/2");
 
-  MockResource* resource = MockResource::Create(ResourceRequest(url));
+  auto* resource = MakeGarbageCollected<MockResource>(url);
   ResourceResponse response(url);
   response.SetHttpStatusCode(200);
   resource->ResponseReceived(response);
@@ -508,7 +508,7 @@ TEST(ResourceTest, StaleWhileRevalidateCacheControl) {
   response.SetHttpHeaderField(http_names::kCacheControl,
                               "max-age=0, stale-while-revalidate=40");
 
-  MockResource* resource = MockResource::Create(url);
+  auto* resource = MakeGarbageCollected<MockResource>(url);
   resource->ResponseReceived(response);
   resource->FinishForTest();
 
@@ -545,7 +545,7 @@ TEST(ResourceTest, StaleWhileRevalidateCacheControlWithRedirect) {
   redirect_response.SetAsyncRevalidationRequested(true);
   ResourceRequest redirected_revalidating_request(redirect_target_url);
 
-  MockResource* resource = MockResource::Create(url);
+  auto* resource = MakeGarbageCollected<MockResource>(url);
   resource->WillFollowRedirect(redirected_revalidating_request,
                                redirect_response);
   resource->ResponseReceived(response);

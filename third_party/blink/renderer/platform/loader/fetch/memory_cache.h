@@ -49,10 +49,6 @@ class KURL;
 // when the prefinalizer is executed.
 class MemoryCacheEntry final : public GarbageCollected<MemoryCacheEntry> {
  public:
-  static MemoryCacheEntry* Create(Resource* resource) {
-    return MakeGarbageCollected<MemoryCacheEntry>(resource);
-  }
-
   explicit MemoryCacheEntry(Resource* resource) : resource_(resource) {}
 
   void Trace(blink::Visitor*);
@@ -73,11 +69,9 @@ class PLATFORM_EXPORT MemoryCache final
   USING_GARBAGE_COLLECTED_MIXIN(MemoryCache);
 
  public:
-  static MemoryCache* Create(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-
   explicit MemoryCache(scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~MemoryCache() override;
+
   void Trace(blink::Visitor*) override;
 
   struct TypeStatistic {
