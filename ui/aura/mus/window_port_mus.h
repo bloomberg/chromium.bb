@@ -266,8 +266,6 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void RemoveTransientChildFromServer(WindowMus* child) override;
   ChangeSource OnTransientChildAdded(WindowMus* child) override;
   ChangeSource OnTransientChildRemoved(WindowMus* child) override;
-  std::unique_ptr<WindowMusChangeData> PrepareForServerBoundsChange(
-      const gfx::Rect& bounds) override;
   std::unique_ptr<WindowMusChangeData> PrepareForServerVisibilityChange(
       bool value) override;
   void PrepareForDestroy() override;

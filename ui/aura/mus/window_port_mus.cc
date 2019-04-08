@@ -584,17 +584,6 @@ WindowPortMus::GetLocalSurfaceIdAllocation() {
 }
 
 std::unique_ptr<WindowMusChangeData>
-WindowPortMus::PrepareForServerBoundsChange(const gfx::Rect& bounds) {
-  std::unique_ptr<WindowMusChangeDataImpl> data(
-      std::make_unique<WindowMusChangeDataImpl>());
-  ServerChangeData change_data;
-  change_data.bounds_in_dip = bounds;
-  data->change = std::make_unique<ScopedServerChange>(
-      this, ServerChangeType::BOUNDS, change_data);
-  return std::move(data);
-}
-
-std::unique_ptr<WindowMusChangeData>
 WindowPortMus::PrepareForServerVisibilityChange(bool value) {
   std::unique_ptr<WindowMusChangeDataImpl> data(
       std::make_unique<WindowMusChangeDataImpl>());
