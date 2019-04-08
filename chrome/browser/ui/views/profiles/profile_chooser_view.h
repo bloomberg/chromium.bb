@@ -99,8 +99,10 @@ class ProfileChooserView : public ProfileMenuViewBase,
   void AddGuestProfileView();
   void AddOptionsView(bool display_lock, AvatarMenu* avatar_menu);
   void AddSupervisedUserDisclaimerView();
-  // If |as_new_group| is true, a separator will be added before this view.
-  void AddAutofillHomeView(bool as_new_group);
+  void AddAutofillHomeView();
+#if defined(GOOGLE_CHROME_BUILD)
+  void AddManageGoogleAccountButton();
+#endif
 
   // Adds the DICE UI view to sign in and turn on sync. It includes an
   // illustration, a promo and a button.
@@ -157,6 +159,7 @@ class ProfileChooserView : public ProfileMenuViewBase,
   views::LabelButton* credit_cards_button_;
   views::LabelButton* addresses_button_;
   views::LabelButton* signout_button_;
+  views::LabelButton* manage_google_account_button_;
 
   // View for the signin/turn-on-sync button in the dice promo.
   DiceSigninButtonView* dice_signin_button_view_;
