@@ -13,7 +13,7 @@ issues]].
   Thanks to Bert Frees.
 
 ** Braille table improvements
-
+- Added modified letters to UEB thanks to Mike Gray.
 ** Other changes
 - Remove some code duplication in pattern.c thanks to Bert Frees
 
