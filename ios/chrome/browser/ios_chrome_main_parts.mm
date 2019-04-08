@@ -249,13 +249,13 @@ void IOSChromeMainParts::SetupMetrics() {
 }
 
 void IOSChromeMainParts::StartMetricsRecording() {
-  bool wifiOnly = local_state_->GetBoolean(prefs::kMetricsReportingWifiOnly);
   bool isConnectionCellular = net::NetworkChangeNotifier::IsConnectionCellular(
       net::NetworkChangeNotifier::GetConnectionType());
   bool mayUpload = false;
   if (base::FeatureList::IsEnabled(kUmaCellular)) {
     mayUpload = !isConnectionCellular;
   } else {
+    bool wifiOnly = local_state_->GetBoolean(prefs::kMetricsReportingWifiOnly);
     mayUpload = !wifiOnly || !isConnectionCellular;
   }
 

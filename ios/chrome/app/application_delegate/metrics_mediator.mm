@@ -160,14 +160,17 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
 - (void)updateMetricsStateBasedOnPrefsUserTriggered:(BOOL)isUserTriggered {
   BOOL optIn = [self areMetricsEnabled];
   BOOL allowUploading = [self isUploadingEnabled];
-  BOOL wifiOnly = GetApplicationContext()->GetLocalState()->GetBoolean(
-      prefs::kMetricsReportingWifiOnly);
+  if (!base::FeatureList::IsEnabled(kUmaCellular)) {
+    BOOL wifiOnly = GetApplicationContext()->GetLocalState()->GetBoolean(
+        prefs::kMetricsReportingWifiOnly);
+    optIn = optIn && wifiOnly;
+  }
 
   if (isUserTriggered)
     [self updateMetricsPrefsOnPermissionChange:optIn];
   [self setMetricsEnabled:optIn withUploading:allowUploading];
   [self setBreakpadEnabled:optIn withUploading:allowUploading];
-  [self setWatchWWANEnabled:(optIn && wifiOnly)];
+  [self setWatchWWANEnabled:optIn];
   [self setAppGroupMetricsEnabled:optIn];
 }
 
@@ -380,10 +383,13 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
 }
 
 - (BOOL)isMetricsReportingEnabledWifiOnly {
-  return GetApplicationContext()->GetLocalState()->GetBoolean(
-             metrics::prefs::kMetricsReportingEnabled) &&
-         GetApplicationContext()->GetLocalState()->GetBoolean(
-             prefs::kMetricsReportingWifiOnly);
+  BOOL optIn = GetApplicationContext()->GetLocalState()->GetBoolean(
+      metrics::prefs::kMetricsReportingEnabled);
+  if (base::FeatureList::IsEnabled(kUmaCellular)) {
+    return optIn;
+  }
+  return optIn && GetApplicationContext()->GetLocalState()->GetBoolean(
+                      prefs::kMetricsReportingWifiOnly);
 }
 
 @end
