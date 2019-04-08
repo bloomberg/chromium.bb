@@ -238,7 +238,7 @@ SQLiteCursor::JavaColumnType SQLiteCursor::GetColumnTypeInternal(int column) {
   if (column == statement_->favicon_index())
     return SQLiteCursor::BLOB;
 
-  return ToJavaColumnType(statement_->statement()->ColumnType(column));
+  return ToJavaColumnType(statement_->statement()->GetColumnType(column));
 }
 
 void SQLiteCursor::RunMoveStatementOnUIThread(int pos) {

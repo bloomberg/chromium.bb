@@ -401,7 +401,7 @@ bool Recovery::AutoRecoverTable(const char* table_name,
   while (s.Step()) {
     const std::string column_name(s.ColumnString(1));
     const std::string column_type(s.ColumnString(2));
-    const ColumnType default_type = s.ColumnType(4);
+    const ColumnType default_type = s.GetColumnType(4);
     const bool default_is_null = (default_type == ColumnType::kNull);
     const int pk_column = s.ColumnInt(5);
 

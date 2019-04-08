@@ -124,7 +124,7 @@ class COMPONENT_EXPORT(SQL) Statement {
   // "type conversion." This means requesting the value of a column of a type
   // where that type is not the native type. For safety, call ColumnType only
   // on a column before getting the value out in any way.
-  ColumnType ColumnType(int col) const;
+  ColumnType GetColumnType(int col) const;
 
   // These all take a 0-based argument index.
   bool ColumnBool(int col) const;
