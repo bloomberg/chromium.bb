@@ -7250,25 +7250,6 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0"
-        ],
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "shards": 4
-        },
-        "test": "angle_end2end_tests"
-      },
-      {
-        "args": [
-          "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--no-xvfb"
         ],
@@ -8753,25 +8734,6 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0"
-        ],
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "shards": 4
-        },
-        "test": "angle_end2end_tests"
-      },
-      {
-        "args": [
-          "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--no-xvfb"
         ],
@@ -8887,33 +8849,7 @@
         "test": "swiftshader_unittests"
       }
     ],
-    "isolated_scripts": [
-      {
-        "args": [
-          "--gtest-benchmark-name=angle_perftests",
-          "-v",
-          "--one-frame-only"
-        ],
-        "isolate_name": "angle_perftests",
-        "merge": {
-          "args": [
-            "--smoke-test-mode"
-          ],
-          "script": "//tools/perf/process_perf_results.py"
-        },
-        "name": "angle_perftests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        }
-      }
-    ]
+    "isolated_scripts": []
   },
   "Linux FYI Ozone (Intel)": {
     "gtest_tests": [
