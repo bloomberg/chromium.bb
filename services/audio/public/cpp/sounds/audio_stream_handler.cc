@@ -45,23 +45,12 @@ class AudioStreamHandler::AudioStreamContainer
       std::unique_ptr<service_manager::Connector> connector,
       std::unique_ptr<media::WavAudioHandler> wav_audio)
       : started_(false),
+        connector_(std::move(connector)),
         cursor_(0),
         delayed_stop_posted_(false),
         wav_audio_(std::move(wav_audio)) {
     DCHECK(wav_audio_);
     task_runner_ = base::SequencedTaskRunnerHandle::Get();
-
-    const media::AudioParameters params(
-        media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-        media::GuessChannelLayout(wav_audio_->num_channels()),
-        wav_audio_->sample_rate(), kDefaultFrameCount);
-
-    if (g_observer_for_testing) {
-      g_observer_for_testing->Initialize(this, params);
-      return;
-    }
-    device_ = std::make_unique<audio::OutputDevice>(
-        std::move(connector), params, this, std::string());
   }
 
   ~AudioStreamContainer() override {
@@ -70,6 +59,20 @@ class AudioStreamHandler::AudioStreamContainer
 
   void Play() {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
+    // Create OutputDevice if it is the first time playing.
+    if (device_ == nullptr) {
+      const media::AudioParameters params(
+          media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+          media::GuessChannelLayout(wav_audio_->num_channels()),
+          wav_audio_->sample_rate(), kDefaultFrameCount);
+      if (g_observer_for_testing) {
+        g_observer_for_testing->Initialize(this, params);
+      } else {
+        device_ = std::make_unique<audio::OutputDevice>(
+            connector_->Clone(), params, this, std::string());
+      }
+    }
 
     {
       base::AutoLock al(state_lock_);
@@ -148,6 +151,7 @@ class AudioStreamHandler::AudioStreamContainer
   }
 
   bool started_;
+  std::unique_ptr<service_manager::Connector> connector_;
   std::unique_ptr<audio::OutputDevice> device_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
