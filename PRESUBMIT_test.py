@@ -1772,6 +1772,20 @@ class BannedFunctionCheckTest(unittest.TestCase):
     self.assertTrue('another/ios_file.mm' in errors[0].message)
     self.assertTrue('some/mac/file.mm' not in errors[0].message)
 
+  def testBannedMojoFunctions(self):
+    input_api = MockInputApi()
+    input_api.files = [
+      MockFile('some/cpp/problematic/file.cc',
+               ['mojo::DataPipe();']),
+      MockFile('some/cpp/ok/file.cc',
+               ['CreateDataPipe();']),
+    ]
+
+    errors = PRESUBMIT._CheckNoBannedFunctions(input_api, MockOutputApi())
+    self.assertEqual(1, len(errors))
+    self.assertTrue('some/cpp/problematic/file.cc' in errors[0].message)
+    self.assertTrue('some/cpp/ok/file.cc' not in errors[0].message)
+
 
 class NoProductionCodeUsingTestOnlyFunctionsTest(unittest.TestCase):
   def testTruePositives(self):

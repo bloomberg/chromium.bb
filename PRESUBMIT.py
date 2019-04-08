@@ -710,6 +710,14 @@ _BANNED_CPP_FUNCTIONS = (
         r'^third_party/blink/renderer/.*\.(cc|h)$',
       ),
     ),
+    (
+      'mojo::DataPipe',
+      (
+        'mojo::DataPipe is deprecated. Use mojo::CreateDataPipe instead.',
+      ),
+      True,
+      (),
+    ),
 )
 
 
