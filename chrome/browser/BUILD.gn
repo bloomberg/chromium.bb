@@ -426,6 +426,8 @@ jumbo_split_static_library("browser") {
     "download/download_item_model.h",
     "download/download_location_dialog_result.h",
     "download/download_location_dialog_type.h",
+    "download/download_manager_utils.cc",
+    "download/download_manager_utils.h",
     "download/download_offline_content_provider.cc",
     "download/download_offline_content_provider.h",
     "download/download_permission_request.cc",

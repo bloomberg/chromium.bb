@@ -338,9 +338,7 @@ DownloadManagerImpl::DownloadManagerImpl(BrowserContext* browser_context)
   if (!in_progress_manager_) {
     in_progress_manager_ =
         std::make_unique<download::InProgressDownloadManager>(
-            this,
-            IsOffTheRecord() ? base::FilePath() : browser_context_->GetPath(),
-            base::BindRepeating(&IsOriginSecure),
+            this, base::FilePath(), base::BindRepeating(&IsOriginSecure),
             base::BindRepeating(&DownloadRequestUtils::IsURLSafe));
   } else {
     in_progress_manager_->set_delegate(this);
