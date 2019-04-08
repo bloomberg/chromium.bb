@@ -1777,6 +1777,9 @@ extern const char kArcBootCompletedDescription[];
 extern const char kArcCupsApiName[];
 extern const char kArcCupsApiDescription[];
 
+extern const char kArcCustomTabsExperimentName[];
+extern const char kArcCustomTabsExperimentDescription[];
+
 extern const char kArcDocumentsProviderName[];
 extern const char kArcDocumentsProviderDescription[];
 

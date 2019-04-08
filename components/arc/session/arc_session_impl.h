@@ -155,6 +155,9 @@ class ArcSessionImpl : public ArcSession, public ArcClientAdapter::Observer {
     // it's not yet available. Calling this method while there is a pending
     // callback will cancel the pending callback.
     virtual void GetLcdDensity(GetLcdDensityCallback callback) = 0;
+
+    // Returns the channel for the installation.
+    virtual version_info::Channel GetChannel() = 0;
   };
 
   explicit ArcSessionImpl(std::unique_ptr<Delegate> delegate);
@@ -163,7 +166,8 @@ class ArcSessionImpl : public ArcSession, public ArcClientAdapter::Observer {
   // Returns default delegate implementation used for the production.
   static std::unique_ptr<Delegate> CreateDelegate(
       ArcBridgeService* arc_bridge_service,
-      ash::DefaultScaleFactorRetriever* retriever);
+      ash::DefaultScaleFactorRetriever* retriever,
+      version_info::Channel channel);
 
   State GetStateForTesting() { return state_; }
 

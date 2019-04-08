@@ -2960,6 +2960,12 @@ const char kArcCupsApiName[] = "ARC CUPS API";
 const char kArcCupsApiDescription[] =
     "Enables support of libcups APIs from ARC";
 
+const char kArcCustomTabsExperimentName[] =
+    "Enable Custom Tabs experiment for ARC";
+const char kArcCustomTabsExperimentDescription[] =
+    "Allow Android apps to use Custom Tabs."
+    "This feature only works on the Canary and Dev channels.";
+
 const char kArcDocumentsProviderName[] = "ARC DocumentsProvider integration";
 const char kArcDocumentsProviderDescription[] =
     "Enables DocumentsProvider integration in Chrome OS Files app.";

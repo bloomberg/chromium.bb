@@ -22,6 +22,7 @@
 #include "components/arc/test/fake_arc_bridge_host.h"
 #include "components/user_manager/fake_user_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
+#include "components/version_info/channel.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -87,6 +88,10 @@ class FakeDelegate : public ArcSessionImpl::Delegate {
       std::move(callback).Run(lcd_density_);
     else
       lcd_density_callback_ = std::move(callback);
+  }
+
+  version_info::Channel GetChannel() override {
+    return version_info::Channel::DEFAULT;
   }
 
   void SetLcdDensity(int32_t lcd_density) {

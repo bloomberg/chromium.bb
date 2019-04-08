@@ -11,6 +11,7 @@ include_rules = [
   "+components/session_manager/core",
   "+components/timers",
   "+components/user_manager",
+  "+components/version_info",
   "+media/base/video_codecs.h",
   "+media/video/video_encode_accelerator.h",
   "+mojo",
