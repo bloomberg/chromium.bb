@@ -4,6 +4,8 @@
 
 #include "base/macros.h"
 #include "base/test/bind_test_util.h"
+#include "components/services/patch/public/interfaces/constants.mojom.h"
+#include "components/services/patch/public/interfaces/file_patcher.mojom.h"
 #include "components/services/unzip/public/interfaces/constants.mojom.h"
 #include "components/services/unzip/public/interfaces/unzipper.mojom.h"
 #include "ios/chrome/browser/web/chrome_web_client.h"
@@ -19,6 +21,9 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+
+template <typename T>
 class ServicesTest : public PlatformTest {
  public:
   ServicesTest() : web_client_(std::make_unique<ChromeWebClient>()) {}
@@ -37,19 +42,36 @@ class ServicesTest : public PlatformTest {
   DISALLOW_COPY_AND_ASSIGN(ServicesTest);
 };
 
-// Tests that services provided by Chrome reachable from browser code.
-TEST_F(ServicesTest, ConnectToUnzip) {
-  unzip::mojom::UnzipperPtr unzipper;
-  connector()->BindInterface(unzip::mojom::kServiceName,
-                             mojo::MakeRequest(&unzipper));
+struct UnzipConfig {
+  static std::string ServiceName() { return unzip::mojom::kServiceName; }
 
-  // If the service is present, the unzipper interface will be connected and
+  using Interface = unzip::mojom::Unzipper;
+};
+
+struct FilePatchConfig {
+  static std::string ServiceName() { return patch::mojom::kServiceName; }
+
+  using Interface = patch::mojom::FilePatcher;
+};
+
+}  // namespace
+
+using ServicesTestConfig = ::testing::Types<UnzipConfig, FilePatchConfig>;
+TYPED_TEST_SUITE(ServicesTest, ServicesTestConfig);
+
+// Tests that services provided by Chrome reachable from browser code.
+TYPED_TEST(ServicesTest, CanConnectToService) {
+  mojo::InterfacePtr<typename TypeParam::Interface> service;
+  this->connector()->BindInterface(TypeParam::ServiceName(),
+                                   mojo::MakeRequest(&service));
+
+  // If the service is present, the interface will be connected and
   // FlushForTesting will complete without an error on the interface. Conversely
   // if there is a problem connecting to the service, we will always hit the
   // error handler before FlushForTesting returns.
   bool encountered_error = false;
-  unzipper.set_connection_error_handler(
+  service.set_connection_error_handler(
       base::BindLambdaForTesting([&] { encountered_error = true; }));
-  unzipper.FlushForTesting();
+  service.FlushForTesting();
   EXPECT_FALSE(encountered_error);
 }
