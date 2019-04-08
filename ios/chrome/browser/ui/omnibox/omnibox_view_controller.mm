@@ -166,7 +166,10 @@ const CGFloat kClearButtonSize = 28.0f;
 #pragma mark - private
 
 - (void)updateLeadingImageVisibility {
-  [self.view setLeadingImageHidden:!IsRegularXRegularSizeClass(self)];
+  BOOL newOmniboxPopupLayout =
+      base::FeatureList::IsEnabled(kNewOmniboxPopupLayout);
+  [self.view setLeadingImageHidden:!newOmniboxPopupLayout &&
+                                   !IsRegularXRegularSizeClass(self)];
 }
 
 // Tint color for the textfield placeholder and the clear button.

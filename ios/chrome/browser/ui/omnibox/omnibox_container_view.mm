@@ -6,6 +6,7 @@
 
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
 #import "ios/chrome/browser/ui/util/animation_util.h"
+#import "ios/chrome/browser/ui/util/named_guide.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -94,6 +95,13 @@ const CGFloat kTextFieldClearButtonTrailingOffset = 4;
   return self;
 }
 
+- (void)didMoveToWindow {
+  [super didMoveToWindow];
+
+  [NamedGuide guideWithName:kOmniboxTextFieldGuide view:self].constrainedView =
+      self.textField;
+}
+
 - (void)setLeadingImageHidden:(BOOL)hidden {
   if (hidden) {
     [_leadingImageView removeFromSuperview];
@@ -116,6 +124,9 @@ const CGFloat kTextFieldClearButtonTrailingOffset = 4;
       self.leadingImageViewLeadingConstraint,
       leadingImageViewToTextField,
     ]];
+
+    [NamedGuide guideWithName:kOmniboxLeadingImageGuide view:self]
+        .constrainedView = self.leadingImageView;
   }
 }
 

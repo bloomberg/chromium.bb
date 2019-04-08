@@ -14,8 +14,10 @@
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_legacy_view_controller.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_mediator.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_presenter.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_controller.h"
 #include "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_ios.h"
 #include "ios/chrome/browser/ui/omnibox/popup/shortcuts/shortcuts_coordinator.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -63,7 +65,11 @@
                                            delegate:_popupView.get()];
   self.mediator.dispatcher = (id<BrowserCommands>)self.dispatcher;
   self.mediator.webStateList = self.webStateList;
-  self.popupViewController = [[OmniboxPopupLegacyViewController alloc] init];
+  if (base::FeatureList::IsEnabled(kNewOmniboxPopupLayout)) {
+    self.popupViewController = [[OmniboxPopupViewController alloc] init];
+  } else {
+    self.popupViewController = [[OmniboxPopupLegacyViewController alloc] init];
+  }
   self.popupViewController.incognito = self.browserState->IsOffTheRecord();
 
   BOOL isIncognito = self.browserState->IsOffTheRecord();
