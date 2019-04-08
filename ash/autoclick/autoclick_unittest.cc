@@ -4,6 +4,7 @@
 
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/autoclick/autoclick_controller.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/accessibility/autoclick_menu_bubble_controller.h"
 #include "ash/system/accessibility/autoclick_menu_view.h"
@@ -744,6 +745,35 @@ TEST_F(AutoclickTest,
   FastForwardBy(full_delay);
   events = GetMouseEvents();
   ASSERT_EQ(0u, events.size());
+
+  // Reset state.
+  Shell::Get()->accessibility_controller()->SetAutoclickEnabled(false);
+}
+
+// The autoclick tray shouldn't stop the shelf from auto-hiding.
+TEST_F(AutoclickTest, ShelfAutohidesWithAutoclickBubble) {
+  Shell::Get()->accessibility_controller()->SetAutoclickEnabled(false);
+  Shelf* shelf = GetPrimaryShelf();
+
+  // Create a visible window so auto-hide behavior is enforced.
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  params.bounds = gfx::Rect(0, 0, 200, 200);
+  params.context = CurrentContext();
+  views::Widget* widget = new views::Widget;
+  widget->Init(params);
+  widget->Show();
+
+  // Turn on auto-hide for the shelf.
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+
+  // Enable autoclick. The shelf should remain invisible.
+  Shell::Get()->accessibility_controller()->SetAutoclickEnabled(true);
+  AutoclickMenuView* menu = GetAutoclickMenuView();
+  ASSERT_TRUE(menu);
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 
   // Reset state.
   Shell::Get()->accessibility_controller()->SetAutoclickEnabled(false);
