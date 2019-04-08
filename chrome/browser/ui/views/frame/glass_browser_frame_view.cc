@@ -12,7 +12,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/themes/theme_properties.h"
-#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
@@ -20,6 +19,7 @@
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/browser/ui/web_app_browser_controller.h"
 #include "chrome/browser/win/titlebar_config.h"
 #include "content/public/browser/web_contents.h"
 #include "skia/ext/image_operations.h"
@@ -111,8 +111,8 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
     AddChildView(window_title_);
   }
 
-  extensions::HostedAppBrowserController* controller =
-      browser_view->browser()->hosted_app_controller();
+  WebAppBrowserController* controller =
+      browser_view->browser()->web_app_controller();
   if (controller && controller->ShouldShowHostedAppButtonContainer()) {
     // TODO(alancutter): Avoid snapshotting GetCaptionColor() values here and
     // call it on demand in HostedAppButtonContainer::UpdateIconsColor() via a

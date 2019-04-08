@@ -162,7 +162,7 @@ CustomTabBarView::CustomTabBarView(BrowserView* browser_view,
       tab_strip_model_observer_(this) {
   Browser* browser = browser_view->browser();
   base::Optional<SkColor> optional_theme_color =
-      browser->hosted_app_controller()->GetThemeColor();
+      browser->web_app_controller()->GetThemeColor();
 
   // If we have a theme color, use that, otherwise fall back to the default
   // frame color.
@@ -231,7 +231,7 @@ void CustomTabBarView::TabChangedAt(content::WebContents* contents,
   // scope (it doesn't make sense to show a 'back-to-scope' button in scope).
   close_button_->SetVisible(!extensions::IsSameScope(
       chrome::FindBrowserWithWebContents(contents)
-          ->hosted_app_controller()
+          ->web_app_controller()
           ->GetAppLaunchURL(),
       contents->GetVisibleURL(), contents->GetBrowserContext()));
 
@@ -339,7 +339,7 @@ void CustomTabBarView::GoBackToAppForTesting() {
 void CustomTabBarView::GoBackToApp() {
   content::WebContents* web_contents = GetWebContents();
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  GURL launch_url = browser->hosted_app_controller()->GetAppLaunchURL();
+  GURL launch_url = browser->web_app_controller()->GetAppLaunchURL();
   content::NavigationController& controller = web_contents->GetController();
   content::BrowserContext* context = web_contents->GetBrowserContext();
 

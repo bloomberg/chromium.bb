@@ -50,6 +50,7 @@
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
+// #include "chrome/browser/ui/web_app_browser_controller.h"
 
 #if !defined(OS_ANDROID)
 #include "components/zoom/zoom_observer.h"
@@ -86,7 +87,7 @@ class SessionStorageNamespace;
 
 namespace extensions {
 class BrowserExtensionWindowController;
-class HostedAppBrowserController;
+
 class Extension;
 class ExtensionRegistry;
 }
@@ -106,6 +107,7 @@ class WebContentsModalDialogHost;
 namespace viz {
 class SurfaceId;
 }
+class WebAppBrowserController;
 
 class Browser : public TabStripModelObserver,
                 public content::WebContentsDelegate,
@@ -323,11 +325,11 @@ class Browser : public TabStripModelObserver,
   BrowserInstantController* instant_controller() {
     return instant_controller_.get();
   }
-  const extensions::HostedAppBrowserController* hosted_app_controller() const {
-    return hosted_app_controller_.get();
+  const WebAppBrowserController* web_app_controller() const {
+    return web_app_controller_.get();
   }
-  extensions::HostedAppBrowserController* hosted_app_controller() {
-    return hosted_app_controller_.get();
+  WebAppBrowserController* web_app_controller() {
+    return web_app_controller_.get();
   }
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
@@ -1082,8 +1084,7 @@ class Browser : public TabStripModelObserver,
   // Helper which handles bookmark app specific browser configuration.
   // This must be initialized before |command_controller_| to ensure the correct
   // set of commands are enabled.
-  std::unique_ptr<extensions::HostedAppBrowserController>
-      hosted_app_controller_;
+  std::unique_ptr<WebAppBrowserController> web_app_controller_;
 
   BookmarkBar::State bookmark_bar_state_;
 

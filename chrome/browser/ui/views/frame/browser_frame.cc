@@ -172,8 +172,8 @@ void BrowserFrame::OnBrowserViewInitViewsComplete() {
 
 bool BrowserFrame::ShouldUseTheme() const {
   // Browser windows are always themed (including popups).
-  if (!extensions::HostedAppBrowserController::
-          IsForExperimentalHostedAppBrowser(browser_view_->browser())) {
+  if (!WebAppBrowserController::IsForExperimentalHostedAppBrowser(
+          browser_view_->browser())) {
     return true;
   }
 

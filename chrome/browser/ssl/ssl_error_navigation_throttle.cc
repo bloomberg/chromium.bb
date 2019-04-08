@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
+#include "chrome/browser/ui/web_app_browser_controller.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 SSLErrorNavigationThrottle::SSLErrorNavigationThrottle(
@@ -85,8 +86,7 @@ SSLErrorNavigationThrottle::WillProcessResponse() {
   Browser* browser =
       chrome::FindBrowserWithWebContents(handle->GetWebContents());
   if (browser &&
-      extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
-          browser)) {
+      WebAppBrowserController::IsForExperimentalHostedAppBrowser(browser)) {
     QueueShowInterstitial(std::move(handle_ssl_error_callback_),
                           handle->GetWebContents(), cert_status, info,
                           handle->GetURL(), std::move(ssl_cert_reporter_));

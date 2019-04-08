@@ -145,6 +145,7 @@
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
+#include "chrome/browser/ui/web_app_browser_controller.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
@@ -279,8 +280,8 @@ const extensions::Extension* GetExtensionForOrigin(
 #endif
 }
 
-std::unique_ptr<extensions::HostedAppBrowserController>
-MaybeCreateHostedAppController(Browser* browser) {
+std::unique_ptr<WebAppBrowserController> MaybeCreateWebAppController(
+    Browser* browser) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   const std::string extension_id =
       web_app::GetAppIdFromApplicationName(browser->app_name());
@@ -422,7 +423,7 @@ Browser::Browser(const CreateParams& params)
       location_bar_model_delegate_(new BrowserLocationBarModelDelegate(this)),
       live_tab_context_(new BrowserLiveTabContext(this)),
       synced_window_delegate_(new BrowserSyncedWindowDelegate(this)),
-      hosted_app_controller_(MaybeCreateHostedAppController(this)),
+      web_app_controller_(MaybeCreateWebAppController(this)),
       bookmark_bar_state_(BookmarkBar::HIDDEN),
       command_controller_(new chrome::BrowserCommandController(this)),
       window_has_shown_(false),
@@ -478,8 +479,8 @@ Browser::Browser(const CreateParams& params)
                           : CreateBrowserWindow(std::unique_ptr<Browser>(this),
                                                 params.user_gesture);
 
-  if (hosted_app_controller_)
-    hosted_app_controller_->UpdateToolbarVisibility(false);
+  if (web_app_controller_)
+    web_app_controller_->UpdateToolbarVisibility(false);
 
   // Create the extension window controller before sending notifications.
   extension_window_controller_.reset(
@@ -673,8 +674,8 @@ base::string16 Browser::GetWindowTitleFromWebContents(
   // |contents| can be NULL because GetWindowTitleForCurrentTab is called by the
   // window during the window's creation (before tabs have been added).
   if (contents) {
-    title = FormatTitleForDisplay(hosted_app_controller_
-                                      ? hosted_app_controller_->GetTitle()
+    title = FormatTitleForDisplay(web_app_controller_
+                                      ? web_app_controller_->GetTitle()
                                       : contents->GetTitle());
   }
 
@@ -691,8 +692,8 @@ base::string16 Browser::GetWindowTitleFromWebContents(
   // ensures that the native window gets a title which is important for a11y,
   // for example the window selector uses the Aura window title.
   if (title.empty() && is_app() && include_app_name) {
-    return base::UTF8ToUTF16(hosted_app_controller_
-                                 ? hosted_app_controller_->GetAppShortName()
+    return base::UTF8ToUTF16(web_app_controller_
+                                 ? web_app_controller_->GetAppShortName()
                                  : app_name());
   }
 
@@ -1384,8 +1385,8 @@ void Browser::NavigationStateChanged(WebContents* source,
                        content::INVALIDATE_TYPE_TAB))
     command_controller_->TabStateChanged();
 
-  if (hosted_app_controller_)
-    hosted_app_controller_->UpdateToolbarVisibility(true);
+  if (web_app_controller_)
+    web_app_controller_->UpdateToolbarVisibility(true);
 }
 
 void Browser::VisibleSecurityStateChanged(WebContents* source) {
@@ -1395,8 +1396,8 @@ void Browser::VisibleSecurityStateChanged(WebContents* source) {
   if (tab_strip_model_->GetActiveWebContents() == source) {
     UpdateToolbar(false);
 
-    if (hosted_app_controller_)
-      hosted_app_controller_->UpdateToolbarVisibility(true);
+    if (web_app_controller_)
+      web_app_controller_->UpdateToolbarVisibility(true);
   }
 }
 
@@ -2569,8 +2570,8 @@ bool Browser::SupportsLocationBar() const {
   if (!is_app())
     return !is_trusted_source();
 
-  // Hosted apps always support a location bar.
-  if (hosted_app_controller_)
+  // Web apps always support a location bar.
+  if (web_app_controller_)
     return true;
 
   return false;
@@ -2603,12 +2604,12 @@ bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
       features |= FEATURE_LOCATIONBAR;
   }
 
-  // Hosted apps should always support the toolbar, so the title/origin of the
+  // Web apps should always support the toolbar, so the title/origin of the
   // current page can be shown when browsing a url that is not inside the app.
   // Note: Final determination of whether or not the toolbar is shown is made by
-  // the |HostedAppBrowserController|.
-  if (hosted_app_controller() &&
-      hosted_app_controller()->IsForExperimentalHostedAppBrowser()) {
+  // the |WebAppBrowserController|.
+  if (web_app_controller() &&
+      web_app_controller()->IsForExperimentalHostedAppBrowser()) {
     features |= FEATURE_TOOLBAR;
   }
 

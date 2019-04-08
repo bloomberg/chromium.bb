@@ -55,7 +55,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window_state.h"
-#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/recently_audible_helper.h"
 #include "chrome/browser/ui/sad_tab_helper.h"
@@ -110,6 +109,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/views/translate/translate_bubble_view.h"
 #include "chrome/browser/ui/views/update_recommended_message_box.h"
+#include "chrome/browser/ui/web_app_browser_controller.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_features.h"
@@ -620,8 +620,8 @@ WebContents* BrowserView::GetActiveWebContents() const {
 }
 
 bool BrowserView::IsBrowserTypeHostedApp() const {
-  return extensions::HostedAppBrowserController::
-      IsForExperimentalHostedAppBrowser(browser_.get());
+  return WebAppBrowserController::IsForExperimentalHostedAppBrowser(
+      browser_.get());
 }
 
 bool BrowserView::IsTopControlsSlideBehaviorEnabled() const {
@@ -1993,7 +1993,7 @@ bool BrowserView::CanChangeWindowIcon() const {
   // The logic of this function needs to be same as GetWindowIcon().
   if (browser_->is_devtools())
     return false;
-  if (browser_->hosted_app_controller())
+  if (browser_->web_app_controller())
     return true;
 #if defined(OS_CHROMEOS)
   // On ChromeOS, the tabbed browser always use a static image for the window
@@ -2021,8 +2021,7 @@ bool BrowserView::ShouldShowWindowTitle() const {
 }
 
 gfx::ImageSkia BrowserView::GetWindowAppIcon() {
-  extensions::HostedAppBrowserController* app_controller =
-      browser()->hosted_app_controller();
+  WebAppBrowserController* app_controller = browser()->web_app_controller();
   return app_controller ? app_controller->GetWindowAppIcon() : GetWindowIcon();
 }
 
@@ -2032,8 +2031,7 @@ gfx::ImageSkia BrowserView::GetWindowIcon() {
     return gfx::ImageSkia();
 
   // Hosted apps always show their app icon.
-  extensions::HostedAppBrowserController* app_controller =
-      browser()->hosted_app_controller();
+  WebAppBrowserController* app_controller = browser()->web_app_controller();
   if (app_controller)
     return app_controller->GetWindowIcon();
 

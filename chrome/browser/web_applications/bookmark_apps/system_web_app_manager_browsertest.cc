@@ -174,9 +174,10 @@ Browser* SystemWebAppManagerBrowserTest::WaitForSystemAppInstallAndLaunch() {
 
 // Test that System Apps install correctly with a manifest.
 IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest, Install) {
-  const extensions::Extension* app = WaitForSystemAppInstallAndLaunch()
-                                         ->hosted_app_controller()
-                                         ->GetExtensionForTesting();
+  const extensions::Extension* app =
+      static_cast<extensions::HostedAppBrowserController*>(
+          WaitForSystemAppInstallAndLaunch()->web_app_controller())
+          ->GetExtensionForTesting();
   EXPECT_EQ("Test System App", app->name());
   EXPECT_EQ(SkColorSetRGB(0, 0xFF, 0),
             extensions::AppThemeColorInfo::GetThemeColor(app));
