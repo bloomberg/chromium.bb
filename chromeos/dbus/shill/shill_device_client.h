@@ -33,7 +33,7 @@ class ShillPropertyChangedObserver;
 // ShillDeviceClient is used to communicate with the Shill Device service.
 // All methods should be called from the origin thread which initializes the
 // DBusThreadManager instance.
-class COMPONENT_EXPORT(CHROMEOS_DBUS) ShillDeviceClient {
+class COMPONENT_EXPORT(SHILL_CLIENT) ShillDeviceClient {
  public:
   typedef ShillClientHelper::PropertyChangedHandler PropertyChangedHandler;
   typedef ShillClientHelper::DictionaryValueCallback DictionaryValueCallback;

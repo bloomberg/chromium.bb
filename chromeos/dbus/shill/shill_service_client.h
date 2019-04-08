@@ -29,7 +29,7 @@ namespace chromeos {
 // service.
 // All methods should be called from the origin thread which initializes the
 // DBusThreadManager instance.
-class COMPONENT_EXPORT(CHROMEOS_DBUS) ShillServiceClient {
+class COMPONENT_EXPORT(SHILL_CLIENT) ShillServiceClient {
  public:
   typedef ShillClientHelper::PropertyChangedHandler PropertyChangedHandler;
   typedef ShillClientHelper::DictionaryValueCallback DictionaryValueCallback;

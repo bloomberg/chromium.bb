@@ -17,7 +17,7 @@
 namespace chromeos {
 
 // A stub implementation of ShillProfileClient.
-class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeShillProfileClient
+class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillProfileClient
     : public ShillProfileClient,
       public ShillProfileClient::TestInterface {
  public:

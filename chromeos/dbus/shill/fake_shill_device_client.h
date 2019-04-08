@@ -19,7 +19,7 @@ namespace chromeos {
 
 // A fake implementation of ShillDeviceClient.
 // Implemented: Stub cellular device for SMS testing.
-class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeShillDeviceClient
+class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillDeviceClient
     : public ShillDeviceClient,
       public ShillDeviceClient::TestInterface {
  public:
