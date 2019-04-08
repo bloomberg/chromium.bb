@@ -146,10 +146,11 @@ const sync_pb::EntityMetadata& FakeModelTypeSyncBridge::Store::GetMetadata(
 
 std::unique_ptr<MetadataBatch>
 FakeModelTypeSyncBridge::Store::CreateMetadataBatch() const {
-  std::unique_ptr<MetadataBatch> metadata_batch(new MetadataBatch());
+  auto metadata_batch = std::make_unique<MetadataBatch>();
   metadata_batch->SetModelTypeState(model_type_state_);
   for (const auto& kv : metadata_store_) {
-    metadata_batch->AddMetadata(kv.first, kv.second);
+    metadata_batch->AddMetadata(
+        kv.first, std::make_unique<sync_pb::EntityMetadata>(kv.second));
   }
   return metadata_batch;
 }
@@ -380,7 +381,7 @@ void FakeModelTypeSyncBridge::ErrorOnNextCall() {
 
 std::unique_ptr<EntityData> FakeModelTypeSyncBridge::CopyEntityData(
     const EntityData& old_data) {
-  std::unique_ptr<EntityData> new_data(new EntityData());
+  auto new_data = std::make_unique<EntityData>();
   new_data->id = old_data.id;
   new_data->client_tag_hash = old_data.client_tag_hash;
   new_data->non_unique_name = old_data.non_unique_name;
