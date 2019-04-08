@@ -145,8 +145,9 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void OnZoomLevelChanged(double zoom_level);
 
   // Out-of-process child frames receive a signal from RenderWidget when the
-  // page scale factor has changed.
-  void OnPageScaleFactorChanged(float page_scale_factor);
+  // page scale factor has changed, and/or a pinch-zoom gesture starts/ends.
+  void OnPageScaleFactorChanged(float page_scale_factor,
+                                bool is_pinch_gesture_active);
 
   // Invoked by RenderWidget when a new capture sequence number was set,
   // indicating that surfaces should be synchronized.
@@ -228,6 +229,10 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void OnDidStartLoading();
 
   void WasEvicted();
+
+  bool is_pinch_gesture_active_for_testing() {
+    return pending_visual_properties_.is_pinch_gesture_active;
+  }
 
  private:
   RenderFrameProxy(int routing_id);
