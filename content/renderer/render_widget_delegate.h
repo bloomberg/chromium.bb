@@ -11,6 +11,7 @@ namespace blink {
 class WebMouseEvent;
 class WebWidget;
 class WebWidgetClient;
+struct WebDeviceEmulationParams;
 }  // namespace blink
 
 namespace content {

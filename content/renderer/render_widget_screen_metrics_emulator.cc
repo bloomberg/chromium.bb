@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/devtools/render_widget_screen_metrics_emulator.h"
+#include "content/renderer/render_widget_screen_metrics_emulator.h"
 
 #include "content/common/visual_properties.h"
 #include "content/public/common/context_menu_params.h"
-#include "content/renderer/devtools/render_widget_screen_metrics_emulator_delegate.h"
+#include "content/renderer/render_widget_screen_metrics_emulator_delegate.h"
 
 namespace content {
 
