@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# coding=utf-8
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -60,16 +61,18 @@ class CheckCallAndFilterTestCase(GclientUtilBase):
         capture_list.append(match.group(1))
     gclient_utils.CheckCallAndFilterAndHeader(
         args, cwd=cwd, always=True, filter_fn=FilterLines)
-    self.assertEquals(line_list, ['ahah', 'accb', 'allo', 'addb'])
+    self.assertEquals(line_list, ['ahah', 'accb', 'allo', 'addb', '✔'])
     self.assertEquals(capture_list, ['cc', 'dd'])
 
   def testCheckCallAndFilter(self):
     args = ['boo', 'foo', 'bar']
-    test_string = 'ahah\naccb\nallo\naddb\n'
+    test_string = 'ahah\naccb\nallo\naddb\n✔\n'
     self._inner(args, test_string)
-    self.checkstdout('________ running \'boo foo bar\' in \'bleh\'\n'
-        'ahah\naccb\nallo\naddb\n'
-        '________ running \'boo foo bar\' in \'bleh\'\nahah\naccb\nallo\naddb'
+    self.checkstdout(
+        '________ running \'boo foo bar\' in \'bleh\'\n'
+        'ahah\naccb\nallo\naddb\n✔\n'
+        '________ running \'boo foo bar\' in \'bleh\'\n'
+        'ahah\naccb\nallo\naddb\n✔'
         '\n')
 
 

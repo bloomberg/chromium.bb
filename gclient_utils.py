@@ -573,7 +573,7 @@ def CheckCallAndFilter(args, stdout=None, filter_fn=None,
         while in_byte:
           output.write(in_byte)
           if print_stdout:
-            stdout.write(in_byte.decode())
+            stdout.write(in_byte)
           if in_byte not in ['\r', '\n']:
             in_line += in_byte
           else:
