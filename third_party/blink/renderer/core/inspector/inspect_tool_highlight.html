@@ -28,6 +28,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+<script src="inspect_tool_common.js"></script>
+<link rel="stylesheet" href="inspect_tool_common.css">
 <style>
 body {
     --arrow-width: 15px;
@@ -62,7 +64,8 @@ body {
     padding: 5px 8px;
     border-radius: 3px;
     box-sizing: border-box;
-    max-width: calc(100% - 4px);
+    min-width: 100px;
+    max-width: 300px;
     z-index: 1;
     background-clip: padding-box;
     will-change: transform;
@@ -86,19 +89,16 @@ body {
 .element-info {
     display: flex;
     flex-direction: column;
-    line-height: 16px;
 }
 
 .element-info-header {
     display: flex;
-    align-content: stretch;
-    line-height: 16px;
+    align-items: baseline;
 }
 
 .element-info-body {
     display: flex;
     flex-direction: column;
-    border-top: 1px solid #999;
     padding-top: 2px;
     margin-top: 2px;
 }
@@ -108,8 +108,10 @@ body {
     line-height: 19px;
 }
 
-.element-info-row > * {
-    flex: none;
+.element-info-contrast-row {
+    border-top: 1px solid #ddd;
+    padding-top: 5px;
+    margin-top: 5px;
 }
 
 .element-info-name {
@@ -120,12 +122,28 @@ body {
     flex: auto;
 }
 
-.element-info-value {
+.element-info-value-color {
+    display: flex;
+    color: rgb(48, 57, 66);
+    margin-left: 10px;
+    align-items: baseline;
+}
+
+.element-info-value-contrast {
     display: flex;
     text-align: right;
     color: rgb(48, 57, 66);
     margin-left: 10px;
+}
+
+.element-info-value-text {
+    text-align: right;
+    color: rgb(48, 57, 66);
+    margin-left: 10px;
     align-items: baseline;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .color-swatch {
@@ -174,13 +192,28 @@ body {
 }
 
 .contrast-text {
-    border-radius: 3px;
-    width: 20px;
+    width: 16px;
     height: 16px;
     text-align: center;
     line-height: 16px;
-    margin-right: 9px;
-    border: 1px solid #ccc;
+    margin-right: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 0 1px;
+}
+
+.a11y-icon {
+    width: 16px;
+    height: 16px;
+    margin-left: 2px;
+    background-repeat: no-repeat;
+}
+
+.a11y-icon-warning {
+    background-image: url("data:image/svg+xml;charset=UTF-8, %3csvg xmlns='http://www.w3.org/2000/svg' width='16px' height='16px' viewBox='0 0 18 18' fill='%23ffc107'%3e%3cpath d='M0 0h18v18H0z' fill='none'/%3e%3cpath d='M.5 16h17L9 1 .5 16zm9.5-2H8v-2h2v2zm0-3H8V7h2v4z'/%3e%3c/svg%3e ");
+}
+
+.a11y-icon-ok {
+    background-image: url("data:image/svg+xml;charset=UTF-8, %3csvg xmlns='http://www.w3.org/2000/svg' width='16px' height='16px' viewBox='0 0 48 48' fill='%2300a000'%3e%3cpath d='M0 0h48v48H0z' fill='none'/%3e%3cpath d='M18 32.34L9.66 24l-2.83 2.83L18 38l24-24-2.83-2.83z'/%3e%3c/svg%3e");
 }
 
 </style>
@@ -428,11 +461,13 @@ function _createElementDescription(elementInfo)
     const tagNameElement = descriptionElement.createChild("span", "material-tag-name");
     tagNameElement.textContent = elementInfo.tagName;
     const nodeIdElement = descriptionElement.createChild("span", "material-node-id");
-    nodeIdElement.textContent = elementInfo.idValue ? "#" + elementInfo.idValue : "";
+    const maxLength = 80;
+    nodeIdElement.textContent = elementInfo.idValue ? "#" + elementInfo.idValue.trimEnd(maxLength) : "";
     nodeIdElement.classList.toggle("hidden", !elementInfo.idValue);
 
     const classNameElement = descriptionElement.createChild("span", "material-class-name");
-    classNameElement.textContent = (elementInfo.className || "").trimEnd(50);
+    if (nodeIdElement.textContent.length < maxLength)
+      classNameElement.textContent = (elementInfo.className || "").trimEnd(maxLength - nodeIdElement.textContent.length);
     classNameElement.classList.toggle("hidden", !elementInfo.className);
     const dimensionsElement = elementInfoHeaderElement.createChild("div", "dimensions");
     dimensionsElement.createChild("span", "material-node-width").textContent = Math.round(elementInfo.nodeWidth * 100) / 100;
@@ -449,7 +484,7 @@ function _createElementDescription(elementInfo)
     const fontFamily = style["font-family"];
     const fontSize = style["font-size"];
     if (fontFamily && fontSize !== "0px")
-        addTextRow("Font", `${fontSize} ${fontFamily}`.trimEnd(20));
+        addTextRow("Font", `${fontSize} ${fontFamily}`);
 
     const bgcolor = style["background-color"];
     if (bgcolor && bgcolor !== "#00000000")
@@ -467,22 +502,24 @@ function _createElementDescription(elementInfo)
     if (color && color !== "#00000000" && cbgColor && cbgColor !== "#00000000")
         addContrastRow(style["color"], elementInfo.contrast);
 
-    function addRow(name) {
+    function addRow(name, rowClassName, valueClassName) {
         if (!elementInfoBodyElement)
             elementInfoBodyElement = elementInfoElement.createChild("div", "element-info-body")
         const rowElement = elementInfoBodyElement.createChild("div", "element-info-row");
+        if (rowClassName)
+            rowElement.classList.add(rowClassName);
         const nameElement = rowElement.createChild("div", "element-info-name");
         nameElement.textContent = name;
         rowElement.createChild("div", "element-info-gap");
-        return rowElement.createChild("div", "element-info-value");
+        return rowElement.createChild("div", valueClassName || "");
     }
 
     function addTextRow(name, value) {
-        addRow(name).createTextChild(value);
+        addRow(name, "", "element-info-value-text").createTextChild(value);
     }
 
     function addColorRow(name, color) {
-        const valueElement = addRow(name);
+        const valueElement = addRow(name, "", "element-info-value-color");
         const swatch = valueElement.createChild("div", "color-swatch");
         const inner = swatch.createChild("div", "color-swatch-inner");
         inner.style.backgroundColor = color;
@@ -492,18 +529,14 @@ function _createElementDescription(elementInfo)
     function addContrastRow(fgColor, contrast) {
         const ratio = contrastRatio(parseHexa(fgColor), parseHexa(contrast.backgroundColor));
         const threshold = computeIsLargeFont(contrast) ? 3.0 : 4.5;
-        const valueElement = addRow("Contrast");
+        const valueElement = addRow("Contrast", "element-info-contrast-row", "element-info-value-contrast");
         const sampleText = valueElement.createChild("div", "contrast-text");
         sampleText.style.color = fgColor;
         sampleText.style.backgroundColor = contrast.backgroundColor;
         sampleText.textContent = "Aa";
         const valueSpan = valueElement.createChild("span");
         valueSpan.textContent = Math.round(ratio * 100) / 100;
-        if (ratio < threshold) {
-            valueSpan.style.color = "red";
-            valueSpan.style.paddingRight = "5px";
-            valueElement.createTextChild(` < ${threshold.toFixed(1)}`);
-        }
+        valueElement.createChild("div", ratio < threshold ? "a11y-icon a11y-icon-warning" : "a11y-icon a11y-icon-ok");
     }
 
     return elementInfoElement;
@@ -769,10 +802,11 @@ function drawHighlight(highlight, context)
 
 function test() {
     document.body.classList.add("platform-mac");
+    reset(window);
     drawHighlight(
         {"paths":[{"path":["M",122,133.796875,"L",822,133.796875,"L",822,208.796875,"L",122,208.796875,"Z"], "fillColor":"rgba(111, 168, 220, 0.658823529411765)","name":"content"},
         {"path":["M",122,113.796875,"L",822,113.796875,"L",822,228.796875,"L",122,228.796875,"Z"],"fillColor":"rgba(246, 178, 107, 0.66)","name":"margin"}],"showRulers":false,"showExtensionLines":false,
-        "elementInfo":{"tagName":"p","idValue":"","nodeWidth":"700","nodeHeight":"75","style":{"color":"#FFFFFFFF","font-family":"\"Product Sans\", \"Open Sans\", Roboto, Arial","font-size":"20px","line-height":"25px","padding":"0px","margin":"20px 0px","background-color":"#00000000"},"contrast":{"fontSize":"20px","fontWeight":"400","backgroundColor":"#F9B826BF"}}, showExtensionLines: true, showRulers: true});
+        "elementInfo":{"tagName":"button","className":"class.name", "idValue":"download-hero","nodeWidth":"700","nodeHeight":"75","style":{"color":"#FFFFFFFF","font-family":"\"Product Sans\", \"Open Sans\", Roboto, Arial, \"Product Sans\", \"Open Sans\", Roboto, Arial","font-size":"20px","line-height":"25px","padding":"0px","margin":"20px 0px","background-color":"#00000000"},"contrast":{"fontSize":"20px","fontWeight":"400","backgroundColor":"#F9B826BF"}}, showExtensionLines: true, showRulers: true});
 }
 
 </script>
