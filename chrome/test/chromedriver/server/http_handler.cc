@@ -704,11 +704,10 @@ HttpHandler::HttpHandler(
                                                        kSessionStorage),
                                    false /*w3c_standard_command*/)),
 
-      // No W3C equivalent.
+      // Non-standard command but supported in the foreseeable future.
       CommandMapping(
           kPost, "session/:sessionId/log",
-          WrapToCommand("GetLog", base::BindRepeating(&ExecuteGetLog),
-                        false /*w3c_standard_command*/)),
+          WrapToCommand("GetLog", base::BindRepeating(&ExecuteGetLog))),
 
       // No W3C equivalent.
       CommandMapping(
