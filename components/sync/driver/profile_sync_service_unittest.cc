@@ -605,7 +605,7 @@ TEST_F(ProfileSyncServiceTest, RevokeAccessTokenFromTokenService) {
   // Make sure the expected credentials (correct account_id, empty access token)
   // were passed to the SyncEngine.
   ASSERT_EQ(primary_account_id, init_credentials.account_id);
-  ASSERT_TRUE(init_credentials.sync_token.empty());
+  ASSERT_TRUE(init_credentials.access_token.empty());
 
   // At this point, the real SyncEngine would try to connect to the server, fail
   // (because it has no access token), and eventually call
@@ -653,7 +653,7 @@ TEST_F(ProfileSyncServiceTest, CredentialsRejectedByClient_StopSync) {
   // Make sure the expected credentials (correct account_id, empty access token)
   // were passed to the SyncEngine.
   ASSERT_EQ(primary_account_id, init_credentials.account_id);
-  ASSERT_TRUE(init_credentials.sync_token.empty());
+  ASSERT_TRUE(init_credentials.access_token.empty());
 
   // At this point, the real SyncEngine would try to connect to the server, fail
   // (because it has no access token), and eventually call
@@ -719,7 +719,7 @@ TEST_F(ProfileSyncServiceTest, CredentialsRejectedByClient_DoNotStopSync) {
   // Make sure the expected credentials (correct account_id, empty access token)
   // were passed to the SyncEngine.
   ASSERT_EQ(primary_account_id, init_credentials.account_id);
-  ASSERT_TRUE(init_credentials.sync_token.empty());
+  ASSERT_TRUE(init_credentials.access_token.empty());
 
   // At this point, the real SyncEngine would try to connect to the server, fail
   // (because it has no access token), and eventually call
@@ -776,7 +776,7 @@ TEST_F(ProfileSyncServiceTest, SignOutRevokeAccessToken) {
   // Make sure the expected credentials (correct account_id, empty access token)
   // were passed to the SyncEngine.
   ASSERT_EQ(primary_account_id, init_credentials.account_id);
-  ASSERT_TRUE(init_credentials.sync_token.empty());
+  ASSERT_TRUE(init_credentials.access_token.empty());
 
   // At this point, the real SyncEngine would try to connect to the server, fail
   // (because it has no access token), and eventually call
@@ -871,7 +871,7 @@ TEST_F(ProfileSyncServiceTest, CredentialErrorReturned) {
   // Make sure the expected credentials (correct account_id, empty access token)
   // were passed to the SyncEngine.
   ASSERT_EQ(primary_account_id, init_credentials.account_id);
-  ASSERT_TRUE(init_credentials.sync_token.empty());
+  ASSERT_TRUE(init_credentials.access_token.empty());
 
   TestSyncServiceObserver observer;
   service()->AddObserver(&observer);
@@ -934,7 +934,7 @@ TEST_F(ProfileSyncServiceTest, CredentialErrorClearsOnNewToken) {
   // Make sure the expected credentials (correct account_id, empty access token)
   // were passed to the SyncEngine.
   ASSERT_EQ(primary_account_id, init_credentials.account_id);
-  ASSERT_TRUE(init_credentials.sync_token.empty());
+  ASSERT_TRUE(init_credentials.access_token.empty());
 
   TestSyncServiceObserver observer;
   service()->AddObserver(&observer);

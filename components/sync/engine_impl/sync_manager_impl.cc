@@ -308,8 +308,8 @@ void SyncManagerImpl::Init(InitArgs* args) {
   share_.sync_credentials = args->credentials;
 
   // UserShare is accessible to a lot of code that doesn't need access to the
-  // sync token so clear sync_token from the UserShare.
-  share_.sync_credentials.sync_token = "";
+  // access token, so clear it from the UserShare.
+  share_.sync_credentials.access_token = "";
 
   DVLOG(1) << "Username: " << args->credentials.email;
   DVLOG(1) << "AccountId: " << args->credentials.account_id;
@@ -538,7 +538,7 @@ void SyncManagerImpl::UpdateCredentials(const SyncCredentials& credentials) {
   cycle_context_->set_account_name(credentials.email);
 
   observing_network_connectivity_changes_ = true;
-  if (!connection_manager_->SetAuthToken(credentials.sync_token))
+  if (!connection_manager_->SetAuthToken(credentials.access_token))
     return;  // Auth token is known to be invalid, so exit early.
 
   scheduler_->OnCredentialsUpdated();

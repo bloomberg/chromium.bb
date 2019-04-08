@@ -207,7 +207,7 @@ class SyncEngineImplTest : public testing::Test {
         temp_dir_.GetPath().Append(base::FilePath(kTestSyncDir)));
     credentials_.account_id = "user@example.com";
     credentials_.email = "user@example.com";
-    credentials_.sync_token = "sync_token";
+    credentials_.access_token = "access_token";
 
     fake_manager_factory_ = std::make_unique<FakeSyncManagerFactory>(
         &fake_manager_, network::TestNetworkConnectionTracker::GetInstance());

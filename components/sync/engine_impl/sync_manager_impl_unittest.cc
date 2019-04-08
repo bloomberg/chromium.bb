@@ -936,7 +936,7 @@ class SyncManagerTest : public testing::Test,
     SyncCredentials credentials;
     credentials.account_id = "foo@bar.com";
     credentials.email = "foo@bar.com";
-    credentials.sync_token = "sometoken";
+    credentials.access_token = "sometoken";
 
     sync_manager_.AddObserver(&manager_observer_);
     EXPECT_CALL(manager_observer_, OnInitializationComplete(_, _, _, _))
