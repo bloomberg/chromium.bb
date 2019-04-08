@@ -21,7 +21,7 @@
 namespace ui {
 
 // Handles input from physical keyboards and the IME service.
-class COMPONENT_EXPORT(UI_BASE_IME) InputMethodFuchsia
+class COMPONENT_EXPORT(UI_BASE_IME_FUCHSIA) InputMethodFuchsia
     : public InputMethodBase,
       public InputEventDispatcherDelegate,
       public fuchsia::ui::input::InputMethodEditorClient {
