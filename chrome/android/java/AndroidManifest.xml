@@ -351,7 +351,7 @@ by a child template that "extends" this file.
             ## Proposed brand name, not to be localized.
             android:label="Dino Run"
             android:exported="true">
-            <intent-filter>
+            <intent-filter android:priority="-1">
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.LAUNCHER" />
