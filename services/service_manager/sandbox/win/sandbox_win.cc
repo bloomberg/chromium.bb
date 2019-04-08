@@ -862,13 +862,12 @@ sandbox::ResultCode SandboxWin::StartSandboxedProcess(
     options.handles_to_inherit = handles_to_inherit;
     BOOL in_job = true;
     // Prior to Windows 8 nested jobs aren't possible.
-    if (sandbox_type == SANDBOX_TYPE_NETWORK &&
-        (base::win::GetVersion() >= base::win::VERSION_WIN8 ||
-         (::IsProcessInJob(::GetCurrentProcess(), nullptr, &in_job) &&
-          !in_job))) {
-      // Launch the process in a job to ensure that the network process doesn't
-      // outlive the browser. This could happen if there is a lot of I/O on
-      // process shutdown, in which case TerminateProcess would fail.
+    if (base::win::GetVersion() >= base::win::VERSION_WIN8 ||
+        (::IsProcessInJob(::GetCurrentProcess(), nullptr, &in_job) &&
+         !in_job)) {
+      // Launch the process in a job to ensure that it doesn't outlive the
+      // browser. This could happen if there is a lot of I/O on process
+      // shutdown, in which case TerminateProcess would fail.
       // https://crbug.com/820996
       if (!g_job_object_handle) {
         sandbox::Job job_obj;
