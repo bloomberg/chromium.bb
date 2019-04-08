@@ -126,7 +126,8 @@ LatencyInfo::LatencyInfo(SourceEventType type)
       began_(false),
       terminated_(false),
       source_event_type_(type),
-      scroll_update_delta_(0) {}
+      scroll_update_delta_(0),
+      predicted_scroll_update_delta_(0) {}
 
 LatencyInfo::LatencyInfo(const LatencyInfo& other) = default;
 
@@ -139,7 +140,8 @@ LatencyInfo::LatencyInfo(int64_t trace_id, bool terminated)
       began_(false),
       terminated_(terminated),
       source_event_type_(SourceEventType::UNKNOWN),
-      scroll_update_delta_(0) {}
+      scroll_update_delta_(0),
+      predicted_scroll_update_delta_(0) {}
 
 bool LatencyInfo::Verify(const std::vector<LatencyInfo>& latency_info,
                          const char* referring_msg) {
@@ -325,6 +327,15 @@ void LatencyInfo::CoalesceScrollUpdateWith(const LatencyInfo& other) {
   }
 
   scroll_update_delta_ += other.scroll_update_delta();
+  predicted_scroll_update_delta_ += other.predicted_scroll_update_delta();
+}
+
+LatencyInfo LatencyInfo::ScaledBy(float scale) const {
+  ui::LatencyInfo scaled_latency_info(*this);
+  scaled_latency_info.set_scroll_update_delta(scroll_update_delta_ * scale);
+  scaled_latency_info.set_predicted_scroll_update_delta(
+      predicted_scroll_update_delta_ * scale);
+  return scaled_latency_info;
 }
 
 std::unique_ptr<base::trace_event::ConvertableToTraceFormat>

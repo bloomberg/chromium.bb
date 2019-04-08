@@ -30,9 +30,13 @@ class AverageLagTrackerTest : public testing::Test {
 
   void SyntheticTouchScrollBeginLatencyInfo(base::TimeTicks event_time,
                                             base::TimeTicks frame_time,
-                                            float delta) {
+                                            float delta,
+                                            float predicted_delta = 0) {
     ui::LatencyInfo touch_latency(ui::SourceEventType::TOUCH);
     touch_latency.set_scroll_update_delta(delta);
+    touch_latency.set_predicted_scroll_update_delta(
+        predicted_delta != 0 ? predicted_delta : delta);
+
     touch_latency.AddLatencyNumberWithTimestamp(
         ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT,
         event_time, 1);
@@ -45,9 +49,12 @@ class AverageLagTrackerTest : public testing::Test {
 
   void SyntheticTouchScrollUpdateLatencyInfo(base::TimeTicks event_time,
                                              base::TimeTicks frame_time,
-                                             float delta) {
+                                             float delta,
+                                             float predicted_delta = 0) {
     ui::LatencyInfo touch_latency(ui::SourceEventType::TOUCH);
     touch_latency.set_scroll_update_delta(delta);
+    touch_latency.set_predicted_scroll_update_delta(
+        predicted_delta != 0 ? predicted_delta : delta);
     touch_latency.AddLatencyNumberWithTimestamp(
         ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT, event_time,
         1);
@@ -242,6 +249,126 @@ TEST_F(AverageLagTrackerTest, ChangeDirectionInFrame) {
   EXPECT_THAT(histogram_tester().GetAllSamples(
                   "Event.Latency.ScrollUpdate.Touch.AverageLag"),
               ElementsAre(Bucket(12, 1)));
+}
+
+// A simple case without scroll prediction to compare with the two with
+// prediction cases below.
+TEST_F(AverageLagTrackerTest, NoScrollPrediction) {
+  // ScrollBegin, at t=5, finter_pos=5px.
+  base::TimeTicks event_time = MillisecondsToTimeTicks(5);
+  base::TimeTicks frame_time = MillisecondsToTimeTicks(10);
+  SyntheticTouchScrollBeginLatencyInfo(event_time, frame_time,
+                                       5 /* scroll_delta */);
+
+  // ScrollUpdate, at t=15, finger_pos=15px.
+  event_time = MillisecondsToTimeTicks(15);
+  frame_time = MillisecondsToTimeTicks(20);
+  SyntheticTouchScrollUpdateLatencyInfo(event_time, frame_time,
+                                        10 /* scroll_delta */);
+
+  // ScrollUpdate, at t=25, finger_pos=25px.
+  event_time = MillisecondsToTimeTicks(25);
+  frame_time = MillisecondsToTimeTicks(30);
+  SyntheticTouchScrollUpdateLatencyInfo(event_time, frame_time,
+                                        10 /* scroll_delta */);
+
+  // Another ScrollBegin to flush unfinished frames.
+  event_time = MillisecondsToTimeTicks(1000);
+  frame_time = MillisecondsToTimeTicks(1000);
+  SyntheticTouchScrollBeginLatencyInfo(event_time, frame_time, 0);
+
+  // Prediction hasn't take affect on ScrollBegin so it'll stay the same.
+  EXPECT_THAT(histogram_tester().GetAllSamples(
+                  "Event.Latency.ScrollBegin.Touch.AverageLag"),
+              ElementsAre(Bucket(7, 1)));
+  // At t=10, finger_pos = 10px, rendered_pos = 5px.
+  // At t=20, finger_pos = 20px, rendered_pos = 15px.
+  // At t=30, finger_pos = 25px, rendered_pos = 25px.
+  // AverageLag = ((5px+15px)*10ms/2 + (5px+10px)*5ms/2 + 10px*5ms)/20ms
+  //            = 9.375
+  EXPECT_THAT(histogram_tester().GetAllSamples(
+                  "Event.Latency.ScrollUpdate.Touch.AverageLag"),
+              ElementsAre(Bucket(9, 1)));
+}
+
+// Test AverageLag with perfect scroll prediction.
+TEST_F(AverageLagTrackerTest, ScrollPrediction) {
+  // ScrollBegin, at t=5, finter_pos=5px.
+  // Predict frame_time=10, predicted_pos = 10px.
+  base::TimeTicks event_time = MillisecondsToTimeTicks(5);
+  base::TimeTicks frame_time = MillisecondsToTimeTicks(10);
+  SyntheticTouchScrollBeginLatencyInfo(
+      event_time, frame_time, 5 /* scroll_delta */, 10 /* predicted_delta */);
+
+  // ScrollUpdate, at t=15, finger_pos=15px.
+  // Predict frame_time=20, predicted_pos = 20px.
+  event_time = MillisecondsToTimeTicks(15);
+  frame_time = MillisecondsToTimeTicks(20);
+  SyntheticTouchScrollUpdateLatencyInfo(
+      event_time, frame_time, 10 /* scroll_delta */, 10 /* predicted_delta */);
+
+  // ScrollUpdate, at t=25, finger_pos=25px.
+  // Predict frame_time=30, predicted_pos = 30px.
+  event_time = MillisecondsToTimeTicks(25);
+  frame_time = MillisecondsToTimeTicks(30);
+  SyntheticTouchScrollUpdateLatencyInfo(
+      event_time, frame_time, 10 /* scroll_delta */, 10 /* predicted_delta */);
+
+  // Another ScrollBegin to flush unfinished frames.
+  event_time = MillisecondsToTimeTicks(1000);
+  frame_time = MillisecondsToTimeTicks(1000);
+  SyntheticTouchScrollBeginLatencyInfo(event_time, frame_time, 0);
+
+  // Prediction hasn't take affect on ScrollBegin so it'll stay the same.
+  EXPECT_THAT(histogram_tester().GetAllSamples(
+                  "Event.Latency.ScrollBegin.Touch.AverageLag"),
+              ElementsAre(Bucket(7, 1)));
+  // At t=10, finger_pos = 10px, rendered_pos = 10px.
+  // At t=20, finger_pos = 20px, rendered_pos = 20px.
+  // At t=30, finger_pos = 25px, rendered_pos = 30px.
+  // AverageLag = ((0px+10px)*10ms/2 + (0px+5px)*10ms/2 + 5px*5ms)/20ms
+  //            = 4.375px
+  EXPECT_THAT(histogram_tester().GetAllSamples(
+                  "Event.Latency.ScrollUpdate.Touch.AverageLag"),
+              ElementsAre(Bucket(4, 1)));
+}
+
+// Test AverageLag with imperfect scroll prediction.
+TEST_F(AverageLagTrackerTest, ImperfectScrollPrediction) {
+  // ScrollBegin, at t=5, finter_pos=5px.
+  // Predict frame_time=10, predicted_pos(over) = 12px.
+  base::TimeTicks event_time = MillisecondsToTimeTicks(5);
+  base::TimeTicks frame_time = MillisecondsToTimeTicks(10);
+  SyntheticTouchScrollBeginLatencyInfo(
+      event_time, frame_time, 5 /* scroll_delta */, 12 /* predicted_delta */);
+
+  // ScrollUpdate, at t=15, finger_pos=15px.
+  // Predict frame_time=20, predicted_pos(under) = 17px.
+  event_time = MillisecondsToTimeTicks(15);
+  frame_time = MillisecondsToTimeTicks(20);
+  SyntheticTouchScrollUpdateLatencyInfo(
+      event_time, frame_time, 10 /* scroll_delta */, 5 /* predicted_delta */);
+
+  // ScrollUpdate, at t=25, finger_pos=25px.
+  // Predict frame_time=30, predicted_pos(over) = 31px.
+  event_time = MillisecondsToTimeTicks(25);
+  frame_time = MillisecondsToTimeTicks(30);
+  SyntheticTouchScrollUpdateLatencyInfo(
+      event_time, frame_time, 10 /* scroll_delta */, 14 /* predicted_delta */);
+
+  // Another ScrollBegin to flush unfinished frames.
+  event_time = MillisecondsToTimeTicks(1000);
+  frame_time = MillisecondsToTimeTicks(1000);
+  SyntheticTouchScrollBeginLatencyInfo(event_time, frame_time, 0);
+
+  EXPECT_THAT(histogram_tester().GetAllSamples(
+                  "Event.Latency.ScrollBegin.Touch.AverageLag"),
+              ElementsAre(Bucket(7, 1)));
+  // AverageLag = ((2px*2ms/2+8px*8ms/2)+ ((3px+8px)*5ms/2+8px*5ms))/20ms
+  //            = 5.075px
+  EXPECT_THAT(histogram_tester().GetAllSamples(
+                  "Event.Latency.ScrollUpdate.Touch.AverageLag"),
+              ElementsAre(Bucket(5, 1)));
 }
 
 }  // namespace
