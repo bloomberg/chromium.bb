@@ -27,8 +27,6 @@ class NetworkInformation final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static NetworkInformation* Create(ExecutionContext*);
-
   explicit NetworkInformation(ExecutionContext*);
   ~NetworkInformation() override;
 
