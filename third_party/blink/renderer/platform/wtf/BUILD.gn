@@ -123,8 +123,6 @@ jumbo_component("wtf") {
     "text/base64.cc",
     "text/base64.h",
     "text/character_names.h",
-    "text/collator.cc",
-    "text/collator.h",
     "text/cstring.cc",
     "text/cstring.h",
     "text/integer_to_string_conversion.h",
