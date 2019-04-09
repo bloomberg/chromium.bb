@@ -274,6 +274,9 @@ void DownloadItemNotification::Close(bool by_user) {
 void DownloadItemNotification::Click(
     const base::Optional<int>& button_index,
     const base::Optional<base::string16>& reply) {
+  if (!item_)
+    return;
+
   if (button_index) {
     if (*button_index < 0 ||
         static_cast<size_t>(*button_index) >= button_actions_->size()) {
@@ -355,6 +358,9 @@ void DownloadItemNotification::CloseNotification() {
 }
 
 void DownloadItemNotification::Update() {
+  if (!item_)
+    return;
+
   auto download_state = item_->GetState();
 
   // When the download is just completed, interrupted or transitions to
