@@ -488,6 +488,9 @@ const char kOobeTimerInterval[] = "oobe-timer-interval";
 // must succeed, otherwise session restart should fail).
 const char kProfileRequiresPolicy[] = "profile-requires-policy";
 
+// Redirects libassistant logging to /var/log/chrome/.
+const char kRedirectLibassistantLogging[] = "redirect-libassistant-logging";
+
 // The rlz ping delay (in seconds) that overwrites the default value.
 const char kRlzPingDelay[] = "rlz-ping-delay";
 

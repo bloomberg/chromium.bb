@@ -188,6 +188,8 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kOobeSkipPostLogin[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kOobeSkipToLogin[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kOobeTimerInterval[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kProfileRequiresPolicy[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const char kRedirectLibassistantLogging[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kRegulatoryLabelDir[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kRlzPingDelay[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kSamlPasswordChangeUrl[];
