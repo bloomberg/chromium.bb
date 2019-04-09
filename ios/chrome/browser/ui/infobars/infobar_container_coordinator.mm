@@ -152,9 +152,10 @@ const double kBannerPresentationDurationInSeconds = 6.0;
   self.dispatcher = static_cast<id<ApplicationCommands>>(_commandDispatcher);
 }
 
-- (BOOL)presentingInfobarBanner {
+- (BOOL)isPresentingInfobarBanner {
   DCHECK(IsInfobarUIRebootEnabled());
-  return self.infobarViewController ? YES : NO;
+  _presentingInfobarBanner = self.infobarViewController ? YES : NO;
+  return _presentingInfobarBanner;
 }
 
 #pragma mark - InfobarConsumer
