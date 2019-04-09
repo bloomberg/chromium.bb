@@ -1016,14 +1016,6 @@ const base::UnguessableToken& RenderFrameHostImpl::GetOverlayRoutingToken() {
   return *overlay_routing_token_;
 }
 
-void RenderFrameHostImpl::DidCommitNavigationForTesting(
-    NavigationRequest* navigation_request,
-    std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params,
-    mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params) {
-  DidCommitNavigation(navigation_request, std::move(params),
-                      std::move(interface_params));
-}
-
 void RenderFrameHostImpl::AudioContextPlaybackStarted(int audio_context_id) {
   delegate_->AudioContextPlaybackStarted(this, audio_context_id);
 }
@@ -2163,7 +2155,7 @@ void RenderFrameHostImpl::DidCommitProvisionalLoad(
     mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params) {
   if (MaybeInterceptCommitCallback(nullptr, validated_params.get(),
                                    &interface_params)) {
-    DidCommitNavigation(nullptr /* committing_navigation_request */,
+    DidCommitNavigation(std::move(navigation_request_),
                         std::move(validated_params),
                         std::move(interface_params));
   }
@@ -2176,12 +2168,22 @@ void RenderFrameHostImpl::DidCommitPerNavigationMojoInterfaceNavigation(
     mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params) {
   DCHECK(committing_navigation_request);
   committing_navigation_request->IgnoreCommitInterfaceDisconnection();
-  if (MaybeInterceptCommitCallback(committing_navigation_request,
-                                   validated_params.get(), &interface_params)) {
-    DidCommitNavigation(committing_navigation_request,
-                        std::move(validated_params),
-                        std::move(interface_params));
+  if (!MaybeInterceptCommitCallback(committing_navigation_request,
+                                    validated_params.get(),
+                                    &interface_params)) {
+    return;
   }
+
+  auto request = navigation_requests_.find(committing_navigation_request);
+
+  // The committing request should be in the map of NavigationRequests for
+  // this RenderFrameHost.
+  CHECK(request != navigation_requests_.end());
+
+  std::unique_ptr<NavigationRequest> owned_request = std::move(request->second);
+  navigation_requests_.erase(committing_navigation_request);
+  DidCommitNavigation(std::move(owned_request), std::move(validated_params),
+                      std::move(interface_params));
 }
 
 void RenderFrameHostImpl::DidCommitSameDocumentNavigation(
@@ -2208,12 +2210,16 @@ void RenderFrameHostImpl::DidCommitSameDocumentNavigation(
                "frame_tree_node", frame_tree_node_->frame_tree_node_id(), "url",
                validated_params->url.possibly_invalid_spec());
 
-  // TODO(ahemery): We also create a NavigationRequest for browser initiated
-  // same document navigations, so implement the passing of this request to
-  // DidCommitNavigationInternal.
-  if (!DidCommitNavigationInternal(nullptr /* navigation_request */,
-                                   validated_params.get(),
-                                   true /* is_same_document_navigation*/)) {
+  // Check if the navigation matches a stored same-document NavigationRequest.
+  // In that case it is browser-initiated.
+  bool is_browser_initiated =
+      same_document_navigation_request_ &&
+      (same_document_navigation_request_->commit_params().navigation_token ==
+       validated_params->navigation_token);
+  if (!DidCommitNavigationInternal(
+          is_browser_initiated ? std::move(same_document_navigation_request_)
+                               : nullptr,
+          validated_params.get(), true /* is_same_document_navigation*/)) {
     return;
   }
 
@@ -5824,115 +5830,38 @@ void RenderFrameHostImpl::GetVirtualAuthenticatorManager(
 }
 
 std::unique_ptr<NavigationRequest>
-RenderFrameHostImpl::TakeNavigationRequestForSameDocumentCommit(
-    const FrameHostMsg_DidCommitProvisionalLoad_Params& params) {
-  bool is_browser_initiated = (params.nav_entry_id != 0);
-
-  // A NavigationRequest is created for browser-initiated same-document
-  // navigation. Try to take it if it's still available and matches the
-  // current navigation.
-  if (is_browser_initiated && same_document_navigation_request_ &&
-      same_document_navigation_request_->common_params().url == params.url) {
-    return std::move(same_document_navigation_request_);
-  }
-
-  // No existing NavigationRequest has been found. Create a new one, but don't
-  // reset any NavigationRequest tracking an ongoing navigation, since this may
-  // lead to the cancellation of the navigation.
-  // First, determine if the navigation corresponds to the pending navigation
-  // entry. This is the case if the NavigationRequest for a browser-initiated
-  // same-document navigation was erased due to a race condition.
-  // TODO(ahemery): Remove when the full mojo interface is in place.
-  // (https://bugs.chromium.org/p/chromium/issues/detail?id=784904)
-  bool is_renderer_initiated = true;
-  NavigationEntryImpl* pending_entry = NavigationEntryImpl::FromNavigationEntry(
-      frame_tree_node()->navigator()->GetController()->GetPendingEntry());
-  if (pending_entry && pending_entry->GetUniqueID() == params.nav_entry_id) {
-    is_renderer_initiated = pending_entry->is_renderer_initiated();
-  } else {
-    // Don't reuse the pending entry if it doesn't match.
-    pending_entry = nullptr;
-  }
-
+RenderFrameHostImpl::CreateNavigationRequestForCommit(
+    const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+    bool is_same_document,
+    NavigationEntryImpl* entry_for_request) {
+  bool is_renderer_initiated =
+      entry_for_request ? entry_for_request->is_renderer_initiated() : true;
   return NavigationRequest::CreateForCommit(
-      frame_tree_node_, this, pending_entry, params, is_renderer_initiated,
-      true /* was_within_same_document */);
+      frame_tree_node_, this, entry_for_request, params, is_renderer_initiated,
+      is_same_document);
 }
 
-std::unique_ptr<NavigationRequest>
-RenderFrameHostImpl::TakeNavigationRequestForCommit(
-    const FrameHostMsg_DidCommitProvisionalLoad_Params& params) {
-  // TODO(ahemery): Once we have IsPerNavigationMojoInterfaceEnabled() always
-  // true, it becomes obsolete to match the NavigationRequest since we are
-  // sure it is the correct one. However using the same request even though
-  // url might have changed ("" becomes "about:blank", etc.) requires some
-  // updating.
-
-  // Determine if the current NavigationRequest can be used.
-  NavigationHandleImpl* navigation_handle =
-      navigation_request_ ? navigation_request_->navigation_handle() : nullptr;
-
-  // TODO(lukasza, clamy): https://crbug.com/784904: Match commit IPC to proper
-  // NavigationHandle without requiring URLs to match.
-  if (navigation_handle && navigation_handle->GetURL() == params.url) {
-    return std::move(navigation_request_);
-  }
-
-  // At this point we know that the right/matching |navigation_request_| has
-  // already been found based on navigation id look-up performed by
-  // RFHI::OnCrossDocumentCommitProcessed.  OTOH, we cannot use its
-  // NavigationHandle, because it has a mismatched URL (which would cause
-  // DCHECKs - for example in NavigationHandleImpl::DidCommitNavigation).
-  //
-  // Because of the above, if the URL does not match what the NavigationHandle
-  // expects, we want to treat the commit as a new navigation.
-  // This mostly works, but there are some remaining issues here tracked
-  // by https://crbug.com/872803.
-  //
-  // The URL mismatch can happen when loading a Data navigation with
-  // LoadDataWithBaseURL.
-  // TODO(csharrison): Data navigations loaded with LoadDataWithBaseURL get
-  // reset here, because the NavigationHandle tracks the URL but the params.url
-  // tracks the data. The trick of saving the old entry ids for these
-  // navigations should go away when this is properly handled.
-  // See https://crbug.com/588317.
-  //
-  // Other cases are where URL mismatch can happen is when committing an error
-  // page - for example this can happen during CSP/frame-ancestors checks (see
-  // https://crbug.com/759184).
-
-  NavigationEntryImpl* entry_for_request = nullptr;
-  bool is_renderer_initiated = true;
-
-  // Make sure that the pending entry was really loaded via LoadDataWithBaseURL
-  // and that it matches this handle.  TODO(csharrison): The pending entry's
-  // base url should equal |params.base_url|. This is not the case for loads
-  // with invalid base urls.
-  if (navigation_handle) {
-    NavigationEntryImpl* pending_entry =
-        NavigationEntryImpl::FromNavigationEntry(
-            frame_tree_node()->navigator()->GetController()->GetPendingEntry());
-    bool pending_entry_matches_handle =
-        pending_entry && pending_entry->GetUniqueID() ==
-                             navigation_handle->pending_nav_entry_id();
+bool RenderFrameHostImpl::NavigationRequestWasIntendedForPendingEntry(
+    NavigationRequest* request,
+    const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+    bool same_document) {
+  NavigationEntryImpl* pending_entry = NavigationEntryImpl::FromNavigationEntry(
+      frame_tree_node()->navigator()->GetController()->GetPendingEntry());
+  if (!pending_entry)
+    return false;
+  if (request->nav_entry_id() != pending_entry->GetUniqueID())
+    return false;
+  if (!same_document) {
+    // Make sure that the pending entry was really loaded via
+    // LoadDataWithBaseURL and that it matches this handle.
     // TODO(csharrison): The pending entry's base url should equal
-    // |validated_params.base_url|. This is not the case for loads with invalid
-    // base urls.
-    if (navigation_handle->GetURL() == params.base_url &&
-        pending_entry_matches_handle &&
-        !pending_entry->GetBaseURLForDataURL().is_empty()) {
-      entry_for_request = pending_entry;
-      is_renderer_initiated = pending_entry->is_renderer_initiated();
+    // |params.base_url|. This is not the case for loads with invalid base urls.
+    if (request->common_params().url != params.base_url ||
+        pending_entry->GetBaseURLForDataURL().is_empty()) {
+      return false;
     }
   }
-
-  // There is no pending NavigationEntry in these cases, so pass 0 as the
-  // pending_nav_entry_id. If the previous handle was a prematurely aborted
-  // navigation loaded via LoadDataWithBaseURL, propagate the entry id.
-  return NavigationRequest::CreateForCommit(
-      frame_tree_node_, this, entry_for_request, params,
-      is_renderer_initiated /* is_renderer_initiated */,
-      false /* is_same_document */);
+  return true;
 }
 
 void RenderFrameHostImpl::BeforeUnloadTimeout() {
@@ -6065,6 +5994,7 @@ mojom::FrameNavigationControl* RenderFrameHostImpl::GetNavigationControl() {
 }
 
 bool RenderFrameHostImpl::ValidateDidCommitParams(
+    NavigationRequest* navigation_request,
     FrameHostMsg_DidCommitProvisionalLoad_Params* validated_params,
     bool is_same_document_navigation) {
   RenderProcessHost* process = GetProcess();
@@ -6102,8 +6032,9 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
     // Without error page isolation, a blocked navigation is expected to
     // commit in the old renderer process.  This may be true for subframe
     // navigations even when error page isolation is enabled for main frames.
-    if (GetNavigationHandle() && GetNavigationHandle()->GetNetErrorCode() ==
-                                     net::ERR_BLOCKED_BY_CLIENT) {
+    if (navigation_request &&
+        navigation_request->navigation_handle()->GetNetErrorCode() ==
+            net::ERR_BLOCKED_BY_CLIENT) {
       // Since this is known to be an error page commit, verify it happened in
       // a unique origin, terminating the renderer process otherwise.
       if (!validated_params->origin.opaque()) {
@@ -6174,8 +6105,8 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
                                             base::debug::CrashKeySize::Size32),
         bool_to_crash_key(IsCrossProcessSubframe()));
 
-    if (navigation_request_ && navigation_request_->navigation_handle()) {
-      NavigationHandleImpl* handle = navigation_request_->navigation_handle();
+    if (navigation_request && navigation_request->navigation_handle()) {
+      NavigationHandleImpl* handle = navigation_request->navigation_handle();
       base::debug::SetCrashKeyString(
           base::debug::AllocateCrashKeyString(
               "is_renderer_initiated", base::debug::CrashKeySize::Size32),
@@ -6256,20 +6187,59 @@ void RenderFrameHostImpl::UpdateSiteURL(const GURL& url,
 }
 
 bool RenderFrameHostImpl::DidCommitNavigationInternal(
-    NavigationRequest* navigation_request,
+    std::unique_ptr<NavigationRequest> navigation_request,
     FrameHostMsg_DidCommitProvisionalLoad_Params* validated_params,
     bool is_same_document_navigation) {
   // Sanity-check the page transition for frame type.
   DCHECK_EQ(ui::PageTransitionIsMainFrame(validated_params->transition),
             !GetParent());
 
-  if (navigation_request) {
-    OnCrossDocumentCommitProcessed(navigation_request,
-                                   blink::mojom::CommitResult::Ok);
+  // Check that the committing navigation token matches the navigation request.
+  std::unique_ptr<NavigationRequest> invalid_request = nullptr;
+  if (navigation_request &&
+      navigation_request->commit_params().navigation_token !=
+          validated_params->navigation_token) {
+    navigation_request.reset();
+    // TODO(clamy): We should kill the renderer in all cases where we expect to
+    // have a NavigationRequest matching the commit URL.
   }
 
-  if (!ValidateDidCommitParams(validated_params, is_same_document_navigation))
+  if (!ValidateDidCommitParams(navigation_request.get(), validated_params,
+                               is_same_document_navigation)) {
     return false;
+  }
+
+  if (navigation_request &&
+      navigation_request->common_params().url != validated_params->url) {
+    // At this point we know that the right/matching |navigation_request| has
+    // already been found based on token matching performed or the commit
+    // originated from a NavigationClient owned by the NavigationRequest. OTOH,
+    // we cannot use its NavigationHandle, because it has a mismatched URL
+    // (which would cause DCHECKs - for example in
+    // NavigationHandleImpl::DidCommitNavigation).
+    //
+    // Because of the above, if the URL does not match what the NavigationHandle
+    // expects, we want to treat the commit as a new navigation.
+    //
+    // The URL mismatch can happen when loading a Data navigation with
+    // LoadDataWithBaseURL.
+    // TODO(csharrison): Data navigations loaded with LoadDataWithBaseURL get
+    // reset here, because the NavigationHandle tracks the URL but the
+    // params.url tracks the data. The trick of saving the old entry ids for
+    // these navigations should go away when this is properly handled. See
+    // https://crbug.com/588317.
+    //
+    // Other cases are where URL mismatch can happen is when committing an error
+    // page - for example this can happen during CSP/frame-ancestors checks (see
+    // https://crbug.com/759184).
+    //
+    // TODO(clamy): We should support the URL filtering without deleting the
+    // request.
+
+    // Note: the NavigationRequest is not reset here, as this could potentially
+    // lead to the deletion of the pending NavigationEntry.
+    invalid_request = std::move(navigation_request);
+  }
 
   // Set is loading to true now if it has not been set yet. This happens for
   // renderer-initiated same-document navigations. It can also happen when a
@@ -6282,47 +6252,64 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
                                        was_loading);
   }
 
-  if (navigation_request_)
-    was_discarded_ = navigation_request_->commit_params().was_discarded;
+  if (navigation_request)
+    was_discarded_ = navigation_request->commit_params().was_discarded;
 
-  std::unique_ptr<NavigationRequest> committed_request;
-  if (is_same_document_navigation) {
-    committed_request =
-        TakeNavigationRequestForSameDocumentCommit(*validated_params);
-  } else {
-    committed_request = TakeNavigationRequestForCommit(*validated_params);
+  // If there is no valid NavigationRequest corresponding to this commit, create
+  // one in order to properly issue DidFinishNavigation calls to
+  // WebContentsObservers.
+  if (!navigation_request) {
+    // First check if there was a request for this navigation that cannot be
+    // used due to URL mismatch. If that's the case and it corresponds to a
+    // navigation to the pending NavigationEntry, the new request should be
+    // associated with the pending NavigationEntry as well so that the pending
+    // NavigationEntry is properly committed.
+    NavigationEntryImpl* entry_for_navigation = nullptr;
+    if (invalid_request && NavigationRequestWasIntendedForPendingEntry(
+                               invalid_request.get(), *validated_params,
+                               is_same_document_navigation)) {
+      entry_for_navigation = NavigationEntryImpl::FromNavigationEntry(
+          frame_tree_node()->navigator()->GetController()->GetPendingEntry());
+    }
+
+    navigation_request = CreateNavigationRequestForCommit(
+        *validated_params, is_same_document_navigation, entry_for_navigation);
   }
 
-  DCHECK(committed_request);
-  DCHECK(committed_request->navigation_handle());
+  DCHECK(navigation_request);
+  DCHECK(navigation_request->navigation_handle());
 
   // Update the page transition. For subframe navigations, the renderer process
   // only gives the correct page transition at commit time.
   // TODO(clamy): We should get the correct page transition when starting the
   // request.
-  committed_request->set_transition(validated_params->transition);
+  navigation_request->set_transition(validated_params->transition);
 
-  committed_request->set_has_user_gesture(validated_params->gesture ==
-                                          NavigationGestureUser);
+  navigation_request->set_has_user_gesture(validated_params->gesture ==
+                                           NavigationGestureUser);
 
   UpdateSiteURL(validated_params->url, validated_params->url_is_unreachable);
 
   // Set the state whether this navigation is to an MHTML document, since there
   // are certain security checks that we cannot apply to subframes in MHTML
   // documents. Do not trust renderer data when determining that, rather use
-  // the |committed_request|, which was generated and stays browser side.
+  // the |navigation_request|, which was generated and stays browser side.
   is_mhtml_document_ =
-      (committed_request->GetMimeType() == "multipart/related" ||
-       committed_request->GetMimeType() == "message/rfc822");
+      (navigation_request->GetMimeType() == "multipart/related" ||
+       navigation_request->GetMimeType() == "message/rfc822");
 
   accessibility_reset_count_ = 0;
   appcache_handle_ =
-      committed_request->navigation_handle()->TakeAppCacheHandle();
+      navigation_request->navigation_handle()->TakeAppCacheHandle();
   frame_tree_node()->navigator()->DidNavigate(this, *validated_params,
-                                              std::move(committed_request),
+                                              std::move(navigation_request),
                                               is_same_document_navigation);
-  if (!is_same_document_navigation)
-    navigation_request_.reset();
+
+  // TODO(clamy): We should stop having a special case for same-document
+  // navigation and just put them in the general map of NavigationRequests.
+  if (is_same_document_navigation && invalid_request)
+    same_document_navigation_request_ = std::move(invalid_request);
+
   return true;
 }
 
@@ -6508,7 +6495,7 @@ void RenderFrameHostImpl::SendCommitFailedNavigation(
 // Called when the renderer navigates.  For every frame loaded, we'll get this
 // notification containing parameters identifying the navigation.
 void RenderFrameHostImpl::DidCommitNavigation(
-    NavigationRequest* committing_navigation_request,
+    std::unique_ptr<NavigationRequest> committing_navigation_request,
     std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
         validated_params,
     mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params) {
@@ -6614,7 +6601,7 @@ void RenderFrameHostImpl::DidCommitNavigation(
     // therefore the global object is not replaced.
   }
 
-  if (!DidCommitNavigationInternal(committing_navigation_request,
+  if (!DidCommitNavigationInternal(std::move(committing_navigation_request),
                                    validated_params.get(),
                                    false /* is_same_document_navigation */)) {
     return;

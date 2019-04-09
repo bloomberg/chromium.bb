@@ -164,7 +164,8 @@ CommonNavigationParams::CommonNavigationParams(
 
 CommonNavigationParams::~CommonNavigationParams() = default;
 
-CommitNavigationParams::CommitNavigationParams() = default;
+CommitNavigationParams::CommitNavigationParams()
+    : navigation_token(base::UnguessableToken::Create()) {}
 
 CommitNavigationParams::CommitNavigationParams(
     const base::Optional<url::Origin>& origin_to_commit,
@@ -198,7 +199,8 @@ CommitNavigationParams::CommitNavigationParams(
       current_history_list_offset(current_history_list_offset),
       current_history_list_length(current_history_list_length),
       is_view_source(is_view_source),
-      should_clear_history_list(should_clear_history_list) {}
+      should_clear_history_list(should_clear_history_list),
+      navigation_token(base::UnguessableToken::Create()) {}
 
 CommitNavigationParams::CommitNavigationParams(
     const CommitNavigationParams& other) = default;

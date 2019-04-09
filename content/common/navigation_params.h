@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/common/content_security_policy/content_security_policy.h"
@@ -395,6 +396,12 @@ struct CONTENT_EXPORT CommitNavigationParams {
   // start it. `was_activated` will answer the former question while
   // `user_gesture` will answer the latter.
   WasActivatedOption was_activated = WasActivatedOption::kUnknown;
+
+  // A token that should be passed to the browser process in
+  // DidCommitProvisionalLoadParams.
+  // TODO(clamy): Remove this once NavigationClient has shipped and
+  // same-document browser-initiated navigations are properly handled as well.
+  base::UnguessableToken navigation_token;
 
 #if defined(OS_ANDROID)
   // The real content of the data: URL. Only used in Android WebView for
