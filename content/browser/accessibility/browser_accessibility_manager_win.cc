@@ -75,6 +75,15 @@ HWND BrowserAccessibilityManagerWin::GetParentHWND() {
   return delegate->AccessibilityGetAcceleratedWidget();
 }
 
+void BrowserAccessibilityManagerWin::OnSubtreeWillBeDeleted(ui::AXTree* tree,
+                                                            ui::AXNode* node) {
+  BrowserAccessibilityManager::OnSubtreeWillBeDeleted(tree, node);
+
+  BrowserAccessibility* obj = GetFromAXNode(node);
+  FireWinAccessibilityEvent(EVENT_OBJECT_HIDE, obj);
+  FireUiaStructureChangedEvent(StructureChangeType_ChildRemoved, obj);
+}
+
 void BrowserAccessibilityManagerWin::UserIsReloading() {
   if (GetRoot())
     FireWinAccessibilityEvent(IA2_EVENT_DOCUMENT_RELOAD, GetRoot());
@@ -107,18 +116,21 @@ void BrowserAccessibilityManagerWin::FireBlinkEvent(
         FireUiaAccessibilityEvent(UIA_Invoke_InvokedEventId, node);
       break;
     case ax::mojom::Event::kEndOfTest: {
-      // Event tests use kEndOfTest as a sentinel to mark the end of the test.
-      Microsoft::WRL::ComPtr<IUIAutomationRegistrar> registrar;
-      CoCreateInstance(CLSID_CUIAutomationRegistrar, NULL, CLSCTX_INPROC_SERVER,
-                       IID_IUIAutomationRegistrar, &registrar);
-      CHECK(registrar.Get());
-      UIAutomationEventInfo custom_event = {kUiaTestCompleteSentinelGuid,
-                                            kUiaTestCompleteSentinel};
-      EVENTID custom_event_id = 0;
-      CHECK(
-          SUCCEEDED(registrar->RegisterEvent(&custom_event, &custom_event_id)));
+      if (::switches::IsExperimentalAccessibilityPlatformUIAEnabled()) {
+        // Event tests use kEndOfTest as a sentinel to mark the end of the test.
+        Microsoft::WRL::ComPtr<IUIAutomationRegistrar> registrar;
+        CoCreateInstance(CLSID_CUIAutomationRegistrar, NULL,
+                         CLSCTX_INPROC_SERVER, IID_IUIAutomationRegistrar,
+                         &registrar);
+        CHECK(registrar.Get());
+        UIAutomationEventInfo custom_event = {kUiaTestCompleteSentinelGuid,
+                                              kUiaTestCompleteSentinel};
+        EVENTID custom_event_id = 0;
+        CHECK(SUCCEEDED(
+            registrar->RegisterEvent(&custom_event, &custom_event_id)));
 
-      FireUiaAccessibilityEvent(custom_event_id, node);
+        FireUiaAccessibilityEvent(custom_event_id, node);
+      }
       break;
     }
     case ax::mojom::Event::kLocationChanged:
@@ -175,6 +187,7 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       break;
     case ui::AXEventGenerator::Event::CHILDREN_CHANGED:
       FireWinAccessibilityEvent(EVENT_OBJECT_REORDER, node);
+      FireUiaStructureChangedEvent(StructureChangeType_ChildrenReordered, node);
       break;
     case ui::AXEventGenerator::Event::CLASS_NAME_CHANGED:
       FireUiaPropertyChangedEvent(UIA_ClassNamePropertyId, node);
@@ -295,6 +308,10 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::SET_SIZE_CHANGED:
       FireUiaPropertyChangedEvent(UIA_SizeOfSetPropertyId, node);
       break;
+    case ui::AXEventGenerator::Event::SUBTREE_CREATED:
+      FireWinAccessibilityEvent(EVENT_OBJECT_SHOW, node);
+      FireUiaStructureChangedEvent(StructureChangeType_ChildAdded, node);
+      break;
     case ui::AXEventGenerator::Event::VALUE_CHANGED:
       FireWinAccessibilityEvent(EVENT_OBJECT_VALUECHANGE, node);
       if (ui::IsRangeValueSupported(node->GetData()))
@@ -374,6 +391,8 @@ void BrowserAccessibilityManagerWin::FireUiaAccessibilityEvent(
 void BrowserAccessibilityManagerWin::FireUiaPropertyChangedEvent(
     LONG uia_property,
     BrowserAccessibility* node) {
+  if (!::switches::IsExperimentalAccessibilityPlatformUIAEnabled())
+    return;
   if (!ShouldFireEventForNode(node))
     return;
 
@@ -387,6 +406,42 @@ void BrowserAccessibilityManagerWin::FireUiaPropertyChangedEvent(
           provider->GetPropertyValue(uia_property, new_value.Receive()))) {
     ::UiaRaiseAutomationPropertyChangedEvent(provider, uia_property, old_value,
                                              new_value);
+  }
+}
+
+void BrowserAccessibilityManagerWin::FireUiaStructureChangedEvent(
+    StructureChangeType change_type,
+    BrowserAccessibility* node) {
+  if (!::switches::IsExperimentalAccessibilityPlatformUIAEnabled())
+    return;
+  if (!ShouldFireEventForNode(node))
+    return;
+
+  auto* provider = ToBrowserAccessibilityWin(node);
+  auto* provider_com = provider ? provider->GetCOM() : nullptr;
+  if (!provider || !provider_com)
+    return;
+
+  switch (change_type) {
+    case StructureChangeType_ChildRemoved: {
+      // 'ChildRemoved' fires on the parent and provides the runtime ID of
+      // the removed child (which was passed as |node|).
+      auto* parent = ToBrowserAccessibilityWin(node->PlatformGetParent());
+      auto* parent_com = parent ? parent->GetCOM() : nullptr;
+      if (parent && parent_com) {
+        ui::AXPlatformNodeWin::RuntimeIdArray runtime_id;
+        provider_com->GetRuntimeIdArray(runtime_id);
+        UiaRaiseStructureChangedEvent(parent_com, change_type,
+                                      runtime_id.data(), runtime_id.size());
+      }
+      break;
+    }
+
+    default: {
+      // All other types are fired on |node|.  For 'ChildAdded' |node| is the
+      // child that was added; for other types, it's the parent container.
+      UiaRaiseStructureChangedEvent(provider_com, change_type, nullptr, 0);
+    }
   }
 }
 
@@ -529,11 +584,13 @@ bool BrowserAccessibilityManagerWin::ShouldFireEventForNode(
   if (!node || !node->CanFireEvents())
     return false;
 
-  // If there's no root delegate, this may be a new frame that hasn't
-  // yet been swapped in or added to the frame tree. Suppress firing events
-  // until then.
+  // If the root delegate isn't the main-frame, this may be a new frame that
+  // hasn't yet been swapped in or added to the frame tree. Suppress firing
+  // events until then.
   BrowserAccessibilityDelegate* root_delegate = GetDelegateFromRootManager();
   if (!root_delegate)
+    return false;
+  if (!root_delegate->AccessibilityIsMainFrame())
     return false;
 
   // Don't fire events when this document might be stale as the user has

@@ -11,6 +11,7 @@
 #include <uiautomation.h>
 #include <wrl/client.h>
 
+#include <array>
 #include <map>
 #include <string>
 #include <vector>
@@ -999,6 +1000,10 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
 
   // IRawElementProviderSimple support method.
   bool IsPatternProviderSupported(PATTERNID pattern_id);
+
+  // Helper to return the runtime id (without going through a SAFEARRAY)
+  using RuntimeIdArray = std::array<int, 2>;
+  void GetRuntimeIdArray(RuntimeIdArray& runtime_id);
 
  protected:
   // This is hard-coded; all products based on the Chromium engine will have the

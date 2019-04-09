@@ -463,10 +463,11 @@ void AXEventGenerator::OnAtomicUpdateFinished(
                      ax::mojom::StringAttribute::kName)) {
         FireLiveRegionEvents(change.node);
       }
-    }
-
-    if (change.type != NODE_CREATED && change.type != SUBTREE_CREATED)
+      if (change.type == SUBTREE_CREATED)
+        AddEvent(change.node, Event::SUBTREE_CREATED);
+    } else {
       FireRelationSourceEvents(tree, change.node);
+    }
   }
 
   FireActiveDescendantEvents();

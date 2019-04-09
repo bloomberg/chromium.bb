@@ -40,6 +40,9 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   // Get the closest containing HWND.
   HWND GetParentHWND();
 
+  // AXEventGenerator methods
+  void OnSubtreeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
+
   // BrowserAccessibilityManager methods
   void UserIsReloading() override;
   BrowserAccessibility* GetFocus() override;
@@ -58,6 +61,8 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   void FireUiaAccessibilityEvent(LONG uia_event, BrowserAccessibility* node);
   void FireUiaPropertyChangedEvent(LONG uia_property,
                                    BrowserAccessibility* node);
+  void FireUiaStructureChangedEvent(StructureChangeType change_type,
+                                    BrowserAccessibility* node);
   void FireUiaTextContainerEvent(LONG uia_event, BrowserAccessibility* node);
 
   // Track this object and post a VISIBLE_DATA_CHANGED notification when

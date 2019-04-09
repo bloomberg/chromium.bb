@@ -84,6 +84,7 @@ class AccessibilityEventRecorderUia : public AccessibilityEventRecorder {
     class EventHandler : public CComObjectRootEx<CComMultiThreadModel>,
                          public IUIAutomationFocusChangedEventHandler,
                          public IUIAutomationPropertyChangedEventHandler,
+                         public IUIAutomationStructureChangedEventHandler,
                          public IUIAutomationEventHandler {
      public:
       EventHandler();
@@ -96,6 +97,7 @@ class AccessibilityEventRecorderUia : public AccessibilityEventRecorder {
       BEGIN_COM_MAP(EventHandler)
       COM_INTERFACE_ENTRY(IUIAutomationFocusChangedEventHandler)
       COM_INTERFACE_ENTRY(IUIAutomationPropertyChangedEventHandler)
+      COM_INTERFACE_ENTRY(IUIAutomationStructureChangedEventHandler)
       COM_INTERFACE_ENTRY(IUIAutomationEventHandler)
       END_COM_MAP()
 
@@ -107,6 +109,12 @@ class AccessibilityEventRecorderUia : public AccessibilityEventRecorder {
       (IUIAutomationElement* sender,
        PROPERTYID property_id,
        VARIANT new_value) override;
+
+      // IUIAutomationStructureChangedEventHandler interface.
+      STDMETHOD(HandleStructureChangedEvent)
+      (IUIAutomationElement* sender,
+       StructureChangeType change_type,
+       SAFEARRAY* runtime_id) override;
 
       // IUIAutomationEventHandler interface.
       STDMETHOD(HandleAutomationEvent)
