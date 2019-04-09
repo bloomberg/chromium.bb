@@ -16,6 +16,7 @@ WASM = -s WASM=1 -fno-exceptions -Wall
 WOPT = -Os --llvm-opts 3 \
   -s STRICT=1 \
   -s ALLOW_MEMORY_GROWTH=1 \
+  -s ENVIRONMENT='web' \
   -s NO_DYNAMIC_EXECUTION=1 \
   -s EXTRA_EXPORTED_RUNTIME_METHODS='$(WAPI)' \
   -s RESERVED_FUNCTION_POINTERS=2
