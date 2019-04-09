@@ -128,10 +128,10 @@ void PageNodeImpl::OnMainFrameNavigationCommitted(
   SendEvent(resource_coordinator::mojom::Event::kNavigationCommitted);
 }
 
-std::set<ProcessNodeImpl*> PageNodeImpl::GetAssociatedProcessCoordinationUnits()
-    const {
+base::flat_set<ProcessNodeImpl*>
+PageNodeImpl::GetAssociatedProcessCoordinationUnits() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::set<ProcessNodeImpl*> process_nodes;
+  base::flat_set<ProcessNodeImpl*> process_nodes;
   ForAllFrameNodes([&process_nodes](FrameNodeImpl* frame_node) -> bool {
     if (auto* process_node = frame_node->process_node())
       process_nodes.insert(process_node);

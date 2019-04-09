@@ -101,7 +101,7 @@ int FrameNodeImpl::frame_tree_node_id() const {
   return frame_tree_node_id_;
 }
 
-const std::set<FrameNodeImpl*>& FrameNodeImpl::child_frame_nodes() const {
+const base::flat_set<FrameNodeImpl*>& FrameNodeImpl::child_frame_nodes() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return child_frame_nodes_;
 }

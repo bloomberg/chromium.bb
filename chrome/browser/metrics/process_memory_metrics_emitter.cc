@@ -4,10 +4,9 @@
 
 #include "chrome/browser/metrics/process_memory_metrics_emitter.h"
 
-#include <set>
-
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/containers/flat_set.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/memory_dump_request_args.h"
@@ -764,7 +763,7 @@ void ProcessMemoryMetricsEmitter::GetProcessToPageInfoMap(
     process_info.pid = process_node->process_id();
     process_info.launch_time = process_node->launch_time();
 
-    std::set<performance_manager::PageNodeImpl*> page_nodes =
+    base::flat_set<performance_manager::PageNodeImpl*> page_nodes =
         process_node->GetAssociatedPageCoordinationUnits();
     for (performance_manager::PageNodeImpl* page_node : page_nodes) {
       if (page_node->ukm_source_id() == ukm::kInvalidSourceId)

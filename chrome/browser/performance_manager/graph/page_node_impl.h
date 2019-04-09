@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/performance_manager/graph/node_attached_data.h"
@@ -44,7 +45,8 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
   // There is no direct relationship between processes and pages. However,
   // frames are accessible by both processes and frames, so we find all of the
   // processes that are reachable from the pages's accessible frames.
-  std::set<ProcessNodeImpl*> GetAssociatedProcessCoordinationUnits() const;
+  base::flat_set<ProcessNodeImpl*> GetAssociatedProcessCoordinationUnits()
+      const;
 
   // Returns the average CPU usage that can be attributed to this page over the
   // last measurement period. CPU usage is expressed as the average percentage
@@ -71,7 +73,7 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
   bool is_loading() const { return is_loading_.value(); }
   ukm::SourceId ukm_source_id() const { return ukm_source_id_.value(); }
   LifecycleState lifecycle_state() const { return lifecycle_state_.value(); }
-  const std::set<FrameNodeImpl*>& main_frame_nodes() const {
+  const base::flat_set<FrameNodeImpl*>& main_frame_nodes() const {
     return main_frame_nodes_;
   }
   base::TimeTicks usage_estimate_time() const { return usage_estimate_time_; }
@@ -181,7 +183,7 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
   // in a page, among other reasons because during main frame navigation, the
   // pending navigation will coexist with the existing main frame until it's
   // committed.
-  std::set<FrameNodeImpl*> main_frame_nodes_;
+  base::flat_set<FrameNodeImpl*> main_frame_nodes_;
   // The total count of frames that tally up to this page.
   size_t frame_node_count_ = 0;
 

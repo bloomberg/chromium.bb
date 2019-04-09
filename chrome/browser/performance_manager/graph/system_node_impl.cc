@@ -4,15 +4,16 @@
 
 #include "chrome/browser/performance_manager/graph/system_node_impl.h"
 
-#include "chrome/browser/performance_manager/graph/frame_node_impl.h"
-#include "chrome/browser/performance_manager/graph/page_node_impl.h"
-#include "chrome/browser/performance_manager/graph/process_node_impl.h"
-
 #include <algorithm>
 #include <iterator>
 
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/process/process_handle.h"
+
+#include "chrome/browser/performance_manager/graph/frame_node_impl.h"
+#include "chrome/browser/performance_manager/graph/page_node_impl.h"
+#include "chrome/browser/performance_manager/graph/process_node_impl.h"
 
 namespace performance_manager {
 
@@ -57,7 +58,7 @@ void SystemNodeImpl::DistributeMeasurementBatch(
 
   // Keep track of the pages updated with CPU cost for the second pass,
   // where their memory usage is updated.
-  std::set<PageNodeImpl*> pages;
+  base::flat_set<PageNodeImpl*> pages;
   std::vector<ProcessNodeImpl*> found_processes;
   for (const auto& measurement : measurement_batch->measurements) {
     ProcessNodeImpl* process = graph()->GetProcessNodeByPid(measurement.pid);
@@ -68,7 +69,7 @@ void SystemNodeImpl::DistributeMeasurementBatch(
 
       // Distribute the CPU delta to the pages that own the frames in this
       // process.
-      std::set<FrameNodeImpl*> frames = process->GetFrameNodes();
+      base::flat_set<FrameNodeImpl*> frames = process->GetFrameNodes();
       if (!frames.empty()) {
         // To make sure we don't systemically truncate the remainder of the
         // delta, simply subtract the remainder and "hold it back" from the

@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_FRAME_NODE_IMPL_H_
 
 #include <memory>
-#include <set>
 
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "chrome/browser/performance_manager/graph/node_base.h"
 #include "chrome/browser/performance_manager/observers/graph_observer.h"
@@ -58,7 +58,7 @@ class FrameNodeImpl
   int frame_tree_node_id() const;
 
   // Getters for non-const properties. These are not thread safe.
-  const std::set<FrameNodeImpl*>& child_frame_nodes() const;
+  const base::flat_set<FrameNodeImpl*>& child_frame_nodes() const;
   resource_coordinator::mojom::LifecycleState lifecycle_state() const;
   bool has_nonempty_beforeunload() const;
   const GURL& url() const;
@@ -103,7 +103,7 @@ class FrameNodeImpl
   // in a new frame that will soon replace the existing one.
   const int frame_tree_node_id_;
 
-  std::set<FrameNodeImpl*> child_frame_nodes_;
+  base::flat_set<FrameNodeImpl*> child_frame_nodes_;
   resource_coordinator::mojom::LifecycleState lifecycle_state_ =
       resource_coordinator::mojom::LifecycleState::kRunning;
   bool has_nonempty_beforeunload_ = false;
