@@ -138,12 +138,7 @@ config("compiler") {
     }
 
     if (use_clang_diagnostics_format) {
-      cflags += [
-        "-Xclang",
-        "-fdiagnostics-format",
-        "-Xclang",
-        "clang",
-      ]
+      cflags += [ "/clang:-fdiagnostics-format=clang" ]
     }
 
     # Clang runtime libraries, such as the sanitizer runtimes, live here.

@@ -654,9 +654,10 @@ config("compiler") {
   if (compiler_timing) {
     if (is_clang) {
       if (is_win) {
-        cflags += [ "-Xclang" ]
+        cflags += [ "/clang:-ftime-report" ]
+      } else {
+        cflags += [ "-ftime-report" ]
       }
-      cflags += [ "-ftime-report" ]
     } else if (is_win) {
       cflags += [
         # "Documented" here:
