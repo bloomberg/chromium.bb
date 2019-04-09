@@ -528,6 +528,12 @@ class ChannelMac : public Channel,
       }
       OnError(Error::kDisconnected);
       return;
+    } else if (header->msgh_id == MACH_NOTIFY_SEND_ONCE) {
+      // Notification of an extant send-once right being destroyed. This is
+      // sent for the right allocated in RequestSendDeadNameNotification(),
+      // and no action needs to be taken. Since it is ignored, the kernel
+      // audit token need not be checked.
+      return;
     }
 
     if (header->msgh_size < sizeof(mach_msg_base_t)) {
