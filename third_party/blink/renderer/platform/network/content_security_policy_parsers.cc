@@ -6,8 +6,8 @@
 
 #include "third_party/blink/public/mojom/csp/content_security_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/web_content_security_policy.h"
-#include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/text/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 
 namespace blink {
