@@ -190,7 +190,7 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
   // PolicyStorageType::kInMemory.
   void set_server_backed_state_keys(
       const std::vector<std::string>& state_keys) {
-    DCHECK(policy_storage_ == PolicyStorageType::kInMemory);
+    DCHECK_EQ(policy_storage_, PolicyStorageType::kInMemory);
     server_backed_state_keys_ = state_keys;
   }
 
@@ -249,15 +249,15 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
   // This simulates a policy load error in session manager.
   bool force_retrieve_policy_load_error_ = false;
 
-  int clear_forced_re_enrollment_vpd_call_count_;
-  int start_device_wipe_call_count_;
-  int request_lock_screen_call_count_;
-  int notify_lock_screen_shown_call_count_;
-  int notify_lock_screen_dismissed_call_count_;
-  int start_tpm_firmware_update_call_count_;
-  bool screen_is_locked_;
+  int clear_forced_re_enrollment_vpd_call_count_ = 0;
+  int start_device_wipe_call_count_ = 0;
+  int request_lock_screen_call_count_ = 0;
+  int notify_lock_screen_shown_call_count_ = 0;
+  int notify_lock_screen_dismissed_call_count_ = 0;
+  int start_tpm_firmware_update_call_count_ = 0;
+  bool screen_is_locked_ = false;
 
-  bool arc_available_;
+  bool arc_available_ = false;
   base::TimeTicks arc_start_time_;
 
   bool low_disk_ = false;
@@ -271,13 +271,13 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
   // Contains last requst passed to StartArcInstance
   login_manager::UpgradeArcContainerRequest last_upgrade_arc_request_;
 
-  StubDelegate* delegate_;
+  StubDelegate* delegate_ = nullptr;
 
   // The last-set flags for user set through |SetFlagsForUser|.
   std::map<cryptohome::AccountIdentifier, std::vector<std::string>>
       flags_for_user_;
 
-  base::WeakPtrFactory<FakeSessionManagerClient> weak_ptr_factory_;
+  base::WeakPtrFactory<FakeSessionManagerClient> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(FakeSessionManagerClient);
 };
 

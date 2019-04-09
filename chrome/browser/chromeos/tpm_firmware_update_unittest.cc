@@ -57,12 +57,10 @@ class TPMFirmwareUpdateTest : public testing::Test {
     kAvailable,
   };
 
-  TPMFirmwareUpdateTest() = default;
-
-  void SetUp() override {
+  TPMFirmwareUpdateTest() {
     feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
     feature_list_->InitAndEnableFeature(features::kTPMFirmwareUpdate);
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    CHECK(temp_dir_.CreateUniqueTempDir());
     base::FilePath update_location_path =
         temp_dir_.GetPath().AppendASCII("tpm_firmware_update_location");
     path_override_location_ = std::make_unique<base::ScopedPathOverride>(
@@ -128,10 +126,7 @@ class TPMFirmwareUpdateTest : public testing::Test {
 
 class TPMFirmwareUpdateModesTest : public TPMFirmwareUpdateTest {
  public:
-  TPMFirmwareUpdateModesTest() = default;
-
-  void SetUp() override {
-    TPMFirmwareUpdateTest::SetUp();
+  TPMFirmwareUpdateModesTest() {
     callback_ = base::BindOnce(&TPMFirmwareUpdateModesTest::RecordResponse,
                                base::Unretained(this));
   }
@@ -238,8 +233,7 @@ TEST_F(TPMFirmwareUpdateModesTest, Timeout) {
 
 class TPMFirmwareUpdateModesEnterpriseTest : public TPMFirmwareUpdateModesTest {
  public:
-  void SetUp() override {
-    TPMFirmwareUpdateModesTest::SetUp();
+  TPMFirmwareUpdateModesEnterpriseTest() {
     cros_settings_test_helper_.ReplaceDeviceSettingsProviderWithStub();
     cros_settings_test_helper_.InstallAttributes()->SetCloudManaged(
         "example.com", "fake-device-id");
@@ -322,10 +316,7 @@ TEST_F(TPMFirmwareUpdateModesEnterpriseTest, VulnerableSRK) {
 
 class TPMFirmwareAutoUpdateTest : public TPMFirmwareUpdateTest {
  public:
-  TPMFirmwareAutoUpdateTest() = default;
-
-  void SetUp() override {
-    TPMFirmwareUpdateTest::SetUp();
+  TPMFirmwareAutoUpdateTest() {
     callback_ = base::BindOnce(&TPMFirmwareAutoUpdateTest::RecordResponse,
                                base::Unretained(this));
   }

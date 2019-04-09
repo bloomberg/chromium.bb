@@ -23,14 +23,13 @@ namespace policy {
 
 class TPMAutoUpdateModePolicyHandlerTest : public testing::Test {
  public:
-  TPMAutoUpdateModePolicyHandlerTest() : weak_factory_(this) {}
-
-  // testing::Test:
-  void SetUp() override {
+  TPMAutoUpdateModePolicyHandlerTest() {
     chromeos::SessionManagerClient::InitializeFakeInMemory();
   }
 
-  void TearDown() override { chromeos::SessionManagerClient::Shutdown(); }
+  ~TPMAutoUpdateModePolicyHandlerTest() override {
+    chromeos::SessionManagerClient::Shutdown();
+  }
 
   void SetAutoUpdateMode(AutoUpdateMode auto_update_mode) {
     base::DictionaryValue dict;
@@ -55,7 +54,7 @@ class TPMAutoUpdateModePolicyHandlerTest : public testing::Test {
                                                           "fake-id")};
   chromeos::ScopedTestingCrosSettings scoped_testing_cros_settings_;
 
-  base::WeakPtrFactory<TPMAutoUpdateModePolicyHandlerTest> weak_factory_;
+  base::WeakPtrFactory<TPMAutoUpdateModePolicyHandlerTest> weak_factory_{this};
 };
 
 // Verify if the TPM updates are triggered (or not) according to the device

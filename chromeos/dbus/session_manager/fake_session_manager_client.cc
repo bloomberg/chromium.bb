@@ -221,17 +221,7 @@ FakeSessionManagerClient::FakeSessionManagerClient()
 
 FakeSessionManagerClient::FakeSessionManagerClient(
     PolicyStorageType policy_storage)
-    : policy_storage_(policy_storage),
-      clear_forced_re_enrollment_vpd_call_count_(0),
-      start_device_wipe_call_count_(0),
-      request_lock_screen_call_count_(0),
-      notify_lock_screen_shown_call_count_(0),
-      notify_lock_screen_dismissed_call_count_(0),
-      start_tpm_firmware_update_call_count_(0),
-      screen_is_locked_(false),
-      arc_available_(false),
-      delegate_(nullptr),
-      weak_ptr_factory_(this) {
+    : policy_storage_(policy_storage) {
   DCHECK(!g_instance);
   g_instance = this;
 }
