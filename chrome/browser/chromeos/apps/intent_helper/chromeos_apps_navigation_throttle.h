@@ -102,7 +102,10 @@ class ChromeOsAppsNavigationThrottle : public apps::AppsNavigationThrottle {
       apps::AppsNavigationAction action,
       std::vector<apps::IntentPickerAppInfo> apps) override;
 
-  PickerShowState GetPickerShowState() override;
+  PickerShowState GetPickerShowState(
+      const std::vector<apps::IntentPickerAppInfo>& apps_for_picker,
+      content::WebContents* web_contents,
+      const GURL& url) override;
 
   IntentPickerResponse GetOnPickerClosedCallback(
       content::WebContents* web_contents,
@@ -110,6 +113,13 @@ class ChromeOsAppsNavigationThrottle : public apps::AppsNavigationThrottle {
       const GURL& url) override;
 
   void CloseTab();
+
+  // Whether or not the intent picker UI should be displayed without the user
+  // clicking in the omnibox's icon.
+  bool ShouldAutoDisplayUi(
+      const std::vector<apps::IntentPickerAppInfo>& apps_for_picker,
+      content::WebContents* web_contents,
+      const GURL& url);
 
   // True if ARC is enabled, false otherwise.
   const bool arc_enabled_;

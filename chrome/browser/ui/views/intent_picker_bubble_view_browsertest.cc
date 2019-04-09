@@ -31,9 +31,8 @@ class IntentPickerBubbleViewBrowserTest
 };
 
 // Tests that clicking a link from a tabbed browser to within the scope of an
-// installed app shows the intent picker with the installed app details.
-// For chrome OS platform, the intent picker bubble will pop out while for
-// other platforms, only intent picker icon will be show in Omnibox.
+// installed app shows the intent picker icon in Omnibox. The intent picker
+// bubble will only show up for android apps which is too hard to test.
 IN_PROC_BROWSER_TEST_P(IntentPickerBubbleViewBrowserTest,
                        NavigationToInScopeLinkShowsIntentPicker) {
   InstallTestBookmarkApp();
@@ -55,15 +54,7 @@ IN_PROC_BROWSER_TEST_P(IntentPickerBubbleViewBrowserTest,
 
   IntentPickerBubbleView* intent_picker =
       IntentPickerBubbleView::intent_picker_bubble();
-#if defined(OS_CHROMEOS)
-  ASSERT_TRUE(intent_picker);
-  EXPECT_EQ(web_contents, intent_picker->web_contents());
-  EXPECT_EQ(1u, intent_picker->GetAppInfoForTesting().size());
-  EXPECT_EQ(GetAppName(),
-            intent_picker->GetAppInfoForTesting()[0].display_name);
-#else
   EXPECT_FALSE(intent_picker);
-#endif
 }
 
 // Tests that clicking a link from a tabbed browser to outside the scope of an

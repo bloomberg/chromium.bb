@@ -4,7 +4,6 @@
 
 #include "chrome/browser/apps/intent_helper/apps_navigation_throttle.h"
 
-#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -350,9 +349,11 @@ void AppsNavigationThrottle::ShowIntentPickerForApps(
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (!browser)
     return;
-  const PickerShowState picker_show_state = GetPickerShowState();
+  const PickerShowState picker_show_state =
+      GetPickerShowState(apps, web_contents, url);
   switch (picker_show_state) {
     case PickerShowState::kOmnibox:
+      ui_displayed_ = false;
       browser->window()->SetIntentPickerViewVisibility(true);
       break;
     case PickerShowState::kPopOut:
@@ -365,7 +366,10 @@ void AppsNavigationThrottle::ShowIntentPickerForApps(
 }
 
 AppsNavigationThrottle::PickerShowState
-AppsNavigationThrottle::GetPickerShowState() {
+AppsNavigationThrottle::GetPickerShowState(
+    const std::vector<IntentPickerAppInfo>& apps_for_picker,
+    content::WebContents* web_contents,
+    const GURL& url) {
   return PickerShowState::kOmnibox;
 }
 
@@ -375,26 +379,6 @@ IntentPickerResponse AppsNavigationThrottle::GetOnPickerClosedCallback(
     const GURL& url) {
   return base::BindOnce(&OnIntentPickerClosed, web_contents,
                         ui_auto_display_service, url);
-}
-
-bool AppsNavigationThrottle::ShouldAutoDisplayUi(
-    const std::vector<IntentPickerAppInfo>& apps_for_picker,
-    content::WebContents* web_contents,
-    const GURL& url) {
-  if (apps_for_picker.empty())
-    return false;
-
-  // Check if all the app candidates are PWAs.
-  bool only_pwa_apps =
-      std::all_of(apps_for_picker.begin(), apps_for_picker.end(),
-                  [](const IntentPickerAppInfo& app_info) {
-                    return app_info.type == apps::mojom::AppType::kWeb;
-                  });
-  if (only_pwa_apps)
-    return false;
-
-  DCHECK(ui_auto_display_service_);
-  return ui_auto_display_service_->ShouldAutoDisplayUi(url);
 }
 
 // static
