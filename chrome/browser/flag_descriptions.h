@@ -270,6 +270,9 @@ extern const char kEnableAutofillAccountWalletStorageDescription[];
 extern const char kEnableAutofillCreditCardAblationExperimentDisplayName[];
 extern const char kEnableAutofillCreditCardAblationExperimentDescription[];
 
+extern const char kEnableAutofillCreditCardAuthenticationName[];
+extern const char kEnableAutofillCreditCardAuthenticationDescription[];
+
 extern const char kEnableAutofillCreditCardLastUsedDateDisplayName[];
 extern const char kEnableAutofillCreditCardLastUsedDateDisplayDescription[];
 

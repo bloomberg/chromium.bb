@@ -34177,6 +34177,7 @@ from previous Chrome versions.
   <int value="1298981651" label="disable-new-task-manager"/>
   <int value="1300282719" label="OfflinePagesBackgroundLoading:enabled"/>
   <int value="1300753556" label="ManualPasswordGenerationAndroid:disabled"/>
+  <int value="1301902557" label="AutofillCreditCardAuthentication:disabled"/>
   <int value="1302421166" label="NativeNotifications:disabled"/>
   <int value="1304636193" label="ArcEnableUnifiedAudioFocus:enabled"/>
   <int value="1307003774" label="AutofillEnableCompanyName:disabled"/>
@@ -34293,6 +34294,7 @@ from previous Chrome versions.
   <int value="1479248574" label="disable-voice-input"/>
   <int value="1481562816" label="disable-password-link"/>
   <int value="1482039233" label="SearchSuggestionsOnLocalNtp:disabled"/>
+  <int value="1482839038" label="AutofillCreditCardAuthentication:enabled"/>
   <int value="1486171015" label="disable-fill-on-account-select"/>
   <int value="1487341558" label="MacViewsAutofillPopup:enabled"/>
   <int value="1488193175" label="ChromeOSAssistant:enabled"/>

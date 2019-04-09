@@ -4039,6 +4039,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-portals", flag_descriptions::kEnablePortalsName,
      flag_descriptions::kEnablePortalsDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kPortals)},
+    {"enable-autofill-credit-card-authentication",
+     flag_descriptions::kEnableAutofillCreditCardAuthenticationName,
+     flag_descriptions::kEnableAutofillCreditCardAuthenticationDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillCreditCardAuthentication)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

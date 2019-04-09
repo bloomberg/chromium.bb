@@ -402,6 +402,13 @@ const char kEnableAutofillCreditCardAblationExperimentDisplayName[] =
 const char kEnableAutofillCreditCardAblationExperimentDescription[] =
     "If enabled, credit card autofill suggestions will not display.";
 
+const char kEnableAutofillCreditCardAuthenticationName[] =
+    "Allow using platform authenticators to retrieve server cards";
+const char kEnableAutofillCreditCardAuthenticationDescription[] =
+    "When enabled, users will be given the option to use a platform "
+    "authenticator (if available) to verify card ownership when retrieving "
+    "credit cards from Google Payments.";
+
 const char kEnableAutofillCreditCardLastUsedDateDisplayName[] =
     "Display the last used date of a credit card in autofill.";
 const char kEnableAutofillCreditCardLastUsedDateDisplayDescription[] =
