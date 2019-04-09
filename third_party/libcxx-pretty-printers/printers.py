@@ -602,7 +602,7 @@ class SetPrinter:
 #        return 'set'
 
 
-class RbtreeIterator:
+class RbtreeIterator(Iterator):
     def __init__(self, rbtree):
         self.node = rbtree['__begin_node_']
         self.size = pair_to_tuple(rbtree['__pair3_'])[0]
@@ -705,7 +705,7 @@ class MapIteratorPrinter:
         return '[%s] %s' % (vals[0], vals[1])
 
 
-class HashtableIterator:
+class HashtableIterator(Iterator):
     def __init__(self, hashtable):
         self.node = pair_to_tuple(hashtable['__p1_'])[0]['__next_']
         self.size = pair_to_tuple(hashtable['__p2_'])[0]
