@@ -75,7 +75,7 @@ bool IsLazyLoadableImage(const LocalFrame* frame,
     return false;
 
   if (EqualIgnoringASCIICase(
-          html_image->FastGetAttribute(html_names::kLoadAttr), "lazy"))
+          html_image->FastGetAttribute(html_names::kLoadingAttr), "lazy"))
     return true;
 
   // Do not lazyload image elements created from javascript.
@@ -83,7 +83,7 @@ bool IsLazyLoadableImage(const LocalFrame* frame,
     return false;
 
   if (EqualIgnoringASCIICase(
-          html_image->FastGetAttribute(html_names::kLoadAttr), "eager") &&
+          html_image->FastGetAttribute(html_names::kLoadingAttr), "eager") &&
       !frame->GetDocument()->IsLazyLoadPolicyEnforced()) {
     return false;
   }

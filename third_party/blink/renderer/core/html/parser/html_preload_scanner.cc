@@ -150,7 +150,7 @@ class TokenPreloadScanner::StartTagScanner {
         referrer_policy_(network::mojom::ReferrerPolicy::kDefault),
         integrity_attr_set_(false),
         integrity_features_(features),
-        load_attr_value_(LoadAttrValue::kAuto),
+        loading_attr_value_(LoadingAttrValue::kAuto),
         width_attr_small_absolute_(false),
         height_attr_small_absolute_(false),
         inline_style_dimensions_small_(false),
@@ -288,10 +288,10 @@ class TokenPreloadScanner::StartTagScanner {
     request->SetCharset(Charset());
     request->SetDefer(defer_);
 
-    // If the 'lazyload' feature policy is enforced, the attribute value "lazy"
-    // for the 'load' attribute is considered as 'auto'.
-    if (load_attr_value_ != LoadAttrValue::kLazy &&
-        ((load_attr_value_ == LoadAttrValue::kEager &&
+    // If the 'lazyload' feature policy is enforced, the attribute value
+    // loading='lazy' is considered as 'auto'.
+    if (loading_attr_value_ != LoadingAttrValue::kLazy &&
+        ((loading_attr_value_ == LoadingAttrValue::kEager &&
           !document_parameters.lazyload_policy_enforced) ||
          (width_attr_small_absolute_ && height_attr_small_absolute_) ||
          inline_style_dimensions_small_)) {
@@ -310,7 +310,7 @@ class TokenPreloadScanner::StartTagScanner {
   }
 
  private:
-  enum class LoadAttrValue { kAuto, kLazy, kEager };
+  enum class LoadingAttrValue { kAuto, kLazy, kEager };
 
   template <typename NameType>
   void ProcessScriptAttribute(const NameType& attribute_name,
@@ -368,14 +368,15 @@ class TokenPreloadScanner::StartTagScanner {
                Match(attribute_name, kImportanceAttr) &&
                priority_hints_origin_trial_enabled_) {
       SetImportance(attribute_value);
-    } else if (load_attr_value_ == LoadAttrValue::kAuto &&
-               Match(attribute_name, kLoadAttr) &&
+    } else if (loading_attr_value_ == LoadingAttrValue::kAuto &&
+               Match(attribute_name, kLoadingAttr) &&
                RuntimeEnabledFeatures::LazyImageLoadingEnabled()) {
-      load_attr_value_ = EqualIgnoringASCIICase(attribute_value, "eager")
-                             ? LoadAttrValue::kEager
-                             : EqualIgnoringASCIICase(attribute_value, "lazy")
-                                   ? LoadAttrValue::kLazy
-                                   : LoadAttrValue::kAuto;
+      loading_attr_value_ =
+          EqualIgnoringASCIICase(attribute_value, "eager")
+              ? LoadingAttrValue::kEager
+              : EqualIgnoringASCIICase(attribute_value, "lazy")
+                    ? LoadingAttrValue::kLazy
+                    : LoadingAttrValue::kAuto;
     } else if (!width_attr_small_absolute_ &&
                Match(attribute_name, kWidthAttr) &&
                RuntimeEnabledFeatures::LazyImageLoadingEnabled()) {
@@ -697,7 +698,7 @@ class TokenPreloadScanner::StartTagScanner {
   bool integrity_attr_set_;
   IntegrityMetadataSet integrity_metadata_;
   SubresourceIntegrity::IntegrityFeatures integrity_features_;
-  LoadAttrValue load_attr_value_;
+  LoadingAttrValue loading_attr_value_;
   bool width_attr_small_absolute_;
   bool height_attr_small_absolute_;
   bool inline_style_dimensions_small_;
