@@ -6,6 +6,8 @@
 """Extracts native methods from a Java file and generates the JNI bindings.
 If you change this, please run and update the tests."""
 
+from __future__ import print_function
+
 import base64
 import collections
 import errno
@@ -1534,13 +1536,13 @@ def GenerateJNIHeader(input_file, output_file, options):
           input_file, options)
       content = jni_from_java_source.GetContent()
   except ParseError, e:
-    print e
+    print(e)
     sys.exit(1)
   if output_file:
     with build_utils.AtomicOutput(output_file) as f:
       f.write(content)
   else:
-    print content
+    print(content)
 
 
 def GetScriptName():
@@ -1613,7 +1615,7 @@ See SampleForTests.java for more details.
     input_file = options.input_file
   else:
     option_parser.print_help()
-    print '\nError: Must specify --jar_file or --input_file.'
+    print('\nError: Must specify --jar_file or --input_file.')
     return 1
   output_file = None
   if options.output_dir:
