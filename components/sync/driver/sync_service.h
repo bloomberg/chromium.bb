@@ -340,11 +340,6 @@ class SyncService : public KeyedService {
   // from the sync server. Used by tests and debug UI (sync-internals).
   virtual void TriggerRefresh(const ModelTypeSet& types) = 0;
 
-  // Attempts to re-enable a data type that is currently disabled due to a
-  // data type error or an unready error. Note, this does not change the
-  // preferred state of a datatype, and is not persisted across restarts.
-  virtual void ReenableDatatype(ModelType type) = 0;
-
   // Informs the data type manager that the ready-for-start status of a
   // controller has changed. If the controller is not ready any more, it will
   // stop |type|. Otherwise, it will trigger reconfiguration so that |type| gets

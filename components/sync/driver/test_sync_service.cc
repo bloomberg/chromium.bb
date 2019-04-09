@@ -189,8 +189,6 @@ void TestSyncService::OnDataTypeRequestsSyncStartup(ModelType type) {}
 
 void TestSyncService::TriggerRefresh(const ModelTypeSet& types) {}
 
-void TestSyncService::ReenableDatatype(ModelType type) {}
-
 void TestSyncService::ReadyForStartChanged(ModelType type) {}
 
 void TestSyncService::AddObserver(SyncServiceObserver* observer) {

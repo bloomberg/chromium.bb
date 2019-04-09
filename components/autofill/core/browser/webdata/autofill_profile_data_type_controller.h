@@ -64,9 +64,6 @@ class AutofillProfileDataTypeController
   // Returns true if the pref is set such that autofill sync should be enabled.
   bool IsEnabled();
 
-  // Report an error (which will stop the datatype asynchronously).
-  void DisableForPolicy();
-
   // Callback that allows accessing PersonalDataManager lazily.
   const PersonalDataManagerProvider pdm_provider_;
 

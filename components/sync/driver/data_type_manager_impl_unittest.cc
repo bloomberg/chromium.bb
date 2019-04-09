@@ -1279,46 +1279,6 @@ TEST_F(SyncDataTypeManagerImplTest, FilterDesiredTypes) {
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
 }
 
-TEST_F(SyncDataTypeManagerImplTest, ReenableAfterDataTypeError) {
-  AddController(PREFERENCES);  // Will succeed.
-  AddController(BOOKMARKS);    // Will be disabled due to datatype error.
-
-  SetConfigureStartExpectation();
-  SetConfigureDoneExpectation(
-      DataTypeManager::OK,
-      BuildStatusTable(ModelTypeSet(), ModelTypeSet(BOOKMARKS), ModelTypeSet(),
-                       ModelTypeSet()));
-
-  Configure(ModelTypeSet(BOOKMARKS, PREFERENCES));
-  FinishDownload(ModelTypeSet(), ModelTypeSet());
-  FinishDownload(ModelTypeSet(PREFERENCES, BOOKMARKS), ModelTypeSet());
-  GetController(PREFERENCES)->FinishStart(DataTypeController::OK);
-  GetController(BOOKMARKS)->FinishStart(DataTypeController::ASSOCIATION_FAILED);
-  FinishDownload(ModelTypeSet(), ModelTypeSet());  // Reconfig for error.
-  FinishDownload(ModelTypeSet(), ModelTypeSet());  // Reconfig for error.
-  EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
-  EXPECT_EQ(DataTypeController::RUNNING, GetController(PREFERENCES)->state());
-  EXPECT_EQ(DataTypeController::NOT_RUNNING, GetController(BOOKMARKS)->state());
-
-  observer_.ResetExpectations();
-
-  // Re-enable bookmarks.
-  SetConfigureDoneExpectation(DataTypeManager::OK, DataTypeStatusTable());
-  dtm_->ReenableType(BOOKMARKS);
-
-  EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
-  FinishDownload(ModelTypeSet(), ModelTypeSet());
-  FinishDownload(ModelTypeSet(BOOKMARKS), ModelTypeSet());
-  EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
-  GetController(BOOKMARKS)->FinishStart(DataTypeController::OK);
-  EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
-  EXPECT_EQ(DataTypeController::RUNNING, GetController(PREFERENCES)->state());
-  EXPECT_EQ(DataTypeController::RUNNING, GetController(BOOKMARKS)->state());
-
-  // Should do nothing.
-  dtm_->ReenableType(BOOKMARKS);
-}
-
 TEST_F(SyncDataTypeManagerImplTest, UnreadyType) {
   AddController(BOOKMARKS);
   GetController(BOOKMARKS)->SetReadyForStart(false);
@@ -1339,7 +1299,7 @@ TEST_F(SyncDataTypeManagerImplTest, UnreadyType) {
   // Bookmarks should start normally now.
   GetController(BOOKMARKS)->SetReadyForStart(true);
   SetConfigureDoneExpectation(DataTypeManager::OK, DataTypeStatusTable());
-  dtm_->ReenableType(BOOKMARKS);
+  dtm_->ReadyForStartChanged(BOOKMARKS);
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
   FinishDownload(ModelTypeSet(), ModelTypeSet());
@@ -1352,7 +1312,7 @@ TEST_F(SyncDataTypeManagerImplTest, UnreadyType) {
 
   // Should do nothing.
   observer_.ResetExpectations();
-  dtm_->ReenableType(BOOKMARKS);
+  dtm_->ReadyForStartChanged(BOOKMARKS);
 
   dtm_->Stop(STOP_SYNC);
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());

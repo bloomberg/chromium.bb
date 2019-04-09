@@ -806,13 +806,6 @@ void ProfileSyncService::OnUnrecoverableErrorImpl(
   sync_prefs_.ClearDirectoryConsistencyPreferences();
 }
 
-void ProfileSyncService::ReenableDatatype(ModelType type) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!engine_ || !engine_->IsInitialized() || !data_type_manager_)
-    return;
-  data_type_manager_->ReenableType(type);
-}
-
 void ProfileSyncService::ReadyForStartChanged(ModelType type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!engine_ || !engine_->IsInitialized() || !data_type_manager_)

@@ -56,10 +56,8 @@ bool AutofillWalletDataTypeController::StartModels() {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(state(), MODEL_STARTING);
 
-  if (!IsEnabled()) {
-    DisableForPolicy();
+  if (!IsEnabled())
     return false;
-  }
 
   if (!web_data_service_)
     return false;
@@ -123,13 +121,7 @@ void AutofillWalletDataTypeController::OnUserPrefChanged() {
     return;  // No change to sync state.
   currently_enabled_ = new_enabled;
 
-  if (currently_enabled_) {
-    // The preference was just enabled. Trigger a reconfiguration. This will do
-    // nothing if the type isn't preferred.
-    sync_service()->ReenableDatatype(type());
-  } else {
-    DisableForPolicy();
-  }
+  sync_service()->ReadyForStartChanged(type());
 }
 
 bool AutofillWalletDataTypeController::IsEnabled() {
@@ -140,13 +132,6 @@ bool AutofillWalletDataTypeController::IsEnabled() {
              autofill::prefs::kAutofillWalletImportEnabled) &&
          sync_client()->GetPrefService()->GetBoolean(
              autofill::prefs::kAutofillCreditCardEnabled);
-}
-void AutofillWalletDataTypeController::DisableForPolicy() {
-  if (state() != NOT_RUNNING && state() != STOPPING) {
-    CreateErrorHandler()->OnUnrecoverableError(
-        syncer::SyncError(FROM_HERE, syncer::SyncError::DATATYPE_POLICY_ERROR,
-                          "Wallet syncing is disabled by policy.", type()));
-  }
 }
 
 }  // namespace browser_sync
