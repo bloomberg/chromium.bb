@@ -77,6 +77,9 @@ void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
       mojom::kGestureDragFromClientAreaTopMovesWindow_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter->RegisterPrimitiveProperty(
+      kHideInOverviewKey, mojom::kHideInOverview_Property,
+      aura::PropertyConverter::CreateAcceptAnyValueCallback());
+  property_converter->RegisterPrimitiveProperty(
       kHideShelfWhenFullscreenKey, mojom::kHideShelfWhenFullscreen_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter->RegisterPrimitiveProperty(

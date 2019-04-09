@@ -6,6 +6,8 @@
 
 #include "ash/disconnected_app_handler.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_properties.h"
+#include "ash/public/interfaces/window_properties.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
 #include "ash/shell.h"
@@ -212,6 +214,16 @@ aura::Window* CreateAndParentTopLevelWindow(
     window->SetTransparent(translucent);
     // No need to persist this value.
     properties->erase(translucent_iter);
+  }
+
+  auto hide_in_overview_iter =
+      properties->find(ash::mojom::kHideInOverview_Property);
+  if (hide_in_overview_iter != properties->end()) {
+    bool hide_in_overview =
+        mojo::ConvertTo<bool>(hide_in_overview_iter->second);
+    window->SetProperty(kHideInOverviewKey, hide_in_overview);
+    // No need to persist this value.
+    properties->erase(hide_in_overview_iter);
   }
 
   return window;

@@ -58,12 +58,6 @@ constexpr SkColor kNoItemsIndicatorBackgroundColor =
     SkColorSetA(SK_ColorBLACK, 204);
 constexpr SkColor kNoItemsIndicatorTextColor = SK_ColorWHITE;
 
-// Triggers a shelf visibility update on all root window controllers.
-void UpdateShelfVisibility() {
-  for (aura::Window* root : Shell::GetAllRootWindows())
-    Shelf::ForWindow(root)->UpdateVisibilityState();
-}
-
 // Returns the bounds for the overview window grid according to the split view
 // state. If split view mode is active, the overview window should open on the
 // opposite side of the default snap window. If |divider_changed| is true, maybe
@@ -185,8 +179,8 @@ void OverviewSession::Init(const WindowList& windows,
                            const WindowList& hide_windows) {
   Shell::Get()->AddShellObserver(this);
 
-  hide_overview_windows_ =
-      std::make_unique<ScopedOverviewHideWindows>(std::move(hide_windows));
+  hide_overview_windows_ = std::make_unique<ScopedOverviewHideWindows>(
+      std::move(hide_windows), /*force_hidden=*/false);
   if (restore_focus_window_)
     restore_focus_window_->AddObserver(this);
 
@@ -280,8 +274,6 @@ void OverviewSession::Init(const WindowList& windows,
   Shell::Get()->accessibility_controller()->TriggerAccessibilityAlert(
       mojom::AccessibilityAlert::WINDOW_OVERVIEW_MODE_ENTERED);
 
-  UpdateShelfVisibility();
-
   ignore_activations_ = false;
 }
 
@@ -335,7 +327,6 @@ void OverviewSession::Shutdown() {
                              base::Time::Now() - overview_start_time_);
 
   grid_list_.clear();
-  UpdateShelfVisibility();
 
   if (no_windows_widget_) {
     // Fade out the no windows widget. This animation continues past the

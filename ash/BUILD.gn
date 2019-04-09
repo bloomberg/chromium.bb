@@ -1888,6 +1888,7 @@ test("ash_unittests") {
     "wm/window_positioner_unittest.cc",
     "wm/window_preview_view_unittest.cc",
     "wm/window_state_unittest.cc",
+    "wm/window_transient_descendant_iterator_unittest.cc",
     "wm/window_util_unittest.cc",
     "wm/wm_toplevel_window_event_handler_unittest.cc",
     "wm/workspace/magnetism_matcher_unittest.cc",

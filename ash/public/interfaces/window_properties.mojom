@@ -23,6 +23,9 @@ const string kCanAttachToAnotherWindow_Property =
 const string kCanConsumeSystemKeys_Property =
   "ash:can-consume-system-keys";
 
+// True if the window should be hidden in ash overview mode. Type: bool.
+const string kHideInOverview_Property = "ash:hide_in_overview";
+
 // True if the shelf should be hidden when this window is put into fullscreen.
 // Exposed because some windows want to explicitly opt-out of this.
 const string kHideShelfWhenFullscreen_Property =

@@ -34,9 +34,9 @@ class Widget;
 }
 
 namespace ash {
-
-class ScopedOverviewAnimationSettings;
 class OverviewItem;
+class ScopedOverviewAnimationSettings;
+class ScopedOverviewHideWindows;
 
 // Manages a window, and its transient children, in the overview mode. This
 // class allows transforming the windows with a helper to determine the best
@@ -237,6 +237,8 @@ class ASH_EXPORT ScopedOverviewTransformWindow
 
   // The original mask layer of the window before entering overview mode.
   ui::Layer* original_mask_layer_ = nullptr;
+
+  std::unique_ptr<ScopedOverviewHideWindows> hidden_transient_children_;
 
   base::WeakPtrFactory<ScopedOverviewTransformWindow> weak_ptr_factory_;
 

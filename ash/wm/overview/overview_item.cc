@@ -9,7 +9,6 @@
 
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/public/cpp/window_properties.h"
 #include "ash/scoped_animation_disabler.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -116,7 +115,6 @@ OverviewItem::OverviewItem(aura::Window* window,
            wm::WindowTransientDescendantIterator(GetWindow()))) {
     window_iter->AddObserver(this);
   }
-  GetWindow()->SetProperty(ash::kIsShowingInOverviewKey, true);
 }
 
 OverviewItem::~OverviewItem() {
@@ -124,7 +122,6 @@ OverviewItem::~OverviewItem() {
            wm::WindowTransientDescendantIterator(GetWindow()))) {
     window_iter->RemoveObserver(this);
   }
-  GetWindow()->ClearProperty(ash::kIsShowingInOverviewKey);
 }
 
 aura::Window* OverviewItem::GetWindow() {
