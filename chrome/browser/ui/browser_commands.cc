@@ -1099,7 +1099,7 @@ void FocusToolbar(Browser* browser) {
 
 void FocusLocationBar(Browser* browser) {
   base::RecordAction(UserMetricsAction("FocusLocation"));
-  browser->window()->SetFocusToLocationBar();
+  browser->window()->SetFocusToLocationBar(true);
 }
 
 void FocusSearch(Browser* browser) {

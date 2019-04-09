@@ -341,12 +341,16 @@ void LocationBarView::SelectAll() {
 ////////////////////////////////////////////////////////////////////////////////
 // LocationBarView, public LocationBar implementation:
 
-void LocationBarView::FocusLocation() {
+void LocationBarView::FocusLocation(bool select_all) {
   const bool omnibox_already_focused = omnibox_view_->HasFocus();
 
   omnibox_view_->SetFocus();
+
   if (omnibox_already_focused)
     omnibox_view()->model()->ClearKeyword();
+
+  if (!select_all)
+    return;
 
   omnibox_view_->SelectAll(true);
 
@@ -1205,7 +1209,7 @@ void LocationBarView::OnOmniboxHovered(bool is_hovering) {
 // LocationBarView, private DropdownBarHostDelegate implementation:
 
 void LocationBarView::FocusAndSelectAll() {
-  FocusLocation();
+  FocusLocation(true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
