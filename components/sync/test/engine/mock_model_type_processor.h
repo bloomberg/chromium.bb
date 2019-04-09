@@ -68,9 +68,10 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   // directly to its attached CommitQueue.  These methods
   // return the value to the caller so the test framework can handle them as it
   // sees fit.
-  CommitRequestData CommitRequest(const std::string& tag_hash,
-                                  const sync_pb::EntitySpecifics& specifics);
-  CommitRequestData DeleteRequest(const std::string& tag_hash);
+  std::unique_ptr<CommitRequestData> CommitRequest(
+      const std::string& tag_hash,
+      const sync_pb::EntitySpecifics& specifics);
+  std::unique_ptr<CommitRequestData> DeleteRequest(const std::string& tag_hash);
 
   // Getters to access the log of received update responses.
   //
@@ -97,7 +98,7 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   void SetDisconnectCallback(const DisconnectCallback& callback);
 
   // Sets commit request that will be returned by GetLocalChanges().
-  void SetCommitRequest(const CommitRequestDataList& commit_request);
+  void SetCommitRequest(CommitRequestDataList commit_request);
 
   int GetLocalChangesCallCount() const;
 

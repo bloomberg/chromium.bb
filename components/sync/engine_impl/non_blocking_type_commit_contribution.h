@@ -31,7 +31,7 @@ class NonBlockingTypeCommitContribution : public CommitContribution {
   NonBlockingTypeCommitContribution(
       ModelType type,
       const sync_pb::DataTypeContext& context,
-      const CommitRequestDataList& commit_requests,
+      CommitRequestDataList commit_requests,
       ModelTypeWorker* worker,
       Cryptographer* cryptographer,
       PassphraseType passphrase_type,

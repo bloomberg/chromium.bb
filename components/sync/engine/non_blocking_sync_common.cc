@@ -10,8 +10,6 @@ namespace syncer {
 
 CommitRequestData::CommitRequestData() {}
 
-CommitRequestData::CommitRequestData(const CommitRequestData& other) = default;
-
 CommitRequestData::~CommitRequestData() {}
 
 CommitResponseData::CommitResponseData() {}

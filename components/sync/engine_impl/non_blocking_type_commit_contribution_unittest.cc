@@ -4,7 +4,9 @@
 
 #include "components/sync/engine_impl/non_blocking_type_commit_contribution.h"
 
+#include <memory>
 #include <string>
+#include <utility>
 
 #include "base/base64.h"
 #include "base/hash/sha1.h"
@@ -152,12 +154,12 @@ TEST(NonBlockingTypeCommitContributionTest,
   data.specifics.mutable_password()->mutable_unencrypted_metadata()->set_url(
       kMetadataUrl);
 
-  CommitRequestData request_data;
-  request_data.entity = data.PassToPtr();
-  request_data.sequence_number = 2;
-  request_data.base_version = kBaseVersion;
+  auto request_data = std::make_unique<CommitRequestData>();
+  request_data->entity = data.PassToPtr();
+  request_data->sequence_number = 2;
+  request_data->base_version = kBaseVersion;
   base::Base64Encode(base::SHA1HashString(data.specifics.SerializeAsString()),
-                     &request_data.specifics_hash);
+                     &request_data->specifics_hash);
 
   base::ObserverList<TypeDebugInfoObserver>::Unchecked observers;
   DataTypeDebugInfoEmitter debug_info_emitter(PASSWORDS, &observers);
@@ -166,8 +168,10 @@ TEST(NonBlockingTypeCommitContributionTest,
   Cryptographer cryptographer(&fake_encryptor);
   cryptographer.AddKey({KeyDerivationParams::CreateForPbkdf2(), "dummy"});
 
+  CommitRequestDataList requests_data;
+  requests_data.push_back(std::move(request_data));
   NonBlockingTypeCommitContribution contribution(
-      PASSWORDS, sync_pb::DataTypeContext(), {request_data},
+      PASSWORDS, sync_pb::DataTypeContext(), std::move(requests_data),
       /*worker=*/nullptr, &cryptographer, PassphraseType::IMPLICIT_PASSPHRASE,
       &debug_info_emitter,
       /*only_commit_specifics=*/false);
@@ -212,12 +216,12 @@ TEST(NonBlockingTypeCommitContributionTest,
   data.specifics.mutable_password()->mutable_unencrypted_metadata()->set_url(
       kMetadataUrl);
 
-  CommitRequestData request_data;
-  request_data.entity = data.PassToPtr();
-  request_data.sequence_number = 2;
-  request_data.base_version = kBaseVersion;
+  auto request_data = std::make_unique<CommitRequestData>();
+  request_data->entity = data.PassToPtr();
+  request_data->sequence_number = 2;
+  request_data->base_version = kBaseVersion;
   base::Base64Encode(base::SHA1HashString(data.specifics.SerializeAsString()),
-                     &request_data.specifics_hash);
+                     &request_data->specifics_hash);
 
   base::ObserverList<TypeDebugInfoObserver>::Unchecked observers;
   DataTypeDebugInfoEmitter debug_info_emitter(PASSWORDS, &observers);
@@ -226,8 +230,10 @@ TEST(NonBlockingTypeCommitContributionTest,
   Cryptographer cryptographer(&fake_encryptor);
   cryptographer.AddKey({KeyDerivationParams::CreateForPbkdf2(), "dummy"});
 
+  CommitRequestDataList requests_data;
+  requests_data.push_back(std::move(request_data));
   NonBlockingTypeCommitContribution contribution(
-      PASSWORDS, sync_pb::DataTypeContext(), {request_data},
+      PASSWORDS, sync_pb::DataTypeContext(), std::move(requests_data),
       /*worker=*/nullptr, &cryptographer, PassphraseType::CUSTOM_PASSPHRASE,
       &debug_info_emitter,
       /*only_commit_specifics=*/false);

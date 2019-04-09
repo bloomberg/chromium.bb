@@ -140,7 +140,7 @@ void BookmarkModelTypeProcessor::GetLocalChanges(
     GetLocalChangesCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   BookmarkLocalChangesBuilder builder(bookmark_tracker_.get(), bookmark_model_);
-  std::vector<syncer::CommitRequestData> local_changes =
+  syncer::CommitRequestDataList local_changes =
       builder.BuildCommitRequests(max_entries);
   std::move(callback).Run(std::move(local_changes));
 }

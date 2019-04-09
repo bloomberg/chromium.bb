@@ -712,11 +712,12 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldCommitLocalCreation) {
 
   // Verify the commit request this operation has triggered.
   worker()->VerifyPendingCommits({{kHash1}});
-  const CommitRequestData& tag1_request_data =
+  const CommitRequestData* tag1_request_data =
       worker()->GetLatestPendingCommitForHash(kHash1);
-  const EntityData& tag1_data = tag1_request_data.entity.value();
+  ASSERT_TRUE(tag1_request_data);
+  const EntityData& tag1_data = tag1_request_data->entity.value();
 
-  EXPECT_EQ(kUncommittedVersion, tag1_request_data.base_version);
+  EXPECT_EQ(kUncommittedVersion, tag1_request_data->base_version);
   EXPECT_TRUE(tag1_data.id.empty());
   EXPECT_FALSE(tag1_data.creation_time.is_null());
   EXPECT_FALSE(tag1_data.modification_time.is_null());
@@ -780,8 +781,9 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   ASSERT_FALSE(worker()->HasPendingCommitForHash(kHash3));
   ASSERT_TRUE(worker()->HasPendingCommitForHash(kHash1));
   EXPECT_EQ(1U, db()->metadata_count());
+  ASSERT_TRUE(worker()->GetLatestPendingCommitForHash(kHash1));
   const EntityData& out_entity1 =
-      worker()->GetLatestPendingCommitForHash(kHash1).entity.value();
+      worker()->GetLatestPendingCommitForHash(kHash1)->entity.value();
   const EntityMetadata metadata_v1 = db()->GetMetadata(kKey1);
 
   EXPECT_EQ(kId1, out_entity1.id);
@@ -805,8 +807,9 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   ASSERT_FALSE(worker()->HasPendingCommitForHash(kHash3));
   ASSERT_TRUE(worker()->HasPendingCommitForHash(kHash1));
   EXPECT_EQ(1U, db()->metadata_count());
+  ASSERT_TRUE(worker()->GetLatestPendingCommitForHash(kHash1));
   const EntityData& out_entity2 =
-      worker()->GetLatestPendingCommitForHash(kHash1).entity.value();
+      worker()->GetLatestPendingCommitForHash(kHash1)->entity.value();
   const EntityMetadata metadata_v2 = db()->GetMetadata(kKey1);
 
   EXPECT_EQ(kValue2, out_entity2.specifics.preference().value());
@@ -828,10 +831,17 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldCommitLocalUpdate) {
   ASSERT_EQ(1U, db()->metadata_count());
   worker()->VerifyPendingCommits({{kHash1}});
 
-  const CommitRequestData& request_data_v1 =
-      worker()->GetLatestPendingCommitForHash(kHash1);
-  const EntityData& data_v1 = request_data_v1.entity.value();
   const EntityMetadata metadata_v1 = db()->GetMetadata(kKey1);
+  int64_t request_data_v1_sequence_number;
+  {
+    // request_data_v1 is valid only while the commit is still pending.
+    const CommitRequestData* request_data_v1 =
+        worker()->GetLatestPendingCommitForHash(kHash1);
+    ASSERT_TRUE(request_data_v1);
+    const EntityData& data_v1 = request_data_v1->entity.value();
+    EXPECT_EQ(data_v1.specifics.preference().value(), kValue1);
+    request_data_v1_sequence_number = request_data_v1->sequence_number;
+  }
 
   worker()->AckOnePendingCommit();
   ASSERT_FALSE(type_processor()->IsEntityUnsynced(kKey1));
@@ -852,17 +862,18 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldCommitLocalUpdate) {
   const base::Time mtime = type_processor()->GetEntityModificationTime(kKey1);
   EXPECT_NE(ctime, mtime);
 
-  const CommitRequestData& request_data_v2 =
+  const CommitRequestData* request_data_v2 =
       worker()->GetLatestPendingCommitForHash(kHash1);
-  const EntityData& data_v2 = request_data_v2.entity.value();
+  ASSERT_TRUE(request_data_v2);
+  const EntityData& data_v2 = request_data_v2->entity.value();
   const EntityMetadata metadata_v2 = db()->GetMetadata(kKey1);
 
   // Test some of the relations between old and new commit requests.
-  EXPECT_GT(request_data_v2.sequence_number, request_data_v1.sequence_number);
-  EXPECT_EQ(data_v1.specifics.preference().value(), kValue1);
+  EXPECT_GT(request_data_v2->sequence_number, request_data_v1_sequence_number);
+  EXPECT_EQ(data_v2.specifics.preference().value(), kValue2);
 
   // Perform a thorough examination of the update-generated request.
-  EXPECT_NE(kUncommittedVersion, request_data_v2.base_version);
+  EXPECT_NE(kUncommittedVersion, request_data_v2->base_version);
   EXPECT_FALSE(data_v2.id.empty());
   EXPECT_EQ(ctime, data_v2.creation_time);
   EXPECT_EQ(mtime, data_v2.modification_time);
@@ -898,9 +909,10 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   ASSERT_EQ(1U, db()->metadata_count());
   worker()->VerifyPendingCommits({{kHash1}});
 
-  const CommitRequestData& request_data_v1 =
+  const CommitRequestData* request_data_v1 =
       worker()->GetLatestPendingCommitForHash(kHash1);
-  const EntityData& data_v1 = request_data_v1.entity.value();
+  ASSERT_TRUE(request_data_v1);
+  const EntityData& data_v1 = request_data_v1->entity.value();
   const EntityMetadata metadata_v1 = db()->GetMetadata(kKey1);
 
   ASSERT_TRUE(type_processor()->IsEntityUnsynced(kKey1));
@@ -921,17 +933,18 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   const base::Time mtime = type_processor()->GetEntityModificationTime(kKey1);
   EXPECT_NE(mtime, ctime);
 
-  const CommitRequestData& request_data_v2 =
+  const CommitRequestData* request_data_v2 =
       worker()->GetLatestPendingCommitForHash(kHash1);
-  const EntityData& data_v2 = request_data_v2.entity.value();
+  ASSERT_TRUE(request_data_v2);
+  const EntityData& data_v2 = request_data_v2->entity.value();
   const EntityMetadata metadata_v2 = db()->GetMetadata(kKey1);
 
   // Test some of the relations between old and new commit requests.
-  EXPECT_GT(request_data_v2.sequence_number, request_data_v1.sequence_number);
+  EXPECT_GT(request_data_v2->sequence_number, request_data_v1->sequence_number);
   EXPECT_EQ(data_v1.specifics.preference().value(), kValue1);
 
   // Perform a thorough examination of the update-generated request.
-  EXPECT_EQ(kUncommittedVersion, request_data_v2.base_version);
+  EXPECT_EQ(kUncommittedVersion, request_data_v2->base_version);
   EXPECT_TRUE(data_v2.id.empty());
   EXPECT_EQ(ctime, data_v2.creation_time);
   EXPECT_EQ(mtime, data_v2.modification_time);
@@ -1114,8 +1127,9 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   InitializeToReadyState();
   bridge()->WriteItem(kKey1, kValue1);
   worker()->VerifyPendingCommits({{kHash1}});
-  const CommitRequestData& data_v1 =
+  const CommitRequestData* data_v1 =
       worker()->GetLatestPendingCommitForHash(kHash1);
+  ASSERT_TRUE(data_v1);
 
   const EntityMetadata metadata_v1 = db()->GetMetadata(kKey1);
   EXPECT_FALSE(metadata_v1.is_deleted());
@@ -1129,12 +1143,13 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   EXPECT_EQ(1U, ProcessorEntityCount());
   worker()->VerifyPendingCommits({{kHash1}, {kHash1}});
 
-  const CommitRequestData& data_v2 =
+  const CommitRequestData* data_v2 =
       worker()->GetLatestPendingCommitForHash(kHash1);
-  EXPECT_GT(data_v2.sequence_number, data_v1.sequence_number);
-  EXPECT_TRUE(data_v2.entity->id.empty());
-  EXPECT_EQ(kUncommittedVersion, data_v2.base_version);
-  EXPECT_TRUE(data_v2.entity->is_deleted());
+  ASSERT_TRUE(data_v2);
+  EXPECT_GT(data_v2->sequence_number, data_v1->sequence_number);
+  EXPECT_TRUE(data_v2->entity->id.empty());
+  EXPECT_EQ(kUncommittedVersion, data_v2->base_version);
+  EXPECT_TRUE(data_v2->entity->is_deleted());
 
   const EntityMetadata metadata_v2 = db()->GetMetadata(kKey1);
   EXPECT_TRUE(metadata_v2.is_deleted());
@@ -1228,7 +1243,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   type_processor()->GetLocalChanges(
       INT_MAX, base::BindOnce(&CaptureCommitRequest, &commit_request));
   EXPECT_EQ(1U, commit_request.size());
-  EXPECT_EQ(kHash1, commit_request[0].entity->client_tag_hash);
+  EXPECT_EQ(kHash1, commit_request[0]->entity->client_tag_hash);
 }
 
 // Tests that GetLocalChanges honors max_entries parameter.
@@ -1325,8 +1340,9 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
 
   bridge()->WriteItem(kKey1, kValue1);
   ASSERT_EQ(1U, worker()->GetNumPendingCommits());
+  ASSERT_TRUE(worker()->GetLatestPendingCommitForHash(kHash1));
   ASSERT_TRUE(
-      worker()->GetLatestPendingCommitForHash(kHash1).entity->id.empty());
+      worker()->GetLatestPendingCommitForHash(kHash1)->entity->id.empty());
 
   // The update from the server should be mostly ignored because local wins, but
   // the server ID should be updated.
@@ -1338,11 +1354,12 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   EXPECT_EQ(2U, worker()->GetNumPendingCommits());
 
   // Verify the commit request this operation has triggered.
-  const CommitRequestData& tag1_request_data =
+  const CommitRequestData* tag1_request_data =
       worker()->GetLatestPendingCommitForHash(kHash1);
-  const EntityData& tag1_data = tag1_request_data.entity.value();
+  ASSERT_TRUE(tag1_request_data);
+  const EntityData& tag1_data = tag1_request_data->entity.value();
 
-  EXPECT_EQ(1, tag1_request_data.base_version);
+  EXPECT_EQ(1, tag1_request_data->base_version);
   EXPECT_FALSE(tag1_data.id.empty());
   EXPECT_FALSE(tag1_data.creation_time.is_null());
   EXPECT_FALSE(tag1_data.modification_time.is_null());
