@@ -81,7 +81,7 @@ static void ConsiderForBestCandidate(SpatialNavigationDirection direction,
 
   // Ignore off-screen focusables that are not exposed after one "scroll step"
   // in the direction.
-  if (candidate.is_offscreen && candidate.is_offscreen_after_scrolling)
+  if (candidate.is_offscreen)
     return;
 
   double distance =
