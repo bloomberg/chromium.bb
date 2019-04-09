@@ -389,6 +389,11 @@ public abstract class AppHooks {
 
     /**
      * @param activity An activity for access to different features.
+     */
+    public void createTouchlessMenuCoordinator(ChromeActivity activity) {}
+
+    /**
+     * @param activity An activity for access to different features.
      * @return A new {@link TouchlessUiController} instance.
      */
     public TouchlessUiController createTouchlessUiController(ChromeActivity activity) {
