@@ -27,8 +27,13 @@ message ClientAppMetadata {
   string instance_id_token = 3;
   // Checkin android id of the device.
   fixed64 android_device_id = 4;
-  // Not all devices have device identifiers that fit in 64 bits.
-  bytes long_device_id = 5;
+  // Chrome and iOS use a UUID in the form xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  // Where x is a lowercase hex digit.
+  // For iOS, this UUID is the IDFV.
+  // For backward compatibility with some Chrome long_device_ids, this can also
+  // be something else.
+  // For the same reason, this field is case sensitive, even with valid UUIDs.
+  string long_device_id = 5;
 
   // Subgrouping of device features field. These help in targeting specific
   // class of devices, for ex: Tablets vs phones etc.
