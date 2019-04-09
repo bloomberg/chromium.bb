@@ -1325,6 +1325,10 @@ void DownloadItemImpl::SetDownloadId(uint32_t download_id) {
   download_id_ = download_id;
 }
 
+void DownloadItemImpl::SetAutoResumeCountForTesting(int32_t auto_resume_count) {
+  auto_resume_count_ = auto_resume_count;
+}
+
 // **** Download progression cascade
 
 void DownloadItemImpl::Init(bool active,

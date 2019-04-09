@@ -365,6 +365,8 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
 
   uint64_t ukm_download_id() const { return ukm_download_id_; }
 
+  void SetAutoResumeCountForTesting(int32_t auto_resume_count);
+
  private:
   // Fine grained states of a download.
   //
