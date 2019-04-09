@@ -982,10 +982,6 @@ constexpr char kMachineLearningInterfaceName[] = "org.chromium.MachineLearning";
 constexpr char kBootstrapMojoConnectionMethod[] = "BootstrapMojoConnection";
 // Token identifying the primordial Mojo pipe passed to BootstrapMojoConnection.
 constexpr char kBootstrapMojoConnectionChannelToken[] = "ml-service-bootstrap";
-// Deprecated, use longer names above:
-constexpr char kMlServiceName[] = "org.chromium.MachineLearning";
-constexpr char kMlServicePath[] = "/org/chromium/MachineLearning";
-constexpr char kMlInterfaceName[] = "org.chromium.MachineLearning";
 }  // namespace ml
 
 namespace virtual_file_provider {
