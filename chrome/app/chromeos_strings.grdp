@@ -3865,11 +3865,8 @@
     Manage your Google Accounts in one place
   </message>
   <message name="IDS_ACCOUNT_MANAGER_WELCOME_TEXT" desc="Text body for the Chrome OS Account Manager Welcome screen.">
-    Apps and websites that have your permission can access the account information they need to work properly.
-
-    If you don't want to add an account, sign in as a guest or open an incognito window for web browsing.
-
-    You can go to Settings -> Google Accounts to view and manage all accounts.
+    Switch accounts quickly and sign in to apps and websites all at once.
+    Apps and sites can ask you for permission to use some of your Google Account info. <ph name="LINK_BEGIN">&lt;a target="_blank" href="$1<ex>https://support.google.com/chromebook/?p=google_accounts</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
   </message>
 
   <!-- TPM firmware auto-update notifications -->
