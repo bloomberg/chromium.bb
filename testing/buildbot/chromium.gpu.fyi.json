@@ -16453,32 +16453,6 @@
           ],
           "idempotent": false
         }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=debug",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "name": "webgl_conformance_tests",
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "10de:0fe9",
-              "hidpi": "1",
-              "os": "Mac-10.13.6",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "idempotent": false,
-          "shards": 2
-        }
       }
     ]
   },
