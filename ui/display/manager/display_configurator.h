@@ -317,6 +317,8 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
     return !configure_display_ || display_externally_controlled_;
   }
 
+  const DisplaySnapshot* GetDisplay(int64_t display_id) const;
+
   // Updates |pending_*| members and applies the passed-in state. |callback| is
   // invoked (perhaps synchronously) on completion.
   void SetDisplayPowerInternal(chromeos::DisplayPowerState power_state,

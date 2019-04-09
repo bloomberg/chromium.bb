@@ -4,7 +4,8 @@
 
 #include "ui/display/manager/display_configurator.h"
 
-#include <stddef.h>
+#include <algorithm>
+#include <cstddef>
 #include <utility>
 
 #include "base/bind.h"
@@ -791,21 +792,14 @@ void DisplayConfigurator::QueryContentProtection(
     ContentProtectionClientId client_id,
     int64_t display_id,
     QueryContentProtectionCallback callback) {
-  if (!client_id || configurator_disabled()) {
+  // Exclude virtual displays so that protected content will not be recaptured
+  // through the cast stream.
+  const DisplaySnapshot* display = GetDisplay(display_id);
+  if (configurator_disabled() || !display ||
+      !IsPhysicalDisplayType(display->type())) {
     std::move(callback).Run(/*success=*/false, DISPLAY_CONNECTION_TYPE_NONE,
                             CONTENT_PROTECTION_METHOD_NONE);
     return;
-  }
-
-  // Exclude virtual displays so that protected content will not be recaptured
-  // through the cast stream.
-  for (const DisplaySnapshot* display : cached_displays_) {
-    if (display->display_id() == display_id &&
-        !IsPhysicalDisplayType(display->type())) {
-      std::move(callback).Run(/*success=*/false, DISPLAY_CONNECTION_TYPE_NONE,
-                              CONTENT_PROTECTION_METHOD_NONE);
-      return;
-    }
   }
 
   QueueContentProtectionTask(new QueryContentProtectionTask(
@@ -848,7 +842,7 @@ void DisplayConfigurator::ApplyContentProtection(
     int64_t display_id,
     uint32_t protection_mask,
     ApplyContentProtectionCallback callback) {
-  if (!client_id || configurator_disabled()) {
+  if (configurator_disabled() || !client_id || !GetDisplay(display_id)) {
     std::move(callback).Run(/*success=*/false);
     return;
   }
@@ -947,6 +941,15 @@ chromeos::DisplayPowerState DisplayConfigurator::GetRequestedPowerState()
 
 void DisplayConfigurator::PrepareForExit() {
   configure_display_ = false;
+}
+
+const DisplaySnapshot* DisplayConfigurator::GetDisplay(
+    int64_t display_id) const {
+  auto it = std::find_if(cached_displays_.begin(), cached_displays_.end(),
+                         [display_id](const DisplaySnapshot* display) {
+                           return display->display_id() == display_id;
+                         });
+  return it == cached_displays_.end() ? nullptr : *it;
 }
 
 void DisplayConfigurator::SetDisplayPowerInternal(

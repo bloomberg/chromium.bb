@@ -987,6 +987,27 @@ TEST_F(DisplayConfiguratorTest, ContentProtection) {
             query_content_protection_protection_mask_);
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
 
+  // Requests on invalid display should fail.
+  constexpr int64_t kInvalidDisplayId = -999;
+  configurator_.QueryContentProtection(
+      id, kInvalidDisplayId,
+      base::BindOnce(&DisplayConfiguratorTest::QueryContentProtectionCallback,
+                     base::Unretained(this)));
+  configurator_.ApplyContentProtection(
+      id, kInvalidDisplayId, CONTENT_PROTECTION_METHOD_HDCP,
+      base::BindOnce(&DisplayConfiguratorTest::ApplyContentProtectionCallback,
+                     base::Unretained(this)));
+
+  EXPECT_EQ(4, query_content_protection_call_count_);
+  EXPECT_FALSE(query_content_protection_success_);
+  EXPECT_EQ(static_cast<uint32_t>(DISPLAY_CONNECTION_TYPE_NONE),
+            query_content_protection_connection_mask_);
+  EXPECT_EQ(static_cast<uint32_t>(CONTENT_PROTECTION_METHOD_NONE),
+            query_content_protection_protection_mask_);
+
+  EXPECT_EQ(2, apply_content_protection_call_count_);
+  EXPECT_FALSE(apply_content_protection_success_);
+
   // Protections should be disabled after unregister.
   configurator_.UnregisterContentProtectionClient(id);
   EXPECT_EQ(GetSetHDCPStateAction(*outputs_[1], HDCP_STATE_UNDESIRED),
