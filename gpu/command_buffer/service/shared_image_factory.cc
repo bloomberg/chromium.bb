@@ -209,8 +209,9 @@ SharedImageBackingFactory* SharedImageFactory::GetFactoryByUsage(
     uint32_t usage,
     bool* allow_legacy_mailbox) {
   // wrapped_sk_image_factory_ is only used for OOPR.
-  constexpr auto kUsageOOPR =
-      SHARED_IMAGE_USAGE_OOP_RASTERIZATION | SHARED_IMAGE_USAGE_DISPLAY;
+  constexpr auto kUsageOOPR = SHARED_IMAGE_USAGE_RASTER |
+                              SHARED_IMAGE_USAGE_OOP_RASTERIZATION |
+                              SHARED_IMAGE_USAGE_DISPLAY;
   bool oopr_only_usage = !(usage & ~kUsageOOPR);
   bool using_wrapped_sk_image = wrapped_sk_image_factory_ && oopr_only_usage;
 
