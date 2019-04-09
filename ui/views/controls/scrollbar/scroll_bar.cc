@@ -405,7 +405,7 @@ int ScrollBar::CalculateContentsOffset(float thumb_position,
     thumb_position = thumb_position - (thumb_size / 2);
   float result = (thumb_position * (contents_size_ - viewport_size_)) /
                  (track_size - thumb_size);
-  return gfx::ToFlooredInt(result);
+  return gfx::ToRoundedInt(result);
 }
 
 void ScrollBar::SetContentsScrollOffset(int contents_scroll_offset) {
