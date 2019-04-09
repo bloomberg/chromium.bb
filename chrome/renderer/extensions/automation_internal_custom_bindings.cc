@@ -818,14 +818,12 @@ void AutomationInternalCustomBindings::AddRoutes() {
             ui::ParseIntAttribute(attribute_name.c_str());
         int attr_value;
 
-        if (attribute == ax::mojom::IntAttribute::kPosInSet) {
+        if (attribute == ax::mojom::IntAttribute::kPosInSet &&
+            node->GetPosInSet()) {
           attr_value = node->GetPosInSet();
-          if (attr_value == 0)
-            return;
-        } else if (attribute == ax::mojom::IntAttribute::kSetSize) {
+        } else if (attribute == ax::mojom::IntAttribute::kSetSize &&
+                   node->GetSetSize()) {
           attr_value = node->GetSetSize();
-          if (attr_value == 0)
-            return;
         } else if (!node->data().GetIntAttribute(attribute, &attr_value)) {
           return;
         }
