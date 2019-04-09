@@ -27,8 +27,8 @@
 #include "third_party/blink/renderer/platform/wtf/text/utf8.h"
 
 #include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
-#include "third_party/blink/renderer/platform/wtf/string_hasher.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hasher.h"
 
 namespace WTF {
 namespace unicode {
