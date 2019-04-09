@@ -762,10 +762,10 @@ class ProcessingBasedContainer {
     return failed_constraint_name;
   }
 
-  std::tuple<Score, AudioProcessingProperties> SelectSettingsAndScore(
-      const ConstraintSet& constraint_set,
-      bool should_disable_hardware_noise_suppression,
-      media::AudioParameters parameters) const {
+  std::tuple<Score, AudioProcessingProperties, base::Optional<int>>
+  SelectSettingsAndScore(const ConstraintSet& constraint_set,
+                         bool should_disable_hardware_noise_suppression,
+                         const media::AudioParameters& parameters) const {
     DCHECK(!IsEmpty());
 
     Score score(0.0);
@@ -792,8 +792,21 @@ class ProcessingBasedContainer {
     base::Optional<double> latency;
     std::tie(sub_score, latency) =
         latency_container_.SelectSettingsAndScore(constraint_set.latency);
-    DCHECK(latency != base::nullopt);
     score += sub_score;
+
+    // Only request an explicit change to the buffer size for the unprocessed
+    // container, and only if it's based on a specific user constraint.
+    base::Optional<int> requested_buffer_size;
+    if (processing_type_ == ProcessingType::kUnprocessed && latency &&
+        !constraint_set.latency.IsEmpty()) {
+      int min_buffer_size, max_buffer_size;
+      std::tie(min_buffer_size, max_buffer_size) =
+          GetMinMaxBufferSizesForAudioParameters(parameters);
+      requested_buffer_size = media::AudioLatency::GetExactBufferSize(
+          base::TimeDelta::FromSecondsD(*latency), parameters.sample_rate(),
+          parameters.frames_per_buffer(), min_buffer_size, max_buffer_size,
+          max_buffer_size);
+    }
 
     AudioProcessingProperties properties;
     Score ec_score(0.0);
@@ -818,7 +831,7 @@ class ProcessingBasedContainer {
 
     score.set_processing_priority(
         GetProcessingPriority(constraint_set.echo_cancellation));
-    return std::make_tuple(score, properties);
+    return std::make_tuple(score, properties, requested_buffer_size);
   }
 
   // The ProcessingBasedContainer is considered empty if at least one of the
@@ -969,14 +982,16 @@ class ProcessingBasedContainer {
     double allowed_latency = device_parameters.frames_per_buffer() > 0
                                  ? device_latency
                                  : fallback_latency;
-
     switch (processing_type) {
       case ProcessingType::kApmProcessed:
         return DoubleRangeSet::FromValue(fallback_latency);
       case ProcessingType::kNoApmProcessed:
         return DoubleRangeSet::FromValue(allowed_latency);
       case ProcessingType::kUnprocessed:
-        return DoubleRangeSet::FromValue(allowed_latency);
+        double min_latency, max_latency;
+        std::tie(min_latency, max_latency) =
+            GetMinMaxLatenciesForAudioParameters(device_parameters);
+        return DoubleRangeSet(min_latency, max_latency);
     }
   }
 
@@ -1164,13 +1179,15 @@ class DeviceContainer {
     Score best_score(-1.0);
     AudioProcessingProperties best_properties;
     const ProcessingBasedContainer* best_container = nullptr;
+    base::Optional<int> best_requested_buffer_size;
     for (const auto& container : processing_based_containers_) {
       if (container.IsEmpty())
         continue;
 
       Score container_score(0.0);
       AudioProcessingProperties container_properties;
-      std::tie(container_score, container_properties) =
+      base::Optional<int> requested_buffer_size;
+      std::tie(container_score, container_properties, requested_buffer_size) =
           container.SelectSettingsAndScore(
               constraint_set, should_disable_hardware_noise_suppression,
               device_parameters_);
@@ -1178,6 +1195,7 @@ class DeviceContainer {
         best_score = container_score;
         best_properties = container_properties;
         best_container = &container;
+        best_requested_buffer_size = requested_buffer_size;
       }
     }
 
@@ -1195,9 +1213,9 @@ class DeviceContainer {
     // are compared against the default device id, which is used as arbitrator
     // in case multiple candidates are available.
     return std::make_tuple(
-        score,
-        AudioCaptureSettings(device_id, disable_local_echo,
-                             render_to_associated_sink, best_properties));
+        score, AudioCaptureSettings(
+                   device_id, best_requested_buffer_size, disable_local_echo,
+                   render_to_associated_sink, best_properties));
   }
 
   // The DeviceContainer is considered empty if at least one of the
@@ -1429,9 +1447,9 @@ AudioCaptureSettings SelectSettingsAudioCapture(
   return settings;
 }
 
-AudioCaptureSettings CONTENT_EXPORT
-SelectSettingsAudioCapture(blink::MediaStreamAudioSource* source,
-                           const blink::WebMediaConstraints& constraints) {
+AudioCaptureSettings SelectSettingsAudioCapture(
+    blink::MediaStreamAudioSource* source,
+    const blink::WebMediaConstraints& constraints) {
   DCHECK(source);
   if (source->device().type != blink::MEDIA_DEVICE_AUDIO_CAPTURE &&
       source->device().type != blink::MEDIA_GUM_TAB_AUDIO_CAPTURE &&
@@ -1468,6 +1486,56 @@ SelectSettingsAudioCapture(blink::MediaStreamAudioSource* source,
 
   return SelectSettingsAudioCapture(capabilities, constraints,
                                     should_disable_hardware_noise_suppression);
+}
+
+std::tuple<int, int> GetMinMaxBufferSizesForAudioParameters(
+    const media::AudioParameters& parameters) {
+  const int default_buffer_size = parameters.frames_per_buffer();
+  DCHECK_GT(default_buffer_size, 0);
+
+  const base::Optional<media::AudioParameters::HardwareCapabilities>
+      hardware_capabilities = parameters.hardware_capabilities();
+
+  // Only support platforms where we have both fixed min and max buffer size
+  // values in order to simplify comparison logic.
+  DCHECK(!hardware_capabilities ||
+         (hardware_capabilities &&
+          // Windows returns a HardwareCapabilities with both values set to 0 if
+          // they're unknown rather than returning null.
+          ((hardware_capabilities->min_frames_per_buffer == 0 &&
+            hardware_capabilities->max_frames_per_buffer == 0) ||
+           (hardware_capabilities->min_frames_per_buffer > 0 &&
+            hardware_capabilities->max_frames_per_buffer > 0))))
+      << "Variable input latency requires both a min and max to be set";
+
+  return (hardware_capabilities &&
+          hardware_capabilities->min_frames_per_buffer > 0 &&
+          hardware_capabilities->max_frames_per_buffer > 0)
+             ? std::make_tuple(hardware_capabilities->min_frames_per_buffer,
+                               hardware_capabilities->max_frames_per_buffer)
+             : std::make_tuple(default_buffer_size, default_buffer_size);
+}
+
+std::tuple<double, double> GetMinMaxLatenciesForAudioParameters(
+    const media::AudioParameters& parameters) {
+  int min_buffer_size, max_buffer_size;
+  std::tie(min_buffer_size, max_buffer_size) =
+      GetMinMaxBufferSizesForAudioParameters(parameters);
+
+  // Doing the microseconds conversion to match what is done in
+  // AudioParameters::GetBufferDuration() so that values reported to the user
+  // are truncated consistently to the microseconds decimal place.
+  return std::make_tuple(
+      base::TimeDelta::FromMicroseconds(
+          static_cast<int64_t>(min_buffer_size *
+                               base::Time::kMicrosecondsPerSecond /
+                               static_cast<float>(parameters.sample_rate())))
+          .InSecondsF(),
+      base::TimeDelta::FromMicroseconds(
+          static_cast<int64_t>(max_buffer_size *
+                               base::Time::kMicrosecondsPerSecond /
+                               static_cast<float>(parameters.sample_rate())))
+          .InSecondsF());
 }
 
 }  // namespace content

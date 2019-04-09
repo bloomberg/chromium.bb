@@ -146,10 +146,10 @@ using AudioDeviceCaptureCapabilities =
 //    their corresponding constraints.
 // TODO(guidou): Add support for other standard constraints such as sampleRate,
 // channelCount and groupId. https://crbug.com/731170
-blink::AudioCaptureSettings CONTENT_EXPORT
-SelectSettingsAudioCapture(const AudioDeviceCaptureCapabilities& capabilities,
-                           const blink::WebMediaConstraints& constraints,
-                           bool should_disable_hardware_noise_suppression);
+CONTENT_EXPORT blink::AudioCaptureSettings SelectSettingsAudioCapture(
+    const AudioDeviceCaptureCapabilities& capabilities,
+    const blink::WebMediaConstraints& constraints,
+    bool should_disable_hardware_noise_suppression);
 
 // This variant of SelectSettings takes an existing MediaStreamAudioSource
 // as input in order to determine settings that are compatible with it.
@@ -158,9 +158,17 @@ SelectSettingsAudioCapture(const AudioDeviceCaptureCapabilities& capabilities,
 // different from those of |source| because it is currently not possible to
 // reconfigure audio tracks or sources.
 // TODO(guidou): Allow reconfiguring audio tracks. https://crbug.com/796964
-blink::AudioCaptureSettings CONTENT_EXPORT
-SelectSettingsAudioCapture(blink::MediaStreamAudioSource* source,
-                           const blink::WebMediaConstraints& constraints);
+CONTENT_EXPORT blink::AudioCaptureSettings SelectSettingsAudioCapture(
+    blink::MediaStreamAudioSource* source,
+    const blink::WebMediaConstraints& constraints);
+
+// Return a tuple with <min,max> representing the min and max buffer sizes or
+// latencies that can be provided by the given AudioParameters. The min and max
+// are guaranteed to be > 0 and with max >= min.
+CONTENT_EXPORT std::tuple<int, int> GetMinMaxBufferSizesForAudioParameters(
+    const media::AudioParameters& parameters);
+CONTENT_EXPORT std::tuple<double, double> GetMinMaxLatenciesForAudioParameters(
+    const media::AudioParameters& parameters);
 
 }  // namespace content
 

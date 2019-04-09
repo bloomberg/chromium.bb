@@ -24,10 +24,12 @@ class CONTENT_EXPORT LocalMediaStreamAudioSource
  public:
   // |consumer_render_frame_id| references the RenderFrame that will consume the
   // audio data. Audio parameters and (optionally) a pre-existing audio session
-  // ID are read from |device_info|.
+  // ID are read from |device_info|. |requested_buffer_size| is the desired
+  // buffer size for the audio hardware, a nullptr means to use the default.
   LocalMediaStreamAudioSource(
       int consumer_render_frame_id,
       const blink::MediaStreamDevice& device,
+      const int* requested_buffer_size,
       bool disable_local_echo,
       const ConstraintsCallback& started_callback,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);

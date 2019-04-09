@@ -1011,12 +1011,13 @@ blink::WebMediaStreamSource UserMediaProcessor::InitializeAudioSourceObject(
                                          device_parameters.sample_rate()),
                                 std::max(blink::kAudioProcessingSampleRate,
                                          device_parameters.sample_rate())};
-    double fallback_latency = blink::kFallbackAudioLatencyMs / 1000;
-    capabilities.latency = {
-        std::min(fallback_latency,
-                 device_parameters.GetBufferDuration().InSecondsF()),
-        std::max(fallback_latency,
-                 device_parameters.GetBufferDuration().InSecondsF())};
+    double fallback_latency =
+        static_cast<double>(blink::kFallbackAudioLatencyMs) / 1000;
+    double min_latency, max_latency;
+    std::tie(min_latency, max_latency) =
+        GetMinMaxLatenciesForAudioParameters(device_parameters);
+    capabilities.latency = {std::min(fallback_latency, min_latency),
+                            std::max(fallback_latency, max_latency)};
   }
 
   capabilities.device_id = blink::WebString::FromUTF8(device.id);
@@ -1048,6 +1049,8 @@ UserMediaProcessor::CreateAudioSource(
           audio_processing_properties)) {
     return std::make_unique<LocalMediaStreamAudioSource>(
         render_frame_->GetRoutingID(), device,
+        base::OptionalOrNullptr(current_request_info_->audio_capture_settings()
+                                    .requested_buffer_size()),
         stream_controls->disable_local_echo, source_ready, task_runner_);
   }
 
