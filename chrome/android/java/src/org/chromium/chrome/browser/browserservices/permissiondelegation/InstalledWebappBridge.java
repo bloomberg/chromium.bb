@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.browserservices.permissiondelegation;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
 
@@ -52,7 +53,8 @@ public class InstalledWebappBridge {
 
     @CalledByNative
     private static Permission[] getNotificationPermissions() {
-        return TrustedWebActivityPermissionManager.getNotificationPermissions();
+        return ChromeApplication.getComponent().resolveTwaPermissionManager()
+                .getNotificationPermissions();
     }
 
     @CalledByNative

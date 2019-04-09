@@ -43,6 +43,9 @@ public class TrustedWebActivityPermissionStore {
     private static final String KEY_ALL_ORIGINS = "origins";
     private static final String KEY_NOTIFICATION_PERMISSION_PREFIX = "notification_permission.";
 
+    private static final String KEY_PRE_TWA_NOTIFICATION_PERMISSION
+            = "pre_twa_notification_permission";
+
     private final SharedPreferences mPreferences;
 
     /**
@@ -100,6 +103,30 @@ public class TrustedWebActivityPermissionStore {
         editor.apply();
     }
 
+    /** Stores the notification state the origin had before the TWA was installed. */
+    void setPreTwaNotificationState(Origin origin, boolean enabled) {
+        SharedPreferences.Editor editor = mPreferences.edit();
+        editor.putBoolean(createNotificationPreTwaPermission(origin), enabled);
+        editor.apply();
+    }
+
+    /**
+     * Retrieves the notification state the origin had before the TWA was installed. {@code null} if
+     * no state is stored. If a value was stored, calling this method removes it.
+     */
+    Boolean getPreTwaNotificationState(Origin origin) {
+        String key = createNotificationPreTwaPermission(origin);
+        if (!mPreferences.contains(key)) return null;
+
+        boolean enabled = mPreferences.getBoolean(key, false);
+
+        SharedPreferences.Editor editor = mPreferences.edit();
+        editor.remove(key);
+        editor.apply();
+
+        return enabled;
+    }
+
     /** Clears the store, for testing. */
     @VisibleForTesting
     public void clearForTesting() {
@@ -119,5 +146,9 @@ public class TrustedWebActivityPermissionStore {
 
     private String createNotificationPermissionKey(Origin origin) {
         return KEY_NOTIFICATION_PERMISSION_PREFIX + origin.toString();
+    }
+
+    private String createNotificationPreTwaPermission(Origin origin) {
+        return KEY_PRE_TWA_NOTIFICATION_PERMISSION + origin.toString();
     }
 }
