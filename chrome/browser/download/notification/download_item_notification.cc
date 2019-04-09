@@ -207,6 +207,8 @@ DownloadItemNotification::DownloadItemNotification(
       base::MakeRefCounted<message_center::ThunkNotificationDelegate>(
           weak_factory_.GetWeakPtr()));
   notification_->set_progress(0);
+  notification_->set_fullscreen_visibility(
+      message_center::FullscreenVisibility::OVER_USER);
   Update();
 }
 
