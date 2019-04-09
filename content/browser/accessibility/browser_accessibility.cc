@@ -1492,6 +1492,19 @@ base::string16 BrowserAccessibility::GetLocalizedStringForLandmarkType() const {
   }
 }
 
+base::string16 BrowserAccessibility::GetStyleNameAttributeAsLocalizedString()
+    const {
+  const BrowserAccessibility* current_node = this;
+  while (current_node) {
+    if (current_node->GetData().role == ax::mojom::Role::kMark) {
+      const ContentClient* content_client = content::GetContentClient();
+      return content_client->GetLocalizedString(IDS_AX_ROLE_MARK);
+    }
+    current_node = current_node->PlatformGetParent();
+  }
+  return {};
+}
+
 bool BrowserAccessibility::ShouldIgnoreHoveredStateForTesting() {
   BrowserAccessibilityStateImpl* accessibility_state =
       BrowserAccessibilityStateImpl::GetInstance();

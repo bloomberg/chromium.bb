@@ -100,6 +100,7 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   base::string16 GetLocalizedStringForLandmarkType() const override;
   base::string16 GetLocalizedStringForImageAnnotationStatus(
       ax::mojom::ImageAnnotationStatus status) const override;
+  base::string16 GetStyleNameAttributeAsLocalizedString() const override;
   bool ShouldIgnoreHoveredStateForTesting() override;
   const ui::AXUniqueId& GetUniqueId() const override;
   std::set<AXPlatformNode*> GetReverseRelations(

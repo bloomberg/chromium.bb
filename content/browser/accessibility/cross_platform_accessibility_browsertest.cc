@@ -564,6 +564,59 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
+                       GetStyleNameAttributeAsLocalizedString) {
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ax::mojom::Event::kLoadComplete);
+  GURL url(
+      "data:text/html,"
+      "<!doctype html>"
+      "<p>text <mark>mark text</mark></p>");
+
+  NavigateToURL(shell(), url);
+  waiter.WaitForNotification();
+
+  BrowserAccessibility* root = GetManager()->GetRoot();
+  ASSERT_NE(nullptr, root);
+  ASSERT_EQ(1u, root->PlatformChildCount());
+
+  auto TestGetStyleNameAttributeAsLocalizedString =
+      [](BrowserAccessibility* node, ax::mojom::Role expected_role,
+         const base::string16& expected_localized_style_name_attribute = {}) {
+        ASSERT_NE(nullptr, node);
+
+        EXPECT_EQ(expected_role, node->GetRole());
+        EXPECT_EQ(expected_localized_style_name_attribute,
+                  node->GetStyleNameAttributeAsLocalizedString());
+      };
+
+  // For testing purposes, assume we get en-US localized strings.
+  BrowserAccessibility* para_node = root->PlatformGetChild(0);
+  ASSERT_EQ(2u, para_node->PlatformChildCount());
+  TestGetStyleNameAttributeAsLocalizedString(para_node,
+                                             ax::mojom::Role::kParagraph);
+
+  BrowserAccessibility* text_node = para_node->PlatformGetChild(0);
+  ASSERT_EQ(0u, text_node->PlatformChildCount());
+  TestGetStyleNameAttributeAsLocalizedString(text_node,
+                                             ax::mojom::Role::kStaticText);
+
+  BrowserAccessibility* mark_node = para_node->PlatformGetChild(1);
+  TestGetStyleNameAttributeAsLocalizedString(
+      mark_node, ax::mojom::Role::kMark,
+      base::ASCIIToUTF16("highlighted content"));
+
+  // Android doesn't always have a child in this case.
+  if (mark_node->PlatformChildCount() > 0) {
+    BrowserAccessibility* mark_text_node = mark_node->PlatformGetChild(0);
+    ASSERT_EQ(0u, mark_text_node->PlatformChildCount());
+    TestGetStyleNameAttributeAsLocalizedString(
+        mark_text_node, ax::mojom::Role::kStaticText,
+        base::ASCIIToUTF16("highlighted content"));
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
                        TooltipStringAttributeMutuallyExclusiveOfNameFromTitle) {
   const char url_str[] =
       "data:text/html,"

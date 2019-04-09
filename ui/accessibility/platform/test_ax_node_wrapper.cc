@@ -543,6 +543,17 @@ base::string16 TestAXNodeWrapper::GetLocalizedStringForImageAnnotationStatus(
   return base::string16();
 }
 
+base::string16 TestAXNodeWrapper::GetStyleNameAttributeAsLocalizedString()
+    const {
+  AXNode* current_node = node_;
+  while (current_node) {
+    if (current_node->data().role == ax::mojom::Role::kMark)
+      return base::ASCIIToUTF16("mark");
+    current_node = current_node->parent();
+  }
+  return base::string16();
+}
+
 bool TestAXNodeWrapper::ShouldIgnoreHoveredStateForTesting() {
   return true;
 }

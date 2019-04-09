@@ -194,6 +194,7 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
       ax::mojom::ImageAnnotationStatus status) const override;
   base::string16 GetLocalizedRoleDescriptionForUnlabeledImage() const override;
   base::string16 GetLocalizedStringForLandmarkType() const override;
+  base::string16 GetStyleNameAttributeAsLocalizedString() const override;
 
   //
   // Testing.

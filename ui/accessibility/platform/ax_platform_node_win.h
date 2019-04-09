@@ -1191,6 +1191,12 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   // Helper method for getting the vertical scroll percent.
   double GetVerticalScrollPercent();
 
+  // Helper to get the UIA FontName for this node as a BSTR.
+  BSTR GetFontNameAttributeAsBSTR() const;
+
+  // Helper to get the UIA StyleName for this node as a BSTR.
+  BSTR GetStyleNameAttributeAsBSTR() const;
+
   // IRawElementProviderSimple support methods.
 
   using PatternProviderFactoryMethod = HRESULT (*)(AXPlatformNodeWin*,

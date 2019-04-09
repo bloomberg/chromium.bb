@@ -290,6 +290,30 @@ bool AXPlatformNodeBase::GetString16Attribute(
   return GetData().GetString16Attribute(attribute, value);
 }
 
+const std::string& AXPlatformNodeBase::GetInheritedStringAttribute(
+    ax::mojom::StringAttribute attribute) const {
+  const AXPlatformNodeBase* current_node = this;
+
+  do {
+    if (!current_node->delegate_) {
+      return base::EmptyString();
+    }
+
+    if (current_node->GetData().HasStringAttribute(attribute)) {
+      return current_node->GetData().GetStringAttribute(attribute);
+    }
+
+    current_node = FromNativeViewAccessible(current_node->GetParent());
+  } while (current_node);
+
+  return base::EmptyString();
+}
+
+const base::string16 AXPlatformNodeBase::GetInheritedString16Attribute(
+    ax::mojom::StringAttribute attribute) const {
+  return base::UTF8ToUTF16(GetInheritedStringAttribute(attribute));
+}
+
 bool AXPlatformNodeBase::HasIntListAttribute(
     ax::mojom::IntListAttribute attribute) const {
   if (!delegate_)
