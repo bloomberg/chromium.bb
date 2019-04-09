@@ -4,15 +4,26 @@
 
 import("//net/features.gni")
 
-source_set("network_impl") {
+source_set("network_public") {
   sources = [
     "net/network_chromium.h",
+  ]
+
+  deps = [
+    "//base",
+  ]
+}
+
+source_set("network") {
+  sources = [
     "net/network_impl.cc",
     "net/network_impl.h",
   ]
 
+  visibility = [ ":*" ]
+
   deps = [
-    ":update_client",
+    ":network_public",
     "//base",
     "//net",
     "//services/network/public/cpp:cpp",
@@ -39,14 +50,6 @@ source_set("patch_impl") {
   deps = [
     ":update_client",
     "//components/services/patch/public/cpp",
-  ]
-}
-
-group("common_impl") {
-  public_deps = [
-    ":network_impl",
-    ":patch_impl",
-    ":unzip_impl",
   ]
 }
 
@@ -122,15 +125,28 @@ static_library("update_client") {
     "utils.h",
   ]
 
+  # Allows callers to include the network factory through "update_client" deps.
+  public_deps = [
+    ":network_public",
+  ]
+
   deps = [
+    ":network",
+    ":network_public",
     "//base",
     "//components/client_update_protocol",
     "//components/crx_file",
+    "//components/data_use_measurement/core",
     "//components/prefs",
     "//components/version_info:version_info",
     "//courgette:courgette_lib",
     "//crypto",
     "//url",
+  ]
+
+  allow_circular_includes_from = [
+    ":network",
+    ":network_public",
   ]
 }
 
@@ -150,7 +166,6 @@ static_library("test_support") {
   ]
 
   deps = [
-    ":network_impl",
     ":patch_impl",
     ":unzip_impl",
     "//base",
@@ -218,7 +233,7 @@ source_set("unit_tests") {
   }
 
   deps = [
-    ":network_impl",
+    ":network",
     ":patch_impl",
     ":test_support",
     ":unit_tests_bundle_data",
