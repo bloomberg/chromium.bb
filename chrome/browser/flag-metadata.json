@@ -1654,11 +1654,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-spelling-feedback-field-trial",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-suggestions-with-substring-match",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
