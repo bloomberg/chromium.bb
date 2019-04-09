@@ -3870,7 +3870,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
-          'isolated_scripts': 'chromium_dbg_isolated_scripts',
+          'isolated_scripts': 'chromium_win_dbg_isolated_scripts',
         },
       },
       'Win7 (32) Tests': {
