@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser;
+package org.chromium.chrome.browser.login;
 
 import android.app.Activity;
 
@@ -161,8 +161,8 @@ public class ChromeHttpAuthHandler extends EmptyTabObserver {
     // Native side calls
     // ---------------------------------------------
 
-    private native void nativeSetAuth(long nativeChromeHttpAuthHandler,
-            String username, String password);
+    private native void nativeSetAuth(
+            long nativeChromeHttpAuthHandler, String username, String password);
     private native void nativeCancelAuth(long nativeChromeHttpAuthHandler);
     private native String nativeGetMessageBody(long nativeChromeHttpAuthHandler);
 }
