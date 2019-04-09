@@ -11,6 +11,7 @@
 #include "ash/ash_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
@@ -99,7 +100,7 @@ class ASH_EXPORT MediaNotificationItem
 
   std::set<media_session::mojom::MediaSessionAction> session_actions_;
 
-  gfx::ImageSkia session_artwork_;
+  base::Optional<gfx::ImageSkia> session_artwork_;
 
   gfx::ImageSkia session_icon_;
 

@@ -8,6 +8,7 @@
 #include "ash/media/media_notification_constants.h"
 #include "ash/media/media_notification_controller.h"
 #include "ash/shell.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "components/vector_icons/vector_icons.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
@@ -66,7 +67,20 @@ SkColor GetMediaNotificationColor(const views::View& view) {
                                 views::style::STYLE_PRIMARY);
 }
 
+void RecordMetadataHistogram(MediaNotificationView::Metadata metadata) {
+  UMA_HISTOGRAM_ENUMERATION(MediaNotificationView::kMetadataHistogramName,
+                            metadata);
+}
+
 }  // namespace
+
+// static
+const char MediaNotificationView::kArtworkHistogramName[] =
+    "Media.Notification.ArtworkPresent";
+
+// static
+const char MediaNotificationView::kMetadataHistogramName[] =
+    "Media.Notification.MetadataPresent";
 
 MediaNotificationView::MediaNotificationView(
     const message_center::Notification& notification)
@@ -266,6 +280,17 @@ void MediaNotificationView::UpdateWithMediaMetadata(
   title_label_->SetText(metadata.title);
   artist_label_->SetText(metadata.artist);
 
+  if (!metadata.title.empty())
+    RecordMetadataHistogram(Metadata::kTitle);
+
+  if (!metadata.artist.empty())
+    RecordMetadataHistogram(Metadata::kArtist);
+
+  if (!metadata.album.empty())
+    RecordMetadataHistogram(Metadata::kAlbum);
+
+  RecordMetadataHistogram(Metadata::kCount);
+
   PreferredSizeChanged();
   Layout();
   SchedulePaint();
@@ -289,6 +314,8 @@ void MediaNotificationView::UpdateWithMediaArtwork(
 
   has_artwork_ = !image.isNull();
   UpdateViewForExpandedState();
+
+  UMA_HISTOGRAM_BOOLEAN(kArtworkHistogramName, has_artwork_);
 
   PreferredSizeChanged();
   Layout();

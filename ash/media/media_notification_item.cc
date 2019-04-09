@@ -131,7 +131,7 @@ void MediaNotificationItem::MediaControllerImageChanged(
       session_artwork_ = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
 
       if (view_)
-        view_->UpdateWithMediaArtwork(session_artwork_);
+        view_->UpdateWithMediaArtwork(*session_artwork_);
       break;
     case media_session::mojom::MediaSessionImageType::kSourceIcon:
       session_icon_ = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
@@ -151,7 +151,9 @@ void MediaNotificationItem::SetView(MediaNotificationView* view) {
     view_->UpdateWithMediaSessionInfo(session_info_);
     view_->UpdateWithMediaMetadata(session_metadata_);
     view_->UpdateWithMediaActions(session_actions_);
-    view_->UpdateWithMediaArtwork(session_artwork_);
+
+    if (session_artwork_.has_value())
+      view_->UpdateWithMediaArtwork(*session_artwork_);
   }
 }
 
