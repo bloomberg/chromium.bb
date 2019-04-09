@@ -18955,6 +18955,7 @@ Called by update_net_error_codes.py.-->
   <int value="1327" label="AUTOTESTPRIVATE_IMPORTCROSTINI"/>
   <int value="1328" label="ACCESSIBILITY_PRIVATE_SETVIRTUALKEYBOARDVISIBLE"/>
   <int value="1329" label="AUTOTESTPRIVATE_SHOWVIRTUALKEYBOARDIFENABLED"/>
+  <int value="1330" label="FEEDBACKPRIVATE_LOGINFEEDBACKCOMPLETE"/>
 </enum>
 
 <enum name="ExtensionIconState">

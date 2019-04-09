@@ -148,6 +148,17 @@ class FeedbackPrivateSendFeedbackFunction : public UIThreadExtensionFunction {
   void OnCompleted(api::feedback_private::LandingPageType type, bool success);
 };
 
+class FeedbackPrivateLoginFeedbackCompleteFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("feedbackPrivate.loginFeedbackComplete",
+                             FEEDBACKPRIVATE_LOGINFEEDBACKCOMPLETE)
+
+ protected:
+  ~FeedbackPrivateLoginFeedbackCompleteFunction() override {}
+  ResponseAction Run() override;
+};
+
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_FEEDBACK_PRIVATE_FEEDBACK_PRIVATE_API_H_

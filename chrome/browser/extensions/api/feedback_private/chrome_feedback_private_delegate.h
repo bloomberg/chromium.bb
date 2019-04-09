@@ -30,6 +30,7 @@ class ChromeFeedbackPrivateDelegate : public FeedbackPrivateDelegate {
       std::unique_ptr<FeedbackCommon::SystemLogsMap> original_sys_logs,
       content::BrowserContext* context,
       system_logs::SysLogsFetcherCallback callback) const override;
+  void UnloadFeedbackExtension(content::BrowserContext* context) const override;
 #endif  // defined(OS_CHROMEOS)
   std::string GetSignedInUserEmail(
       content::BrowserContext* context) const override;

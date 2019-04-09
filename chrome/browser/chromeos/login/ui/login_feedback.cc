@@ -81,7 +81,8 @@ FeedbackExtensionLoader::FeedbackExtensionLoader(Profile* profile)
 
 FeedbackExtensionLoader::~FeedbackExtensionLoader() {
   extension_registry_->RemoveObserver(this);
-  GetComponentLoader(profile_)->Remove(extension_misc::kFeedbackExtensionId);
+  // The extension will be removed via a JS FeedbackPrivate API call to
+  // indicate when it is done,
 }
 
 void FeedbackExtensionLoader::Load(base::OnceClosure on_ready_callback) {

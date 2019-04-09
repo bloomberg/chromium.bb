@@ -229,6 +229,11 @@ namespace feedbackPrivate {
     // </ul>
     static void readLogSource(ReadLogSourceParams params,
                               ReadLogSourceCallback callback);
+
+    // Invoked when the extension is complete during sending feedback from the
+    // login page. This is then used to know we can unload the feedback
+    // extension from the login profile.
+    static void loginFeedbackComplete();
   };
 
   interface Events {

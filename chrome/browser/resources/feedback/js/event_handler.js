@@ -166,7 +166,6 @@ class FeedbackRequest {
       this.onSystemInfoReadyCallback_ = this.sendReportNow;
       return;
     }
-
     this.sendReportNow();
   }
 
@@ -198,6 +197,9 @@ class FeedbackRequest {
                 'Feedback: Report for request with ID ' + ID +
                 ' will be sent later.');
           }
+          if (FLOW == chrome.feedbackPrivate.FeedbackFlow.LOGIN) {
+            chrome.feedbackPrivate.loginFeedbackComplete();
+          }
         });
   }
 
@@ -208,6 +210,10 @@ class FeedbackRequest {
   onWindowClosed() {
     if (!this.reportIsBeingSent_) {
       this.isRequestCanceled_ = true;
+      if (this.feedbackInfo_.flow ==
+          chrome.feedbackPrivate.FeedbackFlow.LOGIN) {
+        chrome.feedbackPrivate.loginFeedbackComplete();
+      }
     }
   }
 }
