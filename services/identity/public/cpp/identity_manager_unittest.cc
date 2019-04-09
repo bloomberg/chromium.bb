@@ -110,50 +110,6 @@ class CustomFakeProfileOAuth2TokenService
   base::OnceClosure on_access_token_invalidated_callback_;
 };
 
-// Class that observes updates from ProfileOAuth2TokenService and and verifies
-// thereby that IdentityManager receives updates before direct observers of
-// ProfileOAuth2TokenService.
-class TestTokenServiceObserver : public OAuth2TokenService::Observer,
-                                 public identity::IdentityManager::Observer {
- public:
-  explicit TestTokenServiceObserver(OAuth2TokenService* token_service)
-      : token_service_(token_service) {
-    token_service_->AddObserver(this);
-  }
-  ~TestTokenServiceObserver() override { token_service_->RemoveObserver(this); }
-
-  void set_identity_manager(IdentityManager* identity_manager) {
-    identity_manager_ = identity_manager;
-  }
-
-  void set_on_refresh_token_available_callback(base::OnceClosure callback) {
-    on_refresh_token_available_callback_ = std::move(callback);
-  }
-  void set_on_refresh_token_revoked_callback(base::OnceClosure callback) {
-    on_refresh_token_revoked_callback_ = std::move(callback);
-  }
-
- private:
-  // OAuth2TokenService::Observer:
-  void OnRefreshTokenAvailable(const std::string& account_id) override {
-    // IdentityManager should have already updated its state.
-    EXPECT_TRUE(identity_manager_->HasAccountWithRefreshToken(account_id));
-    if (on_refresh_token_available_callback_)
-      std::move(on_refresh_token_available_callback_).Run();
-  }
-  void OnRefreshTokenRevoked(const std::string& account_id) override {
-    // IdentityManager should have already updated its state.
-    EXPECT_FALSE(identity_manager_->HasAccountWithRefreshToken(account_id));
-    if (on_refresh_token_revoked_callback_)
-      std::move(on_refresh_token_revoked_callback_).Run();
-  }
-
-  OAuth2TokenService* token_service_;
-  IdentityManager* identity_manager_;
-  base::OnceClosure on_refresh_token_available_callback_;
-  base::OnceClosure on_refresh_token_revoked_callback_;
-};
-
 class TestIdentityManagerDiagnosticsObserver
     : IdentityManager::DiagnosticsObserver {
  public:
@@ -254,10 +210,8 @@ class TestIdentityManagerDiagnosticsObserver
 
 class IdentityManagerTest : public testing::Test {
  protected:
-  IdentityManagerTest()
-      : signin_client_(&pref_service_), token_service_(&pref_service_) {
+  IdentityManagerTest() : signin_client_(&pref_service_) {
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
-    ProfileOAuth2TokenService::RegisterProfilePrefs(pref_service_.registry());
     IdentityManager::RegisterProfilePrefs(pref_service_.registry());
     IdentityManager::RegisterLocalStatePrefs(pref_service_.registry());
 
@@ -269,7 +223,6 @@ class IdentityManagerTest : public testing::Test {
   ~IdentityManagerTest() override {
     identity_manager_->Shutdown();
     signin_client_.Shutdown();
-    token_service_.Shutdown();
     account_tracker_.Shutdown();
   }
 
@@ -292,7 +245,8 @@ class IdentityManagerTest : public testing::Test {
   AccountTrackerService* account_tracker() { return &account_tracker_; }
 
   CustomFakeProfileOAuth2TokenService* token_service() {
-    return &token_service_;
+    return static_cast<CustomFakeProfileOAuth2TokenService*>(
+        identity_manager()->GetTokenService());
   }
 
   // See RecreateIdentityManager.
@@ -325,9 +279,12 @@ class IdentityManagerTest : public testing::Test {
     }
     identity_manager_.reset();
 
+    auto token_service =
+        std::make_unique<CustomFakeProfileOAuth2TokenService>(&pref_service_);
+
     auto gaia_cookie_manager_service =
         std::make_unique<GaiaCookieManagerService>(
-            &token_service_, &signin_client_,
+            token_service.get(), &signin_client_,
             base::BindRepeating(
                 [](network::TestURLLoaderFactory* test_url_loader_factory)
                     -> scoped_refptr<network::SharedURLLoaderFactory> {
@@ -337,17 +294,17 @@ class IdentityManagerTest : public testing::Test {
 
     auto account_fetcher_service = std::make_unique<AccountFetcherService>();
     account_fetcher_service->Initialize(
-        &signin_client_, &token_service_, &account_tracker_,
+        &signin_client_, token_service.get(), &account_tracker_,
         std::make_unique<image_fetcher::FakeImageDecoder>());
 
 #if defined(OS_CHROMEOS)
     DCHECK_EQ(account_consistency, signin::AccountConsistencyMethod::kDisabled)
         << "AccountConsistency is not used by SigninManagerBase";
     auto signin_manager = std::make_unique<SigninManagerBase>(
-        &signin_client_, &token_service_, &account_tracker_);
+        &signin_client_, token_service.get(), &account_tracker_);
 #else
     auto signin_manager = std::make_unique<SigninManager>(
-        &signin_client_, &token_service_, &account_tracker_,
+        &signin_client_, token_service.get(), &account_tracker_,
         gaia_cookie_manager_service.get(), account_consistency);
 #endif
 
@@ -367,12 +324,12 @@ class IdentityManagerTest : public testing::Test {
         gaia_cookie_manager_service.get());
 
     auto diagnostics_provider = std::make_unique<DiagnosticsProviderImpl>(
-        &token_service_, gaia_cookie_manager_service.get());
+        token_service.get(), gaia_cookie_manager_service.get());
 
     identity_manager_.reset(new IdentityManager(
-        std::move(gaia_cookie_manager_service), std::move(signin_manager),
-        std::move(account_fetcher_service), &token_service_, &account_tracker_,
-        nullptr, nullptr, std::move(accounts_cookie_mutator),
+        std::move(token_service), std::move(gaia_cookie_manager_service),
+        std::move(signin_manager), std::move(account_fetcher_service),
+        &account_tracker_, nullptr, nullptr, std::move(accounts_cookie_mutator),
         std::move(diagnostics_provider)));
     identity_manager_observer_.reset(
         new TestIdentityManagerObserver(identity_manager_.get()));
@@ -416,7 +373,6 @@ class IdentityManagerTest : public testing::Test {
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   AccountTrackerService account_tracker_;
   TestSigninClient signin_client_;
-  CustomFakeProfileOAuth2TokenService token_service_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   std::unique_ptr<IdentityManager> identity_manager_;
   std::unique_ptr<TestIdentityManagerObserver> identity_manager_observer_;
@@ -595,35 +551,7 @@ TEST_F(IdentityManagerTest,
   EXPECT_FALSE(identity_manager()->HasPrimaryAccountWithRefreshToken());
 }
 
-TEST_F(IdentityManagerTest, GetAccountsReflectsNonemptyInitialState) {
-  EXPECT_TRUE(identity_manager()->GetAccountsWithRefreshTokens().empty());
-
-  // Add a refresh token for the primary account and sanity-check that it shows
-  // up in GetAccountsWithRefreshTokens().
-  SetRefreshTokenForPrimaryAccount(identity_manager());
-
-  std::vector<AccountInfo> accounts_after_update =
-      identity_manager()->GetAccountsWithRefreshTokens();
-
-  EXPECT_EQ(1u, accounts_after_update.size());
-  EXPECT_EQ(accounts_after_update[0].account_id, primary_account_id());
-  EXPECT_EQ(accounts_after_update[0].gaia, kTestGaiaId);
-  EXPECT_EQ(accounts_after_update[0].email, kTestEmail);
-
-  // Recreate the IdentityManager and check that the newly-created instance
-  // reflects the current state.
-  RecreateIdentityManager();
-
-  std::vector<AccountInfo> accounts_after_recreation =
-      identity_manager()->GetAccountsWithRefreshTokens();
-  EXPECT_EQ(1u, accounts_after_recreation.size());
-  EXPECT_EQ(accounts_after_recreation[0].account_id, primary_account_id());
-  EXPECT_EQ(accounts_after_recreation[0].gaia, kTestGaiaId);
-  EXPECT_EQ(accounts_after_recreation[0].email, kTestEmail);
-}
-
-TEST_F(IdentityManagerTest,
-       QueryingOfRefreshTokensReflectsNonemptyInitialState) {
+TEST_F(IdentityManagerTest, QueryingOfRefreshTokensReflectsEmptyInitialState) {
   CoreAccountInfo account_info = identity_manager()->GetPrimaryAccountInfo();
   std::string account_id = account_info.account_id;
 
@@ -632,15 +560,6 @@ TEST_F(IdentityManagerTest,
   EXPECT_FALSE(identity_manager()->HasPrimaryAccountWithRefreshToken());
 
   SetRefreshTokenForPrimaryAccount(identity_manager());
-
-  EXPECT_TRUE(
-      identity_manager()->HasAccountWithRefreshToken(account_info.account_id));
-  EXPECT_TRUE(identity_manager()->HasPrimaryAccountWithRefreshToken());
-
-  // Recreate the IdentityManager and check that the newly-created instance
-  // reflects the current state.
-  RecreateIdentityManager(signin::AccountConsistencyMethod::kDisabled,
-                          SigninManagerSetup::kWithAuthenticatedAccout);
 
   EXPECT_TRUE(
       identity_manager()->HasAccountWithRefreshToken(account_info.account_id));
@@ -1541,63 +1460,6 @@ TEST_F(IdentityManagerTest, CallbackSentOnRefreshTokenRemovalOfUnknownAccount) {
   EXPECT_EQ(
       dummy_account_id,
       identity_manager_observer()->AccountIdFromRefreshTokenRemovedCallback());
-}
-
-TEST_F(
-    IdentityManagerTest,
-    IdentityManagerGivesConsistentValuesFromTokenServiceObserverNotificationOfTokenUpdate) {
-  base::RunLoop run_loop;
-  TestTokenServiceObserver token_service_observer(token_service());
-  token_service_observer.set_on_refresh_token_available_callback(
-      run_loop.QuitClosure());
-
-  // NOTE: For this test to be meaningful, TestTokenServiceObserver
-  // needs to be created before the IdentityManager instance that it's
-  // interacting with. Otherwise, even an implementation where they're
-  // both TokenService::Observers would work as IdentityManager would
-  // get notified first during the observer callbacks.
-  RecreateIdentityManager(signin::AccountConsistencyMethod::kDisabled,
-                          SigninManagerSetup::kWithAuthenticatedAccout);
-  EXPECT_TRUE(identity_manager()->GetAccountsWithRefreshTokens().empty());
-  token_service_observer.set_identity_manager(identity_manager());
-
-  // When the observer receives the callback directly from the token service,
-  // IdentityManager should have already received the event and forwarded it on
-  // to its own observers. This is checked internally by
-  // TestTokenServiceObserver.
-  token_service()->UpdateCredentials(primary_account_id(), "refresh_token");
-  run_loop.Run();
-}
-
-TEST_F(
-    IdentityManagerTest,
-    IdentityManagerGivesConsistentValuesFromTokenServiceObserverNotificationOfTokenRemoval) {
-  base::RunLoop run_loop;
-  TestTokenServiceObserver token_service_observer(token_service());
-  token_service_observer.set_on_refresh_token_available_callback(
-      run_loop.QuitClosure());
-
-  // NOTE: For this test to be meaningful, TestTokenServiceObserver
-  // needs to be created before the IdentityManager instance that it's
-  // interacting with. Otherwise, even an implementation where they're
-  // both TokenService::Observers would work as IdentityManager would
-  // get notified first during the observer callbacks.
-  RecreateIdentityManager(signin::AccountConsistencyMethod::kDisabled,
-                          SigninManagerSetup::kWithAuthenticatedAccout);
-  token_service_observer.set_identity_manager(identity_manager());
-
-  token_service()->UpdateCredentials(primary_account_id(), "refresh_token");
-  run_loop.Run();
-
-  // When the observer receives the callback directly from the token service,
-  // IdentityManager should have already received the event and forwarded it on
-  // to its own observers. This is checked internally by
-  // TestTokenServiceObserver.
-  base::RunLoop run_loop2;
-  token_service_observer.set_on_refresh_token_revoked_callback(
-      run_loop2.QuitClosure());
-  token_service()->RevokeCredentials(primary_account_id());
-  run_loop2.Run();
 }
 
 TEST_F(IdentityManagerTest, IdentityManagerGetsTokensLoadedEvent) {
