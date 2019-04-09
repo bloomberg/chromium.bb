@@ -466,18 +466,6 @@ const FeatureEntry::Choice kTopChromeTouchUiChoices[] = {
     {flags_ui::kGenericExperimentChoiceEnabled, switches::kTopChromeTouchUi,
      switches::kTopChromeTouchUiEnabled}};
 
-const FeatureEntry::Choice kNewTabButtonPositionChoices[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flag_descriptions::kNewTabButtonPositionOppositeCaption,
-     switches::kNewTabButtonPosition,
-     switches::kNewTabButtonPositionOppositeCaption},
-    {flag_descriptions::kNewTabButtonPositionLeading,
-     switches::kNewTabButtonPosition, switches::kNewTabButtonPositionLeading},
-    {flag_descriptions::kNewTabButtonPositionAfterTabs,
-     switches::kNewTabButtonPosition, switches::kNewTabButtonPositionAfterTabs},
-    {flag_descriptions::kNewTabButtonPositionTrailing,
-     switches::kNewTabButtonPosition, switches::kNewTabButtonPositionTrailing}};
-
 #if defined(OS_CHROMEOS)
 const FeatureEntry::Choice kAshShelfColorSchemeChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
@@ -1285,9 +1273,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"top-chrome-touch-ui", flag_descriptions::kTopChromeTouchUiName,
      flag_descriptions::kTopChromeTouchUiDescription, kOsDesktop,
      MULTI_VALUE_TYPE(kTopChromeTouchUiChoices)},
-    {"new-tab-button-position", flag_descriptions::kNewTabButtonPosition,
-     flag_descriptions::kNewTabButtonPositionDescription, kOsDesktop,
-     MULTI_VALUE_TYPE(kNewTabButtonPositionChoices)},
 #if !defined(OS_ANDROID)
     {"new-tab-loading-animation", flag_descriptions::kNewTabLoadingAnimation,
      flag_descriptions::kNewTabLoadingAnimationDescription, kOsDesktop,
