@@ -28,7 +28,7 @@ import java.util.List;
  * objects.
  */
 public class TabGridSheetCoordinator implements Destroyable {
-    public final static String COMPONENT_NAME = "TabGridSheet";
+    final static String COMPONENT_NAME = "TabGridSheet";
     private final Context mContext;
     private final TabListCoordinator mTabGridCoordinator;
     private final TabGridSheetMediator mMediator;
