@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "components/content_capture/browser/content_capture_receiver.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 
 namespace content_capture {
@@ -30,12 +31,14 @@ ContentCaptureReceiverManager::ContentCaptureReceiverManager(
 
 ContentCaptureReceiverManager::~ContentCaptureReceiverManager() = default;
 
+// static
 ContentCaptureReceiverManager* ContentCaptureReceiverManager::FromWebContents(
     content::WebContents* contents) {
   return static_cast<ContentCaptureReceiverManager*>(
       contents->GetUserData(kUserDataKey));
 }
 
+// static
 void ContentCaptureReceiverManager::BindContentCaptureReceiver(
     mojom::ContentCaptureReceiverAssociatedRequest request,
     content::RenderFrameHost* render_frame_host) {
@@ -77,6 +80,16 @@ void ContentCaptureReceiverManager::RenderFrameCreated(
 void ContentCaptureReceiverManager::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
   frame_map_.erase(render_frame_host);
+}
+
+void ContentCaptureReceiverManager::ReadyToCommitNavigation(
+    content::NavigationHandle* navigation_handle) {
+  auto* receiver =
+      ContentCaptureReceiverForFrame(navigation_handle->GetRenderFrameHost());
+  if (ShouldCapture(navigation_handle->GetURL()))
+    receiver->StartCapture();
+  else
+    receiver->StopCapture();
 }
 
 void ContentCaptureReceiverManager::DidCaptureContent(

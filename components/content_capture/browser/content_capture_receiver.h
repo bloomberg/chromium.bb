@@ -33,6 +33,8 @@ class ContentCaptureReceiver : public mojom::ContentCaptureReceiver {
   void DidCaptureContent(const ContentCaptureData& data,
                          bool first_data) override;
   void DidRemoveContent(const std::vector<int64_t>& data) override;
+  void StartCapture();
+  void StopCapture();
 
   content::RenderFrameHost* rfh() const { return rfh_; }
 
@@ -42,6 +44,8 @@ class ContentCaptureReceiver : public mojom::ContentCaptureReceiver {
   }
 
  private:
+  const mojom::ContentCaptureSenderAssociatedPtr& GetContentCaptureSender();
+
   mojo::AssociatedBinding<mojom::ContentCaptureReceiver> bindings_;
   content::RenderFrameHost* rfh_;
   ContentCaptureData frame_content_capture_data_;
@@ -53,7 +57,8 @@ class ContentCaptureReceiver : public mojom::ContentCaptureReceiver {
   // frame's; if the Id is generated in sender, the
   // ContentCaptureReceiverManager can't get parent frame id in both cases.
   int64_t id_;
-
+  bool content_capture_enabled = false;
+  mojom::ContentCaptureSenderAssociatedPtr content_capture_sender_ = nullptr;
   DISALLOW_COPY_AND_ASSIGN(ContentCaptureReceiver);
 };
 

@@ -70,6 +70,8 @@ class ContentCaptureReceiverManagerHelper
     removed_session_ = data;
   }
 
+  bool ShouldCapture(const GURL& url) override { return false; }
+
   const ContentCaptureSession& parent_session() const {
     return parent_session_;
   }

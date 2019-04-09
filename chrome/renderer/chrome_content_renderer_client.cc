@@ -519,8 +519,10 @@ void ChromeContentRendererClient::RenderFrameCreated(
   new AutofillAgent(render_frame, password_autofill_agent,
                     password_generation_agent, associated_interfaces);
 
-  if (content_capture::features::IsContentCaptureEnabled())
-    new content_capture::ContentCaptureSender(render_frame);
+  if (content_capture::features::IsContentCaptureEnabled()) {
+    new content_capture::ContentCaptureSender(render_frame,
+                                              associated_interfaces);
+  }
 
   // Owned by |render_frame|.
   page_load_metrics::MetricsRenderFrameObserver* metrics_render_frame_observer =
