@@ -82,9 +82,9 @@ const base::Feature kSyncPseudoUSSSupervisedUsers{
 const base::Feature kSyncPseudoUSSThemes{"SyncPseudoUSSThemes",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Controls whether a user can send tabs between synced devices
+// Controls whether a user can receive tabs from their synced devices
 const base::Feature kSyncSendTabToSelf{"SyncSendTabToSelf",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, allows the Sync machinery to start with a signed-in account that
 // has *not* been chosen as Chrome's primary account (see IdentityManager). Only
