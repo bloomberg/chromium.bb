@@ -18,7 +18,7 @@
         <div class="settings-box first two-line">
           <cr-input class="printer-name-input" autofocus
               id="printerName"
-              value="{{activePrinter.printerName}}"
+              value="{{pendingPrinter_.printerName}}"
               on-input="onPrinterInfoChange_"
               label="$i18n{printerName}"
               maxlength=64>
@@ -27,8 +27,8 @@
         <div class="settings-box two-line">
           <cr-input label="$i18n{printerAddress}"
               id="printerAddress"
-              value="{{activePrinter.printerAddress}}"
               on-input="onPrinterInfoChange_"
+              value="{{pendingPrinter_.printerAddress}}"
               disabled="[[!networkProtocolActive_]]"
               maxlength=128>
           </cr-input>
@@ -38,7 +38,7 @@
             <div id="printerProtocol" class="label">$i18n{printerProtocol}</div>
             <div class="secondary">
               <select class="md-select" aria-labelledby="printerProtocol"
-                  value="[[activePrinter.printerProtocol]]"
+                  value="[[pendingPrinter_.printerProtocol]]"
                   on-change="onProtocolChange_"
                   disabled="[[!networkProtocolActive_]]">
                 <option value="ipp" disabled="[[!networkProtocolActive_]]">
@@ -71,7 +71,7 @@
         </div>
         <div class="settings-box two-line">
           <cr-input id="printerQueue" label="$i18n{printerQueue}"
-              value="{{activePrinter.printerQueue}}"
+              value="{{pendingPrinter_.printerQueue}}"
               on-input="onPrinterInfoChange_"
               disabled="[[!networkProtocolActive_]]"
               maxlength=64>
@@ -79,21 +79,21 @@
         </div>
         <div class="settings-box two-line">
           <cr-input label="$i18n{printerURI}" readonly
-              value="[[getPrinterURI_(activePrinter)]]">
+              value="[[getPrinterURI_(pendingPrinter_)]]">
           </cr-input>
         </div>
         <div class="settings-box two-line">
           <cr-searchable-drop-down items="[[manufacturerList]]"
               id="printerPPDManufacturer"
               label="$i18n{printerManufacturer}"
-              value="{{activePrinter.ppdManufacturer}}">
+              value="{{pendingPrinter_.ppdManufacturer}}">
           </cr-searchable-drop-down>
         </div>
         <div class="settings-box two-line">
           <cr-searchable-drop-down items="[[modelList]]"
               id="printerPPDModel"
               label="$i18n{printerModel}"
-              value="{{activePrinter.ppdModel}}">
+              value="{{pendingPrinter_.ppdModel}}">
           </cr-searchable-drop-down>
         </div>
         <div class="settings-box two-line">
@@ -113,8 +113,8 @@
           $i18n{cancel}
         </paper-button>
         <paper-button class="action-button" on-click="onSaveTap_"
-            disabled="[[!canSavePrinter_(activePrinter.*,
-                        printerInfoChanged_)]]">
+            disabled="[[!canSavePrinter_(pendingPrinter_.*,
+                                         printerInfoChanged_)]]">
           $i18n{editPrinterButtonText}
         </paper-button>
       </div>
