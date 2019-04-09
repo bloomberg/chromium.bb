@@ -262,6 +262,10 @@ wholesale, enter the following command into your terminal:
 $ cp tools/vscode/keybindings.json5 .vscode/keybindings.json
 ```
 
+### Snippets
+There are some useful snippets provided in
+[//tools/vscode/cpp.json5](/tools/vscode/cpp.json5).
+
 ### Tips
 
 #### The `out` folder
