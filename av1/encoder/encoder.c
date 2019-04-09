@@ -3556,18 +3556,30 @@ static void set_size_dependent_vars(AV1_COMP *cpi, int *q, int *bottom_index,
 }
 
 static void init_motion_estimation(AV1_COMP *cpi) {
-  int y_stride = cpi->scaled_source.y_stride;
-  int y_stride_src = (cpi->oxcf.resize_mode || cpi->oxcf.superres_mode)
-                         ? y_stride
-                         : cpi->lookahead->buf->img.y_stride;
+  const int y_stride = cpi->scaled_source.y_stride;
+  const int y_stride_src = (cpi->oxcf.resize_mode || cpi->oxcf.superres_mode)
+                               ? y_stride
+                               : cpi->lookahead->buf->img.y_stride;
+  // Update if ss_cfg is uninitialized or the current frame has a new stride
+  const int should_update = !cpi->ss_cfg[SS_CFG_SRC].stride ||
+                            !cpi->ss_cfg[SS_CFG_LOOKAHEAD].stride ||
+                            (y_stride != cpi->ss_cfg[SS_CFG_SRC].stride);
 
-  if (cpi->sf.mv.search_method == NSTEP) {
-    av1_init3smotion_compensation(&cpi->ss_cfg[SS_CFG_SRC], y_stride);
-    av1_init3smotion_compensation(&cpi->ss_cfg[SS_CFG_LOOKAHEAD], y_stride_src);
-  } else if (cpi->sf.mv.search_method == DIAMOND) {
+  if (!should_update) {
+    return;
+  }
+
+  if (cpi->sf.mv.search_method == DIAMOND) {
     av1_init_dsmotion_compensation(&cpi->ss_cfg[SS_CFG_SRC], y_stride);
     av1_init_dsmotion_compensation(&cpi->ss_cfg[SS_CFG_LOOKAHEAD],
                                    y_stride_src);
+  } else {
+    // Update the offsets in search_sites as y_stride can change due to scaled
+    // references. This update allows NSTEP to be used on scaled references as
+    // long as sf.mv.search_method is not DIAMOND. Currently in the codebae,
+    // sf.mv.search_method is never set to DIAMOND.
+    av1_init3smotion_compensation(&cpi->ss_cfg[SS_CFG_SRC], y_stride);
+    av1_init3smotion_compensation(&cpi->ss_cfg[SS_CFG_LOOKAHEAD], y_stride_src);
   }
 }
 
