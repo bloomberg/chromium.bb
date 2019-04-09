@@ -283,22 +283,22 @@ void CustomElement::EnqueueFormResetCallback(Element& element) {
   }
 }
 
-void CustomElement::EnqueueDisabledStateChangedCallback(Element& element,
-                                                        bool is_disabled) {
+void CustomElement::EnqueueFormDisabledCallback(Element& element,
+                                                bool is_disabled) {
   auto& definition = *DefinitionForElementWithoutCheck(element);
-  if (definition.HasDisabledStateChangedCallback()) {
-    Enqueue(element, CustomElementReactionFactory::CreateDisabledStateChanged(
+  if (definition.HasFormDisabledCallback()) {
+    Enqueue(element, CustomElementReactionFactory::CreateFormDisabled(
                          definition, is_disabled));
   }
 }
 
-void CustomElement::EnqueueRestoreStateCallback(
+void CustomElement::EnqueueFormStateRestoreCallback(
     Element& element,
     const FileOrUSVStringOrFormData& value,
     const String& mode) {
   auto& definition = *DefinitionForElementWithoutCheck(element);
-  if (definition.HasRestoreStateCallback()) {
-    Enqueue(element, CustomElementReactionFactory::CreateRestoreState(
+  if (definition.HasFormStateRestoreCallback()) {
+    Enqueue(element, CustomElementReactionFactory::CreateFormStateRestore(
                          definition, value, mode));
   }
 }

@@ -108,9 +108,8 @@ class CORE_EXPORT CustomElement {
   static void EnqueueFormAssociatedCallback(Element& element,
                                             HTMLFormElement* nullable_form);
   static void EnqueueFormResetCallback(Element& element);
-  static void EnqueueDisabledStateChangedCallback(Element& element,
-                                                  bool is_disabled);
-  static void EnqueueRestoreStateCallback(
+  static void EnqueueFormDisabledCallback(Element& element, bool is_disabled);
+  static void EnqueueFormStateRestoreCallback(
       Element& element,
       const FileOrUSVStringOrFormData& value,
       const String& mode);
