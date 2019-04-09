@@ -5,6 +5,7 @@
 #ifndef FUCHSIA_ENGINE_BROWSER_FRAME_IMPL_H_
 #define FUCHSIA_ENGINE_BROWSER_FRAME_IMPL_H_
 
+#include <fuchsia/web/cpp/fidl.h>
 #include <lib/fidl/cpp/binding_set.h>
 #include <lib/zx/channel.h>
 #include <list>
@@ -21,7 +22,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "fuchsia/engine/browser/discarding_event_filter.h"
 #include "fuchsia/engine/on_load_script_injector.mojom.h"
-#include "fuchsia/fidl/chromium/web/cpp/fidl.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/wm/core/focus_controller.h"
 #include "url/gurl.h"
@@ -36,47 +36,16 @@ class WebContents;
 
 class ContextImpl;
 
-// Implementation of Frame from //fuchsia/fidl/frame.fidl.
-// Implements a Frame service, which is a wrapper for a WebContents instance.
-class FrameImpl : public chromium::web::Frame,
-                  public chromium::web::NavigationController,
+// Implementation of fuchsia.web.Frame based on content::WebContents.
+class FrameImpl : public fuchsia::web::Frame,
+                  public fuchsia::web::NavigationController,
                   public content::WebContentsObserver,
                   public content::WebContentsDelegate {
  public:
   FrameImpl(std::unique_ptr<content::WebContents> web_contents,
             ContextImpl* context,
-            fidl::InterfaceRequest<chromium::web::Frame> frame_request);
+            fidl::InterfaceRequest<fuchsia::web::Frame> frame_request);
   ~FrameImpl() override;
-
-  // chromium::web::Frame implementation.
-  void CreateView(fuchsia::ui::views::ViewToken view_token) override;
-  void CreateView2(
-      zx::eventpair view_token,
-      fidl::InterfaceRequest<fuchsia::sys::ServiceProvider> incoming_services,
-      fidl::InterfaceHandle<fuchsia::sys::ServiceProvider> outgoing_services)
-      override;
-  void GetNavigationController(
-      fidl::InterfaceRequest<chromium::web::NavigationController> controller)
-      override;
-  void SetJavaScriptLogLevel(chromium::web::LogLevel level) override;
-  void SetNavigationEventObserver(
-      fidl::InterfaceHandle<chromium::web::NavigationEventObserver> observer)
-      override;
-  void ExecuteJavaScript(std::vector<std::string> origins,
-                         fuchsia::mem::Buffer script,
-                         chromium::web::ExecuteMode mode,
-                         ExecuteJavaScriptCallback callback) override;
-  void PostMessage(chromium::web::WebMessage message,
-                   std::string target_origin,
-                   PostMessageCallback callback) override;
-  void SetEnableInput(bool enable_input) override;
-  void AddJavaScriptBindings(uint64_t id,
-                             std::vector<std::string> origins,
-                             fuchsia::mem::Buffer script,
-                             AddJavaScriptBindingsCallback callback) override;
-  void RemoveJavaScriptBindings(
-      uint64_t id,
-      RemoveJavaScriptBindingsCallback callback) override;
 
   zx::unowned_channel GetBindingChannelForTest() const;
   content::WebContents* web_contents_for_test() { return web_contents_.get(); }
@@ -92,6 +61,30 @@ class FrameImpl : public chromium::web::Frame,
   FRIEND_TEST_ALL_PREFIXES(FrameImplTest, NoNavigationObserverAttached);
   FRIEND_TEST_ALL_PREFIXES(FrameImplTest, ReloadFrame);
   FRIEND_TEST_ALL_PREFIXES(FrameImplTest, Stop);
+
+  // fuchsia::web::Frame implementation.
+  void CreateView(fuchsia::ui::views::ViewToken view_token) override;
+  void GetNavigationController(
+      fidl::InterfaceRequest<fuchsia::web::NavigationController> controller)
+      override;
+  void ExecuteJavaScriptNoResult(
+      std::vector<std::string> origins,
+      fuchsia::mem::Buffer script,
+      ExecuteJavaScriptNoResultCallback callback) override;
+  void AddBeforeLoadJavaScript(
+      uint64_t id,
+      std::vector<std::string> origins,
+      fuchsia::mem::Buffer script,
+      AddBeforeLoadJavaScriptCallback callback) override;
+  void RemoveBeforeLoadJavaScript(uint64_t id) override;
+  void PostMessage(std::string origin,
+                   fuchsia::web::WebMessage message,
+                   fuchsia::web::Frame::PostMessageCallback callback) override;
+  void SetNavigationEventListener(
+      fidl::InterfaceHandle<fuchsia::web::NavigationEventListener> listener)
+      override;
+  void SetJavaScriptLogLevel(fuchsia::web::ConsoleLogLevel level) override;
+  void SetEnableInput(bool enable_input) override;
 
   class OriginScopedScript {
    public:
@@ -126,12 +119,14 @@ class FrameImpl : public chromium::web::Frame,
   // to be reported.
   void MaybeSendNavigationEvent();
 
-  // chromium::web::NavigationController implementation.
-  void LoadUrl(std::string url, chromium::web::LoadUrlParams params) override;
+  // fuchsia::web::NavigationController implementation.
+  void LoadUrl(std::string url,
+               fuchsia::web::LoadUrlParams params,
+               LoadUrlCallback callback) override;
   void GoBack() override;
   void GoForward() override;
   void Stop() override;
-  void Reload(chromium::web::ReloadType type) override;
+  void Reload(fuchsia::web::ReloadType type) override;
   void GetVisibleEntry(GetVisibleEntryCallback callback) override;
 
   // content::WebContentsDelegate implementation.
@@ -166,20 +161,19 @@ class FrameImpl : public chromium::web::Frame,
   std::unique_ptr<wm::FocusController> focus_controller_;
 
   DiscardingEventFilter discarding_event_filter_;
-  chromium::web::NavigationEventObserverPtr navigation_observer_;
-  chromium::web::NavigationEntry cached_navigation_state_;
-  chromium::web::NavigationEvent pending_navigation_event_;
+  fuchsia::web::NavigationEventListenerPtr navigation_listener_;
+  fuchsia::web::NavigationState cached_navigation_state_;
+  fuchsia::web::NavigationState pending_navigation_event_;
   bool waiting_for_navigation_event_ack_;
   bool pending_navigation_event_is_dirty_;
-  chromium::web::LogLevel log_level_ = chromium::web::LogLevel::NONE;
+  logging::LogSeverity log_level_;
   std::map<uint64_t, OriginScopedScript> before_load_scripts_;
   std::vector<uint64_t> before_load_scripts_order_;
   ContextImpl* context_ = nullptr;
-  uint64_t next_transitional_bindings_id_ = 0x80000000;
   base::RepeatingCallback<void(base::StringPiece)> console_log_message_hook_;
 
-  fidl::Binding<chromium::web::Frame> binding_;
-  fidl::BindingSet<chromium::web::NavigationController> controller_bindings_;
+  fidl::Binding<fuchsia::web::Frame> binding_;
+  fidl::BindingSet<fuchsia::web::NavigationController> controller_bindings_;
 
   base::WeakPtrFactory<FrameImpl> weak_factory_;
 

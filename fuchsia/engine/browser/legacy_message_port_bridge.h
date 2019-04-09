@@ -7,20 +7,19 @@
 
 #include <lib/fidl/cpp/binding.h>
 
+#include "base/optional.h"
 #include "fuchsia/engine/browser/message_port_impl.h"
 #include "fuchsia/fidl/chromium/web/cpp/fidl.h"
 
-// Bridges chromium::web::MessagePort and fuchsia::web::MessagePort calls.
+// Allows chromium::web::MessagePort clients to connect to
+// fuchsia::web::MessagePort instances.
 //
 // LegacyMessagePortBridge are self-managed; they destroy themselves when
-// the connection with either the chromium::web::MessagePort or
-// fuchsia::web::MessagePort is terminated.
+// the connection with either end is terminated.
 class LegacyMessagePortBridge : public chromium::web::MessagePort {
  public:
-  // Creates a connected MessagePort from a FIDL MessagePort request and
-  // returns a handle to its peer Mojo pipe.
-  static mojo::ScopedMessagePipeHandle FromFidl(
-      fidl::InterfaceRequest<chromium::web::MessagePort> port);
+  static base::Optional<fuchsia::web::WebMessage> ConvertFromLegacyWebMessage(
+      chromium::web::WebMessage& message);
 
  private:
   explicit LegacyMessagePortBridge(
