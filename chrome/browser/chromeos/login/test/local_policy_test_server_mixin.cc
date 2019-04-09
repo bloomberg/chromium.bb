@@ -7,7 +7,13 @@
 #include <utility>
 
 #include "base/guid.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
+#include "chromeos/attestation/mock_attestation_flow.h"
+#include "chromeos/cryptohome/async_method_caller.h"
+#include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/policy_builder.h"
 #include "components/policy/core/common/policy_switches.h"
@@ -77,6 +83,16 @@ void LocalPolicyTestServerMixin::ExpectAvailableLicenseCount(int perpetual,
   policy_test_server_->SetConfig(server_config_);
 }
 
+void LocalPolicyTestServerMixin::ExpectTokenEnrollment(
+    const std::string& enrollment_token,
+    const std::string& token_creator) {
+  base::Value token_enrollment(base::Value::Type::DICTIONARY);
+  token_enrollment.SetKey("token", base::Value(enrollment_token));
+  token_enrollment.SetKey("username", base::Value(token_creator));
+  server_config_.SetKey("token_enrollment", std::move(token_enrollment));
+  policy_test_server_->SetConfig(server_config_);
+}
+
 void LocalPolicyTestServerMixin::SetUpdateDeviceAttributesPermission(
     bool allowed) {
   server_config_.SetKey("allow_set_device_attributes", base::Value(allowed));
@@ -110,6 +126,17 @@ bool LocalPolicyTestServerMixin::UpdateDevicePolicy(
   return policy_test_server_->UpdatePolicy(
       policy::dm_protocol::kChromeDevicePolicyType,
       std::string() /* entity_id */, policy.SerializeAsString());
+}
+
+void LocalPolicyTestServerMixin::SetFakeAttestationFlow() {
+  g_browser_process->platform_part()
+      ->browser_policy_connector_chromeos()
+      ->GetDeviceCloudPolicyInitializer()
+      ->SetAttestationFlowForTesting(
+          std::make_unique<chromeos::attestation::AttestationFlow>(
+              cryptohome::AsyncMethodCaller::GetInstance(),
+              chromeos::FakeCryptohomeClient::Get(),
+              std::make_unique<chromeos::attestation::FakeServerProxy>()));
 }
 
 bool LocalPolicyTestServerMixin::SetDeviceStateRetrievalResponse(

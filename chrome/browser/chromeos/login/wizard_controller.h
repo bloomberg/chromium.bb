@@ -391,7 +391,7 @@ class WizardController : public BaseScreenDelegate {
                            ControlFlowNoForcedReEnrollmentOnFirstBoot);
 
   friend class DemoSetupTest;
-  friend class EnterpriseEnrollmentConfigurationTest;
+  friend class OobeConfigurationTest;
   friend class HandsOffEnrollmentTest;
   friend class WizardControllerBrokenLocalStateTest;
   friend class WizardControllerDemoSetupTest;

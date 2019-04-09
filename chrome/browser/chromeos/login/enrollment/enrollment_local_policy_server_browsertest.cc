@@ -118,17 +118,6 @@ class AutoEnrollmentLocalPolicyServer : public EnrollmentLocalPolicyServerBase {
                                     "5");
   }
 
-  void SetFakeAttestationFlow() {
-    g_browser_process->platform_part()
-        ->browser_policy_connector_chromeos()
-        ->GetDeviceCloudPolicyInitializer()
-        ->SetAttestationFlowForTesting(
-            std::make_unique<chromeos::attestation::AttestationFlow>(
-                cryptohome::AsyncMethodCaller::GetInstance(),
-                chromeos::FakeCryptohomeClient::Get(),
-                std::make_unique<chromeos::attestation::FakeServerProxy>()));
-  }
-
   policy::ServerBackedStateKeysBroker* state_keys_broker() {
     return g_browser_process->platform_part()
         ->browser_policy_connector_chromeos()
@@ -444,7 +433,7 @@ IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer, DeviceDisabled) {
 
 // Attestation enrollment.
 IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer, Attestation) {
-  SetFakeAttestationFlow();
+  policy_server_.SetFakeAttestationFlow();
   EXPECT_TRUE(policy_server_.SetDeviceStateRetrievalResponse(
       state_keys_broker(),
       enterprise_management::DeviceStateRetrievalResponse::

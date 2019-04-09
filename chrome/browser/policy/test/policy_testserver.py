@@ -411,7 +411,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     is GoogleEnrollmentToken token from an Authorization header. Returns None
     if no token is present.
     """
-    match = re.match('GoogleEnrollmentToken auth=(\\w+)',
+    match = re.match('GoogleEnrollmentToken token=(\\S+)',
                      self.headers.getheader('Authorization', ''))
     if match:
       return match.group(1)

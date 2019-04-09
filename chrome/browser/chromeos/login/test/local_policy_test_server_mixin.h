@@ -39,7 +39,14 @@ class LocalPolicyTestServerMixin : public InProcessBrowserTestMixin {
   // There should be at least one license type.
   void ExpectAvailableLicenseCount(int perpetual, int annual, int kiosk);
 
+  void ExpectTokenEnrollment(const std::string& enrollment_token,
+                             const std::string& token_creator);
+
   void SetUpdateDeviceAttributesPermission(bool allowed);
+
+  // Configures fake attestation flow so that we can test attestation-based
+  // enrollment flows.
+  void SetFakeAttestationFlow();
 
   // Configures server to respond with particular error code during requests.
   // |net_error_code| - error code from device_management_service.cc.
