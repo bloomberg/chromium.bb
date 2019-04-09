@@ -193,9 +193,9 @@
     "expiry_milestone": 72
   },
   {
-    "name": "autofill-dropdown-layout",
-    "owners": [ "tmartino" ],
-    "expiry_milestone": 76
+    "name": "autofill-dynamic-forms",
+    "owners": [ "sebsg" ],
+    "expiry_milestone": 72
   },
   {
     "name": "autofill-enable-company-name",

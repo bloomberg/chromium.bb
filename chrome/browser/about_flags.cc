@@ -3565,12 +3565,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chromeos::switches::kAccountManager)},
 #endif
 
-#if !defined(OS_ANDROID)
-    {"autofill-dropdown-layout", flag_descriptions::kAutofillDropdownLayoutName,
-     flag_descriptions::kAutofillDropdownLayoutDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(autofill::kAutofillDropdownLayoutExperiment)},
-#endif  // OS_ANDROID
-
 #if defined(OS_CHROMEOS)
     {"enable-vaapi-jpeg-image-decode-acceleration",
      flag_descriptions::kVaapiJpegImageDecodeAccelerationName,

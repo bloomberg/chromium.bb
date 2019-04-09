@@ -12,10 +12,6 @@
 
 class PrefService;
 
-namespace base {
-struct Feature;
-}
-
 namespace syncer {
 class SyncService;
 }
@@ -23,15 +19,6 @@ class SyncService;
 namespace autofill {
 
 class PersonalDataManager;
-
-// Parameterized Features (grouped with parameter name and options)
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
-extern const base::Feature kAutofillDropdownLayoutExperiment;
-extern const char kAutofillDropdownLayoutParameterName[];
-extern const char kAutofillDropdownLayoutParameterLeadingIcon[];
-extern const char kAutofillDropdownLayoutParameterTrailingIcon[];
-extern const char kAutofillDropdownLayoutParameterTwoLinesLeadingIcon[];
-#endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 
 // Returns true if uploading credit cards to Wallet servers is enabled. This
 // requires the appropriate flags and user settings to be true and the user to
@@ -63,22 +50,6 @@ bool OfferStoreUnmaskedCards(bool is_off_the_record);
 
 // Returns whether the account of the active signed-in user should be used.
 bool ShouldUseActiveSignedInAccount();
-
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
-enum class ForcedPopupLayoutState {
-  kDefault,       // No popup layout forced by experiment.
-  kLeadingIcon,   // Experiment forces leading (left in LTR) icon layout.
-  kTrailingIcon,  // Experiment forces trailing (right in LTR) icon layout.
-  kTwoLinesLeadingIcon,  // Experiment forces leading (left in LTR) icon layout.
-                         // with two lines display.
-};
-
-// Returns kDefault if no experimental behavior is enabled for
-// kAutofillDropdownLayoutExperiment; returns kLeftIcon or kRightIcon
-// if the experiment param matches kAutofillDropdownLayoutParameterLeadingIcon
-// or kAutofillDropdownLayoutParameterTrailingIcon, respectively.
-ForcedPopupLayoutState GetForcedPopupLayoutState();
-#endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 
 }  // namespace autofill
 
