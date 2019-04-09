@@ -86,9 +86,6 @@ class AppControllerService : public mojom::AppController,
   // is necessary.
   std::map<std::string, std::string> android_package_map_;
 
-  // URL prefix that can be launched by Kiosk Next Home.
-  const std::string url_prefix_;
-
   DISALLOW_COPY_AND_ASSIGN(AppControllerService);
 };
 

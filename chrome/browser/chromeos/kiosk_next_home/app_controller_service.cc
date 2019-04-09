@@ -43,9 +43,7 @@ AppControllerService* AppControllerService::Get(
 
 AppControllerService::AppControllerService(Profile* profile)
     : profile_(profile),
-      app_service_proxy_(apps::AppServiceProxy::Get(profile)),
-      url_prefix_(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          chromeos::switches::kKioskNextHomeUrlPrefix)) {
+      app_service_proxy_(apps::AppServiceProxy::Get(profile)) {
   DCHECK(profile);
   app_service_proxy_->AppRegistryCache().AddObserver(this);
 
@@ -109,12 +107,16 @@ void AppControllerService::GetArcAndroidId(
 
 void AppControllerService::LaunchHomeUrl(const std::string& suffix,
                                          LaunchHomeUrlCallback callback) {
-  if (url_prefix_.empty()) {
+  std::string url_prefix =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          chromeos::switches::kKioskNextHomeUrlPrefix);
+
+  if (url_prefix.empty()) {
     std::move(callback).Run(false, "No URL prefix.");
     return;
   }
 
-  GURL url(url_prefix_ + suffix);
+  GURL url(url_prefix + suffix);
   if (!url.is_valid()) {
     std::move(callback).Run(false, "Invalid URL.");
     return;
