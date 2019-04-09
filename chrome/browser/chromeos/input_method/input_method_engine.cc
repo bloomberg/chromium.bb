@@ -133,10 +133,11 @@ class MojoHelper : public ime::mojom::ImeEngine,
 
  private:
   void OnConnectionLost() {
-    // After the connection to |ImeEngineFactoryRegistry| is broken, notifies
-    // the client to reconnect through Window Service.
-    if (engine_client_)
-      engine_client_->Reconnect();
+    // After the connection to |ImeEngineFactoryRegistry| is broken, break the
+    // connection to the client, so that the client can reconnect through Window
+    // Service.
+    engine_binding_.Close();
+    engine_client_.reset();
   }
 
   InputMethodEngine* engine_;
@@ -369,8 +370,7 @@ void InputMethodEngine::UpdateComposition(
     uint32_t cursor_pos,
     bool is_visible) {
   if (mojo_helper_->IsConnected()) {
-    mojo_helper_->engine_client()->UpdateCompositionText(
-        composition_text, cursor_pos, is_visible);
+    NOTIMPLEMENTED_LOG_ONCE();
   } else {
     ui::IMEInputContextHandlerInterface* input_context =
         ui::IMEBridge::Get()->GetInputContextHandler();
@@ -384,7 +384,7 @@ void InputMethodEngine::CommitTextToInputContext(int context_id,
                                                  const std::string& text) {
   bool committed = false;
   if (mojo_helper_->IsConnected()) {
-    mojo_helper_->engine_client()->CommitText(text);
+    NOTIMPLEMENTED_LOG_ONCE();
   } else {
     ui::IMEInputContextHandlerInterface* input_context =
         ui::IMEBridge::Get()->GetInputContextHandler();
@@ -407,8 +407,7 @@ void InputMethodEngine::DeleteSurroundingTextToInputContext(
     int offset,
     size_t number_of_chars) {
   if (mojo_helper_->IsConnected()) {
-    mojo_helper_->engine_client()->DeleteSurroundingText(offset,
-                                                         number_of_chars);
+    NOTIMPLEMENTED_LOG_ONCE();
   } else {
     ui::IMEInputContextHandlerInterface* input_context =
         ui::IMEBridge::Get()->GetInputContextHandler();
@@ -430,7 +429,7 @@ bool InputMethodEngine::SendKeyEvent(ui::KeyEvent* event,
 
   bool sent = false;
   if (mojo_helper_->IsConnected()) {
-    mojo_helper_->engine_client()->SendKeyEvent(ui::Event::Clone(*event));
+    NOTIMPLEMENTED_LOG_ONCE();
   } else {
     ui::IMEInputContextHandlerInterface* input_context =
         ui::IMEBridge::Get()->GetInputContextHandler();

@@ -18,14 +18,14 @@
 namespace ui {
 
 // CandidateWindow represents the structure of candidates generated from IME.
-class COMPONENT_EXPORT(UI_BASE_IME_TYPES) CandidateWindow {
+class COMPONENT_EXPORT(UI_BASE_IME) CandidateWindow {
  public:
   enum Orientation {
     HORIZONTAL = 0,
     VERTICAL = 1,
   };
 
-  struct COMPONENT_EXPORT(UI_BASE_IME_TYPES) CandidateWindowProperty {
+  struct COMPONENT_EXPORT(UI_BASE_IME) CandidateWindowProperty {
     CandidateWindowProperty();
     virtual ~CandidateWindowProperty();
     int page_size;
@@ -41,7 +41,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_TYPES) CandidateWindow {
   };
 
   // Represents a candidate entry.
-  struct COMPONENT_EXPORT(UI_BASE_IME_TYPES) Entry {
+  struct COMPONENT_EXPORT(UI_BASE_IME) Entry {
     Entry();
     Entry(const Entry& other);
     virtual ~Entry();

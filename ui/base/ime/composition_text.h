@@ -15,7 +15,7 @@
 namespace ui {
 
 // A struct represents the status of an ongoing composition text.
-struct COMPONENT_EXPORT(UI_BASE_IME_TYPES) CompositionText {
+struct COMPONENT_EXPORT(UI_BASE_IME) CompositionText {
   CompositionText();
   CompositionText(const CompositionText& other);
   ~CompositionText();
