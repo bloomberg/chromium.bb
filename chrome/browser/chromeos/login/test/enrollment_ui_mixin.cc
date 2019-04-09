@@ -17,10 +17,11 @@ namespace ui {
 const char kEnrollmentStepSignin[] = "signin";
 const char kEnrollmentStepWorking[] = "working";
 const char kEnrollmentStepSuccess[] = "success";
-const char kEnrollmentStepError[] = "error";
 const char kEnrollmentStepLicenses[] = "license";
 const char kEnrollmentStepDeviceAttributes[] = "attribute-prompt";
 const char kEnrollmentStepADJoin[] = "ad-join";
+const char kEnrollmentStepError[] = "error";
+const char kEnrollmentStepDeviceAttributesError[] = "attribute-prompt-error";
 const char kEnrollmentStepADJoinError[] = "active-directory-join-error";
 
 }  // namespace ui
@@ -38,11 +39,15 @@ const char kLocation[] = "location";
 
 namespace {
 
-const char* const kAllSteps[] = {
-    ui::kEnrollmentStepSignin,   ui::kEnrollmentStepWorking,
-    ui::kEnrollmentStepLicenses, ui::kEnrollmentStepDeviceAttributes,
-    ui::kEnrollmentStepSuccess,  ui::kEnrollmentStepADJoin,
-    ui::kEnrollmentStepError,    ui::kEnrollmentStepADJoinError};
+const char* const kAllSteps[] = {ui::kEnrollmentStepSignin,
+                                 ui::kEnrollmentStepWorking,
+                                 ui::kEnrollmentStepLicenses,
+                                 ui::kEnrollmentStepDeviceAttributes,
+                                 ui::kEnrollmentStepSuccess,
+                                 ui::kEnrollmentStepADJoin,
+                                 ui::kEnrollmentStepError,
+                                 ui::kEnrollmentStepADJoinError,
+                                 ui::kEnrollmentStepDeviceAttributesError};
 
 std::string StepVisibleExpression(const std::string& step) {
   return "document.getElementsByClassName('oauth-enroll-state-" + step +
@@ -51,6 +56,10 @@ std::string StepVisibleExpression(const std::string& step) {
 
 const std::initializer_list<base::StringPiece> kEnrollmentErrorRetryButtonPath =
     {"oauth-enroll-error-card", "submitButton"};
+
+const std::initializer_list<base::StringPiece>
+    kEnrollmentDeviceAttributesErrorButtonPath = {
+        "oauth-enroll-attribute-prompt-error-card", "submitButton"};
 
 }  // namespace
 
@@ -100,6 +109,10 @@ void EnrollmentUIMixin::ExpectErrorMessage(int error_message_id,
 void EnrollmentUIMixin::RetryAfterError() {
   OobeJS().TapOnPath(kEnrollmentErrorRetryButtonPath);
   WaitForStep(ui::kEnrollmentStepSignin);
+}
+
+void EnrollmentUIMixin::LeaveDeviceAttributeErrorScreen() {
+  OobeJS().TapOnPath(kEnrollmentDeviceAttributesErrorButtonPath);
 }
 
 void EnrollmentUIMixin::SubmitDeviceAttributes(const std::string& asset_id,

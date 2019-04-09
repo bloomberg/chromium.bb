@@ -22,6 +22,7 @@ extern const char kEnrollmentStepDeviceAttributes[];
 extern const char kEnrollmentStepSuccess[];
 extern const char kEnrollmentStepADJoin[];
 extern const char kEnrollmentStepError[];
+extern const char kEnrollmentStepDeviceAttributesError[];
 extern const char kEnrollmentStepADJoinError[];
 
 }  // namespace ui
@@ -57,6 +58,8 @@ class EnrollmentUIMixin : public InProcessBrowserTestMixin {
   // Fills out the UI with device attribute information and submits it.
   void SubmitDeviceAttributes(const std::string& asset_id,
                               const std::string& location);
+
+  void LeaveDeviceAttributeErrorScreen();
 
   // Selects enrollment license.
   void SelectEnrollmentLicense(const std::string& license_type);
