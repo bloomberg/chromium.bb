@@ -186,6 +186,12 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
   bool CanDecodeWithHardwareAcceleration(
       base::span<const uint8_t> encoded_data) const override;
 
+  // InterfaceBase implementation.
+  void GenSyncTokenCHROMIUM(GLbyte* sync_token) override;
+  void GenUnverifiedSyncTokenCHROMIUM(GLbyte* sync_token) override;
+  void VerifySyncTokensCHROMIUM(GLbyte** sync_tokens, GLsizei count) override;
+  void WaitSyncTokenCHROMIUM(const GLbyte* sync_token) override;
+
   bool GetQueryObjectValueHelper(const char* function_name,
                                  GLuint id,
                                  GLenum pname,

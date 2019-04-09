@@ -3887,22 +3887,6 @@ _FUNCTION_INFO = {
     'extension': 'CHROMIUM_lose_context',
     'trace_level': 1,
   },
-  'GenSyncTokenCHROMIUM': {
-    'type': 'NoCommand',
-    'extension': "CHROMIUM_sync_point",
-  },
-  'GenUnverifiedSyncTokenCHROMIUM': {
-    'type': 'NoCommand',
-    'extension': "CHROMIUM_sync_point",
-  },
-  'VerifySyncTokensCHROMIUM' : {
-    'type': 'NoCommand',
-    'extension': "CHROMIUM_sync_point",
-  },
-  'WaitSyncTokenCHROMIUM': {
-    'type': 'NoCommand',
-    'extension': "CHROMIUM_sync_point",
-  },
   'DiscardBackbufferCHROMIUM': {
     'type': 'Custom',
     'extension': True,

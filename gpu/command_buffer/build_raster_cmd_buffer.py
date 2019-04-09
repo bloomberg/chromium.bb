@@ -276,15 +276,6 @@ _FUNCTION_INFO = {
     'unit_test': False,
     'trace_level': 1,
   },
-  'GenUnverifiedSyncTokenCHROMIUM': {
-    'type': 'NoCommand',
-  },
-  'VerifySyncTokensCHROMIUM' : {
-    'type': 'NoCommand',
-  },
-  'WaitSyncTokenCHROMIUM': {
-    'type': 'NoCommand',
-  },
   'BeginRasterCHROMIUM': {
     'decoder_func': 'DoBeginRasterCHROMIUM',
     'type': 'PUT',

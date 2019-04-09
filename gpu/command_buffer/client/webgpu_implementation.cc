@@ -145,8 +145,32 @@ bool WebGPUImplementation::CanDecodeWithHardwareAcceleration(
   return false;
 }
 
+// InterfaceBase implementation.
+void WebGPUImplementation::GenSyncTokenCHROMIUM(GLbyte* sync_token) {
+  ImplementationBase::GenSyncToken(sync_token);
+}
+void WebGPUImplementation::GenUnverifiedSyncTokenCHROMIUM(GLbyte* sync_token) {
+  ImplementationBase::GenUnverifiedSyncToken(sync_token);
+}
+void WebGPUImplementation::VerifySyncTokensCHROMIUM(GLbyte** sync_tokens,
+                                                    GLsizei count) {
+  ImplementationBase::VerifySyncTokens(sync_tokens, count);
+}
+void WebGPUImplementation::WaitSyncTokenCHROMIUM(const GLbyte* sync_token) {
+  ImplementationBase::WaitSyncToken(sync_token);
+}
+
 // ImplementationBase implementation.
 void WebGPUImplementation::IssueShallowFlush() {
+  NOTIMPLEMENTED();
+}
+
+void WebGPUImplementation::SetGLError(GLenum error,
+                                      const char* function_name,
+                                      const char* msg) {
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] Client Synthesized Error: "
+                     << gles2::GLES2Util::GetStringError(error) << ": "
+                     << function_name << ": " << msg);
   NOTIMPLEMENTED();
 }
 
