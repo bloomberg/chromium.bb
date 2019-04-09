@@ -25,6 +25,7 @@ void TestAppListClient::GetSearchResultContextMenuModel(
 }
 
 void TestAppListClient::GetContextMenuModel(
+    int profile_id,
     const std::string& id,
     GetContextMenuModelCallback callback) {
   std::move(callback).Run({});

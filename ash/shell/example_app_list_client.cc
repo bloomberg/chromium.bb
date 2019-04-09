@@ -245,7 +245,8 @@ void ExampleAppListClient::OpenSearchResult(
   WindowTypeShelfItem::ActivateItem((*it)->type(), event_flags);
 }
 
-void ExampleAppListClient::ActivateItem(const std::string& id,
+void ExampleAppListClient::ActivateItem(int profile_id,
+                                        const std::string& id,
                                         int event_flags) {
   auto it =
       std::find_if(apps_.begin(), apps_.end(),
