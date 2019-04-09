@@ -2330,6 +2330,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/download/DownloadMediaData.java",
     "java/src/org/chromium/chrome/browser/download/DownloadMediaParserBridge.java",
     "java/src/org/chromium/chrome/browser/download/DownloadUtils.java",
+    "java/src/org/chromium/chrome/browser/download/home/rename/RenameUtils.java",
     "java/src/org/chromium/chrome/browser/download/items/OfflineContentAggregatorFactory.java",
     "java/src/org/chromium/chrome/browser/download/service/DownloadBackgroundTask.java",
     "java/src/org/chromium/chrome/browser/download/service/DownloadTaskScheduler.java",

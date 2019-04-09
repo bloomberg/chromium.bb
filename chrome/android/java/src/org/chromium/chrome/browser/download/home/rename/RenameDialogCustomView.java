@@ -14,7 +14,6 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import org.chromium.base.FileUtils;
 import org.chromium.chrome.browser.widget.AlertDialogEditText;
 import org.chromium.chrome.download.R;
 import org.chromium.components.offline_items_collection.RenameResult;
@@ -90,9 +89,7 @@ public class RenameDialogCustomView extends ScrollView {
     }
 
     private void highlightEditText(String name) {
-        // TODO(hesen): Use backend getExtension instead.
-        int pos = name.length() - FileUtils.getExtension(name).length() - 1;
-        highlightEditText(0, pos);
+        highlightEditText(0, name.length() - RenameUtils.getFileExtension(name).length());
     }
 
     /**

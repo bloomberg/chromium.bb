@@ -13,7 +13,7 @@ import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
- * The Coordinator for the Rename Extension Dialog. Manages UI objects like views and model, and
+ * The Coordinator for the Rename Dialog. Manages UI objects like views and model, and
  * handles communication with the {@link ModalDialogManager}.
  */
 public class RenameDialogCoordinator {
