@@ -138,8 +138,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
       const base::UnguessableToken& embed_token);
 
   // Completes a previous call to ScheduleEmbedForExistingClient(). |window|
-  // is the Window to perform the embedding in. See the mojom for details on
-  // |embed_flags| and |embed_token|.
+  // is the Window to perform the embedding in. This replaces any pre-existing
+  // embedding in |window|. Returns true on success. See the mojom for details
+  // on |embed_flags| and |embed_token|.
   bool CompleteScheduleEmbedForExistingClient(
       aura::Window* window,
       const base::UnguessableToken& embed_token,
