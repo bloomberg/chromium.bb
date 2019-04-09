@@ -94,6 +94,7 @@ object may appear in any order.
 | `has_wdiff` | bool | **Optional, layout test specific, deprecated.** Whether the web tests' output contains wdiff-formatted diffs for test failures. |
 | `layout_tests_dir` | string | **Optional, layout test specific.** Path to the web_tests directory for the test run (used so that we can link to the tests used in the run). |
 | `pixel_tests_enabled` | bool | **Optional, layout test specific.** Whether the web tests' were run with the --pixel-tests flag.  |
+| `flag_name` | string | **Optional, layout test specific.** The flags used when running tests|
 | `fixable` | integer | **Optional, deprecated.** The number of tests that were run but were expected to fail. |
 | `num_flaky` | integer | **Optional, deprecated.** The number of tests that were run more than once and produced different results each time. |
 | `num_passes` | integer | **Optional, deprecated.** The number of successful tests; equivalent to `num_failures_by_type["Pass"]` |
