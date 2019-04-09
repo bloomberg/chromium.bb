@@ -99,6 +99,7 @@
 <translation id="1616111909442424068">пшениченожълто</translation>
 <translation id="1618597272655350600">Съобщава пълно описание на текущата позиция</translation>
 <translation id="1627222324347828322">призрачнобяло</translation>
+<translation id="1630688379087270943">Индикация за курсив:</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{знак за по-голямо}other{# знака за по-голямо}}</translation>
 <translation id="1653266918374749391">Предишното заглавие от трето ниво</translation>
 <translation id="1657616855184033958">Показване на филтрите за потоци на събития</translation>
@@ -319,6 +320,7 @@
 <translation id="3286390186030710347">Плъзгач</translation>
 <translation id="3299925995433437805">Няма следваща посетена връзка.</translation>
 <translation id="3300348286427369683">Поддръжка за разширени функции при работа с текст: ChromeVox вече поддържа текстови полета с разширени функции, включително команди за преход, следване на курсора при брайлови дисплеи, избиране и др.</translation>
+<translation id="3304756947457041303">Персонализиране на индикацията с форматиран текст</translation>
 <translation id="3307886118343381874">Към края на таблицата</translation>
 <translation id="3311969765485641742">Натиснете „Alt+Shift+A“, за да прегледате сигналите</translation>
 <translation id="3312997241656799641">Следваща посетена връзка</translation>
@@ -405,6 +407,7 @@
 <translation id="3930498801443296724">Изнесен цитат</translation>
 <translation id="3936394396199829062">лавандуловорозово</translation>
 <translation id="3941269780691800708">Изговаряне на текста под курсора на мишката.</translation>
+<translation id="394953087167197343">Индикация за правописна грешка:</translation>
 <translation id="3962990492275676168">Стартиране на четенето от текущото местоположение</translation>
 <translation id="3970951409746498040">пясъчнокафяво</translation>
 <translation id="3989324057180830702">бутон за превключване</translation>
@@ -451,6 +454,7 @@
 <translation id="42164919740161077">ненаситен тъмен циан</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{тире}other{# тирета}}</translation>
 <translation id="421884353938374759">инструмент за избор на цветове</translation>
+<translation id="4221071177874897997">Индикация за удебеляване:</translation>
 <translation id="4229646983878045487">дата и час</translation>
 <translation id="4230834257931120629">светло шистовосиво</translation>
 <translation id="4231102694147661229">Активиране на опциите за програмисти</translation>
@@ -753,6 +757,7 @@
 <translation id="6348869651006731065">наситено сиво</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{водещ символ}other{# водещи символа}}</translation>
 <translation id="6355910664415701303">Няма предишен списъчен елемент.</translation>
+<translation id="6360318852623800555">Атрибути на форматирания текст</translation>
 <translation id="6364795331201459219">заглавие от шесто ниво</translation>
 <translation id="6368143427468974988">Предишното заглавие</translation>
 <translation id="6376999910001533545">бордо</translation>
@@ -928,6 +933,7 @@
 <translation id="762020119231868829">Поставя на пауза всички понастоящем пуснати приспособления за мултимедия</translation>
 <translation id="7625690649919402823">Следващата таблица</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), клас <ph name="GRADE" /></translation>
+<translation id="763535765081585392">Индикация за подчертаване:</translation>
 <translation id="7639968568612851608">тъмносиво</translation>
 <translation id="7641134354185483015">Няма предишно заглавие от трето ниво.</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, „<ph name="NAME" />“, текстово поле</translation>
@@ -1163,6 +1169,7 @@
 <translation id="8943175951035496220">Няма клетка отдясно.</translation>
 <translation id="8943282376843390568">лимоненозелено</translation>
 <translation id="8946628535652548639">р <ph name="TABLECELLROWINDEX" />, к <ph name="TABLECELLCOLUMNINDEX" /></translation>
+<translation id="8957142051395645063">Съобщаване</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">Забравяне</translation>
 <translation id="900114243503212879">файл</translation>

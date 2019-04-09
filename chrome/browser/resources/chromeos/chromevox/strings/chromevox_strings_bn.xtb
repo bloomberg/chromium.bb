@@ -99,6 +99,7 @@
 <translation id="1616111909442424068">গম</translation>
 <translation id="1618597272655350600">বর্তমান অবস্থানটির একটি সম্পূর্ণ বিবরণ ঘোষণা করে</translation>
 <translation id="1627222324347828322">ঘোস্ট সাদা</translation>
+<translation id="1630688379087270943">তির্যক টেক্সট নির্দেশ করুন:</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{বৃহত্তম}one{#টি বৃহত্তম চিহ্ন}other{#টি বৃহত্তম চিহ্ন}}</translation>
 <translation id="1653266918374749391">পূর্ববর্তী স্তর ৩ শিরোনাম</translation>
 <translation id="1657616855184033958">ইভেন্ট স্ট্রিম ফিল্টার দেখান</translation>
@@ -320,6 +321,7 @@
 <translation id="3286390186030710347">স্লাইডার</translation>
 <translation id="3299925995433437805">কোনো পরবর্তী ঘুরে দেখা লিঙ্ক নেই</translation>
 <translation id="3300348286427369683">রিচ টেক্সট ব্যবহার করা যাবে। ChromeVox এ এখন রিচ টেক্সট ফিল্ড ব্যবহার করা যাবে, যাতে জাম্প কমান্ড, ব্রেল কারসর রুটিং, বেছে নেওয়া এবং আরও অনেক কিছু রয়েছে।</translation>
+<translation id="3304756947457041303">রিচ টেক্সট সংক্রান্ত নির্দেশ কাস্টমাইজ করা</translation>
 <translation id="3307886118343381874">সারণীর শেষে যান</translation>
 <translation id="3311969765485641742">এই সতর্কতা পর্যালোচনা করতে Alt+Shift+A টিপুন</translation>
 <translation id="3312997241656799641">পরবর্তী ঘুরে দেখা লিঙ্ক</translation>
@@ -406,6 +408,7 @@
 <translation id="3930498801443296724">পুলকোট</translation>
 <translation id="3936394396199829062">ল্যাভেণ্ডার ব্লাশ</translation>
 <translation id="3941269780691800708">মাউস কার্সারের নিচে থাকা টেক্সট পড়ুন।</translation>
+<translation id="394953087167197343">বানান ভুল নির্দেশ করুন:</translation>
 <translation id="3962990492275676168">বর্তমান লোকেশন থেকে পড়া শুরু করুন</translation>
 <translation id="3970951409746498040">স্যান্ডি বাদামি</translation>
 <translation id="3989324057180830702">এই বোতাম টগল করা যায়</translation>
@@ -452,6 +455,7 @@
 <translation id="42164919740161077">ক্যাডেট নীল</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{ড্যাশ}one{#টি ড্যাশ}other{#টি ড্যাশ}}</translation>
 <translation id="421884353938374759">রঙ চয়নকারী</translation>
+<translation id="4221071177874897997">বোল্ড টেক্সট নির্দেশ করুন:</translation>
 <translation id="4229646983878045487">তারিখ সময়</translation>
 <translation id="4230834257931120629">হালকা স্লেট ধূসর</translation>
 <translation id="4231102694147661229">ডেভেলপার বিকল্প চালু করুন</translation>
@@ -754,6 +758,7 @@
 <translation id="6348869651006731065">হালকা ধূসর</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{টি বুলেট চিহ্ন}one{#টি বুলেট চিহ্ন}other{#টি বুলেট চিহ্ন}}</translation>
 <translation id="6355910664415701303">কোনো পূর্ববর্তী তালিকা আইটেম নেই৷</translation>
+<translation id="6360318852623800555">রিচ টেক্সট অ্যাট্রিবিউট</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">পূর্ববর্তী শিরোনাম</translation>
 <translation id="6376999910001533545">মেরুন</translation>
@@ -929,6 +934,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F প্রে
 <translation id="762020119231868829">বর্তমানে চলছে এমন সমস্ত মিডিয়া উইজেটকে বিরাম দেয়</translation>
 <translation id="7625690649919402823">পরবর্তী সারণী</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), গ্রেড <ph name="GRADE" /></translation>
+<translation id="763535765081585392">নিচে দাগ দেওয়া টেক্সট নির্দেশ করুন:</translation>
 <translation id="7639968568612851608">গাঢ় ধূসর</translation>
 <translation id="7641134354185483015">কোনো পূর্ববর্তী স্তর ৩ শিরোনাম নেই৷</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, পাঠ্য বাক্স</translation>
@@ -1164,6 +1170,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F প্রে
 <translation id="8943175951035496220">ডানদিকে কোনো কক্ষ নেই৷</translation>
 <translation id="8943282376843390568">লাইম</translation>
 <translation id="8946628535652548639">সারি<ph name="TABLECELLROWINDEX" />কলাম<ph name="TABLECELLCOLUMNINDEX" /></translation>
+<translation id="8957142051395645063">ঘোষণা করুন</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">ভুলে যান</translation>
 <translation id="900114243503212879">ফাইল...</translation>

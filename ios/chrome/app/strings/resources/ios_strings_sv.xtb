@@ -85,6 +85,7 @@
 <translation id="213900355088104901">Öppna en inkognitoflik om du vill surfa privat</translation>
 <translation id="2139867232736819575">Sök efter kopierad text</translation>
 <translation id="2149973817440762519">Redigera bokmärke</translation>
+<translation id="2179182049312275900">Du kan när som helst inaktivera synkroniseringen i inställningarna.</translation>
 <translation id="2198757192731523470">Google kan anpassa Sök, annonser och andra Google-tjänster utifrån historiken.</translation>
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> olästa artiklar i läslistan.</translation>
 <translation id="2230173723195178503">Webbsidan har lästs in</translation>
@@ -202,6 +203,7 @@
 <translation id="4038354071007134711">Det går inte att öppna filen med någon av apparna på enheten.</translation>
 <translation id="4042870976416480368">Sök på sidan</translation>
 <translation id="4049507953662678203">Kontrollera att du är ansluten till nätverket och försök igen.</translation>
+<translation id="4071530748369333746">Vill du avbryta synkronisering?</translation>
 <translation id="4082688844002261427">Styr hur din webbhistorik används för att anpassa sökning, annonser med mera</translation>
 <translation id="408404951701638773">Nu är det enklare att komma åt sökfältet</translation>
 <translation id="411254640334432676">Nedladdningen misslyckades.</translation>
@@ -271,6 +273,7 @@ Din data har krypterats med lösenfrasen för synkronisering. Ange den om du vil
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Aktivera synkronisering</translation>
 <translation id="5244474230056479698">Synkroniseras med <ph name="EMAIL" /></translation>
+<translation id="5245322853195994030">Avbryt synkronisering</translation>
 <translation id="5300589172476337783">Visa</translation>
 <translation id="5317780077021120954">Spara</translation>
 <translation id="5327248766486351172">Namn</translation>

@@ -148,6 +148,7 @@
 <translation id="204321170514947529"><ph name="APP_NAME" /> juga mempunyai data dalam Chrome</translation>
 <translation id="2045104531052923016">Apl lain <ph name="GIGABYTES" /> GB</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
+<translation id="2049961518639794558">Menukar sambungan fail boleh mengakibatkan gelagat yang tidak dijangka dan boleh membahayakan peranti anda.</translation>
 <translation id="2056878612599315956">Tapak dijeda</translation>
 <translation id="2063713494490388661">Ketik untuk Mencari</translation>
 <translation id="2079545284768500474">Buat asal</translation>
@@ -248,6 +249,7 @@
 <translation id="2810645512293415242">Halaman diringkaskan untuk menjimatkan data dan memuatkan dengan lebih cepat.</translation>
 <translation id="281504910091592009">Lihat dan urus kata laluan yang disimpan dalam <ph name="BEGIN_LINK" />Akaun Google<ph name="END_LINK" /> anda</translation>
 <translation id="2818669890320396765">Log masuk dan hidupkan penyegerakan untuk mendapatkan penanda halaman pada semua peranti anda</translation>
+<translation id="2822354292072154809">Adakah anda pasti mahu menetapkan semula semua kebenaran tapak untuk <ph name="CHOSEN_OBJECT_NAME" />?</translation>
 <translation id="2836148919159985482">Sentuh butang kembali untuk keluar daripada skrin penuh.</translation>
 <translation id="2842985007712546952">Folder induk</translation>
 <translation id="2845873210977809562">Tab dibuka ditutup</translation>
@@ -481,6 +483,7 @@ Akaun Google anda mungkin mempunyai sejarah penyemakan imbas dalam bentuk lain s
 <translation id="4634124774493850572">Gunakan kata laluan</translation>
 <translation id="4645575059429386691">Diurus oleh ibu bapa anda</translation>
 <translation id="4648718555153979859">Tab anda dikumpulkan bersama di sini</translation>
+<translation id="4650364565596261010">Lalai sistem</translation>
 <translation id="4660011489602794167">Tunjukkan papan kekunci</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> penanda halaman dipadamkan</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> telah ditambahkan ke skrin Utama anda</translation>
@@ -520,6 +523,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="488187801263602086">Namakan semula fail</translation>
 <translation id="4882831918239250449">Kawal cara sejarah penyemakan imbas anda digunakan untuk memperibadikan Carian, iklan dan pelbagai lagi</translation>
 <translation id="4883379392681899581">Tinggalkan mod peribadi</translation>
+<translation id="4883854917563148705">Tetapan yang diurus tidak dapat ditetapkan semula</translation>
 <translation id="4885273946141277891">Bilangan kejadian Chrome tidak disokong.</translation>
 <translation id="4910889077668685004">Apl pembayaran</translation>
 <translation id="4913161338056004800">Tetapkan semula perangkaan</translation>
@@ -531,6 +535,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> berkongsi skrin anda</translation>
 <translation id="4961107849584082341">Terjemahkan halaman ini ke sebarang bahasa</translation>
 <translation id="4961700429721424617">Anda log keluar daripada akaun yang diurus oleh <ph name="MANAGED_DOMAIN" />. Tindakan ini akan memadamkan data Chrome anda daripada peranti ini, tetapi data anda akan kekal dalam Akaun Google anda.</translation>
+<translation id="4962975101802056554">Batalkan semua kebenaran untuk peranti</translation>
 <translation id="4970824347203572753">Tidak tersedia di lokasi anda</translation>
 <translation id="497421865427891073">Ke hadapan</translation>
 <translation id="4988210275050210843">Memuat turun fail (<ph name="MEGABYTES" />).</translation>
@@ -550,6 +555,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5087580092889165836">Tambah kad</translation>
 <translation id="5100237604440890931">Diruntuhkan - klik untuk mengembangkan.</translation>
 <translation id="510275257476243843">1 jam lagi</translation>
+<translation id="51149521070059886">Hidupkan tema gelap apabila Penjimat Kuasa peranti anda dihidupkan</translation>
 <translation id="5123685120097942451">Tab Inkognito</translation>
 <translation id="5127805178023152808">Penyegerakan dimatikan</translation>
 <translation id="5129038482087801250">Pasang apl web</translation>
@@ -925,6 +931,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="7765158879357617694">Alih</translation>
 <translation id="7769602470925380267">Terima dan log keluar</translation>
 <translation id="7772032839648071052">Sahkan frasa laluan</translation>
+<translation id="7772375229873196092">Tutup <ph name="APP_NAME" /></translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 dan <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> lagi}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 dan <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> lagi}}</translation>
 <translation id="7781829728241885113">Semalam</translation>
 <translation id="7791543448312431591">Tambah</translation>
@@ -932,6 +939,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="7810647596859435254">Buka dengan...</translation>
 <translation id="7821588508402923572">Penjimatan data anda akan dipaparkan di sini</translation>
 <translation id="7837721118676387834">Benarkan video yang diredamkan dimainkan secara automatik untuk tapak web tertentu.</translation>
+<translation id="7838340937077326045">Adakah anda pasti mahu menukar sambungan fail?</translation>
 <translation id="7846076177841592234">Batalkan pilihan</translation>
 <translation id="784934925303690534">Julat masa</translation>
 <translation id="7851858861565204677">Peranti lain</translation>

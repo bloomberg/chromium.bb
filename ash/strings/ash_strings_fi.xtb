@@ -26,6 +26,7 @@
 <translation id="1290331692326790741">Heikko signaali</translation>
 <translation id="1293264513303784526">C-tyypin USB-laite (vasemman sivun portti)</translation>
 <translation id="1294929383540927798">Muuta lukitusnäytön ilmoitusasetuksia</translation>
+<translation id="1301069673413256657">GSM</translation>
 <translation id="1302880136325416935">Näytä Bluetooth-asetukset. <ph name="STATE_TEXT" /></translation>
 <translation id="1316069254387866896">Näytä hylly aina</translation>
 <translation id="1346748346194534595">Oikealle</translation>
@@ -206,6 +207,7 @@
 <translation id="4181841719683918333">Kielet</translation>
 <translation id="4195877955194704651">Automaattinen klikkaus ‑painike</translation>
 <translation id="4217571870635786043">Sanelu</translation>
+<translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Näytä ilmoitusasetukset. Ilmoitukset on poistettu käytöstä.</translation>
 <translation id="4269883910223712419">Tämän laitteen ylläpitäjä voi</translation>
 <translation id="4279490309300973883">Peilaus päällä</translation>
@@ -276,6 +278,7 @@
 <translation id="544691375626129091">Kaikki käytettävissä olevat käyttäjät on jo lisätty tähän istuntoon.</translation>
 <translation id="5465662442746197494">Tarvitsetko apua?</translation>
 <translation id="5496819745535887422">Järjestelmänvalvoja palauttaa laitetta. Kaikki data poistetaan laitteen käynnistyessä uudelleen.</translation>
+<translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">Käyttökerran lopettaminen</translation>
 <translation id="5537725057119320332">Lähetä</translation>
 <translation id="5548285847212963613">Laajennus <ph name="EXTENSION_NAME" /> voi auttaa muodostamaan yhteyden tähän verkkoon.</translation>
@@ -283,6 +286,7 @@
 <translation id="5571066253365925590">Bluetooth käytössä</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">Poista äänipalaute käytöstä painamalla Ctrl+Alt+Z.</translation>
+<translation id="5625955975703555628">LTE+</translation>
 <translation id="5648021990716966815">Mikrofoniliitäntä</translation>
 <translation id="5669267381087807207">Aktivoidaan</translation>
 <translation id="5673434351075758678">Muutos asetusten synkronoinnin yhteydessä: <ph name="FROM_LOCALE" /> – <ph name="TO_LOCALE" /></translation>
@@ -322,6 +326,7 @@
  pysyvästi, kun tämä valvottu käyttäjä poistetaan. Vieraillut verkkosivustot ja
  valvotun käyttäjän asetukset saattavat silti vielä näkyä hallinnoijalle osoitteessa <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Lisätietoja</translation>
+<translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">Lukittu vaakasuuntaiseksi</translation>
 <translation id="6259254695169772643">Valitse näyttökynällä</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: aktivoidaan…</translation>
@@ -389,6 +394,7 @@
 <translation id="7256634071279256947">Takamikrofoni</translation>
 <translation id="726276584504105859">Jaa näyttö vetämällä tähän.</translation>
 <translation id="7303365578352795231">Vastataan toisella laitteella</translation>
+<translation id="7305884605064981971">EDGE</translation>
 <translation id="7348093485538360975">Virtuaalinäppäimistö</translation>
 <translation id="735745346212279324">VPN-yhteys katkaistu</translation>
 <translation id="7377169924702866686">Caps Lock on päällä.</translation>
@@ -493,9 +499,11 @@
 <translation id="8877788021141246043">Aseta muistutus</translation>
 <translation id="8878886163241303700">Laajennettu näyttö</translation>
 <translation id="890616557918890486">Vaihda lähdettä</translation>
+<translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google Assistant ei ole käytettävissä tällä kielellä.</translation>
 <translation id="8938800817013097409">C-tyypin USB-laite (oikeanpuoleinen takaportti)</translation>
 <translation id="8940956008527784070">Akku vähissä (<ph name="PERCENTAGE" /> %)</translation>
+<translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> käytössä</translation>
 <translation id="899350903320462459">Avaa laitteen lukitus tunnuksella <ph name="LOGIN_ID" />, niin voit käyttää ilmoitustoimintoa</translation>
 <translation id="8995603266996330174">Hallinnoija: <ph name="DOMAIN" /></translation>

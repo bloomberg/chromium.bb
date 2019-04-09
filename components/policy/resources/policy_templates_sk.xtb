@@ -137,6 +137,7 @@ servera, pretože objekty GPO sa znova sťahujú pri každom načítaní pravidi
       Ak toto pravidlo nie je nastavené, použije sa predvolená frekvencia 3 hodiny. Minimálna
       povolená frekvencia je 60 sekúnd.</translation>
 <translation id="1204263402976895730">Povolené podnikové tlačiarne</translation>
+<translation id="1216919699175573511">Povoliť podporu šírenia podpísaného obsahu HTTP (SXG)</translation>
 <translation id="1219695476179627719">Určuje, či má byť zariadenie vrátené na verziu nastavenú pravidlom <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" />, ak už používa novšiu verziu.
 
       Predvolene je pravidlo zakázané (hodnota RollbackDisabled).</translation>
@@ -485,7 +486,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Ak toto nastavenie povolíte, služba ochrany hesla zaznamená digitálny odtlačok hesla na týchto webových adresách na účely rozpoznania opätovného použitia hesla.
       Ak toto nastavenie zakážete alebo nenastavíte, služba ochrany hesla bude zaznamenávať iba digitálne odtlačky hesiel na https://accounts.google.com.
       Toto pravidlo je k dispozícii iba v inštanciách systému Windows, ktoré sú zapojené do domény <ph name="MS_AD_NAME" />, alebo v inštanciách systému Windows 10 Pro alebo Enterprise, ktoré sú zaregistrované do správy zariadení.</translation>
-<translation id="1914840757300882918">Ak je toto pravidlo nastavené, hostiteľ použije certifikát klienta s bežným názvom vydavateľa na overenie adresy RemoteAccessHostTokenValidationUrl. Ak chcete použiť ľubovoľný dostupný certifikát klienta, použite hviezdičku „*“.
+<translation id="1914840757300882918">Ak je toto pravidlo nastavené, hostiteľ použije certifikát klienta s daným názvom vydavateľa na overenie adresy RemoteAccessHostTokenValidationUrl. Ak chcete použiť ľubovoľný dostupný certifikát klienta, použite hviezdičku „*“.
 
           Táto funkcia je momentálne zakázaná na strane servera.</translation>
 <translation id="1919802376548418720">Delegovať poverenia pomocou pravidla KDC.</translation>
@@ -618,7 +619,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
           Od verzie 21 prehliadača <ph name="PRODUCT_NAME" /> je inštalácia rozšírení, aplikácií a skriptov používateľov z iných zdrojov ako Internetového obchodu Chrome náročnejšia. Predtým mohli používatelia kliknúť na odkaz na súbor *.crx a prehliadač <ph name="PRODUCT_NAME" /> im po niekoľkých upozorneniach ponúkol možnosť inštalácie tohto súboru. V prehliadači <ph name="PRODUCT_NAME" /> 21 a novších verziách je potrebné takéto súbory stiahnuť a presunúť na stránku s nastaveniami prehliadača <ph name="PRODUCT_NAME" />. Toto nastavenie umožňuje určitým webovým adresám využiť starší a jednoduchší proces inštalácie.
 
-          Každá položka v tomto zozname predstavuje vzor zodpovedajúci typu rozšírenia (pozrite si https://developer.chrome.com/extensions/match_patterns). Používatelia budú môcť poľahky inštalovať položky z ľubovoľnej webovej adresy, ktorá sa bude zhodovať s položkou v tomto zozname. Pomocou týchto vzorov musíte povoliť umiestnenie súboru *.crx a stránku, na ktorej sa spustí sťahovanie (t. j. sprostredkovateľa).
+          Každá položka v tomto zozname predstavuje vzor zodpovedajúci typu rozšírenia (pozrite si https://developer.chrome.com/extensions/match_patterns). Používatelia budú môcť poľahky inštalovať položky z ľubovoľnej webovej adresy, ktorá bude zodpovedať položke v tomto zozname. Pomocou týchto vzorov musíte povoliť umiestnenie súboru *.crx a stránku, na ktorej sa spustí sťahovanie (t. j. sprostredkovateľa).
 
           <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> má pred týmto pravidlom prednosť. Znamená to, že rozšírenie uvedené v zozname zakázaných položiek sa nenainštaluje ani vtedy, ak pochádza z webu uvedeného v tomto zozname.</translation>
 <translation id="214901426630414675">Obmedziť režim obojstrannej tlače</translation>
@@ -663,7 +664,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
       Ak je pravidlo zakázané, používateľovi sa nikdy nezobrazí výzva a zaznamenávanie videa bude k dispozícii iba pre webové adresy, ktoré sú nakonfigurované v zozname VideoCaptureAllowedUrls.
 
-      Toto pravidlo ovplyvňuje okrem vstavanej webovej kamery aj všetky ostatné výstupy videa.</translation>
+      Toto pravidlo ovplyvňuje okrem vstavanej webovej kamery aj všetky ostatné vstupy videa.</translation>
 <translation id="2201555246697292490">Konfigurácia bielej listiny pre odosielanie natívnych správ</translation>
 <translation id="2204753382813641270">Ovládať automatické skrývanie poličky</translation>
 <translation id="2208976000652006649">Parametre pre webovú adresu vyhľadávania, ktorá používa metódu POST</translation>
@@ -1640,6 +1641,13 @@ Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, k
           Ak toto pravidlo nastavené nie je, použije sa predvolená doba.
 
           Hodnota pravidla by mala byť uvedená v milisekundách.</translation>
+<translation id="4105884561459127998">Umožňuje konfigurovať typ overenia totožnosti prihlasovacích údajov SAML.
+
+      Keď toto pravidlo nenastavíte alebo nastavíte na možnosť Predvolené (hodnota 0), správanie prihlasovacích údajov SAML určuje prehliadač v závislosti od ďalších faktorov. Najčastejšie sa overenie totožnosti používateľa a ochrana údajov používateľa vo vyrovnávacej pamäti zakladajú na heslách ručne zadaných používateľmi.
+
+      Keď tieto pravidlá nastavíte na možnosť ClientCertificate (hodnota 1), overenie certifikátu klienta sa použije pre nových pridaných používateľov, ktorí sa prihlásia prostredníctvom SAML. Nepoužijú sa pre nich žiadne heslá a ich miestne dáta vo vyrovnávacej pamäti sú chránené pomocou zodpovedajúcich kryptografických kľúčov. Toto nastavenie umožňuje napríklad konfigurovať inteligentnú kartu na základe overenia totožnosti používateľa (pamätajte, že middlevérové aplikácie inteligentných kariet musíte nainštalovať prostredníctvom pravidla DeviceLoginScreenExtensions).
+
+      Toto pravidlo sa vzťahuje iba na používateľov, ktorí sa prihlásia pomocou SAML.</translation>
 <translation id="4105989332710272578">Zakázať vynucovanie pravidla transparentnosti certifikátov pre zoznam webových adries</translation>
 <translation id="4121350739760194865">Zabraňuje tomu, aby sa propagácie aplikácií zobrazovali na stránke Nová karta</translation>
 <translation id="4125606414556046117">Toto pravidlo umožňuje nakonfigurovať obrázok tapety, ktorá sa používateľovi zobrazuje na pracovnej ploche a na pozadí prihlasovacej obrazovky. Pravidlo nastavíte určením webovej adresy, z ktorej môže <ph name="PRODUCT_OS_NAME" /> stiahnuť daný obrázok tapety, a určením kryptografickej hodnoty hash, pomocou ktorej sa overí integrita stiahnutého súboru. Obrázok musí byť vo formáte JPEG a jeho veľkosť nesmie prekročiť 16 MB. Webová adresa musí byť prístupná bez overenia.
@@ -1665,9 +1673,33 @@ Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, k
 
       Ak toto pravidlo nastavíte, používatelia ho nebudú môcť zmeniť ani prepísať.
 
-      Ak toto pravidlo nenastavíte, používatelia si budú môcť vybrať obrázok na pracovnej ploche alebo na pozadí prihlasovacej obrazovky.</translation>
+      Ak toto pravidlo nenastavíte, používatelia si budú môcť vybrať obrázok na pracovnej ploche a na pozadí prihlasovacej obrazovky.</translation>
 <translation id="412697421478384751">Povoliť používateľom nastaviť slabé kódy PIN na uzamknutej obrazovke</translation>
 <translation id="4138655880188755661">Časový limit</translation>
+<translation id="4144164749344898721">Toto pravidlo ovláda viaceré nastavenia pre stratégiu správy spotreby energie, keď je používateľ nečinný.
+
+          Môžete nastaviť štyri typy akcií:
+          * Ak bude používateľ nečinný počas časového obdobia uvedeného v nastavení |ScreenDim|, obrazovka sa stlmí.
+          * Ak bude používateľ nečinný počas časového obdobia uvedeného v nastavení |ScreenOff|, obrazovka sa vypne.
+          * Ak bude používateľ nečinný počas časového obdobia uvedeného v nastavení |IdleWarning|, zobrazí sa dialógové okno s upozornením, že sa použije akcia nastavená pre prípad nečinnosti. Hlásenie s upozornením sa zobrazí iba vtedy, ak je akcia pri nečinnosti odhlásenie alebo vypnutie.
+          * Ak bude používateľ nečinný počas časového obdobia uvedeného v nastavení |Idle|, použije sa akcia nastavená v možnosti |IdleAction|.
+
+          Hodnoty oneskorení sa pre všetky akcie uvedené vyššie zadávajú v milisekundách. Príslušná akcia sa spustí len vtedy, keď bude nastavená hodnota väčšia ako nula. Ak je hodnota oneskorenia nastavená na nulu, <ph name="PRODUCT_OS_NAME" /> príslušnú akciu nevykoná.
+
+          Ak nenastavíte časové obdobia pre oneskorenia vyššie, použije sa predvolená hodnota.
+
+          Upozorňujeme, že hodnoty v nastavení |ScreenDim| budú usmernené tak, aby boli menšie alebo rovné hodnote v nastavení |ScreenOff|. Hodnoty v nastaveniach |ScreenOff| a |IdleWarning| budú usmernené tak, aby boli menšie alebo rovné hodnote v nastavení |Idle|.
+
+          V rámci možnosti |IdleAction| môžete nastaviť jednu zo štyroch možných akcií:
+          * |Suspend| – pozastaviť;
+          * |Logout| – odhlásiť;
+          * |Shutdown| – vypnúť;
+          * |DoNothing| – nevykonať žiadnu akciu.
+
+          Ak možnosť |IdleAction| nenastavíte, použije sa predvolená akcia, t. j. pozastaviť.
+
+          K dispozícii sú aj samostatné nastavenia pre použitie zdroja napájania alebo batérie
+          </translation>
 <translation id="4150201353443180367">Displej</translation>
 <translation id="4157003184375321727">Hlásiť verziu operačného systému a firmvéru</translation>
 <translation id="4157594634940419685">Povoliť prístup k natívnym tlačiarňam CUPS</translation>
@@ -1752,6 +1784,15 @@ Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, k
 <translation id="4322842393287974810">Povoliť verejnej aplikácii, ktorá sa spúšťa automaticky s nulovým oneskorením, ovládať verziu systému <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Pridať do oblasti oznámení tlačidlo odhlásenia</translation>
 <translation id="4332177773549877617">Zaznamenávať udalosti počas inštalácie aplikácií pre Android</translation>
+<translation id="4335292026668105285">Umožňuje špecifikovať časový interval bez vstupu používateľa, po uplynutí ktorého sa pri napájaní z elektrickej siete zobrazí dialógové okno s upozornením.
+
+          Keď je toto pravidlo nastavené, stanovuje, ako dlho musí byť používateľ nečinný, než mu<ph name="PRODUCT_OS_NAME" /> zobrazí dialógové okno s upozornením, že sa ide vykonať akcia pri nečinnosti.
+
+          Keď toto pravidlo nenastavíte, nezobrazí sa žiadne dialógové okno s upozornením.
+
+          Hodnota tohto pravidla sa udáva v milisekundách. Hodnoty sú obmedzené, aby boli menšie alebo rovnaké ako oneskorenie pri nečinnosti.
+
+          Hlásenie s upozornením sa zobrazí iba vtedy, ak je akcia pri nečinnosti odhlásenie alebo vypnutie.</translation>
 <translation id="4346674324214534449">Umožňuje nastaviť, či by mali byť reklamy blokované na weboch s obťažujúcimi reklamami.
 
       Ak toto pravidlo nastavíte na hodnotu 2, reklamy budú blokované na weboch s obťažujúcimi reklamami.
@@ -2098,7 +2139,7 @@ Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, k
 
           Toto pravidlo platí, iba keď nie je zadané pravidlo <ph name="PROXY_SETTINGS_POLICY_NAME" />.
 
-          Ak sa rozhodnete proxy server nikdy nepoužívať a vždy sa pripájať ručne, všetky ostatné možnosti budú ignorované.
+          Ak sa rozhodnete proxy server nikdy nepoužívať a vždy sa pripájať priamo, všetky ostatné možnosti budú ignorované.
 
           Ak sa rozhodnete používať systémové nastavenia proxy servera alebo proxy server zisťovať automaticky, všetky ostatné možnosti budú ignorované.
 
@@ -2303,13 +2344,13 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 
       Určuje zoznam doplnkov, ktoré používateľ v prehliadači <ph name="PRODUCT_NAME" /> môže povoliť alebo zakázať.
 
-      Zástupnými znakmi „*“ a „?“ je možné nahradiť sekvenciu ľubovoľných znakov. Znak „*“ zodpovedá ľubovoľnému počtu znakov a znak „?“ určuje jeden voliteľný znak, t. j. zodpovedá žiadnemu alebo jednému znaku. Špeciálny znak uvedenia je „\“. Ak chcete, aby znaky „*“ alebo „?“ zodpovedali skutočným znakom, môžete pred ne vložiť znak „\“.
+      Zástupnými znakmi „*“ a „?“ je možné nahradiť sekvenciu ľubovoľných znakov. Znak „*“ zodpovedá ľubovoľnému počtu znakov a znak „?“ určuje jeden voliteľný znak, t. j. zodpovedá žiadnemu alebo jednému znaku. Znak potlačenia významu je „\“. Ak chcete, aby znaky „*“ alebo „?“ zodpovedali skutočným znakom, môžete pred ne vložiť znak „\“.
 
       Ak toto nastavenie povolíte, môže byť v prehliadači <ph name="PRODUCT_NAME" /> použitý špecifikovaný zoznam doplnkov. Používatelia môžu doplnok aktivovať alebo deaktivovať na about:plugins aj v prípade, že doplnok zodpovedá vzoru v zozname DisabledPlugins. Používatelia môžu tiež aktivovať a deaktivovať doplnky, ktoré nezodpovedajú žiadnemu vzoru v zozname DisabledPlugins, DisabledPluginsExceptions alebo EnabledPlugins.
 
       Toto pravidlo má umožniť zakázanie doplnkov tam, kde zoznam DisabledPlugins obsahuje zástupné znaky, ako napríklad deaktivovať všetky doplnky „*“ alebo deaktivovať všetky doplnky Java „*Java*“, avšak správca si želá zachovať určité verzie, napríklad „IcedTea Java 2.3“. Túto konkrétnu verziu je možné určiť v tomto pravidle.
 
-      Upozorňujeme, že je potrebné vylúčiť názov doplnku aj názov skupiny doplnkov. Jednotlivé skupiny doplnkov sa zobrazujú v samostatných častiach na about:plugins a každá časť môže obsahovať jeden alebo viacero doplnkov Doplnok Shockwave Flash napríklad patrí do skupiny Adobe Flash Player. A ak má byť doplnok vylúčený zo zoznamu zakázaných, musia byť v zozname výnimiek uvedené obidva názvy.
+      Upozorňujeme, že je potrebné vylúčiť názov doplnku aj názov skupiny doplnkov. Jednotlivé skupiny doplnkov sa zobrazujú v samostatných častiach na about:plugins a každá časť môže obsahovať jeden alebo viacero doplnkov. Doplnok Shockwave Flash napríklad patrí do skupiny Adobe Flash Player. Ak má byť doplnok vylúčený zo zoznamu zakázaných, musia byť v zozname výnimiek uvedené obidva názvy.
 
       Ak pravidlo nie je nastavené, bude akýkoľvek doplnok, ktorý zodpovedá vzoru v zozname DisabledPlugins, uzamknutý ako deaktivovaný a používatelia ho nebudú môcť aktivovať.</translation>
 <translation id="5499375345075963939">Toto pravidlo je aktívne iba v režime predaja.
@@ -3317,6 +3358,9 @@ Ak toto pravidlo nastavíte na hodnotu True, vstavaný klient DNS sa použije (p
 <translation id="7464991223784276288">Obmedzenie súborov cookie zo zodpovedajúcich webových adries na aktuálnu reláciu</translation>
 <translation id="7469554574977894907">Povoliť návrhy pre vyhľadávanie</translation>
 <translation id="7474249562477552702">Či sú povolené certifikáty podpísané algoritmom SHA-1 vydané miestnymi ukotveniami dôvery</translation>
+<translation id="747851715060942420">Umožňuje konfigurovať stránky, ktoré sa načítavajú pri spustení.
+
+      Ak ste v časti „Akcia pri spustení“ nevybrali možnosť „Otvoriť zoznam webových adries“, pravidlo „Webové adresy otvárané pri spustení“ sa bude ignorovať.</translation>
 <translation id="7485481791539008776">Pravidlá výberu predvolenej tlačiarne</translation>
 <translation id="7485730741952775732">Ak nastavíte toto pravidlo, hostiteľ vzdialeného prístupu použije pri pripájaní túto webovú adresu na kontrolu overovacích tokenov od klientov vzdialeného prístupu. Musíte ho použiť v kombinácii s pravidlom RemoteAccessHostTokenUrl.
 
@@ -3330,6 +3374,11 @@ Ak toto pravidlo nastavíte na hodnotu True, vstavaný klient DNS sa použije (p
 
       Ak toto pravidlo použijete, používateľ bude mať k dispozícii všetky tlačiarne okrem tých, ktorých identifikátory sú v ňom uvedené. Identifikátory sa musia zhodovať s hodnotou v poli „id“ alebo „guid“ v súbore určenom v pravidle <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
+<translation id="7506269062143646163">Povolenie podpory pre šírenie podpísaného obsahu HTTP (SXG).
+
+          Ak toto pravidlo nenastavíte alebo ho povolíte, Google Chrome bude prijímať obsah webu zobrazovaný v rámci šírenia podpísaného obsahu HTTP.
+
+          Ak toto pravidlo zakážete, šírenie podpísaného obsahu HTTP sa nebude dať načítať.</translation>
 <translation id="7511361072385293666">Ak je toto pravidlo nastavené na možnosť True alebo nie je nastavené vôbec, použitie protokolu QUIC je v prehliadači <ph name="PRODUCT_NAME" /> povolené.
       Ak je toto pravidlo nastavené na možnosť False, použitie protokolu QUIC je zakázané.</translation>
 <translation id="7517845714620372896">Určuje percento jasu obrazovky.
@@ -3475,6 +3524,15 @@ Ak toto pravidlo nastavíte na hodnotu True, vstavaný klient DNS sa použije (p
       Medzi uznávané identifikátory typov pripojení patria "ethernet", "wifi", "wimax", "bluetooth" a "cellular".</translation>
 <translation id="7763614521440615342">Zobrazovať návrhy obsahu na stránke na novej karte</translation>
 <translation id="7765879851993224640">Povoliť použitie prihlásenia pomocou funkcie Smart Lock</translation>
+<translation id="7772346342637974431">Umožňuje špecifikovať časový interval bez vstupu používateľa, po uplynutí ktorého sa pri napájaní z batérie zobrazí dialógové okno s upozornením.
+
+          Keď je toto pravidlo nastavené, stanovuje, ako dlho musí byť používateľ nečinný, než mu<ph name="PRODUCT_OS_NAME" /> zobrazí dialógové okno s upozornením, že sa ide vykonať akcia pri nečinnosti.
+
+          Keď toto pravidlo nenastavíte, nezobrazí sa žiadne dialógové okno s upozornením.
+
+          Hodnota tohto pravidla sa udáva v milisekundách. Hodnoty sú obmedzené, aby boli menšie alebo rovnaké ako oneskorenie pri nečinnosti.
+
+          Hlásenie s upozornením sa zobrazí iba vtedy, ak je akcia pri nečinnosti odhlásenie alebo vypnutie.</translation>
 <translation id="7774768074957326919">Použiť systémové nastavenia servera proxy</translation>
 <translation id="7777535871204167559">Považovať externé úložné zariadenia za položky iba na čítanie</translation>
 <translation id="7781069478569868053">Stránka na novej karte</translation>
@@ -3747,9 +3805,9 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
 
       Ak toto pravidlo nastavíte na hodnotu false, štatistiky sa nebudú nahlasovať.
       Ak ho nastavíte na hodnotu true alebo ho nenastavíte, štatistiky sa budú nahlasovať.</translation>
-<translation id="8380490658357556620">Povoľuje použitie prenosových serverov, keď sa vzdialení klienti pokúšajú nadviazať spojenie s týmto počítačom.
+<translation id="8380490658357556620">Povoľuje použitie prenosových serverov, keď sa vzdialené klienty pokúšajú nadviazať spojenie s týmto počítačom.
 
-          Ak je toto nastavenie povolené, vzdialení klienti môžu používať prenosové servery na pripojenie k tomuto počítaču v prípade, keď nie je k dispozícii priame pripojenie (napr. z dôvodu obmedzení brány firewall).
+          Ak je toto nastavenie povolené, vzdialené klienty môžu používať prenosové servery na pripojenie k tomuto počítaču v prípade, keď nie je k dispozícii priame pripojenie (napr. z dôvodu obmedzení brány firewall).
 
           Upozorňujeme, že ak je pravidlo <ph name="REMOTE_ACCESS_HOST_FIREWALL_TRAVERSAL_POLICY_NAME" /> zakázané, bude toto pravidlo ignorované.
 
@@ -3959,7 +4017,7 @@ Platí to pre všetky skripty PAC bez ohľadu na ich pôvod (vrátane tých, kto
 
           Toto pravidlo sa uplatní iba v prípade, keď nie je nastavené pravidlo <ph name="PROXY_SETTINGS_POLICY_NAME" />.
 
-          Ak sa rozhodnete proxy server nikdy nepoužívať a vždy sa pripájať ručne, všetky ostatné možnosti budú ignorované.
+          Ak sa rozhodnete proxy server nikdy nepoužívať a vždy sa pripájať priamo, všetky ostatné možnosti budú ignorované.
 
           Ak sa rozhodnete používať systémové nastavenia proxy servera, všetky ostatné možnosti budú ignorované.
 
@@ -4028,6 +4086,7 @@ Podpora tohto pravidla bola ukončená vo verzii M69 a používa sa namiesto n
       Ďalšie informácie o zabezpečených kontextoch nájdete na adrese
       https://www.w3.org/TR/secure-contexts/
       </translation>
+<translation id="8939595959513040470">Poskytovať používateľom zostavu s rýchlou opravou.</translation>
 <translation id="8942616385591203339">Toto pravidlo riadi, či je možné používateľovi pri prvom prihlásení zobraziť súhlas so synchronizáciou. Ak používateľ nebude súhlas so synchronizáciou nikdy potrebovať, malo by byť nastavené na hodnotu false.
       Ak ho nastavíte na hodnotu false, súhlas so synchronizáciou sa nikdy nezobrazí.
       Ak ho nastavíte na hodnotu true alebo nenastavíte, súhlas so synchronizáciou je možné zobraziť.</translation>
@@ -4070,7 +4129,7 @@ Podpora tohto pravidla bola ukončená vo verzii M69 a používa sa namiesto n
         "type": "object",
         "properties": {
           "url": {
-            "description": "Webová adresa, na ktorej je možné obrázok avatara stiahnuť.",
+            "description": "Webová adresa, z ktorej je možné obrázok avatara stiahnuť.",
             "type": "string"
           },
           "hash": {
@@ -4086,8 +4145,11 @@ Podpora tohto pravidla bola ukončená vo verzii M69 a používa sa namiesto n
 
       Ak pravidlo nenastavíte, používatelia si budú môcť zvoliť obrázok avatara, ktorý ich bude predstavovať na prihlasovacej obrazovke.</translation>
 <translation id="9035964157729712237">ID rozšírení, ktoré majú byť zo zoznamu zakázaných rozšírení vyňaté</translation>
+<translation id="9038058011835642205">Umožňuje špecifikovať zoznam webov, ktoré sa inštalujú potichu bez interakcie s používateľom a ktoré používateľ nemôže odinštalovať ani deaktivovať.
+
+      Jednotlivé položky zoznamu v danom pravidle sú objekty pozostávajúce z povinnej časti „url“ a dvoch voliteľných častí „default_launch_container“ a „create_desktop_shortcut“. Parameter „url“ by mal byť adresa webovej aplikácie, ktorá sa má nainštalovať, parameter „launch_container“ by mal mať hodnotu „window“ (okno) alebo „tab“ (karta), ktorá určuje, ako sa webová aplikácia po inštalácii otvorí, a parameter „create_desktop_shortcut“ by mal byť nastavený na hodnotu true, ak sa má v systémoch Linux a Windows vytvoriť odkaz na pracovnej ploche. Ak parameter „default_launch_container“ vynecháte, aplikácia sa predvolene otvorí na karte. Bez ohľadu na hodnotu parametra „default_launch_container“ môžu používatelia zmeniť, v ktorom kontajneri sa aplikácia otvorí. Ak vynecháte parameter „create_desktop_shortcuts“, nevytvoria sa žiadne odkazy na pracovnej ploche.</translation>
 <translation id="9038839118379817310">Povoliť Wi‑Fi</translation>
-<translation id="9039822628127365650">Keď je toto pravidlo nastavené, stanovuje časový interval, po uplynutí ktorého bude používateľ automaticky odhlásený a relácia ukončená. O zostávajúcom čase informuje používateľa odpočívanie v oblasti oznámení.
+<translation id="9039822628127365650">Keď je toto pravidlo nastavené, stanovuje časový interval, po uplynutí ktorého bude používateľ automaticky odhlásený a relácia ukončená. O zostávajúcom čase informuje používateľa odpočítavanie v oblasti oznámení.
 
       Keď toto pravidlo nie je nastavené, dĺžka relácie nie je obmedzená.
 
@@ -4095,6 +4157,11 @@ Podpora tohto pravidla bola ukončená vo verzii M69 a používa sa namiesto n
 
       Hodnota tohto pravidla sa udáva v milisekundách. Namiesto hodnôt mimo rozsahu od 30 sekúnd do 24 hodín sa použijú príslušné krajné hodnoty tohto rozsahu.</translation>
 <translation id="9042911395677044526">Umožňuje preniesť konfiguráciu siete, ktorá sa použije pre jednotlivých používateľov v zariadení so systémom <ph name="PRODUCT_OS_NAME" />. Konfigurácia siete je reťazec vo formáte JSON, ktorý sa riadi definíciou formátu Open Network Configuration uvedenou na adrese <ph name="ONC_SPEC_URL" /></translation>
+<translation id="9050853837490399534">Toto pravidlo ovláda, či bude zariadenie aktualizované na zostavu s rýchlou opravou.
+
+      Ak nastavíte hodnotu pravidla na token, ktorý mapuje na zostavu s rýchlou opravou, zariadenie bude aktualizované na zodpovedajúcu zostavu s rýchlou opravou (ak danú aktualizáciu neblokuje iné pravidlo).
+
+      Ak toto pravidlo nenastavíte alebo jeho hodnota nemapuje na zostavu s rýchlou opravou, zariadenie sa na túto zostavu neaktualizuje. Ak zariadenie už používa zostavu s rýchlou opravou a pravidlo už nie je nastavené alebo jeho hodnota nemapuje na zostavu s rýchlou opravou, zariadenie sa aktualizuje na bežnú zostavu (ak danú aktualizáciu neblokuje iné pravidlo).</translation>
 <translation id="906631898352326790">
       Ak toto pravidlo povolíte, jednotlivé uvedené zdroje v zozname oddelené čiarkami sa spustia vo vlastných procesoch. Zároveň sa tým izolujú zdroje označené subdoménami, napr. ak uvediete adresu https://example.com/, izolovaná bude aj adresa https://foo.example.com/ ako súčasť webu https://example.com/.
       Ak ho zakážete, funkcie IsolateOrigins a SitePerProcess budú zakázané. Používatelia budú môcť naďalej povoliť pravidlo SitePerProcess ručne pomocou príznakov v príkazovom riadku.
@@ -4105,7 +4172,7 @@ Podpora tohto pravidla bola ukončená vo verzii M69 a používa sa namiesto n
       </translation>
 <translation id="9072600218500597787">Nakonfiguruje požadované názvy domén hostiteľa, ktoré budú použité pre hostiteľov vzdialeného prístupu, a zabráni používateľom ich zmeniť.
 
-          Ak je toto nastavenie povolené, hostitelia sa dajú zdieľať iba pomocou účtov zaregistrovaných pomocou niektorého zo zadaných názvov domén.
+          Ak je toto nastavenie povolené, hostitelia sa dajú zdieľať iba s účtami, zaregistrovanými v niektorej zo zadaných domén.
 
           Ak je toto nastavenie zakázané alebo nie je nastavené, hostitelia sa dajú zdieľať pomocou ľubovoľného účtu.
 

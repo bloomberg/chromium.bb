@@ -21,9 +21,11 @@
 <translation id="3081586908890909590">Alternar para gravar vídeo</translation>
 <translation id="3183731565330012717">Tipo de grade</translation>
 <translation id="3227137524299004712">Microfone</translation>
+<translation id="3517926952904427380">Não foi possível capturar o retrato</translation>
 <translation id="3569311554794739032">Tem certeza de que quer remover <ph name="FILE" />?</translation>
 <translation id="3810838688059735925">Vídeo</translation>
 <translation id="4279490309300973883">Espelhamento</translation>
+<translation id="4329152592498422850">Alternar para tirar foto quadrada</translation>
 <translation id="4445542136948522167">Parar de tirar foto</translation>
 <translation id="4628948037717959914">Foto</translation>
 <translation id="4649291346448517080">Não foi possível salvar o arquivo</translation>
@@ -35,7 +37,7 @@
 <translation id="5869546221129391014">Grade</translation>
 <translation id="6073451960410192870">Parar de gravar</translation>
 <translation id="6233780560267770709">3 por 3</translation>
-<translation id="6243827288366940320">Proporção de ouro</translation>
+<translation id="6243827288366940320">Número de ouro</translation>
 <translation id="6681668084120808868">Tirar foto</translation>
 <translation id="6778482348691154169">Não foi possível tirar a foto</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -50,6 +52,7 @@
 <translation id="8145038249676204903">Alternar para tirar foto</translation>
 <translation id="8261506727792406068">Excluir</translation>
 <translation id="8428213095426709021">Configurações</translation>
+<translation id="8815966864175525708">Alternar para capturar um retrato</translation>
 <translation id="8870695351537079478">Não foi possível começar a gravação</translation>
 <translation id="9045155556724273246">10 segundos</translation>
 <translation id="945522503751344254">Enviar comentários</translation>

@@ -3,6 +3,7 @@
 <translationbundle lang="fi">
 <translation id="1383286653814676580">Käytetään Googlen tunnistuspalvelun kirjautumissivun käynnistämiseen.</translation>
 <translation id="1894475569413661128">Kirjaudu sisään työtililläsi.</translation>
+<translation id="2227020416206680836">Istuntosi on vanhentunut. Kirjaudu sisään työtililläsi.</translation>
 <translation id="2469311484561825731">Työtilillesi kirjautuminen epäonnistui. Varmista, että tietokoneen internetyhteys toimii, ja yritä uudelleen.</translation>
 <translation id="2595469428674600431">Windows-salasanasi vahvistaminen epäonnistui. Yritä uudelleen.</translation>
 <translation id="3306357053520292004">Tämän tietokoneen käyttäjä on jo lisätty tällä tilillä. Kirjaudu sisään toisella tilillä.</translation>
@@ -14,8 +15,10 @@
 <translation id="6463752215771576050">Tämän tietokoneen rekisteröinti yritysylläpitoon epäonnistui.  Kirjaudu sisään toisella työtilillä.</translation>
 <translation id="7135123390294776473">Tällä hetkellä vain tietokoneen lukinneella käyttäjällä on oikeus kirjautua sisään.</translation>
 <translation id="7357241217513796177">Varmista, että käytössäsi on verkkoyhteys, ja yritä uudelleen.</translation>
+<translation id="7536769223115622137">Lisää työtili</translation>
 <translation id="8474372283141585908">Googlen tunnistuspalvelu</translation>
 <translation id="866458870819756755">Käyttäjän luominen epäonnistui.</translation>
 <translation id="8860262547644202689">Googlen tunnistuspalvelun apuohjelma</translation>
+<translation id="8875753657315897487">Kirjaudu sisään työtililläsi</translation>
 <translation id="9135619837062629367">Kirjautuminen tällä tilillä on estetty. Käytä toista tiliä.</translation>
 </translationbundle>

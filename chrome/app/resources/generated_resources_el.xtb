@@ -1924,7 +1924,6 @@
 <translation id="3995138139523574647">Συσκευή USB-C (πίσω δεξιά θύρα)</translation>
 <translation id="3996366967769547206">{NUM_TABS,plural, =1{Ξεκαρφίτσωμα καρτέλας}other{Ξεκαρφίτσωμα καρτελών}}</translation>
 <translation id="4002440992267487163">Ρύθμιση PIN</translation>
-<translation id="400314203296796334">Αφαιρέστε τα ακουστικά, για να επιλέξετε αποκλεισμό ή αποδοχή.</translation>
 <translation id="4005817994523282006">Μέθοδος ανίχνευσης ζώνης ώρας</translation>
 <translation id="4008291085758151621">Οι πληροφορίες ιστοτόπου δεν είναι διαθέσιμες σε VR</translation>
 <translation id="4010917659463429001">Για να μεταφέρετε τους σελιδοδείκτες σας στην κινητή συσκευή σας, <ph name="GET_IOS_APP_LINK" />.</translation>
@@ -3469,6 +3468,7 @@
 <translation id="6514010653036109809">Διαθέσιμη συσκευή:</translation>
 <translation id="6514565641373682518">Αυτή η σελίδα έχει απενεργοποιήσει τον δείκτη του ποντικιού σας.</translation>
 <translation id="6518014396551869914">Αντι&amp;γραφή εικόνας</translation>
+<translation id="6518133107902771759">Επαλήθευση</translation>
 <translation id="651942933739530207">Θέλετε να γίνεται κοινή χρήση της οθόνης σας και της εξόδου ήχου με την εφαρμογή <ph name="APP_NAME" />;</translation>
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />

@@ -99,6 +99,7 @@
 <translation id="1616111909442424068">Пшеничный</translation>
 <translation id="1618597272655350600">Озвучить полное описание текущего элемента</translation>
 <translation id="1627222324347828322">Призрачно-белый</translation>
+<translation id="1630688379087270943">Курсив:</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{знак "больше"}one{# знак "больше"}few{# знака "больше"}many{# знаков "больше"}other{# greater than signs}}</translation>
 <translation id="1653266918374749391">Перейти к предыдущему заголовку третьего уровня</translation>
 <translation id="1657616855184033958">Показать фильтры журнала событий</translation>
@@ -320,6 +321,7 @@
 <translation id="3286390186030710347">Ползунок</translation>
 <translation id="3299925995433437805">Следующей открытой ссылки нет.</translation>
 <translation id="3300348286427369683">В ChromeVox появилось больше возможностей для редактирования текста, например команды для ускоренной навигации, перемещение курсора с помощью дисплея Брайля, выбор и не только.</translation>
+<translation id="3304756947457041303">Настроить индикаторы форматированного текста</translation>
 <translation id="3307886118343381874">Перейти к концу таблицы</translation>
 <translation id="3311969765485641742">Нажмите ALT + SHIFT + A, чтобы посмотреть оповещения</translation>
 <translation id="3312997241656799641">Перейти к следующей открытой ссылке</translation>
@@ -406,6 +408,7 @@
 <translation id="3930498801443296724">Цитата в виде врезки</translation>
 <translation id="3936394396199829062">Розово-лавандовый</translation>
 <translation id="3941269780691800708">Произносить текст под мышью</translation>
+<translation id="394953087167197343">Опечатка:</translation>
 <translation id="3962990492275676168">Читать с текущего места</translation>
 <translation id="3970951409746498040">Песочно-коричневый</translation>
 <translation id="3989324057180830702">tgl btn</translation>
@@ -452,6 +455,7 @@
 <translation id="42164919740161077">Кадетский синий</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{тире}one{# тире}few{# тире}many{# тире}other{# dashes}}</translation>
 <translation id="421884353938374759">color picker</translation>
+<translation id="4221071177874897997">Полужирный шрифт:</translation>
 <translation id="4229646983878045487">date time</translation>
 <translation id="4230834257931120629">Светлый аспидно-серый</translation>
 <translation id="4231102694147661229">Включить режим для разработчиков</translation>
@@ -754,6 +758,7 @@
 <translation id="6348869651006731065">Тусклый серый</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{маркер списка}one{# маркер списка}few{# маркера списка}many{# маркеров списка}other{# маркера списка}}</translation>
 <translation id="6355910664415701303">Предыдущего пункта списка нет.</translation>
+<translation id="6360318852623800555">Атрибуты форматированного текста</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Перейти к предыдущему заголовку</translation>
 <translation id="6376999910001533545">Красно-коричневый</translation>
@@ -929,6 +934,7 @@
 <translation id="762020119231868829">Приостановить воспроизведение в виджетах мультимедиа</translation>
 <translation id="7625690649919402823">Перейти к следующей таблице</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), уровень <ph name="GRADE" /></translation>
+<translation id="763535765081585392">Подчеркнутый текст:</translation>
 <translation id="7639968568612851608">Темно-серый</translation>
 <translation id="7641134354185483015">Предыдущего заголовка третьего уровня нет.</translation>
 <translation id="7659376057562985921">Текстовое поле <ph name="NAME" /> со значением <ph name="VALUE" /></translation>
@@ -1164,6 +1170,7 @@
 <translation id="8943175951035496220">Ячейки справа нет.</translation>
 <translation id="8943282376843390568">Лаймовый</translation>
 <translation id="8946628535652548639">стр<ph name="TABLECELLROWINDEX" />стлб<ph name="TABLECELLCOLUMNINDEX" /></translation>
+<translation id="8957142051395645063">Чтение</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">Удалить</translation>
 <translation id="900114243503212879">file</translation>

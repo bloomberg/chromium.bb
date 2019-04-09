@@ -148,6 +148,7 @@
 <translation id="204321170514947529"><ph name="APP_NAME" /> също има данни в Chrome</translation>
 <translation id="2045104531052923016">Други приложения: <ph name="GIGABYTES" /> ГБ</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /><ph name="SEPARATOR" /><ph name="DESCRIPTION" /></translation>
+<translation id="2049961518639794558">Промяната на файловото разширение може да доведе до неочаквано поведение и да повреди устройството ви.</translation>
 <translation id="2056878612599315956">Сайтът е на пауза</translation>
 <translation id="2063713494490388661">Търсене с докосване</translation>
 <translation id="2079545284768500474">Отмяна</translation>
@@ -248,6 +249,7 @@
 <translation id="2810645512293415242">Страницата е опростена с цел пестене на данни и по-бързо зареждане.</translation>
 <translation id="281504910091592009">Преглеждайте и управлявайте запазените пароли в <ph name="BEGIN_LINK" />профила си в Google<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Влезте в профила си и включете синхронизирането, за да получите отметките си на всичките си устройства</translation>
+<translation id="2822354292072154809">Наистина ли искате да зададете повторно всички разрешения за сайта за <ph name="CHOSEN_OBJECT_NAME" />?</translation>
 <translation id="2836148919159985482">Докоснете бутона за връщане назад, за да излезете от режима на цял екран.</translation>
 <translation id="2842985007712546952">Основна папка</translation>
 <translation id="2845873210977809562">Секцията „Отворени раздели“ е затворена</translation>
@@ -481,6 +483,7 @@
 <translation id="4634124774493850572">Използване на паролата</translation>
 <translation id="4645575059429386691">Управлява се от ваш родител</translation>
 <translation id="4648718555153979859">Разделите ви са групирани заедно тук</translation>
+<translation id="4650364565596261010">Стандартно за системата</translation>
 <translation id="4660011489602794167">Показване на клавиатурата</translation>
 <translation id="4663756553811254707">Изтрихте <ph name="NUMBER_OF_BOOKMARKS" /> отметки</translation>
 <translation id="4665282149850138822">Добавихте <ph name="NAME" /> към началния екран</translation>
@@ -520,6 +523,7 @@
 <translation id="488187801263602086">Преименуване на файла</translation>
 <translation id="4882831918239250449">Контролирайте начина, по който историята ви на сърфиране се използва за персонализиране на търсенето, рекламите и др.</translation>
 <translation id="4883379392681899581">Напускане на режима на частно сърфиране</translation>
+<translation id="4883854917563148705">Управляваните настройки не могат да се зададат отново</translation>
 <translation id="4885273946141277891">Неподдържан брой екземпляри на Chrome.</translation>
 <translation id="4910889077668685004">Приложения за плащане</translation>
 <translation id="4913161338056004800">Нулиране на статистическите данни</translation>
@@ -531,6 +535,7 @@
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> споделя екрана ви</translation>
 <translation id="4961107849584082341">Превод на тази страница на който и да е език</translation>
 <translation id="4961700429721424617">Излизате от профил, управляван от <ph name="MANAGED_DOMAIN" />. Данните ви в Chrome ще се изтрият от това устройство, но ще останат в профила ви в Google.</translation>
+<translation id="4962975101802056554">Отмяна на всички разрешения за устройството</translation>
 <translation id="4970824347203572753">Не се предлага за местоположението ви</translation>
 <translation id="497421865427891073">Преминаване напред</translation>
 <translation id="4988210275050210843">Изтегля се файл (<ph name="MEGABYTES" />).</translation>
@@ -550,6 +555,7 @@
 <translation id="5087580092889165836">Добавяне на карта</translation>
 <translation id="5100237604440890931">Свито – кликнете за разгъване.</translation>
 <translation id="510275257476243843">Остава 1 час</translation>
+<translation id="51149521070059886">Включване на тъмната тема, когато енергоспестяващият режим на устройството ви е включен</translation>
 <translation id="5123685120097942451">Раздел в режим „инкогнито“</translation>
 <translation id="5127805178023152808">Синхронизирането е изключено</translation>
 <translation id="5129038482087801250">Инстал. на уеб приложението</translation>
@@ -926,6 +932,7 @@
 <translation id="7765158879357617694">Преместване</translation>
 <translation id="7769602470925380267">Приемане и излизане от профила</translation>
 <translation id="7772032839648071052">Потвърдете пропуска</translation>
+<translation id="7772375229873196092">Затваряне на <ph name="APP_NAME" /></translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 и още <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 и още <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7781829728241885113">Вчера</translation>
 <translation id="7791543448312431591">Добавяне</translation>
@@ -933,6 +940,7 @@
 <translation id="7810647596859435254">Отваряне със…</translation>
 <translation id="7821588508402923572">Тук ще се показва количеството икономисани данни</translation>
 <translation id="7837721118676387834">Разрешаване на автоматичното възпроизвеждане на видеоклипове със заглушен звук за конкретен сайт.</translation>
+<translation id="7838340937077326045">Наистина ли искате да промените файловото разширение?</translation>
 <translation id="7846076177841592234">Анулиране на избора</translation>
 <translation id="784934925303690534">Период от време</translation>
 <translation id="7851858861565204677">Други устройства</translation>

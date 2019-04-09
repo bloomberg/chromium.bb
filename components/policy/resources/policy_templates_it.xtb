@@ -137,6 +137,7 @@ Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.or
 
       Se questa norma non viene impostata, la frequenza predefinita è pari a tre ore. La frequenza minima consentita è pari a 60 secondi.</translation>
 <translation id="1204263402976895730">Stampanti aziendali attive</translation>
+<translation id="1216919699175573511">Attiva il supporto Signed HTTP Exchange (SXG)</translation>
 <translation id="1219695476179627719">Consente di specificare se il dispositivo deve eseguire il rollback alla versione impostata da <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> nel caso in cui sia già in esecuzione una versione successiva.
 
       L'impostazione predefinita è RollbackDisabled.</translation>
@@ -1591,6 +1592,13 @@ Se questa norma viene impostata, consente di specificare il periodo di tempo per
 Se questa norma non viene impostata, viene utilizzato un periodo di tempo predefinito.
 
 Il valore della norma deve essere specificato in millisecondi.</translation>
+<translation id="4105884561459127998">Consente di configurare il tipo di autenticazione per gli accessi SAML.
+
+      Se questa norma non viene impostata o è impostata sul valore predefinito (0), il comportamento degli accessi SAML è determinato dal browser sulla base di altri fattori. Nella situazione di base, l'autenticazione dell'utente e la protezione dei dati degli utenti memorizzati nella cache sono basati sulle password inserite manualmente dagli utenti.
+
+      Se questa norma è impostata su ClientCertificate (valore 1), l'autenticazione del certificato client viene utilizzata per gli utenti aggiunti di recente che accedono tramite SAML. Per questi utenti non vengono utilizzate password e i loro dati locali memorizzati nella cache vengono protetti mediante le chiavi crittografiche corrispondenti. Ad esempio, questa impostazione consente di configurare un'autenticazione dell'utente basata su smart card (considera che le app middleware per smart card devono essere installate tramite la norma DeviceLoginScreenExtensions).
+
+      Questa norma riguarda solo gli utenti che eseguono l'autenticazione utilizzando SAML.</translation>
 <translation id="4105989332710272578">Disattiva l'imposizione di Certificate Transparency per un elenco di URL</translation>
 <translation id="4121350739760194865">Impedisci la visualizzazione delle promozioni di applicazioni nella pagina Nuova scheda</translation>
 <translation id="4125606414556046117">Questa norma consente di configurare l'immagine di sfondo che appare all'utente sul desktop e sullo sfondo della schermata di accesso. La norma viene impostata specificando l'URL da cui <ph name="PRODUCT_OS_NAME" /> può scaricare l'immagine di sfondo e un hash di crittografia utilizzato per verificare l'integrità del download. L'immagine deve essere in formato JPEG e avere dimensioni non superiori a 16 MB. L'URL deve essere accessibile senza nessuna autenticazione.
@@ -1619,6 +1627,30 @@ Il valore della norma deve essere specificato in millisecondi.</translation>
       Se la norma non è impostata, l'utente può scegliere un'immagine da visualizzare sul desktop e sullo sfondo della schermata di accesso.</translation>
 <translation id="412697421478384751">Consenti agli utenti di impostare PIN non sicuri per la schermata di blocco</translation>
 <translation id="4138655880188755661">Limite di tempo</translation>
+<translation id="4144164749344898721">Questa norma consente di stabilire diverse impostazioni relative alla strategia di gestione dell'alimentazione quando l'utente diventa inattivo.
+
+          Esistono quattro tipi di azioni:
+          * Lo schermo viene oscurato se l'utente rimane inattivo per il tempo specificato da |ScreenDim|.
+          * Lo schermo viene spento se l'utente rimane inattivo per il tempo specificato da |ScreenOff|.
+          * Se l'utente rimane inattivo per il tempo specificato da |IdleWarning|, viene visualizzata una finestra di dialogo di avviso per indicare all'utente che sta per essere compiuta l'azione per inattività. L'avviso viene mostrato solo se l'azione richiesta in caso di inattività è la disconnessione o lo spegnimento.
+          * Se l'utente rimane inattivo per il tempo specificato da |Idle|, viene compiuta l'azione specificata da |IdleAction|.
+
+          Per ognuna delle azioni precedenti, il ritardo deve essere specificato in millisecondi e per attivare l'azione corrispondente deve essere impostato un valore maggiore di zero. Se il ritardo viene impostato su zero, <ph name="PRODUCT_OS_NAME" /> non compie l'azione corrispondente.
+
+          Per ciascun ritardo sopra indicato, quando il periodo di tempo non viene impostato, viene utilizzato il valore predefinito.
+
+          Tieni presente che i valori |ScreenDim| verranno mantenuti minori o uguali al valore di |ScreenOff|, mentre |ScreenOff| e |IdleWarning| verranno mantenuti minori o uguali al valore di |Idle|.
+
+          |IdleAction| può essere una delle quattro azioni possibili seguenti:
+          * |Suspend|
+          * |Logout|
+          * |Shutdown|
+          * |DoNothing|
+
+          Quando il valore |IdleAction| non è impostato, viene compiuta l'azione predefinita, ossia la sospensione.
+
+          Esistono inoltre impostazioni separate per l'alimentazione CA e la batteria.
+          </translation>
 <translation id="4150201353443180367">Display</translation>
 <translation id="4157003184375321727">Indica versione sistema operativo e firmware</translation>
 <translation id="4157594634940419685">Consenti l'accesso a stampanti CUPS native</translation>
@@ -1703,6 +1735,15 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="4322842393287974810">Consenti all'app kiosk avviata automaticamente senza ritardo di controllare la versione di <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Aggiungi un pulsante di uscita all'area di notifica</translation>
 <translation id="4332177773549877617">Registra eventi per le installazioni di app Android</translation>
+<translation id="4335292026668105285">Consente di specificare il periodo di tempo senza immissioni da parte dell'utente dopo il quale viene mostrata una finestra di dialogo di avviso quando il computer è alimentato tramite CA.
+
+          Quando è impostata, questa norma specifica per quanto tempo l'utente deve rimanere inattivo prima che <ph name="PRODUCT_OS_NAME" /> di avviso in cui comunica all'utente che sta per essere intrapresa l'azione richiesta in caso di inattività.
+
+          Quando questa norma non è impostata, non viene visualizzata alcuna finestra di dialogo di avviso.
+
+          Il valore della norma deve essere specificato in millisecondi. I valori sono fissati in modo da essere minori o uguali al ritardo di inattività.
+
+          L'avviso viene mostrato solo se l'azione richiesta in caso di inattività è la disconnessione o lo spegnimento.</translation>
 <translation id="4346674324214534449">Consente di stabilire se bloccare o meno gli annunci su siti con annunci invasivi.
 
       Se questa norma viene impostata su 2, gli annunci verranno bloccati sui siti con annunci invasivi.
@@ -3204,6 +3245,9 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="7464991223784276288">Limita i cookie degli URL corrispondenti alla sessione corrente</translation>
 <translation id="7469554574977894907">Attiva suggerimenti di ricerca</translation>
 <translation id="7474249562477552702">Specifica se i certificati SHA-1 firmati emessi dai trust anchor locali sono consentiti</translation>
+<translation id="747851715060942420">Consente di configurare le pagine che vengono caricate all'avvio.
+
+      La norma "URL da aprire all'avvio" viene ignorata a meno che non selezioni "Apri un elenco di URL" in "Azione all'avvio".</translation>
 <translation id="7485481791539008776">Regole di selezione della stampante predefinita</translation>
 <translation id="7485730741952775732">Se questa norma è impostata, l'host di accesso remoto utilizzerà questo URL per convalidare i token di autenticazione dai client di accesso remoto per accettare connessioni. Deve essere usata insieme a RemoteAccessHostTokenUrl.
 
@@ -3215,6 +3259,11 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 
       Se viene usata questa norma, gli utenti avranno a disposizione tutte le stampanti tranne quelle i cui ID sono elencati in questa norma. Gli ID devono corrispondere ai campi "id" o "guid" del file specificato nella norma <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
+<translation id="7506269062143646163">Consente di attivare il supporto per Signed HTTP Exchange (SXG).
+
+          Se questa norma non è impostata o viene attivata, Google Chrome accetterà i contenuti web pubblicati come Signed HTTP Exchanges.
+
+          Se non viene attivata, i contenuti Signed HTTP Exchanges non potranno essere caricati.</translation>
 <translation id="7511361072385293666">Se questa norma viene impostata su true o non viene impostata, l'utilizzo del protocollo QUIC in <ph name="PRODUCT_NAME" /> è consentito.
      Se questa norma viene impostata su false, l'utilizzo del protocollo QUIC non è consentito.</translation>
 <translation id="7517845714620372896">Consente di specificare la percentuale di luminosità dello schermo.
@@ -3356,6 +3405,15 @@ Nota. Attualmente i riavvii automatici vengono attivati soltanto durante la visu
       Gli identificatori dei tipi di connessione riconosciuti sono "ethernet", "wifi", "wimax", "bluetooth" e "cellulare".</translation>
 <translation id="7763614521440615342">Mostra suggerimenti di contenuti nella pagina Nuova scheda</translation>
 <translation id="7765879851993224640">Consenti l'uso dell'accesso tramite Smart Lock.</translation>
+<translation id="7772346342637974431">Consente di specificare il periodo di tempo senza immissioni da parte dell'utente dopo il quale viene mostrata una finestra di dialogo di avviso quando il computer è alimentato tramite batteria.
+
+          Quando è impostata, questa norma specifica per quanto tempo l'utente deve rimanere inattivo prima che <ph name="PRODUCT_OS_NAME" /> di avviso in cui comunica all'utente che sta per essere intrapresa l'azione richiesta in caso di inattività.
+
+          Quando questa norma non è impostata, non viene visualizzata alcuna finestra di dialogo di avviso.
+
+          Il valore della norma deve essere specificato in millisecondi. I valori sono fissati in modo da essere minori o uguali al ritardo di inattività.
+
+          L'avviso viene mostrato solo se l'azione richiesta in caso di inattività è la disconnessione o lo spegnimento.</translation>
 <translation id="7774768074957326919">Utilizza le impostazioni proxy di sistema</translation>
 <translation id="7777535871204167559">Considera i dispositivi di archiviazione esterni come di sola lettura</translation>
 <translation id="7781069478569868053">Pagina Nuova scheda</translation>
@@ -3886,6 +3944,7 @@ Questa norma è stata ritirata in M69 in favore di OverrideSecurityRestrictionsO
 Per ulteriori informazioni sui contesti sicuri, visita il sito
 https://www.w3.org/TR/secure-contexts/
       </translation>
+<translation id="8939595959513040470">Fornisce agli utenti una build di correzione rapida.</translation>
 <translation id="8942616385591203339">Questa norma consente di controllare se il consenso alla sincronizzazione può essere mostrato all'utente durante il primo accesso. Dovrebbe essere impostata su false se tale consenso non è mai necessario per l'utente.
       Se impostata su false, il consenso alla sincronizzazione non verrà visualizzato.
       Se impostata su true o non viene impostata, il consenso alla sincronizzazione può essere visualizzato.</translation>
@@ -3943,6 +4002,9 @@ https://www.w3.org/TR/secure-contexts/
 
       Se la norma non viene impostata, l'utente può scegliere l'immagine avatar che lo rappresenta sulla schermata di accesso.</translation>
 <translation id="9035964157729712237">ID delle estensioni da escludere dalla blacklist</translation>
+<translation id="9038058011835642205">Consente di specificare un elenco di siti web che vengono installati automaticamente, senza l'interazione dell'utente, e che non possono essere disinstallati né disattivati dall'utente.
+
+      Ogni voce della norma è un oggetto con un componente obbligatorio: "url" e due componenti facoltativi: "default_launch_container" e "create_desktop_shortcut". "url" deve essere l'URL dell'applicazione web da installare, "launch_container" deve essere "window" o "tab" a indicare che l'applicazione web verrà aperta una volta installata, e "create_desktop_shortcut" deve essere "true" se è necessario creare un collegamento sul desktop su Linux e Windows. Se "default_launch_container" viene omesso, l'applicazione si aprirà in una scheda per impostazione predefinita. A prescindere dal valore di "default_launch_container", gli utenti possono modificare il contenitore in cui si aprirà l'applicazione. Se "create_desktop_shortcuts" viene omesso, non verranno creati collegamenti sul desktop.</translation>
 <translation id="9038839118379817310">Consente di attivare la rete Wi-Fi</translation>
 <translation id="9039822628127365650">Quando questa norma viene impostata, consente di specificare il periodo di tempo trascorso il quale un utente viene automaticamente disconnesso, terminando così la sessione. Un timer conto alla rovescia nella barra delle applicazioni informa l'utente del tempo restante.
 
@@ -3952,6 +4014,11 @@ https://www.w3.org/TR/secure-contexts/
 
       Il valore della norma deve essere specificato in millisecondi. I valori sono limitati a un intervallo compreso tra 30 secondi e 24 ore.</translation>
 <translation id="9042911395677044526">Consente di forzare l'applicazione della configurazione di rete per utente su un dispositivo <ph name="PRODUCT_OS_NAME" />. La configurazione di rete è una stringa in formato JSON definita secondo il formato Open Network Configuration descritto all'indirizzo <ph name="ONC_SPEC_URL" />.</translation>
+<translation id="9050853837490399534">Questa norma consente di stabilire se il dispositivo debba essere aggiornato a una build di correzione rapida.
+
+      Se il valore della norma viene impostato su un token associato a una build di correzione rapida, il dispositivo verrà aggiornato alla build di correzione rapida corrispondente se l'aggiornamento non è bloccato da un'altra norma.
+
+      Se questa norma non è impostata o se il valore non è associato a una build di correzione rapida, il dispositivo non verrà aggiornato a una build di correzione rapida. Se il dispositivo esegue già una build di correzione rapida e la norma non è più impostata o il suo valore non è più associato a una build di correzione rapida, il dispositivo verrà aggiornato a una normale build se l'aggiornamento non è bloccato da un'altra norma.</translation>
 <translation id="906631898352326790">Se il criterio viene attivato, ogni origine indicata in un elenco di valori separati da virgole verrà eseguita in un proprio processo. Verranno inoltre isolate le origini indicate dai sottodomini; ad esempio, se viene specificato il sito https://example.com/ viene isolato anche https://foo.example.com/, perché fa parte del sito https://example.com/.
       Se il criterio è disattivato, le funzionalità IsolateOrigins e SitePerProcess saranno entrambe disattivate. Gli utenti potranno ancora attivare IsolateOrigins manualmente, tramite flag da riga di comando.
       Se il criterio non è configurato, l'utente potrà modificare questa impostazione.

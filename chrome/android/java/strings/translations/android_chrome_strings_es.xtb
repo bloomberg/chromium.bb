@@ -148,6 +148,7 @@
 <translation id="204321170514947529"><ph name="APP_NAME" /> también tiene datos en Chrome</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB de otras aplicaciones</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
+<translation id="2049961518639794558">Cambiar la extensión del archivo podría provocar un comportamiento inesperado y dañar tu dispositivo.</translation>
 <translation id="2056878612599315956">Sitio web en pausa</translation>
 <translation id="2063713494490388661">Tocar para buscar</translation>
 <translation id="2079545284768500474">Deshacer</translation>
@@ -248,6 +249,7 @@
 <translation id="2810645512293415242">Esta página se ha simplificado para ahorrar datos y poder cargarla más rápido.</translation>
 <translation id="281504910091592009">Consulta y gestiona las contraseñas guardadas en tu <ph name="BEGIN_LINK" />cuenta de Google<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Inicia sesión y activa la sincronización para ver tus marcadores en todos tus dispositivos</translation>
+<translation id="2822354292072154809">¿Seguro que quieres restablecer todos los permisos de los sitios web de <ph name="CHOSEN_OBJECT_NAME" />?</translation>
 <translation id="2836148919159985482">Toca el botón de retroceso para salir de la pantalla completa.</translation>
 <translation id="2842985007712546952">Carpeta principal</translation>
 <translation id="2845873210977809562">Las pestañas abiertas se han cerrado</translation>
@@ -329,6 +331,7 @@
 <translation id="3443221991560634068">Vuelve a cargar la página actual</translation>
 <translation id="3445014427084483498">Ahora mismo</translation>
 <translation id="3452612588551937789">Inicia sesión con tu cuenta de Google para acceder a tus marcadores, contraseñas, historial y otros ajustes desde todos tus dispositivos.</translation>
+<translation id="3478363558367712427">Puedes elegir tu buscador</translation>
 <translation id="3492207499832628349">Nueva pestaña de incógnito</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /> sobre el contenido sugerido</translation>
 <translation id="3513704683820682405">Realidad aumentada</translation>
@@ -480,6 +483,7 @@ Es posible que tu cuenta de Google tenga otros tipos de historial de navegación
 <translation id="4634124774493850572">Utilizar contraseña</translation>
 <translation id="4645575059429386691">Administrado por uno de tus padres</translation>
 <translation id="4648718555153979859">Tus pestañas se agrupan aquí</translation>
+<translation id="4650364565596261010">Predeterminado del sistema</translation>
 <translation id="4660011489602794167">Mostrar teclado</translation>
 <translation id="4663756553811254707">Se han eliminado <ph name="NUMBER_OF_BOOKMARKS" /> marcadores</translation>
 <translation id="4665282149850138822">Se ha añadido <ph name="NAME" /> a la pantalla de inicio</translation>
@@ -519,6 +523,7 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="488187801263602086">Cambiar nombre de archivo</translation>
 <translation id="4882831918239250449">Controlar cómo se utiliza el historial de navegación para personalizar la Búsqueda, los anuncios y mucho más</translation>
 <translation id="4883379392681899581">Salir del modo privado</translation>
+<translation id="4883854917563148705">No se pueden restablecer los ajustes gestionados</translation>
 <translation id="4885273946141277891">Número de instancias de Chrome no admitido.</translation>
 <translation id="4910889077668685004">Aplicaciones para pagar</translation>
 <translation id="4913161338056004800">Restablecer estadísticas</translation>
@@ -530,6 +535,7 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="4958708863221495346">Estás compartiendo tu pantalla a través de <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4961107849584082341">Traduce esta página a cualquier idioma</translation>
 <translation id="4961700429721424617">Estás cerrando sesión en una cuenta gestionada por <ph name="MANAGED_DOMAIN" />. Tus datos de Chrome se eliminarán de este dispositivo, pero permanecerán en tu cuenta de Google.</translation>
+<translation id="4962975101802056554">Revocar todos los permisos de este dispositivo</translation>
 <translation id="4970824347203572753">No está disponible en tu ubicación</translation>
 <translation id="497421865427891073">Avanzar</translation>
 <translation id="4988210275050210843">Descargando archivo (<ph name="MEGABYTES" />).</translation>
@@ -549,6 +555,7 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="5087580092889165836">Añadir tarjeta</translation>
 <translation id="5100237604440890931">Contraído (hacer clic para ampliar)</translation>
 <translation id="510275257476243843">Queda 1 hora</translation>
+<translation id="51149521070059886">Activar el tema oscuro cuando el dispositivo esté en modo de ahorro de energía</translation>
 <translation id="5123685120097942451">Pestaña de incógnito</translation>
 <translation id="5127805178023152808">La sincronización está desactivada</translation>
 <translation id="5129038482087801250">Instalar aplicación web</translation>
@@ -924,6 +931,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7765158879357617694">Mover</translation>
 <translation id="7769602470925380267">Aceptar y cerrar sesión</translation>
 <translation id="7772032839648071052">Repite la contraseña</translation>
+<translation id="7772375229873196092">Cerrar <ph name="APP_NAME" /></translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 y <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> más}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 y <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> más}}</translation>
 <translation id="7781829728241885113">Ayer</translation>
 <translation id="7791543448312431591">Añadir</translation>
@@ -931,6 +939,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7810647596859435254">Abrir con…</translation>
 <translation id="7821588508402923572">El ahorro de datos aparecerá aquí</translation>
 <translation id="7837721118676387834">Permitir que un sitio web específico reproduzca automáticamente los vídeos silenciados.</translation>
+<translation id="7838340937077326045">¿Seguro que quieres cambiar la extensión de archivo?</translation>
 <translation id="7846076177841592234">Cancelar selección</translation>
 <translation id="784934925303690534">Intervalo de tiempo</translation>
 <translation id="7851858861565204677">Otros dispositivos</translation>

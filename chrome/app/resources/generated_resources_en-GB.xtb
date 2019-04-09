@@ -1923,7 +1923,6 @@
 <translation id="3995138139523574647">USB-C device (right-hand-side back port)</translation>
 <translation id="3996366967769547206">{NUM_TABS,plural, =1{Unpin Tab}other{Unpin Tabs}}</translation>
 <translation id="4002440992267487163">Pin setup</translation>
-<translation id="400314203296796334">Remove headset to block or allow.</translation>
 <translation id="4005817994523282006">Time zone detection method</translation>
 <translation id="4008291085758151621">Site information is not available in VR</translation>
 <translation id="4010917659463429001">To get your bookmarks on your mobile device, <ph name="GET_IOS_APP_LINK" />.</translation>
@@ -3467,6 +3466,7 @@
 <translation id="6514010653036109809">Available device:</translation>
 <translation id="6514565641373682518">This page has disabled your mouse cursor.</translation>
 <translation id="6518014396551869914">Cop&amp;y image</translation>
+<translation id="6518133107902771759">Verify</translation>
 <translation id="651942933739530207">Do you want <ph name="APP_NAME" /> to share your screen and audio output?</translation>
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />

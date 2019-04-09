@@ -144,6 +144,7 @@
       Se esta política não é configurada, a frequência padrão é de três horas. A frequência
       mínima permitida é de 60 segundos.</translation>
 <translation id="1204263402976895730">Impressoras empresariais ativadas</translation>
+<translation id="1216919699175573511">Ativa a compatibilidade com Signed HTTP Exchange (SXG, na sigla em inglês)</translation>
 <translation id="1219695476179627719">Especifica se o dispositivo deve ser revertido para a versão definida por <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> se ele já estiver executando uma versão posterior.
 
       O padrão é RollbackDisabled.</translation>
@@ -1099,7 +1100,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 
           O URL precisa ter um esquema padrão, como "http://example.com" ou "https://example.com".
 
-          Esta política está disponível apenas em instâncias do Windows associadas a um domínio <ph name="MS_AD_NAME" /> ou instâncias do Windows 10 Pro ou Enterprise inscritas no gerenciamento de dispositivos.</translation>
+          Esta política está disponível apenas em instâncias do Windows associadas a um domínio do <ph name="MS_AD_NAME" /> ou instâncias do Windows 10 Pro ou Enterprise inscritas no gerenciamento de dispositivos.</translation>
 <translation id="3016255526521614822">Colocar na lista de permissões os apps de anotação permitidos na tela de bloqueio do <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="3021562480854470924">Número de marcos em que a reversão é permitida</translation>
 <translation id="3023572080620427845">URL de um arquivo XML que contém URLs que serão carregados em um navegador alternativo.</translation>
@@ -1612,6 +1613,13 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
           Quando esta política não está definida, é usado um período padrão.
 
           O valor da política deve ser especificado em milissegundos.</translation>
+<translation id="4105884561459127998">Configura o tipo de autenticação para logins SAML.
+
+Quando esta política não for definida ou for definida como "Padrão" (valor 0), o comportamento de logins SAML será determinado pelo navegador dependendo de outros fatores. No cenário mais básico, a autenticação do usuário e a proteção dos dados dele armazenados em cache se baseiam em senhas inseridas manualmente.
+
+Quando esta política for definida como ClientCertificate (valor 1), a autenticação do certificado do cliente será usada para usuários recém-adicionados que fazem login via SAML. Nenhuma senha é usada para esses usuários, e os dados locais deles armazenados em cache são protegidos usando chaves criptográficas correspondentes. Por exemplo, essa configuração permite configurar cartões inteligentes com base na autenticação do usuário (apps de middleware de cartão inteligente precisam ser instalados pela política DeviceLoginScreenExtensions).
+
+Esta política afeta apenas os usuários que autenticam usando SAML.</translation>
 <translation id="4105989332710272578">Desativar a aplicação da Transparência dos certificados para uma lista de URLs</translation>
 <translation id="4121350739760194865">Evitar que promoções de aplicativos apareçam na página nova guia</translation>
 <translation id="4125606414556046117">Esta política permite que você configure a imagem de plano de fundo mostrada na área de trabalho e na tela de login do usuário. A política é definida ao especificar o URL a partir do qual o <ph name="PRODUCT_OS_NAME" /> pode fazer o download da imagem de plano de fundo e uma hash criptográfica usada para verificar a integridade do download. A imagem precisa estar no formato JPEG, e o tamanho desse arquivo não pode ultrapassar 16 MB. É necessário que o URL possa ser acessado sem qualquer tipo de autenticação.
@@ -1640,6 +1648,30 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
       Se a política não for definida, os usuários poderão escolher uma imagem para ser exibida na área de trabalho e na tela de login.</translation>
 <translation id="412697421478384751">Permitir que os usuários definam PINs fracos para a tela de bloqueio</translation>
 <translation id="4138655880188755661">Limite de tempo</translation>
+<translation id="4144164749344898721">Esta política controla várias configurações para a estratégia de gerenciamento de energia quando o usuário fica inativo.
+
+          Existem quatro tipos de ação:
+          * A tela escurece se o usuário permanece inativo pelo tempo especificado por |ScreenDim|.
+* A tela é desligada se o usuário permanece inativo pelo tempo especificado por |ScreenOff|.
+* Uma caixa de diálogo com um aviso é exibida se o usuário permanece inativo pelo tempo especificado por |IdleWarning|. A caixa avisará o usuário que a ação de inatividade está prestes a ser realizada. A mensagem de aviso só será mostrada se a ação de inatividade for para sair ou encerrar.
+          * A ação especificada por |IdleAction| será realizada se o usuário permanecer inativo pelo tempo especificado por |Idle|.
+
+Para cada ação acima, o tempo de inatividade precisa ser especificado em milissegundos e definido como um valor maior que zero para ativar a ação correspondente. Caso o tempo seja definido como zero, o <ph name="PRODUCT_OS_NAME" /> não realizará a ação correspondente.
+
+          Para cada período descrito acima, quando a duração não for definida, um valor padrão será usado.
+
+          Os valores de |ScreenDim| serão ajustados para serem menores ou iguais a |ScreenOff|. |ScreenOff| e |IdleWarning| serão ajustados para serem menores ou iguais a |Idle|.
+
+|IdleAction| pode ser uma das quatro ações possíveis:
+          * |Suspend|
+* |Logout|
+* |Shutdown|
+* |DoNothing|
+
+Quando a |IdleAction| não for definida, a ação padrão de suspensão será realizada.
+
+          Há também configurações separadas para bateria e alimentação CA.
+          </translation>
 <translation id="4150201353443180367">Exibição</translation>
 <translation id="4157003184375321727">Informar a versão do sistema operacional e do firmware</translation>
 <translation id="4157594634940419685">Permitir acesso a impressoras CUPS nativas</translation>
@@ -1724,6 +1756,15 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 <translation id="4322842393287974810">Permitir que o aplicativo de quiosque aberto automaticamente com zero de atraso controle a versão do <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Adicionar um botão de logout à bandeja do sistema</translation>
 <translation id="4332177773549877617">Registra eventos de instalações do app Android</translation>
+<translation id="4335292026668105285">Especifica o período sem entrada do usuário depois que uma caixa de diálogo de aviso foi mostrada enquanto funcionava com alimentação CA.
+
+          Quando esta política for definida, ela especificará o tempo necessário que um usuário precisa permanecer inativo antes que o <ph name="PRODUCT_OS_NAME" /> mostre uma caixa de diálogo avisando que a ação de inatividade está prestes a ser realizada.
+
+          Quando esta política não for definida, nenhuma caixa de diálogo será mostrada.
+
+          O valor da política precisa ser especificado em milissegundos. Os valores são ajustados para serem menores ou iguais ao intervalo de inatividade.
+
+          A mensagem de aviso só será mostrada se a ação de inatividade for para sair ou encerrar.</translation>
 <translation id="4346674324214534449">Permite que você determine se os anúncios devem ser bloqueados em sites com anúncios invasivos.
 
       Se esta política for definida como 2, os anúncios serão bloqueados em sites com anúncios invasivos.
@@ -3236,6 +3277,9 @@ Essas políticas são ignoradas se a Área de trabalho remota do Google Chrome n
 <translation id="7464991223784276288">Limita cookies de URLs correspondentes à sessão atual</translation>
 <translation id="7469554574977894907">Ativar sugestões de pesquisa</translation>
 <translation id="7474249562477552702">Se os certificados SHA-1 assinados emitidos pelas âncoras de confiança locais são permitidos ou não</translation>
+<translation id="747851715060942420">Permite que você configure as páginas que são carregadas na inicialização.
+
+      A política "URLs que devem ser abertos na inicialização" será ignorada, a menos que você selecione "Abrir uma lista de URLs" em "Ação na inicialização".</translation>
 <translation id="7485481791539008776">Regras de seleção de impressora padrão</translation>
 <translation id="7485730741952775732">Se esta política for definida, o host do acesso remoto usará este URL para validar os tokens de autenticação de clientes de acesso remoto, de modo a aceitar as conexões. Ela precisa ser usada em conjunto com RemoteAccessHostTokenUrl.
 
@@ -3249,6 +3293,11 @@ Essas políticas são ignoradas se a Área de trabalho remota do Google Chrome n
 
       Se esta política for usada, todas as impressoras serão fornecidas para o usuário, exceto para os códigos listados na política. Os códigos precisam corresponder aos campos "id" ou "guid" no arquivo especificado em <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
+<translation id="7506269062143646163">Ativa a compatibilidade com Signed HTTP Exchange (SXG, na sigla em inglês).
+
+          Se esta política não for definida ou for definida como "Ativada", o Google Chrome aceitará conteúdos da Web exibidos como Signed HTTP Exchanges.
+
+          Se esta política for definida como "Desativada", as Signed HTTP Exchanges não poderão ser carregadas.</translation>
 <translation id="7511361072385293666">Se esta política é definida como "true" ou não é configurada, o uso do protocolo QUIC no <ph name="PRODUCT_NAME" /> é permitido.
       Se esta política é definida como "false", o uso do protocolo QUIC não é permitido.</translation>
 <translation id="7517845714620372896">Especifica a porcentagem de brilho da tela.
@@ -3389,6 +3438,15 @@ Se esta política não for definida, o renderizador padrão será usado para tod
       Os identificadores de tipos de conexão reconhecidos são "ethernet", "wifi", "WiMAX", "bluetooth" e "celular".</translation>
 <translation id="7763614521440615342">Mostrar sugestões de conteúdo na página "Nova guia"</translation>
 <translation id="7765879851993224640">Permitir que o login do Smart Lock seja usado.</translation>
+<translation id="7772346342637974431">Especifica o período sem entrada do usuário depois que uma caixa de diálogo de aviso foi mostrada enquanto funcionava com alimentação da bateria.
+
+          Quando esta política for definida, ela especificará o tempo necessário que um usuário precisa permanecer inativo antes que o <ph name="PRODUCT_OS_NAME" /> mostre uma caixa de diálogo avisando que a ação de inatividade está prestes a ser realizada.
+
+          Quando esta política não for definida, nenhuma caixa de diálogo será mostrada.
+
+          O valor da política precisa ser especificado em milissegundos. Os valores são ajustados para serem menores ou iguais ao intervalo de inatividade.
+
+          A mensagem de aviso só será mostrada se a ação de inatividade for para sair ou encerrar.</translation>
 <translation id="7774768074957326919">Usar configurações de proxy do sistema</translation>
 <translation id="7777535871204167559">Tratar dispositivos de armazenamento externo como somente leitura</translation>
 <translation id="7781069478569868053">Página "Nova guia"</translation>
@@ -3947,6 +4005,7 @@ Se você ativar esta configuração, o <ph name="PRODUCT_NAME" /> e os apps ARC 
       Para ver mais informações sobre contextos seguros, acesse
       https://www.w3.org/TR/secure-contexts/
       </translation>
+<translation id="8939595959513040470">Oferecer Quick Fix Build a usuários.</translation>
 <translation id="8942616385591203339">Esta política controla se o consentimento de sincronização pode ser exibido para o usuário durante o primeiro login. É necessário defini-la como falsa se o consentimento de sincronização nunca for necessário para o usuário.
       Se definida como falsa, o consentimento de sincronização não será exibido.
       Se definida como verdadeira ou não definida, o consentimento de sincronização poderá ser exibido.</translation>
@@ -4006,6 +4065,9 @@ Se você ativar esta configuração, o <ph name="PRODUCT_NAME" /> e os apps ARC 
 
       Se a política não for definida, o usuário poderá escolher a imagem de avatar que o representará na tela de login.</translation>
 <translation id="9035964157729712237">IDs de extensão que serão isentos da lista de proibições</translation>
+<translation id="9038058011835642205">Especifica uma lista de sites que são instalados silenciosamente, sem qualquer interação do usuário e sem permitir a desinstalação nem a desativação feita por ele.
+
+      Cada item de lista da política é um objeto com um elemento obrigatório: "url" e dois elementos opcionais, que são "default_launch_container" e "create_desktop_shortcut". É necessário que "url" seja o URL do app da Web a ser instalado, "launch_container" seja "window" ou "tab" para indicar como o app da Web será aberto depois de instalado, e que "create_desktop_shortcut" seja verdadeiro se um atalho na área de trabalho precisar ser criado no Linux e no Windows. Se "default_launch_container" for omitido, o app será aberto em uma guia por padrão. Seja qual for o valor de "default_launch_container", os usuários poderão alterar em qual contêiner o app será aberto. Se "create_desktop_shortcuts" for omitido, nenhum atalho será criado na área de trabalho.</translation>
 <translation id="9038839118379817310">Ativar Wi-Fi</translation>
 <translation id="9039822628127365650">Quando esta política for definida, ela especificará o tempo que um usuário tem até ser desconectado automaticamente, encerrando a sessão. O usuário será informado sobre o tempo restante por um timer de contagem regressiva mostrado na bandeja do sistema.
 
@@ -4015,6 +4077,11 @@ Se você ativar esta configuração, o <ph name="PRODUCT_NAME" /> e os apps ARC 
 
       O valor da política precisa ser especificado em milissegundos. Os valores são ajustados a um intervalo entre 30 segundos e 24 horas.</translation>
 <translation id="9042911395677044526">Permite aplicar a configuração de rede por usuário de dispositivo <ph name="PRODUCT_OS_NAME" />. A configuração de rede é uma string formatada em JSON, conforme definido pelo formato Open Network Configuration descrito em <ph name="ONC_SPEC_URL" /></translation>
+<translation id="9050853837490399534">Esta política controla se é necessário ou não que o dispositivo seja atualizado para um Quick Fix Build.
+
+      Se o valor da política for definido para um token que mapeia para um Quick Fix Build, o dispositivo será atualizado para o Quick Fix Build correspondente se a atualização não estiver bloqueada por outra política.
+
+      Se essa política não for definida, ou se o valor dela não mapear para um Quick Fix Build, o dispositivo não será atualizado para um Quick Fix Build. Se o dispositivo já estiver executando um Quick Fix Build, e a política não estiver mais definida ou o valor não mapear mais para um Quick Fix Build, o dispositivo será atualizado para uma versão normal caso a atualização não seja bloqueada por outra política.</translation>
 <translation id="906631898352326790">
       Se a política estiver ativada, cada origem indicada em uma
      lista separada por vírgulas será executada no próprio processo. Isso também isolará as

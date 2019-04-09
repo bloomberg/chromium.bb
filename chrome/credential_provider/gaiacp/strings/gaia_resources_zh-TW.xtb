@@ -3,6 +3,7 @@
 <translationbundle lang="zh-TW">
 <translation id="1383286653814676580">用於執行 Google 憑證提供者登入頁面。</translation>
 <translation id="1894475569413661128">請使用公司帳戶登入。</translation>
+<translation id="2227020416206680836">你的工作階段已過期。請使用公司帳戶登入。</translation>
 <translation id="2469311484561825731">公司帳戶登入失敗。請確認電腦已連上網際網路，然後再試一次。</translation>
 <translation id="2595469428674600431">很抱歉，我們無法驗證你的 Windows 密碼，請再試一次。</translation>
 <translation id="3306357053520292004">這台電腦已有其他使用者使用這個帳戶登入。請改用其他帳戶登入。</translation>
@@ -14,8 +15,10 @@
 <translation id="6463752215771576050">無法為這部電腦註冊企業管理服務。請改用其他公司帳戶登入。</translation>
 <translation id="7135123390294776473">目前只有鎖定這台電腦的使用者才能登入系統。</translation>
 <translation id="7357241217513796177">請確認你已連上網路，然後再試一次。</translation>
+<translation id="7536769223115622137">新增公司帳戶</translation>
 <translation id="8474372283141585908">Google 憑證提供者</translation>
 <translation id="866458870819756755">無法建立使用者。</translation>
 <translation id="8860262547644202689">Google 憑證提供者小幫手</translation>
+<translation id="8875753657315897487">請使用公司帳戶登入</translation>
 <translation id="9135619837062629367">你無法以這個帳戶登入，請改用其他帳戶。</translation>
 </translationbundle>

@@ -85,6 +85,7 @@
 <translation id="213900355088104901">Pour parcourir le Web en mode privé, ouvrez un onglet de navigation privée</translation>
 <translation id="2139867232736819575">Rechercher le texte copié</translation>
 <translation id="2149973817440762519">Modifier le favori</translation>
+<translation id="2179182049312275900">Vous pouvez activer la synchronisation à tout moment dans les paramètres</translation>
 <translation id="2198757192731523470">Google peut utiliser votre historique pour personnaliser la recherche, les annonces et d'autres services Google.</translation>
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> articles non lus dans la liste de lecture.</translation>
 <translation id="2230173723195178503">Page Web chargée</translation>
@@ -202,6 +203,7 @@
 <translation id="4038354071007134711">Aucune appli sur appareil ne peut ouvrir fichier.</translation>
 <translation id="4042870976416480368">Rechercher sur la page</translation>
 <translation id="4049507953662678203">Vérifiez si vous disposez bien d'une connexion réseau, puis réessayez.</translation>
+<translation id="4071530748369333746">Annuler la synchronisation ?</translation>
 <translation id="4082688844002261427">Contrôler la manière dont votre historique de navigation est utilisé pour personnaliser la recherche, les annonces et plus encore</translation>
 <translation id="408404951701638773">La barre de recherche est désormais accessible plus facilement</translation>
 <translation id="411254640334432676">Échec du téléchargement.</translation>
@@ -271,6 +273,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Activer la synchronisation</translation>
 <translation id="5244474230056479698">Synchronisation avec <ph name="EMAIL" />…</translation>
+<translation id="5245322853195994030">Annuler la synchronisation</translation>
 <translation id="5300589172476337783">Afficher</translation>
 <translation id="5317780077021120954">Enregistrer</translation>
 <translation id="5327248766486351172">Nom</translation>

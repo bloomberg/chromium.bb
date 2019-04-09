@@ -133,7 +133,6 @@
 <translation id="1620510694547887537">Camera</translation>
 <translation id="1623104350909869708">Voorkomen dat deze pagina extra dialoogvensters weergeeft</translation>
 <translation id="16338877384480380">Architecture-B</translation>
-<translation id="1634051627998691300">Sessie beëindigen</translation>
 <translation id="1639239467298939599">Laden</translation>
 <translation id="1640180200866533862">Gebruikersbeleid</translation>
 <translation id="1640244768702815859">Probeer <ph name="BEGIN_LINK" />de homepage van de site te bezoeken<ph name="END_LINK" />.</translation>
@@ -253,7 +252,6 @@
 <translation id="2330137317877982892"><ph name="CREDIT_CARD" />, verloopt op <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="2337852623177822836">Instelling beheerd door je beheerder</translation>
 <translation id="2346319942568447007">Afbeelding die je hebt gekopieerd</translation>
-<translation id="2349790679044093737">VR-sessie is actief</translation>
 <translation id="2354001756790975382">Andere bladwijzers</translation>
 <translation id="2354430244986887761">Google Safe Browsing heeft onlangs <ph name="BEGIN_LINK" />schadelijke apps gevonden<ph name="END_LINK" /> op <ph name="SITE" />.</translation>
 <translation id="2355395290879513365">Aanvallers kunnen mogelijk de afbeeldingen zien die je op deze site bekijkt en je misleiden door de afbeeldingen aan te passen.</translation>
@@ -770,6 +768,7 @@
 <translation id="5252000469029418751">C7 (envelop)</translation>
 <translation id="5254958791078852567">E1</translation>
 <translation id="5283044957620376778">B1</translation>
+<translation id="528468243742722775">End</translation>
 <translation id="5284909709419567258">Netwerkadressen</translation>
 <translation id="5285570108065881030">Alle opgeslagen wachtwoorden weergeven</translation>
 <translation id="5287240709317226393">Cookies weergeven</translation>

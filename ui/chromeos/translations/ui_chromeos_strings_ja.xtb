@@ -59,7 +59,7 @@
 <translation id="1589128298353575783"><ph name="NUMBER_OF_PB" /> PB</translation>
 <translation id="1646136617204068573">ハンガリー語のキーボード</translation>
 <translation id="164729547906544836">タミル語キーボード（itrans）</translation>
-<translation id="164969095109328410">Chrome 搭載デバイス</translation>
+<translation id="164969095109328410">Chrome デバイス</translation>
 <translation id="1665611772925418501">ファイルを修正することができませんでした。</translation>
 <translation id="1673103856845176271">セキュリティ上の理由で、ファイルにアクセスできませんでした。</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -357,9 +357,9 @@
 <translation id="5253070652067921974">作成者</translation>
 <translation id="5257456363153333584">トンボ</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />どこからでも、オフラインでもファイルにアクセス<ph name="MARKUP_2" />
-        Google ドライブでは最新の状態のファイルをどの端末からでも利用できます。<ph name="MARKUP_3" />
+        Google ドライブでは最新の状態のファイルをどのデバイスからでも利用できます。<ph name="MARKUP_3" />
         <ph name="MARKUP_4" />ファイルの安全性を確保<ph name="MARKUP_5" />
-        端末に問題が生じても、ファイルは Google ドライブで安全に保存されます。<ph name="MARKUP_6" />
+        デバイスに問題が生じても、ファイルは Google ドライブで安全に保存されます。<ph name="MARKUP_6" />
         <ph name="MARKUP_7" />ファイルの作成、共有、共同作業<ph name="MARKUP_8" />
         他のユーザーとの作業をすべて 1 か所で行うことができます。<ph name="MARKUP_9" /></translation>
 <translation id="5275973617553375938">Google ドライブから復元されたファイル</translation>
@@ -392,7 +392,7 @@
 <translation id="5605830556594064952">US Dvorak 配列</translation>
 <translation id="5640179856859982418">スイスのキーボード</translation>
 <translation id="5649768706273821470">聴く</translation>
-<translation id="5678784840044122290">Linux アプリケーションはお使いの端末でご利用いただけるようになります。ランチャーにアイコンが追加されている可能性もあります。</translation>
+<translation id="5678784840044122290">Linux アプリケーションはお使いのデバイスでご利用いただけるようになります。ランチャーにアイコンが追加されている可能性もあります。</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />アーカイブまたは仮想ディスクから切断できません<ph name="END_BOLD" />
    <ph name="LINE_BREAKS" />
    アーカイブまたは仮想ディスク上のすべてのファイルを閉じてから、もう一度お試しください。</translation>

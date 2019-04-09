@@ -99,6 +99,7 @@
 <translation id="1616111909442424068">گندمی</translation>
 <translation id="1618597272655350600">شرح کاملی از موقعیت کنونی را اعلام می‌کند</translation>
 <translation id="1627222324347828322">سفید گچی</translation>
+<translation id="1630688379087270943">نشان دادن به‌صورت ایتالیک:</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{علامت بزرگ‌تر}one{# علامت بزرگ‌تر}other{# علامت بزرگ‌تر}}</translation>
 <translation id="1653266918374749391">عنوان قبلی سطح ۳</translation>
 <translation id="1657616855184033958">نمایش فیلترهای جریان رویداد</translation>
@@ -320,6 +321,7 @@
 <translation id="3286390186030710347">اسلایدر</translation>
 <translation id="3299925995433437805">پیوند بازدید شده بعدی وجود ندارد.</translation>
 <translation id="3300348286427369683">‏پشتیبانی از نوشتار غنی. ChromeVox اکنون از فیلدهای نوشتار غنی (مثل فرمان‌های پرش، مسیریابی مکان‌نمای بریل، انتخاب و غیره) پشتیبانی می‌کند.</translation>
+<translation id="3304756947457041303">سفارشی کردن نشانگر نوشتار غنی‌شده</translation>
 <translation id="3307886118343381874">رفتن به انتهای جدول</translation>
 <translation id="3311969765485641742">‏برای بررسی هشدارها Alt+Shift+A را فشار دهید</translation>
 <translation id="3312997241656799641">پیوند بازدید شده بعدی</translation>
@@ -406,6 +408,7 @@
 <translation id="3930498801443296724">نقل‌قول</translation>
 <translation id="3936394396199829062">صورتی مات</translation>
 <translation id="3941269780691800708">نوشتار زیر نشانگر موشواره خوانده شود.</translation>
+<translation id="394953087167197343">نشان دادن غلط املایی:</translation>
 <translation id="3962990492275676168">شروع به خواندن از محل کنونی</translation>
 <translation id="3970951409746498040">قهوه‌ای خاکی</translation>
 <translation id="3989324057180830702">tgl btn</translation>
@@ -452,6 +455,7 @@
 <translation id="42164919740161077">آبی لجنی</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{خط تیره}one{# خط تیره}other{# خط تیره}}</translation>
 <translation id="421884353938374759">انتخابگر رنگ</translation>
+<translation id="4221071177874897997">نشان دادن به‌صورت سیاه:</translation>
 <translation id="4229646983878045487">زمان تاریخ</translation>
 <translation id="4230834257931120629">سربی روشن</translation>
 <translation id="4231102694147661229">فعال کردن گزینه‌های برنامه‌نویس</translation>
@@ -754,6 +758,7 @@
 <translation id="6348869651006731065">خاکستری تیره</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{ گلوله}one{ # گلوله}other{ # گلوله}}</translation>
 <translation id="6355910664415701303">مورد قبلی فهرست وجود ندارد.</translation>
+<translation id="6360318852623800555">ویژگی‌های متن غنی‌شده</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">عنوان قبلی</translation>
 <translation id="6376999910001533545">آلبالویی</translation>
@@ -929,6 +934,7 @@
 <translation id="762020119231868829">همه ابزارک‌های رسانه ىر حال پخش را موقتاً متوقف می‌کند</translation>
 <translation id="7625690649919402823">جدول بعدی</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />)، درجه <ph name="GRADE" /></translation>
+<translation id="763535765081585392">نشان دادن با زیرخط:</translation>
 <translation id="7639968568612851608">خاکستری تیره</translation>
 <translation id="7641134354185483015">عنوان سطح ۳ قبلی وجود ندارد.</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />، <ph name="NAME" />، کادر نوشتار</translation>
@@ -1164,6 +1170,7 @@
 <translation id="8943175951035496220">سلولی در راست موجود نیست.</translation>
 <translation id="8943282376843390568">لیمویی</translation>
 <translation id="8946628535652548639">ر<ph name="TABLECELLROWINDEX" />س<ph name="TABLECELLCOLUMNINDEX" /></translation>
+<translation id="8957142051395645063">اعلان</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">فراموش شود</translation>
 <translation id="900114243503212879">فایل</translation>

@@ -139,6 +139,7 @@
       Ako se to pravilo ne postavi, zadana učestalost iznosi 3 sata. Minimalna
       dopuštena učestalost iznosi 60 sekundi.</translation>
 <translation id="1204263402976895730">Omogućeni pisači tvrtke</translation>
+<translation id="1216919699175573511">Omogući podršku za Potpisanu HTTP razmjenu (SXG)</translation>
 <translation id="1219695476179627719">Određuje treba li se uređaj vratiti na verziju koja je postavljena pravilom <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> ako već ima noviju verziju.
 
       Zadana postavka glasi RollbackDisabled.</translation>
@@ -1616,6 +1617,13 @@
           Kada pravilo nije postavljeno, upotrebljava se zadano vrijeme.
 
           Vrijednost pravila treba navesti u milisekundama.</translation>
+<translation id="4105884561459127998">Konfigurira vrstu autentifikacije za SAML prijave.
+
+      Kada se to pravilo ne postavi ili se postavi na zadano (vrijednost 0), ponašanje SAML prijava određeno je preglednikom ovisno o drugim čimbenicima. U najjednostavnijem slučaju autentifikacija korisnika i zaštita predmemoriranih podataka korisnika temelje se na zaporkama koje su korisnici unijeli ručno.
+
+      Kada se to pravilo postavi na ClientCertificate (vrijednost 1), autentifikacija korisničkim certifikatom upotrebljava se za novo dodane korisnike koji se prijavljuju putem SAML-a. Za te se korisnike ne upotrebljavaju nikakve zaporke i njihovi se predmemorirani lokalni podaci štite pomoću odgovarajućih kriptografskih ključeva. Na primjer, ta postavka omogućuje konfiguriranje autentifikacije korisnika na temelju pametne kartice (napominjemo da se posredničke aplikacije za pametne kartice trebaju instalirati pomoću pravila DeviceLoginScreenExtensions).
+
+      To se pravilo primjenjuje samo na korisnike koji se autentificiraju putem SAML-a.</translation>
 <translation id="4105989332710272578">Onemogući provedbu Transparentnosti certifikata za popis URL-ova</translation>
 <translation id="4121350739760194865">Sprječavanje prikaza promocija aplikacija na stranici Nova kartica</translation>
 <translation id="4125606414556046117">To pravilo omogućuje vam da konfigurirate sliku pozadine koja se prikazuje na radnoj površini i pozadini zaslona za prijavu korisnika. Pravilo se postavlja tako da se navede URL s kojeg <ph name="PRODUCT_OS_NAME" /> može preuzeti sliku pozadine i kriptografsko hashiranje kojim se potvrđuje integritet preuzimanja. Slika mora biti u JPEG formatu i ne smije biti veća od 16 MB. URL-u se mora moći pristupiti bez autentifikacije.
@@ -1644,6 +1652,30 @@
       Ako se pravilo ne postavi, korisnik može odabrati sliku koja će se prikazivati na radnoj površini i pozadini zaslona za prijavu.</translation>
 <translation id="412697421478384751">Omogući korisnicima da postave slabe PIN-ove za zaključan zaslon</translation>
 <translation id="4138655880188755661">Vremensko ograničenje</translation>
+<translation id="4144164749344898721">To pravilo kontrolira više postavki za strategiju upravljanja napajanjem kada korisnik postane neaktivan.
+
+          Postoje četiri vrste radnji:
+          * Zaslon će se zatamniti ako korisnik ostane neaktivan u razdoblju koje navodi |ScreenDim|.
+          * Zaslon će se isključiti ako korisnik ostane neaktivan u razdoblju koje navodi |ScreenOff|.
+          * Ako korisnik ostane neaktivan u razdoblju koje navodi |IdleWarning|, prikazat će se dijaloški okvir koji će upozoriti korisnika da će se poduzeti radnja mirovanja. Poruka upozorenja prikazuje se samo ako je radnja neaktivnosti odjava ili isključivanje.
+          * Radnja koju navodi |IdleAction| poduzet će se ako korisnik ostane neaktivan u razdoblju koje navodi |Idle|.
+
+          Za svaku od prethodno navedenih radnji vrijeme do ulaska u stanje mirovanja treba navesti u milisekundama i postaviti na vrijednost veću od nule da bi se pokrenula odgovarajuća radnja. Ako se vrijeme do ulaska u stanje mirovanja postavi na nulu, <ph name="PRODUCT_OS_NAME" /> neće poduzeti odgovarajuću radnju.
+
+          Kada se vrijeme ne postavi, za svako od prethodno navedenih vremena do ulaska u stanje mirovanja upotrebljava se zadana vrijednost.
+
+          Napominjemo da će se vrijednosti za |ScreenDim| ograničiti kako bi bile manje od vrijednosti za |ScreenOff| ili jednake toj vrijednosti, te da će se vrijednosti za |ScreenOff| i |IdleWarning| ograničiti kako bi bile manje od vrijednosti za |Idle| ili jednake toj vrijednosti.
+
+          |IdleAction| može biti jedna od četiri moguće radnje:
+          * |Suspend|
+          * |Logout|
+          * |Shutdown|
+          * |DoNothing|
+
+          Kada se |IdleAction| ne postavi, poduzima se zadana radnja, odnosno, obustavljanje.
+
+          Postoje i zasebne postavke za izmjenično napajanje i bateriju.
+          </translation>
 <translation id="4150201353443180367">Zaslon</translation>
 <translation id="4157003184375321727">Izvješće o verziji OS-a i opreme</translation>
 <translation id="4157594634940419685">Dopusti pristup nativnim CUPS pisačima</translation>
@@ -1728,6 +1760,15 @@
 <translation id="4322842393287974810">Dopusti kiosk aplikaciji pokrenutoj automatski bez odgode da upravlja verzijom proizvoda <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Dodaj gumb za odjavu na programsku traku</translation>
 <translation id="4332177773549877617">Zabilježite događaje za instalacije aplikacije za Android</translation>
+<translation id="4335292026668105285">Određuje koliko vremena treba proći od zadnjeg korisničkog unosa nakon kojeg se prikazuje dijaloški okvir upozorenja dok je uređaj priključen na struju.
+
+          Ako se postavi, to pravilo određuje koliko dugo korisnik treba biti neaktivan prije nego što <ph name="PRODUCT_OS_NAME" /> prikaže dijaloški okvir upozorenja koji obavještava korisnika da će se poduzeti radnja neaktivnosti.
+
+          Ako se pravilo ne postavi, ne prikazuje se dijaloški okvir upozorenja.
+
+          Vrijednost pravila treba se navesti u milisekundama. Vrijednosti su ograničene na vrijeme kraće od odgode neaktivnosti ili jednako tom vremenu.
+
+          Poruka upozorenja prikazuje se samo ako je radnja neaktivnosti odjava ili isključivanje.</translation>
 <translation id="4346674324214534449">Omogućuje vam da postavite hoće li se oglasi blokirati na web-lokacijama s ometajućim oglasima.
 
      Ako se to pravilo postavi na 2, oglasi će se blokirati na web-lokacijama s ometajućim oglasima.
@@ -3250,6 +3291,9 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 <translation id="7464991223784276288">Ograničavanje kolačića iz podudarnih URL-ova na trenutačnu sesiju</translation>
 <translation id="7469554574977894907">Omogući prijedloge pretraživanja</translation>
 <translation id="7474249562477552702">Jesu li dopušteni certifikati s SHA-1 potpisom koje izdaju lokalna pouzdana sidra</translation>
+<translation id="747851715060942420">Omogućuje vam da konfigurirate stranice koje se učitavaju prilikom pokretanja.
+
+      Pravilo "URL-ovi za otvaranje prilikom pokretanja" zanemaruje se ako ne odaberete "Otvori popis URL-ova" u odjeljku "Radnje prilikom pokretanja".</translation>
 <translation id="7485481791539008776">Zadana pravila za odabir pisača</translation>
 <translation id="7485730741952775732">Ako se to pravilo postavi, host daljinskog pristupa taj će URL koristiti za provjeru autentifikacijskih tokena od klijenata daljinskog pristupa radi prihvaćanja povezivanja. Mora se upotrebljavati zajedno s pravilom RemoteAccessHostTokenUrl.
 
@@ -3263,6 +3307,11 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 
       Ako se to pravilo upotrebljava, korisniku se pružaju svi pisači osim pisača s ID-jevima navedenima u pravilu. ID-jevi se moraju podudarati s poljima "id" ili "guid" u datoteci navedenoj u pravilu <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
+<translation id="7506269062143646163">Omogući podršku za Potpisanu HTTP razmjenu (SXG).
+
+          Ako se to pravilo ne postavi ili se omogući, Google Chrome prihvaćat će web-sadržaje koji se poslužuju kao potpisane HTTP razmjene.
+
+          Ako se pravilo onemogući, potpisane HTTP razmjene ne mogu se učitati.</translation>
 <translation id="7511361072385293666">Ako se to pravilo postavi na "istinito" ili ako se ne postavi, dopuštena je upotreba QUIC protokola na proizvodu <ph name="PRODUCT_NAME" />.
       Ako se postavi na "neistinito", upotreba QUIC protokola nije dopuštena.</translation>
 <translation id="7517845714620372896">Određuje postotak svjetline zaslona.
@@ -3403,6 +3452,15 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
       Prepoznati identifikatori vrste veze jesu "ethernet", "wifi", "wimax", "bluetooth" i "mobilna".</translation>
 <translation id="7763614521440615342">Prikaz prijedloga sadržaja na web-stranici nove kartice</translation>
 <translation id="7765879851993224640">Dopusti upotrebu Smart Locka za prijavu.</translation>
+<translation id="7772346342637974431">Određuje koliko vremena treba proći od zadnjeg korisničkog unosa nakon kojeg se prikazuje dijaloški okvir upozorenja kada uređaj nije priključen na struju.
+
+          Ako se postavi, to pravilo određuje koliko dugo korisnik treba biti neaktivan prije nego što <ph name="PRODUCT_OS_NAME" /> prikaže dijaloški okvir upozorenja koji obavještava korisnika da će se poduzeti radnja neaktivnosti.
+
+          Ako se pravilo ne postavi, ne prikazuje se dijaloški okvir upozorenja.
+
+          Vrijednost pravila treba se navesti u milisekundama. Vrijednosti su ograničene na vrijeme kraće od odgode neaktivnosti ili jednako tom vremenu.
+
+          Poruka upozorenja prikazuje se samo ako je radnja neaktivnosti odjava ili isključivanje.</translation>
 <translation id="7774768074957326919">Upotrijebi proxy postavke sustava</translation>
 <translation id="7777535871204167559">Postupaj s vanjskim uređajima za pohranu kao da su samo za čitanje</translation>
 <translation id="7781069478569868053">Web-stranica nove kartice</translation>
@@ -3956,6 +4014,7 @@ za preglednike imaju isti raspored.
      Za više informacija o sigurnim kontekstima pogledajte
       https://www.w3.org/TR/secure-contexts/
       </translation>
+<translation id="8939595959513040470">Pruži korisnicima međuverziju za brzi popravak.</translation>
 <translation id="8942616385591203339">Ovo pravilo određuje može li se prilikom prve prijave korisniku prikazivati pristanak na sinkronizaciju. Treba ga postaviti na False ako pristanak na sinkronizaciju nikad nije potreban za korisnika.
       Ako se postavi na False, pristanak na sinkronizaciju neće se prikazivati.
       Ako se postavi na True ili se ne postavi, pristanak na sinkronizaciju može se prikazati.</translation>
@@ -4015,6 +4074,9 @@ za preglednike imaju isti raspored.
 
       Ako se pravilo ne postavi, korisnik može odabrati sliku avatara koja će ga predstavljati na zaslonu za prijavu.</translation>
 <translation id="9035964157729712237">ID-jevi proširenja za izuzimanje s crne liste</translation>
+<translation id="9038058011835642205">Određuje popis web-lokacija koje se instaliraju u pozadini bez interakcije korisnika i koje korisnik ne može deinstalirati ni onemogućiti.
+
+      Svaka stavka na popisu pravila objekt je s obaveznim članom: "url" i dva izborna člana: "default_launch_container" i "create_desktop_shortcut". "url" bi trebao biti URL web-aplikacije koju je potrebno instalirati, "launch_container" bi trebao biti "window" ili "tab" kako bi se naznačilo hoće li se web-aplikacija nakon instalacije otvarati u prozoru ili na kartici, a "create_desktop_shortcut" bi trebao biti true ako je potrebno izraditi prečac na radnoj površini na Linuxu i Windowsima. Ako se izostavi "default_launch_container", aplikacija će se prema zadanim postavkama otvarati u kartici. Neovisno o vrijednosti člana "default_launch_container", korisnici mogu promijeniti spremnik u kojem će se aplikacija otvarati. Ako se "create_desktop_shortcuts" izostavi, prečac na radnoj površini neće se izraditi.</translation>
 <translation id="9038839118379817310">Omogući Wi-Fi</translation>
 <translation id="9039822628127365650">Ako se postavi, to pravilo određuje vremensko razdoblje nakon kojeg se korisnik automatski odjavljuje, a sesija prekida. Korisnik može vidjeti preostalo vrijeme na tajmeru za odbrojavanje prikazanom na traci sustava.
 
@@ -4024,6 +4086,11 @@ za preglednike imaju isti raspored.
 
       Vrijednost pravila treba se navesti u milisekundama. Vrijednosti su ograničene na raspon od 30 sekundi do 24 sata.</translation>
 <translation id="9042911395677044526">Omogućuje nametanje mrežne konfiguracije za primjenu po korisniku na uređaju <ph name="PRODUCT_OS_NAME" />. Mrežna je konfiguracija niz u formatu JSON, kao što je definirano formatom "Open Network Configuration" koji je opisan na adresi <ph name="ONC_SPEC_URL" /></translation>
+<translation id="9050853837490399534">Pravilo određuje treba li se uređaj ažurirati na međuverziju za brzi popravak.
+
+      Ako se vrijednost pravila postavi na token koji mapira na međuverziju za brzi popravak, uređaj će se ažurirati na odgovarajuću međuverziju ako ažuriranje nije blokirano drugim pravilom.
+
+      Ako se pravilo ne postavi ili njegova vrijednost ne mapira na međuverziju za brzi popravak, uređaj se neće ažurirati na međuverziju za brzi popravak. Ako je na uređaju već instalirana međuverzija za brzi popravak i pravilo više nije postavljeno ili njegova vrijednost više ne mapira na međuverziju za brzi popravak, uređaj će se ažurirati na regularnu međuverziju ako ažuriranje nije blokirano drugim pravilom.</translation>
 <translation id="906631898352326790">
       Ako je pravilo omogućeno, svaki od navedenih izvora na popisu odijeljenom zarezima izvodit će se u vlastitom procesu. Time će se također izolirati izvori navedeni prema poddomenama. Na primjer, ako se navede https://example.com/, izolirat će se i https://foo.example.com/ kao dio web-lokacije https://example.com/.
       Ako se pravilo onemogući, onemogućit će se i značajka IsolateOrigins i značajka SitePerProcess. Korisnici će i dalje moći ručno omogućiti SitePerProcess putem oznaka naredbenog retka.

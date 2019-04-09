@@ -99,6 +99,7 @@
 <translation id="1616111909442424068">小麥色</translation>
 <translation id="1618597272655350600">朗讀目前位置的完整說明</translation>
 <translation id="1627222324347828322">鬼魅白</translation>
+<translation id="1630688379087270943">標示斜體：</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{大於符號}other{# 個大於符號}}</translation>
 <translation id="1653266918374749391">上一個第 3 階標題</translation>
 <translation id="1657616855184033958">顯示活動訊息串篩選器</translation>
@@ -320,6 +321,7 @@
 <translation id="3286390186030710347">滑桿</translation>
 <translation id="3299925995433437805">沒有下一個造訪過的連結。</translation>
 <translation id="3300348286427369683">支援 RTF 格式：ChromeVox 現在支援 RTF 格式欄位，包括跳轉指令、點字游標路徑、選取等等。</translation>
+<translation id="3304756947457041303">自訂 RTF 格式指標</translation>
 <translation id="3307886118343381874">前往表格結尾</translation>
 <translation id="3311969765485641742">按下 Alt+Shift+A 鍵即可查看警示內容</translation>
 <translation id="3312997241656799641">下一個造訪過的連結</translation>
@@ -406,6 +408,7 @@
 <translation id="3930498801443296724">重要引述</translation>
 <translation id="3936394396199829062">薰衣草紫紅</translation>
 <translation id="3941269780691800708">請說出滑鼠游標下方的文字。</translation>
+<translation id="394953087167197343">標示拼字錯誤：</translation>
 <translation id="3962990492275676168">從目前位置開始朗讀</translation>
 <translation id="3970951409746498040">沙褐</translation>
 <translation id="3989324057180830702">切換按鈕</translation>
@@ -452,6 +455,7 @@
 <translation id="42164919740161077">軍服藍</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{破折號}other{# 個破折號}}</translation>
 <translation id="421884353938374759">顏色選擇器</translation>
+<translation id="4221071177874897997">標示粗體：</translation>
 <translation id="4229646983878045487">日期時間</translation>
 <translation id="4230834257931120629">淺灰藍</translation>
 <translation id="4231102694147661229">啟用開發人員選項</translation>
@@ -754,6 +758,7 @@
 <translation id="6348869651006731065">暗灰</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{項目符號}other{# 個項目符號}}</translation>
 <translation id="6355910664415701303">沒有上一個清單項目。</translation>
+<translation id="6360318852623800555">RTF 格式屬性</translation>
 <translation id="6364795331201459219">第 6 階</translation>
 <translation id="6368143427468974988">上一個標題</translation>
 <translation id="6376999910001533545">栗色</translation>
@@ -929,6 +934,7 @@
 <translation id="762020119231868829">暫停所有正在播放媒體的小工具</translation>
 <translation id="7625690649919402823">下一個表格</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />)，第 <ph name="GRADE" /> 級</translation>
+<translation id="763535765081585392">標示底線：</translation>
 <translation id="7639968568612851608">深灰色</translation>
 <translation id="7641134354185483015">沒有上一個第 3 階標題。</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />，<ph name="NAME" />，文字方塊</translation>
@@ -1164,6 +1170,7 @@
 <translation id="8943175951035496220">右側沒有儲存格。</translation>
 <translation id="8943282376843390568">萊姆綠</translation>
 <translation id="8946628535652548639">第 <ph name="TABLECELLROWINDEX" /> 列，第 <ph name="TABLECELLCOLUMNINDEX" /> 欄</translation>
+<translation id="8957142051395645063">朗讀</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">清除</translation>
 <translation id="900114243503212879">檔案</translation>

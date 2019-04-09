@@ -151,6 +151,7 @@
       Jei ši politika nenustatyta, numatytasis dažnis yra 3 val. Minimalus
       leistinas dažnis yra 60 sekundžių.</translation>
 <translation id="1204263402976895730">Įgalinti įmonės spausdintuvai</translation>
+<translation id="1216919699175573511">Įgalinti „Signed HTTP Exchange“ (SXG) palaikymą</translation>
 <translation id="1219695476179627719">Nurodoma, ar įrenginyje turėtų būti grąžinta pagal politiką „<ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" />“ nustatyta versija, jei jame jau paleista naujesnė versija.
 
       Numatytasis nustatymas yra „RollbackDisabled“.</translation>
@@ -1662,6 +1663,13 @@
           Kai ši politika nenustatyta, naudojama numatytoji laiko trukmė.
 
           Politikos vertė turėtų būti nurodyta milisekundėmis.</translation>
+<translation id="4105884561459127998">Konfigūruojamas SAML prisijungimo autentifikavimo tipas.
+
+      Kai ši politika nenustatyta arba nustatyta į numatytąją parinktį (vertę „0“), SAML prisijungimo elgseną nustato naršyklė, atsižvelgdama į kitus veiksnius. Paprasčiausiu atveju naudotojų autentifikavimas ir talpykloje saugomų naudotojo duomenų apsauga vykdoma pasitelkiant naudotojų neautomatiškai įvedamus slaptažodžius.
+
+      Kai ši politika nustatyta į „ClientCertificate“ (vertė „1“), naujai pridėtų naudotojų, kurie prisijungia per SAML, tapatybei nustatyti naudojamas kliento sertifikato autentifikavimas. Tokiems naudotojas autentifikuoti nenaudojami slaptažodžiai, o talpykloje saugomi vietiniai duomenys apsaugomi naudojant atitinkamus kriptografinius raktus. Pvz., naudojant šį nustatymą galima konfigūruoti išmaniąją kortelę pasitelkiant naudotojo autentifikavimą (atminkite, kad išmaniosios kortelės tarpinės programos turi būti įdiegtos naudojant politiką „DeviceLoginScreenExtension“).
+
+      Ši politika daro įtaką tik naudotojams, kurie autentifikuojami naudojant SAML.</translation>
 <translation id="4105989332710272578">Sertifikato skaidrumo taikymo URL sąrašui išjungimas</translation>
 <translation id="4121350739760194865">Neleisti rodyti programų reklamų naujo skirtuko puslapyje</translation>
 <translation id="4125606414556046117">Pagal šią politiką leidžiama konfigūruoti ekrano fono vaizdą, kuris rodomas naudotojo darbalaukyje ir prisijungimo ekrano fone. Politika nustatoma nurodant URL, iš kurio „<ph name="PRODUCT_OS_NAME" />“ gali atsisiųsti ekrano fono vaizdą ir kriptografinę maišą, naudojamą atsisiuntimo vientisumui patikrinti. Vaizdas turi būti JPEG formato, ne didesnis nei 16 MB. URL turi būti galima pasiekti nenustačius tapatybės.
@@ -1690,6 +1698,30 @@
       Nenustačius politikos, naudotojas gali pasirinkti darbalaukyje ir prisijungimo ekrano fone rodytiną vaizdą.</translation>
 <translation id="412697421478384751">Leisti naudotojams nustatyti nesudėtingus užrakinimo ekrano PIN kodus</translation>
 <translation id="4138655880188755661">Laiko apribojimas</translation>
+<translation id="4144164749344898721">Ši politika valdo kelis maitinimo valdymo strategijos, kai naudotojas tampa neaktyvus, nustatymus.
+
+          Galimi keturių tipų veiksmai.
+          * Ekranas bus pritemdytas, jei naudotojas išliks neaktyvus laikotarpį, nurodytą kaip „|ScreenDim|“.
+          * Ekranas bus išjungtas, jei naudotojas išliks neaktyvus laikotarpį, nurodytą kaip „|ScreenOff|“.
+          * Jei naudotojas išliks neaktyvus laikotarpį, nurodytą kaip „|IdleWarning|“, bus rodomas įspėjimo dialogo langas, kuriame nurodoma, kad netrukus bus atliekamas neveikos veiksmas. Įspėjimo pranešimas rodomas, tik jei po neveikos laiko nurodyta atsijungti arba išjungti įrenginį.
+          * Veiksmas, nurodytas kaip „|IdleAction|“, bus atliktas, jei naudotojas išliks neaktyvus laikotarpį, nurodytą kaip „|Idle|“.
+
+          Kiekvieno anksčiau nurodyto veiksmo delsos laikotarpis turėtų būti nurodytas milisekundėmis ir turi būti nustatytas kaip didesnė nei nulis vertė, kad būtų suaktyvintas atitinkamas veiksmas. Jei delsos laikotarpis nustatytas kaip nulis, „<ph name="PRODUCT_OS_NAME" />“ neatliks atitinkamo veiksmo.
+
+          Jei laikotarpis nenustatytas, bus naudojama numatytoji vertė. Tai taikoma kiekvienam anksčiau nurodytam delsos laikotarpiui.
+
+          Atminkite, kad „|ScreenDim|“ vertės bus apribotos, kad būtų mažesnės arba lygios „|ScreenOff|“ vertei, o „|ScreenOff|“ ir „|IdleWarning|“ vertės bus apribotos, kad būtų mažesnės arba lygios „|Idle|“ vertei.
+
+          „|IdleAction|“ gali būti vienas iš keturių galimų veiksmų.
+          * |Suspend|
+          * |Logout|
+          * |Shutdown|
+          * |DoNothing|
+
+          Kai „|IdleAction|“ vertė nenustatyta, atliekamas numatytasis veiksmas – laikinai sustabdyti.
+
+          Kintamosios srovės ir akumuliatoriaus maitinimo nustatymai pasirenkami atskirai.
+          </translation>
 <translation id="4150201353443180367">Pateiktis</translation>
 <translation id="4157003184375321727">Pranešti OS ir programinės aparatinės įrangos versiją</translation>
 <translation id="4157594634940419685">Leisti pasiekti savuosius CUPS spausdintuvus</translation>
@@ -1774,6 +1806,15 @@
 <translation id="4322842393287974810">Leisti automatiškai be delsos paleistai viešojo terminalo programai valdyti „<ph name="PRODUCT_OS_NAME" />“ versiją</translation>
 <translation id="4325690621216251241">Pridėti atsijungimo mygtuką prie sistemos dėklo</translation>
 <translation id="4332177773549877617">Registruoti „Android“ programų diegimo įvykius</translation>
+<translation id="4335292026668105285">Nurodoma, po kiek laiko nesulaukus naudotojo veiksmų parodomas įspėjimo dialogo langas, kai naudojamas kintamosios srovės maitinimo šaltinis.
+
+          Nustačius šią politiką, nurodomas laiko tarpas, kurį naudotojas turi būti neaktyvus, kad „<ph name="PRODUCT_OS_NAME" />“ parodytų įspėjimo dialogo langą, kuriame nurodoma, kad bus atliekami veiksmai dėl neveikos.
+
+          Jei politika nenustatyta, įspėjimo dialogo langas nerodomas.
+
+          Politikos vertė turi būti nurodyta milisekundėmis. Vertės apribojamos, kad būtų mažesnės už neveikos laiką arba jam lygios.
+
+          Įspėjimo pranešimas rodomas, tik jei po neveikos laiko nurodyta atsijungti arba išjungti įrenginį.</translation>
 <translation id="4346674324214534449">Leidžiama nustatyti, ar skelbimai turėtų būti blokuojami svetainėse su nepageidaujamais skelbimais.
 
       Jei bus nustatyta šios politikos parinktis 2, skelbimai bus blokuojami svetainėse su nepageidaujamais skelbimais.
@@ -3357,6 +3398,9 @@
 <translation id="7464991223784276288">Ribojami slapukai, kad URL nesutaptų su dabartine sesija</translation>
 <translation id="7469554574977894907">Įgalinti paieškos pasiūlymus</translation>
 <translation id="7474249562477552702">Ar leidžiami SHA-1 pasirašyti sertifikatai, išduoti naudojant vietinius patikimus prieraišus</translation>
+<translation id="747851715060942420">Galite konfigūruoti puslapius, kurie įkeliami paleidžiant.
+
+      Jei skiltyje „Veiksmai paleidžiant“ nepasirinksite „Atidaryti URL sąrašą“, politikos „Paleidžiant atidaromi URL“ bus nepaisoma.</translation>
 <translation id="7485481791539008776">Numatytojo spausdintuvo pasirinkimo taisyklės</translation>
 <translation id="7485730741952775732">Nustačius šią politiką, nuotolinės prieigos priegloba naudos šį URL autentifikavimo prieigos raktams iš nuotolinės prieigos klientų patvirtinti, kad būtų galima priimti ryšius. Reikia naudoti su „RemoteAccessHostTokenUrl“.
 
@@ -3370,6 +3414,11 @@
 
       Jei ši politika naudojama, naudotojui teikiami visi spausdintuvai, išskyrus šioje politikoje nurodytus ID. ID turi atitikti laukus „id“ arba „guid“ faile, kuris nurodytas „<ph name="DEVICE_PRINTERS_POLICY" />“.
       </translation>
+<translation id="7506269062143646163">Įgalinkite „Signed HTTP Exchange“ (SXG) palaikymą.
+
+          Jei ši politika nenustatyta arba nustatyta kaip „Įgalinta“, „Google Chrome“ priims žiniatinklio turinį, teikiamą kaip „Signed HTTP Exchange“.
+
+          Jei ši politika nustatyta kaip „Išjungta“, „Signed HTTP Exchange“ negalima įkelti.</translation>
 <translation id="7511361072385293666">Jei ši politika nustatyta į „true“ arba yra nenustatyta, QUIC protokolo naudojimas sistemoje „<ph name="PRODUCT_NAME" />“ leidžiamas.
       Jei ši politika nustatyta į „false“ QUIC protokolo naudojimas neleidžiamas.</translation>
 <translation id="7517845714620372896">Nurodomas ekrano šviesumo procentas.
@@ -3516,6 +3565,15 @@
       Atpažįstami ryšio tipo identifikatoriai yra „ethernet“, „wifi“, „wimax“, „bluetooth“ ir „cellular“.</translation>
 <translation id="7763614521440615342">Rodyti turinio pasiūlymus naujo skirtuko puslapyje</translation>
 <translation id="7765879851993224640">Leidimas naudoti „Smart Lock“ prisijungimo funkciją.</translation>
+<translation id="7772346342637974431">Nurodoma, po kiek laiko nesulaukus naudotojo veiksmų parodomas įspėjimo dialogo langas, kai naudojamas akumuliatoriaus maitinimas.
+
+          Nustačius šią politiką, nurodomas laiko tarpas, kurį naudotojas turi būti neaktyvus, kad „<ph name="PRODUCT_OS_NAME" />“ parodytų įspėjimo dialogo langą, kuriame nurodoma, kad bus atliekami veiksmai dėl neveikos.
+
+          Jei politika nenustatyta, įspėjimo dialogo langas nerodomas.
+
+          Politikos vertė turi būti nurodyta milisekundėmis. Vertės apribojamos, kad būtų mažesnės už neveikos laiką arba jam lygios.
+
+          Įspėjimo pranešimas rodomas, tik jei po neveikos laiko nurodyta atsijungti arba išjungti įrenginį.</translation>
 <translation id="7774768074957326919">Naudoti sistemos tarpinio serverio nustatymus</translation>
 <translation id="7777535871204167559">Išorinių saugyklos įrenginių laikymas kaip tik skaitomų</translation>
 <translation id="7781069478569868053">Naujo skirtuko puslapis</translation>
@@ -4093,6 +4151,7 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
       Daugiau informacijos apie saugius kontekstus pateikiama adresu
       https://www.w3.org/TR/secure-contexts/
       </translation>
+<translation id="8939595959513040470">Suteikite naudotojams „Quick Fix Build“.</translation>
 <translation id="8942616385591203339">Pagal šią politiką valdoma, ar sutikimas sinchronizuoti gali būti rodomas naudotojui prisijungiant pirmą kartą. Ji turi būti nustatyta kaip „false“, jei naudotojui niekada nereikia sutikimo sinchronizuoti.
       Nustačius kaip „false“, sutikimas sinchronizuoti nebus pateikiamas.
       Nustačius kaip „true“ arba nenustačius, sutikimas sinchronizuoti gali būti pateikiamas.</translation>
@@ -4152,6 +4211,9 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
 
       Jei politika nenustatyta, naudotojas gali pasirinkti pseudoportreto vaizdą, rodomą prisijungimo ekrane.</translation>
 <translation id="9035964157729712237">Į juodąjį sąrašą neįtrauktinų plėtinių ID</translation>
+<translation id="9038058011835642205">Nurodomas sąrašas programų, kurios įdiegiamos automatiškai, naudotojui neatliekant jokių veiksmų, ir kurių naudotojas negali pašalinti arba išjungti.
+
+      Kiekvienas politikos sąrašo elementas yra objektas su privalomu nariu: „url“ ir dviem pasirenkamais nariais: „default_launch_container“ bei „create_desktop_shortcut“. „url“ turėtų būti diegiamos žiniatinklio programos URL, o „launch_container“ – „window“ arba „tab“, nurodantis, kaip žiniatinklio programa atidaroma įdiegus. Jei sistemoje „Linux“ arba „Windows“ turi būti sukurtas darbalaukio spartusis klavišas, „desktop_shortcut“ reikšmė turi būti „true“. Praleidus „default_launch_container“, programa pagal numatytuosius nustatymus bus atidaroma skirtuke. Neatsižvelgiant į „default_launch_container“ reikšmę, naudotojai gali keisti sudėtinį rodinį, kuriame atidaroma programa. Praleidus „create_desktop_shortcuts“, darbalaukio spartieji klavišai nebus kuriami.</translation>
 <translation id="9038839118379817310">„Wi-Fi“ įgalinimas</translation>
 <translation id="9039822628127365650">Kai ši politika nustatyta, nurodoma trukmė, po kurios naudotojas automatiškai atjungiamas ir sesija nutraukiama. Naudotojui likusi trukmė nurodoma atvirkštiniu laikmačiu, pateikiamu sistemos juostelėje.
 
@@ -4161,6 +4223,11 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
 
       Politikos vertė turi būti nurodyta milisekundėmis. Vertės gali būti nuo 30 sekundžių iki 24 valandų.</translation>
 <translation id="9042911395677044526">Leidžiama pateikti tinklo konfigūraciją, kad būtų taikoma „<ph name="PRODUCT_OS_NAME" />“ įrenginiui pagal naudotoją. Tinklo konfigūracija yra JSON formatuota eilutė, apibrėžta pagal „Atvirosios tinklo konfigūracijos“ formatą, nurodytą šiuo adresu: <ph name="ONC_SPEC_URL" /></translation>
+<translation id="9050853837490399534">Naudojant šią politiką nurodoma, ar įrenginys turi būti atnaujintas į „Quick Fix Build“.
+
+      Jei politikos reikšmė yra prieigos raktas, susiejantis su „Quick Fix Build“, įrenginys bus atnaujintas į atitinkamą „Quick Fix Build“, jei naujinio neblokuos kita politika.
+
+      Jei ši politika nenustatyta arba jos reikšmė nesusieja su „Quick Fix Build“, įrenginys nebus atnaujintas į „Quick Fix Build“. Jei įrenginyje jau veikia „Quick Fix Build“ ir politika nebenustatyta arba jos reikšmė nebesusieja su „Quick Fix Build“, įrenginys bus atnaujintas į įprastinę versiją, jei naujinio neblokuos kita politika.</translation>
 <translation id="906631898352326790">
       Įgalinus politiką kiekvienas pavadinimą turintis šaltinis, įtrauktas į
       kableliais atskirtų verčių sąrašą, vykdys atskirą procesą. Taip pat bus atskiriami

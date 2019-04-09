@@ -21,9 +21,11 @@
 <translation id="3081586908890909590">Zu Videomodus wechseln</translation>
 <translation id="3183731565330012717">Rastertyp</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
+<translation id="3517926952904427380">Porträtfoto kann nicht aufgenommen werden</translation>
 <translation id="3569311554794739032">Möchten Sie "<ph name="FILE" />" wirklich entfernen?</translation>
 <translation id="3810838688059735925">Videos</translation>
 <translation id="4279490309300973883">Spiegelung</translation>
+<translation id="4329152592498422850">Zum Modus für quadratische Fotos wechseln</translation>
 <translation id="4445542136948522167">Fotoaufnahme beenden</translation>
 <translation id="4628948037717959914">Foto</translation>
 <translation id="4649291346448517080">Datei konnte nicht gespeichert werden</translation>
@@ -38,7 +40,7 @@
 <translation id="6243827288366940320">Goldener Schnitt</translation>
 <translation id="6681668084120808868">Foto machen</translation>
 <translation id="6778482348691154169">Fotoaufnahme nicht möglich</translation>
-<translation id="6965382102122355670">OK</translation>
+<translation id="6965382102122355670">Ok</translation>
 <translation id="698156982839284926">3 Sekunden</translation>
 <translation id="712848772518857951">Möchten Sie <ph name="COUNT" /> Elemente wirklich entfernen?</translation>
 <translation id="7337660886763914220">Fehler im Dateisystem.</translation>
@@ -50,6 +52,7 @@
 <translation id="8145038249676204903">Zu Fotomodus wechseln</translation>
 <translation id="8261506727792406068">Löschen</translation>
 <translation id="8428213095426709021">Einstellungen</translation>
+<translation id="8815966864175525708">Zum Modus für Porträtfotos wechseln</translation>
 <translation id="8870695351537079478">Videoaufnahme konnte nicht gestartet werden</translation>
 <translation id="9045155556724273246">10 Sekunden</translation>
 <translation id="945522503751344254">Feedback geben</translation>

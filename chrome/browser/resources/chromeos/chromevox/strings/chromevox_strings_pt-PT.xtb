@@ -99,6 +99,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="1616111909442424068">Trigo</translation>
 <translation id="1618597272655350600">Anuncia uma descrição completa da posição atual</translation>
 <translation id="1627222324347828322">Branco-acinzentado</translation>
+<translation id="1630688379087270943">Indicar itálico:</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{maior que}other{# sinais de maior que}}</translation>
 <translation id="1653266918374749391">Título de nível 3 anterior</translation>
 <translation id="1657616855184033958">Mostrar filtros de transmissões de eventos</translation>
@@ -320,6 +321,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="3286390186030710347">Controlo de deslize</translation>
 <translation id="3299925995433437805">Não existe nenhum link visitado seguinte.</translation>
 <translation id="3300348286427369683">Suporte de texto formatado. Agora, o ChromeVox é compatível com campos de texto formatado, incluindo comandos de avanço, encaminhamento do cursor braille, seleção e muito mais.</translation>
+<translation id="3304756947457041303">Personalizar a indicação de texto rico</translation>
 <translation id="3307886118343381874">Ir para o fim da tabela</translation>
 <translation id="3311969765485641742">Prima Alt+Shift+A para consultar os alertas</translation>
 <translation id="3312997241656799641">Link visitado seguinte</translation>
@@ -406,6 +408,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="3930498801443296724">Trecho em destaque</translation>
 <translation id="3936394396199829062">Lavanda avermelhado</translation>
 <translation id="3941269780691800708">Pronunciar o texto sob o rato.</translation>
+<translation id="394953087167197343">Indicar erro ortográfico:</translation>
 <translation id="3962990492275676168">Iniciar a leitura a partir da localização atual</translation>
 <translation id="3970951409746498040">Castanho-amarelado</translation>
 <translation id="3989324057180830702">tgl btn</translation>
@@ -452,6 +455,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="42164919740161077">Azul-cadete</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{traço}other{# traços}}</translation>
 <translation id="421884353938374759">seletor de cores</translation>
+<translation id="4221071177874897997">Indicar negrito:</translation>
 <translation id="4229646983878045487">date time</translation>
 <translation id="4230834257931120629">Cinzento-ardósia claro</translation>
 <translation id="4231102694147661229">Ativar as opções de programador</translation>
@@ -754,6 +758,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="6348869651006731065">Cinzento fosco</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{marca}other{# marcas}}</translation>
 <translation id="6355910664415701303">Não existe nenhum item de lista anterior.</translation>
+<translation id="6360318852623800555">Atributos do texto rico</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Título anterior</translation>
 <translation id="6376999910001533545">Mogno</translation>
@@ -929,6 +934,7 @@ Para abrir o menu do navegador Chrome, prima Alt + F.</translation>
 <translation id="762020119231868829">Interrompe todos os widgets de multimédia atualmente em reprodução</translation>
 <translation id="7625690649919402823">Tabela seguinte</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), grau <ph name="GRADE" /></translation>
+<translation id="763535765081585392">Indicar sublinhado:</translation>
 <translation id="7639968568612851608">Cinzento-escuro</translation>
 <translation id="7641134354185483015">Não existe nenhum título de nível 3 anterior.</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, caixa de texto</translation>
@@ -1164,6 +1170,7 @@ Para abrir o menu do navegador Chrome, prima Alt + F.</translation>
 <translation id="8943175951035496220">Não existe nenhuma célula à direita.</translation>
 <translation id="8943282376843390568">Lima</translation>
 <translation id="8946628535652548639">l<ph name="TABLECELLROWINDEX" />c<ph name="TABLECELLCOLUMNINDEX" /></translation>
+<translation id="8957142051395645063">Anunciar</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">Esquecer</translation>
 <translation id="900114243503212879">ficheiro</translation>

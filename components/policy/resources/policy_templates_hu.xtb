@@ -148,6 +148,7 @@
       Ha nem állítja be a házirendet, az alapértelmezett gyakoriság három óra.
       A legkisebb megengedett gyakoriság hatvan másodperc.</translation>
 <translation id="1204263402976895730">Engedélyezett vállalati nyomtatók</translation>
+<translation id="1216919699175573511">Signed HTTP Exchange (SXG) támogatásának engedélyezése</translation>
 <translation id="1219695476179627719">Megadja, hogy az eszköz visszaálljon-e a(z) <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> házirend által beállított verzióra, ha az eszközön már újabb verzió fut.
 
       Az alapértelmezett érték: RollbackDisabled.</translation>
@@ -1624,6 +1625,13 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
           Ha a házirend nincs beállítva, a rendszer az alapértelmezett időtartamot használja.
 
           A házirend értékét ezredmásodpercben kell megadni.</translation>
+<translation id="4105884561459127998">Az SAML-bejelentkezések hitelesítési típusát konfigurálja.
+
+      Ha a házirend nincs beállítva, vagy ha az alapértelmezett értékkel (0) rendelkezik, akkor az SAML-bejelentkezések viselkedését a böngésző határozza meg egyéb tényezők figyelembevételével. A legáltalánosabb helyzet az, hogy a felhasználói hitelesítés és a gyorsítótárazott felhasználói adatok védelme a felhasználók által manuálisan beírt jelszavakon alapul.
+
+      Ha a házirend beállítása ClientCertificate (klienstanúsítvány, 1-es érték), akkor a böngésző klienstanúsítványon alapuló hitelesítést használ az újonnan hozzáadott felhasználók esetében, akik SAML használatával jelentkezhetnek be. Az ilyen felhasználóknak nem kell jelszót használniuk, gyorsítótárazott helyi adataikat pedig a megfelelő titkosítási kulcsok védik. Ez a beállítás lehetővé teszi például az intelligens kártyákon alapuló felhasználói hitelesítés beállítását (felhívjuk figyelmét, hogy ehhez telepíteni kell az intelligens kártya köztes alkalmazását a DeviceLoginScreenExtensions házirenden keresztül).
+
+      Ez a házirend csak azokra a felhasználókra érvényes, akik SAML-alapú hitelesítést használnak.</translation>
 <translation id="4105989332710272578">A tanúsítványok átláthatósága keretrendszer végrehajtásának kikapcsolása az URL-ek egy listájánál</translation>
 <translation id="4121350739760194865">Megakadályozza az alkalmazáspromóciók megjelenését az új lap oldalon</translation>
 <translation id="4125606414556046117">Ez a házirend lehetővé teszi az asztalon és a felhasználó bejelentkező képernyőjén lévő háttérkép konfigurálását. A házirend annak az URL-nek a megadásával állítható be, ahonnan a <ph name="PRODUCT_OS_NAME" /> letöltheti a háttérképet és a letöltés integritásának ellenőrzésére szolgáló kriptográfiai hash-értéket. A képnek JPEG-formátumban kell lennie, mérete pedig nem haladhatja meg a 16 MB-ot. Az URL-nek hitelesítés nélkül is hozzáférhetőnek kell lennie.
@@ -1652,6 +1660,30 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha nem állítja be a házirendet, a felhasználó kiválaszthatja, hogy milyen háttérkép jelenjen meg az asztalon és a bejelentkezési képernyőn.</translation>
 <translation id="412697421478384751">Annak engedélyezése, hogy a felhasználók gyenge PIN-kódot adjanak meg a lezárási képernyő PIN-kódjaként.</translation>
 <translation id="4138655880188755661">Időkorlát</translation>
+<translation id="4144164749344898721">Ez a házirend többféle, energiagazdálkodási stratégiával kapcsolatos beállítást vezérel arra vonatkozóan, amikor a felhasználó tétlenné válik.
+
+          Négyféle művelet választható:
+          * A képernyő elsötétül, ha a felhasználó tétlen marad a |ScreenDim| beállítás által meghatározott ideig.
+          * A képernyő kikapcsol, ha a felhasználó tétlen marad a |ScreenOff| beállítás által meghatározott ideig.
+          * Figyelmeztető párbeszédpanel jelenik meg, ha a felhasználó tétlen marad az |IdleWarning| beállítás által meghatározott ideig – ez a figyelmeztetés tájékoztatja a felhasználót arról a műveletről, amelyet a tétlenség következtében hajt majd végre a rendszer. A figyelmeztető üzenet csak akkor jelenik meg, ha a tétlenségi művelet a kijelentkezés vagy a leállítás.
+          * Az |IdleAction| beállítás által meghatározott művelet következik be, amennyiben a felhasználó tétlen marad az |Idle| beállítás által meghatározott ideig.
+
+          A késleltetés idejét a fenti műveletek mindegyikénél ezredmásodpercben kell megadni, és a megadott értéknek nullánál nagyobbnak kell lennie a kapcsolódó művelet kiváltásához. Ha a késleltetés értéke nulla, akkor a <ph name="PRODUCT_OS_NAME" /> nem hajtja végre a kapcsolódó műveletet.
+
+          A fenti késleltetések mindegyikénél igaz, hogy amennyiben az időtartam nincs beállítva, akkor a rendszer az alapértelmezett időtartamot alkalmazza.
+
+          Felhívjuk figyelmét arra, hogy a |ScreenDim| értékének mindenképpen alacsonyabbnak vagy ugyanannyinak kell lennie, mint a |ScreenOff| értékének, a |ScreenOff| és az |IdleWarning| értékeinek pedig mindenképpen alacsonyabbnak vagy ugyanannyinak kell lenniük, mint az |Idle| értékének.
+
+          Az |IdleAction| beállítása a következő négy művelet valamelyike lehet:
+          * |Suspend|
+          * |Logout|
+          * |Shutdown|
+          * |DoNothing|
+
+          Ha az |IdleAction| beállítás értéke nincs megadva, akkor az alapértelmezett művelet, azaz a felfüggesztés következik be.
+
+          Külön beállítások adhatók meg a hálózati áramforrásról és az akkumulátorról való működésre vonatkozóan is.
+          </translation>
 <translation id="4150201353443180367">Megjelenítés</translation>
 <translation id="4157003184375321727">Az operációs rendszer és a firmware verziójának jelentése</translation>
 <translation id="4157594634940419685">Hozzáférés engedélyezése a natív CUPS-nyomtatókhoz</translation>
@@ -1736,6 +1768,15 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="4322842393287974810">Annak engedélyezése, hogy a <ph name="PRODUCT_OS_NAME" /> verziójának ellenőrzését a késés nélkül, automatikusan indított kioszkalkalmazás végezze.</translation>
 <translation id="4325690621216251241">Kijelentkezés gomb elhelyezése a tálcán</translation>
 <translation id="4332177773549877617">Az Android-alkalmazások telepítéseivel kapcsolatos események naplózása</translation>
+<translation id="4335292026668105285">Meghatározza a felhasználói adatbevitel nélkül eltelt időtartamot, amelyet követően a rendszer figyelmeztető párbeszédablakot jelenít meg, ha hálózati áramról működik.
+
+          Ha a házirend be van állítva, megadja azt az időtartamot, ameddig a felhasználónak tétlennek kell maradnia, mielőtt a(z) <ph name="PRODUCT_OS_NAME" /> megjeleníti a figyelmeztető párbeszédablakot, amellyel tájékoztatja a felhasználót arról a műveletről, amelyet a tétlenség következtében hajt majd végre a rendszer.
+
+          Ha a házirend nincs beállítva, akkor nem jelenik meg figyelmeztető párbeszédablak.
+
+          A házirend értékét ezredmásodpercben kell megadni. Az értéknek kisebbnek kell lennie a tétlenségi késleltetésnél.
+
+          A figyelmeztető üzenet csak akkor jelenik meg, ha a tétlenségi művelet a kijelentkezés vagy a leállítás.</translation>
 <translation id="4346674324214534449">Lehetővé teszi annak a beállítását, hogy le szeretné-e tiltani a hirdetéseket a tolakodó hirdetéseket tartalmazó webhelyeken.
 
       Ha a házirend beállítása 2, akkor a hirdetések le lesznek tiltva a tolakodó hirdetéseket tartalmazó webhelyeken.
@@ -3264,6 +3305,9 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
 <translation id="7464991223784276288">Cookie-k korlátozása egyező URL-ekről az aktuális munkamenetre</translation>
 <translation id="7469554574977894907">Keresési javaslatok engedélyezése</translation>
 <translation id="7474249562477552702">A helyi bizalmi horgonyok által nyújtott SHA-1-aláírással rendelkező tanúsítványok engedélyezése</translation>
+<translation id="747851715060942420">Lehetővé teszi az induláskor betöltött lapok beállítását.
+
+      Az „Indításkor betöltendő URL-ek” házirendet figyelmen kívül hagyja a böngésző, kivéve akkor, ha a „Teendő indításkor” részben az „URL-ek listájának megnyitása” lehetőséget választották ki.</translation>
 <translation id="7485481791539008776">Alapértelmezett nyomtató kiválasztására vonatkozó szabályok</translation>
 <translation id="7485730741952775732">Ha a házirend be van állítva, a távoli hozzáférésű gazdagép a kapcsolatok fogadása érdekében ezt az URL-t használja a távoli hozzáférésű ügyfelektől kapott hitelesítési tokenek ellenőrzésére. A RemoteAccessHostTokenUrl házirenddel együtt kell használni.
 
@@ -3277,6 +3321,11 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
 
       Ha használatban van a házirend, akkor a felhasználó minden nyomtatót használhat, kivéve azokat, amelyek azonosítója szerepel a házirend felsorolásában. Az azonosítóknak meg kell felelniük a(z) <ph name="DEVICE_PRINTERS_POLICY" /> házirend fájljában meghatározott „id” vagy „guid” mezőknek.
       </translation>
+<translation id="7506269062143646163">Engedélyezheti a Signed HTTP Exchange (SXG) támogatását.
+
+          Ha a házirend nincs beállítva, vagy értéke Engedélyezve, a Google Chrome elfogadja a Signed HTTP Exchange típusúként megjelenített internetes tartalmakat.
+
+          Ha a házirend beállítása Letiltva, akkor a Signed HTTP Exchange típusú tartalmak nem tölthetők be.</translation>
 <translation id="7511361072385293666">Ha a házirend értéke igaz, vagy ha nincs beállítva, akkor a <ph name="PRODUCT_NAME" /> termékben használható a QUIC protokoll.
       Ha a házirend értéke hamis, akkor a QUIC protokoll nem használható.</translation>
 <translation id="7517845714620372896">A képernyő fényerejét adja meg százalékos értékben.
@@ -3417,6 +3466,15 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
       A felismert kapcsolattípus-azonosítók a következők: Ethernet, Wi-Fi, WiMax, Bluetooth és mobil.</translation>
 <translation id="7763614521440615342">Tartalomjavaslatok az Új lap oldalon</translation>
 <translation id="7765879851993224640">A Smart Lock használatának engedélyezése bejelentkezéshez.</translation>
+<translation id="7772346342637974431">Meghatározza a felhasználói adatbevitel nélkül eltelt időtartamot, amelyet követően a rendszer figyelmeztető párbeszédablakot jelenít meg, ha akkumulátorról működik.
+
+          Ha a házirend be van állítva, megadja azt az időtartamot, ameddig a felhasználónak tétlennek kell maradnia, mielőtt a(z) <ph name="PRODUCT_OS_NAME" /> megjeleníti a figyelmeztető párbeszédablakot, amellyel tájékoztatja a felhasználót arról a műveletről, amelyet a tétlenség következtében hajt majd végre a rendszer.
+
+          Ha a házirend nincs beállítva, akkor nem jelenik meg figyelmeztető párbeszédablak.
+
+          A házirend értékét ezredmásodpercben kell megadni. Az értéknek kisebbnek kell lennie a tétlenségi késleltetésnél.
+
+          A figyelmeztető üzenet csak akkor jelenik meg, ha a tétlenségi művelet a kijelentkezés vagy a leállítás.</translation>
 <translation id="7774768074957326919">A rendszer proxybeállításainak használata</translation>
 <translation id="7777535871204167559">Külső tárolóeszközök kezelése csak olvashatóként</translation>
 <translation id="7781069478569868053">Új lap oldal</translation>
@@ -3980,6 +4038,7 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
       További információ a biztonságos környezetekről:
       https://www.w3.org/TR/secure-contexts/
       </translation>
+<translation id="8939595959513040470">A felhasználók számára Quick Fix Buildet biztosít.</translation>
 <translation id="8942616385591203339">Ez a házirend vezérli, hogy megjeleníthető-e szinkronizáláshoz való hozzájárulás a felhasználó számára az első bejelentkezés során. Értékét hamisra kell állítani, ha a felhasználónak sosincs szüksége a szinkronizáláshoz való hozzájáruláshoz.
       Ha a beállítás értéke hamis, a szinkronizáláshoz való hozzájárulás nem jelenik meg.
       Ha a beállítás értéke igaz, vagy ha a beállítás konfigurálatlanul marad, a szinkronizáláshoz való hozzájárulás megjeleníthető.</translation>
@@ -4039,6 +4098,9 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
 
       Ha nem állítja be a házirendet, a felhasználó kiválaszthatja, hogy milyen avatarkép jelenjen meg a fiókjához a bejelentkezési képernyőn.</translation>
 <translation id="9035964157729712237">A feketelista alól kivételt képező bővítményazonosítók.</translation>
+<translation id="9038058011835642205">Megadja azon webhelyek listáját, amelyek telepítése a háttérben, felhasználói interakció nélkül történik, és amelyeket a felhasználó nem távolíthat el vagy tilthat le.
+
+      A házirend minden listaelemei közé tartozik egy kötelező taggal rendelkező objektum: „url” és két nem kötelező objektum: „default_launch_container” és „create_desktop_shortcut”. Az „url" a telepítendő internetes alkalmazás URL-je, míg a „launch_container” értéke vagy „window” (ablak), vagy „tab” (lap), amely jelzi, hogy a böngésző hogyan nyitja meg az internetes alkalmazást a telepítés után. A „create_desktop_shortcut” értékének pedig igaznak kell lennie, ha Linux és Windows rendszerekben asztali parancsikont kell létrehozni. Ha a „default_launch_container” nem szerepel itt, akkor az alkalmazás alapértelmezett módon lapon nyílik meg. A „default_launch_container” értékétől függetlenül a felhasználók módosíthatják, hogy a böngésző hogyan nyissa meg az alkalmazást. Ha a „create_desktop_shortcut” nem szerepel itt, akkor a rendszer nem hoz létre asztali parancsikont.</translation>
 <translation id="9038839118379817310">Wi-Fi engedélyezése</translation>
 <translation id="9039822628127365650">Ha be van állítva a házirend, megadja, hogy a rendszer mennyi idő után jelentkeztesse ki automatikusan a felhasználót, befejezve ezzel a munkamenetet. A hátralévő időt a felhasználó a tálcán lévő visszaszámlálón láthatja.
 
@@ -4048,6 +4110,11 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
 
       A házirend értékét ezredmásodpercben kell megadni. Az érték 30 másodperc és 24 óra közé eshet.</translation>
 <translation id="9042911395677044526">Lehetővé teszi a hálózati konfiguráció push módszerrel történő alkalmazását <ph name="PRODUCT_OS_NAME" /> eszközre. A hálózati konfiguráció a JSON formátumú karakterlánc által meghatározott Open Network Configuration formában leírt karakterlánc, amely a következő helyen van meghatározva: <ph name="ONC_SPEC_URL" /></translation>
+<translation id="9050853837490399534">Ez a házirend vezérli az eszköz Quick Fix Buildre való frissítését.
+
+      Ha a házirend értéke olyan tokenre van állítva, amely megfeleltethető egy Quick Fix Buildnek, akkor az eszköz frissül a kapcsolódó Quick Fix Buildre, feltéve, hogy a frissítést nem akadályozza másik házirend.
+
+      Ha a házirend nincs beállítva, vagy az értéke nem feleltethető meg Quick Fix Buildnek, akkor az eszköz nem frissül Quick Fix Buildre. Ha az eszközön már fut Quick Fix Build, és a házirend már nincs beállítva, vagy értéke már nem feleltethető meg Quick Fix Buildnek, akkor az eszköz szokásos buildre frissül, feltéve, hogy a frissítést nem akadályozza másik házirend.</translation>
 <translation id="906631898352326790">
       Ha a házirend engedélyezve van, a vesszővel tagolt listában szereplő összes
       megnevezett eredet önálló folyamatként fut majd. Ez aldomainek szerint is

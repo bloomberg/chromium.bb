@@ -276,6 +276,7 @@
 <translation id="1426870617281699524">請點選 [再試一次] 並接受電腦顯示的提示</translation>
 <translation id="1427269577154060167">國家/地區</translation>
 <translation id="142758023928848008">啟用相黏鍵 (執行鍵盤快速鍵時只需依序輸入按鍵)</translation>
+<translation id="1429300045468813835">已全部清除</translation>
 <translation id="143027896309062157">讀取及變更你的電腦和造訪過的網站上的所有資料</translation>
 <translation id="1430915738399379752">列印</translation>
 <translation id="1432581352905426595">管理搜尋引擎</translation>
@@ -925,6 +926,7 @@
 <translation id="2462752602710430187">已新增「<ph name="PRINTER_NAME" />」</translation>
 <translation id="2464089476039395325">HTTP Proxy</translation>
 <translation id="2468205691404969808">使用 Cookie 記住你的偏好設定 (即使你沒有造訪這些網頁)</translation>
+<translation id="2469375675106140201">自訂拼字檢查</translation>
 <translation id="247051149076336810">檔案共用網址</translation>
 <translation id="2470702053775288986">已停用不支援的擴充功能</translation>
 <translation id="2473195200299095979">翻譯這個網頁</translation>
@@ -939,6 +941,8 @@
 <translation id="2487067538648443797">新增書籤</translation>
 <translation id="2489829450872380594">手機之後會解鎖這部 <ph name="DEVICE_TYPE" />。你可以在「設定」中停用 Smart Lock。</translation>
 <translation id="2489918096470125693">新增資料夾(&amp;F)...</translation>
+<translation id="2490481887078769936">已從清單中移除「<ph name="FILE_NAME" />」</translation>
+<translation id="2490782392574942205">如要在所有電腦上使用你的擴充功能，請登入並開啟同步功能</translation>
 <translation id="249113932447298600">很抱歉，系統目前不支援 <ph name="DEVICE_LABEL" /> 裝置。</translation>
 <translation id="249303669840926644">無法完成註冊</translation>
 <translation id="2495777824269688114">探索其他功能或者獲得問題解答。選取 [？] 即可取得相關說明。</translation>
@@ -1150,6 +1154,7 @@
 <translation id="2800760947029405028">上傳圖片</translation>
 <translation id="2803375539583399270">輸入 PIN</translation>
 <translation id="2804043232879091219">無法開啟替代瀏覽器</translation>
+<translation id="2804680522274557040">攝影機已關閉</translation>
 <translation id="2805646850212350655">Microsoft 加密檔案系統</translation>
 <translation id="2805756323405976993">應用程式</translation>
 <translation id="2806891468525657116">捷徑已經存在</translation>
@@ -1462,6 +1467,7 @@
 <translation id="3317459757438853210">雙面</translation>
 <translation id="3317678681329786349">無法使用攝影機和麥克風</translation>
 <translation id="3319048459796106952">新增無痕式視窗(&amp;I)</translation>
+<translation id="3325910708063135066">已關閉 Mac 系統偏好設定中的攝影機和麥克風</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET" />) <ph name="LONGTZNAME" /> (<ph name="EXEMPLARCITY" />)</translation>
 <translation id="3331974543021145906">應用程式資訊</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> - 正在使用子母畫面模式播放影片</translation>
@@ -1857,6 +1863,7 @@
 <translation id="3915280005470252504">語音搜尋</translation>
 <translation id="3916445069167113093">這種類型的檔案可能會損害你的電腦，你要保留 <ph name="FILE_NAME" /> 這個檔案嗎？</translation>
 <translation id="3918972485393593704">向 Google 回報詳細資料</translation>
+<translation id="3919145445993746351">如要在所有電腦上使用你的擴充功能，請開啟同步功能</translation>
 <translation id="3920504717067627103">憑證原則</translation>
 <translation id="392089482157167418">啟用 ChromeVox (互動朗讀)</translation>
 <translation id="3924145049010392604">Meta</translation>
@@ -1915,7 +1922,6 @@
 <translation id="3995138139523574647">USB-C 裝置 (右後方連接埠)</translation>
 <translation id="3996366967769547206">{NUM_TABS,plural, =1{取消固定分頁}other{取消固定多個分頁}}</translation>
 <translation id="4002440992267487163">PIN 碼設定</translation>
-<translation id="400314203296796334">請拿下頭戴式裝置，並選擇封鎖或允許這項操作。</translation>
 <translation id="4005817994523282006">時區偵測方法</translation>
 <translation id="4008291085758151621">無法在 VR 狀態下存取網站資訊</translation>
 <translation id="4010917659463429001">如要在行動裝置上取得你的書籤，請<ph name="GET_IOS_APP_LINK" />。</translation>
@@ -2034,6 +2040,7 @@
 <translation id="4206323443866416204">意見回饋報告</translation>
 <translation id="4208390505124702064">搜尋 <ph name="SITE_NAME" /></translation>
 <translation id="4209092469652827314">大</translation>
+<translation id="4209251085232852247">已關閉</translation>
 <translation id="4209464433672152343">已將文件<ph name="BEGIN_LINK_HELP" />傳送至 Google<ph name="END_LINK_HELP" /> 準備列印。如要查看、編輯或管理你的印表機和列印記錄，請前往 <ph name="BEGIN_LINK_DASHBOARD" />Google 雲端列印資訊主頁<ph name="END_LINK_DASHBOARD" />。</translation>
 <translation id="421182450098841253">顯示書籤列(&amp;S)</translation>
 <translation id="4211851069413100178">傳送使用狀況與診斷資料。讓系統自動將診斷資料以及裝置和應用程式的使用狀況資料傳送給 Google，協助改善你的 Android 使用體驗。這些資料將有助於系統和應用程式提高穩定性及做出其他改善。部分匯總資料還能夠為 Google 應用程式和合作夥伴 (例如 Android 開發人員) 提供幫助。這項<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />是由裝置擁有者執行。擁有者可選擇將這個裝置的診斷資料與使用狀況資料傳送給 Google。如果你的「其他網路和應用程式活動」設定為開啟，系統可能會將這些資料儲存到你的 Google 帳戶。<ph name="BEGIN_LINK2" />瞭解詳情<ph name="END_LINK2" /></translation>
@@ -2221,6 +2228,7 @@
 <translation id="4546308221697447294">使用 Google Chrome 快速瀏覽網路</translation>
 <translation id="4547659257713117923">沒有在其他裝置上開啟的分頁</translation>
 <translation id="4547672827276975204">自動設定</translation>
+<translation id="4551763574344810652">按下 <ph name="MODIFIER_KEY_DESCRIPTION" /> 即可復原</translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4554591392113183336">外部擴充功能與現有擴充功能的版本相同，或版本較低。</translation>
 <translation id="4555769855065597957">陰影</translation>
@@ -2640,6 +2648,7 @@
 <translation id="52550593576409946">Kiosk 應用程式無法啟動。</translation>
 <translation id="5255859108402770436">重新登入</translation>
 <translation id="5256861893479663409">在所有網站上</translation>
+<translation id="5258992782919386492">安裝到這部裝置</translation>
 <translation id="5260508466980570042">抱歉，系統無法驗證你的電子郵件地址或密碼，請再試一次。</translation>
 <translation id="5261683757250193089">開啟線上應用程式商店</translation>
 <translation id="5264148714798105376">請稍候片刻。</translation>
@@ -2718,6 +2727,7 @@
 <translation id="537813040452600081">你在這個視窗瀏覽的網頁不會顯示在瀏覽器記錄中，而且在你登出之後，電腦也不會留下 Cookie 等其他記錄。此外，系統不會保留你下載的檔案和建立的書籤。</translation>
 <translation id="5379140238605961210">繼續封鎖存取麥克風</translation>
 <translation id="5382591305415226340">管理支援的連結</translation>
+<translation id="5383377866517186886">已關閉 Mac 系統偏好設定中的攝影機</translation>
 <translation id="5384883051496921101">這個網站即將與外部應用程式分享資訊，分享時會自動退出無痕模式。</translation>
 <translation id="5388885445722491159">已配對</translation>
 <translation id="5389237414310520250">無法建立新的使用者。請檢查您的硬碟空間和權限，然後再試一次。</translation>
@@ -2737,6 +2747,7 @@
 <translation id="5420438158931847627">決定文字和圖片的銳利度</translation>
 <translation id="5422221874247253874">存取點</translation>
 <translation id="5422781158178868512">很抱歉，系統無法識別你的外部儲存裝置。</translation>
+<translation id="5423829801105537712">基本拼字檢查</translation>
 <translation id="5423849171846380976">已啟用</translation>
 <translation id="5425042808445046667">繼續下載</translation>
 <translation id="5425722269016440406">你必須上網才能關閉 Smart Lock，因為這項設定會同步到你的手機和其他裝置上。請先連線至網路。</translation>
@@ -3323,6 +3334,7 @@
 <translation id="6305607932814307878">全域政策：</translation>
 <translation id="6307990684951724544">系統忙碌中</translation>
 <translation id="6308937455967653460">另存連結為(&amp;K)...</translation>
+<translation id="6309510305002439352">麥克風已關閉</translation>
 <translation id="6311220991371174222">開啟你的設定檔時發生錯誤，因此無法啟動 Chrome，請嘗試重新啟動。</translation>
 <translation id="6312403991423642364">不明的網路錯誤</translation>
 <translation id="6313641880021325787">結束 VR</translation>
@@ -3453,6 +3465,7 @@
 <translation id="6514010653036109809">可用的裝置：</translation>
 <translation id="6514565641373682518">這個網頁已停用滑鼠游標。</translation>
 <translation id="6518014396551869914">複製圖片(&amp;Y)</translation>
+<translation id="6518133107902771759">確認</translation>
 <translation id="651942933739530207">你想讓 <ph name="APP_NAME" /> 共用你的畫面和音訊輸入嗎？</translation>
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
@@ -3468,6 +3481,7 @@
 <translation id="6544215763872433504">Google 提供的網路瀏覽器，滿足你的需求</translation>
 <translation id="6545665334409411530">重複頻率</translation>
 <translation id="6545834809683560467">使用預測查詢字串服務，讓系統協助完成你在網址列或應用程式啟動器搜尋框中輸入的搜尋字串或網址</translation>
+<translation id="6545867563032584178">已關閉 Mac 系統偏好設定中的麥克風</translation>
 <translation id="6547316139431024316">不要再顯示這項擴充功能的相關警告訊息</translation>
 <translation id="6547354035488017500">請釋出至少 512 MB 的空間，否則裝置會無回應。如要釋出空間，請刪除裝置儲存空間內的檔案。</translation>
 <translation id="6550675742724504774">選項</translation>
@@ -3885,6 +3899,7 @@
 <translation id="722055596168483966">享有個人化的 Google 服務</translation>
 <translation id="7221855153210829124">顯示通知</translation>
 <translation id="7221869452894271364">重新載入此頁</translation>
+<translation id="7222204278952406003">Chrome 是你的預設瀏覽器</translation>
 <translation id="7222232353993864120">電子郵件地址</translation>
 <translation id="7225179976675429563">找不到網路類型</translation>
 <translation id="7228479291753472782">控制可指定網站能否使用地理位置、麥克風、攝影機等功能的設定。</translation>
@@ -3947,6 +3962,7 @@
 <translation id="7309257895202129721">顯示控制介面(&amp;C)</translation>
 <translation id="7310598146671372464">無法登入，伺服器不支援指定的 Kerberos 加密類型。請與你的管理員聯絡。</translation>
 <translation id="7311079019872751559">無沙箱防護的外掛程式存取行為</translation>
+<translation id="73174032666024687"><ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="7321545336522791733">無法連上伺服器</translation>
 <translation id="7324297612904500502">測試版論壇</translation>
 <translation id="7325437708553334317">高對比擴充功能</translation>
@@ -3955,6 +3971,7 @@
 <translation id="7329154610228416156">由於設定使用的網址 (<ph name="BLOCKED_URL" />) 不安全，導致登入失敗。請與您的管理員聯絡。</translation>
 <translation id="7334190995941642545">目前無法使用 Smart Lock，請稍後再試。</translation>
 <translation id="7334274148831027933">啟用停駐放大鏡</translation>
+<translation id="7335974957018254119">使用拼字檢查的語言：</translation>
 <translation id="7338630283264858612">裝置序號無效。</translation>
 <translation id="7339763383339757376">PKCS #7，單一憑證</translation>
 <translation id="7339785458027436441">輸入時檢查拼字</translation>
@@ -4031,6 +4048,7 @@
 <translation id="7453008956351770337">選取這部印表機，即表示您同意授權下列擴充功能存取您的印表機：</translation>
 <translation id="7456142309650173560">開發人員版</translation>
 <translation id="7456847797759667638">開啟位置...</translation>
+<translation id="7458168200501453431">系統會使用與 Google 搜尋相同的拼字檢查技術，將你在瀏覽器中輸入的文字傳送給 Google。</translation>
 <translation id="7461924472993315131">固定</translation>
 <translation id="746216226901520237">下次手機會為你的 <ph name="DEVICE_TYPE" /> 解鎖。你可以在「設定」中停用 Smart Lock。</translation>
 <translation id="7463006580194749499">新增使用者</translation>
@@ -4132,6 +4150,7 @@
 <translation id="7631887513477658702">一律開啟這類檔案(&amp;A)</translation>
 <translation id="7632948528260659758">下列 Kiosk 應用程式更新失敗：</translation>
 <translation id="763632859238619983">不允許任何網站安裝付款處理常式</translation>
+<translation id="7636919061354591437">安裝到這部裝置</translation>
 <translation id="7638605456503525968">序列埠</translation>
 <translation id="7639178625568735185">我瞭解了！</translation>
 <translation id="764017888128728"><ph name="PASSWORD_MANAGER_BRAND" /> 會使用您儲存的密碼，讓您自動登入符合資格的網站。</translation>

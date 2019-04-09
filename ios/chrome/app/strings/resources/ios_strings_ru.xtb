@@ -85,6 +85,7 @@
 <translation id="213900355088104901">Чтобы просматривать сайты анонимно, откройте вкладку в режиме инкогнито</translation>
 <translation id="2139867232736819575">Поиск скопированного текста</translation>
 <translation id="2149973817440762519">Закладка</translation>
+<translation id="2179182049312275900">Ее можно включить в настройках в любой момент.</translation>
 <translation id="2198757192731523470">Google может использовать вашу историю, чтобы персонализировать рекламу, а также Поиск и другие сервисы.</translation>
 <translation id="2207590065820824892">Число непрочитанных статей в Списке для чтения: <ph name="UNREAD_COUNT" />.</translation>
 <translation id="2230173723195178503">Веб-страница загружена</translation>
@@ -202,6 +203,7 @@
 <translation id="4038354071007134711">Нет приложения, чтобы открыть этот файл.</translation>
 <translation id="4042870976416480368">Найти на странице</translation>
 <translation id="4049507953662678203">Проверьте подключение к Интернету и повторите попытку.</translation>
+<translation id="4071530748369333746">Отключить синхронизацию?</translation>
 <translation id="4082688844002261427">Управление данными о посещенных страницах для персонализации Поиска, рекламы и т. д.</translation>
 <translation id="408404951701638773">Пользоваться строкой поиска стало ещё удобнее</translation>
 <translation id="411254640334432676">Ошибка при скачивании</translation>
@@ -271,6 +273,7 @@
 <translation id="5197255632782567636">Интернет</translation>
 <translation id="5228579091201413441">Включить синхронизацию</translation>
 <translation id="5244474230056479698">Синхронизация с <ph name="EMAIL" /></translation>
+<translation id="5245322853195994030">Отключить</translation>
 <translation id="5300589172476337783">Показать</translation>
 <translation id="5317780077021120954">Сохранить</translation>
 <translation id="5327248766486351172">Название</translation>

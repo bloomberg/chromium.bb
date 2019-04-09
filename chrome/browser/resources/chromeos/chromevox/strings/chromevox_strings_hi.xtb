@@ -98,6 +98,7 @@
 <translation id="1616111909442424068">गेहुंआ</translation>
 <translation id="1618597272655350600">वर्तमान स्थिति का संपूर्ण विवरण दर्शाता है</translation>
 <translation id="1627222324347828322">भूतिया सफ़ेद रंग</translation>
+<translation id="1630688379087270943">इटैलिक दिखाएं:</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{इससे बड़ा}one{# इससे बड़ा चिह्न}other{# इससे बड़ा चिह्न}}</translation>
 <translation id="1653266918374749391">पिछले स्‍तर 3 का शीर्षक</translation>
 <translation id="1657616855184033958">इवेंट स्ट्रीम फ़िल्टर दिखाएं</translation>
@@ -319,6 +320,7 @@
 <translation id="3286390186030710347">स्लाइडर</translation>
 <translation id="3299925995433437805">बाद में देखा गया कोई लिंक नहीं.</translation>
 <translation id="3300348286427369683">रिच टेक्स्ट के साथ काम करता है. अब ChromeVox रिच टेक्स्ट वाली फ़ील्ड के साथ काम करता है जिसमें कहीं भी सीधे पहुंचाने के निर्देश, ब्रेल कर्सर की रूटिंग, चयन वगैरह शामिल हैं.</translation>
+<translation id="3304756947457041303">रिच टेक्स्ट संकेत को पसंद के मुताबिक बनाएं</translation>
 <translation id="3307886118343381874">तालिका के अंत में जाएं</translation>
 <translation id="3311969765485641742">अलर्ट की समीक्षा करने के लिए Alt+Shift+A दबाएं</translation>
 <translation id="3312997241656799641">बाद में देखा गया लिंक</translation>
@@ -405,6 +407,7 @@
 <translation id="3930498801443296724">पुलकोट</translation>
 <translation id="3936394396199829062">बैंगनी लाल</translation>
 <translation id="3941269780691800708">माउस के नीचे वाला टेक्स्ट बोलें</translation>
+<translation id="394953087167197343">स्पेलिंग की गलती दिखाएं:</translation>
 <translation id="3962990492275676168">वर्तमान स्‍थान से पढ़ना प्रारंभ करें</translation>
 <translation id="3970951409746498040">रेत जैसा भूरा</translation>
 <translation id="3989324057180830702">tgl btn</translation>
@@ -451,6 +454,7 @@
 <translation id="42164919740161077">हल्का स्लेटी नीला</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{डैश}one{# डैश}other{# डैश}}</translation>
 <translation id="421884353938374759">रंग पिकर</translation>
+<translation id="4221071177874897997">बोल्ड दिखाएं:</translation>
 <translation id="4229646983878045487">दिनांक समय</translation>
 <translation id="4230834257931120629">हल्का स्लेटी</translation>
 <translation id="4231102694147661229">डेवलपर विकल्प चालू करें</translation>
@@ -751,6 +755,7 @@
 <translation id="6348869651006731065">हल्का स्लेटी</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{बुलेट}one{# बुलेट}other{# बुलेट}}</translation>
 <translation id="6355910664415701303">कोई पिछला सूची आइटम नहीं.</translation>
+<translation id="6360318852623800555">रिच टेक्स्ट विशेषताएं</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">पिछला शीर्षक</translation>
 <translation id="6376999910001533545">मरून</translation>
@@ -925,6 +930,7 @@
 <translation id="762020119231868829">वर्तमान में चल रहे सभी मीडिया विजेट को रोकता है</translation>
 <translation id="7625690649919402823">अगली तालिका</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), ग्रेड <ph name="GRADE" /></translation>
+<translation id="763535765081585392">अंडरलाइन दिखाएं:</translation>
 <translation id="7639968568612851608">गहरा धूसर</translation>
 <translation id="7641134354185483015">कोई पिछला स्तर 3 शीर्षक नहीं.</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, लेख बॉक्‍स</translation>
@@ -1160,6 +1166,7 @@
 <translation id="8943175951035496220">कोई दायां सेल नहीं.</translation>
 <translation id="8943282376843390568">नींबू पीला</translation>
 <translation id="8946628535652548639">पंक्ति<ph name="TABLECELLROWINDEX" />कॉलम<ph name="TABLECELLCOLUMNINDEX" /></translation>
+<translation id="8957142051395645063">घोषणा करें</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">भूल जाएं</translation>
 <translation id="900114243503212879">फ़ाइल</translation>

@@ -99,6 +99,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="1616111909442424068">Vetebrun</translation>
 <translation id="1618597272655350600">Ger en komplett beskrivning av den aktuella positionen</translation>
 <translation id="1627222324347828322">Spökvit</translation>
+<translation id="1630688379087270943">Ange kursiv:</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{större än-tecken}other{# större än-tecken}}</translation>
 <translation id="1653266918374749391">Föregående rubrik på nivå 3</translation>
 <translation id="1657616855184033958">Visa filter för händelseflöden</translation>
@@ -320,6 +321,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="3286390186030710347">Skjutreglage</translation>
 <translation id="3299925995433437805">Det finns inga fler länkar som har besökts.</translation>
 <translation id="3300348286427369683">Stöd för Rich Text. ChromeVox har nu stöd för fält med Rich Text, till exempel hoppkommandon, dirigering av punktskriftsmarkören, urval med mera.</translation>
+<translation id="3304756947457041303">Anpassa rich text-indikator</translation>
 <translation id="3307886118343381874">Flytta till slutet av tabellen</translation>
 <translation id="3311969765485641742">Tryck på Alt+Skift+A om du vill granska varningar</translation>
 <translation id="3312997241656799641">Nästa länk som har besökts</translation>
@@ -406,6 +408,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="3930498801443296724">Utvalt citat</translation>
 <translation id="3936394396199829062">Lavendelrosa</translation>
 <translation id="3941269780691800708">Läs upp text under muspekaren.</translation>
+<translation id="394953087167197343">Ange felstavning:</translation>
 <translation id="3962990492275676168">Börja läsa från aktuell plats</translation>
 <translation id="3970951409746498040">Sandbrun</translation>
 <translation id="3989324057180830702">på/av-knapp</translation>
@@ -452,6 +455,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="42164919740161077">Kadettblå</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{bindestreck}other{# bindestreck}}</translation>
 <translation id="421884353938374759">färgval</translation>
+<translation id="4221071177874897997">Ange fetstil:</translation>
 <translation id="4229646983878045487">datum och tid</translation>
 <translation id="4230834257931120629">Ljust skiffergrå</translation>
 <translation id="4231102694147661229">Aktivera utvecklaralternativ</translation>
@@ -754,6 +758,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="6348869651006731065">Dimgrå</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{punkt}other{# punkter}}</translation>
 <translation id="6355910664415701303">Det finns ingen föregående post i listan.</translation>
+<translation id="6360318852623800555">Rich text-attribut</translation>
 <translation id="6364795331201459219">rubr6</translation>
 <translation id="6368143427468974988">Föregående rubrik</translation>
 <translation id="6376999910001533545">Rödbrun</translation>
@@ -929,6 +934,7 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="762020119231868829">Pausar uppspelningen på alla mediawidgetar</translation>
 <translation id="7625690649919402823">Nästa tabell</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), grad <ph name="GRADE" /></translation>
+<translation id="763535765081585392">Ange understrykning:</translation>
 <translation id="7639968568612851608">Mörkgrå</translation>
 <translation id="7641134354185483015">Det finns ingen föregående rubrik på nivå 3.</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, textruta</translation>
@@ -1164,6 +1170,7 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="8943175951035496220">Det finns ingen cell till höger.</translation>
 <translation id="8943282376843390568">Limegrön</translation>
 <translation id="8946628535652548639">r<ph name="TABLECELLROWINDEX" />k<ph name="TABLECELLCOLUMNINDEX" /></translation>
+<translation id="8957142051395645063">Läs upp</translation>
 <translation id="8978496506222343566">beskrivning</translation>
 <translation id="8986362086234534611">Glöm</translation>
 <translation id="900114243503212879">fil</translation>

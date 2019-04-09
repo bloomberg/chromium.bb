@@ -99,6 +99,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="1616111909442424068">Strågul</translation>
 <translation id="1618597272655350600">Angiver en komplet beskrivelse af den aktuelle position</translation>
 <translation id="1627222324347828322">Spøgelseshvid</translation>
+<translation id="1630688379087270943">Angiv kursiv:</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{større end}one{# større end-tegn}other{# større end-tegn}}</translation>
 <translation id="1653266918374749391">Forrige niveau 3-overskrift</translation>
 <translation id="1657616855184033958">Vis filtre for begivenhedsstreaming</translation>
@@ -320,6 +321,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="3286390186030710347">Skyder</translation>
 <translation id="3299925995433437805">Intet næste besøgte link.</translation>
 <translation id="3300348286427369683">Understøttelse af RTF. ChromeVox understøtter nu RTF-felter, bl.a. hoppekommandoer, markørstyring til brailletekst, valg og meget mere.</translation>
+<translation id="3304756947457041303">Tilpas angivelse af formateret tekst</translation>
 <translation id="3307886118343381874">Gå til slutningen af ​​tabellen</translation>
 <translation id="3311969765485641742">Tryk på Alt+Shift+A for at gennemse underretninger</translation>
 <translation id="3312997241656799641">Næste besøgte link</translation>
@@ -406,6 +408,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="3930498801443296724">Opmærksomhedsskabende citat</translation>
 <translation id="3936394396199829062">Babylyserød</translation>
 <translation id="3941269780691800708">Oplæs teksten under markøren.</translation>
+<translation id="394953087167197343">Angiv stavefejl:</translation>
 <translation id="3962990492275676168">Start læsning fra nuværende position</translation>
 <translation id="3970951409746498040">Sandfarvet</translation>
 <translation id="3989324057180830702">tgl btn</translation>
@@ -452,6 +455,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="42164919740161077">Blågrå</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{tankestreg}one{# tankestreger}other{# tankestreger}}</translation>
 <translation id="421884353938374759">farvevælger</translation>
+<translation id="4221071177874897997">Angiv fed:</translation>
 <translation id="4229646983878045487">dato og tid</translation>
 <translation id="4230834257931120629">Lys skifergrå</translation>
 <translation id="4231102694147661229">Aktivér indstillinger for udviklere</translation>
@@ -754,6 +758,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="6348869651006731065">Dæmpet grå</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{punkttegn}one{# punkttegn}other{# punkttegn}}</translation>
 <translation id="6355910664415701303">Ingen tidligere elementer på listen.</translation>
+<translation id="6360318852623800555">Egenskaber for Rich Text</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Forrige overskrift</translation>
 <translation id="6376999910001533545">Rødbrun</translation>
@@ -929,6 +934,7 @@ Tryk på Alt+F for at åbne browsermenuen i Chrome.</translation>
 <translation id="762020119231868829">Holder pause i alle aktive mediewidgets</translation>
 <translation id="7625690649919402823">Næste tabel</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), niveau <ph name="GRADE" /></translation>
+<translation id="763535765081585392">Angiv understregning:</translation>
 <translation id="7639968568612851608">Mørkegrå</translation>
 <translation id="7641134354185483015">Ingen tidligere niveau 3-overskrifter.</translation>
 <translation id="7659376057562985921">Tekstfeltet <ph name="NAME" />, <ph name="VALUE" /></translation>
@@ -1164,6 +1170,7 @@ Tryk på Alt+F for at åbne browsermenuen i Chrome.</translation>
 <translation id="8943175951035496220">Ingen celle til højre.</translation>
 <translation id="8943282376843390568">Limegrøn</translation>
 <translation id="8946628535652548639">r<ph name="TABLECELLROWINDEX" />k<ph name="TABLECELLCOLUMNINDEX" /></translation>
+<translation id="8957142051395645063">Læs op</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">Glem</translation>
 <translation id="900114243503212879">fil</translation>

@@ -150,6 +150,7 @@
       Jika dasar ini tidak ditetapkan, kekerapan lalai ialah 3 jam. Kekerapan
       minimum yang dibenarkan ialah 60 saat.</translation>
 <translation id="1204263402976895730">Pencetak perusahaan didayakan</translation>
+<translation id="1216919699175573511">Dayakan sokongan Pertukaran HTTP Bertandatangan (SXG)</translation>
 <translation id="1219695476179627719">Menentukan sama ada peranti harus diundurkan kepada versi yang ditetapkan oleh <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> jika peranti sudah menjalankan versi yang lebih baharu.
 
       Nilai lalai ialah RollbackDisabled.</translation>
@@ -1659,6 +1660,13 @@
           Apabila dasar ini tidak ditetapkan, panjang masa lalai digunakan.
 
           Nilai dasar harus dinyatakan dalam milisaat.</translation>
+<translation id="4105884561459127998">Mengkonfigurasikan jenis pengesahan log masuk SAML.
+
+      Apabila dasar ini tidak ditetapkan atau ditetapkan kepada Lalai (nilai 0), gelagat log masuk SAML ditentukan oleh penyemak imbas bergantung pada beberapa faktor lain. Dalam senario yang paling asas, pengesahan pengguna dan perlindungan data pengguna yang dicache dibuat berdasarkan kata laluan yang dimasukkan secara manual oleh pengguna.
+
+      Apabila dasar ini ditetapkan kepada ClientCertificate (nilai 1), pengesahan sijil pelanggan digunakan untuk pengguna yang baru ditambah yang log masuk melalui SAML. Tiada kata laluan yang digunakan untuk pengguna tersebut, dan data setempat mereka yang dicache dilindungi menggunakan kunci kriptografi yang sepadan. Sebagai contoh, tetapan ini membolehkan anda mengkonfigurasikan pengesahan pengguna berasaskan kad pintar (sila ambil perhatian bahawa apl perisian tengah kad pintar mesti dipasang melalui dasar DeviceLoginScreenExtensions).
+
+      Dasar ini mempengaruhi pengguna yang membuat pengesahan menggunakan SAML sahaja.</translation>
 <translation id="4105989332710272578">Lumpuhkan penguatkuasaan Ketelusan Sijil untuk senarai URL</translation>
 <translation id="4121350739760194865">Elakkan promosi apl daripada muncul pada halaman tab baharu</translation>
 <translation id="4125606414556046117">Dasar ini membolehkan anda mengkonfigurasi imej kertas dinding yang dipaparkan pada desktop dan pada latar belakang skrin log masuk untuk pengguna. Dasar ini ditetapkan dengan menyatakan URL tempat <ph name="PRODUCT_OS_NAME" /> boleh memuat turun imej kertas dinding dan cincangan kriptografi yang digunakan untuk mengesahkan integriti muat turun tersebut. Imej mestilah menggunakan format JPEG dan saiz fail tidak boleh melebihi 16MB. URL mestilah boleh diakses tanpa sebarang pengesahan.
@@ -1687,6 +1695,30 @@
       Jika dasar ini dibiarkan tanpa ditetapkan, pengguna boleh memilih imej yang akan dipaparkan pada desktop dan pada latar belakang skrin log masuk.</translation>
 <translation id="412697421478384751">Benarkan pengguna menetapkan PIN yang lemah bagi PIN kunci skrin</translation>
 <translation id="4138655880188755661">Had Masa</translation>
+<translation id="4144164749344898721">Dasar ini mengawal berbilang tetapan untuk strategi pengurusan kuasa apabila pengguna melahu.
+
+          Terdapat empat jenis tindakan:
+          * Skrin akan dimalapkan jika pengguna terus melahu sepanjang tempoh yang ditetapkan oleh |ScreenDim|.
+          * Skrin akan dimatikan jika pengguna terus melahu sepanjang tempoh yang ditetapkan oleh |ScreenOff|.
+          * Dialog amaran akan dipaparkan jika pengguna terus melahu sepanjang tempoh yang ditetapkan oleh |IdleWarning|, yang memberitahu pengguna bahawa tindakan melahu akan diambil. Mesej amaran hanya dipaparkan jika tindakan melahu adalah log keluar atau tutup.
+          * Tindakan yang ditetapkan oleh |IdleAction| akan diambil jika pengguna terus melahu sepanjang tempoh yang ditetapkan oleh |Idle|.
+
+          Bagi setiap tindakan di atas, kelengahan harus dinyatakan dalam milisaat dan perlu ditetapkan kepada nilai yang lebih besar daripada sifar untuk mencetuskan tindakan yang ditetapkan. Sekiranya kelengahan ditetapkan kepada sifar, <ph name="PRODUCT_OS_NAME" /> tidak akan mengambil tindakan yang ditetapkan.
+
+          Bagi setiap kelengahan di atas, apabila tempoh masa tidak ditetapkan, nilai lalai akan digunakan.
+
+          Sila ambil perhatian bahawa nilai |ScreenDim| akan dihadkan kepada kurang daripada atau sama dengan |ScreenOff|, |ScreenOff| dan |IdleWarning| akan dihadkan kepada kurang daripada atau sama dengan |Idle|.
+
+          |IdleAction| boleh jadi satu daripada empat tindakan yang berkemungkinan:
+          * |Suspend|
+          * |Logout|
+          * |Shutdown|
+          * |DoNothing|
+
+          Apabila |IdleAction| tidak ditetapkan, tindakan lalai akan diambil, iaitu penggantungan.
+
+          Terdapat juga tetapan berasingan untuk kuasa AC dan bateri.
+          </translation>
 <translation id="4150201353443180367">Paparan</translation>
 <translation id="4157003184375321727">Laporkan versi OS dan perisian tegar</translation>
 <translation id="4157594634940419685">Benarkan akses kepada pencetak CUPS asli</translation>
@@ -1771,6 +1803,15 @@
 <translation id="4322842393287974810">Benarkan apl kios kelewatan sifar yang dilancarkan secara automatik untuk mengawal versi <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Tambahkan butang log keluar pada dulang sistem</translation>
 <translation id="4332177773549877617">Log acara untuk pemasangan apl Android</translation>
+<translation id="4335292026668105285">Menentukan tempoh masa tanpa input pengguna sebelum dialog amaran dipaparkan apabila menggunakan kuasa AC.
+
+          Apabila ditetapkan, dasar ini menentukan tempoh masa pengguna harus kekal melahu sebelum <ph name="PRODUCT_OS_NAME" /> memaparkan dialog amaran yang memberitahu pengguna bahawa tindakan melahu akan diambil.
+
+          Apabila dasar ini tidak ditetapkan, tiada dialog amaran dipaparkan.
+
+          Nilai dasar harus dinyatakan dalam milisaat. Nilai dihadkan agar kurang daripada atau sama dengan kelengahan melahu.
+
+          Mesej amaran hanya dipaparkan jika tindakan melahu adalah log keluar atau tutup.</translation>
 <translation id="4346674324214534449">Membenarkan anda menetapkan sama ada iklan harus disekat pada tapak yang mengandungi iklan yang mengganggu.
 
       Jika dasar ini ditetapkan kepada 2, iklan akan disekat pada tapak yang mengandungi iklan yang mengganggu.
@@ -3353,6 +3394,9 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="7464991223784276288">Hadkan kuki daripada URL yang sepadan pada sesi semasa</translation>
 <translation id="7469554574977894907">Dayakan cadangan carian</translation>
 <translation id="7474249562477552702">Sama ada sijil yang ditandatangani SHA-1 dikeluarkan oleh pengukuhan kepercayaan setempat dibenarkan</translation>
+<translation id="747851715060942420">Membenarkan anda mengkonfigurasikan halaman yang dimuatkan pada permulaan.
+
+      Dasar 'URL untuk dibuka semasa permulaan' diabaikan melainkan anda memilih 'Buka senarai URL' dalam 'Tindakan pada permulaan'.</translation>
 <translation id="7485481791539008776">Peraturan pilihan pencetak lalai</translation>
 <translation id="7485730741952775732">Jika dasar ini ditetapkan, hos akses jauh akan menggunakan URL ini untuk mengesahkan token pengesahan daripada pelanggan akses jauh untuk membolehkan sambungan diterima. Mesti digunakan bersama dengan RemoteAccessHostTokenUrl.
 
@@ -3366,6 +3410,11 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
       Jika dasar ini digunakan, semua pencetak disediakan kepada pengguna kecuali pencetak dengan ID yang disenaraikan dalam dasar ini. ID mesti sepadan dengan medan "id" atau "guid" dalam fail yang dinyatakan dalam <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
+<translation id="7506269062143646163">Dayakan sokongan untuk Pertukaran HTTP Bertandatangan (SXG).
+
+          Jika dasar ini tidak ditetapkan atau ditetapkan kepada Didayakan, Google Chrome akan menerima kandungan web yang berfungsi sebagai Pertukaran HTTP Bertandatangan.
+
+          Jika dasar ini ditetapkan kepada Dilumpuhkan, Pertukaran HTTP Bertandatangan tidak dapat dimuatkan.</translation>
 <translation id="7511361072385293666">Jika dasar ini ditetapkan kepada benar atau tidak ditetapkan, penggunaan protokol QUIC dalam <ph name="PRODUCT_NAME" /> dibenarkan.
       Jika dasar ini ditetapkan kepada palsu, penggunaan protokol QUIC tidak dibenarkan.</translation>
 <translation id="7517845714620372896">Menentukan peratus kecerahan skrin.
@@ -3512,6 +3561,15 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Pengecam jenis sambungan yang diperakui ialah "ethernet", "wifi", "wimax", "bluetooth" dan "selular".</translation>
 <translation id="7763614521440615342">Tunjukkan cadangan kandungan pada halaman Tab Baharu</translation>
 <translation id="7765879851993224640">Benarkan penggunaan Log Masuk Smart Lock.</translation>
+<translation id="7772346342637974431">Menentukan tempoh masa tanpa input pengguna sebelum dialog amaran dipaparkan apabila menggunakan kuasa bateri.
+
+          Apabila ditetapkan, dasar ini menentukan tempoh masa pengguna harus kekal melahu sebelum <ph name="PRODUCT_OS_NAME" /> memaparkan dialog amaran yang memberitahu pengguna bahawa tindakan melahu akan diambil.
+
+          Apabila dasar ini tidak ditetapkan, tiada dialog amaran dipaparkan.
+
+          Nilai dasar harus dinyatakan dalam milisaat. Nilai dihadkan agar kurang daripada atau sama dengan kelengahan melahu.
+
+          Mesej amaran hanya dipaparkan jika tindakan melahu adalah log keluar atau tutup.</translation>
 <translation id="7774768074957326919">Gunakan tetapan sistem proksi</translation>
 <translation id="7777535871204167559">Kendalikan peranti storan luaran sebagai baca sahaja</translation>
 <translation id="7781069478569868053">Halaman Tab Baharu</translation>
@@ -4092,6 +4150,7 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
       Untuk mendapatkan maklumat lanjut tentang konteks selamat, lihat
       https://www.w3.org/TR/secure-contexts/
       </translation>
+<translation id="8939595959513040470">Memberi pengguna Quick Fix Build.</translation>
 <translation id="8942616385591203339">Dasar ini mengawal sama ada Persetujuan Penyegerakan boleh ditunjukkan kepada pengguna semasa log masuk pertama. Dasar ini harus ditetapkan kepada palsu jika Persetujuan Penyegerakan tidak diperlukan untuk pengguna.
       Jika ditetapkan kepada palsu, Persetujuan Penyegerakan tidak akan dipaparkan.
       Jika ditetapkan kepada benar atau tidak ditetapkan, Persetujuan Penyegerakan boleh dipaparkan.</translation>
@@ -4151,6 +4210,9 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
 
       Jika dasar ini dibiarkan tanpa ditetapkan, pengguna boleh memilih imej avatar yang mewakili mereka pada skrin log masuk.</translation>
 <translation id="9035964157729712237">ID sambungan untuk dikecualikan daripada senarai hitam</translation>
+<translation id="9038058011835642205">Menentukan senarai tapak web yang dipasang secara senyap tanpa interaksi pengguna dan tapak web tersebut tidak boleh dinyahpasang atau dilumpuhkan oleh pengguna.
+
+      Setiap item senarai dasar ialah objek yang mengandungi ahli mandatori: "url" dan dua ahli pilihan: "default_launch_container" dan "create_desktop_shortcut". "url" ialah URL apl web yang hendak dipasang, "launch_container" ialah "tetingkap" atau "tab" untuk menunjukkan cara Apl Web akan dibuka setelah dipasang dan "create_desktop_shortcut" harus benar jika pintasan desktop dibuat pada Linux dan Windows. Jika "default_launch_container" ditinggalkan, apl akan dibuka dalam tab secara lalai. Tanpa mengambil kira nilai "default_launch_container", pengguna dapat menukar jenis bekas tempat apl akan dibuka. Jika "create_desktop_shortcuts" ditinggalkan, pintasan desktop tidak akan dibuat.</translation>
 <translation id="9038839118379817310">Dayakan Wi-Fi</translation>
 <translation id="9039822628127365650">Apabila dasar ini ditetapkan, dasar ini menyatakan tempoh masa yang apabila tamat, pengguna akan dilog keluar secara automatik dan sesi akan ditamatkan. Pengguna diberitahu tentang masa yang tinggal oleh pemasa hitung detik yang ditunjukkan dalam dulang sistem.
 
@@ -4160,6 +4222,11 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
 
       Nilai dasar harus dinyatakan dalam milisaat. Nilai dihadkan kepada julat selama 30 saat hingga 24 jam.</translation>
 <translation id="9042911395677044526">Membenarkan penolakan konfigurasi rangkaian digunakan untuk setiap pengguna pada peranti <ph name="PRODUCT_OS_NAME" />. Konfigurasi rangkaian ialah rentetan berformat JSON seperti yang ditakrifkan oleh format Konfigurasi Rangkaian Terbuka yang dihuraikan di <ph name="ONC_SPEC_URL" /></translation>
+<translation id="9050853837490399534">Dasar ini mengawal sama ada peranti harus dikemas kini kepada Quick Fix Build.
+
+      Jika nilai dasar ditetapkan kepada token yang dipetakan kepada Quick Fix Build, peranti akan dikemas kini kepada Quick Fix Build yang sepadan jika kemas kini tidak disekat oleh dasar lain.
+
+      Jika dasar ini tidak ditetapkan, atau jika nilainya tidak dipetakan kepada Quick Fix Build, maka peranti tidak akan dikemas kini kepada Quick Fix Build. Jika peranti telah pun menjalankan Quick Fix Build dan dasar tidak ditetapkan lagi atau nilainya tidak dipetakan kepada Quick Fix Build lagi, maka peranti akan dikemas kini kepada binaan biasa jika kemas kini tidak disekat oleh dasar lain.</translation>
 <translation id="906631898352326790">
       Jika dasar didayakan, setiap tempat asal yang dinamakan dalam
       senarai yang dipisahkan koma akan berjalan dalam prosesnya sendiri.

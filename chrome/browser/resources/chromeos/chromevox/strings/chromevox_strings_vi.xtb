@@ -99,6 +99,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="1616111909442424068">Màu lúa mì</translation>
 <translation id="1618597272655350600">Thông báo mô tả đầy đủ của vị trí hiện tại</translation>
 <translation id="1627222324347828322">Màu trắng tinh</translation>
+<translation id="1630688379087270943">Biểu thị chữ in nghiêng:</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{dấu lớn hơn}other{# dấu lớn hơn}}</translation>
 <translation id="1653266918374749391">Tiêu đề cấp 3 trước</translation>
 <translation id="1657616855184033958">Hiển thị các bộ lọc luồng sự kiện</translation>
@@ -320,6 +321,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="3286390186030710347">Thanh trượt</translation>
 <translation id="3299925995433437805">Không có liên kết đã truy cập tiếp theo nào.</translation>
 <translation id="3300348286427369683">Hỗ trợ văn bản đa dạng thức. ChromeVox hiện hỗ trợ các trường văn bản đa dạng thức, bao gồm cả lệnh di chuyển, định tuyến con trỏ chữ nổi, lựa chọn và các trường khác.</translation>
+<translation id="3304756947457041303">Tùy chỉnh tùy chọn chỉ báo văn bản đa dạng thức</translation>
 <translation id="3307886118343381874">Đi tới cuối bảng</translation>
 <translation id="3311969765485641742">Nhấn Alt+Shift+A để xem lại thông báo</translation>
 <translation id="3312997241656799641">Liên kết đã truy cập tiếp theo</translation>
@@ -406,6 +408,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="3930498801443296724">Đoạn trích dẫn</translation>
 <translation id="3936394396199829062">Màu hồng tím oải hương</translation>
 <translation id="3941269780691800708">Nói văn bản bên dưới con chuột.</translation>
+<translation id="394953087167197343">Biểu thị lỗi chính tả:</translation>
 <translation id="3962990492275676168">Bắt đầu đọc từ vị trí hiện tại</translation>
 <translation id="3970951409746498040">Màu nâu cát</translation>
 <translation id="3989324057180830702">nút bật/tắt</translation>
@@ -452,6 +455,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="42164919740161077">Màu xanh lơ</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{dấu gạch ngang}other{# dấu gạch ngang}}</translation>
 <translation id="421884353938374759">công cụ chọn màu</translation>
+<translation id="4221071177874897997">Biểu thị chữ in đậm:</translation>
 <translation id="4229646983878045487">ngày giờ</translation>
 <translation id="4230834257931120629">Màu xám đen nhạt</translation>
 <translation id="4231102694147661229">Bật Tùy chọn của nhà phát triển</translation>
@@ -754,6 +758,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="6348869651006731065">Màu xám mờ</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{dấu chấm tròn}other{# dấu chấm tròn}}</translation>
 <translation id="6355910664415701303">Không có mục danh sách trước nào.</translation>
+<translation id="6360318852623800555">Thuộc tính của văn bản đa dạng thức</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Tiêu đề trước</translation>
 <translation id="6376999910001533545">Màu nâu sẫm</translation>
@@ -929,6 +934,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="762020119231868829">Tạm dừng tất cả các tiện ích con phương tiện hiện đang phát</translation>
 <translation id="7625690649919402823">Bảng tiếp theo</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), Lớp <ph name="GRADE" /></translation>
+<translation id="763535765081585392">Biểu thị chữ gạch dưới:</translation>
 <translation id="7639968568612851608">Xám đen</translation>
 <translation id="7641134354185483015">Không có tiêu đề cấp 3 trước nào.</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, hộp văn bản</translation>
@@ -1164,6 +1170,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="8943175951035496220">Không có ô nào bên phải.</translation>
 <translation id="8943282376843390568">Vàng chanh</translation>
 <translation id="8946628535652548639">h<ph name="TABLECELLROWINDEX" />c<ph name="TABLECELLCOLUMNINDEX" /></translation>
+<translation id="8957142051395645063">Thông báo</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">Quên</translation>
 <translation id="900114243503212879">tệp</translation>

@@ -136,6 +136,7 @@ Pokud je nastavena na hodnotu true nebo nastavena není, statistiky hlášeny bu
 
 Není-li tato zásada nastavena, výchozí frekvence je 3 hodiny. Minimální povolená frekvence je 60 sekund.</translation>
 <translation id="1204263402976895730">Povolené podnikové tiskárny</translation>
+<translation id="1216919699175573511">Zapnout podporu technologie Signed HTTP Exchange (SXG)</translation>
 <translation id="1219695476179627719">Určuje, zda se má zařízení vrátit k verzi nastavené v zásadě <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" />, pokud je v něm již spuštěna novější verze.
 
       Výchozí nastavení je RollbackDisabled.</translation>
@@ -1610,6 +1611,13 @@ Není-li zásada nastavena, bude použita zásada AllowCookies a uživatelé ji
           Není-li tato zásada nastavena, bude použita výchozí doba.
 
           Hodnota zásady se zadává v milisekundách.</translation>
+<translation id="4105884561459127998">Konfiguruje typ ověření pro přihlášení pomocí technologie SAML.
+
+      Když tato zásada není nastavená nebo je nastavená na možnost Default (hodnota 0), určuje chování při přihlašování pomocí technologie SAML prohlížeč na základě jiných faktorů. V nejzákladnějším případě se k ověření uživatele a ochraně dat uživatele uložených v mezipaměti používají hesla, která ručně zadávají uživatelé.
+
+      Když je tato zásada nastavená na možnost ClientCertificate (hodnota 1), pro nově přidané uživatele, kteří se přihlašují pomocí technologie SAML, se používá ověření pomocí certifikátu klienta. Pro takové uživatele se nepoužívají žádná hesla a jejich místní data uložená v mezipaměti jsou chráněna pomocí odpovídajících kryptografických klíčů. Pomocí tohoto nastavení lze nakonfigurovat například ověřování uživatelů pomocí čipových karet. (Aplikace middleware pro čipové karty je potřeba nainstalovat pomocí zásady DeviceLoginScreenExtensions.)
+
+      Tato zásada má vliv pouze na uživatele, kteří používají ověření pomocí technologie SAML.</translation>
 <translation id="4105989332710272578">Deaktivovat vynucování zásad Certificate Transparency pro seznam adres URL</translation>
 <translation id="4121350739760194865">Zabraňuje zobrazování propagace aplikací na stránce Nová karta</translation>
 <translation id="4125606414556046117">Tato zásada umožňuje nakonfigurovat obrázek tapety, který se zobrazuje na ploše a na pozadí přihlašovací obrazovky daného uživatele. Zásadu nastavíte zadáním adresy URL, ze které může <ph name="PRODUCT_OS_NAME" /> obrázek tapety stáhnout, a kryptografické hodnoty hash, která slouží k ověření integrity staženého obsahu. Obrázek musí být ve formátu JPEG a jeho velikost nesmí překročit 16 MB. Adresa URL musí být přístupná bez ověření.
@@ -1638,6 +1646,30 @@ Není-li zásada nastavena, bude použita zásada AllowCookies a uživatelé ji
       Pokud je tato zásada ponechána nenastavená, uživatel si může zvolit, jaký obrázek bude mít zobrazený na ploše a na pozadí přihlašovací obrazovky.</translation>
 <translation id="412697421478384751">Povolit uživatelům nastavovat slabé kódy PIN pro odemknutí obrazovky</translation>
 <translation id="4138655880188755661">Časový limit</translation>
+<translation id="4144164749344898721">Tato zásada udává několik nastavení strategie řízení spotřeby pro případ, že uživatel přestane být aktivní.
+
+Lze nastavit čtyři typy akcí:
+* Pokud uživatel nebude aktivní po dobu uvedenou v nastavení |ScreenDim|, obrazovka se ztlumí.
+* Pokud uživatel nebude aktivní po dobu uvedenou v nastavení |ScreenOff|, obrazovka se vypne.
+* Pokud uživatel nebude aktivní po dobu uvedenou v nastavení |IdleWarning|, zobrazí se dialog s upozorněním, že bude provedena akce nastavená pro případ nečinnosti.
+* Pokud uživatel nebude aktivní po dobu uvedenou v nastavení |Idle|, provede se akce nastavená v možnosti |IdleAction|.
+
+Hodnoty prodlev se pro všechny výše uvedené akce nastavují v milisekundách. Za účelem spuštění příslušné akce je třeba nastavit hodnotu vyšší než nula. Pokud je prodleva nastavená na nulu, systém <ph name="PRODUCT_OS_NAME" /> příslušnou akci neprovede.
+
+Pokud některou z výše uvedených prodlev nenastavíte, použije se pro ni výchozí nastavení.
+
+Hodnota |ScreenDim| bude snížena tak, aby nepřevyšovala hodnotu |ScreenOff|. Hodnoty |ScreenOff| a |IdleWarning| budou sníženy tak, aby nepřevyšovaly hodnotu |Idle|.
+
+Možnost |IdleAction| lze nastavit na jednu z následujících čtyř možných akcí:
+          * |Suspend|
+          * |Logout|
+          * |Shutdown|
+          * |DoNothing|
+
+Když hodnota |IdleAction| není nastavená, provede se výchozí akce (Suspend).
+
+K dispozici jsou také samostatná nastavení pro napájení ze sítě a z baterie.
+          </translation>
 <translation id="4150201353443180367">Displej</translation>
 <translation id="4157003184375321727">Hlásit verzi operačního systému a firmwaru</translation>
 <translation id="4157594634940419685">Povolit přístup k nativním tiskárnám CUPS</translation>
@@ -1721,6 +1753,15 @@ Je-li tato zásada použita, bude mít uživatel k dispozici pouze tiskárny, j
 <translation id="4322842393287974810">Povolit automaticky spouštěné terminálové aplikaci s nulovým zpožděním ovládat verzi systému <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Přidat na hlavní panel systému tlačítko pro odhlášení</translation>
 <translation id="4332177773549877617">Protokolovat události při instalaci aplikací pro Android</translation>
+<translation id="4335292026668105285">Udává dobu bez interakce uživatele, po jejímž uplynutí se při napájení ze sítě zobrazí dialogové okno s upozorněním.
+
+          Pokud je tato zásada nastavená, udává, jak dlouho musí být uživatel neaktivní, než systém <ph name="PRODUCT_OS_NAME" /> zobrazí dialogové okno s upozorněním, že brzy bude provedena akce nastavená pro nečinnost.
+
+          Když tato zásada není nastavená, dialogové okno s upozorněním se nezobrazuje.
+
+          Hodnota této zásady se zadává v milisekundách. Hodnota se v případě potřeby sníží, aby nepřesahovala prodlevu pro akci při nečinnosti.
+
+          Upozornění se zobrazí jen v případě, že je akce při nečinnosti nastavená na odhlášení nebo vypnutí.</translation>
 <translation id="4346674324214534449">Umožňuje nastavit, zda mají být blokovány reklamy na webech s rušivými reklamami.
 
       Je-li tato zásada nastavena na hodnotu 2, budou reklamy na webech s rušivými reklamami blokovány.
@@ -3268,6 +3309,9 @@ Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, optimaliz
 <translation id="7464991223784276288">Omezit soubory cookie z odpovídajících adres URL na aktuální relaci</translation>
 <translation id="7469554574977894907">Aktivovat návrhy pro vyhledávání</translation>
 <translation id="7474249562477552702">Udává, zda jsou povoleny certifikáty podepsané algoritmem SHA-1 vydané místními kotvami důvěryhodnosti</translation>
+<translation id="747851715060942420">Umožňuje konfigurovat stránky, které se načtou při spuštění.
+
+      Zásada „Adresy URL otevírané při spuštění“ se projeví pouze v případě, že v části „Akce při spuštění“ zvolíte „Otevřít seznam adres URL“.</translation>
 <translation id="7485481791539008776">Pravidla výběru výchozí tiskárny</translation>
 <translation id="7485730741952775732">Pokud je tato zásada nastavená, hostitel vzdáleného přístupu použije při připojování tuto adresu URL ke kontrole ověřovacích tokenů od klientů vzdáleného přístupu. Tuto zásadu je třeba používat v kombinaci se zásadou RemoteAccessHostTokenUrl.
 
@@ -3281,6 +3325,11 @@ Tato zásada se použije, jen pokud je v zásadě <ph name="PRINTERS_BLACKLIST"
 
 Je-li tato zásada použita, bude mít uživatel k dispozici všechny tiskárny kromě těch, jejichž ID jsou v ní uvedena. ID musejí odpovídat polím „id“ a „guid“ v souboru, který je uveden v zásadě <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
+<translation id="7506269062143646163">Zapne podporu technologie Signed HTTP Exchange (SXG).
+
+          Pokud tato zásada není nastavená nebo je nastavená na Povoleno, Google Chrome bude přijímat webový obsah poskytovaný prostřednictvím technologie SXG.
+
+          Pokud je tato zásada nastavená na Zakázáno, obsah poskytovaný prostřednictvím technologie SXG nelze načíst.</translation>
 <translation id="7511361072385293666">Pokud je tato zásada nastavena na hodnotu true nebo nebo nastavena není, je v prohlížeči <ph name="PRODUCT_NAME" /> povoleno použití protokolu QUIC.
 Pokud je tato zásada nastavena na hodnotu false, použití protokolu QUIC je zakázáno.</translation>
 <translation id="7517845714620372896">Určuje procentuální jas obrazovky.
@@ -3425,6 +3474,15 @@ Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_
       Podporované identifikátory typu připojení jsou „ethernet“, „wifi“, „wimax“, „bluetooth“ a „cellular“.</translation>
 <translation id="7763614521440615342">Zobrazovat na stránce Nová karta návrhy obsahu</translation>
 <translation id="7765879851993224640">Povolit přihlášení pomocí funkce Smart Lock.</translation>
+<translation id="7772346342637974431">Udává dobu bez interakce uživatele, po jejímž uplynutí se při napájení z baterie zobrazí dialogové okno s upozorněním.
+
+          Pokud je tato zásada nastavená, udává, jak dlouho musí být uživatel neaktivní, než systém <ph name="PRODUCT_OS_NAME" /> zobrazí dialogové okno s upozorněním, že brzy bude provedena akce nastavená pro nečinnost.
+
+          Když tato zásada není nastavená, dialogové okno s upozorněním se nezobrazuje.
+
+          Hodnota této zásady se zadává v milisekundách. Hodnota se v případě potřeby sníží, aby nepřesahovala prodlevu pro akci při nečinnosti.
+
+          Upozornění se zobrazí jen v případě, že je akce při nečinnosti nastavená na odhlášení nebo vypnutí.</translation>
 <translation id="7774768074957326919">Použít systémová nastavení proxy serveru</translation>
 <translation id="7777535871204167559">Zacházet s externími úložnými zařízeními, jako by byla pouze pro čtení</translation>
 <translation id="7781069478569868053">Stránka Nová karta</translation>
@@ -3959,6 +4017,7 @@ Pokud tato zásada není nakonfigurována nebo je hodnota nižší než 1 MB, <p
 
       Další informace o bezpečných kontextech najdete na stránce https://www.w3.org/TR/secure-contexts/.
       </translation>
+<translation id="8939595959513040470">Poskytnout uživatelům sestavení Quick Fix Build.</translation>
 <translation id="8942616385591203339">Tato zásada určuje, zda je možné uživateli při prvním přihlášení zobrazit žádost o souhlas se synchronizací. Pokud žádost o souhlas se synchronizací u uživatele není potřeba, měla by být nastavena na hodnotu false.
       Pokud je nastavena na hodnotu false, žádost o souhlas se synchronizací se nebude zobrazovat.
       Pokud je nastavena na hodnotu true nebo není nastavena, žádost o souhlas se synchronizací se může zobrazit.</translation>
@@ -4016,6 +4075,9 @@ POZNÁMKA: Až do verze 45 byla tato zásada podporována pouze v režimu veře
 
       Pokud zásadu nenastavíte, uživatel bude moci sám zvolit, jaký obrázek avatara jej bude na přihlašovací obrazovce představovat.</translation>
 <translation id="9035964157729712237">ID rozšíření, která mají být vyňata ze seznamu zakázaných</translation>
+<translation id="9038058011835642205">Určuje seznam webových stránek, které se instalují na pozadí bez zásahu uživatele a které uživatel nemůže odinstalovat ani deaktivovat.
+
+      Každá položka v seznamu zásady je objekt s jedním povinným členem: „url“ a dvěma volitelnými členy: „default_launch_container“ a „create_desktop_shortcut“. „url“ by měla být adresa URL webové aplikace, která se má nainstalovat. „launch_container“ určuje, jak se webová aplikace po nainstalování otevře, a může mít buď hodnotu „window“, nebo „tab“. „create_desktop_shortcut“ nastavte na hodnotu true v případě, že v systému Linux nebo Windows chcete vytvořit zástupce na ploše. Pokud údaj „default_launch_container“ vynecháte, bude se aplikace ve výchozím nastavení otevírat na kartě. Kontejner, ve kterém se aplikace bude otevírat, mohou uživatelé změnit bez ohledu na hodnotu „default_launch_container“. Pokud vynecháte člen „create_desktop_shortcuts“, zástupci na ploše se nevytvoří.</translation>
 <translation id="9038839118379817310">Zapnout Wi-Fi</translation>
 <translation id="9039822628127365650">Když je tato zásada nastavená, udává dobu, po jejímž uplynutí bude uživatel automaticky odhlášen a relace ukončena. O zbývajícím čase uživatele informuje odpočítávání na hlavním panelu systému.
 
@@ -4025,6 +4087,11 @@ POZNÁMKA: Až do verze 45 byla tato zásada podporována pouze v režimu veře
 
       Hodnota této zásady se zadává v milisekundách. Místo hodnot mimo rozsah od 30 sekund do 24 hodin se použijí příslušné krajní hodnoty tohoto rozsahu.</translation>
 <translation id="9042911395677044526">Umožňuje přenést nastavení sítě, která se uplatní pro jednotlivé uživatele v zařízení se systémem <ph name="PRODUCT_OS_NAME" />. Konfigurace sítě je řetězec ve formátu JSON, který se řídí definicí formátu Open Network Configuration popsanou na stránce <ph name="ONC_SPEC_URL" />.</translation>
+<translation id="9050853837490399534">Tato zásada určuje, zda se má zařízení aktualizovat na sestavení Quick Fix Build.
+
+      Pokud je hodnota zásady nastavená na token, který je namapován k sestavení Quick Fix Build, aktualizuje se zařízení na odpovídající sestavení Quick Fix Build (jestliže aktualizaci neblokuje jiná zásada).
+
+      Pokud tato zásada není nastavená nebo její hodnota není namapována k sestavení Quick Fix Build, zařízení se na sestavení Quick Fix Build neaktualizuje. Pokud je v zařízení již spuštěno sestavení Quick Fix Build a tato zásada již není nastavená nebo její hodnota již není namapována k sestavení Quick Fix Build, aktualizuje se zařízení na běžné sestavení (jestliže aktualizaci neblokuje jiná zásada).</translation>
 <translation id="906631898352326790">
       Pokud tuto zásadu povolíte, každý z uvedených zdrojů v seznamu odděleném čárkami se spustí ve vlastním procesu. Budou izolovány i zdroje uvedené v subdoménách – např. pokud zadáte web https://example.com/, bude izolována také subdoména https://foo.example.com/, která je jeho součástí.
       Pokud tuto zásadu zakážete, budou zakázány zásady IsolateOrigins a SitePerProcess. Zásadu IsolateOrigins však uživatelé budou moci povolit ručně pomocí příznaků příkazového řádku.

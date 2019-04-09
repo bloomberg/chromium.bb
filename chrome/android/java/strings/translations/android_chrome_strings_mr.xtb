@@ -148,6 +148,7 @@
 <translation id="204321170514947529"><ph name="APP_NAME" />चा Chrome मध्ये देखील डेटा आहे</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB अन्य अ‍ॅप्स</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
+<translation id="2049961518639794558">फाइल एक्स्टेंशन बदलल्यास अनपेक्षित वर्तन होऊ शकते जे तुमच्या डिव्हाइससाठी हानिकारक असू शकते.</translation>
 <translation id="2056878612599315956">साइट थांबवली</translation>
 <translation id="2063713494490388661">शोधण्यासाठी टॅप करा</translation>
 <translation id="2079545284768500474">पहिल्यासारखे करा</translation>
@@ -248,6 +249,7 @@
 <translation id="2810645512293415242">डेटा सेव्ह करण्यासाठी आणि तो लवकर लोड होण्यासाठी पेज सुलभ केले.</translation>
 <translation id="281504910091592009">तुमच्या <ph name="BEGIN_LINK" />Google खात्यामध्ये<ph name="END_LINK" /> सेव्ह केलेले पासवर्ड पाहा आणि व्यवस्थापित करा</translation>
 <translation id="2818669890320396765">तुमच्या सर्व डिव्हाइसवर तुमचे बुकमार्क मिळवण्यासाठी, साइन इन करा आणि सिंक सुरू करा</translation>
+<translation id="2822354292072154809">तुम्हाला नक्की <ph name="CHOSEN_OBJECT_NAME" /> साठी सर्व साइट परवानग्या रीसेट करायच्या आहेत का?</translation>
 <translation id="2836148919159985482">क्षेत्रे मधून बाहेर पडण्यासाठी परत बटणास स्पर्श करा.</translation>
 <translation id="2842985007712546952">मुख्य फोल्डर</translation>
 <translation id="2845873210977809562">खुल्या टॅब बंद केल्या</translation>
@@ -329,6 +331,7 @@
 <translation id="3443221991560634068">वर्तमान पृष्‍ठ रीलोड करा</translation>
 <translation id="3445014427084483498">आताच</translation>
 <translation id="3452612588551937789">आपल्या सर्व डिव्हाइसेेसवर तुमचे बुकमार्क, इतिहास, पासवर्ड आणि इतर सेटिंग्ज मिळविण्यासाठी आपल्या Google खात्यासह साइन इन करा.</translation>
+<translation id="3478363558367712427">तुम्ही तुमचे शोध इंजिन निवडू शकता</translation>
 <translation id="3492207499832628349">नवीन गुप्त टॅब</translation>
 <translation id="3493531032208478708">सूचित केलेल्या सामग्रीविषयी <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
 <translation id="3513704683820682405">ऑगमेंटेड रिअ‍ॅलिटी</translation>
@@ -480,6 +483,7 @@
 <translation id="4634124774493850572">पासवर्ड वापरा</translation>
 <translation id="4645575059429386691">आपल्या पालकांद्वारे व्यवस्थापित करण्यात आले</translation>
 <translation id="4648718555153979859">तुमचे टॅब येथे एकत्रित केले आहेत</translation>
+<translation id="4650364565596261010">सिस्टम डीफॉल्ट</translation>
 <translation id="4660011489602794167">कीबोर्ड दाखवा</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> बुकमार्क हटविले</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> ला आपल्या मुख्यस्क्रीनवर जोडण्यात आले</translation>
@@ -519,6 +523,7 @@
 <translation id="488187801263602086">फाइलला पुन्हा नाव द्या</translation>
 <translation id="4882831918239250449">तुम्ही ब्राउझ करत असलेला इतिहास पर्सनलाइझ शोध, जाहिराती आणि बरेच काही करण्यासाठी कसा वापरला जातो ते नियंत्रित करा</translation>
 <translation id="4883379392681899581">खाजगी मोड सोडा</translation>
+<translation id="4883854917563148705">व्यवस्थापित केलेल्या सेटिंग्ज रीसेट करता येत नाहीत</translation>
 <translation id="4885273946141277891">Chrome उदाहरणांची असमर्थित संख्या.</translation>
 <translation id="4910889077668685004">पेमेंट अॅप्स</translation>
 <translation id="4913161338056004800">आकडेवारी रीसेट करा</translation>
@@ -530,6 +535,7 @@
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> तुमची स्क्रीन शेअर करत आहे</translation>
 <translation id="4961107849584082341">या पेजचे कोणत्याही भाषेत भाषांतर करा</translation>
 <translation id="4961700429721424617"><ph name="MANAGED_DOMAIN" /> ने व्यवस्थापित केलेल्या खात्यामधून तुम्ही साइन आउट करीत आहात. हे तुमचा Chrome डेटा या डिव्हाइस वरून हटवेल परंतु तुमचा डेटा आपल्या Google खात्यामध्ये असेल.</translation>
+<translation id="4962975101802056554">डिव्हाइससाठीच्या सर्व परवानग्या रद्द करा</translation>
 <translation id="4970824347203572753">तुमच्या स्थानामध्ये उपलब्ध नाही</translation>
 <translation id="497421865427891073">पुढे जा</translation>
 <translation id="4988210275050210843">(<ph name="MEGABYTES" />) ची फाइल डाउनलोड करत आहे.</translation>
@@ -549,6 +555,7 @@
 <translation id="5087580092889165836">कार्ड जोडा</translation>
 <translation id="5100237604440890931">संकुचित केले - विस्तृत करण्यासाठी क्लिक करा.</translation>
 <translation id="510275257476243843">1 तास शिल्लक</translation>
+<translation id="51149521070059886">तुमच्या डिव्हाइसचे पॉवर सेव्हर सुरू असेल तेव्हा गडद थीम सुरू करा</translation>
 <translation id="5123685120097942451">गुप्त टॅब</translation>
 <translation id="5127805178023152808">संकालन बंद आहे</translation>
 <translation id="5129038482087801250">वेब अ‍ॅप इंस्टॉल करा</translation>
@@ -924,6 +931,7 @@
 <translation id="7765158879357617694">हलवा</translation>
 <translation id="7769602470925380267">स्वीकार करा आणि साइन आउट करा</translation>
 <translation id="7772032839648071052">सांकेतिक वाक्यांशाची पुष्टी करा</translation>
+<translation id="7772375229873196092"><ph name="APP_NAME" /> बंद करा</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 आणि <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> अधिक}one{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 आणि <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> अधिक}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 आणि <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> अधिक}}</translation>
 <translation id="7781829728241885113">काल</translation>
 <translation id="7791543448312431591">जोडा</translation>
@@ -931,6 +939,7 @@
 <translation id="7810647596859435254">यासह उघडा...</translation>
 <translation id="7821588508402923572">तुमची डेटा बचत येथे दिसेल</translation>
 <translation id="7837721118676387834">एका विशिष्ट साइटकरिता नि:शब्द केलेल्या व्हिडिओंच्या ऑटोप्ले ला अनुमती द्या.</translation>
+<translation id="7838340937077326045">तुम्हाला फाइल एक्स्टेंशन नक्की बदलायचे आहे का?</translation>
 <translation id="7846076177841592234">निवड रद्द करा</translation>
 <translation id="784934925303690534">वेळ वर्गवारी</translation>
 <translation id="7851858861565204677">इतर डिव्हाइसेस</translation>

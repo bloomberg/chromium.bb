@@ -85,6 +85,7 @@
 <translation id="213900355088104901">Aby przeglądać prywatnie, otwórz kartę incognito</translation>
 <translation id="2139867232736819575">Wyszukaj skopiowany tekst</translation>
 <translation id="2149973817440762519">Edytuj zakładkę</translation>
+<translation id="2179182049312275900">W każdej chwili możesz włączyć synchronizację w ustawieniach.</translation>
 <translation id="2198757192731523470">Google może korzystać z Twojej historii, by personalizować wyniki wyszukiwania, reklamy i działanie innych usług.</translation>
 <translation id="2207590065820824892">Nieprzeczytane artykuły na liście Do przeczytania: <ph name="UNREAD_COUNT" />.</translation>
 <translation id="2230173723195178503">Wczytano stronę internetową</translation>
@@ -202,6 +203,7 @@
 <translation id="4038354071007134711">Nie masz aplikacji, która może otworzyć ten plik.</translation>
 <translation id="4042870976416480368">Znajdź na stronie</translation>
 <translation id="4049507953662678203">Upewnij się, że masz połączenie z siecią, i spróbuj ponownie.</translation>
+<translation id="4071530748369333746">Anulować synchronizację?</translation>
 <translation id="4082688844002261427">Zarządzaj personalizacją wyszukiwarki, reklam i innych usług na podstawie historii przeglądania</translation>
 <translation id="408404951701638773">Pasek wyszukiwania jest teraz łatwiej dostępny</translation>
 <translation id="411254640334432676">Błąd pobierania.</translation>
@@ -271,6 +273,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Włącz synchronizację</translation>
 <translation id="5244474230056479698">Synchronizowanie z <ph name="EMAIL" /></translation>
+<translation id="5245322853195994030">Anuluj synchronizację</translation>
 <translation id="5300589172476337783">Pokaż</translation>
 <translation id="5317780077021120954">Zapisz</translation>
 <translation id="5327248766486351172">Nazwa</translation>

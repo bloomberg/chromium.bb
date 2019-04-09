@@ -99,6 +99,7 @@
 <translation id="1616111909442424068">قمحي</translation>
 <translation id="1618597272655350600">الإعلان عن وصف كامل للموضع الحالي</translation>
 <translation id="1627222324347828322">أبيض شاحب</translation>
+<translation id="1630688379087270943">الإشارة إلى مائل:</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{علامة أكبر من واحدة}zero{# greater than signs}two{علامتا أكبر من (#)}few{# علامات أكبر من}many{# علامة أكبر من}other{# من علامات أكبر من}}</translation>
 <translation id="1653266918374749391">عنوان المستوى الثالث السابق</translation>
 <translation id="1657616855184033958">عرض فلاتر بث الحدث</translation>
@@ -320,6 +321,7 @@
 <translation id="3286390186030710347">شريط تمرير</translation>
 <translation id="3299925995433437805">ليس هناك رابط تالٍ تم الانتقال إليه.</translation>
 <translation id="3300348286427369683">‏دعم نص منسق. يدعم ChromeVox الآن حقول النص المنسق، بما في ذلك أوامر الانتقال السريع وتوجيه مؤشر لغة برايل والاختيار والمزيد.</translation>
+<translation id="3304756947457041303">تخصيص إشارة النص المنسق</translation>
 <translation id="3307886118343381874">الانتقال إلى نهاية الجدول</translation>
 <translation id="3311969765485641742">‏اضغط على Alt+Shift+A لمراجعة التنبيهات</translation>
 <translation id="3312997241656799641">الرابط التالي الذي تم الانتقال إليه</translation>
@@ -406,6 +408,7 @@
 <translation id="3930498801443296724">اقتباس مستمد</translation>
 <translation id="3936394396199829062">أرجواني فاتح</translation>
 <translation id="3941269780691800708">نطق النص أسفل الماوس.</translation>
+<translation id="394953087167197343">الإشارة إلى الأخطاء الإملائية:</translation>
 <translation id="3962990492275676168">بدء القراءة من الموقع الحالي</translation>
 <translation id="3970951409746498040">بني رملي</translation>
 <translation id="3989324057180830702">زر التبديل</translation>
@@ -452,6 +455,7 @@
 <translation id="42164919740161077">أزرق رمادي</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{شرطة واحدة}zero{# dashes}two{شرطتان (#)}few{# شرطات}many{# شرطة}other{# من الشرطات}}</translation>
 <translation id="421884353938374759">علبة الألوان</translation>
+<translation id="4221071177874897997">الإشارة إلى غامق:</translation>
 <translation id="4229646983878045487">تاريخ ووقت</translation>
 <translation id="4230834257931120629">رمادي فاتح مائل إلى الأزرق</translation>
 <translation id="4231102694147661229">تفعيل خيارات المطوّرين</translation>
@@ -754,6 +758,7 @@
 <translation id="6348869651006731065">رمادي خافت</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{تعداد نقطي واحد}zero{# تعداد نقطي}two{تعدادن نقطيان (#)}few{# تعدادات نقطية}many{# تعدادًا نقطيًا}other{# تعداد نقطي}}</translation>
 <translation id="6355910664415701303">ليس هناك عنصر قائمة سابق.</translation>
+<translation id="6360318852623800555">سمات النص المنسق</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">العنوان السابق</translation>
 <translation id="6376999910001533545">كستنائي</translation>
@@ -929,6 +934,7 @@
 <translation id="762020119231868829">إيقاف كل أدوات الوسائط التي يتم تشغيلها حاليًا مؤقتًا</translation>
 <translation id="7625690649919402823">الجدول التالي</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />)، الدرجة <ph name="GRADE" /></translation>
+<translation id="763535765081585392">الإشارة إلى تسطير:</translation>
 <translation id="7639968568612851608">رمادي داكن</translation>
 <translation id="7641134354185483015">ليس هناك عنوان سابق من المستوى الثالث.</translation>
 <translation id="7659376057562985921">مربع نص <ph name="NAME" />، بالقيمة <ph name="VALUE" /></translation>
@@ -1164,6 +1170,7 @@
 <translation id="8943175951035496220">ليست هناك خلية في اليمين.</translation>
 <translation id="8943282376843390568">ليموني</translation>
 <translation id="8946628535652548639">ص<ph name="TABLECELLROWINDEX" />ع<ph name="TABLECELLCOLUMNINDEX" /></translation>
+<translation id="8957142051395645063">الإعلان</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">حذف</translation>
 <translation id="900114243503212879">file</translation>

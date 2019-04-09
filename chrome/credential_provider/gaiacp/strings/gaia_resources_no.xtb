@@ -3,6 +3,7 @@
 <translationbundle lang="no">
 <translation id="1383286653814676580">Brukes til å kjøre påloggingssiden for Google-legitimasjonsleverandøren.</translation>
 <translation id="1894475569413661128">Logg på med jobbkontoen din.</translation>
+<translation id="2227020416206680836">Økten er utløpt. Logg på med jobbkontoen din.</translation>
 <translation id="2469311484561825731">Kunne ikke logge på jobbkontoen din. Sørg for at datamaskinen er koblet til internett, og prøv på nytt.</translation>
 <translation id="2595469428674600431">Beklager, men Windows-passordet ditt kunne ikke bekreftes. Prøv på nytt.</translation>
 <translation id="3306357053520292004">En bruker på denne datamaskinen er allerede lagt til med denne kontoen. Logg på med en annen konto.</translation>
@@ -14,8 +15,10 @@
 <translation id="6463752215771576050">Kunne ikke registrere denne datamaskinen for bedriftsadministrering.  Logg på med en annen jobbkonto.</translation>
 <translation id="7135123390294776473">Bare brukeren som låste denne datamaskinen, kan logge på.</translation>
 <translation id="7357241217513796177">Sørg for at du er koblet til et nettverk, og prøv på nytt.</translation>
+<translation id="7536769223115622137">Legg til jobbkonto</translation>
 <translation id="8474372283141585908">Google-legitimasjonsleverandør</translation>
 <translation id="866458870819756755">Kunne ikke opprette bruker.</translation>
 <translation id="8860262547644202689">Hjelpefunksjon for Google-legitimasjonsleverandør</translation>
+<translation id="8875753657315897487">Logg på med jobbkontoen din</translation>
 <translation id="9135619837062629367">Det er ikke tillatt å logge på med denne kontoen. Prøv en annen konto.</translation>
 </translationbundle>

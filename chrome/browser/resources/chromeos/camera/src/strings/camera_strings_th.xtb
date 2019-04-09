@@ -21,9 +21,11 @@
 <translation id="3081586908890909590">เปลี่ยนเป็นโหมดบันทึกวิดีโอ</translation>
 <translation id="3183731565330012717">ประเภทตารางกริด</translation>
 <translation id="3227137524299004712">ไมโครโฟน</translation>
+<translation id="3517926952904427380">ถ่ายภาพบุคคลไม่ได้</translation>
 <translation id="3569311554794739032">คุณต้องการนำ <ph name="FILE" /> ออกจริงๆ ใช่ไหม</translation>
 <translation id="3810838688059735925">วิดีโอ</translation>
 <translation id="4279490309300973883">กำลังแสดงผล</translation>
+<translation id="4329152592498422850">เปลี่ยนเป็นถ่ายภาพแบบสี่เหลี่ยมจัตุรัส</translation>
 <translation id="4445542136948522167">หยุดถ่ายภาพ</translation>
 <translation id="4628948037717959914">รูปภาพ</translation>
 <translation id="4649291346448517080">บันทึกไฟล์ไม่ได้</translation>
@@ -50,6 +52,7 @@
 <translation id="8145038249676204903">เปลี่ยนเป็นโหมดถ่ายภาพ</translation>
 <translation id="8261506727792406068">ลบ</translation>
 <translation id="8428213095426709021">การตั้งค่า</translation>
+<translation id="8815966864175525708">เปลี่ยนเป็นถ่ายภาพบุคคล</translation>
 <translation id="8870695351537079478">เริ่มบันทึกวิดีโอไม่ได้</translation>
 <translation id="9045155556724273246">10 วินาที</translation>
 <translation id="945522503751344254">ส่งความคิดเห็น</translation>

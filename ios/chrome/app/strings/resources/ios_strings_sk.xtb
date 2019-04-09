@@ -85,6 +85,7 @@
 <translation id="213900355088104901">Ak chcete prehliadať v súkromí, otvorte kartu inkognito</translation>
 <translation id="2139867232736819575">Vyhľadať skopírovaný text</translation>
 <translation id="2149973817440762519">Upraviť záložku</translation>
+<translation id="2179182049312275900">Synchronizáciu môžete kedykoľvek zapnúť v nastaveniach.</translation>
 <translation id="2198757192731523470">Google môže pomocou vašej histórie prispôsobiť Vyhľadávanie, reklamy a ďalšie služby Googlu.</translation>
 <translation id="2207590065820824892">Počet neprečítaných článkov v čitateľskom zozname: <ph name="UNREAD_COUNT" /></translation>
 <translation id="2230173723195178503">Načítala sa webová stránka</translation>
@@ -202,6 +203,7 @@
 <translation id="4038354071007134711">Tento súbor nedokáže otvoriť žiadna aplikácia na tomto zariadení.</translation>
 <translation id="4042870976416480368">Nájsť na stránke</translation>
 <translation id="4049507953662678203">Uistite sa, že máte pripojenie k sieti, a skúste to znova.</translation>
+<translation id="4071530748369333746">Chcete zrušiť synchronizáciu?</translation>
 <translation id="4082688844002261427">Ovládajte, ako sa pomocou histórie prehliadania prispôsobujú Vyhľadávanie, reklamy a ďalší obsah</translation>
 <translation id="408404951701638773">Vyhľadávací panel je teraz dostupnejší</translation>
 <translation id="411254640334432676">Sťahovanie zlyhalo.</translation>
@@ -271,6 +273,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Povoliť synchronizáciu</translation>
 <translation id="5244474230056479698">Synchronizácia do účtu <ph name="EMAIL" /></translation>
+<translation id="5245322853195994030">Zrušiť synchronizáciu</translation>
 <translation id="5300589172476337783">Zobraziť</translation>
 <translation id="5317780077021120954">Uložiť</translation>
 <translation id="5327248766486351172">Názov</translation>

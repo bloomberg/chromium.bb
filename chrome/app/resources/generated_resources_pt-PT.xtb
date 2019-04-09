@@ -276,6 +276,7 @@
 <translation id="1426870617281699524">Clique em Tentar novamente e aceite o pedido no computador.</translation>
 <translation id="1427269577154060167">País</translation>
 <translation id="142758023928848008">Ativar as teclas aderentes (para executar atalhos de teclado escrevendo-os sequencialmente)</translation>
+<translation id="1429300045468813835">Tudo limpo</translation>
 <translation id="143027896309062157">Ler e alterar todos os dados no computador e os Sites que visita</translation>
 <translation id="1430915738399379752">Imprimir</translation>
 <translation id="1432581352905426595">Gerir motores de pesquisa</translation>
@@ -925,6 +926,7 @@
 <translation id="2462752602710430187"><ph name="PRINTER_NAME" /> adicionada</translation>
 <translation id="2464089476039395325">Proxy de HTTP</translation>
 <translation id="2468205691404969808">Utiliza cookies para memorizar as suas preferências, mesmo que não visite essas páginas.</translation>
+<translation id="2469375675106140201">Personalizar o corretor ortográfico</translation>
 <translation id="247051149076336810">URL de partilha de ficheiros</translation>
 <translation id="2470702053775288986">Extensões não suportadas desativadas</translation>
 <translation id="2473195200299095979">Traduzir esta página</translation>
@@ -939,6 +941,8 @@
 <translation id="2487067538648443797">Adicionar novo marcador</translation>
 <translation id="2489829450872380594">Da próxima vez, um novo telemóvel irá desbloquear o <ph name="DEVICE_TYPE" />. Pode desativar o Smart Lock nas Definições.</translation>
 <translation id="2489918096470125693">Adicionar &amp;Pasta...</translation>
+<translation id="2490481887078769936">"<ph name="FILE_NAME" />" foi removido da lista</translation>
+<translation id="2490782392574942205">Para obter todas as suas extensões em todos os seus computadores, inicie sessão e ative a sincronização</translation>
 <translation id="249113932447298600">Lamentamos, mas de momento o aparelho <ph name="DEVICE_LABEL" /> não é suportado.</translation>
 <translation id="249303669840926644">Não foi possível concluir o registo</translation>
 <translation id="2495777824269688114">Descubra mais funcionalidades ou obtenha respostas. Selecione "?" para obter ajuda.</translation>
@@ -1150,6 +1154,7 @@
 <translation id="2800760947029405028">Carregar uma imagem</translation>
 <translation id="2803375539583399270">Introduzir PIN</translation>
 <translation id="2804043232879091219">Não foi possível abrir o navegador alternativo.</translation>
+<translation id="2804680522274557040">A câmara está desativada</translation>
 <translation id="2805646850212350655">Sistema de encriptação de ficheiros Microsoft</translation>
 <translation id="2805756323405976993">Aplicações</translation>
 <translation id="2806891468525657116">O atalho já existe.</translation>
@@ -1463,6 +1468,7 @@ Pretende pará-lo?</translation>
 <translation id="3317459757438853210">Frente e verso</translation>
 <translation id="3317678681329786349">Câmara e microfone bloqueados</translation>
 <translation id="3319048459796106952">&amp;Nova janela sem registo</translation>
+<translation id="3325910708063135066">A câmara e o microfone estão desativados nas Preferências do Sistema no Mac</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET" />) <ph name="LONGTZNAME" /> (<ph name="EXEMPLARCITY" />)</translation>
 <translation id="3331974543021145906">Informações da aplicação</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> – vídeo em reprodução no modo ecrã no ecrã.</translation>
@@ -1858,6 +1864,7 @@ Pretende pará-lo?</translation>
 <translation id="3915280005470252504">Pesquisar por voz</translation>
 <translation id="3916445069167113093">Este tipo de ficheiro pode danificar o seu computador. Pretende, mesmo assim, manter <ph name="FILE_NAME" />?</translation>
 <translation id="3918972485393593704">Comunicar detalhes à Google</translation>
+<translation id="3919145445993746351">Para obter todas as suas extensões em todos os seus computadores, ative a sincronização</translation>
 <translation id="3920504717067627103">Políticas de certificados</translation>
 <translation id="392089482157167418">Ativar ChromeVox (comentários falados)</translation>
 <translation id="3924145049010392604">Meta</translation>
@@ -1917,7 +1924,6 @@ Pretende pará-lo?</translation>
 <translation id="3995138139523574647">Dispositivo USB-C (porta traseira do lado direito)</translation>
 <translation id="3996366967769547206">{NUM_TABS,plural, =1{Soltar o separador}other{Soltar os separadores}}</translation>
 <translation id="4002440992267487163">Configuração do PIN</translation>
-<translation id="400314203296796334">Remova o capacete de realidade virtual para efeitos de bloqueio ou autorização.</translation>
 <translation id="4005817994523282006">Método de deteção do fuso horário</translation>
 <translation id="4008291085758151621">As informações do site não estão disponíveis na RV</translation>
 <translation id="4010917659463429001">Para obter os seus marcadores no dispositivo móvel, <ph name="GET_IOS_APP_LINK" />.</translation>
@@ -2036,6 +2042,7 @@ Pretende pará-lo?</translation>
 <translation id="4206323443866416204">Relatório de comentários</translation>
 <translation id="4208390505124702064">Pesquisar <ph name="SITE_NAME" /></translation>
 <translation id="4209092469652827314">Grande</translation>
+<translation id="4209251085232852247">Desativado</translation>
 <translation id="4209464433672152343">Os documentos são <ph name="BEGIN_LINK_HELP" />enviados para a Google<ph name="END_LINK_HELP" /> para preparação para impressão. Veja, edite e faça a gestão das suas impressoras e do histórico de impressoras no <ph name="BEGIN_LINK_DASHBOARD" />painel de controlo do Google Cloud Print<ph name="END_LINK_DASHBOARD" />.</translation>
 <translation id="421182450098841253">&amp;Mostrar Barra de Marcadores</translation>
 <translation id="4211851069413100178">Envie dados de utilização e diagnóstico. Ajude a melhorar a experiência Android ao enviar automaticamente dados de diagnóstico, de utilização do dispositivo e das aplicações para a Google. Deste modo, ajudará a melhorar a estabilidade das aplicações e do sistema, entre outras melhorias. Alguns dados agregados também ajudarão as aplicações e os parceiros Google, como os programadores Android. Esta <ph name="BEGIN_LINK1" />definição<ph name="END_LINK1" /> é aplicada pelo proprietário. O proprietário pode optar por enviar dados de diagnóstico e de utilização deste dispositivo para a Google. Se a definição Atividade da Web e de aplicações adicional estiver ativada, estes dados podem ser guardados na sua Conta Google. <ph name="BEGIN_LINK2" />Saiba mais<ph name="END_LINK2" /></translation>
@@ -2223,6 +2230,7 @@ Pretende pará-lo?</translation>
 <translation id="4546308221697447294">Navegue mais depressa com o Google Chrome</translation>
 <translation id="4547659257713117923">Sem separadores de outros dispositivos</translation>
 <translation id="4547672827276975204">Definir automaticamente</translation>
+<translation id="4551763574344810652">Prima <ph name="MODIFIER_KEY_DESCRIPTION" /> para anular</translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4554591392113183336">A extensão externa tem a mesma versão ou uma versão inferior à existente.</translation>
 <translation id="4555769855065597957">Sombra</translation>
@@ -2642,6 +2650,7 @@ Pretende pará-lo?</translation>
 <translation id="52550593576409946">Não foi possível iniciar a aplicação de quiosque.</translation>
 <translation id="5255859108402770436">Iniciar sessão novamente</translation>
 <translation id="5256861893479663409">Em todos os sites</translation>
+<translation id="5258992782919386492">Instalar neste dispositivo</translation>
 <translation id="5260508466980570042">Lamentamos, mas não foi possível confirmar o seu email ou palavra-passe. Tente novamente.</translation>
 <translation id="5261683757250193089">Abrir na Web Store</translation>
 <translation id="5264148714798105376">Esta ação pode demorar cerca de um minuto.</translation>
@@ -2720,6 +2729,7 @@ Pretende pará-lo?</translation>
 <translation id="537813040452600081">As páginas visualizadas nesta janela não serão apresentadas no histórico do navegador nem no histórico de pesquisas e não deixarão outros vestígios, como cookies, no computador depois de terminar sessão. Os ficheiros transferidos e os marcadores criados não serão preservados.</translation>
 <translation id="5379140238605961210">Continuar a bloquear o acesso ao microfone</translation>
 <translation id="5382591305415226340">Gerir links suportados</translation>
+<translation id="5383377866517186886">A câmara está desligada nas Preferências do Sistema no Mac</translation>
 <translation id="5384883051496921101">Este site está prestes a partilhar informações com uma aplicação fora do modo de navegação anónima.</translation>
 <translation id="5388885445722491159">Emparelhado</translation>
 <translation id="5389237414310520250">Não foi possível criar o novo utilizador. Verifique o espaço no disco rígido e as autorizações e tente novamente.</translation>
@@ -2739,6 +2749,7 @@ Pretende pará-lo?</translation>
 <translation id="5420438158931847627">Determina a nitidez do texto e das imagens.</translation>
 <translation id="5422221874247253874">Ponto de acesso</translation>
 <translation id="5422781158178868512">Lamentamos, não foi possível reconhecer o aparelho de armazenamento externo.</translation>
+<translation id="5423829801105537712">Verificação ortográfica básica</translation>
 <translation id="5423849171846380976">Activado</translation>
 <translation id="5425042808445046667">Continuar a transferir</translation>
 <translation id="5425722269016440406">Tem de estar online para desativar o Smart Lock, porque esta definição está sincronizada com o telemóvel e outros dispositivos. Primeiro, estabeleça ligação a uma rede.</translation>
@@ -3326,6 +3337,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6305607932814307878">Política Global:</translation>
 <translation id="6307990684951724544">Sistema ocupado</translation>
 <translation id="6308937455967653460">Guardar lin&amp;k como...</translation>
+<translation id="6309510305002439352">O microfone está desligado</translation>
 <translation id="6311220991371174222">Não é possível iniciar o Chrome porque ocorreu um erro ao abrir o seu perfil. Experimente reiniciar o Chrome.</translation>
 <translation id="6312403991423642364">Erro de rede desconhecido</translation>
 <translation id="6313641880021325787">SAIR DA RV</translation>
@@ -3456,6 +3468,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6514010653036109809">Dispositivo disponível:</translation>
 <translation id="6514565641373682518">Esta página desativou o cursor do rato.</translation>
 <translation id="6518014396551869914">Cop&amp;iar imagem</translation>
+<translation id="6518133107902771759">Verificar</translation>
 <translation id="651942933739530207">Pretende que a aplicação <ph name="APP_NAME" /> partilhe o seu ecrã e saída de áudio?</translation>
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
@@ -3471,6 +3484,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6544215763872433504">O navegador de Internet da Google, para si</translation>
 <translation id="6545665334409411530">Taxa de repetição</translation>
 <translation id="6545834809683560467">Utilize um serviço de previsão para ajudar a concluir as pesquisas e os URLs introduzidos na barra de endereço ou na caixa de pesquisa do iniciador de aplicações</translation>
+<translation id="6545867563032584178">O microfone está desligado nas Preferências do Sistema no Mac</translation>
 <translation id="6547316139431024316">Não avisar novamente para esta extensão</translation>
 <translation id="6547354035488017500">Liberte, pelo menos, 512 MB de espaço ou o seu dispositivo deixa de responder. Para libertar espaço, elimine ficheiros do armazenamento do dispositivo.</translation>
 <translation id="6550675742724504774">Opções</translation>
@@ -3892,6 +3906,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="722055596168483966">Personalizar os serviços Google</translation>
 <translation id="7221855153210829124">Mostrar notificações</translation>
 <translation id="7221869452894271364">Recarregar esta página</translation>
+<translation id="7222204278952406003">O Chrome é o seu navegador predefinido</translation>
 <translation id="7222232353993864120">Endereço de email</translation>
 <translation id="7225179976675429563">Tipo de rede em falta</translation>
 <translation id="7228479291753472782">Manipular definições que especificam se os Sites podem utilizar funcionalidades como a geolocalização, o microfone, a câmara, etc.</translation>
@@ -3954,6 +3969,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7309257895202129721">Mostrar &amp;controlos</translation>
 <translation id="7310598146671372464">Não é possível iniciar sessão. O servidor não suporta os tipos de encriptação Kerberos especificados. Contacte o administrador.</translation>
 <translation id="7311079019872751559">Acesso de plug-in sem isolamento de processos</translation>
+<translation id="73174032666024687"><ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="7321545336522791733">Servidor inacessível</translation>
 <translation id="7324297612904500502">Fórum da versão beta</translation>
 <translation id="7325437708553334317">Extensão Alto Contraste</translation>
@@ -3962,6 +3978,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7329154610228416156">O início de sessão falhou porque foi configurado para utilizar um URL não seguro (<ph name="BLOCKED_URL" />). Contacte o gestor.</translation>
 <translation id="7334190995941642545">O Smart Lock não está disponível atualmente. Tente novamente mais tarde.</translation>
 <translation id="7334274148831027933">Ativar lupa ancorada</translation>
+<translation id="7335974957018254119">Utilizar o corretor ortográfico para</translation>
 <translation id="7338630283264858612">O número de série do dispositivo é inválido.</translation>
 <translation id="7339763383339757376">PKCS #7, certificado único</translation>
 <translation id="7339785458027436441">Verificar a ortografia durante a escrita</translation>
@@ -4038,6 +4055,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7453008956351770337">Ao selecionar esta impressora, está a conceder à seguinte extensão a autorização para aceder à sua impressora:</translation>
 <translation id="7456142309650173560">programador</translation>
 <translation id="7456847797759667638">Abrir localização...</translation>
+<translation id="7458168200501453431">Utiliza o mesmo corretor ortográfico que é utilizado na Pesquisa Google. O texto que introduzir no navegador é enviado à Google.</translation>
 <translation id="7461924472993315131">Fixar</translation>
 <translation id="746216226901520237">Da próxima vez, o telemóvel irá desbloquear o <ph name="DEVICE_TYPE" />. Pode desativar o Smart Lock nas Definições.</translation>
 <translation id="7463006580194749499">Adicionar pessoa</translation>
@@ -4140,6 +4158,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7631887513477658702">&amp;Abrir Sempre Ficheiros Deste Tipo</translation>
 <translation id="7632948528260659758">A atualização das seguintes aplicações quiosque falhou:</translation>
 <translation id="763632859238619983">Não permitir que os sites instalem controladores de pagamentos</translation>
+<translation id="7636919061354591437">Instalar neste dispositivo</translation>
 <translation id="7638605456503525968">Portas de série</translation>
 <translation id="7639178625568735185">Entendido!</translation>
 <translation id="764017888128728">O <ph name="PASSWORD_MANAGER_BRAND" /> inicia automaticamente sessão em sites elegíveis com as palavras-passe que guardou.</translation>
@@ -5118,7 +5137,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="9157697743260533322">Falha ao configurar atualizações automáticas para todos os utilizadores (erro de inicialização da verificação prévia: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Ups! Ocorreu um problema de comunicação com a rede durante a autenticação. Verifique a ligação de rede e tente novamente.</translation>
 <translation id="916607977885256133">Ecrã no ecrã</translation>
-<translation id="9168436347345867845">Fazer mais tarde</translation>
+<translation id="9168436347345867845">Fazer isto mais tarde</translation>
 <translation id="9169496697824289689">Ver atalhos de teclado</translation>
 <translation id="9169931577761441333">Adicionar <ph name="APP_NAME" /> ao ecrã principal</translation>
 <translation id="9170848237812810038">An&amp;ular</translation>

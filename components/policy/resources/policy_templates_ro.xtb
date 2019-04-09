@@ -138,6 +138,7 @@ Pentru mai multe informații despre contextele sigure, accesează https://www.w3
       Dacă această politică nu este configurată, frecvența prestabilită este de 3
       ore. Frecvența minimă permisă este de 60 de secunde.</translation>
 <translation id="1204263402976895730">Imprimantele activate ale companiei</translation>
+<translation id="1216919699175573511">Activează compatibilitatea cu schimbul HTTP cu semnătură (SXG)</translation>
 <translation id="1219695476179627719">Specifică dacă dispozitivul trebuie să revină la versiunea setată de <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> dacă rulează deja o versiune superioară.
 
       Valoarea prestabilită este RollbackDisabled.</translation>
@@ -1089,15 +1090,15 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
           Comportamentul politicilor specifice nu va fi afectat dacă setarea acestei politici este anulată.</translation>
 <translation id="2987155890997901449">Activează ARC</translation>
 <translation id="2987227569419001736">Controlează folosirea API-ului Web Bluetooth</translation>
-<translation id="3011301228198307065">Configurează adresa URL a paginii de pornire prestabilite în <ph name="PRODUCT_NAME" /> și nu le permite utilizatorilor să o schimbe.
+<translation id="3011301228198307065">Configurează adresa URL a paginii principale prestabilite în <ph name="PRODUCT_NAME" /> și nu le permite utilizatorilor să o schimbe.
 
-          Pagina de pornire este cea pe care o deschizi apăsând pe butonul Pagina de pornire. Paginile care se deschid la pornire sunt controlate de politicile RestoreOnStartup.
+          Pagina principală este cea care se deschide apăsând pe butonul Pagină principală. Paginile care se deschid la pornire sunt controlate de politicile RestoreOnStartup.
 
-          Tipul paginii de pornire poate fi setat la o adresă URL pe care o specifici aici sau la pagina Filă nouă. Dacă selectezi pagina Filă nouă, atunci această politică este ignorată.
+          Tipul paginii principale poate fi setat la o adresă URL pe care o specifici aici sau la pagina Filă nouă. Dacă selectezi pagina Filă nouă, atunci această politică este ignorată.
 
-          Dacă activezi această setare, utilizatorii nu pot modifica adresa URL a paginii de pornire din <ph name="PRODUCT_NAME" />, dar pot, totuși, să aleagă pagina Filă nouă ca pagină de pornire.
+          Dacă activezi această setare, utilizatorii nu pot modifica adresa URL a paginii principale din <ph name="PRODUCT_NAME" />, dar pot totuși să aleagă pagina Filă nouă ca pagină principală.
 
-          Dacă această politică nu este configurată, utilizatorii vor putea să aleagă singuri pagina de pornire atunci când nu este setată nici HomepageIsNewTabPage.
+          Dacă această politică nu este configurată, utilizatorii vor putea să aleagă singuri pagina principală atunci când nu este setată nici HomepageIsNewTabPage.
 
           Adresa URL trebuie să aibă o schemă standard, de exemplu: „http://example.com” sau ”https://example.com”.
 
@@ -1622,6 +1623,13 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
           Dacă politica nu este setată, se utilizează un interval de timp prestabilit.
 
           Valoarea politicii trebuie să fie specificată în milisecunde.</translation>
+<translation id="4105884561459127998">Configurează tipul de autentificare pentru conectările SAML.
+
+      Când această politică nu este setată sau este setată la valoarea prestabilită (valoarea 0), comportamentul conectărilor SAML este stabilit de browser, în funcție de alți factori. În scenariul cel mai simplu, autentificarea utilizatorului și protecția datelor utilizatorului din memoria cache se bazează pe parole introduse manual de utilizatori.
+
+      Când această politică este setată la ClientCertificate (valoarea 1), autentificarea certificatelor de client este folosită pentru utilizatorii nou adăugați care se conectează prin SAML. Pentru astfel de utilizatori nu se folosesc parole, iar datele locale din memoria cache sunt protejate cu ajutorul cheilor criptografice corespunzătoare. De exemplu, cu ajutorul acestei setări se poate configura autentificarea utilizatorilor pe bază de carduri inteligente (reține că aplicațiile suplimentare pentru carduri inteligente trebuie să fie instalate prin politica DeviceLoginScreenExtensions).
+
+      Această politică afectează doar utilizatorii care se autentifică prin SAML.</translation>
 <translation id="4105989332710272578">Dezactivează aplicarea politicii privind Transparența certificatului pentru o listă de adrese URL</translation>
 <translation id="4121350739760194865">Împiedicați promoțiile aplicațiilor să apară în pagina Filă nouă</translation>
 <translation id="4125606414556046117">Cu această politică poți configura imaginea de fundal care se afișează pe desktop și pe fundalul ecranului de conectare pentru utilizator. Politica este setată prin specificarea adresei URL de la care <ph name="PRODUCT_OS_NAME" /> poate descărca imaginea de fundal și a unui cod hash criptografic utilizat pentru a verifica integritatea descărcării. Imaginea trebuie să fie în format JPEG, iar dimensiunea acesteia nu trebuie să depășească 16 MB. Adresa URL trebuie să poată fi accesată fără autentificare.
@@ -1650,6 +1658,30 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dacă politica nu este configurată, utilizatorul poate alege imaginea de afișat pe desktop și pe fundalul ecranului de conectare.</translation>
 <translation id="412697421478384751">Permite utilizatorilor să seteze coduri PIN slabe pentru ecranul de blocare</translation>
 <translation id="4138655880188755661">Limita de timp</translation>
+<translation id="4144164749344898721">Această politică controlează mai multe setări pentru strategia de gestionare a consumului de energie atunci când utilizatorul devine inactiv.
+
+          Există patru tipuri de acțiuni:
+          * dacă utilizatorul rămâne inactiv pentru un interval de timp egal cu cel specificat de |ScreenDim|, ecranul va fi estompat;
+          * dacă utilizatorul rămâne inactiv pentru un interval de timp egal cu cel specificat de |ScreenOff|, ecranul va fi dezactivat;
+          * dacă utilizatorul rămâne inactiv pentru un interval de timp egal cu cel specificat de |IdleWarning|, se va afișa o casetă de dialog prin care utilizatorul este avertizat că sistemul va trece în modul inactiv. Mesajul de avertizare se afișează numai dacă, la trecerea la modul inactiv, sistemul se deconectează sau se închide. 
+          * dacă utilizatorul rămâne inactiv pentru un interval de timp egal cu cel specificat de |Idle|, va fi realizată acțiunea specificată de |IdleAction|.
+
+          Pentru fiecare dintre acțiunile de mai sus, intervalul trebuie să fie specificat în milisecunde și trebuie să fie setat la o valoare mai mare decât zero, pentru a se declanșa acțiunea corespunzătoare. Dacă intervalul este setat la zero, <ph name="PRODUCT_OS_NAME" /> nu va realiza acțiunea corespunzătoare.
+
+          Pentru fiecare dintre intervalele de mai sus, dacă durata nu este setată, se va folosi o valoare prestabilită.
+
+          Reține că valorile specificate de |ScreenDim| trebuie să fie mai mici sau egale cu cele specificate de |ScreenOff|, iar valorile specificate de |ScreenOff| și |IdleWarning| trebuie să fie mai mici sau egale cu cele specificate de |Idle|.
+
+          Acțiunea specificată de |IdleAction| poate fi una dintre următoarele patru:
+          * |Suspend|,
+          * |Logout|,
+          * |Shutdown|,
+          * |DoNothing|.
+
+          Dacă acțiunea specificată de |IdleAction| nu este setată, se va urma acțiunea prestabilită, și anume suspendarea.
+
+          Există și setări separate pentru funcționarea pe c.a. și pe baterie.
+          </translation>
 <translation id="4150201353443180367">Ecran</translation>
 <translation id="4157003184375321727">Raportați versiunea sistemului de operare și versiunea firmware</translation>
 <translation id="4157594634940419685">Permite accesul la imprimantele CUPS native</translation>
@@ -1734,6 +1766,15 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="4322842393287974810">Permite aplicației chioșc lansate automat fără nicio întârziere să controleze versiunea <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Adăugați un buton de deconectare în bara de sistem</translation>
 <translation id="4332177773549877617">Înregistrează evenimente pentru instalările aplicației pentru Android</translation>
+<translation id="4335292026668105285">Indică intervalul de timp fără intervenția utilizatorului după care se afișează o casetă de dialog de avertizare atunci când dispozitivul funcționează pe c.a.
+
+          Dacă este configurată, politica indică perioada în care utilizatorul trebuie să rămână inactiv înainte ca <ph name="PRODUCT_OS_NAME" /> să afișeze o casetă de dialog prin care utilizatorul este avertizat că urmează a fi luată o măsură pentru inactivitate.
+
+          Când politica nu este configurată, nu se afișează nicio casetă de dialog de avertizare.
+
+          Valoarea politicii trebuie specificată în milisecunde. Valorile trebuie să fie mai mici sau egale cu intervalul de inactivitate.
+
+          Mesajul de avertizare se afișează numai dacă, la trecerea la modul inactiv, sistemul se deconectează sau se închide.</translation>
 <translation id="4346674324214534449">Îți permite să setezi dacă anunțurile trebuie blocate pe site-urile cu anunțuri deranjante.
 
       Dacă această valoare este setată la 2, anunțurile vor fi blocate pe site-urile cu anunțuri deranjante.
@@ -3264,6 +3305,9 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="7464991223784276288">Limitează cookie-urile de la adresele URL corespunzătoare la sesiunea curentă</translation>
 <translation id="7469554574977894907">Activează sugestiile de căutare</translation>
 <translation id="7474249562477552702">Dacă sunt permise certificatele semnate cu SHA-1, emise de ancorele de încredere locale</translation>
+<translation id="747851715060942420">Îți permite să configurezi paginile încărcate la pornire.
+
+      Politica „Adrese URL care se deschid la pornire” este ignorată, cu excepția cazului în care selectezi „Deschide o listă cu adrese URL” în „Acțiune la pornire”.</translation>
 <translation id="7485481791539008776">Reguli de selectare a imprimantei prestabilite</translation>
 <translation id="7485730741952775732">Dacă politica este configurată, gazda de acces la distanță va folosi această adresă URL ca să valideze indicativele de autentificare de la clienții de acces la distanță pentru a accepta conexiuni. Trebuie folosită în legătură cu RemoteAccessHostTokenUrl.
 
@@ -3277,6 +3321,11 @@ nu poate fi stabilit de utilizator din setările browserului.
 
       Dacă această politică este folosită, utilizatorii vor putea folosi toate imprimantele, cu excepția celor ale căror ID-uri sunt specificate în politică. ID-urile trebuie să corespundă câmpurilor „id” sau „guid” din fișierul specificat în <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
+<translation id="7506269062143646163">Activează compatibilitatea pentru schimbul HTTP cu semnătură (SXG).
+
+          Dacă politica nu este configurată sau este activată, Google Chrome va accepta conținutul web difuzat ca schimburi HTTP cu semnătură.
+
+          Dacă politica este dezactivată, schimburile HTTP cu semnătură nu pot fi încărcate.</translation>
 <translation id="7511361072385293666">Dacă această politică este activată sau nu este configurată, este permisă folosirea protocolului QUIC în <ph name="PRODUCT_NAME" />.
       Dacă această politică este dezactivată, nu este permisă folosirea protocolului QUIC.</translation>
 <translation id="7517845714620372896">Indică procentul luminozității ecranului.
@@ -3416,6 +3465,15 @@ nu poate fi stabilit de utilizator din setările browserului.
       Identificatorii recunoscuți pentru tipurile de conexiune sunt „ethernet”, „wifi”, „wimax”, „bluetooth” și „cellular”.</translation>
 <translation id="7763614521440615342">Afișează sugestii privind conținutul pe pagina Filă nouă</translation>
 <translation id="7765879851993224640">Permite folosirea conectării Smart Lock.</translation>
+<translation id="7772346342637974431">Indică intervalul de timp fără intervenția utilizatorului după care se afișează o casetă de dialog de avertizare atunci când dispozitivul funcționează pe baterie.
+
+          Dacă este configurată, politica indică perioada în care utilizatorul trebuie să rămână inactiv înainte ca <ph name="PRODUCT_OS_NAME" /> să afișeze o casetă de dialog prin care utilizatorul este avertizat că urmează a fi luată o măsură pentru inactivitate.
+
+          Când politica nu este configurată, nu se afișează nicio casetă de dialog de avertizare.
+
+          Valoarea politicii trebuie specificată în milisecunde. Valorile trebuie să fie mai mici sau egale cu intervalul de inactivitate.
+
+          Mesajul de avertizare se afișează numai dacă, la trecerea la modul inactiv, sistemul se deconectează sau se închide.</translation>
 <translation id="7774768074957326919">Utilizează setările proxy-ului pentru sistem</translation>
 <translation id="7777535871204167559">Dispozitivele de stocare externă sunt tratate ca „numai în citire”</translation>
 <translation id="7781069478569868053">Pagina Filă nouă</translation>
@@ -3955,6 +4013,7 @@ Configurarea unei liste de adrese URL în această politică are același efect 
 
 Pentru mai multe informații despre contextele sigure, accesează https://www.w3.org/TR/secure-contexts/
       </translation>
+<translation id="8939595959513040470">Oferă utilizatorilor versiunea de Quick Fix.</translation>
 <translation id="8942616385591203339">Această politică gestionează dacă utilizatorul poate vedea Consimțământul de sincronizare la prima conectare. Ea trebuie setată la false dacă Consimțământul de sincronizare nu este niciodată necesar pentru utilizator.
       Dacă este setată la false, Consimțământul de sincronizare nu se va afișa.
       Dacă este setată la true sau nu este setată, Consimțământul de sincronizare se poate afișa.</translation>
@@ -4014,6 +4073,9 @@ Pentru mai multe informații despre contextele sigure, accesează https://www.w3
 
       Dacă politica nu este setată, utilizatorul poate alege imaginea avatar care îl reprezintă pe ecranul de conectare.</translation>
 <translation id="9035964157729712237">ID-urile extensiilor excluse din lista neagră</translation>
+<translation id="9038058011835642205">Specifică o listă cu site-uri care sunt instalate în fundal, fără intervenția utilizatorului, și care nu pot fi dezinstalate sau dezactivate de utilizator.
+
+      Fiecare element din lista politicii este un obiect cu un membru obligatoriu: „url” și doi membri opționali: „default_launch_container” și „create_desktop_shortcut”. „url” ar trebui să fie adresa URL a aplicației web de instalat, iar „launch_container” ar trebui să fie „window” sau „tab” pentru a indica modul în care va fi deschisă aplicația web după instalare, iar „create_desktop_shortcut” ar trebui să fie adevărat dacă o comandă rapidă pe desktop este creată în Linux și Windows. Dacă „default_launch_container” se omite, aplicația se va deschide într-o filă în mod prestabilit. Indiferent de valoarea „default_launch_container”, utilizatorii pot schimba containerul în care se va deschide aplicația. Dacă „create_desktop_shortcuts” este omis, nu va fi creată nicio comandă rapidă pe desktop.</translation>
 <translation id="9038839118379817310">Activează Wi-Fi</translation>
 <translation id="9039822628127365650">Dacă este configurată, politica specifică perioada de timp după care un utilizator este deconectat în mod automat, încheind sesiunea. Utilizatorul este informat despre timpul rămas prin afișarea unui cronometru în bara de sistem.
 
@@ -4023,6 +4085,11 @@ Pentru mai multe informații despre contextele sigure, accesează https://www.w3
 
       Valoarea politicii trebuie specificată în milisecunde. Valorile variază între 30 de secunde și 24 de ore.</translation>
 <translation id="9042911395677044526">Această politică permite trimiterea configurației rețelei pentru a fi aplicată pentru fiecare utilizator pe un dispozitiv cu <ph name="PRODUCT_OS_NAME" />. Configurația rețelei este un șir în formatul JSON, conform definirii acestuia de către formatul Open Network Configuration descris la <ph name="ONC_SPEC_URL" /></translation>
+<translation id="9050853837490399534">Politica stabilește dacă este necesar ca dispozitivul să fie actualizat la o versiune cu rezolvare rapidă.
+
+      Dacă valoarea politicii este setată la un indicativ care corespunde unei versiuni cu rezolvare rapidă, dispozitivul va fi actualizat la versiunea corespunzătoare dacă actualizarea nu este blocată de altă politică.
+
+      Dacă această politică nu este setată sau dacă valoarea sa nu corespunde unei versiuni cu rezolvare rapidă, dispozitivul nu va fi actualizat la o versiune cu rezolvare rapidă. Dacă dispozitivul rulează deja o versiune de Quick Fix, iar politica nu mai este setată sau valoarea ei nu mai corespunde unei versiuni de Quick Fix, dispozitivul va fi actualizat la o versiune normală dacă actualizarea nu este blocată de altă politică.</translation>
 <translation id="906631898352326790">
       Dacă politica este activată, fiecare dintre originile indicate într-o
       listă de valori separate prin virgulă va rula propriul proces. Astfel se vor izola

@@ -133,7 +133,6 @@
 <translation id="1620510694547887537">कैमरा</translation>
 <translation id="1623104350909869708">इस पेज को अतिरिक्त डॉयलॉग बनाने से रोकें</translation>
 <translation id="16338877384480380">आर्किटेक्चर-बी</translation>
-<translation id="1634051627998691300">सेशन खत्म करें</translation>
 <translation id="1639239467298939599">लोड हो रहा है</translation>
 <translation id="1640180200866533862">उपयोगकर्ता नीतियां</translation>
 <translation id="1640244768702815859"><ph name="BEGIN_LINK" />साइट के मुखपृष्ठ पर विज़िट करके<ph name="END_LINK" /> देखें.</translation>
@@ -256,7 +255,6 @@
 <translation id="2330137317877982892"><ph name="CREDIT_CARD" />, <ph name="EXPIRATION_DATE_ABBR" /> को खत्म होने वाला है</translation>
 <translation id="2337852623177822836">वह सेटिंग जिसे आपका व्यवस्थापक नियंत्रित करता है</translation>
 <translation id="2346319942568447007">आपकी कॉपी की हुई इमेज</translation>
-<translation id="2349790679044093737">VR सेशन चालू है</translation>
 <translation id="2354001756790975382">अन्य बुकमार्क</translation>
 <translation id="2354430244986887761">Google सुरक्षित ब्राउज़िंग को हाल में <ph name="SITE" /> पर <ph name="BEGIN_LINK" />नुकसान पहुंचाने वाले ऐप्लिकेशन मिले हैं<ph name="END_LINK" />.</translation>
 <translation id="2355395290879513365">आप इस साइट पर जिन चित्रों को देख रहे हैं, हो सकता है कि वे हमलावरों को दिखाई दें और हमलावर उन्हें बदलने के लिए आपको भ्रमित करें.</translation>
@@ -775,6 +773,7 @@
 <translation id="5252000469029418751">सी7 (एन्वेलप)</translation>
 <translation id="5254958791078852567">ई1</translation>
 <translation id="5283044957620376778">बी1</translation>
+<translation id="528468243742722775">समाप्त</translation>
 <translation id="5284909709419567258">नेटवर्क के पते</translation>
 <translation id="5285570108065881030">सेव किए गए सभी पासवर्ड दिखाएं</translation>
 <translation id="5287240709317226393">कुकी दिखाएं</translation>

@@ -153,6 +153,7 @@
       Kui see reegel on määramata, on vaikesagedus 3 tundi. Minimaalne
       lubatud sagedus on 60 sekundit.</translation>
 <translation id="1204263402976895730">Ettevõtte lubatud printerid</translation>
+<translation id="1216919699175573511">Allkirjastatud HTTP-andmevahetuse (SXG) toe lubamine</translation>
 <translation id="1219695476179627719">Määrab, kas seade peaks tagasi minema reegliga <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> määratud versioonile, kui see käitab juba hilisemat versiooni.
 
       Vaikereegel on RollbackDisabled.</translation>
@@ -1664,6 +1665,13 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
           Kui jätate selle reegli määramata, kasutatakse vaikeaega.
 
           Reegli väärtus tuleb määrata millisekundites.</translation>
+<translation id="4105884561459127998">Seadistab SAML-i sisselogimiste autentimise tüübi.
+
+      Kui reegel on määramata või seatud vaikeväärtusele (0), määrab brauser olenevalt muudest teguritest SAML-i sisselogimiste käitumise. Kõige tavapärasema stsenaariumi korral põhineb kasutajate autentimine ja vahemällu talletatud kasutajaandmete kaitse paroolidel, mille kasutajad käsitsi sisestavad.
+
+      Kui reegel on seatud väärtusele ClientCertificate (1), kasutatakse äsja lisatud ja SAML-i kaudu sisse logivate kasutajate puhul kliendi sertifikaadi autentimist. Selliste kasutajate puhul ei kasutata paroole ja nende vahemällu talletatud kohalikke andmeid kaitstakse vastavate krüptovõtmetega. See seade võimaldab näiteks seadistada kiipkaardipõhise autentimise (pange tähele, et kiipkaardi vaherakendused tuleb installida reegli DeviceLoginScreenExtensions kaudu).
+
+      Reegel mõjutab ainult kasutajaid, kes kasutavad autentimiseks SAML-i.</translation>
 <translation id="4105989332710272578">Sertifikaadi läbipaistvuse jõustamise keelamine URL-ide loendi jaoks</translation>
 <translation id="4121350739760194865">Rakenduste reklaamide ilmumise takistamine uuel vahelehel</translation>
 <translation id="4125606414556046117">Reegel võimaldab seadistada taustapildi, mis kuvatakse kasutaja töölaual ja sisselogimisekraani taustal. Reegli seadistamiseks määrake URL, millelt <ph name="PRODUCT_OS_NAME" /> saab alla laadida taustapildi ja allalaaditava sisu terviklikkuse kinnitamiseks kasutatava krüptograafilise räsi. Pilt peab olema JPEG-vormingus ja faili maht ei tohi olla suurem kui 16 MB. URL peab olema juurdepääsetav autentimiseta.
@@ -1692,6 +1700,30 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
       Kui jätate reegli määramata, saab kasutaja valida töölaual ja sisselogimisekraani taustal kuvatava pildi.</translation>
 <translation id="412697421478384751">Nõrkade lukustuskuva PIN-koodide määramise lubamine</translation>
 <translation id="4138655880188755661">Ajapiirang</translation>
+<translation id="4144164749344898721">See reegel juhib mitut seadet, mis reguleerivad toitehalduse strateegiat kasutaja tegevusetuse ajal.
+
+          Võimalik on rakendada nelja tüüpi toiminguid.
+          * Ekraan muutub tumedaks, kui kasutaja on tegevusetu aja jooksul, mis on määratud üksusega |ScreenDim|.
+* Ekraan lülitatakse välja, kui kasutaja on tegevusetu aja jooksul, mis on määratud üksusega |ScreenOff|.
+* Kui kasutaja on tegevusetu aja jooksul, mis on määratud üksusega |IdleWarning|, siis kuvatakse hoiatusdialoog, mis ütleb kasutajale, et peagi rakendub tegevusetu oleku toiming. Hoiatussõnum kuvatakse ainult siis, kui tegevusetuse toiming on väljalogimine või väljalülitamine.
+          * Kui kasutaja on tegevusetu üksusega |Idle| määratud aja jooksul, rakendub toiming |IdleAction|.
+
+          Iga ülalnimetatud toimingu puhul tuleb viivitus määrata millisekunditega ja vastava toimingu rakendamiseks peab aja väärtus olema suurem kui null. Kui viivituse väärtus on null, ei rakenda <ph name="PRODUCT_OS_NAME" /> vastavat toimingut.
+
+          Kui mõne ülaltoodud viivituse puhul pole aega määratud, kasutatakse vaikeväärtust.
+
+          Pange tähele, et üksuse |ScreenDim| väärtusi piiratakse nii, et need oleksid võrdsed üksusega |ScreenOff| või sellest väiksemad, üksuseid |ScreenOff| ja |IdleWarning| piiratakse nii, et need oleksid võrdsed üksusega |Idle| või sellest väiksemad.
+
+          |IdleAction| võib olla üks neljast võimalikust toimingust.
+          * |Suspend|
+          * |Logout|
+          * |Shutdown|
+          * |DoNothing|
+
+          Kui üksust |IdleAction| pole määratud, rakendub vaiketoiming, milleks on peatamine.
+
+          Vahelduvvoolu- ja akutoite jaoks on saadaval ka eraldi seaded.
+          </translation>
 <translation id="4150201353443180367">Kuva</translation>
 <translation id="4157003184375321727">OS-ist ja püsivara versioonist teavitamine</translation>
 <translation id="4157594634940419685">CUPS-i omaprinteritele juurdepääsu lubamine</translation>
@@ -1775,6 +1807,15 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
 <translation id="4322842393287974810">Luba automaatselt käivitatud viivituseta kioskirakendusel juhtida operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> versiooni</translation>
 <translation id="4325690621216251241">Lisa väljalogimisnupp süsteemisalve</translation>
 <translation id="4332177773549877617">Androidi rakenduse installimiste logisündmused</translation>
+<translation id="4335292026668105285">Määrab aja, pärast mida kuvatakse vahelduvvoolutoite kasutamisel hoiatusdialoog, kui kasutaja pole midagi sisestanud.
+
+          Kui see reegel on määratud, määrab see aja, mille jooksul peab kasutaja olema tegevusetu, enne kui operatsioonisüsteem <ph name="PRODUCT_OS_NAME" /> kuvab hoiatusdialoogi, teavitades kasutajat tegevusetu oleku peatsest toimingust.
+
+          Kui seda reeglit pole määratud, siis hoiatusdialoogi ei kuvata.
+
+          Reegli väärtus tuleb määrata millisekundites. Väärtus peab olema tegevusetuse viivitusest väiksem või sellega võrdne.
+
+          Hoiatussõnum kuvatakse ainult siis, kui tegevusetuse toiming on väljalogimine või väljalülitamine.</translation>
 <translation id="4346674324214534449">Võimaldab teil määrata, kas blokeerida reklaamid sekkuvate reklaamidega saitidel.
 
       Kui selle reegli väärtuseks on määratud 2, blokeeritakse reklaamid sekkuvate reklaamidega saitidel.
@@ -3358,6 +3399,9 @@ Kui jätate selle reegli määramata, ei ole kasutajate sisselogimine piiratud. 
 <translation id="7464991223784276288">Vastavatelt URL-idelt pärit küpsisefailide seansipõhine piiramine</translation>
 <translation id="7469554574977894907">Luba otsingusoovitused</translation>
 <translation id="7474249562477552702">Kas kohalike usaldusvõtmete väljastatud SHA-1 allkirjastatud sertifikaadid on lubatud?</translation>
+<translation id="747851715060942420">Võimaldab seadistada käivitamisel laaditavad lehed.
+
+      Reeglit „Käivitamisel avatavad URL-id” eiratakse, kui te ei vali jaotises „Toiming käivitamisel” käsku „Ava URL-ide loend”.</translation>
 <translation id="7485481791539008776">Vaikeprinteri valimise reeglid</translation>
 <translation id="7485730741952775732">Kui reegel on määratud, kasutab kaugjuurdepääsu host seda URL-i kaugjuurdepääsu klientide autentimismärkide valideerimiseks, et ühendusi vastu võtta. Reeglit tuleb kasutada koos reegliga RemoteAccessHostTokenUrl.
 
@@ -3371,6 +3415,11 @@ Kui jätate selle reegli määramata, ei ole kasutajate sisselogimine piiratud. 
 
       Selle reegli kasutamisel on kasutajale saadaval kõik printerid, v.a need, mille ID-d on selles reeglis loetletud. ID-d peavad ühtima reeglis <ph name="DEVICE_PRINTERS_POLICY" /> määratud failis olevate väljadega „id” või „guid”.
       </translation>
+<translation id="7506269062143646163">Allkirjastatud HTTP-andmevahetuse (SXG) toe lubamine.
+
+          Kui see reegel on määramata või selle väärtuseks määratakse Lubatud, aktsepteerib Google Chrome allkirjastatud HTTP-andmevahetusena esitatud veebisisu.
+
+          Kui reegli väärtuseks määratakse Väär, siis ei saa allkirjastatud HTTP-andmevahetusi laadida.</translation>
 <translation id="7511361072385293666">Kui reegli väärtuseks määratakse Tõene või seda ei määrata, on QUIC-protokolli kasutamine teenuses <ph name="PRODUCT_NAME" /> lubatud.
       Kui reegli väärtuseks määratakse Väär, on QUIC-protokolli kasutamine keelatud.</translation>
 <translation id="7517845714620372896">Määrab ekraani ereduse protsendi.
@@ -3517,6 +3566,15 @@ Kui jätate selle reegli määramata, ei ole kasutajate sisselogimine piiratud. 
       Tunnustatud ühendustüübi identifikaatorid on „ethernet”, „wifi”, „wimax”, „bluetooth” ja „cellular”.</translation>
 <translation id="7763614521440615342">Kuva uuel vahelehel sisu soovitused</translation>
 <translation id="7765879851993224640">Smart Locki kaudu sisselogimise lubamine.</translation>
+<translation id="7772346342637974431">Määrab aja, pärast mida kuvatakse akutoite kasutamisel hoiatusdialoog, kui kasutaja pole midagi sisestanud.
+
+          Kui see reegel on määratud, määrab see aja, mille jooksul peab kasutaja olema tegevusetu, enne kui operatsioonisüsteem <ph name="PRODUCT_OS_NAME" /> kuvab hoiatusdialoogi, teavitades kasutajat tegevusetu oleku peatsest toimingust.
+
+          Kui seda reeglit pole määratud, siis hoiatusdialoogi ei kuvata.
+
+          Reegli väärtus tuleb määrata millisekundites. Väärtus peab olema tegevusetuse viivitusest väiksem või sellega võrdne.
+
+          Hoiatussõnum kuvatakse ainult siis, kui tegevusetuse toiming on väljalogimine või väljalülitamine.</translation>
 <translation id="7774768074957326919">Kasuta süsteemi puhverserveri seadeid</translation>
 <translation id="7777535871204167559">Väliste salvestusseadmete kirjutuskaitstuna kohtlemine</translation>
 <translation id="7781069478569868053">Uus vaheleht</translation>
@@ -4090,6 +4148,7 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
       Turvaliste kontekstide kohta saate lisateavet aadressilt
       https://www.w3.org/TR/secure-contexts/
       </translation>
+<translation id="8939595959513040470">Pakkuge kasutajatele võimalust kasutada kiirparanduse järku.</translation>
 <translation id="8942616385591203339">Reegel määrab, kas kasutajale võib esimesel sisselogimisel kuvada sünkroonimise nõusoleku. Kui kasutaja ei pea kunagi sünkroonimiseks nõusolekut andma, tuleb reegli väärtuseks määrata Väär.
       Kui reegel on seatud väärtusele Väär, ei kuvata sünkroonimise nõusolekut.
       Kui reegel on määramata või seatud väärtusele Tõene, võidakse kuvada sünkroonimise nõusolek.</translation>
@@ -4149,6 +4208,9 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 
       Kui jätate reegli määramata, saab kasutaja valida avatari pildi, mis neid sisselogimiskuval kujutab.</translation>
 <translation id="9035964157729712237">Mustast nimekirjast välistatud laienduste ID-d</translation>
+<translation id="9038058011835642205">Määrab loendi veebisaitidest, mis installitakse märkamatult, ilma et kasutaja peaks sekkuma, ning mida kasutaja ei saa desinstallida ega keelata.
+
+      Reegli iga loendiüksus on kohustusliku liikmega objekt: „url” ja kaks valikulist liiget: „default_launch_container” ja „create_desktop_shortcut”. Väärtus „url” peab olema installitava veebirakenduse URL ja „launch_container” peab olema „window” või „tab”, mis näitab, kuidas veebirakendus pärast installimist avatakse. Reegel „create_desktop_shortcut” peab olema tõene, kui töölaua otsetee tuleb luua Linuxis ja Windowsis. Kui reegel „default_launch_container" jäetakse tühjaks, avaneb rakendus vaikimisi vahelehel. Olenemata reegli „default_launch_container” väärtusest saavad kasutajad muuta, millises konteineris rakendus avaneb. Kui reegel „create_desktop_shortcuts” jäetakse tühjaks, siis töölaua otseteid ei looda.</translation>
 <translation id="9038839118379817310">WiFi lubamine</translation>
 <translation id="9039822628127365650">Kui reegel on seadistatud, määrab see ajavahemiku, mille möödudes logitakse kasutaja automaatselt välja ja seanss lõpetatakse. Süsteemisalves olev taimer näitab kasutajale järelejäänud aega.
 
@@ -4158,6 +4220,11 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 
       Reegli väärtus tuleb määrata millisekundites. Väärtus peab olema vahemikus 30 sekundit kuni 24 tundi.</translation>
 <translation id="9042911395677044526">Võimaldab võrguseadistuse kasutajapõhiselt teenuse <ph name="PRODUCT_OS_NAME" /> seadmes jõustada. Võrguseadistus on JSON-i vormingus string, mille määratleb Open Network Configuration vorming, mida kirjeldatakse aadressil <ph name="ONC_SPEC_URL" /></translation>
+<translation id="9050853837490399534">See reegel juhib, kas seadme peaks kiirparanduse järgule värskendama või mitte.
+
+      Kui reegli väärtuseks määratakse märk, mis suunab kiirparanduse järgule, värskendatakse seade vastavale kiirparanduse järgule, kui mõni teine reegel värskendust ei blokeeri.
+
+      Kui see reegel jäetakse määramata või selle väärtus ei suuna kiirparanduse järgule, siis seadet kiirparanduse järgule ei värskendata. Kui seade käitab juba kiirparanduse järku ja reeglit pole enam määratud või selle väärtus ei suuna enam kiirparanduse järgule, siis värskendatakse seade tavajärgule, kui mõni teine reegel värskendust ei blokeeri.</translation>
 <translation id="906631898352326790">
       Kui reegel on lubatud, käitab iga komadega eraldatud loendis
       nimetatud lähtekoht oma protsesse. See isoleerib ka alamdomeenide
