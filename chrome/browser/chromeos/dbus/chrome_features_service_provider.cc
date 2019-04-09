@@ -90,14 +90,6 @@ void ChromeFeaturesServiceProvider::Start(
                           weak_ptr_factory_.GetWeakPtr()),
       base::BindRepeating(&ChromeFeaturesServiceProvider::OnExported,
                           weak_ptr_factory_.GetWeakPtr()));
-  exported_object->ExportMethod(
-      kChromeFeaturesServiceInterface,
-      kChromeFeaturesServiceIsShillSandboxingEnabledMethod,
-      base::BindRepeating(
-          &ChromeFeaturesServiceProvider::IsShillSandboxingEnabled,
-          weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&ChromeFeaturesServiceProvider::OnExported,
-                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ChromeFeaturesServiceProvider::OnExported(
@@ -113,8 +105,7 @@ void ChromeFeaturesServiceProvider::IsFeatureEnabled(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
   static const base::Feature constexpr* kFeatureLookup[] = {
-      &features::kUsbbouncer, &features::kUsbguard,
-      &features::kShillSandboxing};
+      &features::kUsbbouncer, &features::kUsbguard};
 
   dbus::MessageReader reader(method_call);
   std::string feature_name;
@@ -167,10 +158,4 @@ void ChromeFeaturesServiceProvider::IsUsbguardEnabled(
                base::FeatureList::IsEnabled(features::kUsbguard));
 }
 
-void ChromeFeaturesServiceProvider::IsShillSandboxingEnabled(
-    dbus::MethodCall* method_call,
-    dbus::ExportedObject::ResponseSender response_sender) {
-  SendResponse(method_call, response_sender,
-               base::FeatureList::IsEnabled(features::kShillSandboxing));
-}
 }  // namespace chromeos
