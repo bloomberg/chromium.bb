@@ -798,7 +798,7 @@ void ProfileSyncService::OnUnrecoverableErrorImpl(
 
   // This is the equivalent for Directory::DeleteDirectoryFiles(), guaranteed
   // to be called, either directly in ShutdownImpl(), or later in
-  // SyncBackendHostCore::DoShutdown().
+  // SyncEngineBackend::DoShutdown().
   // TODO(crbug.com/923285): This doesn't seem to belong here, or if it does,
   // all preferences should be cleared via SyncPrefs::ClearPreferences(),
   // which is done by some of the callers (but not all). Care must be taken
@@ -1025,7 +1025,7 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
       ShutdownImpl(DISABLE_SYNC);
       // This is the equivalent for Directory::DeleteDirectoryFiles(),
       // guaranteed to be called, either directly in ShutdownImpl(), or later in
-      // SyncBackendHostCore::DoShutdown().
+      // SyncEngineBackend::DoShutdown().
       // TODO(crbug.com/923285): This doesn't seem to belong here, or if it
       // does, all preferences should be cleared via
       // SyncPrefs::ClearPreferences(), which is done by some of the callers
@@ -1037,7 +1037,7 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
       ShutdownImpl(DISABLE_SYNC);
       // This is the equivalent for Directory::DeleteDirectoryFiles(),
       // guaranteed to be called, either directly in ShutdownImpl(), or later in
-      // SyncBackendHostCore::DoShutdown().
+      // SyncEngineBackend::DoShutdown().
       // TODO(crbug.com/923285): This doesn't seem to belong here, or if it
       // does, all preferences should be cleared via
       // SyncPrefs::ClearPreferences(), which is done by some of the callers

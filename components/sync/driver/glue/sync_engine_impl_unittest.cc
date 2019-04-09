@@ -719,7 +719,7 @@ TEST_F(SyncEngineImplTest, DownloadControlTypesRestart) {
             fake_manager_->GetAndResetConfigureReason());
 }
 
-// It is SyncBackendHostCore responsibility to cleanup Sync Data folder if sync
+// It is SyncEngineBackend's responsibility to cleanup Sync Data folder if sync
 // setup hasn't been completed. This test ensures that cleanup happens.
 TEST_F(SyncEngineImplTest, TestStartupWithOldSyncData) {
   const char* nonsense = "slon";

@@ -308,7 +308,7 @@ void HttpBridge::MakeAsynchronousPost() {
   // SimpleURLLoader supports it.
   //
   // This calls |BindFetcherToDataTracker| in
-  // components/sync/driver/glue/sync_backend_host_core.cc which used to
+  // components/sync/driver/glue/sync_engine_backend.cc which used to
   // data_use_measurement::DataUseUserData::AttachToFetcher.
   // if (!bind_to_tracker_callback_.is_null())
   //  bind_to_tracker_callback_.Run(fetch_state_.url_poster);

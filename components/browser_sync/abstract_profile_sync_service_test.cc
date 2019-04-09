@@ -13,7 +13,7 @@
 #include "base/run_loop.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/browser_sync/test_http_bridge_factory.h"
-#include "components/sync/driver/glue/sync_backend_host_core.h"
+#include "components/sync/driver/glue/sync_engine_backend.h"
 #include "components/sync/driver/sync_api_component_factory_mock.h"
 #include "components/sync/driver/test_profile_sync_service.h"
 #include "components/sync/engine/sync_manager_factory_for_profile_sync_test.h"

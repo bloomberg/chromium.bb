@@ -38,7 +38,7 @@ class InvalidationService;
 namespace syncer {
 
 class ChangeProcessor;
-class SyncBackendHostCore;
+class SyncEngineBackend;
 class SyncBackendRegistrar;
 class SyncPrefs;
 
@@ -162,13 +162,13 @@ class SyncEngineImpl : public SyncEngine, public InvalidationHandler {
   SyncEngineHost* host() { return host_; }
 
  private:
-  friend class SyncBackendHostCore;
+  friend class SyncEngineBackend;
 
   // Handles backend initialization failure.
   void HandleInitializationFailureOnFrontendLoop();
 
-  // Called from Core::OnSyncCycleCompleted to handle updating frontend
-  // thread components.
+  // Called from SyncEngineBackend::OnSyncCycleCompleted to handle updating
+  // frontend thread components.
   void HandleSyncCycleCompletedOnFrontendLoop(
       const SyncCycleSnapshot& snapshot);
 
@@ -191,10 +191,10 @@ class SyncEngineImpl : public SyncEngine, public InvalidationHandler {
   // Name used for debugging (set from profile_->GetDebugName()).
   const std::string name_;
 
-  // Our core, which communicates directly to the syncapi. Use refptr instead
-  // of WeakHandle because |core_| is created on UI loop but released on
+  // Our backend, which communicates directly to the syncapi. Use refptr instead
+  // of WeakHandle because |backend_| is created on UI loop but released on
   // sync loop.
-  scoped_refptr<SyncBackendHostCore> core_;
+  scoped_refptr<SyncEngineBackend> backend_;
 
   // A handle referencing the main interface for non-blocking sync types. This
   // object is owned because in production code it is a proxy object.
@@ -208,7 +208,7 @@ class SyncEngineImpl : public SyncEngine, public InvalidationHandler {
   // out in StopSyncingForShutdown().
   SyncEngineHost* host_ = nullptr;
 
-  // A pointer to the registrar; owned by |core_|.
+  // A pointer to the registrar; owned by |backend_|.
   SyncBackendRegistrar* registrar_ = nullptr;
 
   invalidation::InvalidationService* invalidator_;
