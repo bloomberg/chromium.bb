@@ -62,6 +62,8 @@ try:
 except ImportError:
     pass
 
+def make_type_re(typename):
+  return re.compile('^std::__[a-zA-Z0-9]+::' + typename + '<.*>$')
 
 # Starting with the type ORIG, search for the member type NAME.  This
 # handles searching upward through superclasses.  This is needed to
@@ -84,7 +86,7 @@ def find_type(orig, name):
 
 
 def pair_to_tuple(val):
-    if val.type.name.startswith("std::__1::__compressed_pair"):
+    if make_type_re('__compressed_pair').match(val.type.name):
         t1 = val.type.template_argument(0)
         t2 = val.type.template_argument(1)
 
@@ -111,7 +113,7 @@ def ptr_to_void_ptr(val):
   
 
 
-class StdStringPrinter:
+class StringPrinter:
     "Print a std::basic_string of some kind"
 
     def __init__(self, typename, val):
@@ -125,9 +127,9 @@ class StdStringPrinter:
             type = type.target()
 
         ss = pair_to_tuple(self.val['__r_'])[0]['__s']
-        __short_mask = 0x1
+        __short_mask = int(self.val['__short_mask'])
         if (ss['__size_'] & __short_mask) == 0:
-            len = (ss['__size_'] >> 1)
+            len = ss['__size_'] >> 1 if __short_mask == 1 else ss['__size_']
             ptr = ss['__data_']
         else:
             sl = pair_to_tuple(self.val['__r_'])[0]['__l']
@@ -175,7 +177,7 @@ class UniquePointerPrinter:
         return '%s<%s> = %s => %s' % (str(self.typename), str(v.type.target()), str(v), v.dereference())
 
 
-class StdPairPrinter:
+class PairPrinter:
     "Print a std::pair"
 
     def __init__(self, typename, val):
@@ -194,7 +196,7 @@ class StdPairPrinter:
 #        return 'array'
 
 
-class StdTuplePrinter:
+class TuplePrinter:
     "Print a std::tuple"
 
     class _iterator(Iterator):
@@ -230,7 +232,7 @@ class StdTuplePrinter:
 #        return 'array'
 
 
-class StdListPrinter:
+class ListPrinter:
     "Print a std::list"
 
     class _iterator(Iterator):
@@ -272,7 +274,7 @@ class StdListPrinter:
 #        return 'array'
 
 
-class StdListIteratorPrinter:
+class ListIteratorPrinter:
     "Print std::list::iterator"
 
     def __init__(self, typename, val):
@@ -283,7 +285,7 @@ class StdListIteratorPrinter:
         return self.val['__ptr_']['__value_']
 
 
-class StdForwardListPrinter:
+class ForwardListPrinter:
     "Print a std::forward_list"
 
     class _iterator(Iterator):
@@ -318,7 +320,7 @@ class StdForwardListPrinter:
         return '%s' % (self.typename)
 
 
-class StdVectorPrinter:
+class VectorPrinter:
     "Print a std::vector"
 
     class _iterator(Iterator):
@@ -404,7 +406,7 @@ class StdVectorPrinter:
         return 'array'
 
 
-class StdVectorIteratorPrinter:
+class VectorIteratorPrinter:
     "Print std::vector::iterator"
 
     def __init__(self, typename, val):
@@ -414,7 +416,7 @@ class StdVectorIteratorPrinter:
         return self.val['__i'].dereference()
 
 
-class StdVectorBoolIteratorPrinter:
+class VectorBoolIteratorPrinter:
     "Print std::vector<bool>::iterator"
 
     def __init__(self, typename, val):
@@ -428,7 +430,7 @@ class StdVectorBoolIteratorPrinter:
             return 0
 
 
-class StdDequePrinter:
+class DequePrinter:
     "Print a std::deque"
 
     class _iterator(Iterator):
@@ -492,7 +494,7 @@ class StdDequePrinter:
 #        return 'array'
 
 
-class StdDequeIteratorPrinter:
+class DequeIteratorPrinter:
     "Print std::deque::iterator"
 
     def __init__(self, typename, val):
@@ -502,7 +504,7 @@ class StdDequeIteratorPrinter:
         return self.val['__ptr_'].dereference()
 
 
-class StdStackOrQueuePrinter:
+class StackOrQueuePrinter:
     "Print a std::stack or std::queue"
 
     def __init__(self, typename, val):
@@ -521,7 +523,7 @@ class StdStackOrQueuePrinter:
         return None
 
 
-class StdBitsetPrinter:
+class BitsetPrinter:
     "Print a std::bitset"
 
     def __init__(self, typename, val):
@@ -553,7 +555,7 @@ class StdBitsetPrinter:
         return result
 
 
-class StdSetPrinter:
+class SetPrinter:
     "Print a std::set or std::multiset"
 
     # Turn an RbtreeIterator into a pretty-print iterator.
@@ -634,7 +636,7 @@ class RbtreeIterator:
         return result
 
 
-class StdRbtreeIteratorPrinter:
+class RbtreeIteratorPrinter:
     "Print std::set::iterator"
 
     def __init__(self, typename, val):
@@ -644,7 +646,7 @@ class StdRbtreeIteratorPrinter:
         return self.val['__ptr_']['__value_']
 
 
-class StdMapPrinter:
+class MapPrinter:
     "Print a std::map or std::multimap"
 
     # Turn an RbtreeIterator into a pretty-print iterator.
@@ -687,7 +689,7 @@ class StdMapPrinter:
 #        return 'map'
 
 
-class StdMapIteratorPrinter:
+class MapIteratorPrinter:
     "Print std::map::iterator"
 
     def __init__(self, typename, val):
@@ -727,7 +729,7 @@ class HashtableIterator:
         return value
 
 
-class StdHashtableIteratorPrinter:
+class HashtableIteratorPrinter:
     "Print std::unordered_set::iterator"
 
     def __init__(self, typename, val):
@@ -737,7 +739,7 @@ class StdHashtableIteratorPrinter:
         return self.val['__node_']['__value_']
 
 
-class StdUnorderedMapIteratorPrinter:
+class UnorderedMapIteratorPrinter:
     "Print std::unordered_map::iterator"
 
     def __init__(self, typename, val):
@@ -833,29 +835,13 @@ class Printer(object):
         super(Printer, self).__init__()
         self.name = name
         self.subprinters = []
-        self.lookup = {}
+        self.lookup = []
         self.enabled = True
-        self.compiled_rx = re.compile('^([a-zA-Z0-9_:]+)<.*>$')
 
     def add(self, name, function):
-        # A small sanity check.
-        # FIXME
-        if not self.compiled_rx.match(name + '<>'):
-            raise ValueError(
-                'libstdc++ programming error: "%s" does not match' % name)
-        printer = RxPrinter(name, function)
+        printer = RxPrinter('std::' + name, function)
         self.subprinters.append(printer)
-        self.lookup[name] = printer
-
-    # Add a name using _GLIBCXX_BEGIN_NAMESPACE_VERSION.
-    def add_version(self, base, name, function):
-        self.add(base + name, function)
-        self.add(base + '__1::' + name, function)
-
-    # Add a name using _GLIBCXX_BEGIN_NAMESPACE_CONTAINER.
-    def add_container(self, base, name, function):
-        self.add_version(base, name, function)
-        self.add_version(base + '__1::', name, function)
+        self.lookup.append((make_type_re(name), printer))
 
     @staticmethod
     def get_basic_type(type):
@@ -873,20 +859,14 @@ class Printer(object):
         if not typename:
             return None
 
-        # All the types we match are template types, so we can use a
-        # dictionary.
-        match = self.compiled_rx.match(typename)
-        if not match:
-            return None
-
-        basename = match.group(1)
-        if basename in self.lookup:
-            return self.lookup[basename].invoke(val)
+        for (regexp, printer) in self.lookup:
+            if regexp.match(typename):
+                return printer.invoke(val)
 
         # Cannot find a pretty printer.  Return None.
         return None
 
-libcxx_printer = None
+printer = None
 
 
 class FilteringTypePrinter(object):
@@ -989,128 +969,69 @@ def register_libcxx_printers(obj):
     "Register libc++ pretty-printers with objfile Obj."
 
     global _use_gdb_pp
-    global libcxx_printer
+    global printer
 
     if _use_gdb_pp:
-        gdb.printing.register_pretty_printer(obj, libcxx_printer)
+        gdb.printing.register_pretty_printer(obj, printer)
     else:
         if obj is None:
             obj = gdb
-        obj.pretty_printers.append(libcxx_printer)
+        obj.pretty_printers.append(printer)
 
     register_type_printers(obj)
 
 
 def build_libcxx_dictionary():
-    global libcxx_printer
+    global printer
 
-    libcxx_printer = Printer("libc++-v1")
+    printer = Printer("libc++")
 
-    # For _GLIBCXX_BEGIN_NAMESPACE_VERSION.
-    vers = '(__1::)?'
-    # For _GLIBCXX_BEGIN_NAMESPACE_CONTAINER.
-    container = '(__cxx2011::' + vers + ')?'
-
-    # libstdc++ objects requiring pretty-printing.
-    # In order from:
-    # http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a01847.html
-    libcxx_printer.add_version('std::', 'basic_string', StdStringPrinter)
-    libcxx_printer.add_container('std::', 'bitset', StdBitsetPrinter)
-    libcxx_printer.add_container('std::', 'deque', StdDequePrinter)
-    libcxx_printer.add_container('std::', 'list', StdListPrinter)
-    libcxx_printer.add_container('std::', 'map', StdMapPrinter)
-    libcxx_printer.add_container('std::', 'multimap', StdMapPrinter)
-    libcxx_printer.add_container('std::', 'multiset', StdSetPrinter)
-    libcxx_printer.add_version('std::', 'priority_queue',
-                               StdStackOrQueuePrinter)
-    libcxx_printer.add_version('std::', 'queue', StdStackOrQueuePrinter)
-    libcxx_printer.add_version('std::', 'tuple', StdTuplePrinter)
-    libcxx_printer.add_version('std::', 'pair', StdPairPrinter)
-    libcxx_printer.add_container('std::', 'set', StdSetPrinter)
-    libcxx_printer.add_version('std::', 'stack', StdStackOrQueuePrinter)
-    libcxx_printer.add_version('std::', 'unique_ptr', UniquePointerPrinter)
-    libcxx_printer.add_container('std::', 'vector', StdVectorPrinter)
+    # libc++ objects requiring pretty-printing.
+    printer.add('basic_string', StringPrinter)
+    printer.add('bitset', BitsetPrinter)
+    printer.add('deque', DequePrinter)
+    printer.add('list', ListPrinter)
+    printer.add('map', MapPrinter)
+    printer.add('multimap', MapPrinter)
+    printer.add('multiset', SetPrinter)
+    printer.add('priority_queue', StackOrQueuePrinter)
+    printer.add('queue', StackOrQueuePrinter)
+    printer.add('tuple', TuplePrinter)
+    printer.add('pair', PairPrinter)
+    printer.add('set', SetPrinter)
+    printer.add('stack', StackOrQueuePrinter)
+    printer.add('unique_ptr', UniquePointerPrinter)
+    printer.add('vector', VectorPrinter)
     # vector<bool>
 
-    # Printer registrations for classes compiled with -D_GLIBCXX_DEBUG.
-    libcxx_printer.add('std::__debug::bitset', StdBitsetPrinter)
-    libcxx_printer.add('std::__debug::deque', StdDequePrinter)
-    libcxx_printer.add('std::__debug::list', StdListPrinter)
-    libcxx_printer.add('std::__debug::map', StdMapPrinter)
-    libcxx_printer.add('std::__debug::multimap', StdMapPrinter)
-    libcxx_printer.add('std::__debug::multiset', StdSetPrinter)
-    libcxx_printer.add('std::__debug::priority_queue', StdStackOrQueuePrinter)
-    libcxx_printer.add('std::__debug::queue', StdStackOrQueuePrinter)
-    libcxx_printer.add('std::__debug::set', StdSetPrinter)
-    libcxx_printer.add('std::__debug::stack', StdStackOrQueuePrinter)
-    libcxx_printer.add('std::__debug::unique_ptr', UniquePointerPrinter)
-    libcxx_printer.add('std::__debug::vector', StdVectorPrinter)
-
     # For array - the default GDB pretty-printer seems reasonable.
-    libcxx_printer.add_version('std::', 'shared_ptr', SharedPointerPrinter)
-    libcxx_printer.add_version('std::', 'weak_ptr', SharedPointerPrinter)
-    libcxx_printer.add_container('std::', 'unordered_map', UnorderedMapPrinter)
-    libcxx_printer.add_container('std::', 'unordered_set', UnorderedSetPrinter)
-    libcxx_printer.add_container('std::', 'unordered_multimap',
-                                 UnorderedMapPrinter)
-    libcxx_printer.add_container('std::', 'unordered_multiset',
-                                 UnorderedSetPrinter)
-    libcxx_printer.add_container(
-        'std::', 'forward_list', StdForwardListPrinter)
+    printer.add('shared_ptr', SharedPointerPrinter)
+    printer.add('weak_ptr', SharedPointerPrinter)
+    printer.add('unordered_map', UnorderedMapPrinter)
+    printer.add('unordered_set', UnorderedSetPrinter)
+    printer.add('unordered_multimap', UnorderedMapPrinter)
+    printer.add('unordered_multiset', UnorderedSetPrinter)
+    printer.add('forward_list', ForwardListPrinter)
 
-    libcxx_printer.add_version('std::', 'shared_ptr', SharedPointerPrinter)
-    libcxx_printer.add_version('std::', 'weak_ptr', SharedPointerPrinter)
-    libcxx_printer.add_version('std::', 'unordered_map', UnorderedMapPrinter)
-    libcxx_printer.add_version('std::', 'unordered_set', UnorderedSetPrinter)
-    libcxx_printer.add_version('std::', 'unordered_multimap',
-                               UnorderedMapPrinter)
-    libcxx_printer.add_version('std::', 'unordered_multiset',
-                               UnorderedSetPrinter)
+    printer.add('shared_ptr', SharedPointerPrinter)
+    printer.add('weak_ptr', SharedPointerPrinter)
+    printer.add('unordered_map', UnorderedMapPrinter)
+    printer.add('unordered_set', UnorderedSetPrinter)
+    printer.add('unordered_multimap', UnorderedMapPrinter)
+    printer.add('unordered_multiset', UnorderedSetPrinter)
 
-    # These are the C++0x printer registrations for -D_GLIBCXX_DEBUG cases.
-    libcxx_printer.add('std::__debug::unordered_map', UnorderedMapPrinter)
-    libcxx_printer.add('std::__debug::unordered_set', UnorderedSetPrinter)
-    libcxx_printer.add('std::__debug::unordered_multimap', UnorderedMapPrinter)
-    libcxx_printer.add('std::__debug::unordered_multiset', UnorderedSetPrinter)
-    libcxx_printer.add('std::__debug::forward_list', StdForwardListPrinter)
-
-    libcxx_printer.add_container('std::', '__list_iterator',
-                                 StdListIteratorPrinter)
-    libcxx_printer.add_container('std::', '__list_const_iterator',
-                                 StdListIteratorPrinter)
-    libcxx_printer.add_version('std::', '__tree_iterator',
-                               StdRbtreeIteratorPrinter)
-    libcxx_printer.add_version('std::', '__tree_const_iterator',
-                               StdRbtreeIteratorPrinter)
-    libcxx_printer.add_version('std::', '__hash_iterator',
-                               StdHashtableIteratorPrinter)
-    libcxx_printer.add_version('std::', '__hash_const_iterator',
-                               StdHashtableIteratorPrinter)
-    libcxx_printer.add_version('std::', '__hash_map_iterator',
-                               StdUnorderedMapIteratorPrinter)
-    libcxx_printer.add_version('std::', '__hash_map_const_iterator',
-                               StdUnorderedMapIteratorPrinter)
-    libcxx_printer.add_version('std::', '__map_iterator',
-                               StdMapIteratorPrinter)
-    libcxx_printer.add_version('std::', '__map_const_iterator',
-                               StdMapIteratorPrinter)
-    libcxx_printer.add_container('std::', '__deque_iterator',
-                                 StdDequeIteratorPrinter)
-    libcxx_printer.add_version('std::', '__wrap_iter',
-                               StdVectorIteratorPrinter)
-    libcxx_printer.add_version('std::', '__bit_iterator',
-                               StdVectorBoolIteratorPrinter)
-
-    # Debug (compiled with -D_GLIBCXX_DEBUG) printer
-    # registrations.  The Rb_tree debug iterator when unwrapped
-    # from the encapsulating __gnu_debug::_Safe_iterator does not
-    # have the __norm namespace. Just use the existing printer
-    # registration for that.
-    libcxx_printer.add('std::__norm::__list_iterator',
-                       StdListIteratorPrinter)
-    libcxx_printer.add('std::__norm::__list_const_iterator',
-                       StdListIteratorPrinter)
-    libcxx_printer.add('std::__norm::__deque_iterator',
-                       StdDequeIteratorPrinter)
+    printer.add('__list_iterator', ListIteratorPrinter)
+    printer.add('__list_const_iterator', ListIteratorPrinter)
+    printer.add('__tree_iterator', RbtreeIteratorPrinter)
+    printer.add('__tree_const_iterator', RbtreeIteratorPrinter)
+    printer.add('__hash_iterator', HashtableIteratorPrinter)
+    printer.add('__hash_const_iterator', HashtableIteratorPrinter)
+    printer.add('__hash_map_iterator', UnorderedMapIteratorPrinter)
+    printer.add('__hash_map_const_iterator', UnorderedMapIteratorPrinter)
+    printer.add('__map_iterator', MapIteratorPrinter)
+    printer.add('__map_const_iterator', MapIteratorPrinter)
+    printer.add('__deque_iterator', DequeIteratorPrinter)
+    printer.add('__wrap_iter', VectorIteratorPrinter)
+    printer.add('__bit_iterator', VectorBoolIteratorPrinter)
 
 build_libcxx_dictionary()
