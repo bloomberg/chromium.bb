@@ -174,7 +174,7 @@ class UprevChromeCommand(command.CliCommand):
     # pfq run, should not uprev or overwrite the uprevs.
     build_infos = buildstore.GetBuildHistory(constants.PFQ_MASTER,
                                              self.NUM_RESULTS_NO_LIMIT,
-                                             starting_build_id=pfq_info['id'])
+                                             starting_build_id=pfq_build)
 
     for build_info in build_infos:
       if build_info['status'] == 'pass':

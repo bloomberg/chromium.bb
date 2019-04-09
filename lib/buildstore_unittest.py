@@ -214,15 +214,21 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     """Tests the redirect for GetBuildHistory function."""
     init = self.PatchObject(BuildStore, 'InitializeClients',
                             return_value=True)
-    bs = BuildStore()
     build_config = 'some-paladin'
     num_results = 1234
+    bs = BuildStore(_read_from_bb=False)
     bs.cidb_conn = mock.MagicMock()
     bs.GetBuildHistory(build_config, num_results, branch='master')
     bs.cidb_conn.GetBuildHistory.assert_called_once_with(
         build_config, num_results, starting_build_id=None, end_date=None,
-        ignore_build_id=None, ending_build_id=None, platform_version=None,
+        ignore_build_id=None, platform_version=None,
         branch='master', start_date=None)
+    bs = BuildStore(_read_from_bb=True)
+    bs.bb_client = mock.MagicMock()
+    bs.GetBuildHistory(build_config, num_results, branch='master')
+    bs.bb_client.GetBuildHistory.assert_called_once_with(
+        build_config, num_results, starting_build_id=None, end_date=None,
+        ignore_build_id=None, branch='master', start_date=None)
     init.return_value = False
     with self.assertRaises(buildstore.BuildStoreException):
       bs.GetBuildHistory(build_config, num_results)

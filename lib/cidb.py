@@ -1404,7 +1404,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     if ending_build_id is not None:
       where_clauses.append('id <= %d' % ending_build_id)
     if ignore_build_id is not None:
-      where_clauses.append('id != %d' % ignore_build_id)
+      where_clauses.append('buildbucket_id != %s' % ignore_build_id)
     if branch is not None:
       where_clauses.append('branch = "%s"' % branch)
     if milestone_version is not None:

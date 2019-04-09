@@ -461,7 +461,7 @@ class FakeCIDBConnection(object):
     if build_configs:
       builds = [b for b in builds if b['build_config'] in build_configs]
     if ignore_build_id is not None:
-      builds = [b for b in builds if b['id'] != ignore_build_id]
+      builds = [b for b in builds if b['buildbucket_id'] != ignore_build_id]
     if start_date is not None:
       builds = [b for b in builds
                 if b['start_time'].date() >= start_date]

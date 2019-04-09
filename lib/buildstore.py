@@ -223,7 +223,7 @@ class BuildStore(object):
   def GetBuildHistory(
       self, build_config, num_results,
       ignore_build_id=None, start_date=None, end_date=None, branch=None,
-      platform_version=None, starting_build_id=None, ending_build_id=None):
+      platform_version=None, starting_build_id=None):
     """Returns basic information about most recent builds for build config.
 
     By default this function returns the most recent builds. Some arguments can
@@ -231,9 +231,7 @@ class BuildStore(object):
 
     Args:
       build_config: config name of the build to get history.
-      num_results: Number of builds to search back. Set this to
-          CIDBConnection.NUM_RESULTS_NO_LIMIT to request no limit on the number
-          of results.
+      num_results: Number of builds to search back.
       ignore_build_id: (Optional) Ignore a specific build. This is most useful
           to ignore the current build when querying recent past builds from a
           build in flight.
@@ -246,8 +244,6 @@ class BuildStore(object):
           platform_version.
       starting_build_id: (Optional) The minimum build_id for which data should
           be retrieved.
-      ending_build_id: (Optional) The maximum build_id for which data should
-          be retrieved.
 
     Returns:
       A sorted list of dicts containing up to |number| dictionaries for
@@ -256,12 +252,17 @@ class BuildStore(object):
     """
     if not self.InitializeClients():
       raise BuildStoreException('BuildStore clients could not be initialized.')
-    if not self._read_from_bb:
+    if platform_version or not self._read_from_bb:
       return self.cidb_conn.GetBuildHistory(
           build_config, num_results, ignore_build_id=ignore_build_id,
           start_date=start_date, end_date=end_date, branch=branch,
           platform_version=platform_version,
-          starting_build_id=starting_build_id, ending_build_id=ending_build_id)
+          starting_build_id=starting_build_id)
+    else:
+      return self.bb_client.GetBuildHistory(
+          build_config, num_results, ignore_build_id=ignore_build_id,
+          start_date=start_date, end_date=end_date, branch=branch,
+          starting_build_id=starting_build_id)
 
   def InsertBuildStage(self,
                        build_id,

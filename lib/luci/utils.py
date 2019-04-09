@@ -10,15 +10,19 @@
 
 from __future__ import print_function
 
+from datetime import datetime
+from datetime import date
+from datetime import time
+from datetime import timedelta
+from email import utils as email_utils
+from google.protobuf import timestamp_pb2
 import binascii
-import datetime
 import functools
 import hashlib
 import os
 import sys
 import threading
 import urlparse
-from email import utils as email_utils
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -27,7 +31,7 @@ DATE_FORMAT = u'%Y-%m-%d'
 VALID_DATETIME_FORMATS = ('%Y-%m-%d', '%Y-%m-%d %H:%M', '%Y-%m-%d %H:%M:%S')
 
 # UTC datetime corresponding to zero Unix timestamp.
-EPOCH = datetime.datetime.utcfromtimestamp(0)
+EPOCH = datetime.utcfromtimestamp(0)
 
 # Module to run task queue tasks on by default. Used by get_task_queue_host
 # function. Can be changed by 'set_task_queue_module' function.
@@ -52,7 +56,7 @@ def parse_datetime(text):
   """Converts text to datetime.datetime instance or None."""
   for f in VALID_DATETIME_FORMATS:
     try:
-      return datetime.datetime.strptime(text, f)
+      return datetime.strptime(text, f)
     except ValueError:
       continue
   return None
@@ -92,7 +96,7 @@ def parse_rfc3339_datetime(value):
   else:
     second_value = time_value[:point_position]
     nano_value = time_value[point_position + 1:]
-  date_object = datetime.datetime.strptime(second_value, '%Y-%m-%dT%H:%M:%S')
+  date_object = datetime.strptime(second_value, '%Y-%m-%dT%H:%M:%S')
   td = date_object - EPOCH
   seconds = td.seconds + td.days * 86400
   if len(nano_value) > 9:
@@ -129,10 +133,28 @@ def TimestampToDatetime(input_time):
     datetime.datetime instance corresponding to input_time.
   """
   if input_time and input_time.seconds != 0:
-    return datetime.datetime.fromtimestamp(input_time.seconds)
+    return datetime.fromtimestamp(input_time.seconds)
   else:
     return None
 
+def DatetimeToTimestamp(input_date, end_of_day=False):
+  """Converts datetime.date object to Timestamp instance.
+
+  Args:
+    input_date: datetime.date instance to be converted.
+    end_of_day: Boolean indicating whether the Timestamp correponds to the
+        end of the date in input_date.
+
+  Returns:
+    A Timestamp instance corresponding to the specific date.
+  """
+  assert isinstance(input_date, date)
+  if end_of_day:
+    datetime_instance = datetime.combine(input_date, time(23, 59))
+  else:
+    datetime_instance = datetime.combine(input_date, time(0, 0))
+  micros = datetime_to_timestamp(datetime_instance)
+  return timestamp_pb2.Timestamp(seconds=micros/(1000*1000))
 
 def constant_time_equals(a, b):
   """Compares two strings in constant time regardless of theirs content."""
@@ -179,7 +201,7 @@ def utcnow():
 
   Use this function so it can be mocked everywhere.
   """
-  return datetime.datetime.utcnow()
+  return datetime.utcnow()
 
 
 def time_time():
@@ -195,7 +217,7 @@ def milliseconds_since_epoch(now):
 
 def datetime_to_rfc2822(dt):
   """datetime -> string value for Last-Modified header as defined by RFC2822."""
-  if not isinstance(dt, datetime.datetime):
+  if not isinstance(dt, datetime):
     raise TypeError(
         'Expecting datetime object, got %s instead' % type(dt).__name__)
   assert dt.tzinfo is None, 'Expecting UTC timestamp: %s' % dt
@@ -204,7 +226,7 @@ def datetime_to_rfc2822(dt):
 
 def datetime_to_timestamp(value):
   """Converts UTC datetime to integer timestamp in microseconds since epoch."""
-  if not isinstance(value, datetime.datetime):
+  if not isinstance(value, datetime):
     raise ValueError(
         'Expecting datetime object, got %s instead' % type(value).__name__)
   if value.tzinfo is not None:
@@ -218,7 +240,7 @@ def timestamp_to_datetime(value):
   if not isinstance(value, (int, long, float)):
     raise ValueError(
         'Expecting a number, got %s instead' % type(value).__name__)
-  return EPOCH + datetime.timedelta(microseconds=value)
+  return EPOCH + timedelta(microseconds=value)
 
 
 ### Cache

@@ -170,6 +170,29 @@ def BuildStepToDict(step, build_values=None):
     step_info.update(build_values)
   return step_info
 
+def DateToTimeRange(start_date=None, end_date=None):
+  """Convert two datetime.date objects into a TimeRange instance.
+
+  Args:
+    start_date: datetime.date instance to mark the start of the TimeRange.
+    end_date: datetime.date instance to mark the end of the TimeRange.
+
+  Returns:
+    A TimeRange object corresponding to the time interval
+    (start_date, end_date).
+  """
+  if not (start_date or end_date):
+    return None
+  if start_date:
+    start_timestamp = utils.DatetimeToTimestamp(start_date)
+  else:
+    start_timestamp = None
+  if end_date:
+    end_timestamp = utils.DatetimeToTimestamp(end_date, end_of_day=True)
+  else:
+    end_timestamp = None
+  return common_pb2.TimeRange(start_time=start_timestamp,
+                              end_time=end_timestamp)
 
 class BuildbucketV2(object):
   """Connection to Buildbucket V2 database."""
@@ -372,6 +395,61 @@ class BuildbucketV2(object):
           predicate=build_predicate, fields=fields, page_size=page_size)
 
     return self.client.SearchBuilds(search_build_request)
+
+  def GetBuildHistory(self, build_config, num_results, ignore_build_id=None,
+                      start_date=None, end_date=None, branch=None,
+                      starting_build_id=None):
+    """Returns basic information about most recent builds for build config.
+
+    By default this function returns the most recent builds. Some arguments can
+    restrict the result to older builds.
+
+    Args:
+      build_config: config name of the build to get history.
+      num_results: Number of builds to search back. Set this to
+          CIDBConnection.NUM_RESULTS_NO_LIMIT to request no limit on the number
+          of results.
+      ignore_build_id: (Optional) Ignore a specific build. This is most useful
+          to ignore the current build when querying recent past builds from a
+          build in flight.
+      start_date: (Optional, type: datetime.date) Get builds that occured on or
+          after this date.
+      end_date: (Optional, type:datetime.date) Get builds that occured on or
+          before this date.
+      branch: (Optional) Return only results for this branch.
+      starting_build_id: (Optional) The minimum build_id for which data should
+          be retrieved.
+
+    Returns:
+      A sorted list of dicts containing up to |number| dictionaries for
+      build statuses in descending order (if |reverse| is True, ascending
+      order).
+    """
+    builder = build_pb2.BuilderID(project='chromeos', bucket='general')
+    tags = [common_pb2.StringPair(key='cbb_config',
+                                  value=build_config)]
+    create_time = DateToTimeRange(start_date, end_date)
+    if ignore_build_id:
+      num_results += 1
+    if branch:
+      tags.append(common_pb2.StringPair(key='cbb_branch',
+                                        value=branch))
+    build = None
+    if starting_build_id:
+      build = rpc_pb2.BuildRange(start_build_id=int(starting_build_id))
+    build_predicate = rpc_pb2.BuildPredicate(
+        builder=builder, tags=tags, create_time=create_time, build=build)
+    search_result = self.SearchBuild(build_predicate, page_size=num_results)
+    build_ids = [build.id for build in search_result.builds]
+    if ignore_build_id:
+      if ignore_build_id in build_ids:
+        build_ids = [x for x in build_ids if ignore_build_id != x]
+      else:
+        # If we do not find ignore_build_id, we ignore the last (i.e. oldest)
+        # build in order to return num_results elements.
+        build_ids = build_ids[:-1]
+
+    return [self.GetBuildStatus(x) for x in build_ids]
 
   def GetChildStatuses(self, buildbucket_id):
     """Retrieve statuses of all the child builds.

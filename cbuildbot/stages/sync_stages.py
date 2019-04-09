@@ -913,7 +913,7 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
       or None if failed to retrieve milestone and platform versions.
     """
     build_identifier, _ = self._run.GetCIDBHandle()
-    build_id = build_identifier.cidb_id
+    buildbucket_id = build_identifier.buildbucket_id
 
     if not self.buildstore.AreClientsReady():
       return None
@@ -921,7 +921,7 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
     builds = self.buildstore.GetBuildHistory(
         build_config=self._run.config.name,
         num_results=self.MAX_BUILD_HISTORY_LENGTH,
-        ignore_build_id=build_id)
+        ignore_build_id=buildbucket_id)
     full_versions = [b.get('full_version') for b in builds]
     old_version = next(itertools.ifilter(bool, full_versions), None)
     if old_version:
