@@ -101,6 +101,29 @@ void ForwardError(syncer::OnceModelErrorHandler error_handler,
   }
 }
 
+// Parses the content of |record_list| into |*initial_data|. The output
+// parameter is first for binding purposes.
+base::Optional<syncer::ModelError> ParseInitialDataOnBackendSequence(
+    std::map<std::string, sync_pb::SessionSpecifics>* initial_data,
+    std::unique_ptr<ModelTypeStore::RecordList> record_list) {
+  DCHECK(initial_data);
+  DCHECK(initial_data->empty());
+  DCHECK(record_list);
+
+  for (ModelTypeStore::Record& record : *record_list) {
+    const std::string& storage_key = record.id;
+    SessionSpecifics specifics;
+    if (storage_key.empty() ||
+        !specifics.ParseFromString(std::move(record.value))) {
+      DVLOG(1) << "Ignoring corrupt database entry with key: " << storage_key;
+      continue;
+    }
+    (*initial_data)[storage_key] = std::move(specifics);
+  }
+
+  return base::nullopt;
+}
+
 }  // namespace
 
 // static
@@ -322,10 +345,17 @@ void SessionStore::OnReadAllMetadata(
     return;
   }
 
+  auto initial_data =
+      std::make_unique<std::map<std::string, sync_pb::SessionSpecifics>>();
+  auto* initial_data_copy = initial_data.get();
   ModelTypeStore* underlying_store_copy = underlying_store.get();
-  underlying_store_copy->ReadAllData(base::BindOnce(
-      &OnReadAllData, std::move(session_store), std::move(callback),
-      std::move(underlying_store), std::move(metadata_batch)));
+
+  underlying_store_copy->ReadAllDataAndPreprocess(
+      base::BindOnce(&ParseInitialDataOnBackendSequence,
+                     base::Unretained(initial_data_copy)),
+      base::BindOnce(&OnReadAllData, std::move(session_store),
+                     std::move(callback), std::move(underlying_store),
+                     std::move(metadata_batch), std::move(initial_data)));
 }
 
 // static
@@ -334,26 +364,15 @@ void SessionStore::OnReadAllData(
     OpenCallback callback,
     std::unique_ptr<ModelTypeStore> underlying_store,
     std::unique_ptr<syncer::MetadataBatch> metadata_batch,
-    const base::Optional<syncer::ModelError>& error,
-    std::unique_ptr<ModelTypeStore::RecordList> record_list) {
-  // Remove after fixing https://crbug.com/902203.
-  TRACE_EVENT0("browser", "OnReadAllMetadata");
+    std::unique_ptr<std::map<std::string, sync_pb::SessionSpecifics>>
+        initial_data,
+    const base::Optional<syncer::ModelError>& error) {
+  DCHECK(initial_data);
+
   if (error) {
     std::move(callback).Run(error, /*store=*/nullptr,
                             /*metadata_batch=*/nullptr);
     return;
-  }
-
-  std::map<std::string, sync_pb::SessionSpecifics> initial_data;
-  for (ModelTypeStore::Record& record : *record_list) {
-    const std::string& storage_key = record.id;
-    SessionSpecifics specifics;
-    if (storage_key.empty() ||
-        !specifics.ParseFromString(std::move(record.value))) {
-      DVLOG(1) << "Ignoring corrupt database entry with key: " << storage_key;
-      continue;
-    }
-    initial_data[storage_key].Swap(&specifics);
   }
 
   // We avoid initialization of the store if the callback was cancelled, in
@@ -363,7 +382,7 @@ void SessionStore::OnReadAllData(
     return;
   }
 
-  session_store->Init(std::move(underlying_store), std::move(initial_data),
+  session_store->Init(std::move(underlying_store), std::move(*initial_data),
                       metadata_batch->GetAllMetadata());
 
   std::move(callback).Run(/*error=*/base::nullopt, std::move(session_store),

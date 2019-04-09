@@ -160,8 +160,9 @@ class SessionStore {
       OpenCallback callback,
       std::unique_ptr<syncer::ModelTypeStore> underlying_store,
       std::unique_ptr<syncer::MetadataBatch> metadata_batch,
-      const base::Optional<syncer::ModelError>& error,
-      std::unique_ptr<syncer::ModelTypeStore::RecordList> record_list);
+      std::unique_ptr<std::map<std::string, sync_pb::SessionSpecifics>>
+          initial_data,
+      const base::Optional<syncer::ModelError>& error);
 
   // Construction prior to any data being read from disk. Callers are expected
   // to read state from disk and call Init(). |sessions_client| must not be null
