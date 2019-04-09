@@ -4014,9 +4014,17 @@ HRESULT AXPlatformNodeWin::GetTextAttributeValue(TEXTATTRIBUTEID attribute_id,
   }
 
   switch (attribute_id) {
+    case UIA_FontNameAttributeId:
+      V_VT(result) = VT_BSTR;
+      V_BSTR(result) = GetFontNameAttributeAsBSTR();
+      break;
     case UIA_IsHiddenAttributeId:
       V_VT(result) = VT_BOOL;
       V_BOOL(result) = IsInvisibleOrIgnored() ? VARIANT_TRUE : VARIANT_FALSE;
+      break;
+    case UIA_StyleNameAttributeId:
+      V_VT(result) = VT_BSTR;
+      V_BSTR(result) = GetStyleNameAttributeAsBSTR();
       break;
     default:
       V_VT(result) = VT_UNKNOWN;
@@ -6532,6 +6540,20 @@ double AXPlatformNodeWin::GetVerticalScrollPercent() {
   float y_max = GetIntAttribute(ax::mojom::IntAttribute::kScrollYMax);
   float y = GetIntAttribute(ax::mojom::IntAttribute::kScrollY);
   return 100.0 * (y - y_min) / (y_max - y_min);
+}
+
+BSTR AXPlatformNodeWin::GetFontNameAttributeAsBSTR() const {
+  const base::string16 string =
+      GetInheritedString16Attribute(ax::mojom::StringAttribute::kFontFamily);
+
+  return SysAllocString(string.c_str());
+}
+
+BSTR AXPlatformNodeWin::GetStyleNameAttributeAsBSTR() const {
+  base::string16 style_name =
+      GetDelegate()->GetStyleNameAttributeAsLocalizedString();
+
+  return SysAllocString(style_name.c_str());
 }
 
 // IRawElementProviderSimple support methods.

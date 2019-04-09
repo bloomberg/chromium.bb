@@ -1222,6 +1222,8 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   ui::AXNodeData text_data;
   text_data.id = 2;
   text_data.role = ax::mojom::Role::kStaticText;
+  text_data.AddStringAttribute(ax::mojom::StringAttribute::kFontFamily, "sans");
+  text_data.AddFloatAttribute(ax::mojom::FloatAttribute::kFontWeight, 300);
   text_data.SetName("some text");
 
   ui::AXNodeData more_text_data;
@@ -1230,10 +1232,20 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   more_text_data.AddState(ax::mojom::State::kInvisible);
   more_text_data.SetName("more text");
 
+  ui::AXNodeData mark_data;
+  mark_data.id = 4;
+  mark_data.role = ax::mojom::Role::kMark;
+  mark_data.child_ids = {5};
+
+  ui::AXNodeData mark_text_data;
+  mark_text_data.id = 5;
+  mark_text_data.role = ax::mojom::Role::kStaticText;
+  mark_text_data.SetName("marked text");
+
   ui::AXNodeData root_data;
   root_data.id = 1;
   root_data.role = ax::mojom::Role::kRootWebArea;
-  root_data.child_ids = {2, 3};
+  root_data.child_ids = {2, 3, 4};
 
   ui::AXTreeUpdate update;
   ui::AXTreeData tree_data;
@@ -1244,12 +1256,16 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   update.nodes.push_back(root_data);
   update.nodes.push_back(text_data);
   update.nodes.push_back(more_text_data);
+  update.nodes.push_back(mark_data);
+  update.nodes.push_back(mark_text_data);
 
   Init(update);
 
   AXNodePosition::SetTreeForTesting(tree_.get());
 
   AXNode* text_node = GetRootNode()->children()[0];
+  AXNode* mark_node = GetRootNode()->children()[2];
+  AXNode* mark_text_node = mark_node->children()[0];
 
   ComPtr<ITextProvider> document_provider;
   EXPECT_HRESULT_SUCCEEDED(
@@ -1261,6 +1277,11 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
       QueryInterfaceFromNode<IRawElementProviderSimple>(text_node)
           ->GetPatternProvider(UIA_TextPatternId, &text_provider));
 
+  ComPtr<ITextProvider> mark_text_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      QueryInterfaceFromNode<IRawElementProviderSimple>(mark_text_node)
+          ->GetPatternProvider(UIA_TextPatternId, &mark_text_provider));
+
   ComPtr<ITextRangeProvider> document_range_provider;
   EXPECT_HRESULT_SUCCEEDED(
       document_provider->get_DocumentRange(&document_range_provider));
@@ -1268,6 +1289,10 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   ComPtr<ITextRangeProvider> text_range_provider;
   EXPECT_HRESULT_SUCCEEDED(
       text_provider->get_DocumentRange(&text_range_provider));
+
+  ComPtr<ITextRangeProvider> mark_text_range_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      mark_text_provider->get_DocumentRange(&mark_text_range_provider));
 
   base::win::ScopedVariant expected_mixed_variant;
   {
@@ -1280,6 +1305,17 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
 
   base::win::ScopedVariant expected_variant;
 
+  base::string16 font_name = base::UTF8ToUTF16("sans");
+  expected_variant.Set(SysAllocString(font_name.c_str()));
+  EXPECT_UIA_TEXTATTRIBUTE_EQ(text_range_provider, UIA_FontNameAttributeId,
+                              expected_variant);
+  expected_variant.Reset();
+
+  expected_variant.Set(300);
+  EXPECT_UIA_TEXTATTRIBUTE_EQ(text_range_provider, UIA_FontWeightAttributeId,
+                              expected_variant);
+  expected_variant.Reset();
+
   expected_variant.Set(false);
   EXPECT_UIA_TEXTATTRIBUTE_EQ(text_range_provider, UIA_IsHiddenAttributeId,
                               expected_variant);
@@ -1287,6 +1323,19 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
 
   EXPECT_UIA_TEXTATTRIBUTE_EQ(document_range_provider, UIA_IsHiddenAttributeId,
                               expected_mixed_variant);
+  expected_variant.Reset();
+
+  base::string16 style_name = base::UTF8ToUTF16("");
+  expected_variant.Set(SysAllocString(style_name.c_str()));
+  EXPECT_UIA_TEXTATTRIBUTE_EQ(text_range_provider, UIA_StyleNameAttributeId,
+                              expected_variant);
+  expected_variant.Reset();
+
+  style_name = base::UTF8ToUTF16("mark");
+  expected_variant.Set(SysAllocString(style_name.c_str()));
+  EXPECT_UIA_TEXTATTRIBUTE_EQ(mark_text_range_provider,
+                              UIA_StyleNameAttributeId, expected_variant);
+  expected_variant.Reset();
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderSelect) {

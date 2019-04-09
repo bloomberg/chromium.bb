@@ -241,6 +241,11 @@ base::string16 AXPlatformNodeDelegateBase::GetLocalizedStringForLandmarkType()
   return base::string16();
 }
 
+base::string16
+AXPlatformNodeDelegateBase::GetStyleNameAttributeAsLocalizedString() const {
+  return base::string16();
+}
+
 bool AXPlatformNodeDelegateBase::ShouldIgnoreHoveredStateForTesting() {
   return true;
 }

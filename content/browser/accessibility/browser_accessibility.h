@@ -427,6 +427,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
       ax::mojom::ImageAnnotationStatus status) const override;
   base::string16 GetLocalizedRoleDescriptionForUnlabeledImage() const override;
   base::string16 GetLocalizedStringForLandmarkType() const override;
+  base::string16 GetStyleNameAttributeAsLocalizedString() const override;
   bool ShouldIgnoreHoveredStateForTesting() override;
   bool IsOffscreen() const override;
   bool IsWebContent() const override;
