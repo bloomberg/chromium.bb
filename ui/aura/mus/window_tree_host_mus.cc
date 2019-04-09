@@ -51,23 +51,34 @@ uint32_t next_accelerated_widget_id = std::numeric_limits<uint32_t>::max();
 // will stop arriving once PerformWindowMove is invoked, but sometimes events
 // are already queued and arrive to the root window. They should be handled
 // by the content window. See https://crbug.com/943316.
-class RemainingGestureEventHandler : public ui::EventHandler {
+class RemainingGestureEventHandler : public ui::EventHandler, WindowObserver {
  public:
   RemainingGestureEventHandler(Window* content_window, Window* root)
-      : content_window_(content_window), root_(root) {
+      : content_window_({content_window}), root_(root) {
     root_->AddPostTargetHandler(this);
+    root_->AddObserver(this);
   }
   ~RemainingGestureEventHandler() override {
-    root_->RemovePostTargetHandler(this);
+    if (root_)
+      StopObserving();
   }
 
  private:
-  // ui::EventHandler:
-  void OnGestureEvent(ui::GestureEvent* event) override {
-    content_window_->delegate()->OnGestureEvent(event);
+  void StopObserving() {
+    root_->RemoveObserver(this);
+    root_->RemovePostTargetHandler(this);
+    root_ = nullptr;
   }
 
-  Window* content_window_;
+  // ui::EventHandler:
+  void OnGestureEvent(ui::GestureEvent* event) override {
+    if (!content_window_.windows().empty())
+      (*content_window_.windows().begin())->delegate()->OnGestureEvent(event);
+  }
+  // WindowObserver:
+  void OnWindowDestroying(Window* window) override { StopObserving(); }
+
+  WindowTracker content_window_;
   Window* root_;
 
   DISALLOW_COPY_AND_ASSIGN(RemainingGestureEventHandler);
