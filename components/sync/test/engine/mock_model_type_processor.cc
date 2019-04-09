@@ -69,7 +69,7 @@ void MockModelTypeProcessor::RunQueuedTasks() {
   pending_tasks_.clear();
 }
 
-CommitRequestData MockModelTypeProcessor::CommitRequest(
+std::unique_ptr<CommitRequestData> MockModelTypeProcessor::CommitRequest(
     const std::string& tag_hash,
     const sync_pb::EntitySpecifics& specifics) {
   const int64_t base_version = GetBaseVersion(tag_hash);
@@ -90,17 +90,17 @@ CommitRequestData MockModelTypeProcessor::CommitRequest(
       data.creation_time + base::TimeDelta::FromSeconds(base_version);
   data.non_unique_name = "Name: " + tag_hash;
 
-  CommitRequestData request_data;
-  request_data.entity = data.PassToPtr();
-  request_data.sequence_number = GetNextSequenceNumber(tag_hash);
-  request_data.base_version = base_version;
+  auto request_data = std::make_unique<CommitRequestData>();
+  request_data->entity = data.PassToPtr();
+  request_data->sequence_number = GetNextSequenceNumber(tag_hash);
+  request_data->base_version = base_version;
   base::Base64Encode(base::SHA1HashString(specifics.SerializeAsString()),
-                     &request_data.specifics_hash);
+                     &request_data->specifics_hash);
 
   return request_data;
 }
 
-CommitRequestData MockModelTypeProcessor::DeleteRequest(
+std::unique_ptr<CommitRequestData> MockModelTypeProcessor::DeleteRequest(
     const std::string& tag_hash) {
   const int64_t base_version = GetBaseVersion(tag_hash);
 
@@ -120,10 +120,10 @@ CommitRequestData MockModelTypeProcessor::DeleteRequest(
   data.modification_time =
       data.creation_time + base::TimeDelta::FromSeconds(base_version);
 
-  CommitRequestData request_data;
-  request_data.entity = data.PassToPtr();
-  request_data.sequence_number = GetNextSequenceNumber(tag_hash);
-  request_data.base_version = base_version;
+  auto request_data = std::make_unique<CommitRequestData>();
+  request_data->entity = data.PassToPtr();
+  request_data->sequence_number = GetNextSequenceNumber(tag_hash);
+  request_data->base_version = base_version;
 
   pending_deleted_hashes_.insert(tag_hash);
 
@@ -194,8 +194,8 @@ void MockModelTypeProcessor::SetDisconnectCallback(
 }
 
 void MockModelTypeProcessor::SetCommitRequest(
-    const CommitRequestDataList& commit_request) {
-  commit_request_ = commit_request;
+    CommitRequestDataList commit_request) {
+  commit_request_ = std::move(commit_request);
 }
 
 int MockModelTypeProcessor::GetLocalChangesCallCount() const {

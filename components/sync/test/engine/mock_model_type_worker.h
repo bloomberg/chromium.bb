@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -43,9 +44,9 @@ class MockModelTypeWorker : public CommitQueue {
 
   // Getters to inspect the requests sent to this object.
   size_t GetNumPendingCommits() const;
-  CommitRequestDataList GetNthPendingCommit(size_t n) const;
+  std::vector<const CommitRequestData*> GetNthPendingCommit(size_t n) const;
   bool HasPendingCommitForHash(const std::string& tag_hash) const;
-  CommitRequestData GetLatestPendingCommitForHash(
+  const CommitRequestData* GetLatestPendingCommitForHash(
       const std::string& tag_hash) const;
 
   // Verify that the |n|th commit request list has the corresponding commit

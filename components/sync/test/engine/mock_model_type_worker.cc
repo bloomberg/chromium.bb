@@ -34,27 +34,34 @@ void MockModelTypeWorker::NudgeForCommit() {
 void MockModelTypeWorker::LocalChangesReceived(
     CommitRequestDataList&& commit_request) {
   // Verify that all request entities have valid id, version combinations.
-  for (const CommitRequestData& commit_request_data : commit_request) {
-    EXPECT_TRUE(commit_request_data.base_version == -1 ||
-                !commit_request_data.entity->id.empty());
+  for (const std::unique_ptr<CommitRequestData>& commit_request_data :
+       commit_request) {
+    EXPECT_TRUE(commit_request_data->base_version == -1 ||
+                !commit_request_data->entity->id.empty());
   }
-  pending_commits_.push_back(commit_request);
+  pending_commits_.push_back(std::move(commit_request));
 }
 
 size_t MockModelTypeWorker::GetNumPendingCommits() const {
   return pending_commits_.size();
 }
 
-CommitRequestDataList MockModelTypeWorker::GetNthPendingCommit(size_t n) const {
+std::vector<const CommitRequestData*> MockModelTypeWorker::GetNthPendingCommit(
+    size_t n) const {
   DCHECK_LT(n, GetNumPendingCommits());
-  return pending_commits_[n];
+  std::vector<const CommitRequestData*> nth_pending_commits;
+  for (const std::unique_ptr<CommitRequestData>& request_data :
+       pending_commits_[n]) {
+    nth_pending_commits.push_back(request_data.get());
+  }
+  return nth_pending_commits;
 }
 
 bool MockModelTypeWorker::HasPendingCommitForHash(
     const std::string& tag_hash) const {
   for (const CommitRequestDataList& commit : pending_commits_) {
-    for (const CommitRequestData& data : commit) {
-      if (data.entity->client_tag_hash == tag_hash) {
+    for (const std::unique_ptr<CommitRequestData>& data : commit) {
+      if (data && data->entity->client_tag_hash == tag_hash) {
         return true;
       }
     }
@@ -62,20 +69,20 @@ bool MockModelTypeWorker::HasPendingCommitForHash(
   return false;
 }
 
-CommitRequestData MockModelTypeWorker::GetLatestPendingCommitForHash(
+const CommitRequestData* MockModelTypeWorker::GetLatestPendingCommitForHash(
     const std::string& tag_hash) const {
   // Iterate backward through the sets of commit requests to find the most
   // recent one that applies to the specified tag_hash.
   for (auto rev_it = pending_commits_.rbegin();
        rev_it != pending_commits_.rend(); ++rev_it) {
-    for (const CommitRequestData& data : *rev_it) {
-      if (data.entity->client_tag_hash == tag_hash) {
-        return data;
+    for (const std::unique_ptr<CommitRequestData>& data : *rev_it) {
+      if (data && data->entity->client_tag_hash == tag_hash) {
+        return data.get();
       }
     }
   }
   NOTREACHED() << "Could not find commit for tag hash " << tag_hash << ".";
-  return CommitRequestData();
+  return nullptr;
 }
 
 void MockModelTypeWorker::VerifyNthPendingCommit(
@@ -83,10 +90,11 @@ void MockModelTypeWorker::VerifyNthPendingCommit(
     const std::vector<std::string>& tag_hashes,
     const std::vector<sync_pb::EntitySpecifics>& specifics_list) {
   ASSERT_EQ(tag_hashes.size(), specifics_list.size());
-  const CommitRequestDataList& list = GetNthPendingCommit(n);
+  std::vector<const CommitRequestData*> list = GetNthPendingCommit(n);
   ASSERT_EQ(tag_hashes.size(), list.size());
   for (size_t i = 0; i < tag_hashes.size(); i++) {
-    const EntityData& data = list[i].entity.value();
+    ASSERT_TRUE(list[i]);
+    const EntityData& data = list[i]->entity.value();
     EXPECT_EQ(tag_hashes[i], data.client_tag_hash);
     EXPECT_EQ(specifics_list[i].SerializeAsString(),
               data.specifics.SerializeAsString());
@@ -95,12 +103,13 @@ void MockModelTypeWorker::VerifyNthPendingCommit(
 
 void MockModelTypeWorker::VerifyPendingCommits(
     const std::vector<std::vector<std::string>>& tag_hashes) {
-  EXPECT_EQ(tag_hashes.size(), GetNumPendingCommits());
+  ASSERT_EQ(tag_hashes.size(), GetNumPendingCommits());
   for (size_t i = 0; i < tag_hashes.size(); i++) {
-    const CommitRequestDataList& commits = GetNthPendingCommit(i);
-    EXPECT_EQ(tag_hashes[i].size(), commits.size());
+    std::vector<const CommitRequestData*> commits = GetNthPendingCommit(i);
+    ASSERT_EQ(tag_hashes[i].size(), commits.size());
     for (size_t j = 0; j < tag_hashes[i].size(); j++) {
-      EXPECT_EQ(tag_hashes[i][j], commits[j].entity->client_tag_hash)
+      ASSERT_TRUE(commits[j]);
+      EXPECT_EQ(tag_hashes[i][j], commits[j]->entity->client_tag_hash)
           << "Hash for tag " << tag_hashes[i][j] << " doesn't match.";
     }
   }
@@ -236,8 +245,9 @@ void MockModelTypeWorker::AckOnePendingCommit() {
 void MockModelTypeWorker::AckOnePendingCommit(int64_t version_offset) {
   CommitResponseDataList list;
   ASSERT_FALSE(pending_commits_.empty());
-  for (const CommitRequestData& data : pending_commits_.front()) {
-    list.push_back(SuccessfulCommitResponse(data, version_offset));
+  for (const std::unique_ptr<CommitRequestData>& data :
+       pending_commits_.front()) {
+    list.push_back(SuccessfulCommitResponse(*data, version_offset));
   }
   pending_commits_.pop_front();
   processor_->OnCommitCompleted(model_type_state_, list);

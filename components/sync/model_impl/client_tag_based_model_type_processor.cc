@@ -1167,9 +1167,9 @@ void ClientTagBasedModelTypeProcessor::CommitLocalChanges(
   for (const auto& kv : entities_) {
     ProcessorEntity* entity = kv.second.get();
     if (entity->RequiresCommitRequest() && !entity->RequiresCommitData()) {
-      CommitRequestData request;
-      entity->InitializeCommitRequestData(&request);
-      commit_requests.push_back(request);
+      auto request = std::make_unique<CommitRequestData>();
+      entity->InitializeCommitRequestData(request.get());
+      commit_requests.push_back(std::move(request));
       if (commit_requests.size() >= max_entries) {
         break;
       }

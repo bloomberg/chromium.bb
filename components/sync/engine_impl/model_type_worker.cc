@@ -490,8 +490,8 @@ std::unique_ptr<CommitContribution> ModelTypeWorker::GetContribution(
 
   DCHECK(response.size() <= max_entries);
   return std::make_unique<NonBlockingTypeCommitContribution>(
-      GetModelType(), model_type_state_.type_context(), response, this,
-      cryptographer_.get(), passphrase_type_, debug_info_emitter_,
+      GetModelType(), model_type_state_.type_context(), std::move(response),
+      this, cryptographer_.get(), passphrase_type_, debug_info_emitter_,
       CommitOnlyTypes().Has(GetModelType()));
 }
 
@@ -714,7 +714,7 @@ void GetLocalChangesRequest::WaitForResponse() {
 
 void GetLocalChangesRequest::SetResponse(
     CommitRequestDataList&& local_changes) {
-  response_ = local_changes;
+  response_ = std::move(local_changes);
   response_accepted_.Signal();
 }
 

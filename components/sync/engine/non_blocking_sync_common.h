@@ -7,9 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "components/sync/model/entity_data.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -20,7 +22,6 @@ static const int64_t kUncommittedVersion = -1;
 
 struct CommitRequestData {
   CommitRequestData();
-  CommitRequestData(const CommitRequestData& other);
   ~CommitRequestData();
 
   // Fields sent to the sync server.
@@ -36,6 +37,9 @@ struct CommitRequestData {
   int64_t sequence_number = 0;
   std::string specifics_hash;
   base::Time unsynced_time;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CommitRequestData);
 };
 
 struct CommitResponseData {
@@ -66,7 +70,7 @@ struct UpdateResponseData {
   std::string encryption_key_name;
 };
 
-using CommitRequestDataList = std::vector<CommitRequestData>;
+using CommitRequestDataList = std::vector<std::unique_ptr<CommitRequestData>>;
 using CommitResponseDataList = std::vector<CommitResponseData>;
 using UpdateResponseDataList = std::vector<UpdateResponseData>;
 

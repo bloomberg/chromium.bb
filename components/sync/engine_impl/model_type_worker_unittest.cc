@@ -1650,15 +1650,15 @@ TEST_F(GetLocalChangesRequestTest, SuccessfulRequest) {
   start_event_.Wait();
   {
     CommitRequestDataList response;
-    response.emplace_back();
-    response.back().specifics_hash = kHash1;
+    response.push_back(std::make_unique<CommitRequestData>());
+    response.back()->specifics_hash = kHash1;
     request->SetResponse(std::move(response));
   }
   done_event_.Wait();
   EXPECT_FALSE(request->WasCancelled());
   CommitRequestDataList response = request->ExtractResponse();
   EXPECT_EQ(1U, response.size());
-  EXPECT_EQ(kHash1, response[0].specifics_hash);
+  EXPECT_EQ(kHash1, response[0]->specifics_hash);
 }
 
 // Analogous test fixture but uses PASSWORDS instead of PREFERENCES, in order
