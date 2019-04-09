@@ -223,7 +223,7 @@ public class DataReductionStatsPreference extends Preference {
         long time = config.getDataReductionLastUpdateTime() - days * DateUtils.DAY_IN_MILLIS;
         for (int i = history.length - days, bucket = 0; i < history.length; i++, bucket++) {
             NetworkStats.Entry entry = new NetworkStats.Entry();
-            entry.rxBytes = history[i];
+            entry.rxBytes = Math.max(history[i], 0);
             long startTime = time + (DateUtils.DAY_IN_MILLIS * bucket);
             // Spread each day's record over the first hour of the day.
             networkStatsHistory.recordData(startTime, startTime + DateUtils.HOUR_IN_MILLIS, entry);
