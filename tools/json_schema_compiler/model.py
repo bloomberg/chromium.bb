@@ -465,6 +465,9 @@ class _Enum(object):
   def __str__(self):
     return repr(self)
 
+  def __hash__(self):
+    return hash(self.name)
+
 
 class _PropertyTypeInfo(_Enum):
   def __init__(self, is_fundamental, name):

@@ -8,6 +8,7 @@ from datetime import datetime
 from functools import partial
 import os
 import re
+import sys
 
 from code import Code
 import json_parse
@@ -67,7 +68,7 @@ CC_FILE_END = """
 # Returns true if the list 'l' only contains strings that are a hex-encoded SHA1
 # hashes.
 def ListContainsOnlySha1Hashes(l):
-  return len(filter(lambda s: not re.match("^[A-F0-9]{40}$", s), l)) == 0
+  return len(list(filter(lambda s: not re.match("^[A-F0-9]{40}$", s), l))) == 0
 
 # A "grammar" for what is and isn't allowed in the features.json files. This
 # grammar has to list all possible keys and the requirements for each. The
@@ -77,7 +78,7 @@ def ListContainsOnlySha1Hashes(l):
 #     allowed_type_2: optional_properties,
 #   }
 # |allowed_types| are the types of values that can be used for a given key. The
-# possible values are list, unicode, bool, and int.
+# possible values are list, str, bool, and int.
 # |optional_properties| provide more restrictions on the given type. The options
 # are:
 #   'subtype': Only applicable for lists. If provided, this enforces that each
@@ -114,12 +115,12 @@ def ListContainsOnlySha1Hashes(l):
 FEATURE_GRAMMAR = (
   {
     'alias': {
-      unicode: {},
+      str: {},
       'shared': True
     },
     'blacklist': {
       list: {
-        'subtype': unicode,
+        'subtype': str,
         'validators': [
           (ListContainsOnlySha1Hashes,
            'list should only have hex-encoded SHA1 hashes of extension ids')
@@ -127,7 +128,7 @@ FEATURE_GRAMMAR = (
       }
     },
     'channel': {
-      unicode: {
+      str: {
         'enum_map': {
           'trunk': 'version_info::Channel::UNKNOWN',
           'canary': 'version_info::Channel::CANARY',
@@ -138,7 +139,7 @@ FEATURE_GRAMMAR = (
       }
     },
     'command_line_switch': {
-      unicode: {}
+      str: {}
     },
     'component_extensions_auto_granted': {
       bool: {}
@@ -166,7 +167,7 @@ FEATURE_GRAMMAR = (
         # We allow an empty list of dependencies for child features that want
         # to override their parents' dependency set.
         'allow_empty': True,
-        'subtype': unicode
+        'subtype': str
       }
     },
     'extension_types': {
@@ -183,7 +184,7 @@ FEATURE_GRAMMAR = (
       },
     },
     'location': {
-      unicode: {
+      str: {
         'enum_map': {
           'component': 'SimpleFeature::COMPONENT_LOCATION',
           'external_component': 'SimpleFeature::EXTERNAL_COMPONENT_LOCATION',
@@ -195,7 +196,7 @@ FEATURE_GRAMMAR = (
       bool: {'values': [True]}
     },
     'matches': {
-      list: {'subtype': unicode}
+      list: {'subtype': str}
     },
     'max_manifest_version': {
       int: {'values': [1, 2]}
@@ -226,12 +227,12 @@ FEATURE_GRAMMAR = (
       }
     },
     'source': {
-      unicode: {},
+      str: {},
       'shared': True
     },
     'whitelist': {
       list: {
-        'subtype': unicode,
+        'subtype': str,
         'validators': [
           (ListContainsOnlySha1Hashes,
            'list should only have hex-encoded SHA1 hashes of extension ids')
@@ -354,11 +355,6 @@ IGNORED_KEYS = ['default_parent']
 # can be disabled for testing.
 ENABLE_ASSERTIONS = True
 
-# JSON parsing returns all strings of characters as unicode types. For testing,
-# we can enable converting all string types to unicode to avoid writing u''
-# everywhere.
-STRINGS_TO_UNICODE = False
-
 def GetCodeForFeatureValues(feature_values):
   """ Gets the Code object for setting feature values for this object. """
   c = Code()
@@ -388,15 +384,14 @@ class Feature(object):
     self.shared_values = {}
 
   def _GetType(self, value):
-    """Returns the type of the given value. This can be different than type() if
-    STRINGS_TO_UNICODE is enabled.
+    """Returns the type of the given value.
     """
-    t = type(value)
-    if not STRINGS_TO_UNICODE:
-      return t
-    if t is str:
-      return unicode
-    return t
+    # For Py3 compatibility we use str in the grammar and treat unicode as str
+    # in Py2.
+    if sys.version_info.major == 2 and type(value) is unicode:
+      return str
+
+    return type(value)
 
   def AddError(self, error):
     """Adds an error to the feature. If ENABLE_ASSERTIONS is active, this will
@@ -444,7 +439,7 @@ class Feature(object):
     if enum_map:
       return enum_map[value]
 
-    if t in [str, unicode]:
+    if t is str:
       return '"%s"' % str(value)
     if t is int:
       return str(value)
@@ -494,7 +489,7 @@ class Feature(object):
       expected_values = expected['values']
     elif 'enum_map' in expected:
       enum_map = expected['enum_map']
-      expected_values = enum_map.keys()
+      expected_values = list(enum_map)
 
     if is_all:
       v = copy.deepcopy(expected_values)
@@ -552,7 +547,7 @@ class Feature(object):
     for key in parsed_json.keys():
       if key not in FEATURE_GRAMMAR:
         self._AddKeyError(key, 'Unrecognized key')
-    for key, key_grammar in FEATURE_GRAMMAR.iteritems():
+    for key, key_grammar in FEATURE_GRAMMAR.items():
       self._ParseKey(key, parsed_json, shared_values, key_grammar)
 
   def Validate(self, feature_type, shared_values):
