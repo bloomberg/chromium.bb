@@ -58,7 +58,9 @@ Example:
       "token": "abcd-ef01-123123123",
       "username": "admin@example.com"
    },
-   "device_register_http_error" : 902,
+   "expected_errors": {
+     "register": 500,
+   }
    "allow_set_device_attributes" : false,
 }
 
@@ -307,6 +309,11 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         (self.GetUniqueParam('deviceid') is not None and
          len(self.GetUniqueParam('deviceid')) >= 64)):
       return (400, 'Invalid request parameter')
+
+    expected_error = self.GetExpectedError(request_type)
+    if expected_error:
+      return expected_error
+
     if request_type == 'register':
       response = self.ProcessRegister(rmsg.register_request)
     elif request_type == 'certificate_based_register':
@@ -428,9 +435,6 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     auth = self.CheckGoogleLogin()
     if not auth:
       return (403, 'No authorization')
-
-    if 'device_register_http_error' in policy:
-      return (policy['device_register_http_error'], 'Preconfigured error')
 
     if ('managed_users' not in policy):
       return (500, 'Error in config - no managed users')
@@ -1228,6 +1232,21 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     """Helper for logging an ASCII dump of a protobuf message."""
     logging.debug('%s\n%s' % (label, str(msg)))
 
+  def GetExpectedError(self, request):
+    """
+    Returns the preset HTTP error for |request| if it is defined in
+    configuration.
+
+    Returns:
+      A tuple of HTTP status code and response data to send to the client or
+      None if no error was defined.
+    """
+    policy = self.server.GetPolicies()
+    if 'request_errors' in policy:
+      errors = policy['request_errors']
+      if (request in errors) and (errors[request] > 0):
+        return errors[request], 'Preconfigured error'
+    return None
 
 class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
                        testserver_base.StoppableHTTPServer):

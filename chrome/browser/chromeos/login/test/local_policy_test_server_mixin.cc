@@ -85,8 +85,22 @@ void LocalPolicyTestServerMixin::SetUpdateDeviceAttributesPermission(
 
 void LocalPolicyTestServerMixin::SetExpectedDeviceEnrollmentError(
     int net_error_code) {
-  server_config_.SetKey("device_register_http_error",
-                        base::Value(net_error_code));
+  server_config_.SetPath({"request_errors", "register"},
+                         base::Value(net_error_code));
+  policy_test_server_->SetConfig(server_config_);
+}
+
+void LocalPolicyTestServerMixin::SetExpectedDeviceAttributeUpdateError(
+    int net_error_code) {
+  server_config_.SetPath({"request_errors", "device_attribute_update"},
+                         base::Value(net_error_code));
+  policy_test_server_->SetConfig(server_config_);
+}
+
+void LocalPolicyTestServerMixin::SetExpectedPolicyFetchError(
+    int net_error_code) {
+  server_config_.SetPath({"request_errors", "policy"},
+                         base::Value(net_error_code));
   policy_test_server_->SetConfig(server_config_);
 }
 

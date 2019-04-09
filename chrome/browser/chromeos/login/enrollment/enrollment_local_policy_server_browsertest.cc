@@ -325,6 +325,67 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
 }
 
+// Error during enrollment : Can not update device attributes
+IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
+                       EnrollmentErrorUploadingDeviceAttributes) {
+  policy_server_.SetUpdateDeviceAttributesPermission(true);
+  policy_server_.SetExpectedDeviceAttributeUpdateError(500);
+
+  TriggerEnrollmentAndSignInSuccessfully();
+
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepDeviceAttributes);
+  enrollment_ui_.SubmitDeviceAttributes(test::values::kAssetId,
+                                        test::values::kLocation);
+
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepDeviceAttributesError);
+  EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
+  enrollment_ui_.LeaveDeviceAttributeErrorScreen();
+  OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
+}
+
+// Error during enrollment : Error fetching policy : 500 server error.
+IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
+                       EnrollmentErrorFetchingPolicyTransient) {
+  policy_server_.SetExpectedPolicyFetchError(500);
+
+  TriggerEnrollmentAndSignInSuccessfully();
+
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
+  enrollment_ui_.ExpectErrorMessage(IDS_POLICY_DM_STATUS_TEMPORARY_UNAVAILABLE,
+                                    /* can retry */ true);
+  EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
+  enrollment_ui_.RetryAfterError();
+}
+
+// Error during enrollment : Error fetching policy : 902 - policy not found.
+IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
+                       EnrollmentErrorFetchingPolicyNotFound) {
+  policy_server_.SetExpectedPolicyFetchError(902);
+
+  TriggerEnrollmentAndSignInSuccessfully();
+
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
+  enrollment_ui_.ExpectErrorMessage(
+      IDS_POLICY_DM_STATUS_SERVICE_POLICY_NOT_FOUND,
+      /* can retry */ true);
+  EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
+  enrollment_ui_.RetryAfterError();
+}
+
+// Error during enrollment : Error fetching policy : 903 - deprovisioned.
+IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
+                       EnrollmentErrorFetchingPolicyDeprovisioned) {
+  policy_server_.SetExpectedPolicyFetchError(903);
+
+  TriggerEnrollmentAndSignInSuccessfully();
+
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
+  enrollment_ui_.ExpectErrorMessage(IDS_POLICY_DM_STATUS_SERVICE_DEPROVISIONED,
+                                    /* can retry */ true);
+  EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
+  enrollment_ui_.RetryAfterError();
+}
+
 // No state keys on the server. Auto enrollment check should proceed to login.
 IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer, AutoEnrollmentCheck) {
   host()->StartWizard(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
