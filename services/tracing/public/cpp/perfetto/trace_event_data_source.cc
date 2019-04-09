@@ -23,6 +23,7 @@
 #include "services/tracing/public/cpp/perfetto/thread_local_event_sink.h"
 #include "services/tracing/public/cpp/perfetto/traced_value_proto_writer.h"
 #include "services/tracing/public/cpp/perfetto/track_event_thread_local_event_sink.h"
+#include "services/tracing/public/cpp/trace_event_args_whitelist.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/shared_memory_arbiter.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/startup_trace_writer.h"
@@ -42,7 +43,11 @@ using ChromeEventBundleHandle =
 
 TraceEventMetadataSource::TraceEventMetadataSource()
     : DataSourceBase(mojom::kMetaDataSourceName),
-      origin_task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
+      origin_task_runner_(base::SequencedTaskRunnerHandle::Get()) {
+  AddGeneratorFunction(base::BindRepeating(
+      &TraceEventMetadataSource::GenerateTraceConfigMetadataDict,
+      base::Unretained(this)));
+}
 
 TraceEventMetadataSource::~TraceEventMetadataSource() = default;
 
@@ -50,6 +55,30 @@ void TraceEventMetadataSource::AddGeneratorFunction(
     MetadataGeneratorFunction generator) {
   DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
   generator_functions_.push_back(generator);
+}
+
+std::unique_ptr<base::DictionaryValue>
+TraceEventMetadataSource::GenerateTraceConfigMetadataDict() {
+  if (chrome_config_.empty()) {
+    return nullptr;
+  }
+
+  base::trace_event::TraceConfig parsed_chrome_config(chrome_config_);
+
+  auto metadata_dict = std::make_unique<base::DictionaryValue>();
+  // If argument filtering is enabled, we need to check if the trace config is
+  // whitelisted before emitting it.
+  // TODO(eseckler): Figure out a way to solve this without calling directly
+  // into IsMetadataWhitelisted().
+  if (!parsed_chrome_config.IsArgumentFilterEnabled() ||
+      IsMetadataWhitelisted("trace-config")) {
+    metadata_dict->SetString("trace-config", chrome_config_);
+  } else {
+    metadata_dict->SetString("trace-config", "__stripped__");
+  }
+
+  chrome_config_ = std::string();
+  return metadata_dict;
 }
 
 void TraceEventMetadataSource::GenerateMetadata(
@@ -91,6 +120,7 @@ void TraceEventMetadataSource::StartTracing(
   // sense to emit the metadata on startup, so the UI can display it right away.
   privacy_filtering_enabled_ =
       data_source_config.chrome_config().privacy_filtering_enabled();
+  chrome_config_ = data_source_config.chrome_config().trace_config();
   trace_writer_ =
       producer_client->CreateTraceWriter(data_source_config.target_buffer());
 }
@@ -107,6 +137,7 @@ void TraceEventMetadataSource::StopTracing(
         std::move(stop_complete_callback));
   } else {
     trace_writer_.reset();
+    chrome_config_ = std::string();
     std::move(stop_complete_callback).Run();
   }
 }

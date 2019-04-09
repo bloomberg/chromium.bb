@@ -76,6 +76,9 @@ perfetto::TraceConfig GetDefaultPerfettoConfig(
       perfetto_config.add_data_sources()->mutable_config();
   trace_metadata_config->set_name(tracing::mojom::kMetaDataSourceName);
   trace_metadata_config->set_target_buffer(0);
+  auto* metadata_chrome_config = trace_metadata_config->mutable_chrome_config();
+  metadata_chrome_config->set_trace_config(chrome_config_string);
+  // TODO(ssid): Also set privacy_filtering_enabled here.
 
   return perfetto_config;
 }
