@@ -69,6 +69,9 @@ class FtlMessagingClient final {
   // Stops the stream for continuously receiving new messages.
   void StopReceivingMessages();
 
+  // Returns true if the streaming channel is open.
+  bool IsReceivingMessages();
+
  private:
   using Messaging =
       google::internal::communications::instantmessaging::v1::Messaging;

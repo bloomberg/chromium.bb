@@ -32,6 +32,7 @@ class FtlRegistrationManager final : public RegistrationManager {
 
   // RegistrationManager implementations.
   void SignInGaia(DoneCallback on_done) override;
+  void SignOut() override;
   bool IsSignedIn() const override;
   std::string GetRegistrationId() const override;
   std::string GetFtlAuthToken() const override;

@@ -96,6 +96,7 @@ class MockMessageReceptionChannel : public MessageReceptionChannel {
 
   MOCK_METHOD2(StartReceivingMessages, void(base::OnceClosure, DoneCallback));
   MOCK_METHOD0(StopReceivingMessages, void());
+  MOCK_METHOD0(IsReceivingMessages, bool());
 
   StreamOpener* stream_opener() { return &stream_opener_; }
 
@@ -114,6 +115,7 @@ class MockRegistrationManager : public RegistrationManager {
   ~MockRegistrationManager() override = default;
 
   MOCK_METHOD1(SignInGaia, void(DoneCallback));
+  MOCK_METHOD0(SignOut, void());
   MOCK_CONST_METHOD0(IsSignedIn, bool());
   MOCK_CONST_METHOD0(GetRegistrationId, std::string());
   MOCK_CONST_METHOD0(GetFtlAuthToken, std::string());

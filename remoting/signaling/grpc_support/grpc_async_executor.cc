@@ -93,15 +93,7 @@ GrpcAsyncExecutor::GrpcAsyncExecutor() : weak_factory_(this) {}
 GrpcAsyncExecutor::~GrpcAsyncExecutor() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(0) << "# of pending RPCs at destruction: " << pending_requests_.size();
-  for (auto& pending_request : pending_requests_) {
-    // If the sequence itself is being destroyed, pending tasks will be dropped
-    // in arbitrary order without checking the weak ptr. If the dequeue task is
-    // destroyed earlier than the executor itself, then |pending_request| will
-    // already be destroyed.
-    if (pending_request) {
-      pending_request->CancelRequest();
-    }
-  }
+  CancelPendingRequests();
 }
 
 void GrpcAsyncExecutor::ExecuteRpc(std::unique_ptr<GrpcAsyncRequest> request) {
@@ -135,6 +127,22 @@ void GrpcAsyncExecutor::ExecuteRpc(std::unique_ptr<GrpcAsyncRequest> request) {
   // queue (which runs on a different thread) expects the client context to be
   // alive when you try to pop out a completed/dead event.
   pending_requests_.push_back(unowned_request->GetGrpcAsyncRequestWeakPtr());
+}
+
+void GrpcAsyncExecutor::CancelPendingRequests() {
+  VLOG(0) << "Canceling # of pending requests: " << pending_requests_.size();
+  // Drop pending response callbacks.
+  weak_factory_.InvalidateWeakPtrs();
+  for (auto& pending_request : pending_requests_) {
+    // If the sequence itself is being destroyed, pending tasks will be dropped
+    // in arbitrary order without checking the weak ptr. If the dequeue task is
+    // destroyed earlier than the executor itself, then |pending_request| will
+    // already be destroyed.
+    if (pending_request) {
+      pending_request->CancelRequest();
+    }
+  }
+  pending_requests_.clear();
 }
 
 void GrpcAsyncExecutor::OnDequeue(std::unique_ptr<GrpcAsyncRequest> request,

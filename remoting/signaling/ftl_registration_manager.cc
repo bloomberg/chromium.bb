@@ -67,6 +67,16 @@ void FtlRegistrationManager::SignInGaia(DoneCallback on_done) {
   executor_->ExecuteRpc(std::move(grpc_request));
 }
 
+void FtlRegistrationManager::SignOut() {
+  if (!IsSignedIn()) {
+    return;
+  }
+  executor_->CancelPendingRequests();
+  sign_in_refresh_timer_.Stop();
+  registration_id_.clear();
+  ftl_auth_token_.clear();
+}
+
 bool FtlRegistrationManager::IsSignedIn() const {
   return !ftl_auth_token_.empty();
 }

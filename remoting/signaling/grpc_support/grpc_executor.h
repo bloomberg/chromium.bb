@@ -24,6 +24,9 @@ class GrpcExecutor {
   // GrpcExecutor instance is destroyed.
   virtual void ExecuteRpc(std::unique_ptr<GrpcAsyncRequest> request) = 0;
 
+  // Cancels all pending requests.
+  virtual void CancelPendingRequests() = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(GrpcExecutor);
 };
