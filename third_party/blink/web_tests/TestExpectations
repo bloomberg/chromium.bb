@@ -6256,3 +6256,6 @@ crbug.com/ [ Win7 ] virtual/streams-native/http/tests/fetch/serviceworker/referr
 crbug.com/946701 [ Win7 ] virtual/streams-native/http/tests/fetch/serviceworker-proxied/thorough/auth-base-https-other-https.html [ Pass Timeout ]
 crbug.com/950222 [ Win7 ] virtual/streams-native/http/tests/fetch/serviceworker-proxied/thorough/auth.html [ Pass Timeout ]
 crbug.com/947670 [ Win7 ] virtual/streams-native/http/tests/fetch/serviceworker-proxied/thorough/cors-preflight2-base-https-other-https.html [ Pass Timeout ]
+
+# Sheriff 2019-04-09
+crbug.com/946335 [ Linux Mac ] fast/filesystem/file-writer-abort-depth.html [ Pass Crash ]
