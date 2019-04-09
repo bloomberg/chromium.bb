@@ -1081,3 +1081,10 @@ base::string16 AttestationPermissionRequestSheetModel::GetAcceptButtonLabel()
 bool AttestationPermissionRequestSheetModel::IsCancelButtonVisible() const {
   return true;
 }
+
+base::string16 AttestationPermissionRequestSheetModel::GetCancelButtonLabel()
+    const {
+  // TODO(martinkr): This should be its own string definition; but we had to
+  // make a change post string freeze and therefore reused this.
+  return l10n_util::GetStringUTF16(IDS_PERMISSION_DENY);
+}

@@ -506,5 +506,6 @@ class AttestationPermissionRequestSheetModel
   bool IsAcceptButtonEnabled() const override;
   base::string16 GetAcceptButtonLabel() const override;
   bool IsCancelButtonVisible() const override;
+  base::string16 GetCancelButtonLabel() const override;
 };
 #endif  // CHROME_BROWSER_UI_WEBAUTHN_SHEET_MODELS_H_
