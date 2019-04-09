@@ -32,11 +32,6 @@
 
 namespace autofill {
 
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
-const base::Feature kAutofillDropdownLayoutExperiment{
-    "AutofillDropdownLayout", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
-
 bool IsCreditCardUploadEnabled(const PrefService* pref_service,
                                const syncer::SyncService* sync_service,
                                const std::string& user_email) {
@@ -210,14 +205,5 @@ bool ShouldUseActiveSignedInAccount() {
          base::FeatureList::IsEnabled(
              features::kAutofillGetPaymentsIdentityFromSync);
 }
-
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
-ForcedPopupLayoutState GetForcedPopupLayoutState() {
-  if (!base::FeatureList::IsEnabled(
-          autofill::kAutofillDropdownLayoutExperiment))
-    return ForcedPopupLayoutState::kDefault;
-  return ForcedPopupLayoutState::kTwoLinesLeadingIcon;
-}
-#endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 
 }  // namespace autofill
