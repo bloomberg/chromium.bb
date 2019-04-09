@@ -33,11 +33,6 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
   void ShallowFlushCHROMIUM() override;
   void OrderingBarrierCHROMIUM() override;
 
-  // SyncTokens.
-  void GenUnverifiedSyncTokenCHROMIUM(GLbyte* sync_token) override;
-  void VerifySyncTokensCHROMIUM(GLbyte** sync_tokens, GLsizei count) override;
-  void WaitSyncTokenCHROMIUM(const GLbyte* sync_token) override;
-
   // Command buffer state.
   GLenum GetError() override;
   GLenum GetGraphicsResetStatusKHR() override;
@@ -96,6 +91,12 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
   void TraceEndCHROMIUM() override;
 
   void SetActiveURLCHROMIUM(const char* url) override;
+
+  // InterfaceBase implementation.
+  void GenSyncTokenCHROMIUM(GLbyte* sync_token) override;
+  void GenUnverifiedSyncTokenCHROMIUM(GLbyte* sync_token) override;
+  void VerifySyncTokensCHROMIUM(GLbyte** sync_tokens, GLsizei count) override;
+  void WaitSyncTokenCHROMIUM(const GLbyte* sync_token) override;
 
  private:
   gles2::GLES2Interface* gl_;

@@ -35,12 +35,6 @@ void GetQueryObjectuivEXT(GLuint id, GLenum pname, GLuint* params) override;
 
 void LoseContextCHROMIUM(GLenum current, GLenum other) override;
 
-void GenUnverifiedSyncTokenCHROMIUM(GLbyte* sync_token) override;
-
-void VerifySyncTokensCHROMIUM(GLbyte** sync_tokens, GLsizei count) override;
-
-void WaitSyncTokenCHROMIUM(const GLbyte* sync_token) override;
-
 GLenum GetGraphicsResetStatusKHR() override;
 
 void EndRasterCHROMIUM() override;

@@ -1083,14 +1083,6 @@ void DiscardFramebufferEXT(GLenum target,
 
 void LoseContextCHROMIUM(GLenum current, GLenum other) override;
 
-void GenSyncTokenCHROMIUM(GLbyte* sync_token) override;
-
-void GenUnverifiedSyncTokenCHROMIUM(GLbyte* sync_token) override;
-
-void VerifySyncTokensCHROMIUM(GLbyte** sync_tokens, GLsizei count) override;
-
-void WaitSyncTokenCHROMIUM(const GLbyte* sync_token) override;
-
 void UnpremultiplyAndDitherCopyCHROMIUM(GLuint source_id,
                                         GLuint dest_id,
                                         GLint x,

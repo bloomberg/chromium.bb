@@ -84,8 +84,17 @@ class WEBGPU_EXPORT WebGPUImplementation final
   bool CanDecodeWithHardwareAcceleration(
       base::span<const uint8_t> encoded_data) const override;
 
+  // InterfaceBase implementation.
+  void GenSyncTokenCHROMIUM(GLbyte* sync_token) override;
+  void GenUnverifiedSyncTokenCHROMIUM(GLbyte* sync_token) override;
+  void VerifySyncTokensCHROMIUM(GLbyte** sync_tokens, GLsizei count) override;
+  void WaitSyncTokenCHROMIUM(const GLbyte* sync_token) override;
+
   // ImplementationBase implementation.
   void IssueShallowFlush() override;
+  void SetGLError(GLenum error,
+                  const char* function_name,
+                  const char* msg) override;
 
   // GpuControlClient implementation.
   void OnGpuControlLostContext() final;

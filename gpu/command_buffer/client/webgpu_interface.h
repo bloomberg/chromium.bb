@@ -7,13 +7,15 @@
 
 #include <dawn/dawn.h>
 
+#include "gpu/command_buffer/client/interface_base.h"
+
 extern "C" typedef struct _ClientBuffer* ClientBuffer;
 extern "C" typedef struct _GLColorSpace* GLColorSpace;
 
 namespace gpu {
 namespace webgpu {
 
-class WebGPUInterface {
+class WebGPUInterface : public InterfaceBase {
  public:
   WebGPUInterface() {}
   virtual ~WebGPUInterface() {}

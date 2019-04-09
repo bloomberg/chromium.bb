@@ -1537,19 +1537,6 @@ void GL_APIENTRY GLES2DiscardFramebufferEXT(GLenum target,
 void GL_APIENTRY GLES2LoseContextCHROMIUM(GLenum current, GLenum other) {
   gles2::GetGLContext()->LoseContextCHROMIUM(current, other);
 }
-void GL_APIENTRY GLES2GenSyncTokenCHROMIUM(GLbyte* sync_token) {
-  gles2::GetGLContext()->GenSyncTokenCHROMIUM(sync_token);
-}
-void GL_APIENTRY GLES2GenUnverifiedSyncTokenCHROMIUM(GLbyte* sync_token) {
-  gles2::GetGLContext()->GenUnverifiedSyncTokenCHROMIUM(sync_token);
-}
-void GL_APIENTRY GLES2VerifySyncTokensCHROMIUM(GLbyte** sync_tokens,
-                                               GLsizei count) {
-  gles2::GetGLContext()->VerifySyncTokensCHROMIUM(sync_tokens, count);
-}
-void GL_APIENTRY GLES2WaitSyncTokenCHROMIUM(const GLbyte* sync_token) {
-  gles2::GetGLContext()->WaitSyncTokenCHROMIUM(sync_token);
-}
 void GL_APIENTRY GLES2UnpremultiplyAndDitherCopyCHROMIUM(GLuint source_id,
                                                          GLuint dest_id,
                                                          GLint x,
@@ -3169,23 +3156,6 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glLoseContextCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(glLoseContextCHROMIUM),
-    },
-    {
-        "glGenSyncTokenCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(glGenSyncTokenCHROMIUM),
-    },
-    {
-        "glGenUnverifiedSyncTokenCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(
-            glGenUnverifiedSyncTokenCHROMIUM),
-    },
-    {
-        "glVerifySyncTokensCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(glVerifySyncTokensCHROMIUM),
-    },
-    {
-        "glWaitSyncTokenCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(glWaitSyncTokenCHROMIUM),
     },
     {
         "glUnpremultiplyAndDitherCopyCHROMIUM",

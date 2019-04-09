@@ -1048,13 +1048,6 @@ void GLES2InterfaceStub::DiscardFramebufferEXT(
     const GLenum* /* attachments */) {}
 void GLES2InterfaceStub::LoseContextCHROMIUM(GLenum /* current */,
                                              GLenum /* other */) {}
-void GLES2InterfaceStub::GenSyncTokenCHROMIUM(GLbyte* /* sync_token */) {}
-void GLES2InterfaceStub::GenUnverifiedSyncTokenCHROMIUM(
-    GLbyte* /* sync_token */) {}
-void GLES2InterfaceStub::VerifySyncTokensCHROMIUM(GLbyte** /* sync_tokens */,
-                                                  GLsizei /* count */) {}
-void GLES2InterfaceStub::WaitSyncTokenCHROMIUM(const GLbyte* /* sync_token */) {
-}
 void GLES2InterfaceStub::UnpremultiplyAndDitherCopyCHROMIUM(
     GLuint /* source_id */,
     GLuint /* dest_id */,
