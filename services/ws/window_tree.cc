@@ -764,14 +764,16 @@ void WindowTree::SendOcclusionStates(const std::set<aura::Window*>& windows) {
   window_tree_client_->OnOcclusionStatesChanged(occlusion_changes);
 }
 
-void WindowTree::OnWindowTreeHostsDisplayIdChanged(
-    const std::set<aura::Window*>& root_windows) {
+void WindowTree::OnWindowTreeHostsSwappedDisplays(
+    aura::Window* new_primary_root,
+    aura::Window* old_primary_root) {
+  DCHECK(new_primary_root->IsRootWindow() && old_primary_root->IsRootWindow());
   for (auto& client_root : client_roots_) {
     aura::Window* root_window = client_root->window()->GetRootWindow();
-    if (root_windows.find(root_window) == root_windows.end())
+    if (root_window != new_primary_root && root_window != old_primary_root)
       continue;
 
-    client_root->OnWindowTreeHostDisplayIdChanged();
+    client_root->NotifyClientOfDisplayIdChange();
   }
 }
 

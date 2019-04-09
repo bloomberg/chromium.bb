@@ -125,10 +125,11 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   // Notifies the client that the occlusion state of |windows| have changed.
   void SendOcclusionStates(const std::set<aura::Window*>& windows);
 
-  // Called from WindowService to update display id of ClientRoots contained by
-  // the root windows.
-  void OnWindowTreeHostsDisplayIdChanged(
-      const std::set<aura::Window*>& root_windows);
+  // Called from WindowService to update display id of ClientRoots contained
+  // by the root windows. See WindowService::OnWindowTreeHostsSwappedDisplays
+  // for details.
+  void OnWindowTreeHostsSwappedDisplays(aura::Window* new_primary_root,
+                                        aura::Window* old_primary_root);
 
   WindowService* window_service() { return window_service_; }
 

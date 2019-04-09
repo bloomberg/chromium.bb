@@ -258,10 +258,13 @@ void WindowService::OnDisplayMetricsChanged(const display::Display& display,
   screen_provider_->DisplayMetricsChanged(display, changed_metrics);
 }
 
-void WindowService::OnWindowTreeHostsDisplayIdChanged(
-    const std::set<aura::Window*>& root_windows) {
-  for (WindowTree* tree : window_trees_)
-    tree->OnWindowTreeHostsDisplayIdChanged(root_windows);
+void WindowService::OnWindowTreeHostsSwappedDisplays(
+    aura::Window* new_primary_root,
+    aura::Window* old_primary_root) {
+  DCHECK(new_primary_root->IsRootWindow() && old_primary_root->IsRootWindow());
+  for (WindowTree* tree : window_trees_) {
+    tree->OnWindowTreeHostsSwappedDisplays(new_primary_root, old_primary_root);
+  }
 }
 
 std::string WindowService::GetIdForDebugging(aura::Window* window) {
