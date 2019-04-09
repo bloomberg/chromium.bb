@@ -56,6 +56,10 @@ cr.define('inline.login', function() {
     $('contents').classList.toggle('loading', true);
   }
 
+  function onShowIncognito() {
+    chrome.send('showIncognito');
+  }
+
   /**
    * Initialize the UI.
    */
@@ -67,6 +71,7 @@ cr.define('inline.login', function() {
     authExtHost.addEventListener('newWindow', onNewWindow);
     authExtHost.addEventListener('resize', onResize);
     authExtHost.addEventListener('authCompleted', onAuthCompleted);
+    authExtHost.addEventListener('showIncognito', onShowIncognito);
     chrome.send('initialize');
   }
 

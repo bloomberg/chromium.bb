@@ -21,6 +21,7 @@ class InlineLoginHandlerChromeOS : public InlineLoginHandler {
   ~InlineLoginHandlerChromeOS() override;
 
   // InlineLoginHandler overrides.
+  void RegisterMessages() override;
   void SetExtraInitParams(base::DictionaryValue& params) override;
   void CompleteLogin(const std::string& email,
                      const std::string& password,
@@ -32,6 +33,8 @@ class InlineLoginHandlerChromeOS : public InlineLoginHandler {
                      bool choose_what_to_sync) override;
 
  private:
+  void ShowIncognitoAndCloseDialog(const base::ListValue* args);
+
   base::RepeatingClosure close_dialog_closure_;
   DISALLOW_COPY_AND_ASSIGN(InlineLoginHandlerChromeOS);
 };

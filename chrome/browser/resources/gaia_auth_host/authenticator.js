@@ -634,6 +634,8 @@ cr.define('cr.login', function() {
         if (this.email_ && this.gaiaId_ && this.sessionIndex_) {
           this.maybeCompleteAuth_();
         }
+      } else if (msg.method == 'showIncognito') {
+        this.dispatchEvent(new Event('showIncognito'));
       } else {
         console.warn('Unrecognized message from GAIA: ' + msg.method);
       }
