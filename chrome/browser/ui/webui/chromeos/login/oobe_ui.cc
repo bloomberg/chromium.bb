@@ -261,7 +261,8 @@ content::WebUIDataSource* CreateOobeUIDataSource(
   const bool is_running_test = command_line->HasSwitch(::switches::kTestName) ||
                                command_line->HasSwitch(::switches::kTestType);
   if (is_running_test)
-    source->SetRequestFilter(::test::GetTestFilesRequestFilter());
+    source->SetRequestFilter(::test::GetTestShouldHandleRequest(),
+                             ::test::GetTestFilesRequestFilter());
 
   return source;
 }

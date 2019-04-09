@@ -57,19 +57,21 @@ std::unique_ptr<base::ListValue> GetNetworkErrorData() {
   return error_list;
 }
 
-bool HandleWebUIRequestCallback(
+bool ShouldHandleWebUIRequestCallback(const std::string& path) {
+  return path == kNetworkErrorDataFile;
+}
+
+void HandleWebUIRequestCallback(
     BrowserContext* current_context,
     const std::string& path,
     const WebUIDataSource::GotDataCallback& callback) {
-  if (path != kNetworkErrorDataFile)
-    return false;
+  DCHECK(ShouldHandleWebUIRequestCallback(path));
 
   base::DictionaryValue data;
   data.Set(kErrorCodesDataName, GetNetworkErrorData());
   std::string json_string;
   base::JSONWriter::Write(data, &json_string);
   callback.Run(base::RefCountedString::TakeString(&json_string));
-  return true;
 }
 
 } // namespace
@@ -88,6 +90,7 @@ NetworkErrorsListingUI::NetworkErrorsListingUI(WebUI* web_ui)
                                IDR_NETWORK_ERROR_LISTING_JS);
   html_source->SetDefaultResource(IDR_NETWORK_ERROR_LISTING_HTML);
   html_source->SetRequestFilter(
+      base::BindRepeating(&ShouldHandleWebUIRequestCallback),
       base::Bind(&HandleWebUIRequestCallback,
                  web_ui->GetWebContents()->GetBrowserContext()));
 

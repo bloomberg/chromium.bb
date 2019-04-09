@@ -83,14 +83,24 @@ class WebUIDataSource {
       GotDataCallback;
 
   // Used by SetRequestFilter. The string parameter is the path of the request.
-  // If the callee doesn't want to handle the data, false is returned. Otherwise
-  // true is returned and the GotDataCallback parameter is called either then or
-  // asynchronously with the response.
-  typedef base::Callback<bool(const std::string&, const GotDataCallback&)>
+  // The return value indicates if the callee wants to handle the request. Iff
+  // true is returned, |handle_request_callback| will be called to provide the
+  // request's response.
+  typedef base::RepeatingCallback<bool(const std::string&)>
+      ShouldHandleRequestCallback;
+
+  // Used by SetRequestFilter. The string parameter is the path of the request.
+  // This callback is only called if a prior call to ShouldHandleRequestCallback
+  // returned true. GotDataCallback should be used to provide the response
+  // bytes.
+  typedef base::RepeatingCallback<void(const std::string&,
+                                       const GotDataCallback&)>
       HandleRequestCallback;
 
   // Allows a caller to add a filter for URL requests.
-  virtual void SetRequestFilter(const HandleRequestCallback& callback) = 0;
+  virtual void SetRequestFilter(
+      const ShouldHandleRequestCallback& should_handle_request_callback,
+      const HandleRequestCallback& handle_request_callback) = 0;
 
   // The following map to methods on URLDataSource. See the documentation there.
   // NOTE: it's not acceptable to call DisableContentSecurityPolicy for new

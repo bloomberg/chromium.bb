@@ -131,28 +131,32 @@ base::LazyInstance<PrintPreviewRequestIdMapWithLock>::DestructorAtExit
 base::LazyInstance<base::IDMap<PrintPreviewUI*>>::DestructorAtExit
     g_print_preview_ui_id_map = LAZY_INSTANCE_INITIALIZER;
 
+bool ShouldHandleRequestCallback(const std::string& path) {
+  // ChromeWebUIDataSource handles most requests except for the print preview
+  // data.
+  return PrintPreviewUI::ParseDataPath(path, nullptr, nullptr);
+}
+
 // Get markup or other resources for the print preview page.
-bool HandleRequestCallback(
+void HandleRequestCallback(
     const std::string& path,
     const content::WebUIDataSource::GotDataCallback& callback) {
   // ChromeWebUIDataSource handles most requests except for the print preview
   // data.
   int preview_ui_id;
   int page_index;
-  if (!PrintPreviewUI::ParseDataPath(path, &preview_ui_id, &page_index))
-    return false;
+  CHECK(PrintPreviewUI::ParseDataPath(path, &preview_ui_id, &page_index));
 
   scoped_refptr<base::RefCountedMemory> data;
   PrintPreviewDataService::GetInstance()->GetDataEntry(preview_ui_id,
                                                        page_index, &data);
   if (data.get()) {
     callback.Run(data.get());
-    return true;
+    return;
   }
   // Invalid request.
   auto empty_bytes = base::MakeRefCounted<base::RefCountedBytes>();
   callback.Run(empty_bytes.get());
-  return true;
 }
 
 void AddPrintPreviewStrings(content::WebUIDataSource* source) {
@@ -416,7 +420,8 @@ std::vector<std::string> SetupPrintPreviewPlugin(
     source->AddResourcePath(resource.path, resource.id);
   }
 
-  source->SetRequestFilter(base::BindRepeating(&HandleRequestCallback));
+  source->SetRequestFilter(base::BindRepeating(&ShouldHandleRequestCallback),
+                           base::BindRepeating(&HandleRequestCallback));
   source->OverrideContentSecurityPolicyChildSrc("child-src 'self';");
   source->DisableDenyXFrameOptions();
   source->OverrideContentSecurityPolicyObjectSrc("object-src 'self';");

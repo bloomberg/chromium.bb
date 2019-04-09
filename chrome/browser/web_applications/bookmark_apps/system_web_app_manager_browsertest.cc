@@ -67,21 +67,24 @@ class TestWebUIController : public content::WebUIController {
     content::WebUIDataSource* data_source =
         content::WebUIDataSource::Create("test-system-app");
     data_source->AddResourcePath("icon-256.png", IDR_PRODUCT_LOGO_256);
-    data_source->SetRequestFilter(base::BindRepeating(
-        [](const std::string& id,
-           const content::WebUIDataSource::GotDataCallback& callback) {
-          scoped_refptr<base::RefCountedString> ref_contents(
-              new base::RefCountedString);
-          if (id == "manifest.json")
-            ref_contents->data() = kSystemAppManifestText;
-          else if (id == "pwa.html")
-            ref_contents->data() = kPwaHtml;
-          else
-            return false;
+    data_source->SetRequestFilter(
+        base::BindRepeating([](const std::string& path) {
+          return path == "manifest.json" || path == "pwa.html";
+        }),
+        base::BindRepeating(
+            [](const std::string& id,
+               const content::WebUIDataSource::GotDataCallback& callback) {
+              scoped_refptr<base::RefCountedString> ref_contents(
+                  new base::RefCountedString);
+              if (id == "manifest.json")
+                ref_contents->data() = kSystemAppManifestText;
+              else if (id == "pwa.html")
+                ref_contents->data() = kPwaHtml;
+              else
+                NOTREACHED();
 
-          callback.Run(ref_contents);
-          return true;
-        }));
+              callback.Run(ref_contents);
+            }));
     content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
                                   data_source);
   }
