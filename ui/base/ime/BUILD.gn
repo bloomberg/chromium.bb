@@ -13,47 +13,15 @@ source_set("text_input_types") {
   ]
 }
 
-jumbo_component("ime_types") {
-  output_name = "ui_base_ime_types"
-  sources = [
-    "candidate_window.cc",
-    "candidate_window.h",
-    "composition_text.cc",
-    "composition_text.h",
-    "ime_text_span.cc",
-    "ime_text_span.h",
-    "infolist_entry.cc",
-    "infolist_entry.h",
-  ]
-
-  defines = [ "IS_UI_BASE_IME_TYPES_IMPL" ]
-
-  deps = [
-    "//base",
-    "//ui/gfx/range",
-  ]
-
-  public_deps = [
-    ":text_input_types",
-    "//skia",
-  ]
-
-  if (is_chromeos || use_ozone) {
-    sources += [
-      "character_composer.cc",
-      "character_composer.h",
-    ]
-    deps += [
-      "//ui/events:dom_keycode_converter",
-      "//ui/events:events",
-      "//ui/events:events_base",
-    ]
-  }
-}
-
 jumbo_component("ime") {
   output_name = "ui_base_ime"
   sources = [
+    "candidate_window.cc",
+    "candidate_window.h",
+    "character_composer.cc",
+    "character_composer.h",
+    "composition_text.cc",
+    "composition_text.h",
     "constants.cc",
     "constants.h",
     "ime_bridge.cc",
@@ -61,6 +29,10 @@ jumbo_component("ime") {
     "ime_candidate_window_handler_interface.h",
     "ime_engine_handler_interface.h",
     "ime_input_context_handler_interface.h",
+    "ime_text_span.cc",
+    "ime_text_span.h",
+    "infolist_entry.cc",
+    "infolist_entry.h",
     "input_method.h",
     "input_method_base.cc",
     "input_method_base.h",
@@ -85,13 +57,11 @@ jumbo_component("ime") {
   defines = [ "IS_UI_BASE_IME_IMPL" ]
 
   public_deps = [
-    ":ime_types",
     ":text_input_types",
     "//base",
     "//base:i18n",
     "//skia",
     "//third_party/icu",
-    "//ui/base/ime/mojo",
     "//ui/events",
     "//ui/events:dom_keycode_converter",
     "//ui/events:events",

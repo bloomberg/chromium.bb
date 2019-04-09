@@ -19,15 +19,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/third_party/icu/icu_utf.h"
 #include "chromeos/system/devicemode.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/ime_engine_handler_interface.h"
 #include "ui/base/ime/input_method_delegate.h"
-#include "ui/base/ime/mojo/ime.mojom.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/rect.h"
@@ -60,68 +57,6 @@ CreateResultCallbackFromAckCallback(InputMethodChromeOS::AckCallback callback) {
 
 }  // namespace
 
-// The helper to make the InputMethodChromeOS as a ime::mojom::ImeEngineClient.
-// It forwards the ime::mojom::ImeEngineClient method calls toi methods of
-// ui::IMEInputContextHandlerInterface methods.
-// Due to the method naming conflict, InputMethodChromeOS cannot directly
-// inherit from ime::mojom::ImeEngineClient.
-class InputMethodChromeOS::MojoHelper : public ime::mojom::ImeEngineClient {
- public:
-  explicit MojoHelper(InputMethodChromeOS* im) : im_(im), binding_(this) {}
-  ~MojoHelper() override = default;
-
-  ime::mojom::ImeEngineProxy* ime_engine() { return ime_engine_.get(); }
-
-  bool connected() const { return connected_; }
-
-  void Connect() {
-    ime::mojom::ImeEngineClientPtr client_ptr;
-    binding_.Bind(mojo::MakeRequest(&client_ptr));
-    connected_ = im_->delegate()->ConnectToImeEngine(
-        mojo::MakeRequest(&ime_engine_), std::move(client_ptr));
-  }
-
-  void Reset() {
-    binding_.Close();
-    ime_engine_.reset();
-    connected_ = false;
-  }
-
- private:
-  // ime::mojom::ImeEngineClient:
-  void CommitText(const std::string& text) override { im_->CommitText(text); }
-  void UpdateCompositionText(const ui::CompositionText& composition_text,
-                             uint32_t cursor_pos,
-                             bool visible) override {
-    im_->UpdateCompositionText(composition_text, cursor_pos, visible);
-  }
-  void DeleteSurroundingText(int32_t offset, uint32_t length) override {
-    im_->DeleteSurroundingText(offset, length);
-  }
-  void SendKeyEvent(std::unique_ptr<ui::Event> key_event) override {
-    im_->SendKeyEvent(key_event->AsKeyEvent());
-  }
-  void Reconnect() override {
-    // Don't reconnect when the |ime_engine_| has been reset, which means the
-    // InputMethodChromeOS is not focused.
-    if (ime_engine_) {
-      Reset();
-      Connect();
-    }
-  }
-
-  InputMethodChromeOS* im_;
-  // Whether the mojo connection is enabled.
-  // If true, |InputMethodChromeOS| works with ime::mojom::ImeEngine.
-  // If false, |InputMethodChromeOS| works with ui::IMEEngineHandlerInterface.
-  bool connected_ = false;
-
-  mojo::Binding<ime::mojom::ImeEngineClient> binding_;
-  ime::mojom::ImeEnginePtr ime_engine_;
-
-  DISALLOW_COPY_AND_ASSIGN(MojoHelper);
-};
-
 // InputMethodChromeOS implementation -----------------------------------------
 InputMethodChromeOS::InputMethodChromeOS(
     internal::InputMethodDelegate* delegate)
@@ -129,7 +64,6 @@ InputMethodChromeOS::InputMethodChromeOS(
       composing_text_(false),
       composition_changed_(false),
       handling_key_event_(false),
-      mojo_helper_(std::make_unique<MojoHelper>(this)),
       weak_ptr_factory_(this) {
   ui::IMEBridge::Get()->SetInputContextHandler(this);
 
@@ -216,8 +150,7 @@ ui::EventDispatchDetails InputMethodChromeOS::DispatchKeyEventInternal(
   // normal input field (not a password field).
   // Note: We need to send the key event to ibus even if the |context_| is not
   // enabled, so that ibus can have a chance to enable the |context_|.
-  const bool has_engine = GetEngine() || mojo_helper_->connected();
-  if (!IsNonPasswordInputFieldFocused() || !has_engine) {
+  if (!IsNonPasswordInputFieldFocused() || !GetEngine()) {
     if (event->type() == ET_KEY_PRESSED) {
       if (ExecuteCharacterComposer(*event)) {
         // Treating as PostIME event if character composer handles key event and
@@ -232,17 +165,13 @@ ui::EventDispatchDetails InputMethodChromeOS::DispatchKeyEventInternal(
   }
 
   handling_key_event_ = true;
-  ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback = base::BindOnce(
-      &InputMethodChromeOS::KeyEventDoneCallback,
-      weak_ptr_factory_.GetWeakPtr(),
-      // Pass the ownership of the new copied event.
-      base::Owned(new ui::KeyEvent(*event)), std::move(result_callback));
-  if (mojo_helper_->connected()) {
-    mojo_helper_->ime_engine()->ProcessKeyEvent(ui::Event::Clone(*event),
-                                                std::move(callback));
-    return ui::EventDispatchDetails();
-  }
   if (GetEngine()->IsInterestedInKeyEvent()) {
+    ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback =
+        base::BindOnce(&InputMethodChromeOS::KeyEventDoneCallback,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       // Pass the ownership of the new copied event.
+                       base::Owned(new ui::KeyEvent(*event)),
+                       std::move(result_callback));
     GetEngine()->ProcessKeyEvent(*event, std::move(callback));
     return ui::EventDispatchDetails();
   }
@@ -298,23 +227,16 @@ void InputMethodChromeOS::OnTextInputTypeChanged(
 
   UpdateContextFocusState();
 
-  if (mojo_helper_->connected()) {
-    mojo_helper_->ime_engine()->FinishInput();
-    mojo_helper_->ime_engine()->StartInput(ime::mojom::EditorInfo::New(
+  ui::IMEEngineHandlerInterface* engine = GetEngine();
+  if (engine) {
+    // When focused input client is not changed, a text input type change should
+    // cause blur/focus events to engine.
+    // The focus in to or out from password field should also notify engine.
+    engine->FocusOut();
+    ui::IMEEngineHandlerInterface::InputContext context(
         GetTextInputType(), GetTextInputMode(), GetTextInputFlags(),
-        GetClientFocusReason(), GetClientShouldDoLearning()));
-  } else {
-    ui::IMEEngineHandlerInterface* engine = GetEngine();
-    if (engine) {
-      ui::IMEEngineHandlerInterface::InputContext context(
-          GetTextInputType(), GetTextInputMode(), GetTextInputFlags(),
-          GetClientFocusReason(), GetClientShouldDoLearning());
-      // When focused input client is not changed, a text input type change
-      // should cause blur/focus events to engine. The focus in to or out from
-      // password field should also notify engine.
-      engine->FocusOut();
-      engine->FocusIn(context);
-    }
+        GetClientFocusReason(), GetClientShouldDoLearning());
+    engine->FocusIn(context);
   }
 
   OnCaretBoundsChanged(client);
@@ -335,12 +257,8 @@ void InputMethodChromeOS::OnCaretBoundsChanged(const TextInputClient* client) {
   DCHECK(client == GetTextInputClient());
   DCHECK(!IsTextInputTypeNone());
 
-  if (mojo_helper_->connected()) {
-    mojo_helper_->ime_engine()->UpdateCompositionBounds(
-        GetCompositionBounds(client));
-  } else if (GetEngine()) {
+  if (GetEngine())
     GetEngine()->SetCompositionBounds(GetCompositionBounds(client));
-  }
 
   chromeos::IMECandidateWindowHandlerInterface* candidate_window =
       ui::IMEBridge::Get()->GetCandidateWindowHandler();
@@ -387,17 +305,12 @@ void InputMethodChromeOS::OnCaretBoundsChanged(const TextInputClient* client) {
   // Here SetSurroundingText accepts relative position of |surrounding_text|, so
   // we have to convert |selection_range| from node coordinates to
   // |surrounding_text| coordinates.
-  if (mojo_helper_->connected()) {
-    mojo_helper_->ime_engine()->UpdateSurroundingInfo(
-        base::UTF16ToUTF8(surrounding_text),
-        selection_range.start() - text_range.start(),
-        selection_range.end() - text_range.start(), text_range.start());
-  } else if (GetEngine()) {
-    GetEngine()->SetSurroundingText(
-        base::UTF16ToUTF8(surrounding_text),
-        selection_range.start() - text_range.start(),
-        selection_range.end() - text_range.start(), text_range.start());
-  }
+  if (!GetEngine())
+    return;
+  GetEngine()->SetSurroundingText(base::UTF16ToUTF8(surrounding_text),
+                                  selection_range.start() - text_range.start(),
+                                  selection_range.end() - text_range.start(),
+                                  text_range.start());
 }
 
 void InputMethodChromeOS::CancelComposition(const TextInputClient* client) {
@@ -421,26 +334,13 @@ InputMethodChromeOS::GetInputMethodKeyboardController() {
   return InputMethodBase::GetInputMethodKeyboardController();
 }
 
-void InputMethodChromeOS::OnFocus() {
-  InputMethodBase::OnFocus();
-  mojo_helper_->Connect();
-}
-
-void InputMethodChromeOS::OnBlur() {
-  InputMethodBase::OnBlur();
-  mojo_helper_->Reset();
-}
-
 void InputMethodChromeOS::OnWillChangeFocusedClient(
     TextInputClient* focused_before,
     TextInputClient* focused) {
   ConfirmCompositionText();
 
-  if (mojo_helper_->connected()) {
-    mojo_helper_->ime_engine()->FinishInput();
-  } else if (GetEngine()) {
+  if (GetEngine())
     GetEngine()->FocusOut();
-  }
 }
 
 void InputMethodChromeOS::OnDidChangeFocusedClient(
@@ -451,11 +351,7 @@ void InputMethodChromeOS::OnDidChangeFocusedClient(
   // focus and after it acquires focus again are the same.
   UpdateContextFocusState();
 
-  if (mojo_helper_->connected()) {
-    mojo_helper_->ime_engine()->StartInput(ime::mojom::EditorInfo::New(
-        GetTextInputType(), GetTextInputMode(), GetTextInputFlags(),
-        GetClientFocusReason(), GetClientShouldDoLearning()));
-  } else if (GetEngine()) {
+  if (GetEngine()) {
     ui::IMEEngineHandlerInterface::InputContext context(
         GetTextInputType(), GetTextInputMode(), GetTextInputFlags(),
         GetClientFocusReason(), GetClientShouldDoLearning());
@@ -486,9 +382,7 @@ void InputMethodChromeOS::ResetContext() {
   // Note: some input method engines may not support reset method, such as
   // ibus-anthy. But as we control all input method engines by ourselves, we can
   // make sure that all of the engines we are using support it correctly.
-  if (mojo_helper_->connected())
-    mojo_helper_->ime_engine()->CancelInput();
-  else if (GetEngine())
+  if (GetEngine())
     GetEngine()->Reset();
 
   character_composer_.Reset();

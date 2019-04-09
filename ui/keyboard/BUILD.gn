@@ -171,7 +171,6 @@ test("keyboard_unittests") {
     "//base",
     "//base/test:test_support",
     "//components/ukm:test_support",
-    "//mojo/core/embedder",
     "//services/service_manager/public/cpp",
     "//testing/gmock",
     "//testing/gtest",

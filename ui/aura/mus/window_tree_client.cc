@@ -1822,12 +1822,6 @@ void WindowTreeClient::OnWindowTreeHostCreated(
                             drag_drop_controller_.get());
 }
 
-void WindowTreeClient::ConnectToImeEngine(
-    ime::mojom::ImeEngineRequest engine_request,
-    ime::mojom::ImeEngineClientPtr client) {
-  tree_->ConnectToImeEngine(std::move(engine_request), std::move(client));
-}
-
 void WindowTreeClient::OnTransientChildWindowAdded(Window* parent,
                                                    Window* transient_child) {
   // TransientWindowClient is a singleton and we allow multiple

@@ -16,7 +16,6 @@
 #include "ui/aura/aura_export.h"
 #include "ui/aura/mus/input_method_mus_delegate.h"
 #include "ui/aura/window_tree_host_platform.h"
-#include "ui/base/ime/mojo/ime.mojom.h"
 #include "ui/base/mojo/ui_base_types.mojom.h"
 
 namespace display {
@@ -119,8 +118,6 @@ class AURA_EXPORT WindowTreeHostMus : public WindowTreeHostPlatform,
   void SetTextInputState(ui::mojom::TextInputStatePtr state) override;
   void SetImeVisibility(bool visible,
                         ui::mojom::TextInputStatePtr state) override;
-  bool ConnectToImeEngine(ime::mojom::ImeEngineRequest engine_request,
-                          ime::mojom::ImeEngineClientPtr client) override;
 
  protected:
   // This is in the protected section as SetBounds() is preferred.

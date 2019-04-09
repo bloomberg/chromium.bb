@@ -515,8 +515,6 @@ class AURA_EXPORT WindowTreeClient
   std::unique_ptr<WindowPortMus> CreateWindowPortForTopLevel(
       const std::map<std::string, std::vector<uint8_t>>* properties) override;
   void OnWindowTreeHostCreated(WindowTreeHostMus* window_tree_host) override;
-  void ConnectToImeEngine(ime::mojom::ImeEngineRequest engine_request,
-                          ime::mojom::ImeEngineClientPtr client) override;
 
   // client::TransientWindowClientObserver:
   void OnTransientChildWindowAdded(Window* parent,

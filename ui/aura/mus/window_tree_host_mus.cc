@@ -390,13 +390,6 @@ void WindowTreeHostMus::SetImeVisibility(bool visible,
   WindowPortMus::Get(window())->SetImeVisibility(visible, std::move(state));
 }
 
-bool WindowTreeHostMus::ConnectToImeEngine(
-    ime::mojom::ImeEngineRequest engine_request,
-    ime::mojom::ImeEngineClientPtr client) {
-  delegate_->ConnectToImeEngine(std::move(engine_request), std::move(client));
-  return true;
-}
-
 void WindowTreeHostMus::SetBoundsInPixels(
     const gfx::Rect& bounds,
     const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {

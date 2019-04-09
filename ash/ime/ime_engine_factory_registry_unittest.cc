@@ -26,15 +26,6 @@ class TestImeEngineClient : public ime::mojom::ImeEngineClient {
   }
 
  private:
-  // ime::mojom::ImeEngineClient:
-  void CommitText(const std::string& text) override {}
-  void UpdateCompositionText(const ui::CompositionText& composition,
-                             uint32_t cursor_pos,
-                             bool visible) override {}
-  void DeleteSurroundingText(int32_t offset, uint32_t length) override {}
-  void SendKeyEvent(std::unique_ptr<ui::Event> key_event) override {}
-  void Reconnect() override {}
-
   mojo::Binding<ime::mojom::ImeEngineClient> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(TestImeEngineClient);
