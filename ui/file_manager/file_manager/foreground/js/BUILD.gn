@@ -682,9 +682,6 @@ js_library("sort_menu_controller") {
 }
 
 js_library("spinner_controller") {
-  deps = [
-    "//ui/webui/resources/js/cr:event_target",
-  ]
 }
 
 js_unittest("spinner_controller_unittest") {
