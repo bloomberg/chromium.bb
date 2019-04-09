@@ -149,14 +149,13 @@ class WebViewSyncControllerObserverBridge
 #pragma mark - Public Methods
 
 - (CWVIdentity*)currentIdentity {
-  base::Optional<AccountInfo> accountInfo =
-      _identityManager->FindExtendedAccountInfoForAccount(
-          _identityManager->GetPrimaryAccountInfo());
-  if (!accountInfo)
+  if (!_identityManager->HasPrimaryAccount()) {
     return nil;
-  NSString* email = base::SysUTF8ToNSString(accountInfo->email);
-  NSString* fullName = base::SysUTF8ToNSString(accountInfo->full_name);
-  NSString* gaiaID = base::SysUTF8ToNSString(accountInfo->gaia);
+  }
+  AccountInfo accountInfo = _identityManager->GetPrimaryAccountInfoDeprecated();
+  NSString* email = base::SysUTF8ToNSString(accountInfo.email);
+  NSString* fullName = base::SysUTF8ToNSString(accountInfo.full_name);
+  NSString* gaiaID = base::SysUTF8ToNSString(accountInfo.gaia);
   return
       [[CWVIdentity alloc] initWithEmail:email fullName:fullName gaiaID:gaiaID];
 }
