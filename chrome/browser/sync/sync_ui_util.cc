@@ -154,7 +154,7 @@ MessageType GetStatusLabelsImpl(
       *status_label =
           l10n_util::GetStringUTF16(IDS_SIGNED_IN_WITH_SYNC_SUPPRESSED);
     }
-    return PRE_SYNCED;
+    return SYNC_ERROR;
   }
 
   if (service->GetUserSettings()->IsFirstSetupComplete()) {
