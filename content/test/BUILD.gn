@@ -433,6 +433,11 @@ jumbo_static_library("test_support") {
       "//content/shell:android_shell_descriptors",
       "//mojo/public/java/system:native_support",
     ]
+  } else {
+    sources += [
+      "../browser/serial/serial_test_utils.cc",
+      "../browser/serial/serial_test_utils.h",
+    ]
   }
 
   if (enable_plugins) {
@@ -2199,6 +2204,7 @@ test("content_unittests") {
     # Non-Android.
     sources += [
       "../browser/host_zoom_map_impl_unittest.cc",
+      "../browser/serial/serial_unittest.cc",
       "../browser/speech/chunked_byte_buffer_unittest.cc",
       "../browser/speech/endpointer/endpointer_unittest.cc",
       "../browser/speech/speech_recognition_engine_unittest.cc",

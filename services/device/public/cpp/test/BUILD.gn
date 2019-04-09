@@ -8,6 +8,8 @@ source_set("test_support") {
   sources = [
     "fake_sensor_and_provider.cc",
     "fake_sensor_and_provider.h",
+    "fake_serial_port_manager.cc",
+    "fake_serial_port_manager.h",
     "scoped_geolocation_overrider.cc",
     "scoped_geolocation_overrider.h",
     "test_wake_lock_provider.cc",
