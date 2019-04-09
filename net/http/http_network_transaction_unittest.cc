@@ -716,7 +716,8 @@ class CaptureGroupIdTransportSocketPool : public TransportClientSocketPool {
 
 // Helper functions for validating that AuthChallengeInfo's are correctly
 // configured for common cases.
-bool CheckBasicServerAuth(const AuthChallengeInfo* auth_challenge) {
+bool CheckBasicServerAuth(
+    const base::Optional<AuthChallengeInfo>& auth_challenge) {
   if (!auth_challenge)
     return false;
   EXPECT_FALSE(auth_challenge->is_proxy);
@@ -726,7 +727,8 @@ bool CheckBasicServerAuth(const AuthChallengeInfo* auth_challenge) {
   return true;
 }
 
-bool CheckBasicProxyAuth(const AuthChallengeInfo* auth_challenge) {
+bool CheckBasicProxyAuth(
+    const base::Optional<AuthChallengeInfo>& auth_challenge) {
   if (!auth_challenge)
     return false;
   EXPECT_TRUE(auth_challenge->is_proxy);
@@ -736,7 +738,8 @@ bool CheckBasicProxyAuth(const AuthChallengeInfo* auth_challenge) {
   return true;
 }
 
-bool CheckBasicSecureProxyAuth(const AuthChallengeInfo* auth_challenge) {
+bool CheckBasicSecureProxyAuth(
+    const base::Optional<AuthChallengeInfo>& auth_challenge) {
   if (!auth_challenge)
     return false;
   EXPECT_TRUE(auth_challenge->is_proxy);
@@ -746,7 +749,8 @@ bool CheckBasicSecureProxyAuth(const AuthChallengeInfo* auth_challenge) {
   return true;
 }
 
-bool CheckDigestServerAuth(const AuthChallengeInfo* auth_challenge) {
+bool CheckDigestServerAuth(
+    const base::Optional<AuthChallengeInfo>& auth_challenge) {
   if (!auth_challenge)
     return false;
   EXPECT_FALSE(auth_challenge->is_proxy);
@@ -757,7 +761,8 @@ bool CheckDigestServerAuth(const AuthChallengeInfo* auth_challenge) {
 }
 
 #if defined(NTLM_PORTABLE)
-bool CheckNTLMServerAuth(const AuthChallengeInfo* auth_challenge) {
+bool CheckNTLMServerAuth(
+    const base::Optional<AuthChallengeInfo>& auth_challenge) {
   if (!auth_challenge)
     return false;
   EXPECT_FALSE(auth_challenge->is_proxy);
@@ -767,7 +772,8 @@ bool CheckNTLMServerAuth(const AuthChallengeInfo* auth_challenge) {
   return true;
 }
 
-bool CheckNTLMProxyAuth(const AuthChallengeInfo* auth_challenge) {
+bool CheckNTLMProxyAuth(
+    const base::Optional<AuthChallengeInfo>& auth_challenge) {
   if (!auth_challenge)
     return false;
   EXPECT_TRUE(auth_challenge->is_proxy);
@@ -2664,7 +2670,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuth) {
 
   const HttpResponseInfo* response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
-  EXPECT_TRUE(CheckBasicServerAuth(response->auth_challenge.get()));
+  EXPECT_TRUE(CheckBasicServerAuth(response->auth_challenge));
 
   TestCompletionCallback callback2;
 
@@ -2690,7 +2696,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuth) {
 
   response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
-  EXPECT_FALSE(response->auth_challenge);
+  EXPECT_FALSE(response->auth_challenge.has_value());
   EXPECT_EQ(100, response->headers->GetContentLength());
 }
 
@@ -2769,7 +2775,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthWithAddressChange) {
 
   const HttpResponseInfo* response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
-  EXPECT_TRUE(CheckBasicServerAuth(response->auth_challenge.get()));
+  EXPECT_TRUE(CheckBasicServerAuth(response->auth_challenge));
 
   IPEndPoint endpoint;
   EXPECT_TRUE(trans.GetRemoteEndpoint(&endpoint));
@@ -2800,7 +2806,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthWithAddressChange) {
 
   response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
-  EXPECT_FALSE(response->auth_challenge);
+  EXPECT_FALSE(response->auth_challenge.has_value());
   EXPECT_EQ(100, response->headers->GetContentLength());
 
   EXPECT_TRUE(trans.GetRemoteEndpoint(&endpoint));
@@ -2863,7 +2869,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthForever) {
     EXPECT_THAT(rv, IsOk());
     const HttpResponseInfo* response = trans.GetResponseInfo();
     ASSERT_TRUE(response);
-    EXPECT_TRUE(CheckBasicServerAuth(response->auth_challenge.get()));
+    EXPECT_TRUE(CheckBasicServerAuth(response->auth_challenge));
 
     data_restarts.push_back(std::make_unique<StaticSocketDataProvider>(
         data_reads, data_writes_restart));
@@ -2921,7 +2927,7 @@ TEST_F(HttpNetworkTransactionTest, DoNotSendAuth) {
 
   const HttpResponseInfo* response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
-  EXPECT_FALSE(response->auth_challenge);
+  EXPECT_FALSE(response->auth_challenge.has_value());
 }
 
 // Test the request-challenge-retry sequence for basic auth, over a keep-alive
@@ -2986,7 +2992,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthKeepAlive) {
 
     const HttpResponseInfo* response = trans.GetResponseInfo();
     ASSERT_TRUE(response);
-    EXPECT_TRUE(CheckBasicServerAuth(response->auth_challenge.get()));
+    EXPECT_TRUE(CheckBasicServerAuth(response->auth_challenge));
 
     TestCompletionCallback callback2;
 
@@ -3005,7 +3011,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthKeepAlive) {
 
     response = trans.GetResponseInfo();
     ASSERT_TRUE(response);
-    EXPECT_FALSE(response->auth_challenge);
+    EXPECT_FALSE(response->auth_challenge.has_value());
     EXPECT_EQ(5, response->headers->GetContentLength());
 
     std::string response_data;
@@ -3075,7 +3081,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthKeepAliveNoBody) {
 
   const HttpResponseInfo* response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
-  EXPECT_TRUE(CheckBasicServerAuth(response->auth_challenge.get()));
+  EXPECT_TRUE(CheckBasicServerAuth(response->auth_challenge));
 
   TestCompletionCallback callback2;
 
@@ -3087,7 +3093,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthKeepAliveNoBody) {
 
   response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
-  EXPECT_FALSE(response->auth_challenge);
+  EXPECT_FALSE(response->auth_challenge.has_value());
   EXPECT_EQ(5, response->headers->GetContentLength());
 }
 
@@ -3156,7 +3162,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthKeepAliveLargeBody) {
 
   const HttpResponseInfo* response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
-  EXPECT_TRUE(CheckBasicServerAuth(response->auth_challenge.get()));
+  EXPECT_TRUE(CheckBasicServerAuth(response->auth_challenge));
 
   TestCompletionCallback callback2;
 
@@ -3168,7 +3174,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthKeepAliveLargeBody) {
 
   response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
-  EXPECT_FALSE(response->auth_challenge);
+  EXPECT_FALSE(response->auth_challenge.has_value());
   EXPECT_EQ(5, response->headers->GetContentLength());
 }
 
@@ -3242,7 +3248,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthKeepAliveImpatientServer) {
 
   const HttpResponseInfo* response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
-  EXPECT_TRUE(CheckBasicServerAuth(response->auth_challenge.get()));
+  EXPECT_TRUE(CheckBasicServerAuth(response->auth_challenge));
 
   TestCompletionCallback callback2;
 
@@ -3254,7 +3260,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthKeepAliveImpatientServer) {
 
   response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
-  EXPECT_FALSE(response->auth_challenge);
+  EXPECT_FALSE(response->auth_challenge.has_value());
   EXPECT_EQ(5, response->headers->GetContentLength());
 }
 
@@ -3349,7 +3355,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp10) {
   ASSERT_TRUE(response->headers);
   EXPECT_EQ(407, response->headers->response_code());
   EXPECT_TRUE(HttpVersion(1, 0) == response->headers->GetHttpVersion());
-  EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge.get()));
+  EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge));
 
   LoadTimingInfo load_timing_info;
   // CONNECT requests and responses are handled at the connect job level, so
@@ -3374,7 +3380,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp10) {
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
 
   // The password prompt info should not be set.
-  EXPECT_FALSE(response->auth_challenge);
+  EXPECT_FALSE(response->auth_challenge.has_value());
 
   EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
   TestLoadTimingNotReusedWithPac(load_timing_info,
@@ -3474,7 +3480,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp11) {
   ASSERT_TRUE(response->headers);
   EXPECT_EQ(407, response->headers->response_code());
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
-  EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge.get()));
+  EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge));
 
   LoadTimingInfo load_timing_info;
   // CONNECT requests and responses are handled at the connect job level, so
@@ -3499,7 +3505,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp11) {
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
 
   // The password prompt info should not be set.
-  EXPECT_FALSE(response->auth_challenge);
+  EXPECT_FALSE(response->auth_challenge.has_value());
 
   EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
   TestLoadTimingNotReusedWithPac(load_timing_info,
@@ -3598,7 +3604,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHttp10) {
     EXPECT_EQ(407, response->headers->response_code());
     EXPECT_EQ(10, response->headers->GetContentLength());
     EXPECT_TRUE(HttpVersion(1, 0) == response->headers->GetHttpVersion());
-    EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge.get()));
+    EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge));
 
     TestCompletionCallback callback2;
 
@@ -3614,7 +3620,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHttp10) {
     EXPECT_EQ(407, response->headers->response_code());
     EXPECT_EQ(10, response->headers->GetContentLength());
     EXPECT_TRUE(HttpVersion(1, 0) == response->headers->GetHttpVersion());
-    EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge.get()));
+    EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge));
 
     // Flush the idle socket before the NetLog and HttpNetworkTransaction go
     // out of scope.
@@ -3709,7 +3715,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHttp11) {
     EXPECT_EQ(407, response->headers->response_code());
     EXPECT_EQ(10, response->headers->GetContentLength());
     EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
-    EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge.get()));
+    EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge));
     EXPECT_FALSE(response->did_use_http_auth);
 
     TestCompletionCallback callback2;
@@ -3726,7 +3732,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHttp11) {
     EXPECT_EQ(407, response->headers->response_code());
     EXPECT_EQ(10, response->headers->GetContentLength());
     EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
-    EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge.get()));
+    EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge));
     EXPECT_TRUE(response->did_use_http_auth);
 
     // Flush the idle socket before the NetLog and HttpNetworkTransaction go
@@ -3834,7 +3840,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveExtraData) {
   EXPECT_TRUE(response->headers->IsKeepAlive());
   EXPECT_EQ(407, response->headers->response_code());
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
-  EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge.get()));
+  EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge));
 
   LoadTimingInfo load_timing_info;
   // CONNECT requests and responses are handled at the connect job level, so
@@ -3853,7 +3859,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveExtraData) {
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
 
   // The password prompt info should not be set.
-  EXPECT_FALSE(response->auth_challenge);
+  EXPECT_FALSE(response->auth_challenge.has_value());
 
   EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
   TestLoadTimingNotReusedWithPac(load_timing_info,
@@ -3939,7 +3945,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHangupDuringBody) {
   ASSERT_TRUE(response->headers);
   EXPECT_TRUE(response->headers->IsKeepAlive());
   EXPECT_EQ(407, response->headers->response_code());
-  EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge.get()));
+  EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge));
 
   rv = trans.RestartWithAuth(AuthCredentials(kFoo, kBar), callback.callback());
   EXPECT_THAT(callback.GetResult(rv), IsOk());
@@ -4269,7 +4275,7 @@ TEST_F(HttpNetworkTransactionTest,
   EXPECT_EQ(407, response->headers->response_code());
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
   EXPECT_TRUE(trans->IsReadyToRestartForAuth());
-  EXPECT_FALSE(response->auth_challenge);
+  EXPECT_FALSE(response->auth_challenge.has_value());
 
   LoadTimingInfo load_timing_info;
   // CONNECT requests and responses are handled at the connect job level, so
@@ -4287,7 +4293,7 @@ TEST_F(HttpNetworkTransactionTest,
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
 
   // The password prompt info should not be set.
-  EXPECT_FALSE(response->auth_challenge);
+  EXPECT_FALSE(response->auth_challenge.has_value());
 
   EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
   TestLoadTimingNotReusedWithPac(load_timing_info,
@@ -4389,7 +4395,7 @@ TEST_F(HttpNetworkTransactionTest,
   EXPECT_EQ(407, response->headers->response_code());
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
   EXPECT_TRUE(trans->IsReadyToRestartForAuth());
-  EXPECT_FALSE(response->auth_challenge);
+  EXPECT_FALSE(response->auth_challenge.has_value());
 
   LoadTimingInfo load_timing_info;
   // CONNECT requests and responses are handled at the connect job level, so
@@ -4408,7 +4414,7 @@ TEST_F(HttpNetworkTransactionTest,
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
 
   // The password prompt info should not be set.
-  EXPECT_FALSE(response->auth_challenge);
+  EXPECT_FALSE(response->auth_challenge.has_value());
 
   EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
   TestLoadTimingNotReusedWithPac(load_timing_info,
@@ -4504,7 +4510,7 @@ TEST_F(HttpNetworkTransactionTest,
   EXPECT_EQ(407, response->headers->response_code());
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
   EXPECT_TRUE(trans->IsReadyToRestartForAuth());
-  EXPECT_FALSE(response->auth_challenge);
+  EXPECT_FALSE(response->auth_challenge.has_value());
 
   LoadTimingInfo load_timing_info;
   EXPECT_FALSE(trans->GetLoadTimingInfo(&load_timing_info));
@@ -4733,7 +4739,7 @@ TEST_F(HttpNetworkTransactionTest,
   EXPECT_EQ(407, response->headers->response_code());
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
   EXPECT_TRUE(trans->IsReadyToRestartForAuth());
-  EXPECT_FALSE(response->auth_challenge);
+  EXPECT_FALSE(response->auth_challenge.has_value());
 
   LoadTimingInfo load_timing_info;
   EXPECT_FALSE(trans->GetLoadTimingInfo(&load_timing_info));
@@ -4745,7 +4751,7 @@ TEST_F(HttpNetworkTransactionTest,
   ASSERT_TRUE(response->headers);
   EXPECT_EQ(407, response->headers->response_code());
   EXPECT_FALSE(trans->IsReadyToRestartForAuth());
-  EXPECT_TRUE(response->auth_challenge);
+  EXPECT_TRUE(response->auth_challenge.has_value());
 
   trans.reset();
   session->CloseAllConnections();
@@ -4855,7 +4861,7 @@ TEST_F(HttpNetworkTransactionTest, NonPermanentGenerateAuthTokenError) {
   // ambient credentials.
   EXPECT_EQ(401, response->headers->response_code());
   EXPECT_TRUE(trans->IsReadyToRestartForAuth());
-  EXPECT_FALSE(response->auth_challenge);
+  EXPECT_FALSE(response->auth_challenge.has_value());
 
   rv = trans->RestartWithAuth(AuthCredentials(), callback.callback());
   EXPECT_THAT(callback.GetResult(rv), IsOk());
@@ -4868,7 +4874,7 @@ TEST_F(HttpNetworkTransactionTest, NonPermanentGenerateAuthTokenError) {
   // to respond to the challenge.
   EXPECT_EQ(401, response->headers->response_code());
   EXPECT_FALSE(trans->IsReadyToRestartForAuth());
-  EXPECT_TRUE(response->auth_challenge);
+  EXPECT_TRUE(response->auth_challenge.has_value());
 
   rv = trans->RestartWithAuth(AuthCredentials(), callback.callback());
   EXPECT_THAT(callback.GetResult(rv), IsOk());
@@ -5424,7 +5430,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxyGet) {
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
 
   // The password prompt info should not be set.
-  EXPECT_FALSE(response->auth_challenge);
+  EXPECT_FALSE(response->auth_challenge.has_value());
 }
 
 // Test a SPDY get through an HTTPS Proxy.
@@ -5637,7 +5643,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyGetWithProxyAuth) {
   ASSERT_TRUE(response->headers);
   EXPECT_EQ(407, response->headers->response_code());
   EXPECT_TRUE(response->was_fetched_via_spdy);
-  EXPECT_TRUE(CheckBasicSecureProxyAuth(response->auth_challenge.get()));
+  EXPECT_TRUE(CheckBasicSecureProxyAuth(response->auth_challenge));
 
   TestCompletionCallback callback2;
 
@@ -5653,7 +5659,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyGetWithProxyAuth) {
   ASSERT_TRUE(response_restart->headers);
   EXPECT_EQ(200, response_restart->headers->response_code());
   // The password prompt info should not be set.
-  EXPECT_FALSE(response_restart->auth_challenge);
+  EXPECT_FALSE(response_restart->auth_challenge.has_value());
 }
 
 // Test a SPDY CONNECT through an HTTPS Proxy to an HTTPS (non-SPDY) Server.
@@ -5991,7 +5997,7 @@ TEST_F(HttpNetworkTransactionTest, ProxiedH2SessionAppearsDuringAuth) {
   ASSERT_TRUE(response->headers);
   EXPECT_EQ(407, response->headers->response_code());
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
-  EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge.get()));
+  EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge));
 
   // Run second request until an auth challenge is observed.
   HttpRequestInfo request2;
@@ -6007,7 +6013,7 @@ TEST_F(HttpNetworkTransactionTest, ProxiedH2SessionAppearsDuringAuth) {
   ASSERT_TRUE(response->headers);
   EXPECT_EQ(407, response->headers->response_code());
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
-  EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge.get()));
+  EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge));
 
   // Now provide credentials for the first request, and wait for it to complete.
   rv = trans1.RestartWithAuth(AuthCredentials(kFoo, kBar), callback.callback());
@@ -6741,7 +6747,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxyAuthRetry) {
   ASSERT_TRUE(response->headers);
   EXPECT_EQ(407, response->headers->response_code());
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
-  EXPECT_TRUE(CheckBasicSecureProxyAuth(response->auth_challenge.get()));
+  EXPECT_TRUE(CheckBasicSecureProxyAuth(response->auth_challenge));
   EXPECT_FALSE(response->did_use_http_auth);
 
   TestCompletionCallback callback2;
@@ -6767,7 +6773,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxyAuthRetry) {
   EXPECT_TRUE(response->did_use_http_auth);
 
   // The password prompt info should not be set.
-  EXPECT_FALSE(response->auth_challenge);
+  EXPECT_FALSE(response->auth_challenge.has_value());
 }
 
 void HttpNetworkTransactionTest::ConnectStatusHelperWithExpectedStatus(
@@ -7080,7 +7086,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyThenServer) {
 
   const HttpResponseInfo* response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
-  EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge.get()));
+  EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge));
 
   TestCompletionCallback callback2;
 
@@ -7092,7 +7098,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyThenServer) {
 
   response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
-  EXPECT_TRUE(CheckBasicServerAuth(response->auth_challenge.get()));
+  EXPECT_TRUE(CheckBasicServerAuth(response->auth_challenge));
 
   TestCompletionCallback callback3;
 
@@ -7104,7 +7110,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyThenServer) {
   EXPECT_THAT(rv, IsOk());
 
   response = trans.GetResponseInfo();
-  EXPECT_FALSE(response->auth_challenge);
+  EXPECT_FALSE(response->auth_challenge.has_value());
   EXPECT_EQ(100, response->headers->GetContentLength());
 }
 
@@ -7233,7 +7239,7 @@ TEST_F(HttpNetworkTransactionTest, NTLMAuthV2) {
 
   const HttpResponseInfo* response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
-  EXPECT_TRUE(CheckNTLMServerAuth(response->auth_challenge.get()));
+  EXPECT_TRUE(CheckNTLMServerAuth(response->auth_challenge));
 
   TestCompletionCallback callback2;
 
@@ -7249,7 +7255,7 @@ TEST_F(HttpNetworkTransactionTest, NTLMAuthV2) {
 
   response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
-  EXPECT_FALSE(response->auth_challenge);
+  EXPECT_FALSE(response->auth_challenge.has_value());
 
   TestCompletionCallback callback3;
 
@@ -7261,7 +7267,7 @@ TEST_F(HttpNetworkTransactionTest, NTLMAuthV2) {
 
   response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
-  EXPECT_FALSE(response->auth_challenge);
+  EXPECT_FALSE(response->auth_challenge.has_value());
   EXPECT_EQ(14, response->headers->GetContentLength());
 
   std::string response_data;
@@ -7440,7 +7446,7 @@ TEST_F(HttpNetworkTransactionTest, NTLMAuthV2WrongThenRightPassword) {
 
   const HttpResponseInfo* response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
-  EXPECT_TRUE(CheckNTLMServerAuth(response->auth_challenge.get()));
+  EXPECT_TRUE(CheckNTLMServerAuth(response->auth_challenge));
 
   TestCompletionCallback callback2;
 
@@ -7463,7 +7469,7 @@ TEST_F(HttpNetworkTransactionTest, NTLMAuthV2WrongThenRightPassword) {
 
   response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
-  EXPECT_TRUE(CheckNTLMServerAuth(response->auth_challenge.get()));
+  EXPECT_TRUE(CheckNTLMServerAuth(response->auth_challenge));
 
   TestCompletionCallback callback4;
 
@@ -7488,7 +7494,7 @@ TEST_F(HttpNetworkTransactionTest, NTLMAuthV2WrongThenRightPassword) {
   EXPECT_THAT(rv, IsOk());
 
   response = trans.GetResponseInfo();
-  EXPECT_FALSE(response->auth_challenge);
+  EXPECT_FALSE(response->auth_challenge.has_value());
   EXPECT_EQ(14, response->headers->GetContentLength());
 
   std::string response_data;
@@ -7627,7 +7633,7 @@ TEST_F(HttpNetworkTransactionTest, NTLMOverHttp2) {
 
   const HttpResponseInfo* response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
-  EXPECT_TRUE(CheckNTLMServerAuth(response->auth_challenge.get()));
+  EXPECT_TRUE(CheckNTLMServerAuth(response->auth_challenge));
 
   TestCompletionCallback callback2;
 
@@ -7643,7 +7649,7 @@ TEST_F(HttpNetworkTransactionTest, NTLMOverHttp2) {
 
   response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
-  EXPECT_FALSE(response->auth_challenge);
+  EXPECT_FALSE(response->auth_challenge.has_value());
 
   TestCompletionCallback callback3;
 
@@ -7655,7 +7661,7 @@ TEST_F(HttpNetworkTransactionTest, NTLMOverHttp2) {
 
   response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
-  EXPECT_FALSE(response->auth_challenge);
+  EXPECT_FALSE(response->auth_challenge.has_value());
   EXPECT_EQ(14, response->headers->GetContentLength());
 
   std::string response_data;
@@ -7783,7 +7789,7 @@ TEST_F(HttpNetworkTransactionTest, NTLMProxyTLSHandshakeReset) {
   EXPECT_FALSE(trans.IsReadyToRestartForAuth());
   const HttpResponseInfo* response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
-  EXPECT_TRUE(CheckNTLMProxyAuth(response->auth_challenge.get()));
+  EXPECT_TRUE(CheckNTLMProxyAuth(response->auth_challenge));
 
   // Configure credentials. The proxy responds with the challenge message.
   rv = callback.GetResult(trans.RestartWithAuth(
@@ -7793,7 +7799,7 @@ TEST_F(HttpNetworkTransactionTest, NTLMProxyTLSHandshakeReset) {
   EXPECT_TRUE(trans.IsReadyToRestartForAuth());
   response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
-  EXPECT_FALSE(response->auth_challenge);
+  EXPECT_FALSE(response->auth_challenge.has_value());
 
   // Restart once more. The tunnel will be established and the the SSL handshake
   // will reset. The TLS 1.3 version interference probe will then kick in and
@@ -7805,7 +7811,7 @@ TEST_F(HttpNetworkTransactionTest, NTLMProxyTLSHandshakeReset) {
   EXPECT_TRUE(trans.IsReadyToRestartForAuth());
   response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
-  EXPECT_FALSE(response->auth_challenge);
+  EXPECT_FALSE(response->auth_challenge.has_value());
 
   // The proxy responds with the NTLM challenge message.
   rv = callback.GetResult(
@@ -7814,7 +7820,7 @@ TEST_F(HttpNetworkTransactionTest, NTLMProxyTLSHandshakeReset) {
   EXPECT_TRUE(trans.IsReadyToRestartForAuth());
   response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
-  EXPECT_FALSE(response->auth_challenge);
+  EXPECT_FALSE(response->auth_challenge.has_value());
 
   // Send the NTLM authenticate message. The tunnel is established and the
   // handshake resets again. We should not retry again.
@@ -8563,7 +8569,7 @@ TEST_F(HttpNetworkTransactionTest, AuthIdentityInURL) {
   ASSERT_TRUE(response);
 
   // There is no challenge info, since the identity in URL worked.
-  EXPECT_FALSE(response->auth_challenge);
+  EXPECT_FALSE(response->auth_challenge.has_value());
 
   EXPECT_EQ(100, response->headers->GetContentLength());
 
@@ -8660,7 +8666,7 @@ TEST_F(HttpNetworkTransactionTest, WrongAuthIdentityInURL) {
 
   const HttpResponseInfo* response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
-  EXPECT_TRUE(CheckBasicServerAuth(response->auth_challenge.get()));
+  EXPECT_TRUE(CheckBasicServerAuth(response->auth_challenge));
 
   TestCompletionCallback callback3;
   rv = trans.RestartWithAuth(AuthCredentials(kFoo, kBar), callback3.callback());
@@ -8673,7 +8679,7 @@ TEST_F(HttpNetworkTransactionTest, WrongAuthIdentityInURL) {
   ASSERT_TRUE(response);
 
   // There is no challenge info, since the identity worked.
-  EXPECT_FALSE(response->auth_challenge);
+  EXPECT_FALSE(response->auth_challenge.has_value());
 
   EXPECT_EQ(100, response->headers->GetContentLength());
 
@@ -8741,7 +8747,7 @@ TEST_F(HttpNetworkTransactionTest, AuthIdentityInURLSuppressed) {
 
   const HttpResponseInfo* response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
-  EXPECT_TRUE(CheckBasicServerAuth(response->auth_challenge.get()));
+  EXPECT_TRUE(CheckBasicServerAuth(response->auth_challenge));
 
   TestCompletionCallback callback3;
   rv = trans.RestartWithAuth(AuthCredentials(kFoo, kBar), callback3.callback());
@@ -8754,7 +8760,7 @@ TEST_F(HttpNetworkTransactionTest, AuthIdentityInURLSuppressed) {
   ASSERT_TRUE(response);
 
   // There is no challenge info, since the identity worked.
-  EXPECT_FALSE(response->auth_challenge);
+  EXPECT_FALSE(response->auth_challenge.has_value());
   EXPECT_EQ(100, response->headers->GetContentLength());
 
   // Empty the current queue.
@@ -8820,7 +8826,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthCacheAndPreauth) {
 
     const HttpResponseInfo* response = trans.GetResponseInfo();
     ASSERT_TRUE(response);
-    EXPECT_TRUE(CheckBasicServerAuth(response->auth_challenge.get()));
+    EXPECT_TRUE(CheckBasicServerAuth(response->auth_challenge));
 
     TestCompletionCallback callback2;
 
@@ -8833,7 +8839,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthCacheAndPreauth) {
 
     response = trans.GetResponseInfo();
     ASSERT_TRUE(response);
-    EXPECT_FALSE(response->auth_challenge);
+    EXPECT_FALSE(response->auth_challenge.has_value());
     EXPECT_EQ(100, response->headers->GetContentLength());
   }
 
@@ -8918,7 +8924,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthCacheAndPreauth) {
 
     response = trans.GetResponseInfo();
     ASSERT_TRUE(response);
-    EXPECT_FALSE(response->auth_challenge);
+    EXPECT_FALSE(response->auth_challenge.has_value());
     EXPECT_EQ(100, response->headers->GetContentLength());
   }
 
@@ -8966,7 +8972,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthCacheAndPreauth) {
     const HttpResponseInfo* response = trans.GetResponseInfo();
     ASSERT_TRUE(response);
 
-    EXPECT_FALSE(response->auth_challenge);
+    EXPECT_FALSE(response->auth_challenge.has_value());
     EXPECT_EQ(100, response->headers->GetContentLength());
   }
 
@@ -9036,7 +9042,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthCacheAndPreauth) {
 
     const HttpResponseInfo* response = trans.GetResponseInfo();
     ASSERT_TRUE(response);
-    EXPECT_FALSE(response->auth_challenge);
+    EXPECT_FALSE(response->auth_challenge.has_value());
     EXPECT_EQ(100, response->headers->GetContentLength());
   }
 
@@ -9126,7 +9132,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthCacheAndPreauth) {
 
     const HttpResponseInfo* response = trans.GetResponseInfo();
     ASSERT_TRUE(response);
-    EXPECT_TRUE(CheckBasicServerAuth(response->auth_challenge.get()));
+    EXPECT_TRUE(CheckBasicServerAuth(response->auth_challenge));
 
     TestCompletionCallback callback3;
 
@@ -9139,7 +9145,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthCacheAndPreauth) {
 
     response = trans.GetResponseInfo();
     ASSERT_TRUE(response);
-    EXPECT_FALSE(response->auth_challenge);
+    EXPECT_FALSE(response->auth_challenge.has_value());
     EXPECT_EQ(100, response->headers->GetContentLength());
   }
 }
@@ -9212,7 +9218,7 @@ TEST_F(HttpNetworkTransactionTest, DigestPreAuthNonceCount) {
 
     const HttpResponseInfo* response = trans.GetResponseInfo();
     ASSERT_TRUE(response);
-    EXPECT_TRUE(CheckDigestServerAuth(response->auth_challenge.get()));
+    EXPECT_TRUE(CheckDigestServerAuth(response->auth_challenge));
 
     TestCompletionCallback callback2;
 
@@ -9225,7 +9231,7 @@ TEST_F(HttpNetworkTransactionTest, DigestPreAuthNonceCount) {
 
     response = trans.GetResponseInfo();
     ASSERT_TRUE(response);
-    EXPECT_FALSE(response->auth_challenge);
+    EXPECT_FALSE(response->auth_challenge.has_value());
   }
 
   // ------------------------------------------------------------------------
@@ -9275,7 +9281,7 @@ TEST_F(HttpNetworkTransactionTest, DigestPreAuthNonceCount) {
 
     const HttpResponseInfo* response = trans.GetResponseInfo();
     ASSERT_TRUE(response);
-    EXPECT_FALSE(response->auth_challenge);
+    EXPECT_FALSE(response->auth_challenge.has_value());
   }
 }
 
@@ -9292,7 +9298,7 @@ TEST_F(HttpNetworkTransactionTest, ResetStateForRestart) {
 
   // Setup state in response_
   HttpResponseInfo* response = &trans.response_;
-  response->auth_challenge = new AuthChallengeInfo();
+  response->auth_challenge = base::nullopt;
   response->ssl_info.cert_status = static_cast<CertStatus>(-1);  // Nonsensical.
   response->response_time = base::Time::Now();
   response->was_cached = true;  // (Wouldn't ever actually be true...)
@@ -9314,7 +9320,7 @@ TEST_F(HttpNetworkTransactionTest, ResetStateForRestart) {
   EXPECT_FALSE(trans.read_buf_);
   EXPECT_EQ(0, trans.read_buf_len_);
   EXPECT_TRUE(trans.request_headers_.IsEmpty());
-  EXPECT_FALSE(response->auth_challenge);
+  EXPECT_FALSE(response->auth_challenge.has_value());
   EXPECT_FALSE(response->headers);
   EXPECT_FALSE(response->was_cached);
   EXPECT_EQ(0U, response->ssl_info.cert_status);
@@ -10050,8 +10056,8 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthSpdyProxy) {
   ASSERT_TRUE(response->headers);
   EXPECT_EQ(407, response->headers->response_code());
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
-  EXPECT_TRUE(response->auth_challenge);
-  EXPECT_TRUE(CheckBasicSecureProxyAuth(response->auth_challenge.get()));
+  EXPECT_TRUE(response->auth_challenge.has_value());
+  EXPECT_TRUE(CheckBasicSecureProxyAuth(response->auth_challenge));
 
   TestCompletionCallback callback2;
 
@@ -10071,7 +10077,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthSpdyProxy) {
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
 
   // The password prompt info should not be set.
-  EXPECT_FALSE(response->auth_challenge);
+  EXPECT_FALSE(response->auth_challenge.has_value());
 
   LoadTimingInfo load_timing_info;
   EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
@@ -11618,7 +11624,7 @@ TEST_F(HttpNetworkTransactionTest, DrainResetOK) {
 
   const HttpResponseInfo* response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
-  EXPECT_TRUE(CheckBasicServerAuth(response->auth_challenge.get()));
+  EXPECT_TRUE(CheckBasicServerAuth(response->auth_challenge));
 
   TestCompletionCallback callback2;
 
@@ -11630,7 +11636,7 @@ TEST_F(HttpNetworkTransactionTest, DrainResetOK) {
 
   response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
-  EXPECT_FALSE(response->auth_challenge);
+  EXPECT_FALSE(response->auth_challenge.has_value());
   EXPECT_EQ(100, response->headers->GetContentLength());
 }
 
@@ -11947,7 +11953,7 @@ TEST_F(HttpNetworkTransactionTest, ChangeAuthRealms) {
   EXPECT_THAT(rv, IsOk());
   const HttpResponseInfo* response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
-  const AuthChallengeInfo* challenge = response->auth_challenge.get();
+  base::Optional<AuthChallengeInfo> challenge = response->auth_challenge;
   ASSERT_TRUE(challenge);
   EXPECT_FALSE(challenge->is_proxy);
   EXPECT_EQ("http://www.example.org", challenge->challenger.Serialize());
@@ -11965,7 +11971,7 @@ TEST_F(HttpNetworkTransactionTest, ChangeAuthRealms) {
   EXPECT_THAT(rv, IsOk());
   response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
-  challenge = response->auth_challenge.get();
+  challenge = response->auth_challenge;
   ASSERT_TRUE(challenge);
   EXPECT_FALSE(challenge->is_proxy);
   EXPECT_EQ("http://www.example.org", challenge->challenger.Serialize());
@@ -11984,7 +11990,7 @@ TEST_F(HttpNetworkTransactionTest, ChangeAuthRealms) {
   EXPECT_THAT(rv, IsOk());
   response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
-  challenge = response->auth_challenge.get();
+  challenge = response->auth_challenge;
   ASSERT_TRUE(challenge);
   EXPECT_FALSE(challenge->is_proxy);
   EXPECT_EQ("http://www.example.org", challenge->challenger.Serialize());
@@ -12000,7 +12006,7 @@ TEST_F(HttpNetworkTransactionTest, ChangeAuthRealms) {
   EXPECT_THAT(rv, IsOk());
   response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
-  EXPECT_FALSE(response->auth_challenge);
+  EXPECT_FALSE(response->auth_challenge.has_value());
 }
 
 // Regression test for https://crbug.com/754395.
@@ -14375,9 +14381,9 @@ TEST_F(HttpNetworkTransactionTest, GenerateAuthToken) {
         continue;
       }
       if (round + 1 < test_config.num_auth_rounds) {
-        EXPECT_TRUE(response->auth_challenge);
+        EXPECT_TRUE(response->auth_challenge.has_value());
       } else {
-        EXPECT_FALSE(response->auth_challenge);
+        EXPECT_FALSE(response->auth_challenge.has_value());
         EXPECT_FALSE(trans.IsReadyToRestartForAuth());
       }
     }
@@ -14494,7 +14500,7 @@ TEST_F(HttpNetworkTransactionTest, MultiRoundAuth) {
   EXPECT_THAT(rv, IsOk());
   response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
-  EXPECT_TRUE(response->auth_challenge);
+  EXPECT_TRUE(response->auth_challenge.has_value());
   EXPECT_EQ(0u, transport_pool->IdleSocketCountInGroup(kSocketGroup));
   EXPECT_EQ(HttpAuthHandlerMock::State::WAIT_FOR_GENERATE_AUTH_TOKEN,
             auth_handler->state());
@@ -14519,7 +14525,7 @@ TEST_F(HttpNetworkTransactionTest, MultiRoundAuth) {
   EXPECT_THAT(rv, IsOk());
   response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
-  EXPECT_FALSE(response->auth_challenge);
+  EXPECT_FALSE(response->auth_challenge.has_value());
   EXPECT_EQ(0u, transport_pool->IdleSocketCountInGroup(kSocketGroup));
   EXPECT_EQ(HttpAuthHandlerMock::State::WAIT_FOR_GENERATE_AUTH_TOKEN,
             auth_handler->state());
@@ -14532,7 +14538,7 @@ TEST_F(HttpNetworkTransactionTest, MultiRoundAuth) {
   EXPECT_THAT(rv, IsOk());
   response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
-  EXPECT_FALSE(response->auth_challenge);
+  EXPECT_FALSE(response->auth_challenge.has_value());
   EXPECT_EQ(0u, transport_pool->IdleSocketCountInGroup(kSocketGroup));
   EXPECT_EQ(HttpAuthHandlerMock::State::WAIT_FOR_GENERATE_AUTH_TOKEN,
             auth_handler->state());
@@ -14545,7 +14551,7 @@ TEST_F(HttpNetworkTransactionTest, MultiRoundAuth) {
   EXPECT_THAT(rv, IsOk());
   response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
-  EXPECT_FALSE(response->auth_challenge);
+  EXPECT_FALSE(response->auth_challenge.has_value());
   EXPECT_EQ(0u, transport_pool->IdleSocketCountInGroup(kSocketGroup));
 
   // In WAIT_FOR_CHALLENGE, although in reality the auth handler is done. A real

@@ -11,38 +11,24 @@
 
 namespace IPC {
 
-void ParamTraits<scoped_refptr<net::AuthChallengeInfo>>::Write(
-    base::Pickle* m,
-    const param_type& p) {
-  WriteParam(m, p != nullptr);
-  if (p) {
-    WriteParam(m, p->is_proxy);
-    WriteParam(m, p->challenger);
-    WriteParam(m, p->scheme);
-    WriteParam(m, p->realm);
-  }
+void ParamTraits<net::AuthChallengeInfo>::Write(base::Pickle* m,
+                                                const param_type& p) {
+  WriteParam(m, p.is_proxy);
+  WriteParam(m, p.challenger);
+  WriteParam(m, p.scheme);
+  WriteParam(m, p.realm);
 }
 
-bool ParamTraits<scoped_refptr<net::AuthChallengeInfo>>::Read(
-    const base::Pickle* m,
-    base::PickleIterator* iter,
-    param_type* r) {
-  bool has_object;
-  if (!ReadParam(m, iter, &has_object))
-    return false;
-  if (!has_object) {
-    *r = nullptr;
-    return true;
-  }
-  *r = new net::AuthChallengeInfo();
-  return ReadParam(m, iter, &(*r)->is_proxy) &&
-         ReadParam(m, iter, &(*r)->challenger) &&
-         ReadParam(m, iter, &(*r)->scheme) && ReadParam(m, iter, &(*r)->realm);
+bool ParamTraits<net::AuthChallengeInfo>::Read(const base::Pickle* m,
+                                               base::PickleIterator* iter,
+                                               param_type* r) {
+  return ReadParam(m, iter, &r->is_proxy) &&
+         ReadParam(m, iter, &r->challenger) && ReadParam(m, iter, &r->scheme) &&
+         ReadParam(m, iter, &r->realm);
 }
 
-void ParamTraits<scoped_refptr<net::AuthChallengeInfo>>::Log(
-    const param_type& p,
-    std::string* l) {
+void ParamTraits<net::AuthChallengeInfo>::Log(const param_type& p,
+                                              std::string* l) {
   l->append("<AuthChallengeInfo>");
 }
 

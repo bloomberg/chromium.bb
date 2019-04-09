@@ -138,7 +138,7 @@ void ShowUpdateChromeDialogViews(gfx::NativeWindow parent);
 
 // Creates a toolkit-views based LoginHandler (e.g. HTTP-Auth dialog).
 std::unique_ptr<LoginHandler> CreateLoginHandlerViews(
-    net::AuthChallengeInfo* auth_info,
+    const net::AuthChallengeInfo& auth_info,
     content::WebContents* web_contents,
     LoginAuthRequiredCallback auth_required_callback);
 

@@ -205,12 +205,12 @@ class WebSocketChannel::ConnectDelegate
                                     fatal);
   }
 
-  int OnAuthRequired(scoped_refptr<AuthChallengeInfo> auth_info,
+  int OnAuthRequired(const AuthChallengeInfo& auth_info,
                      scoped_refptr<HttpResponseHeaders> headers,
                      const IPEndPoint& remote_endpoint,
                      base::OnceCallback<void(const AuthCredentials*)> callback,
                      base::Optional<AuthCredentials>* credentials) override {
-    return creator_->OnAuthRequired(std::move(auth_info), std::move(headers),
+    return creator_->OnAuthRequired(auth_info, std::move(headers),
                                     remote_endpoint, std::move(callback),
                                     credentials);
   }
@@ -602,13 +602,13 @@ void WebSocketChannel::OnSSLCertificateError(
 }
 
 int WebSocketChannel::OnAuthRequired(
-    scoped_refptr<AuthChallengeInfo> auth_info,
+    const AuthChallengeInfo& auth_info,
     scoped_refptr<HttpResponseHeaders> response_headers,
     const IPEndPoint& remote_endpoint,
     base::OnceCallback<void(const AuthCredentials*)> callback,
     base::Optional<AuthCredentials>* credentials) {
   return event_interface_->OnAuthRequired(
-      std::move(auth_info), std::move(response_headers), remote_endpoint,
+      auth_info, std::move(response_headers), remote_endpoint,
       std::move(callback), credentials);
 }
 

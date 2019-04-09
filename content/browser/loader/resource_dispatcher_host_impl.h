@@ -393,7 +393,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // ResourceLoaderDelegate implementation:
   std::unique_ptr<LoginDelegate> CreateLoginDelegate(
       ResourceLoader* loader,
-      net::AuthChallengeInfo* auth_info) override;
+      const net::AuthChallengeInfo& auth_info) override;
   bool HandleExternalProtocol(ResourceLoader* loader, const GURL& url) override;
   void DidStartRequest(ResourceLoader* loader) override;
   void DidReceiveRedirect(ResourceLoader* loader,

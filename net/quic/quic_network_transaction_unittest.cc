@@ -8435,8 +8435,9 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyAuth) {
       EXPECT_EQ(407, response->headers->response_code());
       EXPECT_EQ(10, response->headers->GetContentLength());
       EXPECT_EQ(HttpVersion(1, 1), response->headers->GetHttpVersion());
-      const AuthChallengeInfo* auth_challenge = response->auth_challenge.get();
-      ASSERT_TRUE(auth_challenge != nullptr);
+      base::Optional<AuthChallengeInfo> auth_challenge =
+          response->auth_challenge;
+      ASSERT_TRUE(auth_challenge.has_value());
       EXPECT_TRUE(auth_challenge->is_proxy);
       EXPECT_EQ("https://proxy.example.org:70",
                 auth_challenge->challenger.Serialize());
@@ -8458,8 +8459,8 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyAuth) {
       EXPECT_EQ(407, response->headers->response_code());
       EXPECT_EQ(10, response->headers->GetContentLength());
       EXPECT_EQ(HttpVersion(1, 1), response->headers->GetHttpVersion());
-      auth_challenge = response->auth_challenge.get();
-      ASSERT_TRUE(auth_challenge != nullptr);
+      auth_challenge = response->auth_challenge;
+      ASSERT_TRUE(auth_challenge.has_value());
       EXPECT_TRUE(auth_challenge->is_proxy);
       EXPECT_EQ("https://proxy.example.org:70",
                 auth_challenge->challenger.Serialize());

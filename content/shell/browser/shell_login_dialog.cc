@@ -19,7 +19,7 @@ namespace content {
 
 // static
 std::unique_ptr<ShellLoginDialog> ShellLoginDialog::Create(
-    net::AuthChallengeInfo* auth_info,
+    const net::AuthChallengeInfo& auth_info,
     LoginAuthRequiredCallback auth_required_callback) {
   auto ret =
       std::make_unique<ShellLoginDialog>(std::move(auth_required_callback));
@@ -39,15 +39,15 @@ ShellLoginDialog::~ShellLoginDialog() {
   PlatformCleanUp();
 }
 
-void ShellLoginDialog::Init(net::AuthChallengeInfo* auth_info) {
+void ShellLoginDialog::Init(const net::AuthChallengeInfo& auth_info) {
   // Run this in a new event loop iteration, to ensure the callback isn't called
   // reentrantly.
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &ShellLoginDialog::PrepDialog, weak_factory_.GetWeakPtr(),
-          url_formatter::FormatOriginForSecurityDisplay(auth_info->challenger),
-          base::UTF8ToUTF16(auth_info->realm)));
+          url_formatter::FormatOriginForSecurityDisplay(auth_info.challenger),
+          base::UTF8ToUTF16(auth_info.realm)));
 }
 
 void ShellLoginDialog::UserAcceptedAuth(const base::string16& username,

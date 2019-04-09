@@ -69,13 +69,13 @@ class WebSocketStreamCreateTestBase::TestConnectDelegate
     owner_->ssl_fatal_ = fatal;
   }
 
-  int OnAuthRequired(scoped_refptr<AuthChallengeInfo> auth_info,
+  int OnAuthRequired(const AuthChallengeInfo& auth_info,
                      scoped_refptr<HttpResponseHeaders> response_headers,
                      const IPEndPoint& remote_endpoint,
                      base::OnceCallback<void(const AuthCredentials*)> callback,
                      base::Optional<AuthCredentials>* credentials) override {
     owner_->run_loop_waiting_for_on_auth_required_.Quit();
-    owner_->auth_challenge_info_ = std::move(auth_info);
+    owner_->auth_challenge_info_ = auth_info;
     *credentials = owner_->auth_credentials_;
     owner_->on_auth_required_callback_ = std::move(callback);
     return owner_->on_auth_required_rv_;

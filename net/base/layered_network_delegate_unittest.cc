@@ -178,7 +178,7 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
   ~TestLayeredNetworkDelegate() override = default;
 
   void CallAndVerify() {
-    scoped_refptr<AuthChallengeInfo> auth_challenge(new AuthChallengeInfo());
+    AuthChallengeInfo auth_challenge;
     std::unique_ptr<URLRequest> request = context_.CreateRequest(
         GURL(), IDLE, &delegate_, TRAFFIC_ANNOTATION_FOR_TESTS);
     std::unique_ptr<HttpRequestHeaders> request_headers(
@@ -204,9 +204,9 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
     OnCompleted(request.get(), false, net::OK);
     OnURLRequestDestroyed(request.get());
     OnPACScriptError(0, base::string16());
-    EXPECT_EQ(NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION,
-              OnAuthRequired(request.get(), *auth_challenge, AuthCallback(),
-                             nullptr));
+    EXPECT_EQ(
+        NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION,
+        OnAuthRequired(request.get(), auth_challenge, AuthCallback(), nullptr));
     EXPECT_FALSE(OnCanGetCookies(*request, CookieList(), true));
     EXPECT_FALSE(
         OnCanSetCookie(*request, net::CanonicalCookie(), nullptr, true));

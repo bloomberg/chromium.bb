@@ -47,7 +47,7 @@ class URLLoaderImpl : public ::fuchsia::net::oldhttp::URLLoader,
                           const net::RedirectInfo& redirect_info,
                           bool* defer_redirect) override;
   void OnAuthRequired(net::URLRequest* request,
-                      net::AuthChallengeInfo* auth_info) override;
+                      const net::AuthChallengeInfo& auth_info) override;
   void OnCertificateRequested(
       net::URLRequest* request,
       net::SSLCertRequestInfo* cert_request_info) override;

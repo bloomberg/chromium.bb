@@ -411,7 +411,6 @@ void URLRequestHttpJob::NotifyHeadersComplete() {
   // of sending authorization information. Each time it restarts, we get
   // notified of the headers completion so that we can update the cookie store.
   if (transaction_->IsReadyToRestartForAuth()) {
-    DCHECK(!response_info_->auth_challenge.get());
     // TODO(battre): This breaks the webrequest API for
     // URLRequestTestHTTP.BasicAuthWithCookies
     // where OnBeforeStartTransaction -> OnStartTransaction ->
@@ -1126,8 +1125,7 @@ bool URLRequestHttpJob::NeedsAuth() {
   return false;
 }
 
-void URLRequestHttpJob::GetAuthChallengeInfo(
-    scoped_refptr<AuthChallengeInfo>* result) {
+std::unique_ptr<AuthChallengeInfo> URLRequestHttpJob::GetAuthChallengeInfo() {
   DCHECK(transaction_.get());
   DCHECK(response_info_);
 
@@ -1138,7 +1136,10 @@ void URLRequestHttpJob::GetAuthChallengeInfo(
          (GetResponseHeaders()->response_code() ==
           HTTP_PROXY_AUTHENTICATION_REQUIRED));
 
-  *result = response_info_->auth_challenge;
+  if (!response_info_->auth_challenge.has_value())
+    return nullptr;
+  return std::make_unique<AuthChallengeInfo>(
+      response_info_->auth_challenge.value());
 }
 
 void URLRequestHttpJob::SetAuth(const AuthCredentials& credentials) {

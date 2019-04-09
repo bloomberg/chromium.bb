@@ -175,7 +175,7 @@ class LoginHandlerDelegate {
   LoginHandlerDelegate(
       network::mojom::AuthChallengeResponderPtr auth_challenge_responder,
       ResourceRequestInfo::WebContentsGetter web_contents_getter,
-      scoped_refptr<net::AuthChallengeInfo> auth_info,
+      const net::AuthChallengeInfo& auth_info,
       bool is_request_for_main_frame,
       uint32_t process_id,
       uint32_t routing_id,
@@ -247,8 +247,8 @@ class LoginHandlerDelegate {
     // WeakPtr is not strictly necessary here due to OnRequestCancelled.
     creating_login_delegate_ = true;
     login_delegate_ = GetContentClient()->browser()->CreateLoginDelegate(
-        auth_info_.get(), web_contents, request_id_, is_request_for_main_frame_,
-        url_, response_headers_, first_auth_attempt_,
+        auth_info_, web_contents, request_id_, is_request_for_main_frame_, url_,
+        response_headers_, first_auth_attempt_,
         base::BindOnce(&LoginHandlerDelegate::OnAuthCredentials,
                        weak_factory_.GetWeakPtr()));
     creating_login_delegate_ = false;
@@ -269,7 +269,7 @@ class LoginHandlerDelegate {
   }
 
   network::mojom::AuthChallengeResponderPtr auth_challenge_responder_;
-  scoped_refptr<net::AuthChallengeInfo> auth_info_;
+  net::AuthChallengeInfo auth_info_;
   const content::GlobalRequestID request_id_;
   const uint32_t routing_id_;
   bool is_request_for_main_frame_;
@@ -432,7 +432,7 @@ void NetworkServiceClient::OnAuthRequired(
     const GURL& url,
     const GURL& site_for_cookies,
     bool first_auth_attempt,
-    const scoped_refptr<net::AuthChallengeInfo>& auth_info,
+    const net::AuthChallengeInfo& auth_info,
     int32_t resource_type,
     const base::Optional<network::ResourceResponseHead>& head,
     network::mojom::AuthChallengeResponderPtr auth_challenge_responder) {

@@ -222,11 +222,11 @@ bool URLRequestJob::NeedsAuth() {
   return false;
 }
 
-void URLRequestJob::GetAuthChallengeInfo(
-    scoped_refptr<AuthChallengeInfo>* auth_info) {
+std::unique_ptr<AuthChallengeInfo> URLRequestJob::GetAuthChallengeInfo() {
   // This will only be called if NeedsAuth() returns true, in which
   // case the derived class should implement this!
   NOTREACHED();
+  return nullptr;
 }
 
 void URLRequestJob::SetAuth(const AuthCredentials& credentials) {
@@ -449,13 +449,11 @@ void URLRequestJob::NotifyHeadersComplete() {
   }
 
   if (NeedsAuth()) {
-    scoped_refptr<AuthChallengeInfo> auth_info;
-    GetAuthChallengeInfo(&auth_info);
-
+    std::unique_ptr<AuthChallengeInfo> auth_info = GetAuthChallengeInfo();
     // Need to check for a NULL auth_info because the server may have failed
     // to send a challenge with the 401 response.
-    if (auth_info.get()) {
-      request_->NotifyAuthRequired(auth_info.get());
+    if (auth_info) {
+      request_->NotifyAuthRequired(std::move(auth_info));
       // Wait for SetAuth or CancelAuth to be called.
       return;
     }

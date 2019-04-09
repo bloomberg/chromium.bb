@@ -5426,7 +5426,8 @@ TEST_F(SpdyNetworkTransactionTest, SpdyBasicAuth) {
   ASSERT_TRUE(response_start->headers);
   EXPECT_EQ(401, response_start->headers->response_code());
   EXPECT_TRUE(response_start->was_fetched_via_spdy);
-  AuthChallengeInfo* auth_challenge = response_start->auth_challenge.get();
+  const base::Optional<AuthChallengeInfo>& auth_challenge =
+      response_start->auth_challenge;
   ASSERT_TRUE(auth_challenge);
   EXPECT_FALSE(auth_challenge->is_proxy);
   EXPECT_EQ(kBasicAuthScheme, auth_challenge->scheme);
@@ -5447,7 +5448,7 @@ TEST_F(SpdyNetworkTransactionTest, SpdyBasicAuth) {
   ASSERT_TRUE(response_restart);
   ASSERT_TRUE(response_restart->headers);
   EXPECT_EQ(200, response_restart->headers->response_code());
-  EXPECT_TRUE(response_restart->auth_challenge.get() == nullptr);
+  EXPECT_FALSE(response_restart->auth_challenge);
 }
 
 struct PushHeaderTestParams {

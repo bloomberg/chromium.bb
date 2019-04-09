@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "net/base/net_export.h"
 #include "url/origin.h"
@@ -16,13 +15,14 @@ namespace net {
 
 // Holds info about an authentication challenge that we may want to display
 // to the user.
-class NET_EXPORT AuthChallengeInfo :
-    public base::RefCountedThreadSafe<AuthChallengeInfo> {
+class NET_EXPORT AuthChallengeInfo {
  public:
   AuthChallengeInfo();
+  AuthChallengeInfo(const AuthChallengeInfo& other);
+  ~AuthChallengeInfo();
 
-  // Determines whether two AuthChallengeInfo's are equivalent.
-  bool Equals(const AuthChallengeInfo& other) const;
+  bool operator==(const AuthChallengeInfo& other) const;
+  bool operator!=(const AuthChallengeInfo& other) const;
 
   // Whether this came from a server or a proxy.
   bool is_proxy;
@@ -36,10 +36,6 @@ class NET_EXPORT AuthChallengeInfo :
 
   // The realm of the challenge. May be empty. The encoding is UTF-8.
   std::string realm;
-
- private:
-  friend class base::RefCountedThreadSafe<AuthChallengeInfo>;
-  ~AuthChallengeInfo();
 };
 
 // Authentication Credentials for an authentication credentials.

@@ -163,10 +163,9 @@ class LoginPromptBrowserTest : public InProcessBrowserTest {
 };
 
 void LoginPromptBrowserTest::SetAuthFor(LoginHandler* handler) {
-  const net::AuthChallengeInfo* challenge = handler->auth_info();
+  const net::AuthChallengeInfo& challenge = handler->auth_info();
 
-  ASSERT_TRUE(challenge);
-  auto i = auth_map_.find(challenge->realm);
+  auto i = auth_map_.find(challenge.realm);
   EXPECT_TRUE(auth_map_.end() != i);
   if (i != auth_map_.end()) {
     const AuthInfo& info = i->second;
@@ -604,10 +603,10 @@ void MultiRealmLoginPromptBrowserTest::RunTest(const F& for_each_realm_func) {
         login_prompt_observer_.handlers().begin(),
         login_prompt_observer_.handlers().end(),
         [&seen_realms](LoginHandler* handler) {
-          return seen_realms.count(handler->auth_info()->realm) == 0;
+          return seen_realms.count(handler->auth_info().realm) == 0;
         });
     ASSERT_TRUE(it != login_prompt_observer_.handlers().end());
-    seen_realms.insert((*it)->auth_info()->realm);
+    seen_realms.insert((*it)->auth_info().realm);
 
     for_each_realm_func(*it);
   }
