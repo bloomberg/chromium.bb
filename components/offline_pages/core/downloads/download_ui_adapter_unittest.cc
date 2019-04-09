@@ -236,8 +236,9 @@ class DownloadUIAdapterTest : public testing::Test,
                               public OfflineContentProvider::Observer {
  public:
   const std::string kThumbnailData = "Thumbnail-data";
+  const std::string kFaviconData = "Favicon-data";
   const OfflinePageThumbnail kThumbnail = {kTestOfflineId1, kTestCreationTime,
-                                           kThumbnailData};
+                                           kThumbnailData, kFaviconData};
 
   DownloadUIAdapterTest();
   ~DownloadUIAdapterTest() override;
@@ -705,10 +706,7 @@ TEST_F(DownloadUIAdapterTest, ThumbnailAddedUpdatesItem) {
   PumpLoop();
   updated_guids.clear();
 
-  OfflinePageThumbnail thumb;
-  thumb.offline_id = kTestOfflineId1;
-  adapter->ThumbnailAdded(model.get(), thumb);
-
+  adapter->ThumbnailAdded(model.get(), kTestOfflineId1, std::string());
   EXPECT_EQ(std::vector<std::string>{kTestGuid1}, updated_guids);
 }
 
@@ -719,10 +717,7 @@ TEST_F(DownloadUIAdapterTest, ThumbnailAddedItemNotFound) {
   PumpLoop();
   updated_guids.clear();
 
-  OfflinePageThumbnail thumb;
-  thumb.offline_id = 958120;
-  adapter->ThumbnailAdded(model.get(), thumb);
-
+  adapter->ThumbnailAdded(model.get(), /*offline_id=*/958120, std::string());
   EXPECT_EQ(std::vector<std::string>{}, updated_guids);
 }
 

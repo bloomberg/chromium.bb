@@ -13,13 +13,16 @@
 namespace offline_pages {
 
 namespace {
-
-bool ThumbnailExistsSync(int64_t offline_id, sql::Database* db) {
+VisualsAvailability ThumbnailExistsSync(int64_t offline_id, sql::Database* db) {
   static const char kSql[] =
-      "SELECT 1 FROM page_thumbnails WHERE offline_id = ?";
+      "SELECT length(thumbnail)>0,length(favicon)>0 FROM page_thumbnails"
+      " WHERE offline_id=?";
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, offline_id);
-  return statement.Step();
+  if (!statement.Step())
+    return {false, false};
+
+  return {statement.ColumnBool(0), statement.ColumnBool(1)};
 }
 
 }  // namespace
@@ -35,15 +38,15 @@ HasThumbnailTask::HasThumbnailTask(OfflinePageMetadataStore* store,
 HasThumbnailTask::~HasThumbnailTask() = default;
 
 void HasThumbnailTask::Run() {
-  store_->Execute(base::BindOnce(ThumbnailExistsSync, std::move(offline_id_)),
+  store_->Execute(base::BindOnce(ThumbnailExistsSync, offline_id_),
                   base::BindOnce(&HasThumbnailTask::OnThumbnailExists,
                                  weak_ptr_factory_.GetWeakPtr()),
-                  false);
+                  {false, false});
 }
 
-void HasThumbnailTask::OnThumbnailExists(bool exists) {
+void HasThumbnailTask::OnThumbnailExists(VisualsAvailability availability) {
   TaskComplete();
-  std::move(exists_callback_).Run(exists);
+  std::move(exists_callback_).Run(std::move(availability));
 }
 
 }  // namespace offline_pages

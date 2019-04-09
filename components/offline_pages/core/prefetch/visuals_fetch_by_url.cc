@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/offline_pages/core/prefetch/thumbnail_fetch_by_url.h"
+#include "components/offline_pages/core/prefetch/visuals_fetch_by_url.h"
 
 #include <utility>
 
@@ -15,17 +15,18 @@ namespace {
 
 constexpr char kImageFetcherUmaClientName[] = "OfflinePages";
 
-constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
-    net::DefineNetworkTrafficAnnotation("prefetch_thumbnail", R"(
+constexpr net::NetworkTrafficAnnotationTag kThumbnailTrafficAnnotation =
+    net::DefineNetworkTrafficAnnotation("prefetch_visuals", R"(
         semantics {
           sender: "Offline Pages Prefetch"
           description:
             "Chromium fetches suggested articles for offline viewing. This"
-            " network request is for a thumbnail that matches the article."
+            " network request is for a thumbnail or favicon that matches the"
+            " article."
           trigger:
             "Two attempts, directly before and after the article is fetched."
           data:
-            "The requested thumbnail URL."
+            "The requested thumbnail or favicon URL."
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
@@ -42,12 +43,14 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
           }
         })");
 
-}  // namespace
+const int kPreferredFaviconWidthPixels = 16;
+const int kPreferredFaviconHeightPixels = 16;
 
-void FetchThumbnailByURL(
+void FetchImageByURL(
     base::OnceCallback<void(const std::string& image_data)> callback,
     image_fetcher::ImageFetcher* fetcher,
-    const GURL thumbnail_url) {
+    const GURL& image_url,
+    const image_fetcher::ImageFetcherParams& params) {
   auto forward_callback =
       [](base::OnceCallback<void(const std::string& image_data)> callback,
          const std::string& image_data,
@@ -55,12 +58,31 @@ void FetchThumbnailByURL(
         std::move(callback).Run(image_data);
       };
 
-  image_fetcher::ImageFetcherParams params(kTrafficAnnotation,
-                                           kImageFetcherUmaClientName);
-
-  fetcher->FetchImageData(thumbnail_url,
+  fetcher->FetchImageData(image_url,
                           base::BindOnce(forward_callback, std::move(callback)),
                           std::move(params));
+}
+
+}  // namespace
+
+void FetchThumbnailByURL(
+    base::OnceCallback<void(const std::string& image_data)> callback,
+    image_fetcher::ImageFetcher* fetcher,
+    const GURL& thumbnail_url) {
+  image_fetcher::ImageFetcherParams params(kThumbnailTrafficAnnotation,
+                                           kImageFetcherUmaClientName);
+  FetchImageByURL(std::move(callback), fetcher, thumbnail_url, params);
+}
+
+void FetchFaviconByURL(
+    base::OnceCallback<void(const std::string& image_data)> callback,
+    image_fetcher::ImageFetcher* fetcher,
+    const GURL& favicon_url) {
+  image_fetcher::ImageFetcherParams params(kThumbnailTrafficAnnotation,
+                                           kImageFetcherUmaClientName);
+  params.set_frame_size(
+      gfx::Size(kPreferredFaviconWidthPixels, kPreferredFaviconHeightPixels));
+  FetchImageByURL(std::move(callback), fetcher, favicon_url, params);
 }
 
 }  // namespace offline_pages

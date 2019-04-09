@@ -109,7 +109,13 @@ class OfflinePageModel : public base::SupportsUserData, public KeyedService {
 
     // Invoked when a thumbnail for an offline page is added.
     virtual void ThumbnailAdded(OfflinePageModel* model,
-                                const OfflinePageThumbnail& added_thumbnail) {}
+                                int64_t offline_id,
+                                const std::string& added_thumbnail_data) {}
+
+    // Invoked when a favicon for an offline page is added.
+    virtual void FaviconAdded(OfflinePageModel* model,
+                              int64_t offline_id,
+                              const std::string& added_favicon_data) {}
 
    protected:
     virtual ~Observer() = default;
@@ -201,7 +207,10 @@ class OfflinePageModel : public base::SupportsUserData, public KeyedService {
                                         MultipleOfflineIdCallback callback) = 0;
 
   // Stores a new page thumbnail in the page_thumbnails table.
-  virtual void StoreThumbnail(const OfflinePageThumbnail& thumb) = 0;
+  virtual void StoreThumbnail(int64_t offline_id, std::string thumbnail) = 0;
+
+  // Stores a new favicon in the page_thumbnails table.
+  virtual void StoreFavicon(int64_t offline_id, std::string favicon) = 0;
 
   // Reads a thumbnail from the page_thumbnails table. Calls callback
   // with nullptr if the thumbnail was not found.
@@ -212,7 +221,7 @@ class OfflinePageModel : public base::SupportsUserData, public KeyedService {
   // page_thumbnails table. Calls callback with the bool result.
   virtual void HasThumbnailForOfflineId(
       int64_t offline_id,
-      base::OnceCallback<void(bool)> callback) = 0;
+      base::OnceCallback<void(VisualsAvailability)> callback) = 0;
 
   // Publishes an offline page from the internal offline page directory.  This
   // includes putting it in a public directory, updating the system download

@@ -99,9 +99,14 @@ class OfflinePageModelTaskifiedTest : public testing::Test,
                         const OfflinePageItem& added_page) override;
   void OfflinePageDeleted(
       const OfflinePageModel::DeletedPageInfo& page_info) override;
-  MOCK_METHOD2(ThumbnailAdded,
+  MOCK_METHOD3(ThumbnailAdded,
                void(OfflinePageModel* model,
-                    const OfflinePageThumbnail& added_thumbnail));
+                    int64_t offline_id,
+                    const std::string& thumbnail));
+  MOCK_METHOD3(FaviconAdded,
+               void(OfflinePageModel* model,
+                    int64_t offline_id,
+                    const std::string& favicon));
 
   // OfflinePageTestArchiver::Observer implementation.
   void SetLastPathCreatedByArchiver(const base::FilePath& file_path) override;
@@ -1596,17 +1601,22 @@ TEST_F(OfflinePageModelTaskifiedTest, StoreAndCheckThumbnail) {
   thumb.offline_id = 1;
   thumb.expiration = clock()->Now();
   thumb.thumbnail = "abc123";
-  model()->StoreThumbnail(thumb);
-  EXPECT_CALL(*this, ThumbnailAdded(_, thumb));
+  model()->StoreThumbnail(thumb.offline_id, thumb.thumbnail);
+  EXPECT_CALL(*this, ThumbnailAdded(_, thumb.offline_id, thumb.thumbnail));
   PumpLoop();
 
   // Check it exists
   bool thumbnail_exists = false;
-  auto exists_callback = base::BindLambdaForTesting(
-      [&](bool exists) { thumbnail_exists = exists; });
+  bool favicon_exists = false;
+  auto exists_callback =
+      base::BindLambdaForTesting([&](VisualsAvailability availability) {
+        thumbnail_exists = availability.has_thumbnail;
+        favicon_exists = availability.has_favicon;
+      });
   model()->HasThumbnailForOfflineId(thumb.offline_id, exists_callback);
   PumpLoop();
   EXPECT_TRUE(thumbnail_exists);
+  EXPECT_FALSE(favicon_exists);
 
   // Obtain its data.
   std::unique_ptr<OfflinePageThumbnail> result_thumbnail;
@@ -1616,7 +1626,37 @@ TEST_F(OfflinePageModelTaskifiedTest, StoreAndCheckThumbnail) {
       });
   model()->GetThumbnailByOfflineId(thumb.offline_id, data_callback);
   PumpLoop();
-  EXPECT_EQ(thumb, *result_thumbnail);
+  EXPECT_EQ(thumb.thumbnail, result_thumbnail->thumbnail);
+}
+
+TEST_F(OfflinePageModelTaskifiedTest, StoreAndCheckFavicon) {
+  // Store a thumbnail.
+  OfflinePageThumbnail thumb;
+  thumb.offline_id = 1;
+  thumb.expiration = clock()->Now();
+  thumb.favicon = "abc123";
+  model()->StoreFavicon(thumb.offline_id, thumb.favicon);
+  EXPECT_CALL(*this, FaviconAdded(_, thumb.offline_id, thumb.favicon));
+  PumpLoop();
+
+  // Check if it exists.
+  base::Optional<VisualsAvailability> availability;
+  auto exists_callback = base::BindLambdaForTesting(
+      [&](VisualsAvailability value) { availability = value; });
+  model()->HasThumbnailForOfflineId(thumb.offline_id, exists_callback);
+  PumpLoop();
+  EXPECT_FALSE(availability.value().has_thumbnail);
+  EXPECT_TRUE(availability.value().has_favicon);
+
+  // Obtain its data.
+  std::unique_ptr<OfflinePageThumbnail> result_thumbnail;
+  auto data_callback = base::BindLambdaForTesting(
+      [&](std::unique_ptr<OfflinePageThumbnail> result) {
+        result_thumbnail = std::move(result);
+      });
+  model()->GetThumbnailByOfflineId(thumb.offline_id, data_callback);
+  PumpLoop();
+  EXPECT_EQ(thumb.favicon, result_thumbnail->favicon);
 }
 
 }  // namespace offline_pages

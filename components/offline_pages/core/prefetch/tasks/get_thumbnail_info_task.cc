@@ -14,18 +14,20 @@
 namespace offline_pages {
 namespace {
 
-GetThumbnailInfoTask::Result GetThumbnailInfoSync(const int64_t offline_id,
+GetThumbnailInfoTask::Result GetThumbnailInfoSync(int64_t offline_id,
                                                   sql::Database* db) {
-  static const char kSql[] = R"(SELECT thumbnail_url FROM prefetch_items
-    WHERE offline_id=?;)";
+  static const char kSql[] =
+      "SELECT thumbnail_url,favicon_url FROM prefetch_items WHERE offline_id=?";
 
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   DCHECK(statement.is_valid());
 
   GetThumbnailInfoTask::Result result;
   statement.BindInt64(0, offline_id);
-  if (statement.Step())
+  if (statement.Step()) {
     result.thumbnail_url = GURL(statement.ColumnString(0));
+    result.favicon_url = GURL(statement.ColumnString(1));
+  }
 
   return result;
 }
@@ -33,7 +35,7 @@ GetThumbnailInfoTask::Result GetThumbnailInfoSync(const int64_t offline_id,
 }  // namespace
 
 GetThumbnailInfoTask::GetThumbnailInfoTask(PrefetchStore* store,
-                                           const int64_t offline_id,
+                                           int64_t offline_id,
                                            ResultCallback callback)
     : prefetch_store_(store),
       offline_id_(offline_id),

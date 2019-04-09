@@ -8,15 +8,17 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/offline_pages/core/offline_page_types.h"
 #include "components/offline_pages/task/task.h"
 
 namespace offline_pages {
 class OfflinePageMetadataStore;
 
 // Checks if a thumbnail exists for the specified offline id.
+// TODO(950115): rename to VisualsAvailabilityTask
 class HasThumbnailTask : public Task {
  public:
-  using ThumbnailExistsCallback = base::OnceCallback<void(bool)>;
+  using ThumbnailExistsCallback = base::OnceCallback<void(VisualsAvailability)>;
 
   HasThumbnailTask(OfflinePageMetadataStore* store,
                    int64_t offline_id,
@@ -27,7 +29,7 @@ class HasThumbnailTask : public Task {
   void Run() override;
 
  private:
-  void OnThumbnailExists(bool exists);
+  void OnThumbnailExists(VisualsAvailability availability);
 
   OfflinePageMetadataStore* store_;
   int64_t offline_id_;

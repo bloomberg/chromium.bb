@@ -15,8 +15,12 @@ namespace offline_pages {
 OfflinePageThumbnail::OfflinePageThumbnail() = default;
 OfflinePageThumbnail::OfflinePageThumbnail(int64_t id,
                                            base::Time in_expiration,
-                                           const std::string& in_thumbnail)
-    : offline_id(id), expiration(in_expiration), thumbnail(in_thumbnail) {}
+                                           const std::string& in_thumbnail,
+                                           const std::string& in_favicon)
+    : offline_id(id),
+      expiration(in_expiration),
+      thumbnail(in_thumbnail),
+      favicon(in_favicon) {}
 OfflinePageThumbnail::OfflinePageThumbnail(const OfflinePageThumbnail& other) =
     default;
 OfflinePageThumbnail::OfflinePageThumbnail(OfflinePageThumbnail&& other) =
@@ -25,27 +29,11 @@ OfflinePageThumbnail::~OfflinePageThumbnail() {}
 
 bool OfflinePageThumbnail::operator==(const OfflinePageThumbnail& other) const {
   return offline_id == other.offline_id && expiration == other.expiration &&
-         thumbnail == other.thumbnail;
+         thumbnail == other.thumbnail && favicon == other.favicon;
 }
 
 bool OfflinePageThumbnail::operator<(const OfflinePageThumbnail& other) const {
   return offline_id < other.offline_id;
-}
-
-std::string OfflinePageThumbnail::ToString() const {
-  std::string thumb_data_base64;
-  base::Base64Encode(thumbnail, &thumb_data_base64);
-
-  std::string s("OfflinePageThumbnail(");
-  s.append(base::NumberToString(offline_id)).append(", ");
-  s.append(base::NumberToString(store_utils::ToDatabaseTime(expiration)))
-      .append(", ");
-  s.append(thumb_data_base64).append(")");
-  return s;
-}
-
-std::ostream& operator<<(std::ostream& out, const OfflinePageThumbnail& thumb) {
-  return out << thumb.ToString();
 }
 
 }  // namespace offline_pages

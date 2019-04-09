@@ -20,7 +20,8 @@ struct OfflinePageThumbnail {
   OfflinePageThumbnail();
   OfflinePageThumbnail(int64_t offline_id,
                        base::Time expiration,
-                       const std::string& thumbnail);
+                       const std::string& thumbnail,
+                       const std::string& favicon);
   OfflinePageThumbnail(const OfflinePageThumbnail& other);
   OfflinePageThumbnail(OfflinePageThumbnail&& other);
   ~OfflinePageThumbnail();
@@ -36,6 +37,8 @@ struct OfflinePageThumbnail {
   base::Time expiration;
   // The thumbnail raw image data.
   std::string thumbnail;
+  // The favicon raw image data.
+  std::string favicon;
 };
 
 std::ostream& operator<<(std::ostream& out, const OfflinePageThumbnail& thumb);

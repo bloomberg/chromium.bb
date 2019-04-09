@@ -15,7 +15,8 @@
 namespace offline_pages {
 class OfflinePageMetadataStore;
 
-// GetThumbnailTask reads a thumbnail from the page_thumbnails table.
+// GetThumbnailTask reads a thumbnail and favicon from the page_thumbnails
+// table.
 class GetThumbnailTask : public Task {
  public:
   typedef base::OnceCallback<void(std::unique_ptr<OfflinePageThumbnail>)>

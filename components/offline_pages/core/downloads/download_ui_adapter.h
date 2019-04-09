@@ -115,7 +115,8 @@ class DownloadUIAdapter : public OfflineContentProvider,
   void OfflinePageDeleted(
       const OfflinePageModel::DeletedPageInfo& page_info) override;
   void ThumbnailAdded(OfflinePageModel* model,
-                      const OfflinePageThumbnail& thumbnail) override;
+                      const int64_t offline_id,
+                      const std::string& thumbnail) override;
 
   // RequestCoordinator::Observer
   void OnAdded(const SavePageRequest& request) override;

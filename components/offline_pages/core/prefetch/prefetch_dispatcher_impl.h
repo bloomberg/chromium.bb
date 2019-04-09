@@ -14,6 +14,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/offline_pages/core/offline_page_types.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/server_forbidden_check_request.h"
 #include "components/offline_pages/core/prefetch/suggestions_provider.h"
@@ -114,21 +115,31 @@ class PrefetchDispatcherImpl : public PrefetchDispatcher,
   // throughout the calls. It should be moved into a separate class (possibly
   // internal to the implementation) to make it easier to maintain and
   // understand.
-  void FetchThumbnails(std::unique_ptr<IdsVector> remaining_ids,
-                       bool is_first_attempt);
-  void ThumbnailExistenceChecked(const int64_t offline_id,
-                                 ClientId client_id,
-                                 std::unique_ptr<IdsVector> remaining_ids,
-                                 bool is_first_attempt,
-                                 bool thumbnail_exists);
-  void ThumbnailInfoReceived(const int64_t offline_id,
-                             std::unique_ptr<IdsVector> remaining_ids,
-                             bool is_first_attempt,
-                             GetThumbnailInfoTask::Result result);
-  void ThumbnailFetchComplete(const int64_t offline_id,
+  void FetchVisuals(std::unique_ptr<IdsVector> remaining_ids,
+                    bool is_first_attempt);
+  void VisualsAvailabilityChecked(int64_t offline_id,
+                                  ClientId client_id,
+                                  std::unique_ptr<IdsVector> remaining_ids,
+                                  bool is_first_attempt,
+                                  VisualsAvailability availability);
+  void VisualsInfoReceived(int64_t offline_id,
+                           std::unique_ptr<IdsVector> remaining_ids,
+                           bool is_first_attempt,
+                           VisualsAvailability availability,
+                           GetThumbnailInfoTask::Result result);
+  void ThumbnailFetchComplete(int64_t offline_id,
                               std::unique_ptr<IdsVector> remaining_ids,
                               bool is_first_attempt,
-                              const std::string& image_data);
+                              const GURL& favicon_url,
+                              const std::string& thumbnail);
+  void FetchFavicon(int64_t offline_id,
+                    std::unique_ptr<IdsVector> remaining_ids,
+                    bool is_first_attempt,
+                    const GURL& favicon_url);
+  void FaviconFetchComplete(int64_t offline_id,
+                            std::unique_ptr<IdsVector> remaining_ids,
+                            bool is_first_attempt,
+                            const std::string& favicon_data);
 
   PrefService* pref_service_;
   PrefetchService* service_;
@@ -136,7 +147,6 @@ class PrefetchDispatcherImpl : public PrefetchDispatcher,
   bool needs_pipeline_processing_ = false;
   bool suspended_ = false;
   std::unique_ptr<PrefetchBackgroundTask> background_task_;
-
   base::WeakPtrFactory<PrefetchDispatcherImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchDispatcherImpl);
