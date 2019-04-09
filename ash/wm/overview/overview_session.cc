@@ -758,7 +758,10 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
     case ui::VKEY_BROWSER_BACK:
       FALLTHROUGH;
     case ui::VKEY_ESCAPE:
-      CancelSelection();
+      // Cancel overview unless we're in single split mode with no overview
+      // windows.
+      if (!(IsEmpty() && Shell::Get()->IsSplitViewModeActive()))
+        CancelSelection();
       break;
     case ui::VKEY_UP:
       num_key_presses_++;

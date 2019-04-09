@@ -1421,10 +1421,10 @@ TEST_F(OverviewSessionTest, BasicArrowKeyNavigation) {
   }
 }
 
-// Tests hitting the escape and back keys exit overview mode.
+// Tests hitting the escape and back keys exit overview mode, unless we're in
+// single splitview mode with no windows in overview.
 TEST_F(OverviewSessionTest, ExitOverviewWithKey) {
-  std::unique_ptr<aura::Window> window1(CreateTestWindow());
-  std::unique_ptr<aura::Window> window2(CreateTestWindow());
+  std::unique_ptr<aura::Window> window(CreateTestWindow());
 
   ToggleOverview();
   ASSERT_TRUE(overview_controller()->IsSelecting());
@@ -1435,6 +1435,18 @@ TEST_F(OverviewSessionTest, ExitOverviewWithKey) {
   ASSERT_TRUE(overview_controller()->IsSelecting());
   SendKey(ui::VKEY_BROWSER_BACK);
   EXPECT_FALSE(overview_controller()->IsSelecting());
+
+  // Tests that if we snap the only overview window, we cannot exit overview
+  // mode.
+  ToggleOverview();
+  ASSERT_TRUE(overview_controller()->IsSelecting());
+  Shell::Get()->split_view_controller()->SnapWindow(window.get(),
+                                                    SplitViewController::LEFT);
+  ASSERT_TRUE(overview_controller()->IsSelecting());
+  SendKey(ui::VKEY_ESCAPE);
+  EXPECT_TRUE(overview_controller()->IsSelecting());
+  SendKey(ui::VKEY_BROWSER_BACK);
+  EXPECT_TRUE(overview_controller()->IsSelecting());
 }
 
 // Regression test for clusterfuzz crash. https://crbug.com/920568
