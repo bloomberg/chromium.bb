@@ -58,8 +58,8 @@ const base::Feature kTriggerThrottlerDailyQuotaFeature{
 const base::Feature kUseLocalBlacklistsV2{"SafeBrowsingUseLocalBlacklistsV2",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kInspectRarContentFeature{
-    "InspectRarContent", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kInspectRarContentFeature{"InspectRarContent",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kUseAPDownloadProtection{"UseAPDownloadProtection",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
