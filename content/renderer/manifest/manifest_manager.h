@@ -20,6 +20,7 @@
 class GURL;
 
 namespace blink {
+class WebManifestFetcher;
 class WebURLResponse;
 }
 
@@ -71,10 +72,10 @@ class ManifestManager : public RenderFrameObserver,
   void FetchManifest();
   void OnManifestFetchComplete(const GURL& document_url,
                                const blink::WebURLResponse& response,
-                               const std::string& data);
+                               const blink::WebString& data);
   void ResolveCallbacks(ResolveState state);
 
-  std::unique_ptr<ManifestFetcher> fetcher_;
+  std::unique_ptr<blink::WebManifestFetcher> fetcher_;
 
   // Whether the RenderFrame may have an associated Manifest. If true, the frame
   // may have a manifest, if false, it can't have one. This boolean is true when

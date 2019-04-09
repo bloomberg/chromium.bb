@@ -100,8 +100,6 @@ target(link_target_type, "renderer") {
     "effective_connection_type_helper.h",
     "fetchers/associated_resource_fetcher_impl.cc",
     "fetchers/associated_resource_fetcher_impl.h",
-    "fetchers/manifest_fetcher.cc",
-    "fetchers/manifest_fetcher.h",
     "fetchers/multi_resolution_image_resource_fetcher.cc",
     "fetchers/multi_resolution_image_resource_fetcher.h",
     "fetchers/resource_fetcher_impl.cc",
