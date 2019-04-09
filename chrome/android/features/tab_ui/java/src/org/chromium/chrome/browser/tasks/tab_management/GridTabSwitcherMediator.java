@@ -17,6 +17,7 @@ import android.support.annotation.Nullable;
 import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeController;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
@@ -70,6 +71,8 @@ class GridTabSwitcherMediator
                 }
             };
 
+    private final CompositorViewHolder mCompositorViewHolder;
+
     /**
      * In cases where a didSelectTab was due to switching models with a toggle,
      * we don't change tab grid visibility.
@@ -90,9 +93,11 @@ class GridTabSwitcherMediator
      *         grid.
      * @param tabModelSelector {@link TabModelSelector} to observer for model and selection changes.
      * @param fullscreenManager {@link FullscreenManager} to use.
+     * @param compositorViewHolder {@link CompositorViewHolder} to use.
      */
     GridTabSwitcherMediator(ResetHandler resetHandler, PropertyModel containerViewModel,
-            TabModelSelector tabModelSelector, ChromeFullscreenManager fullscreenManager) {
+            TabModelSelector tabModelSelector, ChromeFullscreenManager fullscreenManager,
+            CompositorViewHolder compositorViewHolder) {
         mResetHandler = resetHandler;
         mContainerViewModel = containerViewModel;
         mTabModelSelector = tabModelSelector;
@@ -134,6 +139,8 @@ class GridTabSwitcherMediator
         mContainerViewModel.set(TOP_CONTROLS_HEIGHT, fullscreenManager.getTopControlsHeight());
         mContainerViewModel.set(
                 BOTTOM_CONTROLS_HEIGHT, fullscreenManager.getBottomControlsHeight());
+
+        mCompositorViewHolder = compositorViewHolder;
     }
 
     private void setVisibility(boolean isVisible) {
@@ -149,6 +156,12 @@ class GridTabSwitcherMediator
         }
 
         mContainerViewModel.set(IS_VISIBLE, isVisible);
+    }
+
+    private void setContentOverlayVisibility(boolean isVisible) {
+        Tab currentTab = mTabModelSelector.getCurrentTab();
+        if (currentTab == null) return;
+        mCompositorViewHolder.setContentOverlayVisibility(isVisible, true);
     }
 
     @Override
@@ -182,6 +195,7 @@ class GridTabSwitcherMediator
 
     @Override
     public void startedShowing(boolean isAnimating) {
+        setContentOverlayVisibility(false);
         for (OverviewModeObserver observer : mObservers) {
             observer.onOverviewModeStartedShowing(true);
         }
@@ -196,6 +210,7 @@ class GridTabSwitcherMediator
 
     @Override
     public void startedHiding(boolean isAnimating) {
+        setContentOverlayVisibility(true);
         for (OverviewModeObserver observer : mObservers) {
             observer.onOverviewModeStartedHiding(true, false);
         }
