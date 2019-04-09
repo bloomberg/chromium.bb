@@ -830,9 +830,21 @@ message DetailsProto {
     bool show_image_placeholder = 10;
   }
 
-  // Whether to show the original URL where image is extracted from. Only useful
-  // when 'image_url' is set.
-  optional bool allow_image_clickthrough = 12;
+  // Specifies what happens when user tap on the image in the details section.
+  message ImageClickthroughData {
+    // Whether to show the original URL where image is extracted from. Only
+    // useful when 'image_url' is set.
+    optional bool allow_clickthrough = 1;
+
+    // When image clickthrough is allowed, below texts are used to customize the
+    // modal dialog shown to user *if* they are set, otherwise default texts
+    // will be used.
+    optional string description = 2;
+    optional string positive_text = 3;
+    optional string negative_text = 4;
+  }
+
+  optional ImageClickthroughData image_clickthrough_data = 12;
 
   // Optional label to provide additional price information.
   optional string total_price_label = 9;

@@ -69,6 +69,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/autofill_assistant/details/AssistantDetailsCoordinator.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/details/AssistantDetailsModel.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/details/AssistantDetailsViewBinder.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/details/ImageClickthroughData.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/header/AnimatedProgressBar.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/header/AssistantHeaderCoordinator.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/header/AssistantHeaderDelegate.java",
