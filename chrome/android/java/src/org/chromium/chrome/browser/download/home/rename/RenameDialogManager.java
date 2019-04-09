@@ -7,7 +7,6 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import org.chromium.base.Callback;
-import org.chromium.base.FileUtils;
 import org.chromium.components.offline_items_collection.RenameResult;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -159,23 +158,21 @@ public class RenameDialogManager {
         if (isPositiveButton) {
             mLastAttemptedName = mRenameDialogCoordinator.getCurSuggestedName();
 
+            // TODO(hesen): Have a TextWatcher on the input, and disable OK button if it's empty.
+            if (TextUtils.isEmpty(mLastAttemptedName)) return;
+
             if (TextUtils.equals(mLastAttemptedName, mOriginalName)) {
                 processDialogState(RenameDialogState.RENAME_DIALOG_CANCEL,
                         DialogDismissalCause.POSITIVE_BUTTON_CLICKED);
                 return;
             }
 
-            // TODO(hesen): Have a TextWatcher on the input, and disable OK button if it's empty.
-            if (TextUtils.isEmpty(mRenameDialogCoordinator.getCurSuggestedName())) return;
-
-            // TODO(hesen): Use backend getExtension instead.
-            if (!TextUtils.equals(FileUtils.getExtension(mLastAttemptedName),
-                        FileUtils.getExtension(mOriginalName))) {
+            if (!RenameUtils.getFileExtension(mLastAttemptedName)
+                            .equalsIgnoreCase(RenameUtils.getFileExtension(mOriginalName))) {
                 processDialogState(RenameDialogState.RENAME_EXTENSION_DIALOG_DEFAULT,
                         DialogDismissalCause.POSITIVE_BUTTON_CLICKED);
                 return;
             }
-
             runRenameCallback();
         } else {
             mRenameDialogCoordinator.dismissDialog(DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
