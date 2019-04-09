@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "components/sync/base/cancelation_observer.h"
 #include "components/sync/engine_impl/net/server_connection_manager.h"
 
 namespace syncer {
