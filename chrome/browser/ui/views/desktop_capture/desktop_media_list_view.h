@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "chrome/browser/media/webrtc/desktop_media_list.h"
+#include "chrome/browser/ui/views/desktop_capture/desktop_media_list_controller.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_source_view.h"
 #include "content/public/browser/desktop_media_id.h"
 #include "ui/views/view.h"
@@ -16,7 +17,9 @@ class DesktopMediaListController;
 
 // View that shows a list of desktop media sources available from
 // DesktopMediaList.
-class DesktopMediaListView : public views::View {
+class DesktopMediaListView
+    : public DesktopMediaListController::ListView,
+      public DesktopMediaListController::SourceListListener {
  public:
   DesktopMediaListView(DesktopMediaListController* controller,
                        DesktopMediaSourceViewStyle generic_style,
@@ -31,27 +34,29 @@ class DesktopMediaListView : public views::View {
   // Called by DesktopMediaSourceView when a source has been double-clicked.
   void OnDoubleClick();
 
-  // Returns currently selected source.
-  DesktopMediaSourceView* GetSelection();
-
-  // views::View overrides.
+  // views::View:
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
-  void OnSourceAdded(int index);
-  void OnSourceRemoved(int index);
-  void OnSourceMoved(int old_index, int new_index);
-  void OnSourceNameChanged(int index);
-  void OnSourceThumbnailChanged(int index);
+  // DesktopMediaListController::ListView:
+  base::Optional<content::DesktopMediaID> GetSelection() override;
+  DesktopMediaListController::SourceListListener* GetSourceListListener()
+      override;
+
+  // DesktopMediaListController::SourceListListener:
+  void OnSourceAdded(size_t index) override;
+  void OnSourceRemoved(size_t index) override;
+  void OnSourceMoved(size_t old_index, size_t new_index) override;
+  void OnSourceNameChanged(size_t index) override;
+  void OnSourceThumbnailChanged(size_t index) override;
 
  private:
   // Change the source style of this list on the fly.
   void SetStyle(DesktopMediaSourceViewStyle* style);
 
-  // Helper for child_at().
-  DesktopMediaSourceView* GetChild(int index);
+  DesktopMediaSourceView* GetSelectedView();
 
   DesktopMediaListController* controller_;
 

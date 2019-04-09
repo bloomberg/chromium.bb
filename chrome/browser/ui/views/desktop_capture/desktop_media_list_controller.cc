@@ -5,10 +5,12 @@
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_list_controller.h"
 
 #include "base/command_line.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_list_view.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_picker_views.h"
+#include "chrome/browser/ui/views/desktop_capture/desktop_media_tab_list.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -33,6 +35,16 @@ std::unique_ptr<views::View> DesktopMediaListController::CreateView(
   return view;
 }
 
+std::unique_ptr<views::View> DesktopMediaListController::CreateTabListView(
+    const base::string16& accessible_name) {
+  DCHECK(!view_);
+
+  auto view = std::make_unique<DesktopMediaTabList>(this, accessible_name);
+  view_ = view.get();
+  view_observer_.Add(view_);
+  return view;
+}
+
 void DesktopMediaListController::StartUpdating(
     content::DesktopMediaID dialog_window_id) {
   media_list_->SetViewDialogWindowId(dialog_window_id);
@@ -46,10 +58,7 @@ void DesktopMediaListController::FocusView() {
 
 base::Optional<content::DesktopMediaID>
 DesktopMediaListController::GetSelection() const {
-  if (!view_ || !view_->GetSelection())
-    return base::nullopt;
-  return base::Optional<content::DesktopMediaID>(
-      view_->GetSelection()->source_id());
+  return view_ ? view_->GetSelection() : base::nullopt;
 }
 
 void DesktopMediaListController::OnSourceListLayoutChanged() {
@@ -69,8 +78,12 @@ void DesktopMediaListController::AcceptSpecificSource(
   dialog_->AcceptSpecificSource(source);
 }
 
+size_t DesktopMediaListController::GetSourceCount() const {
+  return base::checked_cast<size_t>(media_list_->GetSourceCount());
+}
+
 const DesktopMediaList::Source& DesktopMediaListController::GetSource(
-    int index) const {
+    size_t index) const {
   return media_list_->GetSource(index);
 }
 
@@ -84,8 +97,10 @@ views::View* DesktopMediaListController::GetViewForInitialFocus() {
 
 void DesktopMediaListController::OnSourceAdded(DesktopMediaList* list,
                                                int index) {
-  if (view_)
-    view_->OnSourceAdded(index);
+  if (view_) {
+    view_->GetSourceListListener()->OnSourceAdded(
+        base::checked_cast<size_t>(index));
+  }
 
   std::string autoselect_source =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -103,26 +118,35 @@ void DesktopMediaListController::OnSourceAdded(DesktopMediaList* list,
 
 void DesktopMediaListController::OnSourceRemoved(DesktopMediaList* list,
                                                  int index) {
-  if (view_)
-    view_->OnSourceRemoved(index);
+  if (view_) {
+    view_->GetSourceListListener()->OnSourceRemoved(
+        base::checked_cast<size_t>(index));
+  }
 }
 
 void DesktopMediaListController::OnSourceMoved(DesktopMediaList* list,
                                                int old_index,
                                                int new_index) {
-  if (view_)
-    view_->OnSourceMoved(old_index, new_index);
+  if (view_) {
+    view_->GetSourceListListener()->OnSourceMoved(
+        base::checked_cast<size_t>(old_index),
+        base::checked_cast<size_t>(new_index));
+  }
 }
 void DesktopMediaListController::OnSourceNameChanged(DesktopMediaList* list,
                                                      int index) {
-  if (view_)
-    view_->OnSourceNameChanged(index);
+  if (view_) {
+    view_->GetSourceListListener()->OnSourceNameChanged(
+        base::checked_cast<size_t>(index));
+  }
 }
 void DesktopMediaListController::OnSourceThumbnailChanged(
     DesktopMediaList* list,
     int index) {
-  if (view_)
-    view_->OnSourceThumbnailChanged(index);
+  if (view_) {
+    view_->GetSourceListListener()->OnSourceThumbnailChanged(
+        base::checked_cast<size_t>(index));
+  }
 }
 
 void DesktopMediaListController::OnViewIsDeleting(views::View* view) {

@@ -2503,6 +2503,8 @@ jumbo_split_static_library("ui") {
       "views/desktop_capture/desktop_media_picker_views.h",
       "views/desktop_capture/desktop_media_source_view.cc",
       "views/desktop_capture/desktop_media_source_view.h",
+      "views/desktop_capture/desktop_media_tab_list.cc",
+      "views/desktop_capture/desktop_media_tab_list.h",
       "views/device_chooser_content_view.cc",
       "views/device_chooser_content_view.h",
       "views/download/download_danger_prompt_views.cc",

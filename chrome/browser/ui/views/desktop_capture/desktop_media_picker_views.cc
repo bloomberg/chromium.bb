@@ -155,31 +155,14 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
       case DesktopMediaID::TYPE_WEB_CONTENTS: {
         source_types_.push_back(DesktopMediaID::TYPE_WEB_CONTENTS);
 
-        const DesktopMediaSourceViewStyle kTabStyle(
-            1,                                     // columns
-            gfx::Size(600, 30),                    // item_size
-            gfx::Rect(),                           // icon_rect
-            gfx::Rect(46, 0, 490, 30),             // label_rect
-            gfx::HorizontalAlignment::ALIGN_LEFT,  // text_alignment
-            gfx::Rect(10, 2, 26, 26),              // image_rect
-            1,                                     // selection_border_thickness
-            0);                                    // focus_rectangle_inset
-
-        views::ScrollView* tab_scroll_view =
-            views::ScrollView::CreateScrollViewWithBorder();
-        base::string16 tab_title_text =
+        base::string16 title =
             l10n_util::GetStringUTF16(IDS_DESKTOP_MEDIA_PICKER_SOURCE_TYPE_TAB);
         auto list_controller = std::make_unique<DesktopMediaListController>(
             this, std::move(source_list));
-        tab_scroll_view->SetContents(
-            list_controller->CreateView(kTabStyle, kTabStyle, tab_title_text));
+        pane_->AddTab(title,
+                      list_controller->CreateTabListView(title).release());
         list_controllers_.push_back(std::move(list_controller));
 
-        tab_scroll_view->ClipHeightTo(kTabStyle.item_size.height() * 10,
-                                      kTabStyle.item_size.height() * 10);
-        tab_scroll_view->set_hide_horizontal_scrollbar(true);
-
-        pane_->AddTab(tab_title_text, tab_scroll_view);
         pane_->set_listener(this);
         break;
       }

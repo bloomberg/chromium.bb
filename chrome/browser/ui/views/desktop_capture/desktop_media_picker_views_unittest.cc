@@ -136,13 +136,15 @@ TEST_F(DesktopMediaPickerViewsTest, SelectMediaSourceViewOnSingleClick) {
         DesktopMediaID(source_type, 20));
 
     // By default, nothing should be selected.
-    EXPECT_EQ(-1, test_api_.GetSelectedSourceId());
+    EXPECT_FALSE(test_api_.GetSelectedSourceId().has_value());
 
     test_api_.PressMouseOnSourceAtIndex(0);
-    EXPECT_EQ(10, test_api_.GetSelectedSourceId());
+    ASSERT_TRUE(test_api_.GetSelectedSourceId().has_value());
+    EXPECT_EQ(10, test_api_.GetSelectedSourceId().value());
 
     test_api_.PressMouseOnSourceAtIndex(1);
-    EXPECT_EQ(20, test_api_.GetSelectedSourceId());
+    ASSERT_TRUE(test_api_.GetSelectedSourceId().has_value());
+    EXPECT_EQ(20, test_api_.GetSelectedSourceId().value());
   }
 }
 
@@ -208,13 +210,16 @@ TEST_F(DesktopMediaPickerViewsTest, FocusMediaSourceViewToSelect) {
         DesktopMediaID(source_type, 20));
 
     test_api_.FocusSourceAtIndex(0);
-    EXPECT_EQ(10, test_api_.GetSelectedSourceId());
+    ASSERT_TRUE(test_api_.GetSelectedSourceId().has_value());
+    EXPECT_EQ(10, test_api_.GetSelectedSourceId().value());
 
     test_api_.FocusAudioCheckbox();
-    EXPECT_EQ(10, test_api_.GetSelectedSourceId());
+    ASSERT_TRUE(test_api_.GetSelectedSourceId().has_value());
+    EXPECT_EQ(10, test_api_.GetSelectedSourceId().value());
 
     test_api_.FocusSourceAtIndex(1);
-    EXPECT_EQ(20, test_api_.GetSelectedSourceId());
+    ASSERT_TRUE(test_api_.GetSelectedSourceId().has_value());
+    EXPECT_EQ(20, test_api_.GetSelectedSourceId().value());
   }
 }
 
