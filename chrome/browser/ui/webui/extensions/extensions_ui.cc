@@ -342,11 +342,11 @@ content::WebUIDataSource* CreateMdExtensionsSource(Profile* profile,
   source->AddString(kLoadTimeClassesKey, GetLoadTimeClasses(in_dev_mode));
 
 #if BUILDFLAG(OPTIMIZE_WEBUI)
-  source->AddResourcePath("crisper.js", IDR_MD_EXTENSIONS_CRISPER_JS);
+  source->AddResourcePath("crisper.js", IDR_EXTENSIONS_CRISPER_JS);
   source->SetDefaultResource(
-      base::FeatureList::IsEnabled(features::kWebUIPolymer2) ?
-          IDR_MD_EXTENSIONS_VULCANIZED_P2_HTML :
-          IDR_MD_EXTENSIONS_VULCANIZED_HTML);
+      base::FeatureList::IsEnabled(features::kWebUIPolymer2)
+          ? IDR_EXTENSIONS_VULCANIZED_P2_HTML
+          : IDR_EXTENSIONS_VULCANIZED_HTML);
   source->UseGzip();
 #else
   // Add all MD Extensions resources.
@@ -354,7 +354,7 @@ content::WebUIDataSource* CreateMdExtensionsSource(Profile* profile,
     source->AddResourcePath(kExtensionsResources[i].name,
                             kExtensionsResources[i].value);
   }
-  source->SetDefaultResource(IDR_MD_EXTENSIONS_EXTENSIONS_HTML);
+  source->SetDefaultResource(IDR_EXTENSIONS_EXTENSIONS_HTML);
 #endif
 
   return source;
