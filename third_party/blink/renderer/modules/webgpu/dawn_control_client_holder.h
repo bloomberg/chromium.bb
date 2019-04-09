@@ -7,6 +7,7 @@
 
 #include <dawn/dawn.h>
 
+#include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace gpu {
@@ -24,11 +25,13 @@ namespace blink {
 // backing WebGPUInterface has been destroyed.
 class DawnControlClientHolder : public RefCounted<DawnControlClientHolder> {
  public:
-  DawnControlClientHolder(gpu::webgpu::WebGPUInterface* interface);
+  DawnControlClientHolder(
+      std::unique_ptr<WebGraphicsContext3DProvider> context_provider);
 
   void MarkDestroyed();
   bool IsDestroyed() const;
 
+  WebGraphicsContext3DProvider* GetContextProvider() const;
   gpu::webgpu::WebGPUInterface* GetInterface() const;
   const DawnProcTable& GetProcs() const;
 
@@ -36,6 +39,7 @@ class DawnControlClientHolder : public RefCounted<DawnControlClientHolder> {
   friend class RefCounted<DawnControlClientHolder>;
   ~DawnControlClientHolder() = default;
 
+  std::unique_ptr<WebGraphicsContext3DProvider> context_provider_;
   gpu::webgpu::WebGPUInterface* interface_;
   bool destroyed_;
 };
