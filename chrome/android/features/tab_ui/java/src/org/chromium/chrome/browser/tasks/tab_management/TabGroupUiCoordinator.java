@@ -34,7 +34,7 @@ import java.util.List;
  */
 public class TabGroupUiCoordinator
         implements TabGroupUiMediator.ResetHandler, TabGroupUi, PauseResumeWithNativeObserver {
-    public final static String COMPONENT_NAME = "TabStrip";
+    final static String COMPONENT_NAME = "TabStrip";
     private final Context mContext;
     private final PropertyModel mTabStripToolbarModel;
     private final ThemeColorProvider mThemeColorProvider;
