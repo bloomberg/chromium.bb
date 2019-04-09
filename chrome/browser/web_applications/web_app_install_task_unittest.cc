@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/web_applications/web_app_install_manager.h"
+#include "chrome/browser/web_applications/web_app_install_task.h"
 
 #include <memory>
 
@@ -98,7 +98,7 @@ void TestDeclineDialogCallback(
 
 }  // namespace
 
-class WebAppInstallManagerTest : public WebAppTest {
+class WebAppInstallTaskTest : public WebAppTest {
  public:
   void SetUp() override {
     WebAppTest::SetUp();
@@ -115,7 +115,7 @@ class WebAppInstallManagerTest : public WebAppTest {
     install_finalizer_ = std::make_unique<WebAppInstallFinalizer>(
         registrar_.get(), icon_manager_.get());
 
-    install_manager_ = std::make_unique<WebAppInstallManager>(
+    install_task_ = std::make_unique<WebAppInstallTask>(
         profile(), install_finalizer_.get());
   }
 
@@ -136,7 +136,7 @@ class WebAppInstallManagerTest : public WebAppTest {
     auto data_retriever =
         std::make_unique<TestDataRetriever>(std::move(web_app_info));
     data_retriever_ = data_retriever.get();
-    install_manager_->SetDataRetrieverForTesting(std::move(data_retriever));
+    install_task_->SetDataRetrieverForTesting(std::move(data_retriever));
   }
 
   void CreateRendererAppInfo(const GURL& url,
@@ -160,7 +160,7 @@ class WebAppInstallManagerTest : public WebAppTest {
     auto test_install_finalizer = std::make_unique<TestInstallFinalizer>();
     test_install_finalizer_ = test_install_finalizer.get();
     install_finalizer_ = std::move(test_install_finalizer);
-    install_manager_->SetInstallFinalizerForTesting(test_install_finalizer_);
+    install_task_->SetInstallFinalizerForTesting(test_install_finalizer_);
   }
 
   TestInstallFinalizer& test_install_finalizer() {
@@ -182,7 +182,7 @@ class WebAppInstallManagerTest : public WebAppTest {
     InstallResult result;
     base::RunLoop run_loop;
     const bool force_shortcut_app = false;
-    install_manager_->InstallWebApp(
+    install_task_->InstallWebApp(
         web_contents(), force_shortcut_app,
         WebappInstallSource::MENU_BROWSER_TAB,
         base::BindOnce(TestAcceptDialogCallback),
@@ -217,10 +217,10 @@ class WebAppInstallManagerTest : public WebAppTest {
   std::unique_ptr<TestWebAppDatabase> database_;
   std::unique_ptr<WebAppRegistrar> registrar_;
   std::unique_ptr<WebAppIconManager> icon_manager_;
-  std::unique_ptr<WebAppInstallManager> install_manager_;
+  std::unique_ptr<WebAppInstallTask> install_task_;
   std::unique_ptr<InstallFinalizer> install_finalizer_;
 
-  // Owned by install_manager_:
+  // Owned by install_task_:
   TestFileUtils* file_utils_ = nullptr;
   TestDataRetriever* data_retriever_ = nullptr;
 
@@ -228,7 +228,7 @@ class WebAppInstallManagerTest : public WebAppTest {
   TestInstallFinalizer* test_install_finalizer_ = nullptr;
 };
 
-TEST_F(WebAppInstallManagerTest, InstallFromWebContents) {
+TEST_F(WebAppInstallTaskTest, InstallFromWebContents) {
   EXPECT_TRUE(AreWebAppsUserInstallable(profile()));
 
   const GURL url = GURL("https://example.com/path");
@@ -246,7 +246,7 @@ TEST_F(WebAppInstallManagerTest, InstallFromWebContents) {
   bool callback_called = false;
   const bool force_shortcut_app = false;
 
-  install_manager_->InstallWebApp(
+  install_task_->InstallWebApp(
       web_contents(), force_shortcut_app, WebappInstallSource::MENU_BROWSER_TAB,
       base::BindOnce(TestAcceptDialogCallback),
       base::BindLambdaForTesting(
@@ -271,7 +271,7 @@ TEST_F(WebAppInstallManagerTest, InstallFromWebContents) {
   EXPECT_EQ(theme_color, web_app->theme_color());
 }
 
-TEST_F(WebAppInstallManagerTest, AlreadyInstalled) {
+TEST_F(WebAppInstallTaskTest, AlreadyInstalled) {
   const GURL url = GURL("https://example.com/path");
   const std::string name = "Name";
   const std::string description = "Description";
@@ -291,7 +291,7 @@ TEST_F(WebAppInstallManagerTest, AlreadyInstalled) {
   bool callback_called = false;
   const bool force_shortcut_app = false;
 
-  install_manager_->InstallWebApp(
+  install_task_->InstallWebApp(
       web_contents(), force_shortcut_app, WebappInstallSource::MENU_BROWSER_TAB,
       base::BindOnce(TestAcceptDialogCallback),
       base::BindLambdaForTesting(
@@ -306,10 +306,9 @@ TEST_F(WebAppInstallManagerTest, AlreadyInstalled) {
   EXPECT_TRUE(callback_called);
 }
 
-TEST_F(WebAppInstallManagerTest, GetWebApplicationInfoFailed) {
-  install_manager_->SetDataRetrieverForTesting(
-      std::make_unique<TestDataRetriever>(
-          std::unique_ptr<WebApplicationInfo>()));
+TEST_F(WebAppInstallTaskTest, GetWebApplicationInfoFailed) {
+  install_task_->SetDataRetrieverForTesting(std::make_unique<TestDataRetriever>(
+      std::unique_ptr<WebApplicationInfo>()));
 
   CreateDefaultInstallableManager();
 
@@ -317,7 +316,7 @@ TEST_F(WebAppInstallManagerTest, GetWebApplicationInfoFailed) {
   bool callback_called = false;
   const bool force_shortcut_app = false;
 
-  install_manager_->InstallWebApp(
+  install_task_->InstallWebApp(
       web_contents(), force_shortcut_app, WebappInstallSource::MENU_BROWSER_TAB,
       base::BindOnce(TestAcceptDialogCallback),
       base::BindLambdaForTesting(
@@ -332,7 +331,7 @@ TEST_F(WebAppInstallManagerTest, GetWebApplicationInfoFailed) {
   EXPECT_TRUE(callback_called);
 }
 
-TEST_F(WebAppInstallManagerTest, WebContentsDestroyed) {
+TEST_F(WebAppInstallTaskTest, WebContentsDestroyed) {
   CreateRendererAppInfo(GURL("https://example.com/path"), "Name",
                         "Description");
   CreateDefaultInstallableManager();
@@ -341,7 +340,7 @@ TEST_F(WebAppInstallManagerTest, WebContentsDestroyed) {
   bool callback_called = false;
   const bool force_shortcut_app = false;
 
-  install_manager_->InstallWebApp(
+  install_task_->InstallWebApp(
       web_contents(), force_shortcut_app, WebappInstallSource::MENU_BROWSER_TAB,
       base::BindOnce(TestAcceptDialogCallback),
       base::BindLambdaForTesting(
@@ -361,7 +360,7 @@ TEST_F(WebAppInstallManagerTest, WebContentsDestroyed) {
   EXPECT_TRUE(callback_called);
 }
 
-TEST_F(WebAppInstallManagerTest, InstallableCheck) {
+TEST_F(WebAppInstallTaskTest, InstallableCheck) {
   const std::string renderer_description = "RendererDescription";
   CreateRendererAppInfo(GURL("https://renderer.com/path"), "RendererName",
                         renderer_description,
@@ -390,7 +389,7 @@ TEST_F(WebAppInstallManagerTest, InstallableCheck) {
   bool callback_called = false;
   const bool force_shortcut_app = false;
 
-  install_manager_->InstallWebApp(
+  install_task_->InstallWebApp(
       web_contents(), force_shortcut_app, WebappInstallSource::MENU_BROWSER_TAB,
       base::BindOnce(TestAcceptDialogCallback),
       base::BindLambdaForTesting(
@@ -416,7 +415,7 @@ TEST_F(WebAppInstallManagerTest, InstallableCheck) {
   EXPECT_EQ(manifest_theme_color, web_app->theme_color());
 }
 
-TEST_F(WebAppInstallManagerTest, GetIcons) {
+TEST_F(WebAppInstallTaskTest, GetIcons) {
   CreateRendererAppInfo(GURL("https://example.com/path"), "Name",
                         "Description");
   CreateDefaultInstallableManager();
@@ -450,7 +449,7 @@ TEST_F(WebAppInstallManagerTest, GetIcons) {
   }
 }
 
-TEST_F(WebAppInstallManagerTest, GetIcons_NoIconsProvided) {
+TEST_F(WebAppInstallTaskTest, GetIcons_NoIconsProvided) {
   CreateRendererAppInfo(GURL("https://example.com/path"), "Name",
                         "Description");
   CreateDefaultInstallableManager();
@@ -475,7 +474,7 @@ TEST_F(WebAppInstallManagerTest, GetIcons_NoIconsProvided) {
   }
 }
 
-TEST_F(WebAppInstallManagerTest, WriteDataToDisk) {
+TEST_F(WebAppInstallTaskTest, WriteDataToDisk) {
   CreateRendererAppInfo(GURL("https://example.com/path"), "Name",
                         "Description");
   CreateDefaultInstallableManager();
@@ -544,7 +543,7 @@ TEST_F(WebAppInstallManagerTest, WriteDataToDisk) {
   EXPECT_TRUE(written_sizes_px.empty());
 }
 
-TEST_F(WebAppInstallManagerTest, WriteDataToDiskFailed) {
+TEST_F(WebAppInstallTaskTest, WriteDataToDiskFailed) {
   const GURL app_url = GURL("https://example.com/path");
   CreateRendererAppInfo(app_url, "Name", "Description");
   CreateDefaultInstallableManager();
@@ -565,7 +564,7 @@ TEST_F(WebAppInstallManagerTest, WriteDataToDiskFailed) {
   bool callback_called = false;
   const bool force_shortcut_app = false;
 
-  install_manager_->InstallWebApp(
+  install_task_->InstallWebApp(
       web_contents(), force_shortcut_app, WebappInstallSource::MENU_BROWSER_TAB,
       base::BindOnce(TestAcceptDialogCallback),
       base::BindLambdaForTesting(
@@ -587,7 +586,7 @@ TEST_F(WebAppInstallManagerTest, WriteDataToDiskFailed) {
   EXPECT_FALSE(file_utils_->DirectoryExists(app_dir));
 }
 
-TEST_F(WebAppInstallManagerTest, UserInstallDeclined) {
+TEST_F(WebAppInstallTaskTest, UserInstallDeclined) {
   const GURL url = GURL("https://example.com/path");
   const AppId app_id = GenerateAppIdFromURL(url);
 
@@ -598,7 +597,7 @@ TEST_F(WebAppInstallManagerTest, UserInstallDeclined) {
   bool callback_called = false;
   const bool force_shortcut_app = false;
 
-  install_manager_->InstallWebApp(
+  install_task_->InstallWebApp(
       web_contents(), force_shortcut_app, WebappInstallSource::MENU_BROWSER_TAB,
       base::BindOnce(TestDeclineDialogCallback),
       base::BindLambdaForTesting(
@@ -616,7 +615,7 @@ TEST_F(WebAppInstallManagerTest, UserInstallDeclined) {
   EXPECT_EQ(nullptr, web_app);
 }
 
-TEST_F(WebAppInstallManagerTest, FinalizerMethodsCalled) {
+TEST_F(WebAppInstallTaskTest, FinalizerMethodsCalled) {
   PrepareTestAppInstall();
 
   InstallWebApp();
@@ -627,7 +626,7 @@ TEST_F(WebAppInstallManagerTest, FinalizerMethodsCalled) {
   EXPECT_EQ(1, test_install_finalizer().num_pin_app_to_shelf_calls());
 }
 
-TEST_F(WebAppInstallManagerTest, FinalizerMethodsNotCalled) {
+TEST_F(WebAppInstallTaskTest, FinalizerMethodsNotCalled) {
   PrepareTestAppInstall();
   test_install_finalizer().SetNextFinalizeInstallResult(
       AppId(), InstallResultCode::kFailedUnknownReason);
