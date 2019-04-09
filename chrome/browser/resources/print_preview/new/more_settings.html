@@ -43,8 +43,7 @@
       }
 
       :host([disabled]) #label {
-        color: var(--paper-grey-600);
-        opacity: .65;
+        @apply --print-preview-disabled-label;
       }
     </style>
     <div on-click="toggleExpandButton_" actionable>

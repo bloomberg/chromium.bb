@@ -14,12 +14,19 @@
         --md-select-width: calc(100% - 17px);
         --print-preview-settings-border: 1px solid rgb(232, 234, 237);
         --print-preview-dialog-margin: 34px;
+        --print-preview-disabled-label: {
+          color: var(--paper-grey-600);
+          opacity: .65;
+        }
         --cr-form-field-label-height: initial;
         --cr-form-field-label-line-height: .75rem;
         --destination-item-height: 32px;
       }
 
       :host-context([dark]) {
+        --print-preview-disabled-label: {
+          opacity: var(--cr-disabled-opacity);
+        }
         --print-preview-settings-border: var(--cr-separator-line);
       }
 
