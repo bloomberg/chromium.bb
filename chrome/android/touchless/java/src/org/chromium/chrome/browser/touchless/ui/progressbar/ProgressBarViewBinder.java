@@ -21,7 +21,6 @@ public class ProgressBarViewBinder {
             } else if (model.getAllProperties().contains(ProgressBarProperties.IS_VISIBLE)) {
                 progressBarView.setVisibility(model.get(ProgressBarProperties.IS_VISIBLE));
             }
-            progressBarView.setVisibility(model.get(ProgressBarProperties.IS_VISIBLE));
         } else if (ProgressBarProperties.IS_VISIBLE == propertyKey) {
             if (!model.getAllProperties().contains(ProgressBarProperties.IS_ENABLED)
                     || model.get(ProgressBarProperties.IS_ENABLED)) {
