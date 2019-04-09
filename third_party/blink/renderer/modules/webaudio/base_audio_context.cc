@@ -813,10 +813,11 @@ void BaseAudioContext::NotifyWorkletIsReady() {
         audioWorklet()->GetMessagingProxy()->GetBackingWorkerThread();
   }
 
-  // If the context is running or suspended, restart the destination to switch
-  // the render thread with the worklet thread. Note that restarting can happen
-  // right after the context construction.
-  if (ContextState() != kClosed) {
+  // If the context is running, restart the destination to switch the render
+  // thread with the worklet thread. When the context is suspended, the next
+  // resume() call will start rendering with the worklet thread.
+  // Note that restarting can happen right after the context construction.
+  if (ContextState() == kRunning) {
     destination()->GetAudioDestinationHandler().RestartRendering();
   }
 }
