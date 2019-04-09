@@ -9,6 +9,9 @@
 
 namespace blink {
 
+class GPUBindGroup;
+class GPUComputePipeline;
+
 class GPUComputePassEncoder : public DawnObject<DawnComputePassEncoder> {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -21,7 +24,12 @@ class GPUComputePassEncoder : public DawnObject<DawnComputePassEncoder> {
   ~GPUComputePassEncoder() override;
 
   // gpu_compute_pass_encoder.idl
-  // TODO(crbug.com/877147): implement GPUComputePassEncoder.
+  void setBindGroup(uint32_t index,
+                    GPUBindGroup* bindGroup,
+                    const Vector<uint64_t>& dynamicOffsets);
+  void setPipeline(GPUComputePipeline* pipeline);
+  void dispatch(uint32_t x, uint32_t y, uint32_t z);
+  void endPass();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GPUComputePassEncoder);
