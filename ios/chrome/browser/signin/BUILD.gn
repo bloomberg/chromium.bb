@@ -39,6 +39,8 @@ source_set("signin") {
     "ios_chrome_signin_client.mm",
     "ios_chrome_signin_status_metrics_provider_delegate.cc",
     "ios_chrome_signin_status_metrics_provider_delegate.h",
+    "profile_oauth2_token_service_factory.h",
+    "profile_oauth2_token_service_factory.mm",
     "profile_oauth2_token_service_ios_provider_impl.h",
     "profile_oauth2_token_service_ios_provider_impl.mm",
     "signin_browser_state_info_updater.h",
