@@ -85,6 +85,8 @@ static_library("test_support") {
     "base/find_in_page_observer.h",
     "base/process_inspector_win.cc",
     "base/process_inspector_win.h",
+    "base/process_lineage_win.cc",
+    "base/process_lineage_win.h",
     "base/scoped_browser_locale.cc",
     "base/scoped_browser_locale.h",
     "base/scoped_bundle_swizzler_mac.h",
