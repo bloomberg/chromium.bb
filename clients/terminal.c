@@ -2207,10 +2207,29 @@ data_source_cancelled(void *data, struct wl_data_source *source)
 	wl_data_source_destroy(source);
 }
 
+static void
+data_source_dnd_drop_performed(void *data, struct wl_data_source *source)
+{
+}
+
+static void
+data_source_dnd_finished(void *data, struct wl_data_source *source)
+{
+}
+
+static void
+data_source_action(void *data,
+		   struct wl_data_source *source, uint32_t dnd_action)
+{
+}
+
 static const struct wl_data_source_listener data_source_listener = {
 	data_source_target,
 	data_source_send,
-	data_source_cancelled
+	data_source_cancelled,
+	data_source_dnd_drop_performed,
+	data_source_dnd_finished,
+	data_source_action
 };
 
 static const char text_mime_type[] = "text/plain;charset=utf-8";
