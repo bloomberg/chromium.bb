@@ -120,6 +120,7 @@ source_set("eg_tests") {
     "//ios/web",
     "//ios/web:earl_grey_test_support",
     "//ios/web/public/test",
+    "//ios/web/public/test:element_selector",
     "//ios/web/public/test/http_server",
     "//ui/base",
     "//url",
