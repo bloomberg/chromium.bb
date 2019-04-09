@@ -239,11 +239,10 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
 
   NGFloatTypes adjoining_floats_ = kFloatTypeNone;
 
-  bool has_last_resort_break_ = false;
-
   bool is_pushed_by_floats_ = false;
   bool is_old_layout_root_ = false;
 
+  bool has_last_resort_break_ = false;
   bool has_floating_descendants_ = false;
   bool has_orthogonal_flow_roots_ = false;
   bool has_child_that_depends_on_percentage_block_size_ = false;
