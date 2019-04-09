@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/modules/webgpu/gpu_compute_pass_encoder.h"
 
+#include "third_party/blink/renderer/modules/webgpu/gpu_bind_group.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_compute_pipeline.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
 
 namespace blink {
@@ -26,6 +28,27 @@ GPUComputePassEncoder::~GPUComputePassEncoder() {
     return;
   }
   GetProcs().computePassEncoderRelease(GetHandle());
+}
+
+void GPUComputePassEncoder::setBindGroup(
+    uint32_t index,
+    GPUBindGroup* bindGroup,
+    const Vector<uint64_t>& dynamicOffsets) {
+  GetProcs().computePassEncoderSetBindGroup(
+      GetHandle(), index, bindGroup->GetHandle(), dynamicOffsets.size(),
+      dynamicOffsets.data());
+}
+
+void GPUComputePassEncoder::setPipeline(GPUComputePipeline* pipeline) {
+  GetProcs().computePassEncoderSetPipeline(GetHandle(), pipeline->GetHandle());
+}
+
+void GPUComputePassEncoder::dispatch(uint32_t x, uint32_t y, uint32_t z) {
+  GetProcs().computePassEncoderDispatch(GetHandle(), x, y, z);
+}
+
+void GPUComputePassEncoder::endPass() {
+  GetProcs().computePassEncoderEndPass(GetHandle());
 }
 
 }  // namespace blink
