@@ -24,6 +24,8 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -41,6 +43,24 @@ typedef std::map<std::string, mojom::AppPtr> AppMap;
 
 }  // namespace
 
+class FakeAppControllerClient : public mojom::AppControllerClient {
+ public:
+  explicit FakeAppControllerClient(
+      mojo::InterfaceRequest<mojom::AppControllerClient> request)
+      : binding_(this, std::move(request)) {}
+
+  const std::vector<mojom::AppPtr>& app_updates() { return app_updates_; }
+
+  // mojom::AppControllerClient:
+  void OnAppChanged(mojom::AppPtr app) override {
+    app_updates_.push_back(std::move(app));
+  }
+
+ private:
+  mojo::Binding<mojom::AppControllerClient> binding_;
+  std::vector<mojom::AppPtr> app_updates_;
+};
+
 class AppControllerServiceTest : public testing::Test {
  protected:
   void SetUp() override {
@@ -50,6 +70,11 @@ class AppControllerServiceTest : public testing::Test {
     proxy_ = apps::AppServiceProxy::Get(profile());
 
     app_controller_service_ = AppControllerService::Get(profile());
+
+    mojom::AppControllerClientPtr client_proxy;
+    client_ = std::make_unique<FakeAppControllerClient>(
+        mojo::MakeRequest(&client_proxy));
+    app_controller_service_->SetClient(std::move(client_proxy));
   }
 
   void TearDown() override { arc_test_.TearDown(); }
@@ -90,6 +115,10 @@ class AppControllerServiceTest : public testing::Test {
     std::vector<apps::mojom::AppPtr> deltas;
     deltas.push_back(std::move(delta));
     proxy_->AppRegistryCache().OnApps(std::move(deltas));
+
+    // We just triggered some mojo calls by adding the above delta, we need to
+    // wait for them to finish before we continue with the test.
+    base::RunLoop().RunUntilIdle();
   }
 
   // Gets all apps from the AppControllerService instance being tested and
@@ -123,18 +152,7 @@ class AppControllerServiceTest : public testing::Test {
 
       mojom::AppPtr& returned_app = returned_app_it->second;
 
-      // Test equality of every single field to make tests failures more
-      // readable.
-      EXPECT_EQ(returned_app->app_id, expected_app.app_id);
-      EXPECT_EQ(returned_app->type, expected_app.type);
-      EXPECT_EQ(returned_app->display_name, expected_app.display_name);
-      EXPECT_EQ(returned_app->readiness, expected_app.readiness);
-      EXPECT_EQ(returned_app->android_package_name,
-                expected_app.android_package_name);
-
-      // Catch all clause of equality. This will only be necessary if we add
-      // more fields that are not expected above.
-      EXPECT_TRUE(expected_app.Equals(*returned_app));
+      ExpectEqualApps(expected_app, *returned_app);
     }
   }
 
@@ -197,12 +215,40 @@ class AppControllerServiceTest : public testing::Test {
     EXPECT_EQ(arc_test_.app_instance()->launch_intents()[0], launched_url);
   }
 
+  // Expects the given apps were passed to the
+  // AppControllerClient::OnAppChanged method in order.
+  void ExpectAppChangedUpdates(
+      const std::vector<mojom::App>& expected_updates) {
+    ASSERT_EQ(expected_updates.size(), client_->app_updates().size());
+
+    for (std::size_t i = 0; i < expected_updates.size(); ++i) {
+      ExpectEqualApps(expected_updates[i], *(client_->app_updates()[i]));
+    }
+  }
+
  private:
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
   std::unique_ptr<TestingProfile> profile_;
   ArcAppTest arc_test_;
   apps::AppServiceProxy* proxy_;
   AppControllerService* app_controller_service_;
+  std::unique_ptr<FakeAppControllerClient> client_;
+
+  void ExpectEqualApps(const mojom::App& expected_app,
+                       const mojom::App& actual_app) {
+    // Test equality of every single field to make tests failures more
+    // readable.
+    EXPECT_EQ(actual_app.app_id, expected_app.app_id);
+    EXPECT_EQ(actual_app.type, expected_app.type);
+    EXPECT_EQ(actual_app.display_name, expected_app.display_name);
+    EXPECT_EQ(actual_app.readiness, expected_app.readiness);
+    EXPECT_EQ(actual_app.android_package_name,
+              expected_app.android_package_name);
+
+    // Catch all clause of equality. This will only be necessary if we add
+    // more fields that are not expected above.
+    ASSERT_TRUE(expected_app.Equals(actual_app));
+  }
 };
 
 TEST_F(AppControllerServiceTest, AppIsFetchedCorrectly) {
@@ -444,6 +490,144 @@ TEST_F(AppControllerServiceTest, LaunchHomeUrlLaunchesWhenWeHaveAValidPrefix) {
   ExpectLaunchHomeUrlResponse("example_query", true, base::nullopt);
 
   ExpectHomeUrlLaunched("https://example.com/?q=example_query");
+}
+
+TEST_F(AppControllerServiceTest, ClientIsNotifiedOfChangesToAndroidApp) {
+  std::string android_package_name = "fake.app.package.2.0";
+  std::string app_id = GetAppIdFromAndroidPackage(android_package_name);
+  AppType app_type = AppType::kArc;
+
+  // Install the Android app.
+  AddAndroidPackageToArc(android_package_name);
+  apps::mojom::App delta;
+  delta.app_id = app_id;
+  delta.app_type = app_type;
+  delta.show_in_launcher = OptionalBool::kTrue;
+  delta.name = "Fake App Name - First Version";
+  AddAppDeltaToAppService(delta.Clone());
+
+  mojom::App first_app_state;
+  first_app_state.android_package_name = android_package_name;
+  first_app_state.app_id = app_id;
+  first_app_state.display_name = "Fake App Name - First Version";
+  first_app_state.type = app_type;
+  ExpectAppChangedUpdates({first_app_state});
+
+  delta.name = "Fake App Name - Second Version";
+  AddAppDeltaToAppService(delta.Clone());
+  mojom::App second_app_state = first_app_state;
+  second_app_state.display_name = "Fake App Name - Second Version";
+  ExpectAppChangedUpdates({first_app_state, second_app_state});
+
+  // Now we stop ARC and check if we still have all the information we had about
+  // the app. We should have cached all that we needed from the previous
+  // updates.
+  StopArc();
+  delta.name = "Fake App Name - Third Version";
+  AddAppDeltaToAppService(delta.Clone());
+  mojom::App third_app_state = second_app_state;
+  third_app_state.display_name = "Fake App Name - Third Version";
+  ExpectAppChangedUpdates({first_app_state, second_app_state, third_app_state});
+}
+
+TEST_F(AppControllerServiceTest, ClientIsNotifiedOfReadinessChanges) {
+  apps::mojom::App app_delta;
+  app_delta.app_id = "app";
+  app_delta.app_type = AppType::kBuiltIn;
+  app_delta.show_in_launcher = OptionalBool::kTrue;
+  app_delta.readiness = Readiness::kReady;
+  AddAppDeltaToAppService(app_delta.Clone());
+
+  mojom::App first_app_state;
+  first_app_state.app_id = "app";
+  first_app_state.type = AppType::kBuiltIn;
+  first_app_state.readiness = Readiness::kReady;
+  ExpectAppChangedUpdates({first_app_state});
+
+  app_delta.readiness = Readiness::kUninstalledByUser;
+  AddAppDeltaToAppService(app_delta.Clone());
+
+  mojom::App second_app_state;
+  second_app_state.app_id = "app";
+  second_app_state.type = AppType::kBuiltIn;
+  second_app_state.readiness = Readiness::kUninstalledByUser;
+  ExpectAppChangedUpdates({first_app_state, second_app_state});
+}
+
+TEST_F(AppControllerServiceTest, ClientIsNotifiedOfNameChanges) {
+  apps::mojom::App app_delta;
+  app_delta.app_id = "app";
+  app_delta.app_type = AppType::kBuiltIn;
+  app_delta.show_in_launcher = OptionalBool::kTrue;
+  app_delta.name = "First App Name";
+  AddAppDeltaToAppService(app_delta.Clone());
+
+  mojom::App first_app_state;
+  first_app_state.app_id = "app";
+  first_app_state.type = AppType::kBuiltIn;
+  first_app_state.display_name = "First App Name";
+  ExpectAppChangedUpdates({first_app_state});
+
+  app_delta.name = "Second App Name";
+  AddAppDeltaToAppService(app_delta.Clone());
+
+  mojom::App second_app_state;
+  second_app_state.app_id = "app";
+  second_app_state.type = AppType::kBuiltIn;
+  second_app_state.display_name = "Second App Name";
+  ExpectAppChangedUpdates({first_app_state, second_app_state});
+}
+
+TEST_F(AppControllerServiceTest, ClientIsNotNotifiedOfChangesToHiddenApp) {
+  // Install an app that should not be shown in the launcher.
+  apps::mojom::App app_delta;
+  app_delta.app_id = "app";
+  app_delta.app_type = AppType::kBuiltIn;
+  app_delta.show_in_launcher = OptionalBool::kFalse;
+  AddAppDeltaToAppService(app_delta.Clone());
+  ExpectAppChangedUpdates({});
+
+  // Even if we keep changing the app, we will not notify the client.
+  app_delta.name = "Fake App Name";
+  AddAppDeltaToAppService(app_delta.Clone());
+  ExpectAppChangedUpdates({});
+  app_delta.readiness = Readiness::kReady;
+  AddAppDeltaToAppService(app_delta.Clone());
+  ExpectAppChangedUpdates({});
+  app_delta.show_in_launcher = OptionalBool::kUnknown;
+  AddAppDeltaToAppService(app_delta.Clone());
+  ExpectAppChangedUpdates({});
+
+  // Now if we change |show_in_launcher| to true, we notify the client with
+  // the latest app state.
+  app_delta.show_in_launcher = OptionalBool::kTrue;
+  AddAppDeltaToAppService(app_delta.Clone());
+
+  mojom::App app_state;
+  app_state.app_id = "app";
+  app_state.type = AppType::kBuiltIn;
+  app_state.display_name = "Fake App Name";
+  app_state.readiness = Readiness::kReady;
+  ExpectAppChangedUpdates({app_state});
+}
+
+TEST_F(AppControllerServiceTest, ClientIsNotNotifiedOfSuperfluousChanges) {
+  apps::mojom::App app_delta;
+  app_delta.app_id = "app";
+  app_delta.app_type = AppType::kBuiltIn;
+  app_delta.show_in_launcher = OptionalBool::kTrue;
+  AddAppDeltaToAppService(app_delta.Clone());
+
+  mojom::App first_app_state;
+  first_app_state.app_id = "app";
+  first_app_state.type = AppType::kBuiltIn;
+  ExpectAppChangedUpdates({first_app_state});
+
+  // We don't care about this field, so changes to it shouldn't be
+  // propagated to the client.
+  app_delta.additional_search_terms = {"random_term"};
+  AddAppDeltaToAppService(app_delta.Clone());
+  ExpectAppChangedUpdates({first_app_state});
 }
 
 }  // namespace kiosk_next_home
