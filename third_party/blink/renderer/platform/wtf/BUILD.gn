@@ -219,8 +219,6 @@ jumbo_component("wtf") {
     "wtf.h",
     "wtf_export.h",
     "wtf_size_t.h",
-    "wtf_thread_data.cc",
-    "wtf_thread_data.h",
   ]
 
   configs += [

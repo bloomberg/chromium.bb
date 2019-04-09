@@ -41,7 +41,6 @@
 #include "third_party/blink/renderer/platform/wtf/thread_specific.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
 #include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_contents.h"
-#include "third_party/blink/renderer/platform/wtf/wtf_thread_data.h"
 
 namespace WTF {
 
@@ -69,7 +68,7 @@ void Initialize(void (*call_on_main_thread_function)(MainThreadFunction,
   g_initialized = true;
   g_main_thread_identifier = CurrentThread();
 
-  WTFThreadData::Initialize();
+  Threading::Initialize();
 
   // Force initialization of static DoubleToStringConverter converter variable
   // inside EcmaScriptConverter function while we are in single thread mode.

@@ -38,7 +38,6 @@
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
-#include "third_party/blink/renderer/platform/wtf/wtf_thread_data.h"
 
 namespace WTF {
 
@@ -50,7 +49,7 @@ ICUConverterWrapper::~ICUConverterWrapper() {
 }
 
 static UConverter*& CachedConverterICU() {
-  return WtfThreadData().CachedConverterICU().converter;
+  return WtfThreading().CachedConverterICU().converter;
 }
 
 std::unique_ptr<TextCodec> TextCodecICU::Create(const TextEncoding& encoding,
