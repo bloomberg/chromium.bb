@@ -40,10 +40,6 @@ constexpr char kWindowFoundPostTest[] =
     "out. This may have been caused by this test or a previous test and may "
     "cause flakes;";
 
-// A command line switch to specify the output directory into which snapshots
-// are to be saved in case an always-on-top window is found.
-constexpr char kSnapshotOutputDir[] = "snapshot-output-dir";
-
 // A window enumerator that searches for always-on-top windows. A snapshot of
 // the screen is saved if any unexpected on-top windows are found.
 class WindowEnumerator {
