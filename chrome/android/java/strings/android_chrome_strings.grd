@@ -705,7 +705,7 @@ CHAR-LIMIT guidelines:
         System default
       </message>
       <message name="IDS_THEMES_SYSTEM_DEFAULT_SUMMARY" desc="Summary for the System Default option.">
-        Turn on dark theme when your device's Power Saver is on
+        Turn on dark theme when your device's Battery Saver is on
       </message>
 
       <!-- Privacy preferences -->
