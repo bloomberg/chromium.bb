@@ -154,6 +154,10 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_DISABLE_OPLIST_SORTING
 #endif
 
+#ifndef SK_SUPPORT_LEGACY_SHADER_FACTORIES
+#define SK_SUPPORT_LEGACY_SHADER_FACTORIES
+#endif
+
 #ifndef SK_IGNORE_LINEONLY_AA_CONVEX_PATH_OPTS
 #define SK_IGNORE_LINEONLY_AA_CONVEX_PATH_OPTS
 #endif
