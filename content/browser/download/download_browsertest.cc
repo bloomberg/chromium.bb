@@ -36,6 +36,7 @@
 #include "components/download/public/common/download_features.h"
 #include "components/download/public/common/download_file_factory.h"
 #include "components/download/public/common/download_file_impl.h"
+#include "components/download/public/common/download_item_impl.h"
 #include "components/download/public/common/download_task_runner.h"
 #include "components/download/public/common/parallel_download_configs.h"
 #include "content/browser/download/download_manager_impl.h"
@@ -951,6 +952,11 @@ class DownloadContentTest : public ContentBrowserTest {
     EXPECT_EQ("DONE", EvalJs(shell, "register('" + worker_url + "')"));
   }
 
+  void ClearAutoResumptionCount(download::DownloadItem* download) {
+    static_cast<download::DownloadItemImpl*>(download)
+        ->SetAutoResumeCountForTesting(0);
+  }
+
  private:
   // Location of the downloads directory for these tests
   base::ScopedTempDir downloads_directory_;
@@ -1016,6 +1022,7 @@ class ParallelDownloadTest : public DownloadContentTest {
             download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
             download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, false,
             base::Time(), false, slices);
+    ClearAutoResumptionCount(download);
     return download;
   }
 
@@ -2470,6 +2477,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_NoFile) {
           download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, false,
           base::Time(), false,
           std::vector<download::DownloadItem::ReceivedSlice>());
+  ClearAutoResumptionCount(download);
 
   download->Resume(false);
   WaitForCompletion(download);
@@ -2536,6 +2544,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_NoHash) {
           download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, false,
           base::Time(), false,
           std::vector<download::DownloadItem::ReceivedSlice>());
+  ClearAutoResumptionCount(download);
 
   download->Resume(false);
   WaitForCompletion(download);
@@ -2589,6 +2598,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
           download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, false,
           base::Time(), false,
           std::vector<download::DownloadItem::ReceivedSlice>());
+  ClearAutoResumptionCount(download);
 
   download->Resume(false);
   WaitForCompletion(download);
@@ -2649,6 +2659,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
           download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, false,
           base::Time(), false,
           std::vector<download::DownloadItem::ReceivedSlice>());
+  ClearAutoResumptionCount(download);
 
   download->Resume(false);
   WaitForCompletion(download);
@@ -2715,6 +2726,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_WrongHash) {
           download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, false,
           base::Time(), false,
           std::vector<download::DownloadItem::ReceivedSlice>());
+  ClearAutoResumptionCount(download);
 
   download->Resume(false);
   WaitForCompletion(download);
@@ -2790,6 +2802,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_ShortFile) {
           download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, false,
           base::Time(), false,
           std::vector<download::DownloadItem::ReceivedSlice>());
+  ClearAutoResumptionCount(download);
 
   download->Resume(false);
   WaitForCompletion(download);
@@ -2863,6 +2876,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_LongFile) {
           download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, false,
           base::Time(), false,
           std::vector<download::DownloadItem::ReceivedSlice>());
+  ClearAutoResumptionCount(download);
 
   download->Resume(false);
   WaitForCompletion(download);
