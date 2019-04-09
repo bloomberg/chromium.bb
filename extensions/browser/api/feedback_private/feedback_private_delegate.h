@@ -59,6 +59,11 @@ class FeedbackPrivateDelegate {
       std::unique_ptr<FeedbackCommon::SystemLogsMap> original_sys_logs,
       content::BrowserContext* context,
       system_logs::SysLogsFetcherCallback callback) const = 0;
+
+  // Unloads the feedback extension from the current profile, should only be
+  // called when feedback is complete for the login profile.
+  virtual void UnloadFeedbackExtension(
+      content::BrowserContext* context) const = 0;
 #endif
 
   // Returns the normalized email address of the signed-in user associated with

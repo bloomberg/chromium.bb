@@ -48,6 +48,11 @@ void ShellFeedbackPrivateDelegate::FetchAndMergeIwlwifiDumpLogsIfPresent(
   NOTIMPLEMENTED();
   std::move(callback).Run(std::move(original_sys_logs));
 }
+
+void ShellFeedbackPrivateDelegate::UnloadFeedbackExtension(
+    content::BrowserContext* context) const {
+  NOTIMPLEMENTED();
+}
 #endif
 
 std::string ShellFeedbackPrivateDelegate::GetSignedInUserEmail(

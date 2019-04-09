@@ -29,8 +29,12 @@
 #include "chrome/browser/chromeos/system_logs/iwlwifi_dump_log_source.h"
 #include "chrome/browser/chromeos/system_logs/single_debug_daemon_log_source.h"
 #include "chrome/browser/chromeos/system_logs/single_log_file_log_source.h"
+#include "chrome/browser/extensions/component_loader.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/feedback/system_logs/system_logs_source.h"
+#include "extensions/browser/extension_system.h"
+#include "extensions/common/constants.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace extensions {
@@ -191,6 +195,14 @@ void ChromeFeedbackPrivateDelegate::FetchAndMergeIwlwifiDumpLogsIfPresent(
   fetcher->Fetch(base::BindOnce(&system_logs::MergeIwlwifiLogs,
                                 std::move(original_sys_logs),
                                 std::move(callback)));
+}
+
+void ChromeFeedbackPrivateDelegate::UnloadFeedbackExtension(
+    content::BrowserContext* context) const {
+  extensions::ExtensionSystem::Get(context)
+      ->extension_service()
+      ->component_loader()
+      ->Remove(extension_misc::kFeedbackExtensionId);
 }
 #endif  // defined(OS_CHROMEOS)
 

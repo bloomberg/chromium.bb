@@ -397,4 +397,14 @@ void FeedbackPrivateSendFeedbackFunction::OnCompleted(
   }
 }
 
+ExtensionFunction::ResponseAction
+FeedbackPrivateLoginFeedbackCompleteFunction::Run() {
+#if defined(OS_CHROMEOS)
+  FeedbackPrivateDelegate* feedback_private_delegate =
+      ExtensionsAPIClient::Get()->GetFeedbackPrivateDelegate();
+  feedback_private_delegate->UnloadFeedbackExtension(browser_context());
+#endif
+  return RespondNow(NoArguments());
+}
+
 }  // namespace extensions

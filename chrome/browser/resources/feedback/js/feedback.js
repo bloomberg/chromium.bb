@@ -262,6 +262,9 @@ function sendReport() {
 function cancel(e) {
   e.preventDefault();
   scheduleWindowClose();
+  if (feedbackInfo.flow == chrome.feedbackPrivate.FeedbackFlow.LOGIN) {
+    chrome.feedbackPrivate.loginFeedbackComplete();
+  }
 }
 
 // <if expr="chromeos">
@@ -371,7 +374,7 @@ function initialize() {
       takeScreenshot(function(screenshotCanvas) {
         // We've taken our screenshot, show the feedback page without any
         // further delay.
-        window.webkitRequestAnimationFrame(function() {
+        window.requestAnimationFrame(function() {
           resizeAppWindow();
         });
         chrome.app.window.current().show();
