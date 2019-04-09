@@ -33,8 +33,8 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/base/passphrase_enums.h"
-#include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/mock_sync_service.h"
+#include "components/sync/driver/sync_user_settings_impl.h"
 #include "components/sync/driver/sync_user_settings_mock.h"
 #include "components/unified_consent/scoped_unified_consent.h"
 #include "content/public/browser/web_contents.h"
@@ -262,7 +262,8 @@ class PeopleHandlerTest : public ChromeRenderViewHostTestHarness {
         .WillByDefault(Return(GetAllTypes()));
     ON_CALL(*mock_sync_service_, GetPreferredDataTypes())
         .WillByDefault(
-            Return(syncer::SyncPrefs::ResolvePrefGroups(GetAllTypes())));
+            Return(syncer::SyncUserSettingsImpl::ResolvePrefGroupsForTesting(
+                GetAllTypes())));
     ON_CALL(*mock_sync_service_, GetActiveDataTypes())
         .WillByDefault(Return(GetAllTypes()));
     ON_CALL(*mock_sync_service_->GetMockUserSettings(),
@@ -1014,7 +1015,8 @@ TEST_F(PeopleHandlerTest, ShowSetupSyncForAllTypesIndividually) {
     ON_CALL(*mock_sync_service_->GetMockUserSettings(), GetChosenDataTypes())
         .WillByDefault(Return(types));
     ON_CALL(*mock_sync_service_, GetPreferredDataTypes())
-        .WillByDefault(Return(syncer::SyncPrefs::ResolvePrefGroups(types)));
+        .WillByDefault(Return(
+            syncer::SyncUserSettingsImpl::ResolvePrefGroupsForTesting(types)));
 
     // This should display the sync setup dialog (not login).
     handler_->HandleShowSetupUI(nullptr);

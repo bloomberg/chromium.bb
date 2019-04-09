@@ -895,6 +895,7 @@ source_set("unit_tests") {
     "driver/sync_service_utils_unittest.cc",
     "driver/sync_session_durations_metrics_recorder_unittest.cc",
     "driver/sync_stopped_reporter_unittest.cc",
+    "driver/sync_user_settings_unittest.cc",
     "driver/sync_util_unittest.cc",
     "engine/cycle/sync_cycle_snapshot_unittest.cc",
     "engine/model_safe_worker_unittest.cc",

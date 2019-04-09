@@ -16,9 +16,9 @@
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/driver/sync_user_settings_impl.h"
 #include "components/sync/test/fake_server/bookmark_entity_builder.h"
 #include "components/sync/test/fake_server/entity_builder_factory.h"
 
@@ -49,7 +49,8 @@ ModelTypeSet MultiGroupTypes(const ModelTypeSet& registered_types) {
   // elsewhere in the file).
   for (ModelType st : selectable_types) {
     const ModelTypeSet grouped_types =
-        SyncPrefs::ResolvePrefGroups(ModelTypeSet(st));
+        syncer::SyncUserSettingsImpl::ResolvePrefGroupsForTesting(
+            ModelTypeSet(st));
     for (ModelType gt : grouped_types) {
       if (seen.Has(gt)) {
         multi.Put(gt);
@@ -141,7 +142,8 @@ class EnableDisableSingleClientTest : public SyncTest {
 
   ModelTypeSet ResolveGroup(ModelType type) {
     ModelTypeSet grouped_types =
-        SyncPrefs::ResolvePrefGroups(ModelTypeSet(type));
+        syncer::SyncUserSettingsImpl::ResolvePrefGroupsForTesting(
+            ModelTypeSet(type));
     grouped_types.RetainAll(registered_types_);
     grouped_types.RemoveAll(ProxyTypes());
     return grouped_types;
