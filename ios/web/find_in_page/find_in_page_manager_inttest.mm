@@ -26,8 +26,8 @@ namespace {
 // Page with text "Main frame body" and iframe with src URL equal to the URL
 // query string.
 const char kFindPageUrl[] = "/iframe?";
-// URL of iframe with text contents "iframe body".
-const char kFindInPageIFrameUrl[] = "/echo-query?iframe text";
+// URL of iframe with text contents "iframe iframe text".
+const char kFindInPageIFrameUrl[] = "/echo-query?iframe iframe text";
 }
 
 namespace web {
@@ -51,6 +51,16 @@ class FindInPageManagerTest : public WebTestWithWebState {
   // Returns the FindInPageManager associated with |web_state()|.
   FindInPageManager* GetFindInPageManager() {
     return web::FindInPageManager::FromWebState(web_state());
+  }
+
+  // Waits until the delegate receives |index| from
+  // DidSelectMatch(). Returns False if delegate never receives |index| within
+  // time.
+  WARN_UNUSED_RESULT bool WaitForSelectedMatchAtIndex(int index) {
+    return WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool {
+      base::RunLoop().RunUntilIdle();
+      return delegate_.state() && delegate_.state()->index == index;
+    });
   }
 
   net::EmbeddedTestServer test_server_;
@@ -95,7 +105,7 @@ TEST_F(FindInPageManagerTest, FindMatchInMainFrameAndIFrame) {
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool {
     return delegate_.state();
   }));
-  EXPECT_EQ(2, delegate_.state()->match_count);
+  EXPECT_EQ(3, delegate_.state()->match_count);
   EXPECT_EQ(web_state(), delegate_.state()->web_state);
 }
 
@@ -117,6 +127,114 @@ TEST_F(FindInPageManagerTest, FindNoMatch) {
   }));
   EXPECT_EQ(0, delegate_.state()->match_count);
   EXPECT_EQ(web_state(), delegate_.state()->web_state);
+}
+
+// Tests FindInPageNext iteration when matches exist in both the main frame and
+// an iframe.
+TEST_F(FindInPageManagerTest, FindForwardIterateThroughAllMatches) {
+  std::string url_spec =
+      kFindPageUrl +
+      net::EscapeQueryParamValue(kFindInPageIFrameUrl, /*use_plus=*/true);
+  test::LoadUrl(web_state(), test_server_.GetURL(url_spec));
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return GetAllWebFrames(web_state()).size() == 2;
+  }));
+
+  GetFindInPageManager()->Find(@"frame", FindInPageOptions::FindInPageSearch);
+
+  EXPECT_TRUE(WaitForSelectedMatchAtIndex(0));
+  EXPECT_EQ(3, delegate_.state()->match_count);
+
+  GetFindInPageManager()->Find(@"frame", FindInPageOptions::FindInPageNext);
+
+  EXPECT_TRUE(WaitForSelectedMatchAtIndex(1));
+
+  GetFindInPageManager()->Find(@"frame", FindInPageOptions::FindInPageNext);
+
+  EXPECT_TRUE(WaitForSelectedMatchAtIndex(2));
+
+  GetFindInPageManager()->Find(@"frame", FindInPageOptions::FindInPageNext);
+
+  EXPECT_TRUE(WaitForSelectedMatchAtIndex(0));
+}
+
+// Tests FindInPagePrevious iteration when matches exist in both the main frame
+// and an iframe.
+TEST_F(FindInPageManagerTest, FindBackwardsIterateThroughAllMatches) {
+  std::string url_spec =
+      kFindPageUrl +
+      net::EscapeQueryParamValue(kFindInPageIFrameUrl, /*use_plus=*/true);
+  test::LoadUrl(web_state(), test_server_.GetURL(url_spec));
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return GetAllWebFrames(web_state()).size() == 2;
+  }));
+
+  GetFindInPageManager()->Find(@"frame", FindInPageOptions::FindInPageSearch);
+
+  EXPECT_TRUE(WaitForSelectedMatchAtIndex(0));
+  EXPECT_EQ(3, delegate_.state()->match_count);
+
+  GetFindInPageManager()->Find(@"frame", FindInPageOptions::FindInPagePrevious);
+
+  EXPECT_TRUE(WaitForSelectedMatchAtIndex(2));
+
+  GetFindInPageManager()->Find(@"frame", FindInPageOptions::FindInPagePrevious);
+
+  EXPECT_TRUE(WaitForSelectedMatchAtIndex(1));
+
+  GetFindInPageManager()->Find(@"frame", FindInPageOptions::FindInPagePrevious);
+
+  EXPECT_TRUE(WaitForSelectedMatchAtIndex(0));
+}
+
+// Tests FindInPageNext iteration when matches exist in only an iframe.
+TEST_F(FindInPageManagerTest, FindIterateThroughIframeMatches) {
+  std::string url_spec =
+      kFindPageUrl +
+      net::EscapeQueryParamValue(kFindInPageIFrameUrl, /*use_plus=*/true);
+  test::LoadUrl(web_state(), test_server_.GetURL(url_spec));
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return GetAllWebFrames(web_state()).size() == 2;
+  }));
+
+  GetFindInPageManager()->Find(@"iframe", FindInPageOptions::FindInPageSearch);
+
+  EXPECT_TRUE(WaitForSelectedMatchAtIndex(0));
+  EXPECT_EQ(2, delegate_.state()->match_count);
+
+  GetFindInPageManager()->Find(@"iframe", FindInPageOptions::FindInPageNext);
+
+  EXPECT_TRUE(WaitForSelectedMatchAtIndex(1));
+
+  GetFindInPageManager()->Find(@"iframe", FindInPageOptions::FindInPageNext);
+
+  EXPECT_TRUE(WaitForSelectedMatchAtIndex(0));
+}
+
+// Tests FindInPageNext and FindInPagePrevious iteration while passing null
+// query.
+TEST_F(FindInPageManagerTest, FindIterationWithNullQuery) {
+  std::string url_spec =
+      kFindPageUrl +
+      net::EscapeQueryParamValue(kFindInPageIFrameUrl, /*use_plus=*/true);
+  test::LoadUrl(web_state(), test_server_.GetURL(url_spec));
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return GetAllWebFrames(web_state()).size() == 2;
+  }));
+
+  GetFindInPageManager()->Find(@"iframe", FindInPageOptions::FindInPageSearch);
+
+  EXPECT_TRUE(WaitForSelectedMatchAtIndex(0));
+
+  GetFindInPageManager()->Find(nil, FindInPageOptions::FindInPageNext);
+
+  EXPECT_TRUE(WaitForSelectedMatchAtIndex(1));
+  EXPECT_EQ(@"iframe", delegate_.state()->query);
+
+  GetFindInPageManager()->Find(nil, FindInPageOptions::FindInPagePrevious);
+
+  EXPECT_TRUE(WaitForSelectedMatchAtIndex(0));
+  EXPECT_EQ(@"iframe", delegate_.state()->query);
 }
 
 }  // namespace web
