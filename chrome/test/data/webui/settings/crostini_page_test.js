@@ -106,7 +106,7 @@ suite('CrostiniPageTests', function() {
 
     test('Sanity', function() {
       assertTrue(!!subpage.$$('#crostini-shared-paths'));
-      assertTrue(!subpage.$$('#crostini-shared-usb-devices'));
+      assertTrue(!!subpage.$$('#crostini-shared-usb-devices'));
       assertTrue(!!subpage.$$('#crostini-export-import'));
       assertTrue(!!subpage.$$('#remove'));
     });
