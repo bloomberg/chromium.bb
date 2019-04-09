@@ -177,7 +177,10 @@ class AppDataLoadWaiter : public KioskAppManagerObserver {
   }
 
   void OnKioskExtensionDownloadFailed(const std::string& app_id) override {
-    OnKioskAppDataLoadFailure(app_id);
+    // Intentionally nothing to do here. Most tests which use this helper don't
+    // care about extension downloading, only about fetching its app data. Also
+    // fake_cws()->SetNoUpdate creates extension which will fail to download due
+    // to missing update URL in manifest.
   }
 
   scoped_refptr<content::MessageLoopRunner> runner_;
