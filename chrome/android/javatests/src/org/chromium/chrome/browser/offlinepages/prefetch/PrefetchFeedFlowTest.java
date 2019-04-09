@@ -21,6 +21,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
@@ -51,6 +52,7 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.net.NetworkChangeNotifierAutoDetect;
 import org.chromium.net.test.util.WebServer;
+import org.chromium.ui.test.util.UiDisableIf;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -381,6 +383,7 @@ public class PrefetchFeedFlowTest implements WebServer.RequestHandler {
     @Test
     @MediumTest
     @Feature({"OfflinePrefetchFeed"})
+    @DisableIf.Device(type = {UiDisableIf.TABLET}) // https://crbug.com/950749
     public void testPrefetchForbiddenByServer() throws Throwable {
         mOPS.setForbidGeneratePageBundle(true);
 
@@ -399,6 +402,7 @@ public class PrefetchFeedFlowTest implements WebServer.RequestHandler {
     @Test
     @MediumTest
     @Feature({"OfflinePrefetchFeed"})
+    @DisableIf.Device(type = {UiDisableIf.TABLET}) // https://crbug.com/950749
     public void testPrefetchBecomesEnabledByServer() throws Throwable {
         OfflineTestUtil.setPrefetchingEnabledByServer(false);
 
