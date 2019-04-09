@@ -119,8 +119,6 @@ cr.define('downloads', function() {
     /** @private */
     clearAll_: function() {
       this.set('items_', []);
-      cr.toastManager.getInstance().show(
-          loadTimeData.getString('toastClearedAll'), true);
     },
 
     /** @private */
