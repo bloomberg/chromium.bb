@@ -1,0 +1,40 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module mojo.test.share_message_order.mojom;
+
+interface CounterObserver {
+  // Called every time the associated Counter has its value incremented.
+  OnIncrement(uint32 value);
+};
+
+interface Doubler {
+  // Requests that the Doubler's associated Counter double its current count.
+  Double();
+};
+
+interface Counter {
+  Increment() => ();
+
+  // Adds an observer which will be notified after every invocation of
+  // |Increment()|. Observers are always notified *after* the Increment response
+  // is sent.
+  AddObserver([ShareMessageOrder] pending_remote<CounterObserver> observer);
+
+  // Gets an interface which can be used to double the current count retained by
+  // this Counter.
+  AddDoubler([ShareMessageOrder] pending_receiver<Doubler> receiver);
+};
+
+interface SyncPing {
+  PingAsync() => ();
+  [Sync] Ping() => ();
+};
+
+interface SyncEcho {
+  [Sync] PingThenEcho([ShareMessageOrder] pending_remote<SyncPing> ping,
+                      string x)
+             => (string x);
+};
+
