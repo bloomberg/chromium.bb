@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/debug/alias.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -104,6 +105,20 @@ PrefService::PrefService(
 
 PrefService::~PrefService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // TODO(crbug.com/942491, 946668, 945772) The following code collects
+  // augments stack dumps created by ~PrefNotifierImpl() with information
+  // whether the profile owning the PrefService is an incognito profile.
+  // Delete this, once the bugs are closed.
+  const bool is_incognito_profile = user_pref_store_->IsInMemoryPrefStore();
+  base::debug::Alias(&is_incognito_profile);
+  // Export value of is_incognito_profile to a string so that `grep`
+  // is a sufficient tool to analyze crashdumps.
+  char is_incognito_profile_string[32];
+  strncpy(is_incognito_profile_string,
+          is_incognito_profile ? "is_incognito: yes" : "is_incognito: no",
+          sizeof(is_incognito_profile_string));
+  base::debug::Alias(&is_incognito_profile_string);
 }
 
 void PrefService::InitFromStorage(bool async) {
@@ -716,8 +731,4 @@ const base::Value* PrefService::GetPreferenceValue(
   }
 
   return nullptr;
-}
-
-bool PrefService::HasInMemoryUserPrefStore() const {
-  return user_pref_store_->IsInMemoryPrefStore();
 }
