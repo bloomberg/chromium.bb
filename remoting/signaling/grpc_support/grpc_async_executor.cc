@@ -109,7 +109,7 @@ void GrpcAsyncExecutor::ExecuteRpc(std::unique_ptr<GrpcAsyncRequest> request) {
     VLOG(0) << "RPC is canceled before execution: " << unowned_request;
     return;
   }
-  VLOG(0) << "Enqueuing RPC: " << unowned_request;
+  VLOG(1) << "Enqueuing RPC: " << unowned_request;
 
   // User can potentially delete the executor in the callback, so we should
   // delay it to prevent race condition. We also bind the closure with the
@@ -150,14 +150,14 @@ void GrpcAsyncExecutor::OnDequeue(std::unique_ptr<GrpcAsyncRequest> request,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!request->OnDequeue(operation_succeeded)) {
-    VLOG(0) << "Dequeuing RPC: " << request.get();
+    VLOG(1) << "Dequeuing RPC: " << request.get();
     auto iter = FindRequest(request.get());
     DCHECK(iter != pending_requests_.end());
     pending_requests_.erase(iter);
     return;
   }
 
-  VLOG(0) << "Re-enqueuing RPC: " << request.get();
+  VLOG(1) << "Re-enqueuing RPC: " << request.get();
   DCHECK(FindRequest(request.get()) != pending_requests_.end());
   auto* unowned_request = request.get();
   auto task = std::make_unique<DispatchTask>();

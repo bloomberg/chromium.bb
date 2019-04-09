@@ -79,6 +79,10 @@ static_library("test_support") {
 
   deps = [
     "//google_apis",
+    "//remoting/base:authorization",
+    "//remoting/base:test_support",
+    "//services/network:network_service",
+    "//services/network/public/mojom",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
@@ -190,14 +194,25 @@ executable("ftl_services_playground") {
   ]
   deps = [
     ":test_support",
-    "//google_apis",
     "//mojo/core/embedder",
     "//remoting/base",
-    "//remoting/base:authorization",
-    "//remoting/base:test_support",
     "//remoting/signaling",
-    "//services/network:network_service",
-    "//services/network/public/mojom",
+  ]
+}
+
+# A binary for testing and fiddling the FTL signaling process.
+executable("ftl_signaling_playground") {
+  testonly = true
+  sources = [
+    "ftl_signaling_playground.cc",
+    "ftl_signaling_playground.h",
+    "ftl_signaling_playground_main.cc",
+  ]
+  deps = [
+    ":test_support",
+    "//mojo/core/embedder",
+    "//remoting/base",
+    "//remoting/signaling",
   ]
 }
 

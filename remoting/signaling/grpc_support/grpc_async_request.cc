@@ -16,7 +16,7 @@ GrpcAsyncRequest::GrpcAsyncRequest(std::unique_ptr<grpc::ClientContext> context)
 GrpcAsyncRequest::~GrpcAsyncRequest() = default;
 
 void GrpcAsyncRequest::CancelRequest() {
-  VLOG(0) << "Canceling request: " << this;
+  VLOG(1) << "Canceling request: " << this;
   context_->TryCancel();
   OnRequestCanceled();
 }

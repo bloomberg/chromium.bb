@@ -35,18 +35,18 @@ bool GrpcAsyncServerStreamingRequestBase::OnDequeue(bool operation_succeeded) {
     return false;
   }
   if (!operation_succeeded) {
-    VLOG(0) << "Can't read any more data. Figuring out the reason..."
+    VLOG(1) << "Can't read any more data. Figuring out the reason..."
             << " Streaming call: " << this;
     state_ = State::FINISHING;
     return true;
   }
   if (state_ == State::STARTING) {
-    VLOG(0) << "Streaming call started: " << this;
+    VLOG(1) << "Streaming call started: " << this;
     state_ = State::STREAMING;
     return true;
   }
   DCHECK_EQ(State::STREAMING, state_);
-  VLOG(0) << "Streaming call received message: " << this;
+  VLOG(1) << "Streaming call received message: " << this;
   ResolveIncomingMessage();
   return true;
 }
