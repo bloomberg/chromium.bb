@@ -26,14 +26,6 @@
 
 namespace {
 constexpr int kSlideValueChangeDurationMs = 150;
-
-// The image chunks.
-enum BorderElements {
-  LEFT,
-  CENTER_LEFT,
-  CENTER_RIGHT,
-  RIGHT,
-};
 }  // namespace
 
 namespace views {
