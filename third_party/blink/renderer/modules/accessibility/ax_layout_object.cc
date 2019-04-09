@@ -187,13 +187,26 @@ static bool IsImageOrAltText(LayoutBoxModelObject* box, Node* node) {
 // |layout_object| and |node| correspond to an AXLayoutObject. |alt_text| is an
 // output parameter that will be populated if the AXLayoutObject is for a pseudo
 // element and contained the alternative text
-base::Optional<String> GetPseudoElementAltText(Node* node) {
-  if (node && node->IsPseudoElement()) {
+base::Optional<String> GetCSSAltText(Node* node) {
+  if (node && node->GetComputedStyle() &&
+      node->GetComputedStyle()->GetContentData()) {
     const ComputedStyle* style = node->GetComputedStyle();
-    for (const ContentData* content_data = style->GetContentData();
-         content_data; content_data = content_data->Next()) {
-      if (content_data->IsAltText())
-        return To<AltTextContentData>(content_data)->GetText();
+    // If the content property is used on a non-pseudo element, match the
+    // behaviour of LayoutObject::CreateObject and only honour the style if
+    // there is exactly one piece of content, which is an image.
+    if (node->IsPseudoElement()) {
+      for (const ContentData* content_data = style->GetContentData();
+           content_data; content_data = content_data->Next()) {
+        if (content_data->IsAltText())
+          return To<AltTextContentData>(content_data)->GetText();
+      }
+      return base::nullopt;
+    }
+
+    const ContentData* content_data = style->GetContentData();
+    if (content_data && content_data->IsImage() && content_data->Next() &&
+        content_data->Next()->IsAltText()) {
+      return To<AltTextContentData>(content_data->Next())->GetText();
     }
   }
   return base::nullopt;
@@ -259,7 +272,7 @@ ax::mojom::Role AXLayoutObject::NativeRoleIgnoringAria() const {
 ax::mojom::Role AXLayoutObject::DetermineAccessibilityRole() {
   if (!layout_object_)
     return ax::mojom::Role::kUnknown;
-  if (GetPseudoElementAltText(GetNode())) {
+  if (GetCSSAltText(GetNode())) {
     const ComputedStyle* style = GetNode()->GetComputedStyle();
     ContentData* content_data = style->GetContentData();
 
@@ -856,7 +869,7 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
       !GetAttribute(kTitleAttr).IsEmpty())
     return false;
 
-  base::Optional<String> alt_text = GetPseudoElementAltText(GetNode());
+  base::Optional<String> alt_text = GetCSSAltText(GetNode());
   if (alt_text)
     return alt_text->IsEmpty();
 
@@ -1558,8 +1571,7 @@ String AXLayoutObject::TextAlternative(bool recursive,
                                        AXRelatedObjectVector* related_objects,
                                        NameSources* name_sources) const {
   if (layout_object_) {
-    base::Optional<String> text_alternative =
-        GetPseudoElementAltText(GetNode());
+    base::Optional<String> text_alternative = GetCSSAltText(GetNode());
     bool found_text_alternative = false;
     if (text_alternative) {
       if (name_sources) {
@@ -2142,7 +2154,7 @@ void AXLayoutObject::AddChildren() {
 bool AXLayoutObject::CanHaveChildren() const {
   if (!layout_object_)
     return false;
-  if (GetPseudoElementAltText(GetNode()))
+  if (GetCSSAltText(GetNode()))
     return false;
   return AXNodeObject::CanHaveChildren();
 }

@@ -198,3 +198,66 @@ test(function(t) {
 }, "Pseudo elements that don't support the content property should not impact the accessibility tree if the property and alt text is supplied.");
 
 </script>
+
+<div id="divcontent">Div text content</div>
+<style>
+#divcontent {
+  content: url(bullet.png) / "alt";
+}
+</style>
+
+<script>
+
+test(function(t) {
+  var domAXNode = accessibilityController.accessibleElementById("divcontent");
+  assert_equals(domAXNode.role, "AXRole: AXImage");
+  assert_equals(domAXNode.name, "alt");
+},"Non pseudo elements which support the content property should have the alt text applied to the image that replaces their content.");
+
+</script>
+
+<!--- The following test cases are merely here to test that the addition of alt text support has not altered the default behaviour if the content property is incorrectly supplied -->
+
+<div id="divdoubleimage">DOM Text</div>
+
+<style>
+#divdoubleimage {
+  content: url(bullet.png) url(bullet.png) / "alt";
+}
+</style>
+
+<script>
+
+test(function(t) {
+  var domAXNode = accessibilityController.accessibleElementById("divdoubleimage");
+  assert_equals(domAXNode.role, "AXRole: AXGenericContainer");
+  assert_equals(domAXNode.childrenCount, 1);
+
+  var childAXNode = domAXNode.childAtIndex(0);
+  assert_equals(childAXNode.role, "AXRole: AXStaticText");
+  assert_equals(childAXNode.name, "DOM Text");
+},"A DOM Node with more than one image and alternative text should not impact the accessibility tree.");
+
+</script>
+
+<div id="divtextcontent">DOM Text</div>
+
+<style>
+#divtextcontent {
+  content: "text content replacement" / "alt";
+}
+</style>
+
+<script>
+
+test(function(t) {
+  var domAXNode = accessibilityController.accessibleElementById("divtextcontent");
+  assert_equals(domAXNode.role, "AXRole: AXGenericContainer");
+  assert_equals(domAXNode.childrenCount, 1);
+
+  var childAXNode = domAXNode.childAtIndex(0);
+  assert_equals(childAXNode.role, "AXRole: AXStaticText");
+  assert_equals(childAXNode.name, "DOM Text");
+},"A DOM Node with text replacement content and alt text should not impact the accessibility tree.");
+
+</script>
