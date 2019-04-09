@@ -156,8 +156,6 @@ BrowserAccessibilityManager::BrowserAccessibilityManager(
       factory_(factory),
       tree_(new ui::AXSerializableTree()),
       user_is_navigating_away_(false),
-      last_focused_node_(nullptr),
-      last_focused_manager_(nullptr),
       connected_to_parent_tree_node_(false),
       ax_tree_id_(ui::AXTreeIDUnknown()),
       device_scale_factor_(1.0f),
@@ -174,8 +172,6 @@ BrowserAccessibilityManager::BrowserAccessibilityManager(
       factory_(factory),
       tree_(new ui::AXSerializableTree()),
       user_is_navigating_away_(false),
-      last_focused_node_(nullptr),
-      last_focused_manager_(nullptr),
       ax_tree_id_(ui::AXTreeIDUnknown()),
       device_scale_factor_(1.0f),
       use_custom_device_scale_factor_for_testing_(false),
@@ -214,6 +210,13 @@ bool BrowserAccessibilityManager::never_suppress_or_delay_events_for_testing_ =
     false;
 
 // static
+base::Optional<int32_t> BrowserAccessibilityManager::last_focused_node_id_ = {};
+
+// static
+base::Optional<ui::AXTreeID>
+    BrowserAccessibilityManager::last_focused_node_tree_id_ = {};
+
+// static
 ui::AXTreeUpdate BrowserAccessibilityManager::GetEmptyDocument() {
   ui::AXNodeData empty_document;
   empty_document.id = 0;
@@ -247,15 +250,14 @@ void BrowserAccessibilityManager::FireFocusEventsIfNeeded() {
     focus = nullptr;
   }
 
-  if (focus != last_focused_node_) {
-    if (last_focused_node_)
-      OnFocusLost(last_focused_node_);
+  BrowserAccessibility* last_focused_node = GetLastFocusedNode();
+  if (focus != last_focused_node) {
+    if (last_focused_node)
+      OnFocusLost(last_focused_node);
     if (focus)
       FireFocusEvent(focus);
   }
-
-  last_focused_node_ = focus;
-  last_focused_manager_ = focus ? focus->manager() : nullptr;
+  SetLastFocusedNode(focus);
 }
 
 bool BrowserAccessibilityManager::CanFireEvents() {
@@ -343,10 +345,8 @@ void BrowserAccessibilityManager::OnWindowFocused() {
 }
 
 void BrowserAccessibilityManager::OnWindowBlurred() {
-  if (IsRootTree()) {
-    last_focused_node_ = nullptr;
-    last_focused_manager_ = nullptr;
-  }
+  if (IsRootTree())
+    SetLastFocusedNode(nullptr);
 }
 
 void BrowserAccessibilityManager::UserIsNavigatingAway() {
@@ -402,7 +402,8 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
   }
 
   // If this page is hidden by an interstitial, suppress all events.
-  if (GetRootManager()->hidden_by_interstitial_page()) {
+  BrowserAccessibilityManager* root_manager = GetRootManager();
+  if (root_manager->hidden_by_interstitial_page()) {
     event_generator_.ClearEvents();
     return;
   }
@@ -425,7 +426,7 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
   // Screen readers might not do the right thing if they're not aware of what
   // has focus, so always try that first. Nothing will be fired if the window
   // itself isn't focused or if focus hasn't changed.
-  GetRootManager()->FireFocusEventsIfNeeded();
+  root_manager->FireFocusEventsIfNeeded();
 
   // Fire any events related to changes to the tree.
   for (auto targeted_event : event_generator_) {
@@ -457,7 +458,7 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
       continue;
 
     if (event.event_type == ax::mojom::Event::kHover)
-      GetRootManager()->CacheHitTestResult(event_target);
+      root_manager->CacheHitTestResult(event_target);
 
     FireBlinkEvent(event.event_type, event_target);
   }
@@ -1158,12 +1159,10 @@ void BrowserAccessibilityManager::OnNodeWillBeDeleted(ui::AXTree* tree,
                                                       ui::AXNode* node) {
   DCHECK(node);
   if (BrowserAccessibility* wrapper = GetFromAXNode(node)) {
-    if (wrapper == last_focused_node_) {
-      last_focused_node_ = nullptr;
-      last_focused_manager_ = nullptr;
-    }
-    wrapper->Destroy();
+    if (wrapper == GetLastFocusedNode())
+      SetLastFocusedNode(nullptr);
     id_wrapper_map_.erase(node->id());
+    wrapper->Destroy();
   }
 }
 
@@ -1206,6 +1205,12 @@ void BrowserAccessibilityManager::OnAtomicUpdateFinished(
     ui::AXTree* tree,
     bool root_changed,
     const std::vector<ui::AXTreeObserver::Change>& changes) {
+  // When the root changes and this is the root manager, we may need to
+  // fire a new focus event.
+  if (root_changed && last_focused_node_tree_id_ &&
+      ax_tree_id_ == last_focused_node_tree_id_.value())
+    SetLastFocusedNode(nullptr);
+
   bool ax_tree_id_changed = false;
   if (GetTreeData().tree_id != ui::AXTreeIDUnknown() &&
       GetTreeData().tree_id != ax_tree_id_) {
@@ -1220,13 +1225,6 @@ void BrowserAccessibilityManager::OnAtomicUpdateFinished(
   // we're properly connected.
   if (ax_tree_id_changed || root_changed)
     connected_to_parent_tree_node_ = false;
-
-  // When the root changes and this is the root manager, we may need to
-  // fire a new focus event.
-  if (root_changed && last_focused_manager_ == this) {
-    last_focused_node_ = nullptr;
-    last_focused_manager_ = nullptr;
-  }
 }
 
 ui::AXNode* BrowserAccessibilityManager::GetNodeFromTree(ui::AXTreeID tree_id,
@@ -1274,6 +1272,30 @@ BrowserAccessibilityManager::GetDelegateFromRootManager() {
 
 bool BrowserAccessibilityManager::IsRootTree() {
   return delegate()->AccessibilityIsMainFrame();
+}
+
+// static
+void BrowserAccessibilityManager::SetLastFocusedNode(
+    BrowserAccessibility* node) {
+  if (node) {
+    DCHECK(node->manager());
+    last_focused_node_id_ = node->GetId();
+    last_focused_node_tree_id_ = node->manager()->ax_tree_id();
+  } else {
+    last_focused_node_id_.reset();
+    last_focused_node_tree_id_.reset();
+  }
+}
+
+// static
+BrowserAccessibility* BrowserAccessibilityManager::GetLastFocusedNode() {
+  if (last_focused_node_id_) {
+    DCHECK(last_focused_node_tree_id_);
+    if (BrowserAccessibilityManager* last_focused_manager =
+            FromID(last_focused_node_tree_id_.value()))
+      return last_focused_manager->GetFromID(last_focused_node_id_.value());
+  }
+  return nullptr;
 }
 
 ui::AXTreeUpdate BrowserAccessibilityManager::SnapshotAXTreeForTesting() {

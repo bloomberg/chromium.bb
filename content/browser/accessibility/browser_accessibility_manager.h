@@ -431,6 +431,9 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   virtual void SendLocationChangeEvents(
       const std::vector<AccessibilityHostMsg_LocationChangeParams>& params);
 
+  static void SetLastFocusedNode(BrowserAccessibility* node);
+  static BrowserAccessibility* GetLastFocusedNode();
+
  protected:
   // The object that can perform actions on our behalf.
   BrowserAccessibilityDelegate* delegate_;
@@ -452,16 +455,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   bool hidden_by_interstitial_page_ = false;
 
   BrowserAccessibilityFindInPageInfo find_in_page_info_;
-
-  // These are only used by the root BrowserAccessibilityManager of a
-  // frame tree. Stores the last focused node and last focused manager so
-  // that when focus might have changed we can figure out whether we need
-  // to fire a focus event.
-  //
-  // NOTE: these pointers are not cleared, so they should never be
-  // dereferenced, only used for comparison.
-  BrowserAccessibility* last_focused_node_;
-  BrowserAccessibilityManager* last_focused_manager_;
 
   // These cache the AX tree ID, node ID, and global screen bounds of the
   // last object found by an asynchronous hit test. Subsequent hit test
@@ -495,6 +488,15 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   // Fire all events regardless of focus and with no delay, to avoid test
   // flakiness. See NeverSuppressOrDelayEventsForTesting() for details.
   static bool never_suppress_or_delay_events_for_testing_;
+
+  // Stores the id of the last focused node across all frames, as well as the id
+  // of the tree that contains it, so that when focus might have changed we can
+  // figure out whether we need to fire a focus event.
+  //
+  // NOTE: Don't use or modify these properties directly, use the
+  // SetLastFocusedNode and GetLastFocusedNode methods instead.
+  static base::Optional<int32_t> last_focused_node_id_;
+  static base::Optional<ui::AXTreeID> last_focused_node_tree_id_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityManager);
