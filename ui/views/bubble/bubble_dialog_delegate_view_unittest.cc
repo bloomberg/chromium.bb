@@ -286,7 +286,7 @@ TEST_F(BubbleDialogDelegateViewTest, NonClientHitTest) {
     const int hit;
   } kTestCases[] = {
 #if defined(OS_WIN)
-    {0, is_aero_glass_enabled ? HTTRANSPARENT : HTNOWHERE},
+    {0, is_aero_glass_enabled ? HTTRANSPARENT : HTCAPTION},
 #else
     {0, HTTRANSPARENT},
 #endif
