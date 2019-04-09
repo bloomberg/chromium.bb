@@ -390,6 +390,7 @@ public class SyncCustomizationFragmentTest {
     @Test
     @SmallTest
     @Feature({"Sync"})
+    @DisabledTest
     public void testSyncSwitchClearsServerAutofillCreditCards() {
         mSyncTestRule.setUpTestAccountAndSignIn();
 
