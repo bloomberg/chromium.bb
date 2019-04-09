@@ -60,7 +60,9 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
   // Also accept runtime locale which maybe an approximation of user's pref
   // locale.
   const std::string kRuntimeLocale = icu::Locale::getDefault().getName();
-  if (!pref_locale.empty()) {
+  // Bypass locale check when using fake gaia login. There is no need to enforce
+  // in these test environments.
+  if (!chromeos::switches::IsGaiaServicesDisabled() && !pref_locale.empty()) {
     base::ReplaceChars(pref_locale, "-", "_", &pref_locale);
     bool disallowed = !base::ContainsValue(kAllowedLocales, pref_locale) &&
                       !base::ContainsValue(kAllowedLocales, kRuntimeLocale);
