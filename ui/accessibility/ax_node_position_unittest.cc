@@ -115,10 +115,7 @@ void AXPositionTest::SetUp() {
   static_text2_.id = STATIC_TEXT2_ID;
   inline_box2_.id = INLINE_BOX2_ID;
 
-  root_.role = ax::mojom::Role::kDialog;
-  root_.AddState(ax::mojom::State::kFocusable);
-  root_.SetName(std::string("ButtonCheck box") + TEXT_VALUE);
-  root_.relative_bounds.bounds = gfx::RectF(0, 0, 800, 600);
+  root_.role = ax::mojom::Role::kRootWebArea;
 
   button_.role = ax::mojom::Role::kButton;
   button_.SetHasPopup(ax::mojom::HasPopup::kMenu);
@@ -1125,6 +1122,114 @@ TEST_F(AXPositionTest, CreatePositionAtEndOfAnchorWithTextPosition) {
   EXPECT_TRUE(test_position->IsTextPosition());
   EXPECT_EQ(inline_box1_.id, test_position->anchor_id());
   EXPECT_EQ(6, test_position->text_offset());
+  // Affinity should have been reset to the default value.
+  EXPECT_EQ(ax::mojom::TextAffinity::kDownstream, test_position->affinity());
+}
+
+TEST_F(AXPositionTest, CreatePositionAtStartOfDocumentWithNullPosition) {
+  TestPositionType null_position = AXNodePosition::CreateNullPosition();
+  ASSERT_NE(nullptr, null_position);
+  TestPositionType test_position =
+      null_position->CreatePositionAtStartOfDocument();
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsNullPosition());
+}
+
+TEST_F(AXPositionTest, CreatePositionAtStartOfDocumentWithTreePosition) {
+  TestPositionType tree_position = AXNodePosition::CreateTreePosition(
+      tree_.data().tree_id, root_.id, 0 /* child_index */);
+  ASSERT_NE(nullptr, tree_position);
+  TestPositionType test_position =
+      tree_position->CreatePositionAtStartOfDocument();
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_EQ(root_.id, test_position->anchor_id());
+
+  tree_position = AXNodePosition::CreateTreePosition(
+      tree_.data().tree_id, root_.id, 1 /* child_index */);
+  ASSERT_NE(nullptr, tree_position);
+  test_position = tree_position->CreatePositionAtStartOfDocument();
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_EQ(root_.id, test_position->anchor_id());
+
+  tree_position = AXNodePosition::CreateTreePosition(
+      tree_.data().tree_id, inline_box1_.id, 0 /* child_index */);
+  ASSERT_NE(nullptr, tree_position);
+  test_position = tree_position->CreatePositionAtStartOfDocument();
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_EQ(root_.id, test_position->anchor_id());
+}
+
+TEST_F(AXPositionTest, CreatePositionAtStartOfDocumentWithTextPosition) {
+  TestPositionType text_position = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, inline_box1_.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, text_position);
+  TestPositionType test_position =
+      text_position->CreatePositionAtStartOfDocument();
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_EQ(root_.id, test_position->anchor_id());
+
+  text_position = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, inline_box1_.id, 1 /* text_offset */,
+      ax::mojom::TextAffinity::kUpstream);
+  ASSERT_NE(nullptr, text_position);
+  test_position = text_position->CreatePositionAtStartOfDocument();
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_EQ(root_.id, test_position->anchor_id());
+  // Affinity should have been reset to the default value.
+  EXPECT_EQ(ax::mojom::TextAffinity::kDownstream, test_position->affinity());
+}
+
+TEST_F(AXPositionTest, CreatePositionAtEndOfDocumentWithNullPosition) {
+  TestPositionType null_position = AXNodePosition::CreateNullPosition();
+  ASSERT_NE(nullptr, null_position);
+  TestPositionType test_position =
+      null_position->CreatePositionAtEndOfDocument();
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsNullPosition());
+}
+
+TEST_F(AXPositionTest, CreatePositionAtEndOfDocumentWithTreePosition) {
+  TestPositionType tree_position = AXNodePosition::CreateTreePosition(
+      tree_.data().tree_id, root_.id, 3 /* child_index */);
+  ASSERT_NE(nullptr, tree_position);
+  TestPositionType test_position =
+      tree_position->CreatePositionAtEndOfDocument();
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_EQ(inline_box2_.id, test_position->anchor_id());
+
+  tree_position = AXNodePosition::CreateTreePosition(
+      tree_.data().tree_id, root_.id, 1 /* child_index */);
+  ASSERT_NE(nullptr, tree_position);
+  test_position = tree_position->CreatePositionAtEndOfDocument();
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_EQ(inline_box2_.id, test_position->anchor_id());
+
+  tree_position = AXNodePosition::CreateTreePosition(
+      tree_.data().tree_id, inline_box1_.id, 0 /* child_index */);
+  ASSERT_NE(nullptr, tree_position);
+  test_position = tree_position->CreatePositionAtEndOfDocument();
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_EQ(inline_box2_.id, test_position->anchor_id());
+}
+
+TEST_F(AXPositionTest, CreatePositionAtEndOfDocumentWithTextPosition) {
+  TestPositionType text_position = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, inline_box1_.id, 6 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, text_position);
+  TestPositionType test_position =
+      text_position->CreatePositionAtEndOfDocument();
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_EQ(inline_box2_.id, test_position->anchor_id());
+
+  text_position = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, inline_box1_.id, 5 /* text_offset */,
+      ax::mojom::TextAffinity::kUpstream);
+  ASSERT_NE(nullptr, text_position);
+  test_position = text_position->CreatePositionAtEndOfDocument();
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_EQ(inline_box2_.id, test_position->anchor_id());
   // Affinity should have been reset to the default value.
   EXPECT_EQ(ax::mojom::TextAffinity::kDownstream, test_position->affinity());
 }

@@ -21,6 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_tree_id.h"
 
 namespace ui {
@@ -330,6 +331,20 @@ class AXPosition {
     return false;
   }
 
+  bool AtStartOfDocument() const {
+    if (IsNullPosition() || !GetAnchor())
+      return false;
+
+    return ui::IsDocument(GetAnchor()->data().role) && AtStartOfAnchor();
+  }
+
+  bool AtEndOfDocument() const {
+    if (IsNullPosition() || !GetAnchor())
+      return false;
+
+    return CreateNextAnchorPosition()->IsNullPosition() && AtEndOfAnchor();
+  }
+
   // This method returns a position instead of a node because this allows us to
   // return the corresponding text offset or child index in the ancestor that
   // relates to the current position.
@@ -513,6 +528,44 @@ class AXPosition {
       case AXPositionKind::TEXT_POSITION:
         return CreateTextPosition(tree_id_, anchor_id_, MaxTextOffset(),
                                   ax::mojom::TextAffinity::kDownstream);
+    }
+    return CreateNullPosition();
+  }
+
+  AXPositionInstance CreatePositionAtStartOfDocument() const {
+    if (kind_ == AXPositionKind::NULL_POSITION)
+      return CreateNullPosition();
+
+    AXPositionInstance iterator = Clone();
+    while (!iterator->IsNullPosition()) {
+      if (ui::IsDocument(iterator->GetAnchor()->data().role) &&
+          iterator->CreateParentPosition()->IsNullPosition()) {
+        return iterator->CreatePositionAtStartOfAnchor();
+      }
+      iterator = iterator->CreateParentPosition();
+    }
+    return CreateNullPosition();
+  }
+
+  AXPositionInstance CreatePositionAtEndOfDocument() const {
+    if (kind_ == AXPositionKind::NULL_POSITION)
+      return CreateNullPosition();
+
+    AXPositionInstance iterator = Clone();
+    while (!iterator->IsNullPosition()) {
+      if (ui::IsDocument(iterator->GetAnchor()->data().role) &&
+          iterator->CreateParentPosition()->IsNullPosition()) {
+        AXPositionInstance tree_position = iterator->AsTreePosition();
+        DCHECK(tree_position);
+        while (tree_position->AnchorChildCount()) {
+          tree_position = tree_position->CreateChildPositionAt(
+              tree_position->AnchorChildCount() - 1);
+        }
+        iterator =
+            tree_position->AsLeafTextPosition()->CreatePositionAtEndOfAnchor();
+        return iterator;
+      }
+      iterator = iterator->CreateParentPosition();
     }
     return CreateNullPosition();
   }
