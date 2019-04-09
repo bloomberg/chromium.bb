@@ -67,6 +67,7 @@ std::string GetRlzBrandCode(
                      {"IHZG", {"MLLN", "EZTK", "GJEJ"}},
                      {"JBPA", {"VUZL", "XYPI", "XOWE"}},
                      {"JLRH", {"SAMJ", "GLJZ", "SKTN"}},
+                     {"JYXK", {"USZT", "XXPU", "LJHH"}},
                      {"LASN", {"ILWC", "BQYG", "RROZ"}},
                      {"LEAC", {"DMEA", "EXWD", "PBTU"}},
                      {"LEAE", {"QFVM", "GACH", "BMXB"}},
