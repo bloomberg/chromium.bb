@@ -12,6 +12,11 @@
 
 namespace message_center {
 
+namespace {
+constexpr int kSwipeRestoreDurationMs = 150;
+constexpr int kSwipeOutTotalDurationMs = 150;
+}  // anonymous namespace
+
 SlideOutController::SlideOutController(ui::EventTarget* target,
                                        Delegate* delegate)
     : target_handling_(target, this), delegate_(delegate) {}
@@ -45,13 +50,11 @@ void SlideOutController::OnGestureEvent(ui::GestureEvent* event) {
     if (mode_ == SlideMode::FULL &&
         fabsf(event->details().velocity_x()) > kFlingThresholdForClose) {
       SlideOutAndClose(event->details().velocity_x());
-      delegate_->OnSlideChanged(false);
       event->StopPropagation();
       return;
     }
     CaptureControlOpenState();
     RestoreVisualState();
-    delegate_->OnSlideChanged(false);
     return;
   }
 
@@ -111,26 +114,18 @@ void SlideOutController::OnGestureEvent(ui::GestureEvent* event) {
     if (mode_ == SlideMode::FULL &&
         scrolled_ratio >= scroll_amount_for_closing_notification / width) {
       SlideOutAndClose(gesture_amount_);
-      delegate_->OnSlideChanged(false);
       event->StopPropagation();
       return;
     }
     CaptureControlOpenState();
     RestoreVisualState();
-    delegate_->OnSlideChanged(false);
   }
 
   event->SetHandled();
 }
 
 void SlideOutController::RestoreVisualState() {
-  ui::Layer* layer = delegate_->GetSlideOutLayer();
   // Restore the layer state.
-  const int kSwipeRestoreDurationMS = 150;
-  ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
-  settings.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kSwipeRestoreDurationMS));
-  settings.AddObserver(this);
   gfx::Transform transform;
   switch (control_open_state_) {
     case SwipeControlOpenState::CLOSED:
@@ -144,36 +139,21 @@ void SlideOutController::RestoreVisualState() {
       break;
   }
 
-  if (layer->transform() == transform && opacity_ == 1.f) {
-    // Nothing are changed and no animation starts.
-    return;
-  }
-
-  // In this case, animation starts. OnImplicitAnimationsCompleted will be
-  // called just after the animation finishes.
-  layer->SetTransform(transform);
   SetOpacityIfNecessary(1.f);
-  delegate_->OnSlideChanged(true);
+  SetTransformWithAnimationIfNecessary(
+      transform, base::TimeDelta::FromMilliseconds(kSwipeRestoreDurationMs));
 }
 
 void SlideOutController::SlideOutAndClose(int direction) {
   ui::Layer* layer = delegate_->GetSlideOutLayer();
-  const int kSwipeOutTotalDurationMS = 150;
-  int swipe_out_duration = kSwipeOutTotalDurationMS * opacity_;
-  ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
-  settings.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(swipe_out_duration));
-  settings.AddObserver(this);
-
   gfx::Transform transform;
   int width = layer->bounds().width();
   transform.Translate(direction < 0 ? -width : width, 0.0);
 
-  // An animation starts. OnImplicitAnimationsCompleted will be called just
-  // after the animation finishes.
-  layer->SetTransform(transform);
+  int swipe_out_duration = kSwipeOutTotalDurationMs * opacity_;
   SetOpacityIfNecessary(0.f);
-  delegate_->OnSlideChanged(true);
+  SetTransformWithAnimationIfNecessary(
+      transform, base::TimeDelta::FromMilliseconds(swipe_out_duration));
 }
 
 void SlideOutController::SetOpacityIfNecessary(float opacity) {
@@ -182,8 +162,47 @@ void SlideOutController::SetOpacityIfNecessary(float opacity) {
   opacity_ = opacity;
 }
 
+void SlideOutController::SetTransformWithAnimationIfNecessary(
+    const gfx::Transform& transform,
+    base::TimeDelta animation_duration) {
+  ui::Layer* layer = delegate_->GetSlideOutLayer();
+  if (layer->transform() != transform) {
+    ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
+    settings.SetTransitionDuration(animation_duration);
+    settings.AddObserver(this);
+
+    // An animation starts. OnImplicitAnimationsCompleted will be called just
+    // after the animation finishes.
+    layer->SetTransform(transform);
+
+    // Notify slide changed with inprogress=true, since the element will slide
+    // with animation. OnSlideChanged(false) will be called after animation.
+    delegate_->OnSlideChanged(true);
+  } else {
+    // Notify slide changed after the animation finishes.
+    // The argument in_progress is true if the target view is back at the
+    // origin or has been gone. False if the target is visible but not at
+    // the origin. False if the target is visible but not at
+    // the origin.
+    const bool in_progress = !layer->transform().IsIdentity();
+    delegate_->OnSlideChanged(in_progress);
+  }
+}
+
 void SlideOutController::OnImplicitAnimationsCompleted() {
-  if (opacity_ > 0)
+  // Here the situation is either of:
+  // 1) Notification is slided out and is about to be removed
+  //      => |in_progress| is false, calling OnSlideOut
+  // 2) Notification is at the origin => |in_progress| is false
+  // 3) Notification is snapped to the swipe control => |in_progress| is true
+
+  const bool is_completely_slid_out = (opacity_ == 0);
+  const bool in_progress =
+      !delegate_->GetSlideOutLayer()->transform().IsIdentity() &&
+      !is_completely_slid_out;
+  delegate_->OnSlideChanged(in_progress);
+
+  if (!is_completely_slid_out)
     return;
 
   // Call Delegate::OnSlideOut() if this animation came from SlideOutAndClose().
