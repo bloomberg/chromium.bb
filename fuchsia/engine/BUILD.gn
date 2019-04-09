@@ -102,6 +102,8 @@ component("web_engine_core") {
     "browser/discarding_event_filter.h",
     "browser/frame_impl.cc",
     "browser/frame_impl.h",
+    "browser/legacy_context_bridge.cc",
+    "browser/legacy_context_bridge.h",
     "browser/legacy_frame_bridge.cc",
     "browser/legacy_frame_bridge.h",
     "browser/legacy_message_port_bridge.cc",

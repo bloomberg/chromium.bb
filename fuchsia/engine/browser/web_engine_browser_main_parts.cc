@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "content/public/browser/render_frame_host.h"
 #include "fuchsia/engine/browser/context_impl.h"
+#include "fuchsia/engine/browser/legacy_context_bridge.h"
 #include "fuchsia/engine/browser/web_engine_browser_context.h"
 #include "fuchsia/engine/browser/web_engine_screen.h"
 #include "fuchsia/engine/common.h"
@@ -46,9 +47,12 @@ void WebEngineBrowserMainParts::PreMainMessageLoopRun() {
 
   context_service_ = std::make_unique<ContextImpl>(browser_context_.get());
 
-  context_binding_ = std::make_unique<fidl::Binding<chromium::web::Context>>(
-      context_service_.get(), fidl::InterfaceRequest<chromium::web::Context>(
-                                  std::move(context_channel_)));
+  fuchsia::web::ContextPtr fuchsia_context;
+  context_binding_ = std::make_unique<fidl::Binding<fuchsia::web::Context>>(
+      context_service_.get(), fuchsia_context.NewRequest());
+  new LegacyContextBridge(fidl::InterfaceRequest<chromium::web::Context>(
+                              std::move(context_channel_)),
+                          std::move(fuchsia_context));
 
   // Quit the browser main loop when the Context connection is dropped.
   context_binding_->set_error_handler([this](zx_status_t status) {

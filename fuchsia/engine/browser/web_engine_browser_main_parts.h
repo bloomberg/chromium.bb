@@ -5,6 +5,7 @@
 #ifndef FUCHSIA_ENGINE_BROWSER_WEB_ENGINE_BROWSER_MAIN_PARTS_H_
 #define FUCHSIA_ENGINE_BROWSER_WEB_ENGINE_BROWSER_MAIN_PARTS_H_
 
+#include <fuchsia/web/cpp/fidl.h>
 #include <lib/fidl/cpp/binding.h>
 #include <memory>
 
@@ -13,7 +14,6 @@
 #include "content/public/browser/browser_main_parts.h"
 #include "fuchsia/engine/browser/context_impl.h"
 #include "fuchsia/engine/browser/web_engine_browser_context.h"
-#include "fuchsia/fidl/chromium/web/cpp/fidl.h"
 
 namespace display {
 class Screen;
@@ -40,7 +40,7 @@ class WebEngineBrowserMainParts : public content::BrowserMainParts {
   std::unique_ptr<display::Screen> screen_;
   std::unique_ptr<WebEngineBrowserContext> browser_context_;
   std::unique_ptr<ContextImpl> context_service_;
-  std::unique_ptr<fidl::Binding<chromium::web::Context>> context_binding_;
+  std::unique_ptr<fidl::Binding<fuchsia::web::Context>> context_binding_;
 
   base::OnceClosure quit_closure_;
 

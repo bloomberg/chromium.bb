@@ -19,15 +19,13 @@ ContextImpl::ContextImpl(content::BrowserContext* browser_context)
 ContextImpl::~ContextImpl() = default;
 
 void ContextImpl::CreateFrame(
-    fidl::InterfaceRequest<chromium::web::Frame> frame_request) {
+    fidl::InterfaceRequest<fuchsia::web::Frame> frame) {
   content::WebContents::CreateParams create_params(browser_context_, nullptr);
   create_params.initially_hidden = true;
   auto web_contents = content::WebContents::Create(create_params);
 
-  fuchsia::web::FramePtr fuchsia_frame;
   frames_.insert(std::make_unique<FrameImpl>(std::move(web_contents), this,
-                                             fuchsia_frame.NewRequest()));
-  new LegacyFrameBridge(std::move(frame_request), std::move(fuchsia_frame));
+                                             std::move(frame)));
 }
 
 void ContextImpl::DestroyFrame(FrameImpl* frame) {
