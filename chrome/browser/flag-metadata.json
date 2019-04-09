@@ -546,8 +546,8 @@
   },
   {
     "name": "disable-hosted-app-shim-creation",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "ccameron" ],
+    "expiry_milestone": 77
   },
   {
     // See https://crbug.com/882238.
@@ -1208,8 +1208,8 @@
   },
   {
     "name": "enable-hosted-app-quit-notification",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "ccameron" ],
+    "expiry_milestone": 77
   },
   {
     "name": "enable-compositor-threaded-scrollbar-scrolling",
