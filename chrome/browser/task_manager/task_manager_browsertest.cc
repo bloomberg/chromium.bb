@@ -903,10 +903,20 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest, SubframeHistoryNavigation) {
       WaitForTaskManagerRows(1, MatchSubframe("http://c.com/")));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnySubframe()));
 
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Simulate a user gesture on the frame about to be navigated so that the
+  // corresponding navigation entry is not marked as skippable.
+  content::RenderFrameHost* child_frame = ChildFrameAt(tab->GetMainFrame(), 0);
+  content::RenderFrameHost* grandchild_frame = ChildFrameAt(child_frame, 0);
+  grandchild_frame->ExecuteJavaScriptWithUserGestureForTests(
+      base::UTF8ToUTF16("a=5"));
+
   GURL d_url = embedded_test_server()->GetURL(
       "d.com", "/cross_site_iframe_factory.html?d(e)");
   ASSERT_TRUE(content::ExecuteScript(
-      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
+      tab->GetMainFrame(),
       "frames[0][0].location.href = '" + d_url.spec() + "';"));
 
   ASSERT_NO_FATAL_FAILURE(
@@ -919,6 +929,7 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest, SubframeHistoryNavigation) {
       WaitForTaskManagerRows(1, MatchSubframe("http://b.com/")));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(3, MatchAnySubframe()));
 
+  ASSERT_TRUE(chrome::CanGoBack(browser()));
   chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
 
   ASSERT_NO_FATAL_FAILURE(
@@ -931,6 +942,7 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest, SubframeHistoryNavigation) {
       WaitForTaskManagerRows(1, MatchSubframe("http://b.com/")));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnySubframe()));
 
+  ASSERT_TRUE(chrome::CanGoForward(browser()));
   chrome::GoForward(browser(), WindowOpenDisposition::CURRENT_TAB);
 
   // When the subframe appears in the cloned process, it must have a valid

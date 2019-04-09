@@ -1001,7 +1001,7 @@ bool NavigationControllerImpl::RendererDidNavigate(
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
     LoadCommittedDetails* details,
     bool is_same_document_navigation,
-    bool previous_page_was_activated,
+    bool previous_document_was_activated,
     NavigationRequest* navigation_request) {
   DCHECK(navigation_request);
   is_initial_navigation_ = false;
@@ -1105,7 +1105,7 @@ bool NavigationControllerImpl::RendererDidNavigate(
     case NAVIGATION_TYPE_NEW_PAGE:
       RendererDidNavigateToNewPage(
           rfh, params, details->is_same_document, details->did_replace_entry,
-          previous_page_was_activated, navigation_handle);
+          previous_document_was_activated, navigation_handle);
       break;
     case NAVIGATION_TYPE_EXISTING_PAGE:
       RendererDidNavigateToExistingPage(rfh, params, details->is_same_document,
@@ -1117,8 +1117,9 @@ bool NavigationControllerImpl::RendererDidNavigate(
                                     navigation_handle);
       break;
     case NAVIGATION_TYPE_NEW_SUBFRAME:
-      RendererDidNavigateNewSubframe(rfh, params, details->is_same_document,
-                                     details->did_replace_entry);
+      RendererDidNavigateNewSubframe(
+          rfh, params, details->is_same_document, details->did_replace_entry,
+          previous_document_was_activated, navigation_handle);
       break;
     case NAVIGATION_TYPE_AUTO_SUBFRAME:
       if (!RendererDidNavigateAutoSubframe(rfh, params)) {
@@ -1364,7 +1365,7 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
     bool is_same_document,
     bool replace_entry,
-    bool previous_page_was_activated,
+    bool previous_document_was_activated,
     NavigationHandleImpl* handle) {
   std::unique_ptr<NavigationEntryImpl> new_entry;
   bool update_virtual_url = false;
@@ -1521,30 +1522,9 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
     last_committed_entry_index_ = pending_entry_index_;
   }
 
-  // The previous page that started this navigation needs to be skipped in
-  // subsequent back/forward UI navigations if it never received any user
-  // gesture. This is to intervene against pages that manipulate the history
-  // such that the user is not able to go back to the last site they interacted
-  // with (crbug.com/907167).
-  if (!replace_entry && !previous_page_was_activated &&
-      last_committed_entry_index_ != -1 && handle->IsRendererInitiated()) {
-    GetLastCommittedEntry()->set_should_skip_on_back_forward_ui(true);
-    UMA_HISTOGRAM_BOOLEAN("Navigation.BackForward.SetShouldSkipOnBackForwardUI",
-                          true);
-
-    // Log UKM with the URL of the page we are navigating away from. Note that
-    // GetUkmSourceIdForLastCommittedSource looks into the WebContents to get
-    // the last committed source. Since WebContents has not yet been updated
-    // with the current URL being committed, this should give the correct source
-    // even though |rfh| here belongs to the current navigation.
-    ukm::SourceId source_id = rfh->delegate()
-        ->GetUkmSourceIdForLastCommittedSource();
-    ukm::builders::HistoryManipulationIntervention(source_id).Record(
-        ukm::UkmRecorder::Get());
-  } else if (last_committed_entry_index_ != -1) {
-    UMA_HISTOGRAM_BOOLEAN("Navigation.BackForward.SetShouldSkipOnBackForwardUI",
-                          false);
-  }
+  SetShouldSkipOnBackForwardUIIfNeeded(rfh, replace_entry,
+                                       previous_document_was_activated,
+                                       handle->IsRendererInitiated());
 
   InsertOrReplaceEntry(std::move(new_entry), replace_entry);
 }
@@ -1785,7 +1765,9 @@ void NavigationControllerImpl::RendererDidNavigateNewSubframe(
     RenderFrameHostImpl* rfh,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
     bool is_same_document,
-    bool replace_entry) {
+    bool replace_entry,
+    bool previous_document_was_activated,
+    NavigationHandleImpl* handle) {
   DCHECK(ui::PageTransitionCoreTypeIs(params.transition,
                                       ui::PAGE_TRANSITION_MANUAL_SUBFRAME));
 
@@ -1814,6 +1796,10 @@ void NavigationControllerImpl::RendererDidNavigateNewSubframe(
       GetLastCommittedEntry()->CloneAndReplace(
           frame_entry.get(), is_same_document, rfh->frame_tree_node(),
           delegate_->GetFrameTree()->root());
+
+  SetShouldSkipOnBackForwardUIIfNeeded(rfh, replace_entry,
+                                       previous_document_was_activated,
+                                       handle->IsRendererInitiated());
 
   // TODO(creis): Update this to add the frame_entry if we can't find the one
   // to replace, which can happen due to a unique name change.  See
@@ -2153,6 +2139,8 @@ void NavigationControllerImpl::NotifyUserActivation() {
   // When a user activation occurs, ensure that all adjacent entries for the
   // same document clear their skippable bit, so that the history manipulation
   // intervention does not apply to them.
+  // TODO(crbug.com/949279) in case it becomes necessary for resetting based on
+  // which frame created an entry and which frame has the user gesture.
   auto* last_committed_entry = GetLastCommittedEntry();
   if (!last_committed_entry)
     return;
@@ -3451,6 +3439,41 @@ void NavigationControllerImpl::CommitRestoreFromBackForwardCache() {
   // Notify content/ embedder of the history update.
   delegate_->NotifyNavigationStateChanged(INVALIDATE_TYPE_ALL);
   delegate_->NotifyNavigationEntryCommitted(details);
+}
+
+// History manipulation intervention:
+void NavigationControllerImpl::SetShouldSkipOnBackForwardUIIfNeeded(
+    RenderFrameHostImpl* rfh,
+    bool replace_entry,
+    bool previous_document_was_activated,
+    bool is_renderer_initiated) {
+  // Note that for a subframe navigation, previous_document_was_activated is
+  // false if there has been any user gesture on an ancestor frame but not on
+  // the subframe doing the navigation.
+  if (replace_entry || previous_document_was_activated ||
+      !is_renderer_initiated) {
+    if (last_committed_entry_index_ != -1) {
+      UMA_HISTOGRAM_BOOLEAN(
+          "Navigation.BackForward.SetShouldSkipOnBackForwardUI", false);
+    }
+    return;
+  }
+  if (last_committed_entry_index_ == -1)
+    return;
+
+  GetLastCommittedEntry()->set_should_skip_on_back_forward_ui(true);
+  UMA_HISTOGRAM_BOOLEAN("Navigation.BackForward.SetShouldSkipOnBackForwardUI",
+                        true);
+
+  // Log UKM with the URL we are navigating away from. Note that
+  // GetUkmSourceIdForLastCommittedSource looks into the WebContents to get
+  // the last committed source. Since WebContents has not yet been updated
+  // with the current URL being committed, this should give the correct source
+  // even though |rfh| here belongs to the current navigation.
+  ukm::SourceId source_id =
+      rfh->delegate()->GetUkmSourceIdForLastCommittedSource();
+  ukm::builders::HistoryManipulationIntervention(source_id).Record(
+      ukm::UkmRecorder::Get());
 }
 
 }  // namespace content

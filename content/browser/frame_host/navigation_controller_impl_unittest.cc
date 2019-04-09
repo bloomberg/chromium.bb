@@ -2301,7 +2301,7 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   EXPECT_EQ(url3, entry3->root_node()->children[0]->frame_entry->url());
 
   // Go back one.
-  controller.GoBack();
+  controller.GoToOffset(-1);
   params.nav_entry_id = entry2->GetUniqueID();
   params.did_create_new_entry = false;
   params.url = url2;
@@ -2326,7 +2326,7 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   EXPECT_FALSE(controller.GetPendingEntry());
 
   // Go back one more.
-  controller.GoBack();
+  controller.GoToOffset(-1);
   params.nav_entry_id = entry1->GetUniqueID();
   params.did_create_new_entry = false;
   params.url = subframe_url;
