@@ -643,4 +643,47 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,
   EXPECT_NE(find_radio2, control_list.cend());
 }
 
+IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, FocusLostOnDeletedNode) {
+  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+
+  GURL url(
+      "data:text/html,"
+      "<button id='1'>1</button>"
+      "<iframe id='iframe' srcdoc=\""
+      "<button id='2'>2</button>"
+      "\"></iframe>");
+
+  NavigateToURL(shell(), url);
+  EnableAccessibilityForWebContents(shell()->web_contents());
+
+  auto FocusNodeAndReload = [this, &url](const std::string& node_name,
+                                         const std::string& focus_node_script) {
+    WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                  node_name);
+    BrowserAccessibility* node = FindNode(ax::mojom::Role::kButton, node_name);
+    ASSERT_NE(nullptr, node);
+
+    EXPECT_TRUE(ExecuteScript(shell(), focus_node_script));
+    WaitForAccessibilityFocusChange();
+
+    EXPECT_EQ(node->GetId(),
+              GetFocusedAccessibilityNodeInfo(shell()->web_contents()).id);
+
+    // Reloading the frames will achieve two things:
+    //   1. Force the deletion of the node being tested.
+    //   2. Lose focus on the node by focusing a new frame.
+    AccessibilityNotificationWaiter load_waiter(
+        shell()->web_contents(), ui::kAXModeComplete,
+        ax::mojom::Event::kLoadComplete);
+    NavigateToURL(shell(), url);
+    load_waiter.WaitForNotification();
+  };
+
+  FocusNodeAndReload("1", "document.getElementById('1').focus();");
+  FocusNodeAndReload("2",
+                     "var iframe = document.getElementById('iframe');"
+                     "var inner_doc = iframe.contentWindow.document;"
+                     "inner_doc.getElementById('2').focus();");
+}
+
 }  // namespace content
