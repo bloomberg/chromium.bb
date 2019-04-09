@@ -689,6 +689,8 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
   }
   instance = this;
 
+  // Use |bounds()| instead of |GetTargetBounds()| because that's the position a
+  // user captured the window.
   pre_drag_window_bounds_ = window_state->window()->bounds();
 
   window_state->OnDragStarted(details().window_component);

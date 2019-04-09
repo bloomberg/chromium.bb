@@ -297,7 +297,7 @@ void DefaultState::HandleCompoundEvents(WindowState* window_state,
         gfx::Rect new_bounds(work_area.x(), window->bounds().y(),
                              work_area.width(), window->bounds().height());
 
-        gfx::Rect restore_bounds = window->bounds();
+        gfx::Rect restore_bounds = window->GetTargetBounds();
         if (window_state->IsSnapped()) {
           window_state->SetRestoreBoundsInParent(new_bounds);
           window_state->Restore();
