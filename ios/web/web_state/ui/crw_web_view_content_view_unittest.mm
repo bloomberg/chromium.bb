@@ -6,7 +6,6 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/web/public/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
