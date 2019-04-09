@@ -21,8 +21,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_DTOA_DTOA_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_DTOA_DTOA_H_
 
-#include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/dtoa/double-conversion.h"
+#include "third_party/blink/renderer/platform/wtf/text/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 

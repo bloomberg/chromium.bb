@@ -26,8 +26,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_ASCII_CTYPE_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_ASCII_CTYPE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_ASCII_CTYPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_ASCII_CTYPE_H_
 
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
@@ -166,6 +166,7 @@ inline bool IsASCIIAlphaCaselessEqual(CharType css_character, char character) {
 
 using WTF::IsASCII;
 using WTF::IsASCIIAlpha;
+using WTF::IsASCIIAlphaCaselessEqual;
 using WTF::IsASCIIAlphanumeric;
 using WTF::IsASCIIDigit;
 using WTF::IsASCIIHexDigit;
@@ -174,11 +175,10 @@ using WTF::IsASCIIOctalDigit;
 using WTF::IsASCIIPrintable;
 using WTF::IsASCIISpace;
 using WTF::IsASCIIUpper;
+using WTF::LowerNibbleToASCIIHexDigit;
 using WTF::ToASCIIHexValue;
 using WTF::ToASCIILower;
 using WTF::ToASCIIUpper;
-using WTF::LowerNibbleToASCIIHexDigit;
 using WTF::UpperNibbleToASCIIHexDigit;
-using WTF::IsASCIIAlphaCaselessEqual;
 
 #endif
