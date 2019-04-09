@@ -3320,11 +3320,6 @@ const char kSchedulerConfigurationDescription[] =
 const char kSchedulerConfigurationConservative[] = "Conservative";
 const char kSchedulerConfigurationPerformance[] = "Performance";
 
-const char kShillSandboxingName[] =
-    "Run shill, the ChromeOS network manager, in a sandbox.";
-const char kShillSandboxingDescription[] =
-    "Causes shill to be run as user/group 'shill', instead of 'root'.";
-
 const char kShowTapsName[] = "Show taps";
 const char kShowTapsDescription[] =
     "Draws a circle at each touch point, which makes touch points more obvious "

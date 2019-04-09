@@ -2004,9 +2004,6 @@ extern const char kSchedulerConfigurationDescription[];
 extern const char kSchedulerConfigurationConservative[];
 extern const char kSchedulerConfigurationPerformance[];
 
-extern const char kShillSandboxingName[];
-extern const char kShillSandboxingDescription[];
-
 extern const char kShowTapsName[];
 extern const char kShowTapsDescription[];
 
