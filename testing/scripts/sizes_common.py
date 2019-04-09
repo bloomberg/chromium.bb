@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -53,23 +52,3 @@ def main_run(script_args):
   }, script_args.output)
 
   return rc
-
-
-def main_compile_targets(script_args):
-  parser = create_argparser()
-  args = parser.parse_args(script_args.args)
-
-  _COMPILE_TARGETS = {
-      'android-cronet': ['cronet'],
-      'android-webview': ['libwebviewchromium'],
-  }
-
-  json.dump(_COMPILE_TARGETS.get(args.platform, ['chrome']), script_args.output)
-
-
-if __name__ == '__main__':
-  funcs = {
-      'run': main_run,
-      'compile_targets': main_compile_targets,
-  }
-  sys.exit(common.run_script(sys.argv[1:], funcs))
