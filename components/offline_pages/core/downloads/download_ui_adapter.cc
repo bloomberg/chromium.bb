@@ -161,11 +161,11 @@ void DownloadUIAdapter::OfflinePageDeleted(
 
 // OfflinePageModel::Observer
 void DownloadUIAdapter::ThumbnailAdded(OfflinePageModel* model,
-                                       const OfflinePageThumbnail& thumbnail) {
+                                       const int64_t offline_id,
+                                       const std::string& thumbnail) {
   model_->GetPageByOfflineId(
-      thumbnail.offline_id,
-      base::BindOnce(&DownloadUIAdapter::OnPageGetForThumbnailAdded,
-                     weak_ptr_factory_.GetWeakPtr()));
+      offline_id, base::BindOnce(&DownloadUIAdapter::OnPageGetForThumbnailAdded,
+                                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 // RequestCoordinator::Observer

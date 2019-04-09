@@ -12,9 +12,11 @@
 #include "base/test/mock_callback.h"
 #include "components/offline_pages/core/model/model_task_test_base.h"
 #include "components/offline_pages/core/model/offline_page_item_generator.h"
-#include "components/offline_pages/core/model/store_thumbnail_task.h"
+#include "components/offline_pages/core/model/store_visuals_task.h"
+#include "components/offline_pages/core/offline_clock.h"
 #include "components/offline_pages/core/offline_page_metadata_store_test_util.h"
 #include "components/offline_pages/core/offline_store_utils.h"
+#include "components/offline_pages/core/test_scoped_offline_clock.h"
 #include "components/offline_pages/task/test_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,11 +25,12 @@ using testing::_;
 namespace offline_pages {
 namespace {
 
-OfflinePageThumbnail TestThumbnail() {
+OfflinePageThumbnail TestThumbnail(base::Time now) {
   OfflinePageThumbnail thumb;
   thumb.offline_id = 1;
-  thumb.expiration = store_utils::FromDatabaseTime(1234);
+  thumb.expiration = now + kVisualsExpirationDelta;
   thumb.thumbnail = "123abc";
+  thumb.favicon = "favicon";
   return thumb;
 }
 
@@ -50,6 +53,13 @@ class GetThumbnailTaskTest : public ModelTaskTestBase {
     CHECK(thumb);
     return *thumb;
   }
+
+  void StoreVisuals(const OfflinePageThumbnail& thumb) {
+    RunTask(StoreVisualsTask::MakeStoreThumbnailTask(
+        store(), thumb.offline_id, thumb.thumbnail, base::DoNothing()));
+    RunTask(StoreVisualsTask::MakeStoreFaviconTask(
+        store(), thumb.offline_id, thumb.favicon, base::DoNothing()));
+  }
 };
 
 TEST_F(GetThumbnailTaskTest, NotFound) {
@@ -65,9 +75,47 @@ TEST_F(GetThumbnailTaskTest, NotFound) {
 }
 
 TEST_F(GetThumbnailTaskTest, Found) {
-  const OfflinePageThumbnail thumb = TestThumbnail();
+  TestScopedOfflineClock test_clock;
+  const OfflinePageThumbnail thumb = TestThumbnail(OfflineTimeNow());
+  StoreVisuals(thumb);
+
+  bool called = false;
+  auto callback = base::BindLambdaForTesting(
+      [&](std::unique_ptr<OfflinePageThumbnail> result) {
+        called = true;
+        ASSERT_TRUE(result);
+        EXPECT_EQ(thumb, *result);
+      });
+
   RunTask(
-      std::make_unique<StoreThumbnailTask>(store(), thumb, base::DoNothing()));
+      std::make_unique<GetThumbnailTask>(store(), thumb.offline_id, callback));
+  EXPECT_TRUE(called);
+}
+
+TEST_F(GetThumbnailTaskTest, FoundThumbnailOnly) {
+  TestScopedOfflineClock test_clock;
+  OfflinePageThumbnail thumb = TestThumbnail(OfflineTimeNow());
+  thumb.favicon = std::string();
+  StoreVisuals(thumb);
+
+  bool called = false;
+  auto callback = base::BindLambdaForTesting(
+      [&](std::unique_ptr<OfflinePageThumbnail> result) {
+        called = true;
+        ASSERT_TRUE(result);
+        EXPECT_EQ(thumb, *result);
+      });
+
+  RunTask(
+      std::make_unique<GetThumbnailTask>(store(), thumb.offline_id, callback));
+  EXPECT_TRUE(called);
+}
+
+TEST_F(GetThumbnailTaskTest, FoundFaviconOnly) {
+  TestScopedOfflineClock test_clock;
+  OfflinePageThumbnail thumb = TestThumbnail(OfflineTimeNow());
+  thumb.thumbnail = std::string();
+  StoreVisuals(thumb);
 
   bool called = false;
   auto callback = base::BindLambdaForTesting(
@@ -83,8 +131,9 @@ TEST_F(GetThumbnailTaskTest, Found) {
 }
 
 TEST_F(GetThumbnailTaskTest, DbConnectionIsNull) {
-  RunTask(std::make_unique<StoreThumbnailTask>(store(), TestThumbnail(),
-                                               base::DoNothing()));
+  RunTask(StoreVisualsTask::MakeStoreThumbnailTask(store(), 1, std::string(),
+                                                   base::DoNothing()));
+
   bool called = false;
   auto callback = base::BindLambdaForTesting(
       [&](std::unique_ptr<OfflinePageThumbnail> result) {

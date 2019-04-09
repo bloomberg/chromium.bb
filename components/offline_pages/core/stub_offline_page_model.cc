@@ -50,13 +50,16 @@ void StubOfflinePageModel::GetPageByOfflineId(
 void StubOfflinePageModel::GetPagesWithCriteria(
     const PageCriteria& criteria,
     MultipleOfflinePageItemCallback callback) {}
-void StubOfflinePageModel::StoreThumbnail(const OfflinePageThumbnail& thumb) {}
+void StubOfflinePageModel::StoreThumbnail(int64_t offline_id,
+                                          std::string thumbnail) {}
+void StubOfflinePageModel::StoreFavicon(int64_t offline_id,
+                                        std::string favicon) {}
 void StubOfflinePageModel::GetThumbnailByOfflineId(
     int64_t offline_id,
     GetThumbnailCallback callback) {}
 void StubOfflinePageModel::HasThumbnailForOfflineId(
     int64_t offline_id,
-    base::OnceCallback<void(bool)> callback) {}
+    base::OnceCallback<void(VisualsAvailability)> callback) {}
 void StubOfflinePageModel::PublishInternalArchive(
     const OfflinePageItem& offline_page,
     std::unique_ptr<OfflinePageArchiver> archiver,

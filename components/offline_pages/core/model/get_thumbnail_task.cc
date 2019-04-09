@@ -19,8 +19,8 @@ std::unique_ptr<OfflinePageThumbnail> GetThumbnailSync(int64_t offline_id,
                                                        sql::Database* db) {
   std::unique_ptr<OfflinePageThumbnail> result;
   static const char kSql[] =
-      "SELECT offline_id, expiration, thumbnail FROM page_thumbnails"
-      " WHERE offline_id = ?";
+      "SELECT offline_id,expiration,thumbnail,favicon FROM page_thumbnails"
+      " WHERE offline_id=?";
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, offline_id);
 
@@ -33,7 +33,10 @@ std::unique_ptr<OfflinePageThumbnail> GetThumbnailSync(int64_t offline_id,
   int64_t expiration = statement.ColumnInt64(1);
   result->expiration = store_utils::FromDatabaseTime(expiration);
   if (!statement.ColumnBlobAsString(2, &result->thumbnail))
-    result.reset();
+    result->thumbnail = std::string();
+
+  if (!statement.ColumnBlobAsString(3, &result->favicon))
+    result->favicon = std::string();
 
   return result;
 }

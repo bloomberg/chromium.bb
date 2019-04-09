@@ -28,7 +28,7 @@
 #include "components/offline_pages/core/model/offline_page_model_utils.h"
 #include "components/offline_pages/core/model/persistent_page_consistency_check_task.h"
 #include "components/offline_pages/core/model/startup_maintenance_task.h"
-#include "components/offline_pages/core/model/store_thumbnail_task.h"
+#include "components/offline_pages/core/model/store_visuals_task.h"
 #include "components/offline_pages/core/model/update_file_path_task.h"
 #include "components/offline_pages/core/offline_clock.h"
 #include "components/offline_pages/core/offline_page_feature.h"
@@ -352,12 +352,20 @@ void OfflinePageModelTaskified::GetOfflineIdsForClientId(
                                                 std::move(callback)));
 }
 
-void OfflinePageModelTaskified::StoreThumbnail(
-    const OfflinePageThumbnail& thumb) {
-  task_queue_.AddTask(std::make_unique<StoreThumbnailTask>(
-      store_.get(), thumb,
+void OfflinePageModelTaskified::StoreThumbnail(int64_t offline_id,
+                                               std::string thumbnail) {
+  task_queue_.AddTask(StoreVisualsTask::MakeStoreThumbnailTask(
+      store_.get(), offline_id, std::move(thumbnail),
       base::BindOnce(&OfflinePageModelTaskified::OnStoreThumbnailDone,
-                     weak_ptr_factory_.GetWeakPtr(), thumb)));
+                     weak_ptr_factory_.GetWeakPtr(), offline_id)));
+}
+
+void OfflinePageModelTaskified::StoreFavicon(int64_t offline_id,
+                                             std::string favicon) {
+  task_queue_.AddTask(StoreVisualsTask::MakeStoreFaviconTask(
+      store_.get(), offline_id, std::move(favicon),
+      base::BindOnce(&OfflinePageModelTaskified::OnStoreFaviconDone,
+                     weak_ptr_factory_.GetWeakPtr(), offline_id)));
 }
 
 void OfflinePageModelTaskified::GetThumbnailByOfflineId(
@@ -369,7 +377,7 @@ void OfflinePageModelTaskified::GetThumbnailByOfflineId(
 
 void OfflinePageModelTaskified::HasThumbnailForOfflineId(
     int64_t offline_id,
-    base::OnceCallback<void(bool)> callback) {
+    base::OnceCallback<void(VisualsAvailability)> callback) {
   task_queue_.AddTask(std::make_unique<HasThumbnailTask>(
       store_.get(), offline_id, std::move(callback)));
 }
@@ -627,12 +635,21 @@ void OfflinePageModelTaskified::OnDeleteDone(
     std::move(callback).Run(result);
 }
 
-void OfflinePageModelTaskified::OnStoreThumbnailDone(
-    const OfflinePageThumbnail& thumbnail,
-    bool success) {
+void OfflinePageModelTaskified::OnStoreThumbnailDone(int64_t offline_id,
+                                                     bool success,
+                                                     std::string thumbnail) {
   if (success) {
     for (Observer& observer : observers_)
-      observer.ThumbnailAdded(this, thumbnail);
+      observer.ThumbnailAdded(this, offline_id, thumbnail);
+  }
+}
+
+void OfflinePageModelTaskified::OnStoreFaviconDone(int64_t offline_id,
+                                                   bool success,
+                                                   std::string favicon) {
+  if (success) {
+    for (Observer& observer : observers_)
+      observer.FaviconAdded(this, offline_id, favicon);
   }
 }
 

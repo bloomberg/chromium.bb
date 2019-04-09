@@ -12,27 +12,30 @@ namespace {
 
 const base::Time kTestTime = store_utils::FromDatabaseTime(42);
 const char kThumbnailData[] = "abc123";
+const char kFaviconData[] = "favicondata";
 
 TEST(OfflinePageThumbnailTest, Construct) {
-  OfflinePageThumbnail thumbnail(1, kTestTime, kThumbnailData);
+  OfflinePageThumbnail thumbnail(1, kTestTime, kThumbnailData, kFaviconData);
   EXPECT_EQ(1, thumbnail.offline_id);
   EXPECT_EQ(kTestTime, thumbnail.expiration);
   EXPECT_EQ(kThumbnailData, thumbnail.thumbnail);
+  EXPECT_EQ(kFaviconData, thumbnail.favicon);
 }
 
 TEST(OfflinePageThumbnailTest, Equal) {
-  OfflinePageThumbnail thumbnail(1, kTestTime, kThumbnailData);
+  OfflinePageThumbnail thumbnail(1, kTestTime, kThumbnailData, kFaviconData);
   auto copy = thumbnail;
 
   EXPECT_EQ(1, copy.offline_id);
   EXPECT_EQ(kTestTime, copy.expiration);
   EXPECT_EQ(kThumbnailData, copy.thumbnail);
+  EXPECT_EQ(kFaviconData, copy.favicon);
   EXPECT_EQ(copy, thumbnail);
 }
 
 TEST(OfflinePageThumbnailTest, Compare) {
-  OfflinePageThumbnail thumbnail_a(1, kTestTime, kThumbnailData);
-  OfflinePageThumbnail thumbnail_b(2, kTestTime, kThumbnailData);
+  OfflinePageThumbnail thumbnail_a(1, kTestTime, kThumbnailData, kFaviconData);
+  OfflinePageThumbnail thumbnail_b(2, kTestTime, kThumbnailData, kFaviconData);
 
   EXPECT_TRUE(thumbnail_a < thumbnail_b);
   EXPECT_FALSE(thumbnail_b < thumbnail_a);
@@ -40,9 +43,12 @@ TEST(OfflinePageThumbnailTest, Compare) {
 }
 
 TEST(OfflinePageThumbnailTest, ToString) {
-  OfflinePageThumbnail thumbnail(1, kTestTime, kThumbnailData);
+  OfflinePageThumbnail thumbnail(1, kTestTime, kThumbnailData, kFaviconData);
 
-  EXPECT_EQ("OfflinePageThumbnail(1, 42, YWJjMTIz)", thumbnail.ToString());
+  EXPECT_EQ(
+      "OfflinePageThumbnail(id=1, expiration=42, thumbnail=YWJjMTIz, "
+      "favicon=ZmF2aWNvbmRhdGE=)",
+      thumbnail.ToString());
 }
 
 }  // namespace

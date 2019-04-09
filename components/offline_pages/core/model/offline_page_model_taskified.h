@@ -99,14 +99,15 @@ class OfflinePageModelTaskified : public OfflinePageModel,
                             MultipleOfflinePageItemCallback callback) override;
   void GetOfflineIdsForClientId(const ClientId& client_id,
                                 MultipleOfflineIdCallback callback) override;
-  void StoreThumbnail(const OfflinePageThumbnail& thumb) override;
+  void StoreThumbnail(int64_t offline_id, std::string thumbnail) override;
+  void StoreFavicon(int64_t offline_id, std::string favicon) override;
   void GetThumbnailByOfflineId(
       int64_t offline_id,
       base::OnceCallback<void(std::unique_ptr<OfflinePageThumbnail>)> callback)
       override;
   void HasThumbnailForOfflineId(
       int64_t offline_id,
-      base::OnceCallback<void(bool)> callback) override;
+      base::OnceCallback<void(VisualsAvailability)> callback) override;
   const base::FilePath& GetInternalArchiveDirectory(
       const std::string& name_space) const override;
   bool IsArchiveInInternalDir(const base::FilePath& file_path) const override;
@@ -163,8 +164,12 @@ class OfflinePageModelTaskified : public OfflinePageModel,
       DeletePageResult result,
       const std::vector<OfflinePageModel::DeletedPageInfo>& infos);
 
-  void OnStoreThumbnailDone(const OfflinePageThumbnail& thumbnail,
-                            bool success);
+  void OnStoreThumbnailDone(int64_t offline_id,
+                            bool success,
+                            std::string thumbnail);
+  void OnStoreFaviconDone(int64_t offline_id,
+                          bool success,
+                          std::string favicon);
 
   // Methods for clearing temporary pages and performing consistency checks. The
   // latter are executed only once per Chrome session.

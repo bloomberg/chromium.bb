@@ -20,15 +20,17 @@ class PrefetchStore;
 // prefetch store.
 class GetThumbnailInfoTask : public Task {
  public:
+  // Gives URLS for the offline item's thumbnail and favicon. They are empty if
+  // the offline item was not found, or if the item had no thumbnail or favicon
+  // URLs stored.
   struct Result {
-    // The thumbnail URL of the offline item. This is empty if the offline item
-    // was not found, or if the item had no thumbnail URL.
     GURL thumbnail_url;
+    GURL favicon_url;
   };
   using ResultCallback = base::OnceCallback<void(Result)>;
 
   GetThumbnailInfoTask(PrefetchStore* store,
-                       const int64_t offline_id,
+                       int64_t offline_id,
                        ResultCallback callback);
   ~GetThumbnailInfoTask() override;
 

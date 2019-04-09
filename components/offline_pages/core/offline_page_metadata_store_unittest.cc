@@ -57,7 +57,7 @@ const char kTestSnippet[] = "test snippet";
 const char kTestAttribution[] = "test attribution";
 
 OfflinePageThumbnail TestThumbnailVersion3() {
-  return {1, base::Time(), "abc"};
+  return {1, base::Time(), "abc", ""};
 }
 
 // Build a store with outdated schema to simulate the upgrading process.
@@ -637,6 +637,8 @@ class OfflinePageMetadataStoreTest : public testing::Test {
     thumbnail.offline_id = kOfflineId;
     thumbnail.expiration = kThumbnailExpiration;
     thumbnail.thumbnail = "content";
+    thumbnail.favicon = "favicon";
+
     std::vector<OfflinePageThumbnail> thumbnails_before = GetThumbnails(store);
 
     AddThumbnail(store, thumbnail);
@@ -793,6 +795,7 @@ class OfflinePageMetadataStoreTest : public testing::Test {
         thumb.expiration =
             store_utils::FromDatabaseTime(statement.ColumnInt64(1));
         statement.ColumnBlobAsString(2, &thumb.thumbnail);
+        statement.ColumnBlobAsString(3, &thumb.favicon);
         thumbnails.push_back(std::move(thumb));
       }
 
@@ -809,13 +812,13 @@ class OfflinePageMetadataStoreTest : public testing::Test {
     auto run_callback = base::BindLambdaForTesting([&](sql::Database* db) {
       static const char kSql[] =
           "INSERT INTO page_thumbnails"
-          " (offline_id, expiration, thumbnail, favicon) VALUES (?, ?, ?, ?)";
+          " (offline_id,expiration,thumbnail,favicon) VALUES (?,?,?,?)";
       sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
 
       statement.BindInt64(0, thumbnail.offline_id);
       statement.BindInt64(1, store_utils::ToDatabaseTime(thumbnail.expiration));
       statement.BindString(2, thumbnail.thumbnail);
-      statement.BindString(3, std::string());
+      statement.BindString(3, thumbnail.favicon);
       EXPECT_TRUE(statement.Run());
       return thumbnails;
     });

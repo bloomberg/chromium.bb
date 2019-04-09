@@ -10,34 +10,71 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/mock_callback.h"
 #include "components/offline_pages/core/model/model_task_test_base.h"
-#include "components/offline_pages/core/model/store_thumbnail_task.h"
+#include "components/offline_pages/core/model/store_visuals_task.h"
 #include "components/offline_pages/core/offline_store_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
 namespace {
 
+OfflinePageThumbnail TestThumbnail() {
+  return OfflinePageThumbnail(1, store_utils::FromDatabaseTime(1234),
+                              "some thumbnail", "some favicon");
+}
+
 using ThumbnailExistsCallback = HasThumbnailTask::ThumbnailExistsCallback;
 
-class HasThumbnailTaskTest : public ModelTaskTestBase {};
+class HasThumbnailTaskTest : public ModelTaskTestBase {
+ public:
+  void StoreVisuals(const OfflinePageThumbnail& thumb) {
+    RunTask(StoreVisualsTask::MakeStoreThumbnailTask(
+        store(), thumb.offline_id, thumb.thumbnail, base::DoNothing()));
+    RunTask(StoreVisualsTask::MakeStoreFaviconTask(
+        store(), thumb.offline_id, thumb.favicon, base::DoNothing()));
+  }
+};
 
-TEST_F(HasThumbnailTaskTest, CorrectlyFindsById) {
-  const int64_t valid_offline_id = 1;
-  const int64_t invalid_offline_id = 2;
-  OfflinePageThumbnail thumb;
-  thumb.offline_id = valid_offline_id;
-  thumb.expiration = store_utils::FromDatabaseTime(1234);
-  thumb.thumbnail = "123abc";
-  RunTask(
-      std::make_unique<StoreThumbnailTask>(store(), thumb, base::DoNothing()));
+TEST_F(HasThumbnailTaskTest, CorrectlyFindsById_ThumbnailAndFavicon) {
+  OfflinePageThumbnail thumb = TestThumbnail();
+  StoreVisuals(thumb);
 
   base::MockCallback<ThumbnailExistsCallback> exists_callback;
-  EXPECT_CALL(exists_callback, Run(true));
-  RunTask(std::make_unique<HasThumbnailTask>(store(), valid_offline_id,
+  VisualsAvailability availability = {true, true};
+  EXPECT_CALL(exists_callback, Run(availability));
+  RunTask(std::make_unique<HasThumbnailTask>(store(), thumb.offline_id,
                                              exists_callback.Get()));
+}
+
+TEST_F(HasThumbnailTaskTest, CorrectlyFindsById_ThumbnailOnly) {
+  OfflinePageThumbnail thumb = TestThumbnail();
+  thumb.favicon = std::string();
+  StoreVisuals(thumb);
+
+  base::MockCallback<ThumbnailExistsCallback> exists_callback;
+  VisualsAvailability availability = {true, false};
+  EXPECT_CALL(exists_callback, Run(availability));
+  RunTask(std::make_unique<HasThumbnailTask>(store(), thumb.offline_id,
+                                             exists_callback.Get()));
+}
+
+TEST_F(HasThumbnailTaskTest, CorrectlyFindsById_FaviconOnly) {
+  OfflinePageThumbnail thumb = TestThumbnail();
+  thumb.thumbnail = std::string();
+  StoreVisuals(thumb);
+
+  base::MockCallback<ThumbnailExistsCallback> exists_callback;
+  VisualsAvailability availability = {false, true};
+  EXPECT_CALL(exists_callback, Run(availability));
+  RunTask(std::make_unique<HasThumbnailTask>(store(), thumb.offline_id,
+                                             exists_callback.Get()));
+}
+
+TEST_F(HasThumbnailTaskTest, RowDoesNotExist) {
+  const int64_t invalid_offline_id = 2;
 
   base::MockCallback<ThumbnailExistsCallback> doesnt_exist_callback;
-  EXPECT_CALL(doesnt_exist_callback, Run(false));
+  VisualsAvailability availability = {false, false};
+  EXPECT_CALL(doesnt_exist_callback, Run(availability));
   RunTask(std::make_unique<HasThumbnailTask>(store(), invalid_offline_id,
                                              doesnt_exist_callback.Get()));
 }
@@ -47,13 +84,13 @@ TEST_F(HasThumbnailTaskTest, DbConnectionIsNull) {
   thumb.offline_id = 1;
   thumb.expiration = store_utils::FromDatabaseTime(1234);
   thumb.thumbnail = "123abc";
-  RunTask(
-      std::make_unique<StoreThumbnailTask>(store(), thumb, base::DoNothing()));
+  StoreVisuals(thumb);
 
   store()->SetInitializationStatusForTesting(
       SqlStoreBase::InitializationStatus::kFailure, true);
   base::MockCallback<ThumbnailExistsCallback> exists_callback;
-  EXPECT_CALL(exists_callback, Run(false));
+  VisualsAvailability availability = {false, false};
+  EXPECT_CALL(exists_callback, Run(availability));
   RunTask(std::make_unique<HasThumbnailTask>(store(), thumb.offline_id,
                                              exists_callback.Get()));
 }

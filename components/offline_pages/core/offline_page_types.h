@@ -83,6 +83,14 @@ enum class ShareResult {
   kFileAccessPermissionDenied,
 };
 
+struct VisualsAvailability {
+  bool has_thumbnail;
+  bool has_favicon;
+  bool operator==(const VisualsAvailability& rhs) const {
+    return has_thumbnail == rhs.has_thumbnail && has_favicon == rhs.has_favicon;
+  }
+};
+
 typedef std::vector<int64_t> MultipleOfflineIdResult;
 typedef std::vector<OfflinePageItem> MultipleOfflinePageItemResult;
 
