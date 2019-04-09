@@ -29,10 +29,11 @@ class DummyTimebaseVideoSource : public ::libaom_test::DummyVideoSource {
  public:
   // Parameters num and den set the timebase for the video source.
   DummyTimebaseVideoSource(int num, int den)
-      : timebase_({ num, den }), framerate_numerator_(30),
-        framerate_denominator_(1), starting_pts_(0) {
+      : framerate_numerator_(30), framerate_denominator_(1), starting_pts_(0) {
     SetSize(kVideoSourceWidth, kVideoSourceHeight);
     set_limit(kFramesToEncode);
+    timebase_.num = num;
+    timebase_.den = den;
   }
 
   void SetFramerate(int numerator, int denominator) {
