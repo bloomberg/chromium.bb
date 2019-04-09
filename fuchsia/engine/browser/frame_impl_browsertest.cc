@@ -531,7 +531,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptRemoveInvalidId) {
   controller->LoadUrl(url.spec(), chromium::web::LoadUrlParams());
   navigation_observer_.RunUntilNavigationEquals(url, kPage1Title);
 
-  EXPECT_FALSE(*remove_result);
+  EXPECT_TRUE(*remove_result);
 }
 
 // Test JS injection by using Javascript to trigger document navigation.
@@ -1211,35 +1211,6 @@ IN_PROC_BROWSER_TEST_F(RequestMonitoringFrameImplBrowserTest, ExtraHeaders) {
                                StringToUnsignedVector("X-2ExtraHeaders: 2")});
   controller->LoadUrl(page_url.spec(), std::move(load_url_params));
   navigation_observer_.RunUntilNavigationEquals(page_url, kPage1Title);
-
-  // At this point, the page should be loaded, the server should have received
-  // the request and the request should be in the map.
-  const auto iter = accumulated_requests_.find(page_url);
-  ASSERT_NE(iter, accumulated_requests_.end());
-  EXPECT_THAT(iter->second.headers,
-              testing::Contains(testing::Key("X-ExtraHeaders")));
-  EXPECT_THAT(iter->second.headers,
-              testing::Contains(testing::Key("X-2ExtraHeaders")));
-}
-
-// TODO(crbug.com/931831): Remove this test once the transition is complete.
-IN_PROC_BROWSER_TEST_F(RequestMonitoringFrameImplBrowserTest,
-                       DeprecatedExtraHeaders) {
-  chromium::web::FramePtr frame = CreateFrame();
-
-  chromium::web::LoadUrlParams load_url_params;
-  load_url_params.set_headers({StringToUnsignedVector("X-ExtraHeaders: 1"),
-                               StringToUnsignedVector("X-2ExtraHeaders: 2")});
-
-  chromium::web::NavigationControllerPtr controller;
-  frame->GetNavigationController(controller.NewRequest());
-
-  const GURL page_url(embedded_test_server()->GetURL(kPage1Path));
-
-  controller->LoadUrl(page_url.spec(), std::move(load_url_params));
-  navigation_observer_.RunUntilNavigationEquals(page_url, kPage1Title);
-
-  base::RunLoop().RunUntilIdle();
 
   // At this point, the page should be loaded, the server should have received
   // the request and the request should be in the map.

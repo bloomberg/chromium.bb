@@ -5,6 +5,7 @@
 #ifndef FUCHSIA_ENGINE_BROWSER_CONTEXT_IMPL_H_
 #define FUCHSIA_ENGINE_BROWSER_CONTEXT_IMPL_H_
 
+#include <fuchsia/web/cpp/fidl.h>
 #include <lib/fidl/cpp/binding_set.h>
 #include <memory>
 #include <set>
@@ -46,6 +47,7 @@ class WEB_ENGINE_EXPORT ContextImpl : public chromium::web::Context {
 
   // Gets the underlying FrameImpl service object associated with a connected
   // |frame_ptr| client.
+  FrameImpl* GetFrameImplForTest(fuchsia::web::FramePtr* frame_ptr);
   FrameImpl* GetFrameImplForTest(chromium::web::FramePtr* frame_ptr);
 
  private:

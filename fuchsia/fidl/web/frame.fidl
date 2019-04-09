@@ -99,7 +99,7 @@ protocol Frame {
                         fuchsia.mem.Buffer script) -> (bool success);
 
   /// Removes a previously added JavaScript snippet identified by |id|.
-  /// Returns |true| if the script was found and removed.
+  /// Always returns |true|, it is safe to ignore the return value.
   RemoveJavaScriptBindings(uint64 id) -> (bool removed);
 
   /// Posts a message to the frame's onMessage handler.

@@ -7,21 +7,34 @@
 #include "base/fuchsia/fuchsia_logging.h"
 
 // static
-mojo::ScopedMessagePipeHandle LegacyMessagePortBridge::FromFidl(
-    fidl::InterfaceRequest<chromium::web::MessagePort> port) {
-  fuchsia::web::MessagePortPtr fuchsia_port;
-  mojo::ScopedMessagePipeHandle content_port =
-      MessagePortImpl::FromFidl(fuchsia_port.NewRequest());
+base::Optional<fuchsia::web::WebMessage>
+LegacyMessagePortBridge::ConvertFromLegacyWebMessage(
+    chromium::web::WebMessage& message) {
+  fuchsia::web::WebMessage converted;
+  converted.set_data(std::move(message.data));
 
-  new LegacyMessagePortBridge(std::move(port), std::move(fuchsia_port));
-  return content_port;
+  if (message.outgoing_transfer) {
+    if (!message.outgoing_transfer->is_message_port())
+      return base::nullopt;
+
+    fuchsia::web::OutgoingTransferable outgoing;
+    fuchsia::web::MessagePortPtr fuchsia_port;
+    outgoing.set_message_port(fuchsia_port.NewRequest());
+    new LegacyMessagePortBridge(
+        std::move(message.outgoing_transfer->message_port()),
+        std::move(fuchsia_port));
+    std::vector<fuchsia::web::OutgoingTransferable> transferables;
+    transferables.push_back(std::move(outgoing));
+    converted.set_outgoing_transfer(std::move(transferables));
+  }
+
+  return converted;
 }
 
 LegacyMessagePortBridge::LegacyMessagePortBridge(
     fidl::InterfaceRequest<chromium::web::MessagePort> request,
     fuchsia::web::MessagePortPtr handle)
-    : binding_(this), message_port_(std::move(handle)) {
-  binding_.Bind(std::move(request));
+    : binding_(this, std::move(request)), message_port_(std::move(handle)) {
   binding_.set_error_handler([this](zx_status_t status) {
     ZX_LOG_IF(ERROR, status != ZX_ERR_PEER_CLOSED, status)
         << " |binding_| disconnected.";
@@ -38,27 +51,15 @@ LegacyMessagePortBridge::~LegacyMessagePortBridge() = default;
 
 void LegacyMessagePortBridge::PostMessage(chromium::web::WebMessage message,
                                           PostMessageCallback callback) {
-  fuchsia::web::WebMessage converted;
-  converted.set_data(std::move(message.data));
-
-  if (message.outgoing_transfer) {
-    if (!message.outgoing_transfer->is_message_port()) {
-      callback(false);
-      return;
-    }
-    fuchsia::web::OutgoingTransferable outgoing;
-    fuchsia::web::MessagePortPtr fuchsia_port;
-    outgoing.set_message_port(fuchsia_port.NewRequest());
-    new LegacyMessagePortBridge(
-        std::move(message.outgoing_transfer->message_port()),
-        std::move(fuchsia_port));
-    std::vector<fuchsia::web::OutgoingTransferable> transferables;
-    transferables.push_back(std::move(outgoing));
-    converted.set_outgoing_transfer(std::move(transferables));
+  base::Optional<fuchsia::web::WebMessage> converted =
+      ConvertFromLegacyWebMessage(message);
+  if (!converted) {
+    callback(false);
+    return;
   }
 
   message_port_->PostMessage(
-      std::move(converted),
+      std::move(*converted),
       [callback = std::move(callback)](
           fuchsia::web::MessagePort_PostMessage_Result result) {
         callback(result.is_response());
