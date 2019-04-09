@@ -277,7 +277,8 @@
         <settings-toggle-button
             id="enableSpellcheckingToggle"
             label="$i18n{spellCheckTitle}"
-            pref="{{prefs.browser.enable_spellchecking}}">
+            pref="{{prefs.browser.enable_spellchecking}}"
+            on-change="onEnableSpellCheckingChange_">
         </settings-toggle-button>
 <if expr="_google_chrome or not is_macosx">
         <iron-collapse id="spellCheckCollapse"
@@ -334,7 +335,7 @@
                   $i18n{retry}
                 </paper-button>
                 <template is="dom-if" if="[[!item.isManaged]]">
-                  <cr-toggle on-change="onSpellCheckChange_"
+                  <cr-toggle on-change="onSpellCheckLanguageChange_"
                       disabled="[[!item.language.supportsSpellcheck]]"
                       checked="[[item.spellCheckEnabled]]"
                       aria-label$="[[item.language.displayName]]"
