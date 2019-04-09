@@ -6,11 +6,15 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/serial_chooser.h"
 #include "content/public/browser/serial_delegate.h"
+#include "content/public/browser/web_contents.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 
 namespace content {
@@ -36,9 +40,15 @@ SerialService::SerialService(RenderFrameHost* render_frame_host)
     : render_frame_host_(render_frame_host) {
   DCHECK(render_frame_host_->IsFeatureEnabled(
       blink::mojom::FeaturePolicyFeature::kSerial));
+  watchers_.set_connection_error_handler(base::BindRepeating(
+      &SerialService::OnWatcherConnectionError, base::Unretained(this)));
 }
 
-SerialService::~SerialService() = default;
+SerialService::~SerialService() {
+  // The remaining watchers will be closed from this end.
+  if (!watchers_.empty())
+    DecrementActiveFrameCount();
+}
 
 void SerialService::Bind(blink::mojom::SerialServiceRequest request) {
   bindings_.AddBinding(this, std::move(request));
@@ -72,6 +82,24 @@ void SerialService::RequestPort(
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
+void SerialService::GetPort(const base::UnguessableToken& token,
+                            device::mojom::SerialPortRequest request) {
+  SerialDelegate* delegate = GetContentClient()->browser()->GetSerialDelegate();
+  if (!delegate)
+    return;
+
+  if (watchers_.empty()) {
+    auto* web_contents_impl = static_cast<WebContentsImpl*>(
+        WebContents::FromRenderFrameHost(render_frame_host_));
+    web_contents_impl->IncrementSerialActiveFrameCount();
+  }
+
+  device::mojom::SerialPortConnectionWatcherPtr watcher;
+  watchers_.AddBinding(this, mojo::MakeRequest(&watcher));
+  delegate->GetPortManager(render_frame_host_)
+      ->GetPort(token, std::move(request), std::move(watcher));
+}
+
 void SerialService::FinishGetPorts(
     GetPortsCallback callback,
     std::vector<device::mojom::SerialPortInfoPtr> ports) {
@@ -99,6 +127,17 @@ void SerialService::FinishRequestPort(RequestPortCallback callback,
   }
 
   std::move(callback).Run(ToBlinkType(*port));
+}
+
+void SerialService::OnWatcherConnectionError() {
+  if (watchers_.empty())
+    DecrementActiveFrameCount();
+}
+
+void SerialService::DecrementActiveFrameCount() {
+  auto* web_contents_impl = static_cast<WebContentsImpl*>(
+      WebContents::FromRenderFrameHost(render_frame_host_));
+  web_contents_impl->DecrementSerialActiveFrameCount();
 }
 
 }  // namespace content

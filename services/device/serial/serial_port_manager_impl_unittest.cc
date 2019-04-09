@@ -13,9 +13,11 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/task/post_task.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/device/device_service_test_base.h"
 #include "services/device/public/mojom/constants.mojom.h"
@@ -41,46 +43,6 @@ void CreateAndBindOnBlockableRunner(
   fake_enumerator->AddDevicePath(kFakeDevicePath2);
   manager->SetSerialEnumeratorForTesting(std::move(fake_enumerator));
   mojo::MakeStrongBinding(std::move(manager), std::move(request));
-}
-
-void ExpectDevicesAndThen(const std::set<base::FilePath>& expected_paths,
-                          base::OnceClosure continuation,
-                          std::vector<mojom::SerialPortInfoPtr> results) {
-  EXPECT_EQ(expected_paths.size(), results.size());
-  std::set<base::FilePath> actual_paths;
-  for (size_t i = 0; i < results.size(); ++i)
-    actual_paths.insert(results[i]->path);
-  EXPECT_EQ(expected_paths, actual_paths);
-  std::move(continuation).Run();
-}
-
-void OnGotDevicesAndGetPort(mojom::SerialPortManagerPtr port_manager,
-                            base::OnceClosure continuation,
-                            std::vector<mojom::SerialPortInfoPtr> results) {
-  EXPECT_GT(results.size(), 0u);
-
-  mojom::SerialPortPtr serial_port;
-  port_manager->GetPort(results[0]->token, mojo::MakeRequest(&serial_port));
-  // Send a message on the pipe and wait for the response to make sure that the
-  // interface request was bound successfully.
-  serial_port.FlushForTesting();
-  EXPECT_FALSE(serial_port.encountered_error());
-  std::move(continuation).Run();
-}
-
-void OnGotDevicesForSimpleConnect(
-    mojom::SerialPortManagerPtr port_manager,
-    base::OnceClosure continuation,
-    std::vector<mojom::SerialPortInfoPtr> results) {
-  for (auto& device : results) {
-    mojom::SerialPortPtr serial_port;
-    port_manager->GetPort(device->token, mojo::MakeRequest(&serial_port));
-    // Send a message on the pipe and wait for the response to make sure that
-    // the interface request was bound successfully.
-    serial_port.FlushForTesting();
-    EXPECT_FALSE(serial_port.encountered_error());
-  }
-  std::move(continuation).Run();
 }
 
 }  // namespace
@@ -110,22 +72,38 @@ TEST_F(SerialPortManagerImplTest, SimpleConnectTest) {
   connector()->BindInterface(mojom::kServiceName, &port_manager);
 
   base::RunLoop loop;
-  auto* manager = port_manager.get();
-  manager->GetDevices(base::BindOnce(&OnGotDevicesForSimpleConnect,
-                                     std::move(port_manager),
-                                     loop.QuitClosure()));
+  port_manager->GetDevices(base::BindLambdaForTesting(
+      [&](std::vector<mojom::SerialPortInfoPtr> results) {
+        for (auto& device : results) {
+          mojom::SerialPortPtr serial_port;
+          port_manager->GetPort(device->token, mojo::MakeRequest(&serial_port),
+                                /*watcher=*/nullptr);
+          // Send a message on the pipe and wait for the response to make sure
+          // that the interface request was bound successfully.
+          serial_port.FlushForTesting();
+          EXPECT_FALSE(serial_port.encountered_error());
+        }
+        loop.Quit();
+      }));
   loop.Run();
 }
 
 TEST_F(SerialPortManagerImplTest, GetDevices) {
   mojom::SerialPortManagerPtr port_manager;
   BindSerialPortManager(mojo::MakeRequest(&port_manager));
-  std::set<base::FilePath> expected_paths = {kFakeDevicePath1,
-                                             kFakeDevicePath2};
+  const std::set<base::FilePath> expected_paths = {kFakeDevicePath1,
+                                                   kFakeDevicePath2};
 
   base::RunLoop loop;
-  port_manager->GetDevices(base::BindOnce(&ExpectDevicesAndThen, expected_paths,
-                                          loop.QuitClosure()));
+  port_manager->GetDevices(base::BindLambdaForTesting(
+      [&](std::vector<mojom::SerialPortInfoPtr> results) {
+        EXPECT_EQ(expected_paths.size(), results.size());
+        std::set<base::FilePath> actual_paths;
+        for (size_t i = 0; i < results.size(); ++i)
+          actual_paths.insert(results[i]->path);
+        EXPECT_EQ(expected_paths, actual_paths);
+        loop.Quit();
+      }));
   loop.Run();
 }
 
@@ -134,9 +112,20 @@ TEST_F(SerialPortManagerImplTest, GetPort) {
   BindSerialPortManager(mojo::MakeRequest(&port_manager));
 
   base::RunLoop loop;
-  auto* manager = port_manager.get();
-  manager->GetDevices(base::BindOnce(
-      &OnGotDevicesAndGetPort, std::move(port_manager), loop.QuitClosure()));
+  port_manager->GetDevices(base::BindLambdaForTesting(
+      [&](std::vector<mojom::SerialPortInfoPtr> results) {
+        EXPECT_GT(results.size(), 0u);
+
+        mojom::SerialPortPtr serial_port;
+        port_manager->GetPort(results[0]->token,
+                              mojo::MakeRequest(&serial_port),
+                              /*watcher=*/nullptr);
+        // Send a message on the pipe and wait for the response to make sure
+        // that the interface request was bound successfully.
+        serial_port.FlushForTesting();
+        EXPECT_FALSE(serial_port.encountered_error());
+        loop.Quit();
+      }));
   loop.Run();
 }
 
