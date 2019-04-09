@@ -410,7 +410,7 @@ bool PreviewsHints::IsWhitelisted(
   for (const auto& optimization :
        matched_page_hint->whitelisted_optimizations()) {
     // Skip over any disabled experimental optimizations.
-    if (IsDisabledExperimentalOptimization(optimization)) {
+    if (IsDisabledPerOptimizationHintExperiment(optimization)) {
       continue;
     }
     if (!IsEnabledOptimizationType(optimization.optimization_type())) {
@@ -491,7 +491,7 @@ bool PreviewsHints::GetResourceLoadingHints(
       continue;
     }
 
-    if (IsDisabledExperimentalOptimization(optimization)) {
+    if (IsDisabledPerOptimizationHintExperiment(optimization)) {
       continue;
     }
 
