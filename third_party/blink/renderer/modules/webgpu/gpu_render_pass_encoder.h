@@ -6,8 +6,14 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_RENDER_PASS_ENCODER_H_
 
 #include "third_party/blink/renderer/modules/webgpu/dawn_object.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
+
+class GPUBindGroup;
+class GPUBuffer;
+class GPUColor;
+class GPURenderPipeline;
 
 class GPURenderPassEncoder : public DawnObject<DawnRenderPassEncoder> {
   DEFINE_WRAPPERTYPEINFO();
@@ -21,7 +27,36 @@ class GPURenderPassEncoder : public DawnObject<DawnRenderPassEncoder> {
   ~GPURenderPassEncoder() override;
 
   // gpu_render_pass_encoder.idl
-  // TODO(crbug.com/877147): implement GPURenderPassEncoder.
+  void setBindGroup(uint32_t index,
+                    GPUBindGroup* bindGroup,
+                    const Vector<uint64_t>& dynamicOffsets);
+  void setPipeline(GPURenderPipeline* pipeline);
+
+  void setBlendColor(GPUColor* color);
+  void setStencilReference(uint32_t reference);
+  void setViewport(float x,
+                   float y,
+                   float width,
+                   float height,
+                   float minDepth,
+                   float maxDepth);
+  void setScissorRect(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
+  void setIndexBuffer(GPUBuffer* buffer, uint64_t offset);
+  void setVertexBuffers(uint32_t startSlot,
+                        const HeapVector<Member<GPUBuffer>>& buffers,
+                        const Vector<uint64_t>& offsets,
+                        ExceptionState& exception_state);
+  void draw(uint32_t vertexCount,
+            uint32_t instanceCount,
+            uint32_t firstVertex,
+            uint32_t firstInstance);
+  void drawIndexed(uint32_t indexCount,
+                   uint32_t instanceCount,
+                   uint32_t firstIndex,
+                   int32_t baseVertex,
+                   uint32_t firstInstance);
+
+  void endPass();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GPURenderPassEncoder);
