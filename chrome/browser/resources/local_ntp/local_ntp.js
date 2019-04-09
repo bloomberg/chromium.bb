@@ -186,6 +186,11 @@ var LOG_TYPE = {
   NTP_CUSTOMIZE_SHORTCUT_CANCEL: 54,
   // 'Done' was clicked in the 'Edit shortcut' dialog.
   NTP_CUSTOMIZE_SHORTCUT_DONE: 55,
+
+  // A middle slot promo was shown.
+  NTP_MIDDLE_SLOT_PROMO_SHOWN: 60,
+  // A promo link was clicked.
+  NTP_MIDDLE_SLOT_PROMO_LINK_CLICKED: 61,
 };
 
 
@@ -1386,6 +1391,15 @@ function injectPromo(promo) {
 
   if (promo.promoLogUrl) {
     navigator.sendBeacon(promo.promoLogUrl);
+  }
+
+  ntpApiHandle.logEvent(LOG_TYPE.NTP_MIDDLE_SLOT_PROMO_SHOWN);
+
+  let links = promoContainer.getElementsByTagName('a');
+  if (links[0]) {
+    links[0].onclick = function() {
+      ntpApiHandle.logEvent(LOG_TYPE.NTP_MIDDLE_SLOT_PROMO_LINK_CLICKED);
+    };
   }
 }
 

@@ -1253,17 +1253,20 @@ void LocalNtpSource::ServePromo(const base::Optional<PromoData>& data) {
   base::JSONWriter::Write(*ConvertPromoDataToDict(data), &js);
   js = "var promo = " + js + ";";
   result = base::RefCountedString::TakeString(&js);
-
   base::TimeTicks now = base::TimeTicks::Now();
   for (const auto& request : promo_requests_) {
     request.callback.Run(result);
     base::TimeDelta delta = now - request.start_time;
-    UMA_HISTOGRAM_MEDIUM_TIMES("NewTabPage.Promos.RequestLatency", delta);
-    if (result) {
-      UMA_HISTOGRAM_MEDIUM_TIMES("NewTabPage.Promos.RequestLatency.Success",
-                                 delta);
+    UMA_HISTOGRAM_MEDIUM_TIMES("NewTabPage.Promos.RequestLatency2", delta);
+    if (promo_service_->promo_status() == PromoService::Status::OK_WITH_PROMO) {
+      UMA_HISTOGRAM_MEDIUM_TIMES(
+          "NewTabPage.Promos.RequestLatency2.SuccessWithPromo", delta);
+    } else if (promo_service_->promo_status() ==
+               PromoService::Status::OK_WITHOUT_PROMO) {
+      UMA_HISTOGRAM_MEDIUM_TIMES(
+          "NewTabPage.Promos.RequestLatency2.SuccessWithoutPromo", delta);
     } else {
-      UMA_HISTOGRAM_MEDIUM_TIMES("NewTabPage.Promos.RequestLatency.Failure",
+      UMA_HISTOGRAM_MEDIUM_TIMES("NewTabPage.Promos.RequestLatency2.Failure",
                                  delta);
     }
   }
