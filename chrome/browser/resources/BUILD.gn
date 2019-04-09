@@ -168,6 +168,37 @@ if (!is_android) {
   }
 }
 
+if (is_chromeos) {
+  grit("os_settings_resources") {
+    if (optimize_webui) {
+      source = "settings/os_settings_resources_vulcanized.grd"
+
+      # The .grd contains references to generated files.
+      source_is_generated = true
+
+      deps = [
+        "//chrome/browser/resources/settings/chromeos:build",
+      ]
+
+      grit_flags = [
+        "-E",
+        "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+      ]
+    } else {
+      source = "settings/os_settings_resources.grd"
+    }
+
+    defines = chrome_grit_defines
+    outputs = [
+      "grit/os_settings_resources.h",
+      "grit/os_settings_resources_map.cc",
+      "grit/os_settings_resources_map.h",
+      "os_settings_resources.pak",
+    ]
+    output_dir = "$root_gen_dir/chrome"
+  }
+}
+
 if (!is_android && !is_chromeos) {
   grit("onboarding_welcome_resources") {
     source = "welcome/onboarding_welcome/onboarding_welcome_resources.grd"

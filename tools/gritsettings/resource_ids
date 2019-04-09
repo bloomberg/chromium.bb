@@ -117,53 +117,59 @@
   "chrome/browser/resources/quota_internals/quota_internals_resources.grd": {
     "includes": [12810],
   },
-  "chrome/browser/resources/settings/settings_resources_vulcanized.grd": {
+  "chrome/browser/resources/settings/os_settings_resources_vulcanized.grd": {
     "includes": [12830],
   },
-  "chrome/browser/resources/settings/settings_resources.grd": {
+  "chrome/browser/resources/settings/os_settings_resources.grd": {
     "structures": [12840],
   },
-  "chrome/browser/resources/sync_file_system_internals/sync_file_system_internals_resources.grd": {
+  "chrome/browser/resources/settings/settings_resources_vulcanized.grd": {
     "includes": [13340],
   },
+  "chrome/browser/resources/settings/settings_resources.grd": {
+    "structures": [13350],
+  },
+  "chrome/browser/resources/sync_file_system_internals/sync_file_system_internals_resources.grd": {
+    "includes": [13850],
+  },
   "chrome/browser/resources/translate_internals/translate_internals_resources.grd": {
-    "includes": [13370],
+    "includes": [13880],
   },
   "chrome/browser/resources/webapks/webapks_ui_resources.grd": {
-    "includes": [13380],
+    "includes": [13890],
   },
   "chrome/browser/resources/welcome/onboarding_welcome/onboarding_welcome_resources.grd": {
-    "includes": [13390],
-    "structures": [13440],
+    "includes": [13900],
+    "structures": [13950],
   },
   "chrome/browser/vr/testapp/vr_testapp_resources.grd": {
-    "includes": [13480],
+    "includes": [13990],
   },
   # END chrome/browser section.
 
   # START chrome/ miscellaneous section.
   "chrome/common/common_resources.grd": {
-    "includes": [13650],
+    "includes": [14160],
   },
   "chrome/credential_provider/gaiacp/gaia_resources.grd": {
-    "includes": [13670],
-    "messages": [13680],
+    "includes": [14180],
+    "messages": [14190],
   },
   "chrome/renderer/resources/renderer_resources.grd": {
-    "includes": [13720],
-    "structures": [13830],
+    "includes": [14230],
+    "structures": [14340],
   },
   "chrome/test/data/webui_test_resources.grd": {
-    "includes": [13870],
+    "includes": [14380],
   },
   # END chrome/ miscellaneous section.
 
   # START chromeos/ section.
   "chromeos/chromeos_strings.grd": {
-    "messages": [14000],
+    "messages": [14510],
   },
   "chromeos/resources/chromeos_resources.grd": {
-    "includes": [14050],
+    "includes": [14560],
   },
   # END chromeos/ section.
 

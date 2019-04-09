@@ -34,6 +34,8 @@
 #include "chrome/browser/ui/webui/settings/tts_handler.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
+#include "chrome/grit/os_settings_resources.h"
+#include "chrome/grit/os_settings_resources_map.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
@@ -47,16 +49,19 @@ namespace settings {
 
 OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
+#if !BUILDFLAG(OPTIMIZE_WEBUI)
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(chrome::kChromeUIOSSettingsHost);
 
   InitWebUIHandlers(profile, web_ui, html_source);
 
-  html_source->UseGzip();
-  html_source->SetDefaultResource(IDR_OS_SETTINGS_HTML);
+  html_source->SetDefaultResource(IDR_SETTINGS_OS_SETTINGS_HTML);
 
   content::WebUIDataSource::Add(profile, html_source);
+#endif  //! BUILDFLAG(OPTIMIZE_WEBUI)
+
+  // TODO(maybelle): Add optimized build
 }
 
 OSSettingsUI::~OSSettingsUI() = default;
