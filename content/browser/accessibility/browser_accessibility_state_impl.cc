@@ -71,25 +71,22 @@ BrowserAccessibilityStateImpl::BrowserAccessibilityStateImpl()
   // Let each platform do its own initialization.
   PlatformInitialize();
 
-  // Schedule calls to update histograms after a delay.
-  //
+#if defined(OS_WIN) || defined(OS_ANDROID)
   // The delay is necessary because assistive technology sometimes isn't
   // detected until after the user interacts in some way, so a reasonable delay
   // gives us better numbers.
-
-  // Some things can be done on another thread safely.
   base::PostDelayedTaskWithTraits(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(
-          &BrowserAccessibilityStateImpl::UpdateHistogramsOnOtherThread, this),
+      base::BindOnce(&BrowserAccessibilityStateImpl::UpdateHistograms, this),
       base::TimeDelta::FromSeconds(ACCESSIBILITY_HISTOGRAM_DELAY_SECS));
-
-  // Other things must be done on the UI thread (e.g. to access PrefService).
+#else
+  // On MacOS, UpdateHistograms should be called on the UI thread because it
+  // needs to be able to access PrefService.
   base::PostDelayedTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&BrowserAccessibilityStateImpl::UpdateHistogramsOnUIThread,
-                     this),
+      base::BindOnce(&BrowserAccessibilityStateImpl::UpdateHistograms, this),
       base::TimeDelta::FromSeconds(ACCESSIBILITY_HISTOGRAM_DELAY_SECS));
+#endif
 }
 
 BrowserAccessibilityStateImpl::~BrowserAccessibilityStateImpl() {
@@ -139,27 +136,20 @@ bool BrowserAccessibilityStateImpl::IsAccessibleBrowser() {
   return accessibility_mode_ == ui::kAXModeComplete;
 }
 
-void BrowserAccessibilityStateImpl::AddUIThreadHistogramCallback(
-    base::OnceClosure callback) {
-  ui_thread_histogram_callbacks_.push_back(std::move(callback));
-}
-
-void BrowserAccessibilityStateImpl::AddOtherThreadHistogramCallback(
-    base::OnceClosure callback) {
-  other_thread_histogram_callbacks_.push_back(std::move(callback));
+void BrowserAccessibilityStateImpl::AddHistogramCallback(
+    base::Closure callback) {
+  histogram_callbacks_.push_back(std::move(callback));
 }
 
 void BrowserAccessibilityStateImpl::UpdateHistogramsForTesting() {
-  UpdateHistogramsOnUIThread();
-  UpdateHistogramsOnOtherThread();
+  UpdateHistograms();
 }
 
-void BrowserAccessibilityStateImpl::UpdateHistogramsOnUIThread() {
-  UpdatePlatformSpecificHistogramsOnUIThread();
+void BrowserAccessibilityStateImpl::UpdateHistograms() {
+  UpdatePlatformSpecificHistograms();
 
-  for (auto& callback : ui_thread_histogram_callbacks_)
-    std::move(callback).Run();
-  ui_thread_histogram_callbacks_.clear();
+  for (size_t i = 0; i < histogram_callbacks_.size(); ++i)
+    histogram_callbacks_[i].Run();
 
   // TODO(dmazzoni): remove this in M59 since Accessibility.ModeFlag
   // supercedes it.  http://crbug.com/672205
@@ -170,14 +160,6 @@ void BrowserAccessibilityStateImpl::UpdateHistogramsOnUIThread() {
   UMA_HISTOGRAM_BOOLEAN("Accessibility.ManuallyEnabled",
                         base::CommandLine::ForCurrentProcess()->HasSwitch(
                             switches::kForceRendererAccessibility));
-}
-
-void BrowserAccessibilityStateImpl::UpdateHistogramsOnOtherThread() {
-  UpdatePlatformSpecificHistogramsOnOtherThread();
-
-  for (auto& callback : other_thread_histogram_callbacks_)
-    std::move(callback).Run();
-  other_thread_histogram_callbacks_.clear();
 }
 
 void BrowserAccessibilityStateImpl::OnAXModeAdded(ui::AXMode mode) {
@@ -191,10 +173,7 @@ ui::AXMode BrowserAccessibilityStateImpl::GetAccessibilityMode() const {
 #if !defined(OS_ANDROID) && !defined(OS_WIN) && !defined(OS_MACOSX)
 void BrowserAccessibilityStateImpl::PlatformInitialize() {}
 
-void BrowserAccessibilityStateImpl::
-    UpdatePlatformSpecificHistogramsOnUIThread() {}
-void BrowserAccessibilityStateImpl::
-    UpdatePlatformSpecificHistogramsOnOtherThread() {}
+void BrowserAccessibilityStateImpl::UpdatePlatformSpecificHistograms() {}
 #endif
 
 void BrowserAccessibilityStateImpl::AddAccessibilityModeFlags(ui::AXMode mode) {

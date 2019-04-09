@@ -1096,10 +1096,9 @@ void AccessibilityManager::SetProfile(Profile* profile) {
         base::Bind(&AccessibilityManager::OnLocaleChanged,
                    base::Unretained(this)));
 
-    content::BrowserAccessibilityState::GetInstance()
-        ->AddOtherThreadHistogramCallback(base::BindOnce(
-            &AccessibilityManager::UpdateChromeOSAccessibilityHistograms,
-            base::Unretained(this)));
+    content::BrowserAccessibilityState::GetInstance()->AddHistogramCallback(
+        base::Bind(&AccessibilityManager::UpdateChromeOSAccessibilityHistograms,
+                   base::Unretained(this)));
 
     extensions::ExtensionRegistry* registry =
         extensions::ExtensionRegistry::Get(profile);
