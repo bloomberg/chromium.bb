@@ -1,9 +1,9 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-  <script src="../resources/testharness.js"></script>
-  <script src="../resources/testharnessreport.js"></script>
-  <script src="../resources/run-after-layout-and-paint.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 <style>
 .bigbutton {
     display:block;
@@ -21,21 +21,24 @@
 <script>
 
 async_test_after_layout_and_paint((t) => {
+  window.scrollTo(0, 0);
+  assert_equals(window.pageXOffset, 0);
 
-    window.scrollTo(0, 0);
-    assert_equals(window.pageXOffset, 0);
+  accessibilityController.addNotificationListener(t.step_func((target, notification) => {
+    if (target.role == 'AXRole: AXWebArea' && notification == 'ScrollPositionChanged') {
+      console.log('Got notification on web area');
+      accessibilityController.removeNotificationListener();
+      assert_equals(window.pageXOffset, 500);
+      t.done();
+    }
+  }));
 
-    accessibilityController.addNotificationListener(function (target, notification) {
-        if (target.role == 'AXRole: AXWebArea' && notification == 'ScrollPositionChanged') {
-            console.log('Got notification on web area');
-            assert_equals(window.pageXOffset, 500);
-            t.done()();
-        }
-    });
-
-    window.setTimeout(function() {
-        window.scrollTo(500, 0);
-    }, 0);
+  window.setTimeout(function() {
+    window.scrollTo(500, 0);
+  }, 0);
+  window.setTimeout(t.step_func_done(() => {
+    assert_unreached();
+  }), 200);
 }, "This test ensures that scrolling the window sends a notification.");
 
 </script>

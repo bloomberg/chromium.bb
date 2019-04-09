@@ -1,9 +1,9 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-  <script src="../resources/testharness.js"></script>
-  <script src="../resources/testharnessreport.js"></script>
-  <script src="../resources/run-after-layout-and-paint.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 <style>
 .container {
   padding: 100px;
@@ -30,21 +30,24 @@
 <script>
 
 async_test_after_layout_and_paint((t) => {
-    var container = document.getElementById('container');
+  var container = document.getElementById('container');
 
-    accessibilityController.addNotificationListener(function (target, notification) {
-        if (target.role == 'AXRole: AXGenericContainer') {
-            console.log('Got notification on container div');
-            assert_equals(container.scrollTop, 500);
-            t.done();
-        }
-    });
+  accessibilityController.addNotificationListener(t.step_func((target, notification) => {
+    if (target.role == 'AXRole: AXGenericContainer') {
+      console.log('Got notification on container div');
+      assert_equals(container.scrollTop, 500);
+      accessibilityController.removeNotificationListener();
+      t.done();
+    }
+  }));
 
-    window.setTimeout(function() {
-        container.scrollTop = 500;
-    }, 0);
+  window.setTimeout(function() {
+    container.scrollTop = 500;
+  }, 0);
+  window.setTimeout(t.step_func_done(() => {
+    assert_unreached();
+  }), 200);
 }, "This test ensures that scrolling the window sends a notification.");
-
 
 </script>
 

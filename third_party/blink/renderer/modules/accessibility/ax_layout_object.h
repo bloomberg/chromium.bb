@@ -163,6 +163,10 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   AXObject* RawFirstChild() const override;
   AXObject* RawNextSibling() const override;
   void AddChildren() override;
+  void AddListMarker() override;
+  void AddInlineTextBoxChildren(bool force) override;
+  void AddImageMapChildren() override;
+  void AddHiddenChildren() override;
   bool CanHaveChildren() const override;
 
   // Properties of the object's owning document or page.
@@ -213,18 +217,14 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   bool IsValidSelectionBound(const AXObject*) const;
   AXObject* AccessibilityImageMapHitTest(HTMLAreaElement*,
                                          const IntPoint&) const;
-  LayoutObject* LayoutParentObject() const;
   bool IsSVGImage() const;
   void DetachRemoteSVGRoot();
   AXSVGRoot* RemoteSVGRootElement() const;
   AXObject* RemoteSVGElementHitTest(const IntPoint&) const;
   void OffsetBoundingBoxForRemoteSVGElement(LayoutRect&) const;
-  void AddHiddenChildren();
-  void AddImageMapChildren();
   void AddPopupChildren();
   void AddRemoteSVGChildren();
   void AddTableChildren();
-  void AddInlineTextBoxChildren(bool force);
   void AddValidationMessageChild();
   ax::mojom::Role DetermineTableCellRole() const;
   ax::mojom::Role DetermineTableRowRole() const;

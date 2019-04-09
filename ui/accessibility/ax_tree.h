@@ -240,6 +240,7 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
   struct OrderedSetInfo {
     int32_t pos_in_set;
     int32_t set_size;
+    int32_t lowest_hierarchical_level;
     OrderedSetInfo() : pos_in_set(0), set_size(0) {}
     ~OrderedSetInfo() {}
   };

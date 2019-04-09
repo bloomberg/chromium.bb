@@ -58,15 +58,16 @@ ax::mojom::Role AXListBoxOption::DetermineAccessibilityRole() {
 }
 
 bool AXListBoxOption::IsParentPresentationalRole() const {
-  AXObject* parent = ParentObject();
+  LayoutObject* parent_layout_object = GetLayoutObject()->Parent();
+  if (!parent_layout_object)
+    return false;
+
+  AXObject* parent = AXObjectCache().GetOrCreate(parent_layout_object);
   if (!parent)
     return false;
 
-  LayoutObject* layout_object = parent->GetLayoutObject();
-  if (!layout_object)
-    return false;
-
-  if (layout_object->IsListBox() && parent->HasInheritedPresentationalRole())
+  if (parent_layout_object->IsListBox() &&
+      parent->HasInheritedPresentationalRole())
     return true;
 
   return false;
