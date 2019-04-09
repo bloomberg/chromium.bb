@@ -1468,8 +1468,10 @@
   },
   {
     "name": "enable-parallel-downloading",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "qinmin", "xingliu", "dtrainor" ],
+    // This flag is used by dev teams on Android to disable this feature, since
+    // it can badly break pages under test.
+    "expiry_milestone": -1
   },
   {
     "name": "enable-physical-keyboard-autocorrect",
