@@ -39,13 +39,15 @@ source_set("eg_app_support+eg2") {
     "coverage_utils.h",
     "coverage_utils.mm",
     "earl_grey_app.h",
-    "matchers.h",
-    "matchers.mm",
   ]
 }
 
 source_set("eg_test_support+eg2") {
-  configs += [ "//build/config/compiler:enable_arc" ]
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
   testonly = true
 
   sources = [
@@ -53,6 +55,8 @@ source_set("eg_test_support+eg2") {
     "coverage_utils_stub.mm",
     "disabled_test_macros.h",
     "earl_grey_test.h",
+    "matchers.h",
+    "matchers.mm",
   ]
 
   deps = [
