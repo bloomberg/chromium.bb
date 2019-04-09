@@ -2021,7 +2021,9 @@
                 "windows",
                 "mac",
                 "chromeos",
-                "ios"
+                "ios",
+                "linux",
+                "android_webview"
             ],
             "experiments": [
                 {
