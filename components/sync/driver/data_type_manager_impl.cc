@@ -82,23 +82,6 @@ void DataTypeManagerImpl::Configure(ModelTypeSet desired_types,
   ConfigureImpl(Intersection(desired_types, allowed_types), context);
 }
 
-void DataTypeManagerImpl::ReenableType(ModelType type) {
-  // TODO(zea): move the "should we reconfigure" logic into the datatype handler
-  // itself.
-  // Only reconfigure if the type actually had a data type or unready error.
-  if (!data_type_status_table_.ResetDataTypeErrorFor(type) &&
-      !data_type_status_table_.ResetUnreadyErrorFor(type)) {
-    return;
-  }
-
-  // Only reconfigure if the type is actually desired.
-  if (!last_requested_types_.Has(type))
-    return;
-
-  DVLOG(1) << "Reenabling " << ModelTypeToString(type);
-  ForceReconfiguration();
-}
-
 void DataTypeManagerImpl::ReadyForStartChanged(ModelType type) {
   if (!UpdateUnreadyTypeError(type)) {
     // Nothing changed.

@@ -132,7 +132,6 @@ class ProfileSyncService : public SyncService,
   void StopAndClear() override;
   void OnDataTypeRequestsSyncStartup(ModelType type) override;
   void TriggerRefresh(const ModelTypeSet& types) override;
-  void ReenableDatatype(ModelType type) override;
   void ReadyForStartChanged(ModelType type) override;
   void SetInvalidationsForSessionsEnabled(bool enabled) override;
   void AddObserver(SyncServiceObserver* observer) override;

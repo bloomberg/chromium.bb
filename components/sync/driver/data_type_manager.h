@@ -72,10 +72,6 @@ class DataTypeManager {
   virtual void Configure(ModelTypeSet desired_types,
                          const ConfigureContext& context) = 0;
 
-  // Resets the error state for |type| and triggers a reconfiguration if
-  // necessary.
-  virtual void ReenableType(ModelType type) = 0;
-
   // Informs the data type manager that the ready-for-start status of a
   // controller has changed. If the controller is not ready any more, it will
   // stop |type|. Otherwise, it will trigger reconfiguration so that |type| gets

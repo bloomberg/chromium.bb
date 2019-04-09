@@ -60,7 +60,6 @@ class FakeDataTypeManager : public DataTypeManager {
     configure_called_.Run(context.reason);
   }
 
-  void ReenableType(ModelType type) override {}
   void ReadyForStartChanged(ModelType type) override {}
   void ResetDataTypeErrors() override {}
   void PurgeForMigration(ModelTypeSet undesired_types) override {}
