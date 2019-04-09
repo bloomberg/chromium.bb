@@ -331,6 +331,10 @@ class UI_BASE_IME_EXPORT TSFTextStore : public ITextStoreACP,
   bool has_composition_range_ = false;
   gfx::Range composition_range_;
 
+  // |on_start_composition_called_| indicates that OnStartComposition() is
+  // called duriing current edit session.
+  bool on_start_composition_called_ = false;
+
   // |previous_composition_string_| indicicates composition string in last
   // edit session during same composition. |previous_composition_start_|
   // indicates composition start in last session during same composition. If
