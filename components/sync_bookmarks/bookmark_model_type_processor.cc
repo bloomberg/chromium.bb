@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
@@ -257,6 +258,9 @@ void BookmarkModelTypeProcessor::ModelReadyToSync(
   DCHECK(!bookmark_model_);
   DCHECK(!bookmark_tracker_);
   DCHECK(!bookmark_model_observer_);
+
+  // TODO(crbug.com/950869): Remove after investigations are completed.
+  TRACE_EVENT0("browser", "BookmarkModelTypeProcessor::ModelReadyToSync");
 
   bookmark_model_ = model;
   schedule_save_closure_ = schedule_save_closure;
