@@ -72,7 +72,9 @@ CIDB_PROD_BOT_CREDS = os.path.join(HOME_DIRECTORY, '.cidb_creds',
 CIDB_DEBUG_BOT_CREDS = os.path.join(HOME_DIRECTORY, '.cidb_creds',
                                     'debug_cidb_bot')
 
-
+# Crash Server upload API key.
+CRASH_API_KEY = os.path.join('/', 'creds', 'api_keys',
+                             'api_key-chromeos-crash-uploader')
 
 # Buildbucket build status
 BUILDBUCKET_BUILDER_STATUS_SCHEDULED = 'SCHEDULED'

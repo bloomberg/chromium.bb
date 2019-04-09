@@ -15,7 +15,9 @@ from __future__ import print_function
 import hashlib
 import httplib
 import itertools
+import json
 import os
+import requests
 import socket
 import sys
 import textwrap
@@ -77,9 +79,8 @@ poster.streaminghttp.register_openers()
 
 
 # URLs used for uploading symbols.
-OFFICIAL_UPLOAD_URL = 'http://clients2.google.com/cr/symbol'
-STAGING_UPLOAD_URL = 'http://clients2.google.com/cr/staging_symbol'
-
+OFFICIAL_UPLOAD_URL = 'https://prod-crashsymbolcollector-pa.googleapis.com/v1'
+STAGING_UPLOAD_URL = 'https://staging-crashsymbolcollector-pa.googleapis.com/v1'
 
 # The crash server rejects files that are this big.
 CRASH_SERVER_FILE_LIMIT = 700 * 1024 * 1024
@@ -457,59 +458,81 @@ def GetUploadTimeout(symbol):
   return max(symbol.FileSize() / UPLOAD_MIN_RATE, UPLOAD_MIN_TIMEOUT)
 
 
-def UploadSymbolFile(upload_url, symbol, product_name):
-  """Upload a symbol file to the crash server.
+def ExecRequest(operator, url, timeout, api_key, **kwargs):
+  """Makes a web request with default timeout, returning the json result.
 
-  The upload is a multipart/form-data POST with the following parameters:
-    code_file: the basename of the module, e.g. "app"
-    code_identifier: the module file's identifier
-    debug_file: the basename of the debugging file, e.g. "app"
-    debug_identifier: the debug file's identifier, usually consisting of
-                      the guid and age embedded in the pdb, e.g.
-                      "11111111BBBB3333DDDD555555555555F"
-    version: the file version of the module, e.g. "1.2.3.4"
-    product: HTTP-friendly product name
-    os: the operating system that the module was built for
-    cpu: the CPU that the module was built for
-    symbol_file: the contents of the breakpad-format symbol file
+  This method will raise a requests.exceptions.HTTPError if the status
+  code is not 4XX, 5XX
+
+  Note: If you are using verbose logging it is entirely possible that the
+  subsystem will write your api key to the logs!
+
+  Args:
+    operator: HTTP method
+    url: Endpoint URL
+    timeout: HTTP timeout for request
+    api_key: Authentication key
+
+  Returns:
+    HTTP response content
+  """
+  resp = requests.request(operator, url,
+                          params={'key': api_key},
+                          headers={'User-agent': 'chromite.upload_symbols'},
+                          timeout=timeout, **kwargs)
+  # Make sure we don't leak secret keys by accident.
+  if resp.status_code > 399:
+    resp.url = resp.url.replace(urllib2.quote(api_key), 'XX-HIDDEN-XX')
+    logging.error('Url: %s, Status: %s, response: "%s", in: %s',
+                  resp.url, resp.status_code, resp.text, resp.elapsed)
+    resp.raise_for_status()
+  if resp.content:
+    return resp.json()
+  return {}
+
+
+def UploadSymbolFile(upload_url, symbol, api_key):
+  '''Upload a symbol file to the crash server, returning the status result.
 
   Args:
     upload_url: The crash URL to POST the |sym_file| to
     symbol: A SymbolFile instance.
-    product_name: A string for stats purposes. Usually 'ChromeOS' or 'Android'.
-  """
-  fields = (
-      ('code_file', symbol.header.name),
-      ('debug_file', symbol.header.name),
-      ('debug_identifier', symbol.header.id.replace('-', '')),
-      # The product/version fields are used by the server only for statistic
-      # purposes.  They do not impact symbolization, so they're safe to set
-      # to any value all the time.
-      # In this case, we use it to help see the load our build system is
-      # placing on the server.
-      # Not sure what to set for the version.  Maybe the git sha1 of this file.
-      # Note: the server restricts this to 30 chars.
-      #('version', None),
-      ('product', product_name),
-      ('os', symbol.header.os),
-      ('cpu', symbol.header.cpu),
-      poster.encode.MultipartParam.from_file('symbol_file', symbol.file_name),
-  )
+    api_key: Authentication key
+  '''
+  timeout = GetUploadTimeout(symbol)
+  upload = ExecRequest('post',
+                       '{}/uploads:create'.format(upload_url), timeout, api_key)
+  print("API Key: ", api_key)
+  print("Upload: ", upload)
 
-  data, headers = poster.encode.multipart_encode(fields)
-  request = urllib2.Request(upload_url, data, headers)
-  request.add_header('User-agent', 'chromite.upload_symbols')
-  urllib2.urlopen(request, timeout=GetUploadTimeout(symbol))
+  if upload and 'uploadUrl' in upload.keys():
+    symbol_data = {'symbol_id':
+                   {'debug_file': symbol.header.name,
+                    'debug_id': symbol.header.id.replace('-', '')}
+                  }
+    ExecRequest('put',
+                upload['uploadUrl'], timeout,
+                api_key=api_key,
+                data=open(symbol.file_name, 'r'))
+    ExecRequest('post',
+                '%s/uploads/%s:complete' % (
+                    upload_url, upload['uploadKey']),
+                timeout, api_key=api_key,
+                # TODO(mikenichols): Validate product_name once it is added
+                # to the proto; currently unsupported.
+                data=json.dumps(symbol_data))
+  else:
+    raise requests.exceptions.HTTPError
 
 
-def PerformSymbolsFileUpload(symbols, upload_url, product_name='ChromeOS'):
+def PerformSymbolsFileUpload(symbols, upload_url, api_key):
   """Upload the symbols to the crash server
 
   Args:
     symbols: An iterable of SymbolFiles to be uploaded.
     upload_url: URL of crash server to upload too.
+    api_key: Authentication key.
     failures: Tracker for total upload failures.
-    product_name: A string for stats purposes. Usually 'ChromeOS' or 'Android'.
 
   Yields:
     Each symbol from symbols, perhaps modified.
@@ -526,24 +549,28 @@ def PerformSymbolsFileUpload(symbols, upload_url, product_name='ChromeOS'):
         # This command retries the upload multiple times with growing delays. We
         # only consider the upload a failure if these retries fail.
         def ShouldRetryUpload(exception):
-          return isinstance(exception, (urllib2.HTTPError, urllib2.URLError,
+          return isinstance(exception, (requests.exceptions.HTTPError,
+                                        requests.exceptions.RequestException,
+                                        urllib2.URLError,
                                         httplib.HTTPException, socket.error))
 
         with cros_build_lib.TimedSection() as timer:
           retry_stats.RetryWithStats(
               UPLOAD_STATS, ShouldRetryUpload, MAX_RETRIES,
               UploadSymbolFile,
-              upload_url, s, product_name,
+              upload_url, s, api_key,
               sleep=INITIAL_RETRY_DELAY,
               log_all_retries=True)
         logging.info('upload of %10i bytes took %s', s.FileSize(), timer.delta)
         s.status = SymbolFile.UPLOADED
-      except urllib2.HTTPError as e:
-        logging.warning('could not upload: %s: HTTP %s: %s',
-                        s.display_name, e.code, e.reason)
+      except (requests.exceptions.HTTPError,
+              requests.exceptions.Timeout,
+              requests.exceptions.RequestException) as e:
+        logging.warning('could not upload: %s: HTTP error: %s',
+                        s.display_name, e)
         s.status = SymbolFile.ERROR
         failures += 1
-      except (urllib2.URLError, httplib.HTTPException, socket.error) as e:
+      except (httplib.HTTPException, urllib2.URLError, socket.error) as e:
         logging.warning('could not upload: %s: %s %s', s.display_name,
                         type(e).__name__, e)
         s.status = SymbolFile.ERROR
@@ -604,20 +631,20 @@ def ReportResults(symbols, failed_list):
   return result_counts[SymbolFile.INITIAL] + result_counts[SymbolFile.ERROR]
 
 
-def UploadSymbols(sym_paths, upload_url, product_name, dedupe_namespace=None,
-                  failed_list=None, upload_limit=None, strip_cfi=None):
+def UploadSymbols(sym_paths, upload_url, dedupe_namespace=None,
+                  failed_list=None, upload_limit=None, strip_cfi=None,
+                  api_key=None):
   """Upload all the generated symbols for |board| to the crash server
 
   Args:
     sym_paths: Specific symbol files (or dirs of sym files) to upload,
       otherwise search |breakpad_dir|
     upload_url: URL of crash server to upload too.
-    product_name: A string for crash server stats purposes.
-                  Usually 'ChromeOS' or 'Android'.
     dedupe_namespace: None for no deduping, or string namespace in isolate.
     failed_list: A filename at which to write out a list of our failed uploads.
     upload_limit: Integer listing how many files to upload. None for no limit.
     strip_cfi: File size at which we strip out CFI data. None for no limit.
+    api_key: A string based authentication key
 
   Returns:
     The number of errors that were encountered.
@@ -651,7 +678,7 @@ def UploadSymbols(sym_paths, upload_url, product_name, dedupe_namespace=None,
       symbols = FindDuplicates(symbols, dedupe_namespace)
 
     # Perform uploads
-    symbols = PerformSymbolsFileUpload(symbols, upload_url, product_name)
+    symbols = PerformSymbolsFileUpload(symbols, upload_url, api_key)
 
     # Record for future deduping.
     if dedupe_namespace:
@@ -695,6 +722,8 @@ def main(argv):
                       help='answer yes to all prompts')
   parser.add_argument('--product_name', type=str, default='ChromeOS',
                       help='Produce Name for breakpad stats.')
+  parser.add_argument('--api_key', type=str, default=None,
+                      help='full path to the API key file')
 
   opts = parser.parse_args(argv)
   opts.Freeze()
@@ -737,6 +766,15 @@ def main(argv):
       logging.warning('unofficial builds upload to the staging server')
       upload_url = STAGING_UPLOAD_URL
 
+  # Set up the API key needed to authenticate to Crash server.
+  # Allow for a local key file for testing purposes.
+  if opts.api_key:
+    api_key_file = opts.api_key
+  else:
+    api_key_file = constants.CRASH_API_KEY
+
+  api_key = osutils.ReadFile(api_key_file)
+
   # Confirm we really want the long upload.
   if not opts.yes:
     prolog = '\n'.join(textwrap.wrap(textwrap.dedent("""
@@ -762,11 +800,11 @@ def main(argv):
   ret += UploadSymbols(
       sym_paths=sym_paths,
       upload_url=upload_url,
-      product_name=opts.product_name,
       dedupe_namespace=dedupe_namespace,
       failed_list=opts.failed_list,
       upload_limit=opts.upload_limit,
-      strip_cfi=opts.strip_cfi)
+      strip_cfi=opts.strip_cfi,
+      api_key=api_key)
 
   if ret:
     logging.error('encountered %i problem(s)', ret)
