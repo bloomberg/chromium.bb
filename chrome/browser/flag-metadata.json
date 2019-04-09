@@ -825,6 +825,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-autofill-credit-card-authentication",
+    "owners": [ "jsaul@google.com", "manasverma@google.com" ],
+    "expiry_milestone": 79
+  },
+  {
     "name": "enable-autofill-credit-card-local-card-migration",
     "owners": [ "jiahuiguo@google.com", "siyua@google.com" ],
     "expiry_milestone": 76

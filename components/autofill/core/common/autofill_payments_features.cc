@@ -23,6 +23,11 @@ namespace features {
 const base::Feature kAutofillCreditCardAblationExperiment{
     "AutofillCreditCardAblationExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the use of platform authenticators through WebAuthn to retrieve
+// credit cards from Google payments.
+const base::Feature kAutofillCreditCardAuthentication{
+    "AutofillCreditCardAuthentication", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kAutofillCreditCardLocalCardMigration{
     "AutofillCreditCardLocalCardMigration", base::FEATURE_ENABLED_BY_DEFAULT};
 
