@@ -12,7 +12,13 @@
 
 TestBrowser::TestBrowser(ios::ChromeBrowserState* browser_state,
                          TabModel* tab_model)
-    : browser_state_(browser_state), tab_model_(tab_model) {}
+    : browser_state_(browser_state),
+      tab_model_(tab_model),
+      web_state_list_(tab_model_.webStateList) {}
+
+TestBrowser::TestBrowser(ios::ChromeBrowserState* browser_state,
+                         WebStateList* web_state_list)
+    : browser_state_(browser_state), web_state_list_(web_state_list) {}
 
 TestBrowser::~TestBrowser() {}
 
@@ -25,5 +31,5 @@ TabModel* TestBrowser::GetTabModel() const {
 }
 
 WebStateList* TestBrowser::GetWebStateList() const {
-  return tab_model_.webStateList;
+  return web_state_list_;
 }
