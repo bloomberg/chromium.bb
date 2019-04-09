@@ -279,12 +279,14 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
     icon_view_->SetSize(icon_view_->CalculatePreferredSize());
   }
 
-  if (match.type == AutocompleteMatchType::CALCULATOR) {
+  const auto apply_vector_icon = [=](const gfx::VectorIcon& vector_icon) {
+    const auto& icon = gfx::CreateVectorIcon(vector_icon, SK_ColorWHITE);
     answer_image_view_->SetImage(
-        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-            IDR_OMNIBOX_CALCULATOR_ROUND));
-    answer_image_view_->SetImageSize(
-        gfx::Size(kNewAnswerImageSize, kNewAnswerImageSize));
+        gfx::CanvasImageSource::MakeImageSkia<EncircledImageSource>(
+            kNewAnswerImageSize / 2, gfx::kGoogleBlue600, icon));
+  };
+  if (match.type == AutocompleteMatchType::CALCULATOR) {
+    apply_vector_icon(omnibox::kAnswerCalculatorIcon);
   } else if (!is_rich_suggestion_) {
     // An old style answer entry may use the answer_image_view_. But
     // it's set when the image arrives (later).
@@ -322,10 +324,7 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
           break;
       }
       if (vector_icon) {
-        const auto& icon = gfx::CreateVectorIcon(*vector_icon, SK_ColorWHITE);
-        answer_image_view_->SetImage(
-            gfx::CanvasImageSource::MakeImageSkia<EncircledImageSource>(
-                kNewAnswerImageSize / 2, gfx::kGoogleBlue600, icon));
+        apply_vector_icon(*vector_icon);
       } else if (idr_image) {
         answer_image_view_->SetImage(
             ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(

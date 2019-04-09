@@ -156,7 +156,6 @@
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_EASYUNLOCK_ENABLED" file="cros/notification_easyunlock_enabled.png" />
       </if>
       <if expr="not is_android">
-        <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CALCULATOR_ROUND" file="common/calculator_round_24.png" />
         <structure type="chrome_scaled_image" name="IDR_OMNIBOX_TRANSLATION_ROUND" file="common/translate_round_32.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_PLUGINS_FAVICON" file="common/favicon_extensions.png" />
