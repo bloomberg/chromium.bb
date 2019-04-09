@@ -11,4 +11,4 @@
     android:gravity="center_vertical|center_horizontal"
     android:minHeight="36dp"
     android:singleLine="true"
-    style="@style/FilledButton" />
+    style="@style/FilledButton.Flat" />

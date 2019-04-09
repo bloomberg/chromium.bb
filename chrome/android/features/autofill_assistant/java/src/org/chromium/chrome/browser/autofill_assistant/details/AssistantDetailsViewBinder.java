@@ -17,6 +17,7 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.media.ThumbnailUtils;
 import android.os.Build;
+import android.support.annotation.StyleRes;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.text.TextUtils;
@@ -56,7 +57,7 @@ import java.util.Locale;
 class AssistantDetailsViewBinder
         implements PropertyModelChangeProcessor.ViewBinder<AssistantDetailsModel,
                 AssistantDetailsViewBinder.ViewHolder, PropertyKey> {
-    private static final int IMAGE_BORDER_RADIUS = 4;
+    private static final int IMAGE_BORDER_RADIUS = 8;
     private static final int PULSING_DURATION_MS = 1_000;
     private static final String DETAILS_TIME_FORMAT = "H:mma";
     private static final String DETAILS_DATE_FORMAT = "EEE, MMM d";
@@ -228,11 +229,16 @@ class AssistantDetailsViewBinder
     }
 
     private void setTextStyles(AssistantDetails details, ViewHolder viewHolder) {
-        setTitleStyle(details.getUserApprovalRequired(), details.getHighlightTitle(), viewHolder);
-        setSubtextStyle(viewHolder.mDescriptionLine1View, details.getUserApprovalRequired(),
-                details.getHighlightLine1(), viewHolder);
-        setSubtextStyle(viewHolder.mDescriptionLine2View, details.getUserApprovalRequired(),
-                details.getHighlightLine2(), viewHolder);
+        setTextStyle(viewHolder.mTitleView, details.getUserApprovalRequired(),
+                details.getHighlightTitle(), R.style.TextAppearance_AssistantDetailsTitle);
+        setTextStyle(viewHolder.mDescriptionLine1View, details.getUserApprovalRequired(),
+                details.getHighlightLine1(), R.style.TextAppearance_BlackCaption);
+        setTextStyle(viewHolder.mDescriptionLine2View, details.getUserApprovalRequired(),
+                details.getHighlightLine2(), R.style.TextAppearance_BlackHint2);
+        setTextStyle(viewHolder.mTotalPriceLabelView, details.getUserApprovalRequired(),
+                /* highlight= */ false, R.style.TextAppearance_AssistantDetailsPrice);
+        setTextStyle(viewHolder.mTotalPriceView, details.getUserApprovalRequired(),
+                /* highlight= */ false, R.style.TextAppearance_AssistantDetailsPrice);
 
         if (shouldStartOrContinuePlaceholderAnimation(details, viewHolder)) {
             startOrContinuePlaceholderAnimations(viewHolder);
@@ -250,35 +256,17 @@ class AssistantDetailsViewBinder
         return details.getAnimatePlaceholders() && isAtLeastOneFieldEmpty;
     }
 
-    private void setTitleStyle(boolean approvalRequired, boolean highlight, ViewHolder viewHolder) {
-        TextView titleView = viewHolder.mTitleView;
-        if (approvalRequired && !highlight) {
-            // De-emphasize title if user needs to accept details but the title should not be
-            // highlighted.
-            titleView.setTextColor(ApiCompatibilityUtils.getColor(
-                    mContext.getResources(), R.color.modern_grey_300));
-        } else {
-            // Normal style: bold black text.
-            ApiCompatibilityUtils.setTextAppearance(
-                    titleView, R.style.TextAppearance_BlackCaptionDefault);
-            if (highlight) {
-                titleView.setTypeface(titleView.getTypeface(), Typeface.BOLD);
-            }
-        }
-    }
+    private void setTextStyle(
+            TextView view, boolean approvalRequired, boolean highlight, @StyleRes int normalStyle) {
+        ApiCompatibilityUtils.setTextAppearance(view, normalStyle);
 
-    private void setSubtextStyle(
-            TextView view, boolean approvalRequired, boolean highlight, ViewHolder viewHolder) {
-        // Emphasized style.
         if (approvalRequired && highlight) {
+            // Emphasized style.
             view.setTypeface(view.getTypeface(), Typeface.BOLD_ITALIC);
         } else if (approvalRequired) {
             // De-emphasized style.
             view.setTextColor(ApiCompatibilityUtils.getColor(
                     mContext.getResources(), R.color.modern_grey_300));
-        } else {
-            // getUserApprovalRequired == false, normal style.
-            ApiCompatibilityUtils.setTextAppearance(view, R.style.TextAppearance_BlackCaption);
         }
     }
 
