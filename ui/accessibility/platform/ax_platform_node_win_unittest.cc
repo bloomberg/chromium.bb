@@ -1796,7 +1796,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessible2GetNRelations) {
   // TODO(dougt): Try adding one more relation.
 }
 
-TEST_F(AXPlatformNodeWinTest, TestRelationTargetsOfType) {
+TEST_F(AXPlatformNodeWinTest, DISABLED_TestRelationTargetsOfType) {
   AXNodeData root;
   root.id = 1;
   root.role = ax::mojom::Role::kRootWebArea;
