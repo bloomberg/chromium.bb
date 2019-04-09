@@ -5,8 +5,8 @@
 cr.exportPath('management');
 /**
  * @typedef {{
- *    messageIds: !Array<string>,
- *    icon: string,
+ *   messageIds: !Array<string>,
+ *   icon: string,
  * }}
  */
 management.BrowserReportingData;
@@ -44,7 +44,16 @@ Polymer({
      * @private
      */
     localTrustRoots_: String,
+
+    /** @private */
+    managementOverview_: String,
+
+    /** @private {?management.ManagedInfo} */
+    deviceManagedInfo_: Object,
     // </if>
+
+    /** @private {?management.ManagedInfo} */
+    accountManagedInfo_: Object,
 
     /**
      * Indicates if the search field in visible in the toolbar.
@@ -91,6 +100,7 @@ Polymer({
     this.getDeviceReportingInfo_();
     this.getLocalTrustRootsInfo_();
     // </if>
+    this.getManagementStatus_();
   },
 
   /** @private */
@@ -125,6 +135,17 @@ Polymer({
         Object.keys(reportingInfoMap)
             .sort((a, b) => reportingTypeOrder[a] - reportingTypeOrder[b])
             .map(reportingType => reportingInfoMap[reportingType]);
+  },
+
+  /** @private */
+  getManagementStatus_() {
+    this.browserProxy_.getManagementStatus().then(status => {
+      // <if expr="chromeos">
+      this.managementOverview_ = status.overview;
+      this.deviceManagedInfo_ = status.deviceManagedInfo;
+      // </if>
+      this.accountManagedInfo_ = status.accountManagedInfo;
+    });
   },
 
   /** @private */
