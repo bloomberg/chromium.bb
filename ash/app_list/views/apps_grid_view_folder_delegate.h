@@ -52,6 +52,11 @@ class APP_LIST_EXPORT AppsGridViewFolderDelegate {
   // synchronous drag has an icon for reparenting while it loads.
   virtual void SetRootLevelDragViewVisible(bool visible) = 0;
 
+  // Moves |reparented_item| to the root level's grid view, left/right/up/down
+  // of the folder's grid position.
+  virtual void HandleKeyboardReparent(AppListItemView* reparented_view,
+                                      ui::KeyboardCode key_code) = 0;
+
  protected:
   virtual ~AppsGridViewFolderDelegate() {}
 };

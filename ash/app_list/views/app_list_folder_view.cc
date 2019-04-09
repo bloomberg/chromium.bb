@@ -812,6 +812,13 @@ void AppListFolderView::SetRootLevelDragViewVisible(bool visible) {
   container_view_->apps_grid_view()->SetDragViewVisible(visible);
 }
 
+void AppListFolderView::HandleKeyboardReparent(AppListItemView* reparented_view,
+                                               ui::KeyboardCode key_code) {
+  container_view_->ReparentFolderItemTransit(folder_item_);
+  container_view_->apps_grid_view()->HandleKeyboardReparent(reparented_view,
+                                                            key_code);
+}
+
 void AppListFolderView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kGenericContainer;
 }

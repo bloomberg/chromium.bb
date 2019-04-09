@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/model/app_list_model.h"
@@ -335,6 +336,9 @@ class TestAppsGridViewFolderDelegate : public AppsGridViewFolderDelegate {
   bool IsOEMFolder() const override { return false; }
 
   void SetRootLevelDragViewVisible(bool visible) override {}
+
+  void HandleKeyboardReparent(AppListItemView* reparented_item,
+                              ui::KeyboardCode key_code) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestAppsGridViewFolderDelegate);
@@ -1383,6 +1387,157 @@ TEST_F(AppsGridViewTest, ControlArrowDownOrRightRemovesPage) {
   EXPECT_EQ(1, GetPaginationModel()->selected_page());
   EXPECT_EQ(2, GetPaginationModel()->total_pages());
   EXPECT_EQ(2, test_api_->AppsOnPage(1));
+}
+
+// Tests that control + shift + arrow puts |selected_item_| into a folder or
+// creates a folder if one does not exist.
+TEST_F(AppsGridViewTest, ControlShiftArrowFoldersItemBasic) {
+  base::HistogramTester histogram_tester;
+  model_->PopulateApps(GetTilesPerPage(0));
+  // Select the first item in the grid, folder it with the item to the right.
+  AppListItemView* first_item = GetItemViewAt(0);
+  const std::string first_item_id = first_item->item()->id();
+  const std::string second_item_id = GetItemViewAt(1)->item()->id();
+  apps_grid_view_->GetFocusManager()->SetFocusedView(first_item);
+
+  SimulateKeyPress(ui::VKEY_RIGHT, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+
+  // Test that the first item in the grid is now a folder with the first and
+  // second items, and that the folder is the selected view.
+  AppListItemView* new_folder = GetItemViewAt(0);
+  ASSERT_TRUE(apps_grid_view_->IsSelectedView(new_folder));
+  AppListFolderItem* folder_item =
+      static_cast<AppListFolderItem*>(new_folder->item());
+  EXPECT_TRUE(folder_item->is_folder());
+  EXPECT_EQ(2u, folder_item->ChildItemCount());
+  EXPECT_TRUE(folder_item->FindChildItem(first_item_id));
+  EXPECT_TRUE(folder_item->FindChildItem(second_item_id));
+  histogram_tester.ExpectBucketCount(kAppListAppMovingType,
+                                     kMoveByKeyboardIntoFolder, 1);
+
+  // Test that, when a folder is selected, control+shift+arrow does nothing.
+  SimulateKeyPress(ui::VKEY_RIGHT, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+
+  EXPECT_TRUE(apps_grid_view_->IsSelectedView(new_folder));
+  EXPECT_EQ(2u, folder_item->ChildItemCount());
+  histogram_tester.ExpectBucketCount(kAppListAppMovingType,
+                                     kMoveByKeyboardIntoFolder, 1);
+
+  // Move selection to the item to the right of the folder and put it in the
+  // folder.
+  apps_grid_view_->GetFocusManager()->SetFocusedView(GetItemViewAt(1));
+
+  SimulateKeyPress(ui::VKEY_LEFT, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+
+  EXPECT_TRUE(apps_grid_view_->IsSelectedView(new_folder));
+  EXPECT_EQ(3u, folder_item->ChildItemCount());
+  histogram_tester.ExpectBucketCount(kAppListAppMovingType,
+                                     kMoveByKeyboardIntoFolder, 2);
+
+  // Move selection to the item below the folder and put it in the folder.
+  SimulateKeyPress(ui::VKEY_DOWN);
+  SimulateKeyPress(ui::VKEY_UP, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+
+  EXPECT_TRUE(apps_grid_view_->IsSelectedView(new_folder));
+  EXPECT_EQ(4u, folder_item->ChildItemCount());
+  histogram_tester.ExpectBucketCount(kAppListAppMovingType,
+                                     kMoveByKeyboardIntoFolder, 3);
+
+  // Move the folder to the second row, then put the item above the folder in
+  // the folder.
+  SimulateKeyPress(ui::VKEY_DOWN, ui::EF_CONTROL_DOWN);
+  SimulateKeyPress(ui::VKEY_UP);
+  SimulateKeyPress(ui::VKEY_DOWN, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+
+  EXPECT_TRUE(apps_grid_view_->IsSelectedView(new_folder));
+  EXPECT_EQ(5u, folder_item->ChildItemCount());
+  histogram_tester.ExpectBucketCount(kAppListAppMovingType,
+                                     kMoveByKeyboardIntoFolder, 4);
+}
+
+// Tests that foldering an item that is on a different page fails.
+TEST_F(AppsGridViewTest, ControlShiftArrowFailsToFolderAcrossPages) {
+  model_->PopulateApps(2 * GetTilesPerPage(0));
+
+  // For every item on the last row of the first page, test that foldering to
+  // the next page fails.
+  for (int i = 0; i < apps_grid_view_->cols(); ++i) {
+    const GridIndex moved_view_index(
+        0,
+        apps_grid_view_->cols() * (apps_grid_view_->rows_per_page() - 1) + i);
+    AppListItemView* attempted_folder_view =
+        test_api_->GetViewAtIndex(moved_view_index);
+    apps_grid_view_->GetFocusManager()->SetFocusedView(attempted_folder_view);
+
+    SimulateKeyPress(ui::VKEY_DOWN, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+
+    EXPECT_EQ(attempted_folder_view,
+              test_api_->GetViewAtIndex(moved_view_index));
+    EXPECT_EQ(0, GetPaginationModel()->selected_page());
+  }
+  // The last item on the col is selected, try moving right and test that that
+  // fails as well.
+  GridIndex moved_view_index(
+      0, apps_grid_view_->cols() * apps_grid_view_->rows_per_page() - 1);
+  AppListItemView* attempted_folder_view =
+      test_api_->GetViewAtIndex(moved_view_index);
+
+  SimulateKeyPress(ui::VKEY_RIGHT, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+
+  EXPECT_EQ(attempted_folder_view, test_api_->GetViewAtIndex(moved_view_index));
+
+  // Move to the second page and test that foldering up to a new page fails.
+  SimulateKeyPress(ui::VKEY_DOWN);
+
+  // Select the first item on the second page.
+  moved_view_index = GridIndex(1, 0);
+  attempted_folder_view = test_api_->GetViewAtIndex(moved_view_index);
+
+  // Try to folder left to the previous page, it  should fail.
+  SimulateKeyPress(ui::VKEY_LEFT, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+
+  EXPECT_EQ(attempted_folder_view, test_api_->GetViewAtIndex(moved_view_index));
+
+  // For every item on the first row of the second page, test that foldering to
+  // the next page fails.
+  for (int i = 0; i < apps_grid_view_->cols(); ++i) {
+    const GridIndex moved_view_index(1, i);
+    AppListItemView* attempted_folder_view =
+        test_api_->GetViewAtIndex(moved_view_index);
+    apps_grid_view_->GetFocusManager()->SetFocusedView(attempted_folder_view);
+
+    SimulateKeyPress(ui::VKEY_UP, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+
+    EXPECT_EQ(attempted_folder_view,
+              test_api_->GetViewAtIndex(moved_view_index));
+    EXPECT_EQ(1, GetPaginationModel()->selected_page());
+  }
+}
+
+// Tests that foldering the item on the last slot of a page doesn't crash.
+TEST_F(AppsGridViewTest, ControlShiftArrowFolderLastItemOnPage) {
+  const int kNumberOfApps = 4;
+  model_->PopulateApps(kNumberOfApps);
+  // Select the second to last item in the grid, folder it with the item to the
+  // right.
+  AppListItemView* moving_item = GetItemViewAt(kNumberOfApps - 2);
+  const std::string first_item_id = moving_item->item()->id();
+  const std::string second_item_id =
+      GetItemViewAt(kNumberOfApps - 1)->item()->id();
+  apps_grid_view_->GetFocusManager()->SetFocusedView(moving_item);
+
+  SimulateKeyPress(ui::VKEY_RIGHT, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+
+  // Test that the first item in the grid is now a folder with the first and
+  // second items, and that the folder is the selected view.
+  AppListItemView* new_folder = GetItemViewAt(kNumberOfApps - 2);
+  ASSERT_TRUE(apps_grid_view_->IsSelectedView(new_folder));
+  AppListFolderItem* folder_item =
+      static_cast<AppListFolderItem*>(new_folder->item());
+  EXPECT_TRUE(folder_item->is_folder());
+  EXPECT_EQ(2u, folder_item->ChildItemCount());
+  EXPECT_TRUE(folder_item->FindChildItem(first_item_id));
+  EXPECT_TRUE(folder_item->FindChildItem(second_item_id));
 }
 
 TEST_P(AppsGridViewTest, MouseDragFlipPage) {
