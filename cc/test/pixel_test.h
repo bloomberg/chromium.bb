@@ -141,6 +141,18 @@ class RendererPixelTest : public PixelTest {
     return static_cast<RendererType*>(renderer_.get());
   }
 
+  // Text string for graphics backend of the RendererType. Suitable for
+  // generating separate base line file paths.
+  const char* renderer_type() {
+    if (std::is_base_of<viz::GLRenderer, RendererType>::value)
+      return "gl";
+    if (std::is_base_of<viz::SkiaRenderer, RendererType>::value)
+      return "skia";
+    if (std::is_base_of<viz::SoftwareRenderer, RendererType>::value)
+      return "software";
+    return "unknown";
+  }
+
   bool use_gpu() { return !!child_context_provider_; }
 
  protected:
