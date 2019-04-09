@@ -4435,7 +4435,7 @@
     <message name="IDS_SETTINGS_MULTIDEVICE_SETUP_BUTTON" desc="Label of the button that opens a menu to the user that allows them to set up a connection between the user's phone and their Chromebook to give them access to special features.">
       Set up
     </message>
-    <message name="IDS_SETTINGS_MULTIDEVICE_VERIFY_BUTTON" desc="Label for the button to get the Chromebook to verify that it can connect with their phone." translateable="false">
+    <message name="IDS_SETTINGS_MULTIDEVICE_VERIFY_BUTTON" desc="Label for the button to get the Chromebook to verify that it can connect with their phone.">
       Verify
     </message>
     <message name="IDS_SETTINGS_MULTIDEVICE_ENABLED" desc="Text to tell user multidevice features are turned on">
