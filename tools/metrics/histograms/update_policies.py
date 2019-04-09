@@ -88,7 +88,7 @@ def main():
     xml = f.read()
 
   UpdateHistogramDefinitions(policy_templates, histograms_doc)
-  new_xml = histograms_print_style.GetPrintStyle().PrettyPrintNode(
+  new_xml = histograms_print_style.GetPrintStyle().PrettyPrintXml(
       histograms_doc)
   if PromptUserToAcceptDiff(xml, new_xml, 'Is the updated version acceptable?'):
     with open(ENUMS_PATH, 'wb') as f:

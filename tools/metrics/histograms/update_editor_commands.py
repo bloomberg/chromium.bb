@@ -131,7 +131,7 @@ def main():
   UpdateHistogramDefinitions(histogram_values, histograms_doc)
 
   Log('Writing out new histograms file.')
-  new_xml = histograms_print_style.GetPrintStyle().PrettyPrintNode(
+  new_xml = histograms_print_style.GetPrintStyle().PrettyPrintXml(
       histograms_doc)
   if PromptUserToAcceptDiff(xml, new_xml, 'Is the updated version acceptable?'):
     with open(ENUMS_PATH, 'wb') as f:
