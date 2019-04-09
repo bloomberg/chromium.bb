@@ -24,7 +24,12 @@ QueryContentProtectionTask::QueryContentProtectionTask(
       display_id_(display_id),
       callback_(std::move(callback)) {}
 
-QueryContentProtectionTask::~QueryContentProtectionTask() {}
+QueryContentProtectionTask::~QueryContentProtectionTask() {
+  if (callback_) {
+    std::move(callback_).Run(Status::KILLED, DISPLAY_CONNECTION_TYPE_NONE,
+                             CONTENT_PROTECTION_METHOD_NONE);
+  }
+}
 
 void QueryContentProtectionTask::Run() {
   std::vector<DisplaySnapshot*> hdcp_capable_displays;
@@ -37,8 +42,7 @@ void QueryContentProtectionTask::Run() {
 
     uint32_t protection_mask;
     if (!GetContentProtectionMethods(display->type(), &protection_mask)) {
-      std::move(callback_).Run(/*success=*/false,
-                               DISPLAY_CONNECTION_TYPE_UNKNOWN,
+      std::move(callback_).Run(Status::FAILURE, DISPLAY_CONNECTION_TYPE_UNKNOWN,
                                CONTENT_PROTECTION_METHOD_NONE);
       return;
     }
@@ -49,7 +53,7 @@ void QueryContentProtectionTask::Run() {
 
   pending_requests_ = hdcp_capable_displays.size();
   if (pending_requests_ == 0) {
-    std::move(callback_).Run(/*success=*/true, connection_mask_,
+    std::move(callback_).Run(Status::SUCCESS, connection_mask_,
                              CONTENT_PROTECTION_METHOD_NONE);
     return;
   }
@@ -75,7 +79,8 @@ void QueryContentProtectionTask::OnGetHDCPState(bool success, HDCPState state) {
     return;
 
   protection_mask_ &= ~no_protection_mask_;
-  std::move(callback_).Run(success_, connection_mask_, protection_mask_);
+  std::move(callback_).Run(success_ ? Status::SUCCESS : Status::FAILURE,
+                           connection_mask_, protection_mask_);
 }
 
 }  // namespace display

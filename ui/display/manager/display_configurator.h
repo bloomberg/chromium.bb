@@ -62,6 +62,15 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   using ContentProtections =
       base::flat_map<int64_t /* display_id */, uint32_t /* protection_mask */>;
 
+  // Though only run once, a task must outlive its asynchronous operations, so
+  // cannot be a OnceCallback.
+  struct ContentProtectionTask {
+    enum class Status { KILLED, FAILURE, SUCCESS };
+
+    virtual ~ContentProtectionTask() = default;
+    virtual void Run() = 0;
+  };
+
   class Observer {
    public:
     virtual ~Observer() {}
@@ -359,16 +368,22 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   // Content protection callbacks called by the tasks when they finish. These
   // are responsible for destroying the task, replying to the caller that made
   // the task and starting the a new content protection task if one is queued.
-  void OnContentProtectionQueried(uint64_t client_id,
+  void OnContentProtectionQueried(QueryContentProtectionCallback callback,
+                                  uint64_t client_id,
                                   int64_t display_id,
-                                  bool success,
+                                  ContentProtectionTask::Status status,
                                   uint32_t connection_mask,
                                   uint32_t protection_mask);
-  void OnContentProtectionApplied(uint64_t client_id,
+  void OnContentProtectionApplied(ApplyContentProtectionCallback callback,
+                                  uint64_t client_id,
                                   int64_t display_id,
                                   uint32_t protection_mask,
-                                  bool success);
-  void OnContentProtectionClientUnregistered(bool success);
+                                  ContentProtectionTask::Status status);
+  void OnContentProtectionClientUnregistered(
+      ContentProtectionTask::Status status);
+
+  void QueueContentProtectionTask(ContentProtectionTask* task);
+  void DequeueContentProtectionTask();
 
   // Callbacks used to signal when the native platform has released/taken
   // display control.
@@ -427,10 +442,6 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   // task.
   std::vector<ConfigurationCallback> in_progress_configuration_callbacks_;
 
-  base::queue<base::Closure> content_protection_tasks_;
-  base::queue<QueryContentProtectionCallback> query_protection_callbacks_;
-  base::queue<ApplyContentProtectionCallback> apply_protection_callbacks_;
-
   // True if the caller wants to force the display configuration process.
   bool force_configure_;
 
@@ -448,6 +459,9 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
 
   // Content protections requested by each client.
   base::flat_map<uint64_t, ContentProtections> content_protection_requests_;
+
+  // Pending tasks to query or apply content protection.
+  base::queue<std::unique_ptr<ContentProtectionTask>> content_protection_tasks_;
 
   // Display controlled by an external entity.
   bool display_externally_controlled_;

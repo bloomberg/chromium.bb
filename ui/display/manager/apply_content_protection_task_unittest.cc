@@ -37,21 +37,15 @@ std::unique_ptr<DisplaySnapshot> CreateDisplaySnapshot(
 
 class ApplyContentProtectionTaskTest : public testing::Test {
  public:
-  enum class Response {
-    ERROR,
-    SUCCESS,
-    NOT_CALLED,
-  };
+  using Response = ApplyContentProtectionTask::Status;
 
   ApplyContentProtectionTaskTest() = default;
   ~ApplyContentProtectionTaskTest() override = default;
 
-  void ResponseCallback(bool success) {
-    response_ = success ? Response::SUCCESS : Response::ERROR;
-  }
+  void ResponseCallback(Response response) { response_ = response; }
 
  protected:
-  Response response_ = Response::NOT_CALLED;
+  Response response_ = Response::KILLED;
   ActionLogger log_;
   TestNativeDisplayDelegate display_delegate_{&log_};
 
@@ -115,7 +109,7 @@ TEST_F(ApplyContentProtectionTaskTest, ApplyHdcpToUnknownDisplay) {
                  base::Unretained(this)));
   task.Run();
 
-  EXPECT_EQ(Response::ERROR, response_);
+  EXPECT_EQ(Response::FAILURE, response_);
   EXPECT_EQ(kNoActions, log_.GetActionsAndClear());
 }
 
@@ -134,7 +128,7 @@ TEST_F(ApplyContentProtectionTaskTest, ApplyHdcpToDisplayThatCannotGetHdcp) {
                  base::Unretained(this)));
   task.Run();
 
-  EXPECT_EQ(Response::ERROR, response_);
+  EXPECT_EQ(Response::FAILURE, response_);
   EXPECT_EQ(kNoActions, log_.GetActionsAndClear());
 }
 
@@ -153,7 +147,7 @@ TEST_F(ApplyContentProtectionTaskTest, ApplyHdcpToDisplayThatCannotSetHdcp) {
                  base::Unretained(this)));
   task.Run();
 
-  EXPECT_EQ(Response::ERROR, response_);
+  EXPECT_EQ(Response::FAILURE, response_);
   EXPECT_EQ(
       JoinActions(GetSetHDCPStateAction(*layout_manager.GetDisplayStates()[0],
                                         HDCP_STATE_DESIRED)

@@ -588,15 +588,8 @@ DisplayConfigurator::~DisplayConfigurator() {
   CallAndClearInProgressCallbacks(false);
   CallAndClearQueuedCallbacks(false);
 
-  while (!query_protection_callbacks_.empty()) {
-    std::move(query_protection_callbacks_.front()).Run(false, 0, 0);
-    query_protection_callbacks_.pop();
-  }
-
-  while (!apply_protection_callbacks_.empty()) {
-    std::move(apply_protection_callbacks_.front()).Run(false);
-    apply_protection_callbacks_.pop();
-  }
+  // Destroy to fire failure callbacks before weak pointers for |this| expire.
+  content_protection_tasks_ = {};
 }
 
 void DisplayConfigurator::SetDelegateForTesting(
@@ -781,29 +774,17 @@ void DisplayConfigurator::UnregisterContentProtectionClient(
     }
   }
 
-  apply_protection_callbacks_.push(base::DoNothing());
-  ApplyContentProtectionTask* task = new ApplyContentProtectionTask(
+  QueueContentProtectionTask(new ApplyContentProtectionTask(
       layout_manager_.get(), native_display_delegate_.get(), protections,
-      base::Bind(&DisplayConfigurator::OnContentProtectionClientUnregistered,
-                 weak_ptr_factory_.GetWeakPtr()));
-  content_protection_tasks_.push(
-      base::Bind(&ApplyContentProtectionTask::Run, base::Owned(task)));
-
-  if (content_protection_tasks_.size() == 1)
-    content_protection_tasks_.front().Run();
+      base::BindOnce(
+          &DisplayConfigurator::OnContentProtectionClientUnregistered,
+          weak_ptr_factory_.GetWeakPtr())));
 }
 
-void DisplayConfigurator::OnContentProtectionClientUnregistered(bool success) {
-  DCHECK(!content_protection_tasks_.empty());
-  content_protection_tasks_.pop();
-
-  DCHECK(!apply_protection_callbacks_.empty());
-  ApplyContentProtectionCallback callback =
-      std::move(apply_protection_callbacks_.front());
-  apply_protection_callbacks_.pop();
-
-  if (!content_protection_tasks_.empty())
-    content_protection_tasks_.front().Run();
+void DisplayConfigurator::OnContentProtectionClientUnregistered(
+    ContentProtectionTask::Status status) {
+  if (status != ContentProtectionTask::Status::KILLED)
+    DequeueContentProtectionTask();
 }
 
 void DisplayConfigurator::QueryContentProtection(
@@ -827,22 +808,21 @@ void DisplayConfigurator::QueryContentProtection(
     }
   }
 
-  query_protection_callbacks_.push(std::move(callback));
-  QueryContentProtectionTask* task = new QueryContentProtectionTask(
+  QueueContentProtectionTask(new QueryContentProtectionTask(
       layout_manager_.get(), native_display_delegate_.get(), display_id,
-      base::Bind(&DisplayConfigurator::OnContentProtectionQueried,
-                 weak_ptr_factory_.GetWeakPtr(), *client_id, display_id));
-  content_protection_tasks_.push(
-      base::Bind(&QueryContentProtectionTask::Run, base::Owned(task)));
-  if (content_protection_tasks_.size() == 1)
-    content_protection_tasks_.front().Run();
+      base::BindOnce(&DisplayConfigurator::OnContentProtectionQueried,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     *client_id, display_id)));
 }
 
-void DisplayConfigurator::OnContentProtectionQueried(uint64_t client_id,
-                                                     int64_t display_id,
-                                                     bool success,
-                                                     uint32_t connection_mask,
-                                                     uint32_t protection_mask) {
+void DisplayConfigurator::OnContentProtectionQueried(
+    QueryContentProtectionCallback callback,
+    uint64_t client_id,
+    int64_t display_id,
+    ContentProtectionTask::Status status,
+    uint32_t connection_mask,
+    uint32_t protection_mask) {
+  bool success = status == ContentProtectionTask::Status::SUCCESS;
   uint32_t client_mask = CONTENT_PROTECTION_METHOD_NONE;
 
   // Don't reveal protections requested by other clients.
@@ -857,17 +837,10 @@ void DisplayConfigurator::OnContentProtectionQueried(uint64_t client_id,
 
   protection_mask &= client_mask;
 
-  DCHECK(!content_protection_tasks_.empty());
-  content_protection_tasks_.pop();
-
-  DCHECK(!query_protection_callbacks_.empty());
-  QueryContentProtectionCallback callback =
-      std::move(query_protection_callbacks_.front());
-  query_protection_callbacks_.pop();
   std::move(callback).Run(success, connection_mask, protection_mask);
 
-  if (!content_protection_tasks_.empty())
-    content_protection_tasks_.front().Run();
+  if (status != ContentProtectionTask::Status::KILLED)
+    DequeueContentProtectionTask();
 }
 
 void DisplayConfigurator::ApplyContentProtection(
@@ -892,30 +865,36 @@ void DisplayConfigurator::ApplyContentProtection(
   }
   protections[display_id] |= protection_mask;
 
-  apply_protection_callbacks_.push(std::move(callback));
-  ApplyContentProtectionTask* task = new ApplyContentProtectionTask(
+  QueueContentProtectionTask(new ApplyContentProtectionTask(
       layout_manager_.get(), native_display_delegate_.get(), protections,
-      base::Bind(&DisplayConfigurator::OnContentProtectionApplied,
-                 weak_ptr_factory_.GetWeakPtr(), *client_id, display_id,
-                 protection_mask));
-  content_protection_tasks_.push(
-      base::Bind(&ApplyContentProtectionTask::Run, base::Owned(task)));
-  if (content_protection_tasks_.size() == 1)
-    content_protection_tasks_.front().Run();
+      base::BindOnce(&DisplayConfigurator::OnContentProtectionApplied,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     *client_id, display_id, protection_mask)));
 }
 
-void DisplayConfigurator::OnContentProtectionApplied(uint64_t client_id,
-                                                     int64_t display_id,
-                                                     uint32_t protection_mask,
-                                                     bool success) {
+void DisplayConfigurator::QueueContentProtectionTask(
+    ContentProtectionTask* task) {
+  content_protection_tasks_.emplace(task);
+
+  if (content_protection_tasks_.size() == 1)
+    content_protection_tasks_.front()->Run();
+}
+
+void DisplayConfigurator::DequeueContentProtectionTask() {
   DCHECK(!content_protection_tasks_.empty());
   content_protection_tasks_.pop();
 
-  DCHECK(!apply_protection_callbacks_.empty());
-  ApplyContentProtectionCallback callback =
-      std::move(apply_protection_callbacks_.front());
-  apply_protection_callbacks_.pop();
+  if (!content_protection_tasks_.empty())
+    content_protection_tasks_.front()->Run();
+}
 
+void DisplayConfigurator::OnContentProtectionApplied(
+    ApplyContentProtectionCallback callback,
+    uint64_t client_id,
+    int64_t display_id,
+    uint32_t protection_mask,
+    ContentProtectionTask::Status status) {
+  bool success = status == ContentProtectionTask::Status::SUCCESS;
   if (success) {
     if (protection_mask == CONTENT_PROTECTION_METHOD_NONE) {
       auto it = content_protection_requests_.find(client_id);
@@ -933,8 +912,8 @@ void DisplayConfigurator::OnContentProtectionApplied(uint64_t client_id,
 
   std::move(callback).Run(success);
 
-  if (!content_protection_tasks_.empty())
-    content_protection_tasks_.front().Run();
+  if (status != ContentProtectionTask::Status::KILLED)
+    DequeueContentProtectionTask();
 }
 
 bool DisplayConfigurator::SetColorMatrix(
