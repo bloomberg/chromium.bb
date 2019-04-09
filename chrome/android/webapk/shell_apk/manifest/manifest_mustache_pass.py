@@ -15,10 +15,10 @@ import sys
 #Import pystache from //third_party/pystache
 src_dir = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir,
                        os.pardir, os.pardir, os.pardir)
-sys.path.append(os.path.join(src_dir, 'third_party'))
+sys.path.insert(0, os.path.join(src_dir, 'third_party'))
 import pystache
-sys.path.append(os.path.join(src_dir, 'build', 'android', 'gyp', 'util'))
-import build_utils
+sys.path.insert(0, os.path.join(src_dir, 'build/android/gyp'))
+from util import build_utils  # pylint: disable=import-error
 
 
 def _AppendParsedVariables(initial_variable_list, variables_arg, error_func):

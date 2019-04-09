@@ -4,11 +4,15 @@
 # found in the LICENSE file.
 
 import fnmatch
+import os
+import sys
 import tempfile
 import unittest
 import zipfile
 
-import md5_check # pylint: disable=W0403
+sys.path.insert(
+    0, os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)))
+from util import md5_check
 
 
 def _WriteZipFile(path, entries):
@@ -26,7 +30,7 @@ class TestMd5Check(unittest.TestCase):
     input_strings = ['string1', 'string2']
     input_file1 = tempfile.NamedTemporaryFile(suffix='.txt')
     input_file2 = tempfile.NamedTemporaryFile(suffix='.zip')
-    file1_contents = 'input file 1'
+    file1_contents = b'input file 1'
     input_file1.write(file1_contents)
     input_file1.flush()
     # Test out empty zip file to start.
