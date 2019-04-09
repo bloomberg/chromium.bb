@@ -255,6 +255,9 @@ class LocationBarView : public LocationBar,
                                      on_icon_fetched) const override;
   SkColor GetLocationIconInkDropColor() const override;
 
+  // Gets the theme color tint for the location bar and results.
+  OmniboxTint GetTint();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(SecurityIndicatorTest, CheckIndicatorText);
   FRIEND_TEST_ALL_PREFIXES(TouchLocationBarViewBrowserTest,
@@ -300,9 +303,6 @@ class LocationBarView : public LocationBar,
 
   // Gets the OmniboxPopupView associated with the model in |omnibox_view_|.
   OmniboxPopupView* GetOmniboxPopupView();
-
-  // Gets the theme color tint for the location bar and results.
-  OmniboxTint GetTint();
 
   // LocationBar:
   GURL GetDestinationURL() const override;
