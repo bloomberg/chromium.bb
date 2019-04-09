@@ -182,20 +182,20 @@ void InitializeHardwareOverlaySupport() {
   }
 
   Microsoft::WRL::ComPtr<IDXGIDevice> dxgi_device;
-  if (FAILED(d3d11_device.CopyTo(dxgi_device.GetAddressOf()))) {
+  if (FAILED(d3d11_device.As(&dxgi_device))) {
     DLOG(ERROR) << "Failed to retrieve DXGI device";
     return;
   }
 
   Microsoft::WRL::ComPtr<IDXGIAdapter> dxgi_adapter;
-  if (FAILED(dxgi_device->GetAdapter(dxgi_adapter.GetAddressOf()))) {
+  if (FAILED(dxgi_device->GetAdapter(&dxgi_adapter))) {
     DLOG(ERROR) << "Failed to retrieve DXGI adapter";
     return;
   }
 
   // This will fail if the D3D device is "Microsoft Basic Display Adapter".
   Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device;
-  if (FAILED(d3d11_device.CopyTo(video_device.GetAddressOf()))) {
+  if (FAILED(d3d11_device.As(&video_device))) {
     DLOG(ERROR) << "Failed to retrieve video device";
     return;
   }
@@ -204,11 +204,11 @@ void InitializeHardwareOverlaySupport() {
   unsigned int i = 0;
   while (true) {
     Microsoft::WRL::ComPtr<IDXGIOutput> output;
-    if (FAILED(dxgi_adapter->EnumOutputs(i++, output.GetAddressOf())))
+    if (FAILED(dxgi_adapter->EnumOutputs(i++, &output)))
       break;
     DCHECK(output);
     Microsoft::WRL::ComPtr<IDXGIOutput3> output3;
-    if (FAILED(output.CopyTo(output3.GetAddressOf())))
+    if (FAILED(output.As(&output3)))
       continue;
     DCHECK(output3);
 
@@ -224,7 +224,7 @@ void InitializeHardwareOverlaySupport() {
       if (info.overlay_format == OverlayFormat::kNV12) {
         UINT color_space_support_flags = 0;
         Microsoft::WRL::ComPtr<IDXGIOutput4> output4;
-        if (FAILED(output.CopyTo(output4.GetAddressOf())))
+        if (FAILED(output.As(&output4)))
           continue;
 
         if (FAILED(output4->CheckOverlayColorSpaceSupport(
@@ -612,11 +612,11 @@ bool DCLayerTree::Initialize(
   dcomp_device_ = std::move(dcomp_device);
 
   Microsoft::WRL::ComPtr<IDCompositionDesktopDevice> desktop_device;
-  dcomp_device_.CopyTo(desktop_device.GetAddressOf());
+  dcomp_device_.As(&desktop_device);
   DCHECK(desktop_device);
 
-  HRESULT hr = desktop_device->CreateTargetForHwnd(
-      window, TRUE, dcomp_target_.GetAddressOf());
+  HRESULT hr =
+      desktop_device->CreateTargetForHwnd(window, TRUE, &dcomp_target_);
   if (FAILED(hr)) {
     DLOG(ERROR) << "CreateTargetForHwnd failed with error 0x" << std::hex << hr;
     return false;
@@ -639,16 +639,16 @@ bool DCLayerTree::InitializeVideoProcessor(const gfx::Size& input_size,
                                            const gfx::Size& output_size) {
   if (!video_device_) {
     // This can fail if the D3D device is "Microsoft Basic Display Adapter".
-    if (FAILED(d3d11_device_.CopyTo(video_device_.GetAddressOf()))) {
+    if (FAILED(d3d11_device_.As(&video_device_))) {
       DLOG(ERROR) << "Failed to retrieve video device from D3D11 device";
       return false;
     }
     DCHECK(video_device_);
 
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
-    d3d11_device_->GetImmediateContext(context.GetAddressOf());
+    d3d11_device_->GetImmediateContext(&context);
     DCHECK(context);
-    context.CopyTo(video_context_.GetAddressOf());
+    context.As(&video_context_);
     DCHECK(video_context_);
   }
 
@@ -672,7 +672,7 @@ bool DCLayerTree::InitializeVideoProcessor(const gfx::Size& input_size,
   desc.OutputHeight = output_size.height();
   desc.Usage = D3D11_VIDEO_USAGE_PLAYBACK_NORMAL;
   HRESULT hr = video_device_->CreateVideoProcessorEnumerator(
-      &desc, video_processor_enumerator_.GetAddressOf());
+      &desc, &video_processor_enumerator_);
   if (FAILED(hr)) {
     DLOG(ERROR) << "CreateVideoProcessorEnumerator failed with error 0x"
                 << std::hex << hr;
@@ -680,7 +680,7 @@ bool DCLayerTree::InitializeVideoProcessor(const gfx::Size& input_size,
   }
 
   hr = video_device_->CreateVideoProcessor(video_processor_enumerator_.Get(), 0,
-                                           video_processor_.GetAddressOf());
+                                           &video_processor_);
   if (FAILED(hr)) {
     DLOG(ERROR) << "CreateVideoProcessor failed with error 0x" << std::hex
                 << hr;
@@ -788,8 +788,8 @@ bool DCLayerTree::SwapChainPresenter::UploadVideoImages(
     desc.MiscFlags = 0;
     desc.SampleDesc.Count = 1;
     Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
-    HRESULT hr = d3d11_device_->CreateTexture2D(
-        &desc, nullptr, staging_texture_.GetAddressOf());
+    HRESULT hr =
+        d3d11_device_->CreateTexture2D(&desc, nullptr, &staging_texture_);
     if (FAILED(hr)) {
       DLOG(ERROR) << "Creating D3D11 video upload texture failed: " << std::hex
                   << hr;
@@ -800,7 +800,7 @@ bool DCLayerTree::SwapChainPresenter::UploadVideoImages(
   }
 
   Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
-  d3d11_device_->GetImmediateContext(context.GetAddressOf());
+  d3d11_device_->GetImmediateContext(&context);
   // TODO(crbug.com/890227): Temporary CHECK for debugging.
   CHECK(context);
 
@@ -911,9 +911,9 @@ void DCLayerTree::SwapChainPresenter::UpdateVisuals(
     const gfx::Size& swap_chain_size) {
   if (!content_visual_) {
     DCHECK(!clip_visual_);
-    dcomp_device_->CreateVisual(clip_visual_.GetAddressOf());
+    dcomp_device_->CreateVisual(&clip_visual_);
     DCHECK(clip_visual_);
-    dcomp_device_->CreateVisual(content_visual_.GetAddressOf());
+    dcomp_device_->CreateVisual(&content_visual_);
     DCHECK(content_visual_);
     clip_visual_->AddVisual(content_visual_.Get(), FALSE, nullptr);
     layer_tree_->SetNeedsCommit();
@@ -944,7 +944,7 @@ void DCLayerTree::SwapChainPresenter::UpdateVisuals(
     content_visual_->SetOffsetY(offset.y());
 
     Microsoft::WRL::ComPtr<IDCompositionMatrixTransform> dcomp_transform;
-    dcomp_device_->CreateMatrixTransform(dcomp_transform.GetAddressOf());
+    dcomp_device_->CreateMatrixTransform(&dcomp_transform);
     DCHECK(dcomp_transform);
     // SkMatrix44 is column-major, but D2D_MATRIX_3x2_F is row-major.
     D2D_MATRIX_3X2_F d2d_matrix = {
@@ -965,7 +965,7 @@ void DCLayerTree::SwapChainPresenter::UpdateVisuals(
     // parent visual that's untransformed.
     if (params.is_clipped) {
       Microsoft::WRL::ComPtr<IDCompositionRectangleClip> clip;
-      dcomp_device_->CreateRectangleClip(clip.GetAddressOf());
+      dcomp_device_->CreateRectangleClip(&clip);
       DCHECK(clip);
       clip->SetLeft(params.clip_rect.x());
       clip->SetRight(params.clip_rect.right());
@@ -1304,13 +1304,13 @@ bool DCLayerTree::SwapChainPresenter::PresentToSwapChain(
     // first Present() after this needs to have SyncInterval > 0, or else the
     // workaround doesn't help.
     Microsoft::WRL::ComPtr<ID3D11Texture2D> dest_texture;
-    swap_chain_->GetBuffer(0, IID_PPV_ARGS(dest_texture.GetAddressOf()));
+    swap_chain_->GetBuffer(0, IID_PPV_ARGS(&dest_texture));
     DCHECK(dest_texture);
     Microsoft::WRL::ComPtr<ID3D11Texture2D> src_texture;
-    hr = swap_chain_->GetBuffer(1, IID_PPV_ARGS(src_texture.GetAddressOf()));
+    hr = swap_chain_->GetBuffer(1, IID_PPV_ARGS(&src_texture));
     DCHECK(src_texture);
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
-    d3d11_device_->GetImmediateContext(context.GetAddressOf());
+    d3d11_device_->GetImmediateContext(&context);
     DCHECK(context);
     context->CopyResource(dest_texture.Get(), src_texture.Get());
 
@@ -1318,7 +1318,7 @@ bool DCLayerTree::SwapChainPresenter::PresentToSwapChain(
     // there still may be a black flicker when presenting expensive content
     // (e.g. 4k video).
     Microsoft::WRL::ComPtr<IDXGIDevice2> dxgi_device2;
-    d3d11_device_.CopyTo(dxgi_device2.GetAddressOf());
+    d3d11_device_.As(&dxgi_device2);
     DCHECK(dxgi_device2);
     base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                               base::WaitableEvent::InitialState::NOT_SIGNALED);
@@ -1420,8 +1420,8 @@ bool DCLayerTree::SwapChainPresenter::VideoProcessorBlt(
 
   Microsoft::WRL::ComPtr<IDXGISwapChain3> swap_chain3;
   Microsoft::WRL::ComPtr<ID3D11VideoContext1> context1;
-  if (SUCCEEDED(swap_chain_.CopyTo(swap_chain3.GetAddressOf())) &&
-      SUCCEEDED(video_context.CopyTo(context1.GetAddressOf()))) {
+  if (SUCCEEDED(swap_chain_.As(&swap_chain3)) &&
+      SUCCEEDED(video_context.As(&context1))) {
     DCHECK(swap_chain3);
     DCHECK(context1);
     // Set input color space.
@@ -1478,7 +1478,7 @@ bool DCLayerTree::SwapChainPresenter::VideoProcessorBlt(
     Microsoft::WRL::ComPtr<ID3D11VideoProcessorInputView> input_view;
     HRESULT hr = video_device->CreateVideoProcessorInputView(
         input_texture.Get(), video_processor_enumerator.Get(), &input_desc,
-        input_view.GetAddressOf());
+        &input_view);
     if (FAILED(hr)) {
       DLOG(ERROR) << "CreateVideoProcessorInputView failed with error 0x"
                   << std::hex << hr;
@@ -1503,7 +1503,7 @@ bool DCLayerTree::SwapChainPresenter::VideoProcessorBlt(
 
     if (!output_view_) {
       Microsoft::WRL::ComPtr<ID3D11Texture2D> swap_chain_buffer;
-      swap_chain_->GetBuffer(0, IID_PPV_ARGS(swap_chain_buffer.GetAddressOf()));
+      swap_chain_->GetBuffer(0, IID_PPV_ARGS(&swap_chain_buffer));
 
       D3D11_VIDEO_PROCESSOR_OUTPUT_VIEW_DESC output_desc = {};
       output_desc.ViewDimension = D3D11_VPOV_DIMENSION_TEXTURE2D;
@@ -1511,7 +1511,7 @@ bool DCLayerTree::SwapChainPresenter::VideoProcessorBlt(
 
       hr = video_device->CreateVideoProcessorOutputView(
           swap_chain_buffer.Get(), video_processor_enumerator.Get(),
-          &output_desc, output_view_.GetAddressOf());
+          &output_desc, &output_view_);
       if (FAILED(hr)) {
         DLOG(ERROR) << "CreateVideoProcessorOutputView failed with error 0x"
                     << std::hex << hr;
@@ -1592,13 +1592,13 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
   ReleaseSwapChainResources();
 
   Microsoft::WRL::ComPtr<IDXGIDevice> dxgi_device;
-  d3d11_device_.CopyTo(dxgi_device.GetAddressOf());
+  d3d11_device_.As(&dxgi_device);
   DCHECK(dxgi_device);
   Microsoft::WRL::ComPtr<IDXGIAdapter> dxgi_adapter;
-  dxgi_device->GetAdapter(dxgi_adapter.GetAddressOf());
+  dxgi_device->GetAdapter(&dxgi_adapter);
   DCHECK(dxgi_adapter);
   Microsoft::WRL::ComPtr<IDXGIFactoryMedia> media_factory;
-  dxgi_adapter->GetParent(IID_PPV_ARGS(media_factory.GetAddressOf()));
+  dxgi_adapter->GetParent(IID_PPV_ARGS(&media_factory));
   DCHECK(media_factory);
 
   // The composition surface handle is only used to create YUV swap chains since
@@ -1639,7 +1639,7 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
   if (use_yuv_swap_chain) {
     HRESULT hr = media_factory->CreateSwapChainForCompositionSurfaceHandle(
         d3d11_device_.Get(), swap_chain_handle_.Get(), &desc, nullptr,
-        swap_chain_.GetAddressOf());
+        &swap_chain_);
     is_yuv_swapchain_ = SUCCEEDED(hr);
     failed_to_create_yuv_swapchain_ = !is_yuv_swapchain_;
 
@@ -1668,7 +1668,7 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
 
     HRESULT hr = media_factory->CreateSwapChainForCompositionSurfaceHandle(
         d3d11_device_.Get(), swap_chain_handle_.Get(), &desc, nullptr,
-        swap_chain_.GetAddressOf());
+        &swap_chain_);
 
     base::UmaHistogramSparse(kSwapChainCreationResultByFormatUmaPrefix +
                                  OverlayFormatToString(OverlayFormat::kBGRA),
@@ -1837,7 +1837,7 @@ bool DirectCompositionSurfaceWin::IsDirectCompositionSupported() {
 
     // This will fail if the D3D device is "Microsoft Basic Display Adapter".
     Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device;
-    if (FAILED(d3d11_device.CopyTo(video_device.GetAddressOf()))) {
+    if (FAILED(d3d11_device.As(&video_device))) {
       DLOG(ERROR) << "Failed to retrieve video device";
       return false;
     }
@@ -1908,7 +1908,7 @@ bool DirectCompositionSurfaceWin::IsHDRSupported() {
 
   HRESULT hr = S_OK;
   Microsoft::WRL::ComPtr<IDXGIFactory> factory;
-  hr = CreateDXGIFactory(IID_PPV_ARGS(factory.GetAddressOf()));
+  hr = CreateDXGIFactory(IID_PPV_ARGS(&factory));
   if (FAILED(hr)) {
     DLOG(ERROR) << "Failed to create DXGI factory.";
     return false;
@@ -1917,7 +1917,7 @@ bool DirectCompositionSurfaceWin::IsHDRSupported() {
   bool hdr_monitor_found = false;
   for (UINT adapter_index = 0;; ++adapter_index) {
     Microsoft::WRL::ComPtr<IDXGIAdapter> adapter;
-    hr = factory->EnumAdapters(adapter_index, adapter.GetAddressOf());
+    hr = factory->EnumAdapters(adapter_index, &adapter);
     if (hr == DXGI_ERROR_NOT_FOUND)
       break;
     if (FAILED(hr)) {
@@ -1927,7 +1927,7 @@ bool DirectCompositionSurfaceWin::IsHDRSupported() {
 
     for (UINT output_index = 0;; ++output_index) {
       Microsoft::WRL::ComPtr<IDXGIOutput> output;
-      hr = adapter->EnumOutputs(output_index, output.GetAddressOf());
+      hr = adapter->EnumOutputs(output_index, &output);
       if (hr == DXGI_ERROR_NOT_FOUND)
         break;
       if (FAILED(hr)) {
@@ -1936,7 +1936,7 @@ bool DirectCompositionSurfaceWin::IsHDRSupported() {
       }
 
       Microsoft::WRL::ComPtr<IDXGIOutput6> output6;
-      hr = output->QueryInterface(IID_PPV_ARGS(output6.GetAddressOf()));
+      hr = output->QueryInterface(IID_PPV_ARGS(&output6));
       if (FAILED(hr)) {
         DLOG(WARNING) << "IDXGIOutput6 is required for HDR detection.";
         continue;
