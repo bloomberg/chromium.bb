@@ -106,7 +106,9 @@ const char kArcDisableAppSync[] = "arc-disable-app-sync";
 
 // Flag that disables ARC locale sync with Android container. Used in autotest
 // to prevent conditions when certain apps, including Play Store may get
-// restarted. Restarting Play Store may case random test failures.
+// restarted. Restarting Play Store may cause random test failures. Enabling
+// this flag would also forces ARC container to use 'en-US' as a locale and
+// 'en-US,en' as preferred languages.
 const char kArcDisableLocaleSync[] = "arc-disable-locale-sync";
 
 // Flag that disables ARC Play Auto Install flow that installs set of predefined

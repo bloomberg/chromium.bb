@@ -987,7 +987,15 @@ void ArcSessionManager::StartArc() {
 
   std::string locale;
   std::string preferred_languages;
-  GetLocaleAndPreferredLanguages(profile_, &locale, &preferred_languages);
+  if (IsArcLocaleSyncDisabled()) {
+    // Use fixed locale and preferred languages for auto-tests.
+    locale = "en-US";
+    preferred_languages = "en-US,en";
+    VLOG(1) << "Locale and preferred languages are fixed to " << locale << ","
+            << preferred_languages << ".";
+  } else {
+    GetLocaleAndPreferredLanguages(profile_, &locale, &preferred_languages);
+  }
 
   ArcSession::UpgradeParams params;
 
