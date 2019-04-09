@@ -1029,10 +1029,12 @@ class PasswordFormManagerTest : public testing::Test {
 class PasswordFormManagerFillOnAccountSelectTest
     : public PasswordFormManagerTest {
  public:
-  PasswordFormManagerFillOnAccountSelectTest() {
+  void SetUp() override {
+    PasswordFormManagerTest::SetUp();
     scoped_feature_list_.InitAndEnableFeature(features::kFillOnAccountSelect);
   }
 
+ private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
