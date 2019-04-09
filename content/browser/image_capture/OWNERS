@@ -1,7 +1,5 @@
+mcasas@chromium.org
 miu@chromium.org
 
-# Original (legacy) owner.
-mcasas@chromium.org
-
 # COMPONENT: Blink>ImageCapture
-# TEAM: webrtc-dev@chromium.org
+# TEAM: media-dev@chromium.org
