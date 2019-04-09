@@ -27,29 +27,19 @@
       }
 
       cr-dialog {
-        --scroll-border: 0;
         --cr-dialog-body: {
           height: 100%;
           padding-bottom: 0;
           padding-inline-end: 0;
           padding-inline-start: 0;
           padding-top: 0;
-        };
-
-        --cr-dialog-wrapper: {
-          height: 100%;
-          max-height: initial;
-          overflow: hidden;
-        };
-
+        }
+        --cr-dialog-body-border-bottom: none;
+        --cr-dialog-body-border-top: none;
         --cr-dialog-body-container: {
           height: 100%;
           min-height: initial;
-        };
-
-        --cr-dialog-body-border-bottom: none;
-        --cr-dialog-body-border-top: none;
-
+        }
         --cr-dialog-native: {
           opacity: 0;
           /* When loading, it's possible for an size update to follow after the
@@ -57,7 +47,13 @@
              A 100ms delay for the opacity transition will allow two updates to
              occur without showing the dialog resizing to the user. */
           transition: opacity 100ms ease 100ms;
-        };
+        }
+        --cr-dialog-wrapper: {
+          height: 100%;
+          max-height: initial;
+          overflow: hidden;
+        }
+        --scroll-border: none;
       }
     </style>
 
