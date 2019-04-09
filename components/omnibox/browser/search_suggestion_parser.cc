@@ -492,13 +492,15 @@ bool SearchSuggestionParser::ParseSuggestResults(
       base::string16 annotation;
       base::string16 match_contents = suggestion;
       if (match_type == AutocompleteMatchType::CALCULATOR) {
-        if (!suggestion.compare(0, 2, base::UTF8ToUTF16("= "))) {
+        const bool has_equals_prefix =
+            !suggestion.compare(0, 2, base::UTF8ToUTF16("= "));
+        if (has_equals_prefix) {
           // Calculator results include a "= " prefix but we don't want to
           // include this in the search terms.
           suggestion.erase(0, 2);
         }
         if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_DESKTOP) {
-          annotation = match_contents;
+          annotation = has_equals_prefix ? suggestion : match_contents;
           match_contents = query;
         }
       }
