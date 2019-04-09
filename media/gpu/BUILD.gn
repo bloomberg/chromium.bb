@@ -92,10 +92,7 @@ component("gpu") {
   ldflags = []
 
   if (is_linux) {
-    sources += [
-      "linux/platform_video_frame_utils.cc",
-      "linux/platform_video_frame_utils.h",
-    ]
+    public_deps += [ "//media/gpu/linux" ]
   }
 
   if (is_mac) {
