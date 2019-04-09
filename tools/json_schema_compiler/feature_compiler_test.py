@@ -33,7 +33,6 @@ class FeatureCompilerTest(unittest.TestCase):
 
   def setUp(self):
     feature_compiler.ENABLE_ASSERTIONS = False
-    feature_compiler.STRINGS_TO_UNICODE = True
 
   def testFeature(self):
     # Test some basic feature parsing for a sanity check.

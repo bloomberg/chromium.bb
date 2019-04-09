@@ -31,7 +31,7 @@ def _GenerateSchema(filename, root, destdir, namespace):
 
   # Generate a list of the features defined and a list of their models.
   feature_list = []
-  for feature_def, feature in feature_defs.iteritems():
+  for feature_def, feature in feature_defs.items():
     feature_list.append(CreateFeature(feature_def, feature))
 
   source_file_dir, _ = os.path.split(schema)
