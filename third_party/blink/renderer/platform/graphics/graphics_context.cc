@@ -951,6 +951,8 @@ void GraphicsContext::DrawImageRRect(
   image_flags.setColor(SK_ColorBLACK);
   image_flags.setFilterQuality(
       ComputeFilterQuality(image, dest.Rect(), src_rect));
+  if (ShouldApplyDarkModeFilterToImage(*image, src_rect))
+    image_flags.setColorFilter(dark_mode_filter_);
 
   bool use_shader = (visible_src == src_rect) &&
                     (respect_orientation == kDoNotRespectImageOrientation);
