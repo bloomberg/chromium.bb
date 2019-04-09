@@ -331,7 +331,6 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   Stat<std::string>* username = section_identity->AddStringStat("Username");
   Stat<bool>* user_is_primary = section_identity->AddBoolStat("Is Primary");
   Stat<std::string>* auth_error = section_identity->AddStringStat("Auth Error");
-  // TODO(crbug.com/948074): Add the time of the auth error.
 
   Section* section_credentials = section_list.AddSection("Credentials");
   Stat<std::string>* request_token_time =
@@ -471,7 +470,9 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   username->Set(service->GetAuthenticatedAccountInfo().email);
   user_is_primary->Set(service->IsAuthenticatedAccountPrimary());
   std::string auth_error_str = service->GetAuthError().ToString();
-  auth_error->Set(auth_error_str.empty() ? "None" : auth_error_str);
+  auth_error->Set(base::StringPrintf(
+      "%s since %s", (auth_error_str.empty() ? "OK" : auth_error_str).c_str(),
+      GetTimeStr(service->GetAuthErrorTime(), "browser startup").c_str()));
 
   // Credentials.
   request_token_time->Set(GetTimeStr(token_status.token_request_time, "n/a"));

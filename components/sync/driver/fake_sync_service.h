@@ -45,6 +45,7 @@ class FakeSyncService : public SyncService {
       override;
   bool IsSetupInProgress() const override;
   GoogleServiceAuthError GetAuthError() const override;
+  base::Time GetAuthErrorTime() const override;
   bool RequiresClientUpgrade() const override;
   UserShare* GetUserShare() const override;
   void ReenableDatatype(ModelType type) override;

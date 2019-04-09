@@ -38,6 +38,7 @@ class MockSyncService : public SyncService {
   MOCK_CONST_METHOD0(GetAuthenticatedAccountInfo, CoreAccountInfo());
   MOCK_CONST_METHOD0(IsAuthenticatedAccountPrimary, bool());
   MOCK_CONST_METHOD0(GetAuthError, GoogleServiceAuthError());
+  MOCK_CONST_METHOD0(GetAuthErrorTime, base::Time());
   MOCK_CONST_METHOD0(RequiresClientUpgrade, bool());
 
   MOCK_METHOD0(GetSetupInProgressHandle,

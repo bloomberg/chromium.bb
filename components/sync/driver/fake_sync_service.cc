@@ -90,6 +90,10 @@ GoogleServiceAuthError FakeSyncService::GetAuthError() const {
   return GoogleServiceAuthError();
 }
 
+base::Time FakeSyncService::GetAuthErrorTime() const {
+  return base::Time();
+}
+
 bool FakeSyncService::RequiresClientUpgrade() const {
   return false;
 }

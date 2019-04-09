@@ -120,6 +120,7 @@ class ProfileSyncService : public SyncService,
   CoreAccountInfo GetAuthenticatedAccountInfo() const override;
   bool IsAuthenticatedAccountPrimary() const override;
   GoogleServiceAuthError GetAuthError() const override;
+  base::Time GetAuthErrorTime() const override;
   bool RequiresClientUpgrade() const override;
   std::unique_ptr<SyncSetupInProgressHandle> GetSetupInProgressHandle()
       override;
