@@ -1224,7 +1224,7 @@ if (enable_java_templates) {
           ]
         }
 
-        if (_proguarding_with_r8 && defined(invoker.min_sdk_version)) {
+        if (defined(invoker.min_sdk_version)) {
           args += [
             "--min-api",
             "${invoker.min_sdk_version}",

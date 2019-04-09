@@ -82,8 +82,6 @@ def _ParseOptions(args):
 
   assert not options.main_dex_rules_path or options.r8_path, \
       'R8 must be enabled to pass main dex rules.'
-  assert not options.min_api or options.r8_path, \
-      'R8 must be enabled to pass min api.'
 
   classpath = []
   for arg in options.classpath:
@@ -261,6 +259,7 @@ def main(args):
     proguard.mapping_output(options.mapping_output)
     proguard.libraryjars(libraries)
     proguard.verbose(options.verbose)
+    proguard.min_api(options.min_api)
     # Do not consider the temp file as an input since its name is random.
     input_paths = proguard.GetInputs()
 
