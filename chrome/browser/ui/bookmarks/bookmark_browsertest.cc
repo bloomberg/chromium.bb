@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -35,6 +36,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -115,7 +117,13 @@ class BookmarkBrowsertest : public InProcessBrowserTest {
     return bookmark_model;
   }
 
+  base::HistogramTester* histogram_tester() { return &histogram_tester_; }
+
  private:
+  // We make the histogram tester a member field to make sure it starts
+  // recording as early as possible.
+  base::HistogramTester histogram_tester_;
+
   DISALLOW_COPY_AND_ASSIGN(BookmarkBrowsertest);
 };
 
@@ -315,3 +323,66 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DragMultipleBookmarks) {
 
   run_loop->Run();
 }
+
+// ChromeOS initializes two profiles (Default and test-user) and it's impossible
+// to distinguish UMA samples separately.
+#if !defined(OS_CHROMEOS)
+
+IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, PRE_EmitUmaForDuplicates) {
+  BookmarkModel* bookmark_model = WaitForBookmarkModel(browser()->profile());
+  const BookmarkNode* parent = bookmarks::GetParentForNewNodes(bookmark_model);
+  // Add one bookmark with a unique URL, two other bookmarks with a shared URL,
+  // and three more with another shared URL.
+  bookmark_model->AddURL(parent, parent->child_count(),
+                         base::ASCIIToUTF16("title1"), GURL("http://a.com"));
+  bookmark_model->AddURL(parent, parent->child_count(),
+                         base::ASCIIToUTF16("title2"), GURL("http://b.com"));
+  bookmark_model->AddURL(parent, parent->child_count(),
+                         base::ASCIIToUTF16("title3"), GURL("http://b.com"));
+  bookmark_model->AddURL(parent, parent->child_count(),
+                         base::ASCIIToUTF16("title4"), GURL("http://c.com"));
+  bookmark_model->AddURL(parent, parent->child_count(),
+                         base::ASCIIToUTF16("title5"), GURL("http://c.com"));
+  bookmark_model->AddURL(parent, parent->child_count(),
+                         base::ASCIIToUTF16("title6"), GURL("http://c.com"));
+}
+
+IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, EmitUmaForDuplicates) {
+  WaitForBookmarkModel(browser()->profile());
+
+  ASSERT_THAT(
+      histogram_tester()->GetAllSamples("Bookmarks.Count.OnProfileLoad"),
+      testing::ElementsAre(base::Bucket(/*min=*/6, /*count=*/1)));
+  EXPECT_THAT(histogram_tester()->GetAllSamples(
+                  "Bookmarks.Count.OnProfileLoad.DuplicateUrl"),
+              testing::ElementsAre(base::Bucket(/*min=*/5, /*count=*/1)));
+}
+
+IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, PRE_EmitUmaForEmptyTitles) {
+  BookmarkModel* bookmark_model = WaitForBookmarkModel(browser()->profile());
+  const BookmarkNode* parent = bookmarks::GetParentForNewNodes(bookmark_model);
+  // Add two bookmarks with a non-empty title and three with an empty one.
+  bookmark_model->AddURL(parent, parent->child_count(),
+                         base::ASCIIToUTF16("title1"), GURL("http://a.com"));
+  bookmark_model->AddURL(parent, parent->child_count(),
+                         base::ASCIIToUTF16("title2"), GURL("http://b.com"));
+  bookmark_model->AddURL(parent, parent->child_count(), base::string16(),
+                         GURL("http://c.com"));
+  bookmark_model->AddURL(parent, parent->child_count(), base::string16(),
+                         GURL("http://d.com"));
+  bookmark_model->AddURL(parent, parent->child_count(), base::string16(),
+                         GURL("http://e.com"));
+}
+
+IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, EmitUmaForEmptyTitles) {
+  WaitForBookmarkModel(browser()->profile());
+
+  ASSERT_THAT(
+      histogram_tester()->GetAllSamples("Bookmarks.Count.OnProfileLoad"),
+      testing::ElementsAre(base::Bucket(/*min=*/5, /*count=*/1)));
+  EXPECT_THAT(histogram_tester()->GetAllSamples(
+                  "Bookmarks.Count.OnProfileLoad.EmptyTitle"),
+              testing::ElementsAre(base::Bucket(/*min=*/3, /*count=*/1)));
+}
+
+#endif  // !defined(OS_CHROMEOS)
