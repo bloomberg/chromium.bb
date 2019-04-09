@@ -884,6 +884,9 @@ void ExtensionDownloader::FetchUpdatedExtension(
                   << "' for extension " << fetch_data->id;
     delegate_->OnExtensionDownloadStageChanged(
         fetch_data->id, ExtensionDownloaderDelegate::FINISHED);
+    NotifyExtensionsDownloadFailed(
+        {fetch_data->id}, fetch_data->request_ids,
+        ExtensionDownloaderDelegate::CRX_FETCH_FAILED);
     return;
   }
 
