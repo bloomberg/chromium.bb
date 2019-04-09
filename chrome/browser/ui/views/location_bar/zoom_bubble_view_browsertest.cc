@@ -103,7 +103,6 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, ImmersiveFullscreen) {
 
   ImmersiveModeController* immersive_controller =
       browser_view->immersive_mode_controller();
-  ASSERT_EQ(ImmersiveModeController::Type::ASH, immersive_controller->type());
   ash::ImmersiveFullscreenControllerTestApi(
       static_cast<ImmersiveModeControllerAsh*>(immersive_controller)
           ->controller())

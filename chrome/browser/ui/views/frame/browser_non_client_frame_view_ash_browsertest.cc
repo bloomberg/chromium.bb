@@ -460,8 +460,6 @@ IN_PROC_BROWSER_TEST_P(ImmersiveModeBrowserViewTest, ImmersiveFullscreen) {
 
   ImmersiveModeController* immersive_mode_controller =
       browser_view->immersive_mode_controller();
-  ASSERT_EQ(ImmersiveModeController::Type::ASH,
-            immersive_mode_controller->type());
 
   // Immersive fullscreen starts disabled.
   ASSERT_FALSE(browser_view->GetWidget()->IsFullscreen());

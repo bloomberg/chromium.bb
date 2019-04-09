@@ -100,8 +100,7 @@ class ImmersiveRevealedLockAsh : public ImmersiveRevealedLock {
 }  // namespace
 
 ImmersiveModeControllerAsh::ImmersiveModeControllerAsh()
-    : ImmersiveModeController(Type::ASH),
-      controller_(std::make_unique<ash::ImmersiveFullscreenController>(
+    : controller_(std::make_unique<ash::ImmersiveFullscreenController>(
           features::IsUsingWindowService()
               ? ImmersiveContextMus::Get()
               : ash::Shell::Get()->immersive_context())),

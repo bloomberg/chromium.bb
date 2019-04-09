@@ -223,7 +223,7 @@ ImmersiveModeControllerMac::RevealedLock::~RevealedLock() {
 }
 
 ImmersiveModeControllerMac::ImmersiveModeControllerMac()
-    : ImmersiveModeController(Type::MAC), weak_ptr_factory_(this) {}
+    : weak_ptr_factory_(this) {}
 
 ImmersiveModeControllerMac::~ImmersiveModeControllerMac() = default;
 
