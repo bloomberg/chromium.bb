@@ -40,19 +40,19 @@ const char kSupervisedUserPseudoGaiaID[] = "managed_user_gaia_id";
 }  // namespace
 
 IdentityManager::IdentityManager(
+    std::unique_ptr<ProfileOAuth2TokenService> token_service,
     std::unique_ptr<GaiaCookieManagerService> gaia_cookie_manager_service,
     std::unique_ptr<SigninManagerBase> signin_manager,
     std::unique_ptr<AccountFetcherService> account_fetcher_service,
-    ProfileOAuth2TokenService* token_service,
     AccountTrackerService* account_tracker_service,
     std::unique_ptr<PrimaryAccountMutator> primary_account_mutator,
     std::unique_ptr<AccountsMutator> accounts_mutator,
     std::unique_ptr<AccountsCookieMutator> accounts_cookie_mutator,
     std::unique_ptr<DiagnosticsProvider> diagnostics_provider)
-    : gaia_cookie_manager_service_(std::move(gaia_cookie_manager_service)),
+    : token_service_(std::move(token_service)),
+      gaia_cookie_manager_service_(std::move(gaia_cookie_manager_service)),
       signin_manager_(std::move(signin_manager)),
       account_fetcher_service_(std::move(account_fetcher_service)),
-      token_service_(token_service),
       account_tracker_service_(account_tracker_service),
       primary_account_mutator_(std::move(primary_account_mutator)),
       accounts_mutator_(std::move(accounts_mutator)),
@@ -209,7 +209,7 @@ IdentityManager::CreateAccessTokenFetcherForAccount(
     AccessTokenFetcher::TokenCallback callback,
     AccessTokenFetcher::Mode mode) {
   return std::make_unique<AccessTokenFetcher>(account_id, oauth_consumer_name,
-                                              token_service_, scopes,
+                                              token_service_.get(), scopes,
                                               std::move(callback), mode);
 }
 
@@ -222,7 +222,7 @@ IdentityManager::CreateAccessTokenFetcherForAccount(
     AccessTokenFetcher::TokenCallback callback,
     AccessTokenFetcher::Mode mode) {
   return std::make_unique<AccessTokenFetcher>(
-      account_id, oauth_consumer_name, token_service_, url_loader_factory,
+      account_id, oauth_consumer_name, token_service_.get(), url_loader_factory,
       scopes, std::move(callback), mode);
 }
 
@@ -236,8 +236,8 @@ IdentityManager::CreateAccessTokenFetcherForClient(
     AccessTokenFetcher::TokenCallback callback,
     AccessTokenFetcher::Mode mode) {
   return std::make_unique<AccessTokenFetcher>(
-      account_id, client_id, client_secret, oauth_consumer_name, token_service_,
-      scopes, std::move(callback), mode);
+      account_id, client_id, client_secret, oauth_consumer_name,
+      token_service_.get(), scopes, std::move(callback), mode);
 }
 
 void IdentityManager::RemoveAccessTokenFromCache(
@@ -261,7 +261,7 @@ IdentityManager::CreateUbertokenFetcherForAccount(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     bool bount_to_channel_id) {
   return std::make_unique<signin::UbertokenFetcherImpl>(
-      account_id, token_service_, std::move(callback), source,
+      account_id, token_service_.get(), std::move(callback), source,
       url_loader_factory, bount_to_channel_id);
 }
 
@@ -277,6 +277,7 @@ void IdentityManager::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
 
 // static
 void IdentityManager::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  ProfileOAuth2TokenService::RegisterProfilePrefs(registry);
   SigninManagerBase::RegisterProfilePrefs(registry);
   AccountFetcherService::RegisterPrefs(registry);
 }
@@ -395,6 +396,7 @@ void IdentityManager::RemoveDiagnosticsObserver(DiagnosticsObserver* observer) {
 void IdentityManager::Shutdown() {
   account_fetcher_service_->Shutdown();
   gaia_cookie_manager_service_->Shutdown();
+  token_service_->Shutdown();
 }
 
 SigninManagerBase* IdentityManager::GetSigninManager() {
@@ -402,7 +404,7 @@ SigninManagerBase* IdentityManager::GetSigninManager() {
 }
 
 ProfileOAuth2TokenService* IdentityManager::GetTokenService() {
-  return token_service_;
+  return token_service_.get();
 }
 
 AccountTrackerService* IdentityManager::GetAccountTrackerService() {

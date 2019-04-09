@@ -44,6 +44,7 @@ namespace identity {
 
 class AccountsMutator;
 class AccountsCookieMutator;
+class IdentityManagerTest;
 class IdentityTestEnvironment;
 class DiagnosticsProvider;
 class PrimaryAccountMutator;
@@ -193,10 +194,10 @@ class IdentityManager : public SigninManagerBase::Observer,
   };
 
   IdentityManager(
+      std::unique_ptr<ProfileOAuth2TokenService> token_service,
       std::unique_ptr<GaiaCookieManagerService> gaia_cookie_manager_service,
       std::unique_ptr<SigninManagerBase> signin_manager,
       std::unique_ptr<AccountFetcherService> account_fetcher_service,
-      ProfileOAuth2TokenService* token_service,
       AccountTrackerService* account_tracker_service,
       std::unique_ptr<PrimaryAccountMutator> primary_account_mutator,
       std::unique_ptr<AccountsMutator> accounts_mutator,
@@ -540,6 +541,7 @@ class IdentityManager : public SigninManagerBase::Observer,
   // IdentityManagerTest reaches into IdentityManager internals in
   // order to drive its behavior.
   // TODO(https://crbug.com/943135): Find a better way to accomplish this.
+  friend IdentityManagerTest;
   FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest, RemoveAccessTokenFromCache);
   FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest,
                            CreateAccessTokenFetcherWithCustomURLLoaderFactory);
@@ -644,11 +646,12 @@ class IdentityManager : public SigninManagerBase::Observer,
   // these classes in the IdentityManager implementation, as all such
   // synchronous access will become impossible when IdentityManager is
   // backed by the Identity Service.
+  std::unique_ptr<ProfileOAuth2TokenService> token_service_;
   std::unique_ptr<GaiaCookieManagerService> gaia_cookie_manager_service_;
   std::unique_ptr<SigninManagerBase> signin_manager_;
   std::unique_ptr<AccountFetcherService> account_fetcher_service_;
-  ProfileOAuth2TokenService* token_service_;
   AccountTrackerService* account_tracker_service_;
+
   // PrimaryAccountMutator instance. May be null if mutation of the primary
   // account state is not supported on the current platform.
   std::unique_ptr<PrimaryAccountMutator> primary_account_mutator_;
