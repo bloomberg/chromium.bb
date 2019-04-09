@@ -4,6 +4,8 @@
 
 #include "ash/media/media_controller.h"
 
+#include "ash/session/session_controller.h"
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
@@ -71,6 +73,9 @@ void MediaController::NotifyCaptureState(
 }
 
 void MediaController::HandleMediaPlayPause() {
+  if (Shell::Get()->session_controller()->IsScreenLocked())
+    return;
+
   // If the |client_| is force handling the keys then we should forward them.
   if (client_ && force_media_client_key_handling_) {
     ui::RecordMediaHardwareKeyAction(ui::MediaHardwareKeyAction::kPlayPause);
@@ -107,6 +112,9 @@ void MediaController::HandleMediaPlayPause() {
 }
 
 void MediaController::HandleMediaNextTrack() {
+  if (Shell::Get()->session_controller()->IsScreenLocked())
+    return;
+
   ui::RecordMediaHardwareKeyAction(
       ui::MediaHardwareKeyAction::kNextTrack);
 
@@ -128,6 +136,9 @@ void MediaController::HandleMediaNextTrack() {
 }
 
 void MediaController::HandleMediaPrevTrack() {
+  if (Shell::Get()->session_controller()->IsScreenLocked())
+    return;
+
   ui::RecordMediaHardwareKeyAction(
       ui::MediaHardwareKeyAction::kPreviousTrack);
 
@@ -182,8 +193,11 @@ void MediaController::SetMediaSessionControllerForTest(
 }
 
 void MediaController::FlushForTesting() {
-  client_.FlushForTesting();
-  media_session_controller_ptr_.FlushForTesting();
+  if (client_)
+    client_.FlushForTesting();
+
+  if (media_session_controller_ptr_)
+    media_session_controller_ptr_.FlushForTesting();
 }
 
 media_session::mojom::MediaController*

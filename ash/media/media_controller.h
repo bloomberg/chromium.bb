@@ -78,6 +78,7 @@ class ASH_EXPORT MediaController
       const base::Optional<base::UnguessableToken>& request_id) override {}
 
  private:
+  friend class MediaControllerTest;
   friend class MediaSessionAcceleratorTest;
   friend class MultiProfileMediaTrayItemTest;
   FRIEND_TEST_ALL_PREFIXES(MediaSessionAcceleratorTest,
