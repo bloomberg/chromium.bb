@@ -185,6 +185,10 @@ RemotingAuthenticationStatus oauthStatusToRemotingAuthenticationStatus(
   [self setUser:nil];
 }
 
+- (void)invalidateCache {
+  _tokenGetter->InvalidateCache();
+}
+
 #pragma mark - Persistence
 
 - (void)storeUserInfo:(UserInfo*)user {
