@@ -55,15 +55,6 @@ Polymer({
     /** @private {?management.ManagedInfo} */
     accountManagedInfo_: Object,
 
-    /**
-     * Indicates if the search field in visible in the toolbar.
-     * @private
-     */
-    showSearchInToolbar_: {
-      type: Boolean,
-      value: false,
-    },
-
     /** @private */
     subtitle_: String,
 
@@ -242,6 +233,19 @@ Polymer({
       default:
         return 'cr:security';
     }
+  },
+
+  /**
+   * Handles the 'search-changed' event fired from the toolbar.
+   * Redirects to the settings page initialized the the current
+   * search query.
+   * @param {!CustomEvent<string>} e
+   * @private
+   */
+  onSearchChanged_: function(e) {
+    const query = e.detail;
+    window.location.href =
+        `chrome://settings?search=${encodeURIComponent(query)}`;
   },
 
   /** @private */

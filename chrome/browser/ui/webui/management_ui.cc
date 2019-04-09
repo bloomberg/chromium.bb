@@ -15,10 +15,10 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/safe_browsing/common/safebrowsing_constants.h"
 #include "components/strings/grit/components_strings.h"
-#include "content/public/browser/web_ui.h"
 #include "extensions/buildflags/buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -93,6 +93,8 @@ content::WebUIDataSource* CreateManagementUIHtmlSource() {
      IDS_MANAGEMENT_TRUST_ROOTS_NOT_CONFIGURED},
     {"title", IDS_MANAGEMENT_TITLE},
     {"toolbarTitle", IDS_MANAGEMENT_TOOLBAR_TITLE},
+    {"searchPrompt", IDS_SETTINGS_SEARCH_PROMPT},
+    {"clearSearch", IDS_DOWNLOAD_CLEAR_SEARCH},
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     {kManagementExtensionReportMachineName,
      IDS_MANAGEMENT_EXTENSION_REPORT_MACHINE_NAME},

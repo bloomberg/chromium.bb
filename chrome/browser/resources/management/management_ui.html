@@ -159,8 +159,9 @@
       }
     </style>
 
-    <cr-toolbar page-name="$i18n{toolbarTitle}"
-        show-search="[[showSearchInToolbar_]]">
+    <cr-toolbar page-name="$i18n{toolbarTitle}" role="banner"
+        on-search-changed="onSearchChanged_" clear-label="$i18n{clearSearch}"
+        search-prompt="$i18n{searchPrompt}">
     </cr-toolbar>
     <main id="mainContent">
       <div class="sections-container">
