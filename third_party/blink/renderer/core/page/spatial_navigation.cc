@@ -49,10 +49,7 @@ namespace blink {
 static void DeflateIfOverlapped(LayoutRect&, LayoutRect&);
 
 FocusCandidate::FocusCandidate(Node* node, SpatialNavigationDirection direction)
-    : visible_node(nullptr),
-      focusable_node(nullptr),
-      is_offscreen(true),
-      is_offscreen_after_scrolling(true) {
+    : visible_node(nullptr), focusable_node(nullptr), is_offscreen(true) {
   DCHECK(node);
   DCHECK(node->IsElementNode());
 
@@ -73,8 +70,6 @@ FocusCandidate::FocusCandidate(Node* node, SpatialNavigationDirection direction)
 
   focusable_node = node;
   is_offscreen = IsOffscreen(visible_node);
-  is_offscreen_after_scrolling =
-      IsOffscreenAfterFrameScroll(visible_node, direction);
 }
 
 bool IsSpatialNavigationEnabled(const LocalFrame* frame) {
