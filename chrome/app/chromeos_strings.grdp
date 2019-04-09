@@ -3871,4 +3871,18 @@
 
     You can go to Settings -> Google Accounts to view and manage all accounts.
   </message>
+
+  <!-- TPM firmware auto-update notifications -->
+  <message name="IDS_TPM_AUTO_UPDATE_PLANNED_NOTIFICATION_TITLE" desc="Title for the notification informing the user that local data will be deleted.">
+    Your local data will soon be deleted
+  </message>
+  <message name="IDS_TPM_AUTO_UPDATE_PLANNED_NOTIFICATION_MESSAGE" desc="Text for the notification informing the user that a TPM update is planned by the administrator which will result in local data being deleted.">
+    After 24 hours, your administrator will perform a one-time update that will delete your local data when you restart your device. Save any local data you need to cloud storage within 24 hours.
+  </message>
+  <message name="IDS_TPM_AUTO_UPDATE_REBOOT_NOTIFICATION_TITLE" desc="Title for the notification informing the user that local data will be deleted after reboot.">
+    Local data will be deleted when you restart
+  </message>
+  <message name="IDS_TPM_AUTO_UPDATE_REBOOT_NOTIFICATION_MESSAGE" desc="Text for the notification informing the user that a TPM update will be performed after reboot which will result in local data being deleted.">
+    The next time you restart your device, your administrator will perform a one-time update that will delete your local data.
+  </message>
 </grit-part>
