@@ -30,6 +30,9 @@ class ContentCaptureReceiverManagerAndroid
 
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
+ protected:
+  bool ShouldCapture(const GURL& url) override;
+
  private:
   ContentCaptureReceiverManagerAndroid(JNIEnv* env,
                                        content::WebContents* web_contents);

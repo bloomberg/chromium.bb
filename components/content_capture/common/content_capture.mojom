@@ -16,3 +16,10 @@ interface ContentCaptureReceiver {
   // Invoked to notify that a list of content |ids| has been removed.
   DidRemoveContent(array<int64> ids);
 };
+
+// This interface has one instance per RenderFrame in renderer process.
+interface ContentCaptureSender {
+  // Invoked to start/stop ContentCapture, it is stopped by default.
+  StartCapture();
+  StopCapture();
+};

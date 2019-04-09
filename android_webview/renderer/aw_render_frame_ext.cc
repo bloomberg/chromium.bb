@@ -159,7 +159,7 @@ AwRenderFrameExt::AwRenderFrameExt(content::RenderFrame* render_frame)
   new autofill::AutofillAgent(render_frame, password_autofill_agent, nullptr,
                               &registry_);
   if (content_capture::features::IsContentCaptureEnabled())
-    new content_capture::ContentCaptureSender(render_frame);
+    new content_capture::ContentCaptureSender(render_frame, &registry_);
 
   // Add myself to the RenderFrame => AwRenderFrameExt register.
   render_frame_ext_map.Get().emplace(render_frame, this);

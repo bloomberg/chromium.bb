@@ -9,18 +9,27 @@
 #include "components/content_capture/common/content_capture_features.h"
 #include "content/public/renderer/render_frame.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/web/web_content_holder.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 
 namespace content_capture {
 
-ContentCaptureSender::ContentCaptureSender(content::RenderFrame* render_frame)
-    : content::RenderFrameObserver(render_frame) {
-  render_frame->GetWebFrame()->SetContentCaptureClient(this);
+ContentCaptureSender::ContentCaptureSender(
+    content::RenderFrame* render_frame,
+    blink::AssociatedInterfaceRegistry* registry)
+    : content::RenderFrameObserver(render_frame), binding_(this) {
+  registry->AddInterface(base::BindRepeating(&ContentCaptureSender::BindRequest,
+                                             base::Unretained(this)));
 }
 
 ContentCaptureSender::~ContentCaptureSender() {}
+
+void ContentCaptureSender::BindRequest(
+    mojom::ContentCaptureSenderAssociatedRequest request) {
+  binding_.Bind(std::move(request));
+}
 
 cc::NodeHolder::Type ContentCaptureSender::GetNodeHolderType() const {
   if (content_capture::features::ShouldUseNodeID())
@@ -62,6 +71,14 @@ void ContentCaptureSender::DidCaptureContent(
 
 void ContentCaptureSender::DidRemoveContent(const std::vector<int64_t>& data) {
   GetContentCaptureReceiver()->DidRemoveContent(data);
+}
+
+void ContentCaptureSender::StartCapture() {
+  render_frame()->GetWebFrame()->SetContentCaptureClient(this);
+}
+
+void ContentCaptureSender::StopCapture() {
+  render_frame()->GetWebFrame()->SetContentCaptureClient(nullptr);
 }
 
 void ContentCaptureSender::OnDestruct() {

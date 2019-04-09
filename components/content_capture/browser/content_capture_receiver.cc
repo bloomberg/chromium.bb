@@ -9,6 +9,7 @@
 #include "components/content_capture/browser/content_capture_receiver_manager.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
 namespace content_capture {
 
@@ -58,6 +59,35 @@ void ContentCaptureReceiver::DidRemoveContent(
   auto* manager = ContentCaptureReceiverManager::FromWebContents(
       content::WebContents::FromRenderFrameHost(rfh_));
   manager->DidRemoveContent(this, data);
+}
+
+void ContentCaptureReceiver::StartCapture() {
+  if (content_capture_enabled)
+    return;
+
+  if (auto& sender = GetContentCaptureSender()) {
+    sender->StartCapture();
+    content_capture_enabled = true;
+  }
+}
+
+void ContentCaptureReceiver::StopCapture() {
+  if (!content_capture_enabled)
+    return;
+
+  if (auto& sender = GetContentCaptureSender()) {
+    sender->StopCapture();
+    content_capture_enabled = false;
+  }
+}
+
+const mojom::ContentCaptureSenderAssociatedPtr&
+ContentCaptureReceiver::GetContentCaptureSender() {
+  if (!content_capture_sender_) {
+    rfh_->GetRemoteAssociatedInterfaces()->GetInterface(
+        mojo::MakeRequest(&content_capture_sender_));
+  }
+  return content_capture_sender_;
 }
 
 }  // namespace content_capture
