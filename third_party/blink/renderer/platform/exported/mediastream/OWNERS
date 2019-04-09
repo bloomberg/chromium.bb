@@ -2,5 +2,5 @@ file://third_party/blink/common/mediastream/OWNERS
 
 per-file media_stream_audio_processor*=aluebs@chromium.org
 
-# TEAM: webrtc-dev@chromium.org
+# TEAM: media-capture-and-streams@grotations.appspotmail.com
 # COMPONENT: Blink>GetUserMedia

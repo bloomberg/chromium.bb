@@ -7,10 +7,8 @@ tommi@chromium.org
 olka@chromium.org
 maxmorin@chromium.org
 
+per-file *video*=mcasas@chromium.org
 per-file *video*=chfremer@chromium.org
 
-# Original (legacy) owner.
-per-file *video*=mcasas@chromium.org
-
+# TEAM: media-capture-and-streams@grotations.appspotmail.com
 # COMPONENT: Blink>GetUserMedia
-# TEAM: webrtc-dev@chromium.org
