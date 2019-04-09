@@ -126,6 +126,10 @@ void FtlMessagingClient::StopReceivingMessages() {
   reception_channel_->StopReceivingMessages();
 }
 
+bool FtlMessagingClient::IsReceivingMessages() {
+  return reception_channel_->IsReceivingMessages();
+}
+
 void FtlMessagingClient::OnPullMessagesResponse(
     DoneCallback on_done,
     const grpc::Status& status,

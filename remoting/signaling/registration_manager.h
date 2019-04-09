@@ -23,6 +23,10 @@ class RegistrationManager {
   // successfully signed in or failed to sign in.
   virtual void SignInGaia(DoneCallback on_done) = 0;
 
+  // Clears locally cached registration ID and auth token. Caller will need to
+  // call SignInGaia() again if they need to get a new auth token.
+  virtual void SignOut() = 0;
+
   virtual bool IsSignedIn() const = 0;
 
   // Returns empty string if user hasn't been signed in.

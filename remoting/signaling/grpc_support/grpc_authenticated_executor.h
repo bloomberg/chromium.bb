@@ -27,6 +27,7 @@ class GrpcAuthenticatedExecutor final : public GrpcExecutor {
 
   // GrpcExecutor implementation.
   void ExecuteRpc(std::unique_ptr<GrpcAsyncRequest> request) override;
+  void CancelPendingRequests() override;
 
  private:
   friend class GrpcAuthenticatedExecutorTest;

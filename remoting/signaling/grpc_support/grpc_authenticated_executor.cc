@@ -48,4 +48,10 @@ void GrpcAuthenticatedExecutor::ExecuteRpcWithFetchedOAuthToken(
   executor_->ExecuteRpc(std::move(request));
 }
 
+void GrpcAuthenticatedExecutor::CancelPendingRequests() {
+  // Drop all CallWithToken() callbacks.
+  weak_factory_.InvalidateWeakPtrs();
+  executor_->CancelPendingRequests();
+}
+
 }  // namespace remoting

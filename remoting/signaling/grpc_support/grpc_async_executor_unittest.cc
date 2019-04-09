@@ -284,6 +284,31 @@ TEST_F(GrpcAsyncExecutorTest, UnaryRpcCanceledBeforeExecution) {
   ASSERT_EQ("Hello 2", received_request.text());
 }
 
+TEST_F(GrpcAsyncExecutorTest, CancelAllRpcsAndExecuteANewOne) {
+  base::RunLoop run_loop_1;
+  AsyncSendText("Hello 1", base::BindLambdaForTesting(
+                               [&](const grpc::Status&, const EchoResponse&) {
+                                 NOTREACHED();
+                               }));
+  executor_->CancelPendingRequests();
+  EchoRequest received_request;
+  auto responder = GetResponderAndFillEchoRequest(&received_request);
+  ASSERT_EQ("Hello 1", received_request.text());
+  // Response fails to deliver.
+  ASSERT_FALSE(responder->Respond(EchoResponse(), grpc::Status::OK));
+  run_loop_1.RunUntilIdle();
+  base::RunLoop run_loop_2;
+  AsyncSendText("Hello 2",
+                base::BindLambdaForTesting([&](const grpc::Status& status,
+                                               const EchoResponse& response) {
+                  ASSERT_TRUE(status.ok());
+                  ASSERT_EQ("Hello 2", response.text());
+                  run_loop_2.Quit();
+                }));
+  HandleOneEchoRequest();
+  run_loop_2.Run();
+}
+
 TEST_F(GrpcAsyncExecutorTest, ServerStreamingRpcCanceledBeforeExecution) {
   EchoRequest request;
   request.set_text("Hello 1");
