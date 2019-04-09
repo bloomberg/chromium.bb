@@ -17,6 +17,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.gesturenav.NavigationHandler;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabWebContentsUserData;
 import org.chromium.components.feature_engagement.EventConstants;
@@ -54,6 +55,8 @@ public class SwipeRefreshHandler
 
     // The Tab where the swipe occurs.
     private Tab mTab;
+
+    private EmptyTabObserver mTabObserver;
 
     // The container view the SwipeRefreshHandler instance is currently
     // associated with.
@@ -95,15 +98,29 @@ public class SwipeRefreshHandler
     private SwipeRefreshHandler(Tab tab) {
         super(tab);
         mTab = tab;
+        mTabObserver = new EmptyTabObserver() {
+            @Override
+            public void onActivityAttachmentChanged(Tab tab, boolean isAttached) {
+                if (!isAttached && mSwipeRefreshLayout != null) {
+                    cancelStopRefreshingRunnable();
+                    detachSwipeRefreshLayoutIfNecessary();
+                    mSwipeRefreshLayout.setOnRefreshListener(null);
+                    mSwipeRefreshLayout.setOnResetListener(null);
+                    mSwipeRefreshLayout = null;
+                }
+            }
+        };
+        mTab.addObserver(mTabObserver);
         mNavigationEnabled =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.OVERSCROLL_HISTORY_NAVIGATION);
     }
 
-    private void initSwipeRefreshLayout() {
-        final Context context = mTab.getThemedApplicationContext();
+    private void initSwipeRefreshLayout(final Context context) {
         mSwipeRefreshLayout = new SwipeRefreshLayout(context);
         mSwipeRefreshLayout.setLayoutParams(
                 new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        mSwipeRefreshLayout.setProgressBackgroundColorSchemeResource(
+                R.color.default_bg_color_elev_2);
         mSwipeRefreshLayout.setColorSchemeResources(R.color.light_active_color);
         if (mContainerView != null) mSwipeRefreshLayout.setEnabled(true);
 
@@ -174,7 +191,7 @@ public class SwipeRefreshHandler
 
         mSwipeType = type;
         if (type == OverscrollAction.PULL_TO_REFRESH) {
-            if (mSwipeRefreshLayout == null) initSwipeRefreshLayout();
+            if (mSwipeRefreshLayout == null) initSwipeRefreshLayout(mTab.getContext());
             attachSwipeRefreshLayoutIfNecessary();
             return mSwipeRefreshLayout.start();
         } else if (type == OverscrollAction.HISTORY_NAVIGATION && mNavigationEnabled) {
@@ -244,7 +261,11 @@ public class SwipeRefreshHandler
 
     private Runnable getStopRefreshingRunnable() {
         if (mStopRefreshingRunnable == null) {
-            mStopRefreshingRunnable = () -> mSwipeRefreshLayout.setRefreshing(false);
+            mStopRefreshingRunnable = () -> {
+                if (mSwipeRefreshLayout != null) {
+                    mSwipeRefreshLayout.setRefreshing(false);
+                }
+            };
         }
         return mStopRefreshingRunnable;
     }
