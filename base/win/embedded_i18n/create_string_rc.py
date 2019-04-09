@@ -58,6 +58,8 @@ Note: MODE_SPECIFIC_STRINGS cannot be specified if STRING_IDS is not specified.
 # and IDS_L10N_OFFSET_* for the language we are interested in.
 #
 
+from __future__ import print_function
+
 import argparse
 import exceptions
 import glob
@@ -318,8 +320,9 @@ Missing input files:
 Extra input files:
 {}
 '''
-      print error.format('\n'.join(self.expected_xtb_input_files),
-        '\n'.join(all_xtb_files), '\n'.join(missing), '\n'.join(extra))
+      print(error.format('\n'.join(self.expected_xtb_input_files),
+                         '\n'.join(all_xtb_files), '\n'.join(missing),
+                         '\n'.join(extra)))
       sys.exit(1)
     return translated_strings
 
@@ -391,12 +394,12 @@ Extra input files:
       if missing_xtb_files:
         missing_error = ("There were files that were found in the .grd file "
                          "'{}' but do not exist on disk:\n{}")
-        print missing_error.format(grd_file, '\n'.join(missing_xtb_files))
+        print(missing_error.format(grd_file, '\n'.join(missing_xtb_files)))
 
       if extra_xtb_files:
         extra_error = ("There were files that exist on disk but were not found "
                        "in the .grd file '{}':\n{}")
-        print extra_error.format(grd_file, '\n'.join(extra_xtb_files))
+        print(extra_error.format(grd_file, '\n'.join(extra_xtb_files)))
 
       sys.exit(1)
     return translated_strings
@@ -585,8 +588,8 @@ def main():
   xtb_relative_paths = args.input_xtb_relative_paths
 
   if len(grd_files) != len(xtb_relative_paths):
-     parser.error('Mismatch in number of grd files ({}) and xtb relative '
-       'paths ({})'.format(len(grd_files), len(xtb_relative_paths)))
+    parser.error('Mismatch in number of grd files ({}) and xtb relative '
+                 'paths ({})'.format(len(grd_files), len(xtb_relative_paths)))
 
   inputs = zip(grd_files, xtb_relative_paths)
 
