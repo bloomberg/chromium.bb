@@ -726,6 +726,7 @@ class UploadTestArtifactsStage(generic_stages.BoardSpecificBuilderStage,
             os.path.join(self._build_root, 'chroot', 'build',
                          self._current_board, constants.AUTOTEST_BUILD_PATH,
                          '..'))
+        logging.info('Running commands.BuildAutotestTarballsForHWTest')
         for tarball in commands.BuildAutotestTarballsForHWTest(
             self._build_root, cwd, tempdir):
           queue.put([tarball])
@@ -736,6 +737,7 @@ class UploadTestArtifactsStage(generic_stages.BoardSpecificBuilderStage,
       cwd = os.path.abspath(
           os.path.join(self._build_root, 'chroot', 'build',
                        self._current_board, 'build'))
+      logging.info('Running commands.BuildTastBundleTarball')
       tarball = commands.BuildTastBundleTarball(
           self._build_root, cwd, tempdir)
       if tarball:
@@ -744,6 +746,7 @@ class UploadTestArtifactsStage(generic_stages.BoardSpecificBuilderStage,
   def BuildGuestImagesTarball(self):
     """Build the tarball containing guest images test bundles."""
     with osutils.TempDir(prefix='cbuildbot-guest-images') as tempdir:
+      logging.info('Running commands.BuildPinnedGuestImagesTarball')
       tarball = commands.BuildPinnedGuestImagesTarball(
           self._build_root, self._current_board, tempdir)
       if tarball:
@@ -759,7 +762,9 @@ class UploadTestArtifactsStage(generic_stages.BoardSpecificBuilderStage,
     with osutils.TempDir(prefix='cbuildbot-payloads') as tempdir:
       with self.ArtifactUploader() as queue:
         image_path = os.path.join(self.GetImageDirSymlink(), image_name)
+        logging.info('Running commands.GeneratePayloads')
         commands.GeneratePayloads(image_path, tempdir, **kwargs)
+        logging.info('Running commands.GenerateQuickProvisionPayloads')
         commands.GenerateQuickProvisionPayloads(image_path, tempdir)
         for payload in os.listdir(tempdir):
           queue.put([os.path.join(tempdir, payload)])
