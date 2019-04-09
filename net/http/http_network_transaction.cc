@@ -1604,8 +1604,8 @@ int HttpNetworkTransaction::HandleHttp11Required(int error) {
 }
 
 int HttpNetworkTransaction::HandleSSLClientAuthError(int error) {
-  // TODO(davidben): This does handle client certificate errors from the
-  // proxy. https://crbug.com/814911.
+  // Client certificate errors from the proxy are handled in the
+  // HttpStreamFactory and below. See discussion in https://crbug.com/828965.
   if (server_ssl_config_.send_client_cert &&
       (error == ERR_SSL_PROTOCOL_ERROR || IsClientCertificateError(error))) {
     session_->ssl_client_auth_cache()->Remove(
