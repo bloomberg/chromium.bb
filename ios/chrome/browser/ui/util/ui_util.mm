@@ -14,7 +14,6 @@
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#include "ios/web/public/features.h"
 #include "ui/base/device_form_factor.h"
 #include "ui/gfx/ios/uikit_util.h"
 
