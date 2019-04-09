@@ -72,18 +72,18 @@ const puppeteer = require('puppeteer');
   };
 
   const images = [
-    "images/SONY_A500_01.ARW",
-    "images/EOS_XS_REBEL.CR2",
-    "images/RAW_CANON_1DM2.CR2",
-    "images/L100_4220.DNG",
-    "images/RAW_LEICA_M8.DNG",
-    "images/FUJI_E550_RAW.RAF",
-    "images/NIKON_UB20_O35.NEF",
-    "images/NIKON_GDN0447.NEF",
-    "images/OLYMPUS_SC877.ORF",
-    "images/NIKON_CPIX78.NRW",
-    "images/PANASONIC_DMC.RW2",
-    "images/UNKNOWN_FORMAT.JPG",
+    'images/SONY_A500_01.ARW',
+    'images/EOS_XS_REBEL.CR2',
+    'images/RAW_CANON_1DM2.CR2',
+    'images/L100_4220.DNG',
+    'images/RAW_LEICA_M8.DNG',
+    'images/FUJI_E550_RAW.RAF',
+    'images/NIKON_UB20_O35.NEF',
+    'images/NIKON_GDN0447.NEF',
+    'images/OLYMPUS_SC877.ORF',
+    'images/NIKON_CPIX78.NRW',
+    'images/PANASONIC_DMC.RW2',
+    'images/UNKNOWN_FORMAT.JPG',
   ];
 
   await page.evaluate(() => {
