@@ -1107,9 +1107,6 @@ extern const char kSoleIntegrationDescription[];
 extern const char kSpeculativeServiceWorkerStartOnQueryInputName[];
 extern const char kSpeculativeServiceWorkerStartOnQueryInputDescription[];
 
-extern const char kSpellingFeedbackFieldTrialName[];
-extern const char kSpellingFeedbackFieldTrialDescription[];
-
 extern const char kSSLCommittedInterstitialsName[];
 extern const char kSSLCommittedInterstitialsDescription[];
 

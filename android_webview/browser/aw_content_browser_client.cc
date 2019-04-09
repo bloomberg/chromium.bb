@@ -105,7 +105,6 @@
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 #include "components/spellcheck/browser/spell_check_host_impl.h"
-#include "components/spellcheck/common/spellcheck_switches.h"
 #endif
 
 using content::BrowserThread;

@@ -91,7 +91,6 @@
 #include "components/signin/core/browser/signin_buildflags.h"
 #include "components/signin/core/browser/signin_switches.h"
 #include "components/spellcheck/common/spellcheck_features.h"
-#include "components/spellcheck/common/spellcheck_switches.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/suggestions/features.h"
 #include "components/sync/driver/sync_driver_switches.h"
@@ -1527,13 +1526,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCloudPrintXpsDescription, kOsWin,
      SINGLE_VALUE_TYPE(switches::kEnableCloudPrintXps)},
 #endif  // OS_WIN
-#if BUILDFLAG(ENABLE_SPELLCHECK)
-    {"enable-spelling-feedback-field-trial",
-     flag_descriptions::kSpellingFeedbackFieldTrialName,
-     flag_descriptions::kSpellingFeedbackFieldTrialDescription, kOsAll,
-     SINGLE_VALUE_TYPE(
-         spellcheck::switches::kEnableSpellingFeedbackFieldTrial)},
-#endif  // ENABLE_SPELLCHECK
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
     {"enable-webgl2-compute-context",
      flag_descriptions::kWebGL2ComputeContextName,

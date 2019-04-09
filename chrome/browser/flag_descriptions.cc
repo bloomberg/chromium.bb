@@ -1859,10 +1859,6 @@ const char kSpeculativeServiceWorkerStartOnQueryInputDescription[] =
     "a query, any service worker associated with the search engine the query "
     "will be sent to is started early.";
 
-const char kSpellingFeedbackFieldTrialName[] = "Spelling Feedback Field Trial";
-const char kSpellingFeedbackFieldTrialDescription[] =
-    "Enable the field trial for sending user feedback to spelling service.";
-
 const char kSSLCommittedInterstitialsName[] = "Committed Interstitials";
 const char kSSLCommittedInterstitialsDescription[] =
     "Use committed error pages instead of transient navigation entries "
