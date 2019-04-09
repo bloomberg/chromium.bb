@@ -22,6 +22,7 @@ source_set("browser_tests_filters") {
   data = [
     "//testing/buildbot/filters/chromeos.mash.browser_tests.filter",
     "//testing/buildbot/filters/chromeos.mash.fyi.browser_tests.filter",
+    "//testing/buildbot/filters/webui_html_imports_polyfill_browser_tests.filter",
     "//testing/buildbot/filters/webui_polymer1_browser_tests.filter",
     "//testing/buildbot/filters/webrtc_functional.browser_tests.filter",
   ]

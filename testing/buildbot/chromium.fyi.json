@@ -410,6 +410,17 @@
       },
       {
         "args": [
+          "--disable-blink-features=HTMLImports,ShadowDOMV0,CustomElementsV0",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_html_imports_polyfill_browser_tests.filter"
+        ],
+        "name": "webui_html_imports_polyfill_browser_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "browser_tests"
+      },
+      {
+        "args": [
           "--disable-features=WebUIPolymer2",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
         ],
@@ -2188,6 +2199,17 @@
         "test": "boringssl_ssl_tests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--disable-blink-features=HTMLImports,ShadowDOMV0,CustomElementsV0",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_html_imports_polyfill_browser_tests.filter"
+        ],
+        "name": "webui_html_imports_polyfill_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": false
         },
@@ -6223,6 +6245,18 @@
       },
       {
         "args": [
+          "--disable-blink-features=HTMLImports,ShadowDOMV0,CustomElementsV0",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_html_imports_polyfill_browser_tests.filter"
+        ],
+        "isolate_coverage_data": true,
+        "name": "webui_html_imports_polyfill_browser_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "browser_tests"
+      },
+      {
+        "args": [
           "--disable-features=WebUIPolymer2",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
         ],
@@ -6970,6 +7004,17 @@
       },
       {
         "args": [
+          "--disable-blink-features=HTMLImports,ShadowDOMV0,CustomElementsV0",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_html_imports_polyfill_browser_tests.filter"
+        ],
+        "name": "webui_html_imports_polyfill_browser_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "browser_tests"
+      },
+      {
+        "args": [
           "--disable-features=WebUIPolymer2",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
         ],
@@ -7703,6 +7748,18 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 10
+        },
+        "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--disable-blink-features=HTMLImports,ShadowDOMV0,CustomElementsV0",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_html_imports_polyfill_browser_tests.filter"
+        ],
+        "isolate_coverage_data": true,
+        "name": "webui_html_imports_polyfill_browser_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
         },
         "test": "browser_tests"
       },
@@ -11053,6 +11110,17 @@
       },
       {
         "args": [
+          "--disable-blink-features=HTMLImports,ShadowDOMV0,CustomElementsV0",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_html_imports_polyfill_browser_tests.filter"
+        ],
+        "name": "webui_html_imports_polyfill_browser_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "browser_tests"
+      },
+      {
+        "args": [
           "--disable-features=WebUIPolymer2",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
         ],
@@ -11883,6 +11951,24 @@
           ],
           "expiration": 21600,
           "shards": 10
+        },
+        "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--disable-blink-features=HTMLImports,ShadowDOMV0,CustomElementsV0",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_html_imports_polyfill_browser_tests.filter"
+        ],
+        "name": "webui_html_imports_polyfill_browser_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.14.5"
+            }
+          ],
+          "expiration": 21600
         },
         "test": "browser_tests"
       },
