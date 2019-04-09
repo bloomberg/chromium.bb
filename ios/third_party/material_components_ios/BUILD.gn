@@ -184,6 +184,8 @@ source_set("material_components_ios") {
     "src/components/Cards/src/ColorThemer/MDCCardsColorThemer.m",
     "src/components/Cards/src/MDCCard.h",
     "src/components/Cards/src/MDCCard.m",
+    "src/components/Cards/src/MDCCardCollectionCell.h",
+    "src/components/Cards/src/MDCCardCollectionCell.m",
     "src/components/CollectionCells/src/MDCCollectionViewCell.h",
     "src/components/CollectionCells/src/MDCCollectionViewCell.m",
     "src/components/CollectionCells/src/MDCCollectionViewTextCell.h",
