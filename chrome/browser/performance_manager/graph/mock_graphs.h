@@ -6,14 +6,25 @@
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_MOCK_GRAPHS_H_
 
 #include "chrome/browser/performance_manager/graph/graph_test_harness.h"
+#include "chrome/browser/performance_manager/graph/process_node_impl.h"
 
 namespace performance_manager {
 
 class Graph;
 class FrameNodeImpl;
 class PageNodeImpl;
-class ProcessNodeImpl;
 class SystemNodeImpl;
+
+// A for-testing subclass of the process node that allows mocking the
+// process' PID.
+class TestProcessNodeImpl : public ProcessNodeImpl {
+ public:
+  explicit TestProcessNodeImpl(Graph* graph);
+
+  void SetProcessWithPid(base::ProcessId pid,
+                         base::Process process,
+                         base::Time launch_time);
+};
 
 // The following coordination unit graph topology is created to emulate a
 // scenario when a single page executes in a single process:
@@ -30,7 +41,7 @@ struct MockSinglePageInSingleProcessGraph {
   explicit MockSinglePageInSingleProcessGraph(Graph* graph);
   ~MockSinglePageInSingleProcessGraph();
   TestNodeWrapper<SystemNodeImpl> system;
-  TestNodeWrapper<ProcessNodeImpl> process;
+  TestNodeWrapper<TestProcessNodeImpl> process;
   TestNodeWrapper<PageNodeImpl> page;
   TestNodeWrapper<FrameNodeImpl> frame;
 };
@@ -76,7 +87,7 @@ struct MockSinglePageWithMultipleProcessesGraph
     : public MockSinglePageInSingleProcessGraph {
   explicit MockSinglePageWithMultipleProcessesGraph(Graph* graph);
   ~MockSinglePageWithMultipleProcessesGraph();
-  TestNodeWrapper<ProcessNodeImpl> other_process;
+  TestNodeWrapper<TestProcessNodeImpl> other_process;
   TestNodeWrapper<FrameNodeImpl> child_frame;
 };
 
@@ -102,7 +113,7 @@ struct MockMultiplePagesWithMultipleProcessesGraph
     : public MockMultiplePagesInSingleProcessGraph {
   explicit MockMultiplePagesWithMultipleProcessesGraph(Graph* graph);
   ~MockMultiplePagesWithMultipleProcessesGraph();
-  TestNodeWrapper<ProcessNodeImpl> other_process;
+  TestNodeWrapper<TestProcessNodeImpl> other_process;
   TestNodeWrapper<FrameNodeImpl> child_frame;
 };
 

@@ -37,42 +37,33 @@ void ProcessNodeImpl::SetExpectedTaskQueueingDuration(
   expected_task_queueing_duration_.SetAndNotify(this, duration);
 }
 
-void ProcessNodeImpl::SetLaunchTime(base::Time launch_time) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(launch_time_.is_null());
-  launch_time_ = launch_time;
-}
-
 void ProcessNodeImpl::SetMainThreadTaskLoadIsLow(
     bool main_thread_task_load_is_low) {
   main_thread_task_load_is_low_.SetAndMaybeNotify(this,
                                                   main_thread_task_load_is_low);
 }
 
-void ProcessNodeImpl::SetPID(base::ProcessId pid) {
+void ProcessNodeImpl::SetProcessExitStatus(int32_t exit_status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // This may occur as the first event seen in the case where the process
+  // fails to start or suffers a startup crash.
+  exit_status_ = exit_status;
+
+  // Close the process handle to kill the zombie.
+  process_.Close();
+}
+
+void ProcessNodeImpl::SetProcess(base::Process process,
+                                 base::Time launch_time) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(process.IsValid());
   // Either this is the initial process associated with this process CU,
   // or it's a subsequent process. In the latter case, there must have been
   // an exit status associated with the previous process.
-  DCHECK(process_id_ == base::kNullProcessId || exit_status_.has_value());
+  DCHECK(!process_.IsValid() || exit_status_.has_value());
 
-  graph()->BeforeProcessPidChange(this, pid);
-
-  process_id_ = pid;
-
-  // Clear launch time and exit status for the previous process (if any).
-  launch_time_ = base::Time();
-  exit_status_.reset();
-
-  // Also clear the measurement data (if any), as it references the previous
-  // process.
-  private_footprint_kb_ = 0;
-  cumulative_cpu_usage_ = base::TimeDelta();
-}
-
-void ProcessNodeImpl::SetProcessExitStatus(int32_t exit_status) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  exit_status_ = exit_status;
+  base::ProcessId pid = process.Pid();
+  SetProcessImpl(std::move(process), pid, launch_time);
 }
 
 void ProcessNodeImpl::OnRendererIsBloated() {
@@ -111,6 +102,26 @@ void ProcessNodeImpl::OnFrameLifecycleStateChanged(
   else if (frame_node->lifecycle_state() ==
            resource_coordinator::mojom::LifecycleState::kFrozen)
     IncrementNumFrozenFrames();
+}
+
+void ProcessNodeImpl::SetProcessImpl(base::Process process,
+                                     base::ProcessId new_pid,
+                                     base::Time launch_time) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  graph()->BeforeProcessPidChange(this, new_pid);
+
+  process_ = std::move(process);
+  process_id_ = new_pid;
+  launch_time_ = launch_time;
+
+  // Clear the exit status for the previous process (if any).
+  exit_status_.reset();
+
+  // Also clear the measurement data (if any), as it references the previous
+  // process.
+  private_footprint_kb_ = 0;
+  cumulative_cpu_usage_ = base::TimeDelta();
 }
 
 void ProcessNodeImpl::LeaveGraph() {
