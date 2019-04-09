@@ -8,32 +8,45 @@ import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
-import org.chromium.chrome.browser.webapps.WebappRegistry;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import dagger.Lazy;
+
 /**
  * Handles the preserving and surfacing the permissions of TWA client apps for their associated
- * websites. Communicates with the {@link org.chromium.chrome.browser.webapps.WebappRegistry} and
+ * websites. Communicates with the {@link TrustedWebActivityPermissionStore} and
  * {@link InstalledWebappBridge}.
  *
- * Lifecycle: All methods are static.
+ * Lifecycle: This is a singleton.
  * Thread safety: Only call methods on a single thread.
  * Native: Does not require native.
  */
+@Singleton
 public class TrustedWebActivityPermissionManager {
     private static final String TAG = "TwaPermissionManager";
 
-    static InstalledWebappBridge.Permission[] getNotificationPermissions() {
-        // TODO: Hold reference to this.
-        TrustedWebActivityPermissionStore store =
-                WebappRegistry.getInstance().getTrustedWebActivityPermissionStore();
+    private final TrustedWebActivityPermissionStore mStore;
 
+    // Use a Lazy instance so we don't instantiate it on Android versions pre-O.
+    private final Lazy<NotificationChannelPreserver> mPermissionPreserver;
+
+    @Inject
+    public TrustedWebActivityPermissionManager(TrustedWebActivityPermissionStore store,
+            Lazy<NotificationChannelPreserver> preserver) {
+        mStore = store;
+        mPermissionPreserver = preserver;
+    }
+
+    InstalledWebappBridge.Permission[] getNotificationPermissions() {
         List<InstalledWebappBridge.Permission> permissions = new ArrayList<>();
-        for (String originAsString : store.getStoredOrigins()) {
+        for (String originAsString : mStore.getStoredOrigins()) {
             Origin origin = new Origin(originAsString);
-            Boolean enabled = store.areNotificationsEnabled(origin);
+            Boolean enabled = mStore.areNotificationsEnabled(origin);
 
             if (enabled == null) {
                 Log.w(TAG, "%s is known but has no notification permission.", origin);
@@ -49,22 +62,21 @@ public class TrustedWebActivityPermissionManager {
         return permissions.toArray(new InstalledWebappBridge.Permission[permissions.size()]);
     }
 
-    static void register(Origin origin, boolean notificationsEnabled) {
-        TrustedWebActivityPermissionStore store =
-                WebappRegistry.getInstance().getTrustedWebActivityPermissionStore();
-        store.setNotificationState(origin, notificationsEnabled);
+    void register(Origin origin, boolean notificationsEnabled) {
+        // TODO: Only trigger if this is for the first time?
+        NotificationChannelPreserver.deleteChannelIfNeeded(mPermissionPreserver, origin);
+
+        mStore.setNotificationState(origin, notificationsEnabled);
     }
 
-    static void unregister(Origin origin) {
-        TrustedWebActivityPermissionStore store =
-                WebappRegistry.getInstance().getTrustedWebActivityPermissionStore();
-        store.removeOrigin(origin);
+    void unregister(Origin origin) {
+        NotificationChannelPreserver.restoreChannelIfNeeded(mPermissionPreserver, origin);
+
+        mStore.removeOrigin(origin);
     }
 
     @VisibleForTesting
-    static void clearForTesting() {
-        TrustedWebActivityPermissionStore store =
-                WebappRegistry.getInstance().getTrustedWebActivityPermissionStore();
-        store.clearForTesting();
+    void clearForTesting() {
+        mStore.clearForTesting();
     }
 }

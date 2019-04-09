@@ -58,6 +58,8 @@ public class ChromeApplication extends Application {
     private final DiscardableReferencePool mReferencePool = new DiscardableReferencePool();
     private static ChromeApplication sInstance;
 
+    /** Lock on creation of sComponent. */
+    private static final Object sLock = new Object();
     @Nullable
     private static volatile ChromeAppComponent sComponent;
 
@@ -240,7 +242,7 @@ public class ChromeApplication extends Application {
     /** Returns the application-scoped component. */
     public static ChromeAppComponent getComponent() {
         if (sComponent == null) {
-            synchronized (sInstance) {
+            synchronized (sLock) {
                 if (sComponent == null) {
                     sComponent = createComponent();
                 }
