@@ -49,10 +49,7 @@ std::unique_ptr<VizCompositorThreadType> CreateAndStartCompositorThread() {
   auto thread = std::make_unique<base::Thread>(kThreadName);
 
   base::Thread::Options thread_options;
-#if defined(OS_WIN)
-  // Windows needs a UI message loop for child HWND.
-  thread_options.message_loop_type = base::MessageLoop::TYPE_UI;
-#elif defined(USE_OZONE)
+#if defined(USE_OZONE)
   // We may need a non-default message loop type for the platform surface.
   thread_options.message_loop_type =
       ui::OzonePlatform::GetInstance()->GetMessageLoopTypeForGpu();
