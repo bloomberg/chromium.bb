@@ -202,12 +202,23 @@ TEST_F(ChromeSigninProxyingURLLoaderFactoryTest, ModifyHeaders) {
             adapter->SetDestructionCallback(ignored_destruction_callback.Get());
           }));
 
+  const void* const kResponseUserDataKey = &kResponseUserDataKey;
+  std::unique_ptr<base::SupportsUserData::Data> response_user_data =
+      std::make_unique<base::SupportsUserData::Data>();
+  base::SupportsUserData::Data* response_user_data_ptr =
+      response_user_data.get();
+
   // The delegate will also be called twice to process a response, first when
   // the redirect is received and again for the redirect response.
   EXPECT_CALL(*delegate, ProcessResponse(_, _))
       .WillOnce(Invoke([&](ResponseAdapter* adapter, const GURL& redirect_url) {
         EXPECT_EQ(GURL("https://google.com"), adapter->GetOrigin());
         EXPECT_TRUE(adapter->IsMainFrame());
+
+        adapter->SetUserData(kResponseUserDataKey,
+                             std::move(response_user_data));
+        EXPECT_EQ(response_user_data_ptr,
+                  adapter->GetUserData(kResponseUserDataKey));
 
         const net::HttpResponseHeaders* headers = adapter->GetHeaders();
         EXPECT_TRUE(headers->HasHeader("X-Response-1"));
@@ -219,6 +230,9 @@ TEST_F(ChromeSigninProxyingURLLoaderFactoryTest, ModifyHeaders) {
       .WillOnce(Invoke([&](ResponseAdapter* adapter, const GURL& redirect_url) {
         EXPECT_EQ(GURL("https://youtube.com"), adapter->GetOrigin());
         EXPECT_TRUE(adapter->IsMainFrame());
+
+        EXPECT_EQ(response_user_data_ptr,
+                  adapter->GetUserData(kResponseUserDataKey));
 
         const net::HttpResponseHeaders* headers = adapter->GetHeaders();
         // This is a new response and so previous headers should not carry over.
