@@ -40,6 +40,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/tracing/public/cpp/trace_event_agent.h"
 #include "services/tracing/public/cpp/traced_process_impl.h"
+#include "services/tracing/public/cpp/tracing_features.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "v8/include/v8-version-string.h"
 
@@ -220,7 +221,7 @@ TracingControllerImpl::GenerateMetadataDict() const {
   // this does not happen; however, if the service manager is teared down during
   // tracing, e.g. at Chrome shutdown, tracing controller may finish flushing
   // traces without waiting for tracing agents.
-  if (trace_config_) {
+  if (trace_config_ && !tracing::TracingUsesPerfettoBackend()) {
     DCHECK(IsTracing());
     metadata_dict->SetString("trace-config", trace_config_->ToString());
   }

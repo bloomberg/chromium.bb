@@ -51,11 +51,13 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventMetadataSource
 
  private:
   void GenerateMetadata(std::unique_ptr<perfetto::TraceWriter> trace_writer);
+  std::unique_ptr<base::DictionaryValue> GenerateTraceConfigMetadataDict();
 
   std::vector<MetadataGeneratorFunction> generator_functions_;
   scoped_refptr<base::SequencedTaskRunner> origin_task_runner_;
   std::unique_ptr<perfetto::TraceWriter> trace_writer_;
   bool privacy_filtering_enabled_ = false;
+  std::string chrome_config_;
 
   DISALLOW_COPY_AND_ASSIGN(TraceEventMetadataSource);
 };
