@@ -440,6 +440,7 @@ void SlotClosedEvent::SerializeData(void* buffer) const {
   auto* data = static_cast<SlotClosedEventData*>(buffer);
   data->slot_id = slot_id_;
   data->last_sequence_num = last_sequence_num_;
+  memset(data->padding, 0, sizeof(data->padding));
 }
 
 }  // namespace ports
