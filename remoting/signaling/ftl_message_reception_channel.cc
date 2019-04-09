@@ -116,12 +116,12 @@ void FtlMessageReceptionChannel::OnMessageReceived(
     const ftl::ReceiveMessagesResponse& response) {
   switch (response.body_case()) {
     case ftl::ReceiveMessagesResponse::BodyCase::kInboxMessage: {
-      VLOG(0) << "Received message";
+      VLOG(1) << "Received message";
       on_incoming_msg_.Run(response.inbox_message());
       break;
     }
     case ftl::ReceiveMessagesResponse::BodyCase::kPong:
-      VLOG(0) << "Received pong";
+      VLOG(1) << "Received pong";
       stream_pong_timer_->Reset();
       break;
     case ftl::ReceiveMessagesResponse::BodyCase::kStartOfBatch:
@@ -130,7 +130,7 @@ void FtlMessageReceptionChannel::OnMessageReceived(
       BeginStreamTimers();
       break;
     case ftl::ReceiveMessagesResponse::BodyCase::kEndOfBatch:
-      VLOG(0) << "Received end of batch";
+      VLOG(1) << "Received end of batch";
       break;
     default:
       LOG(WARNING) << "Received unknown message type: " << response.body_case();
