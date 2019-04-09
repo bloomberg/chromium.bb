@@ -1705,6 +1705,7 @@ test("ash_unittests") {
     "magnifier/magnifier_test_utils.h",
     "magnifier/magnifier_utils_unittest.cc",
     "magnifier/partial_magnification_controller_unittest.cc",
+    "media/media_controller_unittest.cc",
     "media/media_notification_background_unittest.cc",
     "media/media_notification_controller_unittest.cc",
     "media/media_notification_view_unittest.cc",
