@@ -11,6 +11,7 @@ import android.app.NotificationManager;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.support.annotation.IntDef;
+import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationManagerCompat;
 import android.text.format.DateUtils;
 
@@ -138,8 +139,9 @@ public class NotificationUmaTracker {
      * @param notification The notification that was shown.
      * @see SystemNotificationType
      */
-    public void onNotificationShown(@SystemNotificationType int type, Notification notification) {
-        if (type == SystemNotificationType.UNKNOWN) return;
+    public void onNotificationShown(
+            @SystemNotificationType int type, @Nullable Notification notification) {
+        if (type == SystemNotificationType.UNKNOWN || notification == null) return;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             logNotificationShown(type, notification.getChannelId());
@@ -195,6 +197,15 @@ public class NotificationUmaTracker {
                         "Mobile.SystemNotification.Action.Click", ActionType.NUM_ENTRIES)
                 .record(type);
         recordNotificationAgeHistogram("Mobile.SystemNotification.Action.Click.Age", createTime);
+    }
+
+    /**
+     * Logs when failed to create notification with Android API.
+     * @param type Type of the notification.
+     */
+    public static void onNotificationFailedToCreate(@SystemNotificationType int type) {
+        if (type == SystemNotificationType.UNKNOWN) return;
+        recordHistogram("Mobile.SystemNotification.CreationFailure", type);
     }
 
     private void logNotificationShown(
