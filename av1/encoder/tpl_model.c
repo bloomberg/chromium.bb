@@ -459,15 +459,15 @@ static void mc_flow_dispenser(AV1_COMP *cpi, GF_PICTURE *gf_picture,
   }
 }
 
-static void init_gop_frames(AV1_COMP *cpi, GF_PICTURE *gf_picture,
-                            const GF_GROUP *gf_group, int *tpl_group_frames,
-                            const EncodeFrameInput *const frame_input) {
+static void init_gop_frames_for_tpl(AV1_COMP *cpi, GF_PICTURE *gf_picture,
+                                    const GF_GROUP *gf_group,
+                                    int *tpl_group_frames,
+                                    const EncodeFrameInput *const frame_input) {
   AV1_COMMON *cm = &cpi->common;
   const SequenceHeader *const seq_params = &cm->seq_params;
   int frame_idx = 0;
   int i;
   int gld_index = -1;
-  int alt_index = -1;
   int lst_index = -1;
   int extend_frame_count = 0;
   int frame_gop_offset = 0;
@@ -501,21 +501,17 @@ static void init_gop_frames(AV1_COMP *cpi, GF_PICTURE *gf_picture,
   *tpl_group_frames = 0;
 
   // Initialize Golden reference frame.
-  gf_picture[0].frame = NULL;
   RefCntBuffer *ref_buf = get_ref_frame_buf(cm, GOLDEN_FRAME);
-  if (ref_buf) gf_picture[0].frame = &ref_buf->buf;
+  gf_picture[0].frame = &ref_buf->buf;
   for (i = 0; i < 7; ++i) gf_picture[0].ref_frame[i] = -1;
   gld_index = 0;
   ++*tpl_group_frames;
 
-  // Initialize ARF frame
+  // Initialize base layer ARF frame
   gf_picture[1].frame = frame_input->source;
   gf_picture[1].ref_frame[0] = gld_index;
-  gf_picture[1].ref_frame[1] = lst_index;
-  gf_picture[1].ref_frame[2] = alt_index;
   // TODO(yuec) Need o  figure out full AV1 reference model
-  for (i = 3; i < 7; ++i) gf_picture[1].ref_frame[i] = -1;
-  alt_index = 1;
+  for (i = 1; i < 7; ++i) gf_picture[1].ref_frame[i] = -1;
   ++*tpl_group_frames;
 
   // Initialize P frames
@@ -529,18 +525,17 @@ static void init_gop_frames(AV1_COMP *cpi, GF_PICTURE *gf_picture,
     gf_picture[frame_idx].frame = &buf->img;
     gf_picture[frame_idx].ref_frame[0] = gld_index;
     gf_picture[frame_idx].ref_frame[1] = lst_index;
-    gf_picture[frame_idx].ref_frame[2] = alt_index;
+    gf_picture[frame_idx].ref_frame[2] = 1;
     for (i = 3; i < 7; ++i) gf_picture[frame_idx].ref_frame[i] = -1;
 
     ++*tpl_group_frames;
     lst_index = frame_idx;
 
-    if (frame_idx == cpi->rc.baseline_gf_interval + 1) break;
+    if (frame_idx == gf_group->size) break;
   }
 
   gld_index = frame_idx;
   lst_index = AOMMAX(0, frame_idx - 1);
-  alt_index = -1;
   ++frame_idx;
   ++frame_gop_offset;
 
@@ -556,8 +551,7 @@ static void init_gop_frames(AV1_COMP *cpi, GF_PICTURE *gf_picture,
     gf_picture[frame_idx].frame = &buf->img;
     gf_picture[frame_idx].ref_frame[0] = gld_index;
     gf_picture[frame_idx].ref_frame[1] = lst_index;
-    gf_picture[frame_idx].ref_frame[2] = alt_index;
-    for (i = 3; i < 7; ++i) gf_picture[frame_idx].ref_frame[i] = -1;
+    for (i = 2; i < 7; ++i) gf_picture[frame_idx].ref_frame[i] = -1;
     lst_index = frame_idx;
     ++*tpl_group_frames;
     ++extend_frame_count;
@@ -583,7 +577,8 @@ void av1_tpl_setup_stats(AV1_COMP *cpi,
   int tpl_group_frames = 0;
   int frame_idx;
 
-  init_gop_frames(cpi, gf_picture, gf_group, &tpl_group_frames, frame_input);
+  init_gop_frames_for_tpl(cpi, gf_picture, gf_group, &tpl_group_frames,
+                          frame_input);
 
   init_tpl_stats(cpi);
 
