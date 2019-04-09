@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "content/renderer/media/webrtc/rtc_rtp_source.h"
 #include "content/renderer/media/webrtc/rtc_stats.h"
+#include "content/renderer/media/webrtc/webrtc_util.h"
 #include "third_party/webrtc/api/scoped_refptr.h"
 
 namespace content {
@@ -181,6 +182,11 @@ class RTCRtpReceiver::RTCRtpReceiverInternal
         webrtc_receiver_->GetParameters());
   }
 
+  void SetJitterBufferMinimumDelay(base::Optional<double> delay_seconds) {
+    webrtc_receiver_->SetJitterBufferMinimumDelay(
+        ToAbslOptional(delay_seconds));
+  }
+
  private:
   friend struct RTCRtpReceiver::RTCRtpReceiverInternalTraits;
 
@@ -298,6 +304,11 @@ void RTCRtpReceiver::GetStats(
 
 std::unique_ptr<webrtc::RtpParameters> RTCRtpReceiver::GetParameters() const {
   return internal_->GetParameters();
+}
+
+void RTCRtpReceiver::SetJitterBufferMinimumDelay(
+    base::Optional<double> delay_seconds) {
+  internal_->SetJitterBufferMinimumDelay(delay_seconds);
 }
 
 RTCRtpReceiverOnlyTransceiver::RTCRtpReceiverOnlyTransceiver(

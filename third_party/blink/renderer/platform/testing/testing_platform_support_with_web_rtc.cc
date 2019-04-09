@@ -139,6 +139,9 @@ class DummyWebRTCRtpReceiver : public WebRTCRtpReceiver {
     return nullptr;
   }
 
+  void SetJitterBufferMinimumDelay(
+      base::Optional<double> delay_seconds) override {}
+
  private:
   const uintptr_t id_;
   WebMediaStreamTrack track_;

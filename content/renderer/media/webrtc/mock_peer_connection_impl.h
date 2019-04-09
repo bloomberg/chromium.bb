@@ -73,6 +73,8 @@ class FakeRtpReceiver : public webrtc::RtpReceiverInterface {
   webrtc::RtpParameters GetParameters() const override;
   bool SetParameters(const webrtc::RtpParameters& parameters) override;
   void SetObserver(webrtc::RtpReceiverObserverInterface* observer) override;
+  void SetJitterBufferMinimumDelay(
+      absl::optional<double> delay_seconds) override;
   std::vector<webrtc::RtpSource> GetSources() const override;
   void SetTransport(
       rtc::scoped_refptr<webrtc::DtlsTransportInterface> transport) {

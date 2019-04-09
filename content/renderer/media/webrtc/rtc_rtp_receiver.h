@@ -132,6 +132,8 @@ class CONTENT_EXPORT RTCRtpReceiver : public blink::WebRTCRtpReceiver {
   void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>,
                 const std::vector<webrtc::NonStandardGroupId>&) override;
   std::unique_ptr<webrtc::RtpParameters> GetParameters() const override;
+  void SetJitterBufferMinimumDelay(
+      base::Optional<double> delay_seconds) override;
 
  private:
   class RTCRtpReceiverInternal;
