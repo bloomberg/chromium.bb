@@ -177,18 +177,14 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
       std::vector<IntentPickerAppInfo> apps,
       IntentPickerResponse callback);
 
-  virtual PickerShowState GetPickerShowState();
+  virtual PickerShowState GetPickerShowState(
+      const std::vector<IntentPickerAppInfo>& apps_for_picker,
+      content::WebContents* web_contents,
+      const GURL& url);
 
   virtual IntentPickerResponse GetOnPickerClosedCallback(
       content::WebContents* web_contents,
       IntentPickerAutoDisplayService* ui_auto_display_service,
-      const GURL& url);
-
-  // Whether or not the intent picker UI should be displayed without the user
-  // clicking in the omnibox's icon.
-  bool ShouldAutoDisplayUi(
-      const std::vector<IntentPickerAppInfo>& apps_for_picker,
-      content::WebContents* web_contents,
       const GURL& url);
 
   // Keeps track of whether we already shown the UI or preferred app. Since
