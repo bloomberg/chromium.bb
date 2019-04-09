@@ -14,7 +14,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/update_client/network.h"
 #include "components/update_client/utils.h"
 #include "url/gurl.h"
