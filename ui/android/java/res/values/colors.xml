@@ -48,6 +48,9 @@
     <color name="default_bg_color_elev_0" tools:ignore="UnusedResources">
         @color/modern_grey_100
     </color>
+    <color name="default_bg_color_elev_1" tools:ignore="UnusedResources">
+        @color/default_bg_color_light
+    </color>
     <color name="default_bg_color_elev_2" tools:ignore="UnusedResources">
         @color/default_bg_color_light
     </color>

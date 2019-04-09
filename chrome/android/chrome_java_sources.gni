@@ -273,6 +273,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/compositor/layouts/ToolbarSwipeLayout.java",
   "java/src/org/chromium/chrome/browser/compositor/layouts/components/CompositorButton.java",
   "java/src/org/chromium/chrome/browser/compositor/layouts/components/LayoutTab.java",
+  "java/src/org/chromium/chrome/browser/compositor/layouts/components/TintedCompositorButton.java",
   "java/src/org/chromium/chrome/browser/compositor/layouts/components/VirtualView.java",
   "java/src/org/chromium/chrome/browser/compositor/layouts/content/ContentOffsetProvider.java",
   "java/src/org/chromium/chrome/browser/compositor/layouts/content/InvalidationAwareThumbnailProvider.java",

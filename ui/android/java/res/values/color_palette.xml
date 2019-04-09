@@ -17,6 +17,7 @@
     <color name="modern_grey_800_alpha_38" tools:ignore="UnusedResources">#613C4043</color>
     <color name="modern_grey_900">#202124</color>
 
+    <color name="modern_grey_900_with_white_alpha_4" tools:ignore="UnusedResources">#28292C</color>
     <color name="modern_grey_900_with_white_alpha_6" tools:ignore="UnusedResources">#2D2E31</color>
     <color name="modern_grey_900_with_white_alpha_8" tools:ignore="UnusedResources">#313235</color>
     <color name="modern_grey_900_with_white_alpha_10">#36373A</color>
@@ -65,6 +66,9 @@
     <color name="default_bg_color_light">@android:color/white</color>
     <color name="default_bg_color_dark" tools:ignore="UnusedResources">
         @color/modern_grey_900
+    </color>
+    <color name="default_bg_color_dark_elev_1" tools:ignore="UnusedResources">
+        @color/modern_grey_900_with_white_alpha_4
     </color>
     <color name="default_bg_color_dark_elev_2" tools:ignore="UnusedResources">
         @color/modern_grey_900_with_white_alpha_6
