@@ -37,6 +37,7 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.UserDataHost;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
@@ -95,6 +96,8 @@ public class GridTabSwitcherMediatorUnitTest {
     PropertyObservable.PropertyObserver<PropertyKey> mPropertyObserver;
     @Mock
     OverviewModeBehavior.OverviewModeObserver mOverviewModeObserver;
+    @Mock
+    CompositorViewHolder mCompositorViewHolder;
 
     @Captor
     ArgumentCaptor<TabModelObserver> mTabModelObserverCaptor;
@@ -152,8 +155,8 @@ public class GridTabSwitcherMediatorUnitTest {
 
         mModel = new PropertyModel(TabListContainerProperties.ALL_KEYS);
         mModel.addObserver(mPropertyObserver);
-        mMediator = new GridTabSwitcherMediator(
-                mResetHandler, mModel, mTabModelSelector, mFullscreenManager);
+        mMediator = new GridTabSwitcherMediator(mResetHandler, mModel, mTabModelSelector,
+                mFullscreenManager, mCompositorViewHolder);
         mMediator.addOverviewModeObserver(mOverviewModeObserver);
     }
 
