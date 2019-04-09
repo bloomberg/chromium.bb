@@ -512,8 +512,8 @@ void SoftwareRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
 
   sk_sp<SkShader> shader;
   if (!filter_image) {
-    shader = SkShader::MakeBitmapShader(source_bitmap, SkTileMode::kClamp,
-                                        SkTileMode::kClamp, &content_mat);
+    shader = source_bitmap.makeShader(SkTileMode::kClamp, SkTileMode::kClamp,
+                                      &content_mat);
   } else {
     shader = filter_image->makeShader(SkTileMode::kClamp, SkTileMode::kClamp,
                                       &content_mat);
