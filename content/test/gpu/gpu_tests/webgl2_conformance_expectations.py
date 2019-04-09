@@ -459,6 +459,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'passthrough', 'opengl', 'intel'], bug=2760) # ANGLE bug
     self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
         ['linux', 'passthrough', 'opengl', 'intel'], bug=2761) # ANGLE bug
+    self.Flaky('conformance/extensions/webgl-compressed-texture-s3tc.html',
+        ['linux', 'passthrough', 'opengl', 'intel'], bug=950787)
 
     # Regressions in 10.12.4.
     self.Fail('conformance2/textures/misc/tex-base-level-bug.html',
