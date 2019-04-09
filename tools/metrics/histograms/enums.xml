@@ -50392,6 +50392,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Error">
     The account reconcilor has encountered an error and stopped.
   </int>
+  <int value="3" label="Scheduled">
+    The account reconcilor is scheduled for running soon.
+  </int>
 </enum>
 
 <enum name="SigninChoice">
