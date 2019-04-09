@@ -484,7 +484,6 @@ void av1_encode_sb(const struct AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
   for (plane = 0; plane < num_planes; ++plane) {
     const int subsampling_x = xd->plane[plane].subsampling_x;
     const int subsampling_y = xd->plane[plane].subsampling_y;
-
     if (!is_chroma_reference(mi_row, mi_col, bsize, subsampling_x,
                              subsampling_y))
       continue;
@@ -496,6 +495,7 @@ void av1_encode_sb(const struct AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
     const struct macroblockd_plane *const pd = &xd->plane[plane];
     const BLOCK_SIZE plane_bsize =
         get_plane_block_size(bsizec, pd->subsampling_x, pd->subsampling_y);
+    assert(plane_bsize < BLOCK_SIZES_ALL);
     const int mi_width = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
     const int mi_height = block_size_high[plane_bsize] >> tx_size_high_log2[0];
     const TX_SIZE max_tx_size = get_vartx_max_txsize(xd, plane_bsize, plane);

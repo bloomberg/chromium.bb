@@ -1779,7 +1779,11 @@ static void decode_partition(AV1Decoder *const pbi, ThreadData *const td,
     partition = get_partition(cm, mi_row, mi_col, bsize);
   }
   subsize = get_partition_subsize(bsize, partition);
-
+  if (subsize == BLOCK_INVALID) {
+    aom_internal_error(xd->error_info, AOM_CODEC_CORRUPT_FRAME,
+                       "Partition is invalid for block size %dx%d",
+                       block_size_wide[bsize], block_size_high[bsize]);
+  }
   // Check the bitstream is conformant: if there is subsampling on the
   // chroma planes, subsize must subsample to a valid block size.
   const struct macroblockd_plane *const pd_u = &xd->plane[1];

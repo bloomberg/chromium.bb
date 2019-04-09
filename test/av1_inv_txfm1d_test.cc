@@ -88,9 +88,11 @@ TEST(av1_inv_txfm1d, InvAccuracyCheck) {
     memset(input + 32, 0, 32 * sizeof(input[0]));
 
     int32_t ref_output[64];
+    memset(ref_output, 0, sizeof(ref_output));
     reference_idct_1d_int(input, ref_output, tx_size_pix);
 
     int32_t output[64];
+    memset(output, 0, sizeof(output));
     inv_txfm_func(input, output, cos_bit, range_bit);
 
     for (int i = 0; i < tx_size_pix; ++i) {

@@ -927,6 +927,8 @@ static INLINE int is_chroma_reference(int mi_row, int mi_col, BLOCK_SIZE bsize,
 
 static INLINE BLOCK_SIZE scale_chroma_bsize(BLOCK_SIZE bsize, int subsampling_x,
                                             int subsampling_y) {
+  assert(subsampling_x >= 0 && subsampling_x < 2);
+  assert(subsampling_y >= 0 && subsampling_y < 2);
   BLOCK_SIZE bs = bsize;
   switch (bsize) {
     case BLOCK_4X4:
