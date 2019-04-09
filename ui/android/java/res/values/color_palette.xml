@@ -24,6 +24,7 @@
     <color name="black_alpha_38">#61000000</color>
 
     <color name="white_alpha_10" tools:ignore="UnusedResources">#1AFFFFFF</color>
+    <color name="white_alpha_12" tools:ignore="UnusedResources">#1FFFFFFF</color>
     <color name="white_alpha_20">#33FFFFFF</color>
     <color name="white_alpha_38" tools:ignore="UnusedResources">#61FFFFFF</color>
     <color name="white_alpha_50" tools:ignore="UnusedResources">#80FFFFFF</color>
