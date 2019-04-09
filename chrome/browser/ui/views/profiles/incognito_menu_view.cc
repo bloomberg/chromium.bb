@@ -50,7 +50,9 @@ void IncognitoMenuView::Init() {
 }
 
 base::string16 IncognitoMenuView::GetAccessibleWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_INCOGNITO_BUBBLE_ACCESSIBLE_TITLE);
+  return l10n_util::GetPluralStringFUTF16(
+      IDS_INCOGNITO_BUBBLE_ACCESSIBLE_TITLE,
+      BrowserList::GetIncognitoSessionsActiveForProfile(browser()->profile()));
 }
 
 void IncognitoMenuView::ButtonPressed(views::Button* sender,
