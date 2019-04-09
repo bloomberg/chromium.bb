@@ -1861,6 +1861,14 @@
       'Win 7 Tests x64 (1)',
     ],
   },
+  'webui_html_imports_polyfill_browser_tests': {
+    'remove_from': [
+      # chromium.win
+      'Win10 Tests x64 (dbg)',  # Matches browser_tests.
+      # chromium.clang
+      'CrWinAsan(dll)', # https://crbug.com/935598
+    ],
+  },
   'webui_polymer1_browser_tests': {
     'remove_from': [
       # chromium.win

@@ -4107,6 +4107,13 @@
       'snapshot_unittests': {},
       'sync_integration_tests': {},
       'views_unittests': {},
+      'webui_html_imports_polyfill_browser_tests': {
+        'args': [
+          '--disable-blink-features=HTMLImports,ShadowDOMV0,CustomElementsV0',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/webui_html_imports_polyfill_browser_tests.filter',
+        ],
+        'test': 'browser_tests',
+      },
       'webui_polymer1_browser_tests': {
         'args': [
           '--disable-features=WebUIPolymer2',
