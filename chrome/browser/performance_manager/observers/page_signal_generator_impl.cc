@@ -4,10 +4,10 @@
 
 #include "chrome/browser/performance_manager/observers/page_signal_generator_impl.h"
 
-#include <set>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/flat_set.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
@@ -105,7 +105,7 @@ void PageSignalGeneratorImpl::OnProcessEventReceived(
     ProcessNodeImpl* process_node,
     resource_coordinator::mojom::Event event) {
   if (event == resource_coordinator::mojom::Event::kRendererIsBloated) {
-    std::set<PageNodeImpl*> page_nodes =
+    base::flat_set<PageNodeImpl*> page_nodes =
         process_node->GetAssociatedPageCoordinationUnits();
     // Currently bloated renderer handling supports only a single page.
     if (page_nodes.size() == 1u) {

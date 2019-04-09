@@ -79,7 +79,7 @@ void ProcessNodeImpl::OnRendererIsBloated() {
   SendEvent(resource_coordinator::mojom::Event::kRendererIsBloated);
 }
 
-const std::set<FrameNodeImpl*>& ProcessNodeImpl::GetFrameNodes() const {
+const base::flat_set<FrameNodeImpl*>& ProcessNodeImpl::GetFrameNodes() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return frame_nodes_;
 }
@@ -88,10 +88,10 @@ const std::set<FrameNodeImpl*>& ProcessNodeImpl::GetFrameNodes() const {
 // pages. However, frames are children of both processes and frames, so we
 // find all of the pages that are reachable from the process's child
 // frames.
-std::set<PageNodeImpl*> ProcessNodeImpl::GetAssociatedPageCoordinationUnits()
-    const {
+base::flat_set<PageNodeImpl*>
+ProcessNodeImpl::GetAssociatedPageCoordinationUnits() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::set<PageNodeImpl*> page_nodes;
+  base::flat_set<PageNodeImpl*> page_nodes;
   for (auto* frame_node : frame_nodes_) {
     if (auto* page_node = frame_node->page_node())
       page_nodes.insert(page_node);

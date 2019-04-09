@@ -5,8 +5,7 @@
 #ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_PROCESS_NODE_IMPL_H_
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_PROCESS_NODE_IMPL_H_
 
-#include <set>
-
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/process/process_handle.h"
@@ -65,8 +64,8 @@ class ProcessNodeImpl
   }
   base::TimeDelta cumulative_cpu_usage() const { return cumulative_cpu_usage_; }
 
-  const std::set<FrameNodeImpl*>& GetFrameNodes() const;
-  std::set<PageNodeImpl*> GetAssociatedPageCoordinationUnits() const;
+  const base::flat_set<FrameNodeImpl*>& GetFrameNodes() const;
+  base::flat_set<PageNodeImpl*> GetAssociatedPageCoordinationUnits() const;
 
   base::ProcessId process_id() const { return process_id_; }
   base::Time launch_time() const { return launch_time_; }
@@ -118,7 +117,7 @@ class ProcessNodeImpl
           main_thread_task_load_is_low_{false};
   double cpu_usage_ = 0;
 
-  std::set<FrameNodeImpl*> frame_nodes_;
+  base::flat_set<FrameNodeImpl*> frame_nodes_;
 
   // The number of frames hosted by this process that are frozen.
   int num_frozen_frames_ = 0;
