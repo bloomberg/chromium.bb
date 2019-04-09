@@ -1163,9 +1163,7 @@ const char kGoogleProfileInfoDescription[] =
 
 const char kViewsCastDialogName[] = "Views Cast dialog";
 const char kViewsCastDialogDescription[] =
-    "Replace the WebUI Cast dialog with a Views toolkit dialog. This requires "
-    "#views-browser-windows on Mac. This feature is activated if either this "
-    "flag or #upcoming-ui-features is enabled";
+    "Replace the WebUI Cast dialog with a Views toolkit dialog.";
 
 const char kHandwritingGestureName[] = "Handwriting Gestures";
 const char kHandwritingGestureDescription[] =
@@ -1390,6 +1388,13 @@ const char kOmniboxDisplayTitleForCurrentUrlDescription[] =
     "the current page is provided as the first suggestion without a title. "
     "Enabling this flag causes the title to be displayed.";
 
+const char kOmniboxLocalEntitySuggestionsName[] =
+    "Omnibox Local Entity Suggestions";
+const char kOmniboxLocalEntitySuggestionsDescription[] =
+    "Enables location specific suggestions displayed with images and enhanced "
+    "layout, similar to #omnibox-rich-entity-suggestions. Enabling this feature"
+    "will also enable #omnibox-rich-entity-suggestions.";
+
 const char kOmniboxMaterialDesignWeatherIconsName[] =
     "Omnibox Material Design Weather Icons";
 const char kOmniboxMaterialDesignWeatherIconsDescription[] =
@@ -1404,9 +1409,7 @@ const char kOmniboxRichEntitySuggestionsName[] =
     "Omnibox rich entity suggestions";
 const char kOmniboxRichEntitySuggestionsDescription[] =
     "Display entity suggestions using images and an enhanced layout; showing "
-    "more context and descriptive text about the entity. Has no effect unless "
-    "either the #upcoming-ui-features flag is Enabled or the #top-chrome-md "
-    "flag is set to Refresh or Touchable Refresh.";
+    "more context and descriptive text about the entity.";
 
 const char kOmniboxSpareRendererName[] =
     "Start spare renderer on omnibox focus";
@@ -2769,9 +2772,7 @@ const char kOmniboxPedalSuggestionsDescription[] =
 
 const char kOmniboxReverseAnswersName[] = "Omnibox reverse answers";
 const char kOmniboxReverseAnswersDescription[] =
-    "Display answers with rows reversed (swapped); except definitions. Has no "
-    "effect unless either the #upcoming-ui-features flag is Enabled or the "
-    "#top-chrome-md flag is set to Refresh or Touchable Refresh.";
+    "Display answers with rows reversed (swapped); except definitions.";
 
 const char kOmniboxReverseTabSwitchLogicName[] =
     "Omnibox reverse tab switch logic";
@@ -2782,9 +2783,7 @@ const char kOmniboxReverseTabSwitchLogicDescription[] =
 const char kOmniboxTabSwitchSuggestionsName[] =
     "Omnibox tab switch suggestions";
 const char kOmniboxTabSwitchSuggestionsDescription[] =
-    "Enable suggestions for switching to open tabs within the Omnibox. "
-    "Has no effect unless either the #upcoming-ui-features flag is Enabled or "
-    "the #top-chrome-md flag is set to Refresh or Touchable Refresh.";
+    "Enable suggestions for switching to open tabs within the Omnibox.";
 
 const char kOmniboxTailSuggestionsName[] = "Omnibox tail suggestions";
 const char kOmniboxTailSuggestionsDescription[] =

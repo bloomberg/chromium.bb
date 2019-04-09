@@ -550,7 +550,8 @@ OmniboxFieldTrial::GetEmphasizeTitlesConditionForInput(
 }
 
 bool OmniboxFieldTrial::IsRichEntitySuggestionsEnabled() {
-  return base::FeatureList::IsEnabled(omnibox::kOmniboxRichEntitySuggestions);
+  return base::FeatureList::IsEnabled(omnibox::kOmniboxRichEntitySuggestions) ||
+         base::FeatureList::IsEnabled(omnibox::kOmniboxLocalEntitySuggestions);
 }
 
 bool OmniboxFieldTrial::IsReverseAnswersEnabled() {
@@ -558,11 +559,7 @@ bool OmniboxFieldTrial::IsReverseAnswersEnabled() {
 }
 
 bool OmniboxFieldTrial::IsTabSwitchSuggestionsEnabled() {
-#if defined(OS_IOS)
   return base::FeatureList::IsEnabled(omnibox::kOmniboxTabSwitchSuggestions);
-#else  // defined(OS_IOS)
-  return base::FeatureList::IsEnabled(omnibox::kOmniboxTabSwitchSuggestions);
-#endif
 }
 
 bool OmniboxFieldTrial::IsTabSwitchLogicReversed() {
