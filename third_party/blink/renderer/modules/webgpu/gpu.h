@@ -39,7 +39,6 @@ class GPU final : public ScriptWrappable, public ContextLifecycleObserver {
                                const GPURequestAdapterOptions* options);
 
  private:
-  std::unique_ptr<WebGraphicsContext3DProvider> context_provider_;
   scoped_refptr<DawnControlClientHolder> dawn_control_client_;
 
   DISALLOW_COPY_AND_ASSIGN(GPU);
