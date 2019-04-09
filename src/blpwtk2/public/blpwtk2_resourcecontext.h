@@ -116,6 +116,15 @@ class BLPWTK2_EXPORT ResourceContext {
     // 'addResponseData' is called.
     virtual void addResponseHeader(const StringRef& header) = 0;
 
+    // Returns true if the response contains the specified header-value pair.
+    // Both name and value are compared case insensitively.
+    virtual bool hasResponseHeaderValue(const StringRef& name,
+                                        const StringRef& value) const = 0;
+
+    // Returns true if the response contains the specified header.
+    // The name is compared case insensitively.
+    virtual bool hasReponseHeader(const StringRef& name) const = 0;
+
     // Add response data for this resource.
     virtual void addResponseData(const char* buffer, int length) = 0;
 
