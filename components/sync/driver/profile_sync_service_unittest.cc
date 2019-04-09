@@ -222,8 +222,10 @@ class ProfileSyncServiceTest : public ::testing::Test {
     SyncPrefs sync_prefs(prefs());
     sync_prefs.SetLastSyncedTime(base::Time::Now());
     sync_prefs.SetSyncRequested(true);
-    sync_prefs.SetDataTypesConfiguration(/*keep_everything_synced=*/true,
-                                         UserTypes(), UserSelectableTypes());
+    sync_prefs.SetDataTypesConfiguration(
+        /*keep_everything_synced=*/true,
+        /*choosable_types=*/UserSelectableTypes(),
+        /*chosen_types=*/UserSelectableTypes());
     sync_prefs.SetFirstSetupComplete();
     service_->Initialize();
   }
@@ -336,8 +338,10 @@ TEST_F(ProfileSyncServiceTest, NeedsConfirmation) {
   base::Time now = base::Time::Now();
   sync_prefs.SetLastSyncedTime(now);
   sync_prefs.SetSyncRequested(true);
-  sync_prefs.SetDataTypesConfiguration(/*keep_everything_synced=*/true,
-                                       UserTypes(), UserSelectableTypes());
+  sync_prefs.SetDataTypesConfiguration(
+      /*keep_everything_synced=*/true,
+      /*choosable_types=*/UserSelectableTypes(),
+      /*chosen_types=*/UserSelectableTypes());
   service()->Initialize();
 
   EXPECT_EQ(SyncService::DISABLE_REASON_NONE, service()->GetDisableReasons());

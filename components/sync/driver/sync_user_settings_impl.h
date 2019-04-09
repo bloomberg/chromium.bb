@@ -61,6 +61,11 @@ class SyncUserSettingsImpl : public SyncUserSettings {
   bool IsEncryptedDatatypeEnabled() const;
   bool IsEncryptionPending() const;
 
+  // Converts ModelTypeSet of UserSelectableTypes() to ModelTypeSet of
+  // corresponding UserTypes() by resolving pref groups (e.g. {EXTENSIONS}
+  // becomes {EXTENSIONS, EXTENSION_SETTINGS}).
+  static ModelTypeSet ResolvePrefGroupsForTesting(ModelTypeSet chosen_types);
+
  private:
   SyncServiceCrypto* const crypto_;
   SyncPrefs* const prefs_;

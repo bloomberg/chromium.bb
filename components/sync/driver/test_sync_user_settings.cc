@@ -7,6 +7,7 @@
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_user_settings_impl.h"
 #include "components/sync/driver/test_sync_service.h"
 
 namespace syncer {
@@ -70,7 +71,8 @@ void TestSyncUserSettings::SetChosenDataTypes(bool sync_everything,
   if (sync_everything_enabled_) {
     preferred_types = syncer::ModelTypeSet::All();
   } else {
-    preferred_types = syncer::SyncPrefs::ResolvePrefGroups(types);
+    preferred_types =
+        syncer::SyncUserSettingsImpl::ResolvePrefGroupsForTesting(types);
   }
   service_->SetPreferredDataTypes(preferred_types);
 }

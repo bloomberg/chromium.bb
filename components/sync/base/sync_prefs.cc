@@ -41,43 +41,6 @@ const char kSyncLongPollIntervalSeconds[] = "sync.long_poll_interval";
 const char kSyncSpareBootstrapToken[] = "sync.spare_bootstrap_token";
 #endif  // defined(OS_CHROMEOS)
 
-// Groups of prefs that always have the same value as a "master" pref.
-// For example, the APPS group has {APP_LIST, APP_SETTINGS}
-// (as well as APPS, but that is implied), so
-//   pref_groups_[APPS] =       { APP_LIST, APP_SETTINGS }
-//   pref_groups_[EXTENSIONS] = { EXTENSION_SETTINGS }
-// etc.
-using PrefGroupsMap = std::map<ModelType, ModelTypeSet>;
-PrefGroupsMap ComputePrefGroups() {
-  PrefGroupsMap pref_groups;
-  pref_groups[APPS].Put(APP_SETTINGS);
-  pref_groups[APPS].Put(APP_LIST);
-  pref_groups[APPS].Put(ARC_PACKAGE);
-
-  pref_groups[AUTOFILL].Put(AUTOFILL_PROFILE);
-  pref_groups[AUTOFILL].Put(AUTOFILL_WALLET_DATA);
-  pref_groups[AUTOFILL].Put(AUTOFILL_WALLET_METADATA);
-
-  pref_groups[EXTENSIONS].Put(EXTENSION_SETTINGS);
-
-  pref_groups[PREFERENCES].Put(DICTIONARY);
-  pref_groups[PREFERENCES].Put(PRIORITY_PREFERENCES);
-  pref_groups[PREFERENCES].Put(SEARCH_ENGINES);
-
-  pref_groups[TYPED_URLS].Put(HISTORY_DELETE_DIRECTIVES);
-  pref_groups[TYPED_URLS].Put(SESSIONS);
-  pref_groups[TYPED_URLS].Put(FAVICON_IMAGES);
-  pref_groups[TYPED_URLS].Put(FAVICON_TRACKING);
-  pref_groups[TYPED_URLS].Put(USER_EVENTS);
-
-  pref_groups[PROXY_TABS].Put(SESSIONS);
-  pref_groups[PROXY_TABS].Put(FAVICON_IMAGES);
-  pref_groups[PROXY_TABS].Put(FAVICON_TRACKING);
-  pref_groups[PROXY_TABS].Put(SEND_TAB_TO_SELF);
-
-  return pref_groups;
-}
-
 std::vector<std::string> GetObsoleteUserTypePrefs() {
   return {prefs::kSyncAutofillProfile,
           prefs::kSyncAutofillWallet,
@@ -307,42 +270,33 @@ bool SyncPrefs::HasKeepEverythingSynced() const {
   return pref_service_->GetBoolean(prefs::kSyncKeepEverythingSynced);
 }
 
-ModelTypeSet SyncPrefs::GetPreferredDataTypes(
-    ModelTypeSet registered_types) const {
+ModelTypeSet SyncPrefs::GetChosenDataTypes() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (pref_service_->GetBoolean(prefs::kSyncKeepEverythingSynced)) {
-    return registered_types;
+    return UserSelectableTypes();
   }
 
-  ModelTypeSet preferred_types = AlwaysPreferredUserTypes();
-
-  for (ModelType type : Intersection(UserSelectableTypes(), registered_types)) {
+  ModelTypeSet chosen_types;
+  for (ModelType type : UserSelectableTypes()) {
     if (IsDataTypeChosen(type)) {
-      preferred_types.Put(type);
+      chosen_types.Put(type);
     }
   }
-
-  preferred_types = ResolvePrefGroups(preferred_types);
-  preferred_types.RetainAll(registered_types);
-  return preferred_types;
+  return chosen_types;
 }
 
 void SyncPrefs::SetDataTypesConfiguration(bool keep_everything_synced,
-                                          ModelTypeSet registered_types,
+                                          ModelTypeSet choosable_types,
                                           ModelTypeSet chosen_types) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(UserSelectableTypes().HasAll(chosen_types));
-  // TODO(crbug.com/906611): remove |registered_types| parameter. It have no
-  // real usage and needed only to control the absence of behavioral changes
-  // during the landing of the patch. Also consider removal of this parameter
-  // from the getter.
-  DCHECK(registered_types.HasAll(chosen_types));
+  DCHECK(UserSelectableTypes().HasAll(choosable_types));
+  DCHECK(choosable_types.HasAll(chosen_types));
 
   pref_service_->SetBoolean(prefs::kSyncKeepEverythingSynced,
                             keep_everything_synced);
 
-  for (ModelType type : Intersection(UserSelectableTypes(), registered_types)) {
+  for (ModelType type : choosable_types) {
     SetDataTypeChosen(type, chosen_types.Has(type));
   }
 
@@ -489,17 +443,6 @@ void SyncPrefs::SetDataTypeChosen(ModelType type, bool is_chosen) {
   DCHECK(IsUserSelectableType(type));
 
   pref_service_->SetBoolean(pref_name, is_chosen);
-}
-
-// static
-ModelTypeSet SyncPrefs::ResolvePrefGroups(ModelTypeSet types) {
-  ModelTypeSet types_with_groups = types;
-  for (const auto& pref_group : ComputePrefGroups()) {
-    if (types.Has(pref_group.first)) {
-      types_with_groups.PutAll(pref_group.second);
-    }
-  }
-  return types_with_groups;
 }
 
 void SyncPrefs::SetCacheGuid(const std::string& cache_guid) {

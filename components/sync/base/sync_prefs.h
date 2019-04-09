@@ -104,25 +104,23 @@ class SyncPrefs : public CryptoSyncPrefs,
 
   bool HasKeepEverythingSynced() const;
 
-  // The returned set is guaranteed to be a subset of |registered_types|.
-  // Returns |registered_types| directly if HasKeepEverythingSynced() is true.
-  // Preferred types are derived from chosen types by resolving pref groups.
-  ModelTypeSet GetPreferredDataTypes(ModelTypeSet registered_types) const;
+  // The result set is guaranteed to be a subset of UserSelectableTypes().
+  // Returns all UserSelectableTypes() if HasKeepEverythingSynced() is true.
+  ModelTypeSet GetChosenDataTypes() const;
 
-  // Sets the desired configuration for all data types, including the "keep
-  // everything synced" flag and the "preferred" state for each individual data
-  // type.
+  // Sets the desired configuration for all UserSelectableTypes(), including
+  // the "keep everything synced" flag and the "chosen" state for each
+  // individual type.
   // |keep_everything_synced| indicates that all current and future data types
-  // should be synced. If this is set to true, then GetPreferredDataTypes() will
-  // always return all available data types, even if not all of them are
+  // should be synced. If this is set to true, then GetChosenDataTypes() will
+  // always return all UserSelectableTypes(), even if not all of them are
   // individually marked as preferred.
-  // The |chosen_types| must be a subset of the |registered_types| and
-  // UserSelectableTypes().
-  // Changes are still made to the individual data type prefs even if
-  // |keep_everything_synced| is true, but won't be visible until it's set to
-  // false.
+  // |choosable_types| and |chosen_types| must be a subset of
+  // UserSelectableTypes(). Changes are still made to the individual data type
+  // prefs even if |keep_everything_synced| is true, but won't be visible until
+  // it's set to false. Changes are made only to |choosable_types|.
   void SetDataTypesConfiguration(bool keep_everything_synced,
-                                 ModelTypeSet registered_types,
+                                 ModelTypeSet choosable_types,
                                  ModelTypeSet chosen_types);
 
   // Whether Sync is forced off by enterprise policy. Note that this only covers
@@ -185,11 +183,6 @@ class SyncPrefs : public CryptoSyncPrefs,
 
   // Gets the local sync backend enabled state.
   bool IsLocalSyncEnabled() const;
-
-  // Returns a ModelTypeSet based on |types| expanded to include pref groups
-  // (see |pref_groups_|).
-  // Exposed for testing.
-  static ModelTypeSet ResolvePrefGroups(ModelTypeSet types);
 
  private:
   static void RegisterDataTypePreferredPref(
