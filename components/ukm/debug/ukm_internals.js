@@ -304,6 +304,19 @@ function populateThreadIds(sources) {
 }
 
 /**
+ * Get the string representation of a UKM entry. The array of metrics are sorted
+ * by name to ensure that two entries containing the same metrics and values in
+ * different orders have identical string representation to avoid cache
+ * duplication.
+ * @param {UkmEntry} entry UKM entry to be stringified.
+ * @return {string} Normalized string representation of the entry.
+ */
+function normalizeToString(entry) {
+  entry.metrics.sort((x, y) => x.name.localeCompare(y.name));
+  return JSON.stringify(entry);
+}
+
+/**
  * This function tries to preserve UKM logs around UKM log uploads. There is
  * no way of knowing if duplicate entries for a log are actually produced
  * again after the log cut or if they older records since we don't maintain
@@ -323,11 +336,11 @@ function updateUkmCache(data) {
       CachedSources.set(key, mergedSource);
     } else {
       // Merge distinct entries from the source.
-      const existingEntries =
-          new Set(CachedSources.get(key).entries.map(e => JSON.stringify(e)));
-      for (const entry of source.entries) {
-        if (!existingEntries.has(JSON.stringify(entry))) {
-          CachedSources.get(key).entries.push(entry);
+      const existingEntries = new Set(CachedSources.get(key).entries.map(
+          cachedEntry => normalizeToString(cachedEntry)));
+      for (const sourceEntry of source.entries) {
+        if (!existingEntries.has(normalizeToString(sourceEntry))) {
+          CachedSources.get(key).entries.push(sourceEntry);
         }
       }
     }
