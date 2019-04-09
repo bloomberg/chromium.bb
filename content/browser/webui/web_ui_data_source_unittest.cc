@@ -65,10 +65,9 @@ class WebUIDataSourceTest : public testing::Test {
     return source_->GetMimeType(path);
   }
 
-  bool HandleRequest(const std::string& path,
+  void HandleRequest(const std::string& path,
                      const WebUIDataSourceImpl::GotDataCallback&) {
     request_path_ = path;
-    return true;
   }
 
   void RequestFilterQueryStringCallback(
@@ -180,6 +179,7 @@ void WebUIDataSourceTest::RequestFilterQueryStringCallback(
 TEST_F(WebUIDataSourceTest, RequestFilterQueryString) {
   request_path_ = std::string();
   source()->SetRequestFilter(
+      base::BindRepeating([](const std::string& path) { return true; }),
       base::Bind(&WebUIDataSourceTest::HandleRequest, base::Unretained(this)));
   source()->SetDefaultResource(kDummyDefaultResourceId);
   source()->AddResourcePath("foobar", kDummyResourceId);

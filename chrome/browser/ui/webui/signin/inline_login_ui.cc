@@ -46,8 +46,10 @@ content::WebUIDataSource* CreateWebUIDataSource() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   const bool is_running_test = command_line->HasSwitch(::switches::kTestName) ||
                                command_line->HasSwitch(::switches::kTestType);
-  if (is_running_test)
-    source->SetRequestFilter(test::GetTestFilesRequestFilter());
+  if (is_running_test) {
+    source->SetRequestFilter(test::GetTestShouldHandleRequest(),
+                             test::GetTestFilesRequestFilter());
+  }
 
   source->AddResourcePath("inline_login.css", IDR_INLINE_LOGIN_CSS);
   source->AddResourcePath("inline_login.js", IDR_INLINE_LOGIN_JS);

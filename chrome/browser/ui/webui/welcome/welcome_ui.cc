@@ -49,10 +49,8 @@ const bool kIsBranded =
 
 const char kPreviewBackgroundPath[] = "preview-background.jpg";
 
-bool HandleRequestCallback(
-    base::WeakPtr<WelcomeUI> weak_ptr,
-    const std::string& path,
-    const content::WebUIDataSource::GotDataCallback& callback) {
+bool ShouldHandleRequestCallback(base::WeakPtr<WelcomeUI> weak_ptr,
+                                 const std::string& path) {
   if (!base::StartsWith(path, kPreviewBackgroundPath,
                         base::CompareCase::SENSITIVE)) {
     return false;
@@ -65,12 +63,22 @@ bool HandleRequestCallback(
     return false;
   }
 
-  if (weak_ptr) {
-    weak_ptr->CreateBackgroundFetcher(background_index, callback);
-    return true;
-  }
+  return !weak_ptr ? false : true;
+}
 
-  return false;
+void HandleRequestCallback(
+    base::WeakPtr<WelcomeUI> weak_ptr,
+    const std::string& path,
+    const content::WebUIDataSource::GotDataCallback& callback) {
+  DCHECK(ShouldHandleRequestCallback(weak_ptr, path));
+
+  std::string index_param = path.substr(path.find_first_of("?") + 1);
+  int background_index = -1;
+  CHECK(base::StringToInt(index_param, &background_index) ||
+        background_index < 0);
+
+  DCHECK(weak_ptr);
+  weak_ptr->CreateBackgroundFetcher(background_index, callback);
 }
 
 void AddOnboardingStrings(content::WebUIDataSource* html_source) {
@@ -211,8 +219,11 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
                            nux::GetNuxOnboardingModules(profile)
                                .FindKey("returning-user")
                                ->GetString());
-    html_source->SetRequestFilter(base::BindRepeating(
-        &HandleRequestCallback, weak_ptr_factory_.GetWeakPtr()));
+    html_source->SetRequestFilter(
+        base::BindRepeating(&ShouldHandleRequestCallback,
+                            weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(&HandleRequestCallback,
+                            weak_ptr_factory_.GetWeakPtr()));
     html_source->UseGzip(base::BindRepeating(&WelcomeUI::IsGzipped));
   } else if (kIsBranded &&
              AccountConsistencyModeManager::IsDiceEnabledForProfile(profile)) {
