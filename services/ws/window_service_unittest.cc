@@ -213,11 +213,44 @@ TEST(WindowServiceTest, ScheduleEmbedForExistingClientUsingLocalWindow) {
 
   // Create a window that will serve as the parent for the remote window and
   // complete the embedding.
-  std::unique_ptr<aura::Window> local_window =
-      std::make_unique<aura::Window>(nullptr);
+  auto local_window = std::make_unique<aura::Window>(nullptr);
   local_window->Init(ui::LAYER_NOT_DRAWN);
   ASSERT_TRUE(setup.service()->CompleteScheduleEmbedForExistingClient(
       local_window.get(), token, /* embed_flags */ 0));
+  EXPECT_TRUE(WindowService::IsProxyWindow(local_window.get()));
+}
+
+TEST(WindowServiceTest, ScheduleEmbedForExistingClientTwice) {
+  WindowServiceTestSetup setup;
+  // Schedule an embed in the tree created by |setup|.
+  base::UnguessableToken token_1;
+  const uint32_t window_id_in_child_1 = 149;
+  setup.window_tree_test_helper()
+      ->window_tree()
+      ->ScheduleEmbedForExistingClient(
+          window_id_in_child_1,
+          base::BindOnce(&ScheduleEmbedCallback, &token_1));
+  EXPECT_FALSE(token_1.is_empty());
+
+  // Create a window that will serve as the parent for the remote window and
+  // complete the embedding.
+  auto local_window = std::make_unique<aura::Window>(nullptr);
+  local_window->Init(ui::LAYER_NOT_DRAWN);
+  ASSERT_TRUE(setup.service()->CompleteScheduleEmbedForExistingClient(
+      local_window.get(), token_1, /* embed_flags */ 0));
+  EXPECT_TRUE(WindowService::IsProxyWindow(local_window.get()));
+
+  // Embedding again should replace the existing embed with the new one.
+  base::UnguessableToken token_2;
+  const uint32_t window_id_in_child_2 = 150;
+  setup.window_tree_test_helper()
+      ->window_tree()
+      ->ScheduleEmbedForExistingClient(
+          window_id_in_child_2,
+          base::BindOnce(&ScheduleEmbedCallback, &token_2));
+  EXPECT_FALSE(token_2.is_empty());
+  ASSERT_TRUE(setup.service()->CompleteScheduleEmbedForExistingClient(
+      local_window.get(), token_2, /* embed_flags */ 0));
   EXPECT_TRUE(WindowService::IsProxyWindow(local_window.get()));
 }
 
@@ -240,8 +273,7 @@ TEST(WindowServiceTest,
 
   // Create a window that will serve as the parent for the remote window and
   // complete the embedding.
-  std::unique_ptr<aura::Window> local_window =
-      std::make_unique<aura::Window>(nullptr);
+  auto local_window = std::make_unique<aura::Window>(nullptr);
   local_window->Init(ui::LAYER_NOT_DRAWN);
   ASSERT_TRUE(setup.service()->CompleteScheduleEmbedForExistingClient(
       local_window.get(), token, /* embed_flags */ 0));
