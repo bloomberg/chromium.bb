@@ -37,7 +37,12 @@
       }
 
       #prompt {
+        --cr-toolbar-search-field-prompt-opacity: .7;
         opacity: 0;
+      }
+
+      :host-context([dark]) #prompt {
+        --cr-toolbar-search-field-prompt-opacity: 1;
       }
 
       paper-spinner-lite {
@@ -111,7 +116,7 @@
 
       :host(:not([narrow]):not([showing-search])) #icon,
       :host(:not([narrow])) #prompt {
-        opacity: 0.7;
+        opacity: var(--cr-toolbar-search-field-prompt-opacity);
       }
 
       :host([narrow]:not([showing-search])) #searchTerm {
