@@ -1341,14 +1341,6 @@ const char kNewTabLoadingAnimation[] = "New tab-loading animation";
 const char kNewTabLoadingAnimationDescription[] =
     "Enables a new look for the tab-loading animation.";
 
-const char kNewTabButtonPosition[] = "New tab button position";
-const char kNewTabButtonPositionDescription[] =
-    "Controls placement of the new tab button within the tabstrip.";
-const char kNewTabButtonPositionOppositeCaption[] = "Opposite caption buttons";
-const char kNewTabButtonPositionLeading[] = "Leading";
-const char kNewTabButtonPositionAfterTabs[] = "After tabs";
-const char kNewTabButtonPositionTrailing[] = "Trailing";
-
 const char kNostatePrefetchName[] = "NoState Prefetch";
 const char kNostatePrefetchDescription[] =
     "If enabled, pre-downloads resources to improve page load speed.";

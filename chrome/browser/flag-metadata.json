@@ -2341,11 +2341,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "new-tab-button-position",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "new-tab-loading-animation",
     "owners": [ "pbos@chromium.org" ],
     "expiry_milestone": 76

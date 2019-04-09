@@ -325,6 +325,8 @@ bool BrowserTabStripController::IsCompatibleWith(TabStrip* other) const {
 
 NewTabButtonPosition BrowserTabStripController::GetNewTabButtonPosition()
     const {
+  // TODO(https://crbug.com/951038): Remove this switch, this method, and
+  // probably more of this code.
   const std::string switch_value =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kNewTabButtonPosition);
