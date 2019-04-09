@@ -586,6 +586,7 @@ group("gn_all") {
   if (is_win) {
     deps += [
       "//base:pe_image_test",
+      "//chrome/browser/browser_switcher/bho:browser_switcher_bho",
       "//chrome/chrome_cleaner:chrome_cleaner_unittests",
       "//chrome/elevation_service:elevation_service_unittests",
       "//chrome/install_static:install_static_unittests",

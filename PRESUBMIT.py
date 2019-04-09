@@ -1761,6 +1761,7 @@ def _CheckSpamLogging(input_api, output_api):
                  r"^chrome[\\/]browser[\\/]chrome_browser_main\.cc$",
                  r"^chrome[\\/]browser[\\/]ui[\\/]startup[\\/]"
                      r"startup_browser_creator\.cc$",
+                 r"^chrome[\\/]browser[\\/]browser_switcher[\\/]bho[\\/].*",
                  r"^chrome[\\/]installer[\\/]setup[\\/].*",
                  r"^chrome[\\/]chrome_cleaner[\\/].*",
                  r"chrome[\\/]browser[\\/]diagnostics[\\/]" +
