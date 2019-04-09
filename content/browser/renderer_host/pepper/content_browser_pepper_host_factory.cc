@@ -134,6 +134,34 @@ ContentBrowserPepperHostFactory::CreateResourceHost(
         return std::make_unique<ppapi::host::MessageFilterHost>(
             host_->GetPpapiHost(), instance, resource, udp_socket);
       }
+
+      // The following interfaces are "private" because permission will be
+      // checked against a whitelist of apps at the time of the corresponding
+      // instance's method calls (because permission check can be performed
+      // only on the UI thread).
+      case PpapiHostMsg_TCPServerSocket_CreatePrivate::ID: {
+        if (!CanCreateSocket())
+          return nullptr;
+        scoped_refptr<ppapi::host::ResourceMessageFilter> tcp_server_socket(
+            new PepperTCPServerSocketMessageFilter(this, host_, instance,
+                                                   true));
+        return std::make_unique<ppapi::host::MessageFilterHost>(
+            host_->GetPpapiHost(), instance, resource, tcp_server_socket);
+      }
+      case PpapiHostMsg_TCPSocket_CreatePrivate::ID: {
+        if (!CanCreateSocket())
+          return nullptr;
+        return CreateNewTCPSocket(instance, resource,
+                                  ppapi::TCP_SOCKET_VERSION_PRIVATE);
+      }
+      case PpapiHostMsg_UDPSocket_CreatePrivate::ID: {
+        if (!CanCreateSocket())
+          return nullptr;
+        scoped_refptr<ppapi::host::ResourceMessageFilter> udp_socket(
+            new PepperUDPSocketMessageFilter(host_, instance, true));
+        return std::make_unique<ppapi::host::MessageFilterHost>(
+            host_->GetPpapiHost(), instance, resource, udp_socket);
+      }
     }
   }
 
@@ -199,32 +227,6 @@ ContentBrowserPepperHostFactory::CreateResourceHost(
         new ppapi::host::MessageFilterHost(host_->GetPpapiHost(), instance,
                                            resource, host_resolver));
   }
-  if (message.type() == PpapiHostMsg_TCPServerSocket_CreatePrivate::ID) {
-    if (CanCreateSocket()) {
-      scoped_refptr<ppapi::host::ResourceMessageFilter> tcp_server_socket(
-          new PepperTCPServerSocketMessageFilter(this, host_, instance, true));
-      return std::unique_ptr<ppapi::host::ResourceHost>(
-          new ppapi::host::MessageFilterHost(host_->GetPpapiHost(), instance,
-                                             resource, tcp_server_socket));
-    } else {
-      return std::unique_ptr<ppapi::host::ResourceHost>();
-    }
-  }
-  if (message.type() == PpapiHostMsg_TCPSocket_CreatePrivate::ID) {
-    return CreateNewTCPSocket(instance, resource,
-                              ppapi::TCP_SOCKET_VERSION_PRIVATE);
-  }
-  if (message.type() == PpapiHostMsg_UDPSocket_CreatePrivate::ID) {
-    if (CanCreateSocket()) {
-      scoped_refptr<ppapi::host::ResourceMessageFilter> udp_socket(
-          new PepperUDPSocketMessageFilter(host_, instance, true));
-      return std::unique_ptr<ppapi::host::ResourceHost>(
-          new ppapi::host::MessageFilterHost(host_->GetPpapiHost(), instance,
-                                             resource, udp_socket));
-    } else {
-      return std::unique_ptr<ppapi::host::ResourceHost>();
-    }
-  }
   if (message.type() == PpapiHostMsg_NetworkMonitor_Create::ID) {
     return std::unique_ptr<ppapi::host::ResourceHost>(
         new PepperNetworkMonitorHost(host_, instance, resource));
@@ -272,9 +274,6 @@ ContentBrowserPepperHostFactory::CreateNewTCPSocket(
     PP_Instance instance,
     PP_Resource resource,
     ppapi::TCPSocketVersion version) {
-  if (!CanCreateSocket())
-    return std::unique_ptr<ppapi::host::ResourceHost>();
-
   scoped_refptr<ppapi::host::ResourceMessageFilter> tcp_socket(
       new PepperTCPSocketMessageFilter(this, host_, instance, version));
   if (!tcp_socket.get())
