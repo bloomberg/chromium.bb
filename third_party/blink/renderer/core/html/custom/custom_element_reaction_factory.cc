@@ -183,37 +183,36 @@ class CustomElementFormResetCallbackReaction final
 
 // ----------------------------------------------------------------
 
-class CustomElementDisabledStateChangedCallbackReaction final
+class CustomElementFormDisabledCallbackReaction final
     : public CustomElementReaction {
  public:
-  CustomElementDisabledStateChangedCallbackReaction(
-      CustomElementDefinition& definition,
-      bool is_disabled)
+  CustomElementFormDisabledCallbackReaction(CustomElementDefinition& definition,
+                                            bool is_disabled)
       : CustomElementReaction(definition), is_disabled_(is_disabled) {
-    DCHECK(definition.HasDisabledStateChangedCallback());
+    DCHECK(definition.HasFormDisabledCallback());
   }
 
  private:
   void Invoke(Element& element) override {
-    definition_->RunDisabledStateChangedCallback(element, is_disabled_);
+    definition_->RunFormDisabledCallback(element, is_disabled_);
   }
 
   bool is_disabled_;
 
-  DISALLOW_COPY_AND_ASSIGN(CustomElementDisabledStateChangedCallbackReaction);
+  DISALLOW_COPY_AND_ASSIGN(CustomElementFormDisabledCallbackReaction);
 };
 
 // ----------------------------------------------------------------
 
-class CustomElementRestoreStateCallbackReaction final
+class CustomElementFormStateRestoreCallbackReaction final
     : public CustomElementReaction {
  public:
-  CustomElementRestoreStateCallbackReaction(
+  CustomElementFormStateRestoreCallbackReaction(
       CustomElementDefinition& definition,
       const FileOrUSVStringOrFormData& value,
       const String& mode)
       : CustomElementReaction(definition), value_(value), mode_(mode) {
-    DCHECK(definition.HasRestoreStateCallback());
+    DCHECK(definition.HasFormStateRestoreCallback());
     DCHECK(mode == "restore" || mode == "autocomplete");
   }
 
@@ -224,13 +223,13 @@ class CustomElementRestoreStateCallbackReaction final
 
  private:
   void Invoke(Element& element) override {
-    definition_->RunRestoreStateCallback(element, value_, mode_);
+    definition_->RunFormStateRestoreCallback(element, value_, mode_);
   }
 
   FileOrUSVStringOrFormData value_;
   String mode_;
 
-  DISALLOW_COPY_AND_ASSIGN(CustomElementRestoreStateCallbackReaction);
+  DISALLOW_COPY_AND_ASSIGN(CustomElementFormStateRestoreCallbackReaction);
 };
 
 // ----------------------------------------------------------------
@@ -284,19 +283,18 @@ CustomElementReaction& CustomElementReactionFactory::CreateFormReset(
       definition);
 }
 
-CustomElementReaction& CustomElementReactionFactory::CreateDisabledStateChanged(
+CustomElementReaction& CustomElementReactionFactory::CreateFormDisabled(
     CustomElementDefinition& definition,
     bool is_disabled) {
-  return *MakeGarbageCollected<
-      CustomElementDisabledStateChangedCallbackReaction>(definition,
-                                                         is_disabled);
+  return *MakeGarbageCollected<CustomElementFormDisabledCallbackReaction>(
+      definition, is_disabled);
 }
 
-CustomElementReaction& CustomElementReactionFactory::CreateRestoreState(
+CustomElementReaction& CustomElementReactionFactory::CreateFormStateRestore(
     CustomElementDefinition& definition,
     const FileOrUSVStringOrFormData& value,
     const String& mode) {
-  return *MakeGarbageCollected<CustomElementRestoreStateCallbackReaction>(
+  return *MakeGarbageCollected<CustomElementFormStateRestoreCallbackReaction>(
       definition, value, mode);
 }
 

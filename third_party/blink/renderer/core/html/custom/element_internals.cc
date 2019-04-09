@@ -307,7 +307,7 @@ void ElementInternals::DisabledStateMightBeChanged() {
   if (is_disabled_ == new_disabled)
     return;
   is_disabled_ = new_disabled;
-  CustomElement::EnqueueDisabledStateChangedCallback(Target(), new_disabled);
+  CustomElement::EnqueueFormDisabledCallback(Target(), new_disabled);
 }
 
 bool ElementInternals::ClassSupportsStateRestore() const {
@@ -351,7 +351,7 @@ void ElementInternals::RestoreFormControlState(const FormControlState& state) {
       value_ = ControlValue::FromFormData(form_data);
   }
   if (!value_.IsNull())
-    CustomElement::EnqueueRestoreStateCallback(Target(), value_, "restore");
+    CustomElement::EnqueueFormStateRestoreCallback(Target(), value_, "restore");
 }
 
 }  // namespace blink

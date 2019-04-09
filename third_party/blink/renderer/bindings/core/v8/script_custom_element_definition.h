@@ -21,9 +21,9 @@ class ScriptCustomElementDefinitionData;
 class V8CustomElementAdoptedCallback;
 class V8CustomElementAttributeChangedCallback;
 class V8CustomElementConstructor;
-class V8CustomElementDisabledStateChangedCallback;
 class V8CustomElementFormAssociatedCallback;
-class V8CustomElementRestoreStateCallback;
+class V8CustomElementFormDisabledCallback;
+class V8CustomElementFormStateRestoreCallback;
 class V8VoidFunction;
 
 class CORE_EXPORT ScriptCustomElementDefinition final
@@ -55,8 +55,8 @@ class CORE_EXPORT ScriptCustomElementDefinition final
   bool HasAdoptedCallback() const override;
   bool HasFormAssociatedCallback() const override;
   bool HasFormResetCallback() const override;
-  bool HasDisabledStateChangedCallback() const override;
-  bool HasRestoreStateCallback() const override;
+  bool HasFormDisabledCallback() const override;
+  bool HasFormStateRestoreCallback() const override;
 
   void RunConnectedCallback(Element&) override;
   void RunDisconnectedCallback(Element&) override;
@@ -70,11 +70,10 @@ class CORE_EXPORT ScriptCustomElementDefinition final
   void RunFormAssociatedCallback(Element& element,
                                  HTMLFormElement* nullable_form) override;
   void RunFormResetCallback(Element& element) override;
-  void RunDisabledStateChangedCallback(Element& element,
-                                       bool is_disabled) override;
-  void RunRestoreStateCallback(Element& element,
-                               const FileOrUSVStringOrFormData& value,
-                               const String& mode) override;
+  void RunFormDisabledCallback(Element& element, bool is_disabled) override;
+  void RunFormStateRestoreCallback(Element& element,
+                                   const FileOrUSVStringOrFormData& value,
+                                   const String& mode) override;
 
  private:
   // Implementations of |CustomElementDefinition|
@@ -97,9 +96,8 @@ class CORE_EXPORT ScriptCustomElementDefinition final
   Member<V8CustomElementAttributeChangedCallback> attribute_changed_callback_;
   Member<V8CustomElementFormAssociatedCallback> form_associated_callback_;
   Member<V8VoidFunction> form_reset_callback_;
-  Member<V8CustomElementDisabledStateChangedCallback>
-      disabled_state_changed_callback_;
-  Member<V8CustomElementRestoreStateCallback> restore_state_callback_;
+  Member<V8CustomElementFormDisabledCallback> form_disabled_callback_;
+  Member<V8CustomElementFormStateRestoreCallback> form_state_restore_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ScriptCustomElementDefinition);
 };

@@ -77,8 +77,8 @@ class CORE_EXPORT CustomElementDefinition
   bool HasStyleAttributeChangedCallback() const;
   virtual bool HasFormAssociatedCallback() const = 0;
   virtual bool HasFormResetCallback() const = 0;
-  virtual bool HasDisabledStateChangedCallback() const = 0;
-  virtual bool HasRestoreStateCallback() const = 0;
+  virtual bool HasFormDisabledCallback() const = 0;
+  virtual bool HasFormStateRestoreCallback() const = 0;
 
   virtual void RunConnectedCallback(Element&) = 0;
   virtual void RunDisconnectedCallback(Element&) = 0;
@@ -92,11 +92,11 @@ class CORE_EXPORT CustomElementDefinition
   virtual void RunFormAssociatedCallback(Element& element,
                                          HTMLFormElement* nullable_form) = 0;
   virtual void RunFormResetCallback(Element& element) = 0;
-  virtual void RunDisabledStateChangedCallback(Element& element,
-                                               bool is_disabled) = 0;
-  virtual void RunRestoreStateCallback(Element& element,
-                                       const FileOrUSVStringOrFormData& value,
-                                       const String& mode) = 0;
+  virtual void RunFormDisabledCallback(Element& element, bool is_disabled) = 0;
+  virtual void RunFormStateRestoreCallback(
+      Element& element,
+      const FileOrUSVStringOrFormData& value,
+      const String& mode) = 0;
 
   void EnqueueUpgradeReaction(Element&,
                               bool upgrade_invisible_elements = false);
