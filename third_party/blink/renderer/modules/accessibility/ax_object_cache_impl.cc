@@ -455,7 +455,7 @@ AXObject* AXObjectCacheImpl::GetOrCreate(Node* node) {
   if (node->GetLayoutObject() && !IsHTMLAreaElement(node))
     return GetOrCreate(node->GetLayoutObject());
 
-  if (!node->parentElement())
+  if (!LayoutTreeBuilderTraversal::Parent(*node))
     return nullptr;
 
   if (IsHTMLHeadElement(node))
@@ -500,7 +500,11 @@ AXObject* AXObjectCacheImpl::GetOrCreate(LayoutObject* layout_object) {
   new_obj->Init();
   new_obj->SetLastKnownIsIgnoredValue(new_obj->AccessibilityIsIgnored());
   if (node) {
-    node_object_mapping_.Set(node, axid);
+    AXID prev_axid = node_object_mapping_.at(node);
+    if (prev_axid != 0 && prev_axid != axid) {
+      Remove(node);
+      node_object_mapping_.Set(node, axid);
+    }
     MaybeNewRelationTarget(node, new_obj);
   }
 
@@ -763,6 +767,10 @@ void AXObjectCacheImpl::SelectionChangedWithCleanLayout(Node* node) {
   if (!node)
     return;
 
+  // Something about the call chain for this method seems to leave distribution
+  // in a dirty state - update it before we call GetOrCreate so that we don't
+  // crash.
+  node->UpdateDistributionForFlatTreeTraversal();
   AXObject* ax_object = GetOrCreate(node);
   if (ax_object)
     ax_object->SelectionChanged();
@@ -973,9 +981,9 @@ void AXObjectCacheImpl::PostNotificationsAfterLayout(Document* document) {
     PostPlatformNotification(obj, notification);
 
     if (notification == ax::mojom::Event::kChildrenChanged &&
-        obj->ParentObjectIfExists() &&
+        obj->CachedParentObject() &&
         obj->LastKnownIsIgnoredValue() != obj->AccessibilityIsIgnored())
-      ChildrenChanged(obj->ParentObject());
+      ChildrenChanged(obj->CachedParentObject());
   }
 }
 

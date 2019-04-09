@@ -260,7 +260,6 @@ AccessibilityController::FindAccessibleElementByIdRecursive(
   blink::WebNode node = obj.GetNode();
   if (!node.IsNull() && node.IsElementNode()) {
     blink::WebElement element = node.To<blink::WebElement>();
-    element.GetAttribute("id");
     if (element.GetAttribute("id") == id)
       return elements_.GetOrCreate(obj);
   }
@@ -269,7 +268,7 @@ AccessibilityController::FindAccessibleElementByIdRecursive(
   for (unsigned i = 0; i < childCount; i++) {
     v8::Local<v8::Object> result =
         FindAccessibleElementByIdRecursive(obj.ChildAt(i), id);
-    if (*result)
+    if (!result.IsEmpty())
       return result;
   }
 

@@ -450,6 +450,9 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
     }
   }
 
+  // Clear list_info_map_
+  ordered_set_info_map_.clear();
+
   std::set<const AXNode*>& new_nodes = update_state.new_nodes;
   std::vector<AXTreeObserver::Change> changes;
   changes.reserve(update.nodes.size());
@@ -491,9 +494,6 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
   for (AXTreeObserver& observer : observers_) {
     observer.OnAtomicUpdateFinished(this, root_->id() != old_root_id, changes);
   }
-
-  // Clear list_info_map_
-  ordered_set_info_map_.clear();
 
   return true;
 }
@@ -980,6 +980,7 @@ void AXTree::PopulateOrderedSetItems(const AXNode* ordered_set,
       // examined, stop adding to this set.
       if (original_node_index < i)
         break;
+
       // If a decrease in level has been detected before the original node
       // has been examined, then everything previously added to items actually
       // belongs to a different set. Clear items vector.
@@ -1078,11 +1079,20 @@ void AXTree::ComputeSetSizePosInSetAndCache(const AXNode& node,
   // 1. Node role matches ordered set role.
   // 2. The node that calculations were called on is the ordered_set.
   if (node.SetRoleMatchesItemRole(ordered_set) || ordered_set == &node) {
+    auto ordered_set_info_result =
+        ordered_set_info_map_.find(ordered_set->id());
     // If ordered_set is not in the cache, assign it a new set_size.
-    if (ordered_set_info_map_.find(ordered_set->id()) ==
-        ordered_set_info_map_.end()) {
+    if (ordered_set_info_result == ordered_set_info_map_.end()) {
       ordered_set_info_map_[ordered_set->id()] = OrderedSetInfo();
       ordered_set_info_map_[ordered_set->id()].set_size = set_size_value;
+      ordered_set_info_map_[ordered_set->id()].lowest_hierarchical_level =
+          hierarchical_level;
+    } else {
+      OrderedSetInfo ordered_set_info = ordered_set_info_result->second;
+      if (ordered_set_info.lowest_hierarchical_level > hierarchical_level) {
+        ordered_set_info.set_size = set_size_value;
+        ordered_set_info.lowest_hierarchical_level = hierarchical_level;
+      }
     }
   }
 

@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/aom/accessible_node.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
+#include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
@@ -311,9 +312,9 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
     return ax::mojom::Role::kDetails;
 
   if (IsHTMLSummaryElement(*GetNode())) {
-    ContainerNode* parent = FlatTreeTraversal::Parent(*GetNode());
+    ContainerNode* parent = LayoutTreeBuilderTraversal::Parent(*GetNode());
     if (parent && IsHTMLSlotElement(parent))
-      parent = FlatTreeTraversal::Parent(*parent);
+      parent = LayoutTreeBuilderTraversal::Parent(*parent);
     if (parent && IsHTMLDetailsElement(parent))
       return ax::mojom::Role::kDisclosureTriangle;
     return ax::mojom::Role::kUnknown;
@@ -661,13 +662,15 @@ static Element* SiblingWithAriaRole(String role, Node* node) {
   if (!parent)
     return nullptr;
 
-  for (Element* sibling = ElementTraversal::FirstChild(*parent); sibling;
-       sibling = ElementTraversal::NextSibling(*sibling)) {
+  for (Node* sibling = LayoutTreeBuilderTraversal::FirstChild(*parent); sibling;
+       sibling = LayoutTreeBuilderTraversal::NextSibling(*sibling)) {
+    if (!sibling->IsElementNode())
+      continue;
     const AtomicString& sibling_aria_role =
-        AccessibleNode::GetPropertyOrARIAAttribute(sibling,
+        AccessibleNode::GetPropertyOrARIAAttribute(ToElement(sibling),
                                                    AOMStringProperty::kRole);
     if (EqualIgnoringASCIICase(sibling_aria_role, role))
-      return sibling;
+      return ToElement(sibling);
   }
 
   return nullptr;
@@ -2080,17 +2083,7 @@ static Node* GetParentNodeForComputeParent(Node* node) {
   if (!node)
     return nullptr;
 
-  Node* parent_node = nullptr;
-
-  // Skip over <optgroup> and consider the <select> the immediate parent of an
-  // <option>.
-  if (auto* option = ToHTMLOptionElementOrNull(node))
-    parent_node = option->OwnerSelectElement();
-
-  if (!parent_node)
-    parent_node = node->parentNode();
-
-  return parent_node;
+  return LayoutTreeBuilderTraversal::Parent(*node);
 }
 
 AXObject* AXNodeObject::ComputeParent() const {
@@ -2112,7 +2105,7 @@ AXObject* AXNodeObject::RawFirstChild() const {
   if (!GetNode())
     return nullptr;
 
-  Node* first_child = GetNode()->firstChild();
+  Node* first_child = LayoutTreeBuilderTraversal::FirstChild(*GetNode());
 
   if (!first_child)
     return nullptr;
@@ -2124,7 +2117,7 @@ AXObject* AXNodeObject::RawNextSibling() const {
   if (!GetNode())
     return nullptr;
 
-  Node* next_sibling = GetNode()->nextSibling();
+  Node* next_sibling = LayoutTreeBuilderTraversal::NextSibling(*GetNode());
   if (!next_sibling)
     return nullptr;
 
@@ -2141,34 +2134,38 @@ void AXNodeObject::AddChildren() {
   DCHECK(!have_children_);
   have_children_ = true;
 
-  // The only time we add children from the DOM tree to a node with a
-  // layoutObject is when it's a canvas.
-  if (GetLayoutObject() && !IsHTMLCanvasElement(*node_))
-    return;
-
   AXObjectVector owned_children;
   ComputeAriaOwnsChildren(owned_children);
 
-  for (Node& child : NodeTraversal::ChildrenOf(*node_)) {
-    AXObject* child_obj = AXObjectCache().GetOrCreate(&child);
+  AddListMarker();
+
+  for (Node* child = LayoutTreeBuilderTraversal::FirstChild(*node_); child;
+       child = LayoutTreeBuilderTraversal::NextSibling(*child)) {
+    AXObject* child_obj = AXObjectCache().GetOrCreate(child);
     if (child_obj && !AXObjectCache().IsAriaOwned(child_obj))
       AddChild(child_obj);
   }
 
+  AddHiddenChildren();
+  AddImageMapChildren();
+  AddInlineTextBoxChildren(false);
+  AddAccessibleNodeChildren();
+
+  for (const auto& child : children_) {
+    if (!child->CachedParentObject())
+      child->SetParent(this);
+  }
+
   for (const auto& owned_child : owned_children)
     AddChild(owned_child);
-
-  for (const auto& child : children_)
-    child->SetParent(this);
-
-  AddAccessibleNodeChildren();
 }
 
 void AXNodeObject::AddChild(AXObject* child) {
-  InsertChild(child, children_.size());
+  unsigned index = children_.size();
+  InsertChild(child, index);
 }
 
-void AXNodeObject::InsertChild(AXObject* child, unsigned index) {
+void AXNodeObject::InsertChild(AXObject* child, unsigned& index) {
   if (!child)
     return;
 
@@ -2182,11 +2179,13 @@ void AXNodeObject::InsertChild(AXObject* child, unsigned index) {
   if (child->AccessibilityIsIgnored()) {
     const auto& children = child->Children();
     wtf_size_t length = children.size();
-    for (wtf_size_t i = 0; i < length; ++i)
-      children_.insert(index + i, children[i]);
-  } else {
-    DCHECK_EQ(child->ParentObject(), this);
+    for (wtf_size_t i = 0; i < length; ++i) {
+      InsertChild(children[i], index);
+    }
+  } else if (!child->IsMenuListOption()) {
+    // MenuListOptions must only added in AXMenuListPopup::AddChildren
     children_.insert(index, child);
+    index++;
   }
 }
 
