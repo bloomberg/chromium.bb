@@ -5,11 +5,13 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/safe_browsing/features.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "components/safe_browsing/web_ui/safe_browsing_ui.h"
 #include "content/public/browser/browser_context.h"
@@ -25,6 +27,11 @@ namespace safe_browsing {
 
 class DownloadProtectionServiceBrowserTest : public InProcessBrowserTest {
  protected:
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(kInspectRarContentFeature);
+    InProcessBrowserTest::SetUp();
+  }
+
   base::FilePath GetTestDataDirectory() {
     base::FilePath test_file_directory;
     base::PathService::Get(chrome::DIR_TEST_DATA, &test_file_directory);
@@ -56,6 +63,9 @@ class DownloadProtectionServiceBrowserTest : public InProcessBrowserTest {
   //   echo "BBBBBBBBB" > a.zip
   //   sha256sum a.zip
   static const uint8_t kBZipDigest[];
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 const uint8_t DownloadProtectionServiceBrowserTest::kAZipDigest[] = {
