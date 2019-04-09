@@ -36486,6 +36486,13 @@ Called by update_use_counter_css.py.-->
   <int value="2" label="MediaFling"/>
 </enum>
 
+<enum name="MediaNotificationMetadata">
+  <int value="0" label="Title"/>
+  <int value="1" label="Artist"/>
+  <int value="2" label="Album"/>
+  <int value="3" label="Count"/>
+</enum>
+
 <enum name="MediaNotificationSource">
   <int value="0" label="Unknown"/>
   <int value="1" label="Web"/>

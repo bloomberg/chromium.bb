@@ -237,6 +237,19 @@ class MediaNotificationViewTest : public AshTestBase {
         static_cast<base::HistogramBase::Sample>(action), 1);
   }
 
+  void ExpectHistogramArtworkRecorded(bool present, int count) {
+    histogram_tester_.ExpectBucketCount(
+        MediaNotificationView::kArtworkHistogramName,
+        static_cast<base::HistogramBase::Sample>(present), count);
+  }
+
+  void ExpectHistogramMetadataRecorded(MediaNotificationView::Metadata metadata,
+                                       int count) {
+    histogram_tester_.ExpectBucketCount(
+        MediaNotificationView::kMetadataHistogramName,
+        static_cast<base::HistogramBase::Sample>(metadata), count);
+  }
+
  private:
   std::unique_ptr<message_center::MessageView> CreateAndCaptureCustomView(
       const message_center::Notification& notification) {
@@ -517,9 +530,15 @@ TEST_F(MediaNotificationViewTest, MetadataIsDisplayed) {
 TEST_F(MediaNotificationViewTest, UpdateMetadata_FromObserver) {
   EnableAllActions();
 
+  ExpectHistogramMetadataRecorded(MediaNotificationView::Metadata::kTitle, 1);
+  ExpectHistogramMetadataRecorded(MediaNotificationView::Metadata::kArtist, 1);
+  ExpectHistogramMetadataRecorded(MediaNotificationView::Metadata::kAlbum, 0);
+  ExpectHistogramMetadataRecorded(MediaNotificationView::Metadata::kCount, 1);
+
   media_session::MediaMetadata metadata;
   metadata.title = base::ASCIIToUTF16("title2");
   metadata.artist = base::ASCIIToUTF16("artist2");
+  metadata.album = base::ASCIIToUTF16("album");
 
   GetItem()->MediaSessionMetadataChanged(metadata);
 
@@ -531,6 +550,11 @@ TEST_F(MediaNotificationViewTest, UpdateMetadata_FromObserver) {
   EXPECT_EQ(metadata.artist, artist_label()->text());
 
   EXPECT_EQ(kMediaTitleArtistRowExpectedHeight, title_artist_row()->height());
+
+  ExpectHistogramMetadataRecorded(MediaNotificationView::Metadata::kTitle, 2);
+  ExpectHistogramMetadataRecorded(MediaNotificationView::Metadata::kArtist, 2);
+  ExpectHistogramMetadataRecorded(MediaNotificationView::Metadata::kAlbum, 1);
+  ExpectHistogramMetadataRecorded(MediaNotificationView::Metadata::kCount, 2);
 }
 
 TEST_F(MediaNotificationViewTest, UpdateMetadata_AppName) {
@@ -658,6 +682,8 @@ TEST_F(MediaNotificationViewTest, UpdateArtworkFromItem) {
   GetItem()->MediaControllerImageChanged(
       media_session::mojom::MediaSessionImageType::kArtwork, image);
 
+  ExpectHistogramArtworkRecorded(true, 1);
+
   // Ensure the title artist row has a small width than before now that we
   // have artwork.
   EXPECT_GT(title_artist_width, title_artist_row()->width());
@@ -670,6 +696,8 @@ TEST_F(MediaNotificationViewTest, UpdateArtworkFromItem) {
 
   GetItem()->MediaControllerImageChanged(
       media_session::mojom::MediaSessionImageType::kArtwork, SkBitmap());
+
+  ExpectHistogramArtworkRecorded(false, 1);
 
   // Ensure the title artist row goes back to the original width now that we
   // do not have any artwork.
