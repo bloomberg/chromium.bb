@@ -237,11 +237,11 @@ void JSChecker::ExpectHasNoClass(
 void JSChecker::TapOnPath(
     std::initializer_list<base::StringPiece> element_ids) {
   ExpectVisiblePath(element_ids);
-  // All OOBE UI should be mobile-friendly, so use "tap" instead of "click".
+  // TODO(crbug.com/949377): Switch to always firing 'click' events when
+  // missing OOBE UI components are migrated to handle 'click' events.
   if (polymer_ui_) {
     Evaluate(GetOobeElementPath(element_ids) + ".fire('tap')");
   } else {
-    // Old test-only UI (fake GAIA, fake SAML) only support "click".
     Evaluate(GetOobeElementPath(element_ids) + ".click()");
   }
 }
