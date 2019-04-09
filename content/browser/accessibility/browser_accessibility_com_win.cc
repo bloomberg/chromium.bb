@@ -1728,10 +1728,6 @@ void BrowserAccessibilityComWin::UpdateStep3FireEvents(
     bool is_subtree_creation) {
   int32_t state = MSAAState();
 
-  // Fire an event when a new subtree is created.
-  if (is_subtree_creation)
-    FireNativeEvent(EVENT_OBJECT_SHOW);
-
   // The rest of the events only fire on changes, not on new objects.
 
   bool did_fire_namechange = false;

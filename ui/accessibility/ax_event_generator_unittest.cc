@@ -113,6 +113,9 @@ std::string DumpEvents(AXEventGenerator* generator) {
       case AXEventGenerator::Event::NAME_CHANGED:
         event_name = "NAME_CHANGED";
         break;
+      case AXEventGenerator::Event::SUBTREE_CREATED:
+        event_name = "SUBTREE_CREATED";
+        break;
       case AXEventGenerator::Event::OTHER_ATTRIBUTE_CHANGED:
         event_name = "OTHER_ATTRIBUTE_CHANGED";
         break;
@@ -220,7 +223,10 @@ TEST(AXEventGeneratorTest, LoadCompleteNewTree) {
   load_complete_update.has_tree_data = true;
   load_complete_update.tree_data.loaded = true;
   ASSERT_TRUE(tree.Unserialize(load_complete_update));
-  EXPECT_EQ("LOAD_COMPLETE on 2", DumpEvents(&event_generator));
+  EXPECT_EQ(
+      "LOAD_COMPLETE on 2, "
+      "SUBTREE_CREATED on 2",
+      DumpEvents(&event_generator));
 
   // Load complete should not be emitted for sizeless roots.
   load_complete_update.root_id = 3;
@@ -230,7 +236,7 @@ TEST(AXEventGeneratorTest, LoadCompleteNewTree) {
   load_complete_update.has_tree_data = true;
   load_complete_update.tree_data.loaded = true;
   ASSERT_TRUE(tree.Unserialize(load_complete_update));
-  EXPECT_EQ("", DumpEvents(&event_generator));
+  EXPECT_EQ("SUBTREE_CREATED on 3", DumpEvents(&event_generator));
 
   // TODO(accessibility): http://crbug.com/888758
   // Load complete should not be emitted for chrome-search URLs.
@@ -244,7 +250,10 @@ TEST(AXEventGeneratorTest, LoadCompleteNewTree) {
   load_complete_update.has_tree_data = true;
   load_complete_update.tree_data.loaded = true;
   ASSERT_TRUE(tree.Unserialize(load_complete_update));
-  EXPECT_EQ("LOAD_COMPLETE on 4", DumpEvents(&event_generator));
+  EXPECT_EQ(
+      "LOAD_COMPLETE on 4, "
+      "SUBTREE_CREATED on 4",
+      DumpEvents(&event_generator));
 }
 
 TEST(AXEventGeneratorTest, LoadStart) {
@@ -266,7 +275,10 @@ TEST(AXEventGeneratorTest, LoadStart) {
   load_start_update.has_tree_data = true;
   load_start_update.tree_data.loaded = false;
   ASSERT_TRUE(tree.Unserialize(load_start_update));
-  EXPECT_EQ("LOAD_START on 2", DumpEvents(&event_generator));
+  EXPECT_EQ(
+      "LOAD_START on 2, "
+      "SUBTREE_CREATED on 2",
+      DumpEvents(&event_generator));
 }
 
 TEST(AXEventGeneratorTest, DocumentSelectionChanged) {
@@ -506,7 +518,9 @@ TEST(AXEventGeneratorTest, CreateAlertAndLiveRegion) {
   EXPECT_EQ(
       "ALERT on 3, "
       "CHILDREN_CHANGED on 1, "
-      "LIVE_REGION_CREATED on 2",
+      "LIVE_REGION_CREATED on 2, "
+      "SUBTREE_CREATED on 2, "
+      "SUBTREE_CREATED on 3",
       DumpEvents(&event_generator));
 }
 
@@ -661,7 +675,10 @@ TEST(AXEventGeneratorTest, AddChild) {
   update.nodes[2].id = 3;
 
   ASSERT_TRUE(tree.Unserialize(update));
-  EXPECT_EQ("CHILDREN_CHANGED on 1", DumpEvents(&event_generator));
+  EXPECT_EQ(
+      "CHILDREN_CHANGED on 1, "
+      "SUBTREE_CREATED on 3",
+      DumpEvents(&event_generator));
 }
 
 TEST(AXEventGeneratorTest, RemoveChild) {

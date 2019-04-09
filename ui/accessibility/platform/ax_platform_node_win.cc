@@ -3459,20 +3459,26 @@ IFACEMETHODIMP AXPlatformNodeWin::Navigate(
   return S_OK;
 }
 
+void AXPlatformNodeWin::GetRuntimeIdArray(
+    AXPlatformNodeWin::RuntimeIdArray& runtime_id) {
+  runtime_id[0] = UiaAppendRuntimeId;
+  runtime_id[1] = GetUniqueId();
+}
+
 IFACEMETHODIMP AXPlatformNodeWin::GetRuntimeId(SAFEARRAY** runtime_id) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_RUNTIME_ID);
   UIA_VALIDATE_CALL_1_ARG(runtime_id);
 
-  int id_array[] = {UiaAppendRuntimeId, GetUniqueId()};
-  int id_array_size = 2;
-
-  *runtime_id = ::SafeArrayCreateVector(VT_I4, 0, id_array_size);
+  RuntimeIdArray id_array;
+  GetRuntimeIdArray(id_array);
+  *runtime_id = ::SafeArrayCreateVector(VT_I4, 0, id_array.size());
 
   int* array_data = nullptr;
   ::SafeArrayAccessData(*runtime_id, reinterpret_cast<void**>(&array_data));
 
-  size_t runtime_id_byte_count = id_array_size * sizeof(int);
-  memcpy_s(array_data, runtime_id_byte_count, id_array, runtime_id_byte_count);
+  size_t runtime_id_byte_count = id_array.size() * sizeof(int);
+  memcpy_s(array_data, runtime_id_byte_count, id_array.data(),
+           runtime_id_byte_count);
 
   ::SafeArrayUnaccessData(*runtime_id);
 

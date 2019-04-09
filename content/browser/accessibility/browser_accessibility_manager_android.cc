@@ -152,7 +152,8 @@ void BrowserAccessibilityManagerAndroid::FireGeneratedEvent(
   // Always send AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED to notify
   // the Android system that the accessibility hierarchy rooted at this
   // node has changed.
-  wcax->HandleContentChanged(android_node->unique_id());
+  if (event_type != ui::AXEventGenerator::Event::SUBTREE_CREATED)
+    wcax->HandleContentChanged(android_node->unique_id());
 
   switch (event_type) {
     case ui::AXEventGenerator::Event::LOAD_COMPLETE:
@@ -235,6 +236,7 @@ void BrowserAccessibilityManagerAndroid::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::SELECTED_CHILDREN_CHANGED:
     case ui::AXEventGenerator::Event::SET_SIZE_CHANGED:
     case ui::AXEventGenerator::Event::STATE_CHANGED:
+    case ui::AXEventGenerator::Event::SUBTREE_CREATED:
     case ui::AXEventGenerator::Event::VALUE_MAX_CHANGED:
     case ui::AXEventGenerator::Event::VALUE_MIN_CHANGED:
     case ui::AXEventGenerator::Event::VALUE_STEP_CHANGED:
