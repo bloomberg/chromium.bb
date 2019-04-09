@@ -1477,35 +1477,6 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
 
   WebWindowFeatures window_features = GetWindowFeaturesFromString(features);
 
-  FrameLoadRequest frame_request(active_document,
-                                 ResourceRequest(completed_url),
-                                 target.IsEmpty() ? "_blank" : target);
-  frame_request.SetNavigationPolicy(
-      NavigationPolicyForCreateWindow(window_features));
-  frame_request.SetFeaturesForWindowOpen(window_features);
-  frame_request.SetShouldSetOpener(window_features.noopener ? kNeverSetOpener
-                                                            : kMaybeSetOpener);
-
-  // Normally, FrameLoader would take care of setting the referrer for a
-  // navigation that is triggered from javascript. However, creating a window
-  // goes through sufficient processing that it eventually enters FrameLoader as
-  // an embedder-initiated navigation.  FrameLoader assumes no responsibility
-  // for generating an embedder-initiated navigation's referrer, so we need to
-  // ensure the proper referrer is set now.
-  // TODO(domfarolino): Stop setting ResourceRequest's HTTP Referrer and store
-  // this is a separate member. See https://crbug.com/850813.
-  frame_request.GetResourceRequest().SetHttpReferrer(
-      SecurityPolicy::GenerateReferrer(active_document->GetReferrerPolicy(),
-                                       completed_url,
-                                       active_document->OutgoingReferrer()));
-
-  frame_request.GetResourceRequest().SetHasUserGesture(
-      LocalFrame::HasTransientUserActivation(GetFrame()));
-  GetFrame()->MaybeLogAdClickNavigation();
-
-  if (const WebInputEvent* input_event = CurrentInputEvent::Get())
-    frame_request.SetInputStartTime(input_event->TimeStamp());
-
   // Get the target frame for the special cases of _top and _parent.
   // In those cases, we schedule a location change right now and return early.
   Frame* target_frame = nullptr;
@@ -1533,23 +1504,25 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
     }
   }
 
-  bool created = false;
-  if (!target_frame)
-    target_frame = CreateNewWindow(*GetFrame(), frame_request, created);
-  if (!target_frame)
-    return nullptr;
+  if (!target_frame) {
+    return CreateWindow(completed_url, target, window_features,
+                        *incumbent_window, *GetFrame());
+  }
 
   if (!active_document->GetFrame() ||
       !active_document->GetFrame()->CanNavigate(*target_frame)) {
     return nullptr;
   }
 
-  if ((!completed_url.IsEmpty() || created) &&
+  if (!url_string.IsEmpty() &&
       !target_frame->DomWindow()->IsInsecureScriptAccess(*incumbent_window,
                                                          completed_url)) {
-    frame_request.SetFrameName("_self");
-    frame_request.SetNavigationPolicy(kNavigationPolicyCurrentTab);
-    target_frame->Navigate(frame_request, WebFrameLoadType::kStandard);
+    FrameLoadRequest request(active_document, ResourceRequest(completed_url));
+    request.GetResourceRequest().SetHasUserGesture(
+        LocalFrame::HasTransientUserActivation(GetFrame()));
+    if (const WebInputEvent* input_event = CurrentInputEvent::Get())
+      request.SetInputStartTime(input_event->TimeStamp());
+    target_frame->Navigate(request, WebFrameLoadType::kStandard);
   }
 
   // TODO(japhet): window-open-noopener.html?_top and several tests in
@@ -1565,8 +1538,7 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
 
   if (window_features.noopener)
     return nullptr;
-  if (!created)
-    target_frame->Client()->SetOpener(GetFrame());
+  target_frame->Client()->SetOpener(GetFrame());
   return target_frame->DomWindow();
 }
 
