@@ -37,7 +37,7 @@
         <label id="label">$i18n{optionTwoSided}</label>
       </div>
       <div slot="controls" class="checkbox">
-        <cr-checkbox id="duplex" aria-labelled-by="label"
+        <cr-checkbox id="duplex" aria-labelledby="label"
             disabled$="[[getDisabled_(settings.duplex.setByPolicy, disabled)]]"
             on-change="onCheckboxChange_">
           $i18n{printOnBothSidesLabel}
