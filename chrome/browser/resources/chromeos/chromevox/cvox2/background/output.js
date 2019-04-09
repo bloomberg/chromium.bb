@@ -464,13 +464,12 @@ Output.RULES = {
           $if($inPageLinkTarget, @internal_link, $role) $description`,
     },
     list: {
-      enter: `$role @@list_with_items($countChildren(listItem))`,
+      enter: `$role @@list_with_items($setSize)`,
       speak: `$nameFromNode $descendants $role
-          @@list_with_items($countChildren(listItem)) $description $state`
+          @@list_with_items($setSize) $description $state`
     },
     listBox: {
-      enter: `$nameFromNode
-          $role @@list_with_items($countChildren(listBoxOption))
+      enter: `$nameFromNode $role @@list_with_items($setSize)
           $restriction $description`
     },
     listBoxOption: {
@@ -485,29 +484,23 @@ Output.RULES = {
     menu: {
       enter: `$name $role `,
       speak: `$name $node(activeDescendant)
-          $role @@list_with_items(
-              $countChildren(menuItem, menuItemCheckBox, menuItemRadio))
-          $description $state $restriction`
+          $role @@list_with_items($setSize) $description $state $restriction`
     },
     menuItem: {
       speak: `$name $role $if($hasPopup, @has_submenu)
-          @describe_index($if($posInSet, $posInSet, $indexInParent(menuItem, menuItemCheckBox, menuItemRadio)),
-              $if($setSize, $setSize, $parentChildCount(menuItem, menuItemCheckBox, menuItemRadio)))
-          $description $state $restriction`
+          @describe_index($posInSet, $setSize) $description $state $restriction`
     },
     menuItemCheckBox: {
       speak: `$if($checked, $earcon(CHECK_ON), $earcon(CHECK_OFF))
           $name $role $checked $state $restriction $description
-          @describe_index($if($posInSet, $posInSet, $indexInParent(menuItem, menuItemCheckBox, menuItemRadio)),
-              $if($setSize, $setSize, $parentChildCount(menuItem, menuItemCheckBox, menuItemRadio))) `
+          @describe_index($posInSet, $setSize)`
     },
     menuItemRadio: {
       speak: `$if($checked, $earcon(CHECK_ON), $earcon(CHECK_OFF))
           $if($checked, @describe_radio_selected($name),
           @describe_radio_unselected($name)) $state $roleDescription
           $restriction $description
-          @describe_index($if($posInSet, $posInSet, $indexInParent(menuItem, menuItemCheckBox, menuItemRadio)),
-              $if($setSize, $setSize, $parentChildCount(menuItem, menuItemCheckBox, menuItemRadio))) `
+          @describe_index($posInSet, $setSize)`
     },
     menuListOption: {
       speak: `$name $role @describe_index($posInSet, $setSize) $state
@@ -578,10 +571,7 @@ Output.RULES = {
           $name $role $pressed $description $state $restriction`
     },
     toolbar: {enter: `$name $role $description $restriction`},
-    tree: {
-      enter: `$name $role @@list_with_items($countChildren(treeItem))
-          $restriction`
-    },
+    tree: {enter: `$name $role @@list_with_items($setSize) $restriction`},
     treeItem: {
       enter: `$role $expanded $collapsed $restriction
           @describe_index($posInSet, $setSize)
@@ -1321,25 +1311,6 @@ Output.prototype = {
             this.append_(buff, String(count));
             ruleStr.writeTokenWithValue(token, String(count));
           }
-        } else if (token == 'parentChildCount') {
-          if (node.parent) {
-            options.annotation.push(token);
-            var roles;
-            if (tree.firstChild) {
-              roles = this.createRoles_(tree);
-            } else {
-              roles = new Set();
-              roles.add(node.role);
-            }
-
-            var count = node.parent.children
-                            .filter(function(child) {
-                              return roles.has(child.role);
-                            })
-                            .length;
-            this.append_(buff, String(count));
-            ruleStr.writeTokenWithValue(token, String(count));
-          }
         } else if (token == 'restriction') {
           var msg = Output.RESTRICTION_STATE_MAP[node.restriction];
           if (msg) {
@@ -1590,13 +1561,9 @@ Output.prototype = {
             this.format_(node, '$indexInParent', buff, ruleStr);
           }
         } else if (token == 'setSize') {
-          if (node.setSize !== undefined) {
-            this.append_(buff, String(node.setSize));
-            ruleStr.writeTokenWithValue(token, String(node.setSize));
-          } else {
-            ruleStr.writeToken(token);
-            this.format_(node, '$parentChildCount', buff, ruleStr);
-          }
+          var size = node.setSize ? node.setSize : 0;
+          this.append_(buff, String(size));
+          ruleStr.writeTokenWithValue(token, String(node.setSize));
         } else if (tree.firstChild) {
           // Custom functions.
           if (token == 'if') {
@@ -1630,16 +1597,6 @@ Output.prototype = {
                 tree.firstChild.value, node.location || undefined));
             this.append_(buff, '', options);
             ruleStr.writeTokenWithValue(token, tree.firstChild.value);
-          } else if (token == 'countChildren') {
-            var roles = this.createRoles_(tree);
-
-            var count = node.children
-                            .filter(function(e) {
-                              return roles.has(e.role);
-                            })
-                            .length;
-            this.append_(buff, String(count));
-            ruleStr.writeTokenWithValue(token, String(count));
           }
         }
       } else if (prefix == '@') {
