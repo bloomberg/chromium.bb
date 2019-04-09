@@ -19,6 +19,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/events/base_event_utils.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/gfx/animation/animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
@@ -216,7 +218,16 @@ void MenuItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 bool MenuItemView::HandleAccessibleAction(const ui::AXActionData& action_data) {
   if (action_data.action != ax::mojom::Action::kDoDefault)
     return View::HandleAccessibleAction(action_data);
-  GetMenuController()->Accept(this, ui::EF_NONE);
+
+  // kDoDefault in View would simulate a mouse click in the center of this
+  // MenuItemView. However, mouse events for menus are dispatched via
+  // Widget::SetCapture() to the MenuController rather than to MenuItemView, so
+  // there is no effect. VKEY_RETURN provides a better UX anyway, since it will
+  // move focus to a submenu.
+  ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::DomCode::ENTER,
+                     ui::EF_NONE, ui::DomKey::ENTER, ui::EventTimeForNow());
+  GetMenuController()->SetSelection(this, MenuController::SELECTION_DEFAULT);
+  GetMenuController()->OnWillDispatchKeyEvent(&event);
   return true;
 }
 
