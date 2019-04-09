@@ -966,7 +966,7 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 
           La pàgina d'inici és la que s'obre amb el botó Inici. Les pàgines que s'obren en iniciar el navegador les controlen les polítiques RestoreOnStartup.
 
-          El tipus de pàgina d'inici es pot definir per un URL que especifiquis aquí o per la pàgina Pestanya nova. Si selecciones la pàgina Pestanya nova, aquesta política no s'aplicarà.
+          El tipus de pàgina d'inici pot ser un URL que especifiquis aquí o bé la pàgina Pestanya nova. Si selecciones la pàgina Pestanya nova, aquesta política no s'aplicarà.
 
           Si actives aquesta opció de configuració, els usuaris no podran canviar l'URL de la pàgina d'inici a <ph name="PRODUCT_NAME" />, però sí que podran triar la pàgina Pestanya nova com a pàgina d'inici.
 

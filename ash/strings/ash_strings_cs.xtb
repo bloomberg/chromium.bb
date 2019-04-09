@@ -47,7 +47,7 @@
 <translation id="1621499497873603021">Čas zbývající do vybití baterie: <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Zahájit hlasový dotaz</translation>
 <translation id="1658406695958299976">Je nám líto, vaše heslo se stále nedaří ověřit. Poznámka: Pokud jste heslo nedávno změnili, bude nové heslo možné použít až po odhlášení. Zde použijte staré heslo.</translation>
-<translation id="1677472565718498478">Zbývající čas: <ph name="TIME" /></translation>
+<translation id="1677472565718498478">zbývající čas: <ph name="TIME" /></translation>
 <translation id="1698760176351776263">Adresa IPv6: <ph name="ADDRESS" /></translation>
 <translation id="1743570585616704562">Nerozpoznáno</translation>
 <translation id="1746730358044914197">Metody zadávání nastavuje váš administrátor.</translation>

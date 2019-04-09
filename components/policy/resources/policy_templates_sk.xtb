@@ -467,7 +467,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Ak toto nastavenie povolíte, služba ochrany hesla zaznamená digitálny odtlačok hesla na týchto webových adresách na účely rozpoznania opätovného použitia hesla.
       Ak toto nastavenie zakážete alebo nenastavíte, služba ochrany hesla bude zaznamenávať iba digitálne odtlačky hesiel na https://accounts.google.com.
       Toto pravidlo je k dispozícii iba v inštanciách systému Windows, ktoré sú zapojené do domény <ph name="MS_AD_NAME" />, alebo v inštanciách systému Windows 10 Pro alebo Enterprise, ktoré sú zaregistrované do správy zariadení.</translation>
-<translation id="1914840757300882918">Ak je toto pravidlo nastavené, hostiteľ použije certifikát klienta s bežným názvom vydavateľa na overenie adresy RemoteAccessHostTokenValidationUrl. Ak chcete použiť ľubovoľný dostupný certifikát klienta, použite hviezdičku „*“.
+<translation id="1914840757300882918">Ak je toto pravidlo nastavené, hostiteľ použije certifikát klienta s daným názvom vydavateľa na overenie adresy RemoteAccessHostTokenValidationUrl. Ak chcete použiť ľubovoľný dostupný certifikát klienta, použite hviezdičku „*“.
 
           Táto funkcia je momentálne zakázaná na strane servera.</translation>
 <translation id="1919802376548418720">Delegovať poverenia pomocou pravidla KDC.</translation>
@@ -609,7 +609,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
           Od verzie 21 prehliadača <ph name="PRODUCT_NAME" /> je inštalácia rozšírení, aplikácií a skriptov používateľov z iných zdrojov ako Internetového obchodu Chrome náročnejšia. Predtým mohli používatelia kliknúť na odkaz na súbor *.crx a prehliadač <ph name="PRODUCT_NAME" /> im po niekoľkých upozorneniach ponúkol možnosť inštalácie tohto súboru. V prehliadači <ph name="PRODUCT_NAME" /> 21 a novších verziách je potrebné takéto súbory stiahnuť a presunúť na stránku s nastaveniami prehliadača <ph name="PRODUCT_NAME" />. Toto nastavenie umožňuje určitým webovým adresám využiť starší a jednoduchší proces inštalácie.
 
-          Každá položka v tomto zozname predstavuje vzor zodpovedajúci typu rozšírenia (pozrite si https://developer.chrome.com/extensions/match_patterns). Používatelia budú môcť poľahky inštalovať položky z ľubovoľnej webovej adresy, ktorá sa bude zhodovať s položkou v tomto zozname. Pomocou týchto vzorov musíte povoliť umiestnenie súboru *.crx a stránku, na ktorej sa spustí sťahovanie (t. j. sprostredkovateľa).
+          Každá položka v tomto zozname predstavuje vzor zodpovedajúci typu rozšírenia (pozrite si https://developer.chrome.com/extensions/match_patterns). Používatelia budú môcť poľahky inštalovať položky z ľubovoľnej webovej adresy, ktorá bude zodpovedať položke v tomto zozname. Pomocou týchto vzorov musíte povoliť umiestnenie súboru *.crx a stránku, na ktorej sa spustí sťahovanie (t. j. sprostredkovateľa).
 
           <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> má pred týmto pravidlom prednosť. Znamená to, že rozšírenie uvedené v zozname zakázaných položiek sa nenainštaluje ani vtedy, ak pochádza z webu uvedeného v tomto zozname.</translation>
 <translation id="214901426630414675">Obmedziť režim obojstrannej tlače</translation>
@@ -654,7 +654,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
       Ak je pravidlo zakázané, používateľovi sa nikdy nezobrazí výzva a zaznamenávanie videa bude k dispozícii iba pre webové adresy, ktoré sú nakonfigurované v zozname VideoCaptureAllowedUrls.
 
-      Toto pravidlo ovplyvňuje okrem vstavanej webovej kamery aj všetky ostatné výstupy videa.</translation>
+      Toto pravidlo ovplyvňuje okrem vstavanej webovej kamery aj všetky ostatné vstupy videa.</translation>
 <translation id="2201555246697292490">Konfigurácia bielej listiny pre odosielanie natívnych správ</translation>
 <translation id="2204753382813641270">Ovládať automatické skrývanie poličky</translation>
 <translation id="2208976000652006649">Parametre pre webovú adresu vyhľadávania, ktorá používa metódu POST</translation>
@@ -1637,7 +1637,7 @@ Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, k
 
       Ak toto pravidlo nastavíte, používatelia ho nebudú môcť zmeniť ani prepísať.
 
-      Ak toto pravidlo nenastavíte, používatelia si budú môcť vybrať obrázok na pracovnej ploche alebo na pozadí prihlasovacej obrazovky.</translation>
+      Ak toto pravidlo nenastavíte, používatelia si budú môcť vybrať obrázok na pracovnej ploche a na pozadí prihlasovacej obrazovky.</translation>
 <translation id="412697421478384751">Povoliť používateľom nastaviť slabé kódy PIN na uzamknutej obrazovke</translation>
 <translation id="4138655880188755661">Časový limit</translation>
 <translation id="4150201353443180367">Displej</translation>
@@ -2246,13 +2246,13 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 
       Určuje zoznam doplnkov, ktoré používateľ v prehliadači <ph name="PRODUCT_NAME" /> môže povoliť alebo zakázať.
 
-      Zástupnými znakmi „*“ a „?“ je možné nahradiť sekvenciu ľubovoľných znakov. Znak „*“ zodpovedá ľubovoľnému počtu znakov a znak „?“ určuje jeden voliteľný znak, t. j. zodpovedá žiadnemu alebo jednému znaku. Špeciálny znak uvedenia je „\“. Ak chcete, aby znaky „*“ alebo „?“ zodpovedali skutočným znakom, môžete pred ne vložiť znak „\“.
+      Zástupnými znakmi „*“ a „?“ je možné nahradiť sekvenciu ľubovoľných znakov. Znak „*“ zodpovedá ľubovoľnému počtu znakov a znak „?“ určuje jeden voliteľný znak, t. j. zodpovedá žiadnemu alebo jednému znaku. Znak potlačenia významu je „\“. Ak chcete, aby znaky „*“ alebo „?“ zodpovedali skutočným znakom, môžete pred ne vložiť znak „\“.
 
       Ak toto nastavenie povolíte, môže byť v prehliadači <ph name="PRODUCT_NAME" /> použitý špecifikovaný zoznam doplnkov. Používatelia môžu doplnok aktivovať alebo deaktivovať na about:plugins aj v prípade, že doplnok zodpovedá vzoru v zozname DisabledPlugins. Používatelia môžu tiež aktivovať a deaktivovať doplnky, ktoré nezodpovedajú žiadnemu vzoru v zozname DisabledPlugins, DisabledPluginsExceptions alebo EnabledPlugins.
 
       Toto pravidlo má umožniť zakázanie doplnkov tam, kde zoznam DisabledPlugins obsahuje zástupné znaky, ako napríklad deaktivovať všetky doplnky „*“ alebo deaktivovať všetky doplnky Java „*Java*“, avšak správca si želá zachovať určité verzie, napríklad „IcedTea Java 2.3“. Túto konkrétnu verziu je možné určiť v tomto pravidle.
 
-      Upozorňujeme, že je potrebné vylúčiť názov doplnku aj názov skupiny doplnkov. Jednotlivé skupiny doplnkov sa zobrazujú v samostatných častiach na about:plugins a každá časť môže obsahovať jeden alebo viacero doplnkov Doplnok Shockwave Flash napríklad patrí do skupiny Adobe Flash Player. A ak má byť doplnok vylúčený zo zoznamu zakázaných, musia byť v zozname výnimiek uvedené obidva názvy.
+      Upozorňujeme, že je potrebné vylúčiť názov doplnku aj názov skupiny doplnkov. Jednotlivé skupiny doplnkov sa zobrazujú v samostatných častiach na about:plugins a každá časť môže obsahovať jeden alebo viacero doplnkov. Doplnok Shockwave Flash napríklad patrí do skupiny Adobe Flash Player. Ak má byť doplnok vylúčený zo zoznamu zakázaných, musia byť v zozname výnimiek uvedené obidva názvy.
 
       Ak pravidlo nie je nastavené, bude akýkoľvek doplnok, ktorý zodpovedá vzoru v zozname DisabledPlugins, uzamknutý ako deaktivovaný a používatelia ho nebudú môcť aktivovať.</translation>
 <translation id="5499375345075963939">Toto pravidlo je aktívne iba v režime predaja.
@@ -3697,9 +3697,9 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
       Ďalšie podrobnosti o priorite pravidiel získate na https://support.google.com/chrome?p=set_chrome_policies_for_devices
 
       Toto pravidlo je k dispozícii iba v inštanciách systému Windows, ktoré sú zapojené do domény <ph name="MS_AD_NAME" />, alebo v inštanciách systému Windows 10 Pro alebo Enterprise, ktoré sú zaregistrované do správy zariadení.</translation>
-<translation id="8380490658357556620">Povoľuje použitie prenosových serverov, keď sa vzdialení klienti pokúšajú nadviazať spojenie s týmto počítačom.
+<translation id="8380490658357556620">Povoľuje použitie prenosových serverov, keď sa vzdialené klienty pokúšajú nadviazať spojenie s týmto počítačom.
 
-          Ak je toto nastavenie povolené, vzdialení klienti môžu používať prenosové servery na pripojenie k tomuto počítaču v prípade, keď nie je k dispozícii priame pripojenie (napr. z dôvodu obmedzení brány firewall).
+          Ak je toto nastavenie povolené, vzdialené klienty môžu používať prenosové servery na pripojenie k tomuto počítaču v prípade, keď nie je k dispozícii priame pripojenie (napr. z dôvodu obmedzení brány firewall).
 
           Upozorňujeme, že ak je pravidlo <ph name="REMOTE_ACCESS_HOST_FIREWALL_TRAVERSAL_POLICY_NAME" /> zakázané, bude toto pravidlo ignorované.
 
@@ -3998,7 +3998,7 @@ Podpora tohto pravidla bola ukončená vo verzii M69 a používa sa namiesto n
         "type": "object",
         "properties": {
           "url": {
-            "description": "Webová adresa, na ktorej je možné obrázok avatara stiahnuť.",
+            "description": "Webová adresa, z ktorej je možné obrázok avatara stiahnuť.",
             "type": "string"
           },
           "hash": {
@@ -4014,7 +4014,7 @@ Podpora tohto pravidla bola ukončená vo verzii M69 a používa sa namiesto n
 
       Ak pravidlo nenastavíte, používatelia si budú môcť zvoliť obrázok avatara, ktorý ich bude predstavovať na prihlasovacej obrazovke.</translation>
 <translation id="9035964157729712237">ID rozšírení, ktoré majú byť zo zoznamu zakázaných rozšírení vyňaté</translation>
-<translation id="9039822628127365650">Keď je toto pravidlo nastavené, stanovuje časový interval, po uplynutí ktorého bude používateľ automaticky odhlásený a relácia ukončená. O zostávajúcom čase informuje používateľa odpočívanie v oblasti oznámení.
+<translation id="9039822628127365650">Keď je toto pravidlo nastavené, stanovuje časový interval, po uplynutí ktorého bude používateľ automaticky odhlásený a relácia ukončená. O zostávajúcom čase informuje používateľa odpočítavanie v oblasti oznámení.
 
       Keď toto pravidlo nie je nastavené, dĺžka relácie nie je obmedzená.
 
@@ -4032,7 +4032,7 @@ Podpora tohto pravidla bola ukončená vo verzii M69 a používa sa namiesto n
       </translation>
 <translation id="9072600218500597787">Nakonfiguruje požadované názvy domén hostiteľa, ktoré budú použité pre hostiteľov vzdialeného prístupu, a zabráni používateľom ich zmeniť.
 
-          Ak je toto nastavenie povolené, hostitelia sa dajú zdieľať iba pomocou účtov zaregistrovaných pomocou niektorého zo zadaných názvov domén.
+          Ak je toto nastavenie povolené, hostitelia sa dajú zdieľať iba s účtami, zaregistrovanými v niektorej zo zadaných domén.
 
           Ak je toto nastavenie zakázané alebo nie je nastavené, hostitelia sa dajú zdieľať pomocou ľubovoľného účtu.
 
