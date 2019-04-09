@@ -231,10 +231,19 @@ std::unique_ptr<views::Widget> CreateBackgroundWidget(aura::Window* root_window,
   return widget;
 }
 
+wm::WindowTransientDescendantIteratorRange GetVisibleTransientTreeIterator(
+    aura::Window* window) {
+  auto hide_predicate = [](aura::Window* window) {
+    return !window->IsVisible();
+  };
+  return wm::GetTransientTreeIterator(window,
+                                      base::BindRepeating(hide_predicate));
+}
+
 gfx::RectF GetTransformedBounds(aura::Window* transformed_window,
                                 int top_inset) {
   gfx::RectF bounds;
-  for (auto* window : wm::GetTransientTreeIterator(transformed_window)) {
+  for (auto* window : GetVisibleTransientTreeIterator(transformed_window)) {
     // Ignore other window types when computing bounding box of overview target
     // item.
     if (window != transformed_window &&
@@ -264,7 +273,7 @@ gfx::RectF GetTransformedBounds(aura::Window* transformed_window,
 
 gfx::RectF GetTargetBoundsInScreen(aura::Window* window) {
   gfx::RectF bounds;
-  for (auto* window_iter : wm::GetTransientTreeIterator(window)) {
+  for (auto* window_iter : GetVisibleTransientTreeIterator(window)) {
     // Ignore other window types when computing bounding box of overview target
     // item.
     if (window_iter != window &&
@@ -280,7 +289,7 @@ gfx::RectF GetTargetBoundsInScreen(aura::Window* window) {
 
 void SetTransform(aura::Window* window, const gfx::Transform& transform) {
   gfx::PointF target_origin(GetTargetBoundsInScreen(window).origin());
-  for (auto* window_iter : wm::GetTransientTreeIterator(window)) {
+  for (auto* window_iter : GetVisibleTransientTreeIterator(window)) {
     aura::Window* parent_window = window_iter->parent();
     gfx::RectF original_bounds(window_iter->GetTargetBounds());
     ::wm::TranslateRectToScreen(parent_window, &original_bounds);

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/status_bubble_views.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/i18n/rtl.h"
@@ -42,6 +43,13 @@
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
+
+#if defined(OS_CHROMEOS)
+#include "ash/public/cpp/window_properties.h"
+#include "ash/public/interfaces/window_properties.mojom.h"
+#include "services/ws/public/cpp/property_type_converters.h"
+#include "ui/aura/window.h"
+#endif
 
 namespace {
 
@@ -666,11 +674,18 @@ void StatusBubbleViews::InitPopup() {
     params.parent = frame->GetNativeView();
     params.context = frame->GetNativeWindow();
     params.name = "StatusBubble";
+#if defined(OS_CHROMEOS)
+    params.mus_properties[ash::mojom::kHideInOverview_Property] =
+        mojo::ConvertTo<std::vector<uint8_t>>(true);
+#endif
     popup_->Init(params);
     // We do our own animation and don't want any from the system.
     popup_->SetVisibilityChangedAnimationsEnabled(false);
     popup_->SetOpacity(0.f);
     popup_->SetContentsView(view_);
+#if defined(OS_CHROMEOS)
+    popup_->GetNativeWindow()->SetProperty(ash::kHideInOverviewKey, true);
+#endif
     RepositionPopup();
   }
 }

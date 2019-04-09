@@ -5,6 +5,7 @@
 #include "ash/wm/overview/scoped_overview_transform_window.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/window_properties.h"
@@ -179,9 +180,27 @@ ScopedOverviewTransformWindow::ScopedOverviewTransformWindow(
   type_ = GetWindowDimensionsType(window);
   original_event_targeting_policy_ = window_->event_targeting_policy();
   window_->SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy::NONE);
+  window_->SetProperty(kIsShowingInOverviewKey, true);
+
+  // Hide transient children which have been specified to be hidden in overview
+  // mode.
+  std::vector<aura::Window*> transient_children_to_hide;
+  for (auto* transient : wm::GetTransientTreeIterator(window)) {
+    if (transient == window)
+      continue;
+
+    if (transient->GetProperty(kHideInOverviewKey))
+      transient_children_to_hide.push_back(transient);
+  }
+
+  if (!transient_children_to_hide.empty()) {
+    hidden_transient_children_ = std::make_unique<ScopedOverviewHideWindows>(
+        std::move(transient_children_to_hide), /*forced_hidden=*/true);
+  }
 }
 
 ScopedOverviewTransformWindow::~ScopedOverviewTransformWindow() {
+  window_->ClearProperty(ash::kIsShowingInOverviewKey);
   window_->SetEventTargetingPolicy(original_event_targeting_policy_);
   UpdateMask(/*show=*/false);
   StopObservingImplicitAnimations();
@@ -253,7 +272,7 @@ void ScopedOverviewTransformWindow::BeginScopedAnimation(
   if (animation_type == OVERVIEW_ANIMATION_NONE)
     return;
 
-  for (auto* window : wm::GetTransientTreeIterator(GetOverviewWindow())) {
+  for (auto* window : GetVisibleTransientTreeIterator(GetOverviewWindow())) {
     auto settings = std::make_unique<ScopedOverviewAnimationSettings>(
         animation_type, window);
     settings->DeferPaint();
@@ -295,7 +314,7 @@ int ScopedOverviewTransformWindow::GetTopInset() const {
   // Mirror window doesn't have insets.
   if (minimized_widget_)
     return 0;
-  for (auto* window : wm::GetTransientTreeIterator(window_)) {
+  for (auto* window : GetVisibleTransientTreeIterator(window_)) {
     // If there are regular windows in the transient ancestor tree, all those
     // windows are shown in the same overview item and the header is not masked.
     if (window != window_ &&
@@ -311,7 +330,7 @@ void ScopedOverviewTransformWindow::OnWindowDestroyed() {
 }
 
 void ScopedOverviewTransformWindow::SetOpacity(float opacity) {
-  for (auto* window : wm::GetTransientTreeIterator(GetOverviewWindow()))
+  for (auto* window : GetVisibleTransientTreeIterator(GetOverviewWindow()))
     window->layer()->SetOpacity(opacity);
 }
 
@@ -412,7 +431,7 @@ void ScopedOverviewTransformWindow::PrepareForOverview() {
   // enter animation and the whole time during overview mode. For the exit
   // animation of overview mode, we need to add those requests again.
   if (features::IsTrilinearFilteringEnabled()) {
-    for (auto* window : wm::GetTransientTreeIterator(GetOverviewWindow())) {
+    for (auto* window : GetVisibleTransientTreeIterator(GetOverviewWindow())) {
       cached_and_filtered_layer_observers_.push_back(
           std::make_unique<LayerCachingAndFilteringObserver>(window->layer()));
     }

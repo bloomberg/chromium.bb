@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/wm/overview/overview_animation_type.h"
+#include "ash/wm/window_transient_descendant_iterator.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/layer_type.h"
 #include "ui/gfx/geometry/rect.h"
@@ -61,6 +62,11 @@ std::unique_ptr<views::Widget> CreateBackgroundWidget(aura::Window* root_window,
                                                       bool stack_on_top,
                                                       bool accept_events);
 
+// Iterates through all the windows in the transient tree associated with
+// |window| that are visible.
+wm::WindowTransientDescendantIteratorRange GetVisibleTransientTreeIterator(
+    aura::Window* window);
+
 // Calculates the bounds of the |transformed_window|. Those bounds are a union
 // of all regular (normal and panel) windows in the |transformed_window|'s
 // transient hierarchy. The returned Rect is in virtual screen coordinates. The
@@ -76,7 +82,8 @@ gfx::RectF GetTargetBoundsInScreen(aura::Window* window);
 // Applies the |transform| to |window| and all of its transient children. Note
 // |transform| is the transform that is applied to |window| and needs to be
 // adjusted for the transient child windows.
-void SetTransform(aura::Window* window, const gfx::Transform& transform);
+ASH_EXPORT void SetTransform(aura::Window* window,
+                             const gfx::Transform& transform);
 
 // Checks if we are currently in sliding up on the shelf to hide overview mode.
 bool IsSlidingOutOverviewFromShelf();
