@@ -288,7 +288,6 @@ SkFilterQuality GetFilterQuality(const DrawQuad* quad) {
       // Other quad types do not expose filter quality, so default to bilinear
       // TODO(penghuang): figure out how to set correct filter quality for YUV
       // and video stream quads.
-      // TODO(michaelludwig): use kMedium for RPDQs that ask for mipmaps
       nearest_neighbor = false;
       break;
   }
@@ -313,34 +312,42 @@ sk_sp<SkColorFilter> MakeOpacityFilter(float alpha, sk_sp<SkColorFilter> in) {
 
 }  // namespace
 
-// Parameters needed to draw a RenderPassDrawQuad.
-struct SkiaRenderer::DrawRenderPassDrawQuadParams {
-  // The "in" parameters that will be used when apply filters.
-  const cc::FilterOperations* filters = nullptr;
+// chrome style prevents this from going in skia_renderer.h, but since it
+// uses base::Optional, the style also requires it to have a declared ctor
+SkiaRenderer::BatchedQuadState::BatchedQuadState() = default;
 
-  // The "out" parameters returned by CalculateRPDQParams.
+// Parameters needed to draw a RenderPassDrawQuad.
+struct SkiaRenderer::DrawRPDQParams {
+  explicit DrawRPDQParams(const gfx::RectF& visible_rect);
+
   // Root of the calculated image filter DAG to be applied to the render pass.
-  sk_sp<SkImageFilter> image_filter;
-  // Non-null |color_filter| should be applied when render pass is drawn. It is
-  // a portion of the image filter DAG that was separated out because direct
-  // color filter drawing is much faster than a colorFilterImageFilter drawing.
-  // TODO(skbug.com/8700): Delete this after Skia side implementation is done.
-  sk_sp<SkColorFilter> color_filter;
+  sk_sp<SkImageFilter> image_filter = nullptr;
+  // Root of the calculated backdrop filter DAG to be applied to the render pass
+  sk_sp<SkImageFilter> backdrop_filter = nullptr;
+  // Resolved mask image and calculated transform matrix
+  sk_sp<SkImage> mask_image = nullptr;
+  SkMatrix mask_to_quad_matrix;
+  // Backdrop border box for the render pass, to clip backdrop-filtered content
+  base::Optional<gfx::RRectF> backdrop_filter_bounds;
+  // The content space bounds that includes any filtered extents. If empty,
+  // the draw can be skipped.
+  gfx::Rect filter_bounds;
 };
+
+SkiaRenderer::DrawRPDQParams::DrawRPDQParams(const gfx::RectF& visible_rect)
+    : filter_bounds(gfx::ToEnclosingRect(visible_rect)) {}
 
 // State calculated from a DrawQuad and current renderer state, that is common
 // to all DrawQuad rendering.
 struct SkiaRenderer::DrawQuadParams {
   DrawQuadParams() = default;
   DrawQuadParams(const gfx::Transform& cdt,
-                 const gfx::RectF visible_rect,
+                 const gfx::RectF& visible_rect,
                  unsigned aa_flags,
                  SkBlendMode blend_mode,
                  float opacity,
                  SkFilterQuality filter_quality,
-                 const gfx::QuadF* draw_region,
-                 bool enable_scissor_rect,
-                 const gfx::RRectF* rounded_corner_bounds);
+                 const gfx::QuadF* draw_region);
 
   // window_matrix * projection_matrix * quad_to_target_transform
   gfx::Transform content_device_transform;
@@ -358,12 +365,12 @@ struct SkiaRenderer::DrawQuadParams {
   // Optional restricted draw geometry, will point to a length 4 SkPoint array
   // with its points in CW order matching Skia's vertex/edge expectations.
   base::Optional<SkDrawRegion> draw_region;
-  // True if renderer's scissor_rect_ should be used as a clipRect on the
-  // canvas. Is false if is_scissor_enabled_ is false or the scissor was
-  // explicitly applied to the visible geometry already.
-  bool has_scissor_rect;
-  // The rounded corner clip to be applied. This is in target space.
-  const gfx::RRectF* rounded_corner_bounds;
+  // Optional rounded corner clip to apply. If present, it will have been
+  // transformed to device space and ShouldApplyRoundedCorner returns true.
+  base::Optional<gfx::RRectF> rounded_corner_bounds;
+  // Optional device space clip to apply. If present, it is equal to the current
+  // |scissor_rect_| of the renderer.
+  base::Optional<gfx::Rect> scissor_rect;
 
   SkPaint paint() const {
     SkPaint p;
@@ -375,24 +382,19 @@ struct SkiaRenderer::DrawQuadParams {
   }
 };
 
-SkiaRenderer::DrawQuadParams::DrawQuadParams(
-    const gfx::Transform& cdt,
-    const gfx::RectF visible_rect,
-    unsigned aa_flags,
-    SkBlendMode blend_mode,
-    float opacity,
-    SkFilterQuality filter_quality,
-    const gfx::QuadF* draw_region,
-    bool has_scissor_rect,
-    const gfx::RRectF* rounded_corner_bounds)
+SkiaRenderer::DrawQuadParams::DrawQuadParams(const gfx::Transform& cdt,
+                                             const gfx::RectF& visible_rect,
+                                             unsigned aa_flags,
+                                             SkBlendMode blend_mode,
+                                             float opacity,
+                                             SkFilterQuality filter_quality,
+                                             const gfx::QuadF* draw_region)
     : content_device_transform(cdt),
       visible_rect(visible_rect),
       aa_flags(aa_flags),
       blend_mode(blend_mode),
       opacity(opacity),
-      filter_quality(filter_quality),
-      has_scissor_rect(has_scissor_rect),
-      rounded_corner_bounds(rounded_corner_bounds) {
+      filter_quality(filter_quality) {
   if (draw_region) {
     this->draw_region.emplace(*draw_region);
   }
@@ -778,14 +780,15 @@ void SkiaRenderer::DoDrawQuad(const DrawQuad* quad,
     FlushBatchedQuads();
   }
 
-  // TODO(michaelludwig): By the end of the Skia API update, this switch will
-  // hold all quad draw types and resemble the old DoDrawSingleQuad.
   switch (quad->material) {
     case DrawQuad::DEBUG_BORDER:
       DrawDebugBorderQuad(DebugBorderDrawQuad::MaterialCast(quad), params);
       break;
     case DrawQuad::PICTURE_CONTENT:
       DrawPictureQuad(PictureDrawQuad::MaterialCast(quad), params);
+      break;
+    case DrawQuad::RENDER_PASS:
+      DrawRenderPassQuad(RenderPassDrawQuad::MaterialCast(quad), params);
       break;
     case DrawQuad::SOLID_COLOR:
       DrawSolidColorQuad(SolidColorDrawQuad::MaterialCast(quad), params);
@@ -816,26 +819,28 @@ void SkiaRenderer::DoDrawQuad(const DrawQuad* quad,
       DrawUnsupportedQuad(quad, params);
       break;
     default:
-      // If we've reached here, the quad's type hasn't been updated to be
-      // batch aware yet.
-      DoSingleDrawQuad(quad, draw_region, params);
+      // If we've reached here, it's a new quad type that needs a
+      // dedicated implementation
+      DrawUnsupportedQuad(quad, params);
+      NOTREACHED();
       break;
   }
 }
 
-void SkiaRenderer::PrepareCanvas(const gfx::Rect* scissor_rect,
-                                 const gfx::RRectF* rounded_corner_bounds,
-                                 const gfx::Transform* cdt) {
+void SkiaRenderer::PrepareCanvas(
+    const base::Optional<gfx::Rect>& scissor_rect,
+    const base::Optional<gfx::RRectF>& rounded_corner_bounds,
+    const gfx::Transform* cdt) {
   // Scissor is applied in the device space (CTM == I) and since no changes
   // to the canvas persist, CTM should already be the identity
   DCHECK(current_canvas_->getTotalMatrix() == SkMatrix::I());
 
-  if (scissor_rect) {
+  if (scissor_rect.has_value()) {
     current_canvas_->clipRect(gfx::RectToSkRect(*scissor_rect));
   }
 
-  if (rounded_corner_bounds && !rounded_corner_bounds->IsEmpty())
-    current_canvas_->clipRRect(SkRRect(*rounded_corner_bounds), true);
+  if (rounded_corner_bounds.has_value())
+    current_canvas_->clipRRect(SkRRect(*rounded_corner_bounds), true /* AA */);
 
   if (cdt) {
     SkMatrix m;
@@ -847,13 +852,13 @@ void SkiaRenderer::PrepareCanvas(const gfx::Rect* scissor_rect,
 SkiaRenderer::DrawQuadParams SkiaRenderer::CalculateDrawQuadParams(
     const DrawQuad* quad,
     const gfx::QuadF* draw_region) {
+  gfx::Transform target_to_device =
+      current_frame()->window_matrix * current_frame()->projection_matrix;
   DrawQuadParams params(
-      current_frame()->window_matrix * current_frame()->projection_matrix *
-          quad->shared_quad_state->quad_to_target_transform,
+      target_to_device * quad->shared_quad_state->quad_to_target_transform,
       gfx::RectF(quad->visible_rect), SkCanvas::kNone_QuadAAFlags,
       quad->shared_quad_state->blend_mode, quad->shared_quad_state->opacity,
-      GetFilterQuality(quad), draw_region, is_scissor_enabled_,
-      &quad->shared_quad_state->rounded_corner_bounds);
+      GetFilterQuality(quad), draw_region);
 
   params.content_device_transform.FlattenTo2d();
 
@@ -889,12 +894,34 @@ SkiaRenderer::DrawQuadParams SkiaRenderer::CalculateDrawQuadParams(
 
   // Applying the scissor explicitly means avoiding a clipRect() call and
   // allows more quads to be batched together in a DrawEdgeAAImageSet call
-  if (is_scissor_enabled_ &&
-      CanExplicitlyScissor(quad, draw_region,
-                           params.content_device_transform)) {
-    ApplyExplicitScissor(quad, scissor_rect_, params.content_device_transform,
-                         &params.aa_flags, &params.visible_rect);
-    params.has_scissor_rect = false;
+  if (is_scissor_enabled_) {
+    if (CanExplicitlyScissor(quad, draw_region,
+                             params.content_device_transform)) {
+      ApplyExplicitScissor(quad, scissor_rect_, params.content_device_transform,
+                           &params.aa_flags, &params.visible_rect);
+    } else {
+      params.scissor_rect = scissor_rect_;
+    }
+  }
+
+  // Determine final rounded rect clip geometry. We transform it from target
+  // space to window space to make batching and canvas preparation easier
+  // (otherwise we'd have to separate those two matrices in the CDT).
+  if (ShouldApplyRoundedCorner(quad)) {
+    // Transform by the window and projection matrix to go from target to
+    // device space, which should always be a scale+translate.
+    SkRRect corner_bounds =
+        SkRRect(quad->shared_quad_state->rounded_corner_bounds);
+    SkMatrix to_device;
+    gfx::TransformToFlattenedSkMatrix(target_to_device, &to_device);
+
+    SkRRect device_bounds;
+    bool success = corner_bounds.transform(to_device, &device_bounds);
+    // Since to_device should just be scale+translate, transform always succeeds
+    DCHECK(success);
+    if (!device_bounds.isEmpty()) {
+      params.rounded_corner_bounds.emplace(device_bounds);
+    }
   }
 
   return params;
@@ -917,9 +944,8 @@ bool SkiaRenderer::MustFlushBatchedQuads(const DrawQuad* new_quad,
   if (batched_quads_.empty())
     return false;
 
-  // TODO(michaelludwig) - Once other quad types are migrated from
-  // DoDrawQuadLegacy, this check will be widened
-  if (new_quad->material != DrawQuad::STREAM_VIDEO_CONTENT &&
+  if (new_quad->material != DrawQuad::RENDER_PASS &&
+      new_quad->material != DrawQuad::STREAM_VIDEO_CONTENT &&
       new_quad->material != DrawQuad::TEXTURE_CONTENT &&
       new_quad->material != DrawQuad::TILED_CONTENT)
     return true;
@@ -928,19 +954,12 @@ bool SkiaRenderer::MustFlushBatchedQuads(const DrawQuad* new_quad,
       batched_quad_state_.filter_quality != params.filter_quality)
     return true;
 
-  bool no_scissor =
-      !batched_quad_state_.has_scissor_rect && !params.has_scissor_rect;
-  bool same_scissor = batched_quad_state_.has_scissor_rect &&
-                      params.has_scissor_rect &&
-                      batched_quad_state_.scissor_rect == scissor_rect_;
-
-  if (!no_scissor && !same_scissor)
+  if (batched_quad_state_.scissor_rect != params.scissor_rect) {
     return true;
+  }
 
-  if (batched_quad_state_.rounded_corner_bounds &&
-      params.rounded_corner_bounds &&
-      *batched_quad_state_.rounded_corner_bounds !=
-          *params.rounded_corner_bounds) {
+  if (batched_quad_state_.rounded_corner_bounds !=
+      params.rounded_corner_bounds) {
     return true;
   }
 
@@ -952,16 +971,10 @@ void SkiaRenderer::AddQuadToBatch(const DrawQuadParams& params,
                                   const gfx::RectF& tex_coords) {
   // Configure batch state if it's the first
   if (batched_quads_.empty()) {
-    if (params.has_scissor_rect) {
-      batched_quad_state_.scissor_rect = scissor_rect_;
-      batched_quad_state_.has_scissor_rect = true;
-    } else {
-      batched_quad_state_.has_scissor_rect = false;
-    }
-
+    batched_quad_state_.scissor_rect = params.scissor_rect;
+    batched_quad_state_.rounded_corner_bounds = params.rounded_corner_bounds;
     batched_quad_state_.blend_mode = params.blend_mode;
     batched_quad_state_.filter_quality = params.filter_quality;
-    batched_quad_state_.rounded_corner_bounds = params.rounded_corner_bounds;
   }
 
   // Add entry, with optional clip quad and shared transform
@@ -986,9 +999,7 @@ void SkiaRenderer::FlushBatchedQuads() {
   TRACE_EVENT0("viz", "SkiaRenderer::FlushBatchedQuads");
 
   SkAutoCanvasRestore acr(current_canvas_, true /* do_save */);
-  PrepareCanvas(batched_quad_state_.has_scissor_rect
-                    ? &batched_quad_state_.scissor_rect
-                    : nullptr,
+  PrepareCanvas(batched_quad_state_.scissor_rect,
                 batched_quad_state_.rounded_corner_bounds, nullptr);
 
   SkPaint paint;
@@ -1009,8 +1020,8 @@ void SkiaRenderer::DrawColoredQuad(const DrawQuadParams& params,
   TRACE_EVENT0("viz", "SkiaRenderer::DrawColoredQuad");
 
   SkAutoCanvasRestore acr(current_canvas_, true /* do_save */);
-  PrepareCanvas(params.has_scissor_rect ? &scissor_rect_ : nullptr,
-                params.rounded_corner_bounds, &params.content_device_transform);
+  PrepareCanvas(params.scissor_rect, params.rounded_corner_bounds,
+                &params.content_device_transform);
 
   color = SkColorSetA(color, params.opacity * SkColorGetA(color));
   const SkPoint* draw_region =
@@ -1029,8 +1040,8 @@ void SkiaRenderer::DrawSingleImage(const DrawQuadParams& params,
   TRACE_EVENT0("viz", "SkiaRenderer::DrawSingleImage");
 
   SkAutoCanvasRestore acr(current_canvas_, true /* do_save */);
-  PrepareCanvas(params.has_scissor_rect ? &scissor_rect_ : nullptr,
-                params.rounded_corner_bounds, &params.content_device_transform);
+  PrepareCanvas(params.scissor_rect, params.rounded_corner_bounds,
+                &params.content_device_transform);
   // Use -1 for matrix index since the cdt is set on the canvas.
   // Assume params.opacity has been somehow handled in the SkPaint
   // (setAlphaf, color filter, image filter node, etc.).
@@ -1048,8 +1059,7 @@ void SkiaRenderer::DrawDebugBorderQuad(const DebugBorderDrawQuad* quad,
 
   SkAutoCanvasRestore acr(current_canvas_, true /* do_save */);
   // We need to apply the matrix manually to have pixel-sized stroke width.
-  PrepareCanvas(params.has_scissor_rect ? &scissor_rect_ : nullptr, nullptr,
-                nullptr);
+  PrepareCanvas(params.scissor_rect, params.rounded_corner_bounds, nullptr);
   SkMatrix cdt;
   gfx::TransformToFlattenedSkMatrix(params.content_device_transform, &cdt);
 
@@ -1085,8 +1095,8 @@ void SkiaRenderer::DrawPictureQuad(const PictureDrawQuad* quad,
       params.filter_quality == kNone_SkFilterQuality;
 
   SkAutoCanvasRestore acr(current_canvas_, true /* do_save */);
-  PrepareCanvas(params.has_scissor_rect ? &scissor_rect_ : nullptr,
-                params.rounded_corner_bounds, &params.content_device_transform);
+  PrepareCanvas(params.scissor_rect, params.rounded_corner_bounds,
+                &params.content_device_transform);
 
   // Unlike other quads which draw visible_rect or draw_region as their geometry
   // these represent the valid windows of content to show for the display list,
@@ -1324,99 +1334,6 @@ void SkiaRenderer::DrawUnsupportedQuad(const DrawQuad* quad,
 #endif
 }
 
-void SkiaRenderer::DoSingleDrawQuad(const DrawQuad* quad,
-                                    const gfx::QuadF* draw_region,
-                                    const DrawQuadParams& params) {
-  base::Optional<SkAutoCanvasRestore> auto_canvas_restore;
-  const gfx::Rect* scissor_rect =
-      is_scissor_enabled_ ? &scissor_rect_ : nullptr;
-  const gfx::RRectF* rounded_corner_bounds =
-      ShouldApplyRoundedCorner(quad)
-          ? &quad->shared_quad_state->rounded_corner_bounds
-          : nullptr;
-  PrepareCanvasForDrawQuads(quad->shared_quad_state->quad_to_target_transform,
-                            draw_region, scissor_rect, rounded_corner_bounds,
-                            &auto_canvas_restore);
-
-  SkPaint paint = params.paint();
-
-  switch (quad->material) {
-    case DrawQuad::DEBUG_BORDER:
-      NOTREACHED();
-      break;
-    case DrawQuad::PICTURE_CONTENT:
-      NOTREACHED();
-      break;
-    case DrawQuad::RENDER_PASS:
-      DrawRenderPassQuad(RenderPassDrawQuad::MaterialCast(quad), &paint);
-      break;
-    case DrawQuad::SOLID_COLOR:
-      NOTREACHED();
-      break;
-    case DrawQuad::TEXTURE_CONTENT:
-      NOTREACHED();
-      break;
-    case DrawQuad::TILED_CONTENT:
-      NOTREACHED();
-      break;
-    case DrawQuad::SURFACE_CONTENT:
-      // Surface content should be fully resolved to other quad types before
-      // reaching a direct renderer.
-      NOTREACHED();
-      break;
-    case DrawQuad::YUV_VIDEO_CONTENT:
-      NOTREACHED();
-      break;
-    case DrawQuad::STREAM_VIDEO_CONTENT:
-      NOTREACHED();
-      break;
-    case DrawQuad::INVALID:
-    case DrawQuad::VIDEO_HOLE:
-      NOTREACHED();
-      break;
-  }
-
-  current_canvas_->resetMatrix();
-}
-
-void SkiaRenderer::PrepareCanvasForDrawQuads(
-    gfx::Transform quad_to_target_transform,
-    const gfx::QuadF* draw_region,
-    const gfx::Rect* scissor_rect,
-    const gfx::RRectF* rounded_corner_bounds,
-    base::Optional<SkAutoCanvasRestore>* auto_canvas_restore) {
-  gfx::Transform screen_transform =
-      current_frame()->window_matrix * current_frame()->projection_matrix;
-  screen_transform.FlattenTo2d();
-  if (draw_region || scissor_rect || rounded_corner_bounds) {
-    auto_canvas_restore->emplace(current_canvas_, true /* do_save */);
-    if (scissor_rect)
-      current_canvas_->clipRect(gfx::RectToSkRect(*scissor_rect));
-    if (rounded_corner_bounds) {
-      SkRRect result;
-      if (SkRRect(*rounded_corner_bounds)
-              .transform(screen_transform.matrix(), &result)) {
-        current_canvas_->clipRRect(result, true);
-      }
-    }
-  }
-  gfx::Transform contents_device_transform =
-      screen_transform * quad_to_target_transform;
-  contents_device_transform.FlattenTo2d();
-  SkMatrix sk_device_matrix;
-  gfx::TransformToFlattenedSkMatrix(contents_device_transform,
-                                    &sk_device_matrix);
-  current_canvas_->setMatrix(sk_device_matrix);
-
-  if (draw_region) {
-    SkPath draw_region_clip_path;
-    SkPoint clip_points[4];
-    QuadFToSkPoints(*draw_region, clip_points);
-    draw_region_clip_path.addPoly(clip_points, 4, true);
-    current_canvas_->clipPath(draw_region_clip_path);
-  }
-}
-
 sk_sp<SkColorFilter> SkiaRenderer::GetColorFilter(const gfx::ColorSpace& src,
                                                   const gfx::ColorSpace& dst,
                                                   float resource_offset,
@@ -1463,71 +1380,132 @@ void main(inout half4 color) {
   return color_filter;
 }
 
-bool SkiaRenderer::CalculateRPDQParams(sk_sp<SkImage> content,
-                                       const RenderPassDrawQuad* quad,
-                                       DrawRenderPassDrawQuadParams* params) {
-  if (!params->filters)
-    return true;
+SkiaRenderer::DrawRPDQParams SkiaRenderer::CalculateRPDQParams(
+    const SkImage* content,
+    const RenderPassDrawQuad* quad,
+    const DrawQuadParams& params) {
+  DrawRPDQParams rpdq_params(params.visible_rect);
 
-  DCHECK(!params->filters->IsEmpty());
-  auto paint_filter = cc::RenderSurfaceFilters::BuildImageFilter(
-      *params->filters, gfx::SizeF(content->width(), content->height()));
-  auto filter = paint_filter ? paint_filter->cached_sk_filter_ : nullptr;
+  // Prepare mask.
+  ScopedSkImageBuilder mask_image_builder(this, quad->mask_resource_id());
+  const SkImage* mask_image = mask_image_builder.sk_image();
+  DCHECK_EQ(!!quad->mask_resource_id(), !!mask_image);
+  if (mask_image) {
+    rpdq_params.mask_image = sk_ref_sp(mask_image);
 
-  // If the first imageFilter is a colorFilterImageFilter, pull it off and store
-  // it to be used later. Fall through to allow the remainder of the DAG (if
-  // any) to be applied. Applying the colorFilter as part of the final draw is
-  // much more efficient than applying it as a colorFilterImageFilter. This
-  // optimization would be covered by skbug.com/8700. Delete color_filter
-  // related code after Skia side implementation is done.
-  if (filter) {
-    SkColorFilter* colorfilter_rawptr = nullptr;
-    filter->asColorFilter(&colorfilter_rawptr);
-    sk_sp<SkColorFilter> color_filter(colorfilter_rawptr);
+    // Scale normalized uv rect into absolute texel coordinates.
+    SkRect mask_rect = gfx::RectFToSkRect(
+        gfx::ScaleRect(quad->mask_uv_rect, quad->mask_texture_size.width(),
+                       quad->mask_texture_size.height()));
+    // Map to full quad rect so that mask coordinates don't change with clipping
+    rpdq_params.mask_to_quad_matrix = SkMatrix::MakeRectToRect(
+        mask_rect, gfx::RectToSkRect(quad->rect), SkMatrix::kFill_ScaleToFit);
+  }
 
-    if (color_filter) {
-      params->color_filter = color_filter;
-      filter = sk_ref_sp(filter->getInput(0));
+  const cc::FilterOperations* filters = FiltersForPass(quad->render_pass_id);
+  const cc::FilterOperations* backdrop_filters =
+      BackdropFiltersForPass(quad->render_pass_id);
+  // Early out if there are no filters to convert to SkImageFilters
+  if (!filters && !backdrop_filters) {
+    return rpdq_params;
+  }
+
+  // Calculate local matrix that's shared by filters and backdrop_filters
+  SkMatrix local_matrix;
+  local_matrix.setTranslate(quad->filters_origin.x(), quad->filters_origin.y());
+  local_matrix.postScale(quad->filters_scale.x(), quad->filters_scale.y());
+
+  gfx::SizeF filter_size(content->width(), content->height());
+
+  // Convert CC image filters into a SkImageFilter root node
+  if (filters) {
+    DCHECK(!filters->IsEmpty());
+    auto paint_filter =
+        cc::RenderSurfaceFilters::BuildImageFilter(*filters, filter_size);
+    auto sk_filter = paint_filter ? paint_filter->cached_sk_filter_ : nullptr;
+
+    if (sk_filter) {
+      if (params.opacity != 1.f) {
+        // Apply opacity as the last step of image filter so it is uniform
+        // across any overlapping content produced by the image filters.
+        sk_sp<SkColorFilter> cf = MakeOpacityFilter(params.opacity, nullptr);
+        sk_filter = SkColorFilterImageFilter::Make(std::move(cf), sk_filter);
+      }
+
+      // Update the filter bounds based to account for how the image filters
+      // grow or expand the area touched by drawing.
+      rpdq_params.filter_bounds =
+          filters->MapRect(rpdq_params.filter_bounds, local_matrix);
+
+      // If after applying the filter we would be clipped out, skip the draw.
+      gfx::Rect clip_rect = quad->shared_quad_state->clip_rect;
+      if (clip_rect.IsEmpty()) {
+        clip_rect = current_draw_rect_;
+      }
+      const gfx::Transform& transform =
+          quad->shared_quad_state->quad_to_target_transform;
+      gfx::QuadF clip_quad = gfx::QuadF(gfx::RectF(clip_rect));
+      gfx::QuadF local_clip =
+          cc::MathUtil::InverseMapQuadToLocalSpace(transform, clip_quad);
+
+      rpdq_params.filter_bounds.Intersect(
+          gfx::ToEnclosingRect(local_clip.BoundingBox()));
+      // If we've been fully clipped out (by crop rect or clipping), there's
+      // nothing to draw.
+      if (rpdq_params.filter_bounds.IsEmpty()) {
+        return rpdq_params;
+      }
+
+      rpdq_params.image_filter = sk_filter->makeWithLocalMatrix(local_matrix);
     }
   }
 
-  // If we need to apply filter, apply opacity as the last step of image filter
-  // so it is uniform across.
-  if (filter && quad->shared_quad_state->opacity != 1.f) {
-    sk_sp<SkColorFilter> cf =
-        MakeOpacityFilter(quad->shared_quad_state->opacity, nullptr);
-    filter = SkColorFilterImageFilter::Make(cf, filter);
-  }
+  // Convert CC image filters for the backdrop into a SkImageFilter root node
+  if (backdrop_filters) {
+    DCHECK(!backdrop_filters->IsEmpty());
+    auto paint_filter = cc::RenderSurfaceFilters::BuildImageFilter(
+        *backdrop_filters, filter_size);
+    auto sk_backdrop_filter =
+        paint_filter ? paint_filter->cached_sk_filter_ : nullptr;
 
-  // If after applying the filter we would be clipped out, skip the draw.
-  if (filter) {
-    gfx::Rect clip_rect = quad->shared_quad_state->clip_rect;
-    if (clip_rect.IsEmpty()) {
-      clip_rect = current_draw_rect_;
+    if (sk_backdrop_filter) {
+      SkMatrix content_to_dest = SkMatrix::MakeRectToRect(
+          gfx::RectFToSkRect(quad->tex_coord_rect),
+          gfx::RectToSkRect(quad->rect), SkMatrix::kFill_ScaleToFit);
+      content_to_dest.preConcat(local_matrix);
+      rpdq_params.backdrop_filter =
+          sk_backdrop_filter->makeWithLocalMatrix(content_to_dest);
     }
-    gfx::Transform transform =
-        quad->shared_quad_state->quad_to_target_transform;
-    gfx::QuadF clip_quad = gfx::QuadF(gfx::RectF(clip_rect));
-    gfx::QuadF local_clip =
-        cc::MathUtil::InverseMapQuadToLocalSpace(transform, clip_quad);
-
-    SkMatrix local_matrix;
-    local_matrix.setTranslate(quad->filters_origin.x(),
-                              quad->filters_origin.y());
-    local_matrix.postScale(quad->filters_scale.x(), quad->filters_scale.y());
-    gfx::RectF dst_rect(params->filters
-                            ? params->filters->MapRect(quad->rect, local_matrix)
-                            : quad->rect);
-
-    dst_rect.Intersect(local_clip.BoundingBox());
-    // If we've been fully clipped out (by crop rect or clipping), there's
-    // nothing to draw.
-    if (dst_rect.IsEmpty())
-      return false;
-
-    params->image_filter = filter->makeWithLocalMatrix(local_matrix);
   }
-  return true;
+
+  // Determine if the backdrop filter has its own clip (which only needs to be
+  // checked when we have a backdrop filter to apply)
+  if (rpdq_params.backdrop_filter) {
+    const gfx::RRectF* backdrop_filter_bounds =
+        BackdropFilterBoundsForPass(quad->render_pass_id);
+    if (backdrop_filter_bounds) {
+      // Map this into the same coordinate system as the quad. It is almost
+      // there, barring the offset, which is equal to the difference in origins
+      // between the quad->rect and the render pass' output rect.
+      // (See gl_renderer::GetBackdropBoundingBoxForRenderPassQuad)
+      rpdq_params.backdrop_filter_bounds = *backdrop_filter_bounds;
+      rpdq_params.backdrop_filter_bounds->Offset(
+          quad->rect.origin() -
+          current_frame()->current_render_pass->output_rect.origin());
+
+      // If there are also regular image filters, they apply to the area of
+      // the backdrop_filter_bounds too, so expand the backdrop bounds and join
+      // it with the main filter bounds.
+      if (rpdq_params.image_filter) {
+        gfx::Rect backdrop_rect =
+            gfx::ToEnclosingRect(rpdq_params.backdrop_filter_bounds->rect());
+        rpdq_params.filter_bounds.Union(
+            filters->MapRect(backdrop_rect, local_matrix));
+      }
+    }
+  }
+
+  return rpdq_params;
 }
 
 const TileDrawQuad* SkiaRenderer::CanPassBeDrawnDirectly(
@@ -1536,8 +1514,7 @@ const TileDrawQuad* SkiaRenderer::CanPassBeDrawnDirectly(
 }
 
 void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
-                                      SkPaint* paint) {
-  DCHECK(paint);
+                                      const DrawQuadParams& params) {
   auto bypass = render_pass_bypass_quads_.find(quad->render_pass_id);
   // When Render Pass has a single quad inside we would draw that directly.
   if (bypass != render_pass_bypass_quads_.end()) {
@@ -1546,8 +1523,8 @@ void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
                                  tile_quad->is_premultiplied
                                      ? kPremul_SkAlphaType
                                      : kUnpremul_SkAlphaType);
-    sk_sp<SkImage> content_image = sk_ref_sp(builder.sk_image());
-    DrawRenderPassQuadInternal(quad, content_image, paint);
+    DrawRenderPassQuadInternal(quad, params, builder.sk_image(),
+                               false /* mipmap */);
   } else {
     auto iter = render_pass_backings_.find(quad->render_pass_id);
     DCHECK(render_pass_backings_.end() != iter);
@@ -1573,122 +1550,128 @@ void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
       }
     }
 
-    // Currently the only trigger for generate_mipmap for render pass is
-    // trilinear filtering. It only affects GPU backed implementations and thus
-    // requires medium filter quality level.
-    if (backing.generate_mipmap)
-      paint->setFilterQuality(kMedium_SkFilterQuality);
-    DrawRenderPassQuadInternal(quad, content_image, paint);
+    DrawRenderPassQuadInternal(quad, params, content_image.get(),
+                               backing.generate_mipmap);
   }
 }
 
 void SkiaRenderer::DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
-                                              sk_sp<SkImage> content_image,
-                                              SkPaint* paint) {
-  DCHECK(paint);
-  DrawRenderPassDrawQuadParams params;
-  params.filters = FiltersForPass(quad->render_pass_id);
-  bool can_draw = CalculateRPDQParams(content_image, quad, &params);
-
-  if (!can_draw)
+                                              const DrawQuadParams& params,
+                                              const SkImage* content_image,
+                                              bool needs_mipmap) {
+  DrawRPDQParams rpdq_params = CalculateRPDQParams(content_image, quad, params);
+  if (rpdq_params.filter_bounds.IsEmpty())
     return;
 
-  // Add color filter.
-  if (params.color_filter)
-    paint->setColorFilter(params.color_filter);
-  // Add image filter.
-  if (params.image_filter)
-    paint->setImageFilter(params.image_filter);
-
-  // If this render pass has filter, reset paint to opaque. Render Pass should
-  // apply their opacity as last step, this is done by using a color filter.
-  // This is required for reflector filter.
-  if (params.image_filter)
-    paint->setAlpha(255);
-
-  SkRect content_rect = RectFToSkRect(quad->tex_coord_rect);
-  SkRect dest_visible_rect = gfx::RectToSkRect(quad->visible_rect);
-
-  // Prepare mask.
-  ScopedSkImageBuilder mask_image_builder(this, quad->mask_resource_id());
-  const SkImage* mask_image = mask_image_builder.sk_image();
-  DCHECK_EQ(!!quad->mask_resource_id(), !!mask_image);
-  SkMatrix mask_to_dest_matrix;
-  sk_sp<SkMaskFilter> mask_filter;
-  if (mask_image) {
-    // Scale normalized uv rect into absolute texel coordinates.
-    SkRect mask_rect = gfx::RectFToSkRect(
-        gfx::ScaleRect(quad->mask_uv_rect, quad->mask_texture_size.width(),
-                       quad->mask_texture_size.height()));
-    mask_to_dest_matrix.setRectToRect(mask_rect, gfx::RectToSkRect(quad->rect),
-                                      SkMatrix::kFill_ScaleToFit);
-    mask_filter =
-        SkShaderMaskFilter::Make(mask_image->makeShader(&mask_to_dest_matrix));
-    DCHECK(mask_filter);
-  }
-
-  const cc::FilterOperations* backdrop_filters =
-      BackdropFiltersForPass(quad->render_pass_id);
-  // Without backdrop effect.
-  if (!ShouldApplyBackdropFilters(backdrop_filters)) {
-    if (mask_filter)
-      paint->setMaskFilter(mask_filter);
-
-    // Draw now that all the filters are set up correctly.
-    current_canvas_->drawImageRect(content_image, content_rect,
-                                   dest_visible_rect, paint);
+  gfx::RectF vis_tex_coords = cc::MathUtil::ScaleRectProportional(
+      quad->tex_coord_rect, gfx::RectF(quad->rect), params.visible_rect);
+  if (!needs_mipmap && !rpdq_params.image_filter &&
+      !rpdq_params.backdrop_filter && !rpdq_params.mask_image) {
+    // We've checked enough to know that this is a plain textured draw that
+    // is compatible with any batched images, so preserve that
+    DCHECK(!MustFlushBatchedQuads(quad, params));
+    AddQuadToBatch(params, content_image, vis_tex_coords);
     return;
   }
 
-  // Draw render pass with backdrop effects.
-  // Update the backdrop filter to include "regular" filters and opacity.
-  cc::FilterOperations backdrop_filters_plus_effects = *backdrop_filters;
-  if (params.filters) {
-    for (const auto& filter_op : params.filters->operations())
-      backdrop_filters_plus_effects.Append(filter_op);
+  // Whether or not there are background filters, the paint itself is complex
+  // enough that it has to be drawn on its own
+  if (!batched_quads_.empty())
+    FlushBatchedQuads();
+
+  SkPaint paint = params.paint();
+
+  // Currently the only trigger for generate_mipmap for render pass is
+  // trilinear filtering. It only affects GPU backed implementations and thus
+  // requires medium filter quality level.
+  if (needs_mipmap)
+    paint.setFilterQuality(kMedium_SkFilterQuality);
+
+  if (!rpdq_params.image_filter && !rpdq_params.backdrop_filter) {
+    // When there are no filters, there is no need to save a layer, but we do
+    // have to incorporate the mask directly into the paint then.
+    if (rpdq_params.mask_image) {
+      paint.setMaskFilter(
+          SkShaderMaskFilter::Make(rpdq_params.mask_image->makeShader(
+              &rpdq_params.mask_to_quad_matrix)));
+      DCHECK(paint.getMaskFilter());
+    }
+    DrawSingleImage(params, content_image, vis_tex_coords, &paint);
+    return;
   }
-  if (quad->shared_quad_state->opacity < 1.0) {
-    backdrop_filters_plus_effects.Append(
-        cc::FilterOperation::CreateOpacityFilter(
-            quad->shared_quad_state->opacity));
+
+  // Use Skia's SaveLayerRec feature to automatically handle backdrop and
+  // regular image filters, mask clipping, and final layer blending. This will:
+  //  1. Automatically copy the backbuffer contents (InitWithPrevious flag)
+  //  2. Automatically apply provided backdrop filter to the image from #1
+  //  3. Draw an inverted clip round-rect to zero the filtered backdrop outside
+  //     of the allowed border.
+  //  4. Draw the main render pass content, but using SrcOver and no opacity
+  //     modification, since we apply the layer's blending at the very end.
+  //  5. Automatically restore the saved layer, applying the restore paint's
+  //     image filters and opacity to the results of #3.
+  //     - This will also use the given mask's alpha to clip the final blending.
+
+  // Make sure everything is provided in the quad space coordinate system.
+  SkAutoCanvasRestore acr(current_canvas_, true /* do_save */);
+  PrepareCanvas(params.scissor_rect, params.rounded_corner_bounds,
+                &params.content_device_transform);
+
+  // saveLayer automatically respects the clip when it is restored, and
+  // automatically reads beyond the clip for its backdrop filtered content.
+  // However, since Chromium does not want image-filtered content (ex. blurs) to
+  // be clipped to the visible_rect of the RPDQ, configure the clip to be the
+  // expanded bounds that encloses the entire filtered content.
+  SkRect bounds = gfx::RectToSkRect(rpdq_params.filter_bounds);
+  current_canvas_->clipRect(bounds, paint.isAntiAlias());
+
+  // Add the image filter to the restoration paint.
+  if (rpdq_params.image_filter) {
+    paint.setImageFilter(rpdq_params.image_filter);
+    // Reset paint to opaque. Render Pass should apply their opacity as last
+    // step, so the opacity is built into the image filter.
+    paint.setAlphaf(1.f);
   }
 
-  auto background_paint_filter = cc::RenderSurfaceFilters::BuildImageFilter(
-      backdrop_filters_plus_effects,
-      gfx::SizeF(content_image->width(), content_image->height()));
-  auto background_image_filter =
-      background_paint_filter ? background_paint_filter->cached_sk_filter_
-                              : nullptr;
-  DCHECK(background_image_filter);
-  SkMatrix content_to_dest_matrix;
-  content_to_dest_matrix.setRectToRect(
-      content_rect, gfx::RectToSkRect(quad->rect), SkMatrix::kFill_ScaleToFit);
-  SkMatrix local_matrix;
-  local_matrix.setTranslate(quad->filters_origin.x(), quad->filters_origin.y());
-  local_matrix.postScale(quad->filters_scale.x(), quad->filters_scale.y());
-  local_matrix.postConcat(content_to_dest_matrix);
-  background_image_filter =
-      background_image_filter->makeWithLocalMatrix(local_matrix);
+  // Save the layer with the restoration paint (which holds the final image
+  // filters and blending parameters), the backdrop filters, and mask image.
+  SkCanvas::SaveLayerFlags layer_flags = 0;
+  if (rpdq_params.backdrop_filter) {
+    layer_flags |= SkCanvas::kInitWithPrevious_SaveLayerFlag;
+  }
+  current_canvas_->saveLayer(
+      SkCanvas::SaveLayerRec(&bounds, &paint, rpdq_params.backdrop_filter.get(),
+                             rpdq_params.mask_image.get(),
+                             &rpdq_params.mask_to_quad_matrix, layer_flags));
 
-  SkAutoCanvasRestore auto_canvas_restore(current_canvas_, true /* do_save */);
-  current_canvas_->clipRect(gfx::RectToSkRect(quad->rect));
+  if (rpdq_params.backdrop_filter_bounds.has_value()) {
+    // The initial contents of saved layer is all of the background within
+    // |bounds| filtered by the backdrop filters. Must set all pixels outside
+    // of the border rrect to transparent black. This cannot simply be a clip
+    // when the layer is restored since this rrect should not clip the rest
+    // of the render pass content.
+    current_canvas_->save();
+    current_canvas_->clipRRect(SkRRect(*rpdq_params.backdrop_filter_bounds),
+                               SkClipOp::kDifference, paint.isAntiAlias());
+    current_canvas_->clear(SK_ColorTRANSPARENT);
+    current_canvas_->restore();
+  }
 
-  SkPaint tmp_paint;
-  tmp_paint.setMaskFilter(mask_filter);
-  SkCanvas::SaveLayerRec rec(&dest_visible_rect, &tmp_paint,
-                             background_image_filter.get(),
-                             SkCanvas::kInitWithPrevious_SaveLayerFlag);
-  // Lift content in the current_canvas_ into a new layer with
-  // background_image_filter, and then paint content_image in the layer,
-  // and then the current_canvas_->restore() will drop the layer into the
-  // canvas.
-  SkAutoCanvasRestore auto_canvas_restore_for_save_layer(current_canvas_,
-                                                         false /* do_save */);
-  current_canvas_->saveLayer(rec);
-  // TODO(916317): need to draw the backdrop once first here. Also need to
-  // pull the backdrop-filter bounds rect in and clip the backdrop image.
-  current_canvas_->drawImageRect(content_image, content_rect, dest_visible_rect,
-                                 paint);
+  // Now draw the main content using the same per-edge AA API to be consistent
+  // with DrawSingleImage. Use a new paint that defaults to opaque+src-over,
+  // and just preserve the filter quality from the original paint.
+  SkPaint content_paint;
+  content_paint.setFilterQuality(paint.getFilterQuality());
+
+  SkCanvas::ImageSetEntry entry =
+      MakeEntry(params, content_image, vis_tex_coords, -1,
+                false /* use params.opacity */);
+  const SkPoint* draw_region =
+      params.draw_region.has_value() ? params.draw_region->points : nullptr;
+  current_canvas_->experimental_DrawEdgeAAImageSet(&entry, 1, draw_region,
+                                                   nullptr, &content_paint);
+
+  // And the saved layer will be auto-restored when |acr| is destructed
 }
 
 void SkiaRenderer::CopyDrawnRenderPass(
@@ -1754,14 +1737,6 @@ void SkiaRenderer::FinishDrawingQuadList() {
 void SkiaRenderer::GenerateMipmap() {
   // This is a no-op since setting FilterQuality to high during drawing of
   // RenderPassDrawQuad is what actually generates generate_mipmap.
-}
-
-bool SkiaRenderer::ShouldApplyBackdropFilters(
-    const cc::FilterOperations* backdrop_filters) const {
-  if (!backdrop_filters)
-    return false;
-  DCHECK(!backdrop_filters->IsEmpty());
-  return true;
 }
 
 GrContext* SkiaRenderer::GetGrContext() {

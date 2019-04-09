@@ -90,36 +90,26 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
 
  private:
   struct DrawQuadParams;
-  struct DrawRenderPassDrawQuadParams;
+  struct DrawRPDQParams;
   class ScopedSkImageBuilder;
   class ScopedYUVSkImageBuilder;
 
   void ClearCanvas(SkColor color);
   void ClearFramebuffer();
 
-  // TODO(michaelludwig):
-  // The majority of quad types need to be updated to call the new experimental
-  // SkCanvas APIs, which changes what is needed for canvas prep. This is the
-  // old implementation of DoDrawQuad and types will be migrated individually
-  // to the new system and handled directly in the new DoDrawQuad definition,
-  // after which this function can be removed.
-  void DoSingleDrawQuad(const DrawQuad* quad,
-                        const gfx::QuadF* draw_region,
-                        const DrawQuadParams& params);
-
-  void PrepareCanvasForDrawQuads(
-      gfx::Transform quad_to_target_transform,
-      const gfx::QuadF* draw_region,
-      const gfx::Rect* scissor_rect,
-      const gfx::RRectF* rounded_corner_bounds,
-      base::Optional<SkAutoCanvasRestore>* auto_canvas_restore);
   // Callers should init an SkAutoCanvasRestore before calling this function.
-  void PrepareCanvas(const gfx::Rect* scissor_rect,
-                     const gfx::RRectF* rounded_corner_bounds,
+  // |scissor_rect| and |rounded_corner_bounds| should be in device space,
+  // i.e. same space that |cdt| will transform subsequent draws into.
+  void PrepareCanvas(const base::Optional<gfx::Rect>& scissor_rect,
+                     const base::Optional<gfx::RRectF>& rounded_corner_bounds,
                      const gfx::Transform* cdt);
 
   DrawQuadParams CalculateDrawQuadParams(const DrawQuad* quad,
                                          const gfx::QuadF* draw_region);
+  DrawRPDQParams CalculateRPDQParams(const SkImage* src_image,
+                                     const RenderPassDrawQuad* quad,
+                                     const DrawQuadParams& params);
+
   SkCanvas::ImageSetEntry MakeEntry(const DrawQuadParams& params,
                                     const SkImage* image,
                                     const gfx::RectF& src,
@@ -149,11 +139,12 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
                            const DrawQuadParams& params);
   void DrawPictureQuad(const PictureDrawQuad* quad,
                        const DrawQuadParams& params);
-  void DrawRenderPassQuad(const RenderPassDrawQuad* quad, SkPaint* paint);
+  void DrawRenderPassQuad(const RenderPassDrawQuad* quad,
+                          const DrawQuadParams& params);
   void DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
-                                  sk_sp<SkImage> content_image,
-                                  SkPaint* paint);
-
+                                  const DrawQuadParams& params,
+                                  const SkImage* content_image,
+                                  bool needs_mipmap);
   void DrawSolidColorQuad(const SolidColorDrawQuad* quad,
                           const DrawQuadParams& state);
 
@@ -166,11 +157,6 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
                         const DrawQuadParams& params);
   void DrawUnsupportedQuad(const DrawQuad* quad, const DrawQuadParams& params);
 
-  bool CalculateRPDQParams(sk_sp<SkImage> src_image,
-                           const RenderPassDrawQuad* quad,
-                           DrawRenderPassDrawQuadParams* params);
-  bool ShouldApplyBackdropFilters(
-      const cc::FilterOperations* backdrop_filters) const;
   const TileDrawQuad* CanPassBeDrawnDirectly(const RenderPass* pass) override;
 
   // Get corresponding GrContext. Returns nullptr when there is no GrContext.
@@ -235,11 +221,12 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   // State common to all quads in a batch. Draws that require an SkPaint not
   // captured by this state cannot be batched.
   struct BatchedQuadState {
-    gfx::Rect scissor_rect;
+    base::Optional<gfx::Rect> scissor_rect;
+    base::Optional<gfx::RRectF> rounded_corner_bounds;
     SkBlendMode blend_mode;
     SkFilterQuality filter_quality;
-    bool has_scissor_rect;
-    const gfx::RRectF* rounded_corner_bounds;
+
+    BatchedQuadState();
   };
   BatchedQuadState batched_quad_state_;
   std::vector<SkCanvas::ImageSetEntry> batched_quads_;
