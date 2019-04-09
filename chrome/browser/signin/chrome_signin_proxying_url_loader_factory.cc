@@ -6,6 +6,7 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
+#include "base/supports_user_data.h"
 #include "base/task/post_task.h"
 #include "build/buildflag.h"
 #include "chrome/browser/profiles/profile.h"
@@ -84,7 +85,8 @@ class ResourceContextData : public base::SupportsUserData::Data {
 
 class ProxyingURLLoaderFactory::InProgressRequest
     : public network::mojom::URLLoader,
-      public network::mojom::URLLoaderClient {
+      public network::mojom::URLLoaderClient,
+      public base::SupportsUserData {
  public:
   InProgressRequest(
       ProxyingURLLoaderFactory* factory,
@@ -263,7 +265,7 @@ class ProxyingURLLoaderFactory::InProgressRequest::ProxyRequestAdapter
 class ProxyingURLLoaderFactory::InProgressRequest::ProxyResponseAdapter
     : public ResponseAdapter {
  public:
-  ProxyResponseAdapter(const InProgressRequest* in_progress_request,
+  ProxyResponseAdapter(InProgressRequest* in_progress_request,
                        net::HttpResponseHeaders* headers)
       : ResponseAdapter(nullptr),
         in_progress_request_(in_progress_request),
@@ -296,8 +298,18 @@ class ProxyingURLLoaderFactory::InProgressRequest::ProxyResponseAdapter
     headers_->RemoveHeader(name);
   }
 
+  base::SupportsUserData::Data* GetUserData(const void* key) const override {
+    return in_progress_request_->GetUserData(key);
+  }
+
+  void SetUserData(
+      const void* key,
+      std::unique_ptr<base::SupportsUserData::Data> data) override {
+    in_progress_request_->SetUserData(key, std::move(data));
+  }
+
  private:
-  const InProgressRequest* const in_progress_request_;
+  InProgressRequest* const in_progress_request_;
   net::HttpResponseHeaders* const headers_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyResponseAdapter);
