@@ -234,6 +234,7 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableHTMLImports(bool);
   BLINK_PLATFORM_EXPORT static void EnableSignedExchangeSubresourcePrefetch(
       bool);
+  BLINK_PLATFORM_EXPORT static void EnableIdleDetection(bool);
 
  private:
   WebRuntimeFeatures();

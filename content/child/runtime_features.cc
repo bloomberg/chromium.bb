@@ -481,6 +481,9 @@ void SetIndividualRuntimeFeatures(
   WebRuntimeFeatures::EnableSignedExchangeSubresourcePrefetch(
       base::FeatureList::IsEnabled(
           features::kSignedExchangeSubresourcePrefetch));
+
+  if (!base::FeatureList::IsEnabled(features::kIdleDetection))
+    WebRuntimeFeatures::EnableIdleDetection(false);
 }
 
 }  // namespace
