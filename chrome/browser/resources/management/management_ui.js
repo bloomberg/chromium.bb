@@ -65,7 +65,7 @@ Polymer({
     },
 
     /** @private */
-    title_: String,
+    subtitle_: String,
 
     // <if expr="not chromeos">
     /** @private */
@@ -246,11 +246,11 @@ Polymer({
 
   /** @private */
   updateManagedFields_() {
-    this.title_ = this.browserProxy_.getPageTitle();
+    this.subtitle_ = loadTimeData.getString('subtitle');
     // <if expr="not chromeos">
     this.managementNoticeHtml_ = this.browserProxy_.getManagementNotice();
     // </if>
     this.extensionReportingSubtitle_ =
-        this.browserProxy_.getExtensionReportingTitle();
+        loadTimeData.getString('extensionReportingTitle');
   },
 });

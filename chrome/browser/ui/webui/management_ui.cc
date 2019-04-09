@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/management_ui_handler.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/safe_browsing/common/safebrowsing_constants.h"
@@ -33,12 +34,12 @@ namespace {
 
 #if defined(OS_CHROMEOS)
 
-base::string16 GetChromeOSManagementPageTitle() {
+base::string16 GetChromeOSManagementPageSubtitle() {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   const auto device_type = ui::GetChromeOSDeviceTypeResourceId();
   if (!connector->IsEnterpriseManaged()) {
-    return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_NOT_MANAGED_TITLE,
+    return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE,
                                       l10n_util::GetStringUTF16(device_type));
   }
 
@@ -46,13 +47,13 @@ base::string16 GetChromeOSManagementPageTitle() {
 
   if (display_domain.empty()) {
     if (!connector->IsActiveDirectoryManaged()) {
-      return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_TITLE_MANAGED,
+      return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED,
                                         l10n_util::GetStringUTF16(device_type));
     }
     display_domain = connector->GetRealm();
   }
 
-  return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_TITLE_BY,
+  return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED_BY,
                                     l10n_util::GetStringUTF16(device_type),
                                     base::UTF8ToUTF16(display_domain));
 }
@@ -63,7 +64,7 @@ content::WebUIDataSource* CreateManagementUIHtmlSource() {
       content::WebUIDataSource::Create(chrome::kChromeUIManagementHost);
 
 #if defined(OS_CHROMEOS)
-  source->AddString("title", GetChromeOSManagementPageTitle());
+  source->AddString("subtitle", GetChromeOSManagementPageSubtitle());
 #endif  // defined(OS_CHROMEOS)
 
   static constexpr LocalizedString kLocalizedStrings[] = {
@@ -85,12 +86,13 @@ content::WebUIDataSource* CreateManagementUIHtmlSource() {
     {"browserReportingExplanation",
      IDS_MANAGEMENT_BROWSER_REPORTING_EXPLANATION},
     {"extensionReporting", IDS_MANAGEMENT_EXTENSION_REPORTING},
-    {"extensionsInstalled", IDS_MANAGEMENT_EXTENSIONS_INSTALLED},
     {"extensionName", IDS_MANAGEMENT_EXTENSIONS_NAME},
     {"extensionPermissions", IDS_MANAGEMENT_EXTENSIONS_PERMISSIONS},
     {"localTrustRoots", IDS_MANAGEMENT_LOCAL_TRUST_ROOTS},
     {"managementTrustRootsNotConfigured",
      IDS_MANAGEMENT_TRUST_ROOTS_NOT_CONFIGURED},
+    {"title", IDS_MANAGEMENT_TITLE},
+    {"toolbarTitle", IDS_MANAGEMENT_TOOLBAR_TITLE},
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     {kManagementExtensionReportMachineName,
      IDS_MANAGEMENT_EXTENSION_REPORT_MACHINE_NAME},
@@ -133,7 +135,6 @@ content::WebUIDataSource* CreateManagementUIHtmlSource() {
 #endif  // defined(OS_CHROMEOS)
   source->SetJsonPath("strings.js");
   // Add required resources.
-  source->AddResourcePath("management.js", IDR_MANAGEMENT_JS);
   source->AddResourcePath("management_browser_proxy.html",
                           IDR_MANAGEMENT_BROWSER_PROXY_HTML);
   source->AddResourcePath("management_browser_proxy.js",

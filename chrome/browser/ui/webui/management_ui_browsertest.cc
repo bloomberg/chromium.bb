@@ -76,13 +76,11 @@ IN_PROC_BROWSER_TEST_F(ManagementUITest, ManagementStateChange) {
       "});"
       "unmanaged_result.push({"
       " name: 'extensionReportingTitle',"
-      " value: management.ManagementBrowserProxyImpl"
-      "   .getInstance().getExtensionReportingTitle()"
+      " value: loadTimeData.getString('extensionReportingTitle')"
       "});"
       "unmanaged_result.push({"
-      " name: 'pageTitle',"
-      " value: management.ManagementBrowserProxyImpl"
-      "   .getInstance().getPageTitle()"
+      " name: 'pageSubtitle',"
+      " value: loadTimeData.getString('subtitle')"
       "});"
       "domAutomationController.send(JSON.stringify(unmanaged_result));";
 
@@ -101,8 +99,8 @@ IN_PROC_BROWSER_TEST_F(ManagementUITest, ManagementStateChange) {
            base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl))},
       {"extensionReportingTitle",
        l10n_util::GetStringUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED)},
-      {"pageTitle",
-       l10n_util::GetStringUTF16(IDS_MANAGEMENT_NOT_MANAGED_TITLE)},
+      {"pageSubtitle",
+       l10n_util::GetStringUTF16(IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE)},
   };
 
   VerifyTexts(unmanaged_value_ptr.get(), expected_unmanaged_values);
@@ -128,13 +126,11 @@ IN_PROC_BROWSER_TEST_F(ManagementUITest, ManagementStateChange) {
       "});"
       "managed_result.push({"
       " name: 'extensionReportingTitle',"
-      " value: management.ManagementBrowserProxyImpl"
-      "   .getInstance().getExtensionReportingTitle()"
+      " value: loadTimeData.getString('extensionReportingTitle')"
       "});"
       "managed_result.push({"
-      " name: 'pageTitle',"
-      " value: management.ManagementBrowserProxyImpl"
-      "   .getInstance().getPageTitle()"
+      " name: 'pageSubtitle',"
+      " value: loadTimeData.getString('subtitle')"
       "});"
       "domAutomationController.send(JSON.stringify(managed_result));";
 
@@ -150,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(ManagementUITest, ManagementStateChange) {
            base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl))},
       {"extensionReportingTitle",
        l10n_util::GetStringUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED)},
-      {"pageTitle", l10n_util::GetStringUTF16(IDS_MANAGEMENT_TITLE)},
+      {"pageSubtitle", l10n_util::GetStringUTF16(IDS_MANAGEMENT_SUBTITLE)},
   };
 
   VerifyTexts(managed_value_ptr.get(), expected_managed_values);
