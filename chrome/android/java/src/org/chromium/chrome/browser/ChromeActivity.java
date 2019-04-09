@@ -1436,10 +1436,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     @Override
     public SnackbarManager getSnackbarManager() {
-        return mBottomSheetController != null
-                        && mBottomSheetController.getBottomSheet().isSheetOpen()
-                ? mBottomSheetController.getSnackbarManager()
-                : mSnackbarManager;
+        boolean useBottomSheetContainer = mBottomSheetController != null
+                && mBottomSheetController.getBottomSheet().isSheetOpen()
+                && !mBottomSheetController.getBottomSheet().isClosing();
+        return useBottomSheetContainer ? mBottomSheetController.getSnackbarManager()
+                                       : mSnackbarManager;
     }
 
     @Override
