@@ -4,7 +4,6 @@
 
 #include "components/prefs/pref_notifier_impl.h"
 
-#include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -48,16 +47,6 @@ PrefNotifierImpl::~PrefNotifierImpl() {
           pref_name == "profile.icon_version" ||
           // For BrowserWindowDefaultTouchBar, crbug.com/945772
           pref_name == "default_search_provider_data.template_url_data") {
-        const bool is_incognito_profile =
-            pref_service_->HasInMemoryUserPrefStore();
-        base::debug::Alias(&is_incognito_profile);
-        // Export value of is_incognito_profile to a string so that `grep`
-        // is a sufficient tool to analyze crashdumps.
-        char is_incognito_profile_string[32];
-        strncpy(is_incognito_profile_string,
-                is_incognito_profile ? "is_incognito: yes" : "is_incognito: no",
-                sizeof(is_incognito_profile_string));
-        base::debug::Alias(&is_incognito_profile_string);
         base::debug::DumpWithoutCrashing();
       }
     }
