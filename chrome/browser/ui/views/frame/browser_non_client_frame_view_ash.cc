@@ -735,7 +735,9 @@ int BrowserNonClientFrameViewAsh::GetTabStripLeftInset() const {
 }
 
 int BrowserNonClientFrameViewAsh::GetTabStripRightInset() const {
-  return caption_button_container_->GetPreferredSize().width();
+  return ShouldShowCaptionButtons()
+             ? caption_button_container_->GetPreferredSize().width()
+             : 0;
 }
 
 bool BrowserNonClientFrameViewAsh::ShouldPaint() const {
