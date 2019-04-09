@@ -228,8 +228,8 @@ void LayoutText::WillBeDestroyed() {
     delete secure_text_timer;
 
   if (!node_holder_.is_empty) {
-    DCHECK(GetContentCaptureManager());
-    GetContentCaptureManager()->OnLayoutTextWillBeDestroyed(node_holder_);
+    if (auto* manager = GetContentCaptureManager())
+      manager->OnLayoutTextWillBeDestroyed(node_holder_);
     node_holder_.text_holder.reset();
     node_holder_.is_empty = true;
   }
