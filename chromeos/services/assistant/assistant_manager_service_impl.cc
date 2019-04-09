@@ -221,11 +221,6 @@ void AssistantManagerServiceImpl::EnableListening(bool enable) {
 
 void AssistantManagerServiceImpl::EnableHotword(bool enable) {
   platform_api_->OnHotwordEnabled(enable);
-
-  if (base::FeatureList::IsEnabled(assistant::features::kAssistantVoiceMatch) &&
-      state_ == State::RUNNING) {
-    assistant_settings_manager_->SyncSpeakerIdEnrollmentStatus();
-  }
 }
 
 AssistantSettingsManager*
@@ -826,8 +821,10 @@ void AssistantManagerServiceImpl::PostInitAssistant(
   std::move(post_init_callback).Run();
   assistant_settings_manager_->UpdateServerDeviceSettings();
 
-  if (base::FeatureList::IsEnabled(assistant::features::kAssistantVoiceMatch))
+  if (base::FeatureList::IsEnabled(assistant::features::kAssistantVoiceMatch) &&
+      service_->assistant_state()->hotword_enabled().value()) {
     assistant_settings_manager_->SyncSpeakerIdEnrollmentStatus();
+  }
 }
 
 void AssistantManagerServiceImpl::HandleOpenAndroidAppResponse(

@@ -41,6 +41,10 @@ void GoogleAssistantHandler::RegisterMessages() {
       "retrainAssistantVoiceModel",
       base::BindRepeating(&GoogleAssistantHandler::HandleRetrainVoiceModel,
                           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "syncVoiceModelStatus",
+      base::BindRepeating(&GoogleAssistantHandler::HandleSyncVoiceModelStatus,
+                          base::Unretained(this)));
 }
 
 void GoogleAssistantHandler::HandleShowGoogleAssistantSettings(
@@ -61,6 +65,15 @@ void GoogleAssistantHandler::HandleRetrainVoiceModel(
   CHECK_EQ(0U, args->GetSize());
   chromeos::AssistantOptInDialog::Show(ash::mojom::FlowType::SPEAKER_ID_RETRAIN,
                                        base::DoNothing());
+}
+
+void GoogleAssistantHandler::HandleSyncVoiceModelStatus(
+    const base::ListValue* args) {
+  CHECK_EQ(0U, args->GetSize());
+  if (!settings_manager_.is_bound())
+    BindAssistantSettingsManager();
+
+  settings_manager_->SyncSpeakerIdEnrollmentStatus();
 }
 
 void GoogleAssistantHandler::BindAssistantSettingsManager() {
