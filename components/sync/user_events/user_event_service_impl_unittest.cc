@@ -86,47 +86,16 @@ class UserEventServiceImplTest : public testing::Test {
   TestGlobalIdMapper mapper_;
 };
 
-TEST_F(UserEventServiceImplTest, MightRecordEvents) {
-  // All conditions are met, might record.
-  EXPECT_TRUE(UserEventServiceImpl::MightRecordEvents(false, sync_service()));
-  // No sync service, will not record.
-  EXPECT_FALSE(UserEventServiceImpl::MightRecordEvents(false, nullptr));
-  // Off the record, will not record.
-  EXPECT_FALSE(UserEventServiceImpl::MightRecordEvents(true, sync_service()));
-}
-
 TEST_F(UserEventServiceImplTest, ShouldRecord) {
-  UserEventServiceImpl service(sync_service(), MakeBridge());
+  UserEventServiceImpl service(MakeBridge());
   EXPECT_CALL(*mock_processor(), Put(_, _, _));
   service.RecordUserEvent(AsTest(Event()));
 }
 
-TEST_F(UserEventServiceImplTest,
-       ShouldOnlyRecordEventsWithoutNavIdWhenHistorySyncIsDisabled) {
-  sync_service()->SetPreferredDataTypes({USER_EVENTS});
-  UserEventServiceImpl service(sync_service(), MakeBridge());
-
-  // Only record events without navigation ids when history sync is off.
-  EXPECT_CALL(*mock_processor(), Put(_, _, _)).Times(0);
-  service.RecordUserEvent(WithNav(AsTest(Event())));
-  EXPECT_CALL(*mock_processor(), Put(_, _, _));
-  service.RecordUserEvent(AsTest(Event()));
-}
-
-TEST_F(UserEventServiceImplTest, ShouldNotRecordWhenPassphraseIsUsed) {
-  sync_service()->SetIsUsingSecondaryPassphrase(true);
-  UserEventServiceImpl service(sync_service(), MakeBridge());
-
-  // Do not record events when a passphrase is used.
-  EXPECT_CALL(*mock_processor(), Put(_, _, _)).Times(0);
-  service.RecordUserEvent(WithNav(AsTest(Event())));
-  service.RecordUserEvent(AsTest(Event()));
-}
-
-TEST_F(UserEventServiceImplTest, ShouldNotRecordWhenEngineIsNotInitialized) {
-  sync_service()->SetTransportState(
-      syncer::SyncService::TransportState::INITIALIZING);
-  UserEventServiceImpl service(sync_service(), MakeBridge());
+TEST_F(UserEventServiceImplTest, ShouldNotRecordWhenSyncIsNotStarted) {
+  ON_CALL(*mock_processor(), IsTrackingMetadata())
+      .WillByDefault(testing::Return(false));
+  UserEventServiceImpl service(MakeBridge());
 
   // Do not record events when the engine is off.
   EXPECT_CALL(*mock_processor(), Put(_, _, _)).Times(0);
@@ -135,7 +104,7 @@ TEST_F(UserEventServiceImplTest, ShouldNotRecordWhenEngineIsNotInitialized) {
 }
 
 TEST_F(UserEventServiceImplTest, ShouldNotRecordEmptyEvents) {
-  UserEventServiceImpl service(sync_service(), MakeBridge());
+  UserEventServiceImpl service(MakeBridge());
 
   // All untyped events should always be ignored.
   EXPECT_CALL(*mock_processor(), Put(_, _, _)).Times(0);
@@ -144,7 +113,7 @@ TEST_F(UserEventServiceImplTest, ShouldNotRecordEmptyEvents) {
 }
 
 TEST_F(UserEventServiceImplTest, ShouldRecordHasNavigationId) {
-  UserEventServiceImpl service(sync_service(), MakeBridge());
+  UserEventServiceImpl service(MakeBridge());
 
   // Verify logic for types that might or might not have a navigation id.
   EXPECT_CALL(*mock_processor(), Put(_, _, _));
@@ -175,22 +144,14 @@ TEST_F(UserEventServiceImplTest, SessionIdIsDifferent) {
             entity_data->specifics.user_event().session_id());
       });
 
-  UserEventServiceImpl service1(sync_service(), MakeBridge());
+  UserEventServiceImpl service1(MakeBridge());
   service1.RecordUserEvent(AsTest(Event()));
 
-  UserEventServiceImpl service2(sync_service(), MakeBridge());
+  UserEventServiceImpl service2(MakeBridge());
   service2.RecordUserEvent(AsTest(Event()));
 
   ASSERT_EQ(2U, put_session_ids.size());
   EXPECT_NE(put_session_ids[0], put_session_ids[1]);
-}
-
-TEST_F(UserEventServiceImplTest, ShouldNotRecordWhenEventsDatatypeIsDisabled) {
-  sync_service()->SetPreferredDataTypes({HISTORY_DELETE_DIRECTIVES});
-  UserEventServiceImpl service(sync_service(), MakeBridge());
-  // USER_EVENTS type is disabled, thus, they should not be recorded.
-  EXPECT_CALL(*mock_processor(), Put(_, _, _)).Times(0);
-  service.RecordUserEvent(AsTest(Event()));
 }
 
 }  // namespace

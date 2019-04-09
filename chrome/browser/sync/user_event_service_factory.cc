@@ -11,7 +11,6 @@
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/model_type_store_service_factory.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/common/channel_info.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -45,25 +44,17 @@ UserEventServiceFactory::UserEventServiceFactory()
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(ModelTypeStoreServiceFactory::GetInstance());
   DependsOn(SessionSyncServiceFactory::GetInstance());
-  // TODO(vitaliii): This is missing
-  // DependsOn(ProfileSyncServiceFactory::GetInstance()), which we can't
-  // simply add because ProfileSyncServiceFactory itself depends on this
-  // factory. This won't be relevant anymore once the separate consents datatype
-  // is fully launched.
 }
 
 UserEventServiceFactory::~UserEventServiceFactory() {}
 
 KeyedService* UserEventServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  Profile* profile = Profile::FromBrowserContext(context);
-  syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
-  if (!syncer::UserEventServiceImpl::MightRecordEvents(
-          context->IsOffTheRecord(), sync_service)) {
+  if (context->IsOffTheRecord()) {
     return new syncer::NoOpUserEventService();
   }
 
+  Profile* profile = Profile::FromBrowserContext(context);
   syncer::OnceModelTypeStoreFactory store_factory =
       ModelTypeStoreServiceFactory::GetForProfile(profile)->GetStoreFactory();
 
@@ -75,7 +66,7 @@ KeyedService* UserEventServiceFactory::BuildServiceInstanceFor(
   auto bridge = std::make_unique<syncer::UserEventSyncBridge>(
       std::move(store_factory), std::move(change_processor),
       SessionSyncServiceFactory::GetForProfile(profile)->GetGlobalIdMapper());
-  return new syncer::UserEventServiceImpl(sync_service, std::move(bridge));
+  return new syncer::UserEventServiceImpl(std::move(bridge));
 }
 
 content::BrowserContext* UserEventServiceFactory::GetBrowserContextToUse(
