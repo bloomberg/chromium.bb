@@ -28,7 +28,7 @@ static const char kIgnore[] = "ignore";
 
 // Controls whether ChromeDriver operates in W3C mode (when true) or legacy
 // mode (when false) by default.
-static const bool kW3CDefault = false;
+static const bool kW3CDefault = true;
 
 namespace base {
 class DictionaryValue;
