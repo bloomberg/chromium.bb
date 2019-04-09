@@ -563,6 +563,12 @@ message PolicyData {
   // belongs to. This is domain metadata included in a device policy response,
   // but it is not an explicit device policy.
   optional CustomerLogo customer_logo = 31;
+
+  // b/129771193
+  // This setting is from SingleSignOnSettingsProto#change_password_uri
+  // http://google3/ccc/hosted/policies/services/common/sso_settings.proto?l=48&rcl=241246111
+  // This field is currently only set for User Policy response.
+  optional string change_password_uri = 32;
 }
 
 message PolicyFetchResponse {
