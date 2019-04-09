@@ -9,6 +9,7 @@
 #include <assert.h>
 #include <drm_fourcc.h>
 #include <errno.h>
+#include <inttypes.h>
 #include <msm_drm.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -240,7 +241,7 @@ static int msm_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_
 	struct combination *combo = drv_get_combination(bo->drv, format, flags);
 
 	if (!combo) {
-		drv_log("invalid format = %d, flags = %llx combination\n", format, flags);
+		drv_log("invalid format = %d, flags = %" PRIx64 " combination\n", format, flags);
 		return -EINVAL;
 	}
 
