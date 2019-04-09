@@ -2696,7 +2696,7 @@
 
     'cronet_scripts': {
       'sizes': {
-        'script': 'sizes.py',
+        'script': 'cronet_sizes.py',
       },
     },
 

@@ -671,7 +671,7 @@
         "override_compile_targets": [
           "cronet"
         ],
-        "script": "sizes.py"
+        "script": "cronet_sizes.py"
       }
     ]
   },

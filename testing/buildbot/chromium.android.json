@@ -17724,7 +17724,7 @@
           "android-cronet"
         ],
         "name": "sizes",
-        "script": "sizes.py"
+        "script": "cronet_sizes.py"
       }
     ]
   },
@@ -17739,7 +17739,7 @@
           "android-cronet"
         ],
         "name": "sizes",
-        "script": "sizes.py"
+        "script": "cronet_sizes.py"
       }
     ]
   },
@@ -17762,7 +17762,7 @@
           "android-cronet"
         ],
         "name": "sizes",
-        "script": "sizes.py"
+        "script": "cronet_sizes.py"
       }
     ]
   },
@@ -17785,7 +17785,7 @@
           "android-cronet"
         ],
         "name": "sizes",
-        "script": "sizes.py"
+        "script": "cronet_sizes.py"
       }
     ]
   },
@@ -18731,7 +18731,7 @@
           "android-cronet"
         ],
         "name": "sizes",
-        "script": "sizes.py"
+        "script": "cronet_sizes.py"
       }
     ]
   },
@@ -18754,7 +18754,7 @@
           "android-cronet"
         ],
         "name": "sizes",
-        "script": "sizes.py"
+        "script": "cronet_sizes.py"
       }
     ]
   },
