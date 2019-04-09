@@ -147,11 +147,8 @@
                internal_comment="TODO(wnwen): Remove duplication in components/autofill_assistant_strings.grdp">
         Sorry I'm not able to help, please continue on your own.
       </message>
-      <message name="IDS_AUTOFILL_ASSISTANT_VIEW_ORIGINAL_IMAGE_TITLE" desc="Title of view image dialog.">
-        Open Image
-      </message>
       <message name="IDS_AUTOFILL_ASSISTANT_VIEW_ORIGINAL_IMAGE_DESC" desc="Description of view image dialog.">
-        Would you like to navigate to the image URL?
+        Open external link?
       </message>
       <message name="IDS_AUTOFILL_ASSISTANT_VIEW_ORIGINAL_IMAGE_VIEW" desc="Text on the button to view original image.">
         View

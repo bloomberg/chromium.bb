@@ -24,7 +24,7 @@ public class AssistantDetails {
 
     private final String mTitle;
     private final String mImageUrl;
-    private final boolean mAllowImageClickthrough;
+    private final ImageClickthroughData mImageClickthroughData;
     private final boolean mShowImagePlaceholder;
     @Nullable
     private final Date mDate;
@@ -48,15 +48,15 @@ public class AssistantDetails {
     /** An optional price label, such as 'Estimated Total incl. VAT'. */
     private final String mTotalPriceLabel;
 
-    public AssistantDetails(String title, String imageUrl, boolean allowImageClickthrough,
-            boolean showImagePlaceholder, String totalPriceLabel, String totalPrice,
-            @Nullable Date date, String descriptionLine1, String descriptionLine2,
-            boolean userApprovalRequired, boolean highlightTitle, boolean highlightLine1,
-            boolean highlightLine2, boolean animatePlaceholders) {
+    public AssistantDetails(String title, String imageUrl,
+            ImageClickthroughData imageClickthroughData, boolean showImagePlaceholder,
+            String totalPriceLabel, String totalPrice, @Nullable Date date, String descriptionLine1,
+            String descriptionLine2, boolean userApprovalRequired, boolean highlightTitle,
+            boolean highlightLine1, boolean highlightLine2, boolean animatePlaceholders) {
         this.mTotalPriceLabel = totalPriceLabel;
         this.mTitle = title;
         this.mImageUrl = imageUrl;
-        this.mAllowImageClickthrough = allowImageClickthrough;
+        this.mImageClickthroughData = imageClickthroughData;
         this.mShowImagePlaceholder = showImagePlaceholder;
         this.mTotalPrice = totalPrice;
         this.mDate = date;
@@ -78,8 +78,12 @@ public class AssistantDetails {
         return mImageUrl;
     }
 
-    boolean getAllowImageClickthrough() {
-        return mAllowImageClickthrough;
+    boolean hasImageClickthroughData() {
+        return mImageClickthroughData != null;
+    }
+
+    ImageClickthroughData getImageClickthroughData() {
+        return mImageClickthroughData;
     }
 
     boolean getShowImagePlaceholder() {
@@ -132,11 +136,13 @@ public class AssistantDetails {
      */
     @CalledByNative
     private static AssistantDetails create(String title, String imageUrl,
-            boolean allowImageClickthrough, boolean showImagePlaceholder, String totalPriceLabel,
-            String totalPrice, String datetime, long year, int month, int day, int hour, int minute,
-            int second, String descriptionLine1, String descriptionLine2,
-            boolean userApprovalRequired, boolean highlightTitle, boolean highlightLine1,
-            boolean highlightLine2, boolean animatePlaceholders) {
+            boolean allowImageClickthrough, String imageClickthroughDesc,
+            String imageClickthroughPostiveText, String imageClickthroughNegativeText,
+            boolean showImagePlaceholder, String totalPriceLabel, String totalPrice,
+            String datetime, long year, int month, int day, int hour, int minute, int second,
+            String descriptionLine1, String descriptionLine2, boolean userApprovalRequired,
+            boolean highlightTitle, boolean highlightLine1, boolean highlightLine2,
+            boolean animatePlaceholders) {
         Date date = null;
         if (year > 0 && month > 0 && day > 0 && hour >= 0 && minute >= 0 && second >= 0) {
             Calendar calendar = Calendar.getInstance();
@@ -155,9 +161,11 @@ public class AssistantDetails {
             }
         }
 
-        return new AssistantDetails(title, imageUrl, allowImageClickthrough, showImagePlaceholder,
-                totalPriceLabel, totalPrice, date, descriptionLine1, descriptionLine2,
-                userApprovalRequired, highlightTitle, highlightLine1, highlightLine2,
-                animatePlaceholders);
+        return new AssistantDetails(title, imageUrl,
+                new ImageClickthroughData(allowImageClickthrough, imageClickthroughDesc,
+                        imageClickthroughPostiveText, imageClickthroughNegativeText),
+                showImagePlaceholder, totalPriceLabel, totalPrice, date, descriptionLine1,
+                descriptionLine2, userApprovalRequired, highlightTitle, highlightLine1,
+                highlightLine2, animatePlaceholders);
     }
 }

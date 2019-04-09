@@ -173,9 +173,11 @@ class AssistantDetailsViewBinder
                     ImageFetcher.ASSISTANT_DETAILS_UMA_CLIENT_NAME, image -> {
                         if (image != null) {
                             viewHolder.mImageView.setImageDrawable(getRoundedImage(image));
-                            if (details.getAllowImageClickthrough()) {
+                            if (details.hasImageClickthroughData()
+                                    && details.getImageClickthroughData().getAllowClickthrough()) {
                                 viewHolder.mImageView.setOnClickListener(unusedView
-                                        -> onImageClicked(mContext, details.getImageUrl()));
+                                        -> onImageClicked(mContext, details.getImageUrl(),
+                                                details.getImageClickthroughData()));
                             } else {
                                 viewHolder.mImageView.setOnClickListener(null);
                             }
@@ -328,7 +330,8 @@ class AssistantDetailsViewBinder
      * see the original image, if they choose to see it, a new custom tab pointing to the
      * url of the orinial image will present on top of current one.
      */
-    private void onImageClicked(Context context, String imageUrl) {
+    private void onImageClicked(
+            Context context, String imageUrl, ImageClickthroughData clickthroughData) {
         ModalDialogManager manager = new ModalDialogManager(
                 new AppModalPresenter((android.app.Activity) context), ModalDialogType.APP);
 
@@ -350,19 +353,31 @@ class AssistantDetailsViewBinder
         };
 
         Resources resources = context.getResources();
-        // TODO(wuandy): Make these strings server side and pass along with potential
-        // 'showAttribution' flag.
         PropertyModel.Builder builder =
                 new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
-                        .with(ModalDialogProperties.CONTROLLER, dialogController)
-                        .with(ModalDialogProperties.TITLE, resources,
-                                R.string.autofill_assistant_view_original_image_title)
-                        .with(ModalDialogProperties.MESSAGE, resources,
-                                R.string.autofill_assistant_view_original_image_desc)
-                        .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, resources,
-                                R.string.autofill_assistant_view_original_image_view)
-                        .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, resources,
-                                R.string.autofill_assistant_view_original_image_cancel);
+                        .with(ModalDialogProperties.CONTROLLER, dialogController);
+        if (clickthroughData.getDescription() != null) {
+            builder.with(ModalDialogProperties.MESSAGE, clickthroughData.getDescription());
+        } else {
+            builder.with(ModalDialogProperties.MESSAGE, resources,
+                    R.string.autofill_assistant_view_original_image_desc);
+        }
+
+        if (clickthroughData.getPositiveText() != null) {
+            builder.with(
+                    ModalDialogProperties.POSITIVE_BUTTON_TEXT, clickthroughData.getPositiveText());
+        } else {
+            builder.with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, resources,
+                    R.string.autofill_assistant_view_original_image_view);
+        }
+
+        if (clickthroughData.getNegativeText() != null) {
+            builder.with(
+                    ModalDialogProperties.NEGATIVE_BUTTON_TEXT, clickthroughData.getNegativeText());
+        } else {
+            builder.with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, resources,
+                    R.string.autofill_assistant_view_original_image_cancel);
+        }
 
         PropertyModel dialogModel = builder.build();
         manager.showDialog(dialogModel, ModalDialogType.APP);
