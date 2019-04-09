@@ -256,7 +256,7 @@ void PacFileFetcherImpl::OnReceivedRedirect(URLRequest* request,
 }
 
 void PacFileFetcherImpl::OnAuthRequired(URLRequest* request,
-                                        AuthChallengeInfo* auth_info) {
+                                        const AuthChallengeInfo& auth_info) {
   DCHECK_EQ(request, cur_request_.get());
   // TODO(eroman): http://crbug.com/77366
   LOG(WARNING) << "Auth required to fetch PAC script, aborting.";

@@ -24,13 +24,13 @@ using content::BrowserThread;
 
 namespace android_webview {
 
-AwHttpAuthHandler::AwHttpAuthHandler(net::AuthChallengeInfo* auth_info,
+AwHttpAuthHandler::AwHttpAuthHandler(const net::AuthChallengeInfo& auth_info,
                                      content::WebContents* web_contents,
                                      bool first_auth_attempt,
                                      LoginAuthRequiredCallback callback)
     : WebContentsObserver(web_contents),
-      host_(auth_info->challenger.host()),
-      realm_(auth_info->realm),
+      host_(auth_info.challenger.host()),
+      realm_(auth_info.realm),
       callback_(std::move(callback)),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

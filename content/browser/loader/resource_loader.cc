@@ -403,7 +403,7 @@ void ResourceLoader::OnReceivedRedirect(net::URLRequest* unused,
 }
 
 void ResourceLoader::OnAuthRequired(net::URLRequest* unused,
-                                    net::AuthChallengeInfo* auth_info) {
+                                    const net::AuthChallengeInfo& auth_info) {
   DCHECK_EQ(request_.get(), unused);
 
   ResourceRequestInfoImpl* info = GetRequestInfo();

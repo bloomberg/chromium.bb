@@ -90,7 +90,7 @@ class WebRequestProxyingURLLoaderFactory
     void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
     void HandleAuthRequest(
-        net::AuthChallengeInfo* auth_info,
+        const net::AuthChallengeInfo& auth_info,
         scoped_refptr<net::HttpResponseHeaders> response_headers,
         WebRequestAPI::AuthRequestCallback callback);
 
@@ -108,7 +108,7 @@ class WebRequestProxyingURLLoaderFactory
     void ContinueToStartRequest(int error_code);
     void ContinueToHandleOverrideHeaders(int error_code);
     void ContinueToResponseStarted(int error_code);
-    void ContinueAuthRequest(net::AuthChallengeInfo* auth_info,
+    void ContinueAuthRequest(const net::AuthChallengeInfo& auth_info,
                              WebRequestAPI::AuthRequestCallback callback,
                              int error_code);
     void OnAuthRequestHandled(
@@ -219,7 +219,7 @@ class WebRequestProxyingURLLoaderFactory
 
   // WebRequestAPI::Proxy:
   void HandleAuthRequest(
-      net::AuthChallengeInfo* auth_info,
+      const net::AuthChallengeInfo& auth_info,
       scoped_refptr<net::HttpResponseHeaders> response_headers,
       int32_t request_id,
       WebRequestAPI::AuthRequestCallback callback) override;

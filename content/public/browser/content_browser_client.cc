@@ -878,7 +878,7 @@ ContentBrowserClient::CreateClientCertStore(ResourceContext* resource_context) {
 }
 
 std::unique_ptr<LoginDelegate> ContentBrowserClient::CreateLoginDelegate(
-    net::AuthChallengeInfo* auth_info,
+    const net::AuthChallengeInfo& auth_info,
     content::WebContents* web_contents,
     const GlobalRequestID& request_id,
     bool is_request_for_main_frame,

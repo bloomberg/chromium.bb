@@ -104,7 +104,7 @@ class WebSocket::WebSocketEventHandler final
       const net::SSLInfo& ssl_info,
       bool fatal) override;
   int OnAuthRequired(
-      scoped_refptr<net::AuthChallengeInfo> auth_info,
+      const net::AuthChallengeInfo& auth_info,
       scoped_refptr<net::HttpResponseHeaders> response_headers,
       const net::IPEndPoint& remote_endpoint,
       base::OnceCallback<void(const net::AuthCredentials*)> callback,
@@ -288,7 +288,7 @@ void WebSocket::WebSocketEventHandler::OnSSLCertificateError(
 }
 
 int WebSocket::WebSocketEventHandler::OnAuthRequired(
-    scoped_refptr<net::AuthChallengeInfo> auth_info,
+    const net::AuthChallengeInfo& auth_info,
     scoped_refptr<net::HttpResponseHeaders> response_headers,
     const net::IPEndPoint& remote_endpoint,
     base::OnceCallback<void(const net::AuthCredentials*)> callback,
@@ -301,7 +301,7 @@ int WebSocket::WebSocketEventHandler::OnAuthRequired(
   }
 
   impl_->auth_handler_->OnAuthRequired(
-      std::move(auth_info), std::move(response_headers), remote_endpoint,
+      auth_info, std::move(response_headers), remote_endpoint,
       base::BindOnce(&WebSocket::OnAuthRequiredComplete,
                      impl_->weak_ptr_factory_.GetWeakPtr(),
                      std::move(callback)));

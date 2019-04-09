@@ -194,7 +194,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
                                 bool* ignore_navigation) override;
   bool ShouldCreateTaskScheduler() override;
   std::unique_ptr<content::LoginDelegate> CreateLoginDelegate(
-      net::AuthChallengeInfo* auth_info,
+      const net::AuthChallengeInfo& auth_info,
       content::WebContents* web_contents,
       const content::GlobalRequestID& request_id,
       bool is_main_frame,

@@ -18,7 +18,7 @@
 // all toolkit-views platforms.
 // static
 std::unique_ptr<LoginHandler> LoginHandler::Create(
-    net::AuthChallengeInfo* auth_info,
+    const net::AuthChallengeInfo& auth_info,
     content::WebContents* web_contents,
     LoginAuthRequiredCallback auth_required_callback) {
   return chrome::CreateLoginHandlerViews(auth_info, web_contents,

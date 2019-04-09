@@ -52,7 +52,7 @@ int ProxyClientSocket::HandleProxyAuthChallenge(
   DCHECK(response->headers.get());
   int rv = auth->HandleAuthChallenge(response->headers, response->ssl_info,
                                      false, true, net_log);
-  response->auth_challenge = auth->auth_info();
+  auth->TakeAuthInfo(&response->auth_challenge);
   if (rv == OK)
     return ERR_PROXY_AUTH_REQUESTED;
   return rv;

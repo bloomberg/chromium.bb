@@ -87,7 +87,7 @@ class Delegate : public URLRequest::Delegate {
   void OnResponseStarted(URLRequest* request, int net_error) override;
 
   void OnAuthRequired(URLRequest* request,
-                      AuthChallengeInfo* auth_info) override;
+                      const AuthChallengeInfo& auth_info) override;
 
   void OnCertificateRequested(URLRequest* request,
                               SSLCertRequestInfo* cert_request_info) override;
@@ -410,12 +410,12 @@ void Delegate::OnResponseStarted(URLRequest* request, int net_error) {
 }
 
 void Delegate::OnAuthRequired(URLRequest* request,
-                              AuthChallengeInfo* auth_info) {
+                              const AuthChallengeInfo& auth_info) {
   base::Optional<AuthCredentials> credentials;
   // This base::Unretained(this) relies on an assumption that |callback| can
   // be called called during the opening handshake.
   int rv = owner_->connect_delegate()->OnAuthRequired(
-      scoped_refptr<AuthChallengeInfo>(auth_info), request->response_headers(),
+      auth_info, request->response_headers(),
       request->GetResponseRemoteEndpoint(),
       base::BindOnce(&Delegate::OnAuthRequiredComplete, base::Unretained(this),
                      request),

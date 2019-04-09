@@ -1779,7 +1779,6 @@ int HttpCache::Transaction::DoSuccessfulSendRequest() {
     // able to authenticate this request because we should have authenticated
     // this URL moments ago.
     if (IsReadyToRestartForAuth()) {
-      DCHECK(!response_.auth_challenge.get());
       TransitionToState(STATE_SEND_REQUEST_COMPLETE);
       // In theory we should check to see if there are new cookies, but there
       // is no way to do that from here.

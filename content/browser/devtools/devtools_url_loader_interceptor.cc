@@ -203,7 +203,7 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
   void Detach();
 
   void OnAuthRequest(
-      const scoped_refptr<net::AuthChallengeInfo>& auth_info,
+      const net::AuthChallengeInfo& auth_info,
       DevToolsURLLoaderInterceptor::HandleAuthRequestCallback callback);
 
  private:
@@ -583,7 +583,7 @@ void DevToolsURLLoaderInterceptor::HandleAuthRequest(
     int32_t process_id,
     int32_t routing_id,
     int32_t request_id,
-    const scoped_refptr<net::AuthChallengeInfo>& auth_info,
+    const net::AuthChallengeInfo& auth_info,
     HandleAuthRequestCallback callback) {
   GlobalRequestId req_id = std::make_tuple(process_id, routing_id, request_id);
   if (auto* job = InterceptionJob::FindByRequestId(req_id))
@@ -1411,7 +1411,7 @@ void InterceptionJob::OnComplete(
 }
 
 void InterceptionJob::OnAuthRequest(
-    const scoped_refptr<net::AuthChallengeInfo>& auth_info,
+    const net::AuthChallengeInfo& auth_info,
     DevToolsURLLoaderInterceptor::HandleAuthRequestCallback callback) {
   DCHECK_EQ(kRequestSent, state_);
   DCHECK(pending_auth_callback_.is_null());
@@ -1424,7 +1424,8 @@ void InterceptionJob::OnAuthRequest(
   }
   state_ = State::kAuthRequired;
   auto request_info = BuildRequestInfo(nullptr);
-  request_info->auth_challenge = auth_info;
+  request_info->auth_challenge =
+      std::make_unique<net::AuthChallengeInfo>(auth_info);
   pending_auth_callback_ = std::move(callback);
   NotifyClient(std::move(request_info));
 }

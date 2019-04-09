@@ -129,7 +129,7 @@ class NET_EXPORT_PRIVATE WebSocketStream {
     // async case) cancels authentication. Otherwise the new credentials are set
     // and the opening handshake will be retried with the credentials.
     virtual int OnAuthRequired(
-        scoped_refptr<AuthChallengeInfo> auth_info,
+        const AuthChallengeInfo& auth_info,
         scoped_refptr<HttpResponseHeaders> response_headers,
         const IPEndPoint& remote_endpoint,
         base::OnceCallback<void(const AuthCredentials*)> callback,

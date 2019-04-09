@@ -202,7 +202,7 @@ class MockWebSocketEventInterface : public WebSocketEventInterface {
     OnSSLCertificateErrorCalled(
         ssl_error_callbacks.get(), url, ssl_info, fatal);
   }
-  int OnAuthRequired(scoped_refptr<AuthChallengeInfo> auth_info,
+  int OnAuthRequired(const AuthChallengeInfo& auth_info,
                      scoped_refptr<HttpResponseHeaders> response_headers,
                      const IPEndPoint& remote_endpoint,
                      base::OnceCallback<void(const AuthCredentials*)> callback,
@@ -218,7 +218,7 @@ class MockWebSocketEventInterface : public WebSocketEventInterface {
       OnSSLCertificateErrorCalled,
       void(SSLErrorCallbacks*, const GURL&, const SSLInfo&, bool));  // NOLINT
   MOCK_METHOD4(OnAuthRequiredCalled,
-               int(scoped_refptr<AuthChallengeInfo>,
+               int(const AuthChallengeInfo&,
                    scoped_refptr<HttpResponseHeaders>,
                    const IPEndPoint&,
                    base::Optional<AuthCredentials>*));
@@ -249,7 +249,7 @@ class FakeWebSocketEventInterface : public WebSocketEventInterface {
       const GURL& url,
       const SSLInfo& ssl_info,
       bool fatal) override {}
-  int OnAuthRequired(scoped_refptr<AuthChallengeInfo> auth_info,
+  int OnAuthRequired(const AuthChallengeInfo& auth_info,
                      scoped_refptr<HttpResponseHeaders> response_headers,
                      const IPEndPoint& remote_endpoint,
                      base::OnceCallback<void(const AuthCredentials*)> callback,
@@ -2965,8 +2965,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, OnSSLCertificateErrorCalled) {
 TEST_F(WebSocketChannelEventInterfaceTest, OnAuthRequiredCalled) {
   const GURL wss_url("wss://example.com/on_auth_required");
   connect_data_.socket_url = wss_url;
-  scoped_refptr<AuthChallengeInfo> auth_info =
-      base::MakeRefCounted<AuthChallengeInfo>();
+  AuthChallengeInfo auth_info;
   base::Optional<AuthCredentials> credentials;
   scoped_refptr<HttpResponseHeaders> response_headers =
       base::MakeRefCounted<HttpResponseHeaders>("HTTP/1.1 200 OK");

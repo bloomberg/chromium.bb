@@ -301,22 +301,24 @@ bool URLRequestFtpJob::NeedsAuth() {
   return auth_data_.get() && auth_data_->state == AUTH_STATE_NEED_AUTH;
 }
 
-void URLRequestFtpJob::GetAuthChallengeInfo(
-    scoped_refptr<AuthChallengeInfo>* result) {
+std::unique_ptr<AuthChallengeInfo> URLRequestFtpJob::GetAuthChallengeInfo() {
   DCHECK(NeedsAuth());
 
   if (http_response_info_) {
-    *result = http_response_info_->auth_challenge;
-    return;
+    if (!http_response_info_->auth_challenge.has_value())
+      return nullptr;
+    return std::make_unique<AuthChallengeInfo>(
+        http_response_info_->auth_challenge.value());
   }
 
-  scoped_refptr<AuthChallengeInfo> auth_info(new AuthChallengeInfo);
-  auth_info->is_proxy = false;
-  auth_info->challenger = url::Origin::Create(request_->url());
+  std::unique_ptr<AuthChallengeInfo> result =
+      std::make_unique<AuthChallengeInfo>();
+  result->is_proxy = false;
+  result->challenger = url::Origin::Create(request_->url());
   // scheme and realm are kept empty.
-  DCHECK(auth_info->scheme.empty());
-  DCHECK(auth_info->realm.empty());
-  result->swap(auth_info);
+  DCHECK(result->scheme.empty());
+  DCHECK(result->realm.empty());
+  return result;
 }
 
 void URLRequestFtpJob::SetAuth(const AuthCredentials& credentials) {

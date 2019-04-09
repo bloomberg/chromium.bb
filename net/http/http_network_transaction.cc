@@ -1846,10 +1846,7 @@ int HttpNetworkTransaction::HandleAuthChallenge() {
   if (auth_controllers_[target]->HaveAuthHandler())
     pending_auth_target_ = target;
 
-  scoped_refptr<AuthChallengeInfo> auth_info =
-      auth_controllers_[target]->auth_info();
-  if (auth_info.get())
-      response_.auth_challenge = auth_info;
+  auth_controllers_[target]->TakeAuthInfo(&response_.auth_challenge);
 
   return rv;
 }

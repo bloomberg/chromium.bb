@@ -248,7 +248,7 @@ void TestDelegate::OnReceivedRedirect(URLRequest* request,
 }
 
 void TestDelegate::OnAuthRequired(URLRequest* request,
-                                  AuthChallengeInfo* auth_info) {
+                                  const AuthChallengeInfo& auth_info) {
   auth_required_ = true;
   if (on_auth_required_) {
     std::move(on_auth_required_).Run();

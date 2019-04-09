@@ -237,7 +237,7 @@ class LoginDelegateProxy : public LoginDelegate {
     delegate_ui_.reset(new DelegateOwnerUI(weak_factory_.GetWeakPtr()));
   }
 
-  void Start(net::AuthChallengeInfo* auth_info,
+  void Start(const net::AuthChallengeInfo& auth_info,
              ResourceRequestInfo::WebContentsGetter web_contents_getter,
              const GlobalRequestID& request_id,
              bool is_request_for_main_frame,
@@ -247,11 +247,11 @@ class LoginDelegateProxy : public LoginDelegate {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(
-            &DelegateOwnerUI::Start, base::Unretained(delegate_ui_.get()),
-            base::RetainedRef(auth_info), std::move(web_contents_getter),
-            request_id, is_request_for_main_frame, url,
-            std::move(response_headers), first_auth_attempt));
+        base::BindOnce(&DelegateOwnerUI::Start,
+                       base::Unretained(delegate_ui_.get()), auth_info,
+                       std::move(web_contents_getter), request_id,
+                       is_request_for_main_frame, url,
+                       std::move(response_headers), first_auth_attempt));
   }
 
  private:
@@ -264,7 +264,7 @@ class LoginDelegateProxy : public LoginDelegate {
         : proxy_(std::move(proxy)) {}
     ~DelegateOwnerUI() { DCHECK_CURRENTLY_ON(BrowserThread::UI); }
 
-    void Start(net::AuthChallengeInfo* auth_info,
+    void Start(const net::AuthChallengeInfo& auth_info,
                ResourceRequestInfo::WebContentsGetter web_contents_getter,
                const GlobalRequestID& request_id,
                bool is_request_for_main_frame,
@@ -585,7 +585,7 @@ ResourceDispatcherHostImpl::MaybeInterceptAsStream(
 
 std::unique_ptr<LoginDelegate> ResourceDispatcherHostImpl::CreateLoginDelegate(
     ResourceLoader* loader,
-    net::AuthChallengeInfo* auth_info) {
+    const net::AuthChallengeInfo& auth_info) {
   if (!delegate_)
     return nullptr;
 

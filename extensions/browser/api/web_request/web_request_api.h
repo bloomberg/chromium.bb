@@ -95,7 +95,7 @@ class WebRequestAPI : public BrowserContextKeyedAPI,
     // in-progress network requests. If the request will *not* be handled by
     // the proxy, |callback| should be invoked with |base::nullopt|.
     virtual void HandleAuthRequest(
-        net::AuthChallengeInfo* auth_info,
+        const net::AuthChallengeInfo& auth_info,
         scoped_refptr<net::HttpResponseHeaders> response_headers,
         int32_t request_id,
         AuthRequestCallback callback);
@@ -134,7 +134,7 @@ class WebRequestAPI : public BrowserContextKeyedAPI,
     Proxy* GetProxyFromRequestId(const content::GlobalRequestID& id);
 
     void MaybeProxyAuthRequest(
-        net::AuthChallengeInfo* auth_info,
+        const net::AuthChallengeInfo& auth_info,
         scoped_refptr<net::HttpResponseHeaders> response_headers,
         const content::GlobalRequestID& request_id,
         AuthRequestCallback callback);
@@ -209,7 +209,7 @@ class WebRequestAPI : public BrowserContextKeyedAPI,
   // thread.
   bool MaybeProxyAuthRequest(
       content::BrowserContext* browser_context,
-      net::AuthChallengeInfo* auth_info,
+      const net::AuthChallengeInfo& auth_info,
       scoped_refptr<net::HttpResponseHeaders> response_headers,
       const content::GlobalRequestID& request_id,
       bool is_main_frame,

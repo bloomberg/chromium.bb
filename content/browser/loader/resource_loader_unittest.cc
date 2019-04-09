@@ -489,7 +489,7 @@ class ResourceLoaderTest : public testing::Test,
   // ResourceLoaderDelegate:
   std::unique_ptr<LoginDelegate> CreateLoginDelegate(
       ResourceLoader* loader,
-      net::AuthChallengeInfo* auth_info) override {
+      const net::AuthChallengeInfo& auth_info) override {
     return nullptr;
   }
   bool HandleExternalProtocol(ResourceLoader* loader,

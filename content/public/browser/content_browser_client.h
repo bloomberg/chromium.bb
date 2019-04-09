@@ -1428,7 +1428,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // WebContentsDelegate, where the lifetime ordering is more
   // obvious. https://crbug.com/456255
   virtual std::unique_ptr<LoginDelegate> CreateLoginDelegate(
-      net::AuthChallengeInfo* auth_info,
+      const net::AuthChallengeInfo& auth_info,
       WebContents* web_contents,
       const GlobalRequestID& request_id,
       bool is_request_for_main_frame,

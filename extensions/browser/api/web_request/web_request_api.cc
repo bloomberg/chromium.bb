@@ -405,7 +405,7 @@ std::unique_ptr<WebRequestEventDetails> CreateEventDetails(
 
 void MaybeProxyAuthRequestOnIO(
     content::ResourceContext* resource_context,
-    net::AuthChallengeInfo* auth_info,
+    const net::AuthChallengeInfo& auth_info,
     scoped_refptr<net::HttpResponseHeaders> response_headers,
     const content::GlobalRequestID& request_id,
     WebRequestAPI::AuthRequestCallback callback) {
@@ -477,7 +477,7 @@ void RecordAddEventListenerUMAs(int extra_info_spec) {
 }  // namespace
 
 void WebRequestAPI::Proxy::HandleAuthRequest(
-    net::AuthChallengeInfo* auth_info,
+    const net::AuthChallengeInfo& auth_info,
     scoped_refptr<net::HttpResponseHeaders> response_headers,
     int32_t request_id,
     AuthRequestCallback callback) {
@@ -558,7 +558,7 @@ WebRequestAPI::Proxy* WebRequestAPI::ProxySet::GetProxyFromRequestId(
 }
 
 void WebRequestAPI::ProxySet::MaybeProxyAuthRequest(
-    net::AuthChallengeInfo* auth_info,
+    const net::AuthChallengeInfo& auth_info,
     scoped_refptr<net::HttpResponseHeaders> response_headers,
     const content::GlobalRequestID& request_id,
     AuthRequestCallback callback) {
@@ -714,7 +714,7 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
 
 bool WebRequestAPI::MaybeProxyAuthRequest(
     content::BrowserContext* browser_context,
-    net::AuthChallengeInfo* auth_info,
+    const net::AuthChallengeInfo& auth_info,
     scoped_refptr<net::HttpResponseHeaders> response_headers,
     const content::GlobalRequestID& request_id,
     bool is_main_frame,
@@ -736,9 +736,9 @@ bool WebRequestAPI::MaybeProxyAuthRequest(
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&MaybeProxyAuthRequestOnIO,
-                     browser_context->GetResourceContext(),
-                     base::RetainedRef(auth_info), std::move(response_headers),
-                     proxied_request_id, std::move(callback)));
+                     browser_context->GetResourceContext(), auth_info,
+                     std::move(response_headers), proxied_request_id,
+                     std::move(callback)));
   return true;
 }
 

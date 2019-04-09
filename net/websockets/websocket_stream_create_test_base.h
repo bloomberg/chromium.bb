@@ -81,7 +81,7 @@ class WebSocketStreamCreateTestBase : public WithScopedTaskEnvironment {
   SSLInfo ssl_info_;
   bool ssl_fatal_;
   URLRequest* url_request_;
-  scoped_refptr<AuthChallengeInfo> auth_challenge_info_;
+  AuthChallengeInfo auth_challenge_info_;
   base::OnceCallback<void(const AuthCredentials*)> on_auth_required_callback_;
 
   // This value will be copied to |*credentials| on OnAuthRequired.

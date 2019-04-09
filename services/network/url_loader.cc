@@ -754,7 +754,7 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
 }
 
 void URLLoader::OnAuthRequired(net::URLRequest* url_request,
-                               net::AuthChallengeInfo* auth_info) {
+                               const net::AuthChallengeInfo& auth_info) {
   if (!network_service_client_) {
     OnAuthCredentials(base::nullopt);
     return;

@@ -45,9 +45,8 @@
 namespace IPC {
 
 template <>
-struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
-    ParamTraits<scoped_refptr<net::AuthChallengeInfo>> {
-  typedef scoped_refptr<net::AuthChallengeInfo> param_type;
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ParamTraits<net::AuthChallengeInfo> {
+  typedef net::AuthChallengeInfo param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
