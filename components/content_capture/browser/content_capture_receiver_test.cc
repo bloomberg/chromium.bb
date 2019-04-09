@@ -121,6 +121,15 @@ class ContentCaptureReceiverTest : public content::RenderViewHostTestHarness {
     test_data2_.value = base::ASCIIToUTF16("http://foo.org/bar");
     test_data2_.bounds = gfx::Rect(10, 10);
     test_data2_.children.push_back(child);
+    // Update to test_data_.
+    ContentCaptureData child2;
+    // Have the unique id for text content.
+    child2.id = 3;
+    child2.value = base::ASCIIToUTF16("World");
+    child2.bounds = gfx::Rect(5, 10, 5, 5);
+    test_data_update_.value = base::ASCIIToUTF16("http://foo.com/bar");
+    test_data_update_.bounds = gfx::Rect(10, 10);
+    test_data_update_.children.push_back(child2);
   }
 
   void SetupChildFrame() {
@@ -143,6 +152,9 @@ class ContentCaptureReceiverTest : public content::RenderViewHostTestHarness {
 
   const ContentCaptureData& test_data() const { return test_data_; }
   const ContentCaptureData& test_data2() const { return test_data2_; }
+  const ContentCaptureData& test_data_update() const {
+    return test_data_update_;
+  }
   const std::vector<int64_t>& expected_removed_ids() const {
     return expected_removed_ids_;
   }
@@ -157,6 +169,14 @@ class ContentCaptureReceiverTest : public content::RenderViewHostTestHarness {
 
   ContentCaptureData GetExpectedTestData2(bool main_frame) const {
     ContentCaptureData expected(test_data2_);
+    // Replaces the id with expected id.
+    expected.id = ContentCaptureReceiver::GetIdFrom(main_frame ? main_frame_
+                                                               : child_frame_);
+    return expected;
+  }
+
+  ContentCaptureData GetExpectedTestDataUpdate(bool main_frame) const {
+    ContentCaptureData expected(test_data_update_);
     // Replaces the id with expected id.
     expected.id = ContentCaptureReceiver::GetIdFrom(main_frame ? main_frame_
                                                                : child_frame_);
@@ -213,6 +233,7 @@ class ContentCaptureReceiverTest : public content::RenderViewHostTestHarness {
   content::RenderFrameHost* child_frame_ = nullptr;
   ContentCaptureData test_data_;
   ContentCaptureData test_data2_;
+  ContentCaptureData test_data_update_;
   // Expected removed Ids.
   std::vector<int64_t> expected_removed_ids_{2};
 };
@@ -237,14 +258,14 @@ TEST_F(ContentCaptureReceiverTest, DidCaptureContentWithUpdate) {
   EXPECT_EQ(GetExpectedTestData(true /* main_frame */),
             content_capture_receiver_manager_helper()->captured_data());
   // Simulates to update the content within the same document.
-  DidCaptureContent(test_data2(), false /* first_data */);
+  DidCaptureContent(test_data_update(), false /* first_data */);
   // Verifies to get test_data2() with correct frame content id.
   EXPECT_TRUE(
       content_capture_receiver_manager_helper()->parent_session().empty());
   // Verifies that the sesssion isn't removed.
   EXPECT_TRUE(
       content_capture_receiver_manager_helper()->removed_session().empty());
-  EXPECT_EQ(GetExpectedTestData2(true /* main_frame */),
+  EXPECT_EQ(GetExpectedTestDataUpdate(true /* main_frame */),
             content_capture_receiver_manager_helper()->captured_data());
 }
 

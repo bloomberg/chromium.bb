@@ -46,6 +46,10 @@ void ContentCaptureReceiver::DidCaptureContent(const ContentCaptureData& data,
   // We can't avoid copy the data here, because id need to be overriden.
   ContentCaptureData content(data);
   content.id = id_;
+  // Always have frame URL attached, since the ContentCaptureConsumer will
+  // be reset once activity is resumed, URL is needed to rebuild session.
+  if (!first_data)
+    content.value = frame_content_capture_data_.value;
   manager->DidCaptureContent(this, content);
 }
 
