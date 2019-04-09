@@ -1059,7 +1059,7 @@ void ArcBluetoothBridge::SetAdapterProperty(
   if (property->is_discovery_timeout()) {
     uint32_t discovery_timeout = property->get_discovery_timeout();
     if (discovery_timeout > 0) {
-      SetDiscoverable(true, discovery_timeout);
+      discoverable_off_timeout_ = discovery_timeout;
     } else {
       OnSetAdapterProperty(mojom::BluetoothStatus::PARM_INVALID,
                            std::move(property));
@@ -1075,14 +1075,14 @@ void ArcBluetoothBridge::SetAdapterProperty(
                    weak_factory_.GetWeakPtr(), mojom::BluetoothStatus::FAIL,
                    base::Passed(&property_clone)));
   } else if (property->is_adapter_scan_mode()) {
-    // Android will set adapter scan mode in these 3 situations.
-    // 1) Set to BT_SCAN_MODE_NONE just before turning BT off.
-    // 2) Set to BT_SCAN_MODE_CONNECTABLE just after turning on.
-    // 3) Set to BT_SCAN_MODE_CONNECTABLE_DISCOVERABLE just before set the
-    //    discoverable timeout.
-    // Since turning BT off/on implied scan mode none/connectable and setting
-    // discovery timeout implied scan mode discoverable, we don't need to
-    // do anything here. We will just call success callback in this case.
+    // Only set the BT scan mode to discoverable if requested and Android has
+    // set a discovery timeout previously.
+    if (property->get_adapter_scan_mode() ==
+        mojom::BluetoothScanMode::CONNECTABLE_DISCOVERABLE) {
+      SetDiscoverable(discoverable_off_timeout_ > 0, discoverable_off_timeout_);
+    } else {
+      SetDiscoverable(/*discoverable=*/false, /*timeout=*/0);
+    }
     OnSetAdapterProperty(mojom::BluetoothStatus::SUCCESS, std::move(property));
   } else {
     // Android does not set any other property type.

@@ -544,6 +544,8 @@ class ArcBluetoothBridge
   base::OneShotTimer discovery_off_timer_;
   // Timer to turn adapter discoverable off.
   base::OneShotTimer discoverable_off_timer_;
+  // Adapter discoverable timeout value.
+  uint32_t discoverable_off_timeout_ = 0;
 
   // Queue to track the powered state changes initiated by Android.
   base::queue<AdapterPowerState> remote_power_changes_;
