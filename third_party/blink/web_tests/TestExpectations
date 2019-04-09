@@ -6090,6 +6090,7 @@ crbug.com/938780 [ Mac10.10 Mac10.11 ] virtual/threaded/external/wpt/animation-w
 
 # Sheriff 2019-03-06
 crbug.com/938591 [ Linux ] fast/events/middleClickAutoscroll-nested-divs-forbidden.html [ Failure Pass ]
+crbug.com/938884 [ Win7 Mac ] http/tests/devtools/elements/styles-3/styles-add-blank-property.js [ Pass Timeout ]
 
 # Caused a revert of a good change.
 crbug.com/931533 media/video-played-collapse.html [ Pass Failure ]
