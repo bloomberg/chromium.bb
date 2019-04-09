@@ -7,12 +7,15 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/time/time.h"
+#include "chrome/browser/sync/test/integration/encryption_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sessions_helper.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "chrome/browser/sync/test/integration/user_events_helper.h"
 #include "chrome/browser/sync/user_event_service_factory.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/model/model_type_sync_bridge.h"
@@ -21,19 +24,12 @@
 #include "components/variations/variations_associated_data.h"
 
 using fake_server::FakeServer;
-using sync_pb::UserEventSpecifics;
-using sync_pb::SyncEntity;
 using sync_pb::CommitResponse;
+using sync_pb::SyncEntity;
+using sync_pb::UserEventSpecifics;
+using user_events_helper::CreateTestEvent;
 
 namespace {
-
-UserEventSpecifics CreateTestEvent(int microseconds) {
-  UserEventSpecifics specifics;
-  specifics.set_event_time_usec(microseconds);
-  specifics.set_navigation_id(microseconds);
-  specifics.mutable_test_event();
-  return specifics;
-}
 
 CommitResponse::ResponseType BounceType(
     CommitResponse::ResponseType type,
@@ -55,65 +51,6 @@ CommitResponse::ResponseType TransientErrorFirst(
     return CommitResponse::SUCCESS;
   }
 }
-
-class UserEventEqualityChecker : public SingleClientStatusChangeChecker {
- public:
-  UserEventEqualityChecker(syncer::ProfileSyncService* service,
-                           FakeServer* fake_server,
-                           std::vector<UserEventSpecifics> expected_specifics)
-      : SingleClientStatusChangeChecker(service), fake_server_(fake_server) {
-    for (const UserEventSpecifics& specifics : expected_specifics) {
-      expected_specifics_.insert(std::pair<int64_t, UserEventSpecifics>(
-          specifics.event_time_usec(), specifics));
-    }
-  }
-
-  bool IsExitConditionSatisfied() override {
-    std::vector<SyncEntity> entities =
-        fake_server_->GetSyncEntitiesByModelType(syncer::USER_EVENTS);
-
-    // |entities.size()| is only going to grow, if |entities.size()| ever
-    // becomes bigger then all hope is lost of passing, stop now.
-    EXPECT_GE(expected_specifics_.size(), entities.size());
-
-    if (expected_specifics_.size() > entities.size()) {
-      return false;
-    }
-
-    // Number of events on server matches expected, exit condition is satisfied.
-    // Let's verify that content matches as well. It is safe to modify
-    // |expected_specifics_|.
-    for (const SyncEntity& entity : entities) {
-      UserEventSpecifics server_specifics = entity.specifics().user_event();
-      auto iter = expected_specifics_.find(server_specifics.event_time_usec());
-      // We don't expect to encounter id matching events with different values,
-      // this isn't going to recover so fail the test case now.
-      EXPECT_TRUE(expected_specifics_.end() != iter);
-      if (expected_specifics_.end() == iter) {
-        return false;
-      }
-      // TODO(skym): This may need to change if we start updating navigation_id
-      // based on what sessions data is committed, and end up committing the
-      // same event multiple times.
-      EXPECT_EQ(iter->second.navigation_id(), server_specifics.navigation_id());
-      EXPECT_EQ(iter->second.event_case(), server_specifics.event_case());
-
-      expected_specifics_.erase(iter);
-    }
-
-    return true;
-  }
-
-  std::string GetDebugMessage() const override {
-    return "Waiting server side USER_EVENTS to match expected.";
-  }
-
- private:
-  FakeServer* fake_server_;
-  std::multimap<int64_t, UserEventSpecifics> expected_specifics_;
-
-  DISALLOW_COPY_AND_ASSIGN(UserEventEqualityChecker);
-};
 
 // A more simplistic version of UserEventEqualityChecker that only checks the
 // case of the events. This is helpful if you do not know (or control) some of
@@ -191,15 +128,17 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, Sanity) {
       GetFakeServer()->GetSyncEntitiesByModelType(syncer::USER_EVENTS).size());
   syncer::UserEventService* event_service =
       browser_sync::UserEventServiceFactory::GetForProfile(GetProfile(0));
-  const UserEventSpecifics specifics = CreateTestEvent(0);
+  const UserEventSpecifics specifics = CreateTestEvent(base::Time());
   event_service->RecordUserEvent(specifics);
   EXPECT_TRUE(ExpectUserEvents({specifics}));
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, RetrySequential) {
   ASSERT_TRUE(SetupSync());
-  const UserEventSpecifics specifics1 = CreateTestEvent(1);
-  const UserEventSpecifics specifics2 = CreateTestEvent(2);
+  const UserEventSpecifics specifics1 =
+      CreateTestEvent(base::Time() + base::TimeDelta::FromMicroseconds(1));
+  const UserEventSpecifics specifics2 =
+      CreateTestEvent(base::Time() + base::TimeDelta::FromMicroseconds(2));
   syncer::UserEventService* event_service =
       browser_sync::UserEventServiceFactory::GetForProfile(GetProfile(0));
 
@@ -225,8 +164,10 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, RetrySequential) {
 IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, RetryParallel) {
   ASSERT_TRUE(SetupSync());
   bool first = true;
-  const UserEventSpecifics specifics1 = CreateTestEvent(1);
-  const UserEventSpecifics specifics2 = CreateTestEvent(2);
+  const UserEventSpecifics specifics1 =
+      CreateTestEvent(base::Time() + base::TimeDelta::FromMicroseconds(1));
+  const UserEventSpecifics specifics2 =
+      CreateTestEvent(base::Time() + base::TimeDelta::FromMicroseconds(2));
   UserEventSpecifics retry_specifics;
 
   syncer::UserEventService* event_service =
@@ -245,9 +186,12 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, RetryParallel) {
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, NoHistory) {
-  const UserEventSpecifics test_event1 = CreateTestEvent(1);
-  const UserEventSpecifics test_event2 = CreateTestEvent(2);
-  const UserEventSpecifics test_event3 = CreateTestEvent(3);
+  const UserEventSpecifics test_event1 =
+      CreateTestEvent(base::Time() + base::TimeDelta::FromMicroseconds(1));
+  const UserEventSpecifics test_event2 =
+      CreateTestEvent(base::Time() + base::TimeDelta::FromMicroseconds(2));
+  const UserEventSpecifics test_event3 =
+      CreateTestEvent(base::Time() + base::TimeDelta::FromMicroseconds(3));
 
   ASSERT_TRUE(SetupSync());
   syncer::UserEventService* event_service =
@@ -270,7 +214,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, NoHistory) {
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, NoSessions) {
-  const UserEventSpecifics specifics = CreateTestEvent(1);
+  const UserEventSpecifics specifics =
+      CreateTestEvent(base::Time() + base::TimeDelta::FromMicroseconds(1));
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(GetClient(0)->DisableSyncForDatatype(syncer::PROXY_TABS));
   syncer::UserEventService* event_service =
@@ -283,15 +228,17 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, NoSessions) {
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, Encryption) {
-  const UserEventSpecifics test_event1 = CreateTestEvent(1);
-  const UserEventSpecifics test_event2 = CreateTestEvent(2);
+  const UserEventSpecifics test_event1 =
+      CreateTestEvent(base::Time() + base::TimeDelta::FromMicroseconds(1));
+  const UserEventSpecifics test_event2 =
+      CreateTestEvent(base::Time() + base::TimeDelta::FromMicroseconds(2));
 
   ASSERT_TRUE(SetupSync());
   syncer::UserEventService* event_service =
       browser_sync::UserEventServiceFactory::GetForProfile(GetProfile(0));
   event_service->RecordUserEvent(test_event1);
-  ASSERT_TRUE(EnableEncryption(0));
   EXPECT_TRUE(ExpectUserEvents({test_event1}));
+  ASSERT_TRUE(EnableEncryption(0));
   event_service->RecordUserEvent(test_event2);
 
   // Just checking that we don't see test_event2 isn't very convincing yet,

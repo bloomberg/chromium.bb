@@ -41,6 +41,7 @@
 #include "components/sync/model/model_type_store_service.h"
 #include "components/sync/model_impl/forwarding_model_type_controller_delegate.h"
 #include "components/sync/model_impl/proxy_model_type_controller_delegate.h"
+#include "components/sync/user_events/user_event_model_type_controller.h"
 #include "components/sync_bookmarks/bookmark_change_processor.h"
 #include "components/sync_bookmarks/bookmark_data_type_controller.h"
 #include "components/sync_bookmarks/bookmark_model_associator.h"
@@ -397,8 +398,16 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
   }
 
   if (!disabled_types.Has(syncer::USER_EVENTS)) {
-    controllers.push_back(CreateModelTypeControllerForModelRunningOnUIThread(
-        syncer::USER_EVENTS));
+    // TODO(crbug.com/867801): Switch to forwarding delegate.
+    controllers.push_back(
+        std::make_unique<syncer::UserEventModelTypeController>(
+            sync_service,
+            std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
+                ui_thread_,
+                base::BindRepeating(&browser_sync::BrowserSyncClient::
+                                        GetControllerDelegateForModelType,
+                                    base::Unretained(sync_client_),
+                                    syncer::USER_EVENTS))));
   }
 
   if (!disabled_types.Has(syncer::SEND_TAB_TO_SELF) &&

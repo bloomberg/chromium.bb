@@ -563,6 +563,8 @@ jumbo_static_library("sync") {
     "user_events/fake_user_event_service.h",
     "user_events/no_op_user_event_service.cc",
     "user_events/no_op_user_event_service.h",
+    "user_events/user_event_model_type_controller.cc",
+    "user_events/user_event_model_type_controller.h",
     "user_events/user_event_service.h",
     "user_events/user_event_service_impl.cc",
     "user_events/user_event_service_impl.h",
