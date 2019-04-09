@@ -1993,8 +1993,8 @@
   },
   {
     "name": "explore-sites",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "chili", "dewittj" ],
+    "expiry_milestone": 83
   },
   {
     "name": "extension-apis",
