@@ -1321,8 +1321,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ViewBoundsInNestedFrameTest) {
   // relative offset of its direct parent within the root frame.
   gfx::Rect bounds = rwhv_nested->GetViewBounds();
 
-  scoped_refptr<SynchronizeVisualPropertiesMessageFilter> filter =
-      new SynchronizeVisualPropertiesMessageFilter();
+  auto filter =
+      base::MakeRefCounted<SynchronizeVisualPropertiesMessageFilter>();
   root->current_frame_host()->GetProcess()->AddFilter(filter.get());
 
   // Scroll the parent frame downward to verify that the child rect gets updated
@@ -1442,8 +1442,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
   // SynchronizeVisualPropertiesMessageFilter catches updates to the position in
   // order to avoid busy waiting. It gets created early to catch the initial
   // rects from the navigation.
-  scoped_refptr<SynchronizeVisualPropertiesMessageFilter> filter =
-      new SynchronizeVisualPropertiesMessageFilter();
+  auto filter =
+      base::MakeRefCounted<SynchronizeVisualPropertiesMessageFilter>();
   parent_iframe_node->current_frame_host()->GetProcess()->AddFilter(
       filter.get());
 
@@ -10882,13 +10882,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Monitor visual sync messages coming from the mainframe to make sure
   // |is_pinch_gesture_active| goes true during the pinch gesture.
-  scoped_refptr<SynchronizeVisualPropertiesMessageFilter> filter_mainframe =
-      new SynchronizeVisualPropertiesMessageFilter();
+  auto filter_mainframe =
+      base::MakeRefCounted<SynchronizeVisualPropertiesMessageFilter>();
   root->current_frame_host()->GetProcess()->AddFilter(filter_mainframe.get());
   // Monitor frame sync messages coming from child_b as it will need to
   // relay them to child_d.
-  scoped_refptr<SynchronizeVisualPropertiesMessageFilter> filter_child_b =
-      new SynchronizeVisualPropertiesMessageFilter();
+  auto filter_child_b =
+      base::MakeRefCounted<SynchronizeVisualPropertiesMessageFilter>();
   child_b->current_frame_host()->GetProcess()->AddFilter(filter_child_b.get());
 
   // We need to observe a root frame submission to pick up the initial page

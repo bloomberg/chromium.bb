@@ -3049,8 +3049,8 @@ bool TestChildOrGuestAutoresize(bool is_guest,
   RenderWidgetHostImpl* guest_rwh_impl =
       static_cast<RenderWidgetHostImpl*>(guest_rwh);
 
-  scoped_refptr<SynchronizeVisualPropertiesMessageFilter> filter(
-      new SynchronizeVisualPropertiesMessageFilter());
+  auto filter =
+      base::MakeRefCounted<SynchronizeVisualPropertiesMessageFilter>();
 
   // Register the message filter for the guest or child. For guest, we must use
   // a special hook, as there are already message filters installed which will
