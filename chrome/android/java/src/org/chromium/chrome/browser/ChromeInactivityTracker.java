@@ -19,11 +19,15 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
  */
 public class ChromeInactivityTracker implements StartStopWithNativeObserver, Destroyable {
     private static final String TAG = "InactivityTracker";
-    private static final String FEATURE_NAME = ChromeFeatureList.NTP_LAUNCH_AFTER_INACTIVITY;
-    private static final String NTP_LAUNCH_DELAY_IN_MINS_PARAM = "delay_in_mins";
+
     private static final long UNKNOWN_LAST_BACKGROUNDED_TIME = -1;
     private static final int UNKNOWN_LAUNCH_DELAY_MINS = -1;
     private static final int DEFAULT_LAUNCH_DELAY_IN_MINS = 5;
+
+    @VisibleForTesting
+    public static final String FEATURE_NAME = ChromeFeatureList.NTP_LAUNCH_AFTER_INACTIVITY;
+    @VisibleForTesting
+    public static final String NTP_LAUNCH_DELAY_IN_MINS_PARAM = "delay_in_mins";
 
     // Only true if the feature is enabled.
     private final boolean mIsEnabled;

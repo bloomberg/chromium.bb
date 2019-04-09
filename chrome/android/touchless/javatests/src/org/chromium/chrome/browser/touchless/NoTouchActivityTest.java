@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.touchless;
 
+import static org.chromium.chrome.browser.ChromeInactivityTracker.NTP_LAUNCH_DELAY_IN_MINS_PARAM;
+
 import android.content.Intent;
 import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
@@ -17,6 +19,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.chrome.browser.ChromeInactivityTracker;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.MockSafeBrowsingApiHandler;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -127,6 +130,36 @@ public class NoTouchActivityTest {
         ChromeTabUtils.waitForTabPageLoaded(
                 mActivity.getActivityTab(), mTestServer.getURL(TEST_PATH));
         TestThreadUtils.runOnUiThreadBlocking(() -> mActivity.onBackPressed());
+        CriteriaHelper.pollUiThread(
+                () -> mActivity.getActivityTab().getNativePage() instanceof TouchlessNewTabPage);
+    }
+
+    /**
+     * Tests that the tab does not persist after recreation, if enough time has passed.
+     *
+     * This test configures the time delay to be 0 minutes, which should always cause the inactivity
+     * threshold to be reached upon recreation.
+     */
+    @Test
+    @MediumTest
+    @CommandLineFlags.
+    Add({"enable-features=" + ChromeInactivityTracker.FEATURE_NAME + "<FakeStudyName",
+            "force-fieldtrials=FakeStudyName/Enabled",
+            "force-fieldtrial-params=FakeStudyName.Enabled:" + NTP_LAUNCH_DELAY_IN_MINS_PARAM
+                    + "/0"})
+    public void
+    testRecreateWithTabHistoryAfterInactivity() throws Throwable {
+        mActivityTestRule.startMainActivityFromLauncher();
+        mActivity = mActivityTestRule.getActivity();
+        mActivityTestRule.loadUrl(mTestServer.getURL(TEST_PATH));
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertEquals(mActivity.getActivityTab().getWebContents().getLastCommittedUrl(),
+                    mTestServer.getURL(TEST_PATH));
+        });
+
+        mActivity = ApplicationTestUtils.recreateActivity(mActivity);
+        mActivityTestRule.setActivity(mActivity);
+        mActivityTestRule.waitForActivityNativeInitializationComplete();
         CriteriaHelper.pollUiThread(
                 () -> mActivity.getActivityTab().getNativePage() instanceof TouchlessNewTabPage);
     }

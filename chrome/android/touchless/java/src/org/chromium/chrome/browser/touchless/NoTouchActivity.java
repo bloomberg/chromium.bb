@@ -142,14 +142,22 @@ public class NoTouchActivity extends SingleTabActivity {
 
     @Override
     public void initializeState() {
+        mInactivityTracker = new ChromeInactivityTracker(
+                LAST_BACKGROUNDED_TIME_MS_PREF, this.getLifecycleDispatcher());
+        boolean launchNtpDueToInactivity = mInactivityTracker.inactivityThresholdPassed();
+
+        // SingleTabActivity#initializeState creates a tab based on #getSavedInstanceState(), so if
+        // we need to clear it due to inactivity, we should do it before calling
+        // super#initializeState.
+        if (launchNtpDueToInactivity) resetSavedInstanceState();
+
         super.initializeState();
+
         mKeyFunctionsIPHCoordinator =
                 new KeyFunctionsIPHCoordinator(mTooltipView, getActivityTabProvider());
         mProgressBarCoordinator =
                 new ProgressBarCoordinator(mProgressBarView, getActivityTabProvider());
         mTouchlessZoomHelper = new TouchlessZoomHelper(getActivityTabProvider());
-        mInactivityTracker = new ChromeInactivityTracker(
-                LAST_BACKGROUNDED_TIME_MS_PREF, this.getLifecycleDispatcher());
 
         // By this point if we were going to restore a URL from savedInstanceState we would already
         // have done so.
@@ -157,7 +165,7 @@ public class NoTouchActivity extends SingleTabActivity {
             boolean intentWithEffect = false;
             Intent intent = getIntent();
             mIntentHandlingTimeMs = SystemClock.uptimeMillis();
-            if (intent != null) {
+            if (!launchNtpDueToInactivity && intent != null) {
                 // Treat Dino intent action like a url request for chrome://dino
                 if (DINOSAUR_GAME_INTENT.equals(intent.getComponent().getClassName())) {
                     intent.setData(Uri.parse(UrlConstants.CHROME_DINO_URL));
