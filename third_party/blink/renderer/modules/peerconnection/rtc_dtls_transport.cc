@@ -115,9 +115,11 @@ void RTCDtlsTransport::OnStateChange(webrtc::DtlsTransportInformation info) {
   if (!closed_from_owner_) {
     DispatchEvent(*Event::Create(event_type_names::kStatechange));
   }
-  // Make sure the ICE transport is also closed. This must happen prior
-  // to garbage collection.
-  ice_transport_->stop();
+  if (current_state_.state() == webrtc::DtlsTransportState::kClosed) {
+    // Make sure the ICE transport is also closed. This must happen prior
+    // to garbage collection.
+    ice_transport_->stop();
+  }
 }
 
 const AtomicString& RTCDtlsTransport::InterfaceName() const {
