@@ -11,6 +11,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.provider.Browser;
 import android.support.annotation.NonNull;
@@ -100,8 +101,8 @@ public class NotificationManager {
 
     /**
      * Hides a notification and records an action to the Actions histogram.
-     *
-     * <p>If the notification is not actually visible, then no action will be taken, and the action
+     * <p>
+     * If the notification is not actually visible, then no action will be taken, and the action
      * will not be recorded.
      *
      * @param guid The GUID of the notification to hide.
@@ -124,12 +125,12 @@ public class NotificationManager {
      * @param url URL to open when the user taps on the notification.
      * @param title Title to display within the notification.
      * @param timeoutAtMillis Specifies how long until the notification should be automatically
-     *     hidden.
+     *            hidden.
      * @return whether the notification was successfully displayed
      */
     @CalledByNative
-    private static boolean showNotification(
-            String guid, @NonNull String url, String title, long timeoutAtMillis) {
+    private static boolean showNotification(String guid, @NonNull String url, String title,
+            String deviceName, long timeoutAtMillis) {
         // A notification associated with this Share entry already exists. Don't display a new one.
         if (findActiveNotification(guid) != null) {
             return false;
@@ -151,7 +152,10 @@ public class NotificationManager {
                         .setData(uri)
                         .putExtra(NOTIFICATION_GUID_EXTRA, guid),
                 0);
-
+        // IDS_SEND_TAB_TO_SELF_NOTIFICATION_CONTEXT_TEXT
+        Resources res = context.getResources();
+        String contextText = res.getString(
+                R.string.send_tab_to_self_notification_context_text, uri.getHost(), deviceName);
         // Build the notification itself.
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
@@ -165,7 +169,7 @@ public class NotificationManager {
                         .setContentIntent(contentIntent)
                         .setDeleteIntent(deleteIntent)
                         .setContentTitle(title)
-                        .setContentText(url)
+                        .setContentText(contextText)
                         .setGroup(NotificationConstants.GROUP_SEND_TAB_TO_SELF)
                         .setPriorityBeforeO(NotificationCompat.PRIORITY_HIGH)
                         .setSmallIcon(R.drawable.ic_chrome)
@@ -212,8 +216,8 @@ public class NotificationManager {
     /**
      * State of all notifications currently being displayed to the user. It consists of the
      * notification id and GUID of the Share Entry.
-     *
-     * <p>TODO(https://crbug.com/939026): Consider moving this to another class and add versioning.
+     * <p>
+     * TODO(https://crbug.com/939026): Consider moving this to another class and add versioning.
      */
     private static class ActiveNotification {
         public final int notificationId;
@@ -244,7 +248,7 @@ public class NotificationManager {
      * @param prefs The SharedPreferences to retrieve the set of strings from.
      * @param prefName The name of the preference to retrieve.
      * @return Existing set of strings associated with the prefName. If none exists, creates a new
-     *     set.
+     *         set.
      */
     private static @NonNull Set<String> getMutableStringSetPreference(
             SharedPreferences prefs, String prefName) {

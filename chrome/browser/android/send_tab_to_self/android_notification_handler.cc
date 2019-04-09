@@ -31,6 +31,7 @@ void AndroidNotificationHandler::DisplayNewEntries(
         env, ConvertUTF8ToJavaString(env, entry->GetGUID()),
         ConvertUTF8ToJavaString(env, entry->GetURL().spec()),
         ConvertUTF8ToJavaString(env, entry->GetTitle()),
+        ConvertUTF8ToJavaString(env, entry->GetDeviceName()),
         expiraton_time.ToJavaTime());
   }
 }
