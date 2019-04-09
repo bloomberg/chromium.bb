@@ -546,8 +546,11 @@ void BrowserNonClientFrameViewAsh::OnTabletModeToggled(bool enabled) {
     OnImmersiveRevealEnded();
   }
 
-  caption_button_container_->SetVisible(ShouldShowCaptionButtons());
+  const bool should_show_caption_buttons = ShouldShowCaptionButtons();
+  caption_button_container_->SetVisible(should_show_caption_buttons);
   caption_button_container_->UpdateCaptionButtonState(true /*=animate*/);
+  if (hosted_app_button_container())
+    hosted_app_button_container()->SetVisible(should_show_caption_buttons);
 
   if (enabled) {
     // Enter immersive mode if the feature is enabled and the widget is not
@@ -756,7 +759,10 @@ bool BrowserNonClientFrameViewAsh::ShouldPaint() const {
 }
 
 void BrowserNonClientFrameViewAsh::OnOverviewOrSplitviewModeChanged() {
-  caption_button_container_->SetVisible(ShouldShowCaptionButtons());
+  const bool should_show_caption_buttons = ShouldShowCaptionButtons();
+  caption_button_container_->SetVisible(should_show_caption_buttons);
+  if (hosted_app_button_container())
+    hosted_app_button_container()->SetVisible(should_show_caption_buttons);
 }
 
 std::unique_ptr<ash::FrameHeader>

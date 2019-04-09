@@ -936,6 +936,17 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, FocusableViews) {
   EXPECT_TRUE(browser_view_->contents_web_view()->HasFocus());
 }
 
+IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
+                       ButtonVisibilityInOverviewMode) {
+  SetUpHostedApp();
+  EXPECT_TRUE(hosted_app_button_container_->visible());
+
+  ToggleOverview();
+  EXPECT_FALSE(hosted_app_button_container_->visible());
+  ToggleOverview();
+  EXPECT_TRUE(hosted_app_button_container_->visible());
+}
+
 // Tests that a web app's theme color is set.
 IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, ThemeColor) {
   SetUpHostedApp();
