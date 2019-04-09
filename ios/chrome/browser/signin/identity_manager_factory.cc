@@ -12,14 +12,12 @@
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/account_consistency_method.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/account_tracker_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory_observer.h"
-#include "ios/chrome/browser/signin/profile_oauth2_token_service_ios_provider_impl.h"
+#include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_client_factory.h"
 #include "services/identity/public/cpp/accounts_cookie_mutator_impl.h"
 #include "services/identity/public/cpp/accounts_mutator.h"
@@ -28,17 +26,6 @@
 #include "services/identity/public/cpp/primary_account_mutator_impl.h"
 
 namespace {
-
-std::unique_ptr<ProfileOAuth2TokenService> BuildTokenService(
-    ios::ChromeBrowserState* chrome_browser_state) {
-  auto delegate = std::make_unique<ProfileOAuth2TokenServiceIOSDelegate>(
-      SigninClientFactory::GetForBrowserState(chrome_browser_state),
-      std::make_unique<ProfileOAuth2TokenServiceIOSProviderImpl>(),
-      ios::AccountTrackerServiceFactory::GetForBrowserState(
-          chrome_browser_state));
-  return std::make_unique<ProfileOAuth2TokenService>(
-      chrome_browser_state->GetPrefs(), std::move(delegate));
-}
 
 std::unique_ptr<AccountFetcherService> BuildAccountFetcherService(
     SigninClient* signin_client,
@@ -53,11 +40,11 @@ std::unique_ptr<AccountFetcherService> BuildAccountFetcherService(
 
 std::unique_ptr<SigninManager> BuildSigninManager(
     ios::ChromeBrowserState* chrome_browser_state,
-    ProfileOAuth2TokenService* token_service,
     GaiaCookieManagerService* gaia_cookie_manager_service) {
   std::unique_ptr<SigninManager> service = std::make_unique<SigninManager>(
       SigninClientFactory::GetForBrowserState(chrome_browser_state),
-      token_service,
+      ProfileOAuth2TokenServiceFactory::GetForBrowserState(
+          chrome_browser_state),
       ios::AccountTrackerServiceFactory::GetForBrowserState(
           chrome_browser_state),
       gaia_cookie_manager_service, signin::AccountConsistencyMethod::kMirror);
@@ -77,7 +64,6 @@ class IdentityManagerWrapper : public KeyedService,
                                public identity::IdentityManager {
  public:
   IdentityManagerWrapper(
-      std::unique_ptr<ProfileOAuth2TokenService> token_service,
       std::unique_ptr<GaiaCookieManagerService> gaia_cookie_manager_service,
       std::unique_ptr<SigninManagerBase> signin_manager,
       std::unique_ptr<AccountFetcherService> account_fetcher_service,
@@ -87,10 +73,10 @@ class IdentityManagerWrapper : public KeyedService,
       std::unique_ptr<identity::DiagnosticsProviderImpl> diagnostics_provider,
       ios::ChromeBrowserState* browser_state)
       : identity::IdentityManager(
-            std::move(token_service),
             std::move(gaia_cookie_manager_service),
             std::move(signin_manager),
             std::move(account_fetcher_service),
+            ProfileOAuth2TokenServiceFactory::GetForBrowserState(browser_state),
             ios::AccountTrackerServiceFactory::GetForBrowserState(
                 browser_state),
             std::move(primary_account_mutator),
@@ -112,6 +98,7 @@ IdentityManagerFactory::IdentityManagerFactory()
           "IdentityManager",
           BrowserStateDependencyManager::GetInstance()) {
   DependsOn(ios::AccountTrackerServiceFactory::GetInstance());
+  DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
   DependsOn(SigninClientFactory::GetInstance());
 }
 
@@ -141,6 +128,7 @@ IdentityManagerFactory* IdentityManagerFactory::GetInstance() {
 void IdentityManagerFactory::EnsureFactoryAndDependeeFactoriesBuilt() {
   IdentityManagerFactory::GetInstance();
   ios::AccountTrackerServiceFactory::GetInstance();
+  ProfileOAuth2TokenServiceFactory::GetInstance();
   SigninClientFactory::GetInstance();
 }
 
@@ -160,40 +148,32 @@ std::unique_ptr<KeyedService> IdentityManagerFactory::BuildServiceInstanceFor(
       ios::ChromeBrowserState::FromBrowserState(context);
 
   // Construct the dependencies that IdentityManager will own.
-  std::unique_ptr<ProfileOAuth2TokenService> token_service =
-      BuildTokenService(browser_state);
-
   auto gaia_cookie_manager_service = std::make_unique<GaiaCookieManagerService>(
-      token_service.get(),
+      ProfileOAuth2TokenServiceFactory::GetForBrowserState(browser_state),
       SigninClientFactory::GetForBrowserState(browser_state));
-
-  std::unique_ptr<SigninManager> signin_manager = BuildSigninManager(
-      browser_state, token_service.get(), gaia_cookie_manager_service.get());
-
+  std::unique_ptr<SigninManager> signin_manager =
+      BuildSigninManager(browser_state, gaia_cookie_manager_service.get());
   auto primary_account_mutator =
       std::make_unique<identity::PrimaryAccountMutatorImpl>(
           ios::AccountTrackerServiceFactory::GetForBrowserState(browser_state),
           signin_manager.get());
-
   auto accounts_cookie_mutator =
       std::make_unique<identity::AccountsCookieMutatorImpl>(
           gaia_cookie_manager_service.get());
-
   auto diagnostics_provider =
       std::make_unique<identity::DiagnosticsProviderImpl>(
-          token_service.get(), gaia_cookie_manager_service.get());
-
+          ProfileOAuth2TokenServiceFactory::GetForBrowserState(browser_state),
+          gaia_cookie_manager_service.get());
   std::unique_ptr<AccountFetcherService> account_fetcher_service =
       BuildAccountFetcherService(
           SigninClientFactory::GetForBrowserState(browser_state),
-          token_service.get(),
+          ProfileOAuth2TokenServiceFactory::GetForBrowserState(browser_state),
           ios::AccountTrackerServiceFactory::GetForBrowserState(browser_state));
-
   auto identity_manager = std::make_unique<IdentityManagerWrapper>(
-      std::move(token_service), std::move(gaia_cookie_manager_service),
-      std::move(signin_manager), std::move(account_fetcher_service),
-      std::move(primary_account_mutator), std::move(accounts_cookie_mutator),
-      std::move(diagnostics_provider), browser_state);
+      std::move(gaia_cookie_manager_service), std::move(signin_manager),
+      std::move(account_fetcher_service), std::move(primary_account_mutator),
+      std::move(accounts_cookie_mutator), std::move(diagnostics_provider),
+      browser_state);
 
   for (auto& observer : observer_list_)
     observer.IdentityManagerCreated(identity_manager.get());

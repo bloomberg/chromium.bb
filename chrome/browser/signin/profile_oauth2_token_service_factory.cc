@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/signin/profile_oauth2_token_service_builder.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 
 #include <memory>
 #include <string>
@@ -10,10 +10,13 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/logging.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/device_id_helper.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "content/public/browser/network_service_instance.h"
@@ -132,10 +135,42 @@ std::unique_ptr<OAuth2TokenServiceDelegate> CreateOAuth2TokenServiceDelegate(
 
 }  // namespace
 
+ProfileOAuth2TokenServiceFactory::ProfileOAuth2TokenServiceFactory()
+    : BrowserContextKeyedServiceFactory(
+        "ProfileOAuth2TokenService",
+        BrowserContextDependencyManager::GetInstance()) {
+#if !defined(OS_ANDROID)
+  DependsOn(ChromeSigninClientFactory::GetInstance());
+  DependsOn(WebDataServiceFactory::GetInstance());
+#endif
+  DependsOn(AccountTrackerServiceFactory::GetInstance());
+}
+
+ProfileOAuth2TokenServiceFactory::~ProfileOAuth2TokenServiceFactory() {
+}
+
+ProfileOAuth2TokenService*
+ProfileOAuth2TokenServiceFactory::GetForProfile(Profile* profile) {
+  return static_cast<ProfileOAuth2TokenService*>(
+      GetInstance()->GetServiceForBrowserContext(profile, true));
+}
+
 // static
-std::unique_ptr<ProfileOAuth2TokenService>
-ProfileOAuth2TokenServiceBuilder::BuildInstanceFor(
-    content::BrowserContext* context) {
+ProfileOAuth2TokenServiceFactory*
+    ProfileOAuth2TokenServiceFactory::GetInstance() {
+  return base::Singleton<ProfileOAuth2TokenServiceFactory>::get();
+}
+
+void ProfileOAuth2TokenServiceFactory::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  ProfileOAuth2TokenService::RegisterProfilePrefs(registry);
+#if !defined(OS_ANDROID)
+  MutableProfileOAuth2TokenServiceDelegate::RegisterProfilePrefs(registry);
+#endif
+}
+
+KeyedService* ProfileOAuth2TokenServiceFactory::BuildServiceInstanceFor(
+    content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
 
 // On ChromeOS the device ID is not managed by the token service.
@@ -147,6 +182,6 @@ ProfileOAuth2TokenServiceBuilder::BuildInstanceFor(
   DCHECK(!device_id.empty());
 #endif
 
-  return std::make_unique<ProfileOAuth2TokenService>(
+  return new ProfileOAuth2TokenService(
       profile->GetPrefs(), CreateOAuth2TokenServiceDelegate(profile));
 }
