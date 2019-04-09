@@ -95,11 +95,16 @@ const CGFloat kTextFieldClearButtonTrailingOffset = 4;
   return self;
 }
 
-- (void)didMoveToWindow {
-  [super didMoveToWindow];
-
+- (void)attachLayoutGuides {
   [NamedGuide guideWithName:kOmniboxTextFieldGuide view:self].constrainedView =
       self.textField;
+
+  // The leading image view can be not present, in which case the guide
+  // shouldn't be attached.
+  if (self.leadingImageView.superview) {
+    [NamedGuide guideWithName:kOmniboxLeadingImageGuide view:self]
+        .constrainedView = self.leadingImageView;
+  }
 }
 
 - (void)setLeadingImageHidden:(BOOL)hidden {
@@ -124,9 +129,6 @@ const CGFloat kTextFieldClearButtonTrailingOffset = 4;
       self.leadingImageViewLeadingConstraint,
       leadingImageViewToTextField,
     ]];
-
-    [NamedGuide guideWithName:kOmniboxLeadingImageGuide view:self]
-        .constrainedView = self.leadingImageView;
   }
 }
 

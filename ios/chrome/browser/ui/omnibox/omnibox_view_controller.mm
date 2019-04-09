@@ -119,6 +119,12 @@ const CGFloat kClearButtonSize = 28.0f;
            object:self.textField];
 }
 
+- (void)viewDidAppear:(BOOL)animated {
+  [super viewDidAppear:animated];
+
+  [self.view attachLayoutGuides];
+}
+
 - (void)viewWillDisappear:(BOOL)animated {
   [super viewWillDisappear:animated];
   self.textField.selectedTextRange =
