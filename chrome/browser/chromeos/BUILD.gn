@@ -91,6 +91,7 @@ source_set("chromeos") {
     "//chromeos/dbus:metrics_event_proto",
     "//chromeos/dbus:oobe_config_proto",
     "//chromeos/dbus:plugin_vm_service_proto",
+    "//chromeos/dbus/audio",
     "//chromeos/dbus/auth_policy",
     "//chromeos/dbus/auth_policy:authpolicy_proto",
     "//chromeos/dbus/biod",

@@ -13,7 +13,7 @@
 
 namespace chromeos {
 
-struct COMPONENT_EXPORT(CHROMEOS_DBUS) VolumeState {
+struct COMPONENT_EXPORT(DBUS_AUDIO) VolumeState {
   int32_t output_volume;
   bool output_system_mute;
   int32_t input_gain;

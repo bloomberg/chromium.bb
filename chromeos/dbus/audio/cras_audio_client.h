@@ -25,7 +25,7 @@ class Bus;
 namespace chromeos {
 
 // CrasAudioClient is used to communicate with the cras audio dbus interface.
-class COMPONENT_EXPORT(CHROMEOS_DBUS) CrasAudioClient {
+class COMPONENT_EXPORT(DBUS_AUDIO) CrasAudioClient {
  public:
   // Interface for observing changes from the cras audio changes.
   class Observer {

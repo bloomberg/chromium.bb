@@ -16,7 +16,7 @@
 namespace chromeos {
 
 // The CrasAudioClient implementation used on Linux desktop.
-class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCrasAudioClient
+class COMPONENT_EXPORT(DBUS_AUDIO) FakeCrasAudioClient
     : public CrasAudioClient {
  public:
   FakeCrasAudioClient();
