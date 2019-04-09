@@ -452,7 +452,8 @@ IN_PROC_BROWSER_TEST_F(QuicAllowedPolicyDynamicTest, QuicAllowedFalseThenTrue) {
 
 // QUIC is allowed, then disallowed by policy after the profile has been
 // initialized.
-IN_PROC_BROWSER_TEST_F(QuicAllowedPolicyDynamicTest, QuicAllowedTrueThenFalse) {
+IN_PROC_BROWSER_TEST_F(QuicAllowedPolicyDynamicTest,
+                       DISABLED_QuicAllowedTrueThenFalse) {
   // After browser start, QuicAllowed=true comes in dynamically
   SetQuicAllowedPolicy(policy_for_profile_1(), true);
   EXPECT_TRUE(IsQuicEnabledForSystem());
