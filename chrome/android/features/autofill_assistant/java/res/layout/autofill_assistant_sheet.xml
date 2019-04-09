@@ -43,6 +43,8 @@
                 android:id="@+id/autofill_assistant_bottombar_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:clipChildren="false"
+                android:clipToPadding="false"
                 android:paddingBottom="@dimen/autofill_assistant_bottombar_vertical_spacing"
                 android:orientation="vertical"
                 android:gravity="center"
