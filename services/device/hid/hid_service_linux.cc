@@ -225,12 +225,12 @@ void HidServiceLinux::Connect(const std::string& device_guid,
 
 #if defined(OS_CHROMEOS)
   chromeos::PermissionBrokerClient::ErrorCallback error_callback =
-      base::Bind(&HidServiceLinux::OnPathOpenError,
-                 params->device_info->device_node(), params->callback);
+      base::BindOnce(&HidServiceLinux::OnPathOpenError,
+                     params->device_info->device_node(), params->callback);
   chromeos::PermissionBrokerClient::Get()->OpenPath(
       device_info->device_node(),
-      base::Bind(&HidServiceLinux::OnPathOpenComplete, base::Passed(&params)),
-      error_callback);
+      base::BindOnce(&HidServiceLinux::OnPathOpenComplete, std::move(params)),
+      std::move(error_callback));
 #else
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner =
       params->blocking_task_runner;

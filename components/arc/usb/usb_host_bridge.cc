@@ -159,8 +159,9 @@ void ArcUsbHostBridge::OpenDevice(const std::string& guid,
   auto repeating_callback =
       base::AdaptCallbackForRepeating(std::move(callback));
   chromeos::PermissionBrokerClient::Get()->OpenPath(
-      device->device_path(), base::Bind(&OnDeviceOpened, repeating_callback),
-      base::Bind(&OnDeviceOpenError, repeating_callback));
+      device->device_path(),
+      base::BindOnce(&OnDeviceOpened, repeating_callback),
+      base::BindOnce(&OnDeviceOpenError, repeating_callback));
 }
 
 void ArcUsbHostBridge::OpenDeviceDeprecated(

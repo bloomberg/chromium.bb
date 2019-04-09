@@ -48,8 +48,8 @@ UsbDeviceLinux::~UsbDeviceLinux() = default;
 
 void UsbDeviceLinux::CheckUsbAccess(ResultCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  chromeos::PermissionBrokerClient::Get()->CheckPathAccess(
-      device_path_, base::AdaptCallbackForRepeating(std::move(callback)));
+  chromeos::PermissionBrokerClient::Get()->CheckPathAccess(device_path_,
+                                                           std::move(callback));
 }
 
 #endif  // defined(OS_CHROMEOS)
@@ -61,9 +61,10 @@ void UsbDeviceLinux::Open(OpenCallback callback) {
   auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   chromeos::PermissionBrokerClient::Get()->OpenPath(
       device_path_,
-      base::Bind(&UsbDeviceLinux::OnOpenRequestComplete, this,
-                 copyable_callback),
-      base::Bind(&UsbDeviceLinux::OnOpenRequestError, this, copyable_callback));
+      base::BindOnce(&UsbDeviceLinux::OnOpenRequestComplete, this,
+                     copyable_callback),
+      base::BindOnce(&UsbDeviceLinux::OnOpenRequestError, this,
+                     copyable_callback));
 #else
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner =
       UsbService::CreateBlockingTaskRunner();

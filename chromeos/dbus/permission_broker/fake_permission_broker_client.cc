@@ -29,8 +29,8 @@ FakePermissionBrokerClient* g_instance = nullptr;
 // permission broker by opening the path specified and returning the resulting
 // file descriptor.
 void OpenPath(const std::string& path,
-              const PermissionBrokerClient::OpenPathCallback& callback,
-              const PermissionBrokerClient::ErrorCallback& error_callback,
+              PermissionBrokerClient::OpenPathCallback callback,
+              PermissionBrokerClient::ErrorCallback error_callback,
               scoped_refptr<base::TaskRunner> task_runner) {
   base::ScopedFD fd(HANDLE_EINTR(open(path.c_str(), O_RDWR)));
   if (!fd.is_valid()) {
@@ -38,14 +38,15 @@ void OpenPath(const std::string& path,
     task_runner->PostTask(
         FROM_HERE,
         base::BindOnce(
-            error_callback, kOpenFailedError,
+            std::move(error_callback), kOpenFailedError,
             base::StringPrintf(
                 "Failed to open '%s': %s", path.c_str(),
                 logging::SystemErrorCodeToString(error_code).c_str())));
     return;
   }
 
-  task_runner->PostTask(FROM_HERE, base::BindOnce(callback, std::move(fd)));
+  task_runner->PostTask(FROM_HERE,
+                        base::BindOnce(std::move(callback), std::move(fd)));
 }
 
 }  // namespace
@@ -66,19 +67,19 @@ FakePermissionBrokerClient* FakePermissionBrokerClient::Get() {
   return g_instance;
 }
 
-void FakePermissionBrokerClient::CheckPathAccess(
-    const std::string& path,
-    const ResultCallback& callback) {
-  callback.Run(true);
+void FakePermissionBrokerClient::CheckPathAccess(const std::string& path,
+                                                 ResultCallback callback) {
+  std::move(callback).Run(true);
 }
 
 void FakePermissionBrokerClient::OpenPath(const std::string& path,
-                                          const OpenPathCallback& callback,
-                                          const ErrorCallback& error_callback) {
+                                          OpenPathCallback callback,
+                                          ErrorCallback error_callback) {
   base::PostTaskWithTraits(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::BindOnce(&chromeos::OpenPath, path, callback, error_callback,
+      base::BindOnce(&chromeos::OpenPath, path, std::move(callback),
+                     std::move(error_callback),
                      base::ThreadTaskRunnerHandle::Get()));
 }
 
@@ -86,8 +87,8 @@ void FakePermissionBrokerClient::RequestTcpPortAccess(
     uint16_t port,
     const std::string& interface,
     int lifeline_fd,
-    const ResultCallback& callback) {
-  callback.Run(
+    ResultCallback callback) {
+  std::move(callback).Run(
       RequestPortImpl(port, interface, tcp_deny_rule_set_, &tcp_hole_set_));
 }
 
@@ -95,23 +96,21 @@ void FakePermissionBrokerClient::RequestUdpPortAccess(
     uint16_t port,
     const std::string& interface,
     int lifeline_fd,
-    const ResultCallback& callback) {
-  callback.Run(
+    ResultCallback callback) {
+  std::move(callback).Run(
       RequestPortImpl(port, interface, udp_deny_rule_set_, &udp_hole_set_));
 }
 
-void FakePermissionBrokerClient::ReleaseTcpPort(
-    uint16_t port,
-    const std::string& interface,
-    const ResultCallback& callback) {
-  callback.Run(tcp_hole_set_.erase(std::make_pair(port, interface)));
+void FakePermissionBrokerClient::ReleaseTcpPort(uint16_t port,
+                                                const std::string& interface,
+                                                ResultCallback callback) {
+  std::move(callback).Run(tcp_hole_set_.erase(std::make_pair(port, interface)));
 }
 
-void FakePermissionBrokerClient::ReleaseUdpPort(
-    uint16_t port,
-    const std::string& interface,
-    const ResultCallback& callback) {
-  callback.Run(udp_hole_set_.erase(std::make_pair(port, interface)));
+void FakePermissionBrokerClient::ReleaseUdpPort(uint16_t port,
+                                                const std::string& interface,
+                                                ResultCallback callback) {
+  std::move(callback).Run(udp_hole_set_.erase(std::make_pair(port, interface)));
 }
 
 void FakePermissionBrokerClient::AddTcpDenyRule(uint16_t port,

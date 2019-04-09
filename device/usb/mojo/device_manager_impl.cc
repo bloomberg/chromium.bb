@@ -97,10 +97,10 @@ void DeviceManagerImpl::OpenFileDescriptor(
         static_cast<device::UsbDeviceLinux*>(device.get())->device_path();
     chromeos::PermissionBrokerClient::Get()->OpenPath(
         devpath,
-        base::BindRepeating(&DeviceManagerImpl::OnOpenFileDescriptor,
-                            weak_factory_.GetWeakPtr(), copyable_callback),
-        base::BindRepeating(&DeviceManagerImpl::OnOpenFileDescriptorError,
-                            weak_factory_.GetWeakPtr(), copyable_callback));
+        base::BindOnce(&DeviceManagerImpl::OnOpenFileDescriptor,
+                       weak_factory_.GetWeakPtr(), copyable_callback),
+        base::BindOnce(&DeviceManagerImpl::OnOpenFileDescriptorError,
+                       weak_factory_.GetWeakPtr(), copyable_callback));
   }
 }
 

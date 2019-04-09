@@ -60,9 +60,9 @@ void FirewallHole::Open(PortType type,
   base::ScopedFD lifeline_local(lifeline[0]);
   base::ScopedFD lifeline_remote(lifeline[1]);
 
-  base::Callback<void(bool)> access_granted_closure =
-      base::Bind(&FirewallHole::PortAccessGranted, type, port, interface,
-                 base::Passed(&lifeline_local), callback);
+  base::OnceCallback<void(bool)> access_granted_closure =
+      base::BindOnce(&FirewallHole::PortAccessGranted, type, port, interface,
+                     std::move(lifeline_local), callback);
 
   PermissionBrokerClient* client = PermissionBrokerClient::Get();
   DCHECK(client) << "Could not get permission broker client.";
@@ -70,27 +70,29 @@ void FirewallHole::Open(PortType type,
   switch (type) {
     case PortType::TCP:
       client->RequestTcpPortAccess(port, interface, lifeline_remote.get(),
-                                   access_granted_closure);
+                                   std::move(access_granted_closure));
       return;
     case PortType::UDP:
       client->RequestUdpPortAccess(port, interface, lifeline_remote.get(),
-                                   access_granted_closure);
+                                   std::move(access_granted_closure));
       return;
   }
 }
 
 FirewallHole::~FirewallHole() {
-  base::Callback<void(bool)> port_released_closure = base::Bind(
-      &PortReleased, type_, port_, interface_, base::Passed(&lifeline_fd_));
+  base::OnceCallback<void(bool)> port_released_closure = base::BindOnce(
+      &PortReleased, type_, port_, interface_, std::move(lifeline_fd_));
 
   PermissionBrokerClient* client = PermissionBrokerClient::Get();
   DCHECK(client) << "Could not get permission broker client.";
   switch (type_) {
     case PortType::TCP:
-      client->ReleaseTcpPort(port_, interface_, port_released_closure);
+      client->ReleaseTcpPort(port_, interface_,
+                             std::move(port_released_closure));
       return;
     case PortType::UDP:
-      client->ReleaseUdpPort(port_, interface_, port_released_closure);
+      client->ReleaseUdpPort(port_, interface_,
+                             std::move(port_released_closure));
       return;
   }
 }
