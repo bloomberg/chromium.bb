@@ -58,6 +58,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   void FireUiaAccessibilityEvent(LONG uia_event, BrowserAccessibility* node);
   void FireUiaPropertyChangedEvent(LONG uia_property,
                                    BrowserAccessibility* node);
+  void FireUiaTextContainerEvent(LONG uia_event, BrowserAccessibility* node);
 
   // Track this object and post a VISIBLE_DATA_CHANGED notification when
   // its container scrolls.

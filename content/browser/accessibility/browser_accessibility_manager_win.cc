@@ -127,6 +127,12 @@ void BrowserAccessibilityManagerWin::FireBlinkEvent(
     case ax::mojom::Event::kScrolledToAnchor:
       FireWinAccessibilityEvent(EVENT_SYSTEM_SCROLLINGSTART, node);
       break;
+    case ax::mojom::Event::kTextChanged:
+      FireUiaTextContainerEvent(UIA_Text_TextChangedEventId, node);
+      break;
+    case ax::mojom::Event::kTextSelectionChanged:
+      FireUiaTextContainerEvent(UIA_Text_TextSelectionChangedEventId, node);
+      break;
     default:
       break;
   }
@@ -381,6 +387,21 @@ void BrowserAccessibilityManagerWin::FireUiaPropertyChangedEvent(
           provider->GetPropertyValue(uia_property, new_value.Receive()))) {
     ::UiaRaiseAutomationPropertyChangedEvent(provider, uia_property, old_value,
                                              new_value);
+  }
+}
+
+void BrowserAccessibilityManagerWin::FireUiaTextContainerEvent(
+    LONG uia_event,
+    BrowserAccessibility* node) {
+  // If the node supports text pattern, fire the event from itself, otherwise,
+  // fire the event from the closest ancestor that supports text pattern.
+  while (node) {
+    if (ToBrowserAccessibilityWin(node)->GetCOM()->IsPatternProviderSupported(
+            UIA_TextPatternId)) {
+      FireUiaAccessibilityEvent(uia_event, node);
+      return;
+    }
+    node = node->PlatformGetParent();
   }
 }
 

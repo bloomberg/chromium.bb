@@ -1,12 +1,16 @@
+<!--
+The children changed / reorder event is fired an unpredictable number of times.
+@WIN-DENY:EVENT_OBJECT_REORDER*
+-->
 <!DOCTYPE html>
 <html>
 <body>
-<p id="p1" contenteditable>Paragraph</p>
-<p id="p2" contenteditable>Paragraph</p>
-<p id="p3" contenteditable>Paragraph</p>
-<div id="d1" contenteditable>Div</div>
-<div id="d2" contenteditable>Div</div>
-<div id="d3" contenteditable>Div</div>
+<p id="p1" aria-label="p1" contenteditable>Paragraph</p>
+<p id="p2" aria-label="p2" contenteditable>Paragraph</p>
+<p id="p3" aria-label="p3" contenteditable>Paragraph</p>
+<div id="d1" aria-label="d1" contenteditable>Div</div>
+<div id="d2" aria-label="d2" contenteditable>Div</div>
+<div id="d3" aria-label="d3" contenteditable>Div</div>
 <script>
   function go() {
     document.querySelector('#p1').textContent = 'Modified Paragraph';

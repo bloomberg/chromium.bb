@@ -1,2 +1,5 @@
-Name changed on role=description, name=Text modified
-Name changed on role=heading, name=Heading
+Name changed on role=description, name=Modified Div
+Name changed on role=heading, name=h
+Text_TextChanged on role=description, name=Modified Div
+Text_TextChanged on role=document
+Text_TextChanged on role=heading, name=h
