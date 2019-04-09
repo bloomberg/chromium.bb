@@ -352,6 +352,7 @@ void TypedURLSyncBridge::OnURLVisited(HistoryBackend* history_backend,
                                       base::Time visit_time) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK(sync_metadata_database_);
+  DCHECK_GE(row.typed_count(), 0);
 
   if (processing_syncer_changes_)
     return;  // These are changes originating from us, ignore.
@@ -384,14 +385,10 @@ void TypedURLSyncBridge::OnURLsModified(HistoryBackend* history_backend,
       CreateMetadataChangeList();
 
   for (const auto& row : changed_urls) {
-    // Only care if the modified URL is typed.
-    // TODO(crbug.com/907476): Get rid of this trivial check. Typed_count()
-    // cannot ever be negative.
-    if (row.typed_count() >= 0) {
-      // If there were any errors updating the sync node, just ignore them and
-      // continue on to process the next URL.
-      UpdateSyncFromLocal(row, is_from_expiration, metadata_change_list.get());
-    }
+    DCHECK_GE(row.typed_count(), 0);
+    // If there were any errors updating the sync node, just ignore them and
+    // continue on to process the next URL.
+    UpdateSyncFromLocal(row, is_from_expiration, metadata_change_list.get());
   }
 }
 
@@ -930,8 +927,6 @@ void TypedURLSyncBridge::UpdateSyncFromLocal(
     URLRow row,
     bool is_from_expiration,
     MetadataChangeList* metadata_change_list) {
-  DCHECK_GE(row.typed_count(), 0);
-
   if (ShouldIgnoreUrl(row.url()))
     return;
 
@@ -1099,10 +1094,7 @@ bool TypedURLSyncBridge::ShouldSyncVisit(int typed_count,
   // suggestions. But there are relatively few URLs with > 10 visits, and those
   // tend to be more broadly distributed such that there's no need to sync up
   // every visit to preserve their relative ordering.
-  // TODO(crbug.com/907476): Get rid of the trivial 'typed_count >= 0' check;
-  // typed_count cannot ever be negative.
   return (ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_TYPED) &&
-          typed_count >= 0 &&
           (typed_count < kTypedUrlVisitThrottleThreshold ||
            (typed_count % kTypedUrlVisitThrottleMultiple) == 0));
 }
