@@ -1480,8 +1480,8 @@
   },
   {
     "name": "enable-pixel-canvas-recording",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "malaykeshav", "oshima" ],
+    "expiry_milestone": 77
   },
   {
     "name": "enable-play-store-search",
