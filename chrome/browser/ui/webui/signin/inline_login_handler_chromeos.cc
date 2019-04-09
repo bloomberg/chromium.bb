@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler.h"
 #include "chromeos/components/account_manager/account_manager.h"
 #include "chromeos/components/account_manager/account_manager_factory.h"
@@ -102,6 +103,16 @@ InlineLoginHandlerChromeOS::InlineLoginHandlerChromeOS(
 
 InlineLoginHandlerChromeOS::~InlineLoginHandlerChromeOS() = default;
 
+void InlineLoginHandlerChromeOS::RegisterMessages() {
+  InlineLoginHandler::RegisterMessages();
+
+  web_ui()->RegisterMessageCallback(
+      "showIncognito",
+      base::BindRepeating(
+          &InlineLoginHandlerChromeOS::ShowIncognitoAndCloseDialog,
+          base::Unretained(this)));
+}
+
 void InlineLoginHandlerChromeOS::SetExtraInitParams(
     base::DictionaryValue& params) {
   const GaiaUrls* const gaia_urls = GaiaUrls::GetInstance();
@@ -142,6 +153,12 @@ void InlineLoginHandlerChromeOS::CompleteLogin(const std::string& email,
   new SigninHelper(account_manager, close_dialog_closure_,
                    account_manager->GetUrlLoaderFactory(), gaia_id, email,
                    auth_code);
+}
+
+void InlineLoginHandlerChromeOS::ShowIncognitoAndCloseDialog(
+    const base::ListValue* args) {
+  chrome::NewIncognitoWindow(Profile::FromWebUI(web_ui()));
+  close_dialog_closure_.Run();
 }
 
 }  // namespace chromeos
