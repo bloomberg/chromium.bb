@@ -164,7 +164,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // In the case that nothing has changed, the details structure is undefined
   // and it will return false.
   //
-  // |previous_page_was_activated| is true if the previous page had user
+  // |previous_document_was_activated| is true if the previous document had user
   // interaction. This is used for a new renderer-initiated navigation to decide
   // if the page that initiated the navigation should be skipped on
   // back/forward button.
@@ -173,7 +173,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
       LoadCommittedDetails* details,
       bool is_same_document_navigation,
-      bool previous_page_was_activated,
+      bool previous_document_was_activated,
       NavigationRequest* navigation_request);
 
   // Notifies us that we just became active. This is used by the WebContentsImpl
@@ -383,7 +383,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
       bool is_same_document,
       bool replace_entry,
-      bool previous_page_was_activated,
+      bool previous_document_was_activated,
       NavigationHandleImpl* handle);
   void RendererDidNavigateToExistingPage(
       RenderFrameHostImpl* rfh,
@@ -401,7 +401,9 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       RenderFrameHostImpl* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
       bool is_same_document,
-      bool replace_entry);
+      bool replace_entry,
+      bool previous_document_was_activated,
+      NavigationHandleImpl* handle);
   bool RendererDidNavigateAutoSubframe(
       RenderFrameHostImpl* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params);
@@ -460,6 +462,21 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // Notify observers a document was restored from the bfcache.
   // This updates the URL bar and the history buttons.
   void CommitRestoreFromBackForwardCache();
+
+  // History Manipulation intervention:
+  // The previous document that started this navigation needs to be skipped in
+  // subsequent back/forward UI navigations if it never received any user
+  // gesture. This is to intervene against pages that manipulate the history
+  // such that the user is not able to go back to the last site they interacted
+  // with (crbug.com/907167).
+  // Note that this function must be called before the new navigation entry is
+  // inserted in |entries_| to make sure UKM reports the URL of the document
+  // adding the entry.
+  void SetShouldSkipOnBackForwardUIIfNeeded(
+      RenderFrameHostImpl* rfh,
+      bool replace_entry,
+      bool previous_document_was_activated,
+      bool is_renderer_initiated);
 
   // ---------------------------------------------------------------------------
 
