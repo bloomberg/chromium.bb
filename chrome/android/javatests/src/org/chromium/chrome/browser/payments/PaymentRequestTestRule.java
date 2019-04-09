@@ -12,6 +12,7 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import org.junit.Assert;
 import org.junit.runner.Description;
@@ -117,6 +118,7 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
     final CallbackHelper mHasEnrolledInstrumentQueryResponded;
     final CallbackHelper mExpirationMonthChange;
     final CallbackHelper mPaymentResponseReady;
+    PaymentRequestImpl mPaymentRequest;
     PaymentRequestUI mUI;
 
     private final AtomicReference<WebContents> mWebContentsRef;
@@ -163,7 +165,7 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
         startMainActivityWithURL(mTestFilePath);
     }
 
-    private void openPage() throws InterruptedException, ExecutionException, TimeoutException {
+    protected void openPage() throws InterruptedException, ExecutionException, TimeoutException {
         onMainActivityStarted();
         ThreadUtils.runOnUiThreadBlocking(() -> {
             mWebContentsRef.set(getActivity().getCurrentWebContents());
@@ -275,6 +277,11 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
         JavaScriptUtils.executeJavaScriptAndWaitForResult(
                 mWebContentsRef.get(), "retry(" + validationErrors + ");");
         helper.waitForCallback(callCount);
+    }
+
+    protected String executeJavaScriptAndWaitForResult(String script)
+            throws InterruptedException, TimeoutException {
+        return JavaScriptUtils.executeJavaScriptAndWaitForResult(mWebContentsRef.get(), script);
     }
 
     /** Clicks on an HTML node. */
@@ -492,6 +499,24 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
                 .getRightSummaryLabelForTest()
                 .getText()
                 .toString());
+    }
+
+    protected String getShippingAddressWarningLabel() throws ExecutionException {
+        return ThreadUtils.runOnUiThreadBlocking(() -> {
+            View view = mUI.getShippingAddressSectionForTest().findViewById(
+                    R.id.payments_warning_label);
+            return view != null && view instanceof TextView ? ((TextView) view).getText().toString()
+                                                            : null;
+        });
+    }
+
+    protected String getShippingAddressDescriptionLabel() throws ExecutionException {
+        return ThreadUtils.runOnUiThreadBlocking(() -> {
+            View view = mUI.getShippingAddressSectionForTest().findViewById(
+                    R.id.payments_description_label);
+            return view != null && view instanceof TextView ? ((TextView) view).getText().toString()
+                                                            : null;
+        });
     }
 
     /** Returns the focused view in the card editor view. */
@@ -767,8 +792,8 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
                     }
                     for (int i = 0; i < contents.length; i++) {
                         if (!result.contains(contents[i])) {
-                            updateFailureReason(
-                                    String.format("Result should contain '%s'", contents[i]));
+                            updateFailureReason(String.format(
+                                    "Result '" + result + "' should contain '%s'", contents[i]));
                             return false;
                         }
                     }
@@ -864,6 +889,12 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
                                    .findViewById(R.id.autofill_card_unmask_prompt));
     }
 
+    /** Allows to skip UI into paymenthandler for"basic-card". */
+    protected void enableSkipUIForBasicCard() {
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> mPaymentRequest.setSkipUIForNonURLPaymentMethodIdentifiersForTest());
+    }
+
     @Override
     public void onPaymentRequestReadyForInput(PaymentRequestUI ui) {
         ThreadUtils.assertOnUiThread();
@@ -910,6 +941,12 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
     public void onEditorDismiss() {
         ThreadUtils.assertOnUiThread();
         mDismissed.notifyCalled();
+    }
+
+    @Override
+    public void onPaymentRequestCreated(PaymentRequestImpl paymentRequest) {
+        ThreadUtils.assertOnUiThread();
+        mPaymentRequest = paymentRequest;
     }
 
     @Override
@@ -1137,7 +1174,8 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
                 Map<String, PaymentMethodData> methodData, PaymentItem total,
                 List<PaymentItem> displayItems, Map<String, PaymentDetailsModifier> modifiers,
                 InstrumentDetailsCallback detailsCallback) {
-            detailsCallback.onInstrumentDetailsReady(mDefaultMethodName, "{\"transaction\": 1337}");
+            detailsCallback.onInstrumentDetailsReady(mDefaultMethodName,
+                    "{\"transaction\": 1337, \"total\": \"" + total.amount.value + "\"}");
         }
 
         @Override
