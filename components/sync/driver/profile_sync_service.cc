@@ -1050,20 +1050,6 @@ void ProfileSyncService::OnConfigureDone(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   data_type_error_map_ = result.data_type_status_table.GetAllErrors();
 
-  if (!sync_configure_start_time_.is_null()) {
-    if (result.status == DataTypeManager::OK) {
-      base::Time sync_configure_stop_time = base::Time::Now();
-      base::TimeDelta delta =
-          sync_configure_stop_time - sync_configure_start_time_;
-      if (is_first_time_sync_configure_) {
-        UMA_HISTOGRAM_LONG_TIMES("Sync.ServiceInitialConfigureTime", delta);
-      } else {
-        UMA_HISTOGRAM_LONG_TIMES("Sync.ServiceSubsequentConfigureTime", delta);
-      }
-    }
-    sync_configure_start_time_ = base::Time();
-  }
-
   DVLOG(1) << "PSS OnConfigureDone called with status: " << result.status;
   // The possible status values:
   //    ABORT - Configuration was aborted. This is not an error, if
@@ -1130,7 +1116,6 @@ void ProfileSyncService::OnConfigureDone(
 
 void ProfileSyncService::OnConfigureStart() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  sync_configure_start_time_ = base::Time::Now();
   engine_->StartConfiguration();
   NotifyObservers();
 }
