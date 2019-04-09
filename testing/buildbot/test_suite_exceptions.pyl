@@ -1523,6 +1523,11 @@
         ]
       },
     },
+    'remove_from': [
+      # Too slow on this configuration, which is severely hardware
+      # constrained. crbug.com/950690
+      'Mac FYI Retina Debug (NVIDIA)',
+    ],
   },
   'webgl_conformance_vulkan_passthrough_tests': {
     'remove_from': [
