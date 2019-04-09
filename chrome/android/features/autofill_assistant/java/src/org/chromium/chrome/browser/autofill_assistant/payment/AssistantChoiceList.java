@@ -115,7 +115,7 @@ public class AssistantChoiceList extends GridLayout {
      */
     @Override
     public void addView(View view, int index, ViewGroup.LayoutParams lp) {
-        assert index != -1;
+        assert index == -1;
         String editText = null;
         if (lp instanceof AssistantChoiceList.LayoutParams) {
             editText = ((LayoutParams) lp).mEditText;
