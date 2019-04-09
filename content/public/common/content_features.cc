@@ -188,6 +188,12 @@ const base::Feature kHeapCompaction{"HeapCompaction",
 const base::Feature kHistoryManipulationIntervention{
     "HistoryManipulationIntervention", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// This is intended as a kill switch for the Idle Detection feature. To enable
+// this feature,the experimental web platform features flag should be set,
+// or the site should obtain an Origin Trial token.
+const base::Feature kIdleDetection{"IdleDetection",
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
+
 // This flag is used to set field parameters to choose predictor we use when
 // kResamplingInputEvents is disabled. It's used for gatherig accuracy metrics
 // on finch and also for choosing predictor type for predictedEvents API without
