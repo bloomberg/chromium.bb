@@ -1800,6 +1800,7 @@ jumbo_split_static_library("ui") {
       "//chromeos/components/tether",
       "//chromeos/cryptohome",
       "//chromeos/dbus",
+      "//chromeos/dbus/audio",
       "//chromeos/dbus/cryptohome",
       "//chromeos/dbus/cryptohome:cryptohome_proto",
       "//chromeos/dbus/power",

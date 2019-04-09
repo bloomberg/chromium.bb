@@ -15,7 +15,7 @@
 namespace chromeos {
 
 // Structure to hold AudioNode data received from cras.
-struct COMPONENT_EXPORT(CHROMEOS_DBUS) AudioNode {
+struct COMPONENT_EXPORT(DBUS_AUDIO) AudioNode {
   bool is_input = false;
   uint64_t id = 0;
   bool has_v2_stable_device_id = false;

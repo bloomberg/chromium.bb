@@ -1249,10 +1249,7 @@ test("content_browsertests") {
   if (is_chromeos) {
     deps += [
       "//chromeos/audio",
-
-      # TODO(stevenjb): Replace with //chromeos/dbus/audio once extracted.
-      # https://crbug.com/940810.
-      "//chromeos/dbus",
+      "//chromeos/dbus/audio",
     ]
   }
 
@@ -2157,10 +2154,7 @@ test("content_unittests") {
   if (is_chromeos) {
     deps += [
       "//chromeos/audio",
-
-      # TODO(stevenjb): Replace with //chromeos/dbus/audio once extracted.
-      # https://crbug.com/940810.
-      "//chromeos/dbus",
+      "//chromeos/dbus/audio",
     ]
   }
   if (is_android) {
