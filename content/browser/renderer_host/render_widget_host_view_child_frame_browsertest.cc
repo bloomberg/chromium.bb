@@ -171,8 +171,8 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameTest, ChildFrameSinkId) {
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetFrameTree()
                             ->root();
-  scoped_refptr<SynchronizeVisualPropertiesMessageFilter> message_filter(
-      new SynchronizeVisualPropertiesMessageFilter());
+  auto message_filter =
+      base::MakeRefCounted<SynchronizeVisualPropertiesMessageFilter>();
   root->current_frame_host()->GetProcess()->AddFilter(message_filter.get());
 
   // Load cross-site page into iframe.
