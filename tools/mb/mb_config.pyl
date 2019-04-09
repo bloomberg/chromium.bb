@@ -168,6 +168,8 @@
       'Dawn Linux x64 Builder': 'dawn_tests_release_trybot',
       'Dawn Linux x64 DEPS Builder': 'dawn_tests_release_trybot',
 
+      'Dawn Mac x64 Builder': 'dawn_tests_release_trybot',
+
       'Dawn Win10 x86 Builder': 'dawn_tests_release_trybot_x86',
       'Dawn Win10 x64 Builder': 'dawn_tests_release_trybot',
       'Dawn Win10 x86 DEPS Builder': 'dawn_tests_release_trybot_x86',
