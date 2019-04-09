@@ -27,7 +27,7 @@ enum SpokenFeedbackAppListTestVariant { kTestAsNormalUser, kTestAsGuestUser };
 
 class TestSuggestionChipResult : public app_list::TestSearchResult {
  public:
-  TestSuggestionChipResult(const base::string16& title) {
+  explicit TestSuggestionChipResult(const base::string16& title) {
     set_display_type(ash::SearchResultDisplayType::kRecommendation);
     set_title(title);
   }
