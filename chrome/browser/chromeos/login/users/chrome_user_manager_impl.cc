@@ -206,12 +206,6 @@ void MaybeStartBluetoothLogging(const AccountId& account_id) {
                       base::CompareCase::INSENSITIVE_ASCII)) {
     return;
   }
-  const std::vector<std::string> board =
-      base::SplitString(base::SysInfo::GetLsbReleaseBoard(), "-",
-                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  const std::string board_name = board[0];
-  if (board_name != "eve" && board_name != "nocturne")
-    return;
   chromeos::UpstartClient::Get()->StartJob(kBluetoothLoggingUpstartJob, {},
                                            EmptyVoidDBusMethodCallback());
 }
