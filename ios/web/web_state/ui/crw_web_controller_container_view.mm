@@ -134,6 +134,7 @@
   if (self.transientContentView) {
     if (!self.transientContentView.superview)
       [self addSubview:self.transientContentView];
+    [self bringSubviewToFront:self.transientContentView];
     self.transientContentView.frame = self.bounds;
   }
 }
