@@ -83,6 +83,7 @@ source_set("vaapi") {
 
   if (is_linux) {
     configs += [ "//build/config/linux/libva" ]
+    deps += [ "//media/gpu/linux" ]
   }
 
   if (use_x11) {
