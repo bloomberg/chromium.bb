@@ -259,6 +259,11 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   bool HandleScrollFromAppListView(const gfx::Vector2d& offset,
                                    ui::EventType type);
 
+  // Moves |reparented_item| from its folder to the root AppsGridView in the
+  // direction of |key_code|.
+  void HandleKeyboardReparent(AppListItemView* reparented_view,
+                              ui::KeyboardCode key_code);
+
   // Returns the first app list item view in the selected page in the folder.
   AppListItemView* GetCurrentPageFirstItemViewInFolder();
 
@@ -402,8 +407,13 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // Updates |model_| to move item represented by |item_view| into a folder
   // containing item located at |target| slot, also update |view_model_| for
-  // the related view changes.
-  void MoveItemToFolder(AppListItemView* item_view, const GridIndex& target);
+  // the related view changes. Returns the preexisting or created folder as a
+  // result of the move, or nullptr if the move fails.
+  AppListItemView* MoveItemToFolder(AppListItemView* item_view,
+                                    const GridIndex& target);
+
+  // Sets up |item_view| to fade out and delete on animation end.
+  void FadeOutItemViewAndDelete(AppListItemView* item_view);
 
   // Updates both data model and view_model_ for re-parenting a folder item to a
   // new position in top level item list.
@@ -532,9 +542,19 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Returns true if the grid view is under an OEM folder.
   bool IsUnderOEMFolder();
 
-  // Handles moving the |selected_view_|, triggered by Control+Arrow
-  // up/down/left/right.
-  void HandleKeyboardAppMovement(ui::KeyboardCode key_code);
+  // Handles keyboard app reordering, foldering, and reparenting. Operations
+  // effect |selected_view_|. |folder| is whether to move the app into or out of
+  // a folder.
+  void HandleKeyboardAppOperations(ui::KeyboardCode key_code, bool folder);
+
+  // Handles either creating a folder with |selected_view_| or moving
+  // |selected_view_| into an existing folder.
+  void HandleKeyboardFoldering(ui::KeyboardCode key_code);
+
+  // Returns whether |selected_view_| can be foldered to the item at
+  // |target_index| in the root AppsGridView.
+  bool CanMoveSelectedToTargetForKeyboardFoldering(
+      const GridIndex& target_index) const;
 
   // Handle vertical focus movement triggered by arrow up and down.
   bool HandleVerticalFocusMovement(bool arrow_up);
@@ -588,8 +608,14 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Returns the target GridIndex for a keyboard move.
   GridIndex GetTargetGridIndexForKeyboardMove(ui::KeyboardCode key_code) const;
 
-  // Swaps |selected_view_| and the item at |target_index|.
-  void MoveAppListItemViewForKeyboardMove(const GridIndex& target_index);
+  // Returns the target GridIndex to move an item from a folder to the root
+  // AppsGridView.
+  GridIndex GetTargetGridIndexForKeyboardReparent(
+      ui::KeyboardCode key_code) const;
+
+  // Swaps |selected_view_| with the item in relative position specified by
+  // |key_code|.
+  void HandleKeyboardMove(ui::KeyboardCode key_code);
 
   // Records the total number of pages, and the number of pages with empty slots
   // for UMA histograms.
@@ -616,6 +642,12 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // During an app drag, creates an a11y event to verbalize dropping onto a
   // folder or creating a folder with two apps.
   void MaybeCreateFolderDroppingAccessibilityEvent();
+
+  // Modifies the announcement view to verbalize |moving_view_title| is creating
+  // a folder or moving into an existing folder with |target_view_title|.
+  void AnnounceFolderDrop(const base::string16& moving_view_title,
+                          const base::string16& target_view_title,
+                          bool target_is_folder);
 
   // During an app drag, creates an a11y event to verbalize drop target
   // location.

@@ -122,6 +122,8 @@ class APP_LIST_EXPORT AppListItemView
   // Enables background blur for folder icon if |enabled| is true.
   void SetBackgroundBlurEnabled(bool enabled);
 
+  bool is_folder() const { return is_folder_; }
+
  private:
   class IconImageView;
 

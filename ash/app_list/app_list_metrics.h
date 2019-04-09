@@ -192,14 +192,16 @@ enum AppListPageSwitcherSource {
 // written to logs. New enum values can be added, but existing enums must never
 // be renumbered or deleted and reused.
 enum AppListAppMovingType {
-  kMoveIntoFolder = 0,
-  kMoveOutOfFolder = 1,
+  kMoveByDragIntoFolder = 0,
+  kMoveByDragOutOfFolder = 1,
   kMoveIntoAnotherFolder = 2,
   kReorderByDragInFolder = 3,
   kReorderByDragInTopLevel = 4,
   kReorderByKeyboardInFolder = 5,
   kReorderByKeyboardInTopLevel = 6,
-  kMaxAppListAppMovingType = 7,
+  kMoveByKeyboardIntoFolder = 7,
+  kMoveByKeyboardOutOfFolder = 8,
+  kMaxAppListAppMovingType = 9,
 };
 
 // Different places a search result can be launched from. These values do not

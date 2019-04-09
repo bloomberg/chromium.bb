@@ -150,6 +150,8 @@ class APP_LIST_EXPORT AppListFolderView : public views::View,
   bool IsPointOutsideOfFolderBoundary(const gfx::Point& point) override;
   bool IsOEMFolder() const override;
   void SetRootLevelDragViewVisible(bool visible) override;
+  void HandleKeyboardReparent(AppListItemView* reparented_view,
+                              ui::KeyboardCode key_code) override;
 
   // Returns the compositor associated to the widget containing this view.
   // Returns nullptr if there isn't one associated with this widget.
