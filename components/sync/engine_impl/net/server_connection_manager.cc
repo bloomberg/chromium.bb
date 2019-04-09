@@ -7,7 +7,6 @@
 #include <errno.h>
 
 #include <ostream>
-#include <vector>
 
 #include "base/metrics/histogram.h"
 #include "build/build_config.h"
@@ -22,25 +21,19 @@
 
 namespace syncer {
 
-using std::ostream;
 using std::string;
-using std::vector;
 
-static const char kSyncServerSyncPath[] = "/command/";
+namespace {
 
-HttpResponse::HttpResponse()
-    : http_status_code(kUnsetResponseCode),
-      content_length(kUnsetContentLength),
-      payload_length(kUnsetPayloadLength),
-      server_status(NONE) {}
+const char kSyncServerSyncPath[] = "/command/";
 
-#define ENUM_CASE(x) \
-  case x:            \
-    return #x;       \
+#define ENUM_CASE(x)    \
+  case HttpResponse::x: \
+    return #x;          \
     break
 
-const char* HttpResponse::GetServerConnectionCodeString(
-    ServerConnectionCode code) {
+const char* GetServerConnectionCodeString(
+    HttpResponse::ServerConnectionCode code) {
   switch (code) {
     ENUM_CASE(NONE);
     ENUM_CASE(CONNECTION_UNAVAILABLE);
@@ -54,6 +47,15 @@ const char* HttpResponse::GetServerConnectionCodeString(
 }
 
 #undef ENUM_CASE
+
+}  // namespace
+
+HttpResponse::HttpResponse()
+    : net_error_code(-1),
+      http_status_code(-1),
+      content_length(-1),
+      payload_length(-1),
+      server_status(NONE) {}
 
 ServerConnectionManager::Connection::Connection(ServerConnectionManager* scm)
     : scm_(scm) {}
@@ -264,8 +266,7 @@ ServerConnectionManager::MakeConnection() {
 std::ostream& operator<<(std::ostream& s, const struct HttpResponse& hr) {
   s << " Response Code (bogus on error): " << hr.http_status_code;
   s << " Content-Length (bogus on error): " << hr.content_length;
-  s << " Server Status: "
-    << HttpResponse::GetServerConnectionCodeString(hr.server_status);
+  s << " Server Status: " << GetServerConnectionCodeString(hr.server_status);
   return s;
 }
 

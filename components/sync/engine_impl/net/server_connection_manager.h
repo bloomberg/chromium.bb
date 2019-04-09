@@ -11,22 +11,14 @@
 #include <memory>
 #include <string>
 
-#include "base/atomicops.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
-#include "base/strings/string_util.h"
-#include "base/synchronization/lock.h"
-#include "components/sync/base/cancelation_observer.h"
 #include "components/sync/syncable/syncable_id.h"
 
 namespace syncer {
 
 class CancelationSignal;
-
-static const int32_t kUnsetResponseCode = -1;
-static const int32_t kUnsetContentLength = -1;
-static const int32_t kUnsetPayloadLength = -1;
 
 // HttpResponse gathers the relevant output properties of an HTTP request.
 // Depending on the value of the server_status code, response_code, and
@@ -70,8 +62,6 @@ struct HttpResponse {
   ServerConnectionCode server_status;
 
   HttpResponse();
-
-  static const char* GetServerConnectionCodeString(ServerConnectionCode code);
 };
 
 struct ServerConnectionEvent {
