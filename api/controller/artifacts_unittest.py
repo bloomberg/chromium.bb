@@ -93,6 +93,13 @@ class BundleTastFilesTest(BundleTestCase):
         mock.call('/cros', '/cros/chroot/build/target/build', '/tmp/artifacts')
     ])
 
+  def testBundleTastFilesNoLogs(self):
+    """BundleTasteFiles dies when no tast files found."""
+    self.PatchObject(commands, 'BuildTastBundleTarball',
+                     return_value=None)
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      artifacts.BundleTastFiles(self.input_proto, self.output_proto)
+
 
 class BundlePinnedGuestImagesTest(BundleTestCase):
   """Unittests for BundlePinnedGuestImages."""
@@ -110,6 +117,13 @@ class BundlePinnedGuestImagesTest(BundleTestCase):
     self.assertEqual(build_pinned_guest_images_tarball.call_args_list,
                      [mock.call('/cros', 'target', '/tmp/artifacts')])
 
+  def testBundlePinnedGuestImagesNoLogs(self):
+    """BundlePinnedGuestImages dies when no pinned images found."""
+    self.PatchObject(commands, 'BuildPinnedGuestImagesTarball',
+                     return_value=None)
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      artifacts.BundlePinnedGuestImages(self.input_proto, self.output_proto)
+
 
 class BundleFirmwareTest(BundleTestCase):
   """Unittests for BundleFirmware."""
@@ -124,6 +138,12 @@ class BundleFirmwareTest(BundleTestCase):
         ['/tmp/artifacts/firmware.tar.gz'])
     self.assertEqual(build_firmware_archive.call_args_list,
                      [mock.call('/cros', 'target', '/tmp/artifacts')])
+
+  def testBundleFirmwareNoLogs(self):
+    """BundleFirmware dies when no firmware found."""
+    self.PatchObject(commands, 'BuildFirmwareArchive', return_value=None)
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      artifacts.BundleFirmware(self.input_proto, self.output_proto)
 
 
 class BundleEbuildLogsTest(BundleTestCase):
@@ -140,6 +160,12 @@ class BundleEbuildLogsTest(BundleTestCase):
     self.assertEqual(
         build_ebuild_logs_tarball.call_args_list,
         [mock.call('/cros/chroot/build', 'target', '/tmp/artifacts')])
+
+  def testBundleEbuildLogsNoLogs(self):
+    """BundleEbuildLogs dies when no logs found."""
+    self.PatchObject(commands, 'BuildEbuildLogsTarball', return_value=None)
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      artifacts.BundleEbuildLogs(self.input_proto, self.output_proto)
 
 
 class BundleTestUpdatePayloadsTest(cros_test_lib.MockTempDirTestCase):

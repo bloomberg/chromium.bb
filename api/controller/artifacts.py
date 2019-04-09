@@ -132,6 +132,11 @@ def BundleTastFiles(input_proto, output_proto):
   # TODO(saklein): Replace with a chromite/service implementation.
   archive = commands.BuildTastBundleTarball(build_root, cwd, output_dir)
 
+  if archive is None:
+    cros_build_lib.Die(
+        'Could not bundle Tast files. '
+        'No Tast directories found for %s.', target)
+
   output_proto.artifacts.add().path = archive
 
 
@@ -150,6 +155,11 @@ def BundlePinnedGuestImages(input_proto, output_proto):
   archive = commands.BuildPinnedGuestImagesTarball(build_root, target,
                                                    output_dir)
 
+  if archive is None:
+    cros_build_lib.Die(
+        'Could not bundle pinned guest images. '
+        'No relevant files found for %s.', target)
+
   output_proto.artifacts.add().path = os.path.join(output_dir, archive)
 
 
@@ -166,6 +176,10 @@ def BundleFirmware(input_proto, output_proto):
 
   # TODO(saklein): Replace with a chromite/service implementation.
   archive = commands.BuildFirmwareArchive(build_root, target, output_dir)
+
+  if archive is None:
+    cros_build_lib.Die(
+        'Could not create firmware archive. No firmware found for %s.', target)
 
   output_proto.artifacts.add().path = os.path.join(output_dir, archive)
 
@@ -186,5 +200,9 @@ def BundleEbuildLogs(input_proto, output_proto):
 
   # TODO(saklein): Replace with a chromite/service implementation.
   archive = commands.BuildEbuildLogsTarball(build_root, target, output_dir)
+
+  if archive is None:
+    cros_build_lib.Die(
+        'Could not create ebuild logs archive. No logs found for %s.', target)
 
   output_proto.artifacts.add().path = os.path.join(output_dir, archive)
