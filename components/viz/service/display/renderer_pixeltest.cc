@@ -4489,14 +4489,6 @@ TYPED_TEST(RendererPixelTest, RoundedCornerOnRenderPass) {
         &pass_list,
         base::FilePath(FILE_PATH_LITERAL("rounded_corner_render_pass.png")),
         cc::ExactPixelComparator(true)));
-  } else if (std::is_same<TypeParam, SkiaRenderer>()) {
-    // This is a bug where the render pass is being clipped incorrectly in the
-    // skia renderer. Change the expectation to true when the following bug is
-    // fixed: https://crbug.com/947243
-    EXPECT_FALSE(this->RunPixelTest(
-        &pass_list,
-        base::FilePath(FILE_PATH_LITERAL("rounded_corner_render_pass.png")),
-        cc::FuzzyPixelComparator(true, 0.6f, 0.f, 255.f, 255, 0)));
   } else {
     // Software/skia renderer uses skia rrect to create rounded corner clip.
     // This results in a different corner path due to a different anti aliasing
