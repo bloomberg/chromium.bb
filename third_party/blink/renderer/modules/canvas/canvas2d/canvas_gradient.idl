@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://html.spec.whatwg.org/multipage/canvas.html#canvasgradient
+// https://html.spec.whatwg.org/C#canvasgradient
 
 [
     Exposed(Worker OffscreenCanvas, Window StableBlinkFeatures)
