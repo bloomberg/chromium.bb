@@ -27,24 +27,24 @@ class COMPONENT_EXPORT(PERMISSION_BROKER) FakePermissionBrokerClient
   static FakePermissionBrokerClient* Get();
 
   void CheckPathAccess(const std::string& path,
-                       const ResultCallback& callback) override;
+                       ResultCallback callback) override;
   void OpenPath(const std::string& path,
-                const OpenPathCallback& callback,
-                const ErrorCallback& error_callback) override;
+                OpenPathCallback callback,
+                ErrorCallback error_callback) override;
   void RequestTcpPortAccess(uint16_t port,
                             const std::string& interface,
                             int lifeline_fd,
-                            const ResultCallback& callback) override;
+                            ResultCallback callback) override;
   void RequestUdpPortAccess(uint16_t port,
                             const std::string& interface,
                             int lifeline_fd,
-                            const ResultCallback& callback) override;
+                            ResultCallback callback) override;
   void ReleaseTcpPort(uint16_t port,
                       const std::string& interface,
-                      const ResultCallback& callback) override;
+                      ResultCallback callback) override;
   void ReleaseUdpPort(uint16_t port,
                       const std::string& interface,
-                      const ResultCallback& callback) override;
+                      ResultCallback callback) override;
 
   // Add a rule to have RequestTcpPortAccess fail.
   void AddTcpDenyRule(uint16_t port, const std::string& interface);

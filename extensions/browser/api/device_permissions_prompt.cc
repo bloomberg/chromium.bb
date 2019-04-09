@@ -262,8 +262,8 @@ class HidDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
 #if defined(OS_CHROMEOS)
       chromeos::PermissionBrokerClient::Get()->CheckPathAccess(
           device_info.get()->device()->device_node,
-          base::Bind(&HidDevicePermissionsPrompt::AddCheckedDevice, this,
-                     base::Passed(&device_info)));
+          base::BindOnce(&HidDevicePermissionsPrompt::AddCheckedDevice, this,
+                         std::move(device_info)));
 #else
       AddCheckedDevice(std::move(device_info), true);
 #endif  // defined(OS_CHROMEOS)
