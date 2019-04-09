@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_DRIVER_GLUE_SYNC_BACKEND_HOST_CORE_H_
-#define COMPONENTS_SYNC_DRIVER_GLUE_SYNC_BACKEND_HOST_CORE_H_
+#ifndef COMPONENTS_SYNC_DRIVER_GLUE_SYNC_ENGINE_BACKEND_H_
+#define COMPONENTS_SYNC_DRIVER_GLUE_SYNC_ENGINE_BACKEND_H_
 
 #include <stdint.h>
 
@@ -33,15 +33,14 @@ namespace syncer {
 
 class SyncEngineImpl;
 
-class SyncBackendHostCore
-    : public base::RefCountedThreadSafe<SyncBackendHostCore>,
-      public base::trace_event::MemoryDumpProvider,
-      public SyncManager::Observer,
-      public TypeDebugInfoObserver {
+class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
+                          public base::trace_event::MemoryDumpProvider,
+                          public SyncManager::Observer,
+                          public TypeDebugInfoObserver {
  public:
-  SyncBackendHostCore(const std::string& name,
-                      const base::FilePath& sync_data_folder,
-                      const base::WeakPtr<SyncEngineImpl>& host);
+  SyncEngineBackend(const std::string& name,
+                    const base::FilePath& sync_data_folder,
+                    const base::WeakPtr<SyncEngineImpl>& host);
 
   // MemoryDumpProvider implementation.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
@@ -179,9 +178,9 @@ class SyncBackendHostCore
   bool HasUnsyncedItemsForTest() const;
 
  private:
-  friend class base::RefCountedThreadSafe<SyncBackendHostCore>;
+  friend class base::RefCountedThreadSafe<SyncEngineBackend>;
 
-  ~SyncBackendHostCore() override;
+  ~SyncEngineBackend() override;
 
   // For the olg tango based invalidations method returns true if the
   // invalidation has version lower than last seen version for this datatype.
@@ -228,7 +227,7 @@ class SyncBackendHostCore
   // and ServerConnectionManager without having to wait for those classes to
   // finish initializing first.
   //
-  // See comments in SyncBackendHostCore::ShutdownOnUIThread() for more details.
+  // See comments in SyncEngineBackend::ShutdownOnUIThread() for more details.
   CancelationSignal release_request_context_signal_;
   CancelationSignal stop_syncing_signal_;
 
@@ -247,11 +246,11 @@ class SyncBackendHostCore
   // Checks that we are on the sync thread.
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<SyncBackendHostCore> weak_ptr_factory_;
+  base::WeakPtrFactory<SyncEngineBackend> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(SyncBackendHostCore);
+  DISALLOW_COPY_AND_ASSIGN(SyncEngineBackend);
 };
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_DRIVER_GLUE_SYNC_BACKEND_HOST_CORE_H_
+#endif  // COMPONENTS_SYNC_DRIVER_GLUE_SYNC_ENGINE_BACKEND_H_
