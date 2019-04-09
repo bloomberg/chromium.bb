@@ -189,6 +189,7 @@ class BLINK_EXPORT AudioCaptureSettings {
   // Creates an object with the given values.
   explicit AudioCaptureSettings(
       std::string device_id,
+      const base::Optional<int>& requested_buffer_size,
       bool disable_local_echo,
       bool enable_automatic_output_device_selection,
       const AudioProcessingProperties& audio_processing_properties);
@@ -204,6 +205,10 @@ class BLINK_EXPORT AudioCaptureSettings {
   const std::string& device_id() const {
     DCHECK(HasValue());
     return device_id_;
+  }
+  const base::Optional<int>& requested_buffer_size() const {
+    DCHECK(HasValue());
+    return requested_buffer_size_;
   }
   bool disable_local_echo() const {
     DCHECK(HasValue());
@@ -221,6 +226,7 @@ class BLINK_EXPORT AudioCaptureSettings {
  private:
   const char* failed_constraint_name_;
   std::string device_id_;
+  base::Optional<int> requested_buffer_size_;
   bool disable_local_echo_;
   bool render_to_associated_sink_;
   AudioProcessingProperties audio_processing_properties_;

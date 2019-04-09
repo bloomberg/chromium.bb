@@ -15,6 +15,7 @@ namespace content {
 LocalMediaStreamAudioSource::LocalMediaStreamAudioSource(
     int consumer_render_frame_id,
     const blink::MediaStreamDevice& device,
+    const int* requested_buffer_size,
     bool disable_local_echo,
     const ConstraintsCallback& started_callback,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
@@ -26,8 +27,11 @@ LocalMediaStreamAudioSource::LocalMediaStreamAudioSource(
   DVLOG(1) << "LocalMediaStreamAudioSource::LocalMediaStreamAudioSource()";
   SetDevice(device);
 
-  // If the device buffer size was not provided, use a default.
   int frames_per_buffer = device.input.frames_per_buffer();
+  if (requested_buffer_size)
+    frames_per_buffer = *requested_buffer_size;
+
+  // If the device buffer size was not provided, use a default.
   if (frames_per_buffer <= 0) {
     frames_per_buffer =
         (device.input.sample_rate() * blink::kFallbackAudioLatencyMs) / 1000;
