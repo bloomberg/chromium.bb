@@ -314,7 +314,7 @@ void HTMLImageElement::ParseAttribute(
     if (intrinsic_size_changed && GetLayoutObject() &&
         GetLayoutObject()->IsLayoutImage())
       ToLayoutImage(GetLayoutObject())->IntrinsicSizeChanged();
-  } else if (name == kLoadAttr &&
+  } else if (name == kLoadingAttr &&
              EqualIgnoringASCIICase(params.new_value, "eager") &&
              !GetDocument().IsLazyLoadPolicyEnforced()) {
     GetImageLoader().LoadDeferredImage(referrer_policy_);

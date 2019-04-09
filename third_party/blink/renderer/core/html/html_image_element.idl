@@ -44,7 +44,7 @@
     [CEReactions, MeasureAs=PriorityHints, OriginTrialEnabled=PriorityHints, Reflect, ReflectOnly=("low", "auto", "high"), ReflectMissing="auto", ReflectInvalid="auto"] attribute DOMString importance;
     // https://github.com/ojanvafai/intrinsicsize-attribute/blob/master/README.md
     [RuntimeEnabled=ExperimentalProductivityFeatures, CEReactions, Reflect] attribute DOMString intrinsicSize;
-    [RuntimeEnabled=LazyImageLoading, CEReactions, Reflect, ReflectOnly=("lazy", "eager", "auto"), ReflectMissing="auto", ReflectInvalid="auto"] attribute DOMString load;
+    [RuntimeEnabled=LazyImageLoading, CEReactions, Reflect, ReflectOnly=("lazy", "eager", "auto"), ReflectMissing="auto", ReflectInvalid="auto"] attribute DOMString loading;
 
     // obsolete members
     // https://html.spec.whatwg.org/C/#HTMLImageElement-partial

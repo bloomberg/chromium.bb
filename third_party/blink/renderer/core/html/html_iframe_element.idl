@@ -46,7 +46,7 @@ interface HTMLIFrameElement : HTMLElement {
     // https://w3c.github.io/webappsec-feature-policy/#the-policy-object
     [RuntimeEnabled=FeaturePolicyJavaScriptInterface] readonly attribute FeaturePolicy featurePolicy;
 
-    [RuntimeEnabled=LazyFrameLoading, CEReactions, Reflect, ReflectOnly=("lazy", "eager", "auto"), ReflectMissing="auto", ReflectInvalid="auto"] attribute DOMString load;
+    [RuntimeEnabled=LazyFrameLoading, CEReactions, Reflect, ReflectOnly=("lazy", "eager", "auto"), ReflectMissing="auto", ReflectInvalid="auto"] attribute DOMString loading;
 
     // obsolete members
     // https://html.spec.whatwg.org/C/#HTMLIFrameElement-partial

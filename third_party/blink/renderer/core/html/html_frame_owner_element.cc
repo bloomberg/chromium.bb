@@ -385,14 +385,14 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
     const KURL& url,
     const AtomicString& frame_name,
     bool replace_current_item) {
-  // Update the |should_lazy_load_children_| value according to the "lazyload"
+  // Update the |should_lazy_load_children_| value according to the "loading"
   // attribute immediately, so that it still gets respected even if the "src"
-  // attribute gets parsed in ParseAttribute() before the "lazyload" attribute
+  // attribute gets parsed in ParseAttribute() before the "loading" attribute
   // does. Note that when the *feature policy* for "lazyload" is disabled, the
-  // attribute value "off" for "lazyload" is ignored (i.e., interpreted as
+  // attribute value loading="eager" is ignored (i.e., interpreted as
   // "auto" instead).
   if (should_lazy_load_children_ &&
-      EqualIgnoringASCIICase(FastGetAttribute(html_names::kLoadAttr),
+      EqualIgnoringASCIICase(FastGetAttribute(html_names::kLoadingAttr),
                              "eager") &&
       !GetDocument().IsLazyLoadPolicyEnforced()) {
     should_lazy_load_children_ = false;
@@ -446,10 +446,11 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
     request.SetSkipServiceWorker(true);
 
   if (!lazy_load_frame_observer_ &&
-      IsFrameLazyLoadable(GetDocument(), url,
-                          EqualIgnoringASCIICase(
-                              FastGetAttribute(html_names::kLoadAttr), "lazy"),
-                          should_lazy_load_children_)) {
+      IsFrameLazyLoadable(
+          GetDocument(), url,
+          EqualIgnoringASCIICase(FastGetAttribute(html_names::kLoadingAttr),
+                                 "lazy"),
+          should_lazy_load_children_)) {
     // By default, avoid deferring subresources inside a lazily loaded frame.
     // This will make it possible for subresources in hidden frames to load that
     // will never be visible, as well as make it so that deferred frames that
@@ -496,9 +497,9 @@ bool HTMLFrameOwnerElement::ShouldLazyLoadChildren() const {
 
 void HTMLFrameOwnerElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  if (params.name == html_names::kLoadAttr) {
+  if (params.name == html_names::kLoadingAttr) {
     // Note that when the *feature policy* for "lazyload" is disabled, the
-    // attribute value "off" for "lazyload" is ignored (i.e., interpreted as
+    // attribute value loading="eager" is ignored (i.e., interpreted as
     // "auto" instead).
     if (EqualIgnoringASCIICase(params.new_value, "eager") &&
         !GetDocument().IsLazyLoadPolicyEnforced()) {
