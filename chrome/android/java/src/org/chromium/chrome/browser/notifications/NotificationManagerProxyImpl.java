@@ -13,6 +13,8 @@ import android.content.Context;
 import android.os.Build;
 import android.support.v4.app.NotificationManagerCompat;
 
+import org.chromium.base.Log;
+
 import java.util.List;
 
 /**
@@ -20,6 +22,7 @@ import java.util.List;
  * normal Android Notification Manager.
  */
 public class NotificationManagerProxyImpl implements NotificationManagerProxy {
+    private static final String TAG = "NotifManagerProxy";
     private final Context mContext;
     private final NotificationManager mNotificationManager;
 
@@ -92,16 +95,31 @@ public class NotificationManagerProxyImpl implements NotificationManagerProxy {
 
     @Override
     public void notify(int id, Notification notification) {
+        if (notification == null) {
+            Log.e(TAG, "Failed to create notification.");
+            return;
+        }
+
         mNotificationManager.notify(id, notification);
     }
 
     @Override
     public void notify(String tag, int id, Notification notification) {
+        if (notification == null) {
+            Log.e(TAG, "Failed to create notification.");
+            return;
+        }
+
         mNotificationManager.notify(tag, id, notification);
     }
 
     @Override
     public void notify(ChromeNotification notification) {
+        if (notification == null || notification.getNotification() == null) {
+            Log.e(TAG, "Failed to create notification.");
+            return;
+        }
+
         assert notification.getMetadata() != null;
         mNotificationManager.notify(notification.getMetadata().tag, notification.getMetadata().id,
                 notification.getNotification());
