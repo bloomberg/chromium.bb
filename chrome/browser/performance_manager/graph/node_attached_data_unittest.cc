@@ -212,7 +212,7 @@ TEST_F(NodeAttachedDataTest, TypedAttachDetach) {
 TEST_F(NodeAttachedDataTest, NodeDeathDestroysData) {
   MockSinglePageInSingleProcessGraph mock_graph(graph());
   auto* page_node = mock_graph.page.get();
-  auto* proc_node = mock_graph.process.get();
+  ProcessNodeImpl* proc_node = mock_graph.process.get();
 
   EXPECT_EQ(0u, graph()->GetNodeAttachedDataCountForTesting(nullptr, nullptr));
   EXPECT_EQ(0u, graph()->GetNodeAttachedDataCountForTesting(

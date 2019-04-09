@@ -89,8 +89,6 @@ void RenderProcessUserData::RenderProcessReady(
     content::RenderProcessHost* host) {
   PerformanceManager* performance_manager = PerformanceManager::GetInstance();
 
-  // TODO(siggi): Change this to pass the process into the graph node.
-  const base::ProcessId pid = host->GetProcess().Pid();
   const base::Time launch_time =
 #if defined(OS_ANDROID)
       // Process::CreationTime() is not available on Android. Since this
@@ -102,12 +100,9 @@ void RenderProcessUserData::RenderProcessReady(
 #endif
 
   performance_manager->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&ProcessNodeImpl::SetPID,
-                                base::Unretained(process_node_.get()), pid));
-  performance_manager->task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&ProcessNodeImpl::SetLaunchTime,
-                     base::Unretained(process_node_.get()), launch_time));
+      FROM_HERE, base::BindOnce(&ProcessNodeImpl::SetProcess,
+                                base::Unretained(process_node_.get()),
+                                host->GetProcess().Duplicate(), launch_time));
 }
 
 void RenderProcessUserData::RenderProcessExited(

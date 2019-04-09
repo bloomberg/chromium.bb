@@ -92,8 +92,6 @@ void BrowserChildProcessWatcher::GPUProcessExited(int id, int exit_code) {
 void BrowserChildProcessWatcher::OnProcessLaunched(
     const base::Process& process,
     ProcessNodeImpl* process_node) {
-  // TODO(siggi): Change this to pass the process into the graph node.
-  const base::ProcessId pid = process.Pid();
   const base::Time launch_time =
 #if defined(OS_ANDROID)
       // Process::CreationTime() is not available on Android. Since this method
@@ -106,11 +104,9 @@ void BrowserChildProcessWatcher::OnProcessLaunched(
 
   PerformanceManager* performance_manager = PerformanceManager::GetInstance();
   performance_manager->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&ProcessNodeImpl::SetPID,
-                                base::Unretained(process_node), pid));
-  performance_manager->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&ProcessNodeImpl::SetLaunchTime,
-                                base::Unretained(process_node), launch_time));
+      FROM_HERE, base::BindOnce(&ProcessNodeImpl::SetProcess,
+                                base::Unretained(process_node),
+                                process.Duplicate(), launch_time));
 }
 
 }  // namespace performance_manager

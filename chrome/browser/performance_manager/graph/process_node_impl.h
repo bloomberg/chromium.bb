@@ -8,6 +8,7 @@
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/process/process.h"
 #include "base/process/process_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/performance_manager/graph/node_base.h"
@@ -50,9 +51,8 @@ class ProcessNodeImpl
   // last measurement interval. One core fully occupied would be 100, while two
   // cores at 5% each would be 10.
   void SetCPUUsage(double cpu_usage);
-  void SetLaunchTime(base::Time launch_time);
-  void SetPID(base::ProcessId pid);
   void SetProcessExitStatus(int32_t exit_status);
+  void SetProcess(base::Process process, base::Time launch_time);
 
   // Private implementation properties.
   void set_private_footprint_kb(uint64_t private_footprint_kb) {
@@ -67,7 +67,11 @@ class ProcessNodeImpl
   const base::flat_set<FrameNodeImpl*>& GetFrameNodes() const;
   base::flat_set<PageNodeImpl*> GetAssociatedPageCoordinationUnits() const;
 
+  // Use process_id() in preference to process().Pid(). It's always valid to
+  // access, but will return kNullProcessId when the process is not valid. It
+  // will also retain the process ID for a process that has exited.
   base::ProcessId process_id() const { return process_id_; }
+  const base::Process& process() const { return process_; }
   base::Time launch_time() const { return launch_time_; }
   base::Optional<int32_t> exit_status() const { return exit_status_; }
 
@@ -92,6 +96,11 @@ class ProcessNodeImpl
       FrameNodeImpl* frame_node,
       resource_coordinator::mojom::LifecycleState old_state);
 
+ protected:
+  void SetProcessImpl(base::Process process,
+                      base::ProcessId process_id,
+                      base::Time launch_time);
+
  private:
   void LeaveGraph() override;
 
@@ -105,6 +114,7 @@ class ProcessNodeImpl
   uint64_t private_footprint_kb_ = 0u;
 
   base::ProcessId process_id_ = base::kNullProcessId;
+  base::Process process_;
   base::Time launch_time_;
   base::Optional<int32_t> exit_status_;
 

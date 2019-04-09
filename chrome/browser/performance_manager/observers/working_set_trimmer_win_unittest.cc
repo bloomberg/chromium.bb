@@ -74,7 +74,11 @@ MULTIPROCESS_TEST_MAIN(ProcessWithLargeWorkingSet) {
 
 class WorkingSetTrimmerTest : public GraphTestHarness {
  protected:
-  WorkingSetTrimmerTest() {
+  WorkingSetTrimmerTest() = default;
+
+  void SetUp() override {
+    GraphTestHarness::SetUp();
+
     // Create a child process and wait until it allocates a 10 MB buffer.
     base::CommandLine command_line(
         base::GetMultiProcessTestChildBaseCommandLine());
@@ -87,18 +91,18 @@ class WorkingSetTrimmerTest : public GraphTestHarness {
         CreateEvent(kBufferInitializedEventName, test_process_id_));
     buffer_initialized_event.Wait();
 
-    process_node_->SetPID(child_process_.Pid());
-
     EXPECT_GE(GetWorkingSetSizeMb(child_process_.Handle()), 10U);
   }
 
-  ~WorkingSetTrimmerTest() override {
+  void TearDown() override {
     // Wait for the child process to exit.
     base::WaitableEvent child_process_exit_event(
         CreateEvent(kChildProcessExitEventName, test_process_id_));
     child_process_exit_event.Signal();
 
     child_process_.WaitForExit(nullptr);
+
+    GraphTestHarness::TearDown();
   }
 
   const base::string16 test_process_id_ =
@@ -116,7 +120,8 @@ class WorkingSetTrimmerTest : public GraphTestHarness {
 
 TEST_F(WorkingSetTrimmerTest, EmptyWorkingSet) {
   // Set the launch time of the process CU to match |child_process_|.
-  process_node_->SetLaunchTime(child_process_.CreationTime());
+  process_node_->SetProcess(child_process_.Duplicate(),
+                            child_process_.CreationTime());
 
   // When all frames in the Process CU are frozen, the working set of
   // |child_process_| should be emptied.
@@ -125,18 +130,6 @@ TEST_F(WorkingSetTrimmerTest, EmptyWorkingSet) {
   // Make sure the working set has shrunk by at least the 10mb allocation.
   EXPECT_GE(working_set_before - 10U,
             GetWorkingSetSizeMb(child_process_.Handle()));
-}
-
-TEST_F(WorkingSetTrimmerTest, EmptyWorkingSetInconsistentLaunchTime) {
-  // Set the launch time on the process CU to a dummy time.
-  process_node_->SetLaunchTime(base::Time::Now() +
-                               base::TimeDelta::FromDays(1));
-
-  // When all frames in the Process CU are frozen, the working set of
-  // |child_process_| should not be emptied because its creation time is after
-  // |process_node_->launch_time()|.
-  working_set_trimmer_.OnAllFramesInProcessFrozen(process_node_.get());
-  EXPECT_GE(GetWorkingSetSizeMb(child_process_.Handle()), 10U);
 }
 
 }  // namespace performance_manager
