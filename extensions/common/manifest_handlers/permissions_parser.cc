@@ -82,6 +82,87 @@ bool CanSpecifyHostPermission(const Extension* extension,
   return true;
 }
 
+void ParseHostPermissions(Extension* extension,
+                          const char* key,
+                          const std::vector<std::string>& host_data,
+                          const APIPermissionSet& api_permissions,
+                          URLPatternSet* host_permissions) {
+  bool can_execute_script_everywhere =
+      PermissionsData::CanExecuteScriptEverywhere(extension->id(),
+                                                  extension->location());
+
+  // Users should be able to enable file access for extensions with activeTab.
+  if (!can_execute_script_everywhere &&
+      base::ContainsKey(api_permissions, APIPermission::kActiveTab)) {
+    extension->set_wants_file_access(true);
+  }
+
+  const int kAllowedSchemes = can_execute_script_everywhere
+                                  ? URLPattern::SCHEME_ALL
+                                  : Extension::kValidHostPermissionSchemes;
+
+  const bool all_urls_includes_chrome_urls =
+      PermissionsData::AllUrlsIncludesChromeUrls(extension->id());
+
+  for (std::vector<std::string>::const_iterator iter = host_data.begin();
+       iter != host_data.end(); ++iter) {
+    const std::string& permission_str = *iter;
+
+    // Check if it's a host pattern permission.
+    URLPattern pattern = URLPattern(kAllowedSchemes);
+    URLPattern::ParseResult parse_result = pattern.Parse(permission_str);
+    if (parse_result == URLPattern::ParseResult::kSuccess) {
+      // The path component is not used for host permissions, so we force it
+      // to match all paths.
+      pattern.SetPath("/*");
+      int valid_schemes = pattern.valid_schemes();
+      if (pattern.MatchesScheme(url::kFileScheme) &&
+          !can_execute_script_everywhere) {
+        extension->set_wants_file_access(true);
+        if (!(extension->creation_flags() & Extension::ALLOW_FILE_ACCESS))
+          valid_schemes &= ~URLPattern::SCHEME_FILE;
+      }
+
+      if (pattern.scheme() != content::kChromeUIScheme &&
+          !all_urls_includes_chrome_urls) {
+        // Keep chrome:// in allowed schemes only if it's explicitly requested
+        // or been granted by extension ID. If the extensions_on_chrome_urls
+        // flag is not set, CanSpecifyHostPermission will fail, so don't check
+        // the flag here.
+        valid_schemes &= ~URLPattern::SCHEME_CHROMEUI;
+      }
+      pattern.SetValidSchemes(valid_schemes);
+
+      if (!CanSpecifyHostPermission(extension, pattern, api_permissions)) {
+        // TODO(aboxhall): make a warning (see pattern.match_all_urls() block
+        // below).
+        extension->AddInstallWarning(InstallWarning(
+            ErrorUtils::FormatErrorMessage(errors::kInvalidPermissionScheme,
+                                           permission_str),
+            key, permission_str));
+        continue;
+      }
+
+      host_permissions->AddPattern(pattern);
+      // We need to make sure all_urls matches chrome://favicon and (maybe)
+      // chrome://thumbnail, so add them back in to host_permissions separately.
+      if (pattern.match_all_urls()) {
+        host_permissions->AddPatterns(
+            ExtensionsClient::Get()->GetPermittedChromeSchemeHosts(
+                extension, api_permissions));
+      }
+      continue;
+    }
+
+    // It's probably an unknown API permission. Do not throw an error so
+    // extensions can retain backwards compatibility (http://crbug.com/42742).
+    extension->AddInstallWarning(InstallWarning(
+        ErrorUtils::FormatErrorMessage(
+            manifest_errors::kPermissionUnknownOrMalformed, permission_str),
+        key, permission_str));
+  }
+}
+
 // Parses the host and api permissions from the specified permission |key|
 // from |extension|'s manifest.
 bool ParseHelper(Extension* extension,
@@ -160,85 +241,8 @@ bool ParseHelper(Extension* extension,
     api_permissions->erase(*iter);
   }
 
-  bool can_execute_script_everywhere =
-      PermissionsData::CanExecuteScriptEverywhere(extension->id(),
-                                                  extension->location());
-
-  // Users should be able to enable file access for extensions with activeTab.
-  if (!can_execute_script_everywhere &&
-      base::ContainsKey(*api_permissions, APIPermission::kActiveTab)) {
-    extension->set_wants_file_access(true);
-  }
-
-  // Parse host pattern permissions.
-  const int kAllowedSchemes = can_execute_script_everywhere
-                                  ? URLPattern::SCHEME_ALL
-                                  : Extension::kValidHostPermissionSchemes;
-
-  const bool all_urls_includes_chrome_urls =
-      PermissionsData::AllUrlsIncludesChromeUrls(extension->id());
-
-  for (std::vector<std::string>::const_iterator iter = host_data.begin();
-       iter != host_data.end();
-       ++iter) {
-    const std::string& permission_str = *iter;
-
-    // Check if it's a host pattern permission.
-    URLPattern pattern = URLPattern(kAllowedSchemes);
-    URLPattern::ParseResult parse_result = pattern.Parse(permission_str);
-    if (parse_result == URLPattern::ParseResult::kSuccess) {
-      // The path component is not used for host permissions, so we force it
-      // to match all paths.
-      pattern.SetPath("/*");
-      int valid_schemes = pattern.valid_schemes();
-      if (pattern.MatchesScheme(url::kFileScheme) &&
-          !can_execute_script_everywhere) {
-        extension->set_wants_file_access(true);
-        if (!(extension->creation_flags() & Extension::ALLOW_FILE_ACCESS))
-          valid_schemes &= ~URLPattern::SCHEME_FILE;
-      }
-
-      if (pattern.scheme() != content::kChromeUIScheme &&
-          !all_urls_includes_chrome_urls) {
-        // Keep chrome:// in allowed schemes only if it's explicitly requested
-        // or been granted by extension ID. If the extensions_on_chrome_urls
-        // flag is not set, CanSpecifyHostPermission will fail, so don't check
-        // the flag here.
-        valid_schemes &= ~URLPattern::SCHEME_CHROMEUI;
-      }
-      pattern.SetValidSchemes(valid_schemes);
-
-      if (!CanSpecifyHostPermission(extension, pattern, *api_permissions)) {
-        // TODO(aboxhall): make a warning (see pattern.match_all_urls() block
-        // below).
-        extension->AddInstallWarning(InstallWarning(
-            ErrorUtils::FormatErrorMessage(errors::kInvalidPermissionScheme,
-                                           permission_str),
-            key,
-            permission_str));
-        continue;
-      }
-
-      host_permissions->AddPattern(pattern);
-      // We need to make sure all_urls matches chrome://favicon and (maybe)
-      // chrome://thumbnail, so add them back in to host_permissions separately.
-      if (pattern.match_all_urls()) {
-        host_permissions->AddPatterns(
-            ExtensionsClient::Get()->GetPermittedChromeSchemeHosts(
-                extension, *api_permissions));
-      }
-      continue;
-    }
-
-    // It's probably an unknown API permission. Do not throw an error so
-    // extensions can retain backwards compatability (http://crbug.com/42742).
-    extension->AddInstallWarning(InstallWarning(
-        ErrorUtils::FormatErrorMessage(
-            manifest_errors::kPermissionUnknownOrMalformed, permission_str),
-        key,
-        permission_str));
-  }
-
+  ParseHostPermissions(extension, key, host_data, *api_permissions,
+                       host_permissions);
   return true;
 }
 
