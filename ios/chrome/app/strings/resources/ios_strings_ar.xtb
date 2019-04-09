@@ -85,6 +85,7 @@
 <translation id="213900355088104901">للتصفّح بخصوصية تامّة، افتح علامة تبويب للتصفُّح المتخفي</translation>
 <translation id="2139867232736819575">البحث عن النص الذي نسخته</translation>
 <translation id="2149973817440762519">تعديل الإشارة</translation>
+<translation id="2179182049312275900">يمكنك تفعيل المزامنة في أي وقت في الإعدادات.</translation>
 <translation id="2198757192731523470">‏قد تستخدم Google السجلّ لتخصيص "بحث Google" والإعلانات وخدمات Google الأخرى.</translation>
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> من مقالات "قائمة القراءة" غير المقروءة.</translation>
 <translation id="2230173723195178503">تم تحميل الصفحة المطلوبة</translation>
@@ -202,6 +203,7 @@
 <translation id="4038354071007134711">لا يمكن فتح هذا الملف بأي تطبيق موجود على هذا الجهاز.</translation>
 <translation id="4042870976416480368">البحث في الصفحة</translation>
 <translation id="4049507953662678203">تأكد من اتصالك بالشبكة، وأعد المحاولة.</translation>
+<translation id="4071530748369333746">هل تريد إلغاء المزامنة؟</translation>
 <translation id="4082688844002261427">التحكُّم في كيفية استخدام سجلّ التصفُّح لتخصيص البحث والإعلانات والمزيد</translation>
 <translation id="408404951701638773">أصبح الوصول إلى شريط البحث أسهل الآن</translation>
 <translation id="411254640334432676">فشلت عملية التنزيل</translation>
@@ -271,6 +273,7 @@
 <translation id="5197255632782567636">الإنترنت</translation>
 <translation id="5228579091201413441">تفعيل المزامنة</translation>
 <translation id="5244474230056479698">المزامنة مع <ph name="EMAIL" /></translation>
+<translation id="5245322853195994030">إلغاء المزامنة</translation>
 <translation id="5300589172476337783">عرض</translation>
 <translation id="5317780077021120954">حفظ</translation>
 <translation id="5327248766486351172">الاسم</translation>

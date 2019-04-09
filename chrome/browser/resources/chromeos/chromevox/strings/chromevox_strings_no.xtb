@@ -99,6 +99,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="1616111909442424068">Hvete</translation>
 <translation id="1618597272655350600">Kunngjør en fullstendig beskrivelse av den gjeldende posisjonen</translation>
 <translation id="1627222324347828322">Egghvit</translation>
+<translation id="1630688379087270943">Indiker kursiv:</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{større enn}other{# større enn-tegn}}</translation>
 <translation id="1653266918374749391">Forrige overskrift på nivå 3</translation>
 <translation id="1657616855184033958">Vis filtre for aktivitetsstrømmer</translation>
@@ -320,6 +321,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="3286390186030710347">Glidebryter</translation>
 <translation id="3299925995433437805">Ingen neste besøkte link.</translation>
 <translation id="3300348286427369683">Støtte for rik tekst. Nå støtter ChromeVox felt med rik tekst, inkludert hoppekommandoer, markørstyring for punktskrift, merking med mer.</translation>
+<translation id="3304756947457041303">Tilpass indikator for rik tekst</translation>
 <translation id="3307886118343381874">Gå til slutten av tabellen</translation>
 <translation id="3311969765485641742">Trykk på Alt+Shift+A for å gjennomgå varslene</translation>
 <translation id="3312997241656799641">Neste besøkte link</translation>
@@ -406,6 +408,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="3930498801443296724">Sitat</translation>
 <translation id="3936394396199829062">Lavendelbluss</translation>
 <translation id="3941269780691800708">Les opp teksten som er under musepekeren.</translation>
+<translation id="394953087167197343">Indiker stavefeil:</translation>
 <translation id="3962990492275676168">Begynn å lese fra nåværende plassering</translation>
 <translation id="3970951409746498040">Sandbrun</translation>
 <translation id="3989324057180830702">Av/på-knapp</translation>
@@ -452,6 +455,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="42164919740161077">Kadettblå</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{tankestrek}other{# tankestreker}}</translation>
 <translation id="421884353938374759">fargevelger</translation>
+<translation id="4221071177874897997">Indiker fet:</translation>
 <translation id="4229646983878045487">date time</translation>
 <translation id="4230834257931120629">Lys skifergrå</translation>
 <translation id="4231102694147661229">Slå på utvikleralternativene</translation>
@@ -754,6 +758,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="6348869651006731065">Dempet grå</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{punkttegn}other{# punkttegn}}</translation>
 <translation id="6355910664415701303">Det finnes ingen tidligere listeelementer.</translation>
+<translation id="6360318852623800555">Attributter for rik tekst</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Forrige overskrift</translation>
 <translation id="6376999910001533545">Rødbrun</translation>
@@ -929,6 +934,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="762020119231868829">Setter alle mediemoduler som spilles av, på pause</translation>
 <translation id="7625690649919402823">Neste tabell</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), grad <ph name="GRADE" /></translation>
+<translation id="763535765081585392">Indiker understreking:</translation>
 <translation id="7639968568612851608">Mørk grå</translation>
 <translation id="7641134354185483015">Det finnes ikke tidligere overskrifter på nivå 3.</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, tekstfelt</translation>
@@ -1164,6 +1170,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="8943175951035496220">Det finnes ingen celler til høyre.</translation>
 <translation id="8943282376843390568">Limegrønn</translation>
 <translation id="8946628535652548639">r<ph name="TABLECELLROWINDEX" />k<ph name="TABLECELLCOLUMNINDEX" /></translation>
+<translation id="8957142051395645063">Les opp</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">Glem</translation>
 <translation id="900114243503212879">file</translation>

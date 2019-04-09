@@ -99,6 +99,7 @@
 <translation id="1616111909442424068">Pšenična</translation>
 <translation id="1618597272655350600">Objavi popoln opis trenutnega položaja</translation>
 <translation id="1627222324347828322">Sivo bela</translation>
+<translation id="1630688379087270943">Nakaži ležeče:</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{znak za več}one{# znak za več}two{# znaka za več}few{# znaki za več}other{# znakov za več}}</translation>
 <translation id="1653266918374749391">Prejšnji naslov na ravni 3</translation>
 <translation id="1657616855184033958">Prikaz filtrov toka dogodkov</translation>
@@ -320,6 +321,7 @@
 <translation id="3286390186030710347">Drsnik</translation>
 <translation id="3299925995433437805">Ni naslednje obiskane povezave</translation>
 <translation id="3300348286427369683">Podpora za obogateno besedilo. ChromeVox zdaj podpira polja z obogatenim besedilom, vključno z ukazi za preskakovanje, usmerjanjem kazalca z bralnikom zaslona braille, izbiro in drugim.</translation>
+<translation id="3304756947457041303">Prilagajanje nakazovanja obogatenega besedila</translation>
 <translation id="3307886118343381874">Pomik na konec tabele</translation>
 <translation id="3311969765485641742">Pritisnite Alt + Shift + A, če želite pregledati opozorila</translation>
 <translation id="3312997241656799641">Naslednja obiskana povezava</translation>
@@ -406,6 +408,7 @@
 <translation id="3930498801443296724">Pojavni citat</translation>
 <translation id="3936394396199829062">Svetlo vijoličasta</translation>
 <translation id="3941269780691800708">Izgovori besedilo pod miško.</translation>
+<translation id="394953087167197343">Nakaži napačno črkovanje:</translation>
 <translation id="3962990492275676168">Začetek branja na trenutni lokaciji</translation>
 <translation id="3970951409746498040">Peščeno rjava</translation>
 <translation id="3989324057180830702">prk gmb</translation>
@@ -452,6 +455,7 @@
 <translation id="42164919740161077">Kadetska modra</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{pomišljaj}one{# pomišljaj}two{# pomišljaja}few{# pomišljaji}other{# pomišljajev}}</translation>
 <translation id="421884353938374759">izbirnik barve</translation>
+<translation id="4221071177874897997">Nakaži krepko:</translation>
 <translation id="4229646983878045487">datum čas</translation>
 <translation id="4230834257931120629">Svetla skrilasto siva</translation>
 <translation id="4231102694147661229">Omogočanje možnosti za razvijalce</translation>
@@ -754,6 +758,7 @@
 <translation id="6348869651006731065">Mračno siva</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{točka}one{# točka}two{# točki}few{# točke}other{# točk}}</translation>
 <translation id="6355910664415701303">Ni prejšnjega elementa seznama.</translation>
+<translation id="6360318852623800555">Atributi obogatenega besedila</translation>
 <translation id="6364795331201459219">n6</translation>
 <translation id="6368143427468974988">Prejšnji naslov</translation>
 <translation id="6376999910001533545">Kostanjeva</translation>
@@ -929,6 +934,7 @@
 <translation id="762020119231868829">Začasno ustavi vse pripomočke, ki predvajajo predstavnost</translation>
 <translation id="7625690649919402823">Naslednja tabela</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), <ph name="GRADE" />. raven</translation>
+<translation id="763535765081585392">Nakaži podčrtano:</translation>
 <translation id="7639968568612851608">Temno siva</translation>
 <translation id="7641134354185483015">Ni prejšnjega naslova na ravni 3.</translation>
 <translation id="7659376057562985921">Polje za besedilo z vrednostjo <ph name="VALUE" /> in imenom <ph name="NAME" /></translation>
@@ -1164,6 +1170,7 @@
 <translation id="8943175951035496220">Ni celice desno.</translation>
 <translation id="8943282376843390568">Rumenozelena</translation>
 <translation id="8946628535652548639">v<ph name="TABLECELLROWINDEX" />s<ph name="TABLECELLCOLUMNINDEX" /></translation>
+<translation id="8957142051395645063">Najavi</translation>
 <translation id="8978496506222343566">opord</translation>
 <translation id="8986362086234534611">Pozabi</translation>
 <translation id="900114243503212879">dat</translation>

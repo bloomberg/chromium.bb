@@ -3,6 +3,7 @@
 <translationbundle lang="et">
 <translation id="1383286653814676580">Kasutatakse Google'i mandaadipakkuja sisselogimislehe käitamiseks.</translation>
 <translation id="1894475569413661128">Logige sisse oma töökontoga.</translation>
+<translation id="2227020416206680836">Teie seanss on aegunud. Logige sisse oma töökontoga.</translation>
 <translation id="2469311484561825731">Töökontole sisselogimine nurjus. Veenduge, et Interneti-ühendus töötaks, ja proovige uuesti.</translation>
 <translation id="2595469428674600431">Teie Windowsi parooli ei õnnestunud kinnitada. Proovige uuesti.</translation>
 <translation id="3306357053520292004">Arvutis lisati juba selle kontoga kasutaja. Logige sisse teise kontoga.</translation>
@@ -14,8 +15,10 @@
 <translation id="6463752215771576050">Seda arvutit ei saa ettevõtte halduses registreerida.  Logige sisse muu töökontoga.</translation>
 <translation id="7135123390294776473">Praegu on lubatud sisse logida ainult kasutajal, kes arvuti lukustas.</translation>
 <translation id="7357241217513796177">Kontrollige võrguühendust ja proovige uuesti.</translation>
+<translation id="7536769223115622137">Lisa töökonto</translation>
 <translation id="8474372283141585908">Google'i mandaadipakkuja</translation>
 <translation id="866458870819756755">Kasutajat ei saanud luua.</translation>
 <translation id="8860262547644202689">Google'i mandaadipakkuja abiline</translation>
+<translation id="8875753657315897487">Logige sisse oma töökontoga</translation>
 <translation id="9135619837062629367">Sisselogimine selle Google'i kontoga pole lubatud. Proovige muud kontot.</translation>
 </translationbundle>

@@ -127,6 +127,7 @@
       Si aquesta política no s'estableix, s'envien cada 3 hores de manera
       predeterminada. La freqüència mínima permesa és de 60 segons.</translation>
 <translation id="1204263402976895730">Impressores d'empresa activades</translation>
+<translation id="1216919699175573511">Activa la compatibilitat amb Signed HTTP Exchange (SXG)</translation>
 <translation id="1219695476179627719">Indica si cal que el dispositiu torni a la versió establerta per la política <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> si ja s'hi executa una versió posterior.
 
       L'opció predeterminada és RollbackDisabled.</translation>
@@ -810,7 +811,7 @@ Deixar aquesta política sense establir és igual que activar l'opció, amb el f
 
           En les instàncies de Windows que no formin part d'un domini que pertanyi a <ph name="MS_AD_NAME" />, la instal·lació forçada es limita a les aplicacions i les extensions incloses a Chrome Web Store.
 
-          Per obtenir una descripció detallada de les opcions de configuració possibles i de l'estructura d'aquesta política, visita https://www.chromium.org/administrators/policy-list-3/extension-settings-full
+          Per obtenir una descripció detallada de les opcions de configuració possibles i de l'estructura d'aquesta política, ves a https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           </translation>
 <translation id="2753637905605932878">Restringeix l'interval de ports UDP locals utilitzats per WebRTC</translation>
 <translation id="2755385841634849932">Aquesta política controla la disponibilitat del servei de còpia de seguretat i restauració d'Android.
@@ -962,7 +963,7 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 
           La pàgina d'inici és la que s'obre amb el botó Inici. Les pàgines que s'obren en iniciar el navegador les controlen les polítiques RestoreOnStartup.
 
-          El tipus de pàgina d'inici es pot definir per un URL que especifiquis aquí o per la pàgina Pestanya nova. Si selecciones la pàgina Pestanya nova, aquesta política no s'aplicarà.
+          El tipus de pàgina d'inici pot ser un URL que especifiquis aquí o bé la pàgina Pestanya nova. Si selecciones la pàgina Pestanya nova, aquesta política no s'aplicarà.
 
           Si actives aquesta opció de configuració, els usuaris no podran canviar l'URL de la pàgina d'inici a <ph name="PRODUCT_NAME" />, però sí que podran triar la pàgina Pestanya nova com a pàgina d'inici.
 
@@ -1439,10 +1440,41 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
           Quan aquesta política no es defineix, s'utilitza un temps predeterminat.
 
           El valor de la política s'ha d'indicar en mil·lisegons.</translation>
+<translation id="4105884561459127998">Configura el tipus d'autenticació per a inicis de sessió amb SAML.
+
+      Si aquesta política no es defineix o es defineix en el valor predeterminat ("0"), el comportament dels inicis de sessió amb SAML el determina el navegador en funció d'altres factors. En el cas més senzill, l'autenticació de l'usuari i la protecció de les dades de l'usuari emmagatzemades a la memòria cau es basen en contrasenyes introduïdes manualment pels usuaris.
+
+      Si aquesta política s'estableix en “ClientCertificate” (valor 1), l'autenticació del certificat de client s'utilitza per a usuaris afegits recentment que inicien la sessió amb SAML. Per a aquests usuaris no s'utilitza cap contrasenya i les dades locals emmagatzemades a la memòria cau es protegeixen utilitzant les claus criptogràfiques corresponents. Per exemple, aquesta opció de configuració permet configurar l'autenticació de l'usuari basada en una targeta intel·ligent. Tingues en compte que les aplicacions de programari intermediari de la targeta intel·ligent s'han d'instal·lar mitjançant la política DeviceLoginScreenExtensions.
+
+      Aquesta política només afecta els usuaris que s'autentiquen amb SAML.</translation>
 <translation id="4105989332710272578">Desactiva l'aplicació de la Transparència de certificats per a una llista d'URL</translation>
 <translation id="4121350739760194865">Impedeix que les promocions d'aplicacions apareguin a la pestanya nova</translation>
 <translation id="412697421478384751">Permet que els usuaris defineixin PIN poc segurs per a la pantalla de bloqueig</translation>
 <translation id="4138655880188755661">Límit de temps</translation>
+<translation id="4144164749344898721">Aquesta política controla diverses opcions de configuració de l'estratègia de gestió de l'alimentació quan l'usuari està inactiu.
+
+          Hi ha quatre tipus d'accions:
+          * La il·luminació de la pantalla s'atenua si l'usuari està inactiu durant el temps especificat per |ScreenDim|.
+          * La pantalla s'apaga si l'usuari està inactiu durant el temps especificat per |ScreenOff|.
+          * Es mostra un quadre de diàleg d'advertiment en què es comunica que s'està a punt d'aplicar l'acció d'inactivitat si l'usuari està inactiu durant el temps especificat per |IdleWarning|. El missatge d'advertiment només es mostra si l'acció d'inactivitat consisteix a tancar la sessió o apagar el dispositiu.
+          * L'acció especificada per |IdleAction| es durà a terme si l'usuari està inactiu durant el temps especificat per |Idle|.
+
+          En cadascuna de les accions anteriors, el temps d'inactivitat s'ha d'especificar en mil·lisegons i s'ha de definir en un valor superior a zero perquè s'activi l'acció corresponent. Si el temps d'inactivitat s'estableix en "zero", <ph name="PRODUCT_OS_NAME" /> no durà a terme l'acció corresponent.
+
+          En cadascun dels temps d'inactivitat anteriors, s'utilitzarà un valor predeterminat si la quantitat de temps no es defineix.
+
+          Tingues en compte que els valors de |ScreenDim| es restringiran perquè siguin inferiors o iguals que |ScreenOff|. |ScreenOff| i |IdleWarning| es restringiran perquè siguin inferiors o iguals que |Idle|.
+
+          |IdleAction| pot ser una de les quatre accions següents:
+          * |Suspend| (suspendre)
+          * |Logout| (tancar)
+          * |Shutdown| (apagar)
+          * |DoNothing| (cap acció)
+
+          Si |IdleAction| no es defineix, es duu a terme l'acció predeterminada, que consisteix a suspendre el dispositiu.
+
+          També hi ha opcions de configuració diferents en funció de si es fa servir alimentació elèctrica o bateria.
+          </translation>
 <translation id="4150201353443180367">Pantalla</translation>
 <translation id="4157003184375321727">Informació del SO i de la versió de microprogramari</translation>
 <translation id="4157594634940419685">Permet l'accés a impressores CUPS natives</translation>
@@ -1508,6 +1540,15 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="4322842393287974810">Permet que l'aplicació de quiosc d'inici automàtic sense retards controli la versió de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Afegeix un botó de tancament de sessió a la safata del sistema</translation>
 <translation id="4332177773549877617">Registra esdeveniments d'instal·lacions d'aplicacions per a Android</translation>
+<translation id="4335292026668105285">Especifica el període de temps sense intervenció de l'usuari que ha de passar abans de mostrar un quadre de diàleg d'advertiment quan el dispositiu funciona amb alimentació.
+
+          Si aquesta política es defineix, especifica el període de temps durant el qual l'usuari ha d'estar inactiu abans que <ph name="PRODUCT_OS_NAME" /> mostri un quadre de diàleg d'advertiment que indiqui a l'usuari que s'està a punt de dur a terme l'acció d'inactivitat.
+
+          Si aquesta política no es defineix, no es mostra cap quadre de diàleg d'advertiment.
+
+          El valor de la política s'ha d'especificar en mil·lisegons. Els valors es restringeixen perquè siguin menors o iguals que el temps d'inactivitat.
+
+          El missatge d'advertiment només es mostra si l'acció d'inactivitat consisteix a tancar la sessió o apagar el dispositiu.</translation>
 <translation id="4346674324214534449">Et permet definir si s'han de bloquejar els anuncis als llocs web amb anuncis intrusius.
 
       Si aquesta política es defineix amb el valor 2, els anuncis es bloquejaran als llocs web amb anuncis intrusius.
@@ -2811,6 +2852,9 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7464991223784276288">Limita que les galetes coincideixin amb URL de la sessió actual</translation>
 <translation id="7469554574977894907">Activa els suggeriments de cerca</translation>
 <translation id="7474249562477552702">Defineix si es permeten els certificats SHA-1 signats emesos per ancoratges de confiança local</translation>
+<translation id="747851715060942420">Et permet configurar les pàgines que es carreguen en iniciar.
+
+      La política "URL que s'han d'obrir en iniciar" s'ignora tret que seleccionis "Obre una llista d'URL" a "Acció a en iniciar".</translation>
 <translation id="7485481791539008776">Regles de selecció de la impressora predeterminada</translation>
 <translation id="749556411189861380">Informa de la versió del SO i del microprogramari dels dispositius inscrits.
 
@@ -2821,6 +2865,11 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
       Si s'utilitza, l'usuari té accés a totes les impressores tret de les identificades en aquesta política. Els identificadors han de correspondre amb el camp "id" o "guid" del fitxer especificat a <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
+<translation id="7506269062143646163">Activa la compatibilitat amb Signed HTTP Exchange (SXG).
+
+          Si aquesta política s'activa o no s'estableix, Google Chrome acceptarà el contingut web publicat com a Signed HTTP Exchanges.
+
+          Si aquesta política es desactiva, Signed HTTP Exchanges no es podrà carregar.</translation>
 <translation id="7511361072385293666">Si aquesta política s'estableix en "true" o no es configura, es permet utilitzar el protocol QUIC a <ph name="PRODUCT_NAME" />.
       Si aquesta política s'estableix en "false", no es permet utilitzar el protocol QUIC.</translation>
 <translation id="7517845714620372896">Especifica el percentatge de brillantor de la pantalla.
@@ -2955,6 +3004,15 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Els identificadors de tipus de connexió reconeguts són "ethernet", "wifi", "wimax", "bluetooth" i "xarxes mòbils".</translation>
 <translation id="7763614521440615342">Mostra suggeriments de contingut a la pàgina Pestanya nova</translation>
 <translation id="7765879851993224640">Permet utilitzar l'inici de sessió de Smart Lock.</translation>
+<translation id="7772346342637974431">Especifica el període de temps sense intervenció de l'usuari que ha de passar abans de mostrar un quadre de diàleg d'advertiment quan el dispositiu funciona amb bateria.
+
+          Si aquesta política es defineix, especifica el període de temps durant el qual l'usuari ha d'estar inactiu abans que <ph name="PRODUCT_OS_NAME" /> mostri un quadre de diàleg d'advertiment que indiqui a l'usuari que s'està a punt de dur a terme l'acció d'inactivitat.
+
+          Si aquesta política no es defineix, no es mostra cap quadre de diàleg d'advertiment.
+
+          El valor de la política s'ha d'especificar en mil·lisegons. Els valors es restringeixen perquè siguin menors o iguals que el temps d'inactivitat.
+
+          El missatge d'advertiment només es mostra si l'acció d'inactivitat consisteix a tancar la sessió o apagar el dispositiu.</translation>
 <translation id="7774768074957326919">Utilitza la configuració del servidor intermediari del sistema</translation>
 <translation id="7781069478569868053">Pàgina Pestanya nova</translation>
 <translation id="7788511847830146438">Per perfil</translation>
@@ -3418,6 +3476,7 @@ per donar prioritat a OverrideSecurityRestrictionsOnInsecureOrigin. Si totes due
 
       Per obtenir més informació sobre els contexts segurs, consulta https://www.w3.org/TR/secure-contexts/.
       </translation>
+<translation id="8939595959513040470">Proporciona als usuaris una compilació de correcció ràpida.</translation>
 <translation id="8942616385591203339">Aquesta política controla si es pot mostrar el consentiment de sincronització quan s'inicia la sessió per primera vegada. Si mai no es necessitarà el consentiment de sincronització per a l'usuari, s'ha d'establir en "false".
       Si s'estableix en "false", no es mostrarà el consentiment de sincronització.
       Si s'estableix en "true", es podrà mostrar el consentiment de sincronització.</translation>
@@ -3444,8 +3503,16 @@ per donar prioritat a OverrideSecurityRestrictionsOnInsecureOrigin. Si totes due
 <translation id="8976531594979650914">Utilitza la impressora predeterminada del sistema com a predeterminada</translation>
 <translation id="8992176907758534924">No permetis que cap lloc mostri imatges</translation>
 <translation id="9035964157729712237">ID de les extensions que s'han d'excloure de la llista negra</translation>
+<translation id="9038058011835642205">Especifica una llista de llocs web que s'instal·len en segon pla, sense la interacció de l'usuari, i que l'usuari no pot desinstal·lar ni desactivar.
+
+      Cada element de la llista de la política és un objecte amb un membre obligatori ("url") i dos membres opcionals ("default_launch_container" i "create_desktop_shortcut"). "url" ha de ser l'URL de l'aplicació web que cal instal·lar, "launch_container" ha de ser "window" (finestra) o "tab" (pestanya) per indicar com s'obrirà l'aplicació web un cop instal·lada i "create_desktop_shortcut" ha de ser "true" si cal crear una drecera de l'escriptori a Linux i Windows. Si "default_launch_container" s'omet, l'aplicació s'obrirà en una pestanya de manera predeterminada. Independentment del valor de "default_launch_container", els usuaris poden canviar el contenidor en què s'obrirà l'aplicació. Si "create_desktop_shortcuts" s'omet, no es crearà cap drecera de l'escriptori.</translation>
 <translation id="9038839118379817310">Activa la Wi-Fi</translation>
 <translation id="9042911395677044526">Permet aplicar la configuració de la xarxa per usuari a un dispositiu <ph name="PRODUCT_OS_NAME" />. La configuració de la xarxa és una cadena en format JSON, segons la definició del format de la configuració de xarxa oberta que apareix a <ph name="ONC_SPEC_URL" /></translation>
+<translation id="9050853837490399534">Aquesta política controla si el dispositiu s'ha d'actualitzar o no a una compilació de correcció ràpida.
+
+      Si el valor de la política s'estableix en un testimoni que s'assigna a una compilació de correcció ràpida, el dispositiu s'actualitzarà a la compilació corresponent si l'actualització no està bloquejada per una altra política.
+
+      Si aquesta política no s'estableix o si el seu valor no s'assigna a una compilació de correcció ràpida, el dispositiu no s'actualitzarà a una compilació d'aquest tipus. Si el dispositiu ja utilitza una compilació de correcció ràpida i la política es deixa d'establir o el seu valor es deixa d'assignar a una compilació d'aquest tipus, el dispositiu s'actualitzarà a una compilació normal si l'actualització no està bloquejada per una altra política.</translation>
 <translation id="906631898352326790">
       Si la política s'activa, cadascun dels orígens indicats en una llista separada per comes s'executarà amb el seu propi procés. Així mateix, s'aïllaran els orígens indicats per subdominis (per exemple, en especificar https://example.com/, l'adreça https://foo.example.com/ també s'aïllarà com a part del lloc web https://example.com/).
       Si la política es desactiva, es desactivaran les funcions IsolateOrigins i SitePerProcess. Els usuaris podran continuar activant IsolateOrigins manualment amb marques de la línia d'ordres.

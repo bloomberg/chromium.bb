@@ -99,6 +99,7 @@
 <translation id="1616111909442424068">గోధుమ రంగు</translation>
 <translation id="1618597272655350600">ప్రస్తుత స్థానం యొక్క పూర్తి వివరణను తెలియజేస్తుంది</translation>
 <translation id="1627222324347828322">పిశాచ తెలుపు రంగు</translation>
+<translation id="1630688379087270943">ఇటాలిక్‌తో సూచిస్తుంది:</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{గురుతర గుర్తు}other{# గురుతర గుర్తులు}}</translation>
 <translation id="1653266918374749391">మునుపటి స్థాయి 3 శీర్షిక</translation>
 <translation id="1657616855184033958">ఈవెంట్ ప్రసార ఫిల్టర్‌లను చూపించు</translation>
@@ -320,6 +321,7 @@
 <translation id="3286390186030710347">స్లయిడర్</translation>
 <translation id="3299925995433437805">తర్వాత సందర్శించిన లింక్ ఏదీ లేదు.</translation>
 <translation id="3300348286427369683">రిచ్ టెక్స్ట్ మద్దతు. ChromeVox ఇప్పుడు దాటవేత ఆదేశాలు, బ్రెయిలీ కర్సర్ రూటింగ్, ఎంపిక మరియు మరిన్నింటితో సహా రిచ్ టెక్స్ట్ ఫీల్డ్‌లకు మద్దతిస్తుంది.</translation>
+<translation id="3304756947457041303">రిచ్ టెక్స్ట్ అనుకూలీకరణ సూచిక</translation>
 <translation id="3307886118343381874">పట్టిక చివరకు వెళ్లండి</translation>
 <translation id="3311969765485641742">హెచ్చరికలను సమీక్షించడానికి Alt+Shift+A నొక్కండి</translation>
 <translation id="3312997241656799641">తర్వాత సందర్శించిన లింక్</translation>
@@ -406,6 +408,7 @@
 <translation id="3930498801443296724">పుల్‌కోట్</translation>
 <translation id="3936394396199829062">లావెండర్ ఎరుపు</translation>
 <translation id="3941269780691800708">మౌస్ కింద ఉన్న వచనాన్ని చదవచ్చు.</translation>
+<translation id="394953087167197343">తప్పును సూచిస్తుంది:</translation>
 <translation id="3962990492275676168">ప్రస్తుత స్థానం నుండి చదవడం ప్రారంభించండి</translation>
 <translation id="3970951409746498040">ఇసుక గోధుమ రంగు</translation>
 <translation id="3989324057180830702">tgl btn</translation>
@@ -452,6 +455,7 @@
 <translation id="42164919740161077">బూడిద నీలి రంగు</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{అడ్డగీత}other{# అడ్డగీతలు}}</translation>
 <translation id="421884353938374759">రంగు ఎంపిక</translation>
+<translation id="4221071177874897997">బోల్డ్‌తో సూచిస్తుంది:</translation>
 <translation id="4229646983878045487">తేదీ సమయం</translation>
 <translation id="4230834257931120629">లేత మేఘవర్ణపు బూడిద రంగు</translation>
 <translation id="4231102694147661229">డెవలపర్ ఎంపికలను ప్రారంభించు</translation>
@@ -754,6 +758,7 @@
 <translation id="6348869651006731065">కాంతిహీనమైన బూడిద రంగు</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{బుల్లెట్}other{# బుల్లెట్‌లు}}</translation>
 <translation id="6355910664415701303">మునుపటి జాబితా అంశం లేదు.</translation>
+<translation id="6360318852623800555">రిచ్ టెక్స్ట్ లక్షణాలు</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">మునుపటి శీర్షిక</translation>
 <translation id="6376999910001533545">ముదురు ఎరుపు రంగు</translation>
@@ -929,6 +934,7 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
 <translation id="762020119231868829">ప్రస్తుతం ప్లే అవుతున్న అన్ని మీడియా విడ్జెట్‌లను పాజ్ చేస్తుంది</translation>
 <translation id="7625690649919402823">తరువాత పట్టిక</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), గ్రేడ్ <ph name="GRADE" /></translation>
+<translation id="763535765081585392">కింది గీతను సూచిస్తుంది:</translation>
 <translation id="7639968568612851608">ముదురు బూడిద రంగు</translation>
 <translation id="7641134354185483015">మునుపటి స్థాయి 3 శీర్షిక లేదు.</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, వచన పెట్టె</translation>
@@ -1164,6 +1170,7 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
 <translation id="8943175951035496220">కుడివైపు సెల్ లేదు.</translation>
 <translation id="8943282376843390568">నిమ్మపండు రంగు</translation>
 <translation id="8946628535652548639">అడ్డు వరుస<ph name="TABLECELLROWINDEX" />నిలువు వరుస<ph name="TABLECELLCOLUMNINDEX" /></translation>
+<translation id="8957142051395645063">ప్రకటించు</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">మరిచిపోయారా</translation>
 <translation id="900114243503212879">ఫైల్</translation>

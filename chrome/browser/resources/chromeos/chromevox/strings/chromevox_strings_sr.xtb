@@ -99,6 +99,7 @@
 <translation id="1616111909442424068">Боја пшенице</translation>
 <translation id="1618597272655350600">Објављује потпун опис актуелног положаја</translation>
 <translation id="1627222324347828322">Прљавобела</translation>
+<translation id="1630688379087270943">Ознака за курзив:</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{знак „веће од“}one{# знак „веће од“}few{# знака „веће од“}other{# знакова „веће од“}}</translation>
 <translation id="1653266918374749391">Претходно заглавље 3. нивоа</translation>
 <translation id="1657616855184033958">Прикажи филтере стрима догађаја</translation>
@@ -320,6 +321,7 @@
 <translation id="3286390186030710347">Клизач</translation>
 <translation id="3299925995433437805">Нема следећег посећеног линка.</translation>
 <translation id="3300348286427369683">Подршка за обогаћени текст. ChromeVox сада подржава поља обогаћеног текста, укључујући команде прескакања, усмеравање Брајевог курсора, избор и друге функције.</translation>
+<translation id="3304756947457041303">Прилагодите индикацију са обогаћеним текстом</translation>
 <translation id="3307886118343381874">Прелазак на крај табеле</translation>
 <translation id="3311969765485641742">Притисните Alt+Shift+A да бисте прегледали обавештења</translation>
 <translation id="3312997241656799641">Следећи посећени линк</translation>
@@ -406,6 +408,7 @@
 <translation id="3930498801443296724">Кратки цитат</translation>
 <translation id="3936394396199829062">Светлољубичаста</translation>
 <translation id="3941269780691800708">Изговарај текст под мишем.</translation>
+<translation id="394953087167197343">Ознака за правописну грешку:</translation>
 <translation id="3962990492275676168">Читање почиње од актуелне локације</translation>
 <translation id="3970951409746498040">Наранџастобраон</translation>
 <translation id="3989324057180830702">дугме за укључивање/искључивање</translation>
@@ -452,6 +455,7 @@
 <translation id="42164919740161077">Сивоплава</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{црта}one{# црта}few{# црте}other{# црта}}</translation>
 <translation id="421884353938374759">бирач боја</translation>
+<translation id="4221071177874897997">Ознака за подебљање:</translation>
 <translation id="4229646983878045487">датум време</translation>
 <translation id="4230834257931120629">Светлосива</translation>
 <translation id="4231102694147661229">Омогући опције за програмере</translation>
@@ -754,6 +758,7 @@
 <translation id="6348869651006731065">Затвореносива</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{знак за набрајање}one{# знак за набрајање}few{# знака за набрајање}other{# знакова за набрајање}}</translation>
 <translation id="6355910664415701303">Нема претходне ставке листе.</translation>
+<translation id="6360318852623800555">Атрибути обогаћеног текста</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Претходно заглавље</translation>
 <translation id="6376999910001533545">Црвенкастобраон</translation>
@@ -929,6 +934,7 @@
 <translation id="762020119231868829">Паузира све тренутно пуштене виџете за медијске датотеке</translation>
 <translation id="7625690649919402823">Следећа табела</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), <ph name="GRADE" />. ниво</translation>
+<translation id="763535765081585392">Ознака за подвлачење:</translation>
 <translation id="7639968568612851608">Тамносива</translation>
 <translation id="7641134354185483015">Нема претходног заглавља 3. нивоа.</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, оквир за текст</translation>
@@ -1164,6 +1170,7 @@
 <translation id="8943175951035496220">Нема ћелија десно.</translation>
 <translation id="8943282376843390568">Јаркозелена</translation>
 <translation id="8946628535652548639"><ph name="TABLECELLROWINDEX" />. р<ph name="TABLECELLCOLUMNINDEX" />. к</translation>
+<translation id="8957142051395645063">Најави</translation>
 <translation id="8978496506222343566">објашњење</translation>
 <translation id="8986362086234534611">Заборави</translation>
 <translation id="900114243503212879">file</translation>

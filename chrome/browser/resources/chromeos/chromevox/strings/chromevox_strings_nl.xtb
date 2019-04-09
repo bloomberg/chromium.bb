@@ -99,6 +99,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="1616111909442424068">Tarwe</translation>
 <translation id="1618597272655350600">Geeft een volledige beschrijving van de huidige positie</translation>
 <translation id="1627222324347828322">Spookwit</translation>
+<translation id="1630688379087270943">Cursief aangeven:</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{groter-dan-teken}other{# groter-dan-tekens}}</translation>
 <translation id="1653266918374749391">Vorige kop voor niveau 3</translation>
 <translation id="1657616855184033958">Filters voor gebeurtenisstream weergeven</translation>
@@ -319,6 +320,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="3286390186030710347">Schuifregelaar</translation>
 <translation id="3299925995433437805">Geen volgende bezochte link.</translation>
 <translation id="3300348286427369683">Uitgebreide tekstondersteuning. ChromeVox ondersteunt nu uitgebreide tekstvelden waarmee je gebruik kunt maken van navigatieopdrachten, cursorrouting van een brailleleesregel, selectie en meer.</translation>
+<translation id="3304756947457041303">Indicatie tekst met opmaak aanpassen</translation>
 <translation id="3307886118343381874">Naar het einde van de tabel gaan</translation>
 <translation id="3311969765485641742">Druk op Alt+Shift+A om waarschuwingen te bekijken</translation>
 <translation id="3312997241656799641">Volgende bezochte link</translation>
@@ -405,6 +407,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="3930498801443296724">Pullquote</translation>
 <translation id="3936394396199829062">Lavendelblos</translation>
 <translation id="3941269780691800708">Spreek tekst onder de muisaanwijzer uit.</translation>
+<translation id="394953087167197343">Onjuiste spelling aangeven:</translation>
 <translation id="3962990492275676168">Beginnen met lezen vanaf huidige locatie</translation>
 <translation id="3970951409746498040">Zandbruin</translation>
 <translation id="3989324057180830702">Schakelknop</translation>
@@ -451,6 +454,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="42164919740161077">Cadetblauw</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{streepje}other{# streepjes}}</translation>
 <translation id="421884353938374759">kleurkiezer</translation>
+<translation id="4221071177874897997">Vetgedrukt aangeven:</translation>
 <translation id="4229646983878045487">datum tijd</translation>
 <translation id="4230834257931120629">Licht leisteengrijs</translation>
 <translation id="4231102694147661229">Opties voor ontwikkelaars inschakelen</translation>
@@ -753,6 +757,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="6348869651006731065">Schemergrijs</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{opsommingsteken}other{# opsommingstekens}}</translation>
 <translation id="6355910664415701303">Geen vorig lijstitem.</translation>
+<translation id="6360318852623800555">Kenmerken tekst met opmaak</translation>
 <translation id="6364795331201459219">k6</translation>
 <translation id="6368143427468974988">Vorige kop</translation>
 <translation id="6376999910001533545">Kastanjebruin</translation>
@@ -927,6 +932,7 @@ Als je het menu van de Chrome-browser wilt openen, druk je op Alt + F.</translat
 <translation id="762020119231868829">Hiermee worden alle actieve mediawidgets onderbroken</translation>
 <translation id="7625690649919402823">Volgende tabel</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), niveau <ph name="GRADE" /></translation>
+<translation id="763535765081585392">Onderstreping aangeven:</translation>
 <translation id="7639968568612851608">Donkergrijs</translation>
 <translation id="7641134354185483015">Geen vorige kop voor niveau 3.</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, tekstvak</translation>
@@ -1162,6 +1168,7 @@ Als je het menu van de Chrome-browser wilt openen, druk je op Alt + F.</translat
 <translation id="8943175951035496220">Geen cel aan de rechterkant.</translation>
 <translation id="8943282376843390568">Limoengroen</translation>
 <translation id="8946628535652548639">r<ph name="TABLECELLROWINDEX" />k<ph name="TABLECELLCOLUMNINDEX" /></translation>
+<translation id="8957142051395645063">Aankondigen</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">Vergeten</translation>
 <translation id="900114243503212879">bestand</translation>

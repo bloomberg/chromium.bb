@@ -140,6 +140,7 @@
       Ja šai politikai nav iestatīta vērtība, tiek lietots noklusējuma biežums:
       3 stundas. Minimālais atļautais biežums ir 60 sekundes.</translation>
 <translation id="1204263402976895730">Iespējotie uzņēmuma printeri</translation>
+<translation id="1216919699175573511">Parakstītas HTTP apmaiņas (SXG) atbalsta iespējošana</translation>
 <translation id="1219695476179627719">Šī politika norāda, vai jāveic ierīces atrite uz versiju, ko iestata <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" />, ja ierīcē jau darbojas vēlāka versija.
 
       Noklusējuma vērtība ir RollbackDisabled.</translation>
@@ -1648,6 +1649,13 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
           Ja šī politika nav iestatīta, tiek izmantots noklusējuma laika periods.
 
           Politikas vērtību nedrīkst norādīt milisekundēs.</translation>
+<translation id="4105884561459127998">Konfigurē SAML pieteikšanās autentifikācijas veidus.
+
+      Ja šī politika nav iestatīta vai tai ir iestatīta vērtība “Default” (vērtība: 0), SAML pieteikšanās veidu, pamatojoties uz citiem faktoriem, nosaka pārlūks. Visbiežāk lietotāja autentifikācijai un kešatmiņā saglabāto lietotāja datu aizsardzībai tiek izmantotas paroles, ko lietotājs ievada manuāli.
+
+      Ja šai politikai ir iestatīta vērtība “ClientCertificate” (vērtība: 1), klienta sertifikāta autentifikācija tiek izmantota jaunajiem lietotājiem, kuri piesakās, izmantojot SAML. Šādiem lietotājiem paroles netiek izmantotas un kešatmiņā saglabātie lokālie dati tiek aizsargāti, izmantojot atbilstošas kriptogrāfiskas atslēgas. Piemēram, šis iestatījums ļauj konfigurēt viedkarti atbilstoši lietotāja autentifikācijas veidam (ņemiet vērā, ka viedkartes starpprogrammatūras lietotnes ir jāinstalē, izmantojot politiku “DeviceLoginScreenExtensions”).
+
+      Šī politika attiecas tikai uz tiem lietotājiem, kuri autentifikācijai izmanto SAML.</translation>
 <translation id="4105989332710272578">Atspējot Certificate Transparency piemērošanu norādītajiem vietrāžiem URL</translation>
 <translation id="4121350739760194865">Novērst lietotņu reklāmu rādīšanu Jaunas cilnes lapā.</translation>
 <translation id="4125606414556046117">Izmantojot šo politiku, varat konfigurēt fona tapetes attēlu, kas tiek rādīts darbvirsmā un lietotāja pieteikšanās ekrāna fonā. Politika tiek iestatīta, norādot URL, no kura <ph name="PRODUCT_OS_NAME" /> var lejupielādēt fona tapetes attēlu un kriptogrāfisku jaucējkodu, kas tiek izmantots lejupielādes integritātes pārbaudei. Attēlam ir jābūt JPEG formātā, un tā lielums nedrīkst pārsniegt 16 MB. URL ir jābūt pieejamam bez autentifikācijas.
@@ -1676,6 +1684,30 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ja šī politika netiek iestatīta, lietotājs var izvēlēties attēlu, kas tiek rādīts darbvirsmā un pieteikšanās ekrāna fonā.</translation>
 <translation id="412697421478384751">Atļauja lietotājiem iestatīt nedrošus ekrāna bloķēšanas PIN</translation>
 <translation id="4138655880188755661">Laika ierobežojums</translation>
+<translation id="4144164749344898721">Šī politika kontrolē vairākus barošanas pārvaldības iestatījumus neaktivitātes gadījumā.
+
+          Pastāv četri darbību veidi.
+          * Ekrāns tiks aptumšots, ja lietotājs būs neaktīvs tik ilgi, cik nosaka |ScreenDim|.
+          * Ekrāns tiks izslēgts, ja lietotājs būs neaktīvs tik ilgi, cik nosaka |ScreenOff|.
+          * Ja lietotājs būs neaktīvs tik ilgi, cik nosaka |IdleWarning|, tiks parādīts brīdinājuma dialoglodziņš ar paziņojumu, ka neaktivitātes dēļ tūlīt tiks veikta kāda darbība. Brīdinājuma ziņojums tiek parādīts tikai tad, ja neaktivitātes dēļ notiks atteikšanās vai izslēgšana.
+          * |IdleAction| norādītā darbība tiks veikta, ja lietotājs būs neaktīvs tik ilgi, cik nosaka |Idle|.
+
+          Katrai iepriekš norādītajai darbībai aizkave ir jānorāda milisekundēs, un, lai aktivizētu attiecīgo darbību, tai ir jāiestata vērtība, kas lielāka par nulli. Ja aizkaves vērtība ir nulle, <ph name="PRODUCT_OS_NAME" /> neveiks atbilstošo darbību.
+
+          Ja netiks norādītas aizkaves vērtības, tiks izmantotas noklusējuma vērtības.
+
+          Ņemiet vērā, ka |ScreenDim| vērtības vienmēr būs mazākas par |ScreenOff| vai vienādas ar to, savukārt |ScreenOff| un |IdleWarning| vērtība vienmēr būs mazāka par |Idle| vai vienāda ar to.
+
+          |IdleAction| var būt viena no četrām iespējamām darbībām:
+          * |Suspend|
+          * |Logout|
+          * |Shutdown|
+          * |DoNothing|
+
+          Ja |IdleAction| vērtība nav iestatīta, tiek izmantota noklusējuma darbība — darbības apturēšana.
+
+          Ir pieejami arī atsevišķi iestatījumi atkarībā no tā, vai barošanai tiek izmantots maiņstrāvas tīkls vai akumulators.
+          </translation>
 <translation id="4150201353443180367">Displejs</translation>
 <translation id="4157003184375321727">Ziņošana par OS un programmaparatūras versiju</translation>
 <translation id="4157594634940419685">Atļauja piekļūt vietējiem CUPS printeriem</translation>
@@ -1759,6 +1791,15 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="4322842393287974810">Atļaut kioska lietotnei, kas tiek automātiski palaista ar nulles aizkavi, kontrolēt <ph name="PRODUCT_OS_NAME" /> versiju</translation>
 <translation id="4325690621216251241">Atteikšanās pogas pievienošana sistēmas teknei</translation>
 <translation id="4332177773549877617">Android lietotņu instalēšanas notikumu reģistrēšana</translation>
+<translation id="4335292026668105285">Norāda laika periodu, kurā lietotājam ir jāveic kāda darbība, pretējā gadījumā tiek parādīts brīdinājuma dialoglodziņš (ja ierīce pieslēgta maiņstrāvas tīklam).
+
+          Ja šī politika ir iestatīta, tā norāda neaktivitātes laika periodu, pēc kura <ph name="PRODUCT_OS_NAME" /> parāda brīdinājuma dialoglodziņu, paziņojot lietotājam, ka neaktivitātes dēļ tiks veikta kāda darbība.
+
+          Ja šī politika nav iestatīta, brīdinājuma dialoglodziņš netiek rādīts.
+
+          Politikas vērtība ir jānorāda milisekundēs. Vērtībām ir jābūt mazākām par vai vienādām ar neaktivitātes aizkaves vērtību.
+
+          Brīdinājuma ziņojums tiek parādīts tikai tad, ja neaktivitātes dēļ notiks atteikšanās vai izslēgšana.</translation>
 <translation id="4346674324214534449">Ļauj iestatīt, vai bloķēt reklāmu rādīšanu vietnēs, kurās tiek rādītas traucējošas reklāmas.
 
       Ja politikai ir iestatīta vērtība “2”, reklāmu rādīšana tiks bloķēta vietnēs, kurās tiek rādītas traucējošas reklāmas.
@@ -3331,6 +3372,9 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 <translation id="7464991223784276288">Atbilstošu vietrāžu URL sīkfailu ierobežošana pašreizējā sesijā</translation>
 <translation id="7469554574977894907">Iespējo meklēšanas ieteikumus</translation>
 <translation id="7474249562477552702">Ar SHA-1 parakstītu sertifikātu, ko izsnieguši lokāli uzticamības enkuri, atļaušana</translation>
+<translation id="747851715060942420">Ļauj jums konfigurēt lapas, kas tiek ielādētas pēc startēšanas.
+
+      Politika “URL, kas jāatver startēšanas brīdī” tiek ignorēta, ja vien sadaļā “Darbība startēšanas brīdī” netiek atlasīts iestatījums “Atvērt vietrāžu URL sarakstu”.</translation>
 <translation id="7485481791539008776">Noklusējuma printera atlases kārtulas</translation>
 <translation id="7485730741952775732">Ja šī politika ir iestatīta, attālās piekļuves saimniekdators izmanto šo URL, lai apstiprinātu autentifikācijas pilnvaras no attālās piekļuves klientiem un akceptētu savienojumus. Jāizmanto kopā ar politiku RemoteAccessHostTokenUrl.
 
@@ -3343,6 +3387,11 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
       Šī politika tiek izmantota tikai tad, ja parametram <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> ir izvēlēta vērtība <ph name="PRINTERS_BLACKLIST" />.
       Ja šī politika tiek izmantota, lietotājam ir pieejami visi printeri, izņemot tos, kuru identifikatori atbilst šajā politikā norādītajām vērtībām. Identifikatoriem ir jāatbilst lauku “id” vai “guid” vērtībām failā, kas norādīts politikā <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
+<translation id="7506269062143646163">Iespējojiet parakstītās HTTP apmaiņas (SXG) atbalstu.
+
+          Ja šī politika nav iestatīta vai ir iespējota, Google Chrome pieņems tīmekļa saturu, kas tiek sniegts kā parakstītā HTTP apmaiņa.
+
+          Ja šī politika ir atspējota, parakstītās HTTP apmaiņas saturu nevarēs ielādēt.</translation>
 <translation id="7511361072385293666">Ja politikai ir iestatīta vērtība Patiesa vai tā nav iestatīta, pārlūkā <ph name="PRODUCT_NAME" /> ir atļauts lietot protokolu QUIC.
       Ja politikai ir iestatīta vērtība Nepatiesa, protokolu QUIC nav atļauts lietot.</translation>
 <translation id="7517845714620372896">Norāda ekrāna spilgtuma procentus.
@@ -3489,6 +3538,15 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
       Atpazītie savienojumu veidu identifikatori ir “ethernet”, “wifi”, “wimax”, “bluetooth” un “cellular”.</translation>
 <translation id="7763614521440615342">Rādīt satura ieteikumus lapā “Jauna cilne”</translation>
 <translation id="7765879851993224640">Atļaujiet izmantot Smart Lock.</translation>
+<translation id="7772346342637974431">Norāda laika periodu, kurā lietotājam ir jāveic kāda darbība, pretējā gadījumā tiek parādīts brīdinājuma dialoglodziņš (ja ierīces barošanai tiek izmantots akumulators).
+
+          Ja šī politika ir iestatīta, tā norāda neaktivitātes laika periodu, pēc kura <ph name="PRODUCT_OS_NAME" /> parāda brīdinājuma dialoglodziņu, paziņojot lietotājam, ka neaktivitātes dēļ tiks veikta kāda darbība.
+
+          Ja šī politika nav iestatīta, brīdinājuma dialoglodziņš netiek rādīts.
+
+          Politikas vērtība ir jānorāda milisekundēs. Vērtībām ir jābūt mazākām par vai vienādām ar neaktivitātes aizkaves vērtību.
+
+          Brīdinājuma ziņojums tiek parādīts tikai tad, ja neaktivitātes dēļ notiks atteikšanās vai izslēgšana.</translation>
 <translation id="7774768074957326919">Izmantot sistēmas starpniekservera iestatījumus</translation>
 <translation id="7777535871204167559">Izmanto ārējās atmiņas ierīces kā tikai lasāmas</translation>
 <translation id="7781069478569868053">Jaunas cilnes lapa</translation>
@@ -4048,6 +4106,7 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
 
       Plašāku informāciju par drošu vidi skatiet vietnē https://www.w3.org/TR/secure-contexts/.
       </translation>
+<translation id="8939595959513040470">Nodrošiniet lietotājiem ātrā risinājuma būvējumu.</translation>
 <translation id="8942616385591203339">Šī politika nosaka, vai lietotājam pirmajā pierakstīšanās reizē tiek rādīts dialoglodziņš sinhronizācijas atļaušanai. Ja lietotājam nekad nav nepieciešams rādīt dialoglodziņu sinhronizācijas atļaušanai, politikai jāiestata vērtība “False”.
       Ja ir iestatīta vērtība “False”, dialoglodziņš sinhronizācijas atļaušanai netiks rādīts.
       Ja ir iestatīta vērtība “True” vai politika nav iestatīta, dialoglodziņš sinhronizācijas atļaušanai tiks rādīts.</translation>
@@ -4107,6 +4166,9 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
 
       Ja šī politika netiek iestatīta, lietotājs varēs izvēlēties savu iemiesojuma attēlu, ko rādīt pieteikšanās ekrānā.</translation>
 <translation id="9035964157729712237">Paplašinājumu ID numuri, kas noņemami no melnā saraksta</translation>
+<translation id="9038058011835642205">Norāda sarakstu ar vietnēm, kuras tiek instalētas neuzraudzīti (bez lietotāja iejaukšanās) un kuras lietotājs nevar atinstalēt vai atspējot.
+
+      Katrs politikas saraksta vienums ir objekts ar obligātu elementu “url” un diviem neobligātiem elementiem “default_launch_container” un “create_desktop_shortcut”. Elementam “url” jābūt instalējamās tīmekļa lietotnes vietrādim URL, elementam “launch_container” — vai nu “window”, vai arī “tab”, lai norādītu, kā pēc instalēšanas jāatver tīmekļa lietotne, savukārt elementam “create_desktop_shortcut” jāiestata vērtība “True”, ja operētājsistēmā Linux vai Windows jāizveido darbvirsmas saīsne. Ja elements “default_launch_container” ir izlaists, lietotne pēc noklusējuma tiks atvērta cilnē. Neatkarīgi no “default_launch_container” vērtības lietotāji varēs mainīt konteineru, kurā lietotne tiks atvērta. Ja elements “create_desktop_shortcuts” ir izlaists, darbvirsmas saīsnes netiks izveidotas.</translation>
 <translation id="9038839118379817310">Iespējot Wi-Fi</translation>
 <translation id="9039822628127365650">Ja šī politika ir iestatīta, tiek norādīts laiks, pēc kura lietotājs tiek automātiski izrakstīts un sesija tiek pārtraukta. Lietotājs tiek informēts par atlikušo laiku, izmantojot sistēmas teknē parādītu taimeri.
 
@@ -4117,6 +4179,11 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
       Politikas vērtība ir jānorāda milisekundēs. Vērtība ir jānorāda diapazonā no 30 sekundēm līdz 24 stundām.</translation>
 <translation id="9042911395677044526">Ļauj pārsūtīšanas tīkla konfigurāciju izmantot konkrētam lietotājam <ph name="PRODUCT_OS_NAME" /> ierīcē. Tīkla konfigurācija ir JSON formatēta virkne, kā 
 definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph name="ONC_SPEC_URL" /></translation>
+<translation id="9050853837490399534">Šī politika kontrolē to, vai ierīci var atjaunināt, izmantojot ātrā risinājuma būvējumu.
+
+      Ja kā politikas vērtība ir iestatīts marķieris, kas novirza uz ātrā risinājuma būvējumu, ierīce tiks atjaunināta, izmantojot attiecīgo ātrā risinājuma būvējumu; izņēmums ir gadījumi, kad atjaunināšanu bloķē cita politika.
+
+      Ja šī politika nav iestatīta vai tās vērtība nenovirza uz ātrā risinājuma būvējumu, ierīce netiks atjaunināta, izmantojot ātrā risinājuma būvējumu. Ja ierīcē jau darbojas ātrā risinājuma būvējums un politika vairs nav iestatīta vai tās vērtība vairs nenovirza uz ātrā risinājuma būvējumu, ierīce tiks atjaunināta, izmantojot parasto būvējumu; izņēmums ir gadījumi, kad atjaunināšanu bloķē cita politika.</translation>
 <translation id="906631898352326790">
       Ja politika ir iespējota, katram komatatdalītā
       sarakstā norādītajam sākumpunktam tiks izpildīts atsevišķs process. Šādi tiks arī izolēti

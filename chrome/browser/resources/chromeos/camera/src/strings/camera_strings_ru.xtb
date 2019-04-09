@@ -21,9 +21,11 @@
 <translation id="3081586908890909590">Переключиться на видеосъемку</translation>
 <translation id="3183731565330012717">Тип сетки</translation>
 <translation id="3227137524299004712">Микрофон</translation>
+<translation id="3517926952904427380">Не удалось сделать вертикальное фото.</translation>
 <translation id="3569311554794739032">Удалить файл <ph name="FILE" />?</translation>
 <translation id="3810838688059735925">Видео</translation>
 <translation id="4279490309300973883">Отражение</translation>
+<translation id="4329152592498422850">Перейти к созданию квадратного фото</translation>
 <translation id="4445542136948522167">Отменить съемку</translation>
 <translation id="4628948037717959914">Фото</translation>
 <translation id="4649291346448517080">Не удалось сохранить файл.</translation>
@@ -50,6 +52,7 @@
 <translation id="8145038249676204903">Переключиться на фотосъемку</translation>
 <translation id="8261506727792406068">Удалить</translation>
 <translation id="8428213095426709021">Настройки</translation>
+<translation id="8815966864175525708">Перейти к созданию вертикального фото</translation>
 <translation id="8870695351537079478">Не удалось начать запись</translation>
 <translation id="9045155556724273246">10 секунд</translation>
 <translation id="945522503751344254">Отправить отзыв</translation>

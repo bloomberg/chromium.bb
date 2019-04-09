@@ -151,6 +151,7 @@
       Nếu chính sách này không được đặt thì tần suất mặc định là 3 giờ. Tần
       suất nhỏ nhất được phép là 60 giây.</translation>
 <translation id="1204263402976895730">Đã bật máy in dành cho doanh nghiệp</translation>
+<translation id="1216919699175573511">Bật tính năng hỗ trợ cho Signed HTTP Exchange (SXG)</translation>
 <translation id="1219695476179627719">Chỉ định xem thiết bị có phải khôi phục về phiên bản do <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> đặt không nếu đã chạy phiên bản mới hơn.
 
       Mặc định là RollbackDisabled.</translation>
@@ -1120,15 +1121,15 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="2987227569419001736">Kiểm soát việc sử dụng API Web Bluetooth</translation>
 <translation id="3011301228198307065">Định cấu hình URL trang chủ mặc định trong <ph name="PRODUCT_NAME" /> và ngăn không cho người dùng thay đổi URL đó.
 
-          Trang chủ là trang mở ra khi người dùng nhấn nút Trang chủ. Các trang mở ra khi khởi động do chính sách RestoreOnStartup kiểm soát.
+          Trang chủ là trang mở ra khi người dùng nhấn nút Trang chủ. Các trang mở ra khi khởi động chịu sự kiểm soát của chính sách RestoreOnStartup.
 
           Bạn có thể đặt loại trang chủ thành một URL mà bạn chỉ định tại đây hoặc đặt thành Trang tab mới. Nếu bạn chọn Trang tab mới, thì chính sách này không có hiệu lực.
 
-          Nếu bạn bật tùy chọn cài đặt này, thì người dùng không thể thay đổi URL trang chủ của họ trong <ph name="PRODUCT_NAME" /> nhưng vẫn có thể chọn Trang tab mới làm trang chủ.
+          Nếu bạn bật tùy chọn cài đặt này, thì người dùng không thể thay đổi URL trang chủ trong <ph name="PRODUCT_NAME" /> nhưng vẫn có thể chọn Trang tab mới làm trang chủ.
 
-          Nếu bạn không đặt chính sách này, thì người dùng sẽ được phép tự chọn trang chủ của họ trong trường hợp bạn cũng không đặt chính sách HomepageIsNewTabPage.
+          Nếu bạn không đặt chính sách này và cũng không đặt chính sách HomepageIsNewTabPage, thì người dùng sẽ được phép tự chọn trang chủ.
 
-          URL phải ở dạng chuẩn, chẳng hạn như: "http://example.com" hoặc "https://example.com".
+          URL phải chứa tên giao thức chuẩn, chẳng hạn như: "http://example.com" hoặc "https://example.com".
 
           Chính sách này chỉ có trên các phiên bản Windows liên kết với miền <ph name="MS_AD_NAME" /> hoặc phiên bản Windows 10 Pro hay Enterprise đã đăng ký tính năng quản lý thiết bị.</translation>
 <translation id="3016255526521614822">Đưa các ứng dụng ghi chú được phép trên màn hình khóa của <ph name="PRODUCT_OS_NAME" /> vào danh sách cho phép</translation>
@@ -1656,6 +1657,13 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Khi chính sách này không được đặt, khoảng thời gian mặc định sẽ được sử dụng.
 
           Phải chỉ định giá trị chính sách bằng mili giây.</translation>
+<translation id="4105884561459127998">Định cấu hình loại xác thực cho đăng nhập SAML.
+
+      Khi bạn đặt hoặc không đặt chính sách này thành Default (giá trị 0), hành vi đăng nhập SAML sẽ do trình duyệt xác định dựa trên các yếu tố khác. Trong tình huống cơ bản nhất, tính năng xác thực người dùng và bảo vệ dữ liệu người dùng đã lưu vào bộ nhớ đệm được dựa trên mật khẩu mà người dùng nhập theo cách thủ công.
+
+      Khi bạn đặt chính sách này thành ClientCertificate (giá trị 1), tính năng xác thực chứng chỉ ứng dụng khách được dùng cho người dùng mới thêm đăng nhập qua SAML. Không có mật khẩu nào dùng cho những người dùng đó và dữ liệu đã lưu vào bộ nhớ đệm trên máy được bảo vệ bằng cách sử dụng các khóa mật mã tương ứng. Ví dụ: tùy chọn cài đặt này cho phép định cấu hình thẻ thông minh dựa trên tính năng xác thực người dùng (xin lưu ý rằng bạn phải cài đặt ứng dụng trung gian của thẻ thông minh thông qua chính sách DeviceLoginScreenExtensions).
+
+      Chính sách này chỉ ảnh hưởng đến người dùng xác thực bằng cách sử dụng SAML.</translation>
 <translation id="4105989332710272578">Tắt buộc thực thi Tính minh bạch của chứng chỉ cho danh sách URL</translation>
 <translation id="4121350739760194865">Chặn các quảng cáo ứng dụng xuất hiện trên trang tab mới</translation>
 <translation id="4125606414556046117">Chính sách này cho phép bạn định cấu hình hình nền hiển thị trên màn hình và trên nền màn hình đăng nhập cho người dùng. Bạn đặt chính sách này bằng cách chỉ định URL mà từ đó <ph name="PRODUCT_OS_NAME" /> có thể tải hình nền xuống và dùng hàm băm mật mã để xác minh tính toàn vẹn của hình nền tải xuống. Hình ảnh phải ở định dạng JPEG, kích thước tệp không được vượt quá 16 MB. URL phải truy cập được mà không cần xác thực.
@@ -1684,6 +1692,30 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu bạn không đặt chính sách này, người dùng có thể chọn hình ảnh để hiển thị trên màn hình và trên nền màn hình đăng nhập.</translation>
 <translation id="412697421478384751">Cho phép người dùng đặt mã PIN yếu cho mã PIN màn hình khóa.</translation>
 <translation id="4138655880188755661">Giới hạn thời gian</translation>
+<translation id="4144164749344898721">Chính sách này kiểm soát nhiều tùy chọn cài đặt cho chiến lược quản lý nguồn khi người dùng ở chế độ không sử dụng.
+
+          Có 4 loại hành động sau đây:
+          * Màn hình sẽ mờ nếu người dùng không sử dụng trong khoảng thời gian do |ScreenDim| chỉ định.
+          * Màn hình sẽ tắt nếu người dùng không sử dụng trong khoảng thời gian do |ScreenOff| chỉ định.
+          * Hộp thoại cảnh báo sẽ hiển thị nếu người dùng không sử dụng trong khoảng thời gian do |IdleWarning| chỉ định, qua đó cho người dùng biết hành động khi không sử dụng nào sắp được thực hiện. Thông báo cảnh báo chỉ hiển thị nếu hành động ở chế độ không sử dụng là hành động đăng xuất hoặc tắt nguồn.
+          * Hành động mà |IdleAction| chỉ định sẽ được thực hiện nếu người dùng ở chế độ không sử dụng trong khoảng thời gian do |Idle| chỉ định.
+
+          Đối với từng hành động nêu trên, thời gian chờ phải được chỉ định bằng mili giây và cần đặt ở giá trị lớn hơn 0 để kích hoạt hành động tương ứng. Trong trường hợp thời gian chờ được đặt thành 0, <ph name="PRODUCT_OS_NAME" /> sẽ không thực hiện hành động tương ứng.
+
+          Đối với từng loại thời gian chờ nêu trên, khi khoảng thời gian không được đặt, giá trị mặc định sẽ được sử dụng.
+
+          Xin lưu ý rằng các giá trị |ScreenDim| sẽ được giới hạn ở mức nhỏ hơn hoặc bằng |ScreenOff|, |ScreenOff| và |IdleWarning| sẽ được giới hạn ở mức nhỏ hơn hoặc bằng |Idle|.
+
+          |IdleAction| có thể là một trong 4 hành động sau đây:
+          * |Suspend|
+          * |Logout|
+          * |Shutdown|
+          * |DoNothing|
+
+          Khi bạn không đặt |IdleAction|, hành động mặc định là tạm ngừng sẽ được thực hiện.
+
+          Ngoài ra còn có các tùy chọn cài đặt riêng cho nguồn AC và pin.
+          </translation>
 <translation id="4150201353443180367">Hiển thị</translation>
 <translation id="4157003184375321727">Báo cáo phiên bản hệ điều hành và chương trình cơ sở</translation>
 <translation id="4157594634940419685">Cho phép truy cập vào các máy in gốc sử dụng hệ thống in Unix chung (CUPS)</translation>
@@ -1767,6 +1799,15 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="4322842393287974810">Cho phép ứng dụng kiosk tự động khởi chạy với độ trễ bằng không kiểm soát phiên bản <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Thêm một nút đăng xuất vào khay hệ thống</translation>
 <translation id="4332177773549877617">Ghi lại các sự kiện cho lượt cài đặt ứng dụng Android</translation>
+<translation id="4335292026668105285">Chỉ định khoảng thời gian kể từ khi người dùng không có thao tác nhập cho đến khi hộp thoại cảnh báo hiển thị khi chạy trên nguồn AC.
+
+          Khi bạn đặt, chính sách này sẽ chỉ định khoảng thời gian người dùng phải duy trì chế độ không sử dụng trước khi <ph name="PRODUCT_OS_NAME" /> hiển thị hộp thoại cảnh báo cho người dùng biết rằng hành động ở chế độ không sử dụng đó sắp được thực hiện.
+
+          Khi bạn không đặt chính sách này, sẽ không có hộp thoại cảnh báo nào được hiển thị.
+
+          Phải chỉ định giá trị của chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn hoặc bằng thời gian chờ khi ở chế độ không sử dụng.
+
+          Thông báo cảnh báo chỉ hiển thị nếu hành động ở chế độ không sử dụng là hành động đăng xuất hoặc tắt nguồn.</translation>
 <translation id="4346674324214534449">Cho phép bạn thiết lập xem có chặn quảng cáo trên các trang web chứa quảng cáo xâm nhập hay không.
 
       Nếu bạn đặt chính sách này thành 2, quảng cáo sẽ bị chặn trên các trang web chứa quảng cáo xâm nhập.
@@ -3347,6 +3388,9 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 <translation id="7464991223784276288">Hạn chế cookie so khớp các URL với phiên hiện tại</translation>
 <translation id="7469554574977894907">Bật đề xuất tìm kiếm</translation>
 <translation id="7474249562477552702">Có cho phép chứng chỉ có chữ ký SHA-1 do mẩu neo tin cậy nội bộ phát hành hay không</translation>
+<translation id="747851715060942420">Cho phép bạn định cấu hình các trang được tải khi khởi động.
+
+      Chính sách 'Các URL sẽ mở khi khởi động' sẽ bị bỏ qua trừ khi bạn chọn mục 'Mở danh sách các URL' trong 'Hành động khi khởi động'.</translation>
 <translation id="7485481791539008776">Quy tắc chọn máy in mặc định</translation>
 <translation id="7485730741952775732">Nếu bạn đặt chính sách này, máy chủ truy cập từ xa sẽ dùng URL này để xác thực mã xác thực từ các ứng dụng truy cập từ xa để chấp nhận kết nối. Phải sử dụng chính sách này cùng với RemoteAccessHostTokenUrl.
 
@@ -3360,6 +3404,11 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 
       Nếu bạn sử dụng chính sách này thì tất cả các máy in sẽ được cung cấp cho người dùng ngoại trừ những id được liệt kê trong chính sách này. Các id này phải tương ứng với các trường "id" hoặc "guid" trong tệp đã chỉ định trong <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
+<translation id="7506269062143646163">Bật tính năng hỗ trợ cho Signed HTTP Exchange (SXG).
+
+          Nếu bạn không đặt hoặc đặt chính sách này thành Enabled (Bật), Google Chrome sẽ chấp nhận các nội dung web được phân phối dưới dạng Signed HTTP Exchanges.
+
+          Nếu bạn đặt chính sách này thành Disabled (Tắt), thì sẽ không thể tải được Signed HTTP Exchanges.</translation>
 <translation id="7511361072385293666">Nếu chính sách này được đặt thành true hoặc không được đặt thì được phép sử dụng giao thức QUIC trong <ph name="PRODUCT_NAME" />.
       Nếu chính sách này được đặt thành false thì không được phép sử dụng giao thức QUIC.</translation>
 <translation id="7517845714620372896">Nêu rõ phần trăm độ sáng màn hình.
@@ -3499,6 +3548,15 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Các mã định danh loại kết nối được nhận dạng là "ethernet", "wifi", "wimax", "bluetooth" và "cellular".</translation>
 <translation id="7763614521440615342">Hiển thị các đề xuất nội dung trên trang Tab mới</translation>
 <translation id="7765879851993224640">Cho phép sử dụng tính năng Đăng nhập bằng Smart Lock.</translation>
+<translation id="7772346342637974431">Chỉ định khoảng thời gian kể từ khi người dùng không có thao tác nhập cho đến khi hộp thoại cảnh báo hiển thị khi chạy bằng pin.
+
+          Khi bạn đặt, chính sách này sẽ chỉ định khoảng thời gian người dùng phải duy trì chế độ không sử dụng trước khi <ph name="PRODUCT_OS_NAME" /> hiển thị hộp thoại cảnh báo cho người dùng biết rằng hành động ở chế độ không sử dụng đó sắp được thực hiện.
+
+          Khi bạn không đặt chính sách này, sẽ không có hộp thoại cảnh báo nào được hiển thị.
+
+          Phải chỉ định giá trị của chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn hoặc bằng thời gian chờ khi ở chế độ không sử dụng.
+
+          Thông báo cảnh báo chỉ hiển thị nếu hành động ở chế độ không sử dụng là hành động đăng xuất hoặc tắt nguồn.</translation>
 <translation id="7774768074957326919">Sử dụng cài đặt proxy hệ thống</translation>
 <translation id="7777535871204167559">Coi thiết bị lưu trữ bên ngoài là thiết bị chỉ đọc</translation>
 <translation id="7781069478569868053">Trang tab mới</translation>
@@ -4072,6 +4130,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Để biết thêm thông tin về ngữ cảnh an toàn, hãy truy cập vào
       https://www.w3.org/TR/secure-contexts/
       </translation>
+<translation id="8939595959513040470">Cung cấp Bản dựng Quick Fix cho người dùng.</translation>
 <translation id="8942616385591203339">Chính sách này sẽ kiểm soát liệu màn hình Đồng ý đồng bộ hóa có hiển thị với người dùng trong lần đăng nhập đầu tiên hay không. Bạn nên đặt chính sách này thành false nếu không cần hiển thị màn hình Đồng ý đồng bộ hóa cho người dùng.
       Nếu đặt chính sách thành false, thì màn hình Đồng ý đồng bộ hóa sẽ không hiển thị.
       Nếu đặt thành true hoặc không đặt chính sách này, thì màn hình Đồng ý đồng bộ hóa có thể được hiển thị.</translation>
@@ -4131,6 +4190,9 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 
       Nếu bạn không đặt chính sách này, người dùng có thể chọn hình đại diện cho họ trên màn hình đăng nhập.</translation>
 <translation id="9035964157729712237">Các ID tiện ích được miễn khỏi danh sách đen</translation>
+<translation id="9038058011835642205">Chỉ định danh sách gồm các trang web được cài đặt tự động mà không có sự tương tác của người dùng và người dùng không thể gỡ cài đặt cũng như tắt.
+
+      Mỗi mục trong danh sách của chính sách này là một đối tượng có một thành phần bắt buộc: "url" và hai thành phần không bắt buộc: "default_launch_container" và "create_desktop_shortcut". "url" phải là URL của ứng dụng web cần cài đặt, "launch_container" phải là "cửa sổ" hoặc "tab" để xác định cách mở Ứng dụng web sau khi cài đặt và "create_desktop_shortcut" phải có giá trị true nếu lối tắt trên màn hình được tạo trên Linux và Windows. Nếu bỏ qua mục "default_launch_container", ứng dụng sẽ mở trong tab theo mặc định. Người dùng có thể thay đổi vùng chứa nơi mở ứng dụng bất kể "default_launch_container"có giá trị nào. Nếu bỏ qua mục "create_desktop_shortcuts", thì sẽ không có lối tắt trên màn hình nào được tạo.</translation>
 <translation id="9038839118379817310">Bật Wi-Fi</translation>
 <translation id="9039822628127365650">Khi bạn đặt chính sách này, chính sách sẽ chỉ định thời lượng mà sau đó một người dùng tự động bị đăng xuất, chấm dứt phiên. Người dùng được thông báo về thời gian còn lại bằng đồng hồ đếm ngược hiển thị trong khay hệ thống.
 
@@ -4140,6 +4202,11 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 
       Bạn nên chỉ định giá trị tính bằng mili giây cho chính sách. Giá trị được giới hạn trong khoảng từ 30 giây đến 24 giờ.</translation>
 <translation id="9042911395677044526">Cho phép áp dụng cấu hình mạng cho mỗi người dùng thiết bị <ph name="PRODUCT_OS_NAME" />. Cấu hình mạng là chuỗi có định dạng JSON như được định nghĩa theo định dạng Cấu hình mạng mở được mô tả tại <ph name="ONC_SPEC_URL" /></translation>
+<translation id="9050853837490399534">Chính sách này kiểm soát việc có cập nhật thiết bị lên Bản dựng Quick Fix hay không.
+
+      Nếu bạn đặt giá trị của chính sách thành mã thông báo tương ứng với Bản dựng Quick Fix, thì thiết bị sẽ được cập nhật lên Bản dựng Quick Fix tương ứng nếu không có chính sách nào khác chặn quá trình cập nhật này.
+
+      Nếu bạn không đặt chính sách này hoặc giá trị của chính sách không tương ứng với Bản dựng Quick Fix, thì thiết bị sẽ không được cập nhật lên Bản dựng Quick Fix. Nếu thiết bị đang chạy Bản dựng Quick Fix và bạn không đặt chính sách này nữa hoặc giá trị của chính sách không còn tương ứng với Bản dựng Quick Fix, thì thiết bị sẽ được cập nhật lên bản dựng thông thường nếu không có chính sách nào khác chặn quá trình cập nhật này.</translation>
 <translation id="906631898352326790">
       Nếu bạn bật chính sách này thì mỗi nguồn gốc có tên trong danh sách
       phân tách bằng dấu phẩy sẽ chạy quy trình riêng. Điều này cũng sẽ cách ly

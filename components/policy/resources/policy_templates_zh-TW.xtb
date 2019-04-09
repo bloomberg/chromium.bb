@@ -140,6 +140,7 @@
       如未設定這項政策，預設頻率為 3 小時一次。可用頻率下限
       是 60 秒。</translation>
 <translation id="1204263402976895730">啟用的企業印表機</translation>
+<translation id="1216919699175573511">啟用 Signed HTTP Exchange (SXG) 支援</translation>
 <translation id="1219695476179627719">指定是否要將已搭載較新版本的裝置復原至 <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> 所設定的版本。
 
       預設值為 RollbackDisabled。</translation>
@@ -1092,11 +1093,11 @@
 
           首頁是指點選 [首頁] 按鈕後開啟的網頁。啟動時開啟的網頁由 RestoreOnStartup 政策控管。
 
-          你可以將首頁類型設定為在此處指定的網址或「新分頁」。如果你選取「新分頁」，則系統會略過本政策。
+          你可以將首頁類型設定為在此處指定的網址或「新分頁」。如果你選取「新分頁」，則本政策不會生效。
 
           如果啟用這項設定，使用者將無法變更 <ph name="PRODUCT_NAME" /> 的首頁網址，但仍可選擇將首頁設定為「新分頁」。
 
-          如果這項政策和 HomepageIsNewTabPage 皆不設定，則使用者可以自行選擇首頁。
+          如果這項政策和 HomepageIsNewTabPage 皆不做設定，則使用者可以自行選擇首頁。
 
           網址必須採用標準架構，例如「http://example.com」或「https://example.com」。
 
@@ -1605,6 +1606,13 @@
           如果你未設定這項政策，系統會使用預設時間長度。
 
           指定政策值時需以毫秒為單位。</translation>
+<translation id="4105884561459127998">設定 SAML 登入的驗證類型。
+
+      如果未設定這項政策或使用預設設定 (值為 0)，瀏覽器會依其他因素決定是否要允許 SAML 登入行為。在最基本的情況下，如果是要驗證使用者和保護快取使用者資料，則判斷依據是使用者手動輸入的密碼。
+
+      如果將這項政策設為 ClientCertificate (值為 1)，則會依用戶端憑證驗證判斷是否要允許新使用者透過 SAML 登入。這類使用者不需要密碼，且其快取本機資料會受到對應加密金鑰的保護。舉例來說，如果使用這項設定，就能設定透過智慧型卡片驗證使用者 (請注意，你必須透過 DeviceLoginScreenExtensions 政策安裝智慧型卡片中介軟體應用程式)。
+
+      這項政策只會影響透過 SAML 進行驗證的使用者。</translation>
 <translation id="4105989332710272578">不針對列出的網址強制執行憑證透明化政策</translation>
 <translation id="4121350739760194865">阻止應用程式宣傳資訊在新分頁上顯示</translation>
 <translation id="4125606414556046117">這項政策可讓你為使用者設定桌面和登入畫面背景所顯示的桌布圖片。如要設定這項政策，請指定可供 <ph name="PRODUCT_OS_NAME" />下載桌布圖片的網址，以及用於驗證下載內容完整性的加密編譯雜湊碼。圖片必須為 JPEG 格式，且大小不得超過 16MB。網址必須未設定任何驗證機制，可直接存取。
@@ -1633,6 +1641,31 @@
       如果不設定這項政策，使用者可自行選擇桌面和登入畫面背景的顯示圖片。</translation>
 <translation id="412697421478384751">允許使用者設定強度不足的螢幕鎖定 PIN 碼</translation>
 <translation id="4138655880188755661">時間限制</translation>
+<translation id="4144164749344898721">當使用者處於閒置狀態時，這項政策可控管電源管理策略的多項設定。
+
+          系統可執行以下四種動作：
+          * 如果使用者的閒置時間達到 |ScreenDim| 指定的時間長度，系統會將螢幕調暗。
+          * 如果使用者的閒置時間達到 |ScreenOff| 指定的時間長度，系統會將螢幕關閉。
+          * 如果使用者的閒置時間達到 |IdleWarning| 指定的時間長度，系統會顯示警告對話方塊，告知使用者即將採取的閒置動作。
+          只有當閒置動作設為登出或關機時，系統才會顯示警告訊息。
+          * 如果使用者的閒置時間達到 |Idle| 指定的時間長度，系統會採取 |IdleAction| 所指定的動作。
+
+          指定上述各項動作的延遲時間需以毫秒為單位，且值必須大於 0，系統才會觸發相應動作。如果將延遲時間設為 0，<ph name="PRODUCT_OS_NAME" />將不會採取相應動作。
+
+          如果未設定上述各項動作的延遲時間長度，系統將會使用預設值。
+
+          請注意，|ScreenDim| 的值必須小於或等於 |ScreenOff| 的值，|ScreenOff| 和 |IdleWarning| 的值則必須小於或等於 |Idle| 的值。
+
+          |IdleAction| 可指定以下四種動作：
+          * |Suspend|
+          * |Logout|
+          * |Shutdown|
+          * |DoNothing|
+
+          如果未設定 |IdleAction|，系統將採取預設動作，即暫停作業。
+
+          此外，AC 電源和電池的設定各自獨立。
+          </translation>
 <translation id="4150201353443180367">顯示設定</translation>
 <translation id="4157003184375321727">回報作業系統和韌體版本</translation>
 <translation id="4157594634940419685">允許存取原生 CUPS 印表機</translation>
@@ -1717,6 +1750,15 @@
 <translation id="4322842393287974810">允許使用無延遲資訊站應用程式的自動啟動功能來控制 <ph name="PRODUCT_OS_NAME" /> 版本</translation>
 <translation id="4325690621216251241">在系統列顯示登出按鈕</translation>
 <translation id="4332177773549877617">Android 應用程式安裝記錄事件</translation>
+<translation id="4335292026668105285">指定時間長度，當系統在 AC 供電環境下執行，且未偵測到使用者輸入行為，就會在這段時間過後顯示警告對話方塊。
+
+          設定這項政策後，只要使用者處於閒置狀態的時間達到這項政策指定的長度，<ph name="PRODUCT_OS_NAME" />就會顯示警告對話方塊，告知使用者即將採取的閒置動作。
+
+          如果未設定這項政策，系統將不會顯示警告對話方塊。
+
+          指定政策值時需以毫秒為單位。值必須小於或等於閒置延遲時間。
+
+          只有當閒置動作設為登出或關機時，系統才會顯示警告訊息。</translation>
 <translation id="4346674324214534449">讓你設定是否禁止含侵入式廣告的網站顯示廣告。
 
       如果將這項政策的值設為 2，含侵入式廣告的網站將無法顯示廣告。
@@ -3208,6 +3250,9 @@
 <translation id="7464991223784276288">將來自相符網址的 Cookie 限制在目前的工作階段中</translation>
 <translation id="7469554574977894907">啟用搜尋建議</translation>
 <translation id="7474249562477552702">是否允許本機信任錨點核發的 SHA-1 簽署憑證</translation>
+<translation id="747851715060942420">這項政策可設定系統啟動時要載入的網頁。
+
+      系統會略過「起始時要開啟的網址」政策，除非你在 [起始動作] 中選取 [開啟網址清單]。</translation>
 <translation id="7485481791539008776">預設印表機選取規則</translation>
 <translation id="7485730741952775732">如果設定這項政策，遠端存取主機會使用這個網址，驗證遠端存取用戶端提供的驗證憑證，據此決定是否要接受連線。這項政策必須搭配 RemoteAccessHostTokenUrl 使用。
 
@@ -3221,6 +3266,11 @@
 
       一旦設定了這項政策，除了本政策中列出的 ID 外，其他所有印表機皆可供使用者使用。ID 必須和 <ph name="DEVICE_PRINTERS_POLICY" /> 指定檔案中的「id」或「guid」欄位相符。
       </translation>
+<translation id="7506269062143646163">啟用 Signed HTTP Exchange (SXG) 支援。
+
+          如果未設定這項政策或設為啟用，Google Chrome 將接受透過 Signed HTTP Exchange 提供的網路內容。
+
+          如果將這項政策設為停用，系統將無法載入 Signed HTTP Exchange。</translation>
 <translation id="7511361072385293666">如果這項政策設為 True 或未設定，可在 <ph name="PRODUCT_NAME" /> 中使用 QUIC 通訊協定。
       如果這項政策設為 False，則不可使用 QUIC 通訊協定。</translation>
 <translation id="7517845714620372896">指定螢幕亮度百分比。
@@ -3354,6 +3404,15 @@
       系統可識別的連線類型識別碼包括「ethernet」、「wifi」、「wimax」、「bluetooth」和「cellular」。</translation>
 <translation id="7763614521440615342">在新分頁顯示內容建議</translation>
 <translation id="7765879851993224640">允許使用 Smart Lock 登入功能。</translation>
+<translation id="7772346342637974431">指定時間長度，當系統在電池供電環境下執行，且未偵測到使用者輸入行為，就會在這段時間過後顯示警告對話方塊。
+
+          設定這項政策後，只要使用者處於閒置狀態的時間達到這項政策指定的長度，<ph name="PRODUCT_OS_NAME" />就會顯示警告對話方塊，告知使用者即將採取的閒置動作。
+
+          如果未設定這項政策，系統將不會顯示警告對話方塊。
+
+          指定政策值時需以毫秒為單位。值必須小於或等於閒置延遲時間。
+
+          只有當閒置動作設為登出或關機時，系統才會顯示警告訊息。</translation>
 <translation id="7774768074957326919">使用系統 Proxy 設定</translation>
 <translation id="7777535871204167559">以唯讀模式處理外部儲存裝置</translation>
 <translation id="7781069478569868053">新分頁</translation>
@@ -3884,6 +3943,7 @@
 
 如要進一步瞭解安全內容，請參閱 https://www.w3.org/TR/secure-contexts/
       </translation>
+<translation id="8939595959513040470">提供「快速修復版本」給使用者。</translation>
 <translation id="8942616385591203339">這項政策可控制是否可在使用者初次登入時，向使用者顯示同步處理同意聲明。如果使用者不需要查看同步處理同意聲明，則應設為 false。
       如果設為 false，就不會顯示同步處理同意聲明。
       如果設為 true 或不予設定，則可顯示同步處理同意聲明。</translation>
@@ -3943,6 +4003,9 @@
 
       如果不設定這項政策，使用者可以選擇登入畫面的使用者顯示圖片。</translation>
 <translation id="9035964157729712237">要從黑名單上移除的擴充功能 ID</translation>
+<translation id="9038058011835642205">指定要以無訊息方式 (使用者無需操作) 安裝的網站清單；使用者無法解除安裝或停用這些網站。
+
+      這項政策的每個清單項目都是一個物件，由下列必要元素組成：「url」與兩個選擇性元素：「default_launch_container」和「create_desktop_shortcut」。「url」是要安裝的網路應用程式的網址，「launch_container」則是「window」(視窗) 或「tab」(分頁)，用於指定網路應用程式安裝後所採用的開啟方式。如要在 Linux 和 Windows 上建立桌面捷徑，請將「create_desktop_shortcut」設為 True。如果未設定「default_launch_container」，應用程式預設會在分頁中開啟。無論「default_launch_container」的值為何，使用者都可以變更開啟應用程式的容器。如果未設定「create_desktop_shortcuts」，系統將不會建立桌面捷徑。</translation>
 <translation id="9038839118379817310">啟用 Wi-Fi</translation>
 <translation id="9039822628127365650">如果設定這項政策，系統會在裝置閒置達指定時間後，將使用者自動登出並終止工作階段。使用者可以在系統匣所顯示的倒數計時器中，查看剩餘的等待時間。
 
@@ -3952,6 +4015,11 @@
 
       指定政策值時需以毫秒為單位。該值必須介於 30 秒至 24 小時之間。</translation>
 <translation id="9042911395677044526">允許將網路設定按照使用者套用至安裝了 <ph name="PRODUCT_OS_NAME" /> 的裝置。本網路設定是由開放網路設定格式 (網址為：<ph name="ONC_SPEC_URL" />) 所定義的 JSON 格式字串。</translation>
+<translation id="9050853837490399534">這項政策可控管是否要將裝置更新為「快速修復版本」。
+
+      如果將政策值設為對應至快速修復版本的符記，且其他政策未封鎖更新，則裝置會更新為相應的快速修復版本。
+
+      如果未設定這項政策，或政策值未對應至快速修復版本，則裝置不會更新為快速修復版本。如果裝置已執行快速修復版本，且你不再設定這項政策，或政策值不再對應至快速修復版本，那麼在其他政策未封鎖更新的情況下，裝置會更新為相應的一般版本。</translation>
 <translation id="906631898352326790">
       如果啟用這項政策，逗號分隔清單中指明的每個來源
       將各自以獨立程序執行。這也會將指明的來源依子網域隔離；

@@ -3,6 +3,7 @@
 <translationbundle lang="pl">
 <translation id="1383286653814676580">Używane do uruchamiania strony logowania dostawcy danych uwierzytelniających Google.</translation>
 <translation id="1894475569413661128">Zaloguj się, używając swojego konta do pracy.</translation>
+<translation id="2227020416206680836">Sesja wygasła. Zaloguj się, używając konta do pracy.</translation>
 <translation id="2469311484561825731">Nie udało się zalogować na Twoje konto do pracy. Sprawdź, czy komputer jest połączony z internetem, i spróbuj ponownie.</translation>
 <translation id="2595469428674600431">Nie udało się zweryfikować Twojego hasła do systemu Windows. Spróbuj ponownie.</translation>
 <translation id="3306357053520292004">Inny użytkownik komputera został już dodany za pomocą tego konta. Zaloguj się, używając innego konta.</translation>
@@ -14,8 +15,10 @@
 <translation id="6463752215771576050">Nie udało się zarejestrować tego komputera na potrzeby zarządzania w firmie.  Zaloguj się, używając innego konta do pracy.</translation>
 <translation id="7135123390294776473">Na tym komputerze może się zalogować tylko ten użytkownik, który go zablokował.</translation>
 <translation id="7357241217513796177">Upewnij się, że masz połączenie sieciowe, i spróbuj ponownie.</translation>
+<translation id="7536769223115622137">Dodaj konto do pracy</translation>
 <translation id="8474372283141585908">Dostawca danych uwierzytelniających Google</translation>
 <translation id="866458870819756755">Nie udało się utworzyć użytkownika.</translation>
 <translation id="8860262547644202689">Konto pomocnicze dostawcy danych uwierzytelniających Google</translation>
+<translation id="8875753657315897487">Zaloguj się, używając swojego konta do pracy</translation>
 <translation id="9135619837062629367">Logowanie się za pomocą tego konta jest niedozwolone. Użyj innego konta.</translation>
 </translationbundle>

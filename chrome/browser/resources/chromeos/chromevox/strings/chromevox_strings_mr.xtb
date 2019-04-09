@@ -99,6 +99,7 @@
 <translation id="1616111909442424068">गव्हाळ</translation>
 <translation id="1618597272655350600">वर्तमान स्‍थितीबद्दल पूर्ण वर्णन घोषित करते</translation>
 <translation id="1627222324347828322">धुसर पांढरा</translation>
+<translation id="1630688379087270943">तिर्यक सूचित करा:</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{पेक्षा मोठे}one{# पेक्षा मोठे चिन्हे}other{# पेक्षा मोठे चिन्हे}}</translation>
 <translation id="1653266918374749391">मागील स्तर 3 शीर्षक</translation>
 <translation id="1657616855184033958">इव्हेंट स्ट्रीम फिल्टर दाखवा</translation>
@@ -319,6 +320,7 @@
 <translation id="3286390186030710347">स्‍लायडर</translation>
 <translation id="3299925995433437805">पुढील भेट दिलेला दुवा नाही.</translation>
 <translation id="3300348286427369683">रिच टेक्स्ट सपोर्ट. ChromeVox आता जंप कमांड, ब्रेल कर्सर रूटिंग, निवड आणि बर्‍याच गोष्टींसह रिच टेक्स्ट फील्डना सपोर्ट करते.</translation>
+<translation id="3304756947457041303">रिच टेक्स्ट इंडिकेशन कस्टमाइझ करा</translation>
 <translation id="3307886118343381874">सारणीच्या शेवटी जा</translation>
 <translation id="3311969765485641742">सूचनांचे पुनरावलोकन करण्यासाठी Alt+Shift+A दाबा</translation>
 <translation id="3312997241656799641">पुढील भेट दिलेला दुवा</translation>
@@ -405,6 +407,7 @@
 <translation id="3930498801443296724">पुलकोट</translation>
 <translation id="3936394396199829062">फिकट जांभळा</translation>
 <translation id="3941269780691800708">माउसखाली मजकूर बोला.</translation>
+<translation id="394953087167197343">चुकीचे शब्द सूचित करा:</translation>
 <translation id="3962990492275676168">वर्तमान स्‍थानावरून वाचन प्रारंभ करा</translation>
 <translation id="3970951409746498040">पिवळसर तपकिरी</translation>
 <translation id="3989324057180830702">tgl btn</translation>
@@ -451,6 +454,7 @@
 <translation id="42164919740161077">फिकट निळा</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{डॅश}one{# डॅश}other{# डॅश}}</translation>
 <translation id="421884353938374759">रंग निवडक</translation>
+<translation id="4221071177874897997">ठळक सूचित करा:</translation>
 <translation id="4229646983878045487">तारीख वेळ</translation>
 <translation id="4230834257931120629">फिकट राखाडी</translation>
 <translation id="4231102694147661229">डेव्हलपर पर्याय सुरू करा</translation>
@@ -753,6 +757,7 @@
 <translation id="6348869651006731065">हलका राखाडी</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{बुलेट}one{# बुलेट}other{# बुलेट}}</translation>
 <translation id="6355910664415701303">मागील सूची आयटम नाही.</translation>
+<translation id="6360318852623800555">रिच टेक्स्टची वैशिष्ट्ये</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">मागील मथळा</translation>
 <translation id="6376999910001533545">तपकिरी लाल</translation>
@@ -928,6 +933,7 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
 <translation id="762020119231868829">सध्या प्ले होत असलेल्या सर्व माध्यम विजेटला विराम देते</translation>
 <translation id="7625690649919402823">पुढील सारणी</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> ( <ph name="VARIANT" /> ), ग्रेड <ph name="GRADE" /></translation>
+<translation id="763535765081585392">अधोरेखन सूचित करा:</translation>
 <translation id="7639968568612851608">गडद राखाडी</translation>
 <translation id="7641134354185483015">मागील स्‍तर 3 मथळा नाही.</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, मजकूर बॉक्स</translation>
@@ -1163,6 +1169,7 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
 <translation id="8943175951035496220">उजवीकडे सेल नाही.</translation>
 <translation id="8943282376843390568">लिंबू</translation>
 <translation id="8946628535652548639">पं<ph name="TABLECELLROWINDEX" />स्तं<ph name="TABLECELLCOLUMNINDEX" /></translation>
+<translation id="8957142051395645063">घोषणा करा</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">विसरा</translation>
 <translation id="900114243503212879">फाईल</translation>

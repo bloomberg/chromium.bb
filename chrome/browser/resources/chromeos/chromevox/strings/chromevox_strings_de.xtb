@@ -99,6 +99,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="1616111909442424068">Weizen</translation>
 <translation id="1618597272655350600">Vollständige Beschreibung der aktuellen Position ansagen</translation>
 <translation id="1627222324347828322">Geisterweiß</translation>
+<translation id="1630688379087270943">Kursivformatierung angeben:</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{Größer-als-Zeichen}other{# Größer-als-Zeichen}}</translation>
 <translation id="1653266918374749391">Vorherige Überschrift der Ebene 3</translation>
 <translation id="1657616855184033958">Filter für Ereignisstreams einblenden</translation>
@@ -319,6 +320,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="3286390186030710347">Schieberegler</translation>
 <translation id="3299925995433437805">Kein nächster besuchter Link</translation>
 <translation id="3300348286427369683">Rich-Text-Unterstützung. ChromeVox unterstützt jetzt Rich-Text-Felder, Befehle für den Wechsel zwischen Elementen, Cursor-Routing über eine Braillezeile, das Erstellen von Auswahlen und mehr.</translation>
+<translation id="3304756947457041303">Rich Text-Hinweis anpassen</translation>
 <translation id="3307886118343381874">Zum Ende der Tabelle gehen</translation>
 <translation id="3311969765485641742">Drücken Sie Alt + Umschalttaste + A, um die Benachrichtigungen aufzurufen.</translation>
 <translation id="3312997241656799641">Nächster besuchter Link</translation>
@@ -405,6 +407,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="3930498801443296724">Textzitat</translation>
 <translation id="3936394396199829062">Lavendelrosa</translation>
 <translation id="3941269780691800708">Text unter dem Mauszeiger vorlesen.</translation>
+<translation id="394953087167197343">Rechtschreibfehler angeben:</translation>
 <translation id="3962990492275676168">Ab der aktuellen Position lesen</translation>
 <translation id="3970951409746498040">Sandbraun</translation>
 <translation id="3989324057180830702">Ein/Aus</translation>
@@ -451,6 +454,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="42164919740161077">Graublau</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{Gedankenstrich}other{# Gedankenstriche}}</translation>
 <translation id="421884353938374759">color picker</translation>
+<translation id="4221071177874897997">Fettformatierung angeben:</translation>
 <translation id="4229646983878045487">date time</translation>
 <translation id="4230834257931120629">Helles Schiefergrau</translation>
 <translation id="4231102694147661229">Entwickleroptionen aktivieren</translation>
@@ -753,6 +757,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="6348869651006731065">Mattes Grau</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{Aufzählungspunkt}other{# Aufzählungspunkte}}</translation>
 <translation id="6355910664415701303">Kein vorheriges Listenelement</translation>
+<translation id="6360318852623800555">Rich Text-Attribute</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Vorherige Überschrift</translation>
 <translation id="6376999910001533545">Kastanienbraun</translation>
@@ -928,6 +933,7 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="762020119231868829">Pausiert alle momentan aktiven Medien-Widgets</translation>
 <translation id="7625690649919402823">Nächste Tabelle</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), Grad <ph name="GRADE" /></translation>
+<translation id="763535765081585392">Unterstreichung angeben:</translation>
 <translation id="7639968568612851608">Dunkelgrau</translation>
 <translation id="7641134354185483015">Keine vorherige Überschrift der Ebene 3</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, Textfeld "<ph name="NAME" />"</translation>
@@ -1163,6 +1169,7 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="8943175951035496220">Keine Zelle rechts</translation>
 <translation id="8943282376843390568">Limone</translation>
 <translation id="8946628535652548639">z<ph name="TABLECELLROWINDEX" />s<ph name="TABLECELLCOLUMNINDEX" /></translation>
+<translation id="8957142051395645063">Ankündigen</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">Entfernen</translation>
 <translation id="900114243503212879">file</translation>

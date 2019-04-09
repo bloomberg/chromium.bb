@@ -21,9 +21,11 @@
 <translation id="3081586908890909590">Przełącz, by nagrać film</translation>
 <translation id="3183731565330012717">Typ siatki</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
+<translation id="3517926952904427380">Nie można zrobić zdjęcia w orientacji pionowej</translation>
 <translation id="3569311554794739032">Czy na pewno chcesz usunąć plik <ph name="FILE" />?</translation>
 <translation id="3810838688059735925">Wideo</translation>
 <translation id="4279490309300973883">Odbicie lustrzane</translation>
+<translation id="4329152592498422850">Przełącz, by zrobić kwadratowe zdjęcie</translation>
 <translation id="4445542136948522167">Nie rób zdjęcia</translation>
 <translation id="4628948037717959914">Zdjęcie</translation>
 <translation id="4649291346448517080">Nie udało się zapisać pliku</translation>
@@ -50,6 +52,7 @@
 <translation id="8145038249676204903">Przełącz, by zrobić zdjęcie</translation>
 <translation id="8261506727792406068">Usuń</translation>
 <translation id="8428213095426709021">Ustawienia</translation>
+<translation id="8815966864175525708">Przełącz, by zrobić zdjęcie w orientacji pionowej</translation>
 <translation id="8870695351537079478">Nie udało się rozpocząć nagrywania</translation>
 <translation id="9045155556724273246">10 sekund</translation>
 <translation id="945522503751344254">Wyślij zgłoszenie</translation>

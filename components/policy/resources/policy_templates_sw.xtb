@@ -135,6 +135,7 @@ Kumbuka kuwa hapo awali sera hii iliwashwa kimakosa kwenye Android, lakini kipen
 
      Sera hii isipowekwa, idadi chaguomsingi ni saa 3. Idadi ya chini inayoruhusiwa ni sekunde 60.</translation>
 <translation id="1204263402976895730">Printa za biashara zinazotumia sera</translation>
+<translation id="1216919699175573511">Ruhusu utumiaji wa Kubadilisha HTTP Iliyoambatishwa Cheti (SXG)</translation>
 <translation id="1219695476179627719">Hubainisha ikiwa kifaa kitarejeshwa kwenye toleo lililowekwa na <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> ikiwa tayari kinatumia toleo la sasa. 
 
       Chaguomsingi ni RollbackDisabled</translation>
@@ -1633,6 +1634,13 @@ Sera hii isipowekwa, mtumiaji bado anaweza kusakinisha kiendelezi chochote katik
           Sera hii inapokuwa haijawekwa, urefu wa muda wa chaguomsingi hutumiwa.
 
           Sera ya thamani inastahili kubainishwa kwa nukta.</translation>
+<translation id="4105884561459127998">Huweka aina ya uthibitishaji wa kuingia katika akaunti kupitia SAML.
+
+      Ikiwa sera hii haijawekwa au imeweka kuwa Chaguomsingi (thamani ya 0), hali za kuingia katika akaunti kupitia SAML zinabainishwa na kivinjari kulingana na sifa zingine. Katika hali msingi kabisa, uthibitishaji na ulinzi wa akiba ya data ya mtumiaji hulingana na manenosiri yanayowekwa na watumiaji wenyewe.
+
+      Wakati sera hii imewekwa kuwa ClientCertificate (thamani ya 1), uthibitishaji wa cheti cha kiteja hutumiwa na watumiaji wapya walioongezwa ambao wanaingia katika akaunti wakitumia SAML. Hakuna manenosiri yanayotumiwa kwa watumiaji kama hao, na akiba ya data yao iliyohifadhiwa inalindwa kwa kutumia funguo husika za kriptografia. Kwa mfano, mipangilio hii inaruhusu kuweka mipangilio ya kadi mahiri kulingana na uthibitishaji wa mtumiaji (kumbuka kuwa programu za kati za kadi mahiri zinapaswa kusakinishwa kupitia sera ya DeviceLoginScreenExtensions).
+
+      Sera hii inaathiri tu watumiaji ambao wanathibitisha kupitia SAML.</translation>
 <translation id="4105989332710272578">Zima utekelezaji wa Uwazi wa Cheti kwa orodha ya URL</translation>
 <translation id="4121350739760194865">Zuia utambulishaji dhidi ya kuonekana kwenye ukurasa mpya wa kichupo</translation>
 <translation id="4125606414556046117">Sera hii inakuruhusu kuweka mipangilio ya picha ya mandhari ambayo inaonyeshwa kwenye eneo-kazi na kwenye mandhari ya skrini ya kuingia katika akaunti ya mtumiaji. Sera inawekwa kwa kubainisha URL ambayo <ph name="PRODUCT_OS_NAME" /> inaweza kupakua picha ya mandhari na alama ya reli ya kriptografia iliyotumiwa kuthibitisha uaminifu wa kipakuliwa. Picha lazima iwe katika muundo wa JPEG, ukubwa wa faili yake usizidi MB 16. Ni sharti URL ifikiwe bila uthibitishaji wowote.
@@ -1661,6 +1669,30 @@ Sera hii isipowekwa, mtumiaji bado anaweza kusakinisha kiendelezi chochote katik
       Sera ikiachwa bila kuwekwa, mtumiaji anaweza kuchagua picha itakayoonyeshwa kwenye eneo-kazi na kwenye mandhari ya skrini ya kuingia katika akaunti.</translation>
 <translation id="412697421478384751">Ruhusu watumiaji waweke PIN ambazo si thabiti zitumike kama PIN ya skrini iliyofungwa</translation>
 <translation id="4138655880188755661">Kikomo cha Muda</translation>
+<translation id="4144164749344898721">Sera hii hudhibiti mipangilio mingi ya mikakati ya kusimamia nishati mtumiaji anapokosa kufanya kitu.
+
+        Kuna hatua za aina nne:
+      * Mwanga wa skrini utafifia iwapo mtumiaji hafanyi kitu katika muda uliobainishwa na |ScreenDim|.
+       * Skrini itazimwa iwapo mtumiaji hafanyi kitu katika muda uliobainishwa na |ScreenOff|.
+       * Kidirisha cha ilani kitaonyeshwa iwapo mtumiaji hafanyi kitu katika muda uliobainishwa na |IdleWarning|, kumwambia mtumiaji kuwa hatua ya kutofanya kitu imekaribia kuchukuliwa ikiwa kitendo cha kutofanya kitu ni kuondoka katika akaunti au kuzima.
+        * Hatua iliyobainishwa na |IdleAction| itachukuliwa iwapo mtumiaji hatafanya kitu katika muda uliobainishwa na |Idle|.
+
+          Kwa kila moja ya vitendo vya hapo juu, lazima ucheleweshaji ubainishwe katika milisekunde, na unahitaji kuwekwa katika thamani inayozidi sufuri ili kusababisha kitendo husika. Iwapo ucheleweshaji umewekwa kuwa sufuri, <ph name="PRODUCT_OS_NAME" /> haitatekeleza kitendo husika.
+
+            Kwa kila moja ya ucheleweshaji wa hapo juu, muda usipowekwa, thamani chaguomsingi itatumika.
+
+             Kumbuka kwamba thamani za |ScreenDim| zitawekwa kuwa chini ama sawa na |ScreenOff|, |ScreenOff| na |IdleWarning| zitawekwa kuwa chini au sawa na |Idle|.
+
+            |IdleAction| inaweza kuwa moja ya vitendo vinne:
+           * |Suspend|
+           * |Logout|
+           * |Shutdown|
+           * |DoNothing|
+
+           Wakati |IdleAction| haijawekwa, hatua chaguomsingi huchukuliwa, ambayo ni kusimamisha.
+
+            Pia kuna mipangilio tofauti ya betri na nishati ya AC.
+          </translation>
 <translation id="4150201353443180367">Onyesho</translation>
 <translation id="4157003184375321727">Ripoti OS na toleo la programu dhibiti</translation>
 <translation id="4157594634940419685">Ruhusu ufikiaji wa printa za mtandao wa CUPS</translation>
@@ -1743,6 +1775,15 @@ Thamani ya sera inapaswa kubainishwa katika sekunde. Thamani huwekwa pamoja ili 
 <translation id="4322842393287974810">Ruhusu kipengele kilichofunguliwa kiotomatiki bila chochote kuchelewesha programu inayotumia skrini nzima kudhibiti toleo la <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Ongeza kitufe cha kuondoka kwenye chano la mfumo</translation>
 <translation id="4332177773549877617">Rekodi matukio ya usakinishaji wa programu za Android</translation>
+<translation id="4335292026668105285">Inabainisha kipindi ambacho mtumiaji hajatumia programu na baada ya muda huo, kidirisha cha ilani kitaonyeshwa wakati inatumia nishati ya AC.
+
+          Sera hii ikiwekwa, inabainisha kipindi ambacho mtumiaji ni sharti awe hajafanya kitu kwenye programu kabla ya <ph name="PRODUCT_OS_NAME" /> kuonyesha kidirisha cha ilani kinachomwarifu mtumiaji kwamba hatua ya kutofanya kitu inakaribia kutekelezwa.
+
+          Sera hii isipowekwa, hakuna kidirisha cha ilani kitakachoonyeshwa.
+
+          Thamani ya sera sharti ibainishwe katika milisekunde. Thamani zinawekwa kuwa chini au sawa na ucheleweshaji wa kukosa kufanya kitu.
+
+          Ujumbe wa ilani unaonyeshwa tu ikiwa kitendo cha kutofanya kitu ni kuingia katika akaunti au kuzima.</translation>
 <translation id="4346674324214534449">Inakuruhusu kubaini ikiwa matangazo yanapaswa kuzuiliwa kwenye tovuti zilizo na matangazo yanayokatiza matumizi. 
 Ikiwa sera hii imewekwa kuwa 2, matangazo yatazuiliwa kwenye tovuti zilizo na matangazo yanayozuia matumizi. 
 Hata hivyo, utendaji huu hautafanyika ikiwa sera ya SafeBrowsingEnabled imewekwa kuwa Sivyo.
@@ -3310,6 +3351,9 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
 <translation id="7464991223784276288">Dhibiti vidakuzi visilinganishe URL kwa kipindi cha sasa</translation>
 <translation id="7469554574977894907">Wezesha mapendekezo ya utafutaji</translation>
 <translation id="7474249562477552702">Iwe vyeti vya sahihi ya SHA-1 vilivyotolewa na nanga za ndani zinazoaminika vinaruhusiwa</translation>
+<translation id="747851715060942420">Hukuruhusu kusanidi kurasa ambazo zinapakiwa wakati wa kuanza.
+
+      Sera ya 'URL kufunguka wakati wa kuanza' haitekelezwi isipokuwa uchague 'Fungua orodha ya URL' katika 'Vitendo wakati wa kuanza'.</translation>
 <translation id="7485481791539008776">Sheria za kuchagua printa chaguomsingi</translation>
 <translation id="7485730741952775732">Sera hii ikiwekwa, seva pangishi ya kufikiwa kwa mbali itatumia URL hii ili kuthibitisha tokeni za uthibitishaji kutoka viteja vya kufikiwa kwa mbali ili kukubali miunganisho. Sharti itumike pamoja na RemoteAccessHostTokenUrl.
 
@@ -3323,6 +3367,11 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
 
       Ikiwa sera hii inatumiwa, printa zote hutolewa kwa mtumiaji isipokuwa vitambulisho vilivyoorodheshwa katika sera hii. Ni lazima vitambulisho vilingane na sehemu za "kitambulisho" au "mwongozo" kwenye faili iliyobainishwa katika <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
+<translation id="7506269062143646163">Ruhusu utumiaji wa Kubadilisha HTTP Iliyoambatishwa Cheti (SXG).
+
+          Ikiwa sera hii haijawekwa au imewekwa kuwa 'Imewashwa', Google Chrome itakubali maudhui ya wavuti yanayotolewa kama Kubadilisha HTTP Iliyoambatishwa Cheti.
+
+          Sera hii ikiwekwa kuwa 'Imezimwa', Kubadilisha HTTP Iliyoambatishwa Cheti hakuwezi kupakiwa.</translation>
 <translation id="7511361072385293666">Sera hii ikiwekwa kuwa ndivyo au kutowekwa, matumizi ya itifaki ya QUIC katika <ph name="PRODUCT_NAME" /> yanaruhusiwa.
       Sera hii ikiwekwa kuwa sivyo matumizi ya itifaki ya QUIC hayaruhusiwi.</translation>
 <translation id="7517845714620372896">Hubainisha asilimia ya ung'avu wa skrini.
@@ -3467,6 +3516,15 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
       Vitambulisho vinavyotambuliwa vya aina vya muunganisho ni "ethaneti", "wifi", "wimax", "bluetooth"  na "simu ya mkononi".</translation>
 <translation id="7763614521440615342">Onyesha mapendekezo ya maudhui kwenye ukurasa wa Kichupo Kipya</translation>
 <translation id="7765879851993224640">Huruhusu utumiaji wa Kuingia katika Akaunti kupitia Smart Lock.</translation>
+<translation id="7772346342637974431">Inabainisha kipindi ambacho mtumiaji hatumii programu na baada ya muda huo kidirisha cha ilani kitaonyeshwa wakati inatumia nishati ya betri.
+
+          Sera hii ikiwekwa, inabainisha kipindi ambacho mtumiaji ni sharti awe hajafanya kitu kwenye programu kabla ya <ph name="PRODUCT_OS_NAME" /> kuonyesha kidirisha cha ilani kinachomwarifu mtumiaji kwamba hatua ya kutofanya kitu inakaribia kutekelezwa.
+
+          Sera hii isipowekwa, hakuna kidirisha cha ilani kitakachoonyeshwa.
+
+          Thamani ya sera sharti ibainishwe katika milisekunde. Thamani zinawekwa kuwa chini au sawa na ucheleweshaji wa kukosa kufanya kitu.
+
+          Ujumbe wa ilani unaonyeshwa tu ikiwa kitendo cha kutofanya kitu ni kuingia katika akaunti au kuzima.</translation>
 <translation id="7774768074957326919">Tumia mipangilio ya proksi ya mfumo</translation>
 <translation id="7777535871204167559">Ainisha vifaa vya hifadhi ya nje kuwa vya kusoma tu</translation>
 <translation id="7781069478569868053">Ukurasa wa Kichupo Kipya</translation>
@@ -4005,6 +4063,7 @@ kiwekwe kwenye maombi yote ya HTTP na HTTPS katika vikoa vyote vya google.com, j
       Kwa maelezo zaidi kuhusu miktadha salama, angalia
       https://www.w3.org/TR/secure-contexts/
       </translation>
+<translation id="8939595959513040470">Huwapa watumiaji Muundo wa Kurekebisha kwa Haraka.</translation>
 <translation id="8942616385591203339">Sera hii inadhibiti ikiwa Idhini ya Kusawazisha inaweza kuonyeshwa kwa mtumiaji anapoingia katika akaunti kwa mara ya kwanza. Inapaswa kuwekwa kuwa sivyo ikiwa Idhini ya Kusawazisha haitahitajika kwa mtumiaji.
         Ikiwa imewekwa kuwa sivyo, Idhini ya Kusawazisha haitaonekana.
         Ikiwa imewekwa kuwa ndivyo au haijawekwa, Idhini ya Kusawazisha inaweza kuonyeshwa.</translation>
@@ -4064,6 +4123,9 @@ kiwekwe kwenye maombi yote ya HTTP na HTTPS katika vikoa vyote vya google.com, j
 
       Iwapo sera haijawekwa, watumiaji wataweza kuchagua picha ya ishara inayowawakilisha kwenye skrini ya kuingia katika akaunti.</translation>
 <translation id="9035964157729712237">Vitambulisho vya viendelezi vya kuondolewa kenye orodha isiyokubalika</translation>
+<translation id="9038058011835642205">Hubainisha orodha ya tovuti zinazosakinishwa chinichini bila kumhusisha mtumiaji na ambazo haziwezi kuondolewa wala kuzimwa na mtumiaji.
+
+      Kila kipengee kwenye orodha ya sera ni sehemu yenye kipengele cha lazima: "url" na vipengele vingine viwili visivyo vya lazima: "default_launch_container" na "create_desktop_shortcut". Ni sharti "url" iwe URL ya programu ya wavuti ili isakinishwe, ni sharti "launch_container" iwe aidha "dirisha" au "kichupo" ili kuashiria jinsi Programu ya Wavuti itafunguliwa baada ya kusakinishwa na ni sharti "create_desktop_shortcut" iwekwe kuwa 'ndivyo' ikiwa njia ya mkato ya eneo-kazi inapaswa kuundwa kwenye Linux na Windows. Ikiwa "default_launch_container" haijajumuishwa, programu itafunguka katika kichupo kwa chaguomsingi. Licha ya thamani ya "default_launch_container", watumiaji wanaweza kubadilisha metadata ambamo programu itafunguka. Iwapo "create_desktop_shortcuts" haijumuishwa, hakuna njia za mkato za eneo-kazi zitakazoundwa.</translation>
 <translation id="9038839118379817310">Washa Wi-Fi</translation>
 <translation id="9039822628127365650">Sera hii ikiwekwa, hubainisha kipindi cha muda ambacho huchukuliwa kisha mtumiaji anaondolewa katika akaunti kiotomatiki; hali inayosimamisha kipindi. Mtumiaji huarifiwa kuhusu muda unaosalia katika kipima muda kinachoonyeshwa kwenye ubao wa aikoni.
 
@@ -4073,6 +4135,11 @@ kiwekwe kwenye maombi yote ya HTTP na HTTPS katika vikoa vyote vya google.com, j
 
       Thamani ya sera sharti ibainishwe katika milisekunde. Thamani huwekwa pamoja katika masafa ya sekunde 30 hadi saa 24.</translation>
 <translation id="9042911395677044526">Inaruhusu kusukuma kwa usanidi wa mtandao kutekelezwa kwa kila mtumiaji katika kifaa cha <ph name="PRODUCT_OS_NAME" />. Usanidi wa mtandao ni mtungo ulioumbizwa wa JSON kama ilivyofasiliwa kwa umbizo la Fungua Usanidi wa Mtandao ilivyofafanuliwa katika <ph name="ONC_SPEC_URL" /></translation>
+<translation id="9050853837490399534">Sera hii hudhibiti ikiwa kifaa kinahitaji au hakihitaji kusasishwa kwenye Muundo wa Urekebishaji wa Haraka.
+
+      Thamani ikiwekwa kuwa tokeni inayoambatishwa kwenye Muundo wa Urekebishaji wa Haraka, kifaa kitasasishwa kwenye Muundo wa Urekebishaji wa Haraka unaohusika, ikiwa sasisho halijazuiwa na sera nyingine.
+
+      Ikiwa sera hii haijawekwa, au ikiwa thamani yake haijaambatishwa kwenye Muundo wa Urekebishaji wa Haraka, basi kifaa hakitasasishwa kwenye Muundo wa Urekebishaji wa Haraka. Ikiwa kifaa tayari kinatumia Muundo wa Urekebishaji wa Haraka na sera haijawekwa tena au thamani yake haijaambatishwa tena kwenye Muundo wa Urekebishaji, basi kifaa kitasasishwa kwenye muundo wa kawaida ikiwa sasisho halijazuiwa na sera nyingine.</translation>
 <translation id="906631898352326790">
       Iwapo sera imewashwa, kila chanzo ulichotaja katika orodha inayotenganishwa kwa koma kitatumia mchakato wake. Hatua hii pia itatenga vyanzo vinavyotajwa kwa vikoa; k.m. hatua ya kubainisha https://example.com/ itasababisha pia https://foo.example.com/ itengwe ili isiwe sehemu ya tovuti ya https://example.com/.
       Ukizima sera hii, vipengele vyote viwili vya IsolateOrigins na SitePerProcess vitazimwa. Bado watumiaji wataweza kuwasha IsolateOrigins wenyewe kupitia ripoti za mstari wa amri.

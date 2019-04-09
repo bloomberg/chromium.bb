@@ -1909,7 +1909,6 @@
 <translation id="3995138139523574647">USB-C 设备（右侧后端端口）</translation>
 <translation id="3996366967769547206">{NUM_TABS,plural, =1{取消固定这个标签页}other{取消固定这些标签页}}</translation>
 <translation id="4002440992267487163">PIN 码设置</translation>
-<translation id="400314203296796334">请取下头戴设备并执行禁止或允许操作。</translation>
 <translation id="4005817994523282006">时区检测方法</translation>
 <translation id="4008291085758151621">虚拟实境中不提供网站信息</translation>
 <translation id="4010917659463429001">要在移动设备上获取书签，请<ph name="GET_IOS_APP_LINK" />。</translation>
@@ -3447,6 +3446,7 @@
 <translation id="6514010653036109809">可用的设备：</translation>
 <translation id="6514565641373682518">此网页已隐藏鼠标指针。</translation>
 <translation id="6518014396551869914">复制图片(&amp;Y)</translation>
+<translation id="6518133107902771759">验证</translation>
 <translation id="651942933739530207">您是否想让 <ph name="APP_NAME" /> 共享您的屏幕和音频输出？</translation>
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />

@@ -139,6 +139,7 @@ Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secur
       Hvis denne politik ikke angives, er standardfrekvensen tre timer. Den laveste
       tilladte frekvens er 60 sekunder.</translation>
 <translation id="1204263402976895730">Aktiverede virksomhedsprintere</translation>
+<translation id="1216919699175573511">Aktivér understøttelse af Signed HTTP Exchange (SXG)</translation>
 <translation id="1219695476179627719">Angiver, om enheden skal gå tilbage til den version, der er konfigureret af <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" />, hvis den allerede kører en nyere version.
 
       RollbackDisabled anvendes som standard.</translation>
@@ -1611,6 +1612,13 @@ Hvis de to politikker har forskellige værdier, kan der ske forsinkelser ved ops
           Hvis denne politik ikke indstilles, anvendes standardindstillingen.
 
           Værdien for politikken bør angives i millisekunder.</translation>
+<translation id="4105884561459127998">Konfigurerer godkendelsestypen for SAML-logins.
+
+      Når denne politik ikke er konfigureret eller er angivet som Standard (med værdien 0), bestemmes SAML-loginadfærden af browseren afhængigt af andre faktorer. I det mest grundlæggende scenarie baseres brugergodkendelsen og beskyttelsen af cachelagrede brugerdata på de adgangskoder, som brugerne angiver manuelt.
+
+      Når denne politik er angivet som ClientCertificate (med værdien 1), anvendes godkendelse af klientcertifikat til brugere, der er tilføjet for nylig, og som logger ind via SAML. Der bruges ingen adgangskoder til sådanne brugere, og deres cachelagrede lokale data beskyttes ved hjælp af tilsvarende kryptografiske nøgler. Med denne indstilling er det f.eks. muligt at konfigurere chipkort-baseret brugergodkendelse (bemærk, at middleware-apps til chipkort skal installeres via politikken DeviceLoginScreenExtensions).
+
+      Politikken berører kun brugere, der godkender via SAML.</translation>
 <translation id="4105989332710272578">Deaktiver håndhævelse af Certifikatsgennemsigtighed for en række webadresser</translation>
 <translation id="4121350739760194865">Undgå, at appkampagner vises på ny fane-siden</translation>
 <translation id="4125606414556046117">Denne politik giver dig mulighed for at konfigurere det baggrundsbillede, der er vist på brugerens skrivebord og loginskærm. Politikken konfigureres ved at angive den webadresse, hvorfra <ph name="PRODUCT_OS_NAME" /> kan downloade baggrundsbilledet og en kryptografisk hash-værdi, der bruges til at bekræfte downloadens integritet. Billedet skal være i .jpeg-format, og størrelsen må ikke overstige 16 MB. Webadressen skal være tilgængelig uden nogen form for godkendelse.
@@ -1639,6 +1647,30 @@ Hvis de to politikker har forskellige værdier, kan der ske forsinkelser ved ops
       Hvis politikken ikke er konfigureret, kan brugeren vælge et baggrundsbillede, der skal vises på skrivebordet og på loginskærmen.</translation>
 <translation id="412697421478384751">Giv brugerne mulighed for at konfigurere svage pinkoder som pinkoder til låseskærmen</translation>
 <translation id="4138655880188755661">Tidsgrænse</translation>
+<translation id="4144164749344898721">Denne politik styrer flere indstillinger for strømstyringsstrategien, når brugeren bliver inaktiv.
+
+          Der er fire typer handlinger:
+          * Skærmen nedtones, hvis brugeren forbliver inaktiv i det tidsrum, der er angivet af |ScreenDim|.
+          * Skærmen slukkes, hvis brugeren forbliver inaktiv i det tidsrum, der er angivet af |ScreenOff|.
+          * Der vises en dialogboks med en advarsel, hvis brugeren forbliver inaktiv i det tidsrum, der er angivet af |IdleWarning|. Brugeren får oplyst, at handlingen for inaktivitet snart bliver foretaget. Advarselsmeddelelsen vises kun, hvis inaktivitetshandlingen er at logge ud eller lukke ned.
+          * Den handling, der er angivet af |IdleAction|, bliver foretaget, hvis brugeren forbliver inaktiv i det tidsrum, der angives af |Idle|.
+
+          Forsinkelsen skal angives i millisekunder, og der skal angives en værdi, der er højere end nul, for at aktivere den tilsvarende handling. Dette gælder for alle de ovenstående handlinger. Hvis forsinkelsen er angivet som nul, foretager <ph name="PRODUCT_OS_NAME" /> ikke den tilsvarende handling.
+
+          Hvis der ikke er angivet et tidsrum, anvendes en standardværdi. Dette gælder for alle de ovenstående forsinkelser.
+
+          Bemærk, at værdier for |ScreenDim| skal være mindre end eller lig med |ScreenOff|. |ScreenOff| og |IdleWarning| skal være mindre end eller lig med |Idle|.
+
+          |IdleAction| kan være én af fire mulige handlinger:
+          * |Suspend|
+          * |Logout|
+          * |Shutdown|
+          * |DoNothing|
+
+          Hvis |IdleAction| ikke er konfigureret, foretages standardhandlingen, som er suspendering.
+
+          Der er også separate indstillinger for strømforsyning og batteri.
+          </translation>
 <translation id="4150201353443180367">Skærm</translation>
 <translation id="4157003184375321727">Rapportér OS- og firmwareversion</translation>
 <translation id="4157594634940419685">Giv brugerne mulighed for at bruge deres egne CUPS-printere</translation>
@@ -1723,6 +1755,15 @@ Hvis de to politikker har forskellige værdier, kan der ske forsinkelser ved ops
 <translation id="4322842393287974810">Tillad, at den automatisk startede terminalapp uden forsinkelse kontrollerer <ph name="PRODUCT_OS_NAME" />-versionen</translation>
 <translation id="4325690621216251241">Tilføj en log ud-knap til systembakken</translation>
 <translation id="4332177773549877617">Logfør hændelser under Android-appinstallationer</translation>
+<translation id="4335292026668105285">Angiver tidsrummet uden brugerinput, hvorefter en dialogboks med en advarsel vises, når enheden bruger strømforsyningen.
+
+          Når denne politik er konfigureret, angiver den, hvor længe brugeren skal være inaktiv, før <ph name="PRODUCT_OS_NAME" /> viser en dialogboks med en advarsel, der informerer brugeren om, at inaktivitetshandlingen snart udføres.
+
+          Når denne politik ikke er konfigureret, vises der ingen dialogboks med en advarsel.
+
+          Politikkens værdi skal angives i millisekunder. Værdierne skal være mindre end eller lig med inaktivitetsforsinkelsen.
+
+          Advarselsmeddelelsen vises kun, hvis inaktivitetshandlingen er at logge ud eller lukke ned.</translation>
 <translation id="4346674324214534449">Giver dig mulighed for at angive, om annoncer skal blokeres på websites med påtrængende annoncer.
 
       Hvis mulighed 2 er angivet for denne politik, blokeres annoncer på websites med påtrængende annoncer.
@@ -3242,6 +3283,9 @@ Hvis denne politik er angivet som sand eller ikke angives, aktiveres den smarte 
 <translation id="7464991223784276288">Begræns cookies fra matchende webadresser til den aktuelle session</translation>
 <translation id="7469554574977894907">Aktiver søgeforslag</translation>
 <translation id="7474249562477552702">Om certifikater med SHA-1-signatur, som er udstedt af lokale tillidsankre, er tilladt eller ej</translation>
+<translation id="747851715060942420">Giver dig mulighed for at konfigurere de sider, der indlæses ved opstart.
+
+      "Webadresser, der skal åbnes ved opstart" i politikken ignoreres, medmindre du vælger "Åbn en liste over webadresser" i "Handling ved opstart".</translation>
 <translation id="7485481791539008776">Regler for valg af standardprinter</translation>
 <translation id="7485730741952775732">Hvis denne politik er konfigureret, bruger hosten for fjernadgang denne webadresse til validering af godkendelsestokens fra klienter for fjernadgang for at kunne acceptere forbindelser. Skal bruges i forbindelse med RemoteAccessHostTokenUrl.
 
@@ -3255,6 +3299,11 @@ Hvis denne politik er angivet som sand eller ikke angives, aktiveres den smarte 
 
       Hvis denne politik anvendes, har brugeren adgang til alle printere bortset fra dem med id'er, der er angivet i denne politik. Id'erne skal stemme overens med feltet "id" eller "guid" i den fil, der er angivet i <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
+<translation id="7506269062143646163">Aktivér understøttelse af Signed HTTP Exchange (SXG).
+
+          Hvis denne politik ikke er konfigureret eller er angivet som Aktiveret, accepterer Google Chrome webindhold, der vises som Signed HTTP Exchanges.
+
+          Hvis denne politik er angivet som Deaktiveret, kan Signed HTTP Exchanges ikke indlæses.</translation>
 <translation id="7511361072385293666">Hvis denne politik er angivet som Sand eller ikke er indstillet, er brug i QUIC-protokollen i <ph name="PRODUCT_NAME" /> tilladt.
       Hvis denne politik er angivet som Falsk, er brug i QUIC-protokollen ikke tilladt.</translation>
 <translation id="7517845714620372896">Angiver skærmens lysstyrke i procent.
@@ -3395,6 +3444,15 @@ Hvis denne politik er angivet som sand eller ikke angives, aktiveres den smarte 
       De genkendte forbindelsestype-id'er er "ethernet", "wifi", "wimax", "bluetooth" og "mobil".</translation>
 <translation id="7763614521440615342">Vis forslag til indhold på siden Ny fane</translation>
 <translation id="7765879851993224640">Tillad brug af login med Smart Lock.</translation>
+<translation id="7772346342637974431">Angiver tidsrummet uden brugerinput, hvorefter en dialogboks med en advarsel vises, når enheden bruger batteriet.
+
+          Når denne politik er konfigureret, angiver den, hvor længe brugeren skal være inaktiv, før <ph name="PRODUCT_OS_NAME" /> viser en dialogboks med en advarsel, der informerer brugeren om, at inaktivitetshandlingen snart udføres.
+
+          Når denne politik ikke er konfigureret, vises der ingen dialogboks med en advarsel.
+
+          Politikkens værdi skal angives i millisekunder. Værdierne skal være mindre end eller lig med inaktivitetsforsinkelsen.
+
+          Advarselsmeddelelsen vises kun, hvis inaktivitetshandlingen er at logge ud eller lukke ned.</translation>
 <translation id="7774768074957326919">Brug systemets proxyindstillinger</translation>
 <translation id="7777535871204167559">Eksterne lagerenheder behandles som skrivebeskyttet</translation>
 <translation id="7781069478569868053">Siden Ny fane</translation>
@@ -3940,6 +3998,7 @@ Denne politik er udfaset i M69 til fordel for OverrideSecurityRestrictionsOnInse
 
 Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secure-contexts/
       </translation>
+<translation id="8939595959513040470">Stil Quick Fix Build til rådighed for brugerne.</translation>
 <translation id="8942616385591203339">Denne politik styrer, hvorvidt samtykke til synkronisering kan vises til brugeren ved første login. Den bør angives som falsk, hvis brugeren aldrig behøver at bruge samtykke til synkronisering.
       Hvis den angives som falsk, vises samtykke til synkronisering ikke.
       Hvis den angives som sand eller slet ikke angives, vises samtykke til synkronisering.</translation>
@@ -3999,6 +4058,9 @@ Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secur
 
       Hvis politikken ikke er konfigureret, kan brugerne vælge et avatarbillede, der repræsenterer dem på loginskærmen.</translation>
 <translation id="9035964157729712237">Udvidelses-id'er, der skal udelades fra sortlisten</translation>
+<translation id="9038058011835642205">Angiver en liste over websites, der installeres i baggrunden uden brugerinteraktion, og som ikke kan afinstalleres eller deaktiveres af brugeren.
+
+      Hvert listepunkt i politikken er et objekt med et obligatorisk medlem: "url" og to valgfrie medlemmer: "default_launch_container" og "create_desktop_shortcut". "url" skal være webadressen til den webapp, der skal installeres, "launch_container" skal enten være "window" eller "tab" for at indikere, hvordan webappen åbnes, når den er installeret, og "create_desktop_shortcut" skal være sand, hvis der skal oprettes en skrivebordsgenvej i Linux og Windows. Hvis "default_launch_container" er udeladt, åbnes appen som standard i en fane. Brugerne kan ændre, hvilken container appen åbnes i, uanset hvilken værdi der er angivet for "default_launch_container". Hvis "create_desktop_shortcuts" er udeladt, oprettes der ingen skrivebordsgenveje.</translation>
 <translation id="9038839118379817310">Aktivér Wi-Fi</translation>
 <translation id="9039822628127365650">Når denne politik er konfigureret, angiver den det tidsrum, hvorefter en bruger automatisk logges ud, og sessionen afsluttes. Brugeren oplyses om den resterende tid med et nedtællingsur, der vises i systembakken.
 
@@ -4008,6 +4070,11 @@ Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secur
 
       Politikkens værdi skal angives i millisekunder. Værdierne skal ligge inden for et interval på mellem 30 sekunder og 24 timer.</translation>
 <translation id="9042911395677044526">Tillader, at netværkskonfigurationen gøres gældende pr. bruger til en <ph name="PRODUCT_OS_NAME" />-enhed. Netværkskonfigurationen er en JSON-formateret streng, sådan som den er defineret af formatet Open Network Configuration som beskrevet på <ph name="ONC_SPEC_URL" /></translation>
+<translation id="9050853837490399534">Denne politik styrer, om enheden skal opdateres til en Quick Fix Build.
+
+      Hvis værdien for politikken er angivet som et token, der er tilknyttet en Quick Fix Build, opdateres enheden til den tilsvarende Quick Fix Build, hvis opdateringen ikke blokeres af en anden politik.
+
+      Hvis denne politik ikke er konfigureret, eller hvis værdien ikke er tilknyttet en Quick Fix Build, opdateres enheden ikke til en Quick Fix Build. Hvis enheden allerede kører en Quick Fix Build, og politikken ikke længere er konfigureret, eller dens værdi ikke længere er tilknyttet en Quick Fix Build, opdateres enheden til en almindelig build, hvis opdateringen ikke blokeres af en anden politik.</translation>
 <translation id="906631898352326790">
       Hvis politikken er aktiveret, kører hvert af de angivne websites
       på en kommasepareret liste sin egen proces. Dette isolerer også websites,

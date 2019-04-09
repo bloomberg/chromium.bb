@@ -151,6 +151,7 @@
       Če ta pravilnik ni nastavljen, je vrednost privzete pogostosti 3 ure. Najmanjša
       dovoljena vrednost pogostosti je 60 sekund.</translation>
 <translation id="1204263402976895730">Omogočeni tiskalniki v podjetjih</translation>
+<translation id="1216919699175573511">Omogočanje podpore za podpisano izmenjavo HTTP (SXG)</translation>
 <translation id="1219695476179627719">Določa, ali naj se naprava povrne na različico, ki jo določa pravilnik <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" />, če se v njej že izvaja novejša različica.
 
       Privzeta nastavitev je RollbackDisabled (povrnitev onemogočena).</translation>
@@ -1663,6 +1664,13 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
           Če pravilnik ni nastavljen, velja privzeto trajanje.
 
           Vrednost pravilnika naj bo navedena v milisekundah.</translation>
+<translation id="4105884561459127998">Konfigurira vrsto preverjanja pristnosti za prijave SAML.
+
+      Če ta pravilnik ni nastavljen ali je nastavljen na Default (privzeto, vrednost 0), delovanje prijav SAML določi brskalnik glede na druge dejavnike. V najbolj osnovnem scenariju preverjanje pristnosti uporabnikov in zaščita predpomnjenih uporabniških podatkov temeljita na geslih, ki jih uporabniki ročno vnesejo.
+
+      Če je ta pravilnik nastavljen na ClientCertificate (potrdilo odjemalca, vrednost 1), se preverjanje pristnosti odjemalca uporabi za novo dodane uporabnike, ki se prijavljajo prek SAML-ja. Za take uporabnike se ne uporabljajo gesla in njihovi predpomnjeni lokalni podatki so zaščiteni z ustreznimi kriptografski ključi. Ta nastavitev na primer omogoča konfiguriranje preverjanja pristnosti uporabnikov s pametnimi karticami (nameščene morajo biti aplikacije za pametne kartice prek pravilnika DeviceLoginScreenAppInstallList).
+
+      Ta pravilnik vpliva samo na uporabnike, katerih pristnost se preverja z uporabo SAML-ja.</translation>
 <translation id="4105989332710272578">Onemogočanje uveljavljanja pravilnika o preglednosti potrdila za seznam URL-jev</translation>
 <translation id="4121350739760194865">Onemogoči prikaz oglasov za aplikacije na novem zavihku s povezavami.</translation>
 <translation id="4125606414556046117">S tem pravilnikom lahko nastavite sliko za ozadje, prikazano na namizju in na prijavni strani za uporabnika. Pravilnik se nastavi tako, da navedete URL, s katerega lahko <ph name="PRODUCT_OS_NAME" /> prenese sliko za ozadje, in kriptografsko zgoščeno vrednost, ki se uporabi za preverjanje celovitosti prenosa. Slika mora biti v obliki JPEG in njena velikost ne sme presegati 16 MB. URL mora biti dostopen brez preverjanja pristnosti.
@@ -1691,6 +1699,30 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če tega pravilnika ne nastavite, lahko uporabnik izbere sliko, ki bo prikazana na namizju in v ozadju zaslona za prijavo.</translation>
 <translation id="412697421478384751">Omogoči uporabnikom nastavitev šibkih kod PIN za kodo PIN za zaklenjen zaslon.</translation>
 <translation id="4138655880188755661">Časovna omejitev</translation>
+<translation id="4144164749344898721">Ta pravilnik nadzira različne nastavitve za strategijo upravljanja energije, ko uporabnik postane nedejaven.
+
+          Obstajajo štiri vrste dejanj:
+          * Če je uporabnik nedejaven toliko časa, kot določa |ScreenDim|, se zaslon zatemni.
+          * Če je uporabnik nedejaven toliko časa, kot določa |ScreenOff|, se zaslon izklopi.
+          * Če je uporabnik nedejaven toliko časa, kot določa |IdleWarning|, se prikaže opozorilno pogovorno okno, ki uporabnika obvesti, da se bo izvedlo dejanje zaradi nedejavnosti. Opozorilno sporočilo je prikazano samo, če je dejanje ob nedejavnosti odjava ali izklop.
+          * Če je uporabnik nedejaven toliko časa, kot določa |Idle|, se bo izvedlo dejanje, ki ga določa |IdleAction|.
+
+          Za vsako od navedenih dejanj mora biti zakasnitev navedena v milisekundah, ustrezno dejanje pa se bo sprožilo samo, če je nastavljena vrednost, večja od nič. Če je zakasnitev nastavljena na nič, <ph name="PRODUCT_OS_NAME" /> ne bo izvedel ustreznega dejanja.
+
+          Če za navedene zakasnitve trajanje ni določeno, bo uporabljena privzeta vrednost.
+
+          Upoštevajte, da morajo biti vrednosti za |ScreenDim| manjše ali enake kot vrednosti za |ScreenOff|, vrednosti za |ScreenOff| in |IdleWarning| pa manjše ali enake kot za |Idle|.
+
+          |IdleAction| je lahko eno od štirih dejanj:
+          * |Suspend| (prekinitev)
+          * |Logout| (odjava)
+          * |Shutdown| (zaustavitev)
+          * |DoNothing| (ne naredi ničesar)
+
+          Če vrednost za |IdleAction| ni nastavljena, se bo izvedlo privzeto dejanje, ki je prekinitev.
+
+          Obstajajo tudi ločene nastavitve za napajanje iz električnega omrežja in akumulatorja.
+          </translation>
 <translation id="4150201353443180367">Prikaz</translation>
 <translation id="4157003184375321727">Pošiljanje podatkov o različici operacijskega sistema in vdelane programske opreme</translation>
 <translation id="4157594634940419685">Omogoči dostop do izvornih tiskalnikov CUPS</translation>
@@ -1775,6 +1807,15 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="4322842393287974810">Dovoli samodejno zagnani aplikaciji za kiosk brez zamika nadzor nad različico sistema <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Dodajanje gumb za odjavo v sistemsko vrstico</translation>
 <translation id="4332177773549877617">Beleženje dogodkov za namestitve aplikacije za Android</translation>
+<translation id="4335292026668105285">Določa trajanje uporabnikove nedejavnosti, po preteku katere je prikazano opozorilno pogovorno okno, če se naprava napaja iz električnega omrežja.
+
+          Če je ta pravilnik nastavljen, določa trajanje, med katerim mora biti uporabnik nedejaven, preden sistem <ph name="PRODUCT_OS_NAME" /> prikaže opozorilno pogovorno okno, ki uporabnika obvesti, da se bo izvedlo dejanje ob nedejavnosti.
+
+          Če ta pravilnik ni nastavljen, ni prikazano opozorilno pogovorno okno.
+
+          Vrednost pravilnika mora biti navedena v milisekundah. Vrednosti morajo biti manjše ali enake kot časovni zamik nedejavnosti.
+
+          Opozorilno sporočilo je prikazano samo, če je dejanje ob nedejavnosti odjava ali izklop.</translation>
 <translation id="4346674324214534449">Omogoča, da nastavite, ali je treba oglase blokirati na spletnih mestih z vsiljivimi oglasi.
 
       Če je ta pravilnik nastavljen na 2, bodo oglasi blokirani na spletnih mestih z vsiljivimi oglasi.
@@ -3360,6 +3401,9 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7464991223784276288">Omejitev piškotkov z ujemajočih se URL-jev na trenutno sejo</translation>
 <translation id="7469554574977894907">Omogoči predloge za iskanje</translation>
 <translation id="7474249562477552702">Ali so dovoljena potrdila, podpisana z algoritmom SHA-1, ki jih izdajo lokalna sidra zaupanja</translation>
+<translation id="747851715060942420">Omogoča konfiguriranje strani, ki se naložijo ob zagonu.
+
+      Pravilnik »URL-ji, ki naj se odprejo ob zagonu« je prezrt, razen če v možnosti »Dejanje ob zagonu« izberete »Odpri seznam URL-jev«.</translation>
 <translation id="7485481791539008776">Pravila za izbiro privzetega tiskalnika</translation>
 <translation id="7485730741952775732">Če je ta pravilnik nastavljen, bo gostitelj za oddaljeni dostop na tem URL-ju preverjal žetone za preverjanje pristnosti odjemalcev za oddaljeni dostop, da lahko sprejme povezave. Uporabljati ga je treba v povezavi s pravilnikom RemoteAccessHostTokenUrl.
 
@@ -3373,6 +3417,11 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
       Če se uporablja ta pravilnik, so uporabniku na voljo vsi tiskalniki z izjemo ID-jev, navedenih v tem pravilniku. ID-ji morajo ustrezati polju »id« ali »guid« v datoteki, določeni v pravilniku <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
+<translation id="7506269062143646163">Omogoča podporo za podpisano izmenjavo HTTP (SXG).
+
+          Če ta pravilnik ni nastavljen ali je omogočen, bo Google Chrome sprejemal spletno vsebino, prikazano kot podpisane izmenjave HTTP.
+
+          Če je ta pravilnik onemogočen, podpisanih izmenjav HTTP ni mogoče naložiti.</translation>
 <translation id="7511361072385293666">Če je ta pravilnik omogočen ali ni nastavljen, je uporaba protokola QUIC v brskalniku <ph name="PRODUCT_NAME" /> dovoljena.
       Če je ta pravilnik onemogočen, uporaba protokola QUIC ni dovoljena.</translation>
 <translation id="7517845714620372896">Določa odstotek svetlosti zaslona.
@@ -3519,6 +3568,15 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Prepoznani identifikatorji vrste povezav so »ethernet«, »wifi«, »wimax«, »bluetooth« in »cellular«.</translation>
 <translation id="7763614521440615342">Prikaz predlogov vsebine na novem zavihku s povezavami</translation>
 <translation id="7765879851993224640">Omogočanje uporabe prijave s funkcijo Smart Lock.</translation>
+<translation id="7772346342637974431">Določa trajanje uporabnikove nedejavnosti, po preteku katere je prikazano opozorilno pogovorno okno, če se naprava napaja iz akumulatorja.
+
+          Če je ta pravilnik nastavljen, določa trajanje, med katerim mora biti uporabnik nedejaven, preden sistem <ph name="PRODUCT_OS_NAME" /> prikaže opozorilno pogovorno okno, ki uporabnika obvesti, da se bo izvedlo dejanje ob nedejavnosti.
+
+          Če ta pravilnik ni nastavljen, ni prikazano opozorilno pogovorno okno.
+
+          Vrednost pravilnika mora biti navedena v milisekundah. Vrednosti morajo biti manjše ali enake kot časovni zamik nedejavnosti.
+
+          Opozorilno sporočilo je prikazano samo, če je dejanje ob nedejavnosti odjava ali izklop.</translation>
 <translation id="7774768074957326919">Uporaba sistemskih nastavitev proxyja</translation>
 <translation id="7777535871204167559">Zunanje naprave za shranjevanje naj bodo samo za branje</translation>
 <translation id="7781069478569868053">Nov zavihek s povezavami</translation>
@@ -4095,6 +4153,7 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
       Več informacij o varnih kontekstih je na voljo na
       https://www.w3.org/TR/secure-contexts/
       </translation>
+<translation id="8939595959513040470">Posredovanje delovne različice Quick Fixa uporabnikom.</translation>
 <translation id="8942616385591203339">Ta pravilnik nadzira, ali je soglasje za sinhronizacijo lahko prikazano uporabniku med prvo prijavo. Če soglasja za sinhronizacijo ne potrebujete za uporabnika, mora biti pravilnik onemogočen.
       Če je onemogočen, soglasje za sinhronizacijo ne bo prikazano.
       Če je omogočen ali ni nastavljen, je soglasje za sinhronizacijo mogoče prikazati.</translation>
@@ -4154,6 +4213,9 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 
       Če tega pravilnika ne nastavite, lahko uporabnik izbere sliko za avatar, ki ga predstavlja na zaslonu za prijavo.</translation>
 <translation id="9035964157729712237">ID-ji razširitev, ki naj bodo izvzete s seznama prepovedanih</translation>
+<translation id="9038058011835642205">Določa seznam spletnih mest, ki so nameščene brez obveščanja in poseganja uporabnika ter jih uporabnik ne more odmestiti ali onemogočiti.
+
+      Vsak element na seznamu pravilnika je predmet z obveznim članom, »url«, in dvema neobveznima članoma, »default_launch_container« in »create_desktop_shortcut«. »url« mora biti URL spletne aplikacije za namestitev, »launch_container« mora biti »window« ali »tab«, ki pokaže, kako naj se spletna aplikacija po namestitvi odpira, član »create_desktop_shortcut« pa mora biti nastavljen na »true«, če naj bo bližnjica na namizju ustvarjena v sistemih Linux in Windows. Če je izpuščen član »default_launch_container«, se aplikacija privzeto odpira na zavihku. Ne glede na vrednost člana »default_launch_container« uporabniki lahko spremenijo, v katerem vsebniku se bo odpirala aplikacija. Če je izpuščen član »create_desktop_shortcuts«, bližnjice na namizju ne bodo ustvarjene.</translation>
 <translation id="9038839118379817310">Omogočanje povezave Wi-Fi</translation>
 <translation id="9039822628127365650">Če je ta pravilnik nastavljen, določa dolžino časa, po katerem je uporabnik samodejno odjavljen, seja pa se konča. Uporabnik je obveščen o preostalem času s časovnikom, prikazanem v sistemski vrstici.
 
@@ -4163,6 +4225,11 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 
       Vrednost pravilnika mora biti navedena v milisekundah. Vrednosti so v obsegu od 30 sekund do 24 ur.</translation>
 <translation id="9042911395677044526">Omogoča pošiljanje omrežne konfiguracije, ki se uporablja glede na uporabnika, v napravo s sistemom <ph name="PRODUCT_OS_NAME" />. Omrežna konfiguracija je niz v obliki zapisa JSON, kot je določeno z obliko konfiguracije odprtega omrežja, opisane na <ph name="ONC_SPEC_URL" /></translation>
+<translation id="9050853837490399534">Ta pravilnik nadzira, ali naj bo naprava posodobljena na delovno različico Quick Fixa.
+
+      Če je vrednost pravilnika nastavljena na žeton, ki preslika v delovno različico Quick Fixa, bo naprava posodobljena na ustrezno delovno različico Quick Fixa, če posodobitve ne blokira drug pravilnik.
+
+      Če ta pravilnik ni nastavljen ali njegova vrednost ne preslika v delovno različico Quick Fixa, naprava ne bo posodobljena na delovno različico Quick Fixa. Če naprava že uporablja delovno različico Quick Fixa in pravilnik ni več nastavljen ali njegova vrednost ne preslika več v delovno različico Quick Fixa, bo naprava posodobljena v običajno različico, če posodobitve ne blokira drug pravilnik.</translation>
 <translation id="906631898352326790">
       Če je pravilnik omogočen, se bo vsak naveden izvor s
       seznama, ločenega z vejicami, izvajal v svojem procesu. S tem bodo osamljeni tudi

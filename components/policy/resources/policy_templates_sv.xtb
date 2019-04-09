@@ -151,6 +151,7 @@
       Om inget värde anges för principen är standardfrekvensen 3 timmar. Den kortaste
       tillåtna frekvensen är 60 sekunder.</translation>
 <translation id="1204263402976895730">Aktiverade företagsskrivare</translation>
+<translation id="1216919699175573511">Aktivera stöd för Signed HTTP Exchange (SXG)</translation>
 <translation id="1219695476179627719">Anger om enheten ska återställas till versionen som är inställd i <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> om den redan kör en senare version.
 
       RollbackDisabled är standard.</translation>
@@ -1134,7 +1135,7 @@
 
           Om den här principen inte ställs in kan användaren välja startsida själv om HomepageIsNewTabPage inte heller är inställd.
 
-          Webbadressen måste använda ett standardprotokoll, t.ex. http://example.com eller https://example.com.
+          Standardprotokoll, t.ex. http://example.com eller https://example.com, måste användas i webbadressen.
 
           Den här principen är bara tillgänglig i Windows-instanser som är kopplade till en <ph name="MS_AD_NAME" />-domän, eller i Windows 10 Pro- eller Enterprise-instanser som är registrerade i enhetshantering.</translation>
 <translation id="3016255526521614822">Ange anteckningsappar som är tillåtna på låsskärmen i <ph name="PRODUCT_OS_NAME" /></translation>
@@ -1664,6 +1665,13 @@
           Om policyn inte är inställd används standardtiden.
 
           Policyns värde anges i millisekunder.</translation>
+<translation id="4105884561459127998">Konfigurerar hur autentisering ska göras vid inloggning med SAML.
+
+      När den här principen har lämnats utan inställning eller är inställd på Default (värde 0) hanterar webbläsaren SAML-inloggningarna utifrån andra faktorer. I det enklaste fallet bygger användarautentiseringen och skyddet av cachelagrad användardata på lösenord som användarna anger manuellt.
+
+      När principen är inställd på ClientCertificate (värde 1) används autentisering med klientcertifikat för nya användare som loggar in via SAML. För sådana användare används inga lösenord, och cachelagrad lokal data skyddas med motsvarande kryptografiska nycklar. Till exempel gör den här inställningen det möjligt att konfigurera användarautentisering med smartkort (observera att mellanhandsappar för smartkort måste installeras via principen DeviceLoginScreenExtensions).
+
+      Principen påverkar bara användare som autentiseras med SAML.</translation>
 <translation id="4105989332710272578">Inaktivera tillämpning av Certifikattransparens för en lista med webbadresser</translation>
 <translation id="4121350739760194865">Förhindra att appkampanjer visas på den nya fliksidan</translation>
 <translation id="4125606414556046117">Med den här principen kan du konfigurera bakgrundsbilden som visas på skrivbordet och på inloggningsskärmen för användaren. Principen anges genom att webbadressen som <ph name="PRODUCT_OS_NAME" /> kan ladda ned bakgrundsbilden från anges och att en kryptografisk hash används för att verifiera nedladdningens integritet. Bilden måste vara i JPEG-format och filstorleken får inte överskrida 16 MB. Det måste gå att komma åt webbadressen utan autentisering.
@@ -1692,6 +1700,30 @@
       Om principen inte anges kan användaren välja en bild som ska visas på skrivbordet och på inloggningsskärmen.</translation>
 <translation id="412697421478384751">Tillåt att användare anger en osäker pinkod till låsskärmen</translation>
 <translation id="4138655880188755661">Tidsgräns</translation>
+<translation id="4144164749344898721">Den här principen styr flera energisparinställningar när användaren är inaktiv.
+
+          Det finns fyra typer av åtgärder:
+          * Skärmen tonas ned om användaren är inaktiv under så lång tid som anges av |ScreenDim|.
+          * Skärmen stängs av om användaren är inaktiv under så lång tid som anges av |ScreenOff|.
+          * En varning om att angiven åtgärd vid inaktivitet kommer att vidtas visas i en dialogruta om användaren är inaktiv under så lång tid som anges av |IdleWarning|. Varningsmeddelandet visas endast om inaktivitetsåtgärden är utloggning eller avstängning.
+          * Åtgärden som anges av |IdleAction| genomförs om användaren är inaktiv under så lång tid som anges av |Idle|.
+
+          För var och en av ovanstående åtgärder ska fördröjningen anges i millisekunder och den måste ha ett värde högre än noll för att motsvarande åtgärd ska utlösas. Om fördröjningen har ställts in på noll vidtas inte motsvarande åtgärd av <ph name="PRODUCT_OS_NAME" />.
+
+          För var och en av ovanstående fördröjningar används ett standardvärde när tidslängden inte har angetts.
+
+          Observera att |ScreenDim|-värdena kommer att skäras ned för att vara mindre än eller lika med |ScreenOff|, |ScreenOff| och |IdleWarning| skäras ned för att vara mindre än eller lika med |Idle|.
+
+          |IdleAction| kan vara en av fyra möjliga åtgärder:
+          * |Suspend|
+          * |Logout|
+          * |Shutdown|
+          * |DoNothing|
+
+          När |IdleAction| inte har angetts vidtas standardåtgärden, dvs. viloläget startas.
+
+          Det finns även separata ström- och batteriinställningar.
+          </translation>
 <translation id="4150201353443180367">Skärm</translation>
 <translation id="4157003184375321727">Rapportera version av operativsystem och fast programvara</translation>
 <translation id="4157594634940419685">Tillåt åtkomst till lokala CUPS-skrivare</translation>
@@ -1776,6 +1808,15 @@
 <translation id="4322842393287974810">Tillåt att kioskappen som startas automatiskt utan fördröjning styr <ph name="PRODUCT_OS_NAME" />-versionen</translation>
 <translation id="4325690621216251241">Lägg till en utloggningsknapp i systemfältet</translation>
 <translation id="4332177773549877617">Logga händelser vid installation av Android-appar</translation>
+<translation id="4335292026668105285">Anger tidsperiod utan inmatning från användaren innan en dialogruta med en varning visas när enheten är ansluten till elnätet.
+
+          Om den här principen är inställd anger den hur länge användaren måste vara inaktiv innan <ph name="PRODUCT_OS_NAME" /> visar en dialogruta med en varning om att inaktivitetsåtgärden håller på att utföras.
+
+          Om den är principen inte är inställ visas ingen dialogruta med en varning.
+
+          Principens värde ska anges i millisekunder. Värden är begränsade till att vara är mindre eller lika med inaktivitetstiden.
+
+          Varningsmeddelandet visas endast om inaktivitetsåtgärden är utloggning eller avstängning.</translation>
 <translation id="4346674324214534449">Ger dig möjlighet att ställa in om annonser ska blockeras på webbplatser med påträngande annonser.
 
       Om värdet 2 har angetts för principen blockeras annonser på webbplatser med påträngande annonser.
@@ -3362,6 +3403,9 @@
 <translation id="7464991223784276288">Begränsa cookies från matchande webbadresser till den aktuella sessionen</translation>
 <translation id="7469554574977894907">Aktivera sökförslag</translation>
 <translation id="7474249562477552702">Om SHA-1-signerade certifikat som utfärdats av lokala tillitsankare tillåts eller inte</translation>
+<translation id="747851715060942420">Innebär att du kan konfigurera sidorna som läses in vid start.
+
+      Om du inte väljer Öppna följande sidor under Åtgärd vid start ignoreras principen Webbadresser att öppna vid start.</translation>
 <translation id="7485481791539008776">Skrivarens standardurvalsregler</translation>
 <translation id="7485730741952775732">Om den här principen är inställd använder värden för fjärråtkomst den här webbadressen för att verifiera autentiseringstoken från fjärråtkomstklienter vid godkännande av anslutningar. Måste användas tillsammans med RemoteAccessHostTokenUrl.
 
@@ -3375,6 +3419,11 @@
 
       Om principen används får användaren tillgång till alla skrivare utom dem vars id anges i den här principen. Id:na måste svara mot id- eller guid-fälten i den fil som angetts i <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
+<translation id="7506269062143646163">Aktivera stöd för Signed HTTP Exchange (SXG).
+
+          Om principen inte anges eller ställs in på Aktiverad accepterar Google Chrome webbinnehåll som visas som Signed HTTP Exchange.
+
+          Om principen ställs in på Inaktiverad kan inte Signed HTTP Exchange läsas in.</translation>
 <translation id="7511361072385293666">Om den här policyn är inställd på sant eller inte har angetts är användning av QUIC-protokoll i <ph name="PRODUCT_NAME" /> tillåten.
       Om policyn är inställd på falskt är inte användning av QUIC-protokoll tillåten.</translation>
 <translation id="7517845714620372896">Anger skärmens ljusstyrka i procent.
@@ -3521,6 +3570,15 @@
       Identifierarna för giltiga anslutningstyper är ”ethernet”, ”wifi”, ”wimax”, ”bluetooth” och ”cellular”.</translation>
 <translation id="7763614521440615342">Visa förslag på innehåll på sidan Ny flik</translation>
 <translation id="7765879851993224640">Tillåt inloggning med Smart Lock</translation>
+<translation id="7772346342637974431">Anger tidsperiod utan inmatning från användaren innan en dialogruta med en varning visas vid batteridrift.
+
+          Om den här principen är inställd anger den hur länge användaren måste vara inaktiv innan <ph name="PRODUCT_OS_NAME" /> visar en dialogruta med en varning om att inaktivitetsåtgärden håller på att utföras.
+
+          Om den är principen inte är inställ visas ingen dialogruta med en varning.
+
+          Principens värde ska anges i millisekunder. Värden är begränsade till att vara är mindre eller lika med inaktivitetstiden.
+
+          Varningsmeddelandet visas endast om inaktivitetsåtgärden är utloggning eller avstängning.</translation>
 <translation id="7774768074957326919">Använd systemets proxyinställningar</translation>
 <translation id="7777535871204167559">Behandla externa lagringsenheter som skrivskyddade</translation>
 <translation id="7781069478569868053">Sidan Ny flik</translation>
@@ -4097,6 +4155,7 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
       Mer information om säkra sammanhang finns på
       https://www.w3.org/TR/secure-contexts/
       </translation>
+<translation id="8939595959513040470">Ger användarna Quick Fix Build.</translation>
 <translation id="8942616385591203339">Den här principen styr om samtycke till synkronisering får visas för användaren vid den första inloggningen. Den ska ställas in på falskt om samtycke till synkronisering aldrig behövs för användaren.
       Om principen är inställd på falskt visas inget samtycke till synkronisering.
       Om principen är inställd på sant eller lämnas utan inställning kan samtycke till synkronisering visas.</translation>
@@ -4156,6 +4215,9 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 
       Om principen inte anges kan användaren välja en avatarbild som representerar honom eller henne på inloggningsskärmen.</translation>
 <translation id="9035964157729712237">Tilläggs-ID:n att undanta från svartlistan</translation>
+<translation id="9038058011835642205">Anger en lista mer webbplatser som installeras obemärkt utan att användaren gör något, och som inte kan avinstalleras eller inaktiveras av användaren.
+
+      Varje post i principens lista är ett objekt med en obligatorisk medlem: url och två valfria medlemmar: default_launch_container och create_desktop_shortcut. url ska vara webbadressen till webbappen som ska installeras och launch_container ska anges antingen som window eller tab för att visa hur webbappen ska öppnas när den har installerats, och create_desktop_shortcut ska vara inställt på sant om en skrivbordsgenväg ska skapas på Linux och Windows. Om default_launch_container utesluts öppnas appen på en flik som standard. Användare kan ändra vilken behållare appen öppnas i oavsett vilket värde default_launch_container har. Om create_desktop_shortcuts utesluts skapas ingen skrivbordsgenväg</translation>
 <translation id="9038839118379817310">Aktivera Wi-Fi</translation>
 <translation id="9039822628127365650">När den här principen är inställd anges den tidsrymd efter vilken användaren loggas ut automatisk och sessionen avslutas. Användaren meddelas om den återstående tiden med en nedräkningstimer som visas i systemfältet.
 
@@ -4165,6 +4227,11 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 
       Principens värde ska anges i millisekunder. Värden ska anges inom ett intervall från 30 sekunder till 24 timmar.</translation>
 <translation id="9042911395677044526">Tillåter att en pushad nätverkskonfiguration används per användare på en <ph name="PRODUCT_OS_NAME" />-enhet. Nätverkskonfigurationen är en JSON-formaterad sträng som definieras av formatet för öppen nätverkskonfiguration som beskrivs på <ph name="ONC_SPEC_URL" /></translation>
+<translation id="9050853837490399534">Principen styr om enheten ska uppdateras till en Quick Fix Build.
+
+      Om principens värde är inställt på en token som är mappad till en Quick Fix Build uppdateras enheten till motsvarande Quick Fix Build så länge uppdateringen inte blockeras av en annan princip.
+
+      Om princip inte anges eller om värdet inte är mappat till en Quick Fix Build uppdateras inte enheten till en Quick Fix Build. Om enheten redan kör en Quick Fix Build och principen inte längre är inställd eller värdet inte längre är mappat till en Quick Fix Build, uppdateras enheten till en vanlig version så länge uppdateringen inte blockeras av en annan princip.</translation>
 <translation id="906631898352326790">
       Om principen aktiveras körs alla namngivna ursprung,
       som anges i en kommaavgränsad lista, som egna processer. Även ursprung som anges

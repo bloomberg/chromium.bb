@@ -1,9 +1,9 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fil">
-<translation id="1002439864875515590">Kung nakatakda ang patakarang ito sa isang blangkong string o hindi naka-configure, hindi magpapakita ng opsyon sa pag-autocomplete ang <ph name="PRODUCT_OS_NAME" /> sa flow ng pag-sign in ng user.
+<translation id="1002439864875515590">Kung ang patakarang ito ay nakatakda sa blangkong string o hindi naka-configure, hindi magpapakita ng opsyon sa pag-autocomplete ang <ph name="PRODUCT_OS_NAME" /> sa flow ng pag-sign in ng user.
       Kung nakatakda ang patakarang ito sa isang string na kumakatawan sa isang domain name, magpapakita ang <ph name="PRODUCT_OS_NAME" /> ng opsyon sa pag-autocomplete sa pag-sign in ng user na nagbibigay-daan sa user na i-type lang ang kanyang user name nang walang extension ng domain name.  Mao-overwrite ng user ang extension ng domain name na ito.
-      Kung ang value ng patakaran ay hindi isang wastong domain, hindi ilalapat ang patakaran.</translation>
+      Kung ang value ng patakaran ay hindi wastong domain, hindi ilalapat ang patakaran.</translation>
 <translation id="101438888985615157">I-rotate ang screen nang 180 degrees</translation>
 <translation id="1016912092715201525">Kino-configure ang mga default na pagsusuri ng browser sa <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ang mga ito.
 
@@ -151,6 +151,7 @@
       Kung hindi itatakda ang patakarang ito, ang default na dalas ay 3 oras. Ang minimum
       na pinapayagang dalas ay 60 segundo.</translation>
 <translation id="1204263402976895730">Mga naka-enable na printer ng enterprise</translation>
+<translation id="1216919699175573511">I-enable ang suporta sa Signed HTTP Exchange (SXG)</translation>
 <translation id="1219695476179627719">Tinutukoy kung dapat mag-roll back ang device sa bersyong itinakda ng <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> kung nagpapatakbo na ito ng mas bagong bersyon.
 
       Ang default ay RollbackDisabled.</translation>
@@ -946,13 +947,13 @@
       Kung pinagana o hindi nakatakda ang setting na ito, makakagamit ng JavaScript ang mga web page ngunit mababago ng user ang setting na iyon.</translation>
 <translation id="2747157663401642394">Kino-configure ang mga setting ng pamamahala ng extension para sa <ph name="PRODUCT_NAME" />.
 
-          Kinokontrol ng patakarang ito ang maraming setting, kabilang ang mga setting na kinokontrol ng anumang kasalukuyang patakarang nauugnay sa extension. Io-override ng patakarang ito ang anumang patakaran ng legacy kung naitakda ang pareho.
+          Kinokontrol ng patakarang ito ang maraming setting, kabilang ang mga setting na kinokontrol ng anumang kasalukuyang patakarang nauugnay sa extension. Io-override ng patakarang ito ang anumang patakaran ng legacy kung parehong naitakda.
 
-          Nagmamapa ang patakarang ito ng extension ID o ng isang URL ng update sa configuration nito. Gamit ang isang extension ID, ilalapat ang configuration sa tinukoy na extension lang. Maaaring itakda ang isang default na configuration para sa espesyal na ID <ph name="DEFAULT_SCOPE" /> na ilalapat sa lahat ng extension na walang nakatakdang custom na configuration sa patakarang ito. Gamit ang isang URL ng update, ilalapat ang configuration sa lahat ng extension na may eksaktong URL ng update na nakasaad sa manifest ng extension na ito, gaya ng nakasaad sa <ph name="LINK_TO_EXTENSION_DOC1" />.
+          Nagmamapa ang patakarang ito ng extension ID o ng URL ng update sa configuration nito. Gamit ang isang extension ID, ilalapat ang configuration sa tinukoy na extension lang. Puwedeng itakda ang isang default na configuration para sa espesyal na ID <ph name="DEFAULT_SCOPE" /> na ilalapat sa lahat ng extension na walang nakatakdang custom na configuration sa patakarang ito. Gamit ang isang URL ng update, ilalapat ang configuration sa lahat ng extension na may eksaktong URL ng update na nakasaad sa manifest ng extension na ito, gaya ng nakasaad sa <ph name="LINK_TO_EXTENSION_DOC1" />.
 
-          Para sa mga instance ng Windows na hindi kasama sa isang domain ng <ph name="MS_AD_NAME" />, nililimitahan ang pwersahang pag-install sa mga app at extension na nakalista sa Chrome Web Store.
+          Para sa mga instance ng Windows na hindi kasama sa isang domain ng <ph name="MS_AD_NAME" />, nililimitahan ang sapilitang pag-install sa mga app at extension na nakalista sa Chrome Web Store.
 
-          Para sa kumpletong paglalarawan ng mga posibleng setting at istruktura ng patakarang ito, mangyaring bumisita sa https://www.chromium.org/administrators/policy-list-3/extension-settings-full
+          Para sa kumpletong paglalarawan ng mga posibleng setting at istruktura ng patakarang ito, bumisita sa https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           </translation>
 <translation id="2753637905605932878">Paghigpitan ang hanay ng mga lokal na UDP port na ginagamit ng WebRTC</translation>
 <translation id="2755385841634849932">Kinokontrol ng patakarang ito ang availability ng pag-back up at pag-restore sa Android.
@@ -1124,9 +1125,9 @@
 <translation id="2987227569419001736">Kontrolin ang paggamit ng Web Bluetooth API</translation>
 <translation id="3011301228198307065">Kino-configure ang default na URL ng home page sa <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ito.
 
-          Ang home page ay ang page na binubukas ng button ng Home. Kinokontrol ng mga patakarang RestoreOnStartup ang mga page na bumubukas kapag startup.
+          Ang home page ay ang page na nabubuksan sa pamamagitan ng button ng Home. Kinokontrol ng mga patakarang RestoreOnStartup ang mga page na bumubukas kapag startup.
 
-          Ang uri ng home page ay maaaring itakda sa isang URL na tutukuyin mo rito o sa Page ng Bagong Tab. Kung pipiliin mo ang Page ng Bagong Tab, hindi gagana ang patakarang ito.
+          Puwedeng itakda ang uri ng home page sa isang URL na tutukuyin mo rito o sa Page ng Bagong Tab. Kung pipiliin mo ang Page ng Bagong Tab, hindi gagana ang patakarang ito.
 
           Kung ie-enable mo ang setting na ito, hindi mababago ng mga user ang URL ng kanilang home page sa <ph name="PRODUCT_NAME" />, pero mapipili pa rin nila ang Page ng Bagong Tab bilang kanilang home page.
 
@@ -1662,6 +1663,13 @@
           Kapag hindi nakatakda ang patakarang ito, may default na tagal ng oras na gagamitin.
 
           Dapat tukuyin ang halaga ng patakaran ayon sa millisecond.</translation>
+<translation id="4105884561459127998">Kino-configure ang uri ng pag-authenticate para sa mga SAML na pag-log in.
+
+      Kapag hindi naitakda o naitakda sa Default (value 0) ang patakarang ito, tutukuyin ng browser ang gawi ng mga SAML na pag-log in depende sa iba pang salik. Sa pinakapangunahing sitwasyon, nakabatay ang pag-authenticate ng user at ang proteksyon ng naka-cache na data ng user sa mga password na manual na inilagay ng mga user.
+
+      Kung naitakda ang patakarang ito sa ClientCertificate (value 1), gagamitin ang pag-authenticate ng certificate ng kliyente para sa mga bagong naidagdag na user na nagla-log in sa pamamagitan ng SAML. Walang ginagamit na password para sa mga nasabing user, at pinoprotektahan ang kanilang naka-cache na lokal na data gamit ang mga kaukulang cryptographic key. Halimbawa, nagagamit ang setting na ito para ma-configure ang smart card batay sa pag-authenticate ng user (tandaang kailangang i-install ang mga smart card middleware app sa pamamagitan ng patakarang DeviceLoginScreenExtensions).
+
+      Maaapektuhan lang ng patakarang ito ang mga user na nao-authenticate gamit ang SAML.</translation>
 <translation id="4105989332710272578">I-disable ang pagpapatupad ng Transparency ng Certificate para sa isang listahan ng mga URL</translation>
 <translation id="4121350739760194865">Pigilan ang paglitaw ng mga pag-promote ng app sa pahina ng bagong tab</translation>
 <translation id="4125606414556046117">Nagbibigay-daan sa iyo ang patakarang itong i-configure ang larawan sa wallpaper na ipinapakita sa desktop at sa background ng screen sa pag-log in para sa user. Itinatakda ang patakaran sa pamamagitan ng pagtukoy sa URL kung saan mada-download ng <ph name="PRODUCT_OS_NAME" /> ang larawan sa wallpaper at isang cryptographic na hash na ginagamit para i-verify ang integridad ng download. Dapat ay nasa format na JPEG ang larawan at hindi dapat lumampas sa 16MB ang laki ng file nito. Dapat ay accessible ang URL nang walang anumang pag-authenticate.
@@ -1690,6 +1698,30 @@
       Kung hahayaang hindi nakatakda ang patakaran, puwedeng pumili ang user ng larawang ipapakita sa desktop at sa background ng screen sa pag-log in.</translation>
 <translation id="412697421478384751">I-enable ang mga user na magtakda ng madadaling hulaang PIN para sa PIN ng lock screen</translation>
 <translation id="4138655880188755661">Limitasyon sa Oras</translation>
+<translation id="4144164749344898721">Kinokontrol ng patakarang ito ang maraming setting para sa diskarte ng pamamahala sa power kapag naging idle ang user.
+
+          May apat na uri ng pagkilos:
+          * Magdi-dim ang screen kung mananatiling idle ang user para sa oras na tinukoy ng |ScreenDim|.
+          * Mag-o-off ang screen kung mananatiling idle ang user para sa oras na tinukoy ng |ScreenOff|.
+          * May ipapakitang dialog ng babala kung mananatiling idle ang user para sa oras na tinukoy ng |IdleWarning|, kung saan sinasabi sa user na isasagawa na ang pagkilos na idle. Ipapakita lang ang mensahe ng babala kung ang pagkilos na idle ay para mag-log out o mag-shut down.
+          * Isasagawa ang pagkilos na tinukoy ng |IdleAction| kung mananatiling idle ang user para sa oras na tinukoy ng |Idle|.
+
+          Para sa bawat isa sa mga pagkilos na nasa itaas, dapat tukuyin ang delay gamit ang millisecond, at kailangan itong itakda sa isang value na mas mataas sa zero para ma-trigger ang kaukulang pagkilos. Kung sakaling maitakda sa zero ang pagkaantala, hindi isasagawa ng <ph name="PRODUCT_OS_NAME" /> ang kaukulang pagkilos.
+
+          Para sa bawat isa sa mga pagkaantala sa itaas, kapag hindi naitakda ang haba ng oras, gagamitin ang default na value.
+
+          Tandaang papanatilihin ang mga value ng |ScreenDim| para maging mas mababa sa o katumbas ng |ScreenOff|, papanatilihin ang |ScreenOff| at |IdleWarning| para maging mas mababa sa o katumbas ng |Idle|.
+
+          Ang |IdleAction| ay puwedeng isa sa apat na posibleng pagkilos:
+          * |Suspend|
+          * |Logout|
+          * |Shutdown|
+          * |DoNothing|
+
+          Kapag hindi naitakda ang |IdleAction|, isasagawa ang default na pagkilos, ang pagsususpinde.
+
+          Mayroon ding mga hiwalay na setting kapag nakasaksak sa kuryente at gumagamit ng baterya.
+          </translation>
 <translation id="4150201353443180367">Display</translation>
 <translation id="4157003184375321727">I-ulat ang bersyon ng OS at firmware.</translation>
 <translation id="4157594634940419685">Payagan ang pag-access sa mga native na CUPS printer</translation>
@@ -1774,6 +1806,15 @@
 <translation id="4322842393287974810">Payagan ang awtomatikong inilunsad na walang pagkaantalang kiosk app na kontrolin ang bersyon ng <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Magdagdag ng button sa pag-logout sa tray ng system</translation>
 <translation id="4332177773549877617">Mga log event para sa mga pag-install ng Android app</translation>
+<translation id="4335292026668105285">Tinutukoy ang tagal ng oras nang walang input ang user, at pagkatapos nito ay may ipapakitang isang dialog ng babala kapag tumatakbo nang nakasaksak sa kuryente.
+
+          Kapag naitakda ang patakarang ito, tinutukoy nito ang tagal ng oras na dapat manatiling idle ang user bago magpakita ng dialog ng babala ang <ph name="PRODUCT_OS_NAME" /> na nagsasabi sa user na isasagawa na ang pagkilos na idle.
+
+          Kapag hindi naitakda ang patakarang ito, hindi ipapakita ang dialog ng babala.
+
+          Dapat isaad ang value ng patakaran gamit ang millisecond. Papanatilihing mas mababa sa o katumbas ng delay bago maging idle ang mga value.
+
+          Ipapakita lang ang mensahe ng babala kung ang pagkilos na idle ay para mag-log out o mag-shut down.</translation>
 <translation id="4346674324214534449">Nagbibigay-daan sa iyong itakda kung dapat i-block ang mga ad sa mga site na may mga nakakasagabal na ad.
 
       Kung nakatakda ang patakarang ito sa 2, iba-block ang mga ad sa mga site na may mga nakakasagabal na ad.
@@ -3357,6 +3398,9 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7464991223784276288">Limitahan ang cookies sa pagtutugma ng mga URL sa kasalukuyang session</translation>
 <translation id="7469554574977894907">Paganahin ang mga suhestiyon sa paghahanap</translation>
 <translation id="7474249562477552702">Kung pinapayagan ang mga SHA-1 signed certificate na ibinigay ng mga lokal na trust anchor</translation>
+<translation id="747851715060942420">Nagbibigay-daan sa iyo para i-configure ang mga page na naka-load sa startup.
+
+      Babalewalain ang patakarang 'Mga bubuksang URL sa startup' maliban kung pipiliin mo ang 'Buksan ang isang listahan ng mga URL' sa 'Pagkilos sa startup.'</translation>
 <translation id="7485481791539008776">Mga panuntunan sa pagpili ng default na printer</translation>
 <translation id="7485730741952775732">Kung itatakda ang patakarang ito, gagamitin ng host na may remote na access ang URL na ito para i-validate ang mga token ng pag-authenticate mula sa mga client na may remote na access, nang sa gayon ay tumanggap ng mga koneksyon. Dapat gamitin kasabay ng RemoteAccessHostTokenUrl.
 
@@ -3370,6 +3414,11 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Kung gagamitin ang patakarang ito, ibibigay ang lahat ng printer sa user maliban sa mga id na nakalista sa patakarang ito. Dapat tumugma ang mga id sa mga field na "id" o "guid" sa file na natukoy sa <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
+<translation id="7506269062143646163">I-enable ang suporta para sa Signed HTTP Exchange (SXG).
+
+          Kung hindi naitakda o naitakda sa Naka-enable ang patakarang ito, tatanggap ang Google Chrome ng mga content ng web na ihinahatid bilang Mga Signed HTTP Exchange.
+
+          Kung naitakda sa Naka-disable ang patakarang ito, hindi malo-load ang Mga Signed HTTP Exchange.</translation>
 <translation id="7511361072385293666">Kung nakatakda ang patakaran na ito sa true o hindi ito nakatakda, ang paggamit ng QUIC protocol sa <ph name="PRODUCT_NAME" /> ay pinapayagan.
       Kung ang patakaran na ito ay nakatakda sa false, ang paggamit ng QUIC protocol ay hindi pinapayagan.</translation>
 <translation id="7517845714620372896">Tumutukoy sa porsyento ng liwanag ng screen.
@@ -3517,6 +3566,15 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Ang mga kilalang identifier ng uri ng koneksyon ay "ethernet," "wifi," "wimax," "bluetooth" at "cellular."</translation>
 <translation id="7763614521440615342">Ipakita ang mga suhestyon sa content sa page ng Bagong Tab</translation>
 <translation id="7765879851993224640">Payagang gamitin ang Pag-sign in Gamit ang Smart Lock.</translation>
+<translation id="7772346342637974431">Tinutukoy ang tagal ng oras na walang input ang user, pagkatapos ay ipapakita ang isang dialog ng babala kapag tumatakbo sa baterya.
+
+          Kapag naitakda ang patakarang ito, tinutukoy nito ang tagal ng oras na dapat manatiling idle ang user bago magpakita ng dialog ng babala ang <ph name="PRODUCT_OS_NAME" /> na nagsasabi sa user na isasagawa na ang pagkilos na idle.
+
+          Kapag hindi naitakda ang patakarang ito, hindi ipapakita ang dialog ng babala.
+
+          Dapat isaad ang value ng patakaran gamit ang millisecond. Papanatilihing mas mababa sa o katumbas ng delay bago maging idle ang mga value.
+
+          Ipapakita lang ang mensahe ng babala kung ang pagkilos na idle ay para mag-log out o mag-shut down.</translation>
 <translation id="7774768074957326919">Gumamit ng mga setting ng proxy ng system</translation>
 <translation id="7777535871204167559">Itinuturing ang mga external na storage device bilang read-only</translation>
 <translation id="7781069478569868053">Page ng Bagong Tab</translation>
@@ -4092,6 +4150,7 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
       Para sa higit pang impormasyon sa mga secure na konteksto, tingnan sa
       https://www.w3.org/TR/secure-contexts/
       </translation>
+<translation id="8939595959513040470">Magbigay sa mga user ng Quick Fix Build.</translation>
 <translation id="8942616385591203339">Kinokontrol ng patakarang ito kung maaaring ipakita sa user ang Pahintulot sa Pag-sync sa panahon ng unang pag-sign in. Dapat ay nakatakda ito sa false kung hindi kailanman kinakailangan ang Pahintulot sa Pag-sync para sa user.
       Kung itatakda sa false, hindi ipapakita ang Pahintulot sa Pag-sync.
       Kung itatakda sa true o hindi itatakda, maaaring ipakita ang Pahintulot sa Pag-sync.</translation>
@@ -4151,6 +4210,9 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 
       Kung hahayaang hindi nakatakda ang patakaran, puwedeng piliin ng user ang larawan ng avatar na kumakatawan sa kanya sa screen sa pag-log in.</translation>
 <translation id="9035964157729712237">Ang mga ID ng Extension upang maibukod mula sa blacklist</translation>
+<translation id="9038058011835642205">Tumutukoy ng listahan ng mga website na na-install nang silent, nang walang pakikipag-ugnayan sa user, at hindi maa-uninstall o madi-disable ng user.
+
+      Ang bawat item sa listahan ng patakaran ay isang object na may kinakailangang miyembro: "url" at dalawang opsyonal na miyembro: "default_launch_container" at "create_desktop_shortcut". Ang "url" ay dapat URL ng web app na ii-install, ang "launch_container" ay dapat "window" o "tab" para isaad kung paano bubuksan ang Web App kapag na-install, at ang "create_desktop_shortcut" ay dapat true kung dapat gawin ang isang desktop shortcut sa Linux at Windows. Kung aalisin ang "default_launch_container," bubukas ang app sa isang tab bilang default. Anuman ang value ng "default_launch_container," mababago ng mga user kung saang container bubukas ang app. Kung aalisin ang "create_desktop_shortcuts," hindi gagawa ng mga desktop shortcut.</translation>
 <translation id="9038839118379817310">I-enable ang Wi-Fi</translation>
 <translation id="9039822628127365650">Kapag nakatakda ang patakarang ito, isinasaad nito ang haba ng oras kung kailan awtomatikong mala-log out ang user pagkatapos nito, at matatapos ang session. Ipapaalam sa user ang tungkol sa natitirang oras sa pamamagitan ng timer ng countdown na ipapakita sa system tray.
 
@@ -4160,6 +4222,11 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 
       Dapat isaad ang value ng patakaran gamit ang millisecond. Papanatilihin ang mga value sa hanay na 30 segundo hanggang 24 na oras.</translation>
 <translation id="9042911395677044526">Nagbibigay-daan na malapat sa bawat user ang configuration ng pushing network sa isang <ph name="PRODUCT_OS_NAME" /> na device. Ang configuration ng network ay isang naka-format sa JSON  na string tulad ng tinutukoy ng format ng Configuration ng Open Network na inilalarawan sa <ph name="ONC_SPEC_URL" /></translation>
+<translation id="9050853837490399534">Kinokontrol ng patakarang ito kung dapat i-update o hindi ang device sa isang Quick Fix Build.
+
+      Kung ang value ng patakaran ay naitakda sa token na nagmamapa sa isang Quick Fix Build, ia-update ang device sa kaukulang Quick Fix Build kung ang update ay hindi na-block ng isa pang patakaran.
+
+      Kung hindi naitakda ang patakarang ito, o kung ang value nito ay hindi nagmamapa sa isang Quick Fix Build, hindi maa-update ang device sa isang Quick Fix Build. Kung nagpapatakbo na ang device ng Quick Fix Build at hindi na naitakda ang patakaran o ang value nito ay hindi na nagmamapa sa isang Quick Fix Build, ia-update ang device sa isang regular na build kung ang update ay hindi na-block ng isa pang patakaran.</translation>
 <translation id="906631898352326790">
       Kung ie-enable ang patakaran, ang bawat pinangalanang pinagmulan sa
       comma-separated list ay tatakbo sa sarili nitong proseso. Ia-isolate din nito ang

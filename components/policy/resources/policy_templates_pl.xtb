@@ -147,6 +147,7 @@
       Jeśli ta zasada nie jest skonfigurowana, domyślna częstotliwość wynosi trzy
       godziny. Minimalna dopuszczalna częstotliwość to 60 sekund.</translation>
 <translation id="1204263402976895730">Włączone drukarki firmowe</translation>
+<translation id="1216919699175573511">Włącz obsługę Signed HTTP Exchange (SXG)</translation>
 <translation id="1219695476179627719">Określa, czy oprogramowanie urządzenia ma zostać cofnięte do wersji ustawionej w zasadzie <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" />, jeśli jest już zainstalowana nowsza wersja.
 
       Wartość domyślna to RollbackDisabled.</translation>
@@ -1618,6 +1619,13 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Jeśli ta zasada nie jest ustawiona, używana jest domyślna wartość długości czasu.
 
           Wartość tej zasady powinna być określona w milisekundach.</translation>
+<translation id="4105884561459127998">Konfiguruje typ uwierzytelniania dla logowania SAML.
+
+      Gdy ta zasada nie jest ustawiona lub ma ustawienie „Domyślna” (wartość 0), przebieg logowania SAML jest ustalany przez przeglądarkę na podstawie innych czynników. W podstawowym scenariuszu do uwierzytelniania użytkownika i ochrony jego danych w pamięci podręcznej są używane hasła wpisywane ręcznie przez użytkownika.
+
+      Gdy zasada ma ustawienie „Certyfikat klienta” (wartość 1), dla nowo dodanych użytkowników logujących się za pomocą SAML jest używane uwierzytelnianie przy użyciu certyfikatu klienta. Nie są używane żadne hasła, a dane tych użytkowników w pamięci podręcznej są chronione za pomocą odpowiednich kluczy kryptograficznych. To ustawienie umożliwia na przykład skonfigurowanie uwierzytelniania przy użyciu kart inteligentnych. Aplikacje pośredniczące dla kart inteligentnych należy zainstalować za pomocą zasady DeviceLoginScreenExtensions.
+
+      Ta zasada ma wpływ tylko na użytkowników uwierzytelniających się za pomocą SAML.</translation>
 <translation id="4105989332710272578">Wyłącz egzekwowanie protokołu Certificate Transparency dla adresów URL z listy</translation>
 <translation id="4121350739760194865">Zablokuj wyświetlanie promocji aplikacji na stronie Nowa karta</translation>
 <translation id="4125606414556046117">Ta zasada umożliwia skonfigurowanie obrazu tapety, który użytkownik widzi na pulpicie i na ekranie logowania Zasadę konfiguruje się przez podanie adresu URL, z którego <ph name="PRODUCT_OS_NAME" /> może pobrać obraz tapety, oraz hasha kryptograficznego służącego do weryfikacji integralności pobranego pliku. Obraz musi mieć format JPEG i nie może być większy niż 16 MB. URL musi być dostępny bez uwierzytelniania.
@@ -1646,6 +1654,30 @@ Jeśli ta zasada jest skonfigurowana, <ph name="PRODUCT_OS_NAME" /> będzie pobi
       Jeśli zasada pozostanie nieskonfigurowana, użytkownicy będą mogli samodzielnie wybierać obrazy wyświetlane na pulpicie i jako tło na ekranie logowania.</translation>
 <translation id="412697421478384751">Zezwalaj użytkownikom na ustawianie słabych kodów PIN blokady ekranu</translation>
 <translation id="4138655880188755661">Limit czasu</translation>
+<translation id="4144164749344898721">Ta zasada określa szereg ustawień strategii zarządzania energią, która jest stosowana, gdy użytkownik jest nieaktywny.
+
+          Możliwe są cztery rodzaje działań:
+          * Ekran zostanie przyciemniony, gdy użytkownik będzie nieaktywny przez czas określony w polu |ScreenDim|.
+* Ekran zostanie wyłączony, gdy użytkownik będzie nieaktywny przez czas określony w polu |ScreenOff|.
+* Jeśli użytkownik pozostaje nieaktywny przez czas określony w polu |IdleWarning|, wyświetla się ostrzeżenie z informacją o działaniu, które zostanie wykonane. Ostrzeżenie wyświetla się tylko wtedy, gdy bezczynność spowodowałaby wylogowanie użytkownika lub wyłączenie urządzenia.
+          * Jeśli użytkownik pozostaje nieaktywny przez czas określony w polu |Idle|, zostanie wykonane działanie określone w polu |IdleAction|.
+
+W przypadku każdego z powyższych działań należy określić opóźnienie w milisekundach. Musi być ono większe od zera, by wywołać odpowiednie działanie. Jeśli opóźnienie jest ustawione na zero, <ph name="PRODUCT_OS_NAME" /> nie podejmie wskazanego działania.
+
+          Jeśli wartość opóźnienia dla tych działań nie będzie określona, zostanie użyta wartość domyślna.
+
+          Pamiętaj, że wartość |ScreenDim| zostanie tak zmniejszona, by była co najwyżej równa wartości |ScreenOff|. Wartości |ScreenOff| i |IdleWarning| zostaną zmniejszone, by nie przekraczały wartości |Idle|.
+
+|IdleAction| może przyjąć wartość jednego z czterech możliwych działań:
+          * |Suspend|
+* |Logout|
+* |Shutdown|
+* |DoNothing|
+
+Jeśli wartość |IdleAction| nie będzie określona, zostanie wykonane działanie domyślne, którym jest przejście w tryb zawieszenia.
+
+          Dostępne są też osobne ustawienia zasilania sieciowego i bateryjnego.
+          </translation>
 <translation id="4150201353443180367">Wyświetlacz</translation>
 <translation id="4157003184375321727">Zgłoś wersje systemu operacyjnego i oprogramowania układowego</translation>
 <translation id="4157594634940419685">Zezwalaj na dostęp do natywnych drukarek CUPS</translation>
@@ -1730,6 +1762,15 @@ Jeśli ta zasada jest skonfigurowana, <ph name="PRODUCT_OS_NAME" /> będzie pobi
 <translation id="4322842393287974810">Zezwalaj aplikacji kiosku uruchamianej automatycznie z zerowym opóźnieniem na kontrolowanie wersji <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Dodaj przycisk wylogowania do paska zadań</translation>
 <translation id="4332177773549877617">Rejestruj zdarzenia związane z instalacją aplikacji na Androida</translation>
+<translation id="4335292026668105285">Określa czas nieaktywności użytkownika, po którym wyświetla się okno dialogowe ostrzeżenia, jeśli urządzenie działa na zasilaniu sieciowym.
+
+          Gdy ta zasada jest ustawiona, określa wymagany czas nieaktywności użytkownika przed wyświetleniem w systemie <ph name="PRODUCT_OS_NAME" /> okna dialogowego z ostrzeżeniem informującym, że zostanie wykonana odpowiednia czynność.
+
+          Gdy ta zasada nie jest ustawiona, ostrzeżenie nie jest wyświetlane.
+
+          Wartość ustawienia tej zasady należy podać w milisekundach. Wartości są ograniczane, tak aby nie przekraczały wartości opóźnienia nieaktywności.
+
+          Ostrzeżenie wyświetla się tylko wtedy, gdy bezczynność spowodowałaby wylogowanie użytkownika lub wyłączenie urządzenia.</translation>
 <translation id="4346674324214534449">Umożliwia ustawienie blokowania reklam na stronach zawierających uciążliwe reklamy.
 
       Jeśli zasada jest ustawiona na wartość 2, reklamy na stronach zawierających uciążliwe reklamy będą blokowane.
@@ -3242,6 +3283,9 @@ Jeśli ta zasada nie zostanie skonfigurowana, nie będą obowiązywały żadne o
 <translation id="7464991223784276288">Ogranicz pliki cookie z odpowiednich adresów URL tylko do bieżącej sesji</translation>
 <translation id="7469554574977894907">Włącz propozycje wyszukiwania</translation>
 <translation id="7474249562477552702">Określa, czy są dozwolone certyfikaty z podpisem SHA-1 wydane przez lokalne kotwice zaufania</translation>
+<translation id="747851715060942420">Umożliwia skonfigurowanie stron wczytywanych po uruchomieniu.
+
+      Zasada „Adresy URL otwierane po uruchomieniu” jest ignorowana, chyba że wybierzesz opcję „Otwórz adresy URL z listy” w ustawieniu „Działanie po uruchomieniu”.</translation>
 <translation id="7485481791539008776">Reguły wybierania domyślnej drukarki</translation>
 <translation id="7485730741952775732">Jeśli ta zasada jest skonfigurowana, host dostępu zdalnego będzie na potrzeby akceptowania połączeń używał tego adresu URL do weryfikacji tokenów uwierzytelniania pochodzących z klientów dostępu zdalnego. Musi być stosowana w połączeniu z zasadą RemoteAccessHostTokenUrl.
 
@@ -3255,6 +3299,11 @@ Jeśli ta zasada nie zostanie skonfigurowana, nie będą obowiązywały żadne o
 
       Jeśli ta zasada jest używana, użytkownik ma dostęp do wszystkich drukarek oprócz tych, których identyfikatory w niej określono. Identyfikatory muszą być zgodne z wartościami w polach „id” lub „guid” w pliku określonym w zasadzie <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
+<translation id="7506269062143646163">Włącz obsługę Signed HTTP Exchange (SXG).
+
+          Kiedy ta zasada jest nieskonfigurowana lub włączona, Google Chrome akceptuje zawartość sieciową typu Signed HTTP Exchange.
+
+          Kiedy ta zasada jest wyłączona, nie można wczytać zawartości Signed HTTP Exchange.</translation>
 <translation id="7511361072385293666">Jeśli ta zasada jest włączona lub nieustawiona, użycie protokołu QUIC w <ph name="PRODUCT_NAME" /> jest dozwolone.
       Jeśli zasada jest wyłączona, użycie protokołu QUIC jest niedozwolone.</translation>
 <translation id="7517845714620372896">Określa procent jasności ekranu.
@@ -3395,6 +3444,15 @@ Jeśli zasada nie jest skonfigurowana, na wszystkich stronach używany jest domy
       Rozpoznawane identyfikatory typów połączeń to  „ethernet”, „wifi”, „wimax”, „bluetooth” i „cellular”.</translation>
 <translation id="7763614521440615342">Pokazuj polecane treści na stronie Nowa karta</translation>
 <translation id="7765879851993224640">Zezwala na logowanie przy użyciu funkcji Smart Lock.</translation>
+<translation id="7772346342637974431">Określa czas nieaktywności użytkownika, po którym wyświetla się okno dialogowe ostrzeżenia, jeśli urządzenie działa na baterii.
+
+          Gdy ta zasada jest ustawiona, określa wymagany czas nieaktywności użytkownika przed wyświetleniem w systemie <ph name="PRODUCT_OS_NAME" /> okna dialogowego z ostrzeżeniem informującym, że zostanie wykonana odpowiednia czynność.
+
+          Gdy ta zasada nie jest ustawiona, ostrzeżenie nie jest wyświetlane.
+
+          Wartość ustawienia tej zasady należy podać w milisekundach. Wartości są ograniczane, tak aby nie przekraczały wartości opóźnienia nieaktywności.
+
+          Ostrzeżenie wyświetla się tylko wtedy, gdy bezczynność spowodowałaby wylogowanie użytkownika lub wyłączenie urządzenia.</translation>
 <translation id="7774768074957326919">Używaj systemowych ustawień serwera proxy</translation>
 <translation id="7777535871204167559">Używaj zewnętrznych urządzeń pamięci w trybie tylko do odczytu</translation>
 <translation id="7781069478569868053">Strona Nowa karta</translation>
@@ -3959,6 +4017,7 @@ Ta zasada określa listę źródeł (adresów URL) lub wzorców nazw hosta
       Więcej informacji o bezpiecznych kontekstach znajdziesz na stronie
       https://www.w3.org/TR/secure-contexts/
       </translation>
+<translation id="8939595959513040470">Udostępnia użytkownikom kompilację Quick Fix.</translation>
 <translation id="8942616385591203339">Ta zasada określa, czy pytanie o synchronizację jest wyświetlane podczas pierwszego logowania. Jeśli nie ma potrzeby, by użytkownicy korzystali z pytania o synchronizację, należy wybrać wartość false.
       Jeśli wybierzesz wartość false, pytanie o synchronizację nie będzie wyświetlane.
       Jeśli wybierzesz wartość true lub pozostawisz to ustawienie nieskonfigurowane, pytanie o synchronizację będzie wyświetlane.</translation>
@@ -4018,6 +4077,9 @@ Po skonfigurowaniu tej zasady <ph name="PRODUCT_OS_NAME" /> pobiera obraz awatar
 
       Jeśli zasada pozostanie nieskonfigurowana, użytkownik może wybrać obraz awatara, który będzie oznaczał go na ekranie logowania.</translation>
 <translation id="9035964157729712237">Identyfikatory rozszerzeń nieobjętych czarną listą</translation>
+<translation id="9038058011835642205">Służy do określenia listy witryn, które są instalowane dyskretnie (bez interakcji z użytkownikiem) i których użytkownik nie może odinstalować ani wyłączyć.
+
+      Wartością tej zasady jest lista, której pozycje są obiektami o obowiązkowej składowej: „url” oraz dwóch opcjonalnych składowych: „default_launch_container” i „create_desktop_shortcut”. „url” to URL aplikacji internetowej do zainstalowania. „launch_container” może mieć wartość „window” (okno) lub „tab” (karta) wskazującą sposób otwierania zainstalowanej aplikacji. Natomiast „create_desktop_shortcut” musi mieć wartość „prawda”, jeśli skrót na pulpicie ma być utworzony w systemie Linux i Windows. Jeśli składowa „default_launch_container” zostanie pominięta, aplikacja będzie domyślnie otwierać się na karcie. Niezależnie od wartości składowej „default_launch_container” użytkownicy mogą zmieniać kontener, w którym otwiera się aplikacja. Pominięcie składowej „create_desktop_shortcuts” spowoduje, że skrót na pulpicie nie zostanie utworzony.</translation>
 <translation id="9038839118379817310">Włącz Wi-Fi</translation>
 <translation id="9039822628127365650">Gdy ta zasada jest skonfigurowana, określa czas, po którego upływie użytkownik jest automatycznie wylogowywany, a jego sesja przerywana. Użytkownik jest informowany o pozostałym czasie przez licznik widoczny w obszarze powiadomień.
 
@@ -4027,6 +4089,11 @@ Po skonfigurowaniu tej zasady <ph name="PRODUCT_OS_NAME" /> pobiera obraz awatar
 
       Wartość ustawienia tej zasady należy podać w milisekundach. Dozwolone są wartości od 30 sekund do 24 godzin.</translation>
 <translation id="9042911395677044526">Pozwala na przesyłanie konfiguracji sieciowej w trybie push do urządzeń z <ph name="PRODUCT_OS_NAME" /> dla poszczególnych użytkowników. Konfiguracja sieci to łańcuch w formacie JSON zgodny z formatem Open Network Configuration opisanym na <ph name="ONC_SPEC_URL" /></translation>
+<translation id="9050853837490399534">Ta zasada określa, czy urządzenie ma zostać zaktualizowane pod kątem kompilacji Quick Fix.
+
+      Jeśli jako wartość zasady zostanie ustawiony token mapujący kompilację Quick Fix, urządzenie zostanie zaktualizowane pod kątem odpowiedniej kompilacji Quick Fix, chyba że inna zasada zablokuje aktualizację.
+
+      Jeśli zasada nie zostanie ustawiona lub jej wartość nie będzie mapować kompilacji Quick Fix, urządzenie nie zostanie zaktualizowane pod kątem kompilacji Quick Fix. Jeśli urządzenie ma już kompilację Quick Fix, a zasada nie będzie dłużej ustawiona lub jej wartość nie będzie już mapować kompilacji Quick Fix, urządzenie zostanie zaktualizowane pod kątem standardowej kompilacji, chyba że inna zasada zablokuje aktualizację.</translation>
 <translation id="906631898352326790">
       Jeśli ta zasada jest włączona, każde nazwane źródło na liście rozdzielanej
       przecinkami będzie działać w obrębie własnego procesu. Powoduje to też

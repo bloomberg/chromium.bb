@@ -8,10 +8,10 @@
 <translation id="1199593201721843963">リモート接続を無効にする</translation>
 <translation id="1291443878853470558">Chromoting を使用してこのパソコンにアクセスするには、リモート接続を有効にする必要があります。</translation>
 <translation id="1297009705180977556"><ph name="HOSTNAME" /> への接続中にエラーが発生しました</translation>
-<translation id="1300633907480909701">Android搭載デバイスからパソコンに安全にアクセスできます。
+<translation id="1300633907480909701">Androidデバイスからパソコンに安全にアクセスできます。
 
 • パソコンごとに、Chromeリモートデスクトップアプリを使ってリモートアクセスを設定します。このアプリはChromeウェブストアからインストールできます: https://chrome.google.com/remotedesktop
-• Android搭載デバイスでアプリを開き、オンラインになっているパソコンをタップして接続します。
+• Androidデバイスでアプリを開き、オンラインになっているパソコンをタップして接続します。
 
 US英語以外のキーボードを使用しているリモートパソコンでは、テキストが正確に入力されない可能性があります。US英語以外のキーボード配列は、近日中にサポートされる予定です。
 
@@ -46,13 +46,13 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="2078880767960296260">ホスト プロセス</translation>
 <translation id="20876857123010370">トラックパッド モード</translation>
 <translation id="2089514346391228378">このパソコンのリモート接続が有効になりました。</translation>
-<translation id="2118549242412205620">Android搭載デバイスからパソコンに安全にアクセスできます。
+<translation id="2118549242412205620">Androidデバイスからパソコンに安全にアクセスできます。
 
 • パソコンごとに、Chromeリモート デスクトップアプリを使ってリモートアクセスを設定します。このアプリはChromeウェブストアからインストールできます: https://chrome.google.com/remotedesktop
-• Android搭載デバイスでアプリを開き、オンラインになっているパソコンをタップして接続します。
+• Androidデバイスでアプリを開き、オンラインになっているパソコンをタップして接続します。
 
 詳しくは、Googleプライバシーポリシー（http://goo.gl/SyrVzj）とChromeプライバシーポリシー（http://goo.gl/0uXE5d）をご覧ください。</translation>
-<translation id="2124408767156847088">Android搭載デバイスからパソコンに安全にアクセス。</translation>
+<translation id="2124408767156847088">Androidデバイスからパソコンに安全にアクセス。</translation>
 <translation id="2208514473086078157">ポリシー設定により、Chrome リモート デスクトップのホストとしてこのパソコンを共有することはできません。詳しくはシステム管理者にお問い合わせください。</translation>
 <translation id="2220529011494928058">問題を報告</translation>
 <translation id="2221097377466213233">右 Ctrl キーを Win キー（Mac の場合は ⌘）として使用</translation>
@@ -86,11 +86,11 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2888969873284818612">ネットワーク エラーが発生しました。デバイスが再度オンラインになったときにアプリを再開します。</translation>
 <translation id="2891243864890517178">Mac 版（OS X Yosemite 10.10 以上）</translation>
-<translation id="289405675947420287">無料のツールを使って、iOS 端末からお使いのパソコンにすばやく安全にアクセスできます。
+<translation id="289405675947420287">無料のツールを使って、iOS デバイスからお使いのパソコンにすばやく安全にアクセスできます。
 
 • リモート アクセスを行うパソコンで、Chrome ウェブストアから Chrome リモート デスクトップ アプリをダウンロードします。
 • Chrome リモート デスクトップ ソフトウェアをインストールし、案内に従って設定を完了します。
-• iOS 端末でアプリを開き、オンラインになっているパソコンの中から接続先のパソコンを見つけてタップします。</translation>
+• iOS デバイスでアプリを開き、オンラインになっているパソコンの中から接続先のパソコンを見つけてタップします。</translation>
 <translation id="2894654864775534701">このパソコンは現在、別のアカウントで共有されています。</translation>
 <translation id="2919669478609886916">現在このパソコンを別のユーザーと共有しています。共有を継続しますか？</translation>
 <translation id="2921543551052660690">以前に <ph name="USER_NAME" />（<ph name="USER_EMAIL" />）としてログインしています。このアカウントでパソコンにアクセスするには、このアカウントで <ph name="LINK_BEGIN" />Chromium にログイン<ph name="LINK_END" />し、Chromoting を再インストールしてください。</translation>
@@ -166,7 +166,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="4572065712096155137">アクセス</translation>
 <translation id="4592037108270173918">モバイル ネットワーク経由でデバイスに接続すると、データ通信料が発生する可能性があります。続行しますか？</translation>
 <translation id="4619978527973181021">同意してインストール</translation>
-<translation id="4635770493235256822">リモートの端末</translation>
+<translation id="4635770493235256822">リモートのデバイス</translation>
 <translation id="4660011489602794167">キーボードを表示</translation>
 <translation id="4703302905453407178">必須コンポーネントが停止しました。デベロッパーにこの問題を報告してください。</translation>
 <translation id="4703799847237267011">Chromoting セッションが終了しました。</translation>
@@ -293,7 +293,7 @@ PC</translation>
 <translation id="7444276978508498879">次のクライアントが接続しました: <ph name="CLIENT_USERNAME" />。</translation>
 <translation id="7526139040829362392">アカウントを変更</translation>
 <translation id="7606912958770842224">リモート接続を有効にする</translation>
-<translation id="7628469622942688817">この端末に PIN を保存する。</translation>
+<translation id="7628469622942688817">このデバイスに PIN を保存する。</translation>
 <translation id="7649070708921625228">ヘルプ</translation>
 <translation id="7658239707568436148">キャンセル</translation>
 <translation id="7665369617277396874">アカウントを追加</translation>
@@ -339,7 +339,7 @@ PC</translation>
 <translation id="8548209692293300397">以前に <ph name="USER_NAME" />（<ph name="USER_EMAIL" />）としてログインしています。このアカウントでパソコンにアクセスするには、このアカウントで <ph name="LINK_BEGIN" />Google Chrome にログイン<ph name="LINK_END" />し、Chrome リモート デスクトップを再インストールしてください。</translation>
 <translation id="8642984861538780905">中程度</translation>
 <translation id="8705151241155781642">• Android 9.0 Pie のサポートを追加しました。
-• Android 搭載端末の画面に合わせてリモート デスクトップの解像度を変更できるようになりました。</translation>
+• Android デバイスの画面に合わせてリモート デスクトップの解像度を変更できるようになりました。</translation>
 <translation id="8712909229180978490">Google ドライブに保存したファイルをオンラインで表示できない。</translation>
 <translation id="8743328882720071828"><ph name="CLIENT_USERNAME" /> にパソコンの閲覧と制御を許可しますか？</translation>
 <translation id="8747048596626351634">セッションがクラッシュしたか、セッションを開始できませんでした。~/.chrome-remote-desktop-session がリモートのパソコンにある場合は、このスクリプトによって、デスクトップ環境やウィンドウ マネージャのような長時間実行のフォアグラウンド プロセスが開始されることを確認してください。</translation>
@@ -351,7 +351,7 @@ PC</translation>
 <translation id="8998327464021325874">Chrome リモート デスクトップ ホスト コントローラ</translation>
 <translation id="9016232822027372900">このまま接続する</translation>
 <translation id="906458777597946297">ウィンドウを最大化</translation>
-<translation id="9111855907838866522">リモート端末に接続されています。メニューを開くには、4 本の指で画面をタップしてください。</translation>
+<translation id="9111855907838866522">リモートデバイスに接続されています。メニューを開くには、4 本の指で画面をタップしてください。</translation>
 <translation id="9126115402994542723">このデバイスからこのホストに接続するときに PIN の再入力を要求しない。</translation>
 <translation id="9149580767411232853">リモート デスクトップ全体が見える状態を維持します</translation>
 <translation id="9149992051684092333">デスクトップの共有を開始するには、共有するユーザーに以下のアクセス コードをお知らせください。</translation>

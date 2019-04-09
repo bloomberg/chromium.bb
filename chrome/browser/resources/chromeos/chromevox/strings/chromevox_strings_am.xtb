@@ -99,6 +99,7 @@
 <translation id="1616111909442424068">ስንዴ</translation>
 <translation id="1618597272655350600">የተሟላ የአሁኑ ቦታ ሙሉ ማብራሪያ ያስታውቃል</translation>
 <translation id="1627222324347828322">የመናፍስት ነጭ</translation>
+<translation id="1630688379087270943">ሰያፍ አመልክት፦</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{ይበልጣል}one{# የይበልጣል ምልክቶች}other{# የይበልጣል ምልክቶች}}</translation>
 <translation id="1653266918374749391">ቀዳሚ የደረጃ 3 ርዕስ</translation>
 <translation id="1657616855184033958">የክስተት ዥረት ማጣሪያዎችን አሳይ</translation>
@@ -319,6 +320,7 @@
 <translation id="3286390186030710347">ተንሸራታች</translation>
 <translation id="3299925995433437805">ምንም ቀጣይ የተጎበኘ አገናኝ የለም።</translation>
 <translation id="3300348286427369683">የበለጸገ ጽሑፍ ድጋፍ። ChromeVox አሁን የመዝለል ትዕዛዞችን፣ የብሬይል ጠቋሚ ማዞርን፣ ምርጫን እና ተጨማሪ ነገሮችን ጨምሮ የበለጸገ ጽሑፍ መስኮችን ይደግፋል።</translation>
+<translation id="3304756947457041303">የበለጸገ ጽሑፍ አመልካች አብጅ</translation>
 <translation id="3307886118343381874">ወደ የሠንጠረዡ መጨረሻ ሂድ</translation>
 <translation id="3311969765485641742">ማንቂያዎችን ለመከለስ Alt+Shift+A ይጫኑ</translation>
 <translation id="3312997241656799641">ቀጣይ የተጎበኘ አገናኝ</translation>
@@ -405,6 +407,7 @@
 <translation id="3930498801443296724">ጥቅስ</translation>
 <translation id="3936394396199829062">ሰማያዊ ወይን ጠጅ ፈካ ያለ</translation>
 <translation id="3941269780691800708">ከመዳፊቱ ሥር ያለውን ጽሑፍ ይናገሩ።</translation>
+<translation id="394953087167197343">የተሳሳተ ፊደል አመልክት፦</translation>
 <translation id="3962990492275676168">ከአሁኑ አካባቢ ሆነው ማንበብ ይጀምሩ</translation>
 <translation id="3970951409746498040">አሸዋማ ቡኒ</translation>
 <translation id="3989324057180830702">tgl btn</translation>
@@ -451,6 +454,7 @@
 <translation id="42164919740161077">ካዴት ሰማያዊ</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{ዳሽ}one{# ዳሾች}other{# ዳሾች}}</translation>
 <translation id="421884353938374759">color picker</translation>
+<translation id="4221071177874897997">ደማቅ አመልክት፦</translation>
 <translation id="4229646983878045487">date time</translation>
 <translation id="4230834257931120629">ፈካ ያለ አረንጓዴያማ ግራጫ</translation>
 <translation id="4231102694147661229">የገንቢዎች አማራጮችን አንቃ</translation>
@@ -753,6 +757,7 @@
 <translation id="6348869651006731065">ጠቆር ያለ ግራጫ</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{ነጥብ}one{# ነጥቦች}other{# ነጥቦች}}</translation>
 <translation id="6355910664415701303">ምንም ቀዳሚ የርዕስ ንጥል የለም።</translation>
+<translation id="6360318852623800555">የበለጸገ ጽሑፍ አይነታዎች</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">ቀዳሚ ርዕስ</translation>
 <translation id="6376999910001533545">ጠቆር ያለ ቡናማ ቀይ (ማሩን)</translation>
@@ -928,6 +933,7 @@
 <translation id="762020119231868829">ሁሉንም አሁን በመጫወት ላይ ያሉ የሚዲያ ንዑስ ፕሮግራሞችን ለአፍታ ያቆማቸዋል</translation>
 <translation id="7625690649919402823">ቀጣይ ሠንጠረዥ</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />)፣ ደረጃ <ph name="GRADE" /></translation>
+<translation id="763535765081585392">መስመረግርጌ አመልክት፦</translation>
 <translation id="7639968568612851608">ጠቆር ያለ ግራጫ</translation>
 <translation id="7641134354185483015">ምንም ቀዳሚ የደረጃ 3 ርዕስ የለም።</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />፣ <ph name="NAME" />፣ የጽሑፍ ሳጥን</translation>
@@ -1163,6 +1169,7 @@
 <translation id="8943175951035496220">በቀኝ ምንም ሕዋስ የለም።</translation>
 <translation id="8943282376843390568">ሎሚ ቀለም</translation>
 <translation id="8946628535652548639">ረ<ph name="TABLECELLROWINDEX" />ዓ<ph name="TABLECELLCOLUMNINDEX" /></translation>
+<translation id="8957142051395645063">አስታውቅ</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">እርሳ</translation>
 <translation id="900114243503212879">file</translation>

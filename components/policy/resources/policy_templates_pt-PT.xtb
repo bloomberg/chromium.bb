@@ -152,6 +152,7 @@
       Se esta política não for definida, a frequência predefinida é de 3 horas. A frequência mínima
       permitida é de 60 segundos.</translation>
 <translation id="1204263402976895730">Impressoras empresariais ativadas</translation>
+<translation id="1216919699175573511">Ativar o suporte para Signed HTTP Exchange (SXG)</translation>
 <translation id="1219695476179627719">Especifica se o dispositivo deve reverter para a versão definida por <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> se já estiver a executar uma versão posterior.
 
       A predefinição é RollbackDisabled.</translation>
@@ -1631,6 +1632,13 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           Quando esta política não está definida, utiliza-se um período de tempo predefinido.
 
           O valor da política deve ser especificado em milissegundos.</translation>
+<translation id="4105884561459127998">Configura o tipo de autenticação para inícios de sessão SAML.
+
+      Quando esta política não está definida ou está definida como Predefinição (valor 0), o comportamento dos inícios de sessão SAML é determinado pelo navegador, consoante outros fatores. No cenário mais básico, a autenticação do utilizador e a proteção dos dados do utilizador em cache baseiam-se em palavras-passe introduzidas manualmente pelos utilizadores.
+
+      Quando esta política está definida como ClientCertificate (valor 1), utiliza-se a autenticação por certificado de cliente para utilizadores recentemente adicionados que iniciem sessão via SAML. Não são utilizadas palavras-passe para esse tipo de utilizadores e os seus dados locais em cache estão protegidos através das correspondentes chaves criptográficas. Por exemplo, esta definição permite configurar uma autenticação do utilizador baseada num cartão inteligente (tenha em atenção que as aplicações middleware do cartão inteligente têm de ser instaladas através da política DeviceLoginScreenExtensions).
+
+      Esta política afeta apenas utilizadores que fazem a autenticação através de SAML.</translation>
 <translation id="4105989332710272578">Desativar a imposição da Transparência de certificados para uma lista de URLs</translation>
 <translation id="4121350739760194865">Impedir a apresentação de promoções de aplicações na página de novo separador</translation>
 <translation id="4125606414556046117">Esta política permite-lhe configurar a imagem de fundo apresentada no ambiente de trabalho e no fundo do ecrã de início de sessão do utilizador. A política é definida ao especificar o URL a partir do qual o <ph name="PRODUCT_OS_NAME" /> pode transferir a imagem de fundo e um hash criptográfico utilizado para confirmar a integridade da transferência. A imagem tem de estar no formato JPEG e o tamanho não pode exceder 16 MB. O URL tem de ser acessível sem qualquer autenticação.
@@ -1659,6 +1667,30 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se não definir a política, o utilizador pode escolher uma imagem para apresentação no ambiente de trabalho e no fundo do ecrã de início de sessão.</translation>
 <translation id="412697421478384751">Permitir aos utilizadores definirem PINs fracos para o PIN do ecrã de bloqueio</translation>
 <translation id="4138655880188755661">Limite de tempo</translation>
+<translation id="4144164749344898721">Esta política controla várias definições para a estratégia de gestão de energia quando o utilizador fica inativo.
+
+          Existem quatro tipos de ação:
+          * O ecrã ficará com a luz reduzida se o utilizador continuar inativo durante o período especificado por |ReduzirLuzEcrã|.
+          * O ecrã será desligado se o utilizador continuar inativo durante o período especificado por |EcrãDesligado|.
+          * Será apresentada uma caixa de diálogo de aviso se o utilizador continuar inativo durante o período especificado por |AvisoInatividade|, informando o utilizador de que a ação de inatividade está prestes a ser efetuada. A mensagem de aviso apenas é mostrada se a ação de inatividade for terminar sessão ou encerrar.
+          * A ação especificada por |AçãoInatividade| será efetuada se o utilizador continuar inativo durante o período especificado em |Inativo|.
+
+          Para cada uma das ações mencionadas acima, deve especificar o tempo de atraso em milissegundos e tem de definir para um valor superior a zero para acionar a ação correspondente. Se o tempo de atraso estiver definido como zero, o <ph name="PRODUCT_OS_NAME" /> não efetuará a ação correspondente.
+
+          Para cada um dos tempos de atraso mencionados acima, quando o período de tempo não estiver definido, será utilizado um valor predefinido.
+
+          Tenha em conta que os valores de |ReduzirLuzEcrã| estarão afixados para serem inferiores ou iguais a |EcrãDesligado|, e que |EcrãDesligado| e |AvisoInatividade| estarão afixados para serem inferiores ou iguais a |Inativo|.
+
+          |AçãoInatividade| pode ser uma das quatro ações possíveis:
+          * |Suspender|
+          * |TerminarSessão|
+          * |Encerrar|
+          * |NãoFazerNada|
+
+          Quando a ação |AçãoInatividade| não está definida, é efetuada a ação predefinida, que é a suspensão.
+
+          Existem também definições em separado para a corrente alternada e a bateria.
+          </translation>
 <translation id="4150201353443180367">Visualização</translation>
 <translation id="4157003184375321727">Comunicar versão do SO e do firmware</translation>
 <translation id="4157594634940419685">Autorizar o acesso a impressoras CUPS nativas</translation>
@@ -1743,6 +1775,15 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="4322842393287974810">Permitir que a aplicação de quiosque de início automático com atraso zero controle a versão do <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Adicionar um botão para terminar sessão ao tabuleiro do sistema</translation>
 <translation id="4332177773549877617">Registar eventos para instalações de aplicações para Android</translation>
+<translation id="4335292026668105285">Especifica o período de tempo sem interação do utilizador após o qual é apresentada uma caixa de diálogo de aviso, se em execução através da energia CA.
+
+          Quando esta política está definida, especifica o período de tempo durante o qual o utilizador tem de permanecer inativo antes de o <ph name="PRODUCT_OS_NAME" /> mostrar uma caixa de diálogo de aviso a informá-lo de que a ação de inatividade está prestes a ser realizada.
+
+          Quando esta política não está definida, não é apresentada qualquer caixa de diálogo de aviso.
+
+          O valor da política deve ser especificado em milissegundos. Os valores estão limitados para serem inferiores ou iguais ao atraso da inatividade.
+
+          A mensagem de aviso só é apresentada se a ação de inatividade for terminar sessão ou encerrar.</translation>
 <translation id="4346674324214534449">Permite-lhe definir se os anúncios devem ser bloqueados em sites com anúncios intrusivos.
 
       Se esta política estiver definida como 2, os anúncios são bloqueados em sites com anúncios intrusivos.
@@ -3261,6 +3302,9 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="7464991223784276288">Limitar os cookies dos URLs correspondentes à sessão atual.</translation>
 <translation id="7469554574977894907">Ativar sugestões de pesquisa</translation>
 <translation id="7474249562477552702">Se os certificados assinados SHA-1 emitidos por âncoras fidedignas locais são ou não autorizados</translation>
+<translation id="747851715060942420">Permite-lhe configurar as páginas que são carregadas durante o arranque.
+
+      A política "URLs a abrir no arranque" é ignorada, a não ser que selecione "Abrir uma lista de URLs" em "Ação no arranque".</translation>
 <translation id="7485481791539008776">Regras de seleção da impressora predefinida</translation>
 <translation id="7485730741952775732">Se esta política estiver definida, o anfitrião de acesso remoto utiliza este URL para validar os símbolos de autenticação de clientes de acesso remoto, com o objetivo de aceitar ligações. Tem de ser utilizada juntamente com RemoteAccessHostTokenUrl.
 
@@ -3274,6 +3318,11 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       Se esta política for utilizada, todas as impressoras são disponibilizadas ao utilizador, exceto aquelas cujos IDs forem indicados nesta política. Os IDs têm de corresponder aos campos "id" ou "guid" no ficheiro especificado em <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
+<translation id="7506269062143646163">Ativar o suporte para Signed HTTP Exchange (SXG).
+
+          Se esta política não estiver definida ou estiver definida como Ativada, o Google Chrome aceitará conteúdos Web servidos como Signed HTTP Exchanges.
+
+          Se esta política estiver definida como Desativada, não será possível carregar Signed HTTP Exchanges.</translation>
 <translation id="7511361072385293666">Se esta política estiver definida como verdadeira ou não estiver definida, é permitida a utilização do protocolo QUIC no <ph name="PRODUCT_NAME" />.
       Se esta política estiver definida como falsa, não é permitida a utilização do protocolo QUIC.</translation>
 <translation id="7517845714620372896">Especifica a percentagem de brilho do ecrã.
@@ -3413,6 +3462,15 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Os identificadores dos tipos de ligação reconhecidos são "ethernet", "wifi", "wimax", "bluetooth" e "celular".</translation>
 <translation id="7763614521440615342">Mostrar sugestões de conteúdo na página Novo separador</translation>
 <translation id="7765879851993224640">Permitir a utilização do início de sessão do Smart Lock</translation>
+<translation id="7772346342637974431">Especifica o período de tempo sem interação do utilizador após o qual é apresentada uma caixa de diálogo ao executar com energia da bateria.
+
+          Quando esta política está definida, especifica o período de tempo durante o qual o utilizador tem de permanecer inativo antes de o <ph name="PRODUCT_OS_NAME" /> mostrar uma caixa de diálogo de aviso a informá-lo de que a ação de inatividade está prestes a ser realizada.
+
+          Quando esta política não está definida, não é apresentada qualquer caixa de diálogo de aviso.
+
+          O valor da política deve ser especificado em milissegundos. Os valores estão limitados para serem inferiores ou iguais ao atraso da inatividade.
+
+          A mensagem de aviso só é apresentada se a ação de inatividade for terminar sessão ou encerrar.</translation>
 <translation id="7774768074957326919">Utilizar definições de proxy do sistema</translation>
 <translation id="7777535871204167559">Tratar os dispositivos de armazenamento externo como só de leitura</translation>
 <translation id="7781069478569868053">Página Novo separador</translation>
@@ -3977,6 +4035,7 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
       Para obter mais informações sobre contextos seguros, consulte
       https://www.w3.org/TR/secure-contexts/
       </translation>
+<translation id="8939595959513040470">Disponibilize a Compilação de correção rápida aos utilizadores.</translation>
 <translation id="8942616385591203339">Esta política controla se é possível mostrar o Consentimento de sincronização ao utilizador durante o primeiro início de sessão. Deve estar definida como falsa se o Consentimento de sincronização nunca for necessário para o utilizador.
       Se estiver definida como falsa, o Consentimento de sincronização não é apresentado.
       Se estiver definida como verdadeira ou se não estiver definida, é possível apresentar o Consentimento de sincronização.</translation>
@@ -4036,6 +4095,9 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 
       Se não definir a política, o utilizador pode escolher a imagem do avatar que o representa no ecrã de início de sessão.</translation>
 <translation id="9035964157729712237">IDs de extensões a excluir da lista negra</translation>
+<translation id="9038058011835642205">Especifica uma lista de Websites que são instalados em silêncio, sem interação do utilizador, e que não podem ser desinstalados nem desativados por aquele.
+
+      Cada item de lista da política é um objeto com um membro obrigatório: "url" e dois membros opcionais: "default_launch_container" e "create_desktop_shortcut". "url" deverá ser o URL da aplicação Web a instalar, "launch_container" deverá ser "janela" ou "separador", para indicar de que forma é que a aplicação Web vai ser aberta após a instalação, e "create_desktop_shortcut" deverá ser "verdadeiro", caso deva ser criado um atalho no ambiente de trabalho em Linux e Windows. Se "default_launch_container" for omitido, a aplicação será aberta num separador, por predefinição. Independentemente do valor de "default_launch_container", os utilizadores podem alterar o contentor no qual a aplicação será aberta. Se "create_desktop_shortcuts" for omitido, não serão criados atalhos no ambiente de trabalho.</translation>
 <translation id="9038839118379817310">Ativar o Wi-Fi</translation>
 <translation id="9039822628127365650">Quando esta política está definida, especifica a duração após a qual a sessão de um utilizador é automaticamente terminada, encerrando a sessão. O utilizador é informado sobre o tempo restante através de um temporizador de contagem decrescente mostrado no tabuleiro do sistema.
 
@@ -4045,6 +4107,11 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 
       O valor da política deve ser especificado em milissegundos. Os valores estão limitados a um intervalo entre 30 segundos e 24 horas.</translation>
 <translation id="9042911395677044526">Permite que a configuração de rede seja aplicada por utilizador para um aparelho <ph name="PRODUCT_OS_NAME" />. A configuração de rede é uma cadeia de formato JSON, conforme definido pelo formato de Configuração de Rede Aberta descrito em <ph name="ONC_SPEC_URL" /></translation>
+<translation id="9050853837490399534">Esta política controla se o dispositivo deve ou não ser atualizado para uma Compilação de correção rápida.
+
+      Se o valor da política for definido como um token que mapeia para uma Compilação de correção rápida, o dispositivo será atualizado para a Compilação de correção rápida correspondente, caso a atualização não seja bloqueada por nenhuma outra política.
+
+      Se esta política não for definida ou se o respetivo valor não mapear para uma Compilação de correção rápida, o dispositivo não será atualizado para uma Compilação de correção rápida. Se o dispositivo já estiver a executar uma Compilação de correção rápida e a política já não estiver definida ou o respetivo valor já não mapear para uma Compilação de correção rápida, o dispositivo será atualizado para uma compilação normal, caso a atualização não seja bloqueada por nenhuma outra política.</translation>
 <translation id="906631898352326790">
       Se a política estiver ativada, cada uma das origens nomeadas numa lista separada por vírgulas é executada no seu próprio processo. Deste modo, são também isoladas as origens nomeadas por subdomínios. Por exemplo, ao especificar https://example.com/, https://foo.example.com/ também é isolado como parte do site https://example.com/.
       Se a política estiver desativada, as funcionalidades IsolateOrigins e SitePerProcess serão desativadas. Os utilizadores ainda conseguem ativar SitePerProcess manualmente através dos sinalizadores da linha de comandos.

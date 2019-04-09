@@ -135,7 +135,6 @@
 <translation id="1620510694547887537">Κάμερα</translation>
 <translation id="1623104350909869708">Αποτροπή δημιουργίας πρόσθετων παραθύρων διαλόγου από αυτήν τη σελίδα</translation>
 <translation id="16338877384480380">Architecture-B</translation>
-<translation id="1634051627998691300">Λήξη περιόδου λειτουργίας</translation>
 <translation id="1639239467298939599">Γίνεται φόρτωση</translation>
 <translation id="1640180200866533862">Πολιτικές χρηστών</translation>
 <translation id="1640244768702815859">Δοκιμάστε να <ph name="BEGIN_LINK" />επισκεφτείτε την αρχική σελίδα του ιστότοπου<ph name="END_LINK" />.</translation>
@@ -258,7 +257,6 @@
 <translation id="2330137317877982892"><ph name="CREDIT_CARD" />, λήγει στις <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="2337852623177822836">Η ρύθμιση ελέγχεται από τον διαχειριστή σας</translation>
 <translation id="2346319942568447007">Εικόνα που αντιγράψατε</translation>
-<translation id="2349790679044093737">Η περίοδος λειτουργίας VR είναι ενεργή</translation>
 <translation id="2354001756790975382">Άλλοι σελιδοδείκτες</translation>
 <translation id="2354430244986887761">Η Ασφαλής περιήγηση Google πρόσφατα <ph name="BEGIN_LINK" />εντόπισε επιβλαβείς εφαρμογές<ph name="END_LINK" /> στον ιστότοπο <ph name="SITE" />.</translation>
 <translation id="2355395290879513365">Οι εισβολείς ενδέχεται να έχουν τη δυνατότητα να δουν τις εικόνες που προβάλετε σε αυτόν τον ιστότοπο και να σας εξαπατήσουν τροποποιώντας τες.</translation>
@@ -784,6 +782,7 @@
 <translation id="5252000469029418751">C7 (Φάκελος)</translation>
 <translation id="5254958791078852567">E1</translation>
 <translation id="5283044957620376778">B1</translation>
+<translation id="528468243742722775">End</translation>
 <translation id="5284909709419567258">Διευθύνσεις δικτύου</translation>
 <translation id="5285570108065881030">Εμφάνιση όλων των αποθηκευμένων κωδικών πρόσβασης</translation>
 <translation id="5287240709317226393">Εμφάνιση cookie</translation>

@@ -137,6 +137,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis denne regelen ikke spesifiseres, er standardfrekvensen 3 timer. 
       Korteste tillatte frekvens er 60 sekunder.</translation>
 <translation id="1204263402976895730">Aktiverte bedriftsskrivere</translation>
+<translation id="1216919699175573511">Aktiver støtte for signerte HTTP-utvekslinger (SXG)</translation>
 <translation id="1219695476179627719">Spesifiserer om enheten skal rulles tilbake til versjonen som er angitt av <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" />, hvis den allerede kjører en nyere versjon.
 
       Standardverdien er RollbackDisabled.</translation>
@@ -1625,6 +1626,13 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
           Når innstillingen ikke er konfigurert, brukes standard tidslengde.
 
           Innstillingsverdien må angis i millisekunder.</translation>
+<translation id="4105884561459127998">Konfigurerer autentiseringstypen for SAML-pålogging.
+
+      Når denne regelen ikke er spesifisert eller er satt til standard (verdi 0), bestemmes atferden for SAML pålogging av nettleseren avhengig av andre faktorer. I det mest grunnleggende scenarioet baseres brukerautentisering og beskyttelse av bufrede brukerdata på passord som skrives inn manuelt av brukerne.
+
+      Når denne regelen er satt til klientsertifikat (verdi 1), brukes autentisering av klientsertifikat for brukere som nylig er lagt til, og som logger inn via SAML. Ingen passord brukes for slike brukere, og bufrede lokale data beskyttes med tilhørende kryptografiske nøkler. Denne innstillingen tillater for eksempel konfigurering av smartkortbasert brukerautentisering (merk at mellomvareapper for smartkort må installeres via DeviceLoginScreenExtensions-regelen).
+
+      Denne regelen påvirker bare brukere som autentiserer via SAML.</translation>
 <translation id="4105989332710272578">Slå av tvungen sertifikatåpenhet for en liste med nettadresser</translation>
 <translation id="4121350739760194865">Gjør at programkampanjer ikke vises på siden Ny fane</translation>
 <translation id="4125606414556046117">Med denne regelen kan du konfigurere bakgrunnsbildet som vises på skrivebordet og på brukernes påloggingssider. Du angir denne innstillingen ved å spesifisere hvilken nettadresse <ph name="PRODUCT_OS_NAME" /> kan laste ned bakgrunnsbildet fra, og en kryptografisk hash som brukes til å bekrefte at ingen har tuklet med nedlastingen. Bildet må være i JPEG-format og ikke større enn 16 MB. Nettadressen må være tilgjengelig uten krav om autentisering.
@@ -1653,6 +1661,30 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis denne regelen ikke er angitt, kan brukerne selv velge hvilket bakgrunnsbilde de vil bruke for skrivebordet og påloggingsskjermen.</translation>
 <translation id="412697421478384751">Gjør det mulig for brukere å angi svake PIN-koder for låseskjermen</translation>
 <translation id="4138655880188755661">Tidsgrense</translation>
+<translation id="4144164749344898721">Denne regelen kontrollerer flere innstillinger for strømstyring når brukeren er inaktiv.
+
+          Det finnes fire typer handlinger:
+          * Skjermen dempes hvis brukeren er inaktiv lenger enn det som er angitt for |ScreenDim|.
+          * Skjermen slås av hvis brukeren er inaktiv lenger enn det som er angitt for |ScreenOff|.
+          * En advarsel i en dialogboks vises hvis brukeren er inaktiv lenger enn det som er angitt for |IdleWarning|. Advarselen informerer brukeren om at inaktivitetshandlingen snart utføres. Advarselsmeldingen vises kun hvis inaktivitetshandlingen er avlogging eller avslutning.
+          * Handlingen som er angitt for |IdleAction|, utføres hvis brukeren er inaktiv lenger enn tiden som er angitt for |Idle|.
+
+          Forsinkelsen for hver av handlingene ovenfor må angis i millisekunder. Verdien må være høyere enn null for å utløse den korresponderende handlingen. Hvis forsinkelsen er satt til null, utfører ikke <ph name="PRODUCT_OS_NAME" /> den korresponderende handlingen.
+
+          Hvis det ikke er angitt noen tid for de ulike forsinkelsene ovenfor, brukes det standardverdier.
+
+          Vær oppmerksom på at verdien for |ScreenDim| ikke kan være høyere enn verdien for |ScreenOff|, og at verdiene for |ScreenOff| og |IdleWarning| ikke kan være høyere enn verdien for |Idle|.
+
+          |IdleAction| kan være én av disse fire mulige handlingene:
+          * |Suspend|
+          * |Logout|
+          * |Shutdown|
+          * |DoNothing|
+
+          Når |IdleAction| ikke er angitt, utføres standardhandlingen, som er Suspend (hvilemodus).
+
+          Det finnes også separate innstillinger for nettstrøm og batteri.
+          </translation>
 <translation id="4150201353443180367">Skjerm</translation>
 <translation id="4157003184375321727">Rapportering av operativsystem og maskinvareversjon</translation>
 <translation id="4157594634940419685">Gi tilgang til egne CUPS-skrivere</translation>
@@ -1737,6 +1769,15 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="4322842393287974810">La den automatisk startede kioskappen uten forsinkelse kontrollere <ph name="PRODUCT_OS_NAME" />-versjonen</translation>
 <translation id="4325690621216251241">Legg til en avloggingsknapp for systemstatusfeltet</translation>
 <translation id="4332177773549877617">Loggfør hendelser for installasjoner av Android-apper</translation>
+<translation id="4335292026668105285">Spesifiserer hvor lang tid som kan gå uten brukerinndata før det vises en dialogboks med advarsel når enheten er tilkoblet strøm.
+
+          Når denne regelen er angitt, spesifiserer den hvor lenge brukeren må være inaktiv før <ph name="PRODUCT_OS_NAME" /> viser en dialogboks med en advarsel som forteller brukeren at inaktivitetshandlingen er i ferd med å bli utført.
+
+          Når denne regelen ikke er angitt, vises ingen dialogboks med advarsel.
+
+          Verdien for denne regelen skal angis i millisekunder. Verdien må være mindre enn eller lik inaktivitetsforsinkelsen.
+
+          Advarselsmeldingen vises kun hvis inaktivitetshandlingen er avlogging eller avslutning.</translation>
 <translation id="4346674324214534449">Lar deg angi om annonser skal blokkeres på nettsteder med forstyrrende annonser.
 
       Hvis denne regelen er satt til «2», blokkeres annonser på nettsteder med forstyrrende annonser.
@@ -3299,6 +3340,9 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7464991223784276288">Begrens informasjonkapsler fra samsvarende nettadresser til den gjeldende økten</translation>
 <translation id="7469554574977894907">Aktiver søkeforslag</translation>
 <translation id="7474249562477552702">Hvorvidt SHA-1-signerte sertifikater som utstedes av lokale klareringsankre er tillatt eller ikke</translation>
+<translation id="747851715060942420">Med denne regelen kan du konfigurere sidene som lastes inn ved oppstart.
+
+      Regelen «Nettadresser som skal åpnes ved oppstart» ignoreres, med mindre du velger «Åpne en liste over nettadresser» i «Handling ved oppstart».</translation>
 <translation id="7485481791539008776">Regler for valg av standardskriver</translation>
 <translation id="7485730741952775732">Hvis denne regelen er angitt, bruker verten for ekstern tilgang denne nettadressen til å validere autentiseringstokener fra klienter for ekstern tilgang for å kunne godta tilkoblinger. Denne regelen må brukes sammen med RemoteAccessHostTokenUrl.
 
@@ -3312,6 +3356,11 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
       Hvis denne regelen brukes, får brukeren tilgang til alle skrivere – unntatt eventuelle ID-er som er oppført i denne regelen. ID-ene må samsvare med «id»- eller «quid»-feltene i filen spesifisert i <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
+<translation id="7506269062143646163">Aktiver støtte for signerte HTTP-utvekslinger (SXG).
+
+          Hvis denne regelen ikke er angitt eller den er satt til «Enabled» (aktivert), godtar Google Chrome nettinnhold som sendes via signerte HTTP-utvekslinger.
+
+          Hvis denne regelen er satt til «Disabled» (deaktivert), kan signerte HTTP-utvekslinger ikke lastes inn.</translation>
 <translation id="7511361072385293666">Hvis denne regelen settes til «sann» eller ikke spesifiseres, er bruk av QUIC-protokollen tillatt i <ph name="PRODUCT_NAME" />.
       Hvis denne regelen settes til «usann», er ikke bruk av QUIC-protokollen tillatt.</translation>
 <translation id="7517845714620372896">Angir lysstyrkeprosenten for skjermen.
@@ -3458,6 +3507,15 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Identifikatorene som gjenkjennes for tilkoblingstyper er "ethernet", "wifi", "wimax", "bluetooth" og "cellular".</translation>
 <translation id="7763614521440615342">Vis innholdsforslag på nye faner</translation>
 <translation id="7765879851993224640">Tillat bruk av Smart Lock-pålogging.</translation>
+<translation id="7772346342637974431">Spesifiserer hvor lang tid som kan gå uten brukerinndata før det vises en dialogboks med advarsel når enheten kjører på batteri.
+
+          Når denne regelen er angitt, spesifiserer den hvor lenge brukeren må være inaktiv før <ph name="PRODUCT_OS_NAME" /> viser en dialogboks med en advarsel som forteller brukeren at inaktivitetshandlingen er i ferd med å bli utført.
+
+          Når denne regelen ikke er angitt, vises ingen dialogboks med advarsel.
+
+          Verdien for denne regelen skal angis i millisekunder. Verdien må være mindre enn eller lik inaktivitetsforsinkelsen.
+
+          Advarselsmeldingen vises kun hvis inaktivitetshandlingen er avlogging eller avslutning.</translation>
 <translation id="7774768074957326919">Bruk proxyinnstillingene for systemet</translation>
 <translation id="7777535871204167559">Behandle eksterne lagringsenheter som skrivebeskyttet</translation>
 <translation id="7781069478569868053">Ny fane-siden</translation>
@@ -4006,6 +4064,7 @@ Denne regelen er avviklet i M69 til fordel for OverrideSecurityRestrictionsOnIns
 
 For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts/
       </translation>
+<translation id="8939595959513040470">Gi brukere en hurtigfiks-delversjon.</translation>
 <translation id="8942616385591203339">Denne regelen bestemmer om samtykke for synkronisering skal vises til brukeren ved første pålogging. Den skal angis som «False» (usann) hvis samtykke for synkronisering ikke er nødvendig for denne brukeren.
       Hvis regelen er angitt som «False» (usann), vises ikke samtykke for synkronisering.
       Hvis regelen er angitt som «True» (sann) eller ikke er angitt, vises samtykke for synkronisering.</translation>
@@ -4065,6 +4124,9 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
       Hvis denne innstillingen ikke er angitt, kan brukerne velge sine egne brukerbilder for påloggingskjermen.</translation>
 <translation id="9035964157729712237">Utvidelses-ID-er som skal unntas sperrelisten</translation>
+<translation id="9038058011835642205">Spesifiserer en liste over nettsteder som installeres stille (uten brukerinteraksjon) og ikke kan avinstalleres eller deaktiveres av brukeren.
+
+      Hvert listeelement i regelen er et objekt med en obligatorisk del: «url» og to valgfrie deler: «default_launch_container» og «create_desktop_shortcut». «url» skal være nettadressen for nettprogrammet som skal installeres, «launch_container» skal være enten «window» (vindu) eller «tab» (fane) for å avgjøre hvordan nettprogrammet skal åpnes når det er installert, og «create_desktop_shortcut» skal være «true» (sann) hvis det skal opprettes en snarvei på skrivebordet i Linux og Windows. Hvis «default_launch_container» utelates, åpnes nettprogrammet i en fane som standard. Uavhengig av verdien til «default_launch_container» kan brukere endre hvilken beholder nettprogrammet skal åpnes i. Hvis «create_desktop_shortcuts» utelates, opprettes det ingen snarveier på skrivebordet.</translation>
 <translation id="9038839118379817310">Slå på Wi-Fi</translation>
 <translation id="9039822628127365650">Når denne regelen er angitt, spesifiserer den hvor lang tid det tar før brukerne automatisk logges av og økten avsluttes. Brukerne ser den gjenværende tiden som en nedtelling i systemfeltet.
 
@@ -4074,6 +4136,11 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
       Verdien for denne regelen skal angis i millisekunder. Verdien må være mellom 30 sekunder og 24 timer.</translation>
 <translation id="9042911395677044526">Tillater skyving av nettverkskonfigurasjon for enkeltbrukere på en <ph name="PRODUCT_OS_NAME" />-enhet. Nettverkskonfigurasjon er en JSON-formatert streng, som definert av Open Network Configuration-formatet beskrevet på <ph name="ONC_SPEC_URL" /></translation>
+<translation id="9050853837490399534">Denne regelen styrer om enheten skal oppdateres til en hurtigfiks-delversjon.
+
+      Hvis regelverdien er satt til et token som tilsvarer en hurtigfiks-delversjon, oppdateres enheten til den tilsvarende hurtigfiks-delversjonen hvis ikke oppdateringen blokkeres av en annen regel.
+
+      Hvis denne regelen ikke er angitt, eller hvis regelverdien ikke tilsvarer en hurtigfiks-delversjon, oppdateres ikke enheten til en hurtigfiks-delversjon. Hvis enheten allerede kjører en hurtigfiks-delversjon, men regelen ikke er angitt lenger eller regelverdien ikke tilsvarer en hurtigfiks-delversjon lenger, oppdateres enheten til en vanlig delversjon hvis ikke oppdateringen blokkeres av en annen regel.</translation>
 <translation id="906631898352326790">
       Hvis regelen er aktivert, kjøres alle navngitte opprinnelser i
       kommadelte lister i egne prosesser. Da isoleres også
