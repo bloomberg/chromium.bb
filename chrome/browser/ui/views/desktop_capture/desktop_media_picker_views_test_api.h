@@ -11,6 +11,7 @@ class DesktopMediaPickerViews;
 
 namespace views {
 class Checkbox;
+class TableView;
 class View;
 }  // namespace views
 
@@ -26,19 +27,21 @@ class DesktopMediaPickerViewsTestApi {
   void set_picker(DesktopMediaPickerViews* picker) { picker_ = picker; }
 
   void FocusAudioCheckbox();
-  void PressMouseOnSourceAtIndex(int index, bool double_click = false);
+  void PressMouseOnSourceAtIndex(size_t index, bool double_click = false);
   void SelectTabForSourceType(content::DesktopMediaID::Type source_type);
   views::Checkbox* GetAudioShareCheckbox();
 
-  bool HasSourceAtIndex(int index) const;
-  void FocusSourceAtIndex(int index);
-  void DoubleTapSourceAtIndex(int index);
-  int GetSelectedSourceId() const;
+  bool HasSourceAtIndex(size_t index) const;
+  void FocusSourceAtIndex(size_t index);
+  void DoubleTapSourceAtIndex(size_t index);
+  base::Optional<int> GetSelectedSourceId() const;
   views::View* GetSelectedListView();
 
  private:
-  const views::View* GetSourceAtIndex(int index) const;
-  views::View* GetSourceAtIndex(int index);
+  const views::View* GetSourceAtIndex(size_t index) const;
+  views::View* GetSourceAtIndex(size_t index);
+  const views::TableView* GetTableView() const;
+  views::TableView* GetTableView();
 
   DesktopMediaPickerViews* picker_;
 };

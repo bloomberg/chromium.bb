@@ -39,13 +39,13 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView,
   void OnSourceListLayoutChanged();
   void SelectTab(content::DesktopMediaID::Type source_type);
 
-  // views::TabbedPaneListener overrides.
+  // views::TabbedPaneListener:
   void TabSelectedAt(int index) override;
 
-  // views::View overrides.
+  // views::View:
   gfx::Size CalculatePreferredSize() const override;
 
-  // views::DialogDelegateView overrides.
+  // views::DialogDelegateView:
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
@@ -89,7 +89,7 @@ class DesktopMediaPickerViews : public DesktopMediaPicker {
 
   void NotifyDialogResult(content::DesktopMediaID source);
 
-  // DesktopMediaPicker overrides.
+  // DesktopMediaPicker:
   void Show(const DesktopMediaPicker::Params& params,
             std::vector<std::unique_ptr<DesktopMediaList>> source_lists,
             const DoneCallback& done_callback) override;
