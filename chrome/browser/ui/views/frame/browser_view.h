@@ -342,7 +342,7 @@ class BrowserView : public BrowserWindow,
   PageActionIconContainer* GetPageActionIconContainer() override;
   PageActionIconContainer* GetToolbarPageActionIconContainer() override;
   LocationBar* GetLocationBar() const override;
-  void SetFocusToLocationBar() override;
+  void SetFocusToLocationBar(bool select_all) override;
   void UpdateReloadStopState(bool is_loading, bool force) override;
   void UpdateToolbar(content::WebContents* contents) override;
   void UpdateToolbarVisibility(bool visible, bool animate) override;

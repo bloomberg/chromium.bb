@@ -199,7 +199,7 @@ class LocationBarView : public LocationBar,
   bool ActivateFirstInactiveBubbleForAccessibility();
 
   // LocationBar:
-  void FocusLocation() override;
+  void FocusLocation(bool select_all) override;
   void Revert() override;
   OmniboxView* GetOmniboxView() override;
 
