@@ -949,7 +949,7 @@ TEST_F(OfflinePageModelTaskifiedTest, GetPageByOfflineId) {
   PumpLoop();
 }
 
-TEST_F(OfflinePageModelTaskifiedTest, GetPagesByUrl_FinalUrl) {
+TEST_F(OfflinePageModelTaskifiedTest, GetPagesWithCriteria_FinalUrl) {
   page_generator()->SetUrl(kTestUrl);
   OfflinePageItem page1 = page_generator()->CreateItem();
   InsertPageIntoStore(page1);
@@ -960,18 +960,22 @@ TEST_F(OfflinePageModelTaskifiedTest, GetPagesByUrl_FinalUrl) {
   // Search by kTestUrl.
   base::MockCallback<MultipleOfflinePageItemCallback> callback;
   EXPECT_CALL(callback, Run(ElementsAre(page1)));
-  model()->GetPagesByURL(kTestUrl, callback.Get());
+  PageCriteria criteria;
+  criteria.url = kTestUrl;
+  model()->GetPagesWithCriteria(criteria, callback.Get());
   EXPECT_TRUE(task_queue()->HasRunningTask());
   PumpLoop();
 
   // Search by kTestUrl2.
   EXPECT_CALL(callback, Run(ElementsAre(page2)));
-  model()->GetPagesByURL(kTestUrl2, callback.Get());
+  criteria.url = kTestUrl2;
+  model()->GetPagesWithCriteria(criteria, callback.Get());
   PumpLoop();
 
   // Search by random url, which should return no pages.
   EXPECT_CALL(callback, Run(IsEmpty()));
-  model()->GetPagesByURL(kOtherUrl, callback.Get());
+  criteria.url = kOtherUrl;
+  model()->GetPagesWithCriteria(criteria, callback.Get());
   EXPECT_TRUE(task_queue()->HasRunningTask());
   PumpLoop();
 }
@@ -988,26 +992,28 @@ TEST_F(OfflinePageModelTaskifiedTest,
   // Search by kTestUrlWithFragment.
   base::MockCallback<MultipleOfflinePageItemCallback> callback;
   EXPECT_CALL(callback, Run(ElementsAre(page1)));
-  model()->GetPagesByURL(kTestUrlWithFragment,
-                         callback.Get());
+  PageCriteria criteria;
+  criteria.url = kTestUrlWithFragment;
+  model()->GetPagesWithCriteria(criteria, callback.Get());
   EXPECT_TRUE(task_queue()->HasRunningTask());
   PumpLoop();
 
   // Search by kTestUrl2.
   EXPECT_CALL(callback, Run(ElementsAre(page2)));
-  model()->GetPagesByURL(kTestUrl2, callback.Get());
+  criteria.url = kTestUrl2;
+  model()->GetPagesWithCriteria(criteria, callback.Get());
   EXPECT_TRUE(task_queue()->HasRunningTask());
   PumpLoop();
 
   // Search by kTestUrl2WithFragment.
   EXPECT_CALL(callback, Run(ElementsAre(page2)));
-  model()->GetPagesByURL(kTestUrl2WithFragment,
-                         callback.Get());
+  criteria.url = kTestUrl2WithFragment;
+  model()->GetPagesWithCriteria(criteria, callback.Get());
   EXPECT_TRUE(task_queue()->HasRunningTask());
   PumpLoop();
 }
 
-TEST_F(OfflinePageModelTaskifiedTest, GetPagesByUrl_AllUrls) {
+TEST_F(OfflinePageModelTaskifiedTest, GetPagesWithCriteria_AllUrls) {
   page_generator()->SetUrl(kTestUrl);
   page_generator()->SetOriginalUrl(kTestUrl2);
   OfflinePageItem page1 = page_generator()->CreateItem();
@@ -1019,7 +1025,9 @@ TEST_F(OfflinePageModelTaskifiedTest, GetPagesByUrl_AllUrls) {
 
   base::MockCallback<MultipleOfflinePageItemCallback> callback;
   EXPECT_CALL(callback, Run(UnorderedElementsAre(page1, page2)));
-  model()->GetPagesByURL(kTestUrl2, callback.Get());
+  PageCriteria criteria;
+  criteria.url = kTestUrl2;
+  model()->GetPagesWithCriteria(criteria, callback.Get());
   PumpLoop();
 }
 
@@ -1046,65 +1054,6 @@ TEST_F(OfflinePageModelTaskifiedTest, GetOfflineIdsForClientId) {
               Run(UnorderedElementsAre(page1.offline_id, page2.offline_id)));
 
   model()->GetOfflineIdsForClientId(kTestClientId1, callback.Get());
-  EXPECT_TRUE(task_queue()->HasRunningTask());
-
-  PumpLoop();
-}
-
-TEST_F(OfflinePageModelTaskifiedTest, GetPagesByClientIds) {
-  page_generator()->SetNamespace(kTestClientId1.name_space);
-  page_generator()->SetId(kTestClientId1.id);
-  OfflinePageItem page1 = page_generator()->CreateItem();
-  OfflinePageItem page2 = page_generator()->CreateItem();
-  page_generator()->SetNamespace(kTestUserRequestedClientId.name_space);
-  OfflinePageItem page3 = page_generator()->CreateItem();
-  InsertPageIntoStore(page1);
-  InsertPageIntoStore(page2);
-  InsertPageIntoStore(page3);
-
-  base::MockCallback<MultipleOfflinePageItemCallback> callback;
-  EXPECT_CALL(callback, Run(UnorderedElementsAre(page1, page2)));
-
-  model()->GetPagesByClientIds({kTestClientId1}, callback.Get());
-  EXPECT_TRUE(task_queue()->HasRunningTask());
-
-  PumpLoop();
-}
-
-TEST_F(OfflinePageModelTaskifiedTest, GetPagesByRequestOrigin) {
-  page_generator()->SetRequestOrigin(kTestRequestOrigin);
-  OfflinePageItem page1 = page_generator()->CreateItem();
-  page_generator()->SetRequestOrigin(kEmptyRequestOrigin);
-  OfflinePageItem page2 = page_generator()->CreateItem();
-  InsertPageIntoStore(page1);
-  InsertPageIntoStore(page2);
-
-  base::MockCallback<MultipleOfflinePageItemCallback> callback;
-  EXPECT_CALL(callback, Run(ElementsAre(page1)));
-
-  model()->GetPagesByRequestOrigin(kTestRequestOrigin, callback.Get());
-  EXPECT_TRUE(task_queue()->HasRunningTask());
-
-  PumpLoop();
-}
-
-TEST_F(OfflinePageModelTaskifiedTest, GetPageBySizeAndDigest) {
-  static const int64_t kFileSize1 = 123LL;
-  static const int64_t kFileSize2 = 999999LL;
-  static const char kDigest1[] = "digest 1";
-  page_generator()->SetFileSize(kFileSize1);
-  page_generator()->SetDigest(kDigest1);
-  OfflinePageItem page1 = page_generator()->CreateItem();
-  page_generator()->SetFileSize(kFileSize2);
-  page_generator()->SetDigest(kDigest1);
-  OfflinePageItem page2 = page_generator()->CreateItem();
-  InsertPageIntoStore(page1);
-  InsertPageIntoStore(page2);
-
-  base::MockCallback<SingleOfflinePageItemCallback> callback;
-  EXPECT_CALL(callback, Run(Pointee(Eq(page2))));
-
-  model()->GetPageBySizeAndDigest(kFileSize2, kDigest1, callback.Get());
   EXPECT_TRUE(task_queue()->HasRunningTask());
 
   PumpLoop();
@@ -1150,63 +1099,6 @@ TEST_F(OfflinePageModelTaskifiedTest, DeletePagesByClientIds) {
       model_utils::AddHistogramSuffix(kTestClientId1.name_space,
                                       "OfflinePages.AccessCount"),
       1);
-}
-
-TEST_F(OfflinePageModelTaskifiedTest, GetPagesByNamespace) {
-  page_generator()->SetNamespace(kDefaultNamespace);
-  OfflinePageItem page1 = page_generator()->CreateItem();
-  OfflinePageItem page2 = page_generator()->CreateItem();
-  page_generator()->SetNamespace(kDownloadNamespace);
-  OfflinePageItem page3 = page_generator()->CreateItem();
-  InsertPageIntoStore(page1);
-  InsertPageIntoStore(page2);
-  InsertPageIntoStore(page3);
-
-  base::MockCallback<MultipleOfflinePageItemCallback> callback;
-  EXPECT_CALL(callback, Run(UnorderedElementsAre(page1, page2)));
-
-  model()->GetPagesByNamespace(kDefaultNamespace, callback.Get());
-  EXPECT_TRUE(task_queue()->HasRunningTask());
-
-  PumpLoop();
-}
-
-TEST_F(OfflinePageModelTaskifiedTest, GetPagesRemovedOnCacheReset) {
-  page_generator()->SetNamespace(kDefaultNamespace);
-  OfflinePageItem page1 = page_generator()->CreateItem();
-  OfflinePageItem page2 = page_generator()->CreateItem();
-  InsertPageIntoStore(page1);
-  InsertPageIntoStore(page2);
-  page_generator()->SetNamespace(kDownloadNamespace);
-  OfflinePageItem page3 = page_generator()->CreateItem();
-  InsertPageIntoStore(page3);
-
-  base::MockCallback<MultipleOfflinePageItemCallback> callback;
-  EXPECT_CALL(callback, Run(UnorderedElementsAre(page1, page2)));
-
-  model()->GetPagesRemovedOnCacheReset(callback.Get());
-  EXPECT_TRUE(task_queue()->HasRunningTask());
-
-  PumpLoop();
-}
-
-TEST_F(OfflinePageModelTaskifiedTest, GetPagesSupportedByDownloads) {
-  page_generator()->SetNamespace(kDownloadNamespace);
-  OfflinePageItem page1 = page_generator()->CreateItem();
-  OfflinePageItem page2 = page_generator()->CreateItem();
-  InsertPageIntoStore(page1);
-  InsertPageIntoStore(page2);
-  page_generator()->SetNamespace(kDefaultNamespace);
-  OfflinePageItem page3 = page_generator()->CreateItem();
-  InsertPageIntoStore(page3);
-
-  base::MockCallback<MultipleOfflinePageItemCallback> callback;
-  EXPECT_CALL(callback, Run(UnorderedElementsAre(page1, page2)));
-
-  model()->GetPagesSupportedByDownloads(callback.Get());
-  EXPECT_TRUE(task_queue()->HasRunningTask());
-
-  PumpLoop();
 }
 
 // This test is affected by https://crbug.com/725685, which only affects windows

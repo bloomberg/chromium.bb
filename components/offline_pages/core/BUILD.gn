@@ -79,6 +79,8 @@ static_library("core") {
     "offline_store_types.h",
     "offline_store_utils.cc",
     "offline_store_utils.h",
+    "page_criteria.cc",
+    "page_criteria.h",
     "snapshot_controller.cc",
     "snapshot_controller.h",
     "system_download_manager.h",
@@ -176,6 +178,7 @@ source_set("unit_tests") {
     "offline_page_metadata_store_unittest.cc",
     "offline_page_model_event_logger_unittest.cc",
     "offline_page_thumbnail_unittest.cc",
+    "page_criteria_unittest.cc",
     "snapshot_controller_unittest.cc",
   ]
 

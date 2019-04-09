@@ -28,6 +28,7 @@ class WebContents;
 namespace offline_pages {
 struct OfflinePageHeader;
 struct OfflinePageItem;
+struct PageCriteria;
 
 class OfflinePageUtils {
  public:
@@ -70,6 +71,11 @@ class OfflinePageUtils {
       content::BrowserContext* browser_context,
       const GURL& url,
       int tab_id,
+      base::OnceCallback<void(const std::vector<OfflinePageItem>&)> callback);
+
+  static void SelectPagesWithCriteria(
+      content::BrowserContext* browser_context,
+      const PageCriteria& criteria,
       base::OnceCallback<void(const std::vector<OfflinePageItem>&)> callback);
 
   // Gets the offline page corresponding to the given web contents.  The
