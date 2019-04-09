@@ -1478,6 +1478,10 @@ void AXObjectCacheImpl::HandleScrolledToAnchor(const Node* anchor_node) {
   PostPlatformNotification(obj, ax::mojom::Event::kScrolledToAnchor);
 }
 
+void AXObjectCacheImpl::HandleFrameRectsChanged(Document& document) {
+  MarkAXObjectDirty(Get(&document), false);
+}
+
 void AXObjectCacheImpl::HandleScrollPositionChanged(
     LocalFrameView* frame_view) {
   AXObject* target_ax_object =

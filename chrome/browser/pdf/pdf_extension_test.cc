@@ -1018,7 +1018,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityInIframe) {
   ASSERT_MULTILINE_STR_MATCHES(kExpectedPDFAXTreePattern, ax_tree_dump);
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityInOOPIF) {
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DISABLED_PdfAccessibilityInOOPIF) {
   content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
   GURL test_iframe_url(embedded_test_server()->GetURL(
       "/pdf/test-cross-site-iframe.html"));
