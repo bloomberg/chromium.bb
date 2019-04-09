@@ -38,13 +38,15 @@ std::unique_ptr<DisplaySnapshot> CreateDisplaySnapshot(
 
 class QueryContentProtectionTaskTest : public testing::Test {
  public:
+  using Status = QueryContentProtectionTask::Status;
+
   QueryContentProtectionTaskTest() = default;
   ~QueryContentProtectionTaskTest() override = default;
 
-  void ResponseCallback(bool success,
+  void ResponseCallback(Status status,
                         uint32_t connection_mask,
                         uint32_t protection_mask) {
-    response_ = Response{success, connection_mask, protection_mask};
+    response_ = Response{status, connection_mask, protection_mask};
   }
 
  protected:
@@ -52,7 +54,7 @@ class QueryContentProtectionTaskTest : public testing::Test {
   TestNativeDisplayDelegate display_delegate_{&log_};
 
   struct Response {
-    bool success;
+    Status status;
     uint32_t connection_mask;
     uint32_t protection_mask;
   };
@@ -77,7 +79,7 @@ TEST_F(QueryContentProtectionTaskTest, QueryInternalDisplay) {
   task.Run();
 
   ASSERT_TRUE(response_);
-  EXPECT_TRUE(response_->success);
+  EXPECT_EQ(Status::SUCCESS, response_->status);
   EXPECT_EQ(DISPLAY_CONNECTION_TYPE_INTERNAL, response_->connection_mask);
   EXPECT_EQ(0u, response_->protection_mask);
 }
@@ -95,7 +97,7 @@ TEST_F(QueryContentProtectionTaskTest, QueryUnknownDisplay) {
   task.Run();
 
   ASSERT_TRUE(response_);
-  EXPECT_FALSE(response_->success);
+  EXPECT_EQ(Status::FAILURE, response_->status);
   EXPECT_EQ(DISPLAY_CONNECTION_TYPE_UNKNOWN, response_->connection_mask);
   EXPECT_EQ(0u, response_->protection_mask);
 }
@@ -114,7 +116,7 @@ TEST_F(QueryContentProtectionTaskTest, QueryDisplayThatCannotGetHdcp) {
   task.Run();
 
   ASSERT_TRUE(response_);
-  EXPECT_FALSE(response_->success);
+  EXPECT_EQ(Status::FAILURE, response_->status);
   EXPECT_EQ(DISPLAY_CONNECTION_TYPE_HDMI, response_->connection_mask);
 }
 
@@ -131,7 +133,7 @@ TEST_F(QueryContentProtectionTaskTest, QueryDisplayWithHdcpDisabled) {
   task.Run();
 
   ASSERT_TRUE(response_);
-  EXPECT_TRUE(response_->success);
+  EXPECT_EQ(Status::SUCCESS, response_->status);
   EXPECT_EQ(DISPLAY_CONNECTION_TYPE_HDMI, response_->connection_mask);
   EXPECT_EQ(0u, response_->protection_mask);
 }
@@ -150,7 +152,7 @@ TEST_F(QueryContentProtectionTaskTest, QueryDisplayWithHdcpEnabled) {
   task.Run();
 
   ASSERT_TRUE(response_);
-  EXPECT_TRUE(response_->success);
+  EXPECT_EQ(Status::SUCCESS, response_->status);
   EXPECT_EQ(DISPLAY_CONNECTION_TYPE_HDMI, response_->connection_mask);
   EXPECT_EQ(CONTENT_PROTECTION_METHOD_HDCP, response_->protection_mask);
 }
@@ -169,7 +171,7 @@ TEST_F(QueryContentProtectionTaskTest, QueryInMultiDisplayMode) {
   task.Run();
 
   ASSERT_TRUE(response_);
-  EXPECT_TRUE(response_->success);
+  EXPECT_EQ(Status::SUCCESS, response_->status);
   EXPECT_EQ(DISPLAY_CONNECTION_TYPE_HDMI, response_->connection_mask);
   EXPECT_EQ(0u, response_->protection_mask);
 }
@@ -188,7 +190,7 @@ TEST_F(QueryContentProtectionTaskTest, QueryInMirroringMode) {
   task.Run();
 
   ASSERT_TRUE(response_);
-  EXPECT_TRUE(response_->success);
+  EXPECT_EQ(Status::SUCCESS, response_->status);
   EXPECT_EQ(static_cast<uint32_t>(DISPLAY_CONNECTION_TYPE_HDMI |
                                   DISPLAY_CONNECTION_TYPE_DVI),
             response_->connection_mask);

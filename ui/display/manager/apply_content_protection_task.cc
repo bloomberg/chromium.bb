@@ -44,18 +44,21 @@ ApplyContentProtectionTask::ApplyContentProtectionTask(
       requests_(std::move(requests)),
       callback_(std::move(callback)) {}
 
-ApplyContentProtectionTask::~ApplyContentProtectionTask() {}
+ApplyContentProtectionTask::~ApplyContentProtectionTask() {
+  if (callback_)
+    std::move(callback_).Run(Status::KILLED);
+}
 
 void ApplyContentProtectionTask::Run() {
   std::vector<DisplaySnapshot*> hdcp_capable_displays;
   if (!GetHDCPCapableDisplays(*layout_manager_, &hdcp_capable_displays)) {
-    std::move(callback_).Run(/*success=*/false);
+    std::move(callback_).Run(Status::FAILURE);
     return;
   }
 
   pending_requests_ = hdcp_capable_displays.size();
   if (pending_requests_ == 0) {
-    std::move(callback_).Run(/*success=*/true);
+    std::move(callback_).Run(Status::SUCCESS);
     return;
   }
 
@@ -81,7 +84,7 @@ void ApplyContentProtectionTask::OnGetHDCPState(int64_t display_id,
     return;
 
   if (!success_) {
-    std::move(callback_).Run(/*success=*/false);
+    std::move(callback_).Run(Status::FAILURE);
     return;
   }
 
@@ -91,7 +94,7 @@ void ApplyContentProtectionTask::OnGetHDCPState(int64_t display_id,
 void ApplyContentProtectionTask::ApplyProtections() {
   std::vector<DisplaySnapshot*> hdcp_capable_displays;
   if (!GetHDCPCapableDisplays(*layout_manager_, &hdcp_capable_displays)) {
-    std::move(callback_).Run(/*success=*/false);
+    std::move(callback_).Run(Status::FAILURE);
     return;
   }
 
@@ -103,7 +106,7 @@ void ApplyContentProtectionTask::ApplyProtections() {
     auto it = hdcp_states_.find(display->display_id());
     // If the display can't be found, the display configuration changed.
     if (it == hdcp_states_.end()) {
-      std::move(callback_).Run(/*success=*/false);
+      std::move(callback_).Run(Status::FAILURE);
       return;
     }
 
@@ -119,7 +122,7 @@ void ApplyContentProtectionTask::ApplyProtections() {
   // All the requested changes are the same as the current HDCP state. Nothing
   // to do anymore, just ack the content protection change.
   if (pending_requests_ == 0) {
-    std::move(callback_).Run(/*success=*/true);
+    std::move(callback_).Run(Status::SUCCESS);
     return;
   }
 
@@ -136,7 +139,7 @@ void ApplyContentProtectionTask::OnSetHDCPState(bool success) {
   pending_requests_--;
 
   if (pending_requests_ == 0)
-    std::move(callback_).Run(success_);
+    std::move(callback_).Run(success_ ? Status::SUCCESS : Status::FAILURE);
 }
 
 uint32_t ApplyContentProtectionTask::GetDesiredProtectionMask(

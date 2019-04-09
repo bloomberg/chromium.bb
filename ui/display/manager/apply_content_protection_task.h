@@ -31,17 +31,18 @@ class NativeDisplayDelegate;
 //
 // Note, in steps 1a and 2a, if no HDCP capable displays are found or if errors
 // are reported, the task finishes early and skips to step 3.
-class DISPLAY_MANAGER_EXPORT ApplyContentProtectionTask {
+class DISPLAY_MANAGER_EXPORT ApplyContentProtectionTask
+    : public DisplayConfigurator::ContentProtectionTask {
  public:
-  using ResponseCallback = base::OnceCallback<void(bool success)>;
+  using ResponseCallback = base::OnceCallback<void(Status)>;
 
   ApplyContentProtectionTask(DisplayLayoutManager* layout_manager,
                              NativeDisplayDelegate* native_display_delegate,
                              DisplayConfigurator::ContentProtections requests,
                              ResponseCallback callback);
-  ~ApplyContentProtectionTask();
+  ~ApplyContentProtectionTask() override;
 
-  void Run();
+  void Run() override;
 
  private:
   void OnGetHDCPState(int64_t display_id, bool success, HDCPState state);

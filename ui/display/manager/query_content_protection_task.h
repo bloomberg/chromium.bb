@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "ui/display/manager/display_configurator.h"
 #include "ui/display/manager/display_manager_export.h"
 #include "ui/display/types/display_constants.h"
 
@@ -19,20 +20,21 @@ namespace display {
 class DisplayLayoutManager;
 class NativeDisplayDelegate;
 
-class DISPLAY_MANAGER_EXPORT QueryContentProtectionTask {
+class DISPLAY_MANAGER_EXPORT QueryContentProtectionTask
+    : public DisplayConfigurator::ContentProtectionTask {
  public:
   // |connection_mask| includes mirroring displays, and a protection method is
   // only included in |protection_mask| if also enabled on mirroring displays.
   using ResponseCallback = base::OnceCallback<
-      void(bool success, uint32_t connection_mask, uint32_t protection_mask)>;
+      void(Status status, uint32_t connection_mask, uint32_t protection_mask)>;
 
   QueryContentProtectionTask(DisplayLayoutManager* layout_manager,
                              NativeDisplayDelegate* native_display_delegate,
                              int64_t display_id,
                              ResponseCallback callback);
-  ~QueryContentProtectionTask();
+  ~QueryContentProtectionTask() override;
 
-  void Run();
+  void Run() override;
 
  private:
   void OnGetHDCPState(bool success, HDCPState state);
