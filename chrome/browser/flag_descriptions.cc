@@ -3459,9 +3459,9 @@ extern const char kInSessionPasswordChangeDescription[] =
 #if defined(TOOLKIT_VIEWS)
 
 const char kEnableMDRoundedCornersOnDialogsName[] =
-    "MD corners on secondary UI";
+    "MD corners on all secondary UI";
 const char kEnableMDRoundedCornersOnDialogsDescription[] =
-    "Increases corner radius on secondary UI.";
+    "Increases corner radius on all secondary UI.";
 
 const char kInstallableInkDropName[] = "Use InstallableInkDrop where supported";
 const char kInstallableInkDropDescription[] =
