@@ -4,6 +4,8 @@
 
 #include "components/ntp_snippets/remote/prefetched_pages_tracker_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -17,6 +19,8 @@
 using ntp_snippets::test::FakeOfflinePageModel;
 using offline_pages::MultipleOfflinePageItemCallback;
 using offline_pages::OfflinePageItem;
+using offline_pages::OfflinePageModel;
+using offline_pages::PageCriteria;
 using testing::_;
 using testing::Eq;
 using testing::SaveArg;
@@ -32,8 +36,8 @@ class MockOfflinePageModel : public offline_pages::StubOfflinePageModel {
  public:
   ~MockOfflinePageModel() override = default;
 
-  MOCK_METHOD2(GetPagesByNamespace,
-               void(const std::string& name_space,
+  MOCK_METHOD2(GetPagesWithCriteria,
+               void(const PageCriteria& criteria,
                     MultipleOfflinePageItemCallback callback));
 };
 
@@ -171,9 +175,7 @@ TEST_F(PrefetchedPagesTrackerImplTest,
 
 TEST_F(PrefetchedPagesTrackerImplTest,
        ShouldReportAsNotInitializedBeforeReceivedArticles) {
-  EXPECT_CALL(
-      *mock_offline_page_model(),
-      GetPagesByNamespace(offline_pages::kSuggestedArticlesNamespace, _));
+  EXPECT_CALL(*mock_offline_page_model(), GetPagesWithCriteria(_, _));
   PrefetchedPagesTrackerImpl tracker(mock_offline_page_model());
   tracker.Initialize(base::BindOnce([] {}));
   EXPECT_FALSE(tracker.IsInitialized());
@@ -182,13 +184,11 @@ TEST_F(PrefetchedPagesTrackerImplTest,
 TEST_F(PrefetchedPagesTrackerImplTest,
        ShouldReportAsInitializedAfterInitialization) {
   MultipleOfflinePageItemCallback offline_pages_callback;
-  EXPECT_CALL(
-      *mock_offline_page_model(),
-      GetPagesByNamespace(offline_pages::kSuggestedArticlesNamespace, _))
-      .WillOnce([&](const std::string& name_space,
-                    MultipleOfflinePageItemCallback callback) {
-        offline_pages_callback = std::move(callback);
-      });
+  EXPECT_CALL(*mock_offline_page_model(), GetPagesWithCriteria(_, _))
+      .WillOnce(
+          [&](const PageCriteria&, MultipleOfflinePageItemCallback callback) {
+            offline_pages_callback = std::move(callback);
+          });
   PrefetchedPagesTrackerImpl tracker(mock_offline_page_model());
   tracker.Initialize(base::BindOnce([] {}));
 
@@ -199,13 +199,11 @@ TEST_F(PrefetchedPagesTrackerImplTest,
 
 TEST_F(PrefetchedPagesTrackerImplTest, ShouldCallCallbackAfterInitialization) {
   MultipleOfflinePageItemCallback offline_pages_callback;
-  EXPECT_CALL(
-      *mock_offline_page_model(),
-      GetPagesByNamespace(offline_pages::kSuggestedArticlesNamespace, _))
-      .WillOnce([&](const std::string& name_space,
-                    MultipleOfflinePageItemCallback callback) {
-        offline_pages_callback = std::move(callback);
-      });
+  EXPECT_CALL(*mock_offline_page_model(), GetPagesWithCriteria(_, _))
+      .WillOnce(
+          [&](const PageCriteria&, MultipleOfflinePageItemCallback callback) {
+            offline_pages_callback = std::move(callback);
+          });
   PrefetchedPagesTrackerImpl tracker(mock_offline_page_model());
 
   base::MockCallback<base::OnceCallback<void()>>
@@ -218,13 +216,11 @@ TEST_F(PrefetchedPagesTrackerImplTest, ShouldCallCallbackAfterInitialization) {
 TEST_F(PrefetchedPagesTrackerImplTest,
        ShouldCallMultipleCallbacksAfterInitialization) {
   MultipleOfflinePageItemCallback offline_pages_callback;
-  EXPECT_CALL(
-      *mock_offline_page_model(),
-      GetPagesByNamespace(offline_pages::kSuggestedArticlesNamespace, _))
-      .WillOnce([&](const std::string& name_space,
-                    MultipleOfflinePageItemCallback callback) {
-        offline_pages_callback = std::move(callback);
-      });
+  EXPECT_CALL(*mock_offline_page_model(), GetPagesWithCriteria(_, _))
+      .WillOnce(
+          [&](const PageCriteria&, MultipleOfflinePageItemCallback callback) {
+            offline_pages_callback = std::move(callback);
+          });
   PrefetchedPagesTrackerImpl tracker(mock_offline_page_model());
 
   base::MockCallback<base::OnceCallback<void()>>
@@ -240,13 +236,11 @@ TEST_F(PrefetchedPagesTrackerImplTest,
 TEST_F(PrefetchedPagesTrackerImplTest,
        ShouldCallCallbackImmediatelyIfAlreadyInitialiazed) {
   MultipleOfflinePageItemCallback offline_pages_callback;
-  EXPECT_CALL(
-      *mock_offline_page_model(),
-      GetPagesByNamespace(offline_pages::kSuggestedArticlesNamespace, _))
-      .WillOnce([&](const std::string& name_space,
-                    MultipleOfflinePageItemCallback callback) {
-        offline_pages_callback = std::move(callback);
-      });
+  EXPECT_CALL(*mock_offline_page_model(), GetPagesWithCriteria(_, _))
+      .WillOnce(
+          [&](const PageCriteria&, MultipleOfflinePageItemCallback callback) {
+            offline_pages_callback = std::move(callback);
+          });
   PrefetchedPagesTrackerImpl tracker(mock_offline_page_model());
   tracker.Initialize(base::BindOnce([] {}));
 

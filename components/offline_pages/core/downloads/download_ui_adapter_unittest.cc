@@ -9,6 +9,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -113,7 +114,7 @@ class MockThumbnailDecoder : public ThumbnailDecoder {
 // Mock OfflinePageModel for testing the SavePage calls.
 class MockOfflinePageModel : public StubOfflinePageModel {
  public:
-  MockOfflinePageModel(base::TestMockTimeTaskRunner* task_runner)
+  explicit MockOfflinePageModel(base::TestMockTimeTaskRunner* task_runner)
       : observer_(nullptr),
         task_runner_(task_runner),
         policy_controller_(new ClientPolicyController()) {}
@@ -192,15 +193,16 @@ class MockOfflinePageModel : public StubOfflinePageModel {
     std::move(callback).Run(nullptr);
   }
 
-  void GetPageByGuid(const std::string& guid,
-                     SingleOfflinePageItemCallback callback) override {
+  void GetPagesWithCriteria(const PageCriteria& criteria,
+                            MultipleOfflinePageItemCallback callback) override {
+    ClientPolicyController policy_controller;
+    std::vector<OfflinePageItem> matches;
     for (const auto& page : pages) {
-      if (page.second.client_id.id == guid) {
-        std::move(callback).Run(&(page.second));
-        return;
+      if (MeetsCriteria(policy_controller, criteria, page.second)) {
+        matches.push_back(page.second);
       }
     }
-    std::move(callback).Run(nullptr);
+    std::move(callback).Run(matches);
   }
 
   void AddPageAndNotifyAdapter(const OfflinePageItem& page) {

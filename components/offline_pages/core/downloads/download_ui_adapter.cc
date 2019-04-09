@@ -4,6 +4,8 @@
 
 #include "components/offline_pages/core/downloads/download_ui_adapter.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/guid.h"
@@ -19,6 +21,7 @@
 #include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/downloads/offline_item_conversions.h"
 #include "components/offline_pages/core/offline_page_model.h"
+#include "components/offline_pages/core/page_criteria.h"
 #include "components/offline_pages/core/thumbnail_decoder.h"
 #include "ui/gfx/image/image.h"
 
@@ -242,10 +245,13 @@ void DownloadUIAdapter::GetAllItems(
 
 void DownloadUIAdapter::GetVisualsForItem(const ContentId& id,
                                           VisualsCallback visuals_callback) {
-  model_->GetPageByGuid(id.id,
-                        base::BindOnce(&DownloadUIAdapter::OnPageGetForVisuals,
-                                       weak_ptr_factory_.GetWeakPtr(), id,
-                                       std::move(visuals_callback)));
+  PageCriteria criteria;
+  criteria.guid = id.id;
+  criteria.maximum_matches = 1;
+  model_->GetPagesWithCriteria(
+      criteria, base::BindOnce(&DownloadUIAdapter::OnPageGetForVisuals,
+                               weak_ptr_factory_.GetWeakPtr(), id,
+                               std::move(visuals_callback)));
 }
 
 void DownloadUIAdapter::GetShareInfoForItem(const ContentId& id,
@@ -259,15 +265,16 @@ void DownloadUIAdapter::RenameItem(const ContentId& id,
   NOTREACHED();
 }
 
-void DownloadUIAdapter::OnPageGetForVisuals(const ContentId& id,
-                                            VisualsCallback visuals_callback,
-                                            const OfflinePageItem* page) {
-  if (!page) {
+void DownloadUIAdapter::OnPageGetForVisuals(
+    const ContentId& id,
+    VisualsCallback visuals_callback,
+    const std::vector<OfflinePageItem>& pages) {
+  if (pages.empty()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(visuals_callback), id, nullptr));
     return;
   }
-
+  const OfflinePageItem* page = &pages[0];
   VisualResultCallback callback =
       base::BindOnce(std::move(visuals_callback), id);
   if (page->client_id.name_space == kSuggestedArticlesNamespace) {
@@ -335,8 +342,11 @@ void DownloadUIAdapter::OnPageGetForThumbnailAdded(
 void DownloadUIAdapter::GetItemById(
     const ContentId& id,
     OfflineContentProvider::SingleItemCallback callback) {
-  model_->GetPageByGuid(
-      id.id,
+  PageCriteria criteria;
+  criteria.guid = id.id;
+  criteria.maximum_matches = 1;
+  model_->GetPagesWithCriteria(
+      criteria,
       base::BindOnce(&DownloadUIAdapter::OnPageGetForGetItem,
                      weak_ptr_factory_.GetWeakPtr(), id, std::move(callback)));
 }
@@ -344,8 +354,9 @@ void DownloadUIAdapter::GetItemById(
 void DownloadUIAdapter::OnPageGetForGetItem(
     const ContentId& id,
     OfflineContentProvider::SingleItemCallback callback,
-    const OfflinePageItem* page) {
-  if (page) {
+    const std::vector<OfflinePageItem>& pages) {
+  if (!pages.empty()) {
+    const OfflinePageItem* page = &pages[0];
     bool is_suggested =
         model_->GetPolicyController()->IsSuggested(page->client_id.name_space);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -373,16 +384,20 @@ void DownloadUIAdapter::OnAllRequestsGetForGetItem(
 }
 
 void DownloadUIAdapter::OpenItem(LaunchLocation location, const ContentId& id) {
-  model_->GetPageByGuid(
-      id.id, base::BindOnce(&DownloadUIAdapter::OnPageGetForOpenItem,
-                            weak_ptr_factory_.GetWeakPtr(), location));
+  PageCriteria criteria;
+  criteria.guid = id.id;
+  criteria.maximum_matches = 1;
+  model_->GetPagesWithCriteria(
+      criteria, base::BindOnce(&DownloadUIAdapter::OnPageGetForOpenItem,
+                               weak_ptr_factory_.GetWeakPtr(), location));
 }
 
-void DownloadUIAdapter::OnPageGetForOpenItem(LaunchLocation location,
-                                             const OfflinePageItem* page) {
-  if (!page)
+void DownloadUIAdapter::OnPageGetForOpenItem(
+    LaunchLocation location,
+    const std::vector<OfflinePageItem>& pages) {
+  if (pages.empty())
     return;
-
+  const OfflinePageItem* page = &pages[0];
   bool is_suggested =
       model_->GetPolicyController()->IsSuggested(page->client_id.name_space);
   OfflineItem item =

@@ -5,8 +5,10 @@
 #include "components/offline_pages/core/offline_page_metadata_store.h"
 
 #include <stdint.h>
-
 #include <memory>
+#include <set>
+#include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -21,7 +23,6 @@
 #include "components/offline_pages/core/model/offline_page_item_generator.h"
 #include "components/offline_pages/core/offline_clock.h"
 #include "components/offline_pages/core/offline_page_item.h"
-#include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/offline_page_thumbnail.h"
 #include "components/offline_pages/core/offline_store_utils.h"
@@ -35,6 +36,7 @@ namespace offline_pages {
 
 namespace {
 using InitializationStatus = SqlStoreBase::InitializationStatus;
+using OfflinePageSet = std::set<OfflinePageItem>;
 
 #define OFFLINE_PAGES_TABLE_V1 "offlinepages_v1"
 
@@ -662,7 +664,7 @@ class OfflinePageMetadataStoreTest : public testing::Test {
     auto store = std::make_unique<OfflinePageMetadataStore>(
         base::ThreadTaskRunnerHandle::Get(), TempPath());
     OfflinePageItem item = CheckThatStoreHasOneItem(store.get());
-    CheckThatPageThumbnailCanBeSaved((OfflinePageMetadataStore*)store.get());
+    CheckThatPageThumbnailCanBeSaved(store.get());
     CheckThatOfflinePageCanBeSaved(std::move(store));
     VerifyMetaVersions();
   }
@@ -690,7 +692,7 @@ class OfflinePageMetadataStoreTest : public testing::Test {
     EXPECT_EQ(1U, thumbnails.size());
     EXPECT_EQ(TestThumbnailVersion3(), thumbnails.back());
 
-    CheckThatPageThumbnailCanBeSaved((OfflinePageMetadataStore*)store.get());
+    CheckThatPageThumbnailCanBeSaved(store.get());
     CheckThatOfflinePageCanBeSaved(std::move(store));
     VerifyMetaVersions();
   }
@@ -723,6 +725,13 @@ class OfflinePageMetadataStoreTest : public testing::Test {
       OfflinePageMetadataStore* store) {
     return ExecuteSync<std::vector<OfflinePageItem>>(
         store, base::BindOnce(&GetOfflinePagesSync), {});
+  }
+
+  OfflinePageSet GetOfflinePageSet(OfflinePageMetadataStore* store) {
+    std::vector<OfflinePageItem> items = GetOfflinePages(store);
+    auto page_set = OfflinePageSet(items.begin(), items.end());
+    CHECK_EQ(page_set.size(), items.size());
+    return page_set;
   }
 
   ItemActionStatus AddOfflinePage(OfflinePageMetadataStore* store,
@@ -833,27 +842,27 @@ TEST_F(OfflinePageMetadataStoreTest, GetOfflinePagesFromInvalidStore) {
   // positive results now.
   store->SetInitializationStatusForTesting(
       InitializationStatus::kNotInitialized, false);
-  EXPECT_EQ(0UL, GetOfflinePages(store.get()).size());
+  EXPECT_EQ(OfflinePageSet(), GetOfflinePageSet(store.get()));
   EXPECT_EQ(InitializationStatus::kSuccess,
             store->initialization_status_for_testing());
 
   store->SetInitializationStatusForTesting(InitializationStatus::kFailure,
                                            false);
-  EXPECT_EQ(0UL, GetOfflinePages(store.get()).size());
+  EXPECT_EQ(OfflinePageSet(), GetOfflinePageSet(store.get()));
   EXPECT_EQ(InitializationStatus::kFailure,
             store->initialization_status_for_testing());
 
   store->SetInitializationStatusForTesting(InitializationStatus::kSuccess,
                                            true);
-  EXPECT_EQ(0UL, GetOfflinePages(store.get()).size());
+  EXPECT_EQ(OfflinePageSet(), GetOfflinePageSet(store.get()));
 
   store->SetInitializationStatusForTesting(
       InitializationStatus::kNotInitialized, true);
-  EXPECT_EQ(0UL, GetOfflinePages(store.get()).size());
+  EXPECT_EQ(OfflinePageSet(), GetOfflinePageSet(store.get()));
 
   store->SetInitializationStatusForTesting(InitializationStatus::kFailure,
                                            false);
-  EXPECT_EQ(0UL, GetOfflinePages(store.get()).size());
+  EXPECT_EQ(OfflinePageSet(), GetOfflinePageSet(store.get()));
 }
 
 // Loads a store which has an outdated schema.
@@ -951,17 +960,15 @@ TEST_F(OfflinePageMetadataStoreTest, AddRemoveMultipleOfflinePages) {
   EXPECT_EQ(ItemActionStatus::SUCCESS,
             AddOfflinePage(store.get(), offline_page_2));
 
-  // Get all pages from the store.
-  std::vector<OfflinePageItem> pages = GetOfflinePages(store.get());
-  EXPECT_EQ(2U, pages.size());
+  // Check all pages are in the store.
+  EXPECT_EQ(OfflinePageSet({offline_page_1, offline_page_2}),
+            GetOfflinePageSet(store.get()));
 
   // Close and reload the store.
   store.reset();
   store = BuildStore();
-  pages = GetOfflinePages(store.get());
-  ASSERT_EQ(2U, pages.size());
-  EXPECT_EQ(offline_page_2, pages[0]);
-  EXPECT_EQ(offline_page_2.offline_id, pages[0].offline_id);
+  EXPECT_EQ(OfflinePageSet({offline_page_1, offline_page_2}),
+            GetOfflinePageSet(store.get()));
 }
 
 TEST_F(OfflinePageMetadataStoreTest, StoreCloses) {

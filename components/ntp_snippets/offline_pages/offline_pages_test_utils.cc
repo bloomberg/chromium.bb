@@ -5,6 +5,8 @@
 #include "components/ntp_snippets/offline_pages/offline_pages_test_utils.h"
 
 #include <iterator>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "base/guid.h"
@@ -16,6 +18,7 @@ using offline_pages::ClientId;
 using offline_pages::ClientPolicyController;
 using offline_pages::MultipleOfflinePageItemCallback;
 using offline_pages::OfflinePageItem;
+using offline_pages::PageCriteria;
 using offline_pages::StubOfflinePageModel;
 
 namespace ntp_snippets {
@@ -25,33 +28,21 @@ FakeOfflinePageModel::FakeOfflinePageModel() = default;
 
 FakeOfflinePageModel::~FakeOfflinePageModel() = default;
 
-void FakeOfflinePageModel::GetPagesByNamespace(
-    const std::string& name_space,
+void FakeOfflinePageModel::GetAllPages(
     MultipleOfflinePageItemCallback callback) {
-  MultipleOfflinePageItemResult filtered_result;
-  for (auto& item : items_) {
-    if (item.client_id.name_space == name_space) {
-      filtered_result.emplace_back(item);
-    }
-  }
-  std::move(callback).Run(filtered_result);
+  std::move(callback).Run(items_);
 }
 
-void FakeOfflinePageModel::GetPagesSupportedByDownloads(
+void FakeOfflinePageModel::GetPagesWithCriteria(
+    const PageCriteria& criteria,
     MultipleOfflinePageItemCallback callback) {
   ClientPolicyController controller;
   MultipleOfflinePageItemResult filtered_result;
   for (auto& item : items_) {
-    if (controller.IsSupportedByDownload(item.client_id.name_space)) {
+    if (offline_pages::MeetsCriteria(controller, criteria, item))
       filtered_result.emplace_back(item);
-    }
   }
   std::move(callback).Run(filtered_result);
-}
-
-void FakeOfflinePageModel::GetAllPages(
-    MultipleOfflinePageItemCallback callback) {
-  std::move(callback).Run(items_);
 }
 
 const std::vector<OfflinePageItem>& FakeOfflinePageModel::items() {
