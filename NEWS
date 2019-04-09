@@ -11,6 +11,8 @@ issues]].
 - Remove memoization in ~checkAttr~. It wasn't implemented correctly,
   caused some weird bugs and probably didn't do much for performance.
   Thanks to Bert Frees.
+- Fix a buffer overflow in ~compilePassOpcode~. Thanks to Cheng Wen
+  for the report and to Christian Egli for the fix.
 
 ** Braille table improvements
 - Added modified letters to UEB thanks to Mike Gray.

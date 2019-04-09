@@ -1735,8 +1735,14 @@ compilePassOpcode(FileInfo *nested, TranslationTableOpcode opcode,
 		testDoCharsDots:
 			if (passHoldString.length == 0) return 0;
 			passInstructions[passIC++] = passHoldString.length;
-			for (kk = 0; kk < passHoldString.length; kk++)
+			for (kk = 0; kk < passHoldString.length; kk++) {
+				if (passIC >= MAXSTRING) {
+					compileError(passNested,
+							"@ operand in test part of multipass operand too long");
+					return 0;
+				}
 				passInstructions[passIC++] = passHoldString.chars[kk];
+			}
 			break;
 		case pass_startReplace:
 			passInstructions[passIC++] = pass_startReplace;
