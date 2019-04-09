@@ -115,6 +115,10 @@ void InstallationTracker::ReportResults(bool succeeded) {
         if (!installation.failure_reason && installation.install_stage) {
           installation.failure_reason =
               InstallationReporter::FailureReason::IN_PROGRESS;
+          InstallationReporter::Stage install_stage =
+              installation.install_stage.value();
+          UMA_HISTOGRAM_ENUMERATION("Extensions.ForceInstalledStage",
+                                    install_stage);
         }
         InstallationReporter::FailureReason failure_reason =
             installation.failure_reason.value_or(

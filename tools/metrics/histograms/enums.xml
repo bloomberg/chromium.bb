@@ -19017,6 +19017,14 @@ Called by update_net_error_codes.py.-->
   <int value="24" label="IN_PROGRESS"/>
 </enum>
 
+<enum name="ExtensionInstallationStage">
+  <int value="0" label="CREATED"/>
+  <int value="1" label="PENDING"/>
+  <int value="2" label="DOWNLOADING"/>
+  <int value="3" label="INSTALLING"/>
+  <int value="4" label="COMPLETE"/>
+</enum>
+
 <enum name="ExtensionInstallCause">
   <int value="0" label="INSTALL_CAUSE_UNSET"/>
   <int value="1" label="INSTALL_CAUSE_USER_DOWNLOAD"/>
