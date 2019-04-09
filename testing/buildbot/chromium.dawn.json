@@ -159,6 +159,30 @@
       }
     ]
   },
+  "Dawn Mac x64 Builder": {},
+  "Dawn Mac x64 Release (AMD)": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6821",
+              "hidpi": "1",
+              "os": "Mac-10.13.6",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "dawn_end2end_tests"
+      }
+    ]
+  },
   "Dawn Win10 x64 Builder": {},
   "Dawn Win10 x64 DEPS Builder": {},
   "Dawn Win10 x64 DEPS Release (Intel HD 630)": {

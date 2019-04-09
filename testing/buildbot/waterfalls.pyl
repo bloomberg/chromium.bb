@@ -1050,6 +1050,17 @@
           'gtest_tests': 'gpu_dawn_gtests',
         },
       },
+      'Dawn Mac x64 Builder' : {},
+      'Dawn Mac x64 Release (AMD)': {
+        'os_type': 'mac',
+        'browser_config': 'release',
+        'mixins': [
+          'mac_retina_amd_gpu',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_dawn_gtests',
+        },
+      },
       'Dawn Win10 x64 Builder' : {},
       'Dawn Win10 x64 DEPS Builder' : {},
       'Dawn Win10 x64 DEPS Release (Intel HD 630)': {
