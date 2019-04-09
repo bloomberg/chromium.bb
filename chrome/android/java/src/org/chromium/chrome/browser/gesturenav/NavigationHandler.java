@@ -223,6 +223,7 @@ public class NavigationHandler {
     }
 
     private void detachLayoutIfNecessary() {
+        if (mSideSlideLayout == null) return;
         cancelDetachLayoutRunnable();
         if (mSideSlideLayout.getParent() != null) {
             mParentView.removeView(mSideSlideLayout);
