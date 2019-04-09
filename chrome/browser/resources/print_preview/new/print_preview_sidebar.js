@@ -45,12 +45,8 @@ Polymer({
       notify: true,
     },
 
-    /** @private {boolean} */
-    newPrintPreviewLayout_: {
+    newPrintPreviewLayout: {
       type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('newPrintPreviewLayoutEnabled');
-      },
       reflectToAttribute: true,
     },
 
