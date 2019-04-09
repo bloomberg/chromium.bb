@@ -108,6 +108,7 @@ js_library("toolbar") {
     ":search_service",
     "//third_party/polymer/v1_0/components-chromium/iron-a11y-announcer:iron-a11y-announcer-extracted",
     "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu",
+    "//ui/webui/resources/cr_elements/cr_toast:cr_toast_manager",
     "//ui/webui/resources/cr_elements/cr_toolbar:cr_toolbar",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:util",
