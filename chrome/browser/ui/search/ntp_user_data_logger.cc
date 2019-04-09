@@ -430,6 +430,12 @@ void NTPUserDataLogger::LogEvent(NTPLoggingEventType event,
       UMA_HISTOGRAM_ENUMERATION("NewTabPage.CustomizeShortcutAction",
                                 LoggingEventToCustomizeShortcutAction(event));
       break;
+    case NTP_MIDDLE_SLOT_PROMO_SHOWN:
+      UMA_HISTOGRAM_LOAD_TIME("NewTabPage.Promos.ShownTime", time);
+      break;
+    case NTP_MIDDLE_SLOT_PROMO_LINK_CLICKED:
+      UMA_HISTOGRAM_EXACT_LINEAR("NewTabPage.Promos.LinkClicked", 1, 1);
+      break;
   }
 }
 

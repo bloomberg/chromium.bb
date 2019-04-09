@@ -41,12 +41,20 @@ class MockPromoService : public PromoService {
  public:
   MockPromoService() : PromoService(nullptr, nullptr) {}
 
-  void Refresh() override { PromoDataLoaded(Status::OK, promo_data_); }
+  void Refresh() override { PromoDataLoaded(promo_status_, promo_data_); }
 
-  void set_promo_data(const PromoData& promo_data) { promo_data_ = promo_data; }
+  void SetupWithPromo(const PromoData& promo_data) {
+    promo_data_ = promo_data;
+    promo_status_ = Status::OK_WITH_PROMO;
+  }
+
+  void SetupWithoutPromo() { promo_status_ = Status::OK_WITHOUT_PROMO; }
+
+  void SetupWithFailure() { promo_status_ = Status::FATAL_ERROR; }
 
  private:
   PromoData promo_data_;
+  Status promo_status_;
 };
 
 class LocalNTPPromoTest : public InProcessBrowserTest {
@@ -94,13 +102,13 @@ class LocalNTPPromoTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(LocalNTPPromoTest, PromoInjectedIntoPage) {
   PromoData promo;
   promo.promo_html = "<div>promo</div>";
-  promo_service()->set_promo_data(promo);
+  promo_service()->SetupWithPromo(promo);
+
+  base::HistogramTester histograms;
 
   // Open a new blank tab, then go to NTP and listen for console messages.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  content::ConsoleObserverDelegate console_observer(active_tab, "*");
-  active_tab->SetDelegate(&console_observer);
   local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser(),
                                                         /*delay=*/1000);
 
@@ -108,14 +116,23 @@ IN_PROC_BROWSER_TEST_F(LocalNTPPromoTest, PromoInjectedIntoPage) {
   EXPECT_TRUE(instant_test_utils::GetBoolFromJS(
       active_tab, "$('promo').innerHTML === '<div>promo</div>'", &result));
   ASSERT_TRUE(result);
+
+  histograms.ExpectTotalCount(
+      "NewTabPage.Promos.RequestLatency2.SuccessWithPromo", 1);
+  histograms.ExpectTotalCount(
+      "NewTabPage.Promos.RequestLatency2.SuccessWithoutPromo", 0);
+  histograms.ExpectTotalCount("NewTabPage.Promos.RequestLatency2.Failure", 0);
+  histograms.ExpectTotalCount("NewTabPage.Promos.ShownTime", 1);
 }
 
-IN_PROC_BROWSER_TEST_F(LocalNTPPromoTest, NoPromoInjectedIntoPage) {
+IN_PROC_BROWSER_TEST_F(LocalNTPPromoTest, NoPromoAvailable) {
+  promo_service()->SetupWithoutPromo();
+
+  base::HistogramTester histograms;
+
   // Open a new blank tab, then go to NTP and listen for console messages.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  content::ConsoleObserverDelegate console_observer(active_tab, "*");
-  active_tab->SetDelegate(&console_observer);
   local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser(),
                                                         /*delay=*/1000);
 
@@ -123,4 +140,35 @@ IN_PROC_BROWSER_TEST_F(LocalNTPPromoTest, NoPromoInjectedIntoPage) {
   EXPECT_TRUE(instant_test_utils::GetBoolFromJS(
       active_tab, "$('promo') === null", &result));
   ASSERT_TRUE(result);
+
+  histograms.ExpectTotalCount(
+      "NewTabPage.Promos.RequestLatency2.SuccessWithPromo", 0);
+  histograms.ExpectTotalCount(
+      "NewTabPage.Promos.RequestLatency2.SuccessWithoutPromo", 1);
+  histograms.ExpectTotalCount("NewTabPage.Promos.RequestLatency2.Failure", 0);
+  histograms.ExpectTotalCount("NewTabPage.Promos.ShownTime", 0);
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPPromoTest, PromoFetchFails) {
+  promo_service()->SetupWithFailure();
+
+  base::HistogramTester histograms;
+
+  // Open a new blank tab, then go to NTP and listen for console messages.
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser(),
+                                                        /*delay=*/1000);
+
+  bool result;
+  EXPECT_TRUE(instant_test_utils::GetBoolFromJS(
+      active_tab, "$('promo') === null", &result));
+  ASSERT_TRUE(result);
+
+  histograms.ExpectTotalCount(
+      "NewTabPage.Promos.RequestLatency2.SuccessWithPromo", 0);
+  histograms.ExpectTotalCount(
+      "NewTabPage.Promos.RequestLatency2.SuccessWithoutPromo", 0);
+  histograms.ExpectTotalCount("NewTabPage.Promos.RequestLatency2.Failure", 1);
+  histograms.ExpectTotalCount("NewTabPage.Promos.ShownTime", 0);
 }

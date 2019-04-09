@@ -109,7 +109,7 @@ TEST_F(PromoServiceTest, PromoDataNetworkError) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(service()->promo_data(), base::nullopt);
-  EXPECT_EQ(service()->promo_status(), Status::TRANSIENT_ERROR);
+  EXPECT_EQ(service()->promo_status(), PromoService::Status::TRANSIENT_ERROR);
 }
 
 TEST_F(PromoServiceTest, BadPromoResponse) {
@@ -122,7 +122,7 @@ TEST_F(PromoServiceTest, BadPromoResponse) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(service()->promo_data(), base::nullopt);
-  EXPECT_EQ(service()->promo_status(), Status::FATAL_ERROR);
+  EXPECT_EQ(service()->promo_status(), PromoService::Status::FATAL_ERROR);
 }
 
 TEST_F(PromoServiceTest, BadPromoResponseNoLogUrl) {
@@ -136,8 +136,23 @@ TEST_F(PromoServiceTest, BadPromoResponseNoLogUrl) {
   service()->Refresh();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(service()->promo_data(), base::nullopt);
-  EXPECT_EQ(service()->promo_status(), Status::FATAL_ERROR);
+  PromoData data;
+  EXPECT_EQ(service()->promo_data(), data);
+  EXPECT_EQ(service()->promo_status(), PromoService::Status::OK_WITHOUT_PROMO);
+}
+
+TEST_F(PromoServiceTest, PromoResponseMissingData) {
+  SetUpResponseWithData(service()->GetLoadURLForTesting(),
+                        "{\"update\":{\"promos\":{}}}");
+
+  ASSERT_EQ(service()->promo_data(), base::nullopt);
+
+  service()->Refresh();
+  base::RunLoop().RunUntilIdle();
+
+  PromoData data;
+  EXPECT_EQ(service()->promo_data(), data);
+  EXPECT_EQ(service()->promo_status(), PromoService::Status::OK_WITHOUT_PROMO);
 }
 
 TEST_F(PromoServiceTest, GoodPromoResponse) {
@@ -156,5 +171,5 @@ TEST_F(PromoServiceTest, GoodPromoResponse) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(service()->promo_data(), promo);
-  EXPECT_EQ(service()->promo_status(), Status::OK);
+  EXPECT_EQ(service()->promo_status(), PromoService::Status::OK_WITH_PROMO);
 }
