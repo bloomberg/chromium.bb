@@ -65,9 +65,6 @@ def AddCommonArgs(arg_parser):
   common_args.add_argument('--qemu-cpu-cores', type=int, default=4,
                            help='Sets the number of CPU cores to provide if '
                            'launching in a VM with QEMU.'),
-  common_args.add_argument('--qemu-require-kvm', action='store_true',
-                           help='Disables fall-back to emulated CPU if the '
-                           'host system does not support KVM acceleration.'),
   common_args.add_argument(
       '--os_check', choices=['check', 'update', 'ignore'],
       default='update',
@@ -106,11 +103,14 @@ def GetDeploymentTargetForArgs(args):
     system_log_file = None
 
   if not args.device:
+    # KVM is required on x64 test bots.
+    require_kvm = args.test_launcher_bot_mode and args.target_cpu == "x64"
+
     return QemuTarget(output_dir=args.output_directory,
                       target_cpu=args.target_cpu,
                       cpu_cores=args.qemu_cpu_cores,
                       system_log_file=system_log_file,
-                      require_kvm=args.qemu_require_kvm)
+                      require_kvm=require_kvm)
   else:
     return DeviceTarget(output_dir=args.output_directory,
                         target_cpu=args.target_cpu,

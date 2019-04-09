@@ -1573,6 +1573,9 @@
         'args': [
           '--platform=fuchsia',
         ],
+        'swarming': {
+          'shards': 1,
+        },
       },
       'linux-blink-animation-use-time-delta': {
         'args': [
@@ -1650,6 +1653,14 @@
         ],
       },
       # chromium.linux
+      'Fuchsia x64': {
+        'args': [
+          '--platform=fuchsia',
+        ],
+        'swarming': {
+          'shards': 1,
+        },
+      },
       'Linux Tests': {
         'swarming': {
           'dimension_sets': [
