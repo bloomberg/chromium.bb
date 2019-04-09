@@ -280,6 +280,10 @@ void AssistantController::GetNavigableContentsFactory(
       std::move(receiver));
 }
 
+bool AssistantController::IsAssistantReady() const {
+  return !!assistant_;
+}
+
 void AssistantController::NotifyConstructed() {
   for (AssistantControllerObserver& observer : observers_)
     observer.OnAssistantControllerConstructed();

@@ -227,6 +227,8 @@ class ASH_EXPORT AppListControllerImpl
   void OnWallpaperColorsChanged() override;
 
   // mojom::VoiceInteractionObserver:
+  void OnVoiceInteractionStatusChanged(
+      mojom::VoiceInteractionState state) override;
   void OnVoiceInteractionSettingsEnabled(bool enabled) override;
   void OnAssistantFeatureAllowedChanged(
       mojom::AssistantAllowedState state) override;
