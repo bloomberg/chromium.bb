@@ -52,18 +52,18 @@
         overflow: overlay;
       }
 
-      :host(:not([new-print-preview-layout_])) #container {
+      :host(:not([new-print-preview-layout])) #container {
         padding-bottom: 16px;
       }
 
-      :host([new-print-preview-layout_]) #destinationSettings {
+      :host([new-print-preview-layout]) #destinationSettings {
         margin-top: 12px;
       }
 
       /* Print Preview uses lighter box-shadows compared to the default
        * styling. */
-      :host([new-print-preview-layout_]) #cr-container-shadow-top,
-      :host([new-print-preview-layout_]) #cr-container-shadow-bottom {
+      :host([new-print-preview-layout]) #cr-container-shadow-top,
+      :host([new-print-preview-layout]) #cr-container-shadow-bottom {
         box-shadow: inset 0 5px 3px -3px rgba(0, 0, 0, .2);
       }
 
@@ -74,26 +74,26 @@
       }
 
 <if expr="not chromeos">
-      :host(:not([new-print-preview-layout_])) print-preview-link-container {
+      :host(:not([new-print-preview-layout])) print-preview-link-container {
         border-top: var(--print-preview-settings-border);
       }
 </if>
     </style>
-    <template is="dom-if" if="[[newPrintPreviewLayout_]]">
+    <template is="dom-if" if="[[newPrintPreviewLayout]]">
       <print-preview-header-new id="header" destination="[[destination]]"
           cloud-print-error-message="[[cloudPrintErrorMessage]]"
           error="[[error]]" state="[[state]]"
           settings="[[settings]]" managed="[[controlsManaged]]">
       </print-preview-header-new>
     </template>
-    <template is="dom-if" if="[[!newPrintPreviewLayout_]]">
+    <template is="dom-if" if="[[!newPrintPreviewLayout]]">
       <print-preview-header id="header" destination="[[destination]]"
           cloud-print-error-message="[[cloudPrintErrorMessage]]"
           error="[[error]]" state="[[state]]"
           settings="[[settings]]" managed="[[controlsManaged]]">
       </print-preview-header>
     </template>
-    <div id="container" show-bottom-shadow$="[[newPrintPreviewLayout_]]">
+    <div id="container" show-bottom-shadow$="[[newPrintPreviewLayout]]">
       <print-preview-destination-settings id="destinationSettings"
           cloud-print-interface="[[cloudPrintInterface]]"
           destination="{{destination}}" destination-state="{{destinationState}}"
@@ -169,7 +169,7 @@
             class="settings-section">
         </print-preview-advanced-options-settings>
 <if expr="not chromeos">
-        <template is="dom-if" if="[[newPrintPreviewLayout_]]">
+        <template is="dom-if" if="[[newPrintPreviewLayout]]">
           <print-preview-link-container destination="[[destination]]"
               app-kiosk-mode="[[isInAppKioskMode_]]"
               disabled="[[controlsDisabled_]]">
@@ -178,7 +178,7 @@
 </if>
       </iron-collapse>
 <if expr="not chromeos">
-    <template is="dom-if" if="[[!newPrintPreviewLayout_]]">
+    <template is="dom-if" if="[[!newPrintPreviewLayout]]">
       <print-preview-link-container destination="[[destination]]"
           app-kiosk-mode="[[isInAppKioskMode_]]"
           disabled="[[controlsDisabled_]]">
@@ -186,7 +186,7 @@
     </template>
 </if>
     </div>
-    <template is="dom-if" if="[[newPrintPreviewLayout_]]">
+    <template is="dom-if" if="[[newPrintPreviewLayout]]">
       <print-preview-button-strip destination="[[destination]]"
           state="[[state]]">
       </print-preview-button-strip>

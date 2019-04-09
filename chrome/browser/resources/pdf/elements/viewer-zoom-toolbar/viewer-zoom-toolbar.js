@@ -11,6 +11,15 @@ Polymer({
   is: 'viewer-zoom-toolbar',
 
   properties: {
+    reverse: Boolean,
+
+    /** @private */
+    showOnLeft_: {
+      type: Boolean,
+      computed: 'computeShowOnLeft_(reverse)',
+      reflectToAttribute: true,
+    },
+
     strings: {type: Object, observer: 'updateTooltips_'},
 
     visible_: {type: Boolean, value: true}
@@ -30,6 +39,15 @@ Polymer({
     if (!this.visible_) {
       this.show();
     }
+  },
+
+  /**
+   * @return {boolean} Whether to show the zoom toolbar on the left side of the
+   *     viewport.
+   * @private
+   */
+  computeShowOnLeft_: function() {
+    return isRTL() !== this.reverse;
   },
 
   /**

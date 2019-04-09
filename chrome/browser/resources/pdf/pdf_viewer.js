@@ -749,6 +749,13 @@ PDFViewer.prototype = {
     document.documentElement.lang = strings.language;
 
     loadTimeData.data = strings;
+    const reverseZoomToolbar = this.isPrintPreview_ &&
+        loadTimeData.getBoolean('newPrintPreviewLayoutEnabled');
+    this.reverseZoomToolbar_ = reverseZoomToolbar;
+    if (reverseZoomToolbar) {
+      this.toolbarManager_.reverseSideToolbar();
+    }
+    $('zoom-toolbar').reverse = reverseZoomToolbar;
     $('toolbar').strings = strings;
     $('toolbar').pdfAnnotationsEnabled =
         loadTimeData.getBoolean('pdfAnnotationsEnabled');
@@ -849,9 +856,11 @@ PDFViewer.prototype = {
     // gives a compromise: if there is no scrollbar visible then the toolbar
     // will be half a scrollbar width further left than the spec but if there
     // is a scrollbar visible it will be half a scrollbar width further right
-    // than the spec. In RTL layout, the zoom toolbar is on the left side, but
-    // the scrollbar is still on the right, so this is not necessary.
-    if (!isRTL()) {
+    // than the spec. In RTL layout normally, and in LTR layout in Print Preview
+    // when the NewPrintPreview flag is enabled, the zoom toolbar is on the left
+    // left side, but the scrollbar is still on the right, so this is not
+    // necessary.
+    if (isRTL() === this.reverseZoomToolbar_) {
       this.zoomToolbar_.style.right =
           -verticalScrollbarWidth + (scrollbarWidth / 2) + 'px';
     }
