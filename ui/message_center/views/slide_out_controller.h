@@ -87,6 +87,10 @@ class MESSAGE_CENTER_EXPORT SlideOutController
   // Sets the opacity of the slide out layer if |update_opacity_| is true.
   void SetOpacityIfNecessary(float opacity);
 
+  // Sets the transform matrix and performs animation if the matrix is changed.
+  void SetTransformWithAnimationIfNecessary(const gfx::Transform& transform,
+                                            base::TimeDelta animation_duration);
+
   ui::ScopedTargetHandler target_handling_;
   Delegate* delegate_;
 

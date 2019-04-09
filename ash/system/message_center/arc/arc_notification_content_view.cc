@@ -199,35 +199,23 @@ class ArcNotificationContentView::SlideHelper {
   }
   virtual ~SlideHelper() = default;
 
-  void Update(base::Optional<bool> slide_in_progress) {
-    if (slide_in_progress.has_value())
-      slide_in_progress_ = slide_in_progress.value();
-
-    const bool has_animation =
-        GetSlideOutLayer()->GetAnimator()->is_animating();
-    const bool has_transform = !GetSlideOutLayer()->transform().IsIdentity();
-    const bool moving = (slide_in_progress_ && has_transform) || has_animation;
-
-    if (moving_ == moving)
+  void Update(bool slide_in_progress) {
+    if (slide_in_progress_ == slide_in_progress)
       return;
-    moving_ = moving;
 
-    if (moving_)
+    slide_in_progress_ = slide_in_progress;
+
+    if (slide_in_progress_)
       owner_->ShowCopiedSurface();
     else
       owner_->HideCopiedSurface();
   }
 
  private:
-  // This is a temporary hack to address https://crbug.com/718965
-  ui::Layer* GetSlideOutLayer() {
-    ui::Layer* layer = owner_->parent()->layer();
-    return layer ? layer : owner_->GetWidget()->GetLayer();
-  }
-
   ArcNotificationContentView* const owner_;
+
+  // True if the view is not at the original position.
   bool slide_in_progress_ = false;
-  bool moving_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SlideHelper);
 };
@@ -358,6 +346,7 @@ void ArcNotificationContentView::UpdateCornerRadius(int top_radius,
 }
 
 void ArcNotificationContentView::OnSlideChanged(bool in_progress) {
+  slide_in_progress_ = in_progress;
   if (slide_helper_)
     slide_helper_->Update(in_progress);
 }
@@ -497,7 +486,7 @@ void ArcNotificationContentView::AttachSurface() {
   slide_helper_.reset(new SlideHelper(this));
 
   // Invokes Update() in case surface is attached during a slide.
-  slide_helper_->Update(base::nullopt);
+  slide_helper_->Update(slide_in_progress_);
 
   // (Re-)create the floating buttons after |surface_| is attached to a widget.
   MaybeCreateFloatingControlButtons();
