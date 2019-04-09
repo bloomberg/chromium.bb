@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/storage_option.h"
@@ -267,15 +268,16 @@ class SyncDataTypeManagerImplTest : public testing::Test {
   }
 
   // Configure the given DTM with the given desired types.
-  void Configure(ModelTypeSet desired_types) {
-    dtm_->Configure(desired_types,
-                    BuildConfigureContext(CONFIGURE_REASON_RECONFIGURATION));
+  void Configure(ModelTypeSet desired_types,
+                 ConfigureReason reason = CONFIGURE_REASON_RECONFIGURATION) {
+    dtm_->Configure(desired_types, BuildConfigureContext(reason));
   }
 
-  void Configure(ModelTypeSet desired_types, StorageOption storage_option) {
+  void Configure(ModelTypeSet desired_types,
+                 StorageOption storage_option,
+                 ConfigureReason reason = CONFIGURE_REASON_RECONFIGURATION) {
     dtm_->Configure(desired_types,
-                    BuildConfigureContext(CONFIGURE_REASON_RECONFIGURATION,
-                                          storage_option));
+                    BuildConfigureContext(reason, storage_option));
   }
 
   // Finish downloading for the given DTM. Should be done only after
@@ -1890,6 +1892,41 @@ TEST_F(SyncDataTypeManagerImplTest, DontPurgeDataOnReconfiguringEphemeral) {
   // This should *not* have cleared the data for the excluded type.
   EXPECT_TRUE(last_configure_params().to_purge.Empty());
   EXPECT_EQ(0, GetController(BOOKMARKS)->clear_metadata_call_count());
+}
+TEST_F(SyncDataTypeManagerImplTest, ShouldRecordInitialConfigureTimeHistogram) {
+  base::HistogramTester histogram_tester;
+  AddController(BOOKMARKS);
+
+  // Configure as first sync.
+  SetConfigureStartExpectation();
+  SetConfigureDoneExpectation(DataTypeManager::OK, DataTypeStatusTable());
+
+  Configure(ModelTypeSet(BOOKMARKS), STORAGE_ON_DISK,
+            CONFIGURE_REASON_NEW_CLIENT);
+
+  FinishDownload(ModelTypeSet(), ModelTypeSet());
+  FinishDownload(ModelTypeSet(BOOKMARKS), ModelTypeSet());
+
+  GetController(BOOKMARKS)->FinishStart(DataTypeController::OK);
+  histogram_tester.ExpectTotalCount("Sync.ConfigureTime_Initial.OK", 1);
+}
+
+TEST_F(SyncDataTypeManagerImplTest,
+       ShouldRecordSubsequentConfigureTimeHistogram) {
+  base::HistogramTester histogram_tester;
+  AddController(BOOKMARKS);
+  // Configure as subsequent sync.
+  SetConfigureStartExpectation();
+  SetConfigureDoneExpectation(DataTypeManager::OK, DataTypeStatusTable());
+
+  Configure(ModelTypeSet(BOOKMARKS), STORAGE_ON_DISK,
+            CONFIGURE_REASON_RECONFIGURATION);
+
+  FinishDownload(ModelTypeSet(), ModelTypeSet());
+  FinishDownload(ModelTypeSet(BOOKMARKS), ModelTypeSet());
+
+  GetController(BOOKMARKS)->FinishStart(DataTypeController::OK);
+  histogram_tester.ExpectTotalCount("Sync.ConfigureTime_Subsequent.OK", 1);
 }
 
 }  // namespace syncer

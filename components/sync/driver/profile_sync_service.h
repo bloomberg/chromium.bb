@@ -410,11 +410,6 @@ class ProfileSyncService : public SyncService,
   // Cache of the last SyncCycleSnapshot received from the sync engine.
   SyncCycleSnapshot last_snapshot_;
 
-  // The time that OnConfigureStart is called. This member is zero if
-  // OnConfigureStart has not yet been called, and is reset to zero once
-  // OnConfigureDone is called.
-  base::Time sync_configure_start_time_;
-
   // Callback to update the network time; used for initializing the engine.
   NetworkTimeUpdateCallback network_time_update_callback_;
 
