@@ -87,8 +87,7 @@ class PrintPreviewObserver : PrintPreviewUI::TestDelegate {
 
 class NupPrintingTestDelegate : public PrintingMessageFilter::TestDelegate {
  public:
-  explicit NupPrintingTestDelegate(int initial_document_cookie)
-      : initial_document_cookie_(initial_document_cookie) {
+  NupPrintingTestDelegate() {
     PrintingMessageFilter::SetDelegateForTesting(this);
   }
   ~NupPrintingTestDelegate() override {
@@ -99,31 +98,17 @@ class NupPrintingTestDelegate : public PrintingMessageFilter::TestDelegate {
   PrintMsg_Print_Params GetPrintParams() override {
     PrintMsg_Print_Params params;
     params.page_size = gfx::Size(612, 792);
-    params.content_size = has_margin_ ? gfx::Size(540, 720) : params.page_size;
+    params.content_size = gfx::Size(540, 720);
     params.printable_area = gfx::Rect(612, 792);
     params.dpi = gfx::Size(72, 72);
-    params.document_cookie = GetNextDocumentCookie();
+    params.document_cookie = kDefaultDocumentCookie;
     params.pages_per_sheet = 4;
     params.printed_doc_type =
         IsOopifEnabled() ? SkiaDocumentType::MSKP : SkiaDocumentType::PDF;
     return params;
   }
 
-  int get_print_params_count() const { return get_print_params_count_; }
-
-  void set_no_margin() { has_margin_ = false; }
-
  private:
-  int GetNextDocumentCookie() {
-    int document_cookie = initial_document_cookie_ + get_print_params_count_;
-    ++get_print_params_count_;
-    return document_cookie;
-  }
-
-  const int initial_document_cookie_;
-  int get_print_params_count_ = 0;
-  bool has_margin_ = true;
-
   DISALLOW_COPY_AND_ASSIGN(NupPrintingTestDelegate);
 };
 
@@ -618,52 +603,24 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessPrintExtensionBrowserTest,
 }
 
 // Printing frame content for the main frame of a generic webpage with N-up
-// printing. This is a regression test for https://crbug.com/937247
+// priting. This is a regression test for https://crbug.com/937247
 IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintNup) {
-  NupPrintingTestDelegate test_delegate(kDefaultDocumentCookie);
+  NupPrintingTestDelegate test_delegate;
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(embedded_test_server()->GetURL("/printing/test1.html"));
   ui_test_utils::NavigateToURL(browser(), url);
 
   PrintAndWaitUntilPreviewIsReady(/*print_only_selection=*/false);
-  EXPECT_EQ(1, test_delegate.get_print_params_count());
 }
 
 // Site per process version of PrintBrowserTest.PrintNup.
 IN_PROC_BROWSER_TEST_F(SitePerProcessPrintBrowserTest, PrintNup) {
-  NupPrintingTestDelegate test_delegate(kDefaultDocumentCookie);
+  NupPrintingTestDelegate test_delegate;
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(embedded_test_server()->GetURL("/printing/test1.html"));
   ui_test_utils::NavigateToURL(browser(), url);
 
   PrintAndWaitUntilPreviewIsReady(/*print_only_selection=*/false);
-  EXPECT_EQ(1, test_delegate.get_print_params_count());
-}
-
-// Printing frame content for the main frame of a generic webpage with N-up
-// printing and no margins. This covers the test scenario described in
-// https://crbug.com/944516
-IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintNupNoMargins) {
-  NupPrintingTestDelegate test_delegate(kDefaultDocumentCookie);
-  test_delegate.set_no_margin();
-  ASSERT_TRUE(embedded_test_server()->Started());
-  GURL url(embedded_test_server()->GetURL("/printing/test1.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
-
-  PrintAndWaitUntilPreviewIsReady(/*print_only_selection=*/false);
-  EXPECT_EQ(2, test_delegate.get_print_params_count());
-}
-
-// Site per process version of PrintBrowserTest.PrintNup.
-IN_PROC_BROWSER_TEST_F(SitePerProcessPrintBrowserTest, PrintNupNoMargins) {
-  NupPrintingTestDelegate test_delegate(kDefaultDocumentCookie);
-  test_delegate.set_no_margin();
-  ASSERT_TRUE(embedded_test_server()->Started());
-  GURL url(embedded_test_server()->GetURL("/printing/test1.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
-
-  PrintAndWaitUntilPreviewIsReady(/*print_only_selection=*/false);
-  EXPECT_EQ(2, test_delegate.get_print_params_count());
 }
 
 }  // namespace printing
