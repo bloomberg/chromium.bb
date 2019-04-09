@@ -1205,6 +1205,11 @@
       origin_trial_feature_name: "RTCQuicTransport",
       status: "experimental",
     },
+    {
+      name: "RtcJitterBufferDelayHint",
+      origin_trial_feature_name: "RtcJitterBufferDelayHint",
+      status: "experimental",
+    },
     // Enables the use of the RTCQuicTransport object.
     {
       name: "RTCQuicTransport",

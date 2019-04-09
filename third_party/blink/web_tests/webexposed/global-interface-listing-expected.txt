@@ -5815,6 +5815,7 @@ interface RTCQuicTransport : EventTarget
 interface RTCRtpReceiver
     static method getCapabilities
     attribute @@toStringTag
+    getter jitterBufferDelayHint
     getter rtcp_transport
     getter track
     getter transport
@@ -5823,6 +5824,7 @@ interface RTCRtpReceiver
     method getParameters
     method getStats
     method getSynchronizationSources
+    setter jitterBufferDelayHint
 interface RTCRtpSender
     static method getCapabilities
     attribute @@toStringTag

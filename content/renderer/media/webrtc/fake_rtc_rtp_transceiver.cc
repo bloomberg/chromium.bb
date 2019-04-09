@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/renderer/media/webrtc/fake_rtc_rtp_transceiver.h"
+#include "content/renderer/media/webrtc/webrtc_util.h"
 
 #include <vector>
 
@@ -173,6 +174,11 @@ std::unique_ptr<webrtc::RtpParameters> FakeRTCRtpReceiver::GetParameters()
     const {
   NOTIMPLEMENTED();
   return nullptr;
+}
+
+void FakeRTCRtpReceiver::SetJitterBufferMinimumDelay(
+    base::Optional<double> delay_seconds) {
+  NOTIMPLEMENTED();
 }
 
 FakeRTCRtpTransceiver::FakeRTCRtpTransceiver(
