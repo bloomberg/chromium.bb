@@ -150,9 +150,8 @@ void AppControllerService::OnAppUpdate(const apps::AppUpdate& update) {
   if (!AppIsRelevantForKioskNextHome(update))
     return;
 
-  if (client_) {
+  if (client_)
     client_->OnAppChanged(CreateAppPtr(update));
-  }
 }
 
 mojom::AppPtr AppControllerService::CreateAppPtr(
@@ -163,9 +162,9 @@ mojom::AppPtr AppControllerService::CreateAppPtr(
   app->display_name = update.Name();
   app->readiness = update.Readiness();
 
-  if (app->type == apps::mojom::AppType::kArc) {
+  if (app->type == apps::mojom::AppType::kArc)
     app->android_package_name = MaybeGetAndroidPackageName(app->app_id);
-  }
+
   return app;
 }
 
@@ -173,9 +172,8 @@ bool AppControllerService::AppIsRelevantForKioskNextHome(
     const apps::AppUpdate& update) {
   // The Kiosk Next Home app should never be returned since it's considered an
   // implementation detail.
-  if (update.AppId() == extension_misc::kKioskNextHomeAppId) {
+  if (update.AppId() == extension_misc::kKioskNextHomeAppId)
     return false;
-  }
 
   // We only consider relevant apps that can be shown in the launcher.
   // This skips hidden apps like Galery, Web store, Welcome app, etc.
