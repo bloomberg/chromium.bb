@@ -2959,8 +2959,8 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
 
   def testDefaultComplianceMode(self):
     driver = self.CreateDriver(send_w3c_capability=None,
-                               send_w3c_request=False)
-    self.assertFalse(driver.w3c_compliant)
+                               send_w3c_request=True)
+    self.assertTrue(driver.w3c_compliant)
 
   def testW3cCompliantResponses(self):
     # It's an error to send Legacy format request
