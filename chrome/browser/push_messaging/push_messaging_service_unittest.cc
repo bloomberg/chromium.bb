@@ -257,12 +257,3 @@ TEST_F(PushMessagingServiceTest, NormalizeSenderInfo) {
 
   EXPECT_EQ(p256dh, push_service->NormalizeSenderInfo(p256dh));
 }
-
-TEST_F(PushMessagingServiceTest, DifferentEndpoints) {
-  PushMessagingServiceImpl* push_service = profile()->GetPushMessagingService();
-  ASSERT_TRUE(push_service);
-
-  // Verifies that the service returns different endpoints depending on whether
-  // support for the standard protocol is requested.
-  EXPECT_NE(push_service->GetEndpoint(true), push_service->GetEndpoint(false));
-}

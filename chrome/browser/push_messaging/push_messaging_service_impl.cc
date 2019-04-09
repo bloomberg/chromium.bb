@@ -418,8 +418,7 @@ void PushMessagingServiceImpl::OnSendAcknowledged(
 // GetEndpoint method ----------------------------------------------------------
 
 GURL PushMessagingServiceImpl::GetEndpoint(bool standard_protocol) const {
-  return GURL(standard_protocol ? kPushMessagingPushProtocolEndpoint
-                                : kPushMessagingGcmEndpoint);
+  return GURL(kPushMessagingGcmEndpoint);
 }
 
 // Subscribe and GetPermissionStatus methods -----------------------------------
