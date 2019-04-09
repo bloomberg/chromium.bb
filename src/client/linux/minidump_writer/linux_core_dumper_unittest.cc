@@ -94,7 +94,7 @@ TEST(LinuxCoreDumperTest, VerifyDumpWithMultipleThreads) {
   struct stat st;
   if (stat(core_file.c_str(), &st) != 0) {
     fprintf(stderr, "LinuxCoreDumperTest.VerifyDumpWithMultipleThreads test is "
-            "skipped due to no core file being generated");
+            "skipped due to no core file being generated\n");
     return;
   }
 #endif
@@ -155,7 +155,7 @@ TEST(LinuxCoreDumperTest, VerifyExceptionDetails) {
   struct stat st;
   if (stat(core_file.c_str(), &st) != 0) {
     fprintf(stderr, "LinuxCoreDumperTest.VerifyExceptionDetails test is "
-            "skipped due to no core file being generated");
+            "skipped due to no core file being generated\n");
     return;
   }
 #endif
@@ -170,7 +170,7 @@ TEST(LinuxCoreDumperTest, VerifyExceptionDetails) {
   // TODO: For some reason, Android doesn't seem to pass this.
   if (!dumper.crash_address()) {
     fprintf(stderr, "LinuxCoreDumperTest.VerifyExceptionDetails test is "
-            "skipped due to missing signal details on Android");
+            "skipped due to missing signal details on Android\n");
     return;
   }
 #endif
