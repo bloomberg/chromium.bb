@@ -229,7 +229,7 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
   if (!ash::features::ShouldUseShaderRoundedCorner()) {
     bubble_content_mask_ = views::Painter::CreatePaintedLayer(
         views::Painter::CreateSolidRoundRectPainter(
-            SK_ColorBLACK, bubble_border_->GetBorderCornerRadius()));
+            SK_ColorBLACK, bubble_border_->corner_radius()));
   }
 
   auto layout = std::make_unique<BottomAlignedBoxLayout>(this);
@@ -260,7 +260,7 @@ bool TrayBubbleView::IsATrayBubbleOpen() {
 
 void TrayBubbleView::InitializeAndShowBubble() {
   if (ash::features::ShouldUseShaderRoundedCorner()) {
-    int radius = bubble_border_->GetBorderCornerRadius();
+    int radius = bubble_border_->corner_radius();
     layer()->parent()->SetRoundedCornerRadius({radius, radius, radius, radius});
     layer()->parent()->SetIsFastRoundedCorner(true);
   } else {
