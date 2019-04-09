@@ -484,6 +484,7 @@ extern const char kLocalesNoValidLocaleNamesListed[];
 extern const char kLocalesTreeMissing[];
 extern const char kManifestParseError[];
 extern const char kManifestUnreadable[];
+extern const char kManifestVersionTooHighWarning[];
 extern const char kMissingFile[];
 extern const char kMultipleOverrides[];
 extern const char kNoWildCardsInPaths[];

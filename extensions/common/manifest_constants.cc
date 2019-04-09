@@ -714,6 +714,9 @@ const char kLocalesTreeMissing[] =
 const char kManifestParseError[] =
     "Manifest is not valid JSON.";
 const char kManifestUnreadable[] = "Manifest file is missing or unreadable";
+const char kManifestVersionTooHighWarning[] =
+    "The maximum currently-supported manifest version is *, but this is *.  "
+    "Certain features may not work as expected.";
 const char kMissingFile[] =
     "At least one js or css file is required for 'content_scripts[*]'.";
 const char kMultipleOverrides[] =
