@@ -36,29 +36,25 @@ namespace {
 
 class ClientCertIdentityWin : public ClientCertIdentity {
  public:
-  // Takes ownership of |cert_context|.
   ClientCertIdentityWin(
       scoped_refptr<net::X509Certificate> cert,
-      PCCERT_CONTEXT cert_context,
+      ScopedPCCERT_CONTEXT cert_context,
       scoped_refptr<base::SingleThreadTaskRunner> key_task_runner)
       : ClientCertIdentity(std::move(cert)),
-        cert_context_(cert_context),
-        key_task_runner_(key_task_runner) {}
-  ~ClientCertIdentityWin() override {
-    CertFreeCertificateContext(cert_context_);
-  }
+        cert_context_(std::move(cert_context)),
+        key_task_runner_(std::move(key_task_runner)) {}
 
   void AcquirePrivateKey(base::OnceCallback<void(scoped_refptr<SSLPrivateKey>)>
                              private_key_callback) override {
     base::PostTaskAndReplyWithResult(
         key_task_runner_.get(), FROM_HERE,
         base::BindOnce(&FetchClientCertPrivateKey,
-                       base::Unretained(certificate()), cert_context_),
+                       base::Unretained(certificate()), cert_context_.get()),
         std::move(private_key_callback));
   }
 
  private:
-  PCCERT_CONTEXT cert_context_;
+  ScopedPCCERT_CONTEXT cert_context_;
   scoped_refptr<base::SingleThreadTaskRunner> key_task_runner_;
 };
 
@@ -151,15 +147,18 @@ ClientCertIdentityList GetClientCertsImpl(HCERTSTORE cert_store,
     PCCERT_CONTEXT cert_context =
         chain_context->rgpChain[0]->rgpElement[0]->pCertContext;
     // Copy the certificate, so that it is valid after |cert_store| is closed.
-    PCCERT_CONTEXT cert_context2 = nullptr;
+    ScopedPCCERT_CONTEXT cert_context2;
+    PCCERT_CONTEXT raw = nullptr;
     BOOL ok = CertAddCertificateContextToStore(
-        nullptr, cert_context, CERT_STORE_ADD_USE_EXISTING, &cert_context2);
+        nullptr, cert_context, CERT_STORE_ADD_USE_EXISTING, &raw);
     if (!ok) {
       NOTREACHED();
       continue;
     }
+    cert_context2.reset(raw);
 
     // Grab the intermediates, if any.
+    std::vector<ScopedPCCERT_CONTEXT> intermediates_storage;
     std::vector<PCCERT_CONTEXT> intermediates;
     for (DWORD i = 1; i < chain_context->rgpChain[0]->cElement; ++i) {
       PCCERT_CONTEXT chain_intermediate =
@@ -168,8 +167,10 @@ ClientCertIdentityList GetClientCertsImpl(HCERTSTORE cert_store,
       ok = CertAddCertificateContextToStore(nullptr, chain_intermediate,
                                             CERT_STORE_ADD_USE_EXISTING,
                                             &copied_intermediate);
-      if (ok)
+      if (ok) {
         intermediates.push_back(copied_intermediate);
+        intermediates_storage.emplace_back(copied_intermediate);
+      }
     }
 
     // Drop the self-signed root, if any. Match Internet Explorer in not sending
@@ -181,8 +182,8 @@ ClientCertIdentityList GetClientCertsImpl(HCERTSTORE cert_store,
     // in that case, assume it is a configuration error.
     if (!intermediates.empty() &&
         x509_util::IsSelfSigned(intermediates.back())) {
-      CertFreeCertificateContext(intermediates.back());
       intermediates.pop_back();
+      intermediates_storage.pop_back();
     }
 
     // Allow UTF-8 inside PrintableStrings in client certificates. See
@@ -191,16 +192,14 @@ ClientCertIdentityList GetClientCertsImpl(HCERTSTORE cert_store,
     options.printable_string_is_utf8 = true;
     scoped_refptr<X509Certificate> cert =
         x509_util::CreateX509CertificateFromCertContexts(
-            cert_context2, intermediates, options);
+            cert_context2.get(), intermediates, options);
     if (cert) {
       selected_identities.push_back(std::make_unique<ClientCertIdentityWin>(
           std::move(cert),
-          cert_context2,     // Takes ownership of |cert_context2|.
+          std::move(cert_context2),  // Takes ownership of |cert_context2|.
           current_thread));  // The key must be acquired on the same thread, as
                              // the PCCERT_CONTEXT may not be thread safe.
     }
-    for (size_t i = 0; i < intermediates.size(); ++i)
-      CertFreeCertificateContext(intermediates[i]);
   }
 
   std::sort(selected_identities.begin(), selected_identities.end(),
