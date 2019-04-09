@@ -174,6 +174,7 @@ class VIEWS_EXPORT BubbleBorder : public Border {
   // The arrow will still anchor to the same location but the bubble will shift
   // location to place the arrow |offset| pixels from the perpendicular edge.
   void set_arrow_offset(int offset) { arrow_offset_ = offset; }
+  int arrow_offset() const { return arrow_offset_; }
 
   // Sets the shadow elevation for MD shadows. A null |shadow_elevation| will
   // yield the default BubbleBorder MD shadow.
