@@ -803,8 +803,8 @@ class UnorderedMapPrinter:
         result = []
         count = 0
         for elt in self.hashtableiter:
-            result.append(('[%d] %s' % (count, str(elt['first'])),
-                           elt['second']))
+            result.append(('[%d] %s' % (count, str(elt['__cc']['first'])),
+                           elt['__cc']['second']))
             count += 1
         return result
 
