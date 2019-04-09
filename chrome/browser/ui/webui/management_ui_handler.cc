@@ -164,7 +164,7 @@ void GetDataManagementBrowserContextualSourceUpdate(
 
   if (management_domain.empty()) {
     update->SetString(
-        "extensionsInstalled",
+        "extensionReportingTitle",
         l10n_util::GetStringUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED));
 
     update->SetString("managementNotice",
@@ -172,13 +172,14 @@ void GetDataManagementBrowserContextualSourceUpdate(
                           managed ? IDS_MANAGEMENT_BROWSER_NOTICE
                                   : IDS_MANAGEMENT_NOT_MANAGED_NOTICE,
                           base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl)));
-    update->SetString("title", l10n_util::GetStringUTF16(
-                                   managed ? IDS_MANAGEMENT_TITLE
-                                           : IDS_MANAGEMENT_NOT_MANAGED_TITLE));
+    update->SetString("subtitle",
+                      l10n_util::GetStringUTF16(
+                          managed ? IDS_MANAGEMENT_SUBTITLE
+                                  : IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE));
 
   } else {
     update->SetString(
-        "extensionsInstalled",
+        "extensionReportingTitle",
         l10n_util::GetStringFUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED_BY,
                                    base::UTF8ToUTF16(management_domain)));
 
@@ -192,11 +193,11 @@ void GetDataManagementBrowserContextualSourceUpdate(
                       IDS_MANAGEMENT_NOT_MANAGED_NOTICE,
                       base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl)));
     update->SetString(
-        "title",
+        "subtitle",
         managed
-            ? l10n_util::GetStringFUTF16(IDS_MANAGEMENT_TITLE_BY,
+            ? l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED_BY,
                                          base::UTF8ToUTF16(management_domain))
-            : l10n_util::GetStringUTF16(IDS_MANAGEMENT_NOT_MANAGED_TITLE));
+            : l10n_util::GetStringUTF16(IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE));
   }
 }
 #endif  // !defined(OS_CHROMEOS)
@@ -648,9 +649,9 @@ void AddStatusOverviewNotManaged(base::Value* status) {
 
 void ManagementUIHandler::GetManagementStatus(base::Value* status) {
   auto* profile = Profile::FromWebUI(web_ui());
-  const bool account_managed = IsProfileManaged(profile);
   const std::string account_domain = GetAccountDomain(profile);
 #if defined(OS_CHROMEOS)
+  const bool account_managed = IsProfileManaged(profile);
   const bool profile_associated_with_gaia_account =
       chromeos::IsProfileAssociatedWithGaiaAccount(profile);
 
@@ -698,7 +699,7 @@ void ManagementUIHandler::GetManagementStatus(base::Value* status) {
   }
 #endif  // defined(OS_CHROMEOS)
 
-  if (account_managed) {
+  if (managed_) {
     AddStatusOverviewManagedAccount(status, account_domain);
     return;
   }

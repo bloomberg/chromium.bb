@@ -12,25 +12,33 @@
 
 <grit-part>
   <!-- Title of the page -->
-  <if expr="chromeos">
-    <message name="IDS_MANAGEMENT_TITLE_MANAGED" desc="Title of chrome://management page, shows when device is managed by unknown organization">
+  <message name="IDS_MANAGEMENT_TITLE" desc="Title of management page.">
+    Settings - Management
+  </message>
+  <message name="IDS_MANAGEMENT_TOOLBAR_TITLE" desc="Title of the toolbar in the management page.">
+    Settings
+  </message>
+
+  <!-- Subtitle of the page -->
+ <if expr="chromeos">
+    <message name="IDS_MANAGEMENT_SUBTITLE_MANAGED" desc="Title of chrome://management page, shows when device is managed by unknown organization">
       Your <ph name="DEVICE_NAME">$1<ex>Chromebook</ex></ph> is managed
     </message>
-    <message name="IDS_MANAGEMENT_TITLE_BY" desc="Title of chrome://management page, shows when device managed by known organization">
+    <message name="IDS_MANAGEMENT_SUBTITLE_MANAGED_BY" desc="Title of chrome://management page, shows when device managed by known organization">
       <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> managed by <ph name="ENROLLMENT_DOMAIN">$2<ex>example.com</ex></ph>
     </message>
-    <message name="IDS_MANAGEMENT_NOT_MANAGED_TITLE" desc="Message indicating that the device is not managed">
+    <message name="IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE" desc="Message indicating that the device is not managed">
       Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> is not managed
     </message>
   </if>
   <if expr="not chromeos">
-    <message name="IDS_MANAGEMENT_TITLE" desc="Title of chrome://management page, which shows the administrator's capabilities in a managed environment">
+      <message name="IDS_MANAGEMENT_SUBTITLE" desc="Title of chrome://management page, which shows the administrator's capabilities in a managed environment">
       Your browser is managed
     </message>
-    <message name="IDS_MANAGEMENT_TITLE_BY" desc="Title of chrome://management page, which shows the administrator's capabilities in a managed environment">
+    <message name="IDS_MANAGEMENT_SUBTITLE_MANAGED_BY" desc="Title of chrome://management page, which shows the administrator's capabilities in a managed environment">
       Your browser is managed by <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph>
     </message>
-    <message name="IDS_MANAGEMENT_NOT_MANAGED_TITLE" desc="Title of chrome://management page for a browser that is not managed">
+    <message name="IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE" desc="Title of chrome://management page for a browser that is not managed">
       Your browser is not managed
     </message>
   </if>
