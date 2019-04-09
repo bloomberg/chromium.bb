@@ -382,9 +382,6 @@ const char kEnableNetworkInformationDownlinkMax[] =
 // Disables the video decoder from drawing to an NV12 textures instead of ARGB.
 const char kDisableNv12DxgiVideo[] = "disable-nv12-dxgi-video";
 
-// Enables compositor-accelerated touch-screen pinch gestures.
-const char kEnablePinch[]                   = "enable-pinch";
-
 // Enables testing features of the Plugin Placeholder. For internal use only.
 const char kEnablePluginPlaceholderTesting[] =
     "enable-plugin-placeholder-testing";

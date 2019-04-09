@@ -985,9 +985,6 @@ extern const char kPasswordsMigrateLinuxToLoginDBDescription[];
 extern const char kPerMethodCanMakePaymentQuotaName[];
 extern const char kPerMethodCanMakePaymentQuotaDescription[];
 
-extern const char kPinchScaleName[];
-extern const char kPinchScaleDescription[];
-
 extern const char kPreviewsAllowedName[];
 extern const char kPreviewsAllowedDescription[];
 

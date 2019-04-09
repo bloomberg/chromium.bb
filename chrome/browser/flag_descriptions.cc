@@ -1639,10 +1639,6 @@ const char kPerMethodCanMakePaymentQuotaDescription[] =
     "Allow calling canMakePayment() for different payment methods, as long as "
     "method-specific parameters remain unchanged.";
 
-const char kPinchScaleName[] = "Pinch scale";
-const char kPinchScaleDescription[] =
-    "Enables experimental support for scale using pinch.";
-
 const char kPreviewsAllowedName[] = "Previews Allowed";
 const char kPreviewsAllowedDescription[] =
     "Allows previews to be shown subject to specific preview types being "
