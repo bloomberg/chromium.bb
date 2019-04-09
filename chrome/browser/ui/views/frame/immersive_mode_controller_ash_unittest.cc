@@ -43,7 +43,6 @@ class ImmersiveModeControllerAshTest : public TestWithBrowserView {
     browser()->window()->Show();
 
     controller_ = browser_view()->immersive_mode_controller();
-    ASSERT_EQ(ImmersiveModeController::Type::ASH, controller_->type());
     ash::ImmersiveFullscreenControllerTestApi(
         static_cast<ImmersiveModeControllerAsh*>(controller_)->controller())
         .SetupForTest();

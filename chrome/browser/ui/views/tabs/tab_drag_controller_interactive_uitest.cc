@@ -2630,7 +2630,6 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
   BrowserView* browser_view2 = BrowserView::GetBrowserViewForBrowser(browser2);
   ImmersiveModeController* immersive_controller2 =
       browser_view2->immersive_mode_controller();
-  ASSERT_EQ(ImmersiveModeController::Type::ASH, immersive_controller2->type());
   ash::ImmersiveFullscreenControllerTestApi(
       static_cast<ImmersiveModeControllerAsh*>(immersive_controller2)
           ->controller())

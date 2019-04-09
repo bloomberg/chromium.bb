@@ -93,9 +93,6 @@ views::View* CreateFixedSizeView(const gfx::Size& size) {
 
 class MockImmersiveModeController : public ImmersiveModeController {
  public:
-  MockImmersiveModeController() : ImmersiveModeController(Type::STUB) {}
-  ~MockImmersiveModeController() override {}
-
   // ImmersiveModeController overrides:
   void Init(BrowserView* browser_view) override {}
   void SetEnabled(bool enabled) override {}
@@ -114,9 +111,6 @@ class MockImmersiveModeController : public ImmersiveModeController {
       const gfx::Rect& new_visible_bounds) override {}
   bool ShouldStayImmersiveAfterExitingFullscreen() override { return true; }
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockImmersiveModeController);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
