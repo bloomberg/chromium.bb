@@ -172,9 +172,17 @@ void VideoFrameSubmitter::DidReceiveCompositorFrameAck(
 
 void VideoFrameSubmitter::OnBeginFrame(
     const viz::BeginFrameArgs& args,
-    WTF::HashMap<uint32_t, ::gfx::mojom::blink::PresentationFeedbackPtr>) {
+    WTF::HashMap<uint32_t, ::gfx::mojom::blink::PresentationFeedbackPtr>
+        feedbacks) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   TRACE_EVENT0("media", "VideoFrameSubmitter::OnBeginFrame");
+
+  for (const auto& pair : feedbacks) {
+    if (viz::FrameTokenGT(pair.key, *next_frame_token_))
+      continue;
+    TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP0("media", "VideoFrameSubmitter",
+                                          pair.key, pair.value->timestamp);
+  }
 
   // Don't call UpdateCurrentFrame() for MISSED BeginFrames. Also don't call it
   // after StopRendering() has been called (forbidden by API contract).
@@ -482,6 +490,10 @@ viz::CompositorFrame VideoFrameSubmitter::CreateCompositorFrame(
   viz::CompositorFrame compositor_frame;
   compositor_frame.metadata.begin_frame_ack = begin_frame_ack;
   compositor_frame.metadata.frame_token = ++next_frame_token_;
+
+  TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP0("media", "VideoFrameSubmitter",
+                                          *next_frame_token_,
+                                          base::TimeTicks::Now());
 
   // We don't assume that the ack is marked as having damage.  However, we're
   // definitely emitting a CompositorFrame that damages the entire surface.
