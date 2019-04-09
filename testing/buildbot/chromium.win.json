@@ -3219,6 +3219,57 @@
         }
       },
       {
+        "args": [
+          "--test-type=integration"
+        ],
+        "isolate_name": "chromedriver_py_tests",
+        "name": "chromedriver_py_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ]
+        }
+      },
+      {
+        "isolate_name": "chromedriver_replay_unittests",
+        "name": "chromedriver_replay_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
+          "--gtest-benchmark-name=components_perftests"
+        ],
+        "isolate_name": "components_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "components_perftests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ]
+        }
+      },
+      {
         "experiment_percentage": 100,
         "isolate_name": "content_shell_crash_test",
         "name": "content_shell_crash_test",

@@ -4680,6 +4680,14 @@
       'telemetry_perf_unittests_isolated_scripts',
     ],
 
+    'chromium_win_dbg_isolated_scripts': [
+      'chromedriver_py_tests_isolated_scripts',
+      'components_perftests_isolated_scripts',
+      'desktop_chromium_isolated_scripts',
+      'performance_smoke_test_isolated_scripts',
+      'telemetry_perf_unittests_isolated_scripts',
+    ],
+
     'chromium_win_gtests': [
       'aura_gtests',
       'chromium_gtests',
