@@ -5,8 +5,8 @@
 cr.exportPath('management');
 /**
  * @typedef {{
- *    name: string,
- *    permissions: !Array<string>
+ *   name: string,
+ *   permissions: !Array<string>
  * }}
  */
 management.Extension;
@@ -22,8 +22,8 @@ management.ReportingType = {
 
 /**
  * @typedef {{
- *    messageId: string,
- *    reportingType: !management.ReportingType,
+ *   messageId: string,
+ *   reportingType: !management.ReportingType,
  * }}
  */
 management.BrowserReportingResponse;
@@ -45,12 +45,30 @@ management.DeviceReportingType = {
 
 /**
  * @typedef {{
- *    messageId: string,
- *    reportingType: !management.DeviceReportingType,
+ *   messageId: string,
+ *   reportingType: !management.DeviceReportingType,
  * }}
  */
 management.DeviceReportingResponse;
 // </if>
+
+/**
+ * @typedef {{
+ *   overview: string,
+ *   setup: string,
+ *   data: string,
+ * }}
+ */
+management.ManagedInfo;
+
+/**
+ * @typedef {{
+ *   overview: string,
+ *   deviceManagedInfo: ?management.ManagedInfo,
+ *   accountManagedInfo: ?management.ManagedInfo,
+ * }}
+ */
+management.ManagementStatus;
 
 cr.define('management', function() {
   /** @interface */
@@ -60,6 +78,9 @@ cr.define('management', function() {
 
     /** @return {!Promise<!Array<!management.Extension>>} */
     getExtensions() {}
+
+    /** @return {!Promise<!management.ManagementStatus>} */
+    getManagementStatus() {}
 
     // <if expr="chromeos">
     /**
@@ -100,6 +121,11 @@ cr.define('management', function() {
     /** @override */
     getExtensions() {
       return cr.sendWithPromise('getExtensions');
+    }
+
+    /** @override */
+    getManagementStatus() {
+      return cr.sendWithPromise('getManagementStatus');
     }
 
     // <if expr="chromeos">

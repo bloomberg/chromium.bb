@@ -33,6 +33,10 @@
     <message name="IDS_MANAGEMENT_NOT_MANAGED_TITLE" desc="Title of chrome://management page for a browser that is not managed">
       Your browser is not managed
     </message>
+  </if>
+
+  <!-- Browser managed status section -->
+  <if expr="not chromeos">
     <message name="IDS_MANAGEMENT_BROWSER_NOTICE" desc="Message indicating that the browser is managed by an unknown organization">
       This browser is managed by a company, school or other organization. Your administrator can change your browser setup remotely. Activity on this device may also be managed outside of Chrome. <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Learn More<ph name="END_LINK">&lt;/a&gt;</ph>
     </message>
@@ -44,20 +48,53 @@
     </message>
   </if>
 
-  <message name="IDS_MANAGEMENT_DEVICE_NOT_MANAGED" desc="Message indicating that the device is not managed">
-    Your device is not managed by an administrator.
+  <!-- Chrome OS managed status section -->
+  <if expr="chromeos">
+    <message name="IDS_MANAGEMENT_DEVICE_NOT_MANAGED" desc="Message indicating that the device and account are not managed">
+      This device and account are not managed by a company or other organization.
+    </message>
+    <message name="IDS_MANAGEMENT_DEVICE_MANAGED_BY" desc="Message indicating that the device is enterprise enrolled to be managed by an administrator, from a specific domain">
+      Your device is managed by <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph>.
+    </message>
+    <message name="IDS_MANAGEMENT_DEVICE_MANAGED_BY_ACCOUNT_MANAGED_BY" desc="Message indicating that the device is enterprise enrolled to be managed by an administrator, from a specific domain. And account is managed by an administrator, from another specific domain.">
+      Your device is managed by <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph> and your account is managed by <ph name="ACCOUNT_DOMAIN">$2<ex>example.com</ex></ph>.
+    </message>
+    <message name="IDS_MANAGEMENT_DEVICE_AND_ACCOUNT_MANAGED_BY" desc="Message indicating that the device and account are enterprise enrolled to be managed by an administrator, from a specific domain">
+      Your device and account are managed by <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph>.
+    </message>
+    <message name="IDS_MANAGEMENT_ACCOUNT_MANAGED_BY" desc="Message indicating that the account is enterprise enrolled to be managed by an administrator">
+      Your account is managed by <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph>.
+    </message>
+    <!-- Device managed clarification -->
+    <message name="IDS_MANAGEMENT_DEVICE_MANAGED_CLARIFICATION" desc="First part of the sentence of the managed device clarification.">
+      As the manager of this device, <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph>:
+    </message>
+    <message name="IDS_MANAGEMENT_DEVICE_MANAGED_SETUP" desc="Continuation of the managed device clarification sentence explaining device setup management.">
+      Can remotely change your device setup.
+    </message>
+    <message name="IDS_MANAGEMENT_DEVICE_MANAGED_DATA" desc="Continuation of the managed device clarification sentence explaining device user data management.">
+      Controls how your device data is handled. Google processes your device data exclusively under the direction of your device manager and solely for the purposes specified by your device manager.
+    </message>
+    <!-- Device and account managed clarification -->
+    <message name="IDS_MANAGEMENT_DEVICE_AND_ACCOUNT_MANAGED_CLARIFICATION" desc="First part of the sentence of the managed device and account clarification, when enrollment domain equals account domain.">
+      As the manager of your device and account, <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph>:
+    </message>
+    <message name="IDS_MANAGEMENT_DEVICE_AND_ACCOUNT_MANAGED_SETUP" desc="Continuation of the managed device and account clarification sentence explaining device and account setup management.">
+      Can remotely change your device and account setup.
+    </message>
+    <message name="IDS_MANAGEMENT_DEVICE_AND_ACCOUNT_MANAGED_DATA" desc="Continuation of the managed device and account clarification sentence explaining device and account user data management.">
+      Controls how your device and account data is handled. Google processes your device and account data exclusively under the direction of your device and account manager and solely for the purposes specified by your device and account manager.
+    </message>
+  </if>
+  <!-- Account managed clarification -->
+  <message name="IDS_MANAGEMENT_ACCOUNT_MANAGED_CLARIFICATION" desc="First part of the sentence of the managed account clarification.">
+    As the manager of your account, <ph name="ACCOUNT_DOMAIN">$1<ex>example.com</ex></ph>:
   </message>
-  <message name="IDS_MANAGEMENT_DEVICE_MANAGED_BY" desc="Message indicating that the device is enterprise enrolled to be managed by an administrator, from a specific domain">
-    Your device is managed by <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph>. This means your administrator may remotely configure your device.
+  <message name="IDS_MANAGEMENT_ACCOUNT_MANAGED_SETUP" desc="Continuation of the managed account clarification sentence explaining account setup management.">
+    Can remotely change your account setup.
   </message>
-  <message name="IDS_MANAGEMENT_DEVICE_MANAGED_BY_ACCOUNT_MANAGED_BY" desc="Message indicating that the device is enterprise enrolled to be managed by an administrator, from a specific domain. And account is managed by an administrator, from another specific domain.">
-    Your device is managed by <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph > and your account is managed by <ph name="ACCOUNT_DOMAIN">$2<ex>example.com</ex></ph>. This means your administrators may remotely configure your device and account.
-  </message>
-  <message name="IDS_MANAGEMENT_DEVICE_AND_ACCOUNT_MANAGED_BY" desc="Message indicating that the device and account is enterprise enrolled to be managed by an administrator, from a specific domain">
-    Your device and account is managed by <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph>. This means your administrator may remotely configure your device and account.
-  </message>
-  <message name="IDS_MANAGEMENT_ACCOUNT_MANAGED_BY" desc="Message indicating that the account is enterprise enrolled to be managed by an administrator">
-    Your account is managed by <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph>. This means your administrator may remotely configure your account.
+  <message name="IDS_MANAGEMENT_ACCOUNT_MANAGED_DATA" desc="Continuation of the managed account clarification sentence explaining account user data management.">
+    Controls how your account data is handled. Google processes your account data exclusively under the direction of your account manager and solely for the purposes specified by your account manager.
   </message>
 
   <if expr="chromeos">

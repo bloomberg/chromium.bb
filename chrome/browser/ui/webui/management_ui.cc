@@ -68,6 +68,7 @@ content::WebUIDataSource* CreateManagementUIHtmlSource() {
 
   static constexpr LocalizedString kLocalizedStrings[] = {
 #if defined(OS_CHROMEOS)
+    {"learnMore", IDS_LEARN_MORE},
     {"deviceConfiguration", IDS_MANAGEMENT_DEVICE_CONFIGURATION},
     {"deviceReporting", IDS_MANAGEMENT_DEVICE_REPORTING},
     {kManagementLogUploadEnabled, IDS_MANAGEMENT_LOG_UPLOAD_ENABLED},
@@ -115,6 +116,12 @@ content::WebUIDataSource* CreateManagementUIHtmlSource() {
                     l10n_util::GetStringFUTF16(
                         IDS_MANAGEMENT_EXTENSION_REPORT_SAFE_BROWSING_WARNINGS,
                         base::UTF8ToUTF16(safe_browsing::kSafeBrowsingUrl)));
+#if defined(OS_CHROMEOS)
+  source->AddString("managementDeviceLearnMoreUrl",
+                    chrome::kLearnMoreEnterpriseURL);
+#endif  // defined(OS_CHROMEOS)
+  source->AddString("managementAccountLearnMoreUrl",
+                    chrome::kManagedUiLearnMoreUrl);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 

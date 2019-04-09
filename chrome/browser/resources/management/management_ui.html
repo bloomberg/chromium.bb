@@ -80,8 +80,16 @@
         justify-content: center;
       }
 
-      .three-line {
-        min-height: var(--cr-section-three-line-min-height);
+      .content-indented {
+        margin-inline-start: 20px;
+      }
+
+      .overview-section div + div {
+        margin-top: 1em;
+      }
+
+      .overview-messages div + div {
+        margin-top: 0;
       }
 
 <if expr="chromeos">
@@ -148,92 +156,118 @@
     <main id="mainContent">
       <div class="sections-container">
         <div class="card">
+        <section class="single-column overview-section">
 <if expr="not chromeos">
-          <section class="three-line single-column">
-            <p inner-h-t-m-l="[[managementNoticeHtml_]]"></p>
+          <p inner-h-t-m-l="[[managementNoticeHtml_]]"></p>
+</if>
+<if expr="chromeos">
+          <div>[[managementOverview_]]</div>
+          <div class="overview-messages"
+              hidden="[[!deviceManagedInfo_]]">
+            [[deviceManagedInfo_.overview]]
+            <div class="content-indented">
+              [[deviceManagedInfo_.setup]]
+                  <a href="$i18nRaw{managementDeviceLearnMoreUrl}"
+                    target="_blank">$i18n{learnMore}</a>
+            </div>
+            <div class="content-indented">[[deviceManagedInfo_.data]]</div>
+          </div>
+</if>
+          <div class="overview-messages" hidden="[[!accountManagedInfo_]]">
+            [[accountManagedInfo_.overview]]
+            <div class="content-indented">
+<if expr="chromeos">
+              [[accountManagedInfo_.setup]]
+                <a href="$i18nRaw{managementAccountLearnMoreUrl}"
+                  target="_blank">$i18n{learnMore}</a>
+</if>
+<if expr="not chromeos">
+              [[accountManagedInfo_.setup]].
+</if>
+            </div>
+            <div class="content-indented">[[accountManagedInfo_.data]]</div>
+          </div>
+        </section>
+<if expr="chromeos">
+        <template is="dom-if"
+            if="[[showDeviceReportingInfo_(deviceReportingInfo_)]]">
+          <section class="single-column">
+            <h2>$i18n{deviceReporting}</h2>
+            <div class="subtitle">$i18n{deviceConfiguration}</div>
+            <template is="dom-repeat" items="[[deviceReportingInfo_]]">
+              <div class="device-reporting">
+                <span>
+                  <iron-icon icon="[[getIconForDeviceReportingType_(
+                      item.reportingType)]]"></iron-icon>
+                  [[i18n(item.messageId)]]
+                </span>
+              </div>
+            </template>
           </section>
+        </template>
 </if>
-<if expr="chromeos">
-          <template is="dom-if"
-              if="[[showDeviceReportingInfo_(deviceReportingInfo_)]]">
-            <section class="three-line single-column">
-              <h2>$i18n{deviceReporting}</h2>
-              <div class="subtitle">
-                  $i18n{deviceConfiguration}
+
+        <template is="dom-if"
+            if="[[showBrowserReportingInfo_(browserReportingInfo_)]]">
+          <section class="single-column">
+            <h2>$i18n{browserReporting}</h2>
+            <div class="subtitle">
+              $i18n{browserReportingExplanation}
+            </div>
+            <template is="dom-repeat" items="[[browserReportingInfo_]]">
+              <div class="browser-report">
+                <iron-icon icon="[[item.icon]]"></iron-icon>
+                <ul>
+                  <template is="dom-repeat" items="[[item.messageIds]]"
+                      as="messageId">
+                    <li inner-h-t-m-l="[[i18nAdvanced(messageId)]]"></li>
+                  </template>
+                </ul>
               </div>
-              <template is="dom-repeat" items="[[deviceReportingInfo_]]">
-                <div class="device-reporting">
-                  <span>
-                    <iron-icon icon="[[getIconForDeviceReportingType_(
-                        item.reportingType)]]"></iron-icon>
-                    [[i18n(item.messageId)]]
-                  </span>
+            </template>
+          </section>
+        </template>
+        <template is="dom-if"
+            if="[[showExtensionReportingInfo_(extensions_)]]">
+          <section class="single-column">
+            <h2>$i18n{extensionReporting}</h2>
+            <div class="subtitle">[[extensionReportingSubtitle_]]</div>
+            <div class="extensions-list">
+              <div class="list-item header">
+                <div class="extension-name">$i18n{extensionName}</div>
+                <div class="extension-permissions">
+                  $i18n{extensionPermissions}
                 </div>
-              </template>
-            </section>
-          </template>
-</if>
-          <template is="dom-if"
-              if="[[showBrowserReportingInfo_(browserReportingInfo_)]]">
-            <section class="three-line single-column">
-              <h2>$i18n{browserReporting}</h2>
-              <div class="subtitle">
-                $i18n{browserReportingExplanation}
               </div>
-              <template is="dom-repeat" items="[[browserReportingInfo_]]">
-                <div class="browser-report">
-                  <iron-icon icon="[[item.icon]]"></iron-icon>
-                  <ul>
-                    <template is="dom-repeat" items="[[item.messageIds]]"
-                        as="messageId">
-                      <li inner-h-t-m-l="[[i18nAdvanced(messageId)]]"></li>
-                    </template>
-                  </ul>
-                </div>
-              </template>
-            </section>
-          </template>
-          <template is="dom-if"
-              if="[[showExtensionReportingInfo_(extensions_)]]">
-            <section class="three-line single-column">
-              <h2>$i18n{extensionReporting}</h2>
-              <div class="subtitle">[[extensionReportingSubtitle_]]</div>
-              <div class="extensions-list">
-                <div class="list-item header">
-                  <div class="extension-name">$i18n{extensionName}</div>
-                  <div class="extension-permissions">
-                    $i18n{extensionPermissions}
+              <template is="dom-repeat" items="[[extensions_]]">
+                <div class="list-item">
+                  <div class="extension-name">
+                    <img src="[[item.icon]]"
+                        aria-describedby="a11yAssociation">
+                    <span>[[item.name]]</span>
                   </div>
-                </div>
-                <template is="dom-repeat" items="[[extensions_]]">
-                  <div class="list-item">
-                    <div class="extension-name">
-                      <img src="[[item.icon]]"
-                          aria-describedby="a11yAssociation">
-                      <span>[[item.name]]</span>
-                    </div>
-                    <div class="extension-permissions">
-                      <ul>
-                        <template is="dom-repeat" items="[[item.permissions]]"
-                            as="permission">
-                          <li>[[permission]]</li>
-                        </template>
-                      </ul>
-                    </div>
-                </template>
-              </div>
-            </section>
-          </template>
+                  <div class="extension-permissions">
+                    <ul>
+                      <template is="dom-repeat" items="[[item.permissions]]"
+                          as="permission">
+                        <li>[[permission]]</li>
+                      </template>
+                    </ul>
+                  </div>
+              </template>
+            </div>
+          </section>
+        </template>
 <if expr="chromeos">
-          <template is="dom-if" if="[[localTrustRoots_]]">
-            <section class="three-line single-column">
-              <h2>$i18n{localTrustRoots}</h2>
-              <div id="trust-roots-configuration">[[localTrustRoots_]]</div>
-            </section>
-          </template>
+        <template is="dom-if" if="[[localTrustRoots_]]">
+          <section class="single-column">
+            <h2>$i18n{localTrustRoots}</h2>
+            <div id="trust-roots-configuration">[[localTrustRoots_]]</div>
+          </section>
+        </template>
 </if>
-        </div>
       </div>
+    </div>
     </main>
   </template>
   <script src="management_ui.js"></script>

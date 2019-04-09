@@ -119,9 +119,9 @@ class ManagementUIHandler : public content::WebUIMessageHandler {
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
  private:
-  base::string16 GetEnterpriseManagementStatusString();
+  void GetManagementStatus(base::Value* status);
 
-  void HandleGetDeviceManagementStatus(const base::ListValue* args);
+  void HandleGetManagementStatus(const base::ListValue* args);
 
 #if defined(OS_CHROMEOS)
   void HandleGetDeviceReportingInfo(const base::ListValue* args);
