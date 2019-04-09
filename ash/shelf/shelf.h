@@ -197,6 +197,8 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   // ShelfWidget and lifetimes are managed by the container windows themselves.
   ShelfLayoutManager* shelf_layout_manager_ = nullptr;
 
+  // Null during display teardown, see WindowTreeHostManager::DeleteHost() and
+  // RootWindowController::CloseAllChildWindows().
   std::unique_ptr<ShelfWidget> shelf_widget_;
 
   // These initial values hide the shelf until user preferences are available.
