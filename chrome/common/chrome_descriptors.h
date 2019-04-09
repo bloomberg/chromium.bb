@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_DESCRIPTORS_ANDROID_H_
-#define CHROME_COMMON_DESCRIPTORS_ANDROID_H_
+#ifndef CHROME_COMMON_CHROME_DESCRIPTORS_H_
+#define CHROME_COMMON_CHROME_DESCRIPTORS_H_
 
 #include "build/build_config.h"
 #include "content/public/common/content_descriptors.h"
@@ -18,4 +18,4 @@ enum {
 #endif
 };
 
-#endif  // CHROME_COMMON_DESCRIPTORS_ANDROID_H_
+#endif  // CHROME_COMMON_CHROME_DESCRIPTORS_H_
