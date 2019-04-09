@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "api/public/task_runner.h"
+#include "platform/api/time.h"
 
 namespace openscreen {
 namespace platform {
@@ -20,7 +21,8 @@ namespace platform {
 class TaskRunnerFactory {
  public:
   // Creates a instantiated TaskRunner
-  static std::unique_ptr<TaskRunner> Create();
+  static std::unique_ptr<TaskRunner> Create(
+      platform::ClockNowFunctionPtr now_function);
 };
 }  // namespace platform
 }  // namespace openscreen

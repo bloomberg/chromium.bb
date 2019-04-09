@@ -11,8 +11,9 @@ namespace openscreen {
 namespace platform {
 
 // static
-std::unique_ptr<TaskRunner> TaskRunnerFactory::Create() {
-  return std::unique_ptr<TaskRunner>(new TaskRunnerImpl(platform::Clock::now));
+std::unique_ptr<TaskRunner> TaskRunnerFactory::Create(
+    platform::ClockNowFunctionPtr now_function) {
+  return std::unique_ptr<TaskRunner>(new TaskRunnerImpl(now_function));
 }
 
 }  // namespace platform

@@ -5,6 +5,7 @@
 #include <thread>  // NOLINT
 
 #include "api/impl/task_runner_impl.h"
+#include "api/impl/testing/fake_clock.h"
 #include "api/public/task_runner_factory.h"
 #include "platform/api/time.h"
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
@@ -26,7 +27,8 @@ namespace openscreen {
 namespace platform {
 
 TEST(TaskRunnerTest, TaskRunnerFromFactoryExecutesTask) {
-  auto runner = TaskRunnerFactory::Create();
+  FakeClock fake_clock{platform::Clock::time_point(milliseconds(1337))};
+  auto runner = TaskRunnerFactory::Create(fake_clock.now);
 
   std::thread t([&runner] {
     static_cast<TaskRunnerImpl*>(runner.get())->RunUntilStopped();
@@ -46,7 +48,8 @@ TEST(TaskRunnerTest, TaskRunnerFromFactoryExecutesTask) {
 }
 
 TEST(TaskRunnerTest, TaskRunnerRunsDelayedTasksInOrder) {
-  auto runner = TaskRunnerFactory::Create();
+  FakeClock fake_clock{platform::Clock::time_point(milliseconds(1337))};
+  auto runner = TaskRunnerFactory::Create(fake_clock.now);
 
   std::thread t([&runner] {
     static_cast<TaskRunnerImpl*>(runner.get())->RunUntilStopped();
@@ -54,30 +57,19 @@ TEST(TaskRunnerTest, TaskRunnerRunsDelayedTasksInOrder) {
 
   std::string ran_tasks = "";
 
-  const auto kDelayTimeTaskOne = milliseconds(5);
+  const auto kDelayTime = milliseconds(5);
   const auto task_one = [&ran_tasks] { ran_tasks += "1"; };
-  runner->PostTaskWithDelay(task_one, kDelayTimeTaskOne);
+  runner->PostTaskWithDelay(task_one, kDelayTime);
 
-  const auto kDelayTimeTaskTwo = milliseconds(10);
   const auto task_two = [&ran_tasks] { ran_tasks += "2"; };
-  runner->PostTaskWithDelay(task_two, kDelayTimeTaskTwo);
+  runner->PostTaskWithDelay(task_two, kDelayTime * 2);
 
-  const auto now = platform::Clock::now();
-  const auto kMinimumClockFirstTaskShouldRunAt = now + kDelayTimeTaskOne;
-  const auto kMinimumClockSecondTaskShouldRunAt = now + kDelayTimeTaskTwo;
-  while (platform::Clock::now() < kMinimumClockFirstTaskShouldRunAt) {
-    EXPECT_EQ(ran_tasks, "");
-    std::this_thread::sleep_for(kTaskRunnerSleepTime);
-  }
-
+  EXPECT_EQ(ran_tasks, "");
+  fake_clock.Advance(kDelayTime);
   WaitUntilCondition([&ran_tasks] { return ran_tasks == "1"; });
   EXPECT_EQ(ran_tasks, "1");
 
-  while (platform::Clock::now() < kMinimumClockSecondTaskShouldRunAt) {
-    EXPECT_EQ(ran_tasks, "1");
-    std::this_thread::sleep_for(kTaskRunnerSleepTime);
-  }
-
+  fake_clock.Advance(kDelayTime);
   WaitUntilCondition([&ran_tasks] { return ran_tasks == "12"; });
   EXPECT_EQ(ran_tasks, "12");
 
@@ -86,7 +78,8 @@ TEST(TaskRunnerTest, TaskRunnerRunsDelayedTasksInOrder) {
 }
 
 TEST(TaskRunnerTest, SingleThreadedTaskRunnerRunsSequentially) {
-  TaskRunnerImpl runner(platform::Clock::now);
+  FakeClock fake_clock{platform::Clock::time_point(milliseconds(1337))};
+  TaskRunnerImpl runner(fake_clock.now);
 
   std::string ran_tasks;
   const auto task_one = [&ran_tasks] { ran_tasks += "1"; };
@@ -107,7 +100,8 @@ TEST(TaskRunnerTest, SingleThreadedTaskRunnerRunsSequentially) {
 }
 
 TEST(TaskRunnerTest, TaskRunnerCanStopRunning) {
-  TaskRunnerImpl runner(platform::Clock::now);
+  FakeClock fake_clock{platform::Clock::time_point(milliseconds(1337))};
+  TaskRunnerImpl runner(fake_clock.now);
 
   std::string ran_tasks;
   const auto task_one = [&ran_tasks] { ran_tasks += "1"; };
@@ -132,7 +126,8 @@ TEST(TaskRunnerTest, TaskRunnerCanStopRunning) {
 }
 
 TEST(TaskRunnerTest, StoppingDoesNotDeleteTasks) {
-  TaskRunnerImpl runner(platform::Clock::now);
+  FakeClock fake_clock{platform::Clock::time_point(milliseconds(1337))};
+  TaskRunnerImpl runner(fake_clock.now);
 
   std::string ran_tasks;
   const auto task_one = [&ran_tasks] { ran_tasks += "1"; };
@@ -147,7 +142,8 @@ TEST(TaskRunnerTest, StoppingDoesNotDeleteTasks) {
 }
 
 TEST(TaskRunnerTest, TaskRunnerIsStableWithLotsOfTasks) {
-  TaskRunnerImpl runner(platform::Clock::now);
+  FakeClock fake_clock{platform::Clock::time_point(milliseconds(1337))};
+  TaskRunnerImpl runner(fake_clock.now);
 
   const int kNumberOfTasks = 500;
   std::string expected_ran_tasks;

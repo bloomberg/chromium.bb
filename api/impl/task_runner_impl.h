@@ -79,6 +79,10 @@ class TaskRunnerImpl : public TaskRunner {
   // minimum delay time has elapsed.
   void ScheduleDelayedTasks();
 
+  // Look at the current state of the TaskRunner and determine if the run loop
+  // should be woken up
+  bool ShouldWakeUpRunLoop();
+
   // Takes the task_mutex_ lock, returning immediately if work is available. If
   // no work is available, this places the task running thread into a waiting
   // state until we stop running or work is available.
