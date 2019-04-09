@@ -128,21 +128,6 @@ AudioBuffer* AudioBuffer::CreateUninitialized(unsigned number_of_channels,
   return buffer;
 }
 
-AudioBuffer* AudioBuffer::CreateFromAudioFileData(const void* data,
-                                                  size_t data_size,
-                                                  bool mix_to_mono,
-                                                  float sample_rate) {
-  scoped_refptr<AudioBus> bus =
-      CreateBusFromInMemoryAudioFile(data, data_size, mix_to_mono, sample_rate);
-  if (bus) {
-    AudioBuffer* buffer = MakeGarbageCollected<AudioBuffer>(bus.get());
-    if (buffer->CreatedSuccessfully(bus->NumberOfChannels()))
-      return buffer;
-  }
-
-  return nullptr;
-}
-
 AudioBuffer* AudioBuffer::CreateFromAudioBus(AudioBus* bus) {
   if (!bus)
     return nullptr;
