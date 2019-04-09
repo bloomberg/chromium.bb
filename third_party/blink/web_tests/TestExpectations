@@ -6254,3 +6254,6 @@ crbug.com/947670 [ Win7 ] virtual/streams-native/http/tests/fetch/serviceworker-
 
 # Sheriff 2019-04-09
 crbug.com/946335 [ Linux Mac ] fast/filesystem/file-writer-abort-depth.html [ Pass Crash ]
+
+# Temporarily disabling tests for RTCPeerConnection::AddTransceiver until new version is rolled into chromium.
+crbug.com/webrtc/10491 external/wpt/webrtc/RTCPeerConnection-addTransceiver.https.html [ Pass Failure ]
