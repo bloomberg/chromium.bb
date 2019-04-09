@@ -286,7 +286,49 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::MoveEndpointByUnit(
     int count,
     int* units_moved) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_MOVEENDPOINTBYUNIT);
-  return E_NOTIMPL;
+  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
+
+  *units_moved = 0;
+
+  // Per MSDN, MoveEndpointByUnit with zero count has no effect
+  if (count == 0)
+    return S_OK;
+
+  bool is_start_endpoint = endpoint == TextPatternRangeEndpoint_Start;
+  AXPositionInstance& position_to_move = is_start_endpoint ? start_ : end_;
+  AXPositionInstance new_position;
+
+  switch (unit) {
+    case TextUnit_Character:
+    case TextUnit_Format:
+    case TextUnit_Word:
+    case TextUnit_Paragraph:
+    case TextUnit_Line:
+      return E_NOTIMPL;
+    // Page unit is not supported.
+    // Substituting it by the next larger unit (Document).
+    case TextUnit_Page:
+    case TextUnit_Document:
+      new_position =
+          MoveEndpointByDocument(position_to_move, count, units_moved);
+      break;
+
+    default:
+      return UIA_E_NOTSUPPORTED;
+  }
+
+  position_to_move = std::move(new_position);
+
+  if (*start_ > *end_) {
+    // If the start was moved past the end, create a degenerate range
+    // with the end equal to the start, and vice versa
+    if (is_start_endpoint)
+      end_ = start_->Clone();
+    else
+      start_ = end_->Clone();
+  }
+
+  return S_OK;
 }
 
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::MoveEndpointByRange(
@@ -401,6 +443,28 @@ base::string16 AXPlatformNodeTextRangeProviderWin::GetString() {
 
 ui::AXPlatformNodeWin* AXPlatformNodeTextRangeProviderWin::owner() const {
   return owner_;
+}
+
+AXPlatformNodeTextRangeProviderWin::AXPositionInstance
+AXPlatformNodeTextRangeProviderWin::MoveEndpointByDocument(
+    const AXPositionInstance& endpoint,
+    const int count,
+    int* units_moved) {
+  DCHECK_NE(count, 0);
+
+  *units_moved = 0;
+  AXPositionInstance current_endpoint = endpoint->Clone();
+  const bool forwards = count > 0;
+
+  if (forwards && !current_endpoint->AtEndOfDocument()) {
+    current_endpoint = endpoint->CreatePositionAtEndOfDocument();
+    *units_moved = 1;
+  } else if (!forwards && !current_endpoint->AtStartOfDocument()) {
+    current_endpoint = endpoint->CreatePositionAtStartOfDocument();
+    *units_moved = -1;
+  }
+
+  return current_endpoint;
 }
 
 }  // namespace ui

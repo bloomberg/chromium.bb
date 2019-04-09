@@ -88,6 +88,10 @@ class __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
   using AXPositionInstance = AXNodePosition::AXPositionInstance;
   using AXNodeRange = AXRange<AXNodePosition::AXPositionInstance::element_type>;
 
+  AXPositionInstance MoveEndpointByDocument(const AXPositionInstance& endpoint,
+                                            const int count,
+                                            int* units_moved);
+
   AXNodePosition::AXPositionInstance start_;
   AXNodePosition::AXPositionInstance end_;
   CComPtr<ui::AXPlatformNodeWin> owner_;

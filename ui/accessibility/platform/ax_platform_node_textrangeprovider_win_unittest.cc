@@ -593,6 +593,131 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderGetText) {
   AXNodePosition::SetTreeForTesting(nullptr);
 }
 
+TEST_F(AXPlatformNodeTextRangeProviderTest,
+       TestITextRangeProviderMoveEndpointByDocument) {
+  ui::AXNodeData text_data;
+  text_data.id = 2;
+  text_data.role = ax::mojom::Role::kStaticText;
+  text_data.SetName("some text");
+
+  ui::AXNodeData more_text_data;
+  more_text_data.id = 3;
+  more_text_data.role = ax::mojom::Role::kStaticText;
+  more_text_data.SetName("more text");
+
+  ui::AXNodeData even_more_text_data;
+  even_more_text_data.id = 4;
+  even_more_text_data.role = ax::mojom::Role::kStaticText;
+  even_more_text_data.SetName("even more text");
+
+  ui::AXNodeData root_data;
+  root_data.id = 1;
+  root_data.role = ax::mojom::Role::kRootWebArea;
+  root_data.child_ids = {2, 3, 4};
+
+  ui::AXTreeUpdate update;
+  ui::AXTreeData tree_data;
+  tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+  update.tree_data = tree_data;
+  update.has_tree_data = true;
+  update.root_id = root_data.id;
+  update.nodes.push_back(root_data);
+  update.nodes.push_back(text_data);
+  update.nodes.push_back(more_text_data);
+  update.nodes.push_back(even_more_text_data);
+
+  Init(update);
+
+  AXNode* root_node = GetRootNode();
+  AXNodePosition::SetTreeForTesting(tree_.get());
+  AXNode* text_node = root_node->children()[1];
+
+  ComPtr<IRawElementProviderSimple> text_node_raw =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(text_node);
+
+  ComPtr<ITextProvider> text_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      text_node_raw->GetPatternProvider(UIA_TextPatternId, &text_provider));
+
+  // Run the test twice, one for TextUnit_Document and once for TextUnit_Page,
+  // since they should have identical behavior.
+  const TextUnit textunit_types[] = {TextUnit_Document, TextUnit_Page};
+  for (auto& textunit : textunit_types) {
+    ComPtr<ITextRangeProvider> text_range_provider;
+    EXPECT_HRESULT_SUCCEEDED(
+        text_provider->get_DocumentRange(&text_range_provider));
+
+    // Verify MoveEndpointByUnit with zero count has no effect
+    int count;
+    ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+        TextPatternRangeEndpoint_End, textunit, /*count*/ 0, &count));
+    ASSERT_EQ(0, count);
+
+    // Move the endpoint to the end of the document. Verify all text content.
+    ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+        TextPatternRangeEndpoint_End, textunit, /*count*/ 1, &count));
+    ASSERT_EQ(1, count);
+
+    base::win::ScopedBstr text_content;
+    ASSERT_HRESULT_SUCCEEDED(
+        text_range_provider->GetText(-1, text_content.Receive()));
+    EXPECT_STREQ(L"more texteven more text", text_content);
+    text_content.Reset();
+
+    // Verify no moves occur since the end is already at the end of the document
+    ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+        TextPatternRangeEndpoint_End, textunit, /*count*/ 5, &count));
+    ASSERT_EQ(0, count);
+
+    ASSERT_HRESULT_SUCCEEDED(
+        text_range_provider->GetText(-1, text_content.Receive()));
+    EXPECT_STREQ(L"more texteven more text", text_content);
+    text_content.Reset();
+
+    // Move the end before the start
+    ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+        TextPatternRangeEndpoint_End, textunit, /*count*/ -4, &count));
+    ASSERT_EQ(-1, count);
+
+    ASSERT_HRESULT_SUCCEEDED(
+        text_range_provider->GetText(-1, text_content.Receive()));
+    EXPECT_STREQ(L"", text_content);
+    text_content.Reset();
+
+    // Move the end back to the end of the document. The text content
+    // should now include the entire document since end was previously
+    // moved before start.
+    ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+        TextPatternRangeEndpoint_End, textunit, /*count*/ 1, &count));
+    ASSERT_EQ(1, count);
+
+    ASSERT_HRESULT_SUCCEEDED(
+        text_range_provider->GetText(-1, text_content.Receive()));
+    EXPECT_STREQ(L"some textmore texteven more text", text_content);
+    text_content.Reset();
+
+    // Move the start point to the end
+    ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+        TextPatternRangeEndpoint_Start, textunit, /*count*/ 3, &count));
+    ASSERT_EQ(1, count);
+
+    ASSERT_HRESULT_SUCCEEDED(
+        text_range_provider->GetText(-1, text_content.Receive()));
+    EXPECT_STREQ(L"", text_content);
+    text_content.Reset();
+
+    // Move the start point back to the beginning
+    ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+        TextPatternRangeEndpoint_Start, textunit, /*count*/ -3, &count));
+    ASSERT_EQ(-1, count);
+
+    ASSERT_HRESULT_SUCCEEDED(
+        text_range_provider->GetText(-1, text_content.Receive()));
+    EXPECT_STREQ(L"some textmore texteven more text", text_content);
+    text_content.Reset();
+  }
+}
+
 TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderCompare) {
   ui::AXNodeData text_data;
   text_data.id = 2;
