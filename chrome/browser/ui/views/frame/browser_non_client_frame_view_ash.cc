@@ -757,9 +757,6 @@ bool BrowserNonClientFrameViewAsh::ShouldPaint() const {
 
 void BrowserNonClientFrameViewAsh::OnOverviewOrSplitviewModeChanged() {
   caption_button_container_->SetVisible(ShouldShowCaptionButtons());
-
-  // Schedule a paint to show or hide the header.
-  SchedulePaint();
 }
 
 std::unique_ptr<ash::FrameHeader>
