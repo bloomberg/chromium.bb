@@ -198,11 +198,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "autofill-dynamic-forms",
-    "owners": [ "sebsg" ],
-    "expiry_milestone": 72
-  },
-  {
     "name": "autofill-enable-company-name",
     "owners": [ "sebsg" ],
     "expiry_milestone": 73
@@ -252,11 +247,6 @@
     "expiry_milestone": 79
   },
   {
-    "name": "autofill-prefilled-fields",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "autofill-profile-client-validation",
     "owners": [ "parastoog" ],
     "expiry_milestone": 77
@@ -292,11 +282,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "automatic-tab-discarding",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "autoplay-policy",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
@@ -304,11 +289,6 @@
   {
     "name": "background-task-component-update",
     "owners": [ "sorin", "waffles", "tiborg" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "bookmark-apps",
-    // "owners": [ "your-team" ],
     "expiry_milestone": 76
   },
   {
@@ -442,11 +422,6 @@
     "expiry_milestone": 74
   },
   {
-    "name": "create-app-windows-in-app",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "cros-regions-mode",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
@@ -566,11 +541,6 @@
   },
   {
     "name": "disable-hosted-app-shim-creation",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "disable-hosted-apps-in-windows",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
   },
@@ -943,11 +913,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-blink-heap-unified-garbage-collection",
-    "owners": [ "mlippautz" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-bloated-renderer-detection",
     "owners": [ "ulan" ],
     "expiry_milestone": 75
@@ -1168,11 +1133,6 @@
   {
     "name": "enable-fs-nosymfollow",
     "owners": [ "mortonm@chromium.org" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-fullscreen-handwriting-virtual-keyboard",
-    // "owners": [ "your-team" ],
     "expiry_milestone": 76
   },
   {
@@ -1405,11 +1365,6 @@
     // This flag is used to capture early-browser network logging on platforms
     // without easy access to startup time configuration.
     "expiry_milestone": -1
-  },
-  {
-    "name": "enable-new-contacts-picker",
-    "owners": [ "finnur", "peter" ],
-    "expiry_milestone": 74
   },
   {
     "name": "download-auto-resumption-native",
@@ -1702,11 +1657,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-stylus-virtual-keyboard",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-suggestions-with-substring-match",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
@@ -1872,11 +1822,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "enable-virtual-keyboard-ukm",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-viz-display-compositor",
     "owners": [ "fsamuel", "kylechar" ],
     "expiry_milestone": 76
@@ -1943,11 +1888,6 @@
     "name": "enable-webnfc",
     "owners": [ "rijubrata.bhaumik@intel.com","reillyg" ],
     "expiry_milestone": 79
-  },
-  {
-    "name": "enable-webrtc-h264-with-openh264-ffmpeg",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
   },
   {
     "name": "enable-webrtc-hide-local-ips-with-mdns",
@@ -3071,11 +3011,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "upcoming-ui-features",
-    "owners": [ "robliao" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "update-menu-item-custom-summary",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/omaha/OWNERS" ],
      // This is required by test teams to verify functionality on devices which
@@ -3175,11 +3110,6 @@
     "name": "webxr",
     "owners": [ "//third_party/blink/renderer/modules/xr/OWNERS", "xr-dev@chromium.org" ],
     "expiry_milestone": 79
-  },
-  {
-    "name": "webxr-gamepad-support",
-    "owners": [ "//third_party/blink/renderer/modules/xr/OWNERS", "xr-dev@chromium.org" ],
-    "expiry_milestone": 76
   },
   {
     "name": "webxr-hit-test",
