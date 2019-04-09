@@ -104,6 +104,15 @@ GoogleServiceAuthError SyncAuthManager::GetLastAuthError() const {
   return last_auth_error_;
 }
 
+base::Time SyncAuthManager::GetLastAuthErrorTime() const {
+  // See GetLastAuthError().
+  if (partial_token_status_.connection_status ==
+      syncer::CONNECTION_SERVER_ERROR) {
+    return partial_token_status_.connection_status_update_time;
+  }
+  return last_auth_error_time_;
+}
+
 bool SyncAuthManager::IsSyncPaused() const {
   return IsWebSignout(GetLastAuthError());
 }
@@ -281,7 +290,7 @@ void SyncAuthManager::OnRefreshTokenUpdatedForAccount(
     // that's not going to happen in this case.
     // TODO(blundell): Long-term, it would be nicer if Sync didn't have to
     // cache signin-level authentication errors.
-    last_auth_error_ = token_error;
+    SetLastAuthError(token_error);
 
     credentials_changed_callback_.Run();
     return;
@@ -322,8 +331,8 @@ void SyncAuthManager::OnRefreshTokenRemovedForAccount(
 
   // TODO(crbug.com/839834): REQUEST_CANCELED doesn't seem like the right auth
   // error to use here. Maybe INVALID_GAIA_CREDENTIALS?
-  last_auth_error_ =
-      GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED);
+  SetLastAuthError(
+      GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
   ClearAccessTokenAndRequest();
 
   credentials_changed_callback_.Run();
@@ -369,7 +378,7 @@ bool SyncAuthManager::UpdateSyncAccountIfNecessary() {
     // Also clear any pending request or auth errors we might have, since they
     // aren't meaningful anymore.
     ConnectionClosed();
-    last_auth_error_ = GoogleServiceAuthError::AuthErrorNone();
+    SetLastAuthError(GoogleServiceAuthError::AuthErrorNone());
     account_state_changed_callback_.Run();
   }
 
@@ -429,7 +438,7 @@ void SyncAuthManager::AccessTokenFetched(
   switch (error.state()) {
     case GoogleServiceAuthError::NONE:
       partial_token_status_.token_receive_time = base::Time::Now();
-      last_auth_error_ = GoogleServiceAuthError::AuthErrorNone();
+      SetLastAuthError(GoogleServiceAuthError::AuthErrorNone());
       break;
     case GoogleServiceAuthError::CONNECTION_FAILED:
     case GoogleServiceAuthError::REQUEST_CANCELED:
@@ -443,14 +452,22 @@ void SyncAuthManager::AccessTokenFetched(
       ScheduleAccessTokenRequest();
       break;
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
-      last_auth_error_ = error;
+      SetLastAuthError(error);
       break;
     default:
-      LOG(ERROR) << "Unexpected persistent error: " << error.ToString();
-      last_auth_error_ = error;
+      DLOG(ERROR) << "Unexpected persistent error: " << error.ToString();
+      SetLastAuthError(error);
   }
 
   credentials_changed_callback_.Run();
+}
+
+void SyncAuthManager::SetLastAuthError(const GoogleServiceAuthError& error) {
+  if (last_auth_error_ == error) {
+    return;
+  }
+  last_auth_error_ = error;
+  last_auth_error_time_ = base::Time::Now();
 }
 
 }  // namespace syncer

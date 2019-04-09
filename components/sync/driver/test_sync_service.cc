@@ -149,6 +149,10 @@ GoogleServiceAuthError TestSyncService::GetAuthError() const {
   return auth_error_;
 }
 
+base::Time TestSyncService::GetAuthErrorTime() const {
+  return base::Time();
+}
+
 bool TestSyncService::RequiresClientUpgrade() const {
   return detailed_sync_status_.sync_protocol_error.action ==
          syncer::UPGRADE_CLIENT;

@@ -226,6 +226,7 @@ class SyncService : public KeyedService {
   // an access token), or from the Sync server. It gets cleared when the error
   // is resolved.
   virtual GoogleServiceAuthError GetAuthError() const = 0;
+  virtual base::Time GetAuthErrorTime() const = 0;
 
   // Returns true if the Chrome client is too old and needs to be updated for
   // Sync to work.

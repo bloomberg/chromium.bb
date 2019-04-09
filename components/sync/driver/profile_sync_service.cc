@@ -1165,6 +1165,11 @@ GoogleServiceAuthError ProfileSyncService::GetAuthError() const {
   return auth_manager_->GetLastAuthError();
 }
 
+base::Time ProfileSyncService::GetAuthErrorTime() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return auth_manager_->GetLastAuthErrorTime();
+}
+
 bool ProfileSyncService::RequiresClientUpgrade() const {
   return last_actionable_error_.action == UPGRADE_CLIENT;
 }

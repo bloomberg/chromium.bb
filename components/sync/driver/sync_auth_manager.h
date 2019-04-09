@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/sync/driver/sync_auth_util.h"
@@ -65,6 +66,9 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
   // Returns the last auth error that was encountered. The error could have come
   // from the Sync server or from the IdentityManager.
   GoogleServiceAuthError GetLastAuthError() const;
+
+  // Returns the time at which the last auth error was set.
+  base::Time GetLastAuthErrorTime() const;
 
   // Returns whether we are in the "Sync paused" state. That means there is a
   // primary account, but the user signed out in the content area, and so we
@@ -134,8 +138,11 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
   // we currently have is invalidated.
   void RequestAccessToken();
 
+  // Callback for |ongoing_access_token_fetch_|.
   void AccessTokenFetched(GoogleServiceAuthError error,
                           identity::AccessTokenInfo access_token_info);
+
+  void SetLastAuthError(const GoogleServiceAuthError& error);
 
   identity::IdentityManager* const identity_manager_;
 
@@ -152,6 +159,7 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
   // This is a cache of the last authentication response we received from
   // Chrome's identity/token management system.
   GoogleServiceAuthError last_auth_error_;
+  base::Time last_auth_error_time_;
 
   // The current access token. This is mutually exclusive with
   // |ongoing_access_token_fetch_| and |request_access_token_retry_timer_|:
