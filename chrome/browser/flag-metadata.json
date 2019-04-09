@@ -267,6 +267,11 @@
     "expiry_milestone": 76
   },
   {
+  "name": "omnibox-local-entity-suggestions",
+  "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
+  "expiry_milestone": 80
+  },
+  {
     "name": "autofill-settings-split-by-card-type",
     "owners": [ "sebsg" ],
     "expiry_milestone": 75

@@ -848,6 +848,9 @@ extern const char kOfflineAutoReloadVisibleOnlyDescription[];
 extern const char kOmniboxDisplayTitleForCurrentUrlName[];
 extern const char kOmniboxDisplayTitleForCurrentUrlDescription[];
 
+extern const char kOmniboxLocalEntitySuggestionsName[];
+extern const char kOmniboxLocalEntitySuggestionsDescription[];
+
 extern const char kOmniboxMaterialDesignWeatherIconsName[];
 extern const char kOmniboxMaterialDesignWeatherIconsDescription[];
 
@@ -2102,9 +2105,6 @@ extern const char kWebGL2ComputeContextName[];
 extern const char kWebGL2ComputeContextDescription[];
 
 #endif  // defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
-
-extern const char kExperimentalUiName[];
-extern const char kExperimentalUiDescription[];
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 

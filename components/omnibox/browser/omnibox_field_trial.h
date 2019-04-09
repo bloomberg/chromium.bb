@@ -382,12 +382,10 @@ EmphasizeTitlesCondition GetEmphasizeTitlesConditionForInput(
 // Returns true if the rich entities flag is enabled.
 bool IsRichEntitySuggestionsEnabled();
 
-// Returns true if either the reverse answers flag or the
-// #upcoming-ui-features flag is enabled.
+// Returns true if the reverse answers flag is enabled.
 bool IsReverseAnswersEnabled();
 
-// Returns true if either the tab switch suggestions flag or the
-// #upcoming-ui-features flag is enabled.
+// Returns true if either the tab switch suggestions flag is enabled.
 bool IsTabSwitchSuggestionsEnabled();
 
 // Returns true if the feature of reversing the tab switch logic is enabled.
@@ -396,12 +394,11 @@ bool IsTabSwitchLogicReversed();
 // Returns true if the #omnibox-pedal-suggestions feature is enabled.
 bool IsPedalSuggestionsEnabled();
 
-// Returns true if either the steady-state elision flag for scheme or the
-// #upcoming-ui-features flag is enabled.
+// Returns true if either the steady-state elision flag for scheme is enabled.
 bool IsHideSteadyStateUrlSchemeEnabled();
 
 // Returns true if either the steady-state elision flag for trivial
-// subdomains or the #upcoming-ui-features flag is enabled.
+// subdomains is enabled.
 bool IsHideSteadyStateUrlTrivialSubdomainsEnabled();
 
 // Returns the size of the vertical margin that should be used in the
