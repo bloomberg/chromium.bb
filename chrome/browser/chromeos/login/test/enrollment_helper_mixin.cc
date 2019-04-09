@@ -75,7 +75,7 @@ void EnrollmentHelperMixin::ExpectEnrollmentModeRepeated(
 }
 
 void EnrollmentHelperMixin::ExpectSuccessfulOAuthEnrollment() {
-  EXPECT_CALL(*mock_, EnrollUsingAuthCode(kTestAuthCode, _))
+  EXPECT_CALL(*mock_, EnrollUsingAuthCode(kTestAuthCode))
       .WillOnce(InvokeWithoutArgs(
           [this]() { mock_->status_consumer()->OnDeviceEnrolled(); }));
 }
@@ -91,7 +91,7 @@ void EnrollmentHelperMixin::ExpectAvailableLicenseCount(int perpetual,
   if (kiosk >= 0)
     license_map[policy::LicenseType::KIOSK] = kiosk;
   CHECK(license_map.size() > 1);
-  EXPECT_CALL(*mock_, EnrollUsingAuthCode(kTestAuthCode, _))
+  EXPECT_CALL(*mock_, EnrollUsingAuthCode(kTestAuthCode))
       .WillOnce(InvokeWithoutArgs([this, license_map]() {
         mock_->status_consumer()->OnMultipleLicensesAvailable(license_map);
       }));
@@ -151,7 +151,7 @@ void EnrollmentHelperMixin::SetupClearAuth() {
 }
 
 void EnrollmentHelperMixin::ExpectEnrollmentCredentials() {
-  EXPECT_CALL(*mock_, EnrollUsingAuthCode(kTestAuthCode, _));
+  EXPECT_CALL(*mock_, EnrollUsingAuthCode(kTestAuthCode));
 }
 
 void EnrollmentHelperMixin::DisableAttributePromptUpdate() {
@@ -182,7 +182,7 @@ void EnrollmentHelperMixin::SetupActiveDirectoryJoin(
     const std::string& expected_domain,
     const std::string& domain_join_config,
     const std::string& dm_token) {
-  EXPECT_CALL(*mock_, EnrollUsingAuthCode(kTestAuthCode, _))
+  EXPECT_CALL(*mock_, EnrollUsingAuthCode(kTestAuthCode))
       .WillOnce(InvokeWithoutArgs(
           [delegate, expected_domain, domain_join_config, dm_token]() {
             delegate->JoinDomain(dm_token, domain_join_config,

@@ -332,9 +332,9 @@ TEST_F(MultiLicenseEnrollmentScreenUnitTest, TestLicenseSelection) {
   std::unique_ptr<EnterpriseEnrollmentHelperMock> mock =
       std::make_unique<EnterpriseEnrollmentHelperMock>();
   auto* mock_ref = mock.get();
-  EXPECT_CALL(*mock, EnrollUsingAuthCode(_, _))
+  EXPECT_CALL(*mock, EnrollUsingAuthCode(_))
       .Times(AnyNumber())
-      .WillRepeatedly(Invoke([mock_ref](const std::string&, bool) {
+      .WillRepeatedly(Invoke([mock_ref](const std::string&) {
         EnrollmentLicenseMap licenses;
         static_cast<EnrollmentScreen*>(mock_ref->status_consumer())
             ->OnMultipleLicensesAvailable(licenses);

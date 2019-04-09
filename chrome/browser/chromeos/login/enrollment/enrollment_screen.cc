@@ -253,8 +253,7 @@ void EnrollmentScreen::OnLoginDone(const std::string& user,
 
   view_->ShowEnrollmentSpinnerScreen();
   CreateEnrollmentHelper();
-  enrollment_helper_->EnrollUsingAuthCode(auth_code,
-                                          false /* fetch_additional_token */);
+  enrollment_helper_->EnrollUsingAuthCode(auth_code);
 }
 
 void EnrollmentScreen::OnLicenseTypeSelected(const std::string& license_type) {
