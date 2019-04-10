@@ -141,7 +141,10 @@ bool WalletDataAndMetadataMatchAndAddressesHaveConverted(
 }
 
 void WaitForCurrentTasksToComplete(base::SequencedTaskRunner* task_runner) {
-  base::RunLoop loop;
+  // We need to allow nestable tasks because AutofillWalletMetadataSizeChecker
+  // may cause this function getting called again while |loop| here is running.
+  // Without allowing nestable tasks, the outer loop will block forever.
+  base::RunLoop loop(base::RunLoop::Type::kNestableTasksAllowed);
   task_runner->PostTask(
       FROM_HERE, base::BindOnce(&base::RunLoop::Quit, base::Unretained(&loop)));
   loop.Run();
