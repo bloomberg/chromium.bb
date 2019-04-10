@@ -59,9 +59,7 @@ base::string16 WebAppBrowserController::FormatUrlOrigin(const GURL& url) {
 WebAppBrowserController::WebAppBrowserController(Browser* browser)
     : content::WebContentsObserver(nullptr), browser_(browser) {}
 
-WebAppBrowserController::~WebAppBrowserController() {
-  return;
-}
+WebAppBrowserController::~WebAppBrowserController() = default;
 
 bool WebAppBrowserController::CreatedForInstalledPwa() const {
   return false;
