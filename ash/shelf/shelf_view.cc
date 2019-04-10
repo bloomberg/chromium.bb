@@ -10,6 +10,7 @@
 #include "ash/drag_drop/drag_image_view.h"
 #include "ash/focus_cycler.h"
 #include "ash/keyboard/keyboard_util.h"
+#include "ash/kiosk_next/kiosk_next_shell_controller.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_features.h"
@@ -1221,6 +1222,17 @@ ShelfView::AppCenteringStrategy ShelfView::CalculateAppCenteringStrategy()
   // This is only relevant for the main shelf.
   if (is_overflow_mode())
     return strategy;
+
+  // We only show the back and home buttons in Kiosk Next, with no overflow
+  // button.
+  // TODO(https://crbug.com/951212): Prevent creation of the app item views
+  // instead of using this hack. This is difficult today due to the tight
+  // coupling of the view model and shelf model.
+  if (Shell::Get()->kiosk_next_shell_controller() &&
+      Shell::Get()->kiosk_next_shell_controller()->IsEnabled()) {
+    last_visible_index_ = 1;
+    return strategy;
+  }
 
   const int total_available_size = shelf_->PrimaryAxisValue(width(), height());
   StatusAreaWidget* status_widget = shelf_widget_->status_area_widget();
