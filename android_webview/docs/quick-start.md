@@ -87,6 +87,10 @@ troubleshoot the problem is to query the state of the on-device
 WebViewUpdateService:
 
 ```shell
+# If you don't have `adb` in your path, you can source this file to use
+# the copy from chromium's Android SDK
+$ source build/android/envsetup.sh
+
 # Only available on O+
 $ adb shell dumpsys webviewupdate
 
