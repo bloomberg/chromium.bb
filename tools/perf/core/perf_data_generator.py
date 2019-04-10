@@ -671,10 +671,11 @@ NON_TELEMETRY_BENCHMARKS = {
         'piman@chromium.org, chrome-gpu-perf-owners@chromium.org',
         'Internals>GPU'),
     'passthrough_command_buffer_perftests': BenchmarkMetadata(
-        'piman@chromium.org, chrome-gpu-perf-owners@chromium.org',
-        'Internals>GPU>ANGLE'),
+        'net-dev@chromium.org',
+        'Internals>Network'),
     'net_perftests': BenchmarkMetadata(
-        'xunjieli@chromium.org'),
+        'net-dev@chromium.org',
+        'Internals>Network'),
     'gpu_perftests': BenchmarkMetadata(
         'reveman@chromium.org, chrome-gpu-perf-owners@chromium.org',
         'Internals>GPU'),
