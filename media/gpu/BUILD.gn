@@ -307,6 +307,9 @@ source_set("image_processor") {
   if (use_v4l2_codec) {
     deps += [ "//media/gpu/v4l2" ]
   }
+  if (is_linux) {
+    deps += [ ":video_frame_mapper" ]
+  }
 }
 
 source_set("image_processor_common") {
@@ -323,6 +326,41 @@ source_set("image_processor_common") {
     "//base",
     "//media",
     "//ui/gfx/geometry",
+  ]
+}
+
+source_set("video_frame_mapper") {
+  defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
+  sources = [
+    "video_frame_mapper_factory.cc",
+  ]
+  public_deps = [
+    ":video_frame_mapper_common",
+  ]
+  deps = []
+
+  # generic_dmabuf_video_frame_mapper
+  if (is_linux) {
+    deps += [ "//media/gpu/linux:video_frame_mapper" ]
+  }
+
+  # vaapi_dmabuf_video_frame_mapper
+  if (use_vaapi) {
+    deps += [ "//media/gpu/vaapi" ]
+  }
+}
+
+source_set("video_frame_mapper_common") {
+  defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
+  sources = [
+    "video_frame_mapper.h",
+    "video_frame_mapper_factory.h",
+  ]
+
+  public_deps = [
+    ":buildflags",
+    "//base",
+    "//media",
   ]
 }
 

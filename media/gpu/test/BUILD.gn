@@ -35,44 +35,17 @@ source_set("render_helpers") {
   }
 }
 
-source_set("frame_mapper") {
-  testonly = true
-  sources = [
-    "video_frame_mapper.h",
-    "video_frame_mapper_factory.cc",
-    "video_frame_mapper_factory.h",
-  ]
-  if (is_chromeos) {
-    sources += [
-      "generic_dmabuf_video_frame_mapper.cc",
-      "generic_dmabuf_video_frame_mapper.h",
-    ]
-    if (use_vaapi) {
-      sources += [
-        "vaapi_dmabuf_video_frame_mapper.cc",
-        "vaapi_dmabuf_video_frame_mapper.h",
-      ]
-    }
-  }
-
-  deps = [
-    "//media/gpu",
-  ]
-}
-
 source_set("frame_validator") {
   testonly = true
   sources = [
     "video_frame_validator.cc",
     "video_frame_validator.h",
   ]
-  public_deps = [
-    ":frame_mapper",
-  ]
   deps = [
     ":decode_helpers",
     ":helpers",
     "//media/gpu",
+    "//media/gpu:video_frame_mapper",
   ]
 }
 
@@ -83,9 +56,9 @@ source_set("frame_file_writer") {
     "video_frame_file_writer.h",
   ]
   deps = [
-    ":frame_mapper",
     ":render_helpers",
     "//media/gpu",
+    "//media/gpu:video_frame_mapper",
     "//ui/gfx/codec:codec",
   ]
 }
@@ -120,8 +93,8 @@ source_set("encode_helpers") {
     ":render_helpers",
   ]
   deps = [
-    ":frame_mapper",
     "//media/gpu",
+    "//media/gpu:video_frame_mapper",
   ]
 }
 
