@@ -8,6 +8,7 @@
 #include <functional>
 #include <utility>
 
+#include "ash/kiosk_next/kiosk_next_shell_controller.h"
 #include "ash/metrics/histogram_macros.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/fps_counter.h"
@@ -960,6 +961,11 @@ void OverviewGrid::OnStartingAnimationComplete(bool canceled) {
 }
 
 bool OverviewGrid::ShouldAnimateWallpaper() const {
+  // Kiosk next shell mode will have an opaque background covering the wallpaper
+  // prior to entering overview, so there's no need to animate it.
+  if (Shell::Get()->kiosk_next_shell_controller()->IsEnabled())
+    return false;
+
   // Never animate when doing app dragging.
   if (overview_session_->enter_exit_overview_type() ==
       OverviewSession::EnterExitOverviewType::kWindowDragged) {
