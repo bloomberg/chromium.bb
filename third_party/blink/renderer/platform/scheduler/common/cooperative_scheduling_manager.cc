@@ -6,6 +6,8 @@
 
 #include "base/auto_reset.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/thread_specific.h"
 
@@ -57,6 +59,7 @@ void CooperativeSchedulingManager::SafepointSlow() {
     return;
 
   // TODO(keishi): Also bail if V8 EnteredContextCount is more than 1
+  Thread::MainThread()->Scheduler()->SetHasSafepoint();
 
   RunNestedLoop();
 }

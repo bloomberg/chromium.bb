@@ -28,6 +28,8 @@ namespace scheduler {
 #define DURATION_PER_TASK_TYPE_METRIC_NAME \
   "RendererScheduler.TaskDurationPerTaskType2"
 #define COUNT_PER_FRAME_METRIC_NAME "RendererScheduler.TaskCountPerFrameType"
+#define COUNT_PER_FRAME_METRIC_NAME_WITH_SAFEPOINT \
+  "RendererScheduler.TaskCountPerFrameType.HasSafepoint"
 #define DURATION_PER_TASK_USE_CASE_NAME \
   "RendererScheduler.TaskDurationPerUseCase2"
 
@@ -438,6 +440,40 @@ void MainThreadMetricsHelper::RecordTaskMetrics(
   if (duration >= base::TimeDelta::FromSeconds(1)) {
     UMA_HISTOGRAM_ENUMERATION(COUNT_PER_FRAME_METRIC_NAME ".LongerThan1s",
                               frame_status, FrameStatus::kCount);
+  }
+
+  if (main_thread_scheduler_->main_thread_only().has_safepoint) {
+    UMA_HISTOGRAM_ENUMERATION(COUNT_PER_FRAME_METRIC_NAME_WITH_SAFEPOINT,
+                              frame_status, FrameStatus::kCount);
+    if (duration >= base::TimeDelta::FromMilliseconds(16)) {
+      UMA_HISTOGRAM_ENUMERATION(COUNT_PER_FRAME_METRIC_NAME_WITH_SAFEPOINT
+                                ".LongerThan16ms",
+                                frame_status, FrameStatus::kCount);
+    }
+
+    if (duration >= base::TimeDelta::FromMilliseconds(50)) {
+      UMA_HISTOGRAM_ENUMERATION(COUNT_PER_FRAME_METRIC_NAME_WITH_SAFEPOINT
+                                ".LongerThan50ms",
+                                frame_status, FrameStatus::kCount);
+    }
+
+    if (duration >= base::TimeDelta::FromMilliseconds(100)) {
+      UMA_HISTOGRAM_ENUMERATION(COUNT_PER_FRAME_METRIC_NAME_WITH_SAFEPOINT
+                                ".LongerThan100ms",
+                                frame_status, FrameStatus::kCount);
+    }
+
+    if (duration >= base::TimeDelta::FromMilliseconds(150)) {
+      UMA_HISTOGRAM_ENUMERATION(COUNT_PER_FRAME_METRIC_NAME_WITH_SAFEPOINT
+                                ".LongerThan150ms",
+                                frame_status, FrameStatus::kCount);
+    }
+
+    if (duration >= base::TimeDelta::FromSeconds(1)) {
+      UMA_HISTOGRAM_ENUMERATION(COUNT_PER_FRAME_METRIC_NAME_WITH_SAFEPOINT
+                                ".LongerThan1s",
+                                frame_status, FrameStatus::kCount);
+    }
   }
 
   UseCase use_case =

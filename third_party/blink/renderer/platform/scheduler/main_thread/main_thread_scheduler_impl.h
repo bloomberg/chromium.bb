@@ -571,6 +571,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   void OnIdlePeriodStarted() override;
   void OnIdlePeriodEnded() override;
   void OnPendingTasksChanged(bool has_tasks) override;
+  void SetHasSafepoint() override;
 
   void DispatchRequestBeginMainFrameNotExpected(bool has_tasks);
 
@@ -865,6 +866,9 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     // High-priority for compositing events after input experiment.
     PrioritizeCompositingAfterInputExperiment compositing_experiment;
     bool should_prioritize_compositing;
+
+    // True if a task has a safepoint.
+    bool has_safepoint;
   };
 
   struct AnyThread {
