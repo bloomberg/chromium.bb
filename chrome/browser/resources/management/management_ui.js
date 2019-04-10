@@ -150,9 +150,9 @@ Polymer({
   /** @private */
   getLocalTrustRootsInfo_() {
     this.browserProxy_.getLocalTrustRootsInfo().then(trustRootsConfigured => {
-      this.localTrustRoots_ = loadTimeData.getString(
-          trustRootsConfigured ? 'managementTrustRootsConfigured' :
-                                 'managementTrustRootsNotConfigured');
+      this.localTrustRoots_ = trustRootsConfigured ?
+          loadTimeData.getString('managementTrustRootsConfigured') :
+          '';
     });
   },
 
