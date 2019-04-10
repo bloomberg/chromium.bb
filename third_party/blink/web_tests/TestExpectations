@@ -3025,6 +3025,16 @@ crbug.com/939181 external/wpt/html/browsers/origin/cross-origin-objects/cross-or
 crbug.com/939181 virtual/not-site-per-process/external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Failure Timeout ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-text-decor/text-underline-position-073-manual.html [ Skip ]
+crbug.com/626703 external/wpt/css/css-text-decor/text-underline-position-072-manual.html [ Skip ]
+crbug.com/626703 external/wpt/css/css-text-decor/text-underline-position-071-manual.html [ Skip ]
+crbug.com/626703 external/wpt/css/css-text-decor/text-underline-position-020-manual.html [ Skip ]
+crbug.com/626703 external/wpt/css/css-text-decor/text-underline-position-076-manual.html [ Skip ]
+crbug.com/626703 external/wpt/css/css-text-decor/text-underline-position-075-manual.html [ Skip ]
+crbug.com/626703 external/wpt/css/css-text-decor/text-underline-position-021-manual.html [ Skip ]
+crbug.com/626703 external/wpt/css/css-text-decor/text-underline-position-022-manual.html [ Skip ]
+crbug.com/626703 external/wpt/css/css-text-decor/text-underline-position-074-manual.html [ Skip ]
+crbug.com/626703 external/wpt/css/css-text-decor/text-underline-position-019-manual.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-line-048-manual.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-line-046a-manual.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-line-082-manual.html [ Skip ]
