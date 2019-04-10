@@ -9,6 +9,14 @@ enum OverviewAnimationState {
   kExitAnimationComplete,
 };
 
+enum LauncherAnimationState {
+  kClosed,
+  kPeeking,
+  kHalf,
+  kFullscreenAllApps,
+  kFullscreenSearch
+};
+
 interface ShellTestApi {
   // Returns true if a system modal window is open (e.g. the Wi-Fi network
   // password dialog).
@@ -53,4 +61,8 @@ interface ShellTestApi {
 
   // Runs the callback when the overview state becomes |state|.
   WaitForOverviewAnimationState(OverviewAnimationState state) => ();
+
+  // Runs the callback when the launcher state becomes |state| after
+  // state transition animation.
+  WaitForLauncherAnimationState(LauncherAnimationState state) => ();
 };

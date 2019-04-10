@@ -188,7 +188,8 @@ class AppListEventTargeter : public aura::WindowTargeter {
 class AppListView::StateAnimationMetricsReporter
     : public ui::AnimationMetricsReporter {
  public:
-  StateAnimationMetricsReporter() = default;
+  explicit StateAnimationMetricsReporter(AppListView* view) : view_(view) {}
+
   ~StateAnimationMetricsReporter() override = default;
 
   void Start(bool is_in_tablet_mode) {
@@ -209,6 +210,7 @@ class AppListView::StateAnimationMetricsReporter
       UMA_HISTOGRAM_PERCENTAGE(
           "Apps.StateTransition.AnimationSmoothness.ClamshellMode", value);
     }
+    view_->OnStateTransitionAnimationCompleted();
 #if defined(DCHECK)
     started_ = false;
 #endif
@@ -219,6 +221,7 @@ class AppListView::StateAnimationMetricsReporter
   bool started_ = false;
 #endif
   bool is_in_tablet_mode_ = false;
+  AppListView* view_;
 
   DISALLOW_COPY_AND_ASSIGN(StateAnimationMetricsReporter);
 };
@@ -323,7 +326,9 @@ class AppListBackgroundShieldView : public views::View {
 ////////////////////////////////////////////////////////////////////////////////
 // AppListView::TestApi
 
-AppListView::TestApi::TestApi(AppListView* view) : view_(view) {}
+AppListView::TestApi::TestApi(AppListView* view) : view_(view) {
+  DCHECK(view_);
+}
 
 AppListView::TestApi::~TestApi() = default;
 
@@ -344,7 +349,7 @@ AppListView::AppListView(AppListViewDelegate* delegate)
       transition_animation_observer_(
           std::make_unique<TransitionAnimationObserver>(this)),
       state_animation_metrics_reporter_(
-          std::make_unique<StateAnimationMetricsReporter>()),
+          std::make_unique<StateAnimationMetricsReporter>(this)),
       weak_ptr_factory_(this) {
   CHECK(delegate);
 }
@@ -1840,6 +1845,10 @@ void AppListView::UpdateAppListBackgroundYPosition() {
     transform.Translate(0, -kAppListBackgroundRadius);
   }
   app_list_background_shield_->SetTransform(transform);
+}
+
+void AppListView::OnStateTransitionAnimationCompleted() {
+  delegate_->OnStateTransitionAnimationCompleted(app_list_state_);
 }
 
 }  // namespace app_list

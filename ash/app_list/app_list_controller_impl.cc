@@ -760,6 +760,11 @@ app_list::AppListViewState AppListControllerImpl::CalculateStateAfterShelfDrag(
   return app_list::AppListViewState::CLOSED;
 }
 
+void AppListControllerImpl::SetStateTransitionAnimationCallback(
+    StateTransitionAnimationCallback callback) {
+  state_transition_animation_callback_ = std::move(callback);
+}
+
 void AppListControllerImpl::SetAppListModelForTest(
     std::unique_ptr<app_list::AppListModel> model) {
   model_->RemoveObserver(this);
@@ -1023,6 +1028,12 @@ bool AppListControllerImpl::IsAssistantAllowedAndEnabled() const {
          controller->voice_interaction_state().value_or(
              mojom::VoiceInteractionState::NOT_READY) !=
              mojom::VoiceInteractionState::NOT_READY;
+}
+
+void AppListControllerImpl::OnStateTransitionAnimationCompleted(
+    app_list::AppListViewState state) {
+  if (!state_transition_animation_callback_.is_null())
+    state_transition_animation_callback_.Run(state);
 }
 
 void AppListControllerImpl::AddObserver(AppListControllerObserver* observer) {

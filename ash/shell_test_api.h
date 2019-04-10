@@ -70,6 +70,9 @@ class ShellTestApi : public mojom::ShellTestApi {
   void WaitForOverviewAnimationState(
       mojom::OverviewAnimationState state,
       WaitForOverviewAnimationStateCallback callback) override;
+  void WaitForLauncherAnimationState(
+      mojom::LauncherAnimationState state,
+      WaitForLauncherAnimationStateCallback callback) override;
 
  private:
   Shell* shell_;  // not owned
