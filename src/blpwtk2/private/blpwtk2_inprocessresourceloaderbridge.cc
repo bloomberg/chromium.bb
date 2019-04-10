@@ -218,6 +218,9 @@ class InProcessResourceLoaderBridge::InProcessResourceContext
     const URLRequest* request() override;
     void replaceStatusLine(const StringRef& newStatus) override;
     void addResponseHeader(const StringRef& header) override;
+    bool hasResponseHeaderValue(const StringRef& name,
+                                const StringRef& value) const override;
+    bool hasReponseHeader(const StringRef& name) const override;
     void addResponseData(const char* buffer, int length) override;
     void failed() override;
     void finish() override;
@@ -345,6 +348,24 @@ void InProcessResourceLoaderBridge::InProcessResourceContext::addResponseHeader(
 
     std::string str(header.data(), header.length());
     d_responseHeaders->AddHeader(str);
+}
+
+bool InProcessResourceLoaderBridge::InProcessResourceContext::hasResponseHeaderValue(const StringRef& name, const StringRef& value) const
+{
+  if (!d_responseHeaders) {
+    return false;
+  }
+  return d_responseHeaders->HasHeaderValue(
+      std::string(name.data(), name.length()),
+      std::string(value.data(), value.length()));
+}
+
+bool InProcessResourceLoaderBridge::InProcessResourceContext::hasReponseHeader(const StringRef& name) const
+{
+  if (!d_responseHeaders) {
+    return false;
+  }
+  return d_responseHeaders->HasHeader(std::string(name.data(), name.length()));
 }
 
 void InProcessResourceLoaderBridge::InProcessResourceContext::addResponseData(const char* buffer,
