@@ -3024,11 +3024,6 @@
     "expiry_milestone": 75
   },
   {
-    "name": "use-monitor-color-space",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "use-multilogin-endpoint",
     "owners": [ "droger", "msarda" ],
     "expiry_milestone": 78

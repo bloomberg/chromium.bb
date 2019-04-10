@@ -3381,12 +3381,6 @@ const char kUseMashDescription[] =
     "Runs the mojo UI service (mus) and the ash window manager and system UI "
     "in a separate process.";
 
-// TODO(mcasas): remove after https://crbug.com/771345.
-const char kUseMonitorColorSpaceName[] = "Use monitor color space";
-const char kUseMonitorColorSpaceDescription[] =
-    "Enables Chrome to use the  color space information provided by the monitor"
-    " instead of the default sRGB color space.";
-
 const char kUserActivityPredictionMlServiceName[] =
     "ML Service Smart Dim model";
 const char kUserActivityPredictionMlServiceDescription[] =

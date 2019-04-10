@@ -2617,12 +2617,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kForceColorProfileDescription, kOsAll,
      MULTI_VALUE_TYPE(kForceColorProfileChoices)},
 
-#if defined(OS_CHROMEOS)
-    {"use-monitor-color-space", flag_descriptions::kUseMonitorColorSpaceName,
-     flag_descriptions::kUseMonitorColorSpaceDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(display::features::kUseMonitorColorSpace)},
-#endif  // OS_CHROMEOS
-
 #if defined(OS_ANDROID)
     {"enable-webnfc", flag_descriptions::kEnableWebNfcName,
      flag_descriptions::kEnableWebNfcDescription, kOsAndroid,
