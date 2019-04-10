@@ -96,6 +96,7 @@
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
 #include "components/user_manager/user_type.h"
+#include "components/vector_icons/vector_icons.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -1027,13 +1028,13 @@ void ExistingUserController::ShowAutoLaunchManagedGuestSessionNotification() {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   DCHECK(connector->IsEnterpriseManaged());
-  std::string device_domain = connector->GetEnterpriseDisplayDomain();
-  if (device_domain.empty() && connector->IsActiveDirectoryManaged())
-    device_domain = connector->GetRealm();
+  message_center::RichNotificationData data;
+  data.buttons.push_back(message_center::ButtonInfo(
+      l10n_util::GetStringUTF16(IDS_AUTO_LAUNCH_NOTIFICATION_BUTTON)));
   const base::string16 title =
       l10n_util::GetStringUTF16(IDS_AUTO_LAUNCH_NOTIFICATION_TITLE);
-  const base::string16 message = l10n_util::GetStringFUTF16(
-      IDS_AUTO_LAUNCH_NOTIFICATION_MESSAGE, base::UTF8ToUTF16(device_domain));
+  const base::string16 message =
+      l10n_util::GetStringUTF16(IDS_AUTO_LAUNCH_NOTIFICATION_MESSAGE);
   auto delegate =
       base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
           base::BindRepeating([](base::Optional<int> button_index) {
@@ -1047,8 +1048,7 @@ void ExistingUserController::ShowAutoLaunchManagedGuestSessionNotification() {
           message_center::NotifierId(
               message_center::NotifierType::SYSTEM_COMPONENT,
               kAutoLaunchNotifierId),
-          message_center::RichNotificationData(), std::move(delegate),
-          ash::kAutoLaunchManagedGuestSessionIcon,
+          data, std::move(delegate), vector_icons::kBusinessIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
   notification->SetSystemPriority();
   notification->set_pinned(true);

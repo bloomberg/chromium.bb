@@ -186,6 +186,7 @@ source_set("chromeos") {
     "//components/translate/core/browser:browser",
     "//components/ukm/content",
     "//components/user_manager",
+    "//components/vector_icons",
 
     # This depends directly on the variations target, rather than just
     # transitively via the common target because the proto sources need to

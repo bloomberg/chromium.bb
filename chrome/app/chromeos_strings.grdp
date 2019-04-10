@@ -1725,12 +1725,15 @@
     Learn more.
   </message>
 
-  <!--Auto launch managed guest sessions privacy notification -->
+  <!-- Auto launch managed guest sessions privacy notification -->
   <message name="IDS_AUTO_LAUNCH_NOTIFICATION_TITLE" desc="Title of the notification which is shown when the managed guest session auto launched.">
-    This Chromebook can be monitored
+    Managed guest session
   </message>
   <message name="IDS_AUTO_LAUNCH_NOTIFICATION_MESSAGE" desc="Message of the notification which is shown when the managed guest session auto launched.">
-    <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph> manages this device and has access to all user activity, including webpages visited, passwords, and email. See details.
+    The administrator of this device has access to all activity, including passwords and communications.
+  </message>
+  <message name="IDS_AUTO_LAUNCH_NOTIFICATION_BUTTON" desc="Text of the button.">
+    View details
   </message>
 
 
