@@ -208,12 +208,13 @@ bool SharedImageFactory::IsSharedBetweenThreads(uint32_t usage) {
 SharedImageBackingFactory* SharedImageFactory::GetFactoryByUsage(
     uint32_t usage,
     bool* allow_legacy_mailbox) {
-  // wrapped_sk_image_factory_ is only used for OOPR.
-  constexpr auto kUsageOOPR = SHARED_IMAGE_USAGE_RASTER |
-                              SHARED_IMAGE_USAGE_OOP_RASTERIZATION |
-                              SHARED_IMAGE_USAGE_DISPLAY;
-  bool oopr_only_usage = !(usage & ~kUsageOOPR);
-  bool using_wrapped_sk_image = wrapped_sk_image_factory_ && oopr_only_usage;
+  // wrapped_sk_image_factory_ is only used for OOPR and supports
+  // a limited number of flags (e.g. no SHARED_IMAGE_USAGE_SCANOUT).
+  constexpr auto kWrappedSkImageUsage = SHARED_IMAGE_USAGE_RASTER |
+                                        SHARED_IMAGE_USAGE_OOP_RASTERIZATION |
+                                        SHARED_IMAGE_USAGE_DISPLAY;
+  bool using_wrapped_sk_image =
+      wrapped_sk_image_factory_ && (usage == kWrappedSkImageUsage);
 
   bool vulkan_usage = using_vulkan_ && (usage & SHARED_IMAGE_USAGE_DISPLAY);
   bool gl_usage = usage & SHARED_IMAGE_USAGE_GLES2;
