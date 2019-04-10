@@ -11,11 +11,11 @@ namespace features {
 
 // If enabled, the user will see Doodles on the New Tab Page.
 const base::Feature kDoodlesOnLocalNtp{"DoodlesOnLocalNtp",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, the user will sometimes see promos on the NTP.
 const base::Feature kPromosOnLocalNtp{"PromosOnLocalNtp",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, the fakebox will not be shown on the NTP.
 const base::Feature kRemoveNtpFakebox{"RemoveNtpFakebox",
@@ -23,11 +23,11 @@ const base::Feature kRemoveNtpFakebox{"RemoveNtpFakebox",
 
 // If enabled, the user will sometimes see search suggestions on the NTP.
 const base::Feature kSearchSuggestionsOnLocalNtp{
-    "SearchSuggestionsOnLocalNtp", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SearchSuggestionsOnLocalNtp", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables using the local NTP if Google is the default search engine.
 const base::Feature kUseGoogleLocalNtp{"UseGoogleLocalNtp",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, show a search icon (magnifier glass) in the NTP fakebox.
 const base::Feature kFakeboxSearchIconOnNtp{"FakeboxSearchIconOnNtp",

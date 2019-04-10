@@ -5315,27 +5315,6 @@
             ]
         }
     ],
-    "UseGoogleLocalNtp": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "UseGoogleLocalNtp",
-                    "enable_features": [
-                        "DoodlesOnLocalNtp",
-                        "PromosOnLocalNtp",
-                        "SearchSuggestionsOnLocalNtp",
-                        "UseGoogleLocalNtp"
-                    ]
-                }
-            ]
-        }
-    ],
     "UsePdfCompositorServiceForPrint": [
         {
             "platforms": [
