@@ -72,12 +72,15 @@ class LookalikeUrlServiceFactory : public BrowserContextKeyedServiceFactory {
 
 namespace lookalikes {
 
+std::string GetETLDPlusOne(const std::string& hostname) {
+  return net::registry_controlled_domains::GetDomainAndRegistry(
+      hostname, net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+}
+
 DomainInfo::DomainInfo(const std::string& arg_domain_and_registry,
-                       const std::string& arg_full_domain,
                        const url_formatter::IDNConversionResult& arg_idn_result,
                        const url_formatter::Skeletons& arg_skeletons)
     : domain_and_registry(arg_domain_and_registry),
-      full_domain(arg_full_domain),
       idn_result(arg_idn_result),
       skeletons(arg_skeletons) {}
 
@@ -86,19 +89,12 @@ DomainInfo::~DomainInfo() = default;
 DomainInfo::DomainInfo(const DomainInfo&) = default;
 
 DomainInfo GetDomainInfo(const GURL& url) {
-  // Perform all computations on eTLD+1. This excludes private registries, and
-  // returns "blogspot.com" for "test.blogspot.com" (blogspot.com is
-  // listed as a private registry). We do this to be consistent with
-  // url_formatter's top domain list which doesn't have a notion of private
-  // registries.
-  const std::string domain_and_registry =
-      net::registry_controlled_domains::GetDomainAndRegistry(
-          url, net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+  // Perform all computations on eTLD+1.
+  const std::string domain_and_registry = GetETLDPlusOne(url.host());
 
   // eTLD+1 can be empty for private domains.
   if (domain_and_registry.empty()) {
-    return DomainInfo(domain_and_registry, url.host(),
-                      url_formatter::IDNConversionResult(),
+    return DomainInfo(domain_and_registry, url_formatter::IDNConversionResult(),
                       url_formatter::Skeletons());
   }
   // Compute skeletons using eTLD+1, skipping all spoofing checks. Spoofing
@@ -109,7 +105,7 @@ DomainInfo GetDomainInfo(const GURL& url) {
       url_formatter::UnsafeIDNToUnicodeWithDetails(domain_and_registry);
   const url_formatter::Skeletons skeletons =
       url_formatter::GetSkeletons(idn_result.result);
-  return DomainInfo(domain_and_registry, url.host(), idn_result, skeletons);
+  return DomainInfo(domain_and_registry, idn_result, skeletons);
 }
 
 LookalikeUrlService::LookalikeUrlService(Profile* profile)
