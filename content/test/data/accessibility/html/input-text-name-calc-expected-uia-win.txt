@@ -1,12 +1,12 @@
 region
-++document IsKeyboardFocusable=true
-++++textbox Name='Title0' IsKeyboardFocusable=true HelpText='Title0' IsDataValidForForm=true
-++++textbox Name='Label1' IsKeyboardFocusable=true HelpText='Title1' IsDataValidForForm=true
-++++textbox Name='AriaLabel2' IsKeyboardFocusable=true HelpText='Title2' IsDataValidForForm=true
-++++textbox Name='LabelledBy3' IsKeyboardFocusable=true HelpText='Title3' IsDataValidForForm=true
-++++textbox Name='Placeholder4' IsKeyboardFocusable=true HelpText='Placeholder4' IsDataValidForForm=true
-++++textbox Name='ARIA Placeholder4a' IsKeyboardFocusable=true HelpText='ARIA Placeholder4a' IsDataValidForForm=true
-++++textbox Name='Placeholder4b' IsKeyboardFocusable=true HelpText='Placeholder4b' IsDataValidForForm=true
-++++textbox Name='Placeholder5' IsKeyboardFocusable=true HelpText='Placeholder5' IsDataValidForForm=true
-++++textbox Name='LabelledBy6' IsKeyboardFocusable=true HelpText='Title6' IsDataValidForForm=true
-++++textbox Name='AriaLabel7' IsKeyboardFocusable=true HelpText='Placeholder7' IsDataValidForForm=true
+++document
+++++textbox Name='Title0' HelpText='Title0'
+++++textbox Name='Label1' HelpText='Title1'
+++++textbox Name='AriaLabel2' HelpText='Title2'
+++++textbox Name='LabelledBy3' HelpText='Title3'
+++++textbox Name='Placeholder4' HelpText='Placeholder4'
+++++textbox Name='ARIA Placeholder4a' HelpText='ARIA Placeholder4a'
+++++textbox Name='Placeholder4b' HelpText='Placeholder4b'
+++++textbox Name='Placeholder5' HelpText='Placeholder5'
+++++textbox Name='LabelledBy6' HelpText='Title6'
+++++textbox Name='AriaLabel7' HelpText='Placeholder7'

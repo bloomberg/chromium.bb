@@ -1499,6 +1499,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("scrollable-textarea.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityScrollable) {
+  RunHtmlTest(FILE_PATH_LITERAL("scrollable.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilitySmall) {
   RunHtmlTest(FILE_PATH_LITERAL("small.html"));
 }
@@ -1763,6 +1767,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityScript) {
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilitySection) {
   RunHtmlTest(FILE_PATH_LITERAL("section.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilitySelectionContainer) {
+  RunHtmlTest(FILE_PATH_LITERAL("selection-container.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilitySelect) {

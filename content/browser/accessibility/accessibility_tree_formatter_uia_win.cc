@@ -113,29 +113,28 @@ const long AccessibilityTreeFormatterUia::properties_[] = {
     // UIA_Value*                                       // 30045-30046
     // UIA_RangeValue*                                  // 30047-30052
     // UIA_Scroll*                                      // 30053-30058
-    UIA_SelectionSelectionPropertyId,                   // 30059
-    // UIA_Selection*                                   // 30060-30061
+    // UIA_Selection*                                   // 30059-30061
     // UIA_Grid*                                        // 30062-30068
-    UIA_DockDockPositionPropertyId,                     // 30069
-    UIA_ExpandCollapseExpandCollapseStatePropertyId,    // 30070
-    UIA_MultipleViewCurrentViewPropertyId,              // 30071
-    UIA_MultipleViewSupportedViewsPropertyId,           // 30072
-    UIA_WindowCanMaximizePropertyId,                    // 30073
-    UIA_WindowCanMinimizePropertyId,                    // 30074
-    UIA_WindowWindowVisualStatePropertyId,              // 30075
-    UIA_WindowWindowInteractionStatePropertyId,         // 30076
+    // UIA_DockDockPositionPropertyId,                  // 30069
+    // UIA_ExpandCollapseExpandCollapseStatePropertyId, // 30070
+    // UIA_MultipleViewCurrentViewPropertyId,           // 30071
+    // UIA_MultipleViewSupportedViewsPropertyId,        // 30072
+    // UIA_WindowCanMaximizePropertyId,                 // 30073
+    // UIA_WindowCanMinimizePropertyId,                 // 30074
+    // UIA_WindowWindowVisualStatePropertyId,           // 30075
+    // UIA_WindowWindowInteractionStatePropertyId,      // 30076
     // UIA_WindowIsModalPropertyId                      // 30077
-    UIA_WindowIsTopmostPropertyId,                      // 30078
+    // UIA_WindowIsTopmostPropertyId,                   // 30078
     // UIA_SelectionItem*                               // 30079-30080
-    UIA_TableRowHeadersPropertyId,                      // 30081
-    UIA_TableColumnHeadersPropertyId,                   // 30082
+    // UIA_TableRowHeadersPropertyId,                   // 30081
+    // UIA_TableColumnHeadersPropertyId,                // 30082
     // UIA_TableRowOrColumnMajorPropertyId              // 30083
-    UIA_TableItemRowHeaderItemsPropertyId,              // 30084
-    UIA_TableItemColumnHeaderItemsPropertyId,           // 30085
+    // UIA_TableItemRowHeaderItemsPropertyId,           // 30084
+    // UIA_TableItemColumnHeaderItemsPropertyId,        // 30085
     // UIA_ToggleToggleStatePropertyId                  // 30086
-    UIA_TransformCanMovePropertyId,                     // 30087
-    UIA_TransformCanResizePropertyId,                   // 30088
-    UIA_TransformCanRotatePropertyId,                   // 30089
+    // UIA_TransformCanMovePropertyId,                  // 30087
+    // UIA_TransformCanResizePropertyId,                // 30088
+    // UIA_TransformCanRotatePropertyId,                // 30089
     UIA_IsLegacyIAccessiblePatternAvailablePropertyId,  // 30090
     // UIA_LegacyIAccessible*                           // 30091-30100
     UIA_AriaRolePropertyId,                             // 30101
@@ -213,6 +212,51 @@ const long AccessibilityTreeFormatterUia::properties_[] = {
     UIA_HeadingLevelPropertyId,                         // 30173
 };
 
+const long AccessibilityTreeFormatterUia::patterns_[] = {
+    UIA_SelectionPatternId,       // 10001
+    UIA_ValuePatternId,           // 10002
+    UIA_RangeValuePatternId,      // 10003
+    UIA_ScrollPatternId,          // 10004
+    UIA_ExpandCollapsePatternId,  // 10005
+    UIA_GridPatternId,            // 10006
+    UIA_GridItemPatternId,        // 10007
+    UIA_WindowPatternId,          // 10009
+    UIA_SelectionItemPatternId,   // 10010
+    UIA_TablePatternId,           // 10012
+    UIA_TogglePatternId,          // 10015
+};
+
+const long AccessibilityTreeFormatterUia::pattern_properties_[] = {
+    UIA_ValueValuePropertyId,                         // 30045
+    UIA_ValueIsReadOnlyPropertyId,                    // 30046
+    UIA_RangeValueValuePropertyId,                    // 30047
+    UIA_RangeValueIsReadOnlyPropertyId,               // 30048
+    UIA_RangeValueMinimumPropertyId,                  // 30049
+    UIA_RangeValueMaximumPropertyId,                  // 30050
+    UIA_RangeValueLargeChangePropertyId,              // 30051
+    UIA_RangeValueSmallChangePropertyId,              // 30052
+    UIA_ScrollHorizontalScrollPercentPropertyId,      // 30053
+    UIA_ScrollHorizontalViewSizePropertyId,           // 30054
+    UIA_ScrollVerticalScrollPercentPropertyId,        // 30055
+    UIA_ScrollVerticalViewSizePropertyId,             // 30056
+    UIA_ScrollHorizontallyScrollablePropertyId,       // 30057
+    UIA_ScrollVerticallyScrollablePropertyId,         // 30058
+    UIA_SelectionCanSelectMultiplePropertyId,         // 30060
+    UIA_SelectionIsSelectionRequiredPropertyId,       // 30061
+    UIA_GridRowCountPropertyId,                       // 30062
+    UIA_GridColumnCountPropertyId,                    // 30063
+    UIA_GridItemRowPropertyId,                        // 30064
+    UIA_GridItemColumnPropertyId,                     // 30065
+    UIA_GridItemRowSpanPropertyId,                    // 30066
+    UIA_GridItemColumnSpanPropertyId,                 // 30067
+    UIA_GridItemContainingGridPropertyId,             // 30068
+    UIA_ExpandCollapseExpandCollapseStatePropertyId,  // 30070
+    UIA_WindowIsModalPropertyId,                      // 30077
+    UIA_SelectionItemIsSelectedPropertyId,            // 30079
+    UIA_SelectionItemSelectionContainerPropertyId,    // 30080
+    UIA_TableRowOrColumnMajorPropertyId,              // 30083
+    UIA_ToggleToggleStatePropertyId,                  // 30086
+};
 // static
 std::unique_ptr<AccessibilityTreeFormatter>
 AccessibilityTreeFormatterUia::CreateUia() {
@@ -232,15 +276,53 @@ AccessibilityTreeFormatterUia::~AccessibilityTreeFormatterUia() {}
 
 void AccessibilityTreeFormatterUia::AddDefaultFilters(
     std::vector<PropertyFilter>* property_filters) {
+  // Too noisy: IsKeyboardFocusable, IsDataValidForForm, UIA_ScrollPatternId,
+  //  Value.IsReadOnly
+
+  // properties not exposed through a pattern
   AddPropertyFilter(property_filters, "Name=*");
   AddPropertyFilter(property_filters, "ItemStatus=*");
-  AddPropertyFilter(property_filters, "IsKeyboardFocusable=true");
   AddPropertyFilter(property_filters, "Orientation=OrientationType_Horizontal");
   AddPropertyFilter(property_filters, "IsPassword=true");
   AddPropertyFilter(property_filters, "IsControlElement=false");
   AddPropertyFilter(property_filters, "IsEnabled=false");
-  AddPropertyFilter(property_filters, "IsDataValidForForm=true");
   AddPropertyFilter(property_filters, "IsRequiredForForm=true");
+
+  // UIA_ExpandCollapsePatternId
+  AddPropertyFilter(property_filters, "ExpandCollapse.ExpandCollapseState=*");
+
+  // UIA_GridPatternId
+  AddPropertyFilter(property_filters, "Grid.ColumnCount=*");
+  AddPropertyFilter(property_filters, "Grid.RowCount=*");
+  // UIA_GridItemPatternId
+  AddPropertyFilter(property_filters, "GridItem.Column=*");
+  AddPropertyFilter(property_filters, "GridItem.ColumnSpan=*");
+  AddPropertyFilter(property_filters, "GridItem.Row=*");
+  AddPropertyFilter(property_filters, "GridItem.RowSpan=*");
+  AddPropertyFilter(property_filters, "GridItem.ContainingGrid=*");
+  // UIA_RangeValuePatternId
+  AddPropertyFilter(property_filters, "RangeValue.IsReadOnly=*");
+  AddPropertyFilter(property_filters, "RangeValue.LargeChange=*");
+  AddPropertyFilter(property_filters, "RangeValue.SmallChange=*");
+  AddPropertyFilter(property_filters, "RangeValue.Maximum=*");
+  AddPropertyFilter(property_filters, "RangeValue.Minimum=*");
+  AddPropertyFilter(property_filters, "RangeValue.Value=*");
+  // UIA_SelectionPatternId
+  AddPropertyFilter(property_filters, "Selection.CanSelectMultiple=*");
+  AddPropertyFilter(property_filters, "Selection.IsSelectionRequired=*");
+  // UIA_SelectionItemPatternId
+  AddPropertyFilter(property_filters, "SelectionItem.IsSelected=*");
+  AddPropertyFilter(property_filters, "SelectionItem.SelectionContainer=*");
+  // UIA_TablePatternId
+  AddPropertyFilter(property_filters, "Table.RowOrColumnMajor=*");
+  // UIA_TogglePatternId
+  AddPropertyFilter(property_filters, "Toggle.ToggleState=*");
+  // UIA_ValuePatternId
+  AddPropertyFilter(property_filters, "Value.Value=*");
+  AddPropertyFilter(property_filters, "Value.Value='http*'",
+                    PropertyFilter::DENY);
+  // UIA_WindowPatternId
+  AddPropertyFilter(property_filters, "Window.IsModal=*");
 }
 
 // static
@@ -334,6 +416,299 @@ void AccessibilityTreeFormatterUia::AddProperties(
     if (SUCCEEDED(node->GetCachedPropertyValue(i, variant.Receive()))) {
       WriteProperty(i, variant, dict);
     }
+  }
+  // Add control pattern specific properties
+  AddExpandCollapseProperties(node.Get(), dict);
+  AddGridProperties(node.Get(), dict);
+  AddGridItemProperties(node.Get(), dict);
+  AddRangeValueProperties(node.Get(), dict);
+  AddScrollProperties(node.Get(), dict);
+  AddSelectionProperties(node.Get(), dict);
+  AddSelectionItemProperties(node.Get(), dict);
+  AddTableProperties(node.Get(), dict);
+  AddToggleProperties(node.Get(), dict);
+  AddValueProperties(node.Get(), dict);
+  AddValueProperties(node.Get(), dict);
+  AddWindowProperties(node.Get(), dict);
+}
+
+void AccessibilityTreeFormatterUia::AddExpandCollapseProperties(
+    IUIAutomationElement* node,
+    base::DictionaryValue* dict) {
+  Microsoft::WRL::ComPtr<IUIAutomationExpandCollapsePattern>
+      expand_collapse_pattern;
+  if (SUCCEEDED(
+          node->GetCachedPatternAs(UIA_ExpandCollapsePatternId,
+                                   IID_PPV_ARGS(&expand_collapse_pattern))) &&
+      expand_collapse_pattern) {
+    ExpandCollapseState current_state;
+    if (SUCCEEDED(expand_collapse_pattern->get_CachedExpandCollapseState(
+            &current_state))) {
+      base::string16 state;
+      switch (current_state) {
+        case ExpandCollapseState_Collapsed:
+          state = L"Collapsed";
+          break;
+        case ExpandCollapseState_Expanded:
+          state = L"Expanded";
+          break;
+        case ExpandCollapseState_PartiallyExpanded:
+          state = L"PartiallyExpanded";
+          break;
+        case ExpandCollapseState_LeafNode:
+          state = L"LeafNode";
+          break;
+      }
+      dict->SetString("ExpandCollapse.ExpandCollapseState", state);
+    }
+  }
+}
+
+void AccessibilityTreeFormatterUia::AddGridProperties(
+    IUIAutomationElement* node,
+    base::DictionaryValue* dict) {
+  Microsoft::WRL::ComPtr<IUIAutomationGridPattern> grid_pattern;
+  if (SUCCEEDED(node->GetCachedPatternAs(UIA_GridPatternId,
+                                         IID_PPV_ARGS(&grid_pattern))) &&
+      grid_pattern) {
+    int column_count;
+    if (SUCCEEDED(grid_pattern->get_CachedColumnCount(&column_count)))
+      dict->SetInteger("Grid.ColumnCount", column_count);
+
+    int row_count;
+    if (SUCCEEDED(grid_pattern->get_CachedRowCount(&row_count)))
+      dict->SetInteger("Grid.RowCount", row_count);
+  }
+}
+
+void AccessibilityTreeFormatterUia::AddGridItemProperties(
+    IUIAutomationElement* node,
+    base::DictionaryValue* dict) {
+  Microsoft::WRL::ComPtr<IUIAutomationGridItemPattern> grid_item_pattern;
+  if (SUCCEEDED(node->GetCachedPatternAs(UIA_GridItemPatternId,
+                                         IID_PPV_ARGS(&grid_item_pattern))) &&
+      grid_item_pattern) {
+    int column;
+    if (SUCCEEDED(grid_item_pattern->get_CachedColumn(&column)))
+      dict->SetInteger("GridItem.Column", column);
+
+    int column_span;
+    if (SUCCEEDED(grid_item_pattern->get_CachedColumnSpan(&column_span)))
+      dict->SetInteger("GridItem.ColumnSpan", column_span);
+
+    int row;
+    if (SUCCEEDED(grid_item_pattern->get_CachedRow(&row)))
+      dict->SetInteger("GridItem.Row", row);
+
+    int row_span;
+    if (SUCCEEDED(grid_item_pattern->get_CachedRowSpan(&row_span)))
+      dict->SetInteger("GridItem.RowSpan", row_span);
+    Microsoft::WRL::ComPtr<IUIAutomationElement> containing_grid;
+    if (SUCCEEDED(
+            grid_item_pattern->get_CachedContainingGrid(&containing_grid))) {
+      dict->SetString("GridItem.ContainingGrid",
+                      GetNodeName(containing_grid.Get()));
+      ;
+    }
+  }
+}
+
+void AccessibilityTreeFormatterUia::AddRangeValueProperties(
+    IUIAutomationElement* node,
+    base::DictionaryValue* dict) {
+  Microsoft::WRL::ComPtr<IUIAutomationRangeValuePattern> range_value_pattern;
+  if (SUCCEEDED(node->GetCachedPatternAs(UIA_RangeValuePatternId,
+                                         IID_PPV_ARGS(&range_value_pattern))) &&
+      range_value_pattern) {
+    BOOL is_read_only;
+    if (SUCCEEDED(range_value_pattern->get_CachedIsReadOnly(&is_read_only)))
+      dict->SetBoolean("RangeValue.IsReadOnly", is_read_only);
+
+    double large_change;
+    if (SUCCEEDED(range_value_pattern->get_CachedLargeChange(&large_change)))
+      dict->SetDouble("RangeValue.LargeChange", large_change);
+
+    double small_change;
+    if (SUCCEEDED(range_value_pattern->get_CachedSmallChange(&small_change)))
+      dict->SetDouble("RangeValue.SmallChange", small_change);
+
+    double maximum;
+    if (SUCCEEDED(range_value_pattern->get_CachedMaximum(&maximum)))
+      dict->SetDouble("RangeValue.Maximum", maximum);
+
+    double minimum;
+    if (SUCCEEDED(range_value_pattern->get_CachedMinimum(&minimum)))
+      dict->SetDouble("RangeValue.Minimum", minimum);
+
+    double value;
+    if (SUCCEEDED(range_value_pattern->get_CachedValue(&value)))
+      dict->SetDouble("RangeValue.Value", value);
+  }
+}
+
+void AccessibilityTreeFormatterUia::AddScrollProperties(
+    IUIAutomationElement* node,
+    base::DictionaryValue* dict) {
+  Microsoft::WRL::ComPtr<IUIAutomationScrollPattern> scroll_pattern;
+  if (SUCCEEDED(node->GetCachedPatternAs(UIA_ScrollPatternId,
+                                         IID_PPV_ARGS(&scroll_pattern))) &&
+      scroll_pattern) {
+    double horizontal_scroll_percent;
+    if (SUCCEEDED(scroll_pattern->get_CachedHorizontalScrollPercent(
+            &horizontal_scroll_percent))) {
+      dict->SetDouble("Scroll.HorizontalScrollPercent",
+                      horizontal_scroll_percent);
+    }
+
+    double horizontal_view_size;
+    if (SUCCEEDED(scroll_pattern->get_CachedHorizontalViewSize(
+            &horizontal_view_size)))
+      dict->SetDouble("Scroll.HorizontalViewSize", horizontal_view_size);
+
+    BOOL horizontally_scrollable;
+    if (SUCCEEDED(scroll_pattern->get_CachedHorizontallyScrollable(
+            &horizontally_scrollable))) {
+      dict->SetBoolean("Scroll.HorizontallyScrollable",
+                       horizontally_scrollable);
+    }
+
+    double vertical_scroll_percent;
+    if (SUCCEEDED(scroll_pattern->get_CachedVerticalScrollPercent(
+            &vertical_scroll_percent)))
+      dict->SetDouble("Scroll.VerticalScrollPercent", vertical_scroll_percent);
+
+    double vertical_view_size;
+    if (SUCCEEDED(
+            scroll_pattern->get_CachedVerticalViewSize(&vertical_view_size)))
+      dict->SetDouble("Scroll.VerticalViewSize", vertical_view_size);
+
+    BOOL vertically_scrollable;
+    if (SUCCEEDED(scroll_pattern->get_CachedVerticallyScrollable(
+            &vertically_scrollable)))
+      dict->SetBoolean("Scroll.VerticallyScrollable", vertically_scrollable);
+  }
+}
+
+void AccessibilityTreeFormatterUia::AddSelectionProperties(
+    IUIAutomationElement* node,
+    base::DictionaryValue* dict) {
+  Microsoft::WRL::ComPtr<IUIAutomationSelectionPattern> selection_pattern;
+  if (SUCCEEDED(node->GetCachedPatternAs(UIA_SelectionPatternId,
+                                         IID_PPV_ARGS(&selection_pattern))) &&
+      selection_pattern) {
+    BOOL can_select_multiple;
+    if (SUCCEEDED(selection_pattern->get_CachedCanSelectMultiple(
+            &can_select_multiple)))
+      dict->SetBoolean("Selection.CanSelectMultiple", can_select_multiple);
+
+    BOOL is_selection_required;
+    if (SUCCEEDED(selection_pattern->get_CachedIsSelectionRequired(
+            &is_selection_required)))
+      dict->SetBoolean("Selection.IsSelectionRequired", is_selection_required);
+  }
+}
+
+void AccessibilityTreeFormatterUia::AddSelectionItemProperties(
+    IUIAutomationElement* node,
+    base::DictionaryValue* dict) {
+  Microsoft::WRL::ComPtr<IUIAutomationSelectionItemPattern>
+      selection_item_pattern;
+  if (SUCCEEDED(node->GetCachedPatternAs(
+          UIA_SelectionItemPatternId, IID_PPV_ARGS(&selection_item_pattern))) &&
+      selection_item_pattern) {
+    BOOL is_selected;
+    if (SUCCEEDED(selection_item_pattern->get_CachedIsSelected(&is_selected)))
+      dict->SetBoolean("SelectionItem.IsSelected", is_selected);
+
+    Microsoft::WRL::ComPtr<IUIAutomationElement> selection_container;
+    if (SUCCEEDED(selection_item_pattern->get_CachedSelectionContainer(
+            &selection_container))) {
+      dict->SetString("SelectionItem.SelectionContainer",
+                      GetNodeName(selection_container.Get()));
+    }
+  }
+}
+
+void AccessibilityTreeFormatterUia::AddTableProperties(
+    IUIAutomationElement* node,
+    base::DictionaryValue* dict) {
+  Microsoft::WRL::ComPtr<IUIAutomationTablePattern> table_pattern;
+  if (SUCCEEDED(node->GetCachedPatternAs(UIA_TablePatternId,
+                                         IID_PPV_ARGS(&table_pattern))) &&
+      table_pattern) {
+    RowOrColumnMajor row_or_column_major;
+    if (SUCCEEDED(
+            table_pattern->get_CachedRowOrColumnMajor(&row_or_column_major))) {
+      base::string16 row_or_column_string;
+      switch (row_or_column_major) {
+        case RowOrColumnMajor_RowMajor:
+          row_or_column_string = L"RowMajor";
+          break;
+        case RowOrColumnMajor_ColumnMajor:
+          row_or_column_string = L"ColumnMajor";
+          break;
+        case RowOrColumnMajor_Indeterminate:
+          row_or_column_string = L"Indeterminate";
+          break;
+      }
+      dict->SetString("Table.RowOrColumnMajor", row_or_column_string);
+    }
+  }
+}
+
+void AccessibilityTreeFormatterUia::AddToggleProperties(
+    IUIAutomationElement* node,
+    base::DictionaryValue* dict) {
+  Microsoft::WRL::ComPtr<IUIAutomationTogglePattern> toggle_pattern;
+  if (SUCCEEDED(node->GetCachedPatternAs(UIA_TogglePatternId,
+                                         IID_PPV_ARGS(&toggle_pattern))) &&
+      toggle_pattern) {
+    ToggleState toggle_state;
+    if (SUCCEEDED(toggle_pattern->get_CachedToggleState(&toggle_state))) {
+      base::string16 toggle_state_string;
+      switch (toggle_state) {
+        case ToggleState_Off:
+          toggle_state_string = L"Off";
+          break;
+        case ToggleState_On:
+          toggle_state_string = L"On";
+          break;
+        case ToggleState_Indeterminate:
+          toggle_state_string = L"Indeterminate";
+          break;
+      }
+      dict->SetString("Toggle.ToggleState", toggle_state_string);
+    }
+  }
+}
+
+void AccessibilityTreeFormatterUia::AddValueProperties(
+    IUIAutomationElement* node,
+    base::DictionaryValue* dict) {
+  Microsoft::WRL::ComPtr<IUIAutomationValuePattern> value_pattern;
+  if (SUCCEEDED(node->GetCachedPatternAs(UIA_ValuePatternId,
+                                         IID_PPV_ARGS(&value_pattern))) &&
+      value_pattern) {
+    BOOL is_read_only;
+    if (SUCCEEDED(value_pattern->get_CachedIsReadOnly(&is_read_only)))
+      dict->SetBoolean("Value.IsReadOnly", is_read_only);
+
+    base::win::ScopedBstr value;
+    if (SUCCEEDED(value_pattern->get_CachedValue(value.Receive())))
+      dict->SetString("Value.Value", BstrToUTF8(value));
+  }
+}
+
+void AccessibilityTreeFormatterUia::AddWindowProperties(
+    IUIAutomationElement* node,
+    base::DictionaryValue* dict) {
+  Microsoft::WRL::ComPtr<IUIAutomationWindowPattern> window_pattern;
+  if (SUCCEEDED(node->GetCachedPatternAs(UIA_WindowPatternId,
+                                         IID_PPV_ARGS(&window_pattern))) &&
+      window_pattern) {
+    BOOL is_modal;
+    if (SUCCEEDED(window_pattern->get_CachedIsModal(&is_modal)))
+      dict->SetBoolean("Window.IsModal", is_modal);
   }
 }
 
@@ -475,16 +850,18 @@ void AccessibilityTreeFormatterUia::WriteElementArray(
 base::string16 AccessibilityTreeFormatterUia::GetNodeName(
     IUIAutomationElement* uncached_node) {
   // Update the cache for this node.
-  Microsoft::WRL::ComPtr<IUIAutomationElement> node;
-  uncached_node->BuildUpdatedCache(element_cache_request_.Get(), &node);
+  if (uncached_node) {
+    Microsoft::WRL::ComPtr<IUIAutomationElement> node;
+    uncached_node->BuildUpdatedCache(element_cache_request_.Get(), &node);
 
-  base::win::ScopedBstr name;
-  base::win::ScopedVariant variant;
-  if (SUCCEEDED(node->GetCachedPropertyValue(UIA_NamePropertyId,
-                                             variant.Receive())) &&
-      variant.type() == VT_BSTR) {
-    return base::string16(variant.ptr()->bstrVal,
-                          SysStringLen(variant.ptr()->bstrVal));
+    base::win::ScopedBstr name;
+    base::win::ScopedVariant variant;
+    if (SUCCEEDED(node->GetCachedPropertyValue(UIA_NamePropertyId,
+                                               variant.Receive())) &&
+        variant.type() == VT_BSTR) {
+      return base::string16(variant.ptr()->bstrVal,
+                            SysStringLen(variant.ptr()->bstrVal));
+    }
   }
   return L"";
 }
@@ -508,11 +885,19 @@ void AccessibilityTreeFormatterUia::BuildCacheRequests() {
   for (long i : properties_) {
     element_cache_request_->AddProperty(i);
   }
+  // Cache all patterns.
+  for (long i : patterns_) {
+    element_cache_request_->AddPattern(i);
+  }
+  // Cache pattern properties
+  for (long i : pattern_properties_) {
+    element_cache_request_->AddProperty(i);
+  }
 }
 
 base::string16 AccessibilityTreeFormatterUia::ProcessTreeForOutput(
     const base::DictionaryValue& dict,
-    base::DictionaryValue* filtered_dict_result) {
+    base::DictionaryValue* filtered_result) {
   std::unique_ptr<base::DictionaryValue> tree;
   base::string16 line;
 
@@ -521,75 +906,124 @@ base::string16 AccessibilityTreeFormatterUia::ProcessTreeForOutput(
   dict.GetString(UiaIdentifierToCondensedString(UIA_AriaRolePropertyId),
                  &role_value);
   WriteAttribute(true, base::UTF16ToUTF8(role_value), &line);
-  if (filtered_dict_result) {
-    filtered_dict_result->SetString(
+  if (filtered_result) {
+    filtered_result->SetString(
         UiaIdentifierToStringUTF8(UIA_AriaRolePropertyId), role_value);
   }
 
+  // properties
   for (long i : properties_) {
-    const std::string attribute_name = UiaIdentifierToCondensedString(i);
-    const base::Value* value;
-    if (!dict.Get(attribute_name, &value))
-      continue;
-    switch (value->type()) {
-      case base::Value::Type::STRING: {
-        base::string16 string_value;
-        value->GetAsString(&string_value);
-        bool did_pass_filters = WriteAttribute(
-            false,
-            base::StringPrintf(L"%ls='%ls'",
-                               base::UTF8ToUTF16(attribute_name).c_str(),
-                               string_value.c_str()),
-            &line);
-        if (filtered_dict_result && did_pass_filters)
-          filtered_dict_result->SetString(attribute_name, string_value);
-        break;
-      }
-      case base::Value::Type::BOOLEAN: {
-        bool bool_value = 0;
-        value->GetAsBoolean(&bool_value);
-        bool did_pass_filters = WriteAttribute(
-            false,
-            base::StringPrintf(L"%ls=%ls",
-                               base::UTF8ToUTF16(attribute_name).c_str(),
-                               (bool_value ? L"true" : L"false")),
-            &line);
-        if (filtered_dict_result && did_pass_filters)
-          filtered_dict_result->SetBoolean(attribute_name, bool_value);
-        break;
-      }
-      case base::Value::Type::INTEGER: {
-        int int_value = 0;
-        value->GetAsInteger(&int_value);
-        bool did_pass_filters = WriteAttribute(
-            false,
-            base::StringPrintf(L"%ls=%d",
-                               base::UTF8ToUTF16(attribute_name).c_str(),
-                               int_value),
-            &line);
-        if (filtered_dict_result && did_pass_filters)
-          filtered_dict_result->SetInteger(attribute_name, int_value);
-        break;
-      }
-      case base::Value::Type::DOUBLE: {
-        double double_value = 0.0;
-        value->GetAsDouble(&double_value);
-        bool did_pass_filters = WriteAttribute(
-            false,
-            base::StringPrintf(L"%ls=%.2f",
-                               base::UTF8ToUTF16(attribute_name).c_str(),
-                               double_value),
-            &line);
-        if (filtered_dict_result && did_pass_filters)
-          filtered_dict_result->SetDouble(attribute_name, double_value);
-        break;
-      }
-      default:
-        NOTREACHED();
-        break;
-    }
+    ProcessPropertyForOutput(UiaIdentifierToCondensedString(i), dict, line,
+                             filtered_result);
   }
+
+  // patterns
+  const std::string pattern_property_names[] = {
+      // UIA_ExpandCollapsePatternId
+      "ExpandCollapse.ExpandCollapseState",
+      // UIA_GridPatternId
+      "Grid.ColumnCount", "Grid.RowCount",
+      // UIA_GridItemPatternId
+      "GridItem.Column", "GridItem.ColumnSpan", "GridItem.Row",
+      "GridItem.RowSpan", "GridItem.ContainingGrid",
+      // UIA_RangeValuePatternId
+      "RangeValue.IsReadOnly", "RangeValue.LargeChange",
+      "RangeValue.SmallChange", "RangeValue.Maximum", "RangeValue.Minimum",
+      "RangeValue.Value",
+      // UIA_ScrollPatternId
+      "Scroll.HorizontalScrollPercent", "Scroll.HorizontalViewSize",
+      "Scroll.HorizontallyScrollable", "Scroll.VerticalScrollPercent",
+      "Scroll.VerticalViewSize", "Scroll.VerticallyScrollable",
+      // UIA_SelectionPatternId
+      "Selection.CanSelectMultiple", "Selection.IsSelectionRequired",
+      // UIA_SelectionItemPatternId
+      "SelectionItem.IsSelected", "SelectionItem.SelectionContainer",
+      // UIA_TablePatternId
+      "Table.RowOrColumnMajor",
+      // UIA_TogglePatternId
+      "Toggle.ToggleState",
+      // UIA_ValuePatternId
+      "Value.IsReadOnly", "Value.Value",
+      // UIA_WindowPatternId
+      "Window.IsModal"};
+
+  for (const std::string& pattern_property_name : pattern_property_names) {
+    ProcessPropertyForOutput(pattern_property_name, dict, line,
+                             filtered_result);
+  }
+
   return line;
+}
+
+void AccessibilityTreeFormatterUia::ProcessPropertyForOutput(
+    const std::string& property_name,
+    const base::DictionaryValue& dict,
+    base::string16& line,
+    base::DictionaryValue* filtered_result) {
+  //
+  const base::Value* value;
+  if (dict.Get(property_name, &value))
+    ProcessValueForOutput(property_name, value, line, filtered_result);
+}
+
+void AccessibilityTreeFormatterUia::ProcessValueForOutput(
+    const std::string& name,
+    const base::Value* value,
+    base::string16& line,
+    base::DictionaryValue* filtered_result) {
+  switch (value->type()) {
+    case base::Value::Type::STRING: {
+      base::string16 string_value;
+      value->GetAsString(&string_value);
+      bool did_pass_filters = WriteAttribute(
+          false,
+          base::StringPrintf(L"%ls='%ls'", base::UTF8ToUTF16(name).c_str(),
+                             string_value.c_str()),
+          &line);
+      if (filtered_result && did_pass_filters)
+        filtered_result->SetString(name, string_value);
+      break;
+    }
+    case base::Value::Type::BOOLEAN: {
+      bool bool_value = 0;
+      value->GetAsBoolean(&bool_value);
+      bool did_pass_filters = WriteAttribute(
+          false,
+          base::StringPrintf(L"%ls=%ls", base::UTF8ToUTF16(name).c_str(),
+                             (bool_value ? L"true" : L"false")),
+          &line);
+      if (filtered_result && did_pass_filters)
+        filtered_result->SetBoolean(name, bool_value);
+      break;
+    }
+    case base::Value::Type::INTEGER: {
+      int int_value = 0;
+      value->GetAsInteger(&int_value);
+      bool did_pass_filters = WriteAttribute(
+          false,
+          base::StringPrintf(L"%ls=%d", base::UTF8ToUTF16(name).c_str(),
+                             int_value),
+          &line);
+      if (filtered_result && did_pass_filters)
+        filtered_result->SetInteger(name, int_value);
+      break;
+    }
+    case base::Value::Type::DOUBLE: {
+      double double_value = 0.0;
+      value->GetAsDouble(&double_value);
+      bool did_pass_filters = WriteAttribute(
+          false,
+          base::StringPrintf(L"%ls=%.2f", base::UTF8ToUTF16(name).c_str(),
+                             double_value),
+          &line);
+      if (filtered_result && did_pass_filters)
+        filtered_result->SetDouble(name, double_value);
+      break;
+    }
+    default:
+      NOTREACHED();
+      break;
+  }
 }
 
 const base::FilePath::StringType
