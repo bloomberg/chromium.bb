@@ -3210,6 +3210,9 @@
           # Dawn test retries deliberately disabled to prevent flakiness.
           '--test-launcher-retry-limit=0'
         ],
+        'swarming': {
+          'shards': 4,
+        },
       },
     },
 
@@ -3222,6 +3225,9 @@
           # Dawn test retries deliberately disabled to prevent flakiness.
           '--test-launcher-retry-limit=0'
         ],
+        'swarming': {
+          'shards': 4,
+        },
       },
       'gl_tests': {
         'desktop_args': [
