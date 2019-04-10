@@ -90,6 +90,67 @@ std::string GetMatchingSiteEngagementDomain(
   return std::string();
 }
 
+// Returns the first matching top domain with an edit distance of at most one
+// to |domain_and_registry|.
+std::string GetSimilarDomainFromTop500(const DomainInfo& navigated_domain) {
+  for (const std::string& navigated_skeleton : navigated_domain.skeletons) {
+    for (const char* const top_domain_skeleton : top500_domains::kTop500) {
+      if (lookalikes::IsEditDistanceAtMostOne(
+              base::UTF8ToUTF16(navigated_skeleton),
+              base::UTF8ToUTF16(top_domain_skeleton))) {
+        const std::string top_domain =
+            url_formatter::LookupSkeletonInTopDomains(top_domain_skeleton);
+        DCHECK(!top_domain.empty());
+        // If the only difference between the navigated and top
+        // domains is the registry part, this is unlikely to be a spoofing
+        // attempt. Ignore this match and continue. E.g. If the navigated domain
+        // is google.com.tw and the top domain is google.com.tr, this won't
+        // produce a match.
+        const std::string top_domain_without_registry =
+            url_formatter::top_domains::HostnameWithoutRegistry(top_domain);
+        DCHECK(url_formatter::top_domains::IsEditDistanceCandidate(
+            top_domain_without_registry));
+        if (navigated_domain.domain_without_registry !=
+            top_domain_without_registry) {
+          return top_domain;
+        }
+      }
+    }
+  }
+  return std::string();
+}
+
+// Returns the first matching engaged domain with an edit distance of at most
+// one to |domain_and_registry|.
+std::string GetSimilarDomainFromEngagedSites(
+    const DomainInfo& navigated_domain,
+    const std::vector<DomainInfo>& engaged_sites) {
+  for (const std::string& navigated_skeleton : navigated_domain.skeletons) {
+    for (const DomainInfo& engaged_site : engaged_sites) {
+      if (!url_formatter::top_domains::IsEditDistanceCandidate(
+              engaged_site.domain_and_registry)) {
+        continue;
+      }
+      for (const std::string& engaged_skeleton : engaged_site.skeletons) {
+        if (lookalikes::IsEditDistanceAtMostOne(
+                base::UTF8ToUTF16(navigated_skeleton),
+                base::UTF8ToUTF16(engaged_skeleton))) {
+          // If the only difference between the navigated and engaged
+          // domain is the registry part, this is unlikely to be a spoofing
+          // attempt. Ignore this match and continue. E.g. If the navigated
+          // domain is google.com.tw and the top domain is google.com.tr, this
+          // won't produce a match.
+          if (navigated_domain.domain_without_registry !=
+              engaged_site.domain_without_registry) {
+            return engaged_site.domain_and_registry;
+          }
+        }
+      }
+    }
+  }
+  return std::string();
+}
+
 }  // namespace
 
 namespace lookalikes {
@@ -97,6 +158,47 @@ namespace lookalikes {
 // static
 const char LookalikeUrlNavigationThrottle::kHistogramName[] =
     "NavigationSuggestion.Event";
+
+bool IsEditDistanceAtMostOne(const base::string16& str1,
+                             const base::string16& str2) {
+  if (str1.size() > str2.size() + 1 || str2.size() > str1.size() + 1) {
+    return false;
+  }
+  base::string16::const_iterator i = str1.begin();
+  base::string16::const_iterator j = str2.begin();
+  size_t edit_count = 0;
+  while (i != str1.end() && j != str2.end()) {
+    if (*i == *j) {
+      i++;
+      j++;
+    } else {
+      edit_count++;
+      if (edit_count > 1) {
+        return false;
+      }
+
+      if (str1.size() > str2.size()) {
+        // First string is longer than the second. This can only happen if the
+        // first string has an extra character.
+        i++;
+      } else if (str2.size() > str1.size()) {
+        // Second string is longer than the first. This can only happen if the
+        // second string has an extra character.
+        j++;
+      } else {
+        // Both strings are the same length. This can only happen if the two
+        // strings differ by a single character.
+        i++;
+        j++;
+      }
+    }
+  }
+  if (i != str1.end() || j != str2.end()) {
+    // A character at the end did not match.
+    edit_count++;
+  }
+  return edit_count <= 1;
+}
 
 LookalikeUrlNavigationThrottle::LookalikeUrlNavigationThrottle(
     content::NavigationHandle* navigation_handle)
@@ -204,8 +306,8 @@ void LookalikeUrlNavigationThrottle::PerformChecksDeferred(
     const GURL& url,
     const DomainInfo& navigated_domain,
     const std::vector<DomainInfo>& engaged_sites) {
-  ThrottleCheckResult result = LookalikeUrlNavigationThrottle::PerformChecks(
-      url, navigated_domain, engaged_sites);
+  ThrottleCheckResult result =
+      PerformChecks(url, navigated_domain, engaged_sites);
 
   if (!interstitials_enabled_) {
     return;
@@ -273,7 +375,7 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::PerformChecks(
   ukm::SourceId source_id = ukm::ConvertToSourceId(
       navigation_handle()->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);
 
-  if (interstitials_enabled_ && match_type != MatchType::kEditDistance) {
+  if (ShouldDisplayInterstitial(match_type)) {
     return ShowInterstitial(suggested_url, url, source_id, match_type);
   }
 
@@ -284,12 +386,20 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::PerformChecks(
   return content::NavigationThrottle::PROCEED;
 }
 
+bool LookalikeUrlNavigationThrottle::ShouldDisplayInterstitial(
+    MatchType match_type) const {
+  return interstitials_enabled_ && match_type != MatchType::kEditDistance &&
+         match_type != MatchType::kEditDistanceSiteEngagement;
+}
+
 bool LookalikeUrlNavigationThrottle::GetMatchingDomain(
     const DomainInfo& navigated_domain,
     const std::vector<DomainInfo>& engaged_sites,
     std::string* matched_domain,
     MatchType* match_type) {
   DCHECK(!navigated_domain.domain_and_registry.empty());
+  DCHECK(matched_domain);
+  DCHECK(match_type);
 
   if (navigated_domain.idn_result.has_idn_component) {
     // If the navigated domain is IDN, check its skeleton against engaged sites
@@ -318,95 +428,34 @@ bool LookalikeUrlNavigationThrottle::GetMatchingDomain(
     }
   }
 
-  // If we can't find an exact top domain or an engaged site, try to find a top
-  // domain within an edit distance of one.
-  const std::string similar_domain =
+  if (!url_formatter::top_domains::IsEditDistanceCandidate(
+          navigated_domain.domain_and_registry)) {
+    return false;
+  }
+
+  // If we can't find an exact top domain or an engaged site, try to find an
+  // engaged domain within an edit distance of one.
+  const std::string similar_engaged_domain =
+      GetSimilarDomainFromEngagedSites(navigated_domain, engaged_sites);
+  if (!similar_engaged_domain.empty() &&
+      navigated_domain.domain_and_registry != similar_engaged_domain) {
+    RecordEvent(NavigationSuggestionEvent::kMatchEditDistanceSiteEngagement);
+    *matched_domain = similar_engaged_domain;
+    *match_type = MatchType::kEditDistanceSiteEngagement;
+    return true;
+  }
+
+  // Finally, try to find a top domain within an edit distance of one.
+  const std::string similar_top_domain =
       GetSimilarDomainFromTop500(navigated_domain);
-  if (!similar_domain.empty() &&
-      navigated_domain.domain_and_registry != similar_domain) {
+  if (!similar_top_domain.empty() &&
+      navigated_domain.domain_and_registry != similar_top_domain) {
     RecordEvent(NavigationSuggestionEvent::kMatchEditDistance);
-    *matched_domain = similar_domain;
+    *matched_domain = similar_top_domain;
     *match_type = MatchType::kEditDistance;
     return true;
   }
   return false;
-}
-
-// static
-bool LookalikeUrlNavigationThrottle::IsEditDistanceAtMostOne(
-    const base::string16& str1,
-    const base::string16& str2) {
-  if (str1.size() > str2.size() + 1 || str2.size() > str1.size() + 1) {
-    return false;
-  }
-  base::string16::const_iterator i = str1.begin();
-  base::string16::const_iterator j = str2.begin();
-  size_t edit_count = 0;
-  while (i != str1.end() && j != str2.end()) {
-    if (*i == *j) {
-      i++;
-      j++;
-    } else {
-      edit_count++;
-      if (edit_count > 1) {
-        return false;
-      }
-
-      if (str1.size() > str2.size()) {
-        // First string is longer than the second. This can only happen if the
-        // first string has an extra character.
-        i++;
-      } else if (str2.size() > str1.size()) {
-        // Second string is longer than the first. This can only happen if the
-        // second string has an extra character.
-        j++;
-      } else {
-        // Both strings are the same length. This can only happen if the two
-        // strings differ by a single character.
-        i++;
-        j++;
-      }
-    }
-  }
-  if (i != str1.end() || j != str2.end()) {
-    // A character at the end did not match.
-    edit_count++;
-  }
-  return edit_count <= 1;
-}
-
-// static
-std::string LookalikeUrlNavigationThrottle::GetSimilarDomainFromTop500(
-    const DomainInfo& navigated_domain) {
-  if (!url_formatter::top_domains::IsEditDistanceCandidate(
-          navigated_domain.domain_and_registry)) {
-    return std::string();
-  }
-  const std::string domain_without_registry =
-      url_formatter::top_domains::HostnameWithoutRegistry(
-          navigated_domain.domain_and_registry);
-
-  for (const std::string& navigated_skeleton : navigated_domain.skeletons) {
-    for (const char* const top_domain_skeleton : top500_domains::kTop500) {
-      if (IsEditDistanceAtMostOne(base::UTF8ToUTF16(navigated_skeleton),
-                                  base::UTF8ToUTF16(top_domain_skeleton))) {
-        const std::string top_domain =
-            url_formatter::LookupSkeletonInTopDomains(top_domain_skeleton);
-        DCHECK(!top_domain.empty());
-        // If the only difference between the navigated and top
-        // domains is the registry part, this is unlikely to be a spoofing
-        // attempt. Ignore this match and continue. E.g. If the navigated domain
-        // is google.com.tw and the top domain is google.com.tr, this won't
-        // produce a match.
-        const std::string top_domain_without_registry =
-            url_formatter::top_domains::HostnameWithoutRegistry(top_domain);
-        if (domain_without_registry != top_domain_without_registry) {
-          return top_domain;
-        }
-      }
-    }
-  }
-  return std::string();
 }
 
 }  // namespace lookalikes

@@ -38032,7 +38032,12 @@ Called by update_use_counter_css.py.-->
   <int value="3" label="A navigation suggestion is found using top sites list"/>
   <int value="4"
       label="A navigation suggestion is found using site engagement"/>
-  <int value="5" label="A navigation suggestion is found using edit distance"/>
+  <int value="5"
+      label="A navigation suggestion is found using edit distance against a
+             top domain"/>
+  <int value="6"
+      label="A navigation suggestion is found using edit distance against an
+             engaged site"/>
 </enum>
 
 <enum name="NavigationWasServedFromCache">
