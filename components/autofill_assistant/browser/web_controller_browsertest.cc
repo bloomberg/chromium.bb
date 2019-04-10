@@ -721,6 +721,24 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, FindElementNotFound) {
       Selector({"#iframe", "#iframe", "#hidden"}).MustBeVisible());
 }
 
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, FindElementErrorStatus) {
+  ClientStatus status;
+
+  FindElement(
+      Selector(ElementReferenceProto::default_instance()).MustBeVisible(),
+      &status, nullptr);
+  EXPECT_EQ(INVALID_SELECTOR, status.proto_status());
+
+  FindElement(Selector({"#doesnotexist"}).MustBeVisible(), &status, nullptr);
+  EXPECT_EQ(ELEMENT_RESOLUTION_FAILED, status.proto_status());
+
+  FindElement(Selector({"div"}), &status, nullptr);
+  EXPECT_EQ(TOO_MANY_ELEMENTS, status.proto_status());
+
+  FindElement(Selector({"div"}).MustBeVisible(), &status, nullptr);
+  EXPECT_EQ(TOO_MANY_ELEMENTS, status.proto_status());
+}
+
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, FocusElement) {
   Selector selector;
   selector.selectors.emplace_back("#iframe");

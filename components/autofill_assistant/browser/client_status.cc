@@ -112,6 +112,10 @@ std::ostream& operator<<(std::ostream& out,
       out << "UNEXPECTED_JS_ERROR";
       break;
 
+    case ProcessedActionStatusProto::TOO_MANY_ELEMENTS:
+      out << "TOO_MANY_ELEMENTS";
+      break;
+
       // Intentionally no default case to make compilation fail if a new value
       // was added to the enum but not to this list.
   }

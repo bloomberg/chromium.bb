@@ -145,18 +145,22 @@ const char* const kGetDocumentElement =
 
 // Javascript code to query an elements for a selector, either the first
 // (non-strict) or a single (strict) element.
+//
+// Returns undefined if no elements are found, TOO_MANY_ELEMENTS (18) if too
+// many elements were found and strict mode is enabled.
 const char* const kQuerySelector =
     R"(function (selector, strictMode) {
       var found = this.querySelectorAll(selector);
-      if(found.length == 1)
-        return found[0];
-      if(found.length > 1 && !strictMode)
-        return found[0];
-      return undefined;
+      if(found.length == 0) return undefined;
+      if(found.length > 1 && strictMode) return 18;
+      return found[0];
     })";
 
 // Javascript code to query a visible elements for a selector, either the first
 // (non-strict) or a single (strict) visible element.q
+//
+// Returns undefined if no elements are found, TOO_MANY_ELEMENTS (18) if too
+// many elements were found and strict mode is enabled.
 const char* const kQuerySelectorWithConditions =
     R"(function (selector, strict, visible, inner_text_re) {
         var found = this.querySelectorAll(selector);
@@ -169,7 +173,7 @@ const char* const kQuerySelectorWithConditions =
         };
         for (let i = 0; i < found.length; i++) {
           if (match(found[i])) {
-            if (found_index != -1) return undefined;
+            if (found_index != -1) return 18;
             found_index = i;
             if (!strict) break;
           }
@@ -522,6 +526,10 @@ WebController::ElementFinder::~ElementFinder() = default;
 void WebController::ElementFinder::Start(FindElementCallback callback) {
   callback_ = std::move(callback);
 
+  if (selector_.empty()) {
+    SendResult(ClientStatus(INVALID_SELECTOR));
+    return;
+  }
   devtools_client_->GetRuntime()->Evaluate(
       std::string(kGetDocumentElement),
       base::BindOnce(&WebController::ElementFinder::OnGetDocumentElement,
@@ -596,13 +604,21 @@ void WebController::ElementFinder::RecursiveFindElement(
 void WebController::ElementFinder::OnQuerySelectorAll(
     size_t index,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
-  if (!result || result->HasExceptionDetails()) {
+  if (!result || result->HasExceptionDetails() || !result->GetResult()) {
     DVLOG(1) << __func__ << "Failed to query selector " << index << " of "
              << selector_;
-    SendResult(ClientStatus(OTHER_ACTION_STATUS));
+    SendResult(JavaScriptErrorStatus(__FILE__, __LINE__,
+                                     result->HasExceptionDetails()
+                                         ? result->GetExceptionDetails()
+                                         : nullptr));
     return;
   }
-  if (!result || !result->GetResult() || !result->GetResult()->HasObjectId()) {
+  if (result->GetResult()->HasValue() &&
+      result->GetResult()->GetValue()->GetInt() == TOO_MANY_ELEMENTS) {
+    SendResult(ClientStatus(TOO_MANY_ELEMENTS));
+    return;
+  }
+  if (!result->GetResult()->HasObjectId()) {
     SendResult(ClientStatus(ELEMENT_RESOLUTION_FAILED));
     return;
   }
