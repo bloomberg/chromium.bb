@@ -32,6 +32,7 @@ class MockAutofillWebDataBackend : public AutofillWebDataBackend {
                void(const AutofillProfileChange& change));
   MOCK_METHOD1(NotifyOfCreditCardChanged, void(const CreditCardChange& change));
   MOCK_METHOD0(NotifyOfMultipleAutofillChanges, void());
+  MOCK_METHOD0(NotifyOfAddressConversionCompleted, void());
   MOCK_METHOD1(NotifyThatSyncHasStarted, void(syncer::ModelType model_type));
 
  private:

@@ -112,6 +112,7 @@ class PersonalDataManager : public KeyedService,
 
   // AutofillWebDataServiceObserverOnUISequence:
   void AutofillMultipleChanged() override;
+  void AutofillAddressConversionCompleted() override;
   void SyncStarted(syncer::ModelType model_type) override;
 
   // SyncServiceObserver:
@@ -796,9 +797,6 @@ class PersonalDataManager : public KeyedService,
 
   // True if autofill profile cleanup needs to be performed.
   bool is_autofill_profile_cleanup_pending_ = false;
-
-  // Whether new information was received from the sync server.
-  bool has_synced_new_data_ = false;
 
   // Used to create test data. If the AutofillCreateDataForTest feature is
   // enabled, this helper creates autofill profiles and credit card data that

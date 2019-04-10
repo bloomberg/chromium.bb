@@ -15,6 +15,7 @@
 #include "components/autofill/core/browser/webdata/autofill_change.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
+#include "components/autofill/core/browser/webdata/autofill_webdata_backend_util.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service_observer.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -36,12 +37,15 @@ AutofillWebDataBackendImpl::AutofillWebDataBackendImpl(
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> db_task_runner,
     const base::Closure& on_changed_callback,
+    const base::Closure& on_address_conversion_completed_callback,
     const base::Callback<void(syncer::ModelType)>& on_sync_started_callback)
     : base::RefCountedDeleteOnSequence<AutofillWebDataBackendImpl>(
           std::move(db_task_runner)),
       ui_task_runner_(ui_task_runner),
       web_database_backend_(web_database_backend),
       on_changed_callback_(on_changed_callback),
+      on_address_conversion_completed_callback_(
+          on_address_conversion_completed_callback),
       on_sync_started_callback_(on_sync_started_callback) {}
 
 void AutofillWebDataBackendImpl::AddObserver(
@@ -125,6 +129,14 @@ void AutofillWebDataBackendImpl::NotifyOfMultipleAutofillChanges() {
 
   // UI sequence notification.
   ui_task_runner_->PostTask(FROM_HERE, on_changed_callback_);
+}
+
+void AutofillWebDataBackendImpl::NotifyOfAddressConversionCompleted() {
+  DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
+
+  // UI sequence notification.
+  ui_task_runner_->PostTask(FROM_HERE,
+                            on_address_conversion_completed_callback_);
 }
 
 void AutofillWebDataBackendImpl::NotifyThatSyncHasStarted(
@@ -326,6 +338,16 @@ std::unique_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetServerProfiles(
   return std::unique_ptr<WDTypedResult>(
       new WDResult<std::vector<std::unique_ptr<AutofillProfile>>>(
           AUTOFILL_PROFILES_RESULT, std::move(profiles)));
+}
+
+WebDatabase::State
+AutofillWebDataBackendImpl::ConvertWalletAddressesAndUpdateWalletCards(
+    const std::string& app_locale,
+    const std::string& primary_account_email,
+    WebDatabase* db) {
+  DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
+  return util::ConvertWalletAddressesAndUpdateWalletCards(
+      app_locale, primary_account_email, this, db);
 }
 
 std::unique_ptr<WDTypedResult>

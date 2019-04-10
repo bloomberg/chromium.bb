@@ -197,6 +197,7 @@ class FakeAutofillBackend : public autofill::AutofillWebDataBackend {
     DCHECK(!ui_task_runner_->RunsTasksInCurrentSequence());
     ui_task_runner_->PostTask(FROM_HERE, on_changed_);
   }
+  void NotifyOfAddressConversionCompleted() override {}
   void NotifyThatSyncHasStarted(syncer::ModelType model_type) override {
     DCHECK(!ui_task_runner_->RunsTasksInCurrentSequence());
     ui_task_runner_->PostTask(FROM_HERE,

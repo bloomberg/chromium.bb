@@ -59,6 +59,12 @@ class AutofillWebDataBackend {
   // sequence notifications are asynchronous.
   virtual void NotifyOfMultipleAutofillChanges() = 0;
 
+  // Notifies listeners on the UI sequence that conversion of server profiles
+  // into local profiles is completed.
+  // NOTE: This method is intended to be called from the DB sequence. The UI
+  // sequence notifications are asynchronous.
+  virtual void NotifyOfAddressConversionCompleted() = 0;
+
   // Notifies listeners on the UI sequence that sync has started for
   // |model_type|.
   // NOTE: This method is intended to be called from the DB sequence. The UI
