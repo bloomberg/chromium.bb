@@ -16,10 +16,10 @@
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_auth.h"
-#include "net/http/http_response_info.h"
 #include "net/quic/quic_chromium_client_session.h"
 #include "net/socket/connect_job.h"
 #include "net/socket/ssl_client_socket.h"
+#include "net/ssl/ssl_cert_request_info.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
@@ -202,7 +202,7 @@ class NET_EXPORT_PRIVATE HttpProxyConnectJob : public ConnectJob,
 
   scoped_refptr<HttpProxySocketParams> params_;
 
-  std::unique_ptr<HttpResponseInfo> error_response_info_;
+  scoped_refptr<SSLCertRequestInfo> ssl_cert_request_info_;
 
   State next_state_;
 

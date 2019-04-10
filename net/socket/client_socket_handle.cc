@@ -119,7 +119,7 @@ void ClientSocketHandle::ResetInternal(bool cancel) {
 
 void ClientSocketHandle::ResetErrorState() {
   is_ssl_error_ = false;
-  ssl_error_response_info_ = HttpResponseInfo();
+  ssl_cert_request_info_ = nullptr;
   pending_http_proxy_socket_.reset();
 }
 

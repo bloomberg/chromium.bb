@@ -569,8 +569,7 @@ void HttpStreamFactory::Job::RunLoop(int result) {
           FROM_HERE,
           base::BindOnce(
               &Job::OnNeedsClientAuthCallback, ptr_factory_.GetWeakPtr(),
-              base::RetainedRef(
-                  connection_->ssl_error_response_info().cert_request_info)));
+              base::RetainedRef(connection_->ssl_cert_request_info())));
       return;
 
     case ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT: {

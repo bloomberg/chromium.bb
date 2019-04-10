@@ -15,10 +15,10 @@
 #include "net/base/completion_repeating_callback.h"
 #include "net/base/net_export.h"
 #include "net/base/privacy_mode.h"
-#include "net/http/http_response_info.h"
 #include "net/socket/connect_job.h"
 #include "net/socket/connection_attempts.h"
 #include "net/socket/ssl_client_socket.h"
+#include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_config_service.h"
 
 namespace net {
@@ -156,7 +156,7 @@ class NET_EXPORT_PRIVATE SSLConnectJob : public ConnectJob,
   // True once SSL negotiation has started.
   bool ssl_negotiation_started_;
 
-  HttpResponseInfo error_response_info_;
+  scoped_refptr<SSLCertRequestInfo> ssl_cert_request_info_;
 
   // True if a proxy returned a redirect, resulting in an error.
   bool proxy_redirect_;
