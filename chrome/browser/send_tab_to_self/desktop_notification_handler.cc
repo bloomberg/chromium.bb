@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/guid.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
@@ -26,8 +27,33 @@
 #include "ui/strings/grit/ui_strings.h"
 
 namespace send_tab_to_self {
+
 namespace {
+
+// Metrics for measuring notification interaction.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class SendTabToSelfNotification {
+  // The user opened a tab from a notification.
+  kOpened = 0,
+  // The user closed a notification.
+  kDismissed = 1,
+  // A notification was shown from a remotely added entry.
+  kShown = 2,
+  // A notification was dismissed remotely.
+  kDismissedRemotely = 3,
+  // Update kMaxValue when new enums are added.
+  kMaxValue = kDismissedRemotely,
+};
+
+const char kNotificationStatusHistogram[] = "SendTabToSelf.Notification";
+
 const char kDesktopNotificationSharedPrefix[] = "shared";
+
+void RecordNotificationHistogram(SendTabToSelfNotification status) {
+  UMA_HISTOGRAM_ENUMERATION(kNotificationStatusHistogram, status);
+}
+
 }  // namespace
 
 DesktopNotificationHandler::DesktopNotificationHandler(Profile* profile)
@@ -54,6 +80,7 @@ void DesktopNotificationHandler::DisplayNewEntries(
     NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
         NotificationHandler::Type::SEND_TAB_TO_SELF, notification,
         /*metadata=*/nullptr);
+    RecordNotificationHistogram(SendTabToSelfNotification::kShown);
   }
 }
 
@@ -62,6 +89,7 @@ void DesktopNotificationHandler::DismissEntries(
   for (const std::string& guid : guids) {
     NotificationDisplayServiceFactory::GetForProfile(profile_)->Close(
         NotificationHandler::Type::SEND_TAB_TO_SELF, guid);
+    RecordNotificationHistogram(SendTabToSelfNotification::kDismissedRemotely);
   }
 }
 
@@ -74,6 +102,7 @@ void DesktopNotificationHandler::OnClose(Profile* profile,
     SendTabToSelfSyncServiceFactory::GetForProfile(profile)
         ->GetSendTabToSelfModel()
         ->DismissEntry(notification_id);
+    RecordNotificationHistogram(SendTabToSelfNotification::kDismissed);
   }
   std::move(completed_closure).Run();
 }
@@ -98,6 +127,7 @@ void DesktopNotificationHandler::OnClick(
     SendTabToSelfSyncServiceFactory::GetForProfile(profile)
         ->GetSendTabToSelfModel()
         ->DeleteEntry(notification_id);
+    RecordNotificationHistogram(SendTabToSelfNotification::kOpened);
   }
   std::move(completed_closure).Run();
 }
