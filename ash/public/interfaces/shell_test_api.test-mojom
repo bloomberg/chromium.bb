@@ -4,6 +4,11 @@
 
 module ash.mojom;
 
+enum OverviewAnimationState {
+  kEnterAnimationComplete,
+  kExitAnimationComplete,
+};
+
 interface ShellTestApi {
   // Returns true if a system modal window is open (e.g. the Wi-Fi network
   // password dialog).
@@ -45,4 +50,7 @@ interface ShellTestApi {
   // Runs the callback when the compositor of the primary display has presented
   // a frame on screen.
   WaitForNextFrame() => ();
+
+  // Runs the callback when the overview state becomes |state|.
+  WaitForOverviewAnimationState(OverviewAnimationState state) => ();
 };

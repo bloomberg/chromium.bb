@@ -18,6 +18,9 @@ ash::mojom::ShellTestApiPtr GetShellTestApi();
 // aura::test::WaitForAllChangesToComplete().
 void WaitForNoPointerHoldLock(bool wait_for_changes = true);
 
+// Waits until the overview animation finishes and its state becomes |state|.
+void WaitForOverviewAnimationState(ash::mojom::OverviewAnimationState state);
+
 }  // namespace test
 
 #endif  // CHROME_BROWSER_UI_ASH_ASH_TEST_UTIL_H_
