@@ -11,7 +11,6 @@
 
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/trace_event_analyzer.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
@@ -135,9 +134,6 @@ class TabCapturePerformanceTestBase : public InProcessBrowserTest {
       const net::test_server::HttpRequest& request);
 
   const extensions::Extension* extension_ = nullptr;
-
-  // Manages the Audio Service feature set, enabled for these performance tests.
-  base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(TabCapturePerformanceTestBase);
 };
