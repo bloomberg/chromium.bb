@@ -7,6 +7,7 @@
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_elements_helper.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
+#include "third_party/blink/renderer/modules/media_controls/media_controls_shared_helper.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 
@@ -53,30 +54,7 @@ int MediaControlTimeDisplayElement::EstimateElementWidth() const {
 }
 
 String MediaControlTimeDisplayElement::FormatTime() const {
-  double time = std::isfinite(current_value_) ? current_value_ : 0;
-
-  int seconds = static_cast<int>(fabs(time));
-  int minutes = seconds / 60;
-  int hours = minutes / 60;
-
-  seconds %= 60;
-  minutes %= 60;
-
-  const char* negative_sign = (time < 0 ? "-" : "");
-
-  // [0-10) minutes duration is m:ss
-  // [10-60) minutes duration is mm:ss
-  // [1-10) hours duration is h:mm:ss
-  // [10-100) hours duration is hh:mm:ss
-  // [100-1000) hours duration is hhh:mm:ss
-  // etc.
-
-  if (hours > 0) {
-    return String::Format("%s%d:%02d:%02d", negative_sign, hours, minutes,
-                          seconds);
-  }
-
-  return String::Format("%s%d:%02d", negative_sign, minutes, seconds);
+  return MediaControlsSharedHelpers::FormatTime(current_value_);
 }
 
 void MediaControlTimeDisplayElement::SetAriaLabel() {

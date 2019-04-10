@@ -19,9 +19,11 @@
 #include "third_party/blink/renderer/core/html/track/text_track.h"
 #include "third_party/blink/renderer/core/html/track/text_track_list.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_elements_helper.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_orientation_lock_delegate.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_text_track_manager.h"
 #include "third_party/blink/renderer/modules/media_controls/touchless/elements/media_controls_touchless_overlay_element.h"
+#include "third_party/blink/renderer/modules/media_controls/touchless/elements/media_controls_touchless_time_display_element.h"
 #include "third_party/blink/renderer/modules/media_controls/touchless/elements/media_controls_touchless_timeline_element.h"
 #include "third_party/blink/renderer/modules/media_controls/touchless/media_controls_touchless_media_event_listener.h"
 #include "third_party/blink/renderer/modules/media_controls/touchless/media_controls_touchless_resource_loader.h"
@@ -81,11 +83,18 @@ MediaControlsTouchlessImpl* MediaControlsTouchlessImpl::Create(
       MakeGarbageCollected<MediaControlsTouchlessImpl>(media_element);
   MediaControlsTouchlessOverlayElement* overlay_element =
       MakeGarbageCollected<MediaControlsTouchlessOverlayElement>(*controls);
+
+  MediaControlsTouchlessTimeDisplayElement* time_display_element =
+      MakeGarbageCollected<MediaControlsTouchlessTimeDisplayElement>(*controls);
   MediaControlsTouchlessTimelineElement* timeline_element =
       MakeGarbageCollected<MediaControlsTouchlessTimelineElement>(*controls);
 
   controls->ParserAppendChild(overlay_element);
-  controls->ParserAppendChild(timeline_element);
+
+  Element* bottom_container = MediaControlElementsHelper::CreateDiv(
+      "-internal-media-controls-touchless-bottom-container", controls);
+  bottom_container->ParserAppendChild(time_display_element);
+  bottom_container->ParserAppendChild(timeline_element);
 
   // Controls start hidden.
   controls->MakeTransparent();

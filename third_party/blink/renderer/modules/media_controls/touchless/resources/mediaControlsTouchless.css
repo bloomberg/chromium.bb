@@ -3,6 +3,9 @@
    found in the LICENSE file. */
 
 video::-internal-media-controls-touchless {
+  width: inherit;
+  height: inherit;
+
   position: relative;
   direction: ltr;
   display: flex;
@@ -25,6 +28,7 @@ video::-internal-media-controls-touchless-overlay {
   height: 104px;
   background-color: rgba(32, 33, 36, .9);
   position: absolute;
+  z-index: 1;
   margin: auto;
   top: 0;
   left: 0;
@@ -98,10 +102,33 @@ video::-internal-media-controls-touchless-volume-down-button {
   background-repeat: no-repeat;
 }
 
-video::-internal-media-controls-touchless-timeline {
-  position: absolute;
-  bottom: 0;
+video::-internal-media-controls-touchless-bottom-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  height: 100%;
   width: 100%;
+  z-index: 0;
+  background-size: auto 48px;
+
+  background:
+    -webkit-image-set(url('gradient_bg.png') 1x)
+    repeat-x bottom left;
+}
+
+video::-internal-media-controls-touchless-time-display {
+  color: #ffffff;
+  font-family: Roboto-Regular, Roboto, sans-serif;
+  font-size: 14px;
+  width: 100%;
+  bottom: auto;
+  padding-left: 8px;
+  padding-bottom: 8px;
+}
+
+video::-internal-media-controls-touchless-timeline {
+  width: 100%;
+  bottom: auto;
   height: 4px;
   background-color: rgba(0, 0, 0, 0.2);
 }

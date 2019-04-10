@@ -7,6 +7,7 @@
 
 #include "base/optional.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -18,6 +19,8 @@ class MediaControlsSharedHelpers final {
  public:
   static base::Optional<unsigned> GetCurrentBufferedTimeRange(
       HTMLMediaElement& media_element);
+
+  static String FormatTime(double time);
 };
 
 }  // namespace blink

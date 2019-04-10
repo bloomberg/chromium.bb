@@ -275,6 +275,24 @@ TEST_F(MediaControlsTouchlessImplTest, ProgressBar) {
                    progress_bar_width / loaded_bar_width);
 }
 
+TEST_F(MediaControlsTouchlessImplTest, TimeDisplay) {
+  const double duration = 4000;
+  const double current_time = 3599;
+  const char expect_display[] = "59:59 / 1:06:40";
+
+  Element* time_display = GetControlByShadowPseudoId(
+      "-internal-media-controls-touchless-time-display");
+
+  EXPECT_EQ(time_display->InnerHTMLAsString(), "0:00 / 0:00");
+
+  LoadMediaWithDuration(duration);
+  MediaElement().setCurrentTime(current_time);
+  test::RunPendingTasks();
+  MediaElement().DispatchEvent(*Event::Create(event_type_names::kTimeupdate));
+
+  EXPECT_EQ(time_display->InnerHTMLAsString(), expect_display);
+}
+
 TEST_F(MediaControlsTouchlessImplTestWithMockScheduler, ControlsShowAndHide) {
   // Controls should starts hidden.
   ASSERT_FALSE(IsControlsVisible());

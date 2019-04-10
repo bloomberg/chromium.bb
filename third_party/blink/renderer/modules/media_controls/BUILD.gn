@@ -113,6 +113,8 @@ blink_modules_sources("media_controls") {
       "touchless/elements/media_controls_touchless_play_button_element.h",
       "touchless/elements/media_controls_touchless_seek_button_element.cc",
       "touchless/elements/media_controls_touchless_seek_button_element.h",
+      "touchless/elements/media_controls_touchless_time_display_element.cc",
+      "touchless/elements/media_controls_touchless_time_display_element.h",
       "touchless/elements/media_controls_touchless_timeline_element.cc",
       "touchless/elements/media_controls_touchless_timeline_element.h",
       "touchless/elements/media_controls_touchless_volume_button_element.cc",
