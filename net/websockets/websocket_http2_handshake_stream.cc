@@ -121,8 +121,10 @@ int WebSocketHttp2HandshakeStream::SendRequest(
 
   callback_ = std::move(callback);
   spdy_stream_request_ = std::make_unique<SpdyStreamRequest>();
+  // The initial request for the WebSocket is a CONNECT, so there is no need to
+  // call ConfirmHandshake().
   int rv = spdy_stream_request_->StartRequest(
-      SPDY_BIDIRECTIONAL_STREAM, session_, request_info_->url, priority_,
+      SPDY_BIDIRECTIONAL_STREAM, session_, request_info_->url, true, priority_,
       request_info_->socket_tag, net_log_,
       base::BindOnce(&WebSocketHttp2HandshakeStream::StartRequestCallback,
                      base::Unretained(this)),

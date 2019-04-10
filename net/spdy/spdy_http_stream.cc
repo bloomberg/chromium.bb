@@ -156,8 +156,8 @@ int SpdyHttpStream::InitializeStream(const HttpRequestInfo* request_info,
   }
 
   int rv = stream_request_.StartRequest(
-      SPDY_REQUEST_RESPONSE_STREAM, spdy_session_, request_info_->url, priority,
-      request_info_->socket_tag, stream_net_log,
+      SPDY_REQUEST_RESPONSE_STREAM, spdy_session_, request_info_->url,
+      can_send_early, priority, request_info_->socket_tag, stream_net_log,
       base::BindOnce(&SpdyHttpStream::OnStreamCreated,
                      weak_factory_.GetWeakPtr(), std::move(callback)),
       NetworkTrafficAnnotationTag(request_info->traffic_annotation));

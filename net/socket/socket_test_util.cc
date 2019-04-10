@@ -157,6 +157,12 @@ MockConnect::MockConnect(IoMode io_mode, int r, IPEndPoint addr) :
 
 MockConnect::~MockConnect() = default;
 
+MockConfirm::MockConfirm() : mode(SYNCHRONOUS), result(OK) {}
+
+MockConfirm::MockConfirm(IoMode io_mode, int r) : mode(io_mode), result(r) {}
+
+MockConfirm::~MockConfirm() = default;
+
 bool SocketDataProvider::IsIdle() const {
   return true;
 }
@@ -1461,6 +1467,8 @@ int MockSSLClientSocket::Write(
     int buf_len,
     CompletionOnceCallback callback,
     const NetworkTrafficAnnotationTag& traffic_annotation) {
+  if (!data_->is_confirm_data_consumed)
+    data_->write_called_before_confirm = true;
   return stream_socket_->Write(buf, buf_len, std::move(callback),
                                traffic_annotation);
 }
@@ -1484,6 +1492,28 @@ int MockSSLClientSocket::Connect(CompletionOnceCallback callback) {
 void MockSSLClientSocket::Disconnect() {
   if (stream_socket_ != nullptr)
     stream_socket_->Disconnect();
+}
+
+void MockSSLClientSocket::RunConfirmHandshakeCallback(
+    CompletionOnceCallback callback,
+    int result) {
+  data_->is_confirm_data_consumed = true;
+  std::move(callback).Run(result);
+}
+
+int MockSSLClientSocket::ConfirmHandshake(CompletionOnceCallback callback) {
+  DCHECK(stream_socket_->IsConnected());
+  if (data_->is_confirm_data_consumed)
+    return data_->confirm.result;
+  if (data_->confirm.mode == ASYNC) {
+    RunCallbackAsync(
+        base::BindOnce(&MockSSLClientSocket::RunConfirmHandshakeCallback,
+                       base::Unretained(this), std::move(callback)),
+        data_->confirm.result);
+    return ERR_IO_PENDING;
+  }
+  data_->is_confirm_data_consumed = true;
+  return data_->confirm.result;
 }
 
 bool MockSSLClientSocket::IsConnected() const {
