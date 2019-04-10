@@ -239,7 +239,7 @@ bool GetW3CSetting(const base::DictionaryValue& params) {
     }
   }
 
-  if (!params.GetDictionary("capabilities", &dict)) {
+  if (!params.HasKey("capabilities")) {
     return false;
   }
 
