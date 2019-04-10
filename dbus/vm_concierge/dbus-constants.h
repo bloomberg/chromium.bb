@@ -19,6 +19,8 @@ const char kGetVmInfoMethod[] = "GetVmInfo";
 const char kCreateDiskImageMethod[] = "CreateDiskImage";
 const char kDestroyDiskImageMethod[] = "DestroyDiskImage";
 const char kExportDiskImageMethod[] = "ExportDiskImage";
+const char kImportDiskImageMethod[] = "ImportDiskImage";
+const char kDiskImageStatusMethod[] = "DiskImageStatus";
 const char kListVmDisksMethod[] = "ListVmDisks";
 const char kStartContainerMethod[] = "StartContainer";
 const char kGetContainerSshKeysMethod[] = "GetContainerSshKeys";
@@ -29,6 +31,7 @@ const char kListUsbDeviceMethod[] = "ListUsbDevices";
 const char kStartPluginVmMethod[] = "StartPluginVm";
 
 const char kContainerStartupFailedSignal[] = "ContainerStartupFailed";
+const char kDiskImageProgressSignal[] = "DiskImageProgress";
 
 }  // namespace concierge
 }  // namespace vm_tools

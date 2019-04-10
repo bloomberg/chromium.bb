@@ -226,6 +226,9 @@ enum StorageLocation {
 
   // The user's Downloads directory, under /home/user/<id>/Downloads.
   STORAGE_CRYPTOHOME_DOWNLOADS = 1;
+
+  // Subdirectory under /home/root/<id>/pvm.
+  STORAGE_CRYPTOHOME_PLUGINVM = 2;
 }
 
 enum DiskImageStatus {
@@ -246,6 +249,9 @@ enum DiskImageStatus {
 
   // The specified disk was destroyed.
   DISK_STATUS_DESTROYED = 5;
+
+  // The command is executing.
+  DISK_STATUS_IN_PROGRESS = 6;
 }
 
 // Request to concierge to create a disk image.
@@ -321,6 +327,57 @@ message ExportDiskImageResponse {
 
   // The failure reason if the disk image could not be exported.
   string failure_reason = 2;
+}
+
+// Request to concierge to import a disk image.
+// Must be accompanied by an FD. The contents will be written at `disk_path`
+// location.
+message ImportDiskImageRequest {
+  // The cryptohome id for the user's encrypted storage.
+  string cryptohome_id = 1;
+
+  // The path to the resulting disk image. This must be a relative path.
+  string disk_path = 2;
+
+  // The storage location for the disk image.
+  StorageLocation storage_location = 3;
+
+  // Size of the source image (corresponding to the passed FD).
+  // Used to calculate progress of the import operation.
+  uint64 source_size = 4;
+}
+
+// Response to a ImportDiskImageRequest.
+message ImportDiskImageResponse {
+  // If DISK_STATUS_CREATED, the disk image has been successfully imported.
+  DiskImageStatus status = 1;
+
+  // The failure reason if the disk image could not be imported.
+  string failure_reason = 2;
+
+  // Command identifier if status is DISK_STATUS_IN_PROGRESS.
+  string command_uuid = 3;
+}
+
+// Request about status of image import or export command.
+message DiskImageStatusRequest {
+  // Command identifier.
+  string command_uuid = 1;
+}
+
+// Response to DiskImageStatusRequest. Also being sent as a signal.
+message DiskImageStatusResponse {
+  // Command identifier.
+  string command_uuid = 1;
+
+  // Status of the command.
+  DiskImageStatus status = 2;
+
+  // The failure reason if the command could not be completed.
+  string failure_reason = 3;
+
+  // Progress from 0 to 100.
+  uint32 progress = 4;
 }
 
 // Request to list all VM disk images in the given storage area.
