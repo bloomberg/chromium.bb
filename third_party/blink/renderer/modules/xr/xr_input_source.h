@@ -13,6 +13,7 @@
 
 namespace blink {
 
+class Gamepad;
 class XRGripSpace;
 class XRSession;
 class XRSpace;
@@ -40,6 +41,7 @@ class XRInputSource : public ScriptWrappable {
   bool emulatedPosition() const { return emulated_position_; }
   XRSpace* targetRaySpace() const;
   XRSpace* gripSpace() const;
+  Gamepad* gamepad() const;
 
   uint32_t source_id() const { return source_id_; }
 
@@ -63,6 +65,7 @@ class XRInputSource : public ScriptWrappable {
   const uint32_t source_id_;
   Member<XRTargetRaySpace> target_ray_space_;
   Member<XRGripSpace> grip_space_;
+  Member<Gamepad> gamepad_;
 
   Handedness handedness_ = kHandUninitialized;
   String handedness_string_;

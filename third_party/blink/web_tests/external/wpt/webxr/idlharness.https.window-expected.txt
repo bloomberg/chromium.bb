@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 218 tests; 203 PASS, 15 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 218 tests; 205 PASS, 13 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Navigator: original interface defined
 PASS Partial dictionary WebGLContextAttributes: original dictionary defined
@@ -159,7 +159,7 @@ PASS XRInputSource interface: attribute handedness
 PASS XRInputSource interface: attribute targetRayMode
 PASS XRInputSource interface: attribute targetRaySpace
 PASS XRInputSource interface: attribute gripSpace
-FAIL XRInputSource interface: attribute gamepad assert_true: The prototype object must have a property "gamepad" expected true got false
+PASS XRInputSource interface: attribute gamepad
 PASS XRLayer interface: existence and properties of interface object
 PASS XRLayer interface object length
 PASS XRLayer interface object name
@@ -206,7 +206,7 @@ PASS XRInputSourceEvent interface: existence and properties of interface prototy
 PASS XRInputSourceEvent interface: existence and properties of interface prototype object's @@unscopables property
 PASS XRInputSourceEvent interface: attribute frame
 PASS XRInputSourceEvent interface: attribute inputSource
-FAIL XRInputSourceEvent interface: attribute buttonIndex assert_true: The prototype object must have a property "buttonIndex" expected true got false
+PASS XRInputSourceEvent interface: attribute buttonIndex
 FAIL XRReferenceSpaceEvent interface: existence and properties of interface object assert_own_property: self does not have own property "XRReferenceSpaceEvent" expected property "XRReferenceSpaceEvent" missing
 FAIL XRReferenceSpaceEvent interface object length assert_own_property: self does not have own property "XRReferenceSpaceEvent" expected property "XRReferenceSpaceEvent" missing
 FAIL XRReferenceSpaceEvent interface object name assert_own_property: self does not have own property "XRReferenceSpaceEvent" expected property "XRReferenceSpaceEvent" missing

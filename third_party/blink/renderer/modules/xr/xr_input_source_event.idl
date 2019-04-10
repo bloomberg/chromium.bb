@@ -10,4 +10,5 @@
 ] interface XRInputSourceEvent : Event {
   readonly attribute XRFrame frame;
   readonly attribute XRInputSource inputSource;
+  readonly attribute long? buttonIndex;
 };
