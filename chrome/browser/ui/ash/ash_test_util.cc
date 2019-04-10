@@ -34,4 +34,12 @@ void WaitForNoPointerHoldLock(bool wait_for_changes) {
     aura::test::WaitForAllChangesToComplete();
 }
 
+void WaitForOverviewAnimationState(ash::mojom::OverviewAnimationState state) {
+  ash::mojom::ShellTestApiPtr shell_test_api = GetShellTestApi();
+
+  base::RunLoop run_loop;
+  shell_test_api->WaitForOverviewAnimationState(state, run_loop.QuitClosure());
+  run_loop.Run();
+}
+
 }  // namespace test

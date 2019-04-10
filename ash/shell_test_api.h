@@ -67,6 +67,9 @@ class ShellTestApi : public mojom::ShellTestApi {
   void WaitForNoPointerHoldLock(
       WaitForNoPointerHoldLockCallback callback) override;
   void WaitForNextFrame(WaitForNextFrameCallback callback) override;
+  void WaitForOverviewAnimationState(
+      mojom::OverviewAnimationState state,
+      WaitForOverviewAnimationStateCallback callback) override;
 
  private:
   Shell* shell_;  // not owned

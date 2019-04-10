@@ -8,6 +8,9 @@
 #include <utility>
 
 #include "ash/accelerators/accelerator_commands.h"
+#include "ash/app_list/app_list_controller_impl.h"
+#include "ash/app_list/model/app_list_view_state.h"
+#include "ash/app_list/views/app_list_view.h"
 #include "ash/keyboard/ash_keyboard_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -65,6 +68,41 @@ class PointerMoveLoopWaiter : public ui::CompositorObserver {
   std::unique_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(PointerMoveLoopWaiter);
+};
+
+// Wait until an overview animation completes. This self destruct
+// after executing the callback.
+class OverviewAnimationStateWaiter : public OverviewObserver {
+ public:
+  OverviewAnimationStateWaiter(
+      mojom::OverviewAnimationState state,
+      ShellTestApi::WaitForOverviewAnimationStateCallback callback)
+      : state_(state), callback_(std::move(callback)) {
+    Shell::Get()->overview_controller()->AddObserver(this);
+  }
+  ~OverviewAnimationStateWaiter() override {
+    Shell::Get()->overview_controller()->RemoveObserver(this);
+  }
+
+  // OverviewObserver:
+  void OnOverviewModeStartingAnimationComplete(bool canceled) override {
+    if (state_ == mojom::OverviewAnimationState::kEnterAnimationComplete) {
+      std::move(callback_).Run();
+      delete this;
+    }
+  }
+  void OnOverviewModeEndingAnimationComplete(bool canceled) override {
+    if (state_ == mojom::OverviewAnimationState::kExitAnimationComplete) {
+      std::move(callback_).Run();
+      delete this;
+    }
+  }
+
+ private:
+  mojom::OverviewAnimationState state_;
+  ShellTestApi::WaitForOverviewAnimationStateCallback callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(OverviewAnimationStateWaiter);
 };
 
 }  // namespace
@@ -200,6 +238,27 @@ void ShellTestApi::WaitForNextFrame(WaitForNextFrameCallback callback) {
             std::move(callback).Run();
           },
           std::move(callback)));
+}
+
+void ShellTestApi::WaitForOverviewAnimationState(
+    mojom::OverviewAnimationState state,
+    WaitForOverviewAnimationStateCallback callback) {
+  auto* overview_controller = Shell::Get()->overview_controller();
+  if (state == mojom::OverviewAnimationState::kEnterAnimationComplete &&
+      overview_controller->IsSelecting() &&
+      !overview_controller->IsInStartAnimation()) {
+    // If there is no animation applied, call the callback immediately.
+    std::move(callback).Run();
+    return;
+  }
+  if (state == mojom::OverviewAnimationState::kExitAnimationComplete &&
+      !overview_controller->IsSelecting() &&
+      !overview_controller->IsCompletingShutdownAnimations()) {
+    // If there is no animation applied, call the callback immediately.
+    std::move(callback).Run();
+    return;
+  }
+  new OverviewAnimationStateWaiter(state, std::move(callback));
 }
 
 }  // namespace ash
