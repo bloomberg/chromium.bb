@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/android/resource_sizes.gni")
 import("//build/buildflag_header.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
@@ -426,6 +427,10 @@ android_apk("cronet_sample_apk") {
     "cronet_impl_common_proguard.cfg",
     "//base/android/proguard/chromium_apk.flags",
   ]
+}
+
+android_resource_sizes_test("resource_sizes_cronet_sample_apk") {
+  apk = ":cronet_sample_apk"
 }
 
 action("cronet_combine_proguard_flags") {

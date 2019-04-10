@@ -954,6 +954,9 @@ class MetaBuildWrapper(object):
         # shouldn't generate isolates for them.
         raise MBErr('Cannot generate isolate for %s since it is an '
                     'additional_compile_target.' % target)
+      elif isolate_map[target]['type'] == 'generated_script':
+        script = isolate_map[target]['script']
+        rpaths = ['%s.runtime_deps' % script]
       elif android:
         # Android targets may be either android_apk or executable. The former
         # will result in runtime_deps associated with the stamp file, while the
@@ -1225,6 +1228,11 @@ class MetaBuildWrapper(object):
       cmdline += [
           '../../testing/test_env.py',
           '../../' + self.ToSrcRelPath(isolate_map[target]['script'])
+      ]
+    elif test_type == 'generated_script':
+      cmdline = [
+          '../../testing/test_env.py',
+          isolate_map[target]['script'],
       ]
     elif test_type in ('raw', 'additional_compile_target'):
       cmdline = [

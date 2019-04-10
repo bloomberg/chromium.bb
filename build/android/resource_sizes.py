@@ -646,46 +646,7 @@ def _Analyze(apk_path, chartjson, args):
                             args.reference_apk_bucket, report_func)
 
 
-def main():
-  argparser = argparse.ArgumentParser(description='Print APK size metrics.')
-  argparser.add_argument('--min-pak-resource-size',
-                         type=int,
-                         default=20*1024,
-                         help='Minimum byte size of displayed pak resources.')
-  argparser.add_argument('--chromium-output-directory',
-                         dest='out_dir',
-                         help='Location of the build artifacts.')
-  argparser.add_argument('--chartjson',
-                         action='store_true',
-                         help='DEPRECATED. Use --output-format=chartjson '
-                              'instead.')
-  argparser.add_argument('--output-format',
-                         choices=['chartjson', 'histograms'],
-                         help='Output the results to a file in the given '
-                              'format instead of printing the results.')
-  argparser.add_argument('--output-dir',
-                         default='.',
-                         help='Directory to save chartjson to.')
-  argparser.add_argument('--loadable_module', help='Obsolete (ignored).')
-  argparser.add_argument('--estimate-patch-size',
-                         action='store_true',
-                         help='Include patch size estimates. Useful for perf '
-                         'builders where a reference APK is available but adds '
-                         '~3 mins to run time.')
-  argparser.add_argument('--reference-apk-builder',
-                         default=apk_downloader.DEFAULT_BUILDER,
-                         help='Builder name to use for reference APK for patch '
-                         'size estimates.')
-  argparser.add_argument('--reference-apk-bucket',
-                         default=apk_downloader.DEFAULT_BUCKET,
-                         help='Storage bucket holding reference APKs.')
-  argparser.add_argument('input', help='Path to .apk or .apks file to measure.')
-  args = argparser.parse_args()
-
-  # TODO(bsheedy): Remove this once uses of --chartjson have been removed.
-  if args.chartjson:
-    args.output_format = 'chartjson'
-
+def ResourceSizes(args):
   chartjson = _BASE_CHART.copy() if args.output_format else None
 
   if args.input.endswith('.apk'):
@@ -729,6 +690,80 @@ def main():
       logging.critical('Dumping histograms to %s', histogram_path)
       with open(histogram_path, 'w') as json_file:
         json_file.write(histogram_result.stdout)
+
+  return 0
+
+
+def main():
+  argparser = argparse.ArgumentParser(description='Print APK size metrics.')
+  argparser.add_argument(
+      '--min-pak-resource-size',
+      type=int,
+      default=20 * 1024,
+      help='Minimum byte size of displayed pak resources.')
+  argparser.add_argument(
+      '--chromium-output-directory',
+      dest='out_dir',
+      help='Location of the build artifacts.')
+  argparser.add_argument(
+      '--chartjson',
+      action='store_true',
+      help='DEPRECATED. Use --output-format=chartjson '
+      'instead.')
+  argparser.add_argument(
+      '--output-format',
+      choices=['chartjson', 'histograms'],
+      help='Output the results to a file in the given '
+      'format instead of printing the results.')
+  argparser.add_argument(
+      '--output-dir', default='.', help='Directory to save chartjson to.')
+  argparser.add_argument('--loadable_module', help='Obsolete (ignored).')
+  argparser.add_argument(
+      '--estimate-patch-size',
+      action='store_true',
+      help='Include patch size estimates. Useful for perf '
+      'builders where a reference APK is available but adds '
+      '~3 mins to run time.')
+  argparser.add_argument(
+      '--reference-apk-builder',
+      default=apk_downloader.DEFAULT_BUILDER,
+      help='Builder name to use for reference APK for patch '
+      'size estimates.')
+  argparser.add_argument(
+      '--reference-apk-bucket',
+      default=apk_downloader.DEFAULT_BUCKET,
+      help='Storage bucket holding reference APKs.')
+
+  # Accepted to conform to the isolated script interface, but ignored.
+  argparser.add_argument(
+      '--isolated-script-test-filter', help=argparse.SUPPRESS)
+  argparser.add_argument(
+      '--isolated-script-test-output',
+      type=os.path.realpath,
+      help='File to which results will be written in the '
+      'simplified JSON output format.')
+
+  argparser.add_argument('input', help='Path to .apk or .apks file to measure.')
+  args = argparser.parse_args()
+
+  # TODO(bsheedy): Remove this once uses of --chartjson have been removed.
+  if args.chartjson:
+    args.output_format = 'chartjson'
+
+  isolated_script_output = {'valid': False, 'failures': []}
+
+  try:
+    result = ResourceSizes(args)
+    isolated_script_output = {
+        'valid': True,
+        'failures': ['resource_sizes'] if result else [],
+    }
+  finally:
+    if args.isolated_script_test_output:
+      with open(args.isolated_script_test_output, 'w') as output_file:
+        json.dump(isolated_script_output, output_file)
+
+  return result
 
 
 if __name__ == '__main__':

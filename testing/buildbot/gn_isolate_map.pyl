@@ -42,6 +42,9 @@
 #  "script"
 #  : the test is a python script; the path to the script is specified in
 #    the "script" field.
+#  "generated_script"
+#  : the test is a script generated at build time; the path to the script
+#    *relative to the output directory* is specified in the "script" field.
 #  "fuzzer"
 #  : the test is a fuzzer that needs to be run with a wrapper.
 #  "unknown"
@@ -2202,6 +2205,11 @@
   "residual_echo_detector_fuzzer": {
     "label": "//third_party/webrtc/test/fuzzers:residual_echo_detector_fuzzer",
     "type": "fuzzer",
+  },
+  "resource_sizes_cronet_sample_apk": {
+    "label": "//components/cronet/android:resource_sizes_cronet_sample_apk",
+    "type": "generated_script",
+    "script": "bin/resource_sizes_cronet_sample_apk",
   },
   "rtcp_receiver_fuzzer": {
     "label": "//third_party/webrtc/test/fuzzers:rtcp_receiver_fuzzer",

@@ -372,6 +372,7 @@
           'cronet_package',
         ],
         'test_suites': {
+          'isolated_scripts': 'cronet_isolated_scripts',
           'scripts': 'cronet_scripts',
         },
       },
@@ -404,6 +405,7 @@
           'net_unittests',
         ],
         'test_suites': {
+          'isolated_scripts': 'cronet_isolated_scripts',
           'scripts': 'cronet_scripts',
         },
       },
@@ -486,6 +488,7 @@
           'net_unittests',
         ],
         'test_suites': {
+          'isolated_scripts': 'cronet_isolated_scripts',
           'scripts': 'cronet_scripts',
         },
       },

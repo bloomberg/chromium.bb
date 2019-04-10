@@ -2694,6 +2694,14 @@
       },
     },
 
+    'cronet_isolated_scripts': {
+      'resource_sizes_cronet_sample_apk': {
+        'swarming': {
+          'can_use_on_swarming_builders': False,
+        },
+      },
+    },
+
     'cronet_scripts': {
       'sizes': {
         'script': 'cronet_sizes.py',
