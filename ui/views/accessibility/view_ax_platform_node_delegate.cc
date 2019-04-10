@@ -144,8 +144,6 @@ void ViewAXPlatformNodeDelegate::NotifyAccessibilityEvent(
     return;
   }
 
-  ax_platform_node_->NotifyAccessibilityEvent(event_type);
-
   // Some events have special handling.
   switch (event_type) {
     case ax::mojom::Event::kMenuStart:
@@ -171,6 +169,9 @@ void ViewAXPlatformNodeDelegate::NotifyAccessibilityEvent(
     default:
       break;
   }
+
+  // Fire events here now that our internal state is up-to-date.
+  ax_platform_node_->NotifyAccessibilityEvent(event_type);
 }
 
 #if defined(OS_MACOSX)
