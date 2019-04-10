@@ -420,13 +420,6 @@ jumbo_static_library("sync") {
     "engine_impl/update_handler.h",
     "engine_impl/uss_migrator.cc",
     "engine_impl/uss_migrator.h",
-    "js/js_backend.h",
-    "js/js_controller.h",
-    "js/js_event_details.cc",
-    "js/js_event_details.h",
-    "js/js_event_handler.h",
-    "js/sync_js_controller.cc",
-    "js/sync_js_controller.h",
     "model/blocking_model_type_store.h",
     "model/change_processor.cc",
     "model/change_processor.h",
@@ -605,6 +598,7 @@ jumbo_static_library("sync") {
 
   public_deps = [
     ":base",
+    ":js",
     "//base",
     "//components/invalidation/public",
     "//components/sync/protocol",
@@ -659,6 +653,22 @@ jumbo_static_library("sync") {
   defines = [ "SYNC_USER_AGENT_PRODUCT=$sync_user_agent_product" ]
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
+}
+
+jumbo_static_library("js") {
+  sources = [
+    "js/js_backend.h",
+    "js/js_controller.h",
+    "js/js_event_details.cc",
+    "js/js_event_details.h",
+    "js/js_event_handler.h",
+    "js/sync_js_controller.cc",
+    "js/sync_js_controller.h",
+  ]
+
+  public_deps = [
+    ":base",
+  ]
 }
 
 static_library("test_support_base") {
