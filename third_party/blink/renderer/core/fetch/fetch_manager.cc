@@ -681,7 +681,7 @@ void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
   ResourceRequest request(fetch_request_data_->Url());
   request.SetRequestorOrigin(fetch_request_data_->Origin());
   request.SetRequestContext(fetch_request_data_->Context());
-  request.SetHTTPMethod(fetch_request_data_->Method());
+  request.SetHttpMethod(fetch_request_data_->Method());
   request.SetFetchWindowId(fetch_request_data_->WindowId());
 
   switch (fetch_request_data_->Mode()) {
@@ -784,7 +784,7 @@ void FetchManager::Loader::PerformDataFetch() {
   request.SetRequestorOrigin(fetch_request_data_->Origin());
   request.SetRequestContext(fetch_request_data_->Context());
   request.SetUseStreamOnResponse(true);
-  request.SetHTTPMethod(fetch_request_data_->Method());
+  request.SetHttpMethod(fetch_request_data_->Method());
   request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
   request.SetFetchRedirectMode(FetchRedirectMode::kError);
   request.SetFetchImportanceMode(fetch_request_data_->Importance());

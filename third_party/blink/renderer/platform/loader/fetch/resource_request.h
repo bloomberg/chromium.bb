@@ -130,7 +130,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   }
 
   const AtomicString& HttpMethod() const;
-  void SetHTTPMethod(const AtomicString&);
+  void SetHttpMethod(const AtomicString&);
 
   const HTTPHeaderMap& HttpHeaderFields() const;
   const AtomicString& HttpHeaderField(const AtomicString& name) const;

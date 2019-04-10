@@ -182,7 +182,7 @@ bool CreateWebURLRequest(PP_Instance instance,
   dest->SetReportUploadProgress(data->record_upload_progress);
 
   if (!data->method.empty())
-    dest->SetHTTPMethod(WebString::FromUTF8(data->method));
+    dest->SetHttpMethod(WebString::FromUTF8(data->method));
 
   dest->SetSiteForCookies(frame->GetDocument().SiteForCookies());
 

@@ -97,7 +97,7 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
   std::unique_ptr<ResourceRequest> request =
       std::make_unique<ResourceRequest>(new_url);
   request->SetRequestorOrigin(RequestorOrigin());
-  request->SetHTTPMethod(new_method);
+  request->SetHttpMethod(new_method);
   request->SetSiteForCookies(new_site_for_cookies);
   request->SetTopFrameOrigin(std::move(new_top_frame_origin));
   String referrer =
@@ -199,7 +199,7 @@ const AtomicString& ResourceRequest::HttpMethod() const {
   return http_method_;
 }
 
-void ResourceRequest::SetHTTPMethod(const AtomicString& http_method) {
+void ResourceRequest::SetHttpMethod(const AtomicString& http_method) {
   http_method_ = http_method;
 }
 
