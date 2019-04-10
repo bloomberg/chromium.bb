@@ -63,6 +63,10 @@ class BASE_EXPORT SchedulerSingleThreadTaskRunnerManager final {
   // JoinForTesting() has returned (must never be destroyed in production).
   void Start(SchedulerWorkerObserver* scheduler_worker_observer = nullptr);
 
+  // Wakes up workers as appropriate for the new CanRunPolicy policy. Must be
+  // called after an update to CanRunPolicy in TaskTracker.
+  void DidUpdateCanRunPolicy();
+
   // Creates a SingleThreadTaskRunner which runs tasks with |traits| on a thread
   // named "TaskSchedulerSingleThread[Shared]" +
   // kEnvironmentParams[GetEnvironmentIndexForTraits(traits)].name_suffix +

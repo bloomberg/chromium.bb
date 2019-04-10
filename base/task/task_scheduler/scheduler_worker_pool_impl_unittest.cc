@@ -1044,9 +1044,9 @@ class TaskSchedulerWorkerPoolBlockingTest
   DISALLOW_COPY_AND_ASSIGN(TaskSchedulerWorkerPoolBlockingTest);
 };
 
-// Verify that BlockingScopeEntered() causes max tasks to increase and creates a
-// worker if needed. Also verify that BlockingScopeExited() decreases max tasks
-// after an increase.
+// Verify that SaturateWithBlockingTasks() causes max tasks to increase and
+// creates a worker if needed. Also verify that UnblockBlockingTasks() decreases
+// max tasks after an increase.
 TEST_P(TaskSchedulerWorkerPoolBlockingTest, ThreadBlockedUnblocked) {
   CreateAndStartWorkerPool();
 
@@ -1064,6 +1064,69 @@ TEST_P(TaskSchedulerWorkerPoolBlockingTest, ThreadBlockedUnblocked) {
   UnblockBlockingTasks();
   task_tracker_.FlushForTesting();
   EXPECT_EQ(worker_pool_->GetMaxTasksForTesting(), kMaxTasks);
+}
+
+// Verify that flooding the pool with more BEST_EFFORT tasks than
+// kMaxBestEffortTasks doesn't prevent USER_VISIBLE tasks from running.
+TEST_P(TaskSchedulerWorkerPoolBlockingTest, TooManyBestEffortTasks) {
+  constexpr size_t kMaxBestEffortTasks = kMaxTasks / 2;
+
+  CreateAndStartWorkerPool(TimeDelta::Max(), kMaxTasks, kMaxBestEffortTasks);
+
+  WaitableEvent threads_continue;
+  {
+    WaitableEvent entered_blocking_scope;
+    RepeatingClosure entered_blocking_scope_barrier = BarrierClosure(
+        kMaxBestEffortTasks + 1,
+        BindOnce(&WaitableEvent::Signal, Unretained(&entered_blocking_scope)));
+    WaitableEvent exit_blocking_scope;
+
+    WaitableEvent threads_running;
+    RepeatingClosure threads_running_barrier = BarrierClosure(
+        kMaxBestEffortTasks + 1,
+        BindOnce(&WaitableEvent::Signal, Unretained(&threads_running)));
+
+    const auto best_effort_task_runner = test::CreateTaskRunnerWithTraits(
+        {TaskPriority::BEST_EFFORT, MayBlock()},
+        &mock_scheduler_task_runner_delegate_);
+    for (size_t i = 0; i < kMaxBestEffortTasks + 1; ++i) {
+      best_effort_task_runner->PostTask(
+          FROM_HERE, BindLambdaForTesting([&]() {
+            {
+              NestedScopedBlockingCall scoped_blocking_call(GetParam());
+              entered_blocking_scope_barrier.Run();
+              test::WaitWithoutBlockingObserver(&exit_blocking_scope);
+            }
+            threads_running_barrier.Run();
+            test::WaitWithoutBlockingObserver(&threads_continue);
+          }));
+    }
+    entered_blocking_scope.Wait();
+    exit_blocking_scope.Signal();
+    threads_running.Wait();
+  }
+
+  // At this point, kMaxBestEffortTasks + 1 threads are running (plus
+  // potentially the idle thread), but max_task and max_best_effort_task are
+  // back to normal.
+  EXPECT_GE(worker_pool_->NumberOfWorkersForTesting(), kMaxBestEffortTasks + 1);
+  EXPECT_LE(worker_pool_->NumberOfWorkersForTesting(), kMaxBestEffortTasks + 2);
+  EXPECT_EQ(worker_pool_->GetMaxTasksForTesting(), kMaxTasks);
+
+  WaitableEvent threads_running;
+  task_runner_->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
+                           threads_running.Signal();
+                           test::WaitWithoutBlockingObserver(&threads_continue);
+                         }));
+
+  // This should not block forever.
+  threads_running.Wait();
+
+  EXPECT_GE(worker_pool_->NumberOfWorkersForTesting(), kMaxBestEffortTasks + 2);
+  EXPECT_LE(worker_pool_->NumberOfWorkersForTesting(), kMaxBestEffortTasks + 3);
+  threads_continue.Signal();
+
+  task_tracker_.FlushForTesting();
 }
 
 // Verify that tasks posted in a saturated pool before a ScopedBlockingCall will

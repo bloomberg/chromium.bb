@@ -8,9 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/base_switches.h"
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
 #include "base/json/json_writer.h"
@@ -130,19 +128,6 @@ HistogramBase* GetHistogramForTaskTraits(
                         : 0];
 }
 
-// Returns the maximum number of TaskPriority::BEST_EFFORT sequences that can be
-// scheduled concurrently based on command line flags.
-int GetMaxNumScheduledBestEffortSequences() {
-  // The CommandLine might not be initialized if TaskScheduler is initialized
-  // in a dynamic library which doesn't have access to argc/argv.
-  if (CommandLine::InitializedForCurrentProcess() &&
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableBestEffortTasks)) {
-    return 0;
-  }
-  return std::numeric_limits<int>::max();
-}
-
 // Returns shutdown behavior based on |traits|; returns SKIP_ON_SHUTDOWN if
 // shutdown behavior is BLOCK_SHUTDOWN and |is_delayed|, because delayed tasks
 // are not allowed to block shutdown.
@@ -244,47 +229,10 @@ class TaskTracker::State {
   DISALLOW_COPY_AND_ASSIGN(State);
 };
 
-struct TaskTracker::PreemptedSequence {
-  PreemptedSequence() = default;
-  PreemptedSequence(scoped_refptr<Sequence> sequence_in,
-                    TimeTicks next_task_sequenced_time_in,
-                    CanScheduleSequenceObserver* observer_in)
-      : sequence(std::move(sequence_in)),
-        next_task_sequenced_time(next_task_sequenced_time_in),
-        observer(observer_in) {}
-  PreemptedSequence(PreemptedSequence&& other) = default;
-  ~PreemptedSequence() = default;
-  PreemptedSequence& operator=(PreemptedSequence&& other) = default;
-  bool operator<(const PreemptedSequence& other) const {
-    return next_task_sequenced_time < other.next_task_sequenced_time;
-  }
-  bool operator>(const PreemptedSequence& other) const {
-    return next_task_sequenced_time > other.next_task_sequenced_time;
-  }
-
-  // A sequence waiting to be scheduled.
-  scoped_refptr<Sequence> sequence;
-
-  // The sequenced time of the next task in |sequence|.
-  TimeTicks next_task_sequenced_time;
-
-  // An observer to notify when |sequence| can be scheduled.
-  CanScheduleSequenceObserver* observer = nullptr;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PreemptedSequence);
-};
-
-TaskTracker::PreemptionState::PreemptionState() = default;
-TaskTracker::PreemptionState::~PreemptionState() = default;
-
-TaskTracker::TaskTracker(StringPiece histogram_label)
-    : TaskTracker(histogram_label, GetMaxNumScheduledBestEffortSequences()) {}
-
 // TODO(jessemckenna): Write a helper function to avoid code duplication below.
-TaskTracker::TaskTracker(StringPiece histogram_label,
-                         int max_num_scheduled_best_effort_sequences)
+TaskTracker::TaskTracker(StringPiece histogram_label)
     : state_(new State),
+      can_run_policy_(CanRunPolicy::kAll),
       flush_cv_(flush_lock_.CreateConditionVariable()),
       shutdown_lock_(&flush_lock_),
       task_latency_histograms_{
@@ -349,50 +297,44 @@ TaskTracker::TaskTracker(StringPiece histogram_label,
   DCHECK(*(&task_latency_histograms_[static_cast<int>(TaskPriority::HIGHEST) +
                                      1][0] -
            1));
-  preemption_state_[static_cast<int>(TaskPriority::BEST_EFFORT)]
-      .max_scheduled_sequences = max_num_scheduled_best_effort_sequences;
-  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 TaskTracker::~TaskTracker() = default;
 
-void TaskTracker::SetExecutionFenceEnabled(bool execution_fence_enabled) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+void TaskTracker::StartShutdown() {
+  AutoSchedulerLock auto_lock(shutdown_lock_);
 
-#if DCHECK_IS_ON()
-  // It is invalid to have two fences at the same time.
-  DCHECK_NE(execution_fence_enabled_, execution_fence_enabled);
-  execution_fence_enabled_ = execution_fence_enabled;
-#endif
+  // This method can only be called once.
+  DCHECK(!shutdown_event_);
+  DCHECK(!state_->HasShutdownStarted());
 
-  for (int priority_index = static_cast<int>(TaskPriority::HIGHEST);
-       priority_index >= static_cast<int>(TaskPriority::LOWEST);
-       --priority_index) {
-    int max_scheduled_sequences;
-    if (execution_fence_enabled) {
-      preemption_state_[priority_index].max_scheduled_sequences_before_fence =
-          preemption_state_[priority_index].max_scheduled_sequences;
-      max_scheduled_sequences = 0;
-    } else {
-      max_scheduled_sequences = preemption_state_[priority_index]
-                                    .max_scheduled_sequences_before_fence;
-    }
+  shutdown_event_ = std::make_unique<WaitableEvent>();
 
-    SetMaxNumScheduledSequences(max_scheduled_sequences,
-                                static_cast<TaskPriority>(priority_index));
+  const bool tasks_are_blocking_shutdown = state_->StartShutdown();
+
+  // From now, if a thread causes the number of tasks blocking shutdown to
+  // become zero, it will call OnBlockingShutdownTasksComplete().
+
+  if (!tasks_are_blocking_shutdown) {
+    // If another thread posts a BLOCK_SHUTDOWN task at this moment, it will
+    // block until this method releases |shutdown_lock_|. Then, it will fail
+    // DCHECK(!shutdown_event_->IsSignaled()). This is the desired behavior
+    // because posting a BLOCK_SHUTDOWN task after StartShutdown() when no
+    // tasks are blocking shutdown isn't allowed.
+    shutdown_event_->Signal();
+    return;
   }
 }
 
-size_t TaskTracker::GetPreemptedSequenceCountForTesting(
-    TaskPriority task_priority) {
-  int priority_index = static_cast<int>(task_priority);
-  AutoSchedulerLock auto_lock(preemption_state_[priority_index].lock);
-  return preemption_state_[priority_index].preempted_sequences.size();
-}
-
-void TaskTracker::Shutdown() {
-  PerformShutdown();
-  DCHECK(IsShutdownComplete());
+void TaskTracker::CompleteShutdown() {
+  DCHECK(shutdown_event_);
+  // It is safe to access |shutdown_event_| without holding |lock_| because the
+  // pointer never changes after being set by StartShutdown(), which must be
+  // called before this.
+  {
+    base::ScopedAllowBaseSyncPrimitives allow_wait;
+    shutdown_event_->Wait();
+  }
 
   // Unblock FlushForTesting() and perform the FlushAsyncForTesting callback
   // when shutdown completes.
@@ -426,6 +368,10 @@ void TaskTracker::FlushAsyncForTesting(OnceClosure flush_callback) {
   }
 }
 
+void TaskTracker::SetCanRunPolicy(CanRunPolicy can_run_policy) {
+  can_run_policy_.store(can_run_policy);
+}
+
 bool TaskTracker::WillPostTask(Task* task,
                                TaskShutdownBehavior shutdown_behavior) {
   DCHECK(task);
@@ -444,33 +390,22 @@ bool TaskTracker::WillPostTask(Task* task,
   return true;
 }
 
-bool TaskTracker::WillScheduleSequence(
-    const Sequence::Transaction& sequence_transaction,
-    CanScheduleSequenceObserver* observer) {
-  const SequenceSortKey sort_key = sequence_transaction.GetSortKey();
-  const int priority_index = static_cast<int>(sort_key.priority());
+bool TaskTracker::CanRunPriority(TaskPriority priority) const {
+  auto can_run_policy = can_run_policy_.load();
 
-  AutoSchedulerLock auto_lock(preemption_state_[priority_index].lock);
+  if (can_run_policy == CanRunPolicy::kAll)
+    return true;
 
-  if (preemption_state_[priority_index].current_scheduled_sequences <
-      preemption_state_[priority_index].max_scheduled_sequences) {
-    ++preemption_state_[priority_index].current_scheduled_sequences;
+  if (can_run_policy == CanRunPolicy::kForegroundOnly &&
+      priority >= TaskPriority::USER_VISIBLE) {
     return true;
   }
 
-  // It is convenient not to have to specify an observer when scheduling
-  // foreground sequences in tests.
-  DCHECK(observer);
-
-  preemption_state_[priority_index].preempted_sequences.emplace(
-      WrapRefCounted(sequence_transaction.sequence()),
-      sort_key.next_task_sequenced_time(), observer);
   return false;
 }
 
 scoped_refptr<Sequence> TaskTracker::RunAndPopNextTask(
-    scoped_refptr<Sequence> sequence,
-    CanScheduleSequenceObserver* observer) {
+    scoped_refptr<Sequence> sequence) {
   DCHECK(sequence);
 
   // Run the next task in |sequence|.
@@ -503,15 +438,10 @@ scoped_refptr<Sequence> TaskTracker::RunAndPopNextTask(
   const bool sequence_must_be_queued =
       sequence->BeginTransaction().DidRunTask();
 
-  // Never reschedule a Sequence empty after DidRunTask(). The contract is such
-  // that next poster to make it non-empty is responsible to schedule it.
+  // The sequence should be reenqueued iff requested by DidRunTask().
   if (!sequence_must_be_queued)
-    sequence = nullptr;
-
-  // Allow |sequence| to be rescheduled only if its next task is set to run
-  // earlier than the earliest currently preempted sequence
-  return ManageSequencesAfterRunningTask(std::move(sequence), observer,
-                                         traits.priority());
+    return nullptr;
+  return sequence;
 }
 
 bool TaskTracker::HasShutdownStarted() const {
@@ -521,16 +451,6 @@ bool TaskTracker::HasShutdownStarted() const {
 bool TaskTracker::IsShutdownComplete() const {
   AutoSchedulerLock auto_lock(shutdown_lock_);
   return shutdown_event_ && shutdown_event_->IsSignaled();
-}
-
-void TaskTracker::SetHasShutdownStartedForTesting() {
-  AutoSchedulerLock auto_lock(shutdown_lock_);
-
-  // Create a dummy |shutdown_event_| to satisfy TaskTracker's expectation of
-  // its existence during shutdown (e.g. in OnBlockingShutdownTasksComplete()).
-  shutdown_event_ = std::make_unique<WaitableEvent>();
-
-  state_->StartShutdown();
 }
 
 void TaskTracker::RecordLatencyHistogram(
@@ -655,105 +575,6 @@ void TaskTracker::RunOrSkipTask(Task task,
   ThreadRestrictions::SetSingletonAllowed(previous_singleton_allowed);
 }
 
-void TaskTracker::PerformShutdown() {
-  {
-    AutoSchedulerLock auto_lock(shutdown_lock_);
-
-    // This method can only be called once.
-    DCHECK(!shutdown_event_);
-    DCHECK(!state_->HasShutdownStarted());
-
-    shutdown_event_ = std::make_unique<WaitableEvent>();
-
-    const bool tasks_are_blocking_shutdown = state_->StartShutdown();
-
-    // From now, if a thread causes the number of tasks blocking shutdown to
-    // become zero, it will call OnBlockingShutdownTasksComplete().
-
-    if (!tasks_are_blocking_shutdown) {
-      // If another thread posts a BLOCK_SHUTDOWN task at this moment, it will
-      // block until this method releases |shutdown_lock_|. Then, it will fail
-      // DCHECK(!shutdown_event_->IsSignaled()). This is the desired behavior
-      // because posting a BLOCK_SHUTDOWN task when TaskTracker::Shutdown() has
-      // started and no tasks are blocking shutdown isn't allowed.
-      shutdown_event_->Signal();
-      return;
-    }
-  }
-
-  // Remove the cap on the maximum number of sequences that can be scheduled
-  // concurrently. Done after starting shutdown to ensure that non-
-  // BLOCK_SHUTDOWN sequences don't get a chance to run and that BLOCK_SHUTDOWN
-  // sequences run on threads running with a normal priority.
-  for (int priority_index = static_cast<int>(TaskPriority::HIGHEST);
-       priority_index >= static_cast<int>(TaskPriority::LOWEST);
-       --priority_index) {
-    SetMaxNumScheduledSequences(std::numeric_limits<int>::max(),
-                                static_cast<TaskPriority>(priority_index));
-  }
-
-  // It is safe to access |shutdown_event_| without holding |lock_| because the
-  // pointer never changes after being set above.
-  {
-    base::ScopedAllowBaseSyncPrimitives allow_wait;
-    shutdown_event_->Wait();
-  }
-}
-
-void TaskTracker::SetMaxNumScheduledSequences(int max_scheduled_sequences,
-                                              TaskPriority task_priority) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  std::vector<PreemptedSequence> sequences_to_schedule;
-  int priority_index = static_cast<int>(task_priority);
-
-  {
-    AutoSchedulerLock auto_lock(preemption_state_[priority_index].lock);
-    preemption_state_[priority_index].max_scheduled_sequences =
-        max_scheduled_sequences;
-
-    while (preemption_state_[priority_index].current_scheduled_sequences <
-               max_scheduled_sequences &&
-           !preemption_state_[priority_index].preempted_sequences.empty()) {
-      sequences_to_schedule.push_back(
-          GetPreemptedSequenceToScheduleLockRequired(task_priority));
-    }
-  }
-
-  for (auto& sequence_to_schedule : sequences_to_schedule)
-    SchedulePreemptedSequence(std::move(sequence_to_schedule));
-}
-
-TaskTracker::PreemptedSequence
-TaskTracker::GetPreemptedSequenceToScheduleLockRequired(
-    TaskPriority task_priority) {
-  int priority_index = static_cast<int>(task_priority);
-
-  preemption_state_[priority_index].lock.AssertAcquired();
-  DCHECK(!preemption_state_[priority_index].preempted_sequences.empty());
-
-  ++preemption_state_[priority_index].current_scheduled_sequences;
-  DCHECK_LE(preemption_state_[priority_index].current_scheduled_sequences,
-            preemption_state_[priority_index].max_scheduled_sequences);
-
-  // The const_cast on top is okay since the PreemptedSequence is
-  // transactionnaly being popped from
-  // |preemption_state_[priority_index].preempted_sequences| right after and the
-  // move doesn't alter the sort order (a requirement for the Windows STL's
-  // consistency debug-checks for std::priority_queue::top()).
-  PreemptedSequence popped_sequence = std::move(const_cast<PreemptedSequence&>(
-      preemption_state_[priority_index].preempted_sequences.top()));
-  preemption_state_[priority_index].preempted_sequences.pop();
-  return popped_sequence;
-}
-
-void TaskTracker::SchedulePreemptedSequence(
-    PreemptedSequence sequence_to_schedule) {
-  DCHECK(sequence_to_schedule.observer);
-  sequence_to_schedule.observer->OnCanScheduleSequence(
-      std::move(sequence_to_schedule.sequence));
-}
-
 bool TaskTracker::HasIncompleteUndelayedTasksForTesting() const {
   return subtle::Acquire_Load(&num_incomplete_undelayed_tasks_) != 0;
 }
@@ -867,56 +688,6 @@ void TaskTracker::DecrementNumIncompleteUndelayedTasks() {
     }
     CallFlushCallbackForTesting();
   }
-}
-
-scoped_refptr<Sequence> TaskTracker::ManageSequencesAfterRunningTask(
-    scoped_refptr<Sequence> just_ran_sequence,
-    CanScheduleSequenceObserver* observer,
-    TaskPriority task_priority) {
-  const TimeTicks next_task_sequenced_time =
-      just_ran_sequence ? just_ran_sequence->BeginTransaction()
-                              .GetSortKey()
-                              .next_task_sequenced_time()
-                        : TimeTicks();
-  PreemptedSequence sequence_to_schedule;
-  int priority_index = static_cast<int>(task_priority);
-
-  {
-    AutoSchedulerLock auto_lock(preemption_state_[priority_index].lock);
-
-    --preemption_state_[priority_index].current_scheduled_sequences;
-
-    const bool can_schedule_sequence =
-        preemption_state_[priority_index].current_scheduled_sequences <
-        preemption_state_[priority_index].max_scheduled_sequences;
-
-    if (just_ran_sequence) {
-      if (can_schedule_sequence &&
-          (preemption_state_[priority_index].preempted_sequences.empty() ||
-           preemption_state_[priority_index]
-                   .preempted_sequences.top()
-                   .next_task_sequenced_time > next_task_sequenced_time)) {
-        ++preemption_state_[priority_index].current_scheduled_sequences;
-        return just_ran_sequence;
-      }
-
-      preemption_state_[priority_index].preempted_sequences.emplace(
-          std::move(just_ran_sequence), next_task_sequenced_time, observer);
-    }
-
-    if (can_schedule_sequence &&
-        !preemption_state_[priority_index].preempted_sequences.empty()) {
-      sequence_to_schedule =
-          GetPreemptedSequenceToScheduleLockRequired(task_priority);
-    }
-  }
-
-  // |sequence_to_schedule.sequence| may be null if there was no preempted
-  // sequence.
-  if (sequence_to_schedule.sequence)
-    SchedulePreemptedSequence(std::move(sequence_to_schedule));
-
-  return nullptr;
 }
 
 void TaskTracker::CallFlushCallbackForTesting() {
