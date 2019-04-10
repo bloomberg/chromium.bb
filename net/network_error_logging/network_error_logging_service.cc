@@ -180,9 +180,13 @@ void RecordSignedExchangeRequestOutcome(
 
 class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
  public:
-  NetworkErrorLoggingServiceImpl() = default;
+  explicit NetworkErrorLoggingServiceImpl(PersistentNELStore* store)
+      : store_(store) {}
 
-  ~NetworkErrorLoggingServiceImpl() override = default;
+  ~NetworkErrorLoggingServiceImpl() override {
+    if (store_)
+      store_->Flush();
+  }
 
   // NetworkErrorLoggingService implementation:
 
@@ -453,6 +457,13 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
 
   PolicyMap policies_;
   WildcardPolicyMap wildcard_policies_;
+
+  // The persistent store in which NEL policies will be stored to disk, if not
+  // null. If |store_| is null, then NEL policies will be in-memory only.
+  // The store is owned by the URLRequestContext because Reporting also needs
+  // access to it.
+  // TODO(chlily): Implement.
+  PersistentNELStore* store_;
 
   HeaderOutcome ParseHeader(const std::string& json_value,
                             base::Time now,
@@ -785,9 +796,9 @@ void NetworkErrorLoggingService::RecordRequestDiscardedForInsecureOrigin() {
 }
 
 // static
-std::unique_ptr<NetworkErrorLoggingService>
-NetworkErrorLoggingService::Create() {
-  return std::make_unique<NetworkErrorLoggingServiceImpl>();
+std::unique_ptr<NetworkErrorLoggingService> NetworkErrorLoggingService::Create(
+    PersistentNELStore* store) {
+  return std::make_unique<NetworkErrorLoggingServiceImpl>(store);
 }
 
 NetworkErrorLoggingService::~NetworkErrorLoggingService() = default;

@@ -1514,9 +1514,11 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveReportingCache_NoService) {
                                 BrowsingDataRemover::DATA_TYPE_COOKIES, false);
 }
 
+// TODO(chlily): Use a PersistentNELStore and test that entries are removed from
+// it.
 TEST_F(BrowsingDataRemoverImplTest, RemoveNetworkErrorLogging) {
   std::unique_ptr<net::NetworkErrorLoggingService> logging_service =
-      net::NetworkErrorLoggingService::Create();
+      net::NetworkErrorLoggingService::Create(nullptr /* store */);
   BrowserContext::GetDefaultStoragePartition(GetBrowserContext())
       ->GetURLRequestContext()
       ->GetURLRequestContext()
@@ -1535,9 +1537,11 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveNetworkErrorLogging) {
   EXPECT_TRUE(logging_service->GetPolicyOriginsForTesting().empty());
 }
 
+// TODO(chlily): Use a PersistentNELStore and test that entries are removed from
+// it.
 TEST_F(BrowsingDataRemoverImplTest, RemoveNetworkErrorLogging_SpecificOrigins) {
   std::unique_ptr<net::NetworkErrorLoggingService> logging_service =
-      net::NetworkErrorLoggingService::Create();
+      net::NetworkErrorLoggingService::Create(nullptr /* store */);
   BrowserContext::GetDefaultStoragePartition(GetBrowserContext())
       ->GetURLRequestContext()
       ->GetURLRequestContext()

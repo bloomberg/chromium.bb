@@ -118,7 +118,7 @@ class TestReportingService : public ReportingService {
 class NetworkErrorLoggingServiceTest : public ::testing::Test {
  protected:
   NetworkErrorLoggingServiceTest() {
-    service_ = NetworkErrorLoggingService::Create();
+    service_ = NetworkErrorLoggingService::Create(nullptr /* store */);
     CreateReportingService();
   }
 
