@@ -17,15 +17,18 @@
 namespace media {
 namespace test {
 
-// Suffix to append to the video file path to get the metadata file path.
+// Suffix appended to the video file path to get the metadata file path, if no
+// explicit metadata file path was specified.
 constexpr const base::FilePath::CharType* kMetadataSuffix =
     FILE_PATH_LITERAL(".json");
 
 base::FilePath Video::test_data_path_ = base::FilePath();
 
-Video::Video(const base::FilePath& file_path) : file_path_(file_path) {}
+Video::Video(const base::FilePath& file_path,
+             const base::FilePath& metadata_file_path)
+    : file_path_(file_path), metadata_file_path_(metadata_file_path) {}
 
-Video::~Video() {}
+Video::~Video() = default;
 
 bool Video::Load() {
   // TODO(dstaessens@) Investigate reusing existing infrastructure such as
@@ -33,13 +36,12 @@ bool Video::Load() {
   DCHECK(!file_path_.empty());
   DCHECK(data_.empty());
 
-  // The specified path can be either an absolute path, a path relative to the
-  // current directory, or relative to the test data path.
-  if (!file_path_.IsAbsolute()) {
-    if (!PathExists(file_path_))
-      file_path_ = test_data_path_.Append(file_path_);
-    file_path_ = base::MakeAbsoluteFilePath(file_path_);
+  base::Optional<base::FilePath> resolved_path = ResolveFilePath(file_path_);
+  if (!resolved_path) {
+    LOG(ERROR) << "Video file not found: " << file_path_;
+    return false;
   }
+  file_path_ = resolved_path.value();
   VLOGF(2) << "File path: " << file_path_;
 
   int64_t file_size;
@@ -116,17 +118,21 @@ bool Video::LoadMetadata() {
     return false;
   }
 
-  const base::FilePath json_path = file_path_.AddExtension(kMetadataSuffix);
-  VLOGF(2) << "File path: " << json_path;
+  // If no custom metadata file path was specified, use <video_path>.json.
+  if (metadata_file_path_.empty())
+    metadata_file_path_ = file_path_.AddExtension(kMetadataSuffix);
 
-  if (!base::PathExists(json_path)) {
-    VLOGF(1) << "Video metadata file not found: " << json_path;
+  base::Optional<base::FilePath> resolved_path =
+      ResolveFilePath(metadata_file_path_);
+  if (!resolved_path) {
+    VLOGF(1) << "Video metadata file not found: " << metadata_file_path_;
     return false;
   }
+  metadata_file_path_ = resolved_path.value();
 
   std::string json_data;
-  if (!base::ReadFileToString(json_path, &json_data)) {
-    VLOGF(1) << "Failed to read video metadata file: " << json_path;
+  if (!base::ReadFileToString(metadata_file_path_, &json_data)) {
+    VLOGF(1) << "Failed to read video metadata file: " << metadata_file_path_;
     return false;
   }
 
@@ -134,15 +140,15 @@ bool Video::LoadMetadata() {
   std::unique_ptr<base::Value> metadata(
       reader.ReadToValueDeprecated(json_data));
   if (!metadata) {
-    VLOGF(1) << "Failed to parse video metadata: " << json_path << ": "
-             << reader.GetErrorMessage();
+    VLOGF(1) << "Failed to parse video metadata: " << metadata_file_path_
+             << ": " << reader.GetErrorMessage();
     return false;
   }
 
   const base::Value* profile =
       metadata->FindKeyOfType("profile", base::Value::Type::STRING);
   if (!profile) {
-    VLOGF(1) << "Key \"profile\" is not found in " << json_path;
+    VLOGF(1) << "Key \"profile\" is not found in " << metadata_file_path_;
     return false;
   }
   profile_ = ConvertStringtoProfile(profile->GetString());
@@ -155,7 +161,7 @@ bool Video::LoadMetadata() {
   const base::Value* num_frames =
       metadata->FindKeyOfType("num_frames", base::Value::Type::INTEGER);
   if (!num_frames) {
-    VLOGF(1) << "Key \"num_frames\" is not found in " << json_path;
+    VLOGF(1) << "Key \"num_frames\" is not found in " << metadata_file_path_;
     return false;
   }
   num_frames_ = static_cast<uint32_t>(num_frames->GetInt());
@@ -163,7 +169,7 @@ bool Video::LoadMetadata() {
   const base::Value* num_fragments =
       metadata->FindKeyOfType("num_fragments", base::Value::Type::INTEGER);
   if (!num_fragments) {
-    VLOGF(1) << "Key \"num_fragments\" is not found in " << json_path;
+    VLOGF(1) << "Key \"num_fragments\" is not found in " << metadata_file_path_;
     return false;
   }
   num_fragments_ = static_cast<uint32_t>(num_fragments->GetInt());
@@ -171,13 +177,13 @@ bool Video::LoadMetadata() {
   const base::Value* width =
       metadata->FindKeyOfType("width", base::Value::Type::INTEGER);
   if (!width) {
-    VLOGF(1) << "Key \"width\" is not found in " << json_path;
+    VLOGF(1) << "Key \"width\" is not found in " << metadata_file_path_;
     return false;
   }
   const base::Value* height =
       metadata->FindKeyOfType("height", base::Value::Type::INTEGER);
   if (!height) {
-    VLOGF(1) << "Key \"height\" is not found in " << json_path;
+    VLOGF(1) << "Key \"height\" is not found in " << metadata_file_path_;
     return false;
   }
   resolution_ = gfx::Size(static_cast<uint32_t>(width->GetInt()),
@@ -186,7 +192,7 @@ bool Video::LoadMetadata() {
   const base::Value* md5_checksums =
       metadata->FindKeyOfType("md5_checksums", base::Value::Type::LIST);
   if (!md5_checksums) {
-    VLOGF(1) << "Key \"md5_checksums\" is not found in " << json_path;
+    VLOGF(1) << "Key \"md5_checksums\" is not found in " << metadata_file_path_;
     return false;
   }
   for (const base::Value& checksum : md5_checksums->GetList()) {
@@ -196,7 +202,8 @@ bool Video::LoadMetadata() {
   const base::Value* thumbnail_checksums =
       metadata->FindKeyOfType("thumbnail_checksums", base::Value::Type::LIST);
   if (!thumbnail_checksums) {
-    VLOGF(1) << "Key \"thumbnail_checksums\" is not found in " << json_path;
+    VLOGF(1) << "Key \"thumbnail_checksums\" is not found in "
+             << metadata_file_path_;
     return false;
   }
   for (const base::Value& checksum : thumbnail_checksums->GetList()) {
@@ -210,6 +217,21 @@ bool Video::LoadMetadata() {
 
 bool Video::IsMetadataLoaded() const {
   return profile_ != VIDEO_CODEC_PROFILE_UNKNOWN || num_frames_ != 0;
+}
+
+base::Optional<base::FilePath> Video::ResolveFilePath(
+    const base::FilePath& file_path) {
+  // If the path exists it's either absolute or relative to our working dir.
+  if (PathExists(file_path)) {
+    return base::MakeAbsoluteFilePath(file_path);
+  }
+  // If the path doesn't exist, it might be relative to the test data dir.
+  base::FilePath resolved_path =
+      base::MakeAbsoluteFilePath(test_data_path_.Append(file_path));
+  if (PathExists(resolved_path)) {
+    return resolved_path;
+  }
+  return base::Optional<base::FilePath>();
 }
 
 // static

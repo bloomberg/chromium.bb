@@ -21,12 +21,17 @@ namespace {
 
 // Video decoder tests usage message.
 constexpr const char* usage_msg =
-    "usage: video_decode_accelerator_tests [--help] [--disable_validator]\n"
-    "                                      [--output_frames] [<video>]\n";
+    "usage: video_decode_accelerator_tests\n"
+    "           [--help] [--disable_validator] [--output_frames]\n"
+    "           [<video path>] [<video metadata path>]\n";
+
 // Video decoder tests help message.
 constexpr const char* help_msg =
     "Run the video decode accelerator tests on the specified video. If no\n"
     "video is specified the default \"test-25fps.h264\" video will be used.\n"
+    "\nThe video metadata path should specify the location of a json file\n"
+    "containing the video's metadata, such as frame checksums. By default\n"
+    "<video path>.json will be used.\n"
     "\nThe following arguments are supported:\n"
     "  --disable_validator  disable frame validation, useful on old\n"
     "                       platforms that don't support import mode.\n"
@@ -268,7 +273,7 @@ int main(int argc, char** argv) {
   // initializing gtest, to overwrite the default gtest help message.
   LOG_ASSERT(cmd_line);
   if (cmd_line->HasSwitch("help")) {
-    std::cout << media::test::usage_msg << media::test::help_msg;
+    std::cout << media::test::usage_msg << "\n" << media::test::help_msg;
     return 0;
   }
 
@@ -281,6 +286,8 @@ int main(int argc, char** argv) {
   base::CommandLine::StringVector args = cmd_line->GetArgs();
   base::FilePath video_path =
       (args.size() >= 1) ? base::FilePath(args[0]) : base::FilePath();
+  base::FilePath video_metadata_path =
+      (args.size() >= 2) ? base::FilePath(args[1]) : base::FilePath();
 
   // Parse command line arguments.
   bool enable_validator = true;
@@ -288,13 +295,15 @@ int main(int argc, char** argv) {
   base::CommandLine::SwitchMap switches = cmd_line->GetSwitches();
   for (base::CommandLine::SwitchMap::const_iterator it = switches.begin();
        it != switches.end(); ++it) {
+    if (it->first.find("gtest_") == 0 ||               // Handled by GoogleTest
+        it->first == "v" || it->first == "vmodule") {  // Handled by Chrome
+      continue;
+    }
+
     if (it->first == "disable_validator") {
       enable_validator = false;
     } else if (it->first == "output_frames") {
       output_frames = true;
-    } else if (it->first.find("gtest_") == 0 || it->first == "v" ||
-               it->first == "vmodule") {
-      // Ignore
     } else {
       std::cout << "unknown option: --" << it->first << "\n"
                 << media::test::usage_msg;
@@ -305,7 +314,7 @@ int main(int argc, char** argv) {
   // Set up our test environment.
   media::test::VideoPlayerTestEnvironment* test_environment =
       media::test::VideoPlayerTestEnvironment::Create(
-          video_path, enable_validator, output_frames);
+          video_path, video_metadata_path, enable_validator, output_frames);
   if (!test_environment)
     return 0;
 

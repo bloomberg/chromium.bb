@@ -185,13 +185,16 @@ int main(int argc, char** argv) {
   base::CommandLine::StringVector args = cmd_line->GetArgs();
   base::FilePath video_path =
       (args.size() >= 1) ? base::FilePath(args[0]) : base::FilePath();
+  base::FilePath video_metadata_path =
+      (args.size() >= 2) ? base::FilePath(args[1]) : base::FilePath();
 
   // Set the default test data path.
   media::test::Video::SetTestDataPath(media::GetTestDataPath());
 
   // Set up our test environment.
   media::test::VideoPlayerTestEnvironment* test_environment =
-      media::test::VideoPlayerTestEnvironment::Create(video_path, false, false);
+      media::test::VideoPlayerTestEnvironment::Create(
+          video_path, video_metadata_path, false, false);
   if (!test_environment)
     return 0;
 
