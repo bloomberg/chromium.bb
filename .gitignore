@@ -175,6 +175,7 @@ vs-chromium-project.txt
 /components/rappor.xml
 /components/resources/default_100_percent/google_chrome
 /components/resources/default_200_percent/google_chrome
+/components/resources/default_300_percent/google_chrome
 /components/search_engines/prepopulated_engines.xml
 /components/test/data/language/
 /components/suggestions.xml
