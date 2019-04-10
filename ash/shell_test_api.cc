@@ -105,6 +105,54 @@ class OverviewAnimationStateWaiter : public OverviewObserver {
   DISALLOW_COPY_AND_ASSIGN(OverviewAnimationStateWaiter);
 };
 
+// A waiter that waits until the animation ended with the target state, and
+// execute the callback.  This self destruction upon completion.
+class LauncherStateWaiter {
+ public:
+  LauncherStateWaiter(
+      mojom::LauncherAnimationState state,
+      ShellTestApi::WaitForLauncherAnimationStateCallback callback)
+      : callback_(std::move(callback)) {
+    switch (state) {
+      case mojom::LauncherAnimationState::kClosed:
+        target_state_ = app_list::AppListViewState::CLOSED;
+        break;
+      case mojom::LauncherAnimationState::kPeeking:
+        target_state_ = app_list::AppListViewState::PEEKING;
+        break;
+      case mojom::LauncherAnimationState::kHalf:
+        target_state_ = app_list::AppListViewState::HALF;
+        break;
+      case mojom::LauncherAnimationState::kFullscreenAllApps:
+        target_state_ = app_list::AppListViewState::FULLSCREEN_ALL_APPS;
+        break;
+      case mojom::LauncherAnimationState::kFullscreenSearch:
+        target_state_ = app_list::AppListViewState::FULLSCREEN_SEARCH;
+        break;
+    };
+    Shell::Get()->app_list_controller()->SetStateTransitionAnimationCallback(
+        base::BindRepeating(&LauncherStateWaiter::OnStateChanged,
+                            base::Unretained(this)));
+  }
+  ~LauncherStateWaiter() {
+    Shell::Get()->app_list_controller()->SetStateTransitionAnimationCallback(
+        base::NullCallback());
+  }
+
+  void OnStateChanged(app_list::AppListViewState state) {
+    if (target_state_ == state) {
+      std::move(callback_).Run();
+      delete this;
+    }
+  }
+
+ private:
+  app_list::AppListViewState target_state_;
+  ShellTestApi::WaitForLauncherAnimationStateCallback callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(LauncherStateWaiter);
+};
+
 }  // namespace
 
 ShellTestApi::ShellTestApi() : ShellTestApi(Shell::Get()) {}
@@ -259,6 +307,12 @@ void ShellTestApi::WaitForOverviewAnimationState(
     return;
   }
   new OverviewAnimationStateWaiter(state, std::move(callback));
+}
+
+void ShellTestApi::WaitForLauncherAnimationState(
+    mojom::LauncherAnimationState target_state,
+    WaitForLauncherAnimationStateCallback callback) {
+  new LauncherStateWaiter(target_state, std::move(callback));
 }
 
 }  // namespace ash

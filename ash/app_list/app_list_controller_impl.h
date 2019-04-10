@@ -200,6 +200,8 @@ class ASH_EXPORT AppListControllerImpl
   void OnSearchResultVisibilityChanged(const std::string& id,
                                        bool visibility) override;
   bool IsAssistantAllowedAndEnabled() const override;
+  void OnStateTransitionAnimationCompleted(
+      app_list::AppListViewState state) override;
 
   void AddObserver(AppListControllerObserver* observer);
   void RemoveObserver(AppListControllerObserver* obsever);
@@ -286,6 +288,12 @@ class ASH_EXPORT AppListControllerImpl
 
   void SetAppListModelForTest(std::unique_ptr<app_list::AppListModel> model);
 
+  using StateTransitionAnimationCallback =
+      base::RepeatingCallback<void(app_list::AppListViewState)>;
+
+  void SetStateTransitionAnimationCallback(
+      StateTransitionAnimationCallback callback);
+
  private:
   syncer::StringOrdinal GetOemFolderPos();
   std::unique_ptr<app_list::AppListItem> CreateAppListItem(
@@ -335,6 +343,8 @@ class ASH_EXPORT AppListControllerImpl
   // read/written by Ash side through IPC. Notice that in multi-profile mode,
   // each profile has its own AppListModelUpdater to manipulate app list items.
   int profile_id_ = kAppListInvalidProfileID;
+
+  StateTransitionAnimationCallback state_transition_animation_callback_;
 
   base::ObserverList<AppListControllerObserver> observers_;
 

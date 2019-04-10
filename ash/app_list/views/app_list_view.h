@@ -255,6 +255,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
                              const gfx::Rect& new_bounds,
                              ui::PropertyChangeReason reason) override;
 
+  // Called when state transition animation is completed.
+  void OnStateTransitionAnimationCompleted();
+
   views::Widget* get_fullscreen_widget_for_test() const {
     return fullscreen_widget_;
   }
