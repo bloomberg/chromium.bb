@@ -73,6 +73,11 @@ class MediaNotificationControllerTest : public AshTestBase {
     return metadata;
   }
 
+  void ExpectHistogramCountRecorded(int count, int size) {
+    histogram_tester_.ExpectBucketCount(
+        MediaNotificationController::kCountHistogramName, count, size);
+  }
+
   void ExpectHistogramSourceRecorded(MediaNotificationItem::Source source) {
     histogram_tester_.ExpectUniqueSample(
         MediaNotificationItem::kSourceHistogramName,
@@ -103,11 +108,13 @@ TEST_F(MediaNotificationControllerTest, OnFocusGainedLost_SameId) {
       ->MediaSessionMetadataChanged(BuildMediaMetadata());
 
   ExpectNotificationCount(1);
+  ExpectHistogramCountRecorded(1, 1);
 
   Shell::Get()->media_notification_controller()->OnFocusGained(
       GetRequestStateWithId(id));
 
   ExpectNotificationCount(1);
+  ExpectHistogramCountRecorded(1, 1);
 
   Shell::Get()->media_notification_controller()->OnFocusLost(
       GetRequestStateWithId(id));
@@ -132,6 +139,7 @@ TEST_F(MediaNotificationControllerTest, OnFocusGainedLost_MultipleIds) {
       ->MediaSessionMetadataChanged(BuildMediaMetadata());
 
   ExpectNotificationCount(1);
+  ExpectHistogramCountRecorded(1, 1);
 
   Shell::Get()->media_notification_controller()->OnFocusGained(
       GetRequestStateWithId(id2));
@@ -142,11 +150,13 @@ TEST_F(MediaNotificationControllerTest, OnFocusGainedLost_MultipleIds) {
       ->MediaSessionMetadataChanged(BuildMediaMetadata());
 
   ExpectNotificationCount(2);
+  ExpectHistogramCountRecorded(2, 1);
 
   Shell::Get()->media_notification_controller()->OnFocusLost(
       GetRequestStateWithId(id1));
 
   ExpectNotificationCount(1);
+  ExpectHistogramCountRecorded(1, 1);
 }
 
 // Test that a notification is hidden when it becomes uncontrollable. We still
@@ -166,6 +176,7 @@ TEST_F(MediaNotificationControllerTest,
       ->MediaSessionMetadataChanged(BuildMediaMetadata());
 
   ExpectNotificationCount(1);
+  ExpectHistogramCountRecorded(1, 1);
 
   Shell::Get()
       ->media_notification_controller()
@@ -201,6 +212,7 @@ TEST_F(MediaNotificationControllerTest,
       ->MediaSessionInfoChanged(BuildMediaSessionInfo(true));
 
   ExpectNotificationCount(1);
+  ExpectHistogramCountRecorded(1, 1);
 }
 
 // Test hiding a notification with an invalid ID.
@@ -228,6 +240,7 @@ TEST_F(MediaNotificationControllerTest, NotificationHasCustomViewType) {
       ->MediaSessionMetadataChanged(BuildMediaMetadata());
 
   ExpectNotificationCount(1);
+  ExpectHistogramCountRecorded(1, 1);
 
   message_center::Notification* notification =
       message_center::MessageCenter::Get()->FindVisibleNotificationById(
@@ -254,6 +267,7 @@ TEST_F(MediaNotificationControllerTest, HandleNullMediaSessionInfo) {
       ->MediaSessionMetadataChanged(BuildMediaMetadata());
 
   ExpectNotificationCount(1);
+  ExpectHistogramCountRecorded(1, 1);
 
   Shell::Get()
       ->media_notification_controller()
@@ -315,6 +329,7 @@ TEST_F(MediaNotificationControllerTest, MediaMetadataUpdated_MissingInfo) {
       ->MediaSessionMetadataChanged(BuildMediaMetadata());
 
   ExpectNotificationCount(1);
+  ExpectHistogramCountRecorded(1, 1);
 
   Shell::Get()
       ->media_notification_controller()

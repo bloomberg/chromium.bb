@@ -31,6 +31,10 @@ class MediaNotificationView;
 class ASH_EXPORT MediaNotificationController
     : public media_session::mojom::AudioFocusObserver {
  public:
+  // The name of the histogram used to record the number of concurrent media
+  // notifications.
+  static const char kCountHistogramName[];
+
   explicit MediaNotificationController(service_manager::Connector* connector);
   ~MediaNotificationController() override;
 
@@ -47,6 +51,11 @@ class ASH_EXPORT MediaNotificationController
     DCHECK(it != notifications_.end());
     return &it->second;
   }
+
+  // Called by |MediaNotificationItem| when it displays a new media
+  // notification. It will record the concurrent number of media notifications
+  // displayed.
+  void RecordConcurrentNotificationCount();
 
  private:
   media_session::mojom::MediaControllerManagerPtr controller_manager_ptr_;
