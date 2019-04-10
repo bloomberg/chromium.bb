@@ -43,6 +43,8 @@ ShelfTooltipPreviewBubble::ShelfTooltipPreviewBubble(
       manager_(manager),
       shelf_alignment_(alignment) {
   set_border_radius(kPreviewBubbleBorderRadius);
+  SetCanActivate(false);
+  set_close_on_deactivate(false);
   // The parent class sets non-zero margins. Reset them to zero.
   set_margins(gfx::Insets());
   // We hide this tooltip on mouse exit, so we want to get enter/exit events
