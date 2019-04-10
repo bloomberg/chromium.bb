@@ -168,3 +168,6 @@ crbug.com/927901 [ chromeos ] Pixel_Video_VP9_DXVA [ Skip ]
 
 # Complex overlays test is flaky on Nvidia probably due to its small size.
 crbug.com/929425 [ win nvidia ] Pixel_DirectComposition_ComplexOverlays [ RetryOnFailure ]
+
+# Mark all webview tests as RetryOnFailure due to Nexus 5x driver bug.
+crbug.com/950932 [ android-webview-instrumentation qualcomm-adreno-(tm)-418 ] * [ RetryOnFailure ]
