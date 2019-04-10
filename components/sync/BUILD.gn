@@ -131,6 +131,8 @@ jumbo_static_library("sync") {
     "device_info/local_device_info_provider.h",
     "device_info/local_device_info_provider_impl.cc",
     "device_info/local_device_info_provider_impl.h",
+    "device_info/local_device_info_util.cc",
+    "device_info/local_device_info_util.h",
     "driver/about_sync_util.cc",
     "driver/about_sync_util.h",
     "driver/async_directory_type_controller.cc",
