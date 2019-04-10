@@ -6,7 +6,17 @@
 #include <algorithm>
 
 #include "ash/public/cpp/app_list/app_list_config.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
+
+namespace {
+
+int g_next_unique_model_id = ash::kAppListProfileIdStartFrom;
+
+}  // namespace
+
+AppListModelUpdater::AppListModelUpdater()
+    : model_id_(g_next_unique_model_id++) {}
 
 // static
 syncer::StringOrdinal AppListModelUpdater::GetFirstAvailablePositionInternal(

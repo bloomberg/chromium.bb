@@ -39,6 +39,8 @@ class AppListModelUpdater {
 
   virtual ~AppListModelUpdater() {}
 
+  int model_id() const { return model_id_; }
+
   // Set whether this model updater is active.
   // When we have multiple user profiles, only the active one has access to the
   // model. All others profile can only cache model changes in Chrome.
@@ -146,11 +148,16 @@ class AppListModelUpdater {
   virtual void RemoveObserver(AppListModelUpdaterObserver* observer) = 0;
 
  protected:
+  AppListModelUpdater();
+
   // Returns the first available position in app list. |top_level_items| are
   // items without parents. Note that all items in |top_level_items| should have
   // valid position.
   static syncer::StringOrdinal GetFirstAvailablePositionInternal(
       const std::vector<ChromeAppListItem*>& top_level_items);
+
+ private:
+  const int model_id_;
 };
 
 #endif  // CHROME_BROWSER_UI_APP_LIST_APP_LIST_MODEL_UPDATER_H_

@@ -13,6 +13,13 @@
 
 namespace ash {
 
+// The initial value of |profile_id_| in AppListControllerImpl.
+constexpr int kAppListInvalidProfileID = -1;
+
+// The value from which the unique profile id starts. Notice that this profile
+// id is only used for mojo callings between AppListController and AppListClient
+constexpr int kAppListProfileIdStartFrom = 0;
+
 // Id of OEM folder in app list.
 ASH_PUBLIC_EXPORT extern const char kOemFolderId[];
 

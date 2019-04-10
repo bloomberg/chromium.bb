@@ -37,7 +37,9 @@ class ExampleAppListClient : public TestAppListClient {
                         ash::mojom::AppListLaunchedFrom launched_from,
                         ash::mojom::AppListLaunchType launch_type,
                         int suggestion_index) override;
-  void ActivateItem(const std::string& id, int event_flags) override;
+  void ActivateItem(int profile_id,
+                    const std::string& id,
+                    int event_flags) override;
 
   AppListControllerImpl* controller_;
 

@@ -40,20 +40,28 @@ class TestAppListClient : public mojom::AppListClient {
                                            int event_flags) override {}
   void ViewClosing() override {}
   void ViewShown(int64_t display_id) override {}
-  void ActivateItem(const std::string& id, int event_flags) override {}
-  void GetContextMenuModel(const std::string& id,
+  void ActivateItem(int profile_id,
+                    const std::string& id,
+                    int event_flags) override {}
+  void GetContextMenuModel(int profile_id,
+                           const std::string& id,
                            GetContextMenuModelCallback callback) override;
-  void ContextMenuItemSelected(const std::string& id,
+  void ContextMenuItemSelected(int profile_id,
+                               const std::string& id,
                                int command_id,
                                int event_flags) override {}
   void OnAppListTargetVisibilityChanged(bool visible) override {}
   void OnAppListVisibilityChanged(bool visible) override {}
-  void OnFolderCreated(mojom::AppListItemMetadataPtr item) override {}
-  void OnFolderDeleted(mojom::AppListItemMetadataPtr item) override {}
-  void OnItemUpdated(mojom::AppListItemMetadataPtr item) override {}
-  void OnPageBreakItemAdded(const std::string& id,
+  void OnFolderCreated(int profile_id,
+                       mojom::AppListItemMetadataPtr item) override {}
+  void OnFolderDeleted(int profile_id,
+                       mojom::AppListItemMetadataPtr item) override {}
+  void OnItemUpdated(int profile_id,
+                     mojom::AppListItemMetadataPtr item) override {}
+  void OnPageBreakItemAdded(int profile_id,
+                            const std::string& id,
                             const syncer::StringOrdinal& position) override {}
-  void OnPageBreakItemDeleted(const std::string& id) override {}
+  void OnPageBreakItemDeleted(int profile_id, const std::string& id) override {}
   void GetNavigableContentsFactory(
       content::mojom::NavigableContentsFactoryRequest request) override {}
   void OnSearchResultVisibilityChanged(const std::string& id,

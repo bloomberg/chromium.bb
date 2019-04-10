@@ -31,6 +31,7 @@ class SearchController;
 class SearchResourceManager;
 }  // namespace app_list
 
+class AppListClientWithProfileTest;
 class AppListModelUpdater;
 class AppSyncUIStateWatcher;
 class Profile;
@@ -41,6 +42,23 @@ class AppListClientImpl
       public user_manager::UserManager::UserSessionStateObserver,
       public TemplateURLServiceObserver {
  public:
+  class MojoRecorderForTest {
+   public:
+    MojoRecorderForTest();
+    ~MojoRecorderForTest();
+
+    void Record(int profile_id) { recorder_[profile_id]++; }
+
+    int Query(int profile_id) const;
+
+   private:
+    // For each pair in the map, the key is a profile id while the value is the
+    // mojo calling times associated with the particular profile.
+    std::map<int, int> recorder_;
+
+    DISALLOW_COPY_AND_ASSIGN(MojoRecorderForTest);
+  };
+
   AppListClientImpl();
   ~AppListClientImpl() override;
 
@@ -64,20 +82,28 @@ class AppListClientImpl
                                            int event_flags) override;
   void ViewClosing() override;
   void ViewShown(int64_t display_id) override;
-  void ActivateItem(const std::string& id, int event_flags) override;
-  void GetContextMenuModel(const std::string& id,
+  void ActivateItem(int profile_id,
+                    const std::string& id,
+                    int event_flags) override;
+  void GetContextMenuModel(int profile_id,
+                           const std::string& id,
                            GetContextMenuModelCallback callback) override;
-  void ContextMenuItemSelected(const std::string& id,
+  void ContextMenuItemSelected(int profile_id,
+                               const std::string& id,
                                int command_id,
                                int event_flags) override;
   void OnAppListTargetVisibilityChanged(bool visible) override;
   void OnAppListVisibilityChanged(bool visible) override;
-  void OnFolderCreated(ash::mojom::AppListItemMetadataPtr item) override;
-  void OnFolderDeleted(ash::mojom::AppListItemMetadataPtr item) override;
-  void OnItemUpdated(ash::mojom::AppListItemMetadataPtr item) override;
-  void OnPageBreakItemAdded(const std::string& id,
+  void OnFolderCreated(int profile_id,
+                       ash::mojom::AppListItemMetadataPtr item) override;
+  void OnFolderDeleted(int profile_id,
+                       ash::mojom::AppListItemMetadataPtr item) override;
+  void OnItemUpdated(int profile_id,
+                     ash::mojom::AppListItemMetadataPtr item) override;
+  void OnPageBreakItemAdded(int profile_id,
+                            const std::string& id,
                             const syncer::StringOrdinal& position) override;
-  void OnPageBreakItemDeleted(const std::string& id) override;
+  void OnPageBreakItemDeleted(int profile_id, const std::string& id) override;
   void GetNavigableContentsFactory(
       content::mojom::NavigableContentsFactoryRequest request) override;
   void OnSearchResultVisibilityChanged(const std::string& id,
@@ -135,10 +161,16 @@ class AppListClientImpl
 
   AppListModelUpdater* GetModelUpdaterForTest();
 
+  void SetUpMojoRecorderForTest();
+
+  int QueryMojoRecorderForTest(int profile_id);
+
   // Flushes all pending mojo call to Ash for testing.
   void FlushMojoForTesting();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(AppListClientWithProfileTest, CheckDataRace);
+
   // Overridden from TemplateURLServiceObserver:
   void OnTemplateURLServiceChanged() override;
 
@@ -157,13 +189,24 @@ class AppListClientImpl
   // called.
   Profile* profile_ = nullptr;
 
-  // Unowned pointer to the model updater owned by AppListSyncableService.
-  // Will change if |profile_| changes.
-  AppListModelUpdater* model_updater_ = nullptr;
+  // Unowned pointer to the model updater owned by AppListSyncableService. Will
+  // change if |profile_| changes.
+  AppListModelUpdater* current_model_updater_ = nullptr;
+
+  // Store the mappings between profiles and AppListModelUpdater instances.
+  // In multi-profile mode, mojo callings from the Ash process to access the app
+  // list items should be dealt with the correct AppListModelUpdater instance.
+  // Otherwise data race may happen, like the issue 939755
+  // (https://crbug.com/939755).
+  // TODO: Replace the mojo interface functions provided by AppListClient with
+  // callbacks.
+  std::map<int, AppListModelUpdater*> profile_model_mappings_;
 
   std::unique_ptr<app_list::SearchResourceManager> search_resource_manager_;
   std::unique_ptr<app_list::SearchController> search_controller_;
   std::unique_ptr<AppSyncUIStateWatcher> app_sync_ui_state_watcher_;
+
+  std::unique_ptr<MojoRecorderForTest> mojo_recorder_for_test_;
 
   ScopedObserver<TemplateURLService, AppListClientImpl>
       template_url_service_observer_;
