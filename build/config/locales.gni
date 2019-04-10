@@ -4,41 +4,43 @@
 
 # Android doesn't ship all locales in order to save space (but webview does).
 # http://crbug.com/369218
-if (is_android) {
-  android_chrome_omitted_locales = [
-    "bn",
-    "et",
-    "gu",
-    "kn",
-    "ml",
-    "mr",
-    "ms",
-    "ta",
-    "te",
-  ]
-}
+android_chrome_omitted_locales = [
+  "bn",
+  "et",
+  "gu",
+  "kn",
+  "ml",
+  "mr",
+  "ms",
+  "ta",
+  "te",
+]
 
 # Chrome on iOS only ships with a subset of the locales supported by other
 # version of Chrome as the corresponding locales are not supported by the
 # operating system (but for simplicity, the corresponding .pak files are
 # still generated).
-if (is_ios) {
-  ios_unsupported_locales = [
-    "am",
-    "bn",
-    "et",
-    "fil",
-    "gu",
-    "kn",
-    "lv",
-    "ml",
-    "mr",
-    "sl",
-    "sw",
-    "ta",
-    "te",
-  ]
-}
+ios_unsupported_locales = [
+  "am",
+  "bn",
+  "et",
+  "fil",
+  "gu",
+  "kn",
+  "lv",
+  "ml",
+  "mr",
+  "sl",
+  "sw",
+  "ta",
+  "te",
+]
+
+# These list are defined even when not building for Android or iOS for the
+# sake of build/locale_tool.py. These asserts ensure that GN doesn't complain
+# about them being unused.
+assert(android_chrome_omitted_locales != [])
+assert(ios_unsupported_locales != [])
 
 # Note: keep in sync with below.
 locales = [
