@@ -145,6 +145,7 @@ void TabletModeWindowManager::OnSplitViewModeEnded() {
   switch (Shell::Get()->split_view_controller()->end_reason()) {
     case SplitViewController::EndReason::kNormal:
     case SplitViewController::EndReason::kUnsnappableWindowActivated:
+    case SplitViewController::EndReason::kPipExpanded:
       break;
     case SplitViewController::EndReason::kHomeLauncherPressed:
     case SplitViewController::EndReason::kActiveUserChanged:

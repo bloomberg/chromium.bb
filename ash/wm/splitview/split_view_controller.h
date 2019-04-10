@@ -72,6 +72,8 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
     kUnsnappableWindowActivated,
     kActiveUserChanged,
     kWindowDragStarted,
+    // TODO(950827): Consider not ending Split-View on PIP expand.
+    kPipExpanded,
   };
 
   class Observer {
