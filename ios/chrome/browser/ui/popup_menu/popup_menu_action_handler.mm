@@ -9,6 +9,8 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
+#include "components/feature_engagement/public/event_constants.h"
+#include "components/feature_engagement/public/tracker.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -65,6 +67,16 @@ using base::UserMetricsAction;
     case PopupMenuActionPageBookmark:
       RecordAction(UserMetricsAction("MobileMenuAddToBookmarks"));
       [self.dispatcher bookmarkPage];
+      break;
+    case PopupMenuActionTranslate:
+      base::RecordAction(UserMetricsAction("MobileMenuTranslate"));
+      // Send the "Triggered Translate Infobar" event to the
+      // feature_engagement::Tracker when the user selects the menu item.
+      if (self.engagementTracker) {
+        self.engagementTracker->NotifyEvent(
+            feature_engagement::events::kTriggeredTranslateInfobar);
+      }
+      [self.dispatcher showTranslate];
       break;
     case PopupMenuActionFindInPage:
       RecordAction(UserMetricsAction("MobileMenuFindInPage"));

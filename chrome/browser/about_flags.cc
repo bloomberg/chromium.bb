@@ -3618,7 +3618,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"translate-android-manual-trigger",
      flag_descriptions::kTranslateAndroidManualTriggerName,
      flag_descriptions::kTranslateAndroidManualTriggerDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(translate::kTranslateAndroidManualTrigger)},
+     FEATURE_VALUE_TYPE(translate::kTranslateMobileManualTrigger)},
 #endif
     {"fcm-invalidations", flag_descriptions::kFCMInvalidationsName,
      flag_descriptions::kFCMInvalidationsDescription, kOsAll,

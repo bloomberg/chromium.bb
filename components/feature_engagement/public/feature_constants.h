@@ -61,6 +61,7 @@ extern const base::Feature kIPHLongPressToolbarTipFeature;
 extern const base::Feature kIPHNewTabTipFeature;
 extern const base::Feature kIPHNewIncognitoTabTipFeature;
 extern const base::Feature kIPHBadgedReadingListFeature;
+extern const base::Feature kIPHBadgedTranslateManualTriggerFeature;
 #endif  // defined(OS_IOS)
 
 }  // namespace feature_engagement

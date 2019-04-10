@@ -100,6 +100,8 @@ DEFINE_VARIATION_PARAM(kIPHLongPressToolbarTipFeature,
 DEFINE_VARIATION_PARAM(kIPHNewTabTipFeature, "IPH_NewTabTip");
 DEFINE_VARIATION_PARAM(kIPHNewIncognitoTabTipFeature, "IPH_NewIncognitoTabTip");
 DEFINE_VARIATION_PARAM(kIPHBadgedReadingListFeature, "IPH_BadgedReadingList");
+DEFINE_VARIATION_PARAM(kIPHBadgedTranslateManualTriggerFeature,
+                       "IPH_BadgedTranslateManualTrigger");
 #endif  // defined(OS_IOS)
 
 }  // namespace
@@ -146,6 +148,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHNewTabTipFeature),
         VARIATION_ENTRY(kIPHNewIncognitoTabTipFeature),
         VARIATION_ENTRY(kIPHBadgedReadingListFeature),
+        VARIATION_ENTRY(kIPHBadgedTranslateManualTriggerFeature),
 #else
         VARIATION_ENTRY(kIPHDummyFeature),  // Ensures non-empty array.
 #endif

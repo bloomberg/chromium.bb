@@ -206,7 +206,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &previews::features::kDataSaverLiteModeRebranding,
     &signin::kMiceFeature,
     &switches::kSyncSendTabToSelf,
-    &translate::kTranslateAndroidManualTrigger,
+    &translate::kTranslateMobileManualTrigger,
     &unified_consent::kUnifiedConsent,
     &subresource_filter::kSafeBrowsingSubresourceFilter,
 };

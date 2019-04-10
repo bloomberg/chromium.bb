@@ -65,6 +65,9 @@ class GURL;
 - (void)viewSource;
 #endif
 
+// Shows the translate infobar.
+- (void)showTranslate;
+
 // Shows the Find In Page bar.
 - (void)showFindInPage;
 
