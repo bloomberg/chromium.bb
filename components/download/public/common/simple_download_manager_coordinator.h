@@ -14,15 +14,19 @@
 #include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/download/public/common/simple_download_manager.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 namespace download {
 
 class DownloadItem;
 
 // This object allows swapping between different SimppleDownloadManager
-// instances so that callers don't need to know about the swap.
+// instances so that callers don't need to know about the swap. It can
+// be created before full browser process is launched, so that download
+// can be handled without full browser.
 class COMPONENTS_DOWNLOAD_EXPORT SimpleDownloadManagerCoordinator
-    : SimpleDownloadManager::Observer {
+    : public KeyedService,
+      public SimpleDownloadManager::Observer {
  public:
   class Observer {
    public:
@@ -57,6 +61,9 @@ class COMPONENTS_DOWNLOAD_EXPORT SimpleDownloadManagerCoordinator
 
   // Get the download item for |guid|.
   DownloadItem* GetDownloadByGuid(const std::string& guid);
+
+  // Return whether this object has download manager set.
+  bool HasSetDownloadManager();
 
   bool has_all_history_downloads() const { return has_all_history_downloads_; }
 

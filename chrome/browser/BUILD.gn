@@ -475,6 +475,8 @@ jumbo_split_static_library("browser") {
     "download/offline_item_utils.h",
     "download/save_package_file_picker.cc",
     "download/save_package_file_picker.h",
+    "download/simple_download_manager_coordinator_factory.cc",
+    "download/simple_download_manager_coordinator_factory.h",
     "download/thumbnail_util.cc",
     "download/thumbnail_util.h",
     "download/trusted_sources_manager.cc",

@@ -17,6 +17,7 @@
 #include "chrome/browser/background_fetch/background_fetch_download_client.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_image_download_client.h"
 #include "chrome/browser/download/download_task_scheduler_impl.h"
+#include "chrome/browser/download/simple_download_manager_coordinator_factory.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -60,6 +61,7 @@ DownloadServiceFactory::DownloadServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "download::DownloadService",
           BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(SimpleDownloadManagerCoordinatorFactory::GetInstance());
   DependsOn(download::NavigationMonitorFactory::GetInstance());
   DependsOn(leveldb_proto::ProtoDatabaseProviderFactory::GetInstance());
 }
@@ -128,11 +130,11 @@ KeyedService* DownloadServiceFactory::BuildServiceInstanceFor(
     task_scheduler = std::make_unique<DownloadTaskSchedulerImpl>(context);
 #endif
 
-    Profile* profile = Profile::FromBrowserContext(context);
-
     return download::BuildDownloadService(
         context, profile->GetSimpleFactoryKey(), profile->GetPrefs(),
         std::move(clients), content::GetNetworkConnectionTracker(), storage_dir,
+        SimpleDownloadManagerCoordinatorFactory::GetForKey(
+            profile->GetSimpleFactoryKey(), nullptr),
         background_task_runner, std::move(task_scheduler));
   }
 }
