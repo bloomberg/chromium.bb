@@ -160,6 +160,7 @@ class InfoBarDelegate {
     INLINE_UPDATE_READY_INFOBAR_ANDROID = 89,
     INLINE_UPDATE_FAILED_INFOBAR_ANDROID = 90,
     FLASH_DEPRECATION_INFOBAR_DELEGATE = 91,
+    SEND_TAB_TO_SELF_INFOBAR_DELEGATE = 92,
   };
 
   // Describes navigation events, used to decide whether infobars should be
