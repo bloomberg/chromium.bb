@@ -22720,6 +22720,8 @@ Called by update_net_error_codes.py.-->
   <int value="2847" label="HTMLImportsOnReverseOriginTrials"/>
   <int value="2848" label="ElementCreateShadowRootOnReverseOriginTrials"/>
   <int value="2849" label="DocumentRegisterElementOnReverseOriginTrials"/>
+  <int value="2850" label="V8Animation_Effect_AttributeGetter"/>
+  <int value="2851" label="V8Animation_Effect_AttributeSetter"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
