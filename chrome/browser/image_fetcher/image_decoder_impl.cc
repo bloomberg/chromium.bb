@@ -15,8 +15,8 @@ class ImageDecoderImpl::DecodeImageRequest
     : public ::ImageDecoder::ImageRequest {
  public:
   DecodeImageRequest(ImageDecoderImpl* decoder,
-                     const image_fetcher::ImageDecodedCallback& callback)
-      : decoder_(decoder), callback_(callback) {}
+                     image_fetcher::ImageDecodedCallback callback)
+      : decoder_(decoder), callback_(std::move(callback)) {}
   ~DecodeImageRequest() override {}
 
  private:
@@ -52,7 +52,7 @@ void ImageDecoderImpl::DecodeImageRequest::OnDecodeImageFailed() {
 
 void ImageDecoderImpl::DecodeImageRequest::RunCallbackAndRemoveRequest(
     const gfx::Image& image) {
-  callback_.Run(image);
+  std::move(callback_).Run(image);
 
   // This must be the last line in the method body.
   decoder_->RemoveDecodeImageRequest(this);
@@ -65,9 +65,9 @@ ImageDecoderImpl::~ImageDecoderImpl() {}
 void ImageDecoderImpl::DecodeImage(
     const std::string& image_data,
     const gfx::Size& desired_image_frame_size,
-    const image_fetcher::ImageDecodedCallback& callback) {
+    image_fetcher::ImageDecodedCallback callback) {
   std::unique_ptr<DecodeImageRequest> decode_image_request(
-      new DecodeImageRequest(this, callback));
+      new DecodeImageRequest(this, std::move(callback)));
 
   ::ImageDecoder::StartWithOptions(
       decode_image_request.get(),

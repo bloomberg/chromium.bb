@@ -33,10 +33,10 @@ class IOSImageDecoderImpl : public ImageDecoder {
   // (http://crbug/697596).
   void DecodeImage(const std::string& image_data,
                    const gfx::Size& desired_image_frame_size,
-                   const ImageDecodedCallback& callback) override;
+                   ImageDecodedCallback callback) override;
 
  private:
-  void CreateUIImageAndRunCallback(const ImageDecodedCallback& callback,
+  void CreateUIImageAndRunCallback(ImageDecodedCallback callback,
                                    NSData* image_data);
 
   // The task runner used to decode images if necessary.
@@ -60,7 +60,7 @@ IOSImageDecoderImpl::~IOSImageDecoderImpl() {}
 
 void IOSImageDecoderImpl::DecodeImage(const std::string& image_data,
                                       const gfx::Size& desired_image_frame_size,
-                                      const ImageDecodedCallback& callback) {
+                                      ImageDecodedCallback callback) {
   // Convert the |image_data| std::string to an NSData buffer.
   // The data is copied as it may have to outlive the caller in
   // PostTaskAndReplyWithResult.
@@ -82,11 +82,11 @@ void IOSImageDecoderImpl::DecodeImage(const std::string& image_data,
   base::PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE, base::BindOnce(decodeBlock),
       base::BindOnce(&IOSImageDecoderImpl::CreateUIImageAndRunCallback,
-                     weak_factory_.GetWeakPtr(), callback));
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void IOSImageDecoderImpl::CreateUIImageAndRunCallback(
-    const ImageDecodedCallback& callback,
+    ImageDecodedCallback callback,
     NSData* image_data) {
   // Decode the image data using UIImage.
   if (image_data) {
@@ -94,12 +94,12 @@ void IOSImageDecoderImpl::CreateUIImageAndRunCallback(
     UIImage* ui_image = [UIImage imageWithData:image_data scale:1];
     if (ui_image) {
       gfx::Image gfx_image(ui_image);
-      callback.Run(gfx_image);
+      std::move(callback).Run(gfx_image);
       return;
     }
   }
   gfx::Image empty_image;
-  callback.Run(empty_image);
+  std::move(callback).Run(empty_image);
 }
 
 std::unique_ptr<ImageDecoder> CreateIOSImageDecoder() {
