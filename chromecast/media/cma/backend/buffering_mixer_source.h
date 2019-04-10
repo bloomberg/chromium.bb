@@ -241,7 +241,6 @@ class BufferingMixerSource : public MixerInput::Source,
   const int playout_channel_;
   StreamMixer* const mixer_;
   const scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
-  const scoped_refptr<base::SingleThreadTaskRunner> shim_task_runner_;
   const int max_queued_frames_;
   // Minimum number of frames buffered before starting to fill data.
   const int start_threshold_frames_;
