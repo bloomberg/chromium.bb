@@ -155,9 +155,6 @@
         <structure type="chrome_scaled_image" name="IDR_ARC_PLAY_STORE_OPTIN_IN_PROGRESS_NOTIFICATION" file="cros/notification_play_store_optin_in_progress.png" />
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_EASYUNLOCK_ENABLED" file="cros/notification_easyunlock_enabled.png" />
       </if>
-      <if expr="not is_android">
-        <structure type="chrome_scaled_image" name="IDR_OMNIBOX_TRANSLATION_ROUND" file="common/translate_round_32.png" />
-      </if>
       <structure type="chrome_scaled_image" name="IDR_PLUGINS_FAVICON" file="common/favicon_extensions.png" />
       <structure type="chrome_scaled_image" name="IDR_PRERENDER" file="common/prerender_succeed_icon.png" />
       <if expr="chromeos">

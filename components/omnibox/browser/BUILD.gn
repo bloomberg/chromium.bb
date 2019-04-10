@@ -28,6 +28,7 @@ aggregate_vector_icons("omnibox_vector_icons") {
     "answer_dictionary.icon",
     "answer_finance.icon",
     "answer_sunrise.icon",
+    "answer_translation.icon",
     "answer_when_is.icon",
     "blank.icon",
     "bookmark.icon",
