@@ -478,6 +478,7 @@ class BlinkPerfImageDecoder(_BlinkPerfBenchmark):
 
 
 @benchmark.Info(emails=['eae@chromium.org'],
+                component='Blink>Layout',
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfLayout(_BlinkPerfBenchmark):
   SUBDIR = 'layout'
@@ -488,6 +489,7 @@ class BlinkPerfLayout(_BlinkPerfBenchmark):
 
 
 @benchmark.Info(emails=['dmurph@chromium.org'],
+                component='Blink>Storage',
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfOWPStorage(_BlinkPerfBenchmark):
   SUBDIR = 'owp_storage'
