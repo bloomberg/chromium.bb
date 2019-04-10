@@ -42,8 +42,6 @@ class AXWidgetObjWrapper : public AXAuraObjWrapper,
   void OnWillRemoveView(Widget* widget, View* view) override;
 
  private:
-  AXAuraObjCache* const aura_obj_cache_;
-
   Widget* widget_;
 
   const ui::AXUniqueId unique_id_;

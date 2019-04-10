@@ -39,7 +39,7 @@ void AutomationManagerAura::Enable() {
   Reset(false);
 
   SendEvent(current_tree_->GetRoot(), ax::mojom::Event::kLoadComplete);
-  views::AXAuraObjCache::GetInstance()->SetDelegate(this);
+  cache_.SetDelegate(this);
 
   aura::Window* active_window =
       chromecast::shell::CastBrowserProcess::GetInstance()
@@ -47,8 +47,7 @@ void AutomationManagerAura::Enable() {
           ->window_tree_host()
           ->window();
   if (active_window) {
-    views::AXAuraObjWrapper* focus =
-        views::AXAuraObjCache::GetInstance()->GetOrCreate(active_window);
+    views::AXAuraObjWrapper* focus = cache_.GetOrCreate(active_window);
     SendEvent(focus, ax::mojom::Event::kChildrenChanged);
   }
 
@@ -75,8 +74,7 @@ void AutomationManagerAura::OnViewEvent(views::View* view,
   if (!enabled_)
     return;
 
-  views::AXAuraObjWrapper* obj =
-      views::AXAuraObjCache::GetInstance()->GetOrCreate(view);
+  views::AXAuraObjWrapper* obj = cache_.GetOrCreate(view);
   if (!obj)
     return;
 
@@ -110,7 +108,7 @@ void AutomationManagerAura::HandleEvent(ax::mojom::Event event_type) {
 
 void AutomationManagerAura::SendEventOnObjectById(int32_t id,
                                                   ax::mojom::Event event_type) {
-  views::AXAuraObjWrapper* obj = views::AXAuraObjCache::GetInstance()->Get(id);
+  views::AXAuraObjWrapper* obj = cache_.Get(id);
   if (obj)
     SendEvent(obj, event_type);
 }
@@ -152,9 +150,9 @@ AutomationManagerAura::~AutomationManagerAura() = default;
 
 void AutomationManagerAura::Reset(bool reset_serializer) {
   if (!current_tree_) {
-    desktop_root_ = std::make_unique<AXRootObjWrapper>(this);
-    current_tree_ =
-        std::make_unique<AXTreeSourceAura>(desktop_root_.get(), ax_tree_id());
+    desktop_root_ = std::make_unique<AXRootObjWrapper>(this, &cache_);
+    current_tree_ = std::make_unique<AXTreeSourceAura>(desktop_root_.get(),
+                                                       ax_tree_id(), &cache_);
   }
   if (reset_serializer) {
     current_tree_serializer_.reset();
@@ -198,8 +196,7 @@ void AutomationManagerAura::SendEvent(views::AXAuraObjWrapper* aura_obj,
   tree_updates.push_back(update);
 
   // Make sure the focused node is serialized.
-  views::AXAuraObjWrapper* focus =
-      views::AXAuraObjCache::GetInstance()->GetFocus();
+  views::AXAuraObjWrapper* focus = cache_.GetFocus();
   if (focus) {
     ui::AXTreeUpdate focused_node_update;
     current_tree_serializer_->SerializeChanges(focus, &focused_node_update);

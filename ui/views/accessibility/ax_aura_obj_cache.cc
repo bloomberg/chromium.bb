@@ -30,12 +30,6 @@ aura::client::FocusClient* GetFocusClient(aura::Window* root_window) {
 
 }  // namespace
 
-// static
-AXAuraObjCache* AXAuraObjCache::GetInstance() {
-  static base::NoDestructor<AXAuraObjCache> instance;
-  return instance.get();
-}
-
 AXAuraObjWrapper* AXAuraObjCache::GetOrCreate(View* view) {
   // Avoid problems with transient focus events. https://crbug.com/729449
   if (!view->GetWidget())
@@ -108,7 +102,7 @@ AXAuraObjWrapper* AXAuraObjCache::GetFocus() {
     const ViewAccessibility& view_accessibility =
         focused_view->GetViewAccessibility();
     if (view_accessibility.FocusedVirtualChild())
-      return view_accessibility.FocusedVirtualChild()->GetWrapper();
+      return view_accessibility.FocusedVirtualChild()->GetOrCreateWrapper(this);
 
     return GetOrCreate(focused_view);
   }
@@ -130,7 +124,10 @@ void AXAuraObjCache::FireEvent(AXAuraObjWrapper* aura_obj,
 AXAuraObjCache::AXAuraObjCache() = default;
 
 // Never runs because object is leaked.
-AXAuraObjCache::~AXAuraObjCache() = default;
+AXAuraObjCache::~AXAuraObjCache() {
+  if (!root_windows_.empty() && GetFocusClient(*root_windows_.begin()))
+    GetFocusClient(*root_windows_.begin())->RemoveObserver(this);
+}
 
 View* AXAuraObjCache::GetFocusedView() {
   Widget* focused_widget = focused_widget_for_testing_;

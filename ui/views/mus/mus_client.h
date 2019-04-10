@@ -43,6 +43,7 @@ class InputDeviceClient;
 
 namespace views {
 
+class AXAuraObjCache;
 class AXRemoteHost;
 class DesktopNativeWidgetAura;
 class MusClientObserver;
@@ -194,6 +195,10 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
   // apps that do not need accessibility support and for the browser itself
   // under OopAsh.
   std::unique_ptr<AXRemoteHost> ax_remote_host_;
+
+  // A cache keeping track of ids for accessibility. Used in conjunction with
+  // the above remote host.
+  std::unique_ptr<views::AXAuraObjCache> ax_aura_obj_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(MusClient);
 };

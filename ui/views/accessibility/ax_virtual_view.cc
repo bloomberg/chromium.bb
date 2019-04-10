@@ -39,10 +39,6 @@ AXVirtualView* AXVirtualView::GetFromId(int32_t id) {
 }
 
 AXVirtualView::AXVirtualView() {
-#if defined(USE_AURA)
-  wrapper_ = std::make_unique<AXVirtualViewWrapper>(this);
-#endif
-
   GetIdMap()[unique_id_.Get()] = this;
   ax_platform_node_ = ui::AXPlatformNode::Create(this);
   DCHECK(ax_platform_node_);
@@ -342,7 +338,12 @@ View* AXVirtualView::GetOwnerView() const {
   return nullptr;
 }
 
-AXVirtualViewWrapper* AXVirtualView::GetWrapper() const {
+AXVirtualViewWrapper* AXVirtualView::GetOrCreateWrapper(
+    views::AXAuraObjCache* cache) {
+#if defined(USE_AURA)
+  if (!wrapper_)
+    wrapper_ = std::make_unique<AXVirtualViewWrapper>(this, cache);
+#endif
   return wrapper_.get();
 }
 
