@@ -1411,6 +1411,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/send_tab_to_self/NotificationManager.java",
   "java/src/org/chromium/chrome/browser/send_tab_to_self/SendTabToSelfAndroidBridge.java",
   "java/src/org/chromium/chrome/browser/send_tab_to_self/SendTabToSelfEntry.java",
+  "java/src/org/chromium/chrome/browser/send_tab_to_self/SendTabToSelfInfoBar.java",
   "java/src/org/chromium/chrome/browser/send_tab_to_self/SendTabToSelfShareActivity.java",
   "java/src/org/chromium/chrome/browser/services/AccountsChangedReceiver.java",
   "java/src/org/chromium/chrome/browser/services/AndroidEduAndChildAccountHelper.java",

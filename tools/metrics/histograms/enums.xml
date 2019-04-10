@@ -28833,6 +28833,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="89" label="INLINE_UPDATE_READY_INFOBAR_ANDROID"/>
   <int value="90" label="INLINE_UPDATE_FAILED_INFOBAR_ANDROID"/>
   <int value="91" label="FLASH_DEPRECATION_INFOBAR_DELEGATE"/>
+  <int value="92" label="SEND_TAB_TO_SELF_INFOBAR_DELEGATE"/>
 </enum>
 
 <enum name="InfoBarResponse">
