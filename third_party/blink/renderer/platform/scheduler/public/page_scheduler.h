@@ -30,6 +30,9 @@ class PLATFORM_EXPORT PageScheduler {
     // compositor.
     virtual bool RequestBeginMainFrameNotExpected(bool new_state) = 0;
     virtual void SetLifecycleState(PageLifecycleState) = 0;
+    // Returns true iff the network is idle for the local main frame.
+    // Always returns false if the main frame is remote.
+    virtual bool LocalMainFrameNetworkIsAlmostIdle() const { return true; }
   };
 
   virtual ~PageScheduler() = default;
@@ -45,6 +48,9 @@ class PLATFORM_EXPORT PageScheduler {
   // Whether the main frame of this page is local or not (remote).
   virtual bool IsMainFrameLocal() const = 0;
   virtual void SetIsMainFrameLocal(bool) = 0;
+  // Invoked when the local main frame's network becomes almost idle.
+  // Never invoked if the main frame is remote.
+  virtual void OnLocalMainFrameNetworkAlmostIdle() = 0;
 
   // Creates a new FrameScheduler. The caller is responsible for deleting
   // it. All tasks executed by the frame scheduler will be attributed to

@@ -116,6 +116,7 @@ class SimplePageScheduler : public PageScheduler {
   void SetKeepActive(bool) override {}
   bool IsMainFrameLocal() const override { return true; }
   void SetIsMainFrameLocal(bool) override {}
+  void OnLocalMainFrameNetworkAlmostIdle() override {}
   base::TimeTicks EnableVirtualTime() override { return base::TimeTicks(); }
   void DisableVirtualTimeForTesting() override {}
   bool VirtualTimeAllowedToAdvance() const override { return true; }
