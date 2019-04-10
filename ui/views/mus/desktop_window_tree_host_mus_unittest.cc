@@ -75,6 +75,11 @@ class DesktopWindowTreeHostMusTest : public ViewsTestBase,
     return widget;
   }
 
+  AXAuraObjCache* CreateAXAuraObjCache() {
+    ax_aura_obj_cache_ = std::make_unique<AXAuraObjCache>();
+    return ax_aura_obj_cache_.get();
+  }
+
   const Widget* widget_activated() const { return widget_activated_; }
   const Widget* widget_deactivated() const { return widget_deactivated_; }
 
@@ -91,6 +96,7 @@ class DesktopWindowTreeHostMusTest : public ViewsTestBase,
 
   Widget* widget_activated_ = nullptr;
   Widget* widget_deactivated_ = nullptr;
+  std::unique_ptr<AXAuraObjCache> ax_aura_obj_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostMusTest);
 };
@@ -619,7 +625,8 @@ TEST_F(DesktopWindowTreeHostMusTest, WindowTitle) {
 
 TEST_F(DesktopWindowTreeHostMusTest, Accessibility) {
   // Pretend we're using the remote AX service, like shortcut_viewer.
-  MusClientTestApi::SetAXRemoteHost(std::make_unique<AXRemoteHost>());
+  AXAuraObjCache* cache = CreateAXAuraObjCache();
+  MusClientTestApi::SetAXRemoteHost(std::make_unique<AXRemoteHost>(cache));
 
   std::unique_ptr<Widget> widget = CreateWidget();
   // Widget frame views do not participate in accessibility node hierarchy
