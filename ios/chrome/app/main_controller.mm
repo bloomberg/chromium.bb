@@ -2286,7 +2286,7 @@ enum class EnterTabSwitcherSnapshotResult {
   // -GetLastCommittedURL incase the NTP is still loading.
   if (alwaysInsertNewTab ||
       !(currentTabInTargetBVC.webState &&
-        IsURLNtp(currentTabInTargetBVC.webState->GetLastCommittedURL()))) {
+        IsURLNtp(currentTabInTargetBVC.webState->GetVisibleURL()))) {
     [targetBVC appendTabAddedCompletion:tabOpenedCompletion];
     web::NavigationManager::WebLoadParams params(URL);
     params.transition_type = transition;
