@@ -67,6 +67,19 @@ def make_type_re(typename):
     return re.compile('^std::__[a-zA-Z0-9]+::' + typename + '<.*>$')
 
 
+def get_node_value(it, ptr):
+    t = gdb.lookup_type(it.type.name + '::__node_pointer')
+    return ptr.cast(t)['__value_']
+
+
+def get_node_value_from_pointer(ptr):
+    return get_node_value(ptr.dereference(), ptr)
+
+
+def get_node_value_from_iterator(it):
+    return get_node_value(it, it['__ptr_'])
+
+
 # Starting with the type ORIG, search for the member type NAME.  This
 # handles searching upward through superclasses.  This is needed to
 # work around http://sourceware.org/bugzilla/show_bug.cgi?id=13615.
@@ -99,9 +112,7 @@ def pair_to_tuple(val):
                  val.cast(base1)["__value_"]).cast(t1),
                 (val if base2.template_argument(2) else
                  val.cast(base2)["__value_"]).cast(t2))
-
-    else:
-        return (val['first'], val['second'])
+    return (val['first'], val['second'])
 
 
 void_type = gdb.lookup_type('void')
@@ -290,7 +301,7 @@ class ListIteratorPrinter:
         self.typename = typename
 
     def to_string(self):
-        return self.val['__ptr_']['__value_']
+        return get_node_value_from_pointer(self.val['__ptr_'])
 
 
 class ForwardListPrinter:
@@ -650,7 +661,7 @@ class RbtreeIteratorPrinter:
         self.val = val
 
     def to_string(self):
-        return self.val['__ptr_']['__value_']
+        return get_node_value_from_iterator(self.val)
 
 
 class MapPrinter:
@@ -703,9 +714,8 @@ class MapIteratorPrinter:
         self.val = val
 
     def to_string(self):
-        vals = pair_to_tuple(self.val['__i_']['__ptr_'])
-
-        return '[%s] %s' % (vals[0], vals[1])
+        value = get_node_value_from_iterator(self.val['__i_'])
+        return '[%s] %s' % pair_to_tuple(value['__cc'])
 
 
 class HashtableIterator(Iterator):
@@ -742,7 +752,7 @@ class HashtableIteratorPrinter:
         self.val = val
 
     def to_string(self):
-        return self.val['__node_']['__value_']
+        return get_node_value_from_pointer(self.val['__node_'])
 
 
 class UnorderedMapIteratorPrinter:
@@ -752,7 +762,8 @@ class UnorderedMapIteratorPrinter:
         self.val = val
 
     def to_string(self):
-        return '[%s] %s' % pair_to_tuple(self.val['__i_']['__node_'])
+        value = get_node_value_from_pointer(self.val['__i_']['__node_'])
+        return '[%s] %s' % pair_to_tuple(value['__cc'])
 
 
 class UnorderedSetPrinter:
@@ -1003,10 +1014,7 @@ def build_libcxx_dictionary():
     printer.add('set', SetPrinter)
     printer.add('stack', StackOrQueuePrinter)
     printer.add('unique_ptr', UniquePointerPrinter)
-    printer.add('vector', VectorPrinter)
-    # vector<bool>
-
-    # For array - the default GDB pretty-printer seems reasonable.
+    printer.add('vector', VectorPrinter)  # Includes vector<bool>.
     printer.add('shared_ptr', SharedPointerPrinter)
     printer.add('weak_ptr', SharedPointerPrinter)
     printer.add('unordered_map', UnorderedMapPrinter)
@@ -1014,13 +1022,7 @@ def build_libcxx_dictionary():
     printer.add('unordered_multimap', UnorderedMapPrinter)
     printer.add('unordered_multiset', UnorderedSetPrinter)
     printer.add('forward_list', ForwardListPrinter)
-
-    printer.add('shared_ptr', SharedPointerPrinter)
-    printer.add('weak_ptr', SharedPointerPrinter)
-    printer.add('unordered_map', UnorderedMapPrinter)
-    printer.add('unordered_set', UnorderedSetPrinter)
-    printer.add('unordered_multimap', UnorderedMapPrinter)
-    printer.add('unordered_multiset', UnorderedSetPrinter)
+    # For std::array the default GDB pretty-printer seems reasonable.
 
     printer.add('__list_iterator', ListIteratorPrinter)
     printer.add('__list_const_iterator', ListIteratorPrinter)
