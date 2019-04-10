@@ -58,7 +58,7 @@ const CGFloat kChangeInPositionForTransition = 100.0;
 // YES if the view should be dismissed after any touch gesture has ended.
 @property(nonatomic, assign) BOOL shouldDismissAfterTouchesEnded;
 // UIButton with title |self.buttonText|, which triggers the Infobar action.
-@property(nonatomic, weak) UIButton* infobarButton;
+@property(nonatomic, strong) UIButton* infobarButton;
 // UILabel displaying |self.titleText|.
 @property(nonatomic, strong) UILabel* titleLabel;
 // UILabel displaying |self.subTitleText|.
