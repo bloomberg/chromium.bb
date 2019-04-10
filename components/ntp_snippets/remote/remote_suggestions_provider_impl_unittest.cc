@@ -30,6 +30,7 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "components/image_fetcher/core/fake_image_decoder.h"
 #include "components/image_fetcher/core/image_decoder.h"
 #include "components/image_fetcher/core/image_fetcher.h"
 #include "components/image_fetcher/core/mock_image_fetcher.h"
@@ -177,23 +178,6 @@ void ServeOneByOneImage(
       base::BindOnce(std::move(*callback), gfx::test::CreateImage(1, 1),
                      image_fetcher::RequestMetadata()));
 }
-
-class FakeImageDecoder : public image_fetcher::ImageDecoder {
- public:
-  FakeImageDecoder() {}
-  ~FakeImageDecoder() override = default;
-  void DecodeImage(
-      const std::string& image_data,
-      const gfx::Size& desired_image_frame_size,
-      const image_fetcher::ImageDecodedCallback& callback) override {
-    callback.Run(decoded_image_);
-  }
-
-  void SetDecodedImage(const gfx::Image& image) { decoded_image_ = image; }
-
- private:
-  gfx::Image decoded_image_;
-};
 
 class MockScheduler : public RemoteSuggestionsScheduler {
  public:
@@ -486,7 +470,7 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
   // TODO(tschumann): Make this a strict-mock. We want to avoid unneccesary
   // network requests.
   NiceMock<MockImageFetcher>* image_fetcher() { return image_fetcher_; }
-  FakeImageDecoder* image_decoder() { return &image_decoder_; }
+  image_fetcher::FakeImageDecoder* image_decoder() { return &image_decoder_; }
   PrefService* pref_service() { return utils_.pref_service(); }
   RemoteSuggestionsDatabase* database() { return database_; }
   MockScheduler* scheduler() { return scheduler_.get(); }
@@ -680,7 +664,7 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
   StrictMock<MockRemoteSuggestionsFetcher>* mock_suggestions_fetcher_;
   StrictMock<MockPrefetchedPagesTracker>* mock_prefetched_pages_tracker_;
   NiceMock<MockImageFetcher>* image_fetcher_;
-  FakeImageDecoder image_decoder_;
+  image_fetcher::FakeImageDecoder image_decoder_;
   std::unique_ptr<MockScheduler> scheduler_;
   FakeBreakingNewsListener* fake_breaking_news_listener_;
   RemoteSuggestionsStatusService* remote_suggestions_status_service_;

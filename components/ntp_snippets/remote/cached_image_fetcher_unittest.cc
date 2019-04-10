@@ -14,7 +14,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
-#include "components/image_fetcher/core/image_decoder.h"
+#include "components/image_fetcher/core/fake_image_decoder.h"
 #include "components/image_fetcher/core/image_fetcher.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"
 #include "components/leveldb_proto/testing/fake_db.h"
@@ -44,28 +44,6 @@ const char kSnippetID[] = "http://localhost";
 const ContentSuggestion::ID kSuggestionID(
     Category::FromKnownCategory(KnownCategories::ARTICLES),
     kSnippetID);
-
-// Always decodes a valid image for all non-empty input.
-class FakeImageDecoder : public image_fetcher::ImageDecoder {
- public:
-  void DecodeImage(
-      const std::string& image_data,
-      const gfx::Size& desired_image_frame_size,
-      const image_fetcher::ImageDecodedCallback& callback) override {
-    ASSERT_TRUE(enabled_);
-    gfx::Image image;
-    if (!image_data.empty()) {
-      ASSERT_EQ(kImageData, image_data);
-      image = gfx::test::CreateImage();
-    }
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindRepeating(callback, image));
-  }
-  void SetEnabled(bool enabled) { enabled_ = enabled; }
-
- private:
-  bool enabled_ = true;
-};
 
 enum class TestType {
   kImageCallback,
@@ -99,7 +77,7 @@ class NtpSnippetsCachedImageFetcherTest
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &test_url_loader_factory_);
 
-    auto decoder = std::make_unique<FakeImageDecoder>();
+    auto decoder = std::make_unique<image_fetcher::FakeImageDecoder>();
     fake_image_decoder_ = decoder.get();
     auto image_fetcher = std::make_unique<image_fetcher::ImageFetcherImpl>(
         std::move(decoder), shared_factory_);
@@ -150,7 +128,9 @@ class NtpSnippetsCachedImageFetcherTest
   }
 
   RemoteSuggestionsDatabase* database() { return database_.get(); }
-  FakeImageDecoder* fake_image_decoder() { return fake_image_decoder_; }
+  image_fetcher::FakeImageDecoder* fake_image_decoder() {
+    return fake_image_decoder_;
+  }
   network::TestURLLoaderFactory* test_url_loader_factory() {
     return &test_url_loader_factory_;
   }
@@ -164,7 +144,7 @@ class NtpSnippetsCachedImageFetcherTest
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
   std::unique_ptr<CachedImageFetcher> cached_image_fetcher_;
-  FakeImageDecoder* fake_image_decoder_;
+  image_fetcher::FakeImageDecoder* fake_image_decoder_;
 
   std::unique_ptr<RemoteSuggestionsDatabase> database_;
   base::ScopedTempDir database_dir_;
