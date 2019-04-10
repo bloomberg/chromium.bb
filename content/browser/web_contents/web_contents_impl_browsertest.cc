@@ -425,7 +425,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
     || defined(THREAD_SANITIZER)
 #define MAYBE_GetSizeForNewRenderView DISABLED_GetSizeForNewRenderView
 #else
-#define MAYBE_GetSizeForNewRenderView GetSizeForNewRenderView
+#define MAYBE_GetSizeForNewRenderView DISABLED_GetSizeForNewRenderView
 #endif
 // Test that RenderViewHost is created and updated at the size specified by
 // WebContentsDelegate::GetSizeForNewRenderView().
