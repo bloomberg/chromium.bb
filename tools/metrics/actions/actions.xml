@@ -16404,6 +16404,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="ProfileChooser_ManageGoogleAccountClicked">
+  <owner>droger@chromium.org</owner>
+  <owner>msarda@chromium.org</owner>
+  <owner>tangltom@chromium.org</owner>
+  <description>
+    User clicked 'Manage your Google Account' in the profile chooser menu.
+  </description>
+</action>
+
 <action name="ProfileChooser_PasswordsClicked">
   <owner>vasilii@chromium.org</owner>
   <owner>ewald@chromium.org</owner>
