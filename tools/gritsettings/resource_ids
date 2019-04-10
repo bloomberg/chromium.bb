@@ -99,10 +99,10 @@
   "chrome/browser/resources/local_ntp/local_ntp_resources.grd": {
     "includes": [12440],
   },
-  "chrome/browser/resources/md_extensions/extensions_resources_vulcanized.grd": {
+  "chrome/browser/resources/extensions/extensions_resources_vulcanized.grd": {
     "includes": [12500],
   },
-  "chrome/browser/resources/md_extensions/extensions_resources.grd": {
+  "chrome/browser/resources/extensions/extensions_resources.grd": {
     "structures": [12510],
   },
   "chrome/browser/resources/net_internals/net_internals_resources.grd": {

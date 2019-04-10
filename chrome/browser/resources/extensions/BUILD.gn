@@ -46,7 +46,7 @@ grit("flattened_resources") {
     "grit/extensions_resources_map.h",
     extensions_pak_file,
   ]
-  output_dir = "$root_gen_dir/chrome/browser/resources/md_extensions"
+  output_dir = "$root_gen_dir/chrome/browser/resources/extensions"
 }
 
 group("closure_compile") {

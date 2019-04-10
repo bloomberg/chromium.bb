@@ -36,7 +36,6 @@ let KioskApp;
 let KioskAppSettings;
 
 cr.define('extensions', function() {
-
   /** @interface */
   class KioskBrowserProxy {
     /** @param {string} appId */
