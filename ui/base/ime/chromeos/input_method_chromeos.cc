@@ -131,9 +131,7 @@ InputMethodChromeOS::InputMethodChromeOS(
       handling_key_event_(false),
       mojo_helper_(std::make_unique<MojoHelper>(this)),
       weak_ptr_factory_(this) {
-  ui::IMEBridge::Get()->SetInputContextHandler(this);
-
-  UpdateContextFocusState();
+  ResetContext();
 }
 
 InputMethodChromeOS::~InputMethodChromeOS() {

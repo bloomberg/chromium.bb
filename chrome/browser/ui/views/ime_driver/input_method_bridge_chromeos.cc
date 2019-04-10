@@ -29,6 +29,7 @@ InputMethodBridge::InputMethodBridge(
       accessibility_input_method_observer_(
           std::make_unique<AccessibilityInputMethodObserver>(
               input_method_chromeos_.get())) {
+  input_method_chromeos_->OnFocus();
   input_method_chromeos_->SetFocusedTextInputClient(client_.get());
 }
 
