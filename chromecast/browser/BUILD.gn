@@ -469,6 +469,7 @@ cast_source_set("browsertests") {
   sources = [
     "cast_content_gesture_handler_test.cc",
     "cast_media_blocker_browsertest.cc",
+    "cast_web_contents_browsertest.cc",
     "renderer_prelauncher_test.cc",
     "test/cast_features_browsertest.cc",
     "test/cast_navigation_browsertest.cc",
@@ -478,15 +479,20 @@ cast_source_set("browsertests") {
 
   deps = [
     ":test_support",
+    "//base",
     "//chromecast:chromecast_buildflags",
     "//chromecast/base",
     "//chromecast/base:chromecast_switches",
     "//chromecast/base/metrics",
     "//components/prefs",
+    "//content/public/browser",
+    "//content/test:test_support",
     "//media:test_support",
+    "//net:test_support",
   ]
 
   data = [
+    "//chromecast/browser/test/data/",
     "//media/test/data/",
   ]
 }
