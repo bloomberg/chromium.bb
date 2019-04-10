@@ -801,7 +801,7 @@ breakpad::CrashHandlerHostLinux* CreateCrashHandlerHost(
   base::PathService::Get(chrome::DIR_CRASH_DUMPS, &dumps_path);
   {
     ANNOTATE_SCOPED_MEMORY_LEAK;
-    bool upload = (getenv(env_vars::kHeadless) == NULL);
+    bool upload = !getenv(env_vars::kHeadless);
     breakpad::CrashHandlerHostLinux* crash_handler =
         new breakpad::CrashHandlerHostLinux(process_type, dumps_path, upload);
     crash_handler->StartUploaderThread();
@@ -812,7 +812,7 @@ breakpad::CrashHandlerHostLinux* CreateCrashHandlerHost(
 int GetCrashSignalFD(const base::CommandLine& command_line) {
   // Extensions have the same process type as renderers.
   if (command_line.HasSwitch(extensions::switches::kExtensionProcess)) {
-    static breakpad::CrashHandlerHostLinux* crash_handler = NULL;
+    static breakpad::CrashHandlerHostLinux* crash_handler = nullptr;
     if (!crash_handler)
       crash_handler = CreateCrashHandlerHost("extension");
     return crash_handler->GetDeathSignalSocket();
@@ -829,10 +829,11 @@ int GetCrashSignalFD(const base::CommandLine& command_line) {
         command_line.GetSwitchValueASCII(switches::kMashServiceName);
     auto it = crash_handlers->find(service_name);
     if (it == crash_handlers->end()) {
-      crash_handlers->insert(
+      auto insert_result = crash_handlers->insert(
           std::make_pair(service_name, CreateCrashHandlerHost(service_name)));
+      it = insert_result.first;
     }
-    return crash_handlers->at(service_name)->GetDeathSignalSocket();
+    return it->second->GetDeathSignalSocket();
   }
 #endif  // defined(OS_CHROMEOS)
 
@@ -840,21 +841,21 @@ int GetCrashSignalFD(const base::CommandLine& command_line) {
       command_line.GetSwitchValueASCII(switches::kProcessType);
 
   if (process_type == switches::kRendererProcess) {
-    static breakpad::CrashHandlerHostLinux* crash_handler = NULL;
+    static breakpad::CrashHandlerHostLinux* crash_handler = nullptr;
     if (!crash_handler)
       crash_handler = CreateCrashHandlerHost(process_type);
     return crash_handler->GetDeathSignalSocket();
   }
 
   if (process_type == switches::kPpapiPluginProcess) {
-    static breakpad::CrashHandlerHostLinux* crash_handler = NULL;
+    static breakpad::CrashHandlerHostLinux* crash_handler = nullptr;
     if (!crash_handler)
       crash_handler = CreateCrashHandlerHost(process_type);
     return crash_handler->GetDeathSignalSocket();
   }
 
   if (process_type == switches::kGpuProcess) {
-    static breakpad::CrashHandlerHostLinux* crash_handler = NULL;
+    static breakpad::CrashHandlerHostLinux* crash_handler = nullptr;
     if (!crash_handler)
       crash_handler = CreateCrashHandlerHost(process_type);
     return crash_handler->GetDeathSignalSocket();
