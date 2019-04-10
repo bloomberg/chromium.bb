@@ -56,8 +56,6 @@ class AXWindowObjWrapper : public AXAuraObjWrapper,
   // that widget's root view.
   void FireEvent(aura::Window* window, ax::mojom::Event event_type);
 
-  AXAuraObjCache* const aura_obj_cache_;
-
   aura::Window* window_;
 
   bool is_root_window_;

@@ -39,6 +39,7 @@ class AXUniqueId;
 
 namespace views {
 
+class AXAuraObjCache;
 class View;
 class ViewAccessibility;
 
@@ -143,8 +144,8 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
   // Gets the real View that owns our shallowest virtual ancestor,, if any.
   View* GetOwnerView() const;
 
-  // Gets a wrapper suitable for use with tree sources.
-  AXVirtualViewWrapper* GetWrapper() const;
+  // Gets or creates a wrapper suitable for use with tree sources.
+  AXVirtualViewWrapper* GetOrCreateWrapper(views::AXAuraObjCache* cache);
 
   // Handle a request from assistive technology to perform an action on this
   // virtual view. Returns true on success, but note that the success/failure is

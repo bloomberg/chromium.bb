@@ -22,6 +22,7 @@
 namespace views {
 
 class View;
+class Widget;
 
 // An object that manages the accessibility interface for a View.
 //
@@ -72,6 +73,14 @@ class VIEWS_EXPORT ViewAccessibility {
   //
   // Note: |pos_in_set| is 1-indexed.
   void OverridePosInSet(int pos_in_set, int set_size);
+
+  // Override the next or previous focused widget. Some screen readers may
+  // utilize this information to transition focus from the beginning or end of
+  // one window to another when navigating by its default navigation method.
+  void OverrideNextFocus(Widget* widget);
+  void OverridePreviousFocus(Widget* widget);
+  Widget* GetNextFocus();
+  Widget* GetPreviousFocus();
 
   virtual gfx::NativeViewAccessible GetNativeObject();
   virtual void NotifyAccessibilityEvent(ax::mojom::Event event_type) {}
@@ -169,6 +178,9 @@ class VIEWS_EXPORT ViewAccessibility {
   // Similar to setting the role of an ARIA widget to "none" or
   // "presentational".
   bool is_ignored_;
+
+  Widget* next_focus_ = nullptr;
+  Widget* previous_focus_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ViewAccessibility);
 };
