@@ -20,7 +20,6 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/keyed_service/core/service_access_type.h"
-#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 
@@ -220,13 +219,8 @@ const char kDefaultCustomerID[] = "deadbeef";
 const char kDefaultBillingAddressID[] = "billing address entity ID";
 
 PersonalDataManager* GetPersonalDataManager(int index) {
-  auto* pdm = autofill::PersonalDataManagerFactory::GetForProfile(
+  return autofill::PersonalDataManagerFactory::GetForProfile(
       test()->GetProfile(index));
-  // Hook the sync service up to the personal data manager.
-  // This is normally done by autofill_manager, which we don't
-  // have in our tests.
-  pdm->OnSyncServiceInitialized(test()->GetSyncService(index));
-  return pdm;
 }
 
 scoped_refptr<AutofillWebDataService> GetProfileWebDataService(int index) {
@@ -559,9 +553,9 @@ bool AutofillWalletMetadataSizeChecker::IsExitConditionSatisfied() {
   std::map<std::string, AutofillMetadata> addresses_metadata_b =
       wallet_helper::GetServerAddressesMetadata(profile_b_);
   if (addresses_metadata_a.size() != addresses_metadata_b.size()) {
-    LOG(WARNING) << "Server addresses metadata mismatch, expected "
-                 << addresses_metadata_a.size()
-                 << ", found: " << addresses_metadata_b.size();
+    DVLOG(1) << "Server addresses metadata mismatch, expected "
+             << addresses_metadata_a.size()
+             << ", found: " << addresses_metadata_b.size();
     return false;
   }
   std::map<std::string, AutofillMetadata> cards_metadata_a =
@@ -569,9 +563,9 @@ bool AutofillWalletMetadataSizeChecker::IsExitConditionSatisfied() {
   std::map<std::string, AutofillMetadata> cards_metadata_b =
       wallet_helper::GetServerCardsMetadata(profile_b_);
   if (cards_metadata_a.size() != cards_metadata_b.size()) {
-    LOG(WARNING) << "Server cards metadata mismatch, expected "
-                 << cards_metadata_a.size() << ", found "
-                 << cards_metadata_b.size();
+    DVLOG(1) << "Server cards metadata mismatch, expected "
+             << cards_metadata_a.size() << ", found "
+             << cards_metadata_b.size();
     return false;
   }
   return true;
