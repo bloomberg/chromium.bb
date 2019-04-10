@@ -105,27 +105,44 @@ public class PageViewObserver {
         switchObserverToTab(tabModelSelector.getCurrentTab());
     }
 
+    /** Notify PageViewObserver that {@code fqdn} was just suspended or un-suspended. */
+    public void notifySiteSuspensionChanged(String fqdn, boolean isSuspended) {
+        if (mLastFqdn != null && mLastFqdn.equals(fqdn)) {
+            if (isSuspended) {
+                SuspendedTab.from(mCurrentTab).show(fqdn);
+                return;
+            }
+
+            SuspendedTab suspendedTab = SuspendedTab.get(mCurrentTab);
+            if (suspendedTab != null && !isSuspended && suspendedTab.getFqdn().equals(fqdn)) {
+                suspendedTab.removeIfPresent();
+                mCurrentTab.reload();
+            }
+        }
+    }
+
     private void updateUrl(String newUrl) {
         String newFqdn = newUrl == null ? "" : Uri.parse(newUrl).getHost();
-
         boolean didSuspend = false;
+        boolean sameDomain = mLastFqdn != null && mLastFqdn.equals(newFqdn);
+
         if (newFqdn != null && mSuspensionTracker.isWebsiteSuspended(newFqdn)) {
-            SuspendedTab.create(mCurrentTab).show();
+            SuspendedTab.from(mCurrentTab).show(newFqdn);
             didSuspend = true;
         }
 
-        if (mLastFqdn != null && mLastFqdn.equals(newFqdn)) return;
+        if (sameDomain) return;
 
         if (mLastFqdn != null) {
             mEventTracker.addWebsiteEvent(new WebsiteEvent(
                     System.currentTimeMillis(), mLastFqdn, WebsiteEvent.EventType.STOP));
             reportToPlatformIfDomainIsTracked("reportUsageStop", mLastFqdn);
-            mLastFqdn = null;
         }
+
+        mLastFqdn = newFqdn;
 
         if (!URLUtil.isHttpUrl(newUrl) && !URLUtil.isHttpsUrl(newUrl) || didSuspend) return;
 
-        mLastFqdn = newFqdn;
         mEventTracker.addWebsiteEvent(new WebsiteEvent(
                 System.currentTimeMillis(), mLastFqdn, WebsiteEvent.EventType.START));
         reportToPlatformIfDomainIsTracked("reportUsageStart", mLastFqdn);

@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +34,10 @@ public class UsageStatsService {
     private SuspensionTracker mSuspensionTracker;
     private TokenTracker mTokenTracker;
     private UsageStatsBridge mBridge;
+    // PageViewObservers are scoped to a given ChromeTabbedActivity, but UsageStatsService isn't. To
+    // allow for GC of the observer to happen when the activity goes away, we only hold weak
+    // references here.
+    private List<WeakReference<PageViewObserver>> mPageViewObservers;
 
     private DigitalWellbeingClient mClient;
     private boolean mOptInState;
@@ -53,6 +58,7 @@ public class UsageStatsService {
         mEventTracker = new EventTracker(mBridge);
         mSuspensionTracker = new SuspensionTracker(mBridge);
         mTokenTracker = new TokenTracker(mBridge);
+        mPageViewObservers = new ArrayList<>();
 
         mOptInState = getOptInState();
         mClient = AppHooks.get().createDigitalWellbeingClient();
@@ -67,8 +73,10 @@ public class UsageStatsService {
     public PageViewObserver createPageViewObserver(
             TabModelSelector tabModelSelector, Activity activity) {
         ThreadUtils.assertOnUiThread();
-        return new PageViewObserver(
+        PageViewObserver observer = new PageViewObserver(
                 activity, tabModelSelector, mEventTracker, mTokenTracker, mSuspensionTracker);
+        mPageViewObservers.add(new WeakReference<>(observer));
+        return observer;
     }
 
     /** @return Whether the user has authorized DW to access usage stats data. */
@@ -134,10 +142,19 @@ public class UsageStatsService {
     }
 
     /**
-     * Suspend or unsuspend every site in FQDNs, depending on the truthiness of <c>suspended</c>.
+     * Suspend or unsuspend every site in FQDNs, depending on the value of {@code suspended}.
      */
     public Promise<Void> setWebsitesSuspendedAsync(List<String> fqdns, boolean suspended) {
         ThreadUtils.assertOnUiThread();
+        for (WeakReference<PageViewObserver> observerRef : mPageViewObservers) {
+            PageViewObserver observer = observerRef.get();
+            if (observer != null) {
+                for (String fqdn : fqdns) {
+                    observer.notifySiteSuspensionChanged(fqdn, suspended);
+                }
+            }
+        }
+
         return mSuspensionTracker.setWebsitesSuspended(fqdns, suspended);
     }
 
