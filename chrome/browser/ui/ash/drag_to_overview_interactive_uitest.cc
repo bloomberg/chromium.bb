@@ -201,6 +201,7 @@ IN_PROC_BROWSER_TEST_F(DragToOverviewTest, DragTab) {
   gfx::Vector2d delta(0, drag_length / kSteps);
 
   // Drag tab far enough to detach.
+  test::WaitForNoPointerHoldLock();
   drag_position.Offset(0, GetDetachY(browser_view->tabstrip()));
   ui_controls::SendMouseMoveNotifyWhenDone(
       drag_position.x(), drag_position.y(),
