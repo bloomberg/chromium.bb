@@ -49,16 +49,6 @@ KeyedService* PasswordRequirementsServiceFactory::BuildServiceInstanceFor(
   if (context->IsOffTheRecord())
     return nullptr;
 
-  bool enable_domain_overrides = base::FeatureList::IsEnabled(
-      features::kPasswordGenerationRequirementsDomainOverrides);
-
-  VLOG(1)
-      << "PasswordGenerationRequirementsDomainOverrides experiment enabled? "
-      << enable_domain_overrides;
-
-  if (!enable_domain_overrides)
-    return new PasswordRequirementsService(nullptr);
-
   // Default parameters.
   int version = 1;
   int prefix_length = 0;

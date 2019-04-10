@@ -20,12 +20,6 @@ const base::Feature kEditPasswordsInDesktopSettings = {
 const base::Feature kDeleteCorruptedPasswords = {
     "DeleteCorruptedPasswords", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether password requirements can be overridden for domains
-// (as opposed to only relying on the autofill server).
-const base::Feature kPasswordGenerationRequirementsDomainOverrides = {
-    "PasswordGenerationRequirementsDomainOverrides",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls the ability to import passwords from Chrome's settings page.
 const base::Feature kPasswordImport = {"PasswordImport",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
