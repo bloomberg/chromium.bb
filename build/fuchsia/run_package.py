@@ -43,7 +43,8 @@ class MergedInputStream(object):
     assert len(streams) > 0
     self._streams = streams
     self._read_pipe, write_pipe = os.pipe()
-    self._output_stream = os.fdopen(write_pipe, 'w')
+    # Disable buffering for the stream to make sure there is no delay in logs.
+    self._output_stream = os.fdopen(write_pipe, 'w', 0)
     self._thread = threading.Thread(target=self._Run)
 
   def Start(self):
