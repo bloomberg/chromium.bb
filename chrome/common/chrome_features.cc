@@ -471,7 +471,7 @@ const base::Feature kUseNewAcceptLanguageHeader{
 // Enables usage of Parent Access Code to authorize certain actions on child
 // user device.
 const base::Feature kParentAccessCode{"ParentAccessCode",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // Delegate permissions to cross-origin iframes when the feature has been
