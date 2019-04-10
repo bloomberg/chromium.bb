@@ -9,6 +9,7 @@
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/gpu/GrTexture.h"
@@ -20,6 +21,8 @@ namespace blink {
 class WebGraphicsContext3DProviderWrapper;
 
 class PLATFORM_EXPORT GraphicsContext3DUtils {
+  USING_FAST_MALLOC(GraphicsContext3DUtils);
+
  public:
   // The constructor takes a weak ref to the wrapper because it internally
   // it generates callbacks that may outlive the wrapper.

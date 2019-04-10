@@ -18,7 +18,7 @@
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/heap/trace_traits.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
-
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 namespace blink {
 namespace incremental_marking_test {
 
@@ -77,6 +77,8 @@ class BackingVisitor : public Visitor {
 
 // Base class for initializing worklists.
 class IncrementalMarkingScopeBase {
+  DISALLOW_NEW();
+
  public:
   explicit IncrementalMarkingScopeBase(ThreadState* thread_state)
       : thread_state_(thread_state), heap_(thread_state_->Heap()) {

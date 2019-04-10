@@ -7,6 +7,7 @@
 #include "base/memory/weak_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/scheduler/test/fake_task_runner.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -21,6 +22,8 @@ void GetIsActive(bool* is_active, TaskHandle* handle) {
 }
 
 class CancellationTestHelper {
+  DISALLOW_NEW();
+
  public:
   CancellationTestHelper() : weak_ptr_factory_(this) {}
 

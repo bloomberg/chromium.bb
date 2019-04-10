@@ -9,12 +9,15 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
 // Notifies weak interface bindings to be invalidated when this object is
 // destroyed.
 class PLATFORM_EXPORT InterfaceInvalidator {
+  USING_FAST_MALLOC(InterfaceInvalidator);
+
  public:
   InterfaceInvalidator();
   ~InterfaceInvalidator();

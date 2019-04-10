@@ -10,6 +10,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -87,6 +88,8 @@ const NodeType* SafeUnalias(const NodeType* node) {
 
 template <typename NodeType>
 class PaintPropertyNode : public RefCounted<NodeType> {
+  USING_FAST_MALLOC(PaintPropertyNode);
+
  public:
   // Parent property node, or nullptr if this is the root node.
   const NodeType* Parent() const { return parent_.get(); }

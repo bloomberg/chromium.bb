@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/mac/graphics_context_canvas.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 @class NSGraphicsContext;
 
@@ -37,6 +38,8 @@ class GraphicsContext;
 // This class automatically saves and restores the current NSGraphicsContext for
 // functions which call out into AppKit and rely on the currentContext being set
 class PLATFORM_EXPORT LocalCurrentGraphicsContext {
+  STACK_ALLOCATED();
+
  public:
   LocalCurrentGraphicsContext(GraphicsContext&, const IntRect& dirty_rect);
   LocalCurrentGraphicsContext(cc::PaintCanvas*,

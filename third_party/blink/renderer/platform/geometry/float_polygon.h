@@ -77,6 +77,8 @@ class PLATFORM_EXPORT FloatPolygon {
 };
 
 class PLATFORM_EXPORT VertexPair {
+  DISALLOW_NEW();
+
  public:
   virtual ~VertexPair() = default;
 

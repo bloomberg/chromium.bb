@@ -28,6 +28,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -79,6 +80,8 @@ String AccessibilityTestDataPath(const String& relative_path = String());
 scoped_refptr<SharedBuffer> ReadFromFile(const String& path);
 
 class LineReader {
+  DISALLOW_NEW();
+
  public:
   LineReader(const std::string& text);
   bool GetNextLine(std::string* line);

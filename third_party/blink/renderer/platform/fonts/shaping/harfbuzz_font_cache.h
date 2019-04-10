@@ -37,6 +37,8 @@ using HbFaceUniquePtr = std::unique_ptr<hb_face_t, HbFaceDeleter>;
 // FIXME, crbug.com/609099: We should fix the FontCache to only keep one
 // FontPlatformData object independent of size, then consider using this here.
 class HbFontCacheEntry : public RefCounted<HbFontCacheEntry> {
+  USING_FAST_MALLOC(HbFontCacheEntry);
+
  public:
   static scoped_refptr<HbFontCacheEntry> Create(hb_font_t* hb_font);
 
