@@ -18,7 +18,6 @@
 #include "base/time/time.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/base/time.h"
-#include "components/sync/device_info/device_info.h"
 #include "components/sync/model/data_type_activation_request.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/metadata_batch.h"
@@ -358,17 +357,9 @@ void SessionSyncBridge::OnSyncStarting(
     return;
   }
 
-  const syncer::DeviceInfo* device_info =
-      sessions_client_->GetLocalDeviceInfo();
-
-  // DeviceInfo must be available by the time sync starts, because there's no
-  // task posting involved in the sessions controller.
-  DCHECK(device_info);
-  DCHECK_EQ(device_info->guid(), request.cache_guid);
-
   // Open the store and read state from disk if it exists.
   SessionStore::Open(
-      *device_info,
+      request.cache_guid,
       base::BindRepeating(&FaviconCache::UpdateMappingsFromForeignTab,
                           favicon_cache_.GetWeakPtr()),
       sessions_client_,

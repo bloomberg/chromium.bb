@@ -19,7 +19,6 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/base/sync_prefs.h"
-#include "components/sync/device_info/device_info.h"
 #include "components/sync/model/data_batch.h"
 #include "components/sync/model/data_type_activation_request.h"
 #include "components/sync/model/metadata_batch.h"
@@ -161,13 +160,7 @@ sync_pb::SessionSpecifics CreateTabSpecifics(const std::string& session_tag,
 class SessionSyncBridgeTest : public ::testing::Test {
  protected:
   SessionSyncBridgeTest()
-      : local_device_info_("TestCacheGuid",
-                           "Wayne Gretzky's Hacking Box",
-                           "Chromium 10k",
-                           "Chrome 10k",
-                           sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-                           "device_id"),
-        store_(syncer::ModelTypeStoreTestUtil::CreateInMemoryStoreForTest(
+      : store_(syncer::ModelTypeStoreTestUtil::CreateInMemoryStoreForTest(
             syncer::SESSIONS)),
         session_sync_prefs_(&pref_service_),
         favicon_cache_(/*favicon_service=*/nullptr,
@@ -181,8 +174,6 @@ class SessionSyncBridgeTest : public ::testing::Test {
         .WillByDefault(
             Return(syncer::ModelTypeStoreTestUtil::FactoryForForwardingStore(
                 store_.get())));
-    ON_CALL(mock_sync_sessions_client_, GetLocalDeviceInfo())
-        .WillByDefault(Return(&local_device_info_));
     ON_CALL(mock_sync_sessions_client_, GetSyncedWindowDelegatesGetter())
         .WillByDefault(Return(&window_getter_));
     ON_CALL(mock_sync_sessions_client_, GetLocalSessionEventRouter())
@@ -329,7 +320,6 @@ class SessionSyncBridgeTest : public ::testing::Test {
 
  private:
   base::test::ScopedTaskEnvironment task_environment_;
-  const syncer::DeviceInfo local_device_info_;
   const std::unique_ptr<syncer::ModelTypeStore> store_;
 
   // Dependencies.
