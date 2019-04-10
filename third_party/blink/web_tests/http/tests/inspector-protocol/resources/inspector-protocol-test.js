@@ -260,7 +260,24 @@ TestRunner.Page = class {
   async loadHTML(html) {
     html = html.replace(/'/g, "\\'").replace(/\n/g, '\\n');
     var session = await this.createSession();
-    await session.protocol.Runtime.evaluate({expression: `document.write('${html}');document.close();`});
+    await session.protocol.Runtime.evaluate({
+      awaitPromise: true,
+      expression: `
+      document.write('${html}');
+
+      // wait for all scripts to load
+      const promise = new Promise(x => window._loadHTMLResolve = x).then(() => {
+        delete window._loadHTMLResolve;
+      });
+      // We do a document.write here to serialize with the previous document.write
+      if (document.querySelector('script[src]'))
+        document.write('<script>window._loadHTMLResolve(); document.currentScript.remove();</script>');
+      else
+        window._loadHTMLResolve();
+
+      document.close();
+      promise;
+    `});
     await session.disconnect();
   }
 };
