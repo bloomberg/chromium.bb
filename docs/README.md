@@ -263,6 +263,8 @@ used when committed.
     What are .build_config files and how they are used.
 *   [Android App Bundles](../build/android/docs/android_app_bundles.md) -
     How to build Android app bundles for Chrome.
+*   [Dynamic Feature Modules (DFMs)](android_dynamic_feature_modules.md) - How
+    to create dynamic feature modules.
 
 ### Misc iOS-Specific Docs
 *   [Continuous Build and Test Infrastructure for Chromium for iOS](ios/infra.md)
