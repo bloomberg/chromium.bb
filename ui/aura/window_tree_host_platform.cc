@@ -15,6 +15,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host_observer.h"
 #include "ui/base/layout.h"
 #include "ui/compositor/compositor.h"
 #include "ui/events/event.h"
@@ -198,6 +199,8 @@ void WindowTreeHostPlatform::OnCursorVisibilityChangedNative(bool show) {
 }
 
 void WindowTreeHostPlatform::OnBoundsChanged(const gfx::Rect& new_bounds) {
+  for (WindowTreeHostObserver& observer : observers())
+    observer.OnHostWillProcessBoundsChange(this);
   float current_scale = compositor()->device_scale_factor();
   float new_scale = ui::GetScaleFactorForNativeView(window());
   gfx::Rect old_bounds = bounds_in_pixels_;
@@ -215,6 +218,8 @@ void WindowTreeHostPlatform::OnBoundsChanged(const gfx::Rect& new_bounds) {
     OnHostResizedInPixels(bounds_in_pixels_.size(),
                           local_surface_id_allocation);
   }
+  for (WindowTreeHostObserver& observer : observers())
+    observer.OnHostDidProcessBoundsChange(this);
 }
 
 void WindowTreeHostPlatform::OnDamageRect(const gfx::Rect& damage_rect) {
