@@ -53,7 +53,9 @@ class AURA_EXPORT WindowTreeHostMus : public WindowTreeHostPlatform,
     return aura::WindowTreeHostPlatform::SendEventToSink(event);
   }
 
-  InputMethodMus* input_method() { return input_method_.get(); }
+  void DispatchKeyEventFromServer(
+      ui::KeyEvent* event,
+      base::OnceCallback<void(ws::mojom::EventResult)>);
 
   // Sets the client area on the underlying mus window.
   void SetClientArea(const gfx::Insets& insets,
@@ -140,7 +142,7 @@ class AURA_EXPORT WindowTreeHostMus : public WindowTreeHostPlatform,
   // If true, the server initiated the bounds change.
   bool is_server_setting_bounds_ = false;
 
-  std::unique_ptr<InputMethodMus> input_method_;
+  std::unique_ptr<InputMethodMus> input_method_mus_;
 
   base::Optional<viz::LocalSurfaceIdAllocation>
       pending_local_surface_id_from_server_;

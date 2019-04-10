@@ -130,11 +130,6 @@ bool IsInternalProperty(const void* key) {
   return key == client::kModalKey;
 }
 
-void DispatchKeyEventCallback(EventResultCallback cb, bool handled) {
-  std::move(cb).Run(handled ? ws::mojom::EventResult::HANDLED
-                            : ws::mojom::EventResult::UNHANDLED);
-}
-
 }  // namespace
 
 // static
@@ -1449,17 +1444,9 @@ void WindowTreeClient::OnWindowInputEvent(uint32_t event_id,
   }
 
   if (event->IsKeyEvent()) {
-    InputMethodMus* input_method = GetWindowTreeHostMus(window)->input_method();
-    if (input_method) {
-      ui::AsyncKeyDispatcher* dispatcher =
-          input_method->GetAsyncKeyDispatcher();
-      DCHECK(dispatcher);
-      dispatcher->DispatchKeyEventAsync(
-          event->AsKeyEvent(),
-          base::BindOnce(DispatchKeyEventCallback,
-                         CreateEventResultCallback(event_id)));
-      return;
-    }
+    GetWindowTreeHostMus(window)->DispatchKeyEventFromServer(
+        event->AsKeyEvent(), CreateEventResultCallback(event_id));
+    return;
   }
 
   // |ack_handler| may use |event_to_dispatch| from its destructor, so it needs
