@@ -49,11 +49,13 @@ id<GREYMatcher> PriceCellMatcher(NSString* accessibilityLabel) {
   [super setUp];
 
   autofill::AutofillProfile profile = autofill::test::GetFullProfile();
-  [self addAutofillProfile:profile];
+  NSError* profileError = [self addAutofillProfile:profile];
+  GREYAssertNil(profileError, profileError.localizedDescription);
 
   autofill::CreditCard localCard = autofill::test::GetCreditCard();  // Visa.
   localCard.set_billing_address_id(profile.guid());
-  [self addCreditCard:localCard];
+  NSError* creditCardError = [self addCreditCard:localCard];
+  GREYAssertNil(creditCardError, creditCardError.localizedDescription);
 }
 
 #pragma mark - Tests
