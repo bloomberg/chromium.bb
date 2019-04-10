@@ -57388,6 +57388,7 @@ Full version information for the fingerprint enum values:
   <int value="12" label="External default-install on Chrome OS"/>
   <int value="13" label="Policy-install on Chrome OS"/>
   <int value="14" label="System default app on Chrome OS"/>
+  <int value="15" label="Install icon in the Omnibox"/>
 </enum>
 
 <enum name="WebappUninstallDialogAction">
