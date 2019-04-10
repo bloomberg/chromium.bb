@@ -21,7 +21,6 @@
 #include "extensions/common/image_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/canvas_image_source.h"
@@ -294,41 +293,32 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
     answer_image_view_->SetSize(gfx::Size());
   } else {
     // Determine if we have a local icon (or else it will be downloaded).
-    const gfx::VectorIcon* vector_icon = nullptr;
-    int idr_image = 0;
     if (match.answer) {
       switch (match.answer->type()) {
         case SuggestionAnswer::ANSWER_TYPE_CURRENCY:
-          vector_icon = &omnibox::kAnswerCurrencyIcon;
+          apply_vector_icon(omnibox::kAnswerCurrencyIcon);
           break;
         case SuggestionAnswer::ANSWER_TYPE_DICTIONARY:
-          vector_icon = &omnibox::kAnswerDictionaryIcon;
+          apply_vector_icon(omnibox::kAnswerDictionaryIcon);
           break;
         case SuggestionAnswer::ANSWER_TYPE_FINANCE:
-          vector_icon = &omnibox::kAnswerFinanceIcon;
+          apply_vector_icon(omnibox::kAnswerFinanceIcon);
           break;
         case SuggestionAnswer::ANSWER_TYPE_SUNRISE:
-          vector_icon = &omnibox::kAnswerSunriseIcon;
+          apply_vector_icon(omnibox::kAnswerSunriseIcon);
           break;
         case SuggestionAnswer::ANSWER_TYPE_TRANSLATION:
-          idr_image = IDR_OMNIBOX_TRANSLATION_ROUND;
+          apply_vector_icon(omnibox::kAnswerTranslationIcon);
           break;
         case SuggestionAnswer::ANSWER_TYPE_WEATHER:
           // Weather icons are downloaded. Do nothing.
           break;
         case SuggestionAnswer::ANSWER_TYPE_WHEN_IS:
-          vector_icon = &omnibox::kAnswerWhenIsIcon;
+          apply_vector_icon(omnibox::kAnswerWhenIsIcon);
           break;
         default:
-          vector_icon = &omnibox::kAnswerDefaultIcon;
+          apply_vector_icon(omnibox::kAnswerDefaultIcon);
           break;
-      }
-      if (vector_icon) {
-        apply_vector_icon(*vector_icon);
-      } else if (idr_image) {
-        answer_image_view_->SetImage(
-            ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-                idr_image));
       }
       // Always set the image size so that downloaded images get the correct
       // size (such as Weather answers).
