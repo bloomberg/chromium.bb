@@ -479,7 +479,8 @@ class DCLayerTree::SwapChainPresenter {
   // |protected_video_type|. Returns true on success.
   bool ReallocateSwapChain(const gfx::Size& swap_chain_size,
                            bool use_yuv_swap_chain,
-                           ui::ProtectedVideoType protected_video_type);
+                           ui::ProtectedVideoType protected_video_type,
+                           bool z_order);
 
   // Returns true if YUV swap chain should be preferred over BGRA swap chain.
   // This changes over time based on stats recorded in |presentation_history|.
@@ -1237,7 +1238,7 @@ bool DCLayerTree::SwapChainPresenter::PresentToSwapChain(
   if (!swap_chain_ || swap_chain_resized || toggle_yuv_swapchain ||
       toggle_protected_video) {
     if (!ReallocateSwapChain(swap_chain_size, use_yuv_swap_chain,
-                             params.protected_video_type)) {
+                             params.protected_video_type, params.z_order)) {
       ReleaseSwapChainResources();
       return false;
     }
@@ -1558,7 +1559,8 @@ void DCLayerTree::SwapChainPresenter::ReleaseSwapChainResources() {
 bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
     const gfx::Size& swap_chain_size,
     bool use_yuv_swap_chain,
-    ui::ProtectedVideoType protected_video_type) {
+    ui::ProtectedVideoType protected_video_type,
+    bool z_order) {
   TRACE_EVENT2("gpu", "DCLayerTree::SwapChainPresenter::ReallocateSwapChain",
                "size", swap_chain_size.ToString(), "yuv", use_yuv_swap_chain);
 
@@ -1681,6 +1683,16 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
       DLOG(ERROR) << "Failed to create BGRA swap chain of size "
                   << swap_chain_size.ToString() << " with error 0x" << std::hex
                   << hr;
+
+      // TODO(magchen): Temporary for debugging underlay swap chain failures.
+      bool supports_scaled_overlays = g_supports_scaled_overlays;
+      gfx::Size overlay_monitor_size = g_overlay_monitor_size;
+      base::debug::Alias(&hr);
+      base::debug::Alias(&supports_scaled_overlays);
+      base::debug::Alias(&overlay_monitor_size);
+      base::debug::Alias(&swap_chain_size);
+      base::debug::Alias(&z_order);
+      base::debug::DumpWithoutCrashing();
       return false;
     }
   }
