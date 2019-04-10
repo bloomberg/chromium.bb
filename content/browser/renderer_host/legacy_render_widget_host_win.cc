@@ -352,7 +352,8 @@ LRESULT LegacyRenderWidgetHostHWND::OnMouseLeave(UINT message,
                                                  LPARAM l_param) {
   mouse_tracking_enabled_ = false;
   LRESULT ret = 0;
-  if ((::GetCapture() != GetParent()) && GetWindowEventTarget(GetParent())) {
+  HWND capture_window = ::GetCapture();
+  if ((capture_window != GetParent()) && GetWindowEventTarget(GetParent())) {
     // We should send a WM_MOUSELEAVE to the parent window only if the mouse
     // has moved outside the bounds of the parent.
     POINT cursor_pos;
@@ -362,7 +363,8 @@ LRESULT LegacyRenderWidgetHostHWND::OnMouseLeave(UINT message,
     // respond with HTTRANSPARENT to a WM_NCHITTEST message,
     // it may be returned.
     HWND window_from_point = ::WindowFromPoint(cursor_pos);
-    if (window_from_point != hwnd() && window_from_point != GetParent()) {
+    if (window_from_point != GetParent() &&
+        (capture_window || window_from_point != hwnd())) {
       bool msg_handled = false;
       ret = GetWindowEventTarget(GetParent())->HandleMouseMessage(
           message, w_param, l_param, &msg_handled);
