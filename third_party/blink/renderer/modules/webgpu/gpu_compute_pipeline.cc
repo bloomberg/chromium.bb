@@ -4,7 +4,12 @@
 
 #include "third_party/blink/renderer/modules/webgpu/gpu_compute_pipeline.h"
 
+#include "third_party/blink/renderer/modules/webgpu/dawn_conversions.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_compute_pipeline_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_pipeline_layout.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_pipeline_stage_descriptor.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_shader_module.h"
 
 namespace blink {
 
@@ -12,8 +17,19 @@ namespace blink {
 GPUComputePipeline* GPUComputePipeline::Create(
     GPUDevice* device,
     const GPUComputePipelineDescriptor* webgpu_desc) {
-  NOTIMPLEMENTED();
-  return nullptr;
+  DCHECK(device);
+  DCHECK(webgpu_desc);
+
+  DawnComputePipelineDescriptor dawn_desc;
+  dawn_desc.nextInChain = nullptr;
+  dawn_desc.layout = AsDawnType(webgpu_desc->layout());
+
+  auto compute_stage = AsDawnType(webgpu_desc->computeStage());
+  dawn_desc.computeStage = &std::get<0>(compute_stage);
+
+  return MakeGarbageCollected<GPUComputePipeline>(
+      device, device->GetProcs().deviceCreateComputePipeline(
+                  device->GetHandle(), &dawn_desc));
 }
 
 GPUComputePipeline::GPUComputePipeline(GPUDevice* device,
