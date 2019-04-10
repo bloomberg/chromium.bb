@@ -1117,11 +1117,12 @@ void Browser::SetFocusToLocationBar() {
   // Two differences between this and FocusLocationBar():
   // (1) This doesn't get recorded in user metrics, since it's called
   //     internally.
-  // (2) This checks whether the location bar can be focused, and if not, clears
-  //     the focus.  FocusLocationBar() is only reached when the location bar is
-  //     focusable, but this may be reached at other times, e.g. while in
-  //     fullscreen mode, where we need to leave focus in a consistent state.
-  window_->SetFocusToLocationBar();
+  // (2) This is called with |select_all| == false, because this is a renderer
+  //     initiated focus (this method is a WebContentsDelegate override).
+  //     We don't select-all for renderer initiated focuses, as the user may
+  //     currently be typing something while the tab finishes loading. We don't
+  //     want to clobber user input by selecting all while the user is typing.
+  window_->SetFocusToLocationBar(false);
 }
 
 content::KeyboardEventProcessingResult Browser::PreHandleKeyboardEvent(

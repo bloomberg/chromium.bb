@@ -44,8 +44,16 @@ class LocationBar {
   // latency of page loads starting at user input.
   virtual void AcceptInput(base::TimeTicks match_selection_timestamp) = 0;
 
-  // Focuses the location bar and selects its contents.
-  virtual void FocusLocation() = 0;
+  // Focuses the location bar.  Optionally also selects its contents.
+  //
+  // User-initiated focuses should have |select_all| set to true, as users
+  // are accustomed to being able to use Ctrl+L to select-all in the omnibox.
+  //
+  // Renderer-initiated focuses should have |select_all| set to false, as the
+  // user may be in the middle of typing while the tab finishes loading.
+  // In that case, we don't want to select-all and cause the user to clobber
+  // their already-typed text.
+  virtual void FocusLocation(bool select_all) = 0;
 
   // Puts the user into keyword mode with their default search provider.
   virtual void FocusSearch() = 0;

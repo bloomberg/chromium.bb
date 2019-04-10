@@ -209,7 +209,7 @@ void KeyboardAccessTest::TestMenuKeyboardAccess(bool alternate_key_sequence,
       false);
 
   if (focus_omnibox)
-    browser()->window()->GetLocationBar()->FocusLocation();
+    browser()->window()->GetLocationBar()->FocusLocation(false);
 
 #if defined(OS_CHROMEOS)
   // Chrome OS doesn't have a way to just focus the app menu, so we use Alt+F to
@@ -384,7 +384,7 @@ void KeyboardAccessTest::TestMenuKeyboardAccessAndDismiss() {
       browser_view->toolbar_button_provider()->GetAppMenuButton(), browser(),
       true);
 
-  browser()->window()->GetLocationBar()->FocusLocation();
+  browser()->window()->GetLocationBar()->FocusLocation(false);
 
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
       browser(), ui::VKEY_F10, false, false, false, false));

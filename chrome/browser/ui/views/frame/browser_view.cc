@@ -1121,7 +1121,7 @@ LocationBar* BrowserView::GetLocationBar() const {
   return GetLocationBarView();
 }
 
-void BrowserView::SetFocusToLocationBar() {
+void BrowserView::SetFocusToLocationBar(bool select_all) {
   // On Windows, changing focus to the location bar causes the browser window to
   // become active. This can steal focus if the user has another window open
   // already. On Chrome OS, changing focus makes a view believe it has a focus
@@ -1133,7 +1133,7 @@ void BrowserView::SetFocusToLocationBar() {
 #endif
 
   LocationBarView* location_bar = GetLocationBarView();
-  location_bar->FocusLocation();
+  location_bar->FocusLocation(select_all);
   if (!location_bar->omnibox_view()->HasFocus()) {
     // If none of location bar got focus, then clear focus.
     views::FocusManager* focus_manager = GetFocusManager();
