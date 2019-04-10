@@ -15,3 +15,5 @@ SpecialUserProvider::~SpecialUserProvider() {}
 bool SpecialUserProvider::IsSpecialUser() {
   return false;
 }
+
+void SpecialUserProvider::RecordUserTypeMetrics() {}

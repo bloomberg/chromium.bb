@@ -35,6 +35,8 @@ source_set("metrics") {
     "ios_profile_session_durations_service.mm",
     "ios_profile_session_durations_service_factory.h",
     "ios_profile_session_durations_service_factory.mm",
+    "ios_user_type_metrics_provider.h",
+    "ios_user_type_metrics_provider.mm",
     "mobile_session_shutdown_metrics_provider.h",
     "mobile_session_shutdown_metrics_provider.mm",
     "previous_session_info.h",
@@ -78,6 +80,8 @@ source_set("metrics") {
     "//ios/chrome/browser/variations:ios_chrome_ui_string_overrider_factory",
     "//ios/chrome/browser/web_state_list",
     "//ios/chrome/common",
+    "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/user",
     "//ios/web",
     "//url",
   ]

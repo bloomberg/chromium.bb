@@ -17,6 +17,8 @@ class SpecialUserProvider {
   virtual ~SpecialUserProvider();
   // Returns whether the user needs special handling.
   virtual bool IsSpecialUser();
+  // Records UMA metrics about user type.
+  virtual void RecordUserTypeMetrics();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SpecialUserProvider);

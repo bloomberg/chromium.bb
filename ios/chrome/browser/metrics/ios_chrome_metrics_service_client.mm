@@ -53,6 +53,7 @@
 #include "ios/chrome/browser/google/google_brand.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/metrics/ios_chrome_stability_metrics_provider.h"
+#include "ios/chrome/browser/metrics/ios_user_type_metrics_provider.h"
 #include "ios/chrome/browser/metrics/mobile_session_shutdown_metrics_provider.h"
 #include "ios/chrome/browser/signin/ios_chrome_signin_status_metrics_provider_delegate.h"
 #include "ios/chrome/browser/sync/device_info_sync_service_factory.h"
@@ -238,6 +239,9 @@ void IOSChromeMetricsServiceClient::Initialize() {
 
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<translate::TranslateRankerMetricsProvider>());
+
+  metrics_service_->RegisterMetricsProvider(
+      std::make_unique<IOSUserTypeMetricsProvider>());
 }
 
 void IOSChromeMetricsServiceClient::CollectFinalHistograms() {
