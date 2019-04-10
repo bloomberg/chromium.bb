@@ -1147,6 +1147,9 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
 
 - (void)settingsWillBeDismissed {
   DCHECK(!_settingsHasBeenDismissed);
+  [_googleServicesSettingsCoordinator stop];
+  _googleServicesSettingsCoordinator.delegate = nil;
+  _googleServicesSettingsCoordinator = nil;
   _settingsHasBeenDismissed = YES;
   [self.signinInteractionCoordinator cancel];
   [_signinPromoViewMediator signinPromoViewRemoved];
@@ -1326,6 +1329,8 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
 - (void)googleServicesSettingsCoordinatorDidRemove:
     (GoogleServicesSettingsCoordinator*)coordinator {
   DCHECK_EQ(_googleServicesSettingsCoordinator, coordinator);
+  [_googleServicesSettingsCoordinator stop];
+  _googleServicesSettingsCoordinator.delegate = nil;
   _googleServicesSettingsCoordinator = nil;
 }
 

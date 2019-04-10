@@ -267,6 +267,7 @@
     self.signinCompletion(success);
     self.signinCompletion = nil;
   }
+  [self.advancedSigninSettingsCoordinator stop];
   self.advancedSigninSettingsCoordinator = nil;
 }
 

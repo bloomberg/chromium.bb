@@ -20,6 +20,8 @@
 @end
 
 // Coordinator for the Manage Sync Settings TableView Controller.
+// This class doesn't commit any sync changes made by the user. This class
+// relies on GoogleServicesSettingsCoordinator to commit the sync changes.
 @interface ManageSyncSettingsCoordinator : ChromeCoordinator
 
 // Delegate.

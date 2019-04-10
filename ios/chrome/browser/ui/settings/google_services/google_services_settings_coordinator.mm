@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
@@ -49,6 +50,8 @@
 // Coordinator to present the manage sync settings.
 @property(nonatomic, strong)
     ManageSyncSettingsCoordinator* manageSyncSettingsCoordinator;
+// YES if stop has been called.
+@property(nonatomic, assign) BOOL stopDone;
 
 @end
 
@@ -63,6 +66,11 @@
     _mode = mode;
   }
   return self;
+}
+
+- (void)dealloc {
+  // -[GoogleServicesSettingsCoordinator stop] needs to be called explicitly.
+  DCHECK(self.stopDone);
 }
 
 - (void)start {
@@ -95,6 +103,25 @@
   DCHECK(self.navigationController);
   [self.navigationController pushViewController:self.viewController
                                        animated:YES];
+}
+
+- (void)stop {
+  if (self.stopDone) {
+    return;
+  }
+  if (self.authService->IsAuthenticated()) {
+    SyncSetupService* syncSetupService =
+        SyncSetupServiceFactory::GetForBrowserState(self.browserState);
+    if (self.mode == GoogleServicesSettingsModeSettings &&
+        !syncSetupService->IsFirstSetupComplete()) {
+      // Sign-in workflow has been interrupted. FirstSetupComplete flag needs to
+      // be turned on.
+      syncSetupService->PrepareForFirstSyncSetup();
+      syncSetupService->SetFirstSetupComplete();
+    }
+    syncSetupService->CommitSyncChanges();
+  }
+  self.stopDone = YES;
 }
 
 #pragma mark - Private
