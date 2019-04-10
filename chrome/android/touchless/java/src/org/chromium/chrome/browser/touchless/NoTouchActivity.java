@@ -64,8 +64,11 @@ public class NoTouchActivity extends SingleTabActivity {
     /** The class that controls the UI for touchless devices. */
     private TouchlessUiController mUiController;
 
-    /** The class that finishes this activity after a timeout */
+    /** The class that finishes this activity after a timeout. */
     private ChromeInactivityTracker mInactivityTracker;
+
+    /** Tab observer that tracks media state. */
+    private TouchlessTabObserver mTabObserver;
 
     /**
      * Internal class which performs the intent handling operations delegated by IntentHandler.
@@ -144,13 +147,12 @@ public class NoTouchActivity extends SingleTabActivity {
     public void initializeState() {
         mInactivityTracker = new ChromeInactivityTracker(
                 LAST_BACKGROUNDED_TIME_MS_PREF, this.getLifecycleDispatcher());
-        boolean launchNtpDueToInactivity = mInactivityTracker.inactivityThresholdPassed();
+        boolean launchNtpDueToInactivity = shouldForceNTPDueToInactivity();
 
         // SingleTabActivity#initializeState creates a tab based on #getSavedInstanceState(), so if
         // we need to clear it due to inactivity, we should do it before calling
         // super#initializeState.
         if (launchNtpDueToInactivity) resetSavedInstanceState();
-
         super.initializeState();
 
         mKeyFunctionsIPHCoordinator =
@@ -180,6 +182,13 @@ public class NoTouchActivity extends SingleTabActivity {
         resetSavedInstanceState();
     }
 
+    private boolean shouldForceNTPDueToInactivity() {
+        if (mInactivityTracker == null) return false;
+        if (mTabObserver == null) return false;
+
+        return !mTabObserver.isPlayingMedia() && mInactivityTracker.inactivityThresholdPassed();
+    }
+
     @Override
     public void onNewIntent(Intent intent) {
         mIntentHandlingTimeMs = SystemClock.uptimeMillis();
@@ -193,7 +202,7 @@ public class NoTouchActivity extends SingleTabActivity {
 
     @Override
     public void onNewIntentWithNative(Intent intent) {
-        if (mInactivityTracker.inactivityThresholdPassed()) {
+        if (shouldForceNTPDueToInactivity()) {
             if (!mIntentHandler.shouldIgnoreIntent(intent)) {
                 if (!NTP_URL.equals(getActivityTab().getUrl())) {
                     intent.setData(Uri.parse(NTP_URL));
@@ -245,7 +254,8 @@ public class NoTouchActivity extends SingleTabActivity {
     @Override
     protected Tab createTab() {
         Tab tab = super.createTab();
-        tab.addObserver(new TouchlessTabObserver());
+        mTabObserver = new TouchlessTabObserver();
+        tab.addObserver(mTabObserver);
         return tab;
     }
 
