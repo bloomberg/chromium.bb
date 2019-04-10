@@ -34,6 +34,10 @@ extern const base::Feature kUseMultiloginEndpoint;
 
 namespace signin {
 class AccountReconcilorDelegate;
+
+#if defined(OS_ANDROID)
+class ConsistencyCookieManagerAndroid;
+#endif
 }
 
 class SigninClient;
@@ -388,6 +392,11 @@ class AccountReconcilor : public KeyedService,
   // Stores the WKHTTPSystemCookieStore flag value.
   bool is_wkhttp_system_cookie_store_enabled_ = false;
 #endif  // defined(OS_IOS)
+
+#if defined(OS_ANDROID)
+  std::unique_ptr<signin::ConsistencyCookieManagerAndroid>
+      consistency_cookie_manager_;
+#endif
 
   base::WeakPtrFactory<AccountReconcilor> weak_factory_;
 
