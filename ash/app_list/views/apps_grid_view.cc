@@ -705,6 +705,15 @@ void AppsGridView::EndDrag(bool cancel) {
   SetAsFolderDroppingTarget(drop_target_, false);
   ClearDragState();
   UpdatePaging();
+  {
+    // Normally Layout() cancels any animations. At this point there may be a
+    // pending Layout(), force it now so that one isn't triggered part way
+    // through the animation. Further, ignore this layout so that the position
+    // isn't reset.
+    DCHECK(!ignore_layout_);
+    base::AutoReset<bool> auto_reset(&ignore_layout_, true);
+    GetWidget()->LayoutRootViewIfNecessary();
+  }
   AnimateToIdealBounds();
   if (!cancel && !folder_delegate_)
     view_structure_.SaveToMetadata();
@@ -896,6 +905,9 @@ const char* AppsGridView::GetClassName() const {
 }
 
 void AppsGridView::Layout() {
+  if (ignore_layout_)
+    return;
+
   if (bounds_animator_.IsAnimating())
     bounds_animator_.Cancel();
 
