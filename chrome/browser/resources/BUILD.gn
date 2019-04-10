@@ -40,7 +40,7 @@ if (closure_compile) {
       deps += [ "chromeos:closure_compile" ]
     }
     if (enable_extensions) {
-      deps += [ "md_extensions:closure_compile" ]
+      deps += [ "extensions:closure_compile" ]
     }
     if (is_android) {
       deps += [
@@ -217,20 +217,20 @@ if (!is_android && !is_chromeos) {
 if (enable_extensions) {
   grit("extensions_resources") {
     if (optimize_webui) {
-      source = "md_extensions/extensions_resources_vulcanized.grd"
+      source = "extensions/extensions_resources_vulcanized.grd"
 
       # The .grd contains references to generated files.
       source_is_generated = true
 
       deps = [
-        "//chrome/browser/resources/md_extensions:build",
+        "//chrome/browser/resources/extensions:build",
       ]
       grit_flags = [
         "-E",
         "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
       ]
     } else {
-      source = "md_extensions/extensions_resources.grd"
+      source = "extensions/extensions_resources.grd"
     }
 
     defines = chrome_grit_defines

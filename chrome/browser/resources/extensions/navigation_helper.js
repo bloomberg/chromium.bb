@@ -22,9 +22,11 @@ const Dialog = {
   OPTIONS: 'options',
 };
 
-/** @typedef {{page: Page,
+/**
+   @typedef {{page: Page,
                extensionId: (string|undefined),
-               subpage: (!Dialog|undefined)}} */
+               subpage: (!Dialog|undefined)}}
+ */
 let PageState;
 
 cr.define('extensions', function() {
@@ -187,7 +189,7 @@ cr.define('extensions', function() {
       let path;
       switch (entry.page) {
         case Page.LIST:
-            path = '/';
+          path = '/';
           break;
         case Page.ACTIVITY_LOG:
           path = '/?activity=' + entry.extensionId;
