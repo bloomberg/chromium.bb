@@ -1051,11 +1051,44 @@
         },
       },
       'Dawn Mac x64 Builder' : {},
+      'Dawn Mac x64 DEPS Builder' : {},
+      'Dawn Mac x64 DEPS Release (AMD)': {
+        'os_type': 'mac',
+        'browser_config': 'release',
+        'mixins': [
+          'mac_retina_amd_gpu',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_dawn_integration_gtests',
+        },
+      },
+      'Dawn Mac x64 DEPS Release (Intel)': {
+        'os_type': 'mac',
+        'browser_config': 'release',
+        'mixins': [
+          # NOTE explicit use of 10.13 for these bots.
+          'mac_mini_intel_gpu_experimental',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_dawn_integration_gtests',
+        },
+      },
       'Dawn Mac x64 Release (AMD)': {
         'os_type': 'mac',
         'browser_config': 'release',
         'mixins': [
           'mac_retina_amd_gpu',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_dawn_gtests',
+        },
+      },
+      'Dawn Mac x64 Release (Intel)': {
+        'os_type': 'mac',
+        'browser_config': 'release',
+        'mixins': [
+          # NOTE explicit use of 10.13 for these bots.
+          'mac_mini_intel_gpu_experimental',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_gtests',
