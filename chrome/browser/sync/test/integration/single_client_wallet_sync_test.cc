@@ -198,6 +198,16 @@ class SingleClientWalletSyncTest : public SyncTest {
 
   ~SingleClientWalletSyncTest() override {}
 
+  bool SetupClients() override {
+    // Plug in SyncService into PDM so that it can check we use full sync. We
+    // need to do it before starting the sync in SetupSync().
+    if (!SyncTest::SetupClients()) {
+      return false;
+    }
+    GetPersonalDataManager(0)->OnSyncServiceInitialized(GetSyncService(0));
+    return true;
+  }
+
  protected:
   void RefreshAndWaitForOnPersonalDataChanged(
       autofill::PersonalDataManager* pdm) {
