@@ -221,6 +221,7 @@ public class PermissionDialogController
         // call this handler after the primary/secondary handler.
         // When the dialog is dismissed, the delegate's native pointers are
         // freed, and the next queued dialog (if any) is displayed.
+        mAppModalDialogView = null;
         if (mDialogDelegate == null) {
             // We get into here if a tab navigates or is closed underneath the
             // prompt.
@@ -251,7 +252,6 @@ public class PermissionDialogController
             destroyDelegate();
             scheduleDisplay();
         }
-        mAppModalDialogView = null;
     }
 
     @Override
