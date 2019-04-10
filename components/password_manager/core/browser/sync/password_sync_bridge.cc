@@ -396,10 +396,8 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncDataInternal(
                 remote_entity_change, /*sync_time=*/time_now));
         DCHECK_LE(changes.size(), 1U);
         if (changes.empty()) {
-          metrics_util::LogPasswordSyncState(
-              metrics_util::NOT_SYNCING_FAILED_UPDATE);
-          return syncer::ModelError(
-              FROM_HERE, "Failed to update an entry in the password store.");
+          // TODO(mamir): introduce error detection.
+          continue;
         }
         DCHECK(changes[0].primary_key() == primary_key);
         password_store_changes.push_back(changes[0]);
@@ -436,10 +434,8 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncDataInternal(
       // DCHECK_LE(changes.size(), 1U);
       DCHECK_LE(changes.size(), 2U);
       if (changes.empty()) {
-        metrics_util::LogPasswordSyncState(
-            metrics_util::NOT_SYNCING_FAILED_ADD);
-        return syncer::ModelError(
-            FROM_HERE, "Failed to add an entry in the password store.");
+        // TODO(mamir): introduce error detection.
+        continue;
       }
 
       if (changes.size() == 1) {
@@ -515,8 +511,8 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::ApplySyncChanges(
           // and the last one should be the one representing the actual addition
           // in the DB.
           if (changes.empty()) {
-            return syncer::ModelError(
-                FROM_HERE, "Failed to add an entry to the password store.");
+            // TODO(mamir): introduce error detection.
+            continue;
           }
           // TODO(crbug.com/939302): It's not yet clear if the DCHECK_LE below
           // is legit. However, recent crashes suggest that 2 changes are
@@ -543,8 +539,8 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::ApplySyncChanges(
           changes = password_store_sync_->UpdateLoginSync(
               PasswordFromEntityChange(entity_change, /*sync_time=*/time_now));
           if (changes.empty()) {
-            return syncer::ModelError(
-                FROM_HERE, "Failed to update an entry in the password store.");
+            // TODO(mamir): introduce error detection.
+            continue;
           }
           DCHECK_EQ(1U, changes.size());
           DCHECK(changes[0].primary_key() ==
