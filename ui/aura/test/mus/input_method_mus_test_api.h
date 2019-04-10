@@ -25,11 +25,6 @@ class InputMethodMusTestApi {
                                                        std::move(ack_callback));
   }
 
-  static void Disable(InputMethodMus* input_method) {
-    DCHECK(input_method->pending_callbacks_.empty());
-    input_method->ime_driver_.reset();
-  }
-
   static void CallOnDidChangeFocusedClient(InputMethodMus* input_method,
                                            ui::TextInputClient* focused_before,
                                            ui::TextInputClient* focused) {

@@ -141,6 +141,20 @@ void OnPerformWindowMoveDone(
   std::move(callback).Run(success);
 }
 
+void OnDispatchKeyEventComplete(
+    base::OnceCallback<void(ws::mojom::EventResult)> cb,
+    bool result) {
+  std::move(cb).Run(result ? ws::mojom::EventResult::HANDLED
+                           : ws::mojom::EventResult::UNHANDLED);
+}
+
+void OnDispatchKeyEventPostIMEComplete(
+    base::OnceCallback<void(ws::mojom::EventResult)> cb,
+    bool handled,
+    bool stopped_propagation) {
+  OnDispatchKeyEventComplete(std::move(cb), handled);
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -192,12 +206,12 @@ WindowTreeHostMus::WindowTreeHostMus(WindowTreeHostMusInitParams init_params)
   SetPlatformWindow(std::make_unique<ui::StubWindow>(
       this, use_default_accelerated_widget, bounds_in_pixels));
 
-  if (!init_params.use_classic_ime) {
+  if (!features::IsMojoImfEnabled()) {
     // NOTE: This creates one InputMethodMus per display, despite the
     // call to SetSharedInputMethod() below.
-    input_method_ = std::make_unique<InputMethodMus>(this, this);
-    input_method_->Init(init_params.window_tree_client->connector());
-    SetSharedInputMethod(input_method_.get());
+    input_method_mus_ = std::make_unique<InputMethodMus>(this, this);
+    input_method_mus_->Init(init_params.window_tree_client->connector());
+    SetSharedInputMethod(input_method_mus_.get());
   }
 
   compositor()->SetBackgroundColor(SK_ColorTRANSPARENT);
@@ -225,6 +239,22 @@ WindowTreeHostMus* WindowTreeHostMus::ForWindow(aura::Window* window) {
   }
 
   return root->GetProperty(kWindowTreeHostMusKey);
+}
+
+void WindowTreeHostMus::DispatchKeyEventFromServer(
+    ui::KeyEvent* event,
+    base::OnceCallback<void(ws::mojom::EventResult)> cb) {
+  ui::InputMethod* input_method = GetInputMethod();
+  if (input_method) {
+    ui::AsyncKeyDispatcher* dispatcher = input_method->GetAsyncKeyDispatcher();
+    if (dispatcher) {
+      dispatcher->DispatchKeyEventAsync(
+          event, base::BindOnce(&OnDispatchKeyEventComplete, std::move(cb)));
+      return;
+    }
+  }
+  DispatchKeyEventPostIME(
+      event, base::BindOnce(&OnDispatchKeyEventPostIMEComplete, std::move(cb)));
 }
 
 void WindowTreeHostMus::SetBounds(

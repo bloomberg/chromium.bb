@@ -133,6 +133,11 @@ const base::Feature kSingleProcessMash = {"SingleProcessMash",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+#if defined(OS_CHROMEOS)
+// Connecting the client and IME engine via Mojo. https://crbug.com/937167
+const base::Feature kMojoIMF = {"MojoIMF", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 bool IsUsingWindowService() {
   return IsSingleProcessMash() || IsMultiProcessMash();
 }
@@ -148,6 +153,14 @@ bool IsMashOopVizEnabled() {
 bool IsSingleProcessMash() {
   return base::FeatureList::IsEnabled(features::kSingleProcessMash) &&
          !base::FeatureList::IsEnabled(features::kMash);
+}
+
+bool IsMojoImfEnabled() {
+#if defined(OS_CHROMEOS)
+  return base::FeatureList::IsEnabled(features::kMojoIMF);
+#else
+  return false;
+#endif
 }
 
 bool IsAutomaticUiAdjustmentsForTouchEnabled() {

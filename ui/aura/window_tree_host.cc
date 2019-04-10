@@ -252,7 +252,8 @@ ui::InputMethod* WindowTreeHost::GetInputMethod() {
 }
 
 void WindowTreeHost::SetSharedInputMethod(ui::InputMethod* input_method) {
-  DCHECK(!input_method_);
+  if (input_method_ && owned_input_method_)
+    delete input_method_;
   input_method_ = input_method;
   owned_input_method_ = false;
 }
