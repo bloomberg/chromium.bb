@@ -15,7 +15,7 @@
 #include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/engine/browser/frame_impl.h"
 #include "fuchsia/engine/test/web_engine_browser_test.h"
-#include "fuchsia/runners/cast/not_implemented_api_bindings.h"
+#include "fuchsia/runners/cast/cast_platform_bindings_ids.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -57,8 +57,9 @@ class StubBindingsTest : public cr_fuchsia::WebEngineBrowserTest,
     fuchsia::mem::Buffer stub_buf = cr_fuchsia::MemBufferFromFile(
         base::File(stub_path, base::File::FLAG_OPEN | base::File::FLAG_READ));
     CHECK(stub_buf.vmo);
-    frame_->ExecuteJavaScript(
-        {"*"}, std::move(stub_buf), chromium::web::ExecuteMode::ON_PAGE_LOAD,
+    frame_->AddJavaScriptBindings(
+        static_cast<uint64_t>(CastPlatformBindingsId::NOT_IMPLEMENTED_API),
+        {"*"}, std::move(stub_buf),
         [](bool result) { CHECK(result) << "Couldn't inject stub bindings."; });
 
     chromium::web::NavigationControllerPtr controller;

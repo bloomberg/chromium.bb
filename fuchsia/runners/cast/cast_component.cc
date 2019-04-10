@@ -14,8 +14,8 @@
 #include "base/path_service.h"
 #include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/fidl/chromium/cast/cpp/fidl.h"
+#include "fuchsia/runners/cast/cast_platform_bindings_ids.h"
 #include "fuchsia/runners/cast/cast_runner.h"
-#include "fuchsia/runners/cast/not_implemented_api_bindings.h"
 #include "fuchsia/runners/common/web_component.h"
 
 namespace {
@@ -69,8 +69,9 @@ void CastComponent::InitializeCastPlatformBindings() {
   fuchsia::mem::Buffer stub_buf = cr_fuchsia::MemBufferFromFile(
       base::File(stub_path, base::File::FLAG_OPEN | base::File::FLAG_READ));
   CHECK(stub_buf.vmo);
-  frame()->ExecuteJavaScript(
-      {"*"}, std::move(stub_buf), chromium::web::ExecuteMode::ON_PAGE_LOAD,
+  frame()->AddJavaScriptBindings(
+      static_cast<uint64_t>(CastPlatformBindingsId::NOT_IMPLEMENTED_API), {"*"},
+      std::move(stub_buf),
       [](bool result) { CHECK(result) << "Couldn't inject stub bindings."; });
 
   cast_channel_ = std::make_unique<CastChannelBindings>(
