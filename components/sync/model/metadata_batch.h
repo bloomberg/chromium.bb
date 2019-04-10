@@ -15,7 +15,8 @@
 namespace syncer {
 
 // Map of storage keys to EntityMetadata proto.
-using EntityMetadataMap = std::map<std::string, sync_pb::EntityMetadata>;
+using EntityMetadataMap =
+    std::map<std::string, std::unique_ptr<sync_pb::EntityMetadata>>;
 
 // Container used to pass sync metadata from services to their processor.
 class MetadataBatch {

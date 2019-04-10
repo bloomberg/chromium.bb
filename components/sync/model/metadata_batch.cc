@@ -29,9 +29,7 @@ EntityMetadataMap MetadataBatch::TakeAllMetadata() {
 void MetadataBatch::AddMetadata(
     const std::string& storage_key,
     std::unique_ptr<sync_pb::EntityMetadata> metadata) {
-  // TODO(crbug.com/914396): change metadata_map_ type to avoid unnecessary copy
-  // here.
-  metadata_map_.insert(std::make_pair(storage_key, *metadata));
+  metadata_map_.insert(std::make_pair(storage_key, std::move(metadata)));
 }
 
 const sync_pb::ModelTypeState& MetadataBatch::GetModelTypeState() const {
