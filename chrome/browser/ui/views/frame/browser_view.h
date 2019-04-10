@@ -364,7 +364,8 @@ class BrowserView : public BrowserWindow,
   void ShowUpdateChromeDialog() override;
   void ShowIntentPickerBubble(
       std::vector<IntentPickerBubbleView::AppInfo> app_info,
-      bool disable_stay_in_chrome,
+      bool show_stay_in_chrome,
+      bool show_remember_selection,
       IntentPickerResponse callback) override;
   void SetIntentPickerViewVisibility(bool visible) override;
   void ShowBookmarkBubble(const GURL& url, bool already_bookmarked) override;

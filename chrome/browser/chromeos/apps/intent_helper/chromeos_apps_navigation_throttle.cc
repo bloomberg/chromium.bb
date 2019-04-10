@@ -133,6 +133,7 @@ void ChromeOsAppsNavigationThrottle::FindPwaForUrlAndShowIntentPickerForApps(
       FindPwaForUrl(web_contents, url, std::move(apps));
   apps::AppsNavigationThrottle::ShowIntentPickerBubbleForApps(
       web_contents, std::move(apps_for_picker),
+      /*show_remember_selection=*/true,
       base::BindOnce(&OnIntentPickerClosed, web_contents,
                      ui_auto_display_service, url));
 }
@@ -256,6 +257,10 @@ IntentPickerResponse ChromeOsAppsNavigationThrottle::GetOnPickerClosedCallback(
     const GURL& url) {
   return base::BindOnce(&OnIntentPickerClosed, web_contents,
                         ui_auto_display_service, url);
+}
+
+bool ChromeOsAppsNavigationThrottle::ShouldShowRememberSelection() {
+  return true;
 }
 
 void ChromeOsAppsNavigationThrottle::CloseTab() {

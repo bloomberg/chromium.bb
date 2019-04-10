@@ -80,6 +80,7 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
   static void ShowIntentPickerBubbleForApps(
       content::WebContents* web_contents,
       std::vector<IntentPickerAppInfo> apps,
+      bool show_remember_selection,
       IntentPickerResponse callback);
 
   explicit AppsNavigationThrottle(content::NavigationHandle* navigation_handle);
@@ -186,6 +187,8 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
       content::WebContents* web_contents,
       IntentPickerAutoDisplayService* ui_auto_display_service,
       const GURL& url);
+
+  virtual bool ShouldShowRememberSelection();
 
   // Keeps track of whether we already shown the UI or preferred app. Since
   // AppsNavigationThrottle cannot wait for the user (due to the non-blocking
