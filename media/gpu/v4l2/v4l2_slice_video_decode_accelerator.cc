@@ -2096,7 +2096,7 @@ bool V4L2SliceVideoDecodeAccelerator::OnMemoryDump(
   // OnMemoryDump() must be performed on |decoder_thread_|.
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
 
-  // VIDIOC_OUTPUT queue's memory usage.
+  // VIDEO_OUTPUT queue's memory usage.
   const size_t input_queue_buffers_count = input_buffer_map_.size();
   size_t input_queue_memory_usage = 0;
   std::string input_queue_buffers_memory_type =
@@ -2105,7 +2105,7 @@ bool V4L2SliceVideoDecodeAccelerator::OnMemoryDump(
     input_queue_memory_usage += input_record.length;
   }
 
-  // VIDIOC_CAPTURE queue's memory usage.
+  // VIDEO_CAPTURE queue's memory usage.
   const size_t output_queue_buffers_count = output_buffer_map_.size();
   size_t output_queue_memory_usage = 0;
   std::string output_queue_buffers_memory_type =
