@@ -7,6 +7,7 @@
 #import <UIKit/UIKit.h>
 
 #include "base/logging.h"
+#include "base/metrics/user_metrics.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
@@ -125,6 +126,8 @@ using l10n_util::GetNSString;
 // Called by the cancel button from the navigation controller. Presents a
 // UIAlert to ask the user if wants to cancel the sign-in.
 - (void)navigationCancelButtonAction {
+  base::RecordAction(
+      base::UserMetricsAction("Signin_Signin_CancelAdvancedSyncSettings"));
   self.cancelConfirmationAlertCoordinator = [[AlertCoordinator alloc]
       initWithBaseViewController:self.advancedSigninSettingsNavigationController
                            title:
@@ -157,6 +160,8 @@ using l10n_util::GetNSString;
 // sync preferences chosen by the user, starts the sync, close the completion
 // callback and closes the advanced sign-in settings.
 - (void)navigationConfirmButtonAction {
+  base::RecordAction(
+      base::UserMetricsAction("Signin_Signin_ConfirmAdvancedSyncSettings"));
   DCHECK_EQ(self.advancedSigninSettingsNavigationController,
             self.baseViewController.presentedViewController);
   void (^completion)(void) = ^{
@@ -172,7 +177,12 @@ using l10n_util::GetNSString;
   [self.cancelConfirmationAlertCoordinator stop];
   self.cancelConfirmationAlertCoordinator = nil;
   if (cancelSync) {
+    base::RecordAction(base::UserMetricsAction(
+        "Signin_Signin_ConfirmCancelAdvancedSyncSettings"));
     [self cancelWithDismiss:YES];
+  } else {
+    base::RecordAction(base::UserMetricsAction(
+        "Signin_Signin_CancelCancelAdvancedSyncSettings"));
   }
 }
 
