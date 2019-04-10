@@ -254,7 +254,7 @@ public class DownloadNotificationService {
         startTrackingInProgressDownload(id);
     }
 
-    public void cancelNotification(int notificationId) {
+    private void cancelNotification(int notificationId) {
         // TODO(b/65052774): Add back NOTIFICATION_NAMESPACE when able to.
         mNotificationManager.cancel(notificationId);
     }
