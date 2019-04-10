@@ -1019,7 +1019,8 @@ message SystemProfileProto {
   // Next Tag: 5
   message LinkedAndroidPhoneData {
     // The pii-free model name of the phone used for Better Together with this
-    // device. Will not be set if Better Together is not set up.
+    // device. Will not be set if Better Together is not set up. Hashed using
+    // variations::HashName() to produce a 32-bit SHA1 hash.
     optional fixed32 phone_model_name_hash = 1;
 
     // True if SmartLock is enabled on this Chromebook.
