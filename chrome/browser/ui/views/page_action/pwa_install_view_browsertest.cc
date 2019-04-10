@@ -221,6 +221,25 @@ IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest,
   EXPECT_TRUE(pwa_install_view_->is_animating_label());
 }
 
+// Tests that the animation is suppressed for navigations within the same scope
+// for an exponentially increasing period of time.
+IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest, AnimationSuppression) {
+  std::vector<bool> animation_shown_for_day = {
+      true,  true,  false, true,  false, false, false, true,
+      false, false, false, false, false, false, false, true,
+  };
+  for (size_t day = 0; day < animation_shown_for_day.size(); ++day) {
+    SCOPED_TRACE(testing::Message() << "day: " << day);
+
+    banners::AppBannerManager::SetTimeDeltaForTesting(day);
+
+    NavigateToURL(GetInstallableAppURL());
+    ASSERT_TRUE(app_banner_manager_->WaitForInstallableCheck());
+    EXPECT_EQ(pwa_install_view_->is_animating_label(),
+              animation_shown_for_day[day]);
+  }
+}
+
 // Tests that the icon label is visible against the omnibox background after the
 // native widget becomes active.
 IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest, TextContrast) {
