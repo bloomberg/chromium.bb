@@ -45,7 +45,6 @@ struct TabReloadTestCase {
 // Test cases for when Google is the initial, but not final provider.
 const TabReloadTestCase kTabReloadTestCasesFinalProviderNotGoogle[] = {
     {"Local NTP", chrome::kChromeSearchLocalNtpUrl, true, true, true, true},
-    {"Remote NTP", "https://www.google.com/newtab", true, true, false, false},
     {"Remote SERP", "https://www.google.com/url?bar=search+terms", false, false,
      false, false},
     {"Other NTP", "https://bar.com/newtab", false, false, false, false}};
@@ -53,7 +52,6 @@ const TabReloadTestCase kTabReloadTestCasesFinalProviderNotGoogle[] = {
 // Test cases for when Google is both the initial and final provider.
 const TabReloadTestCase kTabReloadTestCasesFinalProviderGoogle[] = {
     {"Local NTP", chrome::kChromeSearchLocalNtpUrl, true, true, true, true},
-    {"Remote NTP", "https://www.google.com/newtab", true, false, true, true},
     {"Remote SERP", "https://www.google.com/url?bar=search+terms", false, false,
      false, false},
     {"Other NTP", "https://bar.com/newtab", false, false, false, false}};
