@@ -11,7 +11,10 @@ namespace manifest_keys {
 
 const char kAboutPage[] = "about_page";
 const char kAction[] = "action";
+const char kActionDefaultIcon[] = "default_icon";
+const char kActionDefaultPopup[] = "default_popup";
 const char kActionDefaultState[] = "default_state";
+const char kActionDefaultTitle[] = "default_title";
 const char kAllFrames[] = "all_frames";
 const char kAltKey[] = "altKey";
 const char kApp[] = "app";
@@ -56,6 +59,7 @@ const char kExternallyConnectable[] = "externally_connectable";
 const char kEventRules[] = "event_rules";
 const char kFileAccessList[] = "file_access";
 const char kFileFilters[] = "file_filters";
+const char kFileBrowserHandlerId[] = "id";
 const char kFileBrowserHandlers[] = "file_browser_handlers";
 const char kFileHandlers[] = "file_handlers";
 const char kFileHandlerExtensions[] = "extensions";
@@ -122,10 +126,6 @@ const char kOverrideSearchProvider[] =
     "chrome_settings_overrides.search_provider";
 const char kOverrideStartupPage[] = "chrome_settings_overrides.startup_pages";
 const char kPageAction[] = "page_action";
-const char kPageActionDefaultIcon[] = "default_icon";
-const char kPageActionDefaultPopup[] = "default_popup";
-const char kPageActionDefaultTitle[] = "default_title";
-const char kPageActionId[] = "id";
 const char kPermissions[] = "permissions";
 const char kPlatformAppBackground[] = "app.background";
 const char kPlatformAppBackgroundPage[] = "app.background.page";
@@ -241,8 +241,6 @@ const char kRunAtDocumentStart[] = "document_start";
 const char kRunAtDocumentEnd[] = "document_end";
 const char kRunAtDocumentIdle[] = "document_idle";
 const char kPageActionCommandEvent[] = "_execute_page_action";
-const char kPageActionTypeTab[] = "tab";
-const char kPageActionTypePermanent[] = "permanent";
 const char kLaunchContainerPanelDeprecated[] = "panel";
 const char kLaunchContainerTab[] = "tab";
 const char kLaunchContainerWindow[] = "window";
@@ -310,7 +308,10 @@ const char kInvalidAboutPage[] = "Invalid value for 'about_page'.";
 const char kInvalidAboutPageExpectRelativePath[] =
     "Invalid value for 'about_page'. Value must be a relative path.";
 const char kInvalidAction[] = "Invalid value for 'action'.";
+const char kInvalidActionDefaultIcon[] = "Invalid value for 'default_icon'.";
+const char kInvalidActionDefaultPopup[] = "Invalid type for 'default_popup'.";
 const char kInvalidActionDefaultState[] = "Invalid value for 'default_state'.";
+const char kInvalidActionDefaultTitle[] = "Invalid value for 'default_title'.";
 const char kInvalidAllFrames[] =
     "Invalid value for 'content_scripts[*].all_frames'.";
 const char kInvalidAppIconColor[] = "Invalid value for app.icon_color.";
@@ -400,6 +401,8 @@ const char kInvalidFileAccessValue[] =
     "Invalid value for 'file_access[*]'.";
 const char kInvalidFileBrowserHandler[] =
     "Invalid value for 'file_browser_handlers'.";
+const char kInvalidFileBrowserHandlerId[] =
+    "Required value 'id' is missing or invalid.";
 const char kInvalidFileBrowserHandlerMissingPermission[] =
     "Declaring file browser handlers requires the fileBrowserHandler manifest "
     "permission.";
@@ -578,16 +581,6 @@ const char kInvalidOptionsUIOpenInTab[] =
     "Invalid value for 'options_ui.open_in_tab'.";
 const char kInvalidPageAction[] =
     "Invalid value for 'page_action'.";
-const char kInvalidPageActionDefaultTitle[] =
-    "Invalid value for 'default_title'.";
-const char kInvalidPageActionIconPath[] =
-    "Invalid value for 'page_action.default_icon'.";
-const char kInvalidPageActionId[] =
-    "Required value 'id' is missing or invalid.";
-const char kInvalidPageActionPopup[] =
-    "Invalid type for page action popup.";
-const char kInvalidPageActionPopupPath[] =
-    "Invalid value for page action popup path [*].";
 const char kInvalidPermissionWithDetail[] =
     "Invalid value for 'permissions[*]': *.";
 const char kInvalidPermission[] =

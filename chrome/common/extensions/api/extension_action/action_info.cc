@@ -65,15 +65,15 @@ std::unique_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
   // Read the page action |default_icon| (optional).
   // The |default_icon| value can be either dictionary {icon size -> icon path}
   // or non empty string value.
-  if (dict->HasKey(keys::kPageActionDefaultIcon)) {
+  if (dict->HasKey(keys::kActionDefaultIcon)) {
     const base::DictionaryValue* icons_value = NULL;
     std::string default_icon;
-    if (dict->GetDictionary(keys::kPageActionDefaultIcon, &icons_value)) {
+    if (dict->GetDictionary(keys::kActionDefaultIcon, &icons_value)) {
       if (!manifest_handler_helpers::LoadIconsFromDictionary(
               icons_value, &result->default_icon, error)) {
         return nullptr;
       }
-    } else if (dict->GetString(keys::kPageActionDefaultIcon, &default_icon) &&
+    } else if (dict->GetString(keys::kActionDefaultIcon, &default_icon) &&
                manifest_handler_helpers::NormalizeAndValidatePath(
                    &default_icon)) {
       // Choose the most optimistic (highest) icon density regardless of the
@@ -82,26 +82,25 @@ std::unique_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
       result->default_icon.Add(extension_misc::EXTENSION_ICON_GIGANTOR,
                                default_icon);
     } else {
-      *error = base::ASCIIToUTF16(errors::kInvalidPageActionIconPath);
+      *error = base::ASCIIToUTF16(errors::kInvalidActionDefaultIcon);
       return nullptr;
     }
   }
 
   // Read the page action title from |default_title| if present, |name| if not
   // (both optional).
-  if (dict->HasKey(keys::kPageActionDefaultTitle)) {
-    if (!dict->GetString(keys::kPageActionDefaultTitle,
-                         &result->default_title)) {
-      *error = base::ASCIIToUTF16(errors::kInvalidPageActionDefaultTitle);
+  if (dict->HasKey(keys::kActionDefaultTitle)) {
+    if (!dict->GetString(keys::kActionDefaultTitle, &result->default_title)) {
+      *error = base::ASCIIToUTF16(errors::kInvalidActionDefaultTitle);
       return nullptr;
     }
   }
 
   // Read the action's default popup (optional).
-  if (dict->HasKey(keys::kPageActionDefaultPopup)) {
+  if (dict->HasKey(keys::kActionDefaultPopup)) {
     std::string url_str;
-    if (!dict->GetString(keys::kPageActionDefaultPopup, &url_str)) {
-      *error = base::ASCIIToUTF16(errors::kInvalidPageActionPopup);
+    if (!dict->GetString(keys::kActionDefaultPopup, &url_str)) {
+      *error = base::ASCIIToUTF16(errors::kInvalidActionDefaultPopup);
       return nullptr;
     }
 
@@ -110,8 +109,7 @@ std::unique_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
       result->default_popup_url = Extension::GetResourceURL(extension->url(),
                                                             url_str);
       if (!result->default_popup_url.is_valid()) {
-        *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidPageActionPopupPath, url_str);
+        *error = base::ASCIIToUTF16(errors::kInvalidActionDefaultPopup);
         return nullptr;
       }
     } else {
