@@ -1,9 +1,9 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="../controls/settings_slider.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
 <link rel="import" href="../i18n_setup.html">
@@ -50,13 +50,8 @@
         label="$i18n{chromeVoxLabel}">
     </settings-toggle-button>
     <iron-collapse opened="[[prefs.settings.accessibility.value]]">
-      <div class="settings-box"
-          on-click="onChromeVoxSettingsTap_" actionable>
-        <div class="start" aria-hidden="true">$i18n{chromeVoxOptionsLabel}</div>
-        <paper-icon-button-light class="icon-external">
-          <button aria-label="$i18n{chromeVoxOptionsLabel}"></button>
-        </paper-icon-button-light>
-      </div>
+      <cr-link-row class="settings-box" on-click="onChromeVoxSettingsTap_"
+          label="$i18n{chromeVoxOptionsLabel}" external></cr-link-row>
     </iron-collapse>
     <settings-toggle-button
         pref="{{prefs.settings.a11y.select_to_speak}}"
@@ -68,15 +63,8 @@
             '$i18nPolymer{selectToSpeakDescriptionWithoutKeyboard}')]]">
     </settings-toggle-button>
     <iron-collapse opened="[[prefs.settings.a11y.select_to_speak.value]]">
-      <div class="settings-box"
-          on-click="onSelectToSpeakSettingsTap_" actionable>
-        <div class="start" aria-hidden="true">
-          $i18n{selectToSpeakOptionsLabel}
-        </div>
-        <paper-icon-button-light class="icon-external">
-          <button aria-label="$i18n{selectToSpeakOptionsLabel}"></button>
-        </paper-icon-button-light>
-      </div>
+      <cr-link-row class="settings-box" on-click="onSelectToSpeakSettingsTap_"
+          label="$i18n{selectToSpeakOptionsLabel}" external></cr-link-row>
     </iron-collapse>
 
     <cr-link-row class="hr" label="$i18n{manageTtsSettings}"
@@ -236,10 +224,9 @@
             $i18n{a11yWebStore}
           </div>
         </div>
-        <paper-icon-button-light actionable class="icon-external">
-          <button aria-label="$i18n{additionalFeaturesTitle}"
-              aria-describedby="moreFeaturesSecondary"></button>
-        </paper-icon-button-light>
+        <cr-icon-button actionable class="icon-external"
+            aria-label="$i18n{additionalFeaturesTitle}"
+            aria-describedby="moreFeaturesSecondary"></cr-icon-button>
       </a>
     </template>
   </template>
