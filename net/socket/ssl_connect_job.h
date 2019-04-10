@@ -158,6 +158,9 @@ class NET_EXPORT_PRIVATE SSLConnectJob : public ConnectJob,
 
   HttpResponseInfo error_response_info_;
 
+  // True if a proxy returned a redirect, resulting in an error.
+  bool proxy_redirect_;
+
   ConnectionAttempts connection_attempts_;
   // The address of the server the connect job is connected to. Populated if
   // and only if the connect job is connected *directly* to the server (not
