@@ -50,6 +50,8 @@ class VULKAN_EXPORT VulkanSurface {
   VkSurfaceFormatKHR surface_format() const { return surface_format_; }
 
  private:
+  bool CreateSwapChain(const gfx::Size& size);
+
   const VkInstance vk_instance_;
   gfx::Size size_;
   VkSurfaceKHR surface_ = VK_NULL_HANDLE;

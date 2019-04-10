@@ -86,9 +86,15 @@ std::unique_ptr<VulkanSurfaceX11> VulkanSurfaceX11::Create(
     VkInstance vk_instance,
     Window parent_window) {
   XDisplay* display = gfx::GetXDisplay();
-  Window window =
-      XCreateWindow(display, parent_window, 0, 0, 1, 1, 0, CopyFromParent,
-                    InputOutput, CopyFromParent, 0, nullptr);
+  XWindowAttributes attributes;
+  if (!XGetWindowAttributes(display, parent_window, &attributes)) {
+    LOG(ERROR) << "XGetWindowAttributes failed for window " << parent_window
+               << ".";
+    return nullptr;
+  }
+  Window window = XCreateWindow(display, parent_window, 0, 0, attributes.width,
+                                attributes.height, 0, CopyFromParent,
+                                InputOutput, CopyFromParent, 0, nullptr);
   if (!window) {
     LOG(ERROR) << "XCreateWindow failed.";
     return nullptr;
