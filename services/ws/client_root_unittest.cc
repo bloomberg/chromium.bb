@@ -106,14 +106,13 @@ TEST(ClientRootTest, EmbedBoundsInScreen) {
   EXPECT_TRUE(embedding_helper->changes()->empty());
   top_level->AddChild(window);
   std::vector<Change>* embedding_changes = embedding_helper->changes();
-  auto iter =
-      FirstChangeOfType(*embedding_changes, CHANGE_TYPE_NODE_BOUNDS_CHANGED);
-  ASSERT_NE(iter, embedding_changes->end());
-  EXPECT_EQ(gfx::Rect(1, 2, 3, 4), iter->bounds);
+  // Screen bounds of |embed_window| is the same as its initial bounds. Hence
+  // no bounds change fired.
   embedding_changes->clear();
 
   window->SetBounds(gfx::Rect(11, 12, 100, 100));
-  iter = FirstChangeOfType(*embedding_changes, CHANGE_TYPE_NODE_BOUNDS_CHANGED);
+  auto iter =
+      FirstChangeOfType(*embedding_changes, CHANGE_TYPE_NODE_BOUNDS_CHANGED);
   ASSERT_NE(iter, embedding_changes->end());
   EXPECT_EQ(gfx::Rect(12, 14, 3, 4), iter->bounds);
   embedding_changes->clear();

@@ -1088,7 +1088,7 @@ TEST_F(WindowTreeHostManagerTest, SetPrimaryWithFourDisplays) {
 }
 
 // Tests that SetPrimaryDisplayId updates the Window Service client.
-TEST_F(WindowTreeHostManagerTest, SetPrimaryDisplayIdUpdateWSClientDisplayId) {
+TEST_F(WindowTreeHostManagerTest, SetPrimaryDisplayIdUpdateWSClient) {
   // Create two displays.
   UpdateDisplay("200x200,300x300");
   ASSERT_EQ(2200000000, display::Screen::GetScreen()->GetPrimaryDisplay().id());
@@ -1102,7 +1102,7 @@ TEST_F(WindowTreeHostManagerTest, SetPrimaryDisplayIdUpdateWSClientDisplayId) {
   // Create the first window (0,1) on primary display 2200000000.
   ws_client_changes->clear();
   std::unique_ptr<aura::Window> window_in_primary =
-      CreateTestWindow(gfx::Rect(0, 0, 10, 20));
+      CreateTestWindow(gfx::Rect(0, 0, 30, 40));
   auto iter = FirstChangeOfType(*ws_client_changes,
                                 ws::CHANGE_TYPE_ON_TOP_LEVEL_CREATED);
   ASSERT_NE(iter, ws_client_changes->end());
@@ -1112,7 +1112,7 @@ TEST_F(WindowTreeHostManagerTest, SetPrimaryDisplayIdUpdateWSClientDisplayId) {
   // Create the second window (0,2) on non-primary display 2200000001.
   ws_client_changes->clear();
   std::unique_ptr<aura::Window> window_in_non_primary =
-      CreateTestWindow(gfx::Rect(300, 0, 30, 40));
+      CreateTestWindow(gfx::Rect(300, 0, 50, 60));
   iter = FirstChangeOfType(*ws_client_changes,
                            ws::CHANGE_TYPE_ON_TOP_LEVEL_CREATED);
   ASSERT_NE(iter, ws_client_changes->end());
@@ -1121,7 +1121,7 @@ TEST_F(WindowTreeHostManagerTest, SetPrimaryDisplayIdUpdateWSClientDisplayId) {
 
   // Set primary display id to the non-primary 2200000001. This triggers
   // swapping of WindowTreeHosts and client should receive updates about the
-  // display id change.
+  // display id change and bounds change if their screen bounds is changed..
   ws_client_changes->clear();
   Shell::Get()->window_tree_host_manager()->SetPrimaryDisplayId(
       non_primary_display_id);
@@ -1131,6 +1131,13 @@ TEST_F(WindowTreeHostManagerTest, SetPrimaryDisplayIdUpdateWSClientDisplayId) {
   EXPECT_TRUE(
       ContainsChange(*ws_client_changes,
                      "DisplayChanged window_id=0,2 display_id=2200000000"));
+
+  // Window (0,2) on non-primary display changes its screen bounds. But
+  // window (0,1) on the primary display does not because the primary display
+  // origin is always (0,0).
+  EXPECT_TRUE(ContainsChange(
+      *ws_client_changes,
+      "BoundsChanged window=0,2 bounds=-100,0 50x60 local_surface_id=*"));
 }
 
 TEST_F(WindowTreeHostManagerTest, OverscanInsets) {
