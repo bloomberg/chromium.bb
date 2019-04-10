@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "components/sync_preferences/pref_service_syncable.h"
+#include "components/variations/net/variations_http_headers.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_thread.h"
@@ -88,6 +89,11 @@ net::URLRequestContextGetter* ChromeBrowserState::GetRequestContext() {
         base::WrapRefCounted(CreateRequestContext(&protocol_handlers));
   }
   return request_context_getter_.get();
+}
+
+void ChromeBrowserState::UpdateCorsExemptHeader(
+    network::mojom::NetworkContextParams* params) {
+  variations::UpdateCorsExemptHeaderForVariations(params);
 }
 
 }  // namespace ios

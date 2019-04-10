@@ -4,6 +4,9 @@
 
 #include "ios/web/public/network_context_owner.h"
 
+#include <string>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
@@ -49,7 +52,9 @@ class NetworkContextOwnerTest : public PlatformTest {
 TEST_F(NetworkContextOwnerTest, Basic) {
   EXPECT_FALSE(network_context_.is_bound());
   network_context_owner_ = std::make_unique<NetworkContextOwner>(
-      context_getter_.get(), &network_context_);
+      context_getter_.get(),
+      /*cors_exempt_header_list=*/std::vector<std::string>(),
+      &network_context_);
   EXPECT_TRUE(network_context_.is_bound());
   WatchForErrors();
   base::RunLoop().RunUntilIdle();
@@ -66,7 +71,9 @@ TEST_F(NetworkContextOwnerTest, Basic) {
 TEST_F(NetworkContextOwnerTest, ShutdownHandling) {
   EXPECT_FALSE(network_context_.is_bound());
   network_context_owner_ = std::make_unique<NetworkContextOwner>(
-      context_getter_.get(), &network_context_);
+      context_getter_.get(),
+      /*cors_exempt_header_list=*/std::vector<std::string>(),
+      &network_context_);
   EXPECT_TRUE(network_context_.is_bound());
   WatchForErrors();
   base::RunLoop().RunUntilIdle();

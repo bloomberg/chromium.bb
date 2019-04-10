@@ -34,6 +34,7 @@ include_rules = [
   "+components/translate/core",
   "+components/translate/ios",
   "+components/language/ios",
+  "+components/variations/net",
   "+components/version_info",
   "+components/webdata_services",
   "+components/web_resource",

@@ -109,7 +109,8 @@ void NetworkServiceConfigTestUtil::CreateNetworkContextOnNetworkRunner(
   DCHECK(net_runner_->RunsTasksInCurrentSequence());
   network_context_ = std::make_unique<network::NetworkContext>(
       nullptr, std::move(network_context_request),
-      url_request_context_getter_->GetURLRequestContext());
+      url_request_context_getter_->GetURLRequestContext(),
+      /*cors_exempt_header_list=*/std::vector<std::string>());
   if (notify)
     notify->Signal();
 }

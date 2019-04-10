@@ -80,7 +80,7 @@ void CorsURLLoaderFactory::CreateLoaderAndStart(
     const ResourceRequest& resource_request,
     mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
-  if (!IsSane(resource_request)) {
+  if (!IsSane(context_, resource_request)) {
     client->OnComplete(URLLoaderCompletionStatus(net::ERR_INVALID_ARGUMENT));
     return;
   }
@@ -120,7 +120,8 @@ void CorsURLLoaderFactory::DeleteIfNeeded() {
     context_->DestroyURLLoaderFactory(this);
 }
 
-bool CorsURLLoaderFactory::IsSane(const ResourceRequest& request) {
+bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
+                                  const ResourceRequest& request) {
   // CORS needs a proper origin (including a unique opaque origin). If the
   // request doesn't have one, CORS cannot work.
   if (!request.request_initiator &&
@@ -140,6 +141,21 @@ bool CorsURLLoaderFactory::IsSane(const ResourceRequest& request) {
     LOG(WARNING) << "|fetch_credentials_mode| and |load_flags| contradict each "
                     "other.";
     return false;
+  }
+
+  if (context) {
+    net::HttpRequestHeaders::Iterator header_iterator(
+        request.cors_exempt_headers);
+    const auto& allowed_exempt_headers = context->cors_exempt_header_list();
+    while (header_iterator.GetNext()) {
+      if (allowed_exempt_headers.find(header_iterator.name()) !=
+          allowed_exempt_headers.end()) {
+        continue;
+      }
+      LOG(WARNING) << "|cors_exempt_headers| contains unexpected key: "
+                   << header_iterator.name();
+      return false;
+    }
   }
 
   // TODO(yhirano): If the request mode is "no-cors", the redirect mode should
