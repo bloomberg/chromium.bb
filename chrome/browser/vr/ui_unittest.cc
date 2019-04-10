@@ -181,8 +181,8 @@ TEST_F(UiTest, CaptureToasts) {
 
   for (auto& spec : GetIndicatorSpecs()) {
     for (int i = 0; i < 3; ++i) {
-#if defined(OS_WIN)
-      if (i == 1)  // Windows doesn't look at background capturing. Skip.
+#if !defined(OS_ANDROID)
+      if (i == 1)  // Skip background tabs for non-Android platforms.
         continue;
 #endif
       browser_ui->SetWebVrMode(true);
