@@ -202,6 +202,12 @@ base::FilePath BaseTestServer::SSLOptions::GetCertificateFile() const {
       return base::FilePath(FILE_PATH_LITERAL("redundant-server-chain.pem"));
     case CERT_BAD_VALIDITY:
       return base::FilePath(FILE_PATH_LITERAL("bad_validity.pem"));
+    case CERT_KEY_USAGE_RSA_ENCIPHERMENT:
+      return base::FilePath(
+          FILE_PATH_LITERAL("key_usage_rsa_keyencipherment.pem"));
+    case CERT_KEY_USAGE_RSA_DIGITAL_SIGNATURE:
+      return base::FilePath(
+          FILE_PATH_LITERAL("key_usage_rsa_digitalsignature.pem"));
     case CERT_AUTO:
     case CERT_AUTO_WITH_INTERMEDIATE:
     case CERT_AUTO_AIA_INTERMEDIATE:

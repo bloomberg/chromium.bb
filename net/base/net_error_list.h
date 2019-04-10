@@ -437,6 +437,10 @@ NET_ERROR(WRONG_VERSION_ON_EARLY_DATA, -179)
 // https://crbug.com/boringssl/226.)
 NET_ERROR(TLS13_DOWNGRADE_DETECTED, -180)
 
+// The server's certificate has a keyUsage extension incompatible with the
+// negotiated TLS key exchange method.
+NET_ERROR(SSL_KEY_USAGE_INCOMPATIBLE, -181)
+
 // Certificate error codes
 //
 // The values of certificate error codes must be consecutive.
