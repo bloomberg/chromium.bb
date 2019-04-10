@@ -47,10 +47,6 @@ class WebXrVrBrowserTestOpenVrDisabled : public WebXrVrBrowserTestBase {
 #if BUILDFLAG(ENABLE_WINDOWS_MR)
     disable_features_.push_back(features::kWindowsMixedReality);
 #endif
-
-#if defined(OS_WIN)
-    disable_features_.push_back(service_manager::features::kXRSandbox);
-#endif
   }
 };
 
@@ -85,10 +81,6 @@ class WebXrVrBrowserTestStandard : public WebXrVrBrowserTestBase {
 #if BUILDFLAG(ENABLE_WINDOWS_MR)
     disable_features_.push_back(features::kWindowsMixedReality);
 #endif
-
-#if defined(OS_WIN)
-    disable_features_.push_back(service_manager::features::kXRSandbox);
-#endif
   }
 };
 
@@ -100,10 +92,6 @@ class WebXrVrBrowserTestWebXrDisabled : public WebXrVrBrowserTestBase {
 
 #if BUILDFLAG(ENABLE_WINDOWS_MR)
     disable_features_.push_back(features::kWindowsMixedReality);
-#endif
-
-#if defined(OS_WIN)
-    disable_features_.push_back(service_manager::features::kXRSandbox);
 #endif
   }
 };
