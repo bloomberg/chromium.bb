@@ -19,6 +19,8 @@ namespace views {
 class ImageButton;
 }  // namespace views
 
+class ToolbarActionsBar;
+
 // This bubble view displays a list of user extensions.
 // TODO(pbos): Once there's more functionality in here (getting to
 // chrome://extensions, pinning, extension settings), update this comment.
@@ -26,10 +28,14 @@ class ExtensionsMenuView : public views::ButtonListener,
                            public views::BubbleDialogDelegateView,
                            public ToolbarActionsModel::Observer {
  public:
-  ExtensionsMenuView(views::View* anchor_view, Browser* browser);
+  ExtensionsMenuView(views::View* anchor_view,
+                     Browser* browser,
+                     ToolbarActionsBar* toolbar_actions_bar);
   ~ExtensionsMenuView() override;
 
-  static void ShowBubble(views::View* anchor_view, Browser* browser);
+  static void ShowBubble(views::View* anchor_view,
+                         Browser* browser,
+                         ToolbarActionsBar* toolbar_actions_bar);
   static bool IsShowing();
   static void Hide();
   static ExtensionsMenuView* GetExtensionsMenuViewForTesting();
@@ -66,6 +72,7 @@ class ExtensionsMenuView : public views::ButtonListener,
       const base::string16& tooltip);
 
   Browser* const browser_;
+  ToolbarActionsBar* const toolbar_actions_bar_;
   ToolbarActionsModel* const model_;
   ScopedObserver<ToolbarActionsModel, ToolbarActionsModel::Observer>
       model_observer_;
