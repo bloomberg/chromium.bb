@@ -54,6 +54,10 @@ enum class UserFriendlyElementName : int {
   kLocationPermissionIndicator,  // The location icon that appears when a page
                                  // is using the high accuracy location
                                  // permission.
+  kWebXrLocationPermissionIndicator,  // The location icon that appears when a
+                                      // page is using the location permission.
+  kWebXrVideoPermissionIndicator,     // Toast in WebXR indicating the camera
+                                      // permission is in use.
 };
 
 // These are the types of actions that Java can request callbacks for once

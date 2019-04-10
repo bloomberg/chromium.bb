@@ -98,6 +98,10 @@ UiElementName UserFriendlyElementNameToUiElementName(
       return kVideoCaptureIndicator;
     case UserFriendlyElementName::kLocationPermissionIndicator:
       return kLocationAccessIndicator;
+    case UserFriendlyElementName::kWebXrLocationPermissionIndicator:
+      return kWebVrLocationAccessIndicator;
+    case UserFriendlyElementName::kWebXrVideoPermissionIndicator:
+      return kWebVrVideoCaptureIndicator;
     default:
       NOTREACHED();
       return kNone;
