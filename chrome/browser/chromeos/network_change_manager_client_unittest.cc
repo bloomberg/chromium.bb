@@ -11,12 +11,8 @@
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-<<<<<<< HEAD   (6905f8 ui/gl: Fix synchronization bug for release fences with Surfa)
 #include "chromeos/dbus/power_manager_client.h"
-=======
-#include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/shill_service_client.h"
->>>>>>> CHANGE (5db69e Reland "Use NetworkChangeNotifier to initialize the connecti)
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -125,7 +121,7 @@ TEST(NetworkChangeManagerClientTest,
 
   // Initialize DBus and clear services so NetworkHandler thinks we're offline.
   DBusThreadManager::Initialize();
-  PowerManagerClient::InitializeFake();
+  PowerManagerClient::Initialize();
   NetworkHandler::Initialize();
   DBusThreadManager::Get()
       ->GetShillServiceClient()
