@@ -112,10 +112,7 @@ void FrameData::ProcessResourceLoadInFrame(
       ad_bytes_ += resource->encoded_body_length;
 
     ResourceMimeType mime_type = GetResourceMimeType(resource);
-    if (mime_type == ResourceMimeType::kVideo)
-      ad_video_network_bytes_ += resource->delta_bytes;
-    else if (mime_type == ResourceMimeType::kJavascript)
-      ad_javascript_network_bytes_ += resource->delta_bytes;
+    ad_bytes_by_mime_[static_cast<size_t>(mime_type)] += resource->delta_bytes;
   }
 }
 
@@ -123,11 +120,7 @@ void FrameData::AdjustAdBytes(int64_t unaccounted_ad_bytes,
                               ResourceMimeType mime_type) {
   ad_network_bytes_ += unaccounted_ad_bytes;
   ad_bytes_ += unaccounted_ad_bytes;
-
-  if (mime_type == ResourceMimeType::kVideo)
-    ad_video_network_bytes_ += unaccounted_ad_bytes;
-  else if (mime_type == ResourceMimeType::kJavascript)
-    ad_javascript_network_bytes_ += unaccounted_ad_bytes;
+  ad_bytes_by_mime_[static_cast<size_t>(mime_type)] += unaccounted_ad_bytes;
 }
 
 void FrameData::SetFrameSize(gfx::Size frame_size) {
@@ -160,6 +153,10 @@ base::TimeDelta FrameData::GetActivationCpuUsage(
 void FrameData::SetReceivedUserActivation(base::TimeDelta foreground_duration) {
   user_activation_status_ = UserActivationStatus::kReceivedActivation;
   pre_activation_foreground_duration_ = foreground_duration;
+}
+
+size_t FrameData::GetAdNetworkBytesForMime(ResourceMimeType mime_type) const {
+  return ad_bytes_by_mime_[static_cast<size_t>(mime_type)];
 }
 
 void FrameData::UpdateFrameVisibility() {

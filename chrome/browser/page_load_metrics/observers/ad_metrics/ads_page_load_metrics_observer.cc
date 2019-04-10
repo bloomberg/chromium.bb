@@ -485,9 +485,12 @@ void AdsPageLoadMetricsObserver::RecordPageResourceTotalHistograms(
   ukm::builders::AdPageLoad builder(source_id);
   builder.SetTotalBytes(aggregate_frame_data_->network_bytes() >> 10)
       .SetAdBytes(aggregate_frame_data_->ad_network_bytes() >> 10)
-      .SetAdJavascriptBytes(
-          aggregate_frame_data_->ad_javascript_network_bytes() >> 10)
-      .SetAdVideoBytes(aggregate_frame_data_->ad_video_network_bytes() >> 10);
+      .SetAdJavascriptBytes(aggregate_frame_data_->GetAdNetworkBytesForMime(
+                                FrameData::ResourceMimeType::kJavascript) >>
+                            10)
+      .SetAdVideoBytes(aggregate_frame_data_->GetAdNetworkBytesForMime(
+                           FrameData::ResourceMimeType::kVideo) >>
+                       10);
   base::TimeTicks current_time = clock_->NowTicks();
   if (!time_commit_.is_null()) {
     int time_since_commit = (current_time - time_commit_).InMicroseconds();
