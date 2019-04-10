@@ -373,9 +373,7 @@ void OobeInteractiveUITest::SimpleEndToEnd() {
   WaitForLoginDisplayHostShutdown();
 }
 
-// Flaky on MSAN/ASAN/LSAN: crbug.com/891277, crbug.com/891484.
-// Flaky on normal builds: crbug.com/936041
-IN_PROC_BROWSER_TEST_P(OobeInteractiveUITest, DISABLED_SimpleEndToEnd) {
+IN_PROC_BROWSER_TEST_P(OobeInteractiveUITest, SimpleEndToEnd) {
   SimpleEndToEnd();
 }
 
