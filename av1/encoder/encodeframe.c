@@ -4131,9 +4131,12 @@ static void adjust_rdmult_tpl_model(AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
                                     int mi_col) {
   const BLOCK_SIZE sb_size = cpi->common.seq_params.sb_size;
   const int orig_rdmult = cpi->rd.RDMULT;
+  const int gf_group_index = cpi->twopass.gf_group.index;
   x->cb_rdmult = orig_rdmult;
-  if (cpi->twopass.gf_group.index > 0 && cpi->oxcf.enable_tpl_model &&
-      cpi->oxcf.aq_mode == NO_AQ && cpi->oxcf.deltaq_mode == NO_DELTA_Q) {
+
+  if (cpi->oxcf.enable_tpl_model && cpi->oxcf.aq_mode == NO_AQ &&
+      cpi->oxcf.deltaq_mode == NO_DELTA_Q && gf_group_index > 0 &&
+      cpi->twopass.gf_group.update_type[gf_group_index] == ARF_UPDATE) {
     const int dr = get_rdmult_delta(cpi, sb_size, mi_row, mi_col, orig_rdmult);
     x->rdmult = dr;
     x->cb_rdmult = x->rdmult;

@@ -2711,7 +2711,7 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
   av1_set_speed_features_framesize_independent(cpi, oxcf->speed);
   av1_set_speed_features_framesize_dependent(cpi, oxcf->speed);
 
-  for (int frame = 0; frame < MAX_LAG_BUFFERS; ++frame) {
+  for (int frame = 0; frame < MAX_LENGTH_TPL_FRAME_STATS; ++frame) {
     int mi_cols = ALIGN_POWER_OF_TWO(cm->mi_cols, MAX_MIB_SIZE_LOG2);
     int mi_rows = ALIGN_POWER_OF_TWO(cm->mi_rows, MAX_MIB_SIZE_LOG2);
 
@@ -3055,7 +3055,7 @@ void av1_remove_compressor(AV1_COMP *cpi) {
 #endif
   }
 
-  for (int frame = 0; frame < MAX_LAG_BUFFERS; ++frame) {
+  for (int frame = 0; frame < MAX_LENGTH_TPL_FRAME_STATS; ++frame) {
     aom_free(cpi->tpl_stats[frame].tpl_stats_ptr);
     cpi->tpl_stats[frame].is_valid = 0;
   }

@@ -24,7 +24,7 @@
 
 typedef struct GF_PICTURE {
   YV12_BUFFER_CONFIG *frame;
-  int ref_frame[7];
+  int ref_frame[INTER_REFS_PER_FRAME];
 } GF_PICTURE;
 
 static void get_quantize_error(MACROBLOCK *x, int plane, tran_low_t *coeff,
@@ -459,6 +459,12 @@ static void mc_flow_dispenser(AV1_COMP *cpi, GF_PICTURE *gf_picture,
   }
 }
 
+#define REF_IDX(ref) ((ref)-LAST_FRAME)
+
+static INLINE void init_ref_frame_array(GF_PICTURE *gf_picture) {
+  for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) gf_picture->ref_frame[i] = -1;
+}
+
 static void init_gop_frames_for_tpl(AV1_COMP *cpi, GF_PICTURE *gf_picture,
                                     const GF_GROUP *gf_group,
                                     int *tpl_group_frames,
@@ -466,18 +472,15 @@ static void init_gop_frames_for_tpl(AV1_COMP *cpi, GF_PICTURE *gf_picture,
   AV1_COMMON *cm = &cpi->common;
   const SequenceHeader *const seq_params = &cm->seq_params;
   int frame_idx = 0;
-  int i;
-  int gld_index = -1;
-  int lst_index = -1;
-  int extend_frame_count = 0;
-  int frame_gop_offset = 0;
+  int frame_disp_idx = 0;
   int pframe_qindex = cpi->tpl_stats[2].base_qindex;
 
   RefCntBuffer *frame_bufs = cm->buffer_pool->frame_bufs;
   int recon_frame_index[INTER_REFS_PER_FRAME + 1] = { -1, -1, -1, -1,
                                                       -1, -1, -1, -1 };
 
-  for (i = 0; i < FRAME_BUFFERS && frame_idx < INTER_REFS_PER_FRAME + 1; ++i) {
+  for (int i = 0; i < FRAME_BUFFERS && frame_idx < INTER_REFS_PER_FRAME + 1;
+       ++i) {
     if (frame_bufs[i].ref_count == 0) {
       alloc_frame_mvs(cm, &frame_bufs[i]);
       if (aom_realloc_frame_buffer(
@@ -493,7 +496,7 @@ static void init_gop_frames_for_tpl(AV1_COMP *cpi, GF_PICTURE *gf_picture,
     }
   }
 
-  for (i = 0; i < INTER_REFS_PER_FRAME + 1; ++i) {
+  for (int i = 0; i < INTER_REFS_PER_FRAME + 1; ++i) {
     assert(recon_frame_index[i] >= 0);
     cpi->tpl_recon_frames[i] = &frame_bufs[recon_frame_index[i]].buf;
   }
@@ -503,65 +506,68 @@ static void init_gop_frames_for_tpl(AV1_COMP *cpi, GF_PICTURE *gf_picture,
   // Initialize Golden reference frame.
   RefCntBuffer *ref_buf = get_ref_frame_buf(cm, GOLDEN_FRAME);
   gf_picture[0].frame = &ref_buf->buf;
-  for (i = 0; i < 7; ++i) gf_picture[0].ref_frame[i] = -1;
-  gld_index = 0;
+  init_ref_frame_array(&gf_picture[0]);
   ++*tpl_group_frames;
 
-  // Initialize base layer ARF frame
-  gf_picture[1].frame = frame_input->source;
-  gf_picture[1].ref_frame[0] = gld_index;
-  // TODO(yuec) Need o  figure out full AV1 reference model
-  for (i = 1; i < 7; ++i) gf_picture[1].ref_frame[i] = -1;
-  ++*tpl_group_frames;
+  // Initialize frames in the GF group
+  for (frame_idx = 1; frame_idx <= gf_group->size; ++frame_idx) {
+    if (frame_idx == 1) {
+      gf_picture[1].frame = frame_input->source;
+    } else {
+      frame_disp_idx = gf_group->frame_disp_idx[frame_idx];
+      struct lookahead_entry *buf =
+          av1_lookahead_peek(cpi->lookahead, frame_disp_idx - 1);
 
-  // Initialize P frames
-  for (frame_idx = 2; frame_idx < MAX_LAG_BUFFERS; ++frame_idx) {
-    struct lookahead_entry *buf;
-    frame_gop_offset = gf_group->frame_disp_idx[frame_idx];
-    buf = av1_lookahead_peek(cpi->lookahead, frame_gop_offset - 1);
+      if (buf == NULL) break;
 
-    if (buf == NULL) break;
+      gf_picture[frame_idx].frame = &buf->img;
+    }
 
-    gf_picture[frame_idx].frame = &buf->img;
-    gf_picture[frame_idx].ref_frame[0] = gld_index;
-    gf_picture[frame_idx].ref_frame[1] = lst_index;
-    gf_picture[frame_idx].ref_frame[2] = 1;
-    for (i = 3; i < 7; ++i) gf_picture[frame_idx].ref_frame[i] = -1;
+    memcpy(gf_picture[frame_idx].ref_frame,
+           gf_group->ref_frame_gop_idx[frame_idx],
+           sizeof(gf_picture[0].ref_frame[0]) * INTER_REFS_PER_FRAME);
 
     ++*tpl_group_frames;
-    lst_index = frame_idx;
-
-    if (frame_idx == gf_group->size) break;
   }
 
-  gld_index = frame_idx;
-  lst_index = AOMMAX(0, frame_idx - 1);
-  ++frame_idx;
-  ++frame_gop_offset;
+  ++frame_disp_idx;
+  int extend_frame_count = 0;
+  const int gld_idx_next_gop = gf_group->size;
+  const int lst_idx_next_gop =
+      gf_picture[gld_idx_next_gop].ref_frame[REF_IDX(LAST_FRAME)];
+  const int lst2_idx_next_gop =
+      gf_picture[gld_idx_next_gop].ref_frame[REF_IDX(LAST2_FRAME)];
+  const int lst3_idx_next_gop =
+      gf_picture[gld_idx_next_gop].ref_frame[REF_IDX(LAST3_FRAME)];
 
   // Extend two frames outside the current gf group.
-  for (; frame_idx < MAX_LAG_BUFFERS && extend_frame_count < 2; ++frame_idx) {
+  for (; frame_idx < MAX_LENGTH_TPL_FRAME_STATS && extend_frame_count < 2;
+       ++frame_idx) {
     struct lookahead_entry *buf =
-        av1_lookahead_peek(cpi->lookahead, frame_gop_offset - 1);
+        av1_lookahead_peek(cpi->lookahead, frame_disp_idx - 1);
 
     if (buf == NULL) break;
 
     cpi->tpl_stats[frame_idx].base_qindex = pframe_qindex;
 
     gf_picture[frame_idx].frame = &buf->img;
-    gf_picture[frame_idx].ref_frame[0] = gld_index;
-    gf_picture[frame_idx].ref_frame[1] = lst_index;
-    for (i = 2; i < 7; ++i) gf_picture[frame_idx].ref_frame[i] = -1;
-    lst_index = frame_idx;
+
+    init_ref_frame_array(&gf_picture[frame_idx]);
+
+    gf_picture[frame_idx].ref_frame[REF_IDX(GOLDEN_FRAME)] = gld_idx_next_gop;
+    gf_picture[frame_idx].ref_frame[REF_IDX(LAST_FRAME)] = lst_idx_next_gop;
+    gf_picture[frame_idx].ref_frame[REF_IDX(LAST2_FRAME)] = lst2_idx_next_gop;
+    gf_picture[frame_idx].ref_frame[REF_IDX(LAST3_FRAME)] = lst3_idx_next_gop;
+
     ++*tpl_group_frames;
     ++extend_frame_count;
-    ++frame_gop_offset;
+    ++frame_disp_idx;
   }
 }
 
 static void init_tpl_stats(AV1_COMP *cpi) {
   int frame_idx;
-  for (frame_idx = 0; frame_idx < MAX_LAG_BUFFERS; ++frame_idx) {
+  for (frame_idx = 0; frame_idx < MAX_LENGTH_TPL_FRAME_STATS; ++frame_idx) {
     TplDepFrame *tpl_frame = &cpi->tpl_stats[frame_idx];
     memset(tpl_frame->tpl_stats_ptr, 0,
            tpl_frame->height * tpl_frame->width *
@@ -572,7 +578,7 @@ static void init_tpl_stats(AV1_COMP *cpi) {
 
 void av1_tpl_setup_stats(AV1_COMP *cpi,
                          const EncodeFrameInput *const frame_input) {
-  GF_PICTURE gf_picture[MAX_LAG_BUFFERS];
+  GF_PICTURE gf_picture[MAX_LENGTH_TPL_FRAME_STATS];
   const GF_GROUP *gf_group = &cpi->twopass.gf_group;
   int tpl_group_frames = 0;
   int frame_idx;

@@ -157,6 +157,8 @@ enum {
   SS_CFG_TOTAL = 2
 } UENUM1BYTE(SS_CFG_OFFSET);
 
+#define MAX_LENGTH_TPL_FRAME_STATS MAX_STATIC_GF_GROUP_LENGTH + 3
+
 typedef struct TplDepStats {
   int64_t intra_cost;
   int64_t inter_cost;
@@ -741,7 +743,7 @@ typedef struct AV1_COMP {
   YV12_BUFFER_CONFIG *unscaled_last_source;
   YV12_BUFFER_CONFIG scaled_last_source;
 
-  TplDepFrame tpl_stats[MAX_LAG_BUFFERS];
+  TplDepFrame tpl_stats[MAX_LENGTH_TPL_FRAME_STATS];
   YV12_BUFFER_CONFIG *tpl_recon_frames[INTER_REFS_PER_FRAME + 1];
 
   // For a still frame, this flag is set to 1 to skip partition search.
