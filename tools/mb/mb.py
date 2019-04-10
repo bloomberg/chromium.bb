@@ -1157,7 +1157,8 @@ class MetaBuildWrapper(object):
     test_type = isolate_map[target]['type']
 
     executable = isolate_map[target].get('executable', target)
-    executable_suffix = '.exe' if is_win else ''
+    executable_suffix = isolate_map[target].get(
+        'executable_suffix', '.exe' if is_win else '')
 
     cmdline = []
     extra_files = [

@@ -41,7 +41,8 @@ constexpr char XrBrowserTestBase::kVrLogPathEnvVar[];
 constexpr char XrBrowserTestBase::kVrLogPathVal[];
 constexpr char XrBrowserTestBase::kTestFileDir[];
 const std::vector<std::string> XrBrowserTestBase::kRequiredTestSwitches{
-    "enable-gpu", "enable-pixel-output-in-tests"};
+    "enable-gpu", "enable-pixel-output-in-tests",
+    "run-through-xr-wrapper-script"};
 const std::vector<std::pair<std::string, std::string>>
     XrBrowserTestBase::kRequiredTestSwitchesWithValues{
         std::pair<std::string, std::string>("test-launcher-jobs", "1")};
