@@ -368,6 +368,18 @@ const char kSearchIconToggleName[] = "Change the icon for the search button";
 const char kSearchIconToggleDescription[] =
     "Different icons for the search button.";
 
+const char kSendTabToSelfName[] = "Send tab to self";
+const char kSendTabToSelfDescription[] =
+    "Allows users to receive tabs that were pushed from another of their "
+    "synced devices, in order to easily transition tabs between devices.";
+
+const char kSendTabToSelfShowSendingUIName[] =
+    "Send tab to self show sending UI";
+const char kSendTabToSelfShowSendingUIDescription[] =
+    "Allows users to push tabs from this device to another of their synced "
+    "devices, in order to easily transition tabs between them. Requires the "
+    "Send tab to self flag to also be enabled.";
+
 const char kSendUmaOverAnyNetwork[] =
     "Send UMA data over any network available.";
 const char kSendUmaOverAnyNetworkDescription[] =

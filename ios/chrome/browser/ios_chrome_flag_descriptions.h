@@ -299,6 +299,15 @@ extern const char kIgnoresViewportScaleLimitsDescription[];
 extern const char kSearchIconToggleName[];
 extern const char kSearchIconToggleDescription[];
 
+// Title and description for the flag to enable the send tab to self receiving
+// feature.
+extern const char kSendTabToSelfName[];
+extern const char kSendTabToSelfDescription[];
+
+// Title and description for the flag to enable the send tab to self sending UI.
+extern const char kSendTabToSelfShowSendingUIName[];
+extern const char kSendTabToSelfShowSendingUIDescription[];
+
 // Title and description for the flag to send UMA data over any network.
 extern const char kSendUmaOverAnyNetwork[];
 extern const char kSendUmaOverAnyNetworkDescription[];
