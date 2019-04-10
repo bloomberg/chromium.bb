@@ -203,9 +203,9 @@ void VerifyDebugger() {
          "able to find debug symbols, and pretty-printing of STL types may not "
          "work.  Please see debug instructions for using //tools/gdb/gdbinit:\n"
          "https://chromium.googlesource.com/chromium/src/+/master/docs/"
-         "linux_debugging.md#source-level-debug-with-fdebug_compilation_dir\n"
-         "To continue anyway, type 'continue' in gdb.  To ignore this check, "
-         "define an environment variable CHROMIUM_GDBINIT_SOURCED=1";
+         "gdbinit.md\n"
+         "To continue anyway, type 'continue' in gdb.  To always skip this "
+         "check, define an environment variable CHROMIUM_GDBINIT_SOURCED=1";
 #endif
 }
 
