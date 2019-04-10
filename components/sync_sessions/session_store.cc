@@ -434,7 +434,7 @@ void SessionStore::Init(
     }
 
     const base::Time mtime =
-        syncer::ProtoTimeToTime(metadata_it->second.modification_time());
+        syncer::ProtoTimeToTime(metadata_it->second->modification_time());
 
     if (specifics.session_tag() != local_session_info_.session_tag) {
       UpdateTrackerWithSpecifics(specifics, mtime, &session_tracker_);
