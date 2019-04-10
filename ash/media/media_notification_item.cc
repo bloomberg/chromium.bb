@@ -5,8 +5,10 @@
 #include "ash/media/media_notification_item.h"
 
 #include "ash/media/media_notification_constants.h"
+#include "ash/media/media_notification_controller.h"
 #include "ash/media/media_notification_view.h"
 #include "ash/public/cpp/notification_utils.h"
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
@@ -201,6 +203,10 @@ void MediaNotificationItem::MaybeHideOrShowNotification() {
 
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));
+
+  Shell::Get()
+      ->media_notification_controller()
+      ->RecordConcurrentNotificationCount();
 
   UMA_HISTOGRAM_ENUMERATION(kSourceHistogramName, source_);
 }
