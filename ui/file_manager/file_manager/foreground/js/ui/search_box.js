@@ -4,80 +4,197 @@
 
 /**
  * Search box.
- *
- * @param {!Element} element Root element of the search box.
- * @param {!Element} searchButton Search button.
- * @extends {cr.EventTarget}
- * @constructor
  */
-function SearchBox(element, searchButton) {
-  cr.EventTarget.call(this);
+class SearchBox extends cr.EventTarget {
+  /**
+   * @param {!Element} element Root element of the search box.
+   * @param {!Element} searchButton Search button.
+   */
+  constructor(element, searchButton) {
+    super();
+
+    /**
+     * Autocomplete List.
+     * @type {!SearchBox.AutocompleteList}
+     */
+    this.autocompleteList =
+        new SearchBox.AutocompleteList(element.ownerDocument);
+
+    /**
+     * Root element of the search box.
+     * @type {!Element}
+     */
+    this.element = element;
+
+    /**
+     * Search button.
+     * @type {!Element}
+     */
+    this.searchButton = searchButton;
+
+    /**
+     * Ripple effect of search button.
+     * @private {!FilesToggleRipple}
+     * @const
+     */
+    this.searchButtonToggleRipple_ =
+        /** @type {!FilesToggleRipple} */ (
+            queryRequiredElement('files-toggle-ripple', this.searchButton));
+
+    /**
+     * Text input of the search box.
+     * @type {!HTMLInputElement}
+     */
+    this.inputElement =
+        /** @type {!HTMLInputElement} */ (element.querySelector('cr-input'));
+
+    /**
+     * Clear button of the search box.
+     * @private {!Element}
+     */
+    this.clearButton_ = assert(element.querySelector('.clear'));
+
+    // Register events.
+    this.inputElement.addEventListener('input', this.onInput_.bind(this));
+    this.inputElement.addEventListener('keydown', this.onKeyDown_.bind(this));
+    this.inputElement.addEventListener('focus', this.onFocus_.bind(this));
+    this.inputElement.addEventListener('blur', this.onBlur_.bind(this));
+    this.inputElement.ownerDocument.addEventListener(
+        'dragover', this.onDragEnter_.bind(this), true);
+    this.inputElement.ownerDocument.addEventListener(
+        'dragend', this.onDragEnd_.bind(this));
+    this.searchButton.addEventListener(
+        'click', this.onSearchButtonClick_.bind(this));
+    this.clearButton_.addEventListener(
+        'click', this.onClearButtonClick_.bind(this));
+    const dispatchItemSelect =
+        cr.dispatchSimpleEvent.bind(cr, this, SearchBox.EventType.ITEM_SELECT);
+    this.autocompleteList.handleEnterKeydown = dispatchItemSelect;
+    this.autocompleteList.addEventListener('mousedown', dispatchItemSelect);
+
+    // Append dynamically created element.
+    element.parentNode.appendChild(this.autocompleteList);
+  }
 
   /**
-   * Autocomplete List.
-   * @type {!SearchBox.AutocompleteList}
+   * Clears the search query.
    */
-  this.autocompleteList = new SearchBox.AutocompleteList(element.ownerDocument);
+  clear() {
+    this.inputElement.value = '';
+    this.updateStyles_();
+  }
 
   /**
-   * Root element of the search box.
-   * @type {!Element}
+   * Sets hidden attribute for components of search box.
+   * @param {boolean} hidden True when the search box need to be hidden.
    */
-  this.element = element;
+  setHidden(hidden) {
+    this.element.hidden = hidden;
+    this.searchButton.hidden = hidden;
+  }
 
   /**
-   * Search button.
-   * @type {!Element}
+   * @private
    */
-  this.searchButton = searchButton;
+  onInput_() {
+    this.updateStyles_();
+    cr.dispatchSimpleEvent(this, SearchBox.EventType.TEXT_CHANGE);
+  }
 
   /**
-   * Ripple effect of search button.
-   * @private {!FilesToggleRipple}
-   * @const
+   * Handles a focus event of the search box.
+   * @private
    */
-  this.searchButtonToggleRipple_ =
-      /** @type {!FilesToggleRipple} */ (
-          queryRequiredElement('files-toggle-ripple', this.searchButton));
+  onFocus_() {
+    this.element.classList.toggle('has-cursor', true);
+    this.autocompleteList.attachToInput(this.inputElement);
+    this.updateStyles_();
+    this.searchButtonToggleRipple_.activated = true;
+    metrics.recordUserAction('SelectSearch');
+  }
 
   /**
-   * Text input of the search box.
-   * @type {!HTMLInputElement}
+   * Handles a blur event of the search box.
+   * @private
    */
-  this.inputElement =
-      /** @type {!HTMLInputElement} */ (element.querySelector('cr-input'));
+  onBlur_() {
+    this.element.classList.toggle('has-cursor', false);
+    this.autocompleteList.detach();
+    this.updateStyles_();
+    this.searchButtonToggleRipple_.activated = false;
+    // When input has any text we keep it displayed with current search.
+    this.inputElement.hidden = this.inputElement.value.length == 0;
+  }
 
   /**
-   * Clear button of the search box.
-   * @private {!Element}
+   * Handles a keydown event of the search box.
+   * @param {Event} event
+   * @private
    */
-  this.clearButton_ = assert(element.querySelector('.clear'));
+  onKeyDown_(event) {
+    event = /** @type {KeyboardEvent} */ (event);
+    // Handle only Esc key now.
+    if (event.key != 'Escape' || this.inputElement.value) {
+      return;
+    }
 
-  // Register events.
-  this.inputElement.addEventListener('input', this.onInput_.bind(this));
-  this.inputElement.addEventListener('keydown', this.onKeyDown_.bind(this));
-  this.inputElement.addEventListener('focus', this.onFocus_.bind(this));
-  this.inputElement.addEventListener('blur', this.onBlur_.bind(this));
-  this.inputElement.ownerDocument.addEventListener(
-      'dragover', this.onDragEnter_.bind(this), true);
-  this.inputElement.ownerDocument.addEventListener(
-      'dragend', this.onDragEnd_.bind(this));
-  this.searchButton.addEventListener(
-      'click', this.onSearchButtonClick_.bind(this));
-  this.clearButton_.addEventListener(
-      'click', this.onClearButtonClick_.bind(this));
-  const dispatchItemSelect =
-      cr.dispatchSimpleEvent.bind(cr, this, SearchBox.EventType.ITEM_SELECT);
-  this.autocompleteList.handleEnterKeydown = dispatchItemSelect;
-  this.autocompleteList.addEventListener('mousedown', dispatchItemSelect);
+    this.inputElement.tabIndex = -1;  // Focus to default element after blur.
+    this.inputElement.blur();
+  }
 
-  // Append dynamically created element.
-  element.parentNode.appendChild(this.autocompleteList);
+  /**
+   * Handles a dragenter event and refuses a drag source of files.
+   * @param {Event} event The dragenter event.
+   * @private
+   */
+  onDragEnter_(event) {
+    event = /** @type {DragEvent} */ (event);
+    // For normal elements, they does not accept drag drop by default, and
+    // accept it by using event.preventDefault. But input elements accept drag
+    // drop by default. So disable the input element here to prohibit drag drop.
+    if (event.dataTransfer.types.indexOf('text/plain') === -1) {
+      this.inputElement.style.pointerEvents = 'none';
+    }
+  }
+
+  /**
+   * Handles a dragend event.
+   * @private
+   */
+  onDragEnd_() {
+    this.inputElement.style.pointerEvents = '';
+  }
+
+  /**
+   * Updates styles of the search box.
+   * @private
+   */
+  updateStyles_() {
+    const hasText = !!this.inputElement.value;
+    this.element.classList.toggle('has-text', hasText);
+    const hasFocusOnInput = this.element.classList.contains('has-cursor');
+
+    // See go/filesapp-tabindex for tabindexes.
+    this.inputElement.tabIndex = (hasText || hasFocusOnInput) ? 14 : -1;
+    this.searchButton.tabIndex = (hasText || hasFocusOnInput) ? -1 : 13;
+  }
+
+  /**
+   * @private
+   */
+  onSearchButtonClick_() {
+    this.inputElement.hidden = false;
+    this.inputElement.focus();
+  }
+
+  /**
+   * @private
+   */
+  onClearButtonClick_() {
+    this.inputElement.value = '';
+    this.onInput_();
+  }
 }
-
-SearchBox.prototype = {
-  __proto__: cr.EventTarget.prototype
-};
 
 /**
  * Event type.
@@ -136,6 +253,7 @@ SearchBox.AutocompleteList.prototype.onMouseOver_ = function(event) {
   }
 };
 
+
 /**
  * ListItem element for autocomplete.
  *
@@ -169,123 +287,4 @@ SearchBox.AutocompleteListItem_ = function(document, item) {
   li.appendChild(icon);
   li.appendChild(text);
   return li;
-};
-
-/**
- * Clears the search query.
- */
-SearchBox.prototype.clear = function() {
-  this.inputElement.value = '';
-  this.updateStyles_();
-};
-
-/**
- * Sets hidden attribute for components of search box.
- * @param {boolean} hidden True when the search box need to be hidden.
- */
-SearchBox.prototype.setHidden = function(hidden) {
-  this.element.hidden = hidden;
-  this.searchButton.hidden = hidden;
-};
-
-/**
- * @private
- */
-SearchBox.prototype.onInput_ = function() {
-  this.updateStyles_();
-  cr.dispatchSimpleEvent(this, SearchBox.EventType.TEXT_CHANGE);
-};
-
-/**
- * Handles a focus event of the search box.
- * @private
- */
-SearchBox.prototype.onFocus_ = function() {
-  this.element.classList.toggle('has-cursor', true);
-  this.autocompleteList.attachToInput(this.inputElement);
-  this.updateStyles_();
-  this.searchButtonToggleRipple_.activated = true;
-  metrics.recordUserAction('SelectSearch');
-};
-
-/**
- * Handles a blur event of the search box.
- * @private
- */
-SearchBox.prototype.onBlur_ = function() {
-  this.element.classList.toggle('has-cursor', false);
-  this.autocompleteList.detach();
-  this.updateStyles_();
-  this.searchButtonToggleRipple_.activated = false;
-  // When input has any text we keep it displayed with current search.
-  this.inputElement.hidden = this.inputElement.value.length == 0;
-};
-
-/**
- * Handles a keydown event of the search box.
- * @param {Event} event
- * @private
- */
-SearchBox.prototype.onKeyDown_ = function(event) {
-  event = /** @type {KeyboardEvent} */ (event);
-  // Handle only Esc key now.
-  if (event.key != 'Escape' || this.inputElement.value) {
-    return;
-  }
-
-  this.inputElement.tabIndex = -1;  // Focus to default element after blur.
-  this.inputElement.blur();
-};
-
-/**
- * Handles a dragenter event and refuses a drag source of files.
- * @param {Event} event The dragenter event.
- * @private
- */
-SearchBox.prototype.onDragEnter_ = function(event) {
-  event = /** @type {DragEvent} */ (event);
-  // For normal elements, they does not accept drag drop by default, and accept
-  // it by using event.preventDefault. But input elements accept drag drop
-  // by default. So disable the input element here to prohibit drag drop.
-  if (event.dataTransfer.types.indexOf('text/plain') === -1) {
-    this.inputElement.style.pointerEvents = 'none';
-  }
-};
-
-/**
- * Handles a dragend event.
- * @private
- */
-SearchBox.prototype.onDragEnd_ = function() {
-  this.inputElement.style.pointerEvents = '';
-};
-
-/**
- * Updates styles of the search box.
- * @private
- */
-SearchBox.prototype.updateStyles_ = function() {
-  const hasText = !!this.inputElement.value;
-  this.element.classList.toggle('has-text', hasText);
-  const hasFocusOnInput = this.element.classList.contains('has-cursor');
-
-  // See go/filesapp-tabindex for tabindexes.
-  this.inputElement.tabIndex = (hasText || hasFocusOnInput) ? 14 : -1;
-  this.searchButton.tabIndex = (hasText || hasFocusOnInput) ? -1 : 13;
-};
-
-/**
- * @private
- */
-SearchBox.prototype.onSearchButtonClick_ = function() {
-  this.inputElement.hidden = false;
-  this.inputElement.focus();
-};
-
-/**
- * @private
- */
-SearchBox.prototype.onClearButtonClick_ = function() {
-  this.inputElement.value = '';
-  this.onInput_();
 };
