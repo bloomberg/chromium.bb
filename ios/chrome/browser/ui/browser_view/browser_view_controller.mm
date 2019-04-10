@@ -2373,11 +2373,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     }
   }
 
-  // Adjust the content area to be under the toolbar, for fullscreen or below
-  // the toolbar is not fullscreen.
-  CGRect contentFrame = self.contentArea.frame;
-  self.contentArea.frame = contentFrame;
-
   // Attach the typing shield to the content area but have it hidden.
   self.typingShield.frame = self.contentArea.frame;
   if (initialLayout) {
