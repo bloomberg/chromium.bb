@@ -109,12 +109,6 @@ login.createScreen('ResetScreen', 'reset', function() {
     setScreenState: function(state) {
       this.screenState_ = state;
 
-      if (Oobe.getInstance().currentScreen != this) {
-        setTimeout(function() {
-          Oobe.resetSigninUI(false);
-          Oobe.showScreen({id: SCREEN_OOBE_RESET});
-        }, 0);
-      }
       if (state == RESET_SCREEN_STATE.RESTART_REQUIRED)
         this.ui_state = RESET_SCREEN_UI_STATE.RESTART_REQUIRED;
       if (state == RESET_SCREEN_STATE.REVERT_PROMISE)
@@ -159,6 +153,11 @@ login.createScreen('ResetScreen', 'reset', function() {
      * @param {Object} data Screen init payload.
      */
     onBeforeShow: function(data) {},
+
+    /** Event handler that is invoked after the screen is shown. */
+    onAfterShow: function() {
+      Oobe.resetSigninUI(false);
+    },
 
     /**
      * Sets css style for corresponding state of the screen.

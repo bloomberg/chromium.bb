@@ -576,9 +576,6 @@ cr.define('cr.ui.login', function() {
       // Adjust inner container height based on new step's height.
       this.updateScreenSize(newStep);
 
-      if (newStep.onAfterShow)
-        newStep.onAfterShow(screenData);
-
       // Default control to be focused (if specified).
       var defaultControl = newStep.defaultControl;
 
@@ -633,6 +630,11 @@ cr.define('cr.ui.login', function() {
         }
       }
       this.currentStep_ = nextStepIndex;
+
+      // Call onAfterShow after currentStep_ so that the step can have a
+      // post-set hook.
+      if (newStep.onAfterShow)
+        newStep.onAfterShow(screenData);
 
       var stepLogo = $('step-logo');
       if (stepLogo) {
@@ -1114,9 +1116,10 @@ cr.define('cr.ui.login', function() {
   DisplayManager.resetSigninUI = function(forceOnline) {
     var currentScreenId = Oobe.getInstance().currentScreen.id;
 
-    if ($(SCREEN_GAIA_SIGNIN))
+    if ($(SCREEN_GAIA_SIGNIN)) {
       $(SCREEN_GAIA_SIGNIN)
           .reset(currentScreenId == SCREEN_GAIA_SIGNIN, forceOnline);
+    }
     $('pod-row').reset(currentScreenId == SCREEN_ACCOUNT_PICKER);
   };
 
