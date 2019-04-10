@@ -340,7 +340,6 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletWithAccountStorageSyncTest,
                        DownloadAccountStorage_Card) {
   ASSERT_TRUE(SetupClients());
   autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
-  pdm->OnSyncServiceInitialized(GetSyncService(0));
 
   GetFakeServer()->SetWalletData({CreateDefaultSyncWalletAddress(),
                                   CreateDefaultSyncWalletCard(),
@@ -1104,7 +1103,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
 // synced down form the server.
 IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
                        NewWalletCardRemovesExistingCardAndProfile) {
-  ASSERT_TRUE(SetupClients());
+  ASSERT_TRUE(SetupSync());
   autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
   ASSERT_NE(nullptr, pdm);
 
@@ -1143,7 +1142,13 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
   // Add a new card from the server and sync it down.
   GetFakeServer()->SetWalletData(
       {CreateDefaultSyncWalletCard(), CreateDefaultSyncPaymentsCustomerData()});
-  ASSERT_TRUE(SetupSync());
+  // Constructing the checker captures the current progress marker. Make sure to
+  // do that before triggering the fetch.
+  WaitForNextWalletUpdateChecker checker(GetSyncService(0));
+  // Trigger a sync and wait for the new data to arrive.
+  TriggerSyncForModelTypes(0,
+                           syncer::ModelTypeSet(syncer::AUTOFILL_WALLET_DATA));
+  ASSERT_TRUE(checker.Wait());
 
   // The only card present on the client should be the one from the server.
   cards = pdm->GetCreditCards();
@@ -1166,7 +1171,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
 // synced down form the server.
 IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
                        NewWalletDataRemovesExistingData) {
-  ASSERT_TRUE(SetupClients());
+  ASSERT_TRUE(SetupSync());
   autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
   ASSERT_NE(nullptr, pdm);
 
@@ -1206,7 +1211,13 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
   GetFakeServer()->SetWalletData(
       {CreateDefaultSyncWalletAddress(),
        CreateSyncPaymentsCustomerData(/*customer_id=*/"newid")});
-  ASSERT_TRUE(SetupSync());
+  // Constructing the checker captures the current progress marker. Make sure to
+  // do that before triggering the fetch.
+  WaitForNextWalletUpdateChecker checker(GetSyncService(0));
+  // Trigger a sync and wait for the new data to arrive.
+  TriggerSyncForModelTypes(0,
+                           syncer::ModelTypeSet(syncer::AUTOFILL_WALLET_DATA));
+  ASSERT_TRUE(checker.Wait());
 
   // The only profile present on the client should be the one from the server.
   profiles = pdm->GetServerProfiles();
@@ -1226,7 +1237,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
 // be overwritten when that same card is synced again.
 IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
                        SameWalletCard_PreservesLocalBillingAddressId) {
-  ASSERT_TRUE(SetupClients());
+  ASSERT_TRUE(SetupSync());
   autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
   ASSERT_NE(nullptr, pdm);
 
@@ -1248,7 +1259,13 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
   // Sync the same card from the server, except with a default billing address
   // id.
   GetFakeServer()->SetWalletData({CreateDefaultSyncWalletCard()});
-  ASSERT_TRUE(SetupSync());
+  // Constructing the checker captures the current progress marker. Make sure to
+  // do that before triggering the fetch.
+  WaitForNextWalletUpdateChecker checker(GetSyncService(0));
+  // Trigger a sync and wait for the new data to arrive.
+  TriggerSyncForModelTypes(0,
+                           syncer::ModelTypeSet(syncer::AUTOFILL_WALLET_DATA));
+  ASSERT_TRUE(checker.Wait());
 
   // The billing address is should still refer to the local profile.
   cards = pdm->GetCreditCards();
@@ -1261,7 +1278,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
 // overwritten when that same card is synced again.
 IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
                        SameWalletCard_DiscardsOldServerBillingAddressId) {
-  ASSERT_TRUE(SetupClients());
+  ASSERT_TRUE(SetupSync());
   autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
   ASSERT_NE(nullptr, pdm);
 
@@ -1283,7 +1300,13 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
   // Sync the same card from the server, except with a default billing address
   // id.
   GetFakeServer()->SetWalletData({CreateDefaultSyncWalletCard()});
-  ASSERT_TRUE(SetupSync());
+  // Constructing the checker captures the current progress marker. Make sure to
+  // do that before triggering the fetch.
+  WaitForNextWalletUpdateChecker checker(GetSyncService(0));
+  // Trigger a sync and wait for the new data to arrive.
+  TriggerSyncForModelTypes(0,
+                           syncer::ModelTypeSet(syncer::AUTOFILL_WALLET_DATA));
+  ASSERT_TRUE(checker.Wait());
 
   // The billing address should be the one from the server card.
   cards = pdm->GetCreditCards();
@@ -1333,7 +1356,6 @@ class SingleClientWalletSecondaryAccountSyncTest
 IN_PROC_BROWSER_TEST_P(SingleClientWalletSecondaryAccountSyncTest,
                        SwitchesFromAccountToProfileStorageOnSyncOptIn) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
-  GetPersonalDataManager(0)->OnSyncServiceInitialized(GetSyncService(0));
 
   GetFakeServer()->SetWalletData(
       {CreateDefaultSyncWalletCard(), CreateDefaultSyncPaymentsCustomerData()});
@@ -1397,7 +1419,6 @@ IN_PROC_BROWSER_TEST_P(
     SingleClientWalletSecondaryAccountSyncTest,
     SwitchesFromAccountToProfileStorageOnSyncOptInWithAdvancedSetup) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
-  GetPersonalDataManager(0)->OnSyncServiceInitialized(GetSyncService(0));
 
   GetFakeServer()->SetWalletData({CreateDefaultSyncWalletCard()});
 
@@ -1491,7 +1512,6 @@ IN_PROC_BROWSER_TEST_P(
 IN_PROC_BROWSER_TEST_P(SingleClientWalletWithAccountStorageSyncTest,
                        SwitchesBetweenAccountAndProfileStorageOnTogglingSync) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
-  GetPersonalDataManager(0)->OnSyncServiceInitialized(GetSyncService(0));
 
   GetFakeServer()->SetWalletData({CreateDefaultSyncWalletCard()});
 
