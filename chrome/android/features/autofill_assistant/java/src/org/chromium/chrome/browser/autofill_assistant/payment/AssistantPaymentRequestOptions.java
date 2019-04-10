@@ -14,17 +14,19 @@ class AssistantPaymentRequestOptions {
     final boolean mRequestPayerEmail;
     final boolean mRequestPayerPhone;
     final boolean mRequestShipping;
+    final boolean mRequestPaymentMethod;
     final String[] mSupportedBasicCardNetworks;
     @Nullable
     final String mDefaultEmail;
 
     AssistantPaymentRequestOptions(boolean requestPayerName, boolean requestPayerEmail,
-            boolean requestPayerPhone, boolean requestShipping, String[] supportedBasicCardNetworks,
-            @Nullable String defaultEmail) {
+            boolean requestPayerPhone, boolean requestShipping, boolean requestPaymentMethod,
+            String[] supportedBasicCardNetworks, @Nullable String defaultEmail) {
         this.mRequestPayerName = requestPayerName;
         this.mRequestPayerEmail = requestPayerEmail;
         this.mRequestPayerPhone = requestPayerPhone;
         this.mRequestShipping = requestShipping;
+        this.mRequestPaymentMethod = requestPaymentMethod;
         this.mSupportedBasicCardNetworks = supportedBasicCardNetworks;
         this.mDefaultEmail = defaultEmail;
     }

@@ -104,7 +104,7 @@ public class AssistantPaymentRequestCoordinator implements AssistantPaymentReque
         buildPaymentRequestUI(webContents, options);
         mPaymentRequestUI.show(UrlFormatter.formatUrlForSecurityDisplayOmitScheme(
                                        webContents.getLastCommittedUrl()),
-                options.mRequestShipping,
+                options.mRequestShipping, options.mRequestPaymentMethod,
                 options.mRequestPayerName || options.mRequestPayerPhone
                         || options.mRequestPayerEmail,
                 new ShippingStrings(PaymentShippingType.SHIPPING));
