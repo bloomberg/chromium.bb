@@ -106,6 +106,13 @@
   </message>
 
   <if expr="chromeos">
+    <!-- Strings related to Local trust roots section -->
+    <message name="IDS_MANAGEMENT_LOCAL_TRUST_ROOTS" desc="Title of the types of local trust roots section of the page">
+      Custom root certificates
+    </message>
+    <message name="IDS_MANAGEMENT_TRUST_ROOTS_CONFIGURED" desc="Message describing that the administrators have installed their own certificates">
+      Administrators of this device have set up security certificates that may allow them to see the content of websites you visit.
+    </message>
     <!-- Strings related to device reporting section of the management page -->
     <message name="IDS_MANAGEMENT_DEVICE_REPORTING" desc="Title of the types of device reporting section of the page">
       Device
@@ -149,13 +156,6 @@
     Permissions
   </message>
 
-  <message name="IDS_MANAGEMENT_LOCAL_TRUST_ROOTS" desc="Title of the types of local trust roots section of the page">
-    Custom root certificates
-  </message>
-  <message name="IDS_MANAGEMENT_TRUST_ROOTS_NOT_CONFIGURED" desc="Message describing that the administrators have not installed certificates">
-    The contents of websites that you visit is not seen by your administrators
-  </message>
-
   <message name="IDS_MANAGEMENT_BROWSER_REPORTING" desc="Title of the types of browser reporting section of the page">
     Browser
   </message>
@@ -186,10 +186,4 @@
   <message name="IDS_MANAGEMENT_EXTENSION_REPORT_PERF_CRASH" desc="Message explaining that an extension currently reports the user's  performance data and crash report">
     Performance data and crash reports
   </message>
-
-  <if expr="chromeos">
-    <message name="IDS_MANAGEMENT_TRUST_ROOTS_CONFIGURED" desc="Message describing that the administrators have installed their own certificates">
-      Your administrator has configured custom root certificates, which may allow the administrator to see the contents of websites that you visit.
-    </message>
-  </if>
 </grit-part>

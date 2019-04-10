@@ -70,6 +70,8 @@ content::WebUIDataSource* CreateManagementUIHtmlSource() {
   static constexpr LocalizedString kLocalizedStrings[] = {
 #if defined(OS_CHROMEOS)
     {"learnMore", IDS_LEARN_MORE},
+    {"localTrustRoots", IDS_MANAGEMENT_LOCAL_TRUST_ROOTS},
+    {"managementTrustRootsConfigured", IDS_MANAGEMENT_TRUST_ROOTS_CONFIGURED},
     {"deviceConfiguration", IDS_MANAGEMENT_DEVICE_CONFIGURATION},
     {"deviceReporting", IDS_MANAGEMENT_DEVICE_REPORTING},
     {kManagementLogUploadEnabled, IDS_MANAGEMENT_LOG_UPLOAD_ENABLED},
@@ -88,9 +90,6 @@ content::WebUIDataSource* CreateManagementUIHtmlSource() {
     {"extensionReporting", IDS_MANAGEMENT_EXTENSION_REPORTING},
     {"extensionName", IDS_MANAGEMENT_EXTENSIONS_NAME},
     {"extensionPermissions", IDS_MANAGEMENT_EXTENSIONS_PERMISSIONS},
-    {"localTrustRoots", IDS_MANAGEMENT_LOCAL_TRUST_ROOTS},
-    {"managementTrustRootsNotConfigured",
-     IDS_MANAGEMENT_TRUST_ROOTS_NOT_CONFIGURED},
     {"title", IDS_MANAGEMENT_TITLE},
     {"toolbarTitle", IDS_MANAGEMENT_TOOLBAR_TITLE},
     {"searchPrompt", IDS_SETTINGS_SEARCH_PROMPT},
@@ -127,14 +126,6 @@ content::WebUIDataSource* CreateManagementUIHtmlSource() {
   source->AddString("managementAccountLearnMoreUrl",
                     chrome::kManagedUiLearnMoreUrl);
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-
-#if defined(OS_CHROMEOS)
-  source->AddLocalizedString("managementTrustRootsConfigured",
-                             IDS_MANAGEMENT_TRUST_ROOTS_CONFIGURED);
-#endif  // defined(OS_CHROMEOS)
   source->SetJsonPath("strings.js");
   // Add required resources.
   source->AddResourcePath("management_browser_proxy.html",

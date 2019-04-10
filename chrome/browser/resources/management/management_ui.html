@@ -205,6 +205,12 @@
             </div>
           </section>
 <if expr="chromeos">
+          <div hidden="[[!localTrustRoots_]]">
+            <section class="three-line single-column">
+              <h2>$i18n{localTrustRoots}</h2>
+              <div id="trust-roots-configuration">[[localTrustRoots_]]</div>
+            </section>
+          </div>
           <template is="dom-if"
               if="[[showDeviceReportingInfo_(deviceReportingInfo_)]]">
             <section class="single-column">
@@ -274,14 +280,6 @@
               </div>
             </section>
           </template>
-<if expr="chromeos">
-          <template is="dom-if" if="[[localTrustRoots_]]">
-            <section class="single-column">
-              <h2>$i18n{localTrustRoots}</h2>
-              <div id="trust-roots-configuration">[[localTrustRoots_]]</div>
-            </section>
-          </template>
-</if>
         </div>
       </div>
     </main>
