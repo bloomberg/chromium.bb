@@ -113,8 +113,8 @@ class AXAuraWindowUtilsTest : public ViewsTestBase {
   std::unique_ptr<ui::AXTree> GetAccessibilityTreeFromWindow(
       aura::Window* window) {
     ui::AXTreeID tree_id = ui::AXTreeID::CreateNewAXTreeID();
-    AXAuraObjCache cache;
-    AXTreeSourceViews tree_source(cache.GetOrCreate(window), tree_id, &cache);
+    AXAuraObjCache* cache = AXAuraObjCache::GetInstance();
+    AXTreeSourceViews tree_source(cache->GetOrCreate(window), tree_id);
     AuraAXTreeSerializer serializer(&tree_source);
     ui::AXTreeUpdate serialized_tree;
     serializer.SerializeChanges(tree_source.GetRoot(), &serialized_tree);

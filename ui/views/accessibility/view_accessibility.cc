@@ -249,22 +249,6 @@ void ViewAccessibility::OverridePosInSet(int pos_in_set, int set_size) {
   custom_data_.AddIntAttribute(ax::mojom::IntAttribute::kSetSize, set_size);
 }
 
-void ViewAccessibility::OverrideNextFocus(Widget* widget) {
-  next_focus_ = widget;
-}
-
-void ViewAccessibility::OverridePreviousFocus(Widget* widget) {
-  previous_focus_ = widget;
-}
-
-Widget* ViewAccessibility::GetNextFocus() {
-  return next_focus_;
-}
-
-Widget* ViewAccessibility::GetPreviousFocus() {
-  return previous_focus_;
-}
-
 gfx::NativeViewAccessible ViewAccessibility::GetNativeObject() {
   return nullptr;
 }

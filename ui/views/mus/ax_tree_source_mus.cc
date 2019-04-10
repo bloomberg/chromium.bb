@@ -12,9 +12,8 @@
 namespace views {
 
 AXTreeSourceMus::AXTreeSourceMus(AXAuraObjWrapper* root,
-                                 const ui::AXTreeID& tree_id,
-                                 AXAuraObjCache* cache)
-    : AXTreeSourceViews(root, tree_id, cache) {}
+                                 const ui::AXTreeID& tree_id)
+    : AXTreeSourceViews(root, tree_id) {}
 
 AXTreeSourceMus::~AXTreeSourceMus() = default;
 

@@ -7,19 +7,16 @@
 
 #include <vector>
 
-#include "ui/views/accessibility/ax_aura_obj_cache.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
 #include "ui/views/views_export.h"
 
 namespace views {
-
-class AXAuraObjWrapper;
 class AXVirtualView;
 
 // Wraps (and adapts) an AXVirtualView for use with AXTreeSourceViews.
 class AXVirtualViewWrapper : public AXAuraObjWrapper {
  public:
-  AXVirtualViewWrapper(AXVirtualView* virtual_view, AXAuraObjCache* cache);
+  explicit AXVirtualViewWrapper(AXVirtualView* virtual_view);
   ~AXVirtualViewWrapper() override;
 
   // AXAuraObjWrapper:
@@ -32,7 +29,7 @@ class AXVirtualViewWrapper : public AXAuraObjWrapper {
 
  private:
   // Weak.
-  AXVirtualView* virtual_view_;
+  AXVirtualView* const virtual_view_;
 
   DISALLOW_COPY_AND_ASSIGN(AXVirtualViewWrapper);
 };

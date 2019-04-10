@@ -44,7 +44,7 @@ class VIEWS_MUS_EXPORT AXRemoteHost : public ax::mojom::AXRemoteHost,
                                       public AXAuraObjCache::Delegate,
                                       public AXEventObserver {
  public:
-  explicit AXRemoteHost(AXAuraObjCache* cache);
+  AXRemoteHost();
   ~AXRemoteHost() override;
 
   // Initializes and adds ourself as a client of the host service.
@@ -121,7 +121,6 @@ class VIEWS_MUS_EXPORT AXRemoteHost : public ax::mojom::AXRemoteHost,
   using AuraAXTreeSerializer =
       ui::AXTreeSerializer<AXAuraObjWrapper*, ui::AXNodeData, ui::AXTreeData>;
   std::unique_ptr<AuraAXTreeSerializer> tree_serializer_;
-  AXAuraObjCache* cache_;
 
   DISALLOW_COPY_AND_ASSIGN(AXRemoteHost);
 };

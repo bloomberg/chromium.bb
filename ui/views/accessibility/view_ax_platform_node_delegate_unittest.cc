@@ -182,9 +182,7 @@ class DerivedTestView : public View {
 
 class TestAXEventObserver : public AXEventObserver {
  public:
-  TestAXEventObserver(AXAuraObjCache* cache) : cache_(cache) {
-    AXEventManager::Get()->AddObserver(this);
-  }
+  TestAXEventObserver() { AXEventManager::Get()->AddObserver(this); }
 
   ~TestAXEventObserver() override {
     AXEventManager::Get()->RemoveObserver(this);
@@ -192,14 +190,13 @@ class TestAXEventObserver : public AXEventObserver {
 
   // AXEventObserver:
   void OnViewEvent(View* view, ax::mojom::Event event_type) override {
+    AXAuraObjCache* ax = AXAuraObjCache::GetInstance();
     std::vector<AXAuraObjWrapper*> out_children;
-    AXAuraObjWrapper* ax_obj = cache_->GetOrCreate(view->GetWidget());
+    AXAuraObjWrapper* ax_obj = ax->GetOrCreate(view->GetWidget());
     ax_obj->GetChildren(&out_children);
   }
 
  private:
-  AXAuraObjCache* cache_;
-
   DISALLOW_COPY_AND_ASSIGN(TestAXEventObserver);
 };
 
@@ -210,8 +207,7 @@ using ViewAccessibilityTest = ViewsTestBase;
 TEST_F(ViewAccessibilityTest, LayoutCalledInvalidateRootView) {
   // TODO: Construct a real AutomationManagerAura rather than using this
   // observer to simulate it.
-  AXAuraObjCache cache;
-  TestAXEventObserver observer(&cache);
+  TestAXEventObserver observer;
   std::unique_ptr<Widget> widget(new Widget);
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
@@ -230,8 +226,8 @@ TEST_F(ViewAccessibilityTest, LayoutCalledInvalidateRootView) {
   // During the destruction of parent, OnBlur will be called and change the
   // visibility to false.
   parent->SetVisible(true);
-
-  cache.GetOrCreate(widget.get());
+  AXAuraObjCache* ax = AXAuraObjCache::GetInstance();
+  ax->GetOrCreate(widget.get());
 }
 #endif
 

@@ -111,9 +111,7 @@ MusClient::MusClient(const InitParams& params) : identity_(params.identity) {
         std::make_unique<ui::ClipboardClient>(std::move(clipboard_host_ptr)));
 
     if (params.use_accessibility_host) {
-      ax_aura_obj_cache_ = std::make_unique<AXAuraObjCache>();
-      ax_remote_host_ =
-          std::make_unique<AXRemoteHost>(ax_aura_obj_cache_.get());
+      ax_remote_host_ = std::make_unique<AXRemoteHost>();
       ax_remote_host_->Init(connector);
     }
   }
