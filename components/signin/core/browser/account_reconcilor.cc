@@ -32,6 +32,10 @@
 #include "services/identity/public/cpp/accounts_in_cookie_jar_info.h"
 #include "services/identity/public/cpp/accounts_mutator.h"
 
+#if defined(OS_ANDROID)
+#include "components/signin/core/browser/consistency_cookie_manager_android.h"
+#endif
+
 using signin::AccountReconcilorDelegate;
 using signin_metrics::AccountReconcilorState;
 
@@ -228,6 +232,16 @@ void AccountReconcilor::Initialize(bool start_reconcile_if_tokens_available) {
     if (start_reconcile_if_tokens_available && IsIdentityManagerReady())
       StartReconcile();
   }
+
+#if defined(OS_ANDROID)
+  // The ConsistencyCookieManager is not created earlier, because it requires
+  // the reconcilor state to be initialized.
+  if (base::FeatureList::IsEnabled(signin::kMiceFeature)) {
+    consistency_cookie_manager_ =
+        std::make_unique<signin::ConsistencyCookieManagerAndroid>(client_,
+                                                                  this);
+  }
+#endif
 }
 
 #if defined(OS_IOS)
@@ -237,6 +251,7 @@ void AccountReconcilor::SetIsWKHTTPSystemCookieStoreEnabled(bool is_enabled) {
 #endif  // defined(OS_IOS)
 
 void AccountReconcilor::EnableReconcile() {
+  SetState(AccountReconcilorState::ACCOUNT_RECONCILOR_SCHEDULED);
   RegisterWithAllDependencies();
 #if !defined(OS_IOS)
   // TODO(droger): Investigate why this breaks tests on iOS.
@@ -247,6 +262,7 @@ void AccountReconcilor::EnableReconcile() {
 
 void AccountReconcilor::DisableReconcile(bool logout_all_accounts) {
   AbortReconcile();
+  SetState(AccountReconcilorState::ACCOUNT_RECONCILOR_OK);
   UnregisterWithAllDependencies();
 
   if (logout_all_accounts)
