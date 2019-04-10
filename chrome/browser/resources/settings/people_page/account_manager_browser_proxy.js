@@ -19,6 +19,7 @@ cr.exportPath('settings');
  *   fullName: string,
  *   email: string,
  *   pic: string,
+ *   organization: (string|undefined),
  * }}
  */
 settings.Account;
