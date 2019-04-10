@@ -148,8 +148,8 @@ WebString WebURLRequest::HttpMethod() const {
   return resource_request_->HttpMethod();
 }
 
-void WebURLRequest::SetHTTPMethod(const WebString& http_method) {
-  resource_request_->SetHTTPMethod(http_method);
+void WebURLRequest::SetHttpMethod(const WebString& http_method) {
+  resource_request_->SetHttpMethod(http_method);
 }
 
 WebString WebURLRequest::HttpHeaderField(const WebString& name) const {

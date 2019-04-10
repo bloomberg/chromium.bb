@@ -290,7 +290,7 @@ FrameLoadRequest FormSubmission::CreateFrameLoadRequest(
     frame_request.SetFrameName(target_);
 
   if (method_ == FormSubmission::kPostMethod) {
-    frame_request.GetResourceRequest().SetHTTPMethod(http_names::kPOST);
+    frame_request.GetResourceRequest().SetHttpMethod(http_names::kPOST);
     frame_request.GetResourceRequest().SetHttpBody(form_data_);
 
     // construct some user headers if necessary

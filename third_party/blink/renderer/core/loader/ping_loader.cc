@@ -180,7 +180,7 @@ bool SendBeaconCommon(LocalFrame* frame,
   }
 
   ResourceRequest request(url);
-  request.SetHTTPMethod(http_names::kPOST);
+  request.SetHttpMethod(http_names::kPOST);
   request.SetKeepalive(true);
   request.SetRequestContext(mojom::RequestContextType::BEACON);
   beacon.Serialize(request);
@@ -210,7 +210,7 @@ void PingLoader::SendLinkAuditPing(LocalFrame* frame,
     return;
 
   ResourceRequest request(ping_url);
-  request.SetHTTPMethod(http_names::kPOST);
+  request.SetHttpMethod(http_names::kPOST);
   request.SetHTTPContentType("text/ping");
   request.SetHttpBody(EncodedFormData::Create("PING"));
   request.SetHttpHeaderField(http_names::kCacheControl, "max-age=0");
@@ -244,7 +244,7 @@ void PingLoader::SendViolationReport(LocalFrame* frame,
                                      scoped_refptr<EncodedFormData> report,
                                      ViolationReportType type) {
   ResourceRequest request(report_url);
-  request.SetHTTPMethod(http_names::kPOST);
+  request.SetHttpMethod(http_names::kPOST);
   switch (type) {
     case kContentSecurityPolicyViolationReport:
       request.SetHTTPContentType("application/csp-report");

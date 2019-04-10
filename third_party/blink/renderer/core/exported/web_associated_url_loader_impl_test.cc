@@ -168,7 +168,7 @@ class WebAssociatedURLLoaderTest : public testing::Test,
     request.SetFetchRequestMode(network::mojom::FetchRequestMode::kSameOrigin);
     request.SetFetchCredentialsMode(
         network::mojom::FetchCredentialsMode::kOmit);
-    request.SetHTTPMethod(WebString::FromUTF8(unsafe_method));
+    request.SetHttpMethod(WebString::FromUTF8(unsafe_method));
     WebAssociatedURLLoaderOptions options;
     options.untrusted_http = true;
     CheckFails(request, options);

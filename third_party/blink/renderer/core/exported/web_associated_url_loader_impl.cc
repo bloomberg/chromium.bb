@@ -363,7 +363,7 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
     allow_load = observer_ && IsValidHTTPToken(method) &&
                  !FetchUtils::IsForbiddenMethod(method);
     if (allow_load) {
-      new_request.SetHTTPMethod(FetchUtils::NormalizeMethod(method));
+      new_request.SetHttpMethod(FetchUtils::NormalizeMethod(method));
       HTTPRequestHeaderValidator validator;
       new_request.VisitHttpHeaderFields(&validator);
       allow_load = validator.IsSafe();

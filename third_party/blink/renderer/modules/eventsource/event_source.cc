@@ -124,7 +124,7 @@ void EventSource::Connect() {
 
   ExecutionContext& execution_context = *this->GetExecutionContext();
   ResourceRequest request(current_url_);
-  request.SetHTTPMethod(http_names::kGET);
+  request.SetHttpMethod(http_names::kGET);
   request.SetHttpHeaderField(http_names::kAccept, "text/event-stream");
   request.SetHttpHeaderField(http_names::kCacheControl, "no-cache");
   request.SetRequestContext(mojom::RequestContextType::EVENT_SOURCE);

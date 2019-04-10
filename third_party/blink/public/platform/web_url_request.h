@@ -212,7 +212,7 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT base::TimeDelta TimeoutInterval() const;
 
   BLINK_PLATFORM_EXPORT WebString HttpMethod() const;
-  BLINK_PLATFORM_EXPORT void SetHTTPMethod(const WebString&);
+  BLINK_PLATFORM_EXPORT void SetHttpMethod(const WebString&);
 
   BLINK_PLATFORM_EXPORT WebString HttpHeaderField(const WebString& name) const;
   // It's not possible to set the referrer header using this method. Use

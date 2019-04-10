@@ -162,7 +162,7 @@ ThreadableLoader::CreateAccessControlPreflightRequest(
 
   std::unique_ptr<ResourceRequest> preflight_request =
       std::make_unique<ResourceRequest>(request_url);
-  preflight_request->SetHTTPMethod(http_names::kOPTIONS);
+  preflight_request->SetHttpMethod(http_names::kOPTIONS);
   preflight_request->SetHttpHeaderField(http_names::kAccessControlRequestMethod,
                                         request.HttpMethod());
   preflight_request->SetPriority(request.Priority());

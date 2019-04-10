@@ -452,7 +452,7 @@ TEST_F(MemoryCacheCorrectnessTest, FreshWithStaleRedirect) {
 
 TEST_F(MemoryCacheCorrectnessTest, PostToSameURLTwice) {
   ResourceRequest request1{KURL(kResourceURL)};
-  request1.SetHTTPMethod(http_names::kPOST);
+  request1.SetHttpMethod(http_names::kPOST);
   request1.SetRequestorOrigin(GetSecurityOrigin());
   RawResource* resource1 =
       RawResource::CreateForTest(request1, ResourceType::kRaw);
@@ -460,7 +460,7 @@ TEST_F(MemoryCacheCorrectnessTest, PostToSameURLTwice) {
   AddResourceToMemoryCache(resource1);
 
   ResourceRequest request2{KURL(kResourceURL)};
-  request2.SetHTTPMethod(http_names::kPOST);
+  request2.SetHttpMethod(http_names::kPOST);
   request2.SetRequestorOrigin(GetSecurityOrigin());
   FetchParameters fetch2(request2);
   RawResource* resource2 = RawResource::FetchSynchronously(fetch2, Fetcher());
