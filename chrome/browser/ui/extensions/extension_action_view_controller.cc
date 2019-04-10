@@ -46,11 +46,13 @@ ExtensionActionViewController::ExtensionActionViewController(
     const extensions::Extension* extension,
     Browser* browser,
     ExtensionAction* extension_action,
-    ToolbarActionsBar* toolbar_actions_bar)
+    ToolbarActionsBar* main_bar,
+    bool in_overflow_mode)
     : extension_(extension),
       browser_(browser),
+      in_overflow_mode_(in_overflow_mode),
       extension_action_(extension_action),
-      toolbar_actions_bar_(toolbar_actions_bar),
+      main_bar_(main_bar),
       popup_host_(nullptr),
       view_delegate_(nullptr),
       platform_delegate_(ExtensionActionPlatformDelegate::Create(this)),
@@ -59,6 +61,7 @@ ExtensionActionViewController::ExtensionActionViewController(
           extensions::ExtensionRegistry::Get(browser_->profile())),
       popup_host_observer_(this),
       weak_factory_(this) {
+  DCHECK(main_bar);
   DCHECK(extension_action);
   DCHECK(extension_action->action_type() == ActionInfo::TYPE_PAGE ||
          extension_action->action_type() == ActionInfo::TYPE_BROWSER);
@@ -201,13 +204,13 @@ ui::MenuModel* ExtensionActionViewController::GetContextMenu() {
 
   extensions::ExtensionContextMenuModel::ButtonVisibility visibility =
       extensions::ExtensionContextMenuModel::VISIBLE;
-  if (toolbar_actions_bar_) {
-    if (toolbar_actions_bar_->popped_out_action() == this)
-      visibility = extensions::ExtensionContextMenuModel::TRANSITIVELY_VISIBLE;
-    else if (!toolbar_actions_bar_->IsActionVisibleOnMainBar(this))
-      visibility = extensions::ExtensionContextMenuModel::OVERFLOWED;
-    // Else, VISIBLE is correct.
+
+  if (main_bar_->popped_out_action() == this) {
+    visibility = extensions::ExtensionContextMenuModel::TRANSITIVELY_VISIBLE;
+  } else if (!main_bar_->IsActionVisibleOnMainBar(this)) {
+    visibility = extensions::ExtensionContextMenuModel::OVERFLOWED;
   }
+
   // Reconstruct the menu every time because the menu's contents are dynamic.
   context_menu_model_.reset(new extensions::ExtensionContextMenuModel(
       extension(), browser_, visibility, this));
@@ -215,10 +218,8 @@ ui::MenuModel* ExtensionActionViewController::GetContextMenu() {
 }
 
 void ExtensionActionViewController::OnContextMenuClosed() {
-  if (toolbar_actions_bar_ &&
-      toolbar_actions_bar_->popped_out_action() == this && !IsShowingPopup()) {
-    toolbar_actions_bar_->UndoPopOut();
-  }
+  if (main_bar_->popped_out_action() == this && !IsShowingPopup())
+    main_bar_->UndoPopOut();
 }
 
 bool ExtensionActionViewController::ExecuteAction(bool by_user) {
@@ -325,17 +326,6 @@ bool ExtensionActionViewController::ExtensionIsValid() const {
   return extension_registry_->enabled_extensions().Contains(extension_->id());
 }
 
-void ExtensionActionViewController::HideActivePopup() {
-  if (toolbar_actions_bar_) {
-    toolbar_actions_bar_->HideActivePopup();
-  } else {
-    DCHECK_EQ(ActionInfo::TYPE_PAGE, extension_action_->action_type());
-    // In the traditional toolbar, page actions only know how to close their own
-    // popups.
-    HidePopup();
-  }
-}
-
 bool ExtensionActionViewController::GetExtensionCommand(
     extensions::Command* command) {
   DCHECK(command);
@@ -360,24 +350,22 @@ ExtensionActionViewController::GetIconImageSourceForTesting(
 
 ExtensionActionViewController*
 ExtensionActionViewController::GetPreferredPopupViewController() {
-  if (toolbar_actions_bar_ && toolbar_actions_bar_->in_overflow_mode()) {
-    return static_cast<ExtensionActionViewController*>(
-        toolbar_actions_bar_->GetMainControllerForAction(this));
-  }
-
-  return this;
+  return static_cast<ExtensionActionViewController*>(
+      main_bar_->GetActionForId(GetId()));
 }
 
 bool ExtensionActionViewController::TriggerPopupWithUrl(
     PopupShowAction show_action,
     const GURL& popup_url,
     bool grant_tab_permissions) {
+  DCHECK(!in_overflow_mode_)
+      << "Only the main bar's extensions should ever try to show a popup";
   if (!ExtensionIsValid())
     return false;
 
   // Always hide the current popup, even if it's not owned by this extension.
   // Only one popup should be visible at a time.
-  HideActivePopup();
+  main_bar_->HideActivePopup();
 
   std::unique_ptr<extensions::ExtensionViewHost> host =
       extensions::ExtensionViewHostFactory::CreatePopupHost(popup_url,
@@ -387,15 +375,12 @@ bool ExtensionActionViewController::TriggerPopupWithUrl(
 
   popup_host_ = host.get();
   popup_host_observer_.Add(popup_host_);
-  if (toolbar_actions_bar_)
-    toolbar_actions_bar_->SetPopupOwner(this);
+  main_bar_->SetPopupOwner(this);
 
-  if (toolbar_actions_bar_ &&
-      !toolbar_actions_bar_->IsActionVisibleOnMainBar(this)) {
-    toolbar_actions_bar_->CloseOverflowMenuIfOpen();
-    toolbar_actions_bar_->PopOutAction(
-        this,
-        show_action == SHOW_POPUP_AND_INSPECT,
+  if (!main_bar_->IsActionVisibleOnMainBar(this)) {
+    main_bar_->CloseOverflowMenuIfOpen();
+    main_bar_->PopOutAction(
+        this, show_action == SHOW_POPUP_AND_INSPECT,
         base::Bind(&ExtensionActionViewController::ShowPopup,
                    weak_factory_.GetWeakPtr(), base::Passed(std::move(host)),
                    grant_tab_permissions, show_action));
@@ -422,11 +407,10 @@ void ExtensionActionViewController::ShowPopup(
 void ExtensionActionViewController::OnPopupClosed() {
   popup_host_observer_.Remove(popup_host_);
   popup_host_ = nullptr;
-  if (toolbar_actions_bar_) {
-    toolbar_actions_bar_->SetPopupOwner(nullptr);
-    if (toolbar_actions_bar_->popped_out_action() == this &&
-        !view_delegate_->IsMenuRunning())
-      toolbar_actions_bar_->UndoPopOut();
+  main_bar_->SetPopupOwner(nullptr);
+  if (main_bar_->popped_out_action() == this &&
+      !view_delegate_->IsMenuRunning()) {
+    main_bar_->UndoPopOut();
   }
   view_delegate_->OnPopupClosed();
 }
@@ -469,10 +453,8 @@ ExtensionActionViewController::GetIconImageSource(
   // overflowed, we add a decoration so that the user can see which overflowed
   // action wants to run (since they wouldn't be able to see the change from
   // grayscale to color).
-  bool is_overflow =
-      toolbar_actions_bar_ && toolbar_actions_bar_->in_overflow_mode();
   image_source->set_paint_page_action_decoration(
-      !was_blocked && is_overflow && PageActionWantsToRun(web_contents));
+      !was_blocked && in_overflow_mode_ && PageActionWantsToRun(web_contents));
 
   return image_source;
 }

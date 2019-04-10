@@ -53,10 +53,12 @@ std::unique_ptr<views::View> CreateHeaderView(const base::string16& title) {
 }  // namespace
 
 ExtensionsMenuView::ExtensionsMenuView(views::View* anchor_view,
-                                       Browser* browser)
+                                       Browser* browser,
+                                       ToolbarActionsBar* toolbar_actions_bar)
     : BubbleDialogDelegateView(anchor_view,
                                views::BubbleBorder::Arrow::TOP_RIGHT),
       browser_(browser),
+      toolbar_actions_bar_(toolbar_actions_bar),
       model_(ToolbarActionsModel::Get(browser_->profile())),
       model_observer_(this) {
   model_observer_.Add(model_);
@@ -119,7 +121,8 @@ void ExtensionsMenuView::Repopulate() {
 
   for (auto action_id : model_->action_ids()) {
     AddChildView(std::make_unique<ExtensionsMenuButton>(
-        browser_, model_->CreateActionForId(browser_, nullptr, action_id)));
+        browser_, model_->CreateActionForId(browser_, toolbar_actions_bar_,
+                                            false, action_id)));
   }
 
   // TODO(pbos): This is a placeholder until we have proper UI treatment of the
@@ -164,9 +167,11 @@ void ExtensionsMenuView::OnToolbarModelInitialized() {
 
 // static
 void ExtensionsMenuView::ShowBubble(views::View* anchor_view,
-                                    Browser* browser) {
+                                    Browser* browser,
+                                    ToolbarActionsBar* toolbar_actions_bar) {
   DCHECK(!g_extensions_dialog);
-  g_extensions_dialog = new ExtensionsMenuView(anchor_view, browser);
+  g_extensions_dialog =
+      new ExtensionsMenuView(anchor_view, browser, toolbar_actions_bar);
   views::BubbleDialogDelegateView::CreateBubble(g_extensions_dialog)->Show();
 }
 

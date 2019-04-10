@@ -226,8 +226,10 @@ void ToolbarView::Init() {
   browser_actions_ =
       new BrowserActionsContainer(browser_, main_container, this);
 
-  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu))
-    extensions_button_ = new ExtensionsToolbarButton(browser_);
+  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
+    extensions_button_ = new ExtensionsToolbarButton(
+        browser_, browser_actions_->toolbar_actions_bar());
+  }
 
   if (media_router::MediaRouterEnabled(browser_->profile()))
     cast_ = media_router::CastToolbarButton::Create(browser_).release();
