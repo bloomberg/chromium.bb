@@ -311,6 +311,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void WasShown(bool record_presentation_time,
                 base::TimeTicks tab_switch_start_time = base::TimeTicks());
 
+  // Send a WidgetMsg_WasHidden message to the RenderWidget, without caring
+  // about the visibility state of the RenderWidgetHostImpl. This is used to
+  // address https://crbug.com/936858. See the bug for more details.
+  void SetHiddenOnCommit();
+
 #if defined(OS_ANDROID)
   // Set the importance of widget. The importance is passed onto
   // RenderProcessHost which aggregates importance of all of its widgets.

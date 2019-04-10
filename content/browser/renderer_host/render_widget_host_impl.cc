@@ -848,6 +848,10 @@ void RenderWidgetHostImpl::WasShown(bool record_presentation_time,
   SynchronizeVisualProperties();
 }
 
+void RenderWidgetHostImpl::SetHiddenOnCommit() {
+  Send(new WidgetMsg_WasHidden(routing_id_));
+}
+
 #if defined(OS_ANDROID)
 void RenderWidgetHostImpl::SetImportance(ChildProcessImportance importance) {
   if (importance_ == importance)
