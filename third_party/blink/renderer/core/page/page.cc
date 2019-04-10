@@ -54,6 +54,7 @@
 #include "third_party/blink/renderer/core/inspector/console_message_storage.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
+#include "third_party/blink/renderer/core/loader/idleness_detector.h"
 #include "third_party/blink/renderer/core/page/autoscroll_controller.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/context_menu_controller.h"
@@ -901,6 +902,13 @@ bool Page::RequestBeginMainFrameNotExpected(bool new_state) {
     }
   }
   return false;
+}
+
+bool Page::LocalMainFrameNetworkIsAlmostIdle() const {
+  LocalFrame* frame = DynamicTo<LocalFrame>(MainFrame());
+  if (!frame)
+    return true;
+  return frame->GetIdlenessDetector()->NetworkIsAlmostIdle();
 }
 
 void Page::AddAutoplayFlags(int32_t value) {

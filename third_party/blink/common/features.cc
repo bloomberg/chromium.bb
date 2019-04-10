@@ -177,6 +177,11 @@ const base::Feature kStopInBackground {
 #endif
 };
 
+// Freeze scheduler task queues in background on network idle.
+// This feature only works if stop-in-background is enabled.
+const base::Feature kFreezeBackgroundTabOnNetworkIdle{
+    "freeze-background-tab-on-network-idle", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Freeze non-timer task queues in background, after allowed grace time.
 // "stop" is a legacy name.
 const base::Feature kStopNonTimersInBackground {
