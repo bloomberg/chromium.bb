@@ -285,8 +285,9 @@ void SkiaBenchmarking::GetOpTimings(gin::Arguments* args) {
       v8::Array::New(isolate, benchmarking_canvas.CommandCount());
   for (size_t i = 0; i < benchmarking_canvas.CommandCount(); ++i) {
     op_times
-        ->Set(context, i,
-              v8::Number::New(isolate, benchmarking_canvas.GetTime(i)))
+        ->CreateDataProperty(
+            context, i,
+            v8::Number::New(isolate, benchmarking_canvas.GetTime(i)))
         .Check();
   }
 
