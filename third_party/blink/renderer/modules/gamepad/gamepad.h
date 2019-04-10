@@ -39,13 +39,13 @@
 
 namespace blink {
 
-class MODULES_EXPORT Gamepad final : public ScriptWrappable,
-                                     public ContextClient {
+class NavigatorGamepad;
+
+class MODULES_EXPORT Gamepad final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(Gamepad);
 
  public:
-  explicit Gamepad(ExecutionContext*);
+  explicit Gamepad(NavigatorGamepad* navigator_gamepad);
   ~Gamepad() override;
 
   typedef Vector<double> DoubleVector;
@@ -73,11 +73,12 @@ class MODULES_EXPORT Gamepad final : public ScriptWrappable,
   void SetButtons(unsigned count, const device::GamepadButton* data);
   bool isButtonDataDirty() const { return is_button_data_dirty_; }
 
-  GamepadHapticActuator* vibrationActuator() const {
-    return vibration_actuator_;
-  }
+  GamepadHapticActuator* vibrationActuator() const;
   void SetVibrationActuatorInfo(const device::GamepadHapticActuator&);
   bool HasVibrationActuator() const { return has_vibration_actuator_; }
+  device::GamepadHapticActuatorType GetVibrationActuatorType() const {
+    return vibration_actuator_type_;
+  }
 
   GamepadPose* pose() const { return pose_; }
   void SetPose(const device::GamepadPose&);
@@ -88,12 +89,12 @@ class MODULES_EXPORT Gamepad final : public ScriptWrappable,
   unsigned displayId() const { return display_id_; }
   void SetDisplayId(unsigned val) { display_id_ = val; }
 
-  void InitializeSharedState();
-  void CopySharedStateFromBackBuffer(const Gamepad* back);
-
   void Trace(blink::Visitor*) override;
 
  private:
+  // A reference to the NavigatorGamepad that created this gamepad.
+  Member<NavigatorGamepad> navigator_gamepad_;
+
   // A string identifying the gamepad model.
   String id_;
 
@@ -120,9 +121,6 @@ class MODULES_EXPORT Gamepad final : public ScriptWrappable,
 
   // The type of haptic actuator used for vibration effects.
   device::GamepadHapticActuatorType vibration_actuator_type_;
-
-  // The vibration actuator, or nullptr if the gamepad has none.
-  Member<GamepadHapticActuator> vibration_actuator_;
 
   // Snapshot of the gamepad pose.
   Member<GamepadPose> pose_;
