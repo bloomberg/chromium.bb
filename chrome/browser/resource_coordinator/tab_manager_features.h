@@ -273,6 +273,15 @@ int GetNumOldestTabsToLogWithTabRanker();
 // Whether to disable background time TabMetrics log.
 bool DisableBackgroundLogWithTabRanker();
 
+// Gets reload count penalty parameter for TabRanker.
+float GetDiscardCountPenaltyTabRanker();
+
+// Gets mru penalty parameter that converts mru index to scores.
+float GetMRUScorerPenaltyTabRanker();
+
+// Gets which type of scorer to use for TabRanker.
+int GetScorerTypeForTabRanker();
+
 }  // namespace resource_coordinator
 
 #endif  // CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_MANAGER_FEATURES_H_

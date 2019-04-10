@@ -22,12 +22,12 @@ source_set("tab_ranker") {
   deps = [
     "//base",
     "//chrome/browser:resources",
+    "//chrome/browser/resource_coordinator:tab_manager_features",
     "//chrome/browser/resource_coordinator:tab_metrics_event_proto",
     "//components/assist_ranker",
     "//components/assist_ranker/proto",
     "//components/sessions",
     "//services/metrics/public/cpp:ukm_builders",
-    "//ui/base",
   ]
 }
 

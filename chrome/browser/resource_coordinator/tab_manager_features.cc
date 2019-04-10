@@ -272,4 +272,19 @@ bool DisableBackgroundLogWithTabRanker() {
       features::kTabRanker, "disable_background_log_with_TabRanker", false);
 }
 
+float GetDiscardCountPenaltyTabRanker() {
+  return static_cast<float>(base::GetFieldTrialParamByFeatureAsDouble(
+      features::kTabRanker, "discard_count_penalty", 0.0));
+}
+
+float GetMRUScorerPenaltyTabRanker() {
+  return static_cast<float>(base::GetFieldTrialParamByFeatureAsDouble(
+      features::kTabRanker, "mru_scorer_penalty", 1.0));
+}
+
+int GetScorerTypeForTabRanker() {
+  return base::GetFieldTrialParamByFeatureAsInt(features::kTabRanker,
+                                                "scorer_type", 1);
+}
+
 }  // namespace resource_coordinator
