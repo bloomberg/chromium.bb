@@ -145,6 +145,17 @@
       .spell-check-languages .list-item:last-of-type {
         border-bottom: var(--cr-separator-line);
       }
+
+      div.list-item.non-target .target-info {
+        display: none;
+      }
+      
+      /* Any .target.target-info following another .target element needs to
+      be hidden. We only want to show the _first_ .target-info of the list.
+      This is a way to do a :first-of-class selector. */
+      div.list-item.target ~  div.list-item.target .target-info {
+        display: none;
+      }
     </style>
     <settings-languages languages="{{languages}}" prefs="{{prefs}}"
         language-helper="{{languageHelper}}">
@@ -176,13 +187,14 @@
           <div class="list-frame vertical-list">
             <template is="dom-repeat" items="[[languages.enabled]]">
               <div class$="list-item [[getLanguageItemClass_(
-                  item.language.code, language.prospectiveUILanguage)]]">
+                  item.language.code, language.prospectiveUILanguage)]]
+                  [[isTranslationTarget_(item.language.code,
+                  languages.translateTarget)]]">
                 <div class="start">
                   <div title="[[item.language.nativeDisplayName]]">
                     [[item.language.displayName]]
                   </div>
-                  <div class="secondary"
-                      hidden="[[!isTranslationTarget_(item.language.code)]]">
+                  <div class="target-info secondary">
                     $i18n{translateTargetLabel}
                   </div>
 <if expr="chromeos or is_win">
