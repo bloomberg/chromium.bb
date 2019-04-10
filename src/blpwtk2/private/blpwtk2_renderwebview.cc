@@ -97,12 +97,17 @@ namespace blpwtk2 {
 class RenderWebView::RenderViewObserver : public content::RenderViewObserver {
     RenderWebView *d_renderWebView;
 
+    bool d_dispatchingSynchronizeVisualProperties = false;
+
   public:
 
     RenderViewObserver(content::RenderViewImpl *rv, RenderWebView *renderWebView);
     ~RenderViewObserver() override;
 
     void OnDestruct() override;
+    bool OnMessageReceived(const IPC::Message& message) override;
+
+    void DispatchSynchronizeVisualProperties(content::VisualProperties);
 };
 
 RenderWebView::RenderViewObserver::RenderViewObserver(
@@ -123,6 +128,27 @@ void RenderWebView::RenderViewObserver::OnDestruct()
 {
     LOG(INFO) << "Destroyed RenderView, routingId=" << routing_id();
     delete this;
+}
+
+void RenderWebView::RenderViewObserver::DispatchSynchronizeVisualProperties(content::VisualProperties params)
+{
+    d_dispatchingSynchronizeVisualProperties = true;
+
+    d_renderWebView->dispatchToRenderWidget(
+        WidgetMsg_SynchronizeVisualProperties(
+            d_renderWebView->d_renderWidgetRoutingId,
+            params));
+
+    d_dispatchingSynchronizeVisualProperties = false;
+}
+
+bool RenderWebView::RenderViewObserver::OnMessageReceived(const IPC::Message& message)
+{
+    if (message.type() == WidgetMsg_SynchronizeVisualProperties::ID) {
+        return !d_dispatchingSynchronizeVisualProperties;
+    }
+
+    return false;
 }
 
                         // -------------------
@@ -780,9 +806,7 @@ void RenderWebView::updateGeometry()
     params.local_surface_id_allocation = d_compositor->GetLocalSurfaceIdAllocation();
     GetNativeViewScreenInfo(&params.screen_info, d_hwnd.get());
 
-    dispatchToRenderWidget(
-        WidgetMsg_SynchronizeVisualProperties(d_renderWidgetRoutingId,
-            params));
+    d_renderViewObserver->DispatchSynchronizeVisualProperties(params);
 }
 
 void RenderWebView::updateFocus()
@@ -1379,6 +1403,8 @@ void RenderWebView::setSecurityToken(v8::Isolate *isolate,
 void RenderWebView::created(WebView *source)
 {
     d_proxy = source;
+
+    d_proxy->move(0, 0, 0, 0);
 
     static_cast<WebViewProxy *>(d_proxy)->setProxyDelegate(this);
 
