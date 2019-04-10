@@ -302,7 +302,7 @@ sk_sp<SkColorFilter> MakeOpacityFilter(float alpha, sk_sp<SkColorFilter> in) {
   // kDstIn is (srcAlpha * dstColor, srcAlpha * dstAlpha) so this makes the
   // output color equal to input color * alpha.
   sk_sp<SkColorFilter> opacity =
-      SkColorFilter::MakeModeFilter(alpha_as_color, SkBlendMode::kDstIn);
+      SkColorFilters::Blend(alpha_as_color, SkBlendMode::kDstIn);
   if (in) {
     return opacity->makeComposed(std::move(in));
   } else {
@@ -1252,8 +1252,8 @@ void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
   if (blend_background) {
     // Add a color filter that does DstOver blending between texture and the
     // background color. Then, modulate by quad's opacity *after* blending.
-    sk_sp<SkColorFilter> cf = SkColorFilter::MakeModeFilter(
-        quad->background_color, SkBlendMode::kDstOver);
+    sk_sp<SkColorFilter> cf =
+        SkColorFilters::Blend(quad->background_color, SkBlendMode::kDstOver);
     if (quad_alpha < 1.f) {
       cf = MakeOpacityFilter(quad_alpha, std::move(cf));
       quad_alpha = 1.f;

@@ -184,8 +184,8 @@ void WallpaperView::OnPaint(gfx::Canvas* canvas) {
 
   cc::PaintFlags flags;
   if (controller->ShouldApplyDimming()) {
-    flags.setColorFilter(SkColorFilter::MakeModeFilter(
-        GetWallpaperDarkenColor(), SkBlendMode::kDarken));
+    flags.setColorFilter(
+        SkColorFilters::Blend(GetWallpaperDarkenColor(), SkBlendMode::kDarken));
   }
 
   switch (layout) {

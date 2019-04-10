@@ -353,8 +353,7 @@ class ImageFilterClippedPixelTest : public LayerTreeHostFiltersPixelTest {
     FilterOperations filters;
     filters.Append(FilterOperation::CreateReferenceFilter(
         sk_make_sp<ColorFilterPaintFilter>(
-            SkColorFilter::MakeMatrixFilterRowMajor255(matrix), nullptr,
-            &crop_rect)));
+            SkColorFilters::MatrixRowMajor255(matrix), nullptr, &crop_rect)));
 
     // Make the foreground layer's render surface be clipped by the background
     // layer.
@@ -402,8 +401,7 @@ class ImageFilterNonZeroOriginPixelTest : public LayerTreeHostFiltersPixelTest {
     FilterOperations filters;
     filters.Append(FilterOperation::CreateReferenceFilter(
         sk_make_sp<ColorFilterPaintFilter>(
-            SkColorFilter::MakeMatrixFilterRowMajor255(matrix), nullptr,
-            &crop_rect)));
+            SkColorFilters::MatrixRowMajor255(matrix), nullptr, &crop_rect)));
 
     // Make the foreground layer's render surface be clipped by the background
     // layer.
@@ -1074,8 +1072,7 @@ class FilterWithGiantCropRectPixelTest : public LayerTreeHostFiltersPixelTest {
         SkRect::MakeXYWH(-40000, -40000, 80000, 80000));
     filters.Append(FilterOperation::CreateReferenceFilter(
         sk_make_sp<ColorFilterPaintFilter>(
-            SkColorFilter::MakeMatrixFilterRowMajor255(matrix), nullptr,
-            &cropRect)));
+            SkColorFilters::MatrixRowMajor255(matrix), nullptr, &cropRect)));
     filter_layer->SetFilters(filters);
     background->SetMasksToBounds(masks_to_bounds);
     background->AddChild(filter_layer);

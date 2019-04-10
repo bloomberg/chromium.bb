@@ -3040,7 +3040,7 @@ TEST_P(PaintFilterSerializationTest, Basic) {
   SkScalar scalars[9] = {1.f, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f, 8.f, 9.f};
   std::vector<sk_sp<PaintFilter>> filters = {
       sk_sp<PaintFilter>{new ColorFilterPaintFilter(
-          SkColorFilter::MakeLinearToSRGBGamma(), nullptr)},
+          SkColorFilters::LinearToSRGBGamma(), nullptr)},
       sk_sp<PaintFilter>{new BlurPaintFilter(
           0.5f, 0.3f, SkBlurImageFilter::kRepeat_TileMode, nullptr)},
       sk_sp<PaintFilter>{new DropShadowPaintFilter(

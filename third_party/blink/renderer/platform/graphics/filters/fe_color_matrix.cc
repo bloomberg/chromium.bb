@@ -136,7 +136,7 @@ static sk_sp<SkColorFilter> CreateColorFilter(ColorMatrixType type,
       LuminanceToAlphaMatrix(matrix);
       break;
   }
-  return SkColorFilter::MakeMatrixFilterRowMajor255(matrix);
+  return SkColorFilters::MatrixRowMajor255(matrix);
 }
 
 bool FEColorMatrix::AffectsTransparentPixels() const {

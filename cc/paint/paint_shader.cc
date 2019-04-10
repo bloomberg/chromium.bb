@@ -397,7 +397,7 @@ void PaintShader::CreateSkShader(const gfx::SizeF* raster_scale,
 
   switch (shader_type_) {
     case Type::kEmpty:
-      cached_shader_ = SkShader::MakeEmptyShader();
+      cached_shader_ = SkShaders::Empty();
       break;
     case Type::kColor:
       // This will be handled by the fallback check below.
@@ -471,7 +471,7 @@ void PaintShader::CreateSkShader(const gfx::SizeF* raster_scale,
   // If we didn't create a shader for whatever reason, create a fallback color
   // one.
   if (!cached_shader_)
-    cached_shader_ = SkShader::MakeColorShader(fallback_color_);
+    cached_shader_ = SkShaders::Color(fallback_color_);
 }
 
 void PaintShader::SetColorsAndPositions(const SkColor* colors,
