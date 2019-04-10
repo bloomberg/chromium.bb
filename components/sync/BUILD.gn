@@ -13,7 +13,7 @@ declare_args() {
   sync_user_agent_product = "Chrome"
 }
 
-jumbo_static_library("sync") {
+jumbo_static_library("base") {
   sources = [
     "base/bind_to_task_runner.h",
     "base/cancelation_observer.cc",
@@ -86,6 +86,35 @@ jumbo_static_library("sync") {
     "base/unrecoverable_error_info.h",
     "base/weak_handle.cc",
     "base/weak_handle.h",
+  ]
+
+  configs += [ "//build/config:precompiled_headers" ]
+
+  public_deps = [
+    "//base",
+    "//components/invalidation/public",
+    "//components/sync/protocol",
+  ]
+  deps = [
+    "//base:i18n",
+    "//components/os_crypt",
+    "//components/pref_registry",
+    "//components/prefs",
+    "//components/reading_list/features:reading_list_buildflags",
+    "//components/version_info",
+    "//crypto",
+    "//net",
+    "//third_party/zlib",
+  ]
+
+  if (is_chromeos) {
+    # Required by get_session_name.cc on Chrome OS.
+    deps += [ "//chromeos/constants" ]
+  }
+}
+
+jumbo_static_library("sync") {
+  sources = [
     "device_info/device_count_metrics_provider.cc",
     "device_info/device_count_metrics_provider.h",
     "device_info/device_info.cc",
@@ -575,6 +604,7 @@ jumbo_static_library("sync") {
   configs += [ "//build/config:precompiled_headers" ]
 
   public_deps = [
+    ":base",
     "//base",
     "//components/invalidation/public",
     "//components/sync/protocol",
@@ -588,22 +618,17 @@ jumbo_static_library("sync") {
     "//components/invalidation/impl:feature_list",
     "//components/keyed_service/core",
     "//components/metrics",
-    "//components/os_crypt",
-    "//components/pref_registry",
     "//components/prefs",
-    "//components/reading_list/features:reading_list_buildflags",
     "//components/signin/core/browser",
     "//components/variations",
     "//components/version_info",
     "//components/version_info:generate_version_info",
-    "//crypto",
     "//google_apis",
     "//services/identity/public/cpp",
     "//services/network/public/cpp",
     "//sql",
     "//third_party/cacheinvalidation",
     "//third_party/crc32c",
-    "//third_party/zlib",
     "//third_party/zlib/google:compression_utils",
     "//ui/base",
   ]
@@ -611,11 +636,6 @@ jumbo_static_library("sync") {
   if (is_android) {
     deps += [ "//components/sync/android:jni_headers" ]
     sources += [ "android/model_type_helper.cc" ]
-  }
-
-  if (is_chromeos) {
-    # Required by get_session_name.cc on Chrome OS.
-    deps += [ "//chromeos/constants" ]
   }
 
   if (is_mac) {
@@ -674,7 +694,6 @@ static_library("test_support_base") {
     ":sync",
   ]
 
-  defines = [ "SYNC_TEST" ]
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
@@ -745,7 +764,6 @@ static_library("test_support_engine") {
     "//services/network:test_support",
   ]
 
-  defines = [ "SYNC_TEST" ]
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
@@ -779,8 +797,6 @@ static_library("test_support_model") {
     "model/test_model_type_store_service.cc",
     "model/test_model_type_store_service.h",
   ]
-
-  defines = [ "SYNC_TEST" ]
 
   public_deps = [
     ":test_support_base",
@@ -1028,8 +1044,6 @@ source_set("unit_tests") {
       "//components/policy/core/browser",
     ]
   }
-
-  defines = [ "SYNC_TEST" ]
 }
 
 static_library("test_support_fake_server") {
