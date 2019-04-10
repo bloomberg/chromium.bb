@@ -3798,14 +3798,15 @@ bool ChromeContentBrowserClient::BindAssociatedInterfaceRequestFromFrame(
         autofill::mojom::AutofillDriverAssociatedRequest(std::move(*handle)),
         render_frame_host);
     return true;
-  } else if (interface_name == autofill::mojom::PasswordManagerDriver::Name_) {
+  }
+  if (interface_name == autofill::mojom::PasswordManagerDriver::Name_) {
     password_manager::ContentPasswordManagerDriverFactory::BindAutofillDriver(
         autofill::mojom::PasswordManagerDriverAssociatedRequest(
             std::move(*handle)),
         render_frame_host);
     return true;
-  } else if (interface_name ==
-             content_capture::mojom::ContentCaptureReceiver::Name_) {
+  }
+  if (interface_name == content_capture::mojom::ContentCaptureReceiver::Name_) {
     content_capture::ContentCaptureReceiverManager::BindContentCaptureReceiver(
         content_capture::mojom::ContentCaptureReceiverAssociatedRequest(
             std::move(*handle)),
@@ -4042,20 +4043,19 @@ bool ChromeContentBrowserClient::ShouldTerminateOnServiceQuit(
 
 base::Optional<service_manager::Manifest>
 ChromeContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
-  if (name == content::mojom::kBrowserServiceName) {
+  if (name == content::mojom::kBrowserServiceName)
     return GetChromeContentBrowserOverlayManifest();
-  } else if (name == content::mojom::kGpuServiceName) {
+  if (name == content::mojom::kGpuServiceName)
     return GetChromeContentGpuOverlayManifest();
-  } else if (name == content::mojom::kPackagedServicesServiceName) {
+  if (name == content::mojom::kPackagedServicesServiceName) {
     service_manager::Manifest overlay;
     overlay.packaged_services = GetChromePackagedServiceManifests();
     return overlay;
-  } else if (name == content::mojom::kRendererServiceName) {
-    return GetChromeContentRendererOverlayManifest();
-  } else if (name == content::mojom::kUtilityServiceName) {
-    return GetChromeContentUtilityOverlayManifest();
   }
-
+  if (name == content::mojom::kRendererServiceName)
+    return GetChromeContentRendererOverlayManifest();
+  if (name == content::mojom::kUtilityServiceName)
+    return GetChromeContentUtilityOverlayManifest();
   return base::nullopt;
 }
 
