@@ -705,3 +705,13 @@ testcase.fileDisplayUnmountFirstPartition = () => {
 testcase.fileDisplayUnmountLastPartition = () => {
   return unmountRemovableVolume('partition-2');
 };
+
+/**
+ * Tests files display in Downloads while the default blocking file I/O task
+ * runner is blocked.
+ */
+testcase.fileDisplayDownloadsWithBlockedFileTaskRunner = async () => {
+  await sendTestMessage({name: 'blockFileTaskRunner'});
+  await fileDisplay(RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET);
+  await sendTestMessage({name: 'unblockFileTaskRunner'});
+};

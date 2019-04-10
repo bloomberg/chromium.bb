@@ -70,6 +70,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/test/network_connection_change_simulator.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -87,6 +88,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "storage/browser/fileapi/external_mount_points.h"
+#include "storage/browser/fileapi/file_system_context.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event.h"
@@ -549,6 +551,29 @@ class OfflineGetDriveConnectionState : public UIThreadExtensionFunction {
 
   DISALLOW_COPY_AND_ASSIGN(OfflineGetDriveConnectionState);
 };
+
+base::Lock& GetLockForBlockingDefaultFileTaskRunner() {
+  static base::NoDestructor<base::Lock> lock;
+  return *lock;
+}
+
+// Ensures the default HTML filesystem API blocking task runner is blocked for a
+// test.
+void BlockFileTaskRunner(Profile* profile) {
+  GetLockForBlockingDefaultFileTaskRunner().Acquire();
+
+  content::BrowserContext::GetDefaultStoragePartition(profile)
+      ->GetFileSystemContext()
+      ->default_file_task_runner()
+      ->PostTask(FROM_HERE, base::BindOnce([] {
+                   base::AutoLock l(GetLockForBlockingDefaultFileTaskRunner());
+                 }));
+}
+
+// Undo the effects of |BlockFileTaskRunner()|.
+void UnblockFileTaskRunner() {
+  GetLockForBlockingDefaultFileTaskRunner().Release();
+}
 
 }  // anonymous namespace
 
@@ -2050,6 +2075,16 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     }
     std::sort(names.begin(), names.end());
     base::JSONWriter::Write(base::Value(std::move(names)), output);
+    return;
+  }
+
+  if (name == "blockFileTaskRunner") {
+    BlockFileTaskRunner(profile());
+    return;
+  }
+
+  if (name == "unblockFileTaskRunner") {
+    UnblockFileTaskRunner();
     return;
   }
 

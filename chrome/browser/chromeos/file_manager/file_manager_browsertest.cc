@@ -283,7 +283,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("fileDisplayUnmountFirstPartition"),
         TestCase("fileDisplayUnmountLastPartition"),
         TestCase("fileSearchCaseInsensitive"),
-        TestCase("fileSearchNotFound")));
+        TestCase("fileSearchNotFound"),
+        TestCase("fileDisplayDownloadsWithBlockedFileTaskRunner")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     OpenVideoFiles, /* open_video_files.js */
