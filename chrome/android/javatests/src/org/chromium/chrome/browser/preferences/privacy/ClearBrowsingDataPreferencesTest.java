@@ -11,6 +11,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import android.content.Intent;
+import android.os.Build;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceScreen;
@@ -38,6 +39,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.browsing_data.ClearBrowsingDataTab;
+import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.privacy.ClearBrowsingDataPreferences.DialogOption;
@@ -85,6 +87,15 @@ public class ClearBrowsingDataPreferencesTest {
 
         mActivityTestRule.startMainActivityOnBlankPage();
         mTestServer = mActivityTestRule.getTestServer();
+
+        // There can be some left-over notification channels from other tests.
+        // TODO(crbug.com/951402): Find a general solution to avoid leaking channels between tests.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
+                SiteChannelsManager manager = SiteChannelsManager.getInstance();
+                manager.deleteAllSiteChannels();
+            });
+        }
     }
 
     @After
