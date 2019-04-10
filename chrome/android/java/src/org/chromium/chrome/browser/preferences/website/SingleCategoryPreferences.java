@@ -195,6 +195,8 @@ public class SingleCategoryPreferences extends PreferenceFragment
     private void updateAllowedHeader(int numAllowed, boolean toggleValue) {
         ExpandablePreferenceGroup allowedGroup =
                 (ExpandablePreferenceGroup) getPreferenceScreen().findPreference(ALLOWED_GROUP);
+        if (allowedGroup == null) return;
+
         if (numAllowed == 0) {
             if (allowedGroup != null) getPreferenceScreen().removePreference(allowedGroup);
             return;
