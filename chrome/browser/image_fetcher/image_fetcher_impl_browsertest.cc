@@ -10,8 +10,8 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "chrome/browser/image_fetcher/image_decoder_impl.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/suggestions/image_decoder_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/storage_partition.h"
@@ -23,8 +23,6 @@
 
 using image_fetcher::ImageFetcher;
 using image_fetcher::ImageFetcherImpl;
-
-namespace suggestions {
 
 namespace {
 
@@ -50,7 +48,7 @@ class ImageFetcherImplBrowserTest : public InProcessBrowserTest {
 
   ImageFetcher* CreateImageFetcher() {
     ImageFetcher* fetcher = new ImageFetcherImpl(
-        std::make_unique<suggestions::ImageDecoderImpl>(),
+        std::make_unique<ImageDecoderImpl>(),
         content::BrowserContext::GetDefaultStoragePartition(
             browser()->profile())
             ->GetURLLoaderFactoryForBrowserProcess());
@@ -87,8 +85,8 @@ class ImageFetcherImplBrowserTest : public InProcessBrowserTest {
         image_url,
         base::BindOnce(&ImageFetcherImplBrowserTest::OnImageDataAvailable,
                        base::Unretained(this)),
-        base::Bind(&ImageFetcherImplBrowserTest::OnImageAvailable,
-                   base::Unretained(this), &run_loop),
+        base::BindOnce(&ImageFetcherImplBrowserTest::OnImageAvailable,
+                       base::Unretained(this), &run_loop),
         std::move(params));
     run_loop.Run();
   }
@@ -137,5 +135,3 @@ IN_PROC_BROWSER_TEST_F(ImageFetcherImplBrowserTest, InvalidFetch) {
   EXPECT_EQ(0, num_data_callback_valid_called_);
   EXPECT_EQ(1, num_data_callback_null_called_);
 }
-
-}  // namespace suggestions

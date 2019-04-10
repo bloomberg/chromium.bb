@@ -15,6 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/android/download/download_controller_base.h"
 #include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/image_fetcher/image_decoder_impl.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
 #include "chrome/browser/offline_pages/android/downloads/offline_page_infobar_delegate.h"
 #include "chrome/browser/offline_pages/android/downloads/offline_page_share_helper.h"
@@ -27,7 +28,6 @@
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
-#include "chrome/browser/search/suggestions/image_decoder_impl.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
 #include "components/offline_items_collection/core/offline_content_provider.h"
@@ -387,7 +387,7 @@ static jlong JNI_OfflinePageDownloadBridge_Init(
     adapter = new DownloadUIAdapter(
         aggregator, offline_page_model, request_coordinator,
         std::make_unique<ThumbnailDecoderImpl>(
-            std::make_unique<suggestions::ImageDecoderImpl>()),
+            std::make_unique<ImageDecoderImpl>()),
         std::make_unique<DownloadUIAdapterDelegate>(offline_page_model));
     DownloadUIAdapter::AttachToOfflinePageModel(base::WrapUnique(adapter),
                                                 offline_page_model);

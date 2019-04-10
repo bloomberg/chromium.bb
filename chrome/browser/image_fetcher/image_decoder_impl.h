@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SEARCH_SUGGESTIONS_IMAGE_DECODER_IMPL_H_
-#define CHROME_BROWSER_SEARCH_SUGGESTIONS_IMAGE_DECODER_IMPL_H_
+#ifndef CHROME_BROWSER_IMAGE_FETCHER_IMAGE_DECODER_IMPL_H_
+#define CHROME_BROWSER_IMAGE_FETCHER_IMAGE_DECODER_IMPL_H_
 
 #include <memory>
 #include <vector>
@@ -11,11 +11,7 @@
 #include "chrome/browser/image_decoder.h"
 #include "components/image_fetcher/core/image_decoder.h"
 
-namespace suggestions {
-
 // image_fetcher::ImageDecoder implementation.
-// TODO(crbug.com/624761): Move this to a better place - it really has
-// nothing to do with suggestions.
 class ImageDecoderImpl : public image_fetcher::ImageDecoder {
  public:
   ImageDecoderImpl();
@@ -38,7 +34,4 @@ class ImageDecoderImpl : public image_fetcher::ImageDecoder {
   DISALLOW_COPY_AND_ASSIGN(ImageDecoderImpl);
 };
 
-}  // namespace suggestions
-
-#endif  // CHROME_BROWSER_SEARCH_SUGGESTIONS_IMAGE_DECODER_IMPL_H_
-
+#endif  // CHROME_BROWSER_IMAGE_FETCHER_IMAGE_DECODER_IMPL_H_

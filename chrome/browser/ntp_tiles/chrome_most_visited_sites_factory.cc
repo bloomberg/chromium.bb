@@ -13,10 +13,10 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/favicon/large_icon_service_factory.h"
 #include "chrome/browser/history/top_sites_factory.h"
+#include "chrome/browser/image_fetcher/image_decoder_impl.h"
 #include "chrome/browser/ntp_tiles/chrome_custom_links_manager_factory.h"
 #include "chrome/browser/ntp_tiles/chrome_popular_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/suggestions/image_decoder_impl.h"
 #include "chrome/browser/search/suggestions/suggestions_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
@@ -133,7 +133,7 @@ ChromeMostVisitedSitesFactory::NewForProfile(Profile* profile) {
               profile, ServiceAccessType::IMPLICIT_ACCESS),
           LargeIconServiceFactory::GetForBrowserContext(profile),
           std::make_unique<image_fetcher::ImageFetcherImpl>(
-              std::make_unique<suggestions::ImageDecoderImpl>(),
+              std::make_unique<ImageDecoderImpl>(),
               content::BrowserContext::GetDefaultStoragePartition(profile)
                   ->GetURLLoaderFactoryForBrowserProcess())),
       std::make_unique<SupervisorBridge>(profile));
