@@ -2006,4 +2006,76 @@ TEST_F(ClientControlledShellSurfaceTest, PipWindowDragDoesNotAnimate) {
   resizer->CompleteDrag();
 }
 
+TEST_F(ClientControlledShellSurfaceTest,
+       ExpandingPipInTabletModeEndsSplitView) {
+  EnableTabletMode(true);
+
+  auto* split_view_controller = ash::Shell::Get()->split_view_controller();
+  EXPECT_FALSE(split_view_controller->IsSplitViewModeActive());
+
+  // Create a PIP window:
+  const gfx::Size buffer_size(256, 256);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface());
+  auto shell_surface =
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get());
+
+  surface->Attach(buffer.get());
+  surface->Commit();
+  shell_surface->SetPip();
+  surface->Commit();
+  shell_surface->GetWidget()->Show();
+
+  auto window_left = CreateTestWindow();
+  auto window_right = CreateTestWindow();
+
+  split_view_controller->SnapWindow(
+      window_left.get(), ash::SplitViewController::SnapPosition::LEFT);
+  split_view_controller->SnapWindow(
+      window_right.get(), ash::SplitViewController::SnapPosition::RIGHT);
+  EXPECT_TRUE(split_view_controller->IsSplitViewModeActive());
+
+  // Should end split view.
+  shell_surface->SetRestored();
+  surface->Commit();
+  EXPECT_FALSE(split_view_controller->IsSplitViewModeActive());
+}
+
+TEST_F(ClientControlledShellSurfaceTest,
+       DismissingPipInTabletModeDoesNotEndSplitView) {
+  EnableTabletMode(true);
+
+  auto* split_view_controller = ash::Shell::Get()->split_view_controller();
+  EXPECT_FALSE(split_view_controller->IsSplitViewModeActive());
+
+  // Create a PIP window:
+  const gfx::Size buffer_size(256, 256);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface());
+  auto shell_surface =
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get());
+
+  surface->Attach(buffer.get());
+  surface->Commit();
+  shell_surface->SetPip();
+  surface->Commit();
+  shell_surface->GetWidget()->Show();
+
+  auto window_left = CreateTestWindow();
+  auto window_right = CreateTestWindow();
+
+  split_view_controller->SnapWindow(
+      window_left.get(), ash::SplitViewController::SnapPosition::LEFT);
+  split_view_controller->SnapWindow(
+      window_right.get(), ash::SplitViewController::SnapPosition::RIGHT);
+  EXPECT_TRUE(split_view_controller->IsSplitViewModeActive());
+
+  // Should not end split-view.
+  shell_surface->SetMinimized();
+  surface->Commit();
+  EXPECT_TRUE(split_view_controller->IsSplitViewModeActive());
+}
+
 }  // namespace exo
