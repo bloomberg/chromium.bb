@@ -384,7 +384,7 @@ TEST(ExtensionL10nUtil, LocalizeManifestWithNameDescriptionDefaultTitleMsgs) {
   manifest.SetString(keys::kDescription, "__MSG_description__");
   std::string action_title(keys::kBrowserAction);
   action_title.append(".");
-  action_title.append(keys::kPageActionDefaultTitle);
+  action_title.append(keys::kActionDefaultTitle);
   manifest.SetString(action_title, "__MSG_title__");
 
   std::string error;
@@ -437,8 +437,7 @@ TEST(ExtensionL10nUtil, LocalizeManifestWithNameDescriptionFileHandlerTitle) {
   manifest.SetString(keys::kDescription, "__MSG_description__");
 
   base::DictionaryValue handler;
-  handler.SetString(keys::kPageActionDefaultTitle,
-                    "__MSG_file_handler_title__");
+  handler.SetString(keys::kActionDefaultTitle, "__MSG_file_handler_title__");
   auto handlers = std::make_unique<base::ListValue>();
   handlers->GetList().push_back(std::move(handler));
   manifest.Set(keys::kFileBrowserHandlers, std::move(handlers));
@@ -460,7 +459,7 @@ TEST(ExtensionL10nUtil, LocalizeManifestWithNameDescriptionFileHandlerTitle) {
   manifest.GetList(keys::kFileBrowserHandlers, &handlers_raw);
   base::DictionaryValue* handler_raw = nullptr;
   handlers_raw->GetList()[0].GetAsDictionary(&handler_raw);
-  ASSERT_TRUE(handler_raw->GetString(keys::kPageActionDefaultTitle, &result));
+  ASSERT_TRUE(handler_raw->GetString(keys::kActionDefaultTitle, &result));
   EXPECT_EQ("file handler title", result);
 
   EXPECT_TRUE(error.empty());
