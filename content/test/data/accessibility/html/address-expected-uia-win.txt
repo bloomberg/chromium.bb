@@ -1,4 +1,4 @@
 region
-++document IsKeyboardFocusable=true
+++document
 ++++group
 ++++++description Name='Please contact John Citizen for more information.'
