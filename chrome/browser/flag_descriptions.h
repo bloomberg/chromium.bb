@@ -2052,9 +2052,6 @@ extern const char kUserActivityPredictionMlServiceDescription[];
 extern const char kVaapiJpegImageDecodeAccelerationName[];
 extern const char kVaapiJpegImageDecodeAccelerationDescription[];
 
-extern const char kVideoPlayerChromecastSupportName[];
-extern const char kVideoPlayerChromecastSupportDescription[];
-
 extern const char kVirtualKeyboardName[];
 extern const char kVirtualKeyboardDescription[];
 

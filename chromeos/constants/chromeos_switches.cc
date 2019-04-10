@@ -333,10 +333,6 @@ const char kEnableTouchCalibrationSetting[] =
 const char kEnableTouchpadThreeFingerClick[] =
     "enable-touchpad-three-finger-click";
 
-// Enables the chromecast support for video player app.
-const char kEnableVideoPlayerChromecastSupport[] =
-    "enable-video-player-chromecast-support";
-
 // Disables ARC for managed accounts.
 const char kEnterpriseDisableArc[] = "enterprise-disable-arc";
 

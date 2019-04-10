@@ -1334,11 +1334,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAppListSearchAutocompleteName,
      flag_descriptions::kEnableAppListSearchAutocompleteDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kEnableAppListSearchAutocomplete)},
-    {"enable-video-player-chromecast-support",
-     flag_descriptions::kVideoPlayerChromecastSupportName,
-     flag_descriptions::kVideoPlayerChromecastSupportDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(
-         chromeos::switches::kEnableVideoPlayerChromecastSupport)},
     {"list-all-display-modes", flag_descriptions::kListAllDisplayModesName,
      flag_descriptions::kListAllDisplayModesDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(display::features::kListAllDisplayModes)},

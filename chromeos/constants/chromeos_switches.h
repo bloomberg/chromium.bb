@@ -131,8 +131,6 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kEnableTouchCalibrationSetting[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kEnableTouchpadThreeFingerClick[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const char kEnableVideoPlayerChromecastSupport[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kEnterpriseDisableArc[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kEnterpriseDisableLicenseTypeSelection[];
