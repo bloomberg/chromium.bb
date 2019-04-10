@@ -11,11 +11,14 @@
 #include "base/memory/ptr_util.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
 #include "media/base/waiting.h"
 #include "media/gpu/gpu_video_decode_accelerator_factory.h"
+#if defined(OS_LINUX)
 #include "media/gpu/linux/platform_video_frame_utils.h"
+#endif
 #include "media/gpu/macros.h"
 #include "media/gpu/test/video_player/frame_renderer.h"
 #include "media/gpu/test/video_player/video.h"
@@ -186,8 +189,12 @@ void TestVDAVideoDecoder::ProvidePictureBuffers(
             CreatePlatformVideoFrame(pixel_format, size);
         LOG_ASSERT(video_frame) << "Failed to create video frame";
         video_frames_.emplace(picture_buffer.id(), video_frame);
-        gfx::GpuMemoryBufferHandle handle =
-            CreateGpuMemoryBufferHandle(video_frame.get());
+        gfx::GpuMemoryBufferHandle handle;
+#if defined(OS_LINUX)
+        handle = CreateGpuMemoryBufferHandle(video_frame.get());
+#else
+        NOTREACHED();
+#endif
         LOG_ASSERT(!handle.is_null()) << "Failed to create GPU memory handle";
         decoder_->ImportBufferForPicture(picture_buffer.id(), pixel_format,
                                          std::move(handle));

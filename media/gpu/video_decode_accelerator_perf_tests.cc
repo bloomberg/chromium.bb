@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/strings/stringprintf.h"
 #include "media/base/test_data_util.h"
 #include "media/gpu/test/video_player/frame_renderer_dummy.h"
@@ -16,6 +17,10 @@
 
 namespace media {
 namespace test {
+
+namespace {
+
+media::test::VideoPlayerTestEnvironment* g_env;
 
 // Default output folder used to store performance metrics.
 constexpr const base::FilePath::CharType* kDefaultOutputFolder =
@@ -97,8 +102,6 @@ void PerformanceEvaluator::StopMeasuring() {
 }
 
 void PerformanceEvaluator::WriteMetricsToFile() const {
-  const ::testing::TestInfo* const test_info =
-      ::testing::UnitTest::GetInstance()->current_test_info();
   std::string str = base::StringPrintf(
       "Number of frames decoded: %zu\nTotal duration: %fms\nFPS: %f\nAvg. "
       "frame decode time: %fms\n",
@@ -111,8 +114,9 @@ void PerformanceEvaluator::WriteMetricsToFile() const {
   base::FilePath output_folder_path = base::FilePath(kDefaultOutputFolder);
   if (!DirectoryExists(output_folder_path))
     base::CreateDirectory(output_folder_path);
-  base::FilePath output_file_path = output_folder_path.Append(
-      base::FilePath(test_info->name()).AddExtension(".txt"));
+  base::FilePath output_file_path =
+      output_folder_path.Append(base::FilePath(g_env->GetTestName())
+                                    .AddExtension(FILE_PATH_LITERAL(".txt")));
   base::File output_file(
       base::FilePath(output_file_path),
       base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
@@ -121,7 +125,7 @@ void PerformanceEvaluator::WriteMetricsToFile() const {
 
   // Write frame decode times to file.
   base::FilePath decode_times_file_path =
-      output_file_path.InsertBeforeExtension(".frame_times");
+      output_file_path.InsertBeforeExtension(FILE_PATH_LITERAL(".frame_times"));
   base::File decode_times_output_file(
       base::FilePath(decode_times_file_path),
       base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
@@ -133,10 +137,6 @@ void PerformanceEvaluator::WriteMetricsToFile() const {
   }
   VLOG(0) << "Wrote frame decode times to: " << decode_times_file_path;
 }
-
-namespace {
-
-media::test::VideoPlayerTestEnvironment* g_env;
 
 // Video decode test class. Performs setup and teardown for each single test.
 class VideoDecoderTest : public ::testing::Test {

@@ -18,6 +18,7 @@ namespace media {
 namespace test {
 
 namespace {
+
 // Video decoder tests usage message.
 constexpr const char* usage_msg =
     "usage: video_decode_accelerator_tests [--help] [--disable_validator]\n"
@@ -54,11 +55,9 @@ class VideoDecoderTest : public ::testing::Test {
 
     // Write decoded video frames to the 'video_frames/<test_name/>' folder.
     if (g_env->IsFramesOutputEnabled()) {
-      const ::testing::TestInfo* const test_info =
-          ::testing::UnitTest::GetInstance()->current_test_info();
       base::FilePath output_folder =
-          base::FilePath("video_frames")
-              .Append(base::FilePath(test_info->name()));
+          base::FilePath(FILE_PATH_LITERAL("video_frames"))
+              .Append(base::FilePath(g_env->GetTestName()));
       frame_processors.push_back(VideoFrameFileWriter::Create(output_folder));
     }
 
