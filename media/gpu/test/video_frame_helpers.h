@@ -17,6 +17,8 @@ class VideoFrame;
 
 namespace test {
 
+class Image;
+
 // The video frame processor defines an abstract interface for classes that are
 // interested in processing video frames (e.g. FrameValidator,...).
 class VideoFrameProcessor {
@@ -55,11 +57,18 @@ scoped_refptr<VideoFrame> CreatePlatformVideoFrame(
     const gfx::Size& size,
     gfx::BufferUsage buffer_usage = gfx::BufferUsage::SCANOUT_VDA_WRITE);
 
-// Create a video frame layout for the specified |pixel_format| and |size|. The
-// created layout will have a separate buffer for each plane in the format.
+// Create a video frame layout for the specified |pixel_format| and
+// |coded_size|. If |single_buffer| is true, the created VideoFrameLayout
+// represents all the planes are stored in the same buffer. Otherwise, it
+// represents each plane is stored in separated planes.
 base::Optional<VideoFrameLayout> CreateVideoFrameLayout(
     VideoPixelFormat pixel_format,
-    const gfx::Size& size);
+    const gfx::Size& size,
+    bool single_buffer);
+
+// Get VideoFrame that contains Load()ed data. The returned VideoFrame doesn't
+// own the data and thus must not be changed.
+scoped_refptr<const VideoFrame> CreateVideoFrameFromImage(const Image& image);
 
 }  // namespace test
 }  // namespace media

@@ -8,10 +8,17 @@ import("//media/gpu/args.gni")
 source_set("helpers") {
   testonly = true
   sources = [
+    "image.cc",
+    "image.h",
     "video_accelerator_unittest_helpers.h",
+    "video_frame_helpers.cc",
+    "video_frame_helpers.h",
   ]
   deps = [
     "//base:base",
+    "//media:test_support",
+    "//media/gpu",
+    "//third_party/libyuv",
   ]
 }
 
@@ -22,12 +29,10 @@ source_set("render_helpers") {
     "rendering_helper.h",
     "texture_ref.cc",
     "texture_ref.h",
-    "video_frame_helpers.cc",
-    "video_frame_helpers.h",
   ]
   deps = [
+    ":helpers",
     "//media/gpu",
-    "//third_party/libyuv",
     "//ui/gl/init:init",
   ]
   if (use_ozone) {
@@ -56,6 +61,7 @@ source_set("frame_file_writer") {
     "video_frame_file_writer.h",
   ]
   deps = [
+    ":helpers",
     ":render_helpers",
     "//media/gpu",
     "//media/gpu:video_frame_mapper",
@@ -165,12 +171,11 @@ static_library("video_player_test_environment") {
 static_library("image_processor") {
   testonly = true
   sources = [
-    "image.cc",
-    "image.h",
     "image_processor/image_processor_client.cc",
     "image_processor/image_processor_client.h",
   ]
   deps = [
+    ":helpers",
     ":render_helpers",
     "//media:test_support",
     "//media/gpu",
