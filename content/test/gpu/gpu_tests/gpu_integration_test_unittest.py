@@ -164,25 +164,16 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     self.assertEqual(
         self._test_result['tests']['unexpected_test_failure']['actual'],
         'FAIL FAIL')
-    self.assertEqual(
-        self._test_result['test_name_prefix'],
-          'unittest_data.integration_tests.RunTestsWithExpectationsFiles.')
 
   def testDefaultRetryArgumentsinRunGpuIntegrationTests(self):
     self._RunGpuIntegrationTests('run_tests_with_expectations_files')
     self.assertEqual(
         self._test_result['tests']['expected_flaky']['actual'],
         'FAIL FAIL FAIL')
-    self.assertEqual(
-        self._test_result['test_name_prefix'],
-        'unittest_data.integration_tests.RunTestsWithExpectationsFiles.')
 
   def testTestNamePrefixGenerationInRunGpuIntegrationTests(self):
     self._RunGpuIntegrationTests('simple_integration_unittest')
     self.assertIn('expected_failure', self._test_result['tests'])
-    self.assertEqual(
-        self._test_result['test_name_prefix'],
-        'unittest_data.integration_tests.SimpleTest.')
 
   def testWithoutExpectationsFilesGenerateTagsReturnsEmptyList(self):
     # we need to make sure that GenerateTags() returns an empty list if
