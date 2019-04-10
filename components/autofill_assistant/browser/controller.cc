@@ -614,13 +614,15 @@ std::string Controller::GetDebugContext() {
   base::Value dict(base::Value::Type::DICTIONARY);
 
   dict.SetKey("status", base::Value(status_message_));
-  std::vector<base::Value> parameters_js;
-  for (const auto& entry : trigger_context_->script_parameters) {
-    base::Value parameter_js = base::Value(base::Value::Type::DICTIONARY);
-    parameter_js.SetKey(entry.first, base::Value(entry.second));
-    parameters_js.push_back(std::move(parameter_js));
+  if (trigger_context_) {
+    std::vector<base::Value> parameters_js;
+    for (const auto& entry : trigger_context_->script_parameters) {
+      base::Value parameter_js = base::Value(base::Value::Type::DICTIONARY);
+      parameter_js.SetKey(entry.first, base::Value(entry.second));
+      parameters_js.push_back(std::move(parameter_js));
+    }
+    dict.SetKey("parameters", base::Value(parameters_js));
   }
-  dict.SetKey("parameters", base::Value(parameters_js));
   dict.SetKey("scripts", script_tracker()->GetDebugContext());
 
   if (details_)
