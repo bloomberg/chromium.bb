@@ -30,8 +30,9 @@
 
 // https://drafts.csswg.org/web-animations/#the-animationeffect-interface
 
-[Exposed=Window]
-interface AnimationEffect {
+[
+    RuntimeEnabled=WebAnimationsAPI
+] interface AnimationEffect {
     EffectTiming getTiming();
     ComputedEffectTiming getComputedTiming();
     [RaisesException] void updateTiming(optional OptionalEffectTiming timing);
