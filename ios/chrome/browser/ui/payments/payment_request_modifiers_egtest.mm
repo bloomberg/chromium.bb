@@ -80,13 +80,16 @@ id<GREYMatcher> PaymentMethodCellMatcher(
 
 - (void)addProfile {
   _profile = autofill::test::GetFullProfile();
-  [self addAutofillProfile:_profile];
+  NSError* autofillProfileError = [self addAutofillProfile:_profile];
+  GREYAssertNil(autofillProfileError,
+                autofillProfileError.localizedDescription);
 }
 
 - (void)addLocalCard {
   _localCard = autofill::test::GetCreditCard();  // Visa.
   _localCard.set_billing_address_id(_profile.guid());
-  [self addCreditCard:_localCard];
+  NSError* creditCardError = [self addCreditCard:_localCard];
+  GREYAssertNil(creditCardError, creditCardError.localizedDescription);
 }
 
 - (void)addServerCardWithType:(autofill::CreditCard::CardType)cardType {
