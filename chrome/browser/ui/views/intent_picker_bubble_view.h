@@ -64,11 +64,13 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
   static views::Widget* ShowBubble(views::View* anchor_view,
                                    content::WebContents* web_contents,
                                    std::vector<AppInfo> app_info,
-                                   bool disable_stay_in_chrome,
+                                   bool show_stay_in_chrome,
+                                   bool show_remember_selection,
                                    IntentPickerResponse intent_picker_cb);
   static std::unique_ptr<IntentPickerBubbleView> CreateBubbleView(
       std::vector<AppInfo> app_info,
-      bool disable_stay_in_chrome,
+      bool show_stay_in_chrome,
+      bool show_remember_selection,
       IntentPickerResponse intent_picker_cb,
       content::WebContents* web_contents);
   static IntentPickerBubbleView* intent_picker_bubble() {
@@ -86,7 +88,6 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
 
  protected:
   // LocationBarBubbleDelegateView overrides:
-  void Init() override;
   base::string16 GetWindowTitle() const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
@@ -106,7 +107,7 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
   IntentPickerBubbleView(std::vector<AppInfo> app_info,
                          IntentPickerResponse intent_picker_cb,
                          content::WebContents* web_contents,
-                         bool disable_display_in_chrome);
+                         bool show_display_in_chrome);
 
   // views::BubbleDialogDelegateView overrides:
   void OnWidgetDestroying(views::Widget* widget) override;
@@ -120,6 +121,8 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
 
   // ui::EventHandler overrides:
   void OnKeyEvent(ui::KeyEvent* event) override;
+
+  void Initialize(bool show_remember_selection);
 
   // Retrieves the IntentPickerLabelButton* contained at position |index| from
   // the internal ScrollView.
@@ -170,7 +173,7 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
   views::Checkbox* remember_selection_checkbox_;
 
   // Tells whether or not 'Stay in Chrome' should be enabled as an option.
-  const bool disable_stay_in_chrome_;
+  const bool show_stay_in_chrome_;
 
   DISALLOW_COPY_AND_ASSIGN(IntentPickerBubbleView);
 };

@@ -120,6 +120,7 @@ void AppsNavigationThrottle::ShowIntentPickerBubble(
 
   ShowIntentPickerBubbleForApps(
       web_contents, std::move(apps),
+      /*show_remember_selection=*/false,
       base::BindOnce(&OnIntentPickerClosed, web_contents,
                      ui_auto_display_service, url));
 }
@@ -190,6 +191,7 @@ bool AppsNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
 void AppsNavigationThrottle::ShowIntentPickerBubbleForApps(
     content::WebContents* web_contents,
     std::vector<IntentPickerAppInfo> apps,
+    bool show_remember_selection,
     IntentPickerResponse callback) {
   if (apps.empty())
     return;
@@ -201,7 +203,8 @@ void AppsNavigationThrottle::ShowIntentPickerBubbleForApps(
   if (!browser)
     return;
   browser->window()->ShowIntentPickerBubble(std::move(apps),
-                                            /*disable_stay_in_chrome=*/false,
+                                            /*show_stay_in_chrome=*/true,
+                                            show_remember_selection,
                                             std::move(callback));
 }
 
@@ -358,6 +361,7 @@ void AppsNavigationThrottle::ShowIntentPickerForApps(
       break;
     case PickerShowState::kPopOut:
       ShowIntentPickerBubbleForApps(web_contents, std::move(apps),
+                                    ShouldShowRememberSelection(),
                                     std::move(callback));
       break;
     default:
@@ -379,6 +383,10 @@ IntentPickerResponse AppsNavigationThrottle::GetOnPickerClosedCallback(
     const GURL& url) {
   return base::BindOnce(&OnIntentPickerClosed, web_contents,
                         ui_auto_display_service, url);
+}
+
+bool AppsNavigationThrottle::ShouldShowRememberSelection() {
+  return false;
 }
 
 // static

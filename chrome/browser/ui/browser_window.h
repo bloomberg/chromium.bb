@@ -319,13 +319,15 @@ class BrowserWindow : public ui::BaseWindow {
 
 #if !defined(OS_ANDROID)
   // Shows the intent picker bubble. |app_info| contains the app candidates to
-  // display, |disable_stay_in_chrome| allows to disable 'Stay in Chrome' (used
-  // for non-http(s) queries), and |callback| helps to continue the flow back to
-  // either AppsNavigationThrottle or ArcExternalProtocolDialog capturing the
-  // user's decision and storing UMA metrics.
+  // display, |show_stay_in_chrome| allows to show or hide 'Stay in Chrome'
+  // (used for non-http(s) queries), if |show_remember_selection| is false, the
+  // "remember my choice" checkbox is hidden, and |callback| helps to continue
+  // the flow back to either AppsNavigationThrottle or ArcExternalProtocolDialog
+  // capturing the user's decision and storing UMA metrics.
   virtual void ShowIntentPickerBubble(
       std::vector<apps::IntentPickerAppInfo> app_info,
-      bool disable_stay_in_chrome,
+      bool show_stay_in_chrome,
+      bool show_remember_selection,
       IntentPickerResponse callback) = 0;
   virtual void SetIntentPickerViewVisibility(bool visible) = 0;
 #endif  //  !defined(OS_ANDROID)
