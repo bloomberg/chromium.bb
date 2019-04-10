@@ -37,6 +37,7 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/frame_messages.h"
@@ -2376,15 +2377,31 @@ void RenderFrameHostManager::CommitPending(
 
   bool new_rfh_has_view = !!render_frame_host_->GetView();
 
-  // Show the new RenderWidgetHost if the new frame is a local root and not
-  // hidden or crashed. If the frame is not a local root this is redundant as
-  // the ancestor RenderWidgetHost would already be shown.
-  // TODO(danakj): Is this only really needed for a main frame, because the
-  // RenderWidget is not being newly recreated for the new frame due to
-  // https://crbug.com/419087 ? Would sub frames be marked correctly as shown
-  // from creation of their RenderWidgetHost?
-  if (!delegate_->IsHidden() && new_rfh_has_view)
-    render_frame_host_->GetView()->Show();
+  if (new_rfh_has_view) {
+    if (!delegate_->IsHidden()) {
+      // Show the new RenderWidgetHost if the new frame is a local root and not
+      // hidden or crashed. If the frame is not a local root this is redundant
+      // as the ancestor RenderWidgetHost would already be shown.
+      // TODO(danakj): Is this only really needed for a main frame, because the
+      // RenderWidget is not being newly recreated for the new frame due to
+      // https://crbug.com/419087 ? Would sub frames be marked correctly as
+      // shown from creation of their RenderWidgetHost?
+      render_frame_host_->GetView()->Show();
+    } else {
+      // The Browser side RWHI is initialized as hidden, but the RenderWidget is
+      // not if it is going to be visible after navigation commit. We are
+      // bringing their visibility state into alignment here either by showing
+      // the RWHI or hiding the RenderWidget. See https://crbug/936858 for more
+      // details.
+      // TODO(jonross): This is not needed once https://crbug/419087 is
+      // resolved.
+      RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(
+          render_frame_host_->GetView()->GetRenderWidgetHost());
+      rwhi->SetHiddenOnCommit();
+      // TODO(ejoe): This can be removed if the RenderWidget can be always
+      // created as hidden by default.
+    }
+  }
 
   // The process will no longer try to exit, so we can decrement the count.
   render_frame_host_->GetProcess()->RemovePendingView();
