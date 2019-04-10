@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider.IncognitoStateObserver;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.widget.ChromeImageButton;
 
@@ -94,7 +95,9 @@ public class NewTabButton
                 DeviceFormFactor.isNonMultiDisplayContextOnTablet(getContext())
                 || ((DeviceClassManager.enableAccessibilityLayout()
                             || ChromeFeatureList.isEnabled(
-                                    ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID))
+                                    ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)
+                            || FeatureUtilities.isTabGroupsAndroidEnabled()
+                            || FeatureUtilities.isGridTabSwitcherEnabled())
                         && mIsIncognito);
         ApiCompatibilityUtils.setImageTintList(
                 this, shouldUseLightMode ? mLightModeTint : mDarkModeTint);
