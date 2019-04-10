@@ -190,6 +190,8 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
 
   virtual bool ShouldShowRememberSelection();
 
+  bool navigate_from_link();
+
   // Keeps track of whether we already shown the UI or preferred app. Since
   // AppsNavigationThrottle cannot wait for the user (due to the non-blocking
   // nature of the feature) the best we can do is check if we launched a
@@ -218,6 +220,11 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
 
   // A reference to the starting GURL.
   GURL starting_url_;
+
+  // Keeps track of whether the navigation is coming from a link or not. If the
+  // navigation is not from a link, we will not show the pop up for the intent
+  // picker bubble.
+  bool navigate_from_link_;
 
   DISALLOW_COPY_AND_ASSIGN(AppsNavigationThrottle);
 };

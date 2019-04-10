@@ -246,7 +246,8 @@ ChromeOsAppsNavigationThrottle::GetPickerShowState(
     const std::vector<apps::IntentPickerAppInfo>& apps_for_picker,
     content::WebContents* web_contents,
     const GURL& url) {
-  return ShouldAutoDisplayUi(apps_for_picker, web_contents, url)
+  return ShouldAutoDisplayUi(apps_for_picker, web_contents, url) &&
+                 navigate_from_link()
              ? PickerShowState::kPopOut
              : PickerShowState::kOmnibox;
 }
