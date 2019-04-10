@@ -46,14 +46,6 @@ void LogTimeout(bool timed_out) {
   UMA_HISTOGRAM_BOOLEAN("Sync.URLFetchTimedOut", timed_out);
 }
 
-void RecordSyncRequestContentLengthHistograms(int64_t compressed_content_length,
-                                              int64_t original_content_length) {
-  UMA_HISTOGRAM_COUNTS_1M("Sync.RequestContentLength.Compressed",
-                          compressed_content_length);
-  UMA_HISTOGRAM_COUNTS_1M("Sync.RequestContentLength.Original",
-                          original_content_length);
-}
-
 void RecordSyncResponseContentLengthHistograms(
     int64_t compressed_content_length,
     int64_t original_content_length) {
@@ -316,8 +308,6 @@ void HttpBridge::MakeAsynchronousPost() {
   std::string request_to_send;
   compression::GzipCompress(request_content_, &request_to_send);
   url_loader->AttachStringForUpload(request_to_send, content_type_);
-  RecordSyncRequestContentLengthHistograms(request_to_send.size(),
-                                           request_content_.size());
 
   // Sync relies on HTTP errors being detectable (and distinct from
   // net/connection errors).
