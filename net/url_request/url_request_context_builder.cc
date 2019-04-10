@@ -562,8 +562,9 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   }
 
   if (network_error_logging_enabled_) {
+    // TODO(chlily): Create this with an actual PersistentNELStore*.
     storage->set_network_error_logging_service(
-        NetworkErrorLoggingService::Create());
+        NetworkErrorLoggingService::Create(nullptr /* store */));
   }
 
   // If both Reporting and Network Error Logging are actually enabled, then

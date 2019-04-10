@@ -198,7 +198,10 @@ class NET_EXPORT NetworkErrorLoggingService {
   static void RecordRequestDiscardedForNoNetworkErrorLoggingService();
   static void RecordRequestDiscardedForInsecureOrigin();
 
-  static std::unique_ptr<NetworkErrorLoggingService> Create();
+  // NEL policies are persisted to disk if |store| is not null.
+  // The store, if given, should outlive |*this|.
+  static std::unique_ptr<NetworkErrorLoggingService> Create(
+      PersistentNELStore* store);
 
   virtual ~NetworkErrorLoggingService();
 
