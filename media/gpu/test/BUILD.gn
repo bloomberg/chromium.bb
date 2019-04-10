@@ -50,7 +50,6 @@ source_set("frame_validator") {
     ":decode_helpers",
     ":helpers",
     "//media/gpu",
-    "//media/gpu:video_frame_mapper",
   ]
 }
 
@@ -64,7 +63,6 @@ source_set("frame_file_writer") {
     ":helpers",
     ":render_helpers",
     "//media/gpu",
-    "//media/gpu:video_frame_mapper",
     "//ui/gfx/codec:codec",
   ]
 }
@@ -100,7 +98,6 @@ source_set("encode_helpers") {
   ]
   deps = [
     "//media/gpu",
-    "//media/gpu:video_frame_mapper",
   ]
 }
 
