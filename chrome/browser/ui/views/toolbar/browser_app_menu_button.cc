@@ -385,3 +385,13 @@ SkColor BrowserAppMenuButton::GetInkDropBaseColor() const {
   return promo_highlight_color ? promo_highlight_color.value()
                                : AppMenuButton::GetInkDropBaseColor();
 }
+
+base::string16 BrowserAppMenuButton::GetTooltipText(const gfx::Point& p) const {
+#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+  // Suppress tooltip when IPH is showing.
+  if (promo_feature_)
+    return base::string16();
+#endif  // BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+
+  return AppMenuButton::GetTooltipText(p);
+}

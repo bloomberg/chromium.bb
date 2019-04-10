@@ -89,6 +89,7 @@ class BrowserAppMenuButton : public AppMenuButton,
       const override;
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
   SkColor GetInkDropBaseColor() const override;
+  base::string16 GetTooltipText(const gfx::Point& p) const override;
 
   AppMenuIconController::TypeAndSeverity type_and_severity_{
       AppMenuIconController::IconType::NONE,
