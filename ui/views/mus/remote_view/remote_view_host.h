@@ -14,6 +14,10 @@
 #include "ui/aura/window.h"
 #include "ui/views/controls/native/native_view_host.h"
 
+namespace wm {
+class EnsureWindowNotInRectHelper;
+}
+
 namespace views {
 
 // A view at the embedder side to embed an aura::Window from another window
@@ -52,6 +56,10 @@ class RemoteViewHost : public views::NativeViewHost {
   EmbedCallback embed_callback_;
 
   const std::unique_ptr<aura::Window> embedding_root_;
+#if defined(OS_CHROMEOS)
+  std::unique_ptr<wm::EnsureWindowNotInRectHelper> helper_;
+#endif
+
   base::WeakPtrFactory<RemoteViewHost> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RemoteViewHost);

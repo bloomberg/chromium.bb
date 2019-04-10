@@ -84,6 +84,9 @@ PropertyConverter::PropertyConverter() {
   RegisterPrimitiveProperty(client::kDrawAttentionKey,
                             ws::mojom::WindowManager::kDrawAttention_Property,
                             CreateAcceptAnyValueCallback());
+  RegisterRectProperty(
+      client::kEmbeddedWindowEnsureNotInRect,
+      ws::mojom::WindowManager::kEmbeddedWindowEnsureNotInRect);
   RegisterPrimitiveProperty(client::kResizeBehaviorKey,
                             ws::mojom::WindowManager::kResizeBehavior_Property,
                             base::Bind(&ValidateResizeBehaviour));
