@@ -58,27 +58,6 @@ const char kInterstitialDecisionMetric[] = "interstitial.lookalike.decision";
 const char kInterstitialInteractionMetric[] =
     "interstitial.lookalike.interaction";
 
-// The domains here should not private domains (e.g. site.test), otherwise they
-// might test the wrong thing. Also note that site5.com is in the top domain
-// list, so it shouldn't be used here.
-const struct SiteEngagementTestCase {
-  const char* const navigated;
-  const char* const suggested;
-} kSiteEngagementTestCases[] = {
-    {"sité1.com", "site1.com"},
-    {"mail.www.sité1.com", "site1.com"},
-
-    // These should match since the comparison uses eTLD+1s.
-    {"sité2.com", "www.site2.com"},
-    {"mail.sité2.com", "www.site2.com"},
-
-    {"síté3.com", "sité3.com"},
-    {"mail.síté3.com", "sité3.com"},
-
-    {"síté4.com", "www.sité4.com"},
-    {"mail.síté4.com", "www.sité4.com"},
-};
-
 static std::unique_ptr<net::test_server::HttpResponse>
 NetworkErrorResponseHandler(const net::test_server::HttpRequest& request) {
   return std::unique_ptr<net::test_server::HttpResponse>(
@@ -598,6 +577,30 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
   for (const char* const kSite : kEngagedSites) {
     SetEngagementScore(browser(), GURL(kSite), kHighEngagement);
   }
+
+  // The domains here should not be private domains (e.g. site.test), otherwise
+  // they might test the wrong thing. Also note that site5.com is in the top
+  // domain list, so it shouldn't be used here.
+  const struct SiteEngagementTestCase {
+    const char* const navigated;
+    const char* const suggested;
+  } kSiteEngagementTestCases[] = {
+      {"sité1.com", "site1.com"},
+      {"mail.www.sité1.com", "site1.com"},
+      // Same as above two but ending with dots.
+      {"sité1.com.", "site1.com"},
+      {"mail.www.sité1.com.", "site1.com"},
+
+      // These should match since the comparison uses eTLD+1s.
+      {"sité2.com", "site2.com"},
+      {"mail.sité2.com", "site2.com"},
+
+      {"síté3.com", "sité3.com"},
+      {"mail.síté3.com", "sité3.com"},
+
+      {"síté4.com", "sité4.com"},
+      {"mail.síté4.com", "sité4.com"},
+  };
 
   std::vector<GURL> ukm_urls;
   for (const auto& test_case : kSiteEngagementTestCases) {

@@ -84,7 +84,7 @@ std::string GetMatchingSiteEngagementDomain(
     DCHECK_NE(navigated_domain.domain_and_registry,
               engaged_site.domain_and_registry);
     if (SkeletonsMatch(navigated_domain.skeletons, engaged_site.skeletons)) {
-      return engaged_site.full_domain;
+      return engaged_site.domain_and_registry;
     }
   }
   return std::string();
@@ -248,9 +248,26 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::PerformChecks(
   }
 
   DCHECK(!matched_domain.empty());
+  // matched_domain can be a top domain or an engaged domain. Simply use its
+  // eTLD+1 as the suggested domain.
+  // 1. If matched_domain is a top domain: Top domain list already contains
+  // eTLD+1s only so this works well.
+  // 2. If matched_domain is an engaged domain and is not an eTLD+1, don't
+  // suggest it. Otherwise, navigating to googlé.com and having engaged with
+  // docs.google.com would suggest docs.google.com.
+  //
+  // When the navigated and matched domains are not eTLD+1s (e.g.
+  // docs.googlé.com and docs.google.com), this will suggest google.com instead
+  // of docs.google.com. This is less than ideal, but has two benefits:
+  // - Simpler code
+  // - Fewer suggestions to non-existent domains. E.g. When the navigated domain
+  //   is nonexistent.googlé.com and the matched domain is docs.google.com, we
+  //   will suggest google.com instead of nonexistent.google.com.
+  const std::string suggested_domain = GetETLDPlusOne(matched_domain);
+  DCHECK(!suggested_domain.empty());
 
   GURL::Replacements replace_host;
-  replace_host.SetHostStr(matched_domain);
+  replace_host.SetHostStr(suggested_domain);
   const GURL suggested_url = url.ReplaceComponents(replace_host);
 
   ukm::SourceId source_id = ukm::ConvertToSourceId(
