@@ -109,6 +109,36 @@ void AppShimController::PollForChromeReady(
       kPollPeriodMsec);
 }
 
+// static
+mojo::PlatformChannelEndpoint AppShimController::ConnectToBrowser(
+    const mojo::NamedPlatformChannel::ServerName& server_name) {
+  // Normally NamedPlatformChannel is used for point-to-point peer
+  // communication. For apps shims, the same server is used to establish
+  // connections between multiple shim clients and the server. To do this,
+  // the shim creates a local PlatformChannel and sends the local (send)
+  // endpoint to the server in a raw Mach message. The server uses that to
+  // establish an IsolatedConnection, which the client does as well with the
+  // remote (receive) end.
+  mojo::PlatformChannelEndpoint server_endpoint =
+      mojo::NamedPlatformChannel::ConnectToServer(server_name);
+  mojo::PlatformChannel channel;
+  mach_msg_base_t message{};
+  message.header.msgh_id = app_mode::kBootstrapMsgId;
+  message.header.msgh_bits =
+      MACH_MSGH_BITS(MACH_MSG_TYPE_MOVE_SEND, MACH_MSG_TYPE_MOVE_SEND);
+  message.header.msgh_size = sizeof(message);
+  message.header.msgh_local_port =
+      channel.TakeLocalEndpoint().TakePlatformHandle().ReleaseMachSendRight();
+  message.header.msgh_remote_port =
+      server_endpoint.TakePlatformHandle().ReleaseMachSendRight();
+  kern_return_t kr = mach_msg_send(&message.header);
+  if (kr != KERN_SUCCESS) {
+    MACH_LOG(ERROR, kr) << "mach_msg_send";
+    return mojo::PlatformChannelEndpoint();
+  }
+  return channel.TakeRemoteEndpoint();
+}
+
 void AppShimController::InitBootstrapPipe() {
   SetUpMenu();
 
@@ -145,31 +175,7 @@ void AppShimController::InitBootstrapPipe() {
         app_mode::kAppShimBootstrapNameFragment,
         base::MD5String(user_data_dir.value()).c_str());
 
-    // Normally NamedPlatformChannel is used for point-to-point peer
-    // communication. For apps shims, the same server is used to establish
-    // connections between multiple shim clients and the server. To do this,
-    // the shim creates a local PlatformChannel and sends the local (send)
-    // endpoint to the server in a raw Mach message. The server uses that to
-    // establish an IsolatedConnection, which the client does as well with the
-    // remote (receive) end.
-    mojo::PlatformChannelEndpoint server_endpoint =
-        mojo::NamedPlatformChannel::ConnectToServer(name_fragment);
-    mojo::PlatformChannel channel;
-    mach_msg_base_t message{};
-    message.header.msgh_id = app_mode::kBootstrapMsgId;
-    message.header.msgh_bits =
-        MACH_MSGH_BITS(MACH_MSG_TYPE_MOVE_SEND, MACH_MSG_TYPE_MOVE_SEND);
-    message.header.msgh_size = sizeof(message);
-    message.header.msgh_local_port =
-        channel.TakeLocalEndpoint().TakePlatformHandle().ReleaseMachSendRight();
-    message.header.msgh_remote_port =
-        server_endpoint.TakePlatformHandle().ReleaseMachSendRight();
-    kern_return_t kr = mach_msg_send(&message.header);
-    if (kr != KERN_SUCCESS) {
-      MACH_LOG(ERROR, kr) << "mach_msg_send";
-      return;
-    }
-    endpoint = channel.TakeRemoteEndpoint();
+    endpoint = ConnectToBrowser(name_fragment);
   } else {
     base::FilePath symlink_path =
         user_data_dir.Append(app_mode::kAppShimSocketSymlinkName);

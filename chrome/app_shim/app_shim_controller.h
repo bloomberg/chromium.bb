@@ -36,6 +36,8 @@ class AppShimController : public chrome::mojom::AppShim {
                     const std::vector<base::FilePath>& files);
 
  private:
+  friend class TestShimClient;
+
   // Create a channel from the Mojo |endpoint| and send a LaunchApp message.
   void CreateChannelAndSendLaunchApp(mojo::PlatformChannelEndpoint endpoint);
   // Builds main menu bar items.
@@ -59,6 +61,11 @@ class AppShimController : public chrome::mojom::AppShim {
 
   // Terminates the app shim process.
   void Close();
+
+  // Sets up a connection to the AppShimHostManager at the given Mach
+  // endpoint name.
+  static mojo::PlatformChannelEndpoint ConnectToBrowser(
+      const mojo::NamedPlatformChannel::ServerName& server_name);
 
   // Connects to Chrome and sends a LaunchApp message.
   void InitBootstrapPipe();
