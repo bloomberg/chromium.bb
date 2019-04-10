@@ -5895,6 +5895,24 @@
             ]
         }
     ],
+    "WebRTC-ICE-mDNS": [
+        {
+            "platforms": [
+                "chromeos",
+                "windows",
+                "mac",
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "WebRtcHideLocalIpsWithMdns",
+                    "enable_features": [
+                        "WebRtcHideLocalIpsWithMdns"
+                    ]
+                }
+            ]
+        }
+    ],
     "WebRTC-KeepAbsSendTimeExtension": [
         {
             "platforms": [
