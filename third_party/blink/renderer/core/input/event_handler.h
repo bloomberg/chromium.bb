@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/platform/cursor.h"
 #include "third_party/blink/renderer/platform/geometry/layout_point.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_traits.h"
@@ -298,6 +299,8 @@ class CORE_EXPORT EventHandler final
   enum NoCursorChangeType { kNoCursorChange };
 
   class OptionalCursor {
+    STACK_ALLOCATED();
+
    public:
     OptionalCursor(NoCursorChangeType) : is_cursor_change_(false) {}
     OptionalCursor(const Cursor& cursor)

@@ -92,6 +92,7 @@
 #include "third_party/blink/renderer/platform/fonts/shaping/caching_word_shaper.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 #include "third_party/blink/renderer/platform/text/text_run.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_concatenate.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
@@ -105,6 +106,8 @@ namespace {
 int g_frontend_operation_counter = 0;
 
 class FrontendOperationScope {
+  STACK_ALLOCATED();
+
  public:
   FrontendOperationScope() { ++g_frontend_operation_counter; }
   ~FrontendOperationScope() { --g_frontend_operation_counter; }
