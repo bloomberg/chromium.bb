@@ -147,6 +147,14 @@ var tests = [
     }
   },
 
+  function testPostMessageUMA() {
+    // The actual testing is done on the browser side. Pass so long as the
+    // resource is properly fetched.
+    fetchUrl(streamDetails.streamUrl)
+        .then(expectSuccessfulRead)
+        .then(chrome.test.succeed);
+  },
+
   function testDataUrl() {
     // TODO(raymes): have separate checks for embedded/unembedded data URLs.
     checkStreamDetailsNoFile();

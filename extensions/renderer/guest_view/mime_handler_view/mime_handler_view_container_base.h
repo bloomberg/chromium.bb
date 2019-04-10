@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "content/public/common/transferrable_url_loader.mojom.h"
 #include "extensions/common/api/mime_handler.mojom.h"
+#include "extensions/common/guest_view/mime_handler_view_uma_types.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -77,6 +78,7 @@ class MimeHandlerViewContainerBase : public blink::WebAssociatedURLLoaderClient,
   void SendResourceRequest();
   void EmbedderRenderFrameWillBeGone();
   v8::Local<v8::Object> GetScriptableObjectInternal(v8::Isolate* isolate);
+  void RecordInteraction(MimeHandlerViewUMATypes::Type uma_type);
 
   // Returns the frame which is embedding the corresponding plugin element.
   content::RenderFrame* GetEmbedderRenderFrame() const;
@@ -101,7 +103,11 @@ class MimeHandlerViewContainerBase : public blink::WebAssociatedURLLoaderClient,
   int32_t plugin_frame_routing_id_ = MSG_ROUTING_NONE;
 
  private:
+  enum class ResourceAccessType : size_t { kAccessible, kInaccessible };
+
   class PluginResourceThrottle;
+
+  void RecordUMAForPostMessage(v8::Local<v8::Value>& message);
 
   // Called for embedded plugins when network service is enabled. This is called
   // by the URLLoaderThrottle which intercepts the resource load, which is then
@@ -148,6 +154,11 @@ class MimeHandlerViewContainerBase : public blink::WebAssociatedURLLoaderClient,
 
   mojo::Binding<mime_handler::BeforeUnloadControl>
       before_unload_control_binding_;
+
+  ResourceAccessType resource_access_type_;
+  // Currently used to avoid recording UMA stats for internal use of the
+  // postMessage API.
+  bool should_report_internal_messages_ = true;
 
   base::WeakPtrFactory<MimeHandlerViewContainerBase> weak_factory_;
 
