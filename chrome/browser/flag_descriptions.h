@@ -2055,9 +2055,6 @@ extern const char kVaapiJpegImageDecodeAccelerationDescription[];
 extern const char kVirtualKeyboardName[];
 extern const char kVirtualKeyboardDescription[];
 
-extern const char kVirtualKeyboardOverscrollName[];
-extern const char kVirtualKeyboardOverscrollDescription[];
-
 extern const char kWakeOnPacketsName[];
 extern const char kWakeOnPacketsDescription[];
 

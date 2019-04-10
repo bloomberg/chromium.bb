@@ -240,8 +240,7 @@ bool ChromeKeyboardControllerClient::IsKeyboardOverscrollEnabled() {
     return cached_keyboard_config_->overscroll_behavior ==
            keyboard::mojom::KeyboardOverscrollBehavior::kEnabled;
   }
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      keyboard::switches::kDisableVirtualKeyboardOverscroll);
+  return true;
 }
 
 GURL ChromeKeyboardControllerClient::GetVirtualKeyboardUrl() {

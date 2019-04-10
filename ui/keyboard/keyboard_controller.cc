@@ -571,8 +571,7 @@ bool KeyboardController::IsKeyboardOverscrollEnabled() const {
            mojom::KeyboardOverscrollBehavior::kEnabled;
   }
 
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableVirtualKeyboardOverscroll);
+  return true;
 }
 
 // private
