@@ -3069,11 +3069,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "virtual-keyboard-overscroll",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "wake-on-wifi-packet",
     "owners": [ "abhishekbh", "chirantan" ],
     "expiry_milestone": 76

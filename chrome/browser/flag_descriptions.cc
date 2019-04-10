@@ -3395,10 +3395,6 @@ const char kVaapiJpegImageDecodeAccelerationDescription[] =
 const char kVirtualKeyboardName[] = "Virtual Keyboard";
 const char kVirtualKeyboardDescription[] = "Enable virtual keyboard support.";
 
-const char kVirtualKeyboardOverscrollName[] = "Virtual Keyboard Overscroll";
-const char kVirtualKeyboardOverscrollDescription[] =
-    "Enables virtual keyboard overscroll support.";
-
 const char kWakeOnPacketsName[] = "Wake On Packets";
 const char kWakeOnPacketsDescription[] =
     "Enables waking the device based on the receipt of some network packets.";
