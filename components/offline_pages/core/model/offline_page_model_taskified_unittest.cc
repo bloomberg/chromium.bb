@@ -1408,7 +1408,7 @@ TEST_F(OfflinePageModelTaskifiedTest, ClearStorage) {
   task_runner()->FastForwardBy(run_delay);
   PumpLoop();
   EXPECT_EQ(last_scheduling_time, last_maintenance_tasks_schedule_time());
-  // Check that CleanupThumbnailsTask ran.
+  // Check that CleanupVisualsTask ran.
   histogram_tester()->ExpectUniqueSample("OfflinePages.CleanupThumbnails.Count",
                                          0, 1);
 
@@ -1450,7 +1450,7 @@ TEST_F(OfflinePageModelTaskifiedTest, ClearStorage) {
       static_cast<int>(ClearStorageResult::UNNECESSARY), 2);
   histogram_tester()->ExpectTotalCount(
       "OfflinePages.ClearTemporaryPages.BatchSize", 0);
-  // Check that CleanupThumbnailsTask ran only once.
+  // Check that CleanupVisualsTask ran only once.
   histogram_tester()->ExpectTotalCount("OfflinePages.CleanupThumbnails.Count",
                                        1);
 }
@@ -1597,66 +1597,62 @@ TEST_F(OfflinePageModelTaskifiedTest, MaintenanceTasksAreDisabled) {
 
 TEST_F(OfflinePageModelTaskifiedTest, StoreAndCheckThumbnail) {
   // Store a thumbnail.
-  OfflinePageThumbnail thumb;
-  thumb.offline_id = 1;
-  thumb.expiration = clock()->Now();
-  thumb.thumbnail = "abc123";
-  model()->StoreThumbnail(thumb.offline_id, thumb.thumbnail);
-  EXPECT_CALL(*this, ThumbnailAdded(_, thumb.offline_id, thumb.thumbnail));
+  OfflinePageVisuals visuals;
+  visuals.offline_id = 1;
+  visuals.expiration = clock()->Now();
+  visuals.thumbnail = "abc123";
+  model()->StoreThumbnail(visuals.offline_id, visuals.thumbnail);
+  EXPECT_CALL(*this, ThumbnailAdded(_, visuals.offline_id, visuals.thumbnail));
   PumpLoop();
 
   // Check it exists
-  bool thumbnail_exists = false;
-  bool favicon_exists = false;
-  auto exists_callback =
-      base::BindLambdaForTesting([&](VisualsAvailability availability) {
-        thumbnail_exists = availability.has_thumbnail;
-        favicon_exists = availability.has_favicon;
-      });
-  model()->HasThumbnailForOfflineId(thumb.offline_id, exists_callback);
+  base::Optional<VisualsAvailability> availability;
+  auto exists_callback = base::BindLambdaForTesting(
+      [&](VisualsAvailability value) { availability = value; });
+  model()->GetVisualsAvailability(visuals.offline_id, exists_callback);
   PumpLoop();
-  EXPECT_TRUE(thumbnail_exists);
-  EXPECT_FALSE(favicon_exists);
+  EXPECT_TRUE(availability.value().has_thumbnail);
+  EXPECT_FALSE(availability.value().has_favicon);
 
   // Obtain its data.
-  std::unique_ptr<OfflinePageThumbnail> result_thumbnail;
+  std::unique_ptr<OfflinePageVisuals> result_visuals;
   auto data_callback = base::BindLambdaForTesting(
-      [&](std::unique_ptr<OfflinePageThumbnail> result) {
-        result_thumbnail = std::move(result);
+      [&](std::unique_ptr<OfflinePageVisuals> result) {
+        result_visuals = std::move(result);
       });
-  model()->GetThumbnailByOfflineId(thumb.offline_id, data_callback);
+  model()->GetVisualsByOfflineId(visuals.offline_id, data_callback);
   PumpLoop();
-  EXPECT_EQ(thumb.thumbnail, result_thumbnail->thumbnail);
+  EXPECT_EQ(visuals.thumbnail, result_visuals->thumbnail);
 }
 
 TEST_F(OfflinePageModelTaskifiedTest, StoreAndCheckFavicon) {
   // Store a thumbnail.
-  OfflinePageThumbnail thumb;
-  thumb.offline_id = 1;
-  thumb.expiration = clock()->Now();
-  thumb.favicon = "abc123";
-  model()->StoreFavicon(thumb.offline_id, thumb.favicon);
-  EXPECT_CALL(*this, FaviconAdded(_, thumb.offline_id, thumb.favicon));
+  OfflinePageVisuals visuals;
+  visuals.offline_id = 1;
+  visuals.expiration = clock()->Now();
+  visuals.favicon = "abc123";
+  model()->StoreFavicon(visuals.offline_id, visuals.favicon);
+  EXPECT_CALL(*this, FaviconAdded(_, visuals.offline_id, visuals.favicon));
   PumpLoop();
 
   // Check if it exists.
   base::Optional<VisualsAvailability> availability;
   auto exists_callback = base::BindLambdaForTesting(
       [&](VisualsAvailability value) { availability = value; });
-  model()->HasThumbnailForOfflineId(thumb.offline_id, exists_callback);
+  model()->GetVisualsAvailability(visuals.offline_id, exists_callback);
   PumpLoop();
   EXPECT_FALSE(availability.value().has_thumbnail);
   EXPECT_TRUE(availability.value().has_favicon);
 
   // Obtain its data.
-  std::unique_ptr<OfflinePageThumbnail> result_thumbnail;
+  std::unique_ptr<OfflinePageVisuals> result_visuals;
   auto data_callback = base::BindLambdaForTesting(
-      [&](std::unique_ptr<OfflinePageThumbnail> result) {
-        result_thumbnail = std::move(result);
+      [&](std::unique_ptr<OfflinePageVisuals> result) {
+        result_visuals = std::move(result);
       });
-  model()->GetThumbnailByOfflineId(thumb.offline_id, data_callback);
+  model()->GetVisualsByOfflineId(visuals.offline_id, data_callback);
   PumpLoop();
-  EXPECT_EQ(thumb.favicon, result_thumbnail->favicon);
+  EXPECT_EQ(visuals.favicon, result_visuals->favicon);
 }
 
 }  // namespace offline_pages

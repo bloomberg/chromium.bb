@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/offline_pages/core/prefetch/tasks/get_thumbnail_info_task.h"
+#include "components/offline_pages/core/prefetch/tasks/get_visuals_info_task.h"
 
 #include "base/test/mock_callback.h"
 #include "components/offline_pages/core/prefetch/tasks/prefetch_task_test_base.h"
@@ -13,10 +13,10 @@ namespace offline_pages {
 namespace {
 const char kTestUrl[] = "https://www.test_thumbnail.com/";
 
-class GetThumbnailInfoTaskTest : public PrefetchTaskTestBase {
+class GetVisualsInfoTaskTest : public PrefetchTaskTestBase {
  public:
-  GetThumbnailInfoTaskTest() = default;
-  ~GetThumbnailInfoTaskTest() override = default;
+  GetVisualsInfoTaskTest() = default;
+  ~GetVisualsInfoTaskTest() override = default;
 
   PrefetchItem TestItem() {
     PrefetchItem item =
@@ -34,24 +34,24 @@ MATCHER(IsTestUrl, "") {
   return arg.thumbnail_url.possibly_invalid_spec() == kTestUrl;
 }
 
-TEST_F(GetThumbnailInfoTaskTest, NotPresent) {
+TEST_F(GetVisualsInfoTaskTest, NotPresent) {
   const PrefetchItem item = TestItem();
   store_util()->InsertPrefetchItem(item);
 
-  base::MockCallback<GetThumbnailInfoTask::ResultCallback> callback;
+  base::MockCallback<GetVisualsInfoTask::ResultCallback> callback;
   EXPECT_CALL(callback, Run(IsNullResult()));
-  RunTask(std::make_unique<GetThumbnailInfoTask>(store(), item.offline_id + 1,
-                                                 callback.Get()));
+  RunTask(std::make_unique<GetVisualsInfoTask>(store(), item.offline_id + 1,
+                                               callback.Get()));
 }
 
-TEST_F(GetThumbnailInfoTaskTest, Found) {
+TEST_F(GetVisualsInfoTaskTest, Found) {
   const PrefetchItem item = TestItem();
   store_util()->InsertPrefetchItem(item);
 
-  base::MockCallback<GetThumbnailInfoTask::ResultCallback> callback;
+  base::MockCallback<GetVisualsInfoTask::ResultCallback> callback;
   EXPECT_CALL(callback, Run(IsTestUrl()));
-  RunTask(std::make_unique<GetThumbnailInfoTask>(store(), item.offline_id,
-                                                 callback.Get()));
+  RunTask(std::make_unique<GetVisualsInfoTask>(store(), item.offline_id,
+                                               callback.Get()));
 }
 
 }  // namespace

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/offline_pages/core/model/get_thumbnail_task.h"
+#include "components/offline_pages/core/model/get_visuals_task.h"
 
 #include "base/bind.h"
 #include "components/offline_pages/core/offline_page_metadata_store.h"
@@ -15,9 +15,9 @@ namespace offline_pages {
 
 namespace {
 
-std::unique_ptr<OfflinePageThumbnail> GetThumbnailSync(int64_t offline_id,
-                                                       sql::Database* db) {
-  std::unique_ptr<OfflinePageThumbnail> result;
+std::unique_ptr<OfflinePageVisuals> GetVisualsSync(int64_t offline_id,
+                                                   sql::Database* db) {
+  std::unique_ptr<OfflinePageVisuals> result;
   static const char kSql[] =
       "SELECT offline_id,expiration,thumbnail,favicon FROM page_thumbnails"
       " WHERE offline_id=?";
@@ -27,7 +27,7 @@ std::unique_ptr<OfflinePageThumbnail> GetThumbnailSync(int64_t offline_id,
   if (!statement.Step()) {
     return result;
   }
-  result = std::make_unique<OfflinePageThumbnail>();
+  result = std::make_unique<OfflinePageVisuals>();
 
   result->offline_id = statement.ColumnInt64(0);
   int64_t expiration = statement.ColumnInt64(1);
@@ -43,24 +43,24 @@ std::unique_ptr<OfflinePageThumbnail> GetThumbnailSync(int64_t offline_id,
 
 }  // namespace
 
-GetThumbnailTask::GetThumbnailTask(OfflinePageMetadataStore* store,
-                                   int64_t offline_id,
-                                   CompleteCallback complete_callback)
+GetVisualsTask::GetVisualsTask(OfflinePageMetadataStore* store,
+                               int64_t offline_id,
+                               CompleteCallback complete_callback)
     : store_(store),
       offline_id_(offline_id),
       complete_callback_(std::move(complete_callback)),
       weak_ptr_factory_(this) {}
 
-GetThumbnailTask::~GetThumbnailTask() = default;
+GetVisualsTask::~GetVisualsTask() = default;
 
-void GetThumbnailTask::Run() {
-  store_->Execute(base::BindOnce(GetThumbnailSync, std::move(offline_id_)),
-                  base::BindOnce(&GetThumbnailTask::Complete,
-                                 weak_ptr_factory_.GetWeakPtr()),
-                  std::unique_ptr<OfflinePageThumbnail>());
+void GetVisualsTask::Run() {
+  store_->Execute(
+      base::BindOnce(GetVisualsSync, std::move(offline_id_)),
+      base::BindOnce(&GetVisualsTask::Complete, weak_ptr_factory_.GetWeakPtr()),
+      std::unique_ptr<OfflinePageVisuals>());
 }
 
-void GetThumbnailTask::Complete(std::unique_ptr<OfflinePageThumbnail> result) {
+void GetVisualsTask::Complete(std::unique_ptr<OfflinePageVisuals> result) {
   TaskComplete();
   std::move(complete_callback_).Run(std::move(result));
 }

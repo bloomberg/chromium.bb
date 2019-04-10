@@ -18,6 +18,7 @@
 #include "components/offline_pages/core/background/request_coordinator.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/offline_page_types.h"
+#include "components/offline_pages/core/offline_page_visuals.h"
 #include "url/gurl.h"
 
 using ContentId = offline_items_collection::ContentId;
@@ -143,8 +144,8 @@ class DownloadUIAdapter : public OfflineContentProvider,
       OfflineContentProvider::MultipleItemCallback callback,
       std::unique_ptr<OfflineContentProvider::OfflineItemList> offline_items,
       const MultipleOfflinePageItemResult& pages);
-  void OnThumbnailLoaded(VisualResultCallback callback,
-                         std::unique_ptr<OfflinePageThumbnail> thumbnail);
+  void OnVisualsLoaded(VisualResultCallback callback,
+                       std::unique_ptr<OfflinePageVisuals> visuals);
   void OnRequestsLoaded(
       OfflineContentProvider::MultipleItemCallback callback,
       std::unique_ptr<OfflineContentProvider::OfflineItemList> offline_items,

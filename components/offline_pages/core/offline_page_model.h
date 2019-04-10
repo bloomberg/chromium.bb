@@ -17,8 +17,8 @@
 #include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/offline_event_logger.h"
 #include "components/offline_pages/core/offline_page_archiver.h"
-#include "components/offline_pages/core/offline_page_thumbnail.h"
 #include "components/offline_pages/core/offline_page_types.h"
+#include "components/offline_pages/core/offline_page_visuals.h"
 #include "components/offline_pages/core/page_criteria.h"
 #include "url/gurl.h"
 
@@ -212,14 +212,14 @@ class OfflinePageModel : public base::SupportsUserData, public KeyedService {
   // Stores a new favicon in the page_thumbnails table.
   virtual void StoreFavicon(int64_t offline_id, std::string favicon) = 0;
 
-  // Reads a thumbnail from the page_thumbnails table. Calls callback
-  // with nullptr if the thumbnail was not found.
-  virtual void GetThumbnailByOfflineId(int64_t offline_id,
-                                       GetThumbnailCallback callback) = 0;
+  // Reads a thumbnail and favicon from the page_thumbnails table. Calls
+  // callback with nullptr if the thumbnail was not found.
+  virtual void GetVisualsByOfflineId(int64_t offline_id,
+                                     GetVisualsCallback callback) = 0;
 
   // Checks if a thumbnail for a specific |offline_id| exists in the
   // page_thumbnails table. Calls callback with the bool result.
-  virtual void HasThumbnailForOfflineId(
+  virtual void GetVisualsAvailability(
       int64_t offline_id,
       base::OnceCallback<void(VisualsAvailability)> callback) = 0;
 

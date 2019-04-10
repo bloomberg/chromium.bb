@@ -112,7 +112,7 @@ class PrefetchService : public KeyedService {
   // Zine/Feed: Null when using the Feed.
   virtual ThumbnailFetcher* GetThumbnailFetcher() = 0;
   virtual OfflinePageModel* GetOfflinePageModel() = 0;
-  virtual image_fetcher::ImageFetcher* GetThumbnailImageFetcher() = 0;
+  virtual image_fetcher::ImageFetcher* GetImageFetcher() = 0;
 
   // Test-only methods.
 

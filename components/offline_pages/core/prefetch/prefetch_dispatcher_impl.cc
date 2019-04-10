@@ -446,7 +446,7 @@ void PrefetchDispatcherImpl::FetchVisuals(
   DCHECK(client_id.name_space == kSuggestedArticlesNamespace);
   remaining_ids->pop_back();
 
-  service_->GetOfflinePageModel()->HasThumbnailForOfflineId(
+  service_->GetOfflinePageModel()->GetVisualsAvailability(
       offline_id,
       base::BindOnce(&PrefetchDispatcherImpl::VisualsAvailabilityChecked,
                      GetWeakPtr(), offline_id, std::move(client_id),
@@ -471,7 +471,7 @@ void PrefetchDispatcherImpl::VisualsAvailabilityChecked(
       thumbnail_fetcher->FetchSuggestionImageData(client_id,
                                                   std::move(complete_callback));
     } else {
-      task_queue_.AddTask(std::make_unique<GetThumbnailInfoTask>(
+      task_queue_.AddTask(std::make_unique<GetVisualsInfoTask>(
           service_->GetPrefetchStore(), offline_id,
           base::BindOnce(&PrefetchDispatcherImpl::VisualsInfoReceived,
                          GetWeakPtr(), offline_id, std::move(remaining_ids),
@@ -485,7 +485,7 @@ void PrefetchDispatcherImpl::VisualsInfoReceived(
     std::unique_ptr<IdsVector> remaining_ids,
     bool is_first_attempt,
     VisualsAvailability availability,
-    GetThumbnailInfoTask::Result result) {
+    GetVisualsInfoTask::Result result) {
   GURL favicon_url = availability.has_favicon || result.favicon_url.is_empty()
                          ? GURL()
                          : result.favicon_url;
@@ -495,7 +495,7 @@ void PrefetchDispatcherImpl::VisualsInfoReceived(
         base::BindOnce(&PrefetchDispatcherImpl::ThumbnailFetchComplete,
                        GetWeakPtr(), offline_id, std::move(remaining_ids),
                        is_first_attempt, favicon_url),
-        service_->GetThumbnailImageFetcher(), result.thumbnail_url);
+        service_->GetImageFetcher(), result.thumbnail_url);
   } else if (!favicon_url.is_empty()) {
     FetchFavicon(offline_id, std::move(remaining_ids), is_first_attempt,
                  favicon_url);
@@ -530,7 +530,7 @@ void PrefetchDispatcherImpl::FetchFavicon(
       base::BindOnce(&PrefetchDispatcherImpl::FaviconFetchComplete,
                      GetWeakPtr(), offline_id, std::move(remaining_ids),
                      is_first_attempt),
-      service_->GetThumbnailImageFetcher(), favicon_url);
+      service_->GetImageFetcher(), favicon_url);
 }
 
 void PrefetchDispatcherImpl::FaviconFetchComplete(

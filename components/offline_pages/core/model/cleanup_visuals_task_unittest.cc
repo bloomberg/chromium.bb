@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/offline_pages/core/model/cleanup_thumbnails_task.h"
+#include "components/offline_pages/core/model/cleanup_visuals_task.h"
 
 #include <memory>
 
@@ -10,7 +10,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
-#include "components/offline_pages/core/model/get_thumbnail_task.h"
+#include "components/offline_pages/core/model/get_visuals_task.h"
 #include "components/offline_pages/core/model/model_task_test_base.h"
 #include "components/offline_pages/core/model/store_visuals_task.h"
 #include "components/offline_pages/core/offline_clock.h"
@@ -20,24 +20,24 @@
 namespace offline_pages {
 namespace {
 
-class CleanupThumbnailsTaskTest : public ModelTaskTestBase {
+class CleanupVisualsTaskTest : public ModelTaskTestBase {
  public:
-  ~CleanupThumbnailsTaskTest() override {}
+  ~CleanupVisualsTaskTest() override {}
 
-  std::unique_ptr<OfflinePageThumbnail> ReadThumbnail(int64_t offline_id) {
-    std::unique_ptr<OfflinePageThumbnail> thumb;
-    auto callback = [&](std::unique_ptr<OfflinePageThumbnail> result) {
-      thumb = std::move(result);
+  std::unique_ptr<OfflinePageVisuals> ReadVisuals(int64_t offline_id) {
+    std::unique_ptr<OfflinePageVisuals> visuals;
+    auto callback = [&](std::unique_ptr<OfflinePageVisuals> result) {
+      visuals = std::move(result);
     };
-    RunTask(std::make_unique<GetThumbnailTask>(
+    RunTask(std::make_unique<GetVisualsTask>(
         store(), offline_id, base::BindLambdaForTesting(callback)));
-    return thumb;
+    return visuals;
   }
 
-  OfflinePageThumbnail MustReadThumbnail(int64_t offline_id) {
-    std::unique_ptr<OfflinePageThumbnail> thumb = ReadThumbnail(offline_id);
-    CHECK(thumb);
-    return *thumb;
+  OfflinePageVisuals MustReadVisuals(int64_t offline_id) {
+    std::unique_ptr<OfflinePageVisuals> visuals = ReadVisuals(offline_id);
+    CHECK(visuals);
+    return *visuals;
   }
 
   void StoreVisuals(int64_t offline_id,
@@ -50,28 +50,28 @@ class CleanupThumbnailsTaskTest : public ModelTaskTestBase {
   }
 };
 
-TEST_F(CleanupThumbnailsTaskTest, DbConnectionIsNull) {
-  base::MockCallback<CleanupThumbnailsCallback> callback;
+TEST_F(CleanupVisualsTaskTest, DbConnectionIsNull) {
+  base::MockCallback<CleanupVisualsCallback> callback;
   EXPECT_CALL(callback, Run(false)).Times(1);
   store()->SetInitializationStatusForTesting(
       SqlStoreBase::InitializationStatus::kFailure, true);
-  RunTask(std::make_unique<CleanupThumbnailsTask>(
+  RunTask(std::make_unique<CleanupVisualsTask>(
       store(), store_utils::FromDatabaseTime(1000), callback.Get()));
 }
 
-TEST_F(CleanupThumbnailsTaskTest, CleanupNoThumbnails) {
-  base::MockCallback<CleanupThumbnailsCallback> callback;
+TEST_F(CleanupVisualsTaskTest, CleanupNoVisuals) {
+  base::MockCallback<CleanupVisualsCallback> callback;
   EXPECT_CALL(callback, Run(true)).Times(1);
 
   base::HistogramTester histogram_tester;
-  RunTask(std::make_unique<CleanupThumbnailsTask>(
+  RunTask(std::make_unique<CleanupVisualsTask>(
       store(), store_utils::FromDatabaseTime(1000), callback.Get()));
 
   histogram_tester.ExpectUniqueSample("OfflinePages.CleanupThumbnails.Count", 0,
                                       1);
 }
 
-TEST_F(CleanupThumbnailsTaskTest, CleanupAllCombinations) {
+TEST_F(CleanupVisualsTaskTest, CleanupAllCombinations) {
   // Two conditions contribute to thumbnail cleanup: does a corresponding
   // OfflinePageItem exist, and is the thumbnail expired. All four combinations
   // of these states are tested.
@@ -84,47 +84,46 @@ TEST_F(CleanupThumbnailsTaskTest, CleanupAllCombinations) {
   OfflinePageItem item1 = generator()->CreateItem();
   store_test_util()->InsertItem(item1);
 
-  OfflinePageThumbnail thumb1(item1.offline_id,
+  OfflinePageVisuals visuals1(item1.offline_id,
                               OfflineTimeNow() + kVisualsExpirationDelta,
                               "thumb1", "favicon1");
-  StoreVisuals(thumb1.offline_id, thumb1.thumbnail, thumb1.favicon);
+  StoreVisuals(visuals1.offline_id, visuals1.thumbnail, visuals1.favicon);
 
   // 2. Has item, expired.
   OfflinePageItem item2 = generator()->CreateItem();
   store_test_util()->InsertItem(item2);
-
   test_clock.Advance(base::TimeDelta::FromSeconds(-1));
-  OfflinePageThumbnail thumb2(item2.offline_id,
+  OfflinePageVisuals visuals2(item2.offline_id,
                               OfflineTimeNow() + kVisualsExpirationDelta,
                               "thumb2", "favicon2");
-  StoreVisuals(thumb2.offline_id, thumb2.thumbnail, thumb2.favicon);
+  StoreVisuals(visuals2.offline_id, visuals2.thumbnail, visuals2.favicon);
 
   // 3. No item, not expired.
   test_clock.Advance(base::TimeDelta::FromSeconds(1));
-  OfflinePageThumbnail thumb3(store_utils::GenerateOfflineId(),
+  OfflinePageVisuals visuals3(store_utils::GenerateOfflineId(),
                               OfflineTimeNow() + kVisualsExpirationDelta,
                               "thumb3", "favicon3");
-  StoreVisuals(thumb3.offline_id, thumb3.thumbnail, thumb3.favicon);
+  StoreVisuals(visuals3.offline_id, visuals3.thumbnail, visuals3.favicon);
 
   // 4. No item, expired. This one gets removed.
   test_clock.Advance(base::TimeDelta::FromSeconds(-1));
-  OfflinePageThumbnail thumb4(store_utils::GenerateOfflineId(),
+  OfflinePageVisuals visuals4(store_utils::GenerateOfflineId(),
                               OfflineTimeNow() + kVisualsExpirationDelta,
                               "thumb4", "favicon4");
-  StoreVisuals(thumb4.offline_id, thumb4.thumbnail, thumb4.favicon);
+  StoreVisuals(visuals4.offline_id, visuals4.thumbnail, visuals4.favicon);
 
-  base::MockCallback<CleanupThumbnailsCallback> callback;
+  base::MockCallback<CleanupVisualsCallback> callback;
   EXPECT_CALL(callback, Run(true)).Times(1);
 
   test_clock.Advance(kVisualsExpirationDelta + base::TimeDelta::FromSeconds(1));
 
   base::HistogramTester histogram_tester;
-  RunTask(std::make_unique<CleanupThumbnailsTask>(store(), OfflineTimeNow(),
-                                                  callback.Get()));
-  EXPECT_EQ(thumb1, MustReadThumbnail(thumb1.offline_id));
-  EXPECT_EQ(thumb2, MustReadThumbnail(thumb2.offline_id));
-  EXPECT_EQ(thumb3, MustReadThumbnail(thumb3.offline_id));
-  EXPECT_EQ(nullptr, ReadThumbnail(thumb4.offline_id).get());
+  RunTask(std::make_unique<CleanupVisualsTask>(store(), OfflineTimeNow(),
+                                               callback.Get()));
+  EXPECT_EQ(visuals1, MustReadVisuals(visuals1.offline_id));
+  EXPECT_EQ(visuals2, MustReadVisuals(visuals2.offline_id));
+  EXPECT_EQ(visuals3, MustReadVisuals(visuals3.offline_id));
+  EXPECT_EQ(nullptr, ReadVisuals(visuals4.offline_id).get());
 
   histogram_tester.ExpectUniqueSample("OfflinePages.CleanupThumbnails.Count", 1,
                                       1);
