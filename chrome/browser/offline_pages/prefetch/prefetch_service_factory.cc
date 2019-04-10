@@ -59,7 +59,7 @@ PrefetchServiceFactory::PrefetchServiceFactory()
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(DownloadServiceFactory::GetInstance());
   DependsOn(OfflinePageModelFactory::GetInstance());
-  DependsOn(image_fetcher::ImageFetcherServiceFactory::GetInstance());
+  DependsOn(ImageFetcherServiceFactory::GetInstance());
 }
 
 // static
@@ -114,8 +114,8 @@ KeyedService* PrefetchServiceFactory::BuildServiceInstanceFor(
   } else {
     SimpleFactoryKey* simple_factory_key = profile->GetSimpleFactoryKey();
     image_fetcher::ImageFetcherService* image_fetcher_service =
-        image_fetcher::ImageFetcherServiceFactory::GetForKey(
-            simple_factory_key, profile->GetPrefs());
+        ImageFetcherServiceFactory::GetForKey(simple_factory_key,
+                                              profile->GetPrefs());
     DCHECK(image_fetcher_service);
     thumbnail_image_fetcher = image_fetcher_service->GetImageFetcher(
         image_fetcher::ImageFetcherConfig::kDiskCacheOnly);

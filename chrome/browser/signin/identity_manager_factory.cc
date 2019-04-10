@@ -8,8 +8,8 @@
 
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/image_fetcher/image_decoder_impl.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/suggestions/image_decoder_impl.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
@@ -98,9 +98,9 @@ std::unique_ptr<AccountFetcherService> BuildAccountFetcherService(
     ProfileOAuth2TokenService* token_service,
     AccountTrackerService* account_tracker_service) {
   auto account_fetcher_service = std::make_unique<AccountFetcherService>();
-  account_fetcher_service->Initialize(
-      signin_client, token_service, account_tracker_service,
-      std::make_unique<suggestions::ImageDecoderImpl>());
+  account_fetcher_service->Initialize(signin_client, token_service,
+                                      account_tracker_service,
+                                      std::make_unique<ImageDecoderImpl>());
   return account_fetcher_service;
 }
 

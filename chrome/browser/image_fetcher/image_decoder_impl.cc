@@ -6,11 +6,9 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "chrome/browser/search/suggestions/image_decoder_impl.h"
+#include "chrome/browser/image_fetcher/image_decoder_impl.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
-
-namespace suggestions {
 
 // A request for decoding an image.
 class ImageDecoderImpl::DecodeImageRequest
@@ -60,7 +58,7 @@ void ImageDecoderImpl::DecodeImageRequest::RunCallbackAndRemoveRequest(
   decoder_->RemoveDecodeImageRequest(this);
 }
 
-ImageDecoderImpl::ImageDecoderImpl()  {}
+ImageDecoderImpl::ImageDecoderImpl() {}
 
 ImageDecoderImpl::~ImageDecoderImpl() {}
 
@@ -83,13 +81,10 @@ void ImageDecoderImpl::DecodeImage(
 void ImageDecoderImpl::RemoveDecodeImageRequest(DecodeImageRequest* request) {
   // Remove the finished request from the request queue.
   auto request_it =
-      std::find_if(decode_image_requests_.begin(),
-                   decode_image_requests_.end(),
+      std::find_if(decode_image_requests_.begin(), decode_image_requests_.end(),
                    [request](const std::unique_ptr<DecodeImageRequest>& r) {
                      return r.get() == request;
                    });
   DCHECK(request_it != decode_image_requests_.end());
   decode_image_requests_.erase(request_it);
 }
-
-}  // namespace suggestions
