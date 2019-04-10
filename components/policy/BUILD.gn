@@ -178,7 +178,7 @@ action("policy_templates") {
   chrome_version_abspath = "//chrome/VERSION"
   chrome_version_path = rebase_path(chrome_version_abspath, root_build_dir)
   deps = [
-    ":translate_policy_templates",
+    ":translate_policy_templates_grit",
   ]
   inputs = [ chrome_version_abspath ] + policy_templates_translation_outputs
   outputs = []
