@@ -81,12 +81,16 @@ class __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
   STDMETHODIMP GetChildren(SAFEARRAY** children) override;
 
  private:
+  using AXPositionInstance = AXNodePosition::AXPositionInstance;
+  using AXNodeRange = AXRange<AXNodePosition::AXPositionInstance::element_type>;
+
   friend class AXPlatformNodeTextRangeProviderTest;
   base::string16 GetString();
   ui::AXPlatformNodeWin* owner() const;
 
-  using AXPositionInstance = AXNodePosition::AXPositionInstance;
-  using AXNodeRange = AXRange<AXNodePosition::AXPositionInstance::element_type>;
+  AXPositionInstance MoveEndpointByCharacter(const AXPositionInstance& endpoint,
+                                             const int count,
+                                             int* count_moved);
 
   AXPositionInstance MoveEndpointByDocument(const AXPositionInstance& endpoint,
                                             const int count,

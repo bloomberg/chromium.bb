@@ -26,8 +26,8 @@ AXPlatformNodeTextRangeProviderWin::~AXPlatformNodeTextRangeProviderWin() {}
 
 HRESULT AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
     ui::AXPlatformNodeWin* owner,
-    AXNodePosition::AXPositionInstance start,
-    AXNodePosition::AXPositionInstance end,
+    AXPositionInstance start,
+    AXPositionInstance end,
     ITextRangeProvider** provider) {
   CComObject<AXPlatformNodeTextRangeProviderWin>* text_range_provider = nullptr;
   HRESULT hr = CComObject<AXPlatformNodeTextRangeProviderWin>::CreateInstance(
@@ -300,6 +300,9 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::MoveEndpointByUnit(
 
   switch (unit) {
     case TextUnit_Character:
+      new_position =
+          MoveEndpointByCharacter(position_to_move, count, units_moved);
+      break;
     case TextUnit_Format:
     case TextUnit_Word:
     case TextUnit_Paragraph:
@@ -467,4 +470,34 @@ AXPlatformNodeTextRangeProviderWin::MoveEndpointByDocument(
   return current_endpoint;
 }
 
+AXPlatformNodeTextRangeProviderWin::AXPositionInstance
+AXPlatformNodeTextRangeProviderWin::MoveEndpointByCharacter(
+    const AXPositionInstance& endpoint,
+    const int count,
+    int* count_moved) {
+  auto current_endpoint = endpoint->Clone();
+  const bool forwards = count > 0;
+  int iteration = 0;
+  for (iteration = 0; iteration < std::abs(count); ++iteration) {
+    AXPositionInstance next_endpoint;
+    if (forwards)
+      next_endpoint = current_endpoint->CreateNextCharacterPosition(
+          ui::AXBoundaryBehavior::CrossBoundary);
+    else
+      next_endpoint = current_endpoint->CreatePreviousCharacterPosition(
+          ui::AXBoundaryBehavior::CrossBoundary);
+
+    // End of document
+    if (next_endpoint->IsNullPosition())
+      break;
+    current_endpoint = std::move(next_endpoint);
+  }
+
+  *count_moved = iteration;
+
+  if (!forwards)
+    *count_moved *= -1;
+
+  return current_endpoint;
+}
 }  // namespace ui
