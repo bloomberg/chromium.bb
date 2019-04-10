@@ -975,7 +975,8 @@ Polymer({
       // |this.setSetting| does nothing if policy is present.
       // We want to set the value nevertheless so we call |this.set| directly.
       this.set(
-          'settings.color.value', colorValue == print_preview.ColorMode.COLOR);
+          'settings.color.value',
+          colorValue == print_preview.ColorModeRestriction.COLOR);
     }
     this.set('settings.color.setByPolicy', !!colorPolicy);
 
