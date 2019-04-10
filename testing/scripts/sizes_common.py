@@ -22,7 +22,6 @@ def create_argparser():
 
 def main_run(script_args):
   parser = create_argparser()
-  parser.add_argument('prefix')
   args = parser.parse_args(script_args.args)
 
   runtest_args = [
