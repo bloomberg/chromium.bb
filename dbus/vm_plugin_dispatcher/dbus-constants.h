@@ -13,6 +13,20 @@ const char kVmPluginDispatcherServicePath[] =
     "/org/chromium/VmPluginDispatcher";
 const char kVmPluginDispatcherServiceName[] = "org.chromium.VmPluginDispatcher";
 
+const char kShutdownDispatherMethod[] = "ShutdownDispatcher";
+
+const char kRegisterVmMethod[] = "RegisterVm";
+const char kUnregisterVmMethod[] = "UnregisterVm";
+
+const char kListVmsMethod[] = "ListVms";
+
+const char kStartVmMethod[] = "StartVm";
+const char kStopVmMethod[] = "StopVm";
+const char kSuspendVmMethod[] = "SuspendVm";
+const char kResetVmMethod[] = "ResetVm";
+
+const char kShowVmMethod[] = "ShowVm";
+
 }  // namespace plugin_dispatcher
 }  // namespace vm_tools
 
