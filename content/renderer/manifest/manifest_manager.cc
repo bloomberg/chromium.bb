@@ -10,6 +10,7 @@
 #include "base/no_destructor.h"
 #include "base/strings/nullable_string16.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/renderer/fetchers/manifest_fetcher.h"
 #include "content/renderer/manifest/manifest_uma_util.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
@@ -17,7 +18,6 @@
 #include "third_party/blink/public/web/web_console_message.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
-#include "third_party/blink/public/web/web_manifest_fetcher.h"
 #include "third_party/blink/public/web/web_manifest_parser.h"
 
 namespace content {
@@ -114,8 +114,7 @@ void ManifestManager::FetchManifest() {
     return;
   }
 
-  blink::WebDocument document = render_frame()->GetWebFrame()->GetDocument();
-  manifest_url_ = document.ManifestURL();
+  manifest_url_ = render_frame()->GetWebFrame()->GetDocument().ManifestURL();
 
   if (manifest_url_.is_empty()) {
     ManifestUmaUtil::FetchFailed(ManifestUmaUtil::FETCH_EMPTY_URL);
@@ -123,11 +122,13 @@ void ManifestManager::FetchManifest() {
     return;
   }
 
-  fetcher_.reset(new blink::WebManifestFetcher(manifest_url_));
-
-  fetcher_->Start(&document, document.ManifestUseCredentials(),
-                  base::BindOnce(&ManifestManager::OnManifestFetchComplete,
-                                 base::Unretained(this), document.Url()));
+  fetcher_.reset(new ManifestFetcher(manifest_url_));
+  fetcher_->Start(
+      render_frame()->GetWebFrame(),
+      render_frame()->GetWebFrame()->GetDocument().ManifestUseCredentials(),
+      base::Bind(&ManifestManager::OnManifestFetchComplete,
+                 base::Unretained(this),
+                 render_frame()->GetWebFrame()->GetDocument().Url()));
 }
 
 static const std::string& GetMessagePrefix() {
@@ -138,9 +139,9 @@ static const std::string& GetMessagePrefix() {
 void ManifestManager::OnManifestFetchComplete(
     const GURL& document_url,
     const blink::WebURLResponse& response,
-    const blink::WebString& data) {
+    const std::string& data) {
   fetcher_.reset();
-  if (response.IsNull() && data.IsEmpty()) {
+  if (response.IsNull() && data.empty()) {
     manifest_debug_info_ = nullptr;
     ManifestUmaUtil::FetchFailed(ManifestUmaUtil::FETCH_UNSPECIFIED_REASON);
     ResolveCallbacks(ResolveStateFailure);
@@ -149,15 +150,14 @@ void ManifestManager::OnManifestFetchComplete(
 
   ManifestUmaUtil::FetchSucceeded();
   GURL response_url = response.CurrentRequestUrl();
-  std::string data_string = data.Utf8();
-  base::StringPiece data_piece(data_string);
+  base::StringPiece data_piece(data);
 
   blink::WebVector<blink::ManifestError> errors;
   bool result = blink::WebManifestParser::ParseManifest(
       data_piece, response_url, document_url, &manifest_, &errors);
 
   manifest_debug_info_ = blink::mojom::ManifestDebugInfo::New();
-  manifest_debug_info_->raw_manifest = data_string;
+  manifest_debug_info_->raw_manifest = data;
 
   for (const auto& error : errors) {
     blink::WebConsoleMessage message;
