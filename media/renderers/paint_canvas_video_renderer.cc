@@ -223,6 +223,7 @@ sk_sp<SkImage> NewSkImageFromVideoFrameYUVTextures(
   sk_sp<SkImage> img = YUVGrBackendTexturesToSkImage(
       context_3d.gr_context, video_frame->ColorSpace(), video_frame->format(),
       yuv_textures);
+  context_3d.gr_context->flush();
 
   DeleteYUVTextures(video_frame, context_3d, yuv_textures_info);
 
@@ -269,6 +270,7 @@ sk_sp<SkImage> NewSkImageFromVideoFrameYUVTexturesWithExternalBackend(
   sk_sp<SkImage> img = YUVGrBackendTexturesToSkImage(
       context_3d.gr_context, video_frame->ColorSpace(), video_frame->format(),
       yuv_textures, result_texture);
+  context_3d.gr_context->flush();
 
   DeleteYUVTextures(video_frame, context_3d, yuv_textures_info);
 
@@ -1299,7 +1301,7 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameYUVDataToGLTexture(
   }
 
   GrGLTextureInfo src_texture_info{};
-  yuv_image->getBackendTexture(false).getGLTextureInfo(&src_texture_info);
+  yuv_image->getBackendTexture(true).getGLTextureInfo(&src_texture_info);
 
   gpu::gles2::GLES2Interface* source_gl = context_3d.gl;
   gpu::MailboxHolder mailbox_holder;
