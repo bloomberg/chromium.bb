@@ -61,6 +61,10 @@ DownloadItem* SimpleDownloadManagerCoordinator::GetDownloadByGuid(
   return nullptr;
 }
 
+bool SimpleDownloadManagerCoordinator::HasSetDownloadManager() {
+  return simple_download_manager_;
+}
+
 void SimpleDownloadManagerCoordinator::OnManagerInitialized(
     bool has_all_history_downloads) {
   initialized_ = true;

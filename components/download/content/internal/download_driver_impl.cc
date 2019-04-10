@@ -17,6 +17,7 @@
 #include "components/download/internal/background_service/driver_entry.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_url_parameters.h"
+#include "components/download/public/common/simple_download_manager_coordinator.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
@@ -111,9 +112,16 @@ DriverEntry DownloadDriverImpl::CreateDriverEntry(
   return entry;
 }
 
-DownloadDriverImpl::DownloadDriverImpl(content::DownloadManager* manager)
-    : download_manager_(manager), client_(nullptr), weak_ptr_factory_(this) {
+DownloadDriverImpl::DownloadDriverImpl(
+    content::DownloadManager* manager,
+    SimpleDownloadManagerCoordinator* download_manager_coordinator)
+    : download_manager_(manager),
+      client_(nullptr),
+      download_manager_coordinator_(download_manager_coordinator),
+      weak_ptr_factory_(this) {
   DCHECK(download_manager_);
+  DCHECK(!download_manager_coordinator_ ||
+         !download_manager_coordinator_->HasSetDownloadManager());
 }
 
 DownloadDriverImpl::~DownloadDriverImpl() = default;

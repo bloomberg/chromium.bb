@@ -21,6 +21,7 @@
 #include "components/download/internal/background_service/noop_store.h"
 #include "components/download/internal/background_service/proto/entry.pb.h"
 #include "components/download/internal/background_service/scheduler/scheduler_impl.h"
+#include "components/download/public/common/simple_download_manager_coordinator.h"
 #include "components/download/public/task/empty_task_scheduler.h"
 #include "components/leveldb_proto/content/proto_database_provider_factory.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
@@ -100,12 +101,14 @@ DownloadService* BuildDownloadService(
     std::unique_ptr<DownloadClientMap> clients,
     network::NetworkConnectionTracker* network_connection_tracker,
     const base::FilePath& storage_dir,
+    SimpleDownloadManagerCoordinator* download_manager_coordinator,
     const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
     std::unique_ptr<TaskScheduler> task_scheduler) {
   auto config = Configuration::CreateFromFinch();
 
   auto driver = std::make_unique<DownloadDriverImpl>(
-      content::BrowserContext::GetDownloadManager(browser_context));
+      content::BrowserContext::GetDownloadManager(browser_context),
+      download_manager_coordinator);
 
   auto entry_db_storage_dir = storage_dir.Append(kEntryDBStorageDir);
 

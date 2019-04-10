@@ -29,6 +29,7 @@ class SharedURLLoaderFactory;
 namespace download {
 
 class DownloadService;
+class SimpleDownloadManagerCoordinator;
 class TaskScheduler;
 
 // |clients| is a map of DownloadClient -> std::unique_ptr<Client>.  This
@@ -48,6 +49,7 @@ DownloadService* BuildDownloadService(
     std::unique_ptr<DownloadClientMap> clients,
     network::NetworkConnectionTracker* network_connection_tracker,
     const base::FilePath& storage_dir,
+    SimpleDownloadManagerCoordinator* download_manager_coordinator,
     const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
     std::unique_ptr<TaskScheduler> task_scheduler);
 

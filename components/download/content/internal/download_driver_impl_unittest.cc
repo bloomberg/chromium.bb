@@ -59,7 +59,7 @@ class DownloadDriverImplTest : public testing::Test {
   void SetUp() override {
     EXPECT_CALL(mock_client_, IsTrackingDownload(_))
         .WillRepeatedly(Return(true));
-    driver_ = std::make_unique<DownloadDriverImpl>(&mock_manager_);
+    driver_ = std::make_unique<DownloadDriverImpl>(&mock_manager_, nullptr);
   }
 
   // TODO(xingliu): implements test download manager for embedders to test.
