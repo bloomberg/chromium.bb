@@ -60,6 +60,25 @@ interface ImeEngine {
 //    (e.g. by IME's on-screen keyboard)
 //  - later after the IME responds the |ProcessKeyEvent| with the result;
 interface ImeEngineClient {
+  // Called when the IME wants to insert the |text| to the input field.
+  CommitText(string text);
+
+  // Called when the IME wants to generate/update the composition text to the
+  // input field.
+  UpdateCompositionText(ui.mojom.CompositionText composition_text,
+                        uint32 cursor_pos,
+                        bool visible);
+
+  // Called when the IME wants to remove a piece of text in the input field.
+  DeleteSurroundingText(int32 offset, uint32 length);
+
+  // Called when the IME wants to silumate a physical key event to the app.
+  // Usually this is for on-screen keyboard support (e.g. simulate Enter key).
+  SendKeyEvent(ui.mojom.Event key_event);
+
+  // Called when the ImeEngine is deactivated and this client should reconnect
+  // for the new active ImeEngine.
+  Reconnect();
 };
 
 // Implemented by the IME.
