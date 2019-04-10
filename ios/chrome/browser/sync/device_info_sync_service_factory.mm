@@ -19,7 +19,6 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state_manager.h"
 #include "ios/chrome/browser/sync/model_type_store_service_factory.h"
 #include "ios/chrome/common/channel_info.h"
-#include "ui/base/device_form_factor.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -76,7 +75,6 @@ DeviceInfoSyncServiceFactory::BuildServiceInstanceFor(
   auto local_device_info_provider =
       std::make_unique<syncer::LocalDeviceInfoProviderImpl>(
           ::GetChannel(), ::GetVersionString(),
-          ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET,
           /*signin_scoped_device_id_callback=*/
           base::BindRepeating(&signin::GetSigninScopedDeviceId,
                               browser_state->GetPrefs()));

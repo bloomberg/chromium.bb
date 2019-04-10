@@ -28,7 +28,6 @@ ProfileSyncServiceBundle::ProfileSyncServiceBundle()
           std::make_unique<LocalDeviceInfoProviderImpl>(
               version_info::Channel::UNKNOWN,
               "someversion",
-              /*is_tablet=*/false,
               /*signin_scoped_device_id_callback=*/base::BindRepeating([]() {
                 return std::string();
               }))),

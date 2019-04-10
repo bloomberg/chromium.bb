@@ -16,7 +16,6 @@
 #include "components/version_info/version_info.h"
 #import "ios/web_view/internal/sync/web_view_model_type_store_service_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
-#include "ui/base/device_form_factor.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -55,7 +54,6 @@ WebViewDeviceInfoSyncServiceFactory::BuildServiceInstanceFor(
   auto local_device_info_provider =
       std::make_unique<syncer::LocalDeviceInfoProviderImpl>(
           version_info::Channel::STABLE, version_info::GetVersionNumber(),
-          ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET,
           /*signin_scoped_device_id_callback=*/
           base::BindRepeating(&signin::GetSigninScopedDeviceId,
                               browser_state->GetPrefs()));

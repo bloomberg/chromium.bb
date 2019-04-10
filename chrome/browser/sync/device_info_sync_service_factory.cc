@@ -23,7 +23,6 @@
 #include "components/sync/device_info/device_info_sync_service_impl.h"
 #include "components/sync/device_info/local_device_info_provider_impl.h"
 #include "components/sync/model/model_type_store_service.h"
-#include "ui/base/device_form_factor.h"
 
 // static
 syncer::DeviceInfoSyncService* DeviceInfoSyncServiceFactory::GetForProfile(
@@ -93,7 +92,6 @@ KeyedService* DeviceInfoSyncServiceFactory::BuildServiceInstanceFor(
   auto local_device_info_provider =
       std::make_unique<syncer::LocalDeviceInfoProviderImpl>(
           chrome::GetChannel(), chrome::GetVersionString(),
-          ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET,
           signin_scoped_device_id_callback);
   return new syncer::DeviceInfoSyncServiceImpl(
       ModelTypeStoreServiceFactory::GetForProfile(profile)->GetStoreFactory(),
