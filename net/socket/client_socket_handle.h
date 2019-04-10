@@ -169,9 +169,12 @@ class NET_EXPORT ClientSocketHandle {
     DCHECK(!socket_);
     return is_ssl_error_;
   }
-  // On an ERR_PROXY_AUTH_REQUESTED error, the |headers| and |auth_challenge|
-  // fields are filled in. On an ERR_SSL_CLIENT_AUTH_CERT_NEEDED error,
-  // the |cert_request_info| field is set.
+
+  // On an ERR_SSL_CLIENT_AUTH_CERT_NEEDED error, the |cert_request_info| field
+  // is set.
+  //
+  // TODO(mmenke): Replace this with only an SSLCertRequestInfo - no need for
+  // anything else.
   const HttpResponseInfo& ssl_error_response_info() const {
     return ssl_error_response_info_;
   }
