@@ -169,16 +169,8 @@ int NativeViewHostMac::GetHitTestTopInset() const {
   return 0;
 }
 
-void NativeViewHostMac::InstallClip(int x, int y, int w, int h) {
-  NOTIMPLEMENTED();
-}
-
 bool NativeViewHostMac::HasInstalledClip() {
   return false;
-}
-
-void NativeViewHostMac::UninstallClip() {
-  NOTIMPLEMENTED();
 }
 
 void NativeViewHostMac::ShowWidget(int x,
