@@ -6264,6 +6264,9 @@ base::Optional<EVENTID> AXPlatformNodeWin::UIAEvent(ax::mojom::Event event) {
   switch (event) {
     case ax::mojom::Event::kAlert:
       return UIA_SystemAlertEventId;
+    case ax::mojom::Event::kFocus:
+    case ax::mojom::Event::kFocusContext:
+      return UIA_AutomationFocusChangedEventId;
     case ax::mojom::Event::kSelection:
       return UIA_SelectionItem_ElementSelectedEventId;
     case ax::mojom::Event::kSelectionAdd:
