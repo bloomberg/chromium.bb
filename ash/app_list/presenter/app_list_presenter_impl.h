@@ -41,8 +41,7 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
   // UpdateYPositionAndOpacityForHomeLauncher so different callers can do
   // similar animations with different settings.
   using UpdateHomeLauncherAnimationSettingsCallback =
-      base::RepeatingCallback<void(ui::ScopedLayerAnimationSettings* settings,
-                                   bool observe)>;
+      base::RepeatingCallback<void(ui::ScopedLayerAnimationSettings* settings)>;
 
   // Used to dismiss the app list without animations.
   class ScopedDismissAnimationDisabler {

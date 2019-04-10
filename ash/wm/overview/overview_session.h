@@ -90,8 +90,7 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // functions so different callers can do similar animations with different
   // settings.
   using UpdateAnimationSettingsCallback =
-      base::RepeatingCallback<void(ui::ScopedLayerAnimationSettings* settings,
-                                   bool observe)>;
+      base::RepeatingCallback<void(ui::ScopedLayerAnimationSettings* settings)>;
 
   using WindowList = std::vector<aura::Window*>;
 
@@ -194,7 +193,11 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   void SetWindowListNotAnimatedWhenExiting(aura::Window* root_window);
 
   // Shifts and fades the grid in |grid_list_| associated with |location|.
-  void UpdateGridAtLocationYPositionAndOpacity(
+  // Returns a ui::ScopedLayerAnimationSettings object for the caller to
+  // observe.
+  // TODO(sammiequon): Change |new_y| to use float.
+  std::unique_ptr<ui::ScopedLayerAnimationSettings>
+  UpdateGridAtLocationYPositionAndOpacity(
       int64_t display_id,
       int new_y,
       float opacity,
@@ -206,10 +209,6 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
 
   // Called when the overview mode starting animation completes.
   void OnStartingAnimationComplete(bool canceled);
-
-  // Returns true if any of the grids in |grid_list_| shield widgets are still
-  // animating.
-  bool IsOverviewGridAnimating();
 
   // Called when windows are being activated/deactivated during
   // overview mode.
@@ -227,6 +226,26 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
 
   // Returns true if all its window grids don't have any window item.
   bool IsEmpty() const;
+
+  // display::DisplayObserver:
+  void OnDisplayRemoved(const display::Display& display) override;
+  void OnDisplayMetricsChanged(const display::Display& display,
+                               uint32_t metrics) override;
+
+  // aura::WindowObserver:
+  void OnWindowHierarchyChanged(const HierarchyChangeParams& params) override;
+  void OnWindowDestroying(aura::Window* window) override;
+
+  // ShelObserver:
+  void OnShellDestroying() override;
+
+  // ui::EventHandler:
+  void OnKeyEvent(ui::KeyEvent* event) override;
+
+  // SplitViewController::Observer:
+  void OnSplitViewStateChanged(SplitViewController::State previous_state,
+                               SplitViewController::State state) override;
+  void OnSplitViewDividerPositionChanged() override;
 
   OverviewDelegate* delegate() { return delegate_; }
 
@@ -255,26 +274,6 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   RoundedLabelWidget* no_windows_widget_for_testing() {
     return no_windows_widget_.get();
   }
-
-  // display::DisplayObserver:
-  void OnDisplayRemoved(const display::Display& display) override;
-  void OnDisplayMetricsChanged(const display::Display& display,
-                               uint32_t metrics) override;
-
-  // aura::WindowObserver:
-  void OnWindowHierarchyChanged(const HierarchyChangeParams& params) override;
-  void OnWindowDestroying(aura::Window* window) override;
-
-  // ui::EventHandler:
-  void OnKeyEvent(ui::KeyEvent* event) override;
-
-  // ShelObserver:
-  void OnShellDestroying() override;
-
-  // SplitViewController::Observer:
-  void OnSplitViewStateChanged(SplitViewController::State previous_state,
-                               SplitViewController::State state) override;
-  void OnSplitViewDividerPositionChanged() override;
 
  private:
   friend class OverviewSessionTest;

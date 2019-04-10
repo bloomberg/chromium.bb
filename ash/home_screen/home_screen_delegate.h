@@ -21,8 +21,7 @@ class HomeScreenDelegate {
   // Callback which fills out the passed settings object, allowing the caller to
   // animate with the given settings.
   using UpdateAnimationSettingsCallback =
-      base::RepeatingCallback<void(ui::ScopedLayerAnimationSettings* settings,
-                                   bool observe)>;
+      base::RepeatingCallback<void(ui::ScopedLayerAnimationSettings* settings)>;
 
   virtual ~HomeScreenDelegate() = default;
 

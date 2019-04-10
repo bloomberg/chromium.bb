@@ -38,6 +38,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/views/widget/widget.h"
@@ -583,16 +584,35 @@ void OverviewSession::SetWindowListNotAnimatedWhenExiting(
     grid->SetWindowListNotAnimatedWhenExiting();
 }
 
-void OverviewSession::UpdateGridAtLocationYPositionAndOpacity(
+std::unique_ptr<ui::ScopedLayerAnimationSettings>
+OverviewSession::UpdateGridAtLocationYPositionAndOpacity(
     int64_t display_id,
     int new_y,
     float opacity,
     const gfx::Rect& work_area,
     UpdateAnimationSettingsCallback callback) {
   OverviewGrid* grid = GetGridWithRootWindow(
-      ash::Shell::Get()->GetRootWindowForDisplayId(display_id));
-  if (grid)
-    grid->UpdateYPositionAndOpacity(new_y, opacity, work_area, callback);
+      Shell::Get()->GetRootWindowForDisplayId(display_id));
+  if (!grid)
+    return nullptr;
+
+  if (no_windows_widget_) {
+    // Translate and fade |no_windows_widget_| if it is visible.
+    DCHECK(grid->empty());
+    aura::Window* window = no_windows_widget_->GetNativeWindow();
+    std::unique_ptr<ui::ScopedLayerAnimationSettings> settings;
+    if (!callback.is_null()) {
+      settings = std::make_unique<ui::ScopedLayerAnimationSettings>(
+          window->layer()->GetAnimator());
+      callback.Run(settings.get());
+    }
+    window->SetTransform(
+        gfx::Transform(1.f, 0.f, 0.f, 1.f, 0.f, static_cast<float>(new_y)));
+    window->layer()->SetOpacity(opacity);
+    return settings;
+  }
+
+  return grid->UpdateYPositionAndOpacity(new_y, opacity, work_area, callback);
 }
 
 void OverviewSession::UpdateMaskAndShadow() {
@@ -610,19 +630,6 @@ void OverviewSession::OnStartingAnimationComplete(bool canceled) {
       overview_focus_widget_->Show();
     Shell::Get()->overview_controller()->DelayedUpdateMaskAndShadow();
   }
-}
-
-bool OverviewSession::IsOverviewGridAnimating() {
-  for (auto& grid : grid_list_) {
-    if (grid->shield_widget()
-            ->GetNativeWindow()
-            ->layer()
-            ->GetAnimator()
-            ->is_animating()) {
-      return true;
-    }
-  }
-  return false;
 }
 
 void OverviewSession::OnWindowActivating(

@@ -147,8 +147,9 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
 
   // Translate and fade the window (or minimized widget) and |item_widget_|. It
   // should remain in the same spot relative to the grids origin, which is given
-  // by |new_grid_y|.
-  void UpdateYPositionAndOpacity(
+  // by |new_grid_y|. Returns the settings object of the layer the caller should
+  // observe.
+  std::unique_ptr<ui::ScopedLayerAnimationSettings> UpdateYPositionAndOpacity(
       int new_grid_y,
       float opacity,
       OverviewSession::UpdateAnimationSettingsCallback callback);

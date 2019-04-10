@@ -69,7 +69,7 @@ void KioskNextHomeController::UpdateYPositionAndOpacityForHomeLauncher(
   if (!callback.is_null()) {
     settings = std::make_unique<ui::ScopedLayerAnimationSettings>(
         layer->GetAnimator());
-    callback.Run(settings.get(), false /* observe */);
+    callback.Run(settings.get());
   }
   layer->SetOpacity(opacity);
   layer->SetTransform(translation);

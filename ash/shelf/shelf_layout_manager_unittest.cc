@@ -910,14 +910,14 @@ void ShelfLayoutManagerTest::TestHomeLauncherGestureHandler(
   HomeLauncherGestureHandler* gesture_handler =
       Shell::Get()->home_screen_controller()->home_launcher_gesture_handler();
   ASSERT_TRUE(gesture_handler);
-  ASSERT_FALSE(gesture_handler->GetWindow1());
+  ASSERT_FALSE(gesture_handler->GetActiveWindow());
 
   // Tests that after scrolling up on the shelf, the home launcher gesture
   // handler will be acting on |window|, and the shelf becomes transparent.
   ShelfLayoutManager* manager = GetShelfLayoutManager();
   manager->ProcessGestureEvent(
       create_scroll_event(ui::ET_GESTURE_SCROLL_BEGIN, -1.f));
-  EXPECT_EQ(window.get(), gesture_handler->GetWindow1());
+  EXPECT_EQ(window.get(), gesture_handler->GetActiveWindow());
   EXPECT_EQ(SHELF_BACKGROUND_DEFAULT, GetShelfWidget()->GetBackgroundType());
   if (autohide_shelf) {
     // Auto-hide shelf should keep visible after scrolling up on it.
@@ -929,12 +929,12 @@ void ShelfLayoutManagerTest::TestHomeLauncherGestureHandler(
   // direction of scroll updates.
   manager->ProcessGestureEvent(
       create_scroll_event(ui::ET_GESTURE_SCROLL_UPDATE, -1.f));
-  EXPECT_EQ(window.get(), gesture_handler->GetWindow1());
+  EXPECT_EQ(window.get(), gesture_handler->GetActiveWindow());
   EXPECT_EQ(SHELF_BACKGROUND_DEFAULT, GetShelfWidget()->GetBackgroundType());
 
   manager->ProcessGestureEvent(
       create_scroll_event(ui::ET_GESTURE_SCROLL_UPDATE, 1.f));
-  EXPECT_EQ(window.get(), gesture_handler->GetWindow1());
+  EXPECT_EQ(window.get(), gesture_handler->GetActiveWindow());
   EXPECT_EQ(SHELF_BACKGROUND_DEFAULT, GetShelfWidget()->GetBackgroundType());
   if (autohide_shelf)
     EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
@@ -942,7 +942,7 @@ void ShelfLayoutManagerTest::TestHomeLauncherGestureHandler(
   // End the scroll.
   manager->ProcessGestureEvent(
       create_scroll_event(ui::ET_GESTURE_SCROLL_END, 1.f));
-  ASSERT_FALSE(gesture_handler->GetWindow1());
+  ASSERT_FALSE(gesture_handler->GetActiveWindow());
   if (autohide_shelf)
     EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
 
@@ -950,10 +950,10 @@ void ShelfLayoutManagerTest::TestHomeLauncherGestureHandler(
   // launcher gesture handler will not act on |window|.
   manager->ProcessGestureEvent(
       create_scroll_event(ui::ET_GESTURE_SCROLL_BEGIN, 1.f));
-  EXPECT_FALSE(gesture_handler->GetWindow1());
+  EXPECT_FALSE(gesture_handler->GetActiveWindow());
   manager->ProcessGestureEvent(
       create_scroll_event(ui::ET_GESTURE_SCROLL_UPDATE, -1.f));
-  EXPECT_FALSE(gesture_handler->GetWindow1());
+  EXPECT_FALSE(gesture_handler->GetActiveWindow());
 }
 
 // Makes sure SetVisible updates work area and widget appropriately.
