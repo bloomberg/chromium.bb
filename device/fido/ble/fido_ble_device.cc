@@ -37,7 +37,7 @@ void FidoBleDevice::Connect() {
     return;
 
   StartTimeout();
-  state_ = State::kBusy;
+  state_ = State::kConnecting;
   connection_->Connect(
       base::BindOnce(&FidoBleDevice::OnConnected, weak_factory_.GetWeakPtr()));
 }
@@ -53,12 +53,25 @@ std::string FidoBleDevice::GetId(base::StringPiece address) {
   return std::string("ble:").append(address.begin(), address.end());
 }
 
-void FidoBleDevice::Cancel() {
-  if (state_ != State::kReady && state_ != State::kBusy)
+void FidoBleDevice::Cancel(CancelToken token) {
+  if (current_token_ && *current_token_ == token) {
+    transaction_->Cancel();
     return;
+  }
 
-  AddToPendingFrames(FidoBleDeviceCommand::kCancel, std::vector<uint8_t>(),
-                     base::DoNothing());
+  for (auto it = pending_frames_.begin(); it != pending_frames_.end(); it++) {
+    if (it->token != token) {
+      continue;
+    }
+
+    auto callback = std::move(it->callback);
+    pending_frames_.erase(it);
+    std::vector<uint8_t> cancel_reply = {
+        static_cast<uint8_t>(CtapDeviceResponseCode::kCtap2ErrKeepAliveCancel)};
+    std::move(callback).Run(
+        FidoBleFrame(FidoBleDeviceCommand::kMsg, std::move(cancel_reply)));
+    break;
+  }
 }
 
 std::string FidoBleDevice::GetId() const {
@@ -119,10 +132,11 @@ FidoBleConnection::ReadCallback FidoBleDevice::GetReadCallbackForTesting() {
                              weak_factory_.GetWeakPtr());
 }
 
-void FidoBleDevice::DeviceTransact(std::vector<uint8_t> command,
-                                   DeviceCallback callback) {
-  AddToPendingFrames(FidoBleDeviceCommand::kMsg, std::move(command),
-                     std::move(callback));
+FidoDevice::CancelToken FidoBleDevice::DeviceTransact(
+    std::vector<uint8_t> command,
+    DeviceCallback callback) {
+  return AddToPendingFrames(FidoBleDeviceCommand::kMsg, std::move(command),
+                            std::move(callback));
 }
 
 base::WeakPtr<FidoDevice> FidoBleDevice::GetWeakPtr() {
@@ -134,7 +148,11 @@ void FidoBleDevice::OnResponseFrame(FrameCallback callback,
   // The request is done, time to reset |transaction_|.
   ResetTransaction();
 
-  state_ = frame ? State::kReady : State::kDeviceError;
+  if (frame) {
+    state_ = State::kReady;
+  } else {
+    state_ = State::kDeviceError;
+  }
   auto self = GetWeakPtr();
   std::move(callback).Run(std::move(frame));
   // Executing callbacks may free |this|. Check |self| first.
@@ -144,6 +162,7 @@ void FidoBleDevice::OnResponseFrame(FrameCallback callback,
 
 void FidoBleDevice::ResetTransaction() {
   transaction_.reset();
+  current_token_.reset();
 }
 
 void FidoBleDevice::Transition() {
@@ -153,13 +172,13 @@ void FidoBleDevice::Transition() {
       break;
     case State::kReady:
       if (!pending_frames_.empty()) {
-        FidoBleFrame frame;
-        FrameCallback callback;
-        std::tie(frame, callback) = std::move(pending_frames_.front());
-        pending_frames_.pop();
-        SendRequestFrame(std::move(frame), std::move(callback));
+        PendingFrame pending(std::move(pending_frames_.front()));
+        pending_frames_.pop_front();
+        current_token_ = pending.token;
+        SendRequestFrame(std::move(pending.frame), std::move(pending.callback));
       }
       break;
+    case State::kConnecting:
     case State::kBusy:
       break;
     case State::kMsgError:
@@ -168,24 +187,39 @@ void FidoBleDevice::Transition() {
       // Executing callbacks may free |this|. Check |self| first.
       while (self && !pending_frames_.empty()) {
         // Respond to any pending frames.
-        FrameCallback cb = std::move(pending_frames_.front().second);
-        pending_frames_.pop();
+        FrameCallback cb = std::move(pending_frames_.front().callback);
+        pending_frames_.pop_front();
         std::move(cb).Run(base::nullopt);
       }
       break;
   }
 }
 
-void FidoBleDevice::AddToPendingFrames(FidoBleDeviceCommand cmd,
-                                       std::vector<uint8_t> request,
-                                       DeviceCallback callback) {
-  pending_frames_.emplace(
+FidoDevice::CancelToken FidoBleDevice::AddToPendingFrames(
+    FidoBleDeviceCommand cmd,
+    std::vector<uint8_t> request,
+    DeviceCallback callback) {
+  const auto token = next_cancel_token_++;
+  pending_frames_.emplace_back(
       FidoBleFrame(cmd, std::move(request)),
       base::BindOnce(&FidoBleDevice::OnBleResponseReceived,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
+                     weak_factory_.GetWeakPtr(), std::move(callback)),
+      token);
 
   Transition();
+  return token;
 }
+
+FidoBleDevice::PendingFrame::PendingFrame(FidoBleFrame in_frame,
+                                          FrameCallback in_callback,
+                                          CancelToken in_token)
+    : frame(std::move(in_frame)),
+      callback(std::move(in_callback)),
+      token(in_token) {}
+
+FidoBleDevice::PendingFrame::PendingFrame(PendingFrame&&) = default;
+
+FidoBleDevice::PendingFrame::~PendingFrame() = default;
 
 void FidoBleDevice::OnConnected(bool success) {
   StopTimeout();
@@ -197,7 +231,7 @@ void FidoBleDevice::OnConnected(bool success) {
   }
 
   FIDO_LOG(EVENT) << "BLE device connected successfully.";
-  state_ = State::kBusy;
+  DCHECK_EQ(State::kConnecting, state_);
   StartTimeout();
   connection_->ReadControlPointLength(base::BindOnce(
       &FidoBleDevice::OnReadControlPointLength, weak_factory_.GetWeakPtr()));

@@ -52,15 +52,17 @@ class MockFidoDevice : public ::testing::StrictMock<FidoDevice> {
                  base::Optional<AuthenticatorGetInfoResponse> device_info);
   ~MockFidoDevice() override;
 
-  MOCK_METHOD0(Cancel, void(void));
+  MOCK_METHOD1(Cancel, void(FidoDevice::CancelToken));
 
   MOCK_CONST_METHOD0(GetId, std::string(void));
   // GMock cannot mock a method taking a move-only type.
   // TODO(crbug.com/729950): Remove these workarounds once support for move-only
   // types is added to GMock.
   MOCK_METHOD2(DeviceTransactPtr,
-               void(const std::vector<uint8_t>& command, DeviceCallback& cb));
-  void DeviceTransact(std::vector<uint8_t> command, DeviceCallback cb) override;
+               CancelToken(const std::vector<uint8_t>& command,
+                           DeviceCallback& cb));
+  CancelToken DeviceTransact(std::vector<uint8_t> command,
+                             DeviceCallback cb) override;
 
   // FidoDevice:
   FidoTransportProtocol DeviceTransport() const override;

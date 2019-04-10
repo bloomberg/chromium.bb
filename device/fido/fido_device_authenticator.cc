@@ -308,10 +308,12 @@ void FidoDeviceAuthenticator::Reset(ResetCallback callback) {
 }
 
 void FidoDeviceAuthenticator::Cancel() {
-  if (!task_)
-    return;
-
-  task_->CancelTask();
+  if (operation_) {
+    operation_->Cancel();
+  }
+  if (task_) {
+    task_->Cancel();
+  }
 }
 
 std::string FidoDeviceAuthenticator::GetId() const {

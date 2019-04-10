@@ -123,21 +123,22 @@ FidoCableDevice::FidoCableDevice(std::unique_ptr<FidoBleConnection> connection)
 
 FidoCableDevice::~FidoCableDevice() = default;
 
-void FidoCableDevice::DeviceTransact(std::vector<uint8_t> command,
-                                     DeviceCallback callback) {
+FidoDevice::CancelToken FidoCableDevice::DeviceTransact(
+    std::vector<uint8_t> command,
+    DeviceCallback callback) {
   if (!EncryptOutgoingMessage(encryption_data_, &command)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
     state_ = State::kDeviceError;
     FIDO_LOG(ERROR) << "Failed to encrypt outgoing caBLE message.";
-    return;
+    return 0;
   }
 
   ++encryption_data_->write_sequence_num;
 
   FIDO_LOG(DEBUG) << "Sending encrypted message to caBLE client";
-  AddToPendingFrames(FidoBleDeviceCommand::kMsg, std::move(command),
-                     std::move(callback));
+  return AddToPendingFrames(FidoBleDeviceCommand::kMsg, std::move(command),
+                            std::move(callback));
 }
 
 void FidoCableDevice::OnResponseFrame(FrameCallback callback,

@@ -260,6 +260,8 @@ void MakeCredentialRequestHandler::HandleResponse(
          authenticator->WillNeedPINToMakeCredential(request_, observer()) ==
              MakeCredentialPINDisposition::kNoPIN);
 
+  CancelActiveAuthenticators(authenticator->GetId());
+
   state_ = State::kFinished;
   if (response_code != CtapDeviceResponseCode::kSuccess) {
     OnAuthenticatorResponse(authenticator, response_code, base::nullopt);
@@ -321,6 +323,7 @@ void MakeCredentialRequestHandler::HandleTouch(
 void MakeCredentialRequestHandler::HandleInapplicableAuthenticator(
     FidoAuthenticator* authenticator) {
   // User touched an authenticator that cannot handle this request.
+  CancelActiveAuthenticators(authenticator->GetId());
   const FidoReturnCode capability_error = IsCandidateAuthenticatorPostTouch(
       request_, authenticator, authenticator_selection_criteria_, observer());
   DCHECK_NE(capability_error, FidoReturnCode::kSuccess);

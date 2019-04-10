@@ -27,6 +27,10 @@ class GenericDeviceOperation {
  public:
   virtual ~GenericDeviceOperation() {}
   virtual void Start() = 0;
+
+  // Cancel will attempt to cancel the current operation. It is safe to call
+  // this function both before |Start| and after the operation has completed.
+  virtual void Cancel() = 0;
 };
 
 template <class Request, class Response>
@@ -46,7 +50,17 @@ class DeviceOperation : public GenericDeviceOperation {
 
   virtual ~DeviceOperation() = default;
 
-  virtual void Start() = 0;
+  // Cancel requests that the operation be canceled. This is safe to call at any
+  // time but may not be effective because the operation may have already
+  // completed or the device may not support cancelation. Even if canceled, the
+  // callback will still be invoked, albeit perhaps with a status of
+  // |kCtap2ErrKeepAliveCancel|.
+  void Cancel() override {
+    if (token_) {
+      device_->Cancel(*token_);
+      token_.reset();
+    }
+  }
 
  protected:
   // TODO(hongjunchoi): Refactor so that |command| is never base::nullopt.
@@ -58,12 +72,13 @@ class DeviceOperation : public GenericDeviceOperation {
       return;
     }
 
-    device_->DeviceTransact(std::move(*command), std::move(callback));
+    token_ = device_->DeviceTransact(std::move(*command), std::move(callback));
   }
 
   const Request& request() const { return request_; }
   FidoDevice* device() const { return device_; }
   DeviceResponseCallback callback() { return std::move(callback_); }
+  base::Optional<FidoDevice::CancelToken> token_;
 
  private:
   FidoDevice* const device_ = nullptr;

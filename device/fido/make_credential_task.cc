@@ -95,6 +95,16 @@ CtapMakeCredentialRequest MakeCredentialTask::GetTouchRequest(
   return req;
 }
 
+void MakeCredentialTask::Cancel() {
+  // TODO: should set a flag on this object to stop any more operations.
+  if (register_operation_) {
+    register_operation_->Cancel();
+  }
+  if (silent_sign_operation_) {
+    silent_sign_operation_->Cancel();
+  }
+}
+
 void MakeCredentialTask::StartTask() {
   if (device()->supported_protocol() == ProtocolVersion::kCtap &&
       !request_.is_u2f_only() &&

@@ -51,10 +51,11 @@ VirtualU2fDevice::VirtualU2fDevice(scoped_refptr<State> state)
 VirtualU2fDevice::~VirtualU2fDevice() = default;
 
 // Cancel operation is not supported on U2F devices.
-void VirtualU2fDevice::Cancel() {}
+void VirtualU2fDevice::Cancel(CancelToken) {}
 
-void VirtualU2fDevice::DeviceTransact(std::vector<uint8_t> command,
-                                      DeviceCallback cb) {
+FidoDevice::CancelToken VirtualU2fDevice::DeviceTransact(
+    std::vector<uint8_t> command,
+    DeviceCallback cb) {
   // Note, here we are using the code-under-test in this fake.
   auto parsed_command = apdu::ApduCommand::CreateFromMessage(command);
 
@@ -65,7 +66,7 @@ void VirtualU2fDevice::DeviceTransact(std::vector<uint8_t> command,
         base::BindOnce(
             std::move(cb),
             ErrorStatus(apdu::ApduResponse::Status::SW_INS_NOT_SUPPORTED)));
-    return;
+    return 0;
   }
 
   if (mutable_state()->simulate_invalid_response) {
@@ -75,7 +76,7 @@ void VirtualU2fDevice::DeviceTransact(std::vector<uint8_t> command,
                         .GetEncodedResponse();
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(cb), std::move(response)));
-    return;
+    return 0;
   }
 
   base::Optional<std::vector<uint8_t>> response;
@@ -101,6 +102,7 @@ void VirtualU2fDevice::DeviceTransact(std::vector<uint8_t> command,
   // support callback hairpinning.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(cb), std::move(response)));
+  return 0;
 }
 
 base::WeakPtr<FidoDevice> VirtualU2fDevice::GetWeakPtr() {

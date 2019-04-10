@@ -47,7 +47,7 @@ class Ctap2DeviceOperation : public DeviceOperation<Request, Response> {
   ~Ctap2DeviceOperation() override = default;
 
   void Start() override {
-    this->device()->DeviceTransact(
+    this->token_ = this->device()->DeviceTransact(
         this->request().EncodeAsCBOR(),
         base::BindOnce(&Ctap2DeviceOperation::OnResponseReceived,
                        weak_factory_.GetWeakPtr()));
@@ -55,6 +55,8 @@ class Ctap2DeviceOperation : public DeviceOperation<Request, Response> {
 
   void OnResponseReceived(
       base::Optional<std::vector<uint8_t>> device_response) {
+    this->token_.reset();
+
     if (!device_response) {
       std::move(this->callback())
           .Run(CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);

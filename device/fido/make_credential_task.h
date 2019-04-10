@@ -47,6 +47,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialTask : public FidoTask {
   // wait for a touch.
   static CtapMakeCredentialRequest GetTouchRequest(const FidoDevice* device);
 
+  // FidoTask:
+  void Cancel() override;
+
  private:
   // FidoTask:
   void StartTask() final;

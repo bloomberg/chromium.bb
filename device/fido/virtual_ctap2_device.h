@@ -63,8 +63,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
   ~VirtualCtap2Device() override;
 
   // FidoDevice:
-  void Cancel() override;
-  void DeviceTransact(std::vector<uint8_t> command, DeviceCallback cb) override;
+  void Cancel(CancelToken) override;
+  CancelToken DeviceTransact(std::vector<uint8_t> command,
+                             DeviceCallback cb) override;
   base::WeakPtr<FidoDevice> GetWeakPtr() override;
 
   void SetAuthenticatorSupportedOptions(

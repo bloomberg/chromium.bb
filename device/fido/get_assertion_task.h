@@ -44,6 +44,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionTask : public FidoTask {
                    GetAssertionTaskCallback callback);
   ~GetAssertionTask() override;
 
+  // FidoTask:
+  void Cancel() override;
+
  private:
   // FidoTask:
   void StartTask() override;

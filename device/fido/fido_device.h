@@ -30,12 +30,23 @@ namespace device {
 // |FidoDeviceDiscovery| are not fully initialized.
 class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
  public:
+  // CancelToken is an opaque value that can be used to cancel submitted
+  // requests.
+  typedef uint32_t CancelToken;
+  // kInvalidCancelToken is a |CancelToken| value that will not be returned as
+  // the result of |DeviceTransact| and thus can be used as a placeholder.
+  static constexpr CancelToken kInvalidCancelToken = 0;
+
   using DeviceCallback =
       base::OnceCallback<void(base::Optional<std::vector<uint8_t>>)>;
 
   // Internal state machine states.
   enum class State {
     kInit,
+    // kConnecting occurs when the device is performing some initialisation. For
+    // example, HID devices need to allocate a channel ID before sending
+    // requests.
+    kConnecting,
     kBusy,
     kReady,
     // kMsgError occurs when the the device responds with an error indicating an
@@ -53,9 +64,16 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
   // Pure virtual function defined by each device type, implementing
   // the device communication transaction. The function must not immediately
   // call (i.e. hairpin) |callback|.
-  virtual void DeviceTransact(std::vector<uint8_t> command,
-                              DeviceCallback callback) = 0;
-  virtual void Cancel() = 0;
+  virtual CancelToken DeviceTransact(std::vector<uint8_t> command,
+                                     DeviceCallback callback) = 0;
+  // Cancel attempts to cancel an enqueued request. If the request is currently
+  // active it will be aborted if possible, which is expected to cause it to
+  // complete with |kCtap2ErrKeepAliveCancel|. If the request is still enqueued
+  // it will be deleted and the callback called with
+  // |kCtap2ErrKeepAliveCancel| immediately. It is possible that a request to
+  // cancel may be unsuccessful and that the request may complete normally.
+  // It is safe to attempt to cancel an operation that has already completed.
+  virtual void Cancel(CancelToken token) = 0;
   virtual std::string GetId() const = 0;
   virtual base::string16 GetDisplayName() const;
   virtual FidoTransportProtocol DeviceTransport() const = 0;
@@ -94,6 +112,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
   State state_ = State::kInit;
   ProtocolVersion supported_protocol_ = ProtocolVersion::kUnknown;
   base::Optional<AuthenticatorGetInfoResponse> device_info_;
+  // next_cancel_token_ is the value of the next |CancelToken| returned by this
+  // device. It starts at one so that zero can be used as an invalid value where
+  // needed.
+  CancelToken next_cancel_token_ = kInvalidCancelToken + 1;
 
   DISALLOW_COPY_AND_ASSIGN(FidoDevice);
 };
