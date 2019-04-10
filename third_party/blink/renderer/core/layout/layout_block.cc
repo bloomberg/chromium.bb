@@ -653,23 +653,22 @@ void LayoutBlock::UpdateBlockChildDirtyBitsBeforeLayout(bool relayout_children,
     return;
   }
 
-  if (relayout_children) {
-    child.SetChildNeedsLayout(kMarkOnlyThis);
-  } else {
-    // FIXME: Technically percentage height objects only need a relayout if
-    // their percentage isn't going to be turned into an auto value. Add a
-    // method to determine this, so that we can avoid the relayout.
-    bool has_relative_logical_height =
-        child.HasRelativeLogicalHeight() ||
-        (child.IsAnonymous() && HasRelativeLogicalHeight()) ||
-        child.StretchesToViewport();
-    if ((has_relative_logical_height && !IsLayoutView()) ||
-        (height_available_to_children_changed_ &&
-         ChangeInAvailableLogicalHeightAffectsChild(this, child)) ||
-        (child.IsListMarker() && IsListItem() &&
-         ToLayoutBlockFlow(this)->ContainsFloats())) {
+  // FIXME: Technically percentage height objects only need a relayout if
+  // their percentage isn't going to be turned into an auto value. Add a
+  // method to determine this, so that we can avoid the relayout.
+  bool has_relative_logical_height =
+      child.HasRelativeLogicalHeight() ||
+      (child.IsAnonymous() && HasRelativeLogicalHeight()) ||
+      child.StretchesToViewport();
+  if (relayout_children || (has_relative_logical_height && !IsLayoutView()) ||
+      (height_available_to_children_changed_ &&
+       ChangeInAvailableLogicalHeightAffectsChild(this, child)) ||
+      (child.IsListMarker() && IsListItem() &&
+       ToLayoutBlockFlow(this)->ContainsFloats())) {
+    if (child.IsLayoutNGMixin())
       child.SetSelfNeedsLayoutForAvailableSpace(true);
-    }
+    else
+      child.SetChildNeedsLayout(kMarkOnlyThis);
   }
 }
 

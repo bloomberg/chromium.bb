@@ -63,11 +63,13 @@
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragmentation_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/shapes/shape_outside_info.h"
 #include "third_party/blink/renderer/core/page/autoscroll_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -2333,8 +2335,22 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
   if (cached_layout_result->HasOrthogonalFlowRoots())
     return nullptr;
 
-  if (!MaySkipLayout(NGBlockNode(this), *cached_layout_result, new_space))
+  NGBlockNode node(this);
+  if (!MaySkipLayout(node, *cached_layout_result, new_space))
     return nullptr;
+  // It is possible that our intrinsic size has changed; check for that here.
+  // TODO(cbiesinger): Move this to ::MaySkipLayout.
+  if (new_space.IsShrinkToFit() || NeedMinMaxSize(StyleRef())) {
+    NGBoxFragment fragment(
+        new_space.GetWritingMode(), StyleRef().Direction(),
+        To<NGPhysicalBoxFragment>(*cached_layout_result->PhysicalFragment()));
+    // If we get here, we know that border and padding haven't changed.
+    NGBoxStrut border_padding = fragment.Borders() + fragment.Padding();
+    LayoutUnit size =
+        ComputeInlineSizeForFragment(new_space, node, border_padding);
+    if (size != fragment.InlineSize())
+      return nullptr;
+  }
 
   const NGConstraintSpace& old_space =
       cached_layout_result->GetConstraintSpaceForCaching();
