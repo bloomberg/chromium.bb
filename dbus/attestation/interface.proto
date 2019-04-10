@@ -97,7 +97,7 @@ message GetKeyInfoReply {
 }
 
 message GetEndorsementInfoRequest {
-  optional KeyType key_type = 1;
+  reserved 1;
 }
 
 message GetEndorsementInfoReply {
