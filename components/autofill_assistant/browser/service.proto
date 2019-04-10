@@ -478,6 +478,11 @@ enum ProcessedActionStatusProto {
   //
   // ProcessedActionProto.UnexpectedErrorInfoProto contains more details.
   UNEXPECTED_JS_ERROR = 17;
+
+  // There were more than one matching element in the DOM in a context where
+  // only one is supported. This is generally a scripting error: the selector is
+  // not specific enough.
+  TOO_MANY_ELEMENTS = 18;
 }
 
 // The pseudo type values come from
