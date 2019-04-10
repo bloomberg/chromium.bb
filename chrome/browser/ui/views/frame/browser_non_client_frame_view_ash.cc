@@ -763,6 +763,14 @@ void BrowserNonClientFrameViewAsh::OnOverviewOrSplitviewModeChanged() {
   caption_button_container_->SetVisible(should_show_caption_buttons);
   if (hosted_app_button_container())
     hosted_app_button_container()->SetVisible(should_show_caption_buttons);
+
+  // The entire frame should be repainted for v1 apps, since its visibility can
+  // change (see also ShouldPaint()). Do not invoke this on normal browser
+  // windows since it does not have to repaint frame except for the caption
+  // buttons and repainting might cause stuttering of the animation. See
+  // https://crbug.com/949227.
+  if (!browser_view()->IsBrowserTypeNormal())
+    SchedulePaint();
 }
 
 std::unique_ptr<ash::FrameHeader>
