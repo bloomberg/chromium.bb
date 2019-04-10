@@ -327,7 +327,7 @@ class AutofillWalletMetadataSyncBridgeTest : public testing::Test {
     for (const WalletMetadataSpecifics& specifics : remote_data) {
       updates.push_back(SpecificsToUpdateResponse(specifics));
     }
-    real_processor_->OnUpdateReceived(state, updates);
+    real_processor_->OnUpdateReceived(state, std::move(updates));
   }
 
   void ReceiveTombstones(
@@ -344,7 +344,7 @@ class AutofillWalletMetadataSyncBridgeTest : public testing::Test {
       updates.push_back(
           SpecificsToUpdateResponse(specifics, /*is_deleted=*/true));
     }
-    real_processor_->OnUpdateReceived(state, updates);
+    real_processor_->OnUpdateReceived(state, std::move(updates));
   }
 
   EntityData SpecificsToEntity(const WalletMetadataSpecifics& specifics,
@@ -362,12 +362,12 @@ class AutofillWalletMetadataSyncBridgeTest : public testing::Test {
     return data;
   }
 
-  syncer::UpdateResponseData SpecificsToUpdateResponse(
+  std::unique_ptr<syncer::UpdateResponseData> SpecificsToUpdateResponse(
       const WalletMetadataSpecifics& specifics,
       bool is_deleted = false) {
-    syncer::UpdateResponseData data;
-    data.entity = SpecificsToEntity(specifics, is_deleted).PassToPtr();
-    data.response_version = response_version;
+    auto data = std::make_unique<syncer::UpdateResponseData>();
+    data->entity = SpecificsToEntity(specifics, is_deleted).PassToPtr();
+    data->response_version = response_version;
     return data;
   }
 

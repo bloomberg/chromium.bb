@@ -21,9 +21,6 @@ CommitResponseData::~CommitResponseData() {}
 
 UpdateResponseData::UpdateResponseData() {}
 
-UpdateResponseData::UpdateResponseData(const UpdateResponseData& other) =
-    default;
-
 UpdateResponseData::~UpdateResponseData() {}
 
 size_t EstimateMemoryUsage(const CommitRequestData& value) {

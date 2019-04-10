@@ -276,7 +276,7 @@ class AutofillWalletSyncBridgeTest : public UssSwitchToggler,
     for (const AutofillWalletSpecifics& specifics : remote_data) {
       initial_updates.push_back(SpecificsToUpdateResponse(specifics));
     }
-    real_processor_->OnUpdateReceived(state, initial_updates);
+    real_processor_->OnUpdateReceived(state, std::move(initial_updates));
   }
 
   void ExpectAddressesDiffInHistograms(int added, int removed) {
@@ -350,10 +350,10 @@ class AutofillWalletSyncBridgeTest : public UssSwitchToggler,
     return data;
   }
 
-  syncer::UpdateResponseData SpecificsToUpdateResponse(
+  std::unique_ptr<syncer::UpdateResponseData> SpecificsToUpdateResponse(
       const AutofillWalletSpecifics& specifics) {
-    syncer::UpdateResponseData data;
-    data.entity = SpecificsToEntity(specifics).PassToPtr();
+    auto data = std::make_unique<syncer::UpdateResponseData>();
+    data->entity = SpecificsToEntity(specifics).PassToPtr();
     return data;
   }
 

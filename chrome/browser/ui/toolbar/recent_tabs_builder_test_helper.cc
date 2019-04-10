@@ -204,7 +204,7 @@ void RecentTabsBuilderTestHelper::ExportToSessionSync(
 
   sync_pb::ModelTypeState model_type_state;
   model_type_state.set_initial_sync_done(true);
-  processor->OnUpdateReceived(model_type_state, updates);
+  processor->OnUpdateReceived(model_type_state, std::move(updates));
   // ClientTagBasedModelTypeProcessor uses ModelTypeProcessorProxy during
   // activation, which involves task posting for receiving updates.
   base::RunLoop().RunUntilIdle();
@@ -301,7 +301,8 @@ sync_pb::SessionSpecifics RecentTabsBuilderTestHelper::BuildTabSpecifics(
   return specifics;
 }
 
-syncer::UpdateResponseData RecentTabsBuilderTestHelper::BuildUpdateResponseData(
+std::unique_ptr<syncer::UpdateResponseData>
+RecentTabsBuilderTestHelper::BuildUpdateResponseData(
     const sync_pb::SessionSpecifics& specifics,
     base::Time timestamp) {
   syncer::EntityData entity;
@@ -312,8 +313,8 @@ syncer::UpdateResponseData RecentTabsBuilderTestHelper::BuildUpdateResponseData(
       syncer::SESSIONS, sync_sessions::SessionStore::GetClientTag(specifics));
   entity.id = entity.client_tag_hash;
 
-  syncer::UpdateResponseData update;
-  update.entity = entity.PassToPtr();
-  update.response_version = ++next_response_version_;
+  auto update = std::make_unique<syncer::UpdateResponseData>();
+  update->entity = entity.PassToPtr();
+  update->response_version = ++next_response_version_;
   return update;
 }

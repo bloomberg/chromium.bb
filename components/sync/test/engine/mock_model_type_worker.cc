@@ -146,15 +146,15 @@ void MockModelTypeWorker::UpdateFromServer(
   UpdateResponseDataList updates;
   updates.push_back(
       GenerateUpdateData(tag_hash, specifics, version_offset, ekn));
-  UpdateFromServer(updates);
+  UpdateFromServer(std::move(updates));
 }
 
-void MockModelTypeWorker::UpdateFromServer(
-    const UpdateResponseDataList& updates) {
-  processor_->OnUpdateReceived(model_type_state_, updates);
+void MockModelTypeWorker::UpdateFromServer(UpdateResponseDataList updates) {
+  processor_->OnUpdateReceived(model_type_state_, std::move(updates));
 }
 
-UpdateResponseData MockModelTypeWorker::GenerateUpdateData(
+std::unique_ptr<syncer::UpdateResponseData>
+MockModelTypeWorker::GenerateUpdateData(
     const std::string& tag_hash,
     const sync_pb::EntitySpecifics& specifics,
     int64_t version_offset,
@@ -179,23 +179,24 @@ UpdateResponseData MockModelTypeWorker::GenerateUpdateData(
                              ? "encrypted"
                              : data.specifics.preference().name();
 
-  UpdateResponseData response_data;
-  response_data.entity = data.PassToPtr();
-  response_data.response_version = version;
-  response_data.encryption_key_name = ekn;
+  auto response_data = std::make_unique<syncer::UpdateResponseData>();
+  response_data->entity = data.PassToPtr();
+  response_data->response_version = version;
+  response_data->encryption_key_name = ekn;
 
   return response_data;
 }
 
-UpdateResponseData MockModelTypeWorker::GenerateUpdateData(
+std::unique_ptr<syncer::UpdateResponseData>
+MockModelTypeWorker::GenerateUpdateData(
     const std::string& tag_hash,
     const sync_pb::EntitySpecifics& specifics) {
   return GenerateUpdateData(tag_hash, specifics, 1,
                             model_type_state_.encryption_key_name());
 }
 
-UpdateResponseData MockModelTypeWorker::GenerateTypeRootUpdateData(
-    const ModelType& model_type) {
+std::unique_ptr<syncer::UpdateResponseData>
+MockModelTypeWorker::GenerateTypeRootUpdateData(const ModelType& model_type) {
   EntityData data;
   data.id = syncer::ModelTypeToRootTag(model_type);
   data.parent_id = "r";
@@ -206,10 +207,10 @@ UpdateResponseData MockModelTypeWorker::GenerateTypeRootUpdateData(
   data.creation_time = base::Time::UnixEpoch();
   data.modification_time = base::Time::UnixEpoch();
 
-  UpdateResponseData response_data;
-  response_data.entity = data.PassToPtr();
+  auto response_data = std::make_unique<syncer::UpdateResponseData>();
+  response_data->entity = data.PassToPtr();
   // Similar to what's done in the loopback_server.
-  response_data.response_version = 0;
+  response_data->response_version = 0;
   return response_data;
 }
 
@@ -228,14 +229,14 @@ void MockModelTypeWorker::TombstoneFromServer(const std::string& tag_hash) {
       data.creation_time + base::TimeDelta::FromSeconds(version);
   data.non_unique_name = "Name Non Unique";
 
-  UpdateResponseData response_data;
-  response_data.entity = data.PassToPtr();
-  response_data.response_version = version;
-  response_data.encryption_key_name = model_type_state_.encryption_key_name();
+  auto response_data = std::make_unique<UpdateResponseData>();
+  response_data->entity = data.PassToPtr();
+  response_data->response_version = version;
+  response_data->encryption_key_name = model_type_state_.encryption_key_name();
 
   UpdateResponseDataList list;
-  list.push_back(response_data);
-  processor_->OnUpdateReceived(model_type_state_, list);
+  list.push_back(std::move(response_data));
+  processor_->OnUpdateReceived(model_type_state_, std::move(list));
 }
 
 void MockModelTypeWorker::AckOnePendingCommit() {
@@ -296,9 +297,9 @@ void MockModelTypeWorker::UpdateWithEncryptionKey(const std::string& ekn) {
 
 void MockModelTypeWorker::UpdateWithEncryptionKey(
     const std::string& ekn,
-    const UpdateResponseDataList& update) {
+    UpdateResponseDataList update) {
   model_type_state_.set_encryption_key_name(ekn);
-  processor_->OnUpdateReceived(model_type_state_, update);
+  processor_->OnUpdateReceived(model_type_state_, std::move(update));
 }
 
 void MockModelTypeWorker::UpdateWithGarbageCollection(
@@ -308,10 +309,10 @@ void MockModelTypeWorker::UpdateWithGarbageCollection(
 }
 
 void MockModelTypeWorker::UpdateWithGarbageCollection(
-    const UpdateResponseDataList& update,
+    UpdateResponseDataList update,
     const sync_pb::GarbageCollectionDirective& gcd) {
   *model_type_state_.mutable_progress_marker()->mutable_gc_directive() = gcd;
-  processor_->OnUpdateReceived(model_type_state_, update);
+  processor_->OnUpdateReceived(model_type_state_, std::move(update));
 }
 
 std::string MockModelTypeWorker::GenerateId(const std::string& tag_hash) {

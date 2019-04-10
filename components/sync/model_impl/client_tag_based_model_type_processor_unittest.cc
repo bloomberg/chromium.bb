@@ -459,7 +459,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldFilterOutInitialRootNodes) {
   UpdateResponseDataList update;
   update.push_back(worker()->GenerateTypeRootUpdateData(ModelType::SESSIONS));
 
-  worker()->UpdateFromServer(update);
+  worker()->UpdateFromServer(std::move(update));
   // Root node update should be filtered out.
   EXPECT_EQ(0U, ProcessorEntityCount());
 }
@@ -1026,7 +1026,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   UpdateResponseDataList update;
   update.push_back(worker()->GenerateTypeRootUpdateData(ModelType::SESSIONS));
 
-  worker()->UpdateFromServer(update);
+  worker()->UpdateFromServer(std::move(update));
   // Root node update should be filtered out.
   EXPECT_EQ(0U, ProcessorEntityCount());
 }
@@ -1594,7 +1594,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldReencryptUpdatesWithNewKey) {
   update.push_back(worker()->GenerateUpdateData(
       kHash3, GenerateSpecifics(kKey3, kValue3), 1, "k2"));
   // Set desired encryption key to k2 to force updates to some items.
-  worker()->UpdateWithEncryptionKey("k2", update);
+  worker()->UpdateWithEncryptionKey("k2", std::move(update));
 
   OnCommitDataLoaded();
   // kKey1 needed data so once that's loaded, kKey1 and kKey2 are queued for
@@ -1724,7 +1724,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   updates.push_back(worker()->GenerateUpdateData(
       /*tag_hash=*/"", GenerateSpecifics(kKey1, kValue1), 1, "k1"));
 
-  worker()->UpdateFromServer(updates);
+  worker()->UpdateFromServer(std::move(updates));
 
   // Verify that the data wasn't actually stored.
   EXPECT_EQ(0U, db()->metadata_count());
@@ -1743,7 +1743,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
       /*tag_hash=*/"", GenerateSpecifics(kKey1, kValue1), 1, "k1"));
 
   base::HistogramTester histogram_tester;
-  worker()->UpdateFromServer(updates);
+  worker()->UpdateFromServer(std::move(updates));
 
   // The duration should get recorded.
   histogram_tester.ExpectTotalCount(
@@ -1763,7 +1763,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   UpdateResponseDataList updates;
   updates.push_back(worker()->GenerateUpdateData(
       /*tag_hash=*/"", GenerateSpecifics(kKey1, kValue1), 1, "k1"));
-  worker()->UpdateFromServer(updates);
+  worker()->UpdateFromServer(std::move(updates));
 
   ASSERT_EQ(1, bridge()->merge_call_count());
   histogram_tester.ExpectTotalCount(
@@ -1793,7 +1793,8 @@ TEST_F(FullUpdateClientTagBasedModelTypeProcessorTest,
   // Create 2 entries, one is version 3, another is version 1.
   sync_pb::GarbageCollectionDirective garbage_collection_directive;
   garbage_collection_directive.set_version_watermark(1);
-  worker()->UpdateWithGarbageCollection(updates, garbage_collection_directive);
+  worker()->UpdateWithGarbageCollection(std::move(updates),
+                                        garbage_collection_directive);
   WriteItemAndAck(kKey1, kValue1);
   WriteItemAndAck(kKey2, kValue2);
 
@@ -1823,15 +1824,15 @@ TEST_F(FullUpdateClientTagBasedModelTypeProcessorTest,
   InitializeToMetadataLoaded(/*initial_sync_done=*/false);
   OnSyncStarting("SomeAccountId", STORAGE_IN_MEMORY);
 
-  UpdateResponseDataList updates;
-  updates.push_back(worker()->GenerateUpdateData(
+  UpdateResponseDataList updates1;
+  updates1.push_back(worker()->GenerateUpdateData(
       /*tag_hash=*/"", GenerateSpecifics(kKey1, kValue1), 1, "k1"));
   sync_pb::GarbageCollectionDirective garbage_collection_directive;
   garbage_collection_directive.set_version_watermark(1);
 
   {
     base::HistogramTester histogram_tester;
-    worker()->UpdateWithGarbageCollection(updates,
+    worker()->UpdateWithGarbageCollection(std::move(updates1),
                                           garbage_collection_directive);
     ASSERT_EQ(1, bridge()->merge_call_count());
 
@@ -1842,9 +1843,12 @@ TEST_F(FullUpdateClientTagBasedModelTypeProcessorTest,
   }
 
   {
+    UpdateResponseDataList updates2;
+    updates2.push_back(worker()->GenerateUpdateData(
+        /*tag_hash=*/"", GenerateSpecifics(kKey1, kValue1), 1, "k1"));
     base::HistogramTester histogram_tester;
     // Send one more update with the same data.
-    worker()->UpdateWithGarbageCollection(updates,
+    worker()->UpdateWithGarbageCollection(std::move(updates2),
                                           garbage_collection_directive);
     ASSERT_EQ(2, bridge()->merge_call_count());
 
@@ -1922,7 +1926,8 @@ TEST_F(WalletDataClientTagBasedModelTypeProcessorTest,
       /*tag_hash=*/"", GenerateSpecifics(kKey1, kValue1), 1, "k1"));
   sync_pb::GarbageCollectionDirective garbage_collection_directive;
   garbage_collection_directive.set_version_watermark(1);
-  worker()->UpdateWithGarbageCollection(updates, garbage_collection_directive);
+  worker()->UpdateWithGarbageCollection(std::move(updates),
+                                        garbage_collection_directive);
 
   // Verify that the data was stored.
   EXPECT_EQ(1U, db()->metadata_count());
@@ -1938,7 +1943,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldIgnoreRemoteEncryption) {
   EntitySpecifics specifics2 = bridge()->WriteItem(kKey1, kValue2);
   UpdateResponseDataList update;
   update.push_back(worker()->GenerateUpdateData(kHash1, specifics1, 1, "k1"));
-  worker()->UpdateWithEncryptionKey("k1", update);
+  worker()->UpdateWithEncryptionKey("k1", std::move(update));
 
   EXPECT_EQ(2U, worker()->GetNumPendingCommits());
   worker()->VerifyNthPendingCommit(1, {kHash1}, {specifics2});
@@ -1959,7 +1964,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
 
   UpdateResponseDataList update;
   update.push_back(worker()->GenerateUpdateData(kHash1, specifics1, 1, "k1"));
-  worker()->UpdateWithEncryptionKey("k1", update);
+  worker()->UpdateWithEncryptionKey("k1", std::move(update));
 
   EXPECT_EQ(2U, worker()->GetNumPendingCommits());
   worker()->VerifyNthPendingCommit(1, {kHash1}, {specifics2});
@@ -1985,7 +1990,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldUpdateStorageKey) {
   updates.push_back(
       worker()->GenerateUpdateData(kHash3, GenerateSpecifics(kKey3, kValue3)));
   bridge()->SetKeyToIgnore(kKey3);
-  worker()->UpdateFromServer(updates);
+  worker()->UpdateFromServer(std::move(updates));
   EXPECT_EQ(1, bridge()->merge_call_count());
   EXPECT_EQ(1U, ProcessorEntityCount());
   // Metadata should be written under kKey1. This means that UpdateStorageKey
@@ -2021,7 +2026,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   UpdateResponseDataList update;
   update.push_back(worker()->GenerateUpdateData(
       kHash1, GenerateSpecifics(kKey1, kValue1), 1, "ek1"));
-  worker()->UpdateWithEncryptionKey("ek2", update);
+  worker()->UpdateWithEncryptionKey("ek2", std::move(update));
   worker()->VerifyPendingCommits({{kHash1}});
 }
 

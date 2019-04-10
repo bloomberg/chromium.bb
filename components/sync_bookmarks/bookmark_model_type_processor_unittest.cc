@@ -5,6 +5,7 @@
 #include "components/sync_bookmarks/bookmark_model_type_processor.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind_helpers.h"
 #include "base/strings/utf_string_conversions.h"
@@ -47,7 +48,7 @@ struct BookmarkInfo {
   std::string server_tag;
 };
 
-syncer::UpdateResponseData CreateUpdateResponseData(
+std::unique_ptr<syncer::UpdateResponseData> CreateUpdateResponseData(
     const BookmarkInfo& bookmark_info,
     const syncer::UniquePosition& unique_position,
     int response_version) {
@@ -66,9 +67,9 @@ syncer::UpdateResponseData CreateUpdateResponseData(
     bookmark_specifics->set_url(bookmark_info.url);
   }
 
-  syncer::UpdateResponseData response_data;
-  response_data.entity = data.PassToPtr();
-  response_data.response_version = response_version;
+  auto response_data = std::make_unique<syncer::UpdateResponseData>();
+  response_data->entity = data.PassToPtr();
+  response_data->response_version = response_version;
   return response_data;
 }
 
@@ -128,7 +129,7 @@ void InitWithSyncedBookmarks(const std::vector<BookmarkInfo>& bookmarks,
     updates.push_back(
         CreateUpdateResponseData(bookmark, pos, /*response_version=*/0));
   }
-  processor->OnUpdateReceived(CreateDummyModelTypeState(), updates);
+  processor->OnUpdateReceived(CreateDummyModelTypeState(), std::move(updates));
   AssertState(processor, bookmarks);
 }
 
@@ -211,7 +212,8 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteCreation) {
       bookmark_model()->bookmark_bar_node();
   EXPECT_TRUE(bookmarkbar->empty());
 
-  processor()->OnUpdateReceived(CreateDummyModelTypeState(), updates);
+  processor()->OnUpdateReceived(CreateDummyModelTypeState(),
+                                std::move(updates));
 
   ASSERT_THAT(bookmarkbar->GetChild(0), NotNull());
   EXPECT_THAT(bookmarkbar->GetChild(0)->GetTitle(), Eq(ASCIIToUTF16(kTitle)));
@@ -250,7 +252,8 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteUpdate) {
                                 /*server_tag=*/std::string()},
                                kRandomPosition, /*response_version=*/1));
 
-  processor()->OnUpdateReceived(CreateDummyModelTypeState(), updates);
+  processor()->OnUpdateReceived(CreateDummyModelTypeState(),
+                                std::move(updates));
 
   // Check if the bookmark has been updated properly.
   EXPECT_THAT(bookmark_bar->GetChild(0), Eq(bookmark_node));
@@ -287,10 +290,11 @@ TEST_F(
       CreateUpdateResponseData({kNodeId, kTitle, kUrl, kBookmarkBarId,
                                 /*server_tag=*/std::string()},
                                kRandomPosition, /*response_version=*/1));
-  updates[0].response_version++;
+  updates[0]->response_version++;
 
   EXPECT_CALL(*schedule_save_closure(), Run());
-  processor()->OnUpdateReceived(CreateDummyModelTypeState(), updates);
+  processor()->OnUpdateReceived(CreateDummyModelTypeState(),
+                                std::move(updates));
 }
 
 TEST_F(BookmarkModelTypeProcessorTest, ShouldDecodeSyncMetadata) {
@@ -476,17 +480,18 @@ TEST_F(BookmarkModelTypeProcessorTest,
 
   // Push an update that is encrypted with the new encryption key.
   const std::string kNodeId = "node_id";
-  syncer::UpdateResponseData response_data = CreateUpdateResponseData(
-      {kNodeId, "title", "http://www.url.com", /*parent_id=*/kBookmarkBarId,
-       /*server_tag=*/std::string()},
-      syncer::UniquePosition::InitialPosition(
-          syncer::UniquePosition::RandomSuffix()),
-      /*response_version=*/0);
-  response_data.encryption_key_name = kEncryptionKeyName;
+  std::unique_ptr<syncer::UpdateResponseData> response_data =
+      CreateUpdateResponseData(
+          {kNodeId, "title", "http://www.url.com", /*parent_id=*/kBookmarkBarId,
+           /*server_tag=*/std::string()},
+          syncer::UniquePosition::InitialPosition(
+              syncer::UniquePosition::RandomSuffix()),
+          /*response_version=*/0);
+  response_data->encryption_key_name = kEncryptionKeyName;
 
   syncer::UpdateResponseDataList updates;
-  updates.push_back(response_data);
-  processor()->OnUpdateReceived(model_type_state, updates);
+  updates.push_back(std::move(response_data));
+  processor()->OnUpdateReceived(model_type_state, std::move(updates));
 
   // The bookmarks shouldn't be marked for committing.
   ASSERT_THAT(tracker->GetEntityForSyncId(kNodeId), NotNull());

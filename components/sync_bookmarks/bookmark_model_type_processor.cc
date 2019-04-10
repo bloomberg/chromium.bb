@@ -168,7 +168,7 @@ void BookmarkModelTypeProcessor::OnCommitCompleted(
 
 void BookmarkModelTypeProcessor::OnUpdateReceived(
     const sync_pb::ModelTypeState& model_type_state,
-    const syncer::UpdateResponseDataList& updates) {
+    syncer::UpdateResponseDataList updates) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!model_type_state.cache_guid().empty());
   DCHECK_EQ(model_type_state.cache_guid(), cache_guid_);

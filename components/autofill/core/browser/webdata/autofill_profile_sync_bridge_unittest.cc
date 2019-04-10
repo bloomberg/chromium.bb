@@ -264,7 +264,7 @@ class AutofillProfileSyncBridgeTest : public testing::Test {
     for (const AutofillProfileSpecifics& specifics : remote_data) {
       initial_updates.push_back(SpecificsToUpdateResponse(specifics));
     }
-    real_processor_->OnUpdateReceived(state, initial_updates);
+    real_processor_->OnUpdateReceived(state, std::move(initial_updates));
   }
 
   void ApplySyncChanges(const EntityChangeList& changes) {
@@ -301,10 +301,10 @@ class AutofillProfileSyncBridgeTest : public testing::Test {
     return data.PassToPtr();
   }
 
-  syncer::UpdateResponseData SpecificsToUpdateResponse(
+  std::unique_ptr<syncer::UpdateResponseData> SpecificsToUpdateResponse(
       const AutofillProfileSpecifics& specifics) {
-    syncer::UpdateResponseData data;
-    data.entity = SpecificsToEntity(specifics);
+    auto data = std::make_unique<syncer::UpdateResponseData>();
+    data->entity = SpecificsToEntity(specifics);
     return data;
   }
 
