@@ -5,12 +5,16 @@
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 
 #include "base/bind.h"
+#include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
+#include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 
 UpdatedProgressMarkerChecker::UpdatedProgressMarkerChecker(
     syncer::ProfileSyncService* service)
     : SingleClientStatusChangeChecker(service), weak_ptr_factory_(this) {
+  DCHECK(sync_datatype_helper::test()->TestUsesSelfNotifications());
+
   // HasUnsyncedItemsForTest() posts a task to the sync thread which guarantees
   // that all tasks posted to the sync thread before this constructor have been
   // processed.

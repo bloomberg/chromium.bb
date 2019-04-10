@@ -116,15 +116,6 @@ class EnableDisableSingleClientTest : public SyncTest {
         .num_updates_downloaded_total;
   }
 
-  sync_pb::ClientToServerMessage TriggerGetUpdatesCycleAndWait() {
-    TriggerSyncForModelTypes(0, {syncer::BOOKMARKS});
-    EXPECT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
-
-    sync_pb::ClientToServerMessage message;
-    EXPECT_TRUE(GetFakeServer()->GetLastGetUpdatesMessage(&message));
-    return message;
-  }
-
  protected:
   void SetupTest(bool all_types_enabled) {
     ASSERT_TRUE(SetupClients());
@@ -444,7 +435,24 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest,
   EXPECT_EQ(cache_guid, prefs.GetCacheGuid());
 }
 
-IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, PRE_ResendsBagOfChips) {
+class EnableDisableSingleClientSelfNotifyTest
+    : public EnableDisableSingleClientTest {
+ public:
+  // UpdatedProgressMarkerChecker relies on the 'self-notify' feature.
+  bool TestUsesSelfNotifications() override { return true; }
+
+  sync_pb::ClientToServerMessage TriggerGetUpdatesCycleAndWait() {
+    TriggerSyncForModelTypes(0, {syncer::BOOKMARKS});
+    EXPECT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
+
+    sync_pb::ClientToServerMessage message;
+    EXPECT_TRUE(GetFakeServer()->GetLastGetUpdatesMessage(&message));
+    return message;
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientSelfNotifyTest,
+                       PRE_ResendsBagOfChips) {
   sync_pb::ChipBag bag_of_chips;
   bag_of_chips.set_server_chips(kTestServerChips);
   ASSERT_FALSE(base::IsStringUTF8(bag_of_chips.SerializeAsString()));
@@ -460,11 +468,12 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, PRE_ResendsBagOfChips) {
   EXPECT_EQ(kTestServerChips, message.bag_of_chips().server_chips());
 }
 
-IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, ResendsBagOfChips) {
+IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientSelfNotifyTest,
+                       ResendsBagOfChips) {
   ASSERT_TRUE(SetupClients());
   SyncPrefs prefs(GetProfile(0)->GetPrefs());
   ASSERT_NE("", prefs.GetBagOfChips());
-  ASSERT_TRUE(GetClient(0)->AwaitEngineInitialization());
+  ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion());
 
   sync_pb::ClientToServerMessage message = TriggerGetUpdatesCycleAndWait();
   EXPECT_TRUE(message.has_bag_of_chips());
