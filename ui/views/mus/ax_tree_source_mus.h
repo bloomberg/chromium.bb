@@ -20,9 +20,7 @@ class AXAuraObjWrapper;
 class VIEWS_MUS_EXPORT AXTreeSourceMus : public AXTreeSourceViews {
  public:
   // |root| must outlive this object.
-  AXTreeSourceMus(AXAuraObjWrapper* root,
-                  const ui::AXTreeID& tree_id,
-                  AXAuraObjCache* cache);
+  AXTreeSourceMus(AXAuraObjWrapper* root, const ui::AXTreeID& tree_id);
   ~AXTreeSourceMus() override;
 
   void set_device_scale_factor(float scale) { device_scale_factor_ = scale; }

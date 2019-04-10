@@ -157,10 +157,7 @@ IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest, WebAppearsOnce) {
 
 IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest,
                        TransientFocusChangesAreSuppressed) {
-  auto cache = std::make_unique<views::AXAuraObjCache>();
-  auto* cache_ptr = cache.get();
   AutomationManagerAura* manager = AutomationManagerAura::GetInstance();
-  manager->set_ax_aura_obj_cache_for_testing(std::move(cache));
   manager->Enable();
 
   views::Widget* widget = new views::Widget;
@@ -170,23 +167,24 @@ IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest,
   widget->Show();
   widget->Activate();
 
-  cache_ptr->set_focused_widget_for_testing(widget);
+  views::AXAuraObjCache* cache = views::AXAuraObjCache::GetInstance();
+  cache->set_focused_widget_for_testing(widget);
 
   views::View* view1 = new views::View();
   view1->GetViewAccessibility().OverrideName("view1");
   view1->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   widget->GetRootView()->AddChildView(view1);
-  views::AXAuraObjWrapper* wrapper1 = cache_ptr->GetOrCreate(view1);
+  views::AXAuraObjWrapper* wrapper1 = cache->GetOrCreate(view1);
   views::View* view2 = new views::View();
   view2->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   view2->GetViewAccessibility().OverrideName("view2");
   widget->GetRootView()->AddChildView(view2);
-  views::AXAuraObjWrapper* wrapper2 = cache_ptr->GetOrCreate(view2);
+  views::AXAuraObjWrapper* wrapper2 = cache->GetOrCreate(view2);
   views::View* view3 = new views::View();
   view3->GetViewAccessibility().OverrideName("view3");
   view3->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   widget->GetRootView()->AddChildView(view3);
-  views::AXAuraObjWrapper* wrapper3 = cache_ptr->GetOrCreate(view3);
+  views::AXAuraObjWrapper* wrapper3 = cache->GetOrCreate(view3);
 
   AutomationEventWaiter waiter;
 
@@ -209,7 +207,7 @@ IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest,
   EXPECT_FALSE(waiter.WasNodeIdFocused(wrapper2->GetUniqueId()));
   EXPECT_TRUE(waiter.WasNodeIdFocused(wrapper3->GetUniqueId()));
 
-  cache_ptr->set_focused_widget_for_testing(nullptr);
+  cache->set_focused_widget_for_testing(nullptr);
 
   AddFailureOnWidgetAccessibilityError(widget);
 }

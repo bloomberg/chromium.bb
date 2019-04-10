@@ -152,11 +152,11 @@ TEST_F(AXAshWindowUtilsTest, WalkDownToClientWindow) {
 // serialization code.
 TEST_F(AXAshWindowUtilsTest, SerializeNodeTree) {
   // Build a desktop tree serializer similar to AutomationManagerAura.
-  AXAuraObjCache cache;
-  cache.OnRootWindowObjCreated(Shell::GetPrimaryRootWindow());
-  AXRootObjWrapper root_wrapper(nullptr /* delegate */, &cache);
+  AXAuraObjCache* cache = AXAuraObjCache::GetInstance();
+  cache->OnRootWindowObjCreated(Shell::GetPrimaryRootWindow());
+  AXRootObjWrapper root_wrapper(nullptr /* delegate */);
   AXTreeSourceViews ax_tree_source(&root_wrapper,
-                                   ui::AXTreeID::CreateNewAXTreeID(), &cache);
+                                   ui::AXTreeID::CreateNewAXTreeID());
   AuraAXTreeSerializer ax_serializer(&ax_tree_source);
 
   // Initial tree is valid.
@@ -177,7 +177,8 @@ TEST_F(AXAshWindowUtilsTest, SerializeNodeTree) {
 
   // Serialize walking up from the textfield.
   ui::AXTreeUpdate label_update;
-  AXAuraObjWrapper* wrapper = cache.GetOrCreate(textfield_);
+  AXAuraObjWrapper* wrapper =
+      AXAuraObjCache::GetInstance()->GetOrCreate(textfield_);
   ASSERT_TRUE(ax_serializer.SerializeChanges(wrapper, &label_update));
   ASSERT_TRUE(ax_tree.Unserialize(label_update));
 
@@ -191,8 +192,8 @@ TEST_F(AXAshWindowUtilsTest, SerializeNodeTree) {
   // AXAuraObjCache can reach into a client Widget to find a focused view.
   textfield_->RequestFocus();
   EXPECT_TRUE(textfield_->HasFocus());
-  AXAuraObjWrapper* textfield_wrapper = cache.GetOrCreate(textfield_);
-  EXPECT_EQ(textfield_wrapper, cache.GetFocus());
+  AXAuraObjWrapper* textfield_wrapper = cache->GetOrCreate(textfield_);
+  EXPECT_EQ(textfield_wrapper, cache->GetFocus());
 }
 
 TEST_F(AXAshWindowUtilsTest, IsRootWindow) {

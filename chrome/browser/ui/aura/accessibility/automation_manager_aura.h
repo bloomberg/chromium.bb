@@ -73,11 +73,6 @@ class AutomationManagerAura : public ui::AXActionHandler,
     event_bundle_sink_ = sink;
   }
 
-  void set_ax_aura_obj_cache_for_testing(
-      std::unique_ptr<views::AXAuraObjCache> cache) {
-    cache_ = std::move(cache);
-  }
-
  private:
   friend class base::NoDestructor<AutomationManagerAura>;
 
@@ -126,8 +121,6 @@ class AutomationManagerAura : public ui::AXActionHandler,
   ui::AXEventBundleSink* event_bundle_sink_ = nullptr;
 
   std::unique_ptr<views::AccessibilityAlertWindow> alert_window_;
-
-  std::unique_ptr<views::AXAuraObjCache> cache_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationManagerAura);
 };

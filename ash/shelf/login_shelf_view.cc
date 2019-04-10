@@ -48,7 +48,7 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
-#include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/accessibility/ax_aura_obj_cache.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/controls/button/label_button.h"
@@ -456,12 +456,16 @@ void LoginShelfView::AboutToRequestFocusFromTabTraversal(bool reverse) {
 
 void LoginShelfView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   if (LockScreen::HasInstance()) {
-    GetViewAccessibility().OverridePreviousFocus(LockScreen::Get()->widget());
+    int previous_id = views::AXAuraObjCache::GetInstance()->GetID(
+        LockScreen::Get()->widget());
+    node_data->AddIntAttribute(ax::mojom::IntAttribute::kPreviousFocusId,
+                               previous_id);
   }
 
   Shelf* shelf = Shelf::ForWindow(GetWidget()->GetNativeWindow());
-
-  GetViewAccessibility().OverrideNextFocus(shelf->GetStatusAreaWidget());
+  int next_id =
+      views::AXAuraObjCache::GetInstance()->GetID(shelf->GetStatusAreaWidget());
+  node_data->AddIntAttribute(ax::mojom::IntAttribute::kNextFocusId, next_id);
   node_data->role = ax::mojom::Role::kToolbar;
   node_data->SetName(l10n_util::GetStringUTF8(IDS_ASH_SHELF_ACCESSIBLE_NAME));
 }

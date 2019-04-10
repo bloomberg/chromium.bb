@@ -56,7 +56,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/text_constants.h"
-#include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/accessibility/ax_aura_obj_cache.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
@@ -589,9 +589,13 @@ void LockContentsView::AboutToRequestFocusFromTabTraversal(bool reverse) {
 void LockContentsView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   Shelf* shelf = Shelf::ForWindow(GetWidget()->GetNativeWindow());
   ShelfWidget* shelf_widget = shelf->shelf_widget();
-  GetViewAccessibility().OverrideNextFocus(shelf_widget);
+  int next_id = views::AXAuraObjCache::GetInstance()->GetID(shelf_widget);
+  node_data->AddIntAttribute(ax::mojom::IntAttribute::kNextFocusId, next_id);
 
-  GetViewAccessibility().OverridePreviousFocus(shelf->GetStatusAreaWidget());
+  int previous_id =
+      views::AXAuraObjCache::GetInstance()->GetID(shelf->GetStatusAreaWidget());
+  node_data->AddIntAttribute(ax::mojom::IntAttribute::kPreviousFocusId,
+                             previous_id);
   node_data->SetNameExplicitlyEmpty();
 }
 
