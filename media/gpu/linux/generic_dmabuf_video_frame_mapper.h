@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_TEST_GENERIC_DMABUF_VIDEO_FRAME_MAPPER_H_
-#define MEDIA_GPU_TEST_GENERIC_DMABUF_VIDEO_FRAME_MAPPER_H_
+#ifndef MEDIA_GPU_LINUX_GENERIC_DMABUF_VIDEO_FRAME_MAPPER_H_
+#define MEDIA_GPU_LINUX_GENERIC_DMABUF_VIDEO_FRAME_MAPPER_H_
 
-#include "media/gpu/test/video_frame_mapper.h"
+#include "media/gpu/media_gpu_export.h"
+#include "media/gpu/video_frame_mapper.h"
 
 namespace media {
-namespace test {
 
-// VideoFrameMapper for DMAbuf-backed VideoFrame.
-class GenericDmaBufVideoFrameMapper : public VideoFrameMapper {
+// The GenericDmaBufVideoFrameMapper implements functionality to map DMABUF-
+// backed video frames into memory.
+class MEDIA_GPU_EXPORT GenericDmaBufVideoFrameMapper : public VideoFrameMapper {
  public:
   GenericDmaBufVideoFrameMapper() = default;
   ~GenericDmaBufVideoFrameMapper() override = default;
@@ -22,6 +23,5 @@ class GenericDmaBufVideoFrameMapper : public VideoFrameMapper {
   DISALLOW_COPY_AND_ASSIGN(GenericDmaBufVideoFrameMapper);
 };
 
-}  // namespace test
 }  // namespace media
-#endif  // MEDIA_GPU_TEST_GENERIC_DMABUF_VIDEO_FRAME_MAPPER_H_
+#endif  // MEDIA_GPU_LINUX_GENERIC_DMABUF_VIDEO_FRAME_MAPPER_H_

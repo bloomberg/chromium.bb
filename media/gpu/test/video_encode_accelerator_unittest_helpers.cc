@@ -7,13 +7,14 @@
 #include "base/bind_helpers.h"
 #include "build/build_config.h"
 #include "media/gpu/test/texture_ref.h"
-#include "media/gpu/test/video_frame_mapper_factory.h"
+#include "media/gpu/video_frame_mapper.h"
+#include "media/gpu/video_frame_mapper_factory.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/native_pixmap.h"
 
 #if defined(OS_POSIX)
 #include <sys/mman.h>
-#endif
+#endif  // defined(OS_POSIX)
 
 namespace media {
 namespace test {
@@ -28,7 +29,7 @@ bool BlitVideoFrame(scoped_refptr<VideoFrame> src_frame,
 
   scoped_refptr<VideoFrame> mapped_dst_frame = dst_frame;
   if (dst_frame->storage_type() == VideoFrame::STORAGE_DMABUFS) {
-    auto video_frame_mapper = test::VideoFrameMapperFactory::CreateMapper(true);
+    auto video_frame_mapper = VideoFrameMapperFactory::CreateMapper(true);
     LOG_ASSERT(video_frame_mapper);
     mapped_dst_frame = video_frame_mapper->Map(dst_frame);
     if (!mapped_dst_frame) {
@@ -47,7 +48,7 @@ bool BlitVideoFrame(scoped_refptr<VideoFrame> src_frame,
   }
   return true;
 }
-#endif
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace
 
@@ -71,7 +72,7 @@ scoped_refptr<VideoFrame> CreateDmabufFrameFromVideoFrame(
     LOG(ERROR) << "Failed to copy mapped buffer to dmabuf fds";
     return nullptr;
   }
-#endif
+#endif  // defined(OS_CHROMEOS)
   return dmabuf_frame;
 }
 

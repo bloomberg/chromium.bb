@@ -13,8 +13,8 @@
 #include "build/build_config.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/test/video_decode_accelerator_unittest_helpers.h"
-#include "media/gpu/test/video_frame_mapper.h"
-#include "media/gpu/test/video_frame_mapper_factory.h"
+#include "media/gpu/video_frame_mapper.h"
+#include "media/gpu/video_frame_mapper_factory.h"
 
 namespace media {
 namespace test {
@@ -30,7 +30,7 @@ std::unique_ptr<VideoFrameValidator> VideoFrameValidator::Create(
     LOG(ERROR) << "Failed to create VideoFrameMapper.";
     return nullptr;
   }
-#endif
+#endif  // defined(OS_CHROMEOS)
 
   auto video_frame_validator = base::WrapUnique(new VideoFrameValidator(
       expected_frame_checksums, std::move(video_frame_mapper),
@@ -125,7 +125,7 @@ void VideoFrameValidator::ProcessVideoFrameTask(
 #if defined(OS_LINUX)
   if (validated_frame->storage_type() == VideoFrame::STORAGE_DMABUFS)
     validated_frame = video_frame_mapper_->Map(std::move(validated_frame));
-#endif
+#endif  // defined(OS_LINUX)
 
   if (validated_frame->format() != validation_format_) {
     validated_frame =

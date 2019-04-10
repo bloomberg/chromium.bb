@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/test/generic_dmabuf_video_frame_mapper.h"
+#include "media/gpu/linux/generic_dmabuf_video_frame_mapper.h"
 
 #include <sys/mman.h>
 
@@ -14,7 +14,6 @@
 #include "media/gpu/macros.h"
 
 namespace media {
-namespace test {
 
 namespace {
 
@@ -120,5 +119,4 @@ scoped_refptr<VideoFrame> GenericDmaBufVideoFrameMapper::Map(
                                 plane_addrs, chunks, std::move(video_frame));
 }
 
-}  // namespace test
 }  // namespace media

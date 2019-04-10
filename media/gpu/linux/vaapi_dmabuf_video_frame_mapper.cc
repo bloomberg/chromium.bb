@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/test/vaapi_dmabuf_video_frame_mapper.h"
+#include "media/gpu/vaapi/vaapi_dmabuf_video_frame_mapper.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -15,12 +15,11 @@
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "media/video/picture.h"
 
-#if defined(OS_POSIX)
+#if defined(USE_OZONE) || defined(USE_EGL)
 #include "media/gpu/vaapi/vaapi_picture_native_pixmap.h"
-#endif
+#endif  // defined(USE_OZONE) || defined(USE_EGL)
 
 namespace media {
-namespace test {
 
 namespace {
 
@@ -116,11 +115,11 @@ scoped_refptr<VideoFrame> VaapiDmaBufVideoFrameMapper::Map(
   }
 
   gfx::GpuMemoryBufferHandle gmb_handle;
-#if defined(OS_POSIX)
+#if defined(USE_OZONE) || defined(USE_EGL)
   gmb_handle =
       VaapiPictureNativePixmap::CreateGpuMemoryBufferHandleFromVideoFrame(
           video_frame.get());
-#endif
+#endif  // defined(USE_OZONE) || defined(USE_EGL)
   if (gmb_handle.is_null()) {
     VLOGF(1) << "Failed to CreateGMBHandleFromVideoFrame.";
     return nullptr;
@@ -153,5 +152,4 @@ scoped_refptr<VideoFrame> VaapiDmaBufVideoFrameMapper::Map(
                                 std::move(va_image));
 }
 
-}  // namespace test
 }  // namespace media

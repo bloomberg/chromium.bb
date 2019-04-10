@@ -24,10 +24,9 @@
 namespace media {
 
 class VideoFrame;
+class VideoFrameMapper;
 
 namespace test {
-
-class VideoFrameMapper;
 
 // VideoFrameValidator validates the pixel content of each video frame.
 // It maps a video frame by using VideoFrameMapper, and converts the mapped

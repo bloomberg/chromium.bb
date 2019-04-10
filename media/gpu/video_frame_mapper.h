@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_TEST_VIDEO_FRAME_MAPPER_H_
-#define MEDIA_GPU_TEST_VIDEO_FRAME_MAPPER_H_
+#ifndef MEDIA_GPU_VIDEO_FRAME_MAPPER_H_
+#define MEDIA_GPU_VIDEO_FRAME_MAPPER_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "media/base/video_frame.h"
+#include "media/gpu/media_gpu_export.h"
 
 namespace media {
-namespace test {
 
-// VideoFrameMapper is a class for mapping a video frame referred by VideoFrame.
+// The VideoFrameMapper interface allows mapping video frames into memory so
+// that their contents can be accessed directly.
 // VideoFrameMapper should be created by using VideoFrameMapperFactory.
-class VideoFrameMapper {
+class MEDIA_GPU_EXPORT VideoFrameMapper {
  public:
   virtual ~VideoFrameMapper() = default;
 
@@ -28,7 +29,6 @@ class VideoFrameMapper {
   DISALLOW_COPY_AND_ASSIGN(VideoFrameMapper);
 };
 
-}  // namespace test
 }  // namespace media
 
-#endif  // MEDIA_GPU_TEST_VIDEO_FRAME_MAPPER_H_
+#endif  // MEDIA_GPU_VIDEO_FRAME_MAPPER_H_
