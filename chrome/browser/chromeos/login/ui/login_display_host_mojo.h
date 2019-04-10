@@ -167,6 +167,10 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   // first OnStartSigninScreen and remains true afterward.
   bool signin_screen_started_ = false;
 
+  // Set if the signin screen initialization was delayed to show a OOBE dialog,
+  // for example to run reset or enable debugging wizard.
+  bool start_delayed_for_oobe_dialog_ = false;
+
   base::WeakPtrFactory<LoginDisplayHostMojo> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginDisplayHostMojo);
