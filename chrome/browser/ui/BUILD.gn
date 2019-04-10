@@ -2398,6 +2398,8 @@ jumbo_split_static_library("ui") {
       "autofill/payments/save_card_bubble_view.h",
       "autofill/payments/save_card_ui.h",
       "bubble_anchor_util.h",
+      "manifest_web_app_browser_controller.cc",
+      "manifest_web_app_browser_controller.h",
 
       # This test header is included because it contains forward declarations
       # needed for "friend" statements for use in tests.
