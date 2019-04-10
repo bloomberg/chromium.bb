@@ -527,14 +527,10 @@ class PersonalDataManagerHelper : public PersonalDataManagerTestBase {
   }
 
   void ConvertWalletAddressesAndUpdateWalletCards() {
-    base::RunLoop run_loop;
-    EXPECT_CALL(personal_data_observer_, OnPersonalDataFinishedProfileTasks())
-        .WillOnce(QuitMessageLoop(&run_loop));
-    EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
-        .Times(testing::AnyNumber());
-
-    personal_data_->ConvertWalletAddressesAndUpdateWalletCards();
-    run_loop.Run();
+    // Simulate new data is coming from sync which triggers a conversion of
+    // wallet addresses which in turn triggers a refresh.
+    personal_data_->AutofillMultipleChanged();
+    WaitForOnPersonalDataChanged();
   }
 
   std::unique_ptr<PersonalDataManager> personal_data_;
@@ -5587,14 +5583,7 @@ TEST_F(PersonalDataManagerTest,
   ///////////////////////////////////////////////////////////////////////
   // Tested method.
   ///////////////////////////////////////////////////////////////////////
-  personal_data_->ConvertWalletAddressesAndUpdateWalletCards();
-
-  // Since there should be no change in data, OnPersonalDataChanged should not
-  // have been called.
-  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged()).Times(0);
-
-  personal_data_->Refresh();
-  WaitForOnPersonalDataChanged();
+  ConvertWalletAddressesAndUpdateWalletCards();
 
   // There should be no local profiles added.
   EXPECT_EQ(0U, personal_data_->GetProfiles().size());
@@ -5865,18 +5854,11 @@ TEST_F(PersonalDataManagerTest, DoNotConvertWalletAddressesInEphemeralStorage) {
   ///////////////////////////////////////////////////////////////////////
   // Since the wallet addresses are in ephemeral storage, they should *not* get
   // converted to local addresses.
-  personal_data_->ConvertWalletAddressesAndUpdateWalletCards();
+  ConvertWalletAddressesAndUpdateWalletCards();
 
   ///////////////////////////////////////////////////////////////////////
   // Validation.
   ///////////////////////////////////////////////////////////////////////
-  // Since there should be no change in data, OnPersonalDataChanged should not
-  // get called.
-  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged()).Times(0);
-
-  personal_data_->Refresh();
-  WaitForOnPersonalDataChanged();
-
   // There should be no changes to the local profiles: No new one added, and no
   // changes to the existing one (even though the second server profile contains
   // additional information and is mergeable in principle).
