@@ -131,6 +131,24 @@ scoped_refptr<const NGPhysicalTextFragment> CreateHyphenFragment(
   return builder.ToTextFragment();
 }
 
+bool IsStickyImage(const NGInlineItem& candidate,
+                   const NGInlineItemResults& item_results,
+                   NGLineBreaker::WhitespaceState trailing_whitespace,
+                   const String& text) {
+  if (!IsImage(candidate))
+    return false;
+  if (trailing_whitespace != NGLineBreaker::WhitespaceState::kNone &&
+      trailing_whitespace != NGLineBreaker::WhitespaceState::kUnknown)
+    return false;
+
+  if (item_results.size() >= 1) {
+    // If this image follows a <wbr> the image isn't sticky.
+    const auto& last = item_results[item_results.size() - 1];
+    return text[last.start_offset] != kZeroWidthSpaceCharacter;
+  }
+  return true;
+}
+
 }  // namespace
 
 NGLineBreaker::NGLineBreaker(NGInlineNode node,
@@ -387,11 +405,11 @@ void NGLineBreaker::BreakLine(
     // opportunity if we're trailing.
     if (state_ == LineBreakState::kTrailing &&
         CanBreakAfterLast(*item_results)) {
-      if (sticky_images_quirk_ && IsImage(item) &&
-          (trailing_whitespace_ == WhitespaceState::kNone ||
-           trailing_whitespace_ == WhitespaceState::kUnknown)) {
-        // If this is an image that follows text that doesn't end with something
-        // breakable, we cannot break between the two items.
+      // If the sticky images quirk is enabled, and this is an image that
+      // follows text that doesn't end with something breakable, we cannot break
+      // between the two items.
+      if (sticky_images_quirk_ &&
+          IsStickyImage(item, *item_results, trailing_whitespace_, Text())) {
         HandleAtomicInline(item, percentage_resolution_block_size_for_min_max,
                            line_info);
         continue;
