@@ -47,8 +47,6 @@ class TwoClientPasswordsSyncTest
 
   ~TwoClientPasswordsSyncTest() override {}
 
-  bool TestUsesSelfNotifications() override { return false; }
-
  protected:
   // TODO(crbug.com/915219): This leads to a data race and thus all tests here
   // are disabled on TSan. It is hard to avoid as overriding g_feature_list
@@ -133,7 +131,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, E2E_ENABLED(MAYBE_Race)) {
 #define MAYBE_MergeWithTheMostRecent MergeWithTheMostRecent
 #endif
 IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest,
-                       E2E_ENABLED(MAYBE_MergeWithTheMostRecent)) {
+                       MAYBE_MergeWithTheMostRecent) {
   // Setup the test to have Form 0 and Form 1 added on both clients. Form 0 is
   // more recent on Client 0, and Form 1 is more recent on Client 1. They should
   // be merged such that recent passwords are chosen.
