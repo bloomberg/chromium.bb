@@ -39,7 +39,7 @@ sys.path.insert(
 try:
   import blink
 finally:
-  sys.path.pop(0)
+  sys.path.pop(1)
 
 # When debugging this module, set the below variable to True, and then use
 #   (gdb) python del sys.modules['gdb_chrome']
