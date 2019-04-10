@@ -310,7 +310,7 @@ proto_library("system_api-vm_plugin_dispatcher-protos") {
   proto_in_dir = "dbus/vm_plugin_dispatcher"
   proto_out_dir = "include/vm_plugin_dispatcher/proto_bindings"
   sources = [
-    "${proto_in_dir}/service.proto",
+    "${proto_in_dir}/vm_plugin_dispatcher.proto",
   ]
   standalone = true
 }
