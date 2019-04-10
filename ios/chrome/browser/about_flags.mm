@@ -39,6 +39,7 @@
 #include "components/payments/core/features.h"
 #include "components/search_provider_logos/switches.h"
 #include "components/security_state/core/features.h"
+#include "components/send_tab_to_self/features.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/signin_switches.h"
 #include "components/strings/grit/components_strings.h"
@@ -569,6 +570,14 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kFillOnAccountSelectHttpName,
      flag_descriptions::kFillOnAccountSelectHttpDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(password_manager::features::kFillOnAccountSelectHttp)},
+    {"enable-send-tab-to-self", flag_descriptions::kSendTabToSelfName,
+     flag_descriptions::kSendTabToSelfDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(switches::kSyncSendTabToSelf)},
+    {"enable-send-tab-to-self-show-sending-ui",
+     flag_descriptions::kSendTabToSelfShowSendingUIName,
+     flag_descriptions::kSendTabToSelfShowSendingUIDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfShowSendingUI)},
 };
 
 // Add all switches from experimental flags to |command_line|.
