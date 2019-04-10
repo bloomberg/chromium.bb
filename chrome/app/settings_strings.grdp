@@ -3525,6 +3525,12 @@
     <message name="IDS_SETTINGS_ACCOUNT_MANAGER_REMOVE_ACCOUNT_LABEL" desc="Label of the Remove account button in Account Manager.">
       Remove account from this device
     </message>
+    <message name="IDS_SETTINGS_ACCOUNT_MANAGER_MANAGEMENT_STATUS_MANAGED_ACCOUNT" desc="Management status label for managed accounts. This will be e.g. 'Managed by google.com' for Enterprise accounts and 'Managed by Family Link' for child accounts.">
+      Managed by <ph name="DOMAIN">$1<ex>google.com</ex></ph>
+    </message>
+    <message name="IDS_SETTINGS_ACCOUNT_MANAGER_MANAGEMENT_STATUS_UNMANAGED_ACCOUNT" desc="Management status label for unmanaged accounts.">
+      Primary account
+    </message>
     <message name="IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_TITLE" desc="Title of the add fingerprint dialog popup.">
       Set up your fingerprint
     </message>

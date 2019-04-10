@@ -101,6 +101,21 @@ Polymer({
   },
 
   /**
+   * @param {!settings.Account} account
+   * @return {string} An appropriate management status label. e.g.
+   *    "Primary account" for unmanaged accounts, "Managed by <Domain>"
+   *    for Enterprise managed accounts etc.
+   * @private
+   */
+  getManagementLabel_: function(account) {
+    if (account.organization) {
+      return this.i18n('accountManagerManagedLabel', account.organization);
+    }
+
+    return this.i18n('accountManagerUnmanagedLabel');
+  },
+
+  /**
    * @param {!CustomEvent<!{model: !{item: !settings.Account}}>} event
    * @private
    */

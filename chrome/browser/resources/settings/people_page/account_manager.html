@@ -55,6 +55,10 @@
         left: auto;
         right: 60%;
       }
+
+      .management-status {
+        color: var(--cr-secondary-text-color);
+      }
     </style>
 
     <div class="settings-box first">$i18n{accountManagerDescription}</div>
@@ -111,12 +115,20 @@
             </paper-button>
           </template>
 
-          <paper-icon-button-light class="icon-more-vert"
-              hidden="[[item.isDeviceAccount]]">
-            <button title="$i18n{moreActions}"
-                on-click="onAccountActionsMenuButtonTap_">
-            </button>
-          </paper-icon-button-light>
+          <!-- If this is the Device Account, display the management status -->
+          <template is="dom-if" if="[[item.isDeviceAccount]]">
+            <span class="management-status">
+              [[getManagementLabel_(item)]]
+            </span>
+          </template>
+          <!-- Else, display a hamburger menu for removing the account -->
+          <template is="dom-if" if="[[!item.isDeviceAccount]]">
+            <paper-icon-button-light class="icon-more-vert">
+              <button title="$i18n{moreActions}"
+                  on-click="onAccountActionsMenuButtonTap_">
+              </button>
+            </paper-icon-button-light>
+          </template>
         </div>
       </template>
 
