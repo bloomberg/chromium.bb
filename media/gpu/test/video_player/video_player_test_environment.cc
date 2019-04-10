@@ -7,7 +7,9 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/test_timeouts.h"
+#include "build/build_config.h"
 #include "media/gpu/buildflags.h"
 #include "media/gpu/test/video_player/video.h"
 #include "mojo/core/embedder/embedder.h"
@@ -25,7 +27,8 @@ namespace media {
 namespace test {
 
 // Default video to be used if no test video was specified.
-constexpr base::FilePath::CharType kDefaultTestVideoPath[] = "test-25fps.h264";
+constexpr base::FilePath::CharType kDefaultTestVideoPath[] =
+    FILE_PATH_LITERAL("test-25fps.h264");
 
 // static
 VideoPlayerTestEnvironment* VideoPlayerTestEnvironment::Create(
@@ -108,6 +111,18 @@ bool VideoPlayerTestEnvironment::IsValidatorEnabled() const {
 
 bool VideoPlayerTestEnvironment::IsFramesOutputEnabled() const {
   return output_frames_;
+}
+
+base::FilePath::StringType VideoPlayerTestEnvironment::GetTestName() const {
+  const ::testing::TestInfo* const test_info =
+      ::testing::UnitTest::GetInstance()->current_test_info();
+#if defined(OS_WIN)
+  // On Windows the default file path string type is UTF16. Since the test name
+  // is always returned in UTF8 we need to do a conversion here.
+  return base::UTF8ToUTF16(test_info->name());
+#else
+  return test_info->name();
+#endif
 }
 
 }  // namespace test

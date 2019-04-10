@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "media/base/bind_to_current_loop.h"

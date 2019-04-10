@@ -43,6 +43,9 @@ class VideoPlayerTestEnvironment : public ::testing::Environment {
   // Check whether outputting frames is enabled.
   bool IsFramesOutputEnabled() const;
 
+  // Get the name of the current test.
+  base::FilePath::StringType GetTestName() const;
+
  private:
   VideoPlayerTestEnvironment(std::unique_ptr<media::test::Video> video,
                              bool enable_validator,

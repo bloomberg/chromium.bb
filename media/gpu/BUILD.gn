@@ -597,45 +597,39 @@ source_set("unit_tests") {
   }
 }
 
-# TODO(dstaessens@) Make this work on other platforms too.
-if (is_chromeos) {
-  test("video_decode_accelerator_tests") {
-    sources = [
-      "video_decode_accelerator_tests.cc",
-    ]
-    data = [
-      "//media/test/data/",
-    ]
-    deps = [
-      ":buildflags",
-      "test:frame_file_writer",
-      "test:frame_validator",
-      "test:video_player",
-      "test:video_player_test_environment",
-      "test:video_player_thumbnail_renderer",
-      "//media:test_support",
-      "//testing/gtest",
-    ]
-  }
+test("video_decode_accelerator_tests") {
+  sources = [
+    "video_decode_accelerator_tests.cc",
+  ]
+  data = [
+    "//media/test/data/",
+  ]
+  deps = [
+    ":buildflags",
+    "test:frame_file_writer",
+    "test:frame_validator",
+    "test:video_player",
+    "test:video_player_test_environment",
+    "test:video_player_thumbnail_renderer",
+    "//media:test_support",
+    "//testing/gtest",
+  ]
 }
 
-# TODO(dstaessens@) Make this work on other platforms too.
-if (is_chromeos) {
-  test("video_decode_accelerator_perf_tests") {
-    sources = [
-      "video_decode_accelerator_perf_tests.cc",
-    ]
-    data = [
-      "//media/test/data/",
-    ]
-    deps = [
-      ":buildflags",
-      "test:video_player",
-      "test:video_player_test_environment",
-      "//media:test_support",
-      "//testing/gtest",
-    ]
-  }
+test("video_decode_accelerator_perf_tests") {
+  sources = [
+    "video_decode_accelerator_perf_tests.cc",
+  ]
+  data = [
+    "//media/test/data/",
+  ]
+  deps = [
+    ":buildflags",
+    "test:video_player",
+    "test:video_player_test_environment",
+    "//media:test_support",
+    "//testing/gtest",
+  ]
 }
 
 test("image_processor_test") {
