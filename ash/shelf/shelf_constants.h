@@ -67,7 +67,7 @@ ASH_EXPORT constexpr SkColor kShelfIconColor = SK_ColorWHITE;
 
 // The alpha value for the shelf background.
 ASH_EXPORT constexpr int kShelfTranslucentOverAppList = 51;            // 20%
-ASH_EXPORT constexpr int kShelfTranslucentAlpha = 153;                 // 60%
+ASH_EXPORT constexpr int kShelfTranslucentAlpha = 189;                 // 74%
 // Using 0xFF causes clipping on the overlay candidate content, which prevent
 // HW overlay, probably due to a bug in compositor. Fix it and use 0xFF.
 // crbug.com/901538
