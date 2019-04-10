@@ -157,7 +157,7 @@ class NetworkAnnotationTagCallback : public MatchFinder::MatchCallback {
   void GetInstanceLocation(const MatchFinder::MatchResult& result,
                            const clang::Expr* expr,
                            Location* location) {
-    clang::SourceLocation source_location = expr->getLocStart();
+    clang::SourceLocation source_location = expr->getBeginLoc();
     if (source_location.isMacroID())
       source_location = result.SourceManager->getExpansionLoc(source_location);
     location->file_path = result.SourceManager->getFilename(source_location);
