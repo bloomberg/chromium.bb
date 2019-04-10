@@ -9,6 +9,7 @@
 #include "components/sync/base/syncer_error.h"
 #include "components/sync/engine/cycle/model_neutral_state.h"
 #include "components/sync/engine/polling_constants.h"
+#include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::TimeDelta;
@@ -49,7 +50,7 @@ TEST_F(BackoffDelayProviderTest, GetInitialDelay) {
             delay->GetInitialDelay(state).InSeconds());
 
   state.last_download_updates_result =
-      SyncerError(SyncerError::NETWORK_CONNECTION_UNAVAILABLE);
+      SyncerError::NetworkConnectionUnavailable(net::ERR_FAILED);
   EXPECT_EQ(kInitialBackoffRetrySeconds,
             delay->GetInitialDelay(state).InSeconds());
 
@@ -82,7 +83,7 @@ TEST_F(BackoffDelayProviderTest, GetInitialDelay) {
             delay->GetInitialDelay(state).InSeconds());
 
   state.commit_result =
-      SyncerError(SyncerError::NETWORK_CONNECTION_UNAVAILABLE);
+      SyncerError::NetworkConnectionUnavailable(net::ERR_FAILED);
   EXPECT_EQ(kInitialBackoffRetrySeconds,
             delay->GetInitialDelay(state).InSeconds());
 
