@@ -182,7 +182,7 @@ RTCVideoDecoderAdapter::RTCVideoDecoderAdapter(
       config_(config),
       weak_this_factory_(this) {
   DVLOG(1) << __func__;
-  DETACH_FROM_THREAD(decoding_thread_checker_);
+  DETACH_FROM_SEQUENCE(decoding_sequence_checker_);
   weak_this_ = weak_this_factory_.GetWeakPtr();
 }
 
@@ -217,7 +217,7 @@ int32_t RTCVideoDecoderAdapter::InitDecode(
     const webrtc::VideoCodec* codec_settings,
     int32_t number_of_cores) {
   DVLOG(1) << __func__;
-  DCHECK_CALLED_ON_VALID_THREAD(decoding_thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoding_sequence_checker_);
   DCHECK_EQ(webrtc::PayloadStringToCodecType(format_.name),
             codec_settings->codecType);
 
@@ -232,7 +232,7 @@ int32_t RTCVideoDecoderAdapter::Decode(
     const webrtc::CodecSpecificInfo* codec_specific_info,
     int64_t render_time_ms) {
   DVLOG(2) << __func__;
-  DCHECK_CALLED_ON_VALID_THREAD(decoding_thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoding_sequence_checker_);
 
   // Hardware VP9 decoders don't handle more than one spatial layer. Fall back
   // to software decoding. See https://crbug.com/webrtc/9304.
@@ -308,7 +308,7 @@ int32_t RTCVideoDecoderAdapter::Decode(
 int32_t RTCVideoDecoderAdapter::RegisterDecodeCompleteCallback(
     webrtc::DecodedImageCallback* callback) {
   DVLOG(2) << __func__;
-  DCHECK_CALLED_ON_VALID_THREAD(decoding_thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoding_sequence_checker_);
   DCHECK(callback);
 
   base::AutoLock auto_lock(lock_);
@@ -443,7 +443,7 @@ void RTCVideoDecoderAdapter::OnOutput(
 
 bool RTCVideoDecoderAdapter::ShouldReinitializeForSettingHDRColorSpace(
     const webrtc::EncodedImage& input_image) const {
-  DCHECK_CALLED_ON_VALID_THREAD(decoding_thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoding_sequence_checker_);
 
   if (config_.profile() == media::VP9PROFILE_PROFILE2 &&
       input_image.ColorSpace()) {
@@ -459,7 +459,7 @@ bool RTCVideoDecoderAdapter::ShouldReinitializeForSettingHDRColorSpace(
 
 bool RTCVideoDecoderAdapter::ReinitializeSync(
     const media::VideoDecoderConfig& config) {
-  DCHECK_CALLED_ON_VALID_THREAD(decoding_thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoding_sequence_checker_);
 
   base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
   bool result = false;

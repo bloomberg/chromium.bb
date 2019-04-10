@@ -12,8 +12,8 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "media/base/decode_status.h"
 #include "media/base/video_codecs.h"
@@ -128,8 +128,8 @@ class CONTENT_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
   base::circular_deque<base::TimeDelta> decode_timestamps_;
 
   // Thread management.
-  THREAD_CHECKER(worker_thread_checker_);
-  THREAD_CHECKER(decoding_thread_checker_);
+  SEQUENCE_CHECKER(worker_sequence_checker_);
+  SEQUENCE_CHECKER(decoding_sequence_checker_);
 
   base::WeakPtr<RTCVideoDecoderAdapter> weak_this_;
   base::WeakPtrFactory<RTCVideoDecoderAdapter> weak_this_factory_;
