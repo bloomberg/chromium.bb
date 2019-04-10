@@ -54,7 +54,8 @@ void AddGamepadPlatformDataFetchers(GamepadDataFetcherManager* manager) {
 
 #elif defined(OS_LINUX) && defined(USE_UDEV)
 
-  manager->AddFactory(new GamepadPlatformDataFetcherLinux::Factory());
+  manager->AddFactory(new GamepadPlatformDataFetcherLinux::Factory(
+      base::SequencedTaskRunnerHandle::Get()));
   manager->AddFactory(new NintendoDataFetcher::Factory());
 
 #endif

@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/files/scoped_file.h"
 #include "device/gamepad/abstract_haptic_gamepad.h"
 #include "device/gamepad/dualshock4_controller_linux.h"
 #include "device/gamepad/gamepad_standard_mappings.h"
@@ -31,7 +32,10 @@ namespace device {
 // through the raw HID (hidraw) interface.
 class GamepadDeviceLinux : public AbstractHapticGamepad {
  public:
-  GamepadDeviceLinux(const std::string& syspath_prefix);
+  using OpenDeviceNodeCallback = base::OnceCallback<void(GamepadDeviceLinux*)>;
+
+  GamepadDeviceLinux(const std::string& syspath_prefix,
+                     scoped_refptr<base::SequencedTaskRunner> dbus_runner);
   ~GamepadDeviceLinux() override;
 
   // Delete any stored effect and close file descriptors.
@@ -82,7 +86,8 @@ class GamepadDeviceLinux : public AbstractHapticGamepad {
   void CloseEvdevNode();
 
   // Opens the hidraw device node and initializes haptics.
-  bool OpenHidrawNode(const UdevGamepadLinux& pad_info);
+  void OpenHidrawNode(const UdevGamepadLinux& pad_info,
+                      OpenDeviceNodeCallback callback);
 
   // Closes the hidraw device node and shuts down haptics.
   void CloseHidrawNode();
@@ -92,6 +97,21 @@ class GamepadDeviceLinux : public AbstractHapticGamepad {
   void SetZeroVibration() override;
 
  private:
+  using OpenPathCallback = base::OnceCallback<void(base::ScopedFD)>;
+
+  void OnOpenHidrawNodeComplete(OpenDeviceNodeCallback callback,
+                                base::ScopedFD fd);
+  void InitializeHidraw(base::ScopedFD fd);
+
+#if defined(OS_CHROMEOS)
+  void OpenPathWithPermissionBroker(const std::string& path,
+                                    OpenPathCallback callback);
+  void OnOpenPathSuccess(OpenPathCallback callback, base::ScopedFD fd);
+  void OnOpenPathError(OpenPathCallback callback,
+                       const std::string& error_name,
+                       const std::string& error_message);
+#endif
+
   // The syspath prefix is used to identify device nodes that refer to the same
   // underlying gamepad through different interfaces.
   //
@@ -161,6 +181,16 @@ class GamepadDeviceLinux : public AbstractHapticGamepad {
 
   // A controller that uses a HID output report for vibration effects.
   std::unique_ptr<HidHapticGamepadLinux> hid_haptics_;
+
+  // Task runner to use for D-Bus tasks. D-Bus client classes (including
+  // PermissionBrokerClient) are not thread-safe and should be used only on the
+  // UI thread.
+  scoped_refptr<base::SequencedTaskRunner> dbus_runner_;
+
+  // Task runner to use for gamepad polling.
+  scoped_refptr<base::SequencedTaskRunner> polling_runner_;
+
+  base::WeakPtrFactory<GamepadDeviceLinux> weak_factory_{this};
 };
 
 }  // namespace device

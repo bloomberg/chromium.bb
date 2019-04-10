@@ -147,6 +147,10 @@ component("gamepad") {
       "IOKit.framework",
     ]
   }
+
+  if (is_chromeos) {
+    deps += [ "//chromeos/dbus/permission_broker" ]
+  }
 }
 
 static_library("test_helpers") {

@@ -24,7 +24,28 @@
 
 namespace device {
 
-GamepadPlatformDataFetcherLinux::GamepadPlatformDataFetcherLinux() = default;
+GamepadPlatformDataFetcherLinux::Factory::Factory(
+    scoped_refptr<base::SequencedTaskRunner> dbus_runner)
+    : dbus_runner_(std::move(dbus_runner)) {}
+
+GamepadPlatformDataFetcherLinux::Factory::~Factory() = default;
+
+std::unique_ptr<GamepadDataFetcher>
+GamepadPlatformDataFetcherLinux::Factory::CreateDataFetcher() {
+  return std::make_unique<GamepadPlatformDataFetcherLinux>(dbus_runner_);
+}
+
+GamepadSource GamepadPlatformDataFetcherLinux::Factory::source() {
+  return GAMEPAD_SOURCE_LINUX_UDEV;
+}
+
+GamepadSource GamepadPlatformDataFetcherLinux::Factory::static_source() {
+  return GAMEPAD_SOURCE_LINUX_UDEV;
+}
+
+GamepadPlatformDataFetcherLinux::GamepadPlatformDataFetcherLinux(
+    scoped_refptr<base::SequencedTaskRunner> dbus_runner)
+    : dbus_runner_(dbus_runner) {}
 
 GamepadPlatformDataFetcherLinux::~GamepadPlatformDataFetcherLinux() {
   for (auto it = devices_.begin(); it != devices_.end(); ++it) {
@@ -128,8 +149,8 @@ GamepadDeviceLinux* GamepadPlatformDataFetcherLinux::GetOrCreateMatchingDevice(
       return device;
   }
 
-  auto emplace_result = devices_.emplace(
-      std::make_unique<GamepadDeviceLinux>(pad_info.syspath_prefix));
+  auto emplace_result = devices_.emplace(std::make_unique<GamepadDeviceLinux>(
+      pad_info.syspath_prefix, dbus_runner_));
   return emplace_result.first->get();
 }
 
@@ -253,21 +274,31 @@ void GamepadPlatformDataFetcherLinux::RefreshHidrawDevice(
   if (device == nullptr)
     return;
 
-  if (!device->OpenHidrawNode(pad_info)) {
-    if (device->IsEmpty())
-      RemoveDevice(device);
+  device->OpenHidrawNode(
+      pad_info,
+      base::BindOnce(&GamepadPlatformDataFetcherLinux::OnHidrawDeviceOpened,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void GamepadPlatformDataFetcherLinux::OnHidrawDeviceOpened(
+    GamepadDeviceLinux* device) {
+  DCHECK(device);
+  if (device->IsEmpty()) {
+    RemoveDevice(device);
     return;
   }
 
   int joydev_index = device->GetJoydevIndex();
-  if (joydev_index >= 0) {
-    PadState* state = GetPadState(joydev_index);
-    DCHECK(state);
-    if (state) {
-      Gamepad& pad = state->data;
-      pad.vibration_actuator.not_null = device->SupportsVibration();
-    }
-  }
+  if (joydev_index < 0)
+    return;
+
+  PadState* state = GetPadState(joydev_index);
+  if (!state)
+    return;
+
+  Gamepad& pad = state->data;
+  pad.vibration_actuator.type = GamepadHapticActuatorType::kDualRumble;
+  pad.vibration_actuator.not_null = device->SupportsVibration();
 }
 
 void GamepadPlatformDataFetcherLinux::ReadDeviceData(size_t index) {
