@@ -186,6 +186,13 @@ SPECIAL_CASES = {
         "License File": "NOT_SHIPPED",
     },
     os.path.join('third_party', 'crashpad', 'crashpad', 'third_party',
+                 'lss'): {
+        "Name": "linux-syscall-support",
+        "URL": "https://chromium.googlesource.com/linux-syscall-support/",
+        "License": "BSD",
+        "License File": "NOT_SHIPPED",
+    },
+    os.path.join('third_party', 'crashpad', 'crashpad', 'third_party',
                  'mini_chromium'): {
         "Name": "mini_chromium",
         "URL": "https://chromium.googlesource.com/chromium/mini_chromium/",
