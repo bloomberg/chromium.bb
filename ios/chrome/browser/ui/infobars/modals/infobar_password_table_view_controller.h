@@ -19,6 +19,8 @@
 @property(nonatomic, copy) NSString* username;
 // The URL being displayed in the InfobarModal.
 @property(nonatomic, copy) NSString* URL;
+// The text used for the save credentials button.
+@property(nonatomic, copy) NSString* saveButtonText;
 
 @end
 

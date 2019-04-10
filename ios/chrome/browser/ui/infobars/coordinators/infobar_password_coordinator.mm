@@ -81,6 +81,9 @@
   self.modalViewController.infobarModalDelegate = self;
   self.modalViewController.username =
       self.passwordInfoBarDelegate->GetUserNameText();
+  self.modalViewController.saveButtonText =
+      base::SysUTF16ToNSString(self.passwordInfoBarDelegate->GetButtonLabel(
+          ConfirmInfoBarDelegate::BUTTON_OK));
   self.modalViewController.URL = self.passwordInfoBarDelegate->GetURLHostText();
 }
 
