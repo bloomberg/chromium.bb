@@ -73,9 +73,6 @@ class CONTENT_EXPORT DirectManipulationHelper
   // Updates viewport size. Call it when window bounds updated.
   void SetSizeInPixels(const gfx::Size& size_in_pixels);
 
-  // Reset for gesture end.
-  HRESULT Reset();
-
   // Pass the pointer hit test to Direct Manipulation.
   void OnPointerHitTest(WPARAM w_param);
 
@@ -100,7 +97,6 @@ class CONTENT_EXPORT DirectManipulationHelper
   HWND window_;
   ui::Compositor* compositor_ = nullptr;
   DWORD view_port_handler_cookie_;
-  gfx::Size viewport_size_in_pixels_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectManipulationHelper);
 };

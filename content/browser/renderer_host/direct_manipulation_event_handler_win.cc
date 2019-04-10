@@ -28,19 +28,15 @@ bool FloatEquals(float f1, float f2) {
 }  // namespace
 
 DirectManipulationEventHandler::DirectManipulationEventHandler(
-    DirectManipulationHelper* helper)
-    : helper_(helper) {}
+    ui::WindowEventTarget* event_target)
+    : event_target_(event_target) {}
 
-void DirectManipulationEventHandler::SetWindowEventTarget(
-    ui::WindowEventTarget* event_target) {
-  if (!event_target && LoggingEnabled()) {
-    DebugLogging("Event target is null.", S_OK);
-    if (event_target_)
-      DebugLogging("Previous event target is not null", S_OK);
-    else
-      DebugLogging("Previous event target is null", S_OK);
-  }
-  event_target_ = event_target;
+bool DirectManipulationEventHandler::SetViewportSizeInPixels(
+    const gfx::Size& viewport_size_in_pixels) {
+  if (viewport_size_in_pixels_ == viewport_size_in_pixels)
+    return false;
+  viewport_size_in_pixels_ = viewport_size_in_pixels;
+  return true;
 }
 
 void DirectManipulationEventHandler::SetDeviceScaleFactor(
@@ -181,9 +177,14 @@ HRESULT DirectManipulationEventHandler::OnViewportStatusChanged(
   // RUNNING -> READY sequence.
   if (!FloatEquals(1.0f, last_scale_) || last_x_offset_ != 0 ||
       last_y_offset_ != 0) {
-    HRESULT hr = helper_->Reset();
-    if (!SUCCEEDED(hr))
+    HRESULT hr = viewport->ZoomToRect(
+        static_cast<float>(0), static_cast<float>(0),
+        static_cast<float>(viewport_size_in_pixels_.width()),
+        static_cast<float>(viewport_size_in_pixels_.height()), FALSE);
+    if (!SUCCEEDED(hr)) {
+      DebugLogging("Viewport zoom to rect failed.", hr);
       return hr;
+    }
   }
 
   last_scale_ = 1.0f;
