@@ -70,6 +70,7 @@ source_set("signin") {
     "//components/signin/ios/browser",
     "//components/signin/ios/browser:active_state_manager",
     "//components/sync",
+    "//components/unified_consent",
     "//google_apis",
     "//ios/chrome/browser",
     "//ios/chrome/browser/bookmarks:bookmarks_utils",
