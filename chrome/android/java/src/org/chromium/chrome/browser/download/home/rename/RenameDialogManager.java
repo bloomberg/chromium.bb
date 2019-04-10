@@ -158,9 +158,6 @@ public class RenameDialogManager {
         if (isPositiveButton) {
             mLastAttemptedName = mRenameDialogCoordinator.getCurSuggestedName();
 
-            // TODO(hesen): Have a TextWatcher on the input, and disable OK button if it's empty.
-            if (TextUtils.isEmpty(mLastAttemptedName)) return;
-
             if (TextUtils.equals(mLastAttemptedName, mOriginalName)) {
                 processDialogState(RenameDialogState.RENAME_DIALOG_CANCEL,
                         DialogDismissalCause.POSITIVE_BUTTON_CLICKED);

@@ -42,6 +42,10 @@ public class RenameDialogCoordinator {
                         .build();
         mOnClickEventCallback = onClickCallback;
         mOnDismissEventCallback = dismissCallback;
+
+        mRenameDialogCustomView.setEmptyInputObserver((result) -> {
+            mRenameDialogModel.set(ModalDialogProperties.POSITIVE_BUTTON_DISABLED, result);
+        });
     }
 
     public void destroy() {
