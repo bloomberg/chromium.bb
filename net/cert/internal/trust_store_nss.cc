@@ -46,6 +46,17 @@ void TrustStoreNSS::SyncGetIssuersOf(const ParsedCertificate* cert,
 
   for (CERTCertListNode* node = CERT_LIST_HEAD(found_certs);
        !CERT_LIST_END(node, found_certs); node = CERT_LIST_NEXT(node)) {
+    // TODO(mattm): use CERT_GetCertIsTemp when minimum NSS version is >= 3.31.
+    if (node->cert->istemp) {
+      // Ignore temporary NSS certs. This ensures that during the trial when
+      // CertVerifyProcNSS and CertVerifyProcBuiltin are being used
+      // simultaneously, the builtin verifier does not get to "cheat" by using
+      // AIA fetched certs from CertVerifyProcNSS.
+      // TODO(https://crbug.com/951479): remove this when CertVerifyProcBuiltin
+      // becomes the default.
+      continue;
+    }
+
     CertErrors parse_errors;
     scoped_refptr<ParsedCertificate> cur_cert = ParsedCertificate::Create(
         x509_util::CreateCryptoBuffer(node->cert->derCert.data,
