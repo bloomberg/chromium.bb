@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "chrome/browser/sync/test/integration/autofill_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/wallet_helper.h"
 #include "components/autofill/core/browser/autofill_metadata.h"
@@ -469,6 +470,11 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
       {CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
        CreateDefaultSyncPaymentsCustomerData()});
   ASSERT_TRUE(SetupSync());
+
+  // On top of expecting convergence on AutofillWalletChecker, expect
+  // convergence on wallet metadata and on autofill profiles.
+  EXPECT_TRUE(AutofillWalletMetadataSizeChecker(0, 1).Wait());
+  EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
 
   // Make sure both have has_converted true.
   std::vector<AutofillProfile*> server_addresses = GetServerProfiles(0);
