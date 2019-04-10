@@ -2,12 +2,12 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="security_keys_subpage.html">
 <link rel="import" href="../clear_browsing_data_dialog/clear_browsing_data_dialog.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
@@ -268,15 +268,9 @@
               label="$i18n{thirdPartyCookie}"
               sub-label="$i18n{thirdPartyCookieSublabel}">
           </settings-toggle-button>
-          <div id="site-data-trigger" class="settings-box" actionable
-              on-click="onSiteDataTap_">
-             <div class="start" id="cookiesLink">
-               $i18n{siteSettingsCookieLink}
-             </div>
-             <paper-icon-button-light class="subpage-arrow">
-               <button aria-labelledby="cookiesLink"></button>
-             </paper-icon-button-light>
-          </div>
+          <cr-link-row id="site-data-trigger" class="hr"
+              on-click="onSiteDataTap_" label="$i18n{siteSettingsCookieLink}">
+          </cr-link-row>
           <category-setting-exceptions
               category="{{ContentSettingsTypes.COOKIES}}"
               block-header="$i18n{siteSettingsBlock}"
@@ -452,9 +446,8 @@
               target="_blank"
               href="https://www.macromedia.com/support/documentation/en/flashplayer/help/settings_manager07.html">
             <div class="start">$i18n{adobeFlashStorage}</div>
-            <paper-icon-button-light actionable class="icon-external">
-              <button aria-label="$i18n{adobeFlashStorage}"></button>
-            </paper-icon-button-light>
+            <cr-icon-button actionable class="icon-external"
+                aria-label="$i18n{adobeFlashStorage}"></cr-icon-button>
           </a>
 </if>
           <category-setting-exceptions

@@ -53,9 +53,8 @@
           </div>
         </template>
         <template is="dom-if" if="[[!havePlayStoreApp]]" restamp>
-          <cr-link-row id="manageApps" icon-class="icon-external"
-              label="$i18n{androidAppsManageApps}"
-              on-click="onManageAndroidAppsTap_">
+          <cr-link-row id="manageApps" label="$i18n{androidAppsManageApps}"
+              on-click="onManageAndroidAppsTap_" external>
           </cr-link-row>
         </template>
       </div>

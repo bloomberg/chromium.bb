@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="../controls/controlled_button.html">
@@ -52,13 +53,8 @@
           label="$i18n{disconnectGoogleDriveAccount}"
           hidden="[[!pageVisibility.googleDrive]]">
       </settings-toggle-button>
-      <div id="smbShares" class="settings-box"
-          on-click="onTapSmbShares_" actionable>
-        <div class="start"> $i18n{smbSharesTitle} </div>
-        <paper-icon-button-light class="subpage-arrow">
-          <button aria-label="$i18n{smbSharesTitle}"></button>
-        </paper-icon-button-light>
-      </div>
+      <cr-link-row id="smbShares" class="hr" on-click="onTapSmbShares_"
+          label="$i18n{smbSharesTitle}"></cr-link-row>
 </if>
       <template is="dom-if" if="[[autoOpenDownloads_]]" restamp>
         <div class="settings-box">

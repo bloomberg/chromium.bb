@@ -1,10 +1,10 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_indicator.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/md_select_css.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="google_assistant_browser_proxy.html">
 <link rel="import" href="../controls/controlled_button.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
@@ -120,15 +120,9 @@
             sub-label="$i18n{googleAssistantLaunchWithMicOpenDescription}">
         </settings-toggle-button>
       </template>
-      <div id="google-assistant-settings" class="settings-box"
-          on-click="onGoogleAssistantSettingsTapped_" actionable>
-        <div class="start">
-          $i18n{googleAssistantSettings}
-        </div>
-        <paper-icon-button-light class="icon-external">
-          <button aria-label="$i18n{googleAssistantSettings}"></button>
-        </paper-icon-button-light>
-      </div>
+      <cr-link-row id="google-assistant-settings" class="hr"
+          on-click="onGoogleAssistantSettingsTapped_"
+          label="$i18n{googleAssistantSettings}" external></cr-link-row>
     </template>
   </template>
   <script src="google_assistant_page.js"></script>
