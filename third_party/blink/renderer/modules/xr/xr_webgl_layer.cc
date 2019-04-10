@@ -72,7 +72,7 @@ XRWebGLLayer* XRWebGLLayer::Create(
   bool want_depth_buffer = initializer->depth();
   bool want_stencil_buffer = initializer->stencil();
   bool want_alpha_channel = initializer->alpha();
-  bool ignore_depth_values = initializer->ignoreDepthValues();
+  bool want_ignore_depth_values = initializer->ignoreDepthValues();
 
   double framebuffer_scale = 1.0;
 
@@ -109,6 +109,16 @@ XRWebGLLayer* XRWebGLLayer::Create(
                                       "Unable to create a framebuffer.");
     return nullptr;
   }
+
+  // TODO: In the future this should be communicated by the drawing buffer and
+  // indicate whether the depth buffers are being supplied to the XR compositor.
+  bool compositor_supports_depth_values = false;
+
+  // The ignoreDepthValues attribute of XRWebGLLayer may only be set to false if
+  // the compositor is actually making use of the depth values and the user did
+  // not set ignoreDepthValues to true explicitly.
+  bool ignore_depth_values =
+      !compositor_supports_depth_values || want_ignore_depth_values;
 
   return MakeGarbageCollected<XRWebGLLayer>(
       session, webgl_context, std::move(drawing_buffer), framebuffer,
