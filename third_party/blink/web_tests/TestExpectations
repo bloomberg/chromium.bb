@@ -6126,10 +6126,6 @@ crbug.com/943388 [ Win ] virtual/nobinary-for-devtools/http/tests/devtools/netwo
 
 # Sheriff 2019-03-20
 crbug.com/732103 [ Mac10.11 ] http/tests/shapedetection/shapedetection-cross-origin.html [ Timeout Pass ]
-crbug.com/943969 [ Win ] inspector-protocol/animation/animation-pause-infinite.js [ Pass Failure ]
-crbug.com/943969 [ Win ] virtual/nobinary-for-inspector-protocol/inspector-protocol/animation/animation-pause-infinite.js [ Pass Failure ]
-crbug.com/943969 [ Mac10.10 Mac10.11 ] inspector-protocol/animation/animation-pause-infinite.js [ Pass Failure ]
-crbug.com/943969 [ Mac10.10 Mac10.11 ] virtual/nobinary-for-inspector-protocol/inspector-protocol/animation/animation-pause-infinite.js [ Pass Failure ]
 crbug.com/943969 [ Win ] inspector-protocol/css/css-get-media-queries.js [ Pass Failure ]
 crbug.com/943969 [ Win ] virtual/nobinary-for-inspector-protocol/inspector-protocol/css/css-get-media-queries.js [ Pass Failure ]
 crbug.com/943969 [ Mac10.10 Mac10.11 ] inspector-protocol/css/css-get-media-queries.js [ Pass Failure ]
