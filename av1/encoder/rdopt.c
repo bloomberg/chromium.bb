@@ -647,33 +647,26 @@ static const int16_t comp_inter_to_mode_idx[COMP_INTER_MODE_NUM][REF_FRAMES]
 static int get_prediction_mode_idx(PREDICTION_MODE this_mode,
                                    MV_REFERENCE_FRAME ref_frame,
                                    MV_REFERENCE_FRAME second_ref_frame) {
-  int result;
   if (this_mode < INTRA_MODE_END) {
     assert(ref_frame == INTRA_FRAME);
     assert(second_ref_frame == NONE_FRAME);
-    result = intra_to_mode_idx[this_mode - INTRA_MODE_START];
-  } else if (this_mode >= SINGLE_INTER_MODE_START &&
-             this_mode < SINGLE_INTER_MODE_END) {
+    return intra_to_mode_idx[this_mode - INTRA_MODE_START];
+  }
+  if (this_mode >= SINGLE_INTER_MODE_START &&
+      this_mode < SINGLE_INTER_MODE_END) {
     assert((ref_frame > INTRA_FRAME) && (ref_frame <= ALTREF_FRAME));
-    result = single_inter_to_mode_idx[this_mode - SINGLE_INTER_MODE_START]
-                                     [ref_frame];
-  } else if (this_mode >= COMP_INTER_MODE_START &&
-             this_mode < COMP_INTER_MODE_END) {
+    return single_inter_to_mode_idx[this_mode - SINGLE_INTER_MODE_START]
+                                   [ref_frame];
+  }
+  if (this_mode >= COMP_INTER_MODE_START && this_mode < COMP_INTER_MODE_END) {
     assert((ref_frame > INTRA_FRAME) && (ref_frame <= ALTREF_FRAME));
     assert((second_ref_frame > INTRA_FRAME) &&
            (second_ref_frame <= ALTREF_FRAME));
-    result = comp_inter_to_mode_idx[this_mode - COMP_INTER_MODE_START]
-                                   [ref_frame][second_ref_frame];
-  } else {
-    result = -1;
+    return comp_inter_to_mode_idx[this_mode - COMP_INTER_MODE_START][ref_frame]
+                                 [second_ref_frame];
   }
-  // The two data structures that map back and forth between mode number
-  // and (mode, ref frame1, ref frame2) must be manually kept in sync. Add
-  // assertions to catch any drift.
-  assert(result >= 0 && result < MAX_MODES);
-  assert(av1_mode_order[result].mode == this_mode);
-  assert(av1_mode_order[result].ref_frame[0] == ref_frame);
-  return result;
+  assert(0);
+  return -1;
 }
 
 static const PREDICTION_MODE intra_rd_search_mode_order[INTRA_MODES] = {
