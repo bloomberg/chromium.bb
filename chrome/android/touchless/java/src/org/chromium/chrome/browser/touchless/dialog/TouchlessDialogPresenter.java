@@ -6,6 +6,9 @@ package org.chromium.chrome.browser.touchless.dialog;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
+import android.graphics.drawable.Drawable;
 import android.support.v4.view.ViewCompat;
 import android.util.Pair;
 import android.view.LayoutInflater;
@@ -15,6 +18,8 @@ import android.view.Window;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.chromium.chrome.browser.AppHooks;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties.DialogListItemProperties;
 import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties.ListItemType;
 import org.chromium.chrome.touchless.R;
@@ -62,22 +67,15 @@ public class TouchlessDialogPresenter extends Presenter {
         // Cancel on touch outside should be disabled by default. The ModelChangeProcessor wouldn't
         // notify change if the property is not set during initialization.
         mDialog.setCanceledOnTouchOutside(false);
+        mDialog.setOnKeyListener((dialog, keyCode, event) ->
+                AppHooks.get().getTouchlessUiControllerForActivity((ChromeActivity) mActivity)
+                .onKeyEvent(event));
         ViewGroup dialogView = (ViewGroup) LayoutInflater.from(mDialog.getContext())
-                                       .inflate(R.layout.touchless_dialog_view, null);
+                .inflate(R.layout.touchless_dialog_view, null);
         ModelListAdapter adapter = new ModelListAdapter(mActivity);
-        adapter.registerType(ListItemType.DEFAULT, new ModelListAdapter.ViewBuilder<View>() {
-            @Override
-            public View buildView() {
-                View view = LayoutInflater.from(mActivity).inflate(R.layout.dialog_list_item, null);
-                view.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-                    @Override
-                    public void onFocusChange(View view, boolean focused) {
-                        // TODO(mdjones): Do selected item styling here.
-                    }
-                });
-                return view;
-            }
-        }, TouchlessDialogPresenter::bindListItem);
+        adapter.registerType(ListItemType.DEFAULT,
+                () -> LayoutInflater.from(mActivity).inflate(R.layout.dialog_list_item, null),
+                TouchlessDialogPresenter::bindListItem);
         ListView dialogOptions = dialogView.findViewById(R.id.touchless_dialog_option_list);
         dialogOptions.setAdapter(adapter);
         dialogOptions.setItemsCanFocus(true);
@@ -131,7 +129,10 @@ public class TouchlessDialogPresenter extends Presenter {
             ListView listView = dialogView.findViewById(R.id.touchless_dialog_option_list);
             PropertyModel[] models = model.get(TouchlessDialogProperties.LIST_MODELS);
             ArrayList<Pair<Integer, PropertyModel>> modelPairs = new ArrayList<>();
-            for (int i = 0; i < models.length; i++) modelPairs.add(Pair.create(0, models[i]));
+            for (int i = 0; i < models.length; i++) {
+                models[i].set(DialogListItemProperties.FOCUS_LISTENER_SET, true);
+                modelPairs.add(Pair.create(0, models[i]));
+            }
             optionsAdapter.updateModels(modelPairs);
         }
     }
@@ -143,14 +144,33 @@ public class TouchlessDialogPresenter extends Presenter {
      * @param propertyKey The property that changed.
      */
     private static void bindListItem(PropertyModel model, View view, PropertyKey propertyKey) {
+        ChromeImageView imageView = view.findViewById(R.id.dialog_item_icon);
+        TextView textView = view.findViewById(R.id.dialog_item_text);
         if (DialogListItemProperties.ICON == propertyKey) {
-            ChromeImageView imageView = view.findViewById(R.id.dialog_item_icon);
-            imageView.setImageDrawable(model.get(DialogListItemProperties.ICON));
+            Drawable icon = model.get(DialogListItemProperties.ICON).mutate();
+            icon.clearColorFilter();
+            imageView.setImageDrawable(icon);
         } else if (DialogListItemProperties.TEXT == propertyKey) {
-            TextView textView = view.findViewById(R.id.dialog_item_text);
             textView.setText(model.get(DialogListItemProperties.TEXT));
         } else if (DialogListItemProperties.CLICK_LISTENER == propertyKey) {
             view.setOnClickListener(model.get(DialogListItemProperties.CLICK_LISTENER));
+        } else if (DialogListItemProperties.FOCUS_LISTENER_SET == propertyKey) {
+            if (model.get(DialogListItemProperties.FOCUS_LISTENER_SET)) {
+                view.setOnFocusChangeListener((v, hasFocus) -> {
+                    textView.setTextColor(hasFocus
+                            ? view.getResources().getColor(R.color.modern_blue_800)
+                            : view.getResources().getColor(android.R.color.black));
+                    if (imageView.getDrawable() != null) {
+                        if (hasFocus) {
+                            imageView.getDrawable().setColorFilter(new PorterDuffColorFilter(
+                                    view.getResources().getColor(R.color.modern_blue_800),
+                                    PorterDuff.Mode.SRC_ATOP));
+                        } else {
+                            imageView.getDrawable().clearColorFilter();
+                        }
+                    }
+                });
+            }
         }
     }
 }

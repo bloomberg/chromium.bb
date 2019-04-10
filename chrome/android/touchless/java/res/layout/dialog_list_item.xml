@@ -11,16 +11,21 @@
 
     <org.chromium.ui.widget.ChromeImageView
         android:id="@+id/dialog_item_icon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="18dp"
+        android:layout_height="18dp"
         android:layout_gravity="center_vertical"
-        android:padding="8dp" />
+        android:layout_marginBottom="9dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="9dp"
+        android:padding="3dp"
+        android:scaleType="centerInside"/>
 
     <TextView
         android:id="@+id/dialog_item_text"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:textAppearance="@style/TextAppearance.BlackBody" />
+        android:layout_height="match_parent"
+        android:layout_marginStart="10dp"
+        android:gravity="center_vertical"
+        android:textAppearance="@style/TextAppearance.BlackBody"/>
 
 </LinearLayout>
