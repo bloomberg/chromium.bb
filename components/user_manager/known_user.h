@@ -172,6 +172,10 @@ void USER_MANAGER_EXPORT
 SetProfileRequiresPolicy(const AccountId& account_id,
                          ProfileRequiresPolicy policy_required);
 
+// Clears information whether profile requires policy.
+void USER_MANAGER_EXPORT
+ClearProfileRequiresPolicy(const AccountId& account_id);
+
 // Saves why the user has to go through re-auth flow.
 void USER_MANAGER_EXPORT UpdateReauthReason(const AccountId& account_id,
                                             const int reauth_reason);

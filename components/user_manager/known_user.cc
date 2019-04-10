@@ -143,6 +143,19 @@ void UpdateIdentity(const AccountId& account_id, base::DictionaryValue& dict) {
                  AccountId::AccountTypeToString(account_id.GetAccountType()));
 }
 
+void ClearPref(const AccountId& account_id, const std::string& path) {
+  const base::DictionaryValue* user_pref_dict = nullptr;
+  if (!FindPrefs(account_id, &user_pref_dict))
+    return;
+
+  base::Value updated_user_pref = user_pref_dict->Clone();
+  base::DictionaryValue* updated_user_pref_dict;
+  updated_user_pref.GetAsDictionary(&updated_user_pref_dict);
+
+  updated_user_pref_dict->RemovePath(path);
+  UpdatePrefs(account_id, *updated_user_pref_dict, true);
+}
+
 }  // namespace
 
 bool FindPrefs(const AccountId& account_id,
@@ -285,16 +298,7 @@ void RemovePref(const AccountId& account_id, const std::string& path) {
   for (const std::string& key : kReservedKeys)
     CHECK_NE(path, key);
 
-  const base::DictionaryValue* user_pref_dict = nullptr;
-  if (!FindPrefs(account_id, &user_pref_dict))
-    return;
-
-  base::Value updated_user_pref = user_pref_dict->Clone();
-  base::DictionaryValue* updated_user_pref_dict;
-  updated_user_pref.GetAsDictionary(&updated_user_pref_dict);
-
-  updated_user_pref_dict->RemovePath(path);
-  UpdatePrefs(account_id, *updated_user_pref_dict, true);
+  ClearPref(account_id, path);
 }
 
 AccountId GetAccountId(const std::string& user_email,
@@ -529,6 +533,10 @@ ProfileRequiresPolicy GetProfileRequiresPolicy(const AccountId& account_id) {
                            : ProfileRequiresPolicy::kNoPolicyRequired;
   }
   return ProfileRequiresPolicy::kUnknown;
+}
+
+void ClearProfileRequiresPolicy(const AccountId& account_id) {
+  ClearPref(account_id, kProfileRequiresPolicy);
 }
 
 void UpdateReauthReason(const AccountId& account_id, const int reauth_reason) {
