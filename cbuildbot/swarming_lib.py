@@ -246,8 +246,21 @@ class SwarmingCommandResult(cros_build_lib.CommandResult):
     Returns:
       True if the summary is valid else False.
     """
-    return (self.task_summary_json and self.task_summary_json.get('shards')
-            and self.task_summary_json.get('shards')[0])
+    if not self.task_summary_json:
+      logging.warning('Failed to load task summary json')
+      return False
+
+    if 'shards' not in self.task_summary_json:
+      logging.error('No shards in the invalid task summary json file:\n%r',
+                    self.task_summary_json)
+      return False
+
+    try:
+      return self.task_summary_json.get('shards')[0]
+    except TypeError as e:
+      logging.error('Invalid content in task summary json file:%s\n%r', str(e),
+                    self.task_summary_json)
+      return False
 
 
   def GetValue(self, field, default=None):
