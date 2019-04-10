@@ -17721,7 +17721,9 @@
       {
         "args": [
           "--platform",
-          "android-cronet"
+          "android-cronet",
+          "--target",
+          "Debug"
         ],
         "name": "sizes",
         "script": "cronet_sizes.py"
@@ -17745,7 +17747,9 @@
       {
         "args": [
           "--platform",
-          "android-cronet"
+          "android-cronet",
+          "--target",
+          "Release"
         ],
         "name": "sizes",
         "script": "cronet_sizes.py"
@@ -17768,7 +17772,9 @@
       {
         "args": [
           "--platform",
-          "android-cronet"
+          "android-cronet",
+          "--target",
+          "Debug"
         ],
         "name": "sizes",
         "script": "cronet_sizes.py"
@@ -17800,7 +17806,9 @@
       {
         "args": [
           "--platform",
-          "android-cronet"
+          "android-cronet",
+          "--target",
+          "Release"
         ],
         "name": "sizes",
         "script": "cronet_sizes.py"
@@ -18746,7 +18754,9 @@
       {
         "args": [
           "--platform",
-          "android-cronet"
+          "android-cronet",
+          "--target",
+          "Debug"
         ],
         "name": "sizes",
         "script": "cronet_sizes.py"
@@ -18778,7 +18788,9 @@
       {
         "args": [
           "--platform",
-          "android-cronet"
+          "android-cronet",
+          "--target",
+          "Release"
         ],
         "name": "sizes",
         "script": "cronet_sizes.py"
