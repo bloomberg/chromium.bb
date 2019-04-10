@@ -4,7 +4,9 @@
 
 #include "components/ntp_snippets/remote/cached_image_fetcher.h"
 
+#include <map>
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -15,6 +17,7 @@
 #include "components/image_fetcher/core/image_decoder.h"
 #include "components/image_fetcher/core/image_fetcher.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"
+#include "components/leveldb_proto/testing/fake_db.h"
 #include "components/ntp_snippets/remote/proto/ntp_snippets.pb.h"
 #include "components/ntp_snippets/remote/remote_suggestions_database.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -26,6 +29,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_unittest_util.h"
 
+using leveldb_proto::test::FakeDB;
 using testing::_;
 using testing::Eq;
 using testing::Property;
@@ -77,10 +81,19 @@ class NtpSnippetsCachedImageFetcherTest
  public:
   NtpSnippetsCachedImageFetcherTest() {
     EXPECT_TRUE(database_dir_.CreateUniqueTempDir());
-
     RequestThrottler::RegisterProfilePrefs(pref_service_.registry());
-    database_ =
-        std::make_unique<RemoteSuggestionsDatabase>(database_dir_.GetPath());
+
+    // Setup RemoteSuggestionsDatabase with fake ProtoDBs.
+    auto suggestion_db =
+        std::make_unique<FakeDB<SnippetProto>>(&suggestion_db_storage_);
+    auto image_db =
+        std::make_unique<FakeDB<SnippetImageProto>>(&image_db_storage_);
+    suggestion_db_ = suggestion_db.get();
+    image_db_ = image_db.get();
+    database_ = std::make_unique<RemoteSuggestionsDatabase>(
+        std::move(suggestion_db), std::move(image_db), database_dir_.GetPath());
+    suggestion_db_->InitCallback(true);
+    image_db_->InitCallback(true);
 
     shared_factory_ =
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
@@ -88,20 +101,18 @@ class NtpSnippetsCachedImageFetcherTest
 
     auto decoder = std::make_unique<FakeImageDecoder>();
     fake_image_decoder_ = decoder.get();
+    auto image_fetcher = std::make_unique<image_fetcher::ImageFetcherImpl>(
+        std::move(decoder), shared_factory_);
+
     cached_image_fetcher_ = std::make_unique<ntp_snippets::CachedImageFetcher>(
-        std::make_unique<image_fetcher::ImageFetcherImpl>(std::move(decoder),
-                                                          shared_factory_),
-        &pref_service_, database_.get());
-    RunUntilIdle();
+        std::move(image_fetcher), &pref_service_, database_.get());
+
     EXPECT_TRUE(database_->IsInitialized());
   }
 
   ~NtpSnippetsCachedImageFetcherTest() override {
     cached_image_fetcher_.reset();
     database_.reset();
-    // We need to run until idle after deleting the database, because
-    // ProtoDatabase deletes the actual LevelDB asynchronously.
-    RunUntilIdle();
   }
 
   void Fetch(std::string expected_image_data, bool expect_image) {
@@ -116,13 +127,14 @@ class NtpSnippetsCachedImageFetcherTest
         cached_image_fetcher()->FetchSuggestionImage(
             kSuggestionID, GURL(kImageURL), ImageDataFetchedCallback(),
             image_callback.Get());
-
+        image_db_->GetCallback(true);
       } break;
       case TestType::kImageDataCallback: {
         EXPECT_CALL(image_data_callback, Run(expected_image_data));
         cached_image_fetcher()->FetchSuggestionImage(
             kSuggestionID, GURL(kImageURL), image_data_callback.Get(),
             ImageFetchedCallback());
+        image_db_->GetCallback(true);
       } break;
       case TestType::kBothCallbacks: {
         EXPECT_CALL(image_data_callback, Run(expected_image_data));
@@ -131,12 +143,11 @@ class NtpSnippetsCachedImageFetcherTest
         cached_image_fetcher()->FetchSuggestionImage(
             kSuggestionID, GURL(kImageURL), image_data_callback.Get(),
             image_callback.Get());
+        image_db_->GetCallback(true);
       } break;
     }
-    RunUntilIdle();
+    scoped_task_environment_.RunUntilIdle();
   }
-
-  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
 
   RemoteSuggestionsDatabase* database() { return database_.get(); }
   FakeImageDecoder* fake_image_decoder() { return fake_image_decoder_; }
@@ -146,14 +157,23 @@ class NtpSnippetsCachedImageFetcherTest
   CachedImageFetcher* cached_image_fetcher() {
     return cached_image_fetcher_.get();
   }
+  FakeDB<SnippetProto>* suggestion_db() { return suggestion_db_; }
+  FakeDB<SnippetImageProto>* image_db() { return image_db_; }
 
  private:
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
   std::unique_ptr<CachedImageFetcher> cached_image_fetcher_;
+  FakeImageDecoder* fake_image_decoder_;
+
   std::unique_ptr<RemoteSuggestionsDatabase> database_;
   base::ScopedTempDir database_dir_;
-  FakeImageDecoder* fake_image_decoder_;
+  std::map<std::string, SnippetProto> suggestion_db_storage_;
+  std::map<std::string, SnippetImageProto> image_db_storage_;
+
+  // Owned by |database_|.
+  FakeDB<SnippetProto>* suggestion_db_;
+  FakeDB<SnippetImageProto>* image_db_;
 
   TestingPrefServiceSimple pref_service_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -164,7 +184,7 @@ class NtpSnippetsCachedImageFetcherTest
 TEST_P(NtpSnippetsCachedImageFetcherTest, FetchImageFromCache) {
   // Save the image in the database.
   database()->SaveImage(kSnippetID, kImageData);
-  RunUntilIdle();
+  image_db()->UpdateCallback(true);
 
   // Do not provide any URL responses and expect that the image is fetched (from
   // cache).
