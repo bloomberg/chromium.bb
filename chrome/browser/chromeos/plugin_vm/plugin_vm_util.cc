@@ -62,6 +62,10 @@ bool IsPluginVmConfigured(Profile* profile) {
   return true;
 }
 
+bool IsPluginVmEnabled(Profile* profile) {
+  return IsPluginVmAllowedForProfile(profile) && IsPluginVmConfigured(profile);
+}
+
 // TODO(timloh): Implement this (crbug.com/940319).
 bool IsPluginVmExoApplicationId(const std::string& app_id) {
   return false;

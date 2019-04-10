@@ -14,10 +14,17 @@ namespace plugin_vm {
 // Generated as crx_file::id_util::GenerateId("org.chromium.plugin_vm");
 constexpr char kPluginVmAppId[] = "lgjpclljbbmphhnalkeplcmnjpfmmaek";
 
+// Name of the Plugin VM.
+constexpr char kPluginVmName[] = "PluginVm";
+
 // Checks if PluginVm is allowed for the current profile.
 bool IsPluginVmAllowedForProfile(const Profile* profile);
+
 // Checks if PluginVm is configured for the current profile.
 bool IsPluginVmConfigured(Profile* profile);
+
+// Returns true if PluginVm is allowed and configured for the current profile.
+bool IsPluginVmEnabled(Profile* profile);
 
 void ShowPluginVmLauncherView(Profile* profile);
 

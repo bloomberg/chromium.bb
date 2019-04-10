@@ -305,7 +305,7 @@ void OpenInternalApp(const std::string& app_id,
     chromeos::DiscoverWindowManager::GetInstance()
         ->ShowChromeDiscoverPageForProfile(profile);
   } else if (app_id == plugin_vm::kPluginVmAppId) {
-    if (plugin_vm::IsPluginVmConfigured(profile)) {
+    if (plugin_vm::IsPluginVmEnabled(profile)) {
       // TODO(http://crbug.com/904853): Start PluginVm.
     } else {
       plugin_vm::ShowPluginVmLauncherView(profile);

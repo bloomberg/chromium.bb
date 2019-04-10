@@ -57,10 +57,8 @@ ExtensionFunction::ResponseAction FileManagerPrivateGetStringsFunction::Run() {
       "MY_FILES_VOLUME_ENABLED",
       base::FeatureList::IsEnabled(chromeos::features::kMyFilesVolume));
   dict->SetBoolean("PLUGIN_VM_ENABLED",
-                   plugin_vm::IsPluginVmAllowedForProfile(
-                       Profile::FromBrowserContext(browser_context())) &&
-                       plugin_vm::IsPluginVmConfigured(
-                           Profile::FromBrowserContext(browser_context())));
+                   plugin_vm::IsPluginVmEnabled(
+                       Profile::FromBrowserContext(browser_context())));
   dict->SetString("UI_LOCALE", extension_l10n_util::CurrentLocaleOrDefault());
 
   return RespondNow(OneArgument(std::move(dict)));
