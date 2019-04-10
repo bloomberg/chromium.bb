@@ -51,7 +51,7 @@ ConfigSource::ConfigSet PolicyConfigSource::GetConfigSet() {
 
   const base::Value* current_config_value = dictionary->FindKeyOfType(
       kCurrentConfigDictKey, base::Value::Type::DICTIONARY);
-  if (future_config_value) {
+  if (current_config_value) {
     config_set.current_config = AccessCodeConfig::FromDictionary(
         static_cast<const base::DictionaryValue&>(*current_config_value));
   } else {
@@ -61,9 +61,12 @@ ConfigSource::ConfigSet PolicyConfigSource::GetConfigSet() {
   const base::Value* old_configs_value =
       dictionary->FindKeyOfType(kOldConfigsDictKey, base::Value::Type::LIST);
   if (old_configs_value) {
-    for (const auto& config : old_configs_value->GetList()) {
-      config_set.current_config = AccessCodeConfig::FromDictionary(
-          static_cast<const base::DictionaryValue&>(config));
+    for (const auto& config_value : old_configs_value->GetList()) {
+      base::Optional<AccessCodeConfig> config =
+          AccessCodeConfig::FromDictionary(
+              static_cast<const base::DictionaryValue&>(config_value));
+      if (config)
+        config_set.old_configs.push_back(config.value());
     }
   }
   return config_set;
