@@ -28,6 +28,11 @@ if (!program.args.length || program.explain()) {
   process.exit(1);
 }
 
+process.on('unhandledRejection', (error) => {
+  console.log('unhandledRejection', error);
+  process.exit(1);
+});
+
 const puppeteer = require('puppeteer');
 
 (async function main() {
@@ -85,6 +90,16 @@ const puppeteer = require('puppeteer');
     'images/PANASONIC_DMC.RW2',
     'images/UNKNOWN_FORMAT.JPG',
   ];
+
+  await page.evaluate((length) => {
+    return window.createFileSystem(length);
+  }, images.length);
+
+  for (let i = 0; i < images.length; ++i) {
+    await page.evaluate((image) => {
+      return window.writeToFileSystem(image);
+    }, images[i]);
+  }
 
   await page.evaluate(() => {
     window.testTime = 0;
