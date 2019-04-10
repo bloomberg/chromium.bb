@@ -116,6 +116,10 @@ int ConnectJob::Connect() {
   return rv;
 }
 
+std::unique_ptr<StreamSocket> ConnectJob::PassProxySocketOnFailure() {
+  return nullptr;
+}
+
 void ConnectJob::SetSocket(std::unique_ptr<StreamSocket> socket) {
   if (socket)
     net_log().AddEvent(NetLogEventType::CONNECT_JOB_SET_SOCKET);

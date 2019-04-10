@@ -192,6 +192,11 @@ class NET_EXPORT_PRIVATE ConnectJob {
   // proxy tunnel auth has been refactored.
   virtual void GetAdditionalErrorState(ClientSocketHandle* handle) {}
 
+  // On connect failure, returns the nested proxy socket, if there is one.
+  // Returns nullptr otherwise. Only returns a non-null value for SSL sockets on
+  // top of proxy sockets.
+  virtual std::unique_ptr<StreamSocket> PassProxySocketOnFailure();
+
   const LoadTimingInfo::ConnectTiming& connect_timing() const {
     return connect_timing_;
   }

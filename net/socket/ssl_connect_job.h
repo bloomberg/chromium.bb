@@ -100,8 +100,8 @@ class NET_EXPORT_PRIVATE SSLConnectJob : public ConnectJob,
                         HttpAuthController* auth_controller,
                         base::OnceClosure restart_with_auth_callback,
                         ConnectJob* job) override;
-
   void GetAdditionalErrorState(ClientSocketHandle* handle) override;
+  std::unique_ptr<StreamSocket> PassProxySocketOnFailure() override;
 
   // Returns the timeout for the SSL handshake. This is the same for all
   // connections regardless of whether or not there is a proxy in use.
@@ -152,6 +152,9 @@ class NET_EXPORT_PRIVATE SSLConnectJob : public ConnectJob,
   std::unique_ptr<ConnectJob> nested_connect_job_;
   std::unique_ptr<StreamSocket> nested_socket_;
   std::unique_ptr<SSLClientSocket> ssl_socket_;
+
+  // True once SSL negotiation has started.
+  bool ssl_negotiation_started_;
 
   HttpResponseInfo error_response_info_;
 

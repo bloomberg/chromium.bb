@@ -29,6 +29,7 @@
 
 namespace net {
 
+class ConnectJob;
 class SocketTag;
 
 // A container for a StreamSocket.
@@ -144,6 +145,11 @@ class NET_EXPORT ClientSocketHandle {
   // SetSocket() may also be used if this handle is used as simply for
   // socket storage (e.g., http://crbug.com/37810).
   void SetSocket(std::unique_ptr<StreamSocket> s);
+
+  // Populates several fields of |this| with error-related information from the
+  // provided completed ConnectJob. Should only be called on ConnectJob failure.
+  void SetAdditionalErrorState(ConnectJob* connect_job);
+
   void set_reuse_type(SocketReuseType reuse_type) { reuse_type_ = reuse_type; }
   void set_idle_time(base::TimeDelta idle_time) { idle_time_ = idle_time; }
   void set_pool_id(int id) { pool_id_ = id; }

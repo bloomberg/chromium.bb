@@ -289,7 +289,7 @@ bool WebSocketTransportClientSocketPool::TryHandOutSocket(
 
   // If we got a socket, it must contain error information so pass that
   // up so that the caller can retrieve it.
-  connect_job_delegate->connect_job()->GetAdditionalErrorState(handle);
+  handle->SetAdditionalErrorState(connect_job_delegate->connect_job());
   if (socket) {
     HandOutSocket(std::move(socket), connect_timing, handle, request_net_log);
     handed_out_socket = true;
