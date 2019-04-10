@@ -15,6 +15,7 @@
 #include "net/base/trace_constants.h"
 #include "net/log/net_log_event_type.h"
 #include "net/socket/client_socket_pool.h"
+#include "net/socket/connect_job.h"
 
 namespace net {
 
@@ -200,6 +201,20 @@ void ClientSocketHandle::DumpMemoryStats(
 
 void ClientSocketHandle::SetSocket(std::unique_ptr<StreamSocket> s) {
   socket_ = std::move(s);
+}
+
+void ClientSocketHandle::SetAdditionalErrorState(ConnectJob* connect_job) {
+  connect_job->GetAdditionalErrorState(this);
+
+  // TODO(mmenke): Once redirects are no longer followed on
+  // ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT, remove this code.
+  pending_http_proxy_socket_ = connect_job->PassProxySocketOnFailure();
+  if (pending_http_proxy_socket_) {
+    // Connection timing is only set when a socket was actually established. In
+    // this particular case, there is a socket being returned, just not through
+    // the normal path, so need to set timing information here.
+    connect_timing_ = connect_job->connect_timing();
+  }
 }
 
 void ClientSocketHandle::OnIOComplete(int result) {

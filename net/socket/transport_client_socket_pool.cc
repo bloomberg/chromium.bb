@@ -438,7 +438,7 @@ int TransportClientSocketPool::RequestSocketInternal(const GroupId& group_id,
     std::unique_ptr<StreamSocket> error_socket;
     if (!preconnecting) {
       DCHECK(handle);
-      connect_job->GetAdditionalErrorState(handle);
+      handle->SetAdditionalErrorState(connect_job);
       error_socket = connect_job->PassSocket();
     }
     if (error_socket) {
@@ -1232,7 +1232,7 @@ void TransportClientSocketPool::OnConnectJobComplete(Group* group,
     std::unique_ptr<Request> request = group->PopNextUnboundRequest();
     if (request) {
       LogBoundConnectJobToRequest(job_log.source(), *request);
-      job->GetAdditionalErrorState(request->handle());
+      request->handle()->SetAdditionalErrorState(job);
       RemoveConnectJob(job, group);
       if (socket.get()) {
         handed_out_socket = true;
