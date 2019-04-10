@@ -4,10 +4,10 @@
 
 #include <thread>  // NOLINT
 
-#include "api/impl/task_runner_impl.h"
 #include "api/impl/testing/fake_clock.h"
-#include "api/public/task_runner_factory.h"
+#include "platform/api/task_runner_factory.h"
 #include "platform/api/time.h"
+#include "platform/base/task_runner_impl.h"
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
 namespace {

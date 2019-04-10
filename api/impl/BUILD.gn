@@ -22,9 +22,6 @@ source_set("impl") {
     "service_listener_impl.h",
     "service_publisher_impl.cc",
     "service_publisher_impl.h",
-    "task_runner_factory.cc",
-    "task_runner_impl.cc",
-    "task_runner_impl.h",
   ]
 
   if (use_mdns_responder) {

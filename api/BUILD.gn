@@ -37,7 +37,6 @@ source_set("api_unittests") {
     "impl/receiver_list_unittest.cc",
     "impl/service_listener_impl_unittest.cc",
     "impl/service_publisher_impl_unittest.cc",
-    "impl/task_runner_unittest.cc",
     "public/endpoint_request_ids_unittest.cc",
     "public/message_demuxer_unittest.cc",
     "public/service_info_unittest.cc",

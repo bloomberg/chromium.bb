@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file
 
-#include "api/public/task_runner_factory.h"
+#include "platform/api/task_runner_factory.h"
 
-#include "api/impl/task_runner_impl.h"
 #include "platform/api/logging.h"
+#include "platform/base/task_runner_impl.h"
 
 namespace openscreen {
 namespace platform {

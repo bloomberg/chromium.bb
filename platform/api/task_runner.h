@@ -2,14 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef API_PUBLIC_TASK_RUNNER_H_
-#define API_PUBLIC_TASK_RUNNER_H_
+#ifndef PLATFORM_API_TASK_RUNNER_H_
+#define PLATFORM_API_TASK_RUNNER_H_
 
-#include <deque>
 #include <functional>
-#include <list>
-#include <memory>
-#include <utility>
 
 #include "platform/api/time.h"
 
@@ -42,4 +38,4 @@ class TaskRunner {
 }  // namespace platform
 }  // namespace openscreen
 
-#endif  // API_PUBLIC_TASK_RUNNER_H_
+#endif  // PLATFORM_API_TASK_RUNNER_H_

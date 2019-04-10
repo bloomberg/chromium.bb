@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file
 
-#include "api/impl/task_runner_impl.h"
+#include "platform/base/task_runner_impl.h"
 
 #include "platform/api/logging.h"
 
 namespace openscreen {
 namespace platform {
+
 TaskRunnerImpl::TaskRunnerImpl(platform::ClockNowFunctionPtr now_function)
     : now_function_(now_function), is_running_(false) {}
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef API_IMPL_TASK_RUNNER_IMPL_H_
-#define API_IMPL_TASK_RUNNER_IMPL_H_
+#ifndef PLATFORM_BASE_TASK_RUNNER_IMPL_H_
+#define PLATFORM_BASE_TASK_RUNNER_IMPL_H_
 
 #include <atomic>
 #include <condition_variable>  // NOLINT
@@ -18,7 +18,7 @@
 
 #include "absl/base/thread_annotations.h"
 #include "absl/types/optional.h"
-#include "api/public/task_runner.h"
+#include "platform/api/task_runner.h"
 #include "platform/api/time.h"
 
 namespace openscreen {
@@ -108,4 +108,4 @@ class TaskRunnerImpl : public TaskRunner {
 }  // namespace platform
 }  // namespace openscreen
 
-#endif  // API_IMPL_TASK_RUNNER_IMPL_H_
+#endif  // PLATFORM_BASE_TASK_RUNNER_IMPL_H_
