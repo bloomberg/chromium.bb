@@ -464,13 +464,14 @@ VirtualCtap2Device::~VirtualCtap2Device() = default;
 
 // As all operations for VirtualCtap2Device are synchronous and we do not wait
 // for user touch, Cancel command is no-op.
-void VirtualCtap2Device::Cancel() {}
+void VirtualCtap2Device::Cancel(CancelToken) {}
 
-void VirtualCtap2Device::DeviceTransact(std::vector<uint8_t> command,
-                                        DeviceCallback cb) {
+FidoDevice::CancelToken VirtualCtap2Device::DeviceTransact(
+    std::vector<uint8_t> command,
+    DeviceCallback cb) {
   if (command.empty()) {
     ReturnCtap2Response(std::move(cb), CtapDeviceResponseCode::kCtap2ErrOther);
-    return;
+    return 0;
   }
 
   auto cmd_type = command[0];
@@ -478,7 +479,7 @@ void VirtualCtap2Device::DeviceTransact(std::vector<uint8_t> command,
   // is a U2F message.
   if (cmd_type == 0 && config_.u2f_support) {
     u2f_device_->DeviceTransact(std::move(command), std::move(cb));
-    return;
+    return 0;
   }
 
   const auto request_bytes = base::make_span(command).subspan(1);
@@ -490,7 +491,7 @@ void VirtualCtap2Device::DeviceTransact(std::vector<uint8_t> command,
       if (!request_bytes.empty()) {
         ReturnCtap2Response(std::move(cb),
                             CtapDeviceResponseCode::kCtap2ErrOther);
-        return;
+        return 0;
       }
 
       response_code = OnAuthenticatorGetInfo(&response_data);
@@ -514,6 +515,7 @@ void VirtualCtap2Device::DeviceTransact(std::vector<uint8_t> command,
   // Call |callback| via the |MessageLoop| because |AuthenticatorImpl| doesn't
   // support callback hairpinning.
   ReturnCtap2Response(std::move(cb), response_code, std::move(response_data));
+  return 0;
 }
 
 base::WeakPtr<FidoDevice> VirtualCtap2Device::GetWeakPtr() {

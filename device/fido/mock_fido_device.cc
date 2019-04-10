@@ -82,9 +82,10 @@ MockFidoDevice::MockFidoDevice(
 }
 MockFidoDevice::~MockFidoDevice() = default;
 
-void MockFidoDevice::DeviceTransact(std::vector<uint8_t> command,
-                                    DeviceCallback cb) {
-  DeviceTransactPtr(command, cb);
+FidoDevice::CancelToken MockFidoDevice::DeviceTransact(
+    std::vector<uint8_t> command,
+    DeviceCallback cb) {
+  return DeviceTransactPtr(command, cb);
 }
 
 FidoTransportProtocol MockFidoDevice::DeviceTransport() const {
@@ -114,7 +115,9 @@ void MockFidoDevice::ExpectCtap2CommandAndRespondWith(
   };
 
   EXPECT_CALL(*this, DeviceTransactPtr(IsCtap2Command(command), ::testing::_))
-      .WillOnce(::testing::WithArg<1>(::testing::Invoke(send_response)));
+      .WillOnce(::testing::DoAll(
+          ::testing::WithArg<1>(::testing::Invoke(send_response)),
+          ::testing::Return(0)));
 }
 
 void MockFidoDevice::ExpectCtap2CommandAndRespondWithError(
@@ -138,19 +141,23 @@ void MockFidoDevice::ExpectRequestAndRespondWith(
   auto request_as_vector = fido_parsing_utils::Materialize(request);
   EXPECT_CALL(*this,
               DeviceTransactPtr(std::move(request_as_vector), ::testing::_))
-      .WillOnce(::testing::WithArg<1>(::testing::Invoke(send_response)));
+      .WillOnce(::testing::DoAll(
+          ::testing::WithArg<1>(::testing::Invoke(send_response)),
+          ::testing::Return(0)));
 }
 
 void MockFidoDevice::ExpectCtap2CommandAndDoNotRespond(
     CtapRequestCommand command) {
-  EXPECT_CALL(*this, DeviceTransactPtr(IsCtap2Command(command), ::testing::_));
+  EXPECT_CALL(*this, DeviceTransactPtr(IsCtap2Command(command), ::testing::_))
+      .WillOnce(::testing::Return(0));
 }
 
 void MockFidoDevice::ExpectRequestAndDoNotRespond(
     base::span<const uint8_t> request) {
   auto request_as_vector = fido_parsing_utils::Materialize(request);
   EXPECT_CALL(*this,
-              DeviceTransactPtr(std::move(request_as_vector), ::testing::_));
+              DeviceTransactPtr(std::move(request_as_vector), ::testing::_))
+      .WillOnce(::testing::Return(0));
 }
 
 void MockFidoDevice::SetDeviceTransport(

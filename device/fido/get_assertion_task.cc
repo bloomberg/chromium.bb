@@ -49,6 +49,15 @@ GetAssertionTask::GetAssertionTask(FidoDevice* device,
 
 GetAssertionTask::~GetAssertionTask() = default;
 
+void GetAssertionTask::Cancel() {
+  if (sign_operation_) {
+    sign_operation_->Cancel();
+  }
+  if (dummy_register_operation_) {
+    dummy_register_operation_->Cancel();
+  }
+}
+
 void GetAssertionTask::StartTask() {
   if (device()->supported_protocol() == ProtocolVersion::kCtap) {
     GetAssertion();

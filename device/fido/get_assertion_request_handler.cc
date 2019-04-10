@@ -318,6 +318,8 @@ void GetAssertionRequestHandler::HandleResponse(
          authenticator->WillNeedPINToGetAssertion(request_, observer()) ==
              FidoAuthenticator::GetAssertionPINDisposition::kNoPIN);
 
+  CancelActiveAuthenticators(authenticator->GetId());
+
   state_ = State::kFinished;
   if (response_code != CtapDeviceResponseCode::kSuccess) {
     FIDO_LOG(ERROR) << "Failing assertion request due to status "
@@ -420,6 +422,7 @@ void GetAssertionRequestHandler::HandleTouch(FidoAuthenticator* authenticator) {
 void GetAssertionRequestHandler::HandleInapplicableAuthenticator(
     FidoAuthenticator* authenticator) {
   // User touched an authenticator that cannot handle this request.
+  CancelActiveAuthenticators(authenticator->GetId());
   std::move(completion_callback_)
       .Run(FidoReturnCode::kUserConsentButCredentialNotRecognized,
            base::nullopt, base::nullopt);

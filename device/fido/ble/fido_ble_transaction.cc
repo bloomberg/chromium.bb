@@ -60,6 +60,12 @@ void FidoBleTransaction::WriteRequestFragment(
   StartTimeout();
 }
 
+static void WriteCancel(FidoBleConnection* connection) {
+  connection->WriteControlPoint(
+      {static_cast<uint8_t>(FidoBleDeviceCommand::kCancel), 0, 0},
+      base::DoNothing());
+}
+
 void FidoBleTransaction::OnRequestFragmentWritten(bool success) {
   DCHECK(has_pending_request_fragment_write_);
   has_pending_request_fragment_write_ = false;
@@ -74,6 +80,12 @@ void FidoBleTransaction::OnRequestFragmentWritten(bool success) {
     request_cont_fragments_.pop();
     WriteRequestFragment(next_request_fragment);
     return;
+  }
+
+  if (cancel_pending_) {
+    cancel_pending_ = false;
+    cancel_sent_ = true;
+    WriteCancel(connection_);
   }
 
   // The transaction wrote the full request frame. It is possible that the full
@@ -124,6 +136,21 @@ void FidoBleTransaction::OnResponseFragment(std::vector<uint8_t> data) {
       response_frame_assembler_->GetFrame()->command() ==
           FidoBleDeviceCommand::kKeepAlive) {
     ProcessResponseFrame();
+  }
+}
+
+void FidoBleTransaction::Cancel() {
+  if (cancel_sent_) {
+    return;
+  }
+
+  if (has_pending_request_fragment_write_) {
+    // A mesasge is still being written. Signal that the cancelation should be
+    // written once complete.
+    cancel_pending_ = true;
+  } else {
+    cancel_sent_ = true;
+    WriteCancel(connection_);
   }
 }
 
