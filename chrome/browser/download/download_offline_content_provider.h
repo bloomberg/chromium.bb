@@ -70,6 +70,7 @@ class DownloadOfflineContentProvider : public OfflineContentProvider,
   // DownloadItem::Observer overrides
   void OnDownloadUpdated(DownloadItem* item) override;
   void OnDownloadRemoved(DownloadItem* item) override;
+  void OnDownloadDestroyed(DownloadItem* download) override;
 
   // DownloadManager::Observer overrides
   void ManagerGoingDown(DownloadManager* manager) override;

@@ -264,6 +264,13 @@ void DownloadOfflineContentProvider::OnDownloadUpdated(DownloadItem* item) {
 
   if (item->GetState() == DownloadItem::COMPLETE) {
     // TODO(crbug.com/938152): May be move this to DownloadItem.
+    if (completed_downloads_.find(item->GetGuid()) !=
+        completed_downloads_.end()) {
+      return;
+    }
+
+    completed_downloads_.insert(item->GetGuid());
+
     AddCompletedDownload(item);
   }
 
@@ -283,12 +290,12 @@ void DownloadOfflineContentProvider::OnDownloadRemoved(DownloadItem* item) {
     observer.OnItemRemoved(contentId);
 }
 
+void DownloadOfflineContentProvider::OnDownloadDestroyed(DownloadItem* item) {
+  completed_downloads_.erase(item->GetGuid());
+}
+
 void DownloadOfflineContentProvider::AddCompletedDownload(DownloadItem* item) {
 #if defined(OS_ANDROID)
-  if (completed_downloads_.find(item->GetGuid()) != completed_downloads_.end())
-    return;
-  completed_downloads_.insert(item->GetGuid());
-
   DownloadManagerBridge::AddCompletedDownload(
       item,
       base::BindOnce(&DownloadOfflineContentProvider::AddCompletedDownloadDone,
