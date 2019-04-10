@@ -3772,9 +3772,9 @@
       'tags': [],
       'desc': '''Enables merging of the extension install list policies <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME">ExtensionInstallBlacklist</ph>, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME">ExtensionInstallWhitelist</ph> and <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME">ExtensionInstallForcelist</ph>.
 
-      If you enable this setting, the values from machine platform policy, machine cloud policy and user platfrom policy are merged into a single list and used as a whole instead of only using the values from the single source with highest priority.
+      If you enable this setting, the values from machine platform policy, machine cloud policy and user platform policy are merged into a single list and used as a whole instead of only using the values from the single source with highest priority.
 
-      If you disable this setting or leave it unset, only list entries from the highest priority source are taken and all other sources are shown as conflicts but ingoner.''',
+      If you disable this setting or leave it unset, only list entries from the highest priority source are taken and all other sources are shown as conflicts but ignored.''',
     },
     {
       'name': 'ShowHomeButton',
