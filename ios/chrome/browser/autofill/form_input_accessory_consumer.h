@@ -50,6 +50,11 @@
 // reset.
 - (void)continueCustomKeyboardView;
 
+// Tells the consumer that suggestions are being fetched. The fetching is
+// asynchronous, so this call gives the opportunity to do any view preparation
+// that doesn't need the suggestions.
+- (void)prepareToShowSuggestions;
+
 // Replace the keyboard accessory view with one showing the passed suggestions.
 // And form navigation buttons if not an iPad (which already includes those).
 // |isHardwareKeyboard| is true if a hardware keyboard is in use.
