@@ -42,6 +42,21 @@ bool CanTrigger(const NotificationDatabaseData& data) {
   return data.notification_data.show_trigger_timestamp && !data.has_triggered;
 }
 
+void LogNotificationTriggerUMA(const NotificationDatabaseData& data) {
+  UMA_HISTOGRAM_BOOLEAN(
+      "Notifications.Triggers.HasShowTrigger",
+      data.notification_data.show_trigger_timestamp.has_value());
+
+  if (!data.notification_data.show_trigger_timestamp)
+    return;
+
+  base::TimeDelta show_trigger_delay =
+      data.notification_data.show_trigger_timestamp.value() - base::Time::Now();
+
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Notifications.Triggers.ShowTriggerDelay",
+                              show_trigger_delay.InDays(), 1, 365, 50);
+}
+
 }  // namespace
 
 PlatformNotificationContextImpl::PlatformNotificationContextImpl(
@@ -272,16 +287,21 @@ void PlatformNotificationContextImpl::DoTriggerNotification(
   NotificationDatabase::Status status = database_->ReadNotificationResources(
       database_data.notification_id, database_data.origin, &resources);
 
-  if (status != NotificationDatabase::STATUS_OK) {
-    // TODO(knollr): add UMA for this
+  UMA_HISTOGRAM_ENUMERATION(
+      "Notifications.Database.ReadResourcesForTriggeredResult", status,
+      NotificationDatabase::STATUS_COUNT);
+
+  if (status != NotificationDatabase::STATUS_OK)
     resources = blink::NotificationResources();
-  }
 
   // Create a copy of the |database_data| to store the |has_triggered| flag.
   NotificationDatabaseData write_database_data = database_data;
   write_database_data.has_triggered = true;
   status = database_->WriteNotificationData(write_database_data.origin,
                                             write_database_data);
+
+  UMA_HISTOGRAM_ENUMERATION("Notifications.Database.WriteTriggeredResult",
+                            status, NotificationDatabase::STATUS_COUNT);
 
   if (status != NotificationDatabase::STATUS_OK) {
     database_->DeleteNotificationData(write_database_data.notification_id,
@@ -322,8 +342,8 @@ void PlatformNotificationContextImpl::DoReadNotificationResources(
   NotificationDatabase::Status status = database_->ReadNotificationResources(
       notification_id, origin, &notification_resources);
 
-  UMA_HISTOGRAM_ENUMERATION("Notifications.Database.ReadResult", status,
-                            NotificationDatabase::STATUS_COUNT);
+  UMA_HISTOGRAM_ENUMERATION("Notifications.Database.ReadResourcesResult",
+                            status, NotificationDatabase::STATUS_COUNT);
 
   if (status == NotificationDatabase::STATUS_OK) {
     base::PostTaskWithTraits(
@@ -502,6 +522,9 @@ void PlatformNotificationContextImpl::DoWriteNotificationData(
                        /* notification_id= */ ""));
     return;
   }
+
+  if (base::FeatureList::IsEnabled(features::kNotificationTriggers))
+    LogNotificationTriggerUMA(database_data);
 
   bool replaces_existing = false;
   std::string notification_id =
