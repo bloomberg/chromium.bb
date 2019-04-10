@@ -17,6 +17,7 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
+#include "chrome/browser/sync/test/integration/secondary_account_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/autofill/payments/payments_ui_constants.h"
@@ -49,6 +50,7 @@
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/signin/core/browser/signin_buildflags.h"
 #include "components/sync/driver/profile_sync_service.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/test/fake_server/fake_server.h"
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -735,7 +737,6 @@ class SaveCardBubbleViewsFullFormBrowserTest
  private:
   std::unique_ptr<autofill::EventWaiter<DialogEvent>> event_waiter_;
   std::unique_ptr<net::FakeURLFetcherFactory> url_fetcher_factory_;
-  network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   std::unique_ptr<device::ScopedGeolocationOverrider> geolocation_overrider_;
 
@@ -1327,6 +1328,85 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
       "Autofill.SaveCreditCardPrompt.Upload.FirstShow",
       AutofillMetrics::SAVE_CARD_PROMPT_END_ACCEPTED, 1);
 }
+
+// On Chrome OS, the test profile starts with a primary account already set, so
+// sync-the-transport tests don't apply.
+#if !defined(OS_CHROMEOS)
+
+// Sets up Chrome with Sync-the-transport mode enabled, with the Wallet datatype
+// as enabled type.
+class SaveCardBubbleViewsSyncTransportFullFormBrowserTest
+    : public SaveCardBubbleViewsFullFormBrowserTest {
+ protected:
+  SaveCardBubbleViewsSyncTransportFullFormBrowserTest() = default;
+
+  void SetUpInProcessBrowserTestFixture() override {
+    // Set up Sync the transport mode, so that sync starts on content-area
+    // signins. Also add wallet data type to the list of enabled types.
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{features::kAutofillUpstream,
+                              features::kAutofillEnableAccountWalletStorage,
+                              switches::kSyncSupportSecondaryAccount},
+        /*disabled_features=*/{});
+    test_signin_client_factory_ =
+        secondary_account_helper::SetUpSigninClient(test_url_loader_factory());
+
+    SaveCardBubbleViewsFullFormBrowserTest::SetUpInProcessBrowserTestFixture();
+  }
+
+ private:
+  secondary_account_helper::ScopedSigninClientFactory
+      test_signin_client_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(SaveCardBubbleViewsSyncTransportFullFormBrowserTest);
+};
+
+// Tests the upload save bubble. Ensures that clicking the [Save] button
+// successfully causes the bubble to go away and sends an UploadCardRequest RPC
+// to Google Payments.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsSyncTransportFullFormBrowserTest,
+                       Upload_TransportMode_ClickingSaveClosesBubble) {
+  // Signing in (without making the account Chrome's primary one or explicitly
+  // setting up Sync) causes the Sync machinery to start up in standalone
+  // transport mode.
+  secondary_account_helper::SignInSecondaryAccount(
+      browser()->profile(), test_url_loader_factory(), "user@gmail.com");
+  ASSERT_NE(syncer::SyncService::TransportState::DISABLED,
+            harness_->service()->GetTransportState());
+
+  ASSERT_TRUE(harness_->AwaitSyncTransportActive());
+  ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
+            harness_->service()->GetTransportState());
+  ASSERT_FALSE(harness_->service()->IsSyncFeatureEnabled());
+
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsAccepts();
+
+  // Submitting the form should show the upload save bubble and legal footer.
+  // (Must wait for response from Payments before accessing the controller.)
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
+
+  NavigateTo(kCreditCardUploadForm);
+  FillAndSubmitForm();
+  WaitForObservedEvent();
+  EXPECT_TRUE(
+      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
+
+  // Clicking [Save] should accept and close it, then send an UploadCardRequest
+  // to Google Payments.
+  ResetEventWaiterForSequence({DialogEvent::SENT_UPLOAD_CARD_REQUEST});
+  base::HistogramTester histogram_tester;
+  ClickOnDialogViewWithIdAndWait(DialogViewId::OK_BUTTON);
+  // UMA should have recorded bubble acceptance.
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SaveCreditCardPrompt.Upload.FirstShow",
+      AutofillMetrics::SAVE_CARD_PROMPT_END_ACCEPTED, 1);
+}
+
+#endif  // !OS_CHROMEOS
 
 // Tests the upload save bubble. Ensures that clicking the [No thanks] button
 // successfully causes the bubble to go away.
