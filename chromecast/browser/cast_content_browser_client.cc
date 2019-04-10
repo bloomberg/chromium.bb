@@ -40,6 +40,8 @@
 #include "chromecast/browser/cast_session_id_map.h"
 #include "chromecast/browser/default_navigation_throttle.h"
 #include "chromecast/browser/devtools/cast_devtools_manager_delegate.h"
+#include "chromecast/browser/general_audience_browsing_navigation_throttle.h"
+#include "chromecast/browser/general_audience_browsing_service.h"
 #include "chromecast/browser/media/media_caps_impl.h"
 #include "chromecast/browser/service/cast_service_simple.h"
 #include "chromecast/browser/tts/tts_controller.h"
@@ -958,6 +960,13 @@ CastContentBrowserClient::CreateThrottlesForNavigation(
     }
   }
 #endif
+
+  if (chromecast::IsFeatureEnabled(kEnableGeneralAudienceBrowsing)) {
+    throttles.push_back(
+        std::make_unique<GeneralAudienceBrowsingNavigationThrottle>(
+            handle, general_audience_browsing_service_.get()));
+  }
+
   return throttles;
 }
 
@@ -1060,6 +1069,13 @@ void CastContentBrowserClient::RegisterIOThreadServiceHandlers(
         heap_profiling::HeapProfilingService::GetServiceFactory());
   }
 #endif  // !defined(OS_FUCHSIA)
+}
+
+void CastContentBrowserClient::CreateGeneralAudienceBrowsingService() {
+  DCHECK(!general_audience_browsing_service_);
+  general_audience_browsing_service_ =
+      std::make_unique<GeneralAudienceBrowsingService>(
+          cast_network_contexts_->GetSystemSharedURLLoaderFactory());
 }
 
 }  // namespace shell

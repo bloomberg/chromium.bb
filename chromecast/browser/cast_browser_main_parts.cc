@@ -593,6 +593,8 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   cast_browser_process_->metrics_service_client()->Initialize();
   url_request_context_factory_->InitializeNetworkDelegates();
 
+  cast_content_browser_client_->CreateGeneralAudienceBrowsingService();
+
   cast_browser_process_->cast_service()->Start();
 }
 

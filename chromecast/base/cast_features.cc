@@ -148,6 +148,9 @@ const base::Feature kDisableIdleSocketsCloseOnMemoryPressure{
     "disable_idle_sockets_close_on_memory_pressure",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kEnableGeneralAudienceBrowsing{
+    "enable_general_audience_browsing", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // End Chromecast Feature definitions.
 const base::Feature* kFeatures[] = {
     &kAllowUserMediaAccess,
@@ -155,6 +158,7 @@ const base::Feature* kFeatures[] = {
     &kTripleBuffer720,
     &kSingleBuffer,
     &kDisableIdleSocketsCloseOnMemoryPressure,
+    &kEnableGeneralAudienceBrowsing,
 };
 
 // An iterator for a base::DictionaryValue. Use an alias for brevity in loops.

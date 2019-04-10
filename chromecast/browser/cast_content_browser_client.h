@@ -50,6 +50,7 @@ namespace chromecast {
 class CastService;
 class CastWindowManager;
 class CastFeatureListCreator;
+class GeneralAudienceBrowsingService;
 class MemoryPressureControllerImpl;
 
 namespace media {
@@ -227,6 +228,8 @@ class CastContentBrowserClient
     return cast_feature_list_creator_;
   }
 
+  void CreateGeneralAudienceBrowsingService();
+
 #if BUILDFLAG(USE_CHROMECAST_CDMS)
   virtual std::unique_ptr<::media::CdmFactory> CreateCdmFactory(
       service_manager::mojom::InterfaceProvider* host_interfaces);
@@ -295,6 +298,8 @@ class CastContentBrowserClient
   std::unique_ptr<CastResourceDispatcherHostDelegate>
       resource_dispatcher_host_delegate_;
   std::unique_ptr<media::CmaBackendFactory> cma_backend_factory_;
+  std::unique_ptr<GeneralAudienceBrowsingService>
+      general_audience_browsing_service_;
 
   CastFeatureListCreator* cast_feature_list_creator_;
 
