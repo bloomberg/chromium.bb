@@ -1139,31 +1139,37 @@
       'android-cronet-arm-dbg': {
         'args': [
           '--platform', 'android-cronet',
+          '--target', 'Debug',
         ],
       },
       'android-cronet-arm-rel': {
         'args': [
           '--platform', 'android-cronet',
+          '--target', 'Release',
         ],
       },
       'android-cronet-arm64-dbg': {
         'args': [
           '--platform', 'android-cronet',
+          '--target', 'Debug',
         ],
       },
       'android-cronet-arm64-rel': {
         'args': [
           '--platform', 'android-cronet',
+          '--target', 'Release',
         ],
       },
       'android-cronet-x86-dbg': {
         'args': [
           '--platform', 'android-cronet',
+          '--target', 'Debug',
         ],
       },
       'android-cronet-x86-rel': {
         'args': [
           '--platform', 'android-cronet',
+          '--target', 'Release',
         ],
       },
     },

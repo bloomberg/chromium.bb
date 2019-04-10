@@ -14,7 +14,6 @@ PERF_DASHBOARD_URL = 'https://chromeperf.appspot.com'
 
 def create_argparser():
   parser = argparse.ArgumentParser()
-  parser.add_argument('--platform')
   parser.add_argument('--perf-id')
   parser.add_argument('--results-url', default=PERF_DASHBOARD_URL)
   return parser
@@ -22,7 +21,7 @@ def create_argparser():
 
 def main_run(script_args):
   parser = create_argparser()
-  args = parser.parse_args(script_args.args)
+  args, sizes_args = parser.parse_known_args(script_args.args)
 
   runtest_args = [
       '--test-type',
@@ -41,8 +40,7 @@ def main_run(script_args):
       os.path.join(common.SRC_DIR, 'infra', 'scripts', 'legacy', 'scripts',
                    'slave', 'chromium', 'sizes.py')
   ]
-  if args.platform:
-    sizes_cmd.extend(['--platform', args.platform])
+  sizes_cmd.extend(sizes_args)
   rc = common.run_runtest(script_args, runtest_args + sizes_cmd)
 
   json.dump({
