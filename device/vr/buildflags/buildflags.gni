@@ -53,4 +53,7 @@ declare_args() {
 
   # Whether to create AR module as an asynchronous DFM.
   async_ar = false
+
+  # Whether to create VR module as an asynchronous DFM.
+  async_vr = false
 }
