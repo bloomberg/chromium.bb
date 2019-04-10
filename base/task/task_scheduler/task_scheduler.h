@@ -209,9 +209,8 @@ class BASE_EXPORT TaskScheduler : public TaskExecutor {
   virtual int GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
       const TaskTraits& traits) const = 0;
 
-  // Sets whether tasks of any / BEST_EFFORT priority are allowed to run.
-  virtual void SetCanRun(bool can_run) = 0;
-  virtual void SetCanRunBestEffort(bool can_run) = 0;
+  // Enables/disables an execution fence that prevents tasks from running.
+  virtual void SetExecutionFenceEnabled(bool execution_fence_enabled) = 0;
 };
 
 }  // namespace base

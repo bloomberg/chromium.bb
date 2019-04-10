@@ -19,7 +19,8 @@ class TaskSchedulerTestHelpers {
 // static
 void TaskSchedulerTestHelpers::SetTaskSchedulerExecutionFenceEnabledForTesting(
     bool execution_fence_enabled) {
-  TaskScheduler::GetInstance()->SetCanRun(!execution_fence_enabled);
+  TaskScheduler::GetInstance()->SetExecutionFenceEnabled(
+      execution_fence_enabled);
 }
 
 }  // namespace base

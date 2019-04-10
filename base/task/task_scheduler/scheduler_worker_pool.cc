@@ -73,6 +73,17 @@ bool SchedulerWorkerPool::IsBoundToCurrentThread() const {
   return GetCurrentWorkerPool() == this;
 }
 
+void SchedulerWorkerPool::OnCanScheduleSequence(
+    scoped_refptr<Sequence> sequence) {
+  if (replacement_pool_) {
+    replacement_pool_->OnCanScheduleSequence(std::move(sequence));
+    return;
+  }
+
+  PushSequenceAndWakeUpWorkers(
+      SequenceAndTransaction::FromSequence(std::move(sequence)));
+}
+
 void SchedulerWorkerPool::PostTaskWithSequenceNow(
     Task task,
     SequenceAndTransaction sequence_and_transaction) {
@@ -85,29 +96,12 @@ void SchedulerWorkerPool::PostTaskWithSequenceNow(
   const bool task_source_should_be_queued =
       sequence_and_transaction.transaction.PushTask(std::move(task));
   if (task_source_should_be_queued) {
-    PushSequenceAndWakeUpWorkers(std::move(sequence_and_transaction));
+    // Try to schedule the Sequence locked by |sequence_transaction|.
+    if (task_tracker_->WillScheduleSequence(
+            sequence_and_transaction.transaction, this)) {
+      PushSequenceAndWakeUpWorkers(std::move(sequence_and_transaction));
+    }
   }
-}
-
-size_t SchedulerWorkerPool::GetNumQueuedCanRunBestEffortSequences() const {
-  const size_t num_queued =
-      priority_queue_.GetNumSequencesWithPriority(TaskPriority::BEST_EFFORT);
-  if (num_queued == 0 ||
-      !task_tracker_->CanRunPriority(TaskPriority::BEST_EFFORT)) {
-    return 0U;
-  }
-  return num_queued;
-}
-
-size_t SchedulerWorkerPool::GetNumQueuedCanRunForegroundSequences() const {
-  const size_t num_queued =
-      priority_queue_.GetNumSequencesWithPriority(TaskPriority::USER_VISIBLE) +
-      priority_queue_.GetNumSequencesWithPriority(TaskPriority::USER_BLOCKING);
-  if (num_queued == 0 ||
-      !task_tracker_->CanRunPriority(TaskPriority::HIGHEST)) {
-    return 0U;
-  }
-  return num_queued;
 }
 
 bool SchedulerWorkerPool::RemoveSequence(scoped_refptr<Sequence> sequence) {

@@ -21,6 +21,9 @@ namespace {
 
 class MockSchedulerWorkerDelegate : public SchedulerWorker::Delegate {
  public:
+  void OnCanScheduleSequence(scoped_refptr<Sequence> sequence) override {
+    ADD_FAILURE() << "Unexpected call to OnCanScheduleSequence().";
+  }
   SchedulerWorker::ThreadLabel GetThreadLabel() const override {
     return SchedulerWorker::ThreadLabel::DEDICATED;
   }
