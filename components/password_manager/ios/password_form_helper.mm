@@ -406,14 +406,12 @@ constexpr char kCommandPrefix[] = "passwordForm";
             const std::vector<autofill::PasswordForm>& forms) {
     PasswordFormHelper* strongSelf = weakSelf;
     for (const auto& form : forms) {
-      autofill::PasswordFormFillData formData;
       std::map<base::string16, const autofill::PasswordForm*> matches;
-      // Initialize |matches| to satisfy the expectation from
-      // InitPasswordFormFillData() that the preferred match (3rd parameter)
-      // should be one of the |matches|.
+      // Initialize |matches| to satisfy the expectation from the constructor
+      // that the preferred match (3rd parameter) should be one of the
+      // |matches|.
       matches.insert(std::make_pair(form.username_value, &form));
-      autofill::InitPasswordFormFillData(form, matches, &form, false,
-                                         &formData);
+      autofill::PasswordFormFillData formData(form, matches, form, false);
       [strongSelf fillPasswordForm:formData
                       withUsername:base::SysNSStringToUTF16(username)
                           password:base::SysNSStringToUTF16(password)
