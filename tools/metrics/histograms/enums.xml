@@ -49497,6 +49497,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="SendTabToSelf menu item is clicked."/>
 </enum>
 
+<enum name="SendTabToSelfNotification">
+  <int value="0" label="Opened"/>
+  <int value="1" label="Dismissed"/>
+  <int value="2" label="Shown"/>
+  <int value="3" label="DismissedRemotely"/>
+</enum>
+
 <enum name="ServiceProcessEventType">
   <int value="0" label="SERVICE_EVENT_INITIALIZE"/>
   <int value="1" label="SERVICE_EVENT_ENABLED_ON_LAUNCH"/>
