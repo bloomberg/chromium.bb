@@ -17,7 +17,6 @@
 #include "components/update_client/protocol_handler.h"
 #include "components/update_client/unzipper.h"
 #include "components/version_info/version_info.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "url/gurl.h"
 
 #if defined(OS_WIN)
