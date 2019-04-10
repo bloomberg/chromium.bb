@@ -594,8 +594,9 @@ void UiControllerAndroid::OnPaymentRequestChanged(
       env, jmodel,
       base::android::ConvertUTF8ToJavaString(env,
                                              client_->GetAccountEmailAddress()),
-      payment_options->request_shipping, payment_options->request_payer_name,
-      payment_options->request_payer_phone,
+      payment_options->request_shipping,
+      payment_options->request_payment_method,
+      payment_options->request_payer_name, payment_options->request_payer_phone,
       payment_options->request_payer_email,
       base::android::ToJavaArrayOfStrings(
           env, payment_options->supported_basic_card_networks));

@@ -121,6 +121,7 @@ public class AssistantPaymentRequestUI
     private LinearLayout mPaymentContainerLayout;
 
     private boolean mRequestShipping;
+    private boolean mRequestPaymentMethod;
     private boolean mRequestContactDetails;
     private ShippingStrings mShippingStrings;
     private OptionSection mShippingAddressSection;
@@ -149,10 +150,6 @@ public class AssistantPaymentRequestUI
                 new LinearLayout.LayoutParams(/* width= */ ViewGroup.LayoutParams.MATCH_PARENT,
                         /* height= */ 0, /* weight= */ 1));
 
-        // Add separators at the top and bottom of the list.
-        mRequestViewContainer.setEdgeVisibility(
-                FadingEdgeScrollView.EdgeType.HARD, FadingEdgeScrollView.EdgeType.FADING);
-
         mEditorDialog = new EditorDialog(mActivity, null,
                 /*deleteRunnable =*/null);
         mCardEditorDialog = new EditorDialog(mActivity, null,
@@ -177,14 +174,16 @@ public class AssistantPaymentRequestUI
      *
      * @param origin          The origin of the information will be send to.
      * @param requestShipping Whether the UI should show the shipping address selection.
+     * @param requestPaymentMethod Whether the UI should show the payment method selection.
      * @param requestContact  Whether the UI should show the payer name, email address and phone
      *                        number selection.
      * @param shippingStrings The string resource identifiers to use in the shipping sections.
      *
      */
-    public void show(String origin, boolean requestShipping, boolean requestContact,
-            ShippingStrings shippingStrings) {
+    public void show(String origin, boolean requestShipping, boolean requestPaymentMethod,
+            boolean requestContact, ShippingStrings shippingStrings) {
         mRequestShipping = requestShipping;
+        mRequestPaymentMethod = requestPaymentMethod;
         mRequestContactDetails = requestContact;
         mShippingStrings = shippingStrings;
 
@@ -261,11 +260,13 @@ public class AssistantPaymentRequestUI
                             LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
         }
 
-        if (mRequestContactDetails || mRequestShipping)
-            mSectionSeparators.add(new SectionSeparator(mPaymentContainerLayout));
-        mPaymentContainerLayout.addView(mPaymentMethodSection,
-                new LinearLayout.LayoutParams(
-                        LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+        if (mRequestPaymentMethod) {
+            if (mRequestContactDetails || mRequestShipping)
+                mSectionSeparators.add(new SectionSeparator(mPaymentContainerLayout));
+            mPaymentContainerLayout.addView(mPaymentMethodSection,
+                    new LinearLayout.LayoutParams(
+                            LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+        }
 
         // Always expand separators to make them align with the rest of the UI.
         for (int i = 0; i < mSectionSeparators.size(); i++) {
@@ -280,8 +281,10 @@ public class AssistantPaymentRequestUI
             updateSection(DataType.SHIPPING_ADDRESSES,
                     mClient.getSectionInformation(DataType.SHIPPING_ADDRESSES));
         }
-        updateSection(
-                DataType.PAYMENT_METHODS, mClient.getSectionInformation(DataType.PAYMENT_METHODS));
+        if (mRequestPaymentMethod) {
+            updateSection(DataType.PAYMENT_METHODS,
+                    mClient.getSectionInformation(DataType.PAYMENT_METHODS));
+        }
 
         // Force the initial appearance of edit chevrons next to all sections.
         updateSectionVisibility();
@@ -303,8 +306,6 @@ public class AssistantPaymentRequestUI
         mContactDetailsSection = null;
         mPaymentMethodSection = null;
         mShippingAddressSectionInformation = null;
-        mContactDetailsSection = null;
-        mPaymentMethodSection = null;
         mSectionSeparators = null;
     }
 
