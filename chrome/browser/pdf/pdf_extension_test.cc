@@ -796,6 +796,25 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, EnsurePDFFromLocalFileLoads) {
   EXPECT_EQ(1, CountPDFProcesses());
 }
 
+// Tests that PDF with no filename extension can be loaded from local file.
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, ExtensionlessPDFLocalFileLoads) {
+  GURL test_pdf_url;
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    base::FilePath test_data_dir;
+    ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
+    test_data_dir = test_data_dir.AppendASCII("pdf");
+    base::FilePath test_data_file = test_data_dir.AppendASCII("imgpdf");
+    ASSERT_TRUE(PathExists(test_data_file));
+    test_pdf_url = GURL("file://" + test_data_file.MaybeAsASCII());
+  }
+  WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
+  ASSERT_TRUE(guest_contents);
+
+  // Did launch a PPAPI process.
+  EXPECT_EQ(1, CountPDFProcesses());
+}
+
 // This test ensures that link permissions are enforced properly in PDFs.
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkPermissions) {
   GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
