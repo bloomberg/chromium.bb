@@ -57,6 +57,7 @@ source_set("sync") {
     "//components/sync:user_events",
     "//components/sync_preferences",
     "//components/sync_sessions",
+    "//components/unified_consent",
     "//components/version_info",
     "//google_apis",
     "//ios/chrome/browser",

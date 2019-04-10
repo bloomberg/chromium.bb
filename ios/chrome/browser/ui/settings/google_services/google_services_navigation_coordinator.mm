@@ -63,6 +63,9 @@
   DCHECK_EQ(self.navigationController,
             self.baseViewController.presentedViewController);
   void (^completion)(void) = ^{
+    [self.googleServicesSettingsCoordinator stop];
+    self.googleServicesSettingsCoordinator.delegate = nil;
+    self.googleServicesSettingsCoordinator = nil;
     [self.delegate googleServicesNavigationCoordinatorDidClose:self];
   };
   [self.baseViewController dismissViewControllerAnimated:YES

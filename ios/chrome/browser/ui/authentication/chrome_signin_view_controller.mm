@@ -316,8 +316,12 @@ enum AuthenticationState {
   // |unifiedConsentService| may be null in unit tests.
   if (unifiedConsentService)
     unifiedConsentService->SetUrlKeyedAnonymizedDataCollectionEnabled(true);
+  SyncSetupService* syncSetupService =
+      SyncSetupServiceFactory::GetForBrowserState(_browserState);
+  syncSetupService->PrepareForFirstSyncSetup();
   if (!_unifiedConsentCoordinator.settingsLinkWasTapped) {
-    SyncSetupServiceFactory::GetForBrowserState(_browserState)->CommitChanges();
+    syncSetupService->SetFirstSetupComplete();
+    syncSetupService->CommitSyncChanges();
   }
   [self acceptSignInAndShowAccountsSettings:_unifiedConsentCoordinator
                                                 .settingsLinkWasTapped];
@@ -326,7 +330,8 @@ enum AuthenticationState {
 - (void)acceptSignInAndCommitSyncChanges {
   DCHECK(_didSignIn);
   DCHECK(!_unifiedConsentEnabled);
-  SyncSetupServiceFactory::GetForBrowserState(_browserState)->CommitChanges();
+  SyncSetupServiceFactory::GetForBrowserState(_browserState)
+      ->PreUnityCommitChanges();
   [self acceptSignInAndShowAccountsSettings:NO];
 }
 

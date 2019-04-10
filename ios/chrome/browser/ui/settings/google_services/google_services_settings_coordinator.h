@@ -21,6 +21,9 @@
 @end
 
 // Coordinator for the Google services settings view.
+// All the sync changes made by the user are applied when
+// -[GoogleServicesSettingsCoordinator stop] is called, or when the
+// GoogleServicesSettingsCoordinator instance is deallocated.
 @interface GoogleServicesSettingsCoordinator : ChromeCoordinator
 
 // View controller for the Google services settings.

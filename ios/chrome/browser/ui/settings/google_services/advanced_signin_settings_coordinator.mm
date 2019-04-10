@@ -89,11 +89,14 @@ using l10n_util::GetNSString;
   DCHECK(self.advancedSigninSettingsNavigationController);
   if (success) {
     SyncSetupServiceFactory::GetForBrowserState(self.browserState)
-        ->CommitChanges();
+        ->SetFirstSetupComplete();
   } else {
     AuthenticationServiceFactory::GetForBrowserState(self.browserState)
         ->SignOut(signin_metrics::ABORT_SIGNIN, nil);
   }
+  [self.googleServicesSettingsCoordinator stop];
+  self.googleServicesSettingsCoordinator.delegate = nil;
+  self.googleServicesSettingsCoordinator = nil;
   [self.delegate advancedSigninSettingsCoordinatorDidClose:self
                                                    success:success];
   self.advancedSigninSettingsNavigationController = nil;
