@@ -123,6 +123,9 @@ class ToolbarView : public views::AccessiblePaneView,
                           bool already_bookmarked,
                           bookmarks::BookmarkBubbleObserver* observer);
 
+  // Access to the avatar button.
+  AvatarToolbarButton* GetAvatarToolbarButton();
+
   // Accessors.
   Browser* browser() const { return browser_; }
   BrowserActionsContainer* browser_actions() const { return browser_actions_; }
@@ -137,7 +140,6 @@ class ToolbarView : public views::AccessiblePaneView,
   ToolbarPageActionIconContainerView* toolbar_page_action_container() const {
     return toolbar_page_action_container_;
   }
-  AvatarToolbarButton* avatar_button() const { return avatar_; }
   BrowserAppMenuButton* app_menu_button() const { return app_menu_button_; }
   HomeButton* home_button() const { return home_; }
   AppMenuIconController* app_menu_icon_controller() {

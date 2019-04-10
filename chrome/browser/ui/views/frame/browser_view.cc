@@ -2956,7 +2956,7 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
     signin_metrics::AccessPoint access_point,
     bool focus_first_profile_button) {
   // Do not show avatar bubble if there is no avatar menu button.
-  views::Button* avatar_button = toolbar_->avatar_button();
+  views::Button* avatar_button = toolbar_->GetAvatarToolbarButton();
   if (!avatar_button)
     return;
 

@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_icon_container_view.h"
 
+class AvatarToolbarButton;
 class Browser;
 class CommandUpdater;
 
@@ -54,12 +55,15 @@ class ToolbarPageActionIconContainerView : public ToolbarIconContainerView,
     return save_card_icon_view_;
   }
 
+  AvatarToolbarButton* avatar_button() { return avatar_; }
+
  private:
   bool FocusInactiveBubbleForIcon(PageActionIconView* icon_view);
 
   autofill::LocalCardMigrationIconView* local_card_migration_icon_view_ =
       nullptr;
   autofill::SaveCardIconView* save_card_icon_view_ = nullptr;
+  AvatarToolbarButton* avatar_ = nullptr;
 
   std::vector<PageActionIconView*> page_action_icons_;
 
