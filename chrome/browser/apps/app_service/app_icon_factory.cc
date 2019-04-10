@@ -222,9 +222,10 @@ void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
       }
 
       case apps::mojom::IconCompression::kCompressed: {
-        // Load component extensions' icons from statically compiled resources
-        // (built into the Chrome binary), and other extensions' icons from
-        // files on disk.
+        // Load some component extensions' icons from statically compiled
+        // resources (built into the Chrome binary), and other extensions'
+        // icons (whether component extensions or otherwise) from files on
+        // disk.
         //
         // For the kUncompressed case above, RunCallbackWithUncompressedImage
         // calls extensions::ImageLoader::LoadImageAsync, which already handles
@@ -248,7 +249,11 @@ void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
                 std::vector<uint8_t>(data.begin(), data.end()));
             return;
           }
-        } else if (!ext_resource.GetFilePath().empty()) {
+        }
+
+        // This is an "if", not an "else if", as some component extensions
+        // don't have resource-backed icons.
+        if (!ext_resource.GetFilePath().empty()) {
           base::PostTaskWithTraitsAndReplyWithResult(
               FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
               base::BindOnce(&CompressedDataFromResource,
