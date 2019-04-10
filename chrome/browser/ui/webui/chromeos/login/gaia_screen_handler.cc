@@ -1116,7 +1116,8 @@ void GaiaScreenHandler::ShowSigninScreenForTest(const std::string& username,
   // reload gaia then follow the loading case.
   if (frame_state() == GaiaScreenHandler::FRAME_STATE_LOADED) {
     SubmitLoginFormForTest();
-  } else if (frame_state() != GaiaScreenHandler::FRAME_STATE_LOADING) {
+  } else if (frame_state() != GaiaScreenHandler::FRAME_STATE_LOADING &&
+             !auth_extension_being_loaded_) {
     OnShowAddUser();
   }
 }
