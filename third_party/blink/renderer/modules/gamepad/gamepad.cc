@@ -27,10 +27,12 @@
 
 #include <algorithm>
 
+#include "third_party/blink/renderer/modules/gamepad/navigator_gamepad.h"
+
 namespace blink {
 
-Gamepad::Gamepad(ExecutionContext* context)
-    : ContextClient(context),
+Gamepad::Gamepad(NavigatorGamepad* navigator_gamepad)
+    : navigator_gamepad_(navigator_gamepad),
       index_(0),
       timestamp_(0.0),
       has_vibration_actuator_(false),
@@ -84,6 +86,14 @@ void Gamepad::SetButtons(unsigned count, const device::GamepadButton* data) {
   is_button_data_dirty_ = true;
 }
 
+GamepadHapticActuator* Gamepad::vibrationActuator() const {
+  // A disconnected gamepad may share the same index as a newly-connected
+  // gamepad. Return nullptr for disconnected gamepads to avoid returning the
+  // actuator for the connected gamepad.
+  return connected_ ? navigator_gamepad_->GetVibrationActuator(index_)
+                    : nullptr;
+}
+
 void Gamepad::SetVibrationActuatorInfo(
     const device::GamepadHapticActuator& actuator) {
   has_vibration_actuator_ = actuator.not_null;
@@ -119,29 +129,11 @@ void Gamepad::SetHand(const device::GamepadHand& hand) {
   }
 }
 
-void Gamepad::InitializeSharedState() {
-  if (has_vibration_actuator_) {
-    vibration_actuator_ =
-        GamepadHapticActuator::Create(GetExecutionContext(), index_);
-    vibration_actuator_->SetType(vibration_actuator_type_);
-  } else {
-    vibration_actuator_ = nullptr;
-  }
-}
-
-void Gamepad::CopySharedStateFromBackBuffer(const Gamepad* back) {
-  DCHECK(back);
-  // Haptic actuators retain state about ongoing effects that should be
-  // preserved when the buffers are swapped.
-  vibration_actuator_ = back->vibration_actuator_;
-}
-
 void Gamepad::Trace(blink::Visitor* visitor) {
+  visitor->Trace(navigator_gamepad_);
   visitor->Trace(buttons_);
-  visitor->Trace(vibration_actuator_);
   visitor->Trace(pose_);
   ScriptWrappable::Trace(visitor);
-  ContextClient::Trace(visitor);
 }
 
 }  // namespace blink

@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/core/frame/platform_event_controller.h"
+#include "third_party/blink/renderer/modules/gamepad/gamepad.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
@@ -38,8 +39,8 @@
 namespace blink {
 
 class Document;
-class Gamepad;
 class GamepadDispatcher;
+class GamepadHapticActuator;
 class GamepadList;
 class Navigator;
 
@@ -63,12 +64,18 @@ class MODULES_EXPORT NavigatorGamepad final
   static GamepadList* getGamepads(Navigator&);
   GamepadList* Gamepads();
 
+  GamepadHapticActuator* GetVibrationActuator(uint32_t pad_index);
+
   void Trace(blink::Visitor*) override;
 
  private:
+  void SampleGamepads();
+  void SampleGamepad(uint32_t index,
+                     Gamepad& gamepad,
+                     const device::Gamepad& device_gamepad);
+
   void DidRemoveGamepadEventListeners();
   bool StartUpdatingIfAttached();
-  void SwapGamepadBuffers();
   void SampleAndCompareGamepadState();
   void DispatchGamepadEvent(const AtomicString&, Gamepad*);
 
@@ -99,6 +106,8 @@ class MODULES_EXPORT NavigatorGamepad final
   // A reference to the buffer for receiving new gamepad state. May be
   // overwritten.
   Member<GamepadList> gamepads_back_;
+
+  HeapVector<Member<GamepadHapticActuator>> vibration_actuators_;
 
   // The timestamp for the navigationStart attribute. Gamepad timestamps are
   // reported relative to this value.

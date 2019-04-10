@@ -5,6 +5,17 @@
 <script src="resources/gamepad-helpers.js"></script>
 <script>
 
+function checkVibrationActuatorOnDisconnect() {
+  return new Promise(resolve => {
+    window.addEventListener('gamepaddisconnected', (e) => {
+        // The vibration actuator member should be null for a disconnected
+        // gamepad.
+        assert_equals(e.gamepad.vibrationActuator, null);
+        resolve();
+    }, { once: true });
+  });
+}
+
 promise_test(async (t) => {
     // Connect a gamepad with no vibration actuator.
     let connectPromise = ongamepadconnected(t);
@@ -83,7 +94,7 @@ promise_test(async (t) => {
     gamepadController.dispatchConnected(0);
     await connectPromise;
 
-    let gamepadBefore = navigator.getGamepads()[0];
+    let actuatorBefore = navigator.getGamepads()[0].vibrationActuator;
 
     // Disconnect the gamepad and connect a different one, also with vibration.
     connectPromise = ongamepadconnected(t);
@@ -95,12 +106,26 @@ promise_test(async (t) => {
     await connectPromise;
 
     let gamepadAfter = navigator.getGamepads()[0];
+    let actuatorAfter = gamepadAfter.vibrationActuator;
 
     assert_equals(gamepadAfter.id, "Nintendto Implement");
-    assert_not_equals(gamepadBefore.vibrationActuator,
-                      gamepadAfter.vibrationActuator);
+    assert_not_equals(actuatorBefore, actuatorAfter);
 }, "vibration actuator is different for different gamepad");
 
+promise_test(async (t) => {
+    // Connect a gamepad with a dual-rumble vibration actuator.
+    let connectPromise = ongamepadconnected(t);
+    gamepadController.connect(0);
+    gamepadController.setId(0, "Nintendto Ship");
+    gamepadController.setDualRumbleVibrationActuator(0, true);
+    gamepadController.dispatchConnected(0);
+    await connectPromise;
+
+    // Disconnect the gamepad.
+    let disconnectPromise = checkVibrationActuatorOnDisconnect();
+    gamepadController.disconnect(0);
+    await disconnectPromise;
+}, "vibration actuator is null for disconnected gamepad");
 
 </script>
 </body>
