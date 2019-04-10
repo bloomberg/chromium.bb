@@ -105,8 +105,7 @@ class CrosUsbNotificationDelegate
 
   void HandleShowSettings() {
     chrome::ShowSettingsSubPageForProfile(
-        ProfileManager::GetActiveUserProfile(),
-        chrome::kCrostiniSharedUsbDevicesSubPage);
+        profile(), chrome::kCrostiniSharedUsbDevicesSubPage);
     Close(false);
   }
 
@@ -279,6 +278,9 @@ void CrosUsbDetector::ConnectToDeviceManager() {
 
 bool CrosUsbDetector::ShouldShowNotification(
     const device::mojom::UsbDeviceInfo& device_info) {
+  if (!crostini::IsCrostiniEnabled(profile())) {
+    return false;
+  }
   if (device::UsbDeviceFilterMatches(*adb_device_filter_, device_info)) {
     return true;
   }
