@@ -94,6 +94,18 @@ struct MockConnect {
   IPEndPoint peer_addr;
 };
 
+struct MockConfirm {
+  // Asynchronous confirm success.
+  // Creates a MockConfirm with |mode| ASYC and |result| OK.
+  MockConfirm();
+  // Creates a MockConfirm with the specified mode and result.
+  MockConfirm(IoMode io_mode, int r);
+  ~MockConfirm();
+
+  IoMode mode;
+  int result;
+};
+
 // MockRead and MockWrite shares the same interface and members, but we'd like
 // to have distinct types because we don't want to have them used
 // interchangably. To do this, a struct template is defined, and MockRead and
@@ -441,8 +453,17 @@ struct SSLSocketDataProvider {
   // Returns whether MockConnect data has been consumed.
   bool ConnectDataConsumed() const { return is_connect_data_consumed; }
 
+  // Returns whether MockConfirm data has been consumed.
+  bool ConfirmDataConsumed() const { return is_confirm_data_consumed; }
+
+  // Returns whether a Write occurred before ConfirmHandshake completed.
+  bool WriteBeforeConfirm() const { return write_called_before_confirm; }
+
   // Result for Connect().
   MockConnect connect;
+
+  // Result for Confirm().
+  MockConfirm confirm;
 
   // Result for GetNegotiatedProtocol().
   NextProto next_proto;
@@ -459,6 +480,8 @@ struct SSLSocketDataProvider {
   uint16_t expected_ssl_version_max;
 
   bool is_connect_data_consumed = false;
+  bool is_confirm_data_consumed = false;
+  bool write_called_before_confirm = false;
 };
 
 // Uses the sequence_number field in the mock reads and writes to
@@ -898,6 +921,7 @@ class MockSSLClientSocket : public AsyncSocket, public SSLClientSocket {
   // StreamSocket implementation.
   int Connect(CompletionOnceCallback callback) override;
   void Disconnect() override;
+  int ConfirmHandshake(CompletionOnceCallback callback) override;
   bool IsConnected() const override;
   bool IsConnectedAndIdle() const override;
   bool WasEverUsed() const override;
@@ -940,6 +964,8 @@ class MockSSLClientSocket : public AsyncSocket, public SSLClientSocket {
 
   void RunCallbackAsync(CompletionOnceCallback callback, int result);
   void RunCallback(CompletionOnceCallback callback, int result);
+
+  void RunConfirmHandshakeCallback(CompletionOnceCallback callback, int result);
 
   bool connected_ = false;
   NetLogWithSource net_log_;

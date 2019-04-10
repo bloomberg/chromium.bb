@@ -78,7 +78,8 @@ void BidirectionalStreamSpdyImpl::Start(
 
   int rv = stream_request_.StartRequest(
       SPDY_BIDIRECTIONAL_STREAM, spdy_session_, request_info_->url,
-      request_info_->priority, request_info_->socket_tag, net_log,
+      false /* no early data */, request_info_->priority,
+      request_info_->socket_tag, net_log,
       base::Bind(&BidirectionalStreamSpdyImpl::OnStreamInitialized,
                  weak_factory_.GetWeakPtr()),
       traffic_annotation);
