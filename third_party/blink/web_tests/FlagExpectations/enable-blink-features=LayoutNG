@@ -61,7 +61,6 @@ crbug.com/591099 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/591099 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/sizing/hori-block-size-small-or-larger-than-container-with-min-or-max-content-2a.html [ Pass ]
 crbug.com/591099 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/sizing/hori-block-size-small-or-larger-than-container-with-min-or-max-content-2b.html [ Pass ]
 crbug.com/591099 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/sizing/vert-block-size-small-or-larger-than-container-with-min-or-max-content-2a.html [ Pass ]
-crbug.com/613663 external/wpt/quirks/table-cell-width-calculation.html [ Failure ]
 
 # The new 'break-spaces' value is not implemented yet in LayoutNG
 crbug.com/922437 external/wpt/css/css-text/overflow-wrap/overflow-wrap-anywhere-002.html [ Skip ]
