@@ -5,24 +5,17 @@
 #include "ash/kiosk_next/kiosk_next_shell_controller.h"
 
 #include <memory>
-#include <utility>
 
 #include "ash/kiosk_next/kiosk_next_shell_observer.h"
+#include "ash/kiosk_next/kiosk_next_shell_test_util.h"
 #include "ash/kiosk_next/mock_kiosk_next_shell_client.h"
 #include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/ash_pref_names.h"
-#include "ash/session/session_controller.h"
-#include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/test/scoped_feature_list.h"
-#include "components/prefs/pref_registry_simple.h"
-#include "components/prefs/testing_pref_service.h"
 
 namespace ash {
 namespace {
-
-const char kTestUserEmail[] = "primary_user1@test.com";
 
 KioskNextShellController* GetKioskNextShellController() {
   return Shell::Get()->kiosk_next_shell_controller();
@@ -58,33 +51,6 @@ class KioskNextShellControllerTest : public AshTestBase {
   }
 
  protected:
-  void LoginKioskNextUser() { LoginUser(true); }
-
-  void LoginUser(bool enable_kiosk_next_shell) {
-    TestSessionControllerClient* session_controller_client =
-        GetSessionControllerClient();
-
-    // Create session for KioskNext user.
-    session_controller_client->AddUserSession(
-        kTestUserEmail, user_manager::USER_TYPE_REGULAR,
-        true /* enable_settings */, true /* provide_pref_service */);
-
-    ash::SessionController* controller = Shell::Get()->session_controller();
-
-    PrefService* pref_service = controller->GetUserPrefServiceForUser(
-        AccountId::FromUserEmail(kTestUserEmail));
-
-    if (enable_kiosk_next_shell) {
-      // Set the user's KioskNextShell preference.
-      pref_service->Set(prefs::kKioskNextShellEnabled, base::Value(true));
-    }
-
-    session_controller_client->SwitchActiveUser(
-        AccountId::FromUserEmail(kTestUserEmail));
-    session_controller_client->SetSessionState(
-        session_manager::SessionState::ACTIVE);
-  }
-
   std::unique_ptr<MockKioskNextShellClient> client_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
@@ -97,8 +63,7 @@ TEST_F(KioskNextShellControllerTest, TestKioskNextNotEnabled) {
   // No user has logged in yet.
   EXPECT_FALSE(GetKioskNextShellController()->IsEnabled());
 
-  // Login a regular user whose KioskNext pref has not been enabled.
-  LoginUser(false /* enable_kiosk_next_shell */);
+  SimulateUserLogin("primary_user1@test.com");
 
   // KioskNextShell is not enabled for regular users by default.
   EXPECT_FALSE(GetKioskNextShellController()->IsEnabled());
@@ -108,7 +73,7 @@ TEST_F(KioskNextShellControllerTest, TestKioskNextNotEnabled) {
 // Ensures that LaunchKioskNextShell is called when KioskNextUser logs in.
 TEST_F(KioskNextShellControllerTest, TestKioskNextLaunchShellWhenEnabled) {
   EXPECT_CALL(*client_, LaunchKioskNextShell(::testing::_)).Times(1);
-  LoginKioskNextUser();
+  LogInKioskNextUser(GetSessionControllerClient());
   EXPECT_TRUE(GetKioskNextShellController()->IsEnabled());
 }
 
@@ -117,7 +82,7 @@ TEST_F(KioskNextShellControllerTest, TestKioskNextObserverNotification) {
   auto observer = std::make_unique<MockKioskNextShellObserver>();
   GetKioskNextShellController()->AddObserver(observer.get());
   EXPECT_CALL(*observer, OnKioskNextEnabled).Times(1);
-  LoginKioskNextUser();
+  LogInKioskNextUser(GetSessionControllerClient());
   GetKioskNextShellController()->RemoveObserver(observer.get());
 }
 

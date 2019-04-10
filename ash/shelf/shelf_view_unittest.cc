@@ -13,6 +13,9 @@
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/focus_cycler.h"
 #include "ash/ime/ime_controller.h"
+#include "ash/kiosk_next/kiosk_next_shell_test_util.h"
+#include "ash/kiosk_next/mock_kiosk_next_shell_client.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_prefs.h"
@@ -57,6 +60,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "base/time/time.h"
+#include "components/prefs/pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/test/aura_test_base.h"
@@ -2462,7 +2466,7 @@ class NotificationIndicatorTest : public ShelfViewTest {
   ~NotificationIndicatorTest() override = default;
 
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatures({features::kNotificationIndicator},
+    scoped_feature_list_.InitWithFeatures({::features::kNotificationIndicator},
                                           {});
     ShelfViewTest::SetUp();
   }
@@ -3908,6 +3912,40 @@ TEST_F(ShelfViewOverflowFocusTest, FocusCyclingBetweenShelfAndStatusWidget) {
     DoTab();
   // This should have brought focus to the first element on the shelf.
   EXPECT_TRUE(test_api_->GetViewAt(1)->HasFocus());
+}
+
+class KioskNextShelfViewTest : public ShelfViewTest {
+ public:
+  KioskNextShelfViewTest() {
+    scoped_feature_list_.InitAndEnableFeature(features::kKioskNextShell);
+  }
+
+  void SetUp() override {
+    set_start_session(false);
+    ShelfViewTest::SetUp();
+    client_ = BindMockKioskNextShellClient();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  std::unique_ptr<MockKioskNextShellClient> client_;
+
+  DISALLOW_COPY_AND_ASSIGN(KioskNextShelfViewTest);
+};
+
+TEST_F(KioskNextShelfViewTest, AppButtonHidden) {
+  LogInKioskNextUser(GetSessionControllerClient());
+
+  // The home and back buttons are always visible.
+  EXPECT_TRUE(shelf_view_->GetAppListButton()->visible());
+  EXPECT_TRUE(shelf_view_->GetBackButton()->visible());
+
+  // Adding app items doesn't add them to the visible shelf, and the overflow
+  // button remains hidden.
+  AddApp();
+  AddApp();
+  ASSERT_FALSE(shelf_view_->GetOverflowButton()->visible());
+  EXPECT_EQ(1, shelf_view_->last_visible_index());
 }
 
 }  // namespace ash

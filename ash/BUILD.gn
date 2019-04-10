@@ -1668,6 +1668,8 @@ test("ash_unittests") {
     "keyboard/virtual_keyboard_controller_unittest.cc",
     "keyboard/virtual_keyboard_unittest.cc",
     "kiosk_next/kiosk_next_shell_controller_unittest.cc",
+    "kiosk_next/kiosk_next_shell_test_util.cc",
+    "kiosk_next/kiosk_next_shell_test_util.h",
     "kiosk_next/mock_kiosk_next_shell_client.cc",
     "kiosk_next/mock_kiosk_next_shell_client.h",
     "laser/laser_pointer_controller_unittest.cc",
