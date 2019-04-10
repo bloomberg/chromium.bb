@@ -103,7 +103,10 @@ void LocalCardMigrationErrorDialogView::Init() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   auto* image = new views::ImageView();
-  image->SetImage(rb.GetImageSkiaNamed(IDR_AUTOFILL_MIGRATION_DIALOG_HEADER));
+  image->SetImage(
+      rb.GetImageSkiaNamed(GetNativeTheme()->SystemDarkModeEnabled()
+                               ? IDR_AUTOFILL_MIGRATION_DIALOG_HEADER_DARK
+                               : IDR_AUTOFILL_MIGRATION_DIALOG_HEADER));
   image->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_GOOGLE_PAY_LOGO_ACCESSIBLE_NAME));
   AddChildView(image);
