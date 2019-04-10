@@ -10,11 +10,3 @@
 
 # https://crbug.com/893575
 -org.chromium.android_webview.test.CookieManagerStartupTest.testStartup
-
-# Flaky tests on android_mojo and android_mojo_rel bots
-# https://crbug.com/936757, https://crbug.com/939355
--org.chromium.android_webview.test.AwContentsClientFullScreenTest.testOnShowCustomViewAndPlayWithHtmlControl_videoInsideDiv
--org.chromium.android_webview.test.AwContentsClientFullScreenTest.testPowerSaveBlockerIsEnabledDuringEmbeddedPlayback
--org.chromium.android_webview.test.AwContentsClientFullScreenTest.testPowerSaveBlockerIsTransferredToEmbedded
--org.chromium.android_webview.test.AwContentsClientFullScreenTest.testPowerSaveBlockerIsTransferredToFullscreen
--org.chromium.android_webview.test.AwContentsClientFullScreenTest.testPowerSaveBlockerIsEnabledDuringFullscreenPlayback_videoInsideDiv

@@ -223,6 +223,7 @@ void AndroidStreamReaderURLLoader::HeadersComplete(
       content_length_header.append(
           base::NumberToString(expected_content_size_));
       head.headers->AddHeader(content_length_header);
+      head.content_length = expected_content_size_;
     }
 
     std::string mime_type;
