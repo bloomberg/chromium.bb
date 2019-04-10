@@ -106,8 +106,7 @@ bool VulkanSurface::Initialize(VulkanDeviceQueue* device_queue,
       return false;
     }
   }
-  // Delay creating SwapChain to when the surface size is specified by Resize().
-  return true;
+  return CreateSwapChain(gfx::Size());
 }
 
 void VulkanSurface::Destroy() {
@@ -129,6 +128,10 @@ void VulkanSurface::Finish() {
 }
 
 bool VulkanSurface::SetSize(const gfx::Size& size) {
+  return CreateSwapChain(size);
+}
+
+bool VulkanSurface::CreateSwapChain(const gfx::Size& size) {
   // Get Surface Information.
   VkSurfaceCapabilitiesKHR surface_caps;
   VkResult result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
