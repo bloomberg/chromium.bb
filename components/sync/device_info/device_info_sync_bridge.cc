@@ -34,6 +34,8 @@ using sync_pb::ModelTypeState;
 using Record = ModelTypeStore::Record;
 using RecordList = ModelTypeStore::RecordList;
 using WriteBatch = ModelTypeStore::WriteBatch;
+using ClientIdToSpecifics =
+    std::map<std::string, std::unique_ptr<sync_pb::DeviceInfoSpecifics>>;
 
 namespace {
 
@@ -79,6 +81,28 @@ std::unique_ptr<DeviceInfoSpecifics> ModelToSpecifics(
   specifics->set_signin_scoped_device_id(info.signin_scoped_device_id());
   specifics->set_last_updated_timestamp(last_updated_timestamp);
   return specifics;
+}
+
+// Parses the content of |record_list| into |*all_data|. The output
+// parameter is first for binding purposes.
+base::Optional<ModelError> ParseSpecificsOnBackendSequence(
+    ClientIdToSpecifics* all_data,
+    std::unique_ptr<ModelTypeStore::RecordList> record_list) {
+  DCHECK(all_data);
+  DCHECK(all_data->empty());
+  DCHECK(record_list);
+
+  for (const Record& r : *record_list) {
+    std::unique_ptr<DeviceInfoSpecifics> specifics =
+        std::make_unique<DeviceInfoSpecifics>();
+    if (!specifics->ParseFromString(r.value)) {
+      return ModelError(FROM_HERE, "Failed to deserialize specifics.");
+    }
+
+    all_data->emplace(specifics->cache_guid(), std::move(specifics));
+  }
+
+  return base::nullopt;
 }
 
 }  // namespace
@@ -346,29 +370,28 @@ void DeviceInfoSyncBridge::OnStoreCreated(
   }
 
   store_ = std::move(store);
-  store_->ReadAllData(base::BindOnce(&DeviceInfoSyncBridge::OnReadAllData,
-                                     weak_ptr_factory_.GetWeakPtr()));
+
+  auto all_data = std::make_unique<ClientIdToSpecifics>();
+  ClientIdToSpecifics* all_data_copy = all_data.get();
+
+  store_->ReadAllDataAndPreprocess(
+      base::BindOnce(&ParseSpecificsOnBackendSequence,
+                     base::Unretained(all_data_copy)),
+      base::BindOnce(&DeviceInfoSyncBridge::OnReadAllData,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(all_data)));
 }
 
 void DeviceInfoSyncBridge::OnReadAllData(
-    const base::Optional<syncer::ModelError>& error,
-    std::unique_ptr<RecordList> record_list) {
+    std::unique_ptr<ClientIdToSpecifics> all_data,
+    const base::Optional<syncer::ModelError>& error) {
+  DCHECK(all_data);
+
   if (error) {
     change_processor()->ReportError(*error);
     return;
   }
 
-  for (const Record& r : *record_list) {
-    std::unique_ptr<DeviceInfoSpecifics> specifics =
-        std::make_unique<DeviceInfoSpecifics>();
-    if (specifics->ParseFromString(r.value)) {
-      all_data_[specifics->cache_guid()] = std::move(specifics);
-    } else {
-      change_processor()->ReportError(
-          {FROM_HERE, "Failed to deserialize specifics."});
-      return;
-    }
-  }
+  all_data_ = std::move(*all_data);
 
   has_data_loaded_ = true;
   LoadMetadataIfReady();
