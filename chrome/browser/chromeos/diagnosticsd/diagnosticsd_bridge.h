@@ -62,6 +62,12 @@ class DiagnosticsdBridge final
 
   ~DiagnosticsdBridge() override;
 
+  // Sets the Wilco DTC configuration data, passed and owned by the
+  // |DiagnosticsdManager| from the device policy.
+  // The nullptr should be passed to clear it.
+  void SetConfigurationData(const std::string* data);
+  const std::string& GetConfigurationDataForTesting();
+
   // Mojo proxy to the DiagnosticsdService implementation in the diagnosticsd
   // daemon. Returns null when bootstrapping of Mojo connection hasn't started
   // yet. Note that, however, non-null is already returned before the
@@ -101,6 +107,7 @@ class DiagnosticsdBridge final
   void SendDiagnosticsProcessorMessageToUi(
       mojo::ScopedHandle json_message,
       SendDiagnosticsProcessorMessageToUiCallback callback) override;
+  void GetConfigurationData(GetConfigurationDataCallback callback) override;
 
   std::unique_ptr<Delegate> delegate_;
 
@@ -119,6 +126,11 @@ class DiagnosticsdBridge final
 
   // The service to perform diagnostics_processor's web requests.
   DiagnosticsdWebRequestService web_request_service_;
+
+  // The Wilco DTC configuration data blob, passed from the device policy, is
+  // stored and owned by |DiagnosticsdManager|.
+  // nullptr if there is no available configuration data for the Wilco DTC.
+  const std::string* configuration_data_ = nullptr;
 
   // These weak pointer factories must be the last members:
 

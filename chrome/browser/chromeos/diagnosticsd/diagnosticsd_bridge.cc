@@ -122,6 +122,14 @@ DiagnosticsdBridge::~DiagnosticsdBridge() {
   g_diagnosticsd_bridge_instance = nullptr;
 }
 
+void DiagnosticsdBridge::SetConfigurationData(const std::string* data) {
+  configuration_data_ = data;
+}
+
+const std::string& DiagnosticsdBridge::GetConfigurationDataForTesting() {
+  return configuration_data_ ? *configuration_data_ : base::EmptyString();
+}
+
 void DiagnosticsdBridge::WaitForDBusService() {
   if (connection_attempt_ >= kMaxConnectionAttemptCount) {
     DLOG(WARNING) << "Stopping attempts to connect to diagnosticsd - too many "
@@ -280,6 +288,12 @@ void DiagnosticsdBridge::PerformWebRequest(
   web_request_service_.PerformRequest(
       http_method, std::move(gurl), std::move(header_contents),
       std::move(request_body_content), std::move(callback));
+}
+
+void DiagnosticsdBridge::GetConfigurationData(
+    GetConfigurationDataCallback callback) {
+  std::move(callback).Run(configuration_data_ ? *configuration_data_
+                                              : std::string());
 }
 
 void DiagnosticsdBridge::SendDiagnosticsProcessorMessageToUi(

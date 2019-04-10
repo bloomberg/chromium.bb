@@ -60,6 +60,17 @@ interface DiagnosticsdService {
   // diagnostics_processor daemon).
   SendUiMessageToDiagnosticsProcessor@0(handle json_message)
       => (handle? response_json_message);
+
+  // Called when new configuration data blob is available. This happens when
+  // the device policy, passing this configuration data blob, gets updated.
+  // It is only a notification that the configuration data has been changed.
+  // The GetConfigurationData method of DiagnosticsdClient needs to be called to
+  // retrieve the actual configuration data.
+  // NOTE: This notification is only triggered for changes that occur after the
+  // current Mojo connection was established;
+  // an initial call to GetConfigurationData should be used in order to fetch
+  // the changes that happened beforehand.
+  NotifyConfigurationDataChanged@1();
 };
 
 // Interface exposed by the consumer of DiagnosticsdService. In production this
@@ -112,4 +123,8 @@ interface DiagnosticsdClient {
   // diagnostics_processor daemon).
   SendDiagnosticsProcessorMessageToUi@1(handle json_message)
       => (handle? response_json_message);
+
+  // Retrieves a JSON-formatted configuration data. The length of
+  // |json_configuration_data| does not exceed 20'000 bytes.
+  GetConfigurationData@2() => (string json_configuration_data);
 };

@@ -15,7 +15,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/chromeos/diagnosticsd/diagnosticsd_messaging.h"
 #include "chrome/browser/chromeos/diagnosticsd/mojo_utils.h"
-#include "chrome/browser/chromeos/diagnosticsd/testing_diagnosticsd_bridge.h"
+#include "chrome/browser/chromeos/diagnosticsd/testing_diagnosticsd_bridge_wrapper.h"
 #include "chrome/services/diagnosticsd/public/mojom/diagnosticsd.mojom.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "extensions/browser/api/messaging/native_message_host.h"
@@ -97,6 +97,7 @@ class MockMojoDiagnosticsdService
   MOCK_METHOD2(SendUiMessageToDiagnosticsProcessorImpl,
                void(const std::string& json_message,
                     SendUiMessageToDiagnosticsProcessorImplCallback callback));
+  MOCK_METHOD0(NotifyConfigurationDataChanged, void());
 };
 
 }  // namespace
@@ -126,10 +127,12 @@ class DiagnosticsdMessagingOpenedByExtensionTest : public testing::Test {
  protected:
   DiagnosticsdMessagingOpenedByExtensionTest() {
     DBusThreadManager::Initialize();
-    diagnosticsd_bridge_ = std::make_unique<TestingDiagnosticsdBridge>(
-        &mojo_diagnosticsd_service_,
-        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-            &test_url_loader_factory_));
+    testing_diagnosticsd_bridge_wrapper_ =
+        TestingDiagnosticsdBridgeWrapper::Create(
+            &mojo_diagnosticsd_service_,
+            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+                &test_url_loader_factory_),
+            &diagnosticsd_bridge_);
   }
 
   ~DiagnosticsdMessagingOpenedByExtensionTest() override {
@@ -143,8 +146,8 @@ class DiagnosticsdMessagingOpenedByExtensionTest : public testing::Test {
     return &mojo_diagnosticsd_service_;
   }
 
-  TestingDiagnosticsdBridge* diagnosticsd_bridge() {
-    return diagnosticsd_bridge_.get();
+  TestingDiagnosticsdBridgeWrapper* diagnosticsd_bridge_wrapper() {
+    return testing_diagnosticsd_bridge_wrapper_.get();
   }
 
   void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
@@ -153,7 +156,9 @@ class DiagnosticsdMessagingOpenedByExtensionTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   StrictMock<MockMojoDiagnosticsdService> mojo_diagnosticsd_service_;
   network::TestURLLoaderFactory test_url_loader_factory_;
-  std::unique_ptr<TestingDiagnosticsdBridge> diagnosticsd_bridge_;
+  std::unique_ptr<TestingDiagnosticsdBridgeWrapper>
+      testing_diagnosticsd_bridge_wrapper_;
+  std::unique_ptr<DiagnosticsdBridge> diagnosticsd_bridge_;
 };
 
 }  // namespace
@@ -181,7 +186,7 @@ class DiagnosticsdMessagingOpenedByExtensionSingleHostTest
     : public DiagnosticsdMessagingOpenedByExtensionTest {
  protected:
   DiagnosticsdMessagingOpenedByExtensionSingleHostTest() {
-    diagnosticsd_bridge()->EstablishFakeMojoConnection();
+    diagnosticsd_bridge_wrapper()->EstablishFakeMojoConnection();
     message_host_ = CreateExtensionOwnedDiagnosticsdMessageHost();
     message_host_->Start(&message_host_client_);
   }
