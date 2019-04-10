@@ -1931,4 +1931,32 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextTextFieldGetSelection) {
   g_object_unref(root_atk_object);
 }
 
+TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectExpandRebuildsPlatformNode) {
+  AXNodeData root_data;
+  root_data.id = 1;
+  root_data.role = ax::mojom::Role::kUnknown;
+
+  Init(root_data);
+
+  AtkObject* original_atk_object = GetRootAtkObject();
+  ASSERT_TRUE(ATK_IS_OBJECT(original_atk_object));
+  ASSERT_FALSE(ATK_IS_SELECTION(original_atk_object));
+  g_object_ref(original_atk_object);
+
+  root_data = AXNodeData();
+  root_data.role = ax::mojom::Role::kListBox;
+  GetRootNode()->SetData(root_data);
+
+  ASSERT_EQ(original_atk_object, GetRootAtkObject());
+
+  GetRootPlatformNode()->NotifyAccessibilityEvent(
+      ax::mojom::Event::kExpandedChanged);
+
+  AtkObject* new_atk_object = GetRootAtkObject();
+  ASSERT_NE(original_atk_object, new_atk_object);
+  ASSERT_TRUE(ATK_IS_SELECTION(new_atk_object));
+
+  g_object_unref(original_atk_object);
+}
+
 }  // namespace ui
