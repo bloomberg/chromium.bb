@@ -2944,8 +2944,13 @@ void AXPlatformNodeAuraLinux::OnCheckedStateChanged() {
 }
 
 void AXPlatformNodeAuraLinux::OnExpandedStateChanged(bool is_expanded) {
-  DCHECK(atk_object_);
+  // When a list box is expanded, it becomes visible. This means that it might
+  // now have a different role (the role for hidden Views is kUnknown).  We
+  // need to recreate the AtkObject in this case because a change in roles
+  // might imply a change in ATK interfaces implemented.
+  DataChanged();
 
+  DCHECK(atk_object_);
   atk_object_notify_state_change(ATK_OBJECT(atk_object_), ATK_STATE_EXPANDED,
                                  is_expanded);
 }
