@@ -10,6 +10,8 @@
 namespace blink {
 
 class GPUTextureDescriptor;
+class GPUTextureView;
+class GPUTextureViewDescriptor;
 
 class GPUTexture : public DawnObject<DawnTexture> {
   DEFINE_WRAPPERTYPEINFO();
@@ -21,7 +23,9 @@ class GPUTexture : public DawnObject<DawnTexture> {
   ~GPUTexture() override;
 
   // gpu_texture.idl
-  // TODO(crbug.com/877147): implement GPUTexture.
+  GPUTextureView* createView(const GPUTextureViewDescriptor* webgpu_desc);
+  GPUTextureView* createDefaultView();
+  void destroy();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GPUTexture);
