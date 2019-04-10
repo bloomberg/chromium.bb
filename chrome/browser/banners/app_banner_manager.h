@@ -24,6 +24,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "third_party/blink/public/mojom/app_banner/app_banner.mojom.h"
+#include "url/gurl.h"
 
 enum class WebappInstallSource;
 class InstallableManager;
@@ -370,8 +371,6 @@ class AppBannerManager : public content::WebContentsObserver,
 
   bool IsInstallable() const;
   void SetInstallable(Installable installable);
-
-  void SetLastInstallableScope(const GURL& url);
 
   // Fetches the data required to display a banner for the current page.
   InstallableManager* manager_;

@@ -459,24 +459,24 @@ void AppBannerManager::SetInstallable(Installable installable) {
 
   installable_ = installable;
 
-  if (IsInstallable()) {
-    // TODO(https://crbug.com/943916): Move empty scope handling up into the
-    // ManifestParser.
-    SetLastInstallableScope(manifest_.scope.is_empty() ? manifest_.start_url
-                                                       : manifest_.scope);
-  } else if (installable_ == Installable::INSTALLABLE_NO) {
-    SetLastInstallableScope(GURL());
+  switch (installable) {
+    case Installable::UNKNOWN:
+      break;
+    case Installable::INSTALLABLE_YES:
+      last_installable_scope_ = manifest_.scope;
+      DCHECK(!last_installable_scope_.is_empty());
+      install_animation_pending_ =
+          AppBannerSettingsHelper::CanShowInstallTextAnimation(
+              web_contents(), last_installable_scope_);
+      break;
+    case Installable::INSTALLABLE_NO:
+      last_installable_scope_ = GURL();
+      install_animation_pending_ = false;
+      break;
   }
 
   for (Observer& observer : observer_list_)
     observer.OnInstallabilityUpdated();
-}
-
-void AppBannerManager::SetLastInstallableScope(const GURL& url) {
-  if (last_installable_scope_ == url)
-    return;
-  last_installable_scope_ = url;
-  install_animation_pending_ = last_installable_scope_.is_valid();
 }
 
 void AppBannerManager::MigrateObserverListForTesting(
@@ -666,6 +666,8 @@ bool AppBannerManager::MaybeConsumeInstallAnimation() {
   DCHECK(IsProbablyInstallable());
   if (!install_animation_pending_)
     return false;
+  AppBannerSettingsHelper::RecordInstallTextAnimationShown(
+      web_contents(), last_installable_scope_);
   install_animation_pending_ = false;
   return true;
 }
