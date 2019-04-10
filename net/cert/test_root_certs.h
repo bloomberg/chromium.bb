@@ -63,6 +63,7 @@ class NET_EXPORT TestRootCerts {
 
 #if defined(USE_NSS_CERTS)
   bool Contains(CERTCertificate* cert) const;
+  TrustStore* test_trust_store() { return &test_trust_store_; }
 #elif defined(OS_MACOSX)
   CFArrayRef temporary_roots() const { return temporary_roots_; }
 
@@ -121,6 +122,8 @@ class NET_EXPORT TestRootCerts {
   // It is necessary to maintain a cache of the original certificate trust
   // settings, in order to restore them when Clear() is called.
   std::vector<std::unique_ptr<TrustEntry>> trust_cache_;
+
+  TrustStoreInMemory test_trust_store_;
 #elif defined(OS_WIN)
   HCERTSTORE temporary_roots_;
 #elif defined(OS_MACOSX)

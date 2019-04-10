@@ -204,6 +204,15 @@ TEST_F(TrustStoreNSSTest, CertsNotPresent) {
   EXPECT_TRUE(TrustStoreContains(newroot_, ParsedCertificateList()));
 }
 
+// TrustStoreNSS should not return temporary certs. (See
+// https://crbug.com/951166)
+TEST_F(TrustStoreNSSTest, TempCertNotPresent) {
+  ScopedCERTCertificate temp_nss_cert(x509_util::CreateCERTCertificateFromBytes(
+      newintermediate_->der_cert().UnsafeData(),
+      newintermediate_->der_cert().Length()));
+  EXPECT_TRUE(TrustStoreContains(target_, ParsedCertificateList()));
+}
+
 // If certs are present in NSS DB but aren't marked as trusted, should get no
 // anchor results for any of the test certs.
 TEST_F(TrustStoreNSSTest, CertsPresentButNotTrusted) {
