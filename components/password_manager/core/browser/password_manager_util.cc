@@ -247,4 +247,51 @@ void FindBestMatches(
   *preferred_match = *matches.begin();
 }
 
+const PasswordForm* GetMatchForUpdating(
+    const PasswordForm& submitted_form,
+    const std::map<base::string16, const PasswordForm*>& credentials) {
+  // This is the case for the credential management API. It should not depend on
+  // form managers. Once that's the case, this should be turned into a DCHECK.
+  // TODO(crbug/947030): turn it into a DCHECK.
+  if (!submitted_form.federation_origin.opaque())
+    return nullptr;
+
+  // Try to return form with matching |username_value|.
+  auto it = credentials.find(submitted_form.username_value);
+  if (it != credentials.end()) {
+    if (!it->second->is_public_suffix_match)
+      return it->second;
+
+    const auto& password_to_save = submitted_form.new_password_value.empty()
+                                       ? submitted_form.password_value
+                                       : submitted_form.new_password_value;
+    // Normally, the copy of the PSL matched credentials, adapted for the
+    // current domain, is saved automatically without asking the user, because
+    // the copy likely represents the same account, i.e., the one for which
+    // the user already agreed to store a password.
+    //
+    // However, if the user changes the suggested password, it might indicate
+    // that the autofilled credentials and |submitted_password_form|
+    // actually correspond to two different accounts (see
+    // http://crbug.com/385619).
+    return password_to_save == it->second->password_value ? it->second
+                                                          : nullptr;
+  }
+
+  // Next attempt is to find a match by password value. It should not be tried
+  // when the username was actually detected.
+  if (submitted_form.type == PasswordForm::TYPE_API ||
+      !submitted_form.username_value.empty())
+    return nullptr;
+
+  for (const auto& stored_match : credentials) {
+    if (stored_match.second->password_value == submitted_form.password_value)
+      return stored_match.second;
+  }
+
+  // Last try. The submitted form had no username but a password. Assume that
+  // it's an existing credential.
+  return credentials.empty() ? nullptr : credentials.begin()->second;
+}
+
 }  // namespace password_manager_util

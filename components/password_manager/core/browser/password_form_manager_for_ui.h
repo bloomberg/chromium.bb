@@ -142,10 +142,6 @@ class PasswordFormManagerInterface : public PasswordFormManagerForUI {
   // field. We use only client heuristics, so it could include signup forms.
   virtual bool IsPossibleChangePasswordFormWithoutUsername() const = 0;
 
-  // A form is considered to be "retry" password if it has only one field which
-  // is a current password field.
-  virtual bool RetryPasswordFormPasswordUpdate() const = 0;
-
   // Helper function that determines whether update or save prompt should be
   // shown for credentials in |provisional_save_manager|.
   virtual bool IsPasswordUpdate() const = 0;

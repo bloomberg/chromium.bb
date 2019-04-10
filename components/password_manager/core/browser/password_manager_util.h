@@ -125,6 +125,18 @@ void FindBestMatches(
     std::vector<const autofill::PasswordForm*>* not_best_matches,
     const autofill::PasswordForm** preferred_match);
 
+// If the user submits a form, they may have used existing credentials, new
+// credentials, or modified existing credentials that should be updated.
+// The function returns a form from |credentials| that is the best candidate to
+// use for an update. Returned value is NULL if |submitted_form| looks like a
+// new credential for the site to be saved.
+// |submitted_form| is the form being submitted.
+// |credentials| are all the credentials relevant for the current site including
+// PSL and Android matches.
+const autofill::PasswordForm* GetMatchForUpdating(
+    const autofill::PasswordForm& submitted_form,
+    const std::map<base::string16, const autofill::PasswordForm*>& credentials);
+
 }  // namespace password_manager_util
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_UTIL_H_

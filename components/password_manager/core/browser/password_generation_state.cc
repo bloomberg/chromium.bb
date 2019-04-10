@@ -31,7 +31,8 @@ void PasswordGenerationState::PresaveGeneratedPassword(PasswordForm generated) {
                         nullptr /* credentials_to_update */,
                         &presaved_.value() /* old_primary_key */);
   } else {
-    form_saver_->Save(generated, {} /* best_matches */);
+    form_saver_->Save(generated, {} /* matches */,
+                      base::string16() /* old_password */);
   }
   presaved_ = std::move(generated);
 }

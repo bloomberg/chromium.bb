@@ -337,6 +337,9 @@ struct PasswordForm {
   // Returns true if current password element is set.
   bool HasPasswordElement() const;
 
+  // True iff |federation_origin| isn't empty.
+  bool IsFederatedCredential() const;
+
   // Equality operators for testing.
   bool operator==(const PasswordForm& form) const;
   bool operator!=(const PasswordForm& form) const;

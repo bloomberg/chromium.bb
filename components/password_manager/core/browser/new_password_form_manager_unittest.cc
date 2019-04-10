@@ -189,10 +189,10 @@ class MockFormSaver : public StubFormSaver {
 
   // FormSaver:
   MOCK_METHOD1(PermanentlyBlacklist, void(autofill::PasswordForm* observed));
-  MOCK_METHOD2(
-      Save,
-      void(const autofill::PasswordForm& pending,
-           const std::map<base::string16, const PasswordForm*>& best_matches));
+  MOCK_METHOD3(Save,
+               void(const autofill::PasswordForm& pending,
+                    const std::vector<const autofill::PasswordForm*>& matches,
+                    const base::string16& old_password));
   MOCK_METHOD4(
       Update,
       void(const autofill::PasswordForm& pending,
@@ -758,9 +758,7 @@ TEST_F(NewPasswordFormManagerTest,
   submitted_form.fields[0].value = ASCIIToUTF16("strongpassword");
   submitted_form.fields[1].value = ASCIIToUTF16("verystrongpassword");
 
-  PasswordForm expected;
-  expected.origin = observed_form_.origin;
-  expected.action = observed_form_.action;
+  PasswordForm expected = saved_match_;
   expected.password_value = ASCIIToUTF16("verystrongpassword");
 
   EXPECT_TRUE(form_manager_->ProvisionallySave(submitted_form, &driver_));
@@ -847,8 +845,8 @@ TEST_F(NewPasswordFormManagerTest, SaveNewCredentials) {
 
   MockFormSaver& form_saver = MockFormSaver::Get(form_manager_.get());
   PasswordForm saved_form;
-  std::map<base::string16, const PasswordForm*> best_matches;
-  EXPECT_CALL(form_saver, Save(_, _))
+  std::vector<const PasswordForm*> best_matches;
+  EXPECT_CALL(form_saver, Save(_, _, _))
       .WillOnce(DoAll(SaveArg<0>(&saved_form), SaveArg<1>(&best_matches)));
   EXPECT_CALL(client_, UpdateFormManagers());
 
@@ -865,10 +863,7 @@ TEST_F(NewPasswordFormManagerTest, SaveNewCredentials) {
             saved_form.username_element);
   EXPECT_EQ(submitted_form.fields[kPasswordFieldIndex].name,
             saved_form.password_element);
-  EXPECT_EQ(1u, best_matches.size());
-  base::string16 saved_username = saved_match_.username_value;
-  ASSERT_TRUE(best_matches.find(saved_username) != best_matches.end());
-  EXPECT_EQ(saved_match_, *best_matches[saved_username]);
+  EXPECT_EQ(std::vector<const PasswordForm*>{&saved_match_}, best_matches);
 
   // Check UKM metrics.
   form_manager_.reset();
@@ -900,8 +895,8 @@ TEST_F(NewPasswordFormManagerTest, SavePSLToAlreadySaved) {
 
   MockFormSaver& form_saver = MockFormSaver::Get(form_manager_.get());
   PasswordForm saved_form;
-  std::map<base::string16, const PasswordForm*> best_matches;
-  EXPECT_CALL(form_saver, Save(_, _))
+  std::vector<const PasswordForm*> best_matches;
+  EXPECT_CALL(form_saver, Save(_, _, _))
       .WillOnce(DoAll(SaveArg<0>(&saved_form), SaveArg<1>(&best_matches)));
 
   form_manager_->Save();
@@ -915,10 +910,7 @@ TEST_F(NewPasswordFormManagerTest, SavePSLToAlreadySaved) {
 
   EXPECT_TRUE(saved_form.preferred);
 
-  EXPECT_EQ(1u, best_matches.size());
-  base::string16 saved_username = psl_saved_match_.username_value;
-  ASSERT_TRUE(best_matches.find(saved_username) != best_matches.end());
-  EXPECT_EQ(psl_saved_match_, *best_matches[saved_username]);
+  EXPECT_EQ(std::vector<const PasswordForm*>{&psl_saved_match_}, best_matches);
 }
 
 // Tests that when credentials with already saved username but with a new
@@ -976,7 +968,7 @@ TEST_F(NewPasswordFormManagerTest, UpdatePasswordOnChangePasswordForm) {
 
   EXPECT_TRUE(form_manager_->ProvisionallySave(submitted_form, &driver_));
   EXPECT_FALSE(form_manager_->IsNewLogin());
-  EXPECT_FALSE(form_manager_->IsPasswordOverridden());
+  EXPECT_TRUE(form_manager_->IsPasswordOverridden());
   EXPECT_TRUE(form_manager_->IsPasswordUpdate());
 
   MockFormSaver& form_saver = MockFormSaver::Get(form_manager_.get());
@@ -1198,7 +1190,7 @@ TEST_F(NewPasswordFormManagerTest, UpdatePasswordValueMultiplePasswordFields) {
   // Check that the password which was chosen by the user is saved.
   MockFormSaver& form_saver = MockFormSaver::Get(form_manager_.get());
   PasswordForm saved_form;
-  EXPECT_CALL(form_saver, Save(_, _)).WillOnce(SaveArg<0>(&saved_form));
+  EXPECT_CALL(form_saver, Save(_, _, _)).WillOnce(SaveArg<0>(&saved_form));
 
   form_manager_->Save();
   CheckPendingCredentials(expected, saved_form);
@@ -1483,7 +1475,7 @@ TEST_F(NewPasswordFormManagerTest, GeneratedPasswordWhichIsNotInFormData) {
   EXPECT_TRUE(form_manager_->HasGeneratedPassword());
 
   // Check that the generated password is saved.
-  EXPECT_CALL(form_saver, Save(_, _)).WillOnce(SaveArg<0>(&saved_form));
+  EXPECT_CALL(form_saver, Save(_, _, _)).WillOnce(SaveArg<0>(&saved_form));
   EXPECT_CALL(client_, UpdateFormManagers());
 
   EXPECT_TRUE(form_manager_->ProvisionallySave(submitted_form_, &driver_));
@@ -1876,7 +1868,7 @@ TEST_F(NewPasswordFormManagerTest, SaveHttpAuthNoHttpAuthStored) {
     EXPECT_TRUE(form_manager_->IsNewLogin());
 
     PasswordForm saved_form;
-    EXPECT_CALL(form_saver, Save(_, _)).WillOnce(SaveArg<0>(&saved_form));
+    EXPECT_CALL(form_saver, Save(_, _, _)).WillOnce(SaveArg<0>(&saved_form));
     form_manager_->Save();
 
     EXPECT_EQ(http_auth_form.signon_realm, saved_form.signon_realm);
