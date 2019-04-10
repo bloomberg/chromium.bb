@@ -2663,6 +2663,13 @@ be describing additional metrics about the same event.
     <summary>
       True if there were matches.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 
