@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "base/logging.h"
+
 namespace syncer {
 
 // This class describes all the possible results of a sync cycle. It should be
@@ -48,7 +50,11 @@ class SyncerError {
   constexpr SyncerError() : value_(UNSET), net_error_code_(0) {}
 
   explicit constexpr SyncerError(Value value)
-      : value_(value), net_error_code_(0) {}
+      : value_(value), net_error_code_(0) {
+    // NETWORK_CONNECTION_UNAVAILABLE error must be created via the separate
+    // factory method NetworkConnectionUnavailable().
+    DCHECK_NE(value_, NETWORK_CONNECTION_UNAVAILABLE);
+  }
 
   static constexpr SyncerError NetworkConnectionUnavailable(
       int net_error_code) {

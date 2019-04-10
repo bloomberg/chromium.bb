@@ -111,9 +111,10 @@ SyncerError ServerConnectionErrorAsSyncerError(
     case HttpResponse::IO_ERROR:
       return SyncerError(SyncerError::NETWORK_IO_ERROR);
     case HttpResponse::SYNC_SERVER_ERROR:
-      // FIXME what does this mean?
+      // This means the server returned a non-401 HTTP error.
       return SyncerError(SyncerError::SYNC_SERVER_ERROR);
     case HttpResponse::SYNC_AUTH_ERROR:
+      // This means the server returned an HTTP 401 (unauthorized) error.
       return SyncerError(SyncerError::SYNC_AUTH_ERROR);
     case HttpResponse::SERVER_CONNECTION_OK:
     case HttpResponse::NONE:
