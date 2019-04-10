@@ -192,8 +192,7 @@
     "prefix": "android",
     "base": "fullscreen",
     "args": ["--enable-features=OverlayScrollbar", "--enable-threaded-compositing",
-             "--enable-fixed-position-compositing", "--enable-prefer-compositing-to-lcd-text",
-             "--enable-composited-scrolling-for-frames", "--enable-gesture-tap-highlight", "--enable-pinch",
+             "--enable-prefer-compositing-to-lcd-text",
              "--force-overlay-fullscreen-video", "--enable-overscroll-notifications",
              "--enable-viewport", "--disable-canvas-aa", "--disable-composited-antialiasing"]
   },
@@ -201,8 +200,7 @@
     "prefix": "android",
     "base": "rootscroller",
     "args": ["--enable-features=OverlayScrollbar", "--enable-threaded-compositing",
-             "--enable-fixed-position-compositing", "--enable-prefer-compositing-to-lcd-text",
-             "--enable-composited-scrolling-for-frames", "--enable-gesture-tap-highlight", "--enable-pinch",
+             "--enable-prefer-compositing-to-lcd-text",
              "--force-overlay-fullscreen-video", "--enable-overscroll-notifications",
              "--enable-viewport", "--disable-canvas-aa", "--disable-composited-antialiasing"]
   },
@@ -210,8 +208,7 @@
     "prefix": "android",
     "base": "url-bar",
     "args": ["--enable-features=OverlayScrollbar", "--enable-threaded-compositing",
-             "--enable-fixed-position-compositing", "--enable-prefer-compositing-to-lcd-text",
-             "--enable-composited-scrolling-for-frames", "--enable-gesture-tap-highlight", "--enable-pinch",
+             "--enable-prefer-compositing-to-lcd-text",
              "--force-overlay-fullscreen-video", "--enable-overscroll-notifications",
              "--enable-viewport", "--disable-canvas-aa", "--disable-composited-antialiasing"]
   },
@@ -219,8 +216,7 @@
     "prefix": "android",
     "base": "frame-size",
     "args": ["--enable-features=OverlayScrollbar", "--enable-threaded-compositing",
-             "--enable-fixed-position-compositing", "--enable-prefer-compositing-to-lcd-text",
-             "--enable-composited-scrolling-for-frames", "--enable-gesture-tap-highlight", "--enable-pinch",
+             "--enable-prefer-compositing-to-lcd-text",
              "--force-overlay-fullscreen-video", "--enable-overscroll-notifications",
              "--enable-viewport", "--disable-canvas-aa", "--disable-composited-antialiasing"]
   },
