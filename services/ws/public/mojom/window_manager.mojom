@@ -94,6 +94,12 @@ interface WindowManager {
   // shelf icon). Type: bool.
   const string kDrawAttention_Property = "prop:draw-attention";
 
+  // The bounds in screen coordinates that an embedded window wants to be moved
+  // out of. Maps to aura::client::kEmbeddedWindowEnsureNotInRect.
+  // Type: gfx::Rect.
+  const string kEmbeddedWindowEnsureNotInRect =
+      "prop:embedded-window-ensure-not-in-rect";
+
   // Used to explicitly control whether a window appears in the most recently
   // used list of windows. Maps to aura::client::kExcludeFromMruKey. Type: bool.
   const string kExcludeFromMru_Property = "prop:exclude_from_mru";

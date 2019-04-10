@@ -16,6 +16,10 @@ namespace aura {
 class Window;
 }
 
+namespace wm {
+class EnsureWindowNotInRectHelper;
+}
+
 namespace ws {
 
 class WindowService;
@@ -65,7 +69,11 @@ class ServerRemoteViewHost : public views::NativeViewHost {
   base::UnguessableToken embed_token_;
   int embed_flags_ = 0;
   EmbedCallback embed_callback_;
+
   const std::unique_ptr<aura::Window> embedding_root_;
+#if defined(OS_CHROMEOS)
+  std::unique_ptr<wm::EnsureWindowNotInRectHelper> helper_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ServerRemoteViewHost);
 };
