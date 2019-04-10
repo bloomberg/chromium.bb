@@ -1339,6 +1339,7 @@ component("ash") {
 
     # TODO(stevenjb): Investigate whether this is OK. https://crbug.com/644336.
     "//chromeos/dbus/audio",
+    "//chromeos/dbus/hammerd",
     "//chromeos/dbus/power",
     "//chromeos/dbus/power:power_manager_proto",
     "//chromeos/dbus/services:services",
@@ -1940,6 +1941,7 @@ test("ash_unittests") {
     # TODO(stevenjb): Investigate whether this is OK. https://crbug.com/644336.
     "//chromeos/audio",
     "//chromeos/dbus:test_support",
+    "//chromeos/dbus/hammerd",
     "//chromeos/dbus/power",
     "//chromeos/dbus/power:power_manager_proto",
 
