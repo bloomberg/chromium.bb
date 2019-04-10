@@ -4,6 +4,7 @@
 
 #include "components/sync_bookmarks/bookmark_remote_updates_handler.h"
 
+#include <memory>
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -299,8 +300,9 @@ BookmarkRemoteUpdatesHandler::ReorderUpdates(
       parent_to_children;
 
   // Add only non-deletions to |id_to_updates|.
-  for (const syncer::UpdateResponseData& update : *updates) {
-    const syncer::EntityData& update_entity = update.entity.value();
+  for (const std::unique_ptr<syncer::UpdateResponseData>& update : *updates) {
+    DCHECK(update);
+    const syncer::EntityData& update_entity = update->entity.value();
     // Ignore updates to root nodes.
     if (update_entity.parent_id == "0") {
       continue;
@@ -308,7 +310,7 @@ BookmarkRemoteUpdatesHandler::ReorderUpdates(
     if (update_entity.is_deleted()) {
       continue;
     }
-    id_to_updates[update_entity.id] = &update;
+    id_to_updates[update_entity.id] = update.get();
   }
   // Iterate over |id_to_updates| and construct |roots| and
   // |parent_to_children|.
@@ -331,15 +333,16 @@ BookmarkRemoteUpdatesHandler::ReorderUpdates(
 
   int root_node_updates_count = 0;
   // Add deletions.
-  for (const syncer::UpdateResponseData& update : *updates) {
-    const syncer::EntityData& update_entity = update.entity.value();
+  for (const std::unique_ptr<syncer::UpdateResponseData>& update : *updates) {
+    DCHECK(update);
+    const syncer::EntityData& update_entity = update->entity.value();
     // Ignore updates to root nodes.
     if (update_entity.parent_id == "0") {
       root_node_updates_count++;
       continue;
     }
     if (update_entity.is_deleted()) {
-      ordered_updates.push_back(&update);
+      ordered_updates.push_back(update.get());
     }
   }
   // All non root updates should have been included in |ordered_updates|.

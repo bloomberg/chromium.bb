@@ -625,27 +625,23 @@ void ClientTagBasedModelTypeProcessor::OnCommitCompleted(
   }
 }
 
-// Returns an updates list that has client tag hashes populated for every
-// update entity.
-UpdateResponseDataList PopulateClientTagsForWalletData(
-    const ModelType& type,
-    ModelTypeSyncBridge* bridge,
-    const UpdateResponseDataList& updates) {
+// Populates the client tag hashes for every update entity in |updates|.
+void PopulateClientTagsForWalletData(const ModelType& type,
+                                     ModelTypeSyncBridge* bridge,
+                                     UpdateResponseDataList* updates) {
   DCHECK(bridge->SupportsGetClientTag());
   UpdateResponseDataList updates_with_client_tags;
-  for (const UpdateResponseData& update : updates) {
-    if (update.entity->parent_id == "0") {
+  for (std::unique_ptr<UpdateResponseData>& update : *updates) {
+    DCHECK(update);
+    if (update->entity->parent_id == "0") {
       // Ignore the permanent root node. Other places in this file detect them
       // by having empty client tags; this cannot be used for wallet_data as no
       // wallet_data entity has a client tag.
       continue;
     }
-    updates_with_client_tags.push_back(update);
-    updates_with_client_tags.back().entity =
-        update.entity->UpdateClientTagHash(GenerateSyncableHash(
-            type, bridge->GetClientTag(update.entity.value())));
+    update->entity = update->entity->UpdateClientTagHash(GenerateSyncableHash(
+        type, bridge->GetClientTag(update->entity.value())));
   }
-  return updates_with_client_tags;
 }
 
 // Returns whether the state has a version_watermark based GC directive, which
@@ -658,7 +654,7 @@ bool HasClearAllDirective(const sync_pb::ModelTypeState& model_type_state) {
 
 void ClientTagBasedModelTypeProcessor::OnUpdateReceived(
     const sync_pb::ModelTypeState& model_type_state,
-    const UpdateResponseDataList& updates) {
+    UpdateResponseDataList updates) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(model_ready_to_sync_);
   DCHECK(!model_error_);
@@ -666,9 +662,6 @@ void ClientTagBasedModelTypeProcessor::OnUpdateReceived(
   if (!ValidateUpdate(model_type_state, updates)) {
     return;
   }
-
-  const UpdateResponseDataList* updates_to_process = &updates;
-  UpdateResponseDataList pre_processed_updates;
 
   if (type_ == AUTOFILL_WALLET_DATA) {
     // The client tag based processor requires client tags to function properly.
@@ -678,9 +671,7 @@ void ClientTagBasedModelTypeProcessor::OnUpdateReceived(
     // fully use client tags, or to use a different processor.
     // TODO(crbug.com/874001): Remove this feature-specific logic when the right
     // solution for Wallet data has been decided.
-    pre_processed_updates =
-        PopulateClientTagsForWalletData(type_, bridge_, updates);
-    updates_to_process = &pre_processed_updates;
+    PopulateClientTagsForWalletData(type_, bridge_, &updates);
   }
 
   base::Optional<ModelError> error;
@@ -694,9 +685,9 @@ void ClientTagBasedModelTypeProcessor::OnUpdateReceived(
   // has.
   bool is_initial_sync = !model_type_state_.initial_sync_done();
   if (is_initial_sync || HasClearAllDirective(model_type_state)) {
-    error = OnFullUpdateReceived(model_type_state, *updates_to_process);
+    error = OnFullUpdateReceived(model_type_state, updates);
   } else {
-    error = OnIncrementalUpdateReceived(model_type_state, *updates_to_process);
+    error = OnIncrementalUpdateReceived(model_type_state, updates);
     ExpireEntriesIfNeeded(model_type_state.progress_marker());
   }
 
@@ -973,13 +964,14 @@ ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
   model_type_state_ = model_type_state;
   metadata_changes->UpdateModelTypeState(model_type_state_);
 
-  for (const UpdateResponseData& update : updates) {
-    const std::string& client_tag_hash = update.entity->client_tag_hash;
+  for (const std::unique_ptr<syncer::UpdateResponseData>& update : updates) {
+    DCHECK(update);
+    const std::string& client_tag_hash = update->entity->client_tag_hash;
     if (client_tag_hash.empty()) {
       // Ignore updates missing a client tag hash (e.g. permanent nodes).
       continue;
     }
-    if (update.entity->is_deleted()) {
+    if (update->entity->is_deleted()) {
       DLOG(WARNING) << "Ignoring tombstone found during initial update: "
                     << "client_tag_hash = " << client_tag_hash << " for "
                     << ModelTypeToString(type_);
@@ -988,7 +980,7 @@ ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
     if (bridge_->SupportsGetClientTag() &&
         client_tag_hash !=
             GenerateSyncableHash(
-                type_, bridge_->GetClientTag(update.entity.value()))) {
+                type_, bridge_->GetClientTag(update->entity.value()))) {
       DLOG(WARNING) << "Received unexpected client tag hash: "
                     << client_tag_hash << " for " << ModelTypeToString(type_);
       continue;
@@ -1003,10 +995,10 @@ ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
                   << " for " << ModelTypeToString(type_);
     }
 #endif  // DCHECK_IS_ON()
-    ProcessorEntity* entity = CreateEntity(update.entity.value());
-    entity->RecordAcceptedUpdate(update);
+    ProcessorEntity* entity = CreateEntity(update->entity.value());
+    entity->RecordAcceptedUpdate(*update);
     const std::string& storage_key = entity->storage_key();
-    entity_data.push_back(EntityChange::CreateAdd(storage_key, update.entity));
+    entity_data.push_back(EntityChange::CreateAdd(storage_key, update->entity));
     if (!storage_key.empty())
       metadata_changes->UpdateMetadata(storage_key, entity->metadata());
   }
@@ -1039,8 +1031,9 @@ ClientTagBasedModelTypeProcessor::OnIncrementalUpdateReceived(
   // re-encryption phase at the end.
   std::unordered_set<std::string> already_updated;
 
-  for (const UpdateResponseData& update : updates) {
-    ProcessorEntity* entity = ProcessUpdate(update, &entity_changes);
+  for (const std::unique_ptr<syncer::UpdateResponseData>& update : updates) {
+    DCHECK(update);
+    ProcessorEntity* entity = ProcessUpdate(*update, &entity_changes);
 
     if (!entity) {
       // The update is either of the following:

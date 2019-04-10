@@ -246,10 +246,12 @@ void ExtensionSessionsTest::CreateSessionModels() {
         time_now - base::TimeDelta::FromSeconds(index);
     header_entity_data.modification_time = header_entity_data.creation_time;
 
-    syncer::UpdateResponseData header_update;
-    header_update.entity = header_entity_data.PassToPtr();
-    header_update.response_version = 1;
-    worker.UpdateFromServer({header_update});
+    auto header_update = std::make_unique<syncer::UpdateResponseData>();
+    header_update->entity = header_entity_data.PassToPtr();
+    header_update->response_version = 1;
+    syncer::UpdateResponseDataList updates;
+    updates.push_back(std::move(header_update));
+    worker.UpdateFromServer(std::move(updates));
 
     for (size_t i = 0; i < tabs.size(); i++) {
       sync_pb::EntitySpecifics tab_entity;

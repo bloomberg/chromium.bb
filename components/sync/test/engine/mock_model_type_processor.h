@@ -48,7 +48,7 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   void OnCommitCompleted(const sync_pb::ModelTypeState& type_state,
                          const CommitResponseDataList& response_list) override;
   void OnUpdateReceived(const sync_pb::ModelTypeState& type_state,
-                        const UpdateResponseDataList& response_list) override;
+                        UpdateResponseDataList response_list) override;
 
   // By default, this object behaves as if all messages are processed
   // immediately.  Sometimes it is useful to defer work until later, as might
@@ -75,9 +75,9 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
 
   // Getters to access the log of received update responses.
   //
-  // Does not includes repsonses that are in pending tasks.
+  // Does not includes responses that are in pending tasks.
   size_t GetNumUpdateResponses() const;
-  UpdateResponseDataList GetNthUpdateResponse(size_t n) const;
+  std::vector<const UpdateResponseData*> GetNthUpdateResponse(size_t n) const;
   sync_pb::ModelTypeState GetNthUpdateState(size_t n) const;
 
   // Getters to access the log of received commit responses.
@@ -89,7 +89,8 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
 
   // Getters to access the lastest update response for a given tag_hash.
   bool HasUpdateResponse(const std::string& tag_hash) const;
-  UpdateResponseData GetUpdateResponse(const std::string& tag_hash) const;
+  const UpdateResponseData& GetUpdateResponse(
+      const std::string& tag_hash) const;
 
   // Getters to access the lastest commit response for a given tag_hash.
   bool HasCommitResponse(const std::string& tag_hash) const;
@@ -113,7 +114,7 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   //
   // Implemented as an Impl method so we can defer its execution in some cases.
   void OnUpdateReceivedImpl(const sync_pb::ModelTypeState& type_state,
-                            const UpdateResponseDataList& response_list);
+                            UpdateResponseDataList response_list);
 
   // Getter and setter for per-item sequence number tracking.
   int64_t GetCurrentSequenceNumber(const std::string& tag_hash) const;
@@ -131,7 +132,7 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   // State related to the implementation of deferred work.
   // See SetSynchronousExecution() for details.
   bool is_synchronous_;
-  std::vector<base::Closure> pending_tasks_;
+  std::vector<base::OnceClosure> pending_tasks_;
   std::unique_ptr<CommitQueue> commit_queue_;
 
   // A log of messages received by this object.
@@ -142,7 +143,7 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
 
   // Latest responses received, indexed by tag_hash.
   std::map<const std::string, CommitResponseData> commit_response_items_;
-  std::map<const std::string, UpdateResponseData> update_response_items_;
+  std::map<const std::string, const UpdateResponseData*> update_response_items_;
 
   // The per-item state maps.
   std::map<const std::string, int64_t> sequence_numbers_;

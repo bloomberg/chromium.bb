@@ -41,7 +41,7 @@ void NigoriModelTypeProcessor::OnCommitCompleted(
 
 void NigoriModelTypeProcessor::OnUpdateReceived(
     const sync_pb::ModelTypeState& type_state,
-    const UpdateResponseDataList& updates) {
+    UpdateResponseDataList updates) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   NOTIMPLEMENTED();
 }

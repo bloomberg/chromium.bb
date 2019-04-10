@@ -39,21 +39,19 @@ void MockModelTypeProcessor::GetLocalChanges(size_t max_entries,
 void MockModelTypeProcessor::OnCommitCompleted(
     const sync_pb::ModelTypeState& type_state,
     const CommitResponseDataList& response_list) {
-  base::Closure task =
-      base::Bind(&MockModelTypeProcessor::OnCommitCompletedImpl,
-                 base::Unretained(this), type_state, response_list);
-  pending_tasks_.push_back(task);
+  pending_tasks_.push_back(
+      base::BindOnce(&MockModelTypeProcessor::OnCommitCompletedImpl,
+                     base::Unretained(this), type_state, response_list));
   if (is_synchronous_)
     RunQueuedTasks();
 }
 
 void MockModelTypeProcessor::OnUpdateReceived(
     const sync_pb::ModelTypeState& type_state,
-    const UpdateResponseDataList& response_list) {
-  base::Closure task =
-      base::Bind(&MockModelTypeProcessor::OnUpdateReceivedImpl,
-                 base::Unretained(this), type_state, response_list);
-  pending_tasks_.push_back(task);
+    UpdateResponseDataList response_list) {
+  pending_tasks_.push_back(base::BindOnce(
+      &MockModelTypeProcessor::OnUpdateReceivedImpl, base::Unretained(this),
+      type_state, std::move(response_list)));
   if (is_synchronous_)
     RunQueuedTasks();
 }
@@ -64,7 +62,7 @@ void MockModelTypeProcessor::SetSynchronousExecution(bool is_synchronous) {
 
 void MockModelTypeProcessor::RunQueuedTasks() {
   for (auto it = pending_tasks_.begin(); it != pending_tasks_.end(); ++it) {
-    it->Run();
+    std::move(*it).Run();
   }
   pending_tasks_.clear();
 }
@@ -134,10 +132,15 @@ size_t MockModelTypeProcessor::GetNumUpdateResponses() const {
   return received_update_responses_.size();
 }
 
-UpdateResponseDataList MockModelTypeProcessor::GetNthUpdateResponse(
-    size_t n) const {
+std::vector<const UpdateResponseData*>
+MockModelTypeProcessor::GetNthUpdateResponse(size_t n) const {
   DCHECK_LT(n, GetNumUpdateResponses());
-  return received_update_responses_[n];
+  std::vector<const UpdateResponseData*> nth_update_responses;
+  for (const std::unique_ptr<UpdateResponseData>& response :
+       received_update_responses_[n]) {
+    nth_update_responses.push_back(response.get());
+  }
+  return nth_update_responses;
 }
 
 sync_pb::ModelTypeState MockModelTypeProcessor::GetNthUpdateState(
@@ -168,11 +171,11 @@ bool MockModelTypeProcessor::HasUpdateResponse(
   return it != update_response_items_.end();
 }
 
-UpdateResponseData MockModelTypeProcessor::GetUpdateResponse(
+const UpdateResponseData& MockModelTypeProcessor::GetUpdateResponse(
     const std::string& tag_hash) const {
   DCHECK(HasUpdateResponse(tag_hash));
   auto it = update_response_items_.find(tag_hash);
-  return it->second;
+  return *it->second;
 }
 
 bool MockModelTypeProcessor::HasCommitResponse(
@@ -229,17 +232,17 @@ void MockModelTypeProcessor::OnCommitCompletedImpl(
 
 void MockModelTypeProcessor::OnUpdateReceivedImpl(
     const sync_pb::ModelTypeState& type_state,
-    const UpdateResponseDataList& response_list) {
-  received_update_responses_.push_back(response_list);
+    UpdateResponseDataList response_list) {
   type_states_received_on_update_.push_back(type_state);
   for (auto it = response_list.begin(); it != response_list.end(); ++it) {
-    const std::string client_tag_hash = it->entity->client_tag_hash;
-    update_response_items_.insert(std::make_pair(client_tag_hash, *it));
-
+    const std::string client_tag_hash = (*it)->entity->client_tag_hash;
     // Server wins.  Set the model's base version.
-    SetBaseVersion(client_tag_hash, it->response_version);
-    SetServerAssignedId(client_tag_hash, it->entity->id);
+    SetBaseVersion(client_tag_hash, (*it)->response_version);
+    SetServerAssignedId(client_tag_hash, (*it)->entity->id);
+
+    update_response_items_.insert(std::make_pair(client_tag_hash, it->get()));
   }
+  received_update_responses_.push_back(std::move(response_list));
 }
 
 // Fetches the sequence number as of the most recent update request.

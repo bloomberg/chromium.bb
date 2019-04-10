@@ -5,6 +5,7 @@
 #include "components/sync_bookmarks/bookmark_model_merger.h"
 
 #include <algorithm>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -136,16 +137,18 @@ BuildUpdatesTreeWithoutTombstonesWithSortedChildren(
       id_to_updates;
   // Tombstones carry only the sync id and cannot be merged with the local
   // model. Hence, we ignore tombstones.
-  for (const UpdateResponseData& update : *updates) {
-    const EntityData& update_entity = update.entity.value();
+  for (const std::unique_ptr<syncer::UpdateResponseData>& update : *updates) {
+    DCHECK(update);
+    const EntityData& update_entity = update->entity.value();
     if (update_entity.is_deleted()) {
       continue;
     }
-    id_to_updates[update_entity.id] = &update;
+    id_to_updates[update_entity.id] = update.get();
   }
 
-  for (const UpdateResponseData& update : *updates) {
-    const EntityData& update_entity = update.entity.value();
+  for (const std::unique_ptr<UpdateResponseData>& update : *updates) {
+    DCHECK(update);
+    const EntityData& update_entity = update->entity.value();
     if (update_entity.is_deleted()) {
       continue;
     }
@@ -169,7 +172,7 @@ BuildUpdatesTreeWithoutTombstonesWithSortedChildren(
     }
     const UpdateResponseData* parent_update =
         id_to_updates[update_entity.parent_id];
-    updates_tree[parent_update].push_back(&update);
+    updates_tree[parent_update].push_back(update.get());
   }
 
   // Sort all child updates.
@@ -215,14 +218,15 @@ void BookmarkModelMerger::Merge() {
   // perform the primary match. If there are multiple match candidates it
   // selects the first one.
   // Associate permanent folders.
-  for (const UpdateResponseData& update : *updates_) {
-    const EntityData& update_entity = update.entity.value();
+  for (const std::unique_ptr<UpdateResponseData>& update : *updates_) {
+    DCHECK(update);
+    const EntityData& update_entity = update->entity.value();
     const bookmarks::BookmarkNode* permanent_folder =
         GetPermanentFolder(update_entity);
     if (!permanent_folder) {
       continue;
     }
-    MergeSubtree(permanent_folder, &update);
+    MergeSubtree(permanent_folder, update.get());
   }
   // TODO(crbug.com/516866): Check that both models match now.
 

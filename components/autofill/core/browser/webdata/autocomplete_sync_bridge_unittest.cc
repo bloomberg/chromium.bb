@@ -186,7 +186,7 @@ class AutocompleteSyncBridgeTest : public testing::Test {
     for (const AutofillSpecifics& specifics : remote_data) {
       initial_updates.push_back(SpecificsToUpdateResponse(specifics));
     }
-    real_processor_->OnUpdateReceived(state, initial_updates);
+    real_processor_->OnUpdateReceived(state, std::move(initial_updates));
   }
 
   void SaveSpecificsToTable(
@@ -254,10 +254,10 @@ class AutocompleteSyncBridgeTest : public testing::Test {
     return data.PassToPtr();
   }
 
-  syncer::UpdateResponseData SpecificsToUpdateResponse(
+  std::unique_ptr<syncer::UpdateResponseData> SpecificsToUpdateResponse(
       const AutofillSpecifics& specifics) {
-    syncer::UpdateResponseData data;
-    data.entity = SpecificsToEntity(specifics);
+    auto data = std::make_unique<syncer::UpdateResponseData>();
+    data->entity = SpecificsToEntity(specifics);
     return data;
   }
 

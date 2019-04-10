@@ -90,11 +90,11 @@ syncer::EntityDataPtr SpecificsToEntity(
   return data.PassToPtr();
 }
 
-syncer::UpdateResponseData SpecificsToUpdateResponse(
+std::unique_ptr<syncer::UpdateResponseData> SpecificsToUpdateResponse(
     const sync_pb::SessionSpecifics& specifics,
     base::Time mtime = base::Time::Now()) {
-  syncer::UpdateResponseData data;
-  data.entity = SpecificsToEntity(specifics, mtime);
+  auto data = std::make_unique<syncer::UpdateResponseData>();
+  data->entity = SpecificsToEntity(specifics, mtime);
   return data;
 }
 
@@ -107,14 +107,15 @@ std::map<std::string, std::unique_ptr<EntityData>> BatchToEntityDataMap(
   return storage_key_to_data;
 }
 
-syncer::UpdateResponseData CreateTombstone(const std::string& client_tag) {
+std::unique_ptr<syncer::UpdateResponseData> CreateTombstone(
+    const std::string& client_tag) {
   EntityData tombstone;
   tombstone.client_tag_hash =
       syncer::GenerateSyncableHash(syncer::SESSIONS, client_tag);
 
-  syncer::UpdateResponseData data;
-  data.entity = tombstone.PassToPtr();
-  data.response_version = 2;
+  auto data = std::make_unique<syncer::UpdateResponseData>();
+  data->entity = tombstone.PassToPtr();
+  data->response_version = 2;
   return data;
 }
 
@@ -236,7 +237,7 @@ class SessionSyncBridgeTest : public ::testing::Test {
     for (const SessionSpecifics& specifics : remote_data) {
       initial_updates.push_back(SpecificsToUpdateResponse(specifics));
     }
-    real_processor_->OnUpdateReceived(state, initial_updates);
+    real_processor_->OnUpdateReceived(state, std::move(initial_updates));
   }
 
   std::map<std::string, std::unique_ptr<EntityData>> GetAllData() {
@@ -1267,8 +1268,10 @@ TEST_F(SessionSyncBridgeTest, ShouldHandleRemoteDeletion) {
 
   // Mimic receiving a remote deletion of the foreign session.
   EXPECT_CALL(mock_foreign_session_updated_cb(), Run());
-  real_processor()->OnUpdateReceived(
-      state, {CreateTombstone(SessionStore::GetClientTag(foreign_header))});
+  syncer::UpdateResponseDataList updates;
+  updates.push_back(
+      CreateTombstone(SessionStore::GetClientTag(foreign_header)));
+  real_processor()->OnUpdateReceived(state, std::move(updates));
 
   foreign_session_tab = nullptr;
   EXPECT_FALSE(bridge()->GetOpenTabsUIDelegate()->GetForeignTab(
@@ -1364,8 +1367,10 @@ TEST_F(SessionSyncBridgeTest, ShouldIgnoreRemoteDeletionOfLocalTab) {
 
   // Mimic receiving a remote deletion of both entities.
   EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(0);
-  real_processor()->OnUpdateReceived(state, {CreateTombstone(kLocalSessionTag),
-                                             CreateTombstone(tab_client_tag1)});
+  syncer::UpdateResponseDataList updates;
+  updates.push_back(CreateTombstone(kLocalSessionTag));
+  updates.push_back(CreateTombstone(tab_client_tag1));
+  real_processor()->OnUpdateReceived(state, std::move(updates));
 
   // State should remain unchanged (deletions ignored).
   EXPECT_THAT(
@@ -1572,7 +1577,7 @@ TEST_F(SessionSyncBridgeTest, ShouldDoGarbageCollection) {
       Delete(SessionStore::GetTabStorageKey(kStaleSessionTag, kTabNodeId), _));
 
   EXPECT_CALL(mock_foreign_session_updated_cb(), Run()).Times(AtLeast(1));
-  real_processor()->OnUpdateReceived(state, updates);
+  real_processor()->OnUpdateReceived(state, std::move(updates));
 }
 
 }  // namespace

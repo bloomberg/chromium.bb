@@ -28,7 +28,7 @@ namespace {
 const char kBookmarkBarId[] = "bookmark_bar_id";
 const char kBookmarkBarTag[] = "bookmark_bar";
 
-syncer::UpdateResponseData CreateUpdateResponseData(
+std::unique_ptr<syncer::UpdateResponseData> CreateUpdateResponseData(
     const std::string& server_id,
     const std::string& parent_id,
     const std::string& title,
@@ -50,24 +50,24 @@ syncer::UpdateResponseData CreateUpdateResponseData(
   bookmark_specifics->set_favicon(icon_data);
 
   data.is_folder = is_folder;
-  syncer::UpdateResponseData response_data;
-  response_data.entity = data.PassToPtr();
+  auto response_data = std::make_unique<syncer::UpdateResponseData>();
+  response_data->entity = data.PassToPtr();
   // Similar to what's done in the loopback_server.
-  response_data.response_version = 0;
+  response_data->response_version = 0;
   return response_data;
 }
 
-syncer::UpdateResponseData CreateBookmarkBarNodeUpdateData() {
+std::unique_ptr<syncer::UpdateResponseData> CreateBookmarkBarNodeUpdateData() {
   syncer::EntityData data;
   data.id = kBookmarkBarId;
   data.server_defined_unique_tag = kBookmarkBarTag;
 
   data.specifics.mutable_bookmark();
 
-  syncer::UpdateResponseData response_data;
-  response_data.entity = data.PassToPtr();
+  auto response_data = std::make_unique<syncer::UpdateResponseData>();
+  response_data->entity = data.PassToPtr();
   // Similar to what's done in the loopback_server.
-  response_data.response_version = 0;
+  response_data->response_version = 0;
   return response_data;
 }
 
