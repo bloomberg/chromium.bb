@@ -270,9 +270,10 @@ void Slider::OnPaint(gfx::Canvas* canvas) {
       is_active_ ? kEmptySliderColor
                  : SkColorSetA(kEmptySliderColor, kHighlightColorAlpha);
 
-  // Extra space used to hide slider ends behind the thumb when slider is
-  // disabled.
-  const int extra_padding = is_active_ ? 0 : kSliderPadding;
+  // Padding used to adjust space between slider ends and slider thumb.
+  // Value is negative when slider is active so that there is no separation
+  // between slider and thumb.
+  const int extra_padding = is_active_ ? -kSliderPadding : kSliderPadding;
 
   cc::PaintFlags slider_flags;
   slider_flags.setAntiAlias(true);
