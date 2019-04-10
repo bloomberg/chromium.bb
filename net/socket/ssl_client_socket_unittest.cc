@@ -3510,6 +3510,73 @@ TEST_F(SSLClientSocketTest, PKPEnforced) {
   EXPECT_FALSE(ssl_info.pkp_bypassed);
 }
 
+struct KeyUsageTest {
+  SpawnedTestServer::SSLOptions::ServerCertificate server_cert;
+  SpawnedTestServer::SSLOptions::KeyExchange key_exchange;
+  bool known_root;
+  bool success;
+};
+
+class SSLClientSocketKeyUsageTest
+    : public SSLClientSocketTest,
+      public ::testing::WithParamInterface<struct KeyUsageTest> {};
+
+const struct KeyUsageTest kKeyUsageTests[] = {
+    // Known Root: Success iff keyUsage allows the key exchange method
+    {SpawnedTestServer::SSLOptions::CERT_KEY_USAGE_RSA_ENCIPHERMENT,
+     SpawnedTestServer::SSLOptions::KEY_EXCHANGE_ECDHE_RSA, true, false},
+    {SpawnedTestServer::SSLOptions::CERT_KEY_USAGE_RSA_DIGITAL_SIGNATURE,
+     SpawnedTestServer::SSLOptions::KEY_EXCHANGE_ECDHE_RSA, true, true},
+    {SpawnedTestServer::SSLOptions::CERT_KEY_USAGE_RSA_ENCIPHERMENT,
+     SpawnedTestServer::SSLOptions::KEY_EXCHANGE_RSA, true, true},
+    {SpawnedTestServer::SSLOptions::CERT_KEY_USAGE_RSA_DIGITAL_SIGNATURE,
+     SpawnedTestServer::SSLOptions::KEY_EXCHANGE_RSA, true, false},
+    // Unknown Root: Always succeeds
+    {SpawnedTestServer::SSLOptions::CERT_KEY_USAGE_RSA_ENCIPHERMENT,
+     SpawnedTestServer::SSLOptions::KEY_EXCHANGE_ECDHE_RSA, false, true},
+    {SpawnedTestServer::SSLOptions::CERT_KEY_USAGE_RSA_DIGITAL_SIGNATURE,
+     SpawnedTestServer::SSLOptions::KEY_EXCHANGE_ECDHE_RSA, false, true},
+    {SpawnedTestServer::SSLOptions::CERT_KEY_USAGE_RSA_ENCIPHERMENT,
+     SpawnedTestServer::SSLOptions::KEY_EXCHANGE_RSA, false, true},
+    {SpawnedTestServer::SSLOptions::CERT_KEY_USAGE_RSA_DIGITAL_SIGNATURE,
+     SpawnedTestServer::SSLOptions::KEY_EXCHANGE_RSA, false, true},
+};
+
+TEST_P(SSLClientSocketKeyUsageTest, RSAKeyUsageEnforcedForKnownRoot) {
+  const KeyUsageTest test = GetParam();
+  SpawnedTestServer::SSLOptions ssl_options(test.server_cert);
+  ssl_options.key_exchanges = test.key_exchange;
+  ASSERT_TRUE(StartTestServer(ssl_options));
+  scoped_refptr<X509Certificate> server_cert =
+      spawned_test_server()->GetCertificate();
+
+  // Certificate is trusted.
+  CertVerifyResult verify_result;
+  verify_result.is_issued_by_known_root = test.known_root;
+  verify_result.verified_cert = server_cert;
+  verify_result.public_key_hashes =
+      MakeHashValueVector(kGoodHashValueVectorInput);
+  cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
+
+  SSLConfig ssl_config;
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+  SSLInfo ssl_info;
+  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
+
+  if (test.success) {
+    EXPECT_THAT(rv, IsOk());
+    EXPECT_TRUE(sock_->IsConnected());
+  } else {
+    EXPECT_THAT(rv, IsError(ERR_SSL_KEY_USAGE_INCOMPATIBLE));
+    EXPECT_FALSE(sock_->IsConnected());
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(RSAKeyUsageInstantiation,
+                         SSLClientSocketKeyUsageTest,
+                         ::testing::ValuesIn(kKeyUsageTests));
+
 // Test that when CT is required (in this case, by the delegate), the
 // absence of CT information is a socket error.
 TEST_F(SSLClientSocketTest, CTIsRequired) {

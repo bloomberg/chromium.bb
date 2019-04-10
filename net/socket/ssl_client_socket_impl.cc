@@ -1156,6 +1156,13 @@ ssl_verify_result_t SSLClientSocketImpl::VerifyCert() {
                      base::Unretained(this)),
       &cert_verifier_request_, net_log_);
 
+  // Enforce keyUsage extension for RSA leaf certificates chaining up to known
+  // roots.
+  // TODO(795089): Enforce this unconditionally.
+  if (server_cert_verify_result_.is_issued_by_known_root) {
+    SSL_set_enforce_rsa_key_usage(ssl_.get(), 1);
+  }
+
   return HandleVerifyResult();
 }
 

@@ -121,6 +121,8 @@ int MapOpenSSLErrorSSL(uint32_t error_code) {
       }
       return ERR_SSL_PROTOCOL_ERROR;
     }
+    case SSL_R_KEY_USAGE_BIT_INCORRECT:
+      return ERR_SSL_KEY_USAGE_INCOMPATIBLE;
     default:
       return ERR_SSL_PROTOCOL_ERROR;
   }
