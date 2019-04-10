@@ -8,6 +8,7 @@
 #include "base/callback_forward.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "base/trace_event/trace_event.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "services/ws/client_change.h"
@@ -331,6 +332,9 @@ void ClientRoot::HandleBoundsOrScaleFactorChange() {
 void ClientRoot::NotifyClientOfNewBounds() {
   last_bounds_ = GetBoundsToSend(window_);
   auto id = ProxyWindow::GetMayBeNull(window_)->local_surface_id_allocation();
+  TRACE_EVENT_WITH_FLOW0("ui", "ClientRoot::NotifyClientOfNewBounds",
+                         id->local_surface_id().hash(),
+                         TRACE_EVENT_FLAG_FLOW_OUT);
   window_tree_->window_tree_client_->OnWindowBoundsChanged(
       window_tree_->TransportIdForWindow(window_), last_bounds_,
       ProxyWindow::GetMayBeNull(window_)->local_surface_id_allocation());

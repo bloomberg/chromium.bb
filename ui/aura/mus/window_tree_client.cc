@@ -21,6 +21,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/base/switches.h"
 #include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
 #include "mojo/public/cpp/bindings/map.h"
@@ -1223,6 +1224,14 @@ void WindowTreeClient::OnWindowBoundsChanged(
   WindowMus* window = GetWindowByServerId(window_id);
   if (!window)
     return;
+
+  if (IsRoot(window)) {
+    TRACE_EVENT_WITH_FLOW0(
+        "ui", "ClientRoot::NotifyClientOfNewBounds",
+        local_surface_id_allocation->local_surface_id().hash(),
+        TRACE_EVENT_FLAG_FLOW_IN);
+  }
+  TRACE_EVENT0("ui", "WindowTreeClient::OnWindowBoundsChanged");
 
   InFlightBoundsChange new_change(this, window, new_bounds,
                                   /* from_server */ true,
