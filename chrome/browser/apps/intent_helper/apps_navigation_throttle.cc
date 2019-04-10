@@ -26,11 +26,10 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/common/constants.h"
 #include "url/origin.h"
 
 namespace {
-
-constexpr char kGoogleCom[] = "google.com";
 
 // Compares the host name of the referrer and target URL to decide whether
 // the navigation needs to be overridden.
@@ -51,28 +50,10 @@ bool ShouldOverrideUrlLoading(const GURL& previous_url,
   // Check the scheme for both |previous_url| and |current_url| since an
   // extension could have referred us (e.g. Google Docs).
   if (!current_url.SchemeIsHTTPOrHTTPS() ||
-      !previous_url.SchemeIsHTTPOrHTTPS()) {
+      previous_url.SchemeIs(extensions::kExtensionScheme)) {
     return false;
   }
 
-  // TODO(dominickn): this was added as a special case for ARC. Reconsider if
-  // it's necessary for all app platforms.
-  if (net::registry_controlled_domains::SameDomainOrHost(
-          current_url, previous_url,
-          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
-    if (net::registry_controlled_domains::GetDomainAndRegistry(
-            current_url,
-            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES) ==
-        kGoogleCom) {
-      // Navigation within the google.com domain are good candidates for this
-      // throttle (and consecuently the picker UI) only if they have different
-      // hosts, this is because multiple services are hosted within the same
-      // domain e.g. play.google.com, mail.google.com and so on.
-      return current_url.host_piece() != previous_url.host_piece();
-    }
-
-    return false;
-  }
   return true;
 }
 
@@ -214,7 +195,8 @@ AppsNavigationThrottle::AppsNavigationThrottle(
       ui_displayed_(false),
       ui_auto_display_service_(
           IntentPickerAutoDisplayService::Get(Profile::FromBrowserContext(
-              navigation_handle->GetWebContents()->GetBrowserContext()))) {
+              navigation_handle->GetWebContents()->GetBrowserContext()))),
+      navigate_from_link_(false) {
   // |ui_auto_display_service_| can be null iff the call is coming from
   // IntentPickerView. Since the pointer to our service is never modified
   // (in case it is successfully created here) this check covers all the
@@ -389,6 +371,10 @@ bool AppsNavigationThrottle::ShouldShowRememberSelection() {
   return false;
 }
 
+bool AppsNavigationThrottle::navigate_from_link() {
+  return navigate_from_link_;
+}
+
 // static
 AppsNavigationThrottle::PickerAction AppsNavigationThrottle::GetPickerAction(
     apps::mojom::AppType app_type,
@@ -429,6 +415,8 @@ AppsNavigationThrottle::HandleRequest() {
   content::NavigationHandle* handle = navigation_handle();
   DCHECK(!ui_displayed_);
 
+  navigate_from_link_ = false;
+
   // Always handle http(s) <form> submissions in Chrome for two reasons: 1) we
   // don't have a way to send POST data to ARC, and 2) intercepting http(s) form
   // submissions is not very important because such submissions are usually
@@ -439,23 +427,12 @@ AppsNavigationThrottle::HandleRequest() {
   // Ignore navigations with the CLIENT_REDIRECT qualifier on.
   constexpr bool kAllowClientRedirect = false;
 
-  // We must never handle navigations started within a context menu.
-  if (handle->WasStartedFromContextMenu())
-    return content::NavigationThrottle::PROCEED;
-
   ui::PageTransition page_transition = handle->GetPageTransition();
   content::WebContents* web_contents = handle->GetWebContents();
   const GURL& url = handle->GetURL();
-  if (ShouldIgnoreNavigation(page_transition, kAllowFormSubmit,
-                             kAllowClientRedirect)) {
-    if ((page_transition & ui::PAGE_TRANSITION_FORWARD_BACK) ||
-        (page_transition & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR)) {
-      // This enforces that whether we ignore the navigation or not, we make
-      // sure that the user cannot copy/paste or type a url to reuse
-      // ArcWebContentsData.
-      MaybeRemoveComingFromArcFlag(web_contents, starting_url_, url);
-    }
-    return content::NavigationThrottle::PROCEED;
+  if (!ShouldIgnoreNavigation(page_transition, kAllowFormSubmit,
+                              kAllowClientRedirect)) {
+    navigate_from_link_ = true;
   }
 
   MaybeRemoveComingFromArcFlag(web_contents, starting_url_, url);
