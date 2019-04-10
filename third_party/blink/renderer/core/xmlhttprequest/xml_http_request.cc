@@ -87,6 +87,7 @@
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
@@ -100,6 +101,8 @@ namespace {
 // via hasPendingActivity method which returns true if
 // m_eventDispatchRecursionLevel is positive.
 class ScopedEventDispatchProtect final {
+  STACK_ALLOCATED();
+
  public:
   explicit ScopedEventDispatchProtect(int* level) : level_(level) { ++*level_; }
   ~ScopedEventDispatchProtect() {

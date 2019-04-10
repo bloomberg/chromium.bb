@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl_hash.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
 namespace blink {
@@ -59,6 +60,8 @@ class CORE_EXPORT WorkletModuleResponsesMap
 
  private:
   class Entry final {
+    USING_FAST_MALLOC(Entry);
+
    public:
     enum class State { kFetching, kFetched, kFailed };
     Entry() = default;
