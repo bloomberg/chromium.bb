@@ -223,13 +223,13 @@ const AXPosition AXPosition::FromPosition(
   DCHECK(container_node->IsContainerNode());
   if (container->AccessibilityIsIgnored()) {
     container = container->ParentObjectUnignored();
-    // |container_node| could potentially become nullptr if the unignored parent
-    // is an anonymous layout block.
+    if (!container)
+      return {};
+
+    // |container_node| could potentially become nullptr if the unignored
+    // parent is an anonymous layout block.
     container_node = container->GetNode();
   }
-
-  if (!container)
-    return {};
 
   AXPosition ax_position(*container);
   // |ComputeNodeAfterPosition| returns nullptr for "after children"
