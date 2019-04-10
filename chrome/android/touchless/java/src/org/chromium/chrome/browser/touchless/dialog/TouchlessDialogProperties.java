@@ -12,6 +12,7 @@ import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModel.ReadableBooleanPropertyKey;
+import org.chromium.ui.modelutil.PropertyModel.WritableBooleanPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableIntPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
 
@@ -50,7 +51,12 @@ public class TouchlessDialogProperties {
         public static final WritableObjectPropertyKey<OnClickListener> CLICK_LISTENER =
                 new WritableObjectPropertyKey<>();
 
-        public static final PropertyKey[] ALL_KEYS = {ICON, TEXT, CLICK_LISTENER};
+        /** Whether this item has a focus change listener attached to its view. */
+        public static final WritableBooleanPropertyKey FOCUS_LISTENER_SET =
+                new WritableBooleanPropertyKey();
+
+        public static final PropertyKey[] ALL_KEYS = {ICON, TEXT, CLICK_LISTENER,
+                FOCUS_LISTENER_SET};
     }
 
     /**

@@ -22,8 +22,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:padding="8dp"
-        android:textAppearance="@style/TextAppearance.BlackHeadline"
+        android:ellipsize="start"
+        android:padding="13dp"
+        android:singleLine="true"
+        android:textAppearance="@style/TextAppearance.BlackTitle1"
         android:visibility="gone" />
 
     <TextView
