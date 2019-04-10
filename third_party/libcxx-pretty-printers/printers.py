@@ -161,6 +161,9 @@ class SharedPointerPrinter:
             else:
                 state = 'count %d, weak %d' % (usecount, weakcount)
 
+        if self.val['__ptr_'] == 0:
+            return '%s (%s) = %s <nullptr>' % (self.typename, state,
+                                               self.val['__ptr_'])
         return '%s (%s) = %s => %s' % (self.typename, state,
                                        self.val['__ptr_'],
                                        self.val['__ptr_'].dereference())
@@ -206,7 +209,7 @@ class TuplePrinter:
 
     class _iterator(Iterator):
         def __init__(self, head):
-            self.head = head['base_']
+            self.head = head['__base_']
             self.fields = self.head.type.fields()
             self.count = 0
 
@@ -216,7 +219,7 @@ class TuplePrinter:
         def __next__(self):
             if self.count >= len(self.fields):
                 raise StopIteration
-            field = self.head.cast(self.fields[self.count].type)['value']
+            field = self.head.cast(self.fields[self.count].type)['__value_']
             self.count += 1
             return ('[%d]' % (self.count - 1), field)
 
