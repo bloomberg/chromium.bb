@@ -29,7 +29,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
-import org.chromium.chrome.browser.sync.SyncUserDataWiper;
 import org.chromium.components.signin.AccountIdProvider;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountTrackerService;
@@ -703,18 +702,6 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         if (mSignOutState.mWipeDataHooks != null) mSignOutState.mWipeDataHooks.preWipeData();
         // This will call back to onProfileDataWiped().
         SigninManagerJni.get().wipeGoogleServiceWorkerCaches(this, mNativeSigninManagerAndroid);
-    }
-
-    /**
-     * Convenience method to return a Promise to be fulfilled when the user's sync data has been
-     * wiped if the parameter is true, or an already fulfilled Promise if the parameter is false.
-     */
-    public static Promise<Void> wipeSyncUserDataIfRequired(boolean required) {
-        if (required) {
-            return SyncUserDataWiper.wipeSyncUserData();
-        } else {
-            return Promise.fulfilled(null);
-        }
     }
 
     @CalledByNative
