@@ -111,11 +111,11 @@ _OS_SPECIFIC_FILTER['mac'] = [
 
 _DESKTOP_NEGATIVE_FILTER = [
     # Desktop doesn't support touch (without --touch-events).
-    'ChromeDriverTest.testTouchSingleTapElement',
+    'ChromeDriverTestLegacy.testTouchSingleTapElement',
     'ChromeDriverTest.testTouchDownMoveUpElement',
-    'ChromeDriverTest.testTouchScrollElement',
-    'ChromeDriverTest.testTouchDoubleTapElement',
-    'ChromeDriverTest.testTouchLongPressElement',
+    'ChromeDriverTestLegacy.testTouchScrollElement',
+    'ChromeDriverTestLegacy.testTouchDoubleTapElement',
+    'ChromeDriverTestLegacy.testTouchLongPressElement',
     'ChromeDriverTest.testTouchFlickElement',
     'ChromeDriverTest.testTouchPinch',
     'ChromeDriverAndroidTest.*',
@@ -274,7 +274,7 @@ _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
         'ChromeDriverTest.testSendTextToAlert',
         'ChromeDriverTest.testUnexpectedAlertOpenExceptionMessage',
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2332
-        'ChromeDriverTest.testTouchScrollElement',
+        'ChromeDriverTestLegacy.testTouchScrollElement',
     ]
 )
 
@@ -1438,14 +1438,6 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     with self.assertRaises(chromedriver.StaleElementReference):
       elem.Click()
 
-  def testTouchSingleTapElement(self):
-    self._driver.Load(self.GetHttpUrlForFile(
-        '/chromedriver/touch_action_tests.html'))
-    target = self._driver.FindElement('css selector', '#target')
-    target.SingleTap()
-    events = self._driver.FindElement('css selector', '#events')
-    self.assertEquals('events: touchstart touchend', events.GetText())
-
   def testTouchDownMoveUpElement(self):
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/touch_action_tests.html'))
@@ -1468,36 +1460,6 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self.assertEquals(10, rect['y'])
     self.assertEquals(200, rect['height'])
     self.assertEquals(210, rect['width'])
-
-  def testTouchScrollElement(self):
-    self._driver.Load(self.GetHttpUrlForFile(
-        '/chromedriver/touch_action_tests.html'))
-    scroll_left = 'return document.documentElement.scrollLeft;'
-    scroll_top = 'return document.documentElement.scrollTop;'
-    self.assertEquals(0, self._driver.ExecuteScript(scroll_left))
-    self.assertEquals(0, self._driver.ExecuteScript(scroll_top))
-    target = self._driver.FindElement('css selector', '#target')
-    self._driver.TouchScroll(target, 47, 53)
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1179
-    self.assertAlmostEqual(47, self._driver.ExecuteScript(scroll_left), delta=1)
-    self.assertAlmostEqual(53, self._driver.ExecuteScript(scroll_top), delta=1)
-
-  def testTouchDoubleTapElement(self):
-    self._driver.Load(self.GetHttpUrlForFile(
-        '/chromedriver/touch_action_tests.html'))
-    target = self._driver.FindElement('css selector', '#target')
-    target.DoubleTap()
-    events = self._driver.FindElement('css selector', '#events')
-    self.assertEquals('events: touchstart touchend touchstart touchend',
-        events.GetText())
-
-  def testTouchLongPressElement(self):
-    self._driver.Load(self.GetHttpUrlForFile(
-        '/chromedriver/touch_action_tests.html'))
-    target = self._driver.FindElement('css selector', '#target')
-    target.LongPress()
-    events = self._driver.FindElement('css selector', '#events')
-    self.assertEquals('events: touchstart touchcancel', events.GetText())
 
   def testTouchFlickElement(self):
     dx = 3
@@ -2083,6 +2045,43 @@ class ChromeDriverTestLegacy(ChromeDriverBaseTestWithWebServer):
                             'unexpected alert open: {Alert text : Hi}',
                             self._driver.FindElement, 'tag name', 'divine')
 
+  def testTouchScrollElement(self):
+    self._driver.Load(self.GetHttpUrlForFile(
+          '/chromedriver/touch_action_tests.html'))
+    scroll_left = 'return document.documentElement.scrollLeft;'
+    scroll_top = 'return document.documentElement.scrollTop;'
+    self.assertEquals(0, self._driver.ExecuteScript(scroll_left))
+    self.assertEquals(0, self._driver.ExecuteScript(scroll_top))
+    target = self._driver.FindElement('css selector', '#target')
+    self._driver.TouchScroll(target, 47, 53)
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1179
+    self.assertAlmostEqual(47, self._driver.ExecuteScript(scroll_left), delta=1)
+    self.assertAlmostEqual(53, self._driver.ExecuteScript(scroll_top), delta=1)
+
+  def testTouchDoubleTapElement(self):
+    self._driver.Load(self.GetHttpUrlForFile(
+          '/chromedriver/touch_action_tests.html'))
+    target = self._driver.FindElement('css selector', '#target')
+    target.DoubleTap()
+    events = self._driver.FindElement('css selector', '#events')
+    self.assertEquals('events: touchstart touchend touchstart touchend',
+                        events.GetText())
+
+  def testTouchLongPressElement(self):
+    self._driver.Load(self.GetHttpUrlForFile(
+          '/chromedriver/touch_action_tests.html'))
+    target = self._driver.FindElement('css selector', '#target')
+    target.LongPress()
+    events = self._driver.FindElement('css selector', '#events')
+    self.assertEquals('events: touchstart touchcancel', events.GetText())
+
+  def testTouchSingleTapElement(self):
+    self._driver.Load(self.GetHttpUrlForFile(
+          '/chromedriver/touch_action_tests.html'))
+    target = self._driver.FindElement('css selector', '#target')
+    target.SingleTap()
+    events = self._driver.FindElement('css selector', '#events')
+    self.assertEquals('events: touchstart touchend', events.GetText())
 
 class ChromeDriverSiteIsolation(ChromeDriverBaseTestWithWebServer):
   """Tests for ChromeDriver with the new Site Isolation Chrome feature.
@@ -2347,11 +2346,11 @@ class ChromeDriverAndroidTest(ChromeDriverBaseTest):
 
   def testAndroidGetWindowSize(self):
     self._driver = self.CreateDriver()
-    size = self._driver.GetWindowSize()
+    size = self._driver.GetWindowRect()
 
     script_size = self._driver.ExecuteScript(
       "return [window.outerWidth * window.devicePixelRatio,"
-      "window.outerHeight * window.devicePixelRatio]")
+      "window.outerHeight * window.devicePixelRatio, 0, 0]")
     self.assertEquals(size, script_size)
 
     script_inner = self._driver.ExecuteScript(
