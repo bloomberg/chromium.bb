@@ -51,9 +51,9 @@ constexpr int kSliderPadding = 2;
 
 // The radius of the thumb and the highlighted thumb of the slider,
 // respectively.
-constexpr float kThumbRadius = 6.f;
+constexpr float kThumbRadius = 4.f;
 constexpr float kThumbWidth = 2 * kThumbRadius;
-constexpr float kThumbHighlightRadius = 10.f;
+constexpr float kThumbHighlightRadius = 12.f;
 
 // Duration of the thumb highlight growing effect animation.
 constexpr int kSlideHighlightChangeDurationMs = 150;
