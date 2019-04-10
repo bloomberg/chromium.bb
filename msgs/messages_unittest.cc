@@ -97,50 +97,48 @@ TEST(PresentationMessagesTest, InitiationRequest) {
   uint8_t buffer[256];
   const std::string kPresentationId = "lksdjfloiqwerlkjasdlfq";
   const std::string kPresentationUrl = "https://example.com/receiver.html";
-  ssize_t bytes_out = EncodePresentationInitiationRequest(
-      PresentationInitiationRequest{13, kPresentationId, kPresentationUrl, "",
-                                    true, 27},
+  std::vector<HttpHeader> headers;
+  ssize_t bytes_out = EncodePresentationStartRequest(
+      PresentationStartRequest{13, kPresentationId, kPresentationUrl, headers},
       buffer, sizeof(buffer));
   ASSERT_LE(bytes_out, static_cast<ssize_t>(sizeof(buffer)));
   ASSERT_GT(bytes_out, 0);
 
-  PresentationInitiationRequest decoded_request;
+  PresentationStartRequest decoded_request;
   ssize_t bytes_read =
-      DecodePresentationInitiationRequest(buffer, bytes_out, &decoded_request);
+      DecodePresentationStartRequest(buffer, bytes_out, &decoded_request);
   ASSERT_EQ(bytes_read, bytes_out);
   EXPECT_EQ(13u, decoded_request.request_id);
   EXPECT_EQ(kPresentationId, decoded_request.presentation_id);
   EXPECT_EQ(kPresentationUrl, decoded_request.url);
-  EXPECT_TRUE(decoded_request.has_connection_id);
-  EXPECT_EQ(27u, decoded_request.connection_id);
+  EXPECT_EQ(0, (int)decoded_request.headers.size());
 }
 
 TEST(PresentationMessagesTest, InitiationRequestWithoutOptional) {
   uint8_t buffer[256];
   const std::string kPresentationId = "lksdjfloiqwerlkjasdlfq";
   const std::string kPresentationUrl = "https://example.com/receiver.html";
-  ssize_t bytes_out = EncodePresentationInitiationRequest(
-      PresentationInitiationRequest{13, kPresentationId, kPresentationUrl, "",
-                                    false, 0},
+  std::vector<HttpHeader> headers;
+  ssize_t bytes_out = EncodePresentationStartRequest(
+      PresentationStartRequest{13, kPresentationId, kPresentationUrl, headers},
       buffer, sizeof(buffer));
   ASSERT_LE(bytes_out, static_cast<ssize_t>(sizeof(buffer)));
   ASSERT_GT(bytes_out, 0);
 
-  PresentationInitiationRequest decoded_request;
+  PresentationStartRequest decoded_request;
   ssize_t bytes_read =
-      DecodePresentationInitiationRequest(buffer, bytes_out, &decoded_request);
+      DecodePresentationStartRequest(buffer, bytes_out, &decoded_request);
   ASSERT_EQ(bytes_read, bytes_out);
   EXPECT_EQ(13u, decoded_request.request_id);
   EXPECT_EQ(kPresentationId, decoded_request.presentation_id);
   EXPECT_EQ(kPresentationUrl, decoded_request.url);
-  EXPECT_FALSE(decoded_request.has_connection_id);
+  EXPECT_EQ(0, (int)decoded_request.headers.size());
 }
 
 TEST(PresentationMessagesTest, EncodeConnectionMessageString) {
   uint8_t buffer[256];
   PresentationConnectionMessage message;
   message.connection_id = 1234;
-  message.presentation_id = "jecAUuV05bSf4O7FzDl1";
   message.message.which =
       PresentationConnectionMessage::Message::Which::kString;
   new (&message.message.str) std::string("test message as a string");
@@ -154,7 +152,6 @@ TEST(PresentationMessagesTest, EncodeConnectionMessageString) {
       DecodePresentationConnectionMessage(buffer, bytes_out, &decoded_message);
   ASSERT_GT(bytes_read, 0);
   EXPECT_EQ(bytes_read, bytes_out);
-  EXPECT_EQ(message.presentation_id, decoded_message.presentation_id);
   EXPECT_EQ(message.connection_id, decoded_message.connection_id);
   ASSERT_EQ(message.message.which, decoded_message.message.which);
   EXPECT_EQ(message.message.str, decoded_message.message.str);
@@ -164,7 +161,6 @@ TEST(PresentationMessagesTest, EncodeConnectionMessageBytes) {
   uint8_t buffer[256];
   PresentationConnectionMessage message;
   message.connection_id = 1234;
-  message.presentation_id = "FkSyaix6HsXcrCNB";
   message.message.which = PresentationConnectionMessage::Message::Which::kBytes;
   new (&message.message.bytes)
       std::vector<uint8_t>{0, 1, 2, 3, 255, 254, 253, 86, 71, 0, 0, 1, 0, 2};
@@ -178,7 +174,6 @@ TEST(PresentationMessagesTest, EncodeConnectionMessageBytes) {
       DecodePresentationConnectionMessage(buffer, bytes_out, &decoded_message);
   ASSERT_GT(bytes_read, 0);
   EXPECT_EQ(bytes_read, bytes_out);
-  EXPECT_EQ(message.presentation_id, decoded_message.presentation_id);
   EXPECT_EQ(message.connection_id, decoded_message.connection_id);
   ASSERT_EQ(message.message.which, decoded_message.message.which);
   EXPECT_EQ(message.message.bytes, decoded_message.message.bytes);

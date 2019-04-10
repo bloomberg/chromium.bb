@@ -222,22 +222,22 @@ class ReceiverDelegate final : public presentation::ReceiverDelegate {
  public:
   ~ReceiverDelegate() override = default;
 
-  std::vector<msgs::PresentationUrlAvailability> OnUrlAvailabilityRequest(
+  std::vector<msgs::UrlAvailability> OnUrlAvailabilityRequest(
       uint64_t client_id,
       uint64_t request_duration,
       std::vector<std::string> urls) override {
-    std::vector<msgs::PresentationUrlAvailability> result;
+    std::vector<msgs::UrlAvailability> result;
     result.reserve(urls.size());
     for (const auto& url : urls) {
       OSP_LOG << "got availability request for: " << url;
-      result.push_back(msgs::PresentationUrlAvailability::kCompatible);
+      result.push_back(msgs::UrlAvailability::kAvailable);
     }
     return result;
   }
 
   bool StartPresentation(const presentation::Connection::PresentationInfo& info,
-                         uint64_t source_id,
-                         const std::string& http_headers) override {
+      uint64_t source_id,
+      const std::vector<msgs::HttpHeader>& http_headers) override {
     presentation_id = info.id;
     connection = std::make_unique<presentation::Connection>(
         info, presentation::Connection::Role::kReceiver, &cd);

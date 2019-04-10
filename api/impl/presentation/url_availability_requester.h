@@ -100,7 +100,7 @@ class UrlAvailabilityRequester {
     platform::Clock::time_point RefreshWatches(platform::Clock::time_point now);
     void UpdateAvailabilities(
         const std::vector<std::string>& urls,
-        const std::vector<msgs::PresentationUrlAvailability>& availabilities);
+        const std::vector<msgs::UrlAvailability>& availabilities);
     void RemoveUnobservedRequests(const std::set<std::string>& unobserved_urls);
     void RemoveUnobservedWatches(const std::set<std::string>& unobserved_urls);
     void RemoveReceiver();
@@ -135,7 +135,7 @@ class UrlAvailabilityRequester {
     MessageDemuxer::MessageWatch event_watch;
     std::map<uint64_t, Watch> watch_by_id;
 
-    std::map<std::string, msgs::PresentationUrlAvailability>
+    std::map<std::string, msgs::UrlAvailability>
         known_availability_by_url;
   };
 

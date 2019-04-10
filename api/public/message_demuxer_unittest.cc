@@ -41,7 +41,7 @@ class MessageDemuxerTest : public ::testing::Test {
     EXPECT_EQ(decode_result, static_cast<ssize_t>(buffer_.size() - 1));
     EXPECT_EQ(request_.request_id, received_request.request_id);
     EXPECT_EQ(request_.presentation_id, received_request.presentation_id);
-    EXPECT_EQ(request_.connection_id, received_request.connection_id);
+    EXPECT_EQ(request_.url, received_request.url);
   }
 
   const uint64_t endpoint_id_ = 13;
@@ -49,7 +49,8 @@ class MessageDemuxerTest : public ::testing::Test {
   FakeClock fake_clock_{
       platform::Clock::time_point(std::chrono::milliseconds(1298424))};
   msgs::CborEncodeBuffer buffer_;
-  msgs::PresentationConnectionOpenRequest request_{1, "fry-am-the-egg-man", 3};
+  msgs::PresentationConnectionOpenRequest request_{1, "fry-am-the-egg-man",
+                                                   "url"};
   MockMessageCallback mock_callback_;
   MessageDemuxer demuxer_{FakeClock::now, MessageDemuxer::kDefaultBufferLimit};
 };
@@ -234,22 +235,20 @@ TEST_F(MessageDemuxerTest, WatchAfterMultipleData) {
                         buffer_.size());
 
   msgs::CborEncodeBuffer buffer;
-  msgs::PresentationInitiationRequest request;
+  msgs::PresentationStartRequest request;
   request.request_id = 2;
   request.url = "https://example.com/recv";
-  request.connection_id = 98;
-  request.has_connection_id = true;
-  ASSERT_TRUE(msgs::EncodePresentationInitiationRequest(request, &buffer));
+  ASSERT_TRUE(msgs::EncodePresentationStartRequest(request, &buffer));
   demuxer_.OnStreamData(endpoint_id_, connection_id_, buffer.data(),
                         buffer.size());
 
   MockMessageCallback mock_init_callback;
   msgs::PresentationConnectionOpenRequest received_request;
-  msgs::PresentationInitiationRequest received_init_request;
+  msgs::PresentationStartRequest received_init_request;
   ssize_t decode_result1 = 0;
   ssize_t decode_result2 = 0;
   MessageDemuxer::MessageWatch init_watch = demuxer_.WatchMessageType(
-      endpoint_id_, msgs::Type::kPresentationInitiationRequest,
+      endpoint_id_, msgs::Type::kPresentationStartRequest,
       &mock_init_callback);
   EXPECT_CALL(
       mock_callback_,
@@ -267,13 +266,13 @@ TEST_F(MessageDemuxerTest, WatchAfterMultipleData) {
   EXPECT_CALL(
       mock_init_callback,
       OnStreamMessage(endpoint_id_, connection_id_,
-                      msgs::Type::kPresentationInitiationRequest, _, _, _))
+                      msgs::Type::kPresentationStartRequest, _, _, _))
       .WillOnce(Invoke([&decode_result2, &received_init_request](
                            uint64_t endpoint_id, uint64_t connection_id,
                            msgs::Type message_type, const uint8_t* buffer,
                            size_t buffer_size,
                            platform::Clock::time_point now) {
-        decode_result2 = msgs::DecodePresentationInitiationRequest(
+        decode_result2 = msgs::DecodePresentationStartRequest(
             buffer, buffer_size, &received_init_request);
         return ConvertDecodeResult(decode_result2);
       }));
@@ -287,8 +286,6 @@ TEST_F(MessageDemuxerTest, WatchAfterMultipleData) {
   EXPECT_EQ(decode_result2, static_cast<ssize_t>(buffer.size() - 1));
   EXPECT_EQ(request.request_id, received_init_request.request_id);
   EXPECT_EQ(request.url, received_init_request.url);
-  EXPECT_EQ(request.connection_id, received_init_request.connection_id);
-  EXPECT_EQ(request.has_connection_id, received_init_request.has_connection_id);
 }
 
 TEST_F(MessageDemuxerTest, GlobalWatchAfterData) {

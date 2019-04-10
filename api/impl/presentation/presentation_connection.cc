@@ -28,14 +28,15 @@ msgs::PresentationConnectionCloseEvent_reason GetEventCloseReason(
   switch (reason) {
     case Connection::CloseReason::kDiscarded:
       return msgs::PresentationConnectionCloseEvent_reason::
-          kConnectionDestruction;
+             kConnectionObjectDiscarded;
 
     case Connection::CloseReason::kError:
-      return msgs::PresentationConnectionCloseEvent_reason::kUnrecoverableError;
+      return msgs::PresentationConnectionCloseEvent_reason::
+             kUnrecoverableErrorWhileSendingOrReceivingMessage;
 
     case Connection::CloseReason::kClosed:  // fallthrough
     default:
-      return msgs::PresentationConnectionCloseEvent_reason::kCloseMethod;
+      return msgs::PresentationConnectionCloseEvent_reason::kCloseMethodCalled;
   }
 }
 

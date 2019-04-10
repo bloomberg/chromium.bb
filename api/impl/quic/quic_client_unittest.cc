@@ -75,7 +75,6 @@ class QuicClientTest : public ::testing::Test {
 
     msgs::CborEncodeBuffer buffer;
     msgs::PresentationConnectionMessage message;
-    message.presentation_id = "KMvyNqTCvvSv7v5X";
     message.connection_id = 7;
     message.message.which = decltype(message.message.which)::kString;
     new (&message.message.str) std::string("message from client");
@@ -104,7 +103,6 @@ class QuicClientTest : public ::testing::Test {
 
     ASSERT_GT(decode_result, 0);
     EXPECT_EQ(decode_result, static_cast<ssize_t>(buffer.size() - 1));
-    EXPECT_EQ(received_message.presentation_id, message.presentation_id);
     EXPECT_EQ(received_message.connection_id, message.connection_id);
     ASSERT_EQ(received_message.message.which,
               decltype(received_message.message.which)::kString);

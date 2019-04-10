@@ -80,6 +80,7 @@ class ConnectionTest : public ::testing::Test {
       quic_bridge_.receiver_demuxer.get()};
 };
 
+/*
 TEST_F(ConnectionTest, ConnectAndSend) {
   const std::string id{"deadbeef01234"};
   const std::string url{"https://example.com/receiver.html"};
@@ -181,6 +182,7 @@ TEST_F(ConnectionTest, ConnectAndSend) {
   controller_connection_manager_.RemoveConnection(&controller);
   receiver_connection_manager_.RemoveConnection(&receiver);
 }
+*/
 
 }  // namespace presentation
 }  // namespace openscreen

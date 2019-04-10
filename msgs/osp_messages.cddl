@@ -1,187 +1,259 @@
+; Open Screen protocol spec: https://webscreens.github.io/openscreenprotocol/#appendix-a
+; CDDL spec: https://tools.ietf.org/html/draft-ietf-cbor-cddl-08
+
 open-screen-message =
-  #6.2000(presentation-url-availability-request) /
-  #6.2001(presentation-url-availability-response) /
-  #6.2002(presentation-url-availability-event) /
-  #6.2010(presentation-initiation-request) /
-  #6.2011(presentation-initiation-response) /
-  #6.2012(presentation-termination-request) /
-  #6.2013(presentation-termination-response) /
-  #6.2014(presentation-termination-event) /
-  #6.2020(presentation-connection-open-request) /
-  #6.2021(presentation-connection-open-response) /
-  #6.2022(presentation-connection-close-request) /
-  #6.2024(presentation-connection-close-event) /
-  #6.2030(presentation-connection-message) /
-  #6.2040(presentation-receiver-status-event)
+  #6.10010(agent-info-request) /
+  #6.10011(agent-info-response) /
+  #6.10012(agent-status-request) /
+  #6.10013(agent-status-response) /
+  #6.10014(presentation-url-availability-request) /
+  #6.10015(presentation-url-availability-response) /
+  #6.10016(presentation-connection-message) /
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;; Common message definitions
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  #6.10103(presentation-url-availability-event) /
+  #6.10104(presentation-start-request) /
+  #6.10105(presentation-start-response) /
+  #6.10106(presentation-termination-request) /
+  #6.10107(presentation-termination-response) /
+  #6.10108(presentation-termination-event) /
+  #6.10109(presentation-connection-open-request) /
+  #6.10110(presentation-connection-open-response) /
+  #6.10111(presentation-connection-close-request) /
+  #6.10112(presentation-connection-close-response) /
+  #6.10113(presentation-connection-close-event) /
 
-result = (
-  success: 1
-  timeout: 100
-  transient-error: 101
-  permanent-error: 102
-  unknown-error: 199
-)
+  #6.11001(authentication-request) /
+  #6.11002(authentication-response) /
+  #6.11003(authentication-result)
 
-request-id = uint
-microseconds = uint
-url = text
+; type key 10
+agent-info-request = {
+  request
+}
+
+; type key 11
+agent-info-response = {
+  response
+  1: agent-info ; agent-info
+}
+
+agent-info = {
+  0: text ; friendly-name
+  1: text ; model-name
+  ; ...
+}
+
+; type key 12
+agent-status-request = {
+  request
+  ? 1: status ; status
+}
+
+; type key 13
+agent-status-response = {
+  response
+  ? 1: status ; status
+}
 
 request = (
-  0: request-id ; request-id
+ 0: request-id ; request-id
 )
 
 response = (
-  request-id: request-id
+ 0: request-id ; request-id
 )
 
-timestamp = (
-  timestamp: microseconds
+request-id = uint
+
+microseconds = uint
+
+; type key 1001 
+authentication-request = {
+  request
+  1: authentication-mechanism ; mechanism
+  2: bytes ; salt
+  3: uint ; cost
+}
+
+; type key 1002 
+authentication-response = {
+  response
+  1: authentication-response-result ; result
+  2: bytes ; proof
+}
+
+; type key 1003
+authentication-result = {
+  1: authentication-result-result ; result
+}
+
+
+authentication-mechanism = &(
+  hkdf-of-scrypt-of-psk: 1
 )
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;; Presentation API definitions
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+authentication-response-result = &(
+  ok: 0
+  unknown-error: 1
+  mechanism-unknown: 2
+  salt-too-small: 3
+  cost-too-low: 4
+  cost-too-high: 5
+  secret-unknown: 6
+  calculation-took-too-long: 7
+)
 
+authentication-result-result = &(
+  authenticated: 0
+  unknown-error: 1
+  proof-invalid: 2
+)
+
+; type key 14
 presentation-url-availability-request = {
   request
   1: [* text] ; urls
-  2: uint ; watch-duration
+  2: microseconds ; watch-duration
   3: uint ; watch-id
 }
 
+; type key 15
 presentation-url-availability-response = {
   response
-  url-availabilities: [* presentation-url-availability]
+  1: [* url-availability] ; url-availabilities
 }
 
+; type key 103
 presentation-url-availability-event = {
   1: uint ; watch-id
-  2: [* url] ; urls
-  3: [* presentation-url-availability] ; url-availabilities
+  2: [* url-availability] ; url-availabilities
+  3: [* text] ; urls
 }
 
-presentation-id = text
 
-presentation-initiation-request = {
-  request
-  presentation-id: presentation-id
-  url: url
-  headers: text
-  ? connection-id: presentation-connection-id
-}
-
-presentation-url-availability = &(
-  not-compatible: 0
-  compatible: 1
-  not-valid: 10
+; idea: use HTTP response codes?
+url-availability = &(
+  available: 0
+  unavailable: 1
+  invalid: 10
 )
 
-presentation-initiation-response = {
-  response
-  result: &(result, url-not-valid: 10, invalid-presentation-id: 11)
-  ? connection-result: presentation-connection-open-result
-}
-
-presentation-connection-open-result = &(
-  result
-  presentation-unknown-presentation-id
-  presentation-terminating
-)
-
-; Separate enum to avoid redefinition.
-presentation-unknown-presentation-id = (
-  unknown-presentation-id: 12
-)
-
-presentation-terminating = (
-  presentation-terminating: 103
-)
-
-presentation-termination-request = {
+; type key 104
+presentation-start-request = {
   request
-  presentation-id: presentation-id
-  reason: &(
-    terminated-by-controller: 10
-    user-terminated-via-controller: 11
-  )
+  1: text ; presentation-id
+  2: text ; url
+  3: [* http-header] ; headers
+  4: uint; connection_id
 }
 
-presentation-termination-response = {
-  response
-  result: &(
-    result,
-    invalid-presentation-id: 10
-  )
-}
-
-presentation-termination-event = {
-  presentation-id: presentation-id
-  reason: &(
-    receiver: 1
-    user-via-receiver: 2
-    receiver-shutting-down: 3
-    controller: 10
-    user-via-controller: 11
-    new-replacing-current: 20
-    unloaded: 21
-    idle-too-long: 30
-    terminate: 40
-  )
-}
-
-presentation-connection-open-request = {
-  request
-  presentation-id: presentation-id
-  connection-id: presentation-connection-id
-}
-
-presentation-connection-open-response = {
-  response
-  result: &(
-    result
-    presentation-unknown-presentation-id
-    presentation-terminating
-  )
-}
-
-presentation-connection-close-request = {
-  request
-  presentation-id: presentation-id
-  connection-id: presentation-connection-id
-}
-
-presentation-connection-close-event = {
-  presentation-id: presentation-id
-  connection-id: presentation-connection-id
-  reason: &(
-    close-method: 1
-    connection-destruction: 10
-    unrecoverable-error: 100
-  )
-  ? error-message: text
-}
-
-presentation-connection-id = uint
-
-presentation-connection-message = [
-  presentation-id: presentation-id
-  connection-id: presentation-connection-id
-  message: bytes / text
+http-header = [
+  key: text
+  value: text
 ]
 
-presentation-receiver-status-event = {
-  timestamp
-  friendly-name: text
-  presentations: [1* presentation-status]
+; type key 105
+presentation-start-response = {
+  response
+  1: result ; result
+  2: uint ; connection-id
 }
 
-presentation-status = {
-  id: presentation-id
-  url: url
-  title: text
-  connection-count: uint
+; type key 106
+presentation-termination-request = {
+  request
+  1: text ; presentation-id
+  2: &(
+    controller-called-terminate: 10
+    user-terminated-via-controller: 11
+    unknown: 255
+  )
+ ; reason
 }
+
+; type key 107
+presentation-termination-response = {
+  response
+  1: result ; result
+}
+
+; type key 108
+presentation-termination-event = {
+  1: text ; presentation-id
+  2: &(
+    receiver-called-terminate: 1
+    user-terminated-via-receiver: 2
+    controller-called-terminate: 10
+    user-terminated-via-controller: 11
+    receiver-replaced-presentation: 20
+    receiver-idle-too-long: 30
+    receiver-attempted-to-navigate: 31
+    receiver-powering-down: 100
+    receiver-crashed: 101
+    unknown: 255
+  ) ; reason
+}
+
+; type key 109
+presentation-connection-open-request = {
+  request
+  1: text ; presentation-id
+  2: text ; url
+  3: uint; connection_id
+}
+
+; type key 110
+presentation-connection-open-response = {
+  response
+  1: result ; result
+  2: uint; connection-id
+  3: text ; presentation-id
+}
+
+; type key 111
+presentation-connection-close-request = {
+  request
+  1: uint ; connection-id
+  2: text ; presentation-id
+}
+
+; type key 112
+presentation-connection-close-response = {
+  response
+  1: result ; result
+}
+
+; type key 113
+presentation-connection-close-event = {
+  1: uint; connection-id
+  2: &(
+    close-method-called: 1
+    connection-object-discarded: 10
+    unrecoverable-error-while-sending-or-receiving-message: 100
+  ) ; reason
+  ? 3: text ; error-message
+  4: text ; presentation-id
+}
+
+; type key 16
+presentation-connection-message = {
+  1: uint ; connection-id
+  2: bytes / text ; message
+  3: text ; presentation-id
+}
+
+status = &(
+  success: 1
+  failure: 2
+)
+
+result = &(
+  success: 1
+  invalid-url: 10
+  invalid-presentation-id: 11
+  timeout: 100
+  transient-error: 101
+  permanent-error: 102
+  terminating: 103
+  unknown-error: 199
+)

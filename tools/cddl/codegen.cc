@@ -413,14 +413,14 @@ bool WriteEncoder(int fd,
     case CppType::Which::kStruct:
       if (cpp_type.struct_type.key_type == CppType::Struct::KeyType::kMap) {
         if (!WriteMapEncoder(fd, name, cpp_type.struct_type.members,
-                             cpp_type.name, encoder_depth)) {
+                             cpp_type.name, encoder_depth + 1)) {
           return false;
         }
         return true;
       } else if (cpp_type.struct_type.key_type ==
                  CppType::Struct::KeyType::kArray) {
         if (!WriteArrayEncoder(fd, name, cpp_type.struct_type.members,
-                               cpp_type.name, encoder_depth)) {
+                               cpp_type.name, encoder_depth + 1)) {
           return false;
         }
         return true;
@@ -1397,6 +1397,9 @@ class CborEncodeBuffer {
   std::vector<uint8_t> data_;
 };
 
+CborError ExpectKey(CborValue* it, const uint64_t key);
+CborError ExpectKey(CborValue* it, const char* key, size_t key_length);
+
 }  // namespace msgs
 }  // namespace openscreen
 #endif  // %s)";
@@ -1446,6 +1449,7 @@ bool IsValidUtf8(const std::string& s) {
   }
   return true;
 }
+}  // namespace
 
 CborError ExpectKey(CborValue* it, const uint64_t key) {
   if  (!cbor_value_is_unsigned_integer(it))
@@ -1474,8 +1478,6 @@ CborError ExpectKey(CborValue* it, const char* key, size_t key_length) {
   CBOR_RETURN_ON_ERROR_INTERNAL(cbor_value_advance(it));
   return CborNoError;
 }
-
-}  // namespace
 
 // static
 constexpr size_t CborEncodeBuffer::kDefaultInitialEncodeBufferSize;
