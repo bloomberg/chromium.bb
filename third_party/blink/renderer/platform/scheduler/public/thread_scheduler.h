@@ -127,6 +127,8 @@ class PLATFORM_EXPORT ThreadScheduler {
   // Associates |isolate| to the scheduler.
   virtual void SetV8Isolate(v8::Isolate* isolate) = 0;
 
+  virtual void SetHasSafepoint() {}
+
   // Test helpers.
 
   // Return a reference to an underlying main thread WebThreadScheduler object.
