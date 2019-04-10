@@ -106,7 +106,6 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
   // Actual implementation of the load complete callback. Called by tests too.
   void OnURLLoadCompleteInternal(int http_status_code,
                                  int net_error_code,
-                                 int64_t compressed_content_length,
                                  const GURL& final_url,
                                  std::unique_ptr<std::string> response_body);
 
