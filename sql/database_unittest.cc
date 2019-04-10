@@ -210,6 +210,10 @@ TEST_F(SQLDatabaseTest, DoesTableExist) {
   ASSERT_TRUE(db().Execute("CREATE INDEX foo_index ON foo (a)"));
   EXPECT_TRUE(db().DoesTableExist("foo"));
   EXPECT_FALSE(db().DoesTableExist("foo_index"));
+
+  // DoesTableExist() is case-sensitive.
+  EXPECT_FALSE(db().DoesTableExist("Foo"));
+  EXPECT_FALSE(db().DoesTableExist("FOO"));
 }
 
 TEST_F(SQLDatabaseTest, DoesIndexExist) {
@@ -220,6 +224,11 @@ TEST_F(SQLDatabaseTest, DoesIndexExist) {
   ASSERT_TRUE(db().Execute("CREATE INDEX foo_index ON foo (a)"));
   EXPECT_TRUE(db().DoesIndexExist("foo_index"));
   EXPECT_FALSE(db().DoesIndexExist("foo"));
+
+  // DoesIndexExist() is case-sensitive.
+  EXPECT_FALSE(db().DoesIndexExist("Foo_index"));
+  EXPECT_FALSE(db().DoesIndexExist("Foo_Index"));
+  EXPECT_FALSE(db().DoesIndexExist("FOO_INDEX"));
 }
 
 TEST_F(SQLDatabaseTest, DoesViewExist) {
@@ -228,6 +237,10 @@ TEST_F(SQLDatabaseTest, DoesViewExist) {
   EXPECT_FALSE(db().DoesIndexExist("voo"));
   EXPECT_FALSE(db().DoesTableExist("voo"));
   EXPECT_TRUE(db().DoesViewExist("voo"));
+
+  // DoesTableExist() is case-sensitive.
+  EXPECT_FALSE(db().DoesViewExist("Voo"));
+  EXPECT_FALSE(db().DoesViewExist("VOO"));
 }
 
 TEST_F(SQLDatabaseTest, DoesColumnExist) {
@@ -239,9 +252,10 @@ TEST_F(SQLDatabaseTest, DoesColumnExist) {
   ASSERT_FALSE(db().DoesTableExist("bar"));
   EXPECT_FALSE(db().DoesColumnExist("bar", "b"));
 
-  // Names are not case sensitive.
-  EXPECT_TRUE(db().DoesTableExist("FOO"));
+  // SQLite resolves table/column names without case sensitivity.
   EXPECT_TRUE(db().DoesColumnExist("FOO", "A"));
+  EXPECT_TRUE(db().DoesColumnExist("FOO", "a"));
+  EXPECT_TRUE(db().DoesColumnExist("foo", "A"));
 }
 
 TEST_F(SQLDatabaseTest, GetLastInsertRowId) {

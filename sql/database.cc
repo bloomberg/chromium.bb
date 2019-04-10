@@ -1286,14 +1286,14 @@ bool Database::DoesViewExist(const char* view_name) const {
 }
 
 bool Database::DoesSchemaItemExist(const char* name, const char* type) const {
-  const char* kSql =
-      "SELECT name FROM sqlite_master WHERE type=? AND name=? COLLATE NOCASE";
+  static const char kSql[] =
+      "SELECT 1 FROM sqlite_master WHERE type=? AND name=?";
   Statement statement(GetUntrackedStatement(kSql));
 
-  // This can happen if the database is corrupt and the error is a test
-  // expectation.
-  if (!statement.is_valid())
+  if (!statement.is_valid()) {
+    // The database is corrupt.
     return false;
+  }
 
   statement.BindString(0, type);
   statement.BindString(1, name);
