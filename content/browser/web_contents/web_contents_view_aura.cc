@@ -360,8 +360,7 @@ aura::Window* GetHostWindow(aura::Window* window) {
 class WebContentsViewAura::WindowObserver
     : public aura::WindowObserver, public aura::WindowTreeHostObserver {
  public:
-  explicit WindowObserver(WebContentsViewAura* view)
-      : view_(view), host_window_(nullptr) {
+  explicit WindowObserver(WebContentsViewAura* view) : view_(view) {
     view_->window_->AddObserver(this);
   }
 
@@ -392,15 +391,14 @@ class WebContentsViewAura::WindowObserver
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds,
                              ui::PropertyChangeReason reason) override {
-    if (window == host_window_ || window == view_->window_.get()) {
-      SendScreenRects();
-      if (old_bounds.origin() != new_bounds.origin()) {
-        TouchSelectionControllerClientAura* selection_controller_client =
-            view_->GetSelectionControllerClient();
-        if (selection_controller_client)
-          selection_controller_client->OnWindowMoved();
-      }
+    DCHECK(window == host_window_ || window == view_->window_.get());
+    if (pending_window_changes_) {
+      pending_window_changes_->window_bounds_changed = true;
+      if (old_bounds.origin() != new_bounds.origin())
+        pending_window_changes_->window_origin_changed = true;
+      return;
     }
+    ProcessWindowBoundsChange(old_bounds.origin() != new_bounds.origin());
   }
 
   void OnWindowDestroying(aura::Window* window) override {
@@ -417,29 +415,86 @@ class WebContentsViewAura::WindowObserver
 
   void OnWindowRemovingFromRootWindow(aura::Window* window,
                                       aura::Window* new_root) override {
-    if (window == view_->window_.get())
+    if (window == view_->window_.get()) {
       window->GetHost()->RemoveObserver(this);
+      pending_window_changes_.reset();
+    }
   }
 
   // Overridden WindowTreeHostObserver:
+  void OnHostWillProcessBoundsChange(aura::WindowTreeHost* host) override {
+    DCHECK(!pending_window_changes_);
+    pending_window_changes_ = std::make_unique<PendingWindowChanges>();
+  }
+
+  void OnHostDidProcessBoundsChange(aura::WindowTreeHost* host) override {
+    if (!pending_window_changes_)
+      return;  // Happens if added to a new host during bounds change.
+
+    if (pending_window_changes_->window_bounds_changed)
+      ProcessWindowBoundsChange(pending_window_changes_->window_origin_changed);
+    else if (pending_window_changes_->host_moved)
+      ProcessHostMovedInPixels();
+    pending_window_changes_.reset();
+  }
+
   void OnHostMovedInPixels(aura::WindowTreeHost* host,
                            const gfx::Point& new_origin_in_pixels) override {
-    TRACE_EVENT1("ui",
-                 "WebContentsViewAura::WindowObserver::OnHostMovedInPixels",
-                 "new_origin_in_pixels", new_origin_in_pixels.ToString());
-
-    // This is for the desktop case (i.e. Aura desktop).
-    SendScreenRects();
+    if (pending_window_changes_) {
+      pending_window_changes_->host_moved = true;
+      return;
+    }
+    ProcessHostMovedInPixels();
   }
 
  private:
+  // Used to avoid multiple calls to SendScreenRects(). In particular, when
+  // WindowTreeHost changes its size, it's entirely likely the aura::Windows
+  // will change as well. When OnHostWillProcessBoundsChange() is called,
+  // |pending_window_changes_| is created and any changes are set in it.
+  // In OnHostDidProcessBoundsChange() is called, all accumulated changes are
+  // applied.
+  struct PendingWindowChanges {
+    // Set to true if OnWindowBoundsChanged() is called.
+    bool window_bounds_changed = false;
+
+    // Set to true if OnWindowBoundsChanged() is called *and* the origin of the
+    // window changed.
+    bool window_origin_changed = false;
+
+    // Set to true if OnHostMovedInPixels() is called.
+    bool host_moved = false;
+  };
+
+  void ProcessWindowBoundsChange(bool did_origin_change) {
+    SendScreenRects();
+    if (did_origin_change) {
+      TouchSelectionControllerClientAura* selection_controller_client =
+          view_->GetSelectionControllerClient();
+      if (selection_controller_client)
+        selection_controller_client->OnWindowMoved();
+    }
+  }
+
+  void ProcessHostMovedInPixels() {
+    // NOTE: this function is *not* called if OnHostWillProcessBoundsChange()
+    // *and* the bounds changes (OnWindowBoundsChanged() is called).
+    TRACE_EVENT1(
+        "ui", "WebContentsViewAura::WindowObserver::OnHostMovedInPixels",
+        "new_origin_in_pixels",
+        view_->window_->GetHost()->GetBoundsInPixels().origin().ToString());
+    SendScreenRects();
+  }
+
   void SendScreenRects() { view_->web_contents_->SendScreenRects(); }
 
   WebContentsViewAura* view_;
 
   // The parent window that hosts the constrained windows. We cache the old host
   // view so that we can unregister when it's not the parent anymore.
-  aura::Window* host_window_;
+  aura::Window* host_window_ = nullptr;
+
+  std::unique_ptr<PendingWindowChanges> pending_window_changes_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowObserver);
 };
