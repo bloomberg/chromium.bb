@@ -108,7 +108,6 @@ crbug.com/591099 external/wpt/css/css-animations/Element-getAnimations.tentative
 crbug.com/714962 external/wpt/css/css-fonts/font-features-across-space-1.html [ Pass ]
 crbug.com/714962 external/wpt/css/css-fonts/font-features-across-space-3.html [ Pass ]
 crbug.com/591099 external/wpt/css/css-grid/grid-items/grid-item-percentage-sizes-003.html [ Pass ]
-crbug.com/919818 external/wpt/css/css-lists/list-and-block-textarea-001.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-multicol/multicol-span-all-list-item-002.html [ Pass ]
 crbug.com/933054 external/wpt/css/css-position/position-absolute-container-dynamic-002.html [ Pass ]
 crbug.com/591099 external/wpt/css/css-position/position-absolute-in-inline-001.html [ Pass ]
