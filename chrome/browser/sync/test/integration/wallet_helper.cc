@@ -20,6 +20,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 
@@ -216,8 +217,13 @@ const char kDefaultCustomerID[] = "deadbeef";
 const char kDefaultBillingAddressID[] = "billing address entity ID";
 
 PersonalDataManager* GetPersonalDataManager(int index) {
-  return autofill::PersonalDataManagerFactory::GetForProfile(
+  auto* pdm = autofill::PersonalDataManagerFactory::GetForProfile(
       test()->GetProfile(index));
+  // Hook the sync service up to the personal data manager.
+  // This is normally done by autofill_manager, which we don't
+  // have in our tests.
+  pdm->OnSyncServiceInitialized(test()->GetSyncService(index));
+  return pdm;
 }
 
 scoped_refptr<AutofillWebDataService> GetProfileWebDataService(int index) {

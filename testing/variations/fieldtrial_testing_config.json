@@ -4853,6 +4853,28 @@
             ]
         }
     ],
+    "SyncButterWallet": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_DownstreamBehindButton",
+                    "enable_features": [
+                        "AutofillEnableAccountWalletStorage",
+                        "AutofillSaveCardImprovedUserConsent",
+                        "SyncSupportSecondaryAccount"
+                    ],
+                    "disable_features": [
+                        "AlwaysShowServerCardsInSyncTransport"
+                    ]
+                }
+            ]
+        }
+    ],
     "SyncE2ELatency": [
         {
             "platforms": [
