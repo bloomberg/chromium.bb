@@ -49,6 +49,9 @@ class Oobe {
   getOobeConfiguration() {}
 
   startDemoModeFlow() {}
+
+  /** @type {DISPLAY_TYPE} */
+  set displayType(value) {}
 }
 
 cr.ui.Oobe = Oobe;

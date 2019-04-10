@@ -39,7 +39,7 @@ OobeTypes.IMEDsc;
 /**
  * ChromeOS OOBE demo country descriptor.
  * @typedef {{
- *   value: (string|undefined),
+ *   value: !string,
  *   title: (string|undefined),
  *   selected: (boolean|undefined),
  * }}

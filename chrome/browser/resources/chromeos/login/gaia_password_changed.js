@@ -11,6 +11,7 @@ Polymer({
     disabled: {type: Boolean, value: false}
   },
 
+  /** @override */
   ready: function() {
     /**
      * Workaround for
@@ -45,6 +46,7 @@ Polymer({
       this.$.oldPasswordInput.focus();
   },
 
+  /** @private */
   onPasswordSubmitted_: function() {
     if (!this.$.oldPasswordInput.checkValidity())
       return;
@@ -53,16 +55,19 @@ Polymer({
     this.fire('passwordEnter', {password: this.$.oldPasswordInput.value});
   },
 
+  /** @private */
   onForgotPasswordClicked_: function() {
     this.clearPassword();
     this.$.animatedPages.selected += 1;
   },
 
+  /** @private */
   onTryAgainClicked_: function() {
     this.$.oldPasswordInput.isInvalid = false;
     this.$.animatedPages.selected -= 1;
   },
 
+  /** @private */
   onAnimationFinish_: function() {
     this.focus();
   },
@@ -71,6 +76,7 @@ Polymer({
     this.$.oldPasswordInput.value = '';
   },
 
+  /** @private */
   onProceedClicked_: function() {
     this.disabled = true;
     this.$.navigation.closeVisible = false;
@@ -78,6 +84,7 @@ Polymer({
     this.fire('proceedAnyway');
   },
 
+  /** @private */
   onClose_: function() {
     this.fire('cancel');
   }

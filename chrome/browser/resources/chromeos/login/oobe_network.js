@@ -19,17 +19,20 @@ Polymer({
      * Whether network dialog is shown as a part of demo mode setup flow.
      * Additional custom elements can be displayed on network list in demo mode
      * setup.
+     * @type {boolean}
      */
     isDemoModeSetup: false,
 
     /**
      * Whether offline demo mode is enabled. If it is enabled offline setup
      * option will be shown in UI.
+     * @type {boolean}
      */
     offlineDemoModeEnabled: false,
 
     /**
      * Whether device is connected to the network.
+     * @type {boolean}
      * @private
      */
     isConnected_: false,
