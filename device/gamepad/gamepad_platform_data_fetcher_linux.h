@@ -28,10 +28,20 @@ class DEVICE_GAMEPAD_EXPORT GamepadPlatformDataFetcherLinux
     : public GamepadDataFetcher,
       public UdevWatcher::Observer {
  public:
-  using Factory = GamepadDataFetcherFactoryImpl<GamepadPlatformDataFetcherLinux,
-                                                GAMEPAD_SOURCE_LINUX_UDEV>;
+  class Factory : public GamepadDataFetcherFactory {
+   public:
+    Factory(scoped_refptr<base::SequencedTaskRunner> dbus_runner);
+    ~Factory() override;
+    std::unique_ptr<GamepadDataFetcher> CreateDataFetcher() override;
+    GamepadSource source() override;
+    static GamepadSource static_source();
 
-  GamepadPlatformDataFetcherLinux();
+   private:
+    scoped_refptr<base::SequencedTaskRunner> dbus_runner_;
+  };
+
+  GamepadPlatformDataFetcherLinux(
+      scoped_refptr<base::SequencedTaskRunner> dbus_runner);
   ~GamepadPlatformDataFetcherLinux() override;
 
   GamepadSource source() override;
@@ -59,6 +69,8 @@ class DEVICE_GAMEPAD_EXPORT GamepadPlatformDataFetcherLinux
   void RefreshHidrawDevice(udev_device* dev, const UdevGamepadLinux& pad_info);
   void ReadDeviceData(size_t index);
 
+  void OnHidrawDeviceOpened(GamepadDeviceLinux* device);
+
   GamepadDeviceLinux* GetDeviceWithJoydevIndex(int joydev_index);
   GamepadDeviceLinux* GetOrCreateMatchingDevice(
       const UdevGamepadLinux& pad_info);
@@ -72,6 +84,10 @@ class DEVICE_GAMEPAD_EXPORT GamepadPlatformDataFetcherLinux
   std::unordered_set<std::unique_ptr<GamepadDeviceLinux>> devices_;
 
   std::unique_ptr<device::UdevWatcher> udev_watcher_;
+
+  scoped_refptr<base::SequencedTaskRunner> dbus_runner_;
+
+  base::WeakPtrFactory<GamepadPlatformDataFetcherLinux> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GamepadPlatformDataFetcherLinux);
 };

@@ -19,6 +19,10 @@
 #include "device/gamepad/gamepad_data_fetcher.h"
 #include "device/udev_linux/udev.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/dbus/permission_broker/permission_broker_client.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace device {
 
 namespace {
@@ -177,9 +181,13 @@ uint16_t HexStringToUInt16WithDefault(base::StringPiece input,
 
 }  // namespace
 
-GamepadDeviceLinux::GamepadDeviceLinux(const std::string& syspath_prefix)
+GamepadDeviceLinux::GamepadDeviceLinux(
+    const std::string& syspath_prefix,
+    scoped_refptr<base::SequencedTaskRunner> dbus_runner)
     : syspath_prefix_(syspath_prefix),
-      button_indices_used_(Gamepad::kButtonsLengthCap, false) {}
+      button_indices_used_(Gamepad::kButtonsLengthCap, false),
+      dbus_runner_(dbus_runner),
+      polling_runner_(base::SequencedTaskRunnerHandle::Get()) {}
 
 GamepadDeviceLinux::~GamepadDeviceLinux() = default;
 
@@ -223,6 +231,7 @@ void GamepadDeviceLinux::ReadPadState(Gamepad* pad) {
 }
 
 bool GamepadDeviceLinux::ReadJoydevState(Gamepad* pad) {
+  DCHECK(polling_runner_->RunsTasksInCurrentSequence());
   DCHECK(pad);
 
   if (joydev_fd_ < 0)
@@ -264,6 +273,7 @@ bool GamepadDeviceLinux::ReadJoydevState(Gamepad* pad) {
 }
 
 void GamepadDeviceLinux::InitializeEvdevSpecialKeys() {
+  DCHECK(polling_runner_->RunsTasksInCurrentSequence());
   if (evdev_fd_ < 0)
     return;
 
@@ -303,6 +313,7 @@ void GamepadDeviceLinux::InitializeEvdevSpecialKeys() {
 }
 
 bool GamepadDeviceLinux::ReadEvdevSpecialKeys(Gamepad* pad) {
+  DCHECK(polling_runner_->RunsTasksInCurrentSequence());
   DCHECK(pad);
 
   if (evdev_fd_ < 0)
@@ -346,6 +357,7 @@ bool GamepadDeviceLinux::IsSameDevice(const UdevGamepadLinux& pad_info) {
 
 bool GamepadDeviceLinux::OpenJoydevNode(const UdevGamepadLinux& pad_info,
                                         udev_device* device) {
+  DCHECK(polling_runner_->RunsTasksInCurrentSequence());
   DCHECK(pad_info.type == UdevGamepadLinux::Type::JOYDEV);
   DCHECK(pad_info.syspath_prefix == syspath_prefix_);
 
@@ -409,6 +421,7 @@ bool GamepadDeviceLinux::OpenJoydevNode(const UdevGamepadLinux& pad_info,
 }
 
 void GamepadDeviceLinux::CloseJoydevNode() {
+  DCHECK(polling_runner_->RunsTasksInCurrentSequence());
   if (joydev_fd_ >= 0) {
     close(joydev_fd_);
     joydev_fd_ = -1;
@@ -426,6 +439,7 @@ void GamepadDeviceLinux::CloseJoydevNode() {
 }
 
 bool GamepadDeviceLinux::OpenEvdevNode(const UdevGamepadLinux& pad_info) {
+  DCHECK(polling_runner_->RunsTasksInCurrentSequence());
   DCHECK(pad_info.type == UdevGamepadLinux::Type::EVDEV);
   DCHECK(pad_info.syspath_prefix == syspath_prefix_);
 
@@ -441,6 +455,7 @@ bool GamepadDeviceLinux::OpenEvdevNode(const UdevGamepadLinux& pad_info) {
 }
 
 void GamepadDeviceLinux::CloseEvdevNode() {
+  DCHECK(polling_runner_->RunsTasksInCurrentSequence());
   if (evdev_fd_ >= 0) {
     if (effect_id_ != kInvalidEffectId) {
       DestroyEffect(evdev_fd_, effect_id_);
@@ -462,14 +477,50 @@ void GamepadDeviceLinux::CloseEvdevNode() {
   evdev_special_keys_initialized_ = false;
 }
 
-bool GamepadDeviceLinux::OpenHidrawNode(const UdevGamepadLinux& pad_info) {
+void GamepadDeviceLinux::OpenHidrawNode(const UdevGamepadLinux& pad_info,
+                                        OpenDeviceNodeCallback callback) {
+  DCHECK(polling_runner_->RunsTasksInCurrentSequence());
   DCHECK(pad_info.type == UdevGamepadLinux::Type::HIDRAW);
   DCHECK(pad_info.syspath_prefix == syspath_prefix_);
 
   CloseHidrawNode();
-  hidraw_fd_ = open(pad_info.path.c_str(), O_RDWR | O_NONBLOCK);
-  if (hidraw_fd_ < 0)
-    return false;
+
+  auto fd = base::ScopedFD(open(pad_info.path.c_str(), O_RDWR | O_NONBLOCK));
+
+#if defined(OS_CHROMEOS)
+  // If we failed to open the device it may be due to insufficient permissions.
+  // Try again using the PermissionBrokerClient.
+  if (!fd.is_valid()) {
+    DCHECK(dbus_runner_);
+    DCHECK(polling_runner_);
+    auto open_path_callback =
+        base::BindOnce(&GamepadDeviceLinux::OnOpenHidrawNodeComplete,
+                       weak_factory_.GetWeakPtr(), std::move(callback));
+    dbus_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&GamepadDeviceLinux::OpenPathWithPermissionBroker,
+                       weak_factory_.GetWeakPtr(), pad_info.path,
+                       std::move(open_path_callback)));
+    return;
+  }
+#endif  // defined(OS_CHROMEOS)
+
+  OnOpenHidrawNodeComplete(std::move(callback), std::move(fd));
+}
+
+void GamepadDeviceLinux::OnOpenHidrawNodeComplete(
+    OpenDeviceNodeCallback callback,
+    base::ScopedFD fd) {
+  DCHECK(polling_runner_->RunsTasksInCurrentSequence());
+  if (fd.is_valid())
+    InitializeHidraw(std::move(fd));
+  std::move(callback).Run(this);
+}
+
+void GamepadDeviceLinux::InitializeHidraw(base::ScopedFD fd) {
+  DCHECK(polling_runner_->RunsTasksInCurrentSequence());
+  DCHECK(fd.is_valid());
+  hidraw_fd_ = fd.release();
 
   uint16_t vendor_id;
   uint16_t product_id;
@@ -489,11 +540,10 @@ bool GamepadDeviceLinux::OpenHidrawNode(const UdevGamepadLinux& pad_info) {
     hid_haptics_ =
         HidHapticGamepadLinux::Create(vendor_id, product_id, hidraw_fd_);
   }
-
-  return true;
 }
 
 void GamepadDeviceLinux::CloseHidrawNode() {
+  DCHECK(polling_runner_->RunsTasksInCurrentSequence());
   if (dualshock4_)
     dualshock4_->Shutdown();
   dualshock4_.reset();
@@ -506,8 +556,43 @@ void GamepadDeviceLinux::CloseHidrawNode() {
   }
 }
 
+#if defined(OS_CHROMEOS)
+void GamepadDeviceLinux::OpenPathWithPermissionBroker(
+    const std::string& path,
+    OpenPathCallback callback) {
+  DCHECK(dbus_runner_->RunsTasksInCurrentSequence());
+  auto* client = chromeos::PermissionBrokerClient::Get();
+  DCHECK(client) << "Could not get permission broker client.";
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
+  auto success_callback =
+      base::BindOnce(&GamepadDeviceLinux::OnOpenPathSuccess,
+                     weak_factory_.GetWeakPtr(), copyable_callback);
+  auto error_callback =
+      base::BindOnce(&GamepadDeviceLinux::OnOpenPathError,
+                     weak_factory_.GetWeakPtr(), copyable_callback);
+  client->OpenPath(path, std::move(success_callback),
+                   std::move(error_callback));
+}
+
+void GamepadDeviceLinux::OnOpenPathSuccess(OpenPathCallback callback,
+                                           base::ScopedFD fd) {
+  DCHECK(dbus_runner_->RunsTasksInCurrentSequence());
+  polling_runner_->PostTask(FROM_HERE,
+                            base::BindOnce(std::move(callback), std::move(fd)));
+}
+
+void GamepadDeviceLinux::OnOpenPathError(OpenPathCallback callback,
+                                         const std::string& error_name,
+                                         const std::string& error_message) {
+  DCHECK(dbus_runner_->RunsTasksInCurrentSequence());
+  polling_runner_->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), base::ScopedFD()));
+}
+#endif
+
 void GamepadDeviceLinux::SetVibration(double strong_magnitude,
                                       double weak_magnitude) {
+  DCHECK(polling_runner_->RunsTasksInCurrentSequence());
   if (dualshock4_) {
     dualshock4_->SetVibration(strong_magnitude, weak_magnitude);
     return;
@@ -540,6 +625,7 @@ void GamepadDeviceLinux::SetVibration(double strong_magnitude,
 }
 
 void GamepadDeviceLinux::SetZeroVibration() {
+  DCHECK(polling_runner_->RunsTasksInCurrentSequence());
   if (dualshock4_) {
     dualshock4_->SetZeroVibration();
     return;
