@@ -1089,9 +1089,11 @@ bool AcceleratorController::IsDeprecated(
   return deprecated_accelerators_.count(accelerator) != 0;
 }
 
-bool AcceleratorController::PerformActionIfEnabled(AcceleratorAction action) {
-  if (CanPerformAction(action, ui::Accelerator())) {
-    PerformAction(action, ui::Accelerator());
+bool AcceleratorController::PerformActionIfEnabled(
+    AcceleratorAction action,
+    const ui::Accelerator& accelerator) {
+  if (CanPerformAction(action, accelerator)) {
+    PerformAction(action, accelerator);
     return true;
   }
   return false;
@@ -1406,6 +1408,12 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       GetAcceleratorProcessingRestriction(action);
   if (restriction != RESTRICTION_NONE)
     return;
+
+  // TODO(minch): For VOLUME_DOWN and VOLUME_UP. Do the calculation based on
+  // accelerator.source_device_id() and
+  // ui::InputDeviceManager::GetInstance()->GetOtherInputDevices() to see
+  // whether we need to flip its action on current screen orientation for side
+  // volume button. http://crbug.com/937907.
 
   // If your accelerator invokes more than one line of code, please either
   // implement it in your module's controller code or pull it into a HandleFoo()

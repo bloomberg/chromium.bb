@@ -105,7 +105,9 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget,
 
   // Performs the specified action if it is enabled. Returns whether the action
   // was performed successfully.
-  bool PerformActionIfEnabled(AcceleratorAction action);
+  bool PerformActionIfEnabled(
+      AcceleratorAction action,
+      const ui::Accelerator& accelerator = ui::Accelerator());
 
   // Returns the restriction for the current context.
   AcceleratorProcessingRestriction GetCurrentAcceleratorRestriction();
