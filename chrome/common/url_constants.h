@@ -131,6 +131,9 @@ extern const char kGoogleAccountActivityControlsURL[];
 // URL of the Google Account.
 extern const char kGoogleAccountURL[];
 
+// URL of the Google Account chooser.
+extern const char kGoogleAccountChooserURL[];
+
 // URL of the Google Password Manager.
 extern const char kGooglePasswordManagerURL[];
 

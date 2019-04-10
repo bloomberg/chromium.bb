@@ -173,8 +173,8 @@ class ProfileChooserView : public ProfileMenuViewBase,
   // The current access point of sign in.
   const signin_metrics::AccessPoint access_point_;
 
-  // Accounts that are presented in the enable sync promo.
-  std::vector<AccountInfo> dice_sync_promo_accounts_;
+  // Dice accounts used in the sync promo.
+  std::vector<AccountInfo> dice_accounts_;
 
   // Accounts submenu that is shown when |sync_to_another_account_button_| is
   // pressed.

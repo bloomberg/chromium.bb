@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -41,9 +42,11 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/sync/driver/sync_service_utils.h"
 #include "components/vector_icons/vector_icons.h"
+#include "net/base/url_util.h"
 #include "services/identity/public/cpp/accounts_mutator.h"
 #include "services/identity/public/cpp/primary_account_mutator.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -84,9 +87,14 @@ BadgedProfilePhoto::BadgeType GetProfileBadgeType(Profile* profile) {
   return BadgedProfilePhoto::BADGE_TYPE_NONE;
 }
 
-void NavigateToGoogleAccountPage(Profile* profile) {
-  NavigateParams params(profile, GURL(chrome::kGoogleAccountURL),
-                        ui::PAGE_TRANSITION_LINK);
+void NavigateToGoogleAccountPage(Profile* profile, const std::string& email) {
+  // Create a URL so that the account chooser is shown if the account with
+  // |email| is not signed into the web.
+  GURL url(chrome::kGoogleAccountChooserURL);
+  url = net::AppendQueryParameter(url, "Email", email);
+  url = net::AppendQueryParameter(url, "continue", chrome::kGoogleAccountURL);
+
+  NavigateParams params(profile, url, ui::PAGE_TRANSITION_LINK);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   Navigate(&params);
 }
@@ -152,6 +160,13 @@ void ProfileChooserView::Init() {
 
   if (identity_manager)
     identity_manager->AddObserver(this);
+
+  if (dice_enabled_) {
+    // Fetch DICE accounts. Note: This always includes the primary account if it
+    // is set.
+    dice_accounts_ =
+        signin_ui_util::GetAccountsForDicePromos(browser()->profile());
+  }
 
   ShowViewOrOpenTab(view_mode_);
 }
@@ -243,9 +258,10 @@ base::string16 ProfileChooserView::GetAccessibleWindowTitle() const {
 void ProfileChooserView::ButtonPressed(views::Button* sender,
                                        const ui::Event& event) {
   if (sender == manage_google_account_button_) {
+    DCHECK(!dice_accounts_.empty());
     base::RecordAction(
         base::UserMetricsAction("ProfileChooser_ManageGoogleAccountClicked"));
-    NavigateToGoogleAccountPage(browser()->profile());
+    NavigateToGoogleAccountPage(browser()->profile(), dice_accounts_[0].email);
   } else if (sender == passwords_button_) {
     base::RecordAction(
         base::UserMetricsAction("ProfileChooser_PasswordsClicked"));
@@ -386,7 +402,9 @@ void ProfileChooserView::AddProfileChooserView(AvatarMenu* avatar_menu) {
   }
 
 #if defined(GOOGLE_CHROME_BUILD)
-  if (dice_enabled_ && active_item->signed_in) {
+  if (dice_enabled_ && !dice_accounts_.empty() &&
+      !SigninErrorControllerFactory::GetForProfile(browser()->profile())
+           ->HasError()) {
     AddManageGoogleAccountButton();
   }
 #endif
@@ -644,10 +662,6 @@ void ProfileChooserView::AddCurrentProfileView(
 
 void ProfileChooserView::AddDiceSigninView() {
   IncrementDiceSigninPromoShowCount();
-  // Fetch signed in GAIA web accounts.
-  dice_sync_promo_accounts_ =
-      signin_ui_util::GetAccountsForDicePromos(browser()->profile());
-
   // Create a view that holds an illustration, a promo text and a button to turn
   // on Sync. The promo illustration is only shown the first 10 times per
   // profile.
@@ -659,7 +673,7 @@ void ProfileChooserView::AddDiceSigninView() {
           DISTANCE_CONTENT_LIST_VERTICAL_SINGLE);
   ProfileMenuViewBase::MenuItems menu_items;
 
-  const bool promo_account_available = !dice_sync_promo_accounts_.empty();
+  const bool promo_account_available = !dice_accounts_.empty();
 
   // Log sign-in impressions user metrics.
   signin_metrics::RecordSigninImpressionUserActionForAccessPoint(
@@ -707,8 +721,8 @@ void ProfileChooserView::AddDiceSigninView() {
     return;
   }
   // Create a button to sign in the first account of
-  // |dice_sync_promo_accounts_|.
-  AccountInfo dice_promo_default_account = dice_sync_promo_accounts_[0];
+  // |dice_accounts_|.
+  AccountInfo dice_promo_default_account = dice_accounts_[0];
   gfx::Image account_icon = dice_promo_default_account.account_image;
   if (account_icon.IsEmpty()) {
     account_icon = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
