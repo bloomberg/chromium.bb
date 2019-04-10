@@ -7206,6 +7206,13 @@ be describing additional metrics about the same event.
       A boolean that is set to 1 if this page was specifically requested and
       recognized by a voice search.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 
