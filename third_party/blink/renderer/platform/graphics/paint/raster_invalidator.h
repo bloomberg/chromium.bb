@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk_subset.h"
 #include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -19,6 +20,8 @@ class PaintArtifact;
 class IntRect;
 
 class PLATFORM_EXPORT RasterInvalidator {
+  USING_FAST_MALLOC(RasterInvalidator);
+
  public:
   using RasterInvalidationFunction = std::function<void(const IntRect&)>;
 

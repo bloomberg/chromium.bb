@@ -37,6 +37,8 @@
 namespace WTF {
 
 class WTF_EXPORT StringBuilder {
+  USING_FAST_MALLOC(StringBuilder);
+
  public:
   StringBuilder() : no_buffer_() {}
   ~StringBuilder() { Clear(); }

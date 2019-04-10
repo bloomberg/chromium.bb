@@ -38,6 +38,7 @@
 #include "third_party/blink/public/platform/web_isolated_world_ids.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "v8/include/v8.h"
@@ -52,6 +53,8 @@ class SecurityOrigin;
 // is identified by a world id that is a per-thread global identifier (see
 // WorldId enum).
 class PLATFORM_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
+  USING_FAST_MALLOC(DOMWrapperWorld);
+
  public:
   // Per-thread global identifiers for DOMWrapperWorld.
   enum WorldId {

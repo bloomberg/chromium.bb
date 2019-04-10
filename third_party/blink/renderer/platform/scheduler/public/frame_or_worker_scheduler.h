@@ -36,6 +36,8 @@ class PLATFORM_EXPORT FrameOrWorkerScheduler {
   };
 
   class PLATFORM_EXPORT LifecycleObserverHandle {
+    USING_FAST_MALLOC(LifecycleObserverHandle);
+
    public:
     LifecycleObserverHandle(FrameOrWorkerScheduler* scheduler,
                             Observer* observer);
@@ -51,6 +53,8 @@ class PLATFORM_EXPORT FrameOrWorkerScheduler {
   // RAII handle which should be kept alive as long as the feature is active
   // and the policy should be applied.
   class PLATFORM_EXPORT SchedulingAffectingFeatureHandle {
+    DISALLOW_NEW();
+
    public:
     SchedulingAffectingFeatureHandle() = default;
     SchedulingAffectingFeatureHandle(SchedulingAffectingFeatureHandle&&);

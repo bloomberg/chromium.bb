@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 namespace heap_thread_test {
@@ -69,6 +70,8 @@ class Object : public GarbageCollected<Object> {
 };
 
 class AlternatingThreadTester {
+  STACK_ALLOCATED();
+
  public:
   void Test() {
     MutexLocker locker(ActiveThreadMutex());

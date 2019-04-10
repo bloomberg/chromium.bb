@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 #include "third_party/blink/renderer/platform/testing/font_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 using blink::test::CreateTestFont;
 
@@ -21,6 +22,8 @@ static const int kWarmupRuns = 10000;
 static const int kTimeCheckInterval = 1000000;
 
 class ShapeResultPerfTest {
+  USING_FAST_MALLOC(ShapeResultPerfTest);
+
  public:
   enum FontName {
     ahem,

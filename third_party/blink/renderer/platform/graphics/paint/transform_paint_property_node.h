@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/scroll_paint_property_node.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -46,6 +47,8 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
   // Stores a transform and origin with an optimization for the identity and
   // 2d translation cases that avoids allocating a full matrix and origin.
   class TransformAndOrigin {
+    DISALLOW_NEW();
+
    public:
     TransformAndOrigin() {}
     // These constructors are not explicit so that we can use FloatSize or

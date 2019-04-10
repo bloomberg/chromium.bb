@@ -36,6 +36,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/text/bidi_test_harness.h"
 #include "third_party/blink/renderer/platform/text/text_run_iterator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -113,6 +114,8 @@ TEST(BidiResolver, ParagraphDirectionSurrogates) {
 }
 
 class BidiTestRunner {
+  STACK_ALLOCATED();
+
  public:
   BidiTestRunner()
       : tests_run_(0),

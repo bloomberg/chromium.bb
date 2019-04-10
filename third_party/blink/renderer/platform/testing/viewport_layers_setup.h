@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "third_party/blink/renderer/platform/testing/fake_graphics_layer_client.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace cc {
 class AnimationHost;
@@ -20,6 +21,8 @@ class FakeGraphicsLayer;
 class LayerTreeHostEmbedder;
 
 class ViewportLayersSetup {
+  DISALLOW_NEW();
+
  public:
   ViewportLayersSetup();
   ~ViewportLayersSetup();
