@@ -718,6 +718,204 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   }
 }
 
+TEST_F(AXPlatformNodeTextRangeProviderTest,
+       TestITextRangeProviderMoveEndpointByCharacter) {
+  ui::AXNodeData text_data;
+  text_data.id = 2;
+  text_data.role = ax::mojom::Role::kStaticText;
+  text_data.SetName("some text");
+
+  ui::AXNodeData more_text_data;
+  more_text_data.id = 3;
+  more_text_data.role = ax::mojom::Role::kStaticText;
+  more_text_data.SetName("more text");
+
+  ui::AXNodeData even_more_text_data;
+  even_more_text_data.id = 4;
+  even_more_text_data.role = ax::mojom::Role::kStaticText;
+  even_more_text_data.SetName("even more text");
+
+  ui::AXNodeData root_data;
+  root_data.id = 1;
+  root_data.role = ax::mojom::Role::kRootWebArea;
+  root_data.child_ids = {2, 3, 4};
+
+  ui::AXTreeUpdate update;
+  ui::AXTreeData tree_data;
+  tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+  update.tree_data = tree_data;
+  update.has_tree_data = true;
+  update.root_id = root_data.id;
+  update.nodes.push_back(root_data);
+  update.nodes.push_back(text_data);
+  update.nodes.push_back(more_text_data);
+  update.nodes.push_back(even_more_text_data);
+
+  Init(update);
+
+  AXNode* root_node = GetRootNode();
+  AXNodePosition::SetTreeForTesting(tree_.get());
+  AXNode* text_node = root_node->children()[0];
+
+  ComPtr<IRawElementProviderSimple> text_node_raw =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(text_node);
+
+  ComPtr<ITextProvider> text_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      text_node_raw->GetPatternProvider(UIA_TextPatternId, &text_provider));
+
+  ComPtr<ITextRangeProvider> text_range_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      text_provider->get_DocumentRange(&text_range_provider));
+
+  base::win::ScopedBstr text_content;
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->GetText(-1, text_content.Receive()));
+  EXPECT_STREQ(L"some text", text_content);
+  text_content.Reset();
+
+  // Verify MoveEndpointByUnit with zero count has no effect
+  int count;
+  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+      TextPatternRangeEndpoint_End, TextUnit_Character, /*count*/ 0, &count));
+  ASSERT_EQ(0, count);
+
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->GetText(-1, text_content.Receive()));
+  EXPECT_STREQ(L"some text", text_content);
+  text_content.Reset();
+
+  // Test start and end node single-unit moves within a single node
+  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+      TextPatternRangeEndpoint_Start, TextUnit_Character, /*count*/ 1, &count));
+  ASSERT_EQ(1, count);
+
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->GetText(-1, text_content.Receive()));
+  EXPECT_STREQ(L"ome text", text_content);
+  text_content.Reset();
+
+  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+      TextPatternRangeEndpoint_End, TextUnit_Character, /*count*/ -1, &count));
+  ASSERT_EQ(-1, count);
+
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->GetText(-1, text_content.Receive()));
+  EXPECT_STREQ(L"ome tex", text_content);
+  text_content.Reset();
+
+  // Test start and end node multi-unit moves within a single node
+  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+      TextPatternRangeEndpoint_Start, TextUnit_Character, /*count*/ 2, &count));
+  ASSERT_EQ(2, count);
+
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->GetText(-1, text_content.Receive()));
+  EXPECT_STREQ(L"e tex", text_content);
+  text_content.Reset();
+
+  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+      TextPatternRangeEndpoint_End, TextUnit_Character, /*count*/ -3, &count));
+  ASSERT_EQ(-3, count);
+
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->GetText(-1, text_content.Receive()));
+  EXPECT_STREQ(L"e ", text_content);
+  text_content.Reset();
+
+  // Move end to before start - ensure count is truncated
+  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+      TextPatternRangeEndpoint_End, TextUnit_Character, /*count*/ -10, &count));
+  ASSERT_EQ(-5, count);
+
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->GetText(-1, text_content.Receive()));
+  EXPECT_STREQ(L"", text_content);
+  text_content.Reset();
+
+  // Move end back out - ensure both start and end were moved
+  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+      TextPatternRangeEndpoint_End, TextUnit_Character, /*count*/ 4, &count));
+  ASSERT_EQ(4, count);
+
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->GetText(-1, text_content.Receive()));
+  EXPECT_STREQ(L"some", text_content);
+  text_content.Reset();
+
+  // Move start past end, ensure a degenerate range is created
+  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+      TextPatternRangeEndpoint_Start, TextUnit_Character, /*count*/ 7, &count));
+  ASSERT_EQ(7, count);
+
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->GetText(-1, text_content.Receive()));
+  EXPECT_STREQ(L"", text_content);
+  text_content.Reset();
+
+  // Move start back to its prior position and verify that end was also moved
+  // as part of moving start past end
+  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+      TextPatternRangeEndpoint_Start, TextUnit_Character, /*count*/ -7,
+      &count));
+  ASSERT_EQ(-7, count);
+
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->GetText(-1, text_content.Receive()));
+  EXPECT_STREQ(L"some te", text_content);
+  text_content.Reset();
+
+  // Move end into the adjacent node
+  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+      TextPatternRangeEndpoint_End, TextUnit_Character, /*count*/ 3, &count));
+  ASSERT_EQ(3, count);
+
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->GetText(-1, text_content.Receive()));
+  EXPECT_STREQ(L"some text", text_content);
+  text_content.Reset();
+
+  // Move end to the end of the document, ensure truncated count
+  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+      TextPatternRangeEndpoint_End, TextUnit_Character, /*count*/ 30, &count));
+  ASSERT_EQ(24, count);
+
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->GetText(-1, text_content.Receive()));
+  EXPECT_STREQ(L"some textmore texteven more text", text_content);
+  text_content.Reset();
+
+  // Move start beyond end, ensure truncated count and degenerate range
+  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+      TextPatternRangeEndpoint_Start, TextUnit_Character, /*count*/ 40,
+      &count));
+  ASSERT_EQ(34, count);
+
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->GetText(-1, text_content.Receive()));
+  EXPECT_STREQ(L"", text_content);
+  text_content.Reset();
+
+  // Move end before start, ensure both positions are moved
+  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+      TextPatternRangeEndpoint_End, TextUnit_Character, /*count*/ -10, &count));
+  ASSERT_EQ(-10, count);
+
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->GetText(-1, text_content.Receive()));
+  EXPECT_STREQ(L"", text_content);
+  text_content.Reset();
+
+  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+      TextPatternRangeEndpoint_End, TextUnit_Character, /*count*/ 5, &count));
+  ASSERT_EQ(5, count);
+
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->GetText(-1, text_content.Receive()));
+  EXPECT_STREQ(L" more", text_content);
+  text_content.Reset();
+}
+
 TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderCompare) {
   ui::AXNodeData text_data;
   text_data.id = 2;
