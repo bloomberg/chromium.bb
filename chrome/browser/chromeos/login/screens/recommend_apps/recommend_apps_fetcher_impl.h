@@ -16,15 +16,24 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/login/screens/recommend_apps/device_configuration.pb.h"
 #include "chrome/browser/chromeos/login/screens/recommend_apps/recommend_apps_fetcher.h"
-#include "chrome/browser/chromeos/login/screens/recommend_apps_screen_view.h"
 #include "components/arc/arc_features_parser.h"
 #include "extensions/browser/api/system_display/display_info_provider.h"
 
 namespace network {
+namespace mojom {
+class URLLoaderFactory;
+}
+
 class SimpleURLLoader;
+}  // namespace network
+
+namespace service_manager {
+class Connector;
 }
 
 namespace chromeos {
+
+class RecommendAppsFetcherDelegate;
 
 // This class handles the network request for the Recommend Apps screen. It is
 // supposed to run on the UI thread. The request requires the following headers:
@@ -48,13 +57,22 @@ namespace chromeos {
 // 13. gl_extension
 class RecommendAppsFetcherImpl : public RecommendAppsFetcher {
  public:
-  explicit RecommendAppsFetcherImpl(RecommendAppsScreenView* view);
+  RecommendAppsFetcherImpl(
+      RecommendAppsFetcherDelegate* delegate,
+      service_manager::Connector* connector,
+      network::mojom::URLLoaderFactory* url_loader_factory);
   ~RecommendAppsFetcherImpl() override;
 
   // Provide a retry method to download the app list again.
   // RecommendAppsFetcher:
   void Start() override;
   void Retry() override;
+
+  using ArcFeaturesGetter = base::RepeatingCallback<void(
+      base::OnceCallback<void(base::Optional<arc::ArcFeatures> callback)>)>;
+  void set_arc_features_getter_for_testing(const ArcFeaturesGetter& getter) {
+    arc_features_getter_ = getter;
+  }
 
  private:
   // Populate the required device config info.
@@ -121,8 +139,10 @@ class RecommendAppsFetcherImpl : public RecommendAppsFetcher {
   bool has_started_proto_processing_ = false;
   bool proto_compressed_and_encoded_ = false;
 
-  RecommendAppsScreenView* view_;
+  RecommendAppsFetcherDelegate* delegate_;
 
+  service_manager::Connector* connector_;
+  network::mojom::URLLoaderFactory* url_loader_factory_;
   std::unique_ptr<network::SimpleURLLoader> app_list_loader_;
 
   // Timer that enforces a custom (shorter) timeout on the attempt to download
@@ -130,6 +150,8 @@ class RecommendAppsFetcherImpl : public RecommendAppsFetcher {
   base::OneShotTimer download_timer_;
 
   base::TimeTicks start_time_;
+
+  ArcFeaturesGetter arc_features_getter_;
 
   ash::mojom::CrosDisplayConfigControllerPtr cros_display_config_;
   base::WeakPtrFactory<RecommendAppsFetcherImpl> weak_ptr_factory_;

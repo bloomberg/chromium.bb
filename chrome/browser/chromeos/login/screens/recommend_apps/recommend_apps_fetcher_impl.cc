@@ -15,15 +15,15 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/task/post_task.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/chromeos/login/screens/recommend_apps/recommend_apps_fetcher_delegate.h"
 #include "content/public/browser/gpu_data_manager.h"
-#include "content/public/browser/storage_partition.h"
-#include "content/public/common/service_manager_connection.h"
 #include "extensions/common/api/system_display.h"
 #include "gpu/config/gpu_info.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/zlib/google/compression_utils.h"
@@ -110,8 +110,10 @@ int CalculateStableScreenLayout(const int screen_width,
                                 const float dpi) {
   const int density_default = 160;
   const float px_to_dp = density_default / static_cast<float>(dpi);
-  const int short_size_dp = static_cast<int>(screen_width * px_to_dp);
-  const int long_size_dp = static_cast<int>(screen_height * px_to_dp);
+  const int screen_width_dp = static_cast<int>(screen_width * px_to_dp);
+  const int screen_height_dp = static_cast<int>(screen_height * px_to_dp);
+  const int short_size_dp = std::min(screen_width_dp, screen_height_dp);
+  const int long_size_dp = std::max(screen_width_dp, screen_height_dp);
 
   int screen_layout_size;
   bool screen_layout_long;
@@ -267,12 +269,16 @@ void RecordUmaResponseSize(unsigned long responseSize) {
 }  // namespace
 
 RecommendAppsFetcherImpl::RecommendAppsFetcherImpl(
-    RecommendAppsScreenView* view)
-    : view_(view), weak_ptr_factory_(this) {
-  service_manager::Connector* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  DCHECK(connector);
-  connector->BindInterface(ash::mojom::kServiceName, &cros_display_config_);
+    RecommendAppsFetcherDelegate* delegate,
+    service_manager::Connector* connector,
+    network::mojom::URLLoaderFactory* url_loader_factory)
+    : delegate_(delegate),
+      connector_(connector),
+      url_loader_factory_(url_loader_factory),
+      arc_features_getter_(
+          base::BindRepeating(&arc::ArcFeaturesParser::GetArcFeatures)),
+      weak_ptr_factory_(this) {
+  connector_->BindInterface(ash::mojom::kServiceName, &cros_display_config_);
 }
 
 RecommendAppsFetcherImpl::~RecommendAppsFetcherImpl() = default;
@@ -421,8 +427,6 @@ void RecommendAppsFetcherImpl::StartDownload() {
             "Not implemented, considered not necessary."
         })");
 
-  Profile* profile = ProfileManager::GetActiveUserProfile();
-
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = GURL(kGetAppListUrl);
   resource_request->method = "GET";
@@ -436,11 +440,6 @@ void RecommendAppsFetcherImpl::StartDownload() {
   resource_request->headers.SetHeader("X-DFE-Chromesky-Client-Version",
                                       play_store_version_);
 
-  network::mojom::URLLoaderFactory* loader_factory =
-      content::BrowserContext::GetDefaultStoragePartition(profile)
-          ->GetURLLoaderFactoryForBrowserProcess()
-          .get();
-
   start_time_ = base::TimeTicks::Now();
   app_list_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
@@ -449,7 +448,7 @@ void RecommendAppsFetcherImpl::StartDownload() {
   app_list_loader_->SetRetryOptions(
       3, network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE);
   app_list_loader_->DownloadToString(
-      loader_factory,
+      url_loader_factory_,
       base::BindOnce(&RecommendAppsFetcherImpl::OnDownloaded,
                      base::Unretained(this)),
       kMaxDownloadBytes);
@@ -465,9 +464,7 @@ void RecommendAppsFetcherImpl::OnDownloadTimeout() {
 
   RecordUmaDownloadTime(base::TimeTicks::Now() - start_time_);
 
-  // Show an error message to the user.
-  if (view_)
-    view_->OnLoadError();
+  delegate_->OnLoadError();
 }
 
 void RecommendAppsFetcherImpl::OnDownloaded(
@@ -477,12 +474,9 @@ void RecommendAppsFetcherImpl::OnDownloaded(
   RecordUmaDownloadTime(base::TimeTicks::Now() - start_time_);
 
   std::unique_ptr<network::SimpleURLLoader> loader(std::move(app_list_loader_));
-  if (!view_)
-    return;
-
   int response_code = 0;
   if (!loader->ResponseInfo() || !loader->ResponseInfo()->headers) {
-    view_->OnLoadError();
+    delegate_->OnLoadError();
     return;
   }
   response_code = loader->ResponseInfo()->headers->response_code();
@@ -491,7 +485,7 @@ void RecommendAppsFetcherImpl::OnDownloaded(
   // If the recommended app list could not be downloaded, show an error message
   // to the user.
   if (!response_body || response_body->empty()) {
-    view_->OnLoadError();
+    delegate_->OnLoadError();
     return;
   }
 
@@ -508,17 +502,17 @@ void RecommendAppsFetcherImpl::OnDownloaded(
   base::Optional<base::Value> output = ParseResponse(response_body_json);
   if (!output.has_value()) {
     RecordUmaResponseAppCount(0);
-    view_->OnParseResponseError();
+    delegate_->OnParseResponseError();
     return;
   }
 
-  view_->OnLoadSuccess(std::move(output.value()));
+  delegate_->OnLoadSuccess(std::move(output.value()));
 }
 
 void RecommendAppsFetcherImpl::Start() {
   PopulateDeviceConfig();
   StartAshRequest();
-  arc::ArcFeaturesParser::GetArcFeatures(
+  arc_features_getter_.Run(
       base::BindOnce(&RecommendAppsFetcherImpl::OnArcFeaturesRead,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -624,6 +618,11 @@ base::Optional<base::Value> RecommendAppsFetcherImpl::ParseResponse(
         base::Value::Type::STRING);
     if (icon_url)
       output_map.SetKey("icon", base::Value(icon_url->GetString()));
+
+    if (output_map.DictEmpty()) {
+      DVLOG(1) << "Invalid app item.";
+      continue;
+    }
 
     output.GetList().push_back(std::move(output_map));
   }

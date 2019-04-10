@@ -30,7 +30,7 @@ RecommendAppsScreen::~RecommendAppsScreen() {
 void RecommendAppsScreen::Show() {
   view_->Show();
 
-  recommend_apps_fetcher_ = RecommendAppsFetcher::Create(view_);
+  recommend_apps_fetcher_ = RecommendAppsFetcher::Create(this);
   recommend_apps_fetcher_->Start();
 }
 
@@ -54,6 +54,21 @@ void RecommendAppsScreen::OnViewDestroyed(RecommendAppsScreenView* view) {
   DCHECK_EQ(view, view_);
   view_->RemoveObserver(this);
   view_ = nullptr;
+}
+
+void RecommendAppsScreen::OnLoadSuccess(const base::Value& app_list) {
+  if (view_)
+    view_->OnLoadSuccess(app_list);
+}
+
+void RecommendAppsScreen::OnLoadError() {
+  if (view_)
+    view_->OnLoadError();
+}
+
+void RecommendAppsScreen::OnParseResponseError() {
+  if (view_)
+    view_->OnParseResponseError();
 }
 
 }  // namespace chromeos

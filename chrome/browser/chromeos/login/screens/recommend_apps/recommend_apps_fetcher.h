@@ -11,16 +11,16 @@
 
 namespace chromeos {
 
-class RecommendAppsScreenView;
+class RecommendAppsFetcherDelegate;
 
 class RecommendAppsFetcher {
  public:
   static std::unique_ptr<RecommendAppsFetcher> Create(
-      RecommendAppsScreenView* view);
+      RecommendAppsFetcherDelegate* delegate);
 
   using FactoryCallback =
       base::RepeatingCallback<std::unique_ptr<RecommendAppsFetcher>(
-          RecommendAppsScreenView* view)>;
+          RecommendAppsFetcherDelegate* delegate)>;
   static void SetFactoryCallbackForTesting(FactoryCallback* callback);
 
   virtual ~RecommendAppsFetcher() = default;

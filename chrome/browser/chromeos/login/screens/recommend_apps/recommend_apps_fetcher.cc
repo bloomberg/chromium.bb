@@ -6,6 +6,10 @@
 
 #include "base/callback.h"
 #include "chrome/browser/chromeos/login/screens/recommend_apps/recommend_apps_fetcher_impl.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "content/public/browser/storage_partition.h"
+#include "content/public/common/service_manager_connection.h"
 
 namespace chromeos {
 
@@ -20,10 +24,16 @@ RecommendAppsFetcher::FactoryCallback* g_factory_callback = nullptr;
 
 // static
 std::unique_ptr<RecommendAppsFetcher> RecommendAppsFetcher::Create(
-    RecommendAppsScreenView* view) {
+    RecommendAppsFetcherDelegate* delegate) {
   if (g_factory_callback)
-    return g_factory_callback->Run(view);
-  return std::make_unique<RecommendAppsFetcherImpl>(view);
+    return g_factory_callback->Run(delegate);
+  return std::make_unique<RecommendAppsFetcherImpl>(
+      delegate,
+      content::ServiceManagerConnection::GetForProcess()->GetConnector(),
+      content::BrowserContext::GetDefaultStoragePartition(
+          ProfileManager::GetActiveUserProfile())
+          ->GetURLLoaderFactoryForBrowserProcess()
+          .get());
 }
 
 // static
