@@ -218,7 +218,7 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
     var supportsLazyListeners = false;
     AppWindow.prototype.onClosed =
         bindingUtil.createCustomEvent(undefined /* name */,
-                                      undefined /* schema */, supportsFilters,
+                                      supportsFilters,
                                       supportsLazyListeners);
     AppWindow.prototype.close = function() {
       this.contentWindow.close();

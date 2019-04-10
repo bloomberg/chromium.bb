@@ -68,8 +68,8 @@ WebRequestEventImpl.prototype.addListener =
   var supportsFilters = false;
   var supportsLazyListeners = true;
   var subEvent =
-      bindingUtil.createCustomEvent(subEventName, undefined /* schema */,
-                                    supportsFilters, supportsLazyListeners);
+      bindingUtil.createCustomEvent(subEventName, supportsFilters,
+                                    supportsLazyListeners);
 
   var subEventCallback = cb;
   if (opt_extraInfo && $Array.indexOf(opt_extraInfo, 'blocking') >= 0) {

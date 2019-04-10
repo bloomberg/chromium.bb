@@ -29,7 +29,7 @@ function WebViewEvents(webViewImpl) {
 function createOnMessageEvent(name, schema, options, webviewId) {
   var subEventName = name + '/' + IdGenerator.GetNextId();
   var newEvent = bindingUtil.createCustomEvent(
-      subEventName, undefined /* schema */, false /* supports filters */,
+      subEventName, false /* supports filters */,
       false /* supports lazy listeners */);
 
   var view = GuestViewInternalNatives.GetViewFromID(webviewId || 0);

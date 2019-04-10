@@ -9,7 +9,7 @@ var GuestViewInternalNatives = requireNative('guest_view_internal');
 var MessagingNatives = requireNative('messaging_natives');
 
 var CreateEvent = function(name) {
-  return bindingUtil.createCustomEvent(name, null,
+  return bindingUtil.createCustomEvent(name,
                                        true /* supportsFilters */,
                                        false /* supportsLazyListeners */);
 };

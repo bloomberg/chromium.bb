@@ -121,7 +121,6 @@ void APIBindingJSUtil::RegisterEventArgumentMassager(
 
 void APIBindingJSUtil::CreateCustomEvent(gin::Arguments* arguments,
                                          v8::Local<v8::Value> v8_event_name,
-                                         v8::Local<v8::Value> unused_schema,
                                          bool supports_filters,
                                          bool supports_lazy_listeners) {
   v8::Isolate* isolate = arguments->isolate();
