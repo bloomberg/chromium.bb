@@ -146,6 +146,13 @@
             sub-label="$i18n{manageCertificatesDescription}"
             on-click="onManageCertificatesTap_"></cr-link-row>
 </if>
+        <template is="dom-if" if="[[enableSecurityKeysSubpage_]]">
+          <cr-link-row id="security-keys-subpage-trigger"
+            class="hr"
+            label="$i18n{securityKeysTitle}"
+            sub-label="$i18n{securityKeysDesc}"
+            on-click="onSecurityKeysTap_"></cr-link-row>
+        </template>
         <cr-link-row id="site-settings-subpage-trigger"
             class="hr"
             label="[[siteSettingsPageTitle_()]]"
@@ -156,13 +163,6 @@
             label="$i18n{clearBrowsingData}"
             sub-label="$i18n{clearBrowsingDataDescription}"
             on-click="onClearBrowsingDataTap_"></cr-link-row>
-        <template is="dom-if" if="[[enableSecurityKeysSubpage_]]">
-          <cr-link-row id="security-keys-subpage-trigger"
-            class="hr"
-            label="$i18n{securityKeysTitle}"
-            sub-label="$i18n{securityKeysDesc}"
-            on-click="onSecurityKeysTap_"></cr-link-row>
-        </template>
       </div>
 
 <if expr="use_nss_certs">
