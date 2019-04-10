@@ -165,8 +165,7 @@ Resource* ResourceManagerImpl::GetStaticResourceWithTint(int res_id,
       0, 0, 0, 0, SkColorGetB(tint_color),
       0, 0, 0, 1, 0};
   SkPaint color_filter;
-  color_filter.setColorFilter(
-      SkColorFilter::MakeMatrixFilterRowMajor255(color_matrix));
+  color_filter.setColorFilter(SkColorFilters::MatrixRowMajor255(color_matrix));
 
   // Draw the resource and make it immutable.
   base_image->ui_resource()

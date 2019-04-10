@@ -103,7 +103,7 @@ sk_sp<SkDrawLooper> CreateShadowDrawLooper(
     paint->setMaskFilter(SkMaskFilter::MakeBlur(
         kNormal_SkBlurStyle, RadiusToSigma(shadow.blur() / 2)));
     paint->setColorFilter(
-        SkColorFilter::MakeModeFilter(shadow.color(), SkBlendMode::kSrcIn));
+        SkColorFilters::Blend(shadow.color(), SkBlendMode::kSrcIn));
   }
 
   return looper_builder.detach();

@@ -2090,7 +2090,7 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlpha) {
   cc::FilterOperations filters;
   filters.Append(cc::FilterOperation::CreateReferenceFilter(
       sk_make_sp<cc::ColorFilterPaintFilter>(
-          SkColorFilter::MakeMatrixFilterRowMajor255(matrix), nullptr)));
+          SkColorFilters::MatrixRowMajor255(matrix), nullptr)));
 
   std::unique_ptr<RenderPass> child_pass =
       CreateTestRenderPass(child_pass_id, pass_rect, transform_to_root);
@@ -2293,7 +2293,7 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlphaTranslation) {
   cc::FilterOperations filters;
   filters.Append(cc::FilterOperation::CreateReferenceFilter(
       sk_make_sp<cc::ColorFilterPaintFilter>(
-          SkColorFilter::MakeMatrixFilterRowMajor255(matrix), nullptr)));
+          SkColorFilters::MatrixRowMajor255(matrix), nullptr)));
 
   std::unique_ptr<RenderPass> child_pass =
       CreateTestRenderPass(child_pass_id, pass_rect, transform_to_root);
