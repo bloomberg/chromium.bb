@@ -608,7 +608,7 @@ void WebController::ElementFinder::OnQuerySelectorAll(
     DVLOG(1) << __func__ << "Failed to query selector " << index << " of "
              << selector_;
     SendResult(JavaScriptErrorStatus(__FILE__, __LINE__,
-                                     result->HasExceptionDetails()
+                                     result && result->HasExceptionDetails()
                                          ? result->GetExceptionDetails()
                                          : nullptr));
     return;
