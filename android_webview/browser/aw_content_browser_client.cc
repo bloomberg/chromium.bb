@@ -724,9 +724,9 @@ base::Optional<service_manager::Manifest>
 AwContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
   if (name == content::mojom::kBrowserServiceName)
     return GetAWContentBrowserOverlayManifest();
-  else if (name == content::mojom::kRendererServiceName)
+  if (name == content::mojom::kRendererServiceName)
     return GetAWContentRendererOverlayManifest();
-  else if (name == content::mojom::kUtilityServiceName)
+  if (name == content::mojom::kUtilityServiceName)
     return GetAWContentUtilityOverlayManifest();
   return base::nullopt;
 }
@@ -748,8 +748,8 @@ bool AwContentBrowserClient::BindAssociatedInterfaceRequestFromFrame(
         autofill::mojom::AutofillDriverAssociatedRequest(std::move(*handle)),
         render_frame_host);
     return true;
-  } else if (interface_name ==
-             content_capture::mojom::ContentCaptureReceiver::Name_) {
+  }
+  if (interface_name == content_capture::mojom::ContentCaptureReceiver::Name_) {
     content_capture::ContentCaptureReceiverManager::BindContentCaptureReceiver(
         content_capture::mojom::ContentCaptureReceiverAssociatedRequest(
             std::move(*handle)),
