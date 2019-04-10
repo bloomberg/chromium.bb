@@ -30,6 +30,7 @@
 #include "net/base/request_priority.h"
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_response_info.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source.h"
@@ -46,6 +47,7 @@
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/stream_socket.h"
 #include "net/socket/transport_connect_job.h"
+#include "net/ssl/ssl_cert_request_info.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_with_scoped_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -358,9 +360,8 @@ class TestConnectJob : public ConnectJob {
     if (store_additional_error_state_) {
       // Set all of the additional error state fields in some way.
       handle->set_is_ssl_error(true);
-      HttpResponseInfo info;
-      info.headers = new HttpResponseHeaders(std::string());
-      handle->set_ssl_error_response_info(info);
+      handle->set_ssl_cert_request_info(
+          base::MakeRefCounted<SSLCertRequestInfo>());
     }
   }
 
@@ -756,9 +757,7 @@ TEST_F(ClientSocketPoolBaseTest, InitConnectionFailure) {
   TestCompletionCallback callback;
   // Set the additional error state members to ensure that they get cleared.
   handle.set_is_ssl_error(true);
-  HttpResponseInfo info;
-  info.headers = new HttpResponseHeaders(std::string());
-  handle.set_ssl_error_response_info(info);
+  handle.set_ssl_cert_request_info(base::MakeRefCounted<SSLCertRequestInfo>());
   EXPECT_EQ(
       ERR_CONNECTION_FAILED,
       handle.Init(TestGroupId("a"), params_, DEFAULT_PRIORITY, SocketTag(),
@@ -767,7 +766,7 @@ TEST_F(ClientSocketPoolBaseTest, InitConnectionFailure) {
                   log.bound()));
   EXPECT_FALSE(handle.socket());
   EXPECT_FALSE(handle.is_ssl_error());
-  EXPECT_TRUE(handle.ssl_error_response_info().headers.get() == nullptr);
+  EXPECT_FALSE(handle.ssl_cert_request_info());
   TestLoadTimingInfoNotConnected(handle);
 
   TestNetLogEntry::List entries;
@@ -1882,9 +1881,7 @@ TEST_F(ClientSocketPoolBaseTest,
   BoundTestNetLog log;
   // Set the additional error state members to ensure that they get cleared.
   handle.set_is_ssl_error(true);
-  HttpResponseInfo info;
-  info.headers = new HttpResponseHeaders(std::string());
-  handle.set_ssl_error_response_info(info);
+  handle.set_ssl_cert_request_info(base::MakeRefCounted<SSLCertRequestInfo>());
   EXPECT_EQ(
       ERR_IO_PENDING,
       handle.Init(TestGroupId("a"), params_, DEFAULT_PRIORITY, SocketTag(),
@@ -1895,7 +1892,7 @@ TEST_F(ClientSocketPoolBaseTest,
             pool_->GetLoadState(TestGroupId("a"), &handle));
   EXPECT_THAT(callback.WaitForResult(), IsError(ERR_CONNECTION_FAILED));
   EXPECT_FALSE(handle.is_ssl_error());
-  EXPECT_TRUE(handle.ssl_error_response_info().headers.get() == nullptr);
+  EXPECT_FALSE(handle.ssl_cert_request_info());
 
   TestNetLogEntry::List entries;
   log.GetEntries(&entries);
@@ -2312,7 +2309,7 @@ TEST_F(ClientSocketPoolBaseTest, AdditionalErrorStateSynchronous) {
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
   EXPECT_TRUE(handle.is_ssl_error());
-  EXPECT_FALSE(handle.ssl_error_response_info().headers.get() == nullptr);
+  EXPECT_TRUE(handle.ssl_cert_request_info());
 }
 
 TEST_F(ClientSocketPoolBaseTest, AdditionalErrorStateAsynchronous) {
@@ -2334,7 +2331,7 @@ TEST_F(ClientSocketPoolBaseTest, AdditionalErrorStateAsynchronous) {
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
   EXPECT_TRUE(handle.is_ssl_error());
-  EXPECT_FALSE(handle.ssl_error_response_info().headers.get() == nullptr);
+  EXPECT_TRUE(handle.ssl_cert_request_info());
 }
 
 // Make sure we can reuse sockets.
@@ -2700,8 +2697,7 @@ TEST_F(ClientSocketPoolBaseTest, AdditionalErrorSocketsDontUseSlot) {
   EXPECT_FALSE(req.handle()->is_initialized());
   EXPECT_FALSE(req.handle()->socket());
   EXPECT_TRUE(req.handle()->is_ssl_error());
-  EXPECT_FALSE(req.handle()->ssl_error_response_info().headers.get() ==
-               nullptr);
+  EXPECT_TRUE(req.handle()->ssl_cert_request_info());
 }
 
 // http://crbug.com/44724 regression test.

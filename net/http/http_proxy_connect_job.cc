@@ -235,8 +235,8 @@ bool HttpProxyConnectJob::HasEstablishedConnection() const {
 }
 
 void HttpProxyConnectJob::GetAdditionalErrorState(ClientSocketHandle* handle) {
-  if (error_response_info_) {
-    handle->set_ssl_error_response_info(*error_response_info_);
+  if (ssl_cert_request_info_) {
+    handle->set_ssl_cert_request_info(ssl_cert_request_info_);
     handle->set_is_ssl_error(true);
   }
 }
@@ -491,12 +491,12 @@ int HttpProxyConnectJob::DoSSLConnectComplete(int result) {
     ClientSocketHandle client_socket_handle;
     nested_connect_job_->GetAdditionalErrorState(&client_socket_handle);
 
-    DCHECK(client_socket_handle.ssl_error_response_info().cert_request_info);
     UMA_HISTOGRAM_MEDIUM_TIMES("Net.HttpProxy.ConnectLatency.Secure.Error",
                                base::TimeTicks::Now() - connect_start_time_);
-    error_response_info_ = std::make_unique<HttpResponseInfo>(
-        client_socket_handle.ssl_error_response_info());
-    error_response_info_->cert_request_info->is_proxy = true;
+
+    DCHECK(client_socket_handle.ssl_cert_request_info());
+    ssl_cert_request_info_ = client_socket_handle.ssl_cert_request_info();
+    ssl_cert_request_info_->is_proxy = true;
     return result;
   }
 

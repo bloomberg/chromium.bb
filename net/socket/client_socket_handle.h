@@ -20,12 +20,12 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"
-#include "net/http/http_response_info.h"
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/client_socket_pool.h"
 #include "net/socket/connection_attempts.h"
 #include "net/socket/stream_socket.h"
+#include "net/ssl/ssl_cert_request_info.h"
 
 namespace net {
 
@@ -154,8 +154,9 @@ class NET_EXPORT ClientSocketHandle {
   void set_idle_time(base::TimeDelta idle_time) { idle_time_ = idle_time; }
   void set_pool_id(int id) { pool_id_ = id; }
   void set_is_ssl_error(bool is_ssl_error) { is_ssl_error_ = is_ssl_error; }
-  void set_ssl_error_response_info(const HttpResponseInfo& ssl_error_state) {
-    ssl_error_response_info_ = ssl_error_state;
+  void set_ssl_cert_request_info(
+      scoped_refptr<SSLCertRequestInfo> ssl_cert_request_info) {
+    ssl_cert_request_info_ = std::move(ssl_cert_request_info);
   }
   void set_pending_http_proxy_socket(std::unique_ptr<StreamSocket> socket) {
     pending_http_proxy_socket_ = std::move(socket);
@@ -172,15 +173,14 @@ class NET_EXPORT ClientSocketHandle {
 
   // On an ERR_SSL_CLIENT_AUTH_CERT_NEEDED error, the |cert_request_info| field
   // is set.
-  //
-  // TODO(mmenke): Replace this with only an SSLCertRequestInfo - no need for
-  // anything else.
-  const HttpResponseInfo& ssl_error_response_info() const {
-    return ssl_error_response_info_;
+  scoped_refptr<SSLCertRequestInfo> ssl_cert_request_info() const {
+    return ssl_cert_request_info_;
   }
+
   std::unique_ptr<StreamSocket> release_pending_http_proxy_socket() {
     return std::move(pending_http_proxy_socket_);
   }
+
   // If the connection failed, returns the connection attempts made. (If it
   // succeeded, they will be returned through the socket instead; see
   // |StreamSocket::GetConnectionAttempts|.)
@@ -233,7 +233,7 @@ class NET_EXPORT ClientSocketHandle {
   base::TimeDelta idle_time_;
   int pool_id_;  // See ClientSocketPool::ReleaseSocket() for an explanation.
   bool is_ssl_error_;
-  HttpResponseInfo ssl_error_response_info_;
+  scoped_refptr<SSLCertRequestInfo> ssl_cert_request_info_;
   std::unique_ptr<StreamSocket> pending_http_proxy_socket_;
   std::vector<ConnectionAttempt> connection_attempts_;
 

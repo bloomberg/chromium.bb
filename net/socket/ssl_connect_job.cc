@@ -177,7 +177,7 @@ void SSLConnectJob::OnNeedsProxyAuth(
 }
 
 void SSLConnectJob::GetAdditionalErrorState(ClientSocketHandle* handle) {
-  handle->set_ssl_error_response_info(error_response_info_);
+  handle->set_ssl_cert_request_info(ssl_cert_request_info_);
   if (ssl_negotiation_started_)
     handle->set_is_ssl_error(true);
 
@@ -321,7 +321,7 @@ int SSLConnectJob::DoTunnelConnectComplete(int result) {
     if (result == ERR_SSL_CLIENT_AUTH_CERT_NEEDED) {
       ClientSocketHandle handle_with_error_state;
       nested_connect_job_->GetAdditionalErrorState(&handle_with_error_state);
-      error_response_info_ = handle_with_error_state.ssl_error_response_info();
+      ssl_cert_request_info_ = handle_with_error_state.ssl_cert_request_info();
     } else if (result == ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT) {
       proxy_redirect_ = true;
       connect_timing_ = nested_connect_job_->connect_timing();
@@ -442,9 +442,8 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
   if (result == OK || IsCertificateError(result)) {
     SetSocket(std::move(ssl_socket_));
   } else if (result == ERR_SSL_CLIENT_AUTH_CERT_NEEDED) {
-    error_response_info_.cert_request_info = new SSLCertRequestInfo;
-    ssl_socket_->GetSSLCertRequestInfo(
-        error_response_info_.cert_request_info.get());
+    ssl_cert_request_info_ = base::MakeRefCounted<SSLCertRequestInfo>();
+    ssl_socket_->GetSSLCertRequestInfo(ssl_cert_request_info_.get());
   }
 
   return result;
