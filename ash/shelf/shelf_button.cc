@@ -4,10 +4,10 @@
 
 #include "ash/shelf/shelf_button.h"
 
+#include "ash/public/cpp/ash_constants.h"
 #include "ash/shelf/ink_drop_button_listener.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_view.h"
-#include "ash/system/tray/tray_popup_utils.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/views/animation/ink_drop_impl.h"
 
@@ -21,7 +21,8 @@ ShelfButton::ShelfButton(ShelfView* shelf_view)
   set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
-  SetFocusPainter(TrayPopupUtils::CreateFocusPainter());
+  SetFocusPainter(views::Painter::CreateSolidFocusPainter(
+      kShelfFocusBorderColor, kFocusBorderThickness, gfx::InsetsF()));
 }
 
 ShelfButton::~ShelfButton() = default;

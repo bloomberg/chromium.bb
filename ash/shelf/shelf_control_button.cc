@@ -26,7 +26,7 @@ ShelfControlButton::ShelfControlButton(ShelfView* shelf_view)
   set_has_ink_drop_action_on_click(true);
 
   SetInstallFocusRingOnFocus(true);
-  focus_ring()->SetColor(kFocusBorderColor);
+  focus_ring()->SetColor(kShelfFocusBorderColor);
   SetFocusPainter(nullptr);
 }
 
