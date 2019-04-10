@@ -2607,7 +2607,7 @@
   },
   {
     "name": "out-of-blink-cors",
-    // "owners": [ "your-team" ],
+    "owners": [ "toyoshim" ],
     "expiry_milestone": 76
   },
   {
