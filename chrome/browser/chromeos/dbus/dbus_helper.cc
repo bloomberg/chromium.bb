@@ -14,7 +14,6 @@
 #include "chromeos/dbus/auth_policy/auth_policy_client.h"
 #include "chromeos/dbus/biod/biod_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/hammerd/hammerd_client.h"
 #include "chromeos/dbus/kerberos/kerberos_client.h"
 #include "chromeos/dbus/machine_learning/machine_learning_client.h"
 #include "chromeos/dbus/media_analytics/media_analytics_client.h"
