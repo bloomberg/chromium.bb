@@ -2068,7 +2068,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # notice, preferably with a comment indicating why and a bug.
   _paladin_experimental_boards = _paladin_new_boards | frozenset([
       'eve-arcnext', # contact: ihf@ (crbug.com/826755)
-      'fizz-moblab', # contact: haddowk@ (crbug.com/937344)
       'kevin-arcnext', # contact: linben@
       'mistral', # contact: roopeshr@
   ])

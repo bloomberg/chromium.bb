@@ -78,7 +78,6 @@
     falco-full-compile-paladin
     falco-paladin
     fizz-accelerator-paladin
-    fizz-moblab-paladin
     fizz-paladin
     flapjack-paladin
     gale-paladin
@@ -2625,7 +2624,6 @@
     falco-full-compile-paladin-tryjob
     falco-paladin-tryjob
     fizz-accelerator-paladin-tryjob
-    fizz-moblab-paladin-tryjob
     fizz-paladin-tryjob
     flapjack-paladin-tryjob
     gale-paladin-tryjob
