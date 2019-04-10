@@ -391,7 +391,11 @@ class JobEventRouterImpl : public JobEventRouter {
 
 class DriveFsEventRouterImpl : public DriveFsEventRouter {
  public:
-  explicit DriveFsEventRouterImpl(Profile* profile) : profile_(profile) {}
+  DriveFsEventRouterImpl(
+      Profile* profile,
+      const std::map<base::FilePath, std::unique_ptr<FileWatcher>>*
+          file_watchers)
+      : profile_(profile), file_watchers_(file_watchers) {}
 
  private:
   std::set<std::string> GetEventListenerExtensionIds(
@@ -420,6 +424,14 @@ class DriveFsEventRouterImpl : public DriveFsEventRouter {
         .value();
   }
 
+  bool IsPathWatched(const base::FilePath& path) override {
+    base::FilePath absolute_path =
+        DriveIntegrationServiceFactory::FindForProfile(profile_)
+            ->GetMountPointPath();
+    return base::FilePath("/").AppendRelativePath(path, &absolute_path) &&
+           base::ContainsKey(*file_watchers_, absolute_path);
+  }
+
   void DispatchEventToExtension(
       const std::string& extension_id,
       extensions::events::HistogramValue histogram_value,
@@ -431,6 +443,8 @@ class DriveFsEventRouterImpl : public DriveFsEventRouter {
   }
 
   Profile* const profile_;
+  const std::map<base::FilePath, std::unique_ptr<FileWatcher>>* const
+      file_watchers_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveFsEventRouterImpl);
 };
@@ -442,7 +456,8 @@ EventRouter::EventRouter(Profile* profile)
       profile_(profile),
       device_event_router_(std::make_unique<DeviceEventRouterImpl>(profile)),
       job_event_router_(std::make_unique<JobEventRouterImpl>(profile)),
-      drivefs_event_router_(std::make_unique<DriveFsEventRouterImpl>(profile)),
+      drivefs_event_router_(
+          std::make_unique<DriveFsEventRouterImpl>(profile, &file_watchers_)),
       dispatch_directory_change_event_impl_(
           base::Bind(&EventRouter::DispatchDirectoryChangeEventImpl,
                      base::Unretained(this))),
