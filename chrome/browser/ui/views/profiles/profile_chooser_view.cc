@@ -243,6 +243,8 @@ base::string16 ProfileChooserView::GetAccessibleWindowTitle() const {
 void ProfileChooserView::ButtonPressed(views::Button* sender,
                                        const ui::Event& event) {
   if (sender == manage_google_account_button_) {
+    base::RecordAction(
+        base::UserMetricsAction("ProfileChooser_ManageGoogleAccountClicked"));
     NavigateToGoogleAccountPage(browser()->profile());
   } else if (sender == passwords_button_) {
     base::RecordAction(
