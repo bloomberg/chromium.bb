@@ -2255,8 +2255,6 @@ enum WebFeature {
   kHTMLImportsOnReverseOriginTrials = 2847,
   kElementCreateShadowRootOnReverseOriginTrials = 2848,
   kDocumentRegisterElementOnReverseOriginTrials = 2849,
-  kV8Animation_Effect_AttributeGetter = 2850,
-  kV8Animation_Effect_AttributeSetter = 2851,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
