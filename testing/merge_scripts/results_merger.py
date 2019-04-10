@@ -26,8 +26,7 @@ OPTIONAL_MATCHING = (
     'pixel_tests_enabled',
     'random_order_seed',
     'test_name_prefix',
-    'tags',
-    'expectations_files'
+    'metadata'
     )
 
 OPTIONAL_IGNORED = (

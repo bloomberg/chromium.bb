@@ -86,9 +86,8 @@ object may appear in any order.
 | `artifact_permanent_location` | string | **Optional.** The URI of the root location where the artifacts are stored. If present, any artifact locations are taken to be relative to this location. Currently only the `gs://` scheme is supported. |
 | `build_number` | string | **Optional.** If this test run was produced on a bot, this should be the build number of the run, e.g., "1234". |
 | `builder_name` | string | **Optional.** If this test run was produced on a bot, this should be the builder name of the bot, e.g., "Linux Tests". |
+| `metadata` | dict | **Optional.** It maps to a dictionary that contains all the key value pairs used as metadata. This dictionary also includes the tags, test name prefix and test expectations file paths used during a test run. |
 | `test_name_prefix` | string | **Optional.** If a prefix was specified to be removed from test names, then that prefix can be placed here. |
-| `expectations_files` | array of strings | **Optional.** If a list of expectations file paths are passed to the test runner, then that list can be placed here. |
-| `tags` | array of strings | **Optional.** If a list of test expectations file tags are passed to the test runner, then that list can be placed here. |
 | `chromium_revision` | string | **Optional.** The revision of the current Chromium checkout, if relevant, e.g. "356123". |
 | `has_pretty_patch` | bool | **Optional, layout test specific, deprecated.** Whether the web tests' output contains PrettyDiff-formatted diffs for test failures. |
 | `has_wdiff` | bool | **Optional, layout test specific, deprecated.** Whether the web tests' output contains wdiff-formatted diffs for test failures. |
