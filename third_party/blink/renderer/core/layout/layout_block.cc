@@ -1124,6 +1124,14 @@ void LayoutBlock::RemovePositionedObjects(
     }
   }
 
+  // Invalidate the nearest OOF container to ensure it is marked for layout.
+  // Fixed containing blocks are always absolute containing blocks too,
+  // so we only need to look for absolute containing blocks.
+  if (dead_objects.size() > 0) {
+    if (LayoutBlock* containing_block = ContainingBlockForAbsolutePosition())
+      containing_block->SetChildNeedsLayout(kMarkContainerChain);
+  }
+
   for (auto* object : dead_objects) {
     DCHECK_EQ(g_positioned_container_map->at(object), this);
     positioned_descendants->erase(object);
