@@ -29,46 +29,6 @@ namespace {
 // Opacity of the active tab background painted over inactive selected tabs.
 constexpr float kSelectedTabOpacity = 0.75f;
 
-// Cache of pre-painted backgrounds for tabs.
-class BackgroundCache {
- public:
-  BackgroundCache() = default;
-  ~BackgroundCache() = default;
-
-  // Updates the cache key with the new values.
-  // Returns true if any of the values changed.
-  bool UpdateCacheKey(float scale,
-                      const gfx::Size& size,
-                      SkColor active_color,
-                      SkColor inactive_color,
-                      SkColor stroke_color,
-                      float stroke_thickness);
-
-  const sk_sp<cc::PaintRecord>& fill_record() const { return fill_record_; }
-  void set_fill_record(sk_sp<cc::PaintRecord>&& record) {
-    fill_record_ = record;
-  }
-
-  const sk_sp<cc::PaintRecord>& stroke_record() const { return stroke_record_; }
-  void set_stroke_record(sk_sp<cc::PaintRecord>&& record) {
-    stroke_record_ = record;
-  }
-
- private:
-  // Parameters used to construct the PaintRecords.
-  float scale_ = 0.f;
-  gfx::Size size_;
-  SkColor active_color_ = 0;
-  SkColor inactive_color_ = 0;
-  SkColor stroke_color_ = 0;
-  float stroke_thickness_ = 0.f;
-
-  sk_sp<cc::PaintRecord> fill_record_;
-  sk_sp<cc::PaintRecord> stroke_record_;
-
-  DISALLOW_COPY_AND_ASSIGN(BackgroundCache);
-};
-
 // Tab style implementation for the GM2 refresh (Chrome 69).
 class GM2TabStyle : public TabStyleViews {
  public:
@@ -153,10 +113,6 @@ class GM2TabStyle : public TabStyleViews {
 
   std::unique_ptr<GlowHoverController> hover_controller_;
 
-  // Cache of the paint output for tab backgrounds.
-  mutable BackgroundCache background_active_cache_;
-  mutable BackgroundCache background_inactive_cache_;
-
   DISALLOW_COPY_AND_ASSIGN(GM2TabStyle);
 };
 
@@ -181,22 +137,6 @@ bool UpdateValue(T* dest, const T& src) {
     return false;
   *dest = src;
   return true;
-}
-
-// BackgroundCache -------------------------------------------------------------
-
-bool BackgroundCache::UpdateCacheKey(float scale,
-                                     const gfx::Size& size,
-                                     SkColor active_color,
-                                     SkColor inactive_color,
-                                     SkColor stroke_color,
-                                     float stroke_thickness) {
-  // Use | instead of || to prevent lazy evaluation.
-  return UpdateValue(&scale_, scale) | UpdateValue(&size_, size) |
-         UpdateValue(&active_color_, active_color) |
-         UpdateValue(&inactive_color_, inactive_color) |
-         UpdateValue(&stroke_color_, stroke_color) |
-         UpdateValue(&stroke_thickness_, stroke_thickness);
 }
 
 // GM2TabStyle -----------------------------------------------------------------
@@ -731,61 +671,15 @@ void GM2TabStyle::PaintTabBackground(gfx::Canvas* canvas,
   const SkColor stroke_color =
       tab_->controller()->GetToolbarTopSeparatorColor();
   const bool paint_hover_effect = !active && IsHoverActive();
-  const float scale = canvas->image_scale();
   const float stroke_thickness = GetStrokeThickness(active);
 
-  // If there is a |fill_id| we don't try to cache. This could be improved but
-  // would require knowing then the image from the ThemeProvider had been
-  // changed, and invalidating when the tab's x-coordinate or background_offset_
-  // changed.
-  //
-  // If |paint_hover_effect|, we don't try to cache since hover effects change
-  // on every invalidation and we would need to invalidate the cache based on
-  // the hover states.
-  //
-  // Finally, we don't cache for non-integral scale factors, since tabs draw
-  // with slightly different offsets so as to pixel-align the layout rect (see
-  // ScaleAndAlignBounds()).
-  if (fill_id || paint_hover_effect || (std::trunc(scale) != scale)) {
-    PaintTabBackgroundFill(canvas, active, paint_hover_effect, active_color,
-                           inactive_color, fill_id, y_inset);
-    if (stroke_thickness > 0) {
-      gfx::ScopedCanvas scoped_canvas(clip ? canvas : nullptr);
-      if (clip)
-        canvas->sk_canvas()->clipPath(*clip, SkClipOp::kDifference, true);
-      PaintBackgroundStroke(canvas, active, stroke_color);
-    }
-  } else {
-    const gfx::Size& size = tab_->size();
-    BackgroundCache& cache =
-        active ? background_active_cache_ : background_inactive_cache_;
-
-    // If any of the cache key values have changed, update the cached records.
-    if (cache.UpdateCacheKey(scale, size, active_color, inactive_color,
-                             stroke_color, stroke_thickness)) {
-      cc::PaintRecorder recorder;
-      {
-        gfx::Canvas cache_canvas(
-            recorder.beginRecording(size.width(), size.height()), scale);
-        PaintTabBackgroundFill(&cache_canvas, active, paint_hover_effect,
-                               active_color, inactive_color, fill_id, y_inset);
-        cache.set_fill_record(recorder.finishRecordingAsPicture());
-      }
-      if (stroke_thickness > 0) {
-        gfx::Canvas cache_canvas(
-            recorder.beginRecording(size.width(), size.height()), scale);
-        PaintBackgroundStroke(&cache_canvas, active, stroke_color);
-        cache.set_stroke_record(recorder.finishRecordingAsPicture());
-      }
-    }
-
-    canvas->sk_canvas()->drawPicture(cache.fill_record());
-    if (stroke_thickness > 0) {
-      gfx::ScopedCanvas scoped_canvas(clip ? canvas : nullptr);
-      if (clip)
-        canvas->sk_canvas()->clipPath(*clip, SkClipOp::kDifference, true);
-      canvas->sk_canvas()->drawPicture(cache.stroke_record());
-    }
+  PaintTabBackgroundFill(canvas, active, paint_hover_effect, active_color,
+                         inactive_color, fill_id, y_inset);
+  if (stroke_thickness > 0) {
+    gfx::ScopedCanvas scoped_canvas(clip ? canvas : nullptr);
+    if (clip)
+      canvas->sk_canvas()->clipPath(*clip, SkClipOp::kDifference, true);
+    PaintBackgroundStroke(canvas, active, stroke_color);
   }
 
   PaintSeparators(canvas);
