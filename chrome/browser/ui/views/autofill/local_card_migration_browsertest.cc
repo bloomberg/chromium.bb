@@ -941,6 +941,9 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
       "Autofill.LocalCardMigrationBubbleOffer.FirstShow", 0);
 }
 
+// TODO(crbug.com/932818): Remove the condition once the experiment is enabled
+// on ChromeOS.
+#if !defined(OS_CHROMEOS)
 // Ensures that the credit card icon will show in status chip.
 IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTestForStatusChip,
                        CreditCardIconShownInStatusChip) {
@@ -1049,6 +1052,7 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTestForStatusChip,
       GetLocalCardMigrationIconView(/*icon_in_status_chip=*/true)->visible());
   EXPECT_FALSE(GetLocalCardMigrationOfferBubbleViews());
 }
+#endif  // !defined(OS_CHROMEOS)
 
 // TODO(crbug.com/897998):
 // - Update test set-up and add navigation tests.

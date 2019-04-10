@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/views/autofill/save_card_icon_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
+#include "chrome/browser/ui/views/profiles/avatar_toolbar_button.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/widget/widget.h"
 
@@ -36,6 +37,9 @@ ToolbarPageActionIconContainerView::ToolbarPageActionIconContainerView(
     icon_view->SetVisible(false);
     AddChildView(icon_view);
   }
+
+  avatar_ = new AvatarToolbarButton(browser);
+  AddChildView(avatar_);
 }
 
 ToolbarPageActionIconContainerView::~ToolbarPageActionIconContainerView() =
@@ -44,6 +48,9 @@ ToolbarPageActionIconContainerView::~ToolbarPageActionIconContainerView() =
 void ToolbarPageActionIconContainerView::UpdateAllIcons() {
   for (PageActionIconView* icon_view : page_action_icons_)
     icon_view->Update();
+
+  if (avatar_)
+    avatar_->UpdateIcon();
 }
 
 PageActionIconView* ToolbarPageActionIconContainerView::GetIconView(

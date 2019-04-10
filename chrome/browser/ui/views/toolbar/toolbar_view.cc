@@ -234,20 +234,21 @@ void ToolbarView::Init() {
   if (media_router::MediaRouterEnabled(browser_->profile()))
     cast_ = media_router::CastToolbarButton::Create(browser_).release();
 
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
+  bool show_avatar_toolbar_button = true;
   if (base::FeatureList::IsEnabled(
           autofill::features::kAutofillEnableToolbarStatusChip)) {
+    // The avatar button is contained inside the page-action container and
+    // should not be created twice.
+    show_avatar_toolbar_button = false;
     toolbar_page_action_container_ = new ToolbarPageActionIconContainerView(
         browser_->command_controller(), browser_);
-  }
-#endif  // !defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
-
-  bool show_avatar_toolbar_button = true;
+  } else {
 #if defined(OS_CHROMEOS)
-  // ChromeOS only badges Incognito and Guest icons in the browser window.
-  show_avatar_toolbar_button = browser_->profile()->IsOffTheRecord() ||
-                               browser_->profile()->IsGuestSession();
-#endif  // !defined(OS_CHROMEOS)
+    // ChromeOS only badges Incognito and Guest icons in the browser window.
+    show_avatar_toolbar_button = browser_->profile()->IsOffTheRecord() ||
+                                 browser_->profile()->IsGuestSession();
+#endif
+  }
   if (show_avatar_toolbar_button)
     avatar_ = new AvatarToolbarButton(browser_);
 
@@ -276,6 +277,8 @@ void ToolbarView::Init() {
   if (toolbar_page_action_container_)
     AddChildView(toolbar_page_action_container_);
 
+  // TODO(crbug.com/932818): Remove this once the
+  // |kAutofillEnableToolbarStatusChip| is fully launched.
   if (avatar_)
     AddChildView(avatar_);
 
@@ -406,6 +409,18 @@ void ToolbarView::ShowBookmarkBubble(
                                  browser_->profile(), url, already_bookmarked);
 }
 
+AvatarToolbarButton* ToolbarView::GetAvatarToolbarButton() {
+  if (toolbar_page_action_container_ &&
+      toolbar_page_action_container_->avatar_button()) {
+    return toolbar_page_action_container_->avatar_button();
+  }
+
+  if (avatar_)
+    return avatar_;
+
+  return nullptr;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, views::MenuButtonListener implementation:
 
@@ -482,7 +497,7 @@ void ToolbarView::EnabledStateChangedForCommand(int id, bool enabled) {
       button = home_;
       break;
     case IDC_SHOW_AVATAR_MENU:
-      button = avatar_;
+      button = GetAvatarToolbarButton();
       break;
   }
   if (button)
@@ -811,8 +826,12 @@ void ToolbarView::LoadImages() {
     extensions_button_->UpdateIcon();
   if (cast_)
     cast_->UpdateIcon();
+
   if (avatar_)
     avatar_->UpdateIcon();
+
+  if (toolbar_page_action_container_)
+    toolbar_page_action_container_->UpdateAllIcons();
 
   app_menu_button_->UpdateIcon();
 

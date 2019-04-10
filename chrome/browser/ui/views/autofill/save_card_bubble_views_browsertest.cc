@@ -2807,6 +2807,9 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
       AutofillMetrics::SAVE_CARD_ICON_SHOWN_WITHOUT_PROMPT, 1);
 }
 
+// TODO(crbug.com/932818): Remove the condition once the experiment is enabled
+// on ChromeOS.
+#if !defined(OS_CHROMEOS)
 // Ensures that the credit card icon will show in status chip.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
                        CreditCardIconShownInStatusChip) {
@@ -2900,5 +2903,6 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
   EXPECT_TRUE(GetSaveCardIconView()->visible());
   EXPECT_FALSE(GetSaveCardBubbleViews());
 }
+#endif  // !defined(OS_CHROMEOS)
 
 }  // namespace autofill
