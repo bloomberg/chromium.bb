@@ -26,6 +26,7 @@ include_rules = [
   "+components/services/heap_profiling/public/cpp/settings.h",
   "+components/storage_monitor",
   "+components/user_prefs",
+  "+components/variations/net",
   "+components/version_info",
   "+components/viz/common/switches.h",
   "+components/zoom",

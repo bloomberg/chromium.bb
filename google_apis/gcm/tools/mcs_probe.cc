@@ -358,7 +358,8 @@ void MCSProbe::InitializeNetworkState() {
   // Wrap it up with network service APIs.
   network_context_ = std::make_unique<network::NetworkContext>(
       nullptr /* network_service */, mojo::MakeRequest(&network_context_pipe_),
-      url_request_context_.get());
+      url_request_context_.get(),
+      /*cors_exempt_header_list=*/std::vector<std::string>());
   auto url_loader_factory_params =
       network::mojom::URLLoaderFactoryParams::New();
   url_loader_factory_params->process_id = network::mojom::kBrowserProcessId;

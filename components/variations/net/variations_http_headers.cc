@@ -112,9 +112,10 @@ class VariationsHeaderHelper {
       return false;
 
     if (resource_request_) {
-      // Set the variations header to client_data_header rather than headers to
-      // be exempted from CORS checks.
-      resource_request_->client_data_header = variations_header_;
+      // Set the variations header to cors_exempt_headers rather than headers
+      // to be exempted from CORS checks.
+      resource_request_->cors_exempt_headers.SetHeaderIfMissing(
+          kClientDataHeader, variations_header_);
     } else if (url_request_) {
       url_request_->SetExtraRequestHeaderByName(kClientDataHeader,
                                                 variations_header_, false);
@@ -229,11 +230,16 @@ bool IsVariationsHeader(const std::string& header_name) {
 }
 
 bool HasVariationsHeader(const network::ResourceRequest& request) {
-  return !request.client_data_header.empty();
+  return request.cors_exempt_headers.HasHeader(kClientDataHeader);
 }
 
 bool ShouldAppendVariationsHeaderForTesting(const GURL& url) {
   return ShouldAppendVariationsHeader(url);
+}
+
+void UpdateCorsExemptHeaderForVariations(
+    network::mojom::NetworkContextParams* params) {
+  params->cors_exempt_header_list.push_back(kClientDataHeader);
 }
 
 }  // namespace variations

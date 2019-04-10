@@ -149,7 +149,8 @@ class SafeBrowsingNetworkContext::SharedURLLoaderFactory
       request_context_getter_ = std::move(request_context_getter);
       network_context_impl_ = std::make_unique<network::NetworkContext>(
           content::GetNetworkServiceImpl(), std::move(network_context_request),
-          request_context_getter_->GetURLRequestContext());
+          request_context_getter_->GetURLRequestContext(),
+          /*cors_exempt_header_list=*/std::vector<std::string>());
     }
 
     scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
