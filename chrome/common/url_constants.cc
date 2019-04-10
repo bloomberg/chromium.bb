@@ -143,6 +143,9 @@ const char kGoogleAccountActivityControlsURL[] =
 
 const char kGoogleAccountURL[] = "https://myaccount.google.com";
 
+const char kGoogleAccountChooserURL[] =
+    "https://accounts.google.com/AccountChooser";
+
 const char kGooglePasswordManagerURL[] = "https://passwords.google.com";
 
 const char kLearnMoreReportingURL[] =
