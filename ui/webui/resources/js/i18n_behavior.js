@@ -41,8 +41,8 @@ const I18nBehavior = {
    * values. Also sanitizes the output to filter out dangerous HTML/JS.
    * Use with Polymer bindings that are *not* inner-h-t-m-l.
    * @param {string} id The ID of the string to translate.
-   * @param {...string} var_args Values to replace the placeholders $1 to $9
-   *     in the string.
+   * @param {...string|number} var_args Values to replace the placeholders $1
+   *     to $9 in the string.
    * @return {string} A translated, sanitized, substituted string.
    */
   i18n: function(id, var_args) {

@@ -87,19 +87,6 @@
   ROLLBACK_ERROR: 'ui-state-rollback-error'
 };
 
-/* Possible types of UI. */
-/** @const */ var DISPLAY_TYPE = {
-  UNKNOWN: 'unknown',
-  OOBE: 'oobe',
-  LOGIN: 'login',
-  LOCK: 'lock',
-  USER_ADDING: 'user-adding',
-  APP_LAUNCH_SPLASH: 'app-launch-splash',
-  ARC_KIOSK_SPLASH: 'arc-kiosk-splash',
-  DESKTOP_USER_MANAGER: 'login-add-user',
-  GAIA_SIGNIN: 'gaia-signin'
-};
-
 /** @const */ var USER_ACTION_ROLLBACK_TOGGLED = 'rollback-toggled';
 
 cr.define('cr.ui.login', function() {
