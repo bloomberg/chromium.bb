@@ -306,8 +306,13 @@ cr.define('languages_page_tests', function() {
       test('test translate target language is labelled', function() {
         // Translate target language disabled.
         const targetLanguageCode = languageHelper.languages.translateTarget;
-        assertFalse(languageHelper.languages.enabled.some(
-            l => l.language.code == targetLanguageCode));
+        assertTrue(!!targetLanguageCode);
+        assertTrue(languageHelper.languages.enabled.some(
+            l => languageHelper.convertLanguageCodeForTranslate(
+                     l.language.code) == targetLanguageCode));
+        assertTrue(languageHelper.languages.enabled.some(
+            l => languageHelper.convertLanguageCodeForTranslate(
+                     l.language.code) != targetLanguageCode));
         let translateTargetLabel = null;
         let item = null;
 
@@ -315,46 +320,23 @@ cr.define('languages_page_tests', function() {
         let domRepeat = assert(languagesCollapse.querySelector(
             Polymer.DomRepeat ? 'dom-repeat' : 'template[is="dom-repeat"]'));
 
+        let num_visibles = 0;
         Array.from(listItems).forEach(function(el) {
           item = domRepeat.itemForElement(el);
           if (item) {
-            translateTargetLabel = el.querySelector('div.secondary');
-            assertTrue(
-                translateTargetLabel.hidden,
-                'Translate target label should be hidden for ' +
-                    item.language.code);
-          }
-        });
-
-        // Enable the target language.
-        languageHelper.enableLanguage(targetLanguageCode);
-        assertTrue(languageHelper.languages.enabled.some(
-            l => l.language.code == targetLanguageCode));
-
-        // Update the dom-repeat in the UI.
-        Polymer.dom.flush();
-        domRepeat = assert(languagesCollapse.querySelector(
-            Polymer.DomRepeat ? 'dom-repeat' : 'template[is="dom-repeat"]'));
-
-        listItems = languagesCollapse.querySelectorAll('.list-item');
-        Array.from(listItems).forEach(function(el) {
-          item = domRepeat.itemForElement(el);
-          if (item) {
-            translateTargetLabel = el.querySelector('div.secondary');
-            // Check that translate target label is shown only for the target
-            // language.
-            if (item.language.code == targetLanguageCode) {
-              assertFalse(
-                  translateTargetLabel.hidden,
-                  'Translate target label should be shown for ' +
-                      item.language.code);
-            } else {
-              assertTrue(
-                  translateTargetLabel.hidden,
-                  'Translate target label should be hidden for ' +
-                      item.language.code);
+            translateTargetLabel = el.querySelector('.target-info');
+            assertTrue(!!translateTargetLabel);
+            if (getComputedStyle(translateTargetLabel).display != 'none') {
+              num_visibles++;
+              assertEquals(
+                  targetLanguageCode,
+                  languageHelper.convertLanguageCodeForTranslate(
+                      item.language.code));
             }
           }
+          assertEquals(
+              1, num_visibles,
+              'Not exactly one target info label (' + num_visibles + ').');
         });
       });
 

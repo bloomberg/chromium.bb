@@ -219,11 +219,17 @@ Polymer({
 
   /**
    * @param {string} languageCode The language code identifying a language.
-   * @return {boolean} True iff this language is the one used when translating
-   *     pages.
+   * @param {string} translateTarget The target language.
+   * @return {string} 'target' if |languageCode| matches the target language,
+   'non-target' otherwise.
    */
-  isTranslationTarget_: function(languageCode) {
-    return languageCode == this.languages.translateTarget;
+  isTranslationTarget_: function(languageCode, translateTarget) {
+    if (this.languageHelper.convertLanguageCodeForTranslate(languageCode) ==
+        translateTarget) {
+      return 'target';
+    } else {
+      return 'non-target';
+    }
   },
 
   // <if expr="chromeos">
