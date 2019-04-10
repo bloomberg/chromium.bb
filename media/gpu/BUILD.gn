@@ -678,6 +678,7 @@ test("image_processor_test") {
     ":buildflags",
     ":gpu",
     "test:frame_validator",
+    "test:helpers",
     "test:image_processor",
     "test:render_helpers",
     "//base/test:test_support",

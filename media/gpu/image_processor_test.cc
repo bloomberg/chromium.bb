@@ -47,10 +47,13 @@ class ImageProcessorSimpleParamTest
   std::unique_ptr<test::ImageProcessorClient> CreateImageProcessorClient(
       const test::Image& input_image,
       const test::Image& output_image) {
+    const VideoPixelFormat input_format = input_image.PixelFormat();
+    const VideoPixelFormat output_format = output_image.PixelFormat();
     auto input_config_layout = test::CreateVideoFrameLayout(
-        input_image.PixelFormat(), input_image.Size());
-    auto output_config_layout = test::CreateVideoFrameLayout(
-        output_image.PixelFormat(), output_image.Size());
+        input_format, input_image.Size(), VideoFrame::NumPlanes(input_format));
+    auto output_config_layout =
+        test::CreateVideoFrameLayout(output_format, output_image.Size(),
+                                     VideoFrame::NumPlanes(output_format));
     LOG_ASSERT(input_config_layout);
     LOG_ASSERT(output_config_layout);
     ImageProcessor::PortConfig input_config(*input_config_layout,
@@ -64,8 +67,7 @@ class ImageProcessorSimpleParamTest
     LOG_ASSERT(output_image.IsMetadataLoaded());
     std::vector<std::unique_ptr<test::VideoFrameProcessor>> frame_processors;
     // TODO(crbug.com/944823): Use VideoFrameValidator for RGB formats.
-    if (IsYuvPlanar(input_image.PixelFormat()) &&
-        IsYuvPlanar(output_image.PixelFormat())) {
+    if (IsYuvPlanar(input_format) && IsYuvPlanar(output_format)) {
       auto vf_validator = test::VideoFrameValidator::Create(
           {output_image.Checksum()}, output_image.PixelFormat());
       frame_processors.push_back(std::move(vf_validator));

@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "media/base/video_frame.h"
+#include "media/gpu/test/image.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
@@ -169,13 +170,62 @@ scoped_refptr<VideoFrame> CreatePlatformVideoFrame(
   return video_frame;
 }
 
-base::Optional<VideoFrameLayout> CreateVideoFrameLayout(
-    VideoPixelFormat pixel_format,
-    const gfx::Size& size) {
-  return VideoFrameLayout::CreateWithStrides(
-      pixel_format, size, VideoFrame::ComputeStrides(pixel_format, size),
-      std::vector<size_t>(VideoFrame::NumPlanes(pixel_format),
-                          0) /* buffer_sizes */);
+base::Optional<VideoFrameLayout> CreateVideoFrameLayout(VideoPixelFormat format,
+                                                        const gfx::Size& size,
+                                                        bool single_buffer) {
+  const size_t num_planes = VideoFrame::NumPlanes(format);
+  const size_t num_buffers = single_buffer ? 1u : num_planes;
+  // If num_buffers = 1, all the planes are stored in the same buffer.
+  // If num_buffers = num_planes, each of plane is stored in a separate
+  // buffer and located in the beginning of the buffer.
+  std::vector<size_t> buffer_sizes(num_buffers);
+  std::vector<VideoFrameLayout::Plane> planes(num_planes);
+  const auto strides = VideoFrame::ComputeStrides(format, size);
+  size_t offset = 0;
+  for (size_t i = 0; i < num_planes; ++i) {
+    planes[i].stride = strides[i];
+    if (num_buffers == 1) {
+      planes[i].offset = offset;
+      offset += VideoFrame::PlaneSize(format, i, size).GetArea();
+    } else {
+      planes[i].offset = 0;
+      buffer_sizes[i] = VideoFrame::PlaneSize(format, i, size).GetArea();
+    }
+  }
+
+  if (num_buffers == 1)
+    buffer_sizes[0] = VideoFrame::AllocationSize(format, size);
+
+  return VideoFrameLayout::CreateWithPlanes(format, size, std::move(planes),
+                                            std::move(buffer_sizes));
+}
+
+scoped_refptr<const VideoFrame> CreateVideoFrameFromImage(const Image& image) {
+  DCHECK(image.IsLoaded());
+  const auto format = image.PixelFormat();
+  const auto& visible_size = image.Size();
+  // Loaded image data must be tight.
+  DCHECK_EQ(image.DataSize(), VideoFrame::AllocationSize(format, visible_size));
+
+  // Create planes for layout. We cannot use WrapExternalData() because it
+  // calls GetDefaultLayout() and it supports only a few pixel formats.
+  base::Optional<VideoFrameLayout> layout =
+      CreateVideoFrameLayout(format, visible_size, 1u /* num_buffers */);
+  if (!layout) {
+    LOG(ERROR) << "Failed to create VideoFrameLayout";
+    return nullptr;
+  }
+
+  scoped_refptr<const VideoFrame> video_frame =
+      VideoFrame::WrapExternalDataWithLayout(
+          *layout, gfx::Rect(visible_size), visible_size, image.Data(),
+          image.DataSize(), base::TimeDelta());
+  if (!video_frame) {
+    LOG(ERROR) << "Failed to create VideoFrame";
+    return nullptr;
+  }
+
+  return video_frame;
 }
 
 }  // namespace test

@@ -20,6 +20,7 @@
 #include "media/base/video_frame_layout.h"
 #include "media/gpu/image_processor_factory.h"
 #include "media/gpu/test/image.h"
+#include "media/gpu/test/video_frame_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -34,6 +35,9 @@ namespace {
 scoped_refptr<VideoFrame> CloneVideoFrameWithLayout(
     const VideoFrame* const src_frame,
     const VideoFrameLayout& dst_layout) {
+  if (!src_frame)
+    return nullptr;
+
   LOG_ASSERT(src_frame->IsMappable());
   LOG_ASSERT(src_frame->format() == dst_layout.format());
   // Create VideoFrame, which allocates and owns data.
@@ -143,44 +147,12 @@ scoped_refptr<VideoFrame> ImageProcessorClient::CreateInputFrame(
   DCHECK_CALLED_ON_VALID_THREAD(test_main_thread_checker_);
   LOG_ASSERT(image_processor_);
   LOG_ASSERT(input_image.IsLoaded());
-  LOG_ASSERT(input_image.DataSize() ==
-             VideoFrame::AllocationSize(input_image.PixelFormat(),
-                                        input_image.Size()));
-
-  const auto format = input_image.PixelFormat();
-  const auto visible_size = input_image.Size();
-
-  // Create planes for layout. We cannot use WrapExternalData() because it
-  // calls GetDefaultLayout() and it supports only a few pixel formats.
-  const size_t num_planes = VideoFrame::NumPlanes(format);
-  std::vector<VideoFrameLayout::Plane> planes(num_planes);
-  const auto strides = VideoFrame::ComputeStrides(format, visible_size);
-  size_t offset = 0;
-  for (size_t i = 0; i < num_planes; ++i) {
-    planes[i].stride = strides[i];
-    planes[i].offset = offset;
-    offset += VideoFrame::PlaneSize(format, i, visible_size).GetArea();
-  }
-
-  auto layout = VideoFrameLayout::CreateWithPlanes(
-      format, visible_size, std::move(planes), {input_image.DataSize()});
-  if (!layout) {
-    LOG(ERROR) << "Failed to create VideoFrameLayout";
-    return nullptr;
-  }
-
-  auto frame = VideoFrame::WrapExternalDataWithLayout(
-      *layout, gfx::Rect(visible_size), visible_size, input_image.Data(),
-      input_image.DataSize(), base::TimeDelta());
-  if (!frame) {
-    LOG(ERROR) << "Failed to create VideoFrame";
-    return nullptr;
-  }
 
   const auto& input_layout = image_processor_->input_layout();
   if (VideoFrame::IsStorageTypeMappable(
           image_processor_->input_storage_type())) {
-    return CloneVideoFrameWithLayout(frame.get(), input_layout);
+    return CloneVideoFrameWithLayout(
+        CreateVideoFrameFromImage(input_image).get(), input_layout);
   } else {
 #if defined(OS_CHROMEOS)
     LOG_ASSERT(image_processor_->input_storage_type() ==
