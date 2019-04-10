@@ -40,8 +40,7 @@ function createContextMenusHandlers(isWebview) {
   var supportsLazyListeners = !isWebview;
   var supportsFilters = false;
   contextMenus.event = bindingUtil.createCustomEvent(
-      eventName, undefined /* schema */, supportsFilters,
-      supportsLazyListeners);
+      eventName, supportsFilters, supportsLazyListeners);
 
   contextMenus.getIdFromCreateProperties = function(createProperties) {
     if (typeof createProperties.id !== 'undefined')

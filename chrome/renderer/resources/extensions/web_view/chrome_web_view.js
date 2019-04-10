@@ -41,7 +41,7 @@ function createContextMenusOnClickedEvent(webViewInstanceId,
                                           opt_eventOptions) {
   var subEventName = GetUniqueSubEventName(opt_eventName);
   var newEvent =
-      bindingUtil.createCustomEvent(subEventName, undefined, false, false);
+      bindingUtil.createCustomEvent(subEventName, false, false);
 
   var view = GuestViewInternalNatives.GetViewFromID(webViewInstanceId);
   if (view) {
@@ -63,7 +63,7 @@ function createContextMenusOnContextMenuEvent(webViewInstanceId,
                                               opt_eventOptions) {
   var subEventName = GetUniqueSubEventName(opt_eventName);
   var newEvent =
-      bindingUtil.createCustomEvent(subEventName, undefined, false, false);
+      bindingUtil.createCustomEvent(subEventName, false, false);
 
   var view = GuestViewInternalNatives.GetViewFromID(webViewInstanceId);
   if (view) {
