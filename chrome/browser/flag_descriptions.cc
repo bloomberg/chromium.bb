@@ -3392,12 +3392,6 @@ const char kVaapiJpegImageDecodeAccelerationDescription[] =
     "Enable or disable decode acceleration of JPEG images (as opposed to camera"
     " captures) using the VA-API.";
 
-const char kVideoPlayerChromecastSupportName[] =
-    "Experimental Chromecast support for Video Player";
-const char kVideoPlayerChromecastSupportDescription[] =
-    "This option enables experimental Chromecast support for Video Player app "
-    "on ChromeOS.";
-
 const char kVirtualKeyboardName[] = "Virtual Keyboard";
 const char kVirtualKeyboardDescription[] = "Enable virtual keyboard support.";
 

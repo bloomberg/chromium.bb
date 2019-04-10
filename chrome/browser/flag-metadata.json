@@ -1808,11 +1808,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-video-player-chromecast-support",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-virtual-keyboard",
     "owners": [ "//ui/keyboard/OWNERS" ],
     // Useful for debugging the virtual keyboard on non-tablet devices.
