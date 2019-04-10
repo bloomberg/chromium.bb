@@ -57,6 +57,8 @@ void InputDeviceServer::OnInputDeviceConfigurationChanged(
     OnTouchpadDeviceConfigurationChanged();
   if (input_device_types & ui::InputDeviceEventObserver::kTouchscreen)
     OnTouchscreenDeviceConfigurationChanged();
+  if (input_device_types & ui::InputDeviceEventObserver::kUncategorized)
+    OnUncategorizedDeviceConfigurationChanged();
 }
 
 void InputDeviceServer::OnKeyboardDeviceConfigurationChanged() {
@@ -112,6 +114,7 @@ void InputDeviceServer::SendDeviceListsComplete(
   observer->OnDeviceListsComplete(
       manager_->GetKeyboardDevices(), manager_->GetTouchscreenDevices(),
       manager_->GetMouseDevices(), manager_->GetTouchpadDevices(),
+      manager_->GetUncategorizedDevices(),
       manager_->AreTouchscreenTargetDisplaysValid());
 }
 
@@ -126,6 +129,16 @@ void InputDeviceServer::OnTouchscreenDeviceConfigurationChanged() {
                             mojom::InputDeviceObserverMojo* observer) {
     observer->OnTouchscreenDeviceConfigurationChanged(
         devices, are_touchscreen_target_displays_valid);
+  });
+}
+
+void InputDeviceServer::OnUncategorizedDeviceConfigurationChanged() {
+  if (!manager_->AreDeviceListsComplete())
+    return;
+
+  auto& devices = manager_->GetUncategorizedDevices();
+  observers_.ForAllPtrs([&devices](mojom::InputDeviceObserverMojo* observer) {
+    observer->OnUncategorizedDeviceConfigurationChanged(devices);
   });
 }
 

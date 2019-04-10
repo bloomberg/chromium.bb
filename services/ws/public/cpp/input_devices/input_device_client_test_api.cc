@@ -66,7 +66,7 @@ void InputDeviceClientTestApi::OnDeviceListsComplete() {
   if (ui::DeviceDataManager::instance_)
     ui::DeviceDataManager::instance_->OnDeviceListsComplete();
   else
-    GetInputDeviceClient()->OnDeviceListsComplete({}, {}, {}, {}, false);
+    GetInputDeviceClient()->OnDeviceListsComplete({}, {}, {}, {}, {}, false);
 }
 
 void InputDeviceClientTestApi::SetKeyboardDevices(

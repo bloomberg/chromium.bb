@@ -43,6 +43,18 @@ TEST(EventDeviceInfoTest, BasicCrosKeyboard) {
   EXPECT_EQ(ui::InputDeviceType::INPUT_DEVICE_INTERNAL, devinfo.device_type());
 }
 
+TEST(EventDeviceInfoTest, SideVolumeButton) {
+  EventDeviceInfo devinfo;
+  EXPECT_TRUE(CapabilitiesToDeviceInfo(kSideVolumeButton, &devinfo));
+
+  EXPECT_FALSE(devinfo.HasKeyboard());
+  EXPECT_FALSE(devinfo.HasMouse());
+  EXPECT_FALSE(devinfo.HasTouchpad());
+  EXPECT_FALSE(devinfo.HasTouchscreen());
+  EXPECT_FALSE(devinfo.HasTablet());
+  EXPECT_FALSE(devinfo.HasGamepad());
+}
+
 TEST(EventDeviceInfoTest, BasicCrosTouchscreen) {
   EventDeviceInfo devinfo;
   EXPECT_TRUE(CapabilitiesToDeviceInfo(kLinkTouchscreen, &devinfo));

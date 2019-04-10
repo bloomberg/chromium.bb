@@ -51,6 +51,7 @@ class InputDeviceServer : public mojom::InputDeviceServer,
   void OnTouchscreenDeviceConfigurationChanged();
   void OnMouseDeviceConfigurationChanged();
   void OnTouchpadDeviceConfigurationChanged();
+  void OnUncategorizedDeviceConfigurationChanged();
 
   mojo::BindingSet<mojom::InputDeviceServer> bindings_;
   mojo::InterfacePtrSet<mojom::InputDeviceObserverMojo> observers_;

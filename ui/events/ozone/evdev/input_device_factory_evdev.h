@@ -86,6 +86,7 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
   void NotifyMouseDevicesUpdated();
   void NotifyTouchpadDevicesUpdated();
   void NotifyGamepadDevicesUpdated();
+  void NotifyUncategorizedDevicesUpdated();
 
   void SetIntPropertyForOneType(const EventDeviceType type,
                                 const std::string& name,
@@ -117,6 +118,7 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
   bool mouse_list_dirty_ = true;
   bool touchpad_list_dirty_ = true;
   bool gamepad_list_dirty_ = true;
+  bool uncategorized_list_dirty_ = true;
 
   // Whether we have a list of devices that were present at startup.
   bool startup_devices_enumerated_ = false;
