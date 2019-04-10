@@ -20,6 +20,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.DeviceConditions;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
 import org.chromium.chrome.browser.infobar.DownloadProgressInfoBar;
 import org.chromium.chrome.browser.infobar.IPHInfoBarSupport;
@@ -556,6 +557,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
         if (infoBarState == DownloadInfoBarState.DOWNLOADING) {
             info.icon = showAccelerating ? R.drawable.infobar_downloading_sweep_animation
                                          : R.drawable.infobar_downloading_fill_animation;
+            if (areAnimationsDisabled()) info.icon = R.drawable.infobar_downloading_fill_animation;
             info.hasVectorDrawable = true;
         } else if (offlineItemState == OfflineItemState.COMPLETE) {
             stringRes = R.plurals.multiple_download_complete;
@@ -650,6 +652,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
         setForceReparent(info);
         setAccessibilityMessage(
                 info, showAccelerating && infoBarState == DownloadInfoBarState.DOWNLOADING);
+        if (areAnimationsDisabled()) info.hasAnimation = false;
         showInfoBar(infoBarState, info);
     }
 
@@ -713,6 +716,10 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
 
     private boolean isAccelerated(OfflineItem offlineItem) {
         return isSpeedingUpMessageEnabled() && offlineItem != null && offlineItem.isAccelerated;
+    }
+
+    private boolean areAnimationsDisabled() {
+        return DeviceConditions.isCurrentlyInPowerSaveMode(getContext());
     }
 
     /**
