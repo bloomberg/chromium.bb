@@ -10,8 +10,9 @@
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
 
 AXTreeSourceAura::AXTreeSourceAura(views::AXAuraObjWrapper* root,
-                                   const ui::AXTreeID& tree_id)
-    : AXTreeSourceViews(root, tree_id) {}
+                                   const ui::AXTreeID& tree_id,
+                                   views::AXAuraObjCache* cache)
+    : AXTreeSourceViews(root, tree_id, cache) {}
 
 AXTreeSourceAura::~AXTreeSourceAura() = default;
 

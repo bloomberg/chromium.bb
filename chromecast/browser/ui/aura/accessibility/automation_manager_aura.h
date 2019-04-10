@@ -117,6 +117,8 @@ class AutomationManagerAura : public ui::AXActionHandler,
 
   std::unique_ptr<views::AccessibilityAlertWindow> alert_window_;
 
+  views::AXAuraObjCache cache_;
+
   DISALLOW_COPY_AND_ASSIGN(AutomationManagerAura);
 };
 

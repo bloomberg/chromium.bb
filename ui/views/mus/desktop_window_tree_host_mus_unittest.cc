@@ -619,7 +619,8 @@ TEST_F(DesktopWindowTreeHostMusTest, WindowTitle) {
 
 TEST_F(DesktopWindowTreeHostMusTest, Accessibility) {
   // Pretend we're using the remote AX service, like shortcut_viewer.
-  MusClientTestApi::SetAXRemoteHost(std::make_unique<AXRemoteHost>());
+  AXAuraObjCache cache;
+  MusClientTestApi::SetAXRemoteHost(std::make_unique<AXRemoteHost>(&cache));
 
   std::unique_ptr<Widget> widget = CreateWidget();
   // Widget frame views do not participate in accessibility node hierarchy
