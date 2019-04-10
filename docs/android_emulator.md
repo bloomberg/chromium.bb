@@ -79,8 +79,7 @@ $ ~/Android/Sdk/emulator/emulator @EMULATOR_ID
 You can run an emulator without creating a window on your desktop (useful for
 `ssh`):
 ```shell
-$ sudo apt-get install xvfb-run
-$ xvfb-run ~/Android/Sdk/emulator/emulator -gpu off @EMULATOR_ID
+$ ~/Android/Sdk/emulator/emulator -no-window @EMULATOR_ID
 ```
 
 ### Writable system partition
