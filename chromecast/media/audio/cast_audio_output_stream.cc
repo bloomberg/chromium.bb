@@ -207,10 +207,13 @@ void CastAudioOutputStream::CmaWrapper::Initialize(
 
   AudioConfig audio_config;
   audio_config.codec = kCodecPCM;
+  audio_config.channel_layout =
+      ChannelLayoutFromChannelNumber(audio_params_.channels());
   audio_config.sample_format = kSampleFormatS16;
   audio_config.bytes_per_channel = 2;
   audio_config.channel_number = audio_params_.channels();
   audio_config.samples_per_second = audio_params_.sample_rate();
+  DCHECK(IsValidConfig(audio_config));
   if (!audio_decoder_->SetConfig(audio_config)) {
     encountered_error_ = true;
     return;
