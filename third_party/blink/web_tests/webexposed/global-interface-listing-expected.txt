@@ -10499,6 +10499,7 @@ interface XRHitResult
     method constructor
 interface XRInputSource
     attribute @@toStringTag
+    getter gamepad
     getter gripSpace
     getter handedness
     getter targetRayMode
@@ -10506,6 +10507,7 @@ interface XRInputSource
     method constructor
 interface XRInputSourceEvent : Event
     attribute @@toStringTag
+    getter buttonIndex
     getter frame
     getter inputSource
     method constructor

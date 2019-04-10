@@ -23,4 +23,5 @@ enum XRTargetRayMode {
   readonly attribute XRTargetRayMode targetRayMode;
   readonly attribute XRSpace targetRaySpace;
   readonly attribute XRSpace? gripSpace;
+  readonly attribute Gamepad? gamepad;
 };
