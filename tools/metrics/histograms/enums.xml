@@ -37157,6 +37157,53 @@ Called by update_use_counter_css.py.-->
   <int value="4" label="Report an issue"/>
 </enum>
 
+<enum name="MimeHandlerViewEvents">
+  <summary>
+    Tracks certain events related to MimeHandlerView; most importantly the use
+    of the exposed &quot;postMessage&quot; API on HTMLPlugInElement for various
+    expected message values. It also tracks state of &quot;access&quot; to
+    resource based on CORB (e.g., same vs cross origin postMessage).
+  </summary>
+  <int value="0" label="DidCreateMimeHandlerViewContainerBase">
+    A new MimeHandlerViewContainerBase is created; this is in response to
+    attaching a plugin element whose resource is handled by MimeHandlerView.
+  </int>
+  <int value="1" label="DidLoadExtension">
+    Recorded when a MimeHandlerViewContainer is created and notified that the
+    extension handling the resource is loaded in guest process.
+  </int>
+  <int value="2" label="AccessibleInvalid">
+    Invalid message string/object posted to an accessible resource.
+  </int>
+  <int value="3" label="AccessibleGetSelectedText">
+    Message {type: &quot;getSelectedText&quot;} posted to an accessible
+    resource.
+  </int>
+  <int value="4" label="AccessiblePrint">
+    Message {type: &quot;print&quot;} posted to an accessible resource.
+  </int>
+  <int value="5" label="AccessibleSelectAll">
+    Message {type: &quot;selectAll&quot;} posted to an accessible resource.
+  </int>
+  <int value="6" label="InaccessibleInvalid">
+    Invalid message string/object posted to an inaccessible resource.
+  </int>
+  <int value="7" label="InaccessibleGetSelectedText">
+    Message {type: &quot;getSelectedText&quot;} posted to an inaccessible
+    resource.
+  </int>
+  <int value="8" label="InaccessiblePrint">
+    Message {type: &quot;print&quot;} posted to an inaccessible resource.
+  </int>
+  <int value="9" label="InaccessibleSelectAll">
+    Message {type: &quot;selectAll&quot;} posted to an inaccessible resource.
+  </int>
+  <int value="10" label="PostMessageToEmbeddedMimeHandlerView">
+    Any message posted to a MimeHandlerViewContainerBase that is embedded; i.e.,
+    is not created as a result of navigating a frame to the resource.
+  </int>
+</enum>
+
 <enum name="MissingStartType">
   <int value="0" label="Nothing missing"/>
   <int value="1" label="Start missing"/>
