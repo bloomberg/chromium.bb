@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screens/recommend_apps/recommend_apps_fetcher.h"
+#include "chrome/browser/chromeos/login/screens/recommend_apps/recommend_apps_fetcher_delegate.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -54,8 +55,8 @@ struct FakeAppInfo {
 
 class FakeRecommendAppsFetcher : public RecommendAppsFetcher {
  public:
-  explicit FakeRecommendAppsFetcher(RecommendAppsScreenView* view)
-      : view_(view) {}
+  explicit FakeRecommendAppsFetcher(RecommendAppsFetcherDelegate* delegate)
+      : delegate_(delegate) {}
   ~FakeRecommendAppsFetcher() override = default;
 
   bool started() const { return started_; }
@@ -67,17 +68,17 @@ class FakeRecommendAppsFetcher : public RecommendAppsFetcher {
     for (const auto& app : apps) {
       app_list.GetList().emplace_back(app.ToValue());
     }
-    view_->OnLoadSuccess(app_list);
+    delegate_->OnLoadSuccess(app_list);
   }
 
   void SimulateParseError() {
     EXPECT_TRUE(started_);
-    view_->OnParseResponseError();
+    delegate_->OnParseResponseError();
   }
 
   void SimulateLoadError() {
     EXPECT_TRUE(started_);
-    view_->OnLoadError();
+    delegate_->OnLoadError();
   }
 
   // RecommendAppsFetcher:
@@ -91,7 +92,7 @@ class FakeRecommendAppsFetcher : public RecommendAppsFetcher {
   }
 
  private:
-  RecommendAppsScreenView* const view_;
+  RecommendAppsFetcherDelegate* const delegate_;
   bool started_ = false;
   int retries_ = 0;
 };
@@ -203,11 +204,11 @@ class RecommendAppsScreenTest : public InProcessBrowserTest {
   }
 
   std::unique_ptr<RecommendAppsFetcher> CreateRecommendAppsFetcher(
-      RecommendAppsScreenView* view) {
-    EXPECT_EQ(view, GetOobeUI()->GetRecommendAppsScreenView());
+      RecommendAppsFetcherDelegate* delegate) {
+    EXPECT_EQ(delegate, recommend_apps_screen_.get());
     EXPECT_FALSE(recommend_apps_fetcher_);
 
-    auto fetcher = std::make_unique<FakeRecommendAppsFetcher>(view);
+    auto fetcher = std::make_unique<FakeRecommendAppsFetcher>(delegate);
     recommend_apps_fetcher_ = fetcher.get();
     return fetcher;
   }
