@@ -32,6 +32,8 @@ ASH_EXPORT constexpr SkColor kShelfControlPermanentHighlightBackground =
 ASH_EXPORT constexpr SkColor kStandaloneStatusAreaBackground =
     gfx::kGoogleGrey400;
 
+constexpr SkColor kShelfFocusBorderColor = gfx::kGoogleBlue300;
+
 // We reserve a small area on the edge of the workspace area to ensure that
 // the resize handle at the edge of the window can be hit.
 constexpr int kWorkspaceAreaVisibleInset = 2;
