@@ -4,17 +4,22 @@
 
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_mediator.h"
 
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
+#include "components/translate/core/browser/translate_manager.h"
+#include "components/translate/core/browser/translate_prefs.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
 #import "ios/chrome/browser/search_engines/search_engines_util.h"
+#import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/ui/activity_services/canonical_url_retriever.h"
 #include "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -102,6 +107,7 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 @property(nonatomic, strong) PopupMenuToolsItem* reloadStopItem;
 @property(nonatomic, strong) PopupMenuToolsItem* readLaterItem;
 @property(nonatomic, strong) PopupMenuToolsItem* bookmarkItem;
+@property(nonatomic, strong) PopupMenuToolsItem* translateItem;
 @property(nonatomic, strong) PopupMenuToolsItem* findInPageItem;
 @property(nonatomic, strong) PopupMenuToolsItem* siteInformationItem;
 @property(nonatomic, strong) PopupMenuToolsItem* requestDesktopSiteItem;
@@ -169,11 +175,17 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
     _webState = nullptr;
   }
 
-  if (_engagementTracker &&
-      _engagementTracker->ShouldTriggerHelpUI(
-          feature_engagement::kIPHBadgedReadingListFeature)) {
-    _engagementTracker->Dismissed(
-        feature_engagement::kIPHBadgedReadingListFeature);
+  if (_engagementTracker) {
+    if (_readingListItem.badgeText.length != 0) {
+      _engagementTracker->Dismissed(
+          feature_engagement::kIPHBadgedReadingListFeature);
+    }
+
+    if (_translateItem.badgeText.length != 0) {
+      _engagementTracker->Dismissed(
+          feature_engagement::kIPHBadgedTranslateManualTriggerFeature);
+    }
+
     _engagementTracker = nullptr;
   }
 
@@ -329,12 +341,23 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 - (void)setEngagementTracker:(feature_engagement::Tracker*)engagementTracker {
   _engagementTracker = engagementTracker;
 
-  if (self.popupMenu && self.readingListItem && engagementTracker &&
+  if (!self.popupMenu || !engagementTracker)
+    return;
+
+  if (self.readingListItem &&
       self.engagementTracker->ShouldTriggerHelpUI(
           feature_engagement::kIPHBadgedReadingListFeature)) {
     self.readingListItem.badgeText = l10n_util::GetNSStringWithFixup(
-        IDS_IOS_READING_LIST_CELL_NEW_FEATURE_BADGE);
+        IDS_IOS_TOOLS_MENU_CELL_NEW_FEATURE_BADGE);
     [self.popupMenu itemsHaveChanged:@[ self.readingListItem ]];
+  }
+
+  if (self.translateItem &&
+      self.engagementTracker->ShouldTriggerHelpUI(
+          feature_engagement::kIPHBadgedTranslateManualTriggerFeature)) {
+    self.translateItem.badgeText = l10n_util::GetNSStringWithFixup(
+        IDS_IOS_TOOLS_MENU_CELL_NEW_FEATURE_BADGE);
+    [self.popupMenu itemsHaveChanged:@[ self.translateItem ]];
   }
 }
 
@@ -380,6 +403,8 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
       [specificItems addObject:self.readLaterItem];
     if (self.bookmarkItem)
       [specificItems addObject:self.bookmarkItem];
+    if (self.translateItem)
+      [specificItems addObject:self.translateItem];
     if (self.findInPageItem)
       [specificItems addObject:self.findInPageItem];
     if (self.siteInformationItem)
@@ -446,6 +471,7 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   [self updateReloadStopItem];
   self.readLaterItem.enabled = [self isCurrentURLWebURL];
   [self updateBookmarkItem];
+  self.translateItem.enabled = [self isTranslateEnabled];
   self.findInPageItem.enabled = [self isFindInPageEnabled];
   self.siteInformationItem.enabled = [self currentWebPageSupportsSiteInfo];
   self.requestDesktopSiteItem.enabled =
@@ -525,6 +551,25 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
     return NO;
   const GURL& URL = self.webState->GetLastCommittedURL();
   return URL.is_valid() && !web::GetWebClient()->IsAppSpecificURL(URL);
+}
+
+// Whether the translate menu item should be enabled.
+- (BOOL)isTranslateEnabled {
+  if (!base::FeatureList::IsEnabled(translate::kTranslateMobileManualTrigger))
+    return NO;
+
+  if (!self.webState)
+    return NO;
+
+  auto* translate_client =
+      ChromeIOSTranslateClient::FromWebState(self.webState);
+  if (!translate_client)
+    return NO;
+
+  translate::TranslateManager* translate_manager =
+      translate_client->GetTranslateManager();
+  DCHECK(translate_manager);
+  return translate_manager->CanManuallyTranslate();
 }
 
 // Whether find in page is enabled.
@@ -679,6 +724,23 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
       @"popup_menu_add_bookmark", kToolsMenuAddToBookmarks);
   [actionsArray addObject:self.bookmarkItem];
 
+  // Translate.
+  if (base::FeatureList::IsEnabled(translate::kTranslateMobileManualTrigger)) {
+    UMA_HISTOGRAM_BOOLEAN("Translate.MobileMenuTranslate.Shown",
+                          [self isTranslateEnabled]);
+
+    self.translateItem = CreateTableViewItem(
+        IDS_IOS_TOOLS_MENU_TRANSLATE, PopupMenuActionTranslate,
+        @"popup_menu_translate", kToolsMenuTranslateId);
+    if (self.engagementTracker &&
+        self.engagementTracker->ShouldTriggerHelpUI(
+            feature_engagement::kIPHBadgedTranslateManualTriggerFeature)) {
+      self.translateItem.badgeText = l10n_util::GetNSStringWithFixup(
+          IDS_IOS_TOOLS_MENU_CELL_NEW_FEATURE_BADGE);
+    }
+    [actionsArray addObject:self.translateItem];
+  }
+
   // Find in Pad.
   self.findInPageItem = CreateTableViewItem(
       IDS_IOS_TOOLS_MENU_FIND_IN_PAGE, PopupMenuActionFindInPage,
@@ -757,7 +819,7 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
       self.engagementTracker->ShouldTriggerHelpUI(
           feature_engagement::kIPHBadgedReadingListFeature)) {
     self.readingListItem.badgeText = l10n_util::GetNSStringWithFixup(
-        IDS_IOS_READING_LIST_CELL_NEW_FEATURE_BADGE);
+        IDS_IOS_TOOLS_MENU_CELL_NEW_FEATURE_BADGE);
   }
 
   // Recent Tabs.

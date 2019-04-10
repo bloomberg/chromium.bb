@@ -409,6 +409,10 @@ const char kSnapshotDrawViewName[] = "Use DrawViewHierarchy for Snapshots";
 const char kSnapshotDrawViewDescription[] =
     "When enabled, snapshots will be taken using |-drawViewHierarchy:|.";
 
+const char kTranslateManualTriggerName[] = "Enable manual translate trigger";
+const char kTranslateManualTriggerDescription[] =
+    "Show a menu item in the popup menu that triggers page translation.";
+
 const char kUnifiedConsentName[] = "Unified Consent";
 const char kUnifiedConsentDescription[] =
     "Enables a unified management of user consent for privacy-related "

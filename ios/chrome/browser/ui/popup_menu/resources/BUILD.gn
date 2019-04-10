@@ -112,6 +112,14 @@ imageset("popup_menu_new_incognito_tab") {
   ]
 }
 
+imageset("popup_menu_translate") {
+  sources = [
+    "popup_menu_translate.imageset/Contents.json",
+    "popup_menu_translate.imageset/popup_menu_translate@2x.png",
+    "popup_menu_translate.imageset/popup_menu_translate@3x.png",
+  ]
+}
+
 imageset("popup_menu_find_in_page") {
   sources = [
     "popup_menu_find_in_page.imageset/Contents.json",

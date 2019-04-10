@@ -32,6 +32,7 @@
 #import "components/signin/ios/browser/account_consistency_service.h"
 #include "components/signin/ios/browser/active_state_manager.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/translate/core/browser/translate_manager.h"
 #include "components/unified_consent/feature.h"
 #include "ios/chrome/app/tests_hook.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -4183,6 +4184,18 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       completionHandler:completionHandlerBlock];
 }
 #endif  // !defined(NDEBUG)
+
+- (void)showTranslate {
+  DCHECK(self.currentWebState);
+  ChromeIOSTranslateClient* translateClient =
+      ChromeIOSTranslateClient::FromWebState(self.currentWebState);
+  if (translateClient) {
+    translate::TranslateManager* translateManager =
+        translateClient->GetTranslateManager();
+    DCHECK(translateManager);
+    translateManager->InitiateManualTranslation();
+  }
+}
 
 - (void)showFindInPage {
   if (!self.canShowFindBar)

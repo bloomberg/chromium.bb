@@ -239,6 +239,8 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
   self.mediator.popupMenu = tableViewController;
 
   self.actionHandler = [[PopupMenuActionHandler alloc] init];
+  self.actionHandler.engagementTracker =
+      feature_engagement::TrackerFactory::GetForBrowserState(self.browserState);
   self.actionHandler.baseViewController = self.baseViewController;
   self.actionHandler.dispatcher =
       static_cast<id<ApplicationCommands, BrowserCommands, LoadQueryCommands>>(

@@ -578,6 +578,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSendTabToSelfShowSendingUIDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfShowSendingUI)},
+    {"translate-manual-trigger", flag_descriptions::kTranslateManualTriggerName,
+     flag_descriptions::kTranslateManualTriggerDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(translate::kTranslateMobileManualTrigger)},
 };
 
 // Add all switches from experimental flags to |command_line|.

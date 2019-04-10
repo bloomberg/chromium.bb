@@ -337,6 +337,10 @@ extern const char kToolbarContainerDescription[];
 extern const char kSnapshotDrawViewName[];
 extern const char kSnapshotDrawViewDescription[];
 
+// Title and description for the flag to control manual translate trigger.
+extern const char kTranslateManualTriggerName[];
+extern const char kTranslateManualTriggerDescription[];
+
 // Title and description for the flag to enable the unified consent.
 extern const char kUnifiedConsentName[];
 extern const char kUnifiedConsentDescription[];
