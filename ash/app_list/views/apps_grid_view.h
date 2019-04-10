@@ -795,6 +795,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   GhostImageView* current_ghost_view_ = nullptr;
   GhostImageView* last_ghost_view_ = nullptr;
 
+  // If true, Layout() does nothing. See where set for details.
+  bool ignore_layout_ = false;
+
   // Records the presentation time for apps grid dragging.
   std::unique_ptr<ash::PresentationTimeRecorder> presentation_time_recorder_;
 
