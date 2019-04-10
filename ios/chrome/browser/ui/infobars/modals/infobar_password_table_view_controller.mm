@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -27,8 +28,17 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeURL = kItemTypeEnumZero,
   ItemTypeUsername,
   ItemTypePassword,
-  ItemTypeSavePassword,
+  ItemTypeSaveCredentials,
 };
+
+@interface InfobarPasswordTableViewController ()
+// Item that holds the Username TextField information.
+@property(nonatomic, strong) TableViewTextEditItem* usernameItem;
+// Item that holds the Password TextField information.
+@property(nonatomic, strong) TableViewTextEditItem* passwordItem;
+// Item that holds the SaveCredentials Button information.
+@property(nonatomic, strong) TableViewTextButtonItem* saveCredentialsItem;
+@end
 
 @implementation InfobarPasswordTableViewController
 
@@ -78,30 +88,30 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addItem:URLDetailItem
       toSectionWithIdentifier:SectionIdentifierContent];
 
-  TableViewDetailIconItem* usernameDetailItem =
-      [[TableViewDetailIconItem alloc] initWithType:ItemTypeUsername];
-  usernameDetailItem.text =
+  TableViewTextEditItem* usernameTextEditItem =
+      [[TableViewTextEditItem alloc] initWithType:ItemTypeUsername];
+  usernameTextEditItem.textFieldName =
       l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_USERNAME);
-  usernameDetailItem.detailText = self.username;
-  [model addItem:usernameDetailItem
+  usernameTextEditItem.textFieldValue = self.username;
+  usernameTextEditItem.textFieldEnabled = YES;
+  [model addItem:usernameTextEditItem
       toSectionWithIdentifier:SectionIdentifierContent];
 
-  TableViewDetailIconItem* passwordDetailItem =
-      [[TableViewDetailIconItem alloc] initWithType:ItemTypePassword];
-  passwordDetailItem.text =
+  self.passwordItem =
+      [[TableViewTextEditItem alloc] initWithType:ItemTypePassword];
+  self.passwordItem.textFieldName =
       l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_PASSWORD);
   // TODO(crbug.com/927064): Set the number of dots depending on Password
   // length?
-  passwordDetailItem.detailText = @"•••••••••";
-  [model addItem:passwordDetailItem
+  self.passwordItem.textFieldValue = @"•••••••••";
+  self.passwordItem.textFieldEnabled = YES;
+  [model addItem:self.passwordItem
       toSectionWithIdentifier:SectionIdentifierContent];
 
-  TableViewTextButtonItem* savePasswordButtonItem =
-      [[TableViewTextButtonItem alloc] initWithType:ItemTypeSavePassword];
-  // TODO(crbug.com/927064): Create IDS String for this once we're sure about
-  // the exact text.
-  savePasswordButtonItem.buttonText = @"Save Password";
-  [model addItem:savePasswordButtonItem
+  self.saveCredentialsItem =
+      [[TableViewTextButtonItem alloc] initWithType:ItemTypeSaveCredentials];
+  self.saveCredentialsItem.buttonText = self.saveButtonText;
+  [model addItem:self.saveCredentialsItem
       toSectionWithIdentifier:SectionIdentifierContent];
 }
 
@@ -111,22 +121,45 @@ typedef NS_ENUM(NSInteger, ItemType) {
         cellForRowAtIndexPath:(NSIndexPath*)indexPath {
   UITableViewCell* cell = [super tableView:tableView
                      cellForRowAtIndexPath:indexPath];
-  NSInteger itemTypeSelected =
-      [self.tableViewModel itemTypeForIndexPath:indexPath];
+  ItemType itemType = static_cast<ItemType>(
+      [self.tableViewModel itemTypeForIndexPath:indexPath]);
 
-  if (itemTypeSelected == ItemTypeSavePassword) {
-    TableViewTextButtonCell* tableViewTextButtonCell =
-        base::mac::ObjCCastStrict<TableViewTextButtonCell>(cell);
-    [tableViewTextButtonCell.button
-               addTarget:self.infobarModalDelegate
-                  action:@selector(modalInfobarButtonWasPressed:)
-        forControlEvents:UIControlEventTouchUpInside];
+  switch (itemType) {
+    case ItemTypeSaveCredentials: {
+      TableViewTextButtonCell* tableViewTextButtonCell =
+          base::mac::ObjCCastStrict<TableViewTextButtonCell>(cell);
+      [tableViewTextButtonCell.button
+                 addTarget:self.infobarModalDelegate
+                    action:@selector(modalInfobarButtonWasPressed:)
+          forControlEvents:UIControlEventTouchUpInside];
+      break;
+    }
+    case ItemTypeUsername:
+    case ItemTypePassword: {
+      TableViewTextEditCell* editCell =
+          base::mac::ObjCCast<TableViewTextEditCell>(cell);
+      [editCell.textField addTarget:self
+                             action:@selector(updateSaveCredentialsButtonState)
+                   forControlEvents:UIControlEventEditingChanged];
+      break;
+    }
+    case ItemTypeURL:
+      break;
   }
 
   return cell;
 }
 
 #pragma mark - Private Methods
+
+- (void)updateSaveCredentialsButtonState {
+  BOOL currentButtonState = [self.saveCredentialsItem isEnabled];
+  BOOL newButtonState = [self.passwordItem.textFieldValue length] ? YES : NO;
+  if (currentButtonState != newButtonState) {
+    self.saveCredentialsItem.enabled = newButtonState;
+    [self reconfigureCellsForItems:@[ self.saveCredentialsItem ]];
+  }
+}
 
 - (void)dismissInfobarModal:(UIButton*)sender {
   [self.infobarModalDelegate dismissInfobarModal:sender completion:nil];

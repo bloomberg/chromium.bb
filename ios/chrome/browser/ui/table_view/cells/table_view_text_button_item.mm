@@ -16,6 +16,8 @@ namespace {
 const CGFloat grayHexColor = 0x6d6d72;
 // Action button blue background color.
 const CGFloat blueHexColor = 0x1A73E8;
+// Alpha value for the disabled action button.
+const CGFloat disabledButtonAlpha = 0.5;
 // Vertical spacing between stackView and cell contentView.
 const CGFloat stackViewVerticalSpacing = 9.0;
 // Horizontal spacing between stackView and cell contentView.
@@ -42,6 +44,7 @@ const CGFloat buttonTitleFontSize = 17.0;
   self = [super initWithType:type];
   if (self) {
     self.cellClass = [TableViewTextButtonCell class];
+    _enabled = YES;
   }
   return self;
 }
@@ -58,6 +61,11 @@ const CGFloat buttonTitleFontSize = 17.0;
                                     ? self.buttonBackgroundColor
                                     : UIColorFromRGB(blueHexColor);
   [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
+  cell.button.enabled = self.enabled;
+  if (!self.enabled) {
+    cell.button.backgroundColor = [cell.button.backgroundColor
+        colorWithAlphaComponent:disabledButtonAlpha];
+  }
 }
 
 @end
