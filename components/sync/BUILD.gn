@@ -581,17 +581,6 @@ jumbo_static_library("sync") {
     "syncable/write_transaction.h",
     "syncable/write_transaction_info.cc",
     "syncable/write_transaction_info.h",
-    "user_events/fake_user_event_service.cc",
-    "user_events/fake_user_event_service.h",
-    "user_events/no_op_user_event_service.cc",
-    "user_events/no_op_user_event_service.h",
-    "user_events/user_event_model_type_controller.cc",
-    "user_events/user_event_model_type_controller.h",
-    "user_events/user_event_service.h",
-    "user_events/user_event_service_impl.cc",
-    "user_events/user_event_service_impl.h",
-    "user_events/user_event_sync_bridge.cc",
-    "user_events/user_event_sync_bridge.h",
   ]
 
   configs += [ "//build/config:precompiled_headers" ]
@@ -668,6 +657,33 @@ jumbo_static_library("js") {
 
   public_deps = [
     ":base",
+  ]
+}
+
+jumbo_static_library("user_events") {
+  sources = [
+    "user_events/fake_user_event_service.cc",
+    "user_events/fake_user_event_service.h",
+    "user_events/no_op_user_event_service.cc",
+    "user_events/no_op_user_event_service.h",
+    "user_events/user_event_model_type_controller.cc",
+    "user_events/user_event_model_type_controller.h",
+    "user_events/user_event_service.h",
+    "user_events/user_event_service_impl.cc",
+    "user_events/user_event_service_impl.h",
+    "user_events/user_event_sync_bridge.cc",
+    "user_events/user_event_sync_bridge.h",
+  ]
+
+  public_deps = [
+    ":base",
+    ":sync",
+    "//base",
+    "//components/keyed_service/core",
+    "//components/sync/protocol",
+  ]
+  deps = [
+    "//components/signin/core/browser:shared",
   ]
 }
 
@@ -1008,6 +1024,7 @@ source_set("unit_tests") {
     ":test_support_driver",
     ":test_support_engine",
     ":test_support_model",
+    ":user_events",
     "//base",
     "//base/test:test_support",
     "//components/invalidation/impl",
