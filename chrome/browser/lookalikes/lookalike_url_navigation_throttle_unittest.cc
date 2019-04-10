@@ -61,9 +61,9 @@ TEST(LookalikeUrlNavigationThrottleTest, IsEditDistanceAtMostOne) {
       {L"google.com", L"goooglé.com", false},
   };
   for (const TestCase& test_case : kTestCases) {
-    bool result = LookalikeUrlNavigationThrottle::IsEditDistanceAtMostOne(
-        base::WideToUTF16(test_case.domain),
-        base::WideToUTF16(test_case.top_domain));
+    bool result =
+        IsEditDistanceAtMostOne(base::WideToUTF16(test_case.domain),
+                                base::WideToUTF16(test_case.top_domain));
     EXPECT_EQ(test_case.expected, result);
   }
 }

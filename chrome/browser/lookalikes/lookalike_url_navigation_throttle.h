@@ -26,6 +26,12 @@ namespace lookalikes {
 
 struct DomainInfo;
 
+// Returns true if the Levenshtein distance between |str1| and |str2| is at most
+// one. This has O(max(n,m)) complexity as opposed to O(n*m) of the usual edit
+// distance computation.
+bool IsEditDistanceAtMostOne(const base::string16& str1,
+                             const base::string16& str2);
+
 // Observes navigations and shows an interstitial if the navigated domain name
 // is visually similar to a top domain or a domain with a site engagement score.
 class LookalikeUrlNavigationThrottle : public content::NavigationThrottle {
@@ -39,12 +45,12 @@ class LookalikeUrlNavigationThrottle : public content::NavigationThrottle {
     kMatchTopSite = 3,
     kMatchSiteEngagement = 4,
     kMatchEditDistance = 5,
+    kMatchEditDistanceSiteEngagement = 6,
 
     // Append new items to the end of the list above; do not modify or
     // replace existing values. Comment out obsolete items.
-    kMaxValue = kMatchEditDistance,
+    kMaxValue = kMatchEditDistanceSiteEngagement,
   };
-
 
   static const char kHistogramName[];
 
@@ -77,6 +83,9 @@ class LookalikeUrlNavigationThrottle : public content::NavigationThrottle {
                              const DomainInfo& navigated_domain,
                              const std::vector<DomainInfo>& engaged_sites);
 
+  bool ShouldDisplayInterstitial(
+      LookalikeUrlInterstitialPage::MatchType match_type) const;
+
   // Returns true if a domain is visually similar to the hostname of |url|. The
   // matching domain can be a top domain or an engaged site. Similarity check
   // is made using both visual skeleton and edit distance comparison. If this
@@ -86,16 +95,6 @@ class LookalikeUrlNavigationThrottle : public content::NavigationThrottle {
                          const std::vector<DomainInfo>& engaged_sites,
                          std::string* matched_domain,
                          LookalikeUrlInterstitialPage::MatchType* match_type);
-
-  // Returns if the Levenshtein distance between |str1| and |str2| is at most 1.
-  // This has O(max(n,m)) complexity as opposed to O(n*m) of the usual edit
-  // distance computation.
-  static bool IsEditDistanceAtMostOne(const base::string16& str1,
-                                      const base::string16& str2);
-
-  // Returns the first matching top domain with an edit distance of at most one
-  // to |domain_and_registry|.
-  static std::string GetSimilarDomainFromTop500(const DomainInfo& domain_info);
 
   ThrottleCheckResult ShowInterstitial(
       const GURL& safe_domain,

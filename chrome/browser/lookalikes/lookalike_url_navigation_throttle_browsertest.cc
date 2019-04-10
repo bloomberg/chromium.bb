@@ -472,6 +472,34 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
   CheckNoUkm();
 }
 
+// Navigate to a domain within an edit distance of 1 to an engaged domain.
+// This should record metrics, but should not show a lookalike warning
+// interstitial yet.
+IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
+                       EditDistance_EngagedDomain_Match) {
+  base::HistogramTester histograms;
+  SetEngagementScore(browser(), GURL("https://test-site.com"), kHighEngagement);
+
+  // The skeleton of this domain is one 1 edit away from the skeleton of
+  // test-site.com.
+  const GURL kNavigatedUrl = GetURL("best-sité.com");
+  // Even if the navigated site has a low engagement score, it should be
+  // considered for lookalike suggestions.
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+  // Advance clock to force a fetch of new engaged sites list.
+  test_clock()->Advance(base::TimeDelta::FromHours(1));
+
+  TestInterstitialNotShown(browser(), kNavigatedUrl);
+  histograms.ExpectTotalCount(LookalikeUrlNavigationThrottle::kHistogramName,
+                              1);
+  histograms.ExpectBucketCount(
+      LookalikeUrlNavigationThrottle::kHistogramName,
+      NavigationSuggestionEvent::kMatchEditDistanceSiteEngagement, 1);
+
+  CheckUkm({kNavigatedUrl}, "MatchType",
+           MatchType::kEditDistanceSiteEngagement);
+}
+
 // Navigate to a domain within an edit distance of 1 to a top domain.
 // This should record metrics, but should not show a lookalike warning
 // interstitial yet.
@@ -509,6 +537,29 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
 
   // Matches ask.com but is too short.
   TestInterstitialNotShown(browser(), GetURL("bsk.com"));
+  CheckNoUkm();
+}
+
+// Tests negative examples for the edit distance with engaged sites.
+IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
+                       EditDistance_SiteEngagement_NoMatch) {
+  SetEngagementScore(browser(), GURL("https://test-site.com.tr"),
+                     kHighEngagement);
+  SetEngagementScore(browser(), GURL("https://1234.com"), kHighEngagement);
+  SetEngagementScore(browser(), GURL("https://gooogle.com"), kHighEngagement);
+  // Advance clock to force a fetch of new engaged sites list.
+  test_clock()->Advance(base::TimeDelta::FromHours(1));
+
+  // Matches test-site.com.tr but only differs in registry.
+  TestInterstitialNotShown(browser(), GetURL("test-site.com.tw"));
+  CheckNoUkm();
+
+  // Matches gooogle.com but is a top domain itself.
+  TestInterstitialNotShown(browser(), GetURL("google.com"));
+  CheckNoUkm();
+
+  // Matches 1234.com but is too short.
+  TestInterstitialNotShown(browser(), GetURL("123.com"));
   CheckNoUkm();
 }
 
