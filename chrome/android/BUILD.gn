@@ -441,8 +441,12 @@ android_library("chrome_java") {
     "//components/module_installer/android:module_interface_processor",
   ]
 
+  proguard_configs = []
   if (async_ar) {
-    proguard_configs = [ "//chrome/android/features/ar/proguard_async.flags" ]
+    proguard_configs += [ "//chrome/android/features/ar/proguard_async.flags" ]
+  }
+  if (async_vr) {
+    proguard_configs += [ "//chrome/android/features/vr/proguard_async.flags" ]
   }
 
   processor_args_javac = [ "dagger.fastInit=enabled" ]
@@ -2158,6 +2162,7 @@ template("monochrome_public_bundle_tmpl") {
         {
           name = "vr"
           module_target = ":${target_name}__vr_bundle_module"
+          proguard_async = async_vr
         },
       ]
     }

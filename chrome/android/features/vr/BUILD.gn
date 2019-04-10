@@ -133,6 +133,10 @@ android_library("java") {
     "//third_party/gvr-android-keyboard:kb_java",
     "//third_party/gvr-android-sdk:gvr_common_java",
   ]
+
+  if (async_vr) {
+    proguard_configs = [ "//base/android/proguard/chromium_code.flags" ]
+  }
 }
 
 generate_jni("jni_headers") {
