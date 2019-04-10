@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser;
+package org.chromium.chrome.browser.tasks;
+
+import org.chromium.chrome.browser.ChromeFeatureList;
 
 /**
  * This is a utility class for managing experiments related to returning to Chrome.
  */
-final class ReturnToChromeExperimentsUtil {
+public final class ReturnToChromeExperimentsUtil {
     private static final String TAB_SWITCHER_ON_RETURN_MS = "tab_switcher_on_return_time_ms";
 
     private ReturnToChromeExperimentsUtil() {}
@@ -21,7 +23,7 @@ final class ReturnToChromeExperimentsUtil {
      *                                   ChromeTabbedActivity::onStopWithNative
      * @return true if past threshold, false if not past threshold or experiment cannot be loaded.
      */
-    static boolean shouldShowTabSwitcher(final long lastBackgroundedTimeMillis) {
+    public static boolean shouldShowTabSwitcher(final long lastBackgroundedTimeMillis) {
         if (lastBackgroundedTimeMillis == -1) {
             // No last background timestamp set, use control behavior.
             return false;
