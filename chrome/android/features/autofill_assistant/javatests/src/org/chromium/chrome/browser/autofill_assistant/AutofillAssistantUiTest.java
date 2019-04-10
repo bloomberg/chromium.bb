@@ -163,6 +163,7 @@ public class AutofillAssistantUiTest {
         String movieTitle = "testTitle";
         String descriptionLine1 = "This is a fancy line1";
         String descriptionLine2 = "This is a fancy line2";
+        String descriptionLine3 = "This is a fancy line3";
         ThreadUtils.runOnUiThreadBlocking(
                 ()
                         -> assistantCoordinator.getModel().getDetailsModel().set(
@@ -172,17 +173,20 @@ public class AutofillAssistantUiTest {
                                         /* showImage = */ false,
                                         /* totalPriceLabel = */ "",
                                         /* totalPrice = */ "", Calendar.getInstance().getTime(),
-                                        descriptionLine1, descriptionLine2,
+                                        descriptionLine1, descriptionLine2, descriptionLine3,
                                         /* userApprovalRequired= */ false,
                                         /* highlightTitle= */ false, /* highlightLine1= */
-                                        false, /* highlightLine1 = */ false,
+                                        false, /* highlightLine2 = */ false,
+                                        /* highlightLine3 = */ false,
                                         /* animatePlaceholders= */ false)));
         TextView detailsTitle = bottomSheet.findViewById(R.id.details_title);
         TextView detailsLine1 = bottomSheet.findViewById(R.id.details_line1);
         TextView detailsLine2 = bottomSheet.findViewById(R.id.details_line2);
+        TextView detailsLine3 = bottomSheet.findViewById(R.id.details_line3);
         Assert.assertEquals(detailsTitle.getText(), movieTitle);
         Assert.assertTrue(detailsLine1.getText().toString().contains(descriptionLine1));
         Assert.assertTrue(detailsLine2.getText().toString().contains(descriptionLine2));
+        Assert.assertTrue(detailsLine3.getText().toString().contains(descriptionLine3));
 
         // Progress bar must be shown.
         Assert.assertTrue(bottomSheet.findViewById(R.id.progress_bar).isShown());

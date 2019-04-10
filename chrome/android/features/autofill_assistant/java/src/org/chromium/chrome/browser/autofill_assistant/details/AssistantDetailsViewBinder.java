@@ -20,6 +20,7 @@ import android.os.Build;
 import android.support.annotation.StyleRes;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
+import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.View;
@@ -71,8 +72,11 @@ class AssistantDetailsViewBinder
         final TextView mTitleView;
         final TextView mDescriptionLine1View;
         final TextView mDescriptionLine2View;
+        final TextView mDescriptionLine3View;
+        final TextView mPriceAttributionView;
         final View mPriceView;
         final TextView mTotalPriceLabelView;
+        final ImageView mTotalPriceLabelIconView;
         final TextView mTotalPriceView;
 
         public ViewHolder(Context context, View detailsView) {
@@ -82,8 +86,12 @@ class AssistantDetailsViewBinder
             mTitleView = detailsView.findViewById(R.id.details_title);
             mDescriptionLine1View = detailsView.findViewById(R.id.details_line1);
             mDescriptionLine2View = detailsView.findViewById(R.id.details_line2);
+            mDescriptionLine3View = detailsView.findViewById(R.id.details_line3);
+            mPriceAttributionView = detailsView.findViewById(R.id.details_price_attribution);
             mPriceView = detailsView.findViewById(R.id.details_price);
             mTotalPriceView = detailsView.findViewById(R.id.details_total_price);
+            mTotalPriceLabelIconView =
+                    detailsView.findViewById(R.id.details_total_price_label_icon);
             mTotalPriceLabelView = detailsView.findViewById(R.id.details_total_price_label);
         }
     }
@@ -139,6 +147,16 @@ class AssistantDetailsViewBinder
         viewHolder.mTotalPriceLabelView.setText(details.getTotalPriceLabel());
         viewHolder.mTotalPriceView.setText(details.getTotalPrice());
 
+        // If there is a price, we show descriptionLine3 on its left. Otherwise, we show it below
+        // descriptionLine2.
+        if (details.getTotalPrice().isEmpty()) {
+            viewHolder.mDescriptionLine3View.setText(details.getDescriptionLine3());
+            viewHolder.mPriceAttributionView.setText("");
+        } else {
+            viewHolder.mDescriptionLine3View.setText("");
+            viewHolder.mPriceAttributionView.setText(details.getDescriptionLine3());
+        }
+
         // Allow title line wrapping if no or only one description set.
         boolean isDescriptionLine1Empty = viewHolder.mDescriptionLine1View.length() == 0;
         boolean isDescriptionLine2Empty = viewHolder.mDescriptionLine2View.length() == 0;
@@ -154,10 +172,22 @@ class AssistantDetailsViewBinder
 
         hideIfEmpty(viewHolder.mDescriptionLine1View);
         hideIfEmpty(viewHolder.mDescriptionLine2View);
+        hideIfEmpty(viewHolder.mDescriptionLine3View);
 
         // If no price provided, hide the price view (containing separator, price label, and price).
         viewHolder.mPriceView.setVisibility(
                 details.getTotalPrice().isEmpty() ? View.GONE : View.VISIBLE);
+
+        // Show label icon only if there is a label.
+        // TODO(crbug.com/806868): Show popup when the label icon is tapped.
+        viewHolder.mTotalPriceLabelIconView.setVisibility(
+                details.getTotalPriceLabel().isEmpty() ? View.GONE : View.VISIBLE);
+
+        // Set label icon color.
+        ApiCompatibilityUtils.setImageTintList(viewHolder.mTotalPriceLabelIconView,
+                AppCompatResources.getColorStateList(mContext,
+                        details.getUserApprovalRequired() ? R.color.modern_grey_300
+                                                          : R.color.default_text_color_secondary));
 
         viewHolder.mImageView.setVisibility(View.VISIBLE);
         if (details.getImageUrl().isEmpty()) {
@@ -234,11 +264,15 @@ class AssistantDetailsViewBinder
         setTextStyle(viewHolder.mTitleView, details.getUserApprovalRequired(),
                 details.getHighlightTitle(), R.style.TextAppearance_AssistantDetailsTitle);
         setTextStyle(viewHolder.mDescriptionLine1View, details.getUserApprovalRequired(),
-                details.getHighlightLine1(), R.style.TextAppearance_BlackCaption);
+                details.getHighlightLine1(), R.style.TextAppearance_BlackBody);
         setTextStyle(viewHolder.mDescriptionLine2View, details.getUserApprovalRequired(),
-                details.getHighlightLine2(), R.style.TextAppearance_BlackHint2);
+                details.getHighlightLine2(), R.style.TextAppearance_BlackBody);
+        setTextStyle(viewHolder.mDescriptionLine3View, details.getUserApprovalRequired(),
+                details.getHighlightLine2(), R.style.TextAppearance_AssistantDetailsAttribution);
+        setTextStyle(viewHolder.mPriceAttributionView, details.getUserApprovalRequired(),
+                details.getHighlightLine3(), R.style.TextAppearance_AssistantDetailsAttribution);
         setTextStyle(viewHolder.mTotalPriceLabelView, details.getUserApprovalRequired(),
-                /* highlight= */ false, R.style.TextAppearance_AssistantDetailsPrice);
+                /* highlight= */ false, R.style.TextAppearance_BlackButtonText);
         setTextStyle(viewHolder.mTotalPriceView, details.getUserApprovalRequired(),
                 /* highlight= */ false, R.style.TextAppearance_AssistantDetailsPrice);
 
@@ -254,6 +288,7 @@ class AssistantDetailsViewBinder
         boolean isAtLeastOneFieldEmpty = viewHolder.mTitleView.length() == 0
                 || viewHolder.mDescriptionLine1View.length() == 0
                 || viewHolder.mDescriptionLine2View.length() == 0
+                || viewHolder.mDescriptionLine3View.length() == 0
                 || viewHolder.mImageView.getDrawable() == viewHolder.mDefaultImage;
         return details.getAnimatePlaceholders() && isAtLeastOneFieldEmpty;
     }
@@ -297,6 +332,7 @@ class AssistantDetailsViewBinder
                 viewHolder.mTitleView.setBackgroundColor(Color.TRANSPARENT);
                 viewHolder.mDescriptionLine1View.setBackgroundColor(Color.TRANSPARENT);
                 viewHolder.mDescriptionLine2View.setBackgroundColor(Color.TRANSPARENT);
+                viewHolder.mDescriptionLine3View.setBackgroundColor(Color.TRANSPARENT);
                 viewHolder.mDefaultImage.setColor(Color.TRANSPARENT);
             }
         });
@@ -309,6 +345,9 @@ class AssistantDetailsViewBinder
                                                                    : Color.TRANSPARENT);
             viewHolder.mDescriptionLine2View.setBackgroundColor(
                     viewHolder.mDescriptionLine2View.length() == 0 ? animatedValue
+                                                                   : Color.TRANSPARENT);
+            viewHolder.mDescriptionLine3View.setBackgroundColor(
+                    viewHolder.mDescriptionLine3View.length() == 0 ? animatedValue
                                                                    : Color.TRANSPARENT);
             viewHolder.mDefaultImage.setColor(
                     viewHolder.mImageView.getDrawable() == viewHolder.mDefaultImage

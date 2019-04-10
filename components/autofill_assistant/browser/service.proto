@@ -824,6 +824,9 @@ message DetailsChangesProto {
 
   // Whether the second description line should be highlighted.
   optional bool highlight_line2 = 4;
+
+  // Whether the third description line should be highlighted.
+  optional bool highlight_line3 = 5;
 }
 
 message DetailsProto {
@@ -859,6 +862,7 @@ message DetailsProto {
 
   optional string description_line_1 = 7;
   optional string description_line_2 = 8;
+  optional string description_line_3 = 13;
 
   // Deprecated, but currently still necessary and supported. We can get rid of
   // these fields when the backend starts setting description_line_1 and 2.
@@ -869,7 +873,7 @@ message DetailsProto {
   // The placeholder will be shown on effectively missing:
   // * title
   // * image
-  // * description line (1 or 2)
+  // * description line (1, 2 or 3)
   // TODO(crbug.com/806868): Make the fields for displaying placeholders
   // configurable by the server.
   optional bool animate_placeholders = 11;
