@@ -286,6 +286,11 @@
       "extension", "legacy_packaged_app", "hosted_app", "platform_app"
     ]
   },
+  "replacement_web_app": {
+    "channel": "trunk",
+    "extension_types": ["extension", "platform_app"],
+    "min_manifest_version": 2
+  },
   "sandbox": {
     "channel": "stable",
     "extension_types": [
