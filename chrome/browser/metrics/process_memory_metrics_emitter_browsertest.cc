@@ -174,8 +174,9 @@ void CheckExperimentalMemoryMetrics(
     CheckMemoryMetric("Memory.Experimental.Renderer2.PartitionAlloc",
                       histogram_tester, count, ValueRestriction::NONE,
                       number_of_renderer_processes);
+    // V8 memory footprint can be below 1 MB, which is reported as zero.
     CheckMemoryMetric("Memory.Experimental.Renderer2.V8", histogram_tester,
-                      count, ValueRestriction::ABOVE_ZERO,
+                      count, ValueRestriction::NONE,
                       number_of_renderer_processes);
   }
   if (number_of_extension_processes) {
