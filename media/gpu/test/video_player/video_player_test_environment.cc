@@ -33,10 +33,12 @@ constexpr base::FilePath::CharType kDefaultTestVideoPath[] =
 // static
 VideoPlayerTestEnvironment* VideoPlayerTestEnvironment::Create(
     const base::FilePath& video_path,
+    const base::FilePath& video_metadata_path,
     bool enable_validator,
     bool output_frames) {
   auto video = std::make_unique<media::test::Video>(
-      video_path.empty() ? base::FilePath(kDefaultTestVideoPath) : video_path);
+      video_path.empty() ? base::FilePath(kDefaultTestVideoPath) : video_path,
+      video_metadata_path);
   if (!video->Load()) {
     LOG(ERROR) << "Failed to load " << video_path;
     return nullptr;

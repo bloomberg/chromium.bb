@@ -26,9 +26,11 @@ class Video;
 // the entire test run.
 class VideoPlayerTestEnvironment : public ::testing::Environment {
  public:
-  static VideoPlayerTestEnvironment* Create(const base::FilePath& video_path,
-                                            bool enable_validator,
-                                            bool output_frames);
+  static VideoPlayerTestEnvironment* Create(
+      const base::FilePath& video_path,
+      const base::FilePath& video_metadata_path,
+      bool enable_validator,
+      bool output_frames);
   ~VideoPlayerTestEnvironment() override;
 
   // Set up the video decode test environment, only called once.
