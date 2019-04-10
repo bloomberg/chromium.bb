@@ -166,7 +166,6 @@ bool HostedAppBrowserController::IsForExperimentalHostedAppBrowser() const {
   return base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing);
 }
 
-// TODO(yiningwang): Correct this function.
 bool HostedAppBrowserController::IsHostedApp() const {
   return true;
 }
