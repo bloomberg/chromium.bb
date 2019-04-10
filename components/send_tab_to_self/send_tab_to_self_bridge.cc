@@ -63,6 +63,29 @@ std::unique_ptr<syncer::EntityData> CopyToEntityData(
   return entity_data;
 }
 
+// Parses the content of |record_list| into |*initial_data|. The output
+// parameter is first for binding purposes.
+base::Optional<syncer::ModelError> ParseLocalEntriesOnBackendSequence(
+    base::Time now,
+    std::map<std::string, std::unique_ptr<SendTabToSelfEntry>>* entries,
+    std::unique_ptr<ModelTypeStore::RecordList> record_list) {
+  DCHECK(entries);
+  DCHECK(entries->empty());
+  DCHECK(record_list);
+
+  for (const syncer::ModelTypeStore::Record& r : *record_list) {
+    auto specifics = std::make_unique<SendTabToSelfLocal>();
+    if (specifics->ParseFromString(r.value)) {
+      (*entries)[specifics->specifics().guid()] =
+          SendTabToSelfEntry::FromLocalProto(*specifics, now);
+    } else {
+      return syncer::ModelError(FROM_HERE, "Failed to deserialize specifics.");
+    }
+  }
+
+  return base::nullopt;
+}
+
 }  // namespace
 
 SendTabToSelfBridge::SendTabToSelfBridge(
@@ -396,30 +419,29 @@ void SendTabToSelfBridge::OnStoreCreated(
     return;
   }
 
+  auto initial_entries = std::make_unique<SendTabToSelfEntries>();
+  SendTabToSelfEntries* initial_entries_copy = initial_entries.get();
+
   store_ = std::move(store);
-  store_->ReadAllData(base::BindOnce(&SendTabToSelfBridge::OnReadAllData,
-                                     weak_ptr_factory_.GetWeakPtr()));
+  store_->ReadAllDataAndPreprocess(
+      base::BindOnce(&ParseLocalEntriesOnBackendSequence, clock_->Now(),
+                     base::Unretained(initial_entries_copy)),
+      base::BindOnce(&SendTabToSelfBridge::OnReadAllData,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(initial_entries)));
 }
 
 void SendTabToSelfBridge::OnReadAllData(
-    const base::Optional<syncer::ModelError>& error,
-    std::unique_ptr<syncer::ModelTypeStore::RecordList> record_list) {
+    std::unique_ptr<SendTabToSelfEntries> initial_entries,
+    const base::Optional<syncer::ModelError>& error) {
+  DCHECK(initial_entries);
+
   if (error) {
     change_processor()->ReportError(*error);
     return;
   }
 
-  for (const syncer::ModelTypeStore::Record& r : *record_list) {
-    auto specifics = std::make_unique<SendTabToSelfLocal>();
-    if (specifics->ParseFromString(r.value)) {
-      entries_[specifics->specifics().guid()] =
-          SendTabToSelfEntry::FromLocalProto(*specifics, clock_->Now());
-    } else {
-      change_processor()->ReportError(
-          {FROM_HERE, "Failed to deserialize specifics."});
-      return;
-    }
-  }
+  entries_ = std::move(*initial_entries);
 
   if (local_device_info_provider_->GetLocalDeviceInfo()) {
     OnDeviceProviderInitialized();
