@@ -71,7 +71,11 @@ std::vector<IndicatorSpec> GetIndicatorSpecs() {
       {kBluetoothConnectedIndicator, kWebVrBluetoothConnectedIndicator,
        GetVrIcon(kVrBluetoothConnectedIcon),
        IDS_VR_SHELL_SITE_IS_USING_BLUETOOTH,
+#if defined(OS_ANDROID)
        IDS_VR_SHELL_BG_IS_USING_BLUETOOTH,
+#else
+       0,
+#endif
        IDS_VR_SHELL_SITE_CAN_USE_BLUETOOTH,
        &CapturingStateModel::bluetooth_connected,
        false},
