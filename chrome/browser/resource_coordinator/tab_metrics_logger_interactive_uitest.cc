@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/resource_coordinator/tab_metrics_event.pb.h"
 #include "chrome/browser/resource_coordinator/tab_ranker/tab_features.h"
 #include "chrome/browser/resource_coordinator/tab_ranker/window_features.h"
@@ -20,6 +21,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using metrics::WindowMetricsEvent;
+using resource_coordinator::TabLifecycleUnitExternal;
 using tab_ranker::WindowFeatures;
 
 const char* kTestUrl = "https://example.com/";
@@ -61,6 +63,14 @@ class TabMetricsLoggerTest : public InProcessBrowserTest {
         .value();
   }
 
+  void DiscardTabAt(const int index) {
+    auto* web_contents = browser()->tab_strip_model()->GetWebContentsAt(index);
+    auto* external = TabLifecycleUnitExternal::FromWebContents(web_contents);
+    external->DiscardTab();
+  }
+
+  base::test::ScopedFeatureList scoped_feature_list_;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TabMetricsLoggerTest);
 };
@@ -97,6 +107,30 @@ IN_PROC_BROWSER_TEST_F(TabMetricsLoggerTest, CreateWindowFeaturesTest) {
   }
 
   // Closing the window doesn't log more WindowMetrics UKMs.
+  CloseBrowserSynchronously(browser());
+}
+
+// Tests GetDiscardCount.
+IN_PROC_BROWSER_TEST_F(TabMetricsLoggerTest, GetDiscardCount) {
+  // We need at least two tabs because "transition from DISCARDED to DISCARDED
+  // is not allowed".
+  AddTabAtIndex(1, GURL(kTestUrl), ui::PAGE_TRANSITION_LINK);
+  EXPECT_EQ(CurrentTabFeatures(0).discard_count, 0);
+  DiscardTabAt(0);
+  EXPECT_EQ(CurrentTabFeatures(0).discard_count, 1);
+  browser()->tab_strip_model()->ActivateTabAt(
+      0, {TabStripModel::GestureType::kOther});
+  EXPECT_EQ(CurrentTabFeatures(0).discard_count, 1);
+
+  DiscardTabAt(1);
+  EXPECT_EQ(CurrentTabFeatures(1).discard_count, 1);
+  browser()->tab_strip_model()->ActivateTabAt(
+      1, {TabStripModel::GestureType::kOther});
+  EXPECT_EQ(CurrentTabFeatures(1).discard_count, 1);
+
+  DiscardTabAt(0);
+  EXPECT_EQ(CurrentTabFeatures(0).discard_count, 2);
+
   CloseBrowserSynchronously(browser());
 }
 

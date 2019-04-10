@@ -13,10 +13,13 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
+#include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/resource_coordinator/tab_metrics_event.pb.h"
 #include "chrome/browser/resource_coordinator/tab_ranker/mru_features.h"
 #include "chrome/browser/resource_coordinator/tab_ranker/tab_features.h"
 #include "chrome/browser/resource_coordinator/tab_ranker/window_features.h"
+#include "chrome/browser/resource_coordinator/utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -24,6 +27,7 @@
 #include "chrome/browser/ui/recently_audible_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_importance_signals.h"
 #include "net/base/mime_util.h"
@@ -35,6 +39,14 @@ using metrics::TabMetricsEvent;
 using metrics::WindowMetricsEvent;
 
 namespace {
+
+// Returns the number of discards that happened to |contents|.
+int GetDiscardCount(content::WebContents* contents) {
+  auto* external =
+      resource_coordinator::TabLifecycleUnitExternal::FromWebContents(contents);
+  DCHECK(external);
+  return external->GetDiscardCount();
+}
 
 // Populates navigation-related metrics.
 void PopulatePageTransitionFeatures(ui::PageTransition page_transition,
@@ -95,6 +107,8 @@ void PopulateTabFeaturesFromWebContents(content::WebContents* web_contents,
   tab_features->was_recently_audible =
       RecentlyAudibleHelper::FromWebContents(web_contents)
           ->WasRecentlyAudible();
+
+  tab_features->discard_count = GetDiscardCount(web_contents);
 }
 
 // Populates TabFeatures that calculated from |browser| including WindowMetrics
