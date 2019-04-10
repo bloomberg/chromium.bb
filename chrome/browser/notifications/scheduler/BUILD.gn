@@ -73,6 +73,8 @@ source_set("lib") {
     "icon_store.h",
     "impression_history_tracker.cc",
     "impression_history_tracker.h",
+    "impression_store.cc",
+    "impression_store.h",
     "impression_types.cc",
     "impression_types.h",
     "internal_types.h",
@@ -112,6 +114,7 @@ source_set("unit_tests") {
     "distribution_policy_unittest.cc",
     "icon_store_unittest.cc",
     "impression_history_tracker_unittest.cc",
+    "impression_store_unittest.cc",
     "proto_conversion_unittest.cc",
     "scheduler_utils_unittest.cc",
   ]
