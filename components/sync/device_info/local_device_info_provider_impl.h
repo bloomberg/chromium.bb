@@ -25,7 +25,6 @@ class LocalDeviceInfoProviderImpl : public LocalDeviceInfoProvider {
   LocalDeviceInfoProviderImpl(
       version_info::Channel channel,
       const std::string& version,
-      bool is_tablet,
       const SigninScopedDeviceIdCallback& signin_scoped_device_id_callback);
   ~LocalDeviceInfoProviderImpl() override;
 
@@ -46,10 +45,6 @@ class LocalDeviceInfoProviderImpl : public LocalDeviceInfoProvider {
 
   // The version string for the current client.
   const std::string version_;
-
-  // Whether this device has a tablet form factor (only used on Android
-  // devices).
-  const bool is_tablet_;
 
   const SigninScopedDeviceIdCallback signin_scoped_device_id_callback_;
 

@@ -7,19 +7,21 @@
 #include "base/bind.h"
 #include "build/build_config.h"
 #include "components/sync/driver/sync_util.h"
+#include "ui/base/device_form_factor.h"
 
 namespace syncer {
 
 namespace {
 
-sync_pb::SyncEnums::DeviceType GetLocalDeviceType(bool is_tablet) {
+sync_pb::SyncEnums::DeviceType GetLocalDeviceType() {
 #if defined(OS_CHROMEOS)
   return sync_pb::SyncEnums_DeviceType_TYPE_CROS;
 #elif defined(OS_LINUX)
   return sync_pb::SyncEnums_DeviceType_TYPE_LINUX;
 #elif defined(OS_ANDROID) || defined(OS_IOS)
-  return is_tablet ? sync_pb::SyncEnums_DeviceType_TYPE_TABLET
-                   : sync_pb::SyncEnums_DeviceType_TYPE_PHONE;
+  return ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET
+             ? sync_pb::SyncEnums_DeviceType_TYPE_TABLET
+             : sync_pb::SyncEnums_DeviceType_TYPE_PHONE;
 #elif defined(OS_MACOSX)
   return sync_pb::SyncEnums_DeviceType_TYPE_MAC;
 #elif defined(OS_WIN)
@@ -34,11 +36,9 @@ sync_pb::SyncEnums::DeviceType GetLocalDeviceType(bool is_tablet) {
 LocalDeviceInfoProviderImpl::LocalDeviceInfoProviderImpl(
     version_info::Channel channel,
     const std::string& version,
-    bool is_tablet,
     const SigninScopedDeviceIdCallback& signin_scoped_device_id_callback)
     : channel_(channel),
       version_(version),
-      is_tablet_(is_tablet),
       signin_scoped_device_id_callback_(signin_scoped_device_id_callback),
       weak_factory_(this) {
   DCHECK(signin_scoped_device_id_callback_);
@@ -60,7 +60,7 @@ const DeviceInfo* LocalDeviceInfoProviderImpl::GetLocalDeviceInfo() const {
 
 std::string LocalDeviceInfoProviderImpl::GetSyncUserAgent() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return MakeUserAgentForSync(channel_, is_tablet_);
+  return MakeUserAgentForSync(channel_);
 }
 
 std::unique_ptr<LocalDeviceInfoProvider::Subscription>
@@ -78,7 +78,7 @@ void LocalDeviceInfoProviderImpl::Initialize(const std::string& cache_guid,
 
   local_device_info_ = std::make_unique<DeviceInfo>(
       cache_guid, session_name, version_, GetSyncUserAgent(),
-      GetLocalDeviceType(is_tablet_), signin_scoped_device_id_callback_.Run());
+      GetLocalDeviceType(), signin_scoped_device_id_callback_.Run());
 
   // Notify observers.
   callback_list_.Notify();

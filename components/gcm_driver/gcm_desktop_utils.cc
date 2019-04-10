@@ -80,13 +80,6 @@ std::string GetChannelStatusRequestUrl(version_info::Channel channel) {
   return sync_url.spec() + kChannelStatusRelativePath;
 }
 
-std::string GetUserAgent(version_info::Channel channel) {
-  // TODO(pavely): Fix hardcoded is_tablet value in following call to
-  // MakeUserAgentForSync. Current implementation returns iPhone UserAgent for
-  // iPad devices.
-  return syncer::MakeUserAgentForSync(channel, false);
-}
-
 }  // namespace
 
 std::unique_ptr<GCMDriver> CreateGCMDriverDesktop(
@@ -106,8 +99,9 @@ std::unique_ptr<GCMDriver> CreateGCMDriverDesktop(
   return std::unique_ptr<GCMDriver>(new GCMDriverDesktop(
       std::move(gcm_client_factory),
       GetChromeBuildInfo(channel, product_category_for_subtypes),
-      GetChannelStatusRequestUrl(channel), GetUserAgent(channel), prefs,
-      store_path, get_socket_factory_callback, url_loader_factory,
+      GetChannelStatusRequestUrl(channel),
+      syncer::MakeUserAgentForSync(channel), prefs, store_path,
+      get_socket_factory_callback, url_loader_factory,
       network_connection_tracker, ui_task_runner, io_task_runner,
       blocking_task_runner));
 }

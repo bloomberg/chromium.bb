@@ -26,7 +26,7 @@ class LocalDeviceInfoProviderImplTest : public testing::Test {
   void SetUp() override {
     provider_ = std::make_unique<LocalDeviceInfoProviderImpl>(
         version_info::Channel::UNKNOWN,
-        version_info::GetVersionStringWithModifier("UNKNOWN"), false,
+        version_info::GetVersionStringWithModifier("UNKNOWN"),
         signin_scoped_device_id_callback_.Get());
   }
 

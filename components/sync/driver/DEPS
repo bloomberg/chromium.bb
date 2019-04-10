@@ -30,4 +30,5 @@ include_rules = [
   "+services/identity/public/cpp",
   "+services/network/public/cpp",
   "+services/network/test",
+  "+ui/base",
 ]
