@@ -42,9 +42,6 @@ if (enable_feed_in_chrome) {
 chrome_junit_test_java_sources += tab_management_junit_java_sources
 chrome_test_java_sources += tab_management_test_java_sources
 
-# This is enable_arcore, not package_arcore because the apk merger, for
-# example, would complain that the java classes.dex differs between 32bit and
-# 64bit. We must include this, even if we're not packaging the shim.
 if (enable_arcore) {
   chrome_java_sources += [
     "java/src/org/chromium/chrome/browser/vr/ArCoreJavaUtils.java",

@@ -2215,8 +2215,7 @@ if (enable_java_templates) {
       }
     }
 
-    if (_shared_libraries_is_valid ||
-        _secondary_abi_shared_libraries_is_valid) {
+    if (_shared_libraries_is_valid || _secondary_abi_shared_libraries_is_valid) {
       _native_lib_version_rule = ""
       if (defined(invoker.native_lib_version_rule)) {
         _native_lib_version_rule = invoker.native_lib_version_rule
@@ -3216,8 +3215,8 @@ if (enable_java_templates) {
                                "proguard_configs",
                                "proguard_enabled",
                                "proguard_jar_path",
-                               "resource_blacklist_regex",
                                "resource_blacklist_exceptions",
+                               "resource_blacklist_regex",
                                "resources_config_path",
                                "secondary_abi_shared_libraries",
                                "shared_libraries",
@@ -3229,6 +3228,7 @@ if (enable_java_templates) {
                                "testonly",
                                "uncompress_shared_libraries",
                                "use_chromium_linker",
+                               "verify_android_configuration",
                                "version_code",
                                "version_name",
                                "write_asset_list",

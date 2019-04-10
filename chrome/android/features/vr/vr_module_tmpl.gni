@@ -9,7 +9,6 @@ import("//chrome/android/features/module_names_to_package_ids.gni")
 import("//device/vr/buildflags/buildflags.gni")
 
 assert(enable_vr)
-assert(modularize_vr)
 
 template("vr_module_tmpl") {
   assert(defined(invoker.version_code))
