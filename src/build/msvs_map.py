@@ -2,6 +2,7 @@
 
 import sys
 import re
+import gc
 
 # Purpose: The purpose of this tool is to generate a MSVS style map file from
 # a combination of dumpbin-style map and a llvm-style map.  Some in-house
@@ -280,15 +281,20 @@ def main(args):
 
   dumpbin_map = {}
   read_dumpbin_map(dumpbin_map, dumpbin_map_filename)
+  gc.collect()
 
   llvm_map = {}
   read_llvm_map(llvm_map, llvm_map_filename)
+  gc.collect()
 
   merged_map = {}
   merge_maps(merged_map, dumpbin_map, llvm_map)
+  gc.collect()
 
   msvs_map = []
   generate_msvs_map(msvs_map, merged_map)
+  gc.collect()
+
   write_msvs_map(msvs_map)
 
 
