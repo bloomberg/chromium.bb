@@ -56,6 +56,11 @@ struct JobOptions {
   std::string socket_name;
   std::string socket_key;
 
+  // See launchd.plist(5) "MachServices" for details about this field. The
+  // mach_service_ field corresponds to a key in the MachServices dictionary,
+  // whose value will be YES.
+  std::string mach_service_name;
+
   // Whether to run this job immediately once it is loaded.
   bool run_at_load;
 

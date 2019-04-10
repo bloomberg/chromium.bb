@@ -161,6 +161,12 @@ base::scoped_nsobject<NSDictionary> DictionaryForJobOptions(
     [opts setObject:outer_dict forKey:@LAUNCH_JOBKEY_SOCKETS];
   }
 
+  if (!options.mach_service_name.empty()) {
+    NSDictionary* service_entry =
+        @{base::SysUTF8ToNSString(options.mach_service_name) : @YES};
+    [opts setObject:service_entry forKey:@LAUNCH_JOBKEY_MACHSERVICES];
+  }
+
   if (options.run_at_load || options.auto_launch) {
     [opts setObject:@YES forKey:@LAUNCH_JOBKEY_RUNATLOAD];
   }
