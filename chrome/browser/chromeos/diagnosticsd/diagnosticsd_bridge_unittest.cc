@@ -34,6 +34,7 @@ class MockMojoDiagnosticsdService
   MOCK_METHOD2(SendUiMessageToDiagnosticsProcessor,
                void(mojo::ScopedHandle,
                     SendUiMessageToDiagnosticsProcessorCallback));
+  MOCK_METHOD0(NotifyConfigurationDataChanged, void());
 };
 
 // Fake implementation of the DiagnosticsdServiceFactory Mojo interface that

@@ -4,9 +4,21 @@
 
 #include "chrome/browser/chromeos/policy/device_wilco_dtc_configuration_handler.h"
 
+#include "chrome/browser/chromeos/diagnosticsd/diagnosticsd_manager.h"
 #include "components/policy/policy_constants.h"
 
 namespace policy {
+
+namespace {
+
+chromeos::DiagnosticsdManager* GetDiagnosticsdManager() {
+  chromeos::DiagnosticsdManager* const diagnosticsd_manager =
+      chromeos::DiagnosticsdManager::Get();
+  DCHECK(diagnosticsd_manager);
+  return diagnosticsd_manager;
+}
+
+}  // namespace
 
 DeviceWilcoDtcConfigurationHandler::DeviceWilcoDtcConfigurationHandler(
     PolicyService* policy_service)
@@ -20,14 +32,14 @@ DeviceWilcoDtcConfigurationHandler::~DeviceWilcoDtcConfigurationHandler() {}
 
 void DeviceWilcoDtcConfigurationHandler::OnDeviceExternalDataCleared(
     const std::string& policy) {
-  // TODO(b/123933434): handle a data cleared event.
+  GetDiagnosticsdManager()->SetConfigurationData(nullptr);
 }
 
 void DeviceWilcoDtcConfigurationHandler::OnDeviceExternalDataFetched(
     const std::string& policy,
     std::unique_ptr<std::string> data,
     const base::FilePath& file_path) {
-  // TODO(b/123933434): handle |data|.
+  GetDiagnosticsdManager()->SetConfigurationData(std::move(data));
 }
 
 void DeviceWilcoDtcConfigurationHandler::Shutdown() {

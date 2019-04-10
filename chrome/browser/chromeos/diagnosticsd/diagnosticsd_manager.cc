@@ -23,6 +23,32 @@ namespace chromeos {
 
 namespace {
 
+DiagnosticsdManager* g_diagnosticsd_manager_instance = nullptr;
+
+class DiagnosticsdManagerDelegateImpl final
+    : public DiagnosticsdManager::Delegate {
+ public:
+  DiagnosticsdManagerDelegateImpl();
+  ~DiagnosticsdManagerDelegateImpl() override;
+
+  // Delegate overrides:
+  std::unique_ptr<DiagnosticsdBridge> CreateDiagnosticsdBridge() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DiagnosticsdManagerDelegateImpl);
+};
+
+DiagnosticsdManagerDelegateImpl::DiagnosticsdManagerDelegateImpl() = default;
+
+DiagnosticsdManagerDelegateImpl::~DiagnosticsdManagerDelegateImpl() = default;
+
+std::unique_ptr<DiagnosticsdBridge>
+DiagnosticsdManagerDelegateImpl::CreateDiagnosticsdBridge() {
+  return std::make_unique<DiagnosticsdBridge>(
+      g_browser_process->system_network_context_manager()
+          ->GetSharedURLLoaderFactory());
+}
+
 // Returns true if only affiliated users are logged-in.
 bool AreOnlyAffiliatedUsersLoggedIn() {
   const user_manager::UserList logged_in_users =
@@ -37,8 +63,24 @@ bool AreOnlyAffiliatedUsersLoggedIn() {
 
 }  // namespace
 
+DiagnosticsdManager::Delegate::~Delegate() = default;
+
+// static
+DiagnosticsdManager* DiagnosticsdManager::Get() {
+  return g_diagnosticsd_manager_instance;
+}
+
 DiagnosticsdManager::DiagnosticsdManager()
-    : callback_weak_ptr_factory_(this), weak_ptr_factory_(this) {
+    : DiagnosticsdManager(std::make_unique<DiagnosticsdManagerDelegateImpl>()) {
+}
+
+DiagnosticsdManager::DiagnosticsdManager(std::unique_ptr<Delegate> delegate)
+    : delegate_(std::move(delegate)),
+      callback_weak_ptr_factory_(this),
+      weak_ptr_factory_(this) {
+  DCHECK(delegate_);
+  DCHECK(!g_diagnosticsd_manager_instance);
+  g_diagnosticsd_manager_instance = this;
   wilco_dtc_allowed_observer_ = CrosSettings::Get()->AddSettingsObserver(
       kDeviceWilcoDtcAllowed,
       base::BindRepeating(&DiagnosticsdManager::StartOrStopWilcoDtc,
@@ -50,10 +92,33 @@ DiagnosticsdManager::DiagnosticsdManager()
 }
 
 DiagnosticsdManager::~DiagnosticsdManager() {
+  DCHECK_EQ(g_diagnosticsd_manager_instance, this);
+  g_diagnosticsd_manager_instance = nullptr;
+
   // The destruction may mean that non-affiliated user is logging out.
   StartOrStopWilcoDtc();
 
   session_manager::SessionManager::Get()->RemoveObserver(this);
+}
+
+void DiagnosticsdManager::SetConfigurationData(
+    std::unique_ptr<std::string> data) {
+  configuration_data_ = std::move(data);
+
+  if (!diagnosticsd_bridge_) {
+    VLOG(0) << "Cannot send notification - no bridge to the daemon";
+    return;
+  }
+  diagnosticsd_bridge_->SetConfigurationData(configuration_data_.get());
+
+  diagnosticsd::mojom::DiagnosticsdServiceProxy* const diagnosticsd_mojo_proxy =
+      diagnosticsd_bridge_->diagnosticsd_service_mojo_proxy();
+  if (!diagnosticsd_mojo_proxy) {
+    VLOG(0) << "Cannot send message - Mojo connection to the daemon isn't "
+               "bootstrapped yet";
+    return;
+  }
+  diagnosticsd_mojo_proxy->NotifyConfigurationDataChanged();
 }
 
 void DiagnosticsdManager::OnSessionStateChanged() {
@@ -95,11 +160,13 @@ void DiagnosticsdManager::OnStartWilcoDtc(bool success) {
     DLOG(ERROR) << "Failed to start the wilco DTC";
   } else {
     VLOG(1) << "Wilco DTC started";
-    if (!diagnosticsd_bridge_) {
-      diagnosticsd_bridge_ = std::make_unique<DiagnosticsdBridge>(
-          g_browser_process->system_network_context_manager()
-              ->GetSharedURLLoaderFactory());
-    }
+    if (!diagnosticsd_bridge_)
+      diagnosticsd_bridge_ = delegate_->CreateDiagnosticsdBridge();
+    DCHECK(diagnosticsd_bridge_);
+
+    // Once the bridge is created, notify it about an available configuration
+    // data blob.
+    diagnosticsd_bridge_->SetConfigurationData(configuration_data_.get());
   }
 }
 

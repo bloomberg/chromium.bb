@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_DIAGNOSTICSD_DIAGNOSTICSD_MANAGER_H_
 
 #include <memory>
+#include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -27,8 +28,27 @@ class DiagnosticsdManager final
  public:
   using WilcoDtcCallback = base::OnceCallback<void(bool)>;
 
+  // Delegate class, allowing to pass a stub diagnosticsd bridge in unit tests.
+  class Delegate {
+   public:
+    virtual ~Delegate();
+    // Returns a DiagnosticsdBridge instance.
+    virtual std::unique_ptr<DiagnosticsdBridge> CreateDiagnosticsdBridge() = 0;
+  };
+
+  // Returns the global singleton instance.
+  static DiagnosticsdManager* Get();
+
   DiagnosticsdManager();
+  // For use in tests.
+  explicit DiagnosticsdManager(std::unique_ptr<Delegate> delegate);
+
   ~DiagnosticsdManager() override;
+
+  // Sets the Wilco DTC configuration data, passed by the device policy.
+  // The nullptr should be passed to clear it.
+  // Notifies the |diagnosticsd_bridge_| if it is created.
+  void SetConfigurationData(std::unique_ptr<std::string> data);
 
  private:
   // session_manager::SessionManagerObserver override:
@@ -46,9 +66,14 @@ class DiagnosticsdManager final
   void OnStartWilcoDtc(bool success);
   void OnStopWilcoDtc(bool success);
 
+  std::unique_ptr<Delegate> delegate_;
+
   // Observer to changes in the wilco DTC allowed policy.
   std::unique_ptr<CrosSettings::ObserverSubscription>
       wilco_dtc_allowed_observer_;
+
+  // The configuration data blob is stored and owned.
+  std::unique_ptr<std::string> configuration_data_;
 
   std::unique_ptr<DiagnosticsdBridge> diagnosticsd_bridge_;
 

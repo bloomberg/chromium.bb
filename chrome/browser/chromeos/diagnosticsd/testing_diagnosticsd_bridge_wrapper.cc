@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/diagnosticsd/testing_diagnosticsd_bridge.h"
+#include "chrome/browser/chromeos/diagnosticsd/testing_diagnosticsd_bridge_wrapper.h"
 
 #include <unistd.h>
 #include <memory>
@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
@@ -60,10 +61,10 @@ class TestingMojoDiagnosticsdServiceFactory final
     DCHECK(service);
     DCHECK(client);
     // Redirect to |get_service_handler_callback_| to let
-    // TestingDiagnosticsdBridge capture |client| (which points to the
+    // TestingDiagnosticsdBridgeWrapper capture |client| (which points to the
     // production implementation in DiagnosticsdBridge) and fulfill |service|
     // (to make it point to the stub implementation of the DiagnosticsdService
-    // Mojo service that was passed to TestingDiagnosticsdBridge).
+    // Mojo service that was passed to TestingDiagnosticsdBridgeWrapper).
     get_service_handler_callback_.Run(std::move(service), std::move(client));
     std::move(callback).Run();
   }
@@ -86,10 +87,10 @@ class TestingMojoDiagnosticsdServiceFactory final
 // Testing implementation of the DiagnosticsdBridge delegate that stubs out the
 // process of generating the Mojo invitation and tie it with
 // TestingMojoDiagnosticsdServiceFactory instead.
-class TestingDiagnosticsdBridgeDelegate final
+class TestingDiagnosticsdBridgeWrapperDelegate final
     : public DiagnosticsdBridge::Delegate {
  public:
-  explicit TestingDiagnosticsdBridgeDelegate(
+  explicit TestingDiagnosticsdBridgeWrapperDelegate(
       std::unique_ptr<TestingMojoDiagnosticsdServiceFactory>
           mojo_diagnosticsd_service_factory)
       : mojo_diagnosticsd_service_factory_(
@@ -116,7 +117,7 @@ class TestingDiagnosticsdBridgeDelegate final
   std::unique_ptr<TestingMojoDiagnosticsdServiceFactory>
       mojo_diagnosticsd_service_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestingDiagnosticsdBridgeDelegate);
+  DISALLOW_COPY_AND_ASSIGN(TestingDiagnosticsdBridgeWrapperDelegate);
 };
 
 FakeDiagnosticsdClient* GetFakeDbusDiagnosticsdClient() {
@@ -129,20 +130,19 @@ FakeDiagnosticsdClient* GetFakeDbusDiagnosticsdClient() {
 
 }  // namespace
 
-TestingDiagnosticsdBridge::TestingDiagnosticsdBridge(
+// static
+std::unique_ptr<TestingDiagnosticsdBridgeWrapper>
+TestingDiagnosticsdBridgeWrapper::Create(
     diagnosticsd::mojom::DiagnosticsdService* mojo_diagnosticsd_service,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-    : mojo_diagnosticsd_service_binding_(mojo_diagnosticsd_service),
-      bridge_(std::make_unique<TestingDiagnosticsdBridgeDelegate>(
-                  std::make_unique<TestingMojoDiagnosticsdServiceFactory>(
-                      base::BindRepeating(
-                          &TestingDiagnosticsdBridge::HandleMojoGetService,
-                          base::Unretained(this)))),
-              url_loader_factory) {}
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    std::unique_ptr<DiagnosticsdBridge>* bridge) {
+  return base::WrapUnique(new TestingDiagnosticsdBridgeWrapper(
+      mojo_diagnosticsd_service, std::move(url_loader_factory), bridge));
+}
 
-TestingDiagnosticsdBridge::~TestingDiagnosticsdBridge() = default;
+TestingDiagnosticsdBridgeWrapper::~TestingDiagnosticsdBridgeWrapper() = default;
 
-void TestingDiagnosticsdBridge::EstablishFakeMojoConnection() {
+void TestingDiagnosticsdBridgeWrapper::EstablishFakeMojoConnection() {
   DCHECK(!mojo_diagnosticsd_client_);
   DCHECK(!mojo_get_service_handler_);
 
@@ -179,13 +179,27 @@ void TestingDiagnosticsdBridge::EstablishFakeMojoConnection() {
       std::move(intercepted_mojo_diagnosticsd_service_request));
 }
 
-void TestingDiagnosticsdBridge::HandleMojoGetService(
+void TestingDiagnosticsdBridgeWrapper::HandleMojoGetService(
     diagnosticsd::mojom::DiagnosticsdServiceRequest
         mojo_diagnosticsd_service_request,
     diagnosticsd::mojom::DiagnosticsdClientPtr mojo_diagnosticsd_client) {
   std::move(mojo_get_service_handler_)
       .Run(std::move(mojo_diagnosticsd_service_request));
   mojo_diagnosticsd_client_ = std::move(mojo_diagnosticsd_client);
+}
+
+TestingDiagnosticsdBridgeWrapper::TestingDiagnosticsdBridgeWrapper(
+    diagnosticsd::mojom::DiagnosticsdService* mojo_diagnosticsd_service,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    std::unique_ptr<DiagnosticsdBridge>* bridge)
+    : mojo_diagnosticsd_service_binding_(mojo_diagnosticsd_service) {
+  *bridge = std::make_unique<DiagnosticsdBridge>(
+      std::make_unique<TestingDiagnosticsdBridgeWrapperDelegate>(
+          std::make_unique<TestingMojoDiagnosticsdServiceFactory>(
+              base::BindRepeating(
+                  &TestingDiagnosticsdBridgeWrapper::HandleMojoGetService,
+                  base::Unretained(this)))),
+      url_loader_factory);
 }
 
 }  // namespace chromeos
