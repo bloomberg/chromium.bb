@@ -9,9 +9,9 @@
     "192": "static/icon192.png"
   },
   "permissions": [
-    "arcAppsPrivate",
     "https://*.googleapis.com",
-    "chrome://app-icon/"
+    "chrome://app-icon/",
+    "mojoPrivate"
   ],
   "app": {
     "background": {
