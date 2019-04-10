@@ -101,11 +101,11 @@ class OfflinePageModelTaskified : public OfflinePageModel,
                                 MultipleOfflineIdCallback callback) override;
   void StoreThumbnail(int64_t offline_id, std::string thumbnail) override;
   void StoreFavicon(int64_t offline_id, std::string favicon) override;
-  void GetThumbnailByOfflineId(
+  void GetVisualsByOfflineId(
       int64_t offline_id,
-      base::OnceCallback<void(std::unique_ptr<OfflinePageThumbnail>)> callback)
+      base::OnceCallback<void(std::unique_ptr<OfflinePageVisuals>)> callback)
       override;
-  void HasThumbnailForOfflineId(
+  void GetVisualsAvailability(
       int64_t offline_id,
       base::OnceCallback<void(VisualsAvailability)> callback) override;
   const base::FilePath& GetInternalArchiveDirectory(

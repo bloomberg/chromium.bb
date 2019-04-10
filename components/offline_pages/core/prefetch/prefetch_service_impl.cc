@@ -40,7 +40,7 @@ PrefetchServiceImpl::PrefetchServiceImpl(
     std::unique_ptr<PrefetchBackgroundTaskHandler>
         prefetch_background_task_handler,
     std::unique_ptr<ThumbnailFetcher> thumbnail_fetcher,
-    image_fetcher::ImageFetcher* thumbnail_image_fetcher)
+    image_fetcher::ImageFetcher* image_fetcher)
     : offline_metrics_collector_(std::move(offline_metrics_collector)),
       prefetch_dispatcher_(std::move(dispatcher)),
       network_request_factory_(std::move(network_request_factory)),
@@ -52,7 +52,7 @@ PrefetchServiceImpl::PrefetchServiceImpl(
           std::move(prefetch_background_task_handler)),
       suggested_articles_observer_(std::move(suggested_articles_observer)),
       thumbnail_fetcher_(std::move(thumbnail_fetcher)),
-      thumbnail_image_fetcher_(thumbnail_image_fetcher),
+      image_fetcher_(image_fetcher),
       weak_ptr_factory_(this) {
   prefetch_dispatcher_->SetService(this);
   prefetch_downloader_->SetPrefetchService(this);
@@ -110,7 +110,7 @@ void PrefetchServiceImpl::SetContentSuggestionsService(
   DCHECK(suggested_articles_observer_);
   DCHECK(!suggestions_provider_);
   DCHECK(thumbnail_fetcher_);
-  DCHECK(!thumbnail_image_fetcher_);
+  DCHECK(!image_fetcher_);
   suggested_articles_observer_->SetContentSuggestionsServiceAndObserve(
       content_suggestions);
   thumbnail_fetcher_->SetContentSuggestionsService(content_suggestions);
@@ -120,7 +120,7 @@ void PrefetchServiceImpl::SetSuggestionProvider(
     SuggestionsProvider* suggestions_provider) {
   DCHECK(!suggested_articles_observer_);
   DCHECK(!thumbnail_fetcher_);
-  DCHECK(thumbnail_image_fetcher_);
+  DCHECK(image_fetcher_);
   suggestions_provider_ = suggestions_provider;
 }
 
@@ -203,8 +203,8 @@ ThumbnailFetcher* PrefetchServiceImpl::GetThumbnailFetcher() {
   return thumbnail_fetcher_.get();
 }
 
-image_fetcher::ImageFetcher* PrefetchServiceImpl::GetThumbnailImageFetcher() {
-  return thumbnail_image_fetcher_;
+image_fetcher::ImageFetcher* PrefetchServiceImpl::GetImageFetcher() {
+  return image_fetcher_;
 }
 
 void PrefetchServiceImpl::Shutdown() {

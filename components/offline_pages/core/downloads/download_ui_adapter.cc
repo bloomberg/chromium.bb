@@ -291,17 +291,17 @@ void DownloadUIAdapter::OnPageGetForVisuals(
     callback = base::BindOnce(report_and_callback, std::move(callback));
   }
 
-  model_->GetThumbnailByOfflineId(
+  model_->GetVisualsByOfflineId(
       page->offline_id,
-      base::BindOnce(&DownloadUIAdapter::OnThumbnailLoaded,
+      base::BindOnce(&DownloadUIAdapter::OnVisualsLoaded,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void DownloadUIAdapter::OnThumbnailLoaded(
+void DownloadUIAdapter::OnVisualsLoaded(
     VisualResultCallback callback,
-    std::unique_ptr<OfflinePageThumbnail> thumbnail) {
+    std::unique_ptr<OfflinePageVisuals> visuals) {
   DCHECK(thumbnail_decoder_);
-  if (!thumbnail || thumbnail->thumbnail.empty()) {
+  if (!visuals || visuals->thumbnail.empty()) {
     // PostTask not required, GetThumbnailByOfflineId does it for us.
     std::move(callback).Run(nullptr);
     return;
@@ -320,7 +320,7 @@ void DownloadUIAdapter::OnThumbnailLoaded(
   };
 
   thumbnail_decoder_->DecodeAndCropThumbnail(
-      thumbnail->thumbnail,
+      visuals->thumbnail,
       base::BindOnce(forward_visuals_lambda, std::move(callback)));
 }
 

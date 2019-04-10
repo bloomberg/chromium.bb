@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/offline_pages/core/model/has_thumbnail_task.h"
+#include "components/offline_pages/core/model/visuals_availability_task.h"
 
 #include "base/bind.h"
 #include "components/offline_pages/core/offline_page_metadata_store.h"
@@ -13,7 +13,8 @@
 namespace offline_pages {
 
 namespace {
-VisualsAvailability ThumbnailExistsSync(int64_t offline_id, sql::Database* db) {
+VisualsAvailability VisualsAvailableSync(int64_t offline_id,
+                                         sql::Database* db) {
   static const char kSql[] =
       "SELECT length(thumbnail)>0,length(favicon)>0 FROM page_thumbnails"
       " WHERE offline_id=?";
@@ -27,24 +28,26 @@ VisualsAvailability ThumbnailExistsSync(int64_t offline_id, sql::Database* db) {
 
 }  // namespace
 
-HasThumbnailTask::HasThumbnailTask(OfflinePageMetadataStore* store,
-                                   int64_t offline_id,
-                                   ThumbnailExistsCallback exists_callback)
+VisualsAvailabilityTask::VisualsAvailabilityTask(
+    OfflinePageMetadataStore* store,
+    int64_t offline_id,
+    VisualsAvailableCallback exists_callback)
     : store_(store),
       offline_id_(offline_id),
       exists_callback_(std::move(exists_callback)),
       weak_ptr_factory_(this) {}
 
-HasThumbnailTask::~HasThumbnailTask() = default;
+VisualsAvailabilityTask::~VisualsAvailabilityTask() = default;
 
-void HasThumbnailTask::Run() {
-  store_->Execute(base::BindOnce(ThumbnailExistsSync, offline_id_),
-                  base::BindOnce(&HasThumbnailTask::OnThumbnailExists,
+void VisualsAvailabilityTask::Run() {
+  store_->Execute(base::BindOnce(VisualsAvailableSync, offline_id_),
+                  base::BindOnce(&VisualsAvailabilityTask::OnVisualsAvailable,
                                  weak_ptr_factory_.GetWeakPtr()),
                   {false, false});
 }
 
-void HasThumbnailTask::OnThumbnailExists(VisualsAvailability availability) {
+void VisualsAvailabilityTask::OnVisualsAvailable(
+    VisualsAvailability availability) {
   TaskComplete();
   std::move(exists_callback_).Run(std::move(availability));
 }

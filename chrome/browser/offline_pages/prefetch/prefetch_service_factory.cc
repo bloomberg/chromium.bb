@@ -107,7 +107,7 @@ KeyedService* PrefetchServiceFactory::BuildServiceInstanceFor(
   std::unique_ptr<SuggestedArticlesObserver> suggested_articles_observer;
   std::unique_ptr<ThumbnailFetcherImpl> thumbnail_fetcher;
   // Conditional components for Feed. Not created when using Zine.
-  image_fetcher::ImageFetcher* thumbnail_image_fetcher = nullptr;
+  image_fetcher::ImageFetcher* image_fetcher = nullptr;
   if (!feed_enabled) {
     suggested_articles_observer = std::make_unique<SuggestedArticlesObserver>();
     thumbnail_fetcher = std::make_unique<ThumbnailFetcherImpl>();
@@ -117,7 +117,7 @@ KeyedService* PrefetchServiceFactory::BuildServiceInstanceFor(
         ImageFetcherServiceFactory::GetForKey(simple_factory_key,
                                               profile->GetPrefs());
     DCHECK(image_fetcher_service);
-    thumbnail_image_fetcher = image_fetcher_service->GetImageFetcher(
+    image_fetcher = image_fetcher_service->GetImageFetcher(
         image_fetcher::ImageFetcherConfig::kDiskCacheOnly);
   }
 
@@ -137,7 +137,7 @@ KeyedService* PrefetchServiceFactory::BuildServiceInstanceFor(
       std::move(prefetch_store), std::move(suggested_articles_observer),
       std::move(prefetch_downloader), std::move(prefetch_importer),
       std::move(prefetch_background_task_handler), std::move(thumbnail_fetcher),
-      thumbnail_image_fetcher);
+      image_fetcher);
 
   auto callback = base::BindOnce(&OnProfileCreated, service);
   FullBrowserTransitionManager::Get()->RegisterCallbackOnProfileCreation(

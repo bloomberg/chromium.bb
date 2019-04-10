@@ -24,7 +24,7 @@
 #include "components/offline_pages/core/offline_clock.h"
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/offline_page_model.h"
-#include "components/offline_pages/core/offline_page_thumbnail.h"
+#include "components/offline_pages/core/offline_page_visuals.h"
 #include "components/offline_pages/core/offline_store_utils.h"
 #include "sql/database.h"
 #include "sql/meta_table.h"
@@ -52,12 +52,12 @@ int64_t kOfflineId = 12345LL;
 const char kTestRequestOrigin[] = "request.origin";
 int64_t kTestSystemDownloadId = 42LL;
 const char kTestDigest[] = "test-digest";
-const base::Time kThumbnailExpiration = store_utils::FromDatabaseTime(42);
+const base::Time kVisualsExpiration = store_utils::FromDatabaseTime(42);
 const char kTestSnippet[] = "test snippet";
 const char kTestAttribution[] = "test attribution";
 
-OfflinePageThumbnail TestThumbnailVersion3() {
-  return {1, base::Time(), "abc", ""};
+OfflinePageVisuals TestVisuals() {
+  return {1, base::Time(), "abc", "123"};
 }
 
 // Build a store with outdated schema to simulate the upgrading process.
@@ -482,16 +482,16 @@ void BuildTestStoreWithSchemaVersion2(const base::FilePath& file) {
       meta_table.Init(&db, 2, OfflinePageMetadataStore::kCompatibleVersion));
 }
 
-bool InsertThumbnailVersion3(sql::Database* db,
-                             const OfflinePageThumbnail& thumbnail) {
-  static const char kInsertThumbnailSql[] =
+bool InsertVisualsVersion3(sql::Database* db,
+                           const OfflinePageVisuals& visuals) {
+  static const char kInsertVisualsSql[] =
       "INSERT INTO page_thumbnails"
       " (offline_id,expiration,thumbnail) VALUES (?,?,?)";
   sql::Statement statement(
-      db->GetCachedStatement(SQL_FROM_HERE, kInsertThumbnailSql));
-  statement.BindInt64(0, thumbnail.offline_id);
-  statement.BindInt64(1, store_utils::ToDatabaseTime(thumbnail.expiration));
-  statement.BindBlob(2, thumbnail.thumbnail.data(), thumbnail.thumbnail.size());
+      db->GetCachedStatement(SQL_FROM_HERE, kInsertVisualsSql));
+  statement.BindInt64(0, visuals.offline_id);
+  statement.BindInt64(1, store_utils::ToDatabaseTime(visuals.expiration));
+  statement.BindBlob(2, visuals.thumbnail.data(), visuals.thumbnail.size());
   return statement.Run();
 }
 
@@ -510,8 +510,7 @@ void BuildTestStoreWithSchemaVersion3(const base::FilePath& file) {
       " thumbnail BLOB NOT NULL"
       ");";
   ASSERT_TRUE(db.Execute(kSql));
-
-  ASSERT_TRUE(InsertThumbnailVersion3(&db, TestThumbnailVersion3()));
+  ASSERT_TRUE(InsertVisualsVersion3(&db, TestVisuals()));
 }
 
 // Create an offline page item from a SQL result.  Expects complete rows with
@@ -632,19 +631,19 @@ class OfflinePageMetadataStoreTest : public testing::Test {
     EXPECT_EQ(offline_page, pages[0]);
   }
 
-  void CheckThatPageThumbnailCanBeSaved(OfflinePageMetadataStore* store) {
-    OfflinePageThumbnail thumbnail;
-    thumbnail.offline_id = kOfflineId;
-    thumbnail.expiration = kThumbnailExpiration;
-    thumbnail.thumbnail = "content";
-    thumbnail.favicon = "favicon";
+  void CheckThatPageVisualsCanBeSaved(OfflinePageMetadataStore* store) {
+    OfflinePageVisuals visuals;
+    visuals.offline_id = kOfflineId;
+    visuals.expiration = kVisualsExpiration;
+    visuals.thumbnail = "content";
+    visuals.favicon = "favicon";
 
-    std::vector<OfflinePageThumbnail> thumbnails_before = GetThumbnails(store);
+    std::vector<OfflinePageVisuals> visuals_vector_before = GetVisuals(store);
 
-    AddThumbnail(store, thumbnail);
-    std::vector<OfflinePageThumbnail> thumbnails = GetThumbnails(store);
-    EXPECT_EQ(thumbnails_before.size() + 1, thumbnails.size());
-    EXPECT_EQ(thumbnail, thumbnails.back());
+    AddVisuals(store, visuals);
+    std::vector<OfflinePageVisuals> visuals_vector = GetVisuals(store);
+    EXPECT_EQ(visuals_vector_before.size() + 1, visuals_vector.size());
+    EXPECT_EQ(visuals, visuals_vector.back());
   }
 
   void VerifyMetaVersions() {
@@ -666,7 +665,7 @@ class OfflinePageMetadataStoreTest : public testing::Test {
     auto store = std::make_unique<OfflinePageMetadataStore>(
         base::ThreadTaskRunnerHandle::Get(), TempPath());
     OfflinePageItem item = CheckThatStoreHasOneItem(store.get());
-    CheckThatPageThumbnailCanBeSaved(store.get());
+    CheckThatPageVisualsCanBeSaved(store.get());
     CheckThatOfflinePageCanBeSaved(std::move(store));
     VerifyMetaVersions();
   }
@@ -679,7 +678,7 @@ class OfflinePageMetadataStoreTest : public testing::Test {
     std::vector<OfflinePageItem> pages = GetOfflinePages(store.get());
     EXPECT_EQ(5U, pages.size());
 
-    CheckThatPageThumbnailCanBeSaved((OfflinePageMetadataStore*)store.get());
+    CheckThatPageVisualsCanBeSaved((OfflinePageMetadataStore*)store.get());
     CheckThatOfflinePageCanBeSaved(std::move(store));
     VerifyMetaVersions();
   }
@@ -690,11 +689,14 @@ class OfflinePageMetadataStoreTest : public testing::Test {
     std::vector<OfflinePageItem> pages = GetOfflinePages(store.get());
     EXPECT_EQ(5U, pages.size());
 
-    std::vector<OfflinePageThumbnail> thumbnails = GetThumbnails(store.get());
-    EXPECT_EQ(1U, thumbnails.size());
-    EXPECT_EQ(TestThumbnailVersion3(), thumbnails.back());
+    std::vector<OfflinePageVisuals> visuals_vector = GetVisuals(store.get());
+    EXPECT_EQ(1U, visuals_vector.size());
 
-    CheckThatPageThumbnailCanBeSaved(store.get());
+    OfflinePageVisuals visuals_v3 = TestVisuals();
+    visuals_v3.favicon = std::string();
+    EXPECT_EQ(visuals_v3, visuals_vector.back());
+
+    CheckThatPageVisualsCanBeSaved(store.get());
     CheckThatOfflinePageCanBeSaved(std::move(store));
     VerifyMetaVersions();
   }
@@ -782,47 +784,46 @@ class OfflinePageMetadataStoreTest : public testing::Test {
                                          ItemActionStatus::SUCCESS);
   }
 
-  std::vector<OfflinePageThumbnail> GetThumbnails(
-      OfflinePageMetadataStore* store) {
-    std::vector<OfflinePageThumbnail> thumbnails;
+  std::vector<OfflinePageVisuals> GetVisuals(OfflinePageMetadataStore* store) {
+    std::vector<OfflinePageVisuals> visuals_vector;
     auto run_callback = base::BindLambdaForTesting([&](sql::Database* db) {
       static const char kSql[] = "SELECT * FROM page_thumbnails";
       sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
 
       while (statement.Step()) {
-        OfflinePageThumbnail thumb;
-        thumb.offline_id = statement.ColumnInt64(0);
-        thumb.expiration =
+        OfflinePageVisuals visuals;
+        visuals.offline_id = statement.ColumnInt64(0);
+        visuals.expiration =
             store_utils::FromDatabaseTime(statement.ColumnInt64(1));
-        statement.ColumnBlobAsString(2, &thumb.thumbnail);
-        statement.ColumnBlobAsString(3, &thumb.favicon);
-        thumbnails.push_back(std::move(thumb));
+        statement.ColumnBlobAsString(2, &visuals.thumbnail);
+        statement.ColumnBlobAsString(3, &visuals.favicon);
+        visuals_vector.push_back(std::move(visuals));
       }
 
       EXPECT_TRUE(statement.Succeeded());
-      return thumbnails;
+      return visuals_vector;
     });
-    return ExecuteSync<std::vector<OfflinePageThumbnail>>(store, run_callback,
-                                                          {});
+    return ExecuteSync<std::vector<OfflinePageVisuals>>(store, run_callback,
+                                                        {});
   }
 
-  void AddThumbnail(OfflinePageMetadataStore* store,
-                    const OfflinePageThumbnail& thumbnail) {
-    std::vector<OfflinePageThumbnail> thumbnails;
+  void AddVisuals(OfflinePageMetadataStore* store,
+                  const OfflinePageVisuals& visuals) {
+    std::vector<OfflinePageVisuals> visuals_vector;
     auto run_callback = base::BindLambdaForTesting([&](sql::Database* db) {
       static const char kSql[] =
           "INSERT INTO page_thumbnails"
           " (offline_id,expiration,thumbnail,favicon) VALUES (?,?,?,?)";
       sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
 
-      statement.BindInt64(0, thumbnail.offline_id);
-      statement.BindInt64(1, store_utils::ToDatabaseTime(thumbnail.expiration));
-      statement.BindString(2, thumbnail.thumbnail);
-      statement.BindString(3, thumbnail.favicon);
+      statement.BindInt64(0, visuals.offline_id);
+      statement.BindInt64(1, store_utils::ToDatabaseTime(visuals.expiration));
+      statement.BindString(2, visuals.thumbnail);
+      statement.BindString(3, visuals.favicon);
       EXPECT_TRUE(statement.Run());
-      return thumbnails;
+      return visuals_vector;
     });
-    ExecuteSync<std::vector<OfflinePageThumbnail>>(store, run_callback, {});
+    ExecuteSync<std::vector<OfflinePageVisuals>>(store, run_callback, {});
   }
 
  protected:

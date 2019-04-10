@@ -12,7 +12,7 @@
 
 #include "base/callback.h"
 #include "components/offline_pages/core/offline_page_item.h"
-#include "components/offline_pages/core/offline_page_thumbnail.h"
+#include "components/offline_pages/core/offline_page_visuals.h"
 
 class GURL;
 
@@ -105,9 +105,9 @@ typedef base::OnceCallback<void(const MultipleOfflinePageItemResult&)>
     MultipleOfflinePageItemCallback;
 typedef base::RepeatingCallback<bool(const GURL&)> UrlPredicate;
 typedef base::OnceCallback<void(int64_t)> SizeInBytesCallback;
-typedef base::OnceCallback<void(std::unique_ptr<OfflinePageThumbnail>)>
-    GetThumbnailCallback;
-typedef base::OnceCallback<void(bool)> CleanupThumbnailsCallback;
+typedef base::OnceCallback<void(std::unique_ptr<OfflinePageVisuals>)>
+    GetVisualsCallback;
+typedef base::OnceCallback<void(bool)> CleanupVisualsCallback;
 
 // Callbacks used for publishing an offline page.
 using PublishPageCallback =

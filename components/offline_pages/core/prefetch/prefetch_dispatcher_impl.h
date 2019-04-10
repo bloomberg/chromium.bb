@@ -18,7 +18,7 @@
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/server_forbidden_check_request.h"
 #include "components/offline_pages/core/prefetch/suggestions_provider.h"
-#include "components/offline_pages/core/prefetch/tasks/get_thumbnail_info_task.h"
+#include "components/offline_pages/core/prefetch/tasks/get_visuals_info_task.h"
 #include "components/offline_pages/task/task_queue.h"
 #include "components/version_info/channel.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -103,7 +103,7 @@ class PrefetchDispatcherImpl : public PrefetchDispatcher,
   // prefetched.
   void AddSuggestions(std::vector<PrefetchSuggestion> suggestions);
 
-  // The methods below control the  downloading of thumbnails for the provided
+  // The methods below control the  downloading of visuals for the provided
   // prefetch items IDs. They are called multiple times for the same article,
   // when they reach different points in the pipeline to increase the likeliness
   // of the thumbnail to be available. The existence of the thumbnail is
@@ -126,7 +126,7 @@ class PrefetchDispatcherImpl : public PrefetchDispatcher,
                            std::unique_ptr<IdsVector> remaining_ids,
                            bool is_first_attempt,
                            VisualsAvailability availability,
-                           GetThumbnailInfoTask::Result result);
+                           GetVisualsInfoTask::Result result);
   void ThumbnailFetchComplete(int64_t offline_id,
                               std::unique_ptr<IdsVector> remaining_ids,
                               bool is_first_attempt,

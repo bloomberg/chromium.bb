@@ -149,9 +149,9 @@ RenderPageInfo RenderInfo(const std::string& url) {
   return info;
 }
 
-OfflinePageThumbnail FakeThumbnail(int64_t offline_id) {
-  return OfflinePageThumbnail(offline_id, kRenderTime, kThumbnailData,
-                              kFaviconData);
+OfflinePageVisuals FakeVisuals(int64_t offline_id) {
+  return OfflinePageVisuals(offline_id, kRenderTime, kThumbnailData,
+                            kFaviconData);
 }
 
 // This class is a mix between a mock and fake.
@@ -168,42 +168,41 @@ class MockOfflinePageModel : public StubOfflinePageModel {
                void(const OfflinePageItem& page, AddPageCallback callback));
 
   void StoreThumbnail(int64_t offline_id, std::string thumbnail) override {
-    insert_or_update(offline_id, thumbnail, std::string());
+    insert_or_update_visuals(offline_id, thumbnail, std::string());
   }
 
   void StoreFavicon(int64_t offline_id, std::string favicon) override {
-    insert_or_update(offline_id, std::string(), favicon);
+    insert_or_update_visuals(offline_id, std::string(), favicon);
   }
 
-  void HasThumbnailForOfflineId(
+  void GetVisualsAvailability(
       int64_t offline_id,
       base::OnceCallback<void(VisualsAvailability)> callback) override {
     has_thumbnail_for_offline_id_calls_.insert(offline_id);
 
-    bool has_thumbnail = false, has_favicon = false;
+    VisualsAvailability availability = {false, false};
     if (visuals_.count(offline_id) > 0) {
-      const OfflinePageThumbnail& visuals = visuals_[offline_id];
-      has_thumbnail = !visuals.thumbnail.empty();
-      has_favicon = !visuals.favicon.empty();
+      const OfflinePageVisuals& visuals = visuals_[offline_id];
+      availability.has_thumbnail = !visuals.thumbnail.empty();
+      availability.has_favicon = !visuals.favicon.empty();
     }
 
-    VisualsAvailability availability = {has_thumbnail, has_favicon};
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), availability));
   }
 
   // Returns the thumbnails stored with StoreThumbnail.
-  const std::unordered_map<int64_t, OfflinePageThumbnail> visuals() const {
+  const std::unordered_map<int64_t, OfflinePageVisuals> visuals() const {
     return visuals_;
   }
 
-  const OfflinePageThumbnail* FindThumbnail(int64_t offline_id) const {
+  const OfflinePageVisuals* FindVisuals(int64_t offline_id) const {
     if (visuals_.count(offline_id) == 0)
       return nullptr;
     return &visuals_.at(offline_id);
   }
 
-  void set_visuals(std::unordered_map<int64_t, OfflinePageThumbnail> visuals) {
+  void set_visuals(std::unordered_map<int64_t, OfflinePageVisuals> visuals) {
     visuals_ = std::move(visuals);
   }
 
@@ -212,10 +211,10 @@ class MockOfflinePageModel : public StubOfflinePageModel {
   }
 
  private:
-  void insert_or_update(int64_t offline_id,
-                        const std::string& thumbnail,
-                        const std::string& favicon) {
-    OfflinePageThumbnail& new_or_existing = visuals_[offline_id];
+  void insert_or_update_visuals(const int64_t offline_id,
+                                const std::string& thumbnail,
+                                const std::string& favicon) {
+    OfflinePageVisuals& new_or_existing = visuals_[offline_id];
     new_or_existing.offline_id = offline_id;
     new_or_existing.expiration = kRenderTime;
     if (!thumbnail.empty())
@@ -224,7 +223,7 @@ class MockOfflinePageModel : public StubOfflinePageModel {
       new_or_existing.favicon = favicon;
   }
 
-  std::unordered_map<int64_t, OfflinePageThumbnail> visuals_;
+  std::unordered_map<int64_t, OfflinePageVisuals> visuals_;
   std::set<int64_t> has_thumbnail_for_offline_id_calls_;
 };
 
@@ -834,7 +833,7 @@ TEST_F(PrefetchDispatcherTest, ThumbnailImageFetchFailure_ItemDownloaded) {
   RunUntilIdle();
 
   EXPECT_TRUE(offline_model_->visuals().empty())
-      << "Stored thumbnails: "
+      << "Stored visuals: "
       << ::testing::PrintToString(offline_model_->visuals());
 }
 
@@ -907,7 +906,7 @@ TEST_F(PrefetchDispatcherTest, ThumbnailFetchFailure_ItemDownloaded) {
       kTestOfflineID, ClientId(kSuggestedArticlesNamespace, kClientID));
 
   EXPECT_TRUE(offline_model_->visuals().empty())
-      << "Stored thumbnails: "
+      << "Stored visuals: "
       << ::testing::PrintToString(offline_model_->visuals());
 }
 
@@ -919,17 +918,16 @@ TEST_F(PrefetchDispatcherTest, ThumbnailFetchSuccess_ItemDownloaded) {
       kTestOfflineID, ClientId(kSuggestedArticlesNamespace, kClientID));
   RunUntilIdle();
 
-  const OfflinePageThumbnail* stored_thumbnail =
-      offline_model_->FindThumbnail(kTestOfflineID);
-  ASSERT_TRUE(stored_thumbnail);
-  EXPECT_EQ(kThumbnailData, stored_thumbnail->thumbnail);
+  const OfflinePageVisuals* stored_visuals =
+      offline_model_->FindVisuals(kTestOfflineID);
+  ASSERT_TRUE(stored_visuals);
+  EXPECT_EQ(kThumbnailData, stored_visuals->thumbnail);
 }
 
 TEST_F(PrefetchDispatcherTest, ThumbnailAlreadyExists_ItemDownloaded) {
   Configure(PrefetchServiceTestTaco::kContentSuggestions);
 
-  offline_model_->set_visuals(
-      {{kTestOfflineID, FakeThumbnail(kTestOfflineID)}});
+  offline_model_->set_visuals({{kTestOfflineID, FakeVisuals(kTestOfflineID)}});
   EXPECT_CALL(*thumbnail_fetcher_, FetchSuggestionImageData(_, _)).Times(0);
   prefetch_dispatcher()->ItemDownloaded(
       kTestOfflineID, ClientId(kSuggestedArticlesNamespace, kClientID));
@@ -958,7 +956,7 @@ TEST_F(PrefetchDispatcherTest,
   ExpectFetchThumbnail("", kClientID2);
   // Case #3: thumbnail already exists
   offline_model_->set_visuals(
-      {{kTestOfflineID3, FakeThumbnail(kTestOfflineID3)}});
+      {{kTestOfflineID3, FakeVisuals(kTestOfflineID3)}});
 
   auto prefetch_item_ids = std::make_unique<PrefetchDispatcher::IdsVector>();
   prefetch_item_ids->emplace_back(
@@ -971,9 +969,9 @@ TEST_F(PrefetchDispatcherTest,
       std::move(prefetch_item_ids));
   RunUntilIdle();
 
-  EXPECT_TRUE(offline_model_->FindThumbnail(kTestOfflineID1))
+  EXPECT_TRUE(offline_model_->FindVisuals(kTestOfflineID1))
       << "Thumbnails: " << ::testing::PrintToString(offline_model_->visuals());
-  EXPECT_FALSE(offline_model_->FindThumbnail(kTestOfflineID2));
+  EXPECT_FALSE(offline_model_->FindVisuals(kTestOfflineID2));
 }
 
 // Runs through the entire lifecycle of a successful prefetch item,

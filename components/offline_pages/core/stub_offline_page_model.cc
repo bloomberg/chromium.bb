@@ -54,10 +54,9 @@ void StubOfflinePageModel::StoreThumbnail(int64_t offline_id,
                                           std::string thumbnail) {}
 void StubOfflinePageModel::StoreFavicon(int64_t offline_id,
                                         std::string favicon) {}
-void StubOfflinePageModel::GetThumbnailByOfflineId(
-    int64_t offline_id,
-    GetThumbnailCallback callback) {}
-void StubOfflinePageModel::HasThumbnailForOfflineId(
+void StubOfflinePageModel::GetVisualsByOfflineId(int64_t offline_id,
+                                                 GetVisualsCallback callback) {}
+void StubOfflinePageModel::GetVisualsAvailability(
     int64_t offline_id,
     base::OnceCallback<void(VisualsAvailability)> callback) {}
 void StubOfflinePageModel::PublishInternalArchive(

@@ -19,17 +19,17 @@
 #include "components/offline_pages/core/archive_manager.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/model/add_page_task.h"
-#include "components/offline_pages/core/model/cleanup_thumbnails_task.h"
+#include "components/offline_pages/core/model/cleanup_visuals_task.h"
 #include "components/offline_pages/core/model/delete_page_task.h"
 #include "components/offline_pages/core/model/get_pages_task.h"
-#include "components/offline_pages/core/model/get_thumbnail_task.h"
-#include "components/offline_pages/core/model/has_thumbnail_task.h"
+#include "components/offline_pages/core/model/get_visuals_task.h"
 #include "components/offline_pages/core/model/mark_page_accessed_task.h"
 #include "components/offline_pages/core/model/offline_page_model_utils.h"
 #include "components/offline_pages/core/model/persistent_page_consistency_check_task.h"
 #include "components/offline_pages/core/model/startup_maintenance_task.h"
 #include "components/offline_pages/core/model/store_visuals_task.h"
 #include "components/offline_pages/core/model/update_file_path_task.h"
+#include "components/offline_pages/core/model/visuals_availability_task.h"
 #include "components/offline_pages/core/offline_clock.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_metadata_store.h"
@@ -368,17 +368,17 @@ void OfflinePageModelTaskified::StoreFavicon(int64_t offline_id,
                      weak_ptr_factory_.GetWeakPtr(), offline_id)));
 }
 
-void OfflinePageModelTaskified::GetThumbnailByOfflineId(
+void OfflinePageModelTaskified::GetVisualsByOfflineId(
     int64_t offline_id,
-    base::OnceCallback<void(std::unique_ptr<OfflinePageThumbnail>)> callback) {
-  task_queue_.AddTask(std::make_unique<GetThumbnailTask>(
-      store_.get(), offline_id, std::move(callback)));
+    base::OnceCallback<void(std::unique_ptr<OfflinePageVisuals>)> callback) {
+  task_queue_.AddTask(std::make_unique<GetVisualsTask>(store_.get(), offline_id,
+                                                       std::move(callback)));
 }
 
-void OfflinePageModelTaskified::HasThumbnailForOfflineId(
+void OfflinePageModelTaskified::GetVisualsAvailability(
     int64_t offline_id,
     base::OnceCallback<void(VisualsAvailability)> callback) {
-  task_queue_.AddTask(std::make_unique<HasThumbnailTask>(
+  task_queue_.AddTask(std::make_unique<VisualsAvailabilityTask>(
       store_.get(), offline_id, std::move(callback)));
 }
 
@@ -688,7 +688,7 @@ void OfflinePageModelTaskified::RunMaintenanceTasks(base::Time now,
     task_queue_.AddTask(std::make_unique<StartupMaintenanceTask>(
         store_.get(), archive_manager_.get(), policy_controller_.get()));
 
-    task_queue_.AddTask(std::make_unique<CleanupThumbnailsTask>(
+    task_queue_.AddTask(std::make_unique<CleanupVisualsTask>(
         store_.get(), OfflineTimeNow(), base::DoNothing()));
   }
 

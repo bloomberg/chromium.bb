@@ -11,7 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/offline_pages/core/offline_page_item.h"
-#include "components/offline_pages/core/offline_page_thumbnail.h"
+#include "components/offline_pages/core/offline_page_visuals.h"
 #include "components/offline_pages/core/offline_store_utils.h"
 
 namespace offline_pages {
@@ -93,12 +93,12 @@ std::ostream& operator<<(std::ostream& out, const OfflinePageItem& item) {
   return out << value_string;
 }
 
-std::string OfflinePageThumbnail::ToString() const {
+std::string OfflinePageVisuals::ToString() const {
   std::string thumb_data_base64, favicon_data_base64;
   base::Base64Encode(thumbnail, &thumb_data_base64);
   base::Base64Encode(favicon, &favicon_data_base64);
 
-  std::string s("OfflinePageThumbnail(id=");
+  std::string s("OfflinePageVisuals(id=");
   s.append(base::NumberToString(offline_id)).append(", expiration=");
   s.append(base::NumberToString(store_utils::ToDatabaseTime(expiration)))
       .append(", thumbnail=");
@@ -107,8 +107,8 @@ std::string OfflinePageThumbnail::ToString() const {
   return s;
 }
 
-std::ostream& operator<<(std::ostream& out, const OfflinePageThumbnail& thumb) {
-  return out << thumb.ToString();
+std::ostream& operator<<(std::ostream& out, const OfflinePageVisuals& visuals) {
+  return out << visuals.ToString();
 }
 
 }  // namespace offline_pages

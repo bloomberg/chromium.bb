@@ -72,7 +72,7 @@ OfflinePageModel* StubPrefetchService::GetOfflinePageModel() {
   return nullptr;
 }
 
-image_fetcher::ImageFetcher* StubPrefetchService::GetThumbnailImageFetcher() {
+image_fetcher::ImageFetcher* StubPrefetchService::GetImageFetcher() {
   return nullptr;
 }
 

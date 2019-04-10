@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_TASKS_GET_THUMBNAIL_INFO_TASK_H_
-#define COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_TASKS_GET_THUMBNAIL_INFO_TASK_H_
+#ifndef COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_TASKS_GET_VISUALS_INFO_TASK_H_
+#define COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_TASKS_GET_VISUALS_INFO_TASK_H_
 
 #include <memory>
 #include <string>
@@ -18,7 +18,7 @@ class PrefetchStore;
 
 // Task that attempts to get thumbnail information about an offline item in the
 // prefetch store.
-class GetThumbnailInfoTask : public Task {
+class GetVisualsInfoTask : public Task {
  public:
   // Gives URLS for the offline item's thumbnail and favicon. They are empty if
   // the offline item was not found, or if the item had no thumbnail or favicon
@@ -29,10 +29,10 @@ class GetThumbnailInfoTask : public Task {
   };
   using ResultCallback = base::OnceCallback<void(Result)>;
 
-  GetThumbnailInfoTask(PrefetchStore* store,
-                       int64_t offline_id,
-                       ResultCallback callback);
-  ~GetThumbnailInfoTask() override;
+  GetVisualsInfoTask(PrefetchStore* store,
+                     int64_t offline_id,
+                     ResultCallback callback);
+  ~GetVisualsInfoTask() override;
 
   // Task implementation.
   void Run() override;
@@ -43,11 +43,11 @@ class GetThumbnailInfoTask : public Task {
   int64_t offline_id_;
   ResultCallback callback_;
 
-  base::WeakPtrFactory<GetThumbnailInfoTask> weak_factory_{this};
+  base::WeakPtrFactory<GetVisualsInfoTask> weak_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(GetThumbnailInfoTask);
+  DISALLOW_COPY_AND_ASSIGN(GetVisualsInfoTask);
 };
 
 }  // namespace offline_pages
 
-#endif  // COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_TASKS_GET_THUMBNAIL_INFO_TASK_H_
+#endif  // COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_TASKS_GET_VISUALS_INFO_TASK_H_

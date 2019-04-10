@@ -167,16 +167,16 @@ class MockOfflinePageModel : public StubOfflinePageModel {
     }
   }
 
-  void GetThumbnailByOfflineId(
+  void GetVisualsByOfflineId(
       int64_t offline_id,
-      base::OnceCallback<void(std::unique_ptr<OfflinePageThumbnail>)> callback)
+      base::OnceCallback<void(std::unique_ptr<OfflinePageVisuals>)> callback)
       override {
     EXPECT_EQ(kTestOfflineId1, offline_id);
 
-    std::unique_ptr<OfflinePageThumbnail> copy;
-    if (thumbnail_by_offline_id_result) {
-      copy = std::make_unique<OfflinePageThumbnail>(
-          *thumbnail_by_offline_id_result);
+    std::unique_ptr<OfflinePageVisuals> copy;
+    if (visuals_by_offline_id_result) {
+      copy =
+          std::make_unique<OfflinePageVisuals>(*visuals_by_offline_id_result);
     }
     task_runner_->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), std::move(copy)));
@@ -216,7 +216,7 @@ class MockOfflinePageModel : public StubOfflinePageModel {
   }
 
   std::map<int64_t, OfflinePageItem> pages;
-  std::unique_ptr<OfflinePageThumbnail> thumbnail_by_offline_id_result;
+  std::unique_ptr<OfflinePageVisuals> visuals_by_offline_id_result;
 
  private:
   OfflinePageModel::Observer* observer_;
@@ -237,8 +237,8 @@ class DownloadUIAdapterTest : public testing::Test,
  public:
   const std::string kThumbnailData = "Thumbnail-data";
   const std::string kFaviconData = "Favicon-data";
-  const OfflinePageThumbnail kThumbnail = {kTestOfflineId1, kTestCreationTime,
-                                           kThumbnailData, kFaviconData};
+  const OfflinePageVisuals kVisuals = {kTestOfflineId1, kTestCreationTime,
+                                       kThumbnailData, kFaviconData};
 
   DownloadUIAdapterTest();
   ~DownloadUIAdapterTest() override;
@@ -583,8 +583,8 @@ TEST_F(DownloadUIAdapterTest, RequestBecomesPage) {
 
 TEST_F(DownloadUIAdapterTest, GetVisualsForItem) {
   AddInitialPage(kTestClientIdPrefetch);
-  model->thumbnail_by_offline_id_result =
-      std::make_unique<OfflinePageThumbnail>(kThumbnail);
+  model->visuals_by_offline_id_result =
+      std::make_unique<OfflinePageVisuals>(kVisuals);
   const int kImageWidth = 24;
   EXPECT_CALL(*thumbnail_decoder, DecodeAndCropThumbnail_(kThumbnailData, _))
       .WillOnce(
@@ -637,7 +637,7 @@ TEST_F(DownloadUIAdapterTest, GetVisualsForItemInvalidItem) {
 
 TEST_F(DownloadUIAdapterTest, GetVisualsForItemNoThumbnail) {
   AddInitialPage(kTestClientIdPrefetch);
-  model->thumbnail_by_offline_id_result = nullptr;
+  model->visuals_by_offline_id_result = nullptr;
   EXPECT_CALL(*thumbnail_decoder, DecodeAndCropThumbnail_(_, _)).Times(0);
   bool called = false;
   auto callback = base::BindLambdaForTesting(
@@ -661,8 +661,8 @@ TEST_F(DownloadUIAdapterTest, GetVisualsForItemNoThumbnail) {
 
 TEST_F(DownloadUIAdapterTest, GetVisualsForItemBadDecode) {
   AddInitialPage(kTestClientIdPrefetch);
-  model->thumbnail_by_offline_id_result =
-      std::make_unique<OfflinePageThumbnail>(kThumbnail);
+  model->visuals_by_offline_id_result =
+      std::make_unique<OfflinePageVisuals>(kVisuals);
   EXPECT_CALL(*thumbnail_decoder, DecodeAndCropThumbnail_(kThumbnailData, _))
       .WillOnce(
           WithArg<1>(Invoke([&](ThumbnailDecoder::DecodeComplete* callback) {
