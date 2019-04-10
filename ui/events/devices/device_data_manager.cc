@@ -149,6 +149,11 @@ const std::vector<InputDevice>& DeviceDataManager::GetTouchpadDevices() const {
   return touchpad_devices_;
 }
 
+const std::vector<InputDevice>& DeviceDataManager::GetUncategorizedDevices()
+    const {
+  return uncategorized_devices_;
+}
+
 bool DeviceDataManager::AreDeviceListsComplete() const {
   return device_lists_complete_;
 }
@@ -217,6 +222,17 @@ void DeviceDataManager::OnTouchpadDevicesUpdated(
   NotifyObserversTouchpadDeviceConfigurationChanged();
 }
 
+void DeviceDataManager::OnUncategorizedDevicesUpdated(
+    const std::vector<InputDevice>& devices) {
+  if (devices.size() == uncategorized_devices_.size() &&
+      std::equal(devices.begin(), devices.end(), uncategorized_devices_.begin(),
+                 InputDeviceEquals)) {
+    return;
+  }
+  uncategorized_devices_ = devices;
+  NotifyObserversUncategorizedDeviceConfigurationChanged();
+}
+
 void DeviceDataManager::OnDeviceListsComplete() {
   if (!device_lists_complete_) {
     device_lists_complete_ = true;
@@ -239,6 +255,10 @@ NOTIFY_OBSERVERS(
 NOTIFY_OBSERVERS(
     NotifyObserversTouchpadDeviceConfigurationChanged(),
     OnInputDeviceConfigurationChanged(InputDeviceEventObserver::kTouchpad))
+
+NOTIFY_OBSERVERS(
+    NotifyObserversUncategorizedDeviceConfigurationChanged(),
+    OnInputDeviceConfigurationChanged(InputDeviceEventObserver::kUncategorized))
 
 NOTIFY_OBSERVERS(
     NotifyObserversTouchscreenDeviceConfigurationChanged(),
