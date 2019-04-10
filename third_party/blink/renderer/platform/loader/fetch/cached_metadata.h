@@ -89,7 +89,7 @@ class PLATFORM_EXPORT CachedMetadata : public RefCounted<CachedMetadata> {
   }
 
  private:
-  CachedMetadata(Vector<uint8_t> data);
+  explicit CachedMetadata(Vector<uint8_t> data);
   CachedMetadata(uint32_t data_type_id, const uint8_t* data, wtf_size_t);
 
   // Since the serialization format supports random access, storing it in
