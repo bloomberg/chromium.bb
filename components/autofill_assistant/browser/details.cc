@@ -140,6 +140,10 @@ base::Value Details::GetDebugContext() const {
     dict.SetKey("description_line_2",
                 base::Value(detailsProto().description_line_2()));
 
+  if (!detailsProto().description_line_3().empty())
+    dict.SetKey("description_line_3",
+                base::Value(detailsProto().description_line_3()));
+
   if (detailsProto().has_datetime()) {
     dict.SetKey("datetime",
                 base::Value(base::StringPrintf(
@@ -159,6 +163,7 @@ base::Value Details::GetDebugContext() const {
   dict.SetKey("highlight_title", base::Value(changes().highlight_title()));
   dict.SetKey("highlight_line1", base::Value(changes().highlight_line1()));
   dict.SetKey("highlight_line2", base::Value(changes().highlight_line2()));
+  dict.SetKey("highlight_line3", base::Value(changes().highlight_line3()));
 
   return dict;
 }
@@ -224,6 +229,12 @@ bool Details::MaybeUpdateFromDetailsParameters(
 
     if (key == "DETAILS_DESCRIPTION_LINE_2") {
       proto_.set_description_line_2(iter.second);
+      details_updated = true;
+      continue;
+    }
+
+    if (key == "DETAILS_DESCRIPTION_LINE_3") {
+      proto_.set_description_line_3(iter.second);
       details_updated = true;
       continue;
     }

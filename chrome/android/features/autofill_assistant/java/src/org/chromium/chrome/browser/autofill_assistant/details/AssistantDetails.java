@@ -30,6 +30,7 @@ public class AssistantDetails {
     private final Date mDate;
     private final String mDescriptionLine1;
     private final String mDescriptionLine2;
+    private final String mDescriptionLine3;
     /** Whether user approval is required (i.e., due to changes). */
     private boolean mUserApprovalRequired;
     /** Whether the title should be highlighted. */
@@ -38,6 +39,8 @@ public class AssistantDetails {
     private boolean mHighlightLine1;
     /** Whether the second description line should be highlighted. */
     private boolean mHighlightLine2;
+    /** Whether the third description line should be highlighted. */
+    private boolean mHighlightLine3;
     /** Whether empty fields should have the animated placeholder background. */
     private final boolean mAnimatePlaceholders;
     /**
@@ -51,8 +54,9 @@ public class AssistantDetails {
     public AssistantDetails(String title, String imageUrl,
             ImageClickthroughData imageClickthroughData, boolean showImagePlaceholder,
             String totalPriceLabel, String totalPrice, @Nullable Date date, String descriptionLine1,
-            String descriptionLine2, boolean userApprovalRequired, boolean highlightTitle,
-            boolean highlightLine1, boolean highlightLine2, boolean animatePlaceholders) {
+            String descriptionLine2, String descriptionLine3, boolean userApprovalRequired,
+            boolean highlightTitle, boolean highlightLine1, boolean highlightLine2,
+            boolean highlightLine3, boolean animatePlaceholders) {
         this.mTotalPriceLabel = totalPriceLabel;
         this.mTitle = title;
         this.mImageUrl = imageUrl;
@@ -62,11 +66,13 @@ public class AssistantDetails {
         this.mDate = date;
         this.mDescriptionLine1 = descriptionLine1;
         this.mDescriptionLine2 = descriptionLine2;
+        this.mDescriptionLine3 = descriptionLine3;
 
         this.mUserApprovalRequired = userApprovalRequired;
         this.mHighlightTitle = highlightTitle;
         this.mHighlightLine1 = highlightLine1;
         this.mHighlightLine2 = highlightLine2;
+        this.mHighlightLine3 = highlightLine3;
         this.mAnimatePlaceholders = animatePlaceholders;
     }
 
@@ -103,7 +109,11 @@ public class AssistantDetails {
         return mDescriptionLine2;
     }
 
-    String getTotalPrice() {
+    String getDescriptionLine3() {
+        return mDescriptionLine3;
+    }
+
+    public String getTotalPrice() {
         return mTotalPrice;
     }
 
@@ -127,7 +137,11 @@ public class AssistantDetails {
         return mHighlightLine2;
     }
 
-    boolean getAnimatePlaceholders() {
+    boolean getHighlightLine3() {
+        return mHighlightLine3;
+    }
+
+    public boolean getAnimatePlaceholders() {
         return mAnimatePlaceholders;
     }
 
@@ -140,9 +154,9 @@ public class AssistantDetails {
             String imageClickthroughPostiveText, String imageClickthroughNegativeText,
             boolean showImagePlaceholder, String totalPriceLabel, String totalPrice,
             String datetime, long year, int month, int day, int hour, int minute, int second,
-            String descriptionLine1, String descriptionLine2, boolean userApprovalRequired,
-            boolean highlightTitle, boolean highlightLine1, boolean highlightLine2,
-            boolean animatePlaceholders) {
+            String descriptionLine1, String descriptionLine2, String descriptionLine3,
+            boolean userApprovalRequired, boolean highlightTitle, boolean highlightLine1,
+            boolean highlightLine2, boolean highlightLine3, boolean animatePlaceholders) {
         Date date = null;
         if (year > 0 && month > 0 && day > 0 && hour >= 0 && minute >= 0 && second >= 0) {
             Calendar calendar = Calendar.getInstance();
@@ -165,7 +179,7 @@ public class AssistantDetails {
                 new ImageClickthroughData(allowImageClickthrough, imageClickthroughDesc,
                         imageClickthroughPostiveText, imageClickthroughNegativeText),
                 showImagePlaceholder, totalPriceLabel, totalPrice, date, descriptionLine1,
-                descriptionLine2, userApprovalRequired, highlightTitle, highlightLine1,
-                highlightLine2, animatePlaceholders);
+                descriptionLine2, descriptionLine3, userApprovalRequired, highlightTitle,
+                highlightLine1, highlightLine2, highlightLine3, animatePlaceholders);
     }
 }

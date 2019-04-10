@@ -5,6 +5,8 @@
 
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/autofill_assistant_shadow_bg"
@@ -13,22 +15,13 @@
     android:orientation="vertical">
     <LinearLayout android:layout_width="match_parent"
                   android:layout_height="wrap_content"
-                  android:orientation="horizontal"
-                  android:gravity="center">
+                  android:orientation="horizontal">
 
         <LinearLayout android:layout_width="0dp"
                       android:layout_height="wrap_content"
                       android:layout_weight="1"
+                      android:layout_gravity="center_vertical"
                       android:orientation="vertical">
-            <TextView
-                android:id="@+id/details_line2"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:singleLine="true"
-                android:requiresFadingEdge="horizontal"
-                android:fadingEdgeLength="20dp"
-                android:ellipsize="none" />
-
             <TextView
                 android:id="@+id/details_title"
                 android:layout_width="match_parent"
@@ -43,11 +36,28 @@
                 android:id="@+id/details_line1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
                 android:singleLine="true"
                 android:requiresFadingEdge="horizontal"
                 android:fadingEdgeLength="20dp"
                 android:ellipsize="none"/>
+
+            <TextView
+                android:id="@+id/details_line2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:requiresFadingEdge="horizontal"
+                android:fadingEdgeLength="20dp"
+                android:ellipsize="none" />
+
+            <TextView
+                android:id="@+id/details_line3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:requiresFadingEdge="horizontal"
+                android:fadingEdgeLength="20dp"
+                android:ellipsize="none" />
         </LinearLayout>
 
         <org.chromium.ui.widget.ChromeImageView
@@ -58,36 +68,41 @@
             android:scaleType="centerCrop"/>
     </LinearLayout>
 
-    <LinearLayout android:id="@+id/details_price"
-                  android:layout_width="match_parent"
-                  android:layout_height="wrap_content"
-                  android:orientation="vertical">
+    <LinearLayout
+        android:id="@+id/details_price"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+        <TextView
+            android:id="@+id/details_price_attribution"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:singleLine="true" />
 
-        <View style="@style/HorizontalDivider"
-              android:layout_width="match_parent"
-              android:layout_height="1dp"
-              android:layout_marginTop="8dp"
-              android:layout_marginBottom="8dp"/>
+        <TextView
+            android:id="@+id/details_total_price_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="4dp"
+            android:singleLine="true"/>
 
-        <LinearLayout android:layout_width="match_parent"
-                      android:layout_height="wrap_content"
-                      android:orientation="horizontal">
-            <TextView
-                android:id="@+id/details_total_price_label"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:singleLine="true"/>
+        <ImageView
+            android:id="@+id/details_total_price_label_icon"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_marginEnd="4dp"
+            android:tint="@color/default_text_color_secondary"
+            app:srcCompat="@drawable/ic_info_outline_grey"
+            tools:ignore="ContentDescription"/>
 
-            <Space
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"/>
-
-            <TextView
-                android:id="@+id/details_total_price"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:singleLine="true"/>
-        </LinearLayout>
+        <TextView
+            android:id="@+id/details_total_price"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:singleLine="true"/>
     </LinearLayout>
 </LinearLayout>
