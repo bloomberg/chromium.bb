@@ -71,7 +71,6 @@ class DirectManipulationEventHandler
   float last_scale_ = 1.0f;
   int last_x_offset_ = 0;
   int last_y_offset_ = 0;
-  bool first_ready_ = false;
   bool should_send_scroll_begin_ = false;
 
   // Current recognized gesture from Direct Manipulation.
