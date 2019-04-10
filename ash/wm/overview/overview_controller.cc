@@ -332,6 +332,8 @@ bool OverviewController::ToggleOverview(
       return true;
     }
 
+    TRACE_EVENT_ASYNC_BEGIN0("ui", "OverviewController::ExitOverview", this);
+
     // Suspend occlusion tracker until the exit animation is complete.
     PauseOcclusionTracker();
 
@@ -359,6 +361,8 @@ bool OverviewController::ToggleOverview(
     // Don't start overview if window selection is not allowed.
     if (!CanSelect())
       return false;
+
+    TRACE_EVENT_ASYNC_BEGIN0("ui", "OverviewController::EnterOverview", this);
 
     // Clear any animations that may be running from last overview end.
     for (const auto& animation : delayed_animations_)
@@ -405,6 +409,8 @@ void OverviewController::OnStartingAnimationComplete(bool canceled) {
   if (overview_session_)
     overview_session_->OnStartingAnimationComplete(canceled);
   UnpauseOcclusionTracker(kOcclusionPauseDurationForStartMs);
+  TRACE_EVENT_ASYNC_END1("ui", "OverviewController::EnterOverview", this,
+                         "canceled", canceled);
 }
 
 void OverviewController::OnEndingAnimationComplete(bool canceled) {
@@ -417,6 +423,8 @@ void OverviewController::OnEndingAnimationComplete(bool canceled) {
   for (auto& observer : observers_)
     observer.OnOverviewModeEndingAnimationComplete(canceled);
   UnpauseOcclusionTracker(occlusion_pause_duration_for_end_ms_);
+  TRACE_EVENT_ASYNC_END1("ui", "OverviewController::ExitOverview", this,
+                         "canceled", canceled);
 }
 
 void OverviewController::ResetPauser() {
