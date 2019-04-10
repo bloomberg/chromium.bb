@@ -28,6 +28,7 @@ extern const base::Feature kEnableQuic;
 extern const base::Feature kTripleBuffer720;
 extern const base::Feature kSingleBuffer;
 extern const base::Feature kDisableIdleSocketsCloseOnMemoryPressure;
+extern const base::Feature kEnableGeneralAudienceBrowsing;
 
 // Get an iterable list of all of the cast features for checking all features as
 // a collection.
