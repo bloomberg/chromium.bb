@@ -23,6 +23,7 @@ class BadgedProfilePhoto : public views::View {
     BADGE_TYPE_SYNC_ERROR,
     BADGE_TYPE_SYNC_PAUSED,
     BADGE_TYPE_SYNC_DISABLED,
+    BADGE_TYPE_SYNC_OFF,
   };
 
   static const char kViewClassName[];
