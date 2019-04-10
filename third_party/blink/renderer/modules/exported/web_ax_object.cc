@@ -782,7 +782,7 @@ void WebAXObject::Selection(WebAXObject& anchor_object,
   focus_offset = -1;
   focus_affinity = ax::mojom::TextAffinity::kDownstream;
 
-  if (IsDetached())
+  if (IsDetached() || GetDocument().IsNull())
     return;
 
   WebAXObject focus = FromWebDocumentFocused(GetDocument());
@@ -901,7 +901,7 @@ bool WebAXObject::SetSelection(const WebAXObject& anchor_object,
 }
 
 unsigned WebAXObject::SelectionEnd() const {
-  if (IsDetached())
+  if (IsDetached() || GetDocument().IsNull())
     return 0;
 
   WebAXObject focus = FromWebDocumentFocused(GetDocument());
@@ -922,7 +922,7 @@ unsigned WebAXObject::SelectionEnd() const {
 }
 
 unsigned WebAXObject::SelectionStart() const {
-  if (IsDetached())
+  if (IsDetached() || GetDocument().IsNull())
     return 0;
 
   WebAXObject focus = FromWebDocumentFocused(GetDocument());
