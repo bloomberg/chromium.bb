@@ -108,10 +108,8 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
   // Methods used as callbacks given to DataTypeStore.
   void OnStoreCreated(const base::Optional<syncer::ModelError>& error,
                       std::unique_ptr<syncer::ModelTypeStore> store);
-  void OnReadAllData(
-      const base::Optional<syncer::ModelError>& error,
-      std::unique_ptr<syncer::ModelTypeStore::RecordList> record_list);
-
+  void OnReadAllData(std::unique_ptr<SendTabToSelfEntries> initial_entries,
+                     const base::Optional<syncer::ModelError>& error);
   // Used as callback given to LocalDeviceInfoProvider.
   void OnDeviceProviderInitialized();
 
