@@ -103,6 +103,9 @@ crbug.com/894651 [ Linux ] virtual/bidi-caret-affinity/editing/selection/modify_
 crbug.com/894651 [ Linux ] virtual/bidi-caret-affinity/editing/selection/modify_move/move_right_word_09_ltr_multi_line.html [ Failure Leak ]
 crbug.com/894651 [ Linux ] virtual/bidi-caret-affinity/editing/selection/modify_move/move_right_word_09_rtl_multi_line.html [ Failure Leak ]
 
+#Sheriff 2019-04-10
+crbug.com/951453 [ Linux ] external/wpt/html/user-activation/activation-transfer-cross-origin-with-click.sub.tentative.html [ Pass Leak ]
+
 ###########################################################################
 # WARNING: Memory leaks must be fixed asap. Sheriff is expected to revert #
 # culprit CLs instead of suppressing the leaks. If you have any question, #
