@@ -145,11 +145,7 @@ class FrameData {
 
   size_t ad_network_bytes() const { return ad_network_bytes_; }
 
-  size_t ad_video_network_bytes() const { return ad_video_network_bytes_; }
-
-  size_t ad_javascript_network_bytes() const {
-    return ad_javascript_network_bytes_;
-  }
+  size_t GetAdNetworkBytesForMime(ResourceMimeType mime_type) const;
 
   UserActivationStatus user_activation_status() const {
     return user_activation_status_;
@@ -179,10 +175,10 @@ class FrameData {
   size_t bytes_;
   size_t network_bytes_;
 
-  // Tallies for bytes and counts observed in resource data updates for the
+  // Records ad network bytes for different mime type resources loaded in the
   // frame.
-  size_t ad_javascript_network_bytes_ = 0u;
-  size_t ad_video_network_bytes_ = 0u;
+  size_t ad_bytes_by_mime_[static_cast<size_t>(ResourceMimeType::kMaxValue) +
+                           1] = {0};
 
   // Time spent by the frame in the cpu before and after interactive.
   base::TimeDelta cpu_by_interactive_period_[static_cast<size_t>(
