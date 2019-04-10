@@ -300,7 +300,10 @@ void PasswordFormManager::Save() {
     pending_credentials_.date_created = base::Time::Now();
     votes_uploader_.SendVotesOnSave(observed_form_.form_data, *submitted_form_,
                                     best_matches_, &pending_credentials_);
-    form_saver_->Save(pending_credentials_, best_matches_);
+    std::vector<const autofill::PasswordForm*> best_matches;
+    for (const auto& match : best_matches_)
+      best_matches.push_back(match.second);
+    form_saver_->Save(pending_credentials_, best_matches, base::string16());
   } else {
     ProcessUpdate();
     std::vector<PasswordForm> credentials_to_update =
@@ -869,14 +872,10 @@ void PasswordFormManager::SetGenerationPopupWasShown(
                                                      is_manual_generation);
 }
 
-bool PasswordFormManager::RetryPasswordFormPasswordUpdate() const {
-  return retry_password_form_password_update_;
-}
-
 bool PasswordFormManager::IsPasswordUpdate() const {
   return (!GetBestMatches().empty() &&
           IsPossibleChangePasswordFormWithoutUsername()) ||
-         IsPasswordOverridden() || RetryPasswordFormPasswordUpdate();
+         IsPasswordOverridden() || retry_password_form_password_update_;
 }
 
 void PasswordFormManager::LogSubmitPassed() {

@@ -26,8 +26,8 @@ class FormSaverImpl : public FormSaver {
   // FormSaver:
   void PermanentlyBlacklist(autofill::PasswordForm* observed) override;
   void Save(const autofill::PasswordForm& pending,
-            const std::map<base::string16, const autofill::PasswordForm*>&
-                best_matches) override;
+            const std::vector<const autofill::PasswordForm*>& matches,
+            const base::string16& old_password) override;
   void Update(const autofill::PasswordForm& pending,
               const std::map<base::string16, const autofill::PasswordForm*>&
                   best_matches,

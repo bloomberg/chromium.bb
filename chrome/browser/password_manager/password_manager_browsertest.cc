@@ -3898,7 +3898,16 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   prompt_observer->AcceptUpdatePrompt(stored_form);
 
   WaitForPasswordStore();
-  CheckThatCredentialsStored("user", "new password");
+  // There are two credentials saved with the new password.
+  const auto& passwords_map = password_store->stored_passwords();
+  ASSERT_THAT(passwords_map, ElementsAre(testing::Key(url_A.GetOrigin()),
+                                         testing::Key(url_B.GetOrigin())));
+  for (const auto& credentials : passwords_map) {
+    ASSERT_THAT(credentials.second, testing::SizeIs(1));
+    EXPECT_EQ(base::ASCIIToUTF16("user"), credentials.second[0].username_value);
+    EXPECT_EQ(base::ASCIIToUTF16("new password"),
+              credentials.second[0].password_value);
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,

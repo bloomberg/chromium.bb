@@ -125,6 +125,10 @@ bool PasswordForm::HasPasswordElement() const {
                           : !password_element.empty();
 }
 
+bool PasswordForm::IsFederatedCredential() const {
+  return !federation_origin.opaque();
+}
+
 bool PasswordForm::operator==(const PasswordForm& form) const {
   return scheme == form.scheme && signon_realm == form.signon_realm &&
          origin == form.origin && action == form.action &&
