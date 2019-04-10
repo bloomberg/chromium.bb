@@ -402,6 +402,114 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest,
+       TestITextRangeProviderExpandToEnclosingDocument) {
+  ui::AXNodeData text_data;
+  text_data.id = 2;
+  text_data.role = ax::mojom::Role::kStaticText;
+  text_data.SetName("some text");
+
+  ui::AXNodeData more_text_data;
+  more_text_data.id = 3;
+  more_text_data.role = ax::mojom::Role::kStaticText;
+  more_text_data.SetName("more text");
+
+  ui::AXNodeData even_more_text_data;
+  even_more_text_data.id = 4;
+  even_more_text_data.role = ax::mojom::Role::kStaticText;
+  even_more_text_data.SetName("even more text");
+
+  ui::AXNodeData root_data;
+  root_data.id = 1;
+  root_data.role = ax::mojom::Role::kRootWebArea;
+  root_data.child_ids = {2, 3, 4};
+
+  ui::AXTreeUpdate update;
+  ui::AXTreeData tree_data;
+  tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+  update.tree_data = tree_data;
+  update.has_tree_data = true;
+  update.root_id = root_data.id;
+  update.nodes.push_back(root_data);
+  update.nodes.push_back(text_data);
+  update.nodes.push_back(more_text_data);
+  update.nodes.push_back(even_more_text_data);
+
+  Init(update);
+
+  AXNode* root_node = GetRootNode();
+  AXNodePosition::SetTreeForTesting(tree_.get());
+  AXNode* text_node = root_node->children()[0];
+  AXNode* more_text_node = root_node->children()[1];
+  AXNode* even_more_text_node = root_node->children()[2];
+
+  ComPtr<IRawElementProviderSimple> text_node_raw =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(text_node);
+
+  ComPtr<ITextProvider> text_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      text_node_raw->GetPatternProvider(UIA_TextPatternId, &text_provider));
+
+  // Run the test twice, one for TextUnit_Document and once for TextUnit_Page,
+  // since they should have identical behavior.
+  const TextUnit textunit_types[] = {TextUnit_Document, TextUnit_Page};
+  for (auto& textunit : textunit_types) {
+    ComPtr<IRawElementProviderSimple> text_node_raw =
+        QueryInterfaceFromNode<IRawElementProviderSimple>(text_node);
+
+    ComPtr<ITextProvider> text_provider;
+    EXPECT_HRESULT_SUCCEEDED(
+        text_node_raw->GetPatternProvider(UIA_TextPatternId, &text_provider));
+
+    ComPtr<ITextRangeProvider> text_range_provider;
+    EXPECT_HRESULT_SUCCEEDED(
+        text_provider->get_DocumentRange(&text_range_provider));
+
+    ASSERT_HRESULT_SUCCEEDED(
+        text_range_provider->ExpandToEnclosingUnit(textunit));
+
+    base::win::ScopedBstr text_content;
+    ASSERT_HRESULT_SUCCEEDED(
+        text_range_provider->GetText(-1, text_content.Receive()));
+    EXPECT_STREQ(L"some textmore texteven more text", text_content);
+    text_content.Reset();
+
+    text_node_raw =
+        QueryInterfaceFromNode<IRawElementProviderSimple>(more_text_node);
+
+    EXPECT_HRESULT_SUCCEEDED(
+        text_node_raw->GetPatternProvider(UIA_TextPatternId, &text_provider));
+
+    EXPECT_HRESULT_SUCCEEDED(
+        text_provider->get_DocumentRange(&text_range_provider));
+
+    ASSERT_HRESULT_SUCCEEDED(
+        text_range_provider->ExpandToEnclosingUnit(textunit));
+
+    ASSERT_HRESULT_SUCCEEDED(
+        text_range_provider->GetText(-1, text_content.Receive()));
+    EXPECT_STREQ(L"some textmore texteven more text", text_content);
+    text_content.Reset();
+
+    text_node_raw =
+        QueryInterfaceFromNode<IRawElementProviderSimple>(even_more_text_node);
+
+    EXPECT_HRESULT_SUCCEEDED(
+        text_node_raw->GetPatternProvider(UIA_TextPatternId, &text_provider));
+
+    EXPECT_HRESULT_SUCCEEDED(
+        text_provider->get_DocumentRange(&text_range_provider));
+
+    ASSERT_HRESULT_SUCCEEDED(
+        text_range_provider->ExpandToEnclosingUnit(textunit));
+
+    ASSERT_HRESULT_SUCCEEDED(
+        text_range_provider->GetText(-1, text_content.Receive()));
+    EXPECT_STREQ(L"some textmore texteven more text", text_content);
+    text_content.Reset();
+  }
+}
+
+TEST_F(AXPlatformNodeTextRangeProviderTest,
        TestITextRangeProviderInvalidCalls) {
   // Test for when a text range provider is invalid. Because no ax tree is
   // available, the anchor is invalid, so the text range provider fails the

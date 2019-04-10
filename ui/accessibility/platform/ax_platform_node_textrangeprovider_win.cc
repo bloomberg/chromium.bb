@@ -111,7 +111,28 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::CompareEndpoints(
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnit(
     TextUnit unit) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_EXPANDTOENCLOSINGUNIT);
-  return E_NOTIMPL;
+  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
+
+  // Determine if start is on a TextUnit boundary.
+  // If it is not, move backwards until it is.
+  // Try to move backwards, do not pass boundary.
+  switch (unit) {
+    case TextUnit_Character:
+    case TextUnit_Format:
+    case TextUnit_Word:
+    case TextUnit_Paragraph:
+    case TextUnit_Line:
+      return E_NOTIMPL;
+    // Page unit is not supported.
+    // Substituting it by the next larger unit (Document).
+    case TextUnit_Page:
+    case TextUnit_Document:
+      start_ = start_->CreatePositionAtStartOfDocument()->AsLeafTextPosition();
+      end_ = start_->CreatePositionAtEndOfDocument();
+      return S_OK;
+    default:
+      return UIA_E_NOTSUPPORTED;
+  }
 }
 
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::FindAttribute(
