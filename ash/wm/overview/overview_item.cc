@@ -165,8 +165,8 @@ void OverviewItem::EnsureVisible() {
 
 void OverviewItem::Shutdown() {
   // On swiping from the shelf, the caller handles the animation via calls to
-  // UpdateYAndOpacity, so do not additional fade out or slide animation to the
-  // window.
+  // UpdateYPositionAndOpacity, so do not additional fade out or slide animation
+  // to the window.
   if (overview_session_->enter_exit_overview_type() ==
       OverviewSession::EnterExitOverviewType::kSwipeFromShelf) {
     return;
@@ -197,7 +197,8 @@ void OverviewItem::SlideWindowIn() {
   UpdateMaskAndShadow();
 }
 
-void OverviewItem::UpdateYPositionAndOpacity(
+std::unique_ptr<ui::ScopedLayerAnimationSettings>
+OverviewItem::UpdateYPositionAndOpacity(
     int new_grid_y,
     float opacity,
     OverviewSession::UpdateAnimationSettingsCallback callback) {
@@ -221,13 +222,14 @@ void OverviewItem::UpdateYPositionAndOpacity(
     animation_layers_and_offsets.push_back({window->layer(), offset});
   }
 
+  std::unique_ptr<ui::ScopedLayerAnimationSettings> settings_to_observe;
   for (auto& layer_and_offset : animation_layers_and_offsets) {
     ui::Layer* layer = layer_and_offset.first;
     std::unique_ptr<ui::ScopedLayerAnimationSettings> settings;
     if (!callback.is_null()) {
       settings = std::make_unique<ui::ScopedLayerAnimationSettings>(
           layer->GetAnimator());
-      callback.Run(settings.get(), /*observe=*/false);
+      callback.Run(settings.get());
     }
     layer->SetOpacity(opacity);
 
@@ -238,7 +240,13 @@ void OverviewItem::UpdateYPositionAndOpacity(
     gfx::Transform transform = layer->transform();
     transform.matrix().setFloat(1, 3, static_cast<float>(offset + new_grid_y));
     layer->SetTransform(transform);
+
+    // Return the first layer for the caller to observe.
+    if (!settings_to_observe)
+      settings_to_observe = std::move(settings);
   }
+
+  return settings_to_observe;
 }
 
 void OverviewItem::UpdateItemContentViewForMinimizedWindow() {

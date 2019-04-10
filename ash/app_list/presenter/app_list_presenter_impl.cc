@@ -246,7 +246,7 @@ void AppListPresenterImpl::UpdateYPositionAndOpacityForHomeLauncher(
   if (!callback.is_null()) {
     settings = std::make_unique<ui::ScopedLayerAnimationSettings>(
         layer->GetAnimator());
-    callback.Run(settings.get(), /*observe=*/false);
+    callback.Run(settings.get());
   }
   layer->SetOpacity(opacity);
   layer->SetTransform(translation);

@@ -34,8 +34,7 @@ constexpr base::TimeDelta kOverviewAnimationDuration =
     base::TimeDelta::FromMilliseconds(250);
 
 void UpdateOverviewSettings(ui::AnimationMetricsReporter* reporter,
-                            ui::ScopedLayerAnimationSettings* settings,
-                            bool observe) {
+                            ui::ScopedLayerAnimationSettings* settings) {
   settings->SetTransitionDuration(kOverviewAnimationDuration);
   settings->SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
   settings->SetPreemptionStrategy(

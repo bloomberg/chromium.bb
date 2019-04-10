@@ -44,69 +44,6 @@ const gfx::Transform& GetShiftTransform() {
   return *matrix;
 }
 
-// BackgroundWith1PxBorder renders a solid background color, with a one pixel
-// border with rounded corners. This accounts for the scaling of the canvas, so
-// that the border is 1 pixel thick regardless of display scaling.
-class BackgroundWith1PxBorder : public views::Background {
- public:
-  BackgroundWith1PxBorder(SkColor background,
-                          SkColor border_color,
-                          int border_thickness,
-                          int corner_radius)
-      : border_color_(border_color),
-        border_thickness_(border_thickness),
-        corner_radius_(corner_radius) {
-    SetNativeControlColor(background);
-  }
-
-  // views::Background:
-  void Paint(gfx::Canvas* canvas, views::View* view) const override {
-    gfx::RectF border_rect_f(view->GetContentsBounds());
-
-    gfx::ScopedCanvas scoped_canvas(canvas);
-    const float scale = canvas->UndoDeviceScaleFactor();
-    border_rect_f.Inset(border_thickness_, border_thickness_);
-    border_rect_f = gfx::ScaleRect(border_rect_f, scale);
-
-    SkPath path;
-    const SkScalar scaled_corner_radius =
-        SkIntToScalar(gfx::ToCeiledInt(corner_radius_ * scale));
-    path.addRoundRect(gfx::RectFToSkRect(border_rect_f), scaled_corner_radius,
-                      scaled_corner_radius);
-
-    cc::PaintFlags flags;
-    flags.setStyle(cc::PaintFlags::kStroke_Style);
-    flags.setStrokeWidth(1);
-    flags.setAntiAlias(true);
-
-    SkPath stroke_path;
-    flags.getFillPath(path, &stroke_path);
-
-    SkPath fill_path;
-    Op(path, stroke_path, kDifference_SkPathOp, &fill_path);
-    flags.setStyle(cc::PaintFlags::kFill_Style);
-    flags.setColor(get_color());
-    canvas->sk_canvas()->drawPath(fill_path, flags);
-
-    if (border_thickness_ > 0) {
-      flags.setColor(border_color_);
-      canvas->sk_canvas()->drawPath(stroke_path, flags);
-    }
-  }
-
- private:
-  // Color for the one pixel border.
-  const SkColor border_color_;
-
-  // Thickness of border inset.
-  const int border_thickness_;
-
-  // Corner radius of the inside edge of the roundrect border stroke.
-  const int corner_radius_;
-
-  DISALLOW_COPY_AND_ASSIGN(BackgroundWith1PxBorder);
-};
-
 }  // namespace
 
 bool CanCoverAvailableWorkspace(aura::Window* window) {
@@ -179,56 +116,6 @@ void FadeOutWidgetAndMaybeSlideOnExit(std::unique_ptr<views::Widget> widget,
     new_transform.ConcatTransform(GetShiftTransform());
     widget_ptr->GetNativeWindow()->SetTransform(new_transform);
   }
-}
-
-std::unique_ptr<views::Widget> CreateBackgroundWidget(aura::Window* root_window,
-                                                      ui::LayerType layer_type,
-                                                      SkColor background_color,
-                                                      int border_thickness,
-                                                      int border_radius,
-                                                      SkColor border_color,
-                                                      float initial_opacity,
-                                                      aura::Window* parent,
-                                                      bool stack_on_top,
-                                                      bool accept_events) {
-  std::unique_ptr<views::Widget> widget = std::make_unique<views::Widget>();
-  views::Widget::InitParams params;
-  params.type = views::Widget::InitParams::TYPE_POPUP;
-  params.keep_on_top = false;
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  params.layer_type = layer_type;
-  params.accept_events = accept_events;
-  widget->set_focus_on_creation(false);
-  // Parenting in kShellWindowId_WallpaperContainer allows proper layering of
-  // the shield and selection widgets. Since that container is created with
-  // USE_LOCAL_COORDINATES BoundsInScreenBehavior local bounds in |root_window_|
-  // need to be provided.
-  params.parent =
-      parent ? parent
-             : root_window->GetChildById(kShellWindowId_WallpaperContainer);
-  widget->Init(params);
-  aura::Window* widget_window = widget->GetNativeWindow();
-  // Disable the "bounce in" animation when showing the window.
-  ::wm::SetWindowVisibilityAnimationTransition(widget_window,
-                                               ::wm::ANIMATE_NONE);
-  if (params.layer_type == ui::LAYER_SOLID_COLOR) {
-    widget_window->layer()->SetColor(background_color);
-  } else if (params.layer_type == ui::LAYER_TEXTURED) {
-    views::View* content_view = new views::View();
-    content_view->SetBackground(std::make_unique<BackgroundWith1PxBorder>(
-        background_color, border_color, border_thickness, border_radius));
-    widget->SetContentsView(content_view);
-  }
-
-  if (stack_on_top)
-    widget_window->parent()->StackChildAtTop(widget_window);
-  else
-    widget_window->parent()->StackChildAtBottom(widget_window);
-
-  widget->Show();
-  widget_window->layer()->SetOpacity(initial_opacity);
-  return widget;
 }
 
 wm::WindowTransientDescendantIteratorRange GetVisibleTransientTreeIterator(

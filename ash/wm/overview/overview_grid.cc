@@ -46,7 +46,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/compositor/layer_animation_observer.h"
-#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/compositor_extra/shadow.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -383,34 +382,15 @@ void OverviewGrid::Shutdown() {
         root_window_->layer()->GetCompositor(), single_animation_in_clamshell);
   }
 
-  // Shutdown() implies |overview_session_| is about to be deleted, so reset it.
-  auto exit_overview_session_type =
-      overview_session_->enter_exit_overview_type();
   overview_session_ = nullptr;
 
   while (!window_list_.empty())
     RemoveItem(window_list_.back().get());
-
-  // HomeLauncherGestureHandler will handle fading/sliding |shield_widget_| in
-  // this exit mode.
-  if (exit_overview_session_type ==
-      OverviewSession::EnterExitOverviewType::kSwipeFromShelf) {
-    return;
-  }
-
-  if (shield_widget_) {
-    // Fade out the shield widget. This animation continues past the lifetime
-    // of |this|.
-    FadeOutWidgetAndMaybeSlideOnExit(std::move(shield_widget_),
-                                     OVERVIEW_ANIMATION_RESTORE_WINDOW);
-  }
 }
 
 void OverviewGrid::PrepareForOverview() {
-  if (!ShouldAnimateWallpaper()) {
-    InitShieldWidget(/*animate=*/false);
+  if (!ShouldAnimateWallpaper())
     MaybeInitDesksWidget();
-  }
 
   for (const auto& window : window_list_)
     window->PrepareForOverview();
@@ -426,20 +406,10 @@ void OverviewGrid::PositionWindows(
     bool animate,
     OverviewItem* ignored_item,
     OverviewSession::OverviewTransition transition) {
-  if (!overview_session_ || suspend_reposition_)
+  if (!overview_session_ || suspend_reposition_ || window_list_.empty())
     return;
 
   DCHECK_NE(transition, OverviewSession::OverviewTransition::kExit);
-  // Keep the background shield widget covering the whole screen. A grid without
-  // any windows still needs the shield widget bounds updated.
-  if (shield_widget_) {
-    aura::Window* widget_window = shield_widget_->GetNativeWindow();
-    const gfx::Rect bounds = widget_window->parent()->bounds();
-    widget_window->SetBounds(bounds);
-  }
-
-  if (window_list_.empty())
-    return;
 
   std::vector<gfx::RectF> rects = GetWindowRects(ignored_item);
 
@@ -951,9 +921,6 @@ void OverviewGrid::OnStartingAnimationComplete(bool canceled) {
   if (canceled)
     return;
 
-  if (!shield_widget_)
-    InitShieldWidget(/*animate=*/true);
-
   MaybeInitDesksWidget();
 
   for (auto& window : window_list())
@@ -1203,39 +1170,23 @@ void OverviewGrid::SlideWindowsIn() {
     window_item->SlideWindowIn();
 }
 
-void OverviewGrid::UpdateYPositionAndOpacity(
+std::unique_ptr<ui::ScopedLayerAnimationSettings>
+OverviewGrid::UpdateYPositionAndOpacity(
     int new_y,
     float opacity,
     const gfx::Rect& work_area,
     OverviewSession::UpdateAnimationSettingsCallback callback) {
-  // Translate the window items to |new_y| with the opacity.
-  for (const auto& window_item : window_list_)
-    window_item->UpdateYPositionAndOpacity(new_y, opacity, callback);
-
-  // Shield widget can be null because it's created asynchronously. The
-  // shield_widget won't use the same transform when created if this
-  // happened. Since shield widget will be removed soon, this is leave it as is.
-  // (https://crbug.com/942759)
-  if (!shield_widget_)
-    return;
-
-  // Translate |shield_widget_| to |new_y|. The shield widget covers the shelf
-  // so scale it down while moving it, so that it does not cover the launcher,
-  // which is showing as this is disappearing.
-  aura::Window* shield_window = shield_widget_->GetNativeWindow();
-  float height_ratio = 1.f;
-  std::unique_ptr<ui::ScopedLayerAnimationSettings> settings;
-  if (!callback.is_null()) {
-    settings = std::make_unique<ui::ScopedLayerAnimationSettings>(
-        shield_window->layer()->GetAnimator());
-    callback.Run(settings.get(), /*observe=*/true);
-  } else {
-    height_ratio = static_cast<float>(work_area.height()) /
-                   static_cast<float>(shield_window->bounds().height());
+  DCHECK(!window_list_.empty());
+  // Translate the window items to |new_y| with the opacity. Observe the
+  // animation of the first window.
+  std::unique_ptr<ui::ScopedLayerAnimationSettings> settings_to_observe;
+  for (const auto& window_item : window_list_) {
+    auto new_settings =
+        window_item->UpdateYPositionAndOpacity(new_y, opacity, callback);
+    if (!settings_to_observe && new_settings)
+      settings_to_observe = std::move(new_settings);
   }
-  shield_window->SetTransform(gfx::Transform(1.f, 0.f, 0.f, height_ratio, 0.f,
-                                             static_cast<float>(new_y)));
-  shield_window->layer()->SetOpacity(opacity);
+  return settings_to_observe;
 }
 
 aura::Window* OverviewGrid::GetTargetWindowOnLocation(
@@ -1260,39 +1211,6 @@ bool OverviewGrid::IsDesksBarViewActive() const {
          (desks_bar_view_ && !desks_bar_view_->mini_views().empty());
 }
 
-void OverviewGrid::InitShieldWidget(bool animate) {
-  // TODO(varkha): The code assumes that SHELF_BACKGROUND_MAXIMIZED is
-  // synonymous with a black shelf background. Update this code if that
-  // assumption is no longer valid.
-  const float initial_opacity =
-      (Shelf::ForWindow(root_window_)->GetBackgroundType() ==
-       SHELF_BACKGROUND_MAXIMIZED)
-          ? 1.f
-          : 0.f;
-  shield_widget_ = CreateBackgroundWidget(
-      root_window_, ui::LAYER_NOT_DRAWN, SK_ColorTRANSPARENT, 0, 0,
-      SK_ColorTRANSPARENT, initial_opacity, /*parent=*/nullptr,
-      /*stack_on_top=*/true, /*accept_events=*/false);
-  aura::Window* widget_window = shield_widget_->GetNativeWindow();
-  aura::Window* parent_window = widget_window->parent();
-  const gfx::Rect bounds = ash::screen_util::SnapBoundsToDisplayEdge(
-      parent_window->bounds(), parent_window);
-  widget_window->SetBounds(bounds);
-  widget_window->SetName("OverviewModeShield");
-
-  // TODO(sammiequon): The shield widget is not anymore in most cases. Remove
-  // the shield widget and put the cannot snap widget and desks bar into their
-  // own widgets.
-  if (animate) {
-    shield_widget_->SetOpacity(initial_opacity);
-    ScopedOverviewAnimationSettings settings(OVERVIEW_ANIMATION_NO_RECENTS_FADE,
-                                             shield_widget_->GetNativeWindow());
-    shield_widget_->SetOpacity(1.f);
-  } else {
-    shield_widget_->SetOpacity(1.f);
-  }
-}
-
 void OverviewGrid::MaybeInitDesksWidget() {
   if (!features::IsVirtualDesksEnabled() || desks_widget_)
     return;
@@ -1312,11 +1230,29 @@ void OverviewGrid::MaybeInitDesksWidget() {
 }
 
 void OverviewGrid::InitSelectionWidget(OverviewSession::Direction direction) {
-  selection_widget_ = CreateBackgroundWidget(
-      root_window_, ui::LAYER_TEXTURED, kWindowSelectionColor, 0,
-      kWindowSelectionRadius, SK_ColorTRANSPARENT, 0.f, /*parent=*/nullptr,
-      /*stack_on_top=*/true, /*accept_events=*/false);
+  selection_widget_ = std::make_unique<views::Widget>();
+  views::Widget::InitParams params;
+  params.type = views::Widget::InitParams::TYPE_POPUP;
+  params.keep_on_top = false;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.layer_type = ui::LAYER_SOLID_COLOR;
+  params.accept_events = false;
+  selection_widget_->set_focus_on_creation(false);
+  params.parent = root_window_->GetChildById(kShellWindowId_WallpaperContainer);
+  selection_widget_->Init(params);
   aura::Window* widget_window = selection_widget_->GetNativeWindow();
+  // Disable the "bounce in" animation when showing the window.
+  ::wm::SetWindowVisibilityAnimationTransition(widget_window,
+                                               ::wm::ANIMATE_NONE);
+  widget_window->layer()->SetColor(kWindowSelectionColor);
+  widget_window->layer()->SetRoundedCornerRadius(
+      {kWindowSelectionRadius, kWindowSelectionRadius, kWindowSelectionRadius,
+       kWindowSelectionRadius});
+  // Set the opacity to 0 initial so we can fade it in.
+  widget_window->layer()->SetOpacity(0.f);
+  selection_widget_->Show();
+
   gfx::Rect target_bounds =
       gfx::ToEnclosedRect(SelectedWindow()->target_bounds());
   ::wm::ConvertRectFromScreen(root_window_, &target_bounds);

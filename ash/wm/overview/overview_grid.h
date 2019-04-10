@@ -62,7 +62,7 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
                const gfx::Rect& bounds_in_screen);
   ~OverviewGrid() override;
 
-  // Exits overview mode, fading out the |shield_widget_| if necessary.
+  // Exits overview mode.
   void Shutdown();
 
   // Prepares the windows in this grid for overview. This will restore all
@@ -198,10 +198,11 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   void SlideWindowsIn();
 
   // Update the y position and opacity of the entire grid. Does this by
-  // transforming the grids |shield_widget_| and the windows in |window_list_|.
-  // If |callback| is true transformation and opacity change should be animated.
-  // The animation settings will be set by the caller via |callback|.
-  void UpdateYPositionAndOpacity(
+  // transforming the windows in |window_list_|. If |callback| is non null, the
+  // transformation and opacity change should be animated. The animation
+  // settings will be set by the caller via |callback|. Returns the settings of
+  // the first window we are animating; the caller will observe this animation.
+  std::unique_ptr<ui::ScopedLayerAnimationSettings> UpdateYPositionAndOpacity(
       int new_y,
       float opacity,
       const gfx::Rect& work_area,
@@ -238,8 +239,6 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
     return should_animate_when_exiting_;
   }
 
-  views::Widget* shield_widget() { return shield_widget_.get(); }
-
   void set_suspend_reposition(bool value) { suspend_reposition_ = value; }
 
   views::Widget* drop_target_widget_for_testing() {
@@ -260,9 +259,6 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
     gfx::RectF src;
     gfx::RectF dst;
   };
-
-  // Initializes the screen shield widget.
-  void InitShieldWidget(bool animate);
 
   // If the Virtual Desks feature is enabled, it initializes the widget that
   // contains the DeskBarView contents.
@@ -338,11 +334,6 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
 
   ScopedObserver<aura::Window, OverviewGrid> window_observer_;
   ScopedObserver<wm::WindowState, OverviewGrid> window_state_observer_;
-
-  // Unused legacy widget.
-  // TODO(sammiequon): Remove this, kept temporarily as there are some
-  // dependencies on it still.
-  std::unique_ptr<views::Widget> shield_widget_;
 
   // Widget that contains the DeskBarView contents when the Virtual Desks
   // feature is enabled.
