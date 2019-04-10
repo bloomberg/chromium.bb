@@ -6,47 +6,59 @@ package org.chromium.chrome.browser.autofill_assistant.carousel;
 
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.ui.widget.ChipView;
 
 /**
  * The {@link ViewHolder} responsible for reflecting an {@link AssistantChip} to a {@link
  * TextView}.
  */
 class AssistantChipViewHolder extends ViewHolder {
+    private final View mView;
     private final TextView mText;
 
-    private AssistantChipViewHolder(TextView itemView) {
-        super(itemView);
+    private AssistantChipViewHolder(View view, TextView itemView) {
+        super(view);
+        mView = view;
         mText = itemView;
     }
 
     static AssistantChipViewHolder create(ViewGroup parent, int viewType) {
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
-        int resId = -1;
+        View view = null;
+        TextView textView = null;
         switch (viewType % AssistantChip.Type.NUM_ENTRIES) {
             // TODO: inflate normal chrome buttons instead.
             case AssistantChip.Type.CHIP_ASSISTIVE:
-                resId = R.layout.autofill_assistant_chip_assistive;
+                ChipView chipView = new ChipView(parent.getContext(), R.style.AssistiveChip);
+                chipView.setLayoutParams(new ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                view = chipView;
+                textView = chipView.getPrimaryTextView();
                 break;
             case AssistantChip.Type.BUTTON_FILLED_BLUE:
-                resId = R.layout.autofill_assistant_button_filled;
+                view = layoutInflater.inflate(
+                        R.layout.autofill_assistant_button_filled, /* root= */ null);
+                textView = (TextView) view;
                 break;
             case AssistantChip.Type.BUTTON_HAIRLINE:
-                resId = R.layout.autofill_assistant_button_hairline;
+                view = layoutInflater.inflate(
+                        R.layout.autofill_assistant_button_hairline, /* root= */ null);
+                textView = (TextView) view;
                 break;
             default:
                 assert false : "Unsupported view type " + viewType;
         }
 
-        TextView view = (TextView) layoutInflater.inflate(resId, /* root= */ null);
         if (viewType >= AssistantChip.Type.NUM_ENTRIES) {
             view.setEnabled(false);
         }
 
-        return new AssistantChipViewHolder(view);
+        return new AssistantChipViewHolder(view, textView);
     }
 
     static int getViewType(AssistantChip chip) {
@@ -62,6 +74,6 @@ class AssistantChipViewHolder extends ViewHolder {
 
     public void bind(AssistantChip chip) {
         mText.setText(chip.getText());
-        mText.setOnClickListener(ignoredView -> chip.getSelectedListener().run());
+        mView.setOnClickListener(ignoredView -> chip.getSelectedListener().run());
     }
 }
