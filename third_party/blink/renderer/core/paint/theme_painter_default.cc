@@ -214,6 +214,15 @@ bool ThemePainterDefault::PaintTextField(const Node* node,
   if (style.HasBorderRadius() || style.HasBackgroundImage())
     return true;
 
+  // Don't use the theme painter if dark mode is enabled. It has a separate
+  // graphics pipeline that doesn't go through GraphicsContext and so does not
+  // currently know how to handle Dark Mode, causing elements to be rendered
+  // incorrectly (e.g. https://crbug.com/937872).
+  // TODO(gilmanmh): Implement a more permanent solution that allows use of
+  // native dark themes.
+  if (paint_info.context.dark_mode_settings().mode != DarkMode::kOff)
+    return true;
+
   ControlPart part = style.Appearance();
 
   WebThemeEngine::ExtraParams extra_params;

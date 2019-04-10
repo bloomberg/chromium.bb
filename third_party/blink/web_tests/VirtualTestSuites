@@ -472,6 +472,16 @@
   },
   {
     "prefix": "dark-mode",
+    "base": "paint/dark-mode/native-theme-off",
+    "args": ["--blink-settings=darkMode=3"]
+  },
+  {
+    "prefix": "dark-mode",
+    "base": "paint/dark-mode/native-theme-on",
+    "args": ["--blink-settings=darkMode=3"]
+  },
+  {
+    "prefix": "dark-mode",
     "base": "paint/dark-mode/page-policy-all",
     "args": ["--blink-settings=darkMode=3,darkModePagePolicy=0"]
   },
