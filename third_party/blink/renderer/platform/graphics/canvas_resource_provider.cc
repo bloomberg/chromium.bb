@@ -1058,8 +1058,13 @@ bool CanvasResourceProvider::WritePixels(const SkImageInfo& orig_info,
   TRACE_EVENT0("blink", "CanvasResourceProvider::WritePixels");
 
   DCHECK(IsValid());
-  return GetSkSurface()->getCanvas()->writePixels(orig_info, pixels, row_bytes,
-                                                  x, y);
+  if (GetSkSurface()->getCanvas()->writePixels(orig_info, pixels, row_bytes, x,
+                                               y)) {
+    FlushSkia();
+    return true;
+  }
+
+  return false;
 }
 
 void CanvasResourceProvider::Clear() {
