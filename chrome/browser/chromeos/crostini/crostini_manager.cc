@@ -2587,47 +2587,59 @@ void CrostiniManager::OnImportLxdContainerProgress(
   if (signal.owner_id() != owner_id_)
     return;
 
-  bool importing = false;
+  bool call_observers = false;
+  bool call_original_callback = false;
   ImportContainerProgressStatus status;
   CrostiniResult result;
   switch (signal.status()) {
     case vm_tools::cicerone::ImportLxdContainerProgressSignal::IMPORTING_UPLOAD:
-      importing = true;
+      call_observers = true;
       status = ImportContainerProgressStatus::UPLOAD;
       break;
     case vm_tools::cicerone::ImportLxdContainerProgressSignal::IMPORTING_UNPACK:
-      importing = true;
+      call_observers = true;
       status = ImportContainerProgressStatus::UNPACK;
       break;
     case vm_tools::cicerone::ImportLxdContainerProgressSignal::DONE:
+      call_original_callback = true;
       result = CrostiniResult::SUCCESS;
       break;
+    case vm_tools::cicerone::ImportLxdContainerProgressSignal::
+        FAILED_ARCHITECTURE:
+      call_observers = true;
+      status = ImportContainerProgressStatus::FAILURE_ARCHITECTURE;
+      call_original_callback = true;
+      result = CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED_ARCHITECTURE;
+      break;
     default:
+      call_original_callback = true;
       result = CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED;
       LOG(ERROR) << "Failed during import container: " << signal.status()
                  << ", " << signal.failure_reason();
   }
 
-  // If we are still importing, call progress observers.
-  if (importing) {
+  // Call progress observers.
+  if (call_observers) {
     for (auto& observer : import_container_progress_observers_) {
       observer.OnImportContainerProgress(
           signal.vm_name(), signal.container_name(), status,
-          signal.progress_percent(), signal.progress_speed());
+          signal.progress_percent(), signal.progress_speed(),
+          signal.architecture_device(), signal.architecture_container());
     }
-    return;
   }
 
   // Invoke original callback with either success or failure.
-  auto key = std::make_pair(signal.vm_name(), signal.container_name());
-  auto it = import_lxd_container_callbacks_.find(key);
-  if (it == import_lxd_container_callbacks_.end()) {
-    LOG(ERROR) << "No import callback for " << signal.vm_name() << ", "
-               << signal.container_name();
-    return;
+  if (call_original_callback) {
+    auto key = std::make_pair(signal.vm_name(), signal.container_name());
+    auto it = import_lxd_container_callbacks_.find(key);
+    if (it == import_lxd_container_callbacks_.end()) {
+      LOG(ERROR) << "No import callback for " << signal.vm_name() << ", "
+                 << signal.container_name();
+      return;
+    }
+    std::move(it->second).Run(result);
+    import_lxd_container_callbacks_.erase(it);
   }
-  std::move(it->second).Run(result);
-  import_lxd_container_callbacks_.erase(it);
 }
 
 }  // namespace crostini

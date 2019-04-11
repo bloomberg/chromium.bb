@@ -1227,6 +1227,29 @@ TEST_F(CrostiniManagerTest, ImportContainerFailInProgress) {
   run_loop()->Run();
 }
 
+TEST_F(CrostiniManagerTest, ImportContainerFailArchitecture) {
+  crostini_manager()->ImportLxdContainer(
+      kVmName, kContainerName, base::FilePath("import_path"),
+      base::BindOnce(
+          &CrostiniManagerTest::CrostiniResultCallback, base::Unretained(this),
+          run_loop()->QuitClosure(),
+          CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED_ARCHITECTURE));
+
+  // Send signal with FAILED_ARCHITECTURE.
+  vm_tools::cicerone::ImportLxdContainerProgressSignal signal;
+  signal.set_owner_id(CryptohomeIdForProfile(profile()));
+  signal.set_vm_name(kVmName);
+  signal.set_container_name(kContainerName);
+  signal.set_status(
+      vm_tools::cicerone::
+          ImportLxdContainerProgressSignal_Status_FAILED_ARCHITECTURE);
+  signal.set_architecture_device("archdev");
+  signal.set_architecture_container("archcont");
+  fake_cicerone_client_->NotifyImportLxdContainerProgress(signal);
+
+  run_loop()->Run();
+}
+
 TEST_F(CrostiniManagerTest, ImportContainerFailFromSignal) {
   crostini_manager()->ImportLxdContainer(
       kVmName, kContainerName, base::FilePath("import_path"),

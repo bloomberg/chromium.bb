@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_share_path.h"
@@ -319,6 +320,10 @@ void CrostiniExportImport::OnImportComplete(
       case crostini::CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED_VM_STARTED:
         enum_hist_result = ImportContainerResult::kFailedVmStarted;
         break;
+      case crostini::CrostiniResult::
+          CONTAINER_EXPORT_IMPORT_FAILED_ARCHITECTURE:
+        enum_hist_result = ImportContainerResult::kFailedArchitecture;
+        break;
       default:
         enum_hist_result = ImportContainerResult::kFailed;
     }
@@ -338,7 +343,9 @@ void CrostiniExportImport::OnImportContainerProgress(
     const std::string& container_name,
     ImportContainerProgressStatus status,
     int progress_percent,
-    uint64_t progress_speed) {
+    uint64_t progress_speed,
+    const std::string& architecture_device,
+    const std::string& architecture_container) {
   ContainerId container_id(vm_name, container_name);
   auto it = notifications_.find(container_id);
   DCHECK(it != notifications_.end())
@@ -356,6 +363,13 @@ void CrostiniExportImport::OnImportContainerProgress(
       it->second->UpdateStatus(
           CrostiniExportImportNotification::Status::RUNNING,
           50 + progress_percent / 2);
+      break;
+    // Failure, set error message.
+    case ImportContainerProgressStatus::FAILURE_ARCHITECTURE:
+      it->second->set_message_failed(l10n_util::GetStringFUTF16(
+          IDS_CROSTINI_IMPORT_NOTIFICATION_MESSAGE_FAILED_ARCHITECTURE,
+          base::ASCIIToUTF16(architecture_container),
+          base::ASCIIToUTF16(architecture_device)));
       break;
     default:
       LOG(WARNING) << "Unknown Export progress status " << int(status);
