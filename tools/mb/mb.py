@@ -613,35 +613,18 @@ class MetaBuildWrapper(object):
     return ' '.join(gn_args)
 
   def Lookup(self):
-    vals = self.ReadIOSBotConfig()
-    if not vals:
-      self.ReadConfigFile()
-      config = self.ConfigFromArgs()
-      if config.startswith('//'):
-        if not self.Exists(self.ToAbsPath(config)):
-          raise MBErr('args file "%s" not found' % config)
-        vals = self.DefaultVals()
-        vals['args_file'] = config
-      else:
-        if not config in self.configs:
-          raise MBErr('Config "%s" not found in %s' %
-                      (config, self.args.config_file))
-        vals = self.FlattenConfig(config)
-    return vals
-
-  def ReadIOSBotConfig(self):
-    if not self.args.master or not self.args.builder:
-      return {}
-    path = self.PathJoin(self.chromium_src_dir, 'ios', 'build', 'bots',
-                         self.args.master, self.args.builder + '.json')
-    if not self.Exists(path):
-      return {}
-
-    contents = json.loads(self.ReadFile(path))
-    gn_args = ' '.join(contents.get('gn_args', []))
-
-    vals = self.DefaultVals()
-    vals['gn_args'] = gn_args
+    self.ReadConfigFile()
+    config = self.ConfigFromArgs()
+    if config.startswith('//'):
+      if not self.Exists(self.ToAbsPath(config)):
+        raise MBErr('args file "%s" not found' % config)
+      vals = self.DefaultVals()
+      vals['args_file'] = config
+    else:
+      if not config in self.configs:
+        raise MBErr('Config "%s" not found in %s' %
+                    (config, self.args.config_file))
+      vals = self.FlattenConfig(config)
     return vals
 
   def ReadConfigFile(self):
