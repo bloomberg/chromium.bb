@@ -27,7 +27,8 @@ class WebGPUTest : public testing::Test {
     Options();
 
     // Shared memory limits
-    SharedMemoryLimits shared_memory_limits = {};
+    SharedMemoryLimits shared_memory_limits =
+        SharedMemoryLimits::ForWebGPUContext();
   };
 
   WebGPUTest();

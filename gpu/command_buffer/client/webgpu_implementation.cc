@@ -4,8 +4,10 @@
 
 #include "gpu/command_buffer/client/webgpu_implementation.h"
 
+#include <algorithm>
 #include <vector>
 
+#include "base/numerics/checked_math.h"
 #include "gpu/command_buffer/client/gpu_control.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 
@@ -42,12 +44,8 @@ gpu::ContextResult WebGPUImplementation::Initialize(
     return result;
   }
 
-  // TODO(enga): Keep track of how much command space the application is using
-  // and adjust c2s_buffer_size_ accordingly.
-  c2s_buffer_size_ = limits.start_transfer_buffer_size;
-  DCHECK_GT(c2s_buffer_size_, 0u);
-  DCHECK(
-      base::CheckAdd(c2s_buffer_size_, c2s_buffer_size_).IsValid<uint32_t>());
+  c2s_buffer_default_size_ = limits.start_transfer_buffer_size;
+  DCHECK_GT(c2s_buffer_default_size_, 0u);
 
   return gpu::ContextResult::kSuccess;
 }
@@ -214,36 +212,37 @@ void WebGPUImplementation::Dummy() {
 
 void* WebGPUImplementation::GetCmdSpace(size_t size) {
   // The buffer size must be initialized before any commands are serialized.
-  if (c2s_buffer_size_ == 0u) {
+  if (c2s_buffer_default_size_ == 0u) {
     NOTREACHED();
     return nullptr;
   }
 
-  // TODO(enga): Handle chunking commands if size > c2s_buffer_size_.
-  if (size > c2s_buffer_size_) {
-    NOTREACHED();
-    return nullptr;
-  }
+  base::CheckedNumeric<uint32_t> checked_next_offset(c2s_put_offset_);
+  checked_next_offset += size;
 
-  // This should never be more than 2 * c2s_buffer_size_ which is checked in
-  // WebGPUImplementation::Initialize.
-  DCHECK_LE(c2s_put_offset_, c2s_buffer_size_);
-  DCHECK_LE(size, c2s_buffer_size_);
-  uint32_t next_offset = c2s_put_offset_ + static_cast<uint32_t>(size);
+  uint32_t next_offset;
+  bool next_offset_valid = checked_next_offset.AssignIfValid(&next_offset);
 
   // If the buffer does not have enough space, or if the buffer is not
   // initialized, flush and reset the command stream.
-  if (next_offset > c2s_buffer_.size() || !c2s_buffer_.valid()) {
+  if (!next_offset_valid || next_offset > c2s_buffer_.size() ||
+      !c2s_buffer_.valid()) {
     Flush();
 
-    c2s_buffer_.Reset(c2s_buffer_size_);
+    uint32_t max_allocation = transfer_buffer_->GetMaxSize();
+    // TODO(crbug.com/951558): Handle command chunking or ensure commands aren't
+    // this large.
+    CHECK_LE(size, max_allocation);
+
+    uint32_t allocation_size =
+        std::max(c2s_buffer_default_size_, static_cast<uint32_t>(size));
+    c2s_buffer_.Reset(allocation_size);
     c2s_put_offset_ = 0;
     next_offset = size;
 
-    if (size > c2s_buffer_.size() || !c2s_buffer_.valid()) {
-      // TODO(enga): Handle OOM.
-      return nullptr;
-    }
+    // TODO(crbug.com/951558): Handle OOM.
+    CHECK(c2s_buffer_.valid());
+    CHECK_LE(size, c2s_buffer_.size());
   }
 
   DCHECK(c2s_buffer_.valid());
@@ -256,6 +255,7 @@ void* WebGPUImplementation::GetCmdSpace(size_t size) {
 
 bool WebGPUImplementation::Flush() {
   if (c2s_buffer_.valid()) {
+    c2s_buffer_.Shrink(c2s_put_offset_);
     helper_->DawnCommands(c2s_buffer_.shm_id(), c2s_buffer_.offset(),
                           c2s_put_offset_);
     c2s_put_offset_ = 0;

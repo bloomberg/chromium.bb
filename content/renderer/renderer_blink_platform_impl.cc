@@ -1018,7 +1018,7 @@ RendererBlinkPlatformImpl::CreateWebGPUGraphicsContext3DProvider(
           kGpuStreamIdDefault, kGpuStreamPriorityDefault,
           gpu::kNullSurfaceHandle, GURL(top_document_web_url),
           automatic_flushes, support_locking, support_grcontext,
-          gpu::SharedMemoryLimits(), attributes,
+          gpu::SharedMemoryLimits::ForWebGPUContext(), attributes,
           ws::command_buffer_metrics::ContextType::WEBGPU));
   return std::make_unique<WebGraphicsContext3DProviderImpl>(
       std::move(provider));

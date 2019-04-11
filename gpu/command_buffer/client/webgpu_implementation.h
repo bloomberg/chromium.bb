@@ -124,7 +124,7 @@ class WEBGPU_EXPORT WebGPUImplementation final
 #endif
   DawnProcTable procs_ = {};
 
-  uint32_t c2s_buffer_size_ = 0;
+  uint32_t c2s_buffer_default_size_ = 0;
   uint32_t c2s_put_offset_ = 0;
   ScopedTransferBufferPtr c2s_buffer_;
 
