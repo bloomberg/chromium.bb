@@ -129,21 +129,6 @@ class SwitchAccessPrefs {
   }
 
   /**
-   * Get the value of type 'string' of the preference |key|. Will throw a type
-   * error if the value of |key| is not 'string'.
-   *
-   * @param  {string} key
-   * @return {string}
-   */
-  getStringPref(key) {
-    const value = this.prefs_[key];
-    if (typeof value === 'string')
-      return value;
-    else
-      throw new TypeError('No value of string type for key \'' + key + '\'');
-  }
-
-  /**
    * Returns true if |keyCode| is already used to run a command from the
    * keyboard.
    *
