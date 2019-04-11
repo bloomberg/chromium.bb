@@ -509,12 +509,17 @@ public class WebViewBrowserActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu, menu);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+            menu.findItem(R.id.menu_enable_tracing).setEnabled(false);
+        }
         return true;
     }
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        menu.findItem(R.id.menu_enable_tracing).setChecked(mEnableTracing);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            menu.findItem(R.id.menu_enable_tracing).setChecked(mEnableTracing);
+        }
         return true;
     }
 
@@ -539,6 +544,8 @@ public class WebViewBrowserActivity extends AppCompatActivity {
             case R.id.menu_enable_tracing:
                 mEnableTracing = !mEnableTracing;
                 item.setChecked(mEnableTracing);
+
+                // TODO(laisminchillo): replace this with AndroidX's TracingController
                 TracingController tracingController = TracingController.getInstance();
                 if (mEnableTracing) {
                     tracingController.start(
