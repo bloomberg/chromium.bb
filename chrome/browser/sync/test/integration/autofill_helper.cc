@@ -409,6 +409,7 @@ AutofillProfileChecker::~AutofillProfileChecker() {
 }
 
 bool AutofillProfileChecker::Wait() {
+  DLOG(WARNING) << "AutofillProfileChecker::Wait() started";
   PersonalDataLoadedObserverMock personal_data_observer;
   base::RunLoop run_loop_a;
   base::RunLoop run_loop_b;
@@ -439,7 +440,7 @@ bool AutofillProfileChecker::Wait() {
 
   pdm_a->RemoveObserver(&personal_data_observer);
   pdm_b->RemoveObserver(&personal_data_observer);
-
+  DLOG(WARNING) << "AutofillProfileChecker::Wait() completed";
   return StatusChangeChecker::Wait();
 }
 
