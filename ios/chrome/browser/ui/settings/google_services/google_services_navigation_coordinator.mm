@@ -52,27 +52,35 @@
                                       completion:nil];
 }
 
-// This method should be moved to the view controller.
-- (UIBarButtonItem*)closeButton {
-  UIBarButtonItem* closeButton =
-      [ChromeIcon templateBarButtonItemWithImage:[ChromeIcon closeIcon]
-                                          target:self
-                                          action:@selector(closeSettings)];
-  closeButton.accessibilityLabel = l10n_util::GetNSString(IDS_ACCNAME_CLOSE);
-  return closeButton;
-}
-
-- (void)closeSettings {
+- (void)dismissAnimated:(BOOL)animated {
   DCHECK_EQ(self.navigationController,
             self.baseViewController.presentedViewController);
+  DCHECK(self.googleServicesSettingsCoordinator);
   void (^completion)(void) = ^{
     [self.googleServicesSettingsCoordinator stop];
     self.googleServicesSettingsCoordinator.delegate = nil;
     self.googleServicesSettingsCoordinator = nil;
     [self.delegate googleServicesNavigationCoordinatorDidClose:self];
   };
-  [self.baseViewController dismissViewControllerAnimated:YES
+  [self.baseViewController dismissViewControllerAnimated:animated
                                               completion:completion];
+}
+
+#pragma mark - Private
+
+// This method should be moved to the view controller.
+- (UIBarButtonItem*)closeButton {
+  UIBarButtonItem* closeButton =
+      [ChromeIcon templateBarButtonItemWithImage:[ChromeIcon closeIcon]
+                                          target:self
+                                          action:@selector(closeButtonAction)];
+  closeButton.accessibilityLabel = l10n_util::GetNSString(IDS_ACCNAME_CLOSE);
+  return closeButton;
+}
+
+// Called by the close button.
+- (void)closeButtonAction {
+  [self dismissAnimated:YES];
 }
 
 @end
