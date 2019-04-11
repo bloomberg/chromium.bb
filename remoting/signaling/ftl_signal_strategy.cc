@@ -60,6 +60,7 @@ class FtlSignalStrategy::Core {
   void AddListener(Listener* listener);
   void RemoveListener(Listener* listener);
   bool SendStanza(std::unique_ptr<jingle_xmpp::XmlElement> stanza);
+  bool IsSignInError() const;
 
  private:
   // Methods are called in the order below when Connect() is called.
@@ -102,6 +103,7 @@ class FtlSignalStrategy::Core {
   std::string message_sender_override_;
 
   Error error_ = OK;
+  bool is_sign_in_error_ = false;
 
   base::ObserverList<Listener, true> listeners_;
 
@@ -157,6 +159,7 @@ void FtlSignalStrategy::Core::Connect() {
   }
 
   error_ = OK;
+  is_sign_in_error_ = false;
 
   receive_message_subscription_ =
       messaging_client_->RegisterMessageCallback(base::BindRepeating(
@@ -249,6 +252,10 @@ bool FtlSignalStrategy::Core::SendStanza(
   return stream_parser_ != nullptr;
 }
 
+bool FtlSignalStrategy::Core::IsSignInError() const {
+  return is_sign_in_error_;
+}
+
 void FtlSignalStrategy::Core::OnGetOAuthTokenResponse(
     OAuthTokenGetter::Status status,
     const std::string& user_email,
@@ -266,6 +273,7 @@ void FtlSignalStrategy::Core::OnGetOAuthTokenResponse(
         NOTREACHED();
         break;
     }
+    is_sign_in_error_ = true;
     Disconnect();
     return;
   }
@@ -277,6 +285,7 @@ void FtlSignalStrategy::Core::OnGetOAuthTokenResponse(
 void FtlSignalStrategy::Core::OnSignInGaiaResponse(const grpc::Status& status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!status.ok()) {
+    is_sign_in_error_ = true;
     HandleGrpcStatusError(FROM_HERE, status);
     return;
   }
@@ -385,6 +394,7 @@ void FtlSignalStrategy::Core::HandleGrpcStatusError(
              << ", location: " << location.ToString();
   if (status.error_code() == grpc::StatusCode::UNAUTHENTICATED) {
     registration_manager_->SignOut();
+    oauth_token_getter_->InvalidateCache();
   }
   Disconnect();
 }
@@ -461,6 +471,10 @@ bool FtlSignalStrategy::SendStanza(
 
 std::string FtlSignalStrategy::GetNextId() {
   return base::NumberToString(base::RandUint64());
+}
+
+bool FtlSignalStrategy::IsSignInError() const {
+  return core_->IsSignInError();
 }
 
 }  // namespace remoting
