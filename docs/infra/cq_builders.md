@@ -120,6 +120,11 @@ builder.
   Path regular expressions:
     * [`//chromeos/CHROMEOS_LKGM`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:chromeos/CHROMEOS_LKGM)
 
+* [chromeos-kevin-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/chromeos-kevin-rel) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/chromeos-kevin-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+chromeos-kevin-rel))
+
+  Path regular expressions:
+    * [`//build/chromeos/.+`](https://cs.chromium.org/chromium/src/build/chromeos/)
+
 * [closure_compilation](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/closure_compilation) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/closure_compilation)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+closure_compilation))
 
   Path regular expressions:
