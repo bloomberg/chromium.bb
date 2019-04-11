@@ -361,10 +361,6 @@ void MakeCredentialRequestHandler::OnRetriesResponse(
   DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
   DCHECK_EQ(state_, State::kGettingRetries);
 
-  if (status == CtapDeviceResponseCode::kSuccess && !response) {
-    status = CtapDeviceResponseCode::kCtap2ErrInvalidCBOR;
-  }
-
   if (status != CtapDeviceResponseCode::kSuccess) {
     state_ = State::kFinished;
     FidoReturnCode ret = FidoReturnCode::kAuthenticatorResponseInvalid;
@@ -389,10 +385,6 @@ void MakeCredentialRequestHandler::OnHaveEphemeralKey(
   DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
   DCHECK(state_ == State::kGetEphemeralKey ||
          state_ == State::kGetEphemeralKeyForNewPIN);
-
-  if (status == CtapDeviceResponseCode::kSuccess && !response) {
-    status = CtapDeviceResponseCode::kCtap2ErrInvalidCBOR;
-  }
 
   if (status != CtapDeviceResponseCode::kSuccess) {
     state_ = State::kFinished;
@@ -446,10 +438,6 @@ void MakeCredentialRequestHandler::OnHavePINToken(
         base::BindOnce(&MakeCredentialRequestHandler::OnRetriesResponse,
                        weak_factory_.GetWeakPtr()));
     return;
-  }
-
-  if (status == CtapDeviceResponseCode::kSuccess && !response) {
-    status = CtapDeviceResponseCode::kCtap2ErrInvalidCBOR;
   }
 
   if (status != CtapDeviceResponseCode::kSuccess) {

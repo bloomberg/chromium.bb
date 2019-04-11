@@ -50,7 +50,7 @@ struct RetriesRequest {
 // RetriesResponse reflects an authenticator's response to a |RetriesRequest|.
 struct RetriesResponse {
   static base::Optional<RetriesResponse> Parse(
-      base::span<const uint8_t> buffer);
+      const base::Optional<cbor::Value>& cbor);
 
   // retries is the number of PIN attempts remaining before the authenticator
   // locks.
@@ -72,7 +72,7 @@ struct KeyAgreementRequest {
 // authenticator's ephemeral key.
 struct KeyAgreementResponse {
   static base::Optional<KeyAgreementResponse> Parse(
-      base::span<const uint8_t> buffer);
+      const base::Optional<cbor::Value>& cbor);
   static base::Optional<KeyAgreementResponse> ParseFromCOSE(
       const cbor::Value::MapValue& cose_key);
 
@@ -100,7 +100,8 @@ class SetRequest {
 };
 
 struct EmptyResponse {
-  static base::Optional<EmptyResponse> Parse(base::span<const uint8_t> buffer);
+  static base::Optional<EmptyResponse> Parse(
+      const base::Optional<cbor::Value>& cbor);
 };
 
 // ChangeRequest changes the PIN on an authenticator that already has a PIN set.
@@ -164,8 +165,9 @@ class TokenResponse {
   ~TokenResponse();
   TokenResponse(const TokenResponse&);
 
-  static base::Optional<TokenResponse> Parse(std::array<uint8_t, 32> shared_key,
-                                             base::span<const uint8_t> buffer);
+  static base::Optional<TokenResponse> Parse(
+      std::array<uint8_t, 32> shared_key,
+      const base::Optional<cbor::Value>& cbor);
 
   // PinAuth returns a pinAuth parameter for a request that will use the given
   // client-data hash.

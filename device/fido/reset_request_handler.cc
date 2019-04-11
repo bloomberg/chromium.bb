@@ -65,10 +65,6 @@ void ResetRequestHandler::OnResetComplete(
   DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
   DCHECK(processed_touch_);
 
-  if (status == CtapDeviceResponseCode::kSuccess && !response) {
-    status = CtapDeviceResponseCode::kCtap2ErrInvalidCBOR;
-  }
-
   std::move(finished_callback_).Run(status);
 }
 

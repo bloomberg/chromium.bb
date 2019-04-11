@@ -370,10 +370,6 @@ void GetAssertionRequestHandler::HandleNextResponse(
   DCHECK_LT(0u, remaining_responses_);
 
   state_ = State::kFinished;
-  if (status == CtapDeviceResponseCode::kSuccess && !response) {
-    status = CtapDeviceResponseCode::kCtap2ErrInvalidCBOR;
-  }
-
   if (status != CtapDeviceResponseCode::kSuccess) {
     OnAuthenticatorResponse(authenticator, status, base::nullopt);
     return;
@@ -434,10 +430,6 @@ void GetAssertionRequestHandler::OnRetriesResponse(
   DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
   DCHECK_EQ(state_, State::kGettingRetries);
 
-  if (status == CtapDeviceResponseCode::kSuccess && !response) {
-    status = CtapDeviceResponseCode::kCtap2ErrInvalidCBOR;
-  }
-
   if (status != CtapDeviceResponseCode::kSuccess) {
     state_ = State::kFinished;
     FidoReturnCode ret = FidoReturnCode::kAuthenticatorResponseInvalid;
@@ -479,10 +471,6 @@ void GetAssertionRequestHandler::OnHaveEphemeralKey(
   DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
   DCHECK_EQ(State::kGetEphemeralKey, state_);
 
-  if (status == CtapDeviceResponseCode::kSuccess && !response) {
-    status = CtapDeviceResponseCode::kCtap2ErrInvalidCBOR;
-  }
-
   if (status != CtapDeviceResponseCode::kSuccess) {
     state_ = State::kFinished;
     std::move(completion_callback_)
@@ -510,10 +498,6 @@ void GetAssertionRequestHandler::OnHavePINToken(
         base::BindOnce(&GetAssertionRequestHandler::OnRetriesResponse,
                        weak_factory_.GetWeakPtr()));
     return;
-  }
-
-  if (status == CtapDeviceResponseCode::kSuccess && !response) {
-    status = CtapDeviceResponseCode::kCtap2ErrInvalidCBOR;
   }
 
   if (status != CtapDeviceResponseCode::kSuccess) {

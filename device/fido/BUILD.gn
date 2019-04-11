@@ -271,6 +271,7 @@ fuzzer_test("ctap_response_fuzzer") {
     ":fido",
     "//base",
     "//base:i18n",
+    "//components/cbor",
   ]
   seed_corpus = "response_data_fuzzer_corpus/"
   libfuzzer_options = [ "max_len=65537" ]
