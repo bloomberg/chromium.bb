@@ -294,15 +294,12 @@ public class AssistantChoiceList extends GridLayout {
     }
 
     private void setCheckedItem(Item item) {
-        boolean changed = false;
         for (int i = 0; i < mItems.size(); i++) {
             RadioButton radioButton = mItems.get(i).mRadioButton;
-            boolean isItem = mItems.get(i) == item;
-            changed |= isItem && !radioButton.isChecked();
-            radioButton.setChecked(isItem);
+            radioButton.setChecked(mItems.get(i) == item);
         }
 
-        if (changed && mItemSelectedListener != null) {
+        if (mItemSelectedListener != null) {
             mItemSelectedListener.onResult(item.mContent);
         }
     }
