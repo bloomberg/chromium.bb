@@ -108,10 +108,6 @@ void SetPINRequestHandler::OnRetriesResponse(
   DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
   DCHECK_EQ(state_, State::kGettingRetries);
 
-  if (status == CtapDeviceResponseCode::kSuccess && !response) {
-    status = CtapDeviceResponseCode::kCtap2ErrInvalidCBOR;
-  }
-
   if (status != CtapDeviceResponseCode::kSuccess) {
     state_ = State::kFinished;
     finished_callback_.Run(status);
@@ -129,10 +125,6 @@ void SetPINRequestHandler::OnHaveEphemeralKey(
     base::Optional<pin::KeyAgreementResponse> response) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
   DCHECK_EQ(state_, State::kGetEphemeralKey);
-
-  if (status == CtapDeviceResponseCode::kSuccess && !response) {
-    status = CtapDeviceResponseCode::kCtap2ErrInvalidCBOR;
-  }
 
   if (status != CtapDeviceResponseCode::kSuccess) {
     state_ = State::kFinished;

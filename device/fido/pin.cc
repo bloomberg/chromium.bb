@@ -69,19 +69,11 @@ RetriesResponse::RetriesResponse() = default;
 
 // static
 base::Optional<RetriesResponse> RetriesResponse::Parse(
-    base::span<const uint8_t> buffer) {
-  // The response status code (the first byte) has already been processed by
-  // this point.
-  if (buffer.empty()) {
+    const base::Optional<cbor::Value>& cbor) {
+  if (!cbor || !cbor->is_map()) {
     return base::nullopt;
   }
-
-  base::Optional<cbor::Value> decoded_response =
-      cbor::Reader::Read(buffer.subspan(1));
-  if (!decoded_response || !decoded_response->is_map()) {
-    return base::nullopt;
-  }
-  const auto& response_map = decoded_response->GetMap();
+  const auto& response_map = cbor->GetMap();
 
   auto it =
       response_map.find(cbor::Value(static_cast<int>(ResponseKey::kRetries)));
@@ -134,19 +126,11 @@ base::Optional<bssl::UniquePtr<EC_POINT>> PointFromKeyAgreementResponse(
 
 // static
 base::Optional<KeyAgreementResponse> KeyAgreementResponse::Parse(
-    base::span<const uint8_t> buffer) {
-  // The response status code (the first byte) has already been processed by
-  // this point.
-  if (buffer.empty()) {
+    const base::Optional<cbor::Value>& cbor) {
+  if (!cbor || !cbor->is_map()) {
     return base::nullopt;
   }
-
-  base::Optional<cbor::Value> decoded_response =
-      cbor::Reader::Read(buffer.subspan(1));
-  if (!decoded_response || !decoded_response->is_map()) {
-    return base::nullopt;
-  }
-  const auto& response_map = decoded_response->GetMap();
+  const auto& response_map = cbor->GetMap();
 
   // The ephemeral key is encoded as a COSE structure.
   auto it = response_map.find(
@@ -336,10 +320,12 @@ ChangeRequest::ChangeRequest(const std::string& old_pin,
 
 // static
 base::Optional<EmptyResponse> EmptyResponse::Parse(
-    base::span<const uint8_t> buffer) {
-  // The response status code (the first byte) has already been processed by
-  // this point.
-  if (buffer.size() != 1) {
+    const base::Optional<cbor::Value>& cbor) {
+  // Yubikeys can return just the status byte, and no CBOR bytes, for the empty
+  // response, which will end up here with |cbor| being |nullopt|. This seems
+  // wrong, but is handled. (The response should, instead, encode an empty CBOR
+  // map.)
+  if (cbor && (!cbor->is_map() || !cbor->GetMap().empty())) {
     return base::nullopt;
   }
 
@@ -455,19 +441,11 @@ void Decrypt(const uint8_t key[SHA256_DIGEST_LENGTH],
 
 base::Optional<TokenResponse> TokenResponse::Parse(
     std::array<uint8_t, 32> shared_key,
-    base::span<const uint8_t> buffer) {
-  // The response status code (the first byte) has already been processed by
-  // this point.
-  if (buffer.empty()) {
+    const base::Optional<cbor::Value>& cbor) {
+  if (!cbor || !cbor->is_map()) {
     return base::nullopt;
   }
-
-  base::Optional<cbor::Value> decoded_response =
-      cbor::Reader::Read(buffer.subspan(1));
-  if (!decoded_response || !decoded_response->is_map()) {
-    return base::nullopt;
-  }
-  const auto& response_map = decoded_response->GetMap();
+  const auto& response_map = cbor->GetMap();
 
   auto it =
       response_map.find(cbor::Value(static_cast<int>(ResponseKey::kPINToken)));

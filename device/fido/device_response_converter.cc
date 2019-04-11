@@ -12,6 +12,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
+#include "components/cbor/diagnostic_writer.h"
 #include "components/cbor/reader.h"
 #include "components/cbor/writer.h"
 #include "components/device_event_log/device_event_log.h"
@@ -53,15 +54,11 @@ CtapDeviceResponseCode GetResponseCode(base::span<const uint8_t> buffer) {
 // checks for correct encoding format.
 base::Optional<AuthenticatorMakeCredentialResponse>
 ReadCTAPMakeCredentialResponse(FidoTransportProtocol transport_used,
-                               base::span<const uint8_t> buffer) {
-  if (buffer.size() <= kResponseCodeLength)
+                               const base::Optional<cbor::Value>& cbor) {
+  if (!cbor || !cbor->is_map())
     return base::nullopt;
 
-  base::Optional<CBOR> decoded_response = cbor::Reader::Read(buffer.subspan(1));
-  if (!decoded_response || !decoded_response->is_map())
-    return base::nullopt;
-
-  const auto& decoded_map = decoded_response->GetMap();
+  const auto& decoded_map = cbor->GetMap();
   auto it = decoded_map.find(CBOR(1));
   if (it == decoded_map.end() || !it->second.is_string())
     return base::nullopt;
@@ -88,16 +85,11 @@ ReadCTAPMakeCredentialResponse(FidoTransportProtocol transport_used,
 }
 
 base::Optional<AuthenticatorGetAssertionResponse> ReadCTAPGetAssertionResponse(
-    base::span<const uint8_t> buffer) {
-  if (buffer.size() <= kResponseCodeLength)
+    const base::Optional<cbor::Value>& cbor) {
+  if (!cbor || !cbor->is_map())
     return base::nullopt;
 
-  base::Optional<CBOR> decoded_response = cbor::Reader::Read(buffer.subspan(1));
-
-  if (!decoded_response || !decoded_response->is_map())
-    return base::nullopt;
-
-  auto& response_map = decoded_response->GetMap();
+  auto& response_map = cbor->GetMap();
 
   auto it = response_map.find(CBOR(2));
   if (it == response_map.end() || !it->second.is_bytestring())
@@ -155,6 +147,7 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
   if (!decoded_response || !decoded_response->is_map())
     return base::nullopt;
 
+  FIDO_LOG(DEBUG) << "-> " << cbor::DiagnosticWriter::Write(*decoded_response);
   const auto& response_map = decoded_response->GetMap();
 
   auto it = response_map.find(CBOR(1));
