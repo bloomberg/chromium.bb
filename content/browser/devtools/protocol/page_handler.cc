@@ -1155,5 +1155,13 @@ Response PageHandler::SetWebLifecycleState(const std::string& state) {
   return Response::Error("Unidentified lifecycle state");
 }
 
+void PageHandler::GetInstallabilityErrors(
+    std::unique_ptr<GetInstallabilityErrorsCallback> callback) {
+  auto errors = protocol::Array<std::string>::create();
+  // TODO: Use InstallableManager once it moves into content/.
+  // Until then, this code is only used to return empty array in the tests.
+  callback->sendSuccess(std::move(errors));
+}
+
 }  // namespace protocol
 }  // namespace content
