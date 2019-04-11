@@ -139,7 +139,6 @@ cr.define('user_manager.control_bar_tests', function() {
         MockInteractions.tap(controlBarElement.$.launchGuest);
         return browserProxy.whenCalled('launchGuestUser');
       });
-
     });
   }
 

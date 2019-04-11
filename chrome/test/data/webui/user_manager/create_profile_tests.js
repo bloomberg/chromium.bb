@@ -25,8 +25,7 @@ cr.define('user_manager.create_profile_tests', function() {
         signin.ProfileBrowserProxyImpl.instance_ = browserProxy;
         browserProxy.setDefaultProfileInfo({name: 'profile name'});
         browserProxy.setIcons([
-          {url: 'icon1.png', label: 'icon1'},
-          {url: 'icon2.png', label: 'icon2'}
+          {url: 'icon1.png', label: 'icon1'}, {url: 'icon2.png', label: 'icon2'}
         ]);
 
         createProfileElement = createElement();
