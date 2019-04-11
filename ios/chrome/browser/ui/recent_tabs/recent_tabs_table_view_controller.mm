@@ -1125,6 +1125,10 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   [self.dispatcher showSyncPassphraseSettingsFromViewController:self];
 }
 
+- (void)showGoogleServicesSettings {
+  [self.dispatcher showGoogleServicesSettingsFromViewController:self];
+}
+
 #pragma mark - SigninPresenter
 
 - (void)showSignin:(ShowSigninCommand*)command {

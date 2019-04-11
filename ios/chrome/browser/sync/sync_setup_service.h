@@ -28,6 +28,7 @@ class SyncSetupService : public KeyedService {
     kSyncServiceServiceUnavailable,
     kSyncServiceNeedsPassphrase,
     kSyncServiceUnrecoverableError,
+    kSyncSettingsNotConfirmed,
     kLastSyncServiceError = kSyncServiceUnrecoverableError
   };
 
