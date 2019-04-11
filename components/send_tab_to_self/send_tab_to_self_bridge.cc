@@ -14,8 +14,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/send_tab_to_self/features.h"
 #include "components/send_tab_to_self/proto/send_tab_to_self.pb.h"
-#include "components/sync/device_info/device_info.h"
-#include "components/sync/device_info/local_device_info_provider.h"
+#include "components/sync/base/get_session_name.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/metadata_change_list.h"
@@ -68,10 +67,14 @@ std::unique_ptr<syncer::EntityData> CopyToEntityData(
 base::Optional<syncer::ModelError> ParseLocalEntriesOnBackendSequence(
     base::Time now,
     std::map<std::string, std::unique_ptr<SendTabToSelfEntry>>* entries,
+    std::string* local_session_name,
     std::unique_ptr<ModelTypeStore::RecordList> record_list) {
   DCHECK(entries);
   DCHECK(entries->empty());
+  DCHECK(local_session_name);
   DCHECK(record_list);
+
+  *local_session_name = syncer::GetSessionNameBlocking();
 
   for (const syncer::ModelTypeStore::Record& r : *record_list) {
     auto specifics = std::make_unique<SendTabToSelfLocal>();
@@ -90,17 +93,14 @@ base::Optional<syncer::ModelError> ParseLocalEntriesOnBackendSequence(
 
 SendTabToSelfBridge::SendTabToSelfBridge(
     std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
-    syncer::LocalDeviceInfoProvider* local_device_info_provider,
     base::Clock* clock,
     syncer::OnceModelTypeStoreFactory create_store_callback,
     history::HistoryService* history_service)
     : ModelTypeSyncBridge(std::move(change_processor)),
       clock_(clock),
-      local_device_info_provider_(local_device_info_provider),
       history_service_(history_service),
       mru_entry_(nullptr),
       weak_ptr_factory_(this) {
-  DCHECK(local_device_info_provider);
   DCHECK(clock_);
   if (history_service) {
     history_service->AddObserver(this);
@@ -422,19 +422,25 @@ void SendTabToSelfBridge::OnStoreCreated(
   auto initial_entries = std::make_unique<SendTabToSelfEntries>();
   SendTabToSelfEntries* initial_entries_copy = initial_entries.get();
 
+  auto local_device_name = std::make_unique<std::string>();
+  std::string* local_device_name_copy = local_device_name.get();
+
   store_ = std::move(store);
   store_->ReadAllDataAndPreprocess(
       base::BindOnce(&ParseLocalEntriesOnBackendSequence, clock_->Now(),
-                     base::Unretained(initial_entries_copy)),
+                     base::Unretained(initial_entries_copy),
+                     base::Unretained(local_device_name_copy)),
       base::BindOnce(&SendTabToSelfBridge::OnReadAllData,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     std::move(initial_entries)));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(initial_entries),
+                     std::move(local_device_name)));
 }
 
 void SendTabToSelfBridge::OnReadAllData(
     std::unique_ptr<SendTabToSelfEntries> initial_entries,
+    std::unique_ptr<std::string> local_device_name,
     const base::Optional<syncer::ModelError>& error) {
   DCHECK(initial_entries);
+  DCHECK(local_device_name);
 
   if (error) {
     change_processor()->ReportError(*error);
@@ -442,24 +448,8 @@ void SendTabToSelfBridge::OnReadAllData(
   }
 
   entries_ = std::move(*initial_entries);
+  local_device_name_ = std::move(*local_device_name);
 
-  if (local_device_info_provider_->GetLocalDeviceInfo()) {
-    OnDeviceProviderInitialized();
-  } else {
-    device_subscription_ =
-        local_device_info_provider_->RegisterOnInitializedCallback(
-            base::BindRepeating(
-                &SendTabToSelfBridge::OnDeviceProviderInitialized,
-                base::Unretained(this)));
-  }
-}
-
-void SendTabToSelfBridge::OnDeviceProviderInitialized() {
-  device_subscription_.reset();
-  local_device_name_ =
-      local_device_info_provider_->GetLocalDeviceInfo()->client_name();
-
-  // now that all of the providers are ready we can read the metadata.
   store_->ReadAllMetadata(base::BindOnce(
       &SendTabToSelfBridge::OnReadAllMetadata, weak_ptr_factory_.GetWeakPtr()));
 }

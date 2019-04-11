@@ -18,7 +18,6 @@
 #include "components/send_tab_to_self/send_tab_to_self_entry.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/model/model_type_store.h"
 #include "components/sync/model/model_type_sync_bridge.h"
 
@@ -42,11 +41,9 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
                             public SendTabToSelfModel,
                             public history::HistoryServiceObserver {
  public:
-  // |local_device_info_provider| must not be null and must outlive this object.
   // |clock| must not be null and must outlive this object.
   SendTabToSelfBridge(
       std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
-      syncer::LocalDeviceInfoProvider* local_device_info_provider,
       base::Clock* clock,
       syncer::OnceModelTypeStoreFactory create_store_callback,
       history::HistoryService* history_service);
@@ -109,10 +106,8 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
   void OnStoreCreated(const base::Optional<syncer::ModelError>& error,
                       std::unique_ptr<syncer::ModelTypeStore> store);
   void OnReadAllData(std::unique_ptr<SendTabToSelfEntries> initial_entries,
+                     std::unique_ptr<std::string> local_device_name,
                      const base::Optional<syncer::ModelError>& error);
-  // Used as callback given to LocalDeviceInfoProvider.
-  void OnDeviceProviderInitialized();
-
   void OnReadAllMetadata(const base::Optional<syncer::ModelError>& error,
                          std::unique_ptr<syncer::MetadataBatch> metadata_batch);
   void OnCommit(const base::Optional<syncer::ModelError>& error);
@@ -133,9 +128,6 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
   // |clock_| isn't owned.
   const base::Clock* const clock_;
 
-  // |local_device_info_provider_| isn't owned.
-  syncer::LocalDeviceInfoProvider* const local_device_info_provider_;
-
   // |history_service_| isn't owned.
   history::HistoryService* const history_service_;
 
@@ -143,11 +135,6 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
 
   // In charge of actually persisting changes to disk, or loading previous data.
   std::unique_ptr<syncer::ModelTypeStore> store_;
-
-  // Used to listen for provider initialization. If the provider is already
-  // initialized during our constructor then the subscription is never used.
-  std::unique_ptr<syncer::LocalDeviceInfoProvider::Subscription>
-      device_subscription_;
 
   // A pointer to the most recently used entry used for deduplication.
   const SendTabToSelfEntry* mru_entry_;
