@@ -1036,7 +1036,8 @@ public class LocationBarLayout extends FrameLayout
         }
 
         mStatusViewCoordinator.setUseDarkColors(useDarkColors);
-        mAutocompleteCoordinator.updateVisualsForState(useDarkColors);
+        mAutocompleteCoordinator.updateVisualsForState(
+                useDarkColors, mToolbarDataProvider.isIncognito());
     }
 
     @Override

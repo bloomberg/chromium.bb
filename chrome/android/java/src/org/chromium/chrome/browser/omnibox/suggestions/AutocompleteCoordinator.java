@@ -339,9 +339,10 @@ public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextC
     /**
      * Update the visuals of the autocomplete UI.
      * @param useDarkColors Whether dark colors should be applied to the UI.
+     * @param isIncognito Whether the UI is for incognito mode or not.
      */
-    public void updateVisualsForState(boolean useDarkColors) {
-        mMediator.setUseDarkColors(useDarkColors);
+    public void updateVisualsForState(boolean useDarkColors, boolean isIncognito) {
+        mMediator.updateVisualsForState(useDarkColors, isIncognito);
     }
 
     /**

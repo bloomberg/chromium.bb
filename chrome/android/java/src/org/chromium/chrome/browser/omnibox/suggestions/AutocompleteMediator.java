@@ -266,10 +266,11 @@ class AutocompleteMediator
     /**
      * Specifies the visual state to be used by the suggestions.
      * @param useDarkColors Whether dark colors should be used for fonts and icons.
+     * @param isIncognito Whether the UI is for incognito mode or not.
      */
-    void setUseDarkColors(boolean useDarkColors) {
+    void updateVisualsForState(boolean useDarkColors, boolean isIncognito) {
         mUseDarkColors = useDarkColors;
-        mListPropertyModel.set(SuggestionListProperties.USE_DARK_BACKGROUND, !useDarkColors);
+        mListPropertyModel.set(SuggestionListProperties.IS_INCOGNITO, isIncognito);
         for (int i = 0; i < mCurrentModels.size(); i++) {
             PropertyModel model = mCurrentModels.get(i).model;
             model.set(SuggestionCommonProperties.USE_DARK_COLORS, useDarkColors);
