@@ -2051,6 +2051,27 @@ are declared in tools/grit/grit_rule.gni.
         Open as window
       </message>
 
+      <!-- Finish policy app installation dialog -->
+      <message name="IDS_FINISH_POLICY_WEB_APP_INSTALLATION" desc="Main text for the Finish Policy Web App Installation dialog. This is a dialog message that appears on the first launch of an app after it was remotely installed by an enterprise administrator. The app has some cosmetic factors (like the app icon) that can only be fixed if the user launches and then restarts the app. After the initial launch, this dialog encourages users to restart the app to complete the installation.">
+          This app was added by your organization. Restart the app to finish installing it.
+      </message>
+      <if expr="not use_titlecase">
+        <message name="IDS_FINISH_POLICY_WEB_APP_INSTALATION_RESTART" desc="The button in the Finish Policy Web App Installation dialog which closes the app and relaunches it.">
+          Restart
+        </message>
+        <message name="IDS_FINISH_POLICY_WEB_APP_INSTALLATION_NOT_NOW" desc="The button in the Finish Policy Web App Installation dialog which dismisses the dialog.">
+          Not now
+        </message>
+      </if>
+      <if expr="use_titlecase">
+        <message name="IDS_FINISH_POLICY_WEB_APP_INSTALATION_RESTART" desc="The button in the Finish Policy Web App Installation dialog which closes the app and relaunches it.">
+          Restart
+        </message>
+        <message name="IDS_FINISH_POLICY_WEB_APP_INSTALLATION_NOT_NOW" desc="The button in the Finish Policy Web App Installation dialog which dismisses the dialog.">
+          Not Now
+        </message>
+      </if>
+
       <!-- Quit all apps confirmation dialog -->
       <if expr="is_macosx">
         <message name="IDS_QUIT_WITH_APPS_NOTIFICATION_DISPLAY_SOURCE" desc="Display source for the notification when quitting with apps open.">
