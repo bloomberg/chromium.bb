@@ -112,7 +112,9 @@ class WebRequestProxyingWebSocket
 
  private:
   void OnBeforeRequestComplete(int error_code);
-  void OnBeforeSendHeadersComplete(int error_code);
+  void OnBeforeSendHeadersComplete(const std::set<std::string>& removed_headers,
+                                   const std::set<std::string>& set_headers,
+                                   int error_code);
   void ContinueToStartRequest(int error_code);
   void OnHeadersReceivedComplete(int error_code);
   void ContinueToHeadersReceived();

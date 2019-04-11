@@ -8,6 +8,56 @@ function getSetCookieUrl(name, value) {
   return getServerURL('set-cookie?' + name + '=' + value);
 }
 
+function testModifyHeadersOnRedirect(useExtraHeaders) {
+  // Use /echoheader instead of observing headers in onSendHeaders to
+  // ensure we're looking at what the server receives. This avoids bugs in the
+  // webRequest implementation from being masked.
+  var finalURL = getServerURL('echoheader?User-Agent&Accept&X-New-Header');
+  var url = getServerURL('server-redirect?' + finalURL);
+  var listener = callbackPass(function(details) {
+    var headers = details.requestHeaders;
+
+    // Test modification.
+    var accept_value;
+    for (var i = 0; i < headers.length; i++) {
+      if (headers[i].name.toLowerCase() === 'user-agent') {
+        headers[i].value = 'foo';
+      } else if (headers[i].name.toLowerCase() === 'accept') {
+        accept_value = headers[i].value;
+      }
+    }
+
+    // Test removal.
+    chrome.test.assertTrue(accept_value.indexOf('image/webp') >= 0);
+    removeHeader(headers, 'accept');
+
+    // Test addition.
+    headers.push({name: 'X-New-Header', value: 'Baz'});
+
+    return {requestHeaders: headers};
+  });
+
+  var extraInfo = ['requestHeaders', 'blocking'];
+  if (useExtraHeaders)
+    extraInfo.push('extraHeaders');
+  chrome.webRequest.onBeforeSendHeaders.addListener(listener,
+      {urls: [finalURL]}, extraInfo);
+
+  navigateAndWait(url, function(tab) {
+    chrome.webRequest.onBeforeSendHeaders.removeListener(listener);
+    chrome.tabs.executeScript(tab.id, {
+      code: 'document.body.innerText'
+    }, callbackPass(function(results) {
+      chrome.test.assertTrue(results[0].indexOf('foo') >= 0,
+          'User-Agent should be modified.');
+        chrome.test.assertTrue(results[0].indexOf('image/webp') == -1,
+          'Accept should be removed.');
+      chrome.test.assertTrue(results[0].indexOf('Baz') >= 0,
+          'X-New-Header should be added.');
+    }));
+  });
+}
+
 runTests([
   function testSpecialRequestHeadersVisible() {
     // Set a cookie so the cookie request header is set.
@@ -198,6 +248,14 @@ runTests([
             'User-Agent should be modified.');
       }));
     });
+  },
+
+  function testModifyHeadersOnRedirectWithoutExtraHeaders() {
+    testModifyHeadersOnRedirect(false);
+  },
+
+  function testModifyHeadersOnRedirectWithExtraHeaders() {
+    testModifyHeadersOnRedirect(true);
   },
 
   // Successful Set-Cookie modification is tested in test_blocking_cookie.js.

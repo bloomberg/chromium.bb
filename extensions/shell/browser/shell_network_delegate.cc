@@ -70,13 +70,22 @@ int ShellNetworkDelegate::OnBeforeURLRequest(
   return result;
 }
 
+namespace {
+void OnHeadersReceivedAdapter(net::CompletionOnceCallback callback,
+                              const std::set<std::string>& removed_headers,
+                              const std::set<std::string>& set_headers,
+                              int error_code) {
+  std::move(callback).Run(error_code);
+}
+}  // namespace
+
 int ShellNetworkDelegate::OnBeforeStartTransaction(
     net::URLRequest* request,
     net::CompletionOnceCallback callback,
     net::HttpRequestHeaders* headers) {
   return ExtensionWebRequestEventRouter::GetInstance()->OnBeforeSendHeaders(
       browser_context_, extension_info_map_.get(), GetWebRequestInfo(request),
-      std::move(callback), headers);
+      base::BindOnce(OnHeadersReceivedAdapter, std::move(callback)), headers);
 }
 
 void ShellNetworkDelegate::OnStartTransaction(

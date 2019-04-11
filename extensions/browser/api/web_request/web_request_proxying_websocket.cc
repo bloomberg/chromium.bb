@@ -379,10 +379,14 @@ void WebRequestProxyingWebSocket::OnBeforeRequestComplete(int error_code) {
     return;
 
   DCHECK_EQ(net::OK, result);
-  OnBeforeSendHeadersComplete(net::OK);
+  OnBeforeSendHeadersComplete(std::set<std::string>(), std::set<std::string>(),
+                              net::OK);
 }
 
-void WebRequestProxyingWebSocket::OnBeforeSendHeadersComplete(int error_code) {
+void WebRequestProxyingWebSocket::OnBeforeSendHeadersComplete(
+    const std::set<std::string>& removed_headers,
+    const std::set<std::string>& set_headers,
+    int error_code) {
   DCHECK(binding_as_header_client_ || !binding_as_client_.is_bound());
   if (error_code != net::OK) {
     OnError(error_code);

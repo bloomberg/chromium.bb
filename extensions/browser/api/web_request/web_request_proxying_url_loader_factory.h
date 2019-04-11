@@ -103,8 +103,14 @@ class WebRequestProxyingURLLoaderFactory
                            OnHeadersReceivedCallback callback) override;
 
    private:
+    // These two methods combined form the implementation of Restart().
+    void UpdateRequestInfo();
+    void RestartInternal();
+
     void ContinueToBeforeSendHeaders(int error_code);
-    void ContinueToSendHeaders(int error_code);
+    void ContinueToSendHeaders(const std::set<std::string>& removed_headers,
+                               const std::set<std::string>& set_headers,
+                               int error_code);
     void ContinueToStartRequest(int error_code);
     void ContinueToHandleOverrideHeaders(int error_code);
     void ContinueToResponseStarted(int error_code);
@@ -167,6 +173,21 @@ class WebRequestProxyingURLLoaderFactory
     OnBeforeSendHeadersCallback on_before_send_headers_callback_;
     OnHeadersReceivedCallback on_headers_received_callback_;
     mojo::Binding<network::mojom::TrustedHeaderClient> header_client_binding_;
+
+    // If |has_any_extra_headers_listeners_| is set to false and a redirect is
+    // in progress, this stores the parameters to FollowRedirect that came from
+    // the client. That way we can combine it with any other changes that
+    // extensions made to headers in their callbacks.
+    struct FollowRedirectParams {
+      FollowRedirectParams();
+      ~FollowRedirectParams();
+      std::vector<std::string> removed_headers;
+      net::HttpRequestHeaders modified_headers;
+      base::Optional<GURL> new_url;
+
+      DISALLOW_COPY_AND_ASSIGN(FollowRedirectParams);
+    };
+    std::unique_ptr<FollowRedirectParams> pending_follow_redirect_params_;
 
     base::WeakPtrFactory<InProgressRequest> weak_factory_;
 
