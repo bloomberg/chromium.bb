@@ -1059,6 +1059,9 @@ HttpHandler::PrepareStandardResponse(
     case kInvalidSelector:
       response.reset(new net::HttpServerResponseInfo(net::HTTP_BAD_REQUEST));
       break;
+    case kInvalidSessionId:
+      response.reset(new net::HttpServerResponseInfo(net::HTTP_NOT_FOUND));
+      break;
     case kJavaScriptError:
       response.reset(
           new net::HttpServerResponseInfo(net::HTTP_INTERNAL_SERVER_ERROR));
@@ -1126,7 +1129,6 @@ HttpHandler::PrepareStandardResponse(
     case kNoSuchExecutionContext:
       response.reset(new net::HttpServerResponseInfo(net::HTTP_BAD_REQUEST));
       break;
-    case kInvalidSessionId:
     case kChromeNotReachable:
     case kDisconnected:
     case kForbidden:
