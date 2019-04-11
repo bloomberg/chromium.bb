@@ -277,8 +277,7 @@ var executeMessage_ = function(payload, iv) {
   getFrameSymmetricKey_(function(frameKey) {
     window.crypto.subtle.decrypt(algorithm, frameKey, encryptedFunctionArray)
         .then(function(decrypted) {
-      var callJSON =
-          String.fromCharCode.apply(null, new Uint8Array(decrypted));
+      var callJSON = new TextDecoder().decode(new Uint8Array(decrypted));
       var callDict = JSON.parse(callJSON);
 
       // Verify that message id is valid.
