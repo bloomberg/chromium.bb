@@ -332,6 +332,8 @@ void MergeOnBeforeSendHeadersResponses(
     net::HttpRequestHeaders* request_headers,
     IgnoredActions* ignored_actions,
     extensions::WebRequestInfo::Logger* logger,
+    std::set<std::string>* removed_headers,
+    std::set<std::string>* set_headers,
     bool* request_headers_modified);
 // Modifies the "Set-Cookie" headers in |override_response_headers| according to
 // |deltas.response_cookie_modifications|. If |override_response_headers| is

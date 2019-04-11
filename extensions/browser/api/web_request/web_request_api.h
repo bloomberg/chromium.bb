@@ -359,6 +359,11 @@ class ExtensionWebRequestEventRouter {
                       GURL* new_url,
                       bool* should_collapse_initiator);
 
+  using BeforeSendHeadersCallback =
+      base::OnceCallback<void(const std::set<std::string>& removed_headers,
+                              const std::set<std::string>& set_headers,
+                              int error_code)>;
+
   // Dispatches the onBeforeSendHeaders event. This is fired for HTTP(s)
   // requests only, and allows modification of the outgoing request headers.
   // Returns net::ERR_IO_PENDING if an extension is intercepting the request, OK
@@ -366,7 +371,7 @@ class ExtensionWebRequestEventRouter {
   int OnBeforeSendHeaders(void* browser_context,
                           const extensions::InfoMap* extension_info_map,
                           const WebRequestInfo* request,
-                          net::CompletionOnceCallback callback,
+                          BeforeSendHeadersCallback callback,
                           net::HttpRequestHeaders* headers);
 
   // Dispatches the onSendHeaders event. This is fired for HTTP(s) requests
