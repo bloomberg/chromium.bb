@@ -85,10 +85,11 @@ class InterfaceTemplateContextBuilder(object):
         indexed_property_getter = None
         is_global = False
         named_property_getter = None
+        component_info = self._info_provider.component_info
         if interface.name in SNAPSHOTTED_INTERFACES:
-            attributes = [v8_attributes.attribute_context(interface, attribute, interfaces)
+            attributes = [v8_attributes.attribute_context(interface, attribute, interfaces, component_info)
                           for attribute in interface.attributes]
-            methods = v8_interface.methods_context(interface)['methods']
+            methods = v8_interface.methods_context(interface, component_info)['methods']
             is_global = 'Global' in interface.extended_attributes
 
             named_property_getter = v8_interface.property_getter(

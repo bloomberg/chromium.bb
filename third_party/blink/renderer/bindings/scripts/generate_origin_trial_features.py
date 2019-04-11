@@ -20,7 +20,7 @@ from idl_reader import IdlReader
 from utilities import (create_component_info_provider, write_file,
                        idl_filename_to_component)
 from v8_utilities import (binding_header_filename, v8_class_name,
-                          v8_class_name_or_partial)
+                          v8_class_name_or_partial, origin_trial_feature_name)
 
 # Make sure extension is .py, not .pyc or .pyo, so doesn't depend on caching
 MODULE_PYNAME = os.path.splitext(os.path.basename(__file__))[0] + '.py'
@@ -39,7 +39,7 @@ def get_install_functions(interfaces, feature_names):
         be installed on those interfaces.
     """
     return [
-        {'condition': 'origin_trials::%sEnabled' % feature_name,
+        {'condition': 'RuntimeEnabledFeatures::%sEnabled' % feature_name,
          'name': feature_name,
          'install_method': 'Install%s' % feature_name,
          'interface_is_global': interface_info.is_global,
@@ -49,19 +49,19 @@ def get_install_functions(interfaces, feature_names):
         for interface_info in interfaces]
 
 
-def get_origin_trial_feature_names_from_interface(interface):
+def get_origin_trial_feature_names_from_interface(interface, runtime_features):
     feature_names = set()
-    if ('OriginTrialEnabled' in interface.extended_attributes and
-            interface.is_partial):
-        feature_names.add(interface.extended_attributes['OriginTrialEnabled'])
+
+    def add_if_not_none(value):
+        if value:
+            feature_names.add(value)
+
+    if interface.is_partial:
+        add_if_not_none(origin_trial_feature_name(interface, runtime_features))
     for operation in interface.operations:
-        if 'OriginTrialEnabled' in operation.extended_attributes:
-            feature_names.add(
-                operation.extended_attributes['OriginTrialEnabled'])
+        add_if_not_none(origin_trial_feature_name(operation, runtime_features))
     for attribute in interface.attributes:
-        if 'OriginTrialEnabled' in attribute.extended_attributes:
-            feature_names.add(
-                attribute.extended_attributes['OriginTrialEnabled'])
+        add_if_not_none(origin_trial_feature_name(attribute, runtime_features))
     return feature_names
 
 
@@ -91,10 +91,11 @@ def origin_trial_features_info(info_provider, reader, idl_filenames, target_comp
     features_for_type = defaultdict(set)
     types_for_feature = defaultdict(set)
     include_files = set()
+    runtime_features = info_provider.component_info['runtime_enabled_features']
 
     for idl_filename in idl_filenames:
         interface, includes = read_idl_file(reader, idl_filename)
-        feature_names = get_origin_trial_feature_names_from_interface(interface)
+        feature_names = get_origin_trial_feature_names_from_interface(interface, runtime_features)
 
         # If this interface is a mixin, we don't generate V8 bindings code for
         # it.
@@ -108,7 +109,7 @@ def origin_trial_features_info(info_provider, reader, idl_filenames, target_comp
             mixin, _ = read_idl_file(
                 reader,
                 info_provider.interfaces_info[include.mixin].get('full_path'))
-            feature_names |= get_origin_trial_feature_names_from_interface(mixin)
+            feature_names |= get_origin_trial_feature_names_from_interface(mixin, runtime_features)
 
         feature_names = list(feature_names)
         if feature_names:

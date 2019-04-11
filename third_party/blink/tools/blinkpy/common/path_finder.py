@@ -44,6 +44,12 @@ def add_bindings_scripts_dir_to_sys_path():
         sys.path.insert(0, path_to_bindings_scripts)
 
 
+def add_build_scripts_dir_to_sys_path():
+    path_to_build_scripts = os.path.join(get_source_dir(), 'build', 'scripts')
+    if path_to_build_scripts not in sys.path:
+        sys.path.insert(0, path_to_build_scripts)
+
+
 def add_blinkpy_thirdparty_dir_to_sys_path():
     path = get_blinkpy_thirdparty_dir()
     if path not in sys.path:

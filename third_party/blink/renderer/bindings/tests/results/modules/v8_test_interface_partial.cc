@@ -24,7 +24,6 @@
 #include "third_party/blink/renderer/bindings/tests/idls/modules/test_interface_partial_3_implementation.h"
 #include "third_party/blink/renderer/bindings/tests/idls/modules/test_interface_partial_4.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
