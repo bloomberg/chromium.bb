@@ -999,7 +999,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveProfile) {
   ASSERT_TRUE(add_autofill.success());
 
   AutofillProfileChange change(AutofillProfileChange::REMOVE,
-                               sync_profile.guid(), nullptr);
+                               sync_profile.guid(), &sync_profile);
   web_data_service()->OnAutofillProfileChanged(change);
 
   std::vector<AutofillProfile> new_sync_profiles;

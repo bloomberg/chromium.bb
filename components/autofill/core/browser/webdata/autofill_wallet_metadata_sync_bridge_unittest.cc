@@ -821,10 +821,11 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest,
   EXPECT_CALL(*backend(), CommitChanges()).Times(0);
   EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges()).Times(0);
 
-  bridge()->AutofillProfileChanged(AutofillProfileChange(
-      AutofillProfileChange::REMOVE, existing_profile.server_id(), nullptr));
+  bridge()->AutofillProfileChanged(
+      AutofillProfileChange(AutofillProfileChange::REMOVE,
+                            existing_profile.server_id(), &existing_profile));
   bridge()->CreditCardChanged(CreditCardChange(
-      CreditCardChange::REMOVE, existing_card.server_id(), nullptr));
+      CreditCardChange::REMOVE, existing_card.server_id(), &existing_card));
 
   // Check that there is no metadata anymore.
   EXPECT_THAT(GetAllLocalDataInclRestart(), IsEmpty());
@@ -850,10 +851,11 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest,
   EXPECT_CALL(*backend(), CommitChanges()).Times(0);
   EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges()).Times(0);
 
-  bridge()->AutofillProfileChanged(AutofillProfileChange(
-      AutofillProfileChange::REMOVE, existing_profile.server_id(), nullptr));
+  bridge()->AutofillProfileChanged(
+      AutofillProfileChange(AutofillProfileChange::REMOVE,
+                            existing_profile.server_id(), &existing_profile));
   bridge()->CreditCardChanged(CreditCardChange(
-      CreditCardChange::REMOVE, existing_card.server_id(), nullptr));
+      CreditCardChange::REMOVE, existing_card.server_id(), &existing_card));
 
   // Check that there is also no metadata at the end.
   EXPECT_THAT(GetAllLocalDataInclRestart(), IsEmpty());

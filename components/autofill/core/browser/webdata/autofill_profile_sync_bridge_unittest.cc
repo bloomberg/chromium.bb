@@ -453,12 +453,28 @@ TEST_F(AutofillProfileSyncBridgeTest,
 TEST_F(AutofillProfileSyncBridgeTest, AutofillProfileChanged_Deleted) {
   StartSyncing({});
 
-  AutofillProfileChange change(AutofillProfileChange::REMOVE, kGuidB, nullptr);
+  AutofillProfile local(kGuidB, kHttpsOrigin);
+  local.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Jane"));
+  AutofillProfileChange change(AutofillProfileChange::REMOVE, kGuidB, &local);
   EXPECT_CALL(mock_processor(), Delete(kGuidB, _));
   // The bridge does not need to commit when reacting to a notification about a
   // local change.
   EXPECT_CALL(*backend(), CommitChanges()).Times(0);
 
+  bridge()->AutofillProfileChanged(change);
+}
+
+// Server profile updates should be ignored.
+TEST_F(AutofillProfileSyncBridgeTest,
+       AutofillProfileChanged_Deleted_IgnoreServerProfiles) {
+  StartSyncing({});
+
+  AutofillProfile server_profile(AutofillProfile::SERVER_PROFILE, "server-id");
+  AutofillProfileChange change(AutofillProfileChange::REMOVE,
+                               server_profile.guid(), &server_profile);
+
+  EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(0);
+  // Should not crash.
   bridge()->AutofillProfileChanged(change);
 }
 

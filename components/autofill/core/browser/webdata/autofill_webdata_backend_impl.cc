@@ -306,15 +306,17 @@ WebDatabase::State AutofillWebDataBackendImpl::RemoveAutofillProfile(
   }
 
   // Send GUID-based notification.
-  AutofillProfileChange change(AutofillProfileChange::REMOVE, guid, nullptr);
+  AutofillProfileChange change(AutofillProfileChange::REMOVE, guid,
+                               profile.get());
   for (auto& db_observer : db_observer_list_)
     db_observer.AutofillProfileChanged(change);
 
   if (!on_autofill_profile_changed_cb_.is_null()) {
     ui_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(on_autofill_profile_changed_cb_,
-                                  AutofillProfileDeepChange(
-                                      AutofillProfileChange::REMOVE, guid)));
+        FROM_HERE,
+        base::BindOnce(on_autofill_profile_changed_cb_,
+                       AutofillProfileDeepChange(AutofillProfileChange::REMOVE,
+                                                 *profile.get())));
   }
 
   return WebDatabase::COMMIT_NEEDED;
@@ -413,6 +415,13 @@ WebDatabase::State AutofillWebDataBackendImpl::UpdateCreditCard(
 WebDatabase::State AutofillWebDataBackendImpl::RemoveCreditCard(
     const std::string& guid, WebDatabase* db) {
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
+  std::unique_ptr<CreditCard> card =
+      AutofillTable::FromWebDatabase(db)->GetCreditCard(guid);
+  if (!card) {
+    NOTREACHED();
+    return WebDatabase::COMMIT_NOT_NEEDED;
+  }
+
   if (!AutofillTable::FromWebDatabase(db)->RemoveCreditCard(guid)) {
     NOTREACHED();
     return WebDatabase::COMMIT_NOT_NEEDED;
@@ -420,7 +429,7 @@ WebDatabase::State AutofillWebDataBackendImpl::RemoveCreditCard(
 
   for (auto& db_observer : db_observer_list_) {
     db_observer.CreditCardChanged(
-        CreditCardChange(CreditCardChange::REMOVE, guid, nullptr));
+        CreditCardChange(CreditCardChange::REMOVE, guid, card.get()));
   }
   return WebDatabase::COMMIT_NEEDED;
 }
@@ -552,23 +561,20 @@ WebDatabase::State
         const base::Time& delete_end,
         WebDatabase* db) {
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
-  std::vector<std::string> profile_guids;
-  std::vector<std::string> credit_card_guids;
+  std::vector<std::unique_ptr<AutofillProfile>> profiles;
+  std::vector<std::unique_ptr<CreditCard>> credit_cards;
   if (AutofillTable::FromWebDatabase(db)->RemoveAutofillDataModifiedBetween(
-          delete_begin,
-          delete_end,
-          &profile_guids,
-          &credit_card_guids)) {
-    for (const std::string& guid : profile_guids) {
+          delete_begin, delete_end, &profiles, &credit_cards)) {
+    for (const std::unique_ptr<AutofillProfile>& profile : profiles) {
       for (auto& db_observer : db_observer_list_) {
         db_observer.AutofillProfileChanged(AutofillProfileChange(
-            AutofillProfileChange::REMOVE, guid, nullptr));
+            AutofillProfileChange::REMOVE, profile->guid(), profile.get()));
       }
     }
-    for (const std::string& guid : credit_card_guids) {
+    for (const std::unique_ptr<CreditCard>& credit_card : credit_cards) {
       for (auto& db_observer : db_observer_list_) {
-        db_observer.CreditCardChanged(
-            CreditCardChange(CreditCardChange::REMOVE, guid, nullptr));
+        db_observer.CreditCardChanged(CreditCardChange(
+            CreditCardChange::REMOVE, credit_card->guid(), credit_card.get()));
       }
     }
     // Note: It is the caller's responsibility to post notifications for any

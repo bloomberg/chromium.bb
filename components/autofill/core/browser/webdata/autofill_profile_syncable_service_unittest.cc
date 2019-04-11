@@ -593,7 +593,8 @@ TEST_F(AutofillProfileSyncableServiceTest, AutofillProfileDeleted) {
   AutofillProfileChange change1(AutofillProfileChange::ADD, kGuid1, &profile);
   autofill_syncable_service_.AutofillProfileChanged(change1);
 
-  AutofillProfileChange change2(AutofillProfileChange::REMOVE, kGuid1, nullptr);
+  AutofillProfileChange change2(AutofillProfileChange::REMOVE, kGuid1,
+                                &profile);
   autofill_syncable_service_.AutofillProfileChanged(change2);
 
   ASSERT_EQ(1U, sync_change_processor->changes().size());
@@ -611,7 +612,9 @@ TEST_F(AutofillProfileSyncableServiceTest,
   TestSyncChangeProcessor* sync_change_processor = new TestSyncChangeProcessor;
   autofill_syncable_service_.set_sync_processor(sync_change_processor);
 
-  AutofillProfileChange change(AutofillProfileChange::REMOVE, kGuid2, nullptr);
+  AutofillProfile profile(kGuid2, kEmptyOrigin);
+  profile.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Jane"));
+  AutofillProfileChange change(AutofillProfileChange::REMOVE, kGuid2, &profile);
   autofill_syncable_service_.AutofillProfileChanged(change);
 
   ASSERT_EQ(0U, sync_change_processor->changes().size());

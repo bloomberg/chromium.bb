@@ -563,19 +563,18 @@ syncer::SyncError AutofillWalletMetadataSyncableService::ProcessSyncChanges(
 void AutofillWalletMetadataSyncableService::AutofillProfileChanged(
     const AutofillProfileChange& change) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(change.data_model());
   if (!track_wallet_data_) {
     return;
   }
 
-  if (sync_processor_ && change.data_model() &&
+  if (sync_processor_ && change.type() == AutofillProfileChange::UPDATE &&
       change.data_model()->record_type() != AutofillProfile::LOCAL_PROFILE) {
     std::string server_id = GetServerId(*change.data_model());
     auto it = FindServerIdAndTypeInCache(
         server_id, sync_pb::WalletMetadataSpecifics::ADDRESS, &cache_);
     if (it == cache_.end())
       return;
-    // Implicitly, we filter out ADD (not in cache) and REMOVE (!data_model()).
-    DCHECK(change.type() == AutofillProfileChange::UPDATE);
 
     const sync_pb::WalletMetadataSpecifics& remote =
         it->GetSpecifics().wallet_metadata();

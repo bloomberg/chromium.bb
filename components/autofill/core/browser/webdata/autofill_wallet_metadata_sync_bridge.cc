@@ -438,10 +438,8 @@ void AutofillWalletMetadataSyncBridge::ApplyStopSyncChanges(
 
 void AutofillWalletMetadataSyncBridge::AutofillProfileChanged(
     const AutofillProfileChange& change) {
-  // Skip local profiles (if possible, i.e. if it is not a deletion where
-  // data_model() is not set).
-  if (change.data_model() &&
-      change.data_model()->record_type() != AutofillProfile::SERVER_PROFILE) {
+  // Skip local profiles.
+  if (change.data_model()->record_type() != AutofillProfile::SERVER_PROFILE) {
     return;
   }
   LocalMetadataChanged(WalletMetadataSpecifics::ADDRESS, change);
@@ -703,9 +701,7 @@ void AutofillWalletMetadataSyncBridge::LocalMetadataChanged(
       if (RemoveServerMetadata(GetAutofillTable(), type, metadata_id)) {
         cache_.erase(storage_key);
         // Send up deletion only if we had this entry in the DB. It is not there
-        // if (i) it was previously deleted by a remote deletion or (ii) this is
-        // notification for a LOCAL_PROFILE (which have non-overlapping
-        // storage_keys).
+        // if it was previously deleted by a remote deletion.
         change_processor()->Delete(storage_key, metadata_change_list.get());
       }
       return;
