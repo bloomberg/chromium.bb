@@ -289,6 +289,7 @@ jumbo_static_library("content_shell_lib") {
     "//components/download/public/background_service:public",
     "//components/download/public/common:public",
     "//components/keyed_service/content",
+    "//components/keyed_service/core:test_support",
     "//components/network_session_configurator/browser",
     "//components/plugins/renderer",
     "//components/url_formatter",

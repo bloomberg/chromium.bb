@@ -17,7 +17,7 @@
 #include "components/download/public/background_service/download_params.h"
 #include "components/download/public/background_service/download_service.h"
 #include "components/download/public/background_service/features.h"
-#include "components/keyed_service/core/simple_factory_key.h"
+#include "components/keyed_service/core/test_simple_factory_key.h"
 #include "content/public/browser/background_fetch_description.h"
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/browser_context.h"
@@ -252,7 +252,7 @@ void WebTestBackgroundFetchDelegate::CreateDownloadJob(
               ->GetURLLoaderFactoryForBrowserProcess()
               .get();
       simple_factory_key_ =
-          std::make_unique<SimpleFactoryKey>(base::FilePath());
+          std::make_unique<TestSimpleFactoryKey>(base::FilePath());
       download_service_ =
           base::WrapUnique(download::BuildInMemoryDownloadService(
               simple_factory_key_.get(), std::move(clients),

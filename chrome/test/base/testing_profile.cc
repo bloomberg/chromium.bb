@@ -45,6 +45,7 @@
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/storage_partition_descriptor.h"
 #include "chrome/browser/search_engines/template_url_fetcher_factory.h"
@@ -386,12 +387,6 @@ void TestingProfile::Init() {
                           profile_manager->GetSystemProfilePath());
   }
 
-  if (IsOffTheRecord())
-    key_ = std::make_unique<SimpleFactoryKey>(
-        original_profile_->GetPath(), original_profile_->GetSimpleFactoryKey());
-  else
-    key_ = std::make_unique<SimpleFactoryKey>(profile_path_);
-
   BrowserContext::Initialize(this, profile_path_);
 
 #if defined(OS_ANDROID)
@@ -428,6 +423,14 @@ void TestingProfile::Init() {
     CreatePrefServiceForSupervisedUser();
   else
     CreateTestingPrefService();
+
+  if (IsOffTheRecord()) {
+    key_ =
+        std::make_unique<ProfileKey>(original_profile_->GetPath(), prefs_.get(),
+                                     original_profile_->GetProfileKey());
+  } else {
+    key_ = std::make_unique<ProfileKey>(profile_path_, prefs_.get());
+  }
 
   if (!base::PathExists(profile_path_))
     base::CreateDirectory(profile_path_);
@@ -489,7 +492,7 @@ void TestingProfile::Init() {
 
   // Prefs for incognito profiles are set in CreateIncognitoPrefService() by
   // simulating ProfileImpl::GetOffTheRecordPrefs().
-  SimpleFactoryKey* key = GetSimpleFactoryKey();
+  SimpleFactoryKey* key = GetProfileKey();
   if (!IsOffTheRecord()) {
     DCHECK(!original_profile_);
     user_prefs::PrefRegistrySyncable* pref_registry =
@@ -546,7 +549,7 @@ TestingProfile::~TestingProfile() {
   // ones in the SimpleDependencyManager's graph.
   DependencyManager::PerformInterlockedTwoPhaseShutdown(
       browser_context_dependency_manager_, this, simple_dependency_manager_,
-      GetSimpleFactoryKey());
+      key_.get());
 
   if (host_content_settings_map_.get())
     host_content_settings_map_->ShutdownOnUIThread();
@@ -612,7 +615,7 @@ void TestingProfile::CreateBookmarkModel(bool delete_file) {
   }
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   offline_pages::OfflinePageModelFactory::GetInstance()->SetTestingFactory(
-      GetSimpleFactoryKey(), base::BindRepeating(&BuildOfflinePageModel));
+      GetProfileKey(), base::BindRepeating(&BuildOfflinePageModel));
 #endif
   ManagedBookmarkServiceFactory::GetInstance()->SetTestingFactory(
       this, ManagedBookmarkServiceFactory::GetDefaultFactory());
@@ -910,7 +913,7 @@ base::Time TestingProfile::GetStartTime() const {
   return start_time_;
 }
 
-SimpleFactoryKey* TestingProfile::GetSimpleFactoryKey() const {
+ProfileKey* TestingProfile::GetProfileKey() const {
   DCHECK(key_);
   return key_.get();
 }

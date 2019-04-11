@@ -19,10 +19,9 @@ SimpleDownloadManagerCoordinatorFactory::GetInstance() {
 
 // static
 download::SimpleDownloadManagerCoordinator*
-SimpleDownloadManagerCoordinatorFactory::GetForKey(SimpleFactoryKey* key,
-                                                   PrefService* prefs) {
+SimpleDownloadManagerCoordinatorFactory::GetForKey(SimpleFactoryKey* key) {
   return static_cast<download::SimpleDownloadManagerCoordinator*>(
-      GetInstance()->GetServiceForKey(key, prefs, true));
+      GetInstance()->GetServiceForKey(key, true));
 }
 
 SimpleDownloadManagerCoordinatorFactory::
@@ -35,7 +34,6 @@ SimpleDownloadManagerCoordinatorFactory::
 
 std::unique_ptr<KeyedService>
 SimpleDownloadManagerCoordinatorFactory::BuildServiceInstanceFor(
-    SimpleFactoryKey* key,
-    PrefService* prefs) const {
+    SimpleFactoryKey* key) const {
   return std::make_unique<download::SimpleDownloadManagerCoordinator>();
 }

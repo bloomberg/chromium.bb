@@ -18,6 +18,7 @@
 #include "chrome/browser/offline_pages/download_archive_manager.h"
 #include "chrome/browser/offline_pages/fresh_offline_content_observer.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/common/chrome_constants.h"
 #include "components/keyed_service/core/simple_dependency_manager.h"
 #include "components/offline_pages/core/model/offline_page_model_taskified.h"
@@ -35,22 +36,20 @@ OfflinePageModelFactory* OfflinePageModelFactory::GetInstance() {
 }
 
 // static
-OfflinePageModel* OfflinePageModelFactory::GetForKey(SimpleFactoryKey* key,
-                                                     PrefService* prefs) {
+OfflinePageModel* OfflinePageModelFactory::GetForKey(SimpleFactoryKey* key) {
   return static_cast<OfflinePageModel*>(
-      GetInstance()->GetServiceForKey(key, prefs, /*create=*/true));
+      GetInstance()->GetServiceForKey(key, /*create=*/true));
 }
 
 // static
 OfflinePageModel* OfflinePageModelFactory::GetForBrowserContext(
     content::BrowserContext* browser_context) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  return GetForKey(profile->GetSimpleFactoryKey(), profile->GetPrefs());
+  return GetForKey(profile->GetProfileKey());
 }
 
 std::unique_ptr<KeyedService> OfflinePageModelFactory::BuildServiceInstanceFor(
-    SimpleFactoryKey* key,
-    PrefService* prefs) const {
+    SimpleFactoryKey* key) const {
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
       base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
 
@@ -68,10 +67,12 @@ std::unique_ptr<KeyedService> OfflinePageModelFactory::BuildServiceInstanceFor(
     temporary_archives_dir =
         temporary_archives_dir.Append(chrome::kOfflinePageArchivesDirname);
   }
+
+  ProfileKey* profile_key = ProfileKey::FromSimpleFactoryKey(key);
   std::unique_ptr<ArchiveManager> archive_manager(new DownloadArchiveManager(
       temporary_archives_dir, persistent_archives_dir,
       DownloadPrefs::GetDefaultDownloadDirectory(), background_task_runner,
-      prefs));
+      profile_key->prefs()));
   auto clock = std::make_unique<base::DefaultClock>();
 
   std::unique_ptr<SystemDownloadManager> download_manager(

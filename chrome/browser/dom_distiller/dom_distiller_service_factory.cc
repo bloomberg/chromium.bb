@@ -68,7 +68,7 @@ KeyedService* DomDistillerServiceFactory::BuildServiceInstanceFor(
 
   leveldb_proto::ProtoDatabaseProvider* db_provider =
       leveldb_proto::ProtoDatabaseProviderFactory::GetForKey(
-          profile->GetSimpleFactoryKey(), profile->GetPrefs());
+          profile->GetProfileKey());
 
   auto db = db_provider->GetDB<ArticleEntry>(
       leveldb_proto::ProtoDbType::DOM_DISTILLER_STORE, database_dir,

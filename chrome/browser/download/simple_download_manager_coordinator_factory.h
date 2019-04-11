@@ -11,7 +11,6 @@
 #include "components/keyed_service/core/simple_keyed_service_factory.h"
 
 class KeyedService;
-class PrefService;
 class SimpleFactoryKey;
 
 namespace base {
@@ -33,8 +32,7 @@ class SimpleDownloadManagerCoordinatorFactory
 
   // Returns SimpleDownloadManagerCoordinator associated with |key|.
   static download::SimpleDownloadManagerCoordinator* GetForKey(
-      SimpleFactoryKey* key,
-      PrefService* prefs);
+      SimpleFactoryKey* key);
 
  private:
   friend class base::NoDestructor<SimpleDownloadManagerCoordinatorFactory>;
@@ -44,8 +42,7 @@ class SimpleDownloadManagerCoordinatorFactory
 
   // SimpleKeyedServiceFactory overrides.
   std::unique_ptr<KeyedService> BuildServiceInstanceFor(
-      SimpleFactoryKey* key,
-      PrefService* prefs) const override;
+      SimpleFactoryKey* key) const override;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleDownloadManagerCoordinatorFactory);
 };

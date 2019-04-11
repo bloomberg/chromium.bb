@@ -146,7 +146,7 @@ class ProfileImpl : public Profile {
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   bool IsSameProfile(Profile* profile) override;
   base::Time GetStartTime() const override;
-  SimpleFactoryKey* GetSimpleFactoryKey() const override;
+  ProfileKey* GetProfileKey() const override;
   base::FilePath last_selected_directory() override;
   void set_last_selected_directory(const base::FilePath& path) override;
   GURL GetHomePage() override;
@@ -256,7 +256,7 @@ class ProfileImpl : public Profile {
 
   // The key to index KeyedService instances created by
   // SimpleKeyedServiceFactory.
-  std::unique_ptr<SimpleFactoryKey> key_;
+  std::unique_ptr<ProfileKey> key_;
 
 #if defined(OS_CHROMEOS)
   std::unique_ptr<chromeos::Preferences> chromeos_preferences_;

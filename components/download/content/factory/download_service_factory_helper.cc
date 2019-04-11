@@ -113,8 +113,8 @@ DownloadService* BuildDownloadService(
   auto entry_db_storage_dir = storage_dir.Append(kEntryDBStorageDir);
 
   leveldb_proto::ProtoDatabaseProvider* db_provider =
-      leveldb_proto::ProtoDatabaseProviderFactory::GetForKey(simple_factory_key,
-                                                             prefs);
+      leveldb_proto::ProtoDatabaseProviderFactory::GetForKey(
+          simple_factory_key);
   auto entry_db = db_provider->GetDB<protodb::Entry>(
       leveldb_proto::ProtoDbType::DOWNLOAD_STORE, entry_db_storage_dir,
       background_task_runner);

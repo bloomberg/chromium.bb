@@ -112,10 +112,9 @@ KeyedService* PrefetchServiceFactory::BuildServiceInstanceFor(
     suggested_articles_observer = std::make_unique<SuggestedArticlesObserver>();
     thumbnail_fetcher = std::make_unique<ThumbnailFetcherImpl>();
   } else {
-    SimpleFactoryKey* simple_factory_key = profile->GetSimpleFactoryKey();
+    SimpleFactoryKey* simple_factory_key = profile->GetProfileKey();
     image_fetcher::ImageFetcherService* image_fetcher_service =
-        ImageFetcherServiceFactory::GetForKey(simple_factory_key,
-                                              profile->GetPrefs());
+        ImageFetcherServiceFactory::GetForKey(simple_factory_key);
     DCHECK(image_fetcher_service);
     image_fetcher = image_fetcher_service->GetImageFetcher(
         image_fetcher::ImageFetcherConfig::kDiskCacheOnly);
@@ -141,7 +140,7 @@ KeyedService* PrefetchServiceFactory::BuildServiceInstanceFor(
 
   auto callback = base::BindOnce(&OnProfileCreated, service);
   FullBrowserTransitionManager::Get()->RegisterCallbackOnProfileCreation(
-      profile->GetSimpleFactoryKey(), std::move(callback));
+      profile->GetProfileKey(), std::move(callback));
 
   return service;
 }

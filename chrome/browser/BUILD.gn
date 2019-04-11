@@ -1374,6 +1374,8 @@ jumbo_split_static_library("browser") {
     "profiles/profile_info_interface.h",
     "profiles/profile_io_data.cc",
     "profiles/profile_io_data.h",
+    "profiles/profile_key.cc",
+    "profiles/profile_key.h",
     "profiles/profile_manager.cc",
     "profiles/profile_manager.h",
     "profiles/profile_metrics.cc",

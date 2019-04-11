@@ -17,19 +17,15 @@
 // responsibility of the embedder.
 class KEYED_SERVICE_EXPORT SimpleFactoryKey {
  public:
-  explicit SimpleFactoryKey(const base::FilePath& path,
-                            SimpleFactoryKey* original_key = nullptr);
-  ~SimpleFactoryKey();
+  explicit SimpleFactoryKey(const base::FilePath& path);
+  virtual ~SimpleFactoryKey();
 
   const base::FilePath& path() const { return path_; }
-  bool is_off_the_record() const { return original_key_ != nullptr; }
-  SimpleFactoryKey* original_key() { return original_key_; }
+
+  virtual bool is_off_the_record() const = 0;
 
  private:
   base::FilePath path_;
-
-  // Points to the original (non off-the-record) SimpleFactoryKey.
-  SimpleFactoryKey* original_key_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleFactoryKey);
 };

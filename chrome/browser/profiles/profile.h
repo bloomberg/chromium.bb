@@ -13,8 +13,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "components/domain_reliability/clear_mode.h"
-#include "components/keyed_service/core/simple_factory_key.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "services/network/public/mojom/network_service.mojom-forward.h"
@@ -223,8 +223,8 @@ class Profile : public content::BrowserContext {
   virtual base::Time GetStartTime() const = 0;
 
   // Returns the key used to index KeyedService instances created by a
-  // SimpleKeyedServiceFactory.
-  virtual SimpleFactoryKey* GetSimpleFactoryKey() const = 0;
+  // SimpleKeyedServiceFactory, more strictly typed as a ProfileKey.
+  virtual ProfileKey* GetProfileKey() const = 0;
 
   // Returns the last directory that was chosen for uploading or opening a file.
   virtual base::FilePath last_selected_directory() = 0;

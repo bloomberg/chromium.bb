@@ -32,7 +32,7 @@
 #include "components/dom_distiller/core/proto/distilled_article.pb.h"
 #include "components/dom_distiller/core/proto/distilled_page.pb.h"
 #include "components/dom_distiller/core/task_tracker.h"
-#include "components/keyed_service/core/simple_factory_key.h"
+#include "components/keyed_service/core/test_simple_factory_key.h"
 #include "components/leveldb_proto/content/proto_database_provider_factory.h"
 #include "components/leveldb_proto/public/proto_database.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
@@ -139,7 +139,7 @@ std::unique_ptr<DomDistillerService> CreateDomDistillerService(
   DistilledPagePrefs::RegisterProfilePrefs(pref_service->registry());
 
   auto* db_provider =
-      leveldb_proto::ProtoDatabaseProviderFactory::GetForKey(key, pref_service);
+      leveldb_proto::ProtoDatabaseProviderFactory::GetForKey(key);
 
   // TODO(cjhopman): use an in-memory database instead of an on-disk one with
   // temporary directory.
@@ -357,7 +357,8 @@ class ContentExtractor : public ContentBrowserTest {
         command_line, &file_to_url_map);
     content::BrowserContext* context =
         shell()->web_contents()->GetBrowserContext();
-    key_ = std::make_unique<SimpleFactoryKey>(context->GetPath());
+    key_ = std::make_unique<TestSimpleFactoryKey>(context->GetPath(),
+                                                  context->IsOffTheRecord());
     pref_service_ =
         std::make_unique<sync_preferences::TestingPrefServiceSyncable>();
 

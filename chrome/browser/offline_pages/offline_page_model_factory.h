@@ -31,10 +31,10 @@ class OfflinePageModel;
 class OfflinePageModelFactory : public SimpleKeyedServiceFactory {
  public:
   static OfflinePageModelFactory* GetInstance();
-  static OfflinePageModel* GetForKey(SimpleFactoryKey* key, PrefService* prefs);
+  static OfflinePageModel* GetForKey(SimpleFactoryKey* key);
 
-  // Helper method that calls GetForKey(). Extracts the SimpleFactoryKey and
-  // the PrefService from |browser_context|, which is assumed to be a Profile.
+  // Helper method that calls GetForKey(). Extracts the SimpleFactoryKey
+  // from |browser_context|, which is assumed to be a Profile.
   static OfflinePageModel* GetForBrowserContext(
       content::BrowserContext* browser_context);
 
@@ -45,8 +45,7 @@ class OfflinePageModelFactory : public SimpleKeyedServiceFactory {
   ~OfflinePageModelFactory() override {}
 
   std::unique_ptr<KeyedService> BuildServiceInstanceFor(
-      SimpleFactoryKey* key,
-      PrefService* prefs) const override;
+      SimpleFactoryKey* key) const override;
 
   DISALLOW_COPY_AND_ASSIGN(OfflinePageModelFactory);
 };

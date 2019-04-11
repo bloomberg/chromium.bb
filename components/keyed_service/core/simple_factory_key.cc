@@ -4,8 +4,6 @@
 
 #include "components/keyed_service/core/simple_factory_key.h"
 
-SimpleFactoryKey::SimpleFactoryKey(const base::FilePath& path,
-                                   SimpleFactoryKey* original_key)
-    : path_(path), original_key_(original_key) {}
+SimpleFactoryKey::SimpleFactoryKey(const base::FilePath& path) : path_(path) {}
 
 SimpleFactoryKey::~SimpleFactoryKey() = default;

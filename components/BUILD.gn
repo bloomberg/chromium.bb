@@ -565,6 +565,7 @@ if (!is_ios) {
       # a MANUAL component_browsertest.
       sources += [ "dom_distiller/standalone/content_extractor_browsertest.cc" ]
       deps += [
+        "//components/keyed_service/core:test_support",
         "//components/leveldb_proto",
         "//components/leveldb_proto/content:factory",
         "//components/prefs:test_support",

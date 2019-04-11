@@ -13,7 +13,6 @@
 #include "components/keyed_service/core/keyed_service_factory.h"
 
 class KeyedService;
-class PrefService;
 class SimpleDependencyManager;
 class SimpleFactoryKey;
 
@@ -77,7 +76,6 @@ class KEYED_SERVICE_EXPORT SimpleKeyedServiceFactory
   // created KeyedService. Since the factory will be used immediately, it may
   // not be empty.
   KeyedService* SetTestingFactoryAndUse(SimpleFactoryKey* key,
-                                        PrefService* prefs,
                                         TestingFactory testing_factory);
 
  protected:
@@ -92,7 +90,6 @@ class KEYED_SERVICE_EXPORT SimpleKeyedServiceFactory
   // service will be created using BuildServiceInstanceFor() if it doesn't
   // already exist.
   KeyedService* GetServiceForKey(SimpleFactoryKey* key,
-                                 PrefService* prefs,
                                  bool create);
 
   // Interface for people building a concrete FooServiceFactory: --------------
@@ -105,8 +102,7 @@ class KEYED_SERVICE_EXPORT SimpleKeyedServiceFactory
   // All subclasses of SimpleKeyedServiceFactory must return a
   // KeyedService.
   virtual std::unique_ptr<KeyedService> BuildServiceInstanceFor(
-      SimpleFactoryKey* key,
-      PrefService* prefs) const = 0;
+      SimpleFactoryKey* key) const = 0;
 
   // A helper object actually listens for notifications about BrowserContext
   // destruction, calculates the order in which things are destroyed and then
@@ -132,8 +128,7 @@ class KEYED_SERVICE_EXPORT SimpleKeyedServiceFactory
 
   // KeyedServiceFactory:
   std::unique_ptr<KeyedService> BuildServiceInstanceFor(
-      void* context,
-      void* side_parameter) const final;
+      void* context) const final;
   bool IsOffTheRecord(void* context) const final;
 
   // KeyedServiceBaseFactory:
