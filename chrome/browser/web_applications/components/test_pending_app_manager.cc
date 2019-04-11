@@ -91,9 +91,15 @@ std::vector<GURL> TestPendingAppManager::GetInstalledAppUrls(
   return urls;
 }
 
-base::Optional<std::string> TestPendingAppManager::LookupAppId(
+base::Optional<AppId> TestPendingAppManager::LookupAppId(
     const GURL& url) const {
   return base::Optional<std::string>();
+}
+
+bool TestPendingAppManager::HasAppIdWithInstallSource(
+    const AppId& app_id,
+    web_app::InstallSource install_source) const {
+  return false;
 }
 
 }  // namespace web_app

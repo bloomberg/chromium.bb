@@ -77,6 +77,11 @@ base::Optional<std::string> SystemWebAppManager::GetAppIdForSystemApp(
   return pending_app_manager_->LookupAppId(app->second);
 }
 
+bool SystemWebAppManager::IsSystemWebApp(const AppId& app_id) const {
+  return pending_app_manager_->HasAppIdWithInstallSource(
+      app_id, InstallSource::kSystemInstalled);
+}
+
 void SystemWebAppManager::SetSystemAppsForTesting(
     base::flat_map<SystemAppType, GURL> system_app_urls) {
   system_app_urls_ = std::move(system_app_urls);

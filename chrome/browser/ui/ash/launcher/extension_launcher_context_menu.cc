@@ -17,6 +17,8 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/common/context_menu_params.h"
@@ -170,12 +172,17 @@ void ExtensionLauncherContextMenu::CreateOpenNewSubmenu(
 }
 
 void ExtensionLauncherContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
+  Profile* profile = controller()->profile();
   extension_items_.reset(new extensions::ContextMenuMatcher(
-      controller()->profile(), this, menu_model,
-      base::Bind(MenuItemHasLauncherContext)));
+      profile, this, menu_model,
+      base::BindRepeating(MenuItemHasLauncherContext)));
   if (item().type == ash::TYPE_PINNED_APP || item().type == ash::TYPE_APP) {
-    // V1 apps can be started from the menu - but V2 apps should not.
-    if (!controller()->IsPlatformApp(item().id))
+    // V1 apps can be started from the menu - but V2 apps and system web apps
+    // should not.
+    bool is_system_web_app = web_app::WebAppProvider::Get(profile)
+                                 ->system_web_app_manager()
+                                 .IsSystemWebApp(item().id.app_id);
+    if (!controller()->IsPlatformApp(item().id) && !is_system_web_app)
       CreateOpenNewSubmenu(menu_model);
     AddPinMenu(menu_model);
 
@@ -186,7 +193,7 @@ void ExtensionLauncherContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
   } else if (item().type == ash::TYPE_BROWSER_SHORTCUT) {
     AddContextMenuOption(menu_model, ash::MENU_NEW_WINDOW,
                          IDS_APP_LIST_NEW_WINDOW);
-    if (!controller()->profile()->IsGuestSession()) {
+    if (!profile->IsGuestSession()) {
       AddContextMenuOption(menu_model, ash::MENU_NEW_INCOGNITO_WINDOW,
                            IDS_APP_LIST_NEW_INCOGNITO_WINDOW);
     }
