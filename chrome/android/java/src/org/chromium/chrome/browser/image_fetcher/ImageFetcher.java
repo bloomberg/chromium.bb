@@ -58,8 +58,9 @@ public abstract class ImageFetcher {
      * @param eventId The event to be reported
      */
     // TODO(crbug.com/947210): Rename this enum to ImageFetcherEvent.
-    // TOOD(crbug.com/947220): Implement this function here, and remove it from derived classes.
-    public abstract void reportEvent(String clientName, @CachedImageFetcherEvent int eventId);
+    public void reportEvent(String clientName, @CachedImageFetcherEvent int eventId) {
+        ImageFetcherBridge.getInstance().reportEvent(clientName, eventId);
+    }
 
     /**
      * Fetch the gif for the given url.

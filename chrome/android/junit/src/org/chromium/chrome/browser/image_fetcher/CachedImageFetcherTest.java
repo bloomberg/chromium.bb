@@ -59,6 +59,7 @@ public class CachedImageFetcherTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+        ImageFetcherBridge.setupForTesting(mImageFetcherBridge);
         mCachedImageFetcher = Mockito.spy(new CachedImageFetcher(mImageFetcherBridge));
         Mockito.doReturn(URL).when(mImageFetcherBridge).getFilePath(anyObject());
         doAnswer((InvocationOnMock invocation) -> {

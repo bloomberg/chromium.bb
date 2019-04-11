@@ -85,11 +85,6 @@ public class InMemoryCachedImageFetcher extends ImageFetcher {
     }
 
     @Override
-    public void reportEvent(String clientName, @CachedImageFetcherEvent int eventId) {
-        mImageFetcher.reportEvent(clientName, eventId);
-    }
-
-    @Override
     public void fetchGif(String url, String clientName, Callback<BaseGifImage> callback) {
         mImageFetcher.fetchGif(url, clientName, callback);
     }

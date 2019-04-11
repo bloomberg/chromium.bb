@@ -38,9 +38,6 @@ public class ImageFetcherTest {
      */
     private class ImageFetcherForTest extends ImageFetcher {
         @Override
-        public void reportEvent(String clientName, int eventId) {}
-
-        @Override
         public void fetchGif(String url, String clientName, Callback<BaseGifImage> callback) {}
 
         @Override
