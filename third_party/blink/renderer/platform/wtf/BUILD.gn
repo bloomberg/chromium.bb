@@ -92,7 +92,6 @@ jumbo_component("wtf") {
     "leak_annotations.h",
     "linked_hash_set.h",
     "list_hash_set.h",
-    "locker.h",
     "math_extras.h",
     "pod_arena.h",
     "pod_free_list_arena.h",

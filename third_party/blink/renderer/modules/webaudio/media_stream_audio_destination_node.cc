@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_center.h"
 #include "third_party/blink/renderer/platform/uuid.h"
-#include "third_party/blink/renderer/platform/wtf/locker.h"
 
 namespace blink {
 
