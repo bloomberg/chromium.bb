@@ -581,9 +581,10 @@ html[darkmode=true] .selected-check::after {
   color: #FFF;
   display: inline-block;
   font-size: 13px;
-  height: 32px;
+  line-height: 1.6;
+  min-height: 32px;
   overflow: hidden;
-  padding: 8px 16px 0 16px;
+  padding: 0 16px;
   position: absolute;
   text-overflow: ellipsis;
   user-select: none;
