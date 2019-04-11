@@ -210,6 +210,12 @@ void ProcessMirrorHeaderUIThread(
     //
     // - Going Incognito (already handled in above switch-case).
     // - Displaying the Account Manager for managing accounts.
+
+    // Do not display Account Manager if the navigation happened in the
+    // "background".
+    if (!chrome::FindBrowserWithWebContents(web_contents))
+      return;
+
     chrome::SettingsWindowManager::GetInstance()->ShowChromePageForProfile(
         profile, GURL("chrome://settings/accountManager"));
     return;
