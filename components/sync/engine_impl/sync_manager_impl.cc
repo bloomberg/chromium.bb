@@ -305,11 +305,6 @@ void SyncManagerImpl::Init(InitArgs* args) {
       std::move(backing_store), args->unrecoverable_error_handler,
       report_unrecoverable_error_function_, sync_encryption_handler_.get(),
       sync_encryption_handler_->GetCryptographerUnsafe());
-  share_.sync_credentials = args->credentials;
-
-  // UserShare is accessible to a lot of code that doesn't need access to the
-  // access token, so clear it from the UserShare.
-  share_.sync_credentials.access_token = "";
 
   DVLOG(1) << "Username: " << args->credentials.email;
   DVLOG(1) << "AccountId: " << args->credentials.account_id;
