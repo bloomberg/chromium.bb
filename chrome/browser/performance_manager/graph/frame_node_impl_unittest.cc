@@ -38,7 +38,7 @@ class FrameNodeImplTest : public GraphTestHarness {
 
 TEST_F(FrameNodeImplTest, AddFrameHierarchyBasic) {
   auto process = CreateNode<ProcessNodeImpl>();
-  auto page = CreateNode<PageNodeImpl>();
+  auto page = CreateNode<PageNodeImpl>(nullptr /*TEST*/);
   auto parent_node =
       CreateNode<FrameNodeImpl>(process.get(), page.get(), nullptr, 0);
   auto child2_node = CreateNode<FrameNodeImpl>(process.get(), page.get(),
@@ -54,7 +54,7 @@ TEST_F(FrameNodeImplTest, AddFrameHierarchyBasic) {
 
 TEST_F(FrameNodeImplTest, Url) {
   auto process = CreateNode<ProcessNodeImpl>();
-  auto page = CreateNode<PageNodeImpl>();
+  auto page = CreateNode<PageNodeImpl>(nullptr /*TEST*/);
   auto frame_node =
       CreateNode<FrameNodeImpl>(process.get(), page.get(), nullptr, 0);
   EXPECT_TRUE(frame_node->url().is_empty());
@@ -65,7 +65,7 @@ TEST_F(FrameNodeImplTest, Url) {
 
 TEST_F(FrameNodeImplTest, RemoveChildFrame) {
   auto process = CreateNode<ProcessNodeImpl>();
-  auto page = CreateNode<PageNodeImpl>();
+  auto page = CreateNode<PageNodeImpl>(nullptr /*TEST*/);
   auto parent_frame_node =
       CreateNode<FrameNodeImpl>(process.get(), page.get(), nullptr, 0);
   auto child_frame_node = CreateNode<FrameNodeImpl>(process.get(), page.get(),

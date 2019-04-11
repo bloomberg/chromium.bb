@@ -101,9 +101,10 @@ std::unique_ptr<FrameNodeImpl> PerformanceManager::CreateFrameNode(
                                        parent_frame_node, frame_tree_node_id);
 }
 
-std::unique_ptr<PageNodeImpl> PerformanceManager::CreatePageNode() {
-  return CreateNodeImpl<PageNodeImpl>(
-      base::OnceCallback<void(PageNodeImpl*)>());
+std::unique_ptr<PageNodeImpl> PerformanceManager::CreatePageNode(
+    const base::WeakPtr<WebContentsProxy>& contents_proxy) {
+  return CreateNodeImpl<PageNodeImpl>(base::OnceCallback<void(PageNodeImpl*)>(),
+                                      contents_proxy);
 }
 
 std::unique_ptr<ProcessNodeImpl> PerformanceManager::CreateProcessNode() {

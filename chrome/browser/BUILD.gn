@@ -1095,6 +1095,8 @@ jumbo_split_static_library("browser") {
     "performance_manager/performance_manager_tab_helper.h",
     "performance_manager/render_process_user_data.cc",
     "performance_manager/render_process_user_data.h",
+    "performance_manager/web_contents_proxy.cc",
+    "performance_manager/web_contents_proxy.h",
     "performance_manager/webui_graph_dump_impl.cc",
     "performance_manager/webui_graph_dump_impl.h",
     "performance_monitor/metric_evaluator_helper_win.cc",

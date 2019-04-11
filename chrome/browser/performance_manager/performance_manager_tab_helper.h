@@ -11,6 +11,8 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/performance_manager/web_contents_proxy.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -29,7 +31,8 @@ class PerformanceManager;
 // host to the frame graph entity.
 class PerformanceManagerTabHelper
     : public content::WebContentsObserver,
-      public content::WebContentsUserData<PerformanceManagerTabHelper> {
+      public content::WebContentsUserData<PerformanceManagerTabHelper>,
+      public WebContentsProxy {
  public:
   // TODO(siggi): Remove this once the PageSignalGenerator has been abolished.
   static bool GetCoordinationIDForWebContents(
@@ -59,10 +62,14 @@ class PerformanceManagerTabHelper
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle* interface_pipe) override;
 
+  // WebContentsProxy overrides.
+  content::WebContents* GetWebContents() const override;
+
   void SetUkmSourceIdForTesting(ukm::SourceId id) { ukm_source_id_ = id; }
 
  private:
   friend class content::WebContentsUserData<PerformanceManagerTabHelper>;
+  friend class WebContentsProxy;
 
   explicit PerformanceManagerTabHelper(content::WebContents* web_contents);
 
@@ -100,6 +107,8 @@ class PerformanceManagerTabHelper
   PerformanceManagerTabHelper* prev_ = nullptr;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
+
+  base::WeakPtrFactory<PerformanceManagerTabHelper> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PerformanceManagerTabHelper);
 };
