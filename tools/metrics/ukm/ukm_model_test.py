@@ -49,6 +49,43 @@ PRETTY_XML = """
 </ukm-configuration>
 """.strip()
 
+UNPRETTIFIED_XML = """
+<!-- Comment1 -->
+<ukm-configuration>
+<event name="Event1">
+<metric name="Metric3"/>
+<metric name="Metric1">
+  <owner>owner2@chromium.org</owner>
+  <summary>
+    Metric1 summary.
+  </summary>
+  <aggregation>
+    <history>
+      <index fields="profile.form_factor"/>
+      <statistics>
+        <quantiles type="std-percentiles"/>
+      </statistics>
+      <index fields="profile.country"/>
+
+    </history>
+  </aggregation>
+</metric>
+        <metric name="Metric2">
+          <aggregation>
+            <history>
+              <statistics><enumeration export="False"/></statistics>
+            </history>
+          </aggregation>
+        </metric>
+
+  <summary>Event1 summary.</summary>
+  <owner>owner@chromium.org</owner>
+  <owner>anotherowner@chromium.org</owner>
+
+</event>
+</ukm-configuration>
+""".strip()
+
 CONFIG_EVENT_NAMES_SORTED = """
 <ukm-configuration>
 
@@ -75,26 +112,30 @@ CONFIG_EVENT_NAMES_UNSORTED = """
 
 class UkmXmlTest(unittest.TestCase):
 
-  def testIsPretty(self):
-    result = ukm_model.UpdateXML(PRETTY_XML)
+  def testPrettify(self):
+    result = ukm_model.PrettifyXML(PRETTY_XML)
+    self.assertMultiLineEqual(PRETTY_XML, result.strip())
+    result = ukm_model.PrettifyXML(UNPRETTIFIED_XML)
     self.assertMultiLineEqual(PRETTY_XML, result.strip())
 
   def testHasBadEventName(self):
     bad_xml = PRETTY_XML.replace('Event1', 'Event:1')
     with self.assertRaises(ValueError) as context:
-      ukm_model.UpdateXML(bad_xml)
+      ukm_model.PrettifyXML(bad_xml)
     self.assertIn('Event:1', str(context.exception))
     self.assertIn('does not match regex', str(context.exception))
 
   def testHasBadMetricName(self):
     bad_xml = PRETTY_XML.replace('Metric1', 'Metric:1')
     with self.assertRaises(ValueError) as context:
-      ukm_model.UpdateXML(bad_xml)
+      ukm_model.PrettifyXML(bad_xml)
     self.assertIn('Metric:1', str(context.exception))
     self.assertIn('does not match regex', str(context.exception))
 
   def testSortByEventName(self):
-    result = ukm_model.UpdateXML(CONFIG_EVENT_NAMES_UNSORTED)
+    result = ukm_model.PrettifyXML(CONFIG_EVENT_NAMES_SORTED)
+    self.assertMultiLineEqual(CONFIG_EVENT_NAMES_SORTED, result.strip())
+    result = ukm_model.PrettifyXML(CONFIG_EVENT_NAMES_UNSORTED)
     self.assertMultiLineEqual(CONFIG_EVENT_NAMES_SORTED, result.strip())
 
 if __name__ == '__main__':

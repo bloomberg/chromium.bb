@@ -14,7 +14,11 @@ _OBSOLETE_TYPE = models.TextNodeType('obsolete')
 _OWNER_TYPE = models.TextNodeType('owner', single_line=True)
 _SUMMARY_TYPE = models.TextNodeType('summary')
 
-_LOWERCASE_NAME_FN = lambda n: n.get('name').lower()
+# A key for sorting XML nodes by the value of |attribute|.
+_LOWERCASE_FN = lambda attribute: (lambda node: node.get(attribute).lower())
+# A constant function as the sorting key for nodes whose orderings should be
+# kept as given in the XML file within their parent node.
+_KEEP_ORDER = lambda node: 1
 
 _ENUMERATION_TYPE = models.ObjectNodeType(
     'enumeration',
@@ -42,23 +46,28 @@ _STATISTICS_TYPE =  models.ObjectNodeType(
     'statistics',
     attributes=[],
     children=[
-        models.ChildType('quantiles', _QUANTILES_TYPE, multiple=False),
-        models.ChildType('enumeration', _ENUMERATION_TYPE, multiple=False),
+        models.ChildType(_QUANTILES_TYPE.tag, _QUANTILES_TYPE, multiple=False),
+        models.ChildType(
+            _ENUMERATION_TYPE.tag, _ENUMERATION_TYPE, multiple=False),
     ])
 
 _HISTORY_TYPE =  models.ObjectNodeType(
     'history',
     attributes=[],
+    alphabetization=[
+        (_INDEX_TYPE.tag, _LOWERCASE_FN('fields')),
+        (_STATISTICS_TYPE.tag, _KEEP_ORDER),
+    ],
     children=[
-        models.ChildType('index', _INDEX_TYPE, multiple=True),
-        models.ChildType('statistics', _STATISTICS_TYPE, multiple=True),
+        models.ChildType(_INDEX_TYPE.tag, _INDEX_TYPE, multiple=True),
+        models.ChildType(_STATISTICS_TYPE.tag, _STATISTICS_TYPE, multiple=True),
     ])
 
 _AGGREGATION_TYPE =  models.ObjectNodeType(
     'aggregation',
     attributes=[],
     children=[
-        models.ChildType('history', _HISTORY_TYPE, multiple=False),
+        models.ChildType(_HISTORY_TYPE.tag, _HISTORY_TYPE, multiple=False),
     ])
 
 _METRIC_TYPE =  models.ObjectNodeType(
@@ -67,40 +76,52 @@ _METRIC_TYPE =  models.ObjectNodeType(
       ('name', unicode, r'^[A-Za-z0-9_.]+$'),
       ('semantic_type', unicode, None),
     ],
+    alphabetization=[
+        (_OBSOLETE_TYPE.tag, _KEEP_ORDER),
+        (_OWNER_TYPE.tag, _KEEP_ORDER),
+        (_SUMMARY_TYPE.tag, _KEEP_ORDER),
+        (_AGGREGATION_TYPE.tag, _KEEP_ORDER),
+    ],
     children=[
-        models.ChildType('obsolete', _OBSOLETE_TYPE, multiple=False),
-        models.ChildType('owners', _OWNER_TYPE, multiple=True),
-        models.ChildType('summary', _SUMMARY_TYPE, multiple=False),
-        models.ChildType('aggregation', _AGGREGATION_TYPE, multiple=True),
+        models.ChildType(_OBSOLETE_TYPE.tag, _OBSOLETE_TYPE, multiple=False),
+        models.ChildType(_OWNER_TYPE.tag, _OWNER_TYPE, multiple=True),
+        models.ChildType(_SUMMARY_TYPE.tag, _SUMMARY_TYPE, multiple=False),
+        models.ChildType(
+            _AGGREGATION_TYPE.tag, _AGGREGATION_TYPE, multiple=True),
     ])
 
 _EVENT_TYPE =  models.ObjectNodeType(
     'event',
-    alphabetization=[('metric', _LOWERCASE_NAME_FN)],
     attributes=[
       ('name', unicode, r'^[A-Za-z0-9.]+$'),
       ('singular', unicode, r'^(?i)(|true|false)$'),
     ],
+    alphabetization=[
+        (_OBSOLETE_TYPE.tag, _KEEP_ORDER),
+        (_OWNER_TYPE.tag, _KEEP_ORDER),
+        (_SUMMARY_TYPE.tag, _KEEP_ORDER),
+        (_METRIC_TYPE.tag, _LOWERCASE_FN('name')),
+    ],
     extra_newlines=(1, 1, 1),
     children=[
-        models.ChildType('obsolete', _OBSOLETE_TYPE, multiple=False),
-        models.ChildType('owners', _OWNER_TYPE, multiple=True),
-        models.ChildType('summary', _SUMMARY_TYPE, multiple=False),
-        models.ChildType('metrics', _METRIC_TYPE, multiple=True),
+        models.ChildType(_OBSOLETE_TYPE.tag, _OBSOLETE_TYPE, multiple=False),
+        models.ChildType(_OWNER_TYPE.tag, _OWNER_TYPE, multiple=True),
+        models.ChildType(_SUMMARY_TYPE.tag, _SUMMARY_TYPE, multiple=False),
+        models.ChildType(_METRIC_TYPE.tag, _METRIC_TYPE, multiple=True),
     ])
 
 _UKM_CONFIGURATION_TYPE = models.ObjectNodeType(
     'ukm-configuration',
-    alphabetization=[('event', _LOWERCASE_NAME_FN)],
+    alphabetization=[(_EVENT_TYPE.tag, _LOWERCASE_FN('name'))],
     extra_newlines=(2, 1, 1),
     indent=False,
     children=[
-        models.ChildType('events', _EVENT_TYPE, multiple=True),
+        models.ChildType(_EVENT_TYPE.tag, _EVENT_TYPE, multiple=True),
     ])
 
 UKM_XML_TYPE = models.DocumentType(_UKM_CONFIGURATION_TYPE)
 
-def UpdateXML(original_xml):
+def PrettifyXML(original_xml):
   """Parses the original xml and return a pretty printed version.
 
   Args:
