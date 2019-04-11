@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FUCHSIA_ENGINE_BROWSER_LEGACY_NAVIGATION_EVENT_LISTENER_BRIDGE_H_
-#define FUCHSIA_ENGINE_BROWSER_LEGACY_NAVIGATION_EVENT_LISTENER_BRIDGE_H_
+#ifndef FUCHSIA_ENGINE_LEGACY_NAVIGATION_EVENT_LISTENER_BRIDGE_H_
+#define FUCHSIA_ENGINE_LEGACY_NAVIGATION_EVENT_LISTENER_BRIDGE_H_
 
 #include <fuchsia/web/cpp/fidl.h>
 #include <lib/fidl/cpp/binding.h>
@@ -38,4 +38,4 @@ class LegacyNavigationEventListenerBridge
   DISALLOW_COPY_AND_ASSIGN(LegacyNavigationEventListenerBridge);
 };
 
-#endif  // FUCHSIA_ENGINE_BROWSER_LEGACY_NAVIGATION_EVENT_LISTENER_BRIDGE_H_
+#endif  // FUCHSIA_ENGINE_LEGACY_NAVIGATION_EVENT_LISTENER_BRIDGE_H_

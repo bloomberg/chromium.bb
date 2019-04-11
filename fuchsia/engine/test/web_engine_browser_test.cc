@@ -8,6 +8,7 @@
 #include "fuchsia/engine/browser/web_engine_browser_context.h"
 #include "fuchsia/engine/browser/web_engine_browser_main_parts.h"
 #include "fuchsia/engine/browser/web_engine_content_browser_client.h"
+#include "fuchsia/engine/legacy_context_bridge.h"
 #include "fuchsia/engine/web_engine_main_delegate.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 
@@ -22,9 +23,12 @@ WebEngineBrowserTest::WebEngineBrowserTest() = default;
 WebEngineBrowserTest::~WebEngineBrowserTest() = default;
 
 void WebEngineBrowserTest::PreRunTestOnMainThread() {
-  zx_status_t result = context_.Bind(zx::channel(g_context_channel));
+  fuchsia::web::ContextPtr fuchsia_context;
+  zx_status_t result = fuchsia_context.Bind(zx::channel(g_context_channel));
   ZX_DCHECK(result == ZX_OK, result) << "Context::Bind";
   g_context_channel = ZX_HANDLE_INVALID;
+
+  new LegacyContextBridge(context_.NewRequest(), std::move(fuchsia_context));
 
   net::test_server::RegisterDefaultHandlers(embedded_test_server());
   if (!test_server_root_.empty()) {
@@ -70,7 +74,7 @@ ContextImpl* WebEngineBrowserTest::context_impl() const {
   return WebEngineMainDelegate::GetInstanceForTest()
       ->browser_client()
       ->main_parts_for_test()
-      ->context();
+      ->context_for_test();
 }
 
 }  // namespace cr_fuchsia

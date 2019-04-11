@@ -21,10 +21,10 @@ class Screen;
 
 class WebEngineBrowserMainParts : public content::BrowserMainParts {
  public:
-  explicit WebEngineBrowserMainParts(zx::channel context_channel);
+  explicit WebEngineBrowserMainParts(
+      fidl::InterfaceRequest<fuchsia::web::Context> request);
   ~WebEngineBrowserMainParts() override;
 
-  ContextImpl* context() const { return context_service_.get(); }
   content::BrowserContext* browser_context() const {
     return browser_context_.get();
   }
@@ -34,8 +34,10 @@ class WebEngineBrowserMainParts : public content::BrowserMainParts {
   void PreDefaultMainMessageLoopRun(base::OnceClosure quit_closure) override;
   void PostMainMessageLoopRun() override;
 
+  ContextImpl* context_for_test() const { return context_service_.get(); }
+
  private:
-  zx::channel context_channel_;
+  fidl::InterfaceRequest<fuchsia::web::Context> request_;
 
   std::unique_ptr<display::Screen> screen_;
   std::unique_ptr<WebEngineBrowserContext> browser_context_;

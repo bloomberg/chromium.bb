@@ -52,8 +52,8 @@ ContextProviderImpl::ContextProviderImpl() = default;
 ContextProviderImpl::~ContextProviderImpl() = default;
 
 void ContextProviderImpl::Create(
-    chromium::web::CreateContextParams params,
-    fidl::InterfaceRequest<chromium::web::Context> context_request) {
+    fuchsia::web::CreateContextParams params,
+    fidl::InterfaceRequest<fuchsia::web::Context> context_request) {
   if (!context_request.is_valid()) {
     // TODO(crbug.com/934539): Add type epitaph.
     DLOG(WARNING) << "Invalid |context_request|.";
@@ -119,11 +119,6 @@ void ContextProviderImpl::Create(
 
   // |context_handle| was transferred (not copied) to the Context process.
   ignore_result(context_handle.release());
-}
-
-void ContextProviderImpl::Bind(
-    fidl::InterfaceRequest<chromium::web::ContextProvider> request) {
-  bindings_.AddBinding(this, std::move(request));
 }
 
 void ContextProviderImpl::SetLaunchCallbackForTest(

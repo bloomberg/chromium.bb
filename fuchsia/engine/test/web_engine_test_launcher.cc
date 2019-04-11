@@ -39,15 +39,14 @@ class WebEngineTestLauncherDelegate : public content::TestLauncherDelegate {
   content::ContentMainDelegate* CreateContentMainDelegate() override {
     // Set up the channels for the Context service, but postpone client
     // binding until after the browser TaskRunners are up and running.
-    zx::channel server_channel;
-    zx::channel client_channel;
-    zx_status_t result =
-        zx::channel::create(0, &client_channel, &server_channel);
-    ZX_CHECK(result == ZX_OK, result) << "zx::channel::create";
-    cr_fuchsia::WebEngineBrowserTest::SetContextClientChannel(
-        std::move(client_channel));
+    fidl::InterfaceHandle<fuchsia::web::Context> context;
+    content::ContentMainDelegate* content_main_delegate =
+        new WebEngineMainDelegate(context.NewRequest());
 
-    return new WebEngineMainDelegate(std::move(server_channel));
+    cr_fuchsia::WebEngineBrowserTest::SetContextClientChannel(
+        context.TakeChannel());
+
+    return content_main_delegate;
   }
 
  private:

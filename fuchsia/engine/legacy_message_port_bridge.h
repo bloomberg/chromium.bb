@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FUCHSIA_ENGINE_BROWSER_LEGACY_MESSAGE_PORT_BRIDGE_H_
-#define FUCHSIA_ENGINE_BROWSER_LEGACY_MESSAGE_PORT_BRIDGE_H_
+#ifndef FUCHSIA_ENGINE_LEGACY_MESSAGE_PORT_BRIDGE_H_
+#define FUCHSIA_ENGINE_LEGACY_MESSAGE_PORT_BRIDGE_H_
 
 #include <lib/fidl/cpp/binding.h>
 
@@ -40,4 +40,4 @@ class LegacyMessagePortBridge : public chromium::web::MessagePort {
   DISALLOW_COPY_AND_ASSIGN(LegacyMessagePortBridge);
 };
 
-#endif  // FUCHSIA_ENGINE_BROWSER_LEGACY_MESSAGE_PORT_BRIDGE_H_
+#endif  // FUCHSIA_ENGINE_LEGACY_MESSAGE_PORT_BRIDGE_H_
