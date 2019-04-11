@@ -20,6 +20,10 @@
 #include "device/fido/fido_constants.h"
 #include "device/fido/public_key_credential_descriptor.h"
 
+namespace cbor {
+class Value;
+}
+
 namespace device {
 
 // Object that encapsulates request parameters for AuthenticatorGetAssertion as
@@ -39,7 +43,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
   // Serializes GetAssertion request parameter into CBOR encoded map with
   // integer keys and CBOR encoded values as defined by the CTAP spec.
   // https://drafts.fidoalliance.org/fido-2/latest/fido-client-to-authenticator-protocol-v2.0-wd-20180305.html#authenticatorGetAssertion
-  std::vector<uint8_t> EncodeAsCBOR() const;
+  std::pair<CtapRequestCommand, base::Optional<cbor::Value>> EncodeAsCBOR()
+      const;
 
   CtapGetAssertionRequest& SetUserVerification(
       UserVerificationRequirement user_verfication);
@@ -114,7 +119,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
 
 class CtapGetNextAssertionRequest {
  public:
-  std::vector<uint8_t> EncodeAsCBOR() const;
+  std::pair<CtapRequestCommand, base::Optional<cbor::Value>> EncodeAsCBOR()
+      const;
 };
 
 }  // namespace device

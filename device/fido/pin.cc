@@ -40,10 +40,11 @@ bool IsValid(const std::string& pin) {
          HasAtLeastFourCodepoints(pin);
 }
 
-// EncodePINCommand returns a serialised CTAP2 PIN command for the operation
-// |subcommand|. Additional elements of the top-level CBOR map can be added with
-// the optional |add_additional| callback.
-static std::vector<uint8_t> EncodePINCommand(
+// EncodePINCommand returns a CTAP2 PIN command for the operation |subcommand|.
+// Additional elements of the top-level CBOR map can be added with the optional
+// |add_additional| callback.
+static std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+EncodePINCommand(
     Subcommand subcommand,
     std::function<void(cbor::Value::MapValue*)> add_additional = nullptr) {
   cbor::Value::MapValue map;
@@ -55,14 +56,12 @@ static std::vector<uint8_t> EncodePINCommand(
     add_additional(&map);
   }
 
-  auto serialized = cbor::Writer::Write(cbor::Value(map));
-  serialized->insert(
-      serialized->begin(),
-      static_cast<uint8_t>(CtapRequestCommand::kAuthenticatorClientPin));
-  return *serialized;
+  return std::make_pair(CtapRequestCommand::kAuthenticatorClientPin,
+                        cbor::Value(std::move(map)));
 }
 
-std::vector<uint8_t> RetriesRequest::EncodeAsCBOR() const {
+std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+RetriesRequest::EncodeAsCBOR() const {
   return EncodePINCommand(Subcommand::kGetRetries);
 }
 
@@ -100,7 +99,8 @@ base::Optional<RetriesResponse> RetriesResponse::Parse(
   return ret;
 }
 
-std::vector<uint8_t> KeyAgreementRequest::EncodeAsCBOR() const {
+std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+KeyAgreementRequest::EncodeAsCBOR() const {
   return EncodePINCommand(Subcommand::kGetKeyAgreement);
 }
 
@@ -289,7 +289,8 @@ void Encrypt(const uint8_t key[SHA256_DIGEST_LENGTH],
   EVP_CIPHER_CTX_cleanup(&aes_ctx);
 }
 
-std::vector<uint8_t> SetRequest::EncodeAsCBOR() const {
+std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+SetRequest::EncodeAsCBOR() const {
   // See
   // https://fidoalliance.org/specs/fido-v2.0-rd-20180702/fido-client-to-authenticator-protocol-v2.0-rd-20180702.html#settingNewPin
   uint8_t shared_key[SHA256_DIGEST_LENGTH];
@@ -346,7 +347,8 @@ base::Optional<EmptyResponse> EmptyResponse::Parse(
   return ret;
 }
 
-std::vector<uint8_t> ChangeRequest::EncodeAsCBOR() const {
+std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+ChangeRequest::EncodeAsCBOR() const {
   // See
   // https://fidoalliance.org/specs/fido-v2.0-rd-20180702/fido-client-to-authenticator-protocol-v2.0-rd-20180702.html#changingExistingPin
   uint8_t shared_key[SHA256_DIGEST_LENGTH];
@@ -389,8 +391,9 @@ std::vector<uint8_t> ChangeRequest::EncodeAsCBOR() const {
       });
 }
 
-std::vector<uint8_t> ResetRequest::EncodeAsCBOR() const {
-  return {static_cast<uint8_t>(CtapRequestCommand::kAuthenticatorReset)};
+std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+ResetRequest::EncodeAsCBOR() const {
+  return std::make_pair(CtapRequestCommand::kAuthenticatorReset, base::nullopt);
 }
 
 TokenRequest::TokenRequest(const std::string& pin,
@@ -410,7 +413,8 @@ const std::array<uint8_t, 32>& TokenRequest::shared_key() const {
   return shared_key_;
 }
 
-std::vector<uint8_t> TokenRequest::EncodeAsCBOR() const {
+std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+TokenRequest::EncodeAsCBOR() const {
   static_assert((sizeof(pin_hash_) % AES_BLOCK_SIZE) == 0,
                 "pin_hash_ is not a multiple of the AES block size");
   uint8_t encrypted_pin[sizeof(pin_hash_)];

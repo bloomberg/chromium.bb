@@ -8,6 +8,7 @@
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
 #include "device/fido/fido_test_data.h"
+#include "device/fido/mock_fido_device.h"
 #include "device/fido/virtual_ctap2_device.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,10 +31,10 @@ TEST(CTAPRequestTest, TestConstructMakeCredentialRequestParam) {
       test_data::kClientDataJson, std::move(rp), std::move(user),
       PublicKeyCredentialParams({{CredentialType::kPublicKey, 7},
                                  {CredentialType::kPublicKey, 257}}));
-  auto serialized_data =
+  auto serialized_data = MockFidoDevice::EncodeCBORRequest(
       make_credential_param.SetResidentKeyRequired(true)
           .SetUserVerification(UserVerificationRequirement::kRequired)
-          .EncodeAsCBOR();
+          .EncodeAsCBOR());
   EXPECT_THAT(serialized_data, ::testing::ElementsAreArray(
                                    test_data::kCtapMakeCredentialRequest));
 }
@@ -63,7 +64,8 @@ TEST(CTAPRequestTest, TestConstructGetAssertionRequest) {
       .SetUserPresenceRequired(false)
       .SetUserVerification(UserVerificationRequirement::kRequired);
 
-  auto serialized_data = get_assertion_req.EncodeAsCBOR();
+  auto serialized_data =
+      MockFidoDevice::EncodeCBORRequest(get_assertion_req.EncodeAsCBOR());
   EXPECT_THAT(serialized_data,
               ::testing::ElementsAreArray(
                   test_data::kTestComplexCtapGetAssertionRequest));

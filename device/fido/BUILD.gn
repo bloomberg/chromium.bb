@@ -237,6 +237,7 @@ source_set("mocks") {
     ":fido",
     "//base",
     "//components/apdu",
+    "//components/cbor",
     "//testing/gmock",
   ]
 }
