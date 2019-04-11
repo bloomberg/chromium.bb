@@ -40,7 +40,7 @@ class PageNodeImplTest : public GraphTestHarness {
 
 TEST_F(PageNodeImplTest, AddFrameBasic) {
   auto process_node = CreateNode<ProcessNodeImpl>();
-  auto page_node = CreateNode<PageNodeImpl>();
+  auto page_node = CreateNode<PageNodeImpl>(nullptr /*TEST*/);
   auto parent_frame = CreateNode<FrameNodeImpl>(process_node.get(),
                                                 page_node.get(), nullptr, 0);
   auto child1_frame = CreateNode<FrameNodeImpl>(
@@ -54,7 +54,7 @@ TEST_F(PageNodeImplTest, AddFrameBasic) {
 
 TEST_F(PageNodeImplTest, RemoveFrame) {
   auto process_node = CreateNode<ProcessNodeImpl>();
-  auto page_node = CreateNode<PageNodeImpl>();
+  auto page_node = CreateNode<PageNodeImpl>(nullptr /*TEST*/);
   auto frame_node = CreateNode<FrameNodeImpl>(process_node.get(),
                                               page_node.get(), nullptr, 0);
 
@@ -227,7 +227,7 @@ void ExpectInitialInterventionPolicyAggregationWorks(
   TestNodeWrapper<ProcessNodeImpl> process =
       TestNodeWrapper<ProcessNodeImpl>::Create(mock_graph);
   TestNodeWrapper<PageNodeImpl> page =
-      TestNodeWrapper<PageNodeImpl>::Create(mock_graph);
+      TestNodeWrapper<PageNodeImpl>::Create(mock_graph, nullptr /*TEST*/);
 
   // Check the initial values before any frames are added.
   EXPECT_EQ(0u, page->GetInterventionPolicyFramesReportedForTesting());
@@ -368,7 +368,7 @@ TEST_F(PageNodeImplTest, IncrementalInterventionPolicy) {
   TestNodeWrapper<ProcessNodeImpl> process =
       TestNodeWrapper<ProcessNodeImpl>::Create(mock_graph);
   TestNodeWrapper<PageNodeImpl> page =
-      TestNodeWrapper<PageNodeImpl>::Create(mock_graph);
+      TestNodeWrapper<PageNodeImpl>::Create(mock_graph, nullptr /*TEST*/);
 
   // Create two frames and immediately attach them to the page.
   TestNodeWrapper<FrameNodeImpl> f0 = TestNodeWrapper<FrameNodeImpl>::Create(

@@ -42,14 +42,20 @@ void ForFrameAndDescendents(FrameNodeImpl* frame_node,
 
 }  // namespace
 
-PageNodeImpl::PageNodeImpl(Graph* graph)
+PageNodeImpl::PageNodeImpl(Graph* graph,
+                           const base::WeakPtr<WebContentsProxy>& weak_contents)
     : TypedNodeBase(graph),
+      contents_proxy_(weak_contents),
       visibility_change_time_(PerformanceManagerClock::NowTicks()) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 PageNodeImpl::~PageNodeImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
+
+const base::WeakPtr<WebContentsProxy>& PageNodeImpl::contents_proxy() const {
+  return contents_proxy_;
 }
 
 void PageNodeImpl::AddFrame(FrameNodeImpl* frame_node) {
@@ -184,6 +190,85 @@ FrameNodeImpl* PageNodeImpl::GetMainFrameNode() const {
     return nullptr;
 
   return *main_frame_nodes_.begin();
+}
+
+bool PageNodeImpl::is_visible() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return is_visible_.value();
+}
+
+bool PageNodeImpl::is_loading() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return is_loading_.value();
+}
+
+ukm::SourceId PageNodeImpl::ukm_source_id() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return ukm_source_id_.value();
+}
+
+PageNodeImpl::LifecycleState PageNodeImpl::lifecycle_state() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return lifecycle_state_.value();
+}
+
+const base::flat_set<FrameNodeImpl*>& PageNodeImpl::main_frame_nodes() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return main_frame_nodes_;
+}
+
+base::TimeTicks PageNodeImpl::usage_estimate_time() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return usage_estimate_time_;
+}
+
+base::TimeDelta PageNodeImpl::cumulative_cpu_usage_estimate() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return cumulative_cpu_usage_estimate_;
+}
+
+uint64_t PageNodeImpl::private_footprint_kb_estimate() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return private_footprint_kb_estimate_;
+}
+
+bool PageNodeImpl::page_almost_idle() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return page_almost_idle_.value();
+}
+
+const GURL& PageNodeImpl::main_frame_url() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return main_frame_url_;
+}
+
+int64_t PageNodeImpl::navigation_id() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return navigation_id_;
+}
+
+void PageNodeImpl::set_usage_estimate_time(
+    base::TimeTicks usage_estimate_time) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  usage_estimate_time_ = usage_estimate_time;
+}
+
+void PageNodeImpl::set_cumulative_cpu_usage_estimate(
+    base::TimeDelta cumulative_cpu_usage_estimate) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  cumulative_cpu_usage_estimate_ = cumulative_cpu_usage_estimate;
+}
+
+void PageNodeImpl::set_private_footprint_kb_estimate(
+    uint64_t private_footprint_kb_estimate) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  private_footprint_kb_estimate_ = private_footprint_kb_estimate;
+}
+
+void PageNodeImpl::set_has_nonempty_beforeunload(
+    bool has_nonempty_beforeunload) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  has_nonempty_beforeunload_ = has_nonempty_beforeunload;
 }
 
 void PageNodeImpl::OnFrameLifecycleStateChanged(

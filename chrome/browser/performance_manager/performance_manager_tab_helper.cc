@@ -45,7 +45,9 @@ PerformanceManagerTabHelper::PerformanceManagerTabHelper(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       performance_manager_(PerformanceManager::GetInstance()),
-      page_node_(performance_manager_->CreatePageNode()) {
+      weak_factory_(this) {
+  page_node_ = performance_manager_->CreatePageNode(weak_factory_.GetWeakPtr());
+
   // Make sure to set the visibility property when we create
   // |page_resource_coordinator_|.
   UpdatePageNodeVisibility(web_contents->GetVisibility());
@@ -217,6 +219,10 @@ void PerformanceManagerTabHelper::OnInterfaceRequestFromFrame(
   PostToGraph(FROM_HERE, &FrameNodeImpl::AddBinding, it->second.get(),
               resource_coordinator::mojom::FrameCoordinationUnitRequest(
                   std::move(*interface_pipe)));
+}
+
+content::WebContents* PerformanceManagerTabHelper::GetWebContents() const {
+  return web_contents();
 }
 
 template <typename Functor, typename NodeType, typename... Args>

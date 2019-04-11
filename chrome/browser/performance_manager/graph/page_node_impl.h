@@ -14,6 +14,7 @@
 #include "chrome/browser/performance_manager/graph/node_attached_data.h"
 #include "chrome/browser/performance_manager/graph/node_base.h"
 #include "chrome/browser/performance_manager/observers/graph_observer.h"
+#include "chrome/browser/performance_manager/web_contents_proxy.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "url/gurl.h"
 
@@ -30,8 +31,14 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
     return resource_coordinator::CoordinationUnitType::kPage;
   }
 
-  explicit PageNodeImpl(Graph* graph);
+  explicit PageNodeImpl(Graph* graph,
+                        const base::WeakPtr<WebContentsProxy>& contents_proxy);
   ~PageNodeImpl() override;
+
+  // Returns the web contents associated with this page node. It is valid to
+  // call this function on any thread but the weak pointer must only be
+  // dereferenced on the UI thread.
+  const base::WeakPtr<WebContentsProxy>& contents_proxy() const;
 
   void SetIsLoading(bool is_loading);
   void SetIsVisible(bool is_visible);
@@ -69,43 +76,33 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
   FrameNodeImpl* GetMainFrameNode() const;
 
   // Accessors.
-  bool is_visible() const { return is_visible_.value(); }
-  bool is_loading() const { return is_loading_.value(); }
-  ukm::SourceId ukm_source_id() const { return ukm_source_id_.value(); }
-  LifecycleState lifecycle_state() const { return lifecycle_state_.value(); }
-  const base::flat_set<FrameNodeImpl*>& main_frame_nodes() const {
-    return main_frame_nodes_;
-  }
-  base::TimeTicks usage_estimate_time() const { return usage_estimate_time_; }
-  void set_usage_estimate_time(base::TimeTicks usage_estimate_time) {
-    usage_estimate_time_ = usage_estimate_time;
-  }
-  base::TimeDelta cumulative_cpu_usage_estimate() const {
-    return cumulative_cpu_usage_estimate_;
-  }
-  void set_cumulative_cpu_usage_estimate(
-      base::TimeDelta cumulative_cpu_usage_estimate) {
-    cumulative_cpu_usage_estimate_ = cumulative_cpu_usage_estimate;
-  }
-  uint64_t private_footprint_kb_estimate() const {
-    return private_footprint_kb_estimate_;
-  }
-  void set_private_footprint_kb_estimate(
-      uint64_t private_footprint_kb_estimate) {
-    private_footprint_kb_estimate_ = private_footprint_kb_estimate;
-  }
-  void set_has_nonempty_beforeunload(bool has_nonempty_beforeunload) {
-    has_nonempty_beforeunload_ = has_nonempty_beforeunload;
-  }
-  bool page_almost_idle() const { return page_almost_idle_.value(); }
+  bool is_visible() const;
+  bool is_loading() const;
+  ukm::SourceId ukm_source_id() const;
+  LifecycleState lifecycle_state() const;
+  const base::flat_set<FrameNodeImpl*>& main_frame_nodes() const;
+  base::TimeTicks usage_estimate_time() const;
+  base::TimeDelta cumulative_cpu_usage_estimate() const;
+  uint64_t private_footprint_kb_estimate() const;
+  bool page_almost_idle() const;
+  const GURL& main_frame_url() const;
+  int64_t navigation_id() const;
 
-  const GURL& main_frame_url() const { return main_frame_url_; }
-  int64_t navigation_id() const { return navigation_id_; }
+  void set_usage_estimate_time(base::TimeTicks usage_estimate_time);
+  void set_cumulative_cpu_usage_estimate(
+      base::TimeDelta cumulative_cpu_usage_estimate);
+  void set_private_footprint_kb_estimate(
+      uint64_t private_footprint_kb_estimate);
+  void set_has_nonempty_beforeunload(bool has_nonempty_beforeunload);
 
   // Invoked when the state of a frame in this page changes.
+  // TODO(chrisha): Move this out to a decorator.
   void OnFrameLifecycleStateChanged(FrameNodeImpl* frame_node,
                                     LifecycleState old_state);
 
+  // Invoked when a frame belonging to this page changes intervention policy
+  // values.
+  // TODO(chrisha): Move this out to a decorator.
   void OnFrameInterventionPolicyChanged(
       FrameNodeImpl* frame,
       resource_coordinator::mojom::PolicyControlledIntervention intervention,
@@ -178,6 +175,9 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
   // Invokes |map_function| for all frame nodes in this pages frame tree.
   template <typename MapFunction>
   void ForAllFrameNodes(MapFunction map_function) const;
+
+  // A weak pointer to the WebContentsProxy associated with this page.
+  const base::WeakPtr<WebContentsProxy> contents_proxy_;
 
   // The main frame nodes of this page. There can be more than one main frame
   // in a page, among other reasons because during main frame navigation, the

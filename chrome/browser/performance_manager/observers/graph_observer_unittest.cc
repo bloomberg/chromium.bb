@@ -53,7 +53,7 @@ TEST_F(GraphObserverTest, CallbacksInvoked) {
 
   {
     auto process_node = CreateNode<ProcessNodeImpl>();
-    auto page_node = CreateNode<PageNodeImpl>();
+    auto page_node = CreateNode<PageNodeImpl>(nullptr /*TEST*/);
     auto root_frame_node = CreateNode<FrameNodeImpl>(
         process_node.get(), page_node.get(), nullptr, 0);
     auto frame_node = CreateNode<FrameNodeImpl>(
