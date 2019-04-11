@@ -16478,6 +16478,7 @@ Called by update_net_error_codes.py.-->
   <int value="542" label="SignedHTTPExchangeEnabled"/>
   <int value="543" label="DeviceQuickFixBuildToken"/>
   <int value="544" label="ExtensionInstallListsMergeEnabled"/>
+  <int value="545" label="SamlInSessionPasswordChangeEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

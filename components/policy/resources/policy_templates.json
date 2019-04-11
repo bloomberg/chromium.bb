@@ -15330,6 +15330,27 @@
 
       If this policy is not set, or if its value does not map to a Quick Fix Build, then the device won't be updated to a Quick Fix Build. If the device is already running a Quick Fix Build and the policy is not set anymore or its value does not map to a Quick Fix Build anymore, then the device will be updated to a regular build if the update is not blocked by another policy.''',
     },
+    {
+      'name': 'SamlInSessionPasswordChangeEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:76-'],
+      'future': True,
+      'tags': [],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': True,
+      'id': 545,
+      'caption': '''Enables a page for in-session change of password for SAML users.''',
+      'desc': '''Enables a page at chrome://password-change that lets SAML users change their SAML passwords while in-session, which ensures that the SAML password and the device lockscreen password are kept in-sync.
+
+      This policy also enables notifications that warn SAML users if their SAML passwords are soon to expire so that they can deal with this immediately by doing an in-session password change.
+      But, these notifications will only be shown if password expiry information is sent to the device by the SAML identity provider during the SAML login flow.
+
+      If this policy is set, the user cannot change or override it.''',
+    },
   ],
 
   'messages': {
@@ -15495,5 +15516,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used':  544
+  'highest_id_currently_used':  545
 }
