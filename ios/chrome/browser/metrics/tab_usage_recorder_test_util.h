@@ -5,14 +5,16 @@
 #ifndef IOS_CHROME_BROWSER_METRICS_TAB_USAGE_RECORDER_TEST_UTIL_H_
 #define IOS_CHROME_BROWSER_METRICS_TAB_USAGE_RECORDER_TEST_UTIL_H_
 
+@class NSError;
+
 namespace tab_usage_recorder_test_util {
 
 // Opens a new incognito tab using the UI and evicts any main tab model tabs.
-void OpenNewIncognitoTabUsingUIAndEvictMainTabs();
+NSError* OpenNewIncognitoTabUsingUIAndEvictMainTabs();
 
 // Switches to normal mode using the tab switcher and selects the
 // previously-selected normal tab. Assumes current mode is Incognito.
-void SwitchToNormalMode();
+NSError* SwitchToNormalMode();
 
 }  // namespace tab_usage_recorder_test_util
 
