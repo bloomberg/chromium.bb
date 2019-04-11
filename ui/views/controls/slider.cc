@@ -33,12 +33,11 @@ namespace views {
 namespace {
 
 // Color of slider at the active and the disabled state, respectively.
-constexpr SkColor kActiveColor = SkColorSetARGB(0xFF, 0x42, 0x85, 0xF4);
-constexpr SkColor kDisabledColor = SkColorSetARGB(0xFF, 0xBD, 0xBD, 0xBD);
-constexpr uint8_t kHighlightColorAlpha = 0x4D;
+constexpr SkColor kActiveColor = SkColorSetARGB(0xFF, 0x25, 0x81, 0xDF);
+constexpr SkColor kDisabledColor = SkColorSetARGB(0x6E, 0xF1, 0xF3, 0xF4);
 
-// Color of the empty portion of the slider
-const SkColor kEmptySliderColor = SkColorSetARGB(0xFF, 0xBD, 0xBD, 0xBD);
+constexpr uint8_t kActiveColorAlpha = 0x40;
+constexpr uint8_t kDisabledColorAlpha = 0x19;
 
 // The thickness of the slider.
 constexpr int kLineThickness = 2;
@@ -266,9 +265,10 @@ void Slider::OnPaint(gfx::Canvas* canvas) {
   const int x = content.x() + full + kThumbRadius;
   const SkColor current_thumb_color =
       is_active_ ? kActiveColor : kDisabledColor;
+  const uint8_t current_color_alpha =
+      is_active_ ? kActiveColorAlpha : kDisabledColorAlpha;
   const SkColor empty_slider_color =
-      is_active_ ? kEmptySliderColor
-                 : SkColorSetA(kEmptySliderColor, kHighlightColorAlpha);
+      SkColorSetA(current_thumb_color, current_color_alpha);
 
   // Padding used to adjust space between slider ends and slider thumb.
   // Value is negative when slider is active so that there is no separation
@@ -294,7 +294,7 @@ void Slider::OnPaint(gfx::Canvas* canvas) {
   if (thumb_highlight_radius > kThumbRadius) {
     cc::PaintFlags highlight;
     SkColor highlight_color =
-        SkColorSetA(current_thumb_color, kHighlightColorAlpha);
+        SkColorSetA(current_thumb_color, current_color_alpha);
     highlight.setColor(highlight_color);
     highlight.setAntiAlias(true);
     canvas->DrawCircle(thumb_center, thumb_highlight_radius, highlight);
