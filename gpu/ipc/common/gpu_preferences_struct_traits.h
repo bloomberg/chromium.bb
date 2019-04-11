@@ -119,7 +119,6 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
     out->enable_oop_rasterization = prefs.enable_oop_rasterization();
     out->disable_oop_rasterization = prefs.disable_oop_rasterization();
     out->enable_oop_rasterization_ddl = prefs.enable_oop_rasterization_ddl();
-    out->enable_raster_to_sk_image = prefs.enable_raster_to_sk_image();
     out->watchdog_starts_backgrounded = prefs.watchdog_starts_backgrounded();
     out->enable_vulkan = prefs.enable_vulkan();
     out->disable_vulkan_surface = prefs.disable_vulkan_surface();
@@ -260,9 +259,6 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
   }
   static bool enable_oop_rasterization_ddl(const gpu::GpuPreferences& prefs) {
     return prefs.enable_oop_rasterization_ddl;
-  }
-  static bool enable_raster_to_sk_image(const gpu::GpuPreferences& prefs) {
-    return prefs.enable_raster_to_sk_image;
   }
   static bool watchdog_starts_backgrounded(const gpu::GpuPreferences& prefs) {
     return prefs.watchdog_starts_backgrounded;
