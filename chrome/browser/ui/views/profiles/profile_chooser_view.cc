@@ -51,6 +51,7 @@
 #include "services/identity/public/cpp/primary_account_mutator.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/button/label_button.h"
@@ -98,6 +99,27 @@ void NavigateToGoogleAccountPage(Profile* profile, const std::string& email) {
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   Navigate(&params);
 }
+
+#if defined(GOOGLE_CHROME_BUILD)
+// Returns the Google G icon in grey and with a padding of 2. The padding is
+// needed to make the icon look smaller, otherwise it looks too big compared to
+// the other icons. See crbug.com/951751 for more information.
+gfx::ImageSkia GetGoogleIconForUserMenu(int icon_size) {
+  constexpr int kIconPadding = 2;
+  SkColor icon_color =
+      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
+          ui::NativeTheme::kColorId_DefaultIconColor);
+  // |CreateVectorIcon()| doesn't override colors specified in the .icon file,
+  // therefore the image has to be colored manually with |CreateColorMask()|.
+  gfx::ImageSkia google_icon = gfx::CreateVectorIcon(
+      kGoogleGLogoIcon, icon_size - 2 * kIconPadding, gfx::kPlaceholderColor);
+  gfx::ImageSkia grey_google_icon =
+      gfx::ImageSkiaOperations::CreateColorMask(google_icon, icon_color);
+
+  return gfx::CanvasImageSource::CreatePadded(grey_google_icon,
+                                              gfx::Insets(kIconPadding));
+}
+#endif
 
 }  // namespace
 
@@ -894,24 +916,13 @@ void ProfileChooserView::AddAutofillHomeView() {
 
 #if defined(GOOGLE_CHROME_BUILD)
 void ProfileChooserView::AddManageGoogleAccountButton() {
-  ProfileMenuViewBase::MenuItems menu_items;
-
-  SkColor icon_color =
-      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
-          ui::NativeTheme::kColorId_DefaultIconColor);
-  // |CreateVectorIcon()| doesn't override colors specified in the .icon file,
-  // therefore the image has to be colored manually with |CreateColorMask()|.
-  gfx::ImageSkia google_logo = gfx::CreateVectorIcon(
-      kGoogleGLogoIcon, GetDefaultIconSize(), gfx::kPlaceholderColor);
-  gfx::ImageSkia grey_google_logo =
-      gfx::ImageSkiaOperations::CreateColorMask(google_logo, icon_color);
-
   std::unique_ptr<HoverButton> button = std::make_unique<HoverButton>(
-      this, grey_google_logo,
+      this, GetGoogleIconForUserMenu(GetDefaultIconSize()),
       l10n_util::GetStringUTF16(IDS_SETTINGS_MANAGE_GOOGLE_ACCOUNT));
   manage_google_account_button_ = button.get();
-  menu_items.push_back(std::move(button));
 
+  ProfileMenuViewBase::MenuItems menu_items;
+  menu_items.push_back(std::move(button));
   AddMenuItems(menu_items, /*new_group=*/false);
 }
 #endif
