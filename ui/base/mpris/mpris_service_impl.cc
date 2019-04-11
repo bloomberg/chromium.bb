@@ -212,7 +212,9 @@ void MprisServiceImpl::OnExported(const std::string& interface_name,
 
 void MprisServiceImpl::OnOwnership(const std::string& service_name,
                                    bool success) {
-  DCHECK(success);
+  if (!success)
+    return;
+
   service_ready_ = true;
 
   for (MprisServiceObserver& obs : observers_)
@@ -387,7 +389,7 @@ void MprisServiceImpl::SetPropertyInternal(PropertyMap& property_map,
 
 void MprisServiceImpl::EmitPropertiesChangedSignal(
     const PropertyMap& changed_properties) {
-  if (!bus_ || !exported_object_)
+  if (!bus_ || !exported_object_ || !service_ready_)
     return;
 
   // |signal| follows the PropertiesChanged API:
