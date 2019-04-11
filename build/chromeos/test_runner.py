@@ -214,6 +214,7 @@ class TastTest(RemoteTest):
     self._suite_name = args.suite_name
     self._tests = args.tests
     self._conditional = args.conditional
+    self._use_host_tast = args.use_host_tast_bin
 
   @property
   def suite_name(self):
@@ -253,7 +254,7 @@ class TastTest(RemoteTest):
     # on_device_script in that case. For all other tests, use cros_run_test's
     # built-in '--tast' option. This gives us much better results reporting.
     # TODO(bpastene): s/True/self._llvm_profile_var/ once we parse Tast results.
-    if True:  # pylint: disable=using-constant-test
+    if not self._use_host_tast:
       # Build the shell script that will be used on the device to invoke the
       # test.
       device_test_script_contents = self.BASIC_SHELL_SCRIPT[:]
@@ -724,6 +725,10 @@ def main():
   tast_test_parser.add_argument(
       '--test', '-t', action='append', dest='tests',
       help='A Tast test to run in the device (eg: "ui.ChromeLogin").')
+  tast_test_parser.add_argument(
+      '--use-host-tast-bin', action='store_true',
+      help='Use the host-side Tast bin to run the tests instead of the '
+           'DUT-side local_test_runner. TODO(bpastene): Make this default.')
 
   add_common_args(gtest_parser)
   add_common_args(tast_test_parser)
