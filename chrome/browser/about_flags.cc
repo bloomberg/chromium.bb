@@ -3955,6 +3955,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kInSessionPasswordChangeName,
      flag_descriptions::kInSessionPasswordChangeDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kInSessionPasswordChange)},
+
+    {"enable-streamlined-usb-printer-setup",
+     flag_descriptions::kStreamlinedUsbPrinterSetupName,
+     flag_descriptions::kStreamlinedUsbPrinterSetupDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kStreamlinedUsbPrinterSetup)},
+
 #endif  // OS_CHROMEOS
 
     {"autofill-off-no-server-data",

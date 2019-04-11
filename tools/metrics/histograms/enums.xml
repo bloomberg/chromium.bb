@@ -34086,6 +34086,7 @@ from previous Chrome versions.
   <int value="1142515376" label="enable-nacl"/>
   <int value="1142788238" label="FontCacheScaling:disabled"/>
   <int value="1148284632" label="NewTabPageUIMd:disabled"/>
+  <int value="1149417604" label="StreamlinedUsbPrinterSetup:disabled"/>
   <int value="1149823105" label="enable-input-ime-api"/>
   <int value="1150622273" label="enable-apps-file-associations"/>
   <int value="1152491093" label="MediaSessionService:disabled"/>
@@ -34708,6 +34709,7 @@ from previous Chrome versions.
   <int value="2092605092" label="ChromeHomeShowGoogleGWhenUrlCleared:disabled"/>
   <int value="2093235103" label="default-tile-width"/>
   <int value="2093949489" label="ArrayPrototypeValues:enabled"/>
+  <int value="2094335682" label="StreamlinedUsbPrinterSetup:enabled"/>
   <int value="2097048479" label="disable-auto-hiding-toolbar-threshold"/>
   <int value="2098714203" label="enable-generic-sensors"/>
   <int value="2098907258" label="UseSurfaceLayerForVideo:disabled"/>
