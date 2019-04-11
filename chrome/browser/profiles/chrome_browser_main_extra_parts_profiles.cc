@@ -65,6 +65,7 @@
 #include "chrome/browser/search_engines/template_url_fetcher_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_client_service_factory.h"
+#include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
@@ -377,7 +378,9 @@ void ChromeBrowserMainExtraPartsProfiles::
 #if defined(OS_ANDROID)
   SearchPermissionsService::Factory::GetInstance();
 #endif
-  send_tab_to_self::SendTabToSelfClientServiceFactory::GetInstance();
+  if (send_tab_to_self::IsReceivingEnabled()) {
+    send_tab_to_self::SendTabToSelfClientServiceFactory::GetInstance();
+  }
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
   SessionServiceFactory::GetInstance();
 #endif
