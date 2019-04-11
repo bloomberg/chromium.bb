@@ -8967,7 +8967,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
         USB device detected
       </message>
       <message name="IDS_CROSUSB_NOTIFICATION_BUTTON_CONNECT_TO_LINUX" desc="Label for notification button shown to the user when a USB device gets plugged in to allowed Linux to use the device">
-        Connect
+        Connect to Linux
       </message>
       <message name="IDS_CROSUSB_UNKNOWN_DEVICE_FROM_MANUFACTURER" desc="String describing an unknown device in notification shown when a USB device gets plugged in.">
         USB device from <ph name="MANUFACTURER_NAME">$1<ex>Google</ex></ph>
