@@ -215,6 +215,9 @@ if (use_system_harfbuzz) {
       "HAVE_ICU_BUILTIN",
       "HAVE_INTEL_ATOMIC_PRIMITIVES",
       "HB_NO_MMAP",
+
+      # TODO(https://crbug.com/949962): Remove once this is fixed upstream.
+      "U_DISABLE_VERSION_SUFFIX=0",
     ]
 
     if (is_component_build) {
