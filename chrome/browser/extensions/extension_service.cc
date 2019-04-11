@@ -25,6 +25,7 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/syslog_logging.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -1027,6 +1028,23 @@ void ExtensionService::CheckManagementPolicy() {
     }
     if (!to_recheck.ids.empty())
       updater_->CheckNow(std::move(to_recheck));
+  }
+
+  // Check the disabled extensions to see if any should be force uninstalled.
+  std::vector<ExtensionId> remove_list;
+  for (const auto& extension : registry_->disabled_extensions()) {
+    if (system_->management_policy()->ShouldForceUninstall(extension.get(),
+                                                           nullptr /*error*/)) {
+      remove_list.push_back(extension->id());
+    }
+  }
+  for (auto extension_id : remove_list) {
+    base::string16 error;
+    if (!UninstallExtension(extension_id, UNINSTALL_REASON_INTERNAL_MANAGEMENT,
+                            &error)) {
+      SYSLOG(WARNING) << "Extension with id " << extension_id
+                      << " failed to be uninstalled via policy: " << error;
+    }
   }
 }
 

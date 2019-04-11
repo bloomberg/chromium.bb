@@ -121,6 +121,9 @@ extern const char kPrefContentSettings[];
 // Extension-set incognito content settings.
 extern const char kPrefIncognitoContentSettings[];
 
+// A boolean that when set removes blacklisted extensions automatically.
+extern const char kUninstallBlacklistedExtensions[];
+
 }  // namespace pref_names
 }  // namespace extensions
 
