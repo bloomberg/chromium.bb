@@ -76,7 +76,7 @@ public class BlobReceiver implements BlobReaderClient {
     @Override
     public void onConnectionError(MojoException e) {
         if (mCallback == null) return;
-        reportError(MojoResult.INTERNAL, "Connection error detected.");
+        reportError(e.getMojoResult(), "Connection error detected.");
     }
 
     // BlobReaderClient
@@ -109,7 +109,10 @@ public class BlobReceiver implements BlobReaderClient {
 
     // BlobReaderClient
     @Override
-    public void onComplete(int status, long dataLength) {}
+    public void onComplete(int status, long dataLength) {
+        if (mCallback == null) return;
+        read();
+    }
 
     private void read() {
         try {
