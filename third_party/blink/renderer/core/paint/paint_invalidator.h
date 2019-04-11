@@ -81,9 +81,6 @@ struct CORE_EXPORT PaintInvalidatorContext {
     kSubtreeFullInvalidation = 1 << 2,
     kSubtreeFullInvalidationForStackedContents = 1 << 3,
 
-    // For repeated objects inside multicolumn.
-    kSubtreeSlowPathRect = 1 << 4,
-
     // When this flag is set, no paint or raster invalidation will be issued
     // for the subtree.
     //
