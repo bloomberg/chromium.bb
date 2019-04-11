@@ -29,6 +29,7 @@
 #include "components/sync/test/engine/mock_connection_manager.h"
 #include "components/sync/test/engine/mock_nudge_handler.h"
 #include "components/sync/test/mock_invalidation.h"
+#include "net/http/http_status_code.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -1657,7 +1658,8 @@ TEST_F(SyncSchedulerImplTest, PollFromCanaryAfterAuthError) {
           DoAll(Invoke(test_util::SimulatePollSuccess),
                 RecordSyncShareMultiple(&times, kMinNumSamples, true)));
 
-  connection()->SetServerStatus(HttpResponse::SYNC_AUTH_ERROR);
+  connection()->SetServerResponse(
+      HttpResponse::ForHttpError(net::HTTP_UNAUTHORIZED));
   StartSyncScheduler(base::Time());
 
   // Run to wait for polling.
@@ -1670,7 +1672,7 @@ TEST_F(SyncSchedulerImplTest, PollFromCanaryAfterAuthError) {
       .WillOnce(DoAll(Invoke(test_util::SimulatePollSuccess),
                       RecordSyncShare(&times, true)));
   scheduler()->OnCredentialsUpdated();
-  connection()->SetServerStatus(HttpResponse::SERVER_CONNECTION_OK);
+  connection()->SetServerResponse(HttpResponse::ForSuccess());
   RunLoop();
   StopSyncScheduler();
 }

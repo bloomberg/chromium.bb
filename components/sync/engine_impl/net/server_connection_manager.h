@@ -28,7 +28,8 @@ struct HttpResponse {
     // For uninitialized state.
     NONE,
 
-    // CONNECTION_UNAVAILABLE is returned when InternetConnect() fails.
+    // CONNECTION_UNAVAILABLE means either the request got canceled or it
+    // encountered a network error.
     CONNECTION_UNAVAILABLE,
 
     // IO_ERROR is returned when reading/writing to a buffer has failed.
@@ -40,11 +41,16 @@ struct HttpResponse {
 
     // SYNC_AUTH_ERROR is returned when the HTTP status code indicates that an
     // auth error has occurred (i.e. a 401).
+    // TODO(crbug.com/842096, crbug.com/951350): Remove this and instead use
+    // SYNC_SERVER_ERROR plus |http_status_code| == 401.
     SYNC_AUTH_ERROR,
 
     // SERVER_CONNECTION_OK is returned when request was handled correctly.
     SERVER_CONNECTION_OK,
   };
+
+  // Identifies the type of failure, if any.
+  ServerConnectionCode server_status;
 
   // The network error code.
   int net_error_code;
@@ -58,9 +64,15 @@ struct HttpResponse {
   // The size of a download request's payload.
   int64_t payload_length;
 
-  // Identifies the type of failure, if any.
-  ServerConnectionCode server_status;
+  static HttpResponse Uninitialized();
+  static HttpResponse ForNetError(int net_error_code);
+  static HttpResponse ForIoError();
+  static HttpResponse ForHttpError(int http_status_code);
+  static HttpResponse ForSuccess();
 
+ private:
+  // Private to prevent accidental usage. Use Uninitialized() if you really need
+  // a "default" instance.
   HttpResponse();
 };
 
@@ -88,7 +100,7 @@ class ServerConnectionManager {
   struct PostBufferParams {
     std::string buffer_in;
     std::string buffer_out;
-    HttpResponse response;
+    HttpResponse response = HttpResponse::Uninitialized();
   };
 
   // Abstract class providing network-layer functionality to the
@@ -100,6 +112,9 @@ class ServerConnectionManager {
     virtual ~Connection();
 
     // Called to initialize and perform an HTTP POST.
+    // TODO(crbug.com/951350): Return the HttpResponse by value. It's not
+    // obvious what the boolean return value means. (True means success or HTTP
+    // error, false means canceled or network error.)
     virtual bool Init(const char* path,
                       const std::string& access_token,
                       const std::string& payload,
@@ -149,12 +164,12 @@ class ServerConnectionManager {
 
   inline HttpResponse::ServerConnectionCode server_status() const {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    return server_status_;
+    return server_response_.server_status;
   }
 
   inline int net_error_code() const {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    return net_error_code_;
+    return server_response_.net_error_code;
   }
 
   const std::string client_id() const { return client_id_; }
@@ -179,8 +194,9 @@ class ServerConnectionManager {
  protected:
   inline std::string proto_sync_path() const { return proto_sync_path_; }
 
-  // Updates server_status_ and notifies listeners if server_status_ changed
-  void SetServerStatus(HttpResponse::ServerConnectionCode server_status);
+  // Updates server_response_ and notifies listeners if the server status
+  // changed.
+  void SetServerResponse(const HttpResponse& server_response);
 
   // NOTE: Tests rely on this protected function being virtual.
   //
@@ -218,12 +234,7 @@ class ServerConnectionManager {
 
   base::ObserverList<ServerConnectionEventListener>::Unchecked listeners_;
 
-  HttpResponse::ServerConnectionCode server_status_;
-
-  // Contains the network error code if there is an error when making the
-  // connection with the server in which case |server_status_| is set to
-  // HttpResponse::CONNECTION_UNAVAILABLE.
-  int net_error_code_;
+  HttpResponse server_response_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
