@@ -19640,6 +19640,21 @@ TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest, ReportElapsedTime) {
 
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
+TEST_F(HttpNetworkTransactionTest, AlwaysFailRequestToCache) {
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("http://example.org/");
+
+  request.load_flags = LOAD_ONLY_FROM_CACHE;
+
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
+  TestCompletionCallback callback1;
+  int rv = trans.Start(&request, callback1.callback(), NetLogWithSource());
+
+  EXPECT_THAT(rv, IsError(ERR_CACHE_MISS));
+}
+
 TEST_F(HttpNetworkTransactionTest, ZeroRTTDoesntConfirm) {
   HttpRequestInfo request;
   request.method = "GET";
