@@ -13,12 +13,12 @@
 #include "base/command_line.h"
 #include "base/optional.h"
 #include "base/test/bind_test_util.h"
-#include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/services/app_service/public/cpp/app_registry_cache.h"
+#include "chrome/services/app_service/public/cpp/app_service_proxy.h"
 #include "chrome/services/app_service/public/cpp/app_update.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -67,7 +67,7 @@ class AppControllerServiceTest : public testing::Test {
     profile_ = std::make_unique<TestingProfile>();
 
     arc_test_.SetUp(profile());
-    proxy_ = apps::AppServiceProxy::Get(profile());
+    proxy_ = apps::AppServiceProxyFactory::GetForProfile(profile());
 
     app_controller_service_ = AppControllerService::Get(profile());
 

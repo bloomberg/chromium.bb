@@ -17,7 +17,7 @@ namespace apps {
 class StubIconLoader : public IconLoader {
  public:
   StubIconLoader();
-  ~StubIconLoader();
+  ~StubIconLoader() override;
 
   // IconLoader overrides.
   apps::mojom::IconKeyPtr GetIconKey(const std::string& app_id) override;

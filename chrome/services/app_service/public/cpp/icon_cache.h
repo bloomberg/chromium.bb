@@ -67,7 +67,7 @@ class IconCache : public IconLoader {
   };
 
   IconCache(IconLoader* wrapped_loader, GarbageCollectionPolicy gc_policy);
-  ~IconCache();
+  ~IconCache() override;
 
   // IconLoader overrides.
   apps::mojom::IconKeyPtr GetIconKey(const std::string& app_id) override;
