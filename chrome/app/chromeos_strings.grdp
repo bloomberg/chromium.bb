@@ -3610,6 +3610,21 @@
   <message name="IDS_BED_TIME_NOTIFICATION_TITLE" desc="The title of the notification when bedtime reaches before locking the device.">
     Lights out soon
   </message>
+  <message name="IDS_TIME_LIMIT_UPDATED_NOTIFICATION_TITLE" desc="The title of the notification displayed when parent updates bedtime or usage limit for kids device.">
+    Update from your parent
+  </message>
+  <message name="IDS_BEDTIME_UPDATED_NOTIFICATION_MESSAGE" desc="The message of the notification when parent updates bedtime limit for kids device.">
+    New bedtime set
+  </message>
+  <message name="IDS_SCREEN_TIME_UPDATED_NOTIFICATION_MESSAGE" desc="The message of the notification when parent updates usage limit for kids device.">
+    New screen time limit
+  </message>
+  <message name="IDS_OVERRIDE_WITH_DURATION_UPDATED_NOTIFICATION_TITLE" desc="The title of the notification when parent granted the child more time on this device.">
+    Bonus! You got more screen time
+  </message>
+  <message name="IDS_OVERRIDE_WITH_DURATION_UPDATED_NOTIFICATION_MESSAGE" desc="The message of the notification when parent granted the child more time on this device. Informs the child of the device's new lock time.">
+    Your device now locks at <ph name="UNLOCK_TIME">$1<ex>9:30 PM</ex></ph>.
+  </message>
   <message name="IDS_TIME_LIMIT_NOTIFICATION_DISPLAY_SOURCE" desc="The string shown as the display source of the bedtime or screen time notifications.">
     Family Link
   </message>
