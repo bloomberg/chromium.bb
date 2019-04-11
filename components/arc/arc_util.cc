@@ -182,6 +182,10 @@ void SetArcCpuRestriction(bool do_restrict) {
     LOG(WARNING) << "SessionManagerClient is not available";
     return;
   }
+
+  if (chromeos::switches::IsArcCpuRestrictionDisabled())
+    return;
+
   const login_manager::ContainerCpuRestrictionState state =
       do_restrict ? login_manager::CONTAINER_CPU_RESTRICTION_BACKGROUND
                   : login_manager::CONTAINER_CPU_RESTRICTION_FOREGROUND;

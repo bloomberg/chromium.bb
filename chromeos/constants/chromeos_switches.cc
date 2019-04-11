@@ -542,6 +542,11 @@ const char kWaitForInitialPolicyFetchForTest[] =
 // of network packets from whitelisted sources.
 const char kWakeOnWifiPacket[] = "wake-on-wifi-packet";
 
+// Prevents any CPU restrictions being set on the ARC container. Only meant to
+// be used by tests as some tests may time out if the ARC container is
+// throttled.
+const char kDisableArcCpuRestriction[] = "disable-arc-cpu-restriction";
+
 bool WakeOnWifiEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableWakeOnWifi);
 }
@@ -648,6 +653,11 @@ bool ShouldSkipOobePostLogin() {
 bool IsGaiaServicesDisabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kDisableGaiaServices);
+}
+
+bool IsArcCpuRestrictionDisabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kDisableArcCpuRestriction);
 }
 
 }  // namespace switches
