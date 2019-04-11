@@ -176,8 +176,8 @@ void SSLConnectJob::OnNeedsProxyAuth(
                             std::move(restart_with_auth_callback));
 }
 
-void SSLConnectJob::GetAdditionalErrorState(ClientSocketHandle* handle) {
-  handle->set_connection_attempts(connection_attempts_);
+ConnectionAttempts SSLConnectJob::GetConnectionAttempts() const {
+  return connection_attempts_;
 }
 
 std::unique_ptr<StreamSocket> SSLConnectJob::PassProxySocketOnFailure() {
@@ -264,13 +264,11 @@ int SSLConnectJob::DoTransportConnect() {
 }
 
 int SSLConnectJob::DoTransportConnectComplete(int result) {
-  // TODO(https://crbug.com/927101): Implement a better API to get this
-  // information.
-  ClientSocketHandle bogus_handle;
-  nested_connect_job_->GetAdditionalErrorState(&bogus_handle);
+  ConnectionAttempts connection_attempts =
+      nested_connect_job_->GetConnectionAttempts();
   connection_attempts_.insert(connection_attempts_.end(),
-                              bogus_handle.connection_attempts().begin(),
-                              bogus_handle.connection_attempts().end());
+                              connection_attempts.begin(),
+                              connection_attempts.end());
   if (result == OK) {
     next_state_ = STATE_SSL_CONNECT;
     nested_socket_ = nested_connect_job_->PassSocket();

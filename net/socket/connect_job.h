@@ -19,6 +19,7 @@
 #include "net/base/privacy_mode.h"
 #include "net/base/request_priority.h"
 #include "net/log/net_log_with_source.h"
+#include "net/socket/connection_attempts.h"
 #include "net/socket/socket_tag.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/third_party/quiche/src/quic/core/quic_versions.h"
@@ -26,7 +27,6 @@
 namespace net {
 
 class ClientSocketFactory;
-class ClientSocketHandle;
 class HostResolver;
 class HttpAuthCache;
 class HttpAuthController;
@@ -184,14 +184,10 @@ class NET_EXPORT_PRIVATE ConnectJob {
   // Not safe to call after NotifyComplete() is invoked.
   virtual bool HasEstablishedConnection() const = 0;
 
-  // If Connect returns an error (or OnConnectJobComplete reports an error
-  // result) this method will be called, allowing a SocketPool to add additional
-  // error state to the ClientSocketHandle (post late-binding).
-  //
-  // TODO(mmenke): This is a layering violation. Consider refactoring it to not
-  // depend on ClientSocketHandle. Fixing this will need to wait until after
-  // proxy tunnel auth has been refactored.
-  virtual void GetAdditionalErrorState(ClientSocketHandle* handle) {}
+  // If the ConnectJobFailed, this method returns a list of failed attempts to
+  // connect to the destination server. Returns an empty list if connecting to a
+  // proxy.
+  virtual ConnectionAttempts GetConnectionAttempts() const;
 
   // On connect failure, returns the nested proxy socket, if there is one.
   // Returns nullptr otherwise. Only returns a non-null value for SSL sockets on

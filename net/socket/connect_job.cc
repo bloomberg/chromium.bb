@@ -116,6 +116,11 @@ int ConnectJob::Connect() {
   return rv;
 }
 
+ConnectionAttempts ConnectJob::GetConnectionAttempts() const {
+  // Return empty list by default - used by proxy classes.
+  return ConnectionAttempts();
+}
+
 std::unique_ptr<StreamSocket> ConnectJob::PassProxySocketOnFailure() {
   return nullptr;
 }
