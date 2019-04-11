@@ -34,6 +34,8 @@
 
 - (void)start {
   self.navigationController = [[UINavigationController alloc] init];
+  self.navigationController.modalPresentationStyle =
+      UIModalPresentationFormSheet;
   self.googleServicesSettingsCoordinator =
       [[GoogleServicesSettingsCoordinator alloc]
           initWithBaseViewController:self.navigationController
