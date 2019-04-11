@@ -267,7 +267,14 @@ TEST_F(SplicedMessagePipeTest, SignalHandlerOrdering) {
 // No multi-process support for iOS.
 #if !defined(OS_IOS)
 
-TEST_F(SplicedMessagePipeTest, Multiprocess) {
+#if defined(OS_FUCHSIA)
+// Flaky: https://crbug.com/950983
+#define MAYBE_Multiprocess DISABLED_Multiprocess
+#else
+#define MAYBE_Multiprocess Multiprocess
+#endif
+
+TEST_F(SplicedMessagePipeTest, MAYBE_Multiprocess) {
   MojoHandle a, b;
   CreateMessagePipe(&a, &b);
   RunTestClient("Client1", [&](MojoHandle h) {
