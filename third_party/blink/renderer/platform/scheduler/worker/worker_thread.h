@@ -10,6 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/sequence_manager/sequence_manager.h"
 #include "base/threading/thread.h"
 #include "third_party/blink/public/platform/web_private_ptr.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
@@ -61,7 +62,8 @@ class PLATFORM_EXPORT WorkerThread
 
  protected:
   virtual std::unique_ptr<NonMainThreadSchedulerImpl>
-  CreateNonMainThreadScheduler();
+  CreateNonMainThreadScheduler(
+      base::sequence_manager::SequenceManager* sequence_manager);
 
   base::Thread* GetThread() const { return thread_.get(); }
 
@@ -75,6 +77,7 @@ class PLATFORM_EXPORT WorkerThread
   std::unique_ptr<base::Thread> thread_;
   const WebThreadType thread_type_;
   std::unique_ptr<scheduler::WorkerSchedulerProxy> worker_scheduler_proxy_;
+  std::unique_ptr<base::sequence_manager::SequenceManager> sequence_manager_;
   std::unique_ptr<scheduler::NonMainThreadSchedulerImpl>
       non_main_thread_scheduler_;
   scoped_refptr<NonMainThreadTaskQueue> task_queue_;

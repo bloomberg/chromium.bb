@@ -20,12 +20,14 @@ namespace blink {
 namespace scheduler {
 
 // Common scheduler functionality for default tasks.
+// TODO(carlscab): This class is not really needed and should be removed
 class PLATFORM_EXPORT SchedulerHelper
     : public base::sequence_manager::SequenceManager::Observer {
  public:
+  // |sequence_manager| must remain valid until Shutdown() is called or the
+  // object is destroyed.
   explicit SchedulerHelper(
-      std::unique_ptr<base::sequence_manager::SequenceManager>
-          sequence_manager);
+      base::sequence_manager::SequenceManager* sequence_manager);
   ~SchedulerHelper() override;
 
   // SequenceManager::Observer implementation:
@@ -66,7 +68,7 @@ class PLATFORM_EXPORT SchedulerHelper
   void Shutdown();
 
   // Returns true if Shutdown() has been called. Otherwise returns false.
-  bool IsShutdown() const { return !sequence_manager_.get(); }
+  bool IsShutdown() const { return !sequence_manager_; }
 
   inline void CheckOnValidThread() const {
     DCHECK(thread_checker_.CalledOnValidThread());
@@ -119,7 +121,7 @@ class PLATFORM_EXPORT SchedulerHelper
   virtual void ShutdownAllQueues() {}
 
   base::ThreadChecker thread_checker_;
-  std::unique_ptr<base::sequence_manager::SequenceManager> sequence_manager_;
+  base::sequence_manager::SequenceManager* sequence_manager_;  // NOT OWNED
 
  private:
   friend class SchedulerHelperTest;

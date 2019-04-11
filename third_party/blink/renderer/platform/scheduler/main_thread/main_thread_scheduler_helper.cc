@@ -12,9 +12,9 @@ namespace scheduler {
 using base::sequence_manager::TaskQueue;
 
 MainThreadSchedulerHelper::MainThreadSchedulerHelper(
-    std::unique_ptr<base::sequence_manager::SequenceManager> sequence_manager,
+    base::sequence_manager::SequenceManager* sequence_manager,
     MainThreadSchedulerImpl* main_thread_scheduler)
-    : SchedulerHelper(std::move(sequence_manager)),
+    : SchedulerHelper(sequence_manager),
       main_thread_scheduler_(main_thread_scheduler),
       // TODO(hajimehoshi): Forbid V8 execution at |default_task_queue_|
       // (crbug.com/870606).

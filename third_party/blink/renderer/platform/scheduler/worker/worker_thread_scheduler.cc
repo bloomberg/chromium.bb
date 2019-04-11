@@ -97,9 +97,9 @@ base::Optional<base::TimeDelta> GetMaxThrottlingDelay() {
 
 WorkerThreadScheduler::WorkerThreadScheduler(
     WebThreadType thread_type,
-    std::unique_ptr<base::sequence_manager::SequenceManager> sequence_manager,
+    base::sequence_manager::SequenceManager* sequence_manager,
     WorkerSchedulerProxy* proxy)
-    : NonMainThreadSchedulerImpl(std::move(sequence_manager),
+    : NonMainThreadSchedulerImpl(sequence_manager,
                                  TaskType::kWorkerThreadTaskQueueDefault),
       thread_type_(thread_type),
       idle_helper_(helper(),
@@ -205,6 +205,7 @@ void WorkerThreadScheduler::Shutdown() {
       base::TimeDelta::FromDays(1), 50 /* bucket count */);
   task_queue_throttler_.reset();
   idle_helper_.Shutdown();
+  helper()->RemoveTaskTimeObserver(this);
   helper()->Shutdown();
 }
 

@@ -46,9 +46,11 @@ class PLATFORM_EXPORT WorkerThreadScheduler
       public IdleHelper::Delegate,
       public base::sequence_manager::TaskTimeObserver {
  public:
+  // |sequence_manager|and |proxy| must remain valid for the entire lifetime of
+  // this object.
   WorkerThreadScheduler(
       WebThreadType thread_type,
-      std::unique_ptr<base::sequence_manager::SequenceManager> sequence_manager,
+      base::sequence_manager::SequenceManager* sequence_manager,
       WorkerSchedulerProxy* proxy);
   ~WorkerThreadScheduler() override;
 
