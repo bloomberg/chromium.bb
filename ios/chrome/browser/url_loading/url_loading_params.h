@@ -10,6 +10,14 @@
 #import "ios/web/public/navigation_manager.h"
 #include "ui/base/window_open_disposition.h"
 
+// Enum of ways of changing loading behavior, that can be passed around
+// opaquely, and set by using |UrlLoadParams::LoadStrategy|.
+enum class UrlLoadStrategy {
+  NORMAL = 0,
+
+  ALWAYS_NEW_FOREGROUND_TAB = 1 << 0,
+};
+
 // UrlLoadingService wrapper around web::NavigationManager::WebLoadParams,
 // WindowOpenDisposition and parameters from OpenNewTabCommand.
 // This is used when a URL is opened.
@@ -68,6 +76,9 @@ struct UrlLoadParams {
   // Whether the new tab command should also trigger the omnibox to be focused.
   // Only used when the |web_params.url| isn't valid. Defaults to |false|.
   bool should_focus_omnibox;
+
+  // Opaque way of changing loading behavior.
+  UrlLoadStrategy load_strategy;
 
   bool in_background() const {
     return disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB;

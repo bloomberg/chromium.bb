@@ -31,6 +31,7 @@ source_set("recent_tabs") {
     "//ios/chrome/browser/ui/ntp",
     "//ios/chrome/browser/ui/table_view",
     "//ios/chrome/browser/ui/util",
+    "//ios/chrome/browser/url_loading",
     "//services/identity/public/cpp",
     "//ui/base",
   ]
