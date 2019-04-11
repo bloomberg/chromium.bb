@@ -107,7 +107,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPrintersSyncTest, RemoveAndEditPrinters) {
   ASSERT_TRUE(PrintersMatchChecker().Wait());
   EXPECT_EQ(2, GetPrinterCount(0));
   EXPECT_EQ(updated_description,
-            GetPrinterStore(1)->GetConfiguredPrinters()[0].description());
+            GetPrinterStore(1)->GetSavedPrinters()[0].description());
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientPrintersSyncTest, ConflictResolution) {
@@ -140,9 +140,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientPrintersSyncTest, ConflictResolution) {
   // due to lack of a strong consistency model on the server).
   ProfileSyncServiceHarness::AwaitQuiescence({GetClient(1)});
 
-  ASSERT_EQ(GetPrinterStore(0)->GetConfiguredPrinters()[0].description(),
+  ASSERT_EQ(GetPrinterStore(0)->GetSavedPrinters()[0].description(),
             kLatestDescription);
-  ASSERT_EQ(GetPrinterStore(1)->GetConfiguredPrinters()[0].description(),
+  ASSERT_EQ(GetPrinterStore(1)->GetSavedPrinters()[0].description(),
             kOverwrittenDescription);
 
   // Client 0 goes online, which results in a conflict (local wins).
@@ -151,9 +151,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientPrintersSyncTest, ConflictResolution) {
   // Run tasks until the most recent update has been applied to all stores.
   ASSERT_TRUE(PrintersMatchChecker().Wait());
 
-  EXPECT_EQ(GetPrinterStore(0)->GetConfiguredPrinters()[0].description(),
+  EXPECT_EQ(GetPrinterStore(0)->GetSavedPrinters()[0].description(),
             kLatestDescription);
-  EXPECT_EQ(GetPrinterStore(1)->GetConfiguredPrinters()[0].description(),
+  EXPECT_EQ(GetPrinterStore(1)->GetSavedPrinters()[0].description(),
             kLatestDescription);
 }
 
@@ -189,9 +189,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientPrintersSyncTest,
   // involved.
   ASSERT_TRUE(PrintersMatchChecker().Wait());
 
-  EXPECT_EQ(GetPrinterStore(0)->GetConfiguredPrinters()[0].description(),
+  EXPECT_EQ(GetPrinterStore(0)->GetSavedPrinters()[0].description(),
             kLatestDescription);
-  EXPECT_EQ(GetPrinterStore(1)->GetConfiguredPrinters()[0].description(),
+  EXPECT_EQ(GetPrinterStore(1)->GetSavedPrinters()[0].description(),
             kLatestDescription);
 }
 
