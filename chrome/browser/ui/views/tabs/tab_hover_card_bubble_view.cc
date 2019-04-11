@@ -192,8 +192,6 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
   // hide the hovercard on press, touch, and keyboard events.
   SetCanActivate(false);
 
-  set_adjust_if_offscreen(true);
-
   title_label_ =
       new views::Label(base::string16(), CONTEXT_TAB_HOVER_CARD_TITLE,
                        views::style::STYLE_PRIMARY);
@@ -234,6 +232,7 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
       new gfx::Insets(kLineSpacing, kOuterMargin, kOuterMargin, kOuterMargin));
 
   widget_ = views::BubbleDialogDelegateView::CreateBubble(this);
+  set_adjust_if_offscreen(true);
   fade_animation_delegate_ =
       std::make_unique<WidgetFadeAnimationDelegate>(widget_);
 
