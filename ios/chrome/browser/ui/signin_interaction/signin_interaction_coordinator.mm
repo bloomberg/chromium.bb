@@ -118,26 +118,26 @@
 
 - (void)cancel {
   [self.controller cancel];
-  [self.advancedSigninSettingsCoordinator cancelWithDismiss:NO];
+  [self.advancedSigninSettingsCoordinator abortWithDismiss:NO];
 }
 
 - (void)cancelAndDismiss {
   [self.controller cancelAndDismiss];
-  [self.advancedSigninSettingsCoordinator cancelWithDismiss:YES];
+  [self.advancedSigninSettingsCoordinator abortWithDismiss:YES];
 }
 
 - (BOOL)isActive {
   return self.controller != nil;
 }
 
-#pragma mark - AdvancedSigninSettingsCoordinatorDelegates
+#pragma mark - AdvancedSigninSettingsCoordinatorDelegate
 
 - (void)advancedSigninSettingsCoordinatorDidClose:
             (AdvancedSigninSettingsCoordinator*)coordinator
-                                          success:(BOOL)success {
+                                         signedin:(BOOL)signedin {
   DCHECK_EQ(self.advancedSigninSettingsCoordinator, coordinator);
   self.advancedSigninSettingsCoordinator = nil;
-  [self signinDoneWithSuccess:success];
+  [self signinDoneWithSuccess:signedin];
 }
 
 #pragma mark - SigninInteractionPresenting
