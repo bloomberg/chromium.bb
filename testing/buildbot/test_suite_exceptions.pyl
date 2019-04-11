@@ -1474,6 +1474,7 @@
       'Linux FYI GPU TSAN Release',
       'Linux FYI Release (AMD R7 240)',
       'Linux FYI Debug (NVIDIA)',
+      'Linux FYI Experimental Release (NVIDIA)',
       # Consistent hangs crbug.com/940750
       'Linux FYI Experimental Release (Intel HD 630)',
     ],
