@@ -144,6 +144,9 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
                          scoped_refptr<const ShapeResultView> shape_result);
 
   struct RareData {
+    USING_FAST_MALLOC(RareData);
+
+   public:
     NGPhysicalOffsetRect self_ink_overflow_;
     scoped_refptr<const ComputedStyle> style_;  // Used only for ellipsis.
   };

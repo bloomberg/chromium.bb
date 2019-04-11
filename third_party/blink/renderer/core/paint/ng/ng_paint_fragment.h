@@ -348,6 +348,9 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
 
   // The ink overflow storage for when |InkOverflowOwnerBox()| is nullptr.
   struct NGInkOverflowModel {
+    USING_FAST_MALLOC(NGInkOverflowModel);
+
+   public:
     NGInkOverflowModel(const NGPhysicalOffsetRect& self_ink_overflow,
                        const NGPhysicalOffsetRect& contents_ink_overflow);
 
