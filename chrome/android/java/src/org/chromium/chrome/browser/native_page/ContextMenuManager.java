@@ -22,8 +22,6 @@ import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.Map;
-import java.util.TreeMap;
 
 /**
  * Takes care of creating, closing a context menu and triaging the item clicks.
@@ -40,12 +38,15 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
     public @interface ContextMenuItemId {
         // The order of the items will be based on the value of their ID. So if new items are added,
         // the value of the existing ones should be modified so they stay in order.
+        // Values are also used for indexing - should start from 0 and can't have gaps.
         int OPEN_IN_NEW_WINDOW = 0;
         int OPEN_IN_NEW_TAB = 1;
         int OPEN_IN_INCOGNITO_TAB = 2;
         int SAVE_FOR_OFFLINE = 3;
         int REMOVE = 4;
         int LEARN_MORE = 5;
+
+        int NUM_ENTRIES = 6;
     }
 
     private final NativePageNavigationDelegate mNavigationDelegate;
@@ -111,12 +112,10 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
                 new ItemClickListener(delegate, mNavigationDelegate, mUserActionPrefix);
         boolean hasItems = false;
 
-        for (@ContextMenuItemId int itemId : MenuItemLabelMatcher.STRING_MAP.keySet()) {
+        for (@ContextMenuItemId int itemId = 0; itemId < ContextMenuItemId.NUM_ENTRIES; itemId++) {
             if (!shouldShowItem(itemId, delegate)) continue;
-
-            @StringRes
-            int itemString = MenuItemLabelMatcher.STRING_MAP.get(itemId);
-            menu.add(Menu.NONE, itemId, Menu.NONE, itemString).setOnMenuItemClickListener(listener);
+            menu.add(Menu.NONE, itemId, Menu.NONE, getResourceIdForMenuItem(itemId))
+                    .setOnMenuItemClickListener(listener);
             hasItems = true;
         }
 
@@ -182,26 +181,28 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
         }
     }
 
-    private static class MenuItemLabelMatcher {
-        private static final Map<Integer, Integer> STRING_MAP = new TreeMap<Integer, Integer>() {
-            {
-                put(ContextMenuItemId.OPEN_IN_NEW_WINDOW,
-                        R.string.contextmenu_open_in_other_window);
-                put(ContextMenuItemId.OPEN_IN_NEW_TAB,
-                        FeatureUtilities.isTabGroupsAndroidEnabled()
-                                ? R.string.contextmenu_open_in_new_tab_group
-                                : R.string.contextmenu_open_in_new_tab);
-                put(ContextMenuItemId.OPEN_IN_INCOGNITO_TAB,
-                        ChromeFeatureList.isInitialized()
-                                        && ChromeFeatureList.isEnabled(
-                                                   ChromeFeatureList.INCOGNITO_STRINGS)
-                                ? R.string.contextmenu_open_in_private_tab
-                                : R.string.contextmenu_open_in_incognito_tab);
-                put(ContextMenuItemId.SAVE_FOR_OFFLINE, R.string.contextmenu_save_link);
-                put(ContextMenuItemId.REMOVE, R.string.remove);
-                put(ContextMenuItemId.LEARN_MORE, R.string.learn_more);
-            }
-        };
+    private @StringRes int getResourceIdForMenuItem(@ContextMenuItemId int id) {
+        switch (id) {
+            case ContextMenuItemId.OPEN_IN_NEW_WINDOW:
+                return R.string.contextmenu_open_in_other_window;
+            case ContextMenuItemId.OPEN_IN_NEW_TAB:
+                return FeatureUtilities.isTabGroupsAndroidEnabled()
+                        ? R.string.contextmenu_open_in_new_tab_group
+                        : R.string.contextmenu_open_in_new_tab;
+            case ContextMenuItemId.OPEN_IN_INCOGNITO_TAB:
+                return ChromeFeatureList.isInitialized()
+                                && ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS)
+                        ? R.string.contextmenu_open_in_private_tab
+                        : R.string.contextmenu_open_in_incognito_tab;
+            case ContextMenuItemId.SAVE_FOR_OFFLINE:
+                return R.string.contextmenu_save_link;
+            case ContextMenuItemId.REMOVE:
+                return R.string.remove;
+            case ContextMenuItemId.LEARN_MORE:
+                return R.string.learn_more;
+        }
+        assert false;
+        return 0;
     }
 
     private static class ItemClickListener implements OnMenuItemClickListener {
