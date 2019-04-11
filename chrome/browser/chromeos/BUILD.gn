@@ -2169,6 +2169,8 @@ static_library("test_support") {
     "login/screens/mock_welcome_screen.h",
     "login/screens/recommend_apps/fake_recommend_apps_fetcher_delegate.cc",
     "login/screens/recommend_apps/fake_recommend_apps_fetcher_delegate.h",
+    "login/test/help_app_test_helper.cc",
+    "login/test/help_app_test_helper.h",
     "login/test/test_condition_waiter.h",
     "login/test/test_predicate_waiter.cc",
     "login/test/test_predicate_waiter.h",

@@ -44,24 +44,6 @@ EulaScreen::~EulaScreen() {
     view_->Unbind();
 }
 
-GURL EulaScreen::GetOemEulaUrl() const {
-  const StartupCustomizationDocument* customization =
-      StartupCustomizationDocument::GetInstance();
-  if (customization->IsReady()) {
-    // Previously we're using "initial locale" that device initially
-    // booted with out-of-box. http://crbug.com/145142
-    std::string locale = g_browser_process->GetApplicationLocale();
-    std::string eula_page = customization->GetEULAPage(locale);
-    if (!eula_page.empty())
-      return GURL(eula_page);
-
-    VLOG(1) << "No eula found for locale: " << locale;
-  } else {
-    LOG(ERROR) << "No manifest found.";
-  }
-  return GURL();
-}
-
 void EulaScreen::InitiatePasswordFetch() {
   if (tpm_password_.empty()) {
     password_fetcher_.Fetch();
