@@ -14,7 +14,7 @@ enum XRReferenceSpaceType {
 [
     SecureContext,
     Exposed=Window,
-    OriginTrialEnabled=WebXR
+    RuntimeEnabled=WebXR
 ] interface XRReferenceSpace : XRSpace {
   attribute XRRigidTransform originOffset;
   attribute EventHandler onreset;

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // https://gist.github.com/skobes/2f296da1b0a88cc785a4bf10a42bca07
-[Exposed=Window, OriginTrialEnabled=LayoutJankAPI]
+[Exposed=Window, RuntimeEnabled=LayoutJankAPI]
 interface PerformanceLayoutJank : PerformanceEntry {
     readonly attribute double fraction;
 

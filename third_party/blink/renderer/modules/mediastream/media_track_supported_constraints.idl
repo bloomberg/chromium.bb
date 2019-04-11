@@ -19,7 +19,7 @@ dictionary MediaTrackSupportedConstraints {
     boolean sampleSize = true;
     boolean echoCancellation = true;
     // See http://crbug.com/846270.
-    [OriginTrialEnabled=ExperimentalHardwareEchoCancellation] boolean echoCancellationType = true;
+    [RuntimeEnabled=ExperimentalHardwareEchoCancellation] boolean echoCancellationType = true;
     boolean autoGainControl = true;
     boolean noiseSuppression = true;
     boolean latency = true;

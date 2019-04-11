@@ -55,5 +55,5 @@ dictionary CanvasContextCreationAttributesModule {
     boolean preserveDrawingBuffer = false;
     CanvasPowerPreference powerPreference = "default";
     boolean failIfMajorPerformanceCaveat = false;
-    [OriginTrialEnabled=WebXR] boolean xrCompatible = false;
+    [RuntimeEnabled=WebXR] boolean xrCompatible = false;
 };

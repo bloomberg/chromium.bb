@@ -53,16 +53,16 @@ interface Performance : EventTarget {
 
     // Element Timing
     // https://github.com/npm1/Element-Timing
-    [MeasureAs=ElementTimingExplicitlyRequested, OriginTrialEnabled=ElementTiming] void clearElementTimings();
-    [MeasureAs=ElementTimingExplicitlyRequested, OriginTrialEnabled=ElementTiming] void setElementTimingBufferMaxSize(unsigned long maxSize);
-    [MeasureAs=ElementTimingExplicitlyRequested, OriginTrialEnabled=ElementTiming] attribute EventHandler onelementtimingbufferfull;
+    [MeasureAs=ElementTimingExplicitlyRequested, RuntimeEnabled=ElementTiming] void clearElementTimings();
+    [MeasureAs=ElementTimingExplicitlyRequested, RuntimeEnabled=ElementTiming] void setElementTimingBufferMaxSize(unsigned long maxSize);
+    [MeasureAs=ElementTimingExplicitlyRequested, RuntimeEnabled=ElementTiming] attribute EventHandler onelementtimingbufferfull;
 
 
     // Event Timing
     // https://github.com/wicg/event-timing
-    [MeasureAs=PerformanceEventTimingBuffer, OriginTrialEnabled=EventTiming] void clearEventTimings();
-    [MeasureAs=PerformanceEventTimingBuffer, OriginTrialEnabled=EventTiming] void setEventTimingBufferMaxSize(unsigned long maxSize);
-    [MeasureAs=PerformanceEventTimingBuffer, OriginTrialEnabled=EventTiming] attribute EventHandler oneventtimingbufferfull;
+    [MeasureAs=PerformanceEventTimingBuffer, RuntimeEnabled=EventTiming] void clearEventTimings();
+    [MeasureAs=PerformanceEventTimingBuffer, RuntimeEnabled=EventTiming] void setEventTimingBufferMaxSize(unsigned long maxSize);
+    [MeasureAs=PerformanceEventTimingBuffer, RuntimeEnabled=EventTiming] attribute EventHandler oneventtimingbufferfull;
 
     // Navigation Timing
     // https://w3c.github.io/navigation-timing/#extensions-to-the-performance-interface

@@ -22,7 +22,7 @@ dictionary MediaTrackConstraintSet {
     ConstrainLong sampleSize;
     ConstrainBoolean echoCancellation;
     // See http://crbug.com/846270.
-    [OriginTrialEnabled=ExperimentalHardwareEchoCancellation] ConstrainDOMString echoCancellationType;
+    [RuntimeEnabled=ExperimentalHardwareEchoCancellation] ConstrainDOMString echoCancellationType;
     ConstrainBoolean autoGainControl;
     ConstrainBoolean noiseSuppression;
     ConstrainDouble latency;

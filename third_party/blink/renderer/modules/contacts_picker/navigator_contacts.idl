@@ -8,5 +8,5 @@
     Exposed=Window,
     ImplementedAs=NavigatorContacts
 ] partial interface Navigator {
-    [SecureContext, OriginTrialEnabled=ContactsManager] readonly attribute ContactsManager contacts;
+    [SecureContext, RuntimeEnabled=ContactsManager] readonly attribute ContactsManager contacts;
 };

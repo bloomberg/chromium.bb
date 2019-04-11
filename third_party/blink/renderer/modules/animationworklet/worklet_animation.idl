@@ -14,7 +14,7 @@
     RaisesException=Constructor,
     ConstructorCallWith=ScriptState,
     MeasureAs=WorkletAnimationConstructor,
-    OriginTrialEnabled=AnimationWorklet
+    RuntimeEnabled=AnimationWorklet
 ] interface WorkletAnimation {
   readonly attribute AnimationEffect? effect;
   readonly attribute AnimationTimeline? timeline;
