@@ -125,9 +125,9 @@ suite('settings-edit-dictionary-page', function() {
     assertTrue(!!editDictPage.$$('#list'));
     assertEquals(1, editDictPage.$$('#list').items.length);
 
-    const removeWordButton = editDictPage.$$('button');
+    const removeWordButton = editDictPage.$$('cr-icon-button');
     // Button should be reachable in the tab order.
-    assertEquals(0, removeWordButton.tabIndex);
+    assertEquals('0', removeWordButton.getAttribute('tabindex'));
     removeWordButton.click();
     Polymer.dom.flush();
 
@@ -140,8 +140,8 @@ suite('settings-edit-dictionary-page', function() {
     assertTrue(editDictPage.$.noWordsLabel.hidden);
     assertTrue(!!editDictPage.$$('#list'));
     assertEquals(1, editDictPage.$$('#list').items.length);
-    const newRemoveWordButton = editDictPage.$$('button');
+    const newRemoveWordButton = editDictPage.$$('cr-icon-button');
     // Button should be reachable in the tab order.
-    assertEquals(0, newRemoveWordButton.tabIndex);
+    assertEquals('0', newRemoveWordButton.getAttribute('tabindex'));
   });
 });

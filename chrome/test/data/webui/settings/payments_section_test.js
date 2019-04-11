@@ -146,7 +146,7 @@ cr.define('settings_payments_section', function() {
       const menuButton = rowShadowRoot.querySelector('#creditCardMenu');
       assertTrue(!!menuButton);
       const outlinkButton =
-          rowShadowRoot.querySelector('paper-icon-button-light.icon-external');
+          rowShadowRoot.querySelector('cr-icon-button.icon-external');
       assertFalse(!!outlinkButton);
     });
 
@@ -158,7 +158,7 @@ cr.define('settings_payments_section', function() {
       const menuButton = rowShadowRoot.querySelector('#creditCardMenu');
       assertFalse(!!menuButton);
       const outlinkButton =
-          rowShadowRoot.querySelector('paper-icon-button-light.icon-external');
+          rowShadowRoot.querySelector('cr-icon-button.icon-external');
       assertTrue(!!outlinkButton);
     });
 

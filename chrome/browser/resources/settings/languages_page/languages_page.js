@@ -90,14 +90,12 @@ Polymer({
         if (settings.routes.EDIT_DICTIONARY) {
           map.set(
               settings.routes.EDIT_DICTIONARY.path,
-              '#spellCheckCollapse .subpage-arrow button');
+              '#spellCheckSubpageTrigger');
         }
         // </if>
         // <if expr="chromeos">
         if (settings.routes.INPUT_METHODS) {
-          map.set(
-              settings.routes.INPUT_METHODS.path,
-              '#inputMethodsCollapse .subpage-arrow button');
+          map.set(settings.routes.INPUT_METHODS.path, '#manageInputMethods');
         }
         // </if>
         return map;
@@ -272,7 +270,7 @@ Polymer({
     // Taps on the button are handled in onInputMethodOptionsTap_.
     // TODO(dschuyler): The row has two operations that are not clearly
     // delineated. crbug.com/740691
-    if (e.target.tagName == 'BUTTON') {
+    if (e.target.tagName == 'CR-ICON-BUTTON') {
       return;
     }
 

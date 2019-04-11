@@ -271,7 +271,7 @@ cr.define('languages_page_tests', function() {
 
       test('structure', function() {
         const languageOptionsDropdownTrigger =
-            languagesCollapse.querySelector('button');
+            languagesCollapse.querySelector('cr-icon-button');
         assertTrue(!!languageOptionsDropdownTrigger);
         languageOptionsDropdownTrigger.click();
         assertTrue(actionMenu.open);
@@ -343,7 +343,7 @@ cr.define('languages_page_tests', function() {
       test('toggle translate for a specific language', function(done) {
         // Open options for 'sw'.
         const languageOptionsDropdownTrigger =
-            languagesCollapse.querySelectorAll('button')[1];
+            languagesCollapse.querySelectorAll('cr-icon-button')[1];
         assertTrue(!!languageOptionsDropdownTrigger);
         languageOptionsDropdownTrigger.click();
         assertTrue(actionMenu.open);
@@ -371,7 +371,7 @@ cr.define('languages_page_tests', function() {
       test('toggle translate for target language', function() {
         // Open options for 'en'.
         const languageOptionsDropdownTrigger =
-            languagesCollapse.querySelectorAll('button')[0];
+            languagesCollapse.querySelectorAll('cr-icon-button')[0];
         assertTrue(!!languageOptionsDropdownTrigger);
         languageOptionsDropdownTrigger.click();
         assertTrue(actionMenu.open);
@@ -387,7 +387,7 @@ cr.define('languages_page_tests', function() {
 
         // Open options for 'sw'.
         const languageOptionsDropdownTrigger =
-            languagesCollapse.querySelectorAll('button')[1];
+            languagesCollapse.querySelectorAll('cr-icon-button')[1];
         assertTrue(!!languageOptionsDropdownTrigger);
         languageOptionsDropdownTrigger.click();
         assertTrue(actionMenu.open);
@@ -415,7 +415,7 @@ cr.define('languages_page_tests', function() {
         });
 
         // Open the menu and select Remove.
-        item.querySelector('button').click();
+        item.querySelector('cr-icon-button').click();
 
         assertTrue(actionMenu.open);
         const removeMenuItem = getMenuItem('removeLanguage');
@@ -442,7 +442,7 @@ cr.define('languages_page_tests', function() {
               domRepeat.itemForElement(el).language.code == 'en-US';
         });
         // Open the menu and select Remove.
-        item.querySelector('button').click();
+        item.querySelector('cr-icon-button').click();
 
         assertTrue(actionMenu.open);
         const removeMenuItem = getMenuItem('removeLanguage');
@@ -459,7 +459,7 @@ cr.define('languages_page_tests', function() {
         });
 
         // Open the menu and select Remove.
-        item.querySelector('button').click();
+        item.querySelector('cr-icon-button').click();
 
         assertTrue(actionMenu.open);
         const removeMenuItem = getMenuItem('removeLanguage');
@@ -480,10 +480,10 @@ cr.define('languages_page_tests', function() {
         Polymer.dom.flush();
 
         const menuButtons = languagesCollapse.querySelectorAll(
-            '.list-item paper-icon-button-light.icon-more-vert');
+            '.list-item cr-icon-button.icon-more-vert');
 
         // First language should not have "Move up" or "Move to top".
-        menuButtons[0].querySelector('button').click();
+        menuButtons[0].click();
         assertMenuItemButtonsVisible({
           moveToTop: false,
           moveUp: false,
@@ -492,7 +492,7 @@ cr.define('languages_page_tests', function() {
         actionMenu.close();
 
         // Second language should not have "Move up".
-        menuButtons[1].querySelector('button').click();
+        menuButtons[1].click();
         assertMenuItemButtonsVisible({
           moveToTop: true,
           moveUp: false,
@@ -501,7 +501,7 @@ cr.define('languages_page_tests', function() {
         actionMenu.close();
 
         // Middle languages should have all buttons.
-        menuButtons[2].querySelector('button').click();
+        menuButtons[2].click();
         assertMenuItemButtonsVisible({
           moveToTop: true,
           moveUp: true,
@@ -510,7 +510,7 @@ cr.define('languages_page_tests', function() {
         actionMenu.close();
 
         // Last language should not have "Move down".
-        menuButtons[menuButtons.length - 1].querySelector('button').click();
+        menuButtons[menuButtons.length - 1].click();
         assertMenuItemButtonsVisible({
           moveToTop: true,
           moveUp: true,

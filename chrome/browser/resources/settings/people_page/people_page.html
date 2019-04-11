@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
@@ -11,7 +12,6 @@
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
 <link rel="import" href="profile_info_browser_proxy.html">
 <link rel="import" href="sync_browser_proxy.html">
@@ -163,16 +163,14 @@
                   </div>
                 </div>
 <if expr="not chromeos">
-                <paper-icon-button-light class="subpage-arrow">
-                  <button aria-label="$i18n{editPerson}"
-                      aria-describedby="profile-name"></button>
-                </paper-icon-button-light>
+                <cr-icon-button class="subpage-arrow"
+                    aria-label="$i18n{editPerson}"
+                    aria-describedby="profile-name"></cr-icon-button>
 </if>
 <if expr="chromeos">
-                <paper-icon-button-light class="subpage-arrow">
-                  <button aria-label="$i18n{changePictureTitle}"
-                      aria-describedby="profile-name"></button>
-                </paper-icon-button-light>
+                <cr-icon-button class="subpage-arrow"
+                    aria-label="$i18n{changePictureTitle}"
+                    aria-describedby="profile-name"></cr-icon-button>
 </if>
               </div>
 <if expr="not chromeos">
@@ -233,10 +231,8 @@
                 [[syncStatus.statusText]]
               </div>
             </div>
-            <paper-icon-button-light class="subpage-arrow">
-              <button aria-label="$i18n{sync}"
-                  aria-describedby="syncSecondary"></button>
-            </paper-icon-button-light>
+            <cr-icon-button class="subpage-arrow" aria-label="$i18n{sync}"
+                aria-describedby="syncSecondary"></cr-icon-button>
           </div>
         </template>
 
@@ -258,40 +254,23 @@
             <div class="start settings-box-text">
               $i18n{profileNameAndPicture}
             </div>
-            <paper-icon-button-light class="subpage-arrow">
-              <button aria-label="$i18n{editPerson}"></button>
-            </paper-icon-button-light>
+            <cr-icon-button class="subpage-arrow"
+                aria-label="$i18n{editPerson}"></cr-icon-button>
           </div>
         </template>
 </if>
 
 <if expr="chromeos">
-        <div id="lock-screen-subpage-trigger" class="settings-box two-line"
-            actionable on-click="onConfigureLockTap_">
-          <div class="start settings-box-text">
-            [[selectLockScreenTitleString(hasPinLogin)]]
-            <div class="secondary" id="lockScreenSecondary">
-              [[getPasswordState_(hasPin,
-                                  prefs.settings.enable_screen_lock.value)]]
-            </div>
-          </div>
-          <paper-icon-button-light class="subpage-arrow">
-            <button
-                aria-label$="[[selectLockScreenTitleString(hasPinLogin)]]"
-                aria-describedby="lockScreenSecondary"></button>
-          </paper-icon-button-light>
-        </div>
+        <cr-link-row id="lock-screen-subpage-trigger" class="hr"
+            on-click="onConfigureLockTap_"
+            label="[[selectLockScreenTitleString(hasPinLogin)]]"
+            sub-label="[[getPasswordState_(hasPin,
+                prefs.settings.enable_screen_lock.value)]]"></cr-link-row>
 
         <template is="dom-if" if="[[isAccountManagerEnabled_]]">
-          <div id="account-manager-subpage-trigger" class="settings-box"
-              actionable on-click="onAccountManagerTap_">
-            <div class="start settings-box-text">
-              $i18n{accountManagerSubMenuLabel}
-            </div>
-            <paper-icon-button-light class="subpage-arrow">
-              <button aria-label="$i18n{accountManagerSubMenuLabel}"></button>
-            </paper-icon-button-light>
-          </div>
+          <cr-link-row id="account-manager-subpage-trigger" class="hr"
+              on-click="onAccountManagerTap_"
+              label="$i18n{accountManagerSubMenuLabel}"></cr-link-row>
         </template>
 
         <cr-link-row id="manage-other-people-subpage-trigger"

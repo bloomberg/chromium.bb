@@ -163,9 +163,7 @@ cr.define('settings_people_page_account_manager', function() {
         Polymer.dom.flush();
         // Click on 'More Actions' for the second account (First one (index 0)
         // to have the hamburger menu).
-        accountManager.root.querySelectorAll('paper-icon-button-light')[0]
-            .querySelector('button')
-            .click();
+        accountManager.root.querySelectorAll('cr-icon-button')[0].click();
         // Click on 'Remove account'
         accountManager.$$('cr-action-menu').querySelector('button').click();
 

@@ -11,6 +11,7 @@
 <link rel="import" href="../settings_page/settings_section.html">
 <link rel="import" href="../settings_page_css.html">
 <link rel="import" href="../settings_shared_css.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/assert.html">
@@ -24,10 +25,6 @@
 <link rel="import" href="update_warning_dialog.html">
 <link rel="import" href="../settings_page/settings_subpage.html">
 <link rel="import" href="../reset_page/powerwash_dialog.html">
-</if>
-
-<if expr="_google_chrome and is_macosx">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 </if>
 
 <dom-module id="settings-about-page">
@@ -192,9 +189,8 @@
                 </a>
               </div>
             </div>
-            <paper-icon-button-light class="subpage-arrow">
-              <button aria-labelledby="aboutTPMFirmwareUpdate"></button>
-            </paper-icon-button-light>
+            <cr-icon-button class="subpage-arrow"
+                aria-labelledby="aboutTPMFirmwareUpdate"></cr-icon-button>
           </div>
 </if>
 <if expr="_google_chrome and is_macosx">
@@ -211,12 +207,10 @@
                   $i18n{learnMore}
                 </a>
               </div>
-              <paper-icon-button-light class="subpage-arrow"
-                  hidden="[[!promoteUpdaterStatus_.actionable]]">
-                <button disabled="[[promoteUpdaterStatus_.disabled]]"
-                    aria-label$="[[promoteUpdaterStatus_.text]]">
-                </button>
-              </paper-icon-button-light>
+              <cr-icon-button class="subpage-arrow"
+                  hidden$="[[!promoteUpdaterStatus_.actionable]]"
+                  disabled="[[promoteUpdaterStatus_.disabled]]"
+                  aria-label$="[[promoteUpdaterStatus_.text]]"></cr-icon-button>
             </div>
           </template>
 </if>

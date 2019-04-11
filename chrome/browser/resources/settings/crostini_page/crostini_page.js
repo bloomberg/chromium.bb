@@ -29,22 +29,22 @@ Polymer({
         if (settings.routes.CROSTINI_DETAILS) {
           map.set(
               settings.routes.CROSTINI_DETAILS.path,
-              '#crostini .subpage-arrow button');
+              '#crostini .subpage-arrow');
         }
         if (settings.routes.CROSTINI_EXPORT_IMPORT) {
           map.set(
               settings.routes.CROSTINI_EXPORT_IMPORT.path,
-              '#crostini .subpage-arrow button');
+              '#crostini .subpage-arrow');
         }
         if (settings.routes.CROSTINI_SHARED_PATHS) {
           map.set(
               settings.routes.CROSTINI_SHARED_PATHS.path,
-              '#crostini .subpage-arrow button');
+              '#crostini .subpage-arrow');
         }
         if (settings.routes.CROSTINI_SHARED_USB_DEVICES) {
           map.set(
               settings.routes.CROSTINI_SHARED_USB_DEVICES.path,
-              '#crostini .subpage-arrow button');
+              '#crostini .subpage-arrow');
         }
         return map;
       },

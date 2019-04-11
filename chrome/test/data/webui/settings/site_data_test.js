@@ -28,8 +28,8 @@ suite('SiteDataTest', function() {
               const button =
                   siteData.$$('site-data-entry').$$('.icon-delete-gray');
               assertTrue(!!button);
-              assertEquals('PAPER-ICON-BUTTON-LIGHT', button.tagName);
-              button.querySelector('button').click();
+              assertEquals('CR-ICON-BUTTON', button.tagName);
+              button.click();
               return testBrowserProxy.whenCalled('removeItem');
             })
             .then(function(path) {

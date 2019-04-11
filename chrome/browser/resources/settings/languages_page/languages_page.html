@@ -1,6 +1,8 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/action_link_css.html">
@@ -9,7 +11,6 @@
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.html">
@@ -149,7 +150,7 @@
       div.list-item.non-target .target-info {
         display: none;
       }
-      
+
       /* Any .target.target-info following another .target element needs to
       be hidden. We only want to show the _first_ .target-info of the list.
       This is a way to do a :first-of-class selector. */
@@ -214,11 +215,9 @@
                   </paper-button>
                 </template>
 </if>
-                <paper-icon-button-light class="icon-more-vert">
-                  <button title="$i18n{moreActions}"
-                      id="more-[[item.language.code]]" on-click="onDotsTap_">
-                  </button>
-                </paper-icon-button-light>
+                <cr-icon-button class="icon-more-vert"
+                    title="$i18n{moreActions}" id="more-[[item.language.code]]"
+                    on-click="onDotsTap_"></cr-icon-button>
               </div>
             </template>
             <div class="list-item">
@@ -262,22 +261,14 @@
                     $i18n{inputMethodEnabled}
                   </div>
                 </div>
-                <paper-icon-button-light class="icon-external"
-                    hidden="[[!item.hasOptionsPage]]">
-                  <button on-click="onInputMethodOptionsTap_"></button>
-                </paper-icon-button-light>
+                <cr-icon-button class="icon-external"
+                    hidden="[[!item.hasOptionsPage]]"
+                    on-click="onInputMethodOptionsTap_"></cr-icon-button>
               </div>
             </template>
-            <div class="list-item" on-click="onManageInputMethodsTap_"
-                actionable>
-              <div class="start" id="manageInputMethods">
-                $i18n{manageInputMethods}
-              </div>
-              <paper-icon-button-light class="subpage-arrow">
-                <button aria-label="$i18n{manageInputMethods}"
-                    aria-describedby="customSpelling"></button>
-              </paper-icon-button-light>
-            </div>
+            <cr-link-row class="hr list-item" id="manageInputMethods"
+                on-click="onManageInputMethodsTap_"
+                label="$i18n{manageInputMethods}"></cr-link-row>
           </div>
           <settings-toggle-button
               pref="{{prefs.settings.language.ime_menu_activated}}"
@@ -296,28 +287,28 @@
         <iron-collapse id="spellCheckCollapse"
             opened="[[prefs.browser.enable_spellchecking.value]]">
 <if expr="_google_chrome">
-        <div class="settings-box continuation spell-check-radio-group">
-          <settings-radio-group
-              pref="{{prefs.spellcheck.use_spelling_service}}">
-            <controlled-radio-button
-                class="spell-check-radio-button"
-                id="spellingServiceDisable"
-                label="$i18n{spellCheckBasicLabel}"
-                name="false"
-                pref="[[prefs.spellcheck.use_spelling_service]]">
-            </controlled-radio-button>
-            <controlled-radio-button
-                class="spell-check-radio-button"
-                id="spellingServiceEnable"
-                label="$i18n{spellCheckEnhancedLabel}"
-                name="true"
-                pref="[[prefs.spellcheck.use_spelling_service]]">
-              <div class="secondary enhanced-spellcheck-description">
-                $i18n{spellCheckEnhancedDescription}
-              </div>
-            </controlled-radio-button>
-          </settings-radio-group>
-        </div>
+          <div class="settings-box continuation spell-check-radio-group">
+            <settings-radio-group
+                pref="{{prefs.spellcheck.use_spelling_service}}">
+              <controlled-radio-button
+                  class="spell-check-radio-button"
+                  id="spellingServiceDisable"
+                  label="$i18n{spellCheckBasicLabel}"
+                  name="false"
+                  pref="[[prefs.spellcheck.use_spelling_service]]">
+              </controlled-radio-button>
+              <controlled-radio-button
+                  class="spell-check-radio-button"
+                  id="spellingServiceEnable"
+                  label="$i18n{spellCheckEnhancedLabel}"
+                  name="true"
+                  pref="[[prefs.spellcheck.use_spelling_service]]">
+                <div class="secondary enhanced-spellcheck-description">
+                  $i18n{spellCheckEnhancedDescription}
+                </div>
+              </controlled-radio-button>
+            </settings-radio-group>
+          </div>
 </if> <!-- _google_chrome -->
 <if expr="not is_macosx">
           <div class="settings-box continuation">
@@ -372,16 +363,9 @@
               </div>
             </template>
           </div>
-          <div class="settings-box continuation" on-click="onEditDictionaryTap_"
-              actionable id="spellCheckSubpageTrigger">
-            <div class="start settings-box-text" id="customSpelling">
-              $i18n{manageSpellCheck}
-            </div>
-            <paper-icon-button-light class="subpage-arrow">
-              <button aria-label="$i18n{manageSpellCheck}"
-                  aria-describedby="customSpelling"></button>
-            </paper-icon-button-light>
-          </div>
+          <cr-link-row on-click="onEditDictionaryTap_"
+              id="spellCheckSubpageTrigger" label="$i18n{manageSpellCheck}">
+          </cr-link-row>
 </if> <!-- not is_macosx -->
         </iron-collapse>
 </if> <!-- _google_chrome or not is_macosx -->

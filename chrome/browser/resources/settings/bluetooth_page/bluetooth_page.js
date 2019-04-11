@@ -74,7 +74,7 @@ Polymer({
         if (settings.routes.BLUETOOTH_DEVICES) {
           map.set(
               settings.routes.BLUETOOTH_DEVICES.path,
-              '#bluetoothDevices .subpage-arrow button');
+              '#bluetoothDevices .subpage-arrow');
         }
         return map;
       },

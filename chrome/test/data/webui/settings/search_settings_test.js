@@ -113,10 +113,6 @@ cr.define('settings_test', function() {
              <dialog>${text}</dialog>
              <iron-icon>${text}</iron-icon>
              <iron-list>${text}</iron-list>
-             <paper-icon-button>${text}</paper-icon-button>
-             <paper-icon-button-light>
-               <button>${text}</button>
-             </paper-icon-button-light>
              <paper-ripple>${text}</paper-ripple>
              <paper-spinner-lite>${text}</paper-spinner-lite>
              <slot>${text}</slot>
