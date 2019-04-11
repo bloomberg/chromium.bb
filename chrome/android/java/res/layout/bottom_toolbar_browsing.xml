@@ -3,57 +3,64 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-
-<LinearLayout
+<!-- The toolbar is wrapped in a FrameLayout that matches the parent container's height so that
+     background color fills the entire parent. The LinearLayout then has a specific height and top
+     gravity so that items are anchored to the top of the parent container when the parent container
+     is bigger than the LinearLayout. -->
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/bottom_toolbar_browsing"
-    android:orientation="horizontal"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:minHeight="@dimen/bottom_toolbar_height"
-    android:background="@color/toolbar_background_primary"
-    android:layout_gravity="top|center_horizontal"
-    android:paddingStart="@dimen/bottom_toolbar_start_padding"
-    android:paddingEnd="@dimen/bottom_toolbar_end_padding" >
+    android:layout_height="match_parent"
+    android:background="@color/toolbar_background_primary">
 
-    <org.chromium.chrome.browser.toolbar.HomeButton
-        android:id="@+id/home_button"
-        app:tint="@color/standard_mode_tint"
-        style="@style/BottomToolbarButton"
-        android:contentDescription="@string/accessibility_toolbar_btn_home" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/bottom_toolbar_height"
+        android:layout_gravity="top|center_horizontal"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/bottom_toolbar_start_padding"
+        android:paddingEnd="@dimen/bottom_toolbar_end_padding" >
 
-    <include layout="@layout/toolbar_space" />
+        <org.chromium.chrome.browser.toolbar.HomeButton
+            android:id="@+id/home_button"
+            app:tint="@color/standard_mode_tint"
+            style="@style/BottomToolbarButton"
+            android:contentDescription="@string/accessibility_toolbar_btn_home" />
 
-    <org.chromium.chrome.browser.toolbar.bottom.ShareButton
-        android:id="@+id/share_button"
-        style="@style/BottomToolbarButton"
-        android:src="@drawable/ic_share_white_24dp"
-        app:tint="@color/standard_mode_tint"
-        android:contentDescription="@string/share" />
+        <include layout="@layout/toolbar_space" />
 
-    <include layout="@layout/toolbar_space" />
+        <org.chromium.chrome.browser.toolbar.bottom.ShareButton
+            android:id="@+id/share_button"
+            style="@style/BottomToolbarButton"
+            android:src="@drawable/ic_share_white_24dp"
+            app:tint="@color/standard_mode_tint"
+            android:contentDescription="@string/share" />
 
-    <org.chromium.chrome.browser.toolbar.bottom.SearchAccelerator
-        android:id="@+id/search_accelerator"
-        android:layout_width="@dimen/search_accelerator_width"
-        android:layout_height="@dimen/search_accelerator_height"
-        android:layout_gravity="center"
-        android:paddingTop="@dimen/search_accelerator_height_padding"
-        android:paddingBottom="@dimen/search_accelerator_height_padding"
-        android:src="@drawable/ic_search"
-        android:contentDescription="@string/accessibility_toolbar_btn_search_accelerator" />
+        <include layout="@layout/toolbar_space" />
 
-    <include layout="@layout/toolbar_space" />
+        <org.chromium.chrome.browser.toolbar.bottom.SearchAccelerator
+            android:id="@+id/search_accelerator"
+            android:layout_width="@dimen/search_accelerator_width"
+            android:layout_height="@dimen/search_accelerator_height"
+            android:layout_gravity="center"
+            android:paddingTop="@dimen/search_accelerator_height_padding"
+            android:paddingBottom="@dimen/search_accelerator_height_padding"
+            android:src="@drawable/ic_search"
+            android:contentDescription="@string/accessibility_toolbar_btn_search_accelerator" />
 
-    <org.chromium.chrome.browser.toolbar.TabSwitcherButtonView
-        android:id="@+id/tab_switcher_button"
-        style="@style/BottomToolbarButton"
-        android:contentDescription="@string/accessibility_toolbar_btn_tabswitcher_toggle_default" />
+        <include layout="@layout/toolbar_space" />
 
-    <include layout="@layout/toolbar_space" />
+        <org.chromium.chrome.browser.toolbar.TabSwitcherButtonView
+            android:id="@+id/tab_switcher_button"
+            style="@style/BottomToolbarButton"
+            android:contentDescription="@string/accessibility_toolbar_btn_tabswitcher_toggle_default" />
 
-    <include layout="@layout/menu_button" />
+        <include layout="@layout/toolbar_space" />
 
-</LinearLayout>
+        <include layout="@layout/menu_button" />
+
+    </LinearLayout>
+</FrameLayout>
 

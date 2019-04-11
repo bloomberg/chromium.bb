@@ -13,7 +13,7 @@
   <ViewStub
       android:id="@+id/bottom_toolbar_tab_switcher_mode_stub"
       android:layout_width="match_parent"
-      android:layout_height="wrap_content"
+      android:layout_height="match_parent"
       android:inflatedId="@+id/bottom_toolbar_tab_switcher_mode"
       android:layout="@layout/bottom_toolbar_tab_switcher" />
 
