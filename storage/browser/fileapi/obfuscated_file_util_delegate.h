@@ -20,6 +20,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtilDelegate {
   virtual ~ObfuscatedFileUtilDelegate() = default;
 
   virtual bool DirectoryExists(const base::FilePath& path) = 0;
+  virtual size_t ComputeDirectorySize(const base::FilePath& path) = 0;
   virtual bool DeleteFileOrDirectory(const base::FilePath& path,
                                      bool recursive) = 0;
   virtual bool IsLink(const base::FilePath& file_path) = 0;
