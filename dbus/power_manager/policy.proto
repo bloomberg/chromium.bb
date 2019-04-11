@@ -22,7 +22,7 @@ option go_package = "power_manager_proto";
 // opposed to continuing to use a value set by a previous message).  An
 // empty message will restore all settings to their defaults.
 //
-// Next ID to use: 22
+// Next ID to use: 25
 message PowerManagementPolicy {
 
   enum Action {
@@ -163,39 +163,79 @@ message PowerManagementPolicy {
   // Peak Shift policy details with internal discussion: go/peak-shift-details.
 
   // Battery threshold for peak shift, as a percent in the range [15, 100].
+  // Ignored unless powerd is configured to honor charging-related prefs.
   optional int32 peak_shift_battery_percent_threshold = 19;
 
+  enum WeekDay {
+    MONDAY = 0;
+    TUESDAY = 1;
+    WEDNESDAY = 2;
+    THURSDAY = 3;
+    FRIDAY = 4;
+    SATURDAY = 5;
+    SUNDAY = 6;
+  }
+
+  message DayTime {
+    // Can be any value in range [0, 23].
+    optional int32 hour = 1;
+    // Alowed values: 0, 15, 30, 45.
+    optional int32 minute = 2;
+
+    // Next value to use: 3
+  }
+
   message PeakShiftDayConfig {
-    enum WeekDay {
-      MONDAY = 0;
-      TUESDAY = 1;
-      WEDNESDAY = 2;
-      THURSDAY = 3;
-      FRIDAY = 4;
-      SATURDAY = 5;
-      SUNDAY = 6;
-    }
-    // Day of week.
     optional WeekDay day = 1;
 
-    message DayTime {
-      // Can be any value in range [0, 23].
-      optional int32 hour = 1;
-      // Alowed values: 0, 15, 30, 45.
-      optional int32 minute = 2;
-
-      // Next value to use: 3
-    }
     optional DayTime start_time = 2;
     optional DayTime end_time = 3;
     optional DayTime charge_start_time = 4;
 
     // Next value to use: 5
   }
+  // Ignored unless powerd is configured to honor charging-related prefs.
   repeated PeakShiftDayConfig peak_shift_day_configs = 20;
 
   // If true, boot on AC will be enabled.
+  // Ignored unless powerd is configured to honor charging-related prefs.
   optional bool boot_on_ac = 21;
+
+  // If true, USB power share will be enabled.
+  // On supported systems, certain USB ports may continue charging connected
+  // devices while the system is suspended or shut down.
+  // Ignored unless powerd is configured to honor charging-related prefs.
+  optional bool usb_power_share = 22;
+
+  message AdvancedBatteryChargeModeDayConfig {
+    optional WeekDay day = 1;
+
+    optional DayTime charge_start_time = 2;
+    optional DayTime charge_end_time = 3;
+
+    // Next value to use: 4
+  }
+  // Ignored unless powerd is configured to honor charging-related prefs.
+  repeated AdvancedBatteryChargeModeDayConfig
+      advanced_battery_charge_mode_day_configs = 23;
+
+  message BatteryChargeMode {
+    enum Mode {
+      STANDARD = 0;
+      EXPRESS_CHARGE = 1;
+      PRIMARILY_AC_USE = 2;
+      ADAPTIVE = 3;
+      CUSTOM = 4;
+    }
+    optional Mode mode = 1;
+
+    optional int32 custom_charge_start = 2;
+    optional int32 custom_charge_stop = 3;
+
+    // Next value to use: 4
+  }
+  // Ignored unless powerd is configured to honor charging-related prefs.
+  optional BatteryChargeMode battery_charge_mode = 24;
 }
 
 // Message included in IdleActionImminent signals.
