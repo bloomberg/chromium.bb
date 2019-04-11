@@ -81,6 +81,14 @@ Polymer({
       value: null,
     },
 
+    // <if expr="chromeos">
+    hasPinSetting_: {
+      type: Boolean,
+      computed: 'computeHasPinSetting_(settings.pin.available)',
+      reflectToAttribute: true,
+    },
+    // </if>
+
     /** @private {?print_preview.InvitationStore} */
     invitationStore_: {
       type: Object,
@@ -397,6 +405,16 @@ Polymer({
         this.i18n('noLongerSupportedFragment') :
         this.destination.connectionStatusText;
   },
+
+  // <if expr="chromeos">
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeHasPinSetting_: function() {
+    return this.getSetting('pin').available;
+  },
+  // </if>
 
   /**
    * @param {!CustomEvent<string>} e Event containing the new selected value.

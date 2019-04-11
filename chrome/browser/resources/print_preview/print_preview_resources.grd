@@ -258,6 +258,14 @@
                  file="new/destination_settings.js"
                  type="chrome_html"
                  preprocess="true" />
+      <if expr="chromeos">
+        <structure name="IDR_PRINT_PREVIEW_NEW_PIN_SETTINGS_HTML"
+                   file="new/pin_settings.html"
+                   type="chrome_html" />
+        <structure name="IDR_PRINT_PREVIEW_NEW_PIN_SETTINGS_JS"
+                   file="new/pin_settings.js"
+                   type="chrome_html" />
+      </if>
       <structure name="IDR_PRINT_PREVIEW_NEW_PAGES_SETTINGS_HTML"
                  file="new/pages_settings.html"
                  type="chrome_html" />

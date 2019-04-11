@@ -23,6 +23,9 @@
 <link rel="import" href="other_options_settings.html">
 <link rel="import" href="pages_per_sheet_settings.html">
 <link rel="import" href="pages_settings.html">
+<if expr="chromeos">
+  <link rel="import" href="pin_settings.html">
+</if>
 <link rel="import" href="print_preview_shared_css.html">
 <link rel="import" href="scaling_settings.html">
 <link rel="import" href="settings_behavior.html">
@@ -102,6 +105,12 @@
           disabled="[[controlsDisabled_]]"
           available class="settings-section">
       </print-preview-destination-settings>
+<if expr="chromeos">
+      <print-preview-pin-settings settings="[[settings]]"
+          disabled="[[controlsDisabled_]]"
+          hidden$="[[!settings.pin.available]]" class="settings-section">
+      </print-preview-pin-settings>
+</if>
       <print-preview-pages-settings settings="[[settings]]"
           page-count="[[pageCount]]" disabled="[[controlsDisabled_]]"
           hidden$="[[!settings.pages.available]]" class="settings-section">

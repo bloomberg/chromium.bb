@@ -126,6 +126,10 @@ cr.define('restore_state_test', function() {
         isLandscapeEnabled: true,
         isColorEnabled: true,
       };
+      if (cr.isChromeOS) {
+        stickySettings.pin = true;
+        stickySettings.pinValue = '0000';
+      }
       return testInitializeWithStickySettings(stickySettings);
     });
 
@@ -162,6 +166,10 @@ cr.define('restore_state_test', function() {
         isLandscapeEnabled: false,
         isColorEnabled: false,
       };
+      if (cr.isChromeOS) {
+        stickySettings.pin = false;
+        stickySettings.pinValue = '';
+      }
       return testInitializeWithStickySettings(stickySettings);
     });
 
@@ -266,6 +274,21 @@ cr.define('restore_state_test', function() {
           },
         }
       ];
+      if (cr.isChromeOS) {
+        testData.push(
+            {
+              section: 'print-preview-pin-settings',
+              settingName: 'pin',
+              key: 'isPinEnabled',
+              value: true,
+            },
+            {
+              section: 'print-preview-pin-settings',
+              settingName: 'pinValue',
+              key: 'pinValue',
+              value: '0000',
+            });
+      }
 
       // Setup
       nativeLayer.setInitialSettings(initialSettings);
