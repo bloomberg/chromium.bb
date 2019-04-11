@@ -108,6 +108,7 @@ class FakeHidManager : public device::mojom::HidManager {
       GetDevicesCallback callback) override;
   void GetDevices(GetDevicesCallback callback) override;
   void Connect(const std::string& device_guid,
+               mojom::HidConnectionClientPtr connection_client,
                ConnectCallback callback) override;
   void AddBinding(mojo::ScopedMessagePipeHandle handle);
   void AddBinding2(device::mojom::HidManagerRequest request);

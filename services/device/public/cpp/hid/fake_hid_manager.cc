@@ -119,17 +119,18 @@ void FakeHidManager::GetDevices(GetDevicesCallback callback) {
 }
 
 void FakeHidManager::Connect(const std::string& device_guid,
+                             mojom::HidConnectionClientPtr connection_client,
                              ConnectCallback callback) {
   if (!base::ContainsKey(devices_, device_guid)) {
     std::move(callback).Run(nullptr);
     return;
   }
 
-  mojom::HidConnectionPtr client;
+  mojom::HidConnectionPtr connection;
   mojo::MakeStrongBinding(
       std::make_unique<FakeHidConnection>(devices_[device_guid]->Clone()),
-      mojo::MakeRequest(&client));
-  std::move(callback).Run(std::move(client));
+      mojo::MakeRequest(&connection));
+  std::move(callback).Run(std::move(connection));
 }
 
 mojom::HidDeviceInfoPtr FakeHidManager::CreateAndAddDevice(

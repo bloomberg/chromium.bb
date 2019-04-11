@@ -171,7 +171,7 @@ void HidDeviceManager::Connect(const std::string& device_guid,
                                ConnectCallback callback) {
   DCHECK(initialized_);
 
-  hid_manager_->Connect(device_guid,
+  hid_manager_->Connect(device_guid, /*connection_client=*/nullptr,
                         mojo::WrapCallbackWithDefaultInvokeIfNotRun(
                             std::move(callback), nullptr));
 }
