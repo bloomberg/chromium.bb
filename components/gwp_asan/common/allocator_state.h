@@ -72,12 +72,11 @@ class AllocatorState {
   };
 
   enum class GetMetadataReturnType {
-    kUnrelatedCrash = 0,
-    kGwpAsanCrash = 1,
-    kGwpAsanCrashWithMissingMetadata = 2,
-    kErrorBadSlot = 3,
-    kErrorBadMetadataIndex = 4,
-    kErrorOutdatedMetadataIndex = 5,
+    kGwpAsanCrash = 0,
+    kGwpAsanCrashWithMissingMetadata = 1,
+    kErrorBadSlot = 2,
+    kErrorBadMetadataIndex = 3,
+    kErrorOutdatedMetadataIndex = 4,
   };
 
   // Structure for storing data about a slot.
@@ -125,15 +124,12 @@ class AllocatorState {
   bool IsValid() const;
 
   // This method is meant to be called from the crash handler with a validated
-  // AllocatorState object read from the crashed process. Given the metadata
-  // and slot to metadata arrays for the allocator and an exception address,
-  // this method determines if the exception is related to GWP-ASan or not and
-  // what the metadata for the relevant GWP-ASan allocation is if so.
-  //
-  // Returns an enum indicating an error, unrelated exception, or a GWP-ASan
-  // exception with or without metadata. If metadata is available, the
-  // metadata_idx parameter stores the index of the relevant metadata in the
-  // given array.
+  // AllocatorState object read from the crashed process and an exception
+  // address known to be in the GWP-ASan allocator region. Given the metadata
+  // and slot to metadata arrays for the allocator, this method returns an enum
+  // indicating an error or a GWP-ASan exception with or without metadata. If
+  // metadata is available, the metadata_idx parameter stores the index of the
+  // relevant metadata in the given array.
   GetMetadataReturnType GetMetadataForAddress(
       uintptr_t exception_address,
       const SlotMetadata* metadata_arr,

@@ -150,9 +150,14 @@ TEST_F(AllocatorStateTest, GetMetadataForAddress) {
   AllocatorState::MetadataIdx slot_to_metadata[kTestSlots];
 
   AllocatorState::MetadataIdx idx;
-  EXPECT_EQ(state_.GetMetadataForAddress(state_.pages_base_addr - 1, md,
-                                         slot_to_metadata, &idx),
-            GetMetadataReturnType::kUnrelatedCrash);
+#if defined(GTEST_HAS_DEATH_TEST)
+  EXPECT_DEATH(
+      {
+        state_.GetMetadataForAddress(state_.pages_base_addr - 1, md,
+                                     slot_to_metadata, &idx);
+      },
+      "");
+#endif
 
   slot_to_metadata[0] = AllocatorState::kInvalidMetadataIdx;
   EXPECT_EQ(state_.GetMetadataForAddress(state_.first_page_addr, md,

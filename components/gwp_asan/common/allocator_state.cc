@@ -29,9 +29,7 @@ AllocatorState::GetMetadataReturnType AllocatorState::GetMetadataForAddress(
     const MetadataIdx* slot_to_metadata,
     MetadataIdx* metadata_idx) const {
   CHECK(IsValid());
-
-  if (!PointerIsMine(exception_address))
-    return GetMetadataReturnType::kUnrelatedCrash;
+  CHECK(PointerIsMine(exception_address));
 
   AllocatorState::SlotIdx slot_idx = GetNearestSlot(exception_address);
   if (slot_idx >= total_pages)

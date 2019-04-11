@@ -111,8 +111,10 @@ GwpAsanCrashAnalysisResult CrashAnalyzer::AnalyzeCrashedAllocator(
   else if (valid_state.free_invalid_address)
     exception_addr = valid_state.free_invalid_address;
 
-  if (!exception_addr)
+  if (!exception_addr || !valid_state.PointerIsMine(exception_addr))
     return GwpAsanCrashAnalysisResult::kUnrelatedCrash;
+  // All errors that occur below happen for an exception known to be related to
+  // GWP-ASan.
 
   // Read the allocator's entire metadata array.
   auto metadata_arr = std::make_unique<AllocatorState::SlotMetadata[]>(
@@ -152,8 +154,6 @@ GwpAsanCrashAnalysisResult CrashAnalyzer::AnalyzeCrashedAllocator(
     DLOG(ERROR) << "Metadata index was outdated!";
     return GwpAsanCrashAnalysisResult::kErrorOutdatedMetadataIndex;
   }
-  if (ret == GetMetadataReturnType::kUnrelatedCrash)
-    return GwpAsanCrashAnalysisResult::kUnrelatedCrash;
 
   bool missing_metadata =
       (ret == GetMetadataReturnType::kGwpAsanCrashWithMissingMetadata);
