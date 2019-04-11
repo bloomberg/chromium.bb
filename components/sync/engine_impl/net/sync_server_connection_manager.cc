@@ -60,6 +60,7 @@ bool SyncBridgedConnection::Init(const char* path,
   int http_status_code = 0;
   if (!cancelation_signal_->TryRegisterHandler(this)) {
     // Return early because cancelation signal was signaled.
+    // TODO(crbug.com/951350): Introduce an extra status code for canceled?
     response->server_status = HttpResponse::CONNECTION_UNAVAILABLE;
     return false;
   }

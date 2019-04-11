@@ -14,6 +14,7 @@
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/syncable_write_transaction.h"
 #include "components/sync/test/engine/test_id_factory.h"
+#include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using std::find;
@@ -792,11 +793,9 @@ void MockConnectionManager::SetServerNotReachable() {
 }
 
 void MockConnectionManager::UpdateConnectionStatus() {
-  if (!server_reachable_) {
-    SetServerStatus(HttpResponse::CONNECTION_UNAVAILABLE);
-  } else {
-    SetServerStatus(HttpResponse::SERVER_CONNECTION_OK);
-  }
+  SetServerResponse(server_reachable_
+                        ? HttpResponse::ForSuccess()
+                        : HttpResponse::ForNetError(net::ERR_FAILED));
 }
 
 }  // namespace syncer

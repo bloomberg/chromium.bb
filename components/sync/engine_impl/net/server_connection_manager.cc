@@ -15,7 +15,6 @@
 #include "components/sync/engine_impl/syncer.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/syncable/directory.h"
-#include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "url/gurl.h"
 
@@ -51,11 +50,48 @@ const char* GetServerConnectionCodeString(
 }  // namespace
 
 HttpResponse::HttpResponse()
-    : net_error_code(-1),
+    : server_status(NONE),
+      net_error_code(-1),
       http_status_code(-1),
       content_length(-1),
-      payload_length(-1),
-      server_status(NONE) {}
+      payload_length(-1) {}
+
+// static
+HttpResponse HttpResponse::Uninitialized() {
+  return HttpResponse();
+}
+
+// static
+HttpResponse HttpResponse::ForNetError(int net_error_code) {
+  HttpResponse response;
+  response.server_status = CONNECTION_UNAVAILABLE;
+  response.net_error_code = net_error_code;
+  return response;
+}
+
+// static
+HttpResponse HttpResponse::ForIoError() {
+  HttpResponse response;
+  response.server_status = IO_ERROR;
+  return response;
+}
+
+// static
+HttpResponse HttpResponse::ForHttpError(int http_status_code) {
+  HttpResponse response;
+  response.server_status = http_status_code == net::HTTP_UNAUTHORIZED
+                               ? SYNC_AUTH_ERROR
+                               : SYNC_SERVER_ERROR;
+  response.http_status_code = http_status_code;
+  return response;
+}
+
+// static
+HttpResponse HttpResponse::ForSuccess() {
+  HttpResponse response;
+  response.server_status = SERVER_CONNECTION_OK;
+  return response;
+}
 
 ServerConnectionManager::Connection::Connection(ServerConnectionManager* scm)
     : scm_(scm) {}
@@ -111,7 +147,7 @@ string StripTrailingSlash(const string& s) {
 
 }  // namespace
 
-// TODO(chron): Use a GURL instead of string concatenation.
+// TODO(crbug.com/951350): Use a GURL instead of string concatenation.
 string ServerConnectionManager::Connection::MakeConnectionURL(
     const string& sync_server,
     const string& path,
@@ -141,7 +177,7 @@ ServerConnectionManager::ServerConnectionManager(
       sync_server_port_(port),
       use_ssl_(use_ssl),
       proto_sync_path_(kSyncServerSyncPath),
-      server_status_(HttpResponse::NONE),
+      server_response_(HttpResponse::Uninitialized()),
       cancelation_signal_(cancelation_signal) {}
 
 ServerConnectionManager::~ServerConnectionManager() = default;
@@ -170,7 +206,7 @@ bool ServerConnectionManager::SetAccessToken(const std::string& access_token) {
   // second request. Need to notify sync frontend again to request new token,
   // otherwise backend will stay in SYNC_AUTH_ERROR state while frontend thinks
   // everything is fine and takes no actions.
-  SetServerStatus(HttpResponse::SYNC_AUTH_ERROR);
+  SetServerResponse(HttpResponse::ForHttpError(net::HTTP_UNAUTHORIZED));
   return false;
 }
 
@@ -178,22 +214,25 @@ void ServerConnectionManager::ClearAccessToken() {
   access_token_.clear();
 }
 
-void ServerConnectionManager::SetServerStatus(
-    HttpResponse::ServerConnectionCode server_status) {
-  // SYNC_AUTH_ERROR is permanent error. Need to notify observer to take
-  // action externally to resolve.
-  if (server_status != HttpResponse::SYNC_AUTH_ERROR &&
-      server_status_ == server_status) {
-    return;
+void ServerConnectionManager::SetServerResponse(
+    const HttpResponse& server_response) {
+  // Notify only if the server status changed, except for SYNC_AUTH_ERROR: In
+  // that case, always notify in order to poke observers to do something about
+  // it.
+  bool notify =
+      (server_response.server_status == HttpResponse::SYNC_AUTH_ERROR ||
+       server_response_.server_status != server_response.server_status);
+  server_response_ = server_response;
+  if (notify) {
+    NotifyStatusChanged();
   }
-  server_status_ = server_status;
-  NotifyStatusChanged();
 }
 
 void ServerConnectionManager::NotifyStatusChanged() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : listeners_)
-    observer.OnServerConnectionEvent(ServerConnectionEvent(server_status_));
+    observer.OnServerConnectionEvent(
+        ServerConnectionEvent(server_response_.server_status));
 }
 
 bool ServerConnectionManager::PostBufferWithCachedAuth(
@@ -202,8 +241,7 @@ bool ServerConnectionManager::PostBufferWithCachedAuth(
   string path =
       MakeSyncServerPath(proto_sync_path(), MakeSyncQueryString(client_id_));
   bool result = PostBufferToPath(params, path, access_token_);
-  SetServerStatus(params->response.server_status);
-  net_error_code_ = params->response.net_error_code;
+  SetServerResponse(params->response);
   return result;
 }
 

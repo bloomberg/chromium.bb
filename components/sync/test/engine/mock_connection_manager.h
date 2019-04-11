@@ -251,7 +251,7 @@ class MockConnectionManager : public ServerConnectionManager {
   // requests.
   void UpdateConnectionStatus();
 
-  using ServerConnectionManager::SetServerStatus;
+  using ServerConnectionManager::SetServerResponse;
 
   // Return by copy to be thread-safe.
   const std::string store_birthday() {
