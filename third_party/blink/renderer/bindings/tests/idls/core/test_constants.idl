@@ -35,5 +35,9 @@ interface TestConstants {
     [OriginTrialEnabled=FeatureName1] const short FEATURE1_ORIGIN_TRIAL_ENABLED_CONST2 = 7;
     [OriginTrialEnabled=FeatureName2] const short FEATURE2_ORIGIN_TRIAL_ENABLED_CONST1 = 8;
     [OriginTrialEnabled=FeatureName2] const short FEATURE2_ORIGIN_TRIAL_ENABLED_CONST2 = 9;
+    [OriginTrialEnabled=OriginTrialFeature1] const short FEATURE3_ORIGIN_TRIAL_ENABLED_CONST1 = 10;
+    [OriginTrialEnabled=OriginTrialFeature1] const short FEATURE3_ORIGIN_TRIAL_ENABLED_CONST2 = 11;
+    [OriginTrialEnabled=OriginTrialFeature2] const short FEATURE4_ORIGIN_TRIAL_ENABLED_CONST1 = 12;
+    [OriginTrialEnabled=OriginTrialFeature2] const short FEATURE4_ORIGIN_TRIAL_ENABLED_CONST2 = 13;
     [Reflect=CONST_IMPL] const short CONST_JAVASCRIPT = 1;
 };
