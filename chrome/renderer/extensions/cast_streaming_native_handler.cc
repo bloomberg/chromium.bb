@@ -543,9 +543,11 @@ void CastStreamingNativeHandler::GetSupportedParamsCastRtpStream(
     RtpParams params;
     FromFrameSenderConfig(configs[i], &params.payload);
     std::unique_ptr<base::DictionaryValue> params_value = params.ToValue();
-    result->Set(
-        static_cast<int>(i),
-        converter->ToV8Value(params_value.get(), context()->v8_context()));
+    result
+        ->CreateDataProperty(
+            context()->v8_context(), static_cast<int>(i),
+            converter->ToV8Value(params_value.get(), context()->v8_context()))
+        .Check();
   }
   args.GetReturnValue().Set(result);
 }
