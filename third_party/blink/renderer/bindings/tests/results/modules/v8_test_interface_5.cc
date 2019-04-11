@@ -1000,7 +1000,7 @@ static void InstallV8TestInterface5Template(
   // Initialize the interface object's template.
   V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestInterface5::GetWrapperTypeInfo()->interface_name, V8TestInterfaceEmpty::DomTemplate(isolate, world), V8TestInterface5::kInternalFieldCount);
 
-  if (!RuntimeEnabledFeatures::FeatureNameEnabled()) {
+  if (!RuntimeEnabledFeatures::RuntimeFeatureEnabled()) {
     return;
   }
 
@@ -1067,7 +1067,7 @@ void V8TestInterface5::InstallRuntimeEnabledFeaturesOnTemplate(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
     v8::Local<v8::FunctionTemplate> interface_template) {
-  if (!RuntimeEnabledFeatures::FeatureNameEnabled()) {
+  if (!RuntimeEnabledFeatures::RuntimeFeatureEnabled()) {
     return;
   }
 

@@ -123,7 +123,7 @@ void V8TestInterface2Partial::InstallRuntimeEnabledFeaturesOnTemplate(
   // Register IDL constants, attributes and operations.
 
   // Custom signature
-  if (RuntimeEnabledFeatures::Interface2PartialFeatureNameEnabled()) {
+  if (RuntimeEnabledFeatures::Interface2PartialRuntimeFeatureEnabled()) {
     {
       // Install voidMethodPartial1 configuration
       constexpr V8DOMConfiguration::MethodConfiguration kConfigurations[] = {

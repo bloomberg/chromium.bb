@@ -177,7 +177,7 @@ void V8TestConstants::InstallRuntimeEnabledFeaturesOnTemplate(
   ALLOW_UNUSED_LOCAL(prototype_template);
 
   // Register IDL constants, attributes and operations.
-  if (RuntimeEnabledFeatures::FeatureName1Enabled()) {
+  if (RuntimeEnabledFeatures::RuntimeFeature1Enabled()) {
     static constexpr V8DOMConfiguration::ConstantConfiguration kConfigurations[] = {
         {"FEATURE1_ENABLED_CONST1", V8DOMConfiguration::kConstantTypeShort, static_cast<int>(1)},
         {"FEATURE1_ENABLED_CONST2", V8DOMConfiguration::kConstantTypeShort, static_cast<int>(2)},
@@ -186,7 +186,7 @@ void V8TestConstants::InstallRuntimeEnabledFeaturesOnTemplate(
         isolate, interface_template, prototype_template,
         kConfigurations, base::size(kConfigurations));
   }
-  if (RuntimeEnabledFeatures::FeatureName2Enabled()) {
+  if (RuntimeEnabledFeatures::RuntimeFeature2Enabled()) {
     static constexpr V8DOMConfiguration::ConstantConfiguration kConfigurations[] = {
         {"FEATURE2_ENABLED_CONST1", V8DOMConfiguration::kConstantTypeShort, static_cast<int>(3)},
         {"FEATURE2_ENABLED_CONST2", V8DOMConfiguration::kConstantTypeShort, static_cast<int>(4)},
