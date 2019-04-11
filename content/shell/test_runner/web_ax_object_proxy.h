@@ -76,6 +76,7 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
 
   // The following selection functions return global information about the
   // current selection and can be called on any object in the tree.
+  bool SelectionIsBackward();
   v8::Local<v8::Value> SelectionAnchorObject();
   int SelectionAnchorOffset();
   std::string SelectionAnchorAffinity();

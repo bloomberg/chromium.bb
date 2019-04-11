@@ -372,10 +372,10 @@ DesktopAutomationHandler.prototype = {
    * @param {!AutomationEvent} evt
    */
   onDocumentSelectionChanged: function(evt) {
-    var anchor = evt.target.anchorObject;
+    var selectionStart = evt.target.selectionStartObject;
 
     // No selection.
-    if (!anchor)
+    if (!selectionStart)
       return;
 
     // A caller requested this event be ignored.
@@ -384,10 +384,11 @@ DesktopAutomationHandler.prototype = {
       return;
 
     // Editable selection.
-    if (anchor.state[StateType.EDITABLE]) {
-      anchor = AutomationUtil.getEditableRoot(anchor) || anchor;
+    if (selectionStart.state[StateType.EDITABLE]) {
+      selectionStart =
+          AutomationUtil.getEditableRoot(selectionStart) || selectionStart;
       this.onEditableChanged_(
-          new CustomAutomationEvent(evt.type, anchor, evt.eventFrom));
+          new CustomAutomationEvent(evt.type, selectionStart, evt.eventFrom));
     }
 
     // Non-editable selections are handled in |Background|.
@@ -536,14 +537,15 @@ DesktopAutomationHandler.prototype = {
     }
 
     // Sync the ChromeVox range to the editable, if a selection exists.
-    var anchorObject = evt.target.root.anchorObject;
-    var anchorOffset = evt.target.root.anchorOffset || 0;
-    var focusObject = evt.target.root.focusObject;
-    var focusOffset = evt.target.root.focusOffset || 0;
-    if (anchorObject && focusObject) {
+    var selectionStartObject = evt.target.root.selectionStartObject;
+    var selectionStartOffset = evt.target.root.selectionStartOffset || 0;
+    var selectionEndObject = evt.target.root.selectionEndObject;
+    var selectionEndOffset = evt.target.root.selectionEndOffset || 0;
+    if (selectionStartObject && selectionEndObject) {
       var selectedRange = new cursors.Range(
-          new cursors.WrappingCursor(anchorObject, anchorOffset),
-          new cursors.WrappingCursor(focusObject, focusOffset));
+          new cursors.WrappingCursor(
+              selectionStartObject, selectionStartOffset),
+          new cursors.WrappingCursor(selectionEndObject, selectionEndOffset));
 
       // Sync ChromeVox range with selection.
       ChromeVoxState.instance.setCurrentRange(selectedRange);

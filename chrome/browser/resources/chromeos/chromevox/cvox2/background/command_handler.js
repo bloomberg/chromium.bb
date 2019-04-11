@@ -676,10 +676,12 @@ CommandHandler.onCommand = function(command) {
             true);
       } else {
         var root = ChromeVoxState.instance.currentRange.start.node.root;
-        if (root && root.anchorObject && root.focusObject) {
+        if (root && root.selectionStartObject && root.selectionEndObject) {
           var sel = new cursors.Range(
-              new cursors.Cursor(root.anchorObject, root.anchorOffset),
-              new cursors.Cursor(root.focusObject, root.focusOffset));
+              new cursors.Cursor(
+                  root.selectionStartObject, root.selectionStartOffset),
+              new cursors.Cursor(
+                  root.selectionEndObject, root.selectionEndOffset));
           var o = new Output()
                       .format('@end_selection')
                       .withSpeechAndBraille(sel, sel, Output.EventType.NAVIGATE)
