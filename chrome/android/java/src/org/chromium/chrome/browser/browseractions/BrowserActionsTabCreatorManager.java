@@ -73,8 +73,8 @@ public class BrowserActionsTabCreatorManager implements TabCreatorManager {
         }
 
         @Override
-        public boolean createTabWithWebContents(Tab parent, WebContents webContents, int parentId,
-                @TabLaunchType int type, String url) {
+        public boolean createTabWithWebContents(
+                Tab parent, WebContents webContents, @TabLaunchType int type, String url) {
             throw new UnsupportedOperationException(
                     "Browser Actions does not support createTabWithWebContents");
         }

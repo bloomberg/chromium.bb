@@ -90,13 +90,12 @@ int TabModelJniBridge::GetActiveIndex() const {
 }
 
 void TabModelJniBridge::CreateTab(TabAndroid* parent,
-                                  WebContents* web_contents,
-                                  int parent_tab_id) {
+                                  WebContents* web_contents) {
   JNIEnv* env = AttachCurrentThread();
   Java_TabModelJniBridge_createTabWithWebContents(
       env, java_object_.get(env), (parent ? parent->GetJavaObject() : nullptr),
       web_contents->GetBrowserContext()->IsOffTheRecord(),
-      web_contents->GetJavaWebContents(), parent_tab_id);
+      web_contents->GetJavaWebContents());
 }
 
 void TabModelJniBridge::HandlePopupNavigation(TabAndroid* parent,

@@ -20,6 +20,16 @@ import java.util.List;
  */
 public interface TabModelSelector {
     /**
+     * @param tab The Tab to get its {@link TabModelSelector} from.
+     * @return {@link TabModelSelector} that currently hosts the {@link TabModel} for this
+     *         {@link Tab}.
+     */
+    public static TabModelSelector from(Tab tab) {
+        if (tab == null || tab.getActivity() == null) return null;
+        return tab.getActivity().getTabModelSelector();
+    }
+
+    /**
      * A delegate interface to push close all tabs requests.
      */
     public interface CloseAllTabsDelegate {

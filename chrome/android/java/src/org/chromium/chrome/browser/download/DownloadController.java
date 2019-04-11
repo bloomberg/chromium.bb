@@ -280,7 +280,7 @@ public class DownloadController {
                 || contents.getNavigationController().isInitialNavigation();
         if (isInitialNavigation) {
             // Tab is created just for download, close it.
-            TabModelSelector selector = tab.getTabModelSelector();
+            TabModelSelector selector = TabModelSelector.from(tab);
             if (selector == null) return true;
             if (selector.getModel(tab.isIncognito()).getCount() == 1) return false;
             boolean closed = selector.closeTab(tab);

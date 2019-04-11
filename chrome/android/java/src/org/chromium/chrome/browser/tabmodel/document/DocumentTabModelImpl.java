@@ -271,8 +271,8 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
     }
 
     @Override
-    protected boolean createTabWithWebContents(Tab parent, boolean isIncognito,
-            WebContents webContents, int parentTabId) {
+    protected boolean createTabWithWebContents(
+            Tab parent, boolean isIncognito, WebContents webContents) {
         return false;
     }
 

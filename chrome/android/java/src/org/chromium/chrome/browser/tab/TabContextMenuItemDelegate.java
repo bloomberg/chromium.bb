@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
@@ -173,7 +174,7 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
         RecordUserAction.record("LinkOpenedInNewTab");
         LoadUrlParams loadUrlParams = new LoadUrlParams(url);
         loadUrlParams.setReferrer(referrer);
-        mTab.getTabModelSelector().openNewTab(
+        TabModelSelector.from(mTab).openNewTab(
                 loadUrlParams, TabLaunchType.FROM_LONGPRESS_BACKGROUND, mTab, isIncognito());
     }
 
@@ -191,8 +192,8 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
     @Override
     public void onOpenInNewIncognitoTab(String url) {
         RecordUserAction.record("MobileNewTabOpened");
-        mTab.getTabModelSelector().openNewTab(new LoadUrlParams(url),
-                TabLaunchType.FROM_LONGPRESS_FOREGROUND, mTab, true);
+        TabModelSelector.from(mTab).openNewTab(
+                new LoadUrlParams(url), TabLaunchType.FROM_LONGPRESS_FOREGROUND, mTab, true);
     }
 
     @Override

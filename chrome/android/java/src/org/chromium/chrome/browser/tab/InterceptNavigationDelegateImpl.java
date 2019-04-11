@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationParams;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.content_public.browser.NavigationController;
@@ -312,7 +313,7 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
             PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
                 @Override
                 public void run() {
-                    mTab.getTabModelSelector().closeTab(mTab);
+                    TabModelSelector.from(mTab).closeTab(mTab);
                 }
             });
         } else if (TabRedirectHandler.from(mTab).isOnNavigation()) {

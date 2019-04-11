@@ -126,12 +126,13 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
                         intent, IntentHandler.EXTRA_PARENT_INTENT);
                 parentId = IntentUtils.safeGetIntExtra(
                         intent, IntentHandler.EXTRA_PARENT_TAB_ID, parentId);
-
+                TabModelSelector selector = mActivity.getTabModelSelector();
+                parent = selector != null ? selector.getTabById(parentId) : null;
                 assert TabModelUtils.getTabIndexById(mTabModel, assignedTabId)
                         == TabModel.INVALID_TAB_INDEX;
                 tab = TabBuilder.createLiveTab(!openInForeground)
                               .setId(assignedTabId)
-                              .setParentId(parentId)
+                              .setParent(parent)
                               .setIncognito(mIncognito)
                               .setWindow(mNativeWindow)
                               .setLaunchType(type)
@@ -144,7 +145,7 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
                 // to preserve resources (cpu, memory, strong renderer binding) for the foreground
                 // tab.
                 tab = TabBuilder.createForLazyLoad(loadUrlParams)
-                              .setParentId(parentId)
+                              .setParent(parent)
                               .setIncognito(mIncognito)
                               .setWindow(mNativeWindow)
                               .setLaunchType(type)
@@ -152,7 +153,7 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
                 tab.initialize(null, delegateFactory, !openInForeground, null, false);
             } else {
                 tab = TabBuilder.createLiveTab(!openInForeground)
-                              .setParentId(parentId)
+                              .setParent(parent)
                               .setIncognito(mIncognito)
                               .setWindow(mNativeWindow)
                               .setLaunchType(type)
@@ -176,9 +177,10 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
     }
 
     @Override
-    public boolean createTabWithWebContents(Tab parent, WebContents webContents, int parentId,
-            @TabLaunchType int type, String url) {
+    public boolean createTabWithWebContents(
+            Tab parent, WebContents webContents, @TabLaunchType int type, String url) {
         // The parent tab was already closed.  Do not open child tabs.
+        int parentId = parent != null ? parent.getId() : Tab.INVALID_TAB_ID;
         if (mTabModel.isClosurePending(parentId)) return false;
 
         // If parent is in the same tab model, place the new tab next to it.
@@ -190,7 +192,7 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
         TabDelegateFactory delegateFactory = parent == null ? createDefaultTabDelegateFactory()
                 : parent.getDelegateFactory();
         Tab tab = TabBuilder.createLiveTab(!openInForeground)
-                          .setParentId(parentId)
+                          .setParent(parent)
                           .setIncognito(mIncognito)
                           .setWindow(mNativeWindow)
                           .setLaunchType(type)
@@ -291,9 +293,11 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
 
     @Override
     public Tab createFrozenTab(TabState state, int id, int index) {
+        TabModelSelector selector = mActivity.getTabModelSelector();
+        Tab parent = selector != null ? selector.getTabById(state.parentId) : null;
         Tab tab = TabBuilder.createFromFrozenState()
                           .setId(id)
-                          .setParentId(state.parentId)
+                          .setParent(parent)
                           .setIncognito(state.isIncognito())
                           .setWindow(mNativeWindow)
                           .build();
