@@ -1903,8 +1903,8 @@
   },
   {
     "name": "enable-webrtc-hybrid-agc",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "aleloi" ],
+    "expiry_milestone": 83
   },
   {
     "name": "enable-webrtc-new-encode-cpu-load-estimator",
