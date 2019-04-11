@@ -26,6 +26,19 @@ class PrefRegistrySyncable;
 // broadcasting the context creation and destruction to each factory in
 // a safe order based on the stated dependencies.
 class KEYED_SERVICE_EXPORT DependencyManager {
+ public:
+  // Shuts down all keyed services managed by two
+  // DependencyManagers (DMs), then destroys them. The order of execution is:
+  // - Shutdown services in DM1
+  // - Shutdown services in DM2
+  // - Destroy services in DM1
+  // - Destroy services in DM2
+  static void PerformInterlockedTwoPhaseShutdown(
+      DependencyManager* dependency_manager1,
+      void* context1,
+      DependencyManager* dependency_manager2,
+      void* context2);
+
  protected:
   DependencyManager();
   virtual ~DependencyManager();
@@ -70,6 +83,11 @@ class KEYED_SERVICE_EXPORT DependencyManager {
   // 0xWhatever).
   void MarkContextLive(void* context);
 
+  // Marks |context| as dead (i.e., stale). Calls passing |context| to
+  //|AssertContextWasntDestroyed()| will flag an error until that context is
+  // marked as live again with MarkContextLive().
+  void MarkContextDead(void* context);
+
 #ifndef NDEBUG
   // Dumps service dependency graph as a Graphviz dot file |dot_file| with a
   // title |top_level_name|. Helper for |DumpContextDependencies|.
@@ -84,6 +102,12 @@ class KEYED_SERVICE_EXPORT DependencyManager {
   // Hook for subclass to dump the dependency graph of service for |context|.
   virtual void DumpContextDependencies(void* context) const = 0;
 #endif  // NDEBUG
+
+  std::vector<DependencyNode*> GetDestructionOrder();
+  static void ShutdownFactoriesInOrder(void* context,
+                                       std::vector<DependencyNode*>& order);
+  static void DestroyFactoriesInOrder(void* context,
+                                      std::vector<DependencyNode*>& order);
 
   DependencyGraph dependency_graph_;
 

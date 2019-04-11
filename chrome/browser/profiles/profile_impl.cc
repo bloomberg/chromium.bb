@@ -799,14 +799,13 @@ ProfileImpl::~ProfileImpl() {
 
   FullBrowserTransitionManager::Get()->OnProfileDestroyed(this);
 
-  BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(
-      this);
-  // The SimpleDependencyManager should always be called after the
+  // The SimpleDependencyManager should always be passed after the
   // BrowserContextDependencyManager. This is because the KeyedService instances
   // in the BrowserContextDependencyManager's dependency graph can depend on the
   // ones in the SimpleDependencyManager's graph.
-  SimpleDependencyManager::GetInstance()->DestroyKeyedServices(
-      GetSimpleFactoryKey());
+  DependencyManager::PerformInterlockedTwoPhaseShutdown(
+      BrowserContextDependencyManager::GetInstance(), this,
+      SimpleDependencyManager::GetInstance(), GetSimpleFactoryKey());
 
   // This causes the Preferences file to be written to disk.
   if (prefs_loaded)
