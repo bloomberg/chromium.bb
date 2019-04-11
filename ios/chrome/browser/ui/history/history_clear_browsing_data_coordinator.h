@@ -11,7 +11,6 @@
 enum class UrlLoadStrategy;
 
 @protocol ApplicationCommands;
-@protocol UrlLoader;
 @protocol HistoryLocalCommands;
 @protocol HistoryPresentationDelegate;
 @protocol HistoryClearBrowsingDataLocalCommands;
