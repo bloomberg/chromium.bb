@@ -718,9 +718,11 @@ Output.isTruthy = function(node, attrib) {
 
     // Chrome automatically calculates these attributes.
     case 'posInSet':
-      return node.htmlAttributes['aria-posinset'];
+      return node.htmlAttributes['aria-posinset'] ||
+          (node.root.role != RoleType.ROOT_WEB_AREA && node.posInSet);
     case 'setSize':
-      return node.htmlAttributes['aria-setsize'];
+      return node.htmlAttributes['aria-setsize'] ||
+          (node.root.role != RoleType.ROOT_WEB_AREA && node.setSize);
 
     // These attributes default to false for empty strings.
     case 'roleDescription':
