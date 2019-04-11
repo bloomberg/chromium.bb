@@ -46,6 +46,8 @@ using l10n_util::GetNSString;
 - (void)start {
   self.advancedSigninSettingsNavigationController =
       [[AdvancedSigninSettingsNavigationController alloc] init];
+  self.advancedSigninSettingsNavigationController.modalPresentationStyle =
+      UIModalPresentationFormSheet;
   self.googleServicesSettingsCoordinator = [[GoogleServicesSettingsCoordinator
       alloc]
       initWithBaseViewController:self.advancedSigninSettingsNavigationController
