@@ -519,6 +519,55 @@ class BuilderStageTest(AbstractStageTestCase):
         DEFAULT_BUILD_STAGE_ID,
         constants.BUILDER_STATUS_FAILED)
 
+  def testGetJobKeyvalsRegularBuild(self):
+    """Test GetJobKeyvals for a build with master."""
+    stage = self.ConstructStage()
+    build_identifier = BuildIdentifier(cidb_id=constants.MOCK_BUILD_ID,
+                                       buildbucket_id=1234)
+    self.PatchObject(stage._run, 'GetCIDBHandle',
+                     return_value=[build_identifier, None])
+    self.PatchObject(self.buildstore, 'GetBuildStatuses',
+                     return_value=[{'build_config':'master-paladin'}])
+    stage._run.options.master_buildbucket_id = 2341
+    stage._run.config.name = 'something-paladin'
+    stage._run.options.branch = 'master'
+    expected = {
+        constants.JOB_KEYVAL_DATASTORE_PARENT_KEY: (
+            'Build', constants.MOCK_BUILD_ID),
+        constants.JOB_KEYVAL_CIDB_BUILD_ID:
+            constants.MOCK_BUILD_ID,
+        constants.JOB_KEYVAL_BUILD_CONFIG:
+            'something-paladin',
+        constants.JOB_KEYVAL_BRANCH:
+            'master',
+        constants.JOB_KEYVAL_MASTER_BUILD_CONFIG:
+            'master-paladin'
+    }
+    self.assertEqual(stage.GetJobKeyvals(), expected)
+
+  def testGetJobKeyvalsSpecialBuild(self):
+    """Test GetJobKeyvals for a build without master."""
+    stage = self.ConstructStage()
+    build_identifier = BuildIdentifier(cidb_id=constants.MOCK_BUILD_ID,
+                                       buildbucket_id=1234)
+    self.PatchObject(stage._run, 'GetCIDBHandle',
+                     return_value=[build_identifier, None])
+    stage._run.config.name = 'something-paladin'
+    stage._run.options.branch = 'master'
+    expected = {
+        constants.JOB_KEYVAL_DATASTORE_PARENT_KEY: (
+            'Build', constants.MOCK_BUILD_ID),
+        constants.JOB_KEYVAL_CIDB_BUILD_ID:
+            constants.MOCK_BUILD_ID,
+        constants.JOB_KEYVAL_BUILD_CONFIG:
+            'something-paladin',
+        constants.JOB_KEYVAL_BRANCH:
+            'master',
+        constants.JOB_KEYVAL_MASTER_BUILD_CONFIG:
+            None
+    }
+    self.assertEqual(stage.GetJobKeyvals(), expected)
+
 class BuilderStageGetBuildFailureMessage(AbstractStageTestCase):
   """Test GetBuildFailureMessage in BuilderStage."""
 

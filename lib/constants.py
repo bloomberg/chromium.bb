@@ -819,6 +819,9 @@ MESSAGE_SUBTYPE_SELF_DESTRUCTION = 'self_destruction'
 JOB_KEYVAL_DATASTORE_PARENT_KEY = 'datastore_parent_key'
 JOB_KEYVAL_CIDB_BUILD_ID = 'cidb_build_id'
 JOB_KEYVAL_CIDB_BUILD_STAGE_ID = 'cidb_build_stage_id'
+JOB_KEYVAL_BUILD_CONFIG = 'build_config'
+JOB_KEYVAL_MASTER_BUILD_CONFIG = 'master_build_config'
+JOB_KEYVAL_BRANCH = 'branch'
 
 
 # How many total test retries should be done for a suite.
