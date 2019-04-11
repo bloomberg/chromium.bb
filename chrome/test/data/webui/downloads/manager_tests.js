@@ -44,7 +44,7 @@ suite('manager tests', function() {
     const countDates = () => {
       const items = manager.shadowRoot.querySelectorAll('downloads-item');
       return Array.from(items).reduce((soFar, item) => {
-        return item.$$('h3[id=date]:not(:empty)') ? soFar + 1 : soFar;
+        return item.$$('div[id=date]:not(:empty)') ? soFar + 1 : soFar;
       }, 0);
     };
 
