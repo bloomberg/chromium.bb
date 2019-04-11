@@ -251,7 +251,7 @@ void WebGLFramebuffer::SetAttachmentForBoundFramebuffer(GLenum target,
       case GL_TEXTURE_2D_ARRAY:
         if (num_views > 0) {
           DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D_ARRAY), tex_target);
-          Context()->ContextGL()->FramebufferTextureMultiviewLayeredANGLE(
+          Context()->ContextGL()->FramebufferTextureMultiviewOVR(
               target, attachment, texture_id, level, layer, num_views);
         } else {
           Context()->ContextGL()->FramebufferTextureLayer(

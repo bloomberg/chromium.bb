@@ -623,6 +623,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   friend class WebGLObject;
   friend class WebGLContextObject;
   friend class OESVertexArrayObject;
+  friend class OVRMultiview2;
   friend class WebGLDebugShaders;
   friend class WebGLCompressedTextureASTC;
   friend class WebGLCompressedTextureETC;
@@ -633,7 +634,6 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   friend class WebGLMultiDraw;
   friend class WebGLMultiDrawCommon;
   friend class WebGLMultiDrawInstanced;
-  friend class WebGLMultiview;
   friend class WebGLRenderingContextErrorMessageCallback;
   friend class WebGLVertexArrayObjectBase;
   friend class WebGLVideoTexture;

@@ -462,7 +462,7 @@ typedef void(GL_BINDING_CALL* glFramebufferTextureLayerProc)(GLenum target,
                                                              GLuint texture,
                                                              GLint level,
                                                              GLint layer);
-typedef void(GL_BINDING_CALL* glFramebufferTextureMultiviewLayeredANGLEProc)(
+typedef void(GL_BINDING_CALL* glFramebufferTextureMultiviewOVRProc)(
     GLenum target,
     GLenum attachment,
     GLuint texture,
@@ -1840,7 +1840,6 @@ struct ExtensionsGL {
   bool b_GL_ANGLE_framebuffer_multisample;
   bool b_GL_ANGLE_instanced_arrays;
   bool b_GL_ANGLE_multi_draw;
-  bool b_GL_ANGLE_multiview;
   bool b_GL_ANGLE_request_extension;
   bool b_GL_ANGLE_robust_client_memory;
   bool b_GL_ANGLE_translated_shader_source;
@@ -1917,6 +1916,8 @@ struct ExtensionsGL {
   bool b_GL_OES_mapbuffer;
   bool b_GL_OES_texture_buffer;
   bool b_GL_OES_vertex_array_object;
+  bool b_GL_OVR_multiview;
+  bool b_GL_OVR_multiview2;
 };
 
 struct ProcsGL {
@@ -2051,8 +2052,7 @@ struct ProcsGL {
   glFramebufferTexture2DMultisampleEXTProc
       glFramebufferTexture2DMultisampleEXTFn;
   glFramebufferTextureLayerProc glFramebufferTextureLayerFn;
-  glFramebufferTextureMultiviewLayeredANGLEProc
-      glFramebufferTextureMultiviewLayeredANGLEFn;
+  glFramebufferTextureMultiviewOVRProc glFramebufferTextureMultiviewOVRFn;
   glFrontFaceProc glFrontFaceFn;
   glGenBuffersARBProc glGenBuffersARBFn;
   glGenerateMipmapEXTProc glGenerateMipmapEXTFn;
@@ -2814,13 +2814,12 @@ class GL_EXPORT GLApi {
                                            GLuint texture,
                                            GLint level,
                                            GLint layer) = 0;
-  virtual void glFramebufferTextureMultiviewLayeredANGLEFn(
-      GLenum target,
-      GLenum attachment,
-      GLuint texture,
-      GLint level,
-      GLint baseViewIndex,
-      GLsizei numViews) = 0;
+  virtual void glFramebufferTextureMultiviewOVRFn(GLenum target,
+                                                  GLenum attachment,
+                                                  GLuint texture,
+                                                  GLint level,
+                                                  GLint baseViewIndex,
+                                                  GLsizei numViews) = 0;
   virtual void glFrontFaceFn(GLenum mode) = 0;
   virtual void glGenBuffersARBFn(GLsizei n, GLuint* buffers) = 0;
   virtual void glGenerateMipmapEXTFn(GLenum target) = 0;
@@ -4226,8 +4225,8 @@ class GL_EXPORT GLApi {
   ::gl::g_current_gl_context->glFramebufferTexture2DMultisampleEXTFn
 #define glFramebufferTextureLayer \
   ::gl::g_current_gl_context->glFramebufferTextureLayerFn
-#define glFramebufferTextureMultiviewLayeredANGLE \
-  ::gl::g_current_gl_context->glFramebufferTextureMultiviewLayeredANGLEFn
+#define glFramebufferTextureMultiviewOVR \
+  ::gl::g_current_gl_context->glFramebufferTextureMultiviewOVRFn
 #define glFrontFace ::gl::g_current_gl_context->glFrontFaceFn
 #define glGenBuffersARB ::gl::g_current_gl_context->glGenBuffersARBFn
 #define glGenerateMipmapEXT ::gl::g_current_gl_context->glGenerateMipmapEXTFn

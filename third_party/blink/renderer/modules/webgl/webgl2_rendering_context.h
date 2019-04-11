@@ -18,11 +18,11 @@ class EXTColorBufferFloat;
 class EXTFloatBlend;
 class EXTTextureFilterAnisotropic;
 class OESTextureFloatLinear;
+class OVRMultiview2;
 class WebGLDebugRendererInfo;
 class WebGLLoseContext;
 class WebGLMultiDraw;
 class WebGLMultiDrawInstanced;
-class WebGLMultiview;
 class KHRParallelShaderCompile;
 class WebGLVideoTexture;
 
@@ -71,6 +71,7 @@ class WebGL2RenderingContext : public WebGL2RenderingContextBase {
   Member<EXTTextureFilterAnisotropic> ext_texture_filter_anisotropic_;
   Member<KHRParallelShaderCompile> khr_parallel_shader_compile_;
   Member<OESTextureFloatLinear> oes_texture_float_linear_;
+  Member<OVRMultiview2> ovr_multiview2_;
   Member<WebGLCompressedTextureASTC> webgl_compressed_texture_astc_;
   Member<WebGLCompressedTextureETC> webgl_compressed_texture_etc_;
   Member<WebGLCompressedTextureETC1> webgl_compressed_texture_etc1_;
@@ -82,7 +83,6 @@ class WebGL2RenderingContext : public WebGL2RenderingContextBase {
   Member<WebGLLoseContext> webgl_lose_context_;
   Member<WebGLMultiDraw> webgl_multi_draw_;
   Member<WebGLMultiDrawInstanced> webgl_multi_draw_instanced_;
-  Member<WebGLMultiview> webgl_multiview_;
   Member<WebGLVideoTexture> webgl_video_texture_;
 };
 

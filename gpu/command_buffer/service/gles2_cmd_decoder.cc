@@ -1759,12 +1759,12 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
       GLint layer);
 
   // Wrapper for glFramebufferTextureLayer.
-  void DoFramebufferTextureMultiviewLayeredANGLE(GLenum target,
-                                                 GLenum attachment,
-                                                 GLuint texture,
-                                                 GLint level,
-                                                 GLint base_view_index,
-                                                 GLsizei num_views);
+  void DoFramebufferTextureMultiviewOVR(GLenum target,
+                                        GLenum attachment,
+                                        GLuint texture,
+                                        GLint level,
+                                        GLint base_view_index,
+                                        GLsizei num_views);
 
   // Wrapper for glGenerateMipmap
   void DoGenerateMipmap(GLenum target);
@@ -8622,7 +8622,7 @@ void GLES2DecoderImpl::DoFramebufferTextureLayer(
   }
 }
 
-void GLES2DecoderImpl::DoFramebufferTextureMultiviewLayeredANGLE(
+void GLES2DecoderImpl::DoFramebufferTextureMultiviewOVR(
     GLenum target,
     GLenum attachment,
     GLuint client_texture_id,

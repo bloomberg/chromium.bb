@@ -608,12 +608,12 @@ static void GL_BINDING_CALL Mock_glFramebufferTextureLayer(GLenum target,
                                                            GLint level,
                                                            GLint layer);
 static void GL_BINDING_CALL
-Mock_glFramebufferTextureMultiviewLayeredANGLE(GLenum target,
-                                               GLenum attachment,
-                                               GLuint texture,
-                                               GLint level,
-                                               GLint baseViewIndex,
-                                               GLsizei numViews);
+Mock_glFramebufferTextureMultiviewOVR(GLenum target,
+                                      GLenum attachment,
+                                      GLuint texture,
+                                      GLint level,
+                                      GLint baseViewIndex,
+                                      GLsizei numViews);
 static void GL_BINDING_CALL Mock_glFrontFace(GLenum mode);
 static void GL_BINDING_CALL Mock_glGenBuffers(GLsizei n, GLuint* buffers);
 static void GL_BINDING_CALL Mock_glGenFencesAPPLE(GLsizei n, GLuint* fences);

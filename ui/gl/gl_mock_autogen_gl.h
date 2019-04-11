@@ -361,7 +361,7 @@ MOCK_METHOD5(FramebufferTextureLayer,
                   GLuint texture,
                   GLint level,
                   GLint layer));
-MOCK_METHOD6(FramebufferTextureMultiviewLayeredANGLE,
+MOCK_METHOD6(FramebufferTextureMultiviewOVR,
              void(GLenum target,
                   GLenum attachment,
                   GLuint texture,

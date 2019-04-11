@@ -5727,15 +5727,14 @@ TEST_F(GLES2FormatTest, SetReadbackBufferShadowAllocationINTERNAL) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
-TEST_F(GLES2FormatTest, FramebufferTextureMultiviewLayeredANGLE) {
-  cmds::FramebufferTextureMultiviewLayeredANGLE& cmd =
-      *GetBufferAs<cmds::FramebufferTextureMultiviewLayeredANGLE>();
+TEST_F(GLES2FormatTest, FramebufferTextureMultiviewOVR) {
+  cmds::FramebufferTextureMultiviewOVR& cmd =
+      *GetBufferAs<cmds::FramebufferTextureMultiviewOVR>();
   void* next_cmd =
       cmd.Set(&cmd, static_cast<GLenum>(11), static_cast<GLenum>(12),
               static_cast<GLuint>(13), static_cast<GLint>(14),
               static_cast<GLint>(15), static_cast<GLsizei>(16));
-  EXPECT_EQ(static_cast<uint32_t>(
-                cmds::FramebufferTextureMultiviewLayeredANGLE::kCmdId),
+  EXPECT_EQ(static_cast<uint32_t>(cmds::FramebufferTextureMultiviewOVR::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLenum>(11), cmd.target);

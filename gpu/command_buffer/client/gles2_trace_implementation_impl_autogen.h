@@ -2731,17 +2731,17 @@ void GLES2TraceImplementation::InvalidateReadbackBufferShadowDataCHROMIUM(
   gl_->InvalidateReadbackBufferShadowDataCHROMIUM(buffer_id);
 }
 
-void GLES2TraceImplementation::FramebufferTextureMultiviewLayeredANGLE(
+void GLES2TraceImplementation::FramebufferTextureMultiviewOVR(
     GLenum target,
     GLenum attachment,
     GLuint texture,
     GLint level,
     GLint baseViewIndex,
     GLsizei numViews) {
-  TRACE_EVENT_BINARY_EFFICIENT0(
-      "gpu", "GLES2Trace::FramebufferTextureMultiviewLayeredANGLE");
-  gl_->FramebufferTextureMultiviewLayeredANGLE(target, attachment, texture,
-                                               level, baseViewIndex, numViews);
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "GLES2Trace::FramebufferTextureMultiviewOVR");
+  gl_->FramebufferTextureMultiviewOVR(target, attachment, texture, level,
+                                      baseViewIndex, numViews);
 }
 
 void GLES2TraceImplementation::MaxShaderCompilerThreadsKHR(GLuint count) {

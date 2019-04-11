@@ -977,12 +977,12 @@ GLuint CreateClientGpuFenceCHROMIUM(ClientGpuFence source) override;
 void WaitGpuFenceCHROMIUM(GLuint gpu_fence_id) override;
 void DestroyGpuFenceCHROMIUM(GLuint gpu_fence_id) override;
 void InvalidateReadbackBufferShadowDataCHROMIUM(GLuint buffer_id) override;
-void FramebufferTextureMultiviewLayeredANGLE(GLenum target,
-                                             GLenum attachment,
-                                             GLuint texture,
-                                             GLint level,
-                                             GLint baseViewIndex,
-                                             GLsizei numViews) override;
+void FramebufferTextureMultiviewOVR(GLenum target,
+                                    GLenum attachment,
+                                    GLuint texture,
+                                    GLint level,
+                                    GLint baseViewIndex,
+                                    GLsizei numViews) override;
 void MaxShaderCompilerThreadsKHR(GLuint count) override;
 GLuint CreateAndTexStorage2DSharedImageCHROMIUM(const GLbyte* mailbox) override;
 GLuint CreateAndTexStorage2DSharedImageWithInternalFormatCHROMIUM(

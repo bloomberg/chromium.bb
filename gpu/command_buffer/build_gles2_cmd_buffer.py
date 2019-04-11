@@ -4261,11 +4261,11 @@ _FUNCTION_INFO = {
     'extension': 'MESA_framebuffer_flip_y',
     'extension_flag': 'mesa_framebuffer_flip_y',
   },
-  'FramebufferTextureMultiviewLayeredANGLE': {
-    'decoder_func': 'DoFramebufferTextureMultiviewLayeredANGLE',
+  'FramebufferTextureMultiviewOVR': {
+    'decoder_func': 'DoFramebufferTextureMultiviewOVR',
     'unit_test': False,
-    'extension': 'ANGLE_multiview',
-    'extension_flag': 'angle_multiview',
+    'extension': 'OVR_multiview2',
+    'extension_flag': 'ovr_multiview2',
     'trace_level': 1,
     'es3': True
   },
