@@ -73,10 +73,9 @@ cr.define('onboarding_welcome_app_test', function() {
       welcome.navigateTo(welcome.Routes.NEW_USER, 1);
       return test_util.waitForRenderOrTimeout0(testElement).then(() => {
         const views = testElement.shadowRoot.querySelectorAll('[slot=view]');
-        assertEquals(views.length, 6);
+        assertEquals(views.length, 5);
         ['LANDING-VIEW',
          'NUX-GOOGLE-APPS',
-         'NUX-EMAIL',
          'NUX-NTP-BACKGROUND',
          'NUX-SET-AS-DEFAULT',
          'SIGNIN-VIEW',
@@ -91,10 +90,9 @@ cr.define('onboarding_welcome_app_test', function() {
       welcome.navigateTo(welcome.Routes.NEW_USER, 1);
       return test_util.waitForRenderOrTimeout0(testElement).then(() => {
         const views = testElement.shadowRoot.querySelectorAll('[slot=view]');
-        assertEquals(views.length, 5);
+        assertEquals(views.length, 4);
         ['LANDING-VIEW',
          'NUX-GOOGLE-APPS',
-         'NUX-EMAIL',
          'NUX-NTP-BACKGROUND',
          'SIGNIN-VIEW',
         ].forEach((expectedView, ix) => {

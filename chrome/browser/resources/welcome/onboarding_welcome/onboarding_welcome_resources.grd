@@ -14,35 +14,11 @@
   </outputs>
   <release seq="1">
     <includes>
-      <include name="IDR_NUX_EMAIL_AOL_1X"
-               file="images/aol_1x.png"
-               type="BINDATA"/>
-      <include name="IDR_NUX_EMAIL_AOL_2X"
-               file="images/aol_2x.png"
-               type="BINDATA" />
       <include name="IDR_NUX_EMAIL_GMAIL_1X"
                file="images/gmail_1x.png"
                type="BINDATA" />
       <include name="IDR_NUX_EMAIL_GMAIL_2X"
                file="images/gmail_2x.png"
-               type="BINDATA" />
-      <include name="IDR_NUX_EMAIL_ICLOUD_1X"
-               file="images/icloud_1x.png"
-               type="BINDATA" />
-      <include name="IDR_NUX_EMAIL_ICLOUD_2X"
-               file="images/icloud_2x.png"
-               type="BINDATA" />
-      <include name="IDR_NUX_EMAIL_OUTLOOK_1X"
-               file="images/outlook_1x.png"
-               type="BINDATA" />
-      <include name="IDR_NUX_EMAIL_OUTLOOK_2X"
-               file="images/outlook_2x.png"
-               type="BINDATA" />
-      <include name="IDR_NUX_EMAIL_YAHOO_1X"
-               file="images/yahoo_1x.png"
-               type="BINDATA" />
-      <include name="IDR_NUX_EMAIL_YAHOO_2X"
-               file="images/yahoo_2x.png"
                type="BINDATA" />
       <include name="IDR_NUX_GOOGLE_APPS_CHROME_STORE_1X"
                file="images/chrome_store_1x.png"
@@ -73,14 +49,6 @@
                type="BINDATA" />
       <include name="IDR_NUX_GOOGLE_APPS_YOUTUBE_2X"
                file="images/youtube_2x.png"
-               type="BINDATA" />
-      <include name="IDR_NUX_MODULE_ICONS_EMAIL_DARK"
-               file="images/module_icons/email_dark.svg"
-               compress="gzip"
-               type="BINDATA" />
-      <include name="IDR_NUX_MODULE_ICONS_EMAIL_LIGHT"
-               file="images/module_icons/email_light.svg"
-               compress="gzip"
                type="BINDATA" />
       <include name="IDR_NUX_MODULE_ICONS_GOOGLE_DARK"
                file="images/module_icons/google_dark.svg"
@@ -310,24 +278,6 @@
                  type="chrome_html"
                  compress="gzip"
                  preprocess="true"/>
-
-       <!-- NUX Email-->
-      <structure name="IDR_EMAIL_APP_PROXY_HTML"
-                 file="email/email_app_proxy.html"
-                 compress="gzip"
-                 type="chrome_html" />
-      <structure name="IDR_EMAIL_APP_PROXY_JS"
-                 file="email/email_app_proxy.js"
-                 compress="gzip"
-                 type="chrome_html" />
-      <structure name="IDR_NUX_EMAIL_HTML"
-                 file="email/nux_email.html"
-                 compress="gzip"
-                 type="chrome_html" />
-      <structure name="IDR_NUX_EMAIL_JS"
-                 file="email/nux_email.js"
-                 compress="gzip"
-                 type="chrome_html" />
 
        <!-- NUX Google apps-->
       <structure name="IDR_NUX_GOOGLE_APPS_HTML"

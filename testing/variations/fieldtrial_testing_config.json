@@ -2987,12 +2987,11 @@
             ],
             "experiments": [
                 {
-                    "name": "AppsEmailBackgroundUS-005",
+                    "name": "AppsBackgroundUS-005",
                     "params": {
-                        "new-user-modules": "nux-google-apps,nux-email,nux-ntp-background,nux-set-as-default,signin-view",
-                        "onboarding-group": "AppsEmailBackgroundUSSynthetic-005",
-                        "returning-user-modules": "nux-set-as-default",
-                        "show-email-interstitial": "false"
+                        "new-user-modules": "nux-google-apps,nux-ntp-background,nux-set-as-default,signin-view",
+                        "onboarding-group": "AppsBackgroundUSSynthetic-005",
+                        "returning-user-modules": "nux-set-as-default"
                     },
                     "enable_features": [
                         "NuxOnboarding"

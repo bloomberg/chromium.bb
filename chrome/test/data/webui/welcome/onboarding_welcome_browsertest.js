@@ -54,27 +54,6 @@ TEST_F('OnboardingWelcomeAppChooserTest', 'All', function() {
   mocha.run();
 });
 
-OnboardingWelcomeEmailChooserTest = class extends OnboardingWelcomeBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://welcome/shared/app_chooser.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'email_chooser_test.js',
-      'test_nux_email_proxy.js',
-      'test_metrics_proxy.js',
-      'test_bookmark_proxy.js',
-    ]);
-  }
-};
-
-TEST_F('OnboardingWelcomeEmailChooserTest', 'All', function() {
-  mocha.run();
-});
-
 OnboardingWelcomeWelcomeAppTest = class extends OnboardingWelcomeBrowserTest {
   /** @override */
   get browsePreload() {
@@ -107,7 +86,6 @@ OnboardingWelcomeSigninViewTest = class extends OnboardingWelcomeBrowserTest {
   get extraLibraries() {
     return super.extraLibraries.concat([
       'signin_view_test.js',
-      'test_nux_email_proxy.js',
       'test_welcome_browser_proxy.js',
     ]);
   }

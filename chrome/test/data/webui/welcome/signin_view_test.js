@@ -11,15 +11,9 @@ cr.define('onboarding_signin_view_test', function() {
     /** @type {welcome.WelcomeBrowserProxy} */
     let testWelcomeBrowserProxy;
 
-    /** @type {nux.NuxEmailProxy} */
-    let testEmailBrowserProxy;
-
     setup(function() {
       testWelcomeBrowserProxy = new TestWelcomeBrowserProxy();
       welcome.WelcomeBrowserProxyImpl.instance_ = testWelcomeBrowserProxy;
-
-      testEmailBrowserProxy = new TestNuxEmailProxy();
-      nux.EmailAppProxyImpl.instance_ = testEmailBrowserProxy;
 
       PolymerTest.clearBody();
       testElement = document.createElement('signin-view');

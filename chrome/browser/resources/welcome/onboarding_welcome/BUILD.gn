@@ -7,7 +7,6 @@ import("//third_party/closure_compiler/compile_js.gni")
 group("closure_compile") {
   deps = [
     ":welcome_files",
-    "./email:closure_compile",
     "./google_apps:closure_compile",
     "./ntp_background:closure_compile",
     "./set_as_default:closure_compile",
@@ -42,7 +41,6 @@ js_library("signin_view") {
     ":navigation_behavior",
     ":signin_view_proxy",
     ":welcome_browser_proxy",
-    "./email/:email_app_proxy",
   ]
 }
 
@@ -67,6 +65,7 @@ js_library("welcome_app") {
     "./shared:bookmark_proxy",
     "./shared:nux_types",
     "//ui/webui/resources/cr_elements/cr_view_manager:cr_view_manager",
+    "//ui/webui/resources/js:load_time_data",
     "//ui/webui/resources/js:promise_resolver",
   ]
 }
