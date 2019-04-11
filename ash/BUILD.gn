@@ -1968,6 +1968,7 @@ test("ash_unittests") {
     "//extensions/common:common_constants",
     "//mojo/core/embedder",
     "//net:net",
+    "//services/device/public/cpp/bluetooth",
     "//services/media_session/public/cpp/test:test_support",
     "//services/media_session/public/mojom",
     "//services/ws:test_support",
