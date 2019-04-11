@@ -116,6 +116,9 @@ class AutofillMetrics {
     UPLOAD_OFFERED_FROM_NON_FOCUSABLE_FIELD = 1 << 15,
     // The card does not satisfy any of the ranges of supported BIN ranges.
     UPLOAD_NOT_OFFERED_UNSUPPORTED_BIN_RANGE = 1 << 16,
+    // All the required conditions were satisfied even though the form is
+    // dynamic changed.
+    UPLOAD_OFFERED_FROM_DYNAMIC_CHANGE_FORM = 1 << 17,
     // Update |kNumCardUploadDecisionMetrics| when adding new enum here.
   };
 
@@ -1240,7 +1243,7 @@ class AutofillMetrics {
  private:
   static void Log(AutocompleteEvent event);
 
-  static const int kNumCardUploadDecisionMetrics = 17;
+  static const int kNumCardUploadDecisionMetrics = 18;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(AutofillMetrics);
 };

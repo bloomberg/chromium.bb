@@ -1513,6 +1513,10 @@ std::unique_ptr<FormStructure> AutofillManager::ValidateSubmittedForm(
   submitted_form->RetrieveFromCache(*cached_submitted_form,
                                     /*should_keep_cached_value=*/false,
                                     /*only_server_and_autofill_state=*/false);
+  if (value_from_dynamic_change_form_) {
+    submitted_form->set_value_from_dynamic_change_form(true);
+  }
+
   return submitted_form;
 }
 

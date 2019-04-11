@@ -327,6 +327,14 @@ class FormStructure {
     page_language_ = std::move(language);
   }
 
+  bool value_from_dynamic_change_form() const {
+    return value_from_dynamic_change_form_;
+  }
+
+  void set_value_from_dynamic_change_form(bool v) {
+    value_from_dynamic_change_form_ = v;
+  }
+
  private:
   friend class AutofillMergeTest;
   friend class FormStructureTest;
@@ -582,6 +590,8 @@ class FormStructure {
   // True iff queries encoded from this form structure should include rich
   // form/field metadata.
   bool is_rich_query_enabled_ = false;
+
+  bool value_from_dynamic_change_form_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FormStructure);
 };

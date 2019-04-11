@@ -125,6 +125,11 @@ class AutofillClient : public RiskDataLoader {
 
   // Used for options of upload prompt.
   struct SaveCreditCardOptions {
+    SaveCreditCardOptions& with_from_dynamic_change_form(bool b) {
+      from_dynamic_change_form = b;
+      return *this;
+    }
+
     SaveCreditCardOptions& with_has_non_focusable_field(bool b) {
       has_non_focusable_field = b;
       return *this;
@@ -146,6 +151,7 @@ class AutofillClient : public RiskDataLoader {
       return *this;
     }
 
+    bool from_dynamic_change_form = false;
     bool has_non_focusable_field = false;
     bool should_request_name_from_user = false;
     bool should_request_expiration_date_from_user = false;

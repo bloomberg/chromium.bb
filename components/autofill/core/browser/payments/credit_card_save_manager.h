@@ -97,15 +97,21 @@ class CreditCardSaveManager {
   // Begins the process to offer local credit card save to the user.
   // If |has_non_focusable_field| is true, the save is triggered by a form that
   // has non_focusable fields.
-  void AttemptToOfferCardLocalSave(bool has_non_focusable_field,
+  // If |from_dynamic_change_form| is true, the save is triggered by a dynamic
+  // change form.
+  void AttemptToOfferCardLocalSave(bool from_dynamic_change_form,
+                                   bool has_non_focusable_field,
                                    const CreditCard& card);
 
   // Begins the process to offer upload credit card save to the user if the
   // imported card passes all requirements and Google Payments approves.
   // If |has_non_focusable_field| is true, the save is triggered by a form that
   // has non-focusable fields. if |uploading_local_card| is true, the card being
-  // offered for upload is already a local card on the device.
+  // offered for upload is already a local card on the device. If
+  // |from_dynamic_change_form| is true, the save is triggered by a dynamic
+  // change form.
   void AttemptToOfferCardUploadSave(const FormStructure& submitted_form,
+                                    bool from_dynamic_change_form,
                                     bool has_non_focusable_field,
                                     const CreditCard& card,
                                     const bool uploading_local_card);
@@ -334,6 +340,10 @@ class CreditCardSaveManager {
   // |has_non_focusable_field_| is |true| if there exists a field that
   // |is_focusable| is false.
   bool has_non_focusable_field_ = false;
+
+  // |from_dynamic_change_form_| is |true| values imported from dynamic change
+  // form.
+  bool from_dynamic_change_form_ = false;
 
   // The origin of the top level frame from which a form is uploaded.
   url::Origin pending_upload_request_origin_;

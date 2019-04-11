@@ -933,6 +933,7 @@ void FormStructure::RetrieveFromCache(
             base::FeatureList::IsEnabled(
                 features::kAutofillImportDynamicForms)) {
           field->value = cached_field->second->value;
+          value_from_dynamic_change_form_ = true;
         } else if (field->value == cached_field->second->value) {
           // From the perspective of learning user data, text fields containing
           // default values are equivalent to empty fields.

@@ -201,6 +201,8 @@ class AutofillHandler {
                  const FormStructure* cached_form,
                  FormStructure** parsed_form_structure);
 
+  bool value_from_dynamic_change_form_ = false;
+
   AutofillDriver* driver() { return driver_; }
 
   FormStructureMap* mutable_form_structures() { return &form_structures_; }
