@@ -23,6 +23,8 @@ class MockAssistant : public mojom::Assistant {
 
   MOCK_METHOD0(StartCachedScreenContextInteraction, void());
 
+  MOCK_METHOD1(StartEditReminderInteraction, void(const std::string&));
+
   MOCK_METHOD1(StartMetalayerInteraction, void(const gfx::Rect&));
 
   MOCK_METHOD2(StartTextInteraction, void(const std::string&, bool));

@@ -315,6 +315,16 @@ void AssistantManagerServiceImpl::StartCachedScreenContextInteraction() {
                            assistant_screenshot_);
 }
 
+void AssistantManagerServiceImpl::StartEditReminderInteraction(
+    const std::string& client_id) {
+  const std::string interaction = CreateEditReminderInteraction(client_id);
+  assistant_client::VoicelessOptions voiceless_options;
+
+  voiceless_options.is_user_initiated = true;
+  assistant_manager_internal_->SendVoicelessInteraction(
+      interaction, std::string(), voiceless_options, [](auto) {});
+}
+
 void AssistantManagerServiceImpl::StartMetalayerInteraction(
     const gfx::Rect& region) {
   if (!IsScreenContextAllowed(service_->assistant_state()))

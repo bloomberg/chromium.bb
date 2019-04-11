@@ -118,6 +118,39 @@ void AssistantInteractionController::OnDeepLinkReceived(
     return;
   }
 
+  if (type == DeepLinkType::kReminders) {
+    using ReminderAction = assistant::util::ReminderAction;
+    const base::Optional<ReminderAction>& action =
+        GetDeepLinkParamAsRemindersAction(params, DeepLinkParam::kAction);
+
+    // We treat reminders deeplinks without an action as web deep links.
+    if (!action)
+      return;
+
+    switch (action.value()) {
+      case ReminderAction::kCreate:
+        StartTextInteraction(
+            l10n_util::GetStringUTF8(IDS_ASSISTANT_CREATE_REMINDER_QUERY),
+            /*allow_tts=*/model_.response() && model_.response()->has_tts(),
+            /*query_source=*/AssistantQuerySource::kDeepLink);
+        break;
+
+      case ReminderAction::kEdit:
+        const base::Optional<std::string>& client_id =
+            GetDeepLinkParam(params, DeepLinkParam::kClientId);
+        if (client_id && !client_id.value().empty()) {
+          StopActiveInteraction(false);
+          model_.SetPendingQuery(std::make_unique<AssistantTextQuery>(
+              l10n_util::GetStringUTF8(IDS_ASSISTANT_EDIT_REMINDER_QUERY),
+              /*query_source=*/AssistantQuerySource::kDeepLink));
+          assistant_->StartEditReminderInteraction(client_id.value());
+        }
+        break;
+    }
+
+    return;
+  }
+
   if (type != DeepLinkType::kQuery)
     return;
 

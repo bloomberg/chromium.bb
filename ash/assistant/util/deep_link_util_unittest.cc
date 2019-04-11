@@ -135,6 +135,32 @@ TEST_F(DeepLinkUnitTest, GetDeepLinkParamAsBool) {
   AssertDeepLinkParamEq(base::nullopt, DeepLinkParam::kRelaunch);
 }
 
+TEST_F(DeepLinkUnitTest, GetDeepLinkParamAsRemindersAction) {
+  std::map<std::string, std::string> params;
+
+  auto AssertDeepLinkParamEq =
+      [&params](const base::Optional<ReminderAction>& expected,
+                DeepLinkParam param) {
+        ASSERT_EQ(expected, GetDeepLinkParamAsRemindersAction(params, param));
+      };
+
+  // Case: Deep link parameter present, well formed "create.
+  params["action"] = "create";
+  AssertDeepLinkParamEq(ReminderAction::kCreate, DeepLinkParam::kAction);
+
+  // Case: Deep link parameter present, well formed "edit".
+  params["action"] = "edit";
+  AssertDeepLinkParamEq(ReminderAction::kEdit, DeepLinkParam::kAction);
+
+  // Case: Deep link parameter present, incorrect parameter.
+  params["action"] = "invalid";
+  AssertDeepLinkParamEq(base::nullopt, DeepLinkParam::kAction);
+
+  // Case: Deep link parameter absent.
+  params.clear();
+  AssertDeepLinkParamEq(base::nullopt, DeepLinkParam::kAction);
+}
+
 TEST_F(DeepLinkUnitTest, GetDeepLinkType) {
   const std::map<std::string, DeepLinkType> test_cases = {
       // OK: Supported deep links.
@@ -593,6 +619,8 @@ TEST_F(DeepLinkUnitTest, IsWebDeepLink) {
       {"googleassistant://take-screenshot", false},
       {"googleassistant://task-manager", false},
       {"googleassistant://whats-on-my-screen", false},
+      {"googleassistant://reminders?action=create", false},
+      {"googleassistant://reminders?action=edit", false},
 
       // FAIL: Non-deep link URLs.
       {std::string(), false},
@@ -622,8 +650,15 @@ TEST_F(DeepLinkUnitTest, IsWebDeepLinkType) {
       // FAIL: Unsupported deep link types.
       {DeepLinkType::kUnsupported, false}};
 
+  auto params = std::map<std::string, std::string>();
+
   for (const auto& test_case : test_cases)
-    ASSERT_EQ(test_case.second, IsWebDeepLinkType(test_case.first));
+    ASSERT_EQ(test_case.second, IsWebDeepLinkType(test_case.first, params));
+
+  ASSERT_FALSE(
+      IsWebDeepLinkType(DeepLinkType::kReminders, {{"action", "edit"}}));
+  ASSERT_FALSE(
+      IsWebDeepLinkType(DeepLinkType::kReminders, {{"action", "create"}}));
 }
 
 }  // namespace util

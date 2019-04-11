@@ -23,11 +23,17 @@ namespace {
 
 // Supported deep link param keys. These values must be kept in sync with the
 // server. See more details at go/cros-assistant-deeplink.
+constexpr char kActionParamKey[] = "action";
+constexpr char kClientIdParamKey[] = "clientId";
 constexpr char kIdParamKey[] = "id";
 constexpr char kQueryParamKey[] = "q";
 constexpr char kPageParamKey[] = "page";
 constexpr char kRelaunchParamKey[] = "relaunch";
 constexpr char kSourceParamKey[] = "source";
+
+// Supported reminder action deep link param values.
+constexpr char kCreateReminder[] = "create";
+constexpr char kEditReminder[] = "edit";
 
 // Supported deep link prefixes. These values must be kept in sync with the
 // server. See more details at go/cros-assistant-deeplink.
@@ -90,6 +96,8 @@ base::Optional<std::string> GetDeepLinkParam(
     DeepLinkParam param) {
   // Map of supported deep link params to their keys.
   static const std::map<DeepLinkParam, std::string> kDeepLinkParamKeys = {
+      {DeepLinkParam::kAction, kActionParamKey},
+      {DeepLinkParam::kClientId, kClientIdParamKey},
       {DeepLinkParam::kId, kIdParamKey},
       {DeepLinkParam::kPage, kPageParamKey},
       {DeepLinkParam::kQuery, kQueryParamKey},
@@ -114,6 +122,19 @@ base::Optional<bool> GetDeepLinkParamAsBool(
 
   if (value == "false")
     return false;
+
+  return base::nullopt;
+}
+
+base::Optional<ReminderAction> GetDeepLinkParamAsRemindersAction(
+    const std::map<std::string, std::string> params,
+    DeepLinkParam param) {
+  const base::Optional<std::string>& value = GetDeepLinkParam(params, param);
+  if (value == kCreateReminder)
+    return ReminderAction::kCreate;
+
+  if (value == kEditReminder)
+    return ReminderAction::kEdit;
 
   return base::nullopt;
 }
@@ -211,7 +232,7 @@ base::Optional<GURL> GetWebUrl(
   static constexpr char kAssistantSettingsWebUrl[] =
       "https://assistant.google.com/settings/mainpage";
 
-  if (!IsWebDeepLinkType(type))
+  if (!IsWebDeepLinkType(type, params))
     return base::nullopt;
 
   switch (type) {
@@ -240,10 +261,17 @@ base::Optional<GURL> GetWebUrl(
 }
 
 bool IsWebDeepLink(const GURL& deep_link) {
-  return IsWebDeepLinkType(GetDeepLinkType(deep_link));
+  return IsWebDeepLinkType(GetDeepLinkType(deep_link),
+                           GetDeepLinkParams(deep_link));
 }
 
-bool IsWebDeepLinkType(DeepLinkType type) {
+bool IsWebDeepLinkType(DeepLinkType type,
+                       const std::map<std::string, std::string>& params) {
+  // Create/edit reminder deeplink will trigger Assistant conversation flow.
+  if (type == DeepLinkType::kReminders &&
+      GetDeepLinkParamAsRemindersAction(params, DeepLinkParam::kAction)) {
+    return false;
+  }
   // Set of deep link types which open web contents in the Assistant UI.
   static const std::set<DeepLinkType> kWebDeepLinks = {
       DeepLinkType::kLists, DeepLinkType::kNotes, DeepLinkType::kReminders,
