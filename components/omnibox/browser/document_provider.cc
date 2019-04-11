@@ -514,7 +514,7 @@ bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
         match.description = GetProductDescriptionString(mimetype);
       }
       AutocompleteMatch::AddLastClassificationIfNecessary(
-          &match.description_class, 0, ACMatchClassification::NONE);
+          &match.description_class, 0, ACMatchClassification::DIM);
     }
     match.transition = ui::PAGE_TRANSITION_GENERATED;
     if (!in_counterfactual_group) {
