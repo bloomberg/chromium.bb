@@ -371,6 +371,8 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSSLCommittedInterstitials;
 
 #if defined(OS_CHROMEOS)
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kStreamlinedUsbPrinterSetup;
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kNativeSmb;
 #endif
 
