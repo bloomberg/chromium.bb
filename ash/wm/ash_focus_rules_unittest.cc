@@ -11,6 +11,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/window_factory.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -97,8 +98,8 @@ class LockScreenAshFocusRulesTest : public AshTestBase {
             Shell::Get()->session_controller()));
   }
 
-  aura::Window* CreateWindowInDefaultContainer() {
-    return CreateWindowInContainer(kShellWindowId_DefaultContainer);
+  aura::Window* CreateWindowInActiveDesk() {
+    return CreateWindowInContainer(desks_util::GetActiveDeskContainerId());
   }
 
   aura::Window* CreateWindowInAlwaysOnTopContainer() {
@@ -157,7 +158,7 @@ class LockScreenAshFocusRulesTest : public AshTestBase {
 // Verifies focus is returned (after unlocking the screen) to the most recent
 // window that had it before locking the screen.
 TEST_F(LockScreenAshFocusRulesTest, RegainFocusAfterUnlock) {
-  std::unique_ptr<aura::Window> normal_window(CreateWindowInDefaultContainer());
+  std::unique_ptr<aura::Window> normal_window(CreateWindowInActiveDesk());
   std::unique_ptr<aura::Window> always_on_top_window(
       CreateWindowInAlwaysOnTopContainer());
 

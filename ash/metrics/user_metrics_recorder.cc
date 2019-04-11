@@ -5,6 +5,7 @@
 #include "ash/metrics/user_metrics_recorder.h"
 
 #include <memory>
+#include <vector>
 
 #include "ash/login/ui/lock_screen.h"
 #include "ash/metrics/demo_session_metrics_recorder.h"
@@ -19,6 +20,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/window_state.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -99,13 +101,17 @@ bool IsUserActive() {
   return session->IsActiveUserSessionStarted() && !session->IsScreenLocked();
 }
 
-// Array of window container ids that contain visible windows to be counted for
-// UMA statistics. Note the containers are ordered from top most visible
-// container to the lowest to allow the |GetNumVisibleWindows| method to short
-// circuit when processing a maximized or fullscreen window.
-int kVisibleWindowContainerIds[] = {kShellWindowId_PipContainer,
-                                    kShellWindowId_AlwaysOnTopContainer,
-                                    kShellWindowId_DefaultContainer};
+// Returns a list of window container ids that contain visible windows to be
+// counted for UMA statistics. Note the containers are ordered from top most
+// visible container to the lowest to allow the |GetNumVisibleWindows| method to
+// short circuit when processing a maximized or fullscreen window.
+std::vector<int> GetVisibleWindowContainerIds() {
+  std::vector<int> ids{kShellWindowId_PipContainer,
+                       kShellWindowId_AlwaysOnTopContainer};
+  // TODO(afakhry): Add metrics for the inactive desks.
+  ids.emplace_back(desks_util::GetActiveDeskContainerId());
+  return ids;
+}
 
 // Returns an approximate count of how many windows are currently visible in the
 // primary root window.
@@ -113,7 +119,7 @@ int GetNumVisibleWindowsInPrimaryDisplay() {
   int visible_window_count = 0;
   bool maximized_or_fullscreen_window_present = false;
 
-  for (const int& current_container_id : kVisibleWindowContainerIds) {
+  for (const int& current_container_id : GetVisibleWindowContainerIds()) {
     if (maximized_or_fullscreen_window_present)
       break;
 
@@ -140,7 +146,7 @@ int GetNumVisibleWindowsInPrimaryDisplay() {
         ++visible_window_count;
 
       // Stop counting windows that will be hidden by maximized or fullscreen
-      // windows. Only windows in the kShellWindowId_DefaultContainer and
+      // windows. Only windows in the active desk container and
       // kShellWindowId_AlwaysOnTopContainer can be maximized or fullscreened
       // and completely obscure windows beneath them.
       if (child_window_state->IsMaximizedOrFullscreenOrPinned()) {

@@ -11,6 +11,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/desks/desks_util.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
@@ -69,9 +70,9 @@ class AssistantScreenContextControllerTest : public AshTestBase {
 // Verify that incognito windows are blocked in screenshot.
 TEST_F(AssistantScreenContextControllerTest, Screenshot) {
   std::unique_ptr<aura::Window> window1 = CreateToplevelTestWindow(
-      gfx::Rect(0, 0, 200, 200), kShellWindowId_DefaultContainer);
+      gfx::Rect(0, 0, 200, 200), desks_util::GetActiveDeskContainerId());
   std::unique_ptr<aura::Window> window2 = CreateToplevelTestWindow(
-      gfx::Rect(30, 30, 100, 100), kShellWindowId_DefaultContainer);
+      gfx::Rect(30, 30, 100, 100), desks_util::GetActiveDeskContainerId());
 
   ui::Layer* window1_layer = window1->layer();
   ui::Layer* window2_layer = window2->layer();

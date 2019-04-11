@@ -16,6 +16,7 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/default_window_resizer.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/pip/pip_window_resizer.h"
@@ -182,7 +183,8 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
   const int parent_shell_window_id =
       window->parent() ? window->parent()->id() : -1;
   if (window->parent() &&
-      (parent_shell_window_id == kShellWindowId_DefaultContainer ||
+      // TODO(afakhry): Maybe use switchable containers?
+      (desks_util::IsDeskContainerId(parent_shell_window_id) ||
        parent_shell_window_id == kShellWindowId_AlwaysOnTopContainer)) {
     window_resizer.reset(WorkspaceWindowResizer::Create(
         window_state, std::vector<aura::Window*>()));
@@ -899,8 +901,10 @@ bool WorkspaceWindowResizer::UpdateMagnetismWindow(
   aura::Window* root_window =
       Shell::Get()->window_tree_host_manager()->GetRootWindowForDisplayId(
           display.id());
-  const std::vector<aura::Window*>& children =
-      root_window->GetChildById(kShellWindowId_DefaultContainer)->children();
+  aura::Window* container =
+      desks_util::GetActiveDeskContainerForRoot(root_window);
+  DCHECK(container);
+  const std::vector<aura::Window*>& children = container->children();
   for (auto i = children.rbegin();
        i != children.rend() && !matcher.AreEdgesObscured(); ++i) {
     wm::WindowState* other_state = wm::GetWindowState(*i);

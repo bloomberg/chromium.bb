@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/wm/container_finder.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_state.h"
 #include "ui/aura/client/aura_constants.h"
@@ -81,9 +82,11 @@ bool AshFocusRules::IsWindowConsideredVisibleForActivation(
   if (!window->TargetVisibility())
     return false;
 
-  const int parent_shell_window_id = window->parent()->id();
-  return parent_shell_window_id == kShellWindowId_DefaultContainer ||
-         parent_shell_window_id == kShellWindowId_LockScreenContainer;
+  const aura::Window* parent = window->parent();
+  if (desks_util::IsActiveDeskContainer(parent))
+    return true;
+
+  return parent->id() == kShellWindowId_LockScreenContainer;
 }
 
 bool AshFocusRules::CanActivateWindow(const aura::Window* window) const {

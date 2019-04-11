@@ -7,6 +7,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/shell.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/toplevel_window_event_handler.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
@@ -137,7 +138,7 @@ ShellSurface::ShellSurface(Surface* surface)
                        gfx::Point(),
                        true,
                        true,
-                       ash::kShellWindowId_DefaultContainer) {}
+                       ash::desks_util::GetActiveDeskContainerId()) {}
 
 ShellSurface::~ShellSurface() {
   DCHECK(!scoped_configure_);
@@ -273,9 +274,9 @@ void ShellSurface::OnSetParent(Surface* parent, const gfx::Point& position) {
       parent ? views::Widget::GetTopLevelWidgetForNativeView(parent->window())
              : nullptr;
   if (parent_widget) {
-    // Set parent window if using default container and the container itself
-    // is not the parent.
-    if (container_ == ash::kShellWindowId_DefaultContainer)
+    // Set parent window if using one of the desks container and the container
+    // itself is not the parent.
+    if (ash::desks_util::IsDeskContainerId(container_))
       SetParentWindow(parent_widget->GetNativeWindow());
 
     origin_ = position;

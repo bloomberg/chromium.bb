@@ -66,7 +66,7 @@ constexpr SkColor kNoItemsIndicatorTextColor = SK_ColorWHITE;
 gfx::Rect GetGridBoundsInScreen(aura::Window* root_window,
                                 bool divider_changed) {
   gfx::Rect work_area =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           root_window);
 
   // If the shelf is in auto hide, overview will force it to be in auto hide

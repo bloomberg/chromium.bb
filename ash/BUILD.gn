@@ -66,6 +66,7 @@ component("ash") {
     "system/unified/unified_system_tray.h",
     "touch/touch_observer_hud.h",
     "wm/client_controlled_state.h",
+    "wm/desks/desks_util.h",
     "wm/drag_window_resizer.h",
     "wm/mru_window_tracker.h",
     "wm/overview/overview_controller.h",

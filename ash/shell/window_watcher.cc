@@ -14,6 +14,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell/window_watcher_shelf_item_delegate.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/window_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -42,19 +43,20 @@ class WindowWatcher::WorkspaceWindowWatcher : public aura::WindowObserver {
   }
 
   void RootWindowAdded(aura::Window* root) {
-    aura::Window* container =
-        root->GetChildById(kShellWindowId_DefaultContainer);
-    container->AddObserver(watcher_);
-    for (aura::Window* window : container->children())
-      watcher_->OnWindowAdded(window);
+    // The shelf is globally observing all active and inactive desks containers.
+    for (aura::Window* container : desks_util::GetDesksContainers(root)) {
+      container->AddObserver(watcher_);
+      for (aura::Window* window : container->children())
+        watcher_->OnWindowAdded(window);
+    }
   }
 
   void RootWindowRemoved(aura::Window* root) {
-    aura::Window* container =
-        root->GetChildById(kShellWindowId_DefaultContainer);
-    container->RemoveObserver(watcher_);
-    for (aura::Window* window : container->children())
-      watcher_->OnWillRemoveWindow(window);
+    for (aura::Window* container : desks_util::GetDesksContainers(root)) {
+      container->RemoveObserver(watcher_);
+      for (aura::Window* window : container->children())
+        watcher_->OnWillRemoveWindow(window);
+    }
   }
 
  private:

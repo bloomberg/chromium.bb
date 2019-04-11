@@ -1318,7 +1318,7 @@ TEST_F(TabletModeControllerTest,
   std::unique_ptr<aura::Window> left_window(CreateTestWindowInShellWithDelegate(
       &left_window_delegate, /*id=*/-1, /*bounds=*/gfx::Rect(0, 0, 400, 400)));
   const gfx::Rect display_bounds =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           left_window.get());
   left_window_delegate.set_minimum_size(
       gfx::Size(display_bounds.width() * 0.67f, display_bounds.height()));
@@ -1350,7 +1350,7 @@ TEST_F(TabletModeControllerTest,
           &right_window_delegate, /*id=*/-1,
           /*bounds=*/gfx::Rect(0, 0, 400, 400)));
   const gfx::Rect display_bounds =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           right_window.get());
   right_window_delegate.set_minimum_size(
       gfx::Size(display_bounds.width() * 0.67f, display_bounds.height()));
@@ -1381,7 +1381,7 @@ TEST_F(TabletModeControllerTest,
           &right_window_delegate, /*id=*/-1,
           /*bounds=*/gfx::Rect(0, 0, 400, 400)));
   const gfx::Rect display_bounds =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           right_window.get());
   right_window_delegate.set_minimum_size(
       gfx::Size(display_bounds.width() * 0.67f, display_bounds.height()));
@@ -1410,7 +1410,7 @@ TEST_F(TabletModeControllerTest,
   std::unique_ptr<aura::Window> left_window(CreateTestWindowInShellWithDelegate(
       &left_window_delegate, /*id=*/-1, /*bounds=*/gfx::Rect(0, 0, 400, 400)));
   const gfx::Rect display_bounds =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           left_window.get());
   left_window_delegate.set_minimum_size(
       gfx::Size(display_bounds.width() * 0.67f, display_bounds.height()));

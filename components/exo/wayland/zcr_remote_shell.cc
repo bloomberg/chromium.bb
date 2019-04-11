@@ -14,6 +14,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
@@ -839,12 +840,12 @@ void remote_shell_destroy(wl_client* client, wl_resource* resource) {
 int RemoteSurfaceContainer(uint32_t container) {
   switch (container) {
     case ZCR_REMOTE_SHELL_V1_CONTAINER_DEFAULT:
-      return ash::kShellWindowId_DefaultContainer;
+      return ash::desks_util::GetActiveDeskContainerId();
     case ZCR_REMOTE_SHELL_V1_CONTAINER_OVERLAY:
       return ash::kShellWindowId_SystemModalContainer;
     default:
       DLOG(WARNING) << "Unsupported container: " << container;
-      return ash::kShellWindowId_DefaultContainer;
+      return ash::desks_util::GetActiveDeskContainerId();
   }
 }
 

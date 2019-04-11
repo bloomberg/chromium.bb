@@ -24,6 +24,7 @@
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/overview/caption_container_view.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -608,7 +609,7 @@ TEST_F(OverviewSessionTest, ActiveWindowChangedUserActionNotRecorded) {
 TEST_F(OverviewSessionTest, ActiveWindowChangedUserActionWindowClose) {
   base::UserActionTester user_action_tester;
   std::unique_ptr<views::Widget> widget(CreateTestWidget(
-      nullptr, kShellWindowId_DefaultContainer, gfx::Rect(400, 400)));
+      nullptr, desks_util::GetActiveDeskContainerId(), gfx::Rect(400, 400)));
 
   ToggleOverview();
   aura::Window* window = widget->GetNativeWindow();
@@ -2759,7 +2760,7 @@ TEST_F(OverviewSessionTest, PositionWindows) {
 TEST_F(OverviewSessionTest, DraggingFromTopAnimation) {
   EnterTabletMode();
   std::unique_ptr<views::Widget> widget(CreateTestWidget(
-      nullptr, kShellWindowId_DefaultContainer, gfx::Rect(200, 200)));
+      nullptr, desks_util::GetActiveDeskContainerId(), gfx::Rect(200, 200)));
   widget->GetNativeWindow()->SetProperty(aura::client::kTopViewInset, 20);
 
   // Drag from the the top of the app to enter overview.
@@ -2901,7 +2902,7 @@ class SplitViewOverviewSessionTest : public OverviewSessionTest {
   }
 
   gfx::Rect GetWorkAreaInScreen(aura::Window* window) {
-    return screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+    return screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
         window);
   }
 
@@ -4071,7 +4072,7 @@ TEST_F(SplitViewOverviewSessionTest, SnappedWindowAnimationObserverTest) {
   OverviewItem* overview_item2 =
       GetWindowItemForWindow(grid_index, window2.get());
   const gfx::Rect work_area_rect =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           window2.get());
   const gfx::PointF end_location2(work_area_rect.width(), 0);
   DragWindowTo(overview_item2, end_location2);

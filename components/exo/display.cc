@@ -35,6 +35,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/wm/desks/desks_util.h"
 #include "components/exo/client_controlled_shell_surface.h"
 #include "components/exo/input_method_surface.h"
 #include "components/exo/shell_surface.h"
@@ -135,7 +136,7 @@ std::unique_ptr<ShellSurface> Display::CreateShellSurface(Surface* surface) {
 
   return std::make_unique<ShellSurface>(
       surface, gfx::Point(), true /* activatable */, false /* can_minimize */,
-      ash::kShellWindowId_DefaultContainer);
+      ash::desks_util::GetActiveDeskContainerId());
 }
 
 std::unique_ptr<XdgShellSurface> Display::CreateXdgShellSurface(
@@ -149,7 +150,7 @@ std::unique_ptr<XdgShellSurface> Display::CreateXdgShellSurface(
 
   return std::make_unique<XdgShellSurface>(
       surface, gfx::Point(), true /* activatable */, false /* can_minimize */,
-      ash::kShellWindowId_DefaultContainer);
+      ash::desks_util::GetActiveDeskContainerId());
 }
 
 std::unique_ptr<ClientControlledShellSurface>

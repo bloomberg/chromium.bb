@@ -22,7 +22,7 @@ const int32_t kActivatableShellWindowIds[] = {
     kShellWindowId_SystemModalContainer,
     kShellWindowId_AlwaysOnTopContainer,
     kShellWindowId_AppListContainer,
-    kShellWindowId_DefaultContainer,
+    kShellWindowId_DefaultContainerDeprecated,
     kShellWindowId_HomeScreenContainer,
 
     // Launcher and status are intentionally checked after other containers

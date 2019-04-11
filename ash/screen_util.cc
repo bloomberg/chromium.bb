@@ -10,6 +10,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/work_area_insets.h"
 #include "base/logging.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -62,17 +63,17 @@ gfx::Rect GetDisplayWorkAreaBoundsInParentForLockScreen(aura::Window* window) {
   return bounds;
 }
 
-gfx::Rect GetDisplayWorkAreaBoundsInParentForDefaultContainer(
+gfx::Rect GetDisplayWorkAreaBoundsInParentForActiveDeskContainer(
     aura::Window* window) {
   aura::Window* root_window = window->GetRootWindow();
   return GetDisplayWorkAreaBoundsInParent(
-      root_window->GetChildById(kShellWindowId_DefaultContainer));
+      desks_util::GetActiveDeskContainerForRoot(root_window));
 }
 
-gfx::Rect GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+gfx::Rect GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
     aura::Window* window) {
   gfx::Rect bounds =
-      GetDisplayWorkAreaBoundsInParentForDefaultContainer(window);
+      GetDisplayWorkAreaBoundsInParentForActiveDeskContainer(window);
   ::wm::ConvertRectToScreen(window->GetRootWindow(), &bounds);
   return bounds;
 }

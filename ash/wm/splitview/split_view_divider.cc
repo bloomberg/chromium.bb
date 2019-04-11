@@ -376,7 +376,7 @@ gfx::Rect SplitViewDivider::GetDividerBoundsInScreen(bool is_dragging) {
   aura::Window* root_window =
       divider_widget_->GetNativeWindow()->GetRootWindow();
   const gfx::Rect work_area_bounds_in_screen =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           root_window);
   const int divider_position = controller_->divider_position();
   const OrientationLockType screen_orientation = GetCurrentScreenOrientation();

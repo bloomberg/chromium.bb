@@ -12,6 +12,7 @@
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "ui/aura/env.h"
@@ -231,7 +232,7 @@ TEST_F(ScreenUtilTest, FullscreenWindowBoundsWithDockedMagnifier) {
   UpdateDisplay("1366x768");
 
   std::unique_ptr<aura::Window> window = CreateToplevelTestWindow(
-      gfx::Rect(300, 300, 200, 150), kShellWindowId_DefaultContainer);
+      gfx::Rect(300, 300, 200, 150), desks_util::GetActiveDeskContainerId());
 
   auto* docked_magnifier_controller =
       Shell::Get()->docked_magnifier_controller();

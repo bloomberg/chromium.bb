@@ -219,8 +219,9 @@ gfx::Rect GetGridBoundsInScreenAfterDragging(aura::Window* dragged_window) {
       return split_view_controller->GetSnappedWindowBoundsInScreen(
           dragged_window, SplitViewController::LEFT);
     default:
-      return screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
-          dragged_window);
+      return screen_util::
+          GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+              dragged_window);
   }
 }
 
@@ -244,8 +245,9 @@ gfx::Rect GetGridBoundsInScreenDuringDragging(aura::Window* dragged_window,
       return split_view_controller->GetSnappedWindowBoundsInScreen(
           dragged_window, SplitViewController::LEFT);
     default:
-      return screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
-          dragged_window);
+      return screen_util::
+          GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+              dragged_window);
   }
 }
 

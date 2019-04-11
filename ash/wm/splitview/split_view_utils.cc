@@ -253,7 +253,7 @@ bool CanSnapInSplitview(aura::Window* window) {
     // area size, the window can't be snapped in this case.
     const gfx::Size min_size = window->delegate()->GetMinimumSize();
     const gfx::Rect display_area =
-        screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+        screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
             window);
     const bool is_landscape = (display_area.width() > display_area.height());
     if ((is_landscape && min_size.width() > display_area.width() / 2) ||
