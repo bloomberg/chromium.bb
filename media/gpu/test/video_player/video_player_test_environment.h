@@ -30,7 +30,8 @@ class VideoPlayerTestEnvironment : public ::testing::Environment {
       const base::FilePath& video_path,
       const base::FilePath& video_metadata_path,
       bool enable_validator,
-      bool output_frames);
+      bool output_frames,
+      bool use_vd);
   ~VideoPlayerTestEnvironment() override;
 
   // Set up the video decode test environment, only called once.
@@ -44,6 +45,8 @@ class VideoPlayerTestEnvironment : public ::testing::Environment {
   bool IsValidatorEnabled() const;
   // Check whether outputting frames is enabled.
   bool IsFramesOutputEnabled() const;
+  // Check whether we should use VD-based video decoders instead of VDA-based.
+  bool UseVD() const;
 
   // Get the name of the current test.
   base::FilePath::StringType GetTestName() const;
@@ -51,12 +54,14 @@ class VideoPlayerTestEnvironment : public ::testing::Environment {
  private:
   VideoPlayerTestEnvironment(std::unique_ptr<media::test::Video> video,
                              bool enable_validator,
-                             bool output_frames);
+                             bool output_frames,
+                             bool use_vd);
 
   std::unique_ptr<base::test::ScopedTaskEnvironment> task_environment_;
   const std::unique_ptr<media::test::Video> video_;
   const bool enable_validator_;
   const bool output_frames_;
+  const bool use_vd_;
 
   // An exit manager is required to run callbacks on shutdown.
   base::AtExitManager at_exit_manager;

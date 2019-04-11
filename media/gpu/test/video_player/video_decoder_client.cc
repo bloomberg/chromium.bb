@@ -153,12 +153,19 @@ void VideoDecoderClient::CreateDecoderTask(base::WaitableEvent* done) {
   WaitingCB waiting_cb =
       base::BindRepeating([](WaitingReason) { NOTIMPLEMENTED(); });
 
-  // TODO(dstaessens@) Currently we always create a VDA-based video decoder,
-  // change to use a factory that can create different types of decoders.
-  decoder_ = base::WrapUnique(
-      new TestVDAVideoDecoder(decoder_client_config_.allocation_mode,
-                              gfx::ColorSpace(), frame_renderer_.get()));
-  decoder_->Initialize(config, false, nullptr, init_cb, output_cb, waiting_cb);
+  if (decoder_client_config_.use_vd) {
+    // TODO(dstaessens@) Create VD-based video decoder.
+    NOTIMPLEMENTED();
+  } else {
+    // The video decoder client expects decoders to use the VD interface. We can
+    // use the TestVDAVideoDecoder wrapper here to test VDA-based video
+    // decoders.
+    decoder_ = base::WrapUnique(
+        new TestVDAVideoDecoder(decoder_client_config_.allocation_mode,
+                                gfx::ColorSpace(), frame_renderer_.get()));
+    decoder_->Initialize(config, false, nullptr, init_cb, output_cb,
+                         waiting_cb);
+  }
 
   DCHECK_LE(decoder_client_config_.max_outstanding_decode_requests,
             static_cast<size_t>(decoder_->GetMaxDecodeRequests()));

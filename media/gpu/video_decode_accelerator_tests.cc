@@ -23,7 +23,7 @@ namespace {
 constexpr const char* usage_msg =
     "usage: video_decode_accelerator_tests\n"
     "           [-v=<level>] [--vmodule=<config>] [--disable_validator]\n"
-    "           [--output_frames] [--gtest_help] [--help]\n"
+    "           [--output_frames] [--use_vd] [--gtest_help] [--help]\n"
     "           [<video path>] [<video metadata path>]\n";
 
 // Video decoder tests help message.
@@ -42,6 +42,8 @@ constexpr const char* help_msg =
     "                       platforms that don't support import mode.\n"
     "  --output_frames      write all decoded video frames to the\n"
     "                       \"video_frames\" folder.\n"
+    "  --use_vd             use the new VD-based video decoders, instead of\n"
+    "                       the default VDA-based video decoders.\n"
     "  --gtest_help         display the gtest help and exit.\n"
     "  --help               display this help and exit.\n";
 
@@ -52,7 +54,7 @@ class VideoDecoderTest : public ::testing::Test {
  public:
   std::unique_ptr<VideoPlayer> CreateVideoPlayer(
       const Video* video,
-      const VideoDecoderClientConfig& config = VideoDecoderClientConfig(),
+      VideoDecoderClientConfig config = VideoDecoderClientConfig(),
       std::unique_ptr<FrameRenderer> frame_renderer =
           FrameRendererDummy::Create()) {
     LOG_ASSERT(video);
@@ -71,6 +73,9 @@ class VideoDecoderTest : public ::testing::Test {
               .Append(base::FilePath(g_env->GetTestName()));
       frame_processors.push_back(VideoFrameFileWriter::Create(output_folder));
     }
+
+    // Use the new VD-based video decoders if requested.
+    config.use_vd = g_env->UseVD();
 
     return VideoPlayer::Create(video, std::move(frame_renderer),
                                std::move(frame_processors), config);
@@ -295,6 +300,7 @@ int main(int argc, char** argv) {
   // Parse command line arguments.
   bool enable_validator = true;
   bool output_frames = false;
+  bool use_vd = false;
   base::CommandLine::SwitchMap switches = cmd_line->GetSwitches();
   for (base::CommandLine::SwitchMap::const_iterator it = switches.begin();
        it != switches.end(); ++it) {
@@ -307,6 +313,8 @@ int main(int argc, char** argv) {
       enable_validator = false;
     } else if (it->first == "output_frames") {
       output_frames = true;
+    } else if (it->first == "use_vd") {
+      use_vd = true;
     } else {
       std::cout << "unknown option: --" << it->first << "\n"
                 << media::test::usage_msg;
@@ -319,7 +327,8 @@ int main(int argc, char** argv) {
   // Set up our test environment.
   media::test::VideoPlayerTestEnvironment* test_environment =
       media::test::VideoPlayerTestEnvironment::Create(
-          video_path, video_metadata_path, enable_validator, output_frames);
+          video_path, video_metadata_path, enable_validator, output_frames,
+          use_vd);
   if (!test_environment)
     return EXIT_FAILURE;
 

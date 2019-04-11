@@ -43,6 +43,8 @@ struct VideoDecoderClientConfig {
   size_t max_outstanding_decode_requests = 1;
   // How the pictures buffers should be allocated.
   AllocationMode allocation_mode = AllocationMode::kImport;
+  // Use VD-based video decoders instead of VDA-based video decoders.
+  bool use_vd = false;
 };
 
 // The video decoder client is responsible for the communication between the

@@ -23,8 +23,8 @@ namespace {
 // Video decoder perf tests usage message.
 constexpr const char* usage_msg =
     "usage: video_decode_accelerator_perf_tests\n"
-    "           [-v=<level>] [--vmodule=<config>] [--gtest_help] [--help]\n"
-    "           [<video path>] [<video metadata path>]\n";
+    "           [-v=<level>] [--vmodule=<config>] [--use_vd] [--gtest_help]\n"
+    "           [--help] [<video path>] [<video metadata path>]\n";
 
 // Video decoder perf tests help message.
 constexpr const char* help_msg =
@@ -38,6 +38,8 @@ constexpr const char* help_msg =
     "   -v                  enable verbose mode, e.g. -v=2.\n"
     "  --vmodule            enable verbose mode for the specified module,\n"
     "                       e.g. --vmodule=*media/gpu*=2.\n"
+    "  --use_vd             use the new VD-based video decoders, instead of\n"
+    "                       the default VDA-based video decoders.\n"
     "  --gtest_help         display the gtest help and exit.\n"
     "  --help               display this help and exit.\n";
 
@@ -168,9 +170,13 @@ class VideoDecoderTest : public ::testing::Test {
     auto performance_evaluator = std::make_unique<PerformanceEvaluator>();
     performance_evaluator_ = performance_evaluator.get();
     frame_processors.push_back(std::move(performance_evaluator));
+
+    // Use the new VD-based video decoders if requested.
+    VideoDecoderClientConfig config;
+    config.use_vd = g_env->UseVD();
+
     return VideoPlayer::Create(video, FrameRendererDummy::Create(),
-                               std::move(frame_processors),
-                               VideoDecoderClientConfig());
+                               std::move(frame_processors), config);
   }
 
   PerformanceEvaluator* performance_evaluator_;
@@ -219,12 +225,17 @@ int main(int argc, char** argv) {
       (args.size() >= 2) ? base::FilePath(args[1]) : base::FilePath();
 
   // Parse command line arguments.
+  bool use_vd = false;
   base::CommandLine::SwitchMap switches = cmd_line->GetSwitches();
   for (base::CommandLine::SwitchMap::const_iterator it = switches.begin();
        it != switches.end(); ++it) {
     if (it->first.find("gtest_") == 0 ||               // Handled by GoogleTest
         it->first == "v" || it->first == "vmodule") {  // Handled by Chrome
       continue;
+    }
+
+    if (it->first == "use_vd") {
+      use_vd = true;
     } else {
       std::cout << "unknown option: --" << it->first << "\n"
                 << media::test::usage_msg;
@@ -237,7 +248,7 @@ int main(int argc, char** argv) {
   // Set up our test environment.
   media::test::VideoPlayerTestEnvironment* test_environment =
       media::test::VideoPlayerTestEnvironment::Create(
-          video_path, video_metadata_path, false, false);
+          video_path, video_metadata_path, false, false, use_vd);
   if (!test_environment)
     return EXIT_FAILURE;
 
