@@ -26,7 +26,6 @@
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/session/arc_bridge_service.h"
-#include "components/exo/shell_surface_util.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
@@ -172,9 +171,13 @@ void ArcAppWindowLauncherController::OnWindowInitialized(aura::Window* window) {
 void ArcAppWindowLauncherController::OnWindowVisibilityChanged(
     aura::Window* window,
     bool visible) {
+  const int task_id = arc::GetWindowTaskId(window);
+  if (task_id == arc::kNoTaskId)
+    return;
+
   // Attach window to multi-user manager now to let it manage visibility state
   // of the ARC window correctly.
-  if (GetWindowTaskId(window) > 0) {
+  if (task_id != arc::kSystemWindowTaskId) {
     MultiUserWindowManagerClient::GetInstance()->SetWindowOwner(
         window,
         user_manager::UserManager::Get()->GetPrimaryUser()->GetAccountId());
@@ -228,14 +231,15 @@ void ArcAppWindowLauncherController::AttachControllerToWindowsIfNeeded() {
 
 void ArcAppWindowLauncherController::AttachControllerToWindowIfNeeded(
     aura::Window* window) {
-  const int task_id = GetWindowTaskId(window);
-  if (task_id >= 0) {
-    // System windows are also arc apps.
-    window->SetProperty(aura::client::kAppType,
-                        static_cast<int>(ash::AppType::ARC_APP));
-  }
+  const int task_id = arc::GetWindowTaskId(window);
+  if (task_id == arc::kNoTaskId)
+    return;
 
-  if (task_id <= 0)
+  // System windows are also arc apps.
+  window->SetProperty(aura::client::kAppType,
+                      static_cast<int>(ash::AppType::ARC_APP));
+
+  if (task_id == arc::kSystemWindowTaskId)
     return;
 
   // Check if we have controller for this task.
@@ -539,17 +543,4 @@ void ArcAppWindowLauncherController::UnregisterApp(
     controller->RemoveWindow(app_window);
   app_window->SetController(nullptr);
   app_window_info->set_app_window(nullptr);
-}
-
-// static
-int ArcAppWindowLauncherController::GetWindowTaskId(aura::Window* window) {
-  const std::string* arc_app_id = exo::GetShellApplicationId(window);
-  if (!arc_app_id)
-    return -1;
-
-  int task_id = -1;
-  if (sscanf(arc_app_id->c_str(), "org.chromium.arc.%d", &task_id) != 1)
-    return -1;
-
-  return task_id;
 }

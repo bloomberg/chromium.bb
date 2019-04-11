@@ -30,6 +30,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "components/arc/arc_prefs.h"
+#include "components/arc/arc_util.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
@@ -226,8 +227,7 @@ void ArcGraphicsTracingHandler::OnWindowActivated(ActivationReason reason,
   // Handle ARC current active window if any.
   DiscardActiveArcWindow();
 
-  active_task_id_ =
-      ArcAppWindowLauncherController::GetWindowTaskId(gained_active);
+  active_task_id_ = arc::GetWindowTaskId(gained_active);
   if (active_task_id_ <= 0)
     return;
 

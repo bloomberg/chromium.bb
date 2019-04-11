@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/exo/shell_surface_util.h"
 #include "components/prefs/pref_service.h"
 
 namespace plugin_vm {
@@ -66,8 +67,9 @@ bool IsPluginVmEnabled(Profile* profile) {
   return IsPluginVmAllowedForProfile(profile) && IsPluginVmConfigured(profile);
 }
 
-// TODO(timloh): Implement this (crbug.com/940319).
-bool IsPluginVmExoApplicationId(const std::string& app_id) {
+// TODO(timloh): Implement detection for Plugin VM windows, e.g. by setting an
+// exo application id (crbug.com/940319).
+bool IsPluginVmWindow(const aura::Window* window) {
   return false;
 }
 
