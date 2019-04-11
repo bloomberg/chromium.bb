@@ -338,7 +338,7 @@ class DateOrderedListMediator {
     }
 
     private void onRenameItem(OfflineItem item) {
-        // TODO(hesen): Add uma stats.
+        UmaUtils.recordItemAction(ViewAction.MENU_RENAME);
         mRenameController.rename(item.title, (newName, renameCallback) -> {
             mProvider.renameItem(item, newName, renameCallback);
         });
