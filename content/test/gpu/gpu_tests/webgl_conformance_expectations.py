@@ -136,6 +136,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Skip('conformance/rendering/texture-switch-performance.html',
         bug=735483)
 
+    self.Fail('conformance/rendering/blending.html',
+        ['passthrough'], bug=951628)
+
     # Passthrough command decoder / OpenGL
     self.Fail(
         'conformance/textures/canvas/tex-2d-alpha-alpha-unsigned_byte.html',
@@ -143,9 +146,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/textures/canvas/' +
         'tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html',
         ['passthrough', 'opengl'], bug=2952) # angle bug ID
-    # Need to add detection of feedback loops with multiple render targets.
-    self.Fail('conformance/rendering/rendering-sampling-feedback-loop.html',
-        ['passthrough'], bug=660844)
 
     # Intel graphics driver issue. Passed on 25.20.100.6471
     self.Fail('conformance/glsl/constructors/glsl-construct-mat2.html',
@@ -207,6 +207,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Win NVIDIA failures
     self.Flaky('conformance/textures/misc/texture-npot-video.html',
         ['win', 'nvidia', 'no_passthrough'], bug=626524)
+    self.Fail('conformance/rendering/blending.html',
+        ['win', 'nvidia', 'no_passthrough'], bug=951628)
     self.Flaky('conformance/textures/misc/texture-upload-size.html',
         ['win', 'nvidia'], bug=630860)
     self.Skip('conformance/rendering/out-of-bounds-index-buffers.html',
@@ -313,9 +315,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'd3d9'], bug=617148)
     self.Skip('conformance/glsl/misc/large-loop-compile.html',
         ['win', 'd3d9'], bug=674572)
-    # Test needs GL_EXT_draw_buffers which is not supported
-    self.Skip('conformance/rendering/rendering-sampling-feedback-loop.html',
-        ['win', 'd3d9', 'no_passthrough'])
 
     # WIN / OpenGL / NVIDIA failures
     self.Fail('conformance/limits/gl-max-texture-dimensions.html',
@@ -648,6 +647,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/textures/misc/' +
         'copytexsubimage2d-large-partial-copy-corruption.html',
         ['android', 'no_passthrough', 'qualcomm'], bug=679697)
+
+    self.Fail('conformance/rendering/blending.html',
+        ['android', 'no_passthrough'], bug=951628)
     # The following WebView crashes are causing problems with further
     # tests in the suite, so skip them for now.
     self.Skip('conformance/textures/video/' +
@@ -738,8 +740,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/glsl/bugs/' +
               'varying-arrays-should-not-be-reversed.html',
         ['android', ('qualcomm', 'Adreno (TM) 330')], bug=709704)
-    self.Skip('conformance/rendering/rendering-sampling-feedback-loop.html',
-        ['android', ('qualcomm', 'Adreno (TM) 330'), 'no_passthrough'])
 
     # Nexus 5X
     # The following test recently became so flaky that it had to be
@@ -808,9 +808,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
     self.Flaky('conformance/limits/gl-max-texture-dimensions.html',
         ['android', ('qualcomm', 'Adreno (TM) 418'), 'passthrough'], bug=914631)
-    # Test needs GL_EXT_draw_buffers which is not supported
-    self.Skip('conformance/rendering/rendering-sampling-feedback-loop.html',
-        ['android', ('qualcomm', 'Adreno (TM) 418'), 'no_passthrough'])
 
     # Nexus 6 (Adreno 420) and 6P (Adreno 430)
     self.Fail('conformance/context/' +
@@ -875,9 +872,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
          ('qualcomm', 'Adreno (TM) 420'), ('qualcomm', 'Adreno (TM) 430')])
     self.Fail('conformance/glsl/misc/uninitialized-local-global-variables.html',
         ['android', ('qualcomm', 'Adreno (TM) 420')], bug=2046) # angle bug ID
-    self.Skip('conformance/rendering/rendering-sampling-feedback-loop.html',
-        ['android', ('qualcomm', 'Adreno (TM) 420'),
-         ('qualcomm', 'Adreno (TM) 430'), 'no_passthrough'])
 
     # Nexus 9
     self.Fail('deqp/data/gles2/shaders/functions.html',
