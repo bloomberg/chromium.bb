@@ -61,6 +61,8 @@
  *   PASSWORDS: (undefined|!settings.Route),
  *   PAYMENTS: (undefined|!settings.Route),
  *   PEOPLE: (undefined|!settings.Route),
+ *   PLUGIN_VM: (undefined|!settings.Route),
+ *   PLUGIN_VM_DETAILS: (undefined|!settings.Route),
  *   POINTERS: (undefined|!settings.Route),
  *   POWER: (undefined|!settings.Route),
  *   PRINTING: (undefined|!settings.Route),
@@ -284,6 +286,12 @@ cr.define('settings', function() {
       r.CROSTINI_SHARED_PATHS = r.CROSTINI.createChild('/crostini/sharedPaths');
       r.CROSTINI_SHARED_USB_DEVICES =
           r.CROSTINI.createChild('/crostini/sharedUsbDevices');
+    }
+
+    if (loadTimeData.valueExists('showPluginVm') &&
+        loadTimeData.getBoolean('showPluginVm')) {
+      r.PLUGIN_VM = r.BASIC.createSection('/pluginVm', 'pluginVm');
+      r.PLUGIN_VM_DETAILS = r.PLUGIN_VM.createChild('/pluginVm/details');
     }
     // </if>
 

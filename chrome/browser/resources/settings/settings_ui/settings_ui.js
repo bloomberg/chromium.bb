@@ -60,6 +60,9 @@ Polymer({
     showCrostini_: Boolean,
 
     /** @private */
+    showPluginVm_: Boolean,
+
+    /** @private */
     havePlayStoreApp_: Boolean,
 
     /** @private */
@@ -146,6 +149,8 @@ Polymer({
         loadTimeData.getBoolean('showKioskNextShell');
     this.showCrostini_ = loadTimeData.valueExists('showCrostini') &&
         loadTimeData.getBoolean('showCrostini');
+    this.showPluginVm_ = loadTimeData.valueExists('showPluginVm') &&
+        loadTimeData.getBoolean('showPluginVm');
     this.havePlayStoreApp_ = loadTimeData.valueExists('havePlayStoreApp') &&
         loadTimeData.getBoolean('havePlayStoreApp');
 

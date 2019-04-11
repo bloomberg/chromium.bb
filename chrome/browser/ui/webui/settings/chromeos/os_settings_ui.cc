@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/smb_shares/smb_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/accessibility_handler.h"
@@ -147,6 +148,9 @@ void OSSettingsUI::InitWebUIHandlers(Profile* profile,
 
   html_source->AddBoolean("allowCrostini",
                           crostini::IsCrostiniUIAllowedForProfile(profile));
+
+  html_source->AddBoolean("showPluginVm",
+                          plugin_vm::IsPluginVmEnabled(profile));
 
   html_source->AddBoolean("isDemoSession",
                           chromeos::DemoSession::IsDeviceInDemoMode());
