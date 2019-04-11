@@ -45,6 +45,9 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
                                         TranslateErrors::Type error_type) = 0;
     // Return whether user declined translate service.
     virtual bool IsDeclinedByUser() = 0;
+    // Called when the TranslateInfoBarDelegate instance is destroyed.
+    virtual void OnTranslateInfoBarDelegateDestroyed(
+        TranslateInfoBarDelegate* delegate) = 0;
 
    protected:
     virtual ~Observer() {}

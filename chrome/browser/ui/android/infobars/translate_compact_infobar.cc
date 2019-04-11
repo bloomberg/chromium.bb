@@ -214,3 +214,9 @@ bool TranslateCompactInfoBar::IsDeclinedByUser() {
   // Whether there is any affirmative action bit.
   return action_flags_ == FLAG_NONE;
 }
+
+void TranslateCompactInfoBar::OnTranslateInfoBarDelegateDestroyed(
+    translate::TranslateInfoBarDelegate* delegate) {
+  DCHECK_EQ(GetDelegate(), delegate);
+  GetDelegate()->SetObserver(nullptr);
+}
