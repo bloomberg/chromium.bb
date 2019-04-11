@@ -74,7 +74,7 @@
       }
 
       .preview-area-overlay-layer {
-        background: var(--google-grey-200);
+        background: var(--preview-area-background-color);
         display: flex;
         flex-direction: column;
         height: 100%;
@@ -91,8 +91,8 @@
         z-index: 1;
       }
 
-      :host-context([dark]) .preview-area-overlay-layer {
-        background: var(--google-grey-400);
+      :host([new-print-preview-layout]) .preview-area-overlay-layer {
+        background: var(--preview-area-background-color-new);
       }
 
       .preview-area-overlay-layer.invisible {
@@ -108,6 +108,10 @@
         margin: 0 10px;
         position: relative;
         text-align: center;
+      }
+
+      :host([new-print-preview-layout]) .preview-area-message {
+        color: var(--cr-primary-text-color);
       }
     </style>
     <div class$="preview-area-overlay-layer [[getInvisible_(previewState)]]"

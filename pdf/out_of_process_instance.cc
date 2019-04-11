@@ -118,6 +118,9 @@ constexpr char kJSResetPrintPreviewModeType[] = "resetPrintPreviewMode";
 constexpr char kJSPrintPreviewUrl[] = "url";
 constexpr char kJSPrintPreviewGrayscale[] = "grayscale";
 constexpr char kJSPrintPreviewPageCount[] = "pageCount";
+// Background color changed (Page -> Plugin)
+constexpr char kJSBackgroundColorChangedType[] = "backgroundColorChanged";
+constexpr char kJSBackgroundColor[] = "backgroundColor";
 // Load preview page (Page -> Plugin)
 constexpr char kJSLoadPreviewPageType[] = "loadPreviewPage";
 constexpr char kJSPreviewPageUrl[] = "url";
@@ -693,6 +696,13 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
     RotateCounterclockwise();
   } else if (type == kJSSelectAllType) {
     engine_->SelectAll();
+  } else if (type == kJSBackgroundColorChangedType) {
+    if (!dict.Get(pp::Var(kJSBackgroundColor)).is_string()) {
+      NOTREACHED();
+      return;
+    }
+    base::HexStringToUInt(dict.Get(pp::Var(kJSBackgroundColor)).AsString(),
+                          &background_color_);
   } else if (type == kJSResetPrintPreviewModeType) {
     if (!(dict.Get(pp::Var(kJSPrintPreviewUrl)).is_string() &&
           dict.Get(pp::Var(kJSPrintPreviewGrayscale)).is_bool() &&
