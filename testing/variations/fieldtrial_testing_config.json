@@ -5930,7 +5930,7 @@
             ],
             "experiments": [
                 {
-                    "name": "WebRtcHideLocalIpsWithMdns",
+                    "name": "Enabled",
                     "enable_features": [
                         "WebRtcHideLocalIpsWithMdns"
                     ]
