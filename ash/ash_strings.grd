@@ -1765,7 +1765,7 @@ This file contains the strings for ash.
         Power off
       </message>
       <message name="IDS_ASH_POWER_BUTTON_MENU_LOCK_SCREEN_BUTTON" desc="Text shown on lock screen button in power button menu.">
-        Lock screen
+        Lock
       </message>
       <message name="IDS_ASH_POWER_BUTTON_MENU_FEEDBACK_BUTTON" desc="Text shown on feedback button in power button menu.">
         Feedback
