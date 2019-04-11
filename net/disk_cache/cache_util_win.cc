@@ -18,7 +18,7 @@ bool MoveCache(const base::FilePath& from_path, const base::FilePath& to_path) {
   // wrong, that version will attempt to move file by file and fail at the end.
   if (!MoveFileEx(base::as_wcstr(from_path.value()),
                   base::as_wcstr(to_path.value()), 0)) {
-    LOG(ERROR) << "Unable to move the cache: " << GetLastError();
+    PLOG(ERROR) << "Unable to move the cache";
     return false;
   }
   return true;
