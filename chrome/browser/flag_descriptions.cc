@@ -3320,6 +3320,12 @@ const char kSingleProcessMashDescription[] =
     "Runs the system UI (ash) as a mojo service, but inside the browser "
     "process. The browser uses the mojo window service (ws) APIs.";
 
+const char kMojoImfName[] = "Mojo-based IMF to bridge the client and IME";
+const char kMojoImfDescription[] =
+    "Makes the system UI (ash) as the bridge between the client and the IME via"
+    " mojo APIs. This can only take effect if the flag \"single-process-masn\" "
+    "is enabled.";
+
 const char kSmartTextSelectionName[] = "Smart Text Selection";
 const char kSmartTextSelectionDescription[] =
     "Shows quick actions for text "

@@ -32035,6 +32035,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
       label="AutofillCreditCardLastUsedDateDisplay:enabled"/>
   <int value="-2080504230" label="TabHoverCards:disabled"/>
   <int value="-2077268643" label="disable-device-enumeration"/>
+  <int value="-2076250656" label="MojoIMF:enabled"/>
   <int value="-2075870708" label="MediaRemotingEncrypted:disabled"/>
   <int value="-2075807193" label="enable-webusb-on-any-origin"/>
   <int value="-2075725205" label="disable-new-zip-unpacker"/>
@@ -32176,6 +32177,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1892555086" label="disable-compositor-animation-timelines"/>
   <int value="-1892000374" label="SeccompSandboxAndroid:enabled"/>
   <int value="-1890374564" label="OobeRecommendAppsScreen:disabled"/>
+  <int value="-1890060129" label="MojoIMF:disabled"/>
   <int value="-1888273969" label="tab-capture-upscale-quality"/>
   <int value="-1887862464" label="SpannableInlineAutocomplete:disabled"/>
   <int value="-1887053262"
