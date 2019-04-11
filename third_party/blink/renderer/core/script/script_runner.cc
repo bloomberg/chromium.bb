@@ -238,7 +238,7 @@ bool ScriptRunner::ExecuteAsyncTask() {
 void ScriptRunner::ExecuteTask() {
   // This method is triggered by ScriptRunner::PostTask, and runs directly from
   // the scheduler. So, the call stack is safe to reenter.
-  scheduler::CooperativeSchedulingManager::WhitelistedStackScope
+  scheduler::CooperativeSchedulingManager::AllowedStackScope
       whitelisted_stack_scope(
           scheduler::CooperativeSchedulingManager::Instance());
 
