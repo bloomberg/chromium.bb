@@ -186,7 +186,8 @@ bool IsBlockingEvent(const blink::WebInputEvent& web_input_event) {
 MainThreadSchedulerImpl::MainThreadSchedulerImpl(
     std::unique_ptr<base::sequence_manager::SequenceManager> sequence_manager,
     base::Optional<base::Time> initial_virtual_time)
-    : helper_(std::move(sequence_manager), this),
+    : sequence_manager_(std::move(sequence_manager)),
+      helper_(sequence_manager_.get(), this),
       idle_helper_(&helper_,
                    this,
                    "MainThreadSchedulerIdlePeriod",
@@ -622,6 +623,7 @@ void MainThreadSchedulerImpl::Shutdown() {
   task_queue_throttler_.reset();
   idle_helper_.Shutdown();
   helper_.Shutdown();
+  sequence_manager_.reset();
   main_thread_only().rail_mode_observers.Clear();
   was_shutdown_ = true;
 }

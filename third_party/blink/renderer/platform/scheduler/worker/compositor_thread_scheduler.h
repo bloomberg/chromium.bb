@@ -23,8 +23,7 @@ class PLATFORM_EXPORT CompositorThreadScheduler
       public SingleThreadIdleTaskRunner::Delegate {
  public:
   explicit CompositorThreadScheduler(
-      std::unique_ptr<base::sequence_manager::SequenceManager>
-          sequence_manager);
+      base::sequence_manager::SequenceManager* sequence_manager);
 
   ~CompositorThreadScheduler() override;
 

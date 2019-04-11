@@ -55,14 +55,11 @@ class SchedulerHelperTest : public testing::Test {
             base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED) {
     // Null clock triggers some assertions.
     task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(5));
-    std::unique_ptr<base::sequence_manager::SequenceManagerForTest>
-        sequence_manager =
-            base::sequence_manager::SequenceManagerForTest::Create(
-                nullptr, task_environment_.GetMainThreadTaskRunner(),
-                task_environment_.GetMockTickClock());
-    sequence_manager_ = sequence_manager.get();
+    sequence_manager_ = base::sequence_manager::SequenceManagerForTest::Create(
+        nullptr, task_environment_.GetMainThreadTaskRunner(),
+        task_environment_.GetMockTickClock());
     scheduler_helper_ = std::make_unique<NonMainThreadSchedulerHelper>(
-        std::move(sequence_manager), nullptr, TaskType::kInternalTest);
+        sequence_manager_.get(), nullptr, TaskType::kInternalTest);
     default_task_runner_ = scheduler_helper_->DefaultTaskRunner();
   }
 
@@ -86,9 +83,9 @@ class SchedulerHelperTest : public testing::Test {
 
  protected:
   base::test::ScopedTaskEnvironment task_environment_;
+  std::unique_ptr<base::sequence_manager::SequenceManagerForTest>
+      sequence_manager_;
   std::unique_ptr<NonMainThreadSchedulerHelper> scheduler_helper_;
-  base::sequence_manager::SequenceManagerForTest*
-      sequence_manager_;  // Owned by scheduler_helper.
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(SchedulerHelperTest);

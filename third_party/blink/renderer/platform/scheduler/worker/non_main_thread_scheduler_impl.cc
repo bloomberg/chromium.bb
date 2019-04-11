@@ -14,23 +14,19 @@ namespace blink {
 namespace scheduler {
 
 NonMainThreadSchedulerImpl::NonMainThreadSchedulerImpl(
-    std::unique_ptr<base::sequence_manager::SequenceManager> manager,
+    base::sequence_manager::SequenceManager* manager,
     TaskType default_task_type)
-    : helper_(std::move(manager), this, default_task_type) {}
+    : helper_(manager, this, default_task_type) {}
 
 NonMainThreadSchedulerImpl::~NonMainThreadSchedulerImpl() = default;
 
 // static
 std::unique_ptr<NonMainThreadSchedulerImpl> NonMainThreadSchedulerImpl::Create(
     WebThreadType thread_type,
+    base::sequence_manager::SequenceManager* sequence_manager,
     WorkerSchedulerProxy* proxy) {
-  return std::make_unique<WorkerThreadScheduler>(
-      thread_type,
-      base::sequence_manager::CreateSequenceManagerOnCurrentThread(
-          base::sequence_manager::SequenceManager::Settings{
-              base::MessageLoop::TYPE_DEFAULT,
-              /*randomised_sampling_enabled=*/true}),
-      proxy);
+  return std::make_unique<WorkerThreadScheduler>(thread_type, sequence_manager,
+                                                 proxy);
 }
 
 void NonMainThreadSchedulerImpl::Init() {

@@ -14,10 +14,14 @@ namespace scheduler {
 
 class MainThreadSchedulerImpl;
 
+// TODO(carlscab): This class is not really needed and should be removed
 class PLATFORM_EXPORT MainThreadSchedulerHelper : public SchedulerHelper {
  public:
+  // |sequence_manager| must remain valid until Shutdown() is called or the
+  // object is destroyed. |main_thread_scheduler| must remain valid for the
+  // entire lifetime of this object.
   MainThreadSchedulerHelper(
-      std::unique_ptr<base::sequence_manager::SequenceManager> sequence_manager,
+      base::sequence_manager::SequenceManager* sequence_manager,
       MainThreadSchedulerImpl* main_thread_scheduler);
   ~MainThreadSchedulerHelper() override;
 

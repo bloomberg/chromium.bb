@@ -58,7 +58,13 @@ WorkerThread::~WorkerThread() {
 void WorkerThread::InitOnThread(base::WaitableEvent* completion) {
   // TODO(alexclarke): Do we need to unify virtual time for workers and the
   // main thread?
-  non_main_thread_scheduler_ = CreateNonMainThreadScheduler();
+  sequence_manager_ =
+      base::sequence_manager::CreateSequenceManagerOnCurrentThread(
+          base::sequence_manager::SequenceManager::Settings{
+              base::MessageLoop::TYPE_DEFAULT,
+              /*randomised_sampling_enabled=*/true});
+  non_main_thread_scheduler_ =
+      CreateNonMainThreadScheduler(sequence_manager_.get());
   non_main_thread_scheduler_->Init();
   task_queue_ = non_main_thread_scheduler_->DefaultTaskQueue();
   task_runner_ =
@@ -73,14 +79,16 @@ void WorkerThread::ShutdownOnThread(base::WaitableEvent* completion) {
   task_queue_ = nullptr;
   task_runner_ = nullptr;
   non_main_thread_scheduler_ = nullptr;
+  sequence_manager_.reset();
 
   if (completion)
     completion->Signal();
 }
 
 std::unique_ptr<NonMainThreadSchedulerImpl>
-WorkerThread::CreateNonMainThreadScheduler() {
-  return NonMainThreadSchedulerImpl::Create(thread_type_,
+WorkerThread::CreateNonMainThreadScheduler(
+    base::sequence_manager::SequenceManager* sequence_manager) {
+  return NonMainThreadSchedulerImpl::Create(thread_type_, sequence_manager,
                                             worker_scheduler_proxy_.get());
 }
 
