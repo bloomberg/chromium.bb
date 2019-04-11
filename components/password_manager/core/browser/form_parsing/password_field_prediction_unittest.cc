@@ -36,6 +36,16 @@ namespace password_manager {
 
 namespace {
 
+const PasswordFieldPrediction* FindFormPrediction(
+    const FormPredictions& predictions,
+    uint32_t renderer_id) {
+  for (const PasswordFieldPrediction& prediction : predictions) {
+    if (prediction.renderer_id == renderer_id)
+      return &prediction;
+  }
+  return nullptr;
+}
+
 TEST(FormPredictionsTest, ConvertToFormPredictions) {
   struct TestField {
     std::string name;
@@ -85,14 +95,15 @@ TEST(FormPredictionsTest, ConvertToFormPredictions) {
 
   for (size_t i = 0; i < base::size(test_fields); ++i) {
     uint32_t unique_renderer_id = form_data.fields[i].unique_renderer_id;
-    auto it = actual_predictions.find(unique_renderer_id);
+    const PasswordFieldPrediction* actual_prediction =
+        FindFormPrediction(actual_predictions, unique_renderer_id);
     if (test_fields[i].expected_type == UNKNOWN_TYPE) {
-      EXPECT_EQ(actual_predictions.end(), it);
+      EXPECT_FALSE(actual_prediction);
     } else {
-      ASSERT_NE(actual_predictions.end(), it);
-      EXPECT_EQ(test_fields[i].expected_type, it->second.type);
+      ASSERT_TRUE(actual_prediction);
+      EXPECT_EQ(test_fields[i].expected_type, actual_prediction->type);
       EXPECT_EQ(test_fields[i].may_use_prefilled_placeholder,
-                it->second.may_use_prefilled_placeholder);
+                actual_prediction->may_use_prefilled_placeholder);
     }
   }
 }
@@ -155,9 +166,10 @@ TEST(FormPredictionsTest, ConvertToFormPredictions_SynthesiseConfirmation) {
                    << ", input type=" << test_form[i].input_type
                    << ", expected type=" << test_form[i].expected_type
                    << ", synthesised FormFieldData=" << form_data.fields[i]);
-      auto it = actual_predictions.find(form_data.fields[i].unique_renderer_id);
-      ASSERT_NE(actual_predictions.end(), it);
-      EXPECT_EQ(test_form[i].expected_type, it->second.type);
+      const PasswordFieldPrediction* actual_prediction = FindFormPrediction(
+          actual_predictions, form_data.fields[i].unique_renderer_id);
+      ASSERT_TRUE(actual_prediction);
+      EXPECT_EQ(test_form[i].expected_type, actual_prediction->type);
     }
   }
 }

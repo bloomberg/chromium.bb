@@ -174,8 +174,8 @@ FormData GetFormDataAndExpectation(const FormParsingTestCase& test_case,
   form_data.submission_event = test_case.submission_event;
   for (const FieldDataDescription& field_description : test_case.fields) {
     FormFieldData field;
-    const uint32_t unique_id = GetUniqueId();
-    field.unique_renderer_id = unique_id;
+    const uint32_t renderer_id = GetUniqueId();
+    field.unique_renderer_id = renderer_id;
     field.id_attribute = StampUniqueSuffix("html_id");
     if (field_description.name == kNonimportantValue) {
       field.name = StampUniqueSuffix("html_name");
@@ -199,16 +199,19 @@ FormData GetFormDataAndExpectation(const FormParsingTestCase& test_case,
       field.typed_value = ASCIIToUTF16(field_description.typed_value);
     form_data.fields.push_back(field);
     if (field_description.role == ElementRole::NONE) {
-      UpdateResultWithIdByRole(fill_result, unique_id,
+      UpdateResultWithIdByRole(fill_result, renderer_id,
                                field_description.role_filling);
-      UpdateResultWithIdByRole(save_result, unique_id,
+      UpdateResultWithIdByRole(save_result, renderer_id,
                                field_description.role_saving);
     } else {
-      UpdateResultWithIdByRole(fill_result, unique_id, field_description.role);
-      UpdateResultWithIdByRole(save_result, unique_id, field_description.role);
+      UpdateResultWithIdByRole(fill_result, renderer_id,
+                               field_description.role);
+      UpdateResultWithIdByRole(save_result, renderer_id,
+                               field_description.role);
     }
     if (field_description.prediction.type != autofill::MAX_VALID_FIELD_TYPE) {
-      (*predictions)[unique_id] = field_description.prediction;
+      predictions->push_back(field_description.prediction);
+      predictions->back().renderer_id = renderer_id;
     }
     if (field_description.predicted_username >= 0) {
       size_t index = static_cast<size_t>(field_description.predicted_username);

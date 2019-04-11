@@ -6,7 +6,7 @@
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_FORM_PARSING_PASSWORD_FIELD_PREDICTION_H_
 
 #include <stdint.h>
-#include <map>
+#include <vector>
 
 #include "components/autofill/core/browser/field_types.h"
 
@@ -30,13 +30,14 @@ CredentialFieldType DeriveFromServerFieldType(autofill::ServerFieldType type);
 
 // Contains server predictions for a field.
 struct PasswordFieldPrediction {
+  uint32_t renderer_id;
   autofill::ServerFieldType type;
   bool may_use_prefilled_placeholder = false;
 };
 
 // Contains server predictions for a form. Keys are unique renderer ids of
 // fields.
-using FormPredictions = std::map<uint32_t, PasswordFieldPrediction>;
+using FormPredictions = std::vector<PasswordFieldPrediction>;
 
 // Extracts all password related server predictions from |form_structure|.
 FormPredictions ConvertToFormPredictions(
