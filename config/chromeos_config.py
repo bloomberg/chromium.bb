@@ -8,7 +8,6 @@
 from __future__ import print_function
 
 import copy
-import os
 import re
 
 from chromite.lib import config_lib
@@ -1163,8 +1162,8 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
             'chromeos-base/chromeos-chrome',
             'virtual/linux-sources'
         ],
-        # Weekly on Mon 5 PM UTC, aka 9 AM PST
-        schedule='0 0 17 * * 1 *',
+        # Weekly on Sunday 1 AM UTC
+        schedule='0 0 1 * * 0 *',
     )
   # Create three PGO profile collecting builders.
   PGOBuilders('amd64', 'eve')
