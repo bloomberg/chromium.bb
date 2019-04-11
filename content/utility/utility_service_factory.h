@@ -29,9 +29,6 @@ class UtilityServiceFactory {
       mojo::PendingReceiver<service_manager::mojom::Service> receiver);
 
  private:
-  void RunNetworkServiceOnIOThread(
-      service_manager::mojom::ServiceRequest service_request,
-      scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner);
   std::unique_ptr<service_manager::Service> CreateAudioService(
       service_manager::mojom::ServiceRequest request);
 

@@ -105,6 +105,26 @@ class ContentCdmServiceClient final : public media::CdmService::Client {
 
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
+void RunNetworkServiceOnIOThread(
+    service_manager::mojom::ServiceRequest service_request,
+    std::unique_ptr<service_manager::BinderRegistry> network_registry,
+    scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner) {
+  auto service = std::make_unique<network::NetworkService>(
+      std::move(network_registry), nullptr /* request */, nullptr /* net_log */,
+      std::move(service_request), true);
+
+  // Transfer ownership of the service to itself, and have it post to the main
+  // thread on self-termination to kill the process.
+  auto* raw_service = service.get();
+  raw_service->set_termination_closure(base::BindOnce(
+      [](std::unique_ptr<network::NetworkService> service,
+         scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner) {
+        main_thread_task_runner->PostTask(
+            FROM_HERE, base::BindOnce(&TerminateThisProcess));
+      },
+      std::move(service), std::move(main_thread_task_runner)));
+}
+
 }  // namespace
 
 UtilityServiceFactory::UtilityServiceFactory()
@@ -146,8 +166,8 @@ void UtilityServiceFactory::RunService(
         network_registry_.get());
     ChildProcess::current()->io_task_runner()->PostTask(
         FROM_HERE,
-        base::BindOnce(&UtilityServiceFactory::RunNetworkServiceOnIOThread,
-                       base::Unretained(this), std::move(request),
+        base::BindOnce(&RunNetworkServiceOnIOThread, std::move(request),
+                       std::move(network_registry_),
                        base::SequencedTaskRunnerHandle::Get()));
     return;
   } else if (service_name == video_capture::mojom::kServiceName) {
@@ -182,25 +202,6 @@ void UtilityServiceFactory::RunService(
       static_cast<UtilityThreadImpl*>(UtilityThread::Get());
   utility_thread->Shutdown();
   utility_thread->ReleaseProcess();
-}
-
-void UtilityServiceFactory::RunNetworkServiceOnIOThread(
-    service_manager::mojom::ServiceRequest service_request,
-    scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner) {
-  auto service = std::make_unique<network::NetworkService>(
-      std::move(network_registry_), nullptr /* request */,
-      nullptr /* net_log */, std::move(service_request), true);
-
-  // Transfer ownership of the service to itself, and have it post to the main
-  // thread on self-termination to kill the process.
-  auto* raw_service = service.get();
-  raw_service->set_termination_closure(base::BindOnce(
-      [](std::unique_ptr<network::NetworkService> service,
-         scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner) {
-        main_thread_task_runner->PostTask(
-            FROM_HERE, base::BindOnce(&TerminateThisProcess));
-      },
-      std::move(service), std::move(main_thread_task_runner)));
 }
 
 std::unique_ptr<service_manager::Service>
