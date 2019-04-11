@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.touchless;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -64,6 +65,22 @@ class SiteSuggestionsCoordinator {
                 adapter = new RecyclerViewAdapter<>(
                         adapterDelegate, new SiteSuggestionsViewHolderFactory());
 
+        // Add spacing because tile margins get swallowed/overridden somehow.
+        // TODO(chili): use layout margin.
+        recyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
+            @Override
+            public void getItemOffsets(
+                    Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+                outRect.bottom = context.getResources().getDimensionPixelSize(
+                        R.dimen.most_likely_carousel_edge_spacer);
+                outRect.left = context.getResources().getDimensionPixelSize(
+                        R.dimen.most_likely_tile_horizontal_spacer);
+                outRect.right = context.getResources().getDimensionPixelSize(
+                        R.dimen.most_likely_tile_horizontal_spacer);
+                outRect.top = context.getResources().getDimensionPixelSize(
+                        R.dimen.most_likely_carousel_edge_spacer);
+            }
+        });
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
 

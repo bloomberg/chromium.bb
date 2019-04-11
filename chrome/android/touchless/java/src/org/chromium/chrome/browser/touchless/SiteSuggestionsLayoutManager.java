@@ -27,7 +27,7 @@ class SiteSuggestionsLayoutManager extends LinearLayoutManager {
             int position = getPosition(child);
             // Calculates the offset for the child's left edge such that the child would be
             // perfectly centered in the view.
-            int childHalfWidth = child.getWidth() / 2;
+            int childHalfWidth = child.getWidth() / 2 + getLeftDecorationWidth(child);
             int offset = parent.getWidth() / 2 - childHalfWidth;
             // Scroll to child with calculated offset.
             scrollToPositionWithOffset(position, offset);
