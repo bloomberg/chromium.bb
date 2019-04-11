@@ -211,8 +211,8 @@ HEADLESS_PROTOCOL_TEST(VirtualTimeBasics, "emulation/virtual-time-basics.js")
 HEADLESS_PROTOCOL_TEST(VirtualTimeInterrupt,
                        "emulation/virtual-time-interrupt.js")
 
-// Flaky on Linux. TODO(crbug.com/930717): Re-enable.
-#if defined(OS_LINUX)
+// Flaky on Linux & Mac. TODO(crbug.com/930717): Re-enable.
+#if defined(OS_LINUX) || defined(OS_MACOSX)
 #define MAYBE_VirtualTimeCrossProcessNavigation \
   DISABLED_VirtualTimeCrossProcessNavigation
 #else
