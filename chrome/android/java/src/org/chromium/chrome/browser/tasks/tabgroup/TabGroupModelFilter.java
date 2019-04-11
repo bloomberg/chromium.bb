@@ -134,6 +134,7 @@ public class TabGroupModelFilter extends TabModelFilter {
 
         int groupId = tab.getRootId();
         TabGroup group = mGroupIdToGroupMap.get(groupId);
+        if (group == null) return super.getRelatedTabList(TabModel.INVALID_TAB_INDEX);
         return getRelatedTabList(group.getTabIdList());
     }
 
