@@ -68,8 +68,8 @@ constexpr ProviderNamesSourceMapEntry kProviderNamesSourceMap[] = {
     {"policy", content_settings::SETTING_SOURCE_POLICY},
     {"supervised_user", content_settings::SETTING_SOURCE_SUPERVISED},
     {"extension", content_settings::SETTING_SOURCE_EXTENSION},
-    // TODO(peconn): Create a SETTING_SOURCE_WEBAPP.
-    {"installed_webapp_provider", content_settings::SETTING_SOURCE_POLICY},
+    {"installed_webapp_provider",
+      content_settings::SETTING_SOURCE_INSTALLED_WEBAPP},
     {"notification_android", content_settings::SETTING_SOURCE_USER},
     {"ephemeral", content_settings::SETTING_SOURCE_USER},
     {"preference", content_settings::SETTING_SOURCE_USER},
