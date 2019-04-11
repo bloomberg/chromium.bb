@@ -11,21 +11,21 @@
 namespace blink {
 namespace scheduler {
 
-TEST(CooperativeSchedulingManager, WhitelistedStackScope) {
+TEST(CooperativeSchedulingManager, AllowedStackScope) {
   std::unique_ptr<CooperativeSchedulingManager> manager =
       std::make_unique<CooperativeSchedulingManager>();
   {
-    EXPECT_FALSE(manager->InWhitelistedStackScope());
-    CooperativeSchedulingManager::WhitelistedStackScope scope(manager.get());
-    EXPECT_TRUE(manager->InWhitelistedStackScope());
+    EXPECT_FALSE(manager->InAllowedStackScope());
+    CooperativeSchedulingManager::AllowedStackScope scope(manager.get());
+    EXPECT_TRUE(manager->InAllowedStackScope());
     {
-      CooperativeSchedulingManager::WhitelistedStackScope nested_scope(
+      CooperativeSchedulingManager::AllowedStackScope nested_scope(
           manager.get());
-      EXPECT_TRUE(manager->InWhitelistedStackScope());
+      EXPECT_TRUE(manager->InAllowedStackScope());
     }
-    EXPECT_TRUE(manager->InWhitelistedStackScope());
+    EXPECT_TRUE(manager->InAllowedStackScope());
   }
-  EXPECT_FALSE(manager->InWhitelistedStackScope());
+  EXPECT_FALSE(manager->InAllowedStackScope());
 }
 
 class MockCooperativeSchedulingManager : public CooperativeSchedulingManager {
@@ -45,14 +45,14 @@ TEST(CooperativeSchedulingManager, SafePoint) {
     std::unique_ptr<MockCooperativeSchedulingManager> manager =
         std::make_unique<MockCooperativeSchedulingManager>();
     EXPECT_CALL(*manager, RunNestedLoop()).Times(0);
-    // Should not run nested loop because stack is not whitelisted
+    // Should not run nested loop since there is no AllowedStackScope instance.
     manager->Safepoint();
   }
   {
     WTF::ScopedMockClock clock;
     std::unique_ptr<MockCooperativeSchedulingManager> manager =
         std::make_unique<MockCooperativeSchedulingManager>();
-    CooperativeSchedulingManager::WhitelistedStackScope scope(manager.get());
+    CooperativeSchedulingManager::AllowedStackScope scope(manager.get());
     EXPECT_CALL(*manager, RunNestedLoop()).Times(2);
     // Should run nested loop
     manager->Safepoint();

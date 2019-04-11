@@ -27,30 +27,31 @@ CooperativeSchedulingManager* CooperativeSchedulingManager::Instance() {
   return &(*manager);
 }
 
-CooperativeSchedulingManager::WhitelistedStackScope::WhitelistedStackScope(
-    CooperativeSchedulingManager* manager) {
-  cooperative_scheduling_manager_ = manager;
-  cooperative_scheduling_manager_->EnterWhitelistedStackScope();
+CooperativeSchedulingManager::AllowedStackScope::AllowedStackScope(
+    CooperativeSchedulingManager* manager)
+    : cooperative_scheduling_manager_(manager) {
+  DCHECK(cooperative_scheduling_manager_);
+  cooperative_scheduling_manager_->EnterAllowedStackScope();
 }
 
-CooperativeSchedulingManager::WhitelistedStackScope::~WhitelistedStackScope() {
-  cooperative_scheduling_manager_->LeaveWhitelistedStackScope();
+CooperativeSchedulingManager::AllowedStackScope::~AllowedStackScope() {
+  cooperative_scheduling_manager_->LeaveAllowedStackScope();
 }
 
 CooperativeSchedulingManager::CooperativeSchedulingManager() {}
 
-void CooperativeSchedulingManager::EnterWhitelistedStackScope() {
-  TRACE_EVENT_ASYNC_BEGIN0("renderer.scheduler",
-                           "PreemptionWhitelistedStackScope", this);
+void CooperativeSchedulingManager::EnterAllowedStackScope() {
+  TRACE_EVENT_ASYNC_BEGIN0("renderer.scheduler", "PreemptionAllowedStackScope",
+                           this);
 
-  whitelisted_stack_scope_depth_++;
+  allowed_stack_scope_depth_++;
 }
 
-void CooperativeSchedulingManager::LeaveWhitelistedStackScope() {
-  TRACE_EVENT_ASYNC_END0("renderer.scheduler",
-                         "PreemptionWhitelistedStackScope", this);
-  whitelisted_stack_scope_depth_--;
-  DCHECK_GE(whitelisted_stack_scope_depth_, 0);
+void CooperativeSchedulingManager::LeaveAllowedStackScope() {
+  TRACE_EVENT_ASYNC_END0("renderer.scheduler", "PreemptionAllowedStackScope",
+                         this);
+  allowed_stack_scope_depth_--;
+  DCHECK_GE(allowed_stack_scope_depth_, 0);
 }
 
 void CooperativeSchedulingManager::SafepointSlow() {
