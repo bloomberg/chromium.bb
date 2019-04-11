@@ -18,6 +18,7 @@
 #include "android_webview/common/url_constants.h"
 #include "base/android/build_info.h"
 #include "base/bind.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "components/safe_browsing/common/safebrowsing_constants.h"
@@ -133,6 +134,7 @@ class InterceptedRequest : public network::mojom::URLLoader,
   int error_status_ = net::OK;
 
   network::ResourceRequest request_;
+
   const net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
 
   mojo::Binding<network::mojom::URLLoader> proxied_loader_binding_;
@@ -521,7 +523,6 @@ void InterceptedRequest::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
     const network::ResourceResponseHead& head) {
   // TODO(timvolodine): handle redirect override.
-  // TODO(timvolodine): handle unsafe redirect case.
   request_was_redirected_ = true;
   target_client_->OnReceiveRedirect(redirect_info, head);
   request_.url = redirect_info.new_url;
@@ -623,8 +624,17 @@ void InterceptedRequest::OnURLLoaderClientError() {
 
 void InterceptedRequest::OnURLLoaderError(uint32_t custom_reason,
                                           const std::string& description) {
-  if (custom_reason == network::mojom::URLLoader::kClientDisconnectReason)
-    SendErrorCallback(safe_browsing::GetNetErrorCodeForSafeBrowsing(), true);
+  if (custom_reason == network::mojom::URLLoader::kClientDisconnectReason) {
+    if (description == safe_browsing::kCustomCancelReasonForURLLoader) {
+      SendErrorCallback(safe_browsing::GetNetErrorCodeForSafeBrowsing(), true);
+    } else {
+      int parsed_error_code;
+      if (base::StringToInt(base::StringPiece(description),
+                            &parsed_error_code)) {
+        SendErrorCallback(parsed_error_code, false);
+      }
+    }
+  }
 
   // If CallOnComplete was already called, then this object is ready to be
   // deleted.

@@ -1032,7 +1032,11 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // receiving unexpected call.
     if (head.headers &&
         head.headers->response_code() == net::HTTP_NOT_MODIFIED) {
-      OnComplete(network::URLLoaderCompletionStatus(net::ERR_ABORTED));
+      // Call CancelWithError instead of OnComplete so that if there is an
+      // intercepting URLLoaderFactory it gets notified.
+      url_loader_->CancelWithError(
+          net::ERR_ABORTED,
+          base::StringPiece(base::NumberToString(net::ERR_ABORTED)));
       return;
     }
 
@@ -1168,13 +1172,21 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
         !bypass_redirect_checks_ &&
         !IsRedirectSafe(url_, redirect_info.new_url, resource_context_)) {
-      OnComplete(network::URLLoaderCompletionStatus(net::ERR_UNSAFE_REDIRECT));
+      // Call CancelWithError instead of OnComplete so that if there is an
+      // intercepting URLLoaderFactory (created through the embedder's
+      // ContentBrowserClient::WillCreateURLLoaderFactory) it gets notified.
+      url_loader_->CancelWithError(
+          net::ERR_UNSAFE_REDIRECT,
+          base::StringPiece(base::NumberToString(net::ERR_UNSAFE_REDIRECT)));
       return;
     }
 
     if (--redirect_limit_ == 0) {
-      OnComplete(
-          network::URLLoaderCompletionStatus(net::ERR_TOO_MANY_REDIRECTS));
+      // Call CancelWithError instead of OnComplete so that if there is an
+      // intercepting URLLoaderFactory it gets notified.
+      url_loader_->CancelWithError(
+          net::ERR_TOO_MANY_REDIRECTS,
+          base::StringPiece(base::NumberToString(net::ERR_TOO_MANY_REDIRECTS)));
       return;
     }
 
