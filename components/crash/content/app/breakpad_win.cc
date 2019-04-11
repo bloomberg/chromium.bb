@@ -372,9 +372,6 @@ extern "C" void __declspec(dllexport) TerminateProcessWithoutDump() {
 // Crashes the process after generating a dump for the provided exception. Note
 // that the crash reporter should be initialized before calling this function
 // for it to do anything.
-// NOTE: This function is used by SyzyASAN to invoke a crash. If you change the
-// the name or signature of this function you will break SyzyASAN instrumented
-// releases of Chrome. Please contact syzygy-team@chromium.org before doing so!
 extern "C" int __declspec(dllexport) CrashForException(
     EXCEPTION_POINTERS* info) {
   if (g_breakpad) {
