@@ -38,6 +38,9 @@ class MenuModel;
 //
 class AuthenticatorRequestSheetModel {
  public:
+  // Indicates what style to pick for the step illustration.
+  enum class ImageColorScheme { kDark, kLight };
+
   virtual ~AuthenticatorRequestSheetModel() {}
 
   virtual bool IsActivityIndicatorVisible() const = 0;
@@ -50,7 +53,8 @@ class AuthenticatorRequestSheetModel {
   virtual bool IsAcceptButtonEnabled() const = 0;
   virtual base::string16 GetAcceptButtonLabel() const = 0;
 
-  virtual gfx::ImageSkia* GetStepIllustration() const = 0;
+  virtual gfx::ImageSkia* GetStepIllustration(
+      ImageColorScheme color_scheme) const = 0;
   virtual base::string16 GetStepTitle() const = 0;
   virtual base::string16 GetStepDescription() const = 0;
 

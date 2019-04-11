@@ -14,6 +14,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/label.h"
@@ -32,13 +33,17 @@ constexpr SkColor kActivityIndicateFgColor = SkColorSetRGB(0xf2, 0x99, 0x00);
 constexpr SkColor kActivityIndicateBkColor = SkColorSetRGB(0xf6, 0xe6, 0xc8);
 constexpr int kActivityIndicatorHeight = 4;
 
+using ImageColorScheme = AuthenticatorRequestSheetModel::ImageColorScheme;
+
 }  // namespace
 
 using views::BoxLayout;
 
 AuthenticatorRequestSheetView::AuthenticatorRequestSheetView(
     std::unique_ptr<AuthenticatorRequestSheetModel> model)
-    : model_(std::move(model)) {}
+    : model_(std::move(model)),
+      in_dark_mode_(
+          ui::NativeTheme::GetInstanceForNativeUi()->SystemDarkModeEnabled()) {}
 
 AuthenticatorRequestSheetView::~AuthenticatorRequestSheetView() = default;
 
@@ -85,9 +90,11 @@ AuthenticatorRequestSheetView::CreateIllustrationWithOverlays() {
   image_with_overlays->SetPreferredSize(illustration_size);
 
   auto image_view = std::make_unique<NonAccessibleImageView>();
-  image_view->SetImage(model()->GetStepIllustration());
+  image_view->SetImage(model()->GetStepIllustration(
+      in_dark_mode_ ? ImageColorScheme::kDark : ImageColorScheme::kLight));
   image_view->SetPreferredSize(illustration_size);
   image_view->SizeToPreferredSize();
+  step_illustration_ = image_view.get();
   image_with_overlays->AddChildView(image_view.release());
 
   if (model()->IsActivityIndicatorVisible()) {
@@ -172,4 +179,16 @@ AuthenticatorRequestSheetView::CreateContentsBelowIllustration() {
   }
 
   return contents;
+}
+
+void AuthenticatorRequestSheetView::OnNativeThemeChanged(
+    const ui::NativeTheme* theme) {
+  if (theme != ui::NativeTheme::GetInstanceForNativeUi())
+    return;
+  bool in_dark_mode = theme->SystemDarkModeEnabled();
+  if (in_dark_mode == in_dark_mode_)
+    return;
+  in_dark_mode_ = in_dark_mode;
+  step_illustration_->SetImage(model_->GetStepIllustration(
+      in_dark_mode_ ? ImageColorScheme::kDark : ImageColorScheme::kLight));
 }

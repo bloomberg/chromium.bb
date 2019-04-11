@@ -308,19 +308,31 @@
       </if>
       <if expr="is_win or is_macosx or desktop_linux or chromeos">
         <structure type="chrome_scaled_image" name="IDR_WEBAUTHN_ILLUSTRATION_BLE" file="common/webauthn/ble.png" />
+        <structure type="chrome_scaled_image" name="IDR_WEBAUTHN_ILLUSTRATION_BLE_DARK" file="common/webauthn/ble_dark.png" />
         <structure type="chrome_scaled_image" name="IDR_WEBAUTHN_ILLUSTRATION_BLE_NAME" file="common/webauthn/ble_name.png" />
+        <structure type="chrome_scaled_image" name="IDR_WEBAUTHN_ILLUSTRATION_BLE_NAME_DARK" file="common/webauthn/ble_name_dark.png" />
         <structure type="chrome_scaled_image" name="IDR_WEBAUTHN_ILLUSTRATION_BLE_TAP" file="common/webauthn/ble_tap.png" />
+        <structure type="chrome_scaled_image" name="IDR_WEBAUTHN_ILLUSTRATION_BLE_TAP_DARK" file="common/webauthn/ble_tap_dark.png" />
         <structure type="chrome_scaled_image" name="IDR_WEBAUTHN_ILLUSTRATION_BLE_PIN" file="common/webauthn/ble_pin.png" />
+        <structure type="chrome_scaled_image" name="IDR_WEBAUTHN_ILLUSTRATION_BLE_PIN_DARK" file="common/webauthn/ble_pin_dark.png" />
         <structure type="chrome_scaled_image" name="IDR_WEBAUTHN_ILLUSTRATION_ERROR_BLUETOOTH" file="common/webauthn/error_bt.png" />
+        <structure type="chrome_scaled_image" name="IDR_WEBAUTHN_ILLUSTRATION_ERROR_BLUETOOTH_DARK" file="common/webauthn/error_bt_dark.png" />
         <structure type="chrome_scaled_image" name="IDR_WEBAUTHN_ILLUSTRATION_ERROR" file="common/webauthn/error.png" />
+        <structure type="chrome_scaled_image" name="IDR_WEBAUTHN_ILLUSTRATION_ERROR_DARK" file="common/webauthn/error_dark.png" />
         <structure type="chrome_scaled_image" name="IDR_WEBAUTHN_ILLUSTRATION_PHONE" file="common/webauthn/phone.png" />
+        <structure type="chrome_scaled_image" name="IDR_WEBAUTHN_ILLUSTRATION_PHONE_DARK" file="common/webauthn/phone_dark.png" />
         <structure type="chrome_scaled_image" name="IDR_WEBAUTHN_ILLUSTRATION_USB" file="common/webauthn/usb.png" />
+        <structure type="chrome_scaled_image" name="IDR_WEBAUTHN_ILLUSTRATION_USB_DARK" file="common/webauthn/usb_dark.png" />
         <structure type="chrome_scaled_image" name="IDR_WEBAUTHN_ILLUSTRATION_WELCOME" file="common/webauthn/welcome.png" />
+        <structure type="chrome_scaled_image" name="IDR_WEBAUTHN_ILLUSTRATION_WELCOME_DARK" file="common/webauthn/welcome_dark.png" />
         <structure type="chrome_scaled_image" name="IDR_WEBAUTHN_ILLUSTRATION_PIN" file="common/webauthn/usb.png" />
+        <structure type="chrome_scaled_image" name="IDR_WEBAUTHN_ILLUSTRATION_PIN_DARK" file="common/webauthn/usb_dark.png" />
         <structure type="chrome_scaled_image" name="IDR_WEBAUTHN_ILLUSTRATION_PERMISSION" file="common/webauthn/permission.png" />
+        <structure type="chrome_scaled_image" name="IDR_WEBAUTHN_ILLUSTRATION_PERMISSION_DARK" file="common/webauthn/permission_dark.png" />
       </if>
       <if expr="is_macosx">
         <structure type="chrome_scaled_image" name="IDR_WEBAUTHN_ILLUSTRATION_TOUCHID" file="common/webauthn/touchid.png" />
+        <structure type="chrome_scaled_image" name="IDR_WEBAUTHN_ILLUSTRATION_TOUCHID_DARK" file="common/webauthn/touchid_dark.png" />
       </if>
     </structures>
   </release>
