@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/process/process_handle.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -41,8 +42,7 @@ BrowserDesktopWindowTreeHostWin::BrowserDesktopWindowTreeHostWin(
       browser_view_(browser_view),
       browser_frame_(browser_frame) {}
 
-BrowserDesktopWindowTreeHostWin::~BrowserDesktopWindowTreeHostWin() {
-}
+BrowserDesktopWindowTreeHostWin::~BrowserDesktopWindowTreeHostWin() {}
 
 views::NativeMenuWin* BrowserDesktopWindowTreeHostWin::GetSystemMenu() {
   if (!system_menu_.get()) {
@@ -73,6 +73,52 @@ bool BrowserDesktopWindowTreeHostWin::UsesNativeSystemMenu() const {
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserDesktopWindowTreeHostWin, views::DesktopWindowTreeHostWin overrides:
+
+void BrowserDesktopWindowTreeHostWin::Init(
+    const views::Widget::InitParams& params) {
+  DesktopWindowTreeHostWin::Init(params);
+  if (base::win::GetVersion() < base::win::VERSION_WIN10)
+    return;  // VirtualDesktopManager isn't support pre Win-10.
+
+  CHECK(SUCCEEDED(::CoCreateInstance(__uuidof(VirtualDesktopManager), nullptr,
+                                     CLSCTX_ALL,
+                                     IID_PPV_ARGS(&virtual_desktop_manager_))));
+
+  if (!params.workspace.empty()) {
+    GUID guid = GUID_NULL;
+    HRESULT hr =
+        CLSIDFromString(base::UTF8ToUTF16(params.workspace).c_str(), &guid);
+    if (SUCCEEDED(hr)) {
+      // There are valid reasons MoveWindowToDesktop can fail, e.g.,
+      // the desktop was deleted. If it fails, the window will open on the
+      // current desktop.
+      virtual_desktop_manager_->MoveWindowToDesktop(GetHWND(), guid);
+    }
+  }
+  // This will force the window to re-open in this desktop on restart.
+  // We always want to do this even if |params.workspace| is empty, to handle
+  // the case of new windows.
+  OnHostWorkspaceChanged();
+}
+
+std::string BrowserDesktopWindowTreeHostWin::GetWorkspace() const {
+  std::string workspace_id;
+  if (virtual_desktop_manager_) {
+    GUID workspace_guid;
+    HRESULT hr = virtual_desktop_manager_->GetWindowDesktopId(GetHWND(),
+                                                              &workspace_guid);
+    if (SUCCEEDED(hr)) {
+      LPOLESTR workspace_widestr;
+      StringFromCLSID(workspace_guid, &workspace_widestr);
+      workspace_id = base::WideToUTF8(workspace_widestr);
+      workspace_ = workspace_id;
+      CoTaskMemFree(workspace_widestr);
+    } else {
+      return workspace_.value_or("");
+    }
+  }
+  return workspace_id;
+}
 
 int BrowserDesktopWindowTreeHostWin::GetInitialShowState() const {
   STARTUPINFO si = {0};
@@ -195,6 +241,11 @@ void BrowserDesktopWindowTreeHostWin::PostHandleMSG(UINT message,
                                                     WPARAM w_param,
                                                     LPARAM l_param) {
   switch (message) {
+    case WM_ACTIVATE: {
+      if (workspace_.value_or("") != GetWorkspace())
+        OnHostWorkspaceChanged();
+      break;
+    };
     case WM_CREATE:
       minimize_button_metrics_.Init(GetHWND());
       break;
@@ -300,6 +351,5 @@ BrowserDesktopWindowTreeHost*
         BrowserFrame* browser_frame) {
   return new BrowserDesktopWindowTreeHostWin(native_widget_delegate,
                                              desktop_native_widget_aura,
-                                             browser_view,
-                                             browser_frame);
+                                             browser_view, browser_frame);
 }
