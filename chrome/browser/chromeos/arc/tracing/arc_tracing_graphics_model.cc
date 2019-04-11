@@ -36,10 +36,10 @@ constexpr char kKeyActivity[] = "activity";
 constexpr char kKeyAndroid[] = "android";
 constexpr char kKeyBuffers[] = "buffers";
 constexpr char kKeyChrome[] = "chrome";
-constexpr char kKeyCpu[] = "cpu";
 constexpr char kKeyDuration[] = "duration";
 constexpr char kKeyGlobalEvents[] = "global_events";
 constexpr char kKeyViews[] = "views";
+constexpr char kKeySystem[] = "system";
 constexpr char kKeyTaskId[] = "task_id";
 
 constexpr char kAcquireBufferQuery[] =
@@ -980,7 +980,7 @@ bool ArcTracingGraphicsModel::Build(const ArcTracingModel& common_model) {
     return false;
   }
 
-  cpu_model_.CopyFrom(common_model.cpu_model());
+  system_model_.CopyFrom(common_model.system_model());
 
   NormalizeTimestamps();
 
@@ -1012,11 +1012,16 @@ void ArcTracingGraphicsModel::NormalizeTimestamps() {
     }
   }
 
-  for (const auto& cpu_events : cpu_model_.all_cpu_events()) {
+  for (const auto& cpu_events : system_model_.all_cpu_events()) {
     if (!cpu_events.empty()) {
       min = std::min(min, cpu_events.front().timestamp);
       max = std::max(max, cpu_events.back().timestamp);
     }
+  }
+
+  if (!system_model_.memory_events().empty()) {
+    min = std::min(min, system_model_.memory_events().front().timestamp);
+    max = std::max(max, system_model_.memory_events().back().timestamp);
   }
 
   duration_ = max - min + 1;
@@ -1026,10 +1031,13 @@ void ArcTracingGraphicsModel::NormalizeTimestamps() {
       event.timestamp -= min;
   }
 
-  for (auto& cpu_events : cpu_model_.all_cpu_events()) {
+  for (auto& cpu_events : system_model_.all_cpu_events()) {
     for (auto& cpu_event : cpu_events)
       cpu_event.timestamp -= min;
   }
+
+  for (auto& memory_event : system_model_.memory_events())
+    memory_event.timestamp -= min;
 }
 
 void ArcTracingGraphicsModel::Reset() {
@@ -1037,7 +1045,7 @@ void ArcTracingGraphicsModel::Reset() {
   android_top_level_.Reset();
   view_buffers_.clear();
   chrome_buffer_id_to_task_id_.clear();
-  cpu_model_.Reset();
+  system_model_.Reset();
   duration_ = 0;
 }
 
@@ -1070,8 +1078,8 @@ std::unique_ptr<base::DictionaryValue> ArcTracingGraphicsModel::Serialize()
   // Chrome top events
   root->SetKey(kKeyChrome, SerializeEventsContainer(chrome_top_level_));
 
-  // CPU.
-  root->SetKey(kKeyCpu, cpu_model_.Serialize());
+  // System.
+  root->SetKey(kKeySystem, system_model_.Serialize());
 
   // Duration.
   root->SetKey(kKeyDuration, base::Value(static_cast<double>(duration_)));
@@ -1130,7 +1138,7 @@ bool ArcTracingGraphicsModel::LoadFromValue(const base::DictionaryValue& root) {
   if (!LoadEventsContainer(root.FindKey(kKeyChrome), &chrome_top_level_))
     return false;
 
-  if (!cpu_model_.Load(root.FindKey(kKeyCpu)))
+  if (!system_model_.Load(root.FindKey(kKeySystem)))
     return false;
 
   const base::Value* duration = root.FindKey(kKeyDuration);

@@ -78,6 +78,8 @@ bool AddCpuEvent(CpuEvents* cpu_events,
       break;
     case ArcCpuEvent::Type::kWakeUp:
       switch (type) {
+        case ArcCpuEvent::Type::kIdleIn:
+          break;
         case ArcCpuEvent::Type::kIdleOut:
           break;
         case ArcCpuEvent::Type::kWakeUp:

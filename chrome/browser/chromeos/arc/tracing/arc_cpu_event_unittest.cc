@@ -77,8 +77,7 @@ TEST_F(ArcCpuEventTest, Generic) {
   EXPECT_TRUE(
       CheckTrasition(Type::kIdleOut, idle_tid, Type::kActive, real_tid));
 
-  EXPECT_FALSE(
-      CheckTrasition(Type::kWakeUp, real_tid, Type::kIdleIn, idle_tid));
+  EXPECT_TRUE(CheckTrasition(Type::kWakeUp, real_tid, Type::kIdleIn, idle_tid));
   EXPECT_TRUE(
       CheckTrasition(Type::kWakeUp, real_tid, Type::kIdleOut, idle_tid));
   EXPECT_TRUE(CheckTrasition(Type::kWakeUp, real_tid, Type::kWakeUp, real_tid));

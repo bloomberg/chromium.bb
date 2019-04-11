@@ -683,9 +683,9 @@ class CpuDetailedInfoView extends DetailedInfoView {
     // Construct sub-model of active/idle events per each thread, active within
     // this interval.
     var eventsPerTid = {};
-    for (var cpuId = 0; cpuId < overviewBand.model.cpu.events.length; cpuId++) {
+    for (var cpuId = 0; cpuId < overviewBand.model.system.cpu.length; cpuId++) {
       var activeEvents = new Events(
-          overviewBand.model.cpu.events[cpuId], 3 /* kActive */,
+          overviewBand.model.system.cpu[cpuId], 3 /* kActive */,
           3 /* kActive */);
       var activeTid = 0;
       var index = activeEvents.getFirstAfter(minTimestamp);
@@ -715,7 +715,7 @@ class CpuDetailedInfoView extends DetailedInfoView {
     var totalTime = 0;
     for (var tid in eventsPerTid) {
       var thread = eventsPerTid[tid];
-      var pid = overviewBand.model.cpu.threads[tid].pid;
+      var pid = overviewBand.model.system.threads[tid].pid;
       if (!(pid in threadsPerPid)) {
         pids.push(pid);
         threadsPerPid[pid] = {};
@@ -750,8 +750,8 @@ class CpuDetailedInfoView extends DetailedInfoView {
       var pid = pids[i];
       var threads = threadsPerPid[pid].threads;
       var processName;
-      if (pid in overviewBand.model.cpu.threads) {
-        processName = overviewBand.model.cpu.threads[pid].name;
+      if (pid in overviewBand.model.system.threads) {
+        processName = overviewBand.model.system.threads[pid].name;
       } else {
         processName = 'Others';
       }
@@ -773,7 +773,7 @@ class CpuDetailedInfoView extends DetailedInfoView {
         var tid = threads[j].tid;
         bands.addBand(
             new Events(eventsPerTid[tid].events, 0, 1), cpuBandHeight, padding);
-        var threadName = overviewBand.model.cpu.threads[tid].name;
+        var threadName = overviewBand.model.system.threads[tid].name;
         var threadCpuUsage = 100.0 * threads[j].totalTime / duration;
         var threadInfo = threadName + ' ' + threadCpuUsage.toFixed(2) + '%';
         SVG.addText(
@@ -849,9 +849,9 @@ class CpuEventBands extends EventBands {
     this.model = model;
     var bandHeight = 6;
     var padding = 2;
-    for (var cpuId = 0; cpuId < this.model.cpu.events.length; cpuId++) {
+    for (var cpuId = 0; cpuId < this.model.system.cpu.length; cpuId++) {
       this.addBand(
-          new Events(this.model.cpu.events[cpuId], 0, 1), bandHeight, padding);
+          new Events(this.model.system.cpu[cpuId], 0, 1), bandHeight, padding);
     }
   }
 
