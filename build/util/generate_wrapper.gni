@@ -74,10 +74,6 @@ template("generate_wrapper") {
       _wrapper_script,
     ]
 
-    _wrapper_script_name = get_path_info(_wrapper_script, "name")
-    write_runtime_deps =
-        "${target_out_dir}/${_wrapper_script_name}.runtime_deps"
-
     _rebased_executable_to_wrap =
         rebase_path(_executable_to_wrap, root_build_dir)
     _rebased_wrapper_script = rebase_path(_wrapper_script, root_build_dir)
