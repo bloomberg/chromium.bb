@@ -185,6 +185,8 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kOobeGuestSession[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kOobeSkipPostLogin[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kOobeSkipToLogin[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kOobeTimerInterval[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const char kDisableArcCpuRestriction[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kProfileRequiresPolicy[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kRedirectLibassistantLogging[];
@@ -289,6 +291,9 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool ShouldSkipOobePostLogin();
 
 // Returns true if GAIA services has been disabled.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsGaiaServicesDisabled();
+
+// Returns true if |kDisableArcCpuRestriction| is true.
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsArcCpuRestrictionDisabled();
 
 }  // namespace switches
 }  // namespace chromeos
