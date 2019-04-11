@@ -31,6 +31,14 @@ class AddressEmailFormLabelFormatter : public LabelFormatter {
       FieldTypeGroup focused_group) const override;
 
  private:
+  // Returns a label to show the user when |focused_field_type_| is a type
+  // other than a non-street-address field type. For example,
+  // |focused_field_type_| could be last name, home street address, or email
+  // address.
+  base::string16 GetLabelForProfileOnFocusedNameEmailOrStreetAddress(
+      const AutofillProfile& profile,
+      FieldTypeGroup focused_group) const;
+
   // True if this formatter's associated form has a street address field. A
   // form may have an address-related field, e.g. zip code, without having a
   // street address field. If a form does not include a street address field,
