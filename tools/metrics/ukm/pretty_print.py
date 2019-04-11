@@ -14,7 +14,7 @@ import presubmit_util
 
 def main(argv):
   presubmit_util.DoPresubmitMain(argv, 'ukm.xml', 'ukm.old.xml',
-                                 'pretty_print.py', ukm_model.PrettifyXML)
+                                 'pretty_print.py', ukm_model.UpdateXML)
 
 
 if '__main__' == __name__:
