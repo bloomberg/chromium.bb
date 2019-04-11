@@ -119,12 +119,12 @@
         },
         {
           "object": "NGPhysicalTextFragment 'for the hedgehogs; and in a very short time '",
-          "rect": [14, 420, 356, 39],
+          "rect": [14, 420, 355, 39],
           "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'for turns, quarrelling all the while, and fighting'",
-          "rect": [14, 420, 356, 39],
+          "rect": [14, 420, 355, 39],
           "reason": "geometry"
         },
         {
@@ -159,12 +159,12 @@
         },
         {
           "object": "NGPhysicalTextFragment 'The players all played at once without waiting'",
-          "rect": [65, 400, 305, 19],
+          "rect": [65, 400, 304, 19],
           "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'the Queen'",
-          "rect": [302, 440, 68, 19],
+          "rect": [302, 440, 67, 19],
           "reason": "geometry"
         },
         {

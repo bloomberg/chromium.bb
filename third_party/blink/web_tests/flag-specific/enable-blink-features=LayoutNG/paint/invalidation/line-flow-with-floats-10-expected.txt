@@ -103,16 +103,6 @@
           "reason": "geometry"
         },
         {
-          "object": "NGPhysicalTextFragment 'for the hedgehogs; and in a very short time '",
-          "rect": [14, 420, 356, 39],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'for turns, quarrelling all the while, and fighting'",
-          "rect": [14, 420, 356, 39],
-          "reason": "geometry"
-        },
-        {
           "object": "NGPhysicalTextFragment ' was in a furious passion, and went stamping'",
           "rect": [14, 460, 355, 59],
           "reason": "appeared"
@@ -140,6 +130,16 @@
         {
           "object": "NGPhysicalTextFragment 'the'",
           "rect": [14, 440, 355, 39],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'for the hedgehogs; and in a very short time '",
+          "rect": [14, 420, 355, 39],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'for turns, quarrelling all the while, and fighting'",
+          "rect": [14, 420, 355, 39],
           "reason": "geometry"
         },
         {
@@ -174,12 +174,7 @@
         },
         {
           "object": "NGPhysicalTextFragment 'The players all played at once without waiting'",
-          "rect": [65, 400, 305, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'the'",
-          "rect": [302, 440, 68, 19],
+          "rect": [65, 400, 304, 19],
           "reason": "geometry"
         },
         {

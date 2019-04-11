@@ -164,37 +164,37 @@
         },
         {
           "object": "NGPhysicalTextFragment ' was in'",
-          "rect": [14, 440, 340, 79],
+          "rect": [14, 440, 339, 79],
           "reason": "appeared"
         },
         {
           "object": "NGPhysicalTextFragment 'a furious passion, and went stamping about, and'",
-          "rect": [14, 440, 340, 79],
+          "rect": [14, 440, 339, 79],
           "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'about once in a minute.'",
-          "rect": [14, 440, 340, 79],
+          "rect": [14, 440, 339, 79],
           "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'shouting \u2018Off with his head!\u2019 or \u2018Off with her head!\u2019'",
-          "rect": [14, 440, 340, 79],
+          "rect": [14, 440, 339, 79],
           "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'The players all played at once without waiting '",
-          "rect": [65, 400, 305, 19],
+          "rect": [65, 400, 304, 19],
           "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'the Queen'",
-          "rect": [302, 440, 68, 19],
+          "rect": [302, 440, 67, 19],
           "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'the Queen'",
-          "rect": [242, 440, 67, 19],
+          "rect": [242, 440, 66, 19],
           "reason": "geometry"
         },
         {

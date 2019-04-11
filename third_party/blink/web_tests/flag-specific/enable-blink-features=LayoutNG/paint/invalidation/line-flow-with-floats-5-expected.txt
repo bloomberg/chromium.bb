@@ -103,26 +103,6 @@
           "reason": "geometry"
         },
         {
-          "object": "NGPhysicalTextFragment ' was in a'",
-          "rect": [14, 440, 356, 79],
-          "reason": "appeared"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'furious passion, and went stamping about, and shouting'",
-          "rect": [14, 440, 356, 79],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'in a minute.'",
-          "rect": [14, 440, 356, 79],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment '\u2018Off with his head!\u2019 or \u2018Off with her head!\u2019 about once'",
-          "rect": [14, 440, 356, 79],
-          "reason": "geometry"
-        },
-        {
           "object": "NGPhysicalTextFragment 'for'",
           "rect": [14, 400, 356, 59],
           "reason": "appeared"
@@ -135,6 +115,26 @@
         {
           "object": "NGPhysicalTextFragment 'turns, quarrelling all the while, and fighting for the'",
           "rect": [14, 400, 356, 59],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment ' was in a'",
+          "rect": [14, 440, 355, 79],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'furious passion, and went stamping about, and shouting'",
+          "rect": [14, 440, 355, 79],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'in a minute.'",
+          "rect": [14, 440, 355, 79],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment '\u2018Off with his head!\u2019 or \u2018Off with her head!\u2019 about once'",
+          "rect": [14, 440, 355, 79],
           "reason": "geometry"
         },
         {
@@ -169,7 +169,7 @@
         },
         {
           "object": "NGPhysicalTextFragment 'The players all played at once without waiting '",
-          "rect": [65, 400, 305, 19],
+          "rect": [65, 400, 304, 19],
           "reason": "geometry"
         },
         {
@@ -179,7 +179,7 @@
         },
         {
           "object": "NGPhysicalTextFragment 'the Queen'",
-          "rect": [302, 440, 68, 19],
+          "rect": [302, 440, 67, 19],
           "reason": "geometry"
         },
         {
