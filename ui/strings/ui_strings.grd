@@ -946,6 +946,14 @@ need to be translated for each locale.-->
       <message name="IDS_BADGE_UNREAD_NOTIFICATIONS" desc="The accessibility text which will be read by a screen reader when there are notifcatications">
         {UNREAD_NOTIFICATIONS, plural, =1 {1 Unread Notification} other {# Unread Notifications}}
       </message>
+
+      <!-- Send Tab To Self -->
+      <message name="IDS_SEND_TAB_TO_SELF_INFOBAR_MESSAGE" desc="The message text for the infobar when a user receives a shared tab from another device.">
+        Received a tab
+      </message>
+      <message name="IDS_SEND_TAB_TO_SELF_INFOBAR_MESSAGE_URL" desc="Clickable text displayed as part of a URL in the inforbar displayed when a user receives a shared tab from another device.">
+        Open
+      </message>
     </messages>
   </release>
 </grit>
