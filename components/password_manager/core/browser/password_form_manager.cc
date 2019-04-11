@@ -415,13 +415,14 @@ void PasswordFormManager::UpdatePasswordValue(
 
 void PasswordFormManager::PresaveGeneratedPassword(
     const autofill::PasswordForm& form) {
+  autofill::PasswordForm mutable_form(form);
+  mutable_form.date_created = base::Time::Now();
   if ((best_matches_.find(form.username_value) == best_matches_.end()) ||
       form.username_value.empty()) {
-    form_saver()->PresaveGeneratedPassword(form);
+    form_saver()->PresaveGeneratedPassword(mutable_form);
   } else {
-    autofill::PasswordForm form_without_username(form);
-    form_without_username.username_value.clear();
-    form_saver()->PresaveGeneratedPassword(form_without_username);
+    mutable_form.username_value.clear();
+    form_saver()->PresaveGeneratedPassword(mutable_form);
   }
 
   if (!has_generated_password_) {
