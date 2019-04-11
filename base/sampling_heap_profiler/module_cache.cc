@@ -12,32 +12,48 @@ ModuleCache::ModuleCache() = default;
 ModuleCache::~ModuleCache() = default;
 
 const ModuleCache::Module* ModuleCache::GetModuleForAddress(uintptr_t address) {
-  auto it = std::find_if(modules_.begin(), modules_.end(),
+  Module* module = FindModuleForAddress(non_native_modules_, address);
+  if (module)
+    return module;
+
+  module = FindModuleForAddress(native_modules_, address);
+  if (module)
+    return module;
+
+  std::unique_ptr<Module> new_module = CreateModuleForAddress(address);
+  if (!new_module)
+    return nullptr;
+  native_modules_.push_back(std::move(new_module));
+  return native_modules_.back().get();
+}
+
+std::vector<const ModuleCache::Module*> ModuleCache::GetModules() const {
+  std::vector<const Module*> result;
+  result.reserve(native_modules_.size());
+  for (const std::unique_ptr<Module>& module : native_modules_)
+    result.push_back(module.get());
+  return result;
+}
+
+void ModuleCache::AddNonNativeModule(std::unique_ptr<Module> module) {
+  non_native_modules_.push_back(std::move(module));
+}
+
+void ModuleCache::InjectModuleForTesting(std::unique_ptr<Module> module) {
+  native_modules_.push_back(std::move(module));
+}
+
+// static
+ModuleCache::Module* ModuleCache::FindModuleForAddress(
+    const std::vector<std::unique_ptr<Module>>& modules,
+    uintptr_t address) {
+  auto it = std::find_if(modules.begin(), modules.end(),
                          [address](const std::unique_ptr<Module>& module) {
                            return address >= module->GetBaseAddress() &&
                                   address < module->GetBaseAddress() +
                                                 module->GetSize();
                          });
-  if (it != modules_.end())
-    return it->get();
-
-  std::unique_ptr<Module> module = CreateModuleForAddress(address);
-  if (!module)
-    return nullptr;
-  modules_.push_back(std::move(module));
-  return modules_.back().get();
-}
-
-std::vector<const ModuleCache::Module*> ModuleCache::GetModules() const {
-  std::vector<const Module*> result;
-  result.reserve(modules_.size());
-  for (const std::unique_ptr<Module>& module : modules_)
-    result.push_back(module.get());
-  return result;
-}
-
-void ModuleCache::InjectModuleForTesting(std::unique_ptr<Module> module) {
-  modules_.push_back(std::move(module));
+  return it != modules.end() ? it->get() : nullptr;
 }
 
 }  // namespace base

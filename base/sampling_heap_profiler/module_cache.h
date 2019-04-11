@@ -70,18 +70,39 @@ class BASE_EXPORT ModuleCache {
   const Module* GetModuleForAddress(uintptr_t address);
   std::vector<const Module*> GetModules() const;
 
+  // Add a non-native module to the cache. Non-native modules represent regions
+  // of non-native executable code, like v8 generated code or compiled
+  // Java.
+  //
+  // Note that non-native modules may be embedded within native modules, as in
+  // the case of v8 builtin code compiled within Chrome. In that case
+  // GetModuleForAddress() will return the non-native module rather than the
+  // native module for the memory region it occupies.
+  void AddNonNativeModule(std::unique_ptr<Module> module);
+
   void InjectModuleForTesting(std::unique_ptr<Module> module);
 
  private:
+  // Looks for a module containing |address| in |modules| returns the module if
+  // found, or null if not.
+  static Module* FindModuleForAddress(
+      const std::vector<std::unique_ptr<Module>>& modules,
+      uintptr_t address);
+
   // Creates a Module object for the specified memory address. Returns null if
   // the address does not belong to a module.
   static std::unique_ptr<Module> CreateModuleForAddress(uintptr_t address);
 
-  // Unsorted vector of cached modules. The number of loaded modules is
+  // Unsorted vector of cached native modules. The number of loaded modules is
   // generally much less than 100, and more frequently seen modules will tend to
   // be added earlier and thus be closer to the front to the vector. So linear
   // search to find modules should be acceptable.
-  std::vector<std::unique_ptr<Module>> modules_;
+  std::vector<std::unique_ptr<Module>> native_modules_;
+
+  // Unsorted vector of non-native modules. Separate from native_modules_ to
+  // support preferential lookup of non-native modules embedded in native
+  // modules. See comment on AddNonNativeModule().
+  std::vector<std::unique_ptr<Module>> non_native_modules_;
 };
 
 }  // namespace base
