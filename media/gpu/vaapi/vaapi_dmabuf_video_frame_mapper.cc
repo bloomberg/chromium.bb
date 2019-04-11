@@ -15,9 +15,9 @@
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "media/video/picture.h"
 
-#if defined(USE_OZONE) || defined(USE_EGL)
-#include "media/gpu/vaapi/vaapi_picture_native_pixmap.h"
-#endif  // defined(USE_OZONE) || defined(USE_EGL)
+#if defined(OS_LINUX)
+#include "media/gpu/linux/platform_video_frame_utils.h"
+#endif
 
 namespace media {
 
@@ -115,11 +115,9 @@ scoped_refptr<VideoFrame> VaapiDmaBufVideoFrameMapper::Map(
   }
 
   gfx::GpuMemoryBufferHandle gmb_handle;
-#if defined(USE_OZONE) || defined(USE_EGL)
-  gmb_handle =
-      VaapiPictureNativePixmap::CreateGpuMemoryBufferHandleFromVideoFrame(
-          video_frame.get());
-#endif  // defined(USE_OZONE) || defined(USE_EGL)
+#if defined(OS_LINUX)
+  gmb_handle = CreateGpuMemoryBufferHandle(video_frame.get());
+#endif
   if (gmb_handle.is_null()) {
     VLOGF(1) << "Failed to CreateGMBHandleFromVideoFrame.";
     return nullptr;
