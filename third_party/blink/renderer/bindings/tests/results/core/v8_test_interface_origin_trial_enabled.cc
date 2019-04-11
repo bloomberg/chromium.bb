@@ -358,7 +358,7 @@ void V8TestInterfaceOriginTrialEnabled::InstallRuntimeEnabledFeaturesOnTemplate(
 
   // Register IDL constants, attributes and operations.
 
-  if (RuntimeEnabledFeatures::FeatureNameEnabled()) {
+  if (RuntimeEnabledFeatures::RuntimeFeatureEnabled()) {
     static constexpr V8DOMConfiguration::AccessorConfiguration kConfigurations[] = {
         { "conditionalReadOnlyLongAttribute", V8TestInterfaceOriginTrialEnabled::ConditionalReadOnlyLongAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
         { "staticConditionalReadOnlyLongAttribute", V8TestInterfaceOriginTrialEnabled::StaticConditionalReadOnlyLongAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnInterface, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },

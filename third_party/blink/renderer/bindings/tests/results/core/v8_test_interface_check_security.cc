@@ -403,7 +403,7 @@ static void DoNotCheckSecurityVoidOverloadMethod2Method(const v8::FunctionCallba
 }
 
 static int DoNotCheckSecurityVoidOverloadMethodMethodLength() {
-  if (RuntimeEnabledFeatures::FeatureNameEnabled()) {
+  if (RuntimeEnabledFeatures::RuntimeFeatureEnabled()) {
     return 1;
   }
   return 2;
@@ -416,7 +416,7 @@ static void DoNotCheckSecurityVoidOverloadMethodMethod(const v8::FunctionCallbac
 
   switch (std::min(2, info.Length())) {
     case 1:
-      if (RuntimeEnabledFeatures::FeatureNameEnabled()) {
+      if (RuntimeEnabledFeatures::RuntimeFeatureEnabled()) {
         if (true) {
           DoNotCheckSecurityVoidOverloadMethod2Method(info);
           return;
@@ -424,13 +424,13 @@ static void DoNotCheckSecurityVoidOverloadMethodMethod(const v8::FunctionCallbac
       }
       break;
     case 2:
-      if (RuntimeEnabledFeatures::FeatureNameEnabled()) {
+      if (RuntimeEnabledFeatures::RuntimeFeatureEnabled()) {
         if (info[1]->IsUndefined()) {
           DoNotCheckSecurityVoidOverloadMethod2Method(info);
           return;
         }
       }
-      if (RuntimeEnabledFeatures::FeatureNameEnabled()) {
+      if (RuntimeEnabledFeatures::RuntimeFeatureEnabled()) {
         if (info[1]->IsNumber()) {
           DoNotCheckSecurityVoidOverloadMethod2Method(info);
           return;
@@ -440,7 +440,7 @@ static void DoNotCheckSecurityVoidOverloadMethodMethod(const v8::FunctionCallbac
         DoNotCheckSecurityVoidOverloadMethod1Method(info);
         return;
       }
-      if (RuntimeEnabledFeatures::FeatureNameEnabled()) {
+      if (RuntimeEnabledFeatures::RuntimeFeatureEnabled()) {
         if (true) {
           DoNotCheckSecurityVoidOverloadMethod2Method(info);
           return;
@@ -950,7 +950,7 @@ void V8TestInterfaceCheckSecurity::InstallConditionalFeatures(
 
   if (!instance_object.IsEmpty()) {
     if (is_secure_context) {
-      if (RuntimeEnabledFeatures::FeatureNameEnabled()) {
+      if (RuntimeEnabledFeatures::RuntimeFeatureEnabled()) {
         {
           // Install secureContextRuntimeEnabledMethod configuration
           const V8DOMConfiguration::MethodConfiguration kConfigurations[] = {

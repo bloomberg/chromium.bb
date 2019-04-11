@@ -8728,17 +8728,17 @@ static void PartiallyRuntimeEnabledOverloadedVoidMethod4Method(const v8::Functio
 }
 
 static int PartiallyRuntimeEnabledOverloadedVoidMethodMethodLength() {
-  if (RuntimeEnabledFeatures::FeatureName1Enabled()) {
+  if (RuntimeEnabledFeatures::RuntimeFeature1Enabled()) {
     return 1;
   }
-  if (RuntimeEnabledFeatures::FeatureName2Enabled()) {
+  if (RuntimeEnabledFeatures::RuntimeFeature2Enabled()) {
     return 1;
   }
   return 2;
 }
 
 static int PartiallyRuntimeEnabledOverloadedVoidMethodMethodMaxArg() {
-  if (RuntimeEnabledFeatures::FeatureName3Enabled()) {
+  if (RuntimeEnabledFeatures::RuntimeFeature3Enabled()) {
     return 3;
   }
   return 2;
@@ -8751,13 +8751,13 @@ static void PartiallyRuntimeEnabledOverloadedVoidMethodMethod(const v8::Function
 
   switch (std::min(test_object_v8_internal::PartiallyRuntimeEnabledOverloadedVoidMethodMethodMaxArg(), info.Length())) {
     case 1:
-      if (RuntimeEnabledFeatures::FeatureName2Enabled()) {
+      if (RuntimeEnabledFeatures::RuntimeFeature2Enabled()) {
         if (V8TestInterface::HasInstance(info[0], info.GetIsolate())) {
           PartiallyRuntimeEnabledOverloadedVoidMethod2Method(info);
           return;
         }
       }
-      if (RuntimeEnabledFeatures::FeatureName1Enabled()) {
+      if (RuntimeEnabledFeatures::RuntimeFeature1Enabled()) {
         if (true) {
           PartiallyRuntimeEnabledOverloadedVoidMethod1Method(info);
           return;
@@ -8771,7 +8771,7 @@ static void PartiallyRuntimeEnabledOverloadedVoidMethodMethod(const v8::Function
       }
       break;
     case 3:
-      if (RuntimeEnabledFeatures::FeatureName3Enabled()) {
+      if (RuntimeEnabledFeatures::RuntimeFeature3Enabled()) {
         if (true) {
           PartiallyRuntimeEnabledOverloadedVoidMethod4Method(info);
           return;
@@ -13499,7 +13499,7 @@ void V8TestObject::InstallRuntimeEnabledFeaturesOnTemplate(
 
   // Register IDL constants, attributes and operations.
 
-  if (RuntimeEnabledFeatures::FeatureNameEnabled()) {
+  if (RuntimeEnabledFeatures::RuntimeFeatureEnabled()) {
     static constexpr V8DOMConfiguration::AccessorConfiguration kConfigurations[] = {
         { "runtimeEnabledLongAttribute", V8TestObject::RuntimeEnabledLongAttributeAttributeGetterCallback, V8TestObject::RuntimeEnabledLongAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
         { "unscopableRuntimeEnabledLongAttribute", V8TestObject::UnscopableRuntimeEnabledLongAttributeAttributeGetterCallback, V8TestObject::UnscopableRuntimeEnabledLongAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
@@ -13510,7 +13510,7 @@ void V8TestObject::InstallRuntimeEnabledFeaturesOnTemplate(
   }
 
   // Custom signature
-  if (RuntimeEnabledFeatures::FeatureNameEnabled()) {
+  if (RuntimeEnabledFeatures::RuntimeFeatureEnabled()) {
     {
       // Install unscopableRuntimeEnabledVoidMethod configuration
       constexpr V8DOMConfiguration::MethodConfiguration kConfigurations[] = {
@@ -13523,7 +13523,7 @@ void V8TestObject::InstallRuntimeEnabledFeaturesOnTemplate(
       }
     }
   }
-  if (RuntimeEnabledFeatures::FeatureNameEnabled()) {
+  if (RuntimeEnabledFeatures::RuntimeFeatureEnabled()) {
     {
       // Install runtimeEnabledVoidMethod configuration
       constexpr V8DOMConfiguration::MethodConfiguration kConfigurations[] = {
@@ -13536,7 +13536,7 @@ void V8TestObject::InstallRuntimeEnabledFeaturesOnTemplate(
       }
     }
   }
-  if (RuntimeEnabledFeatures::FeatureNameEnabled()) {
+  if (RuntimeEnabledFeatures::RuntimeFeatureEnabled()) {
     {
       // Install perWorldBindingsRuntimeEnabledVoidMethod configuration
       constexpr V8DOMConfiguration::MethodConfiguration kConfigurations[] = {
@@ -13550,7 +13550,7 @@ void V8TestObject::InstallRuntimeEnabledFeaturesOnTemplate(
       }
     }
   }
-  if (RuntimeEnabledFeatures::FeatureNameEnabled()) {
+  if (RuntimeEnabledFeatures::RuntimeFeatureEnabled()) {
     {
       // Install runtimeEnabledOverloadedVoidMethod configuration
       constexpr V8DOMConfiguration::MethodConfiguration kConfigurations[] = {
@@ -13563,7 +13563,7 @@ void V8TestObject::InstallRuntimeEnabledFeaturesOnTemplate(
       }
     }
   }
-  if (RuntimeEnabledFeatures::FeatureNameEnabled()) {
+  if (RuntimeEnabledFeatures::RuntimeFeatureEnabled()) {
     {
       // Install clear configuration
       constexpr V8DOMConfiguration::MethodConfiguration kConfigurations[] = {
@@ -13707,12 +13707,12 @@ void V8TestObject::InstallConditionalFeatures(
     unscopables->CreateDataProperty(
         context, V8AtomicString(isolate, "unscopableOriginTrialEnabledLongAttribute"), v8::True(isolate))
         .FromJust();
-    if (RuntimeEnabledFeatures::FeatureNameEnabled()) {
+    if (RuntimeEnabledFeatures::RuntimeFeatureEnabled()) {
       unscopables->CreateDataProperty(
           context, V8AtomicString(isolate, "unscopableRuntimeEnabledLongAttribute"), v8::True(isolate))
           .FromJust();
     }
-    if (RuntimeEnabledFeatures::FeatureNameEnabled()) {
+    if (RuntimeEnabledFeatures::RuntimeFeatureEnabled()) {
       unscopables->CreateDataProperty(
           context, V8AtomicString(isolate, "unscopableRuntimeEnabledVoidMethod"), v8::True(isolate))
           .FromJust();

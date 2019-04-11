@@ -36,8 +36,8 @@
     Custom=LegacyCallAsFunction,
     DoNotCheckConstants,
     ImplementedAs=TestInterfaceImplementation,
-    RuntimeEnabled=FeatureName,
-    ContextEnabled=FeatureName,
+    RuntimeEnabled=RuntimeFeature,
+    ContextEnabled=RuntimeFeature,
     Exposed=(Worker,Window)
 ] interface TestInterface : TestInterfaceEmpty {
     // members needed to test [ImplementedAs], as this affect attribute
@@ -58,13 +58,13 @@
     attribute DOMStringOrDouble stringOrDoubleAttribute;
     attribute [EnforceRange] long withExtendedAttributeStringAttribute;
     [ImplementedAs=CapitalImplementation] attribute Implementation uncapitalAttribute;
-    [RuntimeEnabled=FeatureName] attribute long conditionalLongAttribute;
-    [RuntimeEnabled=FeatureName] readonly attribute long conditionalReadOnlyLongAttribute;
+    [RuntimeEnabled=RuntimeFeature] attribute long conditionalLongAttribute;
+    [RuntimeEnabled=RuntimeFeature] readonly attribute long conditionalReadOnlyLongAttribute;
     static attribute DOMString staticStringAttribute;
     static attribute TestInterface staticReturnDOMWrapperAttribute;
     static readonly attribute DOMString staticReadOnlyStringAttribute;
     static readonly attribute TestInterface staticReadOnlyReturnDOMWrapperAttribute;
-    [RuntimeEnabled=FeatureName] static readonly attribute long staticConditionalReadOnlyLongAttribute;
+    [RuntimeEnabled=RuntimeFeature] static readonly attribute long staticConditionalReadOnlyLongAttribute;
 
     attribute [TreatNullAs=EmptyString] DOMString stringNullAsEmptyAttribute;
     attribute USVString? usvStringOrNullAttribute;
@@ -101,10 +101,10 @@
     [Exposed=Worker] attribute long workerExposedAttribute;
     [Exposed=Window] attribute long windowExposedAttribute;
 
-    [Exposed=Window, RuntimeEnabled=FeatureName] void methodWithExposedAndRuntimeEnabledFlag();
+    [Exposed=Window, RuntimeEnabled=RuntimeFeature] void methodWithExposedAndRuntimeEnabledFlag();
     [Exposed=Window] void overloadMethodWithExposedAndRuntimeEnabledFlag(long longArg);
-    [Exposed=Window, RuntimeEnabled=FeatureName] void overloadMethodWithExposedAndRuntimeEnabledFlag(DOMString string);
-    [Exposed=Window, RuntimeEnabled=FeatureName2] void overloadMethodWithExposedAndRuntimeEnabledFlag(Window window);
+    [Exposed=Window, RuntimeEnabled=RuntimeFeature] void overloadMethodWithExposedAndRuntimeEnabledFlag(DOMString string);
+    [Exposed=Window, RuntimeEnabled=RuntimeFeature2] void overloadMethodWithExposedAndRuntimeEnabledFlag(Window window);
 
     [Exposed(Window FeatureName, Worker FeatureName2)] void methodWithExposedHavingRuntimeEnabldFlag();
 

@@ -1736,7 +1736,7 @@ static void OverloadMethodWithExposedAndRuntimeEnabledFlagMethod(const v8::Funct
 
   switch (std::min(1, info.Length())) {
     case 1:
-      if (RuntimeEnabledFeatures::FeatureName2Enabled()) {
+      if (RuntimeEnabledFeatures::RuntimeFeature2Enabled()) {
         if (V8Window::HasInstance(info[0], info.GetIsolate())) {
           OverloadMethodWithExposedAndRuntimeEnabledFlag3Method(info);
           return;
@@ -1746,7 +1746,7 @@ static void OverloadMethodWithExposedAndRuntimeEnabledFlagMethod(const v8::Funct
         OverloadMethodWithExposedAndRuntimeEnabledFlag1Method(info);
         return;
       }
-      if (RuntimeEnabledFeatures::FeatureNameEnabled()) {
+      if (RuntimeEnabledFeatures::RuntimeFeatureEnabled()) {
         if (true) {
           OverloadMethodWithExposedAndRuntimeEnabledFlag2Method(info);
           return;
@@ -3881,7 +3881,7 @@ void V8TestInterface::InstallRuntimeEnabledFeaturesOnTemplate(
   ALLOW_UNUSED_LOCAL(prototype_template);
 
   // Register IDL constants, attributes and operations.
-  if (RuntimeEnabledFeatures::PartialFeatureNameEnabled()) {
+  if (RuntimeEnabledFeatures::PartialRuntimeFeatureEnabled()) {
     static constexpr V8DOMConfiguration::ConstantConfiguration kConfigurations[] = {
         {"PARTIAL_UNSIGNED_SHORT", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(0)},
         {"PARTIAL_DOUBLE", V8DOMConfiguration::kConstantTypeDouble, static_cast<double>(3.14)},
@@ -3891,17 +3891,7 @@ void V8TestInterface::InstallRuntimeEnabledFeaturesOnTemplate(
         kConfigurations, base::size(kConfigurations));
   }
 
-  if (RuntimeEnabledFeatures::FeatureNameEnabled()) {
-    static constexpr V8DOMConfiguration::AccessorConfiguration kConfigurations[] = {
-        { "conditionalReadOnlyLongAttribute", V8TestInterface::ConditionalReadOnlyLongAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
-        { "staticConditionalReadOnlyLongAttribute", V8TestInterface::StaticConditionalReadOnlyLongAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnInterface, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
-        { "conditionalLongAttribute", V8TestInterface::ConditionalLongAttributeAttributeGetterCallback, V8TestInterface::ConditionalLongAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
-    };
-    V8DOMConfiguration::InstallAccessors(
-        isolate, world, instance_template, prototype_template, interface_template,
-        signature, kConfigurations, base::size(kConfigurations));
-  }
-  if (RuntimeEnabledFeatures::Mixin2FeatureNameEnabled()) {
+  if (RuntimeEnabledFeatures::Mixin2RuntimeFeatureEnabled()) {
     static constexpr V8DOMConfiguration::AccessorConfiguration kConfigurations[] = {
         { "mixin2StringAttribute", V8TestInterface::Mixin2StringAttributeAttributeGetterCallback, V8TestInterface::Mixin2StringAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
     };
@@ -3909,7 +3899,7 @@ void V8TestInterface::InstallRuntimeEnabledFeaturesOnTemplate(
         isolate, world, instance_template, prototype_template, interface_template,
         signature, kConfigurations, base::size(kConfigurations));
   }
-  if (RuntimeEnabledFeatures::MixinFeatureNameEnabled()) {
+  if (RuntimeEnabledFeatures::MixinRuntimeFeatureEnabled()) {
     static constexpr V8DOMConfiguration::AccessorConfiguration kConfigurations[] = {
         { "mixinRuntimeEnabledNodeAttribute", V8TestInterface::MixinRuntimeEnabledNodeAttributeAttributeGetterCallback, V8TestInterface::MixinRuntimeEnabledNodeAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
     };
@@ -3917,7 +3907,7 @@ void V8TestInterface::InstallRuntimeEnabledFeaturesOnTemplate(
         isolate, world, instance_template, prototype_template, interface_template,
         signature, kConfigurations, base::size(kConfigurations));
   }
-  if (RuntimeEnabledFeatures::PartialFeatureNameEnabled()) {
+  if (RuntimeEnabledFeatures::PartialRuntimeFeatureEnabled()) {
     static constexpr V8DOMConfiguration::AccessorConfiguration kConfigurations[] = {
         { "partialCallWithExecutionContextLongAttribute", V8TestInterface::PartialCallWithExecutionContextLongAttributeAttributeGetterCallback, V8TestInterface::PartialCallWithExecutionContextLongAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
         { "partialLongAttribute", V8TestInterface::PartialLongAttributeAttributeGetterCallback, V8TestInterface::PartialLongAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
@@ -3928,9 +3918,19 @@ void V8TestInterface::InstallRuntimeEnabledFeaturesOnTemplate(
         isolate, world, instance_template, prototype_template, interface_template,
         signature, kConfigurations, base::size(kConfigurations));
   }
+  if (RuntimeEnabledFeatures::RuntimeFeatureEnabled()) {
+    static constexpr V8DOMConfiguration::AccessorConfiguration kConfigurations[] = {
+        { "conditionalReadOnlyLongAttribute", V8TestInterface::ConditionalReadOnlyLongAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+        { "staticConditionalReadOnlyLongAttribute", V8TestInterface::StaticConditionalReadOnlyLongAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnInterface, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+        { "conditionalLongAttribute", V8TestInterface::ConditionalLongAttributeAttributeGetterCallback, V8TestInterface::ConditionalLongAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+    };
+    V8DOMConfiguration::InstallAccessors(
+        isolate, world, instance_template, prototype_template, interface_template,
+        signature, kConfigurations, base::size(kConfigurations));
+  }
 
   // Custom signature
-  if (RuntimeEnabledFeatures::Mixin2FeatureNameEnabled()) {
+  if (RuntimeEnabledFeatures::Mixin2RuntimeFeatureEnabled()) {
     {
       // Install mixin2VoidMethod configuration
       constexpr V8DOMConfiguration::MethodConfiguration kConfigurations[] = {
@@ -3943,7 +3943,7 @@ void V8TestInterface::InstallRuntimeEnabledFeaturesOnTemplate(
       }
     }
   }
-  if (RuntimeEnabledFeatures::PartialFeatureNameEnabled()) {
+  if (RuntimeEnabledFeatures::PartialRuntimeFeatureEnabled()) {
     {
       // Install partialVoidMethod configuration
       constexpr V8DOMConfiguration::MethodConfiguration kConfigurations[] = {
@@ -3956,7 +3956,7 @@ void V8TestInterface::InstallRuntimeEnabledFeaturesOnTemplate(
       }
     }
   }
-  if (RuntimeEnabledFeatures::PartialFeatureNameEnabled()) {
+  if (RuntimeEnabledFeatures::PartialRuntimeFeatureEnabled()) {
     {
       // Install partialStaticVoidMethod configuration
       constexpr V8DOMConfiguration::MethodConfiguration kConfigurations[] = {
@@ -3969,7 +3969,7 @@ void V8TestInterface::InstallRuntimeEnabledFeaturesOnTemplate(
       }
     }
   }
-  if (RuntimeEnabledFeatures::PartialFeatureNameEnabled()) {
+  if (RuntimeEnabledFeatures::PartialRuntimeFeatureEnabled()) {
     {
       // Install partialVoidMethodLongArg configuration
       constexpr V8DOMConfiguration::MethodConfiguration kConfigurations[] = {
@@ -3982,7 +3982,7 @@ void V8TestInterface::InstallRuntimeEnabledFeaturesOnTemplate(
       }
     }
   }
-  if (RuntimeEnabledFeatures::PartialFeatureNameEnabled()) {
+  if (RuntimeEnabledFeatures::PartialRuntimeFeatureEnabled()) {
     {
       // Install partialCallWithExecutionContextRaisesExceptionVoidMethod configuration
       constexpr V8DOMConfiguration::MethodConfiguration kConfigurations[] = {
@@ -3995,7 +3995,7 @@ void V8TestInterface::InstallRuntimeEnabledFeaturesOnTemplate(
       }
     }
   }
-  if (RuntimeEnabledFeatures::PartialFeatureNameEnabled()) {
+  if (RuntimeEnabledFeatures::PartialRuntimeFeatureEnabled()) {
     {
       // Install partialVoidMethodPartialCallbackTypeArg configuration
       constexpr V8DOMConfiguration::MethodConfiguration kConfigurations[] = {
@@ -4110,7 +4110,7 @@ void V8TestInterface::InstallConditionalFeatures(
           isolate, world, instance_object, prototype_object, interface_object,
           signature, accessor_configurations,
           base::size(accessor_configurations));
-      if (RuntimeEnabledFeatures::PartialFeatureNameEnabled()) {
+      if (RuntimeEnabledFeatures::PartialRuntimeFeatureEnabled()) {
         static const V8DOMConfiguration::AccessorConfiguration accessor_configurations[] = {
             { "partialSecureContextLongAttribute", V8TestInterface::PartialSecureContextLongAttributeAttributeGetterCallback, V8TestInterface::PartialSecureContextLongAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
         };
@@ -4224,7 +4224,7 @@ void V8TestInterface::InstallConditionalFeatures(
       }
     }
     if (execution_context && (execution_context->IsDocument())) {
-      if (RuntimeEnabledFeatures::FeatureNameEnabled()) {
+      if (RuntimeEnabledFeatures::RuntimeFeatureEnabled()) {
         {
           // Install methodWithExposedAndRuntimeEnabledFlag configuration
           const V8DOMConfiguration::MethodConfiguration kConfigurations[] = {

@@ -30,7 +30,7 @@
 
 [
     LegacyTreatAsPartialInterface, // Conflicts with default mixin behavior
-    RuntimeEnabled=Mixin2FeatureName // conflicts with [RuntimeEnabled] on member
+    RuntimeEnabled=Mixin2RuntimeFeature // conflicts with [RuntimeEnabled] on member
 ] interface mixin TestInterfaceMixin2 {
     attribute DOMString mixin2StringAttribute;
     void mixin2VoidMethod();
