@@ -276,7 +276,7 @@ Polymer({
       // (e.g., when a Cellular dongle is unplugged or when Instant Tethering
       // becomes unavailable due to the Bluetooth controller disconnecting).
       if (rowForDetailType) {
-        element = rowForDetailType.$$('.subpage-arrow button');
+        element = rowForDetailType.$$('.subpage-arrow');
       }
     }
     if (element) {

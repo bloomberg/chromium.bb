@@ -95,7 +95,7 @@ suite('settings system page', function() {
 
   test('proxy row enforcement', function() {
     const control = systemPage.$.proxy;
-    const showProxyButton = control.querySelector('paper-icon-button-light');
+    const showProxyButton = control.querySelector('cr-icon-button');
     assertTrue(control.hasAttribute('actionable'));
     assertEquals(null, control.querySelector('cr-policy-pref-indicator'));
     assertFalse(showProxyButton.hidden);

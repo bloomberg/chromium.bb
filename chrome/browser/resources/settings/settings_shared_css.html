@@ -56,7 +56,7 @@
         }
       }
 
-      .separator + paper-icon-button-light {
+      .separator + cr-icon-button {
         margin-inline-start: var(--cr-icon-ripple-margin);
       }
 
@@ -302,10 +302,7 @@
       [scrollable],
       iron-list,
       .list-item {
-        --cr-paper-icon-button-margin: {
-          margin-inline-end: 0;
-          margin-inline-start: var(--cr-icon-button-margin-start);
-        };
+        --cr-icon-button-margin-end: 0;
       }
 
       /* Helper for a list frame to automatically avoid the separator line. */

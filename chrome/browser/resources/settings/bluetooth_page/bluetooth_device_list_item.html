@@ -1,10 +1,10 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="../icons.html">
 <link rel="import" href="../settings_shared_css.html">
 
@@ -33,11 +33,9 @@
       </div>
       <span hidden$="[[!device.connecting]]">$i18n{bluetoothConnecting}</span>
       <div hidden$="[[!device.paired]]">
-        <paper-icon-button-light class="icon-more-vert">
-          <button on-click="onMenuButtonTap_" tabindex$="[[tabindex]]"
-              title="$i18n{moreActions}" on-keydown="ignoreEnterKey_">
-          </button>
-        </paper-icon-button-light>
+        <cr-icon-button class="icon-more-vert" on-click="onMenuButtonTap_"
+            tabindex$="[[tabindex]]" title="$i18n{moreActions}"
+            on-keydown="ignoreEnterKey_"></cr-icon-button>
         <cr-action-menu id="dotsMenu">
           <button class="dropdown-item"
               on-click="onConnectActionTap_">

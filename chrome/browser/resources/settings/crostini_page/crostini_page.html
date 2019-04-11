@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_indicator.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
@@ -35,11 +36,9 @@
             </cr-policy-indicator>
           </template>
           <template is="dom-if" if="[[prefs.crostini.enabled.value]]">
-            <paper-icon-button-light class="subpage-arrow">
-              <button aria-label="$i18n{crostiniPageTitle}"
-                  aria-describedby="secondaryText">
-              </button>
-            </paper-icon-button-light>
+            <cr-icon-button class="subpage-arrow"
+                aria-label="$i18n{crostiniPageTitle}"
+                aria-describedby="secondaryText"></cr-icon-button>
           </template>
           <template is="dom-if" if="[[!prefs.crostini.enabled.value]]">
             <div class="separator"></div>

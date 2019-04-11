@@ -145,7 +145,7 @@ suite('InternetPage', function() {
       Polymer.dom.flush();
       const wifi = networkSummary_.$$('#WiFi');
       assertTrue(!!wifi);
-      wifi.$$('.subpage-arrow button').click();
+      wifi.$$('.subpage-arrow').click();
       return flushAsync().then(() => {
         const subpage = internetPage.$$('settings-internet-subpage');
         assertTrue(!!subpage);
@@ -174,7 +174,7 @@ suite('InternetPage', function() {
           .then(() => {
             const mobile = networkSummary_.$$('#Cellular');
             assertTrue(!!mobile);
-            mobile.$$('.subpage-arrow button').click();
+            mobile.$$('.subpage-arrow').click();
             return Promise.all([
               api_.whenCalled('getManagedProperties'),
             ]);
@@ -194,7 +194,7 @@ suite('InternetPage', function() {
       return flushAsync().then(() => {
         const mobile = networkSummary_.$$('#Tether');
         assertTrue(!!mobile);
-        mobile.$$('.subpage-arrow button').click();
+        mobile.$$('.subpage-arrow').click();
         Polymer.dom.flush();
         const subpage = internetPage.$$('settings-internet-subpage');
         assertTrue(!!subpage);
@@ -223,7 +223,7 @@ suite('InternetPage', function() {
       return flushAsync().then(() => {
         const mobile = networkSummary_.$$('#Cellular');
         assertTrue(!!mobile);
-        mobile.$$('.subpage-arrow button').click();
+        mobile.$$('.subpage-arrow').click();
         Polymer.dom.flush();
         const subpage = internetPage.$$('settings-internet-subpage');
         assertTrue(!!subpage);
@@ -276,7 +276,7 @@ suite('InternetPage', function() {
       return flushAsync().then(() => {
         const vpn = networkSummary_.$$('#VPN');
         assertTrue(!!vpn);
-        vpn.$$('.subpage-arrow button').click();
+        vpn.$$('.subpage-arrow').click();
         Polymer.dom.flush();
         const subpage = internetPage.$$('settings-internet-subpage');
         assertTrue(!!subpage);
@@ -329,7 +329,7 @@ suite('InternetPage', function() {
           .then(() => {
             const wifi = networkSummary_.$$('#WiFi');
             assertTrue(!!wifi);
-            wifi.$$('.subpage-arrow button').click();
+            wifi.$$('.subpage-arrow').click();
             return flushAsync();
           })
           .then(() => {

@@ -198,7 +198,7 @@ cr.define('settings_search_engines_page', function() {
 
       test('Remove_Enabled', function() {
         // Open action menu.
-        entry.$$('button').click();
+        entry.$$('cr-icon-button').click();
         const menu = entry.$$('cr-action-menu');
         assertTrue(menu.open);
 
@@ -215,7 +215,7 @@ cr.define('settings_search_engines_page', function() {
 
       test('MakeDefault_Enabled', function() {
         // Open action menu.
-        entry.$$('button').click();
+        entry.$$('cr-icon-button').click();
         const menu = entry.$$('cr-action-menu');
         assertTrue(menu.open);
 
@@ -232,7 +232,7 @@ cr.define('settings_search_engines_page', function() {
       // Test that clicking the "edit" fires edit event.
       test('Edit_Enabled', function() {
         // Open action menu.
-        entry.$$('button').click();
+        entry.$$('cr-icon-button').click();
         const menu = entry.$$('cr-action-menu');
         assertTrue(menu.open);
 
@@ -244,9 +244,7 @@ cr.define('settings_search_engines_page', function() {
         const promise =
             test_util.eventToPromise('edit-search-engine', entry).then(e => {
               assertEquals(engine, e.detail.engine);
-              assertEquals(
-                  entry.$$('paper-icon-button-light button'),
-                  e.detail.anchorElement);
+              assertEquals(entry.$$('cr-icon-button'), e.detail.anchorElement);
             });
         editButton.click();
         return promise;
@@ -506,7 +504,7 @@ cr.define('settings_search_engines_page', function() {
         document.body.appendChild(entry);
 
         // Open action menu.
-        entry.$$('button').click();
+        entry.$$('cr-icon-button').click();
       });
 
       teardown(function() {

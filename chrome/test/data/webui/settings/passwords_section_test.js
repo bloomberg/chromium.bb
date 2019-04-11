@@ -541,7 +541,7 @@ cr.define('settings_passwords_section', function() {
       assertEquals(item.federationText, passwordDialog.$.passwordInput.value);
       // Text should be readable.
       assertEquals('text', passwordDialog.$.passwordInput.type);
-      assertTrue(passwordDialog.$.showPasswordButtonContainer.hidden);
+      assertTrue(passwordDialog.$.showPasswordButton.hidden);
     });
 
     test('showSavedPasswordEditDialog', function() {
@@ -550,7 +550,7 @@ cr.define('settings_passwords_section', function() {
           FakeDataMaker.passwordEntry('goo.gl', 'bart', PASSWORD.length);
       const passwordDialog = createPasswordDialog(item);
 
-      assertFalse(passwordDialog.$.showPasswordButtonContainer.hidden);
+      assertFalse(passwordDialog.$.showPasswordButton.hidden);
 
       passwordDialog.set('item.password', PASSWORD);
       Polymer.dom.flush();
@@ -558,7 +558,7 @@ cr.define('settings_passwords_section', function() {
       assertEquals(PASSWORD, passwordDialog.$.passwordInput.value);
       // Password should be visible.
       assertEquals('text', passwordDialog.$.passwordInput.type);
-      assertFalse(passwordDialog.$.showPasswordButtonContainer.hidden);
+      assertFalse(passwordDialog.$.showPasswordButton.hidden);
     });
 
     test('showSavedPasswordListItem', function() {
@@ -579,7 +579,7 @@ cr.define('settings_passwords_section', function() {
       assertFalse(passwordListItem.$$('#password').disabled);
 
       // Hide Password Button should be shown.
-      assertTrue(passwordListItem.$$('#showPasswordButtonContainer')
+      assertTrue(passwordListItem.$$('#showPasswordButton')
                      .classList.contains('icon-visibility-off'));
     });
 

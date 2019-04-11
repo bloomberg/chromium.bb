@@ -205,9 +205,9 @@ suite('CrostiniPageTests', function() {
 
     test('Remove', function() {
       assertFalse(subpage.$.crostiniInstructionsRemove.hidden);
-      assertTrue(!!subpage.$$('.list-item button'));
+      assertTrue(!!subpage.$$('.list-item cr-icon-button'));
       // Remove first shared path, still one left.
-      subpage.$$('.list-item button').click();
+      subpage.$$('.list-item cr-icon-button').click();
       return crostiniBrowserProxy.whenCalled('removeCrostiniSharedPath')
           .then(([vmName, path]) => {
             assertEquals('termina', vmName);
@@ -223,7 +223,7 @@ suite('CrostiniPageTests', function() {
 
             // Remove remaining shared path, none left.
             crostiniBrowserProxy.resetResolver('removeCrostiniSharedPath');
-            subpage.$$('.list-item button').click();
+            subpage.$$('.list-item cr-icon-button').click();
             return crostiniBrowserProxy.whenCalled('removeCrostiniSharedPath');
           })
           .then(([vmName, path]) => {
