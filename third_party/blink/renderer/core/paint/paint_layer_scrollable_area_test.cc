@@ -1106,7 +1106,7 @@ TEST_P(PaintLayerScrollableAreaTest, ScrollingBackgroundDisplayItemClient) {
     </div>
   )HTML");
 
-  EXPECT_EQ(LayoutRect(2, 3, 101, 200),
+  EXPECT_EQ(IntRect(2, 3, 101, 200),
             ToLayoutBox(GetLayoutObjectByElementId("scroller"))
                 ->GetScrollableArea()
                 ->GetScrollingBackgroundDisplayItemClient()

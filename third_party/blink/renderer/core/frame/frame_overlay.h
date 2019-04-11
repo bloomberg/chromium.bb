@@ -78,7 +78,7 @@ class CORE_EXPORT FrameOverlay : public GraphicsLayerClient,
 
   // DisplayItemClient methods.
   String DebugName() const final { return "FrameOverlay"; }
-  LayoutRect VisualRect() const override;
+  IntRect VisualRect() const override;
 
   // GraphicsLayerClient implementation. Not needed for CompositeAfterPaint.
   bool NeedsRepaint(const GraphicsLayer&) const override { return true; }

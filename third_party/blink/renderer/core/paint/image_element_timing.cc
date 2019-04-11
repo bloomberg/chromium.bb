@@ -142,7 +142,7 @@ FloatRect ImageElementTiming::ComputeIntersectionRect(
     const LayoutObject& layout_object,
     const PropertyTreeState& current_paint_chunk_properties) {
   // Compute the visible part of the image rect.
-  LayoutRect image_visual_rect = layout_object.FirstFragment().VisualRect();
+  IntRect image_visual_rect = layout_object.FirstFragment().VisualRect();
 
   FloatClipRect visual_rect = FloatClipRect(FloatRect(image_visual_rect));
   GeometryMapper::LocalToAncestorVisualRect(current_paint_chunk_properties,

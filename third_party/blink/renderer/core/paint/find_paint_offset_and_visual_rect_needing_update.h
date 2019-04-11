@@ -75,7 +75,7 @@ class FindVisualRectNeedingUpdateScopeBase {
  protected:
   FindVisualRectNeedingUpdateScopeBase(const LayoutObject& object,
                                        const PaintInvalidatorContext& context,
-                                       const LayoutRect& old_visual_rect)
+                                       const IntRect& old_visual_rect)
       : object_(object),
         context_(context),
         old_visual_rect_(old_visual_rect),
@@ -94,13 +94,13 @@ class FindVisualRectNeedingUpdateScopeBase {
               context_.NeedsVisualRectUpdate(object_));
   }
 
-  static LayoutRect InflatedRect(const LayoutRect& r) {
-    LayoutRect result = r;
+  static IntRect InflatedRect(const IntRect& r) {
+    IntRect result = r;
     result.Inflate(1);
     return result;
   }
 
-  void CheckVisualRect(const LayoutRect& new_visual_rect) {
+  void CheckVisualRect(const IntRect& new_visual_rect) {
     if (needed_visual_rect_update_)
       return;
     DCHECK((old_visual_rect_.IsEmpty() && new_visual_rect.IsEmpty()) ||
@@ -122,7 +122,7 @@ class FindVisualRectNeedingUpdateScopeBase {
 
   const LayoutObject& object_;
   const PaintInvalidatorContext& context_;
-  LayoutRect old_visual_rect_;
+  IntRect old_visual_rect_;
   bool needed_visual_rect_update_;
 };
 
@@ -132,17 +132,17 @@ class FindVisualRectNeedingUpdateScope : FindVisualRectNeedingUpdateScopeBase {
  public:
   FindVisualRectNeedingUpdateScope(const LayoutObject& object,
                                    const PaintInvalidatorContext& context,
-                                   const LayoutRect& old_visual_rect,
+                                   const IntRect& old_visual_rect,
                                    // Must be a reference to a rect that
                                    // outlives this scope.
-                                   const LayoutRect& new_visual_rect)
+                                   const IntRect& new_visual_rect)
       : FindVisualRectNeedingUpdateScopeBase(object, context, old_visual_rect),
         new_visual_rect_ref_(new_visual_rect) {}
 
   ~FindVisualRectNeedingUpdateScope() { CheckVisualRect(new_visual_rect_ref_); }
 
  private:
-  const LayoutRect& new_visual_rect_ref_;
+  const IntRect& new_visual_rect_ref_;
 };
 
 // For updates of object visual rect and location.

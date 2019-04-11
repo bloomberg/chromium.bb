@@ -404,7 +404,7 @@ void LayoutScrollbar::InvalidateDisplayItemClientsOfScrollbarParts() {
   }
 }
 
-void LayoutScrollbar::SetVisualRect(const LayoutRect& rect) {
+void LayoutScrollbar::SetVisualRect(const IntRect& rect) {
   Scrollbar::SetVisualRect(rect);
   for (auto& part : parts_)
     part.value->GetMutableForPainting().FirstFragment().SetVisualRect(rect);

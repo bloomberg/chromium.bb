@@ -99,8 +99,8 @@ IntSize FrameOverlay::Size() const {
       frame_->View()->Size());
 }
 
-LayoutRect FrameOverlay::VisualRect() const {
-  return LayoutRect(IntPoint(), Size());
+IntRect FrameOverlay::VisualRect() const {
+  return IntRect(IntPoint(), Size());
 }
 
 IntRect FrameOverlay::ComputeInterestRect(const GraphicsLayer* graphics_layer,

@@ -135,7 +135,7 @@ void PaintTimingDetector::DidChangePerformanceTiming() {
 }
 
 uint64_t PaintTimingDetector::CalculateVisualSize(
-    const LayoutRect& visual_rect,
+    const IntRect& visual_rect,
     const PropertyTreeState& current_paint_chunk_properties) const {
   // This case should be dealt with outside the function.
   DCHECK(!visual_rect.IsEmpty());

@@ -235,7 +235,7 @@ DOMNodeId PaintLayer::OwnerNodeId() const {
   return static_cast<const DisplayItemClient&>(GetLayoutObject()).OwnerNodeId();
 }
 
-LayoutRect PaintLayer::VisualRect() const {
+IntRect PaintLayer::VisualRect() const {
   return layout_object_.FragmentsVisualRectBoundingBox();
 }
 

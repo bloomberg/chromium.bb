@@ -13,8 +13,8 @@
 
 namespace blink {
 
+class IntRect;
 class LayoutObject;
-class LayoutRect;
 class LocalFrameView;
 class PaintLayer;
 class TracedValue;
@@ -29,7 +29,7 @@ class CORE_EXPORT JankTracker {
   JankTracker(LocalFrameView*);
   ~JankTracker() {}
   void NotifyObjectPrePaint(const LayoutObject& object,
-                            const LayoutRect& old_visual_rect,
+                            const IntRect& old_visual_rect,
                             const PaintLayer& painting_layer);
   void NotifyCompositedLayerMoved(const PaintLayer&,
                                   FloatRect old_layer_rect,

@@ -162,7 +162,7 @@ TEST_P(FrameOverlayTest, VisualRect) {
   frame_overlay->UpdatePrePaint();
   GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
       WebWidget::LifecycleUpdateReason::kTest);
-  EXPECT_EQ(LayoutRect(0, 0, kViewportWidth, kViewportHeight),
+  EXPECT_EQ(IntRect(0, 0, kViewportWidth, kViewportHeight),
             frame_overlay->VisualRect());
 }
 

@@ -155,7 +155,7 @@ void TextPaintTimingDetector::RecordText(
   uint64_t visual_size = 0;
   // Compared to object.FirstFragment().VisualRect(), this will include other
   // fragments of the object.
-  LayoutRect visual_rect = object.FragmentsVisualRectBoundingBox();
+  IntRect visual_rect = object.FragmentsVisualRectBoundingBox();
   if (!visual_rect.IsEmpty()) {
     visual_size = frame_view_->GetPaintTimingDetector().CalculateVisualSize(
         visual_rect, current_paint_chunk_properties);

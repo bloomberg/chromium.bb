@@ -77,7 +77,7 @@ class LayoutScrollbar final : public Scrollbar {
 
   void InvalidateDisplayItemClientsOfScrollbarParts();
 
-  void SetVisualRect(const LayoutRect&) final;
+  void SetVisualRect(const IntRect&) final;
 
   void Trace(blink::Visitor*) override;
 

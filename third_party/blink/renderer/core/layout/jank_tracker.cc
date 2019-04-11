@@ -170,7 +170,7 @@ void JankTracker::AccumulateJank(const LayoutObject& source,
 }
 
 void JankTracker::NotifyObjectPrePaint(const LayoutObject& object,
-                                       const LayoutRect& old_visual_rect,
+                                       const IntRect& old_visual_rect,
                                        const PaintLayer& painting_layer) {
   if (!IsActive())
     return;

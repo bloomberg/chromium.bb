@@ -58,9 +58,8 @@ void ComputeChunkDerivedData(const DisplayItemList& display_items,
         item.IsDrawing()) {
       const auto& drawing = static_cast<const DrawingDisplayItem&>(item);
       if (drawing.GetPaintRecord() && drawing.KnownToBeOpaque()) {
-        known_to_be_opaque_region.op(
-            SkIRect(EnclosedIntRect(drawing.VisualRect())),
-            SkRegion::kUnion_Op);
+        known_to_be_opaque_region.op(SkIRect(drawing.VisualRect()),
+                                     SkRegion::kUnion_Op);
       }
     }
 
@@ -72,7 +71,7 @@ void ComputeChunkDerivedData(const DisplayItemList& display_items,
     }
   }
 
-  if (known_to_be_opaque_region.contains(EnclosingIntRect(chunk.bounds)))
+  if (known_to_be_opaque_region.contains(chunk.bounds))
     chunk.known_to_be_opaque = true;
 
   if (items.begin() != items.end()) {
@@ -86,9 +85,7 @@ class DebugDrawingClient final : public DisplayItemClient {
  public:
   DebugDrawingClient() { Invalidate(PaintInvalidationReason::kUncacheable); }
   String DebugName() const final { return "DebugDrawing"; }
-  LayoutRect VisualRect() const final {
-    return LayoutRect(LayoutRect::InfiniteIntRect());
-  }
+  IntRect VisualRect() const final { return LayoutRect::InfiniteIntRect(); }
 };
 
 }  // namespace

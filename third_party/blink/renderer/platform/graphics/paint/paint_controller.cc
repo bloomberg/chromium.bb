@@ -388,8 +388,7 @@ size_t PaintController::FindOutOfOrderCachedItemForward(
 #endif
     // Ensure our paint invalidation tests don't trigger the less performant
     // situation which should be rare.
-    LOG(WARNING) << "Can't find cached display item: " << id.client.DebugName()
-                 << " " << id.ToString();
+    DLOG(WARNING) << "Can't find cached display item: " << id;
   }
   return kNotFound;
 }
@@ -433,12 +432,11 @@ void PaintController::CopyCachedSubsequence(size_t begin_index,
     // Visual rect change should not happen in a cached subsequence.
     // However, because of different method of pixel snapping in different
     // paths, there are false positives. Just log an error.
-    if (cached_item->VisualRect() !=
-        FloatRect(cached_item->Client().VisualRect())) {
-      LOG(ERROR) << "Visual rect changed in a cached subsequence: "
-                 << cached_item->Client().DebugName()
-                 << " old=" << cached_item->VisualRect().ToString()
-                 << " new=" << cached_item->Client().VisualRect().ToString();
+    if (cached_item->VisualRect() != cached_item->Client().VisualRect()) {
+      DLOG(ERROR) << "Visual rect changed in a cached subsequence: "
+                  << cached_item->Client().DebugName()
+                  << " old=" << cached_item->VisualRect()
+                  << " new=" << cached_item->Client().VisualRect();
     }
 #endif
 
@@ -734,9 +732,8 @@ void PaintController::CheckDuplicatePaintChunkId(const PaintChunk::Id& id) {
       const auto& chunk = new_paint_chunks_.PaintChunkAt(index);
       if (chunk.id == id) {
         ShowDebugData();
-        NOTREACHED() << "New paint chunk id " << id.ToString().Utf8().data()
-                     << " has duplicated id with previous chuck "
-                     << chunk.ToString().Utf8().data();
+        NOTREACHED() << "New paint chunk id " << id
+                     << " has duplicated id with previous chuck " << chunk;
       }
     }
   }

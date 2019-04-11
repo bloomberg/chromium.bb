@@ -54,7 +54,7 @@ void NGFragmentPainter::AddPDFURLRectIfNeeded(const PaintInfo& paint_info,
   if (!url.IsValid())
     return;
 
-  IntRect rect = PixelSnappedIntRect(paint_fragment_.VisualRect());
+  IntRect rect = paint_fragment_.VisualRect();
   if (rect.IsEmpty())
     return;
 

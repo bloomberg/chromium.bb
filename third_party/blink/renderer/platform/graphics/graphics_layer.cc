@@ -117,9 +117,9 @@ GraphicsLayer::~GraphicsLayer() {
   DCHECK(!parent_);
 }
 
-LayoutRect GraphicsLayer::VisualRect() const {
+IntRect GraphicsLayer::VisualRect() const {
   DCHECK(layer_state_);
-  return LayoutRect(layer_state_->offset, LayoutSize(Size()));
+  return IntRect(layer_state_->offset, IntSize(Size()));
 }
 
 void GraphicsLayer::SetHasWillChangeTransformHint(
@@ -590,8 +590,9 @@ cc::Layer* GraphicsLayer::ContentsLayerIfRegistered() {
 
 RasterInvalidator& GraphicsLayer::EnsureRasterInvalidator() {
   if (!raster_invalidator_) {
-    raster_invalidator_ = std::make_unique<RasterInvalidator>(
-        [this](const IntRect& r) { SetNeedsDisplayInRect(r); });
+    raster_invalidator_ =
+        std::make_unique<RasterInvalidator>(base::BindRepeating(
+            &GraphicsLayer::SetNeedsDisplayInRect, base::Unretained(this)));
     raster_invalidator_->SetTracksRasterInvalidations(
         client_.IsTrackingRasterInvalidations());
   }

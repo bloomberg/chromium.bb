@@ -12,15 +12,14 @@
 
 namespace blink {
 
+class Image;
+class ImagePaintTimingDetector;
+class ImageResourceContent;
 class LayoutObject;
 class LocalFrameView;
-class LayoutRect;
-class TextPaintTimingDetector;
-class ImagePaintTimingDetector;
 class PropertyTreeState;
-class Image;
 class StyleImage;
-class ImageResourceContent;
+class TextPaintTimingDetector;
 
 // PaintTimingDetector contains some of paint metric detectors,
 // providing common infrastructure for these detectors.
@@ -59,7 +58,7 @@ class CORE_EXPORT PaintTimingDetector
 
   // |visual_rect| should be an object's bounding rect in the space of
   // PropertyTreeState.
-  uint64_t CalculateVisualSize(const LayoutRect& visual_rect,
+  uint64_t CalculateVisualSize(const IntRect& visual_rect,
                                const PropertyTreeState&) const;
   void Dispose();
 

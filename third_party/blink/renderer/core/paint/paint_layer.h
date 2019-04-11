@@ -232,7 +232,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // DisplayItemClient methods
   String DebugName() const final;
   DOMNodeId OwnerNodeId() const final;
-  LayoutRect VisualRect() const final;
+  IntRect VisualRect() const final;
 
   LayoutBoxModelObject& GetLayoutObject() const { return layout_object_; }
   LayoutBox* GetLayoutBox() const {
