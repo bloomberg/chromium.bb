@@ -143,10 +143,6 @@ class WizardController : public BaseScreenDelegate {
   // Volume percent at which spoken feedback is still audible.
   static const int kMinAudibleOutputVolumePercent;
 
-  // Allocate a given BaseScreen for the given |Screen|. Used by
-  // |screen_manager_|.
-  std::unique_ptr<BaseScreen> CreateScreen(OobeScreen screen);
-
   // Set the current screen. For Test use only.
   void SetCurrentScreenForTesting(BaseScreen* screen);
 
@@ -154,6 +150,9 @@ class WizardController : public BaseScreenDelegate {
       scoped_refptr<network::SharedURLLoaderFactory> factory);
 
  private:
+  // Create BaseScreen instances. These are owned by |screen_manager_|.
+  std::vector<std::unique_ptr<BaseScreen>> CreateScreens();
+
   // Show specific screen.
   void ShowWelcomeScreen();
   void ShowNetworkScreen();

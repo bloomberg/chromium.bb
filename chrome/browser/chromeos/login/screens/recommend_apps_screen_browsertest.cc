@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -113,10 +114,14 @@ class RecommendAppsScreenTest : public InProcessBrowserTest {
     RecommendAppsFetcher::SetFactoryCallbackForTesting(
         &fetcher_factory_callback_);
 
-    recommend_apps_screen_ = std::make_unique<RecommendAppsScreen>(
+    auto recommend_apps_screen = std::make_unique<RecommendAppsScreen>(
         GetOobeUI()->GetRecommendAppsScreenView(),
         base::BindRepeating(&RecommendAppsScreenTest::HandleScreenExit,
                             base::Unretained(this)));
+    recommend_apps_screen_ = recommend_apps_screen.get();
+    WizardController::default_controller()
+        ->screen_manager()
+        ->SetScreenForTesting(std::move(recommend_apps_screen));
 
     InProcessBrowserTest::SetUpOnMainThread();
   }
@@ -191,7 +196,7 @@ class RecommendAppsScreenTest : public InProcessBrowserTest {
            result;
   }
 
-  std::unique_ptr<RecommendAppsScreen> recommend_apps_screen_;
+  RecommendAppsScreen* recommend_apps_screen_;
   base::Optional<RecommendAppsScreen::Result> screen_result_;
   FakeRecommendAppsFetcher* recommend_apps_fetcher_ = nullptr;
 
@@ -205,7 +210,7 @@ class RecommendAppsScreenTest : public InProcessBrowserTest {
 
   std::unique_ptr<RecommendAppsFetcher> CreateRecommendAppsFetcher(
       RecommendAppsFetcherDelegate* delegate) {
-    EXPECT_EQ(delegate, recommend_apps_screen_.get());
+    EXPECT_EQ(delegate, recommend_apps_screen_);
     EXPECT_FALSE(recommend_apps_fetcher_);
 
     auto fetcher = std::make_unique<FakeRecommendAppsFetcher>(delegate);

@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/login/screens/base_screen.h"
 
 namespace chromeos {
 
@@ -15,17 +15,16 @@ ScreenManager::ScreenManager() = default;
 
 ScreenManager::~ScreenManager() = default;
 
+void ScreenManager::Init(std::vector<std::unique_ptr<BaseScreen>> screens) {
+  for (auto&& screen : screens)
+    screens_[screen->screen_id()] = std::move(screen);
+}
+
 BaseScreen* ScreenManager::GetScreen(OobeScreen screen) {
   auto iter = screens_.find(screen);
-  if (iter != screens_.end())
-    return iter->second.get();
-
-  std::unique_ptr<BaseScreen> result =
-      WizardController::default_controller()->CreateScreen(screen);
-  DCHECK(result) << "Can not create screen named " << GetOobeScreenName(screen);
-  BaseScreen* unowned_result = result.get();
-  screens_[screen] = std::move(result);
-  return unowned_result;
+  DCHECK(iter != screens_.end())
+      << "Failed to find screen " << GetOobeScreenName(screen);
+  return iter->second.get();
 }
 
 bool ScreenManager::HasScreen(OobeScreen screen) {

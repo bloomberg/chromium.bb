@@ -11,9 +11,11 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "chrome/browser/chromeos/login/screens/base_screen.h"
+#include "chrome/browser/chromeos/login/oobe_screen.h"
 
 namespace chromeos {
+
+class BaseScreen;
 
 // Class that manages creation and ownership of screens.
 class ScreenManager {
@@ -21,7 +23,10 @@ class ScreenManager {
   ScreenManager();
   ~ScreenManager();
 
-  // Getter for screen with lazy initialization.
+  // Initialize all screen instances.
+  void Init(std::vector<std::unique_ptr<BaseScreen>> screens);
+
+  // Getter for screen. Does not create the screen.
   BaseScreen* GetScreen(OobeScreen screen);
 
   bool HasScreen(OobeScreen screen);
