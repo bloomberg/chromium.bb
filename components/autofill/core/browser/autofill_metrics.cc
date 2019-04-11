@@ -684,6 +684,12 @@ void AutofillMetrics::LogCreditCardInfoBarMetric(
                                   metric, NUM_INFO_BAR_METRICS);
   }
 
+  if (options.from_dynamic_change_form) {
+    base::UmaHistogramEnumeration(
+        "Autofill.CreditCardInfoBar" + destination + ".FromDynamicChangeForm",
+        metric, NUM_INFO_BAR_METRICS);
+  }
+
   if (options.has_non_focusable_field) {
     base::UmaHistogramEnumeration(
         "Autofill.CreditCardInfoBar" + destination + ".FromNonFocusableForm",
@@ -744,6 +750,11 @@ void AutofillMetrics::LogSaveCardPromptMetric(
   if (options.has_non_focusable_field) {
     base::UmaHistogramEnumeration(
         metric_with_destination_and_show + ".FromNonFocusableForm", metric,
+        NUM_SAVE_CARD_PROMPT_METRICS);
+  }
+  if (options.from_dynamic_change_form) {
+    base::UmaHistogramEnumeration(
+        metric_with_destination_and_show + ".FromDynamicChangeForm", metric,
         NUM_SAVE_CARD_PROMPT_METRICS);
   }
   base::UmaHistogramEnumeration(

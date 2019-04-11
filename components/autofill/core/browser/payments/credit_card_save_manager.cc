@@ -102,11 +102,13 @@ CreditCardSaveManager::CreditCardSaveManager(
 CreditCardSaveManager::~CreditCardSaveManager() {}
 
 void CreditCardSaveManager::AttemptToOfferCardLocalSave(
+    bool from_dynamic_change_form,
     bool has_non_focusable_field,
     const CreditCard& card) {
   local_card_save_candidate_ = card;
   show_save_prompt_ = base::nullopt;
   has_non_focusable_field_ = has_non_focusable_field;
+  from_dynamic_change_form_ = from_dynamic_change_form;
 
   // Query the Autofill StrikeDatabase on if we should pop up the
   // offer-to-save prompt for this card.
@@ -131,6 +133,7 @@ void CreditCardSaveManager::AttemptToOfferCardLocalSave(
 
 void CreditCardSaveManager::AttemptToOfferCardUploadSave(
     const FormStructure& submitted_form,
+    bool from_dynamic_change_form,
     bool has_non_focusable_field,
     const CreditCard& card,
     const bool uploading_local_card) {
@@ -159,6 +162,7 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
   found_cvc_value_in_non_cvc_field_ = false;
 
   has_non_focusable_field_ = has_non_focusable_field;
+  from_dynamic_change_form_ = from_dynamic_change_form;
 
   for (const auto& field : submitted_form) {
     const bool is_valid_cvc = IsValidCreditCardSecurityCode(
@@ -188,7 +192,10 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
     upload_decision_metrics_ |=
         AutofillMetrics::UPLOAD_OFFERED_FROM_NON_FOCUSABLE_FIELD;
   }
-
+  if (submitted_form.value_from_dynamic_change_form()) {
+    upload_decision_metrics_ |=
+        AutofillMetrics::UPLOAD_OFFERED_FROM_DYNAMIC_CHANGE_FORM;
+  }
   if (upload_request_.cvc.empty()) {
     // Apply the CVC decision to |upload_decision_metrics_| to denote a problem
     // was found.
@@ -445,7 +452,8 @@ void CreditCardSaveManager::OnDidGetUploadDetails(
             features::kAutofillDoNotUploadSaveUnsupportedCards) &&
         !supported_card_bin_ranges.empty() &&
         !IsCreditCardSupported(supported_card_bin_ranges)) {
-      AttemptToOfferCardLocalSave(has_non_focusable_field_,
+      AttemptToOfferCardLocalSave(from_dynamic_change_form_,
+                                  has_non_focusable_field_,
                                   upload_request_.card);
       upload_decision_metrics_ |=
           AutofillMetrics::UPLOAD_NOT_OFFERED_UNSUPPORTED_BIN_RANGE;
@@ -485,7 +493,8 @@ void CreditCardSaveManager::OnDidGetUploadDetails(
         upload_request_.detected_values & DetectedValue::POSTAL_CODE &&
         upload_request_.detected_values & DetectedValue::CVC;
     if (found_name_and_postal_code_and_cvc && !uploading_local_card_) {
-      AttemptToOfferCardLocalSave(has_non_focusable_field_,
+      AttemptToOfferCardLocalSave(from_dynamic_change_form_,
+                                  has_non_focusable_field_,
                                   upload_request_.card);
     }
     upload_decision_metrics_ |=
@@ -539,6 +548,7 @@ void CreditCardSaveManager::OfferCardUploadSave() {
     client_->ConfirmSaveCreditCardToCloud(
         upload_request_.card, std::move(legal_message_),
         AutofillClient::SaveCreditCardOptions()
+            .with_from_dynamic_change_form(from_dynamic_change_form_)
             .with_has_non_focusable_field(has_non_focusable_field_)
             .with_should_request_name_from_user(should_request_name_from_user_)
             .with_should_request_expiration_date_from_user(

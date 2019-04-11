@@ -120,6 +120,9 @@ class FormDataImporter {
   CreditCard ExtractCreditCardFromForm(const FormStructure& form,
                                        bool* hasDuplicateFieldType);
 
+  // Whether a dynamic change form is imported.
+  bool from_dynamic_change_form_ = false;
+
   // Whether the form imported has non-focusable fields after user entered
   // information into it.
   bool has_non_focusable_field_ = false;

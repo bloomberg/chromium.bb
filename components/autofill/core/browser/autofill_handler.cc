@@ -287,6 +287,10 @@ bool AutofillHandler::ParseForm(const FormData& form,
                                       /*only_server_and_autofill_state=*/true);
     if (observer_for_testing_)
       observer_for_testing_->OnFormParsed();
+
+    if (form_structure.get()->value_from_dynamic_change_form()) {
+      value_from_dynamic_change_form_ = true;
+    }
   }
 
   form_structure->DetermineHeuristicTypes();

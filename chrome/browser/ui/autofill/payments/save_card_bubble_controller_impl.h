@@ -48,6 +48,8 @@ class SaveCardBubbleControllerImpl
   // bubble; otherwise, only the omnibox icon is displayed.
   // If |options.has_non_focusable_field| is true, the save is triggered by a
   // form that has non_focusable fields.
+  // If |options.from_dynamic_change_form| is true, the save is triggered by a
+  // dynamic change form.
   void OfferLocalSave(
       const CreditCard& card,
       AutofillClient::SaveCreditCardOptions options,
@@ -65,6 +67,8 @@ class SaveCardBubbleControllerImpl
   // offer-to-save bubble; otherwise, only the omnibox icon is displayed.
   // If |options.has_non_focusable_field| is true, the save is triggered by a
   // form that has non-focusable fields.
+  // If |options.from_dynamic_change_form| is true, the save is triggered by a
+  // dynamic change form.
   void OfferUploadSave(
       const CreditCard& card,
       std::unique_ptr<base::DictionaryValue> legal_message,
