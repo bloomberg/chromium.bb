@@ -453,7 +453,7 @@ gfx::Rect OverviewWindowDragController::GetGridBounds(
   switch (snap_position) {
     case SplitViewController::NONE:
       return gfx::Rect(
-          screen_util::GetDisplayWorkAreaBoundsInParentForDefaultContainer(
+          screen_util::GetDisplayWorkAreaBoundsInParentForActiveDeskContainer(
               pending_snapped_window));
     case SplitViewController::LEFT:
       return split_view_controller_->GetSnappedWindowBoundsInScreen(

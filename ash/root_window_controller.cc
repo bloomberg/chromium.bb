@@ -212,7 +212,8 @@ void ReparentWindow(aura::Window* window, aura::Window* new_parent) {
 void ReparentAllWindows(aura::Window* src, aura::Window* dst) {
   // Set of windows to move.
   const int kContainerIdsToMove[] = {
-      kShellWindowId_DefaultContainer,
+      // TODO(afakhry): Add rest of desks containers.
+      kShellWindowId_DefaultContainerDeprecated,
       kShellWindowId_AlwaysOnTopContainer,
       kShellWindowId_PipContainer,
       kShellWindowId_SystemModalContainer,

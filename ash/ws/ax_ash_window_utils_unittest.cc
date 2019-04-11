@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
+#include "ash/wm/desks/desks_util.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_action_data.h"
@@ -137,7 +138,7 @@ TEST_F(AXAshWindowUtilsTest, WalkDownToClientWindow) {
 
   // Start with the widget's container.
   aura::Window* container = Shell::GetContainer(
-      Shell::GetPrimaryRootWindow(), kShellWindowId_DefaultContainer);
+      Shell::GetPrimaryRootWindow(), desks_util::GetActiveDeskContainerId());
   EXPECT_EQ(aura::Env::Mode::LOCAL, container->env()->mode());
 
   // Walking down "jumps the fence" into the client window.

@@ -15,7 +15,7 @@ namespace {
 
 constexpr std::array<int, kMaxNumberOfDesks> kDesksContainersIds = {
     // TODO(afakhry): Fill this.
-    kShellWindowId_DefaultContainer,
+    kShellWindowId_DefaultContainerDeprecated,
 };
 
 }  // namespace
@@ -26,7 +26,7 @@ const std::array<int, kMaxNumberOfDesks>& GetDesksContainersIds() {
 
 const char* GetDeskContainerName(int container_id) {
   switch (container_id) {
-    case kShellWindowId_DefaultContainer:
+    case kShellWindowId_DefaultContainerDeprecated:
       return "Desk_Container_A";
 
       // TODO(afakhry): Fill this.
@@ -51,19 +51,24 @@ std::vector<aura::Window*> GetDesksContainers(aura::Window* root) {
   return containers;
 }
 
-bool IsDeskContainer(aura::Window* container) {
+bool IsDeskContainer(const aura::Window* container) {
   DCHECK(container);
   // TODO(afakhry): Add the rest of the desks containers.
-  return container->id() == kShellWindowId_DefaultContainer;
+  return container->id() == kShellWindowId_DefaultContainerDeprecated;
+}
+
+bool IsDeskContainerId(int id) {
+  // TODO(afakhry): Add the rest of the desks containers.
+  return id == kShellWindowId_DefaultContainerDeprecated;
 }
 
 int GetActiveDeskContainerId() {
   // TODO(afakhry): Do proper checking when the other desks containers are
   // added.
-  return kShellWindowId_DefaultContainer;
+  return kShellWindowId_DefaultContainerDeprecated;
 }
 
-ASH_EXPORT bool IsActiveDeskContainer(aura::Window* container) {
+ASH_EXPORT bool IsActiveDeskContainer(const aura::Window* container) {
   DCHECK(container);
   return container->id() == GetActiveDeskContainerId();
 }

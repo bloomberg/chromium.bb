@@ -48,8 +48,12 @@ enum ShellWindowId {
   // The wallpaper (desktop background) window.
   kShellWindowId_WallpaperContainer,
 
-  // The container for standard top-level windows.
-  kShellWindowId_DefaultContainer,
+  // The containers for standard top-level windows per active desks.
+  // Note: Do not use this container directly. Use
+  // `desks_util::GetActiveDeskContainerId()` instead.
+  // TODO(afakhry): Rename this container, unexpose it, and add the rest of the
+  // containers.
+  kShellWindowId_DefaultContainerDeprecated,
 
   // The container for top-level windows with the 'always-on-top' flag set.
   kShellWindowId_AlwaysOnTopContainer,
@@ -174,7 +178,7 @@ const int32_t kAllShellContainerIds[] = {
     kShellWindowId_UnparentedControlContainer,
     kShellWindowId_WallpaperContainer,
     kShellWindowId_VirtualKeyboardContainer,
-    kShellWindowId_DefaultContainer,
+    kShellWindowId_DefaultContainerDeprecated,
     kShellWindowId_AlwaysOnTopContainer,
     kShellWindowId_AppListContainer,
     kShellWindowId_HomeScreenContainer,

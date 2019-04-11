@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ui/aura/client/aura_constants.h"
@@ -20,8 +21,8 @@ AlwaysOnTopController::AlwaysOnTopController(
     aura::Window* pip_container)
     : always_on_top_container_(always_on_top_container),
       pip_container_(pip_container) {
-  DCHECK_NE(kShellWindowId_DefaultContainer, always_on_top_container_->id());
-  DCHECK_NE(kShellWindowId_DefaultContainer, pip_container_->id());
+  DCHECK(!desks_util::IsDeskContainer(always_on_top_container_));
+  DCHECK(!desks_util::IsDeskContainer(pip_container_));
   always_on_top_container_->SetLayoutManager(
       new WorkspaceLayoutManager(always_on_top_container_));
   pip_container_->SetLayoutManager(new WorkspaceLayoutManager(pip_container_));
@@ -44,8 +45,12 @@ aura::Window* AlwaysOnTopController::GetContainer(aura::Window* window) const {
   DCHECK(pip_container_);
 
   if (!window->GetProperty(aura::client::kAlwaysOnTopKey)) {
-    return always_on_top_container_->GetRootWindow()->GetChildById(
-        kShellWindowId_DefaultContainer);
+    aura::Window* root = always_on_top_container_->GetRootWindow();
+
+    // TODO(afakhry): Do we need to worry about the context of |window| here? Or
+    // is it safe to assume that |window| should always be parented to the
+    // active desks' container.
+    return desks_util::GetActiveDeskContainerForRoot(root);
   }
   if (window->parent() && wm::GetWindowState(window)->IsPip())
     return pip_container_;

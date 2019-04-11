@@ -441,7 +441,8 @@ gfx::Rect SplitViewController::GetSnappedWindowBoundsInScreen(
     aura::Window* window,
     SnapPosition snap_position) {
   const gfx::Rect work_area_bounds_in_screen =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(window);
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+          window);
   if (snap_position == NONE)
     return work_area_bounds_in_screen;
 
@@ -463,7 +464,8 @@ gfx::Rect SplitViewController::GetSnappedWindowBoundsInScreenUnadjusted(
     aura::Window* window,
     SnapPosition snap_position) {
   const gfx::Rect work_area_bounds_in_screen =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(window);
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+          window);
   if (snap_position == NONE)
     return work_area_bounds_in_screen;
 
@@ -479,7 +481,8 @@ gfx::Rect SplitViewController::GetSnappedWindowBoundsInScreenUnadjusted(
 
 int SplitViewController::GetDefaultDividerPosition(aura::Window* window) const {
   const gfx::Rect work_area_bounds_in_screen =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(window);
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+          window);
   const gfx::Size divider_size = SplitViewDivider::GetDividerSize(
       work_area_bounds_in_screen, GetCurrentScreenOrientation(),
       false /* is_dragging */);
@@ -547,7 +550,7 @@ void SplitViewController::Resize(const gfx::Point& location_in_screen) {
     return;
   presentation_time_recorder_->RequestNext();
   const gfx::Rect work_area_bounds =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           GetDefaultSnappedWindow());
   gfx::Point modified_location_in_screen =
       GetBoundedPosition(location_in_screen, work_area_bounds);
@@ -578,7 +581,7 @@ void SplitViewController::EndResize(const gfx::Point& location_in_screen) {
   is_resizing_ = false;
 
   const gfx::Rect work_area_bounds =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           GetDefaultSnappedWindow());
   gfx::Point modified_location_in_screen =
       GetBoundedPosition(location_in_screen, work_area_bounds);
@@ -1042,7 +1045,7 @@ void SplitViewController::UpdateBlackScrim(
                            ? location_in_screen.x()
                            : location_in_screen.y();
   gfx::Rect work_area_bounds =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           GetDefaultSnappedWindow());
   if (!IsCurrentScreenOrientationLandscape())
     work_area_bounds.Transpose();
@@ -1079,7 +1082,7 @@ void SplitViewController::UpdateSnappedWindowsAndDividerBounds() {
 SplitViewController::SnapPosition SplitViewController::GetBlackScrimPosition(
     const gfx::Point& location_in_screen) {
   const gfx::Rect work_area_bounds =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           GetDefaultSnappedWindow());
   if (!work_area_bounds.Contains(location_in_screen))
     return NONE;
@@ -1143,7 +1146,8 @@ void SplitViewController::GetSnappedWindowBoundsInScreenInternal(
     gfx::Rect* left_or_top_rect,
     gfx::Rect* right_or_bottom_rect) {
   const gfx::Rect work_area_bounds_in_screen =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(window);
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+          window);
 
   // |divide_position_| might not be properly initialized yet.
   divider_position_ = (divider_position_ < 0)
@@ -1187,7 +1191,7 @@ int SplitViewController::GetClosestFixedDividerPosition() {
   DCHECK(IsSplitViewModeActive());
 
   const gfx::Rect work_area_bounds_in_screen =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           GetDefaultSnappedWindow());
   const gfx::Size divider_size = SplitViewDivider::GetDividerSize(
       work_area_bounds_in_screen, GetCurrentScreenOrientation(),
@@ -1271,7 +1275,7 @@ aura::Window* SplitViewController::GetActiveWindowAfterResizingUponExit() {
 
 int SplitViewController::GetDividerEndPosition() {
   const gfx::Rect work_area_bounds =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           GetDefaultSnappedWindow());
   return IsCurrentScreenOrientationLandscape() ? work_area_bounds.width()
                                                : work_area_bounds.height();

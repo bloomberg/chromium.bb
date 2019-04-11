@@ -9,6 +9,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
@@ -130,7 +131,7 @@ TEST_F(AlwaysOnTopControllerTest,
   aura::Window* container =
       always_on_top_controller->GetContainer(window.get());
   ASSERT_TRUE(container);
-  EXPECT_EQ(kShellWindowId_DefaultContainer, container->id());
+  EXPECT_EQ(desks_util::GetActiveDeskContainerId(), container->id());
 }
 
 TEST_F(AlwaysOnTopControllerTest,

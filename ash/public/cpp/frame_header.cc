@@ -62,11 +62,10 @@ gfx::Rect GetAvailableTitleBounds(const views::View* left_view,
 // widget's activation changes. Returns false if the header should switch to
 // new visuals instantaneously.
 bool CanAnimateActivation(views::Widget* widget) {
-  // Do not animate the header if the parent (e.g.
-  // kShellWindowId_DefaultContainer) is already animating. All of the
-  // implementers of FrameHeader animate activation by continuously painting
-  // during the animation. This gives the parent's animation a slower frame
-  // rate.
+  // Do not animate the header if the parent (e.g. the active desk container) is
+  // already animating. All of the implementers of FrameHeader animate
+  // activation by continuously painting during the animation. This gives the
+  // parent's animation a slower frame rate.
   // TODO(sky): Expose a better way to determine this rather than assuming the
   // parent is a toplevel container.
   aura::Window* window = widget->GetNativeWindow();

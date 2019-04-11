@@ -13,6 +13,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/window_factory.h"
 #include "ash/wm/cursor_manager_test_api.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/drag_window_controller.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_util.h"
@@ -608,11 +609,10 @@ TEST_F(DragWindowResizerTest, CursorDeviceScaleFactor) {
   // Move window from the root window with 2.0 device scale factor to the root
   // window with 1.0 device scale factor.
   {
-    // Make sure the window is on the default container first.
-    aura::Window* default_container =
-        RootWindowController::ForWindow(root_windows[1])
-            ->GetContainer(kShellWindowId_DefaultContainer);
-    default_container->AddChild(window_.get());
+    // Make sure the window is on the active desk container first.
+    aura::Window* active_desk_container =
+        desks_util::GetActiveDeskContainerForRoot(root_windows[1]);
+    active_desk_container->AddChild(window_.get());
     window_->SetBoundsInScreen(
         gfx::Rect(600, 0, 50, 60),
         display::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]));

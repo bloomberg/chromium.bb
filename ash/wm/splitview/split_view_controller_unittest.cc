@@ -23,6 +23,7 @@
 #include "ash/system/status_area_widget_test_helper.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -1437,7 +1438,7 @@ TEST_F(SplitViewControllerTest, SnapWindowWithMinimumSizeTest) {
   EXPECT_TRUE(CanSnapInSplitview(window1.get()));
 
   const gfx::Rect display_bounds =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           window1.get());
   aura::test::TestWindowDelegate* delegate =
       static_cast<aura::test::TestWindowDelegate*>(window1->delegate());
@@ -1472,7 +1473,7 @@ TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
             OrientationLockType::kLandscapePrimary);
 
   gfx::Rect display_bounds =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           window1.get());
   EXPECT_TRUE(CanSnapInSplitview(window1.get()));
   split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
@@ -1516,7 +1517,7 @@ TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
             OrientationLockType::kPortraitPrimary);
 
   display_bounds =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           window1.get());
   delegate1->set_minimum_size(
       gfx::Size(display_bounds.width(), display_bounds.height() * 0.4f));
@@ -1546,7 +1547,7 @@ TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
             OrientationLockType::kLandscapeSecondary);
 
   display_bounds =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           window1.get());
   delegate1->set_minimum_size(
       gfx::Size(display_bounds.width() * 0.4f, display_bounds.height()));
@@ -1578,7 +1579,7 @@ TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
             OrientationLockType::kPortraitSecondary);
 
   display_bounds =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           window1.get());
   delegate1->set_minimum_size(
       gfx::Size(display_bounds.width(), display_bounds.height() * 0.4f));
@@ -1616,7 +1617,7 @@ TEST_F(SplitViewControllerTest,
   EXPECT_EQ(OrientationLockType::kLandscapePrimary,
             GetCurrentScreenOrientation());
   gfx::Rect workarea_bounds =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           window1.get());
 
   // Snap the divider to one third position when there is only left window with
@@ -1702,7 +1703,7 @@ TEST_F(SplitViewControllerTest,
   const gfx::Rect bounds(0, 0, 200, 300);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   const gfx::Rect workarea_bounds =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           window1.get());
 
   // Divider should be moved to the middle at the beginning.
@@ -1845,7 +1846,7 @@ TEST_F(SplitViewControllerTest,
   gfx::Rect divider_bounds =
       split_view_divider()->GetDividerBoundsInScreen(false /* is_dragging */);
   const int screen_width =
-      screen_util::GetDisplayWorkAreaBoundsInParentForDefaultContainer(
+      screen_util::GetDisplayWorkAreaBoundsInParentForActiveDeskContainer(
           window1.get())
           .width();
   GetEventGenerator()->set_current_screen_location(
@@ -2128,7 +2129,7 @@ TEST_F(SplitViewControllerTest, DividerClosestRatioOnWorkArea) {
   gfx::Rect divider_bounds =
       split_view_divider()->GetDividerBoundsInScreen(false);
   gfx::Rect workarea_bounds =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           window.get());
   generator->set_current_screen_location(divider_bounds.CenterPoint());
   // Drag the divider to one third position of the work area's width.
@@ -2226,7 +2227,7 @@ TEST_F(SplitViewControllerTest, EndSplitViewWhileResizingBeyondMinimum) {
                               display::Display::RotationSource::ACTIVE);
 
   gfx::Rect display_bounds =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           window.get());
   split_view_controller()->SnapWindow(window.get(), SplitViewController::LEFT);
   delegate->set_minimum_size(
@@ -2269,7 +2270,7 @@ TEST_F(SplitViewControllerTest, ResizeTwoWindows) {
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
 
   gfx::Rect display_bounds =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           window1.get());
   split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
   split_view_controller()->SnapWindow(window2.get(),
@@ -2339,7 +2340,7 @@ TEST_F(SplitViewControllerTest, EndSplitViewDuringDividerSnapAnimation) {
                               display::Display::RotationSource::ACTIVE);
 
   gfx::Rect display_bounds =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           window.get());
   split_view_controller()->SnapWindow(window.get(), SplitViewController::LEFT);
   delegate->set_minimum_size(
@@ -3429,7 +3430,7 @@ TEST_F(SplitViewTabDraggingTest, AdjustOverviewBoundsDuringDragging) {
           window1->GetRootWindow());
   EXPECT_TRUE(current_grid->GetDropTarget());
   const gfx::Rect work_area_bounds =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           window1.get());
   EXPECT_EQ(current_grid->bounds(), work_area_bounds);
   // The drop target should be visible.
@@ -4328,7 +4329,7 @@ TEST_F(SplitViewAppDraggingTest, DragNonActiveMaximizedWindow) {
   InitializeWindow(false);
   EXPECT_TRUE(wm::GetWindowState(window())->IsMaximized());
   gfx::Rect display_bounds =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           window());
   const float long_scroll_delta = display_bounds.height() / 4 + 5;
 
@@ -4354,7 +4355,7 @@ TEST_F(SplitViewAppDraggingTest, DragActiveMaximizedWindow) {
   InitializeWindow();
   EXPECT_TRUE(wm::GetWindowState(window())->IsMaximized());
   gfx::Rect display_bounds =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           window());
 
   // Move the window by a small amount of distance will maximize the window
@@ -4407,7 +4408,7 @@ TEST_F(SplitViewAppDraggingTest, ShelfVisibilityIfDraggingFullscreenedWindow) {
   ShelfLayoutManager* shelf_layout_manager =
       AshTestBase::GetPrimaryShelf()->shelf_layout_manager();
   gfx::Rect display_bounds =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           window());
 
   // Shelf will be auto-hidden if the window requests to be fullscreened.
@@ -4482,7 +4483,7 @@ TEST_F(SplitViewAppDraggingTest, FlingWhenPreviewAreaIsShown) {
   InitializeWindow();
   EXPECT_TRUE(wm::GetWindowState(window())->IsMaximized());
   gfx::Rect display_bounds =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           window());
 
   const float long_scroll_delta = display_bounds.height() / 4 + 5;
@@ -4544,7 +4545,7 @@ TEST_F(SplitViewAppDraggingTest, FlingWhenSplitViewIsActive) {
                                       SplitViewController::RIGHT);
 
   gfx::Rect display_bounds =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           window());
   const float long_scroll_y = display_bounds.bottom() - 10;
   float large_velocity =
@@ -4662,24 +4663,24 @@ TEST_F(SplitViewAppDraggingTest, BackdropBoundsDuringDrag) {
                                       SplitViewController::RIGHT);
   EXPECT_EQ(window2.get(), wm::GetActiveWindow());
 
-  const aura::Window* default_container =
+  const aura::Window* active_desk_container =
       Shell::GetPrimaryRootWindowController()->GetContainer(
-          kShellWindowId_DefaultContainer);
+          desks_util::GetActiveDeskContainerId());
 
   // Backdrop window should below two snapped windows and its bounds should be
   // the same as the container bounds.
-  EXPECT_EQ(3U, default_container->children().size());
-  EXPECT_EQ(window(), default_container->children()[1]);
-  EXPECT_EQ(window2.get(), default_container->children()[2]);
-  EXPECT_EQ(default_container->bounds(),
-            default_container->children()[0]->bounds());
+  EXPECT_EQ(3U, active_desk_container->children().size());
+  EXPECT_EQ(window(), active_desk_container->children()[1]);
+  EXPECT_EQ(window2.get(), active_desk_container->children()[2]);
+  EXPECT_EQ(active_desk_container->bounds(),
+            active_desk_container->children()[0]->bounds());
 
   // Start window drag and activate the dragged window during drag.
   gfx::Point location(0, 10);
   SendScrollStartAndUpdate(location);
   wm::ActivateWindow(window());
 
-  aura::Window::Windows windows = default_container->children();
+  aura::Window::Windows windows = active_desk_container->children();
   auto it = std::find(windows.begin(), windows.end(), window2.get());
   // Backdrop window should be the window that just below the snapped |window2|
   // and its bounds should be the same as the snapped window during drag.
@@ -4692,12 +4693,12 @@ TEST_F(SplitViewAppDraggingTest, BackdropBoundsDuringDrag) {
   // Backdrop should restore back to container bounds after drag.
   EndScrollSequence();
   EXPECT_EQ(window(), wm::GetActiveWindow());
-  windows = default_container->children();
+  windows = active_desk_container->children();
   it = std::find(windows.begin(), windows.end(), window2.get());
   if (it != windows.begin())
     backdrop_window = *(--it);
   DCHECK(backdrop_window);
-  EXPECT_EQ(backdrop_window->bounds(), default_container->bounds());
+  EXPECT_EQ(backdrop_window->bounds(), active_desk_container->bounds());
 }
 
 }  // namespace ash

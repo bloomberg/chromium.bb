@@ -4,6 +4,7 @@
 
 #include "components/exo/display.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/wm/desks/desks_util.h"
 #include "components/exo/buffer.h"
 #include "components/exo/client_controlled_shell_surface.h"
 #include "components/exo/data_device.h"
@@ -128,7 +129,7 @@ TEST_F(DisplayTest, CreateClientControlledShellSurface) {
   // Create a remote shell surface for surface2.
   std::unique_ptr<ShellSurfaceBase> shell_surface2 =
       display->CreateClientControlledShellSurface(
-          surface2.get(), ash::kShellWindowId_DefaultContainer,
+          surface2.get(), ash::desks_util::GetActiveDeskContainerId(),
           1.0 /* default_scale_factor */);
   EXPECT_TRUE(shell_surface2);
 }

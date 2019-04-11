@@ -50,6 +50,10 @@
 #include "ui/gfx/transform_util.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(OS_CHROMEOS)
+#include "ash/wm/desks/desks_util.h"
+#endif  // defined(OS_CHROMEOS)
+
 DEFINE_UI_CLASS_PROPERTY_TYPE(exo::Surface*)
 
 namespace exo {
@@ -112,6 +116,14 @@ gfx::Size ToTransformedSize(const gfx::Size& size, Transform transform) {
   NOTREACHED();
 }
 
+bool IsDeskContainer(aura::Window* container) {
+#if defined(OS_CHROMEOS)
+  return ash::desks_util::IsDeskContainer(container);
+#else
+  return container->id() == ash::kShellWindowId_DefaultContainerDeprecated;
+#endif  // defined(OS_CHROMEOS)
+}
+
 class CustomWindowDelegate : public aura::WindowDelegate {
  public:
   explicit CustomWindowDelegate(Surface* surface) : surface_(surface) {}
@@ -132,9 +144,7 @@ class CustomWindowDelegate : public aura::WindowDelegate {
   int GetNonClientComponent(const gfx::Point& point) const override {
     views::Widget* widget =
         views::Widget::GetTopLevelWidgetForNativeView(surface_->window());
-    if (widget &&
-        widget->GetNativeView()->parent()->id() ==
-            ash::kShellWindowId_DefaultContainer &&
+    if (widget && IsDeskContainer(widget->GetNativeView()->parent()) &&
         surface_->HitTest(point)) {
       return HTCLIENT;
     }

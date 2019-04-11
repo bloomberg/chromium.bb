@@ -28,11 +28,13 @@ ASH_EXPORT std::vector<aura::Window*> GetDesksContainers(aura::Window* root);
 
 ASH_EXPORT const char* GetDeskContainerName(int container_id);
 
-ASH_EXPORT bool IsDeskContainer(aura::Window* container);
+ASH_EXPORT bool IsDeskContainer(const aura::Window* container);
+
+ASH_EXPORT bool IsDeskContainerId(int id);
 
 ASH_EXPORT int GetActiveDeskContainerId();
 
-ASH_EXPORT bool IsActiveDeskContainer(aura::Window* container);
+ASH_EXPORT bool IsActiveDeskContainer(const aura::Window* container);
 
 ASH_EXPORT aura::Window* GetActiveDeskContainerForRoot(aura::Window* root);
 

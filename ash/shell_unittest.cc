@@ -25,6 +25,7 @@
 #include "ash/test_shell_delegate.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/window_factory.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/stl_util.h"
@@ -59,9 +60,9 @@ namespace ash {
 
 namespace {
 
-aura::Window* GetDefaultContainer() {
+aura::Window* GetActiveDeskContainer() {
   return Shell::GetContainer(Shell::GetPrimaryRootWindow(),
-                             kShellWindowId_DefaultContainer);
+                             desks_util::GetActiveDeskContainerId());
 }
 
 aura::Window* GetAlwaysOnTopContainer() {
@@ -80,8 +81,9 @@ void ExpectAllContainers() {
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
   EXPECT_TRUE(
       Shell::GetContainer(root_window, kShellWindowId_WallpaperContainer));
-  EXPECT_TRUE(
-      Shell::GetContainer(root_window, kShellWindowId_DefaultContainer));
+  // TODO(afakhry): Test rest of desks containers.
+  EXPECT_TRUE(Shell::GetContainer(root_window,
+                                  kShellWindowId_DefaultContainerDeprecated));
   EXPECT_TRUE(
       Shell::GetContainer(root_window, kShellWindowId_AlwaysOnTopContainer));
   EXPECT_TRUE(Shell::GetContainer(root_window, kShellWindowId_ShelfContainer));
@@ -238,10 +240,10 @@ TEST_F(ShellTest, CreateWindow) {
   // Normal window should be created in default container.
   TestCreateWindow(views::Widget::InitParams::TYPE_WINDOW,
                    false,  // always_on_top
-                   GetDefaultContainer());
+                   GetActiveDeskContainer());
   TestCreateWindow(views::Widget::InitParams::TYPE_POPUP,
                    false,  // always_on_top
-                   GetDefaultContainer());
+                   GetActiveDeskContainer());
 
   // Always-on-top window and popup are created in always-on-top container.
   TestCreateWindow(views::Widget::InitParams::TYPE_WINDOW,
@@ -283,9 +285,9 @@ TEST_F(ShellTest, ChangeAlwaysOnTop) {
   views::Widget* widget = CreateTestWindow(widget_params);
   widget->Show();
 
-  // It should be in default container.
+  // It should be in the active desk container.
   EXPECT_TRUE(
-      GetDefaultContainer()->Contains(widget->GetNativeWindow()->parent()));
+      GetActiveDeskContainer()->Contains(widget->GetNativeWindow()->parent()));
 
   // Flip always-on-top flag.
   widget->SetAlwaysOnTop(true);
@@ -294,15 +296,15 @@ TEST_F(ShellTest, ChangeAlwaysOnTop) {
 
   // Flip always-on-top flag.
   widget->SetAlwaysOnTop(false);
-  // It should go back to default container.
+  // It should go back to the active desk container.
   EXPECT_TRUE(
-      GetDefaultContainer()->Contains(widget->GetNativeWindow()->parent()));
+      GetActiveDeskContainer()->Contains(widget->GetNativeWindow()->parent()));
 
   // Set the same always-on-top flag again.
   widget->SetAlwaysOnTop(false);
-  // Should have no effect and we are still in the default container.
+  // Should have no effect and we are still in the the active desk container.
   EXPECT_TRUE(
-      GetDefaultContainer()->Contains(widget->GetNativeWindow()->parent()));
+      GetActiveDeskContainer()->Contains(widget->GetNativeWindow()->parent()));
 
   widget->Close();
 }
@@ -315,9 +317,9 @@ TEST_F(ShellTest, CreateModalWindow) {
   views::Widget* widget = CreateTestWindow(widget_params);
   widget->Show();
 
-  // It should be in default container.
+  // It should be in the active desk container.
   EXPECT_TRUE(
-      GetDefaultContainer()->Contains(widget->GetNativeWindow()->parent()));
+      GetActiveDeskContainer()->Contains(widget->GetNativeWindow()->parent()));
 
   // Create a modal window.
   views::Widget* modal_widget = views::Widget::CreateWindowWithParent(
@@ -350,9 +352,9 @@ TEST_F(ShellTest, CreateLockScreenModalWindow) {
   widget->Show();
   EXPECT_TRUE(widget->GetNativeView()->HasFocus());
 
-  // It should be in default container.
+  // It should be in the active desk container.
   EXPECT_TRUE(
-      GetDefaultContainer()->Contains(widget->GetNativeWindow()->parent()));
+      GetActiveDeskContainer()->Contains(widget->GetNativeWindow()->parent()));
 
   Shell::Get()->session_controller()->LockScreenAndFlushForTest();
   // Create a LockScreen window.

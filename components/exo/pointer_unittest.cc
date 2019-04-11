@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "base/bind.h"
 #include "base/run_loop.h"
@@ -481,7 +482,7 @@ TEST_F(MAYBE_PointerTest, OnPointerMotion) {
   std::unique_ptr<Surface> child_surface(new Surface);
   std::unique_ptr<ShellSurface> child_shell_surface(
       new ShellSurface(child_surface.get(), gfx::Point(9, 9), true, false,
-                       ash::kShellWindowId_DefaultContainer));
+                       ash::desks_util::GetActiveDeskContainerId()));
   child_shell_surface->DisableMovement();
   child_shell_surface->SetParent(shell_surface.get());
   gfx::Size child_buffer_size(15, 15);

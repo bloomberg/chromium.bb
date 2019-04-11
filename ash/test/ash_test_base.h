@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/wm/desks/desks_util.h"
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread.h"
@@ -115,7 +116,7 @@ class AshTestBase : public testing::Test {
   // values for |container_id|.
   static std::unique_ptr<views::Widget> CreateTestWidget(
       views::WidgetDelegate* delegate = nullptr,
-      int container_id = kShellWindowId_DefaultContainer,
+      int container_id = desks_util::GetActiveDeskContainerId(),
       const gfx::Rect& bounds = gfx::Rect(),
       bool show = true);
 

@@ -8,6 +8,7 @@
 
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/window_util.h"
 #include "base/time/time.h"
 #include "components/exo/test/exo_test_base.h"
@@ -113,7 +114,7 @@ class ZAuraSurfaceTest : public test::ExoTestBase,
   std::unique_ptr<views::Widget> CreateOpaqueWidget(const gfx::Rect& bounds) {
     return CreateTestWidget(
         /*delegate=*/nullptr,
-        /*container_id=*/ash::kShellWindowId_DefaultContainer, bounds,
+        /*container_id=*/ash::desks_util::GetActiveDeskContainerId(), bounds,
         /*show=*/false);
   }
 

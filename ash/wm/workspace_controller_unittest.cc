@@ -17,6 +17,7 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/window_factory.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
@@ -114,7 +115,7 @@ class WorkspaceControllerTest : public AshTestBase {
 
   aura::Window* GetDesktop() {
     return Shell::GetContainer(Shell::GetPrimaryRootWindow(),
-                               kShellWindowId_DefaultContainer);
+                               desks_util::GetActiveDeskContainerId());
   }
 
   gfx::Rect GetFullscreenBounds(aura::Window* window) {

@@ -6,6 +6,7 @@
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/resize_shadow.h"
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/toplevel_window_event_handler.h"
@@ -400,9 +401,9 @@ TEST_F(WindowServiceDelegateImplTest, CancelDragDropAfterDragLoopRun) {
 TEST_F(WindowServiceDelegateImplTest, ObserveTopmostWindow) {
   std::unique_ptr<aura::Window> window2 =
       CreateTestWindow(gfx::Rect(150, 100, 100, 100));
-  std::unique_ptr<aura::Window> window3(
-      CreateTestWindowInShell(SK_ColorRED, kShellWindowId_DefaultContainer,
-                              gfx::Rect(100, 150, 100, 100)));
+  std::unique_ptr<aura::Window> window3(CreateTestWindowInShell(
+      SK_ColorRED, desks_util::GetActiveDeskContainerId(),
+      gfx::Rect(100, 150, 100, 100)));
 
   // Left button is pressed on SetUp() -- release it first.
   GetEventGenerator()->ReleaseLeftButton();

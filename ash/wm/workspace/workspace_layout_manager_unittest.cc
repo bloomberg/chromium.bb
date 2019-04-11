@@ -30,6 +30,7 @@
 #include "ash/wallpaper/wallpaper_controller_test_api.h"
 #include "ash/window_factory.h"
 #include "ash/wm/always_on_top_controller.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/fullscreen_window_finder.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
@@ -450,10 +451,10 @@ TEST_F(WorkspaceLayoutManagerTest, MaximizeWithEmptySize) {
       window_factory::NewWindow(nullptr, aura::client::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_TEXTURED);
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
-  aura::Window* default_container =
+  aura::Window* active_desk_container =
       Shell::GetPrimaryRootWindowController()->GetContainer(
-          kShellWindowId_DefaultContainer);
-  default_container->AddChild(window.get());
+          desks_util::GetActiveDeskContainerId());
+  active_desk_container->AddChild(window.get());
   window->Show();
   gfx::Rect work_area(GetPrimaryDisplay().work_area());
   EXPECT_EQ(work_area.ToString(), window->GetBoundsInScreen().ToString());
@@ -1130,7 +1131,7 @@ class WorkspaceLayoutManagerBackdropTest : public AshTestBase {
     AshTestBase::SetUp();
     UpdateDisplay("800x600");
     default_container_ = Shell::GetPrimaryRootWindowController()->GetContainer(
-        kShellWindowId_DefaultContainer);
+        desks_util::GetActiveDeskContainerId());
   }
 
   // Turn the top window back drop on / off.
@@ -1649,10 +1650,10 @@ class WorkspaceLayoutManagerKeyboardTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
     UpdateDisplay("800x600");
-    aura::Window* default_container =
+    aura::Window* active_desk_container =
         Shell::GetPrimaryRootWindowController()->GetContainer(
-            kShellWindowId_DefaultContainer);
-    layout_manager_ = GetWorkspaceLayoutManager(default_container);
+            desks_util::GetActiveDeskContainerId());
+    layout_manager_ = GetWorkspaceLayoutManager(active_desk_container);
   }
 
   void ShowKeyboard() {
