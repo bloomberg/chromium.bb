@@ -9,7 +9,7 @@
 
 if [ $# -lt 1 ];
 then
-  echo "Usage: "$0" (android|cast|chromeos|common|flutter|ios)" >&2
+  echo "Usage: "$0" (android|android_small|cast|chromeos|common|flutter|ios)" >&2
   exit 1
 fi
 
@@ -97,6 +97,10 @@ case "$1" in
     ;;
   "android")
     copy_android_ios Android android
+    backup_outdir $1
+    ;;
+  "android_small")
+    copy_android_ios AndroidSmall android_small
     backup_outdir $1
     ;;
   "ios")

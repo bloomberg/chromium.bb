@@ -18,7 +18,7 @@ DIR2=$2
 echo "#######################################################"
 echo "             ICUDT*L.DAT FILE SIZE REPORT"
 echo "#######################################################"
-for build in "chromeos" "common" "cast" "android" "ios" "flutter"
+for build in "chromeos" "common" "cast" "android" "android_small" "ios" "flutter"
 do
   ICUDT_L_DAT1=`ls ${DIR1}/dataout/${build}/data/out/tmp/icudt*l.dat`
   ICUDT_L_DAT2=`ls ${DIR2}/dataout/${build}/data/out/tmp/icudt*l.dat`
@@ -31,7 +31,7 @@ done
 echo "#######################################################"
 echo "             PER BUILD REPORT"
 echo "#######################################################"
-for build in "chromeos" "common" "cast" "android" "ios" "flutter"
+for build in "chromeos" "common" "cast" "android" "android_small" "ios" "flutter"
 do
   $ICUROOT/scripts/diff_data.sh $build ${DIR1} ${DIR2}
 done

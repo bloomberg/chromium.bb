@@ -9,7 +9,7 @@
 
 if [ $# -lt 1 ];
 then
-  echo "Usage: "$0" (android|cast|chromeos|common|flutter|ios)" >&2
+  echo "Usage: "$0" (android|android_small|cast|chromeos|common|flutter|ios)" >&2
   exit 1
 fi
 
