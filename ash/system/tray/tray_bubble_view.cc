@@ -42,15 +42,19 @@ namespace ash {
 
 namespace {
 
-BubbleBorder::Arrow GetArrowAlignment(
-    TrayBubbleView::AnchorAlignment alignment) {
-  if (alignment == TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM) {
-    return base::i18n::IsRTL() ? BubbleBorder::BOTTOM_LEFT
-                               : BubbleBorder::BOTTOM_RIGHT;
+BubbleBorder::Arrow GetArrowAlignment(ash::ShelfAlignment alignment) {
+  // The tray bubble is in a corner. In this case, we want the arrow to be
+  // flush with one side instead of centered on the bubble.
+  switch (alignment) {
+    case ash::SHELF_ALIGNMENT_BOTTOM:
+    case ash::SHELF_ALIGNMENT_BOTTOM_LOCKED:
+      return base::i18n::IsRTL() ? BubbleBorder::BOTTOM_LEFT
+                                 : BubbleBorder::BOTTOM_RIGHT;
+    case ash::SHELF_ALIGNMENT_LEFT:
+      return BubbleBorder::LEFT_BOTTOM;
+    case ash::SHELF_ALIGNMENT_RIGHT:
+      return BubbleBorder::RIGHT_BOTTOM;
   }
-  if (alignment == TrayBubbleView::ANCHOR_ALIGNMENT_LEFT)
-    return BubbleBorder::LEFT_BOTTOM;
-  return BubbleBorder::RIGHT_BOTTOM;
 }
 
 // Only one TrayBubbleView is visible at a time, but there are cases where the
@@ -197,7 +201,7 @@ void TrayBubbleView::RerouteEventHandler::OnKeyEvent(ui::KeyEvent* event) {
 
 TrayBubbleView::TrayBubbleView(const InitParams& init_params)
     : BubbleDialogDelegateView(init_params.anchor_view,
-                               GetArrowAlignment(init_params.anchor_alignment)),
+                               GetArrowAlignment(init_params.shelf_alignment)),
       params_(init_params),
       layout_(nullptr),
       delegate_(init_params.delegate),
@@ -334,8 +338,7 @@ void TrayBubbleView::ChangeAnchorRect(const gfx::Rect& rect) {
   BubbleDialogDelegateView::SetAnchorRect(rect);
 }
 
-void TrayBubbleView::ChangeAnchorAlignment(
-    TrayBubbleView::AnchorAlignment alignment) {
+void TrayBubbleView::ChangeAnchorAlignment(ShelfAlignment alignment) {
   SetArrow(GetArrowAlignment(alignment));
 }
 

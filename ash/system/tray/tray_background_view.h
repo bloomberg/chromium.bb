@@ -94,9 +94,6 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // May close the bubble.
   virtual void ClickedOutsideBubble() = 0;
 
-  // Returns the bubble anchor alignment based on |shelf_alignment_|.
-  TrayBubbleView::AnchorAlignment GetAnchorAlignment() const;
-
   void SetIsActive(bool is_active);
   bool is_active() const { return is_active_; }
 

@@ -415,14 +415,6 @@ void TrayBackgroundView::HideTransformation() {
   layer()->SetTransform(transform);
 }
 
-TrayBubbleView::AnchorAlignment TrayBackgroundView::GetAnchorAlignment() const {
-  if (shelf_->alignment() == SHELF_ALIGNMENT_LEFT)
-    return TrayBubbleView::ANCHOR_ALIGNMENT_LEFT;
-  if (shelf_->alignment() == SHELF_ALIGNMENT_RIGHT)
-    return TrayBubbleView::ANCHOR_ALIGNMENT_RIGHT;
-  return TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM;
-}
-
 void TrayBackgroundView::SetIsActive(bool is_active) {
   if (is_active_ == is_active)
     return;
@@ -443,7 +435,8 @@ views::View* TrayBackgroundView::GetBubbleAnchor() const {
 gfx::Insets TrayBackgroundView::GetBubbleAnchorInsets() const {
   gfx::Insets anchor_insets = GetBubbleAnchor()->GetInsets();
   gfx::Insets tray_bg_insets = GetInsets();
-  if (GetAnchorAlignment() == TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM) {
+  if (shelf_->alignment() == SHELF_ALIGNMENT_BOTTOM ||
+      shelf_->alignment() == SHELF_ALIGNMENT_BOTTOM_LOCKED) {
     return gfx::Insets(-tray_bg_insets.top(), anchor_insets.left(),
                        -tray_bg_insets.bottom(), anchor_insets.right());
   } else {
