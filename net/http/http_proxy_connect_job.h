@@ -102,8 +102,8 @@ class NET_EXPORT_PRIVATE HttpProxyConnectJob : public ConnectJob,
   // ConnectJob methods.
   LoadState GetLoadState() const override;
   bool HasEstablishedConnection() const override;
-
-  void GetAdditionalErrorState(ClientSocketHandle* handle) override;
+  bool IsSSLError() const override;
+  scoped_refptr<SSLCertRequestInfo> GetCertRequestInfo() override;
 
   // ConnectJob::Delegate implementation.
   void OnConnectJobComplete(int result, ConnectJob* job) override;

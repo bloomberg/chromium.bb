@@ -199,9 +199,9 @@ TEST_F(SSLConnectJobTest, TCPFail) {
     test_delegate.StartJobExpectingResult(
         ssl_connect_job.get(), ERR_CONNECTION_FAILED, io_mode == SYNCHRONOUS);
     EXPECT_FALSE(test_delegate.socket());
+    EXPECT_FALSE(ssl_connect_job->IsSSLError());
     ClientSocketHandle handle;
     ssl_connect_job->GetAdditionalErrorState(&handle);
-    EXPECT_FALSE(handle.is_ssl_error());
     ASSERT_EQ(1u, handle.connection_attempts().size());
     EXPECT_THAT(handle.connection_attempts()[0].result,
                 test::IsError(ERR_CONNECTION_FAILED));
@@ -437,9 +437,9 @@ TEST_F(SSLConnectJobTest, DirectCertError) {
   test_delegate.StartJobExpectingResult(ssl_connect_job.get(),
                                         ERR_CERT_COMMON_NAME_INVALID,
                                         false /* expect_sync_result */);
+  EXPECT_TRUE(ssl_connect_job->IsSSLError());
   ClientSocketHandle handle;
   ssl_connect_job->GetAdditionalErrorState(&handle);
-  EXPECT_TRUE(handle.is_ssl_error());
   ASSERT_EQ(1u, handle.connection_attempts().size());
   EXPECT_THAT(handle.connection_attempts()[0].result,
               test::IsError(ERR_CERT_COMMON_NAME_INVALID));
@@ -460,8 +460,8 @@ TEST_F(SSLConnectJobTest, DirectSSLError) {
                                         ERR_SSL_PROTOCOL_ERROR,
                                         false /* expect_sync_result */);
   ClientSocketHandle handle;
+  EXPECT_TRUE(ssl_connect_job->IsSSLError());
   ssl_connect_job->GetAdditionalErrorState(&handle);
-  EXPECT_TRUE(handle.is_ssl_error());
   ASSERT_EQ(1u, handle.connection_attempts().size());
   EXPECT_THAT(handle.connection_attempts()[0].result,
               test::IsError(ERR_SSL_PROTOCOL_ERROR));
@@ -516,10 +516,10 @@ TEST_F(SSLConnectJobTest, SOCKSFail) {
     test_delegate.StartJobExpectingResult(ssl_connect_job.get(),
                                           ERR_PROXY_CONNECTION_FAILED,
                                           io_mode == SYNCHRONOUS);
+    EXPECT_FALSE(ssl_connect_job->IsSSLError());
 
     ClientSocketHandle handle;
     ssl_connect_job->GetAdditionalErrorState(&handle);
-    EXPECT_FALSE(handle.is_ssl_error());
     EXPECT_EQ(0u, handle.connection_attempts().size());
   }
 }
@@ -660,9 +660,9 @@ TEST_F(SSLConnectJobTest, HttpProxyFail) {
                                           ERR_PROXY_CONNECTION_FAILED,
                                           io_mode == SYNCHRONOUS);
 
+    EXPECT_FALSE(ssl_connect_job->IsSSLError());
     ClientSocketHandle handle;
     ssl_connect_job->GetAdditionalErrorState(&handle);
-    EXPECT_FALSE(handle.is_ssl_error());
     EXPECT_EQ(0u, handle.connection_attempts().size());
   }
 }

@@ -356,13 +356,12 @@ class TestConnectJob : public ConnectJob {
     return has_established_connection_;
   }
 
-  void GetAdditionalErrorState(ClientSocketHandle* handle) override {
-    if (store_additional_error_state_) {
-      // Set all of the additional error state fields in some way.
-      handle->set_is_ssl_error(true);
-      handle->set_ssl_cert_request_info(
-          base::MakeRefCounted<SSLCertRequestInfo>());
-    }
+  bool IsSSLError() const override { return store_additional_error_state_; }
+
+  scoped_refptr<SSLCertRequestInfo> GetCertRequestInfo() override {
+    if (store_additional_error_state_)
+      return base::MakeRefCounted<SSLCertRequestInfo>();
+    return nullptr;
   }
 
  private:
