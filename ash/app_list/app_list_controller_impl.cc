@@ -656,6 +656,11 @@ void AppListControllerImpl::OnWallpaperPreviewEnded() {
   UpdateHomeLauncherVisibility();
 }
 
+void AppListControllerImpl::OnVoiceInteractionStatusChanged(
+    mojom::VoiceInteractionState state) {
+  UpdateAssistantVisibility();
+}
+
 void AppListControllerImpl::OnVoiceInteractionSettingsEnabled(bool enabled) {
   UpdateAssistantVisibility();
 }
@@ -958,6 +963,7 @@ void AppListControllerImpl::ViewShown(int64_t display_id) {
           ash::AssistantUiMode::kLauncherEmbeddedUi) {
     CloseAssistantUi(AssistantExitPoint::kLauncherOpen);
   }
+  UpdateAssistantVisibility();
   if (client_)
     client_->ViewShown(display_id);
 }
@@ -1068,9 +1074,15 @@ bool AppListControllerImpl::IsAssistantAllowedAndEnabled() const {
   if (!chromeos::switches::IsAssistantEnabled())
     return false;
 
+  if (!Shell::Get()->assistant_controller()->IsAssistantReady())
+    return false;
+
   auto* controller = Shell::Get()->voice_interaction_controller();
   return controller->settings_enabled().value_or(false) &&
-         controller->allowed_state() == mojom::AssistantAllowedState::ALLOWED;
+         controller->allowed_state() == mojom::AssistantAllowedState::ALLOWED &&
+         controller->voice_interaction_state().value_or(
+             mojom::VoiceInteractionState::NOT_READY) !=
+             mojom::VoiceInteractionState::NOT_READY;
 }
 
 void AppListControllerImpl::AddObserver(AppListControllerObserver* observer) {

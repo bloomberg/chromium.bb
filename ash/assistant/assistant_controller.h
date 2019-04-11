@@ -142,6 +142,8 @@ class ASH_EXPORT AssistantController
 
   AssistantViewDelegate* view_delegate() { return &view_delegate_; }
 
+  bool IsAssistantReady() const;
+
   base::WeakPtr<AssistantController> GetWeakPtr();
 
  private:
