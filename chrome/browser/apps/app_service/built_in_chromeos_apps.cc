@@ -136,6 +136,7 @@ void BuiltInChromeOsApps::Launch(const std::string& app_id,
                                  int64_t display_id) {
   switch (launch_source) {
     case apps::mojom::LaunchSource::kUnknown:
+    case apps::mojom::LaunchSource::kFromKioskNextHome:
       break;
     case apps::mojom::LaunchSource::kFromAppListGrid:
     case apps::mojom::LaunchSource::kFromAppListGridContextMenu:

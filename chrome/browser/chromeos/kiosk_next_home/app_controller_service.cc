@@ -84,10 +84,8 @@ void AppControllerService::SetClient(mojom::AppControllerClientPtr client) {
 }
 
 void AppControllerService::LaunchApp(const std::string& app_id) {
-  // TODO(ltenorio): Create a new launch source for Kiosk Next Home and use it
-  // here.
   app_service_proxy_->Launch(app_id, ui::EventFlags::EF_NONE,
-                             apps::mojom::LaunchSource::kFromAppListGrid,
+                             apps::mojom::LaunchSource::kFromKioskNextHome,
                              display::kDefaultDisplayId);
 }
 

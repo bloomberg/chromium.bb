@@ -13,6 +13,7 @@ ash::ShelfLaunchSource ConvertLaunchSource(
     apps::mojom::LaunchSource launch_source) {
   switch (launch_source) {
     case apps::mojom::LaunchSource::kUnknown:
+    case apps::mojom::LaunchSource::kFromKioskNextHome:
       return ash::LAUNCH_FROM_UNKNOWN;
     case apps::mojom::LaunchSource::kFromAppListGrid:
     case apps::mojom::LaunchSource::kFromAppListGridContextMenu:
