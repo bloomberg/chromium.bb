@@ -247,8 +247,10 @@ void PasswordProtectionRequest::CollectVisualFeatures() {
   content::RenderWidgetHostView* view =
       web_contents_ ? web_contents_->GetRenderWidgetHostView() : nullptr;
 
-  if (!view)
+  if (!view) {
     SendRequest();
+    return;
+  }
 
   visual_feature_start_time_ = base::TimeTicks::Now();
 
