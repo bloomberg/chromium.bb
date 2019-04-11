@@ -694,7 +694,8 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 - (BOOL)canGeneratePasswordForForm:(NSString*)formName
                    fieldIdentifier:(NSString*)fieldIdentifier
                          fieldType:(NSString*)fieldType {
-  if (!features::IsAutomaticPasswordGenerationEnabled())
+  if (!features::IsAutomaticPasswordGenerationEnabled() ||
+      _passwordManagerClient->IsIncognito())
     return NO;
   if (![fieldType isEqualToString:@"password"])
     return NO;
