@@ -1250,6 +1250,16 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
                           container.day_configs(), policies);
     }
   }
+
+  if (policy.has_device_boot_on_ac()) {
+    const em::DeviceBootOnAcProto& container(policy.device_boot_on_ac());
+    if (container.has_enabled()) {
+      policies->Set(key::kDeviceBootOnAcEnabled, POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                    std::make_unique<base::Value>(container.enabled()),
+                    nullptr);
+    }
+  }
 }
 
 }  // namespace
