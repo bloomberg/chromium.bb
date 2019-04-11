@@ -72,7 +72,7 @@ mojom::ArcCustomTabViewPtr ArcCustomTabView::Create(int32_t task_id,
     return nullptr;
   }
   auto* parent = widget->widget_delegate()->GetContentsView();
-  auto* view = new ArcCustomTabView(surface_id, top_margin);
+  auto* view = new ArcCustomTabView(arc_app_window, surface_id, top_margin);
   parent->AddChildView(view);
   parent->SetLayoutManager(std::make_unique<views::FillLayout>());
   parent->Layout();
@@ -118,17 +118,32 @@ void ArcCustomTabView::Layout() {
   window->parent()->StackChildAtTop(window);
 }
 
-ArcCustomTabView::ArcCustomTabView(int32_t surface_id, int32_t top_margin)
+void ArcCustomTabView::OnWindowHierarchyChanged(
+    const HierarchyChangeParams& params) {
+  auto* surface = exo::Surface::AsSurface(params.target);
+  if (surface && surface->GetClientSurfaceId() == surface_id_ &&
+      params.new_parent != nullptr) {
+    Layout();
+  }
+}
+
+ArcCustomTabView::ArcCustomTabView(aura::Window* arc_app_window,
+                                   int32_t surface_id,
+                                   int32_t top_margin)
     : binding_(this),
       remote_view_host_(new ws::ServerRemoteViewHost(
           ash::Shell::Get()->window_service_owner()->window_service())),
+      arc_app_window_(arc_app_window),
       surface_id_(surface_id),
       top_margin_(top_margin),
       weak_ptr_factory_(this) {
   AddChildView(remote_view_host_);
+  arc_app_window_->AddObserver(this);
 }
 
-ArcCustomTabView::~ArcCustomTabView() = default;
+ArcCustomTabView::~ArcCustomTabView() {
+  arc_app_window_->RemoveObserver(this);
+}
 
 void ArcCustomTabView::Bind(mojom::ArcCustomTabViewPtr* ptr) {
   binding_.Bind(mojo::MakeRequest(ptr));
