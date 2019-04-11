@@ -412,6 +412,27 @@ TEST_F(AppControllerServiceTest, MultipleAppsAreFetchedCorrectly) {
   ExpectApps({first_expected_app, second_expected_app});
 }
 
+TEST_F(AppControllerServiceTest, UninstalledAppsAreFiltered) {
+  // First seed an installed app and expect it to be returned.
+  apps::mojom::App app_delta;
+  app_delta.app_id = "app_id";
+  app_delta.app_type = AppType::kBuiltIn;
+  app_delta.show_in_launcher = OptionalBool::kTrue;
+  app_delta.readiness = Readiness::kReady;
+  AddAppDeltaToAppService(app_delta.Clone());
+
+  mojom::App app;
+  app.app_id = "app_id";
+  app.type = AppType::kBuiltIn;
+  app.readiness = Readiness::kReady;
+  ExpectApps({app});
+
+  // Then change the app's readiness and expect it to be filtered.
+  app_delta.readiness = Readiness::kUninstalledByUser;
+  AddAppDeltaToAppService(app_delta.Clone());
+  ExpectApps({});
+}
+
 TEST_F(AppControllerServiceTest, AppsThatAreNotRelevantAreFiltered) {
   // Seed an app that's allowed to be returned by the AppControllerService.
   apps::mojom::App allowed_app_delta;

@@ -70,9 +70,11 @@ void AppControllerService::GetApps(
   // be consumed. Refer to AppRegistryCache::ForEachApp for more information.
   app_service_proxy_->AppRegistryCache().ForEachApp(
       [this, &app_list](const apps::AppUpdate& update) {
-        // Only include relevant apps.
-        if (AppIsRelevantForKioskNextHome(update))
+        // Only include apps that are both relevant and installed.
+        if (AppIsRelevantForKioskNextHome(update) &&
+            update.Readiness() != apps::mojom::Readiness::kUninstalledByUser) {
           app_list.push_back(CreateAppPtr(update));
+        }
       });
   std::move(callback).Run(std::move(app_list));
 }
