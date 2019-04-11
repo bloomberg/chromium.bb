@@ -41,6 +41,7 @@ fidl_library("cast_fidl") {
 
   public_deps = [
     ":web_fidl",
+    "//third_party/fuchsia-sdk/sdk:web",
   ]
 }
 
