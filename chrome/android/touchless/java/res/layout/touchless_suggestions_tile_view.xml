@@ -5,11 +5,41 @@
 
 <org.chromium.chrome.browser.touchless.SiteSuggestionsTileView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:paddingHorizontal="@dimen/most_likely_tile_horizontal_spacer">
-    <include
-        layout="@layout/tile_no_text_view_condensed"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+    android:layout_gravity="center"
+    android:background="@drawable/suggestion_tile">
+    <!-- The icon background. -->
+    <View
+        android:id="@+id/tile_view_icon_background"
+        android:layout_width="@dimen/tile_view_icon_size"
+        android:layout_height="@dimen/tile_view_icon_size"
+        android:background="@drawable/tile_view_icon_background_modern" />
+
+    <!-- The main icon. -->
+    <ImageView
+        android:id="@+id/tile_view_icon"
+        android:layout_width="@dimen/tile_view_icon_size_modern"
+        android:layout_height="@dimen/tile_view_icon_size_modern"
+        android:layout_gravity="center"
+        android:importantForAccessibility="no" />
+
+    <!-- Focus highlight. -->
+    <View
+        android:layout_width="@dimen/tile_view_icon_size"
+        android:layout_height="@dimen/tile_view_icon_size"
+        android:background="@drawable/suggestion_tile"
+        android:duplicateParentState="true"/>
+
+    <!-- The offline badge. -->
+    <ImageView
+        android:id="@+id/offline_badge"
+        android:layout_width="@dimen/tile_view_offline_badge_size_modern"
+        android:layout_height="@dimen/tile_view_offline_badge_size_modern"
+        android:layout_gravity="top|end"
+        android:layout_marginEnd="@dimen/tile_view_offline_badge_margin_end_modern_condensed"
+        android:visibility="gone"
+        android:contentDescription="@string/accessibility_ntp_offline_badge"
+        app:srcCompat="@drawable/ic_offline_pin_blue_white" />
 </org.chromium.chrome.browser.touchless.SiteSuggestionsTileView>
