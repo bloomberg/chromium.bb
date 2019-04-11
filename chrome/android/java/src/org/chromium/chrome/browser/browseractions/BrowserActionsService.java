@@ -20,12 +20,12 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.notifications.ChromeNotification;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
+import org.chromium.chrome.browser.notifications.ForegroundServiceUtils;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationMetadata;
@@ -234,7 +234,7 @@ public class BrowserActionsService extends Service {
         ChromeNotification notification =
                 createNotificationBuilder(isUpdate, tabId).buildChromeNotification();
 
-        AppHooks.get().startForeground(this, notification.getMetadata().id,
+        ForegroundServiceUtils.getInstance().startForeground(this, notification.getMetadata().id,
                 notification.getNotification(), 0 /* foregroundServiceType */);
 
         if (!isUpdate) {

@@ -40,10 +40,10 @@ import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.notifications.ChromeNotification;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
+import org.chromium.chrome.browser.notifications.ForegroundServiceUtils;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
@@ -293,7 +293,7 @@ public class MediaNotificationManager {
                 NotificationBuilderFactory.createChromeNotificationBuilder(true /* preferCompat */,
                         ChannelDefinitions.ChannelId.MEDIA, null /* remoteAppPackageName */,
                         metadata);
-        AppHooks.get().startForeground(s, s.getNotificationId(),
+        ForegroundServiceUtils.getInstance().startForeground(s, s.getNotificationId(),
                 builder.buildChromeNotification().getNotification(), 0 /* foregroundServiceType */);
     }
 
@@ -851,7 +851,7 @@ public class MediaNotificationManager {
         if (mService == null) {
             updateMediaSession();
             updateNotificationBuilder();
-            AppHooks.get().startForegroundService(createIntent());
+            ForegroundServiceUtils.getInstance().startForegroundService(createIntent());
         } else {
             updateNotification(false, false);
         }
@@ -939,7 +939,9 @@ public class MediaNotificationManager {
         // crash Chrome.
         boolean foregroundedService = false;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && serviceStarting) {
-            mService.startForeground(mMediaNotificationInfo.id, notification.getNotification());
+            ForegroundServiceUtils.getInstance().startForeground(mService,
+                    mMediaNotificationInfo.id, notification.getNotification(),
+                    0 /*foregroundServiceType*/);
             foregroundedService = true;
         }
 
@@ -953,7 +955,9 @@ public class MediaNotificationManager {
             NotificationManagerProxy manager = new NotificationManagerProxyImpl(getContext());
             manager.notify(notification);
         } else if (!foregroundedService) {
-            mService.startForeground(mMediaNotificationInfo.id, notification.getNotification());
+            ForegroundServiceUtils.getInstance().startForeground(mService,
+                    mMediaNotificationInfo.id, notification.getNotification(),
+                    0 /*foregroundServiceType*/);
         }
         if (shouldLogNotification) {
             mNotificationUmaTracker.onNotificationShown(

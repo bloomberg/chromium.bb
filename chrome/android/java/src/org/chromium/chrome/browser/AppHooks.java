@@ -11,7 +11,6 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.support.annotation.Nullable;
-import android.support.v4.content.ContextCompat;
 import android.view.View;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -284,18 +283,8 @@ public abstract class AppHooks {
     }
 
     /**
-     * Starts a service from {@code intent} with the expectation that it will make itself a
-     * foreground service with {@link android.app.Service#startForeground(int, Notification)}.
-     *
-     * @param intent The {@link Intent} to fire to start the service.
-     */
-    public void startForegroundService(Intent intent) {
-        ContextCompat.startForegroundService(ContextUtils.getApplicationContext(), intent);
-    }
-
-    /**
      * Upgrades a service from background to foreground after calling
-     * {@link #startForegroundService(Intent)}.
+     * {@link Service#startForegroundService(Intent)}.
      * @param service The service to be foreground.
      * @param id The notification id.
      * @param notification The notification attached to the foreground service.

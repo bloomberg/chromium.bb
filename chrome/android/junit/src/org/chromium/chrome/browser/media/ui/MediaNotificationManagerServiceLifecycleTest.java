@@ -110,7 +110,7 @@ public class MediaNotificationManagerServiceLifecycleTest extends MediaNotificat
 
         verify(getManager()).showNotification(newInfo);
         verifyNoMoreInteractions(getManager());
-        verify(mMockAppHooks, never()).startForegroundService(any(Intent.class));
+        verify(mMockForegroundServiceUtils, never()).startForegroundService(any(Intent.class));
         verify(mMockContext, never()).startService(any(Intent.class));
         verify(mMockUmaTracker, never()).onNotificationShown(anyInt(), any(Notification.class));
     }
@@ -127,7 +127,7 @@ public class MediaNotificationManagerServiceLifecycleTest extends MediaNotificat
 
         verify(getManager()).showNotification(newInfo);
         verifyNoMoreInteractions(getManager());
-        verify(mMockAppHooks, never()).startForegroundService(any(Intent.class));
+        verify(mMockForegroundServiceUtils, never()).startForegroundService(any(Intent.class));
         verify(mMockContext, never()).startService(any(Intent.class));
         verify(mMockUmaTracker, never()).onNotificationShown(anyInt(), any(Notification.class));
     }
@@ -140,7 +140,7 @@ public class MediaNotificationManagerServiceLifecycleTest extends MediaNotificat
         verify(getManager(), times(1)).updateMediaSession();
         verify(getManager(), times(1)).updateNotificationBuilder();
         verify(mMockContext, never()).startService(any(Intent.class));
-        verify(mMockAppHooks, times(1)).startForegroundService(any(Intent.class));
+        verify(mMockForegroundServiceUtils, times(1)).startForegroundService(any(Intent.class));
         verify(getManager(), never()).updateNotification(anyBoolean(), eq(false));
     }
 
@@ -154,7 +154,7 @@ public class MediaNotificationManagerServiceLifecycleTest extends MediaNotificat
         getManager().showNotification(newInfo);
 
         verify(getManager()).showNotification(newInfo);
-        verify(mMockAppHooks, never()).startForegroundService(any(Intent.class));
+        verify(mMockForegroundServiceUtils, never()).startForegroundService(any(Intent.class));
         verify(mMockContext, never()).startService(any(Intent.class));
         verify(getManager()).updateNotification(anyBoolean(), eq(false));
         verify(mMockUmaTracker, never()).onNotificationShown(anyInt(), any(Notification.class));
@@ -169,12 +169,13 @@ public class MediaNotificationManagerServiceLifecycleTest extends MediaNotificat
         MediaNotificationInfo oldInfo = mMediaNotificationInfoBuilder.build();
         getManager().showNotification(oldInfo);
 
-        InOrder order = inOrder(getManager(), mMockAppHooks);
+        InOrder order = inOrder(getManager(), mMockForegroundServiceUtils);
 
         assertEquals(oldInfo, getManager().mMediaNotificationInfo);
         order.verify(getManager(), times(1)).updateMediaSession();
         order.verify(getManager(), times(1)).updateNotificationBuilder();
-        order.verify(mMockAppHooks, times(1)).startForegroundService(any(Intent.class));
+        order.verify(mMockForegroundServiceUtils, times(1))
+                .startForegroundService(any(Intent.class));
         order.verify(getManager(), never()).updateNotification(anyBoolean(), eq(false));
 
         // The second call to |showNotification()| should only update the notification info.
@@ -185,7 +186,8 @@ public class MediaNotificationManagerServiceLifecycleTest extends MediaNotificat
         assertEquals(newInfo, getManager().mMediaNotificationInfo);
         order.verify(getManager(), times(1)).updateMediaSession();
         order.verify(getManager(), times(1)).updateNotificationBuilder();
-        order.verify(mMockAppHooks, times(1)).startForegroundService(any(Intent.class));
+        order.verify(mMockForegroundServiceUtils, times(1))
+                .startForegroundService(any(Intent.class));
         order.verify(getManager(), never()).updateNotification(anyBoolean(), eq(false));
 
         verify(getManager(), never()).onServiceStarted(any(ListenerService.class));
@@ -244,7 +246,9 @@ public class MediaNotificationManagerServiceLifecycleTest extends MediaNotificat
         getManager().mMediaNotificationInfo = mMediaNotificationInfoBuilder.build();
         getManager().updateNotification(false, false);
 
-        verify(mService).startForeground(eq(getNotificationId()), any(Notification.class));
+        verify(mMockForegroundServiceUtils)
+                .startForeground(
+                        eq(mService), eq(getNotificationId()), any(Notification.class), eq(0));
     }
 
     @Test
@@ -255,7 +259,9 @@ public class MediaNotificationManagerServiceLifecycleTest extends MediaNotificat
         getManager().mMediaNotificationInfo = mMediaNotificationInfoBuilder.build();
         getManager().updateNotification(false, false);
 
-        verify(mService).startForeground(eq(getNotificationId()), any(Notification.class));
+        verify(mMockForegroundServiceUtils)
+                .startForeground(
+                        eq(mService), eq(getNotificationId()), any(Notification.class), eq(0));
     }
 
     private ShadowNotificationManager getShadowNotificationManager() {
