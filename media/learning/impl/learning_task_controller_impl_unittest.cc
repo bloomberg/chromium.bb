@@ -28,10 +28,12 @@ class LearningTaskControllerImplTest : public testing::Test {
     }
 
    protected:
-    void OnPrediction(TargetHistogram observed,
+    void OnPrediction(const PredictionInfo& info,
                       TargetHistogram predicted) override {
       num_reported_++;
-      if (observed == predicted)
+      TargetHistogram dist;
+      dist += info.observed;
+      if (dist == predicted)
         num_correct_++;
     }
 
@@ -132,7 +134,6 @@ class LearningTaskControllerImplTest : public testing::Test {
 
   // Number of models that we trained.
   int num_models_ = 0;
-  FakeModel* last_model_ = nullptr;
 
   // Two distinct targets.
   const TargetValue predicted_target_;

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "media/learning/impl/distribution_reporter.h"
 #include "media/learning/impl/extra_trees_trainer.h"
 #include "media/learning/impl/lookup_table_trainer.h"
 
@@ -107,9 +108,11 @@ void LearningTaskControllerImpl::AddFinishedExample(LabelledExample example) {
   if (model_ && reporter_) {
     TargetHistogram predicted = model_->PredictDistribution(example.features);
 
-    TargetHistogram observed;
-    observed += example.target_value;
-    reporter_->GetPredictionCallback(observed).Run(predicted);
+    DistributionReporter::PredictionInfo info;
+    info.observed = example.target_value;
+    info.total_training_weight = last_training_weight_;
+    info.total_training_examples = last_training_size_;
+    reporter_->GetPredictionCallback(info).Run(predicted);
   }
 
   // Can't train more than one model concurrently.
@@ -125,7 +128,8 @@ void LearningTaskControllerImpl::AddFinishedExample(LabelledExample example) {
   num_untrained_examples_ = 0;
 
   TrainedModelCB model_cb =
-      base::BindOnce(&LearningTaskControllerImpl::OnModelTrained, AsWeakPtr());
+      base::BindOnce(&LearningTaskControllerImpl::OnModelTrained, AsWeakPtr(),
+                     training_data_->total_weight(), training_data_->size());
   training_is_in_progress_ = true;
   // Note that this copies the training data, so it's okay if we add more
   // examples to our copy before this returns.
@@ -135,10 +139,15 @@ void LearningTaskControllerImpl::AddFinishedExample(LabelledExample example) {
   trainer_->Train(task_, *training_data_, std::move(model_cb));
 }
 
-void LearningTaskControllerImpl::OnModelTrained(std::unique_ptr<Model> model) {
+void LearningTaskControllerImpl::OnModelTrained(double training_weight,
+                                                int training_size,
+                                                std::unique_ptr<Model> model) {
   DCHECK(training_is_in_progress_);
   training_is_in_progress_ = false;
   model_ = std::move(model);
+  // Record these for metrics.
+  last_training_weight_ = training_weight;
+  last_training_size_ = training_size;
 }
 
 void LearningTaskControllerImpl::SetTrainerForTesting(

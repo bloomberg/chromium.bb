@@ -107,16 +107,10 @@ struct COMPONENT_EXPORT(LEARNING_COMMON) LearningTask {
   // we currently have, which might be less than |max_data_set_size|.
   double min_new_data_fraction = 0.1;
 
-  // If set, then we'll record a confusion matrix hackily to UMA using this as
-  // the histogram name.  If we're using a (single) feature subset, then we'll
-  // slide the x-axis to the right by multiples of 6 (== size of one confusion
-  // matrix, see enums.xml) to match the chosen feature index.
-  std::string uma_hacky_confusion_matrix;
-
   // If provided, then we'll randomly select a |*feature_subset_size|-sized set
   // of feature to train the model with, to allow for feature importance
-  // measurement.  Note that |uma_hacky_confusion_matrix| reporting only
-  // supports subsets of size one, or the whole set.
+  // measurement.  Note that UMA reporting only supports subsets of size one, or
+  // the whole set.
   base::Optional<int> feature_subset_size;
 
   // RandomForest parameters
@@ -138,7 +132,57 @@ struct COMPONENT_EXPORT(LEARNING_COMMON) LearningTask {
   //
   // In particular, if the percentage of dropped frames is greater than this,
   // then report "false" (not smooth), else we report true.
+  //
+  // A better, non-hacky approach would be to report the predictions and
+  // observations directly, and do offline analysis with whatever threshold we
+  // like.  This would remove the thresholding requirement, and also permit
+  // additional types of analysis for general regression tasks, such measuring
+  // the prediction error directly.
+  //
+  // The UKM reporter will support this.
   double smoothness_threshold = 0.1;
+
+  // If set, then we'll record a confusion matrix (hackily, see
+  // |smoothness_threshold|, above, for what that means) to UMA for all
+  // predictions.  Add this task's name to histograms.xml, in the histogram
+  // suffixes for "Media.Learning.BinaryThreshold.Aggregate".  The threshold is
+  // chosen by |smoothness_threshold|.
+  //
+  // This option is ignored if feature subset selection is in use.
+  bool uma_hacky_aggregate_confusion_matrix = false;
+
+  // If set, then we'll record a histogram of many confusion matrices, split out
+  // by the total training data weight that was used to construct the model.  Be
+  // sure to add this task's name to histograms.xml, in the histogram suffixes
+  // for "Media.Learning.BinaryThreshold.ByTrainingWeight".  The threshold is
+  // chosen by |smoothness_threshold|.
+  //
+  // This option is ignored if feature subset selection is in use.
+  bool uma_hacky_by_training_weight_confusion_matrix = false;
+
+  // If set, then we'll record a histogram of many confusion matrices, split out
+  // by the (single) selected feature subset.  This does nothing if we're not
+  // using feature subsets, or if the subset size isn't one.  Be sure to add
+  // this tasks' name to histograms.xml, in the histogram suffixes for
+  // "Media.Learning.BinaryThreshold.ByFeature" too.
+  bool uma_hacky_by_feature_subset_confusion_matrix = false;
+
+  // Maximum training weight for UMA reporting.  We'll report results offset
+  // into different confusion matrices in the same histogram, evenly spaced
+  // from 0 to |max_reporting_weight|, with one additional bucket for everything
+  // larger than that.  The number of buckets is |num_reporting_weight_buckets|.
+  double max_reporting_weight = 99.;
+
+  // Number of buckets that we'll use to split out the confusion matrix by
+  // training weight.  The last one is reserved for "all", while the others are
+  // split evenly from 0 to |max_reporting_weight|, inclusive.  One can select
+  // up to 15 buckets.  We use 11 by default, so it breaks up the default weight
+  // into buckets of size 10.
+  //
+  // In other words, the defaults will make these buckets:
+  // [0-9] [10-19] ... [90-99] [100 and up].  This makes sense if the training
+  // set maximum size is the default of 100, and each example has a weight of 1.
+  int num_reporting_weight_buckets = 11;
 };
 
 }  // namespace learning
