@@ -155,21 +155,6 @@ scoped_refptr<VideoFrame> ConvertVideoFrame(const VideoFrame* src_frame,
   return dst_frame;
 }
 
-scoped_refptr<VideoFrame> CreatePlatformVideoFrame(
-    VideoPixelFormat pixel_format,
-    const gfx::Size& size,
-    gfx::BufferUsage buffer_usage) {
-  scoped_refptr<VideoFrame> video_frame;
-#if defined(OS_CHROMEOS)
-  gfx::Rect visible_rect(size.width(), size.height());
-  video_frame = media::CreatePlatformVideoFrame(
-      pixel_format, size, visible_rect, visible_rect.size(), buffer_usage,
-      base::TimeDelta());
-  LOG_ASSERT(video_frame) << "Failed to create Dmabuf-backed VideoFrame";
-#endif
-  return video_frame;
-}
-
 base::Optional<VideoFrameLayout> CreateVideoFrameLayout(VideoPixelFormat format,
                                                         const gfx::Size& size,
                                                         bool single_buffer) {

@@ -185,8 +185,12 @@ void TestVDAVideoDecoder::ProvidePictureBuffers(
       // Create a video frame for each of the picture buffers and provide memory
       // handles to the video frame's data to the decoder.
       for (const PictureBuffer& picture_buffer : picture_buffers) {
-        scoped_refptr<VideoFrame> video_frame =
-            CreatePlatformVideoFrame(pixel_format, size);
+        scoped_refptr<VideoFrame> video_frame;
+#if defined(OS_LINUX)
+        video_frame = CreatePlatformVideoFrame(
+            pixel_format, size, gfx::Rect(size), size, base::TimeDelta(),
+            gfx::BufferUsage::SCANOUT_VDA_WRITE);
+#endif
         LOG_ASSERT(video_frame) << "Failed to create video frame";
         video_frames_.emplace(picture_buffer.id(), video_frame);
         gfx::GpuMemoryBufferHandle handle;
