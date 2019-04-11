@@ -51,9 +51,19 @@ class NativeViewHostWrapper {
   virtual void SetHitTestTopInset(int top_inset) = 0;
   virtual int GetHitTestTopInset() const = 0;
 
+  // Installs a clip on the gfx::NativeView. These values are in the coordinate
+  // space of the Widget, so if this method is called from ShowWidget
+  // then the values need to be translated.
+  virtual void InstallClip(int x, int y, int w, int h) = 0;
+
   // Whether or not a clip has been installed on the wrapped gfx::NativeView.
-  // A clip is only installed during fast-resize.
   virtual bool HasInstalledClip() = 0;
+
+  // Removes the clip installed on the gfx::NativeView by way of InstallClip. A
+  // following call to ShowWidget should occur after calling this method to
+  // position the gfx::NativeView correctly, since the clipping process may have
+  // adjusted its position.
+  virtual void UninstallClip() = 0;
 
   // Shows the gfx::NativeView within the specified region (relative to the
   // parent native view) and with the given native size. The content will

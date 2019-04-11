@@ -183,12 +183,21 @@ void NativeViewHostAura::SetHitTestTopInset(int top_inset) {
   UpdateInsets();
 }
 
+void NativeViewHostAura::InstallClip(int x, int y, int w, int h) {
+  clip_rect_ = std::make_unique<gfx::Rect>(
+      host_->ConvertRectToWidget(gfx::Rect(x, y, w, h)));
+}
+
 int NativeViewHostAura::GetHitTestTopInset() const {
   return top_inset_;
 }
 
 bool NativeViewHostAura::HasInstalledClip() {
-  return clip_rect_.has_value();
+  return !!clip_rect_;
+}
+
+void NativeViewHostAura::UninstallClip() {
+  clip_rect_.reset();
 }
 
 void NativeViewHostAura::ShowWidget(int x,
@@ -198,11 +207,12 @@ void NativeViewHostAura::ShowWidget(int x,
                                     int native_w,
                                     int native_h) {
   if (host_->fast_resize()) {
-    clip_rect_ = gfx::Rect(x, y, w, h);
+    gfx::Point origin(x, y);
+    views::View::ConvertPointFromWidget(host_, &origin);
+    InstallClip(origin.x(), origin.y(), w, h);
     native_w = host_->native_view()->bounds().width();
     native_h = host_->native_view()->bounds().height();
   } else {
-    clip_rect_.reset();
     gfx::Transform transform = original_transform_;
     if (w > 0 && h > 0 && native_w > 0 && native_h > 0) {
       transform.Scale(static_cast<SkMScalar>(w) / native_w,
@@ -215,7 +225,7 @@ void NativeViewHostAura::ShowWidget(int x,
     }
   }
 
-  clipping_window_->SetBounds(clip_rect_.value_or(gfx::Rect(x, y, w, h)));
+  clipping_window_->SetBounds(clip_rect_ ? *clip_rect_ : gfx::Rect(x, y, w, h));
   gfx::Point clip_offset = clipping_window_->bounds().origin();
   host_->native_view()->SetBounds(
       gfx::Rect(x - clip_offset.x(), y - clip_offset.y(), native_w, native_h));
@@ -224,7 +234,6 @@ void NativeViewHostAura::ShowWidget(int x,
 }
 
 void NativeViewHostAura::HideWidget() {
-  clip_rect_.reset();
   host_->native_view()->Hide();
   clipping_window_->Hide();
 }

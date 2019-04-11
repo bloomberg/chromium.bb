@@ -278,6 +278,48 @@ TEST_F(NativeViewHostAuraTest, BoundsWhileScaling) {
   DestroyHost();
 }
 
+// Test installing and uninstalling a clip.
+TEST_F(NativeViewHostAuraTest, InstallClip) {
+  CreateHost();
+  toplevel()->SetBounds(gfx::Rect(20, 20, 100, 100));
+
+  // Without a clip, the clipping window should always be positioned at the
+  // requested coordinates with the native view positioned at the origin of the
+  // clipping window.
+  native_host()->ShowWidget(10, 20, 100, 100, 100, 100);
+  EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
+            host()->native_view()->bounds().ToString());
+  EXPECT_EQ(gfx::Rect(10, 20, 100, 100).ToString(),
+            clipping_window()->bounds().ToString());
+
+  // Clip to the bottom right quarter of the native view.
+  native_host()->InstallClip(60, 70, 50, 50);
+  native_host()->ShowWidget(10, 20, 100, 100, 100, 100);
+  EXPECT_EQ(gfx::Rect(-50, -50, 100, 100).ToString(),
+            host()->native_view()->bounds().ToString());
+  EXPECT_EQ(gfx::Rect(60, 70, 50, 50).ToString(),
+            clipping_window()->bounds().ToString());
+
+  // Clip to the center of the native view.
+  native_host()->InstallClip(35, 45, 50, 50);
+  native_host()->ShowWidget(10, 20, 100, 100, 100, 100);
+  EXPECT_EQ(gfx::Rect(-25, -25, 100, 100).ToString(),
+            host()->native_view()->bounds().ToString());
+  EXPECT_EQ(gfx::Rect(35, 45, 50, 50).ToString(),
+            clipping_window()->bounds().ToString());
+
+  // Uninstalling the clip should make the clipping window match the native view
+  // again.
+  native_host()->UninstallClip();
+  native_host()->ShowWidget(10, 20, 100, 100, 100, 100);
+  EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
+            host()->native_view()->bounds().ToString());
+  EXPECT_EQ(gfx::Rect(10, 20, 100, 100).ToString(),
+            clipping_window()->bounds().ToString());
+
+  DestroyHost();
+}
+
 // Ensure native view is parented to the root window after detaching. This is
 // a regression test for http://crbug.com/389261.
 TEST_F(NativeViewHostAuraTest, ParentAfterDetach) {
