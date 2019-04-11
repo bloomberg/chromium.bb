@@ -181,6 +181,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         'EXT_texture_filter_anisotropic',
         'KHR_parallel_shader_compile',
         'OES_texture_float_linear',
+        'OVR_multiview2',
         'WEBGL_compressed_texture_astc',
         'WEBGL_compressed_texture_etc',
         'WEBGL_compressed_texture_etc1',
@@ -192,7 +193,6 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         'WEBGL_lose_context',
         'WEBGL_multi_draw',
         'WEBGL_multi_draw_instanced',
-        'WEBGL_multiview',
         'WEBGL_video_texture',
       ]
 

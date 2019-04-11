@@ -1900,14 +1900,13 @@ void GL_APIENTRY
 GLES2InvalidateReadbackBufferShadowDataCHROMIUM(GLuint buffer_id) {
   gles2::GetGLContext()->InvalidateReadbackBufferShadowDataCHROMIUM(buffer_id);
 }
-void GL_APIENTRY
-GLES2FramebufferTextureMultiviewLayeredANGLE(GLenum target,
-                                             GLenum attachment,
-                                             GLuint texture,
-                                             GLint level,
-                                             GLint baseViewIndex,
-                                             GLsizei numViews) {
-  gles2::GetGLContext()->FramebufferTextureMultiviewLayeredANGLE(
+void GL_APIENTRY GLES2FramebufferTextureMultiviewOVR(GLenum target,
+                                                     GLenum attachment,
+                                                     GLuint texture,
+                                                     GLint level,
+                                                     GLint baseViewIndex,
+                                                     GLsizei numViews) {
+  gles2::GetGLContext()->FramebufferTextureMultiviewOVR(
       target, attachment, texture, level, baseViewIndex, numViews);
 }
 void GL_APIENTRY GLES2MaxShaderCompilerThreadsKHR(GLuint count) {
@@ -3410,9 +3409,9 @@ extern const NameToFunc g_gles2_function_table[] = {
             glInvalidateReadbackBufferShadowDataCHROMIUM),
     },
     {
-        "glFramebufferTextureMultiviewLayeredANGLE",
+        "glFramebufferTextureMultiviewOVR",
         reinterpret_cast<GLES2FunctionPointer>(
-            glFramebufferTextureMultiviewLayeredANGLE),
+            glFramebufferTextureMultiviewOVR),
     },
     {
         "glMaxShaderCompilerThreadsKHR",

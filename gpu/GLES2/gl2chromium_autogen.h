@@ -413,8 +413,8 @@
 #define glDestroyGpuFenceCHROMIUM GLES2_GET_FUN(DestroyGpuFenceCHROMIUM)
 #define glInvalidateReadbackBufferShadowDataCHROMIUM \
   GLES2_GET_FUN(InvalidateReadbackBufferShadowDataCHROMIUM)
-#define glFramebufferTextureMultiviewLayeredANGLE \
-  GLES2_GET_FUN(FramebufferTextureMultiviewLayeredANGLE)
+#define glFramebufferTextureMultiviewOVR \
+  GLES2_GET_FUN(FramebufferTextureMultiviewOVR)
 #define glMaxShaderCompilerThreadsKHR GLES2_GET_FUN(MaxShaderCompilerThreadsKHR)
 #define glCreateAndTexStorage2DSharedImageCHROMIUM \
   GLES2_GET_FUN(CreateAndTexStorage2DSharedImageCHROMIUM)

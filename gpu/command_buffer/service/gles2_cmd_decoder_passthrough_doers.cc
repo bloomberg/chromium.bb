@@ -1299,8 +1299,7 @@ error::Error GLES2DecoderPassthroughImpl::DoFramebufferTextureLayer(
   return error::kNoError;
 }
 
-error::Error
-GLES2DecoderPassthroughImpl::DoFramebufferTextureMultiviewLayeredANGLE(
+error::Error GLES2DecoderPassthroughImpl::DoFramebufferTextureMultiviewOVR(
     GLenum target,
     GLenum attachment,
     GLuint texture,
@@ -1312,7 +1311,7 @@ GLES2DecoderPassthroughImpl::DoFramebufferTextureMultiviewLayeredANGLE(
                 "Cannot change the attachments of the default framebuffer.");
     return error::kNoError;
   }
-  api()->glFramebufferTextureMultiviewLayeredANGLEFn(
+  api()->glFramebufferTextureMultiviewOVRFn(
       target, attachment,
       GetTextureServiceID(api(), texture, resources_, false), level,
       base_view_index, num_views);

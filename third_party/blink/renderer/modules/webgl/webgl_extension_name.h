@@ -28,6 +28,7 @@ enum WebGLExtensionName {
   kOESTextureHalfFloatLinearName,
   kOESTextureHalfFloatName,
   kOESVertexArrayObjectName,
+  kOVRMultiview2Name,
   kWebGLColorBufferFloatName,
   kWebGLCompressedTextureASTCName,
   kWebGLCompressedTextureETCName,

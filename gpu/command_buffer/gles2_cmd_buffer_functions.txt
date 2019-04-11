@@ -417,8 +417,8 @@ GL_APICALL void         GL_APIENTRY glInvalidateReadbackBufferShadowDataCHROMIUM
 // (used for CHROMIUM_nonblocking_readback implementation)
 GL_APICALL void         GL_APIENTRY glSetReadbackBufferShadowAllocationINTERNAL (GLidBuffer buffer_id, GLint shm_id, GLuint shm_offset, GLuint size);
 
-// Extension ANGLE_multiview
-GL_APICALL void         GL_APIENTRY glFramebufferTextureMultiviewLayeredANGLE (GLenum target, GLenum attachment, GLuint texture, GLint level, GLint baseViewIndex, GLsizei numViews);
+// Extension OVR_multiview2
+GL_APICALL void         GL_APIENTRY glFramebufferTextureMultiviewOVR (GLenum target, GLenum attachment, GLuint texture, GLint level, GLint baseViewIndex, GLsizei numViews);
 
 // Extension KHR_parallel_shader_compile
 GL_APICALL void         GL_APIENTRY glMaxShaderCompilerThreadsKHR (GLuint count);

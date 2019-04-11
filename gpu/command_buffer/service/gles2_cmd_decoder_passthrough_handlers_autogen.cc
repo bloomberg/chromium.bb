@@ -4835,17 +4835,15 @@ GLES2DecoderPassthroughImpl::HandleSetReadbackBufferShadowAllocationINTERNAL(
   return error::kNoError;
 }
 
-error::Error
-GLES2DecoderPassthroughImpl::HandleFramebufferTextureMultiviewLayeredANGLE(
+error::Error GLES2DecoderPassthroughImpl::HandleFramebufferTextureMultiviewOVR(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
   if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
-  const volatile gles2::cmds::FramebufferTextureMultiviewLayeredANGLE& c =
-      *static_cast<
-          const volatile gles2::cmds::FramebufferTextureMultiviewLayeredANGLE*>(
+  const volatile gles2::cmds::FramebufferTextureMultiviewOVR& c =
+      *static_cast<const volatile gles2::cmds::FramebufferTextureMultiviewOVR*>(
           cmd_data);
-  if (!features().angle_multiview) {
+  if (!features().ovr_multiview2) {
     return error::kUnknownCommand;
   }
 
@@ -4855,7 +4853,7 @@ GLES2DecoderPassthroughImpl::HandleFramebufferTextureMultiviewLayeredANGLE(
   GLint level = static_cast<GLint>(c.level);
   GLint baseViewIndex = static_cast<GLint>(c.baseViewIndex);
   GLsizei numViews = static_cast<GLsizei>(c.numViews);
-  error::Error error = DoFramebufferTextureMultiviewLayeredANGLE(
+  error::Error error = DoFramebufferTextureMultiviewOVR(
       target, attachment, texture, level, baseViewIndex, numViews);
   if (error != error::kNoError) {
     return error;

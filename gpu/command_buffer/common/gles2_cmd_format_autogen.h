@@ -17353,9 +17353,9 @@ static_assert(
     offsetof(SetReadbackBufferShadowAllocationINTERNAL, size) == 16,
     "offset of SetReadbackBufferShadowAllocationINTERNAL size should be 16");
 
-struct FramebufferTextureMultiviewLayeredANGLE {
-  typedef FramebufferTextureMultiviewLayeredANGLE ValueType;
-  static const CommandId kCmdId = kFramebufferTextureMultiviewLayeredANGLE;
+struct FramebufferTextureMultiviewOVR {
+  typedef FramebufferTextureMultiviewOVR ValueType;
+  static const CommandId kCmdId = kFramebufferTextureMultiviewOVR;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
@@ -17401,30 +17401,24 @@ struct FramebufferTextureMultiviewLayeredANGLE {
   int32_t numViews;
 };
 
-static_assert(sizeof(FramebufferTextureMultiviewLayeredANGLE) == 28,
-              "size of FramebufferTextureMultiviewLayeredANGLE should be 28");
+static_assert(sizeof(FramebufferTextureMultiviewOVR) == 28,
+              "size of FramebufferTextureMultiviewOVR should be 28");
+static_assert(offsetof(FramebufferTextureMultiviewOVR, header) == 0,
+              "offset of FramebufferTextureMultiviewOVR header should be 0");
+static_assert(offsetof(FramebufferTextureMultiviewOVR, target) == 4,
+              "offset of FramebufferTextureMultiviewOVR target should be 4");
 static_assert(
-    offsetof(FramebufferTextureMultiviewLayeredANGLE, header) == 0,
-    "offset of FramebufferTextureMultiviewLayeredANGLE header should be 0");
+    offsetof(FramebufferTextureMultiviewOVR, attachment) == 8,
+    "offset of FramebufferTextureMultiviewOVR attachment should be 8");
+static_assert(offsetof(FramebufferTextureMultiviewOVR, texture) == 12,
+              "offset of FramebufferTextureMultiviewOVR texture should be 12");
+static_assert(offsetof(FramebufferTextureMultiviewOVR, level) == 16,
+              "offset of FramebufferTextureMultiviewOVR level should be 16");
 static_assert(
-    offsetof(FramebufferTextureMultiviewLayeredANGLE, target) == 4,
-    "offset of FramebufferTextureMultiviewLayeredANGLE target should be 4");
-static_assert(
-    offsetof(FramebufferTextureMultiviewLayeredANGLE, attachment) == 8,
-    "offset of FramebufferTextureMultiviewLayeredANGLE attachment should be 8");
-static_assert(
-    offsetof(FramebufferTextureMultiviewLayeredANGLE, texture) == 12,
-    "offset of FramebufferTextureMultiviewLayeredANGLE texture should be 12");
-static_assert(
-    offsetof(FramebufferTextureMultiviewLayeredANGLE, level) == 16,
-    "offset of FramebufferTextureMultiviewLayeredANGLE level should be 16");
-static_assert(offsetof(FramebufferTextureMultiviewLayeredANGLE,
-                       baseViewIndex) == 20,
-              "offset of FramebufferTextureMultiviewLayeredANGLE baseViewIndex "
-              "should be 20");
-static_assert(
-    offsetof(FramebufferTextureMultiviewLayeredANGLE, numViews) == 24,
-    "offset of FramebufferTextureMultiviewLayeredANGLE numViews should be 24");
+    offsetof(FramebufferTextureMultiviewOVR, baseViewIndex) == 20,
+    "offset of FramebufferTextureMultiviewOVR baseViewIndex should be 20");
+static_assert(offsetof(FramebufferTextureMultiviewOVR, numViews) == 24,
+              "offset of FramebufferTextureMultiviewOVR numViews should be 24");
 
 struct MaxShaderCompilerThreadsKHR {
   typedef MaxShaderCompilerThreadsKHR ValueType;

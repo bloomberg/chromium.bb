@@ -3227,14 +3227,14 @@ TEST_F(GLES2ImplementationTest, DestroyGpuFenceCHROMIUM) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
-TEST_F(GLES2ImplementationTest, FramebufferTextureMultiviewLayeredANGLE) {
+TEST_F(GLES2ImplementationTest, FramebufferTextureMultiviewOVR) {
   struct Cmds {
-    cmds::FramebufferTextureMultiviewLayeredANGLE cmd;
+    cmds::FramebufferTextureMultiviewOVR cmd;
   };
   Cmds expected;
   expected.cmd.Init(1, 2, 3, 4, 5, 6);
 
-  gl_->FramebufferTextureMultiviewLayeredANGLE(1, 2, 3, 4, 5, 6);
+  gl_->FramebufferTextureMultiviewOVR(1, 2, 3, 4, 5, 6);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 

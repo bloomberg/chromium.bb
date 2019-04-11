@@ -1339,12 +1339,12 @@ void DestroyGpuFenceCHROMIUM(GLuint gpu_fence_id) override;
 
 void InvalidateReadbackBufferShadowDataCHROMIUM(GLuint buffer_id) override;
 
-void FramebufferTextureMultiviewLayeredANGLE(GLenum target,
-                                             GLenum attachment,
-                                             GLuint texture,
-                                             GLint level,
-                                             GLint baseViewIndex,
-                                             GLsizei numViews) override;
+void FramebufferTextureMultiviewOVR(GLenum target,
+                                    GLenum attachment,
+                                    GLuint texture,
+                                    GLint level,
+                                    GLint baseViewIndex,
+                                    GLsizei numViews) override;
 
 void MaxShaderCompilerThreadsKHR(GLuint count) override;
 

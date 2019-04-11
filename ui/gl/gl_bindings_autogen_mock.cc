@@ -1428,16 +1428,15 @@ MockGLInterface::Mock_glFramebufferTextureLayer(GLenum target,
 }
 
 void GL_BINDING_CALL
-MockGLInterface::Mock_glFramebufferTextureMultiviewLayeredANGLE(
-    GLenum target,
-    GLenum attachment,
-    GLuint texture,
-    GLint level,
-    GLint baseViewIndex,
-    GLsizei numViews) {
-  MakeGlMockFunctionUnique("glFramebufferTextureMultiviewLayeredANGLE");
-  interface_->FramebufferTextureMultiviewLayeredANGLE(
-      target, attachment, texture, level, baseViewIndex, numViews);
+MockGLInterface::Mock_glFramebufferTextureMultiviewOVR(GLenum target,
+                                                       GLenum attachment,
+                                                       GLuint texture,
+                                                       GLint level,
+                                                       GLint baseViewIndex,
+                                                       GLsizei numViews) {
+  MakeGlMockFunctionUnique("glFramebufferTextureMultiviewOVR");
+  interface_->FramebufferTextureMultiviewOVR(target, attachment, texture, level,
+                                             baseViewIndex, numViews);
 }
 
 void GL_BINDING_CALL MockGLInterface::Mock_glFrontFace(GLenum mode) {
@@ -5386,9 +5385,9 @@ MockGLInterface::GetGLProcAddress(const char* name) {
   if (strcmp(name, "glFramebufferTextureLayer") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_glFramebufferTextureLayer);
-  if (strcmp(name, "glFramebufferTextureMultiviewLayeredANGLE") == 0)
+  if (strcmp(name, "glFramebufferTextureMultiviewOVR") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
-        Mock_glFramebufferTextureMultiviewLayeredANGLE);
+        Mock_glFramebufferTextureMultiviewOVR);
   if (strcmp(name, "glFrontFace") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glFrontFace);
   if (strcmp(name, "glGenBuffers") == 0)

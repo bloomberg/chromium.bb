@@ -356,7 +356,7 @@
   OP(WaitGpuFenceCHROMIUM)                                 /* 597 */ \
   OP(DestroyGpuFenceCHROMIUM)                              /* 598 */ \
   OP(SetReadbackBufferShadowAllocationINTERNAL)            /* 599 */ \
-  OP(FramebufferTextureMultiviewLayeredANGLE)              /* 600 */ \
+  OP(FramebufferTextureMultiviewOVR)                       /* 600 */ \
   OP(MaxShaderCompilerThreadsKHR)                          /* 601 */ \
   OP(CreateAndTexStorage2DSharedImageINTERNALImmediate)    /* 602 */ \
   OP(BeginSharedImageAccessDirectCHROMIUM)                 /* 603 */ \

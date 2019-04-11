@@ -3405,10 +3405,10 @@ ScriptValue WebGLRenderingContextBase::getParameter(ScriptState* script_state,
           "invalid parameter name, EXT_disjoint_timer_query not enabled");
       return ScriptValue::CreateNull(script_state);
     case GL_MAX_VIEWS_OVR:
-      if (ExtensionEnabled(kWebGLMultiviewName))
+      if (ExtensionEnabled(kOVRMultiview2Name))
         return GetIntParameter(script_state, pname);
       SynthesizeGLError(GL_INVALID_ENUM, "getParameter",
-                        "invalid parameter name, WEBGL_multiview not enabled");
+                        "invalid parameter name, OVR_multiview2 not enabled");
       return ScriptValue::CreateNull(script_state);
     default:
       if ((ExtensionEnabled(kWebGLDrawBuffersName) || IsWebGL2OrHigher()) &&

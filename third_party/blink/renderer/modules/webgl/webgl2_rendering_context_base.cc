@@ -5697,18 +5697,16 @@ ScriptValue WebGL2RenderingContextBase::getFramebufferAttachmentParameter(
       case GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING:
         return WebGLAny(script_state, GL_LINEAR);
       case GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_BASE_VIEW_INDEX_OVR:
-        if (ExtensionEnabled(kWebGLMultiviewName))
+        if (ExtensionEnabled(kOVRMultiview2Name))
           return WebGLAny(script_state, 0);
-        SynthesizeGLError(
-            GL_INVALID_ENUM, kFunctionName,
-            "invalid parameter name, WEBGL_multiview not enabled");
+        SynthesizeGLError(GL_INVALID_ENUM, kFunctionName,
+                          "invalid parameter name, OVR_multiview2 not enabled");
         return ScriptValue::CreateNull(script_state);
       case GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_NUM_VIEWS_OVR:
-        if (ExtensionEnabled(kWebGLMultiviewName))
+        if (ExtensionEnabled(kOVRMultiview2Name))
           return WebGLAny(script_state, 0);
-        SynthesizeGLError(
-            GL_INVALID_ENUM, kFunctionName,
-            "invalid parameter name, WEBGL_multiview not enabled");
+        SynthesizeGLError(GL_INVALID_ENUM, kFunctionName,
+                          "invalid parameter name, OVR_multiview2 not enabled");
         return ScriptValue::CreateNull(script_state);
       default:
         SynthesizeGLError(GL_INVALID_ENUM, kFunctionName,
@@ -5788,10 +5786,9 @@ ScriptValue WebGL2RenderingContextBase::getFramebufferAttachmentParameter(
     }
     case GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_BASE_VIEW_INDEX_OVR:
     case GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_NUM_VIEWS_OVR: {
-      if (!ExtensionEnabled(kWebGLMultiviewName)) {
-        SynthesizeGLError(
-            GL_INVALID_ENUM, kFunctionName,
-            "invalid parameter name, WEBGL_multiview not enabled");
+      if (!ExtensionEnabled(kOVRMultiview2Name)) {
+        SynthesizeGLError(GL_INVALID_ENUM, kFunctionName,
+                          "invalid parameter name, OVR_multiview2 not enabled");
         return ScriptValue::CreateNull(script_state);
       }
       GLint value = 0;

@@ -5561,16 +5561,15 @@ error::Error GLES2DecoderImpl::HandleSetReadbackBufferShadowAllocationINTERNAL(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderImpl::HandleFramebufferTextureMultiviewLayeredANGLE(
+error::Error GLES2DecoderImpl::HandleFramebufferTextureMultiviewOVR(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
   if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
-  const volatile gles2::cmds::FramebufferTextureMultiviewLayeredANGLE& c =
-      *static_cast<
-          const volatile gles2::cmds::FramebufferTextureMultiviewLayeredANGLE*>(
+  const volatile gles2::cmds::FramebufferTextureMultiviewOVR& c =
+      *static_cast<const volatile gles2::cmds::FramebufferTextureMultiviewOVR*>(
           cmd_data);
-  if (!features().angle_multiview) {
+  if (!features().ovr_multiview2) {
     return error::kUnknownCommand;
   }
 
@@ -5581,13 +5580,12 @@ error::Error GLES2DecoderImpl::HandleFramebufferTextureMultiviewLayeredANGLE(
   GLint baseViewIndex = static_cast<GLint>(c.baseViewIndex);
   GLsizei numViews = static_cast<GLsizei>(c.numViews);
   if (numViews < 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE,
-                       "glFramebufferTextureMultiviewLayeredANGLE",
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glFramebufferTextureMultiviewOVR",
                        "numViews < 0");
     return error::kNoError;
   }
-  DoFramebufferTextureMultiviewLayeredANGLE(target, attachment, texture, level,
-                                            baseViewIndex, numViews);
+  DoFramebufferTextureMultiviewOVR(target, attachment, texture, level,
+                                   baseViewIndex, numViews);
   return error::kNoError;
 }
 
