@@ -144,8 +144,6 @@ class ContextualSearchLayer : public OverlayPanelLayer {
   scoped_refptr<cc::SolidColorLayer> bar_banner_container_;
   scoped_refptr<cc::NinePatchLayer> bar_banner_ripple_;
   scoped_refptr<cc::UIResourceLayer> bar_banner_text_;
-  scoped_refptr<cc::NinePatchLayer> progress_bar_;
-  scoped_refptr<cc::NinePatchLayer> progress_bar_background_;
   scoped_refptr<cc::UIResourceLayer> search_caption_;
   scoped_refptr<cc::UIResourceLayer> text_layer_;
   scoped_refptr<cc::SolidColorLayer> divider_line_;
