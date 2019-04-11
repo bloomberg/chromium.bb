@@ -46,21 +46,21 @@ bool Video::Load() {
 
   int64_t file_size;
   if (!base::GetFileSize(file_path_, &file_size) || (file_size < 0)) {
-    VLOGF(1) << "Failed to read file size: " << file_path_;
+    LOG(ERROR) << "Failed to read file size: " << file_path_;
     return false;
   }
 
   std::vector<uint8_t> data(file_size);
   if (base::ReadFile(file_path_, reinterpret_cast<char*>(data.data()),
                      base::checked_cast<int>(file_size)) != file_size) {
-    VLOGF(1) << "Failed to read file: " << file_path_;
+    LOG(ERROR) << "Failed to read file: " << file_path_;
     return false;
   }
 
   data_ = std::move(data);
 
   if (!LoadMetadata()) {
-    VLOGF(1) << "Failed to load metadata";
+    LOG(ERROR) << "Failed to load metadata";
     return false;
   }
 
@@ -114,7 +114,7 @@ void Video::SetTestDataPath(const base::FilePath& test_data_path) {
 
 bool Video::LoadMetadata() {
   if (IsMetadataLoaded()) {
-    VLOGF(1) << "Video metadata is already loaded";
+    LOG(ERROR) << "Video metadata is already loaded";
     return false;
   }
 
@@ -125,14 +125,14 @@ bool Video::LoadMetadata() {
   base::Optional<base::FilePath> resolved_path =
       ResolveFilePath(metadata_file_path_);
   if (!resolved_path) {
-    VLOGF(1) << "Video metadata file not found: " << metadata_file_path_;
+    LOG(ERROR) << "Video metadata file not found: " << metadata_file_path_;
     return false;
   }
   metadata_file_path_ = resolved_path.value();
 
   std::string json_data;
   if (!base::ReadFileToString(metadata_file_path_, &json_data)) {
-    VLOGF(1) << "Failed to read video metadata file: " << metadata_file_path_;
+    LOG(ERROR) << "Failed to read video metadata file: " << metadata_file_path_;
     return false;
   }
 
@@ -140,28 +140,28 @@ bool Video::LoadMetadata() {
   std::unique_ptr<base::Value> metadata(
       reader.ReadToValueDeprecated(json_data));
   if (!metadata) {
-    VLOGF(1) << "Failed to parse video metadata: " << metadata_file_path_
-             << ": " << reader.GetErrorMessage();
+    LOG(ERROR) << "Failed to parse video metadata: " << metadata_file_path_
+               << ": " << reader.GetErrorMessage();
     return false;
   }
 
   const base::Value* profile =
       metadata->FindKeyOfType("profile", base::Value::Type::STRING);
   if (!profile) {
-    VLOGF(1) << "Key \"profile\" is not found in " << metadata_file_path_;
+    LOG(ERROR) << "Key \"profile\" is not found in " << metadata_file_path_;
     return false;
   }
   profile_ = ConvertStringtoProfile(profile->GetString());
   codec_ = ConvertProfileToCodec(profile_);
   if (profile_ == VIDEO_CODEC_PROFILE_UNKNOWN || codec_ == kUnknownVideoCodec) {
-    VLOGF(1) << profile->GetString() << " is not supported";
+    LOG(ERROR) << profile->GetString() << " is not supported";
     return false;
   }
 
   const base::Value* num_frames =
       metadata->FindKeyOfType("num_frames", base::Value::Type::INTEGER);
   if (!num_frames) {
-    VLOGF(1) << "Key \"num_frames\" is not found in " << metadata_file_path_;
+    LOG(ERROR) << "Key \"num_frames\" is not found in " << metadata_file_path_;
     return false;
   }
   num_frames_ = static_cast<uint32_t>(num_frames->GetInt());
@@ -169,7 +169,8 @@ bool Video::LoadMetadata() {
   const base::Value* num_fragments =
       metadata->FindKeyOfType("num_fragments", base::Value::Type::INTEGER);
   if (!num_fragments) {
-    VLOGF(1) << "Key \"num_fragments\" is not found in " << metadata_file_path_;
+    LOG(ERROR) << "Key \"num_fragments\" is not found in "
+               << metadata_file_path_;
     return false;
   }
   num_fragments_ = static_cast<uint32_t>(num_fragments->GetInt());
@@ -177,13 +178,13 @@ bool Video::LoadMetadata() {
   const base::Value* width =
       metadata->FindKeyOfType("width", base::Value::Type::INTEGER);
   if (!width) {
-    VLOGF(1) << "Key \"width\" is not found in " << metadata_file_path_;
+    LOG(ERROR) << "Key \"width\" is not found in " << metadata_file_path_;
     return false;
   }
   const base::Value* height =
       metadata->FindKeyOfType("height", base::Value::Type::INTEGER);
   if (!height) {
-    VLOGF(1) << "Key \"height\" is not found in " << metadata_file_path_;
+    LOG(ERROR) << "Key \"height\" is not found in " << metadata_file_path_;
     return false;
   }
   resolution_ = gfx::Size(static_cast<uint32_t>(width->GetInt()),
@@ -192,7 +193,8 @@ bool Video::LoadMetadata() {
   const base::Value* md5_checksums =
       metadata->FindKeyOfType("md5_checksums", base::Value::Type::LIST);
   if (!md5_checksums) {
-    VLOGF(1) << "Key \"md5_checksums\" is not found in " << metadata_file_path_;
+    LOG(ERROR) << "Key \"md5_checksums\" is not found in "
+               << metadata_file_path_;
     return false;
   }
   for (const base::Value& checksum : md5_checksums->GetList()) {
@@ -202,8 +204,8 @@ bool Video::LoadMetadata() {
   const base::Value* thumbnail_checksums =
       metadata->FindKeyOfType("thumbnail_checksums", base::Value::Type::LIST);
   if (!thumbnail_checksums) {
-    VLOGF(1) << "Key \"thumbnail_checksums\" is not found in "
-             << metadata_file_path_;
+    LOG(ERROR) << "Key \"thumbnail_checksums\" is not found in "
+               << metadata_file_path_;
     return false;
   }
   for (const base::Value& checksum : thumbnail_checksums->GetList()) {
