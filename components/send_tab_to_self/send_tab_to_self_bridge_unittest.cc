@@ -17,7 +17,6 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/send_tab_to_self/features.h"
 #include "components/send_tab_to_self/proto/send_tab_to_self.pb.h"
-#include "components/sync/device_info/local_device_info_provider_mock.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/mock_model_type_change_processor.h"
@@ -77,7 +76,6 @@ class SendTabToSelfBridgeTest : public testing::Test {
  protected:
   SendTabToSelfBridgeTest()
       : store_(syncer::ModelTypeStoreTestUtil::CreateInMemoryStoreForTest()) {
-    provider_.Initialize("cache_guid", "machine");
     scoped_feature_list_.InitAndEnableFeature(kSendTabToSelfShowSendingUI);
   }
 
@@ -86,7 +84,7 @@ class SendTabToSelfBridgeTest : public testing::Test {
   void InitializeBridge() {
     ON_CALL(mock_processor_, IsTrackingMetadata()).WillByDefault(Return(true));
     bridge_ = std::make_unique<SendTabToSelfBridge>(
-        mock_processor_.CreateForwardingProcessor(), &provider_, &clock_,
+        mock_processor_.CreateForwardingProcessor(), &clock_,
         syncer::ModelTypeStoreTestUtil::MoveStoreToFactory(std::move(store_)),
         nullptr);
     bridge_->AddObserver(&mock_observer_);
@@ -168,8 +166,6 @@ class SendTabToSelfBridgeTest : public testing::Test {
 
   // In memory model type store needs to be able to post tasks.
   base::test::ScopedTaskEnvironment task_environment_;
-
-  syncer::LocalDeviceInfoProviderMock provider_;
 
   std::unique_ptr<syncer::ModelTypeStore> store_;
 

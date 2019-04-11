@@ -19,7 +19,6 @@ class HistoryService;
 
 namespace syncer {
 class ModelTypeControllerDelegate;
-class LocalDeviceInfoProvider;
 }  // namespace syncer
 
 namespace send_tab_to_self {
@@ -31,7 +30,6 @@ class SendTabToSelfSyncService : public KeyedService {
  public:
   SendTabToSelfSyncService(
       version_info::Channel channel,
-      syncer::LocalDeviceInfoProvider* local_device_info_provider,
       syncer::OnceModelTypeStoreFactory create_store_callback,
       history::HistoryService* history_service);
   ~SendTabToSelfSyncService() override;
