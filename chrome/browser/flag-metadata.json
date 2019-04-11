@@ -168,11 +168,6 @@
     "expiry_milestone": 75
   },
   {
-    "name": "ash-shelf-color-scheme",
-    "owners": [ "manucornet" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "auto-fetch-on-net-error-page",
     "owners": [ "harringtond", "offline-dev" ],
     "expiry_milestone": 82
