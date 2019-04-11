@@ -101,17 +101,21 @@ void AssistantProgressIndicator::RemovedFromWidget() {
 void AssistantProgressIndicator::OnLayerOpacityChanged(
     ui::PropertyChangeReason reason) {
   VisibilityChanged(/*starting_from=*/this,
-                    /*is_visible=*/layer()->opacity() > 0.f);
+                    /*is_visible=*/visible());
 }
 
 void AssistantProgressIndicator::VisibilityChanged(views::View* starting_from,
                                                    bool is_visible) {
-  if (is_visible == is_visible_)
+  // Stop the animation when the view is either not visible or is "visible" but
+  // not actually visible to the user (because it is faded out).
+  const bool is_drawn =
+      IsDrawn() && !cc::MathUtil::IsWithinEpsilon(layer()->opacity(), 0.f);
+  if (is_drawn_ == is_drawn)
     return;
 
-  is_visible_ = is_visible;
+  is_drawn_ = is_drawn;
 
-  if (!is_visible_) {
+  if (!is_drawn_) {
     // Stop all animations.
     for (int i = 0; i < child_count(); ++i) {
       child_at(i)->layer()->GetAnimator()->StopAnimating();
