@@ -2496,6 +2496,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "omnibox-suggestion-transparency-options",
+    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "omnibox-tab-switch-suggestions",
     "owners": [ "krb", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 76

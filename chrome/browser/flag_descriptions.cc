@@ -2775,6 +2775,13 @@ const char kOmniboxReverseTabSwitchLogicDescription[] =
     "Reverse the logic of suggestions that have a tab switch button: Have "
     "them switch by default, and have the button navigate.";
 
+const char kOmniboxSuggestionTransparencyOptionsName[] =
+    "Omnibox Suggestion Transparency Options";
+const char kOmniboxSuggestionTransparencyOptionsDescription[] =
+    "Improves transparency of and control over omnibox suggestions. This "
+    "includes UI cues (like a clock icon for Search History suggestions), as "
+    "well as user controls to delete personalized suggestions.";
+
 const char kOmniboxTabSwitchSuggestionsName[] =
     "Omnibox tab switch suggestions";
 const char kOmniboxTabSwitchSuggestionsDescription[] =
