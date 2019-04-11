@@ -68,7 +68,6 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST_P(ArcSupervisionTransitionNotificationTest, BaseFlow) {
   ASSERT_TRUE(arc_app_test()->fake_apps().size());
-  arc_app_test()->app_instance()->RefreshAppList();
   arc_app_test()->app_instance()->SendRefreshAppList(
       arc_app_test()->fake_apps());
   const std::string app_id =

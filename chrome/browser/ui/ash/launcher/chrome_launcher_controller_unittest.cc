@@ -979,7 +979,6 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
   }
 
   void SendListOfArcApps() {
-    arc_test_.app_instance()->RefreshAppList();
     arc_test_.app_instance()->SendRefreshAppList(arc_test_.fake_apps());
   }
 
@@ -988,7 +987,6 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
   }
 
   void UninstallArcApps() {
-    arc_test_.app_instance()->RefreshAppList();
     arc_test_.app_instance()->SendRefreshAppList(
         std::vector<arc::mojom::AppInfo>());
   }
@@ -2049,7 +2047,6 @@ TEST_F(ChromeLauncherControllerWithArcTest, ArcDeferredLaunchForSuspendedApp) {
   const std::string app_id = ArcAppTest::GetAppId(app);
 
   // Register app first.
-  arc_test_.app_instance()->RefreshAppList();
   arc_test_.app_instance()->SendRefreshAppList({app});
   arc_test_.StopArcInstance();
 
@@ -2064,7 +2061,6 @@ TEST_F(ChromeLauncherControllerWithArcTest, ArcDeferredLaunchForSuspendedApp) {
 
   // Send app with suspended state.
   app.suspended = true;
-  arc_test_.app_instance()->RefreshAppList();
   arc_test_.app_instance()->SendRefreshAppList({app});
 
   // Controler automatically closed.

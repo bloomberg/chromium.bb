@@ -51,15 +51,8 @@ void FakeAppInstance::InitDeprecated(mojom::AppHostPtr host_ptr) {
 }
 
 void FakeAppInstance::Init(mojom::AppHostPtr host_ptr, InitCallback callback) {
-  // ARC app instance calls RefreshAppList after Init() successfully. Call
-  // RefreshAppList() here to keep the same behavior.
-  RefreshAppList();
   host_ = std::move(host_ptr);
   std::move(callback).Run();
-}
-
-void FakeAppInstance::RefreshAppList() {
-  ++refresh_app_list_count_;
 }
 
 void FakeAppInstance::LaunchAppDeprecated(

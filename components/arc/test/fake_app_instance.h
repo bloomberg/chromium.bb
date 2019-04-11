@@ -88,7 +88,6 @@ class FakeAppInstance : public mojom::AppInstance {
   // mojom::AppInstance overrides:
   void InitDeprecated(mojom::AppHostPtr host_ptr) override;
   void Init(mojom::AppHostPtr host_ptr, InitCallback callback) override;
-  void RefreshAppList() override;
   void LaunchAppDeprecated(const std::string& package_name,
                            const std::string& activity,
                            const base::Optional<gfx::Rect>& dimension) override;
@@ -202,8 +201,6 @@ class FakeAppInstance : public mojom::AppInstance {
                             bool app_icon,
                             std::string* png_data_as_string);
 
-  int refresh_app_list_count() const { return refresh_app_list_count_; }
-
   int start_pai_request_count() const { return start_pai_request_count_; }
 
   int start_fast_app_reinstall_request_count() const {
@@ -252,8 +249,6 @@ class FakeAppInstance : public mojom::AppInstance {
   using TaskIdToInfo = std::map<int32_t, std::unique_ptr<Request>>;
   // Mojo endpoints.
   mojom::AppHost* app_host_;
-  // Number of RefreshAppList calls.
-  int refresh_app_list_count_ = 0;
   // Number of requests to start PAI flows.
   int start_pai_request_count_ = 0;
   // Response for PAI flow state;

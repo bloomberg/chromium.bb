@@ -62,7 +62,6 @@ class ArcAppReinstallSearchProviderTest : public AppListTestBase {
     app.package_name = arc::kPlayStorePackage;
     app.activity = arc::kPlayStoreActivity;
 
-    app_instance()->RefreshAppList();
     app_instance()->SendRefreshAppList({app});
   }
 
