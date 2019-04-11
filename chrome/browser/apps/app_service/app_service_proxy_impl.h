@@ -2,16 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_APPS_APP_SERVICE_APP_SERVICE_PROXY_H_
-#define CHROME_BROWSER_APPS_APP_SERVICE_APP_SERVICE_PROXY_H_
+#ifndef CHROME_BROWSER_APPS_APP_SERVICE_APP_SERVICE_PROXY_IMPL_H_
+#define CHROME_BROWSER_APPS_APP_SERVICE_APP_SERVICE_PROXY_IMPL_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "chrome/services/app_service/public/cpp/app_registry_cache.h"
+#include "chrome/services/app_service/public/cpp/app_service_proxy.h"
 #include "chrome/services/app_service/public/cpp/icon_cache.h"
-#include "chrome/services/app_service/public/mojom/app_service.mojom.h"
-#include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
@@ -31,20 +29,23 @@ namespace apps {
 // proxy for a given Profile, and therefore share its caches.
 //
 // See chrome/services/app_service/README.md.
-class AppServiceProxy : public KeyedService,
-                        public apps::IconLoader,
-                        public apps::mojom::Subscriber {
+class AppServiceProxyImpl : public KeyedService,
+                            public apps::AppServiceProxy,
+                            public apps::mojom::Subscriber {
  public:
-  static AppServiceProxy* Get(Profile* profile);
+  // This method returns an AppServiceProxyImpl, not just an AppServiceProxy, so
+  // that callers (which are presumably in test code) can then call other
+  // XxxForTesting methods.
+  //
+  // For regular (non-test) code, use AppServiceProxyFactory::GetForProfile
+  // instead.
+  static AppServiceProxyImpl* GetImplForTesting(Profile* profile);
 
-  explicit AppServiceProxy(Profile* profile);
+  explicit AppServiceProxyImpl(Profile* profile);
 
-  ~AppServiceProxy() override;
+  ~AppServiceProxyImpl() override;
 
-  apps::mojom::AppServicePtr& AppService();
-  apps::AppRegistryCache& AppRegistryCache();
-
-  // apps::IconLoader overrides.
+  // apps::AppServiceProxy (including apps::IconLoader) overrides.
   apps::mojom::IconKeyPtr GetIconKey(const std::string& app_id) override;
   std::unique_ptr<IconLoader::Releaser> LoadIconFromIconKey(
       apps::mojom::AppType app_type,
@@ -54,18 +55,14 @@ class AppServiceProxy : public KeyedService,
       int32_t size_hint_in_dip,
       bool allow_placeholder_icon,
       apps::mojom::Publisher::LoadIconCallback callback) override;
-
   void Launch(const std::string& app_id,
               int32_t event_flags,
               apps::mojom::LaunchSource launch_source,
-              int64_t display_id);
-
+              int64_t display_id) override;
   void SetPermission(const std::string& app_id,
-                     apps::mojom::PermissionPtr permission);
-
-  void Uninstall(const std::string& app_id);
-
-  void OpenNativeSettings(const std::string& app_id);
+                     apps::mojom::PermissionPtr permission) override;
+  void Uninstall(const std::string& app_id) override;
+  void OpenNativeSettings(const std::string& app_id) override;
 
   apps::IconLoader* OverrideInnerIconLoaderForTesting(
       apps::IconLoader* icon_loader);
@@ -74,8 +71,8 @@ class AppServiceProxy : public KeyedService,
   // An adapter, presenting an IconLoader interface based on the underlying
   // Mojo service (or on a fake implementation for testing).
   //
-  // Conceptually, the ASP (the AppServiceProxy) is itself such an adapter: UI
-  // clients call the IconLoader::LoadIconFromIconKey method (which the ASP
+  // Conceptually, the ASP (the AppServiceProxyImpl) is itself such an adapter:
+  // UI clients call the IconLoader::LoadIconFromIconKey method (which the ASP
   // implements) and the ASP translates (i.e. adapts) these to Mojo calls (or
   // C++ calls to the Fake). This diagram shows control flow going left to
   // right (with "=c=>" and "=m=>" denoting C++ and Mojo calls), and the
@@ -104,7 +101,7 @@ class AppServiceProxy : public KeyedService,
   // component: the one that ultimately talks to the Mojo service.
   //
   // The outer_icon_loader_ field (of type IconCache) is the "Outer" component:
-  // the entry point for calls into the AppServiceProxy.
+  // the entry point for calls into the AppServiceProxyImpl.
   //
   // Note that even if the ASP provides some icon caching, upstream UI clients
   // may want to introduce further icon caching. See the commentary where
@@ -113,7 +110,7 @@ class AppServiceProxy : public KeyedService,
   // IPC coalescing would be one of the "MoreDecorators".
   class InnerIconLoader : public apps::IconLoader {
    public:
-    explicit InnerIconLoader(AppServiceProxy* host);
+    explicit InnerIconLoader(AppServiceProxyImpl* host);
 
     // apps::IconLoader overrides.
     apps::mojom::IconKeyPtr GetIconKey(const std::string& app_id) override;
@@ -126,8 +123,9 @@ class AppServiceProxy : public KeyedService,
         bool allow_placeholder_icon,
         apps::mojom::Publisher::LoadIconCallback callback) override;
 
-    // |host_| owns |this|, as the InnerIconLoader is an AppServiceProxy field.
-    AppServiceProxy* host_;
+    // |host_| owns |this|, as the InnerIconLoader is an AppServiceProxyImpl
+    // field.
+    AppServiceProxyImpl* host_;
 
     apps::IconLoader* overriding_icon_loader_for_testing_;
   };
@@ -139,9 +137,7 @@ class AppServiceProxy : public KeyedService,
   void OnApps(std::vector<apps::mojom::AppPtr> deltas) override;
   void Clone(apps::mojom::SubscriberRequest request) override;
 
-  apps::mojom::AppServicePtr app_service_;
   mojo::BindingSet<apps::mojom::Subscriber> bindings_;
-  apps::AppRegistryCache cache_;
 
   // The LoadIconFromIconKey implementation sends a chained series of requests
   // through each icon loader, starting from the outer and working back to the
@@ -158,9 +154,9 @@ class AppServiceProxy : public KeyedService,
   ExtensionApps extension_web_apps_;
 #endif  // OS_CHROMEOS
 
-  DISALLOW_COPY_AND_ASSIGN(AppServiceProxy);
+  DISALLOW_COPY_AND_ASSIGN(AppServiceProxyImpl);
 };
 
 }  // namespace apps
 
-#endif  // CHROME_BROWSER_APPS_APP_SERVICE_APP_SERVICE_PROXY_H_
+#endif  // CHROME_BROWSER_APPS_APP_SERVICE_APP_SERVICE_PROXY_IMPL_H_

@@ -45,6 +45,9 @@ class IconLoader {
     DISALLOW_COPY_AND_ASSIGN(Releaser);
   };
 
+  IconLoader();
+  virtual ~IconLoader();
+
   // Looks up the IconKey for the given app ID.
   virtual apps::mojom::IconKeyPtr GetIconKey(const std::string& app_id) = 0;
 

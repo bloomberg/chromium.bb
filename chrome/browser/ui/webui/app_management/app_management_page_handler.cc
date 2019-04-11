@@ -9,10 +9,11 @@
 
 #include "base/containers/flat_map.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/services/app_service/public/cpp/app_registry_cache.h"
+#include "chrome/services/app_service/public/cpp/app_service_proxy.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
@@ -48,7 +49,8 @@ AppManagementPageHandler::AppManagementPageHandler(
       shelf_delegate_(this)
 #endif
 {
-  apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile_);
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile_);
 
   // TODO(crbug.com/826982): revisit pending decision on AppServiceProxy in
   // incognito
@@ -62,7 +64,8 @@ AppManagementPageHandler::~AppManagementPageHandler() {}
 
 void AppManagementPageHandler::OnPinnedChanged(const std::string& app_id,
                                                bool pinned) {
-  apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile_);
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile_);
 
   // TODO(crbug.com/826982): revisit pending decision on AppServiceProxy in
   // incognito
@@ -87,7 +90,8 @@ void AppManagementPageHandler::OnPinnedChanged(const std::string& app_id,
 }
 
 void AppManagementPageHandler::GetApps(GetAppsCallback callback) {
-  apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile_);
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile_);
 
   // TODO(crbug.com/826982): revisit pending decision on AppServiceProxy in
   // incognito
@@ -136,7 +140,8 @@ void AppManagementPageHandler::SetPinned(const std::string& app_id,
 void AppManagementPageHandler::SetPermission(
     const std::string& app_id,
     apps::mojom::PermissionPtr permission) {
-  apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile_);
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile_);
 
   // TODO(crbug.com/826982): revisit pending decision on AppServiceProxy in
   // incognito
@@ -147,7 +152,8 @@ void AppManagementPageHandler::SetPermission(
 }
 
 void AppManagementPageHandler::Uninstall(const std::string& app_id) {
-  apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile_);
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile_);
 
   // TODO(crbug.com/826982): revisit pending decision on AppServiceProxy in
   // incognito
@@ -158,7 +164,8 @@ void AppManagementPageHandler::Uninstall(const std::string& app_id) {
 }
 
 void AppManagementPageHandler::OpenNativeSettings(const std::string& app_id) {
-  apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile_);
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile_);
 
   // TODO(crbug.com/826982): revisit pending decision on AppServiceProxy in
   // incognito

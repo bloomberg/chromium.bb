@@ -7,10 +7,11 @@
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/bind.h"
-#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/app_list/app_service_app_item.h"
 #include "chrome/browser/ui/app_list/search/internal_app_result.h"
+#include "chrome/services/app_service/public/cpp/app_service_proxy.h"
 #include "extensions/common/extension.h"
 
 namespace app_list {
@@ -26,7 +27,8 @@ AppServiceAppResult::AppServiceAppResult(Profile* profile,
       is_platform_app_(false),
       show_in_launcher_(false),
       weak_ptr_factory_(this) {
-  apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile);
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile);
 
   if (proxy) {
     proxy->AppRegistryCache().ForOneApp(
@@ -117,7 +119,8 @@ void AppServiceAppResult::ExecuteLaunchCommand(int event_flags) {
 
 void AppServiceAppResult::Launch(int event_flags,
                                  apps::mojom::LaunchSource launch_source) {
-  apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile());
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile());
   if (proxy) {
     proxy->Launch(app_id(), event_flags, launch_source,
                   controller()->GetAppListDisplayId());

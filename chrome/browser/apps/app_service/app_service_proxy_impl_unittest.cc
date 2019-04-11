@@ -6,12 +6,12 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia_rep.h"
 
-class AppServiceProxyTest : public testing::Test {
+class AppServiceProxyImplTest : public testing::Test {
  protected:
   using UniqueReleaser = std::unique_ptr<apps::IconLoader::Releaser>;
 
@@ -66,11 +66,11 @@ class AppServiceProxyTest : public testing::Test {
 
     return loader->LoadIcon(app_type, app_id, icon_compression,
                             size_hint_in_dip, allow_placeholder_icon,
-                            base::BindOnce(&AppServiceProxyTest::OnLoadIcon,
+                            base::BindOnce(&AppServiceProxyImplTest::OnLoadIcon,
                                            base::Unretained(this)));
   }
 
-  void OverrideAppServiceProxyInnerIconLoader(apps::AppServiceProxy* proxy,
+  void OverrideAppServiceProxyInnerIconLoader(apps::AppServiceProxyImpl* proxy,
                                               apps::IconLoader* icon_loader) {
     proxy->OverrideInnerIconLoaderForTesting(icon_loader);
   }
@@ -84,8 +84,8 @@ class AppServiceProxyTest : public testing::Test {
   int num_outer_finished_callbacks_ = 0;
 };
 
-TEST_F(AppServiceProxyTest, IconCache) {
-  apps::AppServiceProxy proxy(nullptr);
+TEST_F(AppServiceProxyImplTest, IconCache) {
+  apps::AppServiceProxyImpl proxy(nullptr);
   FakeIconLoader fake;
   OverrideAppServiceProxyInnerIconLoader(&proxy, &fake);
 

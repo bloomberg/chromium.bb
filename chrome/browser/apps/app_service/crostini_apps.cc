@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/dip_px_util.h"
 #include "chrome/browser/apps/app_service/launch_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"

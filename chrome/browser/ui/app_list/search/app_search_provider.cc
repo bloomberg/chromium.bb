@@ -28,7 +28,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
-#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
@@ -56,6 +56,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/services/app_service/public/cpp/app_service_proxy.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync_sessions/session_sync_service.h"
 #include "extensions/browser/extension_prefs.h"
@@ -288,9 +289,10 @@ class AppServiceDataSource : public AppSearchProvider::DataSource,
  public:
   AppServiceDataSource(Profile* profile, AppSearchProvider* owner)
       : AppSearchProvider::DataSource(profile, owner),
-        icon_cache_(apps::AppServiceProxy::Get(profile),
+        icon_cache_(apps::AppServiceProxyFactory::GetForProfile(profile),
                     apps::IconCache::GarbageCollectionPolicy::kExplicit) {
-    apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile);
+    apps::AppServiceProxy* proxy =
+        apps::AppServiceProxyFactory::GetForProfile(profile);
     if (proxy) {
       Observe(&proxy->AppRegistryCache());
     }
@@ -300,7 +302,8 @@ class AppServiceDataSource : public AppSearchProvider::DataSource,
 
   // AppSearchProvider::DataSource overrides:
   void AddApps(AppSearchProvider::Apps* apps_vector) override {
-    apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile());
+    apps::AppServiceProxy* proxy =
+        apps::AppServiceProxyFactory::GetForProfile(profile());
     if (!proxy) {
       return;
     }

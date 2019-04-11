@@ -16,12 +16,13 @@
 #include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/apps/app_service/app_icon_source.h"
-#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/kiosk_next_home/app_controller_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/services/app_service/public/cpp/app_service_proxy.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/arc/arc_service_manager.h"
@@ -43,7 +44,7 @@ AppControllerService* AppControllerService::Get(
 
 AppControllerService::AppControllerService(Profile* profile)
     : profile_(profile),
-      app_service_proxy_(apps::AppServiceProxy::Get(profile)) {
+      app_service_proxy_(apps::AppServiceProxyFactory::GetForProfile(profile)) {
   DCHECK(profile);
   app_service_proxy_->AppRegistryCache().AddObserver(this);
 

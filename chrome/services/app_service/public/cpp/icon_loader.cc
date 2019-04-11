@@ -60,6 +60,10 @@ bool IconLoader::Key::operator<(const Key& that) const {
   return this->app_id_ < that.app_id_;
 }
 
+IconLoader::IconLoader() = default;
+
+IconLoader::~IconLoader() = default;
+
 std::unique_ptr<IconLoader::Releaser> IconLoader::LoadIcon(
     apps::mojom::AppType app_type,
     const std::string& app_id,
