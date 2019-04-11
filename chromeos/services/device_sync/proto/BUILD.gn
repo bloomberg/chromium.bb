@@ -10,6 +10,7 @@ proto_library("proto") {
     "cryptauth_better_together_feature_metadata.proto",
     "cryptauth_client_app_metadata.proto",
     "cryptauth_common.proto",
+    "cryptauth_devicesync.proto",
     "cryptauth_directive.proto",
     "cryptauth_enrollment.proto",
     "securemessage.proto",
