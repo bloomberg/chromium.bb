@@ -94,6 +94,11 @@ id<LogoVendor> ChromeBrowserProvider::CreateLogoVendor(
   return nil;
 }
 
+id<LogoVendor> ChromeBrowserProvider::CreateLogoVendor(
+    ios::ChromeBrowserState* browser_state) const {
+  return nil;
+}
+
 OmahaServiceProvider* ChromeBrowserProvider::GetOmahaServiceProvider() const {
   return nullptr;
 }
