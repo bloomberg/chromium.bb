@@ -21,6 +21,7 @@ class AddressFormLabelFormatter : public LabelFormatter {
  public:
   AddressFormLabelFormatter(const std::string& app_locale,
                             ServerFieldType focused_field_type,
+                            uint32_t groups,
                             const std::vector<ServerFieldType>& field_types);
 
   ~AddressFormLabelFormatter() override;

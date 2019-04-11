@@ -24,25 +24,30 @@ using label_formatter_groups::kPhone;
 
 LabelFormatter::LabelFormatter(const std::string& app_locale,
                                ServerFieldType focused_field_type,
+                               uint32_t groups,
                                const std::vector<ServerFieldType>& field_types)
-    : app_locale_(app_locale), focused_field_type_(focused_field_type) {
+    : app_locale_(app_locale),
+      focused_field_type_(focused_field_type),
+      groups_(groups) {
   const FieldTypeGroup focused_group = GetFocusedNonBillingGroup();
-  std::set<FieldTypeGroup> groups{NAME, ADDRESS_HOME, EMAIL, PHONE_HOME};
+  std::set<FieldTypeGroup> groups_for_labels{NAME, ADDRESS_HOME, EMAIL,
+                                             PHONE_HOME};
 
   // If a user is focused on an address field, then parts of the address may be
   // shown in the label. For example, if the user is focusing on a street
   // address field, then it may be helpful to show the city in the label.
   // Otherwise, the focused field should not appear in the label.
   if (focused_group != ADDRESS_HOME) {
-    groups.erase(focused_group);
+    groups_for_labels.erase(focused_group);
   }
 
   // Countries are excluded to prevent them from appearing in labels with
   // national addresses.
-  auto can_be_shown_in_label = [&groups](ServerFieldType type) -> bool {
-    return groups.find(
+  auto can_be_shown_in_label =
+      [&groups_for_labels](ServerFieldType type) -> bool {
+    return groups_for_labels.find(
                AutofillType(AutofillType(type).GetStorableType()).group()) !=
-               groups.end() &&
+               groups_for_labels.end() &&
            type != ADDRESS_HOME_COUNTRY && type != ADDRESS_BILLING_COUNTRY;
   };
 
@@ -79,13 +84,13 @@ std::unique_ptr<LabelFormatter> LabelFormatter::Create(
       return nullptr;
     case kName | kAddress | kPhone:
       return std::make_unique<AddressPhoneFormLabelFormatter>(
-          app_locale, focused_field_type, field_types);
+          app_locale, focused_field_type, groups, field_types);
     case kName | kAddress | kEmail:
       return std::make_unique<AddressEmailFormLabelFormatter>(
-          app_locale, focused_field_type, field_types);
+          app_locale, focused_field_type, groups, field_types);
     case kName | kAddress:
       return std::make_unique<AddressFormLabelFormatter>(
-          app_locale, focused_field_type, field_types);
+          app_locale, focused_field_type, groups, field_types);
     case kName | kEmail | kPhone:
     case kName | kEmail:
     case kName | kPhone:

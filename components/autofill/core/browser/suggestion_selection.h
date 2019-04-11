@@ -62,7 +62,10 @@ void RemoveProfilesNotUsedSinceTimestamp(
 // Prepares a collection of Suggestions to show to the user. Adds |labels| to
 // their corresponding |suggestions|. A label corresponds to the suggestion with
 // the same index.
-void PrepareSuggestions(const std::vector<base::string16>& labels,
+// |contains_address| determines which icon to add to suggestions in the
+//  autofill-use-improved-label-disambiguation experiment.
+void PrepareSuggestions(bool contains_address,
+                        const std::vector<base::string16>& labels,
                         std::vector<Suggestion>* suggestions);
 
 }  // namespace suggestion_selection

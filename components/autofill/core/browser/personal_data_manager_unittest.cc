@@ -2544,6 +2544,7 @@ TEST_F(PersonalDataManagerTest,
   EXPECT_EQ(0U, personal_data_->GetProfiles().size());
 }
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 TEST_F(PersonalDataManagerTest,
        GetProfileSuggestionsWithImprovedLabelDisambiguationForContactForm) {
   AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
@@ -2568,9 +2569,12 @@ TEST_F(PersonalDataManagerTest,
               FormatExpectedLabel("(978) 674-4120", "hoa.pham@comcast.net")),
           testing::Field(
               &Suggestion::additional_label,
-              FormatExpectedLabel("(978) 674-4120", "hoa.pham@comcast.net")))));
+              FormatExpectedLabel("(978) 674-4120", "hoa.pham@comcast.net")),
+          testing::Field(&Suggestion::icon, "userAccountAvatarIcon"))));
 }
+#endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 TEST_F(PersonalDataManagerTest,
        GetProfileSuggestionsWithImprovedLabelDisambiguationForAddressForm) {
   AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
@@ -2593,11 +2597,14 @@ TEST_F(PersonalDataManagerTest,
                   testing::Field(
                       &Suggestion::label,
                       base::ASCIIToUTF16("401 Merrimack St, Lowell, MA 01852")),
-                  testing::Field(&Suggestion::additional_label,
-                                 base::ASCIIToUTF16(
-                                     "401 Merrimack St, Lowell, MA 01852")))));
+                  testing::Field(
+                      &Suggestion::additional_label,
+                      base::ASCIIToUTF16("401 Merrimack St, Lowell, MA 01852")),
+                  testing::Field(&Suggestion::icon, "locationOnIcon"))));
 }
+#endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 TEST_F(
     PersonalDataManagerTest,
     GetProfileSuggestionsWithImprovedLabelDisambiguationForAddressPhoneForm) {
@@ -2617,15 +2624,17 @@ TEST_F(
           AutofillType(NAME_FULL), base::string16(), false,
           std::vector<ServerFieldType>{NAME_FULL, ADDRESS_HOME_STREET_ADDRESS,
                                        PHONE_HOME_WHOLE_NUMBER}),
-      ElementsAre(AllOf(
-          testing::Field(
-              &Suggestion::label,
-              FormatExpectedLabel("(978) 674-4120", "401 Merrimack St")),
-          testing::Field(
-              &Suggestion::additional_label,
-              FormatExpectedLabel("(978) 674-4120", "401 Merrimack St")))));
+      ElementsAre(AllOf(testing::Field(&Suggestion::label,
+                                       FormatExpectedLabel("(978) 674-4120",
+                                                           "401 Merrimack St")),
+                        testing::Field(&Suggestion::additional_label,
+                                       FormatExpectedLabel("(978) 674-4120",
+                                                           "401 Merrimack St")),
+                        testing::Field(&Suggestion::icon, "locationOnIcon"))));
 }
+#endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 TEST_F(
     PersonalDataManagerTest,
     GetProfileSuggestionsWithImprovedLabelDisambiguationForAddressEmailForm) {
@@ -2640,19 +2649,20 @@ TEST_F(
       /*enabled_features=*/{features::kAutofillUseImprovedLabelDisambiguation},
       /*disabled_features=*/{});
 
-  EXPECT_THAT(
-      personal_data_->GetProfileSuggestions(
-          AutofillType(NAME_FULL), base::string16(), false,
-          std::vector<ServerFieldType>{NAME_FULL, ADDRESS_HOME_STREET_ADDRESS,
-                                       EMAIL_ADDRESS}),
-      ElementsAre(AllOf(
-          testing::Field(
-              &Suggestion::label,
-              FormatExpectedLabel("401 Merrimack St", "hoa.pham@comcast.net")),
-          testing::Field(&Suggestion::additional_label,
-                         FormatExpectedLabel("401 Merrimack St",
-                                             "hoa.pham@comcast.net")))));
+  EXPECT_THAT(personal_data_->GetProfileSuggestions(
+                  AutofillType(NAME_FULL), base::string16(), false,
+                  std::vector<ServerFieldType>{
+                      NAME_FULL, ADDRESS_HOME_STREET_ADDRESS, EMAIL_ADDRESS}),
+              ElementsAre(AllOf(
+                  testing::Field(&Suggestion::label,
+                                 FormatExpectedLabel("401 Merrimack St",
+                                                     "hoa.pham@comcast.net")),
+                  testing::Field(&Suggestion::additional_label,
+                                 FormatExpectedLabel("401 Merrimack St",
+                                                     "hoa.pham@comcast.net")),
+                  testing::Field(&Suggestion::icon, "locationOnIcon"))));
 }
+#endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
 
 TEST_F(PersonalDataManagerTest, IsKnownCard_MatchesMaskedServerCard) {
   // Add a masked server card.

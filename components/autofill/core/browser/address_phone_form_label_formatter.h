@@ -22,6 +22,7 @@ class AddressPhoneFormLabelFormatter : public LabelFormatter {
   AddressPhoneFormLabelFormatter(
       const std::string& app_locale,
       ServerFieldType focused_field_type,
+      uint32_t groups,
       const std::vector<ServerFieldType>& field_types);
 
   ~AddressPhoneFormLabelFormatter() override;

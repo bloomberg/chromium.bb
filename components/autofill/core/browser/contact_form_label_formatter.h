@@ -38,9 +38,6 @@ class ContactFormLabelFormatter : public LabelFormatter {
   // Returns |profile|'s phone number if |profile| has a phone number and if
   // this formatter's associated form has a phone field.
   base::string16 MaybeGetPhone(const AutofillProfile& profile) const;
-
-  // A bitmask indicating which fields the form contains.
-  uint32_t groups_;
 };
 
 }  // namespace autofill
