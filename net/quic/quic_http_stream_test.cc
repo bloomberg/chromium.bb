@@ -281,7 +281,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<
     EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
         .Times(testing::AtLeast(1));
     EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
-        .WillRepeatedly(Return(quic::kMaxPacketSize));
+        .WillRepeatedly(Return(quic::kMaxOutgoingPacketSize));
     EXPECT_CALL(*send_algorithm_, PacingRate(_))
         .WillRepeatedly(Return(quic::QuicBandwidth::Zero()));
     EXPECT_CALL(*send_algorithm_, CanSend(_)).WillRepeatedly(Return(true));
@@ -1156,7 +1156,7 @@ TEST_P(QuicHttpStreamTest, LogGranularQuicConnectionError) {
               IsError(ERR_IO_PENDING));
 
   quic::QuicConnectionCloseFrame frame;
-  frame.error_code = quic::QUIC_PEER_GOING_AWAY;
+  frame.quic_error_code = quic::QUIC_PEER_GOING_AWAY;
   session_->connection()->OnConnectionCloseFrame(frame);
 
   NetErrorDetails details;
@@ -1196,7 +1196,7 @@ TEST_P(QuicHttpStreamTest, LogGranularQuicErrorIfHandshakeNotConfirmed) {
               IsError(ERR_IO_PENDING));
 
   quic::QuicConnectionCloseFrame frame;
-  frame.error_code = quic::QUIC_PEER_GOING_AWAY;
+  frame.quic_error_code = quic::QUIC_PEER_GOING_AWAY;
   session_->connection()->OnConnectionCloseFrame(frame);
 
   NetErrorDetails details;

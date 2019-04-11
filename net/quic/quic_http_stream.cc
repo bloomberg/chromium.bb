@@ -229,12 +229,14 @@ int QuicHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
     //   && (request_body_stream_->size() ||
     //       request_body_stream_->is_chunked()))
     // Set the body buffer size to be the size of the body clamped
-    // into the range [10 * quic::kMaxPacketSize, 256 * quic::kMaxPacketSize].
-    // With larger bodies, larger buffers reduce CPU usage.
+    // into the range [10 * quic::kMaxOutgoingPacketSize, 256 *
+    // quic::kMaxOutgoingPacketSize]. With larger bodies, larger buffers reduce
+    // CPU usage.
     raw_request_body_buf_ =
-        base::MakeRefCounted<IOBufferWithSize>(static_cast<size_t>(std::max(
-            10 * quic::kMaxPacketSize, std::min(request_body_stream_->size(),
-                                                256 * quic::kMaxPacketSize))));
+        base::MakeRefCounted<IOBufferWithSize>(static_cast<size_t>(
+            std::max(10 * quic::kMaxOutgoingPacketSize,
+                     std::min(request_body_stream_->size(),
+                              256 * quic::kMaxOutgoingPacketSize))));
     // The request body buffer is empty at first.
     request_body_buf_ =
         base::MakeRefCounted<DrainableIOBuffer>(raw_request_body_buf_, 0);
