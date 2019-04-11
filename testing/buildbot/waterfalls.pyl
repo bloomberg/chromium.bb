@@ -157,18 +157,36 @@
       },
       'Android WebView M (dbg)': {
         'test_suites': {
-          'cts_tests': 'android_m_cts_tests',
-          'instrumentation_tests': 'system_webview_and_webview_ui_instrumentation_tests',
+          'gtest_tests': 'webview_bot_gtests',
         },
-        'use_swarming': False,
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': 'MRA58Z',
+              'device_os_flavor': 'aosp',
+              'device_type': 'hammerhead',
+              'os': 'Android',
+            },
+          ],
+        },
+        'use_swarming': True,
         'os_type': 'android',
       },
       'Android WebView N (dbg)': {
         'test_suites': {
-          'cts_tests': 'android_n_cts_tests',
-          'instrumentation_tests': 'system_webview_shell_instrumentation_tests',
+          'gtest_tests': 'webview_bot_gtests',
         },
-        'use_swarming': False,
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': 'NMF27E',
+              'device_os_flavor': 'aosp',
+              'device_type': 'bullhead',
+              'os': 'Android',
+            },
+          ],
+        },
+        'use_swarming': True,
         'os_type': 'android',
       },
       'Android WebView O (dbg)': {
