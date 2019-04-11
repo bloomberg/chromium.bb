@@ -249,6 +249,11 @@ extern const char kNewPasswordFormParsingForSavingDescription[];
 extern const char kNewOmniboxPopupLayoutName[];
 extern const char kNewOmniboxPopupLayoutDescription[];
 
+// Title and description for the flag to show default search engine favicon in
+// the omnibox
+extern const char kOmniboxUseDefaultSearchEngineFaviconName[];
+extern const char kOmniboxUseDefaultSearchEngineFaviconDescription[];
+
 // Title and description for the flag to enable non-modal JavaScript dialogs.
 extern const char kNonModalDialogsName[];
 extern const char kNonModalDialogsDescription[];

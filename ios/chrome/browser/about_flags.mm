@@ -581,6 +581,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"translate-manual-trigger", flag_descriptions::kTranslateManualTriggerName,
      flag_descriptions::kTranslateManualTriggerDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(translate::kTranslateMobileManualTrigger)},
+    {"omnibox-use-default-search-engine-favicon",
+     flag_descriptions::kOmniboxUseDefaultSearchEngineFaviconName,
+     flag_descriptions::kOmniboxUseDefaultSearchEngineFaviconDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kOmniboxUseDefaultSearchEngineFavicon)},
 };
 
 // Add all switches from experimental flags to |command_line|.
