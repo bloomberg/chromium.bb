@@ -295,5 +295,23 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShowPromiseTest, InvalidDetails) {
   ExpectBodyContains({R"(Total amount value should be non-negative)"});
 }
 
+IN_PROC_BROWSER_TEST_F(PaymentRequestShowPromiseTest,
+                       OptionalTotalWhenResolvingShowPromise) {
+  NavigateTo("/show_promise/resolve_with_empty_dictionary.html");
+  InstallEchoPaymentHandlerForBasicCard();
+  ShowBrowserPaymentSheet();
+
+  EXPECT_TRUE(IsPayButtonEnabled());
+
+  OpenOrderSummaryScreen();
+
+  ExpectTotal("$1.00");
+
+  ClickOnBackArrow();
+  Pay();
+
+  ExpectBodyContains({R"({"currency":"USD","value":"1.00"})"});
+}
+
 }  // namespace
 }  // namespace payments

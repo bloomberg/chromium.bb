@@ -922,14 +922,6 @@ public class PaymentRequestImpl
 
         if (!parseAndValidateDetailsOrDisconnectFromClient(details)) return;
 
-        if (details.total == null) {
-            mJourneyLogger.setNotShown(NotShownReason.OTHER);
-            disconnectFromClientWithDebugMessage(
-                    "PaymentRequestUpdateEvent.updateWith() called without a total amount when "
-                    + "resolving the promise passed into PaymentRequest.show()");
-            return;
-        }
-
         if (!TextUtils.isEmpty(details.error)) {
             mJourneyLogger.setNotShown(NotShownReason.OTHER);
             disconnectFromClientWithDebugMessage(

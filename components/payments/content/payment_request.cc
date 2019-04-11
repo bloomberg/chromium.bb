@@ -259,13 +259,6 @@ void PaymentRequest::UpdateWith(mojom::PaymentDetailsPtr details) {
     return;
   }
 
-  bool is_resolving_promise_passed_into_show_method = !spec_->IsInitialized();
-  if (is_resolving_promise_passed_into_show_method && !details->total) {
-    log_.Error("Missing total");
-    OnConnectionTerminated();
-    return;
-  }
-
   std::string error;
   if (!ValidatePaymentDetails(ConvertPaymentDetails(details), &error)) {
     log_.Error(error);
@@ -280,6 +273,8 @@ void PaymentRequest::UpdateWith(mojom::PaymentDetailsPtr details) {
     OnConnectionTerminated();
     return;
   }
+
+  bool is_resolving_promise_passed_into_show_method = !spec_->IsInitialized();
 
   spec_->UpdateWith(std::move(details));
 

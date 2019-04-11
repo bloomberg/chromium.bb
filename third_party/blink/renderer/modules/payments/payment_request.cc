@@ -1093,15 +1093,6 @@ void PaymentRequest::OnUpdatePaymentDetails(
   if (is_waiting_for_show_promise_to_resolve_) {
     is_waiting_for_show_promise_to_resolve_ = false;
 
-    if (!validated_details->total) {
-      resolver->Reject(
-          DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                               "Must specify 'total' when resolving the "
-                               "promise passed into PaymentRequest.show()"));
-      ClearResolversAndCloseMojoConnection();
-      return;
-    }
-
     if (!validated_details->error.IsEmpty()) {
       resolver->Reject(
           DOMException::Create(DOMExceptionCode::kInvalidStateError,
