@@ -6260,3 +6260,8 @@ crbug.com/947670 [ Win7 ] virtual/streams-native/http/tests/fetch/serviceworker-
 
 # Sheriff 2019-04-09
 crbug.com/946335 [ Linux Mac ] fast/filesystem/file-writer-abort-depth.html [ Pass Crash ]
+
+# Sheriff 2019-04-10
+crbug.com/951638 [ Linux ] virtual/mouseevent_fractional/fast/events/mouse-right-coords-in-zoom-and-scroll-right.html [ Pass Failure ]
+crbug.com/951638 [ Mac10.13 Debug ] virtual/mouseevent_fractional/fast/events/mouse-right-coords-in-zoom-and-scroll-right.html [ Pass Failure ]
+crbug.com/951638 [ Win7 ] virtual/mouseevent_fractional/fast/events/mouse-right-coords-in-zoom-and-scroll-right.html [ Pass Failure ]
