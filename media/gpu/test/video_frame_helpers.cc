@@ -155,34 +155,38 @@ scoped_refptr<VideoFrame> ConvertVideoFrame(const VideoFrame* src_frame,
   return dst_frame;
 }
 
-base::Optional<VideoFrameLayout> CreateVideoFrameLayout(VideoPixelFormat format,
-                                                        const gfx::Size& size,
-                                                        bool single_buffer) {
-  const size_t num_planes = VideoFrame::NumPlanes(format);
-  const size_t num_buffers = single_buffer ? 1u : num_planes;
-  // If num_buffers = 1, all the planes are stored in the same buffer.
-  // If num_buffers = num_planes, each of plane is stored in a separate
-  // buffer and located in the beginning of the buffer.
-  std::vector<size_t> buffer_sizes(num_buffers);
-  std::vector<VideoFrameLayout::Plane> planes(num_planes);
-  const auto strides = VideoFrame::ComputeStrides(format, size);
-  size_t offset = 0;
-  for (size_t i = 0; i < num_planes; ++i) {
-    planes[i].stride = strides[i];
-    if (num_buffers == 1) {
-      planes[i].offset = offset;
-      offset += VideoFrame::PlaneSize(format, i, size).GetArea();
-    } else {
-      planes[i].offset = 0;
-      buffer_sizes[i] = VideoFrame::PlaneSize(format, i, size).GetArea();
-    }
+scoped_refptr<VideoFrame> CloneVideoFrameWithLayout(
+    const VideoFrame* const src_frame,
+    const VideoFrameLayout& dst_layout) {
+  if (!src_frame)
+    return nullptr;
+
+  LOG_ASSERT(src_frame->IsMappable());
+  LOG_ASSERT(src_frame->format() == dst_layout.format());
+  // Create VideoFrame, which allocates and owns data.
+  auto dst_frame = VideoFrame::CreateFrameWithLayout(
+      dst_layout, src_frame->visible_rect(), src_frame->natural_size(),
+      src_frame->timestamp(), false /* zero_initialize_memory*/);
+  if (!dst_frame) {
+    LOG(ERROR) << "Failed to create VideoFrame";
+    return nullptr;
   }
 
-  if (num_buffers == 1)
-    buffer_sizes[0] = VideoFrame::AllocationSize(format, size);
+  // Copy every plane's content from |src_frame| to |dst_frame|.
+  const size_t num_planes = VideoFrame::NumPlanes(dst_layout.format());
+  LOG_ASSERT(dst_layout.planes().size() == num_planes);
+  LOG_ASSERT(src_frame->layout().planes().size() == num_planes);
+  for (size_t i = 0; i < num_planes; ++i) {
+    // |width| in libyuv::CopyPlane() is in bytes, not pixels.
+    gfx::Size plane_size = VideoFrame::PlaneSize(dst_frame->format(), i,
+                                                 dst_frame->natural_size());
+    libyuv::CopyPlane(
+        src_frame->data(i), src_frame->layout().planes()[i].stride,
+        dst_frame->data(i), dst_frame->layout().planes()[i].stride,
+        plane_size.width(), plane_size.height());
+  }
 
-  return VideoFrameLayout::CreateWithPlanes(format, size, std::move(planes),
-                                            std::move(buffer_sizes));
+  return dst_frame;
 }
 
 scoped_refptr<const VideoFrame> CreateVideoFrameFromImage(const Image& image) {
@@ -211,6 +215,36 @@ scoped_refptr<const VideoFrame> CreateVideoFrameFromImage(const Image& image) {
   }
 
   return video_frame;
+}
+
+base::Optional<VideoFrameLayout> CreateVideoFrameLayout(VideoPixelFormat format,
+                                                        const gfx::Size& size,
+                                                        bool single_buffer) {
+  const size_t num_planes = VideoFrame::NumPlanes(format);
+  const size_t num_buffers = single_buffer ? 1u : num_planes;
+  // If num_buffers = 1, all the planes are stored in the same buffer.
+  // If num_buffers = num_planes, each of plane is stored in a separate
+  // buffer and located in the beginning of the buffer.
+  std::vector<size_t> buffer_sizes(num_buffers);
+  std::vector<VideoFrameLayout::Plane> planes(num_planes);
+  const auto strides = VideoFrame::ComputeStrides(format, size);
+  size_t offset = 0;
+  for (size_t i = 0; i < num_planes; ++i) {
+    planes[i].stride = strides[i];
+    if (num_buffers == 1) {
+      planes[i].offset = offset;
+      offset += VideoFrame::PlaneSize(format, i, size).GetArea();
+    } else {
+      planes[i].offset = 0;
+      buffer_sizes[i] = VideoFrame::PlaneSize(format, i, size).GetArea();
+    }
+  }
+
+  if (num_buffers == 1)
+    buffer_sizes[0] = VideoFrame::AllocationSize(format, size);
+
+  return VideoFrameLayout::CreateWithPlanes(format, size, std::move(planes),
+                                            std::move(buffer_sizes));
 }
 
 }  // namespace test
