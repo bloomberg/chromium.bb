@@ -118,6 +118,7 @@ def ProcessStepStdout(stdout_url, entry):
   lines = data.splitlines()
   pattern = re.compile('^\[(\d+)/(\d+)\]$')
   results = None
+  bot_candidates = []
   for line in lines:
     if results is not None:
       my_results = results
@@ -139,16 +140,26 @@ def ProcessStepStdout(stdout_url, entry):
     elif line.startswith('Chrome Env: '):
       chrome_env = ast.literal_eval(line[len('Chrome Env: '):])
       if 'COMPUTERNAME' in chrome_env:
-        entry['bot'] = chrome_env['COMPUTERNAME']
+        bot_candidates.append(chrome_env['COMPUTERNAME'])
     elif line.startswith('INFO:root:Chrome Env: '):
       chrome_env = ast.literal_eval(line[len('INFO:root:Chrome Env: '):])
       if 'COMPUTERNAME' in chrome_env:
-        entry['bot'] = chrome_env['COMPUTERNAME']
+        bot_candidates.append(chrome_env['COMPUTERNAME'])
+    elif line.startswith('Env: '):
+      chrome_env = ast.literal_eval(line[len('Env: '):])
+      if 'COMPUTERNAME' in chrome_env:
+        bot_candidates.append(chrome_env['COMPUTERNAME'])
     elif line.startswith(' COMPUTERNAME: '):
-      entry['bot'] = line.strip()[len('COMPUTERNAME: '):]
+      bot_candidates.append(line.strip()[len('COMPUTERNAME: '):])
     elif line.startswith('Results: '):
       assert results is None
       results = ast.literal_eval(line[len('Results: '):])
+  for name in bot_candidates:
+    if name.startswith('BUILD'):
+      entry['bot'] = name
+      break
+  else:
+    logging.warn('[BUILD %d] Fail to locate the bot name' % number)
 
 
 def CollectBuildData(build, data_entry):
