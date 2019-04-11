@@ -543,6 +543,40 @@ AutofillWalletMetadataSizeChecker::~AutofillWalletMetadataSizeChecker() {
 }
 
 bool AutofillWalletMetadataSizeChecker::IsExitConditionSatisfied() {
+  // Make sure we do not nest IsExitConditionSatisfiedImpl() (as it can happen
+  // that OnPersonalDataChanged() gets notified while we're inside
+  // IsExitConditionSatisfiedImpl(), waiting for the DB task that loads metadata
+  // to finish).
+  switch (state_) {
+    case IDLE:
+      do {
+        state_ = CHECKING;
+        if (IsExitConditionSatisfiedImpl()) {
+          return true;
+        }
+      } while (state_ == SHOULD_RECHECK);
+      state_ = IDLE;
+      return false;
+    case CHECKING:
+      // Make sure that each IsExitConditionSatisfied() call is followed by a
+      // IsExitConditionSatisfiedImpl() call so that we do not miss any updates
+      // to the DB.
+      state_ = SHOULD_RECHECK;
+      return false;
+    case SHOULD_RECHECK:
+      return false;
+  }
+}
+
+std::string AutofillWalletMetadataSizeChecker::GetDebugMessage() const {
+  return "Waiting for matching autofill wallet metadata sizes";
+}
+
+void AutofillWalletMetadataSizeChecker::OnPersonalDataChanged() {
+  CheckExitCondition();
+}
+
+bool AutofillWalletMetadataSizeChecker::IsExitConditionSatisfiedImpl() {
   // There could be trailing metadata left on one of the clients. Check that
   // metadata.size() is the same on both clients.
   std::map<std::string, AutofillMetadata> addresses_metadata_a =
@@ -566,39 +600,6 @@ bool AutofillWalletMetadataSizeChecker::IsExitConditionSatisfied() {
     return false;
   }
   return true;
-}
-
-std::string AutofillWalletMetadataSizeChecker::GetDebugMessage() const {
-  return "Waiting for matching autofill wallet metadata sizes";
-}
-
-void AutofillWalletMetadataSizeChecker::CheckExitCondition() {
-  // Make sure we do not nest IsExitConditionSatisfied() (as it can happen that
-  // OnPersonalDataChanged() gets notified while we're inside
-  // IsExitConditionSatisfied(), waiting for the DB task that loads metadata to
-  // finish).
-  switch (state_) {
-    case IDLE:
-      do {
-        state_ = CHECKING;
-        StatusChangeChecker::CheckExitCondition();
-      } while (state_ == SHOULD_RECHECK);
-      state_ = IDLE;
-      return;
-    case CHECKING:
-      // Make sure that each
-      // AutofillWalletMetadataSizeChecker::CheckExitCondition() call is
-      // followed by a StatusChangeChecker::CheckExitCondition() call so that we
-      // do not miss any updates to the DB.
-      state_ = SHOULD_RECHECK;
-      return;
-    case SHOULD_RECHECK:
-      return;
-  }
-}
-
-void AutofillWalletMetadataSizeChecker::OnPersonalDataChanged() {
-  CheckExitCondition();
 }
 
 UssWalletSwitchToggler::UssWalletSwitchToggler() {}
