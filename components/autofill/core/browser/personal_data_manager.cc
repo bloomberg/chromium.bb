@@ -2491,12 +2491,16 @@ void PersonalDataManager::UpdateProfileInDB(const AutofillProfile& profile,
 }
 
 void PersonalDataManager::RemoveProfileFromDB(const std::string& guid) {
-  bool profile_exists = FindByGUID<AutofillProfile>(web_profiles_, guid);
+  auto profile_it = FindElementByGUID<AutofillProfile>(web_profiles_, guid);
+  bool profile_exists = profile_it != web_profiles_.end();
   if (!profile_exists && !ProfileChangesAreOngoing(guid)) {
     NotifyPersonalDataObserver();
     return;
   }
-  AutofillProfileDeepChange change(AutofillProfileChange::REMOVE, guid);
+  const AutofillProfile* profile =
+      profile_exists ? profile_it->get()
+                     : ongoing_profile_changes_[guid].back().profile();
+  AutofillProfileDeepChange change(AutofillProfileChange::REMOVE, *profile);
   if (!ProfileChangesAreOngoing(guid)) {
     database_helper_->GetLocalDatabase()->RemoveAutofillProfile(guid);
     change.set_is_ongoing_on_background();

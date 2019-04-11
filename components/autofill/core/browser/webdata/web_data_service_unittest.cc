@@ -313,7 +313,7 @@ TEST_F(WebDataServiceAutofillTest, ProfileRemove) {
 
   // Check that GUID-based notification was sent.
   const AutofillProfileChange expected_change(AutofillProfileChange::REMOVE,
-                                              profile.guid(), nullptr);
+                                              profile.guid(), &profile);
   EXPECT_CALL(observer_, AutofillProfileChanged(expected_change))
       .WillOnce(SignalEvent(&done_event_));
 
@@ -491,7 +491,7 @@ TEST_F(WebDataServiceAutofillTest, AutofillRemoveModifiedBetween) {
 
   // Check that GUID-based notification was sent for the profile.
   const AutofillProfileChange expected_profile_change(
-      AutofillProfileChange::REMOVE, profile.guid(), nullptr);
+      AutofillProfileChange::REMOVE, profile.guid(), &profile);
   EXPECT_CALL(observer_, AutofillProfileChanged(expected_profile_change))
       .WillOnce(SignalEvent(&done_event_));
 

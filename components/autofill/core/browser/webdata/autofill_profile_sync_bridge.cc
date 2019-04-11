@@ -208,12 +208,8 @@ void AutofillProfileSyncBridge::GetAllDataForDebugging(DataCallback callback) {
 
 void AutofillProfileSyncBridge::ActOnLocalChange(
     const AutofillProfileChange& change) {
-  DCHECK((change.type() == AutofillProfileChange::REMOVE) ==
-         (change.data_model() == nullptr));
-  if (!change_processor()->IsTrackingMetadata()) {
-    return;
-  }
-  if (change.data_model() &&
+  DCHECK(change.data_model());
+  if (!change_processor()->IsTrackingMetadata() ||
       change.data_model()->record_type() != AutofillProfile::LOCAL_PROFILE) {
     return;
   }
@@ -223,19 +219,10 @@ void AutofillProfileSyncBridge::ActOnLocalChange(
           GetAutofillTable(), syncer::AUTOFILL_PROFILE);
 
   // TODO(crbug.com/904390): Remove when the investigation is over.
-  bool is_converted_from_server = false;
-  if (change.type() == AutofillProfileChange::REMOVE) {
-    // The profile is not available any more so we cannot compare its value,
-    // instead we use a rougher test based on the id - whether it is a local
-    // GUID or a server id. As a result, it has a different semantics compared
-    // to AddOrUpdate.
-    is_converted_from_server = !base::IsValidGUID(change.key());
-  } else {
-    std::vector<std::unique_ptr<AutofillProfile>> server_profiles;
-    GetAutofillTable()->GetServerProfiles(&server_profiles);
-    is_converted_from_server = IsLocalProfileEqualToServerProfile(
-        server_profiles, *change.data_model(), app_locale_);
-  }
+  std::vector<std::unique_ptr<AutofillProfile>> server_profiles;
+  GetAutofillTable()->GetServerProfiles(&server_profiles);
+  bool is_converted_from_server = IsLocalProfileEqualToServerProfile(
+      server_profiles, *change.data_model(), app_locale_);
 
   switch (change.type()) {
     case AutofillProfileChange::ADD:
@@ -252,12 +239,6 @@ void AutofillProfileSyncBridge::ActOnLocalChange(
               : AutofillProfileSyncChangeOrigin::kTrulyLocal);
       break;
     case AutofillProfileChange::REMOVE:
-      // Removals have no data_model() so this change can still be for a
-      // SERVER_PROFILE. We have no simple way to rule it out. For the time
-      // being we rely on the processor ignoring deletions for storage keys it
-      // does not know.
-      // TODO(jkrcal): implement a hash map of known storage_keys and use it
-      // here.
       change_processor()->Delete(change.key(), metadata_change_list.get());
 
       // TODO(crbug.com/904390): Remove when the investigation is over.

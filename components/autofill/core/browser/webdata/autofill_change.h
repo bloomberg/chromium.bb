@@ -55,16 +55,12 @@ class AutofillDataModelChange : public GenericAutofillChange<std::string> {
   // The |type| input specifies the change type.  The |key| input is the key
   // that identifies the |data_model|; it is the GUID of the entry for local
   // data and server_id of the entry for server data from GPay.
-  // When |type| == ADD, |data_model| should be non-NULL.
-  // When |type| == UPDATE, |data_model| should be non-NULL.
-  // When |type| == REMOVE, |data_model| should be NULL.
   AutofillDataModelChange(Type type,
                           const std::string& key,
                           const DataType* data_model)
       : GenericAutofillChange<std::string>(type, key), data_model_(data_model) {
-    DCHECK(type == REMOVE ? !data_model
-                          : data_model && (data_model->guid() == key ||
-                                           data_model->server_id() == key));
+    DCHECK(data_model &&
+           (data_model->guid() == key || data_model->server_id() == key));
   }
 
   ~AutofillDataModelChange() override {}
@@ -89,11 +85,6 @@ class AutofillProfileDeepChange : public AutofillProfileChange {
   AutofillProfileDeepChange(Type type, const AutofillProfile& profile)
       : AutofillProfileChange(type, profile.guid(), &profile),
         profile_(profile) {}
-
-  AutofillProfileDeepChange(Type type, const std::string& guid)
-      : AutofillProfileChange(type, guid, nullptr), profile_(guid, "") {
-    DCHECK(type == GenericAutofillChange::REMOVE);
-  }
 
   ~AutofillProfileDeepChange() override {}
 

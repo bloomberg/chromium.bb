@@ -533,7 +533,7 @@ AutofillWalletSyncBridge::ComputeAutofillWalletDiff(
     if (cmp < 0) {
       ++result.items_removed;
       result.changes.emplace_back(AutofillDataModelChange<Item>::REMOVE,
-                                  (*old_it)->server_id(), nullptr);
+                                  (*old_it)->server_id(), *old_it);
       ++old_it;
     } else if (cmp == 0) {
       ++old_it;
