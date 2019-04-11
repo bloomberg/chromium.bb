@@ -10,6 +10,11 @@ import("//build/util/version.gni")
 import("//chrome/android/trichrome.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 
+declare_args() {
+  # Package name of the system_webview_apk target.
+  system_webview_package_name = "com.android.webview"
+}
+
 template("system_webview_apk_tmpl") {
   android_apk(target_name) {
     forward_variables_from(invoker, "*")
