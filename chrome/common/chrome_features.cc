@@ -160,7 +160,7 @@ const base::Feature kChangePictureVideoMode{"ChangePictureVideoMode",
 // Enables passing additional user authentication in requests to DMServer
 // (policy fetch, status report upload).
 const base::Feature kDMServerOAuthForChildUser{
-    "DMServerOAuthForChildUser", base::FEATURE_ENABLED_BY_DEFAULT};
+    "DMServerOAuthForChildUser", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 #if defined(OS_ANDROID)
