@@ -11,6 +11,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/test_timeouts.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "fuchsia/base/fit_adapter.h"
@@ -55,17 +56,21 @@ MATCHER(IsSet, "Checks if an optional field is set.") {
   return !arg.is_null();
 }
 
+MATCHER_P(NavigationHandleUrlEquals,
+          url,
+          "Checks equality with a NavigationHandle's URL.") {
+  return arg->GetURL() == url;
+}
+
 class MockWebContentsObserver : public content::WebContentsObserver {
  public:
-  MockWebContentsObserver() = default;
+  explicit MockWebContentsObserver(content::WebContents* web_contents) {
+    Observe(web_contents);
+  }
+
   ~MockWebContentsObserver() override = default;
 
-  // WebContentsObserver implementation.
-  using content::WebContentsObserver::Observe;
-
-  MOCK_METHOD2(DidFinishLoad,
-               void(content::RenderFrameHost* render_frame_host,
-                    const GURL& validated_url));
+  MOCK_METHOD1(DidStartNavigation, void(content::NavigationHandle*));
 };
 
 // Defines a suite of tests that exercise Frame-level functionality, such as
@@ -266,23 +271,28 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ReloadFrame) {
   controller->LoadUrl(url.spec(), chromium::web::LoadUrlParams());
   navigation_observer_.RunUntilNavigationEquals(url, kPage1Title);
 
-  MockWebContentsObserver web_contents_observer;
-  web_contents_observer.Observe(
-      context_impl()->GetFrameImplForTest(&frame)->web_contents_.get());
-
   // Reload with NO_CACHE.
   {
+    MockWebContentsObserver web_contents_observer(
+        context_impl()->GetFrameImplForTest(&frame)->web_contents_.get());
     base::RunLoop run_loop;
-    EXPECT_CALL(web_contents_observer, DidFinishLoad(_, url))
+    EXPECT_CALL(web_contents_observer,
+                DidStartNavigation(NavigationHandleUrlEquals(url)))
         .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
+
     controller->Reload(chromium::web::ReloadType::NO_CACHE);
     run_loop.Run();
   }
+
   // Reload with PARTIAL_CACHE.
   {
+    MockWebContentsObserver web_contents_observer(
+        context_impl()->GetFrameImplForTest(&frame)->web_contents_.get());
     base::RunLoop run_loop;
-    EXPECT_CALL(web_contents_observer, DidFinishLoad(_, url))
+    EXPECT_CALL(web_contents_observer,
+                DidStartNavigation(NavigationHandleUrlEquals(url)))
         .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
+
     controller->Reload(chromium::web::ReloadType::PARTIAL_CACHE);
     run_loop.Run();
   }
@@ -377,13 +387,12 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, NoNavigationObserverAttached) {
   GURL title1(embedded_test_server()->GetURL(kPage1Path));
   GURL title2(embedded_test_server()->GetURL(kPage2Path));
 
-  MockWebContentsObserver observer;
-  observer.Observe(
+  MockWebContentsObserver observer(
       context_impl()->GetFrameImplForTest(&frame)->web_contents_.get());
 
   {
     base::RunLoop run_loop;
-    EXPECT_CALL(observer, DidFinishLoad(_, title1))
+    EXPECT_CALL(observer, DidStartNavigation(NavigationHandleUrlEquals(title1)))
         .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
     controller->LoadUrl(title1.spec(), chromium::web::LoadUrlParams());
     run_loop.Run();
@@ -391,7 +400,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, NoNavigationObserverAttached) {
 
   {
     base::RunLoop run_loop;
-    EXPECT_CALL(observer, DidFinishLoad(_, title2))
+    EXPECT_CALL(observer, DidStartNavigation(NavigationHandleUrlEquals(title2)))
         .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
     controller->LoadUrl(title2.spec(), chromium::web::LoadUrlParams());
     run_loop.Run();
@@ -709,10 +718,10 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, NavigationObserverDisconnected) {
   GURL title1(embedded_test_server()->GetURL(kPage1Path));
   GURL title2(embedded_test_server()->GetURL(kPage2Path));
 
-  MockWebContentsObserver web_contents_observer;
-  web_contents_observer.Observe(
+  MockWebContentsObserver web_contents_observer(
       context_impl()->GetFrameImplForTest(&frame)->web_contents_.get());
-  EXPECT_CALL(web_contents_observer, DidFinishLoad(_, title1));
+  EXPECT_CALL(web_contents_observer,
+              DidStartNavigation(NavigationHandleUrlEquals(title1)));
 
   controller->LoadUrl(title1.spec(), chromium::web::LoadUrlParams());
   navigation_observer_.RunUntilNavigationEquals(title1, kPage1Title);
@@ -723,14 +732,14 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, NavigationObserverDisconnected) {
   base::RunLoop().RunUntilIdle();
 
   base::RunLoop run_loop;
-  EXPECT_CALL(web_contents_observer, DidFinishLoad(_, title2))
+  EXPECT_CALL(web_contents_observer,
+              DidStartNavigation(NavigationHandleUrlEquals(title2)))
       .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   controller->LoadUrl(title2.spec(), chromium::web::LoadUrlParams());
   run_loop.Run();
 }
 
-// TODO(crbug.com/947268): Re-enable this once flakiness is addressed.
-IN_PROC_BROWSER_TEST_F(FrameImplTest, DISABLED_DelayedNavigationEventAck) {
+IN_PROC_BROWSER_TEST_F(FrameImplTest, DelayedNavigationEventAck) {
   chromium::web::FramePtr frame = CreateFrame();
 
   chromium::web::NavigationControllerPtr controller;
@@ -739,9 +748,6 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, DISABLED_DelayedNavigationEventAck) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL title1(embedded_test_server()->GetURL(kPage1Path));
   GURL title2(embedded_test_server()->GetURL(kPage2Path));
-
-  MockWebContentsObserver web_contents_observer;
-  EXPECT_CALL(web_contents_observer, DidFinishLoad(_, title1));
 
   // Expect an navigation event here, but deliberately postpone acknowledgement
   // until the end of the test.
@@ -757,29 +763,31 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, DISABLED_DelayedNavigationEventAck) {
   navigation_observer_.RunUntilNavigationEquals(title1, kPage1Title);
   EXPECT_TRUE(captured_ack_cb);
 
-  // Since we have blocked NavigationEventObserver's flow, we must observe the
-  // WebContents events directly via a test-only seam.
-  web_contents_observer.Observe(
-      context_impl()->GetFrameImplForTest(&frame)->web_contents_.get());
-
   // Navigate to a second page.
   {
+    // Since we have blocked NavigationEventObserver's flow, we must observe the
+    // lower level browser navigation events directly from the WebContents.
+    MockWebContentsObserver web_contents_observer(
+        context_impl()->GetFrameImplForTest(&frame)->web_contents_.get());
+
     base::RunLoop run_loop;
-    EXPECT_CALL(web_contents_observer, DidFinishLoad(_, title2))
+    EXPECT_CALL(web_contents_observer,
+                DidStartNavigation(NavigationHandleUrlEquals(title2)))
         .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
     controller->LoadUrl(title2.spec(), chromium::web::LoadUrlParams());
     run_loop.Run();
-    Mock::VerifyAndClearExpectations(this);
   }
 
   // Navigate to the first page.
   {
+    MockWebContentsObserver web_contents_observer(
+        context_impl()->GetFrameImplForTest(&frame)->web_contents_.get());
     base::RunLoop run_loop;
-    EXPECT_CALL(web_contents_observer, DidFinishLoad(_, title1))
+    EXPECT_CALL(web_contents_observer,
+                DidStartNavigation(NavigationHandleUrlEquals(title1)))
         .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
     controller->LoadUrl(title1.spec(), chromium::web::LoadUrlParams());
     run_loop.Run();
-    Mock::VerifyAndClearExpectations(this);
   }
 
   // Since there was no observable change in navigation state since the last
@@ -807,17 +815,15 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, Stop) {
   // indefinitely.
   GURL hung_url(embedded_test_server()->GetURL("/hung"));
 
-  WebContentsObserverForStop observer;
-  observer.Observe(
-      context_impl()->GetFrameImplForTest(&frame)->web_contents_.get());
-
   {
     base::RunLoop run_loop;
+    WebContentsObserverForStop observer;
+    observer.Observe(
+        context_impl()->GetFrameImplForTest(&frame)->web_contents_.get());
     EXPECT_CALL(observer, DidStartNavigation(_))
         .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
     controller->LoadUrl(hung_url.spec(), chromium::web::LoadUrlParams());
     run_loop.Run();
-    Mock::VerifyAndClearExpectations(this);
   }
 
   EXPECT_TRUE(
@@ -825,11 +831,13 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, Stop) {
 
   {
     base::RunLoop run_loop;
+    WebContentsObserverForStop observer;
+    observer.Observe(
+        context_impl()->GetFrameImplForTest(&frame)->web_contents_.get());
     EXPECT_CALL(observer, NavigationStopped())
         .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
     controller->Stop();
     run_loop.Run();
-    Mock::VerifyAndClearExpectations(this);
   }
 
   EXPECT_FALSE(
