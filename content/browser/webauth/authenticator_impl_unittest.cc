@@ -3367,8 +3367,8 @@ TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionSingle) {
   TestServiceManagerContext smc;
   AuthenticatorPtr authenticator = ConnectToAuthenticator();
   TestGetAssertionCallback callback_receiver;
-  test_client_.expected_accounts = "01020304:test@example.com:Test User";
-  test_client_.selected_user_id = {1, 2, 3, 4};
+  // |SelectAccount| should not be called when there's only a single response.
+  test_client_.expected_accounts = "<invalid>";
   authenticator->GetAssertion(get_credential_options(),
                               callback_receiver.callback());
   callback_receiver.WaitForCallback();

@@ -807,15 +807,13 @@ void AuthenticatorCommon::GetAssertion(
     return;
   }
 
-  if (options->allow_credentials.empty()) {
-    if (!base::FeatureList::IsEnabled(device::kWebAuthResidentKeys) ||
-        !request_delegate_->SupportsResidentKeys()) {
+  if (options->allow_credentials.empty() &&
+      (!base::FeatureList::IsEnabled(device::kWebAuthResidentKeys) ||
+        !request_delegate_->SupportsResidentKeys())) {
       InvokeCallbackAndCleanup(
           std::move(callback),
           blink::mojom::AuthenticatorStatus::RESIDENT_CREDENTIALS_UNSUPPORTED);
       return;
-    }
-    need_account_selection_ = true;
   }
 
   if (options->appid) {
@@ -1182,15 +1180,14 @@ void AuthenticatorCommon::OnSignResponse(
         request_delegate_->UpdateLastTransportUsed(*transport_used);
       }
 
-      if (need_account_selection_) {
+      if (response_data->size() == 1) {
+        OnAccountSelected(std::move(response_data->at(0)));
+      } else {
         request_delegate_->SelectAccount(
             std::move(*response_data),
             base::BindOnce(&AuthenticatorCommon::OnAccountSelected,
                            weak_factory_.GetWeakPtr()));
-        return;
       }
-
-      OnAccountSelected(std::move(response_data.value()[0]));
       return;
   }
   NOTREACHED();
@@ -1335,7 +1332,6 @@ void AuthenticatorCommon::Cleanup() {
   client_data_json_.clear();
   app_id_.reset();
   attestation_requested_ = false;
-  need_account_selection_ = false;
   error_awaiting_user_acknowledgement_ =
       blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
 }
