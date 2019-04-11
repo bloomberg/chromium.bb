@@ -22,9 +22,8 @@ namespace assistant {
 
 ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
     const Profile* profile) {
-  if (!chromeos::switches::IsAssistantEnabled()) {
+  if (!chromeos::switches::IsAssistantEnabled())
     return ash::mojom::AssistantAllowedState::DISALLOWED_BY_FLAG;
-  }
 
   if (!chromeos::ProfileHelper::IsPrimaryProfile(profile))
     return ash::mojom::AssistantAllowedState::DISALLOWED_BY_NONPRIMARY_USER;
@@ -40,6 +39,12 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
 
   if (user_manager::UserManager::Get()->IsLoggedInAsPublicAccount())
     return ash::mojom::AssistantAllowedState::DISALLOWED_BY_PUBLIC_SESSION;
+
+  // TODO(wutao): Add a new type DISALLOWED_BY_KIOSK_MODE.
+  if (user_manager::UserManager::Get()->IsLoggedInAsKioskApp() ||
+      user_manager::UserManager::Get()->IsLoggedInAsArcKioskApp()) {
+    return ash::mojom::AssistantAllowedState::DISALLOWED_BY_ACCOUNT_TYPE;
+  }
 
   // String literals used in some cases in the array because their
   // constant equivalents don't exist in:
