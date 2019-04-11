@@ -158,6 +158,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
 
   // Accessors for UI elements.
   const MediaControlCurrentTimeDisplayElement& CurrentTimeDisplay() const;
+  const MediaControlRemainingTimeDisplayElement& RemainingTimeDisplay() const;
   MediaControlToggleClosedCaptionsButtonElement& ToggleClosedCaptions();
 
   void Trace(blink::Visitor*) override;

@@ -66,46 +66,6 @@ class AccessibilityMediaControl : public AXLayoutObject {
   DISALLOW_COPY_AND_ASSIGN(AccessibilityMediaControl);
 };
 
-class AccessibilityMediaTimeline final : public AXSlider {
- public:
-  static AXObject* Create(LayoutObject*, AXObjectCacheImpl&);
-
-  AccessibilityMediaTimeline(LayoutObject*, AXObjectCacheImpl&);
-  ~AccessibilityMediaTimeline() override = default;
-
-  String Description(ax::mojom::NameFrom,
-                     ax::mojom::DescriptionFrom&,
-                     AXObjectVector* description_objects) const override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AccessibilityMediaTimeline);
-};
-
-class AccessibilityMediaTimeDisplay final : public AccessibilityMediaControl {
- public:
-  static AXObject* Create(LayoutObject*, AXObjectCacheImpl&);
-
-  AccessibilityMediaTimeDisplay(LayoutObject*, AXObjectCacheImpl&);
-  ~AccessibilityMediaTimeDisplay() override = default;
-
-  ax::mojom::Role RoleValue() const override {
-    return ax::mojom::Role::kStaticText;
-  }
-
-  String StringValue() const override;
-  String TextAlternative(bool recursive,
-                         bool in_aria_labelled_by_traversal,
-                         AXObjectSet& visited,
-                         ax::mojom::NameFrom&,
-                         AXRelatedObjectVector*,
-                         NameSources*) const override;
-
- private:
-  bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
-
-  DISALLOW_COPY_AND_ASSIGN(AccessibilityMediaTimeDisplay);
-};
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_MEDIA_CONTROLS_H_
