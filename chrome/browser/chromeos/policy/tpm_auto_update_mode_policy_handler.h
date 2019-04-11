@@ -11,6 +11,15 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/ui/tpm_auto_update_notification.h"
+
+class PrefRegistrySimple;
+class PrefService;
+class Profile;
+
+namespace base {
+class OneShotTimer;
+}
 
 namespace policy {
 
@@ -38,33 +47,69 @@ class TPMAutoUpdateModePolicyHandler {
   using UpdateCheckerCallback =
       base::RepeatingCallback<void(base::OnceCallback<void(bool)> callback)>;
 
-  explicit TPMAutoUpdateModePolicyHandler(
-      chromeos::CrosSettings* cros_settings);
+  // Will be invoked by TPMAutoUpdateModePolicyHandler to display a notification
+  // informing the user that a TPM update which will clear user data is planned
+  // in 24 hours or at next reboot, depending on |notification_type|.
+  using ShowNotificationCallback = base::RepeatingCallback<void(
+      chromeos::TpmAutoUpdateUserNotification notification_type,
+      Profile* profile)>;
+
+  TPMAutoUpdateModePolicyHandler(chromeos::CrosSettings* cros_settings,
+                                 PrefService* local_state);
   ~TPMAutoUpdateModePolicyHandler();
 
   // Sets a UpdateCheckerCallback for testing.
   void SetUpdateCheckerCallbackForTesting(
       const UpdateCheckerCallback& callback);
 
+  void SetShowNotificationCallbackForTesting(
+      const ShowNotificationCallback& callback);
+
+  void SetNotificationTimerForTesting(
+      std::unique_ptr<base::OneShotTimer> timer);
+
   // Updates the TPM firmware if the device is set to update at enrollment via
   // device policy option TPMFirmwareUpdateSettings.AutoUpdateMode. If the TPM
   // firmware is not vulnerable the method will return without updating.
   void UpdateOnEnrollmentIfNeeded();
 
+  // Shows notifications informing the user about a planned auto-update that
+  // will clear user data. Notifications are shown only if the TPM firmware
+  // needs to be updated and the device policy
+  // TPMFirmwareUpdateSettings.AutoUpdateMode is set to |UserAcknowledgment|.
+  void ShowTPMAutoUpdateNotificationIfNeeded();
+
+  static void RegisterPrefs(PrefRegistrySimple* registry);
+
  private:
   void OnPolicyChanged();
+
+  // Called by the TPM firmware update availability checker via
+  // |UpdateCheckerCallback|. Shows TPM auto-update notifications if
+  // |update_available| is true.
+  void ShowTPMAutoUpdateNotification(bool update_available);
 
   static void OnUpdateAvailableCheckResult(bool update_available);
 
   // Check if a TPM firmware update is available.
   void CheckForUpdate(base::OnceCallback<void(bool)> callback);
 
+  bool WasTPMUpdateOnNextRebootNotificationShown();
+
+  void ShowTPMUpdateOnNextRebootNotification();
+
   chromeos::CrosSettings* cros_settings_;
+
+  PrefService* local_state_;
+
+  std::unique_ptr<base::OneShotTimer> notification_timer_;
 
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       policy_subscription_;
 
   UpdateCheckerCallback update_checker_callback_;
+
+  ShowNotificationCallback show_notfication_callback_;
 
   base::WeakPtrFactory<TPMAutoUpdateModePolicyHandler> weak_factory_;
 

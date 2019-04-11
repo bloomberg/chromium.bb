@@ -243,7 +243,7 @@ void BrowserPolicyConnectorChromeOS::Init(
 
   tpm_auto_update_mode_policy_handler_ =
       std::make_unique<TPMAutoUpdateModePolicyHandler>(
-          chromeos::CrosSettings::Get());
+          chromeos::CrosSettings::Get(), local_state);
 }
 
 void BrowserPolicyConnectorChromeOS::PreShutdown() {

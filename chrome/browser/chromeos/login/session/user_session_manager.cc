@@ -76,6 +76,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/app_install_event_log_manager_wrapper.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/tpm_auto_update_mode_policy_handler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/tether/tether_service.h"
@@ -2184,6 +2185,11 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
   // Check to see if this profile should show TPM Firmware Update Notification
   // and show the message accordingly.
   tpm_firmware_update::ShowNotificationIfNeeded(profile);
+
+  g_browser_process->platform_part()
+      ->browser_policy_connector_chromeos()
+      ->GetTPMAutoUpdateModePolicyHandler()
+      ->ShowTPMAutoUpdateNotificationIfNeeded();
 
   if (should_launch_browser_) {
     ArcTermsOfServiceScreen::MaybeLaunchArcSettings(profile);
