@@ -23,6 +23,33 @@ _NEGATIVE_FILTER = [
 
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2661
     'WindowTest.testSetsTheSizeOfTheCurrentWindowFromIframe',
+
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2854
+    'ChromeOptionsFunctionalTest.canSetAcceptInsecureCerts',
+
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2835
+    'CookieImplementationTest.deleteAllCookies',
+    'CookieImplementationTest.canHandleHttpOnlyCookie',
+
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2858
+    'ElementFindingTest.testFindingMultipleElementsByInvalidClassNameShouldThrow',
+    'ElementFindingTest.testFindingMultipleElementsByCompoundClassNameShouldThrow',
+    'ElementFindingTest.testFindingMultipleElementsByEmptyIdShouldReturnEmptyList',
+    'FormHandlingTest.testShouldNotBeAbleToSubmitAFormThatDoesNotExist',
+    'PositionAndSizeTest.testShouldGetCoordinatesInViewPortOfAnElementInAFrame',
+    'PositionAndSizeTest.testShouldGetCoordinatesInViewPortOfAnElementInANestedFrame',
+    'BasicKeyboardInterfaceTest.testSelectionSelectBySymbol',
+    'BasicKeyboardInterfaceTest.testSelectionSelectByWord',
+    'BasicMouseInterfaceTest.testMovingMouseToRelativeElementOffset',
+    'BasicMouseInterfaceTest.testMovingMouseToRelativeZeroElementOffset',
+    'BasicMouseInterfaceTest.testCanMoveOverAndOutOfAnElement',
+    'BasicMouseInterfaceTest.testMoveMouseByOffsetOverAndOutOfAnElement',
+    'CombinedInputActionsTest.testClickAfterMoveToAnElementWithAnOffsetShouldUseLastMousePosition',
+    'CombinedInputActionsTest.testChordControlCutAndPaste',
+    'DragAndDropTest.testDragAndDropElementWithOffsetInScrolledDiv',
+    'DragAndDropTest.canDragAnElementNotVisibleInTheCurrentViewportDueToAParentOverflow',
+    'LocationContextTest.testShouldSetAndGetLatitude',
+    'LocationContextTest.testShouldSetAndGetLongitude',
 ]
 
 _READY_TO_RUN_FILTER = [
@@ -31,6 +58,12 @@ _READY_TO_RUN_FILTER = [
 
 _OS_NEGATIVE_FILTER = {}
 _OS_NEGATIVE_FILTER['win'] = [
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2855
+    'WindowTest.canFullscreenTheWindow',
+    'WindowTest.canFullscreenTheWindowFromIframe',
+    'WindowTest.testCanMaximizeTheWindowFromIframe',
+    'WindowTest.testCanMaximizeTheWindow',
+    'BasicMouseInterfaceTest.testMovingMouseByRelativeOffset',
 ]
 _OS_NEGATIVE_FILTER['linux'] = [
 ]
@@ -42,7 +75,14 @@ _OS_NEGATIVE_FILTER['mac'] = [
     'WindowTest.canFullscreenTheWindowFromFrame',
     'WindowTest.canFullscreenTheWindowFromIframe',
     'WindowTest.testSetsTheSizeOfTheCurrentWindow',
+    'WindowTest.testCanMaximizeTheWindowFromFrame',
+    'WindowTest.testCanMaximizeTheWindowFromIframe',
+    'WindowTest.testCanMaximizeTheWindow',
     'BasicMouseInterfaceTest.testMovingMouseByRelativeOffset',
+
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2856
+    'ClickScrollingTest.testShouldBeAbleToClickElementThatIsOutOfViewInANestedFrameThatIsOutOfView',
+    'ClickScrollingTest.testShouldBeAbleToClickElementThatIsOutOfViewInANestedFrame',
 ]
 
 _OS_NEGATIVE_FILTER['android:chrome'] = [
