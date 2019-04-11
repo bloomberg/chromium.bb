@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -41,18 +42,8 @@ namespace ash {
 class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
                                   public views::MouseWatcherListener {
  public:
-  // AnchorAlignment determines to which side of the anchor the bubble will
-  // align itself.
-  enum AnchorAlignment {
-    ANCHOR_ALIGNMENT_BOTTOM,
-    ANCHOR_ALIGNMENT_LEFT,
-    ANCHOR_ALIGNMENT_RIGHT,
-  };
-
   class ASH_EXPORT Delegate {
    public:
-    typedef TrayBubbleView::AnchorAlignment AnchorAlignment;
-
     Delegate() {}
     virtual ~Delegate();
 
@@ -100,7 +91,7 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
     AnchorMode anchor_mode = AnchorMode::kView;
     // Only used if anchor_mode == AnchorMode::kRect.
     gfx::Rect anchor_rect;
-    AnchorAlignment anchor_alignment = ANCHOR_ALIGNMENT_BOTTOM;
+    ShelfAlignment shelf_alignment = SHELF_ALIGNMENT_BOTTOM;
     int min_width = 0;
     int max_width = 0;
     int max_height = 0;
@@ -153,7 +144,7 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
   void ChangeAnchorRect(const gfx::Rect& anchor_rect);
 
   // Change anchor alignment mode when anchoring either the rect or view.
-  void ChangeAnchorAlignment(AnchorAlignment alignment);
+  void ChangeAnchorAlignment(ShelfAlignment alignment);
 
   // Returns true if the bubble is an anchored status area bubble. Override
   // this function for a bubble which is not anchored directly to the status

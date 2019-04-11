@@ -75,7 +75,7 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
     time_shown_by_click_ = base::TimeTicks::Now();
 
   TrayBubbleView::InitParams init_params;
-  init_params.anchor_alignment = tray_->GetAnchorAlignment();
+  init_params.shelf_alignment = tray_->shelf()->alignment();
   init_params.min_width = kTrayMenuWidth;
   init_params.max_width = kTrayMenuWidth;
   init_params.delegate = tray;
@@ -303,7 +303,7 @@ void UnifiedSystemTrayBubble::UpdateBubbleBounds() {
   int max_height = CalculateMaxHeight();
   unified_view_->SetMaxHeight(max_height);
   bubble_view_->SetMaxHeight(max_height);
-  bubble_view_->ChangeAnchorAlignment(tray_->GetAnchorAlignment());
+  bubble_view_->ChangeAnchorAlignment(tray_->shelf()->alignment());
   bubble_view_->ChangeAnchorRect(tray_->shelf()->GetSystemTrayAnchorRect());
 }
 
