@@ -519,8 +519,12 @@ void WebRuntimeFeatures::EnableScrollAnchorSerialization(bool enable) {
   RuntimeEnabledFeatures::SetScrollAnchorSerializationEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableSecMetadata(bool enable) {
-  RuntimeEnabledFeatures::SetSecMetadataEnabled(enable);
+void WebRuntimeFeatures::EnableFetchMetadata(bool enable) {
+  RuntimeEnabledFeatures::SetFetchMetadataEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableFetchMetadataDestination(bool enable) {
+  RuntimeEnabledFeatures::SetFetchMetadataDestinationEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableTimerThrottlingForBackgroundTabs(bool enable) {

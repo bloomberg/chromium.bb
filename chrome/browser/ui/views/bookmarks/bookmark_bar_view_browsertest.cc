@@ -50,7 +50,10 @@ class BookmarkBarNavigationTest : public InProcessBrowserTest {
       : https_test_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
 
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(network::features::kSecMetadata);
+    scoped_feature_list_.InitWithFeatures(
+        {network::features::kFetchMetadata,
+         network::features::kFetchMetadataDestination},
+        {});
     InProcessBrowserTest::SetUp();
   }
 

@@ -144,7 +144,7 @@ void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request) {
 
   scoped_refptr<SecurityOrigin> url_origin =
       SecurityOrigin::Create(request.Url());
-  if (blink::RuntimeEnabledFeatures::SecMetadataEnabled() &&
+  if (blink::RuntimeEnabledFeatures::FetchMetadataEnabled() &&
       url_origin->IsPotentiallyTrustworthy()) {
     const char* destination_value =
         GetDestinationFromContext(request.GetRequestContext());
@@ -154,7 +154,7 @@ void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request) {
     if (strlen(destination_value) == 0)
       destination_value = "empty";
 
-    // We'll handle adding the header to navigations outside of Blink.
+    // We'll handle adding these headers to navigations outside of Blink.
     if (strncmp(destination_value, "document", 8) != 0 &&
         request.GetRequestContext() != mojom::RequestContextType::INTERNAL) {
       const char* site_value = "cross-site";
@@ -173,7 +173,10 @@ void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request) {
         }
       }
 
-      request.SetHttpHeaderField("Sec-Fetch-Dest", destination_value);
+      if (blink::RuntimeEnabledFeatures::FetchMetadataDestinationEnabled()) {
+        request.SetHttpHeaderField("Sec-Fetch-Dest", destination_value);
+      }
+
       request.SetHttpHeaderField(
           "Sec-Fetch-Mode",
           FetchRequestModeToString(request.GetFetchRequestMode()));

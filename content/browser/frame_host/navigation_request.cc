@@ -139,8 +139,15 @@ bool IsSecureFrame(FrameTreeNode* frame) {
   return true;
 }
 
-bool IsSecMetadataEnabled() {
-  return base::FeatureList::IsEnabled(network::features::kSecMetadata) ||
+bool IsFetchMetadataEnabled() {
+  return base::FeatureList::IsEnabled(network::features::kFetchMetadata) ||
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kEnableExperimentalWebPlatformFeatures);
+}
+
+bool IsFetchMetadataDestinationEnabled() {
+  return base::FeatureList::IsEnabled(
+             network::features::kFetchMetadataDestination) ||
          base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kEnableExperimentalWebPlatformFeatures);
 }
@@ -207,7 +214,7 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
 
   // TODO(mkwst): Extract this logic out somewhere that can be shared between
   // Blink and //content.
-  if (IsSecMetadataEnabled() && IsOriginSecure(url)) {
+  if (IsFetchMetadataEnabled() && IsOriginSecure(url)) {
     std::string site_value = "cross-site";
     std::string user_value = has_user_gesture ? "?1" : std::string();
 
@@ -251,7 +258,10 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
         destination = "nested-document";
         mode = "nested-navigate";
     }
-    headers->SetHeaderIfMissing("Sec-Fetch-Dest", destination.c_str());
+
+    if (IsFetchMetadataDestinationEnabled()) {
+      headers->SetHeaderIfMissing("Sec-Fetch-Dest", destination.c_str());
+    }
     headers->SetHeaderIfMissing("Sec-Fetch-Mode", mode.c_str());
     headers->SetHeaderIfMissing("Sec-Fetch-Site", site_value.c_str());
     if (!user_value.empty())
