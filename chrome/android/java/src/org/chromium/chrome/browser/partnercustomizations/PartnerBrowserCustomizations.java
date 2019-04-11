@@ -15,6 +15,7 @@ import android.text.TextUtils;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.task.AsyncTask;
@@ -298,8 +299,7 @@ public class PartnerBrowserCustomizations {
         initializeAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
         // Cancel the initialization if it reaches timeout.
-        PostTask.postDelayedTask(
-                UiThreadTaskTraits.DEFAULT, () -> initializeAsyncTask.cancel(true), timeoutMs);
+        ThreadUtils.postOnUiThreadDelayed(() -> initializeAsyncTask.cancel(true), timeoutMs);
     }
 
     /**
@@ -325,7 +325,7 @@ public class PartnerBrowserCustomizations {
     public static void setOnInitializeAsyncFinished(final Runnable callback, long timeoutMs) {
         sInitializeAsyncCallbacks.add(callback);
 
-        PostTask.postDelayedTask(UiThreadTaskTraits.DEFAULT, () -> {
+        ThreadUtils.postOnUiThreadDelayed(() -> {
             if (sInitializeAsyncCallbacks.remove(callback)) callback.run();
         }, sIsInitialized ? 0 : timeoutMs);
     }
