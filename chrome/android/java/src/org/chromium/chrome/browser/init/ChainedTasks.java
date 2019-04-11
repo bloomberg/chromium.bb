@@ -4,11 +4,7 @@
 
 package org.chromium.chrome.browser.init;
 
-import android.util.Pair;
-
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.task.PostTask;
-import org.chromium.base.task.TaskTraits;
 
 import java.util.LinkedList;
 
@@ -22,16 +18,15 @@ import java.util.LinkedList;
  * - {@link cancel()} must be called from the UI thread.
  */
 public class ChainedTasks {
-    private LinkedList<Pair<TaskTraits, Runnable>> mTasks = new LinkedList<>();
+    private LinkedList<Runnable> mTasks = new LinkedList<>();
     private volatile boolean mFinalized;
 
     private final Runnable mRunAndPost = new Runnable() {
         @Override
         public void run() {
             if (mTasks.isEmpty()) return;
-            Pair<TaskTraits, Runnable> pair = mTasks.pop();
-            pair.second.run();
-            PostTask.postTask(pair.first, this);
+            mTasks.pop().run();
+            ThreadUtils.postOnUiThread(this);
         }
     };
 
@@ -39,9 +34,9 @@ public class ChainedTasks {
      * Adds a task to the list of tasks to run. Cannot be called once {@link start()} has been
      * called.
      */
-    public void add(TaskTraits traits, Runnable task) {
+    public void add(Runnable task) {
         if (mFinalized) throw new IllegalStateException("Must not call add() after start()");
-        mTasks.add(new Pair<>(traits, task));
+        mTasks.add(task);
     }
 
     /**
@@ -64,17 +59,16 @@ public class ChainedTasks {
     public void start(final boolean coalesceTasks) {
         if (mFinalized) throw new IllegalStateException("Cannot call start() several times");
         mFinalized = true;
-        if (mTasks.isEmpty()) return;
         if (coalesceTasks) {
-            PostTask.runOrPostTask(mTasks.peek().first, new Runnable() {
+            ThreadUtils.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    for (Pair<TaskTraits, Runnable> pair : mTasks) pair.second.run();
+                    for (Runnable task : mTasks) task.run();
                     mTasks.clear();
                 }
             });
         } else {
-            PostTask.postTask(mTasks.peek().first, mRunAndPost);
+            ThreadUtils.postOnUiThread(mRunAndPost);
         }
     }
 }

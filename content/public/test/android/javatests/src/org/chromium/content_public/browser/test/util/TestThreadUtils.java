@@ -6,8 +6,6 @@ package org.chromium.content_public.browser.test.util;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.PostTask;
-import org.chromium.base.task.SingleThreadTaskRunner;
-import org.chromium.base.task.TaskTraits;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.concurrent.Callable;
@@ -25,23 +23,11 @@ public class TestThreadUtils {
      * @param r The Runnable to run.
      */
     public static void runOnUiThreadBlocking(final Runnable r) {
-        runBlockingWithTraits(UiThreadTaskTraits.DEFAULT, r);
-    }
-
-    /**
-     * Run the supplied Runnable with the provided traits. The method will block until the Runnable
-     * completes.
-     *
-     * @param traits The Traits to run.
-     * @param r The Runnable to run.
-     */
-    public static void runBlockingWithTraits(final TaskTraits traits, final Runnable r) {
-        SingleThreadTaskRunner taskRunner = PostTask.createSingleThreadTaskRunner(traits);
-        if (taskRunner.belongsToCurrentThread()) {
+        if (ThreadUtils.runningOnUiThread()) {
             r.run();
         } else {
             FutureTask<Void> task = new FutureTask<Void>(r, null);
-            taskRunner.postTask(task);
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, task);
             try {
                 task.get();
             } catch (Exception e) {
@@ -74,22 +60,8 @@ public class TestThreadUtils {
      * @throws ExecutionException c's exception
      */
     public static <T> T runOnUiThreadBlocking(Callable<T> c) throws ExecutionException {
-        return runBlockingWithTraits(UiThreadTaskTraits.DEFAULT, c);
-    }
-
-    /**
-     * Run the supplied Callable with the given task traits, The method will block until the
-     * Callable completes.
-     *
-     * @param traits The Traits to run
-     * @param c The Callable to run
-     * @return The result of the callable
-     * @throws ExecutionException c's exception
-     */
-    public static <T> T runBlockingWithTraits(final TaskTraits traits, Callable<T> c)
-            throws ExecutionException {
         FutureTask<T> task = new FutureTask<T>(c);
-        PostTask.runOrPostTask(traits, task);
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, task);
         try {
             return task.get();
         } catch (InterruptedException e) {
