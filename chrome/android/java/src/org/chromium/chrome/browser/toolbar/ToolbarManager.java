@@ -94,6 +94,7 @@ import org.chromium.chrome.browser.toolbar.top.ToolbarLayout;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator;
 import org.chromium.chrome.browser.toolbar.top.ViewShiftingActionBarDelegate;
 import org.chromium.chrome.browser.translate.TranslateBridge;
+import org.chromium.chrome.browser.ui.ImmersiveModeManager;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.ScrimView;
@@ -1592,6 +1593,15 @@ public class ToolbarManager
             };
         } else {
             mOnInitializedRunnable = null;
+        }
+    }
+
+    /**
+     * @param immersiveModeManager The {@link ImmersiveModeManager} for the containing activity.
+     */
+    public void setImmersiveModeManager(ImmersiveModeManager immersiveModeManager) {
+        if (mBottomControlsCoordinator != null) {
+            mBottomControlsCoordinator.setImmersiveModeManager(immersiveModeManager);
         }
     }
 

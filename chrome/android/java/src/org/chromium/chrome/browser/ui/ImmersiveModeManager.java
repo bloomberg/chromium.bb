@@ -34,6 +34,13 @@ public interface ImmersiveModeManager {
     boolean isImmersiveModeSupported();
 
     /**
+     * @return The inset to apply to bottom anchored UI elements in pixels.
+     */
+    default int getBottomUiInsetPx() {
+        return 0;
+    }
+
+    /**
      * Add an observer to be notified of changes related to immersive UI mode.
      * @param observer The observer to add.
      */

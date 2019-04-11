@@ -56,6 +56,10 @@ public class RootUiCoordinator implements Destroyable, NativeInitObserver, Infla
         mSystemUiCoordinator =
                 new SystemUiCoordinator(mActivity.getWindow(), mActivity.getTabModelSelector(),
                         mImmersiveModeManager, mActivity.getActivityType());
+
+        if (mImmersiveModeManager != null) {
+            mActivity.getToolbarManager().setImmersiveModeManager(mImmersiveModeManager);
+        }
     }
 
     @Override
