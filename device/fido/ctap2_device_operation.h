@@ -16,6 +16,10 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "components/cbor/diagnostic_writer.h"
+#include "components/cbor/values.h"
+#include "components/cbor/writer.h"
+#include "components/device_event_log/device_event_log.h"
 #include "device/fido/device_operation.h"
 #include "device/fido/device_response_converter.h"
 #include "device/fido/fido_constants.h"
@@ -47,8 +51,30 @@ class Ctap2DeviceOperation : public DeviceOperation<Request, Response> {
   ~Ctap2DeviceOperation() override = default;
 
   void Start() override {
+    std::pair<CtapRequestCommand, base::Optional<cbor::Value>> request(
+        this->request().EncodeAsCBOR());
+    std::vector<uint8_t> request_bytes;
+
+    // TODO: it would be nice to see which device each request is going to, but
+    // that breaks every mock test because they aren't expecting a call to
+    // GetId().
+    if (request.second) {
+      FIDO_LOG(DEBUG) << "<- " << static_cast<int>(request.first) << " "
+                      << cbor::DiagnosticWriter::Write(*request.second);
+      base::Optional<std::vector<uint8_t>> cbor_bytes =
+          cbor::Writer::Write(*request.second);
+      DCHECK(cbor_bytes);
+      request_bytes = std::move(*cbor_bytes);
+    } else {
+      FIDO_LOG(DEBUG) << "<- " << static_cast<int>(request.first)
+                      << " (no payload)";
+    }
+
+    request_bytes.insert(request_bytes.begin(),
+                         static_cast<uint8_t>(request.first));
+
     this->token_ = this->device()->DeviceTransact(
-        this->request().EncodeAsCBOR(),
+        std::move(request_bytes),
         base::BindOnce(&Ctap2DeviceOperation::OnResponseReceived,
                        weak_factory_.GetWeakPtr()));
   }

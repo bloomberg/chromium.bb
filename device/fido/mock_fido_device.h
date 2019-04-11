@@ -21,6 +21,10 @@
 #include "device/fido/fido_transport_protocol.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+namespace cbor {
+class Value;
+}
+
 namespace device {
 
 class MockFidoDevice : public ::testing::StrictMock<FidoDevice> {
@@ -46,6 +50,10 @@ class MockFidoDevice : public ::testing::StrictMock<FidoDevice> {
   static std::unique_ptr<MockFidoDevice> MakeCtapWithGetInfoExpectation(
       base::Optional<base::span<const uint8_t>> get_info_response =
           base::nullopt);
+  // EncodeCBORRequest is a helper function for use with the |Expect*|
+  // functions, below, that take a serialised request.
+  static std::vector<uint8_t> EncodeCBORRequest(
+      std::pair<CtapRequestCommand, base::Optional<cbor::Value>> request);
 
   MockFidoDevice();
   MockFidoDevice(ProtocolVersion protocol_version,

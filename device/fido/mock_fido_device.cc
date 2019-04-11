@@ -11,6 +11,7 @@
 #include "base/strings/strcat.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/apdu/apdu_response.h"
+#include "components/cbor/writer.h"
 #include "device/fido/device_response_converter.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
@@ -63,6 +64,21 @@ std::unique_ptr<MockFidoDevice> MockFidoDevice::MakeCtapWithGetInfoExpectation(
   device->ExpectCtap2CommandAndRespondWith(
       CtapRequestCommand::kAuthenticatorGetInfo, std::move(get_info_response));
   return device;
+}
+
+std::vector<uint8_t> MockFidoDevice::EncodeCBORRequest(
+    std::pair<CtapRequestCommand, base::Optional<cbor::Value>> request) {
+  std::vector<uint8_t> request_bytes;
+
+  if (request.second) {
+    base::Optional<std::vector<uint8_t>> cbor_bytes =
+        cbor::Writer::Write(*request.second);
+    DCHECK(cbor_bytes);
+    request_bytes = std::move(*cbor_bytes);
+  }
+  request_bytes.insert(request_bytes.begin(),
+                       static_cast<uint8_t>(request.first));
+  return request_bytes;
 }
 
 // Matcher to compare the fist byte of the incoming requests.

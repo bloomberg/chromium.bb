@@ -36,7 +36,8 @@ CtapGetAssertionRequest& CtapGetAssertionRequest::operator=(
 
 CtapGetAssertionRequest::~CtapGetAssertionRequest() = default;
 
-std::vector<uint8_t> CtapGetAssertionRequest::EncodeAsCBOR() const {
+std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+CtapGetAssertionRequest::EncodeAsCBOR() const {
   cbor::Value::MapValue cbor_map;
   cbor_map[cbor::Value(1)] = cbor::Value(rp_id_);
   cbor_map[cbor::Value(2)] = cbor::Value(client_data_hash_);
@@ -74,14 +75,8 @@ std::vector<uint8_t> CtapGetAssertionRequest::EncodeAsCBOR() const {
     cbor_map[cbor::Value(5)] = cbor::Value(std::move(option_map));
   }
 
-  auto serialized_param = cbor::Writer::Write(cbor::Value(std::move(cbor_map)));
-  DCHECK(serialized_param);
-
-  std::vector<uint8_t> cbor_request({base::strict_cast<uint8_t>(
-      CtapRequestCommand::kAuthenticatorGetAssertion)});
-  cbor_request.insert(cbor_request.end(), serialized_param->begin(),
-                      serialized_param->end());
-  return cbor_request;
+  return std::make_pair(CtapRequestCommand::kAuthenticatorGetAssertion,
+                        cbor::Value(std::move(cbor_map)));
 }
 
 CtapGetAssertionRequest& CtapGetAssertionRequest::SetUserVerification(
@@ -136,9 +131,10 @@ bool CtapGetAssertionRequest::CheckResponseRpIdHash(
           response_rp_id_hash == *alternative_application_parameter());
 }
 
-std::vector<uint8_t> CtapGetNextAssertionRequest::EncodeAsCBOR() const {
-  return {
-      static_cast<uint8_t>(CtapRequestCommand::kAuthenticatorGetNextAssertion)};
+std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+CtapGetNextAssertionRequest::EncodeAsCBOR() const {
+  return std::make_pair(CtapRequestCommand::kAuthenticatorGetNextAssertion,
+                        base::nullopt);
 }
 
 }  // namespace device

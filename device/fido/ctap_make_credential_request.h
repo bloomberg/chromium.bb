@@ -21,6 +21,10 @@
 #include "device/fido/public_key_credential_rp_entity.h"
 #include "device/fido/public_key_credential_user_entity.h"
 
+namespace cbor {
+class Value;
+}
+
 namespace device {
 
 // Object containing request parameters for AuthenticatorMakeCredential command
@@ -44,7 +48,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapMakeCredentialRequest {
   // Serializes MakeCredential request parameter into CBOR encoded map with
   // integer keys and CBOR encoded values as defined by the CTAP spec.
   // https://drafts.fidoalliance.org/fido-2/latest/fido-client-to-authenticator-protocol-v2.0-wd-20180305.html#authenticatorMakeCredential
-  std::vector<uint8_t> EncodeAsCBOR() const;
+  std::pair<CtapRequestCommand, base::Optional<cbor::Value>> EncodeAsCBOR()
+      const;
 
   CtapMakeCredentialRequest& SetAuthenticatorAttachment(
       AuthenticatorAttachment authenticator_attachment);
