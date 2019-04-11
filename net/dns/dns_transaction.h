@@ -42,8 +42,6 @@ class NET_EXPORT_PRIVATE DnsTransaction {
   // Starts the transaction.  Always completes asynchronously.
   virtual void Start() = 0;
 
-  virtual void SetRequestContext(URLRequestContext*) = 0;
-
   virtual void SetRequestPriority(RequestPriority priority) = 0;
 };
 
@@ -83,7 +81,8 @@ class NET_EXPORT_PRIVATE DnsTransactionFactory {
       uint16_t qtype,
       CallbackType callback,
       const NetLogWithSource& net_log,
-      SecureDnsMode secure_dns_mode) WARN_UNUSED_RESULT = 0;
+      SecureDnsMode secure_dns_mode,
+      URLRequestContext* url_request_context) WARN_UNUSED_RESULT = 0;
 
   // The given EDNS0 option will be included in all DNS queries performed by
   // transactions from this factory.

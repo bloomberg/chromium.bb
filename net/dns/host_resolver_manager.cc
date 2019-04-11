@@ -999,8 +999,7 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
             base::BindOnce(&DnsTask::OnTransactionComplete,
                            base::Unretained(this), tick_clock_->NowTicks(),
                            dns_query_type),
-            net_log_, secure_dns_mode);
-    trans->SetRequestContext(delegate_->url_request_context());
+            net_log_, secure_dns_mode, delegate_->url_request_context());
     trans->SetRequestPriority(delegate_->priority());
     return trans;
   }

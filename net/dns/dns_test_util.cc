@@ -304,7 +304,6 @@ class MockTransaction : public DnsTransaction,
     }
   }
 
-  void SetRequestContext(URLRequestContext*) override {}
   void SetRequestPriority(RequestPriority priority) override {}
 
   MockDnsClientRule::Result result_;
@@ -458,7 +457,8 @@ class MockDnsClient::MockTransactionFactory : public DnsTransactionFactory {
       uint16_t qtype,
       DnsTransactionFactory::CallbackType callback,
       const NetLogWithSource&,
-      SecureDnsMode secure_dns_mode) override {
+      SecureDnsMode secure_dns_mode,
+      URLRequestContext* url_request_context) override {
     std::unique_ptr<MockTransaction> transaction =
         std::make_unique<MockTransaction>(rules_, hostname, qtype,
                                           secure_dns_mode, std::move(callback));
