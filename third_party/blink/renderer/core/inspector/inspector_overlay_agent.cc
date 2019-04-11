@@ -739,8 +739,10 @@ WebInputEventResult InspectorOverlayAgent::HandleInputEventInOverlay(
 }
 
 void InspectorOverlayAgent::ScheduleUpdate() {
-  GetFrame()->GetPage()->GetChromeClient().ScheduleAnimation(
-      GetFrame()->View());
+  if (inspect_tool_) {
+    GetFrame()->GetPage()->GetChromeClient().ScheduleAnimation(
+        GetFrame()->View());
+  }
 }
 
 void InspectorOverlayAgent::PaintOverlayPage() {
