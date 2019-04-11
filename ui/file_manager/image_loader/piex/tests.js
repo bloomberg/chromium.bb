@@ -95,11 +95,11 @@ const puppeteer = require('puppeteer');
     return window.createFileSystem(length);
   }, images.length);
 
-  for (let i = 0; i < images.length; ++i) {
-    await page.evaluate((image) => {
+  await Promise.all(images.map((image) => {
+    return page.evaluate((image) => {
       return window.writeToFileSystem(image);
-    }, images[i]);
-  }
+    }, image);
+  }));
 
   await page.evaluate(() => {
     window.testTime = 0;
