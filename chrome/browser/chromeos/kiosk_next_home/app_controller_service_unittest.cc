@@ -23,10 +23,14 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/arc/test/fake_app_instance.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/display/types/display_constants.h"
+#include "ui/events/event_constants.h"
 
 namespace chromeos {
 namespace kiosk_next_home {
@@ -61,13 +65,36 @@ class FakeAppControllerClient : public mojom::AppControllerClient {
   std::vector<mojom::AppPtr> app_updates_;
 };
 
+// Mock instance for the AppServiceProxy. It only overrides a subset of the
+// methods provided by the proxy since we expect that most tests can be written
+// with their real implementations (i.e. AppRegistryCache()).
+class MockAppServiceProxy : public KeyedService, public apps::AppServiceProxy {
+ public:
+  static MockAppServiceProxy* OverrideRealProxyForProfile(Profile* profile) {
+    return static_cast<MockAppServiceProxy*>(
+        apps::AppServiceProxyFactory::GetInstance()->SetTestingFactoryAndUse(
+            profile, base::BindRepeating([](content::BrowserContext* context) {
+              return static_cast<std::unique_ptr<KeyedService>>(
+                  std::make_unique<MockAppServiceProxy>());
+            })));
+  }
+
+  // apps::AppServiceProxy:
+  MOCK_METHOD4(Launch,
+               void(const std::string& app_id,
+                    int32_t event_flags,
+                    apps::mojom::LaunchSource launch_source,
+                    int64_t display_id));
+  MOCK_METHOD1(Uninstall, void(const std::string& app_id));
+};
+
 class AppControllerServiceTest : public testing::Test {
  protected:
   void SetUp() override {
     profile_ = std::make_unique<TestingProfile>();
 
     arc_test_.SetUp(profile());
-    proxy_ = apps::AppServiceProxyFactory::GetForProfile(profile());
+    proxy_ = MockAppServiceProxy::OverrideRealProxyForProfile(profile());
 
     app_controller_service_ = AppControllerService::Get(profile());
 
@@ -80,6 +107,8 @@ class AppControllerServiceTest : public testing::Test {
   void TearDown() override { arc_test_.TearDown(); }
 
   Profile* profile() { return profile_.get(); }
+
+  MockAppServiceProxy* proxy() { return proxy_; }
 
   AppControllerService* service() { return app_controller_service_; }
 
@@ -125,7 +154,7 @@ class AppControllerServiceTest : public testing::Test {
   // returns them in a map keyed by their |app_id|.
   AppMap GetAppsFromController() {
     AppMap apps;
-    app_controller_service_->GetApps(base::BindLambdaForTesting(
+    service()->GetApps(base::BindLambdaForTesting(
         [&apps](std::vector<mojom::AppPtr> app_list) {
           for (const auto& app : app_list) {
             apps[app->app_id] = app.Clone();
@@ -160,7 +189,7 @@ class AppControllerServiceTest : public testing::Test {
     bool returned_success;
     std::string returned_android_id;
 
-    app_controller_service_->GetArcAndroidId(base::BindLambdaForTesting(
+    service()->GetArcAndroidId(base::BindLambdaForTesting(
         [&returned_success, &returned_android_id](
             bool success, const std::string& android_id) {
           returned_success = success;
@@ -230,8 +259,8 @@ class AppControllerServiceTest : public testing::Test {
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
   std::unique_ptr<TestingProfile> profile_;
   ArcAppTest arc_test_;
-  apps::AppServiceProxy* proxy_;
-  AppControllerService* app_controller_service_;
+  MockAppServiceProxy* proxy_ = nullptr;
+  AppControllerService* app_controller_service_ = nullptr;
   std::unique_ptr<FakeAppControllerClient> client_;
 
   void ExpectEqualApps(const mojom::App& expected_app,
@@ -649,6 +678,20 @@ TEST_F(AppControllerServiceTest, ClientIsNotNotifiedOfSuperfluousChanges) {
   app_delta.additional_search_terms = {"random_term"};
   AddAppDeltaToAppService(app_delta.Clone());
   ExpectAppChangedUpdates({first_app_state});
+}
+
+TEST_F(AppControllerServiceTest, LaunchAppCallsAppServiceCorrectly) {
+  EXPECT_CALL(*proxy(), Launch("fake_app_id", ui::EventFlags::EF_NONE,
+                               apps::mojom::LaunchSource::kFromKioskNextHome,
+                               display::kDefaultDisplayId));
+
+  service()->LaunchApp("fake_app_id");
+}
+
+TEST_F(AppControllerServiceTest, UninstallAppCallsAppServiceCorrectly) {
+  EXPECT_CALL(*proxy(), Uninstall("fake_app_id"));
+
+  service()->UninstallApp("fake_app_id");
 }
 
 }  // namespace kiosk_next_home
