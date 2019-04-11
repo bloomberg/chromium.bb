@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_treat_non_object_as_null_void_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_uint8_array.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_void_callback_function.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
@@ -1031,7 +1032,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
     }
   }
 
-  if (origin_trials::FeatureNameEnabled(executionContext)) {
+  if (RuntimeEnabledFeatures::FeatureNameEnabled(executionContext)) {
     v8::Local<v8::Value> origin_trial_member_value;
     if (!v8Object->Get(context, keys[29].Get(isolate)).ToLocal(&origin_trial_member_value)) {
       exception_state.RethrowV8Exception(block.Exception());
@@ -1047,7 +1048,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
     }
   }
 
-  if (origin_trials::FeatureName1Enabled(executionContext)) {
+  if (RuntimeEnabledFeatures::FeatureName1Enabled(executionContext)) {
     v8::Local<v8::Value> origin_trial_second_member_value;
     if (!v8Object->Get(context, keys[30].Get(isolate)).ToLocal(&origin_trial_second_member_value)) {
       exception_state.RethrowV8Exception(block.Exception());
@@ -1806,7 +1807,7 @@ bool toV8TestDictionary(const TestDictionary* impl, v8::Local<v8::Object> dictio
     }
   }
 
-  if (origin_trials::FeatureNameEnabled(executionContext)) {
+  if (RuntimeEnabledFeatures::FeatureNameEnabled(executionContext)) {
     v8::Local<v8::Value> origin_trial_member_value;
     bool origin_trial_member_has_value_or_default = false;
     if (impl->hasOriginTrialMember()) {
@@ -1819,7 +1820,7 @@ bool toV8TestDictionary(const TestDictionary* impl, v8::Local<v8::Object> dictio
     }
   }
 
-  if (origin_trials::FeatureName1Enabled(executionContext)) {
+  if (RuntimeEnabledFeatures::FeatureName1Enabled(executionContext)) {
     v8::Local<v8::Value> origin_trial_second_member_value;
     bool origin_trial_second_member_has_value_or_default = false;
     if (impl->hasOriginTrialSecondMember()) {

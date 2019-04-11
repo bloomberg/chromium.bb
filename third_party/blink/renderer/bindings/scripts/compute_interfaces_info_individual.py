@@ -55,6 +55,7 @@ from utilities import merge_dict_recursively
 from utilities import read_idl_files_list_from_file
 from utilities import shorten_union_name
 from utilities import to_snake_case
+from utilities import read_pickle_file
 from utilities import write_pickle_file
 
 
@@ -75,6 +76,7 @@ def parse_options():
     parser.add_option('--idl-files-list', help='file listing IDL files')
     parser.add_option('--interfaces-info-file', help='interface info pickle file')
     parser.add_option('--component-info-file', help='component wide info pickle file')
+    parser.add_option('--runtime-enabled-features-file', help='runtime-enabled features pickle file')
 
     options, args = parser.parse_args()
     if options.interfaces_info_file is None:
@@ -329,12 +331,13 @@ class InterfaceInfoCollector(object):
             'partial_interface_files': dict(self.partial_interface_files),
         }
 
-    def get_component_info_as_dict(self):
+    def get_component_info_as_dict(self, runtime_enabled_features):
         """Returns component wide information as a dict."""
         return {
             'callback_functions': self.callback_functions,
             'enumerations': dict((enum.name, enum.values)
                                  for enum in self.enumerations.values()),
+            'runtime_enabled_features': runtime_enabled_features,
             'typedefs': self.typedefs,
             'union_types': self.union_types,
         }
@@ -357,8 +360,9 @@ def main():
 
     write_pickle_file(options.interfaces_info_file,
                       info_collector.get_info_as_dict())
+    runtime_enabled_features = read_pickle_file(options.runtime_enabled_features_file)
     write_pickle_file(options.component_info_file,
-                      info_collector.get_component_info_as_dict())
+                      info_collector.get_component_info_as_dict(runtime_enabled_features))
 
 if __name__ == '__main__':
     sys.exit(main())

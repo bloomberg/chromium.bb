@@ -151,7 +151,8 @@ def origin_trial_features(interface, constants, attributes, methods):
 
     if features:
         includes.add('platform/bindings/script_state.h')
-        includes.add('core/origin_trials/origin_trials.h')
+        includes.add('platform/runtime_enabled_features.h')
+        includes.add('core/execution_context/execution_context.h')
 
     return features
 
@@ -194,13 +195,15 @@ def runtime_call_stats_context(interface):
         'named_property_setter_counter': counter_prefix + 'NamedPropertySetter',
     }
 
-def interface_context(interface, interfaces):
+
+def interface_context(interface, interfaces, component_info):
     """Creates a Jinja template context for an interface.
 
     Args:
         interface: An interface to create the context for
         interfaces: A dict which maps an interface name to the definition
             which can be referred if needed
+        component_info: A dict containing component wide information
 
     Returns:
         A Jinja template context for |interface|
@@ -279,6 +282,8 @@ def interface_context(interface, interfaces):
     needs_runtime_enabled_installer = v8_class_name in [
         'V8Window', 'V8HTMLDocument', 'V8Document', 'V8Node', 'V8EventTarget']
 
+    runtime_features = component_info['runtime_enabled_features']
+
     context = {
         'active_scriptwrappable': active_scriptwrappable,
         'context_enabled_feature_name': context_enabled_feature_name(interface),  # [ContextEnabled]
@@ -304,11 +309,11 @@ def interface_context(interface, interfaces):
         'is_typed_array_type': is_typed_array_type,
         'measure_as': v8_utilities.measure_as(interface, None),  # [MeasureAs]
         'needs_runtime_enabled_installer': needs_runtime_enabled_installer,
-        'origin_trial_feature_name': v8_utilities.origin_trial_feature_name(interface),
+        'origin_trial_feature_name': v8_utilities.origin_trial_feature_name(interface, runtime_features),
         'parent_interface': parent_interface,
         'pass_cpp_type': cpp_name(interface) + '*',
         'runtime_call_stats': runtime_call_stats_context(interface),
-        'runtime_enabled_feature_name': runtime_enabled_feature_name(interface),  # [RuntimeEnabled]
+        'runtime_enabled_feature_name': runtime_enabled_feature_name(interface, runtime_features),  # [RuntimeEnabled]
         'snake_case_v8_class': NameStyleConverter(v8_class_name).to_snake_case(),
         'v8_class': v8_class_name,
         'v8_class_or_partial': v8_class_name_or_partial,
@@ -369,10 +374,10 @@ def interface_context(interface, interfaces):
     unscopables = []
     for attribute in interface.attributes:
         if 'Unscopable' in attribute.extended_attributes:
-            unscopables.append((attribute.name, runtime_enabled_feature_name(attribute)))
+            unscopables.append((attribute.name, runtime_enabled_feature_name(attribute, runtime_features)))
     for method in interface.operations:
         if 'Unscopable' in method.extended_attributes:
-            unscopables.append((method.name, runtime_enabled_feature_name(method)))
+            unscopables.append((method.name, runtime_enabled_feature_name(method, runtime_features)))
 
     # [CEReactions]
     setter_or_deleters = (
@@ -399,12 +404,12 @@ def interface_context(interface, interfaces):
 
     # Constants
     context.update({
-        'constants': [constant_context(constant, interface) for constant in interface.constants],
+        'constants': [constant_context(constant, interface, component_info) for constant in interface.constants],
         'do_not_check_constants': 'DoNotCheckConstants' in extended_attributes,
     })
 
     # Attributes
-    attributes = attributes_context(interface, interfaces)
+    attributes = attributes_context(interface, interfaces, component_info)
 
     context.update({
         'attributes': attributes,
@@ -427,7 +432,7 @@ def interface_context(interface, interfaces):
     })
 
     # Methods
-    context.update(methods_context(interface))
+    context.update(methods_context(interface, component_info))
     methods = context['methods']
     context.update({
         'has_origin_safe_method_setter': any(method['is_cross_origin'] and not method['is_unforgeable']
@@ -525,7 +530,7 @@ def interface_context(interface, interfaces):
     return context
 
 
-def attributes_context(interface, interfaces):
+def attributes_context(interface, interfaces, component_info):
     """Creates a list of Jinja template contexts for attributes of an interface.
 
     Args:
@@ -537,7 +542,7 @@ def attributes_context(interface, interfaces):
         A list of attribute contexts
     """
 
-    attributes = [v8_attributes.attribute_context(interface, attribute, interfaces)
+    attributes = [v8_attributes.attribute_context(interface, attribute, interfaces, component_info)
                   for attribute in interface.attributes]
 
     has_conditional_attributes = any(attribute['exposed_test'] for attribute in attributes)
@@ -559,16 +564,17 @@ def attributes_context(interface, interfaces):
         size_attribute.is_read_only = True
         size_attribute.extended_attributes['NotEnumerable'] = None
         attributes.append(v8_attributes.attribute_context(
-            interface, size_attribute, interfaces))
+            interface, size_attribute, interfaces, component_info))
 
     return attributes
 
 
-def methods_context(interface):
+def methods_context(interface, component_info):
     """Creates a list of Jinja template contexts for methods of an interface.
 
     Args:
         interface: An interface to create contexts for
+        component_info: A dict containing component wide information
 
     Returns:
         A dictionary with 3 keys:
@@ -581,16 +587,16 @@ def methods_context(interface):
     methods = []
 
     if interface.original_interface:
-        methods.extend([v8_methods.method_context(interface, operation, is_visible=False)
+        methods.extend([v8_methods.method_context(interface, operation, component_info, is_visible=False)
                         for operation in interface.original_interface.operations
                         if operation.name])
-    methods.extend([v8_methods.method_context(interface, method)
+    methods.extend([v8_methods.method_context(interface, method, component_info)
                     for method in interface.operations
                     if method.name])  # Skip anonymous special operations (methods)
     if interface.partial_interfaces:
         assert len(interface.partial_interfaces) == len(set(interface.partial_interfaces))
         for partial_interface in interface.partial_interfaces:
-            methods.extend([v8_methods.method_context(interface, operation, is_visible=False)
+            methods.extend([v8_methods.method_context(interface, operation, component_info, is_visible=False)
                             for operation in partial_interface.operations
                             if operation.name])
     compute_method_overloads_context(interface, methods)
@@ -606,7 +612,7 @@ def methods_context(interface):
         if implemented_as is None:
             implemented_as = name + 'ForBinding'
         operation.extended_attributes['ImplementedAs'] = implemented_as
-        return v8_methods.method_context(interface, operation)
+        return v8_methods.method_context(interface, operation, component_info)
 
     def generated_argument(idl_type, name, is_optional=False, extended_attributes=None):
         argument = IdlArgument()
@@ -815,8 +821,9 @@ def reflected_name(constant_name):
 
 
 # [DeprecateAs], [OriginTrialEnabled], [Reflect], [RuntimeEnabled]
-def constant_context(constant, interface):
+def constant_context(constant, interface, component_info):
     extended_attributes = constant.extended_attributes
+    runtime_features = component_info['runtime_enabled_features']
 
     return {
         'camel_case_name': NameStyleConverter(constant.name).to_upper_camel_case(),
@@ -827,11 +834,11 @@ def constant_context(constant, interface):
         'measure_as': v8_utilities.measure_as(constant, interface),  # [MeasureAs]
         'high_entropy': v8_utilities.high_entropy(constant),  # [HighEntropy]
         'name': constant.name,
-        'origin_trial_feature_name': v8_utilities.origin_trial_feature_name(constant),  # [OriginTrialEnabled]
+        'origin_trial_feature_name': v8_utilities.origin_trial_feature_name(constant, runtime_features),  # [OriginTrialEnabled]
         # FIXME: use 'reflected_name' as correct 'name'
         'rcs_counter': 'Blink_' + v8_utilities.cpp_name(interface) + '_' + constant.name + '_ConstantGetter',
         'reflected_name': extended_attributes.get('Reflect', reflected_name(constant.name)),
-        'runtime_enabled_feature_name': runtime_enabled_feature_name(constant),  # [RuntimeEnabled]
+        'runtime_enabled_feature_name': runtime_enabled_feature_name(constant, runtime_features),  # [RuntimeEnabled]
         'value': constant.value,
     }
 
