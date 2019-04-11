@@ -81,6 +81,9 @@ class ScopedLogIn {
       case user_manager::USER_TYPE_PUBLIC_ACCOUNT:
         LogInAsPublicAccount();
         break;
+      case user_manager::USER_TYPE_KIOSK_APP:
+        LogInKioskApp();
+        break;
       case user_manager::USER_TYPE_ARC_KIOSK_APP:
         LogInArcKioskApp();
         break;
@@ -103,6 +106,11 @@ class ScopedLogIn {
 
   void LogInAsPublicAccount() {
     fake_user_manager_->AddPublicAccountUser(account_id_);
+    fake_user_manager_->LoginUser(account_id_);
+  }
+
+  void LogInKioskApp() {
+    fake_user_manager_->AddKioskAppUser(account_id_);
     fake_user_manager_->LoginUser(account_id_);
   }
 
@@ -241,6 +249,24 @@ TEST_F(ChromeAssistantUtilTest, IsAssistantAllowedForProfile_NonGmail) {
   ScopedLogIn login(GetFakeUserManager(),
                     AccountId::FromUserEmailGaiaId("user2@someotherdomain.com",
                                                    "0123456789"));
+
+  EXPECT_EQ(ash::mojom::AssistantAllowedState::DISALLOWED_BY_ACCOUNT_TYPE,
+            IsAssistantAllowedForProfile(profile()));
+}
+
+TEST_F(ChromeAssistantUtilTest, IsAssistantAllowedForKiosk_KioskApp) {
+  ScopedLogIn login(GetFakeUserManager(),
+                    AccountId::FromUserEmail(profile()->GetProfileUserName()),
+                    user_manager::USER_TYPE_KIOSK_APP);
+
+  EXPECT_EQ(ash::mojom::AssistantAllowedState::DISALLOWED_BY_ACCOUNT_TYPE,
+            IsAssistantAllowedForProfile(profile()));
+}
+
+TEST_F(ChromeAssistantUtilTest, IsAssistantAllowedForKiosk_ArcKioskApp) {
+  ScopedLogIn login(GetFakeUserManager(),
+                    AccountId::FromUserEmail(profile()->GetProfileUserName()),
+                    user_manager::USER_TYPE_ARC_KIOSK_APP);
 
   EXPECT_EQ(ash::mojom::AssistantAllowedState::DISALLOWED_BY_ACCOUNT_TYPE,
             IsAssistantAllowedForProfile(profile()));
