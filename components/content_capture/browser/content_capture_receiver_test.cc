@@ -18,6 +18,9 @@
 namespace content_capture {
 namespace {
 
+static const char kMainFrameUrl[] = "http://foo.com/main.html";
+static const char kChildFrameUrl[] = "http://foo.org/child.html";
+
 // Fake ContentCaptureSender to call ContentCaptureReceiver mojom interface.
 class FakeContentCaptureSender {
  public:
@@ -104,7 +107,7 @@ class ContentCaptureReceiverTest : public content::RenderViewHostTestHarness {
             ContentCaptureReceiverManager::FromWebContents(web_contents()));
     // This needed to keep the WebContentsObserverSanityChecker checks happy for
     // when AppendChild is called.
-    NavigateAndCommit(GURL("about:blank"));
+    NavigateAndCommit(GURL(kMainFrameUrl));
     content_capture_sender_ = std::make_unique<FakeContentCaptureSender>();
     main_frame_ = web_contents()->GetMainFrame();
     // Binds sender with receiver.
@@ -117,10 +120,10 @@ class ContentCaptureReceiverTest : public content::RenderViewHostTestHarness {
     child.value = base::ASCIIToUTF16("Hello");
     child.bounds = gfx::Rect(5, 5, 5, 5);
     // No need to set id in sender.
-    test_data_.value = base::ASCIIToUTF16("http://foo.com/bar");
+    test_data_.value = base::ASCIIToUTF16(kMainFrameUrl);
     test_data_.bounds = gfx::Rect(10, 10);
     test_data_.children.push_back(child);
-    test_data2_.value = base::ASCIIToUTF16("http://foo.org/bar");
+    test_data2_.value = base::ASCIIToUTF16(kChildFrameUrl);
     test_data2_.bounds = gfx::Rect(10, 10);
     test_data2_.children.push_back(child);
     // Update to test_data_.
@@ -129,9 +132,14 @@ class ContentCaptureReceiverTest : public content::RenderViewHostTestHarness {
     child2.id = 3;
     child2.value = base::ASCIIToUTF16("World");
     child2.bounds = gfx::Rect(5, 10, 5, 5);
-    test_data_update_.value = base::ASCIIToUTF16("http://foo.com/bar");
+    test_data_update_.value = base::ASCIIToUTF16(kMainFrameUrl);
     test_data_update_.bounds = gfx::Rect(10, 10);
     test_data_update_.children.push_back(child2);
+  }
+
+  void NavigateMainFrame(const GURL& url) {
+    NavigateAndCommit(url);
+    main_frame_ = web_contents()->GetMainFrame();
   }
 
   void SetupChildFrame() {
@@ -197,6 +205,7 @@ class ContentCaptureReceiverTest : public content::RenderViewHostTestHarness {
       EXPECT_EQ(expected[i].id, result[i].id);
       EXPECT_EQ(expected[i].value, result[i].value);
       EXPECT_EQ(expected[i].bounds, result[i].bounds);
+      EXPECT_TRUE(result[i].children.empty());
     }
   }
 
@@ -345,6 +354,42 @@ TEST_F(ContentCaptureReceiverTest, ChildFrameDidCaptureContent) {
   // Verifies that we receive the correct content from child frame.
   EXPECT_EQ(GetExpectedTestData2(false /* main_frame */),
             content_capture_receiver_manager_helper()->captured_data());
+}
+
+TEST_F(ContentCaptureReceiverTest, ChildFrameCaptureContentFirst) {
+  // Simulate add child frame.
+  SetupChildFrame();
+  // Simulate to capture the content from child frame.
+  DidCaptureContentForChildFrame(test_data2(), true /* first_data */);
+  // Verifies that the parent_session was set correctly.
+  EXPECT_FALSE(
+      content_capture_receiver_manager_helper()->parent_session().empty());
+
+  ContentCaptureData data = GetExpectedTestData(true /* main_frame */);
+  // Currently, there is no way to fake frame size, set it to 0.
+  data.bounds = gfx::Rect();
+  std::vector<ContentCaptureData> expected{data};
+
+  VerifySession(expected,
+                content_capture_receiver_manager_helper()->parent_session());
+  EXPECT_TRUE(
+      content_capture_receiver_manager_helper()->removed_session().empty());
+  // Verifies that we receive the correct content from child frame.
+  EXPECT_EQ(GetExpectedTestData2(false /* main_frame */),
+            content_capture_receiver_manager_helper()->captured_data());
+
+  // When main frame navigates to another URL, the parent session will change.
+  NavigateMainFrame(GURL(kChildFrameUrl));
+  SetupChildFrame();
+  DidCaptureContentForChildFrame(test_data2(), true /* first_data */);
+
+  data = GetExpectedTestData2(true /* main_frame */);
+  // Currently, there is no way to fake frame size, set it to 0.
+  data.bounds = gfx::Rect();
+  expected.clear();
+  expected.push_back(data);
+  VerifySession(expected,
+                content_capture_receiver_manager_helper()->parent_session());
 }
 
 class ContentCaptureReceiverMultipleFrameTest

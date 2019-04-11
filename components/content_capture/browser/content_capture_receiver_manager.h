@@ -76,7 +76,7 @@ class ContentCaptureReceiverManager : public content::WebContentsObserver,
   // Builds ContentCaptureSession and returns in |session|, |ancestor_only|
   // specifies if only ancestor should be returned in |session|.
   void BuildContentCaptureSession(
-      const ContentCaptureReceiver& content_capture_receiver,
+      ContentCaptureReceiver* content_capture_receiver,
       bool ancestor_only,
       ContentCaptureSession* session);
 
