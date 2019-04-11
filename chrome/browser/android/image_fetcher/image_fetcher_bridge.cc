@@ -64,13 +64,13 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
 jlong JNI_ImageFetcherBridge_Init(JNIEnv* j_env,
                                   const JavaParamRef<jobject>& j_profile) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
-  SimpleFactoryKey* simple_factory_key = profile->GetSimpleFactoryKey();
+  SimpleFactoryKey* simple_factory_key = profile->GetProfileKey();
   base::FilePath file_path =
       ImageFetcherServiceFactory::GetCachePath(simple_factory_key)
           .Append(kPathPostfix);
 
-  ImageFetcherService* if_service = ImageFetcherServiceFactory::GetForKey(
-      simple_factory_key, profile->GetPrefs());
+  ImageFetcherService* if_service =
+      ImageFetcherServiceFactory::GetForKey(simple_factory_key);
 
   ImageFetcherBridge* native_if_bridge =
       new ImageFetcherBridge(if_service, file_path);

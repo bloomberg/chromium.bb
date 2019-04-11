@@ -40,6 +40,7 @@
 #include "chrome/browser/prefs/in_process_service_factory_factory.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
@@ -137,11 +138,7 @@ void NotifyOTRProfileDestroyedOnIOThread(void* original_profile,
 }  // namespace
 
 OffTheRecordProfileImpl::OffTheRecordProfileImpl(Profile* real_profile)
-    : profile_(real_profile),
-      start_time_(base::Time::Now()),
-      key_(
-          std::make_unique<SimpleFactoryKey>(profile_->GetPath(),
-                                             profile_->GetSimpleFactoryKey())) {
+    : profile_(real_profile), start_time_(base::Time::Now()) {
   // Must happen before we ask for prefs as prefs needs the connection to the
   // service manager, which is set up in Initialize.
   BrowserContext::Initialize(this, profile_->GetPath());
@@ -150,6 +147,10 @@ OffTheRecordProfileImpl::OffTheRecordProfileImpl(Profile* real_profile)
       CreateExtensionPrefStore(profile_, true),
       InProcessPrefServiceFactoryFactory::GetInstanceForContext(this)
           ->CreateDelegate());
+
+  key_ = std::make_unique<ProfileKey>(profile_->GetPath(), prefs_.get(),
+                                      profile_->GetProfileKey());
+
   // Register on BrowserContext.
   user_prefs::UserPrefs::Set(this, prefs_.get());
 }
@@ -230,7 +231,7 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
   // ones in the SimpleDependencyManager's graph.
   DependencyManager::PerformInterlockedTwoPhaseShutdown(
       BrowserContextDependencyManager::GetInstance(), this,
-      SimpleDependencyManager::GetInstance(), GetSimpleFactoryKey());
+      SimpleDependencyManager::GetInstance(), key_.get());
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   base::PostTaskWithTraits(
@@ -551,7 +552,7 @@ base::Time OffTheRecordProfileImpl::GetStartTime() const {
   return start_time_;
 }
 
-SimpleFactoryKey* OffTheRecordProfileImpl::GetSimpleFactoryKey() const {
+ProfileKey* OffTheRecordProfileImpl::GetProfileKey() const {
   DCHECK(key_);
   return key_.get();
 }

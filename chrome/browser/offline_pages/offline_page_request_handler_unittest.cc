@@ -602,7 +602,7 @@ void OfflinePageRequestHandlerTestBase::SetUp() {
   public_archives_dir_ = public_archives_temp_base_dir_.GetPath().AppendASCII(
       kPublicOfflineFileDir);
   OfflinePageModelFactory::GetInstance()->SetTestingFactoryAndUse(
-      profile()->GetSimpleFactoryKey(), profile()->GetPrefs(),
+      profile()->GetProfileKey(),
       base::BindRepeating(
           &OfflinePageRequestHandlerTestBase::BuildTestOfflinePageModel));
 

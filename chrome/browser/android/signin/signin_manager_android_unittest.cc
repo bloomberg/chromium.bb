@@ -74,8 +74,7 @@ class SigninManagerAndroidTest : public ::testing::Test {
     // Creating a BookmarkModel also a creates a StubOfflinePageModel.
     // We need to replace this with a mock that responds to deletions.
     offline_pages::OfflinePageModelFactory::GetInstance()->SetTestingFactory(
-        profile_->GetSimpleFactoryKey(),
-        base::BindRepeating(&BuildOfflinePageModel));
+        profile_->GetProfileKey(), base::BindRepeating(&BuildOfflinePageModel));
     bookmarks::BookmarkModel* bookmark_model =
         BookmarkModelFactory::GetForBrowserContext(profile_);
     bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);

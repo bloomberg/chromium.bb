@@ -218,8 +218,8 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   download::DownloadNavigationObserver::CreateForWebContents(
-      web_contents, download::NavigationMonitorFactory::GetForKey(
-                        profile->GetSimpleFactoryKey()));
+      web_contents,
+      download::NavigationMonitorFactory::GetForKey(profile->GetProfileKey()));
   history::WebContentsTopSitesObserver::CreateForWebContents(
       web_contents, TopSitesFactory::GetForProfile(profile).get());
   HistoryTabHelper::CreateForWebContents(web_contents);

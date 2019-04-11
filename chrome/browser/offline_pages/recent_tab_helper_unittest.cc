@@ -222,7 +222,7 @@ void RecentTabHelperTest::SetUp() {
 
   // Sets up the factories for testing.
   OfflinePageModelFactory::GetInstance()->SetTestingFactoryAndUse(
-      profile()->GetSimpleFactoryKey(), profile()->GetPrefs(),
+      profile()->GetProfileKey(),
       base::BindRepeating(&BuildTestOfflinePageModel));
   RunUntilIdle();
   RequestCoordinatorFactory::GetInstance()->SetTestingFactoryAndUse(

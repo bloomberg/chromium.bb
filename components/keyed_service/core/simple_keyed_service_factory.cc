@@ -27,11 +27,10 @@ void SimpleKeyedServiceFactory::SetTestingFactory(
 
 KeyedService* SimpleKeyedServiceFactory::SetTestingFactoryAndUse(
     SimpleFactoryKey* key,
-    PrefService* prefs,
     TestingFactory testing_factory) {
   DCHECK(testing_factory);
   return KeyedServiceFactory::SetTestingFactoryAndUse(
-      key, prefs,
+      key,
       base::BindRepeating(
           [](const TestingFactory& testing_factory, void* context) {
             return testing_factory.Run(static_cast<SimpleFactoryKey*>(context));
@@ -47,11 +46,10 @@ SimpleKeyedServiceFactory::SimpleKeyedServiceFactory(
 SimpleKeyedServiceFactory::~SimpleKeyedServiceFactory() {}
 
 KeyedService* SimpleKeyedServiceFactory::GetServiceForKey(SimpleFactoryKey* key,
-                                                          PrefService* prefs,
                                                           bool create) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  return KeyedServiceFactory::GetServiceForContext(key, prefs, create);
+  return KeyedServiceFactory::GetServiceForContext(key, create);
 }
 
 SimpleFactoryKey* SimpleKeyedServiceFactory::GetKeyToUse(
@@ -76,10 +74,8 @@ void SimpleKeyedServiceFactory::SimpleContextDestroyed(SimpleFactoryKey* key) {
 }
 
 std::unique_ptr<KeyedService>
-SimpleKeyedServiceFactory::BuildServiceInstanceFor(void* context,
-                                                   void* side_parameter) const {
-  return BuildServiceInstanceFor(static_cast<SimpleFactoryKey*>(context),
-                                 static_cast<PrefService*>(side_parameter));
+SimpleKeyedServiceFactory::BuildServiceInstanceFor(void* context) const {
+  return BuildServiceInstanceFor(static_cast<SimpleFactoryKey*>(context));
 }
 
 bool SimpleKeyedServiceFactory::IsOffTheRecord(void* context) const {

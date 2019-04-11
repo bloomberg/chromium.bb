@@ -31,7 +31,7 @@ RefcountedBrowserStateKeyedServiceFactory::SetTestingFactoryAndUse(
     TestingFactory testing_factory) {
   DCHECK(testing_factory);
   return RefcountedKeyedServiceFactory::SetTestingFactoryAndUse(
-      context, nullptr /* side_parameter*/,
+      context,
       base::BindRepeating(
           [](const TestingFactory& testing_factory, void* context) {
             return testing_factory.Run(
@@ -54,8 +54,7 @@ scoped_refptr<RefcountedKeyedService>
 RefcountedBrowserStateKeyedServiceFactory::GetServiceForBrowserState(
     web::BrowserState* context,
     bool create) {
-  return RefcountedKeyedServiceFactory::GetServiceForContext(
-      context, nullptr /* side_parameter*/, create);
+  return RefcountedKeyedServiceFactory::GetServiceForContext(context, create);
 }
 
 web::BrowserState*
@@ -93,8 +92,7 @@ void RefcountedBrowserStateKeyedServiceFactory::BrowserStateDestroyed(
 
 scoped_refptr<RefcountedKeyedService>
 RefcountedBrowserStateKeyedServiceFactory::BuildServiceInstanceFor(
-    void* context,
-    void* side_parameter) const {
+    void* context) const {
   return BuildServiceInstanceFor(static_cast<web::BrowserState*>(context));
 }
 

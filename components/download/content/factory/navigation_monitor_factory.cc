@@ -18,7 +18,7 @@ NavigationMonitorFactory* NavigationMonitorFactory::GetInstance() {
 download::NavigationMonitor* NavigationMonitorFactory::GetForKey(
     SimpleFactoryKey* key) {
   return static_cast<download::NavigationMonitor*>(
-      GetInstance()->GetServiceForKey(key, /*prefs=*/nullptr, true));
+      GetInstance()->GetServiceForKey(key, true));
 }
 
 NavigationMonitorFactory::NavigationMonitorFactory()
@@ -28,8 +28,7 @@ NavigationMonitorFactory::NavigationMonitorFactory()
 NavigationMonitorFactory::~NavigationMonitorFactory() = default;
 
 std::unique_ptr<KeyedService> NavigationMonitorFactory::BuildServiceInstanceFor(
-    SimpleFactoryKey* key,
-    PrefService* prefs) const {
+    SimpleFactoryKey* key) const {
   return std::make_unique<NavigationMonitorImpl>();
 }
 

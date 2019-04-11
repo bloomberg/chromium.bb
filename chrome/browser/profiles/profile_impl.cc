@@ -76,6 +76,7 @@
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_destroyer.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/push_messaging/push_messaging_service_factory.h"
@@ -466,7 +467,6 @@ ProfileImpl::ProfileImpl(
       io_data_(this),
       last_session_exit_type_(EXIT_NORMAL),
       start_time_(base::Time::Now()),
-      key_(std::make_unique<SimpleFactoryKey>(GetPath())),
       delegate_(delegate),
       reporting_permissions_checker_factory_(this),
       shared_cors_origin_access_list_(
@@ -580,6 +580,8 @@ ProfileImpl::ProfileImpl(
     // Register on BrowserContext.
     user_prefs::UserPrefs::Set(this, prefs_.get());
   }
+
+  key_ = std::make_unique<ProfileKey>(GetPath(), prefs_.get());
 
 #if defined(OS_CHROMEOS)
   if (is_regular_profile) {
@@ -805,7 +807,7 @@ ProfileImpl::~ProfileImpl() {
   // ones in the SimpleDependencyManager's graph.
   DependencyManager::PerformInterlockedTwoPhaseShutdown(
       BrowserContextDependencyManager::GetInstance(), this,
-      SimpleDependencyManager::GetInstance(), GetSimpleFactoryKey());
+      SimpleDependencyManager::GetInstance(), key_.get());
 
   // This causes the Preferences file to be written to disk.
   if (prefs_loaded)
@@ -1342,7 +1344,7 @@ base::Time ProfileImpl::GetStartTime() const {
   return start_time_;
 }
 
-SimpleFactoryKey* ProfileImpl::GetSimpleFactoryKey() const {
+ProfileKey* ProfileImpl::GetProfileKey() const {
   DCHECK(key_);
   return key_.get();
 }

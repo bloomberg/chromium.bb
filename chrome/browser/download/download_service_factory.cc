@@ -108,7 +108,7 @@ KeyedService* DownloadServiceFactory::BuildServiceInstanceFor(
         SystemNetworkContextManager::GetInstance()->GetSharedURLLoaderFactory();
 
     return download::BuildInMemoryDownloadService(
-        profile->GetSimpleFactoryKey(), std::move(clients),
+        profile->GetProfileKey(), std::move(clients),
         content::GetNetworkConnectionTracker(), base::FilePath(),
         blob_context_getter, io_task_runner, url_loader_factory);
   } else {
@@ -131,10 +131,10 @@ KeyedService* DownloadServiceFactory::BuildServiceInstanceFor(
 #endif
 
     return download::BuildDownloadService(
-        context, profile->GetSimpleFactoryKey(), profile->GetPrefs(),
+        context, profile->GetProfileKey(), profile->GetPrefs(),
         std::move(clients), content::GetNetworkConnectionTracker(), storage_dir,
         SimpleDownloadManagerCoordinatorFactory::GetForKey(
-            profile->GetSimpleFactoryKey(), nullptr),
+            profile->GetProfileKey()),
         background_task_runner, std::move(task_scheduler));
   }
 }

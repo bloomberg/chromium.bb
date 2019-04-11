@@ -40,15 +40,13 @@ void KeyedServiceFactory::SetTestingFactory(void* context,
 
 KeyedService* KeyedServiceFactory::SetTestingFactoryAndUse(
     void* context,
-    void* side_parameter,
     TestingFactory testing_factory) {
   DCHECK(testing_factory);
   SetTestingFactory(context, std::move(testing_factory));
-  return GetServiceForContext(context, side_parameter, true);
+  return GetServiceForContext(context, true);
 }
 
 KeyedService* KeyedServiceFactory::GetServiceForContext(void* context,
-                                                        void* side_parameter,
                                                         bool create) {
   TRACE_EVENT1("browser,startup", "KeyedServiceFactory::GetServiceForContext",
                "service_name", name());
@@ -76,7 +74,7 @@ KeyedService* KeyedServiceFactory::GetServiceForContext(void* context,
       service = factory_iterator->second.Run(context);
     }
   } else {
-    service = BuildServiceInstanceFor(context, side_parameter);
+    service = BuildServiceInstanceFor(context);
   }
 
   return Associate(context, std::move(service));

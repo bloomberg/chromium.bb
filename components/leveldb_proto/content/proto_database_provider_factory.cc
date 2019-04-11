@@ -20,10 +20,9 @@ ProtoDatabaseProviderFactory* ProtoDatabaseProviderFactory::GetInstance() {
 
 // static
 ProtoDatabaseProvider* ProtoDatabaseProviderFactory::GetForKey(
-    SimpleFactoryKey* key,
-    PrefService* prefs) {
+    SimpleFactoryKey* key) {
   return static_cast<ProtoDatabaseProvider*>(
-      GetInstance()->GetServiceForKey(key, prefs, true));
+      GetInstance()->GetServiceForKey(key, true));
 }
 
 ProtoDatabaseProviderFactory::ProtoDatabaseProviderFactory()
@@ -34,8 +33,7 @@ ProtoDatabaseProviderFactory::~ProtoDatabaseProviderFactory() = default;
 
 std::unique_ptr<KeyedService>
 ProtoDatabaseProviderFactory::BuildServiceInstanceFor(
-    SimpleFactoryKey* key,
-    PrefService* prefs) const {
+    SimpleFactoryKey* key) const {
   return std::make_unique<ProtoDatabaseProvider>(key->path());
 }
 
