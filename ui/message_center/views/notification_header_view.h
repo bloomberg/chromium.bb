@@ -28,8 +28,13 @@ class MESSAGE_CENTER_EXPORT NotificationHeaderView : public views::Button {
   void SetAppIcon(const gfx::ImageSkia& img);
   void SetAppName(const base::string16& name);
   void SetAppNameElideBehavior(gfx::ElideBehavior elide_behavior);
+
+  // Progress, summary and overflow indicator are all the same UI element so are
+  // mutually exclusive.
   void SetProgress(int progress);
+  void SetSummaryText(const base::string16& text);
   void SetOverflowIndicator(int count);
+
   void SetTimestamp(base::Time timestamp);
   void SetExpandButtonEnabled(bool enabled);
   void SetExpanded(bool expanded);
@@ -41,7 +46,6 @@ class MESSAGE_CENTER_EXPORT NotificationHeaderView : public views::Button {
   void SetAccentColor(SkColor color);
   void ClearAppIcon();
   void ClearProgress();
-  void ClearOverflowIndicator();
   void ClearTimestamp();
   bool IsExpandButtonEnabled();
   void SetSubpixelRenderingEnabled(bool enabled);
@@ -55,6 +59,10 @@ class MESSAGE_CENTER_EXPORT NotificationHeaderView : public views::Button {
   views::ImageView* expand_button() { return expand_button_; }
 
   SkColor accent_color_for_testing() { return accent_color_; }
+
+  const views::Label* summary_text_for_testing() const {
+    return summary_text_view_;
+  }
 
   const base::string16& app_name_for_testing() const;
 
@@ -76,7 +84,6 @@ class MESSAGE_CENTER_EXPORT NotificationHeaderView : public views::Button {
 
   bool settings_button_enabled_ = false;
   bool has_progress_ = false;
-  bool has_overflow_indicator_ = false;
   bool has_timestamp_ = false;
   bool is_expanded_ = false;
 
