@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "content/public/test/test_launcher.h"
 
 // Allows a test suite to override the TestSuite class used. By default it is an
@@ -37,8 +38,15 @@ class ChromeTestLauncherDelegate : public content::TestLauncherDelegate {
       const base::FilePath& temp_data_dir) override;
   content::ContentMainDelegate* CreateContentMainDelegate() override;
   void PreSharding() override;
+  void OnDoneRunningTests() override;
 
  private:
+#if defined(OS_WIN)
+  class ScopedFirewallRules;
+
+  std::unique_ptr<ScopedFirewallRules> firewall_rules_;
+#endif
+
   ChromeTestSuiteRunner* runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeTestLauncherDelegate);
