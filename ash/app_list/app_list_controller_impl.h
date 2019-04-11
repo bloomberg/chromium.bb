@@ -13,7 +13,6 @@
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/model/app_list_model_observer.h"
-#include "ash/app_list/model/app_list_view_state.h"
 #include "ash/app_list/model/search/search_model.h"
 #include "ash/app_list/presenter/app_list_presenter_impl.h"
 #include "ash/ash_export.h"
@@ -24,6 +23,7 @@
 #include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/interfaces/app_list.mojom.h"
+#include "ash/public/interfaces/app_list_view.mojom.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
@@ -145,12 +145,12 @@ class ASH_EXPORT AppListControllerImpl
             base::TimeTicks event_time_stamp);
   void UpdateYPositionAndOpacity(int y_position_in_screen,
                                  float background_opacity);
-  void EndDragFromShelf(app_list::AppListViewState app_list_state);
+  void EndDragFromShelf(ash::mojom::AppListViewState app_list_state);
   void ProcessMouseWheelEvent(const ui::MouseWheelEvent& event);
   ash::ShelfAction ToggleAppList(int64_t display_id,
                                  app_list::AppListShowSource show_source,
                                  base::TimeTicks event_time_stamp);
-  app_list::AppListViewState GetAppListViewState();
+  ash::mojom::AppListViewState GetAppListViewState();
 
   // app_list::AppListViewDelegate:
   app_list::AppListModel* GetModel() override;
@@ -201,7 +201,7 @@ class ASH_EXPORT AppListControllerImpl
                                        bool visibility) override;
   bool IsAssistantAllowedAndEnabled() const override;
   void OnStateTransitionAnimationCompleted(
-      app_list::AppListViewState state) override;
+      ash::mojom::AppListViewState state) override;
 
   void AddObserver(AppListControllerObserver* observer);
   void RemoveObserver(AppListControllerObserver* obsever);
@@ -282,14 +282,14 @@ class ASH_EXPORT AppListControllerImpl
   bool IsShowingEmbeddedAssistantUI() const;
 
   // Get updated app list view state after dragging from shelf.
-  app_list::AppListViewState CalculateStateAfterShelfDrag(
+  ash::mojom::AppListViewState CalculateStateAfterShelfDrag(
       const ui::GestureEvent& gesture_in_screen,
       float launcher_above_shelf_bottom_amount) const;
 
   void SetAppListModelForTest(std::unique_ptr<app_list::AppListModel> model);
 
   using StateTransitionAnimationCallback =
-      base::RepeatingCallback<void(app_list::AppListViewState)>;
+      base::RepeatingCallback<void(ash::mojom::AppListViewState)>;
 
   void SetStateTransitionAnimationCallback(
       StateTransitionAnimationCallback callback);

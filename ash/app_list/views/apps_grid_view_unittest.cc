@@ -186,7 +186,7 @@ class AppsGridViewTest : public views::ViewsTestBase,
     }
     // Needed to update suggestions from |model_|.
     suggestions_container_->Update();
-    app_list_view_->SetState(AppListViewState::FULLSCREEN_ALL_APPS);
+    app_list_view_->SetState(ash::mojom::AppListViewState::kFullscreenAllApps);
     app_list_view_->Layout();
 
     test_api_ = std::make_unique<AppsGridViewTestApi>(apps_grid_view_);

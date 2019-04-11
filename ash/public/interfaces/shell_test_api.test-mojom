@@ -4,17 +4,11 @@
 
 module ash.mojom;
 
+import "ash/public/interfaces/app_list_view.mojom";
+
 enum OverviewAnimationState {
   kEnterAnimationComplete,
   kExitAnimationComplete,
-};
-
-enum LauncherAnimationState {
-  kClosed,
-  kPeeking,
-  kHalf,
-  kFullscreenAllApps,
-  kFullscreenSearch
 };
 
 interface ShellTestApi {
@@ -64,5 +58,5 @@ interface ShellTestApi {
 
   // Runs the callback when the launcher state becomes |state| after
   // state transition animation.
-  WaitForLauncherAnimationState(LauncherAnimationState state) => ();
+  WaitForLauncherAnimationState(AppListViewState state) => ();
 };

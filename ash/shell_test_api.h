@@ -71,7 +71,7 @@ class ShellTestApi : public mojom::ShellTestApi {
       mojom::OverviewAnimationState state,
       WaitForOverviewAnimationStateCallback callback) override;
   void WaitForLauncherAnimationState(
-      mojom::LauncherAnimationState state,
+      ash::mojom::AppListViewState state,
       WaitForLauncherAnimationStateCallback callback) override;
 
  private:

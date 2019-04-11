@@ -12,13 +12,13 @@
 #include "ash/animation/animation_change_type.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/app_list_metrics.h"
-#include "ash/app_list/model/app_list_view_state.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/home_screen/home_launcher_gesture_handler.h"
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/home_screen/home_screen_delegate.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/interfaces/app_list_view.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller.h"
@@ -1556,14 +1556,14 @@ void ShelfLayoutManager::CompleteAppListDrag(
   }
   DCHECK(Shell::Get()->app_list_controller());
 
-  using app_list::AppListViewState;
+  using ash::mojom::AppListViewState;
   AppListViewState app_list_state =
       Shell::Get()->app_list_controller()->CalculateStateAfterShelfDrag(
           gesture_in_screen, launcher_above_shelf_bottom_amount_);
 
   // Keep auto-hide shelf visible if failed to open the app list.
   base::Optional<Shelf::ScopedAutoHideLock> auto_hide_lock;
-  if (app_list_state == AppListViewState::CLOSED)
+  if (app_list_state == AppListViewState::kClosed)
     auto_hide_lock.emplace(shelf_);
   Shell::Get()->app_list_controller()->EndDragFromShelf(app_list_state);
   gesture_drag_status_ = GESTURE_DRAG_NONE;

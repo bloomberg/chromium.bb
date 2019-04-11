@@ -138,7 +138,7 @@ bool AppListTestViewDelegate::IsAssistantAllowedAndEnabled() const {
 }
 
 void AppListTestViewDelegate::OnStateTransitionAnimationCompleted(
-    AppListViewState state) {}
+    ash::mojom::AppListViewState state) {}
 
 bool AppListTestViewDelegate::IsCommandIdChecked(int command_id) const {
   return true;
