@@ -62,7 +62,8 @@ SharedImageFactory::SharedImageFactory(
     MailboxManager* mailbox_manager,
     SharedImageManager* shared_image_manager,
     ImageFactory* image_factory,
-    MemoryTracker* memory_tracker)
+    MemoryTracker* memory_tracker,
+    bool is_using_skia_renderer)
     : mailbox_manager_(mailbox_manager),
       shared_image_manager_(shared_image_manager),
       memory_tracker_(std::make_unique<MemoryTypeTracker>(memory_tracker)),
@@ -89,7 +90,10 @@ SharedImageFactory::SharedImageFactory(
   // Others
   DCHECK(!using_vulkan_);
 #endif
-  if (gpu_preferences.enable_raster_to_sk_image) {
+  // Certain test suites may enable UseSkiaRenderer feature flag, but never
+  // create a SkiaRenderer. In this case context_state is nullptr and we should
+  // not create a WrappedSkImageFactory.
+  if (is_using_skia_renderer && context_state) {
     wrapped_sk_image_factory_ =
         std::make_unique<raster::WrappedSkImageFactory>(context_state);
   }

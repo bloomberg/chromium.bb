@@ -8,6 +8,7 @@
 
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
+#include "components/viz/common/features.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/shared_image_factory.h"
@@ -311,7 +312,8 @@ ContextResult SharedImageStub::MakeContextCurrentAndCreateFactory() {
       channel_manager->gpu_feature_info(), context_state_.get(),
       channel_manager->mailbox_manager(),
       channel_manager->shared_image_manager(),
-      gmb_factory ? gmb_factory->AsImageFactory() : nullptr, this);
+      gmb_factory ? gmb_factory->AsImageFactory() : nullptr, this,
+      features::IsUsingSkiaRenderer());
   return ContextResult::kSuccess;
 }
 

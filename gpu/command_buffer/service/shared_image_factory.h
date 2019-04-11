@@ -45,7 +45,8 @@ class GPU_GLES2_EXPORT SharedImageFactory {
                      MailboxManager* mailbox_manager,
                      SharedImageManager* manager,
                      ImageFactory* image_factory,
-                     MemoryTracker* tracker);
+                     MemoryTracker* tracker,
+                     bool is_using_skia_renderer);
   ~SharedImageFactory();
 
   bool CreateSharedImage(const Mailbox& mailbox,
@@ -100,7 +101,7 @@ class GPU_GLES2_EXPORT SharedImageFactory {
   // Used for creating shared image which can be shared between gl and vulakn.
   std::unique_ptr<SharedImageBackingFactory> interop_backing_factory_;
 
-  // Non-null if gpu_preferences.senable_raster_to_sk_image.
+  // Non-null if compositing with SkiaRenderer.
   std::unique_ptr<raster::WrappedSkImageFactory> wrapped_sk_image_factory_;
 };
 
