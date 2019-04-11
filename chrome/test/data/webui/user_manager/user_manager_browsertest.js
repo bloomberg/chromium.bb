@@ -4,7 +4,7 @@
 
 /** @fileoverview Tests for the Material Design user manager page. */
 
-/** @const {string} Path to root from chrome/test/data/webui/md_user_manager/ */
+/** @const {string} Path to root from chrome/test/data/webui/user_manager/ */
 const ROOT_PATH = '../../../../../';
 
 // Polymer BrowserTest fixture.

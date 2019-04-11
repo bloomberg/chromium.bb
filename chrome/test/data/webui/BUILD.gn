@@ -104,10 +104,10 @@ js2gtest("browser_tests_js_webui") {
     ]
   } else {
     sources += [
-      "md_user_manager/user_manager_browsertest.js",
       "settings/a11y/manage_profile_a11y_test.js",
       "settings/a11y/sign_out_a11y_test.js",
       "signin/signin_browsertest.js",
+      "user_manager/user_manager_browsertest.js",
       "welcome/onboarding_welcome_browsertest.js",
     ]
   }

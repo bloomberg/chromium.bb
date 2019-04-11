@@ -500,12 +500,12 @@ html[dir=rtl] .action-box-area {
 }
 
 .action-box-area .action-box-icon {
-  /* overriden in chrome/browser/resources/md_user_manager/user_manager.css */
+  /* overriden in chrome/browser/resources/user_manager/user_manager.css */
   display: none;
 }
 
 .user-image-gradient-area {
-  /* overriden in chrome/browser/resources/md_user_manager/user_manager.css */
+  /* overriden in chrome/browser/resources/user_manager/user_manager.css */
   display: none;
 }
 

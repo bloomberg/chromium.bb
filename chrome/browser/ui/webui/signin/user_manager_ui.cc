@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/signin/md_user_manager_ui.h"
+#include "chrome/browser/ui/webui/signin/user_manager_ui.h"
 
 #include <memory>
 #include <string>
@@ -27,8 +27,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
 
-MDUserManagerUI::MDUserManagerUI(content::WebUI* web_ui)
-    : WebUIController(web_ui) {
+UserManagerUI::UserManagerUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   auto signin_create_profile_handler =
       std::make_unique<SigninCreateProfileHandler>();
   signin_create_profile_handler_ = signin_create_profile_handler.get();
@@ -44,17 +43,17 @@ MDUserManagerUI::MDUserManagerUI(content::WebUI* web_ui)
   Profile* profile = Profile::FromWebUI(web_ui);
 
   // Set up the chrome://md-user-manager/ source.
-  auto* md_user_source = CreateUIDataSource(localized_strings);
-  DarkModeHandler::Initialize(web_ui, md_user_source);
-  content::WebUIDataSource::Add(profile, md_user_source);
+  auto* user_source = CreateUIDataSource(localized_strings);
+  DarkModeHandler::Initialize(web_ui, user_source);
+  content::WebUIDataSource::Add(profile, user_source);
 
   // Set up the chrome://theme/ source
   content::URLDataSource::Add(profile, std::make_unique<ThemeSource>(profile));
 }
 
-MDUserManagerUI::~MDUserManagerUI() {}
+UserManagerUI::~UserManagerUI() {}
 
-content::WebUIDataSource* MDUserManagerUI::CreateUIDataSource(
+content::WebUIDataSource* UserManagerUI::CreateUIDataSource(
     const base::DictionaryValue& localized_strings) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIMdUserManagerHost);
@@ -66,35 +65,34 @@ content::WebUIDataSource* MDUserManagerUI::CreateUIDataSource(
 
   source->SetJsonPath("strings.js");
 
-  source->AddResourcePath("control_bar.html", IDR_MD_CONTROL_BAR_HTML);
-  source->AddResourcePath("control_bar.js", IDR_MD_CONTROL_BAR_JS);
-  source->AddResourcePath("create_profile.html", IDR_MD_CREATE_PROFILE_HTML);
-  source->AddResourcePath("create_profile.js", IDR_MD_CREATE_PROFILE_JS);
-  source->AddResourcePath("error_dialog.html", IDR_MD_ERROR_DIALOG_HTML);
-  source->AddResourcePath("error_dialog.js", IDR_MD_ERROR_DIALOG_JS);
+  source->AddResourcePath("control_bar.html", IDR_CONTROL_BAR_HTML);
+  source->AddResourcePath("control_bar.js", IDR_CONTROL_BAR_JS);
+  source->AddResourcePath("create_profile.html", IDR_CREATE_PROFILE_HTML);
+  source->AddResourcePath("create_profile.js", IDR_CREATE_PROFILE_JS);
+  source->AddResourcePath("error_dialog.html", IDR_ERROR_DIALOG_HTML);
+  source->AddResourcePath("error_dialog.js", IDR_ERROR_DIALOG_JS);
   source->AddResourcePath("profile_browser_proxy.html",
-                          IDR_MD_PROFILE_BROWSER_PROXY_HTML);
+                          IDR_PROFILE_BROWSER_PROXY_HTML);
   source->AddResourcePath("profile_browser_proxy.js",
-                          IDR_MD_PROFILE_BROWSER_PROXY_JS);
+                          IDR_PROFILE_BROWSER_PROXY_JS);
   source->AddResourcePath("shared_styles.html",
-                          IDR_MD_USER_MANAGER_SHARED_STYLES_HTML);
-  source->AddResourcePath("strings.html", IDR_MD_USER_MANAGER_STRINGS_HTML);
-  source->AddResourcePath("user_manager.js", IDR_MD_USER_MANAGER_JS);
+                          IDR_USER_MANAGER_SHARED_STYLES_HTML);
+  source->AddResourcePath("strings.html", IDR_USER_MANAGER_STRINGS_HTML);
+  source->AddResourcePath("user_manager.js", IDR_USER_MANAGER_JS);
   source->AddResourcePath("user_manager_pages.html",
-                          IDR_MD_USER_MANAGER_PAGES_HTML);
-  source->AddResourcePath("user_manager_pages.js",
-                          IDR_MD_USER_MANAGER_PAGES_JS);
+                          IDR_USER_MANAGER_PAGES_HTML);
+  source->AddResourcePath("user_manager_pages.js", IDR_USER_MANAGER_PAGES_JS);
   source->AddResourcePath("user_manager_tutorial.html",
-                          IDR_MD_USER_MANAGER_TUTORIAL_HTML);
+                          IDR_USER_MANAGER_TUTORIAL_HTML);
   source->AddResourcePath("user_manager_tutorial.js",
-                          IDR_MD_USER_MANAGER_TUTORIAL_JS);
+                          IDR_USER_MANAGER_TUTORIAL_JS);
 
-  source->SetDefaultResource(IDR_MD_USER_MANAGER_HTML);
+  source->SetDefaultResource(IDR_USER_MANAGER_HTML);
 
   return source;
 }
 
-void MDUserManagerUI::GetLocalizedStrings(
+void UserManagerUI::GetLocalizedStrings(
     base::DictionaryValue* localized_strings) {
   user_manager_screen_handler_->GetLocalizedValues(localized_strings);
   signin_create_profile_handler_->GetLocalizedValues(localized_strings);
