@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/welcome/nux/bookmark_handler.h"
 #include "chrome/browser/ui/webui/welcome/nux/constants.h"
-#include "chrome/browser/ui/webui/welcome/nux/email_handler.h"
 #include "chrome/browser/ui/webui/welcome/nux/google_apps_handler.h"
 #include "chrome/browser/ui/webui/welcome/nux/ntp_background_handler.h"
 #include "chrome/browser/ui/webui/welcome/nux/set_as_default_handler.h"
@@ -101,9 +100,6 @@ void AddOnboardingStrings(content::WebUIDataSource* html_source) {
       {"signInHeader", IDS_ONBOARDING_WELCOME_SIGNIN_VIEW_HEADER},
       {"signInSubHeader", IDS_ONBOARDING_WELCOME_SIGNIN_VIEW_SUB_HEADER},
       {"signIn", IDS_ONBOARDING_WELCOME_SIGNIN_VIEW_SIGNIN},
-
-      // Email provider module strings.
-      {"emailProviderTitle", IDS_ONBOARDING_WELCOME_NUX_EMAIL_TITLE},
 
       // Google apps module strings.
       {"googleAppsDescription",
@@ -199,10 +195,6 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
     web_ui->AddMessageHandler(
         std::make_unique<nux::BookmarkHandler>(profile->GetPrefs()));
 
-    // Add email provider bookmarking onboarding module.
-    web_ui->AddMessageHandler(std::make_unique<nux::EmailHandler>());
-    nux::EmailHandler::AddSources(html_source);
-
     // Add google apps bookmarking onboarding module.
     web_ui->AddMessageHandler(std::make_unique<nux::GoogleAppsHandler>());
 
@@ -225,6 +217,7 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
         base::BindRepeating(&HandleRequestCallback,
                             weak_ptr_factory_.GetWeakPtr()));
     html_source->UseGzip(base::BindRepeating(&WelcomeUI::IsGzipped));
+    html_source->SetJsonPath("strings.js");
   } else if (kIsBranded &&
              AccountConsistencyModeManager::IsDiceEnabledForProfile(profile)) {
     // Use special layout if the application is branded and DICE is enabled.

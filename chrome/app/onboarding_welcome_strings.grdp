@@ -29,11 +29,6 @@
     Chrome is your default browser
   </message>
 
-  <!-- NUX email provider selection module -->
-  <message name="IDS_ONBOARDING_WELCOME_NUX_EMAIL_TITLE" desc="Text shown to prompt the users to select an email service to add as bookmark.">
-    Add a bookmark to your email
-  </message>
-
   <!-- NUX Google apps selection module -->
   <message name="IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_DESCRIPTION" desc="Description of what this section in the onboarding workflow does.">
     Add bookmarks to your favorite Google Apps

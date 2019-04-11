@@ -17,8 +17,7 @@ let NuxOnboardingModules;
  * @const {!Set<string>}
  */
 const MODULES_WHITELIST = new Set([
-  'nux-email', 'nux-google-apps', 'nux-ntp-background', 'nux-set-as-default',
-  'signin-view'
+  'nux-google-apps', 'nux-ntp-background', 'nux-set-as-default', 'signin-view'
 ]);
 
 /**
@@ -26,9 +25,8 @@ const MODULES_WHITELIST = new Set([
  * added.
  * @const {!Set<string>}
  */
-const MODULES_NEEDING_INDICATOR = new Set([
-  'nux-email', 'nux-google-apps', 'nux-ntp-background', 'nux-set-as-default'
-]);
+const MODULES_NEEDING_INDICATOR =
+    new Set(['nux-google-apps', 'nux-ntp-background', 'nux-set-as-default']);
 
 Polymer({
   is: 'welcome-app',
@@ -134,10 +132,10 @@ Polymer({
               return canSetDefault;
             }
 
-            if (module == 'nux-email') {
-              // Show email module in en-US only until email recommendations
-              // for other locales is figured out.
-              return navigator.language == 'en-US';
+            if (!MODULES_WHITELIST.has(module)) {
+              // Makes sure the module specified by the feature configuration is
+              // whitelisted.
+              return false;
             }
 
             return true;
@@ -149,10 +147,6 @@ Polymer({
 
           let indicatorActiveCount = 0;
           modules.forEach((elementTagName, index) => {
-            // Makes sure the module specified by the feature configuration is
-            // whitelisted.
-            assert(MODULES_WHITELIST.has(elementTagName));
-
             const element = document.createElement(elementTagName);
             element.id = 'step-' + (index + 1);
             element.setAttribute('slot', 'view');
