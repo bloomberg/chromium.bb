@@ -3005,17 +3005,6 @@ const char kAshEnableUnifiedDesktopDescription[] =
     "Enable unified desktop mode which allows a window to span multiple "
     "displays.";
 
-const char kAshShelfColorScheme[] = "Shelf color scheme in Chrome OS System UI";
-const char kAshShelfColorSchemeDescription[] =
-    "Specify how the color is derived from the wallpaper. This flag is only "
-    "used when the --ash-shelf-color flag is enabled. Defaults to Dark & Muted";
-const char kAshShelfColorSchemeLightVibrant[] = "Light & Vibrant";
-const char kAshShelfColorSchemeNormalVibrant[] = "Normal & Vibrant";
-const char kAshShelfColorSchemeDarkVibrant[] = "Dark & Vibrant";
-const char kAshShelfColorSchemeLightMuted[] = "Light & Muted";
-const char kAshShelfColorSchemeNormalMuted[] = "Normal & Muted";
-const char kAshShelfColorSchemeDarkMuted[] = "Dark & Muted";
-
 const char kBulkPrintersName[] = "Bulk Printers Policy";
 const char kBulkPrintersDescription[] = "Enables the new bulk printers policy";
 

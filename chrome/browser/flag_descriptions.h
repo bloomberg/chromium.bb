@@ -1806,18 +1806,6 @@ extern const char kAshEnablePipRoundedCornersDescription[];
 extern const char kAshEnableUnifiedDesktopName[];
 extern const char kAshEnableUnifiedDesktopDescription[];
 
-extern const char kAshShelfColorName[];
-extern const char kAshShelfColorDescription[];
-
-extern const char kAshShelfColorScheme[];
-extern const char kAshShelfColorSchemeDescription[];
-extern const char kAshShelfColorSchemeLightVibrant[];
-extern const char kAshShelfColorSchemeNormalVibrant[];
-extern const char kAshShelfColorSchemeDarkVibrant[];
-extern const char kAshShelfColorSchemeLightMuted[];
-extern const char kAshShelfColorSchemeNormalMuted[];
-extern const char kAshShelfColorSchemeDarkMuted[];
-
 extern const char kBulkPrintersName[];
 extern const char kBulkPrintersDescription[];
 

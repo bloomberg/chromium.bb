@@ -466,28 +466,6 @@ const FeatureEntry::Choice kTopChromeTouchUiChoices[] = {
      switches::kTopChromeTouchUiEnabled}};
 
 #if defined(OS_CHROMEOS)
-const FeatureEntry::Choice kAshShelfColorSchemeChoices[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flag_descriptions::kAshShelfColorSchemeLightVibrant,
-     ash::switches::kAshShelfColorScheme,
-     ash::switches::kAshShelfColorSchemeLightVibrant},
-    {flag_descriptions::kAshShelfColorSchemeNormalVibrant,
-     ash::switches::kAshShelfColorScheme,
-     ash::switches::kAshShelfColorSchemeNormalVibrant},
-    {flag_descriptions::kAshShelfColorSchemeDarkVibrant,
-     ash::switches::kAshShelfColorScheme,
-     ash::switches::kAshShelfColorSchemeDarkVibrant},
-    {flag_descriptions::kAshShelfColorSchemeLightMuted,
-     ash::switches::kAshShelfColorScheme,
-     ash::switches::kAshShelfColorSchemeLightMuted},
-    {flag_descriptions::kAshShelfColorSchemeNormalMuted,
-     ash::switches::kAshShelfColorScheme,
-     ash::switches::kAshShelfColorSchemeNormalMuted},
-    {flag_descriptions::kAshShelfColorSchemeDarkMuted,
-     ash::switches::kAshShelfColorScheme,
-     ash::switches::kAshShelfColorSchemeDarkMuted},
-};
-
 const FeatureEntry::Choice kUiShowCompositedLayerBordersChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kUiShowCompositedLayerBordersRenderPass,
@@ -1389,9 +1367,6 @@ const FeatureEntry kFeatureEntries[] = {
         kOsAll,
         SINGLE_VALUE_TYPE(ash::switches::kAshDebugShortcuts),
     },
-    {"ash-shelf-color-scheme", flag_descriptions::kAshShelfColorScheme,
-     flag_descriptions::kAshShelfColorSchemeDescription, kOsCrOS,
-     MULTI_VALUE_TYPE(kAshShelfColorSchemeChoices)},
     {"ui-slow-animations", flag_descriptions::kUiSlowAnimationsName,
      flag_descriptions::kUiSlowAnimationsDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(switches::kUISlowAnimations)},
