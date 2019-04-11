@@ -593,7 +593,8 @@ STDMETHODIMP TSFTextStore::RequestLock(DWORD lock_flags, HRESULT* result) {
   // the replacement text is coming from on-screen keyboard, we should replace
   // current selection with new text.
   if (((new_composition_start > last_composition_start) ||
-       (wparam_keydown_fired_ == 0 && !has_composition_range_)) &&
+       (wparam_keydown_fired_ == 0 && !has_composition_range_ &&
+        !text_input_client_->HasCompositionText())) &&
       text_input_client_) {
     CommitTextAndEndCompositionIfAny(last_composition_start,
                                      new_composition_start);
@@ -606,16 +607,21 @@ STDMETHODIMP TSFTextStore::RequestLock(DWORD lock_flags, HRESULT* result) {
   // Only need to set composition if the current composition string
   // (composition_string) is not the same as previous composition string
   // (prev_composition_string_) during same composition or the composition
-  // string is the same for different composition. If composition_string is
-  // empty and there is an existing composition going on, we still need to call
-  // into blink to complete the composition started by TSF.
-  if ((previous_composition_start_ != composition_range_.start() ||
-       previous_composition_string_ != composition_string) ||
+  // string is the same for different composition or selection is changed during
+  // composition. If composition_string is empty and there is an existing
+  // composition going on, we still need to call into blink to complete the
+  // composition started by TSF.
+  if ((has_composition_range_ &&
+       (previous_composition_start_ != composition_range_.start() ||
+        previous_composition_string_ != composition_string ||
+        !previous_composition_selection_range_.EqualsIgnoringDirection(
+            selection_))) ||
       ((wparam_keydown_fired_ != 0) &&
        text_input_client_->HasCompositionText() &&
        composition_string.empty())) {
     previous_composition_string_ = composition_string;
     previous_composition_start_ = composition_range_.start();
+    previous_composition_selection_range_ = selection_;
 
     StartCompositionOnNewText(new_composition_start, composition_string);
   }
@@ -866,6 +872,7 @@ STDMETHODIMP TSFTextStore::OnEndEdit(ITfContext* context,
           composition_range_.set_end(0);
           previous_composition_string_.clear();
           previous_composition_start_ = 0;
+          previous_composition_selection_range_ = gfx::Range::InvalidRange();
         }
       }
     }
@@ -1129,6 +1136,7 @@ bool TSFTextStore::CancelComposition() {
 
   previous_composition_string_.clear();
   previous_composition_start_ = 0;
+  previous_composition_selection_range_ = gfx::Range::InvalidRange();
   const size_t previous_buffer_size = string_buffer_document_.size();
   string_pending_insertion_.clear();
   composition_start_ = selection_.start();
@@ -1163,6 +1171,7 @@ bool TSFTextStore::ConfirmComposition() {
 
   previous_composition_string_.clear();
   previous_composition_start_ = 0;
+  previous_composition_selection_range_ = gfx::Range::InvalidRange();
   const size_t previous_buffer_size = string_buffer_document_.size();
   string_pending_insertion_.clear();
   composition_start_ = selection_.start();
