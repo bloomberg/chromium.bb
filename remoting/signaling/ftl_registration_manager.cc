@@ -47,12 +47,8 @@ void FtlRegistrationManager::SignInGaia(DoneCallback on_done) {
   request.set_app(FtlGrpcContext::GetChromotingAppIdentifier());
   request.set_mode(ftl::SignInGaiaMode_Value_DEFAULT_CREATE_ACCOUNT);
 
-  request.mutable_register_data()->mutable_device_id()->set_id(
-      device_id_provider_->GetDeviceId());
-
-  // TODO(yuweih): Consider using different device ID type.
-  request.mutable_register_data()->mutable_device_id()->set_type(
-      ftl::DeviceIdType_Type_WEB_UUID);
+  *request.mutable_register_data()->mutable_device_id() =
+      device_id_provider_->GetDeviceId();
 
   for (size_t i = 0; i < kFtlCapabilityCount; i++) {
     request.mutable_register_data()->add_caps(kFtlCapabilities[i]);

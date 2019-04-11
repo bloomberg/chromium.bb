@@ -49,6 +49,7 @@ message DeviceIdType {
     ANDROID_IID_TOKEN = 1;
     IOS_VENDOR_ID = 2;
     WEB_UUID = 3;
+    CHROMOTING_HOST_ID = 6;
   }
 }
 

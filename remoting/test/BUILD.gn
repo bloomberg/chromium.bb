@@ -51,6 +51,8 @@ static_library("test_support") {
     "scroll_frame_generator.h",
     "test_chromoting_client.cc",
     "test_chromoting_client.h",
+    "test_device_id_provider.cc",
+    "test_device_id_provider.h",
     "test_oauth_token_getter.cc",
     "test_oauth_token_getter.h",
     "test_token_storage.cc",

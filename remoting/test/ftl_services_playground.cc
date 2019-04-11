@@ -20,11 +20,11 @@
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "remoting/base/oauth_token_getter_impl.h"
-#include "remoting/signaling/ftl_device_id_provider.h"
 #include "remoting/signaling/ftl_grpc_context.h"
 #include "remoting/signaling/ftl_services.grpc.pb.h"
 #include "remoting/signaling/grpc_support/grpc_async_unary_request.h"
 #include "remoting/test/cli_util.h"
+#include "remoting/test/test_device_id_provider.h"
 #include "remoting/test/test_oauth_token_getter.h"
 #include "remoting/test/test_token_storage.h"
 
@@ -112,7 +112,7 @@ void FtlServicesPlayground::ResetServices(base::OnceClosure on_done) {
 
   registration_manager_ = std::make_unique<FtlRegistrationManager>(
       token_getter_.get(),
-      std::make_unique<FtlDeviceIdProvider>(storage_.get()));
+      std::make_unique<test::TestDeviceIdProvider>(storage_.get()));
 
   message_subscription_.reset();
   messaging_client_ = std::make_unique<FtlMessagingClient>(
