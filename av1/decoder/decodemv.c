@@ -183,7 +183,7 @@ static void read_drl_idx(FRAME_CONTEXT *ec_ctx, MACROBLOCKD *xd,
   if (mbmi->mode == NEWMV || mbmi->mode == NEW_NEWMV) {
     for (int idx = 0; idx < 2; ++idx) {
       if (xd->ref_mv_count[ref_frame_type] > idx + 1) {
-        uint8_t drl_ctx = av1_drl_ctx(xd->ref_mv_stack[ref_frame_type], idx);
+        uint8_t drl_ctx = av1_drl_ctx(xd->weight[ref_frame_type], idx);
         int drl_idx = aom_read_symbol(r, ec_ctx->drl_cdf[drl_ctx], 2, ACCT_STR);
         mbmi->ref_mv_idx = idx + drl_idx;
         if (!drl_idx) return;
@@ -196,7 +196,7 @@ static void read_drl_idx(FRAME_CONTEXT *ec_ctx, MACROBLOCKD *xd,
     // mode is factored in.
     for (int idx = 1; idx < 3; ++idx) {
       if (xd->ref_mv_count[ref_frame_type] > idx + 1) {
-        uint8_t drl_ctx = av1_drl_ctx(xd->ref_mv_stack[ref_frame_type], idx);
+        uint8_t drl_ctx = av1_drl_ctx(xd->weight[ref_frame_type], idx);
         int drl_idx = aom_read_symbol(r, ec_ctx->drl_cdf[drl_ctx], 2, ACCT_STR);
         mbmi->ref_mv_idx = idx + drl_idx - 1;
         if (!drl_idx) return;
@@ -680,8 +680,8 @@ static void read_intrabc_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
     int_mv ref_mvs[INTRA_FRAME + 1][MAX_MV_REF_CANDIDATES];
 
     av1_find_mv_refs(cm, xd, mbmi, INTRA_FRAME, xd->ref_mv_count,
-                     xd->ref_mv_stack, ref_mvs, /*global_mvs=*/NULL, mi_row,
-                     mi_col, inter_mode_ctx);
+                     xd->ref_mv_stack, xd->weight, ref_mvs, /*global_mvs=*/NULL,
+                     mi_row, mi_col, inter_mode_ctx);
 
     int_mv nearestmv, nearmv;
 
@@ -1271,7 +1271,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 
   MV_REFERENCE_FRAME ref_frame = av1_ref_frame_type(mbmi->ref_frame);
   av1_find_mv_refs(cm, xd, mbmi, ref_frame, xd->ref_mv_count, xd->ref_mv_stack,
-                   ref_mvs, /*global_mvs=*/NULL, mi_row, mi_col,
+                   xd->weight, ref_mvs, /*global_mvs=*/NULL, mi_row, mi_col,
                    inter_mode_ctx);
 
   int mode_ctx = av1_mode_context_analyzer(inter_mode_ctx, mbmi->ref_frame);

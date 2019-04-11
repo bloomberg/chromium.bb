@@ -7041,8 +7041,9 @@ static void setup_buffer_ref_mvs_inter(
 
   // Gets an initial list of candidate vectors from neighbours and orders them
   av1_find_mv_refs(cm, xd, mbmi, ref_frame, mbmi_ext->ref_mv_count,
-                   mbmi_ext->ref_mv_stack, NULL, mbmi_ext->global_mvs, mi_row,
-                   mi_col, mbmi_ext->mode_context);
+                   mbmi_ext->ref_mv_stack, mbmi_ext->weight, NULL,
+                   mbmi_ext->global_mvs, mi_row, mi_col,
+                   mbmi_ext->mode_context);
 
   // Further refinement that is encode side only to test the top few candidates
   // in full and choose the best as the center point for subsequent searches.
@@ -9840,8 +9841,7 @@ static INLINE int get_drl_cost(const MB_MODE_INFO *mbmi,
   if (mbmi->mode == NEWMV || mbmi->mode == NEW_NEWMV) {
     for (int idx = 0; idx < 2; ++idx) {
       if (mbmi_ext->ref_mv_count[ref_frame_type] > idx + 1) {
-        uint8_t drl_ctx =
-            av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], idx);
+        uint8_t drl_ctx = av1_drl_ctx(mbmi_ext->weight[ref_frame_type], idx);
         cost += drl_mode_cost0[drl_ctx][mbmi->ref_mv_idx != idx];
         if (mbmi->ref_mv_idx == idx) return cost;
       }
@@ -9852,8 +9852,7 @@ static INLINE int get_drl_cost(const MB_MODE_INFO *mbmi,
   if (have_nearmv_in_inter_mode(mbmi->mode)) {
     for (int idx = 1; idx < 3; ++idx) {
       if (mbmi_ext->ref_mv_count[ref_frame_type] > idx + 1) {
-        uint8_t drl_ctx =
-            av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], idx);
+        uint8_t drl_ctx = av1_drl_ctx(mbmi_ext->weight[ref_frame_type], idx);
         cost += drl_mode_cost0[drl_ctx][mbmi->ref_mv_idx != (idx - 1)];
         if (mbmi->ref_mv_idx == (idx - 1)) return cost;
       }
@@ -10263,8 +10262,8 @@ static int64_t handle_inter_mode(
           mbmi->ref_frame[0] == LAST3_FRAME ||
           mbmi->ref_frame[1] == LAST2_FRAME ||
           mbmi->ref_frame[1] == LAST3_FRAME) {
-        if (mbmi_ext->ref_mv_stack[ref_frame_type][ref_mv_idx + has_nearmv]
-                .weight < REF_CAT_LEVEL) {
+        if (mbmi_ext->weight[ref_frame_type][ref_mv_idx + has_nearmv] <
+            REF_CAT_LEVEL) {
           continue;
         }
       }
@@ -10657,8 +10656,9 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
   MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
   MV_REFERENCE_FRAME ref_frame = INTRA_FRAME;
   av1_find_mv_refs(cm, xd, mbmi, ref_frame, mbmi_ext->ref_mv_count,
-                   mbmi_ext->ref_mv_stack, NULL, mbmi_ext->global_mvs, mi_row,
-                   mi_col, mbmi_ext->mode_context);
+                   mbmi_ext->ref_mv_stack, mbmi_ext->weight, NULL,
+                   mbmi_ext->global_mvs, mi_row, mi_col,
+                   mbmi_ext->mode_context);
 
   int_mv nearestmv, nearmv;
   av1_find_best_ref_mvs_from_stack(0, mbmi_ext, ref_frame, &nearestmv, &nearmv,
@@ -10973,8 +10973,9 @@ static void rd_pick_skip_mode(RD_STATS *rd_cost,
     }
     MB_MODE_INFO_EXT *mbmi_ext = x->mbmi_ext;
     av1_find_mv_refs(cm, xd, mbmi, ref_frame_type, mbmi_ext->ref_mv_count,
-                     mbmi_ext->ref_mv_stack, NULL, mbmi_ext->global_mvs, mi_row,
-                     mi_col, mbmi_ext->mode_context);
+                     mbmi_ext->ref_mv_stack, mbmi_ext->weight, NULL,
+                     mbmi_ext->global_mvs, mi_row, mi_col,
+                     mbmi_ext->mode_context);
   }
 
   assert(this_mode == NEAREST_NEARESTMV);
@@ -11446,8 +11447,9 @@ static void set_params_rd_pick_inter_mode(
       }
     }
     av1_find_mv_refs(cm, xd, mbmi, ref_frame, mbmi_ext->ref_mv_count,
-                     mbmi_ext->ref_mv_stack, NULL, mbmi_ext->global_mvs, mi_row,
-                     mi_col, mbmi_ext->mode_context);
+                     mbmi_ext->ref_mv_stack, mbmi_ext->weight, NULL,
+                     mbmi_ext->global_mvs, mi_row, mi_col,
+                     mbmi_ext->mode_context);
   }
 
   av1_count_overlappable_neighbors(cm, xd, mi_row, mi_col);

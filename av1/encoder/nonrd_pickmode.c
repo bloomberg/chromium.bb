@@ -449,8 +449,9 @@ static INLINE void find_predictors(
     av1_setup_pred_block(xd, yv12_mb[ref_frame], yv12, mi_row, mi_col, sf, sf,
                          num_planes);
     av1_find_mv_refs(cm, xd, mbmi, ref_frame, mbmi_ext->ref_mv_count,
-                     mbmi_ext->ref_mv_stack, NULL, mbmi_ext->global_mvs, mi_row,
-                     mi_col, mbmi_ext->mode_context);
+                     mbmi_ext->ref_mv_stack, mbmi_ext->weight, NULL,
+                     mbmi_ext->global_mvs, mi_row, mi_col,
+                     mbmi_ext->mode_context);
     av1_find_best_ref_mvs_from_stack(cm->allow_high_precision_mv, mbmi_ext,
                                      ref_frame, &frame_mv[NEARESTMV][ref_frame],
                                      &frame_mv[NEARMV][ref_frame], 0);

@@ -535,6 +535,7 @@ typedef struct macroblockd {
 
   uint8_t ref_mv_count[MODE_CTX_REF_FRAMES];
   CANDIDATE_MV ref_mv_stack[MODE_CTX_REF_FRAMES][MAX_REF_MV_STACK_SIZE];
+  int weight[MODE_CTX_REF_FRAMES][MAX_REF_MV_STACK_SIZE];
   uint8_t is_sec_rect;
 
   // Counts of each reference frame in the above and left neighboring blocks.

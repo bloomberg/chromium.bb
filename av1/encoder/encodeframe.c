@@ -1361,7 +1361,7 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
           if (mbmi_ext->ref_mv_count[ref_frame_type] > idx + 1) {
 #if CONFIG_ENTROPY_STATS
             uint8_t drl_ctx =
-                av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], idx);
+                av1_drl_ctx(mbmi_ext->weight[ref_frame_type], idx);
             ++counts->drl_mode[drl_ctx][mbmi->ref_mv_idx != idx];
 #endif
 
@@ -1378,7 +1378,7 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
           if (mbmi_ext->ref_mv_count[ref_frame_type] > idx + 1) {
 #if CONFIG_ENTROPY_STATS
             uint8_t drl_ctx =
-                av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], idx);
+                av1_drl_ctx(mbmi_ext->weight[ref_frame_type], idx);
             ++counts->drl_mode[drl_ctx][mbmi->ref_mv_idx != idx - 1];
 #endif
 
