@@ -48,6 +48,9 @@ FakeAssistantManagerServiceImpl::GetAssistantSettingsManager() {
 
 void FakeAssistantManagerServiceImpl::StartCachedScreenContextInteraction() {}
 
+void FakeAssistantManagerServiceImpl::StartEditReminderInteraction(
+    const std::string& client_id) {}
+
 void FakeAssistantManagerServiceImpl::StartMetalayerInteraction(
     const gfx::Rect& region) {}
 

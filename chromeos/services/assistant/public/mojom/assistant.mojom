@@ -18,6 +18,12 @@ interface Assistant {
   // without having first cached screen context (see CacheScreenContext()).
   StartCachedScreenContextInteraction();
 
+  // Starts an interaction to edit the reminder uniquely identified by
+  // |client_id|. In response to the request, LibAssistant will initiate
+  // a user facing interaction with the context pre-populated with details
+  // to edit the specified reminder.
+  StartEditReminderInteraction(string client_id);
+
   // Starts a metalayer interaction for the selected screen |region|. Results
   // related to the selected region will be returned through the
   // |AssistantInteractionSubscriber| interface to registered subscribers.

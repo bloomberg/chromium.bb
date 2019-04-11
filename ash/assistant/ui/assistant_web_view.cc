@@ -126,7 +126,7 @@ bool AssistantWebView::OnCaptionButtonPressed(AssistantButtonId id) {
 void AssistantWebView::OnDeepLinkReceived(
     assistant::util::DeepLinkType type,
     const std::map<std::string, std::string>& params) {
-  if (!assistant::util::IsWebDeepLinkType(type))
+  if (!assistant::util::IsWebDeepLinkType(type, params))
     return;
 
   RemoveContents();
