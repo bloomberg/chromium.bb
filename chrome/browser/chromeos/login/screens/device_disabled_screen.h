@@ -39,10 +39,9 @@ class DeviceDisabledScreen : public BaseScreen,
 
  private:
   DeviceDisabledScreenView* view_;
-  system::DeviceDisablingManager* device_disabling_manager_;
 
   // Whether the screen is currently showing.
-  bool showing_;
+  bool showing_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceDisabledScreen);
 };

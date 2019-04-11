@@ -299,6 +299,8 @@ WizardController::~WizardController() {
 }
 
 void WizardController::Init(OobeScreen first_screen) {
+  screen_manager_->Init(CreateScreens());
+
   VLOG(1) << "Starting OOBE wizard with screen: "
           << GetOobeScreenName(first_screen);
   first_screen_ = first_screen;
@@ -369,148 +371,6 @@ BaseScreen* WizardController::GetScreen(OobeScreen screen) {
   return screen_manager_->GetScreen(screen);
 }
 
-std::unique_ptr<BaseScreen> WizardController::CreateScreen(OobeScreen screen) {
-  OobeUI* oobe_ui = GetOobeUI();
-
-  if (screen == OobeScreen::SCREEN_OOBE_WELCOME) {
-    return std::make_unique<WelcomeScreen>(
-        oobe_ui->GetWelcomeView(),
-        base::BindRepeating(&WizardController::OnWelcomeScreenExit,
-                            weak_factory_.GetWeakPtr()));
-  } else if (screen == OobeScreen::SCREEN_OOBE_NETWORK) {
-    return std::make_unique<NetworkScreen>(
-        oobe_ui->GetNetworkScreenView(),
-        base::BindRepeating(&WizardController::OnNetworkScreenExit,
-                            weak_factory_.GetWeakPtr()));
-  } else if (screen == OobeScreen::SCREEN_OOBE_UPDATE) {
-    return std::make_unique<UpdateScreen>(
-        this, oobe_ui->GetUpdateView(),
-        base::BindRepeating(&WizardController::OnUpdateScreenExit,
-                            weak_factory_.GetWeakPtr()));
-  } else if (screen == OobeScreen::SCREEN_OOBE_EULA) {
-    return std::make_unique<EulaScreen>(
-        oobe_ui->GetEulaView(),
-        base::BindRepeating(&WizardController::OnEulaScreenExit,
-                            weak_factory_.GetWeakPtr()));
-  } else if (screen == OobeScreen::SCREEN_OOBE_ENROLLMENT) {
-    return std::make_unique<EnrollmentScreen>(
-        oobe_ui->GetEnrollmentScreenView(),
-        base::BindRepeating(&WizardController::OnEnrollmentScreenExit,
-                            weak_factory_.GetWeakPtr()));
-  } else if (screen == OobeScreen::SCREEN_OOBE_RESET) {
-    return std::make_unique<chromeos::ResetScreen>(
-        this, oobe_ui->GetResetView(),
-        base::BindRepeating(&WizardController::OnResetScreenExit,
-                            weak_factory_.GetWeakPtr()));
-  } else if (screen == OobeScreen::SCREEN_OOBE_DEMO_SETUP) {
-    return std::make_unique<chromeos::DemoSetupScreen>(
-        oobe_ui->GetDemoSetupScreenView(),
-        base::BindRepeating(&WizardController::OnDemoSetupScreenExit,
-                            weak_factory_.GetWeakPtr()));
-  } else if (screen == OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES) {
-    return std::make_unique<chromeos::DemoPreferencesScreen>(
-        oobe_ui->GetDemoPreferencesScreenView(),
-        base::BindRepeating(&WizardController::OnDemoPreferencesScreenExit,
-                            weak_factory_.GetWeakPtr()));
-  } else if (screen == OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING) {
-    return std::make_unique<EnableDebuggingScreen>(
-        oobe_ui->GetEnableDebuggingScreenView(),
-        base::BindRepeating(&WizardController::OnEnableDebuggingScreenExit,
-                            weak_factory_.GetWeakPtr()));
-  } else if (screen == OobeScreen::SCREEN_KIOSK_ENABLE) {
-    return std::make_unique<KioskEnableScreen>(
-        oobe_ui->GetKioskEnableScreenView(),
-        base::BindRepeating(&WizardController::OnKioskEnableScreenExit,
-                            weak_factory_.GetWeakPtr()));
-  } else if (screen == OobeScreen::SCREEN_KIOSK_AUTOLAUNCH) {
-    return std::make_unique<KioskAutolaunchScreen>(
-        oobe_ui->GetKioskAutolaunchScreenView(),
-        base::BindRepeating(&WizardController::OnKioskAutolaunchScreenExit,
-                            weak_factory_.GetWeakPtr()));
-  } else if (screen == OobeScreen::SCREEN_TERMS_OF_SERVICE) {
-    return std::make_unique<TermsOfServiceScreen>(
-        oobe_ui->GetTermsOfServiceScreenView(),
-        base::BindRepeating(&WizardController::OnTermsOfServiceScreenExit,
-                            weak_factory_.GetWeakPtr()));
-  } else if (screen == OobeScreen::SCREEN_SYNC_CONSENT) {
-    return std::make_unique<SyncConsentScreen>(
-        oobe_ui->GetSyncConsentScreenView(),
-        base::BindRepeating(&WizardController::OnSyncConsentScreenExit,
-                            weak_factory_.GetWeakPtr()));
-  } else if (screen == OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE) {
-    return std::make_unique<ArcTermsOfServiceScreen>(
-        oobe_ui->GetArcTermsOfServiceScreenView(),
-        base::BindRepeating(&WizardController::OnArcTermsOfServiceScreenExit,
-                            weak_factory_.GetWeakPtr()));
-  } else if (screen == OobeScreen::SCREEN_RECOMMEND_APPS) {
-    return std::make_unique<RecommendAppsScreen>(
-        oobe_ui->GetRecommendAppsScreenView(),
-        base::BindRepeating(&WizardController::OnRecommendAppsScreenExit,
-                            weak_factory_.GetWeakPtr()));
-  } else if (screen == OobeScreen::SCREEN_APP_DOWNLOADING) {
-    return std::make_unique<AppDownloadingScreen>(
-        oobe_ui->GetAppDownloadingScreenView(),
-        base::BindRepeating(&WizardController::OnAppDownloadingScreenExit,
-                            weak_factory_.GetWeakPtr()));
-  } else if (screen == OobeScreen::SCREEN_WRONG_HWID) {
-    return std::make_unique<WrongHWIDScreen>(
-        oobe_ui->GetWrongHWIDScreenView(),
-        base::BindRepeating(&WizardController::OnWrongHWIDScreenExit,
-                            weak_factory_.GetWeakPtr()));
-  } else if (screen == OobeScreen::SCREEN_OOBE_HID_DETECTION) {
-    return std::make_unique<chromeos::HIDDetectionScreen>(
-        oobe_ui->GetHIDDetectionView(),
-        base::BindRepeating(&WizardController::OnHidDetectionScreenExit,
-                            weak_factory_.GetWeakPtr()));
-  } else if (screen == OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK) {
-    return std::make_unique<AutoEnrollmentCheckScreen>(
-        this, oobe_ui->GetAutoEnrollmentCheckScreenView(),
-        base::BindRepeating(&WizardController::OnAutoEnrollmentCheckScreenExit,
-                            weak_factory_.GetWeakPtr()));
-  } else if (screen == OobeScreen::SCREEN_DEVICE_DISABLED) {
-    return std::make_unique<DeviceDisabledScreen>(
-        oobe_ui->GetDeviceDisabledScreenView());
-  } else if (screen == OobeScreen::SCREEN_ENCRYPTION_MIGRATION) {
-    return std::make_unique<EncryptionMigrationScreen>(
-        oobe_ui->GetEncryptionMigrationScreenView());
-  } else if (screen == OobeScreen::SCREEN_SUPERVISION_TRANSITION) {
-    return std::make_unique<SupervisionTransitionScreen>(
-        oobe_ui->GetSupervisionTransitionScreenView(),
-        base::BindRepeating(
-            &WizardController::OnSupervisionTransitionScreenExit,
-            weak_factory_.GetWeakPtr()));
-  } else if (screen == OobeScreen::SCREEN_UPDATE_REQUIRED) {
-    return std::make_unique<UpdateRequiredScreen>(
-        oobe_ui->GetUpdateRequiredScreenView());
-  } else if (screen == OobeScreen::SCREEN_ASSISTANT_OPTIN_FLOW) {
-    return std::make_unique<AssistantOptInFlowScreen>(
-        oobe_ui->GetAssistantOptInFlowScreenView(),
-        base::BindRepeating(&WizardController::OnAssistantOptInFlowScreenExit,
-                            weak_factory_.GetWeakPtr()));
-  } else if (screen == OobeScreen::SCREEN_MULTIDEVICE_SETUP) {
-    return std::make_unique<MultiDeviceSetupScreen>(
-        oobe_ui->GetMultiDeviceSetupScreenView(),
-        base::BindRepeating(&WizardController::OnMultiDeviceSetupScreenExit,
-                            weak_factory_.GetWeakPtr()));
-  } else if (screen == OobeScreen::SCREEN_DISCOVER) {
-    return std::make_unique<DiscoverScreen>(
-        oobe_ui->GetDiscoverScreenView(),
-        base::BindRepeating(&WizardController::OnDiscoverScreenExit,
-                            weak_factory_.GetWeakPtr()));
-  } else if (screen == OobeScreen::SCREEN_FINGERPRINT_SETUP) {
-    return std::make_unique<FingerprintSetupScreen>(
-        oobe_ui->GetFingerprintSetupScreenView(),
-        base::BindRepeating(&WizardController::OnFingerprintSetupScreenExit,
-                            weak_factory_.GetWeakPtr()));
-  } else if (screen == OobeScreen::SCREEN_MARKETING_OPT_IN) {
-    return std::make_unique<MarketingOptInScreen>(
-        oobe_ui->GetMarketingOptInScreenView(),
-        base::BindRepeating(&WizardController::OnMarketingOptInScreenExit,
-                            weak_factory_.GetWeakPtr()));
-  }
-  return nullptr;
-}
-
 void WizardController::SetCurrentScreenForTesting(BaseScreen* screen) {
   current_screen_ = screen;
 }
@@ -519,6 +379,128 @@ void WizardController::SetSharedURLLoaderFactoryForTesting(
     scoped_refptr<network::SharedURLLoaderFactory> factory) {
   auto& testing_factory = GetSharedURLLoaderFactoryForTesting();
   testing_factory = std::move(factory);
+}
+
+std::vector<std::unique_ptr<BaseScreen>> WizardController::CreateScreens() {
+  OobeUI* oobe_ui = GetOobeUI();
+
+  std::vector<std::unique_ptr<BaseScreen>> result;
+
+  auto append = [&](std::unique_ptr<BaseScreen> screen) {
+    result.emplace_back(std::move(screen));
+  };
+
+  if (oobe_ui->display_type() == OobeUI::kOobeDisplay) {
+    append(std::make_unique<WelcomeScreen>(
+        oobe_ui->GetWelcomeView(),
+        base::BindRepeating(&WizardController::OnWelcomeScreenExit,
+                            weak_factory_.GetWeakPtr())));
+  }
+
+  append(std::make_unique<NetworkScreen>(
+      oobe_ui->GetNetworkScreenView(),
+      base::BindRepeating(&WizardController::OnNetworkScreenExit,
+                          weak_factory_.GetWeakPtr())));
+  append(std::make_unique<UpdateScreen>(
+      this, oobe_ui->GetUpdateView(),
+      base::BindRepeating(&WizardController::OnUpdateScreenExit,
+                          weak_factory_.GetWeakPtr())));
+  append(std::make_unique<EulaScreen>(
+      oobe_ui->GetEulaView(),
+      base::BindRepeating(&WizardController::OnEulaScreenExit,
+                          weak_factory_.GetWeakPtr())));
+  append(std::make_unique<EnrollmentScreen>(
+      oobe_ui->GetEnrollmentScreenView(),
+      base::BindRepeating(&WizardController::OnEnrollmentScreenExit,
+                          weak_factory_.GetWeakPtr())));
+  append(std::make_unique<chromeos::ResetScreen>(
+      this, oobe_ui->GetResetView(),
+      base::BindRepeating(&WizardController::OnResetScreenExit,
+                          weak_factory_.GetWeakPtr())));
+  append(std::make_unique<chromeos::DemoSetupScreen>(
+      oobe_ui->GetDemoSetupScreenView(),
+      base::BindRepeating(&WizardController::OnDemoSetupScreenExit,
+                          weak_factory_.GetWeakPtr())));
+  append(std::make_unique<chromeos::DemoPreferencesScreen>(
+      oobe_ui->GetDemoPreferencesScreenView(),
+      base::BindRepeating(&WizardController::OnDemoPreferencesScreenExit,
+                          weak_factory_.GetWeakPtr())));
+  append(std::make_unique<EnableDebuggingScreen>(
+      oobe_ui->GetEnableDebuggingScreenView(),
+      base::BindRepeating(&WizardController::OnEnableDebuggingScreenExit,
+                          weak_factory_.GetWeakPtr())));
+  append(std::make_unique<KioskEnableScreen>(
+      oobe_ui->GetKioskEnableScreenView(),
+      base::BindRepeating(&WizardController::OnKioskEnableScreenExit,
+                          weak_factory_.GetWeakPtr())));
+  append(std::make_unique<KioskAutolaunchScreen>(
+      oobe_ui->GetKioskAutolaunchScreenView(),
+      base::BindRepeating(&WizardController::OnKioskAutolaunchScreenExit,
+                          weak_factory_.GetWeakPtr())));
+  append(std::make_unique<TermsOfServiceScreen>(
+      oobe_ui->GetTermsOfServiceScreenView(),
+      base::BindRepeating(&WizardController::OnTermsOfServiceScreenExit,
+                          weak_factory_.GetWeakPtr())));
+  append(std::make_unique<SyncConsentScreen>(
+      oobe_ui->GetSyncConsentScreenView(),
+      base::BindRepeating(&WizardController::OnSyncConsentScreenExit,
+                          weak_factory_.GetWeakPtr())));
+  append(std::make_unique<ArcTermsOfServiceScreen>(
+      oobe_ui->GetArcTermsOfServiceScreenView(),
+      base::BindRepeating(&WizardController::OnArcTermsOfServiceScreenExit,
+                          weak_factory_.GetWeakPtr())));
+  append(std::make_unique<RecommendAppsScreen>(
+      oobe_ui->GetRecommendAppsScreenView(),
+      base::BindRepeating(&WizardController::OnRecommendAppsScreenExit,
+                          weak_factory_.GetWeakPtr())));
+  append(std::make_unique<AppDownloadingScreen>(
+      oobe_ui->GetAppDownloadingScreenView(),
+      base::BindRepeating(&WizardController::OnAppDownloadingScreenExit,
+                          weak_factory_.GetWeakPtr())));
+  append(std::make_unique<WrongHWIDScreen>(
+      oobe_ui->GetWrongHWIDScreenView(),
+      base::BindRepeating(&WizardController::OnWrongHWIDScreenExit,
+                          weak_factory_.GetWeakPtr())));
+  append(std::make_unique<chromeos::HIDDetectionScreen>(
+      oobe_ui->GetHIDDetectionView(),
+      base::BindRepeating(&WizardController::OnHidDetectionScreenExit,
+                          weak_factory_.GetWeakPtr())));
+  append(std::make_unique<AutoEnrollmentCheckScreen>(
+      this, oobe_ui->GetAutoEnrollmentCheckScreenView(),
+      base::BindRepeating(&WizardController::OnAutoEnrollmentCheckScreenExit,
+                          weak_factory_.GetWeakPtr())));
+  append(std::make_unique<DeviceDisabledScreen>(
+      oobe_ui->GetDeviceDisabledScreenView()));
+  append(std::make_unique<EncryptionMigrationScreen>(
+      oobe_ui->GetEncryptionMigrationScreenView()));
+  append(std::make_unique<SupervisionTransitionScreen>(
+      oobe_ui->GetSupervisionTransitionScreenView(),
+      base::BindRepeating(&WizardController::OnSupervisionTransitionScreenExit,
+                          weak_factory_.GetWeakPtr())));
+  append(std::make_unique<UpdateRequiredScreen>(
+      oobe_ui->GetUpdateRequiredScreenView()));
+  append(std::make_unique<AssistantOptInFlowScreen>(
+      oobe_ui->GetAssistantOptInFlowScreenView(),
+      base::BindRepeating(&WizardController::OnAssistantOptInFlowScreenExit,
+                          weak_factory_.GetWeakPtr())));
+  append(std::make_unique<MultiDeviceSetupScreen>(
+      oobe_ui->GetMultiDeviceSetupScreenView(),
+      base::BindRepeating(&WizardController::OnMultiDeviceSetupScreenExit,
+                          weak_factory_.GetWeakPtr())));
+  append(std::make_unique<DiscoverScreen>(
+      oobe_ui->GetDiscoverScreenView(),
+      base::BindRepeating(&WizardController::OnDiscoverScreenExit,
+                          weak_factory_.GetWeakPtr())));
+  append(std::make_unique<FingerprintSetupScreen>(
+      oobe_ui->GetFingerprintSetupScreenView(),
+      base::BindRepeating(&WizardController::OnFingerprintSetupScreenExit,
+                          weak_factory_.GetWeakPtr())));
+  append(std::make_unique<MarketingOptInScreen>(
+      oobe_ui->GetMarketingOptInScreenView(),
+      base::BindRepeating(&WizardController::OnMarketingOptInScreenExit,
+                          weak_factory_.GetWeakPtr())));
+
+  return result;
 }
 
 void WizardController::ShowWelcomeScreen() {
