@@ -3094,6 +3094,18 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
               hasUserGesture:[context[kUserIsInteractingKey] boolValue]];
   [self updateSSLStatusForCurrentNavigationItem];
 
+  // This is needed for some special pushState. See http://crbug.com/949305 .
+  NSString* replaceWebViewJS = [self javaScriptToReplaceWebViewURL:pushURL
+                                                   stateObjectJSON:stateObject];
+  __weak CRWWebController* weakSelf = self;
+  [self executeJavaScript:replaceWebViewJS
+        completionHandler:^(id, NSError*) {
+          CRWWebController* strongSelf = weakSelf;
+          if (strongSelf && !strongSelf->_isBeingDestroyed) {
+            [strongSelf optOutScrollsToTopForSubviews];
+            [strongSelf didFinishNavigation:nullptr];
+          }
+        }];
   return YES;
 }
 
