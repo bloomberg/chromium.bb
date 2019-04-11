@@ -1169,8 +1169,12 @@ void AXObjectCacheImpl::HandleRoleChangeWithCleanLayout(Node* node) {
 
   DCHECK(!node->GetDocument().NeedsLayoutTreeUpdateForNode(*node));
 
+  AXObject* obj = Get(node);
+  if (!obj && IsHTMLSelectElement(node))
+    obj = GetOrCreate(node);
+
   // Invalidate the current object and make the parent reconsider its children.
-  if (AXObject* obj = Get(node)) {
+  if (obj) {
     // Save parent for later use.
     AXObject* parent = obj->ParentObject();
 

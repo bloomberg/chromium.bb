@@ -54,6 +54,9 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   // The accessibility role, not taking ARIA into account.
   ax::mojom::Role native_role_;
 
+  static base::Optional<String> GetCSSAltText(Node*);
+  AXObjectInclusion ShouldIncludeBasedOnSemantics(
+      IgnoredReasons* = nullptr) const;
   bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
   const AXObject* InheritsPresentationalRoleFrom() const override;
   ax::mojom::Role DetermineAccessibilityRole() override;
