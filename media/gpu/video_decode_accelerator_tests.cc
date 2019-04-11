@@ -307,7 +307,7 @@ int main(int argc, char** argv) {
     } else {
       std::cout << "unknown option: --" << it->first << "\n"
                 << media::test::usage_msg;
-      return 0;
+      return EXIT_FAILURE;
     }
   }
 
@@ -316,7 +316,7 @@ int main(int argc, char** argv) {
       media::test::VideoPlayerTestEnvironment::Create(
           video_path, video_metadata_path, enable_validator, output_frames);
   if (!test_environment)
-    return 0;
+    return EXIT_FAILURE;
 
   media::test::g_env = static_cast<media::test::VideoPlayerTestEnvironment*>(
       testing::AddGlobalTestEnvironment(test_environment));
