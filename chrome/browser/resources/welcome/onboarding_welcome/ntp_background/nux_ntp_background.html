@@ -9,6 +9,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="../navigation_behavior.html">
+<link rel="import" href="../shared/animations_css.html">
 <link rel="import" href="../shared/chooser_shared_css.html">
 <link rel="import" href="../shared/i18n_setup.html">
 <link rel="import" href="../shared/module_metrics_proxy.html">
@@ -17,7 +18,7 @@
 
 <dom-module id="nux-ntp-background">
   <template>
-    <style include="chooser-shared-css paper-button-style">
+    <style include="animations chooser-shared-css paper-button-style">
       :host {
         text-align: center;
       }
@@ -178,7 +179,7 @@
       <div class="ntp-background-logo"></div>
       <h1 tabindex="-1">$i18n{ntpBackgroundDescription}</h1>
 
-      <div class="ntp-backgrounds-grid">
+      <div class="ntp-backgrounds-grid slide-in">
         <template is="dom-repeat" items="[[backgrounds_]]">
           <button
               active$="[[isSelectedBackground_(item, selectedBackground_)]]"

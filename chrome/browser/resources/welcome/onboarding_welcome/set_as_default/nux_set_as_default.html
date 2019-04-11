@@ -5,6 +5,7 @@
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="../navigation_behavior.html">
+<link rel="import" href="../shared/animations_css.html">
 <link rel="import" href="../shared/i18n_setup.html">
 <link rel="import" href="../shared/step_indicator.html">
 <link rel="import" href="nux_set_as_default_proxy.html">
@@ -15,7 +16,7 @@
 
 <dom-module id="nux-set-as-default">
   <template>
-    <style include="paper-button-style">
+    <style include="animations paper-button-style">
       .container {
         text-align: center;
       }
@@ -81,7 +82,7 @@
       <div class="logo"></div>
       <h1 tabindex="-1">$i18n{setDefaultHeader}</h1>
       <h2>$i18n{setDefaultSubHeader}</h2>
-      <div class="illustration" aria-hidden="true"></div>
+      <div class="illustration slide-in" aria-hidden="true"></div>
       <div class="button-bar">
         <paper-button id="decline-button" on-click="onDeclineClick_">
           $i18n{setDefaultSkip}

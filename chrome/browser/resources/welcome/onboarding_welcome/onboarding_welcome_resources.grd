@@ -205,6 +205,10 @@
                  file="shared/action_link_style_css.html"
                  compress="gzip"
                  type="chrome_html" />
+      <structure name="IDR_WELCOME_ONBOARDING_WELCOME_SHARED_ANIMATIONS_CSS"
+                 file="shared/animations_css.html"
+                 compress="gzip"
+                 type="chrome_html" />
       <structure name="IDR_WELCOME_ONBOARDING_WELCOME_SHARED_BOOKMARK_PROXY_HTML"
                  file="shared/bookmark_proxy.html"
                  compress="gzip"
