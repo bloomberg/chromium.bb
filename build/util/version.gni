@@ -51,7 +51,9 @@ if (target_os == "mac") {
   if (target_cpu == "arm64" || target_cpu == "x64") {
     _version_dictionary_template +=
         "monochrome_64_32_version_code = \"@MONOCHROME_64_32_VERSION_CODE@\" " +
-        "monochrome_64_version_code = \"@MONOCHROME_64_VERSION_CODE@\" "
+        "monochrome_64_version_code = \"@MONOCHROME_64_VERSION_CODE@\" " +
+        "trichrome_64_32_version_code = \"@TRICHROME_64_32_VERSION_CODE@\" " +
+        "trichrome_64_version_code = \"@TRICHROME_64_VERSION_CODE@\" "
   }
 
   _script_arguments += [
@@ -96,16 +98,18 @@ if (target_os == "mac") {
 } else if (target_os == "android") {
   forward_variables_from(_result,
                          [
-                           "chrome_version_code",
                            "chrome_modern_version_code",
-                           "monochrome_version_code",
-                           "trichrome_version_code",
-                           "notouch_chrome_version_code",
-                           "webview_stable_version_code",
-                           "webview_beta_version_code",
-                           "webview_dev_version_code",
+                           "chrome_version_code",
                            "monochrome_64_32_version_code",
                            "monochrome_64_version_code",
+                           "monochrome_version_code",
+                           "notouch_chrome_version_code",
+                           "trichrome_64_32_version_code",
+                           "trichrome_64_version_code",
+                           "trichrome_version_code",
+                           "webview_beta_version_code",
+                           "webview_dev_version_code",
+                           "webview_stable_version_code",
                          ])
 
   chrome_version_name = chrome_version_full
@@ -126,6 +130,8 @@ if (target_os == "mac") {
     lines_to_write += [
       "Monochrome_64_32=$monochrome_64_32_version_code",
       "Monochrome_64=$monochrome_64_version_code",
+      "TrichromeChrome_64_32=$trichrome_64_32_version_code",
+      "TrichromeChrome_64=$trichrome_64_version_code",
     ]
   }
 

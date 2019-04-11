@@ -120,7 +120,9 @@ class _VersionTest(unittest.TestCase):
     new_template = (
         self._EXAMPLE_ANDROID_TEMPLATE +
         "monochrome_64_32_version_code = \"@MONOCHROME_64_32_VERSION_CODE@\" "
-        "monochrome_64_version_code = \"@MONOCHROME_64_VERSION_CODE@\" ")
+        "monochrome_64_version_code = \"@MONOCHROME_64_VERSION_CODE@\" "
+        "trichrome_64_32_version_code = \"@TRICHROME_64_32_VERSION_CODE@\" "
+        "trichrome_64_version_code = \"@TRICHROME_64_VERSION_CODE@\" ")
     args_with_template = _ReplaceArgs(self._EXAMPLE_ANDROID_ARGS,
                                       ['-t', new_template])
     new_args = _ReplaceArgs(args_with_template, ['-a', 'arm64'])
@@ -131,13 +133,19 @@ class _VersionTest(unittest.TestCase):
                              r'\bmonochrome_64_32_version_code = "\d+"\s')
     self.assertRegexpMatches(contents,
                              r'\bmonochrome_64_version_code = "\d+"\s')
+    self.assertRegexpMatches(contents,
+                             r'\btrichrome_64_32_version_code = "\d+"\s')
+    self.assertRegexpMatches(contents,
+                             r'\btrichrome_64_version_code = "\d+"\s')
 
   def testBuildOutputAndroidArchVariantsX64(self):
     """Assert 64-bit-specific version codes"""
     new_template = (
         self._EXAMPLE_ANDROID_TEMPLATE +
         "monochrome_64_32_version_code = \"@MONOCHROME_64_32_VERSION_CODE@\" "
-        "monochrome_64_version_code = \"@MONOCHROME_64_VERSION_CODE@\" ")
+        "monochrome_64_version_code = \"@MONOCHROME_64_VERSION_CODE@\" "
+        "trichrome_64_32_version_code = \"@TRICHROME_64_32_VERSION_CODE@\" "
+        "trichrome_64_version_code = \"@TRICHROME_64_VERSION_CODE@\" ")
     args_with_template = _ReplaceArgs(self._EXAMPLE_ANDROID_ARGS,
                                       ['-t', new_template])
     new_args = _ReplaceArgs(args_with_template, ['-a', 'x64'])
@@ -148,6 +156,10 @@ class _VersionTest(unittest.TestCase):
                              r'\bmonochrome_64_32_version_code = "\d+"\s')
     self.assertRegexpMatches(contents,
                              r'\bmonochrome_64_version_code = "\d+"\s')
+    self.assertRegexpMatches(contents,
+                             r'\btrichrome_64_32_version_code = "\d+"\s')
+    self.assertRegexpMatches(contents,
+                             r'\btrichrome_64_version_code = "\d+"\s')
 
   def testBuildOutputAndroidChromeArchInput(self):
     """Assert it raises an exception when using an invalid architecture input"""

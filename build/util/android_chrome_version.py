@@ -113,11 +113,11 @@ e.g. 64_32 is 64-bit chrome with 32-bit webview.
 """
 ARCH64_APK_VARIANTS = {
     '64_32': {
-        'PACKAGES': frozenset(['MONOCHROME']),
+        'PACKAGES': frozenset(['MONOCHROME', 'TRICHROME']),
         'MODIFIER': 10
     },
     '64': {
-        'PACKAGES': frozenset(['MONOCHROME']),
+        'PACKAGES': frozenset(['MONOCHROME', 'TRICHROME']),
         'MODIFIER': 20
     }
 }
