@@ -14,9 +14,11 @@
 @protocol AdvancedSigninSettingsCoordinatorDelegate <NSObject>
 
 // Called when the user closes AdvancedSigninSettingsCoordinator.
+// |signedin|, YES if the view is confirmed or aborted, and NO if the view is
+// canceled.
 - (void)advancedSigninSettingsCoordinatorDidClose:
             (AdvancedSigninSettingsCoordinator*)coordinator
-                                          success:(BOOL)success;
+                                         signedin:(BOOL)signedin;
 
 @end
 
@@ -30,10 +32,11 @@
 // Global dispatcher.
 @property(nonatomic, weak) id<ApplicationCommands> dispatcher;
 
-// Cancels the coordinator, and calls the delegate. This method does nothing if
-// called twice.
+// Aborts the sign-in flow, and calls the delegate. Aborting the Advanced
+// sync settings doesn't sign out the user. The sync is left unsetup and doesn't
+// start. This method does nothing if called twice.
 // |dismiss|, dismisses the view controller if YES.
-- (void)cancelWithDismiss:(BOOL)dismiss;
+- (void)abortWithDismiss:(BOOL)dismiss;
 
 @end
 
