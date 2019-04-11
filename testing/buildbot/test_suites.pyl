@@ -243,16 +243,6 @@
       },
     },
 
-    'android_m_cts_tests': {
-      'arch': 'arm64',
-      'platform': 'M',
-    },
-
-    'android_n_cts_tests': {
-      'arch': 'arm64',
-      'platform': 'N',
-    },
-
     'android_oreo_standard_gtests': {
       'chrome_public_test_apk': {
         'swarming': {
@@ -5123,11 +5113,6 @@
 
     'sandboxed_chromium_memory_linux_gtests': [
       'chromium_browser_tests',
-    ],
-
-    'system_webview_and_webview_ui_instrumentation_tests': [
-      'system_webview_shell_instrumentation_tests',
-      'webview_ui_instrumentation_tests',
     ],
 
     'webrtc_android_tests_with_baremetal_tests': [
