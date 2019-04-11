@@ -490,6 +490,21 @@ void AddCrostiniStrings(content::WebUIDataSource* html_source,
       base::FeatureList::IsEnabled(chromeos::features::kCrostiniUsbSupport));
 }
 
+void AddPluginVmStrings(content::WebUIDataSource* html_source,
+                        Profile* profile) {
+  static constexpr LocalizedString kLocalizedStrings[] = {
+      {"pluginVmPageTitle", IDS_SETTINGS_PLUGIN_VM_PAGE_TITLE},
+      {"pluginVmPageLabel", IDS_SETTINGS_PLUGIN_VM_PAGE_LABEL},
+      {"pluginVmPrinterAccess", IDS_SETTINGS_PLUGIN_VM_PRINTER_ACCESS},
+  };
+  AddLocalizedStringsBulk(html_source, kLocalizedStrings,
+                          base::size(kLocalizedStrings));
+  html_source->AddString(
+      "pluginVmPageSubtext",
+      l10n_util::GetStringFUTF16(IDS_SETTINGS_PLUGIN_VM_PAGE_SUBTEXT,
+                                 ui::GetChromeOSDeviceName()));
+}
+
 void AddKioskNextShellStrings(content::WebUIDataSource* html_source) {
   static constexpr LocalizedString kLocalizedStrings[] = {
       {"kioskNextShellPageTitle", IDS_SETTINGS_KIOSK_NEXT_SHELL_TITLE},
@@ -2861,6 +2876,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
 
 #if defined(OS_CHROMEOS)
   AddCrostiniStrings(html_source, profile);
+  AddPluginVmStrings(html_source, profile);
   AddKioskNextShellStrings(html_source);
   AddAndroidAppStrings(html_source);
   AddBluetoothStrings(html_source);

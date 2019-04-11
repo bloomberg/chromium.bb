@@ -552,6 +552,21 @@
        Only Android devices are currently supported.
     </message>
 
+    <!-- Plugin VM Page -->
+    <!-- TODO(timloh): Remove transleatable flag after strings are finalized. -->
+    <message name="IDS_SETTINGS_PLUGIN_VM_PAGE_TITLE" desc="The title of Plugin VM section." translateable="false">
+      Plugin VM
+    </message>
+    <message name="IDS_SETTINGS_PLUGIN_VM_PAGE_LABEL" desc="The text associated with the primary section setting for Plugin VM." translateable="false">
+      Plugin VM
+    </message>
+    <message name="IDS_SETTINGS_PLUGIN_VM_PAGE_SUBTEXT" desc="Description for the section for enabling and managing Crostini." translateable="false">
+      Run Plugin VM apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+    </message>
+    <message name="IDS_SETTINGS_PLUGIN_VM_PRINTER_ACCESS" desc="The text associated with the primary section setting for Plugin VM." translateable="false">
+      Give access to printers
+    </message>
+
     <!-- Android Apps Page -->
     <message name="IDS_SETTINGS_ANDROID_APPS_TITLE" desc="The title of Google Play Store (Arc++ / Android Apps) section.">
       Google Play Store
