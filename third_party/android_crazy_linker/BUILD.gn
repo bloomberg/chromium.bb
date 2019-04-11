@@ -144,6 +144,12 @@ if (is_android) {
       public_configs = [ ":crazy_config" ]
       configs -= [ "//build/config/compiler:chromium_code" ]
       configs += [ "//build/config/compiler:no_chromium_code" ]
+
+      # This is used to allow shared memory regions to work on Android Q+
+      # See http://crbug.com/949804
+      deps = [
+        "//third_party/ashmem",
+      ]
     }
   }
 
