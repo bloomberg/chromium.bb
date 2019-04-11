@@ -404,7 +404,8 @@ void AXEventGenerator::OnTreeDataChanged(AXTree* tree,
     AddEvent(tree->root(), Event::LOAD_COMPLETE);
   }
 
-  if (new_tree_data.sel_anchor_object_id !=
+  if (new_tree_data.sel_is_backward != old_tree_data.sel_is_backward ||
+      new_tree_data.sel_anchor_object_id !=
           old_tree_data.sel_anchor_object_id ||
       new_tree_data.sel_anchor_offset != old_tree_data.sel_anchor_offset ||
       new_tree_data.sel_anchor_affinity != old_tree_data.sel_anchor_affinity ||

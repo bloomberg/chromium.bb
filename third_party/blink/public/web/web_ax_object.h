@@ -79,6 +79,12 @@ class WebAXObject {
     return *this;
   }
 
+  BLINK_EXPORT bool operator==(const WebAXObject& other) const;
+  BLINK_EXPORT bool operator!=(const WebAXObject& other) const;
+  BLINK_EXPORT bool operator<(const WebAXObject& other) const;
+  BLINK_EXPORT bool operator<=(const WebAXObject& other) const;
+  BLINK_EXPORT bool operator>(const WebAXObject& other) const;
+  BLINK_EXPORT bool operator>=(const WebAXObject& other) const;
   BLINK_EXPORT static WebAXObject FromWebNode(const WebNode&);
   BLINK_EXPORT static WebAXObject FromWebDocument(const WebDocument&);
   BLINK_EXPORT static WebAXObject FromWebDocumentByID(const WebDocument&, int);
@@ -224,7 +230,8 @@ class WebAXObject {
       WebAXObject& focus_object,
       int& focus_offset,
       ax::mojom::TextAffinity& focus_affinity) const;
-  BLINK_EXPORT void Selection(WebAXObject& anchor_object,
+  BLINK_EXPORT void Selection(bool& is_selection_backward,
+                              WebAXObject& anchor_object,
                               int& anchor_offset,
                               ax::mojom::TextAffinity& anchor_affinity,
                               WebAXObject& focus_object,
@@ -368,6 +375,9 @@ class WebAXObject {
                                       WebFloatRect& bounds_in_container,
                                       SkMatrix44& container_transform,
                                       bool* clips_children = nullptr) const;
+
+  // Exchanges a WebAXObject with another.
+  BLINK_EXPORT void Swap(WebAXObject& other);
 
   // Returns a brief description of the object, suitable for debugging. E.g. its
   // role and name.

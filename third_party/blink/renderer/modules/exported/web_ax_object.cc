@@ -769,12 +769,14 @@ static ax::mojom::TextAffinity ToAXAffinity(TextAffinity affinity) {
   }
 }
 
-void WebAXObject::Selection(WebAXObject& anchor_object,
+void WebAXObject::Selection(bool& is_selection_backward,
+                            WebAXObject& anchor_object,
                             int& anchor_offset,
                             ax::mojom::TextAffinity& anchor_affinity,
                             WebAXObject& focus_object,
                             int& focus_offset,
                             ax::mojom::TextAffinity& focus_affinity) const {
+  is_selection_backward = false;
   anchor_object = WebAXObject();
   anchor_offset = -1;
   anchor_affinity = ax::mojom::TextAffinity::kDownstream;
@@ -802,6 +804,7 @@ void WebAXObject::Selection(WebAXObject& anchor_object,
   const AXPosition extent = ax_selection.Extent();
   focus_object = WebAXObject(const_cast<AXObject*>(extent.ContainerObject()));
 
+  is_selection_backward = base > extent;
   if (base.IsTextPosition()) {
     anchor_offset = base.TextOffset();
     anchor_affinity = ToAXAffinity(base.Affinity());
@@ -1542,6 +1545,16 @@ bool WebAXObject::ScrollToGlobalPoint(const WebPoint& point) const {
   return private_->RequestScrollToGlobalPointAction(point);
 }
 
+void WebAXObject::Swap(WebAXObject& other) {
+  if (IsDetached() || other.IsDetached())
+    return;
+
+  AXObject* temp = private_.Get();
+  DCHECK(temp) << "|private_| should not be null.";
+  this->Assign(other);
+  other = temp;
+}
+
 WebString WebAXObject::ToString() const {
   if (IsDetached())
     return WebString();
@@ -1554,6 +1567,42 @@ WebAXObject::WebAXObject(AXObject* object) : private_(object) {}
 WebAXObject& WebAXObject::operator=(AXObject* object) {
   private_ = object;
   return *this;
+}
+
+bool WebAXObject::operator==(const WebAXObject& other) const {
+  if (IsDetached() || other.IsDetached())
+    return false;
+  return *private_ == *other.private_;
+}
+
+bool WebAXObject::operator!=(const WebAXObject& other) const {
+  if (IsDetached() || other.IsDetached())
+    return false;
+  return *private_ != *other.private_;
+}
+
+bool WebAXObject::operator<(const WebAXObject& other) const {
+  if (IsDetached() || other.IsDetached())
+    return false;
+  return *private_ < *other.private_;
+}
+
+bool WebAXObject::operator<=(const WebAXObject& other) const {
+  if (IsDetached() || other.IsDetached())
+    return false;
+  return *private_ <= *other.private_;
+}
+
+bool WebAXObject::operator>(const WebAXObject& other) const {
+  if (IsDetached() || other.IsDetached())
+    return false;
+  return *private_ > *other.private_;
+}
+
+bool WebAXObject::operator>=(const WebAXObject& other) const {
+  if (IsDetached() || other.IsDetached())
+    return false;
+  return *private_ >= *other.private_;
 }
 
 WebAXObject::operator AXObject*() const {

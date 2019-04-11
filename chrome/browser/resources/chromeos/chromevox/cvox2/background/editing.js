@@ -265,18 +265,20 @@ function AutomationRichEditableText(node) {
   AutomationEditableText.call(this, node);
 
   var root = this.node_.root;
-  if (!root || !root.anchorObject || !root.focusObject ||
-      root.anchorOffset === undefined || root.focusOffset === undefined)
+  if (!root || !root.selectionStartObject || !root.selectionEndObject ||
+      root.selectionStartOffset === undefined ||
+      root.selectionEndOffset === undefined)
     return;
 
   this.anchorLine_ = new editing.EditableLine(
-      root.anchorObject, root.anchorOffset, root.anchorObject,
-      root.anchorOffset);
+      root.selectionStartObject, root.selectionStartOffset,
+      root.selectionStartObject, root.selectionStartOffset);
   this.focusLine_ = new editing.EditableLine(
       root.focusObject, root.focusOffset, root.focusObject, root.focusOffset);
 
   this.line_ = new editing.EditableLine(
-      root.anchorObject, root.anchorOffset, root.focusObject, root.focusOffset);
+      root.selectionStartObject, root.selectionStartOffset,
+      root.selectionEndObject, root.selectionEndOffset);
 
   this.updateIntraLineState_(this.line_);
 
@@ -358,13 +360,14 @@ AutomationRichEditableText.prototype = {
   /** @override */
   onUpdate: function(eventFrom) {
     var root = this.node_.root;
-    if (!root.anchorObject || !root.focusObject ||
-        root.anchorOffset === undefined || root.focusOffset === undefined)
+    if (!root.selectionStartObject || !root.selectionEndObject ||
+        root.selectionStartOffset === undefined ||
+        root.selectionEndOffset === undefined)
       return;
 
     var anchorLine = new editing.EditableLine(
-        root.anchorObject, root.anchorOffset, root.anchorObject,
-        root.anchorOffset);
+        root.selectionStartObject, root.selectionStartOffset,
+        root.selectionStartObject, root.selectionStartOffset);
     var focusLine = new editing.EditableLine(
         root.focusObject, root.focusOffset, root.focusObject, root.focusOffset);
 
@@ -386,8 +389,8 @@ AutomationRichEditableText.prototype = {
       return;
     } else {
       cur = new editing.EditableLine(
-          root.anchorObject, root.anchorOffset, root.focusObject,
-          root.focusOffset, baseLineOnStart);
+          root.selectionStartObject, root.selectionStartOffset,
+          root.selectionEndObject, root.selectionEndOffset, baseLineOnStart);
     }
     var prev = this.line_;
     this.line_ = cur;

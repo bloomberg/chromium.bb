@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <set>
 
 #include "base/memory/ptr_util.h"
@@ -377,12 +378,14 @@ bool BlinkAXTreeSource::GetTreeData(AXContentTreeData* tree_data) const {
   if (!focus().IsNull())
     tree_data->focus_id = focus().AxID();
 
+  bool is_selection_backward = false;
   WebAXObject anchor_object, focus_object;
   int anchor_offset, focus_offset;
   ax::mojom::TextAffinity anchor_affinity, focus_affinity;
   if (base::FeatureList::IsEnabled(features::kNewAccessibilitySelection)) {
-    root().Selection(anchor_object, anchor_offset, anchor_affinity,
-                     focus_object, focus_offset, focus_affinity);
+    root().Selection(is_selection_backward, anchor_object, anchor_offset,
+                     anchor_affinity, focus_object, focus_offset,
+                     focus_affinity);
   } else {
     root().SelectionDeprecated(anchor_object, anchor_offset, anchor_affinity,
                                focus_object, focus_offset, focus_affinity);
@@ -391,6 +394,7 @@ bool BlinkAXTreeSource::GetTreeData(AXContentTreeData* tree_data) const {
       focus_offset >= 0) {
     int32_t anchor_id = anchor_object.AxID();
     int32_t focus_id = focus_object.AxID();
+    tree_data->sel_is_backward = is_selection_backward;
     tree_data->sel_anchor_object_id = anchor_id;
     tree_data->sel_anchor_offset = anchor_offset;
     tree_data->sel_focus_object_id = focus_id;

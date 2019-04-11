@@ -942,6 +942,48 @@ chrome.automation.AutomationNode.prototype.focusOffset;
 chrome.automation.AutomationNode.prototype.focusAffinity;
 
 /**
+ * The node at the start of the selection, if any.
+ * @type {(!chrome.automation.AutomationNode|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-selectionStartObject
+ */
+chrome.automation.AutomationNode.prototype.selectionStartObject;
+
+/**
+ * The offset at the start of the selection, if any.
+ * @type {(number|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-selectionStartOffset
+ */
+chrome.automation.AutomationNode.prototype.selectionStartOffset;
+
+/**
+ * The affinity at the start of the selection, if any.
+ * @type {(string|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-selectionStartAffinity
+ */
+chrome.automation.AutomationNode.prototype.selectionStartAffinity;
+
+/**
+ * The node at the end of the selection, if any.
+ * @type {(!chrome.automation.AutomationNode|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-selectionEndObject
+ */
+chrome.automation.AutomationNode.prototype.selectionEndObject;
+
+/**
+ * The offset at the end of the selection, if any.
+ * @type {(number|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-selectionEndOffset
+ */
+chrome.automation.AutomationNode.prototype.selectionEndOffset;
+
+/**
+ * The affinity at the end of the selection, if any.
+ * @type {(string|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-selectionEndAffinity
+ */
+chrome.automation.AutomationNode.prototype.selectionEndAffinity;
+
+/**
  * The current value for this range.
  * @type {(number|undefined)}
  * @see https://developer.chrome.com/extensions/automation#type-valueForRange
