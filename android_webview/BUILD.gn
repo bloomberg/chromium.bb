@@ -16,11 +16,6 @@ import("//tools/grit/repack.gni")
 import("//tools/resources/generate_resource_whitelist.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 
-declare_args() {
-  # Package name of the system_webview_apk target.
-  system_webview_package_name = "com.android.webview"
-}
-
 if (enable_resource_whitelist_generation) {
   system_webview_pak_whitelist =
       "$target_gen_dir/system_webview_pak_whitelist.txt"
