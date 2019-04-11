@@ -55,18 +55,24 @@ class ExternalVkImageSkiaRepresentation : public SharedImageRepresentationSkia {
         ->GetVulkanQueue();
   }
 
+  VulkanFenceHelper* fence_helper() {
+    return backing_impl()
+        ->context_state()
+        ->vk_context_provider()
+        ->GetDeviceQueue()
+        ->GetFenceHelper();
+  }
+
   ExternalVkImageBacking* backing_impl() {
     return static_cast<ExternalVkImageBacking*>(backing());
   }
 
   sk_sp<SkPromiseImageTexture> BeginAccess(bool readonly);
   void EndAccess(bool readonly);
-  void DestroySemaphores(std::vector<VkSemaphore> semaphores,
-                         VkFence fence = VK_NULL_HANDLE);
-  void DestroySemaphore(VkSemaphore semaphores, VkFence fence = VK_NULL_HANDLE);
-  void WaitAndResetFence(VkFence fence);
 
-  VkFence CreateFence();
+  // Functions used in error cases - immediately clean up semaphores.
+  void DestroySemaphoresImmediate(std::vector<VkSemaphore> semaphores);
+  void DestroySemaphoreImmediate(VkSemaphore semaphores);
 
   enum AccessMode {
     kNone = 0,
@@ -75,12 +81,6 @@ class ExternalVkImageSkiaRepresentation : public SharedImageRepresentationSkia {
   };
   AccessMode access_mode_ = kNone;
   sk_sp<SkSurface> surface_;
-
-  std::vector<VkSemaphore> begin_access_semaphores_;
-  VkFence begin_access_fence_ = VK_NULL_HANDLE;
-
-  VkSemaphore end_access_semaphore_ = VK_NULL_HANDLE;
-  VkFence end_access_fence_ = VK_NULL_HANDLE;
 };
 
 }  // namespace gpu

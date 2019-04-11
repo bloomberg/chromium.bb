@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/trace_event/trace_event.h"
+#include "gpu/vulkan/vulkan_fence_helper.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_util.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
@@ -20,27 +21,9 @@ ExternalVkImageSkiaRepresentation::ExternalVkImageSkiaRepresentation(
     SharedImageBacking* backing,
     MemoryTypeTracker* tracker)
     : SharedImageRepresentationSkia(manager, backing, tracker) {
-  VkFenceCreateInfo create_info = {
-      .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
-      .pNext = nullptr,
-      .flags = 0,
-  };
-  VkResult result =
-      vkCreateFence(vk_device(), &create_info, nullptr /* pAllocator */,
-                    &begin_access_fence_);
-  DCHECK_EQ(result, VK_SUCCESS);
-  result = vkCreateFence(vk_device(), &create_info, nullptr /* pAllocator */,
-                         &end_access_fence_);
-  DCHECK_EQ(result, VK_SUCCESS);
 }
 
 ExternalVkImageSkiaRepresentation::~ExternalVkImageSkiaRepresentation() {
-  DestroySemaphores(std::move(begin_access_semaphores_), begin_access_fence_);
-  begin_access_semaphores_.clear();
-  DestroySemaphore(end_access_semaphore_, end_access_fence_);
-  end_access_semaphore_ = VK_NULL_HANDLE;
-  vkDestroyFence(vk_device(), begin_access_fence_, nullptr /* pAllocator */);
-  vkDestroyFence(vk_device(), end_access_fence_, nullptr /* pAllocator */);
 }
 
 sk_sp<SkSurface> ExternalVkImageSkiaRepresentation::BeginWriteAccess(
@@ -95,32 +78,33 @@ void ExternalVkImageSkiaRepresentation::EndReadAccess() {
 sk_sp<SkPromiseImageTexture> ExternalVkImageSkiaRepresentation::BeginAccess(
     bool readonly) {
   DCHECK_EQ(access_mode_, kNone);
-  DestroySemaphores(std::move(begin_access_semaphores_), begin_access_fence_);
-  begin_access_semaphores_.clear();
 
   std::vector<SemaphoreHandle> handles;
   if (!backing_impl()->BeginAccess(readonly, &handles))
     return nullptr;
 
+  std::vector<VkSemaphore> begin_access_semaphores;
   for (auto& handle : handles) {
     VkSemaphore semaphore = vk_implementation()->ImportSemaphoreHandle(
         vk_device(), std::move(handle));
     if (semaphore != VK_NULL_HANDLE)
-      begin_access_semaphores_.push_back(semaphore);
+      begin_access_semaphores.push_back(semaphore);
   }
 
-  if (!begin_access_semaphores_.empty()) {
+  if (!begin_access_semaphores.empty()) {
     // Submit wait semaphore to the queue. Note that Skia uses the same queue
     // exposed by vk_queue(), so this will work due to Vulkan queue ordering.
-    if (!SubmitWaitVkSemaphores(vk_queue(), begin_access_semaphores_,
-                                begin_access_fence_)) {
+    if (!SubmitWaitVkSemaphores(vk_queue(), begin_access_semaphores)) {
       LOG(ERROR) << "Failed to wait on semaphore";
       // Since the semaphore was not actually sent to the queue, it is safe to
-      // destroy the |begin_access_semaphores_| here.
-      DestroySemaphores(std::move(begin_access_semaphores_));
-      begin_access_semaphores_.clear();
+      // destroy the |begin_access_semaphores| here.
+      DestroySemaphoresImmediate(std::move(begin_access_semaphores));
       return nullptr;
     }
+
+    // Enqueue delayed cleanup of the semaphores.
+    fence_helper()->EnqueueSemaphoresCleanupForSubmittedWork(
+        std::move(begin_access_semaphores));
   }
 
   // Create backend texture from the VkImage.
@@ -137,58 +121,59 @@ sk_sp<SkPromiseImageTexture> ExternalVkImageSkiaRepresentation::BeginAccess(
 
 void ExternalVkImageSkiaRepresentation::EndAccess(bool readonly) {
   DCHECK_NE(access_mode_, kNone);
-  // Cleanup resources for previous accessing.
-  DestroySemaphore(end_access_semaphore_, end_access_fence_);
 
-  end_access_semaphore_ =
+  VkSemaphore end_access_semaphore =
       vk_implementation()->CreateExternalSemaphore(backing_impl()->device());
-  // Submit wait semaphore to the queue. Note that Skia uses the same queue
-  // exposed by vk_queue(), so this will work due to Vulkan queue ordering.
-  if (!SubmitSignalVkSemaphore(vk_queue(), end_access_semaphore_,
-                               end_access_fence_)) {
-    LOG(ERROR) << "Failed to wait on semaphore";
-    // Since the semaphore was not actually sent to the queue, it is safe to
-    // destroy the |end_access_semaphore_| here.
-    DestroySemaphore(end_access_semaphore_);
-    end_access_semaphore_ = VK_NULL_HANDLE;
+  VkFence end_access_fence = VK_NULL_HANDLE;
+  if (end_access_semaphore != VK_NULL_HANDLE) {
+    if (VK_SUCCESS != fence_helper()->GetFence(&end_access_fence)) {
+      // Since the semaphore was not actually sent to the queue, it is safe to
+      // destroy the |end_access_semaphore| here.
+      DestroySemaphoreImmediate(end_access_semaphore);
+    }
+    // Submit wait semaphore to the queue. Note that Skia uses the same queue
+    // exposed by vk_queue(), so this will work due to Vulkan queue ordering.
+    if (!SubmitSignalVkSemaphore(vk_queue(), end_access_semaphore,
+                                 end_access_fence)) {
+      LOG(ERROR) << "Failed to wait on semaphore";
+      // Since the semaphore was not actually sent to the queue, it is safe to
+      // destroy the |end_access_semaphore| here.
+      DestroySemaphoreImmediate(end_access_semaphore);
+      // Same for the fence.
+      vkDestroyFence(vk_device(), end_access_fence, nullptr);
+      end_access_fence = VK_NULL_HANDLE;
+      end_access_semaphore = VK_NULL_HANDLE;
+    }
   }
 
   SemaphoreHandle handle;
-  if (end_access_semaphore_ != VK_NULL_HANDLE) {
+  if (end_access_semaphore != VK_NULL_HANDLE) {
     handle = vk_implementation()->GetSemaphoreHandle(vk_device(),
-                                                     end_access_semaphore_);
+                                                     end_access_semaphore);
     if (!handle.is_valid())
       LOG(FATAL) << "Failed to get handle from a semaphore.";
+
+    // We're done with the semaphore, enqueue deferred cleanup.
+    fence_helper()->EnqueueSemaphoreCleanupForSubmittedWork(
+        end_access_semaphore);
+    fence_helper()->EnqueueFence(end_access_fence);
   }
   backing_impl()->EndAccess(readonly, std::move(handle));
 }
 
-void ExternalVkImageSkiaRepresentation::DestroySemaphores(
-    std::vector<VkSemaphore> semaphores,
-    VkFence fence) {
+void ExternalVkImageSkiaRepresentation::DestroySemaphoresImmediate(
+    std::vector<VkSemaphore> semaphores) {
   if (semaphores.empty())
     return;
-  if (fence != VK_NULL_HANDLE)
-    WaitAndResetFence(fence);
   for (VkSemaphore semaphore : semaphores)
     vkDestroySemaphore(vk_device(), semaphore, nullptr /* pAllocator */);
 }
 
-void ExternalVkImageSkiaRepresentation::DestroySemaphore(VkSemaphore semaphore,
-                                                         VkFence fence) {
+void ExternalVkImageSkiaRepresentation::DestroySemaphoreImmediate(
+    VkSemaphore semaphore) {
   if (semaphore == VK_NULL_HANDLE)
     return;
-  if (fence != VK_NULL_HANDLE)
-    WaitAndResetFence(fence);
-  vkDestroySemaphore(vk_device(), semaphore, nullptr /* pAllocator */);
-}
-
-void ExternalVkImageSkiaRepresentation::WaitAndResetFence(VkFence fence) {
-  TRACE_EVENT0("gpu", "ExternalVkImageSkiaRepresentation::WaitAndResetFence");
-  VkResult result = vkWaitForFences(vk_device(), 1, &fence, VK_TRUE,
-                                    std::numeric_limits<uint64_t>::max());
-  LOG_IF(FATAL, result != VK_SUCCESS) << "vkWaitForFences failed.";
-  vkResetFences(vk_device(), 1, &fence);
+  return DestroySemaphoresImmediate({semaphore});
 }
 
 }  // namespace gpu

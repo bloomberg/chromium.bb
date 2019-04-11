@@ -17,6 +17,7 @@
 
 namespace gpu {
 
+class VulkanFenceHelper;
 class VulkanCommandPool;
 
 class VULKAN_EXPORT VulkanDeviceQueue {
@@ -72,6 +73,8 @@ class VULKAN_EXPORT VulkanDeviceQueue {
 
   std::unique_ptr<gpu::VulkanCommandPool> CreateCommandPool();
 
+  VulkanFenceHelper* GetFenceHelper() const { return cleanup_helper_.get(); }
+
  private:
   gfx::ExtensionSet enabled_extensions_;
   VkPhysicalDevice vk_physical_device_ = VK_NULL_HANDLE;
@@ -80,6 +83,7 @@ class VULKAN_EXPORT VulkanDeviceQueue {
   VkQueue vk_queue_ = VK_NULL_HANDLE;
   uint32_t vk_queue_index_ = 0;
   const VkInstance vk_instance_;
+  std::unique_ptr<VulkanFenceHelper> cleanup_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(VulkanDeviceQueue);
 };

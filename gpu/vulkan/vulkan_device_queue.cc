@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "gpu/vulkan/vulkan_command_pool.h"
+#include "gpu/vulkan/vulkan_fence_helper.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 
 namespace gpu {
@@ -154,6 +155,8 @@ bool VulkanDeviceQueue::Initialize(
 
   vkGetDeviceQueue(vk_device_, queue_index, 0, &vk_queue_);
 
+  cleanup_helper_ = std::make_unique<VulkanFenceHelper>(this);
+
   return true;
 }
 
@@ -173,10 +176,14 @@ bool VulkanDeviceQueue::InitializeForWevbView(
   vk_queue_ = vk_queue;
   vk_queue_index_ = vk_queue_index;
   enabled_extensions_ = std::move(enabled_extensions);
+
+  cleanup_helper_ = std::make_unique<VulkanFenceHelper>(this);
   return true;
 }
 
 void VulkanDeviceQueue::Destroy() {
+  cleanup_helper_.reset();
+
   if (VK_NULL_HANDLE != owned_vk_device_) {
     vkDestroyDevice(owned_vk_device_, nullptr);
     owned_vk_device_ = VK_NULL_HANDLE;

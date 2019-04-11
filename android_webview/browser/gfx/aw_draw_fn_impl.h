@@ -82,8 +82,6 @@ class AwDrawFnImpl {
     return &render_thread_manager_;
   }
 
-  std::unique_ptr<InFlightInteropDraw> TakeInFlightInteropDrawForReUse();
-
   const bool is_interop_mode_;
 
   int functor_handle_;
@@ -95,17 +93,6 @@ class AwDrawFnImpl {
 
   // The draw context for the current frame. It is for direct mode only.
   sk_sp<GrVkSecondaryCBDrawContext> draw_context_;
-
-  struct InFlightDraw {
-    InFlightDraw(VkFence fence, sk_sp<GrVkSecondaryCBDrawContext> draw_context);
-    InFlightDraw(InFlightDraw&& other);
-    ~InFlightDraw();
-
-    // The fence for cleanup the |draw_context|.
-    VkFence fence = VK_NULL_HANDLE;
-    sk_sp<GrVkSecondaryCBDrawContext> draw_context;
-  };
-  base::queue<InFlightDraw> in_flight_draws_;
 
   // GL context used to draw via GL in Vk interop path.
   scoped_refptr<GLNonOwnedCompatibilityContext> gl_context_;
