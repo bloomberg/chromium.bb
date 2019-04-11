@@ -2204,6 +2204,11 @@ MediaControlsImpl::CurrentTimeDisplay() const {
   return *current_time_display_;
 }
 
+const MediaControlRemainingTimeDisplayElement&
+MediaControlsImpl::RemainingTimeDisplay() const {
+  return *duration_display_;
+}
+
 MediaControlToggleClosedCaptionsButtonElement&
 MediaControlsImpl::ToggleClosedCaptions() {
   return *toggle_closed_captions_button_;

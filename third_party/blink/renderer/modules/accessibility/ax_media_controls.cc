@@ -55,10 +55,7 @@ AXObject* AccessibilityMediaControl::Create(
 
   switch (MediaControlElementsHelper::GetMediaControlElementType(
       layout_object->GetNode())) {
-    case kMediaSlider:
-      return AccessibilityMediaTimeline::Create(layout_object, ax_object_cache);
 
-    case kMediaSliderThumb:
     case kMediaTimelineContainer:
       return MakeGarbageCollected<AccessibilityMediaControl>(layout_object,
                                                              ax_object_cache);
@@ -100,10 +97,8 @@ String AccessibilityMediaControl::TextAlternative(
     AXRelatedObjectVector* related_objects,
     NameSources* name_sources) const {
   switch (ControlType()) {
-    case kMediaSliderThumb:
     case kMediaTimelineContainer:
       return QueryString(WebLocalizedString::kAXMediaDefault);
-    case kMediaSlider:
     // Removed as a part of the a11y tree rewrite https://crbug/836549.
     case kMediaIgnore:
       NOTREACHED();
@@ -119,10 +114,8 @@ String AccessibilityMediaControl::Description(
     ax::mojom::DescriptionFrom& description_from,
     AXObjectVector* description_objects) const {
   switch (ControlType()) {
-    case kMediaSliderThumb:
     case kMediaTimelineContainer:
       return QueryString(WebLocalizedString::kAXMediaDefault);
-    case kMediaSlider:
     // Removed as a part of the a11y tree rewrite https://crbug/836549.
     case kMediaIgnore:
       NOTREACHED();
@@ -148,10 +141,6 @@ ax::mojom::Role AccessibilityMediaControl::RoleValue() const {
     case kMediaTimelineContainer:
       return ax::mojom::Role::kGroup;
 
-    case kMediaSliderThumb:
-      return ax::mojom::Role::kUnknown;
-
-    case kMediaSlider:
     case kMediaIgnore:
       // Not using AccessibilityMediaControl.
       NOTREACHED();
@@ -160,30 +149,6 @@ ax::mojom::Role AccessibilityMediaControl::RoleValue() const {
 
   NOTREACHED();
   return ax::mojom::Role::kUnknown;
-}
-
-//
-// AccessibilityMediaTimeline
-
-AccessibilityMediaTimeline::AccessibilityMediaTimeline(
-    LayoutObject* layout_object,
-    AXObjectCacheImpl& ax_object_cache)
-    : AXSlider(layout_object, ax_object_cache) {}
-
-AXObject* AccessibilityMediaTimeline::Create(
-    LayoutObject* layout_object,
-    AXObjectCacheImpl& ax_object_cache) {
-  return MakeGarbageCollected<AccessibilityMediaTimeline>(layout_object,
-                                                          ax_object_cache);
-}
-
-String AccessibilityMediaTimeline::Description(
-    ax::mojom::NameFrom name_from,
-    ax::mojom::DescriptionFrom& description_from,
-    AXObjectVector* description_objects) const {
-  return QueryString(IsControllingVideoElement()
-                         ? WebLocalizedString::kAXMediaVideoSliderHelp
-                         : WebLocalizedString::kAXMediaAudioSliderHelp);
 }
 
 }  // namespace blink

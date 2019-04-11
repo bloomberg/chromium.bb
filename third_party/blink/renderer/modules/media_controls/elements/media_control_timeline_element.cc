@@ -27,10 +27,12 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_current_time_display_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_elements_helper.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_remaining_time_display_element.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_resource_loader.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_shared_helper.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace {
 
@@ -58,8 +60,10 @@ namespace blink {
 // +-HTMLStyleElement
 MediaControlTimelineElement::MediaControlTimelineElement(
     MediaControlsImpl& media_controls)
-    : MediaControlSliderElement(media_controls, kMediaSlider) {
+    : MediaControlSliderElement(media_controls) {
   SetShadowPseudoId(AtomicString("-webkit-media-controls-timeline"));
+
+  setAttribute(html_names::kAriaLiveAttr, "polite");
 
   if (MediaControlsImpl::IsModern()) {
     Element& track = GetTrackElement();
@@ -81,15 +85,25 @@ bool MediaControlTimelineElement::WillRespondToMouseClickEvents() {
 
 void MediaControlTimelineElement::SetPosition(double current_time) {
   setValue(String::Number(current_time));
-  setAttribute(
-      html_names::kAriaValuetextAttr,
-      AtomicString(GetMediaControls().CurrentTimeDisplay().textContent(true)));
+  String aria_label =
+      GetLocale().QueryString(
+          MediaElement().IsHTMLVideoElement()
+              ? WebLocalizedString::kAXMediaVideoSliderHelp
+              : WebLocalizedString::kAXMediaAudioSliderHelp) +
+      " " + GetMediaControls().CurrentTimeDisplay().textContent(true) + " " +
+      GetMediaControls().RemainingTimeDisplay().textContent(true);
+  setAttribute(html_names::kAriaLabelAttr, AtomicString(aria_label));
+
+  setAttribute(html_names::kAriaValuetextAttr,
+               AtomicString(GetLocale().QueryString(
+                   WebLocalizedString::kAXMediaCurrentTimeDisplay,
+                   GetMediaControls().CurrentTimeDisplay().textContent(true))));
   RenderBarSegments();
 }
 
 void MediaControlTimelineElement::SetDuration(double duration) {
-  SetFloatingPointAttribute(html_names::kMaxAttr,
-                            std::isfinite(duration) ? duration : 0);
+  double duration_value = std::isfinite(duration) ? duration : 0;
+  SetFloatingPointAttribute(html_names::kMaxAttr, duration_value);
   RenderBarSegments();
 }
 
