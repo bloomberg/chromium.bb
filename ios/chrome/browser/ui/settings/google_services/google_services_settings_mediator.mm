@@ -96,6 +96,8 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 
 // Returns YES if the user is authenticated.
 @property(nonatomic, assign, readonly) BOOL isAuthenticated;
+// Returns YES if Sync setup is in progress.
+@property(nonatomic, assign, readonly) BOOL isSyncSetupInProgress;
 // Returns YES if the user cannot turn on sync for enterprise policy reasons.
 @property(nonatomic, assign, readonly) BOOL isSyncDisabledByAdministrator;
 // Returns YES if the user is allowed to turn on sync (even if there is a sync
@@ -239,10 +241,11 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   self.accountItem.image =
       [self.resizedAvatarCache resizedAvatarForIdentity:identity];
   self.accountItem.text = identity.userFullName;
-  if (self.syncSetupService->HasFinishedInitialSetup()) {
-    self.accountItem.detailText = identity.userEmail;
-  } else {
+  if (self.mode == GoogleServicesSettingsModeAdvancedSigninSettings ||
+      self.isSyncSetupInProgress) {
     self.accountItem.detailText = GetNSString(IDS_IOS_SYNC_SETUP_IN_PROGRESS);
+  } else {
+    self.accountItem.detailText = identity.userEmail;
   }
 }
 
@@ -408,21 +411,28 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 - (BOOL)updateSyncChromeDataItem {
   TableViewModel* model = self.consumer.tableViewModel;
   if (self.isSyncCanBeAvailable) {
-    if (self.syncChromeDataSwitchItem) {
-      BOOL needsUpdate = self.syncChromeDataSwitchItem.on !=
-                         self.syncSetupService->IsSyncingAllDataTypes();
-      self.syncChromeDataSwitchItem.on = self.syncSetupService->IsSyncEnabled();
-      return needsUpdate;
+    BOOL needsUpdate = NO;
+    if (!self.syncChromeDataSwitchItem) {
+      self.syncChromeDataSwitchItem =
+          [self switchItemWithItemType:SyncChromeDataItemType
+                          textStringID:
+                              IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_CHROME_DATA
+                        detailStringID:0
+                              dataType:0];
+      [model addItem:self.syncChromeDataSwitchItem
+          toSectionWithIdentifier:SyncSectionIdentifier];
+      needsUpdate = YES;
     }
-    self.syncChromeDataSwitchItem = [self
-        switchItemWithItemType:SyncChromeDataItemType
-                  textStringID:IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_CHROME_DATA
-                detailStringID:0
-                      dataType:0];
-    self.syncChromeDataSwitchItem.on = self.syncSetupService->IsSyncEnabled();
-    [model addItem:self.syncChromeDataSwitchItem
-        toSectionWithIdentifier:SyncSectionIdentifier];
-    return YES;
+    // Sync is not active when |syncSetupService->IsFirstSetupComplete()| is
+    // false. Show sync being turned off in the UI in this cases.
+    BOOL isSyncEnabled =
+        self.syncSetupService->IsSyncEnabled() &&
+        (self.syncSetupService->IsFirstSetupComplete() ||
+         self.mode == GoogleServicesSettingsModeAdvancedSigninSettings);
+    needsUpdate =
+        needsUpdate || isSyncEnabled != self.syncChromeDataSwitchItem.on;
+    self.syncChromeDataSwitchItem.on = isSyncEnabled;
+    return needsUpdate;
   }
   if (!self.syncChromeDataSwitchItem)
     return NO;
@@ -479,6 +489,13 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 
 - (BOOL)isAuthenticated {
   return self.authService->IsAuthenticated();
+}
+
+- (BOOL)isSyncSetupInProgress {
+  return self.isAuthenticated &&
+         (self.mode == GoogleServicesSettingsModeAdvancedSigninSettings ||
+          (self.syncSetupService->IsSyncEnabled() &&
+           !self.syncSetupService->IsFirstSetupComplete()));
 }
 
 - (BOOL)isSyncDisabledByAdministrator {
@@ -615,6 +632,17 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
       break;
     case SyncChromeDataItemType:
       self.syncSetupService->SetSyncEnabled(value);
+      if (self.mode == GoogleServicesSettingsModeSettings &&
+          !self.syncSetupService->IsFirstSetupComplete()) {
+        // FirstSetupComplete flag needs to be turned on when the user enables
+        // sync for the first time. This flag should not be turned on in
+        // GoogleServicesSettingsModeAdvancedSigninSettings. In that mode,
+        // this flag should be turned on only when the user clicks the confirm
+        // button.
+        CHECK(value);
+        self.syncSetupService->PrepareForFirstSyncSetup();
+        self.syncSetupService->SetFirstSetupComplete();
+      }
       break;
     case IdentityItemType:
     case SignInItemType:
