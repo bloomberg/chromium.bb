@@ -12,7 +12,7 @@
 
 #include "base/macros.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/arc/tracing/arc_cpu_model.h"
+#include "chrome/browser/chromeos/arc/tracing/arc_system_model.h"
 
 namespace arc {
 
@@ -57,7 +57,8 @@ class ArcTracingModel {
   // Dumps this model to |stream|.
   void Dump(std::ostream& stream) const;
 
-  const ArcCpuModel& cpu_model() const { return cpu_model_; }
+  ArcSystemModel& system_model() { return system_model_; }
+  const ArcSystemModel& system_model() const { return system_model_; }
 
  private:
   // Processes list of events. Returns true in case all events were processed
@@ -77,7 +78,7 @@ class ArcTracingModel {
   // tracing events.
   std::map<std::string, TracingEvents> group_events_;
 
-  ArcCpuModel cpu_model_;
+  ArcSystemModel system_model_;
 
   // Metadata events.
   TracingEvents metadata_events_;

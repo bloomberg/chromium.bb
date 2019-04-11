@@ -18,6 +18,7 @@
 
 namespace arc {
 class ArcGraphicsJankDetector;
+class ArcSystemStatCollector;
 }  // namespace arc
 
 namespace base {
@@ -106,6 +107,9 @@ class ArcGraphicsTracingHandler : public content::WebUIMessageHandler,
 
   // Used to detect janks for the currently active ARC++ window.
   std::unique_ptr<arc::ArcGraphicsJankDetector> jank_detector_;
+
+  // Collects system stat runtime.
+  std::unique_ptr<arc::ArcSystemStatCollector> system_stat_colletor_;
 
   // Information about tasks, title and icon.
   base::DictionaryValue tasks_info_;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/arc/tracing/arc_cpu_model.h"
+#include "chrome/browser/chromeos/arc/tracing/arc_system_model.h"
 
 #include <stdio.h>
 
@@ -12,13 +12,14 @@ namespace arc {
 
 namespace {
 
-constexpr char kKeyEvents[] = "events";
+constexpr char kKeyCpu[] = "cpu";
+constexpr char kKeyMemory[] = "memory";
 constexpr char kKeyName[] = "name";
 constexpr char kKeyPid[] = "pid";
 constexpr char kKeyThreads[] = "threads";
 
 bool LoadThreads(const base::Value* value,
-                 ArcCpuModel::ThreadMap* out_threads) {
+                 ArcSystemModel::ThreadMap* out_threads) {
   if (!value || !value->is_dict())
     return false;
 
@@ -38,13 +39,14 @@ bool LoadThreads(const base::Value* value,
       return false;
 
     (*out_threads)[tid] =
-        ArcCpuModel::ThreadInfo(pid->GetInt(), name->GetString());
+        ArcSystemModel::ThreadInfo(pid->GetInt(), name->GetString());
   }
 
   return true;
 }
 
-base::DictionaryValue SerializeThreads(const ArcCpuModel::ThreadMap& threads) {
+base::DictionaryValue SerializeThreads(
+    const ArcSystemModel::ThreadMap& threads) {
   base::DictionaryValue result;
 
   for (auto& thread_info : threads) {
@@ -60,52 +62,59 @@ base::DictionaryValue SerializeThreads(const ArcCpuModel::ThreadMap& threads) {
 
 }  // namespace
 
-ArcCpuModel::ThreadInfo::ThreadInfo() = default;
+ArcSystemModel::ThreadInfo::ThreadInfo() = default;
 
-ArcCpuModel::ThreadInfo::ThreadInfo(int pid, const std::string& name)
+ArcSystemModel::ThreadInfo::ThreadInfo(int pid, const std::string& name)
     : pid(pid), name(name) {}
 
-bool ArcCpuModel::ThreadInfo::operator==(const ThreadInfo& other) const {
+bool ArcSystemModel::ThreadInfo::operator==(const ThreadInfo& other) const {
   return pid == other.pid && name == other.name;
 }
 
-ArcCpuModel::ArcCpuModel() = default;
+ArcSystemModel::ArcSystemModel() = default;
 
-ArcCpuModel::~ArcCpuModel() = default;
+ArcSystemModel::~ArcSystemModel() = default;
 
-void ArcCpuModel::Reset() {
+void ArcSystemModel::Reset() {
   thread_map_.clear();
   all_cpu_events_.clear();
+  memory_events_.clear();
 }
 
-void ArcCpuModel::CopyFrom(const ArcCpuModel& other) {
+void ArcSystemModel::CopyFrom(const ArcSystemModel& other) {
   thread_map_ = other.thread_map_;
   all_cpu_events_ = other.all_cpu_events_;
+  memory_events_ = other.memory_events_;
 }
 
-base::DictionaryValue ArcCpuModel::Serialize() const {
+base::DictionaryValue ArcSystemModel::Serialize() const {
   base::DictionaryValue result;
   result.SetKey(kKeyThreads, SerializeThreads(thread_map_));
-  result.SetKey(kKeyEvents, SerializeAllCpuEvents(all_cpu_events_));
+  result.SetKey(kKeyCpu, SerializeAllCpuEvents(all_cpu_events_));
+  result.SetKey(kKeyMemory, SerializeValueEvents(memory_events_));
   return result;
 }
 
-bool ArcCpuModel::Load(const base::Value* root) {
+bool ArcSystemModel::Load(const base::Value* root) {
   if (!root || !root->is_dict())
     return false;
 
   if (!LoadThreads(root->FindKey(kKeyThreads), &thread_map_))
     return false;
 
-  if (!LoadAllCpuEvents(root->FindKey(kKeyEvents), &all_cpu_events_))
+  if (!LoadAllCpuEvents(root->FindKey(kKeyCpu), &all_cpu_events_))
+    return false;
+
+  if (!LoadValueEvents(root->FindKey(kKeyMemory), &memory_events_))
     return false;
 
   return true;
 }
 
-bool ArcCpuModel::operator==(const ArcCpuModel& other) const {
+bool ArcSystemModel::operator==(const ArcSystemModel& other) const {
   return thread_map_ == other.thread_map_ &&
-         all_cpu_events_ == other.all_cpu_events_;
+         all_cpu_events_ == other.all_cpu_events_ &&
+         memory_events_ == other.memory_events_;
 }
 
 }  // namespace arc

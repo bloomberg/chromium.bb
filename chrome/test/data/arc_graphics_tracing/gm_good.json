@@ -4,7 +4,7 @@
                 "global_events": [ ] },
    "chrome": { "buffers": [ [ [ 500, 1667.0 ], [ 501, 1808.0 ] ] ],
                 "global_events": [ ]  },
-   "cpu": { "threads": {}, "events": []},
+   "system": { "threads": {}, "cpu": [], "memory": []},
    "duration": 1053800.0,
    "views": [ {
       "activity": "com.android.vending/com.android.vending.AssetBrowserActivity",

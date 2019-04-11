@@ -22,8 +22,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/arc/tracing/arc_cpu_model.h"
 #include "chrome/browser/chromeos/arc/tracing/arc_graphics_jank_detector.h"
+#include "chrome/browser/chromeos/arc/tracing/arc_system_model.h"
+#include "chrome/browser/chromeos/arc/tracing/arc_system_stat_collector.h"
 #include "chrome/browser/chromeos/arc/tracing/arc_tracing_graphics_model.h"
 #include "chrome/browser/chromeos/arc/tracing/arc_tracing_model.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
@@ -120,7 +121,7 @@ bool ReadNameFromStatus(pid_t pid, pid_t tid, std::string* out_name) {
 // Helper that clarifies thread and process names. Tracing events may not have
 // enough data for this. Also it determines the process pid the thread belongs
 // to.
-void UpdateThreads(arc::ArcCpuModel::ThreadMap* threads) {
+void UpdateThreads(arc::ArcSystemModel::ThreadMap* threads) {
   ProcessFilterPassAll filter_pass_all;
   base::ProcessIterator process_iterator(&filter_pass_all);
 
@@ -151,9 +152,12 @@ void UpdateThreads(arc::ArcCpuModel::ThreadMap* threads) {
 std::pair<base::Value, std::string> BuildGraphicsModel(
     const std::string& data,
     base::DictionaryValue tasks_info,
+    std::unique_ptr<arc::ArcSystemStatCollector> system_stat_collector,
     const base::TimeTicks& time_min,
     const base::TimeTicks& time_max,
     const base::FilePath& last_model_path) {
+  DCHECK(system_stat_collector);
+
   arc::ArcTracingModel common_model;
   const base::TimeTicks time_min_clamped =
       std::max(time_min, time_max - kMaxIntervalToDisplay);
@@ -164,11 +168,14 @@ std::pair<base::Value, std::string> BuildGraphicsModel(
   if (!common_model.Build(data))
     return std::make_pair(base::Value(), "Failed to process tracing data");
 
+  system_stat_collector->Flush(time_min, time_max,
+                               &common_model.system_model());
+
   arc::ArcTracingGraphicsModel graphics_model;
   if (!graphics_model.Build(common_model))
     return std::make_pair(base::Value(), "Failed to build tracing model");
 
-  UpdateThreads(&graphics_model.cpu_model().thread_map());
+  UpdateThreads(&graphics_model.system_model().thread_map());
 
   std::unique_ptr<base::DictionaryValue> model = graphics_model.Serialize();
   model->SetKey(kKeyTasks, std::move(tasks_info));
@@ -337,6 +344,8 @@ void ArcGraphicsTracingHandler::StartTracing() {
   tracing_active_ = true;
   if (jank_detector_)
     jank_detector_->Reset();
+  system_stat_colletor_ = std::make_unique<arc::ArcSystemStatCollector>();
+  system_stat_colletor_->Start(kMaxIntervalToDisplay);
   content::TracingController::GetInstance()->StartTracing(
       config, base::BindOnce(&ArcGraphicsTracingHandler::OnTracingStarted,
                              weak_ptr_factory_.GetWeakPtr()));
@@ -348,6 +357,9 @@ void ArcGraphicsTracingHandler::StopTracing() {
   tracing_active_ = false;
 
   tracing_time_max_ = TRACE_TIME_TICKS_NOW();
+
+  if (system_stat_colletor_)
+    system_stat_colletor_->Stop();
 
   content::TracingController* const controller =
       content::TracingController::GetInstance();
@@ -378,12 +390,11 @@ void ArcGraphicsTracingHandler::OnTracingStopped(
     base::RefCountedString* trace_data) {
   std::string string_data;
   string_data.swap(trace_data->data());
-
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&BuildGraphicsModel, std::move(string_data),
-                     std::move(tasks_info_), tracing_time_min_,
-                     tracing_time_max_,
+                     std::move(tasks_info_), std::move(system_stat_colletor_),
+                     tracing_time_min_, tracing_time_max_,
                      GetLastTracingModelPath(Profile::FromWebUI(web_ui()))),
       base::BindOnce(&ArcGraphicsTracingHandler::OnGraphicsModelReady,
                      weak_ptr_factory_.GetWeakPtr()));

@@ -421,12 +421,13 @@ bool ArcTracingModel::ConvertSysTraces(const std::string& sys_traces) {
       return false;
     }
 
-    if (cpu_model_.thread_map().find(tid) == cpu_model_.thread_map().end()) {
+    if (system_model_.thread_map().find(tid) ==
+        system_model_.thread_map().end()) {
       int thread_name_start = 0;
       while (line[thread_name_start] == ' ')
         ++thread_name_start;
-      cpu_model_.thread_map()[tid] = ArcCpuModel::ThreadInfo(
-          ArcCpuModel::kUnknownPid,
+      system_model_.thread_map()[tid] = ArcSystemModel::ThreadInfo(
+          ArcSystemModel::kUnknownPid,
           line.substr(thread_name_start, 16 - thread_name_start));
     }
 
@@ -461,20 +462,20 @@ bool ArcTracingModel::ConvertSysTraces(const std::string& sys_traces) {
         return false;
       }
     } else if (!strncmp(&line[separator_position], kCpuIdle, kCpuIdleLength)) {
-      if (!HandleCpuIdle(&cpu_model_.all_cpu_events(), timestamp, cpu_id, tid,
-                         line, separator_position + kCpuIdleLength)) {
+      if (!HandleCpuIdle(&system_model_.all_cpu_events(), timestamp, cpu_id,
+                         tid, line, separator_position + kCpuIdleLength)) {
         return false;
       }
     } else if (!strncmp(&line[separator_position], kSchedWakeUp,
                         kSchedWakeUpLength)) {
-      if (!HandleSchedWakeUp(&cpu_model_.all_cpu_events(), timestamp, cpu_id,
+      if (!HandleSchedWakeUp(&system_model_.all_cpu_events(), timestamp, cpu_id,
                              tid, line,
                              separator_position + kSchedWakeUpLength)) {
         return false;
       }
     } else if (!strncmp(&line[separator_position], kSchedSwitch,
                         kSchedSwitchLength)) {
-      if (!HandleSchedSwitch(&cpu_model_.all_cpu_events(), timestamp, cpu_id,
+      if (!HandleSchedSwitch(&system_model_.all_cpu_events(), timestamp, cpu_id,
                              tid, line,
                              separator_position + kSchedSwitchLength)) {
         return false;
