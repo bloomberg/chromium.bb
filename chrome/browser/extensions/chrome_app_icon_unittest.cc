@@ -388,7 +388,6 @@ TEST_F(ChromeAppIconTest, ChromeBadging) {
   const gfx::ImageSkia image_before_badging = reference_icon.image_skia();
 
   // Badging should be applied once package is installed.
-  arc_test.app_instance()->RefreshAppList();
   std::vector<arc::mojom::AppInfo> fake_apps = arc_test.fake_apps();
   fake_apps[0].package_name = arc_test.fake_packages()[0]->package_name;
   arc_test.app_instance()->SendRefreshAppList(fake_apps);

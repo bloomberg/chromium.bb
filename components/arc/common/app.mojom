@@ -351,7 +351,7 @@ interface AppHost {
 
 // TODO(lhchavez): Migrate all request/response messages to Mojo.
 // Next method ID: 34
-// Deprecated method IDs: 3, 13
+// Deprecated method IDs: 2, 3, 13
 interface AppInstance {
   // DEPRECATED: Please use Init@21 instead.
   InitDeprecated@0(AppHost host_ptr);
@@ -392,12 +392,6 @@ interface AppInstance {
   // Sends a request to ARC to launch an intent. The intent is encoded as a URI
   // string. See Intent.toUri().
   [MinVersion=23] LaunchIntent@19(string intent_uri, int64 display_id);
-
-  // Sends a request to ARC to refresh a list of ARC apps.
-  // OnRefreshAppsList is expected in response to this message. However,
-  // response may not be sent if ARC is not ready yet (boot completed event is
-  // not received).
-  RefreshAppList@2();
 
   // Sends a request for the ARC shortcut icon of a given resource id and
   // |pixel_size|.
