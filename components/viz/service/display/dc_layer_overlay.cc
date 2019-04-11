@@ -193,12 +193,10 @@ void RecordDCLayerResult(DCLayerResult result,
 
 void RecordOverlayHistograms(bool is_overlay,
                              bool has_occluding_surface_damage,
-                             bool is_full_screen_mode,
                              bool zero_damage_rect,
                              bool occluding_damage_equal_to_damage_rect) {
   UMA_HISTOGRAM_BOOLEAN("GPU.DirectComposition.IsUnderlay", !is_overlay);
-  UMA_HISTOGRAM_BOOLEAN("GPU.DirectComposition.FullScreenOverlay",
-                        is_full_screen_mode);
+
   OverlayProcessor::RecordOverlayDamageRectHistograms(
       is_overlay, has_occluding_surface_damage, zero_damage_rect,
       occluding_damage_equal_to_damage_rect);
@@ -447,13 +445,8 @@ void DCLayerOverlayProcessor::ProcessRenderPass(
     current_frame_overlay_rect_union_.Union(rect_in_root);
 
     RecordDCLayerResult(DC_LAYER_SUCCESS, dc_layer.protected_video_type);
-    // In full screen mode, some video quads don't fill up the screen in height
-    // or width due to the screen aspect ratio. To determine full screen mode,
-    // just check either width or height.
-    bool is_full_screen_mode = rect_in_root.width() == display_rect.width() ||
-                               rect_in_root.height() == display_rect.height();
     RecordOverlayHistograms(is_overlay, has_occluding_surface_damage,
-                            is_full_screen_mode, damage_rect->IsEmpty(),
+                            damage_rect->IsEmpty(),
                             occlusion_bounding_box == gfx::RectF(*damage_rect));
     dc_layer_overlays->push_back(dc_layer);
 

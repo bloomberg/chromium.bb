@@ -42257,6 +42257,15 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="NV12"/>
 </enum>
 
+<enum name="OverlayFullScreenTypes">
+  <int value="0" label="Window Mode"/>
+  <int value="1" label="Full Screen Mode"/>
+  <int value="2" label="Full Screen in Width Only"/>
+  <int value="3" label="Full Screen in Height Only"/>
+  <int value="4" label="Oversized Full Screen"/>
+  <int value="5" label="Not Available"/>
+</enum>
+
 <enum name="OverlayPanel.StateChangeReason">
   <int value="0" label="Unknown"/>
   <int value="1" label="Reset"/>
