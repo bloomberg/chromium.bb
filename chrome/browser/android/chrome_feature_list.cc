@@ -255,7 +255,7 @@ const base::Feature kAndroidSearchEngineChoiceNotification{
     "AndroidSearchEngineChoiceNotification", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAndroidSiteSettingsUIRefresh{
-    "AndroidSiteSettingsUIRefresh", base::FEATURE_ENABLED_BY_DEFAULT};
+    "AndroidSiteSettingsUIRefresh", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kAndroidWebContentsDarkMode{
     "AndroidWebContentsDarkMode", base::FEATURE_DISABLED_BY_DEFAULT};
