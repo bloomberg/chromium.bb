@@ -2449,6 +2449,7 @@ Unknown properties are collapsed to zero. -->
   <int value="15" label="App started by left-clicking on link"/>
   <int value="16" label="App started from link context menu"/>
   <int value="17" label="App started from Smart Text Selection context menu"/>
+  <int value="18" label="App started from Kiosk Next Home"/>
 </enum>
 
 <enum name="ArcVideoDecodeAcceleratorResult">
