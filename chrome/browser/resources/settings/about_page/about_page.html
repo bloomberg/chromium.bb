@@ -57,9 +57,10 @@
         margin-inline-end: var(--about-page-image-space);
       }
 
-      iron-icon {
+      .icon-container {
         margin-inline-end: var(--about-page-image-space);
         min-width: 32px;  /* The width of the product-logo img. */
+        text-align: center;
       }
 
       iron-icon[icon='settings:check-circle'] {
@@ -105,19 +106,21 @@
               src URL -->
             <!-- Set the icon from the iconset (when it's obsolete/EOL and
               when update is done) or set the src (when it's updating). -->
-            <iron-icon
-                hidden="[[!shouldShowIcons_(showUpdateStatus_)]]"
+            <div class="icon-container"
+                hidden="[[!shouldShowIcons_(showUpdateStatus_)]]">
+              <iron-icon
 <if expr="not chromeos">
-                icon$="[[getUpdateStatusIcon_(
-                    obsoleteSystemInfo_, currentUpdateStatusEvent_)]]"
-                src="[[getThrobberSrcIfUpdating_(obsoleteSystemInfo_, currentUpdateStatusEvent_)]]">
+                  icon$="[[getUpdateStatusIcon_(
+                      obsoleteSystemInfo_, currentUpdateStatusEvent_)]]"
+                  src="[[getThrobberSrcIfUpdating_(obsoleteSystemInfo_, currentUpdateStatusEvent_)]]">
 </if>
 <if expr="chromeos">
-                icon$="[[getUpdateStatusIcon_(
-                    hasEndOfLife_, currentUpdateStatusEvent_)]]"
-                src="[[getThrobberSrcIfUpdating_(hasEndOfLife_, currentUpdateStatusEvent_)]]">
+                  icon$="[[getUpdateStatusIcon_(
+                      hasEndOfLife_, currentUpdateStatusEvent_)]]"
+                  src="[[getThrobberSrcIfUpdating_(hasEndOfLife_, currentUpdateStatusEvent_)]]">
 </if>
-            </iron-icon>
+              </iron-icon>
+            </div>
             <div class="start padded">
               <div id="updateStatusMessage" hidden="[[!showUpdateStatus_]]">
                 <div
