@@ -42,6 +42,7 @@
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
 #include "ios/chrome/browser/first_run/first_run.h"
 #import "ios/chrome/browser/geolocation/omnibox_geolocation_controller.h"
+#include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/language/url_language_histogram_factory.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #import "ios/chrome/browser/metrics/size_class_recorder.h"
@@ -77,6 +78,7 @@
 #import "ios/chrome/browser/ui/activity_services/activity_service_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_presentation.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
+#import "ios/chrome/browser/ui/authentication/re_signin_infobar_delegate.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_interaction_controller.h"
 #import "ios/chrome/browser/ui/browser_container/browser_container_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller_dependency_factory.h"
@@ -128,8 +130,10 @@
 #import "ios/chrome/browser/ui/presenters/vertical_animation_container.h"
 #import "ios/chrome/browser/ui/reading_list/offline_page_native_content.h"
 #import "ios/chrome/browser/ui/sad_tab/sad_tab_coordinator.h"
+#import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_controller.h"
 #import "ios/chrome/browser/ui/side_swipe/swipe_view.h"
+#import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
 #import "ios/chrome/browser/ui/static_content/static_html_native_content.h"
 #import "ios/chrome/browser/ui/tabs/background_tab_animation_view.h"
 #import "ios/chrome/browser/ui/tabs/foreground_tab_animation_view.h"
@@ -378,6 +382,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                      PasswordControllerDelegate,
                                      PreloadControllerDelegate,
                                      SideSwipeControllerDelegate,
+                                     SigninPresenter,
                                      SnapshotGeneratorDelegate,
                                      TabModelObserver,
                                      TabStripPresentation,
@@ -2031,7 +2036,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   self.infobarContainerCoordinator = [[InfobarContainerCoordinator alloc]
       initWithBaseViewController:self
                     browserState:_browserState
-                        tabModel:self.tabModel];
+                    webStateList:self.tabModel.webStateList];
   self.infobarContainerCoordinator.commandDispatcher = self.dispatcher;
   self.infobarContainerCoordinator.positioner = self;
   self.infobarContainerCoordinator.syncPresenter = self;
@@ -4392,6 +4397,27 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   DCHECK(tab);
   _temporaryNativeController = nil;
 
+  // When adding new tabs, check what kind of reminder infobar should
+  // be added to the new tab. Try to add only one of them.
+  // This check is done when a new tab is added either through the Tools Menu
+  // "New Tab", through a long press on the Tab Switcher button "New Tab", and
+  // through creating a New Tab from the Tab Switcher. This method is called
+  // after a new tab has added and finished initial navigation. If this is added
+  // earlier, the initial navigation may end up clearing the infobar(s) that are
+  // just added.
+  web::WebState* webState = tab.webState;
+  DCHECK(webState);
+
+  infobars::InfoBarManager* infoBarManager =
+      InfoBarManagerImpl::FromWebState(webState);
+  NSString* tabID = TabIdTabHelper::FromWebState(webState)->tab_id();
+  [[UpgradeCenter sharedInstance] addInfoBarToManager:infoBarManager
+                                             forTabId:tabID];
+  if (!ReSignInInfoBarDelegate::Create(self.browserState, tab,
+                                       self /* id<SigninPresenter> */)) {
+    DisplaySyncErrors(self.browserState, tab, self /* id<SyncPresenter> */);
+  }
+
   // The rest of this function initiates the new tab animation, which is
   // phone-specific.  Call the foreground tab added completion block; for
   // iPhones, this will get executed after the animation has finished.
@@ -4839,6 +4865,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   } else {
     [self.dispatcher openURLInNewTab:[OpenNewTabCommand command]];
   }
+}
+
+#pragma mark - SigninPresenter
+
+- (void)showSignin:(ShowSigninCommand*)command {
+  [self.dispatcher showSignin:command baseViewController:self];
 }
 
 #pragma mark - SyncPresenter (Public)

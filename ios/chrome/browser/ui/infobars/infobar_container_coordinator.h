@@ -12,18 +12,19 @@ class WebState;
 }
 
 @class CommandDispatcher;
-@class TabModel;
 @protocol InfobarPositioner;
 @protocol SyncPresenter;
+class WebStateList;
 
 // Coordinator that owns and manages an InfobarContainer.
 @interface InfobarContainerCoordinator : ChromeCoordinator
 
-// TODO(crbug.com/892376): Stop passing TabModel and use WebStateList instead.
+// TODO(crbug.com/892376): Pass a Browser object instead of BrowserState and
+// WebStateList once BVC has a Browser pointer.
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                               browserState:
                                   (ios::ChromeBrowserState*)browserState
-                                  tabModel:(TabModel*)tabModel
+                              webStateList:(WebStateList*)webStateList
     NS_DESIGNATED_INITIALIZER;
 ;
 

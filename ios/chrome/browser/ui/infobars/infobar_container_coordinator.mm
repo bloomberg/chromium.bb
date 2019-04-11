@@ -17,7 +17,6 @@
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/infobars/infobar_positioner.h"
 #include "ios/chrome/browser/ui/infobars/legacy_infobar_container_view_controller.h"
-#import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
 #include "ios/chrome/browser/upgrade/upgrade_center.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -30,11 +29,9 @@ namespace {
 const double kBannerPresentationDurationInSeconds = 6.0;
 }  // namespace
 
-@interface InfobarContainerCoordinator () <
-    InfobarContainerConsumer,
-    SigninPresenter>
+@interface InfobarContainerCoordinator () <InfobarContainerConsumer>
 
-@property(nonatomic, assign) TabModel* tabModel;
+@property(nonatomic, assign) WebStateList* webStateList;
 
 // ViewController of the Infobar currently being presented, can be nil.
 @property(nonatomic, weak) UIViewController* infobarViewController;
@@ -53,11 +50,11 @@ const double kBannerPresentationDurationInSeconds = 6.0;
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                               browserState:
                                   (ios::ChromeBrowserState*)browserState
-                                  tabModel:(TabModel*)tabModel {
+                              webStateList:(WebStateList*)webStateList {
   self = [super initWithBaseViewController:viewController
                               browserState:browserState];
   if (self) {
-    _tabModel = tabModel;
+    _webStateList = webStateList;
   }
   return self;
 }
@@ -85,11 +82,9 @@ const double kBannerPresentationDurationInSeconds = 6.0;
   self.mediator = [[InfobarContainerMediator alloc]
       initWithConsumer:self
         legacyConsumer:self.legacyContainerViewController
-          browserState:self.browserState
-              tabModel:self.tabModel];
+          webStateList:self.webStateList];
 
   self.mediator.syncPresenter = self.syncPresenter;
-  self.mediator.signinPresenter = self;
 
   [[UpgradeCenter sharedInstance] registerClient:self.mediator
                                   withDispatcher:self.dispatcher];
@@ -200,13 +195,6 @@ const double kBannerPresentationDurationInSeconds = 6.0;
   InfobarCoordinator* infobarCoordinator =
       static_cast<InfobarCoordinator*>(self.activeChildCoordinator);
   [infobarCoordinator presentInfobarModal];
-}
-
-#pragma mark - SigninPresenter
-
-- (void)showSignin:(ShowSigninCommand*)command {
-  [self.dispatcher showSignin:command
-           baseViewController:self.baseViewController];
 }
 
 @end
