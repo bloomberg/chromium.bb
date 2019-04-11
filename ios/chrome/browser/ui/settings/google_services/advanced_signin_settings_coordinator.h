@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
 @class AdvancedSigninSettingsCoordinator;
+@protocol ApplicationCommands;
 
 // AdvancedSigninSettingsCoordinator delegate.
 @protocol AdvancedSigninSettingsCoordinatorDelegate <NSObject>
@@ -26,6 +27,8 @@
 // Delegate.
 @property(nonatomic, weak) id<AdvancedSigninSettingsCoordinatorDelegate>
     delegate;
+// Global dispatcher.
+@property(nonatomic, weak) id<ApplicationCommands> dispatcher;
 
 // Cancels the coordinator, and calls the delegate. This method does nothing if
 // called twice.

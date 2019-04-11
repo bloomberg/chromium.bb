@@ -39,6 +39,7 @@
           initWithBaseViewController:self.navigationController
                         browserState:self.browserState
                                 mode:GoogleServicesSettingsModeSettings];
+  self.googleServicesSettingsCoordinator.dispatcher = self.dispatcher;
   self.googleServicesSettingsCoordinator.navigationController =
       self.navigationController;
   [self.googleServicesSettingsCoordinator start];

@@ -250,6 +250,7 @@
             initWithBaseViewController:self.presentingViewController
                           browserState:self.browserState];
     self.advancedSigninSettingsCoordinator.delegate = self;
+    self.advancedSigninSettingsCoordinator.dispatcher = self.dispatcher;
     [self.advancedSigninSettingsCoordinator start];
   } else {
     [self signinDoneWithSuccess:YES];
