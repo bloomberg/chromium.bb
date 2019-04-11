@@ -235,18 +235,6 @@ class SwitchAccess {
   }
 
   /**
-   * Get the value of type 'string' of the preference |key|. Will throw a type
-   * error if the value of |key| is not 'string'.
-   *
-   * @override
-   * @param  {string} key
-   * @return {string}
-   */
-  getStringPref(key) {
-    return this.switchAccessPrefs_.getStringPref(key);
-  }
-
-  /**
    * Returns true if |keyCode| is already used to run a command from the
    * keyboard.
    *
