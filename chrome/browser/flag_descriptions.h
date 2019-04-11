@@ -1974,6 +1974,9 @@ extern const char kAggressiveCacheDiscardThresholds[];
 extern const char kAggressiveTabDiscardThresholds[];
 extern const char kAggressiveThresholds[];
 
+extern const char kMojoImfName[];
+extern const char kMojoImfDescription[];
+
 extern const char kMtpWriteSupportName[];
 extern const char kMtpWriteSupportDescription[];
 
