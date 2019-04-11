@@ -196,6 +196,9 @@ IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest, Install) {
             WebAppProvider::Get(browser()->profile())
                 ->system_web_app_manager()
                 .GetAppIdForSystemApp(web_app::SystemAppType::SETTINGS));
+  EXPECT_TRUE(WebAppProvider::Get(browser()->profile())
+                  ->system_web_app_manager()
+                  .IsSystemWebApp(app->id()));
 }
 
 }  // namespace web_app

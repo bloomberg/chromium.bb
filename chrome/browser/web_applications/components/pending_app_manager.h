@@ -14,6 +14,7 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "chrome/browser/web_applications/components/install_options.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "url/gurl.h"
 
 namespace web_app {
@@ -104,7 +105,13 @@ class PendingAppManager {
       SynchronizeCallback callback);
 
   // Returns the app id for |url| if the PendingAppManager is aware of it.
-  virtual base::Optional<std::string> LookupAppId(const GURL& url) const = 0;
+  virtual base::Optional<AppId> LookupAppId(const GURL& url) const = 0;
+
+  // Returns whether the PendingAppManager has installed an app with |app_id|
+  // from |install_source|.
+  virtual bool HasAppIdWithInstallSource(
+      const AppId& app_id,
+      web_app::InstallSource install_source) const = 0;
 
  private:
   struct SynchronizeRequest {

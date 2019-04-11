@@ -12,6 +12,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
+#include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/common/context_menu_params.h"
@@ -86,8 +88,12 @@ void ExtensionAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
         profile(), this, menu_model,
         base::Bind(MenuItemHasLauncherContext));
 
+    bool is_system_web_app = web_app::WebAppProvider::Get(profile())
+                                 ->system_web_app_manager()
+                                 .IsSystemWebApp(app_id());
+
     // First, add the primary actions.
-    if (!is_platform_app_)
+    if (!is_platform_app_ && !is_system_web_app)
       CreateOpenNewSubmenu(menu_model);
 
     // Create default items.
@@ -107,7 +113,7 @@ void ExtensionAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
                          is_platform_app_ ? IDS_APP_LIST_UNINSTALL_ITEM
                                           : IDS_APP_LIST_EXTENSIONS_UNINSTALL);
 
-    if (controller()->CanDoShowAppInfoFlow()) {
+    if (controller()->CanDoShowAppInfoFlow() && !is_system_web_app) {
       AddContextMenuOption(menu_model, ash::SHOW_APP_INFO,
                            IDS_APP_CONTEXT_MENU_SHOW_INFO);
     }

@@ -40,6 +40,9 @@ class SystemWebAppManager {
   // Returns the app id for the given System App |id|.
   base::Optional<std::string> GetAppIdForSystemApp(SystemAppType id) const;
 
+  // Returns whether |app_id| points to an installed System App.
+  bool IsSystemWebApp(const AppId& app_id) const;
+
  protected:
   void SetSystemAppsForTesting(
       base::flat_map<SystemAppType, GURL> system_app_urls);
