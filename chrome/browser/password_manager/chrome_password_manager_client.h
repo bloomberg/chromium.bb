@@ -142,6 +142,7 @@ class ChromePasswordManagerClient
   void PasswordNoLongerGenerated(
       const autofill::PasswordForm& password_form) override;
   void FrameWasScrolled() override;
+  void GenerationElementLostFocus() override;
 
 #if defined(FULL_SAFE_BROWSING)
   void CheckSafeBrowsingReputation(const GURL& form_action,

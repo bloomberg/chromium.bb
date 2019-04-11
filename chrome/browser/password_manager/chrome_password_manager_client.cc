@@ -781,6 +781,11 @@ void ChromePasswordManagerClient::FrameWasScrolled() {
     popup_controller_->FrameWasScrolled();
 }
 
+void ChromePasswordManagerClient::GenerationElementLostFocus() {
+  if (popup_controller_)
+    popup_controller_->GenerationElementLostFocus();
+}
+
 const GURL& ChromePasswordManagerClient::GetMainFrameURL() const {
   return web_contents()->GetVisibleURL();
 }

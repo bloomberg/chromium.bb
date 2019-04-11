@@ -93,6 +93,10 @@ class PasswordGenerationPopupControllerImpl
   // Hides the popup, since its position is no longer valid.
   void FrameWasScrolled();
 
+  // Hides the popup, since the generation element for which it was shown
+  // is no longer focused.
+  void GenerationElementLostFocus();
+
   // The generated password counts as rejected either if the user ignores the
   // popup and types a password, or if the generated password is deleted.
   // In both cases the popups should be hidden. In the latter case, a new popup
