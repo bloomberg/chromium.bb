@@ -736,11 +736,14 @@ void AutomationInternalCustomBindings::AddRoutes() {
          AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
         const std::vector<int> line_starts =
             node->GetOrComputeLineStartOffsets();
+        v8::Local<v8::Context> context = isolate->GetCurrentContext();
         v8::Local<v8::Array> array_result(
             v8::Array::New(isolate, line_starts.size()));
         for (size_t i = 0; i < line_starts.size(); ++i) {
-          array_result->Set(static_cast<uint32_t>(i),
-                            v8::Integer::New(isolate, line_starts[i]));
+          array_result
+              ->CreateDataProperty(context, static_cast<uint32_t>(i),
+                                   v8::Integer::New(isolate, line_starts[i]))
+              .Check();
         }
         result.Set(array_result);
       });
@@ -898,11 +901,14 @@ void AutomationInternalCustomBindings::AddRoutes() {
             ui::ParseIntAttribute(attribute_name.c_str());
         std::set<int32_t> ids =
             tree->GetReverseRelations(attribute, node->id());
+        v8::Local<v8::Context> context = isolate->GetCurrentContext();
         v8::Local<v8::Array> array_result(v8::Array::New(isolate, ids.size()));
         size_t count = 0;
         for (int32_t id : ids) {
-          array_result->Set(static_cast<uint32_t>(count++),
-                            v8::Integer::New(isolate, id));
+          array_result
+              ->CreateDataProperty(context, static_cast<uint32_t>(count++),
+                                   v8::Integer::New(isolate, id))
+              .Check();
         }
         result.Set(array_result);
       });
@@ -936,11 +942,14 @@ void AutomationInternalCustomBindings::AddRoutes() {
         const std::vector<int32_t>& attr_value =
             node->data().GetIntListAttribute(attribute);
 
+        v8::Local<v8::Context> context = isolate->GetCurrentContext();
         v8::Local<v8::Array> array_result(
             v8::Array::New(isolate, attr_value.size()));
         for (size_t i = 0; i < attr_value.size(); ++i)
-          array_result->Set(static_cast<uint32_t>(i),
-                            v8::Integer::New(isolate, attr_value[i]));
+          array_result
+              ->CreateDataProperty(context, static_cast<uint32_t>(i),
+                                   v8::Integer::New(isolate, attr_value[i]))
+              .Check();
         result.Set(array_result);
       });
   RouteNodeIDPlusAttributeFunction(
@@ -952,11 +961,14 @@ void AutomationInternalCustomBindings::AddRoutes() {
             ui::ParseIntListAttribute(attribute_name.c_str());
         std::set<int32_t> ids =
             tree->GetReverseRelations(attribute, node->id());
+        v8::Local<v8::Context> context = isolate->GetCurrentContext();
         v8::Local<v8::Array> array_result(v8::Array::New(isolate, ids.size()));
         size_t count = 0;
         for (int32_t id : ids) {
-          array_result->Set(static_cast<uint32_t>(count++),
-                            v8::Integer::New(isolate, id));
+          array_result
+              ->CreateDataProperty(context, static_cast<uint32_t>(count++),
+                                   v8::Integer::New(isolate, id))
+              .Check();
         }
         result.Set(array_result);
       });
@@ -1088,13 +1100,17 @@ void AutomationInternalCustomBindings::AddRoutes() {
           return;
         }
 
+        v8::Local<v8::Context> context = isolate->GetCurrentContext();
         v8::Local<v8::Array> custom_actions(
             v8::Array::New(isolate, custom_action_ids.size()));
         for (size_t i = 0; i < custom_action_ids.size(); i++) {
           gin::DataObjectBuilder custom_action(isolate);
           custom_action.Set("id", custom_action_ids[i]);
           custom_action.Set("description", custom_action_descriptions[i]);
-          custom_actions->Set(static_cast<uint32_t>(i), custom_action.Build());
+          custom_actions
+              ->CreateDataProperty(context, static_cast<uint32_t>(i),
+                                   custom_action.Build())
+              .Check();
         }
         result.Set(custom_actions);
       });
@@ -1235,11 +1251,14 @@ void AutomationInternalCustomBindings::AddRoutes() {
          AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
         std::vector<int32_t> col_headers;
         node->GetTableCellColHeaderNodeIds(&col_headers);
+        v8::Local<v8::Context> context = isolate->GetCurrentContext();
         v8::Local<v8::Array> array_result(
             v8::Array::New(isolate, col_headers.size()));
         for (size_t i = 0; i < col_headers.size(); ++i)
-          array_result->Set(static_cast<uint32_t>(i),
-                            v8::Integer::New(isolate, col_headers[i]));
+          array_result
+              ->CreateDataProperty(context, static_cast<uint32_t>(i),
+                                   v8::Integer::New(isolate, col_headers[i]))
+              .Check();
         result.Set(array_result);
       });
   RouteNodeIDFunction(
@@ -1248,11 +1267,14 @@ void AutomationInternalCustomBindings::AddRoutes() {
          AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
         std::vector<int32_t> row_headers;
         node->GetTableCellRowHeaderNodeIds(&row_headers);
+        v8::Local<v8::Context> context = isolate->GetCurrentContext();
         v8::Local<v8::Array> array_result(
             v8::Array::New(isolate, row_headers.size()));
         for (size_t i = 0; i < row_headers.size(); ++i)
-          array_result->Set(static_cast<uint32_t>(i),
-                            v8::Integer::New(isolate, row_headers[i]));
+          array_result
+              ->CreateDataProperty(context, static_cast<uint32_t>(i),
+                                   v8::Integer::New(isolate, row_headers[i]))
+              .Check();
         result.Set(array_result);
       });
   RouteNodeIDFunction(
