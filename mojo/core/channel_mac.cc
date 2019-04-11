@@ -17,8 +17,6 @@
 #include "base/containers/buffer_iterator.h"
 #include "base/containers/circular_deque.h"
 #include "base/containers/span.h"
-#include "base/debug/crash_logging.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/mac/mach_logging.h"
 #include "base/mac/scoped_mach_msg_destroy.h"
@@ -117,11 +115,6 @@ class ChannelMac : public Channel,
                               size_t extra_header_size,
                               std::vector<PlatformHandle>* handles,
                               bool* deferred) override {
-    // TODO(https://crbug.com/946372): Remove when fixed.
-    static base::debug::CrashKeyString* error_crash_key =
-        base::debug::AllocateCrashKeyString("channel-mac-handles-error",
-                                            base::debug::CrashKeySize::Size64);
-
     // Validate the incoming handles. If validation fails, ensure they are
     // destroyed.
     std::vector<PlatformHandle> incoming_handles;
@@ -130,14 +123,12 @@ class ChannelMac : public Channel,
     if (extra_header_size <
         sizeof(Message::MachPortsExtraHeader) +
             (incoming_handles.size() * sizeof(Message::MachPortsEntry))) {
-      base::debug::SetCrashKeyString(error_crash_key, "extra_header_size");
       return false;
     }
 
     const auto* mach_ports_header =
         reinterpret_cast<const Message::MachPortsExtraHeader*>(extra_header);
     if (mach_ports_header->num_ports != incoming_handles.size()) {
-      base::debug::SetCrashKeyString(error_crash_key, "num_ports mismatch");
       return false;
     }
 
@@ -145,29 +136,19 @@ class ChannelMac : public Channel,
       auto type = static_cast<PlatformHandle::Type>(
           mach_ports_header->entries[i].mach_entry.type);
       if (type == PlatformHandle::Type::kNone) {
-        base::debug::SetCrashKeyString(
-            error_crash_key, base::StringPrintf("kNone handle #%d", i));
         return false;
       } else if (type == PlatformHandle::Type::kFd &&
                  incoming_handles[i].is_mach_send()) {
         int fd = fileport_makefd(incoming_handles[i].GetMachSendRight().get());
         if (fd < 0) {
-          base::debug::SetCrashKeyString(
-              error_crash_key,
-              base::StringPrintf("fileport_makefd %d -%d #%d", fd, errno, i));
           return false;
         }
         incoming_handles[i] = PlatformHandle(base::ScopedFD(fd));
       } else if (type != incoming_handles[i].type()) {
-        base::debug::SetCrashKeyString(
-            error_crash_key,
-            base::StringPrintf("handle mismatch %d != -%d #%d", type,
-                               incoming_handles[i].type(), i));
         return false;
       }
     }
 
-    base::debug::ClearCrashKeyString(error_crash_key);
     *handles = std::move(incoming_handles);
     return true;
   }
@@ -646,12 +627,6 @@ class ChannelMac : public Channel,
     size_t ignored;
     DispatchResult result = TryDispatchMessage(payload, &ignored);
     if (result != DispatchResult::kOK) {
-      // TODO(https://crbug.com/946372): Remove when fixed.
-      static auto* error_crash_key = base::debug::AllocateCrashKeyString(
-          "channel-mac-try-dispatch", base::debug::CrashKeySize::Size32);
-      base::debug::SetCrashKeyString(error_crash_key,
-                                     base::StringPrintf("%d", result));
-      base::debug::DumpWithoutCrashing();
       OnError(Error::kReceivedMalformedData);
       return;
     }
