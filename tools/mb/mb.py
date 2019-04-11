@@ -928,18 +928,22 @@ class MetaBuildWrapper(object):
     win = self.platform == 'win32' or 'target_os="win"' in vals['gn_args']
     possible_runtime_deps_rpaths = {}
     for target in ninja_targets:
+      target_type = isolate_map[target]['type']
+      label = isolate_map[target]['label']
+      stamp_runtime_deps = 'obj/%s.stamp.runtime_deps' % label.replace(':', '/')
       # TODO(https://crbug.com/876065): 'official_tests' use
       # type='additional_compile_target' to isolate tests. This is not the
       # intended use for 'additional_compile_target'.
-      if (isolate_map[target]['type'] == 'additional_compile_target' and
+      if (target_type == 'additional_compile_target' and
           target != 'official_tests'):
         # By definition, additional_compile_targets are not tests, so we
         # shouldn't generate isolates for them.
         raise MBErr('Cannot generate isolate for %s since it is an '
                     'additional_compile_target.' % target)
-      elif isolate_map[target]['type'] == 'generated_script':
-        script = isolate_map[target]['script']
-        rpaths = ['%s.runtime_deps' % script]
+      elif fuchsia or ios or target_type == 'generated_script':
+        # iOS and Fuchsia targets end up as groups.
+        # generated_script targets are always actions.
+        rpaths = [stamp_runtime_deps]
       elif android:
         # Android targets may be either android_apk or executable. The former
         # will result in runtime_deps associated with the stamp file, while the
@@ -947,20 +951,16 @@ class MetaBuildWrapper(object):
         label = isolate_map[target]['label']
         rpaths = [
             target + '.runtime_deps',
-            'obj/%s.stamp.runtime_deps' % label.replace(':', '/')]
-      elif ios or fuchsia:
-        # iOS and Fuchsia targets end up as groups.
-        label = isolate_map[target]['label']
-        rpaths = ['obj/%s.stamp.runtime_deps' % label.replace(':', '/')]
-      elif (isolate_map[target]['type'] == 'script' or
-            isolate_map[target]['type'] == 'fuzzer' or
+            stamp_runtime_deps]
+      elif (target_type == 'script' or
+            target_type == 'fuzzer' or
             isolate_map[target].get('label_type') == 'group'):
         # For script targets, the build target is usually a group,
         # for which gn generates the runtime_deps next to the stamp file
         # for the label, which lives under the obj/ directory, but it may
         # also be an executable.
         label = isolate_map[target]['label']
-        rpaths = ['obj/%s.stamp.runtime_deps' % label.replace(':', '/')]
+        rpaths = [stamp_runtime_deps]
         if win:
           rpaths += [ target + '.exe.runtime_deps' ]
         else:
