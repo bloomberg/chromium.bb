@@ -9,6 +9,10 @@
 
 namespace features {
 
+// If enabled, the user will see the second version of the customization picker.
+const base::Feature kNtpCustomizationMenuV2{"NtpCustomizationMenuV2",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled, the user will see Doodles on the New Tab Page.
 const base::Feature kDoodlesOnLocalNtp{"DoodlesOnLocalNtp",
                                        base::FEATURE_ENABLED_BY_DEFAULT};

@@ -33457,6 +33457,7 @@ from previous Chrome versions.
       label="DataReductionProxyEnabledWithNetworkService:disabled"/>
   <int value="91938915" label="enable-suggestions-service"/>
   <int value="92327255" label="DisplayMoveWindowAccels:disabled"/>
+  <int value="93832899" label="NtpCustomizationMenuV2:enabled"/>
   <int value="98134240" label="material-design-ink-drop-animation-speed"/>
   <int value="103932290" label="show-autofill-type-predictions"/>
   <int value="105046382" label="ParallelDownloading:disabled"/>
@@ -34329,6 +34330,7 @@ from previous Chrome versions.
   <int value="1496571153" label="enable-webapk"/>
   <int value="1497924954" label="js-flags"/>
   <int value="1499163193" label="PostScriptPrinting:disabled"/>
+  <int value="1500390299" label="NtpCustomizationMenuV2:disabled"/>
   <int value="1505194447" label="disable-transition-compositing"/>
   <int value="1508761653" label="disable-site-isolation-trials"/>
   <int value="1509901380" label="disable-drive-search-in-app-launcher"/>
