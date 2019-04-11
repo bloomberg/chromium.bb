@@ -595,20 +595,19 @@ function _createMaterialTooltip(parentElement, bounds, contentElement, withArrow
     }
 
     // If tooltip intersects with the bounds, hide it.
-    if (boxX < bounds.maxX && boxX + titleWidth > bounds.minX &&
-        boxY < bounds.maxY && boxY + titleHeight > bounds.minY) {
-      tooltipContent.style.display = 'none';
-      return;
-    }
-
-    if (boxX + titleWidth >= bounds.minX && boxX + titleWidth <= bounds.maxX && boxY + titleHeight >= bounds.minY && boxY + titleHeight <= bounds.maxY) {
+    // Allow bounds to contain the box though for the large elements like <body>.
+    const includes = boxX >= bounds.minX && boxX + titleWidth <= bounds.maxX &&
+      boxY >= bounds.minY && boxY + titleHeight <= bounds.maxY;
+    const overlaps = boxX < bounds.maxX && boxX + titleWidth > bounds.minX &&
+        boxY < bounds.maxY && boxY + titleHeight > bounds.minY;
+    if (overlaps && !includes) {
       tooltipContent.style.display = 'none';
       return;
     }
 
     tooltipContent.style.top = boxY + "px";
     tooltipContent.style.left = boxX + "px";
-    tooltipContent.style.setProperty('--arrow-visibility', arrowHidden ? 'hidden' : 'visible');
+    tooltipContent.style.setProperty('--arrow-visibility', (arrowHidden || includes) ? 'hidden' : 'visible');
     if (arrowHidden)
         return;
 
