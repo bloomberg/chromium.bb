@@ -72,7 +72,7 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
         printers_(kNumPrinterClasses),
         weak_ptr_factory_(this) {
     // Prime the printer cache with the configured and enterprise printers.
-    printers_[kConfigured] = synced_printers_manager_->GetConfiguredPrinters();
+    printers_[kConfigured] = synced_printers_manager_->GetSavedPrinters();
     RebuildConfiguredPrintersIndex();
     synced_printers_manager_observer_.Add(synced_printers_manager_);
     enterprise_printers_are_ready_ =
@@ -141,7 +141,7 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
     }
     // If this is an 'add' instead of just an update, record the event.
     MaybeRecordInstallation(printer, false);
-    synced_printers_manager_->UpdateConfiguredPrinter(printer);
+    synced_printers_manager_->UpdateSavedPrinter(printer);
     // Note that we will rebuild our lists when we get the observer
     // callback from |synced_printers_manager_|.
   }
@@ -153,7 +153,7 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
     if (existing) {
       event_tracker_->RecordPrinterRemoved(*existing);
     }
-    synced_printers_manager_->RemoveConfiguredPrinter(printer_id);
+    synced_printers_manager_->RemoveSavedPrinter(printer_id);
     // Note that we will rebuild our lists when we get the observer
     // callback from |synced_printers_manager_|.
   }
@@ -214,9 +214,9 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   }
 
   // SyncedPrintersManager::Observer implementation
-  void OnConfiguredPrintersChanged() override {
+  void OnSavedPrintersChanged() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
-    printers_[kConfigured] = synced_printers_manager_->GetConfiguredPrinters();
+    printers_[kConfigured] = synced_printers_manager_->GetSavedPrinters();
     RebuildConfiguredPrintersIndex();
     RebuildDetectedLists();
     NotifyObservers({kConfigured});

@@ -57,7 +57,7 @@ class SyncedPrintersManagerImpl : public SyncedPrintersManager,
     sync_bridge_->RemoveObserver(this);
   }
 
-  std::vector<Printer> GetConfiguredPrinters() const override {
+  std::vector<Printer> GetSavedPrinters() const override {
     // No need to lock here, since sync_bridge_ is thread safe and we don't
     // touch anything else.
     std::vector<Printer> printers;
@@ -82,12 +82,12 @@ class SyncedPrintersManagerImpl : public SyncedPrintersManager,
     return GetPrinterLocked(printer_id);
   }
 
-  void UpdateConfiguredPrinter(const Printer& printer) override {
+  void UpdateSavedPrinter(const Printer& printer) override {
     base::AutoLock l(lock_);
-    UpdateConfiguredPrinterLocked(printer);
+    UpdateSavedPrinterLocked(printer);
   }
 
-  bool RemoveConfiguredPrinter(const std::string& printer_id) override {
+  bool RemoveSavedPrinter(const std::string& printer_id) override {
     return sync_bridge_->RemovePrinter(printer_id);
   }
 
@@ -106,7 +106,7 @@ class SyncedPrintersManagerImpl : public SyncedPrintersManager,
 
     // Register this printer if it's the first time we're using it.
     if (!IsPrinterRegistered(printer.id())) {
-      UpdateConfiguredPrinterLocked(printer);
+      UpdateSavedPrinterLocked(printer);
     }
   }
 
@@ -124,8 +124,7 @@ class SyncedPrintersManagerImpl : public SyncedPrintersManager,
   // PrintersSyncBridge::Observer override.
   void OnPrintersUpdated() override {
     observers_->Notify(
-        FROM_HERE,
-        &SyncedPrintersManager::Observer::OnConfiguredPrintersChanged);
+        FROM_HERE, &SyncedPrintersManager::Observer::OnSavedPrintersChanged);
   }
 
   // EnterprisePrintersProvider::Observer override
@@ -165,7 +164,7 @@ class SyncedPrintersManagerImpl : public SyncedPrintersManager,
            sync_bridge_->HasPrinter(printer_id);
   }
 
-  void UpdateConfiguredPrinterLocked(const Printer& printer_arg) {
+  void UpdateSavedPrinterLocked(const Printer& printer_arg) {
     lock_.AssertAcquired();
     DCHECK_EQ(Printer::SRC_USER_PREFS, printer_arg.source());
 
