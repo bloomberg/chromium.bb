@@ -113,11 +113,14 @@
     SyncSetupService* syncSetupService =
         SyncSetupServiceFactory::GetForBrowserState(self.browserState);
     if (self.mode == GoogleServicesSettingsModeSettings &&
-        !syncSetupService->IsFirstSetupComplete()) {
-      // Sign-in workflow has been interrupted. FirstSetupComplete flag needs to
-      // be turned on.
-      syncSetupService->PrepareForFirstSyncSetup();
-      syncSetupService->SetFirstSetupComplete();
+        !syncSetupService->IsFirstSetupComplete() &&
+        syncSetupService->IsSyncEnabled()) {
+      // Google services settings has been opened in the settings mode, and
+      // FirstSetupComplete is off, this means the user never accepted or
+      // refused to turn Sync on.
+      // When closing, FirstSetupComplete is still off, so the user doesn't
+      // want to turn Sync on. To acknowledge, Sync has to be turned off.
+      syncSetupService->SetSyncEnabled(false);
     }
     syncSetupService->CommitSyncChanges();
   }

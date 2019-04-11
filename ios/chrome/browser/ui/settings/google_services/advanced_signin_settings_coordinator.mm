@@ -92,8 +92,14 @@ using l10n_util::GetNSString;
 - (void)finishedWithSuccess:(BOOL)success {
   DCHECK(self.advancedSigninSettingsNavigationController);
   if (success) {
-    SyncSetupServiceFactory::GetForBrowserState(self.browserState)
-        ->SetFirstSetupComplete();
+    SyncSetupService* syncSetupService =
+        SyncSetupServiceFactory::GetForBrowserState(self.browserState);
+    if (syncSetupService->IsSyncEnabled()) {
+      // FirstSetupComplete flag should be only turned on when the user agrees
+      // to start Sync.
+      syncSetupService->PrepareForFirstSyncSetup();
+      syncSetupService->SetFirstSetupComplete();
+    }
   } else {
     AuthenticationServiceFactory::GetForBrowserState(self.browserState)
         ->SignOut(signin_metrics::ABORT_SIGNIN, nil);

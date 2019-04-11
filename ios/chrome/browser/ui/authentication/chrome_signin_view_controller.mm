@@ -316,10 +316,11 @@ enum AuthenticationState {
   // |unifiedConsentService| may be null in unit tests.
   if (unifiedConsentService)
     unifiedConsentService->SetUrlKeyedAnonymizedDataCollectionEnabled(true);
-  SyncSetupService* syncSetupService =
-      SyncSetupServiceFactory::GetForBrowserState(_browserState);
-  syncSetupService->PrepareForFirstSyncSetup();
   if (!_unifiedConsentCoordinator.settingsLinkWasTapped) {
+    // FirstSetupComplete flag should be only turned on when the user agrees
+    // to start Sync.
+    SyncSetupService* syncSetupService =
+        SyncSetupServiceFactory::GetForBrowserState(_browserState);
     syncSetupService->SetFirstSetupComplete();
     syncSetupService->CommitSyncChanges();
   }
