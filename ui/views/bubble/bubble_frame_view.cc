@@ -160,7 +160,7 @@ bool BubbleFrameView::GetClientMask(const gfx::Size& size, SkPath* path) const {
   DCHECK(GetBoundsForClientView().size() == size);
   DCHECK(GetWidget()->client_view()->size() == size);
 
-  const int radius = bubble_border_->corner_radius();
+  const int radius = bubble_border_->GetBorderCornerRadius();
   const gfx::Insets insets =
       GetClientInsetsForFrameWidth(GetContentsBounds().width());
 
@@ -184,7 +184,7 @@ int BubbleFrameView::NonClientHitTest(const gfx::Point& point) {
   // Convert to RRectF to accurately represent the rounded corners of the
   // dialog and allow events to pass through the shadows.
   gfx::RRectF round_contents_bounds(gfx::RectF(GetContentsBounds()),
-                                    bubble_border_->corner_radius());
+                                    bubble_border_->GetBorderCornerRadius());
   if (bubble_border_->shadow() != BubbleBorder::NO_ASSETS)
     round_contents_bounds.Outset(BubbleBorder::kBorderThicknessDip);
   gfx::RectF rectf_point(point.x(), point.y(), 1, 1);
@@ -221,7 +221,8 @@ void BubbleFrameView::GetWindowMask(const gfx::Size& size,
   // Use a window mask roughly matching the border in the image assets.
   const int kBorderStrokeSize =
       bubble_border_->shadow() == BubbleBorder::NO_ASSETS ? 0 : 1;
-  const SkScalar kCornerRadius = SkIntToScalar(bubble_border_->corner_radius());
+  const SkScalar kCornerRadius =
+      SkIntToScalar(bubble_border_->GetBorderCornerRadius());
   const gfx::Insets border_insets = bubble_border_->GetInsets();
   SkRect rect = {
       SkIntToScalar(border_insets.left() - kBorderStrokeSize),
@@ -442,7 +443,7 @@ void BubbleFrameView::SetBubbleBorder(std::unique_ptr<BubbleBorder> border) {
   bubble_border_ = border.get();
 
   if (footnote_container_)
-    footnote_container_->SetCornerRadius(border->corner_radius());
+    footnote_container_->SetCornerRadius(border->GetBorderCornerRadius());
 
   SetBorder(std::move(border));
 
@@ -455,7 +456,7 @@ void BubbleFrameView::SetFootnoteView(View* view) {
     return;
 
   DCHECK(!footnote_container_);
-  int radius = bubble_border_ ? bubble_border_->corner_radius() : 0;
+  int radius = bubble_border_ ? bubble_border_->GetBorderCornerRadius() : 0;
   footnote_container_ =
       new FootnoteContainerView(footnote_margins_, view, radius);
   AddChildView(footnote_container_);
