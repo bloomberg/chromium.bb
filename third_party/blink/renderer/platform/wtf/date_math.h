@@ -53,6 +53,11 @@ namespace WTF {
 
 // Not really math related, but this is currently the only shared place to put
 // these.
+//
+// TODO(tkent): Only blink::ParseDate() uses this function to parse HTTP
+// header values. net::HTTPResponseHeaders::GetTimeValuedHeader() uses
+// base::Time::FromUTCString() for the same purpose.  We should consider
+// switching to base::Time::FromUTCString() for consistency.
 WTF_EXPORT double ParseDateFromNullTerminatedCharacters(
     const char* date_string);
 
