@@ -156,15 +156,19 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "omnibox_text_field_ios_unittest.mm",
+    "omnibox_view_ios_unittest.mm",
   ]
   deps = [
     ":omnibox",
     ":omnibox_internal",
     ":resources_unit_tests",
     "//base",
+    "//base/test:test_support",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/browser_state:test_support",
     "//testing/gtest",
+    "//third_party/ocmock",
     "//ui/base",
   ]
 }

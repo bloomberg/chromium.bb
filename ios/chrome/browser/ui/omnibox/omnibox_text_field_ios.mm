@@ -94,11 +94,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   UIColor* _displayedTintColor;
 }
 
-@synthesize preEditText = _preEditText;
-@synthesize clearingPreEditText = _clearingPreEditText;
-@synthesize placeholderTextColor = _placeholderTextColor;
-@synthesize incognito = _incognito;
-@synthesize suggestionCommandsEndpoint = _suggestionCommandsEndpoint;
+@dynamic delegate;
 
 #pragma mark - Public methods
 // Overload to allow for code-based initialization.
@@ -369,20 +365,6 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 
 #pragma mark - Properties
 
-// Enforces that the delegate is an OmniboxTextFieldDelegate.
-- (id<OmniboxTextFieldDelegate>)delegate {
-  id delegate = [super delegate];
-  DCHECK(delegate == nil ||
-         [[delegate class]
-             conformsToProtocol:@protocol(OmniboxTextFieldDelegate)]);
-  return delegate;
-}
-
-// Overridden to require an OmniboxTextFieldDelegate.
-- (void)setDelegate:(id<OmniboxTextFieldDelegate>)delegate {
-  [super setDelegate:delegate];
-}
-
 - (UIFont*)largerFont {
   return PreferredFontForTextStyleWithMaxCategory(
       UIFontTextStyleBody, self.traitCollection.preferredContentSizeCategory,
@@ -608,15 +590,16 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
     return YES;
   }
 
+  // Handle pre-edit shortcuts.
+  if ([self isPreEditing]) {
+    // Allow cut and copy in preedit.
+    if ((action == @selector(copy:)) || (action == @selector(cut:))) {
+      return YES;
+    }
+  }
+
   // Note that this NO does not keep other elements in the responder chain from
   // adding actions they handle to the menu.
-  // No special handling is necessary for pre-edit and autocomplete states.
-  // In pre-edit, the text in the textfield is selected even though it is not
-  // shown. so the behavior is correct. As an aside, the only way to access the
-  // editing menu without exiting the pre-edit state is via accessibility
-  // features. For inline autocomplete, any action on the textfield first
-  // accepts the autocompletion and unselects the text. It is therefore not
-  // possible to open the editing menu in this state.
   return NO;
 }
 
