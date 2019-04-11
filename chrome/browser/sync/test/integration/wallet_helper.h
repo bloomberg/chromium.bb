@@ -145,7 +145,6 @@ class AutofillWalletMetadataSizeChecker
 
   // StatusChangeChecker implementation.
   bool IsExitConditionSatisfied() override;
-  void CheckExitCondition() override;
   std::string GetDebugMessage() const override;
 
   // autofill::PersonalDataManager implementation.
@@ -154,6 +153,9 @@ class AutofillWalletMetadataSizeChecker
  private:
   // A state machine that makes sure we do not nest checking exit conditions.
   enum State { IDLE, CHECKING, SHOULD_RECHECK };
+
+  bool IsExitConditionSatisfiedImpl();
+
   State state_ = IDLE;
   const int profile_a_;
   const int profile_b_;
