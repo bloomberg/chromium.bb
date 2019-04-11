@@ -72,8 +72,8 @@ class MojoHelper : public ime::mojom::ImeEngine,
     ime::mojom::ImeEngineFactoryPtr factory_ptr;
     factory_binding_.Close();
     factory_binding_.Bind(mojo::MakeRequest(&factory_ptr));
-    factory_binding_.set_connection_error_handler(
-        base::BindOnce(&MojoHelper::OnConnectionLost, base::Unretained(this)));
+    factory_binding_.set_connection_error_handler(base::BindOnce(
+        &MojoHelper::OnFactoryConnectionLost, base::Unretained(this)));
 
     if (registry) {
       registry_ = std::move(registry);
@@ -86,12 +86,16 @@ class MojoHelper : public ime::mojom::ImeEngine,
     registry_->ActivateFactory(std::move(factory_ptr));
   }
 
+  void set_allow_finish_input(bool allow) { allow_finish_input_ = allow; }
+
   // ime::mojom::ImeEngineFactory overrides:
   void CreateEngine(ime::mojom::ImeEngineRequest engine_request,
                     ime::mojom::ImeEngineClientPtr client) override {
     engine_binding_.Close();
     engine_binding_.Bind(std::move(engine_request));
     engine_client_ = std::move(client);
+    engine_client_.set_connection_error_handler(base::BindOnce(
+        &MojoHelper::OnClientConnectionLost, base::Unretained(this)));
   }
 
   // ime::mojom::ImeEngine overrides:
@@ -100,8 +104,17 @@ class MojoHelper : public ime::mojom::ImeEngine,
         info->type, info->mode, info->flags, info->focus_reason,
         info->should_do_learning);
     engine_->FocusIn(context);
+    allow_finish_input_ = true;
   }
-  void FinishInput() override { engine_->FocusOut(); }
+  void FinishInput() override {
+    // Only allows the call of FocusOut() when the FocusIn() was caused from a
+    // mojo-based client. Please see the comments for |allow_finish_input_| for
+    // the details.
+    if (allow_finish_input_) {
+      engine_->FocusOut();
+      allow_finish_input_ = false;
+    }
+  }
   void CancelInput() override { engine_->Reset(); }
   void ProcessKeyEvent(
       std::unique_ptr<ui::Event> key_event,
@@ -132,12 +145,14 @@ class MojoHelper : public ime::mojom::ImeEngine,
   }
 
  private:
-  void OnConnectionLost() {
+  void OnFactoryConnectionLost() {
     // After the connection to |ImeEngineFactoryRegistry| is broken, notifies
     // the client to reconnect through Window Service.
     if (engine_client_)
       engine_client_->Reconnect();
   }
+
+  void OnClientConnectionLost() { engine_client_.reset(); }
 
   InputMethodEngine* engine_;
   mojo::Binding<ime::mojom::ImeEngineFactory> factory_binding_;
@@ -145,6 +160,14 @@ class MojoHelper : public ime::mojom::ImeEngine,
 
   ime::mojom::ImeEngineClientPtr engine_client_;
   ime::mojom::ImeEngineFactoryRegistryPtr registry_;
+
+  // Whether mutes the call of FinishInput().
+  // This is to guard the mis-ordered calls of FocusIn() & FocusOut() calls when
+  // switching between mojo-based and non-mojo-based clients.
+  // e.g. app_list window is non-mojo-based client, so need to guard the
+  // FocusOut() call from the mojo-based client because the app_list window's
+  // FocusIn() comes in first.
+  bool allow_finish_input_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MojoHelper);
 };
@@ -183,6 +206,12 @@ void InputMethodEngine::Enable(const std::string& component_id) {
 
 bool InputMethodEngine::IsActive() const {
   return !active_component_id_.empty();
+}
+
+void InputMethodEngine::FocusIn(
+    const ui::IMEEngineHandlerInterface::InputContext& input_context) {
+  InputMethodEngineBase::FocusIn(input_context);
+  mojo_helper_->set_allow_finish_input(false);
 }
 
 void InputMethodEngine::PropertyActivate(const std::string& property_name) {

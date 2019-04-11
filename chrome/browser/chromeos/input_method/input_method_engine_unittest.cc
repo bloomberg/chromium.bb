@@ -424,6 +424,22 @@ TEST_F(InputMethodEngineTest, TestMojoInteractions) {
   engine_->CommitText(context, "input", &error);
   engine_->FlushForTesting();
   EXPECT_TRUE(client.commit_text_called());
+
+  engine_ptr->FinishInput();
+  engine_ptr.FlushForTesting();
+  EXPECT_EQ(ONBLUR, observer_->GetCallsBitmapAndReset());
+
+  // Switches from a mojo-based client to a non-mojo-based client.
+  engine_ptr->StartInput(ime::mojom::EditorInfo::New(
+      ui::TEXT_INPUT_TYPE_TEXT, ui::TEXT_INPUT_MODE_DEFAULT,
+      ui::TEXT_INPUT_FLAG_NONE, ui::TextInputClient::FOCUS_REASON_MOUSE,
+      false));
+  engine_ptr.FlushForTesting();
+  engine_ptr->FinishInput();
+  FocusIn(ui::TEXT_INPUT_TYPE_TEXT);
+  engine_ptr.FlushForTesting();
+  // Verifies no ONBLUR is called.
+  EXPECT_EQ(ONFOCUS, observer_->GetCallsBitmapAndReset());
 }
 
 }  // namespace input_method

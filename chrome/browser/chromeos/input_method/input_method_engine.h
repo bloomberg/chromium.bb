@@ -92,6 +92,8 @@ class InputMethodEngine : public ::input_method::InputMethodEngineBase {
   // InputMethodEngineBase overrides.
   void Enable(const std::string& component_id) override;
   bool IsActive() const override;
+  void FocusIn(const ui::IMEEngineHandlerInterface::InputContext& input_context)
+      override;
 
   // ui::IMEEngineHandlerInterface overrides.
   void PropertyActivate(const std::string& property_name) override;
