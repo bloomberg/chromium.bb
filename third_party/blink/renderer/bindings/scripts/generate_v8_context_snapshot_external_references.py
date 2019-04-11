@@ -162,10 +162,12 @@ class ExternalReferenceTableGenerator(object):
     # in V8 context snapshot, so we can skip them.
     def _process_interface(self, interface, component, interfaces):
         def has_impl(interface):
+            component_info = self._info_provider.component_info
+            runtime_features = component_info['runtime_enabled_features']
             # Non legacy callback interface does not provide V8 callbacks.
             if interface.is_callback:
                 return len(interface.constants) > 0
-            if 'RuntimeEnabled' in interface.extended_attributes:
+            if v8_utilities.runtime_enabled_feature_name(interface, runtime_features):
                 return False
             if 'Exposed' not in interface.extended_attributes:
                 return True
