@@ -307,6 +307,15 @@
       These settings are enforced by your administrator
     </message>
     <if expr="chromeos">
+      <message name="IDS_PRINT_PREVIEW_OPTION_PIN" desc="Option to print with pin.">
+        Enable user pin
+      </message>
+      <message name="IDS_PRINT_PREVIEW_PIN_ERROR_MESSAGE" desc="Message shown to the user when they attempt to print with pin, but don't enter pin in correct form.">
+        Enter a pin to print
+      </message>
+      <message name="IDS_PRINT_PREVIEW_PIN_PLACEHOLDER" desc="Text to put in a pin textfield when user has not entered any pin value.">
+        Enter 4 digit pin (0000-9999)
+      </message>
       <message name="IDS_PRINT_CONFIGURING_IN_PROGRESS_TEXT" desc="Message shown to user while their printer is being setup in Chrome OS.">
         Setting up
       </message>

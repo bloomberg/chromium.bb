@@ -281,6 +281,9 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
 #if defined(OS_CHROMEOS)
     {"configuringFailedText", IDS_PRINT_CONFIGURING_FAILED_TEXT},
     {"configuringInProgressText", IDS_PRINT_CONFIGURING_IN_PROGRESS_TEXT},
+    {"optionPin", IDS_PRINT_PREVIEW_OPTION_PIN},
+    {"pinErrorMessage", IDS_PRINT_PREVIEW_PIN_ERROR_MESSAGE},
+    {"pinPlaceholder", IDS_PRINT_PREVIEW_PIN_PLACEHOLDER},
 #endif
 #if defined(OS_MACOSX)
     {"openPdfInPreviewOption", IDS_PRINT_PREVIEW_OPEN_PDF_IN_PREVIEW_APP},

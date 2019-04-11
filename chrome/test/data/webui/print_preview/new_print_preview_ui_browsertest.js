@@ -1528,3 +1528,25 @@ PrintPreviewDuplexSettingsTest = class extends NewPrintPreviewTest {
 TEST_F('PrintPreviewDuplexSettingsTest', 'All', function() {
   mocha.run();
 });
+
+GEN('#if defined(OS_CHROMEOS)');
+PrintPreviewPinSettingsTest = class extends NewPrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/pin_settings.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '../settings/test_util.js',
+      'print_preview_test_utils.js',
+      'pin_settings_test.js',
+    ]);
+  }
+};
+
+TEST_F('PrintPreviewPinSettingsTest', 'All', function() {
+  mocha.run();
+});
+GEN('#endif');

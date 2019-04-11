@@ -44,6 +44,10 @@ js_type_check("closure_compile") {
     ":settings_select",
     ":state",
   ]
+
+  if (is_chromeos) {
+    deps += [ ":pin_settings" ]
+  }
 }
 
 js_library("app") {
@@ -98,6 +102,10 @@ js_library("button_strip") {
     "../data:destination",
     "//ui/webui/resources/js:cr",
   ]
+
+  if (is_chromeos) {
+    deps += [ ":pin_settings" ]
+  }
 }
 
 js_library("header") {
@@ -144,6 +152,15 @@ js_library("destination_select") {
     "//ui/webui/resources/js:i18n_behavior",
   ]
   externs_list = [ "$externs_path/pending.js" ]
+}
+
+if (is_chromeos) {
+  js_library("pin_settings") {
+    deps = [
+      ":input_behavior",
+      ":settings_behavior",
+    ]
+  }
 }
 
 js_library("pages_settings") {
