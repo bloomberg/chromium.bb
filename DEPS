@@ -252,23 +252,23 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'spv_tools_revision': '82ebbbba15c2adb7933489130374b43be970b8d4',
+  'spv_tools_revision': '12e4a7b649e6fe28683de9fc352200c82948a1f0',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'spv_headers_revision': '2434b89345a50c018c84f42a310b0fad4f3fd94f',
+  'spv_headers_revision': '111a25e4ae45e2b4d7c18415e1d6884712b958c4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'spirv_cross_revision': '69b034f26e28a76a6f4e5d9521123072b24d7ea2',
+  'spirv_cross_revision': 'f07a4e16a60e1d0231dda5d3883550761bd70a47',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'shaderc_revision': '6ff17fe32fd2e0b6bc1890befaf036d526b24540',
+  'shaderc_revision': 'ff9ae40e3734a264a56bba02191f5ae18c7e5e03',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '51fd66e3dd35d4ed80dc64244a6dd132e2321fa7',
+  'dawn_revision': '9a9b837519953393aa8c76dd4f6df6090fba08c7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
