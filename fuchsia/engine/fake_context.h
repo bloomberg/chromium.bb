@@ -5,6 +5,8 @@
 #ifndef FUCHSIA_ENGINE_FAKE_CONTEXT_H_
 #define FUCHSIA_ENGINE_FAKE_CONTEXT_H_
 
+#include <fuchsia/web/cpp/fidl.h>
+#include <fuchsia/web/cpp/fidl_test_base.h>
 #include <lib/fidl/cpp/binding.h>
 #include <lib/fidl/cpp/binding_set.h>
 
@@ -12,53 +14,51 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "fuchsia/fidl/chromium/web/cpp/fidl.h"
-#include "fuchsia/fidl/chromium/web/cpp/fidl_test_base.h"
 
 // A fake Frame implementation that manages its own lifetime.
-class FakeFrame : public chromium::web::testing::Frame_TestBase {
+class FakeFrame : public fuchsia::web::testing::Frame_TestBase {
  public:
-  explicit FakeFrame(fidl::InterfaceRequest<chromium::web::Frame> request);
+  explicit FakeFrame(fidl::InterfaceRequest<fuchsia::web::Frame> request);
   ~FakeFrame() override;
 
-  void set_on_set_observer_callback(base::OnceClosure callback) {
-    on_set_observer_callback_ = std::move(callback);
+  void set_on_set_listener_callback(base::OnceClosure callback) {
+    on_set_listener_callback_ = std::move(callback);
   }
 
   // Tests can provide e.g a mock NavigationController, which the FakeFrame will
   // pass bind GetNavigationController() requests to.
   void set_navigation_controller(
-      chromium::web::NavigationController* controller) {
+      fuchsia::web::NavigationController* controller) {
     navigation_controller_ = controller;
   }
 
-  chromium::web::NavigationEventObserver* observer() { return observer_.get(); }
+  fuchsia::web::NavigationEventListener* listener() { return listener_.get(); }
 
-  // chromium::web::Frame implementation.
+  // fuchsia::web::Frame implementation.
   void GetNavigationController(
-      fidl::InterfaceRequest<chromium::web::NavigationController> controller)
+      fidl::InterfaceRequest<fuchsia::web::NavigationController> controller)
       override;
-  void SetNavigationEventObserver(
-      fidl::InterfaceHandle<chromium::web::NavigationEventObserver> observer)
+  void SetNavigationEventListener(
+      fidl::InterfaceHandle<fuchsia::web::NavigationEventListener> listener)
       override;
 
-  // chromium::web::testing::Frame_TestBase implementation.
+  // fuchsia::web::testing::Frame_TestBase implementation.
   void NotImplemented_(const std::string& name) override;
 
  private:
-  fidl::Binding<chromium::web::Frame> binding_;
-  chromium::web::NavigationEventObserverPtr observer_;
-  base::OnceClosure on_set_observer_callback_;
+  fidl::Binding<fuchsia::web::Frame> binding_;
+  fuchsia::web::NavigationEventListenerPtr listener_;
+  base::OnceClosure on_set_listener_callback_;
 
-  chromium::web::NavigationController* navigation_controller_ = nullptr;
-  fidl::BindingSet<chromium::web::NavigationController>
+  fuchsia::web::NavigationController* navigation_controller_ = nullptr;
+  fidl::BindingSet<fuchsia::web::NavigationController>
       navigation_controller_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeFrame);
 };
 
 // An implementation of Context that creates and binds FakeFrames.
-class FakeContext : public chromium::web::testing::Context_TestBase {
+class FakeContext : public fuchsia::web::testing::Context_TestBase {
  public:
   using CreateFrameCallback = base::RepeatingCallback<void(FakeFrame*)>;
 
@@ -70,11 +70,11 @@ class FakeContext : public chromium::web::testing::Context_TestBase {
     on_create_frame_callback_ = callback;
   }
 
-  // chromium::web::Context implementation.
+  // fuchsia::web::Context implementation.
   void CreateFrame(
-      fidl::InterfaceRequest<chromium::web::Frame> frame_request) override;
+      fidl::InterfaceRequest<fuchsia::web::Frame> frame_request) override;
 
-  // chromium::web::testing::Frame_TestBase implementation.
+  // fuchsia::web::testing::Frame_TestBase implementation.
   void NotImplemented_(const std::string& name) override;
 
  private:

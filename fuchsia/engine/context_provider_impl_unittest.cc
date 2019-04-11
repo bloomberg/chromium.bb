@@ -33,6 +33,7 @@
 #include "base/test/test_timeouts.h"
 #include "fuchsia/engine/common.h"
 #include "fuchsia/engine/fake_context.h"
+#include "fuchsia/engine/legacy_context_provider_bridge.h"
 #include "fuchsia/fidl/chromium/web/cpp/fidl_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
@@ -56,24 +57,24 @@ MULTIPROCESS_TEST_MAIN(SpawnContextServer) {
     }
   }
 
-  zx::channel context_handle(zx_take_startup_handle(kContextRequestHandleId));
-  CHECK(context_handle);
+  fidl::InterfaceRequest<fuchsia::web::Context> fuchsia_context(
+      zx::channel(zx_take_startup_handle(kContextRequestHandleId)));
+  CHECK(fuchsia_context);
 
   FakeContext context;
-  fidl::Binding<chromium::web::Context> context_binding(
-      &context, fidl::InterfaceRequest<chromium::web::Context>(
-                    std::move(context_handle)));
+  fidl::Binding<fuchsia::web::Context> context_binding(
+      &context, std::move(fuchsia_context));
 
-  // When a Frame's NavigationEventObserver is bound, immediately broadcast a
+  // When a Frame's NavigationEventListener is bound, immediately broadcast a
   // navigation event to its listeners.
   context.set_on_create_frame_callback(
       base::BindRepeating([](FakeFrame* frame) {
-        frame->set_on_set_observer_callback(base::BindOnce(
+        frame->set_on_set_listener_callback(base::BindOnce(
             [](FakeFrame* frame) {
-              chromium::web::NavigationEvent event;
-              event.url = kUrl;
-              event.title = kTitle;
-              frame->observer()->OnNavigationStateChanged(std::move(event),
+              fuchsia::web::NavigationState state;
+              state.set_url(kUrl);
+              state.set_title(kTitle);
+              frame->listener()->OnNavigationStateChanged(std::move(state),
                                                           []() {});
             },
             frame));
@@ -103,10 +104,17 @@ base::Process LaunchFakeContextProcess(const base::CommandLine& command_line,
 class ContextProviderImplTest : public base::MultiProcessTest {
  public:
   ContextProviderImplTest()
-      : provider_(std::make_unique<ContextProviderImpl>()) {
-    provider_->SetLaunchCallbackForTest(
+      : context_provider_(std::make_unique<ContextProviderImpl>()) {
+    fuchsia::web::ContextProviderPtr fuchsia_context_provider;
+    legacy_binding_ =
+        std::make_unique<fidl::Binding<fuchsia::web::ContextProvider>>(
+            context_provider_.get(), fuchsia_context_provider.NewRequest());
+    provider_ = std::make_unique<LegacyContextProviderBridge>(
+        std::move(fuchsia_context_provider));
+
+    context_provider_->SetLaunchCallbackForTest(
         base::BindRepeating(&LaunchFakeContextProcess));
-    provider_->Bind(provider_ptr_.NewRequest());
+    bindings_.AddBinding(provider_.get(), provider_ptr_.NewRequest());
   }
 
   ~ContextProviderImplTest() override {
@@ -175,8 +183,10 @@ class ContextProviderImplTest : public base::MultiProcessTest {
 
  protected:
   base::MessageLoopForIO message_loop_;
-  std::unique_ptr<ContextProviderImpl> provider_;
+  std::unique_ptr<LegacyContextProviderBridge> provider_;
+  std::unique_ptr<fidl::Binding<fuchsia::web::ContextProvider>> legacy_binding_;
   chromium::web::ContextProviderPtr provider_ptr_;
+  fidl::BindingSet<chromium::web::ContextProvider> bindings_;
 
  private:
   struct CapturingNavigationEventObserver
@@ -200,6 +210,8 @@ class ContextProviderImplTest : public base::MultiProcessTest {
     chromium::web::NavigationEvent captured_event_;
   };
 
+  std::unique_ptr<ContextProviderImpl> context_provider_;
+
   DISALLOW_COPY_AND_ASSIGN(ContextProviderImplTest);
 };
 
@@ -214,13 +226,13 @@ TEST_F(ContextProviderImplTest, LaunchContext) {
 TEST_F(ContextProviderImplTest, MultipleConcurrentClients) {
   // Bind a Provider connection, and create a Context from it.
   chromium::web::ContextProviderPtr provider_1_ptr;
-  provider_->Bind(provider_1_ptr.NewRequest());
+  bindings_.AddBinding(provider_.get(), provider_1_ptr.NewRequest());
   chromium::web::ContextPtr context_1;
   provider_1_ptr->Create(BuildCreateContextParams(), context_1.NewRequest());
 
   // Do the same on another Provider connection.
   chromium::web::ContextProviderPtr provider_2_ptr;
-  provider_->Bind(provider_2_ptr.NewRequest());
+  bindings_.AddBinding(provider_.get(), provider_2_ptr.NewRequest());
   chromium::web::ContextPtr context_2;
   provider_2_ptr->Create(BuildCreateContextParams(), context_2.NewRequest());
 
@@ -296,7 +308,7 @@ TEST_F(ContextProviderImplTest, CleansUpContextJobs) {
 
   // Bind to the ContextProvider.
   chromium::web::ContextProviderPtr provider;
-  provider_->Bind(provider.NewRequest());
+  bindings_.AddBinding(provider_.get(), provider.NewRequest());
 
   // Verify that our current default job is still empty.
   ASSERT_TRUE(WaitUntilJobIsEmpty(base::GetDefaultJob(), zx::duration()));

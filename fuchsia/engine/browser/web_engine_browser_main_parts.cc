@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "content/public/browser/render_frame_host.h"
 #include "fuchsia/engine/browser/context_impl.h"
-#include "fuchsia/engine/browser/legacy_context_bridge.h"
 #include "fuchsia/engine/browser/web_engine_browser_context.h"
 #include "fuchsia/engine/browser/web_engine_screen.h"
 #include "fuchsia/engine/common.h"
@@ -20,8 +19,8 @@
 #include "ui/ozone/public/ozone_platform.h"
 
 WebEngineBrowserMainParts::WebEngineBrowserMainParts(
-    zx::channel context_channel)
-    : context_channel_(std::move(context_channel)) {}
+    fidl::InterfaceRequest<fuchsia::web::Context> request)
+    : request_(std::move(request)) {}
 
 WebEngineBrowserMainParts::~WebEngineBrowserMainParts() {
   display::Screen::SetScreenInstance(nullptr);
@@ -45,14 +44,10 @@ void WebEngineBrowserMainParts::PreMainMessageLoopRun() {
   browser_context_ = std::make_unique<WebEngineBrowserContext>(
       base::CommandLine::ForCurrentProcess()->HasSwitch(kIncognitoSwitch));
 
+  DCHECK(request_);
   context_service_ = std::make_unique<ContextImpl>(browser_context_.get());
-
-  fuchsia::web::ContextPtr fuchsia_context;
   context_binding_ = std::make_unique<fidl::Binding<fuchsia::web::Context>>(
-      context_service_.get(), fuchsia_context.NewRequest());
-  new LegacyContextBridge(fidl::InterfaceRequest<chromium::web::Context>(
-                              std::move(context_channel_)),
-                          std::move(fuchsia_context));
+      context_service_.get(), std::move(request_));
 
   // Quit the browser main loop when the Context connection is dropped.
   context_binding_->set_error_handler([this](zx_status_t status) {

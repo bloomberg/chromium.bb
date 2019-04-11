@@ -5,6 +5,7 @@
 #ifndef FUCHSIA_ENGINE_CONTEXT_PROVIDER_IMPL_H_
 #define FUCHSIA_ENGINE_CONTEXT_PROVIDER_IMPL_H_
 
+#include <fuchsia/web/cpp/fidl.h>
 #include <lib/fidl/cpp/binding_set.h>
 #include <memory>
 
@@ -20,7 +21,7 @@ class Process;
 }  // namespace base
 
 class WEB_ENGINE_EXPORT ContextProviderImpl
-    : public chromium::web::ContextProvider {
+    : public fuchsia::web::ContextProvider {
  public:
   using LaunchCallbackForTest = base::RepeatingCallback<base::Process(
       const base::CommandLine& command,
@@ -29,15 +30,10 @@ class WEB_ENGINE_EXPORT ContextProviderImpl
   ContextProviderImpl();
   ~ContextProviderImpl() override;
 
-  // Binds |this| object instance to |request|.
-  // The service will persist and continue to serve other channels in the event
-  // that a bound channel is dropped.
-  void Bind(fidl::InterfaceRequest<chromium::web::ContextProvider> request);
-
-  // chromium::web::ContextProvider implementation.
-  void Create(chromium::web::CreateContextParams params,
-              ::fidl::InterfaceRequest<chromium::web::Context> context_request)
-      override;
+  // fuchsia::web::ContextProvider implementation.
+  void Create(
+      fuchsia::web::CreateContextParams params,
+      fidl::InterfaceRequest<fuchsia::web::Context> context_request) override;
 
   // Sets a |launch| callback to use instead of calling LaunchProcess() to
   // create Context processes.
@@ -47,8 +43,6 @@ class WEB_ENGINE_EXPORT ContextProviderImpl
   // Set by tests to use to launch Context child processes, e.g. to allow a
   // fake Context process to be launched.
   LaunchCallbackForTest launch_for_test_;
-
-  fidl::BindingSet<chromium::web::ContextProvider> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextProviderImpl);
 };

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "fuchsia/engine/browser/legacy_context_bridge.h"
+#include "fuchsia/engine/legacy_context_bridge.h"
 
 #include "base/fuchsia/fuchsia_logging.h"
-#include "fuchsia/engine/browser/legacy_frame_bridge.h"
+#include "fuchsia/engine/legacy_frame_bridge.h"
 
 LegacyContextBridge::LegacyContextBridge(
     fidl::InterfaceRequest<chromium::web::Context> request,

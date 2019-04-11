@@ -11,7 +11,7 @@
 #include "base/fuchsia/fuchsia_logging.h"
 #include "content/public/browser/web_contents.h"
 #include "fuchsia/engine/browser/frame_impl.h"
-#include "fuchsia/engine/browser/legacy_frame_bridge.h"
+#include "fuchsia/engine/legacy_frame_bridge.h"
 
 ContextImpl::ContextImpl(content::BrowserContext* browser_context)
     : browser_context_(browser_context) {}
