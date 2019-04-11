@@ -204,7 +204,7 @@ void ClientSocketHandle::SetSocket(std::unique_ptr<StreamSocket> s) {
 }
 
 void ClientSocketHandle::SetAdditionalErrorState(ConnectJob* connect_job) {
-  connect_job->GetAdditionalErrorState(this);
+  connection_attempts_ = connect_job->GetConnectionAttempts();
 
   // TODO(mmenke): Once redirects are no longer followed on
   // ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT, remove this code.

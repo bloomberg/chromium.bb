@@ -131,7 +131,7 @@ bool TransportConnectJob::HasEstablishedConnection() const {
   return false;
 }
 
-void TransportConnectJob::GetAdditionalErrorState(ClientSocketHandle* handle) {
+ConnectionAttempts TransportConnectJob::GetConnectionAttempts() const {
   // If hostname resolution failed, record an empty endpoint and the result.
   // Also record any attempts made on either of the sockets.
   ConnectionAttempts attempts;
@@ -143,7 +143,7 @@ void TransportConnectJob::GetAdditionalErrorState(ClientSocketHandle* handle) {
                   connection_attempts_.end());
   attempts.insert(attempts.begin(), fallback_connection_attempts_.begin(),
                   fallback_connection_attempts_.end());
-  handle->set_connection_attempts(attempts);
+  return attempts;
 }
 
 // static

@@ -23,7 +23,6 @@
 
 namespace net {
 
-class ClientSocketHandle;
 class HostPortPair;
 class HttpProxySocketParams;
 class SocketTag;
@@ -100,7 +99,7 @@ class NET_EXPORT_PRIVATE SSLConnectJob : public ConnectJob,
                         HttpAuthController* auth_controller,
                         base::OnceClosure restart_with_auth_callback,
                         ConnectJob* job) override;
-  void GetAdditionalErrorState(ClientSocketHandle* handle) override;
+  ConnectionAttempts GetConnectionAttempts() const override;
   std::unique_ptr<StreamSocket> PassProxySocketOnFailure() override;
   bool IsSSLError() const override;
   scoped_refptr<SSLCertRequestInfo> GetCertRequestInfo() override;
