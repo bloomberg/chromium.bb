@@ -7,7 +7,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/layer_owner.h"
 #include "ui/gfx/transform.h"
@@ -37,7 +36,9 @@ class NativeViewHostAura : public NativeViewHostWrapper,
   bool SetCustomMask(std::unique_ptr<ui::LayerOwner> mask) override;
   void SetHitTestTopInset(int top_inset) override;
   int GetHitTestTopInset() const override;
+  void InstallClip(int x, int y, int w, int h) override;
   bool HasInstalledClip() override;
+  void UninstallClip() override;
   void ShowWidget(int x, int y, int w, int h, int native_w, int native_h)
       override;
   void HideWidget() override;
@@ -88,7 +89,7 @@ class NativeViewHostAura : public NativeViewHostWrapper,
   // clipping to occur. This is positioned in the coordinate space of
   // host_->GetWidget().
   std::unique_ptr<aura::Window> clipping_window_;
-  base::Optional<gfx::Rect> clip_rect_;
+  std::unique_ptr<gfx::Rect> clip_rect_;
 
   // This mask exists for the sake of SetCornerRadius().
   std::unique_ptr<ui::LayerOwner> mask_;

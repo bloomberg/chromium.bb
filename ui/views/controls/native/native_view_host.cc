@@ -97,7 +97,24 @@ void NativeViewHost::Layout() {
   if (!native_view_ || !native_wrapper_.get())
     return;
 
-  if (IsDrawn() && !bounds().IsEmpty()) {
+  gfx::Rect vis_bounds = GetVisibleBounds();
+  bool visible = !vis_bounds.IsEmpty();
+
+  if (visible && !fast_resize_) {
+    if (vis_bounds.size() != size()) {
+      // Only a portion of the Widget is really visible.
+      int x = vis_bounds.x();
+      int y = vis_bounds.y();
+      native_wrapper_->InstallClip(x, y, vis_bounds.width(),
+                                   vis_bounds.height());
+    } else if (native_wrapper_->HasInstalledClip()) {
+      // The whole widget is visible but we installed a clip on the widget,
+      // uninstall it.
+      native_wrapper_->UninstallClip();
+    }
+  }
+
+  if (visible) {
     // Since widgets know nothing about the View hierarchy (they are direct
     // children of the Widget that hosts our View hierarchy) they need to be
     // positioned in the coordinate system of the Widget, not the current
@@ -113,6 +130,7 @@ void NativeViewHost::Layout() {
   } else {
     native_wrapper_->HideWidget();
   }
+  fast_resize_at_last_layout_ = visible && fast_resize_;
 }
 
 void NativeViewHost::OnPaint(gfx::Canvas* canvas) {
