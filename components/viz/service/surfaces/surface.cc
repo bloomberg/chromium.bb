@@ -711,6 +711,9 @@ void Surface::TakeLatencyInfoFromFrame(
   frame->metadata.latency_info.clear();
   if (!ui::LatencyInfo::Verify(*latency_info,
                                "Surface::TakeLatencyInfoFromFrame")) {
+    for (auto& info : *latency_info) {
+      info.Terminate();
+    }
     latency_info->clear();
   }
 }

@@ -406,6 +406,9 @@ SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrameInternal(
 
   if (!ui::LatencyInfo::Verify(frame.metadata.latency_info,
                                "RenderWidgetHostImpl::OnSwapCompositorFrame")) {
+    for (auto& info : frame.metadata.latency_info) {
+      info.Terminate();
+    }
     std::vector<ui::LatencyInfo>().swap(frame.metadata.latency_info);
   }
   for (ui::LatencyInfo& latency : frame.metadata.latency_info) {
