@@ -199,6 +199,10 @@ class LookalikeUrlNavigationThrottleBrowserTest
     return embedded_test_server()->GetURL(hostname, "/title1.html");
   }
 
+  GURL GetURLWithoutPath(const char* hostname) const {
+    return GetURL(hostname).GetWithEmptyPath();
+  }
+
   GURL GetLongRedirect(const char* via_hostname1,
                        const char* via_hostname2,
                        const char* dest_hostname) const {
@@ -407,7 +411,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
   base::HistogramTester histograms;
 
   const GURL kNavigatedUrl = GetURL("googlé.com");
-  const GURL kExpectedSuggestedUrl = GetURL("google.com");
+  const GURL kExpectedSuggestedUrl = GetURLWithoutPath("google.com");
   // Even if the navigated site has a low engagement score, it should be
   // considered for lookalike suggestions.
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
@@ -428,7 +432,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
   base::HistogramTester histograms;
 
   const GURL kNavigatedUrl = GetURL("аррӏе.com");
-  const GURL kExpectedSuggestedUrl = GetURL("apple.com");
+  const GURL kExpectedSuggestedUrl = GetURLWithoutPath("apple.com");
   // Even if the navigated site has a low engagement score, it should be
   // considered for lookalike suggestions.
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
@@ -657,7 +661,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
   for (const auto& test_case : kSiteEngagementTestCases) {
     base::HistogramTester histograms;
     const GURL kNavigatedUrl = GetURL(test_case.navigated);
-    const GURL kExpectedSuggestedUrl = GetURL(test_case.suggested);
+    const GURL kExpectedSuggestedUrl = GetURLWithoutPath(test_case.suggested);
 
     // Even if the navigated site has a low engagement score, it should be
     // considered for lookalike suggestions.
@@ -683,7 +687,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
                        Idn_SiteEngagementAndTopDomain_Match) {
   base::HistogramTester histograms;
   const GURL kNavigatedUrl = GetURL("googlé.com");
-  const GURL kExpectedSuggestedUrl = GetURL("google.com");
+  const GURL kExpectedSuggestedUrl = GetURLWithoutPath("google.com");
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
   SetEngagementScore(browser(), kExpectedSuggestedUrl, kHighEngagement);
 
@@ -704,7 +708,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
 IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
                        Idn_SiteEngagement_Match_Incognito) {
   const GURL kNavigatedUrl = GetURL("sité1.com");
-  const GURL kEngagedUrl = GetURL("site1.com");
+  const GURL kEngagedUrl = GetURLWithoutPath("site1.com");
 
   // Set high engagement scores in the main profile and low engagement scores
   // in incognito. Main profile should record metrics, incognito shouldn't.
