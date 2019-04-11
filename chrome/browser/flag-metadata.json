@@ -2356,6 +2356,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "ntp-customization-menu-v2",
+    "owners": ["kmilka", "ramyan"],
+    "expiry_milestone": 77
+  },
+  {
     "name": "oculus-vr",
     "owners": [ "//device/vr/OWNERS", "xr-dev@chromium.org" ],
     "expiry_milestone": 76

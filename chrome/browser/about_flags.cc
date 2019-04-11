@@ -2861,6 +2861,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"remove-ntp-fakebox", flag_descriptions::kRemoveNtpFakeboxName,
      flag_descriptions::kRemoveNtpFakeboxDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kRemoveNtpFakebox)},
+
+    {"ntp-customization-menu-v2",
+     flag_descriptions::kNtpCustomizationMenuV2Name,
+     flag_descriptions::kNtpCustomizationMenuV2Description, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kNtpCustomizationMenuV2)},
 #endif  // !defined(OS_ANDROID)
 
 #if defined(DCHECK_IS_CONFIGURABLE)

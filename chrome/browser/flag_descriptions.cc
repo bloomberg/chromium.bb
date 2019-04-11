@@ -2709,6 +2709,10 @@ const char kRemoveNtpFakeboxName[] = "Remove fakebox from the NTP";
 const char kRemoveNtpFakeboxDescription[] =
     "Do not show the fakebox on the New Tab page.";
 
+const char kNtpCustomizationMenuV2Name[] = "NTP customization menu version 2";
+const char kNtpCustomizationMenuV2Description[] =
+    "Use the second version of the NTP customization menu.";
+
 const char kEnableWebAuthenticationBleSupportName[] =
     "Web Authentication API BLE support";
 const char kEnableWebAuthenticationBleSupportDescription[] =
