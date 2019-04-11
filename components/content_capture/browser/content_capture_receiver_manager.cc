@@ -97,8 +97,8 @@ void ContentCaptureReceiverManager::DidCaptureContent(
     const ContentCaptureData& data) {
   // The root of |data| is frame, we need get its ancestor only.
   ContentCaptureSession parent_session;
-  BuildContentCaptureSession(*content_capture_receiver,
-                             true /* ancestor_only */, &parent_session);
+  BuildContentCaptureSession(content_capture_receiver, true /* ancestor_only */,
+                             &parent_session);
   DidCaptureContent(parent_session, data);
 }
 
@@ -108,7 +108,7 @@ void ContentCaptureReceiverManager::DidRemoveContent(
   ContentCaptureSession session;
   // The |data| is a list of text content id, the session should include
   // |content_capture_receiver| associated frame.
-  BuildContentCaptureSession(*content_capture_receiver,
+  BuildContentCaptureSession(content_capture_receiver,
                              false /* ancestor_only */, &session);
   DidRemoveContent(session, data);
 }
@@ -118,19 +118,19 @@ void ContentCaptureReceiverManager::DidRemoveSession(
   ContentCaptureSession session;
   // The session should include the removed frame that the
   // |content_capture_receiver| associated with.
-  BuildContentCaptureSession(*content_capture_receiver,
+  BuildContentCaptureSession(content_capture_receiver,
                              false /* ancestor_only */, &session);
   DidRemoveSession(session);
 }
 
 void ContentCaptureReceiverManager::BuildContentCaptureSession(
-    const ContentCaptureReceiver& content_capture_receiver,
+    ContentCaptureReceiver* content_capture_receiver,
     bool ancestor_only,
     ContentCaptureSession* session) {
   if (!ancestor_only)
-    session->push_back(content_capture_receiver.frame_content_capture_data());
+    session->push_back(content_capture_receiver->GetFrameContentCaptureData());
 
-  content::RenderFrameHost* rfh = content_capture_receiver.rfh()->GetParent();
+  content::RenderFrameHost* rfh = content_capture_receiver->rfh()->GetParent();
   while (rfh) {
     ContentCaptureReceiver* receiver = ContentCaptureReceiverForFrame(rfh);
     // TODO(michaelbai): Only creates ContentCaptureReceiver here, clean up the
@@ -139,7 +139,7 @@ void ContentCaptureReceiverManager::BuildContentCaptureSession(
       RenderFrameCreated(rfh);
       receiver = ContentCaptureReceiverForFrame(rfh);
     }
-    session->push_back(receiver->frame_content_capture_data());
+    session->push_back(receiver->GetFrameContentCaptureData());
     rfh = receiver->rfh()->GetParent();
   }
 }

@@ -39,9 +39,7 @@ class ContentCaptureReceiver : public mojom::ContentCaptureReceiver {
   content::RenderFrameHost* rfh() const { return rfh_; }
 
   // Return ContentCaptureData of the associated frame.
-  const ContentCaptureData& frame_content_capture_data() const {
-    return frame_content_capture_data_;
-  }
+  const ContentCaptureData& GetFrameContentCaptureData();
 
  private:
   const mojom::ContentCaptureSenderAssociatedPtr& GetContentCaptureSender();
