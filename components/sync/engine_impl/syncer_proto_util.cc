@@ -104,7 +104,8 @@ void LogResponseProfilingData(const ClientToServerResponse& response) {
 
 SyncerError ServerConnectionErrorAsSyncerError(
     const HttpResponse::ServerConnectionCode server_status,
-    int net_error_code) {
+    int net_error_code,
+    int http_status_code) {
   switch (server_status) {
     case HttpResponse::CONNECTION_UNAVAILABLE:
       return SyncerError::NetworkConnectionUnavailable(net_error_code);
@@ -112,10 +113,10 @@ SyncerError ServerConnectionErrorAsSyncerError(
       return SyncerError(SyncerError::NETWORK_IO_ERROR);
     case HttpResponse::SYNC_SERVER_ERROR:
       // This means the server returned a non-401 HTTP error.
-      return SyncerError(SyncerError::SYNC_SERVER_ERROR);
+      return SyncerError::HttpError(http_status_code);
     case HttpResponse::SYNC_AUTH_ERROR:
       // This means the server returned an HTTP 401 (unauthorized) error.
-      return SyncerError(SyncerError::SYNC_AUTH_ERROR);
+      return SyncerError::HttpError(http_status_code);
     case HttpResponse::SERVER_CONNECTION_OK:
     case HttpResponse::NONE:
     default:
@@ -467,8 +468,8 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
     DCHECK_NE(server_status, HttpResponse::SERVER_CONNECTION_OK);
 
     return ServerConnectionErrorAsSyncerError(
-        server_status,
-        cycle->context()->connection_manager()->net_error_code());
+        server_status, cycle->context()->connection_manager()->net_error_code(),
+        cycle->context()->connection_manager()->http_status_code());
   }
   LogClientToServerResponse(*response);
 
