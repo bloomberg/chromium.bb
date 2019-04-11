@@ -47,7 +47,10 @@ class TestSheetModel : public AuthenticatorRequestSheetModel {
     return base::ASCIIToUTF16("Test OK");
   }
 
-  gfx::ImageSkia* GetStepIllustration() const override { return nullptr; }
+  gfx::ImageSkia* GetStepIllustration(
+      ImageColorScheme color_scheme) const override {
+    return nullptr;
+  }
 
   base::string16 GetStepTitle() const override {
     return base::ASCIIToUTF16("Test Title");

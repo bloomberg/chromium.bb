@@ -113,8 +113,11 @@ void AuthenticatorSheetModelBase::OnModelDestroyed() {
 
 // AuthenticatorWelcomeSheetModel ---------------------------------------------
 
-gfx::ImageSkia* AuthenticatorWelcomeSheetModel::GetStepIllustration() const {
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_WELCOME);
+gfx::ImageSkia* AuthenticatorWelcomeSheetModel::GetStepIllustration(
+    ImageColorScheme color_scheme) const {
+  return GetImage(color_scheme == ImageColorScheme::kDark
+                      ? IDR_WEBAUTHN_ILLUSTRATION_WELCOME_DARK
+                      : IDR_WEBAUTHN_ILLUSTRATION_WELCOME);
 }
 
 base::string16 AuthenticatorWelcomeSheetModel::GetStepTitle() const {
@@ -149,9 +152,11 @@ bool AuthenticatorTransportSelectorSheetModel::IsBackButtonVisible() const {
   return false;
 }
 
-gfx::ImageSkia* AuthenticatorTransportSelectorSheetModel::GetStepIllustration()
-    const {
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_WELCOME);
+gfx::ImageSkia* AuthenticatorTransportSelectorSheetModel::GetStepIllustration(
+    ImageColorScheme color_scheme) const {
+  return GetImage(color_scheme == ImageColorScheme::kDark
+                      ? IDR_WEBAUTHN_ILLUSTRATION_WELCOME_DARK
+                      : IDR_WEBAUTHN_ILLUSTRATION_WELCOME);
 }
 
 base::string16 AuthenticatorTransportSelectorSheetModel::GetStepTitle() const {
@@ -189,8 +194,11 @@ bool AuthenticatorInsertAndActivateUsbSheetModel::IsActivityIndicatorVisible()
 }
 
 gfx::ImageSkia*
-AuthenticatorInsertAndActivateUsbSheetModel::GetStepIllustration() const {
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_USB);
+AuthenticatorInsertAndActivateUsbSheetModel::GetStepIllustration(
+    ImageColorScheme color_scheme) const {
+  return GetImage(color_scheme == ImageColorScheme::kDark
+                      ? IDR_WEBAUTHN_ILLUSTRATION_USB_DARK
+                      : IDR_WEBAUTHN_ILLUSTRATION_USB);
 }
 
 base::string16 AuthenticatorInsertAndActivateUsbSheetModel::GetStepTitle()
@@ -219,8 +227,11 @@ base::string16 AuthenticatorTimeoutErrorModel::GetCancelButtonLabel() const {
   return l10n_util::GetStringUTF16(IDS_CLOSE);
 }
 
-gfx::ImageSkia* AuthenticatorTimeoutErrorModel::GetStepIllustration() const {
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_ERROR);
+gfx::ImageSkia* AuthenticatorTimeoutErrorModel::GetStepIllustration(
+    ImageColorScheme color_scheme) const {
+  return GetImage(color_scheme == ImageColorScheme::kDark
+                      ? IDR_WEBAUTHN_ILLUSTRATION_ERROR_DARK
+                      : IDR_WEBAUTHN_ILLUSTRATION_ERROR);
 }
 
 base::string16 AuthenticatorTimeoutErrorModel::GetStepTitle() const {
@@ -243,8 +254,11 @@ AuthenticatorNoAvailableTransportsErrorModel::GetCancelButtonLabel() const {
 }
 
 gfx::ImageSkia*
-AuthenticatorNoAvailableTransportsErrorModel::GetStepIllustration() const {
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_ERROR);
+AuthenticatorNoAvailableTransportsErrorModel::GetStepIllustration(
+    ImageColorScheme color_scheme) const {
+  return GetImage(color_scheme == ImageColorScheme::kDark
+                      ? IDR_WEBAUTHN_ILLUSTRATION_ERROR_DARK
+                      : IDR_WEBAUTHN_ILLUSTRATION_ERROR);
 }
 
 base::string16 AuthenticatorNoAvailableTransportsErrorModel::GetStepTitle()
@@ -269,9 +283,11 @@ base::string16 AuthenticatorNotRegisteredErrorModel::GetCancelButtonLabel()
   return l10n_util::GetStringUTF16(IDS_CLOSE);
 }
 
-gfx::ImageSkia* AuthenticatorNotRegisteredErrorModel::GetStepIllustration()
-    const {
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_ERROR);
+gfx::ImageSkia* AuthenticatorNotRegisteredErrorModel::GetStepIllustration(
+    ImageColorScheme color_scheme) const {
+  return GetImage(color_scheme == ImageColorScheme::kDark
+                      ? IDR_WEBAUTHN_ILLUSTRATION_ERROR_DARK
+                      : IDR_WEBAUTHN_ILLUSTRATION_ERROR);
 }
 
 base::string16 AuthenticatorNotRegisteredErrorModel::GetStepTitle() const {
@@ -295,9 +311,11 @@ base::string16 AuthenticatorAlreadyRegisteredErrorModel::GetCancelButtonLabel()
   return l10n_util::GetStringUTF16(IDS_CLOSE);
 }
 
-gfx::ImageSkia* AuthenticatorAlreadyRegisteredErrorModel::GetStepIllustration()
-    const {
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_ERROR);
+gfx::ImageSkia* AuthenticatorAlreadyRegisteredErrorModel::GetStepIllustration(
+    ImageColorScheme color_scheme) const {
+  return GetImage(color_scheme == ImageColorScheme::kDark
+                      ? IDR_WEBAUTHN_ILLUSTRATION_ERROR_DARK
+                      : IDR_WEBAUTHN_ILLUSTRATION_ERROR);
 }
 
 base::string16 AuthenticatorAlreadyRegisteredErrorModel::GetStepTitle() const {
@@ -314,8 +332,11 @@ base::string16 AuthenticatorAlreadyRegisteredErrorModel::GetStepDescription()
 // -----------------------------------
 
 gfx::ImageSkia*
-AuthenticatorInternalUnrecognizedErrorSheetModel::GetStepIllustration() const {
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_ERROR);
+AuthenticatorInternalUnrecognizedErrorSheetModel::GetStepIllustration(
+    ImageColorScheme color_scheme) const {
+  return GetImage(color_scheme == ImageColorScheme::kDark
+                      ? IDR_WEBAUTHN_ILLUSTRATION_ERROR_DARK
+                      : IDR_WEBAUTHN_ILLUSTRATION_ERROR);
 }
 
 base::string16 AuthenticatorInternalUnrecognizedErrorSheetModel::GetStepTitle()
@@ -332,9 +353,11 @@ AuthenticatorInternalUnrecognizedErrorSheetModel::GetStepDescription() const {
 
 // AuthenticatorBlePowerOnManualSheetModel ------------------------------------
 
-gfx::ImageSkia* AuthenticatorBlePowerOnManualSheetModel::GetStepIllustration()
-    const {
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_ERROR_BLUETOOTH);
+gfx::ImageSkia* AuthenticatorBlePowerOnManualSheetModel::GetStepIllustration(
+    ImageColorScheme color_scheme) const {
+  return GetImage(color_scheme == ImageColorScheme::kDark
+                      ? IDR_WEBAUTHN_ILLUSTRATION_ERROR_BLUETOOTH_DARK
+                      : IDR_WEBAUTHN_ILLUSTRATION_ERROR_BLUETOOTH);
 }
 
 base::string16 AuthenticatorBlePowerOnManualSheetModel::GetStepTitle() const {
@@ -377,9 +400,11 @@ bool AuthenticatorBlePowerOnAutomaticSheetModel::IsActivityIndicatorVisible()
   return busy_powering_on_ble_;
 }
 
-gfx::ImageSkia*
-AuthenticatorBlePowerOnAutomaticSheetModel::GetStepIllustration() const {
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_ERROR_BLUETOOTH);
+gfx::ImageSkia* AuthenticatorBlePowerOnAutomaticSheetModel::GetStepIllustration(
+    ImageColorScheme color_scheme) const {
+  return GetImage(color_scheme == ImageColorScheme::kDark
+                      ? IDR_WEBAUTHN_ILLUSTRATION_ERROR_BLUETOOTH_DARK
+                      : IDR_WEBAUTHN_ILLUSTRATION_ERROR_BLUETOOTH);
 }
 
 base::string16 AuthenticatorBlePowerOnAutomaticSheetModel::GetStepTitle()
@@ -414,9 +439,11 @@ void AuthenticatorBlePowerOnAutomaticSheetModel::OnAccept() {
 
 // AuthenticatorBlePairingBeginSheetModel -------------------------------------
 
-gfx::ImageSkia* AuthenticatorBlePairingBeginSheetModel::GetStepIllustration()
-    const {
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_BLE);
+gfx::ImageSkia* AuthenticatorBlePairingBeginSheetModel::GetStepIllustration(
+    ImageColorScheme color_scheme) const {
+  return GetImage(color_scheme == ImageColorScheme::kDark
+                      ? IDR_WEBAUTHN_ILLUSTRATION_BLE_DARK
+                      : IDR_WEBAUTHN_ILLUSTRATION_BLE);
 }
 
 base::string16 AuthenticatorBlePairingBeginSheetModel::GetStepTitle() const {
@@ -448,9 +475,11 @@ void AuthenticatorBlePairingBeginSheetModel::OnAccept() {
 
 // AuthenticatorBleEnterPairingModeSheetModel ---------------------------------
 
-gfx::ImageSkia*
-AuthenticatorBleEnterPairingModeSheetModel::GetStepIllustration() const {
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_BLE);
+gfx::ImageSkia* AuthenticatorBleEnterPairingModeSheetModel::GetStepIllustration(
+    ImageColorScheme color_scheme) const {
+  return GetImage(color_scheme == ImageColorScheme::kDark
+                      ? IDR_WEBAUTHN_ILLUSTRATION_BLE_DARK
+                      : IDR_WEBAUTHN_ILLUSTRATION_BLE);
 }
 
 base::string16 AuthenticatorBleEnterPairingModeSheetModel::GetStepTitle()
@@ -471,9 +500,11 @@ bool AuthenticatorBleDeviceSelectionSheetModel::IsActivityIndicatorVisible()
   return true;
 }
 
-gfx::ImageSkia* AuthenticatorBleDeviceSelectionSheetModel::GetStepIllustration()
-    const {
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_BLE_NAME);
+gfx::ImageSkia* AuthenticatorBleDeviceSelectionSheetModel::GetStepIllustration(
+    ImageColorScheme color_scheme) const {
+  return GetImage(color_scheme == ImageColorScheme::kDark
+                      ? IDR_WEBAUTHN_ILLUSTRATION_BLE_NAME_DARK
+                      : IDR_WEBAUTHN_ILLUSTRATION_BLE_NAME);
 }
 
 base::string16 AuthenticatorBleDeviceSelectionSheetModel::GetStepTitle() const {
@@ -492,9 +523,11 @@ void AuthenticatorBlePinEntrySheetModel::SetPinCode(base::string16 pin_code) {
   pin_code_ = std::move(pin_code);
 }
 
-gfx::ImageSkia* AuthenticatorBlePinEntrySheetModel::GetStepIllustration()
-    const {
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_BLE_PIN);
+gfx::ImageSkia* AuthenticatorBlePinEntrySheetModel::GetStepIllustration(
+    ImageColorScheme color_scheme) const {
+  return GetImage(color_scheme == ImageColorScheme::kDark
+                      ? IDR_WEBAUTHN_ILLUSTRATION_BLE_PIN_DARK
+                      : IDR_WEBAUTHN_ILLUSTRATION_BLE_PIN);
 }
 
 base::string16 AuthenticatorBlePinEntrySheetModel::GetStepTitle() const {
@@ -536,9 +569,11 @@ bool AuthenticatorBleVerifyingSheetModel::IsActivityIndicatorVisible() const {
   return true;
 }
 
-gfx::ImageSkia* AuthenticatorBleVerifyingSheetModel::GetStepIllustration()
-    const {
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_BLE);
+gfx::ImageSkia* AuthenticatorBleVerifyingSheetModel::GetStepIllustration(
+    ImageColorScheme color_scheme) const {
+  return GetImage(color_scheme == ImageColorScheme::kDark
+                      ? IDR_WEBAUTHN_ILLUSTRATION_BLE_DARK
+                      : IDR_WEBAUTHN_ILLUSTRATION_BLE);
 }
 
 base::string16 AuthenticatorBleVerifyingSheetModel::GetStepTitle() const {
@@ -565,9 +600,11 @@ bool AuthenticatorBleActivateSheetModel::IsActivityIndicatorVisible() const {
   return true;
 }
 
-gfx::ImageSkia* AuthenticatorBleActivateSheetModel::GetStepIllustration()
-    const {
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_BLE_TAP);
+gfx::ImageSkia* AuthenticatorBleActivateSheetModel::GetStepIllustration(
+    ImageColorScheme color_scheme) const {
+  return GetImage(color_scheme == ImageColorScheme::kDark
+                      ? IDR_WEBAUTHN_ILLUSTRATION_BLE_TAP_DARK
+                      : IDR_WEBAUTHN_ILLUSTRATION_BLE_TAP);
 }
 
 base::string16 AuthenticatorBleActivateSheetModel::GetStepTitle() const {
@@ -605,9 +642,12 @@ bool AuthenticatorTouchIdSheetModel::IsBackButtonVisible() const {
   return false;
 }
 
-gfx::ImageSkia* AuthenticatorTouchIdSheetModel::GetStepIllustration() const {
+gfx::ImageSkia* AuthenticatorTouchIdSheetModel::GetStepIllustration(
+    ImageColorScheme color_scheme) const {
 #if defined(OS_MACOSX)
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_TOUCHID);
+  return GetImage(color_scheme == ImageColorScheme::kDark
+                      ? IDR_WEBAUTHN_ILLUSTRATION_TOUCHID_DARK
+                      : IDR_WEBAUTHN_ILLUSTRATION_TOUCHID);
 #else
   // Avoid bundling the PNG on platforms where it's not needed.
   return nullptr;
@@ -646,8 +686,11 @@ AuthenticatorTouchIdIncognitoBumpSheetModel::
     ~AuthenticatorTouchIdIncognitoBumpSheetModel() = default;
 
 gfx::ImageSkia*
-AuthenticatorTouchIdIncognitoBumpSheetModel::GetStepIllustration() const {
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_PERMISSION);
+AuthenticatorTouchIdIncognitoBumpSheetModel::GetStepIllustration(
+    ImageColorScheme color_scheme) const {
+  return GetImage(color_scheme == ImageColorScheme::kDark
+                      ? IDR_WEBAUTHN_ILLUSTRATION_PERMISSION_DARK
+                      : IDR_WEBAUTHN_ILLUSTRATION_PERMISSION);
 }
 
 base::string16 AuthenticatorTouchIdIncognitoBumpSheetModel::GetStepTitle()
@@ -714,8 +757,11 @@ bool AuthenticatorPaaskSheetModel::IsActivityIndicatorVisible() const {
   return true;
 }
 
-gfx::ImageSkia* AuthenticatorPaaskSheetModel::GetStepIllustration() const {
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_PHONE);
+gfx::ImageSkia* AuthenticatorPaaskSheetModel::GetStepIllustration(
+    ImageColorScheme color_scheme) const {
+  return GetImage(color_scheme == ImageColorScheme::kDark
+                      ? IDR_WEBAUTHN_ILLUSTRATION_PHONE_DARK
+                      : IDR_WEBAUTHN_ILLUSTRATION_PHONE);
 }
 
 base::string16 AuthenticatorPaaskSheetModel::GetStepTitle() const {
@@ -781,9 +827,11 @@ void AuthenticatorClientPinEntrySheetModel::MaybeShowRetryError() {
   delegate_->ShowPinError(std::move(error));
 }
 
-gfx::ImageSkia* AuthenticatorClientPinEntrySheetModel::GetStepIllustration()
-    const {
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_PIN);
+gfx::ImageSkia* AuthenticatorClientPinEntrySheetModel::GetStepIllustration(
+    ImageColorScheme color_scheme) const {
+  return GetImage(color_scheme == ImageColorScheme::kDark
+                      ? IDR_WEBAUTHN_ILLUSTRATION_PIN_DARK
+                      : IDR_WEBAUTHN_ILLUSTRATION_PIN);
 }
 
 base::string16 AuthenticatorClientPinEntrySheetModel::GetStepTitle() const {
@@ -869,9 +917,11 @@ bool AuthenticatorClientPinTapAgainSheetModel::IsActivityIndicatorVisible()
   return true;
 }
 
-gfx::ImageSkia* AuthenticatorClientPinTapAgainSheetModel::GetStepIllustration()
-    const {
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_USB);
+gfx::ImageSkia* AuthenticatorClientPinTapAgainSheetModel::GetStepIllustration(
+    ImageColorScheme color_scheme) const {
+  return GetImage(color_scheme == ImageColorScheme::kDark
+                      ? IDR_WEBAUTHN_ILLUSTRATION_USB_DARK
+                      : IDR_WEBAUTHN_ILLUSTRATION_USB);
 }
 
 base::string16 AuthenticatorClientPinTapAgainSheetModel::GetStepTitle() const {
@@ -953,9 +1003,11 @@ base::string16 AuthenticatorGenericErrorSheetModel::GetCancelButtonLabel()
   return l10n_util::GetStringUTF16(IDS_CLOSE);
 }
 
-gfx::ImageSkia* AuthenticatorGenericErrorSheetModel::GetStepIllustration()
-    const {
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_ERROR);
+gfx::ImageSkia* AuthenticatorGenericErrorSheetModel::GetStepIllustration(
+    ImageColorScheme color_scheme) const {
+  return GetImage(color_scheme == ImageColorScheme::kDark
+                      ? IDR_WEBAUTHN_ILLUSTRATION_ERROR_DARK
+                      : IDR_WEBAUTHN_ILLUSTRATION_ERROR);
 }
 
 base::string16 AuthenticatorGenericErrorSheetModel::GetStepTitle() const {
@@ -985,10 +1037,12 @@ void AuthenticatorSelectAccountSheetModel::OnAccept() {
   dialog_model()->OnAccountSelected(selected_);
 }
 
-gfx::ImageSkia* AuthenticatorSelectAccountSheetModel::GetStepIllustration()
-    const {
+gfx::ImageSkia* AuthenticatorSelectAccountSheetModel::GetStepIllustration(
+    ImageColorScheme color_scheme) const {
   // TODO: this is likely the wrong image.
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_WELCOME);
+  return GetImage(color_scheme == ImageColorScheme::kDark
+                      ? IDR_WEBAUTHN_ILLUSTRATION_WELCOME_DARK
+                      : IDR_WEBAUTHN_ILLUSTRATION_WELCOME);
 }
 
 base::string16 AuthenticatorSelectAccountSheetModel::GetStepTitle() const {
@@ -1048,9 +1102,11 @@ void AttestationPermissionRequestSheetModel::OnCancel() {
   dialog_model()->OnAttestationPermissionResponse(false);
 }
 
-gfx::ImageSkia* AttestationPermissionRequestSheetModel::GetStepIllustration()
-    const {
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_PERMISSION);
+gfx::ImageSkia* AttestationPermissionRequestSheetModel::GetStepIllustration(
+    ImageColorScheme color_scheme) const {
+  return GetImage(color_scheme == ImageColorScheme::kDark
+                      ? IDR_WEBAUTHN_ILLUSTRATION_PERMISSION_DARK
+                      : IDR_WEBAUTHN_ILLUSTRATION_PERMISSION);
 }
 
 base::string16 AttestationPermissionRequestSheetModel::GetStepTitle() const {
