@@ -40,8 +40,12 @@ class KerberosFilesHandler {
   explicit KerberosFilesHandler(base::RepeatingClosure get_kerberos_files);
   ~KerberosFilesHandler();
 
+  // Writes the Kerberos credentials to disk asynchronously.
   void SetFiles(base::Optional<std::string> krb5cc,
                 base::Optional<std::string> krb5conf);
+
+  // Deletes the Kerberos credentials from disk asynchronously.
+  void DeleteFiles();
 
   // Sets a callback for when disk IO task posted by SetFiles has finished.
   void SetFilesChangedForTesting(base::OnceClosure callback);

@@ -6,10 +6,10 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/files/file_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "chrome/browser/chromeos/authpolicy/data_pipe_utils.h"
 #include "chromeos/dbus/auth_policy/auth_policy_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
@@ -24,23 +24,6 @@ namespace {
 
 constexpr char kDCPrefix[] = "DC=";
 constexpr char kOUPrefix[] = "OU=";
-
-base::ScopedFD GetDataReadPipe(const std::string& data) {
-  int pipe_fds[2];
-  if (!base::CreateLocalNonBlockingPipe(pipe_fds)) {
-    DLOG(ERROR) << "Failed to create pipe";
-    return base::ScopedFD();
-  }
-  base::ScopedFD pipe_read_end(pipe_fds[0]);
-  base::ScopedFD pipe_write_end(pipe_fds[1]);
-
-  if (!base::WriteFileDescriptor(pipe_write_end.get(), data.c_str(),
-                                 data.size())) {
-    DLOG(ERROR) << "Failed to write to pipe";
-    return base::ScopedFD();
-  }
-  return pipe_read_end;
-}
 
 bool ParseDomainAndOU(const std::string& distinguished_name,
                       authpolicy::JoinDomainRequest* request) {
@@ -147,7 +130,8 @@ void AuthPolicyHelper::TryAuthenticateUser(const std::string& username,
   request.set_user_principal_name(username);
   request.set_account_id(object_guid);
   AuthPolicyClient::Get()->AuthenticateUser(
-      request, GetDataReadPipe(password).get(), base::DoNothing());
+      request, data_pipe_utils::GetDataReadPipe(password).get(),
+      base::DoNothing());
 }
 
 // static
@@ -189,7 +173,7 @@ void AuthPolicyHelper::JoinAdDomain(const std::string& machine_name,
   request.set_dm_token(dm_token_);
 
   AuthPolicyClient::Get()->JoinAdDomain(
-      request, GetDataReadPipe(password).get(),
+      request, data_pipe_utils::GetDataReadPipe(password).get(),
       base::BindOnce(&AuthPolicyHelper::OnJoinCallback,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -203,7 +187,7 @@ void AuthPolicyHelper::AuthenticateUser(const std::string& username,
   request.set_user_principal_name(username);
   request.set_account_id(object_guid);
   AuthPolicyClient::Get()->AuthenticateUser(
-      request, GetDataReadPipe(password).get(),
+      request, data_pipe_utils::GetDataReadPipe(password).get(),
       base::BindOnce(&AuthPolicyHelper::OnAuthCallback,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
