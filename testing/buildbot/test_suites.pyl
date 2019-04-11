@@ -448,7 +448,11 @@
     },
 
     'chromeos_device_friendly_gtests_experimental': {
-      'chrome_login_tast_tests': {},
+      'chrome_login_tast_tests': {
+        'args': [
+          '--use-host-tast-bin',
+        ]
+      },
       'services_unittests': {
         'args': [
           '--vpython-dir=../../vpython_dir_linux_amd64',
