@@ -128,7 +128,7 @@ content::WebUIDataSource* CreateMdExtensionsSource(Profile* profile,
     {"searchResultsPlural", IDS_SEARCH_RESULTS_PLURAL},
     {"searchResultsSingular", IDS_SEARCH_RESULTS_SINGULAR},
 
-    // Multi-use strings defined in md_extensions_strings.grdp.
+    // Multi-use strings defined in extensions_strings.grdp.
     {"remove", IDS_EXTENSIONS_REMOVE},
 
     // Add extension-specific strings.
