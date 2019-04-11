@@ -117,11 +117,11 @@ APP_LIST_EXPORT void RecordSearchResultOpenSource(
     return;
 
   ApplistSearchResultOpenedSource source;
-  AppListViewState state = model->state_fullscreen();
+  ash::mojom::AppListViewState state = model->state_fullscreen();
   if (search_model->tablet_mode()) {
     source = ApplistSearchResultOpenedSource::kFullscreenTablet;
   } else {
-    source = state == AppListViewState::HALF
+    source = state == ash::mojom::AppListViewState::kHalf
                  ? ApplistSearchResultOpenedSource::kHalfClamshell
                  : ApplistSearchResultOpenedSource::kFullscreenClamshell;
   }

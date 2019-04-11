@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/public/interfaces/app_list_view.mojom.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -52,8 +53,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAnimationsTest, Fullscreen) {
   {
     base::RunLoop waiter;
     shell_test_api->WaitForLauncherAnimationState(
-        ash::mojom::LauncherAnimationState::kFullscreenAllApps,
-        waiter.QuitClosure());
+        ash::mojom::AppListViewState::kFullscreenAllApps, waiter.QuitClosure());
     ui_controls::SendKeyPress(browser_window, ui::VKEY_BROWSER_SEARCH,
                               /*control=*/false,
                               /*shift=*/true,
@@ -64,7 +64,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAnimationsTest, Fullscreen) {
   {
     base::RunLoop waiter;
     shell_test_api->WaitForLauncherAnimationState(
-        ash::mojom::LauncherAnimationState::kClosed, waiter.QuitClosure());
+        ash::mojom::AppListViewState::kClosed, waiter.QuitClosure());
     ui_controls::SendKeyPress(browser_window, ui::VKEY_BROWSER_SEARCH,
                               /*control=*/false,
                               /*shift=*/true,
@@ -84,7 +84,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAnimationsTest, Peeking) {
   {
     base::RunLoop waiter;
     shell_test_api->WaitForLauncherAnimationState(
-        ash::mojom::LauncherAnimationState::kPeeking, waiter.QuitClosure());
+        ash::mojom::AppListViewState::kPeeking, waiter.QuitClosure());
     ui_controls::SendKeyPress(browser_window, ui::VKEY_BROWSER_SEARCH,
                               /*control=*/false,
                               /*shift=*/false,
@@ -95,7 +95,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAnimationsTest, Peeking) {
   {
     base::RunLoop waiter;
     shell_test_api->WaitForLauncherAnimationState(
-        ash::mojom::LauncherAnimationState::kClosed, waiter.QuitClosure());
+        ash::mojom::AppListViewState::kClosed, waiter.QuitClosure());
     ui_controls::SendKeyPress(browser_window, ui::VKEY_BROWSER_SEARCH,
                               /*control=*/false,
                               /*shift=*/false,

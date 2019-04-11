@@ -176,11 +176,12 @@ ash::ShelfAction AppListPresenterImpl::ToggleAppList(
                             show_source == kShelfButtonFullscreen;
   if (IsVisible()) {
     if (request_fullscreen) {
-      if (view_->app_list_state() == AppListViewState::PEEKING) {
-        view_->SetState(AppListViewState::FULLSCREEN_ALL_APPS);
+      if (view_->app_list_state() == ash::mojom::AppListViewState::kPeeking) {
+        view_->SetState(ash::mojom::AppListViewState::kFullscreenAllApps);
         return ash::SHELF_ACTION_APP_LIST_SHOWN;
-      } else if (view_->app_list_state() == AppListViewState::HALF) {
-        view_->SetState(AppListViewState::FULLSCREEN_SEARCH);
+      } else if (view_->app_list_state() ==
+                 ash::mojom::AppListViewState::kHalf) {
+        view_->SetState(ash::mojom::AppListViewState::kFullscreenSearch);
         return ash::SHELF_ACTION_APP_LIST_SHOWN;
       }
     }
@@ -189,7 +190,7 @@ ash::ShelfAction AppListPresenterImpl::ToggleAppList(
   }
   Show(display_id, event_time_stamp);
   if (request_fullscreen)
-    view_->SetState(AppListViewState::FULLSCREEN_ALL_APPS);
+    view_->SetState(ash::mojom::AppListViewState::kFullscreenAllApps);
   return ash::SHELF_ACTION_APP_LIST_SHOWN;
 }
 
@@ -210,13 +211,14 @@ void AppListPresenterImpl::UpdateYPositionAndOpacity(int y_position_in_screen,
     view_->UpdateYPositionAndOpacity(y_position_in_screen, background_opacity);
 }
 
-void AppListPresenterImpl::EndDragFromShelf(AppListViewState app_list_state) {
+void AppListPresenterImpl::EndDragFromShelf(
+    ash::mojom::AppListViewState app_list_state) {
   if (view_) {
-    if (app_list_state == AppListViewState::CLOSED ||
-        view_->app_list_state() == AppListViewState::CLOSED) {
+    if (app_list_state == ash::mojom::AppListViewState::kClosed ||
+        view_->app_list_state() == ash::mojom::AppListViewState::kClosed) {
       view_->Dismiss();
     } else {
-      view_->SetState(AppListViewState(app_list_state));
+      view_->SetState(app_list_state);
     }
     view_->SetIsInDrag(false);
     view_->UpdateChildViewsYPositionAndOpacity();

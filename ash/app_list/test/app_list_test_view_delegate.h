@@ -101,7 +101,8 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   void OnSearchResultVisibilityChanged(const std::string& id,
                                        bool visibility) override;
   bool IsAssistantAllowedAndEnabled() const override;
-  void OnStateTransitionAnimationCompleted(AppListViewState state) override;
+  void OnStateTransitionAnimationCompleted(
+      ash::mojom::AppListViewState state) override;
 
   // Do a bulk replacement of the items in the model.
   void ReplaceTestModel(int item_count);

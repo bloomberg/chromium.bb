@@ -9,10 +9,10 @@
 #include <vector>
 
 #include "ash/app_list/app_list_metrics.h"
-#include "ash/app_list/model/app_list_view_state.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/interfaces/app_list.mojom.h"
+#include "ash/public/interfaces/app_list_view.mojom.h"
 #include "ash/public/interfaces/menu.mojom.h"
 #include "base/callback_forward.h"
 #include "base/strings/string16.h"
@@ -170,7 +170,8 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   virtual bool IsAssistantAllowedAndEnabled() const = 0;
 
   // Called when the app list view animation is completed.
-  virtual void OnStateTransitionAnimationCompleted(AppListViewState state) = 0;
+  virtual void OnStateTransitionAnimationCompleted(
+      ash::mojom::AppListViewState state) = 0;
 };
 
 }  // namespace app_list

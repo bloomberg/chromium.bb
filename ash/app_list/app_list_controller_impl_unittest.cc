@@ -150,7 +150,7 @@ TEST_F(AppListControllerImplTest, HideRoundingCorners) {
       GetAppListView()->get_fullscreen_widget_for_test()->GetNativeView();
   gfx::Rect app_list_screen_bounds = native_window->GetBoundsInScreen();
   EXPECT_EQ(0, app_list_screen_bounds.y());
-  EXPECT_EQ(app_list::AppListViewState::HALF,
+  EXPECT_EQ(ash::mojom::AppListViewState::kHalf,
             GetAppListView()->app_list_state());
   gfx::Transform expected_transform;
   expected_transform.Translate(0, -app_list::kAppListBackgroundRadius);
@@ -196,11 +196,11 @@ TEST_F(AppListControllerImplTest, CheckAppListViewBoundsWhenVKeyboardEnabled) {
   // the PEEKING state.
   ShowAppListNow();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(app_list::AppListViewState::PEEKING,
+  EXPECT_EQ(ash::mojom::AppListViewState::kPeeking,
             GetAppListView()->app_list_state());
   EXPECT_EQ(nullptr, GetVirtualKeyboardWindow());
   EXPECT_EQ(GetAppListView()->GetPreferredWidgetBoundsForState(
-                app_list::AppListViewState::PEEKING),
+                ash::mojom::AppListViewState::kPeeking),
             GetAppListViewNativeWindow()->bounds());
 }
 
@@ -232,10 +232,10 @@ TEST_F(AppListControllerImplTest, CheckAppListViewBoundsWhenDismissVKeyboard) {
   // (1) AppListView's state is FULLSCREEN_SEARCH
   // (2) AppListView's bounds are the same as the preferred bounds for
   // the FULLSCREEN_SEARCH state.
-  EXPECT_EQ(app_list::AppListViewState::FULLSCREEN_SEARCH,
+  EXPECT_EQ(ash::mojom::AppListViewState::kFullscreenSearch,
             GetAppListView()->app_list_state());
   EXPECT_EQ(GetAppListView()->GetPreferredWidgetBoundsForState(
-                app_list::AppListViewState::FULLSCREEN_SEARCH),
+                ash::mojom::AppListViewState::kFullscreenSearch),
             GetAppListViewNativeWindow()->bounds());
 }
 

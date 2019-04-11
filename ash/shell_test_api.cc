@@ -9,9 +9,9 @@
 
 #include "ash/accelerators/accelerator_commands.h"
 #include "ash/app_list/app_list_controller_impl.h"
-#include "ash/app_list/model/app_list_view_state.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/keyboard/ash_keyboard_controller.h"
+#include "ash/public/interfaces/app_list_view.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/system/power/backlights_forced_off_setter.h"
@@ -110,26 +110,9 @@ class OverviewAnimationStateWaiter : public OverviewObserver {
 class LauncherStateWaiter {
  public:
   LauncherStateWaiter(
-      mojom::LauncherAnimationState state,
+      ash::mojom::AppListViewState state,
       ShellTestApi::WaitForLauncherAnimationStateCallback callback)
-      : callback_(std::move(callback)) {
-    switch (state) {
-      case mojom::LauncherAnimationState::kClosed:
-        target_state_ = app_list::AppListViewState::CLOSED;
-        break;
-      case mojom::LauncherAnimationState::kPeeking:
-        target_state_ = app_list::AppListViewState::PEEKING;
-        break;
-      case mojom::LauncherAnimationState::kHalf:
-        target_state_ = app_list::AppListViewState::HALF;
-        break;
-      case mojom::LauncherAnimationState::kFullscreenAllApps:
-        target_state_ = app_list::AppListViewState::FULLSCREEN_ALL_APPS;
-        break;
-      case mojom::LauncherAnimationState::kFullscreenSearch:
-        target_state_ = app_list::AppListViewState::FULLSCREEN_SEARCH;
-        break;
-    };
+      : target_state_(state), callback_(std::move(callback)) {
     Shell::Get()->app_list_controller()->SetStateTransitionAnimationCallback(
         base::BindRepeating(&LauncherStateWaiter::OnStateChanged,
                             base::Unretained(this)));
@@ -139,7 +122,7 @@ class LauncherStateWaiter {
         base::NullCallback());
   }
 
-  void OnStateChanged(app_list::AppListViewState state) {
+  void OnStateChanged(ash::mojom::AppListViewState state) {
     if (target_state_ == state) {
       std::move(callback_).Run();
       delete this;
@@ -147,7 +130,7 @@ class LauncherStateWaiter {
   }
 
  private:
-  app_list::AppListViewState target_state_;
+  ash::mojom::AppListViewState target_state_;
   ShellTestApi::WaitForLauncherAnimationStateCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherStateWaiter);
@@ -310,7 +293,7 @@ void ShellTestApi::WaitForOverviewAnimationState(
 }
 
 void ShellTestApi::WaitForLauncherAnimationState(
-    mojom::LauncherAnimationState target_state,
+    ash::mojom::AppListViewState target_state,
     WaitForLauncherAnimationStateCallback callback) {
   new LauncherStateWaiter(target_state, std::move(callback));
 }

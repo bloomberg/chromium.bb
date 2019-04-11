@@ -49,7 +49,7 @@ void AppListModel::SetState(ash::AppListState state) {
     observer.OnAppListStateChanged(state_, old_state);
 }
 
-void AppListModel::SetStateFullscreen(AppListViewState state) {
+void AppListModel::SetStateFullscreen(ash::mojom::AppListViewState state) {
   state_fullscreen_ = state;
 }
 
