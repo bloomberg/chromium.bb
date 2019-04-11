@@ -16,7 +16,7 @@ function AppManagementBrowserTest() {}
 AppManagementBrowserTest.prototype = {
   __proto__: PolymerTest.prototype,
 
-  browsePreload: 'chrome://apps',
+  browsePreload: 'chrome://app-management',
 
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
     '../test_store.js',

@@ -432,7 +432,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
    ***************************************************************************/
 #if !defined(OS_ANDROID)
   if (AppManagementUI::IsEnabled() &&
-      url.host_piece() == chrome::kChromeUIAppLauncherPageHost && profile &&
+      url.host_piece() == chrome::kChromeUIAppManagementHost && profile &&
       !profile->IsGuestSession()) {
     return &NewWebUI<AppManagementUI>;
   }
@@ -453,6 +453,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   }
   if (profile->IsGuestSession() &&
       (url.host_piece() == chrome::kChromeUIAppLauncherPageHost ||
+       url.host_piece() == chrome::kChromeUIAppManagementHost ||
        url.host_piece() == chrome::kChromeUIBookmarksHost ||
        url.host_piece() == chrome::kChromeUIHistoryHost ||
        url.host_piece() == chrome::kChromeUIExtensionsHost)) {
