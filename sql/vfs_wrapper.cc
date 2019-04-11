@@ -340,26 +340,6 @@ int FullPathname(sqlite3_vfs* vfs, const char* relative_path,
       wrapped_vfs, relative_path, buf_size, absolute_path);
 }
 
-void* DlOpen(sqlite3_vfs* vfs, const char* filename) {
-  sqlite3_vfs* wrapped_vfs = GetWrappedVfs(vfs);
-  return wrapped_vfs->xDlOpen(wrapped_vfs, filename);
-}
-
-void DlError(sqlite3_vfs* vfs, int buf_size, char* error_buffer) {
-  sqlite3_vfs* wrapped_vfs = GetWrappedVfs(vfs);
-  wrapped_vfs->xDlError(wrapped_vfs, buf_size, error_buffer);
-}
-
-void(*DlSym(sqlite3_vfs* vfs, void* handle, const char* sym))(void) {
-  sqlite3_vfs* wrapped_vfs = GetWrappedVfs(vfs);
-  return wrapped_vfs->xDlSym(wrapped_vfs, handle, sym);
-}
-
-void DlClose(sqlite3_vfs* vfs, void* handle) {
-  sqlite3_vfs* wrapped_vfs = GetWrappedVfs(vfs);
-  wrapped_vfs->xDlClose(wrapped_vfs, handle);
-}
-
 int Randomness(sqlite3_vfs* vfs, int buf_size, char* buffer) {
   sqlite3_vfs* wrapped_vfs = GetWrappedVfs(vfs);
   return wrapped_vfs->xRandomness(wrapped_vfs, buf_size, buffer);
@@ -370,11 +350,6 @@ int Sleep(sqlite3_vfs* vfs, int microseconds) {
   return wrapped_vfs->xSleep(wrapped_vfs, microseconds);
 }
 
-int CurrentTime(sqlite3_vfs* vfs, double* now) {
-  sqlite3_vfs* wrapped_vfs = GetWrappedVfs(vfs);
-  return wrapped_vfs->xCurrentTime(wrapped_vfs, now);
-}
-
 int GetLastError(sqlite3_vfs* vfs, int e, char* s) {
   sqlite3_vfs* wrapped_vfs = GetWrappedVfs(vfs);
   return wrapped_vfs->xGetLastError(wrapped_vfs, e, s);
@@ -383,22 +358,6 @@ int GetLastError(sqlite3_vfs* vfs, int e, char* s) {
 int CurrentTimeInt64(sqlite3_vfs* vfs, sqlite3_int64* now) {
   sqlite3_vfs* wrapped_vfs = GetWrappedVfs(vfs);
   return wrapped_vfs->xCurrentTimeInt64(wrapped_vfs, now);
-}
-
-int SetSystemCall(sqlite3_vfs* vfs, const char* name,
-                  sqlite3_syscall_ptr func) {
-  sqlite3_vfs* wrapped_vfs = GetWrappedVfs(vfs);
-  return wrapped_vfs->xSetSystemCall(wrapped_vfs, name, func);
-}
-
-sqlite3_syscall_ptr GetSystemCall(sqlite3_vfs* vfs, const char* name) {
-  sqlite3_vfs* wrapped_vfs = GetWrappedVfs(vfs);
-  return wrapped_vfs->xGetSystemCall(wrapped_vfs, name);
-}
-
-const char* NextSystemCall(sqlite3_vfs* vfs, const char* name) {
-  sqlite3_vfs* wrapped_vfs = GetWrappedVfs(vfs);
-  return wrapped_vfs->xNextSystemCall(wrapped_vfs, name);
 }
 
 }  // namespace
@@ -435,13 +394,18 @@ sqlite3_vfs* VFSWrapper() {
 
   // VFS implementations should always work with a SQLite that only knows about
   // earlier versions.
-  wrapper_vfs->iVersion = std::min(wrapped_vfs->iVersion, 3);
+  constexpr int kSqliteVfsApiVersion = 3;
+  wrapper_vfs->iVersion = kSqliteVfsApiVersion;
+
+  // All the SQLite VFS implementations used by Chrome should support the
+  // version proxied here.
+  DCHECK_GE(wrapped_vfs->iVersion, kSqliteVfsApiVersion);
 
   // Caller of xOpen() allocates this much space.
   wrapper_vfs->szOsFile = sizeof(VfsFile);
 
   wrapper_vfs->mxPathname = wrapped_vfs->mxPathname;
-  wrapper_vfs->pNext = nullptr;
+  wrapper_vfs->pNext = nullptr;  // Field used by SQLite.
   wrapper_vfs->zName = kVFSName;
 
   // Keep a reference to the wrapped vfs for use in methods.
@@ -452,26 +416,39 @@ sqlite3_vfs* VFSWrapper() {
   wrapper_vfs->xDelete = &Delete;
   wrapper_vfs->xAccess = &Access;
   wrapper_vfs->xFullPathname = &FullPathname;
-  wrapper_vfs->xDlOpen = &DlOpen;
-  wrapper_vfs->xDlError = &DlError;
-  wrapper_vfs->xDlSym = &DlSym;
-  wrapper_vfs->xDlClose = &DlClose;
+
+  // SQLite's dynamic extension loading is disabled in Chrome. Not proxying
+  // these methods lets us ship less logic and provides a tiny bit of extra
+  // security, as we know for sure that SQLite will not dynamically load code.
+  wrapper_vfs->xDlOpen = nullptr;
+  wrapper_vfs->xDlError = nullptr;
+  wrapper_vfs->xDlSym = nullptr;
+  wrapper_vfs->xDlClose = nullptr;
+
   wrapper_vfs->xRandomness = &Randomness;
   wrapper_vfs->xSleep = &Sleep;
-  // |xCurrentTime| is null when SQLite is built with SQLITE_OMIT_DEPRECATED.
-  wrapper_vfs->xCurrentTime =
-      (wrapped_vfs->xCurrentTime ? &CurrentTime : nullptr);
+
+  // |xCurrentTime| is null when SQLite is built with SQLITE_OMIT_DEPRECATED, so
+  // it does not need to be proxied.
+  wrapper_vfs->xCurrentTime = nullptr;
+
   wrapper_vfs->xGetLastError = &GetLastError;
-  // The methods above are in version 1 of sqlite_vfs.
-  DCHECK(wrapped_vfs->xCurrentTimeInt64);
+
+  // The methods above are in version 1 of SQLite's VFS API.
+
+  DCHECK(wrapped_vfs->xCurrentTimeInt64 != nullptr);
   wrapper_vfs->xCurrentTimeInt64 = &CurrentTimeInt64;
-  // The methods above are in version 2 of sqlite_vfs.
-  DCHECK(wrapped_vfs->xSetSystemCall);
-  wrapper_vfs->xSetSystemCall = &SetSystemCall;
-  DCHECK(wrapped_vfs->xGetSystemCall);
-  wrapper_vfs->xGetSystemCall = &GetSystemCall;
-  DCHECK(wrapped_vfs->xNextSystemCall);
-  wrapper_vfs->xNextSystemCall = &NextSystemCall;
+
+  // The methods above are in version 2 of SQLite's VFS API.
+
+  // The VFS system call interception API is intended for very low-level SQLite
+  // testing and tweaks. Proxying these methods is not necessary because Chrome
+  // does not do very low-level SQLite testing, and the VFS wrapper supports all
+  // the needed tweaks.
+  wrapper_vfs->xSetSystemCall = nullptr;
+  wrapper_vfs->xGetSystemCall = nullptr;
+  wrapper_vfs->xNextSystemCall = nullptr;
+
   // The methods above are in version 3 of sqlite_vfs.
 
   if (SQLITE_OK == sqlite3_vfs_register(wrapper_vfs.get(), 0)) {
