@@ -3265,24 +3265,21 @@ TEST_F(PasswordFormManagerTest, PresaveGeneratedPasswordAndRemoveIt) {
   credentials.password_value = ASCIIToUTF16("password");
 
   // Simulate the user accepted a generated password.
-  EXPECT_CALL(MockFormSaver::Get(form_manager()),
-              PresaveGeneratedPassword(credentials));
+  EXPECT_CALL(MockFormSaver::Get(form_manager()), PresaveGeneratedPassword(_));
   form_manager()->PresaveGeneratedPassword(credentials);
   EXPECT_TRUE(form_manager()->HasGeneratedPassword());
   EXPECT_FALSE(form_manager()->generated_password_changed());
 
   // Simulate the user changed the presaved username.
   credentials.username_value = ASCIIToUTF16("new_username");
-  EXPECT_CALL(MockFormSaver::Get(form_manager()),
-              PresaveGeneratedPassword(credentials));
+  EXPECT_CALL(MockFormSaver::Get(form_manager()), PresaveGeneratedPassword(_));
   form_manager()->PresaveGeneratedPassword(credentials);
   EXPECT_TRUE(form_manager()->HasGeneratedPassword());
   EXPECT_FALSE(form_manager()->generated_password_changed());
 
   // Simulate the user changed the presaved password.
   credentials.password_value = ASCIIToUTF16("changed_password");
-  EXPECT_CALL(MockFormSaver::Get(form_manager()),
-              PresaveGeneratedPassword(credentials));
+  EXPECT_CALL(MockFormSaver::Get(form_manager()), PresaveGeneratedPassword(_));
   form_manager()->PresaveGeneratedPassword(credentials);
   EXPECT_TRUE(form_manager()->HasGeneratedPassword());
   EXPECT_TRUE(form_manager()->generated_password_changed());
@@ -4516,8 +4513,7 @@ TEST_F(PasswordFormManagerTest, PresaveGeneratedPassword_UnknownUsername) {
   credentials.username_value = ASCIIToUTF16("new_user");
   credentials.password_value = ASCIIToUTF16("generatated_password");
 
-  EXPECT_CALL(MockFormSaver::Get(form_manager()),
-              PresaveGeneratedPassword(credentials));
+  EXPECT_CALL(MockFormSaver::Get(form_manager()), PresaveGeneratedPassword(_));
   form_manager()->PresaveGeneratedPassword(credentials);
 }
 
@@ -4534,9 +4530,12 @@ TEST_F(PasswordFormManagerTest, PresaveGeneratedPassword_KnownUsername) {
 
   PasswordForm credentials_without_username(credentials);
   credentials_without_username.username_value.clear();
-  EXPECT_CALL(MockFormSaver::Get(form_manager()),
-              PresaveGeneratedPassword(credentials_without_username));
+  PasswordForm actual;
+  EXPECT_CALL(MockFormSaver::Get(form_manager()), PresaveGeneratedPassword(_))
+      .WillOnce(SaveArg<0>(&actual));
   form_manager()->PresaveGeneratedPassword(credentials);
+  credentials_without_username.date_created = actual.date_created;
+  EXPECT_EQ(credentials_without_username, actual);
 }
 
 TEST_F(PasswordFormManagerTest, PresaveGeneratedPassword_EmptyUsername) {
@@ -4550,8 +4549,7 @@ TEST_F(PasswordFormManagerTest, PresaveGeneratedPassword_EmptyUsername) {
   credentials.username_value.clear();
   credentials.password_value = ASCIIToUTF16("generatated_password");
 
-  EXPECT_CALL(MockFormSaver::Get(form_manager()),
-              PresaveGeneratedPassword(credentials));
+  EXPECT_CALL(MockFormSaver::Get(form_manager()), PresaveGeneratedPassword(_));
   form_manager()->PresaveGeneratedPassword(credentials);
 }
 

@@ -2178,18 +2178,23 @@ TEST_F(PasswordManagerTest, PasswordGenerationPresavePassword) {
   PasswordForm sanitized_form(form);
   SanitizeFormData(&sanitized_form.form_data);
 
-  EXPECT_CALL(*store_, AddLogin(sanitized_form)).WillOnce(Return());
+  PasswordForm actual_form;
+  EXPECT_CALL(*store_, AddLogin(_)).WillOnce(SaveArg<0>(&actual_form));
   manager()->OnPresaveGeneratedPassword(&driver_, form);
+  EXPECT_NE(actual_form.date_created, base::Time());
+  sanitized_form.date_created = actual_form.date_created;
+  EXPECT_EQ(sanitized_form, actual_form);
 
   // The user updates the generated password.
   PasswordForm updated_form(form);
   updated_form.password_value = base::ASCIIToUTF16("password_12345");
   PasswordForm sanitized_updated_form(updated_form);
   SanitizeFormData(&sanitized_updated_form.form_data);
-  EXPECT_CALL(*store_,
-              UpdateLoginWithPrimaryKey(sanitized_updated_form, sanitized_form))
-      .WillOnce(Return());
+  EXPECT_CALL(*store_, UpdateLoginWithPrimaryKey(_, sanitized_form))
+      .WillOnce(SaveArg<0>(&actual_form));
   manager()->OnPresaveGeneratedPassword(&driver_, updated_form);
+  sanitized_updated_form.date_created = actual_form.date_created;
+  EXPECT_EQ(sanitized_updated_form, actual_form);
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.GeneratedFormHasNoFormManager", false, 2);
 
@@ -2256,8 +2261,12 @@ TEST_F(PasswordManagerTest, PasswordGenerationPresavePasswordAndLogin) {
     PasswordForm presaved_form(form);
     if (found_matched_logins_in_store)
       presaved_form.username_value.clear();
-    EXPECT_CALL(*store_, AddLogin(presaved_form)).WillOnce(Return());
+    PasswordForm actual_form;
+    EXPECT_CALL(*store_, AddLogin(_)).WillOnce(SaveArg<0>(&actual_form));
     manager()->OnPresaveGeneratedPassword(&driver_, form);
+    EXPECT_NE(actual_form.date_created, base::Time());
+    presaved_form.date_created = actual_form.date_created;
+    EXPECT_EQ(presaved_form, actual_form);
     ::testing::Mock::VerifyAndClearExpectations(store_.get());
 
     EXPECT_CALL(*store_, IsAbleToSavePasswords()).WillRepeatedly(Return(true));

@@ -1024,6 +1024,7 @@ void NewPasswordFormManager::PresaveGeneratedPasswordInternal(
     parsed_form->origin = form.origin;
     parsed_form->signon_realm = GetSignonRealm(form.origin);
   }
+  parsed_form->date_created = base::Time::Now();
 
   if (!HasGeneratedPassword()) {
     votes_uploader_.set_generated_password_changed(false);
