@@ -12,7 +12,6 @@
 #include "base/strings/string_util.h"
 #include "google_apis/google_api_keys.h"
 #include "remoting/base/logging.h"
-#include "remoting/base/oauth_helper.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace remoting {
