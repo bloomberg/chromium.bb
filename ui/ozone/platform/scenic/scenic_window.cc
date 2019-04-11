@@ -176,8 +176,8 @@ void ScenicWindow::UpdateSize() {
 
   // Translate the node by half of the view dimensions to put it in the center
   // of the view.
-  node_.SetTranslationRH(size_dips_.width() / 2.0, size_dips_.height() / 2.0,
-                         0.f);
+  node_.SetTranslation(size_dips_.width() / 2.0, size_dips_.height() / 2.0,
+                       0.f);
 
   // Scale the render node so that surface rect can always be 1x1.
   render_node_.SetScale(size_dips_.width(), size_dips_.height(), 1.f);
