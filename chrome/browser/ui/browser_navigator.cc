@@ -748,6 +748,7 @@ bool IsHostAllowedInIncognito(const GURL& url) {
   // chrome://extensions is on the list because it redirects to
   // chrome://settings.
   return host != chrome::kChromeUIAppLauncherPageHost &&
+         host != chrome::kChromeUIAppManagementHost &&
          host != chrome::kChromeUISettingsHost &&
          host != chrome::kChromeUIHelpHost &&
          host != chrome::kChromeUIHistoryHost &&

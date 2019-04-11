@@ -4,7 +4,7 @@ Chrome, and especially Chrome OS, has apps, e.g. chat apps and camera apps.
 
 There are a number (lets call it `M`) of different places or app Consumers,
 usually UI (user interfaces) related, where users interact with their installed
-apps: e.g. launcher, search bar, shelf, New Tab Page, the `chrome://apps` page,
+apps: e.g. launcher, search bar, shelf, New Tab Page, the App Management page,
 permissions or settings pages, picking and running default handlers for URLs,
 MIME types or intents, etc.
 

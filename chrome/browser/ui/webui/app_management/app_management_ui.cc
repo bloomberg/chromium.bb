@@ -26,7 +26,7 @@ namespace {
 
 content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
   content::WebUIDataSource* source =
-      content::WebUIDataSource::Create(chrome::kChromeUIAppLauncherPageHost);
+      content::WebUIDataSource::Create(chrome::kChromeUIAppManagementHost);
 
   source->AddLocalizedString("appListTitle", IDS_APP_MANAGEMENT_APP_LIST_TITLE);
   source->AddLocalizedString("appNoPermission",
