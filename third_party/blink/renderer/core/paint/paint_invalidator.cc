@@ -93,15 +93,10 @@ LayoutRect PaintInvalidator::MapLocalRectToVisualRect(
     if (!disable_flip) {
       if (object.IsBox()) {
         ToLayoutBox(object).FlipForWritingMode(rect);
-      } else if (!(context.subtree_flags &
-                   PaintInvalidatorContext::kSubtreeSlowPathRect)) {
-        // For CAP and the GeometryMapper path, we also need to convert the
-        // rect for non-boxes into physical coordinates before applying paint
-        // offset. (Otherwise we'll call mapToVisualrectInAncestorSpace() which
-        // requires physical coordinates for boxes, but "physical coordinates
-        // with flipped block-flow direction" for non-boxes for which we don't
-        // need to flip.)
-        // TODO(wangxianzhu): Avoid containingBlock().
+      } else {
+        // Also convert the rect for non-boxes into physical coordinates before
+        // applying paint offset.
+        // TODO(wangxianzhu): Avoid ContainingBlock().
         object.ContainingBlock()->FlipForWritingMode(rect);
       }
     }
@@ -336,17 +331,6 @@ bool PaintInvalidator::InvalidatePaint(
   object.GetMutableForPainting().EnsureIsReadyForPaintInvalidation();
 
   UpdatePaintingLayer(object, context);
-
-  // TODO(chrishtr): refactor to remove these slow paths by expanding their
-  // LocalVisualRect to include repeated locations.
-  if (object.IsTableSection()) {
-    const auto& section = ToLayoutTableSection(object);
-    if (section.IsRepeatingHeaderGroup() || section.IsRepeatingFooterGroup())
-      context.subtree_flags |= PaintInvalidatorContext::kSubtreeSlowPathRect;
-  }
-  if (object.IsFixedPositionObjectInPagedMedia())
-    context.subtree_flags |= PaintInvalidatorContext::kSubtreeSlowPathRect;
-
   UpdatePaintInvalidationContainer(object, context);
   UpdateEmptyVisualRectFlag(object, context);
 
