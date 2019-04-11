@@ -38,6 +38,25 @@ class IsolatedModule : public ModuleCache::Module {
   std::unique_ptr<char[]> memory_region_;
 };
 
+// Provides a fake module with configurable base address and size.
+class FakeModule : public ModuleCache::Module {
+ public:
+  FakeModule(uintptr_t base_address, size_t size)
+      : base_address_(base_address), size_(size) {}
+
+  FakeModule(const FakeModule&) = delete;
+  FakeModule& operator=(const FakeModule&) = delete;
+
+  uintptr_t GetBaseAddress() const override { return base_address_; }
+  std::string GetId() const override { return ""; }
+  FilePath GetDebugBasename() const override { return FilePath(); }
+  size_t GetSize() const override { return size_; }
+
+ private:
+  uintptr_t base_address_;
+  size_t size_;
+};
+
 #if defined(OS_POSIX) && !defined(OS_IOS) || defined(OS_WIN) || \
     defined(OS_FUCHSIA)
 #define MAYBE_TEST(TestSuite, TestName) TEST(TestSuite, TestName)
@@ -72,6 +91,46 @@ MAYBE_TEST(ModuleCacheTest, LookupRange) {
                                               module->GetSize() - 1));
   EXPECT_EQ(nullptr, cache.GetModuleForAddress(module->GetBaseAddress() +
                                                module->GetSize()));
+}
+
+MAYBE_TEST(ModuleCacheTest, LookupNonNativeModule) {
+  ModuleCache cache;
+  auto non_native_module_to_add = std::make_unique<IsolatedModule>();
+  const ModuleCache::Module* module = non_native_module_to_add.get();
+  cache.AddNonNativeModule(std::move(non_native_module_to_add));
+
+  EXPECT_EQ(nullptr, cache.GetModuleForAddress(module->GetBaseAddress() - 1));
+  EXPECT_EQ(module, cache.GetModuleForAddress(module->GetBaseAddress()));
+  EXPECT_EQ(module, cache.GetModuleForAddress(module->GetBaseAddress() +
+                                              module->GetSize() - 1));
+  EXPECT_EQ(nullptr, cache.GetModuleForAddress(module->GetBaseAddress() +
+                                               module->GetSize()));
+}
+
+MAYBE_TEST(ModuleCacheTest, LookupOverlaidNonNativeModule) {
+  ModuleCache cache;
+
+  auto native_module_to_inject = std::make_unique<IsolatedModule>();
+  const ModuleCache::Module* native_module = native_module_to_inject.get();
+  cache.InjectModuleForTesting(std::move(native_module_to_inject));
+
+  // Overlay the native module with the non-native module, starting 8 bytes into
+  // the native modules and ending 8 bytes before the end of the module.
+  auto non_native_module_to_add = std::make_unique<FakeModule>(
+      native_module->GetBaseAddress() + 8, native_module->GetSize() - 16);
+  const ModuleCache::Module* non_native_module = non_native_module_to_add.get();
+  cache.AddNonNativeModule(std::move(non_native_module_to_add));
+
+  EXPECT_EQ(native_module,
+            cache.GetModuleForAddress(non_native_module->GetBaseAddress() - 1));
+  EXPECT_EQ(non_native_module,
+            cache.GetModuleForAddress(non_native_module->GetBaseAddress()));
+  EXPECT_EQ(non_native_module,
+            cache.GetModuleForAddress(non_native_module->GetBaseAddress() +
+                                      non_native_module->GetSize() - 1));
+  EXPECT_EQ(native_module,
+            cache.GetModuleForAddress(non_native_module->GetBaseAddress() +
+                                      non_native_module->GetSize()));
 }
 
 MAYBE_TEST(ModuleCacheTest, ModulesList) {
