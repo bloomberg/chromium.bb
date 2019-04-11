@@ -52,8 +52,7 @@ class TabModelJniBridge : public TabModel {
   void CloseTabAt(int index) override;
 
   void CreateTab(TabAndroid* parent,
-                 content::WebContents* web_contents,
-                 int parent_tab_id) override;
+                 content::WebContents* web_contents) override;
   void HandlePopupNavigation(TabAndroid* parent,
                              NavigateParams* params) override;
 

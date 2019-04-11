@@ -104,7 +104,7 @@ public class RecentTabsTest {
                 new ClientId(OfflinePageBridge.LAST_N_NAMESPACE, Integer.toString(tab.getId()));
 
         // The tab should be foreground and so no snapshot should exist.
-        TabModelSelector tabModelSelector = tab.getTabModelSelector();
+        TabModelSelector tabModelSelector = TabModelSelector.from(tab);
         Assert.assertEquals(tabModelSelector.getCurrentTab(), tab);
         Assert.assertFalse(tab.isHidden());
         Assert.assertNull(OfflineTestUtil.getPageByClientId(firstTabClientId));

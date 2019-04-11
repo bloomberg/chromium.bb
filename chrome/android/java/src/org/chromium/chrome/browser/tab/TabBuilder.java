@@ -15,7 +15,7 @@ import org.chromium.ui.base.WindowAndroid;
  */
 public class TabBuilder {
     private int mId = Tab.INVALID_TAB_ID;
-    private int mParentId = Tab.INVALID_TAB_ID;
+    private Tab mParent;
     private boolean mIncognito;
     private WindowAndroid mWindow;
     private Integer mLaunchType;
@@ -34,12 +34,12 @@ public class TabBuilder {
     }
 
     /**
-     * Sets the id of the tab from which the new one is opened.
-     * @param parentId The id of the parent Tab.
+     * Sets the tab from which the new one is opened.
+     * @param parent The parent Tab.
      * @return {@link TabBuilder} creating the Tab.
      */
-    public TabBuilder setParentId(int parentId) {
-        mParentId = parentId;
+    public TabBuilder setParent(Tab parent) {
+        mParent = parent;
         return this;
     }
 
@@ -87,7 +87,7 @@ public class TabBuilder {
         }
 
         return new Tab(
-                mId, mParentId, mIncognito, mWindow, mLaunchType, mCreationType, mLoadUrlParams);
+                mId, mParent, mIncognito, mWindow, mLaunchType, mCreationType, mLoadUrlParams);
     }
 
     private TabBuilder setCreationType(@TabCreationState int type) {

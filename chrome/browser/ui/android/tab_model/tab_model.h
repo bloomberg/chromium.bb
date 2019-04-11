@@ -121,8 +121,7 @@ class TabModel : public content::NotificationObserver {
 
   // Used for restoring tabs from synced foreign sessions.
   virtual void CreateTab(TabAndroid* parent,
-                         content::WebContents* web_contents,
-                         int parent_tab_id) = 0;
+                         content::WebContents* web_contents) = 0;
 
   virtual void HandlePopupNavigation(TabAndroid* parent,
                                      NavigateParams* params) = 0;

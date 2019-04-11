@@ -153,7 +153,12 @@ public class Tab
      * caused it to be opened so that we can activate it when this tab gets
      * closed.
      */
-    private int mParentId = INVALID_TAB_ID;
+    private final int mParentId;
+
+    /**
+     * Tab id to be used as a source tab in SyncedTabDelegate.
+     */
+    private final int mSourceTabId;
 
     /**
      * By default, this id inherits from the tab that caused it to be opened, or it equals to tab
@@ -289,7 +294,7 @@ public class Tab
      * Package-private. Use {@link TabBuilder} to create an instance.
      *
      * @param id            The id this tab should be identified with.
-     * @param parentId      The id id of the tab that caused this tab to be opened.
+     * @param parent        The tab that caused this tab to be opened.
      * @param incognito     Whether or not this tab is incognito.
      * @param window        An instance of a {@link WindowAndroid}.
      * @param launchType    Type indicating how this tab was launched.
@@ -297,12 +302,20 @@ public class Tab
      * @param loadUrlParams Parameters used for a lazily loaded Tab.
      */
     @SuppressLint("HandlerLeak")
-    Tab(int id, int parentId, boolean incognito, WindowAndroid window,
+    Tab(int id, Tab parent, boolean incognito, WindowAndroid window,
             @Nullable @TabLaunchType Integer launchType,
             @Nullable @TabCreationState Integer creationState, LoadUrlParams loadUrlParams) {
         mId = TabIdManager.getInstance().generateValidId(id);
-        mParentId = parentId;
         mIncognito = incognito;
+        if (parent == null) {
+            mParentId = INVALID_TAB_ID;
+            mSourceTabId = INVALID_TAB_ID;
+            mRootId = mId;
+        } else {
+            mParentId = parent.getId();
+            mSourceTabId = parent.isIncognito() == incognito ? mParentId : INVALID_TAB_ID;
+            mRootId = parent.getRootId();
+        }
 
         // Override the configuration for night mode to always stay in light mode until all UIs in
         // Tab are inflated from activity context instead of application context. This is to avoid
@@ -327,13 +340,6 @@ public class Tab
         if (loadUrlParams != null) mUrl = loadUrlParams.getUrl();
 
         TabHelpers.initTabHelpers(this, creationState);
-
-        if (mParentId == INVALID_TAB_ID || getTabModelSelector() == null
-                || getTabModelSelector().getTabById(mParentId) == null) {
-            mRootId = mId;
-        } else {
-            mRootId = getTabModelSelector().getTabById(mParentId).getRootId();
-        }
 
         mAttachStateChangeListener = new OnAttachStateChangeListener() {
             @Override
@@ -568,15 +574,6 @@ public class Tab
         if (getWindowAndroid() == null) return getThemedApplicationContext();
         Context context = getWindowAndroid().getContext().get();
         return context == context.getApplicationContext() ? getThemedApplicationContext() : context;
-    }
-
-    /**
-     * @return {@link TabModelSelector} that currently hosts the {@link TabModel} for this
-     *         {@link Tab}.
-     */
-    public TabModelSelector getTabModelSelector() {
-        if (getActivity() == null) return null;
-        return getActivity().getTabModelSelector();
     }
 
     /** @return WebContentsState representing the state of the WebContents (navigations, etc.) */
@@ -995,11 +992,8 @@ public class Tab
         WebContents webContents = getWebContents();
         if (webContents != null) webContents.setTopLevelNativeWindow(null);
 
-        TabModelSelector tabModelSelector = getTabModelSelector();
-        if (tabModelSelector != null) {
-            tabModelSelector.getModel(mIncognito).removeTab(this);
-        }
-
+        // TabModelSelector of this Tab, if present, gets notified to remove the tab from
+        // the TabModel it belonged to.
         for (TabObserver observer : mObservers) {
             observer.onActivityAttachmentChanged(this, false);
         }
@@ -1215,17 +1209,9 @@ public class Tab
 
             mWebContentsDelegate = mDelegateFactory.createWebContentsDelegate(this);
 
-            int parentId = getParentId();
-            if (parentId != INVALID_TAB_ID) {
-                Tab parentTab = getTabModelSelector().getTabById(parentId);
-                if (parentTab != null && parentTab.isIncognito() != isIncognito()) {
-                    parentId = INVALID_TAB_ID;
-                }
-            }
-
             assert mNativeTabAndroid != 0;
             nativeInitWebContents(mNativeTabAndroid, mIncognito, isDetached(), webContents,
-                    parentId, mWebContentsDelegate,
+                    mSourceTabId, mWebContentsDelegate,
                     new TabContextMenuPopulator(
                             mDelegateFactory.createContextMenuPopulator(this), this));
 
@@ -1253,8 +1239,8 @@ public class Tab
         // completed.
         if (isDetached()) return false;
         NativePage candidateForReuse = forceReload ? null : getNativePage();
-        NativePage nativePage = NativePageFactory.createNativePageForURL(url, candidateForReuse,
-                this, getTabModelSelector(), getActivity());
+        NativePage nativePage = NativePageFactory.createNativePageForURL(
+                url, candidateForReuse, this, getActivity());
         if (nativePage != null) {
             showNativePage(nativePage);
             notifyPageTitleChanged();

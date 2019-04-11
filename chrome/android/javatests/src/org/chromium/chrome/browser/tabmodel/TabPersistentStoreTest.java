@@ -114,7 +114,6 @@ public class TabPersistentStoreTest {
         public Tab createFrozenTab(TabState state, int id, int index) {
             Tab tab = TabBuilder.createFromFrozenState()
                               .setId(id)
-                              .setParentId(state.parentId)
                               .setIncognito(state.isIncognito())
                               .build();
             TabTestUtils.restoreFieldsFromState(tab, state);
@@ -124,8 +123,8 @@ public class TabPersistentStoreTest {
         }
 
         @Override
-        public boolean createTabWithWebContents(Tab parent, WebContents webContents, int parentId,
-                @TabLaunchType int type, String url) {
+        public boolean createTabWithWebContents(
+                Tab parent, WebContents webContents, @TabLaunchType int type, String url) {
             return false;
         }
 
