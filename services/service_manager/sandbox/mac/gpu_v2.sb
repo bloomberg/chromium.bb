@@ -69,6 +69,7 @@
 )
 
 (allow file-read-data
+  (path "/Library/MessageTracer/SubmitDiagInfo.default.domains.searchtree")
   (regex (user-homedir-path #"/Library/Preferences/ByHost/com.apple.AppleGVA.*"))
 )
 
