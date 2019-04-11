@@ -251,8 +251,8 @@ void WebTestBackgroundFetchDelegate::CreateDownloadJob(
           BrowserContext::GetDefaultStoragePartition(browser_context_)
               ->GetURLLoaderFactoryForBrowserProcess()
               .get();
-      simple_factory_key_ =
-          std::make_unique<TestSimpleFactoryKey>(base::FilePath());
+      simple_factory_key_ = std::make_unique<TestSimpleFactoryKey>(
+          browser_context_->GetPath(), browser_context_->IsOffTheRecord());
       download_service_ =
           base::WrapUnique(download::BuildInMemoryDownloadService(
               simple_factory_key_.get(), std::move(clients),
