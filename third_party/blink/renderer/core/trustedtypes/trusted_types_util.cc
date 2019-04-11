@@ -203,13 +203,20 @@ String GetStringFromTrustedHTML(StringOrTrustedHTML string_or_trusted_html,
          origin_trials::TrustedDOMTypesEnabled(doc));
   DCHECK(!string_or_trusted_html.IsNull());
 
-  bool require_trusted_type = doc && doc->RequireTrustedTypes();
-  if (!require_trusted_type && string_or_trusted_html.IsString()) {
-    return string_or_trusted_html.GetAsString();
-  }
-
   if (string_or_trusted_html.IsTrustedHTML()) {
     return string_or_trusted_html.GetAsTrustedHTML()->toString();
+  }
+
+  return GetStringFromTrustedHTML(string_or_trusted_html.GetAsString(), doc,
+                                  exception_state);
+}
+
+String GetStringFromTrustedHTML(const String& string,
+                                const Document* doc,
+                                ExceptionState& exception_state) {
+  bool require_trusted_type = doc && doc->RequireTrustedTypes();
+  if (!require_trusted_type) {
+    return string;
   }
 
   TrustedTypePolicy* default_policy =
@@ -218,11 +225,11 @@ String GetStringFromTrustedHTML(StringOrTrustedHTML string_or_trusted_html,
     if (TrustedTypeFail(kTrustedHTMLAssignment, doc, exception_state)) {
       return g_empty_string;
     }
-    return string_or_trusted_html.GetAsString();
+    return string;
   }
 
-  TrustedHTML* result = default_policy->CreateHTML(
-      doc->GetIsolate(), string_or_trusted_html.GetAsString(), exception_state);
+  TrustedHTML* result =
+      default_policy->CreateHTML(doc->GetIsolate(), string, exception_state);
   if (exception_state.HadException()) {
     exception_state.ClearException();
     TrustedTypeFail(kTrustedHTMLAssignmentAndDefaultPolicyFailed, doc,
@@ -371,4 +378,5 @@ String GetStringFromTrustedURL(USVStringOrTrustedURL string_or_trusted_url,
 
   return result->toString();
 }
+
 }  // namespace blink
