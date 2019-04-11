@@ -21,7 +21,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
-
+#include "ui/views/view_class_properties.h"
 namespace ash {
 
 namespace {
@@ -38,11 +38,19 @@ class UserAvatarButton : public views::Button {
 UserAvatarButton::UserAvatarButton(views::ButtonListener* listener)
     : Button(listener) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
+  SetBorder(views::CreateEmptyBorder(kUnifiedCircularButtonFocusPadding));
   AddChildView(CreateUserAvatarView(0 /* user_index */));
 
   SetTooltipText(GetUserItemAccessibleString(0 /* user_index */));
-  SetFocusPainter(TrayPopupUtils::CreateFocusPainter());
+  SetInstallFocusRingOnFocus(true);
   SetFocusForPlatform();
+
+  int focus_ring_radius =
+      kTrayItemSize + kUnifiedCircularButtonFocusPadding.width();
+  auto path = std::make_unique<SkPath>();
+  path->addOval(gfx::RectToSkRect(
+      gfx::Rect(gfx::Size(focus_ring_radius, focus_ring_radius))));
+  SetProperty(views::kHighlightPathKey, path.release());
 }
 
 }  // namespace
@@ -89,15 +97,36 @@ void TopShortcutButtonContainer::Layout() {
   }
 
   int horizontal_position = child_area.x();
-  for (int i = 0; i < child_count(); i++) {
+
+  if (user_avatar_button_ && user_avatar_button_->visible()) {
+    int vertical_position =
+        child_area.y() + kUnifiedTopShortcutContainerTopPadding;
+    horizontal_position -= kUnifiedCircularButtonFocusPadding.left();
+
+    gfx::Size size = user_avatar_button_->GetPreferredSize();
+    gfx::Rect user_avatar_bounds(horizontal_position, vertical_position,
+                                 size.width(), size.height());
+    user_avatar_button_->SetBoundsRect(user_avatar_bounds);
+
+    horizontal_position += user_avatar_bounds.size().width() + spacing -
+                           kUnifiedCircularButtonFocusPadding.right();
+  }
+
+  int vertical_position = child_area.y() +
+                          kUnifiedTopShortcutContainerTopPadding +
+                          kUnifiedCircularButtonFocusPadding.bottom();
+  for (int i = 1; i < child_count(); i++) {
     views::View* child = child_at(i);
     if (!child->visible())
       continue;
     gfx::Rect bounds(child_area);
     bounds.set_x(horizontal_position);
+    bounds.set_y(vertical_position);
+
     int width = (child == sign_out_button_) ? sign_out_button_width
                                             : child->GetPreferredSize().width();
     bounds.set_width(width);
+    bounds.set_height(child->GetHeightForWidth(width));
     child->SetBoundsRect(bounds);
     horizontal_position += width + spacing;
   }
@@ -105,7 +134,6 @@ void TopShortcutButtonContainer::Layout() {
 
 gfx::Size TopShortcutButtonContainer::CalculatePreferredSize() const {
   int total_horizontal_size = 0;
-  int max_height = 0;
   int num_visible = 0;
   for (int i = 0; i < child_count(); i++) {
     const views::View* child = child_at(i);
@@ -116,14 +144,21 @@ gfx::Size TopShortcutButtonContainer::CalculatePreferredSize() const {
       continue;
     total_horizontal_size += child_horizontal_size;
     num_visible++;
-    max_height = std::max(child->GetPreferredSize().height(), max_height);
   }
   int width =
       (num_visible == 0)
           ? 0
           : total_horizontal_size +
                 (num_visible - 1) * kUnifiedTopShortcutButtonDefaultSpacing;
-  return gfx::Size(width, max_height);
+  int height = kTrayItemSize + kUnifiedCircularButtonFocusPadding.height() +
+               kUnifiedTopShortcutContainerTopPadding;
+  return gfx::Size(width, height);
+}
+
+void TopShortcutButtonContainer::AddUserAvatarButton(
+    views::View* user_avatar_button) {
+  AddChildView(user_avatar_button);
+  user_avatar_button_ = user_avatar_button;
 }
 
 void TopShortcutButtonContainer::AddSignOutButton(
@@ -139,7 +174,8 @@ TopShortcutsView::TopShortcutsView(UnifiedSystemTrayController* controller)
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, kUnifiedTopShortcutPadding,
       kUnifiedTopShortcutSpacing));
-  layout->set_cross_axis_alignment(views::BoxLayout::CROSS_AXIS_ALIGNMENT_END);
+  layout->set_cross_axis_alignment(
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
   container_ = new TopShortcutButtonContainer();
   AddChildView(container_);
 
@@ -147,7 +183,7 @@ TopShortcutsView::TopShortcutsView(UnifiedSystemTrayController* controller)
       LoginStatus::NOT_LOGGED_IN) {
     user_avatar_button_ = new UserAvatarButton(this);
     user_avatar_button_->SetEnabled(controller->IsUserChooserEnabled());
-    container_->AddChildView(user_avatar_button_);
+    container_->AddUserAvatarButton(user_avatar_button_);
   }
 
   // Show the buttons in this row as disabled if the user is at the login

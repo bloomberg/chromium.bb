@@ -39,7 +39,7 @@ int FeaturePodsContainerView::GetExpandedHeight() const {
   // floor(visible_count / kUnifiedFeaturePodItemsInRow)
   int number_of_lines = (visible_count + kUnifiedFeaturePodItemsInRow - 1) /
                         kUnifiedFeaturePodItemsInRow;
-  return kUnifiedFeaturePodVerticalPadding +
+  return kUnifiedFeaturePodBottomPadding +
          (kUnifiedFeaturePodVerticalPadding + kUnifiedFeaturePodSize.height()) *
              number_of_lines;
 }
@@ -145,10 +145,9 @@ gfx::Point FeaturePodsContainerView::GetButtonPosition(
           (kUnifiedFeaturePodSize.width() +
            kUnifiedFeaturePodHorizontalMiddlePadding) *
               column;
-  int y =
-      kUnifiedFeaturePodVerticalPadding +
-      (kUnifiedFeaturePodSize.height() + kUnifiedFeaturePodVerticalPadding) *
-          row;
+  int y = kUnifiedFeaturePodTopPadding + (kUnifiedFeaturePodSize.height() +
+                                          kUnifiedFeaturePodVerticalPadding) *
+                                             row;
 
   // When fully expanded, or below the second row, always return the same
   // position.
