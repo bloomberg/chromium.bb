@@ -112,10 +112,7 @@ gpu::ContextResult WebGPUCommandBufferStub::Initialize(
       channel_->sync_point_manager()->CreateSyncPointClientState(
           CommandBufferNamespace::GPU_IO, command_buffer_id_, sequence_id_);
 
-  // Initialize the decoder with either the view or pbuffer GLContext.
-  ContextResult result = decoder->Initialize(
-      nullptr, nullptr, true /* offscreen */, gpu::gles2::DisallowedFeatures(),
-      init_params.attribs);
+  ContextResult result = decoder->Initialize();
   if (result != gpu::ContextResult::kSuccess) {
     DLOG(ERROR) << "Failed to initialize decoder.";
     return result;

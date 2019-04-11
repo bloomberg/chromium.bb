@@ -92,18 +92,13 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
                     gles2::Outputter* outputter);
   ~WebGPUDecoderImpl() override;
 
+  // WebGPUDecoder implementation
+  ContextResult Initialize() override;
+
   // DecoderContext implementation.
   base::WeakPtr<DecoderContext> AsWeakPtr() override {
     NOTIMPLEMENTED();
     return nullptr;
-  }
-  ContextResult Initialize(
-      const scoped_refptr<gl::GLSurface>& surface,
-      const scoped_refptr<gl::GLContext>& context,
-      bool offscreen,
-      const gles2::DisallowedFeatures& disallowed_features,
-      const ContextCreationAttribs& attrib_helper) override {
-    return ContextResult::kSuccess;
   }
   const gles2::ContextState* GetContextState() override {
     NOTREACHED();
@@ -350,11 +345,7 @@ WebGPUDecoderImpl::WebGPUDecoderImpl(
     : WebGPUDecoder(client, command_buffer_service, outputter),
       wire_serializer_(new WireServerCommandSerializer(client)),
       dawn_instance_(new dawn_native::Instance()),
-      dawn_procs_(dawn_native::GetProcs()),
-      dawn_device_(CreateDefaultDevice()),
-      wire_server_(new dawn_wire::WireServer(dawn_device_,
-                                             dawn_procs_,
-                                             wire_serializer_.get())) {}
+      dawn_procs_(dawn_native::GetProcs()) {}
 
 WebGPUDecoderImpl::~WebGPUDecoderImpl() {
   // Reset the wire server first so all objects are destroyed before the device.
@@ -365,14 +356,28 @@ WebGPUDecoderImpl::~WebGPUDecoderImpl() {
   }
 }
 
+ContextResult WebGPUDecoderImpl::Initialize() {
+  dawn_device_ = CreateDefaultDevice();
+  if (dawn_device_ == nullptr) {
+    return ContextResult::kFatalFailure;
+  }
+
+  wire_server_ = std::make_unique<dawn_wire::WireServer>(
+      dawn_device_, dawn_procs_, wire_serializer_.get());
+
+  return ContextResult::kSuccess;
+}
+
 DawnDevice WebGPUDecoderImpl::CreateDefaultDevice() {
   dawn_instance_->DiscoverDefaultAdapters();
   std::vector<dawn_native::Adapter> adapters = dawn_instance_->GetAdapters();
-  for (size_t i = 0; i < adapters.size(); ++i) {
-    return adapters[i].CreateDevice();
+  for (dawn_native::Adapter adapter : adapters) {
+    if (adapter.GetBackendType() != dawn_native::BackendType::Null &&
+        adapter.GetBackendType() != dawn_native::BackendType::OpenGL) {
+      return adapter.CreateDevice();
+    }
   }
-  NOTREACHED();
-  return {};
+  return nullptr;
 }
 
 const char* WebGPUDecoderImpl::GetCommandName(unsigned int command_id) const {

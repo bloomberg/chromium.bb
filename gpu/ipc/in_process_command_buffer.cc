@@ -551,8 +551,16 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
       DLOG(ERROR) << "ContextResult::kFatalFailure: WebGPU not enabled";
       return gpu::ContextResult::kFatalFailure;
     }
-    decoder_.reset(webgpu::WebGPUDecoder::Create(this, command_buffer_.get(),
-                                                 task_executor_->outputter()));
+    std::unique_ptr<webgpu::WebGPUDecoder> webgpu_decoder(
+        webgpu::WebGPUDecoder::Create(this, command_buffer_.get(),
+                                      task_executor_->outputter()));
+    gpu::ContextResult result = webgpu_decoder->Initialize();
+    if (result != gpu::ContextResult::kSuccess) {
+      DestroyOnGpuThread();
+      DLOG(ERROR) << "Failed to initializ WebGPUe decoder.";
+      return result;
+    }
+    decoder_ = std::move(webgpu_decoder);
   } else {
     // TODO(khushalsagar): A lot of this initialization code is duplicated in
     // GpuChannelManager. Pull it into a common util method.

@@ -22,9 +22,8 @@ WebGPUTest::Options::Options() = default;
 WebGPUTest::WebGPUTest() = default;
 WebGPUTest::~WebGPUTest() = default;
 
-bool WebGPUTest::WebGPUSupported() {
-  // crbug.com(941685): Vulkan driver crashes on Linux FYI Release (AMD R7 240).
-  return !GPUTestBotConfig::CurrentConfigMatches("Linux AMD");
+bool WebGPUTest::WebGPUSupported() const {
+  return context_ != nullptr;
 }
 
 void WebGPUTest::SetUp() {
@@ -37,9 +36,11 @@ void WebGPUTest::TearDown() {
 }
 
 void WebGPUTest::Initialize(const Options& options) {
-  if (!WebGPUSupported()) {
+  // crbug.com(941685): Vulkan driver crashes on Linux FYI Release (AMD R7 240).
+  if (GPUTestBotConfig::CurrentConfigMatches("Linux AMD")) {
     return;
   }
+
   ContextCreationAttribs attributes;
   attributes.bind_generates_resource = false;
   attributes.enable_gles2_interface = false;
@@ -53,7 +54,10 @@ void WebGPUTest::Initialize(const Options& options) {
       context_->Initialize(gpu_thread_holder_->GetTaskExecutor(), attributes,
                            options.shared_memory_limits, memory_buffer_manager,
                            image_factory, channel_manager);
-  DCHECK_EQ(result, ContextResult::kSuccess);
+  if (result != ContextResult::kSuccess) {
+    context_ = nullptr;
+    return;
+  }
 
   DawnProcTable procs = webgpu()->GetProcs();
   dawnSetProcs(&procs);
@@ -69,9 +73,10 @@ void WebGPUTest::RunPendingTasks() {
 
 TEST_F(WebGPUTest, Dummy) {
   if (!WebGPUSupported()) {
-    LOG(ERROR) << "Test skipped";
+    LOG(ERROR) << "Test skipped because WebGPU isn't supported";
     return;
   }
+
   Initialize(WebGPUTest::Options());
   webgpu()->Dummy();
 }
