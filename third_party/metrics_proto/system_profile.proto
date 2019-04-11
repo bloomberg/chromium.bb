@@ -80,7 +80,7 @@ message SystemProfileProto {
   optional string application_locale = 4;
 
   // Information on the user's operating system.
-  // Next tag: 7
+  // Next tag: 8
   message OS {
     // The user's operating system. This should be one of:
     // - Android
@@ -111,6 +111,21 @@ message SystemProfileProto {
     // ChromeOS and Android, have a kernel version that the OS release version
     // was built with that differs from the version field above.
     optional string kernel_version = 6;
+
+    // Information on ChromeOS ARC runtime. This is collected to ease analysis
+    // on ARC-specific metrics, since this info varies by different boards /
+    // build configs / releases.
+    // Next tag: 2
+    message Arc {
+      // Android release number from build.prop "ro.build.version.release", e.g.
+      // "7.1.1" for N and "9" for P.
+      optional string release = 1;
+    }
+    // Available since M76. This field is reported if current build supports
+    // ARC, regardless of whether ARC is enabled or not. Check "Arc.State"
+    // histogram to determine if ARC is enabled for current report.
+    // Logged on ChromeOS only.
+    optional Arc arc = 7;
   }
   optional OS os = 5;
 
