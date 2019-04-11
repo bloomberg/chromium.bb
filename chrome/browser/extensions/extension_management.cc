@@ -13,6 +13,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
+#include "base/syslog_logging.h"
 #include "base/trace_event/trace_event.h"
 #include "base/version.h"
 #include "chrome/browser/extensions/extension_management_constants.h"
@@ -460,21 +461,24 @@ void ExtensionManagement::Refresh() {
                           "extensions with update url: " << update_url << ".";
         }
       } else {
-        const std::string& extension_id = iter.key();
-        if (!crx_file::id_util::IdIsValid(extension_id)) {
-          LOG(WARNING) << "Invalid extension ID : " << extension_id << ".";
-          continue;
-        }
-        internal::IndividualSettings* by_id = AccessById(extension_id);
-        if (!by_id->Parse(subdict,
-                          internal::IndividualSettings::SCOPE_INDIVIDUAL)) {
-          settings_by_id_.erase(extension_id);
-          InstallationReporter::ReportFailure(
-              profile_, extension_id,
-              InstallationReporter::FailureReason::
-                  MALFORMED_EXTENSION_SETTINGS);
-          LOG(WARNING) << "Malformed Extension Management settings for "
-                       << extension_id << ".";
+        std::vector<std::string> extension_ids = base::SplitString(
+            iter.key(), ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+        for (const auto& extension_id : extension_ids) {
+          if (!crx_file::id_util::IdIsValid(extension_id)) {
+            SYSLOG(WARNING) << "Invalid extension ID : " << extension_id << ".";
+            continue;
+          }
+          internal::IndividualSettings* by_id = AccessById(extension_id);
+          if (!by_id->Parse(subdict,
+                            internal::IndividualSettings::SCOPE_INDIVIDUAL)) {
+            settings_by_id_.erase(extension_id);
+            InstallationReporter::ReportFailure(
+                profile_, extension_id,
+                InstallationReporter::FailureReason::
+                    MALFORMED_EXTENSION_SETTINGS);
+            SYSLOG(WARNING) << "Malformed Extension Management settings for "
+                            << extension_id << ".";
+          }
         }
       }
     }

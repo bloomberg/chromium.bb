@@ -3614,7 +3614,9 @@
 
           If this setting is configured, extensions/apps which have a type that is not on the list will not be installed.
 
-          If this settings is left not-configured, no restrictions on the acceptable extension/app types are enforced.''',
+          If this settings is left not-configured, no restrictions on the acceptable extension/app types are enforced.
+
+          Prior to version 75 using multiple comma separated extension IDs is not supported and will be skipped. The rest of the policy will continue to apply.''',
       'label': '''Types of extensions/apps that are allowed to be installed''',
     },
     {
@@ -3623,7 +3625,7 @@
       'schema': {
         'type': 'object',
         'patternProperties': {
-          '^[a-p]{32}$': {
+          '^[a-p]{32}(?:,[a-p]{32})*,?$': {
             'type': 'object',
             'properties': {
               'installation_mode': {
@@ -3726,6 +3728,10 @@
           'runtime_allowed_hosts': ['*://good.example.com'],
         },
         'cdefghijklmnopabcdefghijklmnopab' : {
+          'installation_mode': 'blocked',
+          'blocked_install_message': 'Custom error message.',
+        },
+        'defghijklmnopabcdefghijklmnopabc,efghijklmnopabcdefghijklmnopabcd' : {
           'installation_mode': 'blocked',
           'blocked_install_message': 'Custom error message.',
         },
