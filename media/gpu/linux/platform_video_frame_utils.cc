@@ -28,8 +28,8 @@ scoped_refptr<VideoFrame> CreateVideoFrameOzone(VideoPixelFormat pixel_format,
                                                 const gfx::Size& coded_size,
                                                 const gfx::Rect& visible_rect,
                                                 const gfx::Size& natural_size,
-                                                gfx::BufferUsage buffer_usage,
-                                                base::TimeDelta timestamp) {
+                                                base::TimeDelta timestamp,
+                                                gfx::BufferUsage buffer_usage) {
   ui::OzonePlatform* platform = ui::OzonePlatform::GetInstance();
   DCHECK(platform);
   ui::SurfaceFactoryOzone* factory = platform->GetSurfaceFactoryOzone();
@@ -88,11 +88,11 @@ scoped_refptr<VideoFrame> CreatePlatformVideoFrame(
     const gfx::Size& coded_size,
     const gfx::Rect& visible_rect,
     const gfx::Size& natural_size,
-    gfx::BufferUsage buffer_usage,
-    base::TimeDelta timestamp) {
+    base::TimeDelta timestamp,
+    gfx::BufferUsage buffer_usage) {
 #if defined(USE_OZONE)
   return CreateVideoFrameOzone(pixel_format, coded_size, visible_rect,
-                               natural_size, buffer_usage, timestamp);
+                               natural_size, timestamp, buffer_usage);
 #endif  // defined(USE_OZONE)
   NOTREACHED();
   return nullptr;

@@ -50,13 +50,6 @@ bool ConvertVideoFrame(const VideoFrame* src_frame, VideoFrame* dst_frame);
 scoped_refptr<VideoFrame> ConvertVideoFrame(const VideoFrame* src_frame,
                                             VideoPixelFormat dst_pixel_format);
 
-// Create a platform-specific DMA-buffer-backed video frame with specified
-// |pixel_format|, |size| and |buffer_usage|.
-scoped_refptr<VideoFrame> CreatePlatformVideoFrame(
-    VideoPixelFormat pixel_format,
-    const gfx::Size& size,
-    gfx::BufferUsage buffer_usage = gfx::BufferUsage::SCANOUT_VDA_WRITE);
-
 // Create a video frame layout for the specified |pixel_format| and
 // |coded_size|. If |single_buffer| is true, the created VideoFrameLayout
 // represents all the planes are stored in the same buffer. Otherwise, it

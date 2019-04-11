@@ -22,8 +22,8 @@ MEDIA_GPU_EXPORT scoped_refptr<VideoFrame> CreatePlatformVideoFrame(
     const gfx::Size& coded_size,
     const gfx::Rect& visible_rect,
     const gfx::Size& natural_size,
-    gfx::BufferUsage buffer_usage,
-    base::TimeDelta timestamp);
+    base::TimeDelta timestamp,
+    gfx::BufferUsage buffer_usage);
 
 // Create a shared GPU memory handle to the |video_frame|'s data.
 MEDIA_GPU_EXPORT gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferHandle(
