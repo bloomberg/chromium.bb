@@ -60,6 +60,8 @@
 @implementation ManageSyncSettingsCoordinator
 
 - (void)start {
+  DCHECK(self.dispatcher);
+  DCHECK(self.navigationController);
   self.mediator = [[ManageSyncSettingsMediator alloc]
       initWithSyncService:self.syncService
           userPrefService:self.browserState->GetPrefs()];
@@ -73,7 +75,6 @@
   self.viewController.presentationDelegate = self;
   self.viewController.modelDelegate = self.mediator;
   self.mediator.consumer = self.viewController;
-  DCHECK(self.navigationController);
   [self.navigationController pushViewController:self.viewController
                                        animated:YES];
   _syncObserver.reset(new SyncObserverBridge(self, self.syncService));

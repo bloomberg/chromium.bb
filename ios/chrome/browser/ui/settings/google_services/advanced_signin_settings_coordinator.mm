@@ -52,6 +52,7 @@ using l10n_util::GetNSString;
                     browserState:self.browserState
                             mode:
                               GoogleServicesSettingsModeAdvancedSigninSettings];
+  self.googleServicesSettingsCoordinator.dispatcher = self.dispatcher;
   self.googleServicesSettingsCoordinator.navigationController =
       self.advancedSigninSettingsNavigationController;
   [self.googleServicesSettingsCoordinator start];
