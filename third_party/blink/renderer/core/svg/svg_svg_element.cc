@@ -61,7 +61,7 @@
 
 namespace blink {
 
-inline SVGSVGElement::SVGSVGElement(Document& doc)
+SVGSVGElement::SVGSVGElement(Document& doc)
     : SVGGraphicsElement(svg_names::kSVGTag, doc),
       SVGFitToViewBox(this),
       x_(SVGAnimatedLength::Create(this,

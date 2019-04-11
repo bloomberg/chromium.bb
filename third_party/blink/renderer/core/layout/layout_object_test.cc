@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
@@ -760,7 +761,7 @@ TEST_F(LayoutObjectTest, DisplayContentsSVGGElementInHTML) {
   )HTML");
 
   Element* span = GetDocument().getElementById("span");
-  SVGGElement* svg_element = SVGGElement::Create(GetDocument());
+  auto* svg_element = MakeGarbageCollected<SVGGElement>(GetDocument());
   Text* text = Text::Create(GetDocument(), "text");
   svg_element->appendChild(text);
   span->appendChild(svg_element);

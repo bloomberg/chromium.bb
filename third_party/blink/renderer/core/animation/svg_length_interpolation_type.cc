@@ -5,12 +5,15 @@
 #include "third_party/blink/renderer/core/animation/svg_length_interpolation_type.h"
 
 #include <memory>
+#include <utility>
+
 #include "third_party/blink/renderer/core/animation/string_keyframe.h"
 #include "third_party/blink/renderer/core/animation/svg_interpolation_environment.h"
 #include "third_party/blink/renderer/core/css/css_resolution_units.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/core/svg/svg_length.h"
 #include "third_party/blink/renderer/core/svg/svg_length_context.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -86,7 +89,8 @@ SVGLength* SVGLengthInterpolationType::ResolveInterpolableSVGLength(
   if (negative_values_forbidden && value < 0)
     value = 0;
 
-  SVGLength* result = SVGLength::Create(unit_mode);  // defaults to the length 0
+  auto* result =
+      MakeGarbageCollected<SVGLength>(unit_mode);  // defaults to the length 0
   result->NewValueSpecifiedUnits(unit_type, value);
   return result;
 }
