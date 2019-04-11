@@ -24,6 +24,7 @@ TEST_F(GpuDriverBugListTest, CurrentListForARM) {
   GPUInfo gpu_info;
   gpu_info.gl_vendor = "ARM";
   gpu_info.gl_renderer = "MALi_T604";
+  gpu_info.gl_version = "OpenGL ES 2.0";
   std::set<int> bugs = list->MakeDecision(
       GpuControlList::kOsAndroid, "4.1", gpu_info);
   EXPECT_EQ(1u, bugs.count(USE_CLIENT_SIDE_ARRAYS_FOR_STREAM_BUFFERS));
@@ -34,6 +35,7 @@ TEST_F(GpuDriverBugListTest, CurrentListForImagination) {
   GPUInfo gpu_info;
   gpu_info.gl_vendor = "Imagination Technologies";
   gpu_info.gl_renderer = "PowerVR SGX 540";
+  gpu_info.gl_version = "OpenGL ES 2.0";
   std::set<int> bugs = list->MakeDecision(
       GpuControlList::kOsAndroid, "4.1", gpu_info);
   EXPECT_EQ(1u, bugs.count(USE_CLIENT_SIDE_ARRAYS_FOR_STREAM_BUFFERS));
