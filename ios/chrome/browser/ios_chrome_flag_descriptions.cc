@@ -313,6 +313,11 @@ const char kNewOmniboxPopupLayoutDescription[] =
     "Switches the omnibox suggestions and omnibox itself to display the new "
     "design with favicons, new suggestion layout, rich entity support.";
 
+const char kOmniboxUseDefaultSearchEngineFaviconName[] =
+    "Default search engine favicon in the omnibox";
+const char kOmniboxUseDefaultSearchEngineFaviconDescription[] =
+    "Shows default search engine favicon in the omnibox";
+
 const char kNonModalDialogsName[] = "Use non-modal JavaScript dialogs";
 const char kNonModalDialogsDescription[] =
     "Presents JavaScript dialogs non-modally so that the user can change tabs "

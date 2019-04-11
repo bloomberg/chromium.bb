@@ -34,3 +34,6 @@ const base::Feature kDisplaySearchEngineFavicon{
 
 const base::Feature kNewOmniboxPopupLayout{"NewOmniboxPopupLayout",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kOmniboxUseDefaultSearchEngineFavicon{
+    "OmniboxUseDefaultSearchEngineFavicon", base::FEATURE_ENABLED_BY_DEFAULT};
