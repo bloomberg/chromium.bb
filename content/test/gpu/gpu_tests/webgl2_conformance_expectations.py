@@ -90,10 +90,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('conformance2/rendering/texture-switch-performance.html',
         bug=735483)
 
-    # TODO(shrekshao): Remove after updating this test case.
-    self.Fail('conformance2/rendering/depth-stencil-feedback-loop.html',
-        bug=660844) # WebGL 2.0.1
-
     # Nvidia bugs fixed in latest driver
     # TODO(http://crbug.com/887241): Upgrade the drivers on the bots.
     self.Fail('conformance/glsl/bugs/assign-to-swizzled-twice-in-function.html',
@@ -116,6 +112,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'no_passthrough'], bug=3033) # angle bug ID
     self.Fail('conformance2/glsl3/tricky-loop-conditions.html',
         ['win'], bug=1465) # anglebug.com/1465
+    self.Fail('conformance/rendering/blending.html',
+        ['win', 'no_passthrough'], bug=951628)
 
     # Win / NVidia
     self.Flaky('deqp/functional/gles3/fbomultisample*',
@@ -345,8 +343,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Passthrough command decoder
     self.Fail('conformance/misc/webgl-specific-stencil-settings.html',
         ['passthrough'], bug=844349)
-    self.Fail('conformance/rendering/rendering-sampling-feedback-loop.html',
-        ['passthrough'], bug=660844) # WebGL 2.0.1
+    self.Fail('conformance/rendering/blending.html',
+        ['passthrough'], bug=951628)
 
     # Passthrough command decoder / OpenGL
     self.Fail('conformance2/misc/uninitialized-test-2.html',
