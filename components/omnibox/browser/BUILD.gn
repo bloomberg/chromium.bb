@@ -34,6 +34,7 @@ aggregate_vector_icons("omnibox_vector_icons") {
     "bookmark.icon",
     "calculator.icon",
     "clear.icon",
+    "clock.icon",
     "drive_docs.icon",
     "drive_forms.icon",
     "drive_image.icon",
