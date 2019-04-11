@@ -246,6 +246,69 @@ void OverlayPanelLayer::SetProperties(
   }
 }
 
+void OverlayPanelLayer::SetProgressBar(int progress_bar_background_resource_id,
+                                       int progress_bar_resource_id,
+                                       bool progress_bar_visible,
+                                       float progress_bar_position_y,
+                                       float progress_bar_height,
+                                       float progress_bar_opacity,
+                                       int progress_bar_completion,
+                                       float panel_width) {
+  bool should_render_progress_bar =
+      progress_bar_visible && progress_bar_opacity > 0.f;
+
+  if (should_render_progress_bar) {
+    ui::NinePatchResource* progress_bar_background_resource =
+        ui::NinePatchResource::From(resource_manager_->GetResource(
+            ui::ANDROID_RESOURCE_TYPE_STATIC,
+            progress_bar_background_resource_id));
+    ui::NinePatchResource* progress_bar_resource =
+        ui::NinePatchResource::From(resource_manager_->GetResource(
+            ui::ANDROID_RESOURCE_TYPE_STATIC, progress_bar_resource_id));
+
+    DCHECK(progress_bar_background_resource);
+    DCHECK(progress_bar_resource);
+
+    // Progress Bar Background
+    if (progress_bar_background_->parent() != layer_)
+      layer_->AddChild(progress_bar_background_);
+
+    float progress_bar_y = progress_bar_position_y - progress_bar_height;
+    gfx::Size progress_bar_background_size(panel_width, progress_bar_height);
+
+    progress_bar_background_->SetUIResourceId(
+        progress_bar_background_resource->ui_resource()->id());
+    progress_bar_background_->SetBorder(
+        progress_bar_background_resource->Border(progress_bar_background_size));
+    progress_bar_background_->SetAperture(
+        progress_bar_background_resource->aperture());
+    progress_bar_background_->SetBounds(progress_bar_background_size);
+    progress_bar_background_->SetPosition(gfx::PointF(0.f, progress_bar_y));
+    progress_bar_background_->SetOpacity(progress_bar_opacity);
+
+    // Progress Bar
+    if (progress_bar_->parent() != layer_)
+      layer_->AddChild(progress_bar_);
+
+    float progress_bar_width =
+        floor(panel_width * progress_bar_completion / 100.f);
+    gfx::Size progress_bar_size(progress_bar_width, progress_bar_height);
+    progress_bar_->SetUIResourceId(progress_bar_resource->ui_resource()->id());
+    progress_bar_->SetBorder(progress_bar_resource->Border(progress_bar_size));
+    progress_bar_->SetAperture(progress_bar_resource->aperture());
+    progress_bar_->SetBounds(progress_bar_size);
+    progress_bar_->SetPosition(gfx::PointF(0.f, progress_bar_y));
+    progress_bar_->SetOpacity(progress_bar_opacity);
+  } else {
+    // Removes Progress Bar and its Background from the Layer Tree.
+    if (progress_bar_background_.get() && progress_bar_background_->parent())
+      progress_bar_background_->RemoveFromParent();
+
+    if (progress_bar_.get() && progress_bar_->parent())
+      progress_bar_->RemoveFromParent();
+  }
+}
+
 OverlayPanelLayer::OverlayPanelLayer(ui::ResourceManager* resource_manager)
     : resource_manager_(resource_manager),
       layer_(cc::Layer::Create()),
@@ -257,7 +320,9 @@ OverlayPanelLayer::OverlayPanelLayer(ui::ResourceManager* resource_manager)
       close_icon_(cc::UIResourceLayer::Create()),
       content_container_(cc::SolidColorLayer::Create()),
       text_container_(cc::Layer::Create()),
-      bar_border_(cc::SolidColorLayer::Create()) {
+      bar_border_(cc::SolidColorLayer::Create()),
+      progress_bar_(cc::NinePatchLayer::Create()),
+      progress_bar_background_(cc::NinePatchLayer::Create()) {
   layer_->SetMasksToBounds(false);
   layer_->SetIsDrawable(true);
 
@@ -297,6 +362,14 @@ OverlayPanelLayer::OverlayPanelLayer(ui::ResourceManager* resource_manager)
 
   // Bar Shadow
   bar_shadow_->SetIsDrawable(true);
+
+  // Progress Bar Background
+  progress_bar_background_->SetIsDrawable(true);
+  progress_bar_background_->SetFillCenter(true);
+
+  // Progress Bar
+  progress_bar_->SetIsDrawable(true);
+  progress_bar_->SetFillCenter(true);
 }
 
 OverlayPanelLayer::~OverlayPanelLayer() {
