@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.chrome.touchless.R;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -109,7 +110,7 @@ public class TouchlessNewTabPage extends BasicNativePage {
         SuggestionsSource suggestionsSource = depsFactory.createSuggestionSource(profile);
         SuggestionsEventReporter eventReporter = depsFactory.createEventReporter();
         SuggestionsNavigationDelegate navigationDelegate = new SuggestionsNavigationDelegate(
-                activity, profile, nativePageHost, mTab.getTabModelSelector());
+                activity, profile, nativePageHost, TabModelSelector.from(mTab));
         SuggestionsUiDelegate suggestionsUiDelegate = new SuggestionsUiDelegateImpl(
                 suggestionsSource, eventReporter, navigationDelegate, profile, nativePageHost,
                 activity.getChromeApplication().getReferencePool(), activity.getSnackbarManager());
