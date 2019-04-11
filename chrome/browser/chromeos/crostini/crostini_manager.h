@@ -70,6 +70,7 @@ enum class CrostiniResult {
   CONTAINER_EXPORT_IMPORT_FAILED,
   CONTAINER_EXPORT_IMPORT_FAILED_VM_STOPPED,
   CONTAINER_EXPORT_IMPORT_FAILED_VM_STARTED,
+  CONTAINER_EXPORT_IMPORT_FAILED_ARCHITECTURE,
   NOT_ALLOWED,
 };
 
@@ -100,6 +101,7 @@ enum class ExportContainerProgressStatus {
 enum class ImportContainerProgressStatus {
   UPLOAD,
   UNPACK,
+  FAILURE_ARCHITECTURE,
 };
 
 struct VmInfo {
@@ -181,12 +183,15 @@ class ImportContainerProgressObserver {
  public:
   // A successfully started container import will continually fire progress
   // events until the original callback from ImportLxdContainer is invoked with
-  // a status of SUCCESS or CONTAINER_IMPORT_FAILED.
-  virtual void OnImportContainerProgress(const std::string& vm_name,
-                                         const std::string& container_name,
-                                         ImportContainerProgressStatus status,
-                                         int progress_percent,
-                                         uint64_t progress_speed) = 0;
+  // a status of SUCCESS or CONTAINER_IMPORT_FAILED[_*].
+  virtual void OnImportContainerProgress(
+      const std::string& vm_name,
+      const std::string& container_name,
+      ImportContainerProgressStatus status,
+      int progress_percent,
+      uint64_t progress_speed,
+      const std::string& architecture_device,
+      const std::string& architecture_container) = 0;
 };
 
 class InstallerViewStatusObserver : public base::CheckedObserver {

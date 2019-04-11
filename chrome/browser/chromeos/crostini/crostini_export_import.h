@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/crostini/crostini_export_import_notification.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
@@ -43,7 +44,8 @@ enum class ImportContainerResult {
   kFailed = 1,
   kFailedVmStopped = 2,
   kFailedVmStarted = 3,
-  kMaxValue = kFailedVmStarted,
+  kFailedArchitecture = 4,
+  kMaxValue = kFailedArchitecture,
 };
 
 // CrostiniExportImport is a keyed profile service to manage exporting and
@@ -109,11 +111,14 @@ class CrostiniExportImport : public KeyedService,
                                  uint64_t progress_speed) override;
 
   // crostini::ImportContainerProgressObserver implementation.
-  void OnImportContainerProgress(const std::string& vm_name,
-                                 const std::string& container_name,
-                                 crostini::ImportContainerProgressStatus status,
-                                 int progress_percent,
-                                 uint64_t progress_speed) override;
+  void OnImportContainerProgress(
+      const std::string& vm_name,
+      const std::string& container_name,
+      crostini::ImportContainerProgressStatus status,
+      int progress_percent,
+      uint64_t progress_speed,
+      const std::string& architecture_device,
+      const std::string& architecture_container) override;
 
   void ExportAfterSharing(const ContainerId& container_id,
                           const base::FilePath& filename,
