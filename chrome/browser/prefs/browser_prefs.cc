@@ -15,6 +15,7 @@
 #include "chrome/browser/accessibility/invert_bubble_prefs.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/chrome_content_browser_client.h"
+#include "chrome/browser/chromeos/policy/tpm_auto_update_mode_policy_handler.h"
 #include "chrome/browser/chromeos/scheduler_configuration_manager.h"
 #include "chrome/browser/component_updater/component_updater_prefs.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
@@ -583,6 +584,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   policy::DeviceWallpaperImageHandler::RegisterPrefs(registry);
   policy::DMTokenStorage::RegisterPrefs(registry);
   policy::PolicyCertServiceFactory::RegisterPrefs(registry);
+  policy::TPMAutoUpdateModePolicyHandler::RegisterPrefs(registry);
   quirks::QuirksManager::RegisterPrefs(registry);
 #endif
 

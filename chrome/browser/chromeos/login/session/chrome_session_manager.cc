@@ -31,6 +31,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/app_install_event_log_manager_wrapper.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/tpm_auto_update_mode_policy_handler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/tether/tether_service.h"
 #include "chrome/browser/chromeos/tpm_firmware_update_notification.h"
@@ -194,6 +195,11 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
 
   UserSessionManager::GetInstance()->CheckEolStatus(user_profile);
   tpm_firmware_update::ShowNotificationIfNeeded(user_profile);
+  g_browser_process->platform_part()
+      ->browser_policy_connector_chromeos()
+      ->GetTPMAutoUpdateModePolicyHandler()
+      ->ShowTPMAutoUpdateNotificationIfNeeded();
+
   ArcTermsOfServiceScreen::MaybeLaunchArcSettings(user_profile);
   SyncConsentScreen::MaybeLaunchSyncConsentSettings(user_profile);
   UserSessionManager::GetInstance()->StartAccountManagerMigration(user_profile);
