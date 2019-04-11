@@ -253,11 +253,10 @@ void ParseUsingPredictions(std::vector<ProcessedField>* processed_fields,
   bool sign_in_username_first = true;
   // First username is stored in |result->username|.
   const FormFieldData* second_username = nullptr;
-  for (const auto& prediction : predictions) {
+  for (const PasswordFieldPrediction& prediction : predictions) {
     ProcessedField* processed_field = nullptr;
 
-    CredentialFieldType field_type =
-        DeriveFromServerFieldType(prediction.second.type);
+    CredentialFieldType field_type = DeriveFromServerFieldType(prediction.type);
     bool is_password_prediction = IsPasswordPrediction(field_type);
     if (mode == FormDataParser::Mode::kSaving && is_password_prediction) {
       // TODO(crbug.com/913965): Consider server predictions for password fields
@@ -267,14 +266,14 @@ void ParseUsingPredictions(std::vector<ProcessedField>* processed_fields,
     switch (field_type) {
       case CredentialFieldType::kUsername:
         if (!result->username) {
-          processed_field =
-              FindFieldWithUniqueRendererId(processed_fields, prediction.first);
+          processed_field = FindFieldWithUniqueRendererId(
+              processed_fields, prediction.renderer_id);
           if (processed_field) {
             result->username = processed_field->field;
           }
         } else if (!second_username) {
-          processed_field =
-              FindFieldWithUniqueRendererId(processed_fields, prediction.first);
+          processed_field = FindFieldWithUniqueRendererId(
+              processed_fields, prediction.renderer_id);
           if (processed_field) {
             second_username = processed_field->field;
           }
@@ -286,8 +285,8 @@ void ParseUsingPredictions(std::vector<ProcessedField>* processed_fields,
         if (result->password) {
           prevent_handling_two_usernames = true;
         } else {
-          processed_field =
-              FindFieldWithUniqueRendererId(processed_fields, prediction.first);
+          processed_field = FindFieldWithUniqueRendererId(
+              processed_fields, prediction.renderer_id);
           if (processed_field) {
             if (!processed_field->is_password)
               continue;
@@ -307,8 +306,8 @@ void ParseUsingPredictions(std::vector<ProcessedField>* processed_fields,
         // before the user has thought of and typed their new password
         // elsewhere. See https://crbug.com/902700 for more details.
         if (!result->new_password) {
-          processed_field =
-              FindFieldWithUniqueRendererId(processed_fields, prediction.first);
+          processed_field = FindFieldWithUniqueRendererId(
+              processed_fields, prediction.renderer_id);
           if (processed_field) {
             if (!processed_field->is_password)
               continue;
@@ -317,8 +316,8 @@ void ParseUsingPredictions(std::vector<ProcessedField>* processed_fields,
         }
         break;
       case CredentialFieldType::kConfirmationPassword:
-        processed_field =
-            FindFieldWithUniqueRendererId(processed_fields, prediction.first);
+        processed_field = FindFieldWithUniqueRendererId(processed_fields,
+                                                        prediction.renderer_id);
         if (processed_field) {
           if (!processed_field->is_password)
             continue;
@@ -355,11 +354,11 @@ void ParseUsingPredictions(std::vector<ProcessedField>* processed_fields,
 
   // For the use of basic heuristics, also mark CVC fields and NOT_PASSWORD
   // fields as such.
-  for (const auto& prediction : predictions) {
-    if (prediction.second.type == autofill::CREDIT_CARD_VERIFICATION_CODE ||
-        prediction.second.type == autofill::NOT_PASSWORD) {
-      ProcessedField* processed_field =
-          FindFieldWithUniqueRendererId(processed_fields, prediction.first);
+  for (const PasswordFieldPrediction& prediction : predictions) {
+    if (prediction.type == autofill::CREDIT_CARD_VERIFICATION_CODE ||
+        prediction.type == autofill::NOT_PASSWORD) {
+      ProcessedField* processed_field = FindFieldWithUniqueRendererId(
+          processed_fields, prediction.renderer_id);
       if (processed_field)
         processed_field->server_hints_not_password = true;
     }
@@ -868,10 +867,11 @@ bool GetMayUsePrefilledPlaceholder(
     return false;
 
   uint32_t username_id = significant_fields.username->unique_renderer_id;
-  auto it = form_predictions->find(username_id);
-  if (it == form_predictions->end())
-    return false;
-  return it->second.may_use_prefilled_placeholder;
+  for (const PasswordFieldPrediction& prediction : *form_predictions) {
+    if (prediction.renderer_id == username_id)
+      return prediction.may_use_prefilled_placeholder;
+  }
+  return false;
 }
 
 // Puts together a PasswordForm, the result of the parsing, based on the

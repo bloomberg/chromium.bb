@@ -175,7 +175,7 @@ std::map<FormSignature, FormPredictions> CreatePredictions(
     uint32_t renderer_id =
         form.fields[index_prediction.first].unique_renderer_id;
     ServerFieldType server_type = index_prediction.second;
-    predictions[renderer_id] = PasswordFieldPrediction{.type = server_type};
+    predictions.push_back({.renderer_id = renderer_id, .type = server_type});
   }
   FormSignature form_signature = CalculateFormSignature(form);
   return {{form_signature, predictions}};
