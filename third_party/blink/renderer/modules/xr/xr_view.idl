@@ -11,7 +11,7 @@ enum XREye {
 [
     SecureContext,
     Exposed=Window,
-    OriginTrialEnabled=WebXR
+    RuntimeEnabled=WebXR
 ] interface XRView {
   readonly attribute XREye eye;
   readonly attribute Float32Array projectionMatrix;

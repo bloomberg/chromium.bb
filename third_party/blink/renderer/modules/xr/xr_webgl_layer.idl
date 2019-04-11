@@ -8,7 +8,7 @@ typedef (WebGLRenderingContext or WebGL2RenderingContext) XRWebGLRenderingContex
 [
     SecureContext,
     Exposed=Window,
-    OriginTrialEnabled=WebXR,
+    RuntimeEnabled=WebXR,
     Constructor(XRSession session, XRWebGLRenderingContext context, optional XRWebGLLayerInit layerInit),
     RaisesException=Constructor
 ] interface XRWebGLLayer : XRLayer {

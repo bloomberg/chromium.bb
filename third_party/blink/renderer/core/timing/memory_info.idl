@@ -37,6 +37,6 @@
     [Measure] readonly attribute unsigned long long totalJSHeapSize;
     [Measure] readonly attribute unsigned long long usedJSHeapSize;
     [Measure] readonly attribute unsigned long long jsHeapSizeLimit;
-    [OriginTrialEnabled=LegacyPerformanceMemoryCounters] readonly attribute unsigned long long usedJSHeapSizeWithoutExternalMemory;
-    [OriginTrialEnabled=LegacyPerformanceMemoryCounters] readonly attribute unsigned long long totalJSHeapSizeWithoutExternalMemory;
+    [RuntimeEnabled=LegacyPerformanceMemoryCounters] readonly attribute unsigned long long usedJSHeapSizeWithoutExternalMemory;
+    [RuntimeEnabled=LegacyPerformanceMemoryCounters] readonly attribute unsigned long long totalJSHeapSizeWithoutExternalMemory;
 };

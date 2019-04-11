@@ -25,7 +25,7 @@
 
 // https://w3c.github.io/gamepad/extensions.html#gamepadhand-enum
 [
-    OriginTrialEnabled=WebVR
+    RuntimeEnabled=WebVR
 ] enum GamepadHand {
   "left",
   "right"
@@ -45,9 +45,9 @@ interface Gamepad {
     // https://github.com/w3c/gamepad/pull/68
     [MeasureAs=GamepadVibrationActuator] readonly attribute GamepadHapticActuator? vibrationActuator;
 
-    [OriginTrialEnabled=WebVR, MeasureAs=GamepadPose] readonly attribute GamepadPose? pose;
-    [OriginTrialEnabled=WebVR, MeasureAs=GamepadHand] readonly attribute GamepadHand hand;
+    [RuntimeEnabled=WebVR, MeasureAs=GamepadPose] readonly attribute GamepadPose? pose;
+    [RuntimeEnabled=WebVR, MeasureAs=GamepadHand] readonly attribute GamepadHand hand;
 
     // https://w3c.github.io/webvr/#interface-gamepad
-    [OriginTrialEnabled=WebVR, MeasureAs=GamepadDisplayId] readonly attribute unsigned long displayId;
+    [RuntimeEnabled=WebVR, MeasureAs=GamepadDisplayId] readonly attribute unsigned long displayId;
 };

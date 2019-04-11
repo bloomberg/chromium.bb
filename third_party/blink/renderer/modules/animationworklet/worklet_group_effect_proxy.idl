@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 [
     Exposed=AnimationWorklet,
-    OriginTrialEnabled=AnimationWorklet
+    RuntimeEnabled=AnimationWorklet
 ] interface WorkletGroupEffectProxy {
   sequence<EffectProxy> getChildren();
 };

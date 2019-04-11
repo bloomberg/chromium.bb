@@ -5,7 +5,7 @@
 // https://github.com/wicg/event-timing
 [
     Exposed=Window,
-    OriginTrialEnabled=EventTiming
+    RuntimeEnabled=EventTiming
 ] interface PerformanceEventTiming : PerformanceEntry {
     readonly attribute DOMHighResTimeStamp processingStart;
     readonly attribute DOMHighResTimeStamp processingEnd;

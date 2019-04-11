@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // https://docs.google.com/document/d/1blFeMVdqxB0V3BAJh60ptOBFY7cJSXnf7VyW3wspbZ8
-[OriginTrialEnabled=ElementTiming]
+[RuntimeEnabled=ElementTiming]
 interface PerformanceElementTiming : PerformanceEntry {
     readonly attribute DOMRectReadOnly intersectionRect;
     readonly attribute DOMHighResTimeStamp responseEnd;

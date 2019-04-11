@@ -13,7 +13,7 @@ enum XRStationaryReferenceSpaceSubtype {
 [
     SecureContext,
     Exposed=Window,
-    OriginTrialEnabled=WebXR
+    RuntimeEnabled=WebXR
 ] interface XRStationaryReferenceSpace : XRReferenceSpace {
   readonly attribute XRStationaryReferenceSpaceSubtype subtype;
 };
