@@ -132,6 +132,14 @@ public class ImageFetcherBridge {
                 mNativeImageFetcherBridge, clientName, startTimeMillis);
     }
 
+    /**
+     * Setup the bridge for testing.
+     * @param imageFetcherBridge The bridge used for testing.
+     */
+    public static void setupForTesting(ImageFetcherBridge imageFetcherBridge) {
+        sImageFetcherBridge = imageFetcherBridge;
+    }
+
     // Native methods
     private static native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeImageFetcherBridge);

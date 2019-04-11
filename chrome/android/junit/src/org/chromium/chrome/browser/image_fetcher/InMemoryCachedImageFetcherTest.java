@@ -53,6 +53,8 @@ public class InMemoryCachedImageFetcherTest {
     private DiscardableReferencePool mReferencePool;
 
     @Mock
+    private ImageFetcherBridge mBridge;
+    @Mock
     private CachedImageFetcher mCachedImageFetcher;
     @Mock
     private Callback<Bitmap> mCallback;
@@ -67,6 +69,7 @@ public class InMemoryCachedImageFetcherTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        ImageFetcherBridge.setupForTesting(mBridge);
         mReferencePool = new DiscardableReferencePool();
         mBitmapCache = new BitmapCache(mReferencePool, DEFAULT_CACHE_SIZE);
         mInMemoryCachedImageFetcher =
@@ -109,9 +112,8 @@ public class InMemoryCachedImageFetcherTest {
                 .fetchImage(eq(URL), eq(UMA_CLIENT_NAME), eq(WIDTH_PX), eq(HEIGHT_PX), any());
 
         // Verify metrics are reported.
-        verify(mCachedImageFetcher)
-                .reportEvent(
-                        eq(UMA_CLIENT_NAME), eq(CachedImageFetcherEvent.JAVA_IN_MEMORY_CACHE_HIT));
+        verify(mBridge).reportEvent(
+                eq(UMA_CLIENT_NAME), eq(CachedImageFetcherEvent.JAVA_IN_MEMORY_CACHE_HIT));
     }
 
     @Test

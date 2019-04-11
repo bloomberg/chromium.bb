@@ -27,11 +27,6 @@ public class NetworkImageFetcher extends ImageFetcher {
     }
 
     @Override
-    public void reportEvent(String clientName, @CachedImageFetcherEvent int eventId) {
-        mImageFetcherBridge.reportEvent(clientName, eventId);
-    }
-
-    @Override
     public void destroy() {
         // Do nothing, this lives for the lifetime of the application.
     }
