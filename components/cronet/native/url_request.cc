@@ -546,6 +546,7 @@ void Cronet_UrlRequestImpl::InvokeCallbackOnSucceeded() {
   }
   InvokeAllStatusListeners();
   Cronet_UrlRequestCallback_OnSucceeded(callback_, this, response_info_.get());
+  // |this| may have been deleted here.
 }
 
 void Cronet_UrlRequestImpl::InvokeCallbackOnFailed() {
@@ -556,11 +557,13 @@ void Cronet_UrlRequestImpl::InvokeCallbackOnFailed() {
   InvokeAllStatusListeners();
   Cronet_UrlRequestCallback_OnFailed(callback_, this, response_info_.get(),
                                      error_.get());
+  // |this| may have been deleted here.
 }
 
 void Cronet_UrlRequestImpl::InvokeCallbackOnCanceled() {
   InvokeAllStatusListeners();
   Cronet_UrlRequestCallback_OnCanceled(callback_, this, response_info_.get());
+  // |this| may have been deleted here.
 }
 
 void Cronet_UrlRequestImpl::InvokeAllStatusListeners() {
