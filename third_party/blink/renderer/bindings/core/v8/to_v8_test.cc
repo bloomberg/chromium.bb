@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/core/testing/garbage_collected_script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 #define TEST_TOV8(expected, value) \
@@ -55,6 +56,8 @@ class GarbageCollectedHolderForToV8Test
 };
 
 class OffHeapGarbageCollectedHolder {
+  STACK_ALLOCATED();
+
  public:
   OffHeapGarbageCollectedHolder(
       GarbageCollectedScriptWrappable* script_wrappable)
