@@ -51,7 +51,7 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
                                          ULOC_US,
                                          "da_DK",
                                          "nl_NL",
-                                         "no_NO"
+                                         "no_NO",
                                          "sv_SE"};
 
   const PrefService* prefs = profile->GetPrefs();
