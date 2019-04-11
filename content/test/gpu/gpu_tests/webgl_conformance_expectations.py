@@ -344,6 +344,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', ('amd', 0x699f), 'opengl'], bug=950123)
     self.Skip('conformance/glsl/samplers/glsl-function-texture2dprojlod.html',
         ['win', ('amd', 0x699f), 'opengl'], bug=950123)
+    self.Fail('conformance/reading/read-pixels-test.html',
+        ['win', ('amd', 0x699f), 'opengl'], bug=951771)
     self.Skip('conformance/rendering/line-rendering-quality.html',
         ['win', ('amd', 0x699f), 'opengl'], bug=950123)
 
