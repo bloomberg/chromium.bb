@@ -85,11 +85,11 @@ bool SyncSetupService::UserActionIsRequiredToHaveTabSyncWork() {
     case SyncSetupService::kSyncServiceSignInNeedsUpdate:
     case SyncSetupService::kSyncServiceNeedsPassphrase:
     case SyncSetupService::kSyncServiceUnrecoverableError:
-      return true;
-    default:
-      NOTREACHED() << "Unknown sync service state.";
+    case SyncSetupService::kSyncSettingsNotConfirmed:
       return true;
   }
+  NOTREACHED() << "Unknown sync service state.";
+  return true;
 }
 
 bool SyncSetupService::IsSyncingAllDataTypes() const {
@@ -154,6 +154,8 @@ SyncSetupService::SyncServiceState SyncSetupService::GetSyncServiceState() {
     return kSyncServiceUnrecoverableError;
   if (sync_service_->GetUserSettings()->IsPassphraseRequiredForDecryption())
     return kSyncServiceNeedsPassphrase;
+  if (!IsFirstSetupComplete() && IsSyncEnabled())
+    return kSyncSettingsNotConfirmed;
   return kNoSyncServiceError;
 }
 

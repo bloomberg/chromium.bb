@@ -4897,6 +4897,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [self.dispatcher showSyncPassphraseSettingsFromViewController:self];
 }
 
+- (void)showGoogleServicesSettings {
+  [self.dispatcher showGoogleServicesSettingsFromViewController:self];
+}
+
 #pragma mark - NewTabPageTabHelperDelegate
 
 - (void)newTabPageHelperDidChangeVisibility:(NewTabPageTabHelper*)NTPHelper
