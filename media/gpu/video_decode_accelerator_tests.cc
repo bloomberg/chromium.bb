@@ -22,21 +22,27 @@ namespace {
 // Video decoder tests usage message.
 constexpr const char* usage_msg =
     "usage: video_decode_accelerator_tests\n"
-    "           [--help] [--disable_validator] [--output_frames]\n"
+    "           [-v=<level>] [--vmodule=<config>] [--disable_validator]\n"
+    "           [--output_frames] [--gtest_help] [--help]\n"
     "           [<video path>] [<video metadata path>]\n";
 
 // Video decoder tests help message.
 constexpr const char* help_msg =
-    "Run the video decode accelerator tests on the specified video. If no\n"
-    "video is specified the default \"test-25fps.h264\" video will be used.\n"
-    "\nThe video metadata path should specify the location of a json file\n"
+    "Run the video decode accelerator tests on the video specified by\n"
+    "<video path>. If no <video path> is given the default\n"
+    "\"test-25fps.h264\" video will be used.\n"
+    "\nThe <video metadata path> should specify the location of a json file\n"
     "containing the video's metadata, such as frame checksums. By default\n"
     "<video path>.json will be used.\n"
     "\nThe following arguments are supported:\n"
+    "   -v                  enable verbose mode, e.g. -v=2.\n"
+    "  --vmodule            enable verbose mode for the specified module,\n"
+    "                       e.g. --vmodule=*media/gpu*=2.\n"
     "  --disable_validator  disable frame validation, useful on old\n"
     "                       platforms that don't support import mode.\n"
     "  --output_frames      write all decoded video frames to the\n"
     "                       \"video_frames\" folder.\n"
+    "  --gtest_help         display the gtest help and exit.\n"
     "  --help               display this help and exit.\n";
 
 media::test::VideoPlayerTestEnvironment* g_env;
@@ -266,21 +272,18 @@ TEST_F(VideoDecoderTest, FlushAtEndOfStream_RenderThumbnails) {
 }  // namespace media
 
 int main(int argc, char** argv) {
-  base::CommandLine::Init(argc, argv);
-  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  // Set the default test data path.
+  media::test::Video::SetTestDataPath(media::GetTestDataPath());
 
   // Print the help message if requested. This needs to be done before
   // initializing gtest, to overwrite the default gtest help message.
+  base::CommandLine::Init(argc, argv);
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   LOG_ASSERT(cmd_line);
   if (cmd_line->HasSwitch("help")) {
     std::cout << media::test::usage_msg << "\n" << media::test::help_msg;
     return 0;
   }
-
-  testing::InitGoogleTest(&argc, argv);
-
-  // Set the default test data path.
-  media::test::Video::SetTestDataPath(media::GetTestDataPath());
 
   // Check if a video was specified on the command line.
   base::CommandLine::StringVector args = cmd_line->GetArgs();
@@ -310,6 +313,8 @@ int main(int argc, char** argv) {
       return EXIT_FAILURE;
     }
   }
+
+  testing::InitGoogleTest(&argc, argv);
 
   // Set up our test environment.
   media::test::VideoPlayerTestEnvironment* test_environment =
