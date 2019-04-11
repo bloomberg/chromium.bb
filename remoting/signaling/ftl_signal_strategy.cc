@@ -35,6 +35,7 @@ SignalStrategy::Error GrpcStatusToSignalingError(const grpc::Status& status) {
   switch (status.error_code()) {
     case grpc::StatusCode::OK:
       return SignalStrategy::Error::OK;
+    case grpc::StatusCode::PERMISSION_DENIED:
     case grpc::StatusCode::UNAUTHENTICATED:
       return SignalStrategy::Error::AUTHENTICATION_FAILED;
     default:
@@ -75,10 +76,12 @@ class FtlSignalStrategy::Core {
                          const std::string& sender_registration_id,
                          const ftl::ChromotingMessage& message);
 
-  void SendMessage(const std::string& destination,
-                   const std::string& destination_registration_id,
+  void SendMessage(const SignalingAddress& receiver,
+                   const std::string& stanza_id,
                    const std::string& message);
-  void OnSendMessageResponse(const grpc::Status& status);
+  void OnSendMessageResponse(const SignalingAddress& receiver,
+                             const std::string& stanza_id,
+                             const grpc::Status& status);
 
   // Returns true if the status is handled.
   void HandleGrpcStatusError(const base::Location& location,
@@ -230,22 +233,13 @@ bool FtlSignalStrategy::Core::SendStanza(
   SignalingAddress to =
       SignalingAddress::Parse(stanza.get(), SignalingAddress::TO, &to_error);
   DCHECK(to_error.empty());
-  std::string receiver_username;
-  std::string receiver_registration_id;
-  bool get_info_result =
-      to.GetFtlInfo(&receiver_username, &receiver_registration_id);
-  DCHECK(get_info_result);
 
   // Remove from and to fields from the stanza to prevent confusion to the peer.
   stanza->ClearAttr(jingle_xmpp::QN_FROM);
   stanza->ClearAttr(jingle_xmpp::QN_TO);
 
-  HOST_LOG << "Sending outgoing stanza:\n"
-           << "Receiver: " << receiver_username << "\n"
-           << "Receiver registration ID: " << receiver_registration_id << "\n"
-           << stanza->Str()
-           << "\n=========================================================";
-  SendMessage(receiver_username, receiver_registration_id, stanza->Str());
+  std::string stanza_id = stanza->Attr(jingle_xmpp::QN_ID);
+  SendMessage(to, stanza_id, stanza->Str());
 
   // Return false if the SendMessage() call above resulted in the SignalStrategy
   // being disconnected.
@@ -352,35 +346,67 @@ void FtlSignalStrategy::Core::OnMessageReceived(
     const ftl::ChromotingMessage& message) {
   auto sender_address = SignalingAddress::CreateFtlSignalingAddress(
       sender_id, sender_registration_id);
+  DCHECK(message_sender_override_.empty());
   if (!message_sender_override_.empty() &&
       sender_address.jid() != message_sender_override_) {
-    LOG(DFATAL) << "Received message from a different sender before the "
-                << "current stanza is parsed.";
+    LOG(ERROR) << "Received message from a different sender before the current "
+               << "stanza is parsed.";
     return;
   }
   message_sender_override_ = sender_address.jid();
   stream_parser_->AppendData(message.xmpp().stanza());
+  DCHECK(message_sender_override_.empty());
 }
 
-void FtlSignalStrategy::Core::SendMessage(
-    const std::string& destination,
-    const std::string& destination_registration_id,
-    const std::string& message) {
+void FtlSignalStrategy::Core::SendMessage(const SignalingAddress& receiver,
+                                          const std::string& stanza_id,
+                                          const std::string& message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  std::string receiver_username;
+  std::string receiver_registration_id;
+  bool get_info_result =
+      receiver.GetFtlInfo(&receiver_username, &receiver_registration_id);
+  DCHECK(get_info_result);
+
+  HOST_LOG << "Sending outgoing stanza:\n"
+           << "Receiver: " << receiver_username << "\n"
+           << "Receiver registration ID: " << receiver_registration_id << "\n"
+           << message
+           << "\n=========================================================";
   ftl::ChromotingMessage crd_message;
   crd_message.mutable_xmpp()->set_stanza(message);
   messaging_client_->SendMessage(
-      destination, destination_registration_id, crd_message,
-      base::BindOnce(&Core::OnSendMessageResponse, weak_factory_.GetWeakPtr()));
+      receiver_username, receiver_registration_id, crd_message,
+      base::BindOnce(&Core::OnSendMessageResponse, weak_factory_.GetWeakPtr(),
+                     receiver, stanza_id));
 }
 
 void FtlSignalStrategy::Core::OnSendMessageResponse(
+    const SignalingAddress& receiver,
+    const std::string& stanza_id,
     const grpc::Status& status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!status.ok()) {
+  if (status.ok()) {
+    return;
+  }
+
+  if (status.error_code() == grpc::StatusCode::UNAUTHENTICATED) {
     HandleGrpcStatusError(FROM_HERE, status);
     return;
   }
+
+  // Fake an error message so that JingleSession will take it as
+  // PEER_IS_OFFLINE.
+  DCHECK(message_sender_override_.empty());
+  message_sender_override_ = receiver.jid();
+  LOG(ERROR) << "Failed to send message to peer. Error code: "
+             << status.error_code() << ", message: " << status.error_message();
+  auto error_iq = std::make_unique<jingle_xmpp::XmlElement>(jingle_xmpp::QN_IQ);
+  error_iq->SetAttr(jingle_xmpp::QN_TYPE, jingle_xmpp::STR_ERROR);
+  error_iq->SetAttr(jingle_xmpp::QN_ID, stanza_id);
+  OnStanza(std::move(error_iq));
+  DCHECK(message_sender_override_.empty());
 }
 
 void FtlSignalStrategy::Core::HandleGrpcStatusError(
@@ -406,6 +432,8 @@ void FtlSignalStrategy::Core::OnStanza(
   // Don't trust the sender/receiver fields coming from the sender.
   stanza->SetAttr(jingle_xmpp::QN_FROM, message_sender_override_);
   stanza->SetAttr(jingle_xmpp::QN_TO, local_address_.jid());
+
+  message_sender_override_.clear();
 
   HOST_LOG << "Received incoming stanza:\n"
            << stanza->Str()
