@@ -146,6 +146,54 @@ OverlaySupportInfo g_overlay_support_info[] = {
     {OverlayFormat::kBGRA, DXGI_FORMAT_B8G8R8A8_UNORM, 0},
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class OverlayFullScreenTypes {
+  kWindowMode,
+  kFullScreenMode,
+  kFullScreenInWidthOnly,
+  kFullScreenInHeightOnly,
+  kOverSizedFullScreen,
+  kNotAvailable,
+  kMaxValue = kNotAvailable,
+};
+
+void RecordOverlayFullScreenTypes(bool workaround_applied,
+                                  const gfx::Rect& overlay_onscreen_rect) {
+  OverlayFullScreenTypes full_screen_type;
+  const gfx::Size& screen_size = g_overlay_monitor_size;
+  const gfx::Size& overlay_onscreen_size = overlay_onscreen_rect.size();
+  const gfx::Point& origin = overlay_onscreen_rect.origin();
+
+  // The kFullScreenInWidthOnly type might be over counted, it's possible the
+  // video width fits the screen but it's still in a window mode.
+  if (screen_size.IsEmpty()) {
+    full_screen_type = OverlayFullScreenTypes::kNotAvailable;
+  } else if (origin.IsOrigin() && overlay_onscreen_size == screen_size)
+    full_screen_type = OverlayFullScreenTypes::kFullScreenMode;
+  else if (overlay_onscreen_size.width() > screen_size.width() ||
+           overlay_onscreen_size.height() > screen_size.height()) {
+    full_screen_type = OverlayFullScreenTypes::kOverSizedFullScreen;
+  } else if (origin.x() == 0 &&
+             overlay_onscreen_size.width() == screen_size.width()) {
+    full_screen_type = OverlayFullScreenTypes::kFullScreenInWidthOnly;
+  } else if (origin.y() == 0 &&
+             overlay_onscreen_size.height() == screen_size.height()) {
+    full_screen_type = OverlayFullScreenTypes::kFullScreenInHeightOnly;
+  } else {
+    full_screen_type = OverlayFullScreenTypes::kWindowMode;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("GPU.DirectComposition.OverlayFullScreenTypes",
+                            full_screen_type);
+
+  // TODO(magchen): To be deleted once we know if this workaround is still
+  // needed
+  UMA_HISTOGRAM_BOOLEAN(
+      "GPU.DirectComposition.DisableLargerThanScreenOverlaysWorkaround",
+      workaround_applied);
+}
+
 const char* ProtectedVideoTypeToString(ui::ProtectedVideoType type) {
   switch (type) {
     case ui::ProtectedVideoType::kClear:
@@ -851,6 +899,10 @@ gfx::Size DCLayerTree::SwapChainPresenter::CalculateSwapChainSize(
   // to read the minimal amount of data. DWM is also less likely to promote a
   // surface to an overlay if it's much larger than its area on-screen.
   gfx::Size swap_chain_size = params.content_rect.size();
+  gfx::Size overlay_onscreen_size = swap_chain_size;
+  gfx::RectF bounds(params.quad_rect);
+  params.transform.TransformRect(&bounds);
+  overlay_onscreen_size = gfx::ToEnclosingRect(bounds).size();
 
   // If transform isn't a scale or translation then swap chain can't be promoted
   // to an overlay so avoid blitting to a large surface unnecessarily.  Also,
@@ -859,9 +911,7 @@ gfx::Size DCLayerTree::SwapChainPresenter::CalculateSwapChainSize(
   // the transform to counteract.
   // TODO(sunnyps): Support 90/180/270 deg rotations using video context.
   if (params.transform.IsScaleOrTranslation()) {
-    gfx::RectF bounds(params.quad_rect);
-    params.transform.TransformRect(&bounds);
-    swap_chain_size = gfx::ToEnclosingRect(bounds).size();
+    swap_chain_size = overlay_onscreen_size;
   }
 
   if (g_supports_scaled_overlays) {
@@ -871,6 +921,7 @@ gfx::Size DCLayerTree::SwapChainPresenter::CalculateSwapChainSize(
     swap_chain_size.SetToMin(params.content_rect.size());
   }
 
+  bool workaround_applied = false;
   if (layer_tree_->workarounds().disable_larger_than_screen_overlays &&
       !g_overlay_monitor_size.IsEmpty()) {
     // Because of the rounding when converting between pixels and DIPs, a
@@ -888,14 +939,19 @@ gfx::Size DCLayerTree::SwapChainPresenter::CalculateSwapChainSize(
         (swap_chain_size.width() <=
          g_overlay_monitor_size.width() + kOversizeMargin)) {
       swap_chain_size.set_width(g_overlay_monitor_size.width());
+      workaround_applied = true;
     }
 
     if ((swap_chain_size.height() > g_overlay_monitor_size.height()) &&
         (swap_chain_size.height() <=
          g_overlay_monitor_size.height() + kOversizeMargin)) {
       swap_chain_size.set_height(g_overlay_monitor_size.height());
+      workaround_applied = true;
     }
   }
+  RecordOverlayFullScreenTypes(
+      workaround_applied,
+      /*overlay_onscreen_rect*/ gfx::ToEnclosingRect(bounds));
 
   // 4:2:2 subsampled formats like YUY2 must have an even width, and 4:2:0
   // subsampled formats like NV12 must have an even width and height.
