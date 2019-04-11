@@ -20,6 +20,27 @@ namespace test {
 
 namespace {
 
+// Video decoder perf tests usage message.
+constexpr const char* usage_msg =
+    "usage: video_decode_accelerator_perf_tests\n"
+    "           [-v=<level>] [--vmodule=<config>] [--gtest_help] [--help]\n"
+    "           [<video path>] [<video metadata path>]\n";
+
+// Video decoder perf tests help message.
+constexpr const char* help_msg =
+    "Run the video decode accelerator performance tests on the video\n"
+    "specified by <video path>. If no <video path> is given the default\n"
+    "\"test-25fps.h264\" video will be used.\n"
+    "\nThe <video metadata path> should specify the location of a json file\n"
+    "containing the video's metadata, such as frame checksums. By default\n"
+    "<video path>.json will be used.\n"
+    "\nThe following arguments are supported:\n"
+    "   -v                  enable verbose mode, e.g. -v=2.\n"
+    "  --vmodule            enable verbose mode for the specified module,\n"
+    "                       e.g. --vmodule=*media/gpu*=2.\n"
+    "  --gtest_help         display the gtest help and exit.\n"
+    "  --help               display this help and exit.\n";
+
 media::test::VideoPlayerTestEnvironment* g_env;
 
 // Default output folder used to store performance metrics.
@@ -177,19 +198,41 @@ TEST_F(VideoDecoderTest, MeasureUncappedPerfomance) {
 }  // namespace media
 
 int main(int argc, char** argv) {
-  testing::InitGoogleTest(&argc, argv);
+  // Set the default test data path.
+  media::test::Video::SetTestDataPath(media::GetTestDataPath());
+
+  // Print the help message if requested. This needs to be done before
+  // initializing gtest, to overwrite the default gtest help message.
   base::CommandLine::Init(argc, argv);
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  LOG_ASSERT(cmd_line);
+  if (cmd_line->HasSwitch("help")) {
+    std::cout << media::test::usage_msg << "\n" << media::test::help_msg;
+    return 0;
+  }
 
   // Check if a video was specified on the command line.
-  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   base::CommandLine::StringVector args = cmd_line->GetArgs();
   base::FilePath video_path =
       (args.size() >= 1) ? base::FilePath(args[0]) : base::FilePath();
   base::FilePath video_metadata_path =
       (args.size() >= 2) ? base::FilePath(args[1]) : base::FilePath();
 
-  // Set the default test data path.
-  media::test::Video::SetTestDataPath(media::GetTestDataPath());
+  // Parse command line arguments.
+  base::CommandLine::SwitchMap switches = cmd_line->GetSwitches();
+  for (base::CommandLine::SwitchMap::const_iterator it = switches.begin();
+       it != switches.end(); ++it) {
+    if (it->first.find("gtest_") == 0 ||               // Handled by GoogleTest
+        it->first == "v" || it->first == "vmodule") {  // Handled by Chrome
+      continue;
+    } else {
+      std::cout << "unknown option: --" << it->first << "\n"
+                << media::test::usage_msg;
+      return EXIT_FAILURE;
+    }
+  }
+
+  testing::InitGoogleTest(&argc, argv);
 
   // Set up our test environment.
   media::test::VideoPlayerTestEnvironment* test_environment =
