@@ -11,12 +11,15 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ws/remote_view_host/server_remote_view_host.h"
+#include "ui/aura/window_observer.h"
 #include "ui/views/view.h"
 
 namespace ash {
 
 // Implementation of ArcCustomTabView interface.
-class ArcCustomTabView : public views::View, public mojom::ArcCustomTabView {
+class ArcCustomTabView : public views::View,
+                         public mojom::ArcCustomTabView,
+                         public aura::WindowObserver {
  public:
   // Creates a new ArcCustomTabView instance. The instance will be deleted when
   // the pointer is closed. Returns null when the arguments are invalid.
@@ -30,8 +33,13 @@ class ArcCustomTabView : public views::View, public mojom::ArcCustomTabView {
   // views::View:
   void Layout() override;
 
+  // aura::WindowObserver:
+  void OnWindowHierarchyChanged(const HierarchyChangeParams& params) override;
+
  private:
-  ArcCustomTabView(int32_t surface_id, int32_t top_margin);
+  ArcCustomTabView(aura::Window* arc_app_window,
+                   int32_t surface_id,
+                   int32_t top_margin);
   ~ArcCustomTabView() override;
 
   // Binds this instance to the pointer.
@@ -45,6 +53,7 @@ class ArcCustomTabView : public views::View, public mojom::ArcCustomTabView {
 
   mojo::Binding<mojom::ArcCustomTabView> binding_;
   ws::ServerRemoteViewHost* remote_view_host_;
+  aura::Window* arc_app_window_;
   int32_t surface_id_, top_margin_;
   base::WeakPtrFactory<ArcCustomTabView> weak_ptr_factory_;
 
