@@ -40,6 +40,7 @@
 #include "ios/chrome/browser/sync/consent_auditor_factory.h"
 #include "ios/chrome/browser/sync/device_info_sync_service_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_sync_client.h"
+#include "ios/chrome/browser/sync/ios_user_event_service_factory.h"
 #include "ios/chrome/browser/sync/model_type_store_service_factory.h"
 #include "ios/chrome/browser/sync/session_sync_service_factory.h"
 #include "ios/chrome/browser/undo/bookmark_undo_service_factory.h"
@@ -136,6 +137,7 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   DependsOn(IOSChromeProfileInvalidationProviderFactory::GetInstance());
   DependsOn(
       IOSChromeDeprecatedProfileInvalidationProviderFactory::GetInstance());
+  DependsOn(IOSUserEventServiceFactory::GetInstance());
   DependsOn(ModelTypeStoreServiceFactory::GetInstance());
   DependsOn(ReadingListModelFactory::GetInstance());
   DependsOn(SessionSyncServiceFactory::GetInstance());

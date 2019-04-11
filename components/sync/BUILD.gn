@@ -656,8 +656,6 @@ jumbo_static_library("js") {
 
 jumbo_static_library("user_events") {
   sources = [
-    "user_events/fake_user_event_service.cc",
-    "user_events/fake_user_event_service.h",
     "user_events/no_op_user_event_service.cc",
     "user_events/no_op_user_event_service.h",
     "user_events/user_event_model_type_controller.cc",
@@ -678,6 +676,24 @@ jumbo_static_library("user_events") {
   ]
   deps = [
     "//components/signin/core/browser:shared",
+  ]
+}
+
+static_library("test_support_user_events") {
+  testonly = true
+  sources = [
+    "user_events/fake_user_event_service.cc",
+    "user_events/fake_user_event_service.h",
+  ]
+
+  public_deps = [
+    ":test_support_base",
+  ]
+
+  deps = [
+    ":sync",
+    ":test_support_model",
+    ":user_events",
   ]
 }
 
@@ -1018,6 +1034,7 @@ source_set("unit_tests") {
     ":test_support_driver",
     ":test_support_engine",
     ":test_support_model",
+    ":test_support_user_events",
     ":user_events",
     "//base",
     "//base/test:test_support",

@@ -402,12 +402,10 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
     controllers.push_back(
         std::make_unique<syncer::UserEventModelTypeController>(
             sync_service,
-            std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
-                ui_thread_,
-                base::BindRepeating(&browser_sync::BrowserSyncClient::
-                                        GetControllerDelegateForModelType,
-                                    base::Unretained(sync_client_),
-                                    syncer::USER_EVENTS))));
+            std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
+                sync_client_
+                    ->GetControllerDelegateForModelType(syncer::USER_EVENTS)
+                    .get())));
   }
 
   if (!disabled_types.Has(syncer::SEND_TAB_TO_SELF) &&
