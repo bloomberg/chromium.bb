@@ -15,7 +15,8 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
  * Coordinator for the header of the Autofill Assistant.
  */
 public class AssistantHeaderCoordinator {
-    public AssistantHeaderCoordinator(Context context, ViewGroup root, AssistantHeaderModel model) {
+    public AssistantHeaderCoordinator(
+            Context context, ViewGroup bottomBarView, AssistantHeaderModel model) {
         // Create the poodle and insert it before the status message. We have to create a view
         // bigger than the desired poodle size (24dp) because the actual downstream implementation
         // needs extra space for the animation.
@@ -24,13 +25,16 @@ public class AssistantHeaderCoordinator {
                         R.dimen.autofill_assistant_poodle_view_size),
                 context.getResources().getDimensionPixelSize(
                         R.dimen.autofill_assistant_poodle_size));
-        addPoodle(root, poodle.getView());
+        addPoodle(bottomBarView, poodle.getView());
 
         // Bind view and mediator through the model.
         AssistantHeaderViewBinder.ViewHolder viewHolder =
-                new AssistantHeaderViewBinder.ViewHolder(root, poodle);
+                new AssistantHeaderViewBinder.ViewHolder(bottomBarView, poodle);
         AssistantHeaderViewBinder viewBinder = new AssistantHeaderViewBinder();
         PropertyModelChangeProcessor.create(model, viewHolder, viewBinder);
+
+        model.set(AssistantHeaderModel.VISIBLE, true);
+        model.set(AssistantHeaderModel.PROGRESS_VISIBLE, true);
     }
 
     private void addPoodle(ViewGroup root, View poodleView) {

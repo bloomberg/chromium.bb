@@ -23,6 +23,9 @@ import org.chromium.ui.text.SpanApplier;
  * Assistant for the first time.
  */
 class AssistantOnboardingCoordinator {
+    // TODO(crbug.com/806868): Wire this with A/B experiment.
+    private static final boolean SHOW_SMALL_ONBOARDING = false;
+
     /**
      * Shows the onboarding screen and returns whether we should proceed.
      */
@@ -55,7 +58,18 @@ class AssistantOnboardingCoordinator {
         initView.announceForAccessibility(
                 context.getString(R.string.autofill_assistant_first_run_accessibility));
 
+        // Hide views that should not be displayed when showing the small onboarding.
+        if (SHOW_SMALL_ONBOARDING) {
+            hide(initView, R.id.onboarding_image);
+            hide(initView, R.id.onboarding_subtitle);
+            hide(initView, R.id.onboarding_separator);
+        }
+
         return initView;
+    }
+
+    private static void hide(View root, int resId) {
+        root.findViewById(resId).setVisibility(View.GONE);
     }
 
     private static void onClicked(

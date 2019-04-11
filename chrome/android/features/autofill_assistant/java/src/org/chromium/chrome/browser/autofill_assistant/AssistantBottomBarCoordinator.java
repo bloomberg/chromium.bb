@@ -134,7 +134,7 @@ class AssistantBottomBarCoordinator {
      * proceed, false otherwise.
      */
     public void showOnboarding(Callback<Boolean> callback) {
-        mModel.getHeaderModel().set(AssistantHeaderModel.FEEDBACK_VISIBLE, false);
+        mModel.getHeaderModel().set(AssistantHeaderModel.VISIBLE, false);
 
         // Show overlay to prevent user from interacting with the page during onboarding.
         mModel.getOverlayModel().set(AssistantOverlayModel.STATE, AssistantOverlayState.FULL);
@@ -147,7 +147,7 @@ class AssistantBottomBarCoordinator {
                         return;
                     }
 
-                    mModel.getHeaderModel().set(AssistantHeaderModel.FEEDBACK_VISIBLE, true);
+                    mModel.getHeaderModel().set(AssistantHeaderModel.VISIBLE, true);
 
                     // Hide overlay.
                     mModel.getOverlayModel().set(
