@@ -120,8 +120,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'no_passthrough'], bug=3033) # angle bug ID
     self.Fail('conformance2/glsl3/tricky-loop-conditions.html',
         ['win'], bug=1465) # anglebug.com/1465
-    self.Fail('conformance/textures/misc/texture-active-bind.html',
-        ['win'], bug=931006)
 
     # Win / NVidia
     self.Flaky('deqp/functional/gles3/fbomultisample*',
@@ -1392,18 +1390,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/video/' +
         'tex-2d-rgba8ui-rgba_integer-unsigned_byte.html',
         ['android', 'qualcomm'], bug=906735)
-    self.Fail('conformance2/textures/misc/tex-new-formats.html',
-        ['android', 'qualcomm'], bug=906740)
-    self.Fail('conformance2/textures/misc/copy-texture-image-luma-format.html',
-        ['android', 'qualcomm'], bug=906740)
     # This test is failing on Android Pixel 2 and 3 (Qualcomm)
     # Seems to be an OpenGL ES bug.
     self.Fail('conformance2/rendering/vertex-id.html',
         ['android', 'qualcomm'], bug=945903)
-    self.Fail('deqp/functional/gles3/textureformat/unsized_2d_array.html',
-        ['android', 'qualcomm'], bug=906740)
-    self.Fail('deqp/functional/gles3/textureformat/unsized_3d.html',
-        ['android', 'qualcomm'], bug=906740)
     self.Fail('deqp/functional/gles3/shaderderivate_dfdy.html',
         ['android', 'qualcomm'], bug=906745)
     self.Flaky('deqp/functional/gles3/multisample.html',
