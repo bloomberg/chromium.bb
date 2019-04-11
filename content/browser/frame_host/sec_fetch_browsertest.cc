@@ -37,7 +37,10 @@ class SecFetchBrowserTest : public ContentBrowserTest {
     https_test_server_.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
     ASSERT_TRUE(https_test_server_.Start());
 
-    feature_list_.InitAndEnableFeature(network::features::kSecMetadata);
+    feature_list_.InitWithFeatures(
+        {network::features::kFetchMetadata,
+         network::features::kFetchMetadataDestination},
+        {});
   }
 
   WebContents* web_contents() { return shell()->web_contents(); }

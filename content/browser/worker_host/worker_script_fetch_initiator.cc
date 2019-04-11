@@ -214,9 +214,11 @@ void WorkerScriptFetchInitiator::AddAdditionalRequestHeaders(
   }
 
   // Set Fetch metadata headers if necessary.
-  if ((base::FeatureList::IsEnabled(network::features::kSecMetadata) ||
-       base::CommandLine::ForCurrentProcess()->HasSwitch(
-           switches::kEnableExperimentalWebPlatformFeatures)) &&
+  bool experimental_features_enabled =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalWebPlatformFeatures);
+  if ((base::FeatureList::IsEnabled(network::features::kFetchMetadata) ||
+       experimental_features_enabled) &&
       IsOriginSecure(resource_request->url)) {
     // The worker's origin can be different from the constructor's origin, for
     // example, when the worker created from the extension.
@@ -227,13 +229,18 @@ void WorkerScriptFetchInitiator::AddAdditionalRequestHeaders(
             url::Origin::Create(resource_request->url))) {
       site_value = "same-origin";
     }
-    resource_request->headers.SetHeaderIfMissing("Sec-Fetch-Dest",
-                                                 "sharedworker");
     resource_request->headers.SetHeaderIfMissing("Sec-Fetch-Site",
                                                  site_value.c_str());
     resource_request->headers.SetHeaderIfMissing("Sec-Fetch-Mode",
                                                  "same-origin");
     // We don't set `Sec-Fetch-User` for subresource requests.
+
+    if (base::FeatureList::IsEnabled(
+            network::features::kFetchMetadataDestination) ||
+        experimental_features_enabled) {
+      resource_request->headers.SetHeaderIfMissing("Sec-Fetch-Dest",
+                                                   "sharedworker");
+    }
   }
 }
 

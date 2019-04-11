@@ -550,6 +550,14 @@
       name: "FeaturePolicyVibrateFeature"
     },
     {
+      name: "FetchMetadata",
+      status: "experimental"
+    },
+    {
+      name: "FetchMetadataDestination",
+      status: "experimental"
+    },
+    {
       name: "FileSystem",
       status: "stable",
     },
@@ -1267,10 +1275,6 @@
     {
       name: "ScrollTopLeftInterop",
       status: "stable",
-    },
-    {
-      name: "SecMetadata",
-      status: "experimental"
     },
     {
       name: "SendBeaconThrowForBlobWithNonSimpleType",

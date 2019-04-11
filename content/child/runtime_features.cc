@@ -201,8 +201,12 @@ void SetIndividualRuntimeFeatures(
 
   // TODO(yashard): Remove |enable_experimental_web_platform_features| flag
   // since the feature should have been enabled when it is set to experimental
-  WebRuntimeFeatures::EnableSecMetadata(
-      base::FeatureList::IsEnabled(network::features::kSecMetadata) ||
+  WebRuntimeFeatures::EnableFetchMetadata(
+      base::FeatureList::IsEnabled(network::features::kFetchMetadata) ||
+      enable_experimental_web_platform_features);
+  WebRuntimeFeatures::EnableFetchMetadataDestination(
+      base::FeatureList::IsEnabled(
+          network::features::kFetchMetadataDestination) ||
       enable_experimental_web_platform_features);
 
   WebRuntimeFeatures::EnableUserActivationPostMessageTransfer(
