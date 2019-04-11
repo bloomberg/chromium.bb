@@ -78,7 +78,9 @@ void FtlMessageReceptionChannel::StartReceivingMessages(
   if (state_ == State::STARTING) {
     return;
   }
-  StartReceivingMessagesInternal();
+
+  state_ = State::STARTING;
+  RetryStartReceivingMessagesWithBackoff();
 }
 
 void FtlMessageReceptionChannel::StopReceivingMessages() {
@@ -100,6 +102,7 @@ void FtlMessageReceptionChannel::OnReceiveMessagesStreamClosed(
     // Previously closed by the caller.
     return;
   }
+  reconnect_retry_backoff_.InformOfRequest(false);
   if (status.error_code() == grpc::StatusCode::ABORTED ||
       status.error_code() == grpc::StatusCode::UNAVAILABLE) {
     // These are 'soft' connection errors that should be retried.
@@ -142,10 +145,13 @@ void FtlMessageReceptionChannel::RunStreamReadyCallbacks() {
   if (stream_ready_callbacks_.empty()) {
     return;
   }
-  for (base::OnceClosure& callback : stream_ready_callbacks_) {
+
+  // The swap is to make StartReceivingMessages() reentrant.
+  std::list<base::OnceClosure> callbacks;
+  callbacks.swap(stream_ready_callbacks_);
+  for (base::OnceClosure& callback : callbacks) {
     std::move(callback).Run();
   }
-  stream_ready_callbacks_.clear();
 }
 
 void FtlMessageReceptionChannel::RunStreamClosedCallbacks(
@@ -153,14 +159,16 @@ void FtlMessageReceptionChannel::RunStreamClosedCallbacks(
   if (stream_closed_callbacks_.empty()) {
     return;
   }
-  for (DoneCallback& callback : stream_closed_callbacks_) {
+
+  // The swap is to make StartReceivingMessages() reentrant.
+  std::list<DoneCallback> callbacks;
+  callbacks.swap(stream_closed_callbacks_);
+  for (DoneCallback& callback : callbacks) {
     std::move(callback).Run(status);
   }
-  stream_closed_callbacks_.clear();
 }
 
 void FtlMessageReceptionChannel::RetryStartReceivingMessagesWithBackoff() {
-  reconnect_retry_backoff_.InformOfRequest(false);
   VLOG(0) << "RetryStartReceivingMessages will be called with backoff: "
           << reconnect_retry_backoff_.GetTimeUntilRelease();
   reconnect_retry_timer_.Start(
@@ -212,6 +220,7 @@ void FtlMessageReceptionChannel::BeginStreamTimers() {
 
 void FtlMessageReceptionChannel::OnPongTimeout() {
   LOG(WARNING) << "Timed out waiting for PONG message from server.";
+  reconnect_retry_backoff_.InformOfRequest(false);
   RetryStartReceivingMessagesWithBackoff();
 }
 

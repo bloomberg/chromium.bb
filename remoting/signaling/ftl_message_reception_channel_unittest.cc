@@ -96,8 +96,12 @@ base::OnceClosure NotReachedClosure() {
   return base::BindOnce([]() { NOTREACHED(); });
 }
 
-base::RepeatingCallback<void(const grpc::Status&)> NotReachedStatusCallback() {
-  return base::BindRepeating([](const grpc::Status&) { NOTREACHED(); });
+base::RepeatingCallback<void(const grpc::Status&)> NotReachedStatusCallback(
+    const base::Location& location) {
+  return base::BindLambdaForTesting([=](const grpc::Status& status) {
+    NOTREACHED() << "Location: " << location.ToString()
+                 << ", status code: " << status.error_code();
+  });
 }
 
 }  // namespace
@@ -191,7 +195,7 @@ TEST_F(FtlMessageReceptionChannelTest,
           }));
 
   channel_->StartReceivingMessages(run_loop.QuitClosure(),
-                                   NotReachedStatusCallback());
+                                   NotReachedStatusCallback(FROM_HERE));
 
   run_loop.Run();
 }
@@ -235,7 +239,7 @@ TEST_F(FtlMessageReceptionChannelTest,
           }));
 
   channel_->StartReceivingMessages(run_loop.QuitClosure(),
-                                   NotReachedStatusCallback());
+                                   NotReachedStatusCallback(FROM_HERE));
 
   run_loop.Run();
 }
@@ -260,11 +264,11 @@ TEST_F(FtlMessageReceptionChannelTest,
           }));
 
   channel_->StartReceivingMessages(stream_ready_callback.Get(),
-                                   NotReachedStatusCallback());
+                                   NotReachedStatusCallback(FROM_HERE));
   channel_->StartReceivingMessages(stream_ready_callback.Get(),
-                                   NotReachedStatusCallback());
+                                   NotReachedStatusCallback(FROM_HERE));
   channel_->StartReceivingMessages(stream_ready_callback.Get(),
-                                   NotReachedStatusCallback());
+                                   NotReachedStatusCallback(FROM_HERE));
 
   run_loop.Run();
 }
@@ -349,7 +353,7 @@ TEST_F(FtlMessageReceptionChannelTest, NoPongWithinTimeout_ResetsStream) {
           }));
 
   channel_->StartReceivingMessages(base::DoNothing(),
-                                   NotReachedStatusCallback());
+                                   NotReachedStatusCallback(FROM_HERE));
 
   run_loop.Run();
 }
@@ -392,7 +396,7 @@ TEST_F(FtlMessageReceptionChannelTest, LifetimeExceeded_ResetsStream) {
           }));
 
   channel_->StartReceivingMessages(base::DoNothing(),
-                                   NotReachedStatusCallback());
+                                   NotReachedStatusCallback(FROM_HERE));
 
   run_loop.Run();
 }
@@ -439,7 +443,55 @@ TEST_F(FtlMessageReceptionChannelTest, TimeoutIncreasesToMaximum) {
           }));
 
   channel_->StartReceivingMessages(base::DoNothing(),
-                                   NotReachedStatusCallback());
+                                   NotReachedStatusCallback(FROM_HERE));
+
+  run_loop.Run();
+}
+
+TEST_F(FtlMessageReceptionChannelTest,
+       StartStreamFailsWithUnRecoverableErrorAndRetry_TimeoutApplied) {
+  base::RunLoop run_loop;
+
+  base::WeakPtr<FakeScopedGrpcServerStream> old_stream;
+  EXPECT_CALL(mock_stream_opener_, Run(_, _))
+      .WillOnce(StartStream(
+          [&](const ReceiveMessagesResponseCallback& on_incoming_msg,
+              StatusCallback on_channel_closed) {
+            // The first open stream attempt fails with UNAUTHENTICATED error.
+            ASSERT_EQ(0, GetRetryFailureCount());
+
+            std::move(on_channel_closed)
+                .Run(grpc::Status(grpc::StatusCode::UNAUTHENTICATED, ""));
+
+            ASSERT_EQ(1, GetRetryFailureCount());
+            ASSERT_NEAR(
+                FtlMessageReceptionChannel::kBackoffInitialDelay.InSecondsF(),
+                GetTimeUntilRetry().InSecondsF(), 0.5);
+          },
+          &old_stream))
+      .WillOnce(StartStream(
+          [&](const ReceiveMessagesResponseCallback& on_incoming_msg,
+              StatusCallback on_channel_closed) {
+            // Second open stream attempt succeeds.
+
+            // Assert old stream closed.
+            ASSERT_FALSE(old_stream);
+
+            ASSERT_EQ(1, GetRetryFailureCount());
+
+            // Send a StartOfBatch and verify it resets the failure counter.
+            on_incoming_msg.Run(CreateStartOfBatchResponse());
+
+            ASSERT_EQ(0, GetRetryFailureCount());
+          }));
+
+  channel_->StartReceivingMessages(
+      base::DoNothing(),
+      base::BindLambdaForTesting([&](const grpc::Status& status) {
+        ASSERT_EQ(grpc::StatusCode::UNAUTHENTICATED, status.error_code());
+        channel_->StartReceivingMessages(run_loop.QuitClosure(),
+                                         NotReachedStatusCallback(FROM_HERE));
+      }));
 
   run_loop.Run();
 }

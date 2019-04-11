@@ -39,6 +39,10 @@ class FtlSignalStrategy : public SignalStrategy {
   bool SendStanza(std::unique_ptr<jingle_xmpp::XmlElement> stanza) override;
   std::string GetNextId() override;
 
+  // Returns true if the signal strategy gets into an error state when it tries
+  // to sign in. You can get back the actual error by calling GetError().
+  bool IsSignInError() const;
+
  private:
   // This ensures that even if a Listener deletes the current instance during
   // OnSignalStrategyIncomingStanza(), we can delete |core_| asynchronously.
