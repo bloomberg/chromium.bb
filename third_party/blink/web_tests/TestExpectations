@@ -6266,3 +6266,6 @@ crbug.com/946335 [ Linux Mac ] fast/filesystem/file-writer-abort-depth.html [ Pa
 crbug.com/951638 [ Linux ] virtual/mouseevent_fractional/fast/events/mouse-right-coords-in-zoom-and-scroll-right.html [ Pass Failure ]
 crbug.com/951638 [ Mac10.13 Debug ] virtual/mouseevent_fractional/fast/events/mouse-right-coords-in-zoom-and-scroll-right.html [ Pass Failure ]
 crbug.com/951638 [ Win7 ] virtual/mouseevent_fractional/fast/events/mouse-right-coords-in-zoom-and-scroll-right.html [ Pass Failure ]
+
+# Sheriff 2019-04-11
+crbug.com/951774 [ Linux ] virtual/video-surface-layer/media/controls/modern/overlay-play-button-tap-to-hide.html [ Pass Timeout ]
