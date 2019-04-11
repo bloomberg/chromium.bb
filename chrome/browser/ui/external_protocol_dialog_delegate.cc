@@ -33,8 +33,7 @@ ExternalProtocolDialogDelegate::ExternalProtocolDialogDelegate(
       render_view_routing_id_(render_view_routing_id),
       program_name_(shell_integration::GetApplicationNameForProtocol(url)) {}
 
-ExternalProtocolDialogDelegate::~ExternalProtocolDialogDelegate() {
-}
+ExternalProtocolDialogDelegate::~ExternalProtocolDialogDelegate() {}
 
 base::string16 ExternalProtocolDialogDelegate::GetDialogButtonLabel(
     ui::DialogButton button) const {

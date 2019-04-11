@@ -320,12 +320,12 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   }
 #endif
 
-// --- Feature tab helpers behind flags ---
+  // --- Feature tab helpers behind flags ---
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-offline_pages::OfflinePageTabHelper::CreateForWebContents(web_contents);
-offline_pages::RecentTabHelper::CreateForWebContents(web_contents);
-offline_pages::AutoFetchPageLoadWatcher::CreateForWebContents(web_contents);
+  offline_pages::OfflinePageTabHelper::CreateForWebContents(web_contents);
+  offline_pages::RecentTabHelper::CreateForWebContents(web_contents);
+  offline_pages::AutoFetchPageLoadWatcher::CreateForWebContents(web_contents);
 #endif
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)

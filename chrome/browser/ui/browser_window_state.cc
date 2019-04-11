@@ -76,8 +76,8 @@ class WindowPlacementPrefUpdate : public DictionaryPrefUpdate {
 
 std::string GetWindowName(const Browser* browser) {
   if (browser->app_name().empty()) {
-    return browser->is_type_popup() ?
-        prefs::kBrowserWindowPlacementPopup : prefs::kBrowserWindowPlacement;
+    return browser->is_type_popup() ? prefs::kBrowserWindowPlacementPopup
+                                    : prefs::kBrowserWindowPlacement;
   }
   return browser->app_name();
 }
@@ -114,7 +114,8 @@ bool ShouldSaveWindowPlacement(const Browser* browser) {
   // Only save the window placement of popups if the window is from a trusted
   // source (v1 app, devtools, or system window).
   return (browser->type() == Browser::TYPE_TABBED) ||
-    ((browser->type() == Browser::TYPE_POPUP) && browser->is_trusted_source());
+         ((browser->type() == Browser::TYPE_POPUP) &&
+          browser->is_trusted_source());
 }
 
 bool SavedBoundsAreContentBounds(const Browser* browser) {
@@ -151,11 +152,8 @@ void GetSavedWindowBoundsAndShowState(const Browser* browser,
   DCHECK(bounds);
   DCHECK(show_state);
   *bounds = browser->override_bounds();
-  WindowSizer::GetBrowserWindowBoundsAndShowState(browser->app_name(),
-                                                  *bounds,
-                                                  browser,
-                                                  bounds,
-                                                  show_state);
+  WindowSizer::GetBrowserWindowBoundsAndShowState(browser->app_name(), *bounds,
+                                                  browser, bounds, show_state);
 
   const base::CommandLine& parsed_command_line =
       *base::CommandLine::ForCurrentProcess();

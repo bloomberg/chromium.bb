@@ -43,7 +43,7 @@
 
 namespace chrome {
 
-class BrowserCommandControllerBrowserTest: public InProcessBrowserTest {
+class BrowserCommandControllerBrowserTest : public InProcessBrowserTest {
  public:
   BrowserCommandControllerBrowserTest() {}
   ~BrowserCommandControllerBrowserTest() override {}
@@ -117,12 +117,12 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest,
   TemplateURLServiceFactory::GetForProfile(guest)->set_loaded(true);
 
   const CommandUpdater* command_updater = browser->command_controller();
-  #if defined(OS_CHROMEOS)
-    // Chrome OS uses system tray menu to handle multi-profiles.
-    EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SHOW_AVATAR_MENU));
-  #else
-    EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_SHOW_AVATAR_MENU));
-  #endif
+#if defined(OS_CHROMEOS)
+  // Chrome OS uses system tray menu to handle multi-profiles.
+  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SHOW_AVATAR_MENU));
+#else
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_SHOW_AVATAR_MENU));
+#endif
 }
 
 #if defined(OS_CHROMEOS)

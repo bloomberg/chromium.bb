@@ -41,10 +41,9 @@ void AddTabAt(Browser* browser,
   core_tab_helper->set_new_tab_start_time(new_tab_start_time);
 }
 
-content::WebContents* AddSelectedTabWithURL(
-    Browser* browser,
-    const GURL& url,
-    ui::PageTransition transition) {
+content::WebContents* AddSelectedTabWithURL(Browser* browser,
+                                            const GURL& url,
+                                            ui::PageTransition transition) {
   NavigateParams params(browser, url, transition);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   Navigate(&params);
@@ -83,9 +82,8 @@ void CloseWebContents(Browser* browser,
   }
 
   browser->tab_strip_model()->CloseWebContentsAt(
-      index,
-      add_to_history ? TabStripModel::CLOSE_CREATE_HISTORICAL_TAB
-                     : TabStripModel::CLOSE_NONE);
+      index, add_to_history ? TabStripModel::CLOSE_CREATE_HISTORICAL_TAB
+                            : TabStripModel::CLOSE_NONE);
 }
 
 }  // namespace chrome

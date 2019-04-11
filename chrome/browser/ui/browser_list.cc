@@ -82,8 +82,7 @@ void BrowserList::AddBrowser(Browser* browser) {
   browser->RegisterKeepAlive();
 
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_BROWSER_OPENED,
-      content::Source<Browser>(browser),
+      chrome::NOTIFICATION_BROWSER_OPENED, content::Source<Browser>(browser),
       content::NotificationService::NoDetails());
 
   for (BrowserListObserver& observer : observers_.Get())
@@ -101,8 +100,7 @@ void BrowserList::RemoveBrowser(Browser* browser) {
   browser_list->currently_closing_browsers_.erase(browser);
 
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_BROWSER_CLOSED,
-      content::Source<Browser>(browser),
+      chrome::NOTIFICATION_BROWSER_CLOSED, content::Source<Browser>(browser),
       content::NotificationService::NoDetails());
 
   RemoveBrowserFrom(browser, &browser_list->browsers_);
@@ -332,11 +330,9 @@ bool BrowserList::IsIncognitoSessionInUse(Profile* profile) {
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserList, private:
 
-BrowserList::BrowserList() {
-}
+BrowserList::BrowserList() {}
 
-BrowserList::~BrowserList() {
-}
+BrowserList::~BrowserList() {}
 
 // static
 void BrowserList::RemoveBrowserFrom(Browser* browser,

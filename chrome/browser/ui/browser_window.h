@@ -50,18 +50,18 @@ class LocalCardMigrationBubbleController;
 class LocalCardMigrationBubble;
 class SaveCardBubbleController;
 class SaveCardBubbleView;
-}
+}  // namespace autofill
 
 namespace content {
 class WebContents;
 struct NativeWebKeyboardEvent;
 enum class KeyboardEventProcessingResult;
-}
+}  // namespace content
 
 namespace extensions {
 class Command;
 class Extension;
-}
+}  // namespace extensions
 
 namespace gfx {
 class Size;
@@ -410,7 +410,7 @@ class BrowserWindow : public ui::BaseWindow {
   // modal dialogs within the browser window. This can sometimes be NULL (for
   // instance during tab drag on Views/Win32).
   virtual web_modal::WebContentsModalDialogHost*
-      GetWebContentsModalDialogHost() = 0;
+  GetWebContentsModalDialogHost() = 0;
 
   // Construct a BrowserWindow implementation for the specified |browser|.
   static BrowserWindow* CreateBrowserWindow(std::unique_ptr<Browser> browser,

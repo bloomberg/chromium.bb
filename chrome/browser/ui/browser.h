@@ -90,7 +90,7 @@ class BrowserExtensionWindowController;
 
 class Extension;
 class ExtensionRegistry;
-}
+}  // namespace extensions
 
 namespace gfx {
 class Image;
@@ -269,18 +269,14 @@ class Browser : public TabStripModelObserver,
     initial_show_state_ = initial_show_state;
   }
   // Return true if the initial window bounds have been overridden.
-  bool bounds_overridden() const {
-    return !override_bounds_.IsEmpty();
-  }
+  bool bounds_overridden() const { return !override_bounds_.IsEmpty(); }
   // Set indicator that this browser is being created via session restore.
   // This is used on the Mac (only) to determine animation style when the
   // browser window is shown.
   void set_is_session_restore(bool is_session_restore) {
     is_session_restore_ = is_session_restore;
   }
-  bool is_session_restore() const {
-    return is_session_restore_;
-  }
+  bool is_session_restore() const { return is_session_restore_; }
 
   bool is_focus_mode() const { return is_focus_mode_; }
 
@@ -315,7 +311,7 @@ class Browser : public TabStripModelObserver,
   }
   const SessionID& session_id() const { return session_id_; }
   BrowserContentSettingBubbleModelDelegate*
-      content_setting_bubble_model_delegate() {
+  content_setting_bubble_model_delegate() {
     return content_setting_bubble_model_delegate_.get();
   }
   BrowserLiveTabContext* live_tab_context() { return live_tab_context_.get(); }
@@ -853,8 +849,7 @@ class Browser : public TabStripModelObserver,
   //   updates), then scheduled_updates_ is updated for the |source| and update
   //   pair and a task is scheduled (assuming it isn't running already)
   //   that invokes ProcessPendingUIUpdates.
-  void ScheduleUIUpdate(content::WebContents* source,
-                        unsigned changed_flags);
+  void ScheduleUIUpdate(content::WebContents* source, unsigned changed_flags);
 
   // Processes all pending updates to the UI that have been scheduled by
   // ScheduleUIUpdate in scheduled_updates_.

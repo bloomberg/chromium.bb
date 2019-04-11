@@ -135,8 +135,8 @@ TEST_F(BrowserUnitTest, DisableZoomOnCrashedTab) {
   WebContentsTester::For(raw_contents)->NavigateAndCommit(GURL("about:blank"));
   zoom::ZoomController* zoom_controller =
       zoom::ZoomController::FromWebContents(raw_contents);
-  EXPECT_TRUE(zoom_controller->SetZoomLevel(zoom_controller->
-                                            GetDefaultZoomLevel()));
+  EXPECT_TRUE(
+      zoom_controller->SetZoomLevel(zoom_controller->GetDefaultZoomLevel()));
 
   CommandUpdater* command_updater = browser()->command_controller();
 
@@ -275,15 +275,15 @@ class BrowserBookmarkBarTest : public BrowserWithTestWindowTest {
 
  protected:
   BookmarkBar::State window_bookmark_bar_state() const {
-    return static_cast<BookmarkBarStateTestBrowserWindow*>(
-        browser()->window())->bookmark_bar_state();
+    return static_cast<BookmarkBarStateTestBrowserWindow*>(browser()->window())
+        ->bookmark_bar_state();
   }
 
   // BrowserWithTestWindowTest:
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
-    static_cast<BookmarkBarStateTestBrowserWindow*>(
-        browser()->window())->set_browser(browser());
+    static_cast<BookmarkBarStateTestBrowserWindow*>(browser()->window())
+        ->set_browser(browser());
   }
 
   BrowserWindow* CreateBrowserWindow() override {
@@ -294,8 +294,7 @@ class BrowserBookmarkBarTest : public BrowserWithTestWindowTest {
   class BookmarkBarStateTestBrowserWindow : public TestBrowserWindow {
    public:
     BookmarkBarStateTestBrowserWindow()
-        : browser_(NULL),
-          bookmark_bar_state_(BookmarkBar::HIDDEN) {}
+        : browser_(NULL), bookmark_bar_state_(BookmarkBar::HIDDEN) {}
     ~BookmarkBarStateTestBrowserWindow() override {}
 
     void set_browser(Browser* browser) { browser_ = browser; }
