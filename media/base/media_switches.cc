@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "build/build_config.h"
+#include "ui/base/mpris/buildflags/buildflags.h"
 
 namespace switches {
 
@@ -335,7 +336,8 @@ const base::Feature kHardwareSecureDecryption{
 // Enables handling of hardware media keys for controlling media.
 const base::Feature kHardwareMediaKeyHandling{
   "HardwareMediaKeyHandling",
-#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_MACOSX) || \
+    BUILDFLAG(USE_MPRIS)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT

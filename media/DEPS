@@ -19,6 +19,7 @@ include_rules = [
   "+third_party/libyuv",
   "+third_party/opus",
   "+third_party/skia",
+  "+ui/base/mpris/buildflags",
   "+ui/display",
   "+ui/events",
   "+ui/gfx",
