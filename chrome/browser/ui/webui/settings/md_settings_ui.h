@@ -7,10 +7,14 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui_controller.h"
 
+class Profile;
+
 namespace content {
+class WebUIDataSource;
 class WebUIMessageHandler;
 }
 
@@ -28,6 +32,13 @@ class MdSettingsUI : public content::WebUIController,
 
   explicit MdSettingsUI(content::WebUI* web_ui);
   ~MdSettingsUI() override;
+
+#if defined(OS_CHROMEOS)
+  // Initializes the WebUI message handlers for OS-specific settings.
+  static void InitOSWebUIHandlers(Profile* profile,
+                                  content::WebUI* web_ui,
+                                  content::WebUIDataSource* html_source);
+#endif  // defined(OS_CHROMEOS)
 
   // content::WebContentsObserver:
   void DidStartNavigation(
