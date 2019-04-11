@@ -203,8 +203,9 @@ class BrowserToPageConnector {
 
     std::string encoded;
     base::Base64Encode(message, &encoded);
-    std::string eval_code = "window." + binding_name_ + ".onmessage(atob(\"";
-    std::string eval_suffix = "\"))";
+    std::string eval_code =
+        "try { window." + binding_name_ + ".onmessage(atob(\"";
+    std::string eval_suffix = "\")); } catch(e) { console.error(e); }";
     eval_code.reserve(eval_code.size() + encoded.size() + eval_suffix.size());
     eval_code.append(encoded);
     eval_code.append(eval_suffix);
