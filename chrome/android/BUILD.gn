@@ -2046,7 +2046,7 @@ if (is_official_build) {
   }
 }
 
-template("monochrome_public_bundle_tmpl") {
+template("monochrome_or_trichrome_public_bundle_tmpl") {
   _base_module_target_name = "${invoker.target_name}__base_bundle_module"
   _is_trichrome =
       defined(invoker.use_trichrome_library) && invoker.use_trichrome_library
@@ -2059,15 +2059,25 @@ template("monochrome_public_bundle_tmpl") {
   }
 
   if (_is_trichrome) {
-    _version_code = trichrome_version_code
-  } else if (defined(invoker.is_64_bit_browser) && invoker.is_64_bit_browser) {
-    if (invoker.build_apk_secondary_abi && invoker.include_32_bit_webview) {
-      _version_code = monochrome_64_32_version_code
+    if (defined(invoker.is_64_bit_browser) && invoker.is_64_bit_browser) {
+      if (invoker.build_apk_secondary_abi && invoker.include_32_bit_webview) {
+        _version_code = trichrome_64_32_version_code
+      } else {
+        _version_code = trichrome_64_version_code
+      }
     } else {
-      _version_code = monochrome_64_version_code
+      _version_code = trichrome_version_code
     }
   } else {
-    _version_code = monochrome_version_code
+    if (defined(invoker.is_64_bit_browser) && invoker.is_64_bit_browser) {
+      if (invoker.build_apk_secondary_abi && invoker.include_32_bit_webview) {
+        _version_code = monochrome_64_32_version_code
+      } else {
+        _version_code = monochrome_64_version_code
+      }
+    } else {
+      _version_code = monochrome_version_code
+    }
   }
   _version_name = chrome_version_name
 
@@ -2175,7 +2185,7 @@ template("monochrome_public_bundle_tmpl") {
   }
 }
 
-monochrome_public_bundle_tmpl("monochrome_public_bundle") {
+monochrome_or_trichrome_public_bundle_tmpl("monochrome_public_bundle") {
   bundle_suffix = ""
 }
 
@@ -2189,8 +2199,13 @@ if (is_official_build) {
   }
 }
 
+monochrome_or_trichrome_public_bundle_tmpl("trichrome_chrome_bundle") {
+  bundle_suffix = ""
+  use_trichrome_library = true
+}
+
 if (android_64bit_target_cpu) {
-  monochrome_public_bundle_tmpl("monochrome_64_public_bundle") {
+  monochrome_or_trichrome_public_bundle_tmpl("monochrome_64_public_bundle") {
     bundle_suffix = "64"
     is_64_bit_browser = true
     if (build_apk_secondary_abi) {
@@ -2198,18 +2213,31 @@ if (android_64bit_target_cpu) {
     }
   }
 
-  monochrome_public_bundle_tmpl("monochrome_64_32_public_bundle") {
+  monochrome_or_trichrome_public_bundle_tmpl("monochrome_64_32_public_bundle") {
     bundle_suffix = "6432"
     is_64_bit_browser = true
     if (build_apk_secondary_abi) {
       include_32_bit_webview = true
     }
   }
-}
 
-monochrome_public_bundle_tmpl("trichrome_chrome_bundle") {
-  bundle_suffix = ""
-  use_trichrome_library = true
+  monochrome_or_trichrome_public_bundle_tmpl("trichrome_64_chrome_bundle") {
+    bundle_suffix = "64"
+    is_64_bit_browser = true
+    use_trichrome_library = true
+    if (build_apk_secondary_abi) {
+      include_32_bit_webview = false
+    }
+  }
+
+  monochrome_or_trichrome_public_bundle_tmpl("trichrome_64_32_chrome_bundle") {
+    bundle_suffix = "6432"
+    is_64_bit_browser = true
+    use_trichrome_library = true
+    if (build_apk_secondary_abi) {
+      include_32_bit_webview = true
+    }
+  }
 }
 
 generate_jni("chrome_jni_headers") {
