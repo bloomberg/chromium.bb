@@ -403,11 +403,11 @@ void Text::RecalcTextStyle(const StyleRecalcChange change) {
       // The computed style or the need for an anonymous inline wrapper for a
       // display:contents text child changed.
       SetNeedsReattachLayoutTree();
-      return;
+    } else {
+      layout_text->SetStyle(std::move(new_style));
+      if (NeedsStyleRecalc())
+        layout_text->SetText(DataImpl());
     }
-    layout_text->SetStyle(std::move(new_style));
-    if (NeedsStyleRecalc())
-      layout_text->SetText(DataImpl());
   } else if (new_style && (NeedsStyleRecalc() || change.ReattachLayoutTree() ||
                            NeedsWhitespaceLayoutObject(*new_style))) {
     SetNeedsReattachLayoutTree();
