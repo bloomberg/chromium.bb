@@ -20,8 +20,13 @@ class LabelFormatter {
  public:
   LabelFormatter(const std::string& app_locale,
                  ServerFieldType focused_field_type,
+                 uint32_t groups,
                  const std::vector<ServerFieldType>& field_types);
   virtual ~LabelFormatter();
+
+  // Returns the bitmask indicating which FieldTypeGroups are represented in
+  // this formatter's associated form.
+  uint32_t groups() const { return groups_; }
 
   // Returns a collection of labels formed by extracting useful disambiguating
   // information from a collection of |profiles|.
@@ -68,6 +73,10 @@ class LabelFormatter {
 
   // The type of field on which the user is focused, e.g. NAME_FIRST.
   ServerFieldType focused_field_type_;
+
+  // The bitmask indicating which FieldTypeGroups are represented in this
+  // formatter's associated form.
+  uint32_t groups_;
 
   // A collection of field types that can be used to make labels. It includes
   // only types related to names, addresses, email addresses, and phone

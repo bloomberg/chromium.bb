@@ -11,8 +11,9 @@ namespace autofill {
 AddressFormLabelFormatter::AddressFormLabelFormatter(
     const std::string& app_locale,
     ServerFieldType focused_field_type,
+    uint32_t groups,
     const std::vector<ServerFieldType>& field_types)
-    : LabelFormatter(app_locale, focused_field_type, field_types),
+    : LabelFormatter(app_locale, focused_field_type, groups, field_types),
       form_has_street_address_(HasStreetAddress(field_types_for_labels())) {}
 
 AddressFormLabelFormatter::~AddressFormLabelFormatter() {}

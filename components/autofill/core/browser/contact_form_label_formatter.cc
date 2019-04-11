@@ -13,8 +13,7 @@ ContactFormLabelFormatter::ContactFormLabelFormatter(
     ServerFieldType focused_field_type,
     uint32_t groups,
     const std::vector<ServerFieldType>& field_types)
-    : LabelFormatter(app_locale, focused_field_type, field_types),
-      groups_(groups) {}
+    : LabelFormatter(app_locale, focused_field_type, groups, field_types) {}
 
 ContactFormLabelFormatter::~ContactFormLabelFormatter() {}
 
@@ -42,14 +41,14 @@ base::string16 ContactFormLabelFormatter::GetLabelForProfile(
 
 base::string16 ContactFormLabelFormatter::MaybeGetEmail(
     const AutofillProfile& profile) const {
-  return ContainsEmail(groups_) ? GetLabelEmail(profile, app_locale())
-                                : base::string16();
+  return ContainsEmail(groups()) ? GetLabelEmail(profile, app_locale())
+                                 : base::string16();
 }
 
 base::string16 ContactFormLabelFormatter::MaybeGetPhone(
     const AutofillProfile& profile) const {
-  return ContainsPhone(groups_) ? GetLabelPhone(profile, app_locale())
-                                : base::string16();
+  return ContainsPhone(groups()) ? GetLabelPhone(profile, app_locale())
+                                 : base::string16();
 }
 
 }  // namespace autofill
