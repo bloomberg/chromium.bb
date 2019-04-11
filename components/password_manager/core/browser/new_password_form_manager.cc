@@ -421,7 +421,9 @@ void NewPasswordFormManager::PresaveGeneratedPassword(
 }
 
 void NewPasswordFormManager::PasswordNoLongerGenerated() {
-  DCHECK(HasGeneratedPassword());
+  if (!HasGeneratedPassword())
+    return;
+
   form_saver_->RemovePresavedPassword();
   generated_password_.clear();
   votes_uploader_.set_has_generated_password(false);
