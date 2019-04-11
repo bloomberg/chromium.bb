@@ -12,7 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import org.chromium.base.Promise;
+import org.chromium.base.Callback;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
@@ -26,8 +26,7 @@ class AssistantOnboardingCoordinator {
     /**
      * Shows the onboarding screen and returns whether we should proceed.
      */
-    static Promise<Boolean> show(Context context, ViewGroup root) {
-        Promise<Boolean> promise = new Promise<>();
+    static View show(Context context, ViewGroup root, Callback<Boolean> callback) {
         View initView = LayoutInflater.from(context)
                                 .inflate(R.layout.autofill_assistant_onboarding, root)
                                 .findViewById(R.id.assistant_onboarding);
@@ -50,18 +49,19 @@ class AssistantOnboardingCoordinator {
         initView.setFocusable(true);
 
         initView.findViewById(R.id.button_init_ok)
-                .setOnClickListener(unusedView -> onClicked(true, root, initView, promise));
+                .setOnClickListener(unusedView -> onClicked(true, root, initView, callback));
         initView.findViewById(R.id.button_init_not_ok)
-                .setOnClickListener(unusedView -> onClicked(false, root, initView, promise));
+                .setOnClickListener(unusedView -> onClicked(false, root, initView, callback));
         initView.announceForAccessibility(
                 context.getString(R.string.autofill_assistant_first_run_accessibility));
-        return promise;
+
+        return initView;
     }
 
     private static void onClicked(
-            boolean accept, ViewGroup root, View initView, Promise<Boolean> promise) {
+            boolean accept, ViewGroup root, View initView, Callback<Boolean> callback) {
         AutofillAssistantPreferencesUtil.setInitialPreferences(accept);
         root.removeView(initView);
-        promise.fulfill(accept);
+        callback.onResult(accept);
     }
 }

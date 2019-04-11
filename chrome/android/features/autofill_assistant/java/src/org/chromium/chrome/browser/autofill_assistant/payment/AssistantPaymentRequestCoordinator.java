@@ -10,6 +10,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.util.ArrayMap;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.ScrollView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
@@ -81,7 +82,7 @@ public class AssistantPaymentRequestCoordinator implements AssistantPaymentReque
                                           model.get(AssistantPaymentRequestModel.DELEGATE)));
     }
 
-    public View getView() {
+    public ScrollView getView() {
         return mPaymentRequestUI.getView();
     }
 

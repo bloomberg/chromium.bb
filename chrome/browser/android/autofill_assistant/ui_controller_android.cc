@@ -173,14 +173,12 @@ void UiControllerAndroid::SetupForState() {
       SetOverlayState(OverlayState::FULL);
       AllowShowingSoftKeyboard(false);
       SetSpinPoodle(true);
-      SetAllowSwipingSheet(true);
       return;
 
     case AutofillAssistantState::RUNNING:
       SetOverlayState(OverlayState::FULL);
       AllowShowingSoftKeyboard(false);
       SetSpinPoodle(true);
-      SetAllowSwipingSheet(true);
       return;
 
     case AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT:
@@ -197,7 +195,6 @@ void UiControllerAndroid::SetupForState() {
       AllowShowingSoftKeyboard(true);
       SetSpinPoodle(false);
 
-      SetAllowSwipingSheet(ui_delegate_->GetPaymentRequestOptions() == nullptr);
       // user interaction is needed.
       ExpandBottomSheet();
       return;
@@ -206,14 +203,12 @@ void UiControllerAndroid::SetupForState() {
       SetOverlayState(OverlayState::FULL);
       AllowShowingSoftKeyboard(true);
       SetSpinPoodle(true);
-      SetAllowSwipingSheet(true);
       return;
 
     case AutofillAssistantState::STOPPED:
       SetOverlayState(OverlayState::HIDDEN);
       AllowShowingSoftKeyboard(true);
       SetSpinPoodle(false);
-      SetAllowSwipingSheet(true);
 
       // make sure user sees the error message.
       ExpandBottomSheet();
@@ -259,11 +254,6 @@ void UiControllerAndroid::ExpandBottomSheet() {
 void UiControllerAndroid::SetSpinPoodle(bool enabled) {
   Java_AssistantHeaderModel_setSpinPoodle(AttachCurrentThread(),
                                           GetHeaderModel(), enabled);
-}
-
-void UiControllerAndroid::SetAllowSwipingSheet(bool allow) {
-  Java_AssistantModel_setAllowSwipingSheet(AttachCurrentThread(), GetModel(),
-                                           allow);
 }
 
 void UiControllerAndroid::OnFeedbackButtonClicked() {

@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -45,6 +46,9 @@ import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
+import org.chromium.chrome.browser.snackbar.BottomContainer;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -98,12 +102,26 @@ public class AutofillAssistantUiTest {
                 InstrumentationRegistry.getTargetContext(), mTestPage);
     }
 
-    private View findViewByIdInMainCoordinator(int id) {
-        return getActivity().findViewById(R.id.coordinator).findViewById(id);
-    }
-
     private CustomTabActivity getActivity() {
         return mCustomTabActivityTestRule.getActivity();
+    }
+
+    // Copied from {@link ChromeActivity#initializeBottomSheet}.
+    protected BottomSheetController initializeBottomSheet() {
+        CustomTabActivity activity = getActivity();
+        ViewGroup coordinator = activity.findViewById(org.chromium.chrome.R.id.coordinator);
+        LayoutInflater.from(activity).inflate(
+                org.chromium.chrome.R.layout.bottom_sheet, coordinator);
+        BottomSheet bottomSheet = coordinator.findViewById(org.chromium.chrome.R.id.bottom_sheet);
+        bottomSheet.init(coordinator, activity);
+
+        ((BottomContainer) activity.findViewById(org.chromium.chrome.R.id.bottom_container))
+                .setBottomSheet(bottomSheet);
+
+        return new BottomSheetController(activity, activity.getActivityTabProvider(),
+                activity.getScrim(), bottomSheet,
+                activity.getCompositorViewHolder().getLayoutManager().getOverlayPanelManager(),
+                /* suppressSheetForContextualSearch= */ false);
     }
 
     // TODO(crbug.com/806868): Add more UI details test and check, like payment request UI,
@@ -114,21 +132,24 @@ public class AutofillAssistantUiTest {
         InOrder inOrder = inOrder(mRunnableMock);
 
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(createMinimalCustomTabIntent());
+        BottomSheetController bottomSheetController =
+                ThreadUtils.runOnUiThreadBlocking(this::initializeBottomSheet);
         AssistantCoordinator assistantCoordinator = ThreadUtils.runOnUiThreadBlocking(
-                () -> new AssistantCoordinator(getActivity(), mCoordinatorDelegateMock));
+                ()
+                        -> new AssistantCoordinator(
+                                getActivity(), mCoordinatorDelegateMock, bottomSheetController));
 
-        // Bottom sheet is shown when creating the AssistantCoordinator.
-        View bottomSheet = findViewByIdInMainCoordinator(R.id.autofill_assistant);
-        Assert.assertTrue(bottomSheet.isShown());
+        // Bottom sheet is shown in the BottomSheet when creating the AssistantCoordinator.
+        ViewGroup bottomSheetContent =
+                bottomSheetController.getBottomSheet().findViewById(R.id.autofill_assistant);
+        Assert.assertNotNull(bottomSheetContent);
 
-        // Disable bottom sheet container animations. This is a workaround for http://crbug/943483.
-        ViewGroup bottomSheetContainer =
-                bottomSheet.findViewById(R.id.autofill_assistant_bottombar_container);
-        TestThreadUtils.runOnUiThreadBlocking(() -> bottomSheetContainer.setLayoutTransition(null));
+        // Disable bottom sheet content animations. This is a workaround for http://crbug/943483.
+        TestThreadUtils.runOnUiThreadBlocking(() -> bottomSheetContent.setLayoutTransition(null));
 
         // Show onboarding.
         ThreadUtils.runOnUiThreadBlocking(() -> assistantCoordinator.showOnboarding(mRunnableMock));
-        View onboardingView = bottomSheet.findViewById(R.id.assistant_onboarding);
+        View onboardingView = bottomSheetContent.findViewById(R.id.assistant_onboarding);
         Assert.assertNotNull(onboardingView);
         View initOkButton = onboardingView.findViewById(R.id.button_init_ok);
         Assert.assertNotNull(initOkButton);
@@ -141,7 +162,7 @@ public class AutofillAssistantUiTest {
                 ()
                         -> assistantCoordinator.getModel().getHeaderModel().set(
                                 AssistantHeaderModel.STATUS_MESSAGE, testStatusMessage));
-        TextView statusMessageView = bottomSheet.findViewById(R.id.status_message);
+        TextView statusMessageView = bottomSheetContent.findViewById(R.id.status_message);
         Assert.assertEquals(statusMessageView.getText(), testStatusMessage);
 
         // Show scrim.
@@ -179,24 +200,24 @@ public class AutofillAssistantUiTest {
                                         false, /* highlightLine2 = */ false,
                                         /* highlightLine3 = */ false,
                                         /* animatePlaceholders= */ false)));
-        TextView detailsTitle = bottomSheet.findViewById(R.id.details_title);
-        TextView detailsLine1 = bottomSheet.findViewById(R.id.details_line1);
-        TextView detailsLine2 = bottomSheet.findViewById(R.id.details_line2);
-        TextView detailsLine3 = bottomSheet.findViewById(R.id.details_line3);
+        TextView detailsTitle = bottomSheetContent.findViewById(R.id.details_title);
+        TextView detailsLine1 = bottomSheetContent.findViewById(R.id.details_line1);
+        TextView detailsLine2 = bottomSheetContent.findViewById(R.id.details_line2);
+        TextView detailsLine3 = bottomSheetContent.findViewById(R.id.details_line3);
         Assert.assertEquals(detailsTitle.getText(), movieTitle);
         Assert.assertTrue(detailsLine1.getText().toString().contains(descriptionLine1));
         Assert.assertTrue(detailsLine2.getText().toString().contains(descriptionLine2));
         Assert.assertTrue(detailsLine3.getText().toString().contains(descriptionLine3));
 
         // Progress bar must be shown.
-        Assert.assertTrue(bottomSheet.findViewById(R.id.progress_bar).isShown());
+        Assert.assertTrue(bottomSheetContent.findViewById(R.id.progress_bar).isShown());
 
         // Disable progress bar.
         ThreadUtils.runOnUiThreadBlocking(
                 ()
                         -> assistantCoordinator.getModel().getHeaderModel().set(
                                 AssistantHeaderModel.PROGRESS_VISIBLE, false));
-        Assert.assertFalse(bottomSheet.findViewById(R.id.progress_bar).isShown());
+        Assert.assertFalse(bottomSheetContent.findViewById(R.id.progress_bar).isShown());
 
         // Show info box content.
         String infoBoxExplanation = "InfoBox explanation.";
@@ -206,7 +227,8 @@ public class AutofillAssistantUiTest {
                                 AssistantInfoBoxModel.INFO_BOX,
                                 new AssistantInfoBox(
                                         /* imagePath = */ "", infoBoxExplanation)));
-        TextView infoBoxExplanationView = bottomSheet.findViewById(R.id.info_box_explanation);
+        TextView infoBoxExplanationView =
+                bottomSheetContent.findViewById(R.id.info_box_explanation);
         Assert.assertEquals(infoBoxExplanationView.getText(), infoBoxExplanation);
     }
 
