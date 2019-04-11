@@ -29,12 +29,12 @@
 #include "remoting/protocol/negotiating_client_authenticator.h"
 #include "remoting/protocol/pairing_registry.h"
 #include "remoting/protocol/transport.h"
-#include "remoting/signaling/ftl_device_id_provider.h"
 #include "remoting/signaling/ftl_grpc_context.h"
 #include "remoting/signaling/ftl_services.grpc.pb.h"
 #include "remoting/signaling/ftl_signal_strategy.h"
 #include "remoting/signaling/grpc_support/grpc_async_unary_request.h"
 #include "remoting/test/cli_util.h"
+#include "remoting/test/test_device_id_provider.h"
 #include "remoting/test/test_oauth_token_getter.h"
 #include "remoting/test/test_token_storage.h"
 
@@ -197,7 +197,7 @@ void FtlSignalingPlayground::FetchSecret(
 void FtlSignalingPlayground::SetUpSignaling() {
   signal_strategy_ = std::make_unique<FtlSignalStrategy>(
       token_getter_.get(),
-      std::make_unique<FtlDeviceIdProvider>(storage_.get()));
+      std::make_unique<test::TestDeviceIdProvider>(storage_.get()));
   signal_strategy_->AddListener(this);
 
   session_manager_ =

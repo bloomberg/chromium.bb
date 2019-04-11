@@ -8,10 +8,11 @@ static_library("signaling") {
   sources = [
     "delegating_signal_strategy.cc",
     "delegating_signal_strategy.h",
-    "ftl_device_id_provider.cc",
     "ftl_device_id_provider.h",
     "ftl_grpc_context.cc",
     "ftl_grpc_context.h",
+    "ftl_host_device_id_provider.cc",
+    "ftl_host_device_id_provider.h",
     "ftl_message_reception_channel.cc",
     "ftl_message_reception_channel.h",
     "ftl_messaging_client.cc",
@@ -71,6 +72,8 @@ static_library("signaling") {
     sources -= [
       "ftl_grpc_context.cc",
       "ftl_grpc_context.h",
+      "ftl_host_device_id_provider.cc",
+      "ftl_host_device_id_provider.h",
       "ftl_message_reception_channel.cc",
       "ftl_message_reception_channel.h",
       "ftl_messaging_client.cc",

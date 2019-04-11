@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "remoting/signaling/ftl_device_id_provider.h"
+#include "remoting/test/test_device_id_provider.h"
 
 namespace base {
 class FilePath;
@@ -19,7 +19,7 @@ namespace test {
 
 // Used to store and retrieve tokens for test.  This interface is provided to
 // allow for stubbing out the storage mechanism for testing.
-class TestTokenStorage : public FtlDeviceIdProvider::TokenStorage {
+class TestTokenStorage : public TestDeviceIdProvider::TokenStorage {
  public:
   TestTokenStorage() = default;
   ~TestTokenStorage() override = default;
