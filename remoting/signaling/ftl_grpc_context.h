@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "net/base/backoff_entry.h"
 #include "remoting/signaling/ftl.pb.h"
 #include "remoting/signaling/grpc_support/grpc_channel.h"
 
@@ -22,6 +23,12 @@ namespace remoting {
 // to FTL backend.
 class FtlGrpcContext final {
  public:
+  static constexpr base::TimeDelta kBackoffInitialDelay =
+      base::TimeDelta::FromSeconds(1);
+  static constexpr base::TimeDelta kBackoffMaxDelay =
+      base::TimeDelta::FromMinutes(1);
+
+  static const net::BackoffEntry::Policy& GetBackoffPolicy();
   static std::string GetChromotingAppIdentifier();
   static ftl::Id CreateIdFromString(const std::string& ftl_id);
   static GrpcChannelSharedPtr CreateChannel();

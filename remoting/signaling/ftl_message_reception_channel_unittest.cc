@@ -19,6 +19,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "remoting/signaling/ftl.pb.h"
+#include "remoting/signaling/ftl_grpc_context.h"
 #include "remoting/signaling/grpc_support/grpc_test_util.h"
 #include "remoting/signaling/grpc_support/scoped_grpc_server_stream.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -216,9 +217,8 @@ TEST_F(FtlMessageReceptionChannelTest,
                 .Run(grpc::Status(grpc::StatusCode::UNAVAILABLE, ""));
 
             ASSERT_EQ(1, GetRetryFailureCount());
-            ASSERT_NEAR(
-                FtlMessageReceptionChannel::kBackoffInitialDelay.InSecondsF(),
-                GetTimeUntilRetry().InSecondsF(), 0.5);
+            ASSERT_NEAR(FtlGrpcContext::kBackoffInitialDelay.InSecondsF(),
+                        GetTimeUntilRetry().InSecondsF(), 0.5);
 
             // This will make the channel reopen the stream.
             scoped_task_environment_.FastForwardBy(GetTimeUntilRetry());
@@ -329,9 +329,8 @@ TEST_F(FtlMessageReceptionChannelTest, NoPongWithinTimeout_ResetsStream) {
                 FtlMessageReceptionChannel::kPongTimeout);
 
             ASSERT_EQ(1, GetRetryFailureCount());
-            ASSERT_NEAR(
-                FtlMessageReceptionChannel::kBackoffInitialDelay.InSecondsF(),
-                GetTimeUntilRetry().InSecondsF(), 0.5);
+            ASSERT_NEAR(FtlGrpcContext::kBackoffInitialDelay.InSecondsF(),
+                        GetTimeUntilRetry().InSecondsF(), 0.5);
 
             // This will make the channel reopen the stream.
             scoped_task_environment_.FastForwardBy(GetTimeUntilRetry());
@@ -430,7 +429,7 @@ TEST_F(FtlMessageReceptionChannelTest, TimeoutIncreasesToMaximum) {
             base::TimeDelta time_until_retry = GetTimeUntilRetry();
 
             base::TimeDelta max_delay_diff =
-                time_until_retry - FtlMessageReceptionChannel::kBackoffMaxDelay;
+                time_until_retry - FtlGrpcContext::kBackoffMaxDelay;
 
             // Adjust for fuzziness.
             if (max_delay_diff.magnitude() <
@@ -464,9 +463,8 @@ TEST_F(FtlMessageReceptionChannelTest,
                 .Run(grpc::Status(grpc::StatusCode::UNAUTHENTICATED, ""));
 
             ASSERT_EQ(1, GetRetryFailureCount());
-            ASSERT_NEAR(
-                FtlMessageReceptionChannel::kBackoffInitialDelay.InSecondsF(),
-                GetTimeUntilRetry().InSecondsF(), 0.5);
+            ASSERT_NEAR(FtlGrpcContext::kBackoffInitialDelay.InSecondsF(),
+                        GetTimeUntilRetry().InSecondsF(), 0.5);
           },
           &old_stream))
       .WillOnce(StartStream(
