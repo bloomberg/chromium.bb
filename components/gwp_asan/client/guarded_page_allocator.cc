@@ -176,19 +176,17 @@ size_t GuardedPageAllocator::GetRequestedSize(const void* ptr) const {
   const uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
   AllocatorState::SlotIdx slot = state_.AddrToSlot(state_.GetPageAddr(addr));
   AllocatorState::MetadataIdx metadata_idx = slot_to_metadata_idx_[slot];
+#if !defined(OS_MACOSX)
   CHECK_LT(metadata_idx, state_.num_metadata);
-  if (addr != metadata_[metadata_idx].alloc_ptr) {
-    // TODO(https://crbug.com/946736): Temporary code to help debug a macOS
-    // crash that happens when malloc_size() is called with what appears to be
-    // an invalid allocation address.
-    static crash_reporter::CrashKeyString<64> gpa_crash_key("crbug-946736");
-    gpa_crash_key.Set(
-        base::StringPrintf("%zx %zx", addr, metadata_[metadata_idx].alloc_ptr));
-    uintptr_t nearest_guard_page =
-        state_.GetPageAddr(state_.GetNearestValidPage(addr)) - 1;
-    *reinterpret_cast<char*>(nearest_guard_page) = 0;
-    CHECK(false);
-  }
+  CHECK_EQ(addr, metadata_[metadata_idx].alloc_ptr);
+#else
+  // macOS core libraries call malloc_size() inside an allocation. The macOS
+  // malloc_size() returns 0 when the pointer is not recognized.
+  // https://crbug.com/946736
+  if (metadata_idx == AllocatorState::kInvalidMetadataIdx ||
+      addr != metadata_[metadata_idx].alloc_ptr)
+    return 0;
+#endif
   return metadata_[metadata_idx].alloc_size;
 }
 

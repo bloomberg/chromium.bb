@@ -13,6 +13,7 @@
 #include "base/process/process_metrics.h"
 #include "base/test/gtest_util.h"
 #include "base/threading/simple_thread.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gwp_asan {
@@ -88,6 +89,16 @@ TEST_F(GuardedPageAllocatorTest, PointerIsMine) {
   int stack_var;
   EXPECT_FALSE(gpa_.PointerIsMine(&stack_var));
   EXPECT_FALSE(gpa_.PointerIsMine(malloc_ptr.get()));
+}
+
+TEST_F(GuardedPageAllocatorTest, GetRequestedSize) {
+  void* buf = gpa_.Allocate(100);
+  EXPECT_EQ(gpa_.GetRequestedSize(buf), 100U);
+#if !defined(OS_MACOSX)
+  EXPECT_DEATH({ gpa_.GetRequestedSize((char*)buf + 1); }, "");
+#else
+  EXPECT_EQ(gpa_.GetRequestedSize((char*)buf + 1), 0U);
+#endif
 }
 
 TEST_F(GuardedPageAllocatorTest, LeftAlignedAllocation) {
