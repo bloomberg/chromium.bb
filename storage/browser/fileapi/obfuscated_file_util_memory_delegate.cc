@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/numerics/safe_conversions.h"
+#include "base/numerics/checked_math.h"
 #include "build/build_config.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -399,6 +399,29 @@ bool ObfuscatedFileUtilMemoryDelegate::CopyOrMoveFileInternal(
   entry->file_content = src_dp.entry->file_content;
 
   return true;
+}
+
+size_t ObfuscatedFileUtilMemoryDelegate::ComputeDirectorySize(
+    const base::FilePath& path) {
+  base::Optional<DecomposedPath> dp = ParsePath(path);
+  if (!dp || !dp->entry || dp->entry->type != Entry::kDirectory)
+    return 0;
+
+  base::CheckedNumeric<size_t> running_sum = 0;
+  std::vector<Entry*> directories;
+  directories.push_back(dp->entry);
+
+  while (!directories.empty()) {
+    Entry* current = directories.back();
+    directories.pop_back();
+    for (auto& child : current->directory_content) {
+      if (child.second.type == Entry::kDirectory)
+        directories.push_back(&child.second);
+      else
+        running_sum += child.second.file_content.size();
+    }
+  }
+  return running_sum.ValueOrDefault(0);
 }
 
 int ObfuscatedFileUtilMemoryDelegate::ReadFile(const base::FilePath& path,

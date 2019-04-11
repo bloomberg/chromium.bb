@@ -653,4 +653,31 @@ TEST_F(ObfuscatedFileUtilMemoryDelegateTest, PreserveLastModified_Move) {
   EXPECT_EQ(file_info1.last_modified, file_info2.last_modified);
 }
 
+TEST_F(ObfuscatedFileUtilMemoryDelegateTest, ComputeDirectorySize) {
+  base::FilePath file_name0 = Path("test_file0");
+  base::FilePath dir_name1 = Path("dir1");
+  base::FilePath file_name1 = dir_name1.AppendASCII("test_file1");
+  base::FilePath dir_name2 = dir_name1.AppendASCII("dir2");
+  base::FilePath file_name2 = dir_name2.AppendASCII("test_file2");
+  char content[] = "01234567890123456789";
+
+  ASSERT_EQ(base::File::FILE_OK,
+            file_util()->CreateDirectory(dir_name2, false /* exclusive */,
+                                         true /* recursive */));
+
+  ASSERT_EQ(base::File::FILE_OK,
+            file_util()->CreateFileForTesting(
+                file_name0, base::span<const char>(content, 10)));
+  ASSERT_EQ(base::File::FILE_OK,
+            file_util()->CreateFileForTesting(
+                file_name1, base::span<const char>(content, 15)));
+  ASSERT_EQ(base::File::FILE_OK,
+            file_util()->CreateFileForTesting(
+                file_name2, base::span<const char>(content, 20)));
+
+  ASSERT_EQ(20u, file_util()->ComputeDirectorySize(dir_name2));
+  ASSERT_EQ(35u, file_util()->ComputeDirectorySize(dir_name1));
+  ASSERT_EQ(45u, file_util()->ComputeDirectorySize(Path()));
+}
+
 }  // namespace storage
