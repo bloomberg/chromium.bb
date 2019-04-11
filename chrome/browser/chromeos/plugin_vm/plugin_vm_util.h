@@ -7,6 +7,10 @@
 
 #include <string>
 
+namespace aura {
+class Window;
+}  // namespace aura
+
 class Profile;
 
 namespace plugin_vm {
@@ -28,8 +32,8 @@ bool IsPluginVmEnabled(Profile* profile);
 
 void ShowPluginVmLauncherView(Profile* profile);
 
-// Checks if an exo window's app id is for plugin vm.
-bool IsPluginVmExoApplicationId(const std::string& app_id);
+// Checks if an window is for plugin vm.
+bool IsPluginVmWindow(const aura::Window* window);
 
 // Retrieves the license key to be used for PluginVm. If
 // none is set this will return an empty string.

@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/arc/tracing/arc_tracing_event.h"
 #include "chrome/browser/chromeos/arc/tracing/arc_tracing_event_matcher.h"
 #include "chrome/browser/chromeos/arc/tracing/arc_tracing_model.h"
+#include "components/arc/arc_util.h"
 
 namespace arc {
 
@@ -351,9 +352,8 @@ void ProcessChromeEvents(const ArcTracingModel& common_model,
         LOG(ERROR) << "Failed to get app id from event: " << event->ToString();
         continue;
       }
-      int task_id = -1;
-      if (sscanf(app_id.c_str(), "org.chromium.arc.%d", &task_id) != 1 ||
-          task_id < 0) {
+      int task_id = GetTaskIdFromWindowAppId(app_id);
+      if (task_id == kNoTaskId) {
         LOG(ERROR) << "Failed to parse app id from event: "
                    << event->ToString();
         continue;

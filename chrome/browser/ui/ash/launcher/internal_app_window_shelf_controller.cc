@@ -102,11 +102,8 @@ void InternalAppWindowShelfController::OnWindowVisibilityChanging(
       ash::ShelfID::Deserialize(window->GetProperty(ash::kShelfIDKey));
 
   if (shelf_id.IsNull()) {
-    const std::string* window_app_id = exo::GetShellApplicationId(window);
-    if (!window_app_id ||
-        !plugin_vm::IsPluginVmExoApplicationId(*window_app_id)) {
+    if (!plugin_vm::IsPluginVmWindow(window))
       return;
-    }
     shelf_id = ash::ShelfID(plugin_vm::kPluginVmAppId);
     window->SetProperty(ash::kShelfIDKey,
                         new std::string(shelf_id.Serialize()));

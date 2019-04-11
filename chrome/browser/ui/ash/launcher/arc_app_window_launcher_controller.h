@@ -39,9 +39,6 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
   explicit ArcAppWindowLauncherController(ChromeLauncherController* owner);
   ~ArcAppWindowLauncherController() override;
 
-  // Returns ARC task id for the window.
-  static int GetWindowTaskId(aura::Window* window);
-
   // AppWindowLauncherController:
   void ActiveUserChanged(const std::string& user_email) override;
   void AdditionalUserAddedToSession(Profile* profile) override;

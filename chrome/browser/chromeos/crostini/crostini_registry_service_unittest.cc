@@ -357,10 +357,6 @@ TEST_F(CrostiniRegistryServiceTest, GetCrostiniAppIdNoStartupID) {
   window_app_id = "fancy.app";
   EXPECT_EQ(service()->GetCrostiniShelfAppId(&window_app_id, nullptr),
             "crostini:fancy.app");
-
-  window_app_id = "org.chromium.arc.h";
-  EXPECT_EQ(service()->GetCrostiniShelfAppId(&window_app_id, nullptr),
-            std::string());
 }
 
 TEST_F(CrostiniRegistryServiceTest, GetCrostiniAppIdStartupWMClass) {
