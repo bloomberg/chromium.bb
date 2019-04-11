@@ -417,17 +417,19 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
 
         mConnection.showSignInToastIfNecessary(mSession, getIntent());
 
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ASSISTANT)
-                && AutofillAssistantFacade.isConfigured(getInitialIntent().getExtras())) {
-            AutofillAssistantFacade.start(this);
-        }
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && useSeparateTask()) {
             mTaskDescriptionHelper = new ActivityTabTaskDescriptionHelper(this,
                     ApiCompatibilityUtils.getColor(getResources(), R.color.default_primary_color));
         }
 
         super.finishNativeInitialization();
+
+        // We start the Autofill Assistant after the call to super.finishNativeInitialization() as
+        // this will initialize the BottomSheet that is used to embed the Autofill Assistant bottom
+        // bar.
+        if (isAutofillAssistantEnabled()) {
+            AutofillAssistantFacade.start(this);
+        }
     }
 
     @Override
@@ -919,5 +921,15 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         }
 
         return component;
+    }
+
+    @Override
+    protected boolean shouldInitializeBottomSheet() {
+        return isAutofillAssistantEnabled();
+    }
+
+    private boolean isAutofillAssistantEnabled() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ASSISTANT)
+                && AutofillAssistantFacade.isConfigured(getInitialIntent().getExtras());
     }
 }

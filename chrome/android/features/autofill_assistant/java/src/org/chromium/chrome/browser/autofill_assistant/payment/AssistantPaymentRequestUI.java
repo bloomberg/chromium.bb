@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import org.chromium.chrome.autofill_assistant.R;
@@ -164,7 +165,7 @@ public class AssistantPaymentRequestUI
     /**
      * Gets the root view of AssistantPaymentRequestUI.
      */
-    public View getView() {
+    public ScrollView getView() {
         return mRequestViewContainer;
     }
 

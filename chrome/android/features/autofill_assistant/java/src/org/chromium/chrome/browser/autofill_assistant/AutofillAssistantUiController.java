@@ -21,11 +21,14 @@ import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Bridge to native side autofill_assistant::UiControllerAndroid. It allows native side to control
@@ -37,6 +40,7 @@ import java.util.List;
 // TODO(crbug.com/806868): This class should be removed once all logic is in native side and the
 // model is directly modified by the native AssistantMediator.
 class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
+    private static Set<ChromeActivity> sActiveChromeActivities;
     private long mNativeUiController;
 
     private final ChromeActivity mActivity;
@@ -54,25 +58,49 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     @Nullable
     private static ChromeActivity findAppropriateActivity(WebContents webContents) {
         ChromeActivity activity = ChromeActivity.fromWebContents(webContents);
-        if (activity != null && AssistantCoordinator.isActive(activity)) {
+        if (activity != null && isActive(activity)) {
             return null;
         }
 
         return activity;
     }
 
+    /**
+     * Returns {@code true} if an AA UI is active on the given activity.
+     *
+     * <p>Used to avoid creating duplicate coordinators views.
+     *
+     * <p>TODO(crbug.com/806868): Refactor to have AssistantCoordinator owned by the activity, so
+     * it's easy to guarantee that there will be at most one per activity.
+     */
+    private static boolean isActive(ChromeActivity activity) {
+        if (sActiveChromeActivities == null) {
+            return false;
+        }
+
+        return sActiveChromeActivities.contains(activity);
+    }
+
     @CalledByNative
     private static AutofillAssistantUiController create(
             ChromeActivity activity, boolean allowTabSwitching, long nativeUiController) {
         assert activity != null;
-        return new AutofillAssistantUiController(activity, allowTabSwitching, nativeUiController);
+        assert activity.getBottomSheetController() != null;
+
+        if (sActiveChromeActivities == null) {
+            sActiveChromeActivities = new HashSet<>();
+        }
+        sActiveChromeActivities.add(activity);
+
+        return new AutofillAssistantUiController(activity, activity.getBottomSheetController(),
+                allowTabSwitching, nativeUiController);
     }
 
-    private AutofillAssistantUiController(
-            ChromeActivity activity, boolean allowTabSwitching, long nativeUiController) {
+    private AutofillAssistantUiController(ChromeActivity activity, BottomSheetController controller,
+            boolean allowTabSwitching, long nativeUiController) {
         mNativeUiController = nativeUiController;
         mActivity = activity;
-        mCoordinator = new AssistantCoordinator(activity, this);
+        mCoordinator = new AssistantCoordinator(activity, this, controller);
         mActivityTabObserver =
                 new ActivityTabProvider.ActivityTabTabObserver(activity.getActivityTabProvider()) {
                     @Override
@@ -154,6 +182,7 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
         mNativeUiController = 0;
         mActivityTabObserver.destroy();
         mCoordinator.destroy();
+        sActiveChromeActivities.remove(mActivity);
     }
 
     /**
@@ -174,7 +203,7 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
 
     @CalledByNative
     private void expandBottomSheet() {
-        mCoordinator.getBottomBarCoordinator().expand();
+        mCoordinator.getBottomBarCoordinator().showAndExpand();
     }
 
     @CalledByNative

@@ -12,6 +12,7 @@
     android:orientation="vertical">
 
     <org.chromium.chrome.browser.widget.FadingEdgeScrollView
+        android:id="@+id/onboarding_scroll_view"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:layout_width="match_parent">

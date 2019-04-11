@@ -143,7 +143,6 @@ class UiControllerAndroid : public UiController {
   void AllowShowingSoftKeyboard(bool enabled);
   void ExpandBottomSheet();
   void SetSpinPoodle(bool enabled);
-  void SetAllowSwipingSheet(bool allow);
   std::string GetDebugContext();
   void DestroySelf();
   void Shutdown(Metrics::DropOutReason reason);

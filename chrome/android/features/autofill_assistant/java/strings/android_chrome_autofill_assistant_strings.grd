@@ -136,9 +136,6 @@
       <message name="IDS_AUTOFILL_ASSISTANT_3RD_PARTY_PRIVACY_NOTICE" desc="Privacy notice telling users that autofill assistant will send personal data to a third party’s website.">
         Chrome will send personal data you selected to <ph name="BEGIN_BOLD">&lt;b&gt;</ph><ph name="DOMAIN">%1$s<ex>google.com</ex></ph><ph name="END_BOLD">&lt;/b&gt;</ph>
       </message>
-      <message name="IDS_AUTOFILL_ASSISTANT_AVAILABLE_ACCESSIBILITY" desc="Accessibility description of Autofill Assistant is available.">
-        Google Assistant in Chrome is available near bottom of the screen
-      </message>
       <message name="IDS_AUTOFILL_ASSISTANT_FIRST_RUN_ACCESSIBILITY" desc="Accessibility description of Autofill Assistant first run screen is shown.">
         Google Assistant in Chrome first run screen is shown
       </message>
@@ -155,6 +152,18 @@
       </message>
       <message name="IDS_AUTOFILL_ASSISTANT_VIEW_ORIGINAL_IMAGE_CANCEL" desc="Text on the button to dismiss view image dialog.">
         Cancel
+      </message>
+      <message name="IDS_AUTOFILL_ASSISTANT_SHEET_CONTENT_DESCRIPTION" desc="Content description for the Autofill Assistant sheet.">
+        Google Assistant in Chrome.
+      </message>
+      <message name="IDS_AUTOFILL_ASSISTANT_SHEET_HALF_HEIGHT" desc="Text announced when the Autofill Assistant sheet is opened at half height.">
+        Google Assistant in Chrome opened at half height.
+      </message>
+      <message name="IDS_AUTOFILL_ASSISTANT_SHEET_FULL_HEIGHT" desc="Text announced when the Autofill Assistant sheet is opened at full height.">
+        Google Assistant in Chrome opened at full height.
+      </message>
+      <message name="IDS_AUTOFILL_ASSISTANT_SHEET_CLOSED" desc="Text announced when the Autofill Assistant sheet is closed.">
+        Google Assistant in Chrome closed.
       </message>
     </messages>
   </release>
