@@ -182,10 +182,13 @@ File* DOMFileSystemBase::CreateFile(const FileMetadata& metadata,
   // types (which could be platform-specific ones), there's a chance that the
   // files are on remote filesystem.  If the port has returned metadata just
   // pass it to File constructor (so we may cache the metadata).
+  // If |metadata.platform_path|, filesystem will decide about the actual
+  // storage location based on the url.
   // FIXME: We should use the snapshot metadata for all files.
   // https://www.w3.org/Bugs/Public/show_bug.cgi?id=17746
-  if (type == mojom::blink::FileSystemType::kTemporary ||
-      type == mojom::blink::FileSystemType::kPersistent)
+  if (!metadata.platform_path.IsEmpty() &&
+      (type == mojom::blink::FileSystemType::kTemporary ||
+       type == mojom::blink::FileSystemType::kPersistent))
     return File::CreateForFileSystemFile(metadata.platform_path, name);
 
   const File::UserVisibility user_visibility =

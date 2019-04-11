@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/thread_test_helper.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -22,6 +23,7 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "storage/browser/fileapi/file_system_features.h"
 #include "storage/browser/quota/quota_manager.h"
 
 using storage::QuotaManager;
@@ -30,11 +32,16 @@ namespace content {
 
 // This browser test is aimed towards exercising the File System API bindings
 // and the actual implementation that lives in the browser side.
-class FileSystemBrowserTest : public ContentBrowserTest {
+class FileSystemBrowserTest : public ContentBrowserTest,
+                              public testing::WithParamInterface<bool> {
  public:
-  FileSystemBrowserTest() {}
+  FileSystemBrowserTest() {
+    feature_list_.InitAndEnableFeature(
+        storage::features::kEnableFilesystemInIncognito);
+  }
 
-  void SimpleTest(const GURL& test_url, bool incognito = false) {
+  void SimpleTest(const GURL& test_url) {
+    const bool incognito = GetParam();
     // The test page will perform tests on FileAPI, then navigate to either
     // a #pass or #fail ref.
     Shell* the_browser = incognito ? CreateOffTheRecordBrowser() : shell();
@@ -52,7 +59,12 @@ class FileSystemBrowserTest : public ContentBrowserTest {
       FAIL() << "Failed: " << js_result;
     }
   }
+
+ protected:
+  base::test::ScopedFeatureList feature_list_;
 };
+
+INSTANTIATE_TEST_SUITE_P(, FileSystemBrowserTest, ::testing::Bool());
 
 class FileSystemBrowserTestWithLowQuota : public FileSystemBrowserTest {
  public:
@@ -81,15 +93,21 @@ class FileSystemBrowserTestWithLowQuota : public FileSystemBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(FileSystemBrowserTest, RequestTest) {
+// TODO(https://crbug.com/93417): Expand the test after updating quota
+// managenent for in-memory implementation.
+INSTANTIATE_TEST_SUITE_P(,
+                         FileSystemBrowserTestWithLowQuota,
+                         ::testing::Values(false));
+
+IN_PROC_BROWSER_TEST_P(FileSystemBrowserTest, RequestTest) {
   SimpleTest(GetTestUrl("fileapi", "request_test.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(FileSystemBrowserTest, CreateTest) {
+IN_PROC_BROWSER_TEST_P(FileSystemBrowserTest, CreateTest) {
   SimpleTest(GetTestUrl("fileapi", "create_test.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(FileSystemBrowserTestWithLowQuota, QuotaTest) {
+IN_PROC_BROWSER_TEST_P(FileSystemBrowserTestWithLowQuota, QuotaTest) {
   SimpleTest(GetTestUrl("fileapi", "quota_test.html"));
 }
 
