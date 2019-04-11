@@ -161,8 +161,7 @@ TEST_F(BrowserCommandControllerTest, IncognitoCommands) {
   testprofile->SetGuestSession(true);
   chrome::BrowserCommandController ::
       UpdateSharedCommandsForIncognitoAvailability(
-          browser()->command_controller(),
-          testprofile);
+          browser()->command_controller(), testprofile);
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_OPTIONS));
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_IMPORT_SETTINGS));
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_SHOW_SIGNIN));
@@ -172,8 +171,7 @@ TEST_F(BrowserCommandControllerTest, IncognitoCommands) {
                                       IncognitoModePrefs::FORCED);
   chrome::BrowserCommandController ::
       UpdateSharedCommandsForIncognitoAvailability(
-          browser()->command_controller(),
-          testprofile);
+          browser()->command_controller(), testprofile);
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_OPTIONS));
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_IMPORT_SETTINGS));
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_SHOW_SIGNIN));

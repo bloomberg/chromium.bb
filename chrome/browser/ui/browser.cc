@@ -223,6 +223,7 @@
 #if defined(OS_WIN)
 #include <shellapi.h>
 #include <windows.h>
+
 #include "chrome/browser/ui/view_ids.h"
 #include "components/autofill/core/browser/autofill_ie_toolbar_import_win.h"
 #include "ui/base/win/shell.h"
@@ -370,9 +371,7 @@ Browser::CreateParams Browser::CreateParams::CreateForDevTools(
 class Browser::InterstitialObserver : public content::WebContentsObserver {
  public:
   InterstitialObserver(Browser* browser, content::WebContents* web_contents)
-      : WebContentsObserver(web_contents),
-        browser_(browser) {
-  }
+      : WebContentsObserver(web_contents), browser_(browser) {}
 
   void DidAttachInterstitialPage() override {
     browser_->UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
@@ -446,10 +445,9 @@ Browser::Browser(const CreateParams& params)
   extension_registry_observer_.Add(
       extensions::ExtensionRegistry::Get(profile_));
 #if !defined(OS_ANDROID)
-  registrar_.Add(
-      this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-      content::Source<ThemeService>(
-          ThemeServiceFactory::GetForProfile(profile_)));
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
+                 content::Source<ThemeService>(
+                     ThemeServiceFactory::GetForProfile(profile_)));
 #endif
   registrar_.Add(this, chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
                  content::NotificationService::AllSources());
@@ -699,9 +697,10 @@ base::string16 Browser::GetWindowTitleFromWebContents(
 
   // Include the app name in window titles for tabbed browser windows when
   // requested with |include_app_name|.
-  return (!is_app() && include_app_name) ?
-      l10n_util::GetStringFUTF16(IDS_BROWSER_WINDOW_TITLE_FORMAT, title):
-      title;
+  return (!is_app() && include_app_name)
+             ? l10n_util::GetStringFUTF16(IDS_BROWSER_WINDOW_TITLE_FORMAT,
+                                          title)
+             : title;
 }
 
 // static
@@ -830,7 +829,7 @@ Browser::DownloadClosePreventionType Browser::OkToCloseWithInProgressDownloads(
   int total_download_count =
       DownloadCoreService::NonMaliciousDownloadCountAllProfiles();
   if (total_download_count == 0)
-    return DOWNLOAD_CLOSE_OK;   // No downloads; can definitely close.
+    return DOWNLOAD_CLOSE_OK;  // No downloads; can definitely close.
 
   // Figure out how many windows are open total, and associated with this
   // profile, that are relevant for the ok-to-close decision.
@@ -925,14 +924,9 @@ void Browser::OpenFile() {
   ui::SelectFileDialog::FileTypeInfo file_types;
   file_types.allowed_paths =
       ui::SelectFileDialog::FileTypeInfo::ANY_PATH_OR_URL;
-  select_file_dialog_->SelectFile(ui::SelectFileDialog::SELECT_OPEN_FILE,
-                                  base::string16(),
-                                  directory,
-                                  &file_types,
-                                  0,
-                                  base::FilePath::StringType(),
-                                  parent_window,
-                                  NULL);
+  select_file_dialog_->SelectFile(
+      ui::SelectFileDialog::SELECT_OPEN_FILE, base::string16(), directory,
+      &file_types, 0, base::FilePath::StringType(), parent_window, NULL);
 }
 
 void Browser::UpdateDownloadShelfVisibility(bool visible) {
@@ -1381,9 +1375,9 @@ void Browser::NavigationStateChanged(WebContents* source,
   // navigation, so we don't have to worry about flickering. We do, however,
   // need to update the command state early on load to always present usable
   // actions in the face of slow-to-commit pages.
-  if (changed_flags & (content::INVALIDATE_TYPE_URL |
-                       content::INVALIDATE_TYPE_LOAD |
-                       content::INVALIDATE_TYPE_TAB))
+  if (changed_flags &
+      (content::INVALIDATE_TYPE_URL | content::INVALIDATE_TYPE_LOAD |
+       content::INVALIDATE_TYPE_TAB))
     command_controller_->TabStateChanged();
 
   if (web_app_controller_)
@@ -1479,8 +1473,7 @@ void Browser::ContentsZoomChange(bool zoom_in) {
   chrome::ExecuteCommand(this, zoom_in ? IDC_ZOOM_PLUS : IDC_ZOOM_MINUS);
 }
 
-bool Browser::TakeFocus(content::WebContents* source,
-                        bool reverse) {
+bool Browser::TakeFocus(content::WebContents* source, bool reverse) {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_FOCUS_RETURNED_TO_BROWSER,
       content::Source<Browser>(this),
@@ -1491,8 +1484,8 @@ bool Browser::TakeFocus(content::WebContents* source,
 void Browser::BeforeUnloadFired(WebContents* web_contents,
                                 bool proceed,
                                 bool* proceed_to_fire_unload) {
-  if (is_devtools() && DevToolsWindow::HandleBeforeUnload(web_contents,
-        proceed, proceed_to_fire_unload))
+  if (is_devtools() && DevToolsWindow::HandleBeforeUnload(
+                           web_contents, proceed, proceed_to_fire_unload))
     return;
 
   *proceed_to_fire_unload =
@@ -1706,8 +1699,8 @@ void Browser::RegisterProtocolHandler(WebContents* web_contents,
       PermissionRequestManager::FromWebContents(web_contents);
   if (permission_request_manager) {
     permission_request_manager->AddRequest(
-        new RegisterProtocolHandlerPermissionRequest(registry, handler,
-                                                     url, user_gesture));
+        new RegisterProtocolHandlerPermissionRequest(registry, handler, url,
+                                                     user_gesture));
   }
 }
 
@@ -1739,10 +1732,8 @@ void Browser::FindReply(WebContents* web_contents,
   if (!find_tab_helper)
     return;
 
-  find_tab_helper->HandleFindReply(request_id,
-                                   number_of_matches,
-                                   selection_rect,
-                                   active_match_ordinal,
+  find_tab_helper->HandleFindReply(request_id, number_of_matches,
+                                   selection_rect, active_match_ordinal,
                                    final_update);
 }
 
@@ -1929,7 +1920,8 @@ void Browser::OnZoomChanged(
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, ui::SelectFileDialog::Listener implementation:
 
-void Browser::FileSelected(const base::FilePath& path, int index,
+void Browser::FileSelected(const base::FilePath& path,
+                           int index,
                            void* params) {
   FileSelectedWithExtraInfo(ui::SelectedFileInfo(path, path), index, params);
 }
@@ -2034,8 +2026,9 @@ void Browser::OnIsPageTranslatedChanged(content::WebContents* source) {
   DCHECK(source);
   if (tab_strip_model_->GetActiveWebContents() == source) {
     window_->SetTranslateIconToggled(
-        ChromeTranslateClient::FromWebContents(
-            source)->GetLanguageState().IsPageTranslated());
+        ChromeTranslateClient::FromWebContents(source)
+            ->GetLanguageState()
+            .IsPageTranslated());
   }
 }
 
@@ -2261,12 +2254,11 @@ void Browser::OnDevToolsAvailabilityChanged() {
 
 void Browser::UpdateToolbar(bool should_restore_state) {
   TRACE_EVENT0("ui", "Browser::UpdateToolbar");
-  window_->UpdateToolbar(should_restore_state ?
-      tab_strip_model_->GetActiveWebContents() : NULL);
+  window_->UpdateToolbar(
+      should_restore_state ? tab_strip_model_->GetActiveWebContents() : NULL);
 }
 
-void Browser::ScheduleUIUpdate(WebContents* source,
-                               unsigned changed_flags) {
+void Browser::ScheduleUIUpdate(WebContents* source, unsigned changed_flags) {
   DCHECK(source);
   int index = tab_strip_model_->GetIndexOfWebContents(source);
   DCHECK_NE(TabStripModel::kNoTab, index);
@@ -2347,12 +2339,14 @@ void Browser::ProcessPendingUIUpdates() {
 
       // Updating the URL happens synchronously in ScheduleUIUpdate.
       if (flags & content::INVALIDATE_TYPE_LOAD && GetStatusBubble()) {
-        GetStatusBubble()->SetStatus(CoreTabHelper::FromWebContents(
-            tab_strip_model_->GetActiveWebContents())->GetStatusText());
+        GetStatusBubble()->SetStatus(
+            CoreTabHelper::FromWebContents(
+                tab_strip_model_->GetActiveWebContents())
+                ->GetStatusText());
       }
 
-      if (flags & (content::INVALIDATE_TYPE_TAB |
-                   content::INVALIDATE_TYPE_TITLE)) {
+      if (flags &
+          (content::INVALIDATE_TYPE_TAB | content::INVALIDATE_TYPE_TITLE)) {
         window_->UpdateTitleBar();
       }
     }
@@ -2410,10 +2404,9 @@ void Browser::SyncHistoryWithTabs(int index) {
             SessionTabHelper::FromWebContents(web_contents);
         session_service->SetTabIndexInWindow(
             session_id(), session_tab_helper->session_id(), i);
-        session_service->SetPinnedState(
-            session_id(),
-            session_tab_helper->session_id(),
-            tab_strip_model_->IsTabPinned(i));
+        session_service->SetPinnedState(session_id(),
+                                        session_tab_helper->session_id(),
+                                        tab_strip_model_->IsTabPinned(i));
       }
     }
   }
@@ -2438,9 +2431,7 @@ bool Browser::CanCloseWithInProgressDownloads() {
   // that's ok.
   cancel_download_confirmation_state_ = WAITING_FOR_RESPONSE;
   window_->ConfirmBrowserCloseWithPendingDownloads(
-      num_downloads_blocking,
-      dialog_type,
-      false,
+      num_downloads_blocking, dialog_type, false,
       base::Bind(&Browser::InProgressDownloadResponse,
                  weak_factory_.GetWeakPtr()));
 
@@ -2491,8 +2482,8 @@ void Browser::SetAsDelegate(WebContents* web_contents, bool set_delegate) {
   web_contents->SetDelegate(delegate);
 
   // ...and all the helpers.
-  WebContentsModalDialogManager::FromWebContents(web_contents)->
-      SetDelegate(delegate);
+  WebContentsModalDialogManager::FromWebContents(web_contents)
+      ->SetDelegate(delegate);
   translate::ContentTranslateDriver& content_translate_driver =
       ChromeTranslateClient::FromWebContents(web_contents)->translate_driver();
   if (delegate) {
@@ -2637,9 +2628,9 @@ void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
   }
 
   bool should_animate = reason == BOOKMARK_BAR_STATE_CHANGE_PREF_CHANGE;
-  window_->BookmarkBarStateChanged(should_animate ?
-      BookmarkBar::ANIMATE_STATE_CHANGE :
-      BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
+  window_->BookmarkBarStateChanged(
+      should_animate ? BookmarkBar::ANIMATE_STATE_CHANGE
+                     : BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
 }
 
 bool Browser::ShouldShowBookmarkBar() const {

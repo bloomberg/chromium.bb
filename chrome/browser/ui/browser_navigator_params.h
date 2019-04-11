@@ -31,7 +31,7 @@ namespace content {
 class RenderFrameHost;
 class WebContents;
 struct OpenURLParams;
-}
+}  // namespace content
 
 // Parameters that tell Navigate() what to do.
 //

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/browser_navigator_browsertest.h"
-
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "base/command_line.h"
@@ -13,6 +11,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_navigator_browsertest.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
@@ -106,17 +105,15 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTestChromeOS,
 }
 
 // Subclass that tests navigation while in the Guest session.
-class BrowserGuestSessionNavigatorTest: public BrowserNavigatorTest {
+class BrowserGuestSessionNavigatorTest : public BrowserNavigatorTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     base::CommandLine command_line_copy = *command_line;
-    command_line_copy.AppendSwitchASCII(
-        chromeos::switches::kLoginProfile, "user");
+    command_line_copy.AppendSwitchASCII(chromeos::switches::kLoginProfile,
+                                        "user");
     command_line_copy.AppendSwitch(chromeos::switches::kGuestSession);
-    chromeos::GetOffTheRecordCommandLine(GetGoogleURL(),
-                                         true,
-                                         command_line_copy,
-                                         command_line);
+    chromeos::GetOffTheRecordCommandLine(GetGoogleURL(), true,
+                                         command_line_copy, command_line);
   }
 };
 
@@ -142,9 +139,9 @@ IN_PROC_BROWSER_TEST_F(BrowserGuestSessionNavigatorTest,
   EXPECT_NE(browser(), params.browser);
   EXPECT_EQ(incognito_browser, params.browser);
   EXPECT_EQ(2, incognito_browser->tab_strip_model()->count());
-  EXPECT_EQ(GURL("chrome://chrome/settings"),
-            incognito_browser->tab_strip_model()->GetActiveWebContents()->
-                GetURL());
+  EXPECT_EQ(
+      GURL("chrome://chrome/settings"),
+      incognito_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
 // Test that in multi user environments a newly created browser gets created

@@ -18,8 +18,7 @@
 
 ChromeSelectFilePolicy::ChromeSelectFilePolicy(
     content::WebContents* source_contents)
-    : source_contents_(source_contents) {
-}
+    : source_contents_(source_contents) {}
 
 ChromeSelectFilePolicy::~ChromeSelectFilePolicy() {}
 

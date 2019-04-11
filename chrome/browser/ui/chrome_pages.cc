@@ -275,7 +275,6 @@ bool IsTrustedPopupWindowWithScheme(const Browser* browser,
   return url.SchemeIs(scheme);
 }
 
-
 void ShowSettings(Browser* browser) {
   ShowSettingsSubPage(browser, std::string());
 }
