@@ -17,7 +17,6 @@
 #include "base/optional.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/content/public/cpp/navigable_contents.h"
-#include "ui/aura/window_observer.h"
 #include "ui/views/view.h"
 
 namespace ash {
@@ -31,7 +30,6 @@ class AssistantViewDelegate;
 // Service.
 class COMPONENT_EXPORT(ASSISTANT_UI) AssistantWebView
     : public views::View,
-      public aura::WindowObserver,
       public AssistantViewDelegateObserver,
       public CaptionBarDelegate,
       public content::NavigableContentsObserver,
@@ -47,13 +45,6 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantWebView
   void ChildPreferredSizeChanged(views::View* child) override;
   void OnFocus() override;
   void AboutToRequestFocusFromTabTraversal(bool reverse) override;
-
-  // views::WindowObserver:
-  void OnWindowBoundsChanged(aura::Window* window,
-                             const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds,
-                             ui::PropertyChangeReason reason) override;
-  void OnWindowDestroying(aura::Window* window) override;
 
   // CaptionBarDelegate:
   bool OnCaptionButtonPressed(AssistantButtonId id) override;
@@ -87,12 +78,6 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantWebView
 
   mojo::Remote<content::mojom::NavigableContentsFactory> contents_factory_;
   std::unique_ptr<content::NavigableContents> contents_;
-
-  // Our contents are drawn to a layer that is not masked by our widget's layer.
-  // This causes our contents to ignore the corner radius that we have set on
-  // the widget. To address this, we apply a separate layer mask to the
-  // contents' native view layer enforcing our desired corner radius.
-  std::unique_ptr<ui::LayerOwner> contents_mask_;
 
   base::WeakPtrFactory<AssistantWebView> weak_factory_;
 
