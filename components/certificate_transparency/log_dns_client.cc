@@ -483,14 +483,14 @@ bool AuditProofQueryImpl::StartDnsTransaction(const std::string& qname) {
   }
 
   last_dns_response_ = nullptr;
+  DCHECK(url_request_context_);
   current_dns_transaction_ = factory->CreateTransaction(
       qname, net::dns_protocol::kTypeTXT,
       base::BindOnce(&AuditProofQueryImpl::OnDnsTransactionComplete,
                      weak_ptr_factory_.GetWeakPtr()),
       net_log_,
-      lookup_securely_ ? net::SecureDnsMode::SECURE : net::SecureDnsMode::OFF);
-  DCHECK(url_request_context_);
-  current_dns_transaction_->SetRequestContext(url_request_context_);
+      lookup_securely_ ? net::SecureDnsMode::SECURE : net::SecureDnsMode::OFF,
+      url_request_context_);
 
   current_dns_transaction_->Start();
   return true;

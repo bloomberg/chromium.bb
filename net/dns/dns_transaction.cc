@@ -797,7 +797,8 @@ class DnsTransactionImpl : public DnsTransaction,
                      DnsTransactionFactory::CallbackType callback,
                      const NetLogWithSource& net_log,
                      const OptRecordRdata* opt_rdata,
-                     SecureDnsMode secure_dns_mode)
+                     SecureDnsMode secure_dns_mode,
+                     URLRequestContext* url_request_context)
       : session_(session),
         hostname_(hostname),
         qtype_(qtype),
@@ -811,6 +812,7 @@ class DnsTransactionImpl : public DnsTransaction,
         had_tcp_attempt_(false),
         doh_attempt_(false),
         first_server_index_(0),
+        url_request_context_(url_request_context),
         request_priority_(DEFAULT_PRIORITY) {
     DCHECK(session_.get());
     DCHECK(!hostname_.empty());
@@ -856,10 +858,6 @@ class DnsTransactionImpl : public DnsTransaction,
           FROM_HERE,
           base::BindOnce(&DnsTransactionImpl::DoCallback, AsWeakPtr(), result));
     }
-  }
-
-  void SetRequestContext(URLRequestContext* context) override {
-    url_request_context_ = context;
   }
 
   void SetRequestPriority(RequestPriority priority) override {
@@ -1289,10 +1287,11 @@ class DnsTransactionFactoryImpl : public DnsTransactionFactory {
       uint16_t qtype,
       CallbackType callback,
       const NetLogWithSource& net_log,
-      SecureDnsMode secure_dns_mode) override {
+      SecureDnsMode secure_dns_mode,
+      URLRequestContext* url_request_context) override {
     return std::make_unique<DnsTransactionImpl>(
         session_.get(), hostname, qtype, std::move(callback), net_log,
-        opt_rdata_.get(), secure_dns_mode);
+        opt_rdata_.get(), secure_dns_mode, url_request_context);
   }
 
   void AddEDNSOption(const OptRecordRdata::Opt& opt) override {

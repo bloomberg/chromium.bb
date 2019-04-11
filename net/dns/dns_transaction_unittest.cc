@@ -303,8 +303,7 @@ class TransactionHelper {
         base::Bind(&TransactionHelper::OnTransactionComplete,
                    base::Unretained(this)),
         NetLogWithSource::Make(&net_log_, net::NetLogSourceType::NONE),
-        secure_dns_mode_);
-    transaction_->SetRequestContext(&request_context_);
+        secure_dns_mode_, &request_context_);
     transaction_->SetRequestPriority(DEFAULT_PRIORITY);
     EXPECT_EQ(hostname_, transaction_->GetHostname());
     EXPECT_EQ(qtype_, transaction_->GetType());
