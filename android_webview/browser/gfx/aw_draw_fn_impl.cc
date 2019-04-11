@@ -16,6 +16,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "gpu/ipc/common/android/android_image_reader_utils.h"
+#include "gpu/vulkan/vulkan_fence_helper.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_implementation.h"
 #include "jni/AwDrawFnImpl_jni.h"
@@ -38,6 +39,18 @@ namespace android_webview {
 
 namespace {
 GLNonOwnedCompatibilityContext* g_gl_context = nullptr;
+
+void CleanupInFlightDraw(sk_sp<GrVkSecondaryCBDrawContext> draw_context,
+                         VkSemaphore post_draw_semaphore,
+                         gpu::VulkanDeviceQueue* device_queue,
+                         bool /* context_lost */) {
+  VkDevice device = device_queue->GetVulkanDevice();
+  // We do the same thing whether or not context is lost.
+  draw_context->releaseResources();
+  draw_context.reset();
+  if (post_draw_semaphore != VK_NULL_HANDLE)
+    vkDestroySemaphore(device, post_draw_semaphore, nullptr);
+}
 }
 
 class GLNonOwnedCompatibilityContext : public gl::GLContextEGL {
@@ -177,33 +190,6 @@ sk_sp<SkColorSpace> CreateColorSpace(T* params) {
   return SkColorSpace::MakeRGB(transfer_fn, to_xyz);
 }
 
-// Create a VkFence and submit it to the queue.
-VkFence CreateAndSubmitFence(VkDevice device, VkQueue queue) {
-  VkFence fence = VK_NULL_HANDLE;
-  VkFenceCreateInfo create_info{
-      .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
-      .pNext = nullptr,
-      .flags = 0,
-  };
-
-  auto result =
-      vkCreateFence(device, &create_info, nullptr /* pAllocator */, &fence);
-  if (result != VK_SUCCESS) {
-    LOG(ERROR) << "Could not create VkFence.";
-    return VK_NULL_HANDLE;
-  }
-
-  result =
-      vkQueueSubmit(queue, 0 /* submitCount */, nullptr /* pSubmits */, fence);
-  if (result != VK_SUCCESS) {
-    LOG(ERROR) << "Could not create VkFence.";
-    vkDestroyFence(device, fence, nullptr /* pAllocator */);
-    return VK_NULL_HANDLE;
-  }
-
-  return fence;
-}
-
 }  // namespace
 
 static void JNI_AwDrawFnImpl_SetDrawFnFunctionTable(JNIEnv* env,
@@ -277,31 +263,8 @@ void AwDrawFnImpl::OnContextDestroyed() {
         false /* save_restore */);
   }
 
-  if (!in_flight_draws_.empty()) {
-    DCHECK(!is_interop_mode_);
-    // Make sure the last pending draw is finished, and then we can destroy all
-    // pending draws safely.
-    VkFence last_fence = in_flight_draws_.back().fence;
-    VkDevice device =
-        vulkan_context_provider_->GetDeviceQueue()->GetVulkanDevice();
-    VkResult result =
-        vkWaitForFences(device, 1, &last_fence, VK_TRUE,
-                        base::TimeDelta::FromSeconds(60).InNanoseconds());
-    DCHECK_EQ(result, VK_SUCCESS);
-    while (!in_flight_draws_.empty()) {
-      auto& draw = in_flight_draws_.front();
-      vkDestroyFence(device, draw.fence, nullptr /* pAllocator */);
-      draw.draw_context->releaseResources();
-      draw.draw_context = nullptr;
-      in_flight_draws_.pop();
-    }
-  }
-
-  while (!in_flight_interop_draws_.empty()) {
-    DCHECK(is_interop_mode_);
-    // Let returned InFlightInteropDraw go out of scope.
-    TakeInFlightInteropDrawForReUse();
-  }
+  // Clear the queue.
+  { auto queue = std::move(in_flight_interop_draws_); }
 
   vulkan_context_provider_.reset();
   gl_context_.reset();
@@ -366,31 +329,16 @@ void AwDrawFnImpl::PostDrawVkDirect(AwDrawFn_PostDrawVkParams* params) {
   if (!vulkan_context_provider_)
     return;
 
-  DCHECK(draw_context_);
-  VkDevice device =
-      vulkan_context_provider_->GetDeviceQueue()->GetVulkanDevice();
-  VkQueue queue = vulkan_context_provider_->GetDeviceQueue()->GetVulkanQueue();
-  VkFence fence = CreateAndSubmitFence(device, queue);
-  DCHECK(fence != VK_NULL_HANDLE);
-  in_flight_draws_.emplace(fence, std::move(draw_context_));
+  gpu::VulkanFenceHelper* fence_helper =
+      vulkan_context_provider_->GetDeviceQueue()->GetFenceHelper();
 
-  // Cleanup completed draws.
-  while (!in_flight_draws_.empty()) {
-    auto& draw = in_flight_draws_.front();
-    VkResult result = vkGetFenceStatus(device, draw.fence);
-    if (result == VK_NOT_READY)
-      break;
-    if (result == VK_SUCCESS) {
-      vkDestroyFence(device, draw.fence, nullptr /* pAllocator */);
-      draw.draw_context->releaseResources();
-      draw.draw_context = nullptr;
-      in_flight_draws_.pop();
-      continue;
-    }
-    // Handle context lost.
-    NOTREACHED();
-  }
-  DCHECK_LE(in_flight_draws_.size(), 2u);
+  fence_helper->EnqueueCleanupTaskForSubmittedWork(
+      base::BindOnce(&CleanupInFlightDraw, std::move(draw_context_),
+                     static_cast<VkSemaphore>(VK_NULL_HANDLE)));
+
+  // Process cleanup tasks and generate fences at the end of each PostDrawVk.
+  fence_helper->GenerateCleanupFence();
+  fence_helper->ProcessCleanupTasks();
 }
 
 void AwDrawFnImpl::DrawVkInterop(AwDrawFn_DrawVkParams* params) {
@@ -411,7 +359,8 @@ void AwDrawFnImpl::DrawVkInterop(AwDrawFn_DrawVkParams* params) {
   // If we've exhausted our buffers, re-use an existing one.
   // TODO(ericrk): Benchmark using more than 1 buffer.
   if (in_flight_interop_draws_.size() >= 1 /* single buffering */) {
-    pending_draw = TakeInFlightInteropDrawForReUse();
+    pending_draw = std::move(in_flight_interop_draws_.front());
+    in_flight_interop_draws_.pop();
   }
 
   // If prev buffer is wrong size, just re-allocate.
@@ -636,20 +585,22 @@ void AwDrawFnImpl::PostDrawVkInterop(AwDrawFn_PostDrawVkParams* params) {
   }
   pending_draw->sync_fd = semaphore_handle.TakeHandle();
 
-  DCHECK(VK_NULL_HANDLE == pending_draw->post_draw_fence);
+  gpu::VulkanFenceHelper* fence_helper =
+      vulkan_context_provider_->GetDeviceQueue()->GetFenceHelper();
 
-  VkDevice device =
-      vulkan_context_provider_->GetDeviceQueue()->GetVulkanDevice();
-  VkQueue queue = vulkan_context_provider_->GetDeviceQueue()->GetVulkanQueue();
-  VkFence fence = CreateAndSubmitFence(device, queue);
-  if (fence == VK_NULL_HANDLE) {
-    LOG(ERROR) << "Could not create fence.";
-    return;
-  }
-  pending_draw->post_draw_fence = fence;
+  fence_helper->EnqueueCleanupTaskForSubmittedWork(base::BindOnce(
+      &CleanupInFlightDraw, std::move(pending_draw->draw_context),
+      pending_draw->post_draw_semaphore));
+  pending_draw->post_draw_semaphore = VK_NULL_HANDLE;
 
   // Add the |pending_draw| to |in_flight_interop_draws_|.
   in_flight_interop_draws_.push(std::move(pending_draw));
+
+  // Process cleanup tasks and generate fences at the end of each PostDrawVk.
+  // TODO(ericrk): We'd ideally combine this with the flushAndSignalSemaphores
+  // above.
+  fence_helper->GenerateCleanupFence();
+  fence_helper->ProcessCleanupTasks();
 }
 
 template <typename T>
@@ -672,43 +623,6 @@ void AwDrawFnImpl::DrawInternal(T* params, SkColorSpace* color_space) {
   }
   render_thread_manager_.DrawOnRT(false /* save_restore */, &hr_params);
 }
-
-std::unique_ptr<AwDrawFnImpl::InFlightInteropDraw>
-AwDrawFnImpl::TakeInFlightInteropDrawForReUse() {
-  DCHECK(vulkan_context_provider_);
-  DCHECK(!in_flight_interop_draws_.empty());
-  std::unique_ptr<InFlightInteropDraw> draw =
-      std::move(in_flight_interop_draws_.front());
-  in_flight_interop_draws_.pop();
-
-  // Wait for our draw's |post_draw_fence| to pass.
-  DCHECK(draw->post_draw_fence != VK_NULL_HANDLE);
-  VkResult wait_result = vkWaitForFences(
-      vulkan_context_provider_->device(), 1, &draw->post_draw_fence, VK_TRUE,
-      base::TimeDelta::FromSeconds(60).InNanoseconds());
-  if (wait_result != VK_SUCCESS) {
-    LOG(ERROR) << "Fence did not pass in the expected timeframe.";
-    return nullptr;
-  }
-
-  draw->draw_context->releaseResources();
-  draw->draw_context.reset();
-  vkDestroyFence(vulkan_context_provider_->device(), draw->post_draw_fence,
-                 nullptr);
-  draw->post_draw_fence = VK_NULL_HANDLE;
-  vkDestroySemaphore(vulkan_context_provider_->device(),
-                     draw->post_draw_semaphore, nullptr);
-  draw->post_draw_semaphore = VK_NULL_HANDLE;
-  return draw;
-}
-
-AwDrawFnImpl::InFlightDraw::InFlightDraw(
-    VkFence fence,
-    sk_sp<GrVkSecondaryCBDrawContext> draw_context)
-    : fence(fence), draw_context(std::move(draw_context)) {}
-
-AwDrawFnImpl::InFlightDraw::InFlightDraw(InFlightDraw&& other) = default;
-AwDrawFnImpl::InFlightDraw::~InFlightDraw() = default;
 
 AwDrawFnImpl::InFlightInteropDraw::InFlightInteropDraw(
     AwVulkanContextProvider* vk_context_provider)
@@ -734,10 +648,6 @@ AwDrawFnImpl::InFlightInteropDraw::~InFlightInteropDraw() {
       draw_context->releaseResources();
       draw_context.reset();
     }
-    if (post_draw_fence != VK_NULL_HANDLE) {
-      vkDestroyFence(vk_context_provider->device(), post_draw_fence, nullptr);
-      post_draw_fence = VK_NULL_HANDLE;
-    }
     if (post_draw_semaphore != VK_NULL_HANDLE) {
       vkDestroySemaphore(vk_context_provider->device(), post_draw_semaphore,
                          nullptr);
@@ -746,7 +656,6 @@ AwDrawFnImpl::InFlightInteropDraw::~InFlightInteropDraw() {
   }
   DCHECK(!draw_context);
   DCHECK(!ahb_skimage);
-  DCHECK(post_draw_fence == VK_NULL_HANDLE);
   DCHECK(post_draw_semaphore == VK_NULL_HANDLE);
 
   // Clean up re-usable components that are expected to still be alive.
@@ -755,9 +664,10 @@ AwDrawFnImpl::InFlightInteropDraw::~InFlightInteropDraw() {
   if (framebuffer_id)
     glDeleteFramebuffersEXT(1, &framebuffer_id);
   if (image_info.fImage != VK_NULL_HANDLE) {
-    vkDestroyImage(vk_context_provider->device(), image_info.fImage, nullptr);
-    vkFreeMemory(vk_context_provider->device(), image_info.fAlloc.fMemory,
-                 nullptr);
+    vk_context_provider->GetDeviceQueue()
+        ->GetFenceHelper()
+        ->EnqueueImageCleanupForSubmittedWork(image_info.fImage,
+                                              image_info.fAlloc.fMemory);
   }
 }
 

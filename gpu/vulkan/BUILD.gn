@@ -37,6 +37,8 @@ if (enable_vulkan) {
       "vulkan_device_queue.cc",
       "vulkan_device_queue.h",
       "vulkan_export.h",
+      "vulkan_fence_helper.cc",
+      "vulkan_fence_helper.h",
       "vulkan_function_pointers.cc",
       "vulkan_function_pointers.h",
       "vulkan_implementation.cc",
@@ -100,13 +102,17 @@ if (enable_vulkan) {
         "tests/native_window.h",
         "tests/vulkan_test.cc",
         "tests/vulkan_tests_main.cc",
+        "vulkan_fence_helper_unittest.cc",
       ]
 
       deps = [
+        "//base:base",
         "//base/test:test_support",
+        "//components/viz/common:vulkan_context_provider",
         "//gpu/vulkan/init",
         "//testing/gmock",
         "//testing/gtest",
+        "//ui/gfx",
         "//ui/gfx:native_widget_types",
         "//ui/gfx/geometry",
       ]
