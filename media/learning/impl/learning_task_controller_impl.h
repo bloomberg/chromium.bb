@@ -21,6 +21,7 @@
 namespace media {
 namespace learning {
 
+class DistributionReporter;
 class LearningTaskControllerImplTest;
 
 // Controller for a single learning task.  Takes training examples, and forwards
@@ -55,8 +56,11 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningTaskControllerImpl
   // Add |example| to the training data, and process it.
   void AddFinishedExample(LabelledExample example);
 
-  // Called by |training_cb_| when the model is trained.
-  void OnModelTrained(std::unique_ptr<Model> model);
+  // Called by |training_cb_| when the model is trained.  |training_weight| and
+  // |training_size| are the training set's total weight and number of examples.
+  void OnModelTrained(double training_weight,
+                      int training_size,
+                      std::unique_ptr<Model> model);
 
   void SetTrainerForTesting(std::unique_ptr<TrainingAlgorithm> trainer);
 
@@ -77,6 +81,10 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningTaskControllerImpl
   // Number of examples in |training_data_| that haven't been used for training.
   // This helps us decide when to train a new model.
   int num_untrained_examples_ = 0;
+
+  // Total weight and number of examples in the most recently trained model.
+  double last_training_weight_ = 0.;
+  size_t last_training_size_ = 0u;
 
   // Training algorithm that we'll use.
   std::unique_ptr<TrainingAlgorithm> trainer_;

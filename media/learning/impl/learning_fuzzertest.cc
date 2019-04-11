@@ -47,7 +47,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   task.name = provider.ConsumeRandomLengthString(100);
   task.model = provider.ConsumeEnum<LearningTask::Model>();
   task.use_one_hot_conversion = provider.ConsumeBool();
-  task.uma_hacky_confusion_matrix = provider.ConsumeRandomLengthString(10);
+  task.uma_hacky_aggregate_confusion_matrix = provider.ConsumeBool();
+  task.uma_hacky_by_training_weight_confusion_matrix = provider.ConsumeBool();
+  task.uma_hacky_by_feature_subset_confusion_matrix = provider.ConsumeBool();
   int n_features = provider.ConsumeIntegralInRange(0, 100);
   int subset_size = provider.ConsumeIntegralInRange<uint8_t>(0, n_features);
   if (subset_size)

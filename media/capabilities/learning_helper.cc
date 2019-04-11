@@ -21,23 +21,22 @@ using learning::ObservationCompletion;
 using learning::SequenceBoundFeatureProvider;
 using learning::TargetValue;
 
+// Remember that these are used to construct UMA histogram names!  Be sure to
+// update histograms.xml if you change them!
 // Dropped frame ratio, default features, regression tree.
-const char* const kDroppedFrameRatioBaseTreeTaskName =
-    "DroppedFrameRatioBaseTreeTask";
+const char* const kDroppedFrameRatioBaseTreeTaskName = "BaseTree";
 // Dropped frame ratio, default+FeatureLibrary features, regression tree.
-const char* const kDroppedFrameRatioEnhancedTreeTaskName =
-    "DroppedFrameRatioEnhancedTreeTask";
+const char* const kDroppedFrameRatioEnhancedTreeTaskName = "EnhancedTree";
 // Dropped frame ratio, default+FeatureLibrary features, regression tree,
 // examples are unweighted.
 const char* const kDroppedFrameRatioEnhancedUnweightedTreeTaskName =
-    "DroppedFrameRatioEnhancedUnweightedTreeTask";
+    "EnhancedUnweightedTree";
 // Binary smoothness, default+FeatureLibrary features, regression tree,
 // examples are unweighted.
 const char* const kBinarySmoothnessEnhancedUnweightedTreeTaskName =
-    "BinarySmoothnessTreeTask";
+    "BinarySmoothnessTree";
 // Dropped frame ratio, default features, lookup table.
-const char* const kDroppedFrameRatioBaseTableTaskName =
-    "DroppedFrameRatioBaseTableTask";
+const char* const kDroppedFrameRatioBaseTableTaskName = "BaseTable";
 
 // Threshold for the dropped frame to total frame ratio, at which we'll decide
 // that the playback was not smooth.
@@ -69,11 +68,22 @@ LearningHelper::LearningHelper(FeatureProviderFactoryCB feature_factory) {
       LearningTask::ValueDescription(
           {"dropped_ratio", LearningTask::Ordering::kNumeric}));
 
+  // Report results hackily both in aggregate and by training data weight.
   dropped_frame_task.smoothness_threshold = kSmoothnessThreshold;
+  dropped_frame_task.uma_hacky_aggregate_confusion_matrix = true;
+  dropped_frame_task.uma_hacky_by_training_weight_confusion_matrix = true;
 
-  // Enable hacky reporting of accuracy.
-  dropped_frame_task.uma_hacky_confusion_matrix =
-      "Media.Learning.MediaCapabilities.DroppedFrameRatioTask.BaseTable";
+  // Pick a max reporting weight that represents the total number of frames.
+  // This will record in bucket [0, 4999], [5000, 9999], etc.  Unlike the
+  // existing mcap thresholds, these are not per-bucket.  That's why they're 10x
+  // higher than the per-bucket thresholds we're using there.  Mcap allows on
+  // the order of 2,500 frames in each of {resolution X fps X codec} buckets,
+  // while the reported training weight here would be total for the whole set.
+  // So, we multiply by about 20 to approximate the number of buckets to keep
+  // it about the same as the size of the cross product.
+  const double weighted_reporting_max = 49999.;
+  dropped_frame_task.max_reporting_weight = weighted_reporting_max;
+
   learning_session_->RegisterTask(dropped_frame_task,
                                   SequenceBoundFeatureProvider());
   base_table_controller_ =
@@ -82,8 +92,6 @@ LearningHelper::LearningHelper(FeatureProviderFactoryCB feature_factory) {
   // Modify the task to use ExtraTrees.
   dropped_frame_task.name = kDroppedFrameRatioBaseTreeTaskName;
   dropped_frame_task.model = LearningTask::Model::kExtraTrees;
-  dropped_frame_task.uma_hacky_confusion_matrix =
-      "Media.Learning.MediaCapabilities.DroppedFrameRatioTask.BaseTree";
   learning_session_->RegisterTask(dropped_frame_task,
                                   SequenceBoundFeatureProvider());
   base_tree_controller_ =
@@ -98,8 +106,6 @@ LearningHelper::LearningHelper(FeatureProviderFactoryCB feature_factory) {
         FeatureLibrary::NetworkType());
     dropped_frame_task.feature_descriptions.push_back(
         FeatureLibrary::BatteryPower());
-    dropped_frame_task.uma_hacky_confusion_matrix =
-        "Media.Learning.MediaCapabilities.DroppedFrameRatioTask.EnhancedTree";
     learning_session_->RegisterTask(dropped_frame_task,
                                     feature_factory.Run(dropped_frame_task));
     enhanced_tree_controller_ =
@@ -108,9 +114,8 @@ LearningHelper::LearningHelper(FeatureProviderFactoryCB feature_factory) {
     // Duplicate the task with a new name and UMA histogram.  We'll add
     // unweighted examples to it to see which one does better.
     dropped_frame_task.name = kDroppedFrameRatioEnhancedUnweightedTreeTaskName;
-    dropped_frame_task.uma_hacky_confusion_matrix =
-        "Media.Learning.MediaCapabilities.DroppedFrameRatioTask."
-        "EnhancedUnweightedTree";
+    // Adjust the reporting weight since we'll have 100 or fewer examples.
+    dropped_frame_task.max_reporting_weight = 99.;
     learning_session_->RegisterTask(dropped_frame_task,
                                     feature_factory.Run(dropped_frame_task));
     unweighted_tree_controller_ =
@@ -127,13 +132,11 @@ LearningHelper::LearningHelper(FeatureProviderFactoryCB feature_factory) {
     dropped_frame_task.target_description = {
         "is_smooth", ::media::learning::LearningTask::Ordering::kUnordered};
     */
-    dropped_frame_task.uma_hacky_confusion_matrix =
-        "Media.Learning.MediaCapabilities.DroppedFrameRatioTask."
-        "BinarySmoothnessTree";
     // We'll threshold the ratio when figuring out the binary label, so we just
     // want to pick the majority.  Note that I have no idea if this is actually
     // the best threshold, but it seems like a good place to start.
     dropped_frame_task.smoothness_threshold = 0.5;
+    dropped_frame_task.max_reporting_weight = weighted_reporting_max;
     learning_session_->RegisterTask(dropped_frame_task,
                                     feature_factory.Run(dropped_frame_task));
     binary_tree_controller_ =
