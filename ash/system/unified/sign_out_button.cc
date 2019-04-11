@@ -16,6 +16,7 @@
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/border.h"
+#include "ui/views/view_class_properties.h"
 
 namespace ash {
 
@@ -29,6 +30,11 @@ RoundedLabelButton::RoundedLabelButton(views::ButtonListener* listener,
   label()->SetFontList(views::Label::GetDefaultFontList().Derive(
       1, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
   TrayPopupUtils::ConfigureTrayPopupButton(this);
+
+  auto path = std::make_unique<SkPath>();
+  path->addRoundRect(gfx::RectToSkRect(gfx::Rect(CalculatePreferredSize())),
+                     kTrayItemSize / 2, kTrayItemSize / 2);
+  SetProperty(views::kHighlightPathKey, path.release());
 }
 
 RoundedLabelButton::~RoundedLabelButton() = default;

@@ -203,7 +203,7 @@ std::unique_ptr<views::Painter> TrayPopupUtils::CreateFocusPainter() {
 }
 
 void TrayPopupUtils::ConfigureTrayPopupButton(views::Button* button) {
-  button->SetFocusPainter(TrayPopupUtils::CreateFocusPainter());
+  button->SetInstallFocusRingOnFocus(true);
   button->SetFocusForPlatform();
 
   button->SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
