@@ -431,6 +431,9 @@ bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
       omnibox::kDocumentProvider, "DocumentScoreResult2", 700);
   int score2 = base::GetFieldTrialParamByFeatureAsInt(
       omnibox::kDocumentProvider, "DocumentScoreResult3", 300);
+  // During development/quality iteration we may wish to defeat server scores.
+  bool use_server_scores = base::GetFieldTrialParamByFeatureAsBool(
+      omnibox::kDocumentProvider, "DocumentUseServerScore", true);
 
   // Some users may be in a counterfactual study arm in which we perform all
   // necessary work but do not forward the autocomplete matches.
@@ -473,7 +476,7 @@ bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
         break;
     }
     int server_score;
-    if (result->GetInteger("score", &server_score)) {
+    if (use_server_scores && result->GetInteger("score", &server_score)) {
       if (previous_score >= 0 && server_score >= previous_score) {
         server_score = previous_score - 1;
       }
