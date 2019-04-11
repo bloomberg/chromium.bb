@@ -62,8 +62,13 @@ enum class PrefetchRequestStatus {
   // indicating that the request was forbidden specifically by an OPS request
   // filtering rule.
   kShouldSuspendForbiddenByOPS = 6,
+  // The server responded with 403 forbidden due to a filter rule though the
+  // last request was successful.
+  kShouldSuspendNewlyForbiddenByOPS = 7,
+  // A request for no URLs (i.e. server-enabled check) completed successfully.
+  kEmptyRequestSuccess = 8,
   // kMaxValue should always be the last type.
-  kMaxValue = kShouldSuspendForbiddenByOPS
+  kMaxValue = kEmptyRequestSuccess
 };
 
 // Status indicating the page rendering status in the server.

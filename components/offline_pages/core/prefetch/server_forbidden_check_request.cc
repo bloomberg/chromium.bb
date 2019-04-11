@@ -16,7 +16,8 @@ void OnGeneratePageBundleResponse(PrefService* pref_service,
                                   PrefetchRequestStatus status,
                                   const std::string& operation_name,
                                   const std::vector<RenderPageInfo>& pages) {
-  if (status == PrefetchRequestStatus::kSuccess) {
+  if (status == PrefetchRequestStatus::kSuccess ||
+      status == PrefetchRequestStatus::kEmptyRequestSuccess) {
     // Request succeeded; enable prefetching.
     prefetch_prefs::SetEnabledByServer(pref_service, true);
   }
