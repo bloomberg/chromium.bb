@@ -1562,7 +1562,13 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest,
   EXPECT_TRUE(IsTabDiscarded(browser4->tab_strip_model()->GetWebContentsAt(1)));
 }
 
-IN_PROC_BROWSER_TEST_F(TabManagerTest, UnfreezeTabOnNavigationEvent) {
+#if defined(OS_WIN)
+// Flaky: https://crbug.com/918701
+#define MAYBE_UnfreezeTabOnNavigationEvent DISABLED_UnfreezeTabOnNavigationEvent
+#else
+#define MAYBE_UnfreezeTabOnNavigationEvent UnfreezeTabOnNavigationEvent
+#endif
+IN_PROC_BROWSER_TEST_F(TabManagerTest, MAYBE_UnfreezeTabOnNavigationEvent) {
   TestTransitionFromActiveToPendingFreeze();
 
   browser()->tab_strip_model()->GetWebContentsAt(1)->GetController().Reload(
