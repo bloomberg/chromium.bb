@@ -209,7 +209,7 @@ const base::Feature kNativeFilesystemAPI{"NativeFilesystemAPI",
 
 // Allows for synchronous XHR requests during page dismissal
 const base::Feature kForbidSyncXHRInPageDismissal{
-    "ForbidSyncXHRInPageDismissal", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ForbidSyncXHRInPageDismissal", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Emergency lever that can be used to restore DeviceOrientationEvent and
 // DeviceMotionEvent functionality in non-secure browsing contexts.
