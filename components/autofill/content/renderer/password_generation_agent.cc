@@ -754,6 +754,7 @@ void PasswordGenerationAgent::DidEndTextFieldEditing(
     const blink::WebInputElement& element) {
   if (!element.IsNull() && current_generation_item_ &&
       element == current_generation_item_->generation_element_) {
+    GetPasswordGenerationDriver()->GenerationElementLostFocus();
     if (!current_generation_item_->password_is_generated_)
       AutomaticGenerationStatusChanged(false);
     current_generation_item_->generation_element_.SetShouldRevealPassword(

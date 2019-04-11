@@ -148,6 +148,9 @@ interface PasswordGenerationDriver {
 
   // Notifies the browser when automatic generation becomes available or
   // unavailable and provides data needed by the UI.
+  // TODO(crbug.com/951714): Replace this with AutomaticGenerationAvailable,
+  // since the available == false case now overlaps with
+  // GenerationElementLostFocus.
   AutomaticGenerationStatusChanged(
       bool available, PasswordGenerationUIData? password_generation_ui_data);
 
@@ -171,4 +174,8 @@ interface PasswordGenerationDriver {
   // Communicates to the browser that a scroll event happened on the frame. This
   // event affects the password generation popup position.
   FrameWasScrolled();
+
+  // Informs the browser that the generation element lost focus, so the browser
+  // might hide the generation popup.
+  GenerationElementLostFocus();
 };

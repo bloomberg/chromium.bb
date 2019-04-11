@@ -163,6 +163,11 @@ class PasswordGenerationInteractiveTest
         WebContents(), "document.getElementById('password_field').focus()"));
   }
 
+  void FocusUsernameField() {
+    ASSERT_TRUE(content::ExecuteScript(
+        WebContents(), "document.getElementById('username_field').focus();"));
+  }
+
   void SendKeyToPopup(ui::KeyboardCode key) {
     content::NativeWebKeyboardEvent event(
         blink::WebKeyboardEvent::kRawKeyDown,
@@ -283,6 +288,16 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
   FocusPasswordField();
   EXPECT_TRUE(GenerationPopupShowing());
 
+  FocusUsernameField();
+
+  // Popup is dismissed.
+  EXPECT_FALSE(GenerationPopupShowing());
+}
+IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
+                       PopupShownAndDismissedByKeyPress) {
+  FocusPasswordField();
+  EXPECT_TRUE(GenerationPopupShowing());
+
   SendKeyToPopup(ui::VKEY_ESCAPE);
 
   // Popup is dismissed.
@@ -331,8 +346,7 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
   SendKeyToPopup(ui::VKEY_RETURN);
 
   // Change username.
-  std::string focus("document.getElementById('username_field').focus();");
-  ASSERT_TRUE(content::ExecuteScript(WebContents(), focus));
+  FocusUsernameField();
   content::SimulateKeyPress(WebContents(), ui::DomKey::FromCharacter('U'),
                             ui::DomCode::US_U, ui::VKEY_U, false, false, false,
                             false);

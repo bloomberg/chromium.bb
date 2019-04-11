@@ -219,6 +219,10 @@ void PasswordGenerationPopupControllerImpl::FrameWasScrolled() {
   Hide();
 }
 
+void PasswordGenerationPopupControllerImpl::GenerationElementLostFocus() {
+  Hide();
+}
+
 void PasswordGenerationPopupControllerImpl::GeneratedPasswordRejected() {
   Hide();
 }

@@ -45,6 +45,7 @@ class FakePasswordGenerationDriver
   MOCK_METHOD1(PasswordNoLongerGenerated,
                void(const autofill::PasswordForm& password_form));
   MOCK_METHOD0(FrameWasScrolled, void());
+  MOCK_METHOD0(GenerationElementLostFocus, void());
 
  private:
   mojo::AssociatedBinding<autofill::mojom::PasswordGenerationDriver> binding_;
