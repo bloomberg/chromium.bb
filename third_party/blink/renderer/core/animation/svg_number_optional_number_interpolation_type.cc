@@ -5,8 +5,11 @@
 #include "third_party/blink/renderer/core/animation/svg_number_optional_number_interpolation_type.h"
 
 #include <memory>
+#include <utility>
+
 #include "third_party/blink/renderer/core/animation/interpolation_environment.h"
 #include "third_party/blink/renderer/core/svg/svg_number_optional_number.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -40,9 +43,11 @@ SVGPropertyBase* SVGNumberOptionalNumberInterpolationType::AppliedSVGValue(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue*) const {
   const InterpolableList& list = ToInterpolableList(interpolable_value);
-  return SVGNumberOptionalNumber::Create(
-      SVGNumber::Create(ToInterpolableNumber(list.Get(0))->Value()),
-      SVGNumber::Create(ToInterpolableNumber(list.Get(1))->Value()));
+  return MakeGarbageCollected<SVGNumberOptionalNumber>(
+      MakeGarbageCollected<SVGNumber>(
+          ToInterpolableNumber(list.Get(0))->Value()),
+      MakeGarbageCollected<SVGNumber>(
+          ToInterpolableNumber(list.Get(1))->Value()));
 }
 
 }  // namespace blink

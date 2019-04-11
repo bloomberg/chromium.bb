@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/animation/svg_interpolation_environment.h"
 #include "third_party/blink/renderer/core/svg/svg_transform.h"
 #include "third_party/blink/renderer/core/svg/svg_transform_list.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -58,7 +59,8 @@ std::unique_ptr<InterpolableValue> TranslateToInterpolableValue(
 SVGTransform* TranslateFromInterpolableValue(const InterpolableValue& value) {
   const InterpolableList& list = ToInterpolableList(value);
 
-  SVGTransform* transform = SVGTransform::Create(SVGTransformType::kTranslate);
+  auto* transform =
+      MakeGarbageCollected<SVGTransform>(SVGTransformType::kTranslate);
   transform->SetTranslate(ToInterpolableNumber(list.Get(0))->Value(),
                           ToInterpolableNumber(list.Get(1))->Value());
   return transform;
@@ -76,7 +78,8 @@ std::unique_ptr<InterpolableValue> ScaleToInterpolableValue(
 SVGTransform* ScaleFromInterpolableValue(const InterpolableValue& value) {
   const InterpolableList& list = ToInterpolableList(value);
 
-  SVGTransform* transform = SVGTransform::Create(SVGTransformType::kScale);
+  auto* transform =
+      MakeGarbageCollected<SVGTransform>(SVGTransformType::kScale);
   transform->SetScale(ToInterpolableNumber(list.Get(0))->Value(),
                       ToInterpolableNumber(list.Get(1))->Value());
   return transform;
@@ -95,7 +98,8 @@ std::unique_ptr<InterpolableValue> RotateToInterpolableValue(
 SVGTransform* RotateFromInterpolableValue(const InterpolableValue& value) {
   const InterpolableList& list = ToInterpolableList(value);
 
-  SVGTransform* transform = SVGTransform::Create(SVGTransformType::kRotate);
+  auto* transform =
+      MakeGarbageCollected<SVGTransform>(SVGTransformType::kRotate);
   transform->SetRotate(ToInterpolableNumber(list.Get(0))->Value(),
                        ToInterpolableNumber(list.Get(1))->Value(),
                        ToInterpolableNumber(list.Get(2))->Value());
@@ -108,7 +112,8 @@ std::unique_ptr<InterpolableValue> SkewXToInterpolableValue(
 }
 
 SVGTransform* SkewXFromInterpolableValue(const InterpolableValue& value) {
-  SVGTransform* transform = SVGTransform::Create(SVGTransformType::kSkewx);
+  auto* transform =
+      MakeGarbageCollected<SVGTransform>(SVGTransformType::kSkewx);
   transform->SetSkewX(ToInterpolableNumber(value).Value());
   return transform;
 }
@@ -119,7 +124,8 @@ std::unique_ptr<InterpolableValue> SkewYToInterpolableValue(
 }
 
 SVGTransform* SkewYFromInterpolableValue(const InterpolableValue& value) {
-  SVGTransform* transform = SVGTransform::Create(SVGTransformType::kSkewy);
+  auto* transform =
+      MakeGarbageCollected<SVGTransform>(SVGTransformType::kSkewy);
   transform->SetSkewY(ToInterpolableNumber(value).Value());
   return transform;
 }
@@ -279,7 +285,7 @@ InterpolationValue SVGTransformListInterpolationType::MaybeConvertSingle(
 SVGPropertyBase* SVGTransformListInterpolationType::AppliedSVGValue(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue* non_interpolable_value) const {
-  SVGTransformList* result = SVGTransformList::Create();
+  auto* result = MakeGarbageCollected<SVGTransformList>();
   const InterpolableList& list = ToInterpolableList(interpolable_value);
   const Vector<SVGTransformType>& transform_types =
       ToSVGTransformNonInterpolableValue(non_interpolable_value)

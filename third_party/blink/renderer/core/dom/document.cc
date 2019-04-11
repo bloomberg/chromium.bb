@@ -275,6 +275,7 @@
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/date_components.h"
 #include "third_party/blink/renderer/platform/geometry/length_functions.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instance_counters.h"
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/frame_resource_coordinator.h"
@@ -1673,7 +1674,7 @@ void Document::setTitle(const String& title) {
   Element* element = documentElement();
   if (IsSVGSVGElement(element)) {
     if (!title_element_) {
-      title_element_ = SVGTitleElement::Create(*this);
+      title_element_ = MakeGarbageCollected<SVGTitleElement>(*this);
       element->InsertBefore(title_element_.Get(), element->firstChild());
     }
     if (auto* svg_title = ToSVGTitleElementOrNull(title_element_))

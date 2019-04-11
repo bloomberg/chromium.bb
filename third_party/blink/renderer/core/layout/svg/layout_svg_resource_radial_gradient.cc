@@ -22,13 +22,15 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_radial_gradient.h"
 
 #include "third_party/blink/renderer/core/svg/svg_radial_gradient_element.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
 LayoutSVGResourceRadialGradient::LayoutSVGResourceRadialGradient(
     SVGRadialGradientElement* node)
     : LayoutSVGResourceGradient(node),
-      attributes_wrapper_(RadialGradientAttributesWrapper::Create()) {}
+      attributes_wrapper_(
+          MakeGarbageCollected<RadialGradientAttributesWrapper>()) {}
 
 LayoutSVGResourceRadialGradient::~LayoutSVGResourceRadialGradient() = default;
 

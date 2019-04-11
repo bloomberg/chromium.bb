@@ -4,9 +4,12 @@
 #include "third_party/blink/renderer/core/animation/svg_rect_interpolation_type.h"
 
 #include <memory>
+#include <utility>
+
 #include "third_party/blink/renderer/core/animation/interpolation_environment.h"
 #include "third_party/blink/renderer/core/animation/string_keyframe.h"
 #include "third_party/blink/renderer/core/svg/svg_rect.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
@@ -46,7 +49,7 @@ SVGPropertyBase* SVGRectInterpolationType::AppliedSVGValue(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue*) const {
   const InterpolableList& list = ToInterpolableList(interpolable_value);
-  SVGRect* result = SVGRect::Create();
+  auto* result = MakeGarbageCollected<SVGRect>();
   result->SetX(ToInterpolableNumber(list.Get(kRectX))->Value());
   result->SetY(ToInterpolableNumber(list.Get(kRectY))->Value());
   result->SetWidth(ToInterpolableNumber(list.Get(kRectWidth))->Value());

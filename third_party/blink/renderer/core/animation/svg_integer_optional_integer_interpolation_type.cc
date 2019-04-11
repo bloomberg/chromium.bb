@@ -5,8 +5,11 @@
 #include "third_party/blink/renderer/core/animation/svg_integer_optional_integer_interpolation_type.h"
 
 #include <memory>
+#include <utility>
+
 #include "third_party/blink/renderer/core/animation/interpolation_environment.h"
 #include "third_party/blink/renderer/core/svg/svg_integer_optional_integer.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -37,7 +40,7 @@ SVGIntegerOptionalIntegerInterpolationType::MaybeConvertSVGValue(
 }
 
 static SVGInteger* ToPositiveInteger(const InterpolableValue* number) {
-  return SVGInteger::Create(
+  return MakeGarbageCollected<SVGInteger>(
       clampTo<int>(roundf(ToInterpolableNumber(number)->Value()), 1));
 }
 
@@ -45,8 +48,8 @@ SVGPropertyBase* SVGIntegerOptionalIntegerInterpolationType::AppliedSVGValue(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue*) const {
   const InterpolableList& list = ToInterpolableList(interpolable_value);
-  return SVGIntegerOptionalInteger::Create(ToPositiveInteger(list.Get(0)),
-                                           ToPositiveInteger(list.Get(1)));
+  return MakeGarbageCollected<SVGIntegerOptionalInteger>(
+      ToPositiveInteger(list.Get(0)), ToPositiveInteger(list.Get(1)));
 }
 
 }  // namespace blink

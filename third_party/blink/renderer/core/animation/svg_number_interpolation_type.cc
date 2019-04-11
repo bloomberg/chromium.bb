@@ -4,10 +4,13 @@
 
 #include "third_party/blink/renderer/core/animation/svg_number_interpolation_type.h"
 
+#include <memory>
+
 #include "third_party/blink/renderer/core/animation/interpolation_environment.h"
 #include "third_party/blink/renderer/core/animation/string_keyframe.h"
 #include "third_party/blink/renderer/core/svg/properties/svg_animated_property.h"
 #include "third_party/blink/renderer/core/svg/svg_number.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -29,7 +32,8 @@ SVGPropertyBase* SVGNumberInterpolationType::AppliedSVGValue(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue*) const {
   double value = ToInterpolableNumber(interpolable_value).Value();
-  return SVGNumber::Create(is_non_negative_ && value < 0 ? 0 : value);
+  return MakeGarbageCollected<SVGNumber>(is_non_negative_ && value < 0 ? 0
+                                                                       : value);
 }
 
 }  // namespace blink

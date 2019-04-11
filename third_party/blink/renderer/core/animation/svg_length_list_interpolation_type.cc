@@ -5,10 +5,13 @@
 #include "third_party/blink/renderer/core/animation/svg_length_list_interpolation_type.h"
 
 #include <memory>
+#include <utility>
+
 #include "third_party/blink/renderer/core/animation/svg_interpolation_environment.h"
 #include "third_party/blink/renderer/core/animation/svg_length_interpolation_type.h"
 #include "third_party/blink/renderer/core/animation/underlying_length_checker.h"
 #include "third_party/blink/renderer/core/svg/svg_length_list.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -88,7 +91,7 @@ void SVGLengthListInterpolationType::Apply(
   SVGElement& element = ToSVGInterpolationEnvironment(environment).SvgElement();
   SVGLengthContext length_context(&element);
 
-  SVGLengthList* result = SVGLengthList::Create(unit_mode_);
+  auto* result = MakeGarbageCollected<SVGLengthList>(unit_mode_);
   const InterpolableList& list = ToInterpolableList(interpolable_value);
   for (wtf_size_t i = 0; i < list.length(); i++) {
     result->Append(SVGLengthInterpolationType::ResolveInterpolableSVGLength(

@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/svg/properties/svg_property_info.h"
 #include "third_party/blink/renderer/core/svg/properties/svg_property_tear_off.h"
 #include "third_party/blink/renderer/core/svg/svg_parsing_error.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 
 namespace blink {
@@ -259,16 +260,16 @@ class SVGAnimatedProperty<Property, TearOffType, void>
   // Use currentValue() from C++ code.
   virtual TearOffType* baseVal() {
     if (!base_val_tear_off_) {
-      base_val_tear_off_ =
-          TearOffType::Create(this->BaseValue(), this, kPropertyIsNotAnimVal);
+      base_val_tear_off_ = MakeGarbageCollected<TearOffType>(
+          this->BaseValue(), this, kPropertyIsNotAnimVal);
     }
     return base_val_tear_off_;
   }
 
   TearOffType* animVal() {
     if (!anim_val_tear_off_) {
-      anim_val_tear_off_ =
-          TearOffType::Create(this->CurrentValue(), this, kPropertyIsAnimVal);
+      anim_val_tear_off_ = MakeGarbageCollected<TearOffType>(
+          this->CurrentValue(), this, kPropertyIsAnimVal);
     }
     return anim_val_tear_off_;
   }

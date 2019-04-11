@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/svg/svg_uri_reference.h"
 #include "third_party/blink/renderer/core/xlink_names.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -53,6 +54,8 @@ class RepeatEvent final : public Event {
                                              Cancelable::kNo, repeat);
   }
 
+  RepeatEvent(const AtomicString& type, int repeat)
+      : RepeatEvent(type, Bubbles::kNo, Cancelable::kNo, repeat) {}
   RepeatEvent(const AtomicString& type,
               Bubbles bubbles,
               Cancelable cancelable,
@@ -1241,7 +1244,8 @@ void SVGSMILElement::DispatchPendingEvent(const AtomicString& event_type) {
   if (event_type == "repeatn") {
     unsigned repeat_event_count = repeat_event_count_list_.front();
     repeat_event_count_list_.EraseAt(0);
-    DispatchEvent(*RepeatEvent::Create(event_type, repeat_event_count));
+    DispatchEvent(
+        *MakeGarbageCollected<RepeatEvent>(event_type, repeat_event_count));
   } else {
     DispatchEvent(*Event::Create(event_type));
   }

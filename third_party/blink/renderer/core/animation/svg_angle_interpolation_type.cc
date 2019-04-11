@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/animation/interpolation_environment.h"
 #include "third_party/blink/renderer/core/animation/string_keyframe.h"
 #include "third_party/blink/renderer/core/svg/svg_angle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -28,7 +29,7 @@ SVGPropertyBase* SVGAngleInterpolationType::AppliedSVGValue(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue*) const {
   double double_value = ToInterpolableNumber(interpolable_value).Value();
-  SVGAngle* result = SVGAngle::Create();
+  auto* result = MakeGarbageCollected<SVGAngle>();
   result->NewValueSpecifiedUnits(SVGAngle::kSvgAngletypeDeg, double_value);
   return result;
 }

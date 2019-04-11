@@ -48,7 +48,7 @@ class SVGNumber : public SVGPropertyHelper<SVGNumber> {
     return MakeGarbageCollected<SVGNumber>(value);
   }
 
-  explicit SVGNumber(float);
+  explicit SVGNumber(float = 0.0f);
 
   virtual SVGNumber* Clone() const;
 

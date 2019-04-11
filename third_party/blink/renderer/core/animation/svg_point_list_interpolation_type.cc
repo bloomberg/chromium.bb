@@ -5,10 +5,13 @@
 #include "third_party/blink/renderer/core/animation/svg_point_list_interpolation_type.h"
 
 #include <memory>
+#include <utility>
+
 #include "third_party/blink/renderer/core/animation/interpolation_environment.h"
 #include "third_party/blink/renderer/core/animation/string_keyframe.h"
 #include "third_party/blink/renderer/core/animation/underlying_length_checker.h"
 #include "third_party/blink/renderer/core/svg/svg_point_list.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -77,7 +80,7 @@ void SVGPointListInterpolationType::Composite(
 SVGPropertyBase* SVGPointListInterpolationType::AppliedSVGValue(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue*) const {
-  SVGPointList* result = SVGPointList::Create();
+  auto* result = MakeGarbageCollected<SVGPointList>();
 
   const InterpolableList& list = ToInterpolableList(interpolable_value);
   DCHECK_EQ(list.length() % 2, 0U);
@@ -85,7 +88,7 @@ SVGPropertyBase* SVGPointListInterpolationType::AppliedSVGValue(
     FloatPoint point =
         FloatPoint(ToInterpolableNumber(list.Get(i))->Value(),
                    ToInterpolableNumber(list.Get(i + 1))->Value());
-    result->Append(SVGPoint::Create(point));
+    result->Append(MakeGarbageCollected<SVGPoint>(point));
   }
 
   return result;

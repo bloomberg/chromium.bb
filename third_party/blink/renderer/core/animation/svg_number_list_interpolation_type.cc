@@ -5,9 +5,12 @@
 #include "third_party/blink/renderer/core/animation/svg_number_list_interpolation_type.h"
 
 #include <memory>
+#include <utility>
+
 #include "third_party/blink/renderer/core/animation/interpolation_environment.h"
 #include "third_party/blink/renderer/core/animation/underlying_length_checker.h"
 #include "third_party/blink/renderer/core/svg/svg_number_list.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -95,11 +98,12 @@ void SVGNumberListInterpolationType::Composite(
 SVGPropertyBase* SVGNumberListInterpolationType::AppliedSVGValue(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue*) const {
-  SVGNumberList* result = SVGNumberList::Create();
+  auto* result = MakeGarbageCollected<SVGNumberList>();
   const InterpolableList& list = ToInterpolableList(interpolable_value);
-  for (wtf_size_t i = 0; i < list.length(); i++)
-    result->Append(
-        SVGNumber::Create(ToInterpolableNumber(list.Get(i))->Value()));
+  for (wtf_size_t i = 0; i < list.length(); i++) {
+    result->Append(MakeGarbageCollected<SVGNumber>(
+        ToInterpolableNumber(list.Get(i))->Value()));
+  }
   return result;
 }
 
