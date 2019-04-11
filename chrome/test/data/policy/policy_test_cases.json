@@ -3521,6 +3521,14 @@
     "pref_mappings": [{ "pref": "web_package.signed_exchange.enabled" }]
   },
 
+  "SamlInSessionPasswordChangeEnabled": {
+    "os": [],
+    "test_policy": { "SamlInSessionPasswordChangeEnabled": true },
+    "pref_mappings": [
+      { "pref": "saml.in_session_password_change_enabled"}
+    ]
+  },
+
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {
