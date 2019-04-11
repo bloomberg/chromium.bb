@@ -384,8 +384,7 @@ public class ContextualSearchBarControl {
      * @return The visibility percentage for the divider line ranging from 0.f to 1.f.
      */
     public float getDividerLineVisibilityPercentage() {
-        return mContextualSearchPanel.useGenericSheetUx() ? DIVIDER_LINE_OPACITY_GENERIC
-                                                          : mDividerLineVisibilityPercentage;
+        return mDividerLineVisibilityPercentage;
     }
 
     /**
