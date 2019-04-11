@@ -155,8 +155,18 @@ TEST_F(
       mocha.run();
     });
 
+// Disabling on chromeos due to flaky test.
+// https://crbug.com/945198
+GEN('#if defined(OS_CHROMEOS)');
+GEN('#define MAYBE_MediaRouterContainerSearchPart1 \\');
+GEN('    DISABLED_MediaRouterContainerSearchPart1');
+GEN('#else');
+GEN('#define MAYBE_MediaRouterContainerSearchPart1 \\');
+GEN('    MediaRouterContainerSearchPart1');
+GEN('#endif');
+
 TEST_F(
-    'MediaRouterElementsBrowserTest', 'MediaRouterContainerSearchPart1',
+    'MediaRouterElementsBrowserTest', 'MAYBE_MediaRouterContainerSearchPart1',
     function() {
       media_router_container_search.registerTestsPart1();
       mocha.run();
