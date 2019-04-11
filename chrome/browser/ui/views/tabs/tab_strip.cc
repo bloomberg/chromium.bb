@@ -2668,7 +2668,7 @@ bool TabStrip::NeedsTouchLayout() const {
 
   const int pinned_tab_count = GetPinnedTabCount();
   const int normal_count = tab_count() - pinned_tab_count;
-  if (normal_count <= 1 || normal_count == pinned_tab_count)
+  if (normal_count <= 1)
     return false;
 
   const int tab_overlap = TabStyle::GetTabOverlap();
