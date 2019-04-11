@@ -209,7 +209,7 @@ are declared in tools/grit/grit_rule.gni.
 
       <!-- MD Extensions specific strings -->
       <if expr="enable_extensions">
-        <part file="md_extensions_strings.grdp" />
+        <part file="extensions_strings.grdp" />
       </if>
 
       <!-- NUX Welcome onboarding experience strings -->
