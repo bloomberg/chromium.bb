@@ -200,10 +200,6 @@ class CONTENT_EXPORT AuthenticatorCommon {
   std::string relying_party_id_;
   std::unique_ptr<base::OneShotTimer> timer_;
   base::Optional<std::string> app_id_;
-  // need_account_selection_ indicates if an empty allow-list was used, thus
-  // implying that an account selection dialog needs to be displayed to the user
-  // before returning any assertions.
-  bool need_account_selection_ = false;
   // awaiting_attestation_response_ is true if the embedder has been queried
   // about an attestsation decision and the response is still pending.
   bool awaiting_attestation_response_ = false;
