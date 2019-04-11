@@ -26,10 +26,21 @@ using resource_coordinator::GetDiscardCountPenaltyTabRanker;
 using resource_coordinator::GetMRUScorerPenaltyTabRanker;
 using resource_coordinator::GetScorerTypeForTabRanker;
 
-// ReverseRank maps a positive number to the range (0.0, 1.0).
-inline float ReverseRank(const float a) {
-  DCHECK_GE(a, 0.0f);
-  return 1.0f / (1.0f + a);
+// Maps the |mru_index| to it's reverse rank in (0.0, 1.0).
+// High score means more likely to be reactivated.
+// We use inverse rank because we think that the first several |mru_index| is
+// more significant than the larger ones.
+inline float MruToScore(const float mru_index) {
+  DCHECK_GE(mru_index, 0.0f);
+  return 1.0f / (1.0f + mru_index);
+}
+
+// Maps the |discard_count| to a score in (0.0, 1.0), for which
+// High score means more likely to be reactivated.
+// We use std::exp because we think that the first several |discard_count| is
+// not as significant as the larger ones.
+inline float DiscardCountToScore(const float discard_count) {
+  return std::exp(discard_count);
 }
 
 // Loads the preprocessor config protobuf, which lists each feature, their
@@ -83,8 +94,8 @@ TabRankerResult TabScorePredictor::ScoreTab(const TabFeatures& tab,
   // The default value of discard_count_penalty_ is 0.0f, which will not change
   // the score.
   // The larger the |discard_count_penalty_| is (set from Finch), the quicker
-  // the score decreases based on the discard_count.
-  *score *= ReverseRank(tab.discard_count * discard_count_penalty_);
+  // the score increases based on the discard_count.
+  *score *= DiscardCountToScore(tab.discard_count * discard_count_penalty_);
 
   return result;
 }
@@ -142,7 +153,7 @@ TabRankerResult TabScorePredictor::ScoreTabWithMLScorer(const TabFeatures& tab,
 
 TabRankerResult TabScorePredictor::ScoreTabWithMRUScorer(const TabFeatures& tab,
                                                          float* score) {
-  *score = ReverseRank(tab.mru_index * mru_scorer_penalty_);
+  *score = MruToScore(tab.mru_index * mru_scorer_penalty_);
   return TabRankerResult::kSuccess;
 }
 
