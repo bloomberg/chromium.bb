@@ -4320,15 +4320,13 @@ String LocalFrameView::MainThreadScrollingReasonsAsText() {
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
       RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
     DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kPrePaintClean);
-    if (const auto* scroll =
-            GetLayoutView()->FirstFragment().PaintProperties()->Scroll()) {
-      reasons = scroll->GetMainThreadScrollingReasons();
-    }
+    const auto* properties = GetLayoutView()->FirstFragment().PaintProperties();
+    if (properties && properties->Scroll())
+      reasons = properties->Scroll()->GetMainThreadScrollingReasons();
   } else {
     DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kCompositingClean);
     reasons = main_thread_scrolling_reasons_;
-    if (GraphicsLayer* layer_for_scrolling =
-            LayoutViewport()->LayerForScrolling()) {
+    if (auto* layer_for_scrolling = LayoutViewport()->LayerForScrolling()) {
       if (cc::Layer* cc_layer = layer_for_scrolling->CcLayer())
         reasons = cc_layer->GetMainThreadScrollingReasons();
     }
