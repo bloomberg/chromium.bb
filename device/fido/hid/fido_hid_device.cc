@@ -156,7 +156,8 @@ FidoHidDevice::PendingTransaction::~PendingTransaction() = default;
 void FidoHidDevice::Connect(
     device::mojom::HidManager::ConnectCallback callback) {
   DCHECK(hid_manager_);
-  hid_manager_->Connect(device_info_->guid, std::move(callback));
+  hid_manager_->Connect(device_info_->guid, /*connection_client=*/nullptr,
+                        std::move(callback));
 }
 
 void FidoHidDevice::OnConnect(device::mojom::HidConnectionPtr connection) {

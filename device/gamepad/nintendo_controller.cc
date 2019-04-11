@@ -1124,7 +1124,8 @@ void NintendoController::UpdateRightGamepadState(Gamepad& pad,
 void NintendoController::Connect(mojom::HidManager::ConnectCallback callback) {
   DCHECK(!is_composite_);
   DCHECK(hid_manager_);
-  hid_manager_->Connect(device_info_->guid, std::move(callback));
+  hid_manager_->Connect(device_info_->guid, /*connection_client=*/nullptr,
+                        std::move(callback));
 }
 
 void NintendoController::OnConnect(mojom::HidConnectionPtr connection) {
