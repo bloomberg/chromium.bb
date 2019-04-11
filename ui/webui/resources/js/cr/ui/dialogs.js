@@ -18,10 +18,33 @@ cr.define('cr.ui.dialogs', function() {
     // so we can restore it when we're hidden.
     this.previousActiveElement_ = null;
 
-    this.initDom_();
-
+    // TODO: Rename these protected fields to remove the underscore, to comply
+    // with the style guide.
     /** @private{boolean} */
     this.showing_ = false;
+
+    /** @protected {?Element} */
+    this.container_ = null;
+
+    /** @protected {?Element} */
+    this.frame_ = null;
+
+    /** @protected {?Element} */
+    this.title_ = null;
+
+    /** @protected {?Element} */
+    this.text_ = null;
+
+    /** @protected {?Element} */
+    this.closeButton_ = null;
+
+    /** @protected {?Element} */
+    this.okButton_ = null;
+
+    /** @protected {?Element} */
+    this.cancelButton_ = null;
+
+    this.initDom_();
   }
 
   /**
