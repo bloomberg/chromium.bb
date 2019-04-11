@@ -140,10 +140,7 @@ bool WalletDataAndMetadataMatchAndAddressesHaveConverted(
 }
 
 void WaitForCurrentTasksToComplete(base::SequencedTaskRunner* task_runner) {
-  // We need to allow nestable tasks because AutofillWalletMetadataSizeChecker
-  // may cause this function getting called again while |loop| here is running.
-  // Without allowing nestable tasks, the outer loop will block forever.
-  base::RunLoop loop(base::RunLoop::Type::kNestableTasksAllowed);
+  base::RunLoop loop;
   task_runner->PostTask(
       FROM_HERE, base::BindOnce(&base::RunLoop::Quit, base::Unretained(&loop)));
   loop.Run();
@@ -573,6 +570,31 @@ bool AutofillWalletMetadataSizeChecker::IsExitConditionSatisfied() {
 
 std::string AutofillWalletMetadataSizeChecker::GetDebugMessage() const {
   return "Waiting for matching autofill wallet metadata sizes";
+}
+
+void AutofillWalletMetadataSizeChecker::CheckExitCondition() {
+  // Make sure we do not nest IsExitConditionSatisfied() (as it can happen that
+  // OnPersonalDataChanged() gets notified while we're inside
+  // IsExitConditionSatisfied(), waiting for the DB task that loads metadata to
+  // finish).
+  switch (state_) {
+    case IDLE:
+      do {
+        state_ = CHECKING;
+        StatusChangeChecker::CheckExitCondition();
+      } while (state_ == SHOULD_RECHECK);
+      state_ = IDLE;
+      return;
+    case CHECKING:
+      // Make sure that each
+      // AutofillWalletMetadataSizeChecker::CheckExitCondition() call is
+      // followed by a StatusChangeChecker::CheckExitCondition() call so that we
+      // do not miss any updates to the DB.
+      state_ = SHOULD_RECHECK;
+      return;
+    case SHOULD_RECHECK:
+      return;
+  }
 }
 
 void AutofillWalletMetadataSizeChecker::OnPersonalDataChanged() {
