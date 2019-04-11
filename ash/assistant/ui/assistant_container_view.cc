@@ -451,7 +451,7 @@ SkColor AssistantContainerView::GetBackgroundColor() const {
 }
 
 int AssistantContainerView::GetCornerRadius() const {
-  return GetBubbleFrameView()->bubble_border()->corner_radius();
+  return GetBubbleFrameView()->bubble_border()->GetBorderCornerRadius();
 }
 
 void AssistantContainerView::SetCornerRadius(int corner_radius) {

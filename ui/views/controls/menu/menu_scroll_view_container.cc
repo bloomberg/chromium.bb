@@ -348,7 +348,7 @@ void MenuScrollViewContainer::CreateBubbleBorder() {
     scroll_view_->GetContents()->SetBorder(CreateEmptyBorder(insets));
   }
 
-  corner_radius_ = bubble_border_->corner_radius();
+  corner_radius_ = bubble_border_->GetBorderCornerRadius();
 
   SetBorder(std::unique_ptr<Border>(bubble_border_));
   SetBackground(std::make_unique<BubbleBackground>(bubble_border_));

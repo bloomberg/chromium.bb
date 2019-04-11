@@ -199,7 +199,7 @@ class VIEWS_EXPORT BubbleBorder : public Border {
                               const gfx::Size& contents_size) const;
 
   // Returns the corner radius of the current image set.
-  int corner_radius() const { return corner_radius_; }
+  int GetBorderCornerRadius() const;
 
   // Overridden from Border:
   void Paint(const View& view, gfx::Canvas* canvas) override;
@@ -237,7 +237,7 @@ class VIEWS_EXPORT BubbleBorder : public Border {
   SkRRect GetClientRect(const View& view) const;
 
   // Paint for the NO_ASSETS shadow type. This just paints transparent pixels
-  // to make the window shape based on insets and corner_radius().
+  // to make the window shape based on insets and GetBorderCornerRadius().
   void PaintNoAssets(const View& view, gfx::Canvas* canvas);
 
   // Paint for the NO_SHADOW shadow type. This paints a simple line border.
@@ -245,7 +245,9 @@ class VIEWS_EXPORT BubbleBorder : public Border {
 
   Arrow arrow_;
   int arrow_offset_;
-  int corner_radius_ = 0;
+  // Corner radius for the bubble border. If supplied the border will use
+  // material design.
+  base::Optional<int> corner_radius_;
 
   Shadow shadow_;
   // Elevation for the MD shadow.
