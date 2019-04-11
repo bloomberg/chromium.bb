@@ -41,14 +41,11 @@ using StagingKeyChangedObserver = void (^)(BOOL stagingKeySet);
 @interface CrStagingKeyWatcher (TestingInterface)
 
 // The designated initializer. Allows a non-default NSUserDefaults to be
-// specified.
+// specified. Also allows the use of KVO to be disabled to allow the macOS 10.11
+// and earlier code path to be tested on 10.12 and later.
 - (instancetype)initWithUserDefaults:(NSUserDefaults*)defaults
-                         pollingTime:(NSTimeInterval)pollingTime;
-
-// KVO works for NSUserDefaults on 10.12 and later. This method turns off the
-// use of KVO to allow the macOS 10.11 and earlier code path to be tested on
-// 10.12 and later.
-- (void)disableKVOForTesting;
+                         pollingTime:(NSTimeInterval)pollingTime
+                disableKVOForTesting:(BOOL)disableKVOForTesting;
 
 // Returns whether the last call to -waitForStagingKeyToClear blocked or
 // returned immediately.

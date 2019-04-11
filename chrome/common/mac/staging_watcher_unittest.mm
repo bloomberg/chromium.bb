@@ -36,10 +36,10 @@ class StagingKeyWatcherTest : public testing::TestWithParam<KVOOrNot> {
 
   base::scoped_nsobject<CrStagingKeyWatcher> CreateKeyWatcher() {
     base::scoped_nsobject<CrStagingKeyWatcher> keyWatcher(
-        [[CrStagingKeyWatcher alloc] initWithUserDefaults:defaults_
-                                              pollingTime:0.5]);
-    if (GetParam() == KVOOrNot::kDontUseKVO)
-      [keyWatcher disableKVOForTesting];
+        [[CrStagingKeyWatcher alloc]
+            initWithUserDefaults:defaults_
+                     pollingTime:0.5
+            disableKVOForTesting:(GetParam() == KVOOrNot::kDontUseKVO)]);
 
     return keyWatcher;
   }
@@ -133,16 +133,20 @@ TEST_P(StagingKeyWatcherTest, CallbackOnKeySet) {
   base::scoped_nsobject<CrStagingKeyWatcher> watcher = CreateKeyWatcher();
   NSRunLoop* runloop = [NSRunLoop currentRunLoop];
 
+  __block bool observerCalled = false;
   [watcher setStagingKeyChangedObserver:^(BOOL stagingKeySet) {
+    observerCalled = true;
     CFRunLoopStop([runloop getCFRunLoop]);
   }];
 
   SetDefaultsValueInSeparateProcess();
-  while (![watcher isStagingKeySet] &&
-         [runloop runMode:NSDefaultRunLoopMode
-               beforeDate:[NSDate distantFuture]]) {
+  ASSERT_FALSE([watcher isStagingKeySet]);
+  while (!observerCalled && [runloop runMode:NSDefaultRunLoopMode
+                                  beforeDate:[NSDate distantFuture]]) {
     /* run! */
   }
+
+  EXPECT_TRUE([watcher isStagingKeySet]);
 }
 
 TEST_P(StagingKeyWatcherTest, CallbackOnKeyUnset) {
@@ -152,14 +156,18 @@ TEST_P(StagingKeyWatcherTest, CallbackOnKeyUnset) {
   base::scoped_nsobject<CrStagingKeyWatcher> watcher = CreateKeyWatcher();
   NSRunLoop* runloop = [NSRunLoop currentRunLoop];
 
+  __block bool observerCalled = false;
   [watcher setStagingKeyChangedObserver:^(BOOL stagingKeySet) {
+    observerCalled = true;
     CFRunLoopStop([runloop getCFRunLoop]);
   }];
 
   ClearDefaultsValueInSeparateProcess();
-  while ([watcher isStagingKeySet] &&
-         [runloop runMode:NSDefaultRunLoopMode
-               beforeDate:[NSDate distantFuture]]) {
+  ASSERT_TRUE([watcher isStagingKeySet]);
+  while (!observerCalled && [runloop runMode:NSDefaultRunLoopMode
+                                  beforeDate:[NSDate distantFuture]]) {
     /* run! */
   }
+
+  EXPECT_FALSE([watcher isStagingKeySet]);
 }
