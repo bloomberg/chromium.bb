@@ -15,43 +15,12 @@
 
 namespace remoting {
 
-namespace {
-
-const net::BackoffEntry::Policy kBackoffPolicy = {
-    // Number of initial errors (in sequence) to ignore before applying
-    // exponential back-off rules.
-    0,
-
-    // Initial delay for exponential back-off in ms.
-    FtlMessageReceptionChannel::kBackoffInitialDelay.InMilliseconds(),
-
-    // Factor by which the waiting time will be multiplied.
-    2,
-
-    // Fuzzing percentage. ex: 10% will spread requests randomly
-    // between 90%-100% of the calculated time.
-    0.5,
-
-    // Maximum amount of time we are willing to delay our request in ms.
-    FtlMessageReceptionChannel::kBackoffMaxDelay.InMilliseconds(),
-
-    // Time to keep an entry from being discarded even when it
-    // has no significant state, -1 to never discard.
-    -1,
-
-    // Starts with initial delay.
-    false,
-};
-
-}  // namespace
-
 constexpr base::TimeDelta FtlMessageReceptionChannel::kPongTimeout;
 constexpr base::TimeDelta FtlMessageReceptionChannel::kStreamLifetime;
-constexpr base::TimeDelta FtlMessageReceptionChannel::kBackoffInitialDelay;
-constexpr base::TimeDelta FtlMessageReceptionChannel::kBackoffMaxDelay;
 
 FtlMessageReceptionChannel::FtlMessageReceptionChannel()
-    : reconnect_retry_backoff_(&kBackoffPolicy), weak_factory_(this) {}
+    : reconnect_retry_backoff_(&FtlGrpcContext::GetBackoffPolicy()),
+      weak_factory_(this) {}
 
 FtlMessageReceptionChannel::~FtlMessageReceptionChannel() = default;
 

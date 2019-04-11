@@ -25,10 +25,6 @@ class FtlMessageReceptionChannel final : public MessageReceptionChannel {
       base::TimeDelta::FromSeconds(15);
   static constexpr base::TimeDelta kStreamLifetime =
       base::TimeDelta::FromMinutes(13);
-  static constexpr base::TimeDelta kBackoffInitialDelay =
-      base::TimeDelta::FromSeconds(1);
-  static constexpr base::TimeDelta kBackoffMaxDelay =
-      base::TimeDelta::FromMinutes(1);
 
   FtlMessageReceptionChannel();
   ~FtlMessageReceptionChannel() override;

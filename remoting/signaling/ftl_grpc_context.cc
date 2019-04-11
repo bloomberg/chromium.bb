@@ -25,7 +25,41 @@ constexpr char kFtlServerEndpoint[] = "instantmessaging-pa.googleapis.com";
 
 static base::NoDestructor<GrpcChannelSharedPtr> g_channel_for_testing;
 
+const net::BackoffEntry::Policy kBackoffPolicy = {
+    // Number of initial errors (in sequence) to ignore before applying
+    // exponential back-off rules.
+    0,
+
+    // Initial delay for exponential back-off in ms.
+    FtlGrpcContext::kBackoffInitialDelay.InMilliseconds(),
+
+    // Factor by which the waiting time will be multiplied.
+    2,
+
+    // Fuzzing percentage. ex: 10% will spread requests randomly
+    // between 90%-100% of the calculated time.
+    0.5,
+
+    // Maximum amount of time we are willing to delay our request in ms.
+    FtlGrpcContext::kBackoffMaxDelay.InMilliseconds(),
+
+    // Time to keep an entry from being discarded even when it
+    // has no significant state, -1 to never discard.
+    -1,
+
+    // Starts with initial delay.
+    false,
+};
+
 }  // namespace
+
+constexpr base::TimeDelta FtlGrpcContext::kBackoffInitialDelay;
+constexpr base::TimeDelta FtlGrpcContext::kBackoffMaxDelay;
+
+// static
+const net::BackoffEntry::Policy& FtlGrpcContext::GetBackoffPolicy() {
+  return kBackoffPolicy;
+}
 
 // static
 std::string FtlGrpcContext::GetChromotingAppIdentifier() {
