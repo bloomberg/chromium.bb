@@ -6,7 +6,6 @@
 
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/url_loading/url_loading_notifier.h"
-#import "ios/chrome/browser/url_loading/url_loading_params.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -15,17 +14,17 @@
 TestUrlLoadingService::TestUrlLoadingService(UrlLoadingNotifier* notifier)
     : UrlLoadingService(notifier) {}
 
-void TestUrlLoadingService::LoadUrlInCurrentTab(UrlLoadParams* params) {
+void TestUrlLoadingService::LoadUrlInCurrentTab(const UrlLoadParams& params) {
   last_params = params;
   load_current_tab_call_count++;
 }
 
-void TestUrlLoadingService::LoadUrlInNewTab(UrlLoadParams* params) {
+void TestUrlLoadingService::LoadUrlInNewTab(const UrlLoadParams& params) {
   last_params = params;
   load_new_tab_call_count++;
 }
 
-void TestUrlLoadingService::SwitchToTab(UrlLoadParams* params) {
+void TestUrlLoadingService::SwitchToTab(const UrlLoadParams& params) {
   last_params = params;
   switch_tab_call_count++;
 }

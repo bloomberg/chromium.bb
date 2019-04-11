@@ -365,20 +365,17 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
   // Use a referrer with a specific URL to signal that this entry should not be
   // taken into account for the Most Visited tiles.
   if (newTab) {
-    web::Referrer referrer = web::Referrer(GURL(kReadingListReferrerURL),
-                                           web::ReferrerPolicyDefault);
-    UrlLoadParams* params =
-        UrlLoadParams::InNewTab(loadURL, entryURL, referrer,
-                                /* in_incognito */ incognito,
-                                /* in_background */ NO, kLastTab);
+    UrlLoadParams params = UrlLoadParams::InNewTab(loadURL, entryURL);
+    params.in_incognito = incognito;
+    params.web_params.referrer = web::Referrer(GURL(kReadingListReferrerURL),
+                                               web::ReferrerPolicyDefault);
     UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
         ->Load(params);
   } else {
-    web::NavigationManager::WebLoadParams web_params(loadURL);
-    web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-    web_params.referrer = web::Referrer(GURL(kReadingListReferrerURL),
-                                        web::ReferrerPolicyDefault);
-    UrlLoadParams* params = UrlLoadParams::InCurrentTab(web_params);
+    UrlLoadParams params = UrlLoadParams::InCurrentTab(loadURL);
+    params.web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
+    params.web_params.referrer = web::Referrer(GURL(kReadingListReferrerURL),
+                                               web::ReferrerPolicyDefault);
     UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
         ->Load(params);
   }

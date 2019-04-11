@@ -24,36 +24,37 @@ void AppUrlLoadingService::SetDelegate(
   delegate_ = delegate;
 }
 
-void AppUrlLoadingService::LoadUrlInNewTab(UrlLoadParams* params) {
+void AppUrlLoadingService::LoadUrlInNewTab(const UrlLoadParams& params) {
   DCHECK(delegate_);
 
-  if (params->web_params.url.is_valid()) {
-    if (params->from_chrome) {
+  if (params.web_params.url.is_valid()) {
+    UrlLoadParams saved_params = params;
+
+    if (params.from_chrome) {
       [delegate_
           dismissModalDialogsWithCompletion:^{
             [delegate_ openSelectedTabInMode:ApplicationMode::NORMAL
-                                     withURL:params->web_params.url
-                                  virtualURL:params->web_params.virtual_url
+                                     withURL:saved_params.web_params.url
+                                  virtualURL:saved_params.web_params.virtual_url
                                   transition:ui::PAGE_TRANSITION_TYPED
                                   completion:nil];
           }
                              dismissOmnibox:YES];
     } else {
-      ApplicationMode mode = params->in_incognito ? ApplicationMode::INCOGNITO
-                                                  : ApplicationMode::NORMAL;
+      ApplicationMode mode = params.in_incognito ? ApplicationMode::INCOGNITO
+                                                 : ApplicationMode::NORMAL;
       [delegate_
           dismissModalDialogsWithCompletion:^{
             [delegate_ setCurrentInterfaceForMode:mode];
             UrlLoadingServiceFactory::GetForBrowserState(
                 [delegate_ currentBrowserState])
-                ->Load(params);
+                ->Load(saved_params);
           }
                              dismissOmnibox:YES];
     }
-
   } else {
     if ([delegate_ currentBrowserState] -> IsOffTheRecord() !=
-                                               params->in_incognito) {
+                                               params.in_incognito) {
       // Must take a snapshot of the tab before we switch the incognito mode
       // because the currentTab will change after the switch.
       Tab* currentTab = [delegate_ currentTabModel].currentTab;
@@ -63,8 +64,8 @@ void AppUrlLoadingService::LoadUrlInNewTab(UrlLoadParams* params) {
       }
 
       // Not for this browser state, switch and try again.
-      ApplicationMode mode = params->in_incognito ? ApplicationMode::INCOGNITO
-                                                  : ApplicationMode::NORMAL;
+      ApplicationMode mode = params.in_incognito ? ApplicationMode::INCOGNITO
+                                                 : ApplicationMode::NORMAL;
       [delegate_ expectNewForegroundTabForMode:mode];
       [delegate_ setCurrentInterfaceForMode:mode];
       LoadUrlInNewTab(params);
@@ -74,7 +75,7 @@ void AppUrlLoadingService::LoadUrlInNewTab(UrlLoadParams* params) {
     // TODO(crbug.com/907527): move the following lines to Browser level making
     // openNewTabFromOriginPoint a delegate there. openNewTabFromOriginPoint is
     // only called from here.
-    [delegate_ openNewTabFromOriginPoint:params->origin_point
-                            focusOmnibox:params->should_focus_omnibox];
+    [delegate_ openNewTabFromOriginPoint:params.origin_point
+                            focusOmnibox:params.should_focus_omnibox];
   }
 }

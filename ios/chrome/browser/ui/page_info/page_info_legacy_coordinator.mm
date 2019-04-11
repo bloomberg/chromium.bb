@@ -156,10 +156,8 @@ NSString* const kPageInfoWillHideNotification =
 }
 
 - (void)showSecurityHelpPage {
-  UrlLoadParams* params = UrlLoadParams::InNewTab(
-      GURL(kPageInfoHelpCenterURL),
-      /* in_incognito */ self.browserState->IsOffTheRecord(),
-      /* in_background */ NO, kLastTab);
+  UrlLoadParams params = UrlLoadParams::InNewTab(GURL(kPageInfoHelpCenterURL));
+  params.in_incognito = self.browserState->IsOffTheRecord();
   UrlLoadingServiceFactory::GetForBrowserState(self.browserState)->Load(params);
   [self hidePageInfo];
 }

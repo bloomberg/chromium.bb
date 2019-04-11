@@ -122,13 +122,11 @@ TEST_F(StaticHtmlViewControllerTest, LoadResourceTest) {
           chrome_browser_state_.get());
   EXPECT_EQ(0, url_loader->load_current_tab_call_count);
   EXPECT_EQ(0, url_loader->load_new_tab_call_count);
-  EXPECT_EQ(nullptr, url_loader->last_params);
 
   DryRunLoop(true);
 
   EXPECT_EQ(0, url_loader->load_current_tab_call_count);
   EXPECT_EQ(0, url_loader->load_new_tab_call_count);
-  EXPECT_EQ(nullptr, url_loader->last_params);
   ASSERT_OCMOCK_VERIFY((OCMockObject*)delegate);
 }
 
@@ -163,13 +161,11 @@ TEST_F(StaticHtmlViewControllerTest, LoadFileURLTest) {
           chrome_browser_state_.get());
   EXPECT_EQ(0, url_loader->load_current_tab_call_count);
   EXPECT_EQ(0, url_loader->load_new_tab_call_count);
-  EXPECT_EQ(nullptr, url_loader->last_params);
 
   DryRunLoop(true);
 
   EXPECT_EQ(0, url_loader->load_current_tab_call_count);
   EXPECT_EQ(0, url_loader->load_new_tab_call_count);
-  EXPECT_EQ(nullptr, url_loader->last_params);
   ASSERT_OCMOCK_VERIFY((OCMockObject*)delegate);
 }
 

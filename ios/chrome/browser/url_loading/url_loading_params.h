@@ -16,66 +16,23 @@
 struct UrlLoadParams {
  public:
   // Initializes a UrlLoadParams intended to open in current page.
-  static UrlLoadParams* InCurrentTab(
-      const web::NavigationManager::WebLoadParams& web_params,
-      WindowOpenDisposition disposition);
-  // Initializes a UrlLoadParams intended to open in current page, width
-  // disposition set to WindowOpenDisposition::CURRENT_TAB.
-  static UrlLoadParams* InCurrentTab(
+  static UrlLoadParams InCurrentTab(
       const web::NavigationManager::WebLoadParams& web_params);
-  // Initializes a UrlLoadParams intended to open in current page, width
-  // disposition set to WindowOpenDisposition::CURRENT_TAB.
-  static UrlLoadParams* InCurrentTab(const GURL& url);
+  static UrlLoadParams InCurrentTab(const GURL& url);
+  static UrlLoadParams InCurrentTab(const GURL& url, const GURL& virtual_url);
 
   // Initializes a UrlLoadParams intended to open in a new page.
-  static UrlLoadParams* InNewTab(
-      const web::NavigationManager::WebLoadParams& web_params,
-      bool in_incognito,
-      bool in_background,
-      OpenPosition append_to);
-
-  // Initializes a UrlLoadParams intended to open in a new page.
-  static UrlLoadParams* InNewTab(const GURL& url,
-                                 const GURL& virtual_url,
-                                 const web::Referrer& referrer,
-                                 bool in_incognito,
-                                 bool in_background,
-                                 OpenPosition append_to);
-
-  // Initializes a UrlLoadParams intended to open in a new page with virtual_url
-  // set to GURL::EmptyGURL().
-  static UrlLoadParams* InNewTab(const GURL& url,
-                                 const web::Referrer& referrer,
-                                 bool in_incognito,
-                                 bool in_background,
-                                 OpenPosition append_to);
-
-  // Initializes a UrlLoadParams intended to open in a new page with virtual_url
-  // set to GURL::EmptyGURL() and the default web::Referrer().
-  static UrlLoadParams* InNewTab(const GURL& url,
-                                 bool in_incognito,
-                                 bool in_background,
-                                 OpenPosition append_to);
-
-  // Initializes a UrlLoadParams intended to open a new page.
-  static UrlLoadParams* InNewEmptyTab(bool in_incognito, bool in_background);
-
-  // Initializes a UrlLoadParams intended to open a URL from browser chrome
-  // (e.g., settings). This will always open in a new foreground tab in
-  // non-incognito mode.
-  static UrlLoadParams* InNewFromChromeTab(const GURL& url);
-
-  // Initializes a UrlLoadParams with |in_incognito| and an |origin_point|.
-  static UrlLoadParams* InNewForegroundTab(bool in_incognito,
-                                           CGPoint origin_point);
-
-  // Initializes a UrlLoadParams with |in_incognito| and an |origin_point| of
-  // CGPointZero.
-  static UrlLoadParams* InNewForegroundTab(bool in_incognito);
+  static UrlLoadParams InNewTab(
+      const web::NavigationManager::WebLoadParams& web_params);
+  static UrlLoadParams InNewTab(const GURL& url);
+  static UrlLoadParams InNewTab(const GURL& url, const GURL& virtual_url);
 
   // Initializes a UrlLoadParams intended to switch to tab.
-  static UrlLoadParams* SwitchToTab(
+  static UrlLoadParams SwitchToTab(
       const web::NavigationManager::WebLoadParams& web_params);
+
+  // Set appropriate parameters for background tab mode.
+  void SetInBackground(bool in_background);
 
   // Allow copying UrlLoadParams.
   UrlLoadParams(const UrlLoadParams& other);
@@ -84,23 +41,22 @@ struct UrlLoadParams {
   // The wrapped params.
   web::NavigationManager::WebLoadParams web_params;
 
-  // The disposition of the URL being opened.
+  // The disposition of the URL being opened. Defaults to
+  // |WindowOpenDisposition::NEW_FOREGROUND_TAB|.
   WindowOpenDisposition disposition;
 
-  // Parameters for when opening in new tab:
-
-  // Whether this requests opening in incognito or not.
+  // Whether this requests opening in incognito or not. Defaults to |false|.
   bool in_incognito;
 
-  // Location where the new tab should be opened.
+  // Location where the new tab should be opened. Defaults to |kLastTab|.
   OpenPosition append_to;
 
   // Origin point of the action triggering this command, in main window
-  // coordinates.
+  // coordinates. Defaults to |CGPointZero|.
   CGPoint origin_point;
 
   // Whether or not this URL command comes from a chrome context (e.g.,
-  // settings), as opposed to a web page context.
+  // settings), as opposed to a web page context. Defaults to |false|.
   bool from_chrome;
 
   // Whether the new tab command was initiated by the user (e.g. by tapping the
@@ -110,14 +66,14 @@ struct UrlLoadParams {
   bool user_initiated;
 
   // Whether the new tab command should also trigger the omnibox to be focused.
-  // Only used when the |web_params.url| isn't valid.
+  // Only used when the |web_params.url| isn't valid. Defaults to |false|.
   bool should_focus_omnibox;
 
-  bool in_background() {
+  bool in_background() const {
     return disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB;
   }
 
- private:
+  // Public for testing only.
   UrlLoadParams();
 };
 

@@ -245,14 +245,16 @@ const int kLocationAuthorizationStatusCount = 4;
     // |loadURL|?  It doesn't seem to be causing major problems.  If we call
     // cancel before load, then any prerendered pages get destroyed before the
     // call to load.
-    web::NavigationManager::WebLoadParams params =
+    web::NavigationManager::WebLoadParams web_params =
         web_navigation_util::CreateWebLoadParams(url, transition, postContent);
     NSMutableDictionary* combinedExtraHeaders =
         [[self variationHeadersForURL:url] mutableCopy];
-    [combinedExtraHeaders addEntriesFromDictionary:params.extra_headers];
-    params.extra_headers = [combinedExtraHeaders copy];
+    [combinedExtraHeaders addEntriesFromDictionary:web_params.extra_headers];
+    web_params.extra_headers = [combinedExtraHeaders copy];
+    UrlLoadParams params = UrlLoadParams::InCurrentTab(web_params);
+    params.disposition = disposition;
     UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
-        ->Load(UrlLoadParams::InCurrentTab(params, disposition));
+        ->Load(params);
 
     if (google_util::IsGoogleSearchUrl(url)) {
       UMA_HISTOGRAM_ENUMERATION(
@@ -429,11 +431,11 @@ const int kLocationAuthorizationStatusCount = 4;
     // It is necessary to include PAGE_TRANSITION_FROM_ADDRESS_BAR in the
     // transition type is so that query-in-the-omnibox is triggered for the
     // URL.
-    web::NavigationManager::WebLoadParams params(searchURL);
-    params.transition_type = ui::PageTransitionFromInt(
+    UrlLoadParams params = UrlLoadParams::InCurrentTab(searchURL);
+    params.web_params.transition_type = ui::PageTransitionFromInt(
         ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
     UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
-        ->Load(UrlLoadParams::InCurrentTab(params));
+        ->Load(params);
   }
 }
 
