@@ -199,6 +199,20 @@ bool StandardManagementPolicyProvider::MustRemainInstalled(
   return false;
 }
 
+bool StandardManagementPolicyProvider::ShouldForceUninstall(
+    const Extension* extension,
+    base::string16* error) const {
+  if (!settings_->ShouldUninstallPolicyBlacklistedExtensions())
+    return false;
+  if (UserMayLoad(extension, error))
+    return false;
+  if (settings_->GetInstallationMode(extension) ==
+      ExtensionManagement::INSTALLATION_BLOCKED) {
+    return true;
+  }
+  return false;
+}
+
 bool StandardManagementPolicyProvider::ReturnLoadError(
     const extensions::Extension* extension,
     base::string16* error) const {

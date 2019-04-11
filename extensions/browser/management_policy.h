@@ -101,6 +101,11 @@ class ManagementPolicy {
     virtual bool MustRemainInstalled(const Extension* extension,
                                      base::string16* error) const;
 
+    // Providers should return true for extensions that should be force
+    // uninstalled.
+    virtual bool ShouldForceUninstall(const Extension* extension,
+                                      base::string16* error) const;
+
    private:
     DISALLOW_COPY_AND_ASSIGN(Provider);
   };
@@ -159,6 +164,10 @@ class ManagementPolicy {
   // function returns true.
   bool MustRemainInstalled(const Extension* extension,
                            base::string16* error) const;
+
+  // Returns true for extensions that should be force uninstalled.
+  bool ShouldForceUninstall(const Extension* extension,
+                            base::string16* error) const;
 
   // For use in testing.
   void UnregisterAllProviders();
