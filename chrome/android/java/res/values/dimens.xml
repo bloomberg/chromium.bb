@@ -497,7 +497,6 @@
          https://www.google.com/design/spec/components/dialogs.html#dialogs-simple-dialogs -->
     <dimen name="dialog_width_unit">56dp</dimen>  <!-- MD dialog widths are multiples of this. -->
     <dimen name="dialog_header_margin">14dp</dimen>
-    <dimen name="dialog_text_size">14sp</dimen>
     <dimen name="separator_height">1dp</dimen>
 
     <!-- Modern List Item dimensions -->
