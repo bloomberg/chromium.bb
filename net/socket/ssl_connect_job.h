@@ -102,6 +102,8 @@ class NET_EXPORT_PRIVATE SSLConnectJob : public ConnectJob,
                         ConnectJob* job) override;
   void GetAdditionalErrorState(ClientSocketHandle* handle) override;
   std::unique_ptr<StreamSocket> PassProxySocketOnFailure() override;
+  bool IsSSLError() const override;
+  scoped_refptr<SSLCertRequestInfo> GetCertRequestInfo() override;
 
   // Returns the timeout for the SSL handshake. This is the same for all
   // connections regardless of whether or not there is a proxy in use.

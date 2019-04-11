@@ -215,6 +215,9 @@ void ClientSocketHandle::SetAdditionalErrorState(ConnectJob* connect_job) {
     // the normal path, so need to set timing information here.
     connect_timing_ = connect_job->connect_timing();
   }
+
+  is_ssl_error_ = connect_job->IsSSLError();
+  ssl_cert_request_info_ = connect_job->GetCertRequestInfo();
 }
 
 void ClientSocketHandle::OnIOComplete(int result) {

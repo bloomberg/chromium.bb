@@ -120,6 +120,14 @@ std::unique_ptr<StreamSocket> ConnectJob::PassProxySocketOnFailure() {
   return nullptr;
 }
 
+bool ConnectJob::IsSSLError() const {
+  return false;
+}
+
+scoped_refptr<SSLCertRequestInfo> ConnectJob::GetCertRequestInfo() {
+  return nullptr;
+}
+
 void ConnectJob::SetSocket(std::unique_ptr<StreamSocket> socket) {
   if (socket)
     net_log().AddEvent(NetLogEventType::CONNECT_JOB_SET_SOCKET);

@@ -234,11 +234,12 @@ bool HttpProxyConnectJob::HasEstablishedConnection() const {
   return false;
 }
 
-void HttpProxyConnectJob::GetAdditionalErrorState(ClientSocketHandle* handle) {
-  if (ssl_cert_request_info_) {
-    handle->set_ssl_cert_request_info(ssl_cert_request_info_);
-    handle->set_is_ssl_error(true);
-  }
+bool HttpProxyConnectJob::IsSSLError() const {
+  return ssl_cert_request_info_ != nullptr;
+}
+
+scoped_refptr<SSLCertRequestInfo> HttpProxyConnectJob::GetCertRequestInfo() {
+  return ssl_cert_request_info_;
 }
 
 void HttpProxyConnectJob::OnConnectJobComplete(int result, ConnectJob* job) {
@@ -486,16 +487,11 @@ int HttpProxyConnectJob::DoSSLConnect() {
 
 int HttpProxyConnectJob::DoSSLConnectComplete(int result) {
   if (result == ERR_SSL_CLIENT_AUTH_CERT_NEEDED) {
-    // Not really used to hold a socket.
-    // TODO(mmenke): Implement a better API to get this information.
-    ClientSocketHandle client_socket_handle;
-    nested_connect_job_->GetAdditionalErrorState(&client_socket_handle);
-
     UMA_HISTOGRAM_MEDIUM_TIMES("Net.HttpProxy.ConnectLatency.Secure.Error",
                                base::TimeTicks::Now() - connect_start_time_);
 
-    DCHECK(client_socket_handle.ssl_cert_request_info());
-    ssl_cert_request_info_ = client_socket_handle.ssl_cert_request_info();
+    ssl_cert_request_info_ = nested_connect_job_->GetCertRequestInfo();
+    DCHECK(ssl_cert_request_info_);
     ssl_cert_request_info_->is_proxy = true;
     return result;
   }

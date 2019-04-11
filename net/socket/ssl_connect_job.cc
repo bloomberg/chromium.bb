@@ -177,10 +177,6 @@ void SSLConnectJob::OnNeedsProxyAuth(
 }
 
 void SSLConnectJob::GetAdditionalErrorState(ClientSocketHandle* handle) {
-  handle->set_ssl_cert_request_info(ssl_cert_request_info_);
-  if (ssl_negotiation_started_)
-    handle->set_is_ssl_error(true);
-
   handle->set_connection_attempts(connection_attempts_);
 }
 
@@ -188,6 +184,14 @@ std::unique_ptr<StreamSocket> SSLConnectJob::PassProxySocketOnFailure() {
   if (proxy_redirect_)
     return std::move(nested_socket_);
   return nullptr;
+}
+
+bool SSLConnectJob::IsSSLError() const {
+  return ssl_negotiation_started_;
+}
+
+scoped_refptr<SSLCertRequestInfo> SSLConnectJob::GetCertRequestInfo() {
+  return ssl_cert_request_info_;
 }
 
 base::TimeDelta SSLConnectJob::HandshakeTimeoutForTesting() {
@@ -319,9 +323,7 @@ int SSLConnectJob::DoTunnelConnectComplete(int result) {
     // authentication so that when ClientSocketPoolBaseHelper calls
     // |GetAdditionalErrorState|, we can easily set the state.
     if (result == ERR_SSL_CLIENT_AUTH_CERT_NEEDED) {
-      ClientSocketHandle handle_with_error_state;
-      nested_connect_job_->GetAdditionalErrorState(&handle_with_error_state);
-      ssl_cert_request_info_ = handle_with_error_state.ssl_cert_request_info();
+      ssl_cert_request_info_ = nested_connect_job_->GetCertRequestInfo();
     } else if (result == ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT) {
       proxy_redirect_ = true;
       connect_timing_ = nested_connect_job_->connect_timing();

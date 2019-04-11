@@ -41,6 +41,7 @@ class StreamSocket;
 class WebSocketEndpointLockManager;
 class QuicStreamFactory;
 class SpdySessionPool;
+class SSLCertRequestInfo;
 
 // Immutable socket parameters intended for shared use by all ConnectJob types.
 // Excludes priority because it can be modified over the lifetime of a
@@ -196,6 +197,15 @@ class NET_EXPORT_PRIVATE ConnectJob {
   // Returns nullptr otherwise. Only returns a non-null value for SSL sockets on
   // top of proxy sockets.
   virtual std::unique_ptr<StreamSocket> PassProxySocketOnFailure();
+
+  // If the ConnectJob failed, returns true if the failure occurred after SSL
+  // negotiation started. If the ConnectJob succeeded, the returned value is
+  // undefined.
+  virtual bool IsSSLError() const;
+
+  // If the ConnectJob failed with ERR_SSL_CLIENT_AUTH_CERT_NEEDED, returns the
+  // SSLCertRequestInfo received. Otherwise, returns nullptr.
+  virtual scoped_refptr<SSLCertRequestInfo> GetCertRequestInfo();
 
   const LoadTimingInfo::ConnectTiming& connect_timing() const {
     return connect_timing_;
