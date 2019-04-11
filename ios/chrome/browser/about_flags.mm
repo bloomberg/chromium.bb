@@ -586,6 +586,18 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxUseDefaultSearchEngineFaviconDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kOmniboxUseDefaultSearchEngineFavicon)},
+    {"enable-autofill-import-dynamic-forms",
+     flag_descriptions::kEnableAutofillImportDynamicFormsName,
+     flag_descriptions::kEnableAutofillImportDynamicFormsDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillImportDynamicForms)},
+    {"enable-autofill-import-non-focusable-credit-card-forms",
+     flag_descriptions::kEnableAutofillImportNonFocusableCreditCardFormsName,
+     flag_descriptions::
+         kEnableAutofillImportNonFocusableCreditCardFormsDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillImportNonFocusableCreditCardForms)},
 };
 
 // Add all switches from experimental flags to |command_line|.

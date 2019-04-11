@@ -169,6 +169,19 @@ const char kAutofillEnforceMinRequiredFieldsForUploadDescription[] =
     "When enabled, autofill will generally require a form to have at least 3 "
     "fillable fields before uploading field-type votes for that form.";
 
+const char kEnableAutofillImportDynamicFormsName[] =
+    "Allow credit card import from dynamic forms after entry";
+const char kEnableAutofillImportDynamicFormsDescription[] =
+    "If enabled, offers credit card save for dynamic forms from the page after "
+    "information has been entered into them.";
+
+const char kEnableAutofillImportNonFocusableCreditCardFormsName[] =
+    "Allow credit card import from forms that disappear after entry";
+const char kEnableAutofillImportNonFocusableCreditCardFormsDescription[] =
+    "If enabled, offers credit card save for forms that are hidden from the "
+    "page after information has been entered into them, including "
+    "accordion-style checkout flows.";
+
 const char kAutofillIOSDelayBetweenFieldsName[] = "Autofill delay";
 const char kAutofillIOSDelayBetweenFieldsDescription[] =
     "Delay between the different fields of a form being autofilled. In "
