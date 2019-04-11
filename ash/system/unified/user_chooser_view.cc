@@ -149,6 +149,9 @@ views::View* CreateUserAvatarView(int user_index) {
     gfx::ImageSkia icon =
         gfx::CreateVectorIcon(kSystemMenuGuestIcon, kMenuIconColor);
     image_view->SetImage(icon, icon.size());
+    // make sure icon height stays same for guest icon
+    image_view->SetBorder(views::CreateEmptyBorder(
+        gfx::Insets((kTrayItemSize - icon.size().height()) / 2, 0)));
   } else {
     image_view->SetImage(user_session->user_info->avatar->image,
                          gfx::Size(kTrayItemSize, kTrayItemSize));
