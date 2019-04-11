@@ -224,14 +224,13 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
   GetDefaultStoragePartition(this)->GetNetworkContext()->ClearHostCache(
       nullptr, network::mojom::NetworkContext::ClearHostCacheCallback());
 
-  BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(
-      this);
-  // The SimpleDependencyManager should always be called after the
+  // The SimpleDependencyManager should always be passed after the
   // BrowserContextDependencyManager. This is because the KeyedService instances
   // in the BrowserContextDependencyManager's dependency graph can depend on the
   // ones in the SimpleDependencyManager's graph.
-  SimpleDependencyManager::GetInstance()->DestroyKeyedServices(
-      GetSimpleFactoryKey());
+  DependencyManager::PerformInterlockedTwoPhaseShutdown(
+      BrowserContextDependencyManager::GetInstance(), this,
+      SimpleDependencyManager::GetInstance(), GetSimpleFactoryKey());
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   base::PostTaskWithTraits(

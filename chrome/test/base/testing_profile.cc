@@ -540,8 +540,13 @@ TestingProfile::~TestingProfile() {
 
   FullBrowserTransitionManager::Get()->OnProfileDestroyed(this);
 
-  browser_context_dependency_manager_->DestroyBrowserContextServices(this);
-  simple_dependency_manager_->DestroyKeyedServices(GetSimpleFactoryKey());
+  // The SimpleDependencyManager should always be passed after the
+  // BrowserContextDependencyManager. This is because the KeyedService instances
+  // in the BrowserContextDependencyManager's dependency graph can depend on the
+  // ones in the SimpleDependencyManager's graph.
+  DependencyManager::PerformInterlockedTwoPhaseShutdown(
+      browser_context_dependency_manager_, this, simple_dependency_manager_,
+      GetSimpleFactoryKey());
 
   if (host_content_settings_map_.get())
     host_content_settings_map_->ShutdownOnUIThread();
