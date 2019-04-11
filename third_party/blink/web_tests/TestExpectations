@@ -4438,11 +4438,6 @@ crbug.com/660384 external/wpt/webmessaging/with-options/broken-origin.html [ Fai
 crbug.com/610835 http/tests/security/XFrameOptions/x-frame-options-deny-multiple-clients.html [ Failure Pass ]
 crbug.com/610835 virtual/outofblink-cors/http/tests/security/XFrameOptions/x-frame-options-deny-multiple-clients.html [ Failure Pass ]
 
-# Added 2016-12-12
-crbug.com/673539 [ Linux ] css3/filters/effect-contrast-hw.html [ Pass Failure ]
-crbug.com/673539 [ Win ] css3/filters/effect-contrast-hw.html [ Pass Failure ]
-
-
 #crbug.com/765738 [ Linux Win Mac ] http/tests/wasm/wasm_remote_postMessage_test.https.html [ Pass Timeout ]
 crbug.com/892212 http/tests/wasm/wasm_remote_postMessage_test.https.html [ Pass Failure Timeout ]
 
