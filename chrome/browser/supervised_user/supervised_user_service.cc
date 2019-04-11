@@ -979,6 +979,7 @@ syncer::ModelTypeSet SupervisedUserService::GetForcedDataTypes() const {
   result.Put(syncer::APPS);
   result.Put(syncer::APP_SETTINGS);
   result.Put(syncer::APP_LIST);
+  result.Put(syncer::ARC_PACKAGE);
   return result;
 }
 
