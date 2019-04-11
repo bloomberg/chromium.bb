@@ -18,6 +18,7 @@
 
 namespace download {
 
+class AllDownloadEventNotifier;
 class DownloadItem;
 
 // This object allows swapping between different SimppleDownloadManager
@@ -65,6 +66,9 @@ class COMPONENTS_DOWNLOAD_EXPORT SimpleDownloadManagerCoordinator
   // Return whether this object has download manager set.
   bool HasSetDownloadManager();
 
+  // Returns a non-empty notifier to be used for observing download events.
+  AllDownloadEventNotifier* GetNotifier();
+
   bool has_all_history_downloads() const { return has_all_history_downloads_; }
 
  private:
@@ -76,6 +80,9 @@ class COMPONENTS_DOWNLOAD_EXPORT SimpleDownloadManagerCoordinator
   void OnManagerInitialized(bool has_all_history_downloads);
 
   SimpleDownloadManager* simple_download_manager_;
+
+  // Object for notifying others about various download events.
+  std::unique_ptr<AllDownloadEventNotifier> notifier_;
 
   // Whether all the history downloads are ready.
   bool has_all_history_downloads_;

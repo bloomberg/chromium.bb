@@ -18,6 +18,7 @@ source_set("internal") {
   ]
 
   sources = [
+    "all_download_event_notifier.cc",
     "base_file.cc",
     "base_file_win.cc",
     "download_create_info.cc",

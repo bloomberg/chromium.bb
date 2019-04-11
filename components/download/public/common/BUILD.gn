@@ -15,6 +15,7 @@ config("components_download_implementation") {
 
 component("public") {
   sources = [
+    "all_download_event_notifier.h",
     "auto_resumption_handler.cc",
     "auto_resumption_handler.h",
     "base_file.h",

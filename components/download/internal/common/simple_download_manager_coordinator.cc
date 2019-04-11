@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "components/download/public/common/all_download_event_notifier.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/simple_download_manager.h"
 
@@ -80,6 +81,12 @@ void SimpleDownloadManagerCoordinator::OnManagerGoingDown() {
 void SimpleDownloadManagerCoordinator::OnDownloadCreated(DownloadItem* item) {
   for (auto& observer : observers_)
     observer.OnDownloadCreated(item);
+}
+
+AllDownloadEventNotifier* SimpleDownloadManagerCoordinator::GetNotifier() {
+  if (!notifier_)
+    notifier_ = std::make_unique<AllDownloadEventNotifier>(this);
+  return notifier_.get();
 }
 
 }  // namespace download
