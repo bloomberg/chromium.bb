@@ -127,7 +127,6 @@ Error Connection::SendString(absl::string_view message) {
   msgs::PresentationConnectionMessage cbor_message;
   OSP_LOG << "sending '" << message << "' to (" << presentation_.id << ", "
           << connection_id_.value() << ")";
-  cbor_message.presentation_id = presentation_.id;
   cbor_message.connection_id = connection_id_.value();
   cbor_message.message.which =
       msgs::PresentationConnectionMessage::Message::Which::kString;
@@ -144,7 +143,6 @@ Error Connection::SendBinary(std::vector<uint8_t>&& data) {
   msgs::PresentationConnectionMessage cbor_message;
   OSP_LOG << "sending " << data.size() << " bytes to (" << presentation_.id
           << ", " << connection_id_.value() << ")";
-  cbor_message.presentation_id = presentation_.id;
   cbor_message.connection_id = connection_id_.value();
   cbor_message.message.which =
       msgs::PresentationConnectionMessage::Message::Which::kBytes;
@@ -179,7 +177,6 @@ Error Connection::Close(CloseReason reason) {
         return Error::Code::kNoActiveConnection;
 
       msgs::PresentationConnectionCloseEvent event;
-      event.presentation_id = presentation_.id;
       event.connection_id = connection_id_.value();
       // TODO(btolsch): More event/request asymmetry...
       event.reason = GetEventCloseReason(reason);
@@ -219,16 +216,13 @@ ConnectionManager::ConnectionManager(MessageDemuxer* demuxer) {
 
 void ConnectionManager::AddConnection(Connection* connection) {
   auto emplace_result =
-      connections_.emplace(std::make_pair(connection->presentation_info().id,
-                                          connection->connection_id()),
-                           connection);
+      connections_.emplace(connection->connection_id(), connection);
 
   OSP_DCHECK(emplace_result.second);
 }
 
 void ConnectionManager::RemoveConnection(Connection* connection) {
-  auto entry = connections_.find(std::make_pair(
-      connection->presentation_info().id, connection->connection_id()));
+  auto entry = connections_.find(connection->connection_id());
   if (entry != connections_.end()) {
     connections_.erase(entry);
   }
@@ -255,8 +249,7 @@ ErrorOr<size_t> ConnectionManager::OnStreamMessage(
         return Error::Code::kParseError;
       }
 
-      Connection* connection =
-          GetConnection(message.presentation_id, message.connection_id);
+      Connection* connection = GetConnection(message.connection_id);
       if (!connection) {
         return Error::Code::kNoItemFound;
       }
@@ -286,8 +279,7 @@ ErrorOr<size_t> ConnectionManager::OnStreamMessage(
         return Error::Code::kCborInvalidMessage;
       }
 
-      Connection* connection =
-          GetConnection(request.presentation_id, request.connection_id);
+      Connection* connection = GetConnection(request.connection_id);
       if (!connection) {
         return Error::Code::kNoActiveConnection;
       }
@@ -307,8 +299,7 @@ ErrorOr<size_t> ConnectionManager::OnStreamMessage(
         return Error::Code::kParseError;
       }
 
-      Connection* connection =
-          GetConnection(event.presentation_id, event.connection_id);
+      Connection* connection = GetConnection(event.connection_id);
       if (!connection) {
         return Error::Code::kNoActiveConnection;
       }
@@ -324,16 +315,14 @@ ErrorOr<size_t> ConnectionManager::OnStreamMessage(
   }
 }
 
-Connection* ConnectionManager::GetConnection(const std::string& presentation_id,
-                                             uint64_t connection_id) {
+Connection* ConnectionManager::GetConnection(uint64_t connection_id) {
   auto entry =
-      connections_.find(std::make_pair(presentation_id, connection_id));
+      connections_.find(connection_id);
   if (entry != connections_.end()) {
     return entry->second;
   }
 
-  OSP_DVLOG << "unknown ID pair: (" << presentation_id << ", " << connection_id
-            << ")";
+  OSP_DVLOG << "unknown ID: " << connection_id;
   return nullptr;
 }
 

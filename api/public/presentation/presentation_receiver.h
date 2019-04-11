@@ -138,6 +138,8 @@ class Receiver final : public MessageDemuxer::MessageCallback {
   MessageDemuxer::MessageWatch availability_watch_;
   MessageDemuxer::MessageWatch initiation_watch_;
   MessageDemuxer::MessageWatch connection_watch_;
+
+  uint64_t GetNextConnectionId();
 };
 
 }  // namespace presentation

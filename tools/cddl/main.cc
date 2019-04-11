@@ -231,7 +231,7 @@ int main(int argc, char** argv) {
   Logger::Log("Successfully wrote decoders!\n");
 
   Logger::Log("Writing equality operators...");
-  if(!WriteStructEqualityOperators(cc_fd, cpp_result.second)) {
+  if(!WriteEqualityOperators(cc_fd, cpp_result.second)) {
     Logger::Error("WriteStructEqualityOperators failed");
     return 1;
   }

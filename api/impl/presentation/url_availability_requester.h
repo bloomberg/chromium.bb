@@ -98,7 +98,7 @@ class UrlAvailabilityRequester {
     ErrorOr<uint64_t> SendRequest(uint64_t request_id,
                                   const std::vector<std::string>& urls);
     platform::Clock::time_point RefreshWatches(platform::Clock::time_point now);
-    void UpdateAvailabilities(
+    Error::Code UpdateAvailabilities(
         const std::vector<std::string>& urls,
         const std::vector<msgs::UrlAvailability>& availabilities);
     void RemoveUnobservedRequests(const std::set<std::string>& unobserved_urls);

@@ -181,12 +181,11 @@ class ConnectionManager final : public MessageDemuxer::MessageCallback {
                                   size_t buffer_size,
                                   platform::Clock::time_point now) override;
 
-  Connection* GetConnection(const std::string& presentation_id,
-                            uint64_t connection_id);
+  Connection* GetConnection(uint64_t connection_id);
 
  private:
   // <presentation id, connection id> -> Connection
-  std::map<std::pair<std::string, uint64_t>, Connection*> connections_;
+  std::map<uint64_t, Connection*> connections_;
 
   MessageDemuxer::MessageWatch message_watch_;
   MessageDemuxer::MessageWatch close_request_watch_;

@@ -271,10 +271,13 @@ Clock::time_point UrlAvailabilityRequester::ReceiverRequester::RefreshWatches(
   return minimum_schedule_time;
 }
 
-void UrlAvailabilityRequester::ReceiverRequester::UpdateAvailabilities(
+Error::Code UrlAvailabilityRequester::ReceiverRequester::UpdateAvailabilities(
     const std::vector<std::string>& urls,
     const std::vector<msgs::UrlAvailability>& availabilities) {
   auto availability_it = availabilities.begin();
+  if (urls.size() != availabilities.size()) {
+    return Error::Code::kCborInvalidMessage;
+  }
   for (const auto& url : urls) {
     auto observer_entry = listener->observers_by_url_.find(url);
     if (observer_entry == listener->observers_by_url_.end())
@@ -301,6 +304,7 @@ void UrlAvailabilityRequester::ReceiverRequester::UpdateAvailabilities(
     }
     ++availability_it;
   }
+  return Error::Code::kNone;
 }
 
 void UrlAvailabilityRequester::ReceiverRequester::RemoveUnobservedRequests(
@@ -444,7 +448,11 @@ ErrorOr<size_t> UrlAvailabilityRequester::ReceiverRequester::OnStreamMessage(
                        << " but got " << response.url_availabilities.size();
           return Error::Code::kCborInvalidMessage;
         }
-        UpdateAvailabilities(urls, response.url_availabilities);
+        Error::Code update_result =
+            UpdateAvailabilities(urls, response.url_availabilities);
+        if (update_result != Error::Code::kNone) {
+          return update_result;
+        }
         request_by_id.erase(response.request_id);
         if (request_by_id.empty())
           StopWatching(&response_watch);
@@ -462,8 +470,14 @@ ErrorOr<size_t> UrlAvailabilityRequester::ReceiverRequester::OnStreamMessage(
         return Error::Code::kCborParsing;
       } else {
         auto watch_entry = watch_by_id.find(event.watch_id);
-        if (watch_entry != watch_by_id.end())
-          UpdateAvailabilities(event.urls, event.url_availabilities);
+        if (watch_entry != watch_by_id.end()) {
+          std::vector<std::string> urls = watch_entry->second.urls;
+          Error::Code update_result =
+              UpdateAvailabilities(urls, event.url_availabilities);
+          if (update_result != Error::Code::kNone) {
+            return update_result;
+          }
+        }
         return result;
       }
     } break;

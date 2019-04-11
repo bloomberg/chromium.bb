@@ -87,7 +87,6 @@ authentication-result = {
   1: authentication-result-result ; result
 }
 
-
 authentication-mechanism = &(
   hkdf-of-scrypt-of-psk: 1
 )
@@ -127,9 +126,7 @@ presentation-url-availability-response = {
 presentation-url-availability-event = {
   1: uint ; watch-id
   2: [* url-availability] ; url-availabilities
-  3: [* text] ; urls
 }
-
 
 ; idea: use HTTP response codes?
 url-availability = &(
@@ -144,7 +141,6 @@ presentation-start-request = {
   1: text ; presentation-id
   2: text ; url
   3: [* http-header] ; headers
-  4: uint; connection_id
 }
 
 http-header = [
@@ -155,7 +151,7 @@ http-header = [
 ; type key 105
 presentation-start-response = {
   response
-  1: result ; result
+  1: &result ; result
   2: uint ; connection-id
 }
 
@@ -174,7 +170,7 @@ presentation-termination-request = {
 ; type key 107
 presentation-termination-response = {
   response
-  1: result ; result
+  1: &result ; result
 }
 
 ; type key 108
@@ -199,28 +195,25 @@ presentation-connection-open-request = {
   request
   1: text ; presentation-id
   2: text ; url
-  3: uint; connection_id
 }
 
 ; type key 110
 presentation-connection-open-response = {
   response
-  1: result ; result
+  1: &result ; result
   2: uint; connection-id
-  3: text ; presentation-id
 }
 
 ; type key 111
 presentation-connection-close-request = {
   request
   1: uint ; connection-id
-  2: text ; presentation-id
 }
 
 ; type key 112
 presentation-connection-close-response = {
   response
-  1: result ; result
+  1: &result ; result
 }
 
 ; type key 113
@@ -232,14 +225,12 @@ presentation-connection-close-event = {
     unrecoverable-error-while-sending-or-receiving-message: 100
   ) ; reason
   ? 3: text ; error-message
-  4: text ; presentation-id
 }
 
 ; type key 16
 presentation-connection-message = {
   1: uint ; connection-id
   2: bytes / text ; message
-  3: text ; presentation-id
 }
 
 status = &(
@@ -247,7 +238,7 @@ status = &(
   failure: 2
 )
 
-result = &(
+result = (
   success: 1
   invalid-url: 10
   invalid-presentation-id: 11

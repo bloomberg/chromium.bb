@@ -107,12 +107,10 @@ class UrlAvailabilityRequesterTest : public Test {
 
   void SendAvailabilityEvent(
       uint64_t watch_id,
-      std::vector<std::string>&& urls,
       std::vector<msgs::UrlAvailability>&& availabilities,
       ProtocolConnection* stream) {
     msgs::PresentationUrlAvailabilityEvent event;
     event.watch_id = watch_id;
-    event.urls = std::move(urls);
     event.url_availabilities = std::move(availabilities);
     msgs::CborEncodeBuffer buffer;
     ssize_t encode_result =
@@ -388,7 +386,7 @@ TEST_F(UrlAvailabilityRequesterTest, RemoveObserverUrls) {
   quic_bridge_.RunTasksUntilIdle();
 
   SendAvailabilityEvent(
-      url1_watch_id, std::vector<std::string>{url1_},
+      url1_watch_id,
       std::vector<msgs::UrlAvailability>{msgs::UrlAvailability::kUnavailable},
       stream.get());
 
@@ -443,7 +441,7 @@ TEST_F(UrlAvailabilityRequesterTest, RemoveObserver) {
   quic_bridge_.RunTasksUntilIdle();
 
   SendAvailabilityEvent(
-      url1_watch_id, std::vector<std::string>{url1_},
+      url1_watch_id,
       std::vector<msgs::UrlAvailability>{msgs::UrlAvailability::kUnavailable},
       stream.get());
 
@@ -455,12 +453,12 @@ TEST_F(UrlAvailabilityRequesterTest, RemoveObserver) {
   listener_.RemoveObserver(&mock_observer2);
 
   SendAvailabilityEvent(
-      url1_watch_id, std::vector<std::string>{url1_},
+      url1_watch_id,
       std::vector<msgs::UrlAvailability>{msgs::UrlAvailability::kUnavailable},
       stream.get());
 
   SendAvailabilityEvent(
-      url2_watch_id, std::vector<std::string>{url2_},
+      url2_watch_id,
       std::vector<msgs::UrlAvailability>{msgs::UrlAvailability::kAvailable},
       stream.get());
 
@@ -494,10 +492,11 @@ TEST_F(UrlAvailabilityRequesterTest, EventUpdate) {
   quic_bridge_.RunTasksUntilIdle();
 
   EXPECT_CALL(mock_callback_, OnStreamMessage(_, _, _, _, _, _)).Times(0);
-  SendAvailabilityEvent(
-      request.watch_id, std::vector<std::string>{url2_},
-      std::vector<msgs::UrlAvailability>{msgs::UrlAvailability::kUnavailable},
-      stream.get());
+  SendAvailabilityEvent(request.watch_id,
+                        std::vector<msgs::UrlAvailability>{
+                            msgs::UrlAvailability::kAvailable,
+                            msgs::UrlAvailability::kUnavailable},
+                        stream.get());
 
   EXPECT_CALL(mock_observer1, OnReceiverUnavailable(url2_, service_id_));
   quic_bridge_.RunTasksUntilIdle();
@@ -626,7 +625,6 @@ TEST_F(UrlAvailabilityRequesterTest, RemoveObserverInSteps) {
                                msgs::UrlAvailability::kAvailable},
                            stream.get());
   SendAvailabilityEvent(request.watch_id,
-                        std::vector<std::string>{url1_, url2_},
                         std::vector<msgs::UrlAvailability>{
                             msgs::UrlAvailability::kUnavailable,
                             msgs::UrlAvailability::kUnavailable},

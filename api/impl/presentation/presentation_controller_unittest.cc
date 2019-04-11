@@ -216,7 +216,6 @@ TEST_F(ControllerTest, ReceiverWatchCancel) {
   watch = Controller::ReceiverWatch();
   msgs::PresentationUrlAvailabilityEvent event;
   event.watch_id = request.watch_id;
-  event.urls.emplace_back(kTestUrl);
   event.url_availabilities.push_back(msgs::UrlAvailability::kUnavailable);
 
   EXPECT_CALL(mock_receiver_observer2, OnReceiverUnavailable(_, _));

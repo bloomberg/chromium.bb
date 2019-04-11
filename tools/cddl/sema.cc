@@ -10,6 +10,7 @@
 
 #include <cinttypes>
 #include <cstdlib>
+#include <iostream>
 #include <map>
 #include <memory>
 #include <string>
@@ -499,6 +500,37 @@ CppType* GetCppType(CppSymbolTable* table, const std::string& name) {
 bool IncludeGroupMembersInEnum(CppSymbolTable* table,
                                const CddlSymbolTable& cddl_table,
                                CppType* cpp_type,
+                               const CddlGroup& group);
+
+bool IncludeGroupMembersInSubEnum(CppSymbolTable* table,
+                                  const CddlSymbolTable& cddl_table,
+                                  CppType* cpp_type,
+                                  const std::string& name) {
+  auto group_entry = cddl_table.group_map.find(name);
+  if (group_entry == cddl_table.group_map.end()) {
+    return false;
+  }
+  if (group_entry->second->entries.size() != 1 ||
+      group_entry->second->entries[0]->which !=
+          CddlGroup::Entry::Which::kGroup) {
+    return false;
+  }
+  CppType* sub_enum = GetCppType(table, name);
+  if (sub_enum->which == CppType::Which::kUninitialized) {
+    sub_enum->InitEnum();
+    sub_enum->name = name;
+    if (!IncludeGroupMembersInEnum(table, cddl_table, sub_enum,
+                                   *group_entry->second->entries[0]->group)) {
+      return false;
+    }
+  }
+  cpp_type->enum_type.sub_members.push_back(sub_enum);
+  return true;
+}
+
+bool IncludeGroupMembersInEnum(CppSymbolTable* table,
+                               const CddlSymbolTable& cddl_table,
+                               CppType* cpp_type,
                                const CddlGroup& group) {
   for (const auto& x : group.entries) {
     if (x->HasOccurrenceOperator() ||
@@ -510,26 +542,8 @@ bool IncludeGroupMembersInEnum(CppSymbolTable* table,
       cpp_type->enum_type.members.emplace_back(
           x->type.opt_key, atoi(x->type.value->value.c_str()));
     } else if (x->type.value->which == CddlType::Which::kId) {
-      auto group_entry = cddl_table.group_map.find(x->type.value->id);
-      if (group_entry == cddl_table.group_map.end()) {
-        return false;
-      }
-      if (group_entry->second->entries.size() != 1 ||
-          group_entry->second->entries[0]->which !=
-              CddlGroup::Entry::Which::kGroup) {
-        return false;
-      }
-      CppType* sub_enum = GetCppType(table, x->type.value->id);
-      if (sub_enum->which == CppType::Which::kUninitialized) {
-        sub_enum->InitEnum();
-        sub_enum->name = x->type.value->id;
-        if (!IncludeGroupMembersInEnum(
-                table, cddl_table, sub_enum,
-                *group_entry->second->entries[0]->group)) {
-          return false;
-        }
-      }
-      cpp_type->enum_type.sub_members.push_back(sub_enum);
+      IncludeGroupMembersInSubEnum(table, cddl_table, cpp_type,
+                                   x->type.value->id);
     } else {
       return false;
     }
@@ -667,6 +681,14 @@ CppType* MakeCppType(CppSymbolTable* table,
       cpp_type->name = name;
       if (!IncludeGroupMembersInEnum(table, cddl_table, cpp_type,
                                      *type.group_choice)) {
+        return nullptr;
+      }
+    } break;
+    case CddlType::Which::kGroupnameChoice: {
+      cpp_type = GetCppType(table, name);
+      cpp_type->InitEnum();
+      cpp_type->name = name;
+      if (!IncludeGroupMembersInSubEnum(table, cddl_table, cpp_type, type.id)) {
         return nullptr;
       }
     } break;
