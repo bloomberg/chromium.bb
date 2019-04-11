@@ -27,6 +27,7 @@
 
 #include <atomic>
 #include <limits>
+#include <type_traits>
 
 #include "base/threading/platform_thread.h"
 

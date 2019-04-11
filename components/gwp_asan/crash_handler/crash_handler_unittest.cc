@@ -36,8 +36,6 @@ namespace internal {
 
 namespace {
 
-class GwpAsanTest : public testing::Test {};
-
 constexpr size_t kAllocationSize = 902;
 constexpr int kSuccess = 0;
 constexpr size_t kTotalPages = AllocatorState::kMaxSlots;
