@@ -69,7 +69,8 @@ UrlLoadParams::UrlLoadParams()
       origin_point(CGPointZero),
       from_chrome(false),
       user_initiated(true),
-      should_focus_omnibox(false) {}
+      should_focus_omnibox(false),
+      load_strategy(UrlLoadStrategy::NORMAL) {}
 
 UrlLoadParams::UrlLoadParams(const UrlLoadParams& other)
     : web_params(other.web_params),
@@ -79,7 +80,8 @@ UrlLoadParams::UrlLoadParams(const UrlLoadParams& other)
       origin_point(other.origin_point),
       from_chrome(other.from_chrome),
       user_initiated(other.user_initiated),
-      should_focus_omnibox(other.should_focus_omnibox) {}
+      should_focus_omnibox(other.should_focus_omnibox),
+      load_strategy(other.load_strategy) {}
 
 UrlLoadParams& UrlLoadParams::operator=(const UrlLoadParams& other) {
   web_params = other.web_params;
@@ -90,6 +92,7 @@ UrlLoadParams& UrlLoadParams::operator=(const UrlLoadParams& other) {
   from_chrome = other.from_chrome;
   user_initiated = other.user_initiated;
   should_focus_omnibox = other.should_focus_omnibox;
+  load_strategy = other.load_strategy;
   return *this;
 }
 

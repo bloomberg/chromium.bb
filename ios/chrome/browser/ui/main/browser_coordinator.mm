@@ -381,9 +381,7 @@
   self.recentTabsCoordinator = [[RecentTabsCoordinator alloc]
       initWithBaseViewController:self.viewController
                     browserState:self.browserState];
-  self.recentTabsCoordinator.loader =
-      UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
-          ->GetUrlLoader();
+  self.recentTabsCoordinator.loadStrategy = UrlLoadStrategy::NORMAL;
   self.recentTabsCoordinator.dispatcher = self.applicationCommandHandler;
   self.recentTabsCoordinator.webStateList = self.tabModel.webStateList;
   [self.recentTabsCoordinator start];

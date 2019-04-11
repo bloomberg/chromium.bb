@@ -43,10 +43,14 @@ class UrlLoadingService : public KeyedService {
   // TODO(crbug.com/907527): deprecate this when possible.
   id<UrlLoader> GetUrlLoader();
 
-  // Opens a url depending on |params.disposition|.
+  // Opens a url depending on |params.disposition|.  Applies load strategy then
+  // calls| Dispatch|.
   virtual void Load(const UrlLoadParams& params);
 
  private:
+  // Dispatches to action method below.
+  void Dispatch(const UrlLoadParams& params);
+
   // Switches to a tab that matches |params.web_params| or loads in a new tab.
   virtual void SwitchToTab(const UrlLoadParams& params);
 

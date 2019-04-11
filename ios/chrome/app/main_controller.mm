@@ -1482,9 +1482,7 @@ enum class EnterTabSwitcherSnapshotResult {
   _historyCoordinator =
       [[HistoryCoordinator alloc] initWithBaseViewController:self.currentBVC
                                                 browserState:_mainBrowserState];
-  _historyCoordinator.loader = UrlLoadingServiceFactory::GetForBrowserState(
-                                   [self.currentBVC browserState])
-                                   ->GetUrlLoader();
+  _historyCoordinator.loadStrategy = UrlLoadStrategy::NORMAL;
   _historyCoordinator.dispatcher = self.mainBVC.dispatcher;
   [_historyCoordinator start];
 }

@@ -118,6 +118,23 @@ void UrlLoadingService::SetBrowser(Browser* browser) {
 }
 
 void UrlLoadingService::Load(const UrlLoadParams& params) {
+  // First apply any override load strategy.
+  switch (params.load_strategy) {
+    case UrlLoadStrategy::ALWAYS_NEW_FOREGROUND_TAB: {
+      UrlLoadParams fixed_params = params;
+      fixed_params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+      Dispatch(fixed_params);
+      break;
+    }
+    default: {
+      Dispatch(params);
+      break;
+    }
+  }
+}
+
+void UrlLoadingService::Dispatch(const UrlLoadParams& params) {
+  // Then dispatch.
   switch (params.disposition) {
     case WindowOpenDisposition::NEW_BACKGROUND_TAB:
     case WindowOpenDisposition::NEW_FOREGROUND_TAB:
@@ -130,7 +147,7 @@ void UrlLoadingService::Load(const UrlLoadParams& params) {
       SwitchToTab(params);
       break;
     default:
-      // Unhandled disposition.
+      DCHECK(false) << "Unhandled url loading disposition.";
       break;
   }
 }

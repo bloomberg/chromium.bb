@@ -8,7 +8,6 @@
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/main/view_controller_swapping.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_paging.h"
-#import "ios/chrome/browser/ui/tab_grid/tab_grid_url_loader.h"
 #import "ios/web/public/navigation_manager.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -74,8 +73,6 @@
 - (void)setOtrTabModel:(TabModel*)otrModel {
   DCHECK(self.incognitoMediator);
   self.incognitoMediator.tabModel = otrModel;
-  self.loader.incognitoWebStateList = otrModel.webStateList;
-  self.loader.incognitoBrowserState = otrModel.browserState;
 }
 
 @end
