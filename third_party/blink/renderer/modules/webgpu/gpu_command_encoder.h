@@ -9,7 +9,15 @@
 
 namespace blink {
 
+class GPUBuffer;
+class GPUBufferCopyView;
+class GPUCommandBuffer;
 class GPUCommandEncoderDescriptor;
+class GPUComputePassEncoder;
+class GPUExtent3D;
+class GPURenderPassDescriptor;
+class GPURenderPassEncoder;
+class GPUTextureCopyView;
 
 class GPUCommandEncoder : public DawnObject<DawnCommandEncoder> {
   DEFINE_WRAPPERTYPEINFO();
@@ -23,7 +31,24 @@ class GPUCommandEncoder : public DawnObject<DawnCommandEncoder> {
   ~GPUCommandEncoder() override;
 
   // gpu_command_encoder.idl
-  // TODO(crbug.com/877147): implement GPUCommandEncoder.
+  GPURenderPassEncoder* beginRenderPass(
+      const GPURenderPassDescriptor* descriptor);
+  GPUComputePassEncoder* beginComputePass();
+  void copyBufferToBuffer(GPUBuffer* src,
+                          uint64_t src_offset,
+                          GPUBuffer* dst,
+                          uint64_t dst_offset,
+                          uint64_t size);
+  void copyBufferToTexture(GPUBufferCopyView* source,
+                           GPUTextureCopyView* destination,
+                           GPUExtent3D* copy_size);
+  void copyTextureToBuffer(GPUTextureCopyView* source,
+                           GPUBufferCopyView* destination,
+                           GPUExtent3D* copy_size);
+  void copyTextureToTexture(GPUTextureCopyView* source,
+                            GPUTextureCopyView* destination,
+                            GPUExtent3D* copy_size);
+  GPUCommandBuffer* finish();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GPUCommandEncoder);
