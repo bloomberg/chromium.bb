@@ -139,6 +139,7 @@ class HintCacheStore {
 
  private:
   friend class HintCacheStoreTest;
+  friend class HintUpdateData;
 
   using EntryKeyPrefix = std::string;
   using EntryKeySet = std::unordered_set<EntryKey>;
