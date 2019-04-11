@@ -279,6 +279,7 @@ void MediaNotificationView::UpdateWithMediaMetadata(
 
   title_label_->SetText(metadata.title);
   artist_label_->SetText(metadata.artist);
+  header_row_->SetSummaryText(metadata.album);
 
   if (!metadata.title.empty())
     RecordMetadataHistogram(Metadata::kTitle);

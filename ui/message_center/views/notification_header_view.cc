@@ -202,6 +202,7 @@ NotificationHeaderView::NotificationHeaderView(
   summary_text_divider_->SetLineHeight(font_list_height);
   summary_text_divider_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   summary_text_divider_->SetBorder(views::CreateEmptyBorder(text_view_padding));
+  summary_text_divider_->SetEnabledColor(accent_color_);
   summary_text_divider_->SetVisible(false);
   DCHECK_EQ(kInnerHeaderHeight,
             summary_text_divider_->GetPreferredSize().height());
@@ -213,6 +214,7 @@ NotificationHeaderView::NotificationHeaderView(
   summary_text_view_->SetLineHeight(font_list_height);
   summary_text_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   summary_text_view_->SetBorder(views::CreateEmptyBorder(text_view_padding));
+  summary_text_view_->SetEnabledColor(accent_color_);
   summary_text_view_->SetVisible(false);
   DCHECK_EQ(kInnerHeaderHeight,
             summary_text_view_->GetPreferredSize().height());
@@ -287,7 +289,14 @@ void NotificationHeaderView::SetProgress(int progress) {
   UpdateSummaryTextVisibility();
 }
 
+void NotificationHeaderView::SetSummaryText(const base::string16& text) {
+  DCHECK(!has_progress_);
+  summary_text_view_->SetText(text);
+  UpdateSummaryTextVisibility();
+}
+
 void NotificationHeaderView::ClearProgress() {
+  summary_text_view_->SetText(base::string16());
   has_progress_ = false;
   UpdateSummaryTextVisibility();
 }
@@ -296,15 +305,10 @@ void NotificationHeaderView::SetOverflowIndicator(int count) {
   if (count > 0) {
     summary_text_view_->SetText(l10n_util::GetStringFUTF16Int(
         IDS_MESSAGE_CENTER_LIST_NOTIFICATION_HEADER_OVERFLOW_INDICATOR, count));
-    has_overflow_indicator_ = true;
   } else {
-    has_overflow_indicator_ = false;
+    summary_text_view_->SetText(base::string16());
   }
-  UpdateSummaryTextVisibility();
-}
 
-void NotificationHeaderView::ClearOverflowIndicator() {
-  has_overflow_indicator_ = false;
   UpdateSummaryTextVisibility();
 }
 
@@ -353,6 +357,8 @@ void NotificationHeaderView::SetExpanded(bool expanded) {
 void NotificationHeaderView::SetAccentColor(SkColor color) {
   accent_color_ = color;
   app_name_view_->SetEnabledColor(accent_color_);
+  summary_text_view_->SetEnabledColor(accent_color_);
+  summary_text_divider_->SetEnabledColor(accent_color_);
   SetExpanded(is_expanded_);
 }
 
@@ -381,7 +387,7 @@ const gfx::ImageSkia& NotificationHeaderView::app_icon_for_testing() const {
 }
 
 void NotificationHeaderView::UpdateSummaryTextVisibility() {
-  const bool visible = has_progress_ || has_overflow_indicator_;
+  const bool visible = !summary_text_view_->text().empty();
   summary_text_divider_->SetVisible(visible);
   summary_text_view_->SetVisible(visible);
   timestamp_divider_->SetVisible(!has_progress_ && has_timestamp_);

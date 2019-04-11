@@ -535,6 +535,8 @@ TEST_F(MediaNotificationViewTest, UpdateMetadata_FromObserver) {
   ExpectHistogramMetadataRecorded(MediaNotificationView::Metadata::kAlbum, 0);
   ExpectHistogramMetadataRecorded(MediaNotificationView::Metadata::kCount, 1);
 
+  EXPECT_FALSE(header_row()->summary_text_for_testing()->visible());
+
   media_session::MediaMetadata metadata;
   metadata.title = base::ASCIIToUTF16("title2");
   metadata.artist = base::ASCIIToUTF16("artist2");
@@ -545,9 +547,11 @@ TEST_F(MediaNotificationViewTest, UpdateMetadata_FromObserver) {
   EXPECT_TRUE(title_artist_row()->visible());
   EXPECT_TRUE(title_label()->visible());
   EXPECT_TRUE(artist_label()->visible());
+  EXPECT_TRUE(header_row()->summary_text_for_testing()->visible());
 
   EXPECT_EQ(metadata.title, title_label()->text());
   EXPECT_EQ(metadata.artist, artist_label()->text());
+  EXPECT_EQ(metadata.album, header_row()->summary_text_for_testing()->text());
 
   EXPECT_EQ(kMediaTitleArtistRowExpectedHeight, title_artist_row()->height());
 
