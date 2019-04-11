@@ -5691,21 +5691,6 @@
             ]
         }
     ],
-    "WebContentsOcclusion": [
-        {
-            "platforms": [
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "WindowsWebContentsOcclusion",
-                    "enable_features": [
-                        "WebContentsOcclusion"
-                    ]
-                }
-            ]
-        }
-    ],
     "WebPaymentsPerMethodCanMakePaymentQuota": [
         {
             "platforms": [
@@ -6057,6 +6042,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "WinOOPSelectFileDialog"
+                    ]
+                }
+            ]
+        }
+    ],
+    "WindowsWebContentsOcclusion": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "WindowsWebContentsOcclusion",
+                    "enable_features": [
+                        "WebContentsOcclusion"
                     ]
                 }
             ]
