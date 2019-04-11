@@ -45,6 +45,11 @@ Polymer({
     /** @type {?print_preview.MeasurementSystem} */
     measurementSystem: Object,
 
+    newPrintPreviewLayout: {
+      type: Boolean,
+      reflectToAttribute: true,
+    },
+
     /** @type {!print_preview.Size} */
     pageSize: Object,
 
@@ -110,6 +115,10 @@ Polymer({
     this.nativeLayer_ = print_preview.NativeLayer.getInstance();
     this.addWebUIListener(
         'page-preview-ready', this.onPagePreviewReady_.bind(this));
+    if (this.newPrintPreviewLayout) {
+      this.addWebUIListener(
+          'dark-mode-changed', this.onDarkModeChanged_.bind(this));
+    }
 
     this.pluginProxy_ = print_preview_new.PluginProxy.getInstance();
     if (!this.pluginProxy_.checkPluginCompatibility(assert(
@@ -257,9 +266,12 @@ Polymer({
     }
   },
 
-  /** @private */
-  startPreview: function() {
-    if (!this.hasTicketChanged_() &&
+  /**
+   * @param {boolean} forceUpdate Whether to force the preview area to update
+   *     regardless of whether the print ticket has changed.
+   */
+  startPreview: function(forceUpdate) {
+    if (!this.hasTicketChanged_() && !forceUpdate &&
         this.previewState !== print_preview_new.PreviewAreaState.ERROR) {
       return;
     }
@@ -312,6 +324,10 @@ Polymer({
     }
 
     this.pluginLoaded_ = false;
+    if (document.documentElement.hasAttribute('dark') &&
+        this.newPrintPreviewLayout) {
+      this.pluginProxy_.darkModeChanged(true);
+    }
     this.pluginProxy_.resetPrintPreviewMode(
         previewUid, index, !this.getSettingValue('color'),
         /** @type {!Array<number>} */ (this.getSettingValue('pages')),
@@ -381,6 +397,21 @@ Polymer({
     }
     if (index != -1) {
       this.pluginProxy_.loadPreviewPage(previewUid, pageIndex, index);
+    }
+  },
+
+  /**
+   * @param {boolean} darkMode Whether the page is now in dark mode.
+   * @private
+   */
+  onDarkModeChanged_: function(darkMode) {
+    if (this.pluginProxy_.pluginReady()) {
+      this.pluginProxy_.darkModeChanged(darkMode);
+    }
+
+    if (this.previewState ===
+        print_preview_new.PreviewAreaState.DISPLAY_PREVIEW) {
+      this.startPreview(true);
     }
   },
 

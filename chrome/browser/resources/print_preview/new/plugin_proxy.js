@@ -159,6 +159,11 @@ cr.define('print_preview_new', function() {
       this.plugin_.loadPreviewPage(
           this.getPreviewUrl_(previewUid, pageIndex), index);
     }
+
+    /** @param {boolean} darkMode Whether the page is in dark mode. */
+    darkModeChanged(darkMode) {
+      this.plugin_.darkModeChanged(darkMode);
+    }
   }
 
   /** @type {?print_preview_new.PluginProxy} */

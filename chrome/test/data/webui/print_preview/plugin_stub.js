@@ -89,6 +89,8 @@ cr.define('print_preview', function() {
         this.loadCallback_(true);
       }
     }
+
+    darkModeChanged(darkMode) {}
   }
 
   return {PDFPluginStub: PDFPluginStub};

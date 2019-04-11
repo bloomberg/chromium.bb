@@ -215,6 +215,11 @@ PDFScriptingAPI.prototype = {
     this.sendMessage_({type: 'loadPreviewPage', url: url, index: index});
   },
 
+  /** @param {boolean} darkMode Whether the page is in dark mode. */
+  darkModeChanged: function(darkMode) {
+    this.sendMessage_({type: 'darkModeChanged', darkMode: darkMode});
+  },
+
   /**
    * Select all the text in the document. May only be called after document
    * load.
@@ -296,5 +301,6 @@ function PDFCreateOutOfProcessPlugin(src, baseUrl) {
   iframe.sendKeyEvent = client.sendKeyEvent.bind(client);
   iframe.scrollPosition = client.scrollPosition.bind(client);
   iframe.hideToolbars = client.hideToolbars.bind(client);
+  iframe.darkModeChanged = client.darkModeChanged.bind(client);
   return iframe;
 }

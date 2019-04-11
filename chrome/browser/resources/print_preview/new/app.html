@@ -45,12 +45,12 @@
 
       #preview-area-container {
         align-items: center;
-        background-color: var(--google-grey-200);
+        background-color: var(--preview-area-background-color);
         flex: 1;
       }
 
-      :host-context([dark]) #preview-area-container {
-        background-color: var(--google-grey-400);
+      :host([new-print-preview-layout_]) #preview-area-container {
+        background-color: var(--preview-area-background-color-new);
       }
     </style>
     <print-preview-state id="state" state="{{state}}" error="{{error_}}">
@@ -90,6 +90,7 @@
           document-modifiable="[[documentSettings_.isModifiable]]"
           margins="[[margins_]]" page-size="[[pageSize_]]" state="[[state]]"
           measurement-system="[[measurementSystem_]]"
+          new-print-preview-layout="[[newPrintPreviewLayout_]]"
           preview-state="{{previewState_}}" on-preview-start="onPreviewStart_">
       </print-preview-preview-area>
     </div>

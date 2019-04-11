@@ -350,7 +350,7 @@ Polymer({
   /** @private */
   onPreviewSettingChanged_: function() {
     if (this.state === print_preview_new.State.READY) {
-      this.$.previewArea.startPreview();
+      this.$.previewArea.startPreview(false);
       this.startPreviewWhenReady_ = false;
     } else {
       this.startPreviewWhenReady_ = true;
@@ -361,7 +361,7 @@ Polymer({
   onStateChanged_: function() {
     if (this.state == print_preview_new.State.READY) {
       if (this.startPreviewWhenReady_) {
-        this.$.previewArea.startPreview();
+        this.$.previewArea.startPreview(false);
         this.startPreviewWhenReady_ = false;
       }
       if (this.isInKioskAutoPrintMode_ || this.printRequested_) {

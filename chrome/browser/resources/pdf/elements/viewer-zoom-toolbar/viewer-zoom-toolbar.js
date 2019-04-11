@@ -11,12 +11,15 @@ Polymer({
   is: 'viewer-zoom-toolbar',
 
   properties: {
-    reverse: Boolean,
+    newPrintPreview: {
+      type: Boolean,
+      reflectToAttribute: true,
+    },
 
     /** @private */
     showOnLeft_: {
       type: Boolean,
-      computed: 'computeShowOnLeft_(reverse)',
+      computed: 'computeShowOnLeft_(newPrintPreview)',
       reflectToAttribute: true,
     },
 
@@ -47,7 +50,7 @@ Polymer({
    * @private
    */
   computeShowOnLeft_: function() {
-    return isRTL() !== this.reverse;
+    return isRTL() !== this.newPrintPreview;
   },
 
   /**
