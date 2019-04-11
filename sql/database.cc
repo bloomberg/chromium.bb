@@ -518,20 +518,25 @@ std::string Database::CollectErrorInfo(int error, Statement* stmt) const {
   // SQLITE_ERROR often indicates some sort of mismatch between the statement
   // and the schema, possibly due to a failed schema migration.
   if (error == SQLITE_ERROR) {
-    const char* kVersionSql = "SELECT value FROM meta WHERE key = 'version'";
-    sqlite3_stmt* s;
-    int rc = sqlite3_prepare_v2(db_, kVersionSql, -1, &s, nullptr);
+    static const char kVersionSql[] =
+        "SELECT value FROM meta WHERE key='version'";
+    sqlite3_stmt* sqlite_statement;
+    // When the number of bytes passed to sqlite3_prepare_v3() includes the null
+    // terminator, SQLite avoids a buffer copy.
+    int rc = sqlite3_prepare_v3(db_, kVersionSql, sizeof(kVersionSql),
+                                SQLITE_PREPARE_NO_VTAB, &sqlite_statement,
+                                /* pzTail= */ nullptr);
     if (rc == SQLITE_OK) {
-      rc = sqlite3_step(s);
+      rc = sqlite3_step(sqlite_statement);
       if (rc == SQLITE_ROW) {
         base::StringAppendF(&debug_info, "version: %d\n",
-                            sqlite3_column_int(s, 0));
+                            sqlite3_column_int(sqlite_statement, 0));
       } else if (rc == SQLITE_DONE) {
         debug_info += "version: none\n";
       } else {
         base::StringAppendF(&debug_info, "version: error %d\n", rc);
       }
-      sqlite3_finalize(s);
+      sqlite3_finalize(sqlite_statement);
     } else {
       base::StringAppendF(&debug_info, "version: prepare error %d\n", rc);
     }
@@ -548,15 +553,19 @@ std::string Database::CollectErrorInfo(int error, Statement* stmt) const {
     // |rootpage| is not interesting for debugging, without the contents of the
     // database.  The COALESCE is because certain automatic elements will have a
     // |name| but no |sql|,
-    const char* kSchemaSql = "SELECT COALESCE(sql, name) FROM sqlite_master";
-    rc = sqlite3_prepare_v2(db_, kSchemaSql, -1, &s, nullptr);
+    static const char kSchemaSql[] =
+        "SELECT COALESCE(sql,name) FROM sqlite_master";
+    rc = sqlite3_prepare_v3(db_, kSchemaSql, sizeof(kSchemaSql),
+                            SQLITE_PREPARE_NO_VTAB, &sqlite_statement,
+                            /* pzTail= */ nullptr);
     if (rc == SQLITE_OK) {
-      while ((rc = sqlite3_step(s)) == SQLITE_ROW) {
-        base::StringAppendF(&debug_info, "%s\n", sqlite3_column_text(s, 0));
+      while ((rc = sqlite3_step(sqlite_statement)) == SQLITE_ROW) {
+        base::StringAppendF(&debug_info, "%s\n",
+                            sqlite3_column_text(sqlite_statement, 0));
       }
       if (rc != SQLITE_DONE)
         base::StringAppendF(&debug_info, "error %d\n", rc);
-      sqlite3_finalize(s);
+      sqlite3_finalize(sqlite_statement);
     } else {
       base::StringAppendF(&debug_info, "prepare error %d\n", rc);
     }
@@ -1099,24 +1108,24 @@ int Database::ExecuteAndReturnErrorCode(const char* sql) {
 
   int rc = SQLITE_OK;
   while ((rc == SQLITE_OK) && *sql) {
-    sqlite3_stmt* stmt = nullptr;
+    sqlite3_stmt* sqlite_statement;
     const char* leftover_sql;
-
-    rc = sqlite3_prepare_v2(db_, sql, -1, &stmt, &leftover_sql);
-    sql = leftover_sql;
-
+    rc = sqlite3_prepare_v3(db_, sql, /* nByte= */ -1, /* prepFlags= */ 0,
+                            &sqlite_statement, &leftover_sql);
     // Stop if an error is encountered.
     if (rc != SQLITE_OK)
       break;
+
+    sql = leftover_sql;
 
     // This happens if |sql| originally only contained comments or whitespace.
     // TODO(shess): Audit to see if this can become a DCHECK().  Having
     // extraneous comments and whitespace in the SQL statements increases
     // runtime cost and can easily be shifted out to the C++ layer.
-    if (!stmt)
+    if (!sqlite_statement)
       continue;
 
-    while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
+    while ((rc = sqlite3_step(sqlite_statement)) == SQLITE_ROW) {
       // TODO(shess): Audit to see if this can become a DCHECK.  I think PRAGMA
       // is the only legitimate case for this. Previously recorded histograms
       // show significant use of this code path.
@@ -1124,7 +1133,7 @@ int Database::ExecuteAndReturnErrorCode(const char* sql) {
 
     // sqlite3_finalize() returns SQLITE_OK if the most recent sqlite3_step()
     // returned SQLITE_DONE or SQLITE_ROW, otherwise the error code.
-    rc = sqlite3_finalize(stmt);
+    rc = sqlite3_finalize(sqlite_statement);
 
     // sqlite3_exec() does this, presumably to avoid spinning the parser for
     // trailing whitespace.
@@ -1216,8 +1225,11 @@ scoped_refptr<Database::StatementRef> Database::GetStatementImpl(
   base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
   InitScopedBlockingCall(&scoped_blocking_call);
 
-  sqlite3_stmt* stmt = nullptr;
-  int rc = sqlite3_prepare_v2(db_, sql, -1, &stmt, nullptr);
+  // TODO(pwnall): Cached statements (but not unique statements) should be
+  //               prepared with prepFlags set to SQLITE_PREPARE_PERSISTENT.
+  sqlite3_stmt* sqlite_statement;
+  int rc = sqlite3_prepare_v3(db_, sql, /* nByte= */ -1, /* prepFlags= */ 0,
+                              &sqlite_statement, /* pzTail= */ nullptr);
   if (rc != SQLITE_OK) {
     // This is evidence of a syntax error in the incoming SQL.
     DCHECK_NE(rc, SQLITE_ERROR) << "SQL compile error " << GetErrorMessage();
@@ -1226,7 +1238,8 @@ scoped_refptr<Database::StatementRef> Database::GetStatementImpl(
     OnSqliteError(rc, nullptr, sql);
     return base::MakeRefCounted<StatementRef>(nullptr, nullptr, false);
   }
-  return base::MakeRefCounted<StatementRef>(tracking_db, stmt, true);
+  return base::MakeRefCounted<StatementRef>(tracking_db, sqlite_statement,
+                                            true);
 }
 
 scoped_refptr<Database::StatementRef> Database::GetUntrackedStatement(
@@ -1265,11 +1278,14 @@ bool Database::IsSQLValid(const char* sql) {
     return false;
   }
 
-  sqlite3_stmt* stmt = nullptr;
-  if (sqlite3_prepare_v2(db_, sql, -1, &stmt, nullptr) != SQLITE_OK)
+  sqlite3_stmt* sqlite_statement = nullptr;
+  if (sqlite3_prepare_v3(db_, sql, /* nByte= */ -1, /* prepFlags= */ 0,
+                         &sqlite_statement,
+                         /* pzTail= */ nullptr) != SQLITE_OK) {
     return false;
+  }
 
-  sqlite3_finalize(stmt);
+  sqlite3_finalize(sqlite_statement);
   return true;
 }
 
