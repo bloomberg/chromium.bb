@@ -3691,6 +3691,37 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="A menulist option in ChromeVox rich text settings to announce rich text" name="IDS_CHROMEVOX_RICH_TEXT_ANNOUNCE">
         Announce
       </message>
+
+      <message desc="An option to announce download notifications." name="IDS_CHROMEVOX_OPTIONS_ANNOUNCE_DOWNLOAD">
+        Announce download notifications
+      </message>
+      <message desc="Spoken when a download is started" name="IDS_CHROMEVOX_DOWNLOAD_STARTED">
+        Download started <ph name="file_name">$1<ex>test.pdf</ex></ph>
+      </message>
+      <message desc="Spoken when a download is completed" name="IDS_CHROMEVOX_DOWNLOAD_COMPLETED">
+        Download completed <ph name="file_name">$1<ex>test.pdf</ex></ph>
+      </message>
+      <message desc="Spoken when a download is stopped" name="IDS_CHROMEVOX_DOWNLOAD_STOPPED">
+        Download stopped <ph name="file_name">$1<ex>test.pdf</ex></ph>
+      </message>
+      <message desc="Spoken when a download is paused" name="IDS_CHROMEVOX_DOWNLOAD_PAUSED">
+        Download paused <ph name="file_name">$1<ex>test.pdf</ex></ph>
+      </message>
+      <message desc="Spoken when a download is resumed" name="IDS_CHROMEVOX_DOWNLOAD_RESUMED">
+        Download resumed <ph name="file_name">$1<ex>test.pdf</ex></ph>
+      </message>
+      <message desc="Spoken to give progress on a current download, specifying percent complete and time remaining." name="IDS_CHROMEVOX_DOWNLOAD_PROGRESS">
+        Download <ph name="progress">$1<ex>50</ex></ph>% complete <ph name="file_name">$2<ex>test.pdf</ex></ph>. About <ph name="time">$3<ex>30</ex></ph> <ph name="units">$4<ex>minutes</ex></ph> remaining.
+      </message>
+      <message desc="A string to specify time units in seconds." name="IDS_CHROMEVOX_SECONDS">
+        {COUNT, plural, =1 {second}other {seconds}}
+      </message>
+      <message desc="A string to specify time units in minutes." name="IDS_CHROMEVOX_MINUTES">
+        {COUNT, plural, =1 {minute}other {minutes}}
+      </message>
+      <message desc="A string to specify time units in hours." name="IDS_CHROMEVOX_HOURS">
+        {COUNT, plural, =1 {hour}other {hours}}
+      </message>
     </messages>
   </release>
 </grit>
