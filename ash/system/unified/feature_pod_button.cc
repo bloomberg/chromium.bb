@@ -21,6 +21,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/view_class_properties.h"
 
 namespace ash {
 
@@ -40,6 +41,10 @@ FeaturePodIconButton::FeaturePodIconButton(views::ButtonListener* listener)
   SetBorder(views::CreateEmptyBorder(kUnifiedFeaturePodIconPadding));
   SetImageAlignment(ALIGN_CENTER, ALIGN_MIDDLE);
   TrayPopupUtils::ConfigureTrayPopupButton(this);
+
+  auto path = std::make_unique<SkPath>();
+  path->addOval(gfx::RectToSkRect(gfx::Rect(kUnifiedFeaturePodIconSize)));
+  SetProperty(views::kHighlightPathKey, path.release());
 }
 
 FeaturePodIconButton::~FeaturePodIconButton() = default;
@@ -130,6 +135,8 @@ FeaturePodLabelButton::FeaturePodLabelButton(views::ButtonListener* listener)
 FeaturePodLabelButton::~FeaturePodLabelButton() = default;
 
 void FeaturePodLabelButton::Layout() {
+  DCHECK(focus_ring());
+  focus_ring()->Layout();
   LayoutInCenter(label_, GetContentsBounds().y());
   LayoutInCenter(sub_label_, GetContentsBounds().CenterPoint().y());
 
