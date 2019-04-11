@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/scoped_file.h"
+#include "build/build_config.h"
 #include "media/base/scopedfd_helper.h"
 #include "media/base/video_frame_layout.h"
 #include "media/gpu/format_utils.h"
@@ -102,18 +103,28 @@ gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferHandle(
   DCHECK(video_frame);
 
   gfx::GpuMemoryBufferHandle handle;
+#if defined(OS_LINUX)
   handle.type = gfx::NATIVE_PIXMAP;
 
   std::vector<base::ScopedFD> duped_fds =
       DuplicateFDs(video_frame->DmabufFds());
   const size_t num_planes = VideoFrame::NumPlanes(video_frame->format());
-  DCHECK_EQ(num_planes, duped_fds.size());
+  const size_t num_buffers = video_frame->layout().buffer_sizes().size();
+  DCHECK_EQ(video_frame->layout().planes().size(), num_planes);
+
+  // TODO(crbug.com/946880): Handles case that num_planes mismatches num_buffers
   for (size_t i = 0; i < num_planes; ++i) {
     const auto& plane = video_frame->layout().planes()[i];
+    size_t buffer_size = 0;
+    if (i < num_buffers)
+      buffer_size = video_frame->layout().buffer_sizes()[i];
     handle.native_pixmap_handle.planes.emplace_back(
-        plane.stride, plane.offset, i, std::move(duped_fds[i]), plane.modifier);
+        plane.stride, plane.offset, buffer_size, std::move(duped_fds[i]),
+        plane.modifier);
   }
-
+#else
+  NOTREACHED();
+#endif  // defined(OS_LINUX)
   return handle;
 }
 

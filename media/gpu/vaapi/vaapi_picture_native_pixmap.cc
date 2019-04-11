@@ -50,29 +50,4 @@ VASurfaceID VaapiPictureNativePixmap::va_surface_id() const {
   return va_surface_->id();
 }
 
-// static
-gfx::GpuMemoryBufferHandle
-VaapiPictureNativePixmap::CreateGpuMemoryBufferHandleFromVideoFrame(
-    const VideoFrame* const video_frame) {
-  DCHECK(video_frame->HasDmaBufs());
-
-  const auto& planes = video_frame->layout().planes();
-  const auto& fds = video_frame->DmabufFds();
-  DCHECK_EQ(fds.size(), planes.size());
-
-  gfx::GpuMemoryBufferHandle handle;
-  handle.type = gfx::NATIVE_PIXMAP;
-  for (size_t i = 0; i < planes.size(); ++i) {
-    int dup_fd = HANDLE_EINTR(dup(fds[i].get()));
-    if (dup_fd == -1) {
-      PLOG(ERROR) << "Failed duplicating dmabuf fd";
-      return gfx::GpuMemoryBufferHandle();
-    }
-
-    handle.native_pixmap_handle.planes.emplace_back(
-        planes[i].stride, planes[i].offset, 0, base::ScopedFD(dup_fd));
-  }
-  return handle;
-}
-
 }  // namespace media

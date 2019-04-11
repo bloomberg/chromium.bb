@@ -41,8 +41,8 @@
 #include "media/gpu/vp8_reference_frame_vector.h"
 #include "media/gpu/vp9_reference_frame_vector.h"
 
-#if defined(OS_POSIX)
-#include "media/gpu/vaapi/vaapi_picture_native_pixmap.h"
+#if defined(OS_LINUX)
+#include "media/gpu/linux/platform_video_frame_utils.h"
 #endif
 
 #define NOTIFY_ERROR(error, msg)                        \
@@ -555,10 +555,8 @@ scoped_refptr<VaapiEncodeJob> VaapiVideoEncodeAccelerator::CreateEncodeJob(
         vaapi_wrapper_, MakeGLContextCurrentCallback(), BindGLImageCallback(),
         PictureBuffer(kDummyPictureBufferId, frame->coded_size()));
     gfx::GpuMemoryBufferHandle gmb_handle;
-#if defined(OS_POSIX)
-    gmb_handle =
-        VaapiPictureNativePixmap::CreateGpuMemoryBufferHandleFromVideoFrame(
-            frame.get());
+#if defined(OS_LINUX)
+    gmb_handle = CreateGpuMemoryBufferHandle(frame.get());
 #endif
     if (gmb_handle.is_null()) {
       NOTIFY_ERROR(kPlatformFailureError,
