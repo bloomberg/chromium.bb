@@ -28,6 +28,9 @@
 // Global dispatcher.
 @property(nonatomic, weak) id<ApplicationCommands> dispatcher;
 
+// Dismisses the Google services navigation view controller.
+- (void)dismissAnimated:(BOOL)animated;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_GOOGLE_SERVICES_NAVIGATION_COORDINATOR_H_
