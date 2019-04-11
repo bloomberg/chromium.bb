@@ -24,8 +24,11 @@ class Event {
   void Reset();
 
   // Wait for the event to become signaled, for the specified number of
-  // |milliseconds|.  To wait indefinetly, pass kForever.
-  bool Wait(int milliseconds);
+  // milliseconds.  To wait indefinetly, pass kForever.
+  bool Wait(int give_up_after_ms);
+  bool Wait(int give_up_after_ms, int /*warn_after_ms*/) {
+    return Wait(give_up_after_ms);
+  }
 
  private:
   base::WaitableEvent event_;
