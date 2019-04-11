@@ -1180,6 +1180,7 @@ void SafeBrowsingUIHandler::GetReferrerChain(const base::ListValue* args) {
   if (!provider) {
     AllowJavascript();
     ResolveJavascriptCallback(base::Value(callback_id), base::Value(""));
+    return;
   }
 
   ReferrerChain referrer_chain;
