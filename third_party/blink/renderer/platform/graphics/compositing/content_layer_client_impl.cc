@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/graphics/compositing/content_layer_client_impl.h"
 
 #include <memory>
+#include "base/bind.h"
 #include "base/optional.h"
 #include "base/trace_event/traced_value.h"
 #include "cc/paint/paint_flags.h"
@@ -24,9 +25,9 @@ namespace blink {
 
 ContentLayerClientImpl::ContentLayerClientImpl()
     : cc_picture_layer_(cc::PictureLayer::Create(this)),
-      raster_invalidator_([this](const IntRect& rect) {
-        cc_picture_layer_->SetNeedsDisplayRect(rect);
-      }),
+      raster_invalidator_(
+          base::BindRepeating(&ContentLayerClientImpl::InvalidateRect,
+                              base::Unretained(this))),
       layer_state_(PropertyTreeState::Uninitialized()),
       weak_ptr_factory_(this) {
   cc_picture_layer_->SetLayerClient(weak_ptr_factory_.GetWeakPtr());

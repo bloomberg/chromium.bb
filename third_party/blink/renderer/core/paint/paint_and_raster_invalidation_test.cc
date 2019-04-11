@@ -240,13 +240,13 @@ TEST_P(PaintAndRasterInvalidationTest, SubpixelWithinPixelsChange) {
   SetUpHTML(*this);
   Element* target = GetDocument().getElementById("target");
   LayoutObject* object = target->GetLayoutObject();
-  EXPECT_EQ(LayoutRect(0, 0, 50, 100), object->FirstFragment().VisualRect());
+  EXPECT_EQ(IntRect(0, 0, 50, 100), object->FirstFragment().VisualRect());
 
   GetDocument().View()->SetTracksPaintInvalidations(true);
   target->setAttribute(html_names::kStyleAttr,
                        "margin-top: 0.6px; width: 50px; height: 99.3px");
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(LayoutRect(0, 0, 50, 100), object->FirstFragment().VisualRect());
+  EXPECT_EQ(IntRect(0, 0, 50, 100), object->FirstFragment().VisualRect());
   EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
               UnorderedElementsAre(RasterInvalidationInfo{
                   object, object->DebugName(), IntRect(0, 0, 50, 100),
@@ -257,7 +257,7 @@ TEST_P(PaintAndRasterInvalidationTest, SubpixelWithinPixelsChange) {
   target->setAttribute(html_names::kStyleAttr,
                        "margin-top: 0.6px; width: 49.3px; height: 98.5px");
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(LayoutRect(0, 0, 50, 100), object->FirstFragment().VisualRect());
+  EXPECT_EQ(IntRect(0, 0, 50, 100), object->FirstFragment().VisualRect());
   EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
               UnorderedElementsAre(RasterInvalidationInfo{
                   object, object->DebugName(), IntRect(0, 0, 50, 100),
@@ -783,14 +783,14 @@ TEST_P(PaintAndRasterInvalidationTest,
   LayoutView* child_layout_view = ChildDocument().GetLayoutView();
   EXPECT_EQ(GetDocument().GetLayoutView(),
             &child_layout_view->ContainerForPaintInvalidation());
-  EXPECT_EQ(LayoutRect(0, 0, 100, 100),
+  EXPECT_EQ(IntRect(0, 0, 100, 100),
             child_layout_view->FirstFragment().VisualRect());
 
   iframe->setAttribute(html_names::kStyleAttr, "border: 20px solid blue");
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(GetDocument().GetLayoutView(),
             &child_layout_view->ContainerForPaintInvalidation());
-  EXPECT_EQ(LayoutRect(0, 0, 100, 100),
+  EXPECT_EQ(IntRect(0, 0, 100, 100),
             child_layout_view->FirstFragment().VisualRect());
 }
 
@@ -860,19 +860,19 @@ TEST_P(PaintAndRasterInvalidationTest, SVGHiddenContainer) {
 
   // mask_rect's visual rect is in coordinates of the mask.
   auto* mask_rect = GetLayoutObjectByElementId("mask-rect");
-  EXPECT_EQ(LayoutRect(), mask_rect->FirstFragment().VisualRect());
+  EXPECT_EQ(IntRect(), mask_rect->FirstFragment().VisualRect());
 
   // real_rect's visual rect is in coordinates of its paint invalidation
   // container (the view).
   auto* real_rect = GetLayoutObjectByElementId("real-rect");
-  EXPECT_EQ(LayoutRect(55, 66, 7, 8), real_rect->FirstFragment().VisualRect());
+  EXPECT_EQ(IntRect(55, 66, 7, 8), real_rect->FirstFragment().VisualRect());
 
   GetDocument().View()->SetTracksPaintInvalidations(true);
   ToElement(mask_rect->GetNode())->setAttribute("x", "20");
   UpdateAllLifecyclePhasesForTest();
 
-  EXPECT_EQ(LayoutRect(), mask_rect->FirstFragment().VisualRect());
-  EXPECT_EQ(LayoutRect(55, 66, 7, 8), real_rect->FirstFragment().VisualRect());
+  EXPECT_EQ(IntRect(), mask_rect->FirstFragment().VisualRect());
+  EXPECT_EQ(IntRect(55, 66, 7, 8), real_rect->FirstFragment().VisualRect());
 
   // Should invalidate raster for real_rect only.
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
@@ -914,11 +914,11 @@ TEST_P(PaintAndRasterInvalidationTest, UpdateVisualRectWhenPrinting) {
   )HTML");
 
   auto* a = GetDocument().getElementById("a")->GetLayoutObject();
-  EXPECT_EQ(LayoutRect(0, 0, 150, 20), a->FirstFragment().VisualRect());
+  EXPECT_EQ(IntRect(0, 0, 150, 20), a->FirstFragment().VisualRect());
   auto* b = GetDocument().getElementById("b")->GetLayoutObject();
-  EXPECT_EQ(LayoutRect(150, 0, 150, 20), b->FirstFragment().VisualRect());
+  EXPECT_EQ(IntRect(150, 0, 150, 20), b->FirstFragment().VisualRect());
   auto* c = GetDocument().getElementById("c")->GetLayoutObject();
-  EXPECT_EQ(LayoutRect(300, 0, 150, 20), c->FirstFragment().VisualRect());
+  EXPECT_EQ(IntRect(300, 0, 150, 20), c->FirstFragment().VisualRect());
 
   // Print the page with a width of 400px which will require wrapping 'c'.
   FloatSize page_size(400, 200);
@@ -929,10 +929,10 @@ TEST_P(PaintAndRasterInvalidationTest, UpdateVisualRectWhenPrinting) {
   b = GetDocument().getElementById("b")->GetLayoutObject();
   c = GetDocument().getElementById("c")->GetLayoutObject();
 
-  EXPECT_EQ(LayoutRect(0, 0, 150, 20), a->FirstFragment().VisualRect());
-  EXPECT_EQ(LayoutRect(150, 0, 150, 20), b->FirstFragment().VisualRect());
+  EXPECT_EQ(IntRect(0, 0, 150, 20), a->FirstFragment().VisualRect());
+  EXPECT_EQ(IntRect(150, 0, 150, 20), b->FirstFragment().VisualRect());
   // 'c' should be on the next line.
-  EXPECT_EQ(LayoutRect(0, 20, 150, 20), c->FirstFragment().VisualRect());
+  EXPECT_EQ(IntRect(0, 20, 150, 20), c->FirstFragment().VisualRect());
 
   GetFrame().EndPrinting();
   GetDocument().View()->UpdateLifecyclePhasesForPrinting();
@@ -940,9 +940,9 @@ TEST_P(PaintAndRasterInvalidationTest, UpdateVisualRectWhenPrinting) {
   b = GetDocument().getElementById("b")->GetLayoutObject();
   c = GetDocument().getElementById("c")->GetLayoutObject();
 
-  EXPECT_EQ(LayoutRect(0, 0, 150, 20), a->FirstFragment().VisualRect());
-  EXPECT_EQ(LayoutRect(150, 0, 150, 20), b->FirstFragment().VisualRect());
-  EXPECT_EQ(LayoutRect(300, 0, 150, 20), c->FirstFragment().VisualRect());
+  EXPECT_EQ(IntRect(0, 0, 150, 20), a->FirstFragment().VisualRect());
+  EXPECT_EQ(IntRect(150, 0, 150, 20), b->FirstFragment().VisualRect());
+  EXPECT_EQ(IntRect(300, 0, 150, 20), c->FirstFragment().VisualRect());
 }
 
 TEST_P(PaintAndRasterInvalidationTest, PaintPropertyChange) {

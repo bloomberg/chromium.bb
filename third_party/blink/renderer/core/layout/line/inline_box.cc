@@ -95,11 +95,11 @@ String InlineBox::DebugName() const {
   return BoxName();
 }
 
-LayoutRect InlineBox::VisualRect() const {
+IntRect InlineBox::VisualRect() const {
   return GetLineLayoutItem().VisualRectForInlineBox();
 }
 
-LayoutRect InlineBox::PartialInvalidationVisualRect() const {
+IntRect InlineBox::PartialInvalidationVisualRect() const {
   return GetLineLayoutItem().PartialInvalidationVisualRectForInlineBox();
 }
 

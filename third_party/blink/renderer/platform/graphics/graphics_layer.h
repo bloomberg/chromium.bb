@@ -274,7 +274,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   // DisplayItemClient methods
   String DebugName() const final { return client_.DebugName(this); }
-  LayoutRect VisualRect() const override;
+  IntRect VisualRect() const override;
 
   void SetHasWillChangeTransformHint(bool);
 

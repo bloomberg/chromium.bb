@@ -71,14 +71,14 @@ void ChunkToLayerMapper::SwitchToChunk(const PaintChunk& chunk) {
   has_filter_that_moves_pixels_ = new_has_filter_that_moves_pixels;
 }
 
-IntRect ChunkToLayerMapper::MapVisualRect(const FloatRect& rect) const {
+IntRect ChunkToLayerMapper::MapVisualRect(const IntRect& rect) const {
   if (rect.IsEmpty())
     return IntRect();
 
   if (UNLIKELY(has_filter_that_moves_pixels_))
     return MapUsingGeometryMapper(rect);
 
-  auto mapped_rect = rect;
+  FloatRect mapped_rect(rect);
   translation_2d_or_matrix_.MapRect(mapped_rect);
   if (!mapped_rect.IsEmpty() && !clip_rect_.IsInfinite())
     mapped_rect.Intersect(clip_rect_.Rect());
@@ -104,9 +104,8 @@ IntRect ChunkToLayerMapper::MapVisualRect(const FloatRect& rect) const {
 // This is called when the fast path doesn't apply if there is any filter that
 // moves pixels. GeometryMapper::LocalToAncestorVisualRect() will apply the
 // visual effects of the filters, though slowly.
-IntRect ChunkToLayerMapper::MapUsingGeometryMapper(
-    const FloatRect& rect) const {
-  FloatClipRect visual_rect(rect);
+IntRect ChunkToLayerMapper::MapUsingGeometryMapper(const IntRect& rect) const {
+  FloatClipRect visual_rect((FloatRect(rect)));
   GeometryMapper::LocalToAncestorVisualRect(chunk_state_, layer_state_,
                                             visual_rect);
   if (visual_rect.Rect().IsEmpty())

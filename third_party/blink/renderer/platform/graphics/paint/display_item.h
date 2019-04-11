@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_DISPLAY_ITEM_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_DISPLAY_ITEM_H_
 
-#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/graphics/contiguous_container.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -188,14 +188,14 @@ class PLATFORM_EXPORT DisplayItem {
   // This equals to Client().VisualRect() as long as the client is alive and is
   // not invalidated. Otherwise it saves the previous visual rect of the client.
   // See DisplayItemClient::VisualRect() about its coordinate space.
-  const FloatRect& VisualRect() const { return visual_rect_; }
+  const IntRect& VisualRect() const { return visual_rect_; }
   float OutsetForRasterEffects() const { return outset_for_raster_effects_; }
 
   // Visual rect can change without needing invalidation of the client, e.g.
   // when ancestor clip changes. This is called from PaintController::
   // UseCachedItemIfPossible() to update the visual rect of a cached display
   // item.
-  void UpdateVisualRect() { visual_rect_ = FloatRect(client_->VisualRect()); }
+  void UpdateVisualRect() { visual_rect_ = client_->VisualRect(); }
 
   Type GetType() const { return static_cast<Type>(type_); }
 
@@ -281,7 +281,7 @@ class PLATFORM_EXPORT DisplayItem {
   DisplayItem() : draws_content_(false), is_tombstone_(true) {}
 
   const DisplayItemClient* client_;
-  FloatRect visual_rect_;
+  IntRect visual_rect_;
   float outset_for_raster_effects_;
 
   static_assert(kTypeLast < (1 << 7), "DisplayItem::Type should fit in 7 bits");

@@ -662,7 +662,7 @@ TEST_P(VisualRectMappingTest,
   LayoutRect rect = normal_flow_visual_rect;
   EXPECT_TRUE(normal_flow->MapToVisualRectInAncestorSpace(scroller, rect));
   EXPECT_EQ(LayoutRect(0, 0, 2000, 2000), rect);
-  EXPECT_EQ(rect, normal_flow->FirstFragment().VisualRect());
+  EXPECT_EQ(EnclosingIntRect(rect), normal_flow->FirstFragment().VisualRect());
 
   auto* stacking_context =
       To<LayoutBlock>(GetLayoutObjectByElementId("stacking-context"));
@@ -769,7 +769,7 @@ TEST_P(VisualRectMappingTest, FloatUnderInline) {
   } else {
     EXPECT_EQ(LayoutRect(66, 55, 33, 44), rect);
   }
-  EXPECT_EQ(rect, target->FirstFragment().VisualRect());
+  EXPECT_EQ(EnclosingIntRect(rect), target->FirstFragment().VisualRect());
 
   rect = target_visual_rect;
 

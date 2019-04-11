@@ -1662,17 +1662,17 @@ DOMNodeId LayoutObject::OwnerNodeId() const {
   return GetNode() ? DOMNodeIds::IdForNode(GetNode()) : kInvalidDOMNodeId;
 }
 
-LayoutRect LayoutObject::FragmentsVisualRectBoundingBox() const {
+IntRect LayoutObject::FragmentsVisualRectBoundingBox() const {
   if (!fragment_.NextFragment())
     return fragment_.VisualRect();
-  LayoutRect visual_rect;
+  IntRect visual_rect;
   for (auto* fragment = &fragment_; fragment;
        fragment = fragment->NextFragment())
     visual_rect.Unite(fragment->VisualRect());
   return visual_rect;
 }
 
-LayoutRect LayoutObject::VisualRect() const {
+IntRect LayoutObject::VisualRect() const {
   return FragmentsVisualRectBoundingBox();
 }
 
@@ -1727,18 +1727,17 @@ void LayoutObject::InvalidatePaint(
 }
 
 void LayoutObject::AdjustVisualRectForCompositedScrolling(
-    LayoutRect& rect,
+    IntRect& rect,
     const LayoutBoxModelObject& paint_invalidation_container) const {
   if (CompositedScrollsWithRespectTo(paint_invalidation_container)) {
-    LayoutSize offset(
-        -ToLayoutBox(&paint_invalidation_container)->ScrolledContentOffset());
-    rect.Move(offset);
+    rect.Move(
+        -ToLayoutBox(paint_invalidation_container).ScrolledContentOffset());
   }
 }
 
-LayoutRect LayoutObject::VisualRectIncludingCompositedScrolling(
+IntRect LayoutObject::VisualRectIncludingCompositedScrolling(
     const LayoutBoxModelObject& paint_invalidation_container) const {
-  LayoutRect rect = VisualRect();
+  IntRect rect = VisualRect();
   AdjustVisualRectForCompositedScrolling(rect, paint_invalidation_container);
   return rect;
 }
@@ -1748,8 +1747,8 @@ void LayoutObject::ClearPreviousVisualRects() {
 
   for (auto* fragment = &fragment_; fragment;
        fragment = fragment->NextFragment()) {
-    fragment->SetVisualRect(LayoutRect());
-    fragment->SetSelectionVisualRect(LayoutRect());
+    fragment->SetVisualRect(IntRect());
+    fragment->SetSelectionVisualRect(IntRect());
   }
 
   // After clearing ("invalidating") the visual rects, mark this object as
@@ -4226,8 +4225,8 @@ void LayoutObject::InvalidateClipPathCache() {
     fragment->InvalidateClipPathCache();
 }
 
-LayoutRect LayoutObject::AdjustVisualRectForInlineBox(
-    const LayoutRect& visual_rect) const {
+IntRect LayoutObject::AdjustVisualRectForInlineBox(
+    const IntRect& visual_rect) const {
   // For simplicity, we use the layout object's visual rect as the visual rect
   // of contained inline boxes, mapped to the correct transform space of the
   // inline boxes.
@@ -4238,7 +4237,7 @@ LayoutRect LayoutObject::AdjustVisualRectForInlineBox(
       // For now this happens for EllipsisBox only.
       auto float_visual_rect = FloatRect(visual_rect);
       float_visual_rect.Move(-scroll_translation->Translation2D());
-      return EnclosingLayoutRect(float_visual_rect);
+      return EnclosingIntRect(float_visual_rect);
     }
   }
   return visual_rect;

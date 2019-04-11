@@ -169,8 +169,8 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   bool ShouldClipOverflow() const;
   bool HasSelfPaintingLayer() const;
   // This is equivalent to LayoutObject::VisualRect
-  LayoutRect VisualRect() const override;
-  LayoutRect PartialInvalidationVisualRect() const override;
+  IntRect VisualRect() const override;
+  IntRect PartialInvalidationVisualRect() const override;
 
   NGPhysicalOffsetRect ComputeLocalSelectionRectForText(
       const LayoutSelectionStatus&) const;

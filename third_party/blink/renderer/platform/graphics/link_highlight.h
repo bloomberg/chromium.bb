@@ -30,7 +30,7 @@ class PLATFORM_EXPORT LinkHighlight : public DisplayItemClient {
   // TODO(wangxianzhu): This class doesn't need to be a DisplayItemClient in
   // CompositeAfterPaint.
   String DebugName() const final { return "LinkHighlight"; }
-  LayoutRect VisualRect() const final { return LayoutRect(); }
+  IntRect VisualRect() const final { return IntRect(); }
 };
 
 }  // namespace blink

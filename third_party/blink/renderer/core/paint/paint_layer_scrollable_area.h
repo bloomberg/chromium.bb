@@ -619,9 +619,9 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   void ScrollControlWasSetNeedsPaintInvalidation() override;
 
-  void SetHorizontalScrollbarVisualRect(const LayoutRect&);
-  void SetVerticalScrollbarVisualRect(const LayoutRect&);
-  void SetScrollCornerAndResizerVisualRect(const LayoutRect&);
+  void SetHorizontalScrollbarVisualRect(const IntRect&);
+  void SetVerticalScrollbarVisualRect(const IntRect&);
+  void SetScrollCornerAndResizerVisualRect(const IntRect&);
 
   // PaintLayer is destructed before PaintLayerScrollable area, during this
   // time before PaintLayerScrollableArea has been collected layer_ will
@@ -696,9 +696,9 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   bool horizontal_scrollbar_previously_was_overlay_;
   bool vertical_scrollbar_previously_was_overlay_;
-  LayoutRect horizontal_scrollbar_visual_rect_;
-  LayoutRect vertical_scrollbar_visual_rect_;
-  LayoutRect scroll_corner_and_resizer_visual_rect_;
+  IntRect horizontal_scrollbar_visual_rect_;
+  IntRect vertical_scrollbar_visual_rect_;
+  IntRect scroll_corner_and_resizer_visual_rect_;
 
   class ScrollingBackgroundDisplayItemClient final : public DisplayItemClient {
     DISALLOW_NEW();
@@ -711,7 +711,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
     void Trace(Visitor* visitor) { visitor->Trace(scrollable_area_); }
 
    private:
-    LayoutRect VisualRect() const final;
+    IntRect VisualRect() const final;
     String DebugName() const final;
     DOMNodeId OwnerNodeId() const final;
     bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const final;

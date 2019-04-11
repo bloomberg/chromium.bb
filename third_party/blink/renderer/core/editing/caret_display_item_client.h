@@ -79,7 +79,7 @@ class CORE_EXPORT CaretDisplayItemClient final : public DisplayItemClient {
                   DisplayItem::Type) const;
 
   // DisplayItemClient methods.
-  LayoutRect VisualRect() const final;
+  IntRect VisualRect() const final;
   String DebugName() const final;
 
  private:
@@ -95,14 +95,14 @@ class CORE_EXPORT CaretDisplayItemClient final : public DisplayItemClient {
 
   // Visual rect of the caret in layout_block_. This is updated by
   // InvalidatePaintIfNeeded().
-  LayoutRect visual_rect_;
+  IntRect visual_rect_;
 
   // These are set to the previous value of layout_bloc_k and visual_rect_
   // during UpdateStyleAndLayoutIfNeeded() if they haven't been set since the
   // last paint invalidation. They can only be used in InvalidatePaintIfNeeded()
   // to invalidate the caret in the previous layout block.
   const LayoutBlock* previous_layout_block_ = nullptr;
-  LayoutRect visual_rect_in_previous_layout_block_;
+  IntRect visual_rect_in_previous_layout_block_;
 
   bool needs_paint_invalidation_ = false;
 

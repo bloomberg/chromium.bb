@@ -11,8 +11,8 @@ namespace blink {
 struct SameSizeAsDisplayItem {
   virtual ~SameSizeAsDisplayItem() = default;  // Allocate vtable pointer.
   void* pointer;
-  LayoutRect rect;
-  LayoutUnit outset;
+  IntRect rect;
+  float outset;
   int i;
 };
 static_assert(sizeof(DisplayItem) == sizeof(SameSizeAsDisplayItem),

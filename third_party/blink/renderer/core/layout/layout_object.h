@@ -258,26 +258,26 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   // Do not call VisualRect directly outside of the DisplayItemClient
   // interface, use a per-fragment one on FragmentData instead.
-  LayoutRect VisualRect() const final;
+  IntRect VisualRect() const final;
 
   void ClearPartialInvalidationVisualRect() const final {
     return GetMutableForPainting()
         .FirstFragment()
-        .SetPartialInvalidationVisualRect(LayoutRect());
+        .SetPartialInvalidationVisualRect(IntRect());
   }
 
   DOMNodeId OwnerNodeId() const final;
 
  public:
-  LayoutRect PartialInvalidationVisualRect() const final {
+  IntRect PartialInvalidationVisualRect() const final {
     return FirstFragment().PartialInvalidationVisualRect();
   }
 
-  LayoutRect VisualRectForInlineBox() const {
+  IntRect VisualRectForInlineBox() const {
     return AdjustVisualRectForInlineBox(VisualRect());
   }
 
-  LayoutRect PartialInvalidationVisualRectForInlineBox() const {
+  IntRect PartialInvalidationVisualRectForInlineBox() const {
     return AdjustVisualRectForInlineBox(PartialInvalidationVisualRect());
   }
 
@@ -1872,7 +1872,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   // The visual rect, in the the space of the paint invalidation container
   // (*not* the graphics layer that paints this object).
-  LayoutRect VisualRectIncludingCompositedScrolling(
+  IntRect VisualRectIncludingCompositedScrolling(
       const LayoutBoxModelObject& paint_invalidation_container) const;
 
   // Called when the previous visual rect(s) is no longer valid.
@@ -1988,7 +1988,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   const FragmentData& FirstFragment() const { return fragment_; }
 
   // Returns the bounding box of the visual rects of all fragments.
-  LayoutRect FragmentsVisualRectBoundingBox() const;
+  IntRect FragmentsVisualRectBoundingBox() const;
 
   void SetNeedsOverflowRecalc();
 
@@ -2074,11 +2074,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
     // The following setters store the current values as calculated during the
     // pre-paint tree walk. TODO(wangxianzhu): Add check of lifecycle states.
-    void SetVisualRect(const LayoutRect& r) {
+    void SetVisualRect(const IntRect& r) {
       layout_object_.fragment_.SetVisualRect(r);
     }
 
-    void SetSelectionVisualRect(const LayoutRect& r) {
+    void SetSelectionVisualRect(const IntRect& r) {
       layout_object_.fragment_.SetSelectionVisualRect(r);
     }
 
@@ -2101,7 +2101,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       layout_object_.AddSubtreePaintPropertyUpdateReason(reason);
     }
 
-    void SetPartialInvalidationVisualRect(const LayoutRect& r) {
+    void SetPartialInvalidationVisualRect(const IntRect& r) {
       DCHECK_EQ(layout_object_.GetDocument().Lifecycle().GetState(),
                 DocumentLifecycle::kInPrePaint);
       FirstFragment().SetPartialInvalidationVisualRect(r);
@@ -2220,7 +2220,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return bitfields_.PreviousOutlineMayBeAffectedByDescendants();
   }
 
-  LayoutRect SelectionVisualRect() const {
+  IntRect SelectionVisualRect() const {
     return fragment_.SelectionVisualRect();
   }
   LayoutRect PartialInvalidationLocalRect() const {
@@ -2468,7 +2468,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // the |paint_invalidation_container|, if needed. They can be different only
   // if |paint_invalidation_container| is a composited scroller.
   void AdjustVisualRectForCompositedScrolling(
-      LayoutRect& visual_rect,
+      IntRect& visual_rect,
       const LayoutBoxModelObject& paint_invalidation_container) const;
 
   FloatQuad LocalToAncestorQuadInternal(const FloatQuad&,
@@ -2539,7 +2539,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   void ApplyPseudoStyleChanges(const ComputedStyle* old_style);
   void ApplyFirstLineChanges(const ComputedStyle* old_style);
 
-  LayoutRect AdjustVisualRectForInlineBox(const LayoutRect&) const;
+  IntRect AdjustVisualRectForInlineBox(const IntRect&) const;
 
   // This is set by Set[Subtree]ShouldDoFullPaintInvalidation, and cleared
   // during PrePaint in this object's InvalidatePaint(). It's different from

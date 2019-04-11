@@ -781,16 +781,16 @@ TEST_P(PaintLayerTest, PaintInvalidationOnNonCompositedScroll) {
   LayoutBox* scroller = ToLayoutBox(GetLayoutObjectByElementId("scroller"));
   LayoutObject* content_layer = GetLayoutObjectByElementId("content-layer");
   LayoutObject* content = GetLayoutObjectByElementId("content");
-  EXPECT_EQ(LayoutRect(0, 30, 50, 10),
+  EXPECT_EQ(IntRect(0, 30, 50, 10),
             content_layer->FirstFragment().VisualRect());
-  EXPECT_EQ(LayoutRect(0, 30, 50, 5), content->FirstFragment().VisualRect());
+  EXPECT_EQ(IntRect(0, 30, 50, 5), content->FirstFragment().VisualRect());
 
   scroller->GetScrollableArea()->SetScrollOffset(ScrollOffset(0, 20),
                                                  kProgrammaticScroll);
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(LayoutRect(0, 30, 50, 10),
+  EXPECT_EQ(IntRect(0, 30, 50, 10),
             content_layer->FirstFragment().VisualRect());
-  EXPECT_EQ(LayoutRect(0, 30, 50, 5), content->FirstFragment().VisualRect());
+  EXPECT_EQ(IntRect(0, 30, 50, 5), content->FirstFragment().VisualRect());
 }
 
 TEST_P(PaintLayerTest, PaintInvalidationOnCompositedScroll) {
@@ -810,16 +810,16 @@ TEST_P(PaintLayerTest, PaintInvalidationOnCompositedScroll) {
   LayoutBox* scroller = ToLayoutBox(GetLayoutObjectByElementId("scroller"));
   LayoutObject* content_layer = GetLayoutObjectByElementId("content-layer");
   LayoutObject* content = GetLayoutObjectByElementId("content");
-  EXPECT_EQ(LayoutRect(0, 30, 50, 10),
+  EXPECT_EQ(IntRect(0, 30, 50, 10),
             content_layer->FirstFragment().VisualRect());
-  EXPECT_EQ(LayoutRect(0, 30, 50, 5), content->FirstFragment().VisualRect());
+  EXPECT_EQ(IntRect(0, 30, 50, 5), content->FirstFragment().VisualRect());
 
   scroller->GetScrollableArea()->SetScrollOffset(ScrollOffset(0, 20),
                                                  kProgrammaticScroll);
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(LayoutRect(0, 30, 50, 10),
+  EXPECT_EQ(IntRect(0, 30, 50, 10),
             content_layer->FirstFragment().VisualRect());
-  EXPECT_EQ(LayoutRect(0, 30, 50, 5), content->FirstFragment().VisualRect());
+  EXPECT_EQ(IntRect(0, 30, 50, 5), content->FirstFragment().VisualRect());
 }
 
 TEST_P(PaintLayerTest, CompositingContainerStackedFloatUnderStackingInline) {

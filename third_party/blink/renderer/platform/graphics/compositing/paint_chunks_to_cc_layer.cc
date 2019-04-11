@@ -711,7 +711,7 @@ void ConversionContext::Convert(const PaintChunkSubset& paint_chunks,
       cc_list_.EndPaintOfUnpaired(
           chunk_to_layer_mapper_.MapVisualRect(item.VisualRect()));
     }
-    UpdateEffectBounds(chunk.bounds, chunk_state.Transform());
+    UpdateEffectBounds(FloatRect(chunk.bounds), chunk_state.Transform());
   }
 }
 

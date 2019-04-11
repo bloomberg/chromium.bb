@@ -641,12 +641,12 @@ TEST_F(BlockPainterTouchActionTest, ScrolledHitTestChunkProperties) {
               scrolled_hit_test_data)));
 
   const auto& scroller_paint_chunk = paint_chunks[1];
-  EXPECT_EQ(FloatRect(0, 0, 100, 100), scroller_paint_chunk.bounds);
+  EXPECT_EQ(IntRect(0, 0, 100, 100), scroller_paint_chunk.bounds);
   // The hit test rect for the scroller itself should not be scrolled.
   EXPECT_FALSE(scroller_paint_chunk.properties.Transform().ScrollNode());
 
   const auto& scrolled_paint_chunk = paint_chunks[2];
-  EXPECT_EQ(FloatRect(0, 0, 200, 50), scrolled_paint_chunk.bounds);
+  EXPECT_EQ(IntRect(0, 0, 200, 50), scrolled_paint_chunk.bounds);
   // The hit test rect for the scrolled contents should be scrolled.
   EXPECT_TRUE(scrolled_paint_chunk.properties.Transform().ScrollNode());
 }

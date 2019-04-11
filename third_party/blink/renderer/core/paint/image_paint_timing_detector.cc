@@ -290,7 +290,7 @@ void ImagePaintTimingDetector::RecordImage(
 
   if (records_manager_.IsRecordedVisibleNode(node_id) || !is_recording_)
     return;
-  LayoutRect visual_rect = object.FragmentsVisualRectBoundingBox();
+  IntRect visual_rect = object.FragmentsVisualRectBoundingBox();
   // Before the image resource starts loading, <img> has no size info. We wait
   // until the size is known.
   if (visual_rect.IsEmpty())
@@ -300,7 +300,7 @@ void ImagePaintTimingDetector::RecordImage(
           visual_rect, current_paint_chunk_properties);
   rect_size = DownScaleIfIntrinsicSizeIsSmaller(
       rect_size, intrinsic_size.Area(),
-      (visual_rect.Width() * visual_rect.Height()).ToUnsigned());
+      visual_rect.Width() * visual_rect.Height());
   DVLOG(2) << "Node id (" << node_id << "): size=" << rect_size
            << ", type=" << object.DebugName();
   if (rect_size == 0) {

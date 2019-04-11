@@ -61,10 +61,8 @@ TEST_F(ChunkToLayerMapperTest, OneChunkUsingLayerState) {
   EXPECT_EQ(SkMatrix::MakeTrans(-10, -20), mapper.Transform());
   EXPECT_EQ(FloatClipRect(), mapper.ClipRect());
   EXPECT_EQ(IntRect(20, 10, 88, 99),
-            mapper.MapVisualRect(FloatRect(30, 30, 88, 99)));
-  EXPECT_EQ(IntRect(20, 10, 88, 99),
-            mapper.MapVisualRect(FloatRect(30.2f, 30.7f, 87.3f, 98.1f)));
-  EXPECT_EQ(IntRect(), mapper.MapVisualRect(FloatRect()));
+            mapper.MapVisualRect(IntRect(30, 30, 88, 99)));
+  EXPECT_EQ(IntRect(), mapper.MapVisualRect(IntRect()));
 }
 
 TEST_F(ChunkToLayerMapperTest, TwoChunkUsingLayerState) {
@@ -77,20 +75,16 @@ TEST_F(ChunkToLayerMapperTest, TwoChunkUsingLayerState) {
   EXPECT_EQ(SkMatrix::MakeTrans(-10, -20), mapper.Transform());
   EXPECT_EQ(FloatClipRect(), mapper.ClipRect());
   EXPECT_EQ(IntRect(20, 10, 88, 99),
-            mapper.MapVisualRect(FloatRect(30, 30, 88, 99)));
-  EXPECT_EQ(IntRect(20, 10, 88, 99),
-            mapper.MapVisualRect(FloatRect(30.2f, 30.7f, 87.3f, 98.1f)));
-  EXPECT_EQ(IntRect(), mapper.MapVisualRect(FloatRect()));
+            mapper.MapVisualRect(IntRect(30, 30, 88, 99)));
+  EXPECT_EQ(IntRect(), mapper.MapVisualRect(IntRect()));
 
   mapper.SwitchToChunk(chunk2);
   EXPECT_FALSE(HasFilterThatMovesPixels(mapper));
   EXPECT_EQ(SkMatrix::MakeTrans(-10, -20), mapper.Transform());
   EXPECT_EQ(FloatClipRect(), mapper.ClipRect());
   EXPECT_EQ(IntRect(20, 10, 88, 99),
-            mapper.MapVisualRect(FloatRect(30, 30, 88, 99)));
-  EXPECT_EQ(IntRect(20, 10, 88, 99),
-            mapper.MapVisualRect(FloatRect(30.2f, 30.7f, 87.3f, 98.1f)));
-  EXPECT_EQ(IntRect(), mapper.MapVisualRect(FloatRect()));
+            mapper.MapVisualRect(IntRect(30, 30, 88, 99)));
+  EXPECT_EQ(IntRect(), mapper.MapVisualRect(IntRect()));
 }
 
 TEST_F(ChunkToLayerMapperTest, TwoChunkSameState) {
@@ -111,8 +105,8 @@ TEST_F(ChunkToLayerMapperTest, TwoChunkSameState) {
   EXPECT_EQ(FloatRect(0, -10, 100, 100), mapper.ClipRect().Rect());
   EXPECT_TRUE(mapper.ClipRect().IsTight());
   EXPECT_EQ(IntRect(50, 40, 50, 50),
-            mapper.MapVisualRect(FloatRect(30, 30, 88, 99)));
-  EXPECT_EQ(IntRect(), mapper.MapVisualRect(FloatRect()));
+            mapper.MapVisualRect(IntRect(30, 30, 88, 99)));
+  EXPECT_EQ(IntRect(), mapper.MapVisualRect(IntRect()));
 
   mapper.SwitchToChunk(chunk2);
   EXPECT_FALSE(HasFilterThatMovesPixels(mapper));
@@ -120,8 +114,8 @@ TEST_F(ChunkToLayerMapperTest, TwoChunkSameState) {
   EXPECT_EQ(FloatRect(0, -10, 100, 100), mapper.ClipRect().Rect());
   EXPECT_TRUE(mapper.ClipRect().IsTight());
   EXPECT_EQ(IntRect(50, 40, 50, 50),
-            mapper.MapVisualRect(FloatRect(30, 30, 88, 99)));
-  EXPECT_EQ(IntRect(), mapper.MapVisualRect(FloatRect()));
+            mapper.MapVisualRect(IntRect(30, 30, 88, 99)));
+  EXPECT_EQ(IntRect(), mapper.MapVisualRect(IntRect()));
 }
 
 TEST_F(ChunkToLayerMapperTest, TwoChunkDifferentState) {
@@ -146,8 +140,8 @@ TEST_F(ChunkToLayerMapperTest, TwoChunkDifferentState) {
   EXPECT_EQ(FloatRect(0, -10, 100, 100), mapper.ClipRect().Rect());
   EXPECT_TRUE(mapper.ClipRect().IsTight());
   EXPECT_EQ(IntRect(50, 40, 50, 50),
-            mapper.MapVisualRect(FloatRect(30, 30, 88, 99)));
-  EXPECT_EQ(IntRect(), mapper.MapVisualRect(FloatRect()));
+            mapper.MapVisualRect(IntRect(30, 30, 88, 99)));
+  EXPECT_EQ(IntRect(), mapper.MapVisualRect(IntRect()));
 
   mapper.SwitchToChunk(chunk2);
   EXPECT_FALSE(HasFilterThatMovesPixels(mapper));
@@ -156,8 +150,8 @@ TEST_F(ChunkToLayerMapperTest, TwoChunkDifferentState) {
   EXPECT_EQ(FloatRect(30, 40, 40, 40), mapper.ClipRect().Rect());
   EXPECT_FALSE(mapper.ClipRect().IsTight());
   EXPECT_EQ(IntRect(30, 40, 40, 40),
-            mapper.MapVisualRect(FloatRect(0, 0, 200, 200)));
-  EXPECT_EQ(IntRect(), mapper.MapVisualRect(FloatRect()));
+            mapper.MapVisualRect(IntRect(0, 0, 200, 200)));
+  EXPECT_EQ(IntRect(), mapper.MapVisualRect(IntRect()));
 }
 
 TEST_F(ChunkToLayerMapperTest, SlowPath) {
@@ -198,20 +192,16 @@ TEST_F(ChunkToLayerMapperTest, SlowPath) {
   EXPECT_EQ(SkMatrix::MakeTrans(-10, -20), mapper.Transform());
   EXPECT_TRUE(mapper.ClipRect().IsInfinite());
   EXPECT_EQ(IntRect(-40, -50, 208, 219),
-            mapper.MapVisualRect(FloatRect(30, 30, 88, 99)));
-  EXPECT_EQ(IntRect(-40, -50, 208, 219),
-            mapper.MapVisualRect(FloatRect(30.2f, 30.7f, 87.3f, 98.1f)));
-  EXPECT_EQ(IntRect(), mapper.MapVisualRect(FloatRect()));
+            mapper.MapVisualRect(IntRect(30, 30, 88, 99)));
+  EXPECT_EQ(IntRect(), mapper.MapVisualRect(IntRect()));
 
   mapper.SwitchToChunk(chunk3);
   EXPECT_TRUE(HasFilterThatMovesPixels(mapper));
   EXPECT_EQ(SkMatrix::MakeTrans(-10, -20), mapper.Transform());
   EXPECT_TRUE(mapper.ClipRect().IsInfinite());
   EXPECT_EQ(IntRect(-40, -50, 208, 219),
-            mapper.MapVisualRect(FloatRect(30, 30, 88, 99)));
-  EXPECT_EQ(IntRect(-40, -50, 208, 219),
-            mapper.MapVisualRect(FloatRect(30.2f, 30.7f, 87.3f, 98.1f)));
-  EXPECT_EQ(IntRect(), mapper.MapVisualRect(FloatRect()));
+            mapper.MapVisualRect(IntRect(30, 30, 88, 99)));
+  EXPECT_EQ(IntRect(), mapper.MapVisualRect(IntRect()));
 
   mapper.SwitchToChunk(chunk4);
   EXPECT_FALSE(HasFilterThatMovesPixels(mapper));

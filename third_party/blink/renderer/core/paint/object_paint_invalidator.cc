@@ -297,15 +297,15 @@ PaintInvalidationReason ObjectPaintInvalidatorWithContext::InvalidateSelection(
   if (!full_invalidation && !object_.ShouldInvalidateSelection())
     return reason;
 
-  LayoutRect old_selection_rect = object_.SelectionVisualRect();
-  LayoutRect new_selection_rect;
+  IntRect old_selection_rect = object_.SelectionVisualRect();
+  IntRect new_selection_rect;
 #if DCHECK_IS_ON()
   FindVisualRectNeedingUpdateScope finder(object_, context_, old_selection_rect,
                                           new_selection_rect);
 #endif
   if (context_.NeedsVisualRectUpdate(object_)) {
-    new_selection_rect = object_.LocalSelectionRect();
-    context_.MapLocalRectToVisualRect(object_, new_selection_rect);
+    new_selection_rect = context_.MapLocalRectToVisualRect(
+        object_, object_.LocalSelectionRect());
   } else {
     new_selection_rect = old_selection_rect;
   }
@@ -318,8 +318,7 @@ PaintInvalidationReason ObjectPaintInvalidatorWithContext::InvalidateSelection(
   // See layout_selection.cc SetShouldInvalidateIfNeeded for more detail.
   if (object_.IsSVGText())
     return PaintInvalidationReason::kSelection;
-  const LayoutRect invalidation_rect =
-      UnionRect(new_selection_rect, old_selection_rect);
+  auto invalidation_rect = UnionRect(new_selection_rect, old_selection_rect);
   if (invalidation_rect.IsEmpty())
     return reason;
 
@@ -335,16 +334,16 @@ ObjectPaintInvalidatorWithContext::InvalidatePartialRect(
   if (IsFullPaintInvalidationReason(reason))
     return reason;
 
-  auto rect = object_.PartialInvalidationLocalRect();
-  if (rect.IsEmpty())
+  auto local_rect = object_.PartialInvalidationLocalRect();
+  if (local_rect.IsEmpty())
     return reason;
 
-  context_.MapLocalRectToVisualRect(object_, rect);
-  if (rect.IsEmpty())
+  auto visual_rect = context_.MapLocalRectToVisualRect(object_, local_rect);
+  if (visual_rect.IsEmpty())
     return reason;
 
   object_.GetMutableForPainting().SetPartialInvalidationVisualRect(
-      UnionRect(object_.PartialInvalidationVisualRect(), rect));
+      UnionRect(object_.PartialInvalidationVisualRect(), visual_rect));
 
   return PaintInvalidationReason::kRectangle;
 }

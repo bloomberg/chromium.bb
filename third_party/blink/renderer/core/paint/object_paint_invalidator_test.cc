@@ -288,19 +288,17 @@ TEST_F(ObjectPaintInvalidatorTest, InvalidatePaintRectangle) {
 
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   EXPECT_EQ(LayoutRect(), target->PartialInvalidationLocalRect());
-  EXPECT_EQ(LayoutRect(18, 18, 80, 80),
-            target->PartialInvalidationVisualRect());
+  EXPECT_EQ(IntRect(18, 18, 80, 80), target->PartialInvalidationVisualRect());
 
   target->InvalidatePaintRectangle(LayoutRect(30, 30, 50, 80));
   EXPECT_EQ(LayoutRect(30, 30, 50, 80), target->PartialInvalidationLocalRect());
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   // PartialInvalidationVisualRect should accumulate until painting.
-  EXPECT_EQ(LayoutRect(18, 18, 80, 100),
-            target->PartialInvalidationVisualRect());
+  EXPECT_EQ(IntRect(18, 18, 80, 100), target->PartialInvalidationVisualRect());
 
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(LayoutRect(), target->PartialInvalidationLocalRect());
-  EXPECT_EQ(LayoutRect(), target->PartialInvalidationVisualRect());
+  EXPECT_EQ(IntRect(), target->PartialInvalidationVisualRect());
 
   EXPECT_THAT(
       *GetDocument().View()->TrackedObjectPaintInvalidations(),
@@ -326,7 +324,7 @@ TEST_F(ObjectPaintInvalidatorTest, Selection) {
   EnableCompositing();
   SetBodyInnerHTML("<img id='target' style='width: 100px; height: 100px'>");
   auto* target = GetLayoutObjectByElementId("target");
-  EXPECT_EQ(LayoutRect(), target->SelectionVisualRect());
+  EXPECT_EQ(IntRect(), target->SelectionVisualRect());
 
   // Add selection.
   GetDocument().View()->SetTracksPaintInvalidations(true);
@@ -338,7 +336,7 @@ TEST_F(ObjectPaintInvalidatorTest, Selection) {
   ASSERT_EQ(1u, invalidations->size());
   EXPECT_EQ(IntRect(8, 8, 100, 100), (*invalidations)[0].rect);
   EXPECT_EQ(PaintInvalidationReason::kSelection, (*invalidations)[0].reason);
-  EXPECT_EQ(LayoutRect(8, 8, 100, 100), target->SelectionVisualRect());
+  EXPECT_EQ(IntRect(8, 8, 100, 100), target->SelectionVisualRect());
   GetDocument().View()->SetTracksPaintInvalidations(false);
 
   // Simulate a change without full invalidation or selection change.
@@ -348,7 +346,7 @@ TEST_F(ObjectPaintInvalidatorTest, Selection) {
   EXPECT_TRUE(graphics_layer->GetRasterInvalidationTracking()
                   ->Invalidations()
                   .IsEmpty());
-  EXPECT_EQ(LayoutRect(8, 8, 100, 100), target->SelectionVisualRect());
+  EXPECT_EQ(IntRect(8, 8, 100, 100), target->SelectionVisualRect());
   GetDocument().View()->SetTracksPaintInvalidations(false);
 
   // Remove selection.
@@ -360,7 +358,7 @@ TEST_F(ObjectPaintInvalidatorTest, Selection) {
   ASSERT_EQ(1u, invalidations->size());
   EXPECT_EQ(IntRect(8, 8, 100, 100), (*invalidations)[0].rect);
   EXPECT_EQ(PaintInvalidationReason::kSelection, (*invalidations)[0].reason);
-  EXPECT_EQ(LayoutRect(), target->SelectionVisualRect());
+  EXPECT_EQ(IntRect(), target->SelectionVisualRect());
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }
 
