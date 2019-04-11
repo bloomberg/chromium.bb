@@ -366,12 +366,14 @@ UnifiedSystemInfoView::UnifiedSystemInfoView(
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, kUnifiedMenuItemPadding,
       kUnifiedSystemInfoSpacing));
+  layout->set_cross_axis_alignment(
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
 
   AddChildView(new DateView(controller));
 
   if (PowerStatus::Get()->IsBatteryPresent()) {
     auto* separator = new views::Separator();
-    separator->SetColor(kUnifiedMenuSecondaryTextColor);
+    separator->SetColor(kUnifiedSystemInfoSeparatorColor);
     separator->SetPreferredHeight(kUnifiedSystemInfoHeight);
     AddChildView(separator);
 
