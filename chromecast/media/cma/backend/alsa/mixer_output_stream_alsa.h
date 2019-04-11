@@ -56,6 +56,11 @@ class MixerOutputStreamAlsa : public MixerOutputStream {
 
   void UpdateRenderingDelay();
 
+  // Checks ALSA output for current state and if it's suspended, tries to
+  // recover.
+  // Returns true if ALSA device is recovered successfully.
+  bool MaybeRecoverDeviceFromSuspendedState();
+
   std::unique_ptr<AlsaWrapper> alsa_;
 
   snd_pcm_t* pcm_ = nullptr;
