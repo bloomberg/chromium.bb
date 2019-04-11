@@ -227,6 +227,8 @@ source_set("test_support") {
     "chrome_earl_grey.mm",
     "chrome_earl_grey_ui.h",
     "chrome_earl_grey_ui.mm",
+    "chrome_error_util.h",
+    "chrome_error_util.mm",
     "chrome_matchers.h",
     "chrome_matchers.mm",
     "chrome_matchers_shorthand.h",
