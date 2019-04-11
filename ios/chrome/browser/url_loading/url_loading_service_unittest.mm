@@ -94,7 +94,7 @@
 - (void)openURLInNewTabWithCommand:(OpenNewTabCommand*)command {
 }
 
-- (void)animateOpenBackgroundTabFromParams:(UrlLoadParams*)params
+- (void)animateOpenBackgroundTabFromParams:(const UrlLoadParams&)params
                                 completion:(void (^)())completion {
 }
 

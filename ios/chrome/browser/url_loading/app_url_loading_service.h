@@ -69,7 +69,7 @@ class AppUrlLoadingService {
   void SetDelegate(id<AppURLLoadingServiceDelegate> delegate);
 
   // Opens a url based on |params| in a new tab.
-  virtual void LoadUrlInNewTab(UrlLoadParams* params);
+  virtual void LoadUrlInNewTab(const UrlLoadParams& params);
 
  private:
   __weak id<AppURLLoadingServiceDelegate> delegate_;

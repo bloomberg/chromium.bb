@@ -230,14 +230,14 @@ const char kNTPHelpURL[] =
   self.suggestionsService->user_classifier()->OnEvent(
       ntp_snippets::UserClassifier::Metric::SUGGESTIONS_USED);
 
-  web::NavigationManager::WebLoadParams params(suggestionItem.URL);
   // Use a referrer with a specific URL to mark this entry as coming from
   // ContentSuggestions.
-  params.referrer =
+  UrlLoadParams params = UrlLoadParams::InCurrentTab(suggestionItem.URL);
+  params.web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
+  params.web_params.referrer =
       web::Referrer(GURL(ntp_snippets::GetContentSuggestionsReferrerURL()),
                     web::ReferrerPolicyDefault);
-  params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-  _urlLoadingService->Load(UrlLoadParams::InCurrentTab(params));
+  _urlLoadingService->Load(params);
   [self.NTPMetrics recordAction:new_tab_page_uma::ACTION_OPENED_SUGGESTION];
 }
 
@@ -281,9 +281,9 @@ const char kNTPHelpURL[] =
 
   [self logMostVisitedOpening:mostVisitedItem atIndex:mostVisitedIndex];
 
-  web::NavigationManager::WebLoadParams params(mostVisitedItem.URL);
-  params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-  _urlLoadingService->Load(UrlLoadParams::InCurrentTab(params));
+  UrlLoadParams params = UrlLoadParams::InCurrentTab(mostVisitedItem.URL);
+  params.web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
+  _urlLoadingService->Load(params);
 }
 
 - (void)displayContextMenuForSuggestion:(CollectionViewItem*)item
@@ -353,10 +353,8 @@ const char kNTPHelpURL[] =
   [self.NTPMetrics recordAction:new_tab_page_uma::ACTION_OPENED_PROMO];
 
   if (notificationPromo->IsURLPromo()) {
-    UrlLoadParams* params =
-        UrlLoadParams::InNewTab(notificationPromo->url(),
-                                /* in_incognito */ NO,
-                                /* in_background */ NO, kCurrentTab);
+    UrlLoadParams params = UrlLoadParams::InNewTab(notificationPromo->url());
+    params.append_to = kCurrentTab;
     _urlLoadingService->Load(params);
     return;
   }
@@ -376,8 +374,7 @@ const char kNTPHelpURL[] =
       NewTabPageTabHelper::FromWebState(self.webState);
   if (NTPHelper && NTPHelper->IgnoreLoadRequests())
     return;
-  GURL URL(kNTPHelpURL);
-  _urlLoadingService->Load(UrlLoadParams::InCurrentTab(URL));
+  _urlLoadingService->Load(UrlLoadParams::InCurrentTab(GURL(kNTPHelpURL)));
   [self.NTPMetrics recordAction:new_tab_page_uma::ACTION_OPENED_LEARN_MORE];
 }
 
@@ -552,11 +549,11 @@ const char kNTPHelpURL[] =
                 incognito:(BOOL)incognito
               originPoint:(CGPoint)originPoint {
   // Open the tab in background if it is non-incognito only.
-  UrlLoadParams* params =
-      UrlLoadParams::InNewTab(URL,
-                              /* in_incognito */ incognito,
-                              /* in_background */ !incognito, kCurrentTab);
-  params->origin_point = originPoint;
+  UrlLoadParams params = UrlLoadParams::InNewTab(URL);
+  params.SetInBackground(!incognito);
+  params.in_incognito = incognito;
+  params.append_to = kCurrentTab;
+  params.origin_point = originPoint;
   _urlLoadingService->Load(params);
 }
 

@@ -546,10 +546,10 @@ bookmarkHomeViewControllerWantsDismissal:(BookmarkHomeViewController*)controller
     LoadJavaScriptURL(url, _browserState, _webStateList->GetActiveWebState());
     return;
   }
-  web::NavigationManager::WebLoadParams params(url);
-  params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
+  UrlLoadParams params = UrlLoadParams::InCurrentTab(url);
+  params.web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
   UrlLoadingServiceFactory::GetForBrowserState(_currentBrowserState)
-      ->Load(UrlLoadParams::InCurrentTab(params));
+      ->Load(params);
 }
 
 - (void)openURLInNewTab:(const GURL&)url
@@ -557,8 +557,11 @@ bookmarkHomeViewControllerWantsDismissal:(BookmarkHomeViewController*)controller
            inBackground:(BOOL)inBackground {
   // TODO(crbug.com/695749):  Open bookmarklet in new tab doesn't work.  See how
   // to deal with this later.
+  UrlLoadParams params = UrlLoadParams::InNewTab(url);
+  params.SetInBackground(inBackground);
+  params.in_incognito = inIncognito;
   UrlLoadingServiceFactory::GetForBrowserState(_currentBrowserState)
-      ->Load(UrlLoadParams::InNewTab(url, inIncognito, inBackground, kLastTab));
+      ->Load(params);
 }
 
 @end

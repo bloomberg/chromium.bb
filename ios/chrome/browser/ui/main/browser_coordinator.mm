@@ -428,10 +428,10 @@
 
 #pragma mark - URLLoadingServiceDelegate
 
-- (void)animateOpenBackgroundTabFromParams:(UrlLoadParams*)params
+- (void)animateOpenBackgroundTabFromParams:(const UrlLoadParams&)params
                                 completion:(void (^)())completion {
   [self.viewController
-      animateOpenBackgroundTabFromOriginPoint:params->origin_point
+      animateOpenBackgroundTabFromOriginPoint:params.origin_point
                                    completion:completion];
 }
 

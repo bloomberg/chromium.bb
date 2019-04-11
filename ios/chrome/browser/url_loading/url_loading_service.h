@@ -26,7 +26,7 @@ struct UrlLoadParams;
 
 // Implementing delegate can do an animation using information in |params| when
 // opening a background tab, then call |completion|.
-- (void)animateOpenBackgroundTabFromParams:(UrlLoadParams*)params
+- (void)animateOpenBackgroundTabFromParams:(const UrlLoadParams&)params
                                 completion:(void (^)())completion;
 
 @end
@@ -44,17 +44,17 @@ class UrlLoadingService : public KeyedService {
   id<UrlLoader> GetUrlLoader();
 
   // Opens a url depending on |params.disposition|.
-  virtual void Load(UrlLoadParams* params);
+  virtual void Load(const UrlLoadParams& params);
 
  private:
   // Switches to a tab that matches |params.web_params| or loads in a new tab.
-  virtual void SwitchToTab(UrlLoadParams* params);
+  virtual void SwitchToTab(const UrlLoadParams& params);
 
   // Loads a url based on |params| in current tab.
-  virtual void LoadUrlInCurrentTab(UrlLoadParams* params);
+  virtual void LoadUrlInCurrentTab(const UrlLoadParams& params);
 
   // Loads a url based on |params| in a new tab.
-  virtual void LoadUrlInNewTab(UrlLoadParams* params);
+  virtual void LoadUrlInNewTab(const UrlLoadParams& params);
 
   __weak id<URLLoadingServiceDelegate> delegate_;
   AppUrlLoadingService* app_service_;
