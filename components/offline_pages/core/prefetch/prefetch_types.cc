@@ -39,6 +39,10 @@ std::string PrefetchEnumToString(PrefetchRequestStatus value) {
       return "SHOULD_SUSPEND_BLOCKED_BY_ADMINISTRATOR";
     case PrefetchRequestStatus::kShouldSuspendForbiddenByOPS:
       return "SHOULD_SUSPEND_FORBIDDEN_BY_OPS";
+    case PrefetchRequestStatus::kShouldSuspendNewlyForbiddenByOPS:
+      return "SHOULD_SUSPEND_NEWLY_FORBIDDEN_BY_OPS";
+    case PrefetchRequestStatus::kEmptyRequestSuccess:
+      return "EMPTY_REQUEST_SUCCESS";
   }
   DCHECK(false) << static_cast<int>(value) << " not valid enum value";
 }

@@ -110,7 +110,8 @@ void PrefetchNetworkRequestFactoryImpl::GeneratePageBundleRequestDone(
     PrefetchRequestStatus status,
     const std::string& operation_name,
     const std::vector<RenderPageInfo>& pages) {
-  if (status == PrefetchRequestStatus::kShouldSuspendForbiddenByOPS) {
+  if (status == PrefetchRequestStatus::kShouldSuspendForbiddenByOPS ||
+      status == PrefetchRequestStatus::kShouldSuspendNewlyForbiddenByOPS) {
     prefetch_prefs::SetEnabledByServer(prefs_, false);
   }
   std::move(callback).Run(status, operation_name, pages);

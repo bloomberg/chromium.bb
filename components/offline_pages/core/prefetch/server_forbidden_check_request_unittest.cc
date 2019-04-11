@@ -4,6 +4,8 @@
 
 #include <memory>
 
+#include "base/metrics/histogram_macros.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "components/offline_pages/core/offline_clock.h"
 #include "components/offline_pages/core/prefetch/prefetch_prefs.h"
 #include "components/offline_pages/core/prefetch/prefetch_request_test_base.h"
@@ -43,7 +45,7 @@ void ServerForbiddenCheckRequestTest::SetUp() {
 
   prefetch_prefs::RegisterPrefs(pref_service_.registry());
 
-  // Ensure check will happen
+  // Ensure check will happen.
   prefetch_prefs::SetPrefetchingEnabledInSettings(prefs(), true);
 }
 
@@ -52,15 +54,24 @@ void ServerForbiddenCheckRequestTest::MakeRequest() {
 }
 
 TEST_F(ServerForbiddenCheckRequestTest, StillForbidden) {
+  base::HistogramTester histogram_tester;
+
+  prefetch_prefs::SetEnabledByServer(prefs(), false);
   MakeRequest();
   RespondWithHttpErrorAndData(net::HTTP_FORBIDDEN, "request forbidden by OPS");
   RunUntilIdle();
 
   EXPECT_FALSE(prefetch_prefs::IsForbiddenCheckDue(prefs()));
   EXPECT_FALSE(prefetch_prefs::IsEnabledByServer(prefs()));
+
+  // Ensure that the status was recorded in UMA.
+  histogram_tester.ExpectUniqueSample(
+      "OfflinePages.Prefetching.ServiceGetPageBundleStatus",
+      static_cast<int>(PrefetchRequestStatus::kShouldSuspendForbiddenByOPS), 1);
 }
 
 TEST_F(ServerForbiddenCheckRequestTest, NoLongerForbidden) {
+  base::HistogramTester histogram_tester;
   MakeRequest();
 
   std::string operation_data, bundle_data;
@@ -82,6 +93,11 @@ TEST_F(ServerForbiddenCheckRequestTest, NoLongerForbidden) {
 
   EXPECT_FALSE(prefetch_prefs::IsForbiddenCheckDue(prefs()));
   EXPECT_TRUE(prefetch_prefs::IsEnabledByServer(prefs()));
+
+  // Ensure the request was recorded in UMA.
+  histogram_tester.ExpectUniqueSample(
+      "OfflinePages.Prefetching.ServiceGetPageBundleStatus",
+      static_cast<int>(PrefetchRequestStatus::kEmptyRequestSuccess), 1);
 }
 
 }  // namespace offline_pages

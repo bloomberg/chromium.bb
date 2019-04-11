@@ -34,7 +34,7 @@ std::unique_ptr<PrefetchRequestFetcher> PrefetchRequestFetcher::CreateForGet(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     FinishedCallback callback) {
   return base::WrapUnique(
-      new PrefetchRequestFetcher(url, std::string(), std::string(),
+      new PrefetchRequestFetcher(url, std::string(), std::string(), false,
                                  url_loader_factory, std::move(callback)));
 }
 
@@ -43,20 +43,24 @@ std::unique_ptr<PrefetchRequestFetcher> PrefetchRequestFetcher::CreateForPost(
     const GURL& url,
     const std::string& message,
     const std::string& testing_header_value,
+    bool empty_request,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     FinishedCallback callback) {
-  return base::WrapUnique(
-      new PrefetchRequestFetcher(url, message, testing_header_value,
-                                 url_loader_factory, std::move(callback)));
+  return base::WrapUnique(new PrefetchRequestFetcher(
+      url, message, testing_header_value, empty_request, url_loader_factory,
+      std::move(callback)));
 }
 
 PrefetchRequestFetcher::PrefetchRequestFetcher(
     const GURL& url,
     const std::string& message,
     const std::string& testing_header_value,
+    bool empty_request,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     FinishedCallback callback)
-    : url_loader_factory_(url_loader_factory), callback_(std::move(callback)) {
+    : empty_request_(empty_request),
+      url_loader_factory_(url_loader_factory),
+      callback_(std::move(callback)) {
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("offline_prefetch", R"(
         semantics {
@@ -137,8 +141,11 @@ PrefetchRequestStatus PrefetchRequestFetcher::ParseResponse(
       case net::HTTP_FORBIDDEN:
         // Check whether the request was forbidden because of a filter rule.
         if (response_body && response_body->find("request forbidden by OPS") !=
-                                 std::string::npos)
+                                 std::string::npos) {
+          if (!empty_request_)
+            return PrefetchRequestStatus::kShouldSuspendNewlyForbiddenByOPS;
           return PrefetchRequestStatus::kShouldSuspendForbiddenByOPS;
+        }
         return PrefetchRequestStatus::kShouldSuspendForbidden;
       default:
         return PrefetchRequestStatus::kShouldRetryWithBackoff;
@@ -158,6 +165,9 @@ PrefetchRequestStatus PrefetchRequestFetcher::ParseResponse(
   }
 
   *data = *response_body;
+
+  if (empty_request_)
+    return PrefetchRequestStatus::kEmptyRequestSuccess;
   return PrefetchRequestStatus::kSuccess;
 }
 
