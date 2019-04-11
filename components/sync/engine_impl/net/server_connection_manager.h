@@ -172,6 +172,11 @@ class ServerConnectionManager {
     return server_response_.net_error_code;
   }
 
+  inline int http_status_code() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return server_response_.http_status_code;
+  }
+
   const std::string client_id() const { return client_id_; }
 
   // Factory method to create an Connection object we can use for
@@ -194,7 +199,7 @@ class ServerConnectionManager {
  protected:
   inline std::string proto_sync_path() const { return proto_sync_path_; }
 
-  // Updates server_response_ and notifies listeners if the server status
+  // Updates |server_response_| and notifies listeners if the server status
   // changed.
   void SetServerResponse(const HttpResponse& server_response);
 
