@@ -154,7 +154,7 @@ piex wasm raw image preview / thumbnail test page
     return (string || '').replace(/\0/g, '');
   }
 
-  self.Module = {
+  window.Module = {
     onRuntimeInitialized: piexModuleReady,
   };
 
