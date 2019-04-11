@@ -22,6 +22,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -241,6 +242,7 @@ public class VrBrowserNativeUiTest {
      */
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/951375")
     public void testOmniboxAutocompletion() throws InterruptedException {
         // At least with chrome:// URLs, autocompletion only kicks in when there's one valid option
         // left. So, test that:
