@@ -94,6 +94,11 @@ public class TestBottomSheetContent implements BottomSheetContent {
     }
 
     @Override
+    public boolean setContentSizeListener(@Nullable BottomSheet.ContentSizeListener listener) {
+        return false;
+    }
+
+    @Override
     public int getSheetContentDescriptionStringId() {
         return R.string.contextual_suggestions_button_description;
     }

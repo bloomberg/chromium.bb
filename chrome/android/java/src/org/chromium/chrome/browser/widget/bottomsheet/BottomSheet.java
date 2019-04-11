@@ -329,6 +329,18 @@ public class BottomSheet
         }
 
         /**
+         * Set a {@link ContentSizeListener} that should be notified when the size of the content
+         * has changed. This will be called only if {@link #wrapContentEnabled()} returns {@code
+         * true}. Note that you need to implement this method only if the content view height
+         * changes are animated.
+         *
+         * @return Whether the listener was correctly set.
+         */
+        default boolean setContentSizeListener(@Nullable ContentSizeListener listener) {
+            return false;
+        }
+
+        /**
          * @return The resource id of the content description for the bottom sheet. This is
          *         generally the name of the feature/content that is showing. 'Swipe down to close.'
          *         will be automatically appended after the content description.
@@ -352,6 +364,12 @@ public class BottomSheet
          *         typically the name of your feature followed by 'closed'.
          */
         int getSheetClosedAccessibilityStringId();
+    }
+
+    /** Interface to listen when the size of a BottomSheetContent changes. */
+    public interface ContentSizeListener {
+        /** Called when the size of the view has changed. */
+        void onSizeChanged(int width, int height, int oldWidth, int oldHeight);
     }
 
     /**
@@ -517,7 +535,10 @@ public class BottomSheet
         int heightSize = MeasureSpec.getSize(heightMeasureSpec);
         assert heightSize != 0;
         int height = heightSize + mToolbarShadowHeight;
-        super.onMeasure(widthMeasureSpec, MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY));
+        int mode = mSheetContent != null && mSheetContent.wrapContentEnabled()
+                ? MeasureSpec.AT_MOST
+                : MeasureSpec.EXACTLY;
+        super.onMeasure(widthMeasureSpec, MeasureSpec.makeMeasureSpec(height, mode));
     }
 
     /**
@@ -768,7 +789,13 @@ public class BottomSheet
 
     @Override
     public float getMaxOffsetPx() {
-        return getFullRatio() * mContainerHeight;
+        float maxOffset = getFullRatio() * mContainerHeight;
+        if (mSheetContent != null && mSheetContent.wrapContentEnabled()) {
+            ensureContentDesiredHeightIsComputed();
+            return Math.min(maxOffset, mContentDesiredHeight + mToolbarShadowHeight);
+        }
+
+        return maxOffset;
     }
 
     /**
@@ -782,8 +809,9 @@ public class BottomSheet
         // If the desired content is already showing, do nothing.
         if (mSheetContent == content) return;
 
-        // Remove this as listener from previous content layout changes.
+        // Remove this as listener from previous content layout and size changes.
         if (mSheetContent != null) {
+            mSheetContent.setContentSizeListener(null);
             mSheetContent.getContentView().removeOnLayoutChangeListener(this);
         }
 
@@ -1374,17 +1402,22 @@ public class BottomSheet
     public float getSheetHeightForState(@SheetState int state) {
         if (mSheetContent != null && mSheetContent.wrapContentEnabled()
                 && state == SheetState.FULL) {
-            if (mContentDesiredHeight == HEIGHT_UNSPECIFIED) {
-                mSheetContent.getContentView().measure(
-                        MeasureSpec.makeMeasureSpec((int) mContainerWidth, MeasureSpec.EXACTLY),
-                        MeasureSpec.makeMeasureSpec((int) mContainerHeight, MeasureSpec.AT_MOST));
-                mContentDesiredHeight =
-                        mSheetContent.getContentView().getMeasuredHeight() + mToolbarShadowHeight;
-            }
-            return mContentDesiredHeight;
+            ensureContentDesiredHeightIsComputed();
+            return mContentDesiredHeight + mToolbarShadowHeight;
         }
 
         return getRatioForState(state) * mContainerHeight;
+    }
+
+    private void ensureContentDesiredHeightIsComputed() {
+        if (mContentDesiredHeight != HEIGHT_UNSPECIFIED) {
+            return;
+        }
+
+        mSheetContent.getContentView().measure(
+                MeasureSpec.makeMeasureSpec((int) mContainerWidth, MeasureSpec.EXACTLY),
+                MeasureSpec.makeMeasureSpec((int) mContainerHeight, MeasureSpec.AT_MOST));
+        mContentDesiredHeight = mSheetContent.getContentView().getMeasuredHeight();
     }
 
     private float getRatioForState(int state) {
@@ -1530,8 +1563,13 @@ public class BottomSheet
         mSheetContent = content;
 
         if (content != null && content.wrapContentEnabled()) {
-            content.getContentView().addOnLayoutChangeListener(this);
-            ensureContentIsWrapped();
+            // Listen for layout/size changes.
+            if (!content.setContentSizeListener(this::onContentSizeChanged)) {
+                content.getContentView().addOnLayoutChangeListener(this);
+            }
+
+            invalidateContentDesiredHeight();
+            ensureContentIsWrapped(/* animate= */ true);
 
             // HALF state is forbidden when wrapping the content.
             if (mCurrentState == SheetState.HALF) {
@@ -1551,12 +1589,19 @@ public class BottomSheet
     @Override
     public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft,
             int oldTop, int oldRight, int oldBottom) {
-        ensureContentIsWrapped();
+        invalidateContentDesiredHeight();
+        ensureContentIsWrapped(/* animate= */ true);
     }
 
-    private void ensureContentIsWrapped() {
-        invalidateContentDesiredHeight();
+    /**
+     * Called when the sheet content size changed.
+     */
+    private void onContentSizeChanged(int width, int height, int oldWidth, int oldHeight) {
+        mContentDesiredHeight = height;
+        ensureContentIsWrapped(/* animate= */ false);
+    }
 
+    private void ensureContentIsWrapped(boolean animate) {
         if (mCurrentState == SheetState.HIDDEN || mCurrentState == SheetState.PEEK) return;
 
         // The SCROLLING state is used when animating the sheet height or when the user is swiping
@@ -1564,7 +1609,7 @@ public class BottomSheet
         cancelAnimation();
         if (mCurrentState == SheetState.SCROLLING) return;
 
-        createSettleAnimation(mCurrentState, StateChangeReason.NONE);
+        setSheetState(mCurrentState, animate);
     }
 
     private void invalidateContentDesiredHeight() {
