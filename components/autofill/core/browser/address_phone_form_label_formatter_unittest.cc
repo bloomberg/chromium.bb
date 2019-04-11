@@ -70,7 +70,7 @@ TEST(AddressPhoneFormLabelFormatterTest, GetLabelsForUSProfilesAndFocusedName) {
 }
 
 TEST(AddressPhoneFormLabelFormatterTest,
-     GetLabelsForUSProfilesAndFocusedAddress) {
+     GetLabelsForUSProfilesAndFocusedStreetAddress) {
   AutofillProfile profile1 =
       AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile1, "John", "F", "Kennedy", "jfk@gmail.com", "",
@@ -101,6 +101,41 @@ TEST(AddressPhoneFormLabelFormatterTest,
                                                          &profile3, &profile4}),
       ElementsAre(FormatExpectedLabel("John F Kennedy", "(617) 730-2000"),
                   base::ASCIIToUTF16("Jackie Kennedy"),
+                  base::ASCIIToUTF16("(617) 523-2338"), base::string16()));
+}
+
+TEST(AddressPhoneFormLabelFormatterTest,
+     GetLabelsForUSProfilesAndFocusedNonStreetAddress) {
+  AutofillProfile profile1 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile1, "John", "F", "Kennedy", "jfk@gmail.com", "",
+                       "333 Washington St", "", "Brookline", "MA", "02445",
+                       "US", "16177302000");
+
+  AutofillProfile profile2 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile2, "Jackie", "", "Kennedy", "", "",
+                       "151 Irving Ave", "", "Hyannis", "MA", "02601", "US",
+                       "");
+
+  AutofillProfile profile3 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile3, "", "", "", "", "", "", "", "", "", "", "US",
+                       "6175232338");
+
+  AutofillProfile profile4 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile4, "", "", "", "", "", "", "", "Quincy", "MA",
+                       "02169", "US", "");
+
+  const std::unique_ptr<LabelFormatter> formatter =
+      LabelFormatter::Create("en-US", ADDRESS_HOME_CITY, GetFieldTypes());
+
+  EXPECT_THAT(
+      formatter->GetLabels(std::vector<AutofillProfile*>{&profile1, &profile2,
+                                                         &profile3, &profile4}),
+      ElementsAre(FormatExpectedLabel("333 Washington St", "(617) 730-2000"),
+                  base::ASCIIToUTF16("151 Irving Ave"),
                   base::ASCIIToUTF16("(617) 523-2338"), base::string16()));
 }
 
@@ -167,7 +202,7 @@ TEST(AddressPhoneFormLabelFormatterTest, GetLabelsForBRProfilesAndFocusedName) {
 }
 
 TEST(AddressPhoneFormLabelFormatterTest,
-     GetLabelsForBRProfilesAndFocusedAddress) {
+     GetLabelsForBRProfilesAndFocusedStreetAddress) {
   AutofillProfile profile1 =
       AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile1, "Tarsila", "do", "Amaral", "tarsila@aol.com",
@@ -189,6 +224,33 @@ TEST(AddressPhoneFormLabelFormatterTest,
       formatter->GetLabels(std::vector<AutofillProfile*>{&profile1, &profile2}),
       ElementsAre(FormatExpectedLabel("Tarsila do Amaral", "(11) 2648-0254"),
                   FormatExpectedLabel("Artur Avila", "(21) 98765-0000")));
+}
+
+TEST(AddressPhoneFormLabelFormatterTest,
+     GetLabelsForBRProfilesAndFocusedNonStreetAddress) {
+  AutofillProfile profile1 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile1, "Tarsila", "do", "Amaral", "tarsila@aol.com",
+                       "", "Av. Pedro Álvares Cabral, 1301", "", "Vila Mariana",
+                       "São Paulo", "SP", "04094-050", "BR",
+                       "+55 11 2648-0254");
+
+  AutofillProfile profile2 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile2, "Artur", "", "Avila", "aavila@uol.com.br", "",
+                       "Estr. Dona Castorina, 110", "", "Jardim Botânico",
+                       "Rio de Janeiro", "RJ", "22460-320", "BR",
+                       "21987650000");
+
+  const std::unique_ptr<LabelFormatter> formatter =
+      LabelFormatter::Create("pt-BR", ADDRESS_HOME_ZIP, GetFieldTypes());
+
+  EXPECT_THAT(
+      formatter->GetLabels(std::vector<AutofillProfile*>{&profile1, &profile2}),
+      ElementsAre(
+          FormatExpectedLabel("Av. Pedro Álvares Cabral, 1301",
+                              "(11) 2648-0254"),
+          FormatExpectedLabel("Estr. Dona Castorina, 110", "(21) 98765-0000")));
 }
 
 TEST(AddressPhoneFormLabelFormatterTest,

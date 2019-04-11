@@ -215,6 +215,20 @@ base::string16 GetLabelStreetAddress(
   return base::UTF8ToUTF16(address_line);
 }
 
+base::string16 GetLabelForProfileOnFocusedNonStreetAddress(
+    bool form_has_street_address,
+    const AutofillProfile& profile,
+    const std::string& app_locale,
+    const std::vector<ServerFieldType>& types,
+    const base::string16& contact_info) {
+  std::vector<base::string16> label_parts;
+  AddLabelPartIfNotEmpty(
+      GetLabelAddress(form_has_street_address, profile, app_locale, types),
+      &label_parts);
+  AddLabelPartIfNotEmpty(contact_info, &label_parts);
+  return ConstructLabelLine(label_parts);
+}
+
 base::string16 GetLabelEmail(const AutofillProfile& profile,
                              const std::string& app_locale) {
   const base::string16 email =

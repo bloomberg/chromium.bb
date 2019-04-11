@@ -151,6 +151,16 @@ base::string16 GetLabelStreetAddress(const AutofillProfile& profile,
                                      const std::string& app_locale,
                                      const std::vector<ServerFieldType>& types);
 
+// Returns a label to show the user when |focused_field_type_| is not part of
+// a street address. For example, city and postal code are non-street-address
+// field types.
+base::string16 GetLabelForProfileOnFocusedNonStreetAddress(
+    bool form_has_street_address,
+    const AutofillProfile& profile,
+    const std::string& app_locale,
+    const std::vector<ServerFieldType>& types,
+    const base::string16& contact_info);
+
 // Returns the email address associated with |profile|, if any; otherwise,
 // returns an empty string.
 base::string16 GetLabelEmail(const AutofillProfile& profile,
