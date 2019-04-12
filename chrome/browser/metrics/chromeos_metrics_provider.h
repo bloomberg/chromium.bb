@@ -14,6 +14,10 @@
 #include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_provider.h"
 
+namespace arc {
+struct ArcFeatures;
+}
+
 namespace device {
 class BluetoothAdapter;
 }
@@ -62,6 +66,10 @@ class ChromeOSMetricsProvider : public metrics::MetricsProvider {
   // run.
   void InitTaskGetBluetoothAdapter(const base::Closure& callback);
 
+  // Retrieves ARC features using ArcFeaturesParser. When this task is complete,
+  // |callback| is run.
+  void InitTaskGetArcFeatures(const base::RepeatingClosure& callback);
+
   // metrics::MetricsProvider:
   void Init() override;
   void AsyncInit(const base::Closure& done_callback) override;
@@ -88,6 +96,10 @@ class ChromeOSMetricsProvider : public metrics::MetricsProvider {
   // Sets the full hardware class, then calls the callback.
   void SetFullHardwareClass(base::Closure callback,
                             std::string full_hardware_class);
+
+  // Updates ARC-related system profile fields, then calls the callback.
+  void OnArcFeaturesParsed(base::RepeatingClosure callback,
+                           base::Optional<arc::ArcFeatures> features);
 
   // Writes info about paired Bluetooth devices on this system.
   void WriteBluetoothProto(metrics::SystemProfileProto* system_profile_proto);
@@ -122,6 +134,9 @@ class ChromeOSMetricsProvider : public metrics::MetricsProvider {
   // Hardware class (e.g., hardware qualification ID). This value identifies
   // the configured system components such as CPU, WiFi adapter, etc.
   std::string full_hardware_class_;
+
+  // ARC release version obtained from build properties.
+  base::Optional<std::string> arc_release_ = base::nullopt;
 
   base::WeakPtrFactory<ChromeOSMetricsProvider> weak_ptr_factory_;
 
