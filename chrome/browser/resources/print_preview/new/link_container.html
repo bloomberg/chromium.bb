@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="../data/destination.html">
@@ -13,13 +14,11 @@
         display: block;
       }
 
-      :host paper-icon-button-light {
-        --cr-paper-icon-button-margin: {
-          margin-inline-end: -2px;
-          margin-inline-start: 0;
-        };
-        --cr-icon-size: 16px;
-        --cr-icon-ripple-size: 28px;
+      :host cr-icon-button {
+        --cr-icon-button-icon-size: 16px;
+        --cr-icon-button-margin-end: -2px;
+        --cr-icon-button-margin-start: 0;
+        --cr-icon-button-size: 28px;
       }
 
       .link:not([actionable]) {
@@ -56,12 +55,10 @@
          hidden$="[[!shouldShowSystemDialogLink_]]"
          on-click="onSystemDialogClick_">
       <div class="label">$i18n{systemDialogOption}</div>
-      <paper-icon-button-light actionable class="icon-external"
-          hidden$="[[openingSystemDialog_]]">
-        <button disabled="[[systemDialogLinkDisabled_]]"
-            aria-label="$i18n{systemDialogOption}">
-        </button>
-      </paper-icon-button-light>
+      <cr-icon-button actionable class="icon-external"
+          hidden$="[[openingSystemDialog_]]"
+          disabled="[[systemDialogLinkDisabled_]]"
+          aria-label="$i18n{systemDialogOption}"></cr-icon-button>
       <div id="systemDialogThrobber" hidden$="[[!openingSystemDialog_]]"
           class="throbber"></div>
     </div>
@@ -69,12 +66,9 @@
     <div class="link" id="openPdfInPreviewLink" actionable$="[[!disabled]]"
         on-click="onOpenInPreviewClick_">
       <div class="label">$i18n{openPdfInPreviewOption}</div>
-      <paper-icon-button-light actionable class="icon-external"
-          hidden$="[[openingInPreview_]]">
-        <button disabled="[[disabled]]"
-            aria-label="$i18n{openPdfInPreviewOption}">
-        </button>
-      </paper-icon-button-light>
+      <cr-icon-button actionable class="icon-external"
+          hidden$="[[openingInPreview_]]" disabled="[[disabled]]"
+          aria-label="$i18n{openPdfInPreviewOption}"></cr-icon-button>
       <div id="openPdfInPreviewThrobber" hidden$="[[!openingInPreview_]]"
           class="throbber"></div>
     </div>
