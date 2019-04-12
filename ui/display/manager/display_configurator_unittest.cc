@@ -14,7 +14,7 @@
 #include "base/stl_util.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/display/manager/fake_display_snapshot.h"
+#include "ui/display/fake/fake_display_snapshot.h"
 #include "ui/display/manager/test/action_logger_util.h"
 #include "ui/display/manager/test/test_native_display_delegate.h"
 #include "ui/display/util/display_util.h"

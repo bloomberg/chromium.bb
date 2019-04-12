@@ -1994,6 +1994,8 @@ test("ash_unittests") {
     "//ui/compositor_extra:compositor_extra",
     "//ui/display",
     "//ui/display:test_support",
+    "//ui/display/fake",
+    "//ui/display/manager",
     "//ui/display/types",
     "//ui/events",
     "//ui/events:gesture_detection",
