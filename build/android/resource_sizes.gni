@@ -32,6 +32,8 @@ template("android_resource_sizes_test") {
     executable_args = [
       "--chartjson",
       _apk_path,
+      "--chromium-output-directory",
+      "@WrappedPath(.)",
     ]
   }
 }
