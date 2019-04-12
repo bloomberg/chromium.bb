@@ -28,6 +28,8 @@ source_set("lib") {
       "//chromeos/services/ime/public/cpp/shared_lib:interfaces",
       "decoder/decoder_engine.cc",
       "decoder/decoder_engine.h",
+      "decoder/downloader_impl.cc",
+      "decoder/downloader_impl.h",
     ]
   }
 }
