@@ -94,6 +94,7 @@ content::WebUIDataSource* CreateManagementUIHtmlSource() {
     {"toolbarTitle", IDS_MANAGEMENT_TOOLBAR_TITLE},
     {"searchPrompt", IDS_SETTINGS_SEARCH_PROMPT},
     {"clearSearch", IDS_DOWNLOAD_CLEAR_SEARCH},
+    {"backButton", IDS_ACCNAME_BACK},
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     {kManagementExtensionReportMachineName,
      IDS_MANAGEMENT_EXTENSION_REPORT_MACHINE_NAME},

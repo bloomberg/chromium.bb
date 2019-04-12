@@ -171,7 +171,7 @@
       <div class="sections-container">
         <div class="card">
           <section class="page-subtitle">
-            <a href="chrome://settings/help">
+            <a href="chrome://settings/help" aria-label="$i18n{backButton}">
               <iron-icon icon="cr:arrow-back"></iron-icon>
             </a>
             [[subtitle_]]
@@ -259,8 +259,7 @@
                 <template is="dom-repeat" items="[[extensions_]]">
                   <div class="list-item">
                     <div class="extension-name">
-                      <img src="[[item.icon]]"
-                          aria-describedby="a11yAssociation">
+                      <img src="[[item.icon]]" alt="">
                       <span>[[item.name]]</span>
                     </div>
                     <div class="extension-permissions">
