@@ -23,9 +23,9 @@ namespace blink {
 class ParkableString;
 
 const base::Feature kCompressParkableStringsInBackground{
-    "CompressParkableStringsInBackground", base::FEATURE_ENABLED_BY_DEFAULT};
+    "CompressParkableStringsInBackground", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kCompressParkableStringsInForeground{
-    "CompressParkableStringsInForeground", base::FEATURE_DISABLED_BY_DEFAULT};
+    "CompressParkableStringsInForeground", base::FEATURE_ENABLED_BY_DEFAULT};
 
 class PLATFORM_EXPORT ParkableStringManagerDumpProvider
     : public base::trace_event::MemoryDumpProvider {
