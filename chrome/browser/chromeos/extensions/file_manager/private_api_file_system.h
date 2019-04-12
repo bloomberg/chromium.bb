@@ -363,6 +363,26 @@ class FileManagerPrivateSearchFilesByHashesFunction
   const ChromeExtensionFunctionDetails chrome_details_;
 };
 
+class FileManagerPrivateSearchFilesFunction
+    : public LoggedUIThreadExtensionFunction {
+ public:
+  FileManagerPrivateSearchFilesFunction();
+
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.searchFiles",
+                             FILEMANAGERPRIVATE_SEARCHFILES)
+
+ protected:
+  ~FileManagerPrivateSearchFilesFunction() override = default;
+
+ private:
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+
+  void OnSearchByPattern(const std::vector<base::FilePath>& results);
+
+  const ChromeExtensionFunctionDetails chrome_details_;
+};
+
 // Implements the chrome.fileManagerPrivate.setEntryTag method.
 class FileManagerPrivateInternalSetEntryTagFunction
     : public LoggedUIThreadExtensionFunction {

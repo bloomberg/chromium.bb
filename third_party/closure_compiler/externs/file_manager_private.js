@@ -777,6 +777,13 @@ chrome.fileManagerPrivate.searchFilesByHashes = function(volumeId, hashes,
     callback) {};
 
 /**
+ * Search files in My Files.
+ * @param {!chrome.fileManagerPrivate.SearchMetadataParams} searchParams
+ * @param {function(!Array<Object>):void} callback
+ */
+chrome.fileManagerPrivate.searchFiles = function(searchParams, callback) {};
+
+/**
  * Create a zip file for the selected files. |parentEntry| Entry of the
  * directory containing the selected files. |entries| Selected entries.
  * The files must be under the directory specified by |parentEntry|. |destName|
