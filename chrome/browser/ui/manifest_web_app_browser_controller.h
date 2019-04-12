@@ -29,8 +29,6 @@ class ManifestWebAppBrowserController : public WebAppBrowserController {
   explicit ManifestWebAppBrowserController(Browser* browser);
   ~ManifestWebAppBrowserController() override;
 
-  bool IsForExperimentalHostedAppBrowser() const override;
-
   base::Optional<std::string> GetAppId() const override;
 
   bool ShouldShowToolbar() const override;

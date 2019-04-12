@@ -38,10 +38,10 @@
 #include "url/gurl.h"
 
 // static
-bool WebAppBrowserController::IsForExperimentalHostedAppBrowser(
+bool WebAppBrowserController::IsForExperimentalWebAppBrowser(
     const Browser* browser) {
   return browser && browser->web_app_controller() &&
-         browser->web_app_controller()->IsForExperimentalHostedAppBrowser();
+         browser->web_app_controller()->IsForExperimentalWebAppBrowser();
 }
 
 // static
@@ -60,6 +60,10 @@ WebAppBrowserController::WebAppBrowserController(Browser* browser)
     : content::WebContentsObserver(nullptr), browser_(browser) {}
 
 WebAppBrowserController::~WebAppBrowserController() = default;
+
+bool WebAppBrowserController::IsForExperimentalWebAppBrowser() const {
+  return base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing);
+}
 
 bool WebAppBrowserController::CreatedForInstalledPwa() const {
   return false;

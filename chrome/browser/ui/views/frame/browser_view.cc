@@ -621,7 +621,7 @@ WebContents* BrowserView::GetActiveWebContents() const {
 }
 
 bool BrowserView::IsBrowserTypeHostedApp() const {
-  return WebAppBrowserController::IsForExperimentalHostedAppBrowser(
+  return WebAppBrowserController::IsForExperimentalWebAppBrowser(
       browser_.get());
 }
 

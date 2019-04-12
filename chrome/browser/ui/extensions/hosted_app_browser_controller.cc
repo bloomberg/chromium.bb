@@ -162,10 +162,6 @@ bool HostedAppBrowserController::IsForSystemWebApp() const {
          extension->location() == Manifest::EXTERNAL_COMPONENT;
 }
 
-bool HostedAppBrowserController::IsForExperimentalHostedAppBrowser() const {
-  return base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing);
-}
-
 bool HostedAppBrowserController::IsHostedApp() const {
   return true;
 }
@@ -229,7 +225,7 @@ bool HostedAppBrowserController::ShouldShowToolbar() const {
 
 bool HostedAppBrowserController::ShouldShowHostedAppButtonContainer() const {
   // System Web Apps don't get the Hosted App buttons.
-  return IsForExperimentalHostedAppBrowser() && !IsForSystemWebApp();
+  return IsForExperimentalWebAppBrowser() && !IsForSystemWebApp();
 }
 
 gfx::ImageSkia HostedAppBrowserController::GetWindowAppIcon() const {
@@ -253,7 +249,7 @@ gfx::ImageSkia HostedAppBrowserController::GetWindowAppIcon() const {
 }
 
 gfx::ImageSkia HostedAppBrowserController::GetWindowIcon() const {
-  if (IsForExperimentalHostedAppBrowser())
+  if (IsForExperimentalWebAppBrowser())
     return GetWindowAppIcon();
 
   return browser()->GetCurrentPageIcon().AsImageSkia();

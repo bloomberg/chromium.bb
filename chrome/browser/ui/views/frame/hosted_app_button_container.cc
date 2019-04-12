@@ -185,7 +185,7 @@ HostedAppButtonContainer::HostedAppButtonContainer(
   DCHECK(browser_view_);
   DCHECK(browser_view_->browser()
              ->web_app_controller()
-             ->IsForExperimentalHostedAppBrowser());
+             ->IsForExperimentalWebAppBrowser());
 
   set_id(VIEW_ID_HOSTED_APP_BUTTON_CONTAINER);
 

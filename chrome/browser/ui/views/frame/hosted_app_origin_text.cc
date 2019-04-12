@@ -25,7 +25,7 @@ constexpr gfx::Tween::Type kTweenType = gfx::Tween::FAST_OUT_SLOW_IN_2;
 }  // namespace
 
 HostedAppOriginText::HostedAppOriginText(Browser* browser) {
-  DCHECK(WebAppBrowserController::IsForExperimentalHostedAppBrowser(browser));
+  DCHECK(WebAppBrowserController::IsForExperimentalWebAppBrowser(browser));
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
