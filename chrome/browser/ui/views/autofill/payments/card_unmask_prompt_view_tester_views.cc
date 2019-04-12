@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/autofill/card_unmask_prompt_view_tester_views.h"
+#include "chrome/browser/ui/views/autofill/payments/card_unmask_prompt_view_tester_views.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ui/views/autofill/card_unmask_prompt_views.h"
+#include "chrome/browser/ui/views/autofill/payments/card_unmask_prompt_views.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/window/dialog_client_view.h"
 
@@ -14,19 +14,16 @@ namespace autofill {
 // static
 std::unique_ptr<CardUnmaskPromptViewTester> CardUnmaskPromptViewTester::For(
     CardUnmaskPromptView* view) {
-  return std::unique_ptr<CardUnmaskPromptViewTester>(
-      new CardUnmaskPromptViewTesterViews(
-          static_cast<CardUnmaskPromptViews*>(view)));
+  return std::make_unique<CardUnmaskPromptViewTesterViews>(
+      static_cast<CardUnmaskPromptViews*>(view));
 }
 
 // Class that facilitates testing.
 CardUnmaskPromptViewTesterViews::CardUnmaskPromptViewTesterViews(
     CardUnmaskPromptViews* view)
-    : view_(view) {
-}
+    : view_(view) {}
 
-CardUnmaskPromptViewTesterViews::~CardUnmaskPromptViewTesterViews() {
-}
+CardUnmaskPromptViewTesterViews::~CardUnmaskPromptViewTesterViews() {}
 
 void CardUnmaskPromptViewTesterViews::Close() {
   view_->ClosePrompt();

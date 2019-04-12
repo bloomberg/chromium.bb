@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_page_action_icon_container_view.h"
 
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/views/autofill/local_card_migration_icon_view.h"
-#include "chrome/browser/ui/views/autofill/save_card_icon_view.h"
+#include "chrome/browser/ui/views/autofill/payments/local_card_migration_icon_view.h"
+#include "chrome/browser/ui/views/autofill/payments/save_card_icon_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/profiles/avatar_toolbar_button.h"

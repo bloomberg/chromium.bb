@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/autofill/local_card_migration_error_dialog_view.h"
+#include "chrome/browser/ui/views/autofill/payments/local_card_migration_error_dialog_view.h"
 
 #include "base/macros.h"
 #include "chrome/app/vector_icons/vector_icons.h"

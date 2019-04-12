@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_AUTOFILL_SAVE_CARD_SIGN_IN_PROMO_BUBBLE_VIEWS_H_
-#define CHROME_BROWSER_UI_VIEWS_AUTOFILL_SAVE_CARD_SIGN_IN_PROMO_BUBBLE_VIEWS_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_AUTOFILL_PAYMENTS_SAVE_CARD_SIGN_IN_PROMO_BUBBLE_VIEWS_H_
+#define CHROME_BROWSER_UI_VIEWS_AUTOFILL_PAYMENTS_SAVE_CARD_SIGN_IN_PROMO_BUBBLE_VIEWS_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ui/views/autofill/save_card_bubble_views.h"
+#include "chrome/browser/ui/views/autofill/payments/save_card_bubble_views.h"
 
 namespace content {
 class WebContents;
@@ -39,4 +39,4 @@ class SaveCardSignInPromoBubbleViews : public SaveCardBubbleViews {
 
 }  // namespace autofill
 
-#endif  // CHROME_BROWSER_UI_VIEWS_AUTOFILL_SAVE_CARD_SIGN_IN_PROMO_BUBBLE_VIEWS_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_AUTOFILL_PAYMENTS_SAVE_CARD_SIGN_IN_PROMO_BUBBLE_VIEWS_H_

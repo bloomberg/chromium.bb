@@ -1,7 +1,8 @@
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#include "chrome/browser/ui/views/autofill/local_card_migration_icon_view.h"
+
+#include "chrome/browser/ui/views/autofill/payments/local_card_migration_icon_view.h"
 
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -10,8 +11,8 @@
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/view_ids.h"
-#include "chrome/browser/ui/views/autofill/local_card_migration_bubble_views.h"
-#include "chrome/browser/ui/views/autofill/local_card_migration_dialog_view.h"
+#include "chrome/browser/ui/views/autofill/payments/local_card_migration_bubble_views.h"
+#include "chrome/browser/ui/views/autofill/payments/local_card_migration_dialog_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"

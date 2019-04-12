@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_AUTOFILL_DIALOG_VIEW_IDS_H_
-#define CHROME_BROWSER_UI_VIEWS_AUTOFILL_DIALOG_VIEW_IDS_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_AUTOFILL_PAYMENTS_DIALOG_VIEW_IDS_H_
+#define CHROME_BROWSER_UI_VIEWS_AUTOFILL_PAYMENTS_DIALOG_VIEW_IDS_H_
 
 #include "components/autofill/core/browser/field_types.h"
 
@@ -62,4 +62,4 @@ enum DialogViewId : int {
 
 }  // namespace autofill
 
-#endif  // CHROME_BROWSER_UI_VIEWS_AUTOFILL_DIALOG_VIEW_IDS_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_AUTOFILL_PAYMENTS_DIALOG_VIEW_IDS_H_
