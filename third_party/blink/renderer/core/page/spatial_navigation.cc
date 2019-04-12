@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -145,30 +146,42 @@ bool IsOffscreen(const Node* node) {
 
   DCHECK(!frame_view->NeedsLayout());
 
-  LayoutRect frame_viewport(
-      frame_view->GetScrollableArea()->VisibleContentRect());
-
-  LayoutObject* layout_object = node->GetLayoutObject();
-  if (!layout_object)
+  LayoutObject* object = node->GetLayoutObject();
+  if (!object)
     return true;
 
-  LayoutRect rect(layout_object->VisualRectInDocument());
-  if (rect.IsEmpty())
-    return true;
+  // Get the rect in the object's own frame. We use VisualRectInDocument for
+  // legacy reasons, it has some special cases for inlines that we'd like to
+  // preserve (or at least break layout tests). Because of that, we have to
+  // manually convert into frame coordinates and then clip to the frame.
+  LayoutRect rect_in_frame =
+      object->IsLayoutView()
+          ? object->VisualRectInDocument()
+          : frame_view->DocumentToFrame(object->VisualRectInDocument());
+  LayoutRect frame_rect =
+      LayoutRect(LayoutPoint(), LayoutSize(frame_view->Size()));
+  rect_in_frame.Intersect(frame_rect);
 
-  // A document always intersects with its frame's viewport.
-  if (node != node->GetDocument() && !frame_viewport.Intersects(rect))
-    return true;
+  // Now convert from the local frame to the root frame's coordinate space.
+  // This will already apply clipping along the way.
+  LayoutRect rect_in_root_frame = rect_in_frame;
+  const LayoutBoxModelObject* ancestor = nullptr;
+  frame_view->GetLayoutView()->MapToVisualRectInAncestorSpace(
+      ancestor, rect_in_root_frame,
+      kUseTransforms | kTraverseDocumentBoundaries, kDefaultVisualRectFlags);
 
-  // Now we know that the node is visible in the its own frame's viewport (it is
-  // not clipped by a scrollable div). That is, we've taken "element-clipping"
-  // into account - now we only need to ensure that this node isn't clipped by
-  // a frame.
-  if (auto* document = DynamicTo<Document>(node))
-    node = document->body();
-  if (node && node->IsElementNode())
-    return ToElement(*node).VisibleBoundsInVisualViewport().IsEmpty();
-  return true;
+  // Now convert to the visual viewport which will account for pinch zoom.
+  VisualViewport& visual_viewport =
+      object->GetDocument().GetPage()->GetVisualViewport();
+  FloatRect rect_in_viewport =
+      visual_viewport.RootFrameToViewport(FloatRect(rect_in_root_frame));
+
+  // RootFrameToViewport doesn't clip so manually apply the viewport clip here.
+  FloatRect viewport_rect =
+      FloatRect(FloatPoint(), FloatSize(visual_viewport.Size()));
+  rect_in_viewport.Intersect(viewport_rect);
+
+  return rect_in_viewport.IsEmpty();
 }
 
 // As IsOffscreen() but returns visibility through the |node|'s frame's viewport
