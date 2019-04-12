@@ -144,13 +144,9 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
     [self.leadingImageView.centerYAnchor
         constraintEqualToAnchor:self.contentView.centerYAnchor],
 
-    // Position textStackView "after" leadingImageView. The leading constraint
+    // Position textStackView "after" leadingImageView. The horizontal position
     // is actually left off because it will be added via a
     // layout guide once the cell has been added to the view hierarchy.
-    // Use greater than or equal constraints because there may be a trailing
-    // view here.
-    [self.contentView.trailingAnchor
-        constraintGreaterThanOrEqualToAnchor:self.textStackView.trailingAnchor],
     // Top space should be at least the given top margin, but can be more if
     // the row is short enough to use the minimum height constraint above.
     [self.textStackView.topAnchor
@@ -208,12 +204,48 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
   DCHECK(imageLayoutGuide.isConstrained);
   DCHECK(textLayoutGuide.isConstrained);
 
+  // The text stack view is attached to both ends of the layout gude. This is
+  // because it needs to switch directions if the device is in LTR mode and the
+  // user types in RTL. Furthermore, because the layout guide is added to the
+  // main view, its direction will not change if the |semanticContentAttribute|
+  // of this cell or the omnibox changes.
+  // However, the text should still extend all the way to cell's trailing edge.
+  // To do this, constrain the text to the layout guide using a low priority
+  // constraint, so it will be there if possible, but add medium priority
+  // constraint to the cell's trailing edge. This will pull the text past the
+  // layout guide if necessary.
+
+  NSLayoutConstraint* stackViewToLayoutGuideLeading =
+      [self.textStackView.leadingAnchor
+          constraintEqualToAnchor:textLayoutGuide.leadingAnchor];
+  NSLayoutConstraint* stackViewToLayoutGuideTrailing =
+      [self.textStackView.trailingAnchor
+          constraintEqualToAnchor:textLayoutGuide.trailingAnchor];
+  NSLayoutConstraint* stackViewToCellTrailing =
+      [self.textStackView.trailingAnchor
+          constraintEqualToAnchor:self.contentView.trailingAnchor];
+
+  UILayoutPriority highest = UILayoutPriorityRequired - 1;
+  UILayoutPriority higher = UILayoutPriorityRequired - 2;
+
+  stackViewToLayoutGuideLeading.priority = higher;
+  stackViewToLayoutGuideTrailing.priority = higher;
+  stackViewToCellTrailing.priority = highest;
+
   [NSLayoutConstraint activateConstraints:@[
     [self.leadingImageView.centerXAnchor
         constraintEqualToAnchor:imageLayoutGuide.centerXAnchor],
-    [self.textStackView.leadingAnchor
-        constraintEqualToAnchor:textLayoutGuide.leadingAnchor],
+    stackViewToLayoutGuideLeading,
+    stackViewToLayoutGuideTrailing,
+    stackViewToCellTrailing,
   ]];
+}
+
+- (void)setOmniboxSemanticContentAttribute:
+    (UISemanticContentAttribute)omniboxSemanticContentAttribute {
+  _omniboxSemanticContentAttribute = omniboxSemanticContentAttribute;
+  self.contentView.semanticContentAttribute = omniboxSemanticContentAttribute;
+  self.textStackView.semanticContentAttribute = omniboxSemanticContentAttribute;
 }
 
 - (void)prepareForReuse {
@@ -221,6 +253,8 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
 
   self.suggestion = nil;
   self.incognito = NO;
+
+  self.omniboxSemanticContentAttribute = UISemanticContentAttributeUnspecified;
 
   // Clear text.
   self.textTruncatingLabel.attributedText = nil;

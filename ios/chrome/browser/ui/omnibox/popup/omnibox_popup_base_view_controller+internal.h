@@ -16,6 +16,11 @@
 // Alignment of omnibox text. Popup text should match this alignment.
 @property(nonatomic, assign) NSTextAlignment alignment;
 
+// Semantic content attribute of omnibox text. Popup should match this
+// attribute. This is used by the new omnibox popup.
+@property(nonatomic, assign)
+    UISemanticContentAttribute semanticContentAttribute;
+
 // Table view that displays the results.
 @property(nonatomic, strong) UITableView* tableView;
 

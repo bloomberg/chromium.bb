@@ -50,6 +50,10 @@ class OmniboxPopupMediatorDelegate {
 // Sets the text alignment of the popup content.
 - (void)setTextAlignment:(NSTextAlignment)alignment;
 
+// Sets the semantic content attribute of the popup content.
+- (void)setSemanticContentAttribute:
+    (UISemanticContentAttribute)semanticContentAttribute;
+
 // Updates the popup with the |results|.
 - (void)updateWithResults:(const AutocompleteResult&)results;
 

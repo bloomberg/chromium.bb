@@ -44,6 +44,8 @@ UIColor* BackgroundColorIncognito() {
 #pragma mark Redeclaration of Internal properties
 
 @property(nonatomic, assign) NSTextAlignment alignment;
+@property(nonatomic, assign)
+    UISemanticContentAttribute semanticContentAttribute;
 @property(nonatomic, strong) UITableView* tableView;
 
 #pragma mark Private properties

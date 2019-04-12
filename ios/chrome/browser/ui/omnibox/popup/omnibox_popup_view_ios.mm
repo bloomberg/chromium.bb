@@ -83,6 +83,11 @@ void OmniboxPopupViewIOS::SetTextAlignment(NSTextAlignment alignment) {
   [mediator_ setTextAlignment:alignment];
 }
 
+void OmniboxPopupViewIOS::SetSemanticContentAttribute(
+    UISemanticContentAttribute semanticContentAttribute) {
+  [mediator_ setSemanticContentAttribute:semanticContentAttribute];
+}
+
 #pragma mark - OmniboxPopupViewControllerDelegate
 
 bool OmniboxPopupViewIOS::IsStarredMatch(const AutocompleteMatch& match) const {

@@ -42,6 +42,21 @@
                                 animated:NO];
 }
 
+#pragma mark - UITableViewDelegate
+
+- (void)tableView:(UITableView*)tableView
+      willDisplayCell:(UITableViewCell*)cell
+    forRowAtIndexPath:(NSIndexPath*)indexPath {
+  if ([cell isKindOfClass:[OmniboxPopupRowCell class]]) {
+    OmniboxPopupRowCell* rowCell =
+        base::mac::ObjCCastStrict<OmniboxPopupRowCell>(cell);
+    // This has to be set here because the cell's content view has its
+    // semantic content attribute reset before the cell is displayed (and before
+    // this method is called).
+    rowCell.omniboxSemanticContentAttribute = self.semanticContentAttribute;
+  }
+}
+
 #pragma mark - Table view data source
 
 - (CGFloat)tableView:(UITableView*)tableView

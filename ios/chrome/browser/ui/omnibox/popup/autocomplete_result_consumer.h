@@ -40,6 +40,9 @@
         withAnimation:(BOOL)animation;
 // Sets the text alignment of the popup content.
 - (void)setTextAlignment:(NSTextAlignment)alignment;
+// Sets the semantic content attribute of the popup content.
+- (void)setSemanticContentAttribute:
+    (UISemanticContentAttribute)semanticContentAttribute;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_POPUP_AUTOCOMPLETE_RESULT_CONSUMER_H_

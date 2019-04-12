@@ -31,6 +31,11 @@
 // The default leading image to be used whenever the omnibox text is empty.
 @property(nonatomic, strong) UIImage* emptyTextLeadingImage;
 
+// The current semantic content attribute for the views this view controller
+// manages
+@property(nonatomic, assign)
+    UISemanticContentAttribute* semanticContentAttribute;
+
 // Designated initializer.
 - (instancetype)initWithIncognito:(BOOL)isIncognito;
 
