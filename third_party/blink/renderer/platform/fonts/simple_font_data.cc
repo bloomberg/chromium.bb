@@ -191,11 +191,9 @@ const SimpleFontData* SimpleFontData::FontDataForCharacter(UChar32) const {
 }
 
 Glyph SimpleFontData::GlyphForCharacter(UChar32 codepoint) const {
-  uint16_t glyph;
   SkTypeface* typeface = PlatformData().Typeface();
   CHECK(typeface);
-  typeface->charsToGlyphs(&codepoint, SkTypeface::kUTF32_Encoding, &glyph, 1);
-  return glyph;
+  return typeface->unicharToGlyph(codepoint);
 }
 
 bool SimpleFontData::IsSegmented() const {
