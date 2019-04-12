@@ -22,6 +22,7 @@
 
 #include "third_party/blink/renderer/core/svg/svg_animation_element.h"
 #include "third_party/blink/renderer/core/svg/svg_parser_utilities.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -31,13 +32,13 @@ SVGLengthList::SVGLengthList(SVGLengthMode mode) : mode_(mode) {}
 SVGLengthList::~SVGLengthList() = default;
 
 SVGLengthList* SVGLengthList::Clone() {
-  SVGLengthList* ret = SVGLengthList::Create(mode_);
+  auto* ret = MakeGarbageCollected<SVGLengthList>(mode_);
   ret->DeepCopy(this);
   return ret;
 }
 
 SVGPropertyBase* SVGLengthList::CloneForAnimation(const String& value) const {
-  SVGLengthList* ret = SVGLengthList::Create(mode_);
+  auto* ret = MakeGarbageCollected<SVGLengthList>(mode_);
   ret->SetValueAsString(value);
   return ret;
 }
@@ -61,7 +62,7 @@ SVGParsingError SVGLengthList::ParseInternal(const CharType*& ptr,
     if (value_string.IsEmpty())
       break;
 
-    SVGLength* length = SVGLength::Create(mode_);
+    auto* length = MakeGarbageCollected<SVGLength>(mode_);
     SVGParsingError length_parse_status =
         length->SetValueAsString(value_string);
     if (length_parse_status != SVGParseStatus::kNoError)
@@ -102,7 +103,7 @@ void SVGLengthList::Add(SVGPropertyBase* other, SVGElement* context_element) {
 }
 
 SVGLength* SVGLengthList::CreatePaddingItem() const {
-  return SVGLength::Create(mode_);
+  return MakeGarbageCollected<SVGLength>(mode_);
 }
 
 void SVGLengthList::CalculateAnimatedValue(
