@@ -2255,6 +2255,14 @@ enum WebFeature {
   kHTMLImportsOnReverseOriginTrials = 2847,
   kElementCreateShadowRootOnReverseOriginTrials = 2848,
   kDocumentRegisterElementOnReverseOriginTrials = 2849,
+  kInputTypeRadio = 2850,
+  kInputTypeCheckbox = 2851,
+  kInputTypeImage = 2852,
+  kInputTypeButton = 2853,
+  kInputTypeHidden = 2854,
+  kInputTypeReset = 2855,
+  kSelectElementSingle = 2856,
+  kSelectElementMultiple = 2857,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

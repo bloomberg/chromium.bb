@@ -46,6 +46,7 @@ class ImageInputType final : public BaseButtonInputType {
       scoped_refptr<ComputedStyle>) override;
 
  private:
+  void CountUsage() override;
   const AtomicString& FormControlType() const override;
   bool IsFormDataAppendable() const override;
   void AppendToFormData(FormData&) const override;

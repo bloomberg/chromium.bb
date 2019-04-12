@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/forms/form_controller.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
@@ -2003,6 +2004,19 @@ void HTMLSelectElement::DidRecalcStyle(const StyleRecalcChange change) {
   HTMLFormControlElementWithState::DidRecalcStyle(change);
   if (PopupIsVisible())
     popup_->UpdateFromElement(PopupMenu::kByStyleChange);
+}
+
+void HTMLSelectElement::AttachLayoutTree(AttachContext& context) {
+  HTMLFormControlElementWithState::AttachLayoutTree(context);
+
+  if (const ComputedStyle* style = GetComputedStyle()) {
+    if (style->Visibility() != EVisibility::kHidden) {
+      if (IsMultiple())
+        UseCounter::Count(GetDocument(), WebFeature::kSelectElementMultiple);
+      else
+        UseCounter::Count(GetDocument(), WebFeature::kSelectElementSingle);
+    }
+  }
 }
 
 void HTMLSelectElement::DetachLayoutTree(const AttachContext& context) {

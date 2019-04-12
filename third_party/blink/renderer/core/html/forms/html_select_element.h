@@ -206,6 +206,7 @@ class CORE_EXPORT HTMLSelectElement final
 
   LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
   void DidRecalcStyle(const StyleRecalcChange) override;
+  void AttachLayoutTree(AttachContext&) override;
   void DetachLayoutTree(const AttachContext& = AttachContext()) override;
   void AppendToFormData(FormData&) override;
   void DidAddUserAgentShadowRoot(ShadowRoot&) override;

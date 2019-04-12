@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -47,6 +48,10 @@ HTMLInputElement* NextInputElement(const HTMLInputElement& element,
 
 InputType* RadioInputType::Create(HTMLInputElement& element) {
   return MakeGarbageCollected<RadioInputType>(element);
+}
+
+void RadioInputType::CountUsage() {
+  CountUsageIfVisible(WebFeature::kInputTypeRadio);
 }
 
 const AtomicString& RadioInputType::FormControlType() const {

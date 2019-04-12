@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
@@ -48,6 +49,10 @@ inline ImageInputType::ImageInputType(HTMLInputElement& element)
 
 InputType* ImageInputType::Create(HTMLInputElement& element) {
   return MakeGarbageCollected<ImageInputType>(element);
+}
+
+void ImageInputType::CountUsage() {
+  CountUsageIfVisible(WebFeature::kInputTypeImage);
 }
 
 const AtomicString& ImageInputType::FormControlType() const {
