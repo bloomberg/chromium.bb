@@ -128,10 +128,8 @@ class ChromePasswordManagerClient
       password_manager::ManagePasswordsReferrer referrer) override;
 
   // autofill::mojom::PasswordGenerationDriver overrides.
-  void AutomaticGenerationStatusChanged(
-      bool available,
-      const base::Optional<
-          autofill::password_generation::PasswordGenerationUIData>& ui_data)
+  void AutomaticGenerationAvailable(
+      const autofill::password_generation::PasswordGenerationUIData& ui_data)
       override;
   void ShowPasswordEditingPopup(const gfx::RectF& bounds,
                                 const autofill::PasswordForm& form) override;
