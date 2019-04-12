@@ -149,13 +149,14 @@ class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
                       std::string* read_mime_type,
                       net::CompletionOnceCallback callback,
                       bool read_result) {
-    response_info_.headers->AddHeader(
-        base::StringPrintf("%s: %s", net::HttpRequestHeaders::kContentType,
-                           read_mime_type->c_str()));
+    if (read_result) {
+      response_info_.headers->AddHeader(
+          base::StringPrintf("%s: %s", net::HttpRequestHeaders::kContentType,
+                             read_mime_type->c_str()));
+    }
     *out_mime_type = *read_mime_type;
     DetermineCharset(*read_mime_type, data.get(), charset);
-    int result = read_result ? net::OK : net::ERR_INVALID_URL;
-    std::move(callback).Run(result);
+    std::move(callback).Run(net::OK);
   }
 
   // We need the filename of the resource to determine the mime type.

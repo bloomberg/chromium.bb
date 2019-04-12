@@ -791,7 +791,9 @@ TEST_P(ExtensionProtocolsTest, MimeTypesForKnownFiles) {
     const char* file_name;
     const char* expected_mime_type;
   } test_cases[] = {
-      {"json_file.json", "application/json"}, {"js_file.js", "text/javascript"},
+      {"json_file.json", "application/json"},
+      {"js_file.js", "text/javascript"},
+      {"mem_file.mem", ""},
   };
 
   for (const auto& test_case : test_cases) {
