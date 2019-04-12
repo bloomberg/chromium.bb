@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_AUTOFILL_SAVE_CARD_OFFER_BUBBLE_VIEWS_H_
-#define CHROME_BROWSER_UI_VIEWS_AUTOFILL_SAVE_CARD_OFFER_BUBBLE_VIEWS_H_
-
-#include "chrome/browser/ui/views/autofill/save_card_bubble_views.h"
+#ifndef CHROME_BROWSER_UI_VIEWS_AUTOFILL_PAYMENTS_SAVE_CARD_OFFER_BUBBLE_VIEWS_H_
+#define CHROME_BROWSER_UI_VIEWS_AUTOFILL_PAYMENTS_SAVE_CARD_OFFER_BUBBLE_VIEWS_H_
 
 #include "chrome/browser/ui/autofill/payments/autofill_dialog_models.h"
-#include "chrome/browser/ui/views/autofill/view_util.h"
+#include "chrome/browser/ui/views/autofill/payments/payments_view_util.h"
+#include "chrome/browser/ui/views/autofill/payments/save_card_bubble_views.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
@@ -76,4 +75,4 @@ class SaveCardOfferBubbleViews : public SaveCardBubbleViews,
 
 }  // namespace autofill
 
-#endif  // CHROME_BROWSER_UI_VIEWS_AUTOFILL_SAVE_CARD_OFFER_BUBBLE_VIEWS_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_AUTOFILL_PAYMENTS_SAVE_CARD_OFFER_BUBBLE_VIEWS_H_

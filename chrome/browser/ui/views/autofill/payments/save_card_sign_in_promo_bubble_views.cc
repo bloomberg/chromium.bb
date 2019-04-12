@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/autofill/save_card_sign_in_promo_bubble_views.h"
+#include "chrome/browser/ui/views/autofill/payments/save_card_sign_in_promo_bubble_views.h"
 
 #include <memory>
 
 #include "build/build_config.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/views/autofill/dialog_view_ids.h"
+#include "chrome/browser/ui/views/autofill/payments/dialog_view_ids.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/signin/core/browser/signin_metrics.h"
