@@ -27,6 +27,8 @@ enum SharedImageUsage : uint32_t {
   SHARED_IMAGE_USAGE_OOP_RASTERIZATION = 1 << 5,
   // Image will be used for RGB emulation in WebGL on Mac.
   SHARED_IMAGE_USAGE_RGB_EMULATION = 1 << 6,
+  // Image will be used by Dawn (for WebGPU)
+  SHARED_IMAGE_USAGE_WEBGPU = 1 << 7,
 };
 
 }  // namespace gpu

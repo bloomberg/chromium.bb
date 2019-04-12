@@ -219,13 +219,14 @@ SharedImageBackingFactory* SharedImageFactory::GetFactoryByUsage(
                                         SHARED_IMAGE_USAGE_DISPLAY;
   bool using_wrapped_sk_image =
       wrapped_sk_image_factory_ && (usage == kWrappedSkImageUsage);
+  bool using_dawn = usage & SHARED_IMAGE_USAGE_WEBGPU;
 
   bool vulkan_usage = using_vulkan_ && (usage & SHARED_IMAGE_USAGE_DISPLAY);
   bool gl_usage = usage & SHARED_IMAGE_USAGE_GLES2;
   bool share_between_threads = IsSharedBetweenThreads(usage);
   bool share_between_gl_vulkan = gl_usage && vulkan_usage;
   bool using_interop_factory = share_between_threads ||
-                               share_between_gl_vulkan ||
+                               share_between_gl_vulkan || using_dawn ||
                                (vulkan_usage && !using_wrapped_sk_image);
 
   *allow_legacy_mailbox =
@@ -305,6 +306,12 @@ SharedImageRepresentationFactory::ProduceSkia(
     const Mailbox& mailbox,
     scoped_refptr<SharedContextState> context_state) {
   return manager_->ProduceSkia(mailbox, tracker_.get(), context_state);
+}
+
+std::unique_ptr<SharedImageRepresentationDawn>
+SharedImageRepresentationFactory::ProduceDawn(const Mailbox& mailbox,
+                                              DawnDevice device) {
+  return manager_->ProduceDawn(mailbox, tracker_.get(), device);
 }
 
 }  // namespace gpu

@@ -5,6 +5,8 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_SHARED_IMAGE_REPRESENTATION_H_
 #define GPU_COMMAND_BUFFER_SERVICE_SHARED_IMAGE_REPRESENTATION_H_
 
+#include <dawn/dawn.h>
+
 #include "base/callback_helpers.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
@@ -154,6 +156,17 @@ class SharedImageRepresentationSkia : public SharedImageRepresentation {
   virtual void EndWriteAccess(sk_sp<SkSurface> surface) = 0;
   virtual sk_sp<SkPromiseImageTexture> BeginReadAccess() = 0;
   virtual void EndReadAccess() = 0;
+};
+
+class SharedImageRepresentationDawn : public SharedImageRepresentation {
+ public:
+  SharedImageRepresentationDawn(SharedImageManager* manager,
+                                SharedImageBacking* backing,
+                                MemoryTypeTracker* tracker)
+      : SharedImageRepresentation(manager, backing, tracker) {}
+
+  virtual DawnTexture BeginAccess(DawnTextureUsageBit usage) = 0;
+  virtual void EndAccess() = 0;
 };
 
 }  // namespace gpu

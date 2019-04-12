@@ -46,6 +46,10 @@ class GPU_GLES2_EXPORT SharedImageManager {
       const Mailbox& mailbox,
       MemoryTypeTracker* ref,
       scoped_refptr<SharedContextState> context_state);
+  std::unique_ptr<SharedImageRepresentationDawn> ProduceDawn(
+      const Mailbox& mailbox,
+      MemoryTypeTracker* ref,
+      DawnDevice device);
 
   // Called by SharedImageRepresentation in the destructor.
   void OnRepresentationDestroyed(const Mailbox& mailbox,

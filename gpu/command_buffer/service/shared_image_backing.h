@@ -5,6 +5,10 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_SHARED_IMAGE_BACKING_H_
 #define GPU_COMMAND_BUFFER_SERVICE_SHARED_IMAGE_BACKING_H_
 
+#include <dawn/dawn.h>
+
+#include <memory>
+
 #include "base/containers/flat_map.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
@@ -30,6 +34,7 @@ class SharedImageRepresentation;
 class SharedImageRepresentationGLTexture;
 class SharedImageRepresentationGLTexturePassthrough;
 class SharedImageRepresentationSkia;
+class SharedImageRepresentationDawn;
 class MemoryTypeTracker;
 
 // Represents the actual storage (GL texture, VkImage, GMB) for a SharedImage.
@@ -100,6 +105,10 @@ class GPU_GLES2_EXPORT SharedImageBacking {
       SharedImageManager* manager,
       MemoryTypeTracker* tracker,
       scoped_refptr<SharedContextState> context_state);
+  virtual std::unique_ptr<SharedImageRepresentationDawn> ProduceDawn(
+      SharedImageManager* manager,
+      MemoryTypeTracker* tracker,
+      DawnDevice device);
 
   // Used by subclasses in Destroy.
   bool have_context() const;
