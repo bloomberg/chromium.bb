@@ -29,12 +29,12 @@ std::unique_ptr<KeyedService> BuildTestOfflinePageModel(SimpleFactoryKey* key) {
       base::ThreadTaskRunnerHandle::Get();
 
   base::FilePath store_path =
-      key->path().Append(chrome::kOfflinePageMetadataDirname);
+      key->GetPath().Append(chrome::kOfflinePageMetadataDirname);
   std::unique_ptr<OfflinePageMetadataStore> metadata_store(
       new OfflinePageMetadataStore(task_runner, store_path));
 
   base::FilePath private_archives_dir =
-      key->path().Append(chrome::kOfflinePageArchivesDirname);
+      key->GetPath().Append(chrome::kOfflinePageArchivesDirname);
   base::FilePath public_archives_dir("/sdcard/Download");
   // If base::PathService::Get returns false, the temporary_archives_dir will be
   // empty, and no temporary pages will be saved during this chrome lifecycle.

@@ -17,7 +17,7 @@ class KEYED_SERVICE_EXPORT TestSimpleFactoryKey : public SimpleFactoryKey {
   ~TestSimpleFactoryKey() override;
 
   // SimpleFactoryKey implementation.
-  bool is_off_the_record() const override;
+  bool IsOffTheRecord() const override;
 
  private:
   bool is_off_the_record_;

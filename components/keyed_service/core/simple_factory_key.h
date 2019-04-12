@@ -20,9 +20,9 @@ class KEYED_SERVICE_EXPORT SimpleFactoryKey {
   explicit SimpleFactoryKey(const base::FilePath& path);
   virtual ~SimpleFactoryKey();
 
-  const base::FilePath& path() const { return path_; }
+  const base::FilePath& GetPath() const { return path_; }
 
-  virtual bool is_off_the_record() const = 0;
+  virtual bool IsOffTheRecord() const = 0;
 
  private:
   base::FilePath path_;

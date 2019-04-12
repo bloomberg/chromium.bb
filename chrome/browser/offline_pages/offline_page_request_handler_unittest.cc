@@ -961,7 +961,7 @@ OfflinePageRequestHandlerTestBase::BuildTestOfflinePageModel(
       base::ThreadTaskRunnerHandle::Get();
 
   base::FilePath store_path =
-      key->path().Append(chrome::kOfflinePageMetadataDirname);
+      key->GetPath().Append(chrome::kOfflinePageMetadataDirname);
   std::unique_ptr<OfflinePageMetadataStore> metadata_store(
       new OfflinePageMetadataStore(task_runner, store_path));
   std::unique_ptr<SystemDownloadManager> download_manager(

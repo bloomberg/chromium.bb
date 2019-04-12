@@ -54,12 +54,12 @@ std::unique_ptr<KeyedService> OfflinePageModelFactory::BuildServiceInstanceFor(
       base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
 
   base::FilePath store_path =
-      key->path().Append(chrome::kOfflinePageMetadataDirname);
+      key->GetPath().Append(chrome::kOfflinePageMetadataDirname);
   std::unique_ptr<OfflinePageMetadataStore> metadata_store(
       new OfflinePageMetadataStore(background_task_runner, store_path));
 
   base::FilePath persistent_archives_dir =
-      key->path().Append(chrome::kOfflinePageArchivesDirname);
+      key->GetPath().Append(chrome::kOfflinePageArchivesDirname);
   // If base::PathService::Get returns false, the temporary_archives_dir will be
   // empty, and no temporary pages will be saved during this chrome lifecycle.
   base::FilePath temporary_archives_dir;
@@ -72,7 +72,7 @@ std::unique_ptr<KeyedService> OfflinePageModelFactory::BuildServiceInstanceFor(
   std::unique_ptr<ArchiveManager> archive_manager(new DownloadArchiveManager(
       temporary_archives_dir, persistent_archives_dir,
       DownloadPrefs::GetDefaultDownloadDirectory(), background_task_runner,
-      profile_key->prefs()));
+      profile_key->GetPrefs()));
   auto clock = std::make_unique<base::DefaultClock>();
 
   std::unique_ptr<SystemDownloadManager> download_manager(

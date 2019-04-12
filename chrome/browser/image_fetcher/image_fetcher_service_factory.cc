@@ -39,7 +39,7 @@ const base::FilePath::CharType kImageCacheSubdir[] =
 // static
 base::FilePath ImageFetcherServiceFactory::GetCachePath(SimpleFactoryKey* key) {
   base::FilePath cache_path;
-  chrome::GetUserCacheDirectory(key->path(), &cache_path);
+  chrome::GetUserCacheDirectory(key->GetPath(), &cache_path);
   return cache_path.Append(kImageCacheSubdir);
 }
 
@@ -84,7 +84,7 @@ ImageFetcherServiceFactory::BuildServiceInstanceFor(
   scoped_refptr<image_fetcher::ImageCache> image_cache =
       base::MakeRefCounted<image_fetcher::ImageCache>(
           std::move(data_store), std::move(metadata_store),
-          profile_key->prefs(), clock, task_runner);
+          profile_key->GetPrefs(), clock, task_runner);
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
       SystemNetworkContextManager::GetInstance()->GetSharedURLLoaderFactory();
@@ -92,7 +92,7 @@ ImageFetcherServiceFactory::BuildServiceInstanceFor(
   auto cached_image_fetcher_service =
       std::make_unique<image_fetcher::ImageFetcherService>(
           std::make_unique<ImageDecoderImpl>(), std::move(url_loader_factory),
-          std::move(image_cache), key->is_off_the_record());
+          std::move(image_cache), key->IsOffTheRecord());
   return cached_image_fetcher_service;
 }
 

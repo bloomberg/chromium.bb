@@ -54,7 +54,7 @@ void SimpleDependencyManager::DumpContextDependencies(void* context) const {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           kDumpSimpleDependencyGraphFlag)) {
     base::FilePath dot_file =
-        static_cast<const SimpleFactoryKey*>(context)->path().AppendASCII(
+        static_cast<const SimpleFactoryKey*>(context)->GetPath().AppendASCII(
             "simple-dependencies.dot");
     DumpDependenciesAsGraphviz("SimpleDependencyManager", dot_file);
   }
