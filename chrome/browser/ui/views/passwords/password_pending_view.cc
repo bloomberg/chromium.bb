@@ -174,29 +174,18 @@ std::unique_ptr<views::ToggleImageButton> CreatePasswordViewButton(
 std::unique_ptr<views::EditableCombobox> CreatePasswordDropdownView(
     const autofill::PasswordForm& form,
     bool are_passwords_revealed) {
-  DCHECK(!form.all_possible_passwords.empty());
+  DCHECK(form.federation_origin.opaque());
+  const std::vector<base::string16> passwords =
+      form.all_possible_passwords.empty()
+          ? std::vector<base::string16>(/*n=*/1, form.password_value)
+          : ToValues(form.all_possible_passwords);
   auto combobox = std::make_unique<views::EditableCombobox>(
-      std::make_unique<ui::SimpleComboboxModel>(
-          ToValues(form.all_possible_passwords)),
+      std::make_unique<ui::SimpleComboboxModel>(passwords),
       /*filter_on_edit=*/false, /*show_on_empty=*/true,
       views::EditableCombobox::Type::kPassword, views::style::CONTEXT_BUTTON,
       STYLE_PRIMARY_MONOSPACED);
+  combobox->SetText(form.password_value);
   combobox->RevealPasswords(are_passwords_revealed);
-  size_t index =
-      std::distance(form.all_possible_passwords.begin(),
-                    find_if(form.all_possible_passwords.begin(),
-                            form.all_possible_passwords.end(),
-                            [&form](const autofill::ValueElementPair& pair) {
-                              return pair.first == form.password_value;
-                            }));
-  // Unlikely, but if we don't find the password in possible passwords,
-  // we will set the default to first element.
-  if (index == form.all_possible_passwords.size()) {
-    NOTREACHED();
-    combobox->SetText(form.all_possible_passwords.at(0).first);
-  } else {
-    combobox->SetText(form.all_possible_passwords.at(index).first);
-  }
   combobox->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_PASSWORD_LABEL));
   return combobox;
@@ -215,7 +204,6 @@ PasswordPendingView::PasswordPendingView(content::WebContents* web_contents,
       password_view_button_(nullptr),
       initially_focused_view_(nullptr),
       password_dropdown_(nullptr),
-      password_label_(nullptr),
       are_passwords_revealed_(
           model()->are_passwords_revealed_when_bubble_is_opened()) {
   DCHECK(model()->state() == password_manager::ui::PENDING_PASSWORD_STATE ||
@@ -246,17 +234,9 @@ PasswordPendingView::PasswordPendingView(content::WebContents* web_contents,
       username_field_ = CreateUsernameLabel(password_form).release();
     }
 
-    if (password_form.all_possible_passwords.size() > 1 &&
-        model()->enable_editing()) {
-      password_dropdown_ =
-          CreatePasswordDropdownView(password_form, are_passwords_revealed_)
-              .release();
-    } else {
-      password_label_ = CreatePasswordLabel(password_form,
-                                            /*federation_message_id*/ 0,
-                                            are_passwords_revealed_)
-                            .release();
-    }
+    password_dropdown_ =
+        CreatePasswordDropdownView(password_form, are_passwords_revealed_)
+            .release();
 
     password_view_button_ =
         CreatePasswordViewButton(this, are_passwords_revealed_).release();
@@ -264,10 +244,7 @@ PasswordPendingView::PasswordPendingView(content::WebContents* web_contents,
     views::GridLayout* layout =
         SetLayoutManager(std::make_unique<views::GridLayout>(this));
 
-    views::View* password_field =
-        password_dropdown_ ? static_cast<views::View*>(password_dropdown_)
-                           : static_cast<views::View*>(password_label_);
-    BuildCredentialRows(layout, username_field_, password_field,
+    BuildCredentialRows(layout, username_field_, password_dropdown_,
                         password_view_button_);
     if (model()->enable_editing() &&
         model()->pending_password().username_value.empty()) {
@@ -397,18 +374,13 @@ void PasswordPendingView::TogglePasswordVisibility() {
 
   are_passwords_revealed_ = !are_passwords_revealed_;
   password_view_button_->SetToggled(are_passwords_revealed_);
-  DCHECK(!password_dropdown_ || !password_label_);
-  if (password_dropdown_)
-    password_dropdown_->RevealPasswords(are_passwords_revealed_);
-  else
-    password_label_->SetObscured(!are_passwords_revealed_);
+  DCHECK(password_dropdown_);
+  password_dropdown_->RevealPasswords(are_passwords_revealed_);
 }
 
 void PasswordPendingView::UpdateUsernameAndPasswordInModel() {
   const bool username_editable = model()->enable_editing();
-  const bool password_editable =
-      password_dropdown_ && model()->enable_editing();
-  if (!username_editable && !password_editable)
+  if (!username_editable && !password_dropdown_)
     return;
 
   base::string16 new_username = model()->pending_password().username_value;
@@ -417,7 +389,7 @@ void PasswordPendingView::UpdateUsernameAndPasswordInModel() {
     new_username = static_cast<views::Textfield*>(username_field_)->text();
     base::TrimString(new_username, base::ASCIIToUTF16(" "), &new_username);
   }
-  if (password_editable)
+  if (password_dropdown_)
     new_password = password_dropdown_->GetText();
   model()->OnCredentialEdited(std::move(new_username), std::move(new_password));
 }
