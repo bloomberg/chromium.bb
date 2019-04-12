@@ -186,7 +186,9 @@ bool ServiceImageTransferCacheEntry::Deserialize(
   SkColorType color_type = kUnknown_SkColorType;
   reader.Read(&color_type);
 
-  if (color_type == kUnknown_SkColorType || color_type > kLastEnum_SkColorType)
+  if (color_type == kUnknown_SkColorType ||
+      color_type == kRGB_101010x_SkColorType ||
+      color_type > kLastEnum_SkColorType)
     return false;
 
   uint32_t width;
