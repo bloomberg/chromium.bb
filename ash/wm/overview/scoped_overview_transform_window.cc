@@ -10,14 +10,13 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
-#include "ash/wm/overview/cleanup_animation_observer.h"
+#include "ash/wm/overview/delayed_animation_observer_impl.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
-#include "ash/wm/overview/start_animation_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_preview_view.h"
 #include "ash/wm/window_state.h"
@@ -246,6 +245,13 @@ void ScopedOverviewTransformWindow::RestoreWindow(
     ScopedAnimationSettings animation_settings_list;
     BeginScopedAnimation(overview_item_->GetExitTransformAnimationType(),
                          &animation_settings_list);
+    for (auto& settings : animation_settings_list) {
+      auto exit_observer = std::make_unique<ExitAnimationObserver>();
+      settings->AddObserver(exit_observer.get());
+      Shell::Get()->overview_controller()->AddExitAnimationObserver(
+          std::move(exit_observer));
+    }
+
     // Use identity transform directly to reset window's transform when exiting
     // overview.
     SetTransform(GetOverviewWindow(), gfx::Transform());
