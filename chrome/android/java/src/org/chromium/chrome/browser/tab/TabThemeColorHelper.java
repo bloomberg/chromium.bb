@@ -139,13 +139,6 @@ public class TabThemeColorHelper extends EmptyTabObserver implements UserData {
     }
 
     /**
-     * @return Whether the theme color for this tab is the default color.
-     */
-    public boolean isDefaultColor() {
-        return mTab.isNativePage() || mDefaultColor == getColor();
-    }
-
-    /**
      * @return The default theme color for this tab.
      */
     @VisibleForTesting

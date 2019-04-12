@@ -1672,6 +1672,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/ui/ImmersiveModeManager.java",
   "java/src/org/chromium/chrome/browser/ui/RootUiCoordinator.java",
   "java/src/org/chromium/chrome/browser/ui/system/NavigationBarColorController.java",
+  "java/src/org/chromium/chrome/browser/ui/system/StatusBarColorController.java",
   "java/src/org/chromium/chrome/browser/ui/system/SystemUiCoordinator.java",
   "java/src/org/chromium/chrome/browser/util/AccessibilityUtil.java",
   "java/src/org/chromium/chrome/browser/util/ChromeContextUtil.java",

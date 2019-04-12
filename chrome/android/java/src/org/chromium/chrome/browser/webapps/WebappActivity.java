@@ -769,10 +769,8 @@ public class WebappActivity extends SingleTabActivity {
         // around an issue where the status bars go transparent and can't be seen on top of the page
         // content when users swipe them in or they appear because the on-screen keyboard was
         // triggered.
-        int statusBarColor = Color.BLACK;
         if (mBrandColor != null && mWebappInfo.displayMode() != WebDisplayMode.FULLSCREEN) {
             taskDescriptionColor = mBrandColor;
-            statusBarColor = mBrandColor;
             if (getToolbarManager() != null) {
                 getToolbarManager().onThemeColorChanged(mBrandColor, false);
             }
@@ -780,21 +778,18 @@ public class WebappActivity extends SingleTabActivity {
 
         ApiCompatibilityUtils.setTaskDescription(this, title, icon,
                 ColorUtils.getOpaqueColor(taskDescriptionColor));
-        setStatusBarColor(statusBarColor, statusBarColor != Color.BLACK);
+        getStatusBarColorController().updateStatusBarColor(getBaseStatusBarColor() != Color.BLACK);
     }
 
     @Override
-    protected void setStatusBarColor(Tab tab, int color) {
-        // Ignore any color that is not the brand color.
-        super.setStatusBarColor(
-                mBrandColor == null ? Color.BLACK : mBrandColor, mBrandColor == null);
-    }
-
-    @Override
-    protected void setStatusBarColor(int color, boolean isDefaultThemeColor) {
-        // Ignore any color that is not the brand color.
-        super.setStatusBarColor(
-                mBrandColor == null ? Color.BLACK : mBrandColor, mBrandColor == null);
+    public int getBaseStatusBarColor() {
+        // Don't use the brand color for the status bars if we're in display: fullscreen. This works
+        // around an issue where the status bars go transparent and can't be seen on top of the page
+        // content when users swipe them in or they appear because the on-screen keyboard was
+        // triggered.
+        return mBrandColor != null && mWebappInfo.displayMode() != WebDisplayMode.FULLSCREEN
+                ? mBrandColor
+                : Color.BLACK;
     }
 
     @Override
