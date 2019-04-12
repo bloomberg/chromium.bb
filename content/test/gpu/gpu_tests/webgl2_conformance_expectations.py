@@ -1373,6 +1373,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/video/' +
         'tex-2d-rgb8ui-rgb_integer-unsigned_byte.html',
         ['android'], bug=906735)
+    self.Fail('conformance/rendering/blending.html',
+        ['android', 'no_passthrough'], bug=951628)
 
     # Qualcomm (Pixel 2) failures
     self.Fail('conformance/extensions/webgl-compressed-texture-astc.html',

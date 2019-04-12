@@ -203,12 +203,12 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win'], bug=478572)
     self.Fail('conformance/textures/misc/texture-active-bind.html',
         ['win'], bug=931006)
+    self.Fail('conformance/rendering/blending.html',
+        ['win', 'no_passthrough'], bug=951628)
 
     # Win NVIDIA failures
     self.Flaky('conformance/textures/misc/texture-npot-video.html',
         ['win', 'nvidia', 'no_passthrough'], bug=626524)
-    self.Fail('conformance/rendering/blending.html',
-        ['win', 'nvidia', 'no_passthrough'], bug=951628)
     self.Flaky('conformance/textures/misc/texture-upload-size.html',
         ['win', 'nvidia'], bug=630860)
     self.Skip('conformance/rendering/out-of-bounds-index-buffers.html',
