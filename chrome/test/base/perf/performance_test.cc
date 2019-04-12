@@ -57,6 +57,9 @@ void PerformanceTest::SetUpOnMainThread() {
 void PerformanceTest::TearDownOnMainThread() {
   if (should_start_trace_) {
     auto* controller = content::TracingController::GetInstance();
+    ASSERT_TRUE(controller->IsTracing())
+        << "Did you forget to call PerformanceTest::SetUpOnMainThread?";
+
     base::RunLoop runloop;
     base::FilePath dir =
         base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(kTraceDir);
