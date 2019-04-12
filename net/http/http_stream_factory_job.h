@@ -22,7 +22,6 @@
 #include "net/http/http_request_info.h"
 #include "net/http/http_stream_factory.h"
 #include "net/http/http_stream_request.h"
-#include "net/log/net_log_with_source.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/quic/quic_stream_factory.h"
 #include "net/socket/client_socket_handle.h"
@@ -80,26 +79,6 @@ class HttpStreamFactory::Job
         const SSLConfig& used_ssl_config,
         const ProxyInfo& used_proxy_info,
         std::unique_ptr<WebSocketHandshakeStreamBase> stream) = 0;
-
-    // Alternative versions of above functions, for use when pooled connections
-    // call into |this|. The difference is the Job must be destroyed in these
-    // callbacks, to prevent other things from happening.
-    //
-    // TODO(mmenke): Remove these methods.
-    virtual void OnStreamReadyOnPooledConnection(
-        bool was_alpn_negotiated,
-        NextProto negotiated_protocol,
-        bool using_spdy,
-        const SSLConfig& used_ssl_config,
-        const ProxyInfo& used_proxy_info,
-        std::unique_ptr<HttpStream> stream) = 0;
-    virtual void OnBidirectionalStreamImplReadyOnPooledConnection(
-        bool was_alpn_negotiated,
-        NextProto negotiated_protocol,
-        bool using_spdy,
-        const SSLConfig& used_ssl_config,
-        const ProxyInfo& used_proxy_info,
-        std::unique_ptr<BidirectionalStreamImpl> stream) = 0;
 
     // Invoked when |job| fails to create a stream.
     virtual void OnStreamFailed(Job* job,
@@ -361,13 +340,7 @@ class HttpStreamFactory::Job
   void ReturnToStateInitConnection(bool close_connection);
 
   // SpdySessionPool::SpdySessionRequest::Delegate implementation:
-  void OnSpdySessionAvailable(bool was_alpn_negotiated,
-                              NextProto negotiated_protocol,
-                              bool using_spdy,
-                              const SSLConfig& used_ssl_config,
-                              const ProxyInfo& used_proxy_info,
-                              NetLogSource source_dependency,
-                              base::WeakPtr<SpdySession> spdy_session) override;
+  void OnSpdySessionAvailable(base::WeakPtr<SpdySession> spdy_session) override;
 
   // Sets several fields of |ssl_config| based on the proxy info and other
   // factors.

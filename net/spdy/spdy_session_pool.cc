@@ -404,13 +404,7 @@ void SpdySessionPool::OnCertDBChanged() {
 }
 
 void SpdySessionPool::OnNewSpdySessionReady(
-    const base::WeakPtr<SpdySession>& spdy_session,
-    const SSLConfig& used_ssl_config,
-    const ProxyInfo& used_proxy_info,
-    bool was_alpn_negotiated,
-    NextProto negotiated_protocol,
-    bool using_spdy,
-    NetLogSource source_dependency) {
+    const base::WeakPtr<SpdySession>& spdy_session) {
   while (spdy_session) {
     const SpdySessionKey& spdy_session_key = spdy_session->spdy_session_key();
     // Each iteration may empty out the RequestSet for |spdy_session_key| in
@@ -426,9 +420,7 @@ void SpdySessionPool::OnNewSpdySessionReady(
     SpdySessionRequest* request = *iter->second.begin();
     SpdySessionRequest::Delegate* delegate = request->delegate();
     RemoveRequestForSpdySession(request);
-    delegate->OnSpdySessionAvailable(
-        was_alpn_negotiated, negotiated_protocol, using_spdy, used_ssl_config,
-        used_proxy_info, source_dependency, spdy_session);
+    delegate->OnSpdySessionAvailable(spdy_session);
   }
   // TODO(mbelshe): Alert other valid requests.
 }
