@@ -389,6 +389,25 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, BackupRestorePolicyTest) {
   EXPECT_EQ(0, fake_backup_settings_instance_->set_backup_enabled_count());
   EXPECT_FALSE(fake_backup_settings_instance_->enabled());
   EXPECT_FALSE(fake_backup_settings_instance_->managed());
+
+  fake_backup_settings_instance_->ClearCallHistory();
+
+  // The policy is set to enabled.
+  policy.Set(policy::key::kArcBackupRestoreServiceEnabled,
+             policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+             policy::POLICY_SOURCE_CLOUD,
+             std::make_unique<base::Value>(
+                 static_cast<int>(policy::ArcServicePolicyValue::kEnabled)),
+             nullptr);
+  UpdatePolicy(policy);
+
+  // The pref is enabled and managed, but the corresponding sync method does
+  // not reflect the pref as it is not dynamically applied.
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kArcBackupRestoreEnabled));
+  EXPECT_TRUE(prefs->IsManagedPreference(prefs::kArcBackupRestoreEnabled));
+  EXPECT_EQ(0, fake_backup_settings_instance_->set_backup_enabled_count());
+  EXPECT_FALSE(fake_backup_settings_instance_->enabled());
+  EXPECT_FALSE(fake_backup_settings_instance_->managed());
 }
 
 IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, LocationServicePolicyTest) {
@@ -439,6 +458,21 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, LocationServicePolicyTest) {
   // The pref is unmanaged, but no broadcast is sent as the setting is not
   // dynamically applied.
   EXPECT_FALSE(prefs->IsManagedPreference(prefs::kArcLocationServiceEnabled));
+  EXPECT_EQ(0UL, fake_intent_helper_instance_->broadcasts().size());
+
+  // The policy is set to enabled.
+  policy.Set(policy::key::kArcGoogleLocationServicesEnabled,
+             policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+             policy::POLICY_SOURCE_CLOUD,
+             std::make_unique<base::Value>(
+                 static_cast<int>(policy::ArcServicePolicyValue::kEnabled)),
+             nullptr);
+  UpdatePolicy(policy);
+
+  // The pref is enabled and managed, but no broadcast is sent as the setting
+  // is not dynamically applied.
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kArcLocationServiceEnabled));
+  EXPECT_TRUE(prefs->IsManagedPreference(prefs::kArcLocationServiceEnabled));
   EXPECT_EQ(0UL, fake_intent_helper_instance_->broadcasts().size());
 }
 

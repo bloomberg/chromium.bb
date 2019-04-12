@@ -1027,17 +1027,15 @@ TEST_P(ArcSessionManagerPolicyTest, SkippingTerms) {
   arc_session_manager()->RequestEnable();
 
   // Terms of Service are skipped iff ARC is enabled by policy and both policies
-  // are either managed/OFF or unused (for Active Directory users a LaForge
+  // are either managed or unused (for Active Directory users a LaForge
   // account is created, not a full Dasher account, where the policies have no
   // meaning).
   const bool prefs_unused = is_active_directory_user();
-  const bool backup_managed_off = backup_restore_pref_value().is_bool() &&
-                                  !backup_restore_pref_value().GetBool();
-  const bool location_managed_off = location_service_pref_value().is_bool() &&
-                                    !location_service_pref_value().GetBool();
+  const bool backup_managed = backup_restore_pref_value().is_bool();
+  const bool location_managed = location_service_pref_value().is_bool();
   const bool expected_terms_skipping =
       (arc_enabled_pref_managed() &&
-       ((backup_managed_off && location_managed_off) || prefs_unused));
+       ((backup_managed && location_managed) || prefs_unused));
   EXPECT_EQ(expected_terms_skipping
                 ? ArcSessionManager::State::CHECKING_ANDROID_MANAGEMENT
                 : ArcSessionManager::State::NEGOTIATING_TERMS_OF_SERVICE,
