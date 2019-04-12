@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/core/xlink_names.h"
 #include "third_party/blink/renderer/core/xml/parser/xml_document_parser.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
@@ -51,24 +52,28 @@ namespace blink {
 inline SVGUseElement::SVGUseElement(Document& document)
     : SVGGraphicsElement(svg_names::kUseTag, document),
       SVGURIReference(this),
-      x_(SVGAnimatedLength::Create(this,
-                                   svg_names::kXAttr,
-                                   SVGLengthMode::kWidth,
-                                   SVGLength::Initial::kUnitlessZero,
-                                   CSSPropertyID::kX)),
-      y_(SVGAnimatedLength::Create(this,
-                                   svg_names::kYAttr,
-                                   SVGLengthMode::kHeight,
-                                   SVGLength::Initial::kUnitlessZero,
-                                   CSSPropertyID::kY)),
-      width_(SVGAnimatedLength::Create(this,
-                                       svg_names::kWidthAttr,
-                                       SVGLengthMode::kWidth,
-                                       SVGLength::Initial::kUnitlessZero)),
-      height_(SVGAnimatedLength::Create(this,
-                                        svg_names::kHeightAttr,
-                                        SVGLengthMode::kHeight,
-                                        SVGLength::Initial::kUnitlessZero)),
+      x_(MakeGarbageCollected<SVGAnimatedLength>(
+          this,
+          svg_names::kXAttr,
+          SVGLengthMode::kWidth,
+          SVGLength::Initial::kUnitlessZero,
+          CSSPropertyID::kX)),
+      y_(MakeGarbageCollected<SVGAnimatedLength>(
+          this,
+          svg_names::kYAttr,
+          SVGLengthMode::kHeight,
+          SVGLength::Initial::kUnitlessZero,
+          CSSPropertyID::kY)),
+      width_(MakeGarbageCollected<SVGAnimatedLength>(
+          this,
+          svg_names::kWidthAttr,
+          SVGLengthMode::kWidth,
+          SVGLength::Initial::kUnitlessZero)),
+      height_(MakeGarbageCollected<SVGAnimatedLength>(
+          this,
+          svg_names::kHeightAttr,
+          SVGLengthMode::kHeight,
+          SVGLength::Initial::kUnitlessZero)),
       element_url_is_local_(true),
       have_fired_load_event_(false),
       needs_shadow_tree_recreation_(false) {
@@ -410,8 +415,8 @@ Element* SVGUseElement::CreateInstanceTree(SVGElement& target_root) const {
     // transferred to the generated 'svg'. If attributes width and/or
     // height are not specified, the generated 'svg' element will use
     // values of 100% for these attributes.
-    SVGSVGElement* svg_element =
-        SVGSVGElement::Create(target_root.GetDocument());
+    auto* svg_element =
+        MakeGarbageCollected<SVGSVGElement>(target_root.GetDocument());
     // Transfer all attributes from the <symbol> to the new <svg>
     // element.
     svg_element->CloneAttributesFrom(*instance_root);
@@ -602,7 +607,8 @@ void SVGUseElement::ExpandUseElementsInShadowTree() {
 
     // Don't DCHECK(target) here, it may be "pending", too.
     // Setup sub-shadow tree root node
-    SVGGElement* clone_parent = SVGGElement::Create(original_use.GetDocument());
+    auto* clone_parent =
+        MakeGarbageCollected<SVGGElement>(original_use.GetDocument());
     // Transfer all data (attributes, etc.) from <use> to the new <g> element.
     clone_parent->CloneAttributesFrom(*use);
     clone_parent->SetCorrespondingElement(&original_use);

@@ -42,6 +42,7 @@ class CORE_EXPORT SVGAnimateElement : public SVGAnimationElement {
  public:
   static SVGAnimateElement* Create(Document&);
 
+  explicit SVGAnimateElement(Document&);
   SVGAnimateElement(const QualifiedName&, Document&);
   ~SVGAnimateElement() override;
 
