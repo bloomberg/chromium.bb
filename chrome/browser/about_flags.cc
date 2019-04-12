@@ -3984,6 +3984,13 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillCreditCardAuthentication)},
 
+#if defined(OS_MACOSX)
+    {"mac-system-media-permissions-info-ui",
+     flag_descriptions::kMacSystemMediaPermissionsInfoUiName,
+     flag_descriptions::kMacSystemMediaPermissionsInfoUiDescription, kOsMac,
+     FEATURE_VALUE_TYPE(features::kMacSystemMediaPermissionsInfoUi)},
+#endif  // defined(OS_MACOSX)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

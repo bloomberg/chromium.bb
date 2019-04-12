@@ -403,6 +403,15 @@ const base::Feature kMacMaterialDesignDownloadShelf{
     "MacMDDownloadShelf", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
+#if defined(OS_MACOSX)
+// In case a website is trying to use the camera/microphone, but Chrome itself
+// is blocked on the system level to access these, show an icon in the Omnibox,
+// which, when clicked, displays a bubble with information on how to toggle
+// Chrome's system-level media permissions.
+const base::Feature kMacSystemMediaPermissionsInfoUi{
+    "MacSystemMediaPermissionsInfoUI", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 // Sets whether dismissing the new-tab-page override bubble counts as
 // acknowledgement.
