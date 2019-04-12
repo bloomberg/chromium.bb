@@ -4337,6 +4337,9 @@ if (enable_java_templates) {
       outputs = [
         _bundle_path,
       ]
+      data = [
+        _bundle_path,
+      ]
       deps = _all_create_module_targets + [ ":$_build_config_target" ]
       args = [
         "--out-bundle=$_rebased_bundle_path",
@@ -4411,6 +4414,12 @@ if (enable_java_templates) {
       outputs = [
         _bundle_wrapper_script_path,
       ]
+
+      # Telemetry for bundles uses the wrapper script for installation.
+      data = [
+        _bundle_wrapper_script_path,
+      ]
+
       deps = [
         _base_module_build_config_target,
       ]
