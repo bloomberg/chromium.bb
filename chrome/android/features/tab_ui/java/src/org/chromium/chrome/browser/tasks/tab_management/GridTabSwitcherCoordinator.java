@@ -42,8 +42,8 @@ public class GridTabSwitcherCoordinator
             CompositorViewHolder compositorViewHolder, ChromeFullscreenManager fullscreenManager) {
         PropertyModel containerViewModel = new PropertyModel(TabListContainerProperties.ALL_KEYS);
 
-        mMediator = new GridTabSwitcherMediator(
-                this, containerViewModel, tabModelSelector, fullscreenManager);
+        mMediator = new GridTabSwitcherMediator(this, containerViewModel, tabModelSelector,
+                fullscreenManager, compositorViewHolder);
 
         mMultiThumbnailCardProvider =
                 new MultiThumbnailCardProvider(context, tabContentManager, tabModelSelector);

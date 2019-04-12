@@ -113,6 +113,7 @@ public class TabModalLifetimeHandler implements NativeInitObserver, Destroyable 
     @Override
     public void destroy() {
         if (mTabModelObserver != null) mTabModelObserver.destroy();
+        if (mPresenter != null) mPresenter.destroy();
     }
 
     /** Update whether the {@link ModalDialogManager} should suspend tab modal dialogs. */

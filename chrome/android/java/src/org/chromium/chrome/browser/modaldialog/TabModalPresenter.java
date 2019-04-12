@@ -21,13 +21,11 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAttributeKeys;
 import org.chromium.chrome.browser.tab.TabAttributes;
 import org.chromium.chrome.browser.tab.TabBrowserControlsOffsetHelper;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
-import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.BrowserControlsState;
@@ -44,23 +42,15 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
  * The presenter that displays a single tab modal dialog.
  */
 public class TabModalPresenter
-        extends ModalDialogManager.Presenter implements TabBrowserControlsOffsetHelper.Observer {
+        extends ModalDialogManager.Presenter implements TabBrowserControlsOffsetHelper.Observer,
+                                                        ChromeFullscreenManager.FullscreenListener {
     private static final int ENTER_EXIT_ANIMATION_DURATION_MS = 200;
 
     /** The activity displaying the dialogs. */
     private final ChromeActivity mChromeActivity;
 
-    /** Whether browser controls are at the bottom */
-    private final boolean mHasBottomControls;
-
     /** The active tab of which the dialog will be shown on top. */
     private Tab mActiveTab;
-
-    /**
-     * The observer to change view hierarchy for the dialog container when the sheet is opened or
-     * closed.
-     */
-    private BottomSheetObserver mBottomSheetObserver;
 
     /** The parent view that contains the dialog container. */
     private ViewGroup mContainerParent;
@@ -96,6 +86,10 @@ public class TabModalPresenter
     /** Enter and exit animation duration that can be overwritten in tests. */
     private int mEnterExitAnimationDurationMs;
 
+    private final ChromeFullscreenManager mChromeFullscreenManager;
+    private int mBottomControlsHeight;
+    private boolean mShouldUpdateContainerLayoutParams;
+
     private class ViewBinder extends ModalDialogViewBinder {
         @Override
         public void bind(PropertyModel model, ModalDialogView view, PropertyKey propertyKey) {
@@ -120,22 +114,14 @@ public class TabModalPresenter
      */
     public TabModalPresenter(ChromeActivity chromeActivity) {
         mChromeActivity = chromeActivity;
-        mHasBottomControls = mChromeActivity.getBottomSheet() != null;
         mEnterExitAnimationDurationMs = ENTER_EXIT_ANIMATION_DURATION_MS;
+        mChromeFullscreenManager = mChromeActivity.getFullscreenManager();
+        mChromeFullscreenManager.addListener(this);
+    }
 
-        if (mHasBottomControls) {
-            mBottomSheetObserver = new EmptyBottomSheetObserver() {
-                @Override
-                public void onSheetOpened(@BottomSheet.StateChangeReason int reason) {
-                    updateContainerHierarchy(false);
-                }
+    public void destroy() {
+        if (mChromeFullscreenManager != null) mChromeFullscreenManager.removeListener(this);
 
-                @Override
-                public void onSheetClosed(@BottomSheet.StateChangeReason int reason) {
-                    updateContainerHierarchy(true);
-                }
-            };
-        }
     }
 
     // ModalDialogManager.Presenter implementation.
@@ -143,6 +129,7 @@ public class TabModalPresenter
     @Override
     protected void addDialogView(PropertyModel model) {
         if (mDialogContainer == null) initDialogContainer();
+        updateContainerLayoutParams();
         mDialogView = (ModalDialogView) LayoutInflater
                               .from(new ContextThemeWrapper(
                                       mChromeActivity, R.style.Theme_Chromium_ModalDialog))
@@ -190,6 +177,23 @@ public class TabModalPresenter
             mRunEnterAnimationOnCallback = false;
             runEnterAnimation(mDialogView);
         }
+    }
+
+    // ChromeFullscreenManager.FullscreenListener implementation.
+
+    @Override
+    public void onContentOffsetChanged(int offset) {}
+
+    @Override
+    public void onControlsOffsetChanged(int topOffset, int bottomOffset, boolean needsAnimate) {}
+
+    @Override
+    public void onToggleOverlayVideoMode(boolean enabled) {}
+
+    @Override
+    public void onBottomControlsHeightChanged(int bottomControlsHeight) {
+        mBottomControlsHeight = bottomControlsHeight;
+        mShouldUpdateContainerLayoutParams = true;
     }
 
     private TabBrowserControlsOffsetHelper getControlsOffsetHelper() {
@@ -254,17 +258,24 @@ public class TabModalPresenter
         MarginLayoutParams params = (MarginLayoutParams) mDialogContainer.getLayoutParams();
         params.width = ViewGroup.MarginLayoutParams.MATCH_PARENT;
         params.height = ViewGroup.MarginLayoutParams.MATCH_PARENT;
-        params.topMargin = !mHasBottomControls ? containerVerticalMargin : 0;
-        params.bottomMargin = mHasBottomControls ? containerVerticalMargin : 0;
+        params.topMargin = containerVerticalMargin;
+        params.bottomMargin = mChromeActivity.getFullscreenManager().getBottomControlsHeight();
         mDialogContainer.setLayoutParams(params);
 
         View scrimView = mDialogContainer.findViewById(R.id.scrim);
         params = (MarginLayoutParams) scrimView.getLayoutParams();
         params.width = MarginLayoutParams.MATCH_PARENT;
         params.height = MarginLayoutParams.MATCH_PARENT;
-        params.topMargin = !mHasBottomControls ? scrimVerticalMargin : 0;
-        params.bottomMargin = mHasBottomControls ? scrimVerticalMargin : 0;
+        params.topMargin = scrimVerticalMargin;
         scrimView.setLayoutParams(params);
+    }
+
+    private void updateContainerLayoutParams() {
+        if (!mShouldUpdateContainerLayoutParams) return;
+        MarginLayoutParams params = (MarginLayoutParams) mDialogContainer.getLayoutParams();
+        params.bottomMargin = mBottomControlsHeight;
+        mDialogContainer.setLayoutParams(params);
+        mShouldUpdateContainerLayoutParams = false;
     }
 
     /**
@@ -273,7 +284,6 @@ public class TabModalPresenter
      * @param restricted Whether the browser controls access should be restricted.
      */
     private void setBrowserControlsAccess(boolean restricted) {
-        BottomSheet bottomSheet = mChromeActivity.getBottomSheet();
         View menuButton = mChromeActivity.getToolbarManager().getMenuButton();
 
         if (restricted) {
@@ -308,12 +318,8 @@ public class TabModalPresenter
             // Force toolbar to show and disable overflow menu.
             onTabModalDialogStateChanged(true);
 
-            if (mHasBottomControls) {
-                bottomSheet.setSheetState(BottomSheet.SheetState.PEEK, true);
-                bottomSheet.addObserver(mBottomSheetObserver);
-            } else {
-                mChromeActivity.getToolbarManager().setUrlBarFocus(false);
-            }
+            mChromeActivity.getToolbarManager().setUrlBarFocus(false);
+
             menuButton.setEnabled(false);
         } else {
             getControlsOffsetHelper().removeObserver(this);
@@ -329,7 +335,6 @@ public class TabModalPresenter
 
             onTabModalDialogStateChanged(false);
             menuButton.setEnabled(true);
-            if (mHasBottomControls) bottomSheet.removeObserver(mBottomSheetObserver);
             mActiveTab = null;
         }
     }
