@@ -2061,7 +2061,8 @@ void Document::PropagateStyleToViewport() {
       overflow_style->OverscrollBehaviorY();
   using OverscrollBehaviorType = cc::OverscrollBehavior::OverscrollBehaviorType;
   if (IsInMainFrame()) {
-    GetPage()->GetOverscrollController().SetOverscrollBehavior(
+    GetPage()->GetChromeClient().SetOverscrollBehavior(
+        *GetFrame(),
         cc::OverscrollBehavior(
             static_cast<OverscrollBehaviorType>(overscroll_behavior_x),
             static_cast<OverscrollBehaviorType>(overscroll_behavior_y)));

@@ -152,8 +152,6 @@ class CONTENT_EXPORT LayerTreeView
                                 bool shrink) override;
   void SetBrowserControlsShownRatio(float) override;
 
-  void SetOverscrollBehavior(const cc::OverscrollBehavior&) override;
-
   // cc::LayerTreeHostClient implementation.
   void WillBeginMainFrame() override;
   void DidBeginMainFrame() override;

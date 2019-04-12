@@ -2770,11 +2770,10 @@ void RenderWidget::DidHandleGestureEvent(const WebGestureEvent& event,
 }
 
 void RenderWidget::DidOverscroll(
-    const blink::WebFloatSize& overscrollDelta,
-    const blink::WebFloatSize& accumulatedOverscroll,
+    const blink::WebFloatSize& overscroll_delta,
+    const blink::WebFloatSize& accumulated_overscroll,
     const blink::WebFloatPoint& position,
-    const blink::WebFloatSize& velocity,
-    const cc::OverscrollBehavior& behavior) {
+    const blink::WebFloatSize& velocity) {
 #if defined(OS_MACOSX)
   // On OSX the user can disable the elastic overscroll effect. If that's the
   // case, don't forward the overscroll notification.
@@ -2782,8 +2781,14 @@ void RenderWidget::DidOverscroll(
   if (!compositor_deps()->IsElasticOverscrollEnabled())
     return;
 #endif
-  input_handler_->DidOverscrollFromBlink(overscrollDelta, accumulatedOverscroll,
-                                         position, velocity, behavior);
+  input_handler_->DidOverscrollFromBlink(
+      overscroll_delta, accumulated_overscroll, position, velocity,
+      layer_tree_view_->layer_tree_host()->overscroll_behavior());
+}
+
+void RenderWidget::SetOverscrollBehavior(
+    const cc::OverscrollBehavior& behavior) {
+  layer_tree_view_->layer_tree_host()->SetOverscrollBehavior(behavior);
 }
 
 // static

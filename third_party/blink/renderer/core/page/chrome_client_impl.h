@@ -87,8 +87,9 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   void DidOverscroll(const FloatSize& overscroll_delta,
                      const FloatSize& accumulated_overscroll,
                      const FloatPoint& position_in_viewport,
-                     const FloatSize& velocity_in_viewport,
-                     const cc::OverscrollBehavior&) override;
+                     const FloatSize& velocity_in_viewport) override;
+  void SetOverscrollBehavior(LocalFrame& main_frame,
+                             const cc::OverscrollBehavior&) override;
   bool ShouldReportDetailedMessageForSource(LocalFrame&,
                                             const String&) override;
   void AddMessageToConsole(LocalFrame*,
@@ -231,7 +232,6 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
 
   void OnMouseDown(Node&) override;
   void DidUpdateBrowserControls() const override;
-  void SetOverscrollBehavior(const cc::OverscrollBehavior&) override;
 
   FloatSize ElasticOverscroll() const override;
 

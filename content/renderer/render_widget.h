@@ -405,11 +405,11 @@ class CONTENT_EXPORT RenderWidget
   void SetWindowRect(const blink::WebRect&) override;
   void DidHandleGestureEvent(const blink::WebGestureEvent& event,
                              bool event_cancelled) override;
-  void DidOverscroll(const blink::WebFloatSize& overscrollDelta,
-                     const blink::WebFloatSize& accumulatedOverscroll,
+  void DidOverscroll(const blink::WebFloatSize& overscroll_delta,
+                     const blink::WebFloatSize& accumulated_overscroll,
                      const blink::WebFloatPoint& position,
-                     const blink::WebFloatSize& velocity,
-                     const cc::OverscrollBehavior& behavior) override;
+                     const blink::WebFloatSize& velocity) override;
+  void SetOverscrollBehavior(const cc::OverscrollBehavior&) override;
   void ShowVirtualKeyboardOnElementFocus() override;
   void ConvertViewportToWindow(blink::WebRect* rect) override;
   void ConvertWindowToViewport(blink::WebFloatRect* rect) override;

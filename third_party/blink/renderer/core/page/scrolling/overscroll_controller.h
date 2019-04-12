@@ -36,8 +36,6 @@ class OverscrollController : public GarbageCollected<OverscrollController> {
                         const FloatPoint& position_in_root_frame,
                         const FloatSize& velocity_in_root_frame);
 
-  void SetOverscrollBehavior(const cc::OverscrollBehavior&);
-
   void Trace(blink::Visitor*);
 
  private:
@@ -45,8 +43,6 @@ class OverscrollController : public GarbageCollected<OverscrollController> {
   WeakMember<ChromeClient> chrome_client_;
 
   FloatSize accumulated_root_overscroll_;
-
-  cc::OverscrollBehavior overscroll_behavior_;
 };
 
 }  // namespace blink
