@@ -68,6 +68,7 @@ public class TabGroupUiMediator {
     private final ThemeColorProvider.TintObserver mTintObserver;
     private final TabModelSelectorTabObserver mTabModelSelectorTabObserver;
     private final TabModelSelectorObserver mTabModelSelectorObserver;
+    private boolean mIsResetWithNonNullList;
 
     TabGroupUiMediator(
             BottomControlsCoordinator.BottomControlsVisibilityController visibilityController,
@@ -127,8 +128,7 @@ public class TabGroupUiMediator {
                                                .getRelatedTabList(tab.getId());
                 int numTabs = listOfTabs.size();
                 // This is set to zero because the UI is hidden.
-                if (numTabs < 2) numTabs = 0;
-
+                if (!mIsResetWithNonNullList) numTabs = 0;
                 RecordHistogram.recordCountHistogram("TabStrip.TabCountOnPageLoad", numTabs);
             }
         };
@@ -190,11 +190,12 @@ public class TabGroupUiMediator {
                                        .getRelatedTabList(id);
         if (listOfTabs.size() < 2) {
             mResetHandler.resetStripWithListOfTabs(null);
-            mVisibilityController.setBottomControlsVisible(false);
+            mIsResetWithNonNullList = false;
         } else {
             mResetHandler.resetStripWithListOfTabs(listOfTabs);
-            mVisibilityController.setBottomControlsVisible(true);
+            mIsResetWithNonNullList = true;
         }
+        mVisibilityController.setBottomControlsVisible(mIsResetWithNonNullList);
     }
 
     private List<Tab> getRelatedTabsForId(int id) {
