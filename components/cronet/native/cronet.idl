@@ -317,6 +317,10 @@ enum RESULT {
    * Params is required
    */
   NULL_POINTER_PARAMS = -311,
+  /**
+   * Executor for RequestFinishedInfoListener is required
+   */
+  NULL_POINTER_REQUEST_FINISHED_INFO_LISTENER_EXECUTOR = -312,
 };
 
 /**
