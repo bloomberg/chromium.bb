@@ -20,19 +20,6 @@ namespace features {
 extern const base::Feature kDoubleTapToZoomInTabletMode;
 #endif
 
-extern const base::Feature kExtensionsToolbarMenu;
-
-extern const base::Feature kTabGroups;
-
-extern const base::Feature kTabHoverCards;
-extern const char kTabHoverCardsFeatureParameterName[];
-
-extern const base::Feature kTabHoverCardImages;
-
-#if !defined(OS_ANDROID)
-extern const base::Feature kWebUIDarkMode;
-#endif
-
 }  // namespace features
 
 #endif  // CHROME_BROWSER_BROWSER_FEATURES_H_

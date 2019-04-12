@@ -210,6 +210,8 @@ jumbo_split_static_library("ui") {
     "translate/translate_bubble_model_impl.h",
     "translate/translate_bubble_view_state_transition.cc",
     "translate/translate_bubble_view_state_transition.h",
+    "ui_features.cc",
+    "ui_features.h",
     "uninstall_browser_prompt.h",
     "view_ids.h",
     "web_contents_sizer.h",
