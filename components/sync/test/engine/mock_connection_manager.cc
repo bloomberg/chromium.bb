@@ -432,8 +432,6 @@ sync_pb::SyncEntity* MockConnectionManager::AddUpdateFromLastCommit() {
     ent->CopyFrom(last_sent_commit().entries(0));
     ent->clear_insert_after_item_id();
     ent->clear_old_parent_id();
-    ent->set_position_in_parent(
-        last_commit_response().entryresponse(0).position_in_parent());
     ent->set_version(last_commit_response().entryresponse(0).version());
     ent->set_id_string(last_commit_response().entryresponse(0).id_string());
 
@@ -488,10 +486,6 @@ void MockConnectionManager::SetLastUpdateServerTag(const string& tag) {
 
 void MockConnectionManager::SetLastUpdateClientTag(const string& tag) {
   GetMutableLastUpdate()->set_client_defined_unique_tag(tag);
-}
-
-void MockConnectionManager::SetLastUpdatePosition(int64_t server_position) {
-  GetMutableLastUpdate()->set_position_in_parent(server_position);
 }
 
 void MockConnectionManager::SetNewTimestamp(int ts) {
