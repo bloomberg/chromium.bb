@@ -231,7 +231,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // for each matching pixel.
   void SetMaskLayer(PictureLayer* mask_layer);
   PictureLayer* mask_layer() { return inputs_.mask_layer.get(); }
-  const PictureLayer* mask_layer() const { return inputs_.mask_layer.get(); }
 
   // Marks the |dirty_rect| as being changed, which will cause a commit and
   // the compositor to submit a new frame with a damage rect that includes the

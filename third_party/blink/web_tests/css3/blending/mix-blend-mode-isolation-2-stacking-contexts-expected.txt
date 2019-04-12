@@ -26,6 +26,7 @@
       "name": "LayoutBlockFlow (positioned) DIV class='stacking-context'",
       "position": [8, 8],
       "contentsOpaque": true,
+      "drawsContent": false,
       "backgroundColor": "#FF0000"
     },
     {
@@ -45,11 +46,13 @@
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='stacking-context' (foreground) Layer",
-      "position": [8, 8]
+      "position": [8, 8],
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='accelerated stacking-context'",
       "contentsOpaque": true,
+      "drawsContent": false,
       "backgroundColor": "#FF0000",
       "transform": 2
     },
@@ -70,6 +73,7 @@
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='accelerated stacking-context' (foreground) Layer",
+      "drawsContent": false,
       "transform": 2
     },
     {

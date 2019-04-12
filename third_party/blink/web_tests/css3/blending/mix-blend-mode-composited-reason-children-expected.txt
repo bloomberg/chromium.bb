@@ -26,6 +26,7 @@
       "name": "LayoutBlockFlow (positioned) DIV class='stacking-context'",
       "position": [8, 8],
       "contentsOpaque": true,
+      "drawsContent": false,
       "backgroundColor": "#FF0000"
     },
     {
@@ -51,7 +52,8 @@
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='stacking-context' (foreground) Layer",
-      "position": [8, 8]
+      "position": [8, 8],
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow HTML (foreground) Layer",
