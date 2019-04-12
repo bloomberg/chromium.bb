@@ -8,6 +8,8 @@ Polymer({
   behaviors: [SettingsBehavior, print_preview_new.SelectBehavior],
 
   properties: {
+    dark: Boolean,
+
     disabled: Boolean,
 
     /**
@@ -72,18 +74,15 @@ Polymer({
   },
 
   /**
-   * @return {string} An inline svg corresponding to |icon|.
+   * @return {string} An inline svg corresponding to |icon| and the image for
+   *     the dropdown arrow.
    * @private
    */
-  getIconImage_: function() {
+  getBackgroundImages_: function() {
     const icon =
         this.getSettingValue('duplexShortEdge') ? 'short-edge' : 'long-edge';
-    const iconset = /** @type {Polymer.IronIconsetSvg} */ (
+    const iconset = /** @type {!Polymer.IronIconsetSvg} */ (
         this.meta_.byKey('print-preview'));
-    const serializer = new XMLSerializer();
-    const iconElement = iconset.createIcon(icon, isRTL());
-    const serializedIcon = serializer.serializeToString(iconElement);
-    const uri = encodeURIComponent(serializedIcon);
-    return `url("data:image/svg+xml;charset=utf-8,${uri}")`;
+    return getSelectDropdownBackground(iconset, icon, this);
   },
 });
