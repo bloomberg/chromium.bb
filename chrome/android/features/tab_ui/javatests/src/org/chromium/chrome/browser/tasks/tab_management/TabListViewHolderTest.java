@@ -113,35 +113,33 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     @UiThreadTest
-    public void testSelected() throws Exception {
+    public void testSelected() {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
             mGridModel.set(TabProperties.IS_SELECTED, true);
-            Assert.assertTrue(
-                    ((FrameLayout) (mTabGridViewHolder.itemView)).getForeground() != null);
+            Assert.assertNotNull(((FrameLayout) (mTabGridViewHolder.itemView)).getForeground());
             mGridModel.set(TabProperties.IS_SELECTED, false);
-            Assert.assertFalse(
-                    ((FrameLayout) (mTabGridViewHolder.itemView)).getForeground() != null);
+            Assert.assertNull(((FrameLayout) (mTabGridViewHolder.itemView)).getForeground());
         } else {
             mGridModel.set(TabProperties.IS_SELECTED, true);
             Drawable selectedDrawable =
                     mTabGridViewHolder.itemView.findViewById(R.id.background_view).getBackground();
-            Assert.assertTrue(selectedDrawable != null);
+            Assert.assertNotNull(selectedDrawable);
             mGridModel.set(TabProperties.IS_SELECTED, false);
             Drawable elevationDrawable =
                     mTabGridViewHolder.itemView.findViewById(R.id.background_view).getBackground();
-            Assert.assertTrue(elevationDrawable != null);
+            Assert.assertNotNull(elevationDrawable);
             Assert.assertNotSame(selectedDrawable, elevationDrawable);
         }
         mStripModel.set(TabProperties.IS_SELECTED, true);
-        Assert.assertTrue(((FrameLayout) (mTabStripViewHolder.itemView)).getForeground() != null);
+        Assert.assertNotNull(((FrameLayout) (mTabStripViewHolder.itemView)).getForeground());
         mStripModel.set(TabProperties.IS_SELECTED, false);
-        Assert.assertFalse(((FrameLayout) (mTabStripViewHolder.itemView)).getForeground() != null);
+        Assert.assertNull(((FrameLayout) (mTabStripViewHolder.itemView)).getForeground());
     }
 
     @Test
     @MediumTest
     @UiThreadTest
-    public void testTitle() throws Exception {
+    public void testTitle() {
         final String title = "Surf the cool webz";
         mGridModel.set(TabProperties.TITLE, title);
         Assert.assertEquals(mTabGridViewHolder.title.getText(), title);
@@ -150,7 +148,7 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     @UiThreadTest
-    public void testThumbnail() throws Exception {
+    public void testThumbnail() {
         mGridModel.set(TabProperties.THUMBNAIL_FETCHER, mMockThumbnailProvider);
         // This should have set the image resource id to 0 and reset it.
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
@@ -168,7 +166,7 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     @UiThreadTest
-    public void testClickToSelect() throws Exception {
+    public void testClickToSelect() {
         mTabGridViewHolder.itemView.performClick();
         Assert.assertTrue(mSelectClicked.get());
         mSelectClicked.set(false);
@@ -186,7 +184,7 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     @UiThreadTest
-    public void testClickToClose() throws Exception {
+    public void testClickToClose() {
         mTabGridViewHolder.closeButton.performClick();
         Assert.assertTrue(mCloseClicked.get());
         mCloseClicked.set(false);

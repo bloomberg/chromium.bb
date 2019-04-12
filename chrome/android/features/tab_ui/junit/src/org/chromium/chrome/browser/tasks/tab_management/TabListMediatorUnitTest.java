@@ -40,7 +40,6 @@ import org.chromium.base.UserDataHost;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
@@ -83,8 +82,6 @@ public class TabListMediatorUnitTest {
     TabListFaviconProvider mTabListFaviconProvider;
     @Captor
     ArgumentCaptor<TabModelObserver> mTabModelObserverCaptor;
-    @Captor
-    ArgumentCaptor<FaviconHelper.FaviconImageCallback> mFaviconCallbackCaptor;
     @Captor
     ArgumentCaptor<TabObserver> mTabObserverCaptor;
     @Captor
