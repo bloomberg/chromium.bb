@@ -137,6 +137,7 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   friend base::NoDestructor<GuardedPageAllocator>;
 
   friend class GuardedPageAllocatorTest;
+  FRIEND_TEST_ALL_PREFIXES(CrashAnalyzerTest, StackTraceCollection);
   FRIEND_TEST_ALL_PREFIXES(GuardedPageAllocatorTest,
                            GetNearestValidPageEdgeCases);
   FRIEND_TEST_ALL_PREFIXES(GuardedPageAllocatorTest, GetErrorTypeEdgeCases);

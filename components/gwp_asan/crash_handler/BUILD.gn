@@ -36,6 +36,7 @@ proto_library("crash_proto") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "crash_analyzer_unittest.cc",
     "crash_handler_unittest.cc",
   ]
   deps = [
