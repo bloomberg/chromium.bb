@@ -48,16 +48,12 @@ class DarkModeHandlerTest : public testing::Test {
     const auto* replacements = source()->GetReplacements();
     const auto dark_it = replacements->find("dark");
 
-    const auto* local_strings = source()->GetLocalizedStrings();
-    const auto* dark_mode =
-        local_strings->FindKeyOfType("darkMode", base::Value::Type::BOOLEAN);
-
-    if (dark_it == replacements->end() || !dark_mode) {
+    if (dark_it == replacements->end()) {
       ADD_FAILURE();
       return false;
     }
 
-    return dark_it->second == "dark" && dark_mode->GetBool();
+    return dark_it->second == "dark";
   }
 
  private:
