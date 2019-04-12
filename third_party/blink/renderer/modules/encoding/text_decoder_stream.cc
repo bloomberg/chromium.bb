@@ -17,7 +17,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/to_v8.h"
-#include "third_party/blink/renderer/platform/wtf/string_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_codec.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding_registry.h"
@@ -138,7 +138,7 @@ TextDecoderStream* TextDecoderStream::Create(ScriptState* script_state,
   // The replacement encoding is not valid, but the Encoding API also
   // rejects aliases of the replacement encoding.
   if (!encoding.IsValid() ||
-      strcasecmp(encoding.GetName(), "replacement") == 0) {
+      WTF::EqualIgnoringASCIICase(encoding.GetName(), "replacement")) {
     exception_state.ThrowRangeError("The encoding label provided ('" + label +
                                     "') is invalid.");
     return nullptr;

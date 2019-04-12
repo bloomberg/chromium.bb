@@ -30,13 +30,13 @@
 
 #include <unicode/ucnv.h>
 #include <unicode/ucnv_cb.h>
-#include <memory>
+
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/string_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
 
 namespace WTF {
@@ -132,7 +132,7 @@ void TextCodecICU::RegisterEncodingNames(EncodingNameRegistrar registrar) {
                !strcmp(standard_name, "cp1363")) {
       standard_name = "EUC-KR";
     // And so on.
-    } else if (!strcasecmp(standard_name, "iso-8859-9")) {
+    } else if (EqualIgnoringASCIICaser(standard_name, "iso-8859-9")) {
       // This name is returned in different case by ICU 3.2 and 3.6.
       standard_name = "windows-1254";
     } else if (!strcmp(standard_name, "TIS-620")) {
@@ -431,7 +431,7 @@ String TextCodecICU::Decode(const char* bytes,
   // Simplified Chinese pages use the code A3A0 to mean "full-width space", but
   // ICU decodes it as U+E5E5.
   if (!strcmp(encoding_.GetName(), "GBK")) {
-    if (!strcasecmp(encoding_.GetName(), "gb18030"))
+    if (EqualIgnoringASCIICase(encoding_.GetName(), "gb18030"))
       resultString.Replace(0xE5E5, ideographicSpaceCharacter);
     // Make GBK compliant to the encoding spec and align with GB18030
     resultString.Replace(0x01F9, 0xE7C8);

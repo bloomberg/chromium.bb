@@ -109,7 +109,6 @@ jumbo_component("wtf") {
     "stack_util.h",
     "static_constructors.h",
     "std_lib_extras.h",
-    "string_extras.h",
     "text/ascii_ctype.cc",
     "text/ascii_ctype.h",
     "text/ascii_fast_path.h",
