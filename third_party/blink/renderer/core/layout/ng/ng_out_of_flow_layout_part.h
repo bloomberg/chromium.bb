@@ -110,15 +110,14 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
 
   scoped_refptr<const NGLayoutResult> LayoutDescendant(
       const NGOutOfFlowPositionedDescendant&,
-      const LayoutBox* only_layout,
-      NGLogicalOffset* offset);
+      const LayoutBox* only_layout);
 
   bool IsContainingBlockForDescendant(
       const NGOutOfFlowPositionedDescendant& descendant);
 
   scoped_refptr<const NGLayoutResult> GenerateFragment(
       NGBlockNode node,
-      const ContainingBlockInfo&,
+      const NGLogicalSize& container_content_size_in_child_writing_mode,
       const base::Optional<LayoutUnit>& block_estimate,
       const NGAbsolutePhysicalPosition& node_position);
 

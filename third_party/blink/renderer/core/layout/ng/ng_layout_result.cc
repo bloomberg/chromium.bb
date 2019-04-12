@@ -46,17 +46,16 @@ NGLayoutResult::NGLayoutResult(NGLayoutResultStatus status,
       << "Use the other constructor for successful layout";
 }
 
-NGLayoutResult::NGLayoutResult(
-    const NGLayoutResult& other,
-    const NGExclusionSpace& new_input_exclusion_space,
-    LayoutUnit bfc_line_offset,
-    base::Optional<LayoutUnit> bfc_block_offset)
-    : space_(other.space_),
+NGLayoutResult::NGLayoutResult(const NGLayoutResult& other,
+                               const NGConstraintSpace& new_space,
+                               LayoutUnit bfc_line_offset,
+                               base::Optional<LayoutUnit> bfc_block_offset)
+    : space_(new_space),
       physical_fragment_(other.physical_fragment_),
       oof_positioned_descendants_(other.oof_positioned_descendants_),
       unpositioned_list_marker_(other.unpositioned_list_marker_),
       exclusion_space_(MergeExclusionSpaces(other,
-                                            new_input_exclusion_space,
+                                            new_space.ExclusionSpace(),
                                             bfc_line_offset,
                                             bfc_block_offset)),
       bfc_line_offset_(bfc_line_offset),
