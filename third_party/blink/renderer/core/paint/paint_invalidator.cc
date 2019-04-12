@@ -76,9 +76,9 @@ IntRect PaintInvalidatorContext::MapLocalRectToVisualRect(
     return IntRect();
 
   DCHECK(!object.IsSVGChild() ||
-         // This function applies to LayoutSVGText (for caret) and
-         // LayoutSVGInlineText (for selection).
-         object.IsSVGText() || object.IsSVGInlineText());
+         // This function applies to SVG children derived from non-SVG layout
+         // objects, for carets, selections, etc.
+         object.IsBoxModelObject() || object.IsText());
 
   // The flip below is required because local visual rects are currently in
   // "physical coordinates with flipped block-flow direction" (see
