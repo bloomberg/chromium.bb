@@ -161,10 +161,6 @@ base::Optional<ModelError> DeviceInfoSyncBridge::MergeSyncData(
                                           local_session_name_);
 
   std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
-
-  // Send local data.
-  SendLocalDataWithBatch(batch.get());
-
   for (const auto& change : entity_data) {
     const DeviceInfoSpecifics& specifics =
         change->data().specifics.device_info();
@@ -181,8 +177,9 @@ base::Optional<ModelError> DeviceInfoSyncBridge::MergeSyncData(
   }
 
   batch->TakeMetadataChangesFrom(std::move(metadata_change_list));
-  CommitAndNotify(std::move(batch), /*should_notify=*/true);
-  return {};
+  // Complete batch with local data and commit.
+  SendLocalDataWithBatch(std::move(batch));
+  return base::nullopt;
 }
 
 base::Optional<ModelError> DeviceInfoSyncBridge::ApplySyncChanges(
@@ -212,7 +209,7 @@ base::Optional<ModelError> DeviceInfoSyncBridge::ApplySyncChanges(
 
   batch->TakeMetadataChangesFrom(std::move(metadata_change_list));
   CommitAndNotify(std::move(batch), has_changes);
-  return {};
+  return base::nullopt;
 }
 
 void DeviceInfoSyncBridge::GetData(StorageKeyList storage_keys,
@@ -256,6 +253,7 @@ void DeviceInfoSyncBridge::ApplyStopSyncChanges(
   // should be cleared.
   local_device_info_provider_->Clear();
   local_cache_guid_.clear();
+  pulse_timer_.Stop();
 
   // Remove all local data, if sync is being disabled, the user has expressed
   // their desire to not have knowledge about other devices.
@@ -447,10 +445,9 @@ void DeviceInfoSyncBridge::ReconcileLocalAndStored() {
     const TimeDelta pulse_delay(DeviceInfoUtil::CalculatePulseDelay(
         GetLastUpdateTime(*iter->second), Time::Now()));
     if (!pulse_delay.is_zero()) {
-      pulse_timer_.Start(
-          FROM_HERE, pulse_delay,
-          base::BindRepeating(&DeviceInfoSyncBridge::SendLocalData,
-                              base::Unretained(this)));
+      pulse_timer_.Start(FROM_HERE, pulse_delay,
+                         base::BindOnce(&DeviceInfoSyncBridge::SendLocalData,
+                                        base::Unretained(this)));
       return;
     }
   }
@@ -458,37 +455,26 @@ void DeviceInfoSyncBridge::ReconcileLocalAndStored() {
 }
 
 void DeviceInfoSyncBridge::SendLocalData() {
-  std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
-  SendLocalDataWithBatch(batch.get());
-  // TODO(mastiz): Remove this condition and instead make sure the timer is
-  // running only while sync is known to be enabled.
-  if (local_device_info_provider_->GetLocalDeviceInfo() != nullptr) {
-    CommitAndNotify(std::move(batch), /*should_notify=*/true);
-  }
+  SendLocalDataWithBatch(store_->CreateWriteBatch());
 }
 
 void DeviceInfoSyncBridge::SendLocalDataWithBatch(
-    ModelTypeStore::WriteBatch* batch) {
-  // It is possible that the provider no longer has data for us, such as when
-  // the user signs out. No-op this pulse, but keep the timer going in case sync
-  // is enabled later.
-  if (local_device_info_provider_->GetLocalDeviceInfo() != nullptr) {
-    std::unique_ptr<DeviceInfoSpecifics> specifics =
-        ModelToSpecifics(*local_device_info_provider_->GetLocalDeviceInfo(),
-                         TimeToProtoTime(Time::Now()));
+    std::unique_ptr<ModelTypeStore::WriteBatch> batch) {
+  DCHECK(store_);
+  DCHECK(local_device_info_provider_->GetLocalDeviceInfo());
+  DCHECK(change_processor()->IsTrackingMetadata());
 
-    if (change_processor()->IsTrackingMetadata()) {
-      change_processor()->Put(specifics->cache_guid(),
-                              CopyToEntityData(*specifics),
-                              batch->GetMetadataChangeList());
-    }
-
-    StoreSpecifics(std::move(specifics), batch);
-  }
+  std::unique_ptr<DeviceInfoSpecifics> specifics =
+      ModelToSpecifics(*local_device_info_provider_->GetLocalDeviceInfo(),
+                       TimeToProtoTime(Time::Now()));
+  change_processor()->Put(specifics->cache_guid(), CopyToEntityData(*specifics),
+                          batch->GetMetadataChangeList());
+  StoreSpecifics(std::move(specifics), batch.get());
+  CommitAndNotify(std::move(batch), /*should_notify=*/true);
 
   pulse_timer_.Start(FROM_HERE, DeviceInfoUtil::kPulseInterval,
-                     base::BindRepeating(&DeviceInfoSyncBridge::SendLocalData,
-                                         base::Unretained(this)));
+                     base::BindOnce(&DeviceInfoSyncBridge::SendLocalData,
+                                    base::Unretained(this)));
 }
 
 void DeviceInfoSyncBridge::CommitAndNotify(std::unique_ptr<WriteBatch> batch,

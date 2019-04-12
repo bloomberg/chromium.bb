@@ -104,13 +104,13 @@ class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
   void ReconcileLocalAndStored();
 
   // Stores the updated version of the local copy of device info in durable
-  // storage, in memory, and informs sync of the change. Should not be called
+  // storage, in memory, and informs sync of the change. Must not be called
   // before the provider and processor have initialized.
   void SendLocalData();
 
-  // Same as above but allows callers to specify a WriteBatch, which the caller
-  // is responsible for committing.
-  void SendLocalDataWithBatch(ModelTypeStore::WriteBatch* batch);
+  // Same as above but allows callers to specify a WriteBatch
+  void SendLocalDataWithBatch(
+      std::unique_ptr<ModelTypeStore::WriteBatch> batch);
 
   // Persists the changes in the given aggregators and notifies observers if
   // indicated to do as such.
