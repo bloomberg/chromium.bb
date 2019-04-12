@@ -51,6 +51,7 @@ class ContextualSearchLayer : public OverlayPanelLayer {
                      bool search_promo_visible,
                      float search_promo_height,
                      float search_promo_opacity,
+                     int search_promo_background_color,
                      bool search_bar_banner_visible,
                      float search_bar_banner_height,
                      float search_bar_banner_padding,

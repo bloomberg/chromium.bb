@@ -155,8 +155,8 @@ public class ContextualSearchBarControl {
                 R.dimen.contextual_search_divider_line_width);
         mDividerLineHeight = context.getResources().getDimension(
                 R.dimen.contextual_search_divider_line_height);
-        mDividerLineColor = ApiCompatibilityUtils.getColor(context.getResources(),
-                R.color.light_grey);
+        mDividerLineColor = ApiCompatibilityUtils.getColor(
+                context.getResources(), R.color.contextual_search_divider_line_color);
         mEndButtonWidth = context.getResources().getDimension(
                 R.dimen.contextual_search_end_button_width);
         mDpToPx = context.getResources().getDisplayMetrics().density;

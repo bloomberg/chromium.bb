@@ -40,7 +40,6 @@
     <!-- Old color palette -->
     <color name="google_blue_grey_500">#607D8B</color>
     <color name="google_blue_50">#E3F2FD</color>
-    <color name="light_grey">#CCCCCC</color>
 
     <!-- TODO(https://crbug.com/919835): Clarify whether these colors can be reused. -->
     <color name="google_yellow_600">#F9AB00</color>
@@ -126,6 +125,7 @@
     <!-- Contextual Search colors -->
     <color name="contextual_search_promo_background_color">@color/default_bg_color_elev_0</color>
     <color name="contextual_search_promo_border_color">#C2C2C2</color>
+    <color name="contextual_search_divider_line_color">@color/modern_secondary_color</color>
 
     <!-- Progress Bar colors -->
     <color name="downloads_progress_bar_background_blue">#421A73E8</color>
