@@ -11,10 +11,6 @@
 #include "chrome/browser/performance_manager/performance_manager.h"
 #include "chrome/browser/performance_manager/performance_manager_tab_helper.h"
 #include "chrome/browser/performance_manager/render_process_user_data.h"
-#include "chrome/browser/resource_coordinator/page_signal_receiver.h"
-#include "chrome/browser/resource_coordinator/render_process_probe.h"
-#include "chrome/browser/resource_coordinator/utils.h"
-#include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 
 ChromeBrowserMainExtraPartsResourceCoordinator::
     ChromeBrowserMainExtraPartsResourceCoordinator() = default;
@@ -28,22 +24,6 @@ void ChromeBrowserMainExtraPartsResourceCoordinator::
 
   browser_child_process_watcher_ =
       std::make_unique<performance_manager::BrowserChildProcessWatcher>();
-}
-
-void ChromeBrowserMainExtraPartsResourceCoordinator::PreBrowserStart() {
-  if (base::FeatureList::IsEnabled(features::kPerformanceMeasurement)) {
-    DCHECK(resource_coordinator::RenderProcessProbe::IsEnabled());
-    resource_coordinator::PageSignalReceiver* page_signal_receiver =
-        resource_coordinator::GetPageSignalReceiver();
-
-    DCHECK_NE(nullptr, performance_manager_.get());
-    resource_coordinator::RenderProcessProbe* render_process_probe =
-        resource_coordinator::RenderProcessProbe::GetInstance();
-
-    performance_measurement_manager_ =
-        std::make_unique<resource_coordinator::PerformanceMeasurementManager>(
-            page_signal_receiver, render_process_probe);
-  }
 }
 
 void ChromeBrowserMainExtraPartsResourceCoordinator::PostMainMessageLoopRun() {
