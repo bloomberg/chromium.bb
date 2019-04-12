@@ -517,7 +517,7 @@ static void init_gop_frames_for_tpl(AV1_COMP *cpi, GF_PICTURE *gf_picture,
   // Initialize P frames
   for (frame_idx = 2; frame_idx < MAX_LAG_BUFFERS; ++frame_idx) {
     struct lookahead_entry *buf;
-    frame_gop_offset = gf_group->frame_gop_index[frame_idx];
+    frame_gop_offset = gf_group->frame_disp_idx[frame_idx];
     buf = av1_lookahead_peek(cpi->lookahead, frame_gop_offset - 1);
 
     if (buf == NULL) break;

@@ -119,8 +119,10 @@ typedef struct {
   unsigned char arf_src_offset[MAX_STATIC_GF_GROUP_LENGTH + 1];
   unsigned char arf_update_idx[MAX_STATIC_GF_GROUP_LENGTH + 1];
   unsigned char arf_pos_in_gf[MAX_STATIC_GF_GROUP_LENGTH + 1];
-  unsigned char frame_gop_index[MAX_STATIC_GF_GROUP_LENGTH + 1];
+  unsigned char frame_disp_idx[MAX_STATIC_GF_GROUP_LENGTH + 1];
   unsigned char pyramid_level[MAX_STATIC_GF_GROUP_LENGTH + 1];
+  int ref_frame_disp_idx[MAX_STATIC_GF_GROUP_LENGTH + 1][REF_FRAMES];
+  int ref_frame_gop_idx[MAX_STATIC_GF_GROUP_LENGTH + 1][REF_FRAMES];
   unsigned char pyramid_height;
   unsigned char pyramid_lvl_nodes[MAX_PYRAMID_LVL];
   int bit_allocation[MAX_STATIC_GF_GROUP_LENGTH + 1];
