@@ -22,31 +22,36 @@
 
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_ellipse.h"
 #include "third_party/blink/renderer/core/svg/svg_length.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
 inline SVGEllipseElement::SVGEllipseElement(Document& document)
     : SVGGeometryElement(svg_names::kEllipseTag, document),
-      cx_(SVGAnimatedLength::Create(this,
-                                    svg_names::kCxAttr,
-                                    SVGLengthMode::kWidth,
-                                    SVGLength::Initial::kUnitlessZero,
-                                    CSSPropertyID::kCx)),
-      cy_(SVGAnimatedLength::Create(this,
-                                    svg_names::kCyAttr,
-                                    SVGLengthMode::kHeight,
-                                    SVGLength::Initial::kUnitlessZero,
-                                    CSSPropertyID::kCy)),
-      rx_(SVGAnimatedLength::Create(this,
-                                    svg_names::kRxAttr,
-                                    SVGLengthMode::kWidth,
-                                    SVGLength::Initial::kUnitlessZero,
-                                    CSSPropertyID::kRx)),
-      ry_(SVGAnimatedLength::Create(this,
-                                    svg_names::kRyAttr,
-                                    SVGLengthMode::kHeight,
-                                    SVGLength::Initial::kUnitlessZero,
-                                    CSSPropertyID::kRy)) {
+      cx_(MakeGarbageCollected<SVGAnimatedLength>(
+          this,
+          svg_names::kCxAttr,
+          SVGLengthMode::kWidth,
+          SVGLength::Initial::kUnitlessZero,
+          CSSPropertyID::kCx)),
+      cy_(MakeGarbageCollected<SVGAnimatedLength>(
+          this,
+          svg_names::kCyAttr,
+          SVGLengthMode::kHeight,
+          SVGLength::Initial::kUnitlessZero,
+          CSSPropertyID::kCy)),
+      rx_(MakeGarbageCollected<SVGAnimatedLength>(
+          this,
+          svg_names::kRxAttr,
+          SVGLengthMode::kWidth,
+          SVGLength::Initial::kUnitlessZero,
+          CSSPropertyID::kRx)),
+      ry_(MakeGarbageCollected<SVGAnimatedLength>(
+          this,
+          svg_names::kRyAttr,
+          SVGLengthMode::kHeight,
+          SVGLength::Initial::kUnitlessZero,
+          CSSPropertyID::kRy)) {
   AddToPropertyMap(cx_);
   AddToPropertyMap(cy_);
   AddToPropertyMap(rx_);

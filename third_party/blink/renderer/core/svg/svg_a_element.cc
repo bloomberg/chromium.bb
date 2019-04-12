@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/core/svg/animation/svg_smil_element.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/core/xlink_names.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 
 namespace blink {
@@ -52,7 +53,9 @@ using namespace html_names;
 inline SVGAElement::SVGAElement(Document& document)
     : SVGGraphicsElement(svg_names::kATag, document),
       SVGURIReference(this),
-      svg_target_(SVGAnimatedString::Create(this, svg_names::kTargetAttr)) {
+      svg_target_(
+          MakeGarbageCollected<SVGAnimatedString>(this,
+                                                  svg_names::kTargetAttr)) {
   AddToPropertyMap(svg_target_);
 }
 
