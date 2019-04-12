@@ -13,6 +13,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 
 import dalvik.system.DexClassLoader;
 
@@ -37,6 +38,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Dynamically loads a module from another apk.
@@ -54,7 +56,7 @@ public class ModuleLoader {
     private final String mDexAssetName;
     private final DexInputStreamProvider mDexInputStreamProvider;
     private final DexClassLoaderProvider mDexClassLoaderProvider;
-    private final long mModuleLastUpdateTime;
+    private final ModuleApkVersion mModuleApkVersion;
     private final String mModuleId;
 
     /** @param moduleContext The context for the package to load the class from. */
@@ -97,6 +99,58 @@ public class ModuleLoader {
     private ModuleEntryPoint mModuleEntryPoint;
 
     /**
+     * Helper class to store info about module version.
+     */
+    public static class ModuleApkVersion {
+        final int mApkVersionCode;
+        final String mApkVersionName;
+        final long mLastUpdateTime;
+
+        ModuleApkVersion(int apkVersionCode, String apkVersionName, long lastUpdateTime) {
+            mApkVersionCode = apkVersionCode;
+            mApkVersionName = apkVersionName;
+            mLastUpdateTime = lastUpdateTime;
+        }
+
+        public static ModuleApkVersion getModuleVersion(String packageName) {
+            int apkVersionCode = 0;
+            String apkVersionName = "";
+            long lastUpdateTime = 0;
+
+            try {
+                PackageInfo info = ContextUtils.getApplicationContext()
+                        .getPackageManager()
+                        .getPackageInfo(packageName, 0);
+                apkVersionCode = info.versionCode;
+                apkVersionName = info.versionName;
+                lastUpdateTime = info.lastUpdateTime;
+            } catch (PackageManager.NameNotFoundException ignored) {
+                // Ignore the exception.
+                // Failure to find the package name will be handled createModuleContext().
+            }
+
+            return new ModuleApkVersion(apkVersionCode, apkVersionName, lastUpdateTime);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof ModuleApkVersion)) return false;
+
+            ModuleApkVersion that = (ModuleApkVersion) o;
+
+            if (mApkVersionCode != that.mApkVersionCode) return false;
+            if (mLastUpdateTime != that.mLastUpdateTime) return false;
+            return TextUtils.equals(mApkVersionName, that.mApkVersionName);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(mApkVersionCode, mApkVersionName, mLastUpdateTime);
+        }
+    }
+
+    /**
      * Instantiates a new {@link ModuleLoader}.
      * @param componentName Specifies the module package name and entry point class name.
      * @param dexAssetName Identifier for the asset that contains the dex file to load the
@@ -116,25 +170,16 @@ public class ModuleLoader {
         mDexInputStreamProvider = dexInputStreamProvider;
         mDexClassLoaderProvider = dexClassLoaderProvider;
         String packageName = componentName.getPackageName();
-        int versionCode = 0;
-        String versionName = "";
-        long lastUpdateTime = 0;
-        try {
-            PackageInfo info = ContextUtils.getApplicationContext()
-                                     .getPackageManager()
-                                     .getPackageInfo(packageName, 0);
-            versionCode = info.versionCode;
-            versionName = info.versionName;
-            lastUpdateTime = info.lastUpdateTime;
-        } catch (PackageManager.NameNotFoundException ignored) {
-            // Ignore the exception. Failure to find the package name will be handled in
-            // createModuleContext() below.
-        }
-        mModuleLastUpdateTime = lastUpdateTime;
-        mModuleId = String.format("%s v%s (%s)", packageName, versionCode, versionName);
+        mModuleApkVersion = ModuleApkVersion.getModuleVersion(packageName);
+        mModuleId = String.format("%s v%s (%s)",
+                packageName, mModuleApkVersion.mApkVersionCode, mModuleApkVersion.mApkVersionName);
 
         mModuleContext = createModuleContext(
                 mComponentName.getPackageName(), /* resourcesOnly = */ mDexAssetName != null);
+    }
+
+    public ModuleApkVersion getModuleApkVersion() {
+        return mModuleApkVersion;
     }
 
     public ComponentName getComponentName() {
@@ -319,7 +364,7 @@ public class ModuleLoader {
 
     @VisibleForTesting
     /* package */ long getModuleLastUpdateTime() {
-        return mModuleLastUpdateTime;
+        return mModuleApkVersion.mLastUpdateTime;
     }
 
     @VisibleForTesting
@@ -385,11 +430,11 @@ public class ModuleLoader {
                     cleanUpLocalDex();
                 }
                 return false;
-            } else if (localDexLastUpdateTime != mModuleLastUpdateTime) {
+            } else if (localDexLastUpdateTime != mModuleApkVersion.mLastUpdateTime) {
                 try {
                     copyDexToDisk(mDexAssetName);
                     preferences.edit()
-                            .putLong(dexLastUpdateTimePref, mModuleLastUpdateTime)
+                            .putLong(dexLastUpdateTimePref, mModuleApkVersion.mLastUpdateTime)
                             .apply();
                 } catch (IOException e) {
                     if (localDexLastUpdateTime != -1) {

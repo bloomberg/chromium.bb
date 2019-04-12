@@ -1464,11 +1464,6 @@ public class CustomTabsConnection {
             CustomTabsSessionToken session, String url, String origin, int referrerPolicy,
             @DetachedResourceRequestMotivation int motivation);
 
-    // TODO(amalova): remove this method as soon as it is safe to do
-    public ModuleLoader getModuleLoader(ComponentName componentName, int dexResourceId) {
-        return getModuleLoader(componentName, null);
-    }
-
     public ModuleLoader getModuleLoader(ComponentName componentName, @Nullable String assetName) {
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_MODULE_DEX_LOADING)) {
             assetName = null;
@@ -1479,8 +1474,12 @@ public class CustomTabsConnection {
                     !componentName.equals(mModuleLoader.getComponentName());
             boolean isAssetNameChanged =
                     !TextUtils.equals(assetName, mModuleLoader.getDexAssetName());
+            ModuleLoader.ModuleApkVersion newModuleApkVersion =
+                    ModuleLoader.ModuleApkVersion.getModuleVersion(componentName.getPackageName());
+            boolean isModuleVersionChanged =
+                    !mModuleLoader.getModuleApkVersion().equals(newModuleApkVersion);
 
-            if (isComponentNameChanged || isAssetNameChanged) {
+            if (isComponentNameChanged || isAssetNameChanged || isModuleVersionChanged) {
                 mModuleLoader.destroyModule(ModuleMetrics.DestructionReason.MODULE_LOADER_CHANGED);
                 mModuleLoader = null;
             }
