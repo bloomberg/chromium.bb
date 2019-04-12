@@ -168,7 +168,6 @@ WebRtcTestBase::WebRtcTestBase(): detect_errors_in_javascript_(false) {
   hit_javascript_errors_.Get() = false;
 
   EnablePixelOutput();
-  EnableAudioOutput();
 }
 
 WebRtcTestBase::~WebRtcTestBase() {
