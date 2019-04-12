@@ -1,4 +1,5 @@
 abseil/src/
+boringssl/src/
 chromium_quic/src/
 googletest/src/
 mDNSResponder/src/
