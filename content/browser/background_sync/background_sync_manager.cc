@@ -156,6 +156,7 @@ std::unique_ptr<BackgroundSyncParameters> GetControllerParameters(
 base::TimeDelta GetNextEventDelay(
     scoped_refptr<ServiceWorkerContextWrapper> sw_context_wrapper,
     const BackgroundSyncRegistration& registration,
+    const url::Origin& origin,
     std::unique_ptr<BackgroundSyncParameters> parameters) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -166,7 +167,7 @@ base::TimeDelta GetNextEventDelay(
     return base::TimeDelta::Max();
 
   return background_sync_controller->GetNextEventDelay(
-      registration.options()->min_interval, registration.num_attempts(),
+      origin, registration.options()->min_interval, registration.num_attempts(),
       registration.sync_type(), parameters.get());
 }
 
@@ -599,11 +600,12 @@ void BackgroundSyncManager::RegisterDidAskForPermission(
   }
 
   // TODO(crbug.com/925297): Record Periodic Sync metrics.
+  url::Origin origin =
+      url::Origin::Create(sw_registration->scope().GetOrigin());
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(
-          &NotifyBackgroundSyncRegisteredOnUIThread, service_worker_context_,
-          url::Origin::Create(sw_registration->scope().GetOrigin())));
+      base::BindOnce(&NotifyBackgroundSyncRegisteredOnUIThread,
+                     service_worker_context_, origin));
 
   BackgroundSyncRegistration* existing_registration =
       LookupActiveRegistration(blink::mojom::BackgroundSyncRegistrationInfo(
@@ -641,7 +643,7 @@ void BackgroundSyncManager::RegisterDidAskForPermission(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             &GetNextEventDelay, service_worker_context_, new_registration,
-            std::make_unique<BackgroundSyncParameters>(*parameters_)),
+            origin, std::make_unique<BackgroundSyncParameters>(*parameters_)),
         base::BindOnce(&BackgroundSyncManager::RegisterDidGetDelay,
                        weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
                        new_registration, std::move(callback)));
@@ -1105,6 +1107,8 @@ void BackgroundSyncManager::FireReadyEventsImpl(base::OnceClosure callback) {
   }
 
   // Find the registrations that are ready to run.
+  // TODO(crbug.com/925297): Periodically re-evaluate suspended Periodic Sync
+  // registrations.
   std::vector<blink::mojom::BackgroundSyncRegistrationInfoPtr> to_fire;
 
   for (auto& sw_reg_id_and_registrations : active_registrations_) {
@@ -1322,7 +1326,7 @@ void BackgroundSyncManager::EventCompleteImpl(
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
-            &GetNextEventDelay, service_worker_context_, *registration,
+            &GetNextEventDelay, service_worker_context_, *registration, origin,
             std::make_unique<BackgroundSyncParameters>(*parameters_)),
         base::BindOnce(&BackgroundSyncManager::EventCompleteDidGetDelay,
                        weak_ptr_factory_.GetWeakPtr(),

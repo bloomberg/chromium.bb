@@ -28,6 +28,8 @@ class Origin;
 }
 
 class Profile;
+class SiteEngagementService;
+class GURL;
 
 class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
                                      public KeyedService {
@@ -40,6 +42,12 @@ class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
   static const char kMinSyncRecoveryTimeName[];
   static const char kMaxSyncEventDurationName[];
 
+  static const int kEngagementLevelNonePenalty = 0;
+  static const int kEngagementLevelHighOrMaxPenalty = 1;
+  static const int kEngagementLevelMediumPenalty = 2;
+  static const int kEngagementLevelLowPenalty = 3;
+  static const int kEngagementLevelMinimalPenalty = 4;
+
   explicit BackgroundSyncControllerImpl(Profile* profile);
   ~BackgroundSyncControllerImpl() override;
 
@@ -49,6 +57,7 @@ class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
   void NotifyBackgroundSyncRegistered(const url::Origin& origin) override;
   void RunInBackground() override;
   base::TimeDelta GetNextEventDelay(
+      const url::Origin& origin,
       int64_t min_interval,
       int num_attempts,
       blink::mojom::BackgroundSyncType sync_type,
@@ -59,7 +68,17 @@ class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
   virtual rappor::RapporServiceImpl* GetRapporServiceImpl();
 
  private:
+  // Gets the site engagement penalty for |url|, which is inversely proportional
+  // to the engagement level. The lower the engagement levels with the site,
+  // the less often periodic sync events will be fired.
+  // Returns kEngagementLevelNonePenalty if the engagement level is
+  // blink::mojom::EngagementLevel::NONE.
+  int GetSiteEngagementPenalty(const GURL& url) const;
+
   Profile* profile_;  // This object is owned by profile_.
+
+  // Same lifetime as |profile_|.
+  SiteEngagementService* site_engagement_service_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundSyncControllerImpl);
 };
