@@ -15,6 +15,7 @@
 #include "ui/base/mpris/buildflags/buildflags.h"
 
 #if BUILDFLAG(USE_MPRIS)
+#include "content/browser/media/mpris_notifier.h"
 #include "ui/base/mpris/mpris_service.h"  // nogncheck
 #endif
 
@@ -160,6 +161,9 @@ void MediaKeysListenerManagerImpl::EnsureAuxiliaryServices() {
 
 #if BUILDFLAG(USE_MPRIS)
   mpris::MprisService::GetInstance()->StartService();
+
+  mpris_notifier_ = std::make_unique<MprisNotifier>(connector_);
+  mpris_notifier_->Initialize();
 #endif
 
 #if defined(OS_MACOSX)

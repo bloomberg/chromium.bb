@@ -214,9 +214,11 @@ TEST_F(MprisServiceImplTest, ObserverNotifiedOfPlayCalls) {
 }
 
 TEST_F(MprisServiceImplTest, ChangingPropertyEmitsSignal) {
+  base::RunLoop wait_for_signal;
+
   // The returned signal should give the changed property.
   EXPECT_CALL(*GetExportedObject(), SendSignal(_))
-      .WillOnce(WithArg<0>([](dbus::Signal* signal) {
+      .WillOnce(WithArg<0>([&wait_for_signal](dbus::Signal* signal) {
         EXPECT_NE(nullptr, signal);
         dbus::MessageReader reader(signal);
 
@@ -242,14 +244,73 @@ TEST_F(MprisServiceImplTest, ChangingPropertyEmitsSignal) {
 
         // CanPlay should be the only entry.
         EXPECT_FALSE(changed_properties_reader.HasMoreData());
+
+        wait_for_signal.Quit();
       }));
 
   // CanPlay is initialized as false, so setting it to true should emit an
   // org.freedesktop.DBus.Properties.PropertiesChanged signal.
   GetService()->SetCanPlay(true);
+  wait_for_signal.Run();
 
   // Setting it to true again should not re-signal.
   GetService()->SetCanPlay(true);
+}
+
+TEST_F(MprisServiceImplTest, ChangingMetadataEmitsSignal) {
+  base::RunLoop wait_for_signal;
+
+  // The returned signal should give the changed property.
+  EXPECT_CALL(*GetExportedObject(), SendSignal(_))
+      .WillOnce(WithArg<0>([&wait_for_signal](dbus::Signal* signal) {
+        ASSERT_NE(nullptr, signal);
+        dbus::MessageReader reader(signal);
+
+        std::string interface_name;
+        ASSERT_TRUE(reader.PopString(&interface_name));
+        EXPECT_EQ(kMprisAPIPlayerInterfaceName, interface_name);
+
+        dbus::MessageReader changed_properties_reader(nullptr);
+        ASSERT_TRUE(reader.PopArray(&changed_properties_reader));
+
+        dbus::MessageReader dict_entry_reader(nullptr);
+        ASSERT_TRUE(changed_properties_reader.PopDictEntry(&dict_entry_reader));
+
+        // The changed property name should be "Metadata".
+        std::string property_name;
+        ASSERT_TRUE(dict_entry_reader.PopString(&property_name));
+        EXPECT_EQ("Metadata", property_name);
+
+        // The new metadata should have the new title.
+        dbus::MessageReader metadata_variant_reader(nullptr);
+        ASSERT_TRUE(dict_entry_reader.PopVariant(&metadata_variant_reader));
+        dbus::MessageReader metadata_reader(nullptr);
+        ASSERT_TRUE(metadata_variant_reader.PopArray(&metadata_reader));
+
+        dbus::MessageReader metadata_entry_reader(nullptr);
+        ASSERT_TRUE(metadata_reader.PopDictEntry(&metadata_entry_reader));
+
+        std::string metadata_property_name;
+        ASSERT_TRUE(metadata_entry_reader.PopString(&metadata_property_name));
+        EXPECT_EQ("xesam:title", metadata_property_name);
+
+        std::string value;
+        ASSERT_TRUE(metadata_entry_reader.PopVariantOfString(&value));
+        EXPECT_EQ("Foo", value);
+
+        // Metadata should be the only changed property.
+        EXPECT_FALSE(changed_properties_reader.HasMoreData());
+
+        wait_for_signal.Quit();
+      }));
+
+  // Setting the title should emit an
+  // org.freedesktop.DBus.Properties.PropertiesChanged signal.
+  GetService()->SetTitle("Foo");
+  wait_for_signal.Run();
+
+  // Setting the title to the same value as before should not emit a new signal.
+  GetService()->SetTitle("Foo");
 }
 
 }  // namespace mpris
