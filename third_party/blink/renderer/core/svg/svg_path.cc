@@ -24,6 +24,8 @@
 #include "third_party/blink/renderer/core/svg/svg_path.h"
 
 #include <memory>
+#include <utility>
+
 #include "third_party/blink/renderer/core/svg/svg_animation_element.h"
 #include "third_party/blink/renderer/core/svg/svg_path_blender.h"
 #include "third_party/blink/renderer/core/svg/svg_path_byte_stream.h"
@@ -31,6 +33,7 @@
 #include "third_party/blink/renderer/core/svg/svg_path_byte_stream_source.h"
 #include "third_party/blink/renderer/core/svg/svg_path_utilities.h"
 #include "third_party/blink/renderer/platform/graphics/path.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -90,7 +93,7 @@ String SVGPath::ValueAsString() const {
 }
 
 SVGPath* SVGPath::Clone() const {
-  return SVGPath::Create(path_value_);
+  return MakeGarbageCollected<SVGPath>(path_value_);
 }
 
 SVGParsingError SVGPath::SetValueAsString(const String& string) {
@@ -106,7 +109,8 @@ SVGPropertyBase* SVGPath::CloneForAnimation(const String& value) const {
   std::unique_ptr<SVGPathByteStream> byte_stream =
       std::make_unique<SVGPathByteStream>();
   BuildByteStreamFromString(value, *byte_stream);
-  return SVGPath::Create(CSSPathValue::Create(std::move(byte_stream)));
+  return MakeGarbageCollected<SVGPath>(
+      CSSPathValue::Create(std::move(byte_stream)));
 }
 
 void SVGPath::Add(SVGPropertyBase* other, SVGElement*) {

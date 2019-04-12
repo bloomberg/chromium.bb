@@ -32,6 +32,7 @@
 
 #include "third_party/blink/renderer/core/svg/svg_animation_element.h"
 #include "third_party/blink/renderer/core/svg/svg_parser_utilities.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/transforms/affine_transform.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -43,7 +44,7 @@ SVGPoint::SVGPoint() = default;
 SVGPoint::SVGPoint(const FloatPoint& point) : value_(point) {}
 
 SVGPoint* SVGPoint::Clone() const {
-  return SVGPoint::Create(value_);
+  return MakeGarbageCollected<SVGPoint>(value_);
 }
 
 template <typename CharType>
