@@ -242,7 +242,6 @@ class TabStrip : public views::AccessiblePaneView,
   // TabController:
   const ui::ListSelectionModel& GetSelectionModel() const override;
   bool SupportsMultipleSelection() override;
-  NewTabButtonPosition GetNewTabButtonPosition() const override;
   bool ShouldHideCloseButtonForTab(Tab* tab) const override;
   bool MaySetClip() override;
   void SelectTab(Tab* tab, const ui::Event& event) override;
@@ -298,7 +297,6 @@ class TabStrip : public views::AccessiblePaneView,
   void Layout() override;
   bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
   void PaintChildren(const views::PaintInfo& paint_info) override;
-  void OnPaint(gfx::Canvas* canvas) override;
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
@@ -368,18 +366,13 @@ class TabStrip : public views::AccessiblePaneView,
   // Returns whether the close button should be highlighted after a remove.
   bool ShouldHighlightCloseButtonAfterRemove();
 
-  // If the new tab button position is AFTER_TABS, returns the spacing to use
-  // between the trailing edge of the tabs and the leading edge of the new tab
-  // button.  For other button positions, returns 0.
-  int TabToFollowingNewTabButtonSpacing() const;
+  // Returns the spacing between the trailing edge of the tabs and the leading
+  // edge of the new tab button.
+  int TabToNewTabButtonSpacing() const;
 
-  // Returns whether dragging tabs should ever result in the new tab button
-  // being hidden.
-  bool MayHideNewTabButtonWhileDragging() const;
-
-  // Returns the space to reserve after the tabs, if any, to guarantee the user
-  // can grab part of the window frame (to move the window with).
-  int GetFrameGrabWidth() const;
+  // Returns the space to reserve after the tabs to guarantee the user can grab
+  // part of the window frame (to move the window with).
+  int FrameGrabWidth() const;
 
   // Returns whether the window background behind the tabstrip is transparent.
   bool TitlebarBackgroundIsTransparent() const;
@@ -433,9 +426,6 @@ class TabStrip : public views::AccessiblePaneView,
   // beginning of the strip.
   int GetInsertionIndexFromReversed(const gfx::Rect& dragged_bounds,
                                     int start) const;
-
-  // Returns the X coordinate the first tab should start at.
-  int TabStartX() const;
 
   // Returns where the drag region ends; tabs dragged past this should detach.
   int TabDragAreaEndX() const;

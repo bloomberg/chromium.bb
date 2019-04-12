@@ -47,9 +47,6 @@ class FakeTabController : public TabController {
     return selection_model_;
   }
   bool SupportsMultipleSelection() override { return false; }
-  NewTabButtonPosition GetNewTabButtonPosition() const override {
-    return LEADING;
-  }
   bool ShouldHideCloseButtonForTab(Tab* tab) const override { return false; }
   bool MaySetClip() override { return false; }
   void SelectTab(Tab* tab, const ui::Event& event) override {}

@@ -323,25 +323,6 @@ bool BrowserTabStripController::IsCompatibleWith(TabStrip* other) const {
   return other_profile == GetProfile();
 }
 
-NewTabButtonPosition BrowserTabStripController::GetNewTabButtonPosition()
-    const {
-  // TODO(https://crbug.com/951038): Remove this switch, this method, and
-  // probably more of this code.
-  const std::string switch_value =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kNewTabButtonPosition);
-  if (switch_value == switches::kNewTabButtonPositionOppositeCaption)
-    return GetFrameView()->CaptionButtonsOnLeadingEdge() ? TRAILING : LEADING;
-  if (switch_value == switches::kNewTabButtonPositionLeading)
-    return LEADING;
-  if (switch_value == switches::kNewTabButtonPositionAfterTabs)
-    return AFTER_TABS;
-  if (switch_value == switches::kNewTabButtonPositionTrailing)
-    return TRAILING;
-
-  return AFTER_TABS;
-}
-
 void BrowserTabStripController::CreateNewTab() {
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
   // This must be called before AddTabAt() so that OmniboxFocused is called

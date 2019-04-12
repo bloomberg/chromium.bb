@@ -50,7 +50,6 @@ class FakeBaseTabStripController : public TabStripController {
   int HasAvailableDragActions() const override;
   void OnDropIndexUpdate(int index, bool drop_before) override;
   bool IsCompatibleWith(TabStrip* other) const override;
-  NewTabButtonPosition GetNewTabButtonPosition() const override;
   void CreateNewTab() override;
   void CreateNewTabWithLocation(const base::string16& loc) override;
   void StackedLayoutMaybeChanged() override;
