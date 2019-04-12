@@ -889,8 +889,7 @@ String TextControlElement::ValueWithHardLineBreaks() const {
   if (!inner_text || !IsTextControl())
     return value();
 
-  LayoutBlockFlow* layout_object =
-      ToLayoutBlockFlow(inner_text->GetLayoutObject());
+  auto* layout_object = To<LayoutBlockFlow>(inner_text->GetLayoutObject());
   if (!layout_object)
     return value();
 

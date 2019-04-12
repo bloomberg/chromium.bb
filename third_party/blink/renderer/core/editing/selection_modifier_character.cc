@@ -538,7 +538,7 @@ class InlineFormattingContextTraversal {
       }
 
       if (IsValidContextForCaretNavigation(*runner))
-        return ToLayoutBlockFlow(runner);
+        return To<LayoutBlockFlow>(runner);
 
       runner = runner->PreviousInPostOrder(stay_within);
     }
@@ -555,7 +555,7 @@ class InlineFormattingContextTraversal {
       }
 
       if (IsValidContextForCaretNavigation(*runner))
-        return ToLayoutBlockFlow(runner);
+        return To<LayoutBlockFlow>(runner);
 
       runner = runner->NextInPreOrder(stay_within);
     }
@@ -564,19 +564,18 @@ class InlineFormattingContextTraversal {
 
  private:
   static bool IsValidContextForCaretNavigation(LayoutObject& object) {
-    if (!object.IsLayoutBlockFlow() || !object.ChildrenInline())
+    auto* block_flow = DynamicTo<LayoutBlockFlow>(object);
+    if (!block_flow || !object.ChildrenInline())
       return false;
 
-    LayoutBlockFlow& block_flow = ToLayoutBlockFlow(object);
-    if (block_flow.IsLayoutNGMixin()) {
-      if (!block_flow.HasNGInlineNodeData() ||
-          !block_flow.GetNGInlineNodeData()->text_content.length()) {
+    if (block_flow->IsLayoutNGMixin()) {
+      if (!block_flow->HasNGInlineNodeData() ||
+          !block_flow->GetNGInlineNodeData()->text_content.length()) {
         return false;
       }
     }
 
-    const NGOffsetMapping* mapping =
-        NGInlineNode::GetOffsetMapping(&block_flow);
+    const NGOffsetMapping* mapping = NGInlineNode::GetOffsetMapping(block_flow);
     DCHECK(mapping);
 
     // Reject empty blocks
@@ -669,10 +668,10 @@ PositionWithAffinityTemplate<Strategy> TraverseIntoChildContext(
   DCHECK(position.AnchorNode()->GetLayoutObject()->IsLayoutBlockFlow())
       << position;
 
-  LayoutBlockFlow& target_block =
-      *ToLayoutBlockFlow(position.AnchorNode()->GetLayoutObject());
+  auto* target_block =
+      To<LayoutBlockFlow>(position.AnchorNode()->GetLayoutObject());
 
-  if (!target_block.IsLayoutNGMixin()) {
+  if (!target_block->IsLayoutNGMixin()) {
     // In most cases, we reach here by crossing editing boundary, in which case
     // returning null position suffices.
     // TODO(xiaochengh): Investigate if there are other cases that need a
@@ -680,14 +679,14 @@ PositionWithAffinityTemplate<Strategy> TraverseIntoChildContext(
     return PositionWithAffinityTemplate<Strategy>();
   }
 
-  if (!target_block.ChildrenInline() || !target_block.HasNGInlineNodeData() ||
-      !target_block.GetNGInlineNodeData()->text_content.length()) {
+  if (!target_block->ChildrenInline() || !target_block->HasNGInlineNodeData() ||
+      !target_block->GetNGInlineNodeData()->text_content.length()) {
     // TODO(xiaochengh): Implement when |target_block| has its own child blocks,
     // or when |target_block| is empty.
     return PositionWithAffinityTemplate<Strategy>();
   }
 
-  NGCaretNavigator caret_navigator(target_block);
+  NGCaretNavigator caret_navigator(*target_block);
   DCHECK(caret_navigator.GetText().length());
 
   const NGCaretNavigator::Position position_in_target =
@@ -709,8 +708,7 @@ PositionWithAffinityTemplate<Strategy> TraverseIntoChildContext(
     return PositionWithAffinityTemplate<Strategy>();
   }
 
-  const NGOffsetMapping* mapping =
-      NGInlineNode::GetOffsetMapping(&target_block);
+  const NGOffsetMapping* mapping = NGInlineNode::GetOffsetMapping(target_block);
   return FromPositionInDOMTree<Strategy>(
       mapping->GetPositionWithAffinity(*result_position.position));
 }

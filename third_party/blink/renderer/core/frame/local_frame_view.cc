@@ -1544,9 +1544,10 @@ static inline void RemoveFloatingObjectsForSubtreeRoot(LayoutObject& root) {
   // having floats is very rare, prefer to re-create
   // FloatingObjects.
   if (LayoutBlock* cb = root.ContainingBlock()) {
+    auto* child_block_flow = DynamicTo<LayoutBlockFlow>(cb);
     if ((cb->NormalChildNeedsLayout() || cb->SelfNeedsLayout()) &&
-        cb->IsLayoutBlockFlow()) {
-      ToLayoutBlockFlow(cb)->RemoveFloatingObjectsFromDescendants();
+        child_block_flow) {
+      child_block_flow->RemoveFloatingObjectsFromDescendants();
     }
   }
 }

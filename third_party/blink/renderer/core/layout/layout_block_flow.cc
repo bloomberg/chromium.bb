@@ -631,9 +631,8 @@ void LayoutBlockFlow::AddOverhangingFloatsFromChildren(
        child = child->PreviousSibling()) {
     // TODO(robhogan): We should exclude blocks that create formatting
     // contexts, not just out of flow or floating blocks.
-    if (child->IsLayoutBlockFlow() &&
-        !child->IsFloatingOrOutOfFlowPositioned()) {
-      LayoutBlockFlow* block = ToLayoutBlockFlow(child);
+    auto* block = DynamicTo<LayoutBlockFlow>(child);
+    if (block && !child->IsFloatingOrOutOfFlowPositioned()) {
       if (!block->ContainsFloats())
         continue;
       lowest_block = block;
@@ -773,24 +772,25 @@ bool LayoutBlockFlow::PositionAndLayoutOnceIfNeeded(
       layout_info.PreviousFloatLogicalBottom();
   LayoutUnit lowest_float =
       std::max(previous_float_logical_bottom, LowestFloatLogicalBottom());
-  if (child.IsLayoutBlockFlow()) {
-    LayoutBlockFlow& child_block_flow = ToLayoutBlockFlow(child);
-    if (child_block_flow.ContainsFloats() || ContainsFloats())
+  auto* child_block_flow = DynamicTo<LayoutBlockFlow>(child);
+  if (child_block_flow) {
+    if (child_block_flow->ContainsFloats() || ContainsFloats()) {
       MarkDescendantsWithFloatsForLayoutIfNeeded(
-          child_block_flow, new_logical_top, previous_float_logical_bottom);
+          *child_block_flow, new_logical_top, previous_float_logical_bottom);
+    }
 
     // TODO(mstensho): A writing mode root is one thing, but we should be able
     // to skip anything that establishes a new block formatting context here.
     // Their floats don't affect us.
-    if (!child_block_flow.IsWritingModeRoot() &&
-        child_block_flow.ContainsFloats()) {
+    if (!child_block_flow->IsWritingModeRoot() &&
+        child_block_flow->ContainsFloats()) {
       // Only do this if the child actually contains floats, so that we don't
       // set previous_float_logical_bottom to child.LogicalTop() when there
       // are none.
       previous_float_logical_bottom =
           std::max(previous_float_logical_bottom,
-                   child_block_flow.LogicalTop() +
-                       child_block_flow.LowestFloatLogicalBottom());
+                   child_block_flow->LogicalTop() +
+                       child_block_flow->LowestFloatLogicalBottom());
     }
   }
 
@@ -851,8 +851,7 @@ void LayoutBlockFlow::InsertForcedBreakBeforeChildIfNeeded(
 void LayoutBlockFlow::LayoutBlockChild(LayoutBox& child,
                                        BlockChildrenLayoutInfo& layout_info) {
   MarginInfo& margin_info = layout_info.GetMarginInfo();
-  LayoutBlockFlow* child_layout_block_flow =
-      child.IsLayoutBlockFlow() ? ToLayoutBlockFlow(&child) : nullptr;
+  auto* child_layout_block_flow = DynamicTo<LayoutBlockFlow>(&child);
   LayoutUnit old_pos_margin_before = MaxPositiveMarginBefore();
   LayoutUnit old_neg_margin_before = MaxNegativeMarginBefore();
 
@@ -980,9 +979,10 @@ void LayoutBlockFlow::LayoutBlockChild(LayoutBox& child,
   // floating/positioned descendants. An exception is if we need a layout.
   // In this case, we know we're going to invalidate our paint (and the child)
   // anyway.
+  auto* child_layout_block = DynamicTo<LayoutBlockFlow>(child);
   if (!SelfNeedsLayout() && (child_offset.Width() || child_offset.Height()) &&
-      child.IsLayoutBlockFlow())
-    BlockFlowPaintInvalidator(ToLayoutBlockFlow(child))
+      child_layout_block)
+    BlockFlowPaintInvalidator(*child_layout_block)
         .InvalidatePaintForOverhangingFloats();
 
   if (paginated) {
@@ -1013,8 +1013,7 @@ LayoutUnit LayoutBlockFlow::AdjustBlockChildForPagination(
     LayoutBox& child,
     BlockChildrenLayoutInfo& layout_info,
     bool at_before_side_of_block) {
-  LayoutBlockFlow* child_block_flow =
-      child.IsLayoutBlockFlow() ? ToLayoutBlockFlow(&child) : nullptr;
+  auto* child_block_flow = DynamicTo<LayoutBlockFlow>(&child);
 
   // See if we need a soft (unforced) break in front of this child, and set the
   // pagination strut in that case. An unforced break may come from two sources:
@@ -1102,8 +1101,9 @@ LayoutUnit LayoutBlockFlow::AdjustFloatLogicalTopForPagination(
   // The first piece of content inside the child may have set a strut during
   // layout.
   LayoutUnit strut;
-  if (child.IsLayoutBlockFlow())
-    strut = ToLayoutBlockFlow(child).PaginationStrutPropagatedFromChild();
+  auto* child_block_flow = DynamicTo<LayoutBlockFlow>(child);
+  if (child_block_flow)
+    strut = child_block_flow->PaginationStrutPropagatedFromChild();
 
   LayoutUnit margin_before = MarginBeforeForChild(child);
   if (margin_before > LayoutUnit()) {
@@ -1327,12 +1327,12 @@ LayoutUnit LayoutBlockFlow::AdjustForUnsplittableChild(
     return logical_offset;
   }
 
-  if (child.IsLayoutBlockFlow()) {
+  const auto* block_child = DynamicTo<LayoutBlockFlow>(child);
+  if (block_child) {
     // If there's a forced break inside this object, figure out if we can fit
     // everything before that forced break in the current fragmentainer. If it
     // fits, we don't need to insert a break before the child.
-    const LayoutBlockFlow& block_child = ToLayoutBlockFlow(child);
-    if (LayoutUnit first_break_offset = block_child.FirstForcedBreakOffset()) {
+    if (LayoutUnit first_break_offset = block_child->FirstForcedBreakOffset()) {
       if (remaining_logical_height >= first_break_offset)
         return logical_offset;
     }
@@ -1384,14 +1384,14 @@ void LayoutBlockFlow::RebuildFloatsFromIntruding() {
   // crash arising from a bad cast on the parent.
   // See <rdar://problem/8049753>, where float property is applied on a text
   // node in a SVG.
-  if (!Parent() || !Parent()->IsLayoutBlockFlow())
+  auto* parent_block_flow = DynamicTo<LayoutBlockFlow>(Parent());
+  if (!parent_block_flow)
     return;
 
   // Attempt to locate a previous sibling with overhanging floats. We skip any
   // elements that may have shifted to avoid floats, and any objects whose
   // floats cannot interact with objects outside it (i.e. objects that create a
   // new block formatting context).
-  LayoutBlockFlow* parent_block_flow = ToLayoutBlockFlow(Parent());
   bool sibling_float_may_intrude = false;
   LayoutObject* prev = PreviousSibling();
   auto* prev_layout_block = DynamicTo<LayoutBlock>(prev);
@@ -1409,7 +1409,7 @@ void LayoutBlockFlow::RebuildFloatsFromIntruding() {
   // floats from the parent too.
   bool parent_floats_may_intrude =
       !sibling_float_may_intrude &&
-      (!prev || ToLayoutBlockFlow(prev)->IsSelfCollapsingBlock() ||
+      (!prev || To<LayoutBlockFlow>(prev)->IsSelfCollapsingBlock() ||
        prev_layout_block->LogicalTop() > LogicalTop()) &&
       parent_block_flow->LowestFloatLogicalBottom() > LogicalTop();
   if (sibling_float_may_intrude || parent_floats_may_intrude)
@@ -1420,7 +1420,7 @@ void LayoutBlockFlow::RebuildFloatsFromIntruding() {
   // Add overhanging floats from the previous LayoutBlockFlow, but only if it
   // has a float that intrudes into our space.
   if (prev) {
-    LayoutBlockFlow* previous_block_flow = ToLayoutBlockFlow(prev);
+    auto* previous_block_flow = To<LayoutBlockFlow>(prev);
     if (LogicalTop() < previous_block_flow->LogicalTop() +
                            previous_block_flow->LowestFloatLogicalBottom())
       AddIntrudingFloats(previous_block_flow, LayoutUnit(),
@@ -1652,8 +1652,7 @@ LayoutBlockFlow::MarginValues LayoutBlockFlow::MarginValuesForChild(
   LayoutUnit before_margin;
   LayoutUnit after_margin;
 
-  LayoutBlockFlow* child_layout_block_flow =
-      child.IsLayoutBlockFlow() ? ToLayoutBlockFlow(&child) : nullptr;
+  auto* child_layout_block_flow = DynamicTo<LayoutBlockFlow>(&child);
 
   // If the child has the same directionality as we do, then we can just return
   // its margins in the same direction.
@@ -1740,11 +1739,11 @@ static LayoutBlockFlow* PreviousBlockFlowInFormattingContext(
     const LayoutBox& child) {
   LayoutObject* prev = child.PreviousSibling();
   while (prev && (!prev->IsLayoutBlockFlow() ||
-                  ToLayoutBlockFlow(prev)->CreatesNewFormattingContext())) {
+                  To<LayoutBlockFlow>(prev)->CreatesNewFormattingContext())) {
     prev = prev->PreviousSibling();
   }
   if (prev)
-    return ToLayoutBlockFlow(prev);
+    return To<LayoutBlockFlow>(prev);
   return nullptr;
 }
 
@@ -1832,8 +1831,7 @@ LayoutUnit LayoutBlockFlow::CollapseMargins(
   LayoutUnit logical_top = before_collapse_logical_top;
 
   LayoutObject* prev = child.PreviousSibling();
-  LayoutBlockFlow* previous_block_flow =
-      prev && prev->IsLayoutBlockFlow() ? ToLayoutBlockFlow(prev) : nullptr;
+  auto* previous_block_flow = DynamicTo<LayoutBlockFlow>(prev);
   bool previous_block_flow_can_self_collapse =
       previous_block_flow &&
       !previous_block_flow->IsFloatingOrOutOfFlowPositioned();
@@ -2137,10 +2135,10 @@ void LayoutBlockFlow::MarginBeforeEstimateForChild(
   negative_margin_before =
       std::max(negative_margin_before, -before_child_margin);
 
-  if (!child.IsLayoutBlockFlow())
+  auto* child_block_flow = DynamicTo<LayoutBlockFlow>(&child);
+  if (!child_block_flow)
     return;
 
-  LayoutBlockFlow* child_block_flow = ToLayoutBlockFlow(&child);
   if (child_block_flow->ChildrenInline() ||
       child_block_flow->IsWritingModeRoot())
     return;
@@ -2382,16 +2380,16 @@ bool LayoutBlockFlow::MustDiscardMarginBeforeForChild(
     const LayoutBox& child) const {
   DCHECK(!child.SelfNeedsLayout() || child.LayoutBlockedByDisplayLock());
   if (!child.IsWritingModeRoot()) {
-    return child.IsLayoutBlockFlow()
-               ? ToLayoutBlockFlow(&child)->MustDiscardMarginBefore()
-               : (child.StyleRef().MarginBeforeCollapse() ==
-                  EMarginCollapse::kDiscard);
+    auto* child_layout_block = DynamicTo<LayoutBlockFlow>(&child);
+    return child_layout_block ? child_layout_block->MustDiscardMarginBefore()
+                              : (child.StyleRef().MarginBeforeCollapse() ==
+                                 EMarginCollapse::kDiscard);
   }
   if (child.IsHorizontalWritingMode() == IsHorizontalWritingMode()) {
-    return child.IsLayoutBlockFlow()
-               ? ToLayoutBlockFlow(&child)->MustDiscardMarginAfter()
-               : (child.StyleRef().MarginAfterCollapse() ==
-                  EMarginCollapse::kDiscard);
+    auto* child_layout_block = DynamicTo<LayoutBlockFlow>(&child);
+    return child_layout_block ? child_layout_block->MustDiscardMarginAfter()
+                              : (child.StyleRef().MarginAfterCollapse() ==
+                                 EMarginCollapse::kDiscard);
   }
 
   // FIXME: We return false here because the implementation is not geometrically
@@ -2405,16 +2403,16 @@ bool LayoutBlockFlow::MustDiscardMarginAfterForChild(
     const LayoutBox& child) const {
   DCHECK(!child.SelfNeedsLayout() || child.LayoutBlockedByDisplayLock());
   if (!child.IsWritingModeRoot()) {
-    return child.IsLayoutBlockFlow()
-               ? ToLayoutBlockFlow(&child)->MustDiscardMarginAfter()
-               : (child.StyleRef().MarginAfterCollapse() ==
-                  EMarginCollapse::kDiscard);
+    auto* child_layout_block = DynamicTo<LayoutBlockFlow>(&child);
+    return child_layout_block ? child_layout_block->MustDiscardMarginAfter()
+                              : (child.StyleRef().MarginAfterCollapse() ==
+                                 EMarginCollapse::kDiscard);
   }
   if (child.IsHorizontalWritingMode() == IsHorizontalWritingMode()) {
-    return child.IsLayoutBlockFlow()
-               ? ToLayoutBlockFlow(&child)->MustDiscardMarginBefore()
-               : (child.StyleRef().MarginBeforeCollapse() ==
-                  EMarginCollapse::kDiscard);
+    auto* child_layout_block = DynamicTo<LayoutBlockFlow>(&child);
+    return child_layout_block ? child_layout_block->MustDiscardMarginBefore()
+                              : (child.StyleRef().MarginBeforeCollapse() ==
+                                 EMarginCollapse::kDiscard);
   }
 
   // FIXME: See |mustDiscardMarginBeforeForChild| above.
@@ -2795,8 +2793,9 @@ void LayoutBlockFlow::RemoveFloatingObjectsFromDescendants() {
     // We don't skip blocks that create formatting contexts as they may have
     // only recently changed style and their float lists may still contain
     // floats from siblings and ancestors.
-    if (child->IsLayoutBlockFlow())
-      ToLayoutBlockFlow(child)->RemoveFloatingObjectsFromDescendants();
+    auto* child_layout_block = DynamicTo<LayoutBlockFlow>(child);
+    if (child_layout_block)
+      child_layout_block->RemoveFloatingObjectsFromDescendants();
   }
 }
 
@@ -2834,7 +2833,7 @@ void LayoutBlockFlow::MarkAllDescendantsWithFloatsForLayout(
           child_block->SetChildNeedsLayout(mark_parents);
         continue;
       }
-      LayoutBlockFlow* child_block_flow = ToLayoutBlockFlow(child);
+      auto* child_block_flow = To<LayoutBlockFlow>(child);
       if ((float_to_remove ? child_block_flow->ContainsFloat(float_to_remove)
                            : child_block_flow->ContainsFloats()) ||
           child_block_flow->ShrinkToAvoidFloats())
@@ -3028,9 +3027,8 @@ void LayoutBlockFlow::StyleDidChange(StyleDifference diff,
 
     for (LayoutObject* curr = Parent(); curr && !curr->IsLayoutView();
          curr = curr->Parent()) {
-      if (curr->IsLayoutBlockFlow()) {
-        LayoutBlockFlow* curr_block = ToLayoutBlockFlow(curr);
-
+      auto* curr_block = DynamicTo<LayoutBlockFlow>(curr);
+      if (curr_block) {
         if (curr_block->HasOverhangingFloats()) {
           for (FloatingObjectSetIterator it = floating_object_set.begin();
                it != end; ++it) {
@@ -3181,7 +3179,7 @@ void LayoutBlockFlow::AddChild(LayoutObject* new_child,
     // is not inline level, but IsInline().
     if (new_child->IsInline() && !new_child->IsLayoutNGListMarker()) {
       // No suitable existing anonymous box - create a new one.
-      LayoutBlockFlow* new_block = ToLayoutBlockFlow(CreateAnonymousBlock());
+      auto* new_block = To<LayoutBlockFlow>(CreateAnonymousBlock());
       LayoutBox::AddChild(new_block, before_child);
       // Reparent adjacent floating or out-of-flow siblings to the new box.
       new_block->ReparentPrecedingFloatingOrOutOfFlowSiblings();
@@ -3227,30 +3225,30 @@ void LayoutBlockFlow::RemoveChild(LayoutObject* old_child) {
   bool merged_anonymous_blocks = false;
   if (prev && next && !old_child->IsInline() &&
       !old_child->VirtualContinuation()) {
-    if (prev->IsLayoutBlockFlow() && next->IsLayoutBlockFlow() &&
-        ToLayoutBlockFlow(prev)->MergeSiblingContiguousAnonymousBlock(
-            ToLayoutBlockFlow(next))) {
+    auto* prev_block_flow = DynamicTo<LayoutBlockFlow>(prev);
+    auto* next_block_flow = DynamicTo<LayoutBlockFlow>(next);
+    if (prev_block_flow && next_block_flow &&
+        prev_block_flow->MergeSiblingContiguousAnonymousBlock(
+            next_block_flow)) {
       merged_anonymous_blocks = true;
       next = nullptr;
-    } else if (prev->IsLayoutBlockFlow() &&
-               IsMergeableAnonymousBlock(ToLayoutBlockFlow(prev))) {
+    } else if (prev_block_flow && IsMergeableAnonymousBlock(prev_block_flow)) {
       // The previous sibling is anonymous. Scan the next siblings and reparent
       // any floating or out-of-flow positioned objects into the end of the
       // previous anonymous block.
       while (next && next->IsFloatingOrOutOfFlowPositioned()) {
         LayoutObject* sibling = next->NextSibling();
-        MoveChildTo(ToLayoutBlockFlow(prev), next, nullptr, false);
+        MoveChildTo(prev_block_flow, next, nullptr, false);
         next = sibling;
       }
-    } else if (next->IsLayoutBlockFlow() &&
-               IsMergeableAnonymousBlock(ToLayoutBlockFlow(next))) {
+    } else if (next_block_flow && IsMergeableAnonymousBlock(next_block_flow)) {
       // The next sibling is anonymous. Scan the previous siblings and reparent
       // any floating or out-of-flow positioned objects into the start of the
       // next anonymous block.
       while (prev && prev->IsFloatingOrOutOfFlowPositioned()) {
         LayoutObject* sibling = prev->PreviousSibling();
-        MoveChildTo(ToLayoutBlockFlow(next), prev,
-                    ToLayoutBlockFlow(next)->FirstChild(), false);
+        MoveChildTo(next_block_flow, prev, next_block_flow->FirstChild(),
+                    false);
         prev = sibling;
       }
     }
@@ -3259,14 +3257,14 @@ void LayoutBlockFlow::RemoveChild(LayoutObject* old_child) {
   LayoutBlock::RemoveChild(old_child);
 
   LayoutObject* child = prev ? prev : next;
-  if (child && child->IsLayoutBlockFlow() && !child->PreviousSibling() &&
+  auto* child_block_flow = DynamicTo<LayoutBlockFlow>(child);
+  if (child && child_block_flow && !child->PreviousSibling() &&
       !child->NextSibling()) {
     // If the removal has knocked us down to containing only a single anonymous
     // box we can go ahead and pull the content right back up into our
     // box.
-    if (merged_anonymous_blocks ||
-        IsMergeableAnonymousBlock(ToLayoutBlockFlow(child)))
-      CollapseAnonymousBlockChild(ToLayoutBlockFlow(child));
+    if (merged_anonymous_blocks || IsMergeableAnonymousBlock(child_block_flow))
+      CollapseAnonymousBlockChild(child_block_flow);
   }
 
   if (!FirstChild()) {
@@ -3294,8 +3292,8 @@ void LayoutBlockFlow::RemoveChild(LayoutObject* old_child) {
         LayoutBoxModelObject* next_continuation = Continuation();
         if (curr->IsLayoutInline())
           ToLayoutInline(curr)->SetContinuation(next_continuation);
-        else if (curr->IsLayoutBlockFlow())
-          ToLayoutBlockFlow(curr)->SetContinuation(next_continuation);
+        else if (auto* curr_block_flow = DynamicTo<LayoutBlockFlow>(curr))
+          curr_block_flow->SetContinuation(next_continuation);
         else
           NOTREACHED();
 
@@ -3316,7 +3314,7 @@ void LayoutBlockFlow::RemoveChild(LayoutObject* old_child) {
 void LayoutBlockFlow::MoveAllChildrenIncludingFloatsTo(
     LayoutBlock* to_block,
     bool full_remove_insert) {
-  LayoutBlockFlow* to_block_flow = ToLayoutBlockFlow(to_block);
+  auto* to_block_flow = To<LayoutBlockFlow>(to_block);
 
   DCHECK(full_remove_insert ||
          to_block_flow->ChildrenInline() == ChildrenInline());
@@ -3365,8 +3363,8 @@ void LayoutBlockFlow::ChildBecameFloatingOrOutOfFlow(LayoutBox* child) {
 
   // Reparent the child to an adjacent anonymous block if one is available.
   LayoutObject* prev = child->PreviousSibling();
-  if (prev && prev->IsAnonymousBlock() && prev->IsLayoutBlockFlow()) {
-    LayoutBlockFlow* new_container = ToLayoutBlockFlow(prev);
+  auto* new_container = DynamicTo<LayoutBlockFlow>(prev);
+  if (prev && prev->IsAnonymousBlock() && new_container) {
     MoveChildTo(new_container, child, nullptr, false);
     // The anonymous block we've moved to may now be adjacent to former siblings
     // of ours that it can contain also.
@@ -3374,8 +3372,8 @@ void LayoutBlockFlow::ChildBecameFloatingOrOutOfFlow(LayoutBox* child) {
     return;
   }
   LayoutObject* next = child->NextSibling();
+  new_container = DynamicTo<LayoutBlockFlow>(next);
   if (next && next->IsAnonymousBlock() && next->IsLayoutBlockFlow()) {
-    LayoutBlockFlow* new_container = ToLayoutBlockFlow(next);
     MoveChildTo(new_container, child, new_container->FirstChild(), false);
   }
 }
@@ -3435,11 +3433,11 @@ bool LayoutBlockFlow::MergeSiblingContiguousAnonymousBlock(
 }
 
 void LayoutBlockFlow::ReparentSubsequentFloatingOrOutOfFlowSiblings() {
-  if (!Parent() || !Parent()->IsLayoutBlockFlow())
+  auto* parent_block_flow = DynamicTo<LayoutBlockFlow>(Parent());
+  if (!parent_block_flow)
     return;
   if (BeingDestroyed() || DocumentBeingDestroyed())
     return;
-  LayoutBlockFlow* parent_block_flow = ToLayoutBlockFlow(Parent());
   LayoutObject* child = NextSibling();
   while (child && child->IsFloatingOrOutOfFlowPositioned()) {
     LayoutObject* sibling = child->NextSibling();
@@ -3448,17 +3446,18 @@ void LayoutBlockFlow::ReparentSubsequentFloatingOrOutOfFlowSiblings() {
   }
 
   if (LayoutObject* next = NextSibling()) {
-    if (next->IsLayoutBlockFlow())
-      MergeSiblingContiguousAnonymousBlock(ToLayoutBlockFlow(next));
+    auto* next_block_flow = DynamicTo<LayoutBlockFlow>(next);
+    if (next_block_flow)
+      MergeSiblingContiguousAnonymousBlock(next_block_flow);
   }
 }
 
 void LayoutBlockFlow::ReparentPrecedingFloatingOrOutOfFlowSiblings() {
-  if (!Parent() || !Parent()->IsLayoutBlockFlow())
+  auto* parent_block_flow = DynamicTo<LayoutBlockFlow>(Parent());
+  if (!parent_block_flow)
     return;
   if (BeingDestroyed() || DocumentBeingDestroyed())
     return;
-  LayoutBlockFlow* parent_block_flow = ToLayoutBlockFlow(Parent());
   LayoutObject* child = PreviousSibling();
   while (child && child->IsFloatingOrOutOfFlowPositioned()) {
     LayoutObject* sibling = child->PreviousSibling();
@@ -3483,16 +3482,17 @@ void LayoutBlockFlow::MakeChildrenInlineIfPossible() {
 
     // There are still block children in the container, so any anonymous
     // wrappers are still needed.
-    if (!child->IsAnonymousBlock() || !child->IsLayoutBlockFlow())
+    auto* child_block_flow = DynamicTo<LayoutBlockFlow>(child);
+    if (!child->IsAnonymousBlock() || !child_block_flow)
       return;
     // If one of the children is being destroyed then it is unsafe to clean up
     // anonymous wrappers as the
     // entire branch may be being destroyed.
-    if (ToLayoutBlockFlow(child)->BeingDestroyed())
+    if (child_block_flow->BeingDestroyed())
       return;
     // We can't remove anonymous wrappers if they contain continuations as this
     // means there are block children present.
-    if (ToLayoutBlockFlow(child)->Continuation())
+    if (child_block_flow->Continuation())
       return;
     // We are only interested in removing anonymous wrappers if there are inline
     // siblings underneath them.
@@ -3503,7 +3503,7 @@ void LayoutBlockFlow::MakeChildrenInlineIfPossible() {
     if (child->IsRubyRun() || child->IsRubyBase())
       return;
 
-    blocks_to_remove.push_back(ToLayoutBlockFlow(child));
+    blocks_to_remove.push_back(child_block_flow);
   }
 
   // If we make an object's children inline we are going to frustrate any future
@@ -3972,8 +3972,8 @@ LayoutUnit LayoutBlockFlow::PositionAndLayoutFloat(
   // mark for layout siblings that may have it in its float lists.
   if (child.LogicalBottom() <= old_logical_top) {
     LayoutObject* next = child.NextSibling();
-    if (next && next->IsLayoutBlockFlow()) {
-      LayoutBlockFlow* next_block = ToLayoutBlockFlow(next);
+    auto* next_block = DynamicTo<LayoutBlockFlow>(next);
+    if (next_block) {
       if (!next_block->CreatesNewFormattingContext() ||
           next_block->ShrinkToAvoidFloats())
         next_block->MarkAllDescendantsWithFloatsForLayout();
@@ -4356,7 +4356,7 @@ void LayoutBlockFlow::UpdateAncestorShouldPaintFloatingObject(
     if (!ancestor->IsLayoutBlockFlow())
       continue;
 
-    LayoutBlockFlow* ancestor_block = ToLayoutBlockFlow(ancestor);
+    auto* ancestor_block = To<LayoutBlockFlow>(ancestor);
     FloatingObjects* ancestor_floating_objects =
         ancestor_block->floating_objects_.get();
     if (!ancestor_floating_objects)
@@ -4414,8 +4414,7 @@ bool LayoutBlockFlow::AllowsPaginationStrut() const {
   const LayoutBlock* containing_block = ContainingBlock();
   if (!containing_block || !containing_block->IsLayoutBlockFlow())
     return false;
-  const LayoutBlockFlow* containing_block_flow =
-      ToLayoutBlockFlow(containing_block);
+  const auto* containing_block_flow = To<LayoutBlockFlow>(containing_block);
   // If children are inline, allow the strut. We are probably a float.
   if (containing_block_flow->ChildrenInline())
     return true;

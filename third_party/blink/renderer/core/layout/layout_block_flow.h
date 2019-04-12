@@ -1034,6 +1034,13 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutBlockFlow, IsLayoutBlockFlow());
 
+template <>
+struct DowncastTraits<LayoutBlockFlow> {
+  static bool AllowFrom(const LayoutObject& object) {
+    return object.IsLayoutBlockFlow();
+  }
+};
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_BLOCK_FLOW_H_
