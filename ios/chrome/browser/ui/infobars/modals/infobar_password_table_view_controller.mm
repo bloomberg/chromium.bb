@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_modal_constants.h"
-#import "ios/chrome/browser/ui/infobars/modals/infobar_modal_delegate.h"
+#import "ios/chrome/browser/ui/infobars/modals/infobar_password_modal_delegate.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
@@ -88,13 +88,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addItem:URLDetailItem
       toSectionWithIdentifier:SectionIdentifierContent];
 
-  TableViewTextEditItem* usernameTextEditItem =
+  self.usernameItem =
       [[TableViewTextEditItem alloc] initWithType:ItemTypeUsername];
-  usernameTextEditItem.textFieldName =
+  self.usernameItem.textFieldName =
       l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_USERNAME);
-  usernameTextEditItem.textFieldValue = self.username;
-  usernameTextEditItem.textFieldEnabled = YES;
-  [model addItem:usernameTextEditItem
+  self.usernameItem.textFieldValue = self.username;
+  self.usernameItem.textFieldEnabled = YES;
+  [model addItem:self.usernameItem
       toSectionWithIdentifier:SectionIdentifierContent];
 
   self.passwordItem =
@@ -127,8 +127,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       TableViewTextButtonCell* tableViewTextButtonCell =
           base::mac::ObjCCastStrict<TableViewTextButtonCell>(cell);
       [tableViewTextButtonCell.button
-                 addTarget:self.infobarModalDelegate
-                    action:@selector(modalInfobarButtonWasPressed:)
+                 addTarget:self
+                    action:@selector(saveCredentialsButtonWasPressed:)
           forControlEvents:UIControlEventTouchUpInside];
       break;
     }
@@ -161,6 +161,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)dismissInfobarModal:(UIButton*)sender {
   [self.infobarModalDelegate dismissInfobarModal:sender completion:nil];
+}
+
+- (void)saveCredentialsButtonWasPressed:(UIButton*)sender {
+  [self.infobarModalDelegate
+      updateCredentialsWithUsername:self.usernameItem.textFieldValue
+                           password:self.passwordItem.textFieldValue];
 }
 
 @end

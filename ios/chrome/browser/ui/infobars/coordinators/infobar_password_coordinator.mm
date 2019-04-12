@@ -9,13 +9,15 @@
 #import "ios/chrome/browser/passwords/ios_chrome_password_manager_infobar_delegate.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_view_controller.h"
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator_implementation.h"
+#import "ios/chrome/browser/ui/infobars/modals/infobar_password_modal_delegate.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_password_table_view_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface InfobarPasswordCoordinator () <InfobarCoordinatorImplementation>
+@interface InfobarPasswordCoordinator () <InfobarCoordinatorImplementation,
+                                          InfobarPasswordModalDelegate>
 
 // Delegate that holds the Infobar information and actions.
 @property(nonatomic, readonly)
@@ -109,6 +111,13 @@
   // Release these strong ViewControllers at the time of infobar dismissal.
   self.bannerViewController = nil;
   self.modalViewController = nil;
+}
+
+#pragma mark - InfobarPasswordModalDelegate
+
+- (void)updateCredentialsWithUsername:(NSString*)username
+                             password:(NSString*)password {
+  // TODO(crbug.com/945478): Implement once https://crrev.com/c/1560448 lands.
 }
 
 @end
