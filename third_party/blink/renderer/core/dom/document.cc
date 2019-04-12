@@ -229,7 +229,6 @@
 #include "third_party/blink/renderer/core/loader/prerenderer_client.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
 #include "third_party/blink/renderer/core/loader/text_resource_decoder_builder.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/event_with_hit_test_results.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
@@ -1040,7 +1039,7 @@ Element* Document::CreateElementForBinding(
   bool is_v1 =
       string_or_options.IsElementCreationOptions() || !RegistrationContext();
   // V0 is only allowed with the flag.
-  DCHECK(is_v1 || origin_trials::CustomElementsV0Enabled(this));
+  DCHECK(is_v1 || RuntimeEnabledFeatures::CustomElementsV0Enabled(this));
   bool create_v1_builtin = string_or_options.IsElementCreationOptions();
   bool should_create_builtin =
       create_v1_builtin || string_or_options.IsString();
@@ -1118,7 +1117,7 @@ Element* Document::createElementNS(
   bool is_v1 =
       string_or_options.IsElementCreationOptions() || !RegistrationContext();
   // V0 is only allowed with the flag.
-  DCHECK(is_v1 || origin_trials::CustomElementsV0Enabled(this));
+  DCHECK(is_v1 || RuntimeEnabledFeatures::CustomElementsV0Enabled(this));
   bool create_v1_builtin = string_or_options.IsElementCreationOptions();
   bool should_create_builtin =
       create_v1_builtin || string_or_options.IsString();
@@ -3887,13 +3886,13 @@ void Document::writeln(v8::Isolate* isolate,
 
 bool Document::IsTrustedTypesEnabledForDoc() const {
   return SecurityContext::RequireTrustedTypes() &&
-         origin_trials::TrustedDOMTypesEnabled(this);
+         RuntimeEnabledFeatures::TrustedDOMTypesEnabled(this);
 }
 
 void Document::write(v8::Isolate* isolate,
                      TrustedHTML* text,
                      ExceptionState& exception_state) {
-  DCHECK(origin_trials::TrustedDOMTypesEnabled(this));
+  DCHECK(RuntimeEnabledFeatures::TrustedDOMTypesEnabled(this));
   write(text->toString(), EnteredDOMWindow(isolate)->document(),
         exception_state);
 }
@@ -3901,7 +3900,7 @@ void Document::write(v8::Isolate* isolate,
 void Document::writeln(v8::Isolate* isolate,
                        TrustedHTML* text,
                        ExceptionState& exception_state) {
-  DCHECK(origin_trials::TrustedDOMTypesEnabled(this));
+  DCHECK(RuntimeEnabledFeatures::TrustedDOMTypesEnabled(this));
   writeln(text->toString(), EnteredDOMWindow(isolate)->document(),
           exception_state);
 }
@@ -5104,7 +5103,8 @@ Event* Document::createEvent(ScriptState* script_state,
       // createEvent for TouchEvent should throw DOM exception if touch event
       // feature detection is not enabled. See crbug.com/392584#c22
       if (DeprecatedEqualIgnoringCase(event_type, "TouchEvent") &&
-          !origin_trials::TouchEventFeatureDetectionEnabled(execution_context))
+          !RuntimeEnabledFeatures::TouchEventFeatureDetectionEnabled(
+              execution_context))
         break;
       return event;
     }
@@ -5944,29 +5944,34 @@ namespace {
 using resource_coordinator::mojom::InterventionPolicy;
 using resource_coordinator::mojom::PolicyControlledIntervention;
 
-typedef bool (*InterventionPolicyGetter)(const ExecutionContext*);
+typedef bool (*InterventionPolicyGetter)(const FeatureContext*);
 struct InterventionPolicyGetters {
   InterventionPolicyGetter opt_in_getter;
   InterventionPolicyGetter opt_out_getter;
 };
 
-constexpr InterventionPolicyGetters kInterventionPolicyGetters[] = {
-    {&origin_trials::PageLifecycleTransitionsOptInEnabled,
-     &origin_trials::PageLifecycleTransitionsOptOutEnabled}};
-
-static_assert(base::size(kInterventionPolicyGetters) ==
-                  static_cast<size_t>(PolicyControlledIntervention::kMaxValue) +
-                      1,
-              "kInterventionPolicyGetters array must be kept in sync with "
-              "mojom::PolicyControlledIntervention enum.");
-
 // A helper function for setting intervention policy values on a frame en masse.
 void SetInitialInterventionPolicies(FrameResourceCoordinator* frame_coordinator,
                                     const ExecutionContext* context) {
+  DEFINE_STATIC_LOCAL(Vector<InterventionPolicyGetters>,
+                      kInterventionPolicyGetters, ());
+  if (kInterventionPolicyGetters.IsEmpty()) {
+    InterventionPolicyGetters getters = {
+        &RuntimeEnabledFeatures::PageLifecycleTransitionsOptInEnabled,
+        &RuntimeEnabledFeatures::PageLifecycleTransitionsOptOutEnabled};
+    kInterventionPolicyGetters.push_back(getters);
+    const wtf_size_t kInterventionPolicyGettersSize = 1;
+    static_assert(
+        kInterventionPolicyGettersSize ==
+            static_cast<wtf_size_t>(PolicyControlledIntervention::kMaxValue) +
+                1,
+        "kInterventionPolicyGetters array must be kept in sync with "
+        "mojom::PolicyControlledIntervention enum.");
+  }
   // Note that these must be emitted in order, as the *last* policy being set
   // is used as a sentinel in the browser-side logic to infer that the frame has
   // transmitted all of its policy data.
-  for (size_t i = 0; i < base::size(kInterventionPolicyGetters); ++i) {
+  for (wtf_size_t i = 0; i < kInterventionPolicyGetters.size(); ++i) {
     bool opt_in = (*kInterventionPolicyGetters[i].opt_in_getter)(context);
     bool opt_out = (*kInterventionPolicyGetters[i].opt_out_getter)(context);
 
@@ -6256,7 +6261,7 @@ void Document::ApplyReportOnlyFeaturePolicyFromHeader(
   // Note that we do not return here. Instead, the header is parsed and the
   // report-only policy is stored, in case a valid Origin Trial token is added
   // later. In that case, any subsequent violations will be correctly reported.
-  if (!origin_trials::FeaturePolicyReportingEnabled(this)) {
+  if (!RuntimeEnabledFeatures::FeaturePolicyReportingEnabled(this)) {
     AddConsoleMessage(ConsoleMessage::Create(
         mojom::ConsoleMessageSource::kSecurity,
         mojom::ConsoleMessageLevel::kWarning,
@@ -7716,7 +7721,7 @@ void Document::ReportFeaturePolicyViolation(
     mojom::FeaturePolicyFeature feature,
     mojom::FeaturePolicyDisposition disposition,
     const String& message) const {
-  if (!origin_trials::FeaturePolicyReportingEnabled(this))
+  if (!RuntimeEnabledFeatures::FeaturePolicyReportingEnabled(this))
     return;
   LocalFrame* frame = GetFrame();
   if (!frame)

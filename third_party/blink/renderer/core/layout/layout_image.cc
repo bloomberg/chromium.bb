@@ -41,7 +41,6 @@
 #include "third_party/blink/renderer/core/layout/intrinsic_sizing_info.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/paint/image_element_timing.h"
 #include "third_party/blink/renderer/core/paint/image_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -69,7 +68,7 @@ LayoutImage::~LayoutImage() = default;
 void LayoutImage::WillBeDestroyed() {
   DCHECK(image_resource_);
   image_resource_->Shutdown();
-  if (origin_trials::ElementTimingEnabled(&GetDocument())) {
+  if (RuntimeEnabledFeatures::ElementTimingEnabled(&GetDocument())) {
     if (LocalDOMWindow* window = GetDocument().domWindow())
       ImageElementTiming::From(*window).NotifyWillBeDestroyed(this);
   }

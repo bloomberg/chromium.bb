@@ -44,7 +44,6 @@ class OriginTrialsWriter(make_runtime_features.BaseRuntimeFeatureWriter):
         super(OriginTrialsWriter, self).__init__(json5_file_path, output_dir)
         self._outputs = {
             (self.file_basename + '.cc'): self.generate_implementation,
-            (self.file_basename + '.h'): self.generate_header,
         }
         self._implied_mappings = self._make_implied_mappings()
         self._trial_to_features_map = self._make_trial_to_features_map()
@@ -97,16 +96,6 @@ class OriginTrialsWriter(make_runtime_features.BaseRuntimeFeatureWriter):
             'implied_origin_trial_features': self._implied_mappings,
             'trial_to_features_map': self._trial_to_features_map,
             'input_files': self._input_files,
-        }
-
-    @template_expander.use_jinja('templates/' + file_basename + '.h.tmpl')
-    def generate_header(self):
-        return {
-            'features': self._features,
-            'origin_trial_features': self._origin_trial_features,
-            'implied_origin_trial_features': self._implied_mappings,
-            'input_files': self._input_files,
-            'header_guard': self._header_guard,
         }
 
 

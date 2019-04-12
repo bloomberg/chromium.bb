@@ -8,9 +8,9 @@
 #include "third_party/blink/renderer/core/events/pointer_event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/loader/interactive_detector.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/performance_event_timing.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
@@ -32,7 +32,8 @@ bool IsEventTypeForEventTiming(const Event& event) {
 }
 
 bool ShouldReportForEventTiming(WindowPerformance* performance) {
-  if (!origin_trials::EventTimingEnabled(performance->GetExecutionContext()))
+  if (!RuntimeEnabledFeatures::EventTimingEnabled(
+          performance->GetExecutionContext()))
     return false;
 
   if (performance->ShouldBufferEntries() &&
@@ -90,8 +91,8 @@ std::unique_ptr<EventTiming> EventTiming::Create(LocalDOMWindow* window,
 }
 
 void EventTiming::DidDispatchEvent(const Event& event) {
-  DCHECK(
-      origin_trials::EventTimingEnabled(performance_->GetExecutionContext()));
+  DCHECK(RuntimeEnabledFeatures::EventTimingEnabled(
+      performance_->GetExecutionContext()));
   performance_->RegisterEventTiming(event.type(), event_timestamp_,
                                     processing_start_, CurrentTimeTicks(),
                                     event.cancelable());

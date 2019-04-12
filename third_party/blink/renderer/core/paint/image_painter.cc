@@ -14,7 +14,6 @@
 #include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/core/layout/layout_replaced.h"
 #include "third_party/blink/renderer/core/layout/text_run_constructor.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/image_element_timing.h"
@@ -27,6 +26,7 @@
 #include "third_party/blink/renderer/platform/graphics/path.h"
 #include "third_party/blink/renderer/platform/graphics/placeholder_image.h"
 #include "third_party/blink/renderer/platform/graphics/scoped_interpolation_quality.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 namespace {
@@ -238,7 +238,8 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
       image.get(), decode_mode, FloatRect(pixel_snapped_dest_rect), &src_rect,
       SkBlendMode::kSrcOver,
       LayoutObject::ShouldRespectImageOrientation(&layout_image_));
-  if (origin_trials::ElementTimingEnabled(&layout_image_.GetDocument()) &&
+  if (RuntimeEnabledFeatures::ElementTimingEnabled(
+          &layout_image_.GetDocument()) &&
       (IsHTMLImageElement(node) || IsHTMLVideoElement(node)) &&
       !context.ContextDisabled() && layout_image_.CachedImage() &&
       layout_image_.CachedImage()->IsLoaded()) {

@@ -46,7 +46,6 @@
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/navigation_policy.h"
 #include "third_party/blink/renderer/core/loader/ping_loader.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
@@ -435,7 +434,7 @@ void HTMLAnchorElement::HandleClick(Event& event) {
   }
   if (HasRel(kRelationNoOpener))
     frame_request.SetShouldSetOpener(kNeverSetOpener);
-  if (origin_trials::HrefTranslateEnabled(&GetDocument()) &&
+  if (RuntimeEnabledFeatures::HrefTranslateEnabled(&GetDocument()) &&
       hasAttribute(kHreftranslateAttr)) {
     frame_request.SetHrefTranslate(FastGetAttribute(kHreftranslateAttr));
     UseCounter::Count(GetDocument(),

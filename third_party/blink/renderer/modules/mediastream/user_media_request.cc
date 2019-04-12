@@ -41,7 +41,6 @@
 #include "third_party/blink/renderer/core/dom/space_split_string.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/hosts_using_features.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/modules/mediastream/media_constraints_impl.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints.h"
@@ -51,6 +50,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_center.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -437,14 +437,16 @@ UserMediaRequest::UserMediaRequest(ExecutionContext* context,
       audio_(audio),
       video_(video),
       should_disable_hardware_noise_suppression_(
-          origin_trials::DisableHardwareNoiseSuppressionEnabled(context)),
+          RuntimeEnabledFeatures::DisableHardwareNoiseSuppressionEnabled(
+              context)),
       controller_(controller),
       callbacks_(callbacks) {
   if (should_disable_hardware_noise_suppression_) {
     UseCounter::Count(context,
                       WebFeature::kUserMediaDisableHardwareNoiseSuppression);
   }
-  if (origin_trials::ExperimentalHardwareEchoCancellationEnabled(context)) {
+  if (RuntimeEnabledFeatures::ExperimentalHardwareEchoCancellationEnabled(
+          context)) {
     UseCounter::Count(
         context,
         WebFeature::kUserMediaEnableExperimentalHardwareEchoCancellation);

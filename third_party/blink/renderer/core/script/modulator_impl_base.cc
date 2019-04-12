@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_tree_linker.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_tree_linker_registry.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/script/dynamic_module_resolver.h"
 #include "third_party/blink/renderer/core/script/import_map.h"
 #include "third_party/blink/renderer/core/script/module_map.h"
@@ -19,6 +18,7 @@
 #include "third_party/blink/renderer/core/script/module_script.h"
 #include "third_party/blink/renderer/core/script/parsed_specifier.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -48,7 +48,8 @@ bool ModulatorImplBase::IsScriptingDisabled() const {
 }
 
 bool ModulatorImplBase::BuiltInModuleInfraEnabled() const {
-  return origin_trials::BuiltInModuleInfraEnabled(GetExecutionContext());
+  return RuntimeEnabledFeatures::BuiltInModuleInfraEnabled(
+      GetExecutionContext());
 }
 
 bool ModulatorImplBase::BuiltInModuleEnabled(
@@ -61,7 +62,7 @@ bool ModulatorImplBase::BuiltInModuleEnabled(
       return RuntimeEnabledFeatures::BuiltInModuleAllEnabled();
     case blink::layered_api::Module::kKvStorage:
       return RuntimeEnabledFeatures::BuiltInModuleAllEnabled() ||
-             origin_trials::BuiltInModuleKvStorageEnabled(
+             RuntimeEnabledFeatures::BuiltInModuleKvStorageEnabled(
                  GetExecutionContext());
   }
 }

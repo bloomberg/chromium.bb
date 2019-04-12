@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/modules/event_target_modules_names.h"
 #include "third_party/blink/renderer/modules/payments/address_errors.h"
 #include "third_party/blink/renderer/modules/payments/android_pay_method_data.h"
@@ -897,7 +896,8 @@ ScriptPromise PaymentRequest::hasEnrolledInstrument(ScriptState* script_state) {
   }
 
   bool per_method_quota =
-      origin_trials::PerMethodCanMakePaymentQuotaEnabled(GetExecutionContext());
+      RuntimeEnabledFeatures::PerMethodCanMakePaymentQuotaEnabled(
+          GetExecutionContext());
   if (per_method_quota) {
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kPerMethodCanMakePaymentQuota);

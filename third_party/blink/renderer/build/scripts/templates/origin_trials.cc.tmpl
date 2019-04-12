@@ -41,30 +41,12 @@ bool origin_trials::IsTrialValid(const String& trial_name) {
   return GetTrialToFeaturesMap().Contains(trial_name);
 }
 
+
 const Vector<OriginTrialFeature>& origin_trials::FeaturesForTrial(const String& trial_name) {
   DCHECK(IsTrialValid(trial_name));
   return GetTrialToFeaturesMap().find(trial_name)->value;
 }
 
-{% for feature in features %}
-{% if feature.origin_trial_feature_name %}
-
-bool origin_trials::{{feature.name}}Enabled(const ExecutionContext* executionContext) {
-  if (RuntimeEnabledFeatures::{{feature.name}}EnabledByRuntimeFlag())
-    return true;
-{% for depends_on in feature.depends_on %}
-  if (!RuntimeEnabledFeatures::{{depends_on}}Enabled())
-    return false;
-{% endfor %}
-  const OriginTrialContext* context = OriginTrialContext::From(executionContext);
-  if (!context) return false;
-  if (context->IsFeatureEnabled(OriginTrialFeature::k{{feature.name}}))
-    return true;
-  return false;
-}
-
-{% endif %}
-{% endfor %}
 
 Vector<OriginTrialFeature> origin_trials::GetImpliedFeatures(OriginTrialFeature feature) {
 {% for implied_by_name, implied_list in implied_origin_trial_features.items() %}

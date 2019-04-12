@@ -7,7 +7,6 @@
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
@@ -66,7 +65,7 @@ SubresourceIntegrity::IntegrityFeatures SubresourceIntegrityHelper::GetFeatures(
     ExecutionContext* execution_context) {
   bool allow_signatures =
       RuntimeEnabledFeatures::SignatureBasedIntegrityEnabledByRuntimeFlag() ||
-      origin_trials::SignatureBasedIntegrityEnabled(execution_context);
+      RuntimeEnabledFeatures::SignatureBasedIntegrityEnabled(execution_context);
   return allow_signatures ? SubresourceIntegrity::IntegrityFeatures::kSignatures
                           : SubresourceIntegrity::IntegrityFeatures::kDefault;
 }

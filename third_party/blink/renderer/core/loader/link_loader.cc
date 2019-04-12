@@ -42,12 +42,12 @@
 #include "third_party/blink/renderer/core/loader/private/prerender_handle.h"
 #include "third_party/blink/renderer/core/loader/resource/css_style_sheet_resource.h"
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_finish_observer.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/subresource_integrity.h"
 #include "third_party/blink/renderer/platform/prerender.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -225,7 +225,7 @@ void LinkLoader::LoadStylesheet(const LinkLoadParameters& params,
   mojom::FetchImportanceMode importance_mode =
       GetFetchImportanceAttributeValue(params.importance);
   DCHECK(importance_mode == mojom::FetchImportanceMode::kImportanceAuto ||
-         origin_trials::PriorityHintsEnabled(&document));
+         RuntimeEnabledFeatures::PriorityHintsEnabled(&document));
   resource_request.SetFetchImportanceMode(importance_mode);
 
   ResourceLoaderOptions options;

@@ -14,7 +14,6 @@
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_type_policy.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
@@ -28,7 +27,7 @@ TrustedTypePolicy* TrustedTypePolicyFactory::createPolicy(
     ExceptionState& exception_state) {
   UseCounter::Count(GetExecutionContext(),
                     WebFeature::kTrustedTypesCreatePolicy);
-  if (origin_trials::TrustedDOMTypesEnabled(GetExecutionContext()) &&
+  if (RuntimeEnabledFeatures::TrustedDOMTypesEnabled(GetExecutionContext()) &&
       !GetExecutionContext()
            ->GetContentSecurityPolicy()
            ->AllowTrustedTypePolicy(policy_name)) {

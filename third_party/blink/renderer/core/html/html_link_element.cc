@@ -44,7 +44,7 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/link_loader.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -119,7 +119,7 @@ void HTMLLinkElement::ParseAttribute(
   } else if (name == kIntegrityAttr) {
     integrity_ = value;
   } else if (name == kImportanceAttr &&
-             origin_trials::PriorityHintsEnabled(&GetDocument())) {
+             RuntimeEnabledFeatures::PriorityHintsEnabled(&GetDocument())) {
     UseCounter::Count(GetDocument(), WebFeature::kPriorityHints);
     importance_ = value;
   } else if (name == kDisabledAttr) {
@@ -199,7 +199,8 @@ LinkResource* HTMLLinkElement::LinkResourceToProcess() {
         // Ensure the origin trial context is created, as the enabled check will
         // return false if the context doesn't exist yet.
         OriginTrialContext::FromOrCreate(&GetDocument());
-        imports_enabled = origin_trials::HTMLImportsEnabled(&GetDocument());
+        imports_enabled =
+            RuntimeEnabledFeatures::HTMLImportsEnabled(&GetDocument());
       }
       if (imports_enabled) {
         link_ = MakeGarbageCollected<LinkImport>(this);

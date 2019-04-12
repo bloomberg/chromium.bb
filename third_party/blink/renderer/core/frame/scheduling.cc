@@ -6,7 +6,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/pending_user_input.h"
 #include "third_party/blink/renderer/platform/scheduler/public/pending_user_input_type.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
@@ -17,7 +17,7 @@ namespace blink {
 
 bool Scheduling::isInputPending(ScriptState* script_state,
                                 const Vector<String>& input_types) const {
-  DCHECK(origin_trials::ExperimentalIsInputPendingEnabled(
+  DCHECK(RuntimeEnabledFeatures::ExperimentalIsInputPendingEnabled(
       ExecutionContext::From(script_state)));
 
   if (!Platform::Current()->IsLockedToSite()) {

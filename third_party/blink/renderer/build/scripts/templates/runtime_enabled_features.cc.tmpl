@@ -86,7 +86,7 @@ void RuntimeEnabledFeatures::SetFeatureEnabledFromString(
 
 {% for feature in origin_trial_controlled_features %}
 
-bool RuntimeEnabledFeatures::{{feature.name}}Enabled(FeatureContext* context) {
+bool RuntimeEnabledFeatures::{{feature.name}}Enabled(const FeatureContext* context) {
   {% for depends_on in feature.depends_on %}
   if (!RuntimeEnabledFeatures::{{depends_on}}Enabled(context))
     return false;
