@@ -4,53 +4,65 @@ set -x
 
 ICUROOT="$(dirname "$0")/.."
 
+function config_data {
+  if [ $# -lt 1 ];
+  then
+    echo "config target missing." >&2
+    echo "Should be (android|android_small|cast|chromeos|common|flutter|ios)" >&2
+    exit 1
+  fi
+
+  ICU_DATA_FILTER_FILE="${ICUROOT}/filters/$1.json" \
+  "${ICUROOT}/source/runConfigureICU" --enable-debug --disable-release \
+    Linux/gcc --disable-tests  --disable-layoutex || \
+    { echo "failed to configure data for $1" >&2; exit 1; }
+}
+
 echo "Build the necessary tools"
-"${ICUROOT}/source/runConfigureICU" --enable-debug --disable-release Linux/gcc --disable-tests
+"${ICUROOT}/source/runConfigureICU" --enable-debug --disable-release \
+    Linux/gcc  --disable-tests --disable-layoutex
 make -j 120
 
 echo "Build the filtered data for common"
 (cd data && make clean)
-$ICUROOT/scripts/config_data.sh common
+config_data common
 make -j 120
 $ICUROOT/scripts/copy_data.sh common
 
 echo "Build the filtered data for chromeos"
 (cd data && make clean)
-$ICUROOT/scripts/config_data.sh chromeos
+config_data chromeos
 make -j 120
-# For now just copy the build result from common
 $ICUROOT/scripts/copy_data.sh chromeos
 
 echo "Build the filtered data for Cast"
 (cd data && make clean)
-$ICUROOT/scripts/config_data.sh cast
-$ICUROOT/cast/patch_locale.sh
-make -j 120
+config_data cast
+$ICUROOT/cast/patch_locale.sh && make -j 120
 $ICUROOT/scripts/copy_data.sh cast
 
 echo "Build the filtered data for Android"
 (cd data && make clean)
-$ICUROOT/scripts/config_data.sh android
+config_data android
 make -j 120
 $ICUROOT/scripts/copy_data.sh android
 
 echo "Build the filtered data for AndroidSmall"
 (cd data && make clean)
-$ICUROOT/scripts/config_data.sh android_small
+config_data android_small
 make -j 120
 $ICUROOT/scripts/copy_data.sh android_small
 
 echo "Build the filtered data for iOS"
 (cd data && make clean)
-$ICUROOT/scripts/config_data.sh ios
+config_data ios
 make -j 120
 $ICUROOT/scripts/copy_data.sh ios
 
 echo "Build the filtered data for Flutter"
 (cd data && make clean)
-$ICUROOT/scripts/config_data.sh flutter
-$ICUROOT/flutter/patch_brkitr.sh
-make -j 120
+config_data flutter
+$ICUROOT/flutter/patch_brkitr.sh && make -j 120
 $ICUROOT/scripts/copy_data.sh flutter
 
 echo "Clean up the git"
