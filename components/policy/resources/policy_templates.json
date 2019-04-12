@@ -803,7 +803,8 @@
         'NetworkThrottlingEnabled',
         'DeviceHostnameTemplate',
         'DeviceWiFiFastTransitionEnabled',
-        'DeviceWiFiAllowed'
+        'DeviceWiFiAllowed',
+        'DeviceDockMacAddressSource',
       ],
     },
     {
@@ -11062,6 +11063,53 @@
       'id': 537,
     },
     {
+      'name': 'DeviceDockMacAddressSource',
+      'caption': '''Device MAC address source when docked''',
+      'desc': '''
+          Configures which MAC (media access control) address will be used when a dock is connected to the device.
+
+          When a dock is connected to some device models, the device's designated dock MAC address is used to identify the device on Ethernet by default. This policy allows the administrator to change the source of the MAC address while docked.
+
+          If  'DeviceDockMacAddress' is selected or the policy is left unset, the device's designated dock MAC address will be used.
+
+          If  'DeviceNicMacAddress' is selected, the device's NIC (network interface controller) MAC address will be used.
+
+          If  'DockNicMacAddress' is selected, the dock's NIC MAC address will be used.
+
+          This setting can not be changed by the user.''',
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 1, 2, 3 ]
+      },
+      'items': [
+        {
+          'name': 'DeviceDockMacAddress',
+          'value': 1,
+          'caption': '''Device's designated dock MAC address'''
+        },
+        {
+          'name': 'DeviceNicMacAddress',
+          'value': 2,
+          'caption': '''Device's built-in NIC MAC address'''
+        },
+        {
+          'name': 'DockNicMacAddress',
+          'value': 3,
+          'caption': '''Dock's built-in NIC MAC address'''
+        },
+      ],
+      'supported_on': ['chrome_os:75-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': 1,
+      'tags': [],
+      'id': 547,
+    },
+    {
       'name': 'LoginVideoCaptureAllowedUrls',
       'type': 'list',
       'schema': {
@@ -15552,5 +15600,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used':  546
+  'highest_id_currently_used':  547
 }

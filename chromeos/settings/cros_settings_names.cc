@@ -376,4 +376,7 @@ const char kDeviceRebootOnUserSignout[] = "cros.device.reboot_on_user_signout";
 // controller on Chrome OS is allowed.
 const char kDeviceWilcoDtcAllowed[] = "cros.device.wilco_dtc_allowed";
 
+// An enum pref that specifies the device dock MAC address source.
+const char kDeviceDockMacAddressSource[] =
+    "cros.device.device_dock_mac_address_source";
 }  // namespace chromeos

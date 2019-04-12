@@ -74,6 +74,7 @@ const char* const kKnownSettings[] = {
     kDeviceDisabled,
     kDeviceDisabledMessage,
     kDeviceDisplayResolution,
+    kDeviceDockMacAddressSource,
     kDeviceHostnameTemplate,
     kDeviceLoginScreenExtensions,
     kDeviceLoginScreenInputMethods,
@@ -793,6 +794,13 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
           kDeviceWilcoDtcAllowed,
           base::Value(container.device_wilco_dtc_allowed()));
     }
+  }
+
+  if (policy.has_device_dock_mac_address_source() &&
+      policy.device_dock_mac_address_source().has_source()) {
+    new_values_cache->SetInteger(
+        kDeviceDockMacAddressSource,
+        policy.device_dock_mac_address_source().source());
   }
 }
 
