@@ -33,7 +33,7 @@ const size_t kNumSessionsToCreatePerSocketEvent = 16;
 
 // Allocate some extra space so we can send an error if the client goes over
 // the limit.
-const int kReadBufferSize = 2 * quic::kMaxOutgoingPacketSize;
+const int kReadBufferSize = 2 * quic::kMaxPacketSize;
 
 }  // namespace
 
@@ -115,7 +115,7 @@ int QuicSimpleServer::Listen(const IPEndPoint& address) {
     return rc;
   }
 
-  rc = socket->SetSendBufferSize(20 * quic::kMaxOutgoingPacketSize);
+  rc = socket->SetSendBufferSize(20 * quic::kMaxPacketSize);
   if (rc < 0) {
     LOG(ERROR) << "SetSendBufferSize() failed: " << ErrorToString(rc);
     return rc;

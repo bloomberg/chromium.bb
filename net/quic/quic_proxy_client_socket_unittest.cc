@@ -173,7 +173,7 @@ class QuicProxyClientSocketTest
     EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
         .Times(testing::AtLeast(1));
     EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
-        .WillRepeatedly(Return(quic::kMaxOutgoingPacketSize));
+        .WillRepeatedly(Return(quic::kMaxPacketSize));
     EXPECT_CALL(*send_algorithm_, PacingRate(_))
         .WillRepeatedly(Return(quic::QuicBandwidth::Zero()));
     EXPECT_CALL(*send_algorithm_, CanSend(_)).WillRepeatedly(Return(true));

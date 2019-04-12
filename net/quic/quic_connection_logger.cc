@@ -169,7 +169,7 @@ std::unique_ptr<base::Value> NetLogQuicConnectionCloseFrameCallback(
     const quic::QuicConnectionCloseFrame* frame,
     NetLogCaptureMode /* capture_mode */) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetInteger("quic_error", frame->quic_error_code);
+  dict->SetInteger("quic_error", frame->error_code);
   dict->SetString("details", frame->error_details);
   return std::move(dict);
 }
@@ -393,6 +393,8 @@ void QuicConnectionLogger::OnFrameAddedToPacket(const quic::QuicFrame& frame) {
       break;
     case quic::MTU_DISCOVERY_FRAME:
       break;
+    case quic::APPLICATION_CLOSE_FRAME:
+      break;
     case quic::NEW_CONNECTION_ID_FRAME:
       break;
     case quic::MAX_STREAM_ID_FRAME:
@@ -476,6 +478,8 @@ void QuicConnectionLogger::OnFrameAddedToPacket(const quic::QuicFrame& frame) {
     case quic::MTU_DISCOVERY_FRAME:
       // MtuDiscoveryFrame is PingFrame on wire, it does not have any payload.
       net_log_.AddEvent(NetLogEventType::QUIC_SESSION_MTU_DISCOVERY_FRAME_SENT);
+      break;
+    case quic::APPLICATION_CLOSE_FRAME:
       break;
     case quic::NEW_CONNECTION_ID_FRAME:
       break;
