@@ -360,8 +360,6 @@ class RenderWidgetHostImpl::KeyEventResultTracker {
     return weak_factory_.GetWeakPtr();
   }
 
-  bool is_async() const { return is_async_; }
-
   // Called if the event is being sent to the renderer.
   void PrepareForAsync() {
     DCHECK(!is_async_);
