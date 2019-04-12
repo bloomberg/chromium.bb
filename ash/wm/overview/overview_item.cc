@@ -590,7 +590,7 @@ void OverviewItem::SetOpacity(float opacity) {
 }
 
 float OverviewItem::GetOpacity() {
-  return item_widget_->GetNativeWindow()->layer()->opacity();
+  return item_widget_->GetNativeWindow()->layer()->GetTargetOpacity();
 }
 
 OverviewAnimationType OverviewItem::GetExitOverviewAnimationType() {
