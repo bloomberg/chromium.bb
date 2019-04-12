@@ -195,9 +195,37 @@ bool HandleSchedWakeUp(AllCpuEvents* all_cpu_events,
   const char* data = strstr(&line[event_position], " pid=");
   uint32_t target_tid;
   uint32_t target_priority;
+  uint32_t success;
   uint32_t target_cpu_id;
-  if (!data || sscanf(data, " pid=%d prio=%d target_cpu=%d", &target_tid,
-                      &target_priority, &target_cpu_id) != 3) {
+  if (!data) {
+    LOG(ERROR) << "Failed to parse sched_wakeup event: " << line;
+    return false;
+  }
+
+  bool parsed = false;
+
+  // Try different kernel formats. In case one does not match, don't attempt to
+  // use it in the future.
+  {
+    static bool use_this = true;
+    if (!parsed && use_this) {
+      parsed = sscanf(data, " pid=%d prio=%d target_cpu=%d", &target_tid,
+                      &target_priority, &target_cpu_id) == 3;
+      use_this = parsed;
+    }
+  }
+
+  {
+    static bool use_this = true;
+    if (!parsed && use_this) {
+      parsed =
+          sscanf(data, " pid=%d prio=%d success=%d target_cpu=%d", &target_tid,
+                 &target_priority, &success, &target_cpu_id) == 4;
+      use_this = parsed;
+    }
+  }
+
+  if (!parsed) {
     LOG(ERROR) << "Failed to parse sched_wakeup event: " << line;
     return false;
   }
