@@ -67,10 +67,8 @@ TEST_F(SyncAuthManagerTest, ProvidesNothingInLocalSyncMode) {
   EXPECT_TRUE(credentials.email.empty());
   EXPECT_TRUE(credentials.access_token.empty());
   EXPECT_TRUE(auth_manager->access_token().empty());
-  // Note: Calling RegisterForAuthNotifications is illegal in local Sync mode,
-  // so we don't test that.
-  // Calling ConnectionClosed() does nothing, but shouldn't crash.
-  auth_manager->ConnectionClosed();
+  // Note: Calling RegisterForAuthNotifications or any of the Connection*()
+  // methods is illegal in local Sync mode, so we don't test that.
 }
 
 // ChromeOS doesn't support sign-in/sign-out.
@@ -209,11 +207,7 @@ TEST_F(SyncAuthManagerTest, ForwardsCredentialsEvents) {
   ASSERT_EQ(auth_manager->GetActiveAccountInfo().account_info.account_id,
             account_id);
 
-  // During Sync startup, the SyncEngine attempts to connect to the server
-  // without an access token, resulting in a call to ConnectionStatusChanged
-  // with CONNECTION_AUTH_ERROR. This is what kicks off the initial access token
-  // fetch.
-  auth_manager->ConnectionStatusChanged(syncer::CONNECTION_AUTH_ERROR);
+  auth_manager->ConnectionOpened();
 
   // Once an access token is available, the callback should get run.
   EXPECT_CALL(credentials_changed, Run());
@@ -248,11 +242,7 @@ TEST_F(SyncAuthManagerTest, RequestsAccessTokenOnSyncStartup) {
   ASSERT_EQ(auth_manager->GetActiveAccountInfo().account_info.account_id,
             account_id);
 
-  // During Sync startup, the SyncEngine attempts to connect to the server
-  // without an access token, resulting in a call to ConnectionStatusChanged
-  // with CONNECTION_AUTH_ERROR. This is what kicks off the initial access token
-  // fetch.
-  auth_manager->ConnectionStatusChanged(syncer::CONNECTION_AUTH_ERROR);
+  auth_manager->ConnectionOpened();
 
   identity_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
       "access_token", base::Time::Now() + base::TimeDelta::FromHours(1));
@@ -269,11 +259,7 @@ TEST_F(SyncAuthManagerTest,
   ASSERT_EQ(auth_manager->GetActiveAccountInfo().account_info.account_id,
             account_id);
 
-  // During Sync startup, the SyncEngine attempts to connect to the server
-  // without an access token, resulting in a call to ConnectionStatusChanged
-  // with CONNECTION_AUTH_ERROR. This is what kicks off the initial access token
-  // fetch.
-  auth_manager->ConnectionStatusChanged(syncer::CONNECTION_AUTH_ERROR);
+  auth_manager->ConnectionOpened();
 
   identity_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
       GoogleServiceAuthError::FromConnectionError(net::ERR_TIMED_OUT));
@@ -293,11 +279,7 @@ TEST_F(SyncAuthManagerTest, AbortsAccessTokenFetchOnPersistentFailure) {
   ASSERT_EQ(auth_manager->GetActiveAccountInfo().account_info.account_id,
             account_id);
 
-  // During Sync startup, the SyncEngine attempts to connect to the server
-  // without an access token, resulting in a call to ConnectionStatusChanged
-  // with CONNECTION_AUTH_ERROR. This is what kicks off the initial access token
-  // fetch.
-  auth_manager->ConnectionStatusChanged(syncer::CONNECTION_AUTH_ERROR);
+  auth_manager->ConnectionOpened();
 
   GoogleServiceAuthError auth_error =
       GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
@@ -319,17 +301,13 @@ TEST_F(SyncAuthManagerTest, FetchesNewAccessTokenWithBackoffOnServerError) {
   ASSERT_EQ(auth_manager->GetActiveAccountInfo().account_info.account_id,
             account_id);
 
-  // During Sync startup, the SyncEngine attempts to connect to the server
-  // without an access token, resulting in a call to ConnectionStatusChanged
-  // with CONNECTION_AUTH_ERROR. This is what kicks off the initial access token
-  // fetch.
-  auth_manager->ConnectionStatusChanged(syncer::CONNECTION_AUTH_ERROR);
+  auth_manager->ConnectionOpened();
   identity_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
       "access_token", base::Time::Now() + base::TimeDelta::FromHours(1));
   ASSERT_EQ(auth_manager->GetCredentials().access_token, "access_token");
 
-  // But now the server is still returning AUTH_ERROR - maybe something's wrong
-  // with the token.
+  // The server is returning AUTH_ERROR - maybe something's wrong with the
+  // token we got.
   auth_manager->ConnectionStatusChanged(syncer::CONNECTION_AUTH_ERROR);
 
   // The access token fetch should get retried (with backoff, hence no actual
@@ -347,11 +325,7 @@ TEST_F(SyncAuthManagerTest, ExposesServerError) {
   ASSERT_EQ(auth_manager->GetActiveAccountInfo().account_info.account_id,
             account_id);
 
-  // During Sync startup, the SyncEngine attempts to connect to the server
-  // without an access token, resulting in a call to ConnectionStatusChanged
-  // with CONNECTION_AUTH_ERROR. This is what kicks off the initial access token
-  // fetch.
-  auth_manager->ConnectionStatusChanged(syncer::CONNECTION_AUTH_ERROR);
+  auth_manager->ConnectionOpened();
   identity_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
       "access_token", base::Time::Now() + base::TimeDelta::FromHours(1));
   ASSERT_EQ(auth_manager->GetCredentials().access_token, "access_token");
@@ -375,11 +349,7 @@ TEST_F(SyncAuthManagerTest, ClearsServerErrorOnSyncDisable) {
   ASSERT_EQ(auth_manager->GetActiveAccountInfo().account_info.account_id,
             account_id);
 
-  // During Sync startup, the SyncEngine attempts to connect to the server
-  // without an access token, resulting in a call to ConnectionStatusChanged
-  // with CONNECTION_AUTH_ERROR. This is what kicks off the initial access token
-  // fetch.
-  auth_manager->ConnectionStatusChanged(syncer::CONNECTION_AUTH_ERROR);
+  auth_manager->ConnectionOpened();
   identity_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
       "access_token", base::Time::Now() + base::TimeDelta::FromHours(1));
   ASSERT_EQ(auth_manager->GetCredentials().access_token, "access_token");
@@ -406,11 +376,7 @@ TEST_F(SyncAuthManagerTest, RequestsNewAccessTokenOnExpiry) {
   ASSERT_EQ(auth_manager->GetActiveAccountInfo().account_info.account_id,
             account_id);
 
-  // During Sync startup, the SyncEngine attempts to connect to the server
-  // without an access token, resulting in a call to ConnectionStatusChanged
-  // with CONNECTION_AUTH_ERROR. This is what kicks off the initial access token
-  // fetch.
-  auth_manager->ConnectionStatusChanged(syncer::CONNECTION_AUTH_ERROR);
+  auth_manager->ConnectionOpened();
   identity_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
       "access_token", base::Time::Now() + base::TimeDelta::FromHours(1));
   ASSERT_EQ(auth_manager->GetCredentials().access_token, "access_token");
@@ -440,11 +406,7 @@ TEST_F(SyncAuthManagerTest, RequestsNewAccessTokenOnRefreshTokenUpdate) {
   ASSERT_EQ(auth_manager->GetActiveAccountInfo().account_info.account_id,
             account_id);
 
-  // During Sync startup, the SyncEngine attempts to connect to the server
-  // without an access token, resulting in a call to ConnectionStatusChanged
-  // with CONNECTION_AUTH_ERROR. This is what kicks off the initial access token
-  // fetch.
-  auth_manager->ConnectionStatusChanged(syncer::CONNECTION_AUTH_ERROR);
+  auth_manager->ConnectionOpened();
   identity_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
       "access_token", base::Time::Now() + base::TimeDelta::FromHours(1));
   ASSERT_EQ(auth_manager->GetCredentials().access_token, "access_token");
@@ -501,11 +463,7 @@ TEST_F(SyncAuthManagerTest, ClearsCredentialsOnRefreshTokenRemoval) {
   ASSERT_EQ(auth_manager->GetActiveAccountInfo().account_info.account_id,
             account_id);
 
-  // During Sync startup, the SyncEngine attempts to connect to the server
-  // without an access token, resulting in a call to ConnectionStatusChanged
-  // with CONNECTION_AUTH_ERROR. This is what kicks off the initial access token
-  // fetch.
-  auth_manager->ConnectionStatusChanged(syncer::CONNECTION_AUTH_ERROR);
+  auth_manager->ConnectionOpened();
   identity_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
       "access_token", base::Time::Now() + base::TimeDelta::FromHours(1));
   ASSERT_EQ(auth_manager->GetCredentials().access_token, "access_token");
@@ -542,11 +500,7 @@ TEST_F(SyncAuthManagerTest, ClearsCredentialsOnInvalidRefreshToken) {
   ASSERT_EQ(auth_manager->GetActiveAccountInfo().account_info.account_id,
             account_id);
 
-  // During Sync startup, the SyncEngine attempts to connect to the server
-  // without an access token, resulting in a call to ConnectionStatusChanged
-  // with CONNECTION_AUTH_ERROR. This is what kicks off the initial access token
-  // fetch.
-  auth_manager->ConnectionStatusChanged(syncer::CONNECTION_AUTH_ERROR);
+  auth_manager->ConnectionOpened();
   identity_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
       "access_token", base::Time::Now() + base::TimeDelta::FromHours(1));
   ASSERT_EQ(auth_manager->GetCredentials().access_token, "access_token");

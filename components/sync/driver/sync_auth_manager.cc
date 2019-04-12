@@ -142,7 +142,21 @@ syncer::SyncCredentials SyncAuthManager::GetCredentials() const {
   return credentials;
 }
 
+void SyncAuthManager::ConnectionOpened() {
+  DCHECK(registered_for_auth_notifications_);
+
+  // At this point, we must not already have an access token or an attempt to
+  // get one.
+  DCHECK(access_token_.empty());
+  DCHECK(!ongoing_access_token_fetch_);
+  DCHECK(!request_access_token_retry_timer_.IsRunning());
+
+  RequestAccessToken();
+}
+
 void SyncAuthManager::ConnectionStatusChanged(syncer::ConnectionStatus status) {
+  DCHECK(registered_for_auth_notifications_);
+
   partial_token_status_.connection_status_update_time = base::Time::Now();
   partial_token_status_.connection_status = status;
 
@@ -175,12 +189,6 @@ void SyncAuthManager::ConnectionStatusChanged(syncer::ConnectionStatus status) {
         // The timer to perform a request later is already running; nothing
         // further needs to be done at this point.
         DCHECK(access_token_.empty());
-      } else if (request_access_token_backoff_.failure_count() == 0) {
-        // First time request without delay. Currently invalid token is used
-        // to initialize sync engine and we'll always end up here. We don't
-        // want to delay initialization.
-        request_access_token_backoff_.InformOfRequest(false);
-        RequestAccessToken();
       } else {
         // Drop any access token here, to maintain the invariant that only one
         // of a token OR a pending request OR a pending retry can exist at any
@@ -244,6 +252,8 @@ void SyncAuthManager::ScheduleAccessTokenRequest() {
 }
 
 void SyncAuthManager::ConnectionClosed() {
+  DCHECK(registered_for_auth_notifications_);
+
   partial_token_status_ = syncer::SyncTokenStatus();
   ClearAccessTokenAndRequest();
 }
@@ -306,6 +316,10 @@ void SyncAuthManager::OnRefreshTokenUpdatedForAccount(
     // If we were in an auth error state, then now's also a good time to try
     // again. In this case it's possible that there is already a pending
     // request, in which case RequestAccessToken will simply do nothing.
+    // Note: This is necessary to get out of the "Sync paused" state (see
+    // above), or to recover if the refresh token was previously removed.
+    // TODO(crbug.com/948148): This can cause us to fetch an access token even
+    // if Sync is disabled.
     RequestAccessToken();
   }
 }
