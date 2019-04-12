@@ -114,7 +114,10 @@
         width: var(--cr-toolbar-field-width, 680px);
       }
 
-      :host(:not([narrow]):not([showing-search])) #icon,
+      :host(:not([narrow]):not([showing-search])) #icon {
+        opacity: .7;
+      }
+
       :host(:not([narrow])) #prompt {
         opacity: var(--cr-toolbar-search-field-prompt-opacity);
       }
