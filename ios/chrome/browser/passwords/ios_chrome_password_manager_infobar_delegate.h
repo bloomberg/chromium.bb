@@ -31,6 +31,9 @@ class IOSChromePasswordManagerInfoBarDelegate : public ConfirmInfoBarDelegate {
   // The Username being saved or updated by the Infobar.
   NSString* GetUserNameText() const;
 
+  // The Password being saved or updated by the Infobar.
+  NSString* GetPasswordText() const;
+
   // The URL host for which the credentials are being saved for.
   NSString* GetURLHostText() const;
 

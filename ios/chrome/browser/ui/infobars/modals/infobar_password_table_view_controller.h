@@ -17,6 +17,10 @@
 @property(nonatomic, strong) id<InfobarModalDelegate> infobarModalDelegate;
 // The username being displayed in the InfobarModal.
 @property(nonatomic, copy) NSString* username;
+// The masked password being displayed in the InfobarModal.
+@property(nonatomic, copy) NSString* maskedPassword;
+// The unmasked password for the InfobarModal.
+@property(nonatomic, copy) NSString* unmaskedPassword;
 // The URL being displayed in the InfobarModal.
 @property(nonatomic, copy) NSString* URL;
 // The text used for the save credentials button.

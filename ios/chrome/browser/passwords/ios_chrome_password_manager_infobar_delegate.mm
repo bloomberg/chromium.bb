@@ -40,6 +40,11 @@ NSString* IOSChromePasswordManagerInfoBarDelegate::GetUserNameText() const {
       form_to_save_->GetPendingCredentials().username_value);
 }
 
+NSString* IOSChromePasswordManagerInfoBarDelegate::GetPasswordText() const {
+  return base::SysUTF16ToNSString(
+      form_to_save_->GetPendingCredentials().password_value);
+}
+
 NSString* IOSChromePasswordManagerInfoBarDelegate::GetURLHostText() const {
   return base::SysUTF8ToNSString(form_to_save_->GetOrigin().host());
 }
