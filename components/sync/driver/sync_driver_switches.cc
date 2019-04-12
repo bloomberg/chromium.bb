@@ -92,14 +92,6 @@ const base::Feature kSyncSendTabToSelf{"SyncSendTabToSelf",
 const base::Feature kSyncSupportSecondaryAccount{
     "SyncSupportSecondaryAccount", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Gates registration for user language detection events.
-const base::Feature kSyncUserLanguageDetectionEvents{
-    "SyncUserLanguageDetectionEvents", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Gates registration for user translation events.
-const base::Feature kSyncUserTranslationEvents{
-    "SyncUserTranslationEvents", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enable USS implementation of Bookmarks datatype.
 const base::Feature kSyncUSSBookmarks{"SyncUSSBookmarks",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
