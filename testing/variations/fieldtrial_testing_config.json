@@ -2244,6 +2244,12 @@
                     "//4": "captured from the experiment. The perf results",
                     "//5": "from the default value are sufficient.",
                     "name": "Enabled",
+                    "params": {
+                        "MaxAllocations": "30",
+                        "MaxMetadata": "100",
+                        "ProcessSamplingProbability": "0.2",
+                        "TotalPages": "100"
+                    },
                     "enable_features": [
                         "GwpAsanMalloc"
                     ]
@@ -2259,6 +2265,11 @@
             "experiments": [
                 {
                     "name": "Enabled",
+                    "params": {
+                        "MaxAllocations": "30",
+                        "ProcessSamplingProbability": "0.2",
+                        "TotalPages": "100"
+                    },
                     "enable_features": [
                         "GwpAsanMalloc"
                     ]
