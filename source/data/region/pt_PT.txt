@@ -46,7 +46,7 @@ pt_PT{
         MC{"Mónaco"}
         MD{"Moldávia"}
         MG{"Madagáscar"}
-        MK{"Macedónia"}
+        MK{"Macedónia do Norte"}
         MS{"Monserrate"}
         MU{"Maurícia"}
         MW{"Maláui"}
@@ -80,7 +80,7 @@ pt_PT{
         CG{"República do Congo"}
         CI{"Costa do Marfim"}
         CZ{"República Checa"}
-        MK{"Macedónia (ARJM)"}
+        FK{"Ilhas Falkland (Malvinas)"}
     }
-    Version{"2.1.47.89"}
+    Version{"2.1.49.82"}
 }

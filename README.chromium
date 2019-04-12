@@ -1,15 +1,15 @@
 Name: icu
 URL: https://github.com/unicode-org/icu
-Version: 64.1
+Version: 64.2-rc
 License: MIT
 Security Critical: yes
 
 Description:
-This directory contains the source code of ICU 64.1 for C/C++.
+This directory contains the source code of ICU 64.2-rc for C/C++.
 
 A. How to update ICU
 
-1. Run "scripts/update.sh <version>" (e.g. 64-1).
+1. Run "scripts/update.sh <version>" (e.g. 64-2-rc).
    This will download ICU from the upstream git repository.
    It does preserve Chrome-specific build files and
    converter files. (see section C)
@@ -243,3 +243,12 @@ D. Local Modifications
   - patches/iso2022jp.patch
   - upstream bug:
     https://unicode-org.atlassian.net/browse/ICU-20251
+
+8. Regexp fuzzer breakage patch
+
+  - patches/regexp.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-20544
+  - upstream PR:
+    https://github.com/unicode-org/icu/pull/611
+    https://github.com/unicode-org/icu/pull/623

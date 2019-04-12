@@ -309,5 +309,5 @@ vi{
         CZ{"Cộng hòa Séc"}
         TL{"Đông Timor"}
     }
-    Version{"2.1.48.42"}
+    Version{"2.1.49.82"}
 }
