@@ -19,6 +19,9 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
+#include "chrome/browser/previews/previews_lite_page_decider.h"
+#include "chrome/browser/previews/previews_service.h"
+#include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 #include "chrome/browser/signin/signin_promo.h"
@@ -336,9 +339,15 @@ void LoadURLInContents(WebContents* target_contents,
   // |frame_tree_node_id| is kNoFrameTreeNodeId for main frame navigations.
   if (params->frame_tree_node_id ==
       content::RenderFrameHost::kNoFrameTreeNodeId) {
+    PreviewsService* previews_service =
+        PreviewsServiceFactory::GetForProfile(GetSourceProfile(params));
+    uint64_t previews_page_id =
+        previews_service
+            ? previews_service->previews_lite_page_decider()->GeneratePageID()
+            : 0;
     load_url_params.navigation_ui_data =
         ChromeNavigationUIData::CreateForMainFrameNavigation(
-            target_contents, params->disposition);
+            target_contents, params->disposition, previews_page_id);
   }
 
   if (params->uses_post) {
