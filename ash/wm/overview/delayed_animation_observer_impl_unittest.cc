@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/overview/start_animation_observer.h"
+#include "ash/wm/overview/delayed_animation_observer_impl.h"
 
 #include <vector>
 
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/overview/overview_delegate.h"
 #include "base/containers/unique_ptr_adapters.h"
+#include "base/test/scoped_task_environment.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/transform.h"
@@ -25,24 +26,24 @@ class TestOverviewDelegate : public OverviewDelegate {
 
   // OverviewDelegate:
   void OnSelectionEnded() override {}
-  void AddDelayedAnimationObserver(
+  void AddExitAnimationObserver(
       std::unique_ptr<DelayedAnimationObserver> animation_observer) override {}
-  void RemoveAndDestroyAnimationObserver(
+  void RemoveAndDestroyExitAnimationObserver(
       DelayedAnimationObserver* animation_observer) override {}
   void AddStartAnimationObserver(
       std::unique_ptr<DelayedAnimationObserver> animation_observer) override {
     animation_observer->SetOwner(this);
-    observers_.push_back(std::move(animation_observer));
+    enter_observers_.push_back(std::move(animation_observer));
   }
   void RemoveAndDestroyStartAnimationObserver(
       DelayedAnimationObserver* animation_observer) override {
-    base::EraseIf(observers_, base::MatchesUniquePtr(animation_observer));
+    base::EraseIf(enter_observers_, base::MatchesUniquePtr(animation_observer));
   }
 
-  size_t NumObservers() const { return observers_.size(); }
+  size_t num_enter_observers() const { return enter_observers_.size(); }
 
  private:
-  std::vector<std::unique_ptr<DelayedAnimationObserver>> observers_;
+  std::vector<std::unique_ptr<DelayedAnimationObserver>> enter_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TestOverviewDelegate);
 };
@@ -68,12 +69,12 @@ TEST_F(StartAnimationObserverTest, Basic) {
     animation_settings.AddObserver(observer.get());
     delegate.AddStartAnimationObserver(std::move(observer));
     window->SetTransform(gfx::Transform(1.f, 0.f, 0.f, 1.f, 100.f, 0.f));
-    EXPECT_EQ(1u, delegate.NumObservers());
+    EXPECT_EQ(1u, delegate.num_enter_observers());
   }
 
   // Tests that when done animating, the observer count is zero.
   window->layer()->GetAnimator()->StopAnimating();
-  EXPECT_EQ(0u, delegate.NumObservers());
+  EXPECT_EQ(0u, delegate.num_enter_observers());
 }
 
 }  // namespace ash

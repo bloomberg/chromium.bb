@@ -2,22 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_OVERVIEW_START_ANIMATION_OBSERVER_H_
-#define ASH_WM_OVERVIEW_START_ANIMATION_OBSERVER_H_
+#ifndef ASH_WM_OVERVIEW_DELAYED_ANIMATION_OBSERVER_IMPL_H_
+#define ASH_WM_OVERVIEW_DELAYED_ANIMATION_OBSERVER_IMPL_H_
 
 #include "ash/ash_export.h"
-#include "ash/wm/overview/overview_delegate.h"
+#include "ash/wm/overview/delayed_animation_observer.h"
 #include "base/macros.h"
 #include "ui/compositor/layer_animation_observer.h"
 
 namespace ash {
+class OverviewDelegate;
 
-class ForceDelayObserver : public DelayedAnimationObserver {
+class ASH_EXPORT ForceDelayObserver : public DelayedAnimationObserver {
  public:
   explicit ForceDelayObserver(base::TimeDelta delay);
   ~ForceDelayObserver() override;
 
-  // DelayedAnimationobserver:
+  // DelayedAnimationObserver:
   void SetOwner(OverviewDelegate* owner) override;
   void Shutdown() override;
 
@@ -30,7 +31,7 @@ class ForceDelayObserver : public DelayedAnimationObserver {
   DISALLOW_COPY_AND_ASSIGN(ForceDelayObserver);
 };
 
-// An observer which watches a overview start animation and signals its owner
+// An observer which watches a overview enter animation and signals its owner
 // when the animation it is watching finishes.
 class ASH_EXPORT StartAnimationObserver : public ui::ImplicitAnimationObserver,
                                           public DelayedAnimationObserver {
@@ -51,6 +52,25 @@ class ASH_EXPORT StartAnimationObserver : public ui::ImplicitAnimationObserver,
   DISALLOW_COPY_AND_ASSIGN(StartAnimationObserver);
 };
 
+class ASH_EXPORT ExitAnimationObserver : public ui::ImplicitAnimationObserver,
+                                         public DelayedAnimationObserver {
+ public:
+  ExitAnimationObserver();
+  ~ExitAnimationObserver() override;
+
+  // ui::ImplicitAnimationObserver:
+  void OnImplicitAnimationsCompleted() override;
+
+  // DelayedAnimationObserver:
+  void SetOwner(OverviewDelegate* owner) override;
+  void Shutdown() override;
+
+ private:
+  OverviewDelegate* owner_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(ExitAnimationObserver);
+};
+
 }  // namespace ash
 
-#endif  // ASH_WM_OVERVIEW_START_ANIMATION_OBSERVER_H_
+#endif  // ASH_WM_OVERVIEW_DELAYED_ANIMATION_OBSERVER_IMPL_H_

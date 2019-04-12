@@ -12,6 +12,7 @@
 #include "ash/scoped_animation_disabler.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/wm/overview/delayed_animation_observer_impl.h"
 #include "ash/wm/overview/overview_animation_type.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -21,7 +22,6 @@
 #include "ash/wm/overview/rounded_label_widget.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/overview/scoped_overview_transform_window.h"
-#include "ash/wm/overview/start_animation_observer.h"
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -164,16 +164,6 @@ void OverviewItem::EnsureVisible() {
 }
 
 void OverviewItem::Shutdown() {
-  // On swiping from the shelf, the caller handles the animation via calls to
-  // UpdateYPositionAndOpacity, so do not additional fade out or slide animation
-  // to the window.
-  if (overview_session_->enter_exit_overview_type() ==
-      OverviewSession::EnterExitOverviewType::kSwipeFromShelf) {
-    return;
-  }
-
-  // TODO(sammiequon|xdai): Close the item widget without animation to reduce
-  // the load during exit animation.
   item_widget_.reset();
 }
 
