@@ -146,6 +146,7 @@ void av1_simple_motion_search_based_split(
     return;
   }
 
+  aom_clear_system_state();
   const NN_CONFIG *nn_config = NULL;
   const float *ml_mean = NULL, *ml_std = NULL;
   float split_only_thresh = 10.0f, no_split_thresh = -10.0f;
