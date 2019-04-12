@@ -14,6 +14,7 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/tabs/tab_style.h"
 #include "chrome/browser/ui/thumbnails/thumbnail_image.h"
+#include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
@@ -238,6 +239,8 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
 
   GetBubbleFrameView()->set_preferred_arrow_adjustment(
       views::BubbleFrameView::PreferredArrowAdjustment::kOffset);
+  GetBubbleFrameView()->bubble_border()->SetCornerRadius(
+      ChromeLayoutProvider::Get()->GetCornerRadiusMetric(views::EMPHASIS_HIGH));
 }
 
 TabHoverCardBubbleView::~TabHoverCardBubbleView() = default;
