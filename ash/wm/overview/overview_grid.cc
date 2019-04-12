@@ -1293,7 +1293,7 @@ void OverviewGrid::MoveSelectionWidget(OverviewSession::Direction direction,
     std::unique_ptr<CleanupAnimationObserver> observer(
         new CleanupAnimationObserver(std::move(selection_widget_)));
     settings.AddObserver(observer.get());
-    overview_session_->delegate()->AddDelayedAnimationObserver(
+    overview_session_->delegate()->AddExitAnimationObserver(
         std::move(observer));
     old_selection->SetOpacity(0.f);
     old_selection_window->SetBounds(old_selection_window->bounds() +

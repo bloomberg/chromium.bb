@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/wm/overview/delayed_animation_observer.h"
 #include "ash/wm/overview/overview_delegate.h"
 #include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/overview/overview_session.h"
@@ -79,9 +80,9 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
 
   // OverviewDelegate:
   void OnSelectionEnded() override;
-  void AddDelayedAnimationObserver(
+  void AddExitAnimationObserver(
       std::unique_ptr<DelayedAnimationObserver> animation) override;
-  void RemoveAndDestroyAnimationObserver(
+  void RemoveAndDestroyExitAnimationObserver(
       DelayedAnimationObserver* animation) override;
   void AddStartAnimationObserver(
       std::unique_ptr<DelayedAnimationObserver> animation_observer) override;
