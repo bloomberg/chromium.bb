@@ -3969,6 +3969,15 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kStreamlinedUsbPrinterSetupDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kStreamlinedUsbPrinterSetup)},
 
+    {"enable-media-session-notifications",
+     flag_descriptions::kMediaSessionNotificationsName,
+     flag_descriptions::kMediaSessionNotificationsDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kMediaSessionNotification)},
+
+    {"enable-hide-arc-media-notifications",
+     flag_descriptions::kHideArcMediaNotificationsName,
+     flag_descriptions::kHideArcMediaNotificationsDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kHideArcMediaNotifications)},
 #endif  // OS_CHROMEOS
 
     {"autofill-off-no-server-data",

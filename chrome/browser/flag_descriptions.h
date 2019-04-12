@@ -1946,6 +1946,9 @@ extern const char kFsNosymfollowDescription[];
 extern const char kGestureTypingName[];
 extern const char kGestureTypingDescription[];
 
+extern const char kHideArcMediaNotificationsName[];
+extern const char kHideArcMediaNotificationsDescription[];
+
 extern const char kImeInputLogicFstName[];
 extern const char kImeInputLogicFstDescription[];
 
@@ -1960,6 +1963,9 @@ extern const char kLockScreenNotificationDescription[];
 
 extern const char kMashOopVizName[];
 extern const char kMashOopVizDescription[];
+
+extern const char kMediaSessionNotificationsName[];
+extern const char kMediaSessionNotificationsDescription[];
 
 extern const char kMemoryPressureThresholdName[];
 extern const char kMemoryPressureThresholdDescription[];
