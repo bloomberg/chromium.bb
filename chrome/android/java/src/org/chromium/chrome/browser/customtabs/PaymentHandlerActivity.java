@@ -23,6 +23,7 @@ import org.chromium.ui.display.DisplayUtil;
 public class PaymentHandlerActivity extends CustomTabActivity {
     private static final double BOTTOM_SHEET_HEIGHT_RATIO = 0.7;
     private boolean mHaveNotifiedServiceWorker;
+    private WebContents mWebContents;
 
     @Override
     public void performPreInflationStartup() {
@@ -36,12 +37,14 @@ public class PaymentHandlerActivity extends CustomTabActivity {
         Tab tab = tabProvider.getTab();
         if (tab != null) {
             ServiceWorkerPaymentAppBridge.addTabObserverForPaymentRequestTab(tab);
+            mWebContents = tab.getWebContents();
         } else {
             tabProvider.addObserver(new CustomTabActivityTabProvider.Observer() {
                 @Override
                 public void onInitialTabCreated(@NonNull Tab tab, int mode) {
                     tabProvider.removeObserver(this);
                     ServiceWorkerPaymentAppBridge.addTabObserverForPaymentRequestTab(tab);
+                    mWebContents = tab.getWebContents();
                 }
             });
         }
@@ -50,11 +53,9 @@ public class PaymentHandlerActivity extends CustomTabActivity {
     @Override
     protected void handleFinishAndClose() {
         // Notify the window is closing so as to abort invoking payment app early.
-        Tab tab = getActivityTab();
-        WebContents webContents = tab == null ? null : tab.getWebContents();
-        if (!mHaveNotifiedServiceWorker && webContents != null) {
+        if (!mHaveNotifiedServiceWorker && mWebContents != null) {
             mHaveNotifiedServiceWorker = true;
-            ServiceWorkerPaymentAppBridge.onClosingPaymentAppWindow(webContents);
+            ServiceWorkerPaymentAppBridge.onClosingPaymentAppWindow(mWebContents);
         }
 
         super.handleFinishAndClose();
