@@ -34,7 +34,7 @@ Element* ElementFromCenter(Element& element) {
 MediaControlCastButtonElement::MediaControlCastButtonElement(
     MediaControlsImpl& media_controls,
     bool is_overlay_button)
-    : MediaControlInputElement(media_controls, kMediaIgnore),
+    : MediaControlInputElement(media_controls),
       is_overlay_button_(is_overlay_button) {
   SetShadowPseudoId(is_overlay_button
                         ? "-internal-media-controls-overlay-cast-button"

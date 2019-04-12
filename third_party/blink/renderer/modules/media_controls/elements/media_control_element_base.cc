@@ -30,20 +30,14 @@ bool MediaControlElementBase::DoesFit() const {
   return does_fit_;
 }
 
-MediaControlElementType MediaControlElementBase::DisplayType() const {
-  return display_type_;
-}
-
 bool MediaControlElementBase::HasOverflowButton() const {
   return false;
 }
 
 MediaControlElementBase::MediaControlElementBase(
     MediaControlsImpl& media_controls,
-    MediaControlElementType display_type,
     HTMLElement* element)
     : media_controls_(&media_controls),
-      display_type_(display_type),
       element_(element),
       is_wanted_(true),
       does_fit_(true) {}
@@ -64,11 +58,6 @@ MediaControlsImpl& MediaControlElementBase::GetMediaControls() const {
 
 HTMLMediaElement& MediaControlElementBase::MediaElement() const {
   return GetMediaControls().MediaElement();
-}
-
-void MediaControlElementBase::SetDisplayType(
-    MediaControlElementType display_type) {
-  display_type_ = display_type;
 }
 
 void MediaControlElementBase::Trace(blink::Visitor* visitor) {

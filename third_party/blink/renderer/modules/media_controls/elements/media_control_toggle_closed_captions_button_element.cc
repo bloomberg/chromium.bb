@@ -47,7 +47,7 @@ bool UseClosedCaptionsIcon() {
 MediaControlToggleClosedCaptionsButtonElement::
     MediaControlToggleClosedCaptionsButtonElement(
         MediaControlsImpl& media_controls)
-    : MediaControlInputElement(media_controls, kMediaIgnore) {
+    : MediaControlInputElement(media_controls) {
   setAttribute(html_names::kAriaLabelAttr,
                WTF::AtomicString(GetLocale().QueryString(
                    WebLocalizedString::kAXMediaShowClosedCaptionsMenuButton)));

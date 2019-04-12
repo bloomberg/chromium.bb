@@ -73,7 +73,6 @@
 #include "third_party/blink/renderer/modules/accessibility/ax_list.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_list_box.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_list_box_option.h"
-#include "third_party/blink/renderer/modules/accessibility/ax_media_controls.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_media_element.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_menu_list.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_menu_list_option.h"
@@ -365,14 +364,6 @@ AXObject* AXObjectCacheImpl::CreateFromRenderer(LayoutObject* layout_object) {
   // media element
   if (node && node->IsMediaElement())
     return AccessibilityMediaElement::Create(layout_object, *this);
-
-  // media controls
-  // TODO(836549): Remove for the rest of the controls.
-  if (node && node->IsMediaControlElement() &&
-      MediaControlElementsHelper::GetMediaControlElementType(node) !=
-          kMediaIgnore) {
-    return AccessibilityMediaControl::Create(layout_object, *this);
-  }
 
   if (IsHTMLOptionElement(node))
     return MakeGarbageCollected<AXListBoxOption>(layout_object, *this);
