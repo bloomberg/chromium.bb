@@ -207,6 +207,9 @@ function returnExperimentalFeatures(experimentalFeaturesData) {
     $('channel-promo-dev').hidden = false;
   }
 
+  $('promos').hidden = !experimentalFeaturesData.showBetaChannelPromotion &&
+      !experimentalFeaturesData.showDevChannelPromotion;
+
   bodyContainer.style.visibility = 'visible';
   var ownerWarningDiv = $('owner-warning');
   if (ownerWarningDiv) {
