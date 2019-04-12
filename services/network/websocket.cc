@@ -566,6 +566,10 @@ void WebSocket::OnBeforeSendHeadersComplete(
     net::HttpRequestHeaders* out_headers,
     int result,
     const base::Optional<net::HttpRequestHeaders>& headers) {
+  if (!channel_) {
+    // Something happened before the OnBeforeSendHeaders response arrives.
+    return;
+  }
   if (headers)
     *out_headers = headers.value();
   std::move(callback).Run(result);
@@ -578,6 +582,10 @@ void WebSocket::OnHeadersReceivedComplete(
     int result,
     const base::Optional<std::string>& headers,
     const GURL& allowed_unsafe_redirect_url) {
+  if (!channel_) {
+    // Something happened before the OnHeadersReceived response arrives.
+    return;
+  }
   if (headers) {
     *out_headers =
         base::MakeRefCounted<net::HttpResponseHeaders>(headers.value());
