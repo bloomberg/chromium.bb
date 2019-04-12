@@ -60,6 +60,13 @@ std::unique_ptr<SharedImageRepresentationSkia> SharedImageBacking::ProduceSkia(
   return nullptr;
 }
 
+std::unique_ptr<SharedImageRepresentationDawn> SharedImageBacking::ProduceDawn(
+    SharedImageManager* manager,
+    MemoryTypeTracker* tracker,
+    DawnDevice device) {
+  return nullptr;
+}
+
 void SharedImageBacking::AddRef(SharedImageRepresentation* representation) {
   AutoLock auto_lock(this);
 

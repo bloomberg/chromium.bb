@@ -122,6 +122,9 @@ class GPU_GLES2_EXPORT SharedImageRepresentationFactory {
   std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
       const Mailbox& mailbox,
       scoped_refptr<SharedContextState> context_State);
+  std::unique_ptr<SharedImageRepresentationDawn> ProduceDawn(
+      const Mailbox& mailbox,
+      DawnDevice device);
 
  private:
   SharedImageManager* manager_;

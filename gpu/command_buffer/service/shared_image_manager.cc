@@ -6,6 +6,7 @@
 
 #include <inttypes.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
@@ -191,6 +192,30 @@ std::unique_ptr<SharedImageRepresentationSkia> SharedImageManager::ProduceSkia(
   auto representation = (*found)->ProduceSkia(this, tracker, context_state);
   if (!representation) {
     LOG(ERROR) << "SharedImageManager::ProduceSkia: Trying to produce a "
+                  "Skia representation from an incompatible mailbox.";
+    return nullptr;
+  }
+
+  return representation;
+}
+
+std::unique_ptr<SharedImageRepresentationDawn> SharedImageManager::ProduceDawn(
+    const Mailbox& mailbox,
+    MemoryTypeTracker* tracker,
+    DawnDevice device) {
+  CALLED_ON_VALID_THREAD();
+
+  AutoLock autolock(this);
+  auto found = images_.find(mailbox);
+  if (found == images_.end()) {
+    LOG(ERROR) << "SharedImageManager::ProduceDawn: Trying to Produce a "
+                  "Dawn representation from a non-existent mailbox.";
+    return nullptr;
+  }
+
+  auto representation = (*found)->ProduceDawn(this, tracker, device);
+  if (!representation) {
+    LOG(ERROR) << "SharedImageManager::ProduceDawn: Trying to produce a "
                   "Skia representation from an incompatible mailbox.";
     return nullptr;
   }
