@@ -1285,6 +1285,32 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
                           container.day_configs(), policies);
     }
   }
+
+  if (policy.has_device_battery_charge_mode()) {
+    const em::DeviceBatteryChargeModeProto& container(
+        policy.device_battery_charge_mode());
+    if (container.has_battery_charge_mode()) {
+      policies->Set(
+          key::kDeviceBatteryChargeMode, POLICY_LEVEL_MANDATORY,
+          POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+          std::make_unique<base::Value>(container.battery_charge_mode()),
+          nullptr);
+    }
+    if (container.has_custom_charge_start()) {
+      policies->Set(
+          key::kDeviceBatteryChargeCustomStartCharging, POLICY_LEVEL_MANDATORY,
+          POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+          std::make_unique<base::Value>(container.custom_charge_start()),
+          nullptr);
+    }
+    if (container.has_custom_charge_stop()) {
+      policies->Set(
+          key::kDeviceBatteryChargeCustomStopCharging, POLICY_LEVEL_MANDATORY,
+          POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+          std::make_unique<base::Value>(container.custom_charge_stop()),
+          nullptr);
+    }
+  }
 }
 
 }  // namespace

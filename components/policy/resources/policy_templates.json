@@ -583,7 +583,10 @@
         'DevicePowerPeakShiftEnabled',
         'DeviceBootOnAcEnabled',
         'DeviceAdvancedBatteryChargeModeEnabled',
-        'DeviceAdvancedBatteryChargeModeDayConfig'
+        'DeviceAdvancedBatteryChargeModeDayConfig',
+        'DeviceBatteryChargeMode',
+        'DeviceBatteryChargeCustomStartCharging',
+        'DeviceBatteryChargeCustomStopCharging',
       ],
     },
     {
@@ -15505,7 +15508,119 @@
           Note: <ph name="CHARGE_START_TIME_FIELD_NAME">charge_start_time</ph> must be less than <ph name="CHARGE_END_TIME_FIELD_NAME">charge_end_time</ph>.
 
           Note: allowed values for <ph name="MINUTE_FIELD_NAME">minute</ph> field in <ph name="CHARGE_START_TIME_FIELD_NAME">charge_start_time</ph> and <ph name="CHARGE_END_TIME_FIELD_NAME">charge_end_time</ph> are 0, 15, 30, 45.'''
-    }
+    },
+    {
+      'name': 'DeviceBatteryChargeMode',
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 1, 2, 3, 4, 5 ]
+      },
+      'items': [
+        {
+          'name': 'Standard',
+          'value': 1,
+          'caption': '''Fully charge battery at a standard rate.'''
+        },
+        {
+          'name': 'ExpressCharge',
+          'value': 2,
+          'caption': '''Charge battery using fast charging technology.'''
+        },
+        {
+          'name': 'PrimarilyAcUse',
+          'value': 3,
+          'caption': '''Charge battery for devices that are primarily connected to an external power source.'''
+        },
+        {
+          'name': 'Adaptive',
+          'value': 4,
+          'caption': '''Adaptive charge battery based on battery usage pattern.'''
+        },
+        {
+          'name': 'Custom',
+          'value': 5,
+          'caption': '''Charge battery while it is within a fixed range.'''
+        }
+      ],
+      'supported_on': ['chrome_os:75-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False
+      },
+      'example_value': 1,
+      'id': 550,
+      'caption': '''Battery charge mode''',
+      'tags': [],
+      'desc': '''Specifies battery charge mode power management policy.
+
+          Dynamically control battery charging to minimize battery wear-out due to battery stress and extend battery life.
+
+          If custom battery charge mode is selected then DeviceBatteryChargeCustomStartCharging and DeviceBatteryChargeCustomStopCharging must be specified.
+
+          If this policy is set then battery charge mode will be applied if supported on the device.
+
+          If this policy is left unset and policy is supported on the device, the standard battery charge mode will be applied and cannot be changed by the user.
+
+          Note: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME">DeviceAdvancedBatteryChargeModeEnabled</ph> overrides this policy if the former is specified.'''
+    },
+    {
+      'name': 'DeviceBatteryChargeCustomStartCharging',
+      'type': 'int',
+      'schema': {
+        'type': 'integer',
+        'minimum': 50,
+        'maximum': 95
+      },
+      'supported_on': ['chrome_os:75-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False
+      },
+      'example_value': 60,
+      'id': 551,
+      'caption': '''Set battery charge custom start charging in percent''',
+      'tags': [],
+      'desc': '''Set battery charge custom start charging in percent.
+
+          Battery starts charging when it depletes the battery charge custom start charging value.
+
+          DeviceBatteryChargeCustomStartCharging must be less than DeviceBatteryChargeCustomStopCharging.
+
+          This policy is only used if DeviceBatteryChargeMode is set to custom.
+
+          If this policy is not configured or left unset, the standard battery charge mode will be applied.'''
+    },
+    {
+      'name': 'DeviceBatteryChargeCustomStopCharging',
+      'type': 'int',
+      'schema': {
+        'type': 'integer',
+        'minimum': 55,
+        'maximum': 100
+      },
+      'supported_on': ['chrome_os:75-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False
+      },
+      'example_value': 90,
+      'id': 552,
+      'caption': '''Set battery charge custom stop charging in percent''',
+      'tags': [],
+      'desc': '''Set battery charge custom stop charging in percent.
+
+          Battery stops charging when it reaches the battery charge custom stop charging value.
+
+          DeviceBatteryChargeCustomStartCharging must be less than DeviceBatteryChargeCustomStopCharging.
+
+          This policy is only used if DeviceBatteryChargeMode is set to custom.
+
+          If this policy is not configured or left unset, the standard battery charge mode will be applied.'''
+    },
   ],
 
   'messages': {
@@ -15671,5 +15786,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used':  549
+  'highest_id_currently_used':  552
 }

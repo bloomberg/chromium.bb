@@ -249,6 +249,13 @@ void PowerPrefs::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
                                 false, PrefRegistry::PUBLIC);
   registry->RegisterDictionaryPref(
       prefs::kDeviceAdvancedBatteryChargeModeDayConfig, PrefRegistry::PUBLIC);
+
+  registry->RegisterIntegerPref(prefs::kDeviceBatteryChargeMode, -1,
+                                PrefRegistry::PUBLIC);
+  registry->RegisterIntegerPref(prefs::kDeviceBatteryChargeCustomStartCharging,
+                                -1, PrefRegistry::PUBLIC);
+  registry->RegisterIntegerPref(prefs::kDeviceBatteryChargeCustomStopCharging,
+                                -1, PrefRegistry::PUBLIC);
 }
 
 // static
