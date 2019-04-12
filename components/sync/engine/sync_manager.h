@@ -220,6 +220,8 @@ class SyncManager {
     ChangeDelegate* change_delegate;
 
     // Credentials to be used when talking to the sync server.
+    // TODO(crbug.com/948148): Replace this by just the account ID. At the point
+    // this is populated, we don't have an access token yet anyway.
     SyncCredentials credentials;
 
     // Unqiuely identifies this client to the invalidation notification server.

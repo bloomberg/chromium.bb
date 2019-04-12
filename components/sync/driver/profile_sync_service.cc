@@ -518,11 +518,9 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
 
   ReportPreviousSessionMemoryWarningCount();
 
-  // TODO(crbug.com/948148): Consider kicking off an access token fetch here.
-  // Currently, the flow goes as follows: The SyncEngine tries to connect to the
-  // server, but has no access token, so it ends up calling
-  // OnConnectionStatusChange(CONNECTION_AUTH_ERROR) which in turn causes
-  // SyncAuthManager to request a new access token.
+  if (!IsLocalSyncEnabled()) {
+    auth_manager_->ConnectionOpened();
+  }
 }
 
 void ProfileSyncService::Shutdown() {
@@ -618,7 +616,9 @@ void ProfileSyncService::ShutdownImpl(ShutdownReason reason) {
   crypto_.Reset();
   expect_sync_configuration_aborted_ = false;
   last_snapshot_ = SyncCycleSnapshot();
-  auth_manager_->ConnectionClosed();
+  if (!IsLocalSyncEnabled()) {
+    auth_manager_->ConnectionClosed();
+  }
 
   NotifyObservers();
 
@@ -954,7 +954,9 @@ void ProfileSyncService::OnSyncCycleCompleted(
 
 void ProfileSyncService::OnConnectionStatusChange(ConnectionStatus status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auth_manager_->ConnectionStatusChanged(status);
+  if (!IsLocalSyncEnabled()) {
+    auth_manager_->ConnectionStatusChanged(status);
+  }
   NotifyObservers();
 }
 

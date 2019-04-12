@@ -565,15 +565,28 @@ TEST_F(ProfileSyncServiceTest, GetSyncTokenStatus) {
   SyncTokenStatus token_status = service()->GetSyncTokenStatus();
   ASSERT_EQ(CONNECTION_NOT_ATTEMPTED, token_status.connection_status);
   ASSERT_TRUE(token_status.connection_status_update_time.is_null());
-  ASSERT_TRUE(token_status.token_request_time.is_null());
+  ASSERT_FALSE(token_status.token_request_time.is_null());
   ASSERT_TRUE(token_status.token_receive_time.is_null());
-
-  // Simulate an auth error.
-  service()->OnConnectionStatusChange(CONNECTION_AUTH_ERROR);
+  ASSERT_FALSE(token_status.has_token);
 
   // The token request will take the form of a posted task.  Run it.
   base::RunLoop().RunUntilIdle();
 
+  // Now we should have an access token.
+  token_status = service()->GetSyncTokenStatus();
+  EXPECT_TRUE(token_status.connection_status_update_time.is_null());
+  EXPECT_FALSE(token_status.token_request_time.is_null());
+  EXPECT_FALSE(token_status.token_receive_time.is_null());
+  EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
+            token_status.last_get_token_error);
+  EXPECT_TRUE(token_status.next_token_request_time.is_null());
+  EXPECT_TRUE(token_status.has_token);
+
+  // Simulate an auth error.
+  service()->OnConnectionStatusChange(CONNECTION_AUTH_ERROR);
+
+  // This should get reflected in the status, and we should have dropped the
+  // invalid access token.
   token_status = service()->GetSyncTokenStatus();
   EXPECT_EQ(CONNECTION_AUTH_ERROR, token_status.connection_status);
   EXPECT_FALSE(token_status.connection_status_update_time.is_null());
@@ -581,7 +594,8 @@ TEST_F(ProfileSyncServiceTest, GetSyncTokenStatus) {
   EXPECT_FALSE(token_status.token_receive_time.is_null());
   EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
             token_status.last_get_token_error);
-  EXPECT_TRUE(token_status.next_token_request_time.is_null());
+  EXPECT_FALSE(token_status.next_token_request_time.is_null());
+  EXPECT_FALSE(token_status.has_token);
 
   // Simulate successful connection.
   service()->OnConnectionStatusChange(CONNECTION_OK);

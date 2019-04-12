@@ -368,9 +368,6 @@ void SyncManagerImpl::Init(InitArgs* args) {
 
   if (!args->enable_local_sync_backend) {
     network_connection_tracker_->AddNetworkConnectionObserver(this);
-    observing_network_connectivity_changes_ = true;
-
-    UpdateCredentials(args->credentials);
   } else {
     scheduler_->OnCredentialsUpdated();
   }

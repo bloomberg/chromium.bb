@@ -84,9 +84,12 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
   // internals UI.
   syncer::SyncTokenStatus GetSyncTokenStatus() const;
 
+  // Called by ProfileSyncService when Sync starts up and will try talking to
+  // the server soon. This initiates fetching an access token.
+  void ConnectionOpened();
+
   // Called by ProfileSyncService when the status of the connection to the Sync
-  // server changed. Updates auth error state accordingly. During Sync startup,
-  // this is what initiates fetching an access token.
+  // server changed. Updates auth error state accordingly.
   void ConnectionStatusChanged(syncer::ConnectionStatus status);
 
   // Called by ProfileSyncService when the connection to the Sync server is

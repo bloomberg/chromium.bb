@@ -131,8 +131,12 @@ SyncSchedulerImpl::~SyncSchedulerImpl() {
 void SyncSchedulerImpl::OnCredentialsUpdated() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (HttpResponse::SYNC_AUTH_ERROR ==
-      cycle_context_->connection_manager()->server_status()) {
+  // If this is the first time we got credentials, or we were previously in an
+  // auth error state, then try connecting to the server now.
+  HttpResponse::ServerConnectionCode server_status =
+      cycle_context_->connection_manager()->server_status();
+  if (server_status == HttpResponse::NONE ||
+      server_status == HttpResponse::SYNC_AUTH_ERROR) {
     OnServerConnectionErrorFixed();
   }
 }
