@@ -21,7 +21,8 @@ public final class ArrowChipView extends ChipView {
 
     public ArrowChipView(Context context, @StyleRes int style) {
         super(context, style);
-        getPrimaryTextView().setText(R.string.overscroll_navigation_close_chrome);
+        getPrimaryTextView().setText(context.getResources().getString(
+                R.string.overscroll_navigation_close_chrome, context.getString(R.string.app_name)));
         getPrimaryTextView().setVisibility(View.GONE);
     }
 
