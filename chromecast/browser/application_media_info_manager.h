@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "content/public/browser/frame_service_base.h"
-#include "media/mojo/interfaces/application_session_id_manager.mojom.h"
+#include "media/mojo/interfaces/cast_application_media_info_manager.mojom.h"
 
 namespace content {
 class RenderFrameHost;
@@ -18,28 +18,33 @@ class RenderFrameHost;
 namespace chromecast {
 namespace media {
 
-class CastApplicationSessionIdManager
+class ApplicationMediaInfoManager
     : public ::content::FrameServiceBase<
-          ::media::mojom::ApplicationSessionIdManager> {
+          ::media::mojom::CastApplicationMediaInfoManager> {
  public:
-  CastApplicationSessionIdManager(
+  ApplicationMediaInfoManager(
       content::RenderFrameHost* render_frame_host,
-      ::media::mojom::ApplicationSessionIdManagerRequest request,
-      std::string application_session_id);
+      ::media::mojom::CastApplicationMediaInfoManagerRequest request,
+      std::string application_session_id,
+      bool mixer_audio_enabled);
+  ~ApplicationMediaInfoManager() override;
 
  private:
-  // ::media::mojom::ApplicationSessionIdManager implementation.
-  void GetApplicationSessionId(GetApplicationSessionIdCallback callback) final;
+  // ::media::mojom::CastApplicationMediaInfoManager implementation:
+  void GetCastApplicationMediaInfo(
+      GetCastApplicationMediaInfoCallback callback) final;
 
   const std::string application_session_id_;
+  bool mixer_audio_enabled_;
 
-  DISALLOW_COPY_AND_ASSIGN(CastApplicationSessionIdManager);
+  DISALLOW_COPY_AND_ASSIGN(ApplicationMediaInfoManager);
 };
 
-void CreateApplicationSessionIdManager(
+void CreateApplicationMediaInfoManager(
     content::RenderFrameHost* render_frame_host,
     std::string application_session_id,
-    ::media::mojom::ApplicationSessionIdManagerRequest request);
+    bool mixer_audio_enabled,
+    ::media::mojom::CastApplicationMediaInfoManagerRequest request);
 
 }  // namespace media
 }  // namespace chromecast

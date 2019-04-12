@@ -4,10 +4,19 @@
 
 module media.mojom;
 
+struct CastApplicationMediaInfo {
+  // Used by multizone Playback.
+  // Can be empty string if WebContents isn't for a WebApplication.
+  string application_session_id;
+  // True if WebApplication has MIXER_AUDIO feature enabled.
+  // This value is set in Chromecast internal code.
+  bool mixer_audio_enabled;
+};
+
 // This is a service attached to RenderFrameHost.
-// This is only used for Chromecast.
-interface ApplicationSessionIdManager {
-  // Returns the |application_session_id| associated with the
-  // RenderFrameHost.
-  GetApplicationSessionId() => (string application_session_id);
+interface CastApplicationMediaInfoManager {
+  // Returns the CastApplicationMediaInfo associated with the
+  // RenderFrameHost, i.e., the application.
+  GetCastApplicationMediaInfo() =>
+    (CastApplicationMediaInfo cast_application_media_info);
 };
