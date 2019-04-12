@@ -114,7 +114,6 @@ class TestConfigurator : public Configurator {
   void SetUpdateCheckUrl(const GURL& url);
   void SetPingUrl(const GURL& url);
   void SetAppGuid(const std::string& app_guid);
-  void SetUseJSON(bool use_JSON);
   network::TestURLLoaderFactory* test_url_loader_factory() {
     return &test_url_loader_factory_;
   }
@@ -134,7 +133,6 @@ class TestConfigurator : public Configurator {
   GURL update_check_url_;
   GURL ping_url_;
   std::string app_guid_;
-  bool use_JSON_;
 
   service_manager::TestConnectorFactory connector_factory_;
   scoped_refptr<update_client::UnzipChromiumFactory> unzip_factory_;
