@@ -209,82 +209,84 @@ SearchBox.EventType = {
 
 /**
  * Autocomplete list for search box.
- * @param {Document} document Document.
- * @constructor
- * @extends {cr.ui.AutocompleteList}
  */
-SearchBox.AutocompleteList = function(document) {
-  const self = cr.ui.AutocompleteList.call(this);
-  self.__proto__ = SearchBox.AutocompleteList.prototype;
-  self.id = 'autocomplete-list';
-  self.autoExpands = true;
-  self.itemConstructor = SearchBox.AutocompleteListItem_.bind(null, document);
-  self.addEventListener('mouseover', self.onMouseOver_.bind(self));
-  return self;
-};
+SearchBox.AutocompleteList =
+    class AutocompleteList extends cr.ui.AutocompleteList {
+  /**
+   * @param {Document} document Document.
+   */
+  constructor(document) {
+    super();
+    this.__proto__ = SearchBox.AutocompleteList.prototype;
+    this.id = 'autocomplete-list';
+    this.autoExpands = true;
+    this.itemConstructor = /** @type {function(new:cr.ui.ListItem, *)} */ (
+        SearchBox.AutocompleteListItem_.bind(null, document));
+    this.addEventListener('mouseover', this.onMouseOver_.bind(this));
+  }
 
-SearchBox.AutocompleteList.prototype = {
-  __proto__: cr.ui.AutocompleteList.prototype
-};
+  /**
+   * Do nothing when a suggestion is selected.
+   * @override
+   */
+  handleSelectedSuggestion() {}
 
-/**
- * Do nothing when a suggestion is selected.
- * @override
- */
-SearchBox.AutocompleteList.prototype.handleSelectedSuggestion = () => {};
 
-/**
- * Change the selection by a mouse over instead of just changing the
- * color of moused over element with :hover in CSS. Here's why:
- *
- * 1) The user selects an item A with up/down keys (item A is highlighted)
- * 2) Then the user moves the cursor to another item B
- *
- * If we just change the color of moused over element (item B), both
- * the item A and B are highlighted. This is bad. We should change the
- * selection so only the item B is highlighted.
- *
- * @param {Event} event Event.
- * @private
- */
-SearchBox.AutocompleteList.prototype.onMouseOver_ = function(event) {
-  if (event.target.itemInfo) {
-    this.selectedItem = event.target.itemInfo;
+  /**
+   * Change the selection by a mouse over instead of just changing the
+   * color of moused over element with :hover in CSS. Here's why:
+   *
+   * 1) The user selects an item A with up/down keys (item A is highlighted)
+   * 2) Then the user moves the cursor to another item B
+   *
+   * If we just change the color of moused over element (item B), both
+   * the item A and B are highlighted. This is bad. We should change the
+   * selection so only the item B is highlighted.
+   *
+   * @param {Event} event Event.
+   * @private
+   */
+  onMouseOver_(event) {
+    if (event.target.itemInfo) {
+      this.selectedItem = event.target.itemInfo;
+    }
   }
 };
 
 
 /**
  * ListItem element for autocomplete.
- *
- * @param {Document} document Document.
- * @param {SearchItem|chrome.fileManagerPrivate.SearchResult} item An object
- * representing a suggestion.
- * @constructor
  * @private
  */
-SearchBox.AutocompleteListItem_ = function(document, item) {
-  const li = new cr.ui.ListItem();
-  li.itemInfo = item;
+SearchBox.AutocompleteListItem_ =
+    class AutocompleteListItem_ extends cr.ui.ListItem {
+  /**
+   * @param {Document} document Document.
+   * @param {SearchItem|chrome.fileManagerPrivate.SearchResult} item An object
+   * representing a suggestion.
+   */
+  constructor(document, item) {
+    super();
+    this.itemInfo = item;
 
-  const icon = document.createElement('div');
-  icon.className = 'detail-icon';
+    const icon = document.createElement('div');
+    icon.className = 'detail-icon';
 
-  const text = document.createElement('div');
-  text.className = 'detail-text';
+    const text = document.createElement('div');
+    text.className = 'detail-text';
 
-  if (item.isHeaderItem) {
-    icon.setAttribute('search-icon', '');
-    text.innerHTML =
-        strf('SEARCH_DRIVE_HTML', util.htmlEscape(item.searchQuery));
-  } else {
-    const iconType = FileType.getIcon(item.entry);
-    icon.setAttribute('file-type-icon', iconType);
-    // highlightedBaseName is a piece of HTML with meta characters properly
-    // escaped. See the comment at fileManagerPrivate.searchDriveMetadata().
-    text.innerHTML = item.highlightedBaseName;
+    if (item.isHeaderItem) {
+      icon.setAttribute('search-icon', '');
+      text.innerHTML =
+          strf('SEARCH_DRIVE_HTML', util.htmlEscape(item.searchQuery));
+    } else {
+      const iconType = FileType.getIcon(item.entry);
+      icon.setAttribute('file-type-icon', iconType);
+      // highlightedBaseName is a piece of HTML with meta characters properly
+      // escaped. See the comment at fileManagerPrivate.searchDriveMetadata().
+      text.innerHTML = item.highlightedBaseName;
+    }
+    this.appendChild(icon);
+    this.appendChild(text);
   }
-  li.appendChild(icon);
-  li.appendChild(text);
-  return li;
 };
