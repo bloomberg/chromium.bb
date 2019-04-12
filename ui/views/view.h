@@ -42,6 +42,8 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/views/metadata/metadata_macros.h"
+#include "ui/views/metadata/metadata_types.h"
 #include "ui/views/paint_info.h"
 #include "ui/views/view_targeter.h"
 #include "ui/views/views_export.h"
@@ -229,15 +231,50 @@ enum PropertyEffects {
 //     LOG() << frobble_changed ? "Frobble changed" : "Frobble NOT changed!";
 //   }
 //
+//   Property metadata -----------
+//
+//   For Views that expose properties which are intended to be dynamically
+//   discoverable by other subsystems, each View and its descendants must
+//   include metadata. These other subsystems, such as dev tools or a delarative
+//   layout system, can then enumerate the properties on any given instance or
+//   class. Using the enumerated information, the actual values of the
+//   properties can be read or written. This will be done by getting and setting
+//   the values using string representations. The metadata can also be used to
+//   instantiate and initialize a View (or descendant) class from a declarative
+//   "script".
+//
+//   For each View class in their respective header declaration, place the macro
+//   METADATA_HEADER(<classname>) in the public section.
+//
+//   In the implementing .cc file, add the following macros to the same
+//   namespace in which the class resides.
+//
+//   BEGIN_METADATA(View)
+//   ADD_PROPERTY_METADATA(View, bool, Frobble)
+//   END_METADATA()
+//
+//   For each property, add a definition using ADD_PROPERTY_METADATA() between
+//   the begin and end macros.
+//
+//   Descendant classes must add the METADATA_PARENT_CLASS() macro to the
+//   similar block in the respective implementing file.
+//
+//   BEGIN_METADATA(MyView)
+//   METADATA_PARENT_CLASS(views::View);
+//   ADD_PROPERTY_METADATA(MyView, int, Bobble)
+//   END_METADATA()
 /////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT View : public ui::LayerDelegate,
                           public ui::LayerOwner,
                           public ui::AcceleratorTarget,
                           public ui::EventTarget,
                           public ui::EventHandler,
-                          public ui::PropertyHandler {
+                          public ui::PropertyHandler,
+                          public views::metadata::MetaDataProvider {
  public:
   using Views = std::vector<View*>;
+
+  METADATA_HEADER(View);
 
   enum class FocusBehavior {
     // Use when the View is never focusable. Default.
