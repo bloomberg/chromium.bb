@@ -114,6 +114,11 @@ QUIC_FLAG(int32_t, FLAGS_quic_max_pace_time_into_future_ms, 10)
 // Smoothed RTT fraction that a connection can pace packets into the future.
 QUIC_FLAG(double, FLAGS_quic_pace_time_into_future_srtt_fraction, 0.125f)
 
+// Mechanism to override version label and ALPN for IETF interop.
+QUIC_FLAG(int32_t,  // allow-non-std-int
+          FLAGS_quic_ietf_draft_version,
+          0)
+
 // If true, enable QUIC v44.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_44, true)
 
@@ -314,3 +319,9 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_always_get_bw_sample_when_acked,
           true)
+
+// If true, ignore TLPR for retransmission delay when sending pings from ping
+// alarm.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_ignore_tlpr_if_sending_ping,
+          false)
