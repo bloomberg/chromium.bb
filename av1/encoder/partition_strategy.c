@@ -132,6 +132,17 @@ static void simple_motion_search_based_split_fast(
   }
 }
 
+static int convert_bsize_to_idx(BLOCK_SIZE bsize) {
+  switch (bsize) {
+    case BLOCK_128X128: return 0;
+    case BLOCK_64X64: return 1;
+    case BLOCK_32X32: return 2;
+    case BLOCK_16X16: return 3;
+    case BLOCK_8X8: return 4;
+    default: assert(0 && "Invalid bsize"); return -1;
+  }
+}
+
 void av1_simple_motion_search_based_split(
     AV1_COMP *const cpi, MACROBLOCK *x, PC_TREE *pc_tree, int mi_row,
     int mi_col, BLOCK_SIZE bsize, int *partition_none_allowed,
@@ -147,42 +158,28 @@ void av1_simple_motion_search_based_split(
   }
 
   aom_clear_system_state();
-  const NN_CONFIG *nn_config = NULL;
-  const float *ml_mean = NULL, *ml_std = NULL;
-  float split_only_thresh = 10.0f, no_split_thresh = -10.0f;
-  if (bsize == BLOCK_128X128) {
-    ml_mean = av1_simple_motion_search_split_mean_128;
-    ml_std = av1_simple_motion_search_split_std_128;
-    nn_config = &av1_simple_motion_search_split_nn_config_128;
-    split_only_thresh = av1_simple_motion_search_split_thresh_128;
-    no_split_thresh = av1_simple_motion_search_no_split_thresh_128;
-  } else if (bsize == BLOCK_64X64) {
-    ml_mean = av1_simple_motion_search_split_mean_64;
-    ml_std = av1_simple_motion_search_split_std_64;
-    nn_config = &av1_simple_motion_search_split_nn_config_64;
-    split_only_thresh = av1_simple_motion_search_split_thresh_64;
-    no_split_thresh = av1_simple_motion_search_no_split_thresh_64;
-  } else if (bsize == BLOCK_32X32) {
-    ml_mean = av1_simple_motion_search_split_mean_32;
-    ml_std = av1_simple_motion_search_split_std_32;
-    nn_config = &av1_simple_motion_search_split_nn_config_32;
-    split_only_thresh = av1_simple_motion_search_split_thresh_32;
-    no_split_thresh = av1_simple_motion_search_no_split_thresh_32;
-  } else if (bsize == BLOCK_16X16) {
-    ml_mean = av1_simple_motion_search_split_mean_16;
-    ml_std = av1_simple_motion_search_split_std_16;
-    nn_config = &av1_simple_motion_search_split_nn_config_16;
-    split_only_thresh = av1_simple_motion_search_split_thresh_16;
-    no_split_thresh = av1_simple_motion_search_no_split_thresh_16;
-  } else if (bsize == BLOCK_8X8) {
-    ml_mean = av1_simple_motion_search_split_mean_8;
-    ml_std = av1_simple_motion_search_split_std_8;
-    nn_config = &av1_simple_motion_search_split_nn_config_8;
-    split_only_thresh = av1_simple_motion_search_split_thresh_8;
-    no_split_thresh = av1_simple_motion_search_no_split_thresh_8;
+
+  const AV1_COMMON *const cm = &cpi->common;
+  const int is_480p_or_larger = AOMMIN(cm->width, cm->height) >= 480;
+  const int bsize_idx = convert_bsize_to_idx(bsize);
+
+  assert(bsize_idx >= 0 && bsize_idx <= 4 &&
+         "Invalid bsize in simple_motion_search_based_split");
+
+  float split_only_thresh = 100.0f, no_split_thresh = -100.0f;
+
+  const float *ml_mean = av1_simple_motion_search_split_mean[bsize_idx];
+  const float *ml_std = av1_simple_motion_search_split_std[bsize_idx];
+  const NN_CONFIG *nn_config =
+      av1_simple_motion_search_split_nn_config[bsize_idx];
+  if (is_480p_or_larger) {
+    split_only_thresh = av1_simple_motion_search_split_midres_thresh[bsize_idx];
+    no_split_thresh =
+        av1_simple_motion_search_split_midres_no_thresh[bsize_idx];
   } else {
-    assert(0 && "Unexpected block size in simple_motion_based_split");
-    return;
+    split_only_thresh = av1_simple_motion_search_split_lowres_thresh[bsize_idx];
+    no_split_thresh =
+        av1_simple_motion_search_split_lowres_no_thresh[bsize_idx];
   }
 
   float features[FEATURE_SIZE_SMS_SPLIT] = { 0.0f };
