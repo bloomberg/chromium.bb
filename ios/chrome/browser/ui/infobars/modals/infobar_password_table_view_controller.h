@@ -7,14 +7,15 @@
 
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 
-@protocol InfobarModalDelegate;
+@protocol InfobarPasswordModalDelegate;
 
 // InfobarPasswordTableViewController represents the content for the Passwords
 // InfobarModal.
 @interface InfobarPasswordTableViewController : ChromeTableViewController
 
-// InfobarModalDelegate for this ViewController.
-@property(nonatomic, strong) id<InfobarModalDelegate> infobarModalDelegate;
+// InfobarPasswordModalDelegate for this ViewController.
+@property(nonatomic, strong) id<InfobarPasswordModalDelegate>
+    infobarModalDelegate;
 // The username being displayed in the InfobarModal.
 @property(nonatomic, copy) NSString* username;
 // The masked password being displayed in the InfobarModal.
