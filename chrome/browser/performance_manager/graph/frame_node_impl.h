@@ -18,9 +18,28 @@ namespace performance_manager {
 class PageNodeImpl;
 class ProcessNodeImpl;
 
-// Frame Coordination Units form a tree structure, each FrameNode at
-// most has one parent that is a FrameNode.
-// A Frame Coordination Unit will have parents only if navigation committed.
+// Frame nodes form a tree structure, each FrameNode at most has one parent that
+// is a FrameNode. Conceptually, a frame corresponds to a
+// content::RenderFrameHost in the browser, and a content::RenderFrameImpl /
+// blink::LocalFrame in a renderer.
+//
+// Note that a frame in a frame tree can be replaced with another, with the
+// continuity of that position represented via the |frame_tree_node_id|. It is
+// possible to have multiple "sibling" nodes that share the same
+// |frame_tree_node_id|. Only one of these may contribute to the content being
+// rendered, and this node is designated the "current" node in content
+// terminology. A swap is effectively atomic but will take place in two steps
+// in the graph: the outgoing frame will first be marked as not current, and the
+// incoming frame will be marked as current. As such, the graph invariant is
+// that there will be 0 or 1 |is_current| frames with a given
+// |frame_tree_node_id|.
+//
+// This occurs when a frame is navigated and the existing frame can't be reused.
+// In that case a "provisional" frame is created to start the navigation. Once
+// the navigation completes (which may actually involve a redirect to another
+// origin meaning the frame has to be destroyed and another one created in
+// another process!) and commits, the frame will be swapped with the previously
+// active frame.
 class FrameNodeImpl
     : public CoordinationUnitInterface<
           FrameNodeImpl,
@@ -62,10 +81,12 @@ class FrameNodeImpl
   resource_coordinator::mojom::LifecycleState lifecycle_state() const;
   bool has_nonempty_beforeunload() const;
   const GURL& url() const;
+  bool is_current() const;
   bool network_almost_idle() const;
 
   // Setters are not thread safe.
   void set_url(const GURL& url);
+  void SetIsCurrent(bool is_current);
 
   // A frame is a main frame if it has no |parent_frame_node|. This can be
   // called from any thread.
@@ -108,6 +129,10 @@ class FrameNodeImpl
       resource_coordinator::mojom::LifecycleState::kRunning;
   bool has_nonempty_beforeunload_ = false;
   GURL url_;
+
+  ObservedProperty::NotifiesOnlyOnChanges<bool,
+                                          &GraphObserver::OnIsCurrentChanged>
+      is_current_{false};
 
   // Network is considered almost idle when there are no more than 2 network
   // connections.

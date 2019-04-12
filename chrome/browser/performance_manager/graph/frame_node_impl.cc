@@ -122,6 +122,11 @@ const GURL& FrameNodeImpl::url() const {
   return url_;
 }
 
+bool FrameNodeImpl::is_current() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return is_current_.value();
+}
+
 bool FrameNodeImpl::network_almost_idle() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return network_almost_idle_.value();
@@ -130,6 +135,33 @@ bool FrameNodeImpl::network_almost_idle() const {
 void FrameNodeImpl::set_url(const GURL& url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   url_ = url;
+}
+
+void FrameNodeImpl::SetIsCurrent(bool is_current) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  is_current_.SetAndMaybeNotify(this, is_current);
+
+#if DCHECK_IS_ON()
+  // We maintain an invariant that of all sibling nodes with the same
+  // |frame_tree_node_id|, at most one may be current.
+  if (is_current) {
+    const base::flat_set<FrameNodeImpl*>* siblings = nullptr;
+    if (parent_frame_node_) {
+      siblings = &parent_frame_node_->child_frame_nodes();
+    } else {
+      siblings = &page_node_->main_frame_nodes();
+    }
+
+    size_t current_siblings = 0;
+    for (auto* frame : *siblings) {
+      if (frame->frame_tree_node_id() == frame_tree_node_id_ &&
+          frame->is_current()) {
+        ++current_siblings;
+      }
+    }
+    DCHECK_EQ(1u, current_siblings);
+  }
+#endif
 }
 
 bool FrameNodeImpl::IsMainFrame() const {
