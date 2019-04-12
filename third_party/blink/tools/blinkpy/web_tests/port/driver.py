@@ -323,18 +323,18 @@ class Driver(object):
                 # We really shouldn't reach here, but in case we do, fail gracefully.
                 _log.error('Unrecognized WPT test name: %s', test_name)
                 test_dir_prefix = 'external/wpt/'
-                test_url_prefix = ''
+                test_url_prefix = '/'
             hostname, insecure_port, secure_port = self.WPT_HOST_AND_PORTS
         else:
             test_dir_prefix = self.HTTP_DIR
-            test_url_prefix = ''
+            test_url_prefix = '/'
             hostname, insecure_port, secure_port = self.HTTP_HOST_AND_PORTS
 
         relative_path = test_name[len(test_dir_prefix):]
 
         if '/https/' in test_name or '.https.' in test_name or '.serviceworker.' in test_name:
-            return 'https://%s:%d/%s%s' % (hostname, secure_port, test_url_prefix, relative_path)
-        return 'http://%s:%d/%s%s' % (hostname, insecure_port, test_url_prefix, relative_path)
+            return 'https://%s:%d%s%s' % (hostname, secure_port, test_url_prefix, relative_path)
+        return 'http://%s:%d%s%s' % (hostname, insecure_port, test_url_prefix, relative_path)
 
     def _get_uri_prefixes(self, hostname, insecure_port, secure_port):
         """Returns the HTTP and HTTPS URI prefix for a hostname."""
@@ -360,10 +360,10 @@ class Driver(object):
                 return self.HTTP_DIR + uri[len(prefix):]
         for prefix in self._get_uri_prefixes(*self.WPT_HOST_AND_PORTS):
             if uri.startswith(prefix):
-                relative_path = uri[len(prefix):]
+                url_path = '/' + uri[len(prefix):]
                 for wpt_path, url_prefix in self.WPT_DIRS.items():
-                    if relative_path.startswith(url_prefix):
-                        return wpt_path + '/' + relative_path[len(url_prefix):]
+                    if url_path.startswith(url_prefix):
+                        return wpt_path + '/' + url_path[len(url_prefix):]
         raise NotImplementedError('unknown url type: %s' % uri)
 
     def has_crashed(self):

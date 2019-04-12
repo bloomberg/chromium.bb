@@ -60,8 +60,8 @@ class PortTest(LoggingTestCase):
             self.assertFalse(wpt_path.endswith('/'))
         # Values should not be empty (except the last one).
         for url_prefix in Port.WPT_DIRS.values()[:-1]:
-            self.assertNotEqual(url_prefix, '')
-        self.assertEqual(Port.WPT_DIRS.values()[-1], '')
+            self.assertNotEqual(url_prefix, '/')
+        self.assertEqual(Port.WPT_DIRS.values()[-1], '/')
 
     def test_validate_wpt_regex(self):
         self.assertEquals(Port.WPT_REGEX.match('external/wpt/foo/bar.html').groups(),
@@ -485,25 +485,25 @@ class PortTest(LoggingTestCase):
             'items': {
                 'testharness': {
                     'dom/ranges/Range-attributes.html': [
-                        ['/dom/ranges/Range-attributes.html', {}]
+                        ['dom/ranges/Range-attributes.html', {}]
                     ],
                     'dom/ranges/Range-attributes-slow.html': [
-                        ['/dom/ranges/Range-attributes-slow.html', {'timeout': 'long'}]
+                        ['dom/ranges/Range-attributes-slow.html', {'timeout': 'long'}]
                     ],
                     'console/console-is-a-namespace.any.js': [
-                        ['/console/console-is-a-namespace.any.html', {}],
-                        ['/console/console-is-a-namespace.any.worker.html', {'timeout': 'long'}],
+                        ['console/console-is-a-namespace.any.html', {}],
+                        ['console/console-is-a-namespace.any.worker.html', {'timeout': 'long'}],
                     ],
                     'html/parse.html': [
-                        ['/html/parse.html?run_type=uri', {}],
-                        ['/html/parse.html?run_type=write', {'timeout': 'long'}],
+                        ['html/parse.html?run_type=uri', {}],
+                        ['html/parse.html?run_type=write', {'timeout': 'long'}],
                     ],
                 },
                 'manual': {},
                 'reftest': {
                     'html/dom/elements/global-attributes/dir_auto-EN-L.html': [
                         [
-                            '/html/dom/elements/global-attributes/dir_auto-EN-L.html',
+                            'html/dom/elements/global-attributes/dir_auto-EN-L.html',
                             [
                                 [
                                     '/html/dom/elements/global-attributes/dir_auto-EN-L-ref.html',
@@ -516,6 +516,7 @@ class PortTest(LoggingTestCase):
                 },
             }}))
         filesystem.write_text_file(WEB_TEST_DIR + '/external/wpt/dom/ranges/Range-attributes.html', '')
+        filesystem.write_text_file(WEB_TEST_DIR + '/external/wpt/dom/ranges/Range-attributes-slow.html', '')
         filesystem.write_text_file(WEB_TEST_DIR + '/external/wpt/console/console-is-a-namespace.any.js', '')
         filesystem.write_text_file(WEB_TEST_DIR + '/external/wpt/common/blank.html', 'foo')
 
@@ -523,7 +524,7 @@ class PortTest(LoggingTestCase):
             'items': {
                 'testharness': {
                     'dom/bar.html': [
-                        ['/dom/bar.html', {}]
+                        ['dom/bar.html', {}]
                     ]
                 }
             }}))
@@ -561,21 +562,21 @@ class PortTest(LoggingTestCase):
         self.assertEqual(port.tests(['external/csswg-test']), [])
         self.assertEqual(sorted(port.tests(['external/wpt'])), all_wpt)
         self.assertEqual(sorted(port.tests(['external/wpt/'])), all_wpt)
-        self.assertEqual(port.tests(['external/wpt/console']),
-                         ['external/wpt/console/console-is-a-namespace.any.worker.html',
-                          'external/wpt/console/console-is-a-namespace.any.html'])
-        self.assertEqual(port.tests(['external/wpt/console/']),
-                         ['external/wpt/console/console-is-a-namespace.any.worker.html',
-                          'external/wpt/console/console-is-a-namespace.any.html'])
-        self.assertEqual(port.tests(['external/wpt/console/console-is-a-namespace.any.js']),
-                         ['external/wpt/console/console-is-a-namespace.any.worker.html',
-                          'external/wpt/console/console-is-a-namespace.any.html'])
+        self.assertEqual(sorted(port.tests(['external/wpt/console'])),
+                         ['external/wpt/console/console-is-a-namespace.any.html',
+                          'external/wpt/console/console-is-a-namespace.any.worker.html'])
+        self.assertEqual(sorted(port.tests(['external/wpt/console/'])),
+                         ['external/wpt/console/console-is-a-namespace.any.html',
+                          'external/wpt/console/console-is-a-namespace.any.worker.html'])
+        self.assertEqual(sorted(port.tests(['external/wpt/console/console-is-a-namespace.any.js'])),
+                         ['external/wpt/console/console-is-a-namespace.any.html',
+                          'external/wpt/console/console-is-a-namespace.any.worker.html'])
         self.assertEqual(port.tests(['external/wpt/console/console-is-a-namespace.any.html']),
                          ['external/wpt/console/console-is-a-namespace.any.html'])
-        self.assertEqual(port.tests(['external/wpt/dom']),
+        self.assertEqual(sorted(port.tests(['external/wpt/dom'])),
                          ['external/wpt/dom/ranges/Range-attributes-slow.html',
                           'external/wpt/dom/ranges/Range-attributes.html'])
-        self.assertEqual(port.tests(['external/wpt/dom/']),
+        self.assertEqual(sorted(port.tests(['external/wpt/dom/'])),
                          ['external/wpt/dom/ranges/Range-attributes-slow.html',
                           'external/wpt/dom/ranges/Range-attributes.html'])
         self.assertEqual(port.tests(['external/wpt/dom/ranges/Range-attributes.html']),
