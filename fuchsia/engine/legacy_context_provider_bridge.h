@@ -9,11 +9,13 @@
 #include <lib/fidl/cpp/binding_set.h>
 
 #include "base/macros.h"
+#include "fuchsia/engine/web_engine_export.h"
 #include "fuchsia/fidl/chromium/web/cpp/fidl.h"
 
 // Allows chromium::web::ContextProvider clients to connect to
 // fuchsia::web::ContextProvider instances.
-class LegacyContextProviderBridge : public chromium::web::ContextProvider {
+class WEB_ENGINE_EXPORT LegacyContextProviderBridge
+    : public chromium::web::ContextProvider {
  public:
   LegacyContextProviderBridge(fuchsia::web::ContextProviderPtr handle);
   ~LegacyContextProviderBridge() override;
