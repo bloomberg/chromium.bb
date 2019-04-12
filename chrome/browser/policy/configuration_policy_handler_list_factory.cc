@@ -749,6 +749,15 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kDeviceAdvancedBatteryChargeModeDayConfig,
     ash::prefs::kDeviceAdvancedBatteryChargeModeDayConfig,
     base::Value::Type::DICTIONARY },
+  { key::kDeviceBatteryChargeMode,
+    ash::prefs::kDeviceBatteryChargeMode,
+    base::Value::Type::INTEGER },
+  { key::kDeviceBatteryChargeCustomStartCharging,
+    ash::prefs::kDeviceBatteryChargeCustomStartCharging,
+    base::Value::Type::INTEGER },
+  { key::kDeviceBatteryChargeCustomStopCharging,
+    ash::prefs::kDeviceBatteryChargeCustomStopCharging,
+    base::Value::Type::INTEGER },
 #endif  // defined(OS_CHROMEOS)
 
 // Metrics reporting is controlled by a platform specific policy for ChromeOS

@@ -4490,6 +4490,39 @@
     ]
   },
 
+  "DeviceBatteryChargeMode": {
+    "os": ["chromeos"],
+    "test_policy": { "DeviceBatteryChargeMode": 5 },
+    "pref_mappings": [
+      {
+        "pref": "ash.power.battery_charge_mode",
+        "local_state": true
+      }
+    ]
+  },
+
+  "DeviceBatteryChargeCustomStartCharging": {
+    "os": ["chromeos"],
+    "test_policy": { "DeviceBatteryChargeCustomStartCharging": 60 },
+    "pref_mappings": [
+      {
+        "pref": "ash.power.battery_charge_custom_start_charging",
+        "local_state": true
+      }
+    ]
+  },
+
+  "DeviceBatteryChargeCustomStopCharging": {
+    "os": ["chromeos"],
+    "test_policy": { "DeviceBatteryChargeCustomStopCharging": 91 },
+    "pref_mappings": [
+      {
+        "pref": "ash.power.battery_charge_custom_stop_charging",
+        "local_state": true
+      }
+    ]
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {

@@ -382,6 +382,24 @@ const char kDeviceAdvancedBatteryChargeModeEnabled[] =
 const char kDeviceAdvancedBatteryChargeModeDayConfig[] =
     "ash.power.advanced_battery_charge_mode_day_config";
 
+// An integer pref that specifies the battery charge mode.
+// For details see "DeviceBatteryChargeMode" in policy_templates.json.
+const char kDeviceBatteryChargeMode[] = "ash.power.battery_charge_mode";
+
+// An integer pref that specifies the battery charge custom start charging in
+// percent.
+// For details see "DeviceBatteryChargeCustomStartCharging" in
+// policy_templates.json.
+const char kDeviceBatteryChargeCustomStartCharging[] =
+    "ash.power.battery_charge_custom_start_charging";
+
+// An integer pref that specifies the battery charge custom stop charging in
+// percent.
+// For details see "DeviceBatteryChargeCustomStopCharging" in
+// policy_templates.json.
+const char kDeviceBatteryChargeCustomStopCharging[] =
+    "ash.power.battery_charge_custom_stop_charging";
+
 // NOTE: New prefs should start with the "ash." prefix. Existing prefs moved
 // into this file should not be renamed, since they may be synced.
 

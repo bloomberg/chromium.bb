@@ -16500,6 +16500,9 @@ Called by update_net_error_codes.py.-->
   <int value="547" label="DeviceDockMacAddressSource"/>
   <int value="548" label="DeviceAdvancedBatteryChargeModeEnabled"/>
   <int value="549" label="DeviceAdvancedBatteryChargeModeDayConfig"/>
+  <int value="550" label="DeviceBatteryChargeMode"/>
+  <int value="551" label="DeviceBatteryChargeCustomStartCharging"/>
+  <int value="552" label="DeviceBatteryChargeCustomStopCharging"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

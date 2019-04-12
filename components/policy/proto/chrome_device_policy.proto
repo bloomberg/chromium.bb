@@ -1237,6 +1237,32 @@ message DeviceAdvancedBatteryChargeModeProto {
   optional string day_configs = 2;
 }
 
+// Settings that control battery charge mode policy.
+message DeviceBatteryChargeModeProto {
+  enum BatteryChargeMode {
+    MODE_UNSPECIFIED = 0;
+    STANDARD = 1;
+    EXPRESS_CHARGE = 2;
+    PRIMARILY_AC_USE = 3;
+    ADAPTIVE = 4;
+    CUSTOM = 5;
+  }
+
+  // Setting that controls battery charge mode on this device.
+  // For details see "DeviceBatteryChargeMode" in policy_templates.json.
+  optional BatteryChargeMode battery_charge_mode = 1;
+
+  // Percent at which charging starts when using CUSTOM.
+  // For details see "DeviceBatteryChargeCustomStartCharging" in
+  // policy_templates.json.
+  optional int32 custom_charge_start = 2;
+
+  // Percent at which charging stops when using CUSTOM.
+  // For details see "DeviceBatteryChargeCustomStopCharging" in
+  // policy_templates.json.
+  optional int32 custom_charge_stop = 3;
+}
+
 message ChromeDeviceSettingsProto {
   reserved 61;
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
@@ -1345,4 +1371,5 @@ message ChromeDeviceSettingsProto {
   optional DeviceDockMacAddressSourceProto device_dock_mac_address_source = 85;
   optional DeviceAdvancedBatteryChargeModeProto
       device_advanced_battery_charge_mode = 86;
+  optional DeviceBatteryChargeModeProto device_battery_charge_mode = 87;
 }
