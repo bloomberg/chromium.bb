@@ -78,7 +78,8 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
 
   [[EarlGrey selectElementWithMatcher:PrimarySignInButton()]
       assertWithMatcher:grey_sufficientlyVisible()];
-  [SigninEarlGreyUtils assertSignedOut];
+  NSError* signedOutError = [SigninEarlGreyUtils checkSignedOut];
+  GREYAssertNil(signedOutError, signedOutError.localizedDescription);
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -104,7 +105,8 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
 
   [[EarlGrey selectElementWithMatcher:PrimarySignInButton()]
       assertWithMatcher:grey_sufficientlyVisible()];
-  [SigninEarlGreyUtils assertSignedOut];
+  NSError* signedOutError = [SigninEarlGreyUtils checkSignedOut];
+  GREYAssertNil(signedOutError, signedOutError.localizedDescription);
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -137,7 +139,9 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
                                    grey_accessibilityLabel(identity2.userEmail),
                                    grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_nil()];
-  [SigninEarlGreyUtils assertSignedInWithIdentity:identity1];
+  NSError* signedInError =
+      [SigninEarlGreyUtils checkSignedInWithIdentity:identity1];
+  GREYAssertNil(signedInError, signedInError.localizedDescription);
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -176,7 +180,9 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
                                    grey_accessibilityLabel(identity2.userEmail),
                                    grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_nil()];
-  [SigninEarlGreyUtils assertSignedInWithIdentity:identity1];
+  NSError* signedInError =
+      [SigninEarlGreyUtils checkSignedInWithIdentity:identity1];
+  GREYAssertNil(signedInError, signedInError.localizedDescription);
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -202,7 +208,8 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
   // Check that the user is signed out and the Main Settings screen is shown.
   [[EarlGrey selectElementWithMatcher:PrimarySignInButton()]
       assertWithMatcher:grey_sufficientlyVisible()];
-  [SigninEarlGreyUtils assertSignedOut];
+  NSError* signedOutError = [SigninEarlGreyUtils checkSignedOut];
+  GREYAssertNil(signedOutError, signedOutError.localizedDescription);
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -231,7 +238,9 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::
                                           SettingsAccountsCollectionView()]
       assertWithMatcher:grey_sufficientlyVisible()];
-  [SigninEarlGreyUtils assertSignedInWithIdentity:identity];
+  NSError* signedInError =
+      [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
+  GREYAssertNil(signedInError, signedInError.localizedDescription);
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];

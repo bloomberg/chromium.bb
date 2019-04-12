@@ -11,6 +11,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
@@ -38,11 +39,15 @@
                                           name:@"Fake Managed"];
 }
 
-+ (void)assertSignedInWithIdentity:(ChromeIdentity*)identity {
-  GREYAssertNotNil(identity, @"Need to give an identity");
-  // Required to avoid any problem since the following test is not dependant to
-  // UI, and the previous action has to be totally finished before going through
-  // the assert.
++ (NSError*)checkSignedInWithIdentity:(ChromeIdentity*)identity {
+  if (identity == nil) {
+    return chrome_test_util::NSErrorWithLocalizedDescription(
+        @"Need to give an identity");
+  }
+
+  // Required to avoid any problem since the following test is not dependant
+  // to UI, and the previous action has to be totally finished before going
+  // through the assert.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
   ios::ChromeBrowserState* browser_state =
@@ -51,13 +56,19 @@
       IdentityManagerFactory::GetForBrowserState(browser_state)
           ->GetPrimaryAccountInfo();
 
-  GREYAssertEqual(base::SysNSStringToUTF8(identity.gaiaID), info.gaia,
-                  @"Unexpected Gaia ID of the signed in user [expected = "
-                  @"\"%@\", actual = \"%s\"]",
-                  identity.gaiaID, info.gaia.c_str());
+  if (base::SysNSStringToUTF8(identity.gaiaID) != info.gaia) {
+    NSString* errorStr =
+        [NSString stringWithFormat:
+                      @"Unexpected Gaia ID of the signed in user [expected = "
+                      @"\"%@\", actual = \"%s\"]",
+                      identity.gaiaID, info.gaia.c_str()];
+    return chrome_test_util::NSErrorWithLocalizedDescription(errorStr);
+  }
+
+  return nil;
 }
 
-+ (void)assertSignedOut {
++ (NSError*)checkSignedOut {
   // Required to avoid any problem since the following test is not dependant to
   // UI, and the previous action has to be totally finished before going through
   // the assert.
@@ -65,9 +76,14 @@
 
   ios::ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
-  GREYAssertFalse(IdentityManagerFactory::GetForBrowserState(browser_state)
-                      ->HasPrimaryAccount(),
-                  @"Unexpected signed in user");
+
+  if (IdentityManagerFactory::GetForBrowserState(browser_state)
+          ->HasPrimaryAccount()) {
+    return chrome_test_util::NSErrorWithLocalizedDescription(
+        @"Unexpected signed in user");
+  }
+
+  return nil;
 }
 
 @end

@@ -6,6 +6,7 @@
 #define IOS_CHROME_BROWSER_UI_AUTHENTICATION_SIGNIN_EARLGREY_UTILS_H_
 
 #import <Foundation/Foundation.h>
+#include "base/compiler_specific.h"
 
 @class ChromeIdentity;
 
@@ -21,11 +22,12 @@
 // Returns a fake managed identity.
 + (ChromeIdentity*)fakeManagedIdentity;
 
-// Asserts that |identity| is actually signed in to the active profile.
-+ (void)assertSignedInWithIdentity:(ChromeIdentity*)identity;
+// Checks that |identity| is actually signed in to the active profile.
++ (NSError*)checkSignedInWithIdentity:(ChromeIdentity*)identity
+    WARN_UNUSED_RESULT;
 
-// Asserts that no identity is signed in.
-+ (void)assertSignedOut;
+// Checks that no identity is signed in.
++ (NSError*)checkSignedOut WARN_UNUSED_RESULT;
 
 @end
 

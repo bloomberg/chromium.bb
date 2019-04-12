@@ -199,7 +199,8 @@ void SignOut() {
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
 
-  [SigninEarlGreyUtils assertSignedOut];
+  NSError* signedOutError = [SigninEarlGreyUtils checkSignedOut];
+  GREYAssertNil(signedOutError, signedOutError.localizedDescription);
 }
 
 }  // namespace

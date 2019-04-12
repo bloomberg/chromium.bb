@@ -74,7 +74,9 @@ using chrome_test_util::SettingsDoneButton;
   [self confirmSigninConfirmationDialog];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
-  [SigninEarlGreyUtils assertSignedInWithIdentity:identity];
+  NSError* signedInError =
+      [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
+  GREYAssertNil(signedInError, signedInError.localizedDescription);
 }
 
 + (void)selectIdentityWithEmail:(NSString*)userEmail {
