@@ -35,5 +35,11 @@ const base::Feature kFCMInvalidationsForSyncDontCheckVersion = {
     "FCMInvalidationsForSyncDontCheckVersion",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
+// TODO(melandory): Once FCM invalidations are launched, this feature toggle
+// should be removed.
+const base::Feature kTiclInvalidationsStartInvalidatorOnActiveHandler = {
+    "TiclInvalidationsStartInvalidatorOnActiveHandler",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
 }  // namespace switches
 }  // namespace invalidation

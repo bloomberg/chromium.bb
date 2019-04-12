@@ -14,6 +14,7 @@
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/invalidation/impl/gcm_invalidation_bridge.h"
 #include "components/invalidation/impl/invalidation_service_util.h"
+#include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/impl/invalidator.h"
 #include "components/invalidation/impl/non_blocking_invalidator.h"
 #include "components/invalidation/public/invalidation_util.h"
@@ -130,6 +131,12 @@ void TiclInvalidationService::RegisterInvalidationHandler(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(2) << "Registering an invalidation handler";
   invalidator_registrar_->RegisterHandler(handler);
+  // Start the invalidator if it wasn't started before, because there was no
+  // handler registered.
+  if (!IsStarted() && IsReadyToStart()) {
+    StartInvalidator();
+  }
+
   logger_.OnRegistration(handler->GetOwnerName());
 }
 
@@ -321,6 +328,15 @@ void TiclInvalidationService::OnIncomingInvalidation(
 std::string TiclInvalidationService::GetOwnerName() const { return "TICL"; }
 
 bool TiclInvalidationService::IsReadyToStart() {
+  if (base::FeatureList::IsEnabled(
+          invalidation::switches::
+              kTiclInvalidationsStartInvalidatorOnActiveHandler) &&
+      !invalidator_registrar_->HasRegisteredHandlers()) {
+    DVLOG(2) << "Not starting TiclInvalidationService: "
+             << "no registered handlers";
+    return false;
+  }
+
   if (!identity_provider_->IsActiveAccountWithRefreshToken()) {
     DVLOG(2) << "Not starting TiclInvalidationService: "
              << "active account is not available";
