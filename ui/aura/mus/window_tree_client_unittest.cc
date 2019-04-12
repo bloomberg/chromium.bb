@@ -617,6 +617,28 @@ TEST_F(WindowTreeClientTest, SetPropertySucceeded) {
   EXPECT_TRUE(root_window()->GetProperty(client::kAlwaysOnTopKey));
 }
 
+TEST_F(WindowTreeClientTest, SetPropertyWithSameValueDoesntCallServer) {
+  // False should be the default, and setting to false should not notify the
+  // server.
+  EXPECT_FALSE(root_window()->GetProperty(client::kAlwaysOnTopKey));
+  root_window()->SetProperty(client::kAlwaysOnTopKey, false);
+  EXPECT_EQ(
+      0u, window_tree()->GetChangeCountForType(WindowTreeChangeType::PROPERTY));
+
+  // Setting to true, twice, should notify the server only once.
+  root_window()->SetProperty(client::kAlwaysOnTopKey, true);
+  root_window()->SetProperty(client::kAlwaysOnTopKey, true);
+  EXPECT_EQ(
+      1u, window_tree()->GetChangeCountForType(WindowTreeChangeType::PROPERTY));
+  window_tree()->AckAllChanges();
+
+  // Setting back to false, twice, should notify the server only once.
+  root_window()->SetProperty(client::kAlwaysOnTopKey, false);
+  root_window()->SetProperty(client::kAlwaysOnTopKey, false);
+  EXPECT_EQ(
+      1u, window_tree()->GetChangeCountForType(WindowTreeChangeType::PROPERTY));
+}
+
 // Verifies properties are reverted if the server replied that the change
 // failed.
 TEST_F(WindowTreeClientTest, SetPropertyFailed) {
