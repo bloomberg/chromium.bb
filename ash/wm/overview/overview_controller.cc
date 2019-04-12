@@ -500,13 +500,9 @@ void OverviewController::OnOverviewButtonTrayLongPressed(
     while (active_window && ::wm::GetTransientParent(active_window))
       active_window = ::wm::GetTransientParent(active_window);
 
-    // Do nothing if there are no active windows or less than two windows to
-    // work with.
-    if (!active_window ||
-        Shell::Get()->mru_window_tracker()->BuildWindowForCycleList().size() <
-            2u) {
+    // Do nothing if there are no active windows.
+    if (!active_window)
       return;
-    }
 
     // Show a toast if the window cannot be snapped.
     if (!CanSnapInSplitview(active_window)) {

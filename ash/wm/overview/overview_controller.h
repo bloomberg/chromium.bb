@@ -62,6 +62,7 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   // Called when the overview button tray has been long pressed. Enters
   // splitview mode if the active window is snappable. Also enters overview mode
   // if device is not currently in overview mode.
+  // TODO(sammiequon): Move this function to SplitViewController.
   void OnOverviewButtonTrayLongPressed(const gfx::Point& event_location);
 
   // Returns true if we're in start-overview animation.
