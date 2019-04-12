@@ -3743,8 +3743,8 @@ be describing additional metrics about the same event.
     </summary>
     <aggregation>
       <history>
-        <statistics>
-          <enumeration export="False"/>
+        <statistics export="False">
+          <enumeration/>
         </statistics>
       </history>
     </aggregation>

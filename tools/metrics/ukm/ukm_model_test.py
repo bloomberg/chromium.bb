@@ -37,8 +37,8 @@ PRETTY_XML = """
   <metric name="Metric2">
     <aggregation>
       <history>
-        <statistics>
-          <enumeration export="False"/>
+        <statistics export="False">
+          <enumeration/>
         </statistics>
       </history>
     </aggregation>
