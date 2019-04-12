@@ -144,10 +144,9 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   // not be offered.
   void MaybeOfferAutomaticGeneration();
 
-  // Signals the browser that it should offer or rescind automatic password
-  // generation depending whether the user has just focused a form field
-  // suitable for generation or has changed focus from such a field.
-  void AutomaticGenerationStatusChanged(bool available);
+  // Signals the browser that it should offer automatic password generation
+  // as a result of the user focusing a password field eligible for generation.
+  void AutomaticGenerationAvailable();
 
   // Show UI for editing a generated password at |generation_element_|.
   void ShowEditingPopup();

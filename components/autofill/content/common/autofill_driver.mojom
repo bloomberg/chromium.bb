@@ -146,13 +146,10 @@ interface PasswordGenerationDriver {
   // form. This is used for UMA stats.
   GenerationAvailableForForm(PasswordForm password_form);
 
-  // Notifies the browser when automatic generation becomes available or
-  // unavailable and provides data needed by the UI.
-  // TODO(crbug.com/951714): Replace this with AutomaticGenerationAvailable,
-  // since the available == false case now overlaps with
-  // GenerationElementLostFocus.
-  AutomaticGenerationStatusChanged(
-      bool available, PasswordGenerationUIData? password_generation_ui_data);
+  // Notifies the browser when automatic generation becomes available
+  // and provides data needed by the UI.
+  AutomaticGenerationAvailable(
+    PasswordGenerationUIData password_generation_ui_data);
 
   // Instructs the browser to show the popup for editing a generated password.
   // The location should be specified in the renderers coordinate system. Form

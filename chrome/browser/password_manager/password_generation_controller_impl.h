@@ -31,12 +31,11 @@ class PasswordGenerationControllerImpl
   ~PasswordGenerationControllerImpl() override;
 
   // PasswordGenerationController:
-  void OnAutomaticGenerationStatusChanged(
-      bool available,
-      const base::Optional<
-          autofill::password_generation::PasswordGenerationUIData>& ui_data,
+  void OnAutomaticGenerationAvailable(
+      const autofill::password_generation::PasswordGenerationUIData& ui_data,
       const base::WeakPtr<password_manager::PasswordManagerDriver>& driver)
       override;
+  void OnGenerationElementLostFocus() override;
   void OnGenerationRequested() override;
   void GeneratedPasswordAccepted(const base::string16& password) override;
   void GeneratedPasswordRejected() override;

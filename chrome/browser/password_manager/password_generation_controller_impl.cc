@@ -73,31 +73,31 @@ struct PasswordGenerationControllerImpl::GenerationElementData {
   uint32_t max_password_length;
 };
 
-void PasswordGenerationControllerImpl::OnAutomaticGenerationStatusChanged(
-    bool available,
-    const base::Optional<
-        autofill::password_generation::PasswordGenerationUIData>& ui_data,
+void PasswordGenerationControllerImpl::OnAutomaticGenerationAvailable(
+    const autofill::password_generation::PasswordGenerationUIData& ui_data,
     const base::WeakPtr<password_manager::PasswordManagerDriver>& driver) {
   target_frame_driver_ = driver;
-  if (available) {
-    DCHECK(ui_data.has_value());
-    generation_element_data_ = std::make_unique<GenerationElementData>(
-        ui_data.value().password_form,
-        autofill::CalculateFormSignature(
-            ui_data.value().password_form.form_data),
-        autofill::CalculateFieldSignatureByNameAndType(
-            ui_data.value().generation_element, "password"),
-        ui_data.value().max_length);
-  } else {
-    generation_element_data_.reset();
-  }
+  generation_element_data_ = std::make_unique<GenerationElementData>(
+      ui_data.password_form,
+      autofill::CalculateFormSignature(ui_data.password_form.form_data),
+      autofill::CalculateFieldSignatureByNameAndType(ui_data.generation_element,
+                                                     "password"),
+      ui_data.max_length);
+
   if (!manual_filling_controller_) {
     manual_filling_controller_ =
         ManualFillingController::GetOrCreate(web_contents_);
   }
 
   DCHECK(manual_filling_controller_);
-  manual_filling_controller_->OnAutomaticGenerationStatusChanged(available);
+  manual_filling_controller_->OnAutomaticGenerationStatusChanged(true);
+}
+
+void PasswordGenerationControllerImpl::OnGenerationElementLostFocus() {
+  if (manual_filling_controller_ && generation_element_data_) {
+    manual_filling_controller_->OnAutomaticGenerationStatusChanged(false);
+  }
+  generation_element_data_.reset();
 }
 
 void PasswordGenerationControllerImpl::OnGenerationRequested() {

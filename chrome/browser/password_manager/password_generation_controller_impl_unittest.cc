@@ -159,9 +159,8 @@ void PasswordGenerationControllerTest::InitializeGeneration(
   EXPECT_CALL(mock_manual_filling_controller_,
               OnAutomaticGenerationStatusChanged(true));
 
-  controller()->OnAutomaticGenerationStatusChanged(
-      true, GetTestGenerationUIData1(),
-      mock_password_manager_driver_->AsWeakPtr());
+  controller()->OnAutomaticGenerationAvailable(
+      GetTestGenerationUIData1(), mock_password_manager_driver_->AsWeakPtr());
 
   ON_CALL(*mock_generation_helper_, GeneratePassword(_, _, _, _, _))
       .WillByDefault(Return(password));
@@ -182,18 +181,30 @@ TEST_F(PasswordGenerationControllerTest, IsNotRecreatedForSameWebContents) {
 TEST_F(PasswordGenerationControllerTest, RelaysAutomaticGenerationAvailable) {
   EXPECT_CALL(mock_manual_filling_controller_,
               OnAutomaticGenerationStatusChanged(true));
-  controller()->OnAutomaticGenerationStatusChanged(
-      true, GetTestGenerationUIData1(), nullptr);
+  controller()->OnAutomaticGenerationAvailable(GetTestGenerationUIData1(),
+                                               nullptr);
 }
 
-TEST_F(PasswordGenerationControllerTest, RelaysAutmaticGenerationUnavailable) {
+TEST_F(PasswordGenerationControllerTest, OnlySignalsGenerationUnavailableOnce) {
+  EXPECT_CALL(mock_manual_filling_controller_,
+              OnAutomaticGenerationStatusChanged(true));
+  controller()->OnAutomaticGenerationAvailable(
+      GetTestGenerationUIData1(), mock_password_manager_driver_->AsWeakPtr());
   EXPECT_CALL(mock_manual_filling_controller_,
               OnAutomaticGenerationStatusChanged(false));
-  controller()->OnAutomaticGenerationStatusChanged(false, base::nullopt,
-                                                   nullptr);
+  controller()->OnGenerationElementLostFocus();
+  controller()->OnGenerationElementLostFocus();
 }
 
-// Tests that if AutomaticGenerationStatusChanged(true) is called for different
+TEST_F(PasswordGenerationControllerTest,
+       OnlySendsGenerationUnavailableIfAvailableBefore) {
+  EXPECT_CALL(mock_manual_filling_controller_,
+              OnAutomaticGenerationStatusChanged(false))
+      .Times(0);
+  controller()->OnGenerationElementLostFocus();
+}
+
+// Tests that if AutomaticGenerationAvailable is called for different
 // password forms, the form and field signatures used for password generation
 // are updated.
 TEST_F(PasswordGenerationControllerTest,
@@ -202,12 +213,11 @@ TEST_F(PasswordGenerationControllerTest,
   EXPECT_CALL(mock_manual_filling_controller_,
               OnAutomaticGenerationStatusChanged(true))
       .Times(2);
-  controller()->OnAutomaticGenerationStatusChanged(
-      true, GetTestGenerationUIData1(),
-      mock_password_manager_driver_->AsWeakPtr());
+  controller()->OnAutomaticGenerationAvailable(
+      GetTestGenerationUIData1(), mock_password_manager_driver_->AsWeakPtr());
   PasswordGenerationUIData new_ui_data = GetTestGenerationUIData2();
-  controller()->OnAutomaticGenerationStatusChanged(
-      true, new_ui_data, mock_password_manager_driver_->AsWeakPtr());
+  controller()->OnAutomaticGenerationAvailable(
+      new_ui_data, mock_password_manager_driver_->AsWeakPtr());
 
   autofill::FormSignature form_signature =
       autofill::CalculateFormSignature(new_ui_data.password_form.form_data);
