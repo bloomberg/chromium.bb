@@ -140,7 +140,8 @@ class URLLoaderInterceptor::IOState
   }
 
   // Callback on IO thread whenever NavigationURLLoaderImpl needs a
-  // URLLoaderFactory with a network::mojom::TrustedURLLoaderHeaderClient.
+  // URLLoaderFactory with a network::mojom::TrustedURLLoaderHeaderClient or
+  // for a non-network-service scheme.
   void InterceptNavigationRequestCallback(
       network::mojom::URLLoaderFactoryRequest* request) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
