@@ -583,6 +583,18 @@ base::string16 AXPlatformNodeWin::GetText() const {
   return hypertext_.hypertext;
 }
 
+bool AXPlatformNodeWin::HasActiveComposition() const {
+  return active_composition_range_.end() > active_composition_range_.start();
+}
+
+gfx::Range AXPlatformNodeWin::GetActiveCompositionOffsets() const {
+  return active_composition_range_;
+}
+
+void AXPlatformNodeWin::OnActiveComposition(const gfx::Range& range) {
+  active_composition_range_ = range;
+}
+
 //
 // IAccessible implementation.
 //

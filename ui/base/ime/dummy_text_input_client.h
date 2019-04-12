@@ -61,6 +61,7 @@ class DummyTextInputClient : public TextInputClient {
   void SetCompositionFromExistingText(
       const gfx::Range& range,
       const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) override;
+  void SetActiveCompositionForAccessibility(const gfx::Range& range) override;
 #endif
 
   int insert_char_count() const { return insert_char_count_; }

@@ -211,6 +211,12 @@ class COMPONENT_EXPORT(UI_BASE_IME) TextInputClient {
   virtual void SetCompositionFromExistingText(
       const gfx::Range& range,
       const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) = 0;
+  // Notifies accessibility about active composition. This API is currently
+  // only defined for TSF which is available only on Windows
+  // https://docs.microsoft.com/en-us/windows/desktop/api/UIAutomationCore/
+  // nf-uiautomationcore-itexteditprovider-getactivecomposition
+  virtual void SetActiveCompositionForAccessibility(
+      const gfx::Range& range) = 0;
 #endif
 };
 

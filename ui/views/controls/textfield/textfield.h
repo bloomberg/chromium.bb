@@ -377,6 +377,7 @@ class VIEWS_EXPORT Textfield : public View,
   void SetCompositionFromExistingText(
       const gfx::Range& range,
       const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) override;
+  void SetActiveCompositionForAccessibility(const gfx::Range& range) override;
 #endif
 
  protected:
