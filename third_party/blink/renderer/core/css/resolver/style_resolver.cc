@@ -1433,20 +1433,18 @@ static bool ShouldIgnoreTextTrackAuthorStyle(const Document& document) {
   return false;
 }
 
-static inline bool IsPropertyInWhitelist(
-    PropertyWhitelistType property_whitelist_type,
-    CSSPropertyID property,
-    const Document& document) {
-  if (property_whitelist_type == kPropertyWhitelistNone)
-    return true;  // Early bail for the by far most common case.
-
-  if (property_whitelist_type == kPropertyWhitelistFirstLetter)
-    return IsValidFirstLetterStyleProperty(property);
-
-  if (property_whitelist_type == kPropertyWhitelistCue)
-    return IsValidCueStyleProperty(property) &&
-           !ShouldIgnoreTextTrackAuthorStyle(document);
-
+static bool PassesPropertyFilter(ValidPropertyFilter valid_property_filter,
+                                 CSSPropertyID property,
+                                 const Document& document) {
+  switch (valid_property_filter) {
+    case ValidPropertyFilter::kNoFilter:
+      return true;
+    case ValidPropertyFilter::kFirstLetter:
+      return IsValidFirstLetterStyleProperty(property);
+    case ValidPropertyFilter::kCue:
+      return IsValidCueStyleProperty(property) &&
+             !ShouldIgnoreTextTrackAuthorStyle(document);
+  }
   NOTREACHED();
   return true;
 }
@@ -1458,7 +1456,7 @@ void StyleResolver::ApplyAllProperty(
     StyleResolverState& state,
     const CSSValue& all_value,
     bool inherited_only,
-    PropertyWhitelistType property_whitelist_type) {
+    ValidPropertyFilter valid_property_filter) {
   // The 'all' property doesn't apply to variables:
   // https://drafts.csswg.org/css-variables/#defining-variables
   if (priority == kResolveVariables)
@@ -1487,8 +1485,8 @@ void StyleResolver::ApplyAllProperty(
     if (!property_class.IsAffectedByAll())
       continue;
 
-    if (!IsPropertyInWhitelist(property_whitelist_type, property_id,
-                               GetDocument()))
+    if (!PassesPropertyFilter(valid_property_filter, property_id,
+                              GetDocument()))
       continue;
 
     // When hitting matched properties' cache, only inherited properties will be
@@ -1521,13 +1519,12 @@ inline void ApplyProperty<kResolveVariables>(
 
 template <CSSPropertyPriority priority,
           StyleResolver::ShouldUpdateNeedsApplyPass shouldUpdateNeedsApplyPass>
-void StyleResolver::ApplyProperties(
-    StyleResolverState& state,
-    const CSSPropertyValueSet* properties,
-    bool is_important,
-    bool inherited_only,
-    NeedsApplyPass& needs_apply_pass,
-    PropertyWhitelistType property_whitelist_type) {
+void StyleResolver::ApplyProperties(StyleResolverState& state,
+                                    const CSSPropertyValueSet* properties,
+                                    bool is_important,
+                                    bool inherited_only,
+                                    NeedsApplyPass& needs_apply_pass,
+                                    ValidPropertyFilter valid_property_filter) {
   unsigned property_count = properties->PropertyCount();
   for (unsigned i = 0; i < property_count; ++i) {
     CSSPropertyValueSet::PropertyReference current = properties->PropertyAt(i);
@@ -1541,7 +1538,7 @@ void StyleResolver::ApplyProperties(
         needs_apply_pass.Set(kLowPropertyPriority, is_important);
       }
       ApplyAllProperty<priority>(state, current.Value(), inherited_only,
-                                 property_whitelist_type);
+                                 valid_property_filter);
       continue;
     }
 
@@ -1552,8 +1549,8 @@ void StyleResolver::ApplyProperties(
     if (is_important != current.IsImportant())
       continue;
 
-    if (!IsPropertyInWhitelist(property_whitelist_type, property_id,
-                               GetDocument()))
+    if (!PassesPropertyFilter(valid_property_filter, property_id,
+                              GetDocument()))
       continue;
 
     if (inherited_only && !current.IsInherited()) {
@@ -1602,8 +1599,8 @@ void StyleResolver::ApplyMatchedProperties(StyleResolverState& state,
       ApplyProperties<priority, shouldUpdateNeedsApplyPass>(
           state, matched_properties.properties.Get(), is_important,
           inherited_only, needs_apply_pass,
-          static_cast<PropertyWhitelistType>(
-              matched_properties.types_.whitelist_type));
+          static_cast<ValidPropertyFilter>(
+              matched_properties.types_.valid_property_filter));
     }
     state.SetApplyPropertyToRegularStyle(true);
     state.SetApplyPropertyToVisitedLinkStyle(false);
@@ -1613,8 +1610,8 @@ void StyleResolver::ApplyMatchedProperties(StyleResolverState& state,
     ApplyProperties<priority, shouldUpdateNeedsApplyPass>(
         state, matched_properties.properties.Get(), is_important,
         inherited_only, needs_apply_pass,
-        static_cast<PropertyWhitelistType>(
-            matched_properties.types_.whitelist_type));
+        static_cast<ValidPropertyFilter>(
+            matched_properties.types_.valid_property_filter));
   }
 }
 
