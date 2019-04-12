@@ -31,6 +31,7 @@
 #include "net/socket/next_proto.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/spdy/spdy_session_key.h"
+#include "net/spdy/spdy_session_pool.h"
 #include "net/ssl/ssl_config_service.h"
 
 namespace net {
@@ -51,7 +52,8 @@ struct SSLConfig;
 
 // An HttpStreamRequest exists for each stream which is in progress of being
 // created for the HttpStreamFactory.
-class HttpStreamFactory::Job {
+class HttpStreamFactory::Job
+    : public SpdySessionPool::SpdySessionRequest::Delegate {
  public:
   // For jobs issued simultaneously to an HTTP/2 supported server, a delay is
   // applied to avoid unnecessary socket connection establishments.
@@ -78,6 +80,26 @@ class HttpStreamFactory::Job {
         const SSLConfig& used_ssl_config,
         const ProxyInfo& used_proxy_info,
         std::unique_ptr<WebSocketHandshakeStreamBase> stream) = 0;
+
+    // Alternative versions of above functions, for use when pooled connections
+    // call into |this|. The difference is the Job must be destroyed in these
+    // callbacks, to prevent other things from happening.
+    //
+    // TODO(mmenke): Remove these methods.
+    virtual void OnStreamReadyOnPooledConnection(
+        bool was_alpn_negotiated,
+        NextProto negotiated_protocol,
+        bool using_spdy,
+        const SSLConfig& used_ssl_config,
+        const ProxyInfo& used_proxy_info,
+        std::unique_ptr<HttpStream> stream) = 0;
+    virtual void OnBidirectionalStreamImplReadyOnPooledConnection(
+        bool was_alpn_negotiated,
+        NextProto negotiated_protocol,
+        bool using_spdy,
+        const SSLConfig& used_ssl_config,
+        const ProxyInfo& used_proxy_info,
+        std::unique_ptr<BidirectionalStreamImpl> stream) = 0;
 
     // Invoked when |job| fails to create a stream.
     virtual void OnStreamFailed(Job* job,
@@ -140,16 +162,6 @@ class HttpStreamFactory::Job {
     // will wait for Job::Resume() to be called before advancing.
     virtual bool ShouldWait(Job* job) = 0;
 
-    // Called when |job| determines the appropriate |spdy_session_key| for the
-    // HttpStreamRequest. Note that this does not mean that HTTP/2 is
-    // necessarily supported for this SpdySessionKey, since we may need to wait
-    // for ALPN negotiation to complete before knowing if HTTP/2 is available.
-    virtual void SetSpdySessionKey(Job* job,
-                                   const SpdySessionKey& spdy_session_key) = 0;
-
-    // Remove session from the SpdySessionRequestMap.
-    virtual void RemoveRequestFromSpdySessionRequestMapForJob(Job* job) = 0;
-
     virtual const NetLogWithSource* GetNetLog() const = 0;
 
     virtual WebSocketHandshakeStreamBase::CreateHelper*
@@ -197,7 +209,7 @@ class HttpStreamFactory::Job {
       bool is_websocket,
       bool enable_ip_based_pooling,
       NetLog* net_log);
-  virtual ~Job();
+  ~Job() override;
 
   // Start initiates the process of creating a new HttpStream.
   // |delegate_| will be notified upon completion.
@@ -338,6 +350,7 @@ class HttpStreamFactory::Job {
   int DoCreateStreamComplete(int result);
 
   void ResumeInitConnection();
+
   // Creates a SpdyHttpStream or a BidirectionalStreamImpl from the given values
   // and sets to |stream_| or |bidirectional_stream_impl_| respectively. Does
   // nothing if |stream_factory_| is for WebSocket.
@@ -346,6 +359,15 @@ class HttpStreamFactory::Job {
 
   // Returns to STATE_INIT_CONNECTION and resets some state.
   void ReturnToStateInitConnection(bool close_connection);
+
+  // SpdySessionPool::SpdySessionRequest::Delegate implementation:
+  void OnSpdySessionAvailable(bool was_alpn_negotiated,
+                              NextProto negotiated_protocol,
+                              bool using_spdy,
+                              const SSLConfig& used_ssl_config,
+                              const ProxyInfo& used_proxy_info,
+                              NetLogSource source_dependency,
+                              base::WeakPtr<SpdySession> spdy_session) override;
 
   // Sets several fields of |ssl_config| based on the proxy info and other
   // factors.
@@ -384,15 +406,9 @@ class HttpStreamFactory::Job {
   // allowed_bad_certs list. Returns the error code.
   int HandleCertificateError(int error);
 
-  // Called to handle a client certificate request.
-  int HandleCertificateRequest(int error);
-
   ClientSocketPoolManager::SocketGroupType GetSocketGroup() const;
 
   void MaybeCopyConnectionAttemptsFromSocketOrHandle();
-
-  // Record histograms of latency until Connect() completes.
-  static void LogHttpConnectedMetrics(const ClientSocketHandle& handle);
 
   // Invoked by the transport socket pool after host resolution is complete
   // to allow the connection to be aborted, if a matching SPDY session can
@@ -521,6 +537,8 @@ class HttpStreamFactory::Job {
   base::OnceClosure restart_with_auth_callback_;
 
   NetErrorDetails net_error_details_;
+
+  std::unique_ptr<SpdySessionPool::SpdySessionRequest> spdy_session_request_;
 
   base::WeakPtrFactory<Job> ptr_factory_;
 

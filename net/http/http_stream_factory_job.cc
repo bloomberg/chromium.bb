@@ -50,7 +50,6 @@
 #include "net/spdy/http2_push_promise_index.h"
 #include "net/spdy/spdy_http_stream.h"
 #include "net/spdy/spdy_session.h"
-#include "net/spdy/spdy_session_pool.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
@@ -287,6 +286,10 @@ void HttpStreamFactory::Job::Resume() {
 void HttpStreamFactory::Job::Orphan() {
   DCHECK_EQ(job_type_, ALTERNATIVE);
   net_log_.AddEvent(NetLogEventType::HTTP_STREAM_JOB_ORPHANED);
+
+  // Watching for SPDY sessions isn't supported on orphaned jobs.
+  // TODO(mmenke): Fix that.
+  spdy_session_request_.reset();
 }
 
 void HttpStreamFactory::Job::SetPriority(RequestPriority priority) {
@@ -460,6 +463,7 @@ void HttpStreamFactory::Job::OnCertificateErrorCallback(
     int result,
     const SSLInfo& ssl_info) {
   DCHECK_NE(job_type_, PRECONNECT);
+  DCHECK(!spdy_session_request_);
 
   MaybeCopyConnectionAttemptsFromSocketOrHandle();
 
@@ -477,6 +481,10 @@ void HttpStreamFactory::Job::OnNeedsProxyAuthCallback(
 
   restart_with_auth_callback_ = std::move(restart_with_auth_callback);
 
+  // This is called out of band, so need to abort the SpdySessionRequest to
+  // prevent being passed a new session while waiting on proxy auth credentials.
+  spdy_session_request_.reset();
+
   delegate_->OnNeedsProxyAuth(this, response, server_ssl_config_, proxy_info_,
                               auth_controller);
   // |this| may be deleted after this call.
@@ -485,6 +493,7 @@ void HttpStreamFactory::Job::OnNeedsProxyAuthCallback(
 void HttpStreamFactory::Job::OnNeedsClientAuthCallback(
     SSLCertRequestInfo* cert_info) {
   DCHECK_NE(job_type_, PRECONNECT);
+  DCHECK(!spdy_session_request_);
 
   delegate_->OnNeedsClientAuth(this, server_ssl_config_, cert_info);
   // |this| may be deleted after this call.
@@ -494,6 +503,7 @@ void HttpStreamFactory::Job::OnHttpsProxyTunnelResponseRedirectCallback(
     const HttpResponseInfo& response_info,
     std::unique_ptr<HttpStream> stream) {
   DCHECK_NE(job_type_, PRECONNECT);
+  DCHECK(!spdy_session_request_);
 
   delegate_->OnHttpsProxyTunnelResponseRedirect(
       this, response_info, server_ssl_config_, proxy_info_, std::move(stream));
@@ -536,9 +546,16 @@ void HttpStreamFactory::Job::RunLoop(int result) {
   if (result == ERR_IO_PENDING)
     return;
 
+  // Stop watching for new SpdySessions, to avoid receiving a new SPDY session
+  // while doing anything other than waiting to establish a connection.
+  spdy_session_request_.reset();
+
   if (!using_quic_) {
     // Resume all throttled Jobs with the same SpdySessionKey if there are any,
     // now that this job is done.
+    //
+    // TODO(mmenke): The |spdy_session_request_| call above already does this,
+    // except for preconnects. Make it resume preconnects, too.
     session_->spdy_session_pool()->ResumePendingRequests(spdy_session_key_);
   }
 
@@ -744,9 +761,17 @@ int HttpStreamFactory::Job::DoEvaluateThrottle() {
     return OK;
   if (using_quic_)
     return OK;
-  // Ask |delegate_delegate_| to update the HTTP/2 session key for the request
-  // that launched this job.
-  delegate_->SetSpdySessionKey(this, spdy_session_key_);
+
+  DCHECK(!spdy_session_request_);
+  if (job_type_ != PRECONNECT) {
+    // Start watching for an available H2 connection. Note that this does not
+    // mean that HTTP/2 is necessarily supported for this SpdySessionKey, since
+    // we may need to wait for ALPN to complete before knowing if HTTP/2 is
+    // available.
+    spdy_session_request_ =
+        session_->spdy_session_pool()->CreateRequestForSpdySession(
+            spdy_session_key_, this);
+  }
 
   // Throttle connect to an HTTP/2 supported server, if there are pending
   // requests with the same SpdySessionKey.
@@ -1245,10 +1270,38 @@ void HttpStreamFactory::Job::ReturnToStateInitConnection(
     connection_->socket()->Disconnect();
   connection_->Reset();
 
-  if (!using_quic_)
-    delegate_->RemoveRequestFromSpdySessionRequestMapForJob(this);
+  spdy_session_request_.reset();
 
   next_state_ = STATE_INIT_CONNECTION;
+}
+
+void HttpStreamFactory::Job::OnSpdySessionAvailable(
+    bool was_alpn_negotiated,
+    NextProto negotiated_protocol,
+    bool using_spdy,
+    const SSLConfig& used_ssl_config,
+    const ProxyInfo& used_proxy_info,
+    NetLogSource source_dependency,
+    base::WeakPtr<SpdySession> spdy_session) {
+  DCHECK(spdy_session);
+
+  was_alpn_negotiated_ = was_alpn_negotiated;
+  negotiated_protocol_ = negotiated_protocol;
+  using_spdy_ = using_spdy;
+
+  if (stream_type_ == HttpStreamRequest::BIDIRECTIONAL_STREAM) {
+    delegate_->OnBidirectionalStreamImplReadyOnPooledConnection(
+        was_alpn_negotiated, negotiated_protocol, using_spdy, used_ssl_config,
+        used_proxy_info,
+        std::make_unique<BidirectionalStreamSpdyImpl>(spdy_session,
+                                                      source_dependency));
+  } else {
+    delegate_->OnStreamReadyOnPooledConnection(
+        was_alpn_negotiated, negotiated_protocol, using_spdy, used_ssl_config,
+        used_proxy_info,
+        std::make_unique<SpdyHttpStream>(spdy_session, kNoPushedStreamFound,
+                                         source_dependency));
+  }
 }
 
 void HttpStreamFactory::Job::InitSSLConfig(SSLConfig* ssl_config,
