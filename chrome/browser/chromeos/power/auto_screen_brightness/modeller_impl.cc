@@ -372,8 +372,20 @@ void ModellerImpl::RunCustomization() {
   global_curve_.emplace(
       MonotoneCubicSpline(model_config_.log_lux, model_config_.brightness));
 
+  // Get |model_als_horizon_seconds| from finch and use the value from
+  // |model_config_| as its default.
+  int model_als_horizon_seconds = GetFieldTrialParamByFeatureAsInt(
+      features::kAutoScreenBrightness, "model_als_horizon_seconds",
+      model_config_.model_als_horizon_seconds);
+
+  // If finch param is invalid, use the value from |model_config_|, which is
+  // guaranteed to be valid.
+  if (model_als_horizon_seconds <= 0) {
+    // TODO(jiameng): log model param error.
+    model_als_horizon_seconds = model_config_.model_als_horizon_seconds;
+  }
   log_als_values_ = std::make_unique<AmbientLightSampleBuffer>(
-      base::TimeDelta::FromSeconds(model_config_.model_als_horizon_seconds));
+      base::TimeDelta::FromSeconds(model_als_horizon_seconds));
 
   // TODO(jiameng): the following params are probably not useful and can be
   // removed.
