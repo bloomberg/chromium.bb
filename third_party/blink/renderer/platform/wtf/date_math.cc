@@ -84,9 +84,9 @@
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
-#include "third_party/blink/renderer/platform/wtf/string_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 #include <unicode/basictz.h>
@@ -556,14 +556,15 @@ static double ParseDateFromNullTerminatedCharacters(const char* date_string,
 
       SkipSpacesAndComments(date_string);
 
-      if (strncasecmp(date_string, "AM", 2) == 0) {
+      String date_wtf_string(date_string);
+      if (date_wtf_string.StartsWithIgnoringASCIICase("AM")) {
         if (hour > 12)
           return std::numeric_limits<double>::quiet_NaN();
         if (hour == 12)
           hour = 0;
         date_string += 2;
         SkipSpacesAndComments(date_string);
-      } else if (strncasecmp(date_string, "PM", 2) == 0) {
+      } else if (date_wtf_string.StartsWithIgnoringASCIICase("PM")) {
         if (hour > 12)
           return std::numeric_limits<double>::quiet_NaN();
         if (hour != 12)
@@ -585,8 +586,9 @@ static double ParseDateFromNullTerminatedCharacters(const char* date_string,
   // Don't fail if the time zone is missing.
   // Some websites omit the time zone (4275206).
   if (*date_string) {
-    if (strncasecmp(date_string, "GMT", 3) == 0 ||
-        strncasecmp(date_string, "UTC", 3) == 0) {
+    String date_wtf_string(date_string);
+    if (date_wtf_string.StartsWithIgnoringASCIICase("GMT") ||
+        date_wtf_string.StartsWithIgnoringASCIICase("UTC")) {
       date_string += 3;
       have_tz = true;
     }
@@ -617,9 +619,10 @@ static double ParseDateFromNullTerminatedCharacters(const char* date_string,
       }
       have_tz = true;
     } else {
+      date_wtf_string = String(date_string);
       for (size_t i = 0; i < base::size(known_zones); ++i) {
-        if (0 == strncasecmp(date_string, known_zones[i].tz_name,
-                             strlen(known_zones[i].tz_name))) {
+        if (date_wtf_string.StartsWithIgnoringASCIICase(
+                known_zones[i].tz_name)) {
           offset = known_zones[i].tz_offset;
           date_string += strlen(known_zones[i].tz_name);
           have_tz = true;
