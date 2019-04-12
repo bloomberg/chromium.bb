@@ -40769,6 +40769,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="NuxEmailProvidersInteractions">
+  <obsolete>
+    Deprecated 2019-04.
+  </obsolete>
   <summary>
     All possible user journeys when interacting with the NUX email provider
     page.
@@ -40787,6 +40790,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="NuxEmailProvidersSelections">
+  <obsolete>
+    Deprecated 2019-04.
+  </obsolete>
   <summary>Email providers that can be added by the NUX.</summary>
   <int value="0" label="Gmail"/>
   <int value="1" label="Yahoo"/>
