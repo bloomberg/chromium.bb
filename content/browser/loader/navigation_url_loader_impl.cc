@@ -916,6 +916,15 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 non_network_factory.get());
       }
+
+      if (g_loader_factory_interceptor.Get()) {
+        network::mojom::URLLoaderFactoryPtr factory_ptr;
+        auto request = mojo::MakeRequest(&factory_ptr);
+        g_loader_factory_interceptor.Get().Run(&request);
+        factory->Clone(std::move(request));
+        factory = base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
+            std::move(factory_ptr));
+      }
     } else {
       default_loader_used_ = true;
 
