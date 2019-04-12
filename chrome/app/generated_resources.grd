@@ -4269,9 +4269,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXTENSIONS_MENU_TITLE" desc="Title of the Extensions Menu">
         Extensions
       </message>
-      <message name="IDS_EXTENSIONS_MENU_SETTINGS_TOOLTIP" desc="Tooltip for the 'manage extensions' button inside the Extensions Menu">
-        Manage extensions
-      </message>
 
       <!-- Settings API bubble -->
       <message name="IDS_EXTENSIONS_SETTINGS_API_TITLE_HOME_PAGE_BUBBLE" desc="Title of a bubble warning users that an extension has overridden their home page setting">

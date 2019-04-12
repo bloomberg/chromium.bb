@@ -15,8 +15,10 @@
 #include "chrome/grit/generated_resources.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
+#include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/view_class_properties.h"
@@ -26,30 +28,14 @@ ExtensionsMenuView* g_extensions_dialog = nullptr;
 
 constexpr int EXTENSIONS_SETTINGS_ID = 42;
 
-std::unique_ptr<views::View> CreateHeaderView(const base::string16& title) {
-  auto container = std::make_unique<views::View>();
-
-  auto* layout_manager =
-      container->SetLayoutManager(std::make_unique<views::FlexLayout>());
-  layout_manager->SetOrientation(views::LayoutOrientation::kHorizontal)
-      .SetCrossAxisAlignment(views::LayoutAlignment::kCenter);
-
-  gfx::Insets header_insets =
-      ChromeLayoutProvider::Get()->GetInsetsMetric(views::INSETS_DIALOG);
-  container->SetProperty(views::kMarginsKey, new gfx::Insets(header_insets));
-
-  views::Label* title_label =
-      new views::Label(title, views::style::CONTEXT_DIALOG_TITLE);
-  title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  title_label->SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY);
-
-  container->AddChildView(title_label);
-  layout_manager->SetFlexForView(title_label,
-                                 views::FlexSpecification::ForSizeRule(
-                                     views::MinimumFlexSizeRule::kPreferred,
-                                     views::MaximumFlexSizeRule::kUnbounded));
-  return container;
+gfx::ImageSkia CreateVectorIcon(const gfx::VectorIcon& icon) {
+  return gfx::CreateVectorIcon(
+      icon, 16,
+      ui::NativeTheme::GetInstanceForNativeUi()->SystemDarkModeEnabled()
+          ? gfx::kGoogleGrey500
+          : gfx::kChromeIconGrey);
 }
+
 }  // namespace
 
 ExtensionsMenuView::ExtensionsMenuView(views::View* anchor_view,
@@ -79,15 +65,16 @@ ExtensionsMenuView::~ExtensionsMenuView() {
 
 void ExtensionsMenuView::ButtonPressed(views::Button* sender,
                                        const ui::Event& event) {
-  if (sender->id() != EXTENSIONS_SETTINGS_ID)
-    return;
+  DCHECK_EQ(sender->id(), EXTENSIONS_SETTINGS_ID);
   chrome::ShowExtensions(browser_, std::string());
 }
 
-base::string16 ExtensionsMenuView::GetAccessibleWindowTitle() const {
-  // TODO(pbos): Revisit this when subpanes exist so that the title read by a11y
-  // tools are in sync with the current visuals.
+base::string16 ExtensionsMenuView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_EXTENSIONS_MENU_TITLE);
+}
+
+bool ExtensionsMenuView::ShouldShowCloseButton() const {
+  return true;
 }
 
 bool ExtensionsMenuView::AcceleratorPressed(
@@ -112,25 +99,19 @@ bool ExtensionsMenuView::ShouldSnapFrameWidth() const {
 void ExtensionsMenuView::Repopulate() {
   RemoveAllChildViews(true);
 
-  auto header =
-      CreateHeaderView(l10n_util::GetStringUTF16(IDS_EXTENSIONS_MENU_TITLE));
-  header->AddChildView(CreateImageButtonForHeader(
-      kSettingsIcon, EXTENSIONS_SETTINGS_ID,
-      l10n_util::GetStringUTF16(IDS_EXTENSIONS_MENU_SETTINGS_TOOLTIP)));
-  AddChildView(std::move(header));
-
   for (auto action_id : model_->action_ids()) {
     AddChildView(std::make_unique<ExtensionsMenuButton>(
         browser_, model_->CreateActionForId(browser_, toolbar_actions_bar_,
                                             false, action_id)));
   }
 
-  // TODO(pbos): This is a placeholder until we have proper UI treatment of the
-  // no-extensions case.
-  if (model_->action_ids().empty()) {
-    AddChildView(std::make_unique<views::Label>(
-        l10n_util::GetStringUTF16(IDS_EXTENSIONS_MENU_TITLE)));
-  }
+  AddChildView(std::make_unique<views::Separator>());
+  auto footer = std::make_unique<HoverButton>(
+      this, CreateVectorIcon(kSettingsIcon),
+      l10n_util::GetStringUTF16(IDS_MANAGE_EXTENSION));
+  footer->set_id(EXTENSIONS_SETTINGS_ID);
+  manage_extensions_button_for_testing_ = footer.get();
+  AddChildView(std::move(footer));
 }
 
 // TODO(pbos): Revisit observed events below.
@@ -188,26 +169,4 @@ void ExtensionsMenuView::Hide() {
 
 ExtensionsMenuView* ExtensionsMenuView::GetExtensionsMenuViewForTesting() {
   return g_extensions_dialog;
-}
-
-std::unique_ptr<views::ImageButton>
-ExtensionsMenuView::CreateImageButtonForHeader(const gfx::VectorIcon& icon,
-                                               int id,
-                                               const base::string16& tooltip) {
-  views::ImageButton* image_button = views::CreateVectorImageButton(this);
-  views::SetImageFromVectorIconWithColor(
-      image_button, icon,
-      GetNativeTheme()->SystemDarkModeEnabled()
-          ? SkColorSetA(SK_ColorWHITE, 0xDD)
-          : gfx::kGoogleGrey700);
-  image_button->set_id(id);
-  image_button->SetTooltipText(tooltip);
-  image_button->SizeToPreferredSize();
-
-  // Let the settings button use a circular inkdrop shape.
-  auto highlight_path = std::make_unique<SkPath>();
-  highlight_path->addOval(gfx::RectToSkRect(gfx::Rect(image_button->size())));
-  image_button->SetProperty(views::kHighlightPathKey, highlight_path.release());
-
-  return base::WrapUnique<views::ImageButton>(image_button);
 }

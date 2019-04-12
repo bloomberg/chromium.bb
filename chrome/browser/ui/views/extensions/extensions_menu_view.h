@@ -11,12 +11,8 @@
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/button/button.h"
 
-namespace gfx {
-struct VectorIcon;
-}  // namespace gfx
-
 namespace views {
-class ImageButton;
+class Button;
 }  // namespace views
 
 class ToolbarActionsBar;
@@ -44,7 +40,8 @@ class ExtensionsMenuView : public views::ButtonListener,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::BubbleDialogDelegateView:
-  base::string16 GetAccessibleWindowTitle() const override;
+  base::string16 GetWindowTitle() const override;
+  bool ShouldShowCloseButton() const override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   int GetDialogButtons() const override;
   bool ShouldSnapFrameWidth() const override;
@@ -63,19 +60,20 @@ class ExtensionsMenuView : public views::ButtonListener,
   void OnToolbarHighlightModeChanged(bool is_highlighting) override;
   void OnToolbarModelInitialized() override;
 
+  views::Button* manage_extensions_button_for_testing() {
+    return manage_extensions_button_for_testing_;
+  }
+
  private:
   void Repopulate();
-
-  std::unique_ptr<views::ImageButton> CreateImageButtonForHeader(
-      const gfx::VectorIcon& icon,
-      int id,
-      const base::string16& tooltip);
 
   Browser* const browser_;
   ToolbarActionsBar* const toolbar_actions_bar_;
   ToolbarActionsModel* const model_;
   ScopedObserver<ToolbarActionsModel, ToolbarActionsModel::Observer>
       model_observer_;
+
+  views::Button* manage_extensions_button_for_testing_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsMenuView);
 };

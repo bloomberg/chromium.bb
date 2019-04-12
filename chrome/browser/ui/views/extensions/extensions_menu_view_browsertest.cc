@@ -14,6 +14,8 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/webui_url_constants.h"
+#include "ui/views/test/button_test_api.h"
 
 class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
  protected:
@@ -73,4 +75,24 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
   EXPECT_EQ(2u, extensions_.size());
   EXPECT_EQ(extensions_.size(), GetExtensionMenuButtons().size());
   DismissUi();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
+                       ManageExtensionsOpensExtensionsPage) {
+  ShowUi("");
+  VerifyUi();
+
+  EXPECT_TRUE(ExtensionsMenuView::IsShowing());
+
+  ui::MouseEvent click_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                             base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, 0);
+  views::test::ButtonTestApi test_api(
+      ExtensionsMenuView::GetExtensionsMenuViewForTesting()
+          ->manage_extensions_button_for_testing());
+  test_api.NotifyClick(click_event);
+
+  // Clicking the Manage Extensions button should open chrome://extensions.
+  EXPECT_EQ(
+      chrome::kChromeUIExtensionsURL,
+      browser()->tab_strip_model()->GetActiveWebContents()->GetVisibleURL());
 }
