@@ -666,11 +666,12 @@ void HttpStreamFactory::JobController::SetSpdySessionKey(
     const SpdySessionKey& spdy_session_key) {
   DCHECK(!job->using_quic());
 
-  if (is_preconnect_ || IsJobOrphaned(job))
+  if (is_preconnect_ || IsJobOrphaned(job) || spdy_session_request_)
     return;
 
-  session_->spdy_session_pool()->AddRequestToSpdySessionRequestMap(
-      spdy_session_key, request_);
+  spdy_session_request_ =
+      session_->spdy_session_pool()->CreateRequestForSpdySession(
+          spdy_session_key, request_);
 }
 
 void HttpStreamFactory::JobController::
@@ -680,14 +681,16 @@ void HttpStreamFactory::JobController::
   if (is_preconnect_ || IsJobOrphaned(job))
     return;
 
-  RemoveRequestFromSpdySessionRequestMap();
+  spdy_session_request_.reset();
 }
 
 void HttpStreamFactory::JobController::
     RemoveRequestFromSpdySessionRequestMap() {
+  // Since |spdy_session_request_| references |request_|, |request_| should
+  // still be live at this point.
   DCHECK(request_);
-  session_->spdy_session_pool()->RemoveRequestFromSpdySessionRequestMap(
-      request_);
+
+  spdy_session_request_.reset();
 }
 
 const NetLogWithSource* HttpStreamFactory::JobController::GetNetLog() const {

@@ -8,17 +8,18 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "net/base/load_states.h"
 #include "net/base/net_error_details.h"
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_info.h"
+#include "net/log/net_log_source.h"
 #include "net/log/net_log_with_source.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/socket/connection_attempts.h"
 #include "net/socket/next_proto.h"
 #include "net/spdy/spdy_session_key.h"
+#include "net/spdy/spdy_session_pool.h"
 #include "net/ssl/ssl_config.h"
 #include "net/ssl/ssl_info.h"
 #include "net/websockets/websocket_handshake_stream_base.h"
@@ -36,7 +37,8 @@ class SSLCertRequestInfo;
 // created, this object is the creator's handle for interacting with the
 // HttpStream creation process.  The request is cancelled by deleting it, after
 // which no callbacks will be invoked.
-class NET_EXPORT_PRIVATE HttpStreamRequest {
+class NET_EXPORT_PRIVATE HttpStreamRequest
+    : public SpdySessionPool::SpdySessionRequest::Delegate {
  public:
   // Indicates which type of stream is requested.
   enum StreamType {
@@ -191,7 +193,7 @@ class NET_EXPORT_PRIVATE HttpStreamRequest {
                     const NetLogWithSource& net_log,
                     StreamType stream_type);
 
-  ~HttpStreamRequest();
+  ~HttpStreamRequest() override;
 
   // When a HttpStream creation process is stalled due to necessity
   // of Proxy authentication credentials, the delegate OnNeedsProxyAuth
@@ -212,8 +214,17 @@ class NET_EXPORT_PRIVATE HttpStreamRequest {
   // layer in an attached Job for this stream request.
   void AddConnectionAttempts(const ConnectionAttempts& attempts);
 
-  // Called when a stream becomes available on a connection that was not created
-  // by this request.
+  // SpdySessionRequest::Delegate implementation:
+  //
+  // TODO(mmenke): Move this to HttpStreamFactory::Job.
+  void OnSpdySessionAvailable(bool was_alpn_negotiated,
+                              NextProto negotiated_protocol,
+                              bool using_spdy,
+                              const SSLConfig& used_ssl_config,
+                              const ProxyInfo& used_proxy_info,
+                              NetLogSource source_dependency,
+                              base::WeakPtr<SpdySession> spdy_session) override;
+
   void OnStreamReadyOnPooledConnection(const SSLConfig& used_ssl_config,
                                        const ProxyInfo& used_proxy_info,
                                        std::unique_ptr<HttpStream> stream);
@@ -247,20 +258,6 @@ class NET_EXPORT_PRIVATE HttpStreamRequest {
 
   const NetLogWithSource& net_log() const { return net_log_; }
 
-  // Called when the |helper_| determines the appropriate |spdy_session_key|
-  // for the Request. Note that this does not mean that SPDY is necessarily
-  // supported for this SpdySessionKey, since we may need to wait for NPN to
-  // complete before knowing if SPDY is available.
-  void SetSpdySessionKey(const SpdySessionKey& spdy_session_key) {
-    spdy_session_key_ = spdy_session_key;
-  }
-  bool HasSpdySessionKey() const { return spdy_session_key_.has_value(); }
-  const SpdySessionKey& GetSpdySessionKey() const {
-    DCHECK(HasSpdySessionKey());
-    return spdy_session_key_.value();
-  }
-  void ResetSpdySessionKey() { spdy_session_key_.reset(); }
-
   StreamType stream_type() const { return stream_type_; }
 
   bool completed() const { return completed_; }
@@ -274,8 +271,6 @@ class NET_EXPORT_PRIVATE HttpStreamRequest {
   WebSocketHandshakeStreamBase::CreateHelper* const
       websocket_handshake_stream_create_helper_;
   const NetLogWithSource net_log_;
-
-  base::Optional<SpdySessionKey> spdy_session_key_;
 
   bool completed_;
   bool was_alpn_negotiated_;

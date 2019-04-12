@@ -14,6 +14,7 @@
 #include "net/http/http_stream_factory_job.h"
 #include "net/http/http_stream_request.h"
 #include "net/socket/next_proto.h"
+#include "net/spdy/spdy_session_pool.h"
 
 namespace net {
 
@@ -397,6 +398,7 @@ class HttpStreamFactory::JobController
   int num_streams_;
   HttpStreamRequest::StreamType stream_type_;
   RequestPriority priority_;
+  std::unique_ptr<SpdySessionPool::SpdySessionRequest> spdy_session_request_;
   const NetLogWithSource net_log_;
 
   base::WeakPtrFactory<JobController> ptr_factory_;
