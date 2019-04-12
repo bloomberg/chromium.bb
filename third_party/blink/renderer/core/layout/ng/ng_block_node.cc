@@ -292,6 +292,43 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
   return layout_result;
 }
 
+scoped_refptr<const NGLayoutResult>
+NGBlockNode::CachedLayoutResultForOutOfFlowPositioned(
+    NGLogicalSize container_content_size) const {
+  DCHECK(IsOutOfFlowPositioned());
+
+  if (box_->NeedsLayout())
+    return nullptr;
+
+  const NGLayoutResult* cached_layout_result = box_->GetCachedLayoutResult();
+  if (!cached_layout_result)
+    return nullptr;
+
+  // TODO(layout-dev): There are potentially more cases where we can reuse this
+  // layout result.
+  // E.g. when we have a fixed-length top position constraint (top: 5px), we
+  // are in the correct writing mode (htb-ltr), and we have a fixed width.
+  const NGConstraintSpace& space =
+      cached_layout_result->GetConstraintSpaceForCaching();
+  if (space.PercentageResolutionSize() != container_content_size)
+    return nullptr;
+
+  // We currently don't keep the static-position around to determine if it is
+  // the same as the previous layout pass. As such, only reuse the result when
+  // we know it doesn't depend on the static-position.
+  //
+  // TODO(layout-dev): We might be able to determine what the previous
+  // static-position was based on |NGLayoutResult::OutOfFlowPositionedOffset|.
+  bool depends_on_static_position =
+      (Style().Left().IsAuto() && Style().Right().IsAuto()) ||
+      (Style().Top().IsAuto() && Style().Bottom().IsAuto());
+
+  if (depends_on_static_position)
+    return nullptr;
+
+  return cached_layout_result;
+}
+
 void NGBlockNode::PrepareForLayout() {
   auto* block = DynamicTo<LayoutBlock>(box_);
   if (block && block->HasOverflowClip()) {

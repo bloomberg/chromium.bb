@@ -1758,11 +1758,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // scrollWidth. For the full story, visit http://crbug.com/724255.
   LayoutUnit VerticalScrollbarWidthClampedToContentBox() const;
 
-  bool NeedsRelativePositionedLayoutOnly() const {
-    return NeedsPositionedMovementLayoutOnly() &&
-           StyleRef().GetPosition() == EPosition::kRelative;
-  }
-
   // The CSS border box rect for this box.
   //
   // The rectangle is in LocationContainer's physical coordinates in flipped

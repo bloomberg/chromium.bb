@@ -37,6 +37,18 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   scoped_refptr<const NGLayoutResult> Layout(
       const NGConstraintSpace& constraint_space,
       const NGBreakToken* break_token = nullptr);
+
+  // This method is just for use within the |NGOutOfFlowLayoutPart|.
+  //
+  // As OOF-positioned objects have their position, and size computed
+  // pre-layout, we need a way to quickly determine if we need to perform this
+  // work. This method compares the containing-block size to determine this.
+  //
+  // If the containing-block size hasn't changed, and we are layout-clean we
+  // can reuse the previous layout result.
+  scoped_refptr<const NGLayoutResult> CachedLayoutResultForOutOfFlowPositioned(
+      NGLogicalSize container_content_size) const;
+
   NGLayoutInputNode NextSibling() const;
 
   // Computes the value of min-content and max-content for this node's border

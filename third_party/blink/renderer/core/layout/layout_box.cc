@@ -2321,7 +2321,7 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
 
   if (SelfNeedsLayoutForStyle() || NormalChildNeedsLayout() ||
       PosChildNeedsLayout() || NeedsSimplifiedNormalFlowLayout() ||
-      (NeedsPositionedMovementLayout() && !NeedsRelativePositionedLayoutOnly()))
+      (NeedsPositionedMovementLayout() && !NeedsPositionedMovementLayoutOnly()))
     return nullptr;
 
   const NGLayoutResult* cached_layout_result = GetCachedLayoutResult();
@@ -2417,18 +2417,31 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
     }
   }
 
-  // We can safely re-use this fragment if we are position relative, and only
-  // our position constraints changed (left/top/etc). However we need to clear
-  // the dirty layout bit.
+  // We can safely re-use this fragment if we are positioned, and only our
+  // position constraints changed (left/top/etc). However we need to clear the
+  // dirty layout bit(s).
   ClearNeedsLayout();
 
   // The checks above should be enough to bail if layout is incomplete, but
   // let's verify:
   DCHECK(IsBlockLayoutComplete(old_space, *cached_layout_result));
 
+  // OOF-positioned nodes have to two-tier cache. The additional cache check
+  // runs before the OOF-positioned sizing, and positioning calculations.
+  //
+  // This additional check compares the percentage resolution size.
+  //
+  // As a result, the cached layout result always needs to contain the previous
+  // percentage resolution size in order for the first-tier cache to work.
+  // See |NGBlockNode::CachedLayoutResultForOutOfFlowPositioned|.
+  bool needs_cached_result_update =
+      node.IsOutOfFlowPositioned() && new_space.PercentageResolutionSize() !=
+                                          old_space.PercentageResolutionSize();
+
   // We can safely reuse this result if our BFC and "input" exclusion spaces
   // were equal.
-  if (is_bfc_offset_equal && is_exclusion_space_equal) {
+  if (is_bfc_offset_equal && is_exclusion_space_equal &&
+      !needs_cached_result_update) {
     // In order not to rebuild the internal derived-geometry "cache" of float
     // data, we need to move this to the new "output" exclusion space.
     cached_layout_result->ExclusionSpace().MoveAndUpdateDerivedGeometry(
@@ -2436,9 +2449,14 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
     return cached_layout_result;
   }
 
-  return base::AdoptRef(new NGLayoutResult(*cached_layout_result,
-                                           new_space.ExclusionSpace(),
-                                           bfc_line_offset, bfc_block_offset));
+  scoped_refptr<const NGLayoutResult> new_result =
+      base::AdoptRef(new NGLayoutResult(*cached_layout_result, new_space,
+                                        bfc_line_offset, bfc_block_offset));
+
+  if (needs_cached_result_update)
+    SetCachedLayoutResult(*new_result, break_token);
+
+  return new_result;
 }
 
 void LayoutBox::PositionLineBox(InlineBox* box) {
