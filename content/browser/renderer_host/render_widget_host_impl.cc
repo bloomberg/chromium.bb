@@ -672,10 +672,6 @@ void RenderWidgetHostImpl::ShutdownAndDestroyWidget(bool also_delete) {
   Destroy(also_delete);
 }
 
-bool RenderWidgetHostImpl::IsLoading() {
-  return is_loading_;
-}
-
 bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
   // Only process most messages if the RenderWidget is alive.
   if (!renderer_initialized())
