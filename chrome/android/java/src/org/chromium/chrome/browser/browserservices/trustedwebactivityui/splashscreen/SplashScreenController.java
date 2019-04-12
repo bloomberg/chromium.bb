@@ -22,6 +22,7 @@ import android.widget.ImageView;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.TabObserverRegistrar;
@@ -79,6 +80,7 @@ public class SplashScreenController implements InflationObserver, Destroyable {
     private final Lazy<CompositorViewHolder> mCompositorViewHolder;
     private final SplashImageHolder mSplashImageCache;
     private final CustomTabIntentDataProvider mIntentDataProvider;
+    private final TrustedWebActivityUmaRecorder mUmaRecorder;
 
     @Nullable
     private ImageView mSplashView;
@@ -92,13 +94,15 @@ public class SplashScreenController implements InflationObserver, Destroyable {
             ActivityLifecycleDispatcher lifecycleDispatcher,
             Lazy<CompositorViewHolder> compositorViewHolder,
             SplashImageHolder splashImageCache,
-            CustomTabIntentDataProvider intentDataProvider) {
+            CustomTabIntentDataProvider intentDataProvider,
+            TrustedWebActivityUmaRecorder umaRecorder) {
         mSplashImageCache = splashImageCache;
         mIntentDataProvider = intentDataProvider;
         mActivity = activity;
         mLifecycleDispatcher = lifecycleDispatcher;
         mTabObserverRegistrar = tabObserverRegistrar;
         mCompositorViewHolder = compositorViewHolder;
+        mUmaRecorder = umaRecorder;
 
         lifecycleDispatcher.register(this);
     }
@@ -117,6 +121,7 @@ public class SplashScreenController implements InflationObserver, Destroyable {
             method.invoke(mActivity);
         } catch (ReflectiveOperationException e) {
             // Method not found or threw an exception.
+            mUmaRecorder.recordTranslucencyRemovalFailed();
             assert false : "Failed to remove activity translucency reflectively";
             Log.e(TAG, "Failed to remove activity translucency reflectively");
         }

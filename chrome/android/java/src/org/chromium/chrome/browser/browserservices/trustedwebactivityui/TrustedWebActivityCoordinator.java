@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.browserservices.trustedwebactivityui;
 
+import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityDisclosureController;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityOpenTimeRecorder;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityToolbarController;
@@ -35,15 +36,27 @@ public class TrustedWebActivityCoordinator {
             TrustedWebActivityVerifier verifier,
             CustomTabActivityNavigationController navigationController,
             Lazy<SplashScreenController> splashScreenController,
-            CustomTabIntentDataProvider intentDataProvider) {
+            CustomTabIntentDataProvider intentDataProvider,
+            TrustedWebActivityUmaRecorder umaRecorder) {
         // We don't need to do anything with most of the classes above, we just need to resolve them
         // so they start working.
 
         navigationController.setLandingPageOnCloseCriterion(verifier::isPageOnVerifiedOrigin);
 
-        if (SplashScreenController.intentIsForTwaWithSplashScreen(
-                intentDataProvider.getIntent())) {
+        initSplashScreen(splashScreenController, intentDataProvider, umaRecorder);
+    }
+
+    private void initSplashScreen(Lazy<SplashScreenController> splashScreenController,
+            CustomTabIntentDataProvider intentDataProvider,
+            TrustedWebActivityUmaRecorder umaRecorder) {
+
+        boolean showSplashScreen = SplashScreenController.intentIsForTwaWithSplashScreen(
+                intentDataProvider.getIntent());
+
+        if (showSplashScreen) {
             splashScreenController.get();
         }
+
+        umaRecorder.recordSplashScreenUsage(showSplashScreen);
     }
 }
