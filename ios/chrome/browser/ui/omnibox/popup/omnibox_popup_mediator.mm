@@ -97,6 +97,11 @@
   [self.consumer setTextAlignment:alignment];
 }
 
+- (void)setSemanticContentAttribute:
+    (UISemanticContentAttribute)semanticContentAttribute {
+  [self.consumer setSemanticContentAttribute:semanticContentAttribute];
+}
+
 #pragma mark - AutocompleteResultConsumerDelegate
 
 - (void)autocompleteResultConsumer:(id<AutocompleteResultConsumer>)sender

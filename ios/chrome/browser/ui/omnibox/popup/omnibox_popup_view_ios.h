@@ -45,6 +45,8 @@ class OmniboxPopupViewIOS : public OmniboxPopupView,
 
   // OmniboxPopupProvider implemetation.
   void SetTextAlignment(NSTextAlignment alignment) override;
+  void SetSemanticContentAttribute(
+      UISemanticContentAttribute semanticContentAttribute) override;
   bool IsPopupOpen() override;
 
   // OmniboxPopupViewControllerDelegate implementation.

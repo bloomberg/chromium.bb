@@ -112,11 +112,12 @@ const CGFloat kClearButtonSize = 28.0f;
          selector:@selector(textFieldDidBeginEditing)
              name:UITextFieldTextDidBeginEditingNotification
            object:self.textField];
-  [[NSNotificationCenter defaultCenter]
+
+  [NSNotificationCenter.defaultCenter
       addObserver:self
-         selector:@selector(textFieldDidChange)
-             name:UITextFieldTextDidChangeNotification
-           object:self.textField];
+         selector:@selector(textInputModeDidChange)
+             name:UITextInputCurrentInputModeDidChangeNotification
+           object:nil];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -135,6 +136,15 @@ const CGFloat kClearButtonSize = 28.0f;
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
   [self updateLeadingImageVisibility];
+}
+
+- (void)textInputModeDidChange {
+  if (!self.textField.isFirstResponder) {
+    return;
+  }
+
+  [self.textField updateTextDirection];
+  [self updateSemanticContentAttribute];
 }
 
 #pragma mark - public methods
@@ -194,13 +204,8 @@ const CGFloat kClearButtonSize = 28.0f;
   [self.view setLeadingImage:self.textField.text.length
                                  ? self.defaultLeadingImage
                                  : self.emptyTextLeadingImage];
-}
 
-- (void)textFieldDidChange {
-  // If the text is empty, update the leading image.
-  if (self.textField.text.length == 0) {
-    [self.view setLeadingImage:self.emptyTextLeadingImage];
-  }
+  [self updateSemanticContentAttribute];
 }
 
 #pragma mark clear button
@@ -250,14 +255,19 @@ const CGFloat kClearButtonSize = 28.0f;
     [self.textField setText:@""];
     // Calling setText: does not trigger UIControlEventEditingChanged, so update
     // the clear button visibility manually.
-    [self updateClearButtonVisibility];
-    [self textFieldDidChange];
+    [self.textField sendActionsForControlEvents:UIControlEventEditingChanged];
   }
 }
 
 // Called on textField's UIControlEventEditingChanged.
 - (void)textFieldDidChange:(UITextField*)textField {
+  // If the text is empty, update the leading image.
+  if (self.textField.text.length == 0) {
+    [self.view setLeadingImage:self.emptyTextLeadingImage];
+  }
+
   [self updateClearButtonVisibility];
+  [self updateSemanticContentAttribute];
 }
 
 // Hides the clear button if the textfield is empty; shows it otherwise.
@@ -265,6 +275,17 @@ const CGFloat kClearButtonSize = 28.0f;
   BOOL hasText = self.textField.text.length > 0;
   [self.textField setRightViewMode:hasText ? UITextFieldViewModeAlways
                                            : UITextFieldViewModeNever];
+}
+
+// Updates the semantic content attribute based on the textField's current text.
+- (void)updateSemanticContentAttribute {
+  if (!base::FeatureList::IsEnabled(kNewOmniboxPopupLayout)) {
+    return;
+  }
+  UISemanticContentAttribute bestAttribute =
+      [self.textField bestSemanticContentAttribute];
+  self.view.semanticContentAttribute = bestAttribute;
+  self.textField.semanticContentAttribute = bestAttribute;
 }
 
 #pragma mark - UIMenuItem

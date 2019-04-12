@@ -272,6 +272,8 @@ void OmniboxViewIOS::UpdatePopup() {
                                prevent_inline_autocomplete);
   DCHECK(popup_provider_);
   popup_provider_->SetTextAlignment([field_ bestTextAlignment]);
+  popup_provider_->SetSemanticContentAttribute(
+      [field_ bestSemanticContentAttribute]);
 }
 
 void OmniboxViewIOS::OnTemporaryTextMaybeChanged(

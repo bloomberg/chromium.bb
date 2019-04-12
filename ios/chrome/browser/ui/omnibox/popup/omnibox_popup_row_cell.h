@@ -36,6 +36,11 @@ NSString* OmniboxPopupRowCellReuseIdentifier = @"OmniboxPopupRowCell";
 
 @property(nonatomic, weak) id<ImageRetriever> imageRetriever;
 
+// The semanticContentAttribute determined by the text in the omnibox. The
+// views in this cell should be updated to match this.
+@property(nonatomic, assign)
+    UISemanticContentAttribute omniboxSemanticContentAttribute;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_POPUP_OMNIBOX_POPUP_ROW_CELL_H_
