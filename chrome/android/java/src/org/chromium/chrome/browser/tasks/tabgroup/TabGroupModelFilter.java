@@ -4,10 +4,15 @@
 
 package org.chromium.chrome.browser.tasks.tabgroup;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 
+import org.chromium.base.ContextUtils;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
@@ -32,6 +37,10 @@ import java.util.Set;
  * also a {@link TabList} that contains the last shown {@link Tab} from every group.
  */
 public class TabGroupModelFilter extends TabModelFilter {
+    private static final String PREFS_FILE = "tab_group_pref";
+    private static final String SESSIONS_COUNT_FOR_GROUP = "SessionsCountForGroup-";
+    private static SharedPreferences sPref;
+
     /**
      * This class is a representation of a group of tabs. It knows the last selected tab within the
      * group.
@@ -114,13 +123,56 @@ public class TabGroupModelFilter extends TabModelFilter {
             @Override
             public void restoreCompleted() {
                 RecordHistogram.recordCountHistogram("TabGroups.UserGroupCount", mActualGroupCount);
+                Tab currentTab = TabModelUtils.getCurrentTab(getTabModel());
+                if (currentTab != null) recordSessionsCount(currentTab);
                 removeObserver(this);
             }
         });
     }
 
+    /**
+     * @return Number of {@link TabGroup}s that has at least two tabs.
+     */
     public int getTabGroupCount() {
         return mActualGroupCount;
+    }
+
+    /**
+     * This method records the number of sessions of the provided {@link Tab}, only if that
+     * {@link Tab} is in a group that has at least two tab, and it records as
+     * "TabGroups.SessionPerGroup".
+     * @param tab {@link Tab}
+     */
+    public void recordSessionsCount(Tab tab) {
+        int groupId = tab.getRootId();
+        boolean isActualGroup = mGroupIdToGroupMap.get(groupId) != null
+                && mGroupIdToGroupMap.get(groupId).size() > 1;
+        if (!isActualGroup) return;
+
+        AsyncTask.THREAD_POOL_EXECUTOR.execute(() -> {
+            int sessionsCount = updateAndGetSessionsCount(groupId);
+            RecordHistogram.recordCountHistogram("TabGroups.SessionsPerGroup", sessionsCount);
+        });
+    }
+
+    // TODO(crbug.com/951608): follow up with sessions count histogram for TabGroups.
+    private int updateAndGetSessionsCount(int groupId) {
+        ThreadUtils.assertOnBackgroundThread();
+
+        String sessionsCountForGroupKey = SESSIONS_COUNT_FOR_GROUP + Integer.toString(groupId);
+        SharedPreferences prefs = getSharedPreferences();
+        int sessionsCount = prefs.getInt(sessionsCountForGroupKey, 0);
+        sessionsCount++;
+        prefs.edit().putInt(sessionsCountForGroupKey, sessionsCount).apply();
+        return sessionsCount;
+    }
+
+    private SharedPreferences getSharedPreferences() {
+        if (sPref == null) {
+            sPref = ContextUtils.getApplicationContext().getSharedPreferences(
+                    PREFS_FILE, Context.MODE_PRIVATE);
+        }
+        return sPref;
     }
 
     // TabModelFilter implementation.
@@ -190,6 +242,17 @@ public class TabGroupModelFilter extends TabModelFilter {
             updateGroupIdToGroupIndexMapAfterGroupClosed(groupId);
             mGroupIdToGroupIndexMap.remove(groupId);
             mGroupIdToGroupMap.remove(groupId);
+            AsyncTask.THREAD_POOL_EXECUTOR.execute(() -> removeGroupFromPref(groupId));
+        }
+    }
+
+    private void removeGroupFromPref(int groupId) {
+        ThreadUtils.assertOnBackgroundThread();
+
+        SharedPreferences prefs = getSharedPreferences();
+        String key = SESSIONS_COUNT_FOR_GROUP + Integer.toString(groupId);
+        if (prefs.contains(key)) {
+            prefs.edit().remove(key).apply();
         }
     }
 

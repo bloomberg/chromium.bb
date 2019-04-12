@@ -135,6 +135,21 @@ public class TabGroupUiCoordinator
                 ((TabGroupModelFilter) provider.getTabModelFilter(true)).getTabGroupCount();
         groupCount += ((TabGroupModelFilter) provider.getTabModelFilter(false)).getTabGroupCount();
         RecordHistogram.recordCountHistogram("TabGroups.UserGroupCount", groupCount);
+
+        recordSessionCount();
+    }
+
+    private void recordSessionCount() {
+        if (mActivity.getOverviewModeBehavior() != null
+                && mActivity.getOverviewModeBehavior().overviewVisible()) {
+            return;
+        }
+
+        Tab currentTab = mActivity.getTabModelSelector().getCurrentTab();
+        if (currentTab == null) return;
+        TabModelFilterProvider provider =
+                mActivity.getTabModelSelector().getTabModelFilterProvider();
+        ((TabGroupModelFilter) provider.getCurrentTabModelFilter()).recordSessionsCount(currentTab);
     }
 
     @Override
