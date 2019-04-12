@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "base/sequence_checker.h"
 #include "base/strings/stringprintf.h"
@@ -452,14 +453,14 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
                                const Printer::PpdReference& ref) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     inflight_ppd_reference_resolutions_.erase(printer_id);
-    // Create the entry.
-    std::unique_ptr<Printer::PpdReference>& value =
-        detected_printer_ppd_references_[printer_id];
-    if (code == PpdProvider::SUCCESS) {
-      // If we got something, populate the entry.  Otherwise let it
-      // just remain null.
-      value = std::make_unique<Printer::PpdReference>(ref);
-    }
+
+    // Create the entry. If we got something, populate the entry. Otherwise let
+    // it just remain empty.
+    detected_printer_ppd_references_[printer_id] =
+        (code == PpdProvider::SUCCESS)
+            ? ref
+            : base::Optional<Printer::PpdReference>();
+
     RebuildDetectedLists();
   }
 
@@ -495,10 +496,10 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
 
   // This is a dual-purpose structure.  The keys in the map are printer ids.
   // If an entry exists in this map it means we have received a response from
-  // PpdProvider about a PpdReference for the given printer.  A null value
+  // PpdProvider about a PpdReference for the given printer.  An empty value
   // means we don't have a PpdReference (and so can't set up this printer
   // automatically).
-  std::unordered_map<std::string, std::unique_ptr<Printer::PpdReference>>
+  std::unordered_map<std::string, base::Optional<Printer::PpdReference>>
       detected_printer_ppd_references_;
 
   // Printer ids for which we have sent off a request to PpdProvider for a ppd
