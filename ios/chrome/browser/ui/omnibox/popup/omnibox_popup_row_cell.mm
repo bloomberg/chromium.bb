@@ -24,11 +24,11 @@
 #endif
 
 namespace {
-const CGFloat kTextTopMargin = 6;
-const CGFloat kImageViewSize = 28;
 const CGFloat kImageViewCornerRadius = 7;
+const CGFloat kRowMinimumHeight = 58;
+const CGFloat kTextTopMargin = 6;
 const CGFloat kTrailingButtonSize = 24;
-const CGFloat kTrailingButtonTrailingMargin = 4;
+const CGFloat kTrailingButtonTrailingMargin = 14;
 
 NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
     @"OmniboxPopupRowSwitchTabAccessibilityIdentifier";
@@ -106,6 +106,10 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
                           forAxis:UILayoutConstraintAxisHorizontal];
     [_answerImageView setContentHuggingPriority:UILayoutPriorityDefaultHigh
                                         forAxis:UILayoutConstraintAxisVertical];
+    [_answerImageView
+        setContentCompressionResistancePriority:UILayoutPriorityRequired
+                                        forAxis:
+                                            UILayoutConstraintAxisHorizontal];
 
     _incognito = NO;
 
@@ -132,15 +136,14 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
 
   [NSLayoutConstraint activateConstraints:@[
     // Row has a minimum height.
-    [self.contentView.heightAnchor constraintGreaterThanOrEqualToConstant:48],
+    [self.contentView.heightAnchor
+        constraintGreaterThanOrEqualToConstant:kRowMinimumHeight],
 
     // Position leadingImageView at the leading edge of the view.
     // Leave the horizontal position unconstrained as that will be added via a
     // layout guide once the cell has been added to the view hierarchy.
     [self.leadingImageView.heightAnchor
-        constraintEqualToConstant:kImageViewSize],
-    [self.leadingImageView.widthAnchor
-        constraintEqualToConstant:kImageViewSize],
+        constraintEqualToAnchor:self.leadingImageView.widthAnchor],
     [self.leadingImageView.centerYAnchor
         constraintEqualToAnchor:self.contentView.centerYAnchor],
 
@@ -235,6 +238,10 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
   [NSLayoutConstraint activateConstraints:@[
     [self.leadingImageView.centerXAnchor
         constraintEqualToAnchor:imageLayoutGuide.centerXAnchor],
+    [self.textStackView.leadingAnchor
+        constraintEqualToAnchor:textLayoutGuide.leadingAnchor],
+    [self.leadingImageView.widthAnchor
+        constraintEqualToAnchor:imageLayoutGuide.widthAnchor],
     stackViewToLayoutGuideLeading,
     stackViewToLayoutGuideTrailing,
     stackViewToCellTrailing,
