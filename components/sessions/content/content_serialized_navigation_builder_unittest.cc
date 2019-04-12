@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/sessions/content/content_record_password_state.h"
+#include "components/sessions/content/content_record_task_id.h"
 #include "components/sessions/content/content_serialized_navigation_driver.h"
 #include "components/sessions/content/extended_info_handler.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
@@ -83,6 +84,14 @@ std::unique_ptr<content::NavigationEntry> MakeNavigationEntryForTest() {
   redirect_chain.push_back(test_data::kRedirectURL1);
   redirect_chain.push_back(test_data::kVirtualURL);
   navigation_entry->SetRedirectChain(redirect_chain);
+  ContextRecordTaskId::Get(navigation_entry.get())
+      ->set_task_id(test_data::kTaskId);
+  ContextRecordTaskId::Get(navigation_entry.get())
+      ->set_parent_task_id(test_data::kParentTaskId);
+  ContextRecordTaskId::Get(navigation_entry.get())
+      ->set_root_task_id(test_data::kRootTaskId);
+  ContextRecordTaskId::Get(navigation_entry.get())
+      ->set_children_task_ids(test_data::kChildrenTaskIds);
   return navigation_entry;
 }
 
@@ -163,6 +172,11 @@ TEST_F(ContentSerializedNavigationBuilderTest, FromNavigationEntry) {
   ASSERT_EQ(1U, navigation.extended_info_map().count(kExtendedInfoKey2));
   EXPECT_EQ(kExtendedInfoValue2,
             navigation.extended_info_map().at(kExtendedInfoKey2));
+
+  EXPECT_EQ(test_data::kTaskId, navigation.task_id());
+  EXPECT_EQ(test_data::kParentTaskId, navigation.parent_task_id());
+  EXPECT_EQ(test_data::kRootTaskId, navigation.root_task_id());
+  EXPECT_EQ(test_data::kChildrenTaskIds, navigation.children_task_ids());
 }
 
 // Test effect of the navigation serialization options.
