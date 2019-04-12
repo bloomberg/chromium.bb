@@ -208,10 +208,6 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   // Optional hook for subclasses invoked by WindowDestroying().
   virtual void OnWindowDestroying(gfx::NativeWindow window) {}
 
-  // Redispatch a keyboard event using the widget's window's CommandDispatcher.
-  // Return true if the event is handled.
-  bool RedispatchKeyEvent(NSEvent* event);
-
   internal::NativeWidgetDelegate* delegate() { return delegate_; }
   views_bridge_mac::mojom::BridgedNativeWidget* bridge() const;
   BridgedNativeWidgetImpl* bridge_impl() const;

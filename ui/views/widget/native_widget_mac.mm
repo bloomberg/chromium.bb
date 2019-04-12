@@ -715,22 +715,6 @@ BridgeFactoryHost* NativeWidgetMac::GetBridgeFactoryHost() {
   return nullptr;
 }
 
-bool NativeWidgetMac::RedispatchKeyEvent(NSEvent* event) {
-  // If the target window is in-process, then redispatch the event directly,
-  // and give an accurate return value.
-  if (bridge_impl())
-    return bridge_impl()->RedispatchKeyEvent(event);
-
-  // If the target window is out of process then always report the event as
-  // handled (because it should never be handled in this process).
-  bridge()->RedispatchKeyEvent(
-      [event type], [event modifierFlags], [event timestamp],
-      base::SysNSStringToUTF16([event characters]),
-      base::SysNSStringToUTF16([event charactersIgnoringModifiers]),
-      [event keyCode]);
-  return true;
-}
-
 views_bridge_mac::mojom::BridgedNativeWidget* NativeWidgetMac::bridge() const {
   return bridge_host_ ? bridge_host_->bridge() : nullptr;
 }
