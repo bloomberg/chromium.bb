@@ -1260,6 +1260,16 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
                     nullptr);
     }
   }
+
+  if (policy.has_device_dock_mac_address_source()) {
+    const em::DeviceDockMacAddressSourceProto& container(
+        policy.device_dock_mac_address_source());
+    if (container.has_source()) {
+      policies->Set(key::kDeviceDockMacAddressSource, POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                    std::make_unique<base::Value>(container.source()), nullptr);
+    }
+  }
 }
 
 }  // namespace

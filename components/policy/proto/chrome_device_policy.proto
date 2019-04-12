@@ -1208,6 +1208,20 @@ message DeviceBootOnAcProto {
   optional bool enabled = 1;
 }
 
+// Settings that control device's dock MAC address source.
+message DeviceDockMacAddressSourceProto {
+  enum Source {
+    SOURCE_UNSPECIFIED = 0;
+    // Device's designated dock MAC address.
+    DEVICE_DOCK_MAC_ADDRESS = 1;
+    // Device's built-in NIC MAC address.
+    DEVICE_NIC_MAC_ADDRESS = 2;
+    // Dock's built-in NIC MAC address.
+    DOCK_NIC_MAC_ADDRESS = 3;
+  }
+  optional Source source = 1;
+}
+
 message ChromeDeviceSettingsProto {
   reserved 61;
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
@@ -1313,4 +1327,5 @@ message ChromeDeviceSettingsProto {
   optional DeviceWiFiAllowedProto device_wifi_allowed = 82;
   optional DevicePowerPeakShiftProto device_power_peak_shift = 83;
   optional DeviceBootOnAcProto device_boot_on_ac = 84;
+  optional DeviceDockMacAddressSourceProto device_dock_mac_address_source = 85;
 }

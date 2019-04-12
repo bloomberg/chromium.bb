@@ -287,6 +287,15 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     BuildAndInstallDevicePolicy();
   }
 
+  void SetDeviceDockMacAddressSourceSetting(
+      em::DeviceDockMacAddressSourceProto::Source
+          device_dock_mac_address_source) {
+    em::DeviceDockMacAddressSourceProto* const proto =
+        device_policy_->payload().mutable_device_dock_mac_address_source();
+    proto->set_source(device_dock_mac_address_source);
+    BuildAndInstallDevicePolicy();
+  }
+
   ScopedTestingLocalState local_state_;
 
   std::unique_ptr<DeviceSettingsProvider> provider_;
@@ -741,6 +750,23 @@ TEST_F(DeviceSettingsProviderTest, DeviceWilcoDtcAllowedSetting) {
 
   SetDeviceWilcoDtcAllowedSetting(false);
   EXPECT_EQ(base::Value(false), *provider_->Get(kDeviceWilcoDtcAllowed));
+}
+
+TEST_F(DeviceSettingsProviderTest, DeviceDockMacAddressSourceSetting) {
+  // Policy should not be set by default
+  VerifyPolicyValue(kDeviceDockMacAddressSource, nullptr);
+
+  SetDeviceDockMacAddressSourceSetting(
+      em::DeviceDockMacAddressSourceProto::DEVICE_DOCK_MAC_ADDRESS);
+  EXPECT_EQ(base::Value(1), *provider_->Get(kDeviceDockMacAddressSource));
+
+  SetDeviceDockMacAddressSourceSetting(
+      em::DeviceDockMacAddressSourceProto::DEVICE_NIC_MAC_ADDRESS);
+  EXPECT_EQ(base::Value(2), *provider_->Get(kDeviceDockMacAddressSource));
+
+  SetDeviceDockMacAddressSourceSetting(
+      em::DeviceDockMacAddressSourceProto::DOCK_NIC_MAC_ADDRESS);
+  EXPECT_EQ(base::Value(3), *provider_->Get(kDeviceDockMacAddressSource));
 }
 
 }  // namespace chromeos

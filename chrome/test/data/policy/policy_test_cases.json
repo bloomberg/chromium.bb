@@ -4433,6 +4433,14 @@
     ]
   },
 
+  "DeviceDockMacAddressSource": {
+    "os": ["chromeos"],
+    "test_policy": { "DeviceDockMacAddressSource": 2},
+    "pref_mappings": [
+      { "pref": "cros.device.device_dock_mac_address_source" }
+    ]
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {
