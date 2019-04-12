@@ -263,7 +263,7 @@ void SyncManagerImpl::Init(InitArgs* args) {
   DCHECK(args->post_factory);
   DCHECK(!args->poll_interval.is_zero());
   if (!args->enable_local_sync_backend) {
-    DCHECK(!args->credentials.account_id.empty());
+    DCHECK(!args->authenticated_account_id.empty());
   }
   DCHECK(args->cancelation_signal);
   DVLOG(1) << "SyncManager starting Init...";
@@ -298,7 +298,7 @@ void SyncManagerImpl::Init(InitArgs* args) {
   std::unique_ptr<syncable::DirectoryBackingStore> backing_store =
       args->engine_components_factory->BuildDirectoryBackingStore(
           EngineComponentsFactory::STORAGE_ON_DISK,
-          args->credentials.account_id, absolute_db_path);
+          args->authenticated_account_id, absolute_db_path);
 
   DCHECK(backing_store);
   share_.directory = std::make_unique<syncable::Directory>(
@@ -306,11 +306,10 @@ void SyncManagerImpl::Init(InitArgs* args) {
       report_unrecoverable_error_function_, sync_encryption_handler_.get(),
       sync_encryption_handler_->GetCryptographerUnsafe());
 
-  DVLOG(1) << "Username: " << args->credentials.email;
-  DVLOG(1) << "AccountId: " << args->credentials.account_id;
+  DVLOG(1) << "AccountId: " << args->authenticated_account_id;
   if (!OpenDirectory(args)) {
     NotifyInitializationFailure();
-    LOG(ERROR) << "Sync manager initialization failed!";
+    DLOG(ERROR) << "Sync manager initialization failed!";
     return;
   }
 
@@ -459,18 +458,18 @@ const SyncScheduler* SyncManagerImpl::scheduler() const {
 bool SyncManagerImpl::OpenDirectory(const InitArgs* args) {
   DCHECK(!initialized_) << "Should only happen once";
 
-  const std::string& account_id = args->credentials.account_id;
-
   // Set before Open().
   change_observer_ = MakeWeakHandle(js_mutation_event_observer_.AsWeakPtr());
   WeakHandle<syncable::TransactionObserver> transaction_observer(
       MakeWeakHandle(js_mutation_event_observer_.AsWeakPtr()));
 
   syncable::DirOpenResult open_result = syncable::NOT_INITIALIZED;
-  open_result = directory()->Open(account_id, this, transaction_observer);
+  open_result = directory()->Open(args->authenticated_account_id, this,
+                                  transaction_observer);
   if (open_result != syncable::OPENED_NEW &&
       open_result != syncable::OPENED_EXISTING) {
-    LOG(ERROR) << "Could not open share for:" << account_id;
+    DLOG(ERROR) << "Could not open share for: "
+                << args->authenticated_account_id;
     return false;
   }
 

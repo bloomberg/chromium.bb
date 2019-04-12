@@ -467,8 +467,8 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
                                ->GetLocalDeviceInfoProvider()
                                ->GetSyncUserAgent();
   params.http_factory_getter = MakeHttpPostProviderFactoryGetter();
-  params.credentials = auth_manager_->GetCredentials();
-  DCHECK(!params.credentials.account_id.empty() || IsLocalSyncEnabled());
+  params.authenticated_account_id = GetAuthenticatedAccountInfo().account_id;
+  DCHECK(!params.authenticated_account_id.empty() || IsLocalSyncEnabled());
   if (!base::FeatureList::IsEnabled(switches::kSyncE2ELatencyMeasurement)) {
     invalidation::InvalidationService* invalidator =
         sync_client_->GetInvalidationService();

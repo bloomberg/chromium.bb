@@ -79,8 +79,6 @@ void SyncEngineForProfileSyncTest::Initialize(InitParams params) {
       std::make_unique<syncer::SyncManagerFactoryForProfileSyncTest>(
           std::move(callback_),
           network::TestNetworkConnectionTracker::GetInstance());
-  params.credentials.email = "testuser@gmail.com";
-  params.credentials.access_token = "token";
   params.restored_key_for_bootstrapping.clear();
 
   // It'd be nice if we avoided creating the EngineComponentsFactory in the

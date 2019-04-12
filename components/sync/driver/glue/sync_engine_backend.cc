@@ -356,7 +356,7 @@ void SyncEngineBackend::DoInitialize(SyncEngine::InitParams params) {
   registrar_->GetWorkers(&args.workers);
   args.extensions_activity = params.extensions_activity.get();
   args.change_delegate = registrar_.get();  // as SyncManager::ChangeDelegate
-  args.credentials = params.credentials;
+  args.authenticated_account_id = params.authenticated_account_id;
   args.invalidator_client_id = params.invalidator_client_id;
   args.restored_key_for_bootstrapping = params.restored_key_for_bootstrapping;
   args.restored_keystore_key_for_bootstrapping =
