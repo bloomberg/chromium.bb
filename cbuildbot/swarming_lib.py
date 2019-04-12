@@ -217,6 +217,7 @@ class SwarmingCommandResult(cros_build_lib.CommandResult):
       A dictionary or None if task_summary_json_path doesn't exist.
     """
     if os.path.exists(task_summary_json_path):
+      logging.debug('Loading summary json file: %s', task_summary_json_path)
       with open(task_summary_json_path) as f:
         return json.load(f)
 
@@ -274,5 +275,11 @@ class SwarmingCommandResult(cros_build_lib.CommandResult):
       Value of the field.
     """
     if self.HasValidSummary():
-      return self.task_summary_json.get('shards')[0].get(field)
+      # Hack for crbug.com/951373, will be changed after CL:1159239 is merged.
+      if (field == 'outputs' and
+          field not in self.task_summary_json.get('shards')[0]):
+        res = self.task_summary_json.get('shards')[0].get('output', default)
+        return [res]
+
+      return self.task_summary_json.get('shards')[0].get(field, default)
     return default
