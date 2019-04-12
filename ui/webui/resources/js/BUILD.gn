@@ -55,7 +55,6 @@ js_library("cr") {
 js_library("dark_mode") {
   deps = [
     ":cr",
-    ":load_time_data",
   ]
   externs_list = [ "$externs_path/pending.js" ]
 }
