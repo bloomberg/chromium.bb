@@ -2145,9 +2145,9 @@
           'linux_intel_hd_630',
         ],
         'test_suites': {
-          # TODO(jmadill): Use custom test lists. crbug.com/822310
-          'gtest_tests': 'gpu_fyi_linux_release_gtests',
-          'gpu_telemetry_tests': 'gpu_fyi_linux_intel_and_nvidia_release_telemetry_tests',
+          'gtest_tests': 'gpu_angle_linux_gtests',
+          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
+          'gpu_telemetry_tests': 'gpu_angle_linux_telemetry_tests',
         },
       },
       'ANGLE GPU Linux Release (NVIDIA)': {
@@ -2157,10 +2157,9 @@
           'linux_nvidia_quadro_p400',
         ],
         'test_suites': {
-          # TODO(jmadill): Use custom test lists. crbug.com/822310
-          'gtest_tests': 'gpu_fyi_linux_release_gtests',
-          'isolated_scripts': 'gpu_angle_perftests',
-          'gpu_telemetry_tests': 'gpu_fyi_linux_intel_and_nvidia_release_telemetry_tests',
+          'gtest_tests': 'gpu_angle_linux_gtests',
+          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
+          'gpu_telemetry_tests': 'gpu_angle_linux_telemetry_tests',
         },
       },
       'ANGLE GPU Mac Release (Intel)': {
@@ -2170,9 +2169,8 @@
           'mac_mini_intel_gpu',
         ],
         'test_suites': {
-          # TODO(jmadill): Use custom test lists. crbug.com/822310
-          'gtest_tests': 'gpu_fyi_mac_release_gtests',
-          'gpu_telemetry_tests': 'gpu_fyi_mac_release_telemetry_tests',
+          'gtest_tests': 'gpu_angle_mac_gtests',
+          'gpu_telemetry_tests': 'gpu_angle_mac_telemetry_tests',
         },
       },
       'ANGLE GPU Mac Retina Release (AMD)': {
@@ -2182,9 +2180,8 @@
           'mac_retina_amd_gpu',
         ],
         'test_suites': {
-          # TODO(jmadill): Use custom test lists. crbug.com/822310
-          'gtest_tests': 'gpu_fyi_mac_release_gtests',
-          'gpu_telemetry_tests': 'gpu_fyi_mac_release_telemetry_tests',
+          'gtest_tests': 'gpu_angle_mac_gtests',
+          'gpu_telemetry_tests': 'gpu_angle_mac_telemetry_tests',
         },
       },
       'ANGLE GPU Mac Retina Release (NVIDIA)': {
@@ -2194,9 +2191,8 @@
           'mac_retina_nvidia_gpu',
         ],
         'test_suites': {
-          # TODO(jmadill): Use custom test lists. crbug.com/822310
-          'gtest_tests': 'gpu_fyi_mac_release_gtests',
-          'gpu_telemetry_tests': 'gpu_fyi_mac_release_telemetry_tests',
+          # Fewer tests enabled on this config because of limited capacity.
+          'gtest_tests': 'gpu_angle_gtests',
         },
       },
       'ANGLE GPU Win10 Release (Intel HD 630)': {
@@ -2207,7 +2203,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_win_gtests',
-          'isolated_scripts': 'gpu_angle_perftests',
+          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_angle_win_intel_telemetry_tests',
         },
       },
@@ -2234,7 +2230,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_gtests',
-          'isolated_scripts': 'gpu_angle_perftests',
+          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
         },
       },
       'Android FYI 32 Vk Release (Pixel XL)': {
@@ -2247,7 +2243,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_gtests',
-          'isolated_scripts': 'gpu_angle_perftests',
+          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
         },
       },
       'Android FYI 32 dEQP Vk Release (Pixel 2)': {
@@ -2284,7 +2280,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_gtests',
-          'isolated_scripts': 'gpu_angle_perftests',
+          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
         },
       },
       'Android FYI 64 Vk Release (Pixel XL)': {
@@ -2297,7 +2293,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_gtests',
-          'isolated_scripts': 'gpu_angle_perftests',
+          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
         },
       },
       'Android FYI 64 dEQP Vk Release (Pixel 2)': {
@@ -2335,7 +2331,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
-          'isolated_scripts': 'gpu_angle_perftests',
+          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
         },
       },
@@ -2363,7 +2359,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
-          'isolated_scripts': 'gpu_angle_perftests',
+          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_nexus5x_telemetry_tests',
           'android_webview_gpu_telemetry_tests': 'android_webview_gpu_telemetry_tests',
         },
@@ -2379,7 +2375,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
-          'isolated_scripts': 'gpu_angle_perftests',
+          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
         },
       },
@@ -2394,7 +2390,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
-          'isolated_scripts': 'gpu_angle_perftests',
+          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
         },
       },
@@ -2409,7 +2405,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
-          'isolated_scripts': 'gpu_angle_perftests',
+          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
         },
       },
@@ -2554,7 +2550,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_linux_release_gtests',
-          'isolated_scripts': 'gpu_angle_perftests',
+          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_fyi_linux_intel_and_nvidia_release_telemetry_tests',
         },
       },
@@ -2569,7 +2565,7 @@
           # This bot doesn't run any browser-based tests
           # (tab_capture_end2end_tests) either.
           'gtest_tests': 'gpu_fyi_linux_debug_gtests',
-          'isolated_scripts': 'gpu_angle_perftests',
+          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
         },
       },
       'Linux FYI Ozone (Intel)': {
@@ -2617,7 +2613,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_linux_release_gtests',
-          'isolated_scripts': 'gpu_angle_perftests',
+          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_fyi_linux_intel_and_nvidia_release_telemetry_tests',
         },
       },
@@ -2884,7 +2880,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_linux_optional_gtests',
-          'isolated_scripts': 'gpu_angle_perftests',
+          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_fyi_optional_linux_telemetry_tests',
         },
       },
@@ -2929,7 +2925,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_win_optional_gtests',
-          'isolated_scripts': 'gpu_angle_perftests',
+          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_optional_win_intel_telemetry_tests',
         },
       },
@@ -2986,7 +2982,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_win_gtests',
-          'isolated_scripts': 'gpu_angle_perftests',
+          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_fyi_win_intel_release_telemetry_tests',
         },
       },
@@ -3028,7 +3024,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_win_gtests',
-          'isolated_scripts': 'gpu_angle_perftests',
+          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_fyi_win_intel_release_telemetry_tests',
         },
       },
