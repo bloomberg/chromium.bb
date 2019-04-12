@@ -242,7 +242,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
                    prefName:password_manager::prefs::kCredentialsEnableService];
     [passwordManagerEnabled_ setObserver:self];
     [self getLoginsFromPasswordStore];
-    [self updateEditButton];
+    [self updateUIForEditState];
     [self updateExportPasswordsButton];
   }
   return self;
@@ -514,7 +514,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   password_manager::SortEntriesAndHideDuplicates(
       &blacklistedForms_, &blacklistedPasswordDuplicates_);
 
-  [self updateEditButton];
+  [self updateUIForEditState];
   [self reloadData];
 }
 
@@ -893,7 +893,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
         if (strongSelf->savedForms_.empty() &&
             strongSelf->blacklistedForms_.empty())
           [strongSelf setEditing:NO animated:YES];
-        [strongSelf updateEditButton];
+        [strongSelf updateUIForEditState];
         [strongSelf updateExportPasswordsButton];
       }];
 }
@@ -1026,7 +1026,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   }
   duplicates.erase(key);
 
-  [self updateEditButton];
+  [self updateUIForEditState];
   [self reloadData];
   [self.navigationController popViewControllerAnimated:YES];
 }
