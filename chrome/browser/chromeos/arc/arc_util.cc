@@ -13,7 +13,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -121,37 +120,9 @@ void StoreCompatibilityCheckResult(const AccountId& account_id,
 }
 
 bool IsArcMigrationAllowedInternal(const Profile* profile) {
-  policy_util::EcryptfsMigrationAction migration_strategy =
-      policy_util::GetDefaultEcryptfsMigrationActionForManagedUser(
-          IsActiveDirectoryUserForProfile(profile));
-  if (profile->GetPrefs()->IsManagedPreference(
-          prefs::kEcryptfsMigrationStrategy)) {
-    migration_strategy = static_cast<policy_util::EcryptfsMigrationAction>(
-        profile->GetPrefs()->GetInteger(prefs::kEcryptfsMigrationStrategy));
-  }
-  // |kAskForEcryptfsArcUsers| value is received only if the device is in EDU
-  // and admin left the migration policy unset. Note that when enabling ARC on
-  // the admin console, it is mandatory for the administrator to also choose a
-  // migration policy.
-  // In this default case, only a group of devices that had ARC M enabled are
-  // allowed to migrate, provided that ARC is enabled by policy.
-  // TODO(pmarko): Remove the special kAskForEcryptfsArcUsers handling when we
-  // assess that it's not necessary anymore: crbug.com/761348.
-  if (migration_strategy ==
-      policy_util::EcryptfsMigrationAction::kAskForEcryptfsArcUsers) {
-    // Note that ARC enablement is controlled by policy for managed users (as
-    // it's marked 'default_for_enterprise_users': False in
-    // policy_templates.json).
-    DCHECK(profile->GetPrefs()->IsManagedPreference(prefs::kArcEnabled));
-    // We can't reuse IsArcPlayStoreEnabledForProfile here because this would
-    // lead to a circular dependency: It ends up calling this function for some
-    // cases.
-    return profile->GetPrefs()->GetBoolean(prefs::kArcEnabled) &&
-           base::CommandLine::ForCurrentProcess()->HasSwitch(
-               chromeos::switches::kArcTransitionMigrationRequired);
-  }
-
-  return migration_strategy !=
+  return static_cast<policy_util::EcryptfsMigrationAction>(
+             profile->GetPrefs()->GetInteger(
+                 prefs::kEcryptfsMigrationStrategy)) !=
          policy_util::EcryptfsMigrationAction::kDisallowMigration;
 }
 

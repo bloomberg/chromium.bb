@@ -15,6 +15,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
@@ -255,35 +256,12 @@ bool ShouldForceDircrypto(const AccountId& account_id) {
   return true;
 }
 
-// Decodes the EcryptfsMigrationStrategy user policy into the
-// EcryptfsMigrationAction enum. If the policy is present and has a valid value,
-// returns the value. Otherwise returns base::nullopt.
-base::Optional<apu::EcryptfsMigrationAction> DecodeMigrationActionFromPolicy(
-    const enterprise_management::CloudPolicySettings* policy) {
-  if (!policy->has_ecryptfsmigrationstrategy())
-    return base::nullopt;
-
-  const enterprise_management::IntegerPolicyProto& policy_proto =
-      policy->ecryptfsmigrationstrategy();
-  if (!policy_proto.has_value())
-    return base::nullopt;
-
-  if (policy_proto.value() < 0 ||
-      policy_proto.value() >
-          static_cast<int64_t>(apu::kEcryptfsMigrationActionMaxValue)) {
-    return base::nullopt;
-  }
-
-  return static_cast<apu::EcryptfsMigrationAction>(policy_proto.value());
-}
-
 // Decides which EcryptfsMigrationAction should be used based on policy fetch
 // result, policy payload and user type. |policy_payload| is only dereferenced
 // if |policy_fetch_result| is PolicyFetchResult::SUCCESS.
 apu::EcryptfsMigrationAction GetEcryptfsMigrationAction(
     PolicyFetchResult policy_fetch_result,
-    enterprise_management::CloudPolicySettings* policy_payload,
-    bool active_directory_user) {
+    enterprise_management::CloudPolicySettings* policy_payload) {
   if (IsTestingMigrationUI())
     return apu::EcryptfsMigrationAction::kAskUser;
 
@@ -298,7 +276,7 @@ apu::EcryptfsMigrationAction GetEcryptfsMigrationAction(
       // EcryptfsMigrationStrategy policy value.
       VLOG(1) << "Policy pre-fetch result: User policy fetched";
       base::Optional<apu::EcryptfsMigrationAction> action =
-          DecodeMigrationActionFromPolicy(policy_payload);
+          apu::DecodeMigrationActionFromPolicy(*policy_payload);
       if (action)
         return action.value();
       break;
@@ -309,17 +287,7 @@ apu::EcryptfsMigrationAction GetEcryptfsMigrationAction(
       VLOG(1) << "Policy pre-fetch: User policy could not be fetched.";
       break;
   }
-  return apu::GetDefaultEcryptfsMigrationActionForManagedUser(
-      active_directory_user);
-}
-
-// Returns true if ArcEnabled policy is present and set to true. Otherwise
-// returns false.
-bool IsArcEnabledFromPolicy(
-    const enterprise_management::CloudPolicySettings* policy) {
-  if (policy->has_arcenabled())
-    return policy->arcenabled().value();
-  return false;
+  return apu::EcryptfsMigrationAction::kDisallowMigration;
 }
 
 // Returns true if the device is enrolled to an Active Directory domain
@@ -1183,18 +1151,19 @@ void ExistingUserController::OnPolicyFetchResult(
     PolicyFetchResult policy_fetch_result,
     std::unique_ptr<enterprise_management::CloudPolicySettings>
         policy_payload) {
-  const bool active_directory_user =
-      user_context.GetUserType() == user_manager::USER_TYPE_ACTIVE_DIRECTORY;
-  const apu::EcryptfsMigrationAction action = GetEcryptfsMigrationAction(
-      policy_fetch_result, policy_payload.get(), active_directory_user);
-  VLOG(1) << "Migration action (active_directory_user=" << active_directory_user
-          << "): " << static_cast<int>(action);
+  const apu::EcryptfsMigrationAction action =
+      GetEcryptfsMigrationAction(policy_fetch_result, policy_payload.get());
+  VLOG(1) << "Migration action: " << static_cast<int>(action);
 
   switch (action) {
     case apu::EcryptfsMigrationAction::kDisallowMigration:
       ContinuePerformLoginWithoutMigration(login_performer_->auth_mode(),
                                            user_context);
       break;
+
+    case apu::EcryptfsMigrationAction::kAskForEcryptfsArcUsersNoLongerSupported:
+      NOTREACHED();
+      FALLTHROUGH;
 
     case apu::EcryptfsMigrationAction::kMigrate:
       user_manager::known_user::SetUserHomeMinimalMigrationAttempted(
@@ -1234,21 +1203,6 @@ void ExistingUserController::OnPolicyFetchResult(
           base::BindOnce(&ExistingUserController::ShowEncryptionMigrationScreen,
                          weak_factory_.GetWeakPtr(), user_context,
                          EncryptionMigrationMode::START_MINIMAL_MIGRATION));
-      break;
-
-    case apu::EcryptfsMigrationAction::kAskForEcryptfsArcUsers:
-      // If the device is transitioning from ARC M to ARC N and has ARC enabled
-      // by policy, then ask the user about the migration. Otherwise disallow
-      // migration.
-      if (IsArcEnabledFromPolicy(policy_payload.get()) &&
-          base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kArcTransitionMigrationRequired)) {
-        ShowEncryptionMigrationScreen(user_context,
-                                      EncryptionMigrationMode::ASK_USER);
-      } else {
-        ContinuePerformLoginWithoutMigration(login_performer_->auth_mode(),
-                                             user_context);
-      }
       break;
   }
 }
