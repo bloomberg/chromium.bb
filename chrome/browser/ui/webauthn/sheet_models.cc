@@ -23,6 +23,24 @@
 #include "ui/gfx/text_utils.h"
 #include "url/gurl.h"
 
+namespace {
+base::string16 GetRelyingPartyIdString(
+    AuthenticatorRequestDialogModel* dialog_model) {
+  static constexpr char kRpIdUrlPrefix[] = "https://";
+  // The preferred width of medium snap point modal dialog view is 448 dp, but
+  // we leave some room for padding between the text and the modal views.
+  static constexpr int kDialogWidth = 300;
+  const auto& rp_id = dialog_model->transport_availability()->rp_id;
+  DCHECK(!rp_id.empty());
+  GURL rp_id_url(kRpIdUrlPrefix + rp_id);
+  auto max_static_string_length = gfx::GetStringWidthF(
+      l10n_util::GetStringUTF16(IDS_WEBAUTHN_GENERIC_TITLE), gfx::FontList(),
+      gfx::Typesetter::DEFAULT);
+  return url_formatter::ElideHost(rp_id_url, gfx::FontList(),
+                                  kDialogWidth - max_static_string_length);
+}
+}  // namespace
+
 // AuthenticatorSheetModelBase ------------------------------------------------
 
 AuthenticatorSheetModelBase::AuthenticatorSheetModelBase(
@@ -92,21 +110,6 @@ void AuthenticatorSheetModelBase::OnCancel() {
     dialog_model()->Cancel();
 }
 
-base::string16 AuthenticatorSheetModelBase::GetRelyingPartyIdString() const {
-  static constexpr char kRpIdUrlPrefix[] = "https://";
-  // The preferred width of medium snap point modal dialog view is 448 dp, but
-  // we leave some room for padding between the text and the modal views.
-  static constexpr int kDialogWidth = 300;
-  const auto& rp_id = dialog_model()->transport_availability()->rp_id;
-  DCHECK(!rp_id.empty());
-  GURL rp_id_url(kRpIdUrlPrefix + rp_id);
-  auto max_static_string_length = gfx::GetStringWidthF(
-      l10n_util::GetStringUTF16(IDS_WEBAUTHN_GENERIC_TITLE), gfx::FontList(),
-      gfx::Typesetter::DEFAULT);
-  return url_formatter::ElideHost(rp_id_url, gfx::FontList(),
-                                  kDialogWidth - max_static_string_length);
-}
-
 void AuthenticatorSheetModelBase::OnModelDestroyed() {
   dialog_model_ = nullptr;
 }
@@ -122,7 +125,7 @@ gfx::ImageSkia* AuthenticatorWelcomeSheetModel::GetStepIllustration(
 
 base::string16 AuthenticatorWelcomeSheetModel::GetStepTitle() const {
   return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_WELCOME_SCREEN_TITLE,
-                                    GetRelyingPartyIdString());
+                                    GetRelyingPartyIdString(dialog_model()));
 }
 
 base::string16 AuthenticatorWelcomeSheetModel::GetStepDescription() const {
@@ -161,7 +164,7 @@ gfx::ImageSkia* AuthenticatorTransportSelectorSheetModel::GetStepIllustration(
 
 base::string16 AuthenticatorTransportSelectorSheetModel::GetStepTitle() const {
   return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_TRANSPORT_SELECTION_TITLE,
-                                    GetRelyingPartyIdString());
+                                    GetRelyingPartyIdString(dialog_model()));
 }
 
 base::string16 AuthenticatorTransportSelectorSheetModel::GetStepDescription()
@@ -204,7 +207,7 @@ AuthenticatorInsertAndActivateUsbSheetModel::GetStepIllustration(
 base::string16 AuthenticatorInsertAndActivateUsbSheetModel::GetStepTitle()
     const {
   return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_GENERIC_TITLE,
-                                    GetRelyingPartyIdString());
+                                    GetRelyingPartyIdString(dialog_model()));
 }
 
 base::string16 AuthenticatorInsertAndActivateUsbSheetModel::GetStepDescription()
@@ -609,7 +612,7 @@ gfx::ImageSkia* AuthenticatorBleActivateSheetModel::GetStepIllustration(
 
 base::string16 AuthenticatorBleActivateSheetModel::GetStepTitle() const {
   return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_GENERIC_TITLE,
-                                    GetRelyingPartyIdString());
+                                    GetRelyingPartyIdString(dialog_model()));
 }
 
 base::string16 AuthenticatorBleActivateSheetModel::GetStepDescription() const {
@@ -657,7 +660,7 @@ gfx::ImageSkia* AuthenticatorTouchIdSheetModel::GetStepIllustration(
 base::string16 AuthenticatorTouchIdSheetModel::GetStepTitle() const {
 #if defined(OS_MACOSX)
   return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_TOUCH_ID_TITLE,
-                                    GetRelyingPartyIdString());
+                                    GetRelyingPartyIdString(dialog_model()));
 #else
   return base::string16();
 #endif  // defined(OS_MACOSX)
@@ -697,7 +700,7 @@ base::string16 AuthenticatorTouchIdIncognitoBumpSheetModel::GetStepTitle()
     const {
 #if defined(OS_MACOSX)
   return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_TOUCH_ID_INCOGNITO_BUMP_TITLE,
-                                    GetRelyingPartyIdString());
+                                    GetRelyingPartyIdString(dialog_model()));
 #else
   return base::string16();
 #endif  // defined(OS_MACOSX)
@@ -926,7 +929,7 @@ gfx::ImageSkia* AuthenticatorClientPinTapAgainSheetModel::GetStepIllustration(
 
 base::string16 AuthenticatorClientPinTapAgainSheetModel::GetStepTitle() const {
   return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_GENERIC_TITLE,
-                                    GetRelyingPartyIdString());
+                                    GetRelyingPartyIdString(dialog_model()));
 }
 
 base::string16 AuthenticatorClientPinTapAgainSheetModel::GetStepDescription()
@@ -983,7 +986,8 @@ AuthenticatorGenericErrorSheetModel::ForMissingUserVerificationSupport(
   return base::WrapUnique(new AuthenticatorGenericErrorSheetModel(
       dialog_model,
       l10n_util::GetStringUTF16(IDS_WEBAUTHN_ERROR_MISSING_CAPABILITY_TITLE),
-      l10n_util::GetStringUTF16(IDS_WEBAUTHN_MISSING_USER_VERIFICATION_DESC)));
+      l10n_util::GetStringFUTF16(IDS_WEBAUTHN_MISSING_USER_VERIFICATION_DESC,
+                                 GetRelyingPartyIdString(dialog_model))));
 }
 
 AuthenticatorGenericErrorSheetModel::AuthenticatorGenericErrorSheetModel(
@@ -1118,7 +1122,7 @@ base::string16 AttestationPermissionRequestSheetModel::GetStepDescription()
     const {
   return l10n_util::GetStringFUTF16(
       IDS_WEBAUTHN_REQUEST_ATTESTATION_PERMISSION_DESC,
-      GetRelyingPartyIdString());
+      GetRelyingPartyIdString(dialog_model()));
 }
 
 bool AttestationPermissionRequestSheetModel::IsAcceptButtonVisible() const {

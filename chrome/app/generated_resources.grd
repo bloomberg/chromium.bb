@@ -9561,16 +9561,16 @@ Please help our engineers fix this problem. Tell us what happened right before y
         Select an account to sign in:
       </message>
       <message name="IDS_WEBAUTHN_ERROR_MISSING_CAPABILITY_TITLE" desc="Title of the dialog informing the user that the security key (an external physical device for user authentication) that they selected does not support some capability that the site requested.">
-        This security key can’t be used in this way
+        Your security key can't be used with this site
       </message>
       <message name="IDS_WEBAUTHN_MISSING_RESIDENT_KEYS_DESC" desc="The description on a dialog informing the user that the security key (an external physical device for user authentication) that they selected does not support storing credentials, but the website demanded this feature">
         That security key does not support internal storage of credentials, but that feature was requested.
       </message>
       <message name="IDS_WEBAUTHN_MISSING_USER_VERIFICATION_DESC" desc="The description on a dialog informing the user that the security key (an external physical device for user authentication) that they selected does not support any methods of identifying its owner, e.g. a fingerprint reader or a secret code (PIN).">
-        That security key does not support any method of personal identification (e.g. a fingerprint reader, or PIN entry), but that feature was requested.
+        <ph name="WEBSITE"><ex>accounts.google.com</ex>$1</ph> may require a newer or different kind of security key
       </message>
       <message name="IDS_WEBAUTHN_REQUEST_ATTESTATION_PERMISSION_TITLE" desc="Title of a dialog informing the user that the website wants to see information that identifies the user's Security Key, such as make and model number. The 'make' of a device is the brand name of the manufacturer, e.g. Yubikey is a make of Security Key. The 'model' of a device is the specific product, e.g. Yubikey Neo is a model of Security Key.">
-        Give permission to read your Security Key?
+        Allow this site to see your security key?
       </message>
       <message name="IDS_WEBAUTHN_REQUEST_ATTESTATION_PERMISSION_DESC" desc="The description on a dialog informing the user that the website wants to see information that identifies the user's Security Key, such as make and model number. The 'make' of a device is the brand name of the manufacturer, e.g. Yubikey is a make of Security Key. The 'model' of a device is the specific product, e.g. Yubikey Neo is a model of Security Key.">
         <ph name="WEBSITE"><ex>accounts.google.com</ex>$1</ph> wants to see the make and model of your security key
