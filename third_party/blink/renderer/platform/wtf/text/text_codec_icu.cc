@@ -132,7 +132,7 @@ void TextCodecICU::RegisterEncodingNames(EncodingNameRegistrar registrar) {
                !strcmp(standard_name, "cp1363")) {
       standard_name = "EUC-KR";
     // And so on.
-    } else if (EqualIgnoringASCIICaser(standard_name, "iso-8859-9")) {
+    } else if (EqualIgnoringASCIICase(standard_name, "iso-8859-9")) {
       // This name is returned in different case by ICU 3.2 and 3.6.
       standard_name = "windows-1254";
     } else if (!strcmp(standard_name, "TIS-620")) {
