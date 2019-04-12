@@ -504,12 +504,15 @@ int PropertyTreeManager::EnsureCompositorScrollNode(
 }
 
 void PropertyTreeManager::EmitClipMaskLayer() {
+  cc::EffectNode& mask_isolation = *GetEffectTree().Node(current_.effect_id);
+  if (pending_synthetic_mask_layers_.Contains(mask_isolation.id))
+    return;
+
   int clip_id = EnsureCompositorClipNode(*current_.clip);
   CompositorElementId mask_isolation_id, mask_effect_id;
   cc::Layer* mask_layer = client_.CreateOrReuseSynthesizedClipLayer(
       *current_.clip, mask_isolation_id, mask_effect_id);
 
-  cc::EffectNode& mask_isolation = *GetEffectTree().Node(current_.effect_id);
   // Assignment of mask_isolation.stable_id was delayed until now.
   // See PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded().
   DCHECK_EQ(static_cast<uint64_t>(cc::EffectNode::INVALID_STABLE_ID),
@@ -557,6 +560,9 @@ void PropertyTreeManager::CloseCcEffect() {
   if (IsCurrentCcEffectSyntheticForNonTrivialClip())
     EmitClipMaskLayer();
 
+  if (IsCurrentCcEffectSynthetic())
+    pending_synthetic_mask_layers_.erase(current_.effect_id);
+
   current_ = previous_state;
   effect_stack_.pop_back();
 
@@ -568,7 +574,8 @@ void PropertyTreeManager::CloseCcEffect() {
 
 int PropertyTreeManager::SwitchToEffectNodeWithSynthesizedClip(
     const EffectPaintPropertyNode& next_effect,
-    const ClipPaintPropertyNode& next_clip) {
+    const ClipPaintPropertyNode& next_clip,
+    bool layer_draws_content) {
   // This function is expected to be invoked right before emitting each layer.
   // It keeps track of the nesting of clip and effects, output a composited
   // effect node whenever an effect is entered, or a non-trivial clip is
@@ -623,6 +630,10 @@ int PropertyTreeManager::SwitchToEffectNodeWithSynthesizedClip(
 
   BuildEffectNodesRecursively(next_effect);
   SynthesizeCcEffectsForClipsIfNeeded(next_clip, SkBlendMode::kSrcOver);
+
+  if (layer_draws_content)
+    pending_synthetic_mask_layers_.clear();
+
   return current_.effect_id;
 }
 
@@ -745,6 +756,8 @@ SkBlendMode PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
     synthetic_effect.transform_id = EnsureCompositorTransformNode(transform);
     synthetic_effect.double_sided = !transform.IsBackfaceHidden();
     synthetic_effect.has_render_surface = true;
+    pending_synthetic_mask_layers_.insert(synthetic_effect.id);
+
     // Clip and kDstIn do not commute. This shall never be reached because
     // kDstIn is only used internally to implement CSS clip-path and mask,
     // and there is never a difference between the output clip of the effect

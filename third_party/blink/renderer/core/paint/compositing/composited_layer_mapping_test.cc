@@ -2720,6 +2720,28 @@ TEST_F(CompositedLayerMappingTest, ContentsNotOpaqueWithForegroundLayer) {
   EXPECT_FALSE(mapping->MainGraphicsLayer()->ContentsOpaque());
 }
 
+TEST_F(CompositedLayerMappingTest, EmptyBoundsDoesntDrawContent) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      div {
+        width: 100px;
+        height: 0px;
+        position: relative;
+        isolation: isolate;
+      }
+    </style>
+    <div id='target' style='will-change: transform; background: blue'>
+    </div>
+    )HTML");
+  PaintLayer* target_layer =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"))->Layer();
+  CompositedLayerMapping* mapping = target_layer->GetCompositedLayerMapping();
+  EXPECT_FALSE(mapping->MainGraphicsLayer()->DrawsContent());
+}
+
 TEST_F(CompositedLayerMappingTest, TouchActionRectsWithoutContent) {
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;

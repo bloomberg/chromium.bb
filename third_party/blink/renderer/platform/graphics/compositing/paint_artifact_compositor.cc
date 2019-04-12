@@ -286,6 +286,9 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
   auto cc_layer = content_layer_client->UpdateCcPictureLayer(
       paint_artifact, paint_chunks, cc_combined_bounds,
       pending_layer.property_tree_state);
+  if (cc_combined_bounds.IsEmpty())
+    cc_layer->SetIsDrawable(false);
+
   new_content_layer_clients.push_back(std::move(content_layer_client));
   if (extra_data_for_testing_enabled_)
     extra_data_for_testing_->content_layers.push_back(cc_layer);
@@ -894,7 +897,7 @@ void PaintArtifactCompositor::Update(
     int clip_id = property_tree_manager_.EnsureCompositorClipNode(clip);
     int effect_id =
         property_tree_manager_.SwitchToEffectNodeWithSynthesizedClip(
-            property_state.Effect(), clip);
+            property_state.Effect(), clip, layer->DrawsContent());
     blink_effects.resize(effect_id + 1);
     blink_effects[effect_id] = &property_state.Effect();
     // The compositor scroll node is not directly stored in the property tree

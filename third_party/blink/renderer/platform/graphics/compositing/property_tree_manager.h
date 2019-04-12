@@ -114,7 +114,8 @@ class PropertyTreeManager {
   // effect, i.e. applying the clip as a mask.
   int SwitchToEffectNodeWithSynthesizedClip(
       const EffectPaintPropertyNode& next_effect,
-      const ClipPaintPropertyNode& next_clip);
+      const ClipPaintPropertyNode& next_clip,
+      bool layer_draws_content);
   // Expected to be invoked after emitting the last layer. This will exit all
   // effects on the effect stack, generating clip mask layers for all the
   // unclosed synthesized clips.
@@ -261,6 +262,10 @@ class PropertyTreeManager {
   // the current state (which is in current_), but the state prior to most
   // recent push.
   Vector<EffectState> effect_stack_;
+
+  // A set of synthetic clips masks which will be applied if a layer under them
+  // is encountered which draws content (and thus necessitates the mask).
+  HashSet<int> pending_synthetic_mask_layers_;
 
 #if DCHECK_IS_ON()
   HashSet<const EffectPaintPropertyNode*> effect_nodes_converted_;

@@ -2790,6 +2790,9 @@ bool CompositedLayerMapping::HasVisibleNonCompositingDescendant(
 }
 
 bool CompositedLayerMapping::ContainsPaintedContent() const {
+  if (CompositedBounds().IsEmpty())
+    return false;
+
   if (GetLayoutObject().IsImage() && IsDirectlyCompositedImage())
     return false;
 
