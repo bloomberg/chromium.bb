@@ -28,6 +28,7 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.OriginVerifier;
@@ -79,6 +80,7 @@ public class TrustedWebActivityVerifierTest {
     @Mock OriginVerifier.Factory mOriginVerifierFactory;
     @Mock CustomTabActivityTabProvider mTabProvider;
     @Mock Tab mTab;
+    @Mock ChromeActivity mChromeActivity;
     @Captor ArgumentCaptor<TabObserver> mTabObserverCaptor;
 
     private final FakeOriginVerifier mOriginVerifier = new FakeOriginVerifier();
@@ -97,7 +99,7 @@ public class TrustedWebActivityVerifierTest {
         mVerifier = new TrustedWebActivityVerifier(() -> mClientAppDataRecorder,
                 mIntentDataProvider, mCustomTabsConnection, mLifecycleDispatcher,
                 mTabObserverRegistrar, mOriginVerifierFactory,
-                mTabProvider);
+                mTabProvider, mChromeActivity);
     }
 
     @Test

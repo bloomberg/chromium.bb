@@ -4,12 +4,14 @@
 
 package org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller;
 
+import android.os.Bundle;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsService;
 
 import org.chromium.base.ObserverList;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.OriginVerifier;
@@ -22,6 +24,7 @@ import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
+import org.chromium.chrome.browser.lifecycle.SaveInstanceStateObserver;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -42,9 +45,13 @@ import dagger.Lazy;
  * {@link TrustedWebActivityModel} accordingly.
  */
 @ActivityScope
-public class TrustedWebActivityVerifier implements NativeInitObserver, Destroyable {
+public class TrustedWebActivityVerifier implements NativeInitObserver, Destroyable,
+        SaveInstanceStateObserver {
     /** The Digital Asset Link relationship used for Trusted Web Activities. */
     private final static int RELATIONSHIP = CustomTabsService.RELATION_HANDLE_ALL_URLS;
+
+    /** Used in activity instance state */
+    private static final String KEY_CLIENT_PACKAGE = "twaClientPackageName";
 
     private final Lazy<ClientAppDataRecorder> mClientAppDataRecorder;
     private final CustomTabsConnection mCustomTabsConnection;
@@ -112,14 +119,20 @@ public class TrustedWebActivityVerifier implements NativeInitObserver, Destroyab
             ActivityLifecycleDispatcher lifecycleDispatcher,
             TabObserverRegistrar tabObserverRegistrar,
             OriginVerifier.Factory originVerifierFactory,
-            CustomTabActivityTabProvider tabProvider) {
+            CustomTabActivityTabProvider tabProvider,
+            ChromeActivity activity) {
         mClientAppDataRecorder = clientAppDataRecorder;
         mCustomTabsConnection = customTabsConnection;
         mIntentDataProvider = intentDataProvider;
         mTabProvider = tabProvider;
         mTabObserverRegistrar =  tabObserverRegistrar;
-        mClientPackageName = customTabsConnection.getClientPackageNameForSession(
-                intentDataProvider.getSession());
+        Bundle savedInstanceState = activity.getSavedInstanceState();
+        if (savedInstanceState != null) {
+            mClientPackageName = savedInstanceState.getString(KEY_CLIENT_PACKAGE);
+        } else {
+            mClientPackageName = customTabsConnection.getClientPackageNameForSession(
+                    intentDataProvider.getSession());
+        }
         assert mClientPackageName != null;
 
         mOriginVerifier = originVerifierFactory.create(mClientPackageName, RELATIONSHIP);
@@ -249,5 +262,11 @@ public class TrustedWebActivityVerifier implements NativeInitObserver, Destroyab
      */
     private void registerClientAppData(Origin origin) {
         mClientAppDataRecorder.get().register(mClientPackageName, origin);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        // TODO(pshmakov): address this problem in a more general way, http://crbug.com/952221
+        outState.putString(KEY_CLIENT_PACKAGE, mClientPackageName);
     }
 }
