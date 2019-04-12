@@ -4,6 +4,7 @@
 
 #include "fuchsia/engine/context_provider_impl.h"
 
+#include <fuchsia/web/cpp/fidl.h>
 #include <lib/fdio/directory.h>
 #include <lib/fidl/cpp/binding.h>
 #include <zircon/processargs.h>
@@ -34,7 +35,6 @@
 #include "fuchsia/engine/common.h"
 #include "fuchsia/engine/fake_context.h"
 #include "fuchsia/engine/legacy_context_provider_bridge.h"
-#include "fuchsia/fidl/chromium/web/cpp/fidl_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 

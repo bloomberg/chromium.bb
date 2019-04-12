@@ -4,6 +4,8 @@
 
 #include "fuchsia/engine/test/web_engine_browser_test.h"
 
+#include <fuchsia/web/cpp/fidl.h>
+
 #include "base/fuchsia/fuchsia_logging.h"
 #include "fuchsia/engine/browser/web_engine_browser_context.h"
 #include "fuchsia/engine/browser/web_engine_browser_main_parts.h"

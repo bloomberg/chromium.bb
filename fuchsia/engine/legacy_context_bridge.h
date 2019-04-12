@@ -9,6 +9,7 @@
 #include <lib/fidl/cpp/binding.h>
 
 #include "base/macros.h"
+#include "fuchsia/engine/web_engine_export.h"
 #include "fuchsia/fidl/chromium/web/cpp/fidl.h"
 
 // Allows chromium::web::Context clients to connect to fuchsia::web::Context
@@ -16,7 +17,7 @@
 //
 // LegacyContextBridge instances are self-managed; they destroy themselves when
 // the connection with either end is terminated.
-class LegacyContextBridge : public chromium::web::Context {
+class WEB_ENGINE_EXPORT LegacyContextBridge : public chromium::web::Context {
  public:
   LegacyContextBridge(fidl::InterfaceRequest<chromium::web::Context> request,
                       fuchsia::web::ContextPtr handle);

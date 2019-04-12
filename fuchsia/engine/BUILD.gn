@@ -197,6 +197,7 @@ source_set("browsertest_core") {
     "//fuchsia:web_fidl",
     "//net:test_support",
     "//testing/gtest",
+    "//third_party/fuchsia-sdk/sdk:web",
     "//ui/ozone",
   ]
 }
@@ -238,6 +239,7 @@ test("web_engine_unittests") {
     "//fuchsia:web_fidl",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/fuchsia-sdk/sdk:web",
   ]
 }
 
