@@ -135,6 +135,12 @@ std::unique_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
 }
 
 // static
+const ActionInfo* ActionInfo::GetExtensionActionInfo(
+    const Extension* extension) {
+  return GetActionInfo(extension, keys::kAction);
+}
+
+// static
 const ActionInfo* ActionInfo::GetBrowserActionInfo(const Extension* extension) {
   return GetActionInfo(extension, keys::kBrowserAction);
 }
