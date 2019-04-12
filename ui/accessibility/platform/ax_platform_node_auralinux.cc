@@ -971,28 +971,21 @@ char* GetTextWithBoundaryType(AtkText* atk_text,
   // need to convert this input value.
   offset = obj->UnicodeToUTF16OffsetInText(offset);
 
-  base::string16 text = obj->GetText();
-  AXPlatformNodeDelegate::EnclosingBoundaryOffsets boundaries =
-      obj->GetDelegate()->FindTextBoundariesAtOffset(
-          boundary_type, offset, ax::mojom::TextAffinity::kDownstream);
-  if (boundaries.has_value()) {
-    *start_offset_ptr = obj->UTF16ToUnicodeOffsetInText(boundaries->first);
-    *end_offset_ptr = obj->UTF16ToUnicodeOffsetInText(boundaries->second);
-    base::string16 substr =
-        text.substr(boundaries->first, boundaries->second - boundaries->first);
-    return g_strdup(base::UTF16ToUTF8(substr).c_str());
-  }
+  int start_offset =
+      obj->FindTextBoundary(boundary_type, offset, BACKWARDS_DIRECTION);
+  int end_offset =
+      obj->FindTextBoundary(boundary_type, offset, FORWARDS_DIRECTION);
 
-  std::vector<int32_t> unused_line_start_offsets;
-  size_t start_offset = static_cast<int>(FindAccessibleTextBoundary(
-      text, unused_line_start_offsets, boundary_type, offset,
-      BACKWARDS_DIRECTION, ax::mojom::TextAffinity::kDownstream));
-  size_t end_offset = static_cast<int>(FindAccessibleTextBoundary(
-      text, unused_line_start_offsets, boundary_type, offset,
-      FORWARDS_DIRECTION, ax::mojom::TextAffinity::kDownstream));
+  DCHECK_LE(start_offset, end_offset)
+      << "Start offset should be less than or equal the end offset.";
 
+  // The ATK API is also expecting Unicode character offsets as output
+  // values.
   *start_offset_ptr = obj->UTF16ToUnicodeOffsetInText(start_offset);
   *end_offset_ptr = obj->UTF16ToUnicodeOffsetInText(end_offset);
+
+  base::string16 text = obj->GetText();
+  DCHECK_LE(end_offset, static_cast<int>(text.size()));
 
   base::string16 substr = text.substr(start_offset, end_offset - start_offset);
   return g_strdup(base::UTF16ToUTF8(substr).c_str());

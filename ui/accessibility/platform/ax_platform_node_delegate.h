@@ -157,11 +157,14 @@ class AX_EXPORT AXPlatformNodeDelegate {
 
   // This method finds text boundaries in the text used for platform text APIs.
   // Implementations may use side-channel data such as line or word indices to
-  // produce appropriate results.
-  using EnclosingBoundaryOffsets = base::Optional<std::pair<size_t, size_t>>;
-  virtual EnclosingBoundaryOffsets FindTextBoundariesAtOffset(
+  // produce appropriate results. It may optionally return no value, indicating
+  // that the delegate does not have all the information required to calculate
+  // this value and it is the responsibility of the AXPlatformNode itself to
+  // to calculate it.
+  virtual base::Optional<int> FindTextBoundary(
       TextBoundaryType boundary_type,
       int offset,
+      TextBoundaryDirection direction,
       ax::mojom::TextAffinity affinity) const = 0;
 
   // Return a vector of all the descendants of this delegate's node.
