@@ -178,9 +178,9 @@ base::Optional<syncer::ModelError> PrintersSyncBridge::MergeSyncData(
     // Store the new data locally.
     for (const auto& change : entity_data) {
       const sync_pb::PrinterSpecifics& specifics =
-          change.data().specifics.printer();
+          change->data().specifics.printer();
 
-      DCHECK_EQ(change.storage_key(), specifics.id());
+      DCHECK_EQ(change->storage_key(), specifics.id());
       sync_entity_ids.insert(specifics.id());
 
       // Write the update to local storage even if we already have it.
@@ -216,18 +216,18 @@ base::Optional<syncer::ModelError> PrintersSyncBridge::ApplySyncChanges(
   {
     base::AutoLock lock(data_lock_);
     // For all the entities from the server, apply changes.
-    for (const EntityChange& change : entity_changes) {
+    for (const std::unique_ptr<EntityChange>& change : entity_changes) {
       // We register the entity's storage key as our printer ids since they're
       // globally unique.
-      const std::string& id = change.storage_key();
-      if (change.type() == EntityChange::ACTION_DELETE) {
+      const std::string& id = change->storage_key();
+      if (change->type() == EntityChange::ACTION_DELETE) {
         // Server says delete, try to remove locally.
         DeleteSpecifics(id, batch.get());
       } else {
         // Server says update, overwrite whatever is local.  Conflict resolution
         // guarantees that this will be the newest version of the object.
         const sync_pb::PrinterSpecifics& specifics =
-            change.data().specifics.printer();
+            change->data().specifics.printer();
         DCHECK_EQ(id, specifics.id());
         StoreSpecifics(std::make_unique<sync_pb::PrinterSpecifics>(specifics),
                        batch.get());

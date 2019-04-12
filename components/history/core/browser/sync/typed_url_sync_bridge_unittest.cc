@@ -379,7 +379,8 @@ class TypedURLSyncBridgeTest : public testing::Test {
       metadata_changes->UpdateMetadata(storage_key, metadata);
     }
 
-    bridge()->ApplySyncChanges(std::move(metadata_changes), entity_changes);
+    bridge()->ApplySyncChanges(std::move(metadata_changes),
+                               std::move(entity_changes));
     return visits;
   }
 

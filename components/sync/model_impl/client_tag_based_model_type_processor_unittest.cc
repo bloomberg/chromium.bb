@@ -140,14 +140,14 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
       db_->ClearAllData();
     }
     return FakeModelTypeSyncBridge::MergeSyncData(
-        std::move(metadata_change_list), entity_data);
+        std::move(metadata_change_list), std::move(entity_data));
   }
   base::Optional<ModelError> ApplySyncChanges(
       std::unique_ptr<MetadataChangeList> metadata_change_list,
       EntityChangeList entity_changes) override {
     apply_call_count_++;
     return FakeModelTypeSyncBridge::ApplySyncChanges(
-        std::move(metadata_change_list), entity_changes);
+        std::move(metadata_change_list), std::move(entity_changes));
   }
 
   void GetData(StorageKeyList keys, DataCallback callback) override {

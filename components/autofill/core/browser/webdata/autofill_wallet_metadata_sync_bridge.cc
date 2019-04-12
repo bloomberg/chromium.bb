@@ -596,10 +596,10 @@ void AutofillWalletMetadataSyncBridge::UploadInitialLocalData(
     local_keys_to_upload.insert(it.first);
   }
   // Strip |local_keys_to_upload| of the keys of data provided by the server.
-  for (const EntityChange& change : entity_data) {
-    DCHECK_EQ(change.type(), EntityChange::ACTION_ADD)
+  for (const std::unique_ptr<EntityChange>& change : entity_data) {
+    DCHECK_EQ(change->type(), EntityChange::ACTION_ADD)
         << "Illegal change; can only be called during initial MergeSyncData()";
-    local_keys_to_upload.erase(change.storage_key());
+    local_keys_to_upload.erase(change->storage_key());
   }
   // Upload the remaining storage keys
   for (const std::string& storage_key : local_keys_to_upload) {
@@ -620,24 +620,24 @@ AutofillWalletMetadataSyncBridge::MergeRemoteChanges(
 
   AutofillTable* table = GetAutofillTable();
 
-  for (const EntityChange& change : entity_data) {
+  for (const std::unique_ptr<EntityChange>& change : entity_data) {
     TypeAndMetadataId parsed_storage_key =
-        ParseWalletMetadataStorageKey(change.storage_key());
-    switch (change.type()) {
+        ParseWalletMetadataStorageKey(change->storage_key());
+    switch (change->type()) {
       case EntityChange::ACTION_ADD:
       case EntityChange::ACTION_UPDATE: {
         const WalletMetadataSpecifics& specifics =
-            change.data().specifics.wallet_metadata();
+            change->data().specifics.wallet_metadata();
         AutofillMetadata remote =
             CreateAutofillMetadataFromWalletMetadataSpecifics(specifics);
-        auto it = cache_.find(change.storage_key());
+        auto it = cache_.find(change->storage_key());
         base::Optional<AutofillMetadata> local = base::nullopt;
         if (it != cache_.end()) {
           local = it->second;
         }
 
         if (!local) {
-          cache_[change.storage_key()] = remote;
+          cache_[change->storage_key()] = remote;
           is_any_local_modified |= AddServerMetadata(
               GetAutofillTable(), parsed_storage_key.type, remote);
           continue;
@@ -647,12 +647,12 @@ AutofillWalletMetadataSyncBridge::MergeRemoteChanges(
         AutofillMetadata merged =
             MergeMetadata(parsed_storage_key.type, *local, remote);
         if (merged != *local) {
-          cache_[change.storage_key()] = merged;
+          cache_[change->storage_key()] = merged;
           is_any_local_modified |=
               UpdateServerMetadata(table, parsed_storage_key.type, merged);
         }
         if (merged != remote) {
-          change_processor()->Put(change.storage_key(),
+          change_processor()->Put(change->storage_key(),
                                   CreateEntityDataFromAutofillMetadata(
                                       parsed_storage_key.type, merged),
                                   metadata_change_list.get());
@@ -660,7 +660,7 @@ AutofillWalletMetadataSyncBridge::MergeRemoteChanges(
         break;
       }
       case EntityChange::ACTION_DELETE: {
-        cache_.erase(change.storage_key());
+        cache_.erase(change->storage_key());
         is_any_local_modified |= RemoveServerMetadata(
             table, parsed_storage_key.type, parsed_storage_key.metadata_id);
         break;

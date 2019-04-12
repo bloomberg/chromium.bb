@@ -99,11 +99,11 @@ base::Optional<ModelError> UserEventSyncBridge::ApplySyncChanges(
     EntityChangeList entity_changes) {
   std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
   std::set<int64_t> deleted_event_times;
-  for (EntityChange& change : entity_changes) {
-    DCHECK_EQ(EntityChange::ACTION_DELETE, change.type());
-    batch->DeleteData(change.storage_key());
+  for (const std::unique_ptr<EntityChange>& change : entity_changes) {
+    DCHECK_EQ(EntityChange::ACTION_DELETE, change->type());
+    batch->DeleteData(change->storage_key());
     deleted_event_times.insert(
-        GetEventTimeFromStorageKey(change.storage_key()));
+        GetEventTimeFromStorageKey(change->storage_key()));
   }
 
   // Because we receive ApplySyncChanges with deletions when our commits are

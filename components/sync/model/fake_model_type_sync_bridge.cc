@@ -222,22 +222,22 @@ base::Optional<ModelError> FakeModelTypeSyncBridge::MergeSyncData(
   std::set<std::string> remote_storage_keys;
   // Store any new remote entities.
   for (const auto& change : entity_data) {
-    EXPECT_FALSE(change.data().is_deleted());
-    EXPECT_EQ(EntityChange::ACTION_ADD, change.type());
-    std::string storage_key = change.storage_key();
+    EXPECT_FALSE(change->data().is_deleted());
+    EXPECT_EQ(EntityChange::ACTION_ADD, change->type());
+    std::string storage_key = change->storage_key();
     EXPECT_NE(SupportsGetStorageKey(), storage_key.empty());
     if (storage_key.empty()) {
-      storage_key = GetStorageKeyImpl(change.data());
+      storage_key = GetStorageKeyImpl(change->data());
       if (base::ContainsKey(keys_to_ignore_, storage_key)) {
         change_processor()->UntrackEntityForClientTagHash(
-            change.data().client_tag_hash);
+            change->data().client_tag_hash);
       } else {
-        change_processor()->UpdateStorageKey(change.data(), storage_key,
+        change_processor()->UpdateStorageKey(change->data(), storage_key,
                                              metadata_change_list.get());
       }
     }
     remote_storage_keys.insert(storage_key);
-    db_->PutData(storage_key, change.data());
+    db_->PutData(storage_key, change->data());
   }
 
   // Commit any local entities that aren't being overwritten by the server.
@@ -260,27 +260,27 @@ base::Optional<ModelError> FakeModelTypeSyncBridge::ApplySyncChanges(
     return ModelError(FROM_HERE, "boom");
   }
 
-  for (const EntityChange& change : entity_changes) {
-    switch (change.type()) {
+  for (const std::unique_ptr<EntityChange>& change : entity_changes) {
+    switch (change->type()) {
       case EntityChange::ACTION_ADD: {
-        std::string storage_key = change.storage_key();
+        std::string storage_key = change->storage_key();
         EXPECT_NE(SupportsGetStorageKey(), storage_key.empty());
         if (storage_key.empty()) {
-          storage_key = GetStorageKeyImpl(change.data());
-          change_processor()->UpdateStorageKey(change.data(), storage_key,
+          storage_key = GetStorageKeyImpl(change->data());
+          change_processor()->UpdateStorageKey(change->data(), storage_key,
                                                metadata_changes.get());
         }
         EXPECT_FALSE(db_->HasData(storage_key));
-        db_->PutData(storage_key, change.data());
+        db_->PutData(storage_key, change->data());
         break;
       }
       case EntityChange::ACTION_UPDATE:
-        EXPECT_TRUE(db_->HasData(change.storage_key()));
-        db_->PutData(change.storage_key(), change.data());
+        EXPECT_TRUE(db_->HasData(change->storage_key()));
+        db_->PutData(change->storage_key(), change->data());
         break;
       case EntityChange::ACTION_DELETE:
-        EXPECT_TRUE(db_->HasData(change.storage_key()));
-        db_->RemoveData(change.storage_key());
+        EXPECT_TRUE(db_->HasData(change->storage_key()));
+        db_->RemoveData(change->storage_key());
         break;
     }
   }

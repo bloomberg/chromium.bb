@@ -108,14 +108,15 @@ Optional<syncer::ModelError> AutofillProfileSyncBridge::MergeSyncData(
       GetAutofillTable());
 
   for (const auto& change : entity_data) {
-    DCHECK(change.data().specifics.has_autofill_profile());
+    DCHECK(change->data().specifics.has_autofill_profile());
     std::unique_ptr<AutofillProfile> remote =
         CreateAutofillProfileFromSpecifics(
-            change.data().specifics.autofill_profile());
+            change->data().specifics.autofill_profile());
     if (!remote) {
-      DVLOG(2) << "[AUTOFILL SYNC] Invalid remote specifics "
-               << change.data().specifics.autofill_profile().SerializeAsString()
-               << " received from the server in an initial sync.";
+      DVLOG(2)
+          << "[AUTOFILL SYNC] Invalid remote specifics "
+          << change->data().specifics.autofill_profile().SerializeAsString()
+          << " received from the server in an initial sync.";
       continue;
     }
     RETURN_IF_ERROR(
@@ -139,18 +140,18 @@ Optional<ModelError> AutofillProfileSyncBridge::ApplySyncChanges(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   AutofillProfileSyncDifferenceTracker tracker(GetAutofillTable());
-  for (const syncer::EntityChange& change : entity_changes) {
-    if (change.type() == syncer::EntityChange::ACTION_DELETE) {
-      RETURN_IF_ERROR(tracker.IncorporateRemoteDelete(change.storage_key()));
+  for (const std::unique_ptr<syncer::EntityChange>& change : entity_changes) {
+    if (change->type() == syncer::EntityChange::ACTION_DELETE) {
+      RETURN_IF_ERROR(tracker.IncorporateRemoteDelete(change->storage_key()));
     } else {
-      DCHECK(change.data().specifics.has_autofill_profile());
+      DCHECK(change->data().specifics.has_autofill_profile());
       std::unique_ptr<AutofillProfile> remote =
           CreateAutofillProfileFromSpecifics(
-              change.data().specifics.autofill_profile());
+              change->data().specifics.autofill_profile());
       if (!remote) {
         DVLOG(2)
             << "[AUTOFILL SYNC] Invalid remote specifics "
-            << change.data().specifics.autofill_profile().SerializeAsString()
+            << change->data().specifics.autofill_profile().SerializeAsString()
             << " received from the server in an initial sync.";
         continue;
       }

@@ -202,7 +202,8 @@ TEST_F(SendTabToSelfBridgeTest, SyncAddOneEntry) {
   auto metadata_change_list =
       std::make_unique<syncer::InMemoryMetadataChangeList>();
   EXPECT_CALL(*mock_observer(), EntriesAddedRemotely(SizeIs(1)));
-  bridge()->MergeSyncData(std::move(metadata_change_list), remote_input);
+  bridge()->MergeSyncData(std::move(metadata_change_list),
+                          std::move(remote_input));
   EXPECT_EQ(1ul, bridge()->GetAllGuids().size());
 }
 
@@ -238,7 +239,8 @@ TEST_F(SendTabToSelfBridgeTest, ApplySyncChangesOneAdd) {
       std::make_unique<syncer::InMemoryMetadataChangeList>();
 
   EXPECT_CALL(*mock_observer(), EntriesAddedRemotely(SizeIs(1)));
-  bridge()->ApplySyncChanges(std::move(metadata_change_list), add_changes);
+  bridge()->ApplySyncChanges(std::move(metadata_change_list),
+                             std::move(add_changes));
   EXPECT_EQ(1ul, bridge()->GetAllGuids().size());
 }
 
@@ -255,14 +257,15 @@ TEST_F(SendTabToSelfBridgeTest, ApplySyncChangesOneDeletion) {
       syncer::EntityChange::CreateAdd("guid1", MakeEntityData(entry)));
 
   EXPECT_CALL(*mock_observer(), EntriesAddedRemotely(SizeIs(1)));
-  bridge()->ApplySyncChanges(bridge()->CreateMetadataChangeList(), add_changes);
+  bridge()->ApplySyncChanges(bridge()->CreateMetadataChangeList(),
+                             std::move(add_changes));
   EXPECT_EQ(1ul, bridge()->GetAllGuids().size());
   syncer::EntityChangeList delete_changes;
   delete_changes.push_back(syncer::EntityChange::CreateDelete("guid1"));
 
   EXPECT_CALL(*mock_observer(), EntriesRemovedRemotely(SizeIs(1)));
   bridge()->ApplySyncChanges(bridge()->CreateMetadataChangeList(),
-                             delete_changes);
+                             std::move(delete_changes));
   EXPECT_EQ(0ul, bridge()->GetAllGuids().size());
 }
 
@@ -322,9 +325,11 @@ TEST_F(SendTabToSelfBridgeTest, ApplySyncChangesInMemory) {
 
   EXPECT_CALL(*mock_observer(), EntriesRemovedRemotely(SizeIs(1)));
 
+  syncer::EntityChangeList entity_change_list;
+  entity_change_list.push_back(
+      syncer::EntityChange::CreateDelete(specifics.guid()));
   auto error_on_delete = bridge()->ApplySyncChanges(
-      bridge()->CreateMetadataChangeList(),
-      {syncer::EntityChange::CreateDelete(specifics.guid())});
+      bridge()->CreateMetadataChangeList(), std::move(entity_change_list));
 
   EXPECT_FALSE(error_on_delete);
   EXPECT_EQ(0ul, bridge()->GetAllGuids().size());
@@ -338,9 +343,11 @@ TEST_F(SendTabToSelfBridgeTest, ApplyDeleteNonexistent) {
       bridge()->CreateMetadataChangeList();
 
   EXPECT_CALL(*processor(), Delete(_, _)).Times(0);
-  auto error =
-      bridge()->ApplySyncChanges(std::move(metadata_changes),
-                                 {syncer::EntityChange::CreateDelete("guid")});
+
+  syncer::EntityChangeList entity_change_list;
+  entity_change_list.push_back(syncer::EntityChange::CreateDelete("guid"));
+  auto error = bridge()->ApplySyncChanges(std::move(metadata_changes),
+                                          std::move(entity_change_list));
   EXPECT_FALSE(error);
 }
 

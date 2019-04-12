@@ -340,11 +340,11 @@ void PopulateWalletTypesFromSyncData(
     std::vector<PaymentsCustomerData>* customer_data) {
   std::map<std::string, std::string> ids;
 
-  for (const syncer::EntityChange& change : entity_data) {
-    DCHECK(change.data().specifics.has_autofill_wallet());
+  for (const std::unique_ptr<syncer::EntityChange>& change : entity_data) {
+    DCHECK(change->data().specifics.has_autofill_wallet());
 
     const sync_pb::AutofillWalletSpecifics& autofill_specifics =
-        change.data().specifics.autofill_wallet();
+        change->data().specifics.autofill_wallet();
 
     switch (autofill_specifics.type()) {
       case sync_pb::AutofillWalletSpecifics::MASKED_CREDIT_CARD:

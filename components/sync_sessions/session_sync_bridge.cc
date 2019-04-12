@@ -191,13 +191,13 @@ base::Optional<syncer::ModelError> SessionSyncBridge::ApplySyncChanges(
   // information is ignored (local wins).
   std::unique_ptr<SessionStore::WriteBatch> batch =
       CreateSessionStoreWriteBatch();
-  for (const syncer::EntityChange& change : entity_changes) {
-    switch (change.type()) {
+  for (const std::unique_ptr<syncer::EntityChange>& change : entity_changes) {
+    switch (change->type()) {
       case syncer::EntityChange::ACTION_DELETE:
         // Deletions are all or nothing (since we only ever delete entire
         // sessions). Therefore we don't care if it's a tab node or meta node,
         // and just ensure we've disassociated.
-        if (store_->StorageKeyMatchesLocalSession(change.storage_key())) {
+        if (store_->StorageKeyMatchesLocalSession(change->storage_key())) {
           // Another client has attempted to delete our local data (possibly by
           // error or a clock is inaccurate). Just ignore the deletion for now.
           DLOG(WARNING) << "Local session data deleted. Ignoring until next "
@@ -210,7 +210,7 @@ base::Optional<syncer::ModelError> SessionSyncBridge::ApplySyncChanges(
           // these deletions, simply delete all local sync metadata (untrack).
           for (const std::string& deleted_storage_key :
                batch->DeleteForeignEntityAndUpdateTracker(
-                   change.storage_key())) {
+                   change->storage_key())) {
             change_processor()->UntrackEntityForStorageKey(deleted_storage_key);
             metadata_change_list->ClearMetadata(deleted_storage_key);
           }
@@ -218,9 +218,9 @@ base::Optional<syncer::ModelError> SessionSyncBridge::ApplySyncChanges(
         break;
       case syncer::EntityChange::ACTION_ADD:
       case syncer::EntityChange::ACTION_UPDATE: {
-        const SessionSpecifics& specifics = change.data().specifics.session();
+        const SessionSpecifics& specifics = change->data().specifics.session();
 
-        if (store_->StorageKeyMatchesLocalSession(change.storage_key())) {
+        if (store_->StorageKeyMatchesLocalSession(change->storage_key())) {
           // We should only ever receive a change to our own machine's session
           // info if encryption was turned on. In that case, the data is still
           // the same, so we can ignore.
@@ -234,16 +234,16 @@ base::Optional<syncer::ModelError> SessionSyncBridge::ApplySyncChanges(
         }
 
         // Guaranteed by the processor.
-        DCHECK_EQ(change.data().client_tag_hash,
+        DCHECK_EQ(change->data().client_tag_hash,
                   GenerateSyncableHash(syncer::SESSIONS,
                                        SessionStore::GetClientTag(specifics)));
 
-        batch->PutAndUpdateTracker(specifics, change.data().modification_time);
+        batch->PutAndUpdateTracker(specifics, change->data().modification_time);
         // If a favicon or favicon urls are present, load the URLs and visit
         // times into the in-memory favicon cache.
         if (specifics.has_tab()) {
           favicon_cache_.UpdateMappingsFromForeignTab(
-              specifics.tab(), change.data().modification_time);
+              specifics.tab(), change->data().modification_time);
         }
         break;
       }
