@@ -61,7 +61,7 @@ void FilterGroup::Initialize(int output_samples_per_second,
 
   // Run a buffer of 0's to initialize rendering delay.
   delay_seconds_ = post_processing_pipeline_->ProcessFrames(
-      interleaved_.get(), input_frames_per_write_, last_volume_,
+      interleaved_.data(), input_frames_per_write_, last_volume_,
       true /* is_silence */);
 }
 
@@ -139,20 +139,20 @@ float FilterGroup::MixAndFilter(
   }
 
   mixed_->ToInterleaved<::media::FloatSampleTypeTraits<float>>(
-      input_frames_per_write_, interleaved_.get());
+      input_frames_per_write_, interleaved_.data());
 
   // Mix FilterGroups
   for (FilterGroup* group : mixed_inputs_) {
     if (group->last_volume() > 0.0f) {
       ::media::vector_math::FMAC(group->GetOutputBuffer(), 1.0f,
                                  input_frames_per_write_ * num_channels_,
-                                 interleaved_.get());
+                                 interleaved_.data());
     }
   }
 
   if (playout_channel_selection_ != kChannelAll) {
     // Duplicate selected channel to all channels.
-    float* data = interleaved_.get();
+    float* data = interleaved_.data();
     for (int f = 0; f < input_frames_per_write_; ++f) {
       float selected = data[f * num_channels_ + playout_channel_selection_];
       for (int c = 0; c < num_channels_; ++c)
@@ -175,7 +175,7 @@ float FilterGroup::MixAndFilter(
   }
 
   delay_seconds_ = post_processing_pipeline_->ProcessFrames(
-      interleaved_.get(), input_frames_per_write_, last_volume_, is_silence);
+      interleaved_.data(), input_frames_per_write_, last_volume_, is_silence);
   return last_volume_;
 }
 
@@ -205,9 +205,7 @@ void FilterGroup::ResizeBuffers() {
   for (MixerInput* input : active_inputs_) {
     AddTempBuffer(input->num_channels(), input_frames_per_write_);
   }
-  interleaved_.reset(static_cast<float*>(base::AlignedAlloc(
-      input_frames_per_write_ * num_channels_ * sizeof(float),
-      ::media::AudioBus::kChannelAlignment)));
+  interleaved_.assign(input_frames_per_write_ * num_channels_, 0.0f);
 }
 
 void FilterGroup::AddTempBuffer(int num_channels, int num_frames) {

@@ -13,8 +13,8 @@
 
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
-#include "base/memory/aligned_memory.h"
 #include "base/values.h"
+#include "chromecast/media/base/aligned_buffer.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/volume_control.h"
 
@@ -147,7 +147,7 @@ class FilterGroup {
   std::unique_ptr<::media::AudioBus> mixed_;
 
   // Interleaved data must be aligned to 16 bytes.
-  std::unique_ptr<float, base::AlignedFreeDeleter> interleaved_;
+  AlignedBuffer<float> interleaved_;
 
   std::unique_ptr<PostProcessingPipeline> post_processing_pipeline_;
 
