@@ -24,6 +24,7 @@
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_text_utils.h"
 #include "ui/accessibility/platform/ax_platform_node_base.h"
+#include "ui/gfx/range/range.h"
 
 // IMPORTANT!
 // These values are written to logs.  Do not renumber or delete
@@ -1005,6 +1006,13 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   using RuntimeIdArray = std::array<int, 2>;
   void GetRuntimeIdArray(RuntimeIdArray& runtime_id);
 
+  // Notifies accessibility about active composition.
+  void OnActiveComposition(const gfx::Range& range);
+  // Returns true if there is an active composition
+  bool HasActiveComposition() const;
+  // Returns the start/end offsets of the active composition
+  gfx::Range GetActiveCompositionOffsets() const;
+
  protected:
   // This is hard-coded; all products based on the Chromium engine will have the
   // same framework name, so that assistive technology can detect any
@@ -1209,6 +1217,9 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
 
   PatternProviderFactoryMethod GetPatternProviderFactoryMethod(
       PATTERNID pattern_id);
+
+  // Start and end offsets of an active composition
+  gfx::Range active_composition_range_;
 };
 
 }  // namespace ui

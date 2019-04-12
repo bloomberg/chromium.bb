@@ -1758,11 +1758,15 @@ bool Textfield::ShouldDoLearning() {
 }
 
 #if defined(OS_WIN)
-// TODO(IME): Implement this method to support Korean IME reconversion feature
+// TODO(https://crbug.com/952355): Implement this method to support Korean IME reconversion feature
 // on native text fields (e.g. find bar).
 void Textfield::SetCompositionFromExistingText(
     const gfx::Range& range,
     const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {}
+
+// TODO(https://crbug.com/952355): Implement this method once TSF supports reconversion
+// features on native text fields.
+void Textfield::SetActiveCompositionForAccessibility(const gfx::Range& range) {}
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////

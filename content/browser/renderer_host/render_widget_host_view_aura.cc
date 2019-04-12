@@ -62,6 +62,7 @@
 #include "third_party/blink/public/web/web_ime_text_span.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/platform/aura_window_properties.h"
+#include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/cursor_client_observer.h"
@@ -1588,6 +1589,22 @@ void RenderWidgetHostViewAura::SetCompositionFromExistingText(
     has_composition_text_ = true;
   }
 }
+
+void RenderWidgetHostViewAura::SetActiveCompositionForAccessibility(
+    const gfx::Range& range) {
+  BrowserAccessibilityManager* manager =
+      host()->GetRootBrowserAccessibilityManager();
+  if (manager) {
+    ui::AXPlatformNodeWin* focus_node = static_cast<ui::AXPlatformNodeWin*>(
+        ui::AXPlatformNode::FromNativeViewAccessible(
+            manager->GetFocus()->GetNativeViewAccessible()));
+    if (focus_node) {
+      // Notify accessibility object about this composition
+      focus_node->OnActiveComposition(range);
+    }
+  }
+}
+
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////

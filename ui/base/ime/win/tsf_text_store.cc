@@ -878,6 +878,12 @@ STDMETHODIMP TSFTextStore::OnEndEdit(ITfContext* context,
     }
   }
 
+  if (text_input_client_) {
+    // Notify accessibility about this composition
+    text_input_client_->SetActiveCompositionForAccessibility(
+        composition_range_);
+  }
+
   return S_OK;
 }
 

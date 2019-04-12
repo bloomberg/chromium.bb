@@ -211,13 +211,19 @@ STDMETHODIMP AXPlatformNodeTextProviderWin::get_SupportedTextSelection(
 STDMETHODIMP AXPlatformNodeTextProviderWin::GetActiveComposition(
     ITextRangeProvider** range) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTEDIT_GETACTIVECOMPOSITION);
-  return E_NOTIMPL;
+  UIA_VALIDATE_TEXTPROVIDER_CALL();
+
+  *range = nullptr;
+  return GetTextRangeProviderFromActiveComposition(range);
 }
 
 STDMETHODIMP AXPlatformNodeTextProviderWin::GetConversionTarget(
     ITextRangeProvider** range) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTEDIT_GETCONVERSIONTARGET);
-  return E_NOTIMPL;
+  UIA_VALIDATE_TEXTPROVIDER_CALL();
+
+  *range = nullptr;
+  return GetTextRangeProviderFromActiveComposition(range);
 }
 
 ITextRangeProvider* AXPlatformNodeTextProviderWin::GetRangeFromChild(
@@ -250,6 +256,35 @@ ITextRangeProvider* AXPlatformNodeTextProviderWin::GetRangeFromChild(
 
 ui::AXPlatformNodeWin* AXPlatformNodeTextProviderWin::owner() const {
   return owner_;
+}
+
+HRESULT
+AXPlatformNodeTextProviderWin::GetTextRangeProviderFromActiveComposition(
+    ITextRangeProvider** range) {
+  *range = nullptr;
+  // We fetch the start and end offset of an active composition only if
+  // this object has focus and TSF is in composition mode.
+  // The offsets here refer to the character positions in a plain text
+  // view of the DOM tree. Ex: if the active composition in an element
+  // has "abc" then the range will be (0,3) in both TSF and accessibility
+  if ((AXPlatformNode::FromNativeViewAccessible(
+           owner()->GetDelegate()->GetFocus()) ==
+       static_cast<AXPlatformNode*>(owner())) &&
+      owner()->HasActiveComposition()) {
+    gfx::Range active_composition_offset =
+        owner()->GetActiveCompositionOffsets();
+    AXNodePosition::AXPositionInstance start =
+        owner()->GetDelegate()->CreateTextPositionAt(
+            /*offset*/ active_composition_offset.start());
+    AXNodePosition::AXPositionInstance end =
+        owner()->GetDelegate()->CreateTextPositionAt(
+            /*offset*/ active_composition_offset.end());
+
+    return AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
+        owner_, std::move(start), std::move(end), range);
+  }
+
+  return S_OK;
 }
 
 }  // namespace ui

@@ -9,8 +9,10 @@
 
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_safearray.h"
+#include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/platform/ax_fragment_root_win.h"
 #include "ui/accessibility/platform/ax_platform_node_textprovider_win.h"
+#include "ui/accessibility/platform/ax_platform_node_textrangeprovider_win.h"
 #include "ui/base/win/accessibility_misc_utils.h"
 
 using Microsoft::WRL::ComPtr;
@@ -28,6 +30,14 @@ class AXPlatformNodeTextProviderTest : public ui::AXPlatformNodeWinTest {
   ui::AXPlatformNodeWin* GetOwner(
       const AXPlatformNodeTextProviderWin* text_provider) {
     return text_provider->owner_;
+  }
+  const AXNodePosition::AXPositionInstance& GetStart(
+      const AXPlatformNodeTextRangeProviderWin* text_range) {
+    return text_range->start_;
+  }
+  const AXNodePosition::AXPositionInstance& GetEnd(
+      const AXPlatformNodeTextRangeProviderWin* text_range) {
+    return text_range->end_;
   }
 };
 
@@ -397,6 +407,128 @@ TEST_F(AXPlatformNodeTextProviderTest, TestITextProviderGetSelection) {
             text_edit_provider->GetSelection(selections.Receive()));
 
   AXNodePosition::SetTreeForTesting(nullptr);
+}
+
+TEST_F(AXPlatformNodeTextProviderTest, TestITextProviderGetActiveComposition) {
+  ui::AXNodeData text_data;
+  text_data.id = 2;
+  text_data.role = ax::mojom::Role::kStaticText;
+  text_data.SetName("some text");
+
+  ui::AXNodeData root_data;
+  root_data.id = 1;
+  root_data.SetName("Document");
+  root_data.role = ax::mojom::Role::kRootWebArea;
+  root_data.child_ids.push_back(2);
+
+  ui::AXTreeUpdate update;
+  ui::AXTreeData tree_data;
+  tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+  update.tree_data = tree_data;
+  update.has_tree_data = true;
+  update.root_id = root_data.id;
+  update.nodes.push_back(root_data);
+  update.nodes.push_back(text_data);
+  Init(update);
+
+  AXNodePosition::SetTreeForTesting(tree_.get());
+
+  ComPtr<IRawElementProviderSimple> root_node =
+      GetRootIRawElementProviderSimple();
+
+  ComPtr<ITextProvider> root_text_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      root_node->GetPatternProvider(UIA_TextPatternId, &root_text_provider));
+
+  ComPtr<ITextEditProvider> root_text_edit_provider;
+  EXPECT_HRESULT_SUCCEEDED(root_node->GetPatternProvider(
+      UIA_TextEditPatternId, &root_text_edit_provider));
+
+  CComPtr<ITextRangeProvider> text_range_provider;
+  root_text_edit_provider->GetActiveComposition(&text_range_provider);
+  ASSERT_EQ(nullptr, text_range_provider);
+
+  ComPtr<AXPlatformNodeTextProviderWin> root_platform_node;
+  root_text_provider->QueryInterface(IID_PPV_ARGS(&root_platform_node));
+
+  ui::AXActionData action_data;
+  action_data.action = ax::mojom::Action::kFocus;
+  action_data.target_node_id = 1;
+  AXPlatformNodeWin* owner = GetOwner(root_platform_node.Get());
+  owner->GetDelegate()->AccessibilityPerformAction(action_data);
+  owner->OnActiveComposition(gfx::Range(0, 1));
+
+  root_text_edit_provider->GetActiveComposition(&text_range_provider);
+  ASSERT_NE(nullptr, text_range_provider);
+  ComPtr<AXPlatformNodeTextRangeProviderWin> actual_range;
+  AXNodePosition::AXPositionInstance expected_start =
+      owner->GetDelegate()->CreateTextPositionAt(0);
+  AXNodePosition::AXPositionInstance expected_end =
+      owner->GetDelegate()->CreateTextPositionAt(1);
+  text_range_provider->QueryInterface(IID_PPV_ARGS(&actual_range));
+  EXPECT_EQ(*GetStart(actual_range.Get()), *expected_start);
+  EXPECT_EQ(*GetEnd(actual_range.Get()), *expected_end);
+}
+
+TEST_F(AXPlatformNodeTextProviderTest, TestITextProviderGetConversionTarget) {
+  ui::AXNodeData text_data;
+  text_data.id = 2;
+  text_data.role = ax::mojom::Role::kStaticText;
+  text_data.SetName("some text");
+
+  ui::AXNodeData root_data;
+  root_data.id = 1;
+  root_data.SetName("Document");
+  root_data.role = ax::mojom::Role::kRootWebArea;
+  root_data.child_ids.push_back(2);
+
+  ui::AXTreeUpdate update;
+  ui::AXTreeData tree_data;
+  tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+  update.tree_data = tree_data;
+  update.has_tree_data = true;
+  update.root_id = root_data.id;
+  update.nodes.push_back(root_data);
+  update.nodes.push_back(text_data);
+  Init(update);
+
+  AXNodePosition::SetTreeForTesting(tree_.get());
+
+  ComPtr<IRawElementProviderSimple> root_node =
+      GetRootIRawElementProviderSimple();
+
+  ComPtr<ITextProvider> root_text_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      root_node->GetPatternProvider(UIA_TextPatternId, &root_text_provider));
+
+  ComPtr<ITextEditProvider> root_text_edit_provider;
+  EXPECT_HRESULT_SUCCEEDED(root_node->GetPatternProvider(
+      UIA_TextEditPatternId, &root_text_edit_provider));
+
+  CComPtr<ITextRangeProvider> text_range_provider;
+  root_text_edit_provider->GetConversionTarget(&text_range_provider);
+  ASSERT_EQ(nullptr, text_range_provider);
+
+  ComPtr<AXPlatformNodeTextProviderWin> root_platform_node;
+  root_text_provider->QueryInterface(IID_PPV_ARGS(&root_platform_node));
+
+  ui::AXActionData action_data;
+  action_data.action = ax::mojom::Action::kFocus;
+  action_data.target_node_id = 1;
+  AXPlatformNodeWin* owner = GetOwner(root_platform_node.Get());
+  owner->GetDelegate()->AccessibilityPerformAction(action_data);
+  owner->OnActiveComposition(gfx::Range(0, 1));
+
+  root_text_edit_provider->GetConversionTarget(&text_range_provider);
+  ASSERT_NE(nullptr, text_range_provider);
+  ComPtr<AXPlatformNodeTextRangeProviderWin> actual_range;
+  AXNodePosition::AXPositionInstance expected_start =
+      owner->GetDelegate()->CreateTextPositionAt(0);
+  AXNodePosition::AXPositionInstance expected_end =
+      owner->GetDelegate()->CreateTextPositionAt(1);
+  text_range_provider->QueryInterface(IID_PPV_ARGS(&actual_range));
+  EXPECT_EQ(*GetStart(actual_range.Get()), *expected_start);
+  EXPECT_EQ(*GetEnd(actual_range.Get()), *expected_end);
 }
 
 }  // namespace ui
