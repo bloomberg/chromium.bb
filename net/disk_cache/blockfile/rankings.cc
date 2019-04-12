@@ -48,7 +48,7 @@ enum Operation {
 // data on the file header) can be used to finish the operation.
 class Transaction {
  public:
-  // addr is the cache addres of the node being inserted or removed. We want to
+  // addr is the cache address of the node being inserted or removed. We want to
   // avoid having the compiler doing optimizations on when to read or write
   // from user_data because it is the basis of the crash detection. Maybe
   // volatile is not enough for that, but it should be a good hint.
@@ -320,8 +320,6 @@ void Rankings::Remove(CacheRankingsBlock* node, List list, bool strict) {
   Trace("Remove 0x%x (0x%x 0x%x) l %d", node->address().value(),
         node->Data()->next, node->Data()->prev, list);
   DCHECK(node->HasData());
-  if (strict)
-    InvalidateIterators(node);
 
   Addr next_addr(node->Data()->next);
   Addr prev_addr(node->Data()->prev);
@@ -392,6 +390,9 @@ void Rankings::Remove(CacheRankingsBlock* node, List list, bool strict) {
   GenerateCrash(ON_REMOVE_8);
   node->Store();
   DecrementCounter(list);
+  if (strict)
+    UpdateIteratorsForRemoved(node_value, &next);
+
   UpdateIterators(&next);
   UpdateIterators(&prev);
   backend_->FlushIndex();
@@ -893,11 +894,14 @@ void Rankings::UpdateIterators(CacheRankingsBlock* node) {
   }
 }
 
-void Rankings::InvalidateIterators(CacheRankingsBlock* node) {
-  CacheAddr address = node->address().value();
+void Rankings::UpdateIteratorsForRemoved(CacheAddr address,
+                                         CacheRankingsBlock* next) {
+  CacheAddr next_addr = next->address().value();
   for (auto it = iterators_.begin(); it != iterators_.end(); ++it) {
-    if (it->first == address)
-      it->second->Discard();
+    if (it->first == address) {
+      it->first = next_addr;
+      it->second->CopyFrom(next);
+    }
   }
 }
 
