@@ -34,6 +34,7 @@
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_devices_controller.h"
+#include "chrome/browser/media/webrtc/system_media_capture_permissions_stats_mac.h"
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
 #include "chrome/browser/net/net_error_tab_helper.h"
 #include "chrome/browser/net/prediction_options.h"
@@ -592,6 +593,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   confirm_quit::RegisterLocalState(registry);
   OSCrypt::RegisterLocalPrefs(registry);
   QuitWithAppsController::RegisterPrefs(registry);
+  system_media_permissions::RegisterSystemMediaPermissionStatesPrefs(registry);
 #endif
 
 #if defined(OS_WIN)

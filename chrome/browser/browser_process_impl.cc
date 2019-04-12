@@ -196,6 +196,10 @@
 #include "chrome/browser/ui/user_manager.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "chrome/browser/media/webrtc/system_media_capture_permissions_stats_mac.h"
+#endif
+
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
 // How often to check if the persistent instance of Chrome needs to restart
 // to install an update.
@@ -321,6 +325,10 @@ void BrowserProcessImpl::Init() {
 
   DCHECK(!webrtc_event_log_manager_);
   webrtc_event_log_manager_ = WebRtcEventLogManager::CreateSingletonInstance();
+
+#if defined(OS_MACOSX)
+  system_media_permissions::LogSystemMediaPermissionsStartupStats();
+#endif
 }
 
 #if !defined(OS_ANDROID)

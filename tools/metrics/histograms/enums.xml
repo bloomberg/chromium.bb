@@ -53876,6 +53876,13 @@ would be helpful to identify which type is being sent.
   <int value="3" label="SSID"/>
 </enum>
 
+<enum name="SystemMediaCapturePermission">
+  <int value="0" label="Not determined"/>
+  <int value="1" label="Restricted"/>
+  <int value="2" label="Denied"/>
+  <int value="3" label="Allowed"/>
+</enum>
+
 <enum name="SystemMenuDefaultViewRows">
   <int value="0" label="NOT_RECORDED - Should not be recorded"/>
   <int value="1" label="TEST - Should not be recorded"/>

@@ -2904,6 +2904,8 @@ jumbo_split_static_library("browser") {
       "media/webrtc/display_media_access_handler.h",
       "media/webrtc/system_media_capture_permissions_mac.h",
       "media/webrtc/system_media_capture_permissions_mac.mm",
+      "media/webrtc/system_media_capture_permissions_stats_mac.h",
+      "media/webrtc/system_media_capture_permissions_stats_mac.mm",
       "media/webrtc/tab_desktop_media_list.cc",
       "media/webrtc/tab_desktop_media_list.h",
       "media_galleries/chromeos/mtp_device_delegate_impl_chromeos.cc",
