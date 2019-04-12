@@ -1633,10 +1633,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // a small region of a canvas changes.
   void InvalidatePaintRectangle(const LayoutRect&);
 
-  // Returns the rect that should have paint invalidated whenever this object
+  // Returns the rect that should have raster invalidated whenever this object
   // changes. The rect is in the coordinate space of the document's scrolling
   // contents. This method deals with outlines and overflow.
-  virtual LayoutRect VisualRectInDocument() const;
+  virtual LayoutRect VisualRectInDocument(
+      VisualRectFlags = kDefaultVisualRectFlags) const;
 
   // Returns the rect that should have raster invalidated whenever this object
   // changes. The rect is in the object's local coordinate space. This is for
