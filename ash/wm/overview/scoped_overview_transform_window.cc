@@ -283,13 +283,13 @@ void ScopedOverviewTransformWindow::BeginScopedAnimation(
         animation_type, window);
     settings->DeferPaint();
 
-    // Create a start animation observer if this is an enter overview layout
+    // Create an EnterAnimationObserver if this is an enter overview layout
     // animation.
     if (animation_type == OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_ON_ENTER) {
-      auto start_observer = std::make_unique<StartAnimationObserver>();
-      settings->AddObserver(start_observer.get());
-      Shell::Get()->overview_controller()->AddStartAnimationObserver(
-          std::move(start_observer));
+      auto enter_observer = std::make_unique<EnterAnimationObserver>();
+      settings->AddObserver(enter_observer.get());
+      Shell::Get()->overview_controller()->AddEnterAnimationObserver(
+          std::move(enter_observer));
     }
 
     animation_settings->push_back(std::move(settings));

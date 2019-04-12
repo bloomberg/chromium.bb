@@ -79,10 +79,10 @@ void FadeInWidgetAndMaybeSlideOnEnter(views::Widget* widget,
   if (slide) {
     window->SetTransform(original_transform);
 
-    auto start_observer = std::make_unique<StartAnimationObserver>();
-    scoped_overview_animation_settings.AddObserver(start_observer.get());
-    Shell::Get()->overview_controller()->AddStartAnimationObserver(
-        std::move(start_observer));
+    auto enter_observer = std::make_unique<EnterAnimationObserver>();
+    scoped_overview_animation_settings.AddObserver(enter_observer.get());
+    Shell::Get()->overview_controller()->AddEnterAnimationObserver(
+        std::move(enter_observer));
   }
 }
 

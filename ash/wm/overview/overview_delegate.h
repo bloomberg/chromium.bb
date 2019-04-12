@@ -32,13 +32,13 @@ class ASH_EXPORT OverviewDelegate {
       DelayedAnimationObserver* animation_observer) = 0;
 
   // Passes ownership of |animation_observer| to |this| delegate.
-  virtual void AddStartAnimationObserver(
+  virtual void AddEnterAnimationObserver(
       std::unique_ptr<DelayedAnimationObserver> animation_observer) = 0;
 
   // Finds and erases |animation_observer| from the list which tracks the start
   // animations. This method should be called when a scheduled start overview
   // animation completes.
-  virtual void RemoveAndDestroyStartAnimationObserver(
+  virtual void RemoveAndDestroyEnterAnimationObserver(
       DelayedAnimationObserver* animation_observer) = 0;
 
  protected:

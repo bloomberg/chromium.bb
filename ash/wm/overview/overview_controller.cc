@@ -389,7 +389,7 @@ bool OverviewController::ToggleOverview(
         !delayed_animation_task_delay_.is_zero()) {
       auto force_delay_observer =
           std::make_unique<ForceDelayObserver>(delayed_animation_task_delay_);
-      AddStartAnimationObserver(std::move(force_delay_observer));
+      AddEnterAnimationObserver(std::move(force_delay_observer));
     }
 
     if (start_animations_.empty())
@@ -665,13 +665,13 @@ OverviewController::GetWindowsListInOverviewGridsForTest() {
   return windows;
 }
 
-void OverviewController::AddStartAnimationObserver(
+void OverviewController::AddEnterAnimationObserver(
     std::unique_ptr<DelayedAnimationObserver> animation_observer) {
   animation_observer->SetOwner(this);
   start_animations_.push_back(std::move(animation_observer));
 }
 
-void OverviewController::RemoveAndDestroyStartAnimationObserver(
+void OverviewController::RemoveAndDestroyEnterAnimationObserver(
     DelayedAnimationObserver* animation_observer) {
   const bool previous_empty = start_animations_.empty();
   base::EraseIf(start_animations_, base::MatchesUniquePtr(animation_observer));

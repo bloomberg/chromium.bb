@@ -85,9 +85,9 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
       std::unique_ptr<DelayedAnimationObserver> animation) override;
   void RemoveAndDestroyExitAnimationObserver(
       DelayedAnimationObserver* animation) override;
-  void AddStartAnimationObserver(
+  void AddEnterAnimationObserver(
       std::unique_ptr<DelayedAnimationObserver> animation_observer) override;
-  void RemoveAndDestroyStartAnimationObserver(
+  void RemoveAndDestroyEnterAnimationObserver(
       DelayedAnimationObserver* animation_observer) override;
 
   // ::wm::ActivationChangeObserver:
