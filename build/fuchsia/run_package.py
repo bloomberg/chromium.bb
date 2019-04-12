@@ -196,8 +196,11 @@ def RunPackage(output_dir, target, package_path, package_name,
       output_fd = process.stdout.fileno()
 
     # Run the log data through the symbolizer process.
-    build_ids_path = os.path.join(os.path.dirname(package_path), 'ids.txt')
-    output_stream = SymbolizerFilter(output_fd, build_ids_path)
+    build_ids_paths = map(
+        lambda package_path: os.path.join(
+            os.path.dirname(package_path), 'ids.txt'),
+        [package_path] + package_deps)
+    output_stream = SymbolizerFilter(output_fd, build_ids_paths)
 
     for next_line in output_stream:
       print next_line.rstrip()
