@@ -57,11 +57,6 @@ jumbo_component("views") {
   all_dependent_configs = [ ":flags" ]
 
   public = [
-    # TODO(ccameron): Move these sources to the views_bridge_mac component
-    "../views_bridge_mac/bridge_factory_impl.h",
-    "../views_bridge_mac/bridged_native_widget_impl.h",
-    "../views_bridge_mac/native_widget_mac_nswindow.h",
-    "../views_bridge_mac/window_touch_bar_delegate.h",
     "accessibility/ax_event_manager.h",
     "accessibility/ax_event_observer.h",
     "accessibility/ax_virtual_view.h",
@@ -283,9 +278,6 @@ jumbo_component("views") {
   ]
 
   sources = [
-    # TODO(ccameron): Move these sources to the views_bridge_mac component
-    "../views_bridge_mac/bridged_native_widget_impl.mm",
-    "../views_bridge_mac/native_widget_mac_nswindow.mm",
     "accessibility/ax_event_manager.cc",
     "accessibility/ax_event_observer.cc",
     "accessibility/ax_virtual_view.cc",
@@ -480,21 +472,6 @@ jumbo_component("views") {
   # Internal sources. TODO(https://crbug.com/871123): Move more headers from
   # public into this list, along with the implementation file.
   sources += [
-    # TODO(ccameron): Move these sources to the views_bridge_mac component
-    "../views_bridge_mac/bridge_factory_impl.mm",
-    "../views_bridge_mac/bridged_content_view.h",
-    "../views_bridge_mac/bridged_content_view.mm",
-    "../views_bridge_mac/bridged_content_view_touch_bar.mm",
-    "../views_bridge_mac/browser_native_widget_window_mac.h",
-    "../views_bridge_mac/browser_native_widget_window_mac.mm",
-    "../views_bridge_mac/cocoa_window_move_loop.h",
-    "../views_bridge_mac/cocoa_window_move_loop.mm",
-    "../views_bridge_mac/native_widget_mac_frameless_nswindow.h",
-    "../views_bridge_mac/native_widget_mac_frameless_nswindow.mm",
-    "../views_bridge_mac/views_nswindow_delegate.h",
-    "../views_bridge_mac/views_nswindow_delegate.mm",
-    "../views_bridge_mac/views_scrollbar_bridge.h",
-    "../views_bridge_mac/views_scrollbar_bridge.mm",
     "cocoa/bridge_factory_host.cc",
     "cocoa/bridged_native_widget_host_impl.mm",
     "cocoa/drag_drop_client_mac.h",
@@ -802,7 +779,7 @@ jumbo_component("views") {
       "CoreGraphics.framework",
       "Foundation.framework",
       "IOSurface.framework",
-      "QuartzCore.framework",  # Required by bridged_native_widget.mm.
+      "QuartzCore.framework",
     ]
   }
 
@@ -963,6 +940,9 @@ jumbo_source_set("test_support") {
       "test/desktop_window_tree_host_win_test_api.cc",
       "test/desktop_window_tree_host_win_test_api.h",
     ]
+  }
+  if (is_mac) {
+    deps += [ "//ui/views_bridge_mac" ]
   }
 
   if (use_aura) {
@@ -1309,6 +1289,7 @@ source_set("views_interactive_ui_tests") {
       "cocoa/bridged_native_widget_interactive_uitest.mm",
       "widget/native_widget_mac_interactive_uitest.mm",
     ]
+    deps += [ "//ui/views_bridge_mac" ]
   }
 
   if (use_aura) {

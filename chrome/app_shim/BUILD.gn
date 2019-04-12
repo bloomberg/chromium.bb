@@ -30,7 +30,7 @@ source_set("app_shim") {
     "//mojo/core/embedder",
     "//ui/accelerated_widget_mac",
     "//ui/base",
-    "//ui/views:views",
+    "//ui/views_bridge_mac",
   ]
 }
 

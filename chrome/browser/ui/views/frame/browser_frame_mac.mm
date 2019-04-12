@@ -408,5 +408,5 @@ bool BrowserFrameMac::HandleKeyboardEvent(
 
   // Redispatch the event. If it's a keyEquivalent:, this gives
   // CommandDispatcher the opportunity to finish passing the event to consumers.
-  return RedispatchKeyEvent(event.os_event);
+  return bridge_host()->RedispatchKeyEvent(event.os_event);
 }
