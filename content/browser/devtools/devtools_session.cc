@@ -155,7 +155,11 @@ bool DevToolsSession::DispatchProtocolMessage(const std::string& message) {
   }
   std::string converted_cbor_message;
   const std::string* message_to_send = &message;
-  if (EnableInternalDevToolsBinaryProtocol()) {
+  std::unique_ptr<protocol::DictionaryValue> value;
+  if (!EnableInternalDevToolsBinaryProtocol()) {
+    value = protocol::DictionaryValue::cast(protocol::StringUtil::parseMessage(
+        message, client_->UsesBinaryProtocol()));
+  } else {
     if (client_->UsesBinaryProtocol()) {
       // If the client uses the binary protocol, then |message| is already
       // CBOR (it comes from the client).
@@ -164,10 +168,9 @@ bool DevToolsSession::DispatchProtocolMessage(const std::string& message) {
       converted_cbor_message = ConvertJSONToCBOR(message);
       message_to_send = &converted_cbor_message;
     }
+    value = protocol::DictionaryValue::cast(
+        protocol::StringUtil::parseMessage(*message_to_send, true));
   }
-  std::unique_ptr<protocol::DictionaryValue> value =
-      protocol::DictionaryValue::cast(protocol::StringUtil::parseMessage(
-          message, client_->UsesBinaryProtocol()));
 
   std::string session_id;
   if (!value || !value->getString(kSessionId, &session_id))
