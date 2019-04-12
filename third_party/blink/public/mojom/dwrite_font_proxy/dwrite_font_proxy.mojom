@@ -28,6 +28,11 @@ struct MapCharactersResult {
   DWriteFontStyle font_style;
 };
 
+enum UniqueFontLookupMode {
+    kRetrieveTable,
+    kSingleLookups
+};
+
 interface DWriteFontProxy {
   // Locates the index of the specified font family within the system
   // collection.
@@ -50,6 +55,26 @@ interface DWriteFontProxy {
   GetFontFiles(uint32 family_index)
      => (array<mojo_base.mojom.FilePath> file_paths,
          array<mojo_base.mojom.File> file_handles);
+
+  // Returns which font unique name matching lookup mode is to be used on the
+  // current machine. On DirectWrite 10 and above, single lookups can be
+  // performed directly against DirectWrite API. On older DirectWrite (Windows
+  // 7-8.1), unique font lookups need to be performed against a shared memory
+  // region which contains the lookup table. Compare GetUniqueFontLookupTable()
+  // for lookup mode kRetrieveTable and MatchUniqueFont for
+  // lookup mode kSingleLookups.
+  [Sync]
+  GetUniqueFontLookupMode() => (UniqueFontLookupMode lookup_mode);
+
+  // On supported Windows versions, matches a unique PostScript or full font
+  // name against the installed fonts using DirectWrite API. Returns a file path
+  // and ttc_index from which the unique font can be instantiated.  Check which
+  // mode is supported using GetFontUniqueNameLookupMode().  Returns empty path
+  // and 0 ttc index if no font is found. Must not be called if
+  // GetUniqueFontLookupMode() returned kRetrieveTable.
+  [Sync]
+  MatchUniqueFont(mojo_base.mojom.String16 font_unique_name)
+      => (mojo_base.mojom.FilePath file_path, uint32 ttc_index);
 
   // Synchronously returns a protobuf structured lookup list of
   // (full_font_name|postscript_name) => (font_file + ttc_index) to the

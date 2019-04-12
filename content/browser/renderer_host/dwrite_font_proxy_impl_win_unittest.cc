@@ -9,10 +9,12 @@
 
 #include <memory>
 
+#include "base/file_version_info.h"
 #include "base/files/file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
@@ -67,6 +69,12 @@ class DWriteFontProxyUniqueNameMatchingTest
         scoped_temp_dir_.GetPath());
     table_builder_instance->ResetLookupTableForTesting();
     table_builder_instance->SchedulePrepareFontUniqueNameTable();
+  }
+
+  bool SupportsSingleLookups() {
+    blink::mojom::UniqueFontLookupMode lookup_mode;
+    dwrite_font_proxy().GetUniqueFontLookupMode(&lookup_mode);
+    return lookup_mode == blink::mojom::UniqueFontLookupMode::kSingleLookups;
   }
 
  private:
@@ -245,6 +253,62 @@ TEST_F(DWriteFontProxyUniqueNameMatchingTest, TestFindUniqueFont) {
       &TestWhenLookupTableReady, &lookup_table_results_were_tested));
   scoped_task_environment_.RunUntilIdle();
   ASSERT_TRUE(lookup_table_results_were_tested);
+}
+
+TEST_F(DWriteFontProxyUniqueNameMatchingTest, TestSingleLookup) {
+  // Do not run this test on unsupported Windows versions.
+  if (!SupportsSingleLookups())
+    return;
+  for (auto& test_font_name_index : kExpectedTestFonts) {
+    base::FilePath result_path;
+    uint32_t ttc_index;
+    dwrite_font_proxy().MatchUniqueFont(
+        base::UTF8ToUTF16(test_font_name_index.font_name), &result_path,
+        &ttc_index);
+    ASSERT_GT(result_path.value().size(), 0u);
+    base::File unique_font_file(result_path,
+                                base::File::FLAG_OPEN | base::File::FLAG_READ);
+    ASSERT_TRUE(unique_font_file.IsValid());
+    ASSERT_GT(unique_font_file.GetLength(), 0);
+    ASSERT_EQ(test_font_name_index.ttc_index, ttc_index);
+  }
+}
+
+TEST_F(DWriteFontProxyUniqueNameMatchingTest, TestSingleLookupUnavailable) {
+  // Do not run this test on unsupported Windows versions.
+  if (!SupportsSingleLookups())
+    return;
+  base::FilePath result_path;
+  uint32_t ttc_index;
+  std::string unavailable_font_name =
+      "Unavailable_Font_Name_56E7EA7E-2C69-4E23-99DC-750BC19B250E";
+  dwrite_font_proxy().MatchUniqueFont(base::UTF8ToUTF16(unavailable_font_name),
+                                      &result_path, &ttc_index);
+  ASSERT_EQ(result_path.value().size(), 0u);
+  ASSERT_EQ(ttc_index, 0u);
+}
+
+TEST_F(DWriteFontProxyUniqueNameMatchingTest, TestLookupMode) {
+  std::unique_ptr<FileVersionInfo> dwrite_version_info =
+      FileVersionInfo::CreateFileVersionInfo(
+          base::FilePath(FILE_PATH_LITERAL("DWrite.dll")));
+
+  std::string dwrite_version =
+      base::WideToUTF8(dwrite_version_info->product_version());
+
+  int dwrite_major_version_number =
+      std::stoi(dwrite_version.substr(0, dwrite_version.find(".")));
+
+  blink::mojom::UniqueFontLookupMode expected_lookup_mode;
+  if (dwrite_major_version_number >= 10) {
+    expected_lookup_mode = blink::mojom::UniqueFontLookupMode::kSingleLookups;
+  } else {
+    expected_lookup_mode = blink::mojom::UniqueFontLookupMode::kRetrieveTable;
+  }
+
+  blink::mojom::UniqueFontLookupMode lookup_mode;
+  dwrite_font_proxy().GetUniqueFontLookupMode(&lookup_mode);
+  ASSERT_EQ(lookup_mode, expected_lookup_mode);
 }
 
 }  // namespace
