@@ -223,17 +223,19 @@ bool Video::IsMetadataLoaded() const {
 
 base::Optional<base::FilePath> Video::ResolveFilePath(
     const base::FilePath& file_path) {
-  // If the path exists it's either absolute or relative to our working dir.
-  if (PathExists(file_path)) {
-    return base::MakeAbsoluteFilePath(file_path);
+  base::FilePath resolved_path = file_path;
+
+  // Try to resolve the path into an absolute path. If the path doesn't exist,
+  // it might be relative to the test data dir.
+  if (!resolved_path.IsAbsolute()) {
+    resolved_path = base::MakeAbsoluteFilePath(
+        PathExists(resolved_path) ? resolved_path
+                                  : test_data_path_.Append(resolved_path));
   }
-  // If the path doesn't exist, it might be relative to the test data dir.
-  base::FilePath resolved_path =
-      base::MakeAbsoluteFilePath(test_data_path_.Append(file_path));
-  if (PathExists(resolved_path)) {
-    return resolved_path;
-  }
-  return base::Optional<base::FilePath>();
+
+  return PathExists(resolved_path)
+             ? base::Optional<base::FilePath>(resolved_path)
+             : base::Optional<base::FilePath>();
 }
 
 // static
