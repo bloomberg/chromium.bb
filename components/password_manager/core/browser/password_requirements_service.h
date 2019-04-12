@@ -20,6 +20,10 @@ namespace autofill {
 class PasswordRequirementsSpec;
 }
 
+namespace network {
+class SharedURLLoaderFactory;
+}
+
 namespace password_manager {
 
 // A service that fetches, stores and returns requirements for generating a
@@ -75,6 +79,9 @@ class PasswordRequirementsService : public KeyedService {
 
   DISALLOW_COPY_AND_ASSIGN(PasswordRequirementsService);
 };
+
+std::unique_ptr<PasswordRequirementsService> CreatePasswordRequirementsService(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
 }  // namespace password_manager
 
