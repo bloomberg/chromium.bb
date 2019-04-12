@@ -69,10 +69,9 @@ FaviconAttributes* FaviconLoader::FaviconForPageUrl(
     return value;
   }
 
-  const CGFloat favicon_size_in_pixels =
-      [UIScreen mainScreen].scale * size_in_points;
-  const CGFloat min_favicon_size_in_pixels =
-      [UIScreen mainScreen].scale * min_size_in_points;
+  const CGFloat scale = UIScreen.mainScreen.scale;
+  const CGFloat favicon_size_in_pixels = scale * size_in_points;
+  const CGFloat min_favicon_size_in_pixels = scale * min_size_in_points;
   GURL block_page_url(page_url);
   auto favicon_block = ^(const favicon_base::LargeIconResult& result) {
     // GetLargeIconOrFallbackStyle() either returns a valid favicon (which can
@@ -81,9 +80,9 @@ FaviconAttributes* FaviconLoader::FaviconForPageUrl(
       scoped_refptr<base::RefCountedMemory> data =
           result.bitmap.bitmap_data.get();
       // The favicon code assumes favicons are PNG-encoded.
-      UIImage* favicon =
-          [UIImage imageWithData:[NSData dataWithBytes:data->front()
-                                                length:data->size()]];
+      UIImage* favicon = [UIImage
+          imageWithData:[NSData dataWithBytes:data->front() length:data->size()]
+                  scale:scale];
       FaviconAttributes* attributes =
           [FaviconAttributes attributesWithImage:favicon];
       [favicon_cache_ setObject:attributes forKey:key];
@@ -139,8 +138,7 @@ FaviconAttributes* FaviconLoader::FaviconForPageUrl(
       page_url, min_favicon_size_in_pixels, favicon_size_in_pixels,
       base::BindRepeating(favicon_block), &cancelable_task_tracker_);
 
-  return [FaviconAttributes
-      attributesWithImage:[UIImage imageNamed:@"default_world_favicon"]];
+  return [FaviconAttributes attributesWithDefaultImage];
 }
 
 FaviconAttributes* FaviconLoader::FaviconForIconUrl(
@@ -154,10 +152,9 @@ FaviconAttributes* FaviconLoader::FaviconForIconUrl(
     return value;
   }
 
-  const CGFloat favicon_size_in_pixels =
-      [UIScreen mainScreen].scale * size_in_points;
-  const CGFloat min_favicon_size_in_pixels =
-      [UIScreen mainScreen].scale * min_size_in_points;
+  const CGFloat scale = UIScreen.mainScreen.scale;
+  const CGFloat favicon_size_in_pixels = scale * size_in_points;
+  const CGFloat min_favicon_size_in_pixels = scale * min_size_in_points;
   GURL block_icon_url(icon_url);
   auto favicon_block = ^(const favicon_base::LargeIconResult& result) {
     // GetLargeIconOrFallbackStyle() either returns a valid favicon (which can
@@ -166,9 +163,9 @@ FaviconAttributes* FaviconLoader::FaviconForIconUrl(
       scoped_refptr<base::RefCountedMemory> data =
           result.bitmap.bitmap_data.get();
       // The favicon code assumes favicons are PNG-encoded.
-      UIImage* favicon =
-          [UIImage imageWithData:[NSData dataWithBytes:data->front()
-                                                length:data->size()]];
+      UIImage* favicon = [UIImage
+          imageWithData:[NSData dataWithBytes:data->front() length:data->size()]
+                  scale:scale];
       FaviconAttributes* attributes =
           [FaviconAttributes attributesWithImage:favicon];
       [favicon_cache_ setObject:attributes forKey:key];

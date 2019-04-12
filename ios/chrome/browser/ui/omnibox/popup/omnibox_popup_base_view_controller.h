@@ -14,6 +14,7 @@
 #include "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_row.h"
 
 @protocol ImageRetriever;
+@protocol FaviconRetriever;
 
 // View controller used to display a list of omnibox autocomplete matches in the
 // omnibox popup.
@@ -39,6 +40,7 @@
 @property(nonatomic, assign) BOOL incognito;
 @property(nonatomic, weak) id<AutocompleteResultConsumerDelegate> delegate;
 @property(nonatomic, weak) id<ImageRetriever> imageRetriever;
+@property(nonatomic, weak) id<FaviconRetriever> faviconRetriever;
 
 // The cell with shortcuts to display when no results are available (only if
 // this is enabled with |shortcutsEnabled|). Lazily instantiated.

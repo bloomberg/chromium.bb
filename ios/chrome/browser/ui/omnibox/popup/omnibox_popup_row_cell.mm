@@ -9,6 +9,7 @@
 #include "components/omnibox/common/omnibox_features.h"
 #import "ios/chrome/browser/ui/elements/extended_touch_target_button.h"
 #import "ios/chrome/browser/ui/omnibox/popup/autocomplete_suggestion.h"
+#import "ios/chrome/browser/ui/omnibox/popup/favicon_retriever.h"
 #import "ios/chrome/browser/ui/omnibox/popup/image_retriever.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_truncating_label.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
@@ -320,6 +321,16 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
 // Populate the leading image view with the correct icon and color.
 - (void)setupLeadingImageView {
   self.leadingImageView.image = self.suggestion.suggestionTypeIcon;
+
+  // Load favicon.
+  GURL pageURL = self.suggestion.faviconPageURL;
+  __weak OmniboxPopupRowCell* weakSelf = self;
+  [self.faviconRetriever fetchFavicon:pageURL
+                           completion:^(UIImage* image) {
+                             if (pageURL == weakSelf.suggestion.faviconPageURL)
+                               weakSelf.leadingImageView.image = image;
+                           }];
+
   self.leadingImageView.backgroundColor =
       self.incognito ? [UIColor colorWithWhite:1 alpha:0.05]
                      : [UIColor colorWithWhite:0 alpha:0.03];

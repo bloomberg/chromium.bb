@@ -283,6 +283,7 @@ NSAttributedString* calculatorText() {
         [[UIImage imageNamed:@"omnibox_completion_default_favicon"]
             imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     _imageURL = GURL();
+    _faviconPageURL = GURL();
   }
   return self;
 }

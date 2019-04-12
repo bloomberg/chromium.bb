@@ -22,6 +22,7 @@
 @property(nonatomic) NSInteger numberOfLines;
 @property(nonatomic) UIImage* suggestionTypeIcon;
 @property(nonatomic) GURL imageURL;
+@property(nonatomic) GURL faviconPageURL;
 
 // Simple suggestion with text.
 + (instancetype)simpleSuggestion;
