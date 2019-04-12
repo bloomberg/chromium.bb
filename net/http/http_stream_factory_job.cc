@@ -907,6 +907,9 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
               try_websocket_over_http2_, net_log_);
     }
     if (existing_spdy_session_) {
+      // Stop watching for SpdySessions.
+      spdy_session_request_.reset();
+
       // If we're preconnecting, but we already have a SpdySession, we don't
       // actually need to preconnect any sockets, so we're done.
       if (job_type_ == PRECONNECT)
@@ -984,6 +987,11 @@ void HttpStreamFactory::Job::OnFailedOnDefaultNetwork(int result) {
 
 int HttpStreamFactory::Job::DoInitConnectionComplete(int result) {
   net_log_.EndEvent(NetLogEventType::HTTP_STREAM_JOB_INIT_CONNECTION);
+
+  // No need to continue waiting for a session, once a connection is
+  // established.
+  spdy_session_request_.reset();
+
   if (job_type_ == PRECONNECT) {
     if (using_quic_)
       return result;
@@ -1124,6 +1132,7 @@ int HttpStreamFactory::Job::DoWaitingUserAction(int result) {
 int HttpStreamFactory::Job::SetSpdyHttpStreamOrBidirectionalStreamImpl(
     base::WeakPtr<SpdySession> session) {
   DCHECK(using_spdy_);
+
   if (is_websocket_) {
     DCHECK_NE(job_type_, PRECONNECT);
     DCHECK(delegate_->websocket_handshake_stream_create_helper());
@@ -1276,32 +1285,25 @@ void HttpStreamFactory::Job::ReturnToStateInitConnection(
 }
 
 void HttpStreamFactory::Job::OnSpdySessionAvailable(
-    bool was_alpn_negotiated,
-    NextProto negotiated_protocol,
-    bool using_spdy,
-    const SSLConfig& used_ssl_config,
-    const ProxyInfo& used_proxy_info,
-    NetLogSource source_dependency,
     base::WeakPtr<SpdySession> spdy_session) {
   DCHECK(spdy_session);
 
-  was_alpn_negotiated_ = was_alpn_negotiated;
-  negotiated_protocol_ = negotiated_protocol;
-  using_spdy_ = using_spdy;
+  // Once a connection is initialized, or if there's any out-of-band callback,
+  // like proxy auth challenge, the SpdySessionRequest is cancelled.
+  DCHECK(next_state_ == STATE_INIT_CONNECTION ||
+         next_state_ == STATE_INIT_CONNECTION_COMPLETE);
 
-  if (stream_type_ == HttpStreamRequest::BIDIRECTIONAL_STREAM) {
-    delegate_->OnBidirectionalStreamImplReadyOnPooledConnection(
-        was_alpn_negotiated, negotiated_protocol, using_spdy, used_ssl_config,
-        used_proxy_info,
-        std::make_unique<BidirectionalStreamSpdyImpl>(spdy_session,
-                                                      source_dependency));
-  } else {
-    delegate_->OnStreamReadyOnPooledConnection(
-        was_alpn_negotiated, negotiated_protocol, using_spdy, used_ssl_config,
-        used_proxy_info,
-        std::make_unique<SpdyHttpStream>(spdy_session, kNoPushedStreamFound,
-                                         source_dependency));
-  }
+  // Ignore calls to ResumeInitConnection() from either the timer or the
+  // SpdySessionPool.
+  init_connection_already_resumed_ = true;
+
+  using_spdy_ = true;
+  existing_spdy_session_ = spdy_session;
+  next_state_ = STATE_CREATE_STREAM;
+
+  // This will synchronously close |connection_|, so no need to worry about it
+  // calling back into |this|.
+  RunLoop(net::OK);
 }
 
 void HttpStreamFactory::Job::InitSSLConfig(SSLConfig* ssl_config,

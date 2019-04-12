@@ -100,22 +100,6 @@ class HttpStreamFactory::JobController
                       int status,
                       const SSLConfig& used_ssl_config) override;
 
-  void OnStreamReadyOnPooledConnection(
-      bool was_alpn_negotiated,
-      NextProto negotiated_protocol,
-      bool using_spdy,
-      const SSLConfig& used_ssl_config,
-      const ProxyInfo& proxy_info,
-      std::unique_ptr<HttpStream> stream) override;
-
-  void OnBidirectionalStreamImplReadyOnPooledConnection(
-      bool was_alpn_negotiated,
-      NextProto negotiated_protocol,
-      bool using_spdy,
-      const SSLConfig& used_ssl_config,
-      const ProxyInfo& used_proxy_info,
-      std::unique_ptr<BidirectionalStreamImpl> stream) override;
-
   // Invoked when |job| fails on the default network.
   void OnFailedOnDefaultNetwork(Job* job) override;
 

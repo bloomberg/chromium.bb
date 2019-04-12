@@ -353,52 +353,6 @@ void HttpStreamFactory::JobController::OnStreamFailed(
                             job->proxy_info());
 }
 
-void HttpStreamFactory::JobController::OnStreamReadyOnPooledConnection(
-    bool was_alpn_negotiated,
-    NextProto negotiated_protocol,
-    bool using_spdy,
-    const SSLConfig& used_ssl_config,
-    const ProxyInfo& proxy_info,
-    std::unique_ptr<HttpStream> stream) {
-  // This isn't supported on orphaned jobs.
-  DCHECK(request_);
-  DCHECK(!is_websocket_);
-  DCHECK_EQ(HttpStreamRequest::HTTP_STREAM, request_->stream_type());
-
-  request_->Complete(was_alpn_negotiated, negotiated_protocol, using_spdy);
-
-  main_job_.reset();
-  alternative_job_.reset();
-  ResetErrorStatusForJobs();
-
-  factory_->OnStreamReady(proxy_info, request_info_.privacy_mode);
-
-  delegate_->OnStreamReady(used_ssl_config, proxy_info, std::move(stream));
-}
-
-void HttpStreamFactory::JobController::
-    OnBidirectionalStreamImplReadyOnPooledConnection(
-        bool was_alpn_negotiated,
-        NextProto negotiated_protocol,
-        bool using_spdy,
-        const SSLConfig& used_ssl_config,
-        const ProxyInfo& used_proxy_info,
-        std::unique_ptr<BidirectionalStreamImpl> stream) {
-  // This isn't supported on orphaned jobs.
-  DCHECK(request_);
-  DCHECK(!is_websocket_);
-  DCHECK_EQ(HttpStreamRequest::BIDIRECTIONAL_STREAM, request_->stream_type());
-
-  request_->Complete(was_alpn_negotiated, negotiated_protocol, using_spdy);
-
-  main_job_.reset();
-  alternative_job_.reset();
-  ResetErrorStatusForJobs();
-
-  delegate_->OnBidirectionalStreamImplReady(used_ssl_config, used_proxy_info,
-                                            std::move(stream));
-}
-
 void HttpStreamFactory::JobController::OnFailedOnDefaultNetwork(Job* job) {
   DCHECK_EQ(job->job_type(), ALTERNATIVE);
   alternative_job_failed_on_default_network_ = true;
@@ -508,14 +462,6 @@ void HttpStreamFactory::JobController::OnNewSpdySessionReady(
 
   bool is_job_orphaned = IsJobOrphaned(job);
 
-  // Cache these values in case the job gets deleted.
-  const SSLConfig used_ssl_config = job->server_ssl_config();
-  const ProxyInfo used_proxy_info = job->proxy_info();
-  const bool was_alpn_negotiated = job->was_alpn_negotiated();
-  const NextProto negotiated_protocol = job->negotiated_protocol();
-  const bool using_spdy = job->using_spdy();
-  const NetLogSource source_dependency = job->net_log().source();
-
   // Cache this so we can still use it if the JobController is deleted.
   SpdySessionPool* spdy_session_pool = session_->spdy_session_pool();
 
@@ -529,7 +475,8 @@ void HttpStreamFactory::JobController::OnNewSpdySessionReady(
       BindJob(job);
     }
 
-    MarkRequestComplete(was_alpn_negotiated, negotiated_protocol, using_spdy);
+    MarkRequestComplete(job->was_alpn_negotiated(), job->negotiated_protocol(),
+                        job->using_spdy());
 
     if (is_websocket_) {
       // TODO(bnc): Re-instate this code when WebSockets over HTTP/2 is
@@ -540,26 +487,23 @@ void HttpStreamFactory::JobController::OnNewSpdySessionReady(
           job->ReleaseBidirectionalStream();
       DCHECK(bidirectional_stream_impl);
       delegate_->OnBidirectionalStreamImplReady(
-          used_ssl_config, used_proxy_info,
+          job->server_ssl_config(), job->proxy_info(),
           std::move(bidirectional_stream_impl));
     } else {
       std::unique_ptr<HttpStream> stream = job->ReleaseStream();
       DCHECK(stream);
-      delegate_->OnStreamReady(used_ssl_config, used_proxy_info,
+      delegate_->OnStreamReady(job->server_ssl_config(), job->proxy_info(),
                                std::move(stream));
     }
   }
 
   // Notify other requests that have the same SpdySessionKey.
   // |request_| and |bound_job_| might be deleted already.
-  if (spdy_session && spdy_session->IsAvailable()) {
-    spdy_session_pool->OnNewSpdySessionReady(
-        spdy_session, used_ssl_config, used_proxy_info, was_alpn_negotiated,
-        negotiated_protocol, using_spdy, source_dependency);
-  }
-  if (is_job_orphaned) {
+  if (spdy_session && spdy_session->IsAvailable())
+    spdy_session_pool->OnNewSpdySessionReady(spdy_session);
+
+  if (is_job_orphaned)
     OnOrphanedJobComplete(job);
-  }
 }
 
 void HttpStreamFactory::JobController::OnPreconnectsComplete(Job* job) {

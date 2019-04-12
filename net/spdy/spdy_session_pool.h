@@ -91,16 +91,7 @@ class NET_EXPORT SpdySessionPool
       virtual ~Delegate();
 
       // |spdy_session| will not be null.
-      //
-      // TODO(mmenke): Remove all parameters except |spdy_session| and possibly
-      // |source_dependency|.
       virtual void OnSpdySessionAvailable(
-          bool was_alpn_negotiated,
-          NextProto negotiated_protocol,
-          bool using_spdy,
-          const SSLConfig& used_ssl_config,
-          const ProxyInfo& used_proxy_info,
-          NetLogSource source_dependency,
           base::WeakPtr<SpdySession> spdy_session) = 0;
 
      private:
@@ -263,13 +254,7 @@ class NET_EXPORT SpdySessionPool
 
   // Called when a SpdySession is ready. It will find appropriate Requests and
   // fulfill them.
-  void OnNewSpdySessionReady(const base::WeakPtr<SpdySession>& spdy_session,
-                             const SSLConfig& used_ssl_config,
-                             const ProxyInfo& used_proxy_info,
-                             bool was_alpn_negotiated,
-                             NextProto negotiated_protocol,
-                             bool using_spdy,
-                             NetLogSource source_dependency);
+  void OnNewSpdySessionReady(const base::WeakPtr<SpdySession>& spdy_session);
 
   // Called when a HttpStreamRequest is started with |spdy_session_key|.
   // Returns true if the request should continue. Returns false if the request
