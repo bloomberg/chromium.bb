@@ -468,16 +468,19 @@ TEST_F(ModellerImplTest, PersonalCurveError) {
 // calculated from the recent samples only.
 TEST_F(ModellerImplTest, OnAmbientLightUpdated) {
   const ModelConfig model_config = GetTestModelConfig();
+  // Set a horizon different from model_config.
+  const int horizon_in_seconds = 4;
   Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
        model_config, true /* is_trainer_configured */,
-       true /* is_personal_curve_valid */);
+       true /* is_personal_curve_valid */,
+       {{"model_als_horizon_seconds",
+         base::NumberToString(horizon_in_seconds)}});
 
   test_observer_->CheckStatus(true /* is_model_initialized */,
                               modeller_->GetGlobalCurveForTesting(),
                               base::nullopt /* personal_curve */);
 
   EXPECT_EQ(modeller_->GetModelConfigForTesting(), model_config);
-  const int horizon_in_seconds = model_config.model_als_horizon_seconds;
 
   const int first_lux = 1000;
   double running_sum = 0.0;
