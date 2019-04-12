@@ -765,7 +765,7 @@ public class ShortcutHelper {
                 // return value is non-null
                 WebApkInfo webApkInfo = WebApkInfo.create(packageInfo.packageName, "",
                         ShortcutSource.UNKNOWN, false /* forceNavigation */,
-                        false /* useTransparentSplash */, null /* shareData */);
+                        false /* isSplashProvidedByWebApk */, null /* shareData */);
                 if (webApkInfo != null) {
                     names.add(webApkInfo.name());
                     shortNames.add(webApkInfo.shortName());
