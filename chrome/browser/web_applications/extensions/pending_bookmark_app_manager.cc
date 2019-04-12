@@ -10,10 +10,13 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
+#include "chrome/browser/web_applications/components/web_app_ui_delegate.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_install_finalizer.h"
 #include "content/public/browser/web_contents.h"
 
@@ -103,6 +106,23 @@ void PendingBookmarkAppManager::ReinstallPlaceholderApp(
                      std::move(callback)));
 }
 
+void PendingBookmarkAppManager::ReinstallPlaceholderAppIfUnused(
+    web_app::InstallOptions install_options,
+    OnceInstallCallback callback) {
+  base::Optional<std::string> extension_id =
+      extension_ids_map_.LookupPlaceholderAppId(install_options.url);
+
+  if (!extension_id.has_value() ||
+      !registrar_->IsInstalled(extension_id.value()) ||
+      GetUiDelegate().GetNumWindowsForApp(extension_id.value()) == 0) {
+    ReinstallPlaceholderApp(std::move(install_options), std::move(callback));
+    return;
+  }
+
+  std::move(callback).Run(install_options.url,
+                          web_app::InstallResultCode::kFailedUnknownReason);
+}
+
 void PendingBookmarkAppManager::StartReinstallTask(
     web_app::InstallOptions install_options,
     OnceInstallCallback callback) {
@@ -156,6 +176,10 @@ void PendingBookmarkAppManager::SetUninstallerForTesting(
 void PendingBookmarkAppManager::SetUrlLoaderForTesting(
     std::unique_ptr<web_app::WebAppUrlLoader> url_loader) {
   url_loader_ = std::move(url_loader);
+}
+
+web_app::WebAppUiDelegate& PendingBookmarkAppManager::GetUiDelegate() {
+  return web_app::WebAppProviderBase::GetProviderBase(profile_)->ui_delegate();
 }
 
 void PendingBookmarkAppManager::MaybeStartNextInstallation() {

@@ -31,6 +31,7 @@ class WebContents;
 namespace web_app {
 class AppRegistrar;
 class InstallFinalizer;
+class WebAppUiDelegate;
 }  // namespace web_app
 
 namespace extensions {
@@ -65,6 +66,8 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager {
                      const UninstallCallback& callback) override;
   void ReinstallPlaceholderApp(web_app::InstallOptions install_options,
                                OnceInstallCallback callback) override;
+  void ReinstallPlaceholderAppIfUnused(web_app::InstallOptions install_options,
+                                       OnceInstallCallback callback) override;
   std::vector<GURL> GetInstalledAppUrls(
       web_app::InstallSource install_source) const override;
   base::Optional<web_app::AppId> LookupAppId(const GURL& url) const override;
@@ -80,6 +83,8 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager {
 
  private:
   struct TaskAndCallback;
+
+  web_app::WebAppUiDelegate& GetUiDelegate();
 
   void MaybeStartNextInstallation();
 

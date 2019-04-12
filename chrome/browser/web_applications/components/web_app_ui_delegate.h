@@ -5,11 +5,16 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_UI_DELEGATE_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_UI_DELEGATE_H_
 
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
+
 namespace web_app {
 
 // Pure virtual interface used to perform Web App UI operations or listen to Web
 // App UI events.
-class WebAppUiDelegate {};
+class WebAppUiDelegate {
+ public:
+  virtual size_t GetNumWindowsForApp(const AppId& app_id) = 0;
+};
 
 }  // namespace web_app
 
