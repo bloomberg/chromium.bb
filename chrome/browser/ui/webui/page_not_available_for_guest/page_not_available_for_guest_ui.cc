@@ -38,7 +38,6 @@ content::WebUIDataSource* CreateHTMLSource(Profile* profile,
   source->AddString("pageHeading", page_heading);
 
   source->SetDefaultResource(IDR_PAGE_NOT_AVAILABLE_FOR_GUEST_APP_HTML);
-  source->SetJsonPath("strings.js");
 
   return source;
 }
