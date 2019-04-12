@@ -309,11 +309,11 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::MoveEndpointByUnit(
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_MOVEENDPOINTBYUNIT);
   UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
 
-  *units_moved = 0;
-
-  // Per MSDN, MoveEndpointByUnit with zero count has no effect
-  if (count == 0)
+  // Per MSDN, MoveEndpointByUnit with zero count has no effect.
+  if (count == 0) {
+    *units_moved = 0;
     return S_OK;
+  }
 
   bool is_start_endpoint = endpoint == TextPatternRangeEndpoint_Start;
   AXPositionInstance& position_to_move = is_start_endpoint ? start_ : end_;
@@ -325,33 +325,38 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::MoveEndpointByUnit(
           MoveEndpointByCharacter(position_to_move, count, units_moved);
       break;
     case TextUnit_Format:
-    case TextUnit_Word:
-    case TextUnit_Paragraph:
-    case TextUnit_Line:
       return E_NOTIMPL;
-    // Page unit is not supported.
-    // Substituting it by the next larger unit (Document).
+    case TextUnit_Word:
+      new_position = MoveEndpointByWord(position_to_move, is_start_endpoint,
+                                        count, units_moved);
+      break;
+    case TextUnit_Line:
+      new_position = MoveEndpointByLine(position_to_move, is_start_endpoint,
+                                        count, units_moved);
+      break;
+    case TextUnit_Paragraph:
+      return E_NOTIMPL;
+    // Since web content is not paginated, TextUnit_Page is not supported.
+    // Substituting it by the next larger unit: TextUnit_Document.
     case TextUnit_Page:
     case TextUnit_Document:
       new_position =
           MoveEndpointByDocument(position_to_move, count, units_moved);
       break;
-
     default:
       return UIA_E_NOTSUPPORTED;
   }
 
   position_to_move = std::move(new_position);
 
+  // If the start was moved past the end, create a degenerate range with the end
+  // equal to the start. Do the equivalent if the end moved past the start.
   if (*start_ > *end_) {
-    // If the start was moved past the end, create a degenerate range
-    // with the end equal to the start, and vice versa
     if (is_start_endpoint)
       end_ = start_->Clone();
     else
       start_ = end_->Clone();
   }
-
   return S_OK;
 }
 
@@ -470,6 +475,66 @@ ui::AXPlatformNodeWin* AXPlatformNodeTextRangeProviderWin::owner() const {
 }
 
 AXPlatformNodeTextRangeProviderWin::AXPositionInstance
+AXPlatformNodeTextRangeProviderWin::MoveEndpointByCharacter(
+    const AXPositionInstance& endpoint,
+    const int count,
+    int* units_moved) {
+  DCHECK_NE(count, 0);
+
+  return MoveEndpointByUnitHelper(
+      std::move(endpoint),
+      (count > 0) ? &AXPositionInstanceType::CreateNextCharacterPosition
+                  : &AXPositionInstanceType::CreatePreviousCharacterPosition,
+      count, units_moved);
+}
+
+AXPlatformNodeTextRangeProviderWin::AXPositionInstance
+AXPlatformNodeTextRangeProviderWin::MoveEndpointByWord(
+    const AXPositionInstance& endpoint,
+    bool is_start_endpoint,
+    const int count,
+    int* units_moved) {
+  DCHECK_NE(count, 0);
+
+  CreateNextPositionFunction create_next_position = nullptr;
+  if (count > 0)
+    create_next_position =
+        is_start_endpoint ? &AXPositionInstanceType::CreateNextWordStartPosition
+                          : &AXPositionInstanceType::CreateNextWordEndPosition;
+  else
+    create_next_position =
+        is_start_endpoint
+            ? &AXPositionInstanceType::CreatePreviousWordStartPosition
+            : &AXPositionInstanceType::CreatePreviousWordEndPosition;
+
+  return MoveEndpointByUnitHelper(std::move(endpoint), create_next_position,
+                                  count, units_moved);
+}
+
+AXPlatformNodeTextRangeProviderWin::AXPositionInstance
+AXPlatformNodeTextRangeProviderWin::MoveEndpointByLine(
+    const AXPositionInstance& endpoint,
+    bool is_start_endpoint,
+    const int count,
+    int* units_moved) {
+  DCHECK_NE(count, 0);
+
+  CreateNextPositionFunction create_next_position = nullptr;
+  if (count > 0)
+    create_next_position =
+        is_start_endpoint ? &AXPositionInstanceType::CreateNextLineStartPosition
+                          : &AXPositionInstanceType::CreateNextLineEndPosition;
+  else
+    create_next_position =
+        is_start_endpoint
+            ? &AXPositionInstanceType::CreatePreviousLineStartPosition
+            : &AXPositionInstanceType::CreatePreviousLineEndPosition;
+
+  return MoveEndpointByUnitHelper(std::move(endpoint), create_next_position,
+                                  count, units_moved);
+}
+
+AXPlatformNodeTextRangeProviderWin::AXPositionInstance
 AXPlatformNodeTextRangeProviderWin::MoveEndpointByDocument(
     const AXPositionInstance& endpoint,
     const int count,
@@ -492,33 +557,30 @@ AXPlatformNodeTextRangeProviderWin::MoveEndpointByDocument(
 }
 
 AXPlatformNodeTextRangeProviderWin::AXPositionInstance
-AXPlatformNodeTextRangeProviderWin::MoveEndpointByCharacter(
+AXPlatformNodeTextRangeProviderWin::MoveEndpointByUnitHelper(
     const AXPositionInstance& endpoint,
+    CreateNextPositionFunction create_next_position,
     const int count,
-    int* count_moved) {
-  auto current_endpoint = endpoint->Clone();
-  const bool forwards = count > 0;
-  int iteration = 0;
-  for (iteration = 0; iteration < std::abs(count); ++iteration) {
-    AXPositionInstance next_endpoint;
-    if (forwards)
-      next_endpoint = current_endpoint->CreateNextCharacterPosition(
-          ui::AXBoundaryBehavior::CrossBoundary);
-    else
-      next_endpoint = current_endpoint->CreatePreviousCharacterPosition(
-          ui::AXBoundaryBehavior::CrossBoundary);
+    int* units_moved) {
+  DCHECK_NE(count, 0);
 
-    // End of document
-    if (next_endpoint->IsNullPosition())
-      break;
+  AXPositionInstance current_endpoint = endpoint->Clone();
+
+  for (int iteration = 0; iteration < std::abs(count); ++iteration) {
+    AXPositionInstance next_endpoint =
+        (current_endpoint.get()->*create_next_position)(
+            AXBoundaryBehavior::CrossBoundary);
+
+    // We've reached either the start or the end of the document.
+    if (next_endpoint->IsNullPosition()) {
+      *units_moved = (count > 0) ? iteration : -iteration;
+      return current_endpoint;
+    }
     current_endpoint = std::move(next_endpoint);
   }
 
-  *count_moved = iteration;
-
-  if (!forwards)
-    *count_moved *= -1;
-
+  *units_moved = count;
   return current_endpoint;
 }
+
 }  // namespace ui
