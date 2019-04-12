@@ -27635,6 +27635,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-453454441" label="Bluetooth.MacOS.Errors.DidWriteValue"/>
   <int value="-412157817"
       label="Autofill.FieldPredictionQuality.ByFieldType.Server"/>
+  <int value="-404962476" label="Blink.ForcedStyleAndLayout.UpdateTime"/>
   <int value="-355731177" label="UMA.SamplingRatePerMille"/>
   <int value="-141990989" label="DataUse.AllServices.Background"/>
   <int value="-132932440" label="DataUse.ContentType.Services"/>
