@@ -237,6 +237,23 @@ function waitForAppWindowCount(appId, expectedCount) {
 }
 
 /**
+ * Get all the browser windows.
+ * @return {Object} Object returned from chrome.windows.getAll().
+ */
+async function getBrowserWindows() {
+  const caller = getCaller();
+  return repeatUntil(async () => {
+    const result = await new Promise(function(fulfill) {
+      chrome.windows.getAll({'populate': true}, fulfill);
+    });
+    if (result.length == 0) {
+      return pending(caller, 'getBrowserWindows ' + result.length);
+    }
+    return result;
+  });
+}
+
+/**
  * Adds the givin entries to the target volume(s).
  * @param {Array<string>} volumeNames Names of target volumes.
  * @param {Array<TestEntryInfo>} entries List of entries to be added.
@@ -686,6 +703,17 @@ var ENTRIES = {
     nameText: 'tall.pdf',
     sizeText: '15 KB',
     typeText: 'PDF document',
+  }),
+
+  imgPdf: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'img.pdf',
+    targetPath: 'imgpdf',
+    mimeType: 'application/pdf',
+    lastModifiedTime: 'Jul 4, 2012, 10:35 AM',
+    nameText: 'imgpdf',
+    sizeText: '1608 bytes',
+    typeText: 'PDF document'
   }),
 
   pinned: new TestEntryInfo({

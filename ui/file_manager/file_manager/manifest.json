@@ -68,6 +68,9 @@
     "view-pdf": {
       "extensions": [
         "pdf"
+      ],
+      "types": [
+        "application/pdf"
       ]
     },
     "view-swf": {

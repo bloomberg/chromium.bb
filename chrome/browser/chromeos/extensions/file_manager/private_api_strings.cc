@@ -30,6 +30,7 @@ FileManagerPrivateGetStringsFunction::~FileManagerPrivateGetStringsFunction() =
 
 ExtensionFunction::ResponseAction FileManagerPrivateGetStringsFunction::Run() {
   auto dict = GetFileManagerStrings();
+  const std::string empty;
 
   dict->SetBoolean("VIDEO_PLAYER_NATIVE_CONTROLS_ENABLED",
                    base::FeatureList::IsEnabled(
@@ -37,11 +38,11 @@ ExtensionFunction::ResponseAction FileManagerPrivateGetStringsFunction::Run() {
   dict->SetBoolean("PDF_VIEW_ENABLED",
                    file_manager::util::ShouldBeOpenedWithPlugin(
                        Profile::FromBrowserContext(browser_context()),
-                       FILE_PATH_LITERAL(".pdf")));
+                       FILE_PATH_LITERAL(".pdf"), empty));
   dict->SetBoolean("SWF_VIEW_ENABLED",
                    file_manager::util::ShouldBeOpenedWithPlugin(
                        Profile::FromBrowserContext(browser_context()),
-                       FILE_PATH_LITERAL(".swf")));
+                       FILE_PATH_LITERAL(".swf"), empty));
   // TODO(crbug.com/868747): Find a better solution for demo mode.
   dict->SetBoolean("HIDE_SPACE_INFO",
                    chromeos::DemoSession::IsDeviceInDemoMode());
