@@ -8,7 +8,7 @@ namespace views {
 
 StatusIconLinux::Delegate::~Delegate() = default;
 
-StatusIconLinux::StatusIconLinux() : delegate_(nullptr) {}
+StatusIconLinux::StatusIconLinux() = default;
 
 StatusIconLinux::~StatusIconLinux() = default;
 

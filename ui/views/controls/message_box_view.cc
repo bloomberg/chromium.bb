@@ -85,10 +85,7 @@ MessageBoxView::InitParams::InitParams(const base::string16& message)
 MessageBoxView::InitParams::~InitParams() = default;
 
 MessageBoxView::MessageBoxView(const InitParams& params)
-    : prompt_field_(nullptr),
-      checkbox_(nullptr),
-      link_(nullptr),
-      message_width_(params.message_width) {
+    : message_width_(params.message_width) {
   Init(params);
 }
 

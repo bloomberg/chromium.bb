@@ -14,8 +14,7 @@
 
 namespace views {
 
-X11DesktopWindowMoveClient::X11DesktopWindowMoveClient()
-    : move_loop_(this), host_(nullptr) {}
+X11DesktopWindowMoveClient::X11DesktopWindowMoveClient() = default;
 
 X11DesktopWindowMoveClient::~X11DesktopWindowMoveClient() = default;
 

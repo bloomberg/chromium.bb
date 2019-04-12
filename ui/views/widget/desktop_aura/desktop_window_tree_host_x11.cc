@@ -137,30 +137,9 @@ DesktopWindowTreeHostX11::DesktopWindowTreeHostX11(
     internal::NativeWidgetDelegate* native_widget_delegate,
     DesktopNativeWidgetAura* desktop_native_widget_aura)
     : xdisplay_(gfx::GetXDisplay()),
-      xwindow_(0),
       x_root_window_(DefaultRootWindow(xdisplay_)),
-      window_mapped_in_server_(false),
-      window_mapped_in_client_(false),
-      is_fullscreen_(false),
-      is_always_on_top_(false),
-      use_native_frame_(false),
-      should_maximize_after_map_(false),
-      use_argb_visual_(false),
-      drag_drop_client_(nullptr),
       native_widget_delegate_(native_widget_delegate),
-      desktop_native_widget_aura_(desktop_native_widget_aura),
-      window_parent_(nullptr),
-      custom_window_shape_(false),
-      urgency_hint_set_(false),
-      has_pointer_grab_(false),
-      activatable_(true),
-      override_redirect_(false),
-      has_pointer_(false),
-      has_window_focus_(false),
-      has_pointer_focus_(false),
-      modal_dialog_counter_(0),
-      close_widget_factory_(this),
-      weak_factory_(this) {}
+      desktop_native_widget_aura_(desktop_native_widget_aura) {}
 
 DesktopWindowTreeHostX11::~DesktopWindowTreeHostX11() {
   window()->ClearProperty(kHostForRootWindow);

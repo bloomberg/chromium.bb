@@ -92,7 +92,7 @@ class TestMoveLoop : public X11MoveLoop {
   // Ends the move loop.
   base::OnceClosure quit_closure_;
 
-  bool is_running_;
+  bool is_running_ = false;
 };
 
 // Implementation of DesktopDragDropClientAuraX11 which short circuits
@@ -118,10 +118,10 @@ class SimpleTestDragDropClient : public DesktopDragDropClientAuraX11 {
   XID FindWindowFor(const gfx::Point& screen_point) override;
 
   // The XID of the window which is simulated to be the topmost window.
-  XID target_xid_;
+  XID target_xid_ = x11::None;
 
   // The move loop. Not owned.
-  TestMoveLoop* loop_;
+  TestMoveLoop* loop_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleTestDragDropClient);
 };
@@ -216,9 +216,7 @@ void ClientMessageEventCollector::RecordEvent(
 // TestMoveLoop
 
 TestMoveLoop::TestMoveLoop(X11MoveLoopDelegate* delegate)
-    : delegate_(delegate),
-      is_running_(false) {
-}
+    : delegate_(delegate) {}
 
 TestMoveLoop::~TestMoveLoop() = default;
 
@@ -256,9 +254,7 @@ SimpleTestDragDropClient::SimpleTestDragDropClient(
     : DesktopDragDropClientAuraX11(window,
                                    cursor_manager,
                                    gfx::GetXDisplay(),
-                                   window->GetHost()->GetAcceleratedWidget()),
-      target_xid_(x11::None),
-      loop_(nullptr) {}
+                                   window->GetHost()->GetAcceleratedWidget()) {}
 
 SimpleTestDragDropClient::~SimpleTestDragDropClient() = default;
 
@@ -779,12 +775,7 @@ namespace {
 // keeps track of the most recent drag-drop event.
 class TestDragDropDelegate : public aura::client::DragDropDelegate {
  public:
-  TestDragDropDelegate()
-      : num_enters_(0),
-        num_updates_(0),
-        num_exits_(0),
-        num_drops_(0),
-        last_event_flags_(0) {}
+  TestDragDropDelegate() = default;
   ~TestDragDropDelegate() override = default;
 
   int num_enters() const { return num_enters_; }
@@ -822,13 +813,13 @@ class TestDragDropDelegate : public aura::client::DragDropDelegate {
     return ui::DragDropTypes::DRAG_COPY;
   }
 
-  int num_enters_;
-  int num_updates_;
-  int num_exits_;
-  int num_drops_;
+  int num_enters_ = 0;
+  int num_updates_ = 0;
+  int num_exits_ = 0;
+  int num_drops_ = 0;
 
   gfx::Point last_event_mouse_position_;
-  int last_event_flags_;
+  int last_event_flags_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestDragDropDelegate);
 };
