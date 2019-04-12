@@ -77,6 +77,7 @@ class Shelf;
 class TestScreenshotDelegate;
 class TestSessionControllerClient;
 class UnifiedSystemTray;
+class WorkAreaInsets;
 
 class AshTestBase : public testing::Test {
  public:
@@ -92,6 +93,9 @@ class AshTestBase : public testing::Test {
 
   // Returns the unified system tray on the primary display.
   static UnifiedSystemTray* GetPrimaryUnifiedSystemTray();
+
+  // Returns WorkAreaInsets for the primary display.
+  static WorkAreaInsets* GetPrimaryWorkAreaInsets();
 
   // AshTestBase creates a ScopedTaskEnvironment. This may not be appropriate in
   // some environments. Use this to destroy it.

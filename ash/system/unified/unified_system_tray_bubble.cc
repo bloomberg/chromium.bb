@@ -17,6 +17,7 @@
 #include "ash/wm/container_finder.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/widget_finder.h"
+#include "ash/wm/work_area_insets.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/aura/window.h"
 #include "ui/wm/core/window_util.h"
@@ -240,8 +241,10 @@ int UnifiedSystemTrayBubble::CalculateMaxHeight() const {
       tray_->shelf()->GetSystemTrayAnchorView()->GetBoundsInScreen();
   int bottom = tray_->shelf()->IsHorizontalAlignment() ? anchor_bounds.y()
                                                        : anchor_bounds.bottom();
+  WorkAreaInsets* work_area =
+      WorkAreaInsets::ForWindow(tray_->shelf()->GetWindow()->GetRootWindow());
   int free_space_height_above_anchor =
-      bottom - tray_->shelf()->GetUserWorkAreaBounds().y();
+      bottom - work_area->user_work_area_bounds().y();
   return free_space_height_above_anchor - kUnifiedMenuPadding * 2;
 }
 

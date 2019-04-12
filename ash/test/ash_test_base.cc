@@ -33,6 +33,7 @@
 #include "ash/window_factory.h"
 #include "ash/wm/top_level_window_factory.h"
 #include "ash/wm/window_positioner.h"
+#include "ash/wm/work_area_insets.h"
 #include "ash/ws/window_service_owner.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -209,6 +210,11 @@ void AshTestBase::DestroyScopedTaskEnvironment() {
 // static
 UnifiedSystemTray* AshTestBase::GetPrimaryUnifiedSystemTray() {
   return GetPrimaryShelf()->GetStatusAreaWidget()->unified_system_tray();
+}
+
+// static
+WorkAreaInsets* AshTestBase::GetPrimaryWorkAreaInsets() {
+  return Shell::GetPrimaryRootWindowController()->work_area_insets();
 }
 
 ui::test::EventGenerator* AshTestBase::GetEventGenerator() {

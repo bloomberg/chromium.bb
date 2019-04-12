@@ -629,9 +629,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Notifies observers that |pinned_window| changed its pinned window state.
   void NotifyPinnedStateChanged(aura::Window* pinned_window);
 
-  // Notifies observers that |root_window|'s accessibility related insets have
-  // changed.
-  void NotifyAccessibilityInsetsChanged(aura::Window* root_window);
+  // Notifies observers that |root_window|'s user work area insets have changed.
+  // This notification is not fired when shelf bounds changed.
+  void NotifyUserWorkAreaInsetsChanged(aura::Window* root_window);
 
   // Notifies observers that |root_window|'s shelf changed alignment.
   // TODO(jamescook): Move to Shelf.

@@ -6,11 +6,11 @@
 
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/unified_system_tray_view.h"
+#include "ash/wm/work_area_insets.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event_utils.h"
 
@@ -46,8 +46,8 @@ void AutoclickMenuBubbleController::SetPosition(
   // condition with the user work area bounds loading.
 
   // TODO(katie): Support multiple displays.
-  gfx::Rect work_area =
-      Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetUserWorkAreaBounds();
+  gfx::Rect work_area = WorkAreaInsets::ForWindow(Shell::GetPrimaryRootWindow())
+                            ->user_work_area_bounds();
   gfx::Rect new_position;
   switch (position) {
     case mojom::AutoclickMenuPosition::kBottomRight:
