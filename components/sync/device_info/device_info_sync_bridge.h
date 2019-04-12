@@ -35,12 +35,16 @@ class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
                              public DeviceInfoTracker {
  public:
   DeviceInfoSyncBridge(
-      LocalDeviceInfoProvider* local_device_info_provider,
+      std::unique_ptr<MutableLocalDeviceInfoProvider>
+          local_device_info_provider,
       OnceModelTypeStoreFactory store_factory,
       std::unique_ptr<ModelTypeChangeProcessor> change_processor);
   ~DeviceInfoSyncBridge() override;
 
+  LocalDeviceInfoProvider* GetLocalDeviceInfoProvider();
+
   // ModelTypeSyncBridge implementation.
+  void OnSyncStarting(const DataTypeActivationRequest& request) override;
   std::unique_ptr<MetadataChangeList> CreateMetadataChangeList() override;
   base::Optional<ModelError> MergeSyncData(
       std::unique_ptr<MetadataChangeList> metadata_change_list,
@@ -65,8 +69,6 @@ class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
   int CountActiveDevices() const override;
 
   // For testing only.
-  static std::unique_ptr<ModelTypeStore> DestroyAndStealStoreForTest(
-      std::unique_ptr<DeviceInfoSyncBridge> bridge);
   bool IsPulseTimerRunningForTest() const;
   void ForcePulseForTest() override;
 
@@ -86,20 +88,15 @@ class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
   // Notify all registered observers.
   void NotifyObservers();
 
-  // Used as callback given to LocalDeviceInfoProvider.
-  void OnProviderInitialized();
-
   // Methods used as callbacks given to DataTypeStore.
   void OnStoreCreated(const base::Optional<syncer::ModelError>& error,
                       std::unique_ptr<ModelTypeStore> store);
   void OnReadAllData(std::unique_ptr<ClientIdToSpecifics> all_data,
+                     std::unique_ptr<std::string> session_name,
                      const base::Optional<syncer::ModelError>& error);
   void OnReadAllMetadata(const base::Optional<syncer::ModelError>& error,
                          std::unique_ptr<MetadataBatch> metadata_batch);
   void OnCommit(const base::Optional<syncer::ModelError>& error);
-
-  // Load metadata if the data is loaded and the provider is initialized.
-  void LoadMetadataIfReady();
 
   // Performs reconciliation between the locally provided device info and the
   // stored device info data. If the sets of data differ, then we consider this
@@ -110,6 +107,10 @@ class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
   // storage, in memory, and informs sync of the change. Should not be called
   // before the provider and processor have initialized.
   void SendLocalData();
+
+  // Same as above but allows callers to specify a WriteBatch, which the caller
+  // is responsible for committing.
+  void SendLocalDataWithBatch(ModelTypeStore::WriteBatch* batch);
 
   // Persists the changes in the given aggregators and notifies observers if
   // indicated to do as such.
@@ -122,9 +123,11 @@ class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
   // allow unit tests to control expected results.
   int CountActiveDevices(const base::Time now) const;
 
-  // |local_device_info_provider_| isn't owned.
-  const LocalDeviceInfoProvider* const local_device_info_provider_;
+  const std::unique_ptr<MutableLocalDeviceInfoProvider>
+      local_device_info_provider_;
 
+  std::string local_cache_guid_;
+  std::string local_session_name_;
   ClientIdToSpecifics all_data_;
 
   // Registered observers, not owned.
@@ -133,17 +136,8 @@ class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
   // In charge of actually persisting changes to disk, or loading previous data.
   std::unique_ptr<ModelTypeStore> store_;
 
-  // If |local_device_info_provider_| has initialized.
-  bool has_provider_initialized_ = false;
-  // If data has been loaded from the store.
-  bool has_data_loaded_ = false;
-
   // Used to update our local device info once every pulse interval.
   base::OneShotTimer pulse_timer_;
-
-  // Used to listen for provider initialization. If the provider is already
-  // initialized during our constructor then the subscription is never used.
-  std::unique_ptr<LocalDeviceInfoProvider::Subscription> subscription_;
 
   base::WeakPtrFactory<DeviceInfoSyncBridge> weak_ptr_factory_;
 

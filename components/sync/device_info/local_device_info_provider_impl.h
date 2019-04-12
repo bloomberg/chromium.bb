@@ -18,7 +18,7 @@
 
 namespace syncer {
 
-class LocalDeviceInfoProviderImpl : public LocalDeviceInfoProvider {
+class LocalDeviceInfoProviderImpl : public MutableLocalDeviceInfoProvider {
  public:
   using SigninScopedDeviceIdCallback = base::RepeatingCallback<std::string()>;
 
@@ -28,16 +28,15 @@ class LocalDeviceInfoProviderImpl : public LocalDeviceInfoProvider {
       const SigninScopedDeviceIdCallback& signin_scoped_device_id_callback);
   ~LocalDeviceInfoProviderImpl() override;
 
-  // LocalDeviceInfoProvider implementation.
+  // MutableLocalDeviceInfoProvider implementation.
+  void Initialize(const std::string& cache_guid,
+                  const std::string& session_name) override;
+  void Clear() override;
   version_info::Channel GetChannel() const override;
   const DeviceInfo* GetLocalDeviceInfo() const override;
   std::string GetSyncUserAgent() const override;
   std::unique_ptr<Subscription> RegisterOnInitializedCallback(
       const base::RepeatingClosure& callback) override;
-
-  void Initialize(const std::string& cache_guid,
-                  const std::string& session_name);
-  void Clear();
 
  private:
   // The channel (CANARY, DEV, BETA, etc.) of the current client.

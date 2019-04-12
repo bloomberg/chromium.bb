@@ -82,9 +82,6 @@ class TestDeviceInfoSyncService : public syncer::DeviceInfoSyncService {
       override {
     return nullptr;
   }
-  void InitLocalCacheGuid(const std::string& cache_guid,
-                          const std::string& session_name) override {}
-  void ClearLocalCacheGuid() override {}
 
  protected:
   TestDeviceInfoTracker tracker_;

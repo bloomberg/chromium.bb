@@ -39,6 +39,7 @@ class SessionSyncService;
 }  // namespace sync_sessions
 
 namespace syncer {
+class DeviceInfoSyncService;
 class ModelTypeStoreService;
 }  // namespace syncer
 
@@ -54,6 +55,7 @@ class BrowserSyncClient : public syncer::SyncClient {
   ~BrowserSyncClient() override;
 
   base::FilePath GetSyncDataPath() final;
+  const syncer::LocalDeviceInfoProvider* GetLocalDeviceInfoProvider() final;
   virtual syncer::ModelTypeStoreService* GetModelTypeStoreService() = 0;
 
   // Returns a weak pointer to the ModelTypeControllerDelegate specified by
@@ -62,6 +64,7 @@ class BrowserSyncClient : public syncer::SyncClient {
   GetControllerDelegateForModelType(syncer::ModelType type) = 0;
 
   // DataType specific service getters.
+  virtual syncer::DeviceInfoSyncService* GetDeviceInfoSyncService() = 0;
   virtual bookmarks::BookmarkModel* GetBookmarkModel() = 0;
   virtual favicon::FaviconService* GetFaviconService() = 0;
   virtual history::HistoryService* GetHistoryService() = 0;

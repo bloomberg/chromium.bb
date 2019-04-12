@@ -846,8 +846,6 @@ static_library("test_support_model") {
 static_library("test_support_driver") {
   testonly = true
   sources = [
-    "device_info/local_device_info_provider_mock.cc",
-    "device_info/local_device_info_provider_mock.h",
     "driver/async_directory_type_controller_mock.cc",
     "driver/async_directory_type_controller_mock.h",
     "driver/data_type_controller_mock.cc",

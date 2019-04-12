@@ -19,7 +19,7 @@ class SyncClientMock : public SyncClient {
   MOCK_METHOD0(GetPrefService, PrefService*());
   MOCK_METHOD0(GetSyncDataPath, base::FilePath());
   MOCK_METHOD0(GetLocalSyncBackendFolder, base::FilePath());
-  MOCK_METHOD0(GetDeviceInfoSyncService, DeviceInfoSyncService*());
+  MOCK_METHOD0(GetLocalDeviceInfoProvider, LocalDeviceInfoProvider*());
   MOCK_METHOD1(CreateDataTypeControllers,
                DataTypeController::TypeVector(SyncService* sync_service));
   MOCK_METHOD0(GetPasswordStateChangedCallback, base::RepeatingClosure());

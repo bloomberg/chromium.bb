@@ -10,7 +10,6 @@
 #include "base/bind_helpers.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/sync/base/sync_prefs.h"
-#include "components/sync/device_info/local_device_info_provider_impl.h"
 #include "components/sync/engine/passive_model_worker.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -23,14 +22,12 @@ namespace syncer {
 using testing::Return;
 
 ProfileSyncServiceBundle::ProfileSyncServiceBundle()
-    : device_info_sync_service_(
-          model_type_store_service_.GetStoreFactory(),
-          std::make_unique<LocalDeviceInfoProviderImpl>(
-              version_info::Channel::UNKNOWN,
-              "someversion",
-              /*signin_scoped_device_id_callback=*/base::BindRepeating([]() {
-                return std::string();
-              }))),
+    : local_device_info_provider_(
+          version_info::Channel::UNKNOWN,
+          "someversion",
+          /*signin_scoped_device_id_callback=*/base::BindRepeating([]() {
+            return std::string();
+          })),
       identity_test_env_(&test_url_loader_factory_, &pref_service_) {
   SyncPrefs::RegisterProfilePrefs(pref_service_.registry());
   identity_test_env_.SetAutomaticIssueOfAccessTokens(true);
@@ -44,8 +41,8 @@ std::unique_ptr<SyncClientMock>
 ProfileSyncServiceBundle::CreateSyncClientMock() {
   auto sync_client = std::make_unique<testing::NiceMock<SyncClientMock>>();
   ON_CALL(*sync_client, GetPrefService()).WillByDefault(Return(&pref_service_));
-  ON_CALL(*sync_client, GetDeviceInfoSyncService())
-      .WillByDefault(Return(&device_info_sync_service_));
+  ON_CALL(*sync_client, GetLocalDeviceInfoProvider())
+      .WillByDefault(Return(&local_device_info_provider_));
   ON_CALL(*sync_client, GetSyncApiComponentFactory())
       .WillByDefault(Return(&component_factory_));
   // Used by control types.

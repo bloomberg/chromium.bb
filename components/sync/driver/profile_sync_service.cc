@@ -143,11 +143,9 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       debug_identifier_(init_params.debug_identifier),
       autofill_enable_account_wallet_storage_(
           init_params.autofill_enable_account_wallet_storage),
-      sync_service_url_(
-          GetSyncServiceURL(*base::CommandLine::ForCurrentProcess(),
-                            sync_client_->GetDeviceInfoSyncService()
-                                ->GetLocalDeviceInfoProvider()
-                                ->GetChannel())),
+      sync_service_url_(GetSyncServiceURL(
+          *base::CommandLine::ForCurrentProcess(),
+          sync_client_->GetLocalDeviceInfoProvider()->GetChannel())),
       crypto_(
           base::BindRepeating(&ProfileSyncService::NotifyObservers,
                               base::Unretained(this)),
@@ -199,9 +197,7 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
 
   sync_stopped_reporter_ = std::make_unique<SyncStoppedReporter>(
       sync_service_url_,
-      sync_client_->GetDeviceInfoSyncService()
-          ->GetLocalDeviceInfoProvider()
-          ->GetSyncUserAgent(),
+      sync_client_->GetLocalDeviceInfoProvider()->GetSyncUserAgent(),
       url_loader_factory_, SyncStoppedReporter::ResultCallback());
 
   if (identity_manager_)
@@ -463,9 +459,8 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
   params.extensions_activity = sync_client_->GetExtensionsActivity();
   params.event_handler = GetJsEventHandler();
   params.service_url = sync_service_url();
-  params.sync_user_agent = sync_client_->GetDeviceInfoSyncService()
-                               ->GetLocalDeviceInfoProvider()
-                               ->GetSyncUserAgent();
+  params.sync_user_agent =
+      sync_client_->GetLocalDeviceInfoProvider()->GetSyncUserAgent();
   params.http_factory_getter = MakeHttpPostProviderFactoryGetter();
   params.authenticated_account_id = GetAuthenticatedAccountInfo().account_id;
   DCHECK(!params.authenticated_account_id.empty() || IsLocalSyncEnabled());
@@ -503,9 +498,8 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
           EngineSwitchesFromCommandLine());
   params.unrecoverable_error_handler = GetUnrecoverableErrorHandler();
   params.report_unrecoverable_error_function = base::BindRepeating(
-      ReportUnrecoverableError, sync_client_->GetDeviceInfoSyncService()
-                                    ->GetLocalDeviceInfoProvider()
-                                    ->GetChannel());
+      ReportUnrecoverableError,
+      sync_client_->GetLocalDeviceInfoProvider()->GetChannel());
   params.saved_nigori_state = crypto_.TakeSavedNigoriState();
   sync_prefs_.GetInvalidationVersions(&params.invalidation_versions);
   params.poll_interval = sync_prefs_.GetPollInterval();
@@ -605,12 +599,6 @@ void ProfileSyncService::ShutdownImpl(ShutdownReason reason) {
   sync_enabled_weak_factory_.InvalidateWeakPtrs();
 
   startup_controller_->Reset();
-
-  // If the sync DB is getting destroyed, the local DeviceInfo is no longer
-  // valid and should be cleared from the cache.
-  if (reason == ShutdownReason::DISABLE_SYNC) {
-    sync_client_->GetDeviceInfoSyncService()->ClearLocalCacheGuid();
-  }
 
   // Clear various state.
   crypto_.Reset();
@@ -863,10 +851,6 @@ void ProfileSyncService::OnEngineInitialized(
   }
 
   sync_js_controller_.AttachJsBackend(js_backend);
-
-  // Initialize local device info.
-  sync_client_->GetDeviceInfoSyncService()->InitLocalCacheGuid(cache_guid,
-                                                               session_name);
 
   // Copy some data to preferences to be able to one day migrate away from the
   // directory.
