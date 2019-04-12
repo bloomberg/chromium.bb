@@ -160,7 +160,7 @@ public class NotificationManager {
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
                         .createChromeNotificationBuilder(true /* preferCompat */,
-                                ChannelDefinitions.ChannelId.BROWSER,
+                                ChannelDefinitions.ChannelId.SHARING,
                                 null /* remoteAppPackageName */,
                                 new NotificationMetadata(
                                         NotificationUmaTracker.SystemNotificationType
@@ -172,6 +172,7 @@ public class NotificationManager {
                         .setContentText(contextText)
                         .setGroup(NotificationConstants.GROUP_SEND_TAB_TO_SELF)
                         .setPriorityBeforeO(NotificationCompat.PRIORITY_HIGH)
+                        .setVibrate(new long[0])
                         .setSmallIcon(R.drawable.ic_chrome)
                         .setDefaults(Notification.DEFAULT_ALL);
         ChromeNotification notification = builder.buildChromeNotification();
