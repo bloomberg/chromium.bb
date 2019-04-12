@@ -589,7 +589,7 @@ TEST_F(CopylessPasteExtractorTest, truncateTooManyValuesInField) {
 TEST_F(CopylessPasteExtractorTest, truncateTooManyFields) {
   StringBuilder tooManyFields;
   for (int i = 0; i < 20; ++i) {
-    tooManyFields.Append(String::Format("\"%d\": \"a\"", i));
+    tooManyFields.AppendFormat("\"%d\": \"a\"", i);
     if (i != 19) {
       tooManyFields.Append(",\n");
     }

@@ -750,12 +750,12 @@ const CSSSelector* CSSSelector::SerializeCompound(
             else if (a == -1)
               builder.Append("-n");
             else
-              builder.Append(String::Format("%dn", a));
+              builder.AppendFormat("%dn", a);
 
             if (b < 0)
               builder.Append(String::Number(b));
             else if (b > 0)
-              builder.Append(String::Format("+%d", b));
+              builder.AppendFormat("+%d", b);
           }
 
           builder.Append(')');

@@ -128,9 +128,8 @@ String RuntimeCallStats::ToString() const {
       "(ms)\n\n");
   for (int i = 0; i < number_of_counters_; i++) {
     const RuntimeCallCounter* counter = &counters_[i];
-    builder.Append(String::Format(row_format, counter->GetName(),
-                                  counter->GetCount(),
-                                  counter->GetTime().InMillisecondsF()));
+    builder.AppendFormat(row_format, counter->GetName(), counter->GetCount(),
+                         counter->GetTime().InMillisecondsF());
   }
 
 #if BUILDFLAG(RCS_COUNT_EVERYTHING)
@@ -178,12 +177,11 @@ Vector<RuntimeCallCounter*> RuntimeCallStats::CounterMapToSortedArray() const {
 
 void RuntimeCallStats::AddCounterMapStatsToBuilder(
     StringBuilder& builder) const {
-  builder.Append(String::Format("\nNumber of counters in map: %u\n\n",
+  builder.AppendFormat("\nNumber of counters in map: %u\n\n",
                                 counter_map_.size()));
   for (RuntimeCallCounter* counter : CounterMapToSortedArray()) {
-    builder.Append(String::Format(row_format, counter->GetName(),
-                                  counter->GetCount(),
-                                  counter->GetTime().InMillisecondsF()));
+    builder.AppendFormat(row_format, counter->GetName(), counter->GetCount(),
+                         counter->GetTime().InMillisecondsF());
   }
 }
 #endif

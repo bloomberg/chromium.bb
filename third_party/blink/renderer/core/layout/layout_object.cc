@@ -1919,21 +1919,21 @@ void LayoutObject::DumpLayoutObject(StringBuilder& string_builder,
   string_builder.Append(DecoratedName());
 
   if (dump_address)
-    string_builder.Append(String::Format(" %p", this));
+    string_builder.AppendFormat(" %p", this);
 
-  if (IsText() && ToLayoutText(this)->IsTextFragment())
-    string_builder.Append(String::Format(
-        " \"%s\" ", ToLayoutText(this)->GetText().Ascii().data()));
+  if (IsText() && ToLayoutText(this)->IsTextFragment()) {
+    string_builder.AppendFormat(" \"%s\" ",
+                                ToLayoutText(this)->GetText().Ascii().data());
+  }
 
   if (VirtualContinuation())
-    string_builder.Append(
-        String::Format(" continuation=%p", VirtualContinuation()));
+    string_builder.AppendFormat(" continuation=%p", VirtualContinuation());
 
   if (GetNode()) {
     while (string_builder.length() < show_tree_character_offset)
       string_builder.Append(' ');
     string_builder.Append('\t');
-    string_builder.Append(GetNode()->ToString().Utf8().data());
+    string_builder.Append(GetNode()->ToString());
   }
 }
 

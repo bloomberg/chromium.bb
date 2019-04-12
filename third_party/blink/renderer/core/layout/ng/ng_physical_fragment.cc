@@ -192,11 +192,9 @@ void AppendFragmentToString(const NGPhysicalFragment* fragment,
 
     if (flags & NGPhysicalFragment::DumpTextOffsets) {
       if (has_content)
-        builder->Append(" ");
-      builder->Append("start: ");
-      builder->Append(String::Format("%u", text->StartOffset()));
-      builder->Append(" end: ");
-      builder->Append(String::Format("%u", text->EndOffset()));
+        builder->Append(' ');
+      builder->AppendFormat("start: %u end: %u", text->StartOffset(),
+                            text->EndOffset());
       has_content = true;
     }
     builder->Append("\n");
@@ -451,19 +449,18 @@ TextDirection NGPhysicalFragment::ResolvedDirection() const {
 
 String NGPhysicalFragment::ToString() const {
   StringBuilder output;
-  output.Append(String::Format("Type: '%d' Size: '%s'", Type(),
-                               Size().ToString().Ascii().data()));
+  output.AppendFormat("Type: '%d' Size: '%s'", Type(),
+                      Size().ToString().Ascii().data());
   switch (Type()) {
     case kFragmentBox:
     case kFragmentRenderedLegend:
-      output.Append(String::Format(", BoxType: '%s'",
-                                   StringForBoxType(*this).Ascii().data()));
+      output.AppendFormat(", BoxType: '%s'",
+                          StringForBoxType(*this).Ascii().data());
       break;
     case kFragmentText: {
       const auto& text = To<NGPhysicalTextFragment>(*this);
-      output.Append(String::Format(", TextType: %u, Text: (%u,%u) \"",
-                                   text.TextType(), text.StartOffset(),
-                                   text.EndOffset()));
+      output.AppendFormat(", TextType: %u, Text: (%u,%u) \"", text.TextType(),
+                          text.StartOffset(), text.EndOffset());
       output.Append(text.Text());
       output.Append("\"");
       break;
