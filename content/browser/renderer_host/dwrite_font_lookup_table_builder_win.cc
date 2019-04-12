@@ -182,13 +182,13 @@ void DWriteFontLookupTableBuilder::InitializeDirectWrite() {
 }
 
 std::string DWriteFontLookupTableBuilder::ComputePersistenceHash() {
-  // Build a hash from DWrite product version, browser product version and font
-  // names and file paths as stored in the registry. The browser product version
+  // Build a hash from DWrite product version, browser major version and font
+  // names and file paths as stored in the registry. The browser major version
   // is included to ensure that the cache is rebuild at least once for every
-  // Chrome release. DWrite DLL version is included to ensure that any change in
-  // DWrite behavior after an update does not interfere with the information we
-  // have in the cache. The font registry keys and values are used to detect
-  // changes in installed fonts.
+  // Chrome milestone release. DWrite DLL version is included to ensure that any
+  // change in DWrite behavior after an update does not interfere with the
+  // information we have in the cache. The font registry keys and values are
+  // used to detect changes in installed fonts.
 
   std::unique_ptr<FileVersionInfo> dwrite_version_info =
       FileVersionInfo::CreateFileVersionInfo(
@@ -211,7 +211,8 @@ std::string DWriteFontLookupTableBuilder::ComputePersistenceHash() {
   }
 
   DCHECK(GetContentClient());
-  to_hash.append(GetContentClient()->browser()->GetProduct());
+  to_hash.append(
+      GetContentClient()->browser()->GetUserAgentMetadata().major_version);
 
   uint32_t fonts_changed_hash = base::PersistentHash(to_hash);
   return std::to_string(fonts_changed_hash);
@@ -314,6 +315,8 @@ bool DWriteFontLookupTableBuilder::FontUniqueNameTableReady() {
 void DWriteFontLookupTableBuilder::SchedulePrepareFontUniqueNameTable() {
   DCHECK(base::FeatureList::IsEnabled(features::kFontSrcLocalMatching));
 
+  start_time_table_ready_ = base::TimeTicks::Now();
+
   // TODO(https://crbug.com/931366): Downgrade the priority of this startup
   // task once the UpdatePriority() API for sequenced task runners is in
   // place. Then bump the priority when the renderer needs the table to be
@@ -347,6 +350,10 @@ void DWriteFontLookupTableBuilder::PrepareFontUniqueNameTable() {
     UMA_HISTOGRAM_BOOLEAN("DirectWrite.Fonts.Proxy.LookupTableDiskCacheHit",
                           !update_needed);
     if (!update_needed) {
+      base::TimeDelta duration =
+          base::TimeTicks::Now() - start_time_table_ready_;
+      UMA_HISTOGRAM_MEDIUM_TIMES("DirectWrite.Fonts.Proxy.LookupTableReadyTime",
+                                 duration);
       font_table_built_.Signal();
       return;
     }
@@ -358,7 +365,7 @@ void DWriteFontLookupTableBuilder::PrepareFontUniqueNameTable() {
     InitializeDirectWrite();
   }
 
-  start_time_ = base::TimeTicks::Now();
+  start_time_table_build_ = base::TimeTicks::Now();
   font_unique_name_table_ = std::make_unique<blink::FontUniqueNameTable>();
 
   // The |stored_for_platform_version_identifier| proto field is used for
@@ -380,7 +387,8 @@ void DWriteFontLookupTableBuilder::PrepareFontUniqueNameTable() {
         {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(
             &DWriteFontLookupTableBuilder::ExtractPathAndNamesFromFamily,
-            collection_, family_index, start_time_, slow_down_mode_for_testing_,
+            collection_, family_index, start_time_table_build_,
+            slow_down_mode_for_testing_,
             OptionalOrNullptr(hang_event_for_testing_)),
         base::BindOnce(&DWriteFontLookupTableBuilder::
                            AppendFamilyResultAndFinalizeIfNeeded,
@@ -561,7 +569,7 @@ void DWriteFontLookupTableBuilder::FinalizeFontTable() {
       std::move(font_unique_name_table_));
 
   bool timed_out = false;
-  if (base::TimeTicks::Now() - start_time_ > kFontIndexingTimeout) {
+  if (base::TimeTicks::Now() - start_time_table_build_ > kFontIndexingTimeout) {
     font_unique_name_table->clear_fonts();
     font_unique_name_table->clear_name_map();
     timed_out = true;
@@ -598,9 +606,14 @@ void DWriteFontLookupTableBuilder::FinalizeFontTable() {
                           persist_succeeded);
   }
 
-  base::TimeDelta duration = base::TimeTicks::Now() - start_time_;
+  base::TimeDelta duration = base::TimeTicks::Now() - start_time_table_build_;
   UMA_HISTOGRAM_MEDIUM_TIMES("DirectWrite.Fonts.Proxy.LookupTableBuildTime",
                              duration);
+
+  duration = base::TimeTicks::Now() - start_time_table_ready_;
+  UMA_HISTOGRAM_MEDIUM_TIMES("DirectWrite.Fonts.Proxy.LookupTableReadyTime",
+                             duration);
+
   // The size is usually tens of kilobytes, ~50kb on a standard Windows 10
   // installation, 1MB should be a more than high enough upper limit.
   UMA_HISTOGRAM_CUSTOM_COUNTS("DirectWrite.Fonts.Proxy.LookupTableSize",
