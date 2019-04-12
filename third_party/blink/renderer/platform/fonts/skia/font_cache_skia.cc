@@ -38,7 +38,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/font_family_names.h"
 #include "third_party/blink/renderer/platform/fonts/alternate_font_family.h"
-#include "third_party/blink/renderer/platform/fonts/bitmap_glyphs_blacklist.h"
+#include "third_party/blink/renderer/platform/fonts/bitmap_glyphs_block_list.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 #include "third_party/blink/renderer/platform/fonts/font_face_creation_params.h"
@@ -303,7 +303,7 @@ std::unique_ptr<FontPlatformData> FontCache::CreateFontPlatformData(
           font_description.Orientation());
 
   font_platform_data->SetAvoidEmbeddedBitmaps(
-      BitmapGlyphsBlacklist::AvoidEmbeddedBitmapsForTypeface(typeface.get()));
+      BitmapGlyphsBlockList::ShouldAvoidEmbeddedBitmapsForTypeface(*typeface));
 
   return font_platform_data;
 }
