@@ -89,6 +89,13 @@ class ParkableStringTest : public ParkableStringTestBase {
   ParkableStringTest() : ParkableStringTestBase() {}
 
  protected:
+  void SetUp() override {
+    ParkableStringTestBase::SetUp();
+    scoped_feature_list_.InitWithFeatures(
+        {kCompressParkableStringsInBackground},
+        {kCompressParkableStringsInForeground});
+  }
+
   void WaitForStatisticsRecording() {
     scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(
         ParkableStringManager::kStatisticsRecordingDelayInSeconds));
