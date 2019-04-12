@@ -10,6 +10,7 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/hash/md5.h"
 #include "base/metrics/histogram_functions.h"
@@ -31,6 +32,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #include "chromeos/system/statistics_provider.h"
+#include "components/arc/arc_features_parser.h"
 #include "components/arc/metrics/stability_metrics_manager.h"
 #include "components/metrics/metrics_service.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -182,9 +184,10 @@ void ChromeOSMetricsProvider::Init() {
 }
 
 void ChromeOSMetricsProvider::AsyncInit(const base::Closure& done_callback) {
-  base::RepeatingClosure barrier = base::BarrierClosure(2, done_callback);
+  base::RepeatingClosure barrier = base::BarrierClosure(3, done_callback);
   InitTaskGetFullHardwareClass(barrier);
   InitTaskGetBluetoothAdapter(barrier);
+  InitTaskGetArcFeatures(barrier);
 }
 
 void ChromeOSMetricsProvider::OnDidCreateMetricsLog() {
@@ -217,6 +220,13 @@ void ChromeOSMetricsProvider::InitTaskGetBluetoothAdapter(
                      weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
+void ChromeOSMetricsProvider::InitTaskGetArcFeatures(
+    const base::RepeatingClosure& callback) {
+  arc::ArcFeaturesParser::GetArcFeatures(
+      base::BindOnce(&ChromeOSMetricsProvider::OnArcFeaturesParsed,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
+}
+
 void ChromeOSMetricsProvider::ProvideSystemProfileMetrics(
     metrics::SystemProfileProto* system_profile_proto) {
   WriteBluetoothProto(system_profile_proto);
@@ -233,6 +243,12 @@ void ChromeOSMetricsProvider::ProvideSystemProfileMetrics(
     hardware->set_internal_display_supports_touch(true);
   else if (has_touch == display::Display::TouchSupport::UNAVAILABLE)
     hardware->set_internal_display_supports_touch(false);
+
+  if (arc_release_) {
+    metrics::SystemProfileProto::OS::Arc* arc =
+        system_profile_proto->mutable_os()->mutable_arc();
+    arc->set_release(*arc_release_);
+  }
 }
 
 void ChromeOSMetricsProvider::ProvideStabilityMetrics(
@@ -404,6 +420,17 @@ void ChromeOSMetricsProvider::SetFullHardwareClass(
   }
   full_hardware_class_ = full_hardware_class;
   callback.Run();
+}
+
+void ChromeOSMetricsProvider::OnArcFeaturesParsed(
+    base::RepeatingClosure callback,
+    base::Optional<arc::ArcFeatures> features) {
+  base::ScopedClosureRunner runner(callback);
+  if (!features) {
+    LOG(WARNING) << "ArcFeatures not available on this build";
+    return;
+  }
+  arc_release_ = features->build_props.at("ro.build.version.release");
 }
 
 void ChromeOSMetricsProvider::UpdateUserTypeUMA() {
