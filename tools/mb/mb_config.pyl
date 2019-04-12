@@ -161,8 +161,7 @@
       'ToTWinCFI64': 'clang_tot_win_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on',
       'ToTWinLibcxx64': 'clang_tot_official_optimize_minimal_symbols_static_release_libcxx',
       'ToTWinThinLTO64': 'clang_tot_win_official_full_symbols_thin_lto_static',
-      'ToTiOS': 'clang_tot_ios_simulator',
-      'ToTiOSDevice': 'clang_tot_ios_device',
+      'ToTiOS': 'ios_error',
       'UBSanVptr Linux': 'ubsan_vptr_release_bot',
     },
 
@@ -237,15 +236,6 @@
       'mac-hermetic-upgrade-rel': 'release_bot',
       'Chromium Mac 10.13': 'release_bot',
 
-      'ios-device-goma-canary-clobber': 'ios_device',
-      'ios-device-goma-latest-clobber': 'ios_device',
-      'ios-simulator': 'ios_simulator',
-      'ios-simulator-cronet': 'ios_simulator_cronet_no_tss_preload',
-      'ios12-beta-simulator': 'ios_simulator',
-      'ios12-sdk-device': 'ios_device',
-      'ios12-sdk-simulator': 'ios_simulator',
-      'ios13-beta-simulator': 'ios_simulator',
-
       'Mac Builder (dbg) Goma Canary (clobber)': 'debug_bot',
       'Mac Builder (dbg) Goma Canary': 'debug_bot',
       'Mac Builder (dbg) Goma Latest Client (clobber)': 'debug_bot',
@@ -276,7 +266,11 @@
       'fuchsia-fyi-x64-dbg': 'debug_bot_fuchsia',
       'fuchsia-fyi-x64-rel': 'release_bot_fuchsia',
 
+      'ios-device-goma-canary-clobber': 'ios_error',
+      'ios-device-goma-latest-clobber': 'ios_error',
+
       'ios-simulator-code-coverage': 'clang_code_coverage_ios',
+      'ios-simulator': 'ios_error',
       'Jumbo Linux x64': 'jumbo_large_chunks_release_bot_minimal_symbols',
       'Jumbo Mac': 'jumbo_release_bot_minimal_symbols',
       'Jumbo Win x64': 'jumbo_release_bot_minimal_symbols',
@@ -477,15 +471,12 @@
       'Mac Builder': 'gpu_tests_release_bot_minimal_symbols',
       'Mac Builder (dbg)': 'gpu_tests_debug_bot',
       'mac-jumbo-rel': 'jumbo_large_chunks_release_bot_minimal_symbols',
-      'ios-device': 'ios_device_no_symbols',
-      'ios-device-xcode-clang': 'ios_device_no_symbols_xcode_clang',
-      'ios-simulator': 'ios_simulator',
-      'ios-simulator-cronet': 'ios_simulator_cronet',
-      'ios-simulator-full-configs': 'ios_simulator',
-      'ios-simulator-xcode-clang': 'ios_simulator_no_symbols_xcode_clang',
-      'ios-slimnav': 'ios_simulator',
-      'ios-uirefresh-simulator': 'ios_simulator',
-      'ios12-sdk-simulator': 'ios_simulator',
+      'ios-device': 'ios_error',
+      'ios-device-xcode-clang': 'ios_error',
+      'ios-simulator': 'ios_error',
+      'ios-simulator-cronet': 'ios_error',
+      'ios-simulator-full-configs': 'ios_error',
+      'ios-simulator-xcode-clang': 'ios_error',
       'WebKit Mac10.13 (retina)': 'release_bot',
     },
 
@@ -587,8 +578,6 @@
       'WebRTC Chromium FYI Android Builder': 'android_release_bot_minimal_symbols',
       'WebRTC Chromium FYI Android Builder (dbg)': 'android_debug_static_bot',
       'WebRTC Chromium FYI Android Builder ARM64 (dbg)': 'android_debug_static_bot_arm64',
-      'WebRTC Chromium FYI ios-device': 'ios_device',
-      'WebRTC Chromium FYI ios-simulator': 'ios_simulator',
       'WebRTC Chromium FYI Linux Builder': 'gpu_tests_release_bot',
       'WebRTC Chromium FYI Linux Builder (RBE)': 'gpu_tests_release_bot',
       'WebRTC Chromium FYI Linux Builder (dbg)': 'debug_bot',
@@ -804,15 +793,12 @@
     },
 
     'tryserver.chromium.mac': {
-      'ios-device': 'ios_device_no_symbols',
-      'ios-device-xcode-clang': 'ios_device_no_symbols_xcode_clang',
-      'ios-simulator': 'ios_simulator',
-      'ios-simulator-cronet': 'ios_simulator_cronet',
-      'ios-simulator-full-configs': 'ios_simulator',
-      'ios-simulator-xcode-clang': 'ios_simulator_no_symbols_xcode_clang',
-      'ios-slimnav': 'ios_simulator',
-      'ios-uirefresh-simulator': 'ios_simulator',
-      'ios12-sdk-simulator': 'ios_simulator',
+      'ios-device': 'ios_error',
+      'ios-device-xcode-clang': 'ios_error',
+      'ios-simulator': 'ios_error',
+      'ios-simulator-full-configs': 'ios_error',
+      'ios-simulator-cronet': 'ios_error',
+      'ios-simulator-xcode-clang': 'ios_error',
       'mac-jumbo-rel': 'jumbo_large_chunks_release_bot_minimal_symbols',
       'mac_chromium_10.10': 'gpu_tests_release_trybot',
       'mac_chromium_10.12_rel_ng': 'gpu_tests_release_trybot',
@@ -1279,11 +1265,6 @@
       'dcheck_always_on', 'x86', 'win_linker_timing',
     ],
 
-    # TODO(thakis): Can we use clang_tot here instead of llvm_force_head?
-    # https://crbug.com/951182.
-    'clang_tot_ios_device': ['ios_device', 'ios_disable_code_signing', 'static', 'llvm_force_head'],
-    'clang_tot_ios_simulator': ['ios_simulator', 'ios_disable_code_signing', 'static', 'release', 'llvm_force_head'],
-
     'clang_tot_ubsan_no_recover_hack_static_release': [
       'clang_tot', 'ubsan_no_recover_hack', 'static', 'release',
     ],
@@ -1627,15 +1608,12 @@
       'gn_linux_upload', 'official', 'goma',
     ],
 
-    'ios_device': ['ios_device', 'release_bot', 'ios_disable_code_signing'],
-    # TODO(justincohen): Why do we build with no_symbols on main waterfall?
-    # Shouldn't we just build with symbols everywhere? https://crbug.com/951182.
-    'ios_device_no_symbols': ['ios_device', 'release_bot', 'ios_disable_code_signing', 'no_symbols'],
-    'ios_device_no_symbols_xcode_clang': ['ios_device', 'release_bot', 'ios_disable_code_signing', 'no_symbols', 'xcode_clang'],
-    'ios_simulator': ['ios_simulator', 'debug', 'minimal_symbols', 'goma'],
-    'ios_simulator_cronet': ['ios_simulator', 'debug', 'minimal_symbols', 'goma', 'ios_cronet_mixins'],
-    'ios_simulator_cronet_no_tss_preload': ['ios_simulator', 'debug', 'minimal_symbols', 'goma', 'ios_cronet_mixins_no_tss_preload'],
-    'ios_simulator_no_symbols_xcode_clang': ['ios_simulator', 'debug', 'ios_disable_code_signing', 'goma', 'no_symbols', 'xcode_clang'],
+    # The 'ios_error' config is just used for auditing. iOS bots
+    # actually use the ios recipes, not the chromium recipe, and look
+    # up their GN arguments via files checked in under //ios/build/bots.
+    # It is an error to actually use one of these configs to generate the
+    # build files.
+    'ios_error': [ 'error'],
 
     'jumbo_release_bot_minimal_symbols': [
       'jumbo', 'release_bot', 'compile_only',
@@ -2210,29 +2188,6 @@
       'gn_args': 'target_os="ios"',
     },
 
-    'ios_disable_code_signing': {
-      'gn_args': 'ios_enable_code_signing=false',
-    },
-
-    'ios_device': {
-      'mixins': ['ios'],
-      'gn_args': 'target_cpu="arm64"',
-    },
-
-    'ios_simulator': {
-      'mixins': ['ios'],
-      'gn_args': 'target_cpu="x64"',
-    },
-
-    'ios_cronet_mixins': {
-      'gn_args': 'additional_target_cpus=["x86"] disable_brotli_filter=false disable_file_support=true disable_ftp_support=true enable_websockets=false ios_deployment_target="9.0" use_crash_key_stubs=true is_cronet_build=true use_platform_icu_alternatives=true',
-    },
-
-    'ios_cronet_mixins_no_tss_preload': {
-      'mixins': ['ios_cronet_mixins'],
-      'gn_args': 'include_transport_security_state_preload_list=false',
-    },
-
     'java_coverage': {
       'gn_args': 'emma_coverage=true emma_filter="org.chromium.*"',
     },
@@ -2250,10 +2205,6 @@
     },
 
     'libfuzzer': { 'gn_args': 'use_libfuzzer=true' },
-
-    'llvm_force_head': {
-      'gn_args': 'llvm_force_head_revision=true',
-    },
 
     'lsan': {
       'gn_args': 'is_lsan=true',
@@ -2469,10 +2420,6 @@
 
     'win_cross': {
       'gn_args': 'target_os="win"',
-    },
-
-    'xcode_clang': {
-      'gn_args': 'use_xcode_clang=true',
     },
 
     'x64': {
