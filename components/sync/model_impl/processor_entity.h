@@ -124,8 +124,11 @@ class ProcessorEntity {
   // Check whether |data| matches the stored specifics hash.
   bool MatchesData(const EntityData& data) const;
 
-  // Check whether |data| matches the stored base (shared between client and
-  // server) specifics hash.
+  // Check whether the current metadata of an unsynced entity matches the stored
+  // base specifics hash.
+  bool MatchesOwnBaseData() const;
+
+  // Check whether |data| matches the stored base specifics hash.
   bool MatchesBaseData(const EntityData& data) const;
 
   // Increment sequence number in the metadata. This will also update the
