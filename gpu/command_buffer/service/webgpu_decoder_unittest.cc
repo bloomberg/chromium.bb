@@ -51,15 +51,15 @@ class WebGPUDecoderTest : public ::testing::Test {
   scoped_refptr<gles2::ContextGroup> group_;
 };
 
-TEST_F(WebGPUDecoderTest, Dummy) {
+TEST_F(WebGPUDecoderTest, DawnCommands) {
   if (!WebGPUSupported()) {
     LOG(ERROR) << "Test skipped because WebGPU isn't supported";
     return;
   }
 
-  cmds::Dummy dummy;
-  dummy.Init();
-  EXPECT_EQ(error::kNoError, ExecuteCmd(dummy));
+  cmds::DawnCommands cmd;
+  cmd.Init(0, 0, 0);
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 }  // namespace webgpu
 }  // namespace gpu

@@ -42,9 +42,6 @@ _FUNCTION_INFO = {
       'commands': 'size * sizeof(char)',
     },
   },
-  'Dummy': {
-    'impl_func': False,
-  },
 }
 
 

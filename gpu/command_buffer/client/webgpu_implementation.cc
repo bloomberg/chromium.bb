@@ -203,13 +203,6 @@ void WebGPUImplementation::OnGpuControlReturnData(
 #endif
 }
 
-void WebGPUImplementation::Dummy() {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] wgDummy()");
-  helper_->Dummy();
-  helper_->Flush();
-}
-
 void* WebGPUImplementation::GetCmdSpace(size_t size) {
   // The buffer size must be initialized before any commands are serialized.
   if (c2s_buffer_default_size_ == 0u) {

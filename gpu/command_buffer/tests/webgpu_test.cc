@@ -71,14 +71,14 @@ void WebGPUTest::RunPendingTasks() {
   context_->GetTaskRunner()->RunPendingTasks();
 }
 
-TEST_F(WebGPUTest, Dummy) {
+TEST_F(WebGPUTest, FlushNoCommands) {
   if (!WebGPUSupported()) {
     LOG(ERROR) << "Test skipped because WebGPU isn't supported";
     return;
   }
 
   Initialize(WebGPUTest::Options());
-  webgpu()->Dummy();
+  webgpu()->FlushCommands();
 }
 
 }  // namespace gpu
