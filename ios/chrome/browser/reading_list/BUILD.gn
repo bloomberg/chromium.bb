@@ -66,6 +66,7 @@ source_set("features") {
   ]
   deps = [
     "//base",
+    "//ios/chrome/browser/web:feature_flags",
     "//ios/web/public",
   ]
 }
