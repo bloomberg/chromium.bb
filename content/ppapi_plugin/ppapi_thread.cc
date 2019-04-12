@@ -311,27 +311,26 @@ void PpapiThread::OnLoadPlugin(const base::FilePath& path,
   base::ScopedNativeLibrary library;
   if (!plugin_entry_points_.initialize_module) {
     // Load the plugin from the specified library.
-    base::NativeLibraryLoadError error;
     base::TimeDelta load_time;
     {
       TRACE_EVENT1("ppapi", "PpapiThread::LoadPlugin", "path",
                    path.MaybeAsASCII());
 
       base::TimeTicks start = base::TimeTicks::Now();
-      library.Reset(base::LoadNativeLibrary(path, &error));
+      library = base::ScopedNativeLibrary(path);
       load_time = base::TimeTicks::Now() - start;
     }
 
     if (!library.is_valid()) {
       LOG(ERROR) << "Failed to load Pepper module from " << path.value()
-                 << " (error: " << error.ToString() << ")";
+                 << " (error: " << library.GetError()->ToString() << ")";
       if (!base::PathExists(path)) {
         ReportLoadResult(path, FILE_MISSING);
         return;
       }
       ReportLoadResult(path, LOAD_FAILED);
       // Report detailed reason for load failure.
-      ReportLoadErrorCode(path, error);
+      ReportLoadErrorCode(path, library.GetError());
       return;
     }
 
@@ -452,7 +451,7 @@ void PpapiThread::OnLoadPlugin(const base::FilePath& path,
   }
 
   // Initialization succeeded, so keep the plugin DLL loaded.
-  library_.Reset(library.Release());
+  library_ = std::move(library);
 
   ReportLoadResult(path, LOAD_SUCCESS);
 }
@@ -571,12 +570,12 @@ void PpapiThread::ReportLoadResult(const base::FilePath& path,
 
 void PpapiThread::ReportLoadErrorCode(
     const base::FilePath& path,
-    const base::NativeLibraryLoadError& error) {
+    const base::NativeLibraryLoadError* error) {
 // Only report load error code on Windows because that's the only platform that
 // has a numerical error value.
 #if defined(OS_WIN)
   base::UmaHistogramSparse(GetHistogramName(is_broker_, "LoadErrorCode", path),
-                           error.code);
+                           error->code);
 #endif
 }
 

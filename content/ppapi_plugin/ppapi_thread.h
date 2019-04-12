@@ -138,7 +138,7 @@ class PpapiThread : public ChildThreadImpl,
 
   // Reports |error| to UMA when plugin load fails.
   void ReportLoadErrorCode(const base::FilePath& path,
-                           const base::NativeLibraryLoadError& error);
+                           const base::NativeLibraryLoadError* error);
 
   // Reports time to load the plugin.
   void ReportLoadTime(const base::FilePath& path,

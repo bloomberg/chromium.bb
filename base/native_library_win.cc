@@ -8,6 +8,9 @@
 
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
+#include "base/path_service.h"
+#include "base/scoped_native_library.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -15,9 +18,11 @@
 
 namespace base {
 
-using AddDllDirectory = HMODULE (*)(PCWSTR new_directory);
-
 namespace {
+
+// forward declare
+HMODULE AddDllDirectory(PCWSTR new_directory);
+
 // This enum is used to back an UMA histogram, and should therefore be treated
 // as append-only.
 enum LoadLibraryResult {
@@ -56,8 +61,9 @@ bool AreSearchFlagsAvailable() {
   // https://msdn.microsoft.com/en-us/library/windows/desktop/ms684179(v=vs.85).aspx
   // The LOAD_LIBRARY_SEARCH_* flags are used in the LoadNativeLibraryHelper
   // method.
-  auto add_dll_dir_func = reinterpret_cast<AddDllDirectory>(
-      GetProcAddress(GetModuleHandle(L"kernel32.dll"), "AddDllDirectory"));
+  static const auto add_dll_dir_func =
+      reinterpret_cast<decltype(AddDllDirectory)*>(
+          GetProcAddress(GetModuleHandle(L"kernel32.dll"), "AddDllDirectory"));
   return !!add_dll_dir_func;
 }
 
@@ -81,7 +87,8 @@ LoadLibraryResult GetLoadLibraryResult(bool are_search_flags_available,
 
 NativeLibrary LoadNativeLibraryHelper(const FilePath& library_path,
                                       NativeLibraryLoadError* error) {
-  // LoadLibrary() opens the file off disk.
+  // LoadLibrary() opens the file off disk and acquires the LoaderLock, hence
+  // must not be called from DllMain.
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
 
   HMODULE module = nullptr;
@@ -137,6 +144,40 @@ NativeLibrary LoadNativeLibraryHelper(const FilePath& library_path,
 
   return module;
 }
+
+NativeLibrary LoadSystemLibraryHelper(const FilePath& library_path,
+                                      NativeLibraryLoadError* error) {
+  NativeLibrary module;
+  BOOL module_found =
+      ::GetModuleHandleEx(0, as_wcstr(library_path.value()), &module);
+  if (!module_found) {
+    // LoadLibrary() opens the file off disk and acquires the LoaderLock, hence
+    // must not be called from DllMain.
+    ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
+    bool are_search_flags_available = AreSearchFlagsAvailable();
+    // prefer LOAD_LIBRARY_SEARCH_SYSTEM32 to avoid DLL preloading attacks
+    DWORD flags = are_search_flags_available ? LOAD_LIBRARY_SEARCH_SYSTEM32
+                                             : LOAD_WITH_ALTERED_SEARCH_PATH;
+    module = ::LoadLibraryExW(as_wcstr(library_path.value()), nullptr, flags);
+
+    if (!module && error)
+      error->code = ::GetLastError();
+
+    LogLibrarayLoadResultToUMA(
+        GetLoadLibraryResult(are_search_flags_available, !!module));
+  }
+
+  return module;
+}
+
+Optional<FilePath> GetSystemLibraryName(FilePath::StringPieceType name) {
+  FilePath library_path;
+  // Use an absolute path to load the DLL to avoid DLL preloading attacks.
+  if (!base::PathService::Get(base::DIR_SYSTEM, &library_path))
+    return base::nullopt;
+  return make_optional(library_path.Append(name));
+}
+
 }  // namespace
 
 std::string NativeLibraryLoadError::ToString() const {
@@ -165,6 +206,16 @@ std::string GetNativeLibraryName(StringPiece name) {
 
 std::string GetLoadableModuleName(StringPiece name) {
   return GetNativeLibraryName(name);
+}
+
+NativeLibrary LoadSystemLibrary(FilePath::StringPieceType name,
+                                NativeLibraryLoadError* error) {
+  Optional<FilePath> library_path = GetSystemLibraryName(name);
+  if (library_path)
+    return LoadSystemLibraryHelper(library_path.value(), error);
+  if (error)
+    error->code = ERROR_NOT_FOUND;
+  return nullptr;
 }
 
 }  // namespace base
