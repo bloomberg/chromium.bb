@@ -581,7 +581,9 @@
         'DevicePowerPeakShiftBatteryThreshold',
         'DevicePowerPeakShiftDayConfig',
         'DevicePowerPeakShiftEnabled',
-        'DeviceBootOnAcEnabled'
+        'DeviceBootOnAcEnabled',
+        'DeviceAdvancedBatteryChargeModeEnabled',
+        'DeviceAdvancedBatteryChargeModeDayConfig'
       ],
     },
     {
@@ -12394,6 +12396,7 @@
                   'properties': {
                     'day_of_week': {
                       'type': 'string',
+                      'id': 'WeekDay',
                       'enum': [
                         'MONDAY',
                         'TUESDAY',
@@ -13532,18 +13535,7 @@
                 'items': {
                   'type': 'object',
                   'properties': {
-                    'effective_day': {
-                      'type': 'string',
-                      'enum': [
-                        'MONDAY',
-                        'TUESDAY',
-                        'WEDNESDAY',
-                        'THURSDAY',
-                        'FRIDAY',
-                        'SATURDAY',
-                        'SUNDAY'
-                      ]
-                    },
+                    'effective_day': { '$ref': 'WeekDay' },
                     'starts_at': {
                       'type': 'object',
                       'id': 'Time',
@@ -15277,18 +15269,7 @@
             'items': {
               'type': 'object',
               'properties': {
-                'day': {
-                  'type': 'string',
-                  'enum': [
-                    'MONDAY',
-                    'TUESDAY',
-                    'WEDNESDAY',
-                    'THURSDAY',
-                    'FRIDAY',
-                    'SATURDAY',
-                    'SUNDAY'
-                  ]
-                },
+                'day': { '$ref': 'WeekDay' },
                 'start_time': { '$ref': 'Time' },
                 'end_time': { '$ref': 'Time' },
                 'charge_start_time': { '$ref': 'Time' }
@@ -15435,6 +15416,96 @@
 
       If this policy is set, the user cannot change or override it.''',
     },
+    {
+      'name': 'DeviceAdvancedBatteryChargeModeEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:75-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': False,
+      'id': 548,
+      'caption': '''Enable advanced battery charge mode''',
+      'tags': [],
+      'desc': '''Enable the advanced battery charge mode power management policy.
+
+          Advanced Battery Charging Mode allows the user to maximize the battery health. In Advanced Charging Mode the system will use standard charging algorithm and other techniques during non-work hours to maximize battery health. During work hours, an express charge is used. This express charge allows the battery to be charged faster; therefore, the battery is at full charge sooner. For each day the time in which the system will be most heavily used is specified by the start time and the duration.
+
+          If this policy is set to true, and DeviceAdvancedBatteryChargeModeDayConfig is set, then advanced battery charge mode will always be enabled if supported on the device.
+
+          If this policy is set to false, advanced battery charge mode will always be disabled.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, advanced battery charge mode is disabled and cannot be enabled by the user.'''
+    },
+    {
+      'name': 'DeviceAdvancedBatteryChargeModeDayConfig',
+      'type': 'dict',
+      'schema': {
+        'type': 'object',
+        'properties': {
+          'entries': {
+            'type': 'array',
+            'items': {
+              'type': 'object',
+              'properties': {
+                'day': { '$ref': 'WeekDay' },
+                'charge_start_time': { '$ref': 'Time' },
+                'charge_end_time': { '$ref': 'Time' }
+              }
+            }
+          }
+        }
+      },
+      'supported_on': ['chrome_os:75-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': {
+        'entries': [
+          {
+            'day': 'TUESDAY',
+            'charge_start_time': {
+              'hour': 20,
+              'minute': 30,
+            },
+            'charge_end_time': {
+              'hour': 23,
+              'minute': 0,
+            },
+          },
+          {
+            'day': 'FRIDAY',
+            'charge_start_time': {
+              'hour': 4,
+              'minute': 15,
+            },
+            'charge_end_time': {
+              'hour': 6,
+              'minute': 45,
+            },
+          }
+        ],
+      },
+      'id': 549,
+      'caption': '''Set advanced battery charge mode day config''',
+      'tags': [],
+      'desc': '''Set advanced battery charge mode day config.
+
+          This policy is only used if DeviceAdvancedBatteryChargeModeEnabled is set to true.
+
+          If this policy is not configured or left unset, advanced battery charge mode will always be disabled.
+
+          Note: <ph name="CHARGE_START_TIME_FIELD_NAME">charge_start_time</ph> must be less than <ph name="CHARGE_END_TIME_FIELD_NAME">charge_end_time</ph>.
+
+          Note: allowed values for <ph name="MINUTE_FIELD_NAME">minute</ph> field in <ph name="CHARGE_START_TIME_FIELD_NAME">charge_start_time</ph> and <ph name="CHARGE_END_TIME_FIELD_NAME">charge_end_time</ph> are 0, 15, 30, 45.'''
+    }
   ],
 
   'messages': {
@@ -15600,5 +15671,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used':  547
+  'highest_id_currently_used':  549
 }

@@ -358,16 +358,29 @@ const char kVpnConfigAllowed[] = "vpn_config_allowed";
 
 // A boolean pref that indicates whether power peak shift is enabled.
 const char kDevicePowerPeakShiftEnabled[] = "ash.power.peak_shift_enabled";
+
 // An integer pref that specifies the power peak shift battery threshold in
 // percent.
 const char kDevicePowerPeakShiftBatteryThreshold[] =
     "ash.power.peak_shift_battery_threshold";
+
 // A dictionary pref that specifies the power peak shift day configs.
 // For details see "DevicePowerPeakShiftDayConfig" in policy_templates.json.
 const char kDevicePowerPeakShiftDayConfig[] = "ash.power.peak_shift_day_config";
 
 // A boolean pref that indicates whether boot on AC is enabled.
 const char kDeviceBootOnAcEnabled[] = "ash.power.boot_on_ac_enabled";
+
+// A boolean pref that indicates whether advanced battery charge mode is
+// enabled.
+const char kDeviceAdvancedBatteryChargeModeEnabled[] =
+    "ash.power.advanced_battery_charge_mode_enabled";
+
+// A dictionary pref that specifies the advanced battery charge mode day config.
+// For details see "DeviceAdvancedBatteryChargeModeDayConfig" in
+// policy_templates.json.
+const char kDeviceAdvancedBatteryChargeModeDayConfig[] =
+    "ash.power.advanced_battery_charge_mode_day_config";
 
 // NOTE: New prefs should start with the "ash." prefix. Existing prefs moved
 // into this file should not be renamed, since they may be synced.

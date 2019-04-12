@@ -144,6 +144,9 @@ ASH_PUBLIC_EXPORT extern const char kDevicePowerPeakShiftDayConfig[];
 
 ASH_PUBLIC_EXPORT extern const char kDeviceBootOnAcEnabled[];
 
+ASH_PUBLIC_EXPORT extern const char kDeviceAdvancedBatteryChargeModeEnabled[];
+ASH_PUBLIC_EXPORT extern const char kDeviceAdvancedBatteryChargeModeDayConfig[];
+
 }  // namespace prefs
 
 }  // namespace ash

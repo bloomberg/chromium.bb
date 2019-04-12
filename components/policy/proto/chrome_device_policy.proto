@@ -1222,6 +1222,21 @@ message DeviceDockMacAddressSourceProto {
   optional Source source = 1;
 }
 
+// Settings that control advanced battery charge mode policy.
+message DeviceAdvancedBatteryChargeModeProto {
+  // Setting that controls whether advanced battery charge mode is enabled on
+  // this device.
+  // For details see "DeviceAdvancedBatteryChargeModeEnabled" in
+  // policy_templates.json.
+  optional bool enabled = 1;
+
+  // Setting that controls advanced battery charge mode day config on this
+  // device.
+  // This is a JSON string, for details see
+  // "DeviceAdvancedBatteryChargeModeDayConfig" in policy_templates.json.
+  optional string day_configs = 2;
+}
+
 message ChromeDeviceSettingsProto {
   reserved 61;
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
@@ -1328,4 +1343,6 @@ message ChromeDeviceSettingsProto {
   optional DevicePowerPeakShiftProto device_power_peak_shift = 83;
   optional DeviceBootOnAcProto device_boot_on_ac = 84;
   optional DeviceDockMacAddressSourceProto device_dock_mac_address_source = 85;
+  optional DeviceAdvancedBatteryChargeModeProto
+      device_advanced_battery_charge_mode = 86;
 }
