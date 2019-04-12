@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/modules/gamepad/gamepad_event.h"
 #include "third_party/blink/renderer/modules/gamepad/gamepad_list.h"
 #include "third_party/blink/renderer/modules/vr/navigator_vr.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 
 namespace blink {
 
@@ -123,16 +124,16 @@ void NavigatorGamepad::SampleGamepads() {
   bool include_xr_gamepads = ShouldIncludeXrGamepads(GetFrame());
 
   for (uint32_t i = 0; i < device::Gamepads::kItemsLengthCap; ++i) {
-    device::Gamepad& web_gamepad = gamepads.items[i];
+    device::Gamepad& device_gamepad = gamepads.items[i];
 
-    bool hide_xr_gamepad = web_gamepad.is_xr && !include_xr_gamepads;
+    bool hide_xr_gamepad = device_gamepad.is_xr && !include_xr_gamepads;
     if (hide_xr_gamepad) {
       gamepads_back_->Set(i, nullptr);
-    } else if (web_gamepad.connected) {
+    } else if (device_gamepad.connected) {
       Gamepad* gamepad = gamepads_back_->item(i);
       if (!gamepad)
         gamepad = MakeGarbageCollected<Gamepad>(this);
-      SampleGamepad(i, *gamepad, web_gamepad);
+      SampleGamepad(i, *gamepad, device_gamepad);
       gamepads_back_->Set(i, gamepad);
     } else {
       gamepads_back_->Set(i, nullptr);
@@ -143,8 +144,12 @@ void NavigatorGamepad::SampleGamepads() {
 void NavigatorGamepad::SampleGamepad(uint32_t index,
                                      Gamepad& gamepad,
                                      const device::Gamepad& device_gamepad) {
-  String old_id = gamepad.id();
-  bool old_was_connected = gamepad.connected();
+  bool newly_connected;
+  GamepadComparisons::HasGamepadConnectionChanged(
+      gamepad.connected(),                            // Old connected.
+      device_gamepad.connected,                       // New connected.
+      gamepad.id() != StringView(device_gamepad.id),  // ID changed.
+      &newly_connected, nullptr);
 
   TimeTicks last_updated =
       TimeTicks() + TimeDelta::FromMicroseconds(device_gamepad.timestamp);
@@ -154,40 +159,36 @@ void NavigatorGamepad::SampleGamepad(uint32_t index,
   DOMHighResTimeStamp timestamp =
       Performance::MonotonicTimeToDOMHighResTimeStamp(navigation_start_,
                                                       last_updated, false);
-  gamepad.SetId(device_gamepad.id);
+
   gamepad.SetConnected(device_gamepad.connected);
   gamepad.SetTimestamp(timestamp);
   gamepad.SetAxes(device_gamepad.axes_length, device_gamepad.axes);
   gamepad.SetButtons(device_gamepad.buttons_length, device_gamepad.buttons);
-  gamepad.SetPose(device_gamepad.pose);
-  gamepad.SetHand(device_gamepad.hand);
+  // Always called as gamepads require additional steps to determine haptics
+  // capability and thus may provide them when not |newly_connected|. This is
+  // also simpler than logic to conditionally call.
+  gamepad.SetVibrationActuatorInfo(device_gamepad.vibration_actuator);
 
   if (device_gamepad.is_xr) {
+    gamepad.SetPose(device_gamepad.pose);
+    gamepad.SetHand(device_gamepad.hand);
+
     TimeTicks now = TimeTicks::Now();
     TRACE_COUNTER1("input", "XR gamepad pose age (ms)",
                    (now - last_updated).InMilliseconds());
   }
 
-  bool newly_connected;
-  GamepadComparisons::HasGamepadConnectionChanged(
-      old_was_connected, gamepad.connected(), old_id != gamepad.id(),
-      &newly_connected, nullptr);
-
   // These fields are not expected to change and will only be written when the
   // gamepad is newly connected.
   if (newly_connected) {
+    gamepad.SetId(device_gamepad.id);
     gamepad.SetIndex(index);
     gamepad.SetMapping(device_gamepad.mapping);
-    gamepad.SetVibrationActuatorInfo(device_gamepad.vibration_actuator);
-    // Re-map display ids, since we will hand out at most one VRDisplay.
-    gamepad.SetDisplayId(device_gamepad.display_id ? 1 : 0);
-  } else if (!gamepad.HasVibrationActuator() &&
-             device_gamepad.vibration_actuator.not_null) {
-    // Some gamepads require additional steps to determine haptics capability.
-    // These gamepads may initially set |vibration_actuator| to null and then
-    // update it some time later. Make sure such devices can correctly propagate
-    // the changed capabilities.
-    gamepad.SetVibrationActuatorInfo(device_gamepad.vibration_actuator);
+
+    if (device_gamepad.is_xr && device_gamepad.display_id) {
+      // Re-map display ids, since we will hand out at most one VRDisplay.
+      gamepad.SetDisplayId(1);
+    }
   }
 }
 
