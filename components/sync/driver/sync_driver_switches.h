@@ -44,8 +44,6 @@ extern const base::Feature kSyncPseudoUSSSupervisedUsers;
 extern const base::Feature kSyncPseudoUSSThemes;
 extern const base::Feature kSyncSendTabToSelf;
 extern const base::Feature kSyncSupportSecondaryAccount;
-extern const base::Feature kSyncUserLanguageDetectionEvents;
-extern const base::Feature kSyncUserTranslationEvents;
 extern const base::Feature kSyncUSSBookmarks;
 extern const base::Feature kSyncUSSPasswords;
 extern const base::Feature kSyncUSSAutofillProfile;
