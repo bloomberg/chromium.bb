@@ -219,6 +219,10 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
     return start_tpm_firmware_update_call_count_;
   }
 
+  const std::string& last_tpm_firmware_update_mode() const {
+    return last_tpm_firmware_update_mode_;
+  }
+
   void set_arc_available(bool available) { arc_available_ = available; }
   void set_arc_start_time(base::TimeTicks arc_start_time) {
     arc_start_time_ = arc_start_time;
@@ -255,6 +259,7 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
   int notify_lock_screen_shown_call_count_ = 0;
   int notify_lock_screen_dismissed_call_count_ = 0;
   int start_tpm_firmware_update_call_count_ = 0;
+  std::string last_tpm_firmware_update_mode_;
   bool screen_is_locked_ = false;
 
   bool arc_available_ = false;

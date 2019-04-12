@@ -41,6 +41,11 @@ constexpr const char kUserActionResetResetConfirmationDismissed[] =
 constexpr const char kUserActionTPMFirmwareUpdateLearnMore[] =
     "tpm-firmware-update-learn-more-link";
 
+// If set, callback that will be run to determine TPM firmware update
+// availability. Used for tests.
+ResetScreen::TpmFirmwareUpdateAvailabilityChecker*
+    g_tpm_firmware_update_checker = nullptr;
+
 void StartTPMFirmwareUpdate(
     tpm_firmware_update::Mode requested_mode,
     const std::set<tpm_firmware_update::Mode>& available_modes) {
@@ -77,6 +82,12 @@ void StartTPMFirmwareUpdate(
 
 }  // namespace
 
+// static
+void ResetScreen::SetTpmFirmwareUpdateCheckerForTesting(
+    TpmFirmwareUpdateAvailabilityChecker* checker) {
+  g_tpm_firmware_update_checker = checker;
+}
+
 ResetScreen::ResetScreen(BaseScreenDelegate* base_screen_delegate,
                          ResetView* view,
                          const base::RepeatingClosure& exit_callback)
@@ -84,6 +95,11 @@ ResetScreen::ResetScreen(BaseScreenDelegate* base_screen_delegate,
       base_screen_delegate_(base_screen_delegate),
       view_(view),
       exit_callback_(exit_callback),
+      tpm_firmware_update_checker_(
+          g_tpm_firmware_update_checker
+              ? *g_tpm_firmware_update_checker
+              : base::BindRepeating(
+                    &tpm_firmware_update::GetAvailableUpdateModes)),
       weak_ptr_factory_(this) {
   DCHECK(view_);
   if (view_) {
@@ -173,7 +189,7 @@ void ResetScreen::Show() {
     // system to see whether to offer the checkbox to update TPM firmware. Note
     // that due to the asynchronous availability check, the decision might not
     // be available immediately, so set a timeout of a couple seconds.
-    tpm_firmware_update::GetAvailableUpdateModes(
+    tpm_firmware_update_checker_.Run(
         base::BindOnce(&ResetScreen::OnTPMFirmwareUpdateAvailableCheck,
                        weak_ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromSeconds(10));
@@ -259,7 +275,7 @@ void ResetScreen::OnPowerwash() {
     // Re-check availability with a couple seconds timeout. This addresses the
     // case where the powerwash dialog gets shown immediately after reboot and
     // the decision on whether the update is available is not known immediately.
-    tpm_firmware_update::GetAvailableUpdateModes(
+    tpm_firmware_update_checker_.Run(
         base::BindOnce(&StartTPMFirmwareUpdate,
                        view_->GetTpmFirmwareUpdateMode()),
         base::TimeDelta::FromSeconds(10));
