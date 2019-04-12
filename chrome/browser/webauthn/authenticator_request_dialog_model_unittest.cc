@@ -289,7 +289,7 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
        {},
        base::nullopt,
        {TransportAvailabilityParam::kHasWinNativeAuthenticator},
-       Step::kClosed},
+       Step::kNotStarted},
       {RequestType::kGetAssertion,
        {AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy},
        base::nullopt,
@@ -611,8 +611,7 @@ TEST_F(AuthenticatorRequestDialogModelTest,
   model.StartFlow(std::move(transports_info), base::nullopt,
                   &test_paired_device_list_);
 
-  EXPECT_EQ(AuthenticatorRequestDialogModel::Step::kClosed,
-            model.current_step());
+  EXPECT_TRUE(model.should_dialog_be_hidden());
   task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_THAT(dispatched_authenticator_ids, ElementsAre(kWinAuthenticatorId));
 }

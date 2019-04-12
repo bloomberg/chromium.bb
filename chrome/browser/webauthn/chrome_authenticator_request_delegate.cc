@@ -206,12 +206,15 @@ void ChromeAuthenticatorRequestDelegate::ShouldReturnAttestation(
     return;
   }
 
-  if (!IsWebAuthnUIEnabled()) {
-    // Enable the UI to show the user the permission dialog.
-    ShowAuthenticatorRequestDialog(
-        content::WebContents::FromRenderFrameHost(render_frame_host()),
-        std::move(transient_dialog_model_holder_));
+  // Cryptotoken displays its own attestation consent prompt.
+  // AuthenticatorCommon does not invoke ShouldReturnAttestation() for those
+  // requests.
+  if (disable_ui_) {
+    NOTREACHED();
+    std::move(callback).Run(false);
+    return;
   }
+
   weak_dialog_model_->RequestAttestationPermission(std::move(callback));
 #endif
 }
@@ -224,7 +227,14 @@ void ChromeAuthenticatorRequestDelegate::SelectAccount(
     std::vector<device::AuthenticatorGetAssertionResponse> responses,
     base::OnceCallback<void(device::AuthenticatorGetAssertionResponse)>
         callback) {
-  if (!IsWebAuthnUIEnabled() || !weak_dialog_model_) {
+  if (disable_ui_) {
+    // Cryptotoken requests should never reach account selection.
+    NOTREACHED();
+    std::move(cancel_callback_).Run();
+    return;
+  }
+
+  if (!weak_dialog_model_) {
     std::move(cancel_callback_).Run();
     return;
   }
@@ -310,10 +320,12 @@ void ChromeAuthenticatorRequestDelegate::DisableUI() {
 }
 
 bool ChromeAuthenticatorRequestDelegate::IsWebAuthnUIEnabled() {
-  // UI can be disabled via flag or by the request handler for certain
-  // requests (e.g. on Windows, where the native API renders its own UI).
-  return base::FeatureList::IsEnabled(features::kWebAuthenticationUI) &&
-         !disable_ui_;
+  // The UI is fully disabled for the entire request duration only if the
+  // request originates from cryptotoken. The UI may be hidden in other
+  // circumstances (e.g. while showing the native Windows WebAuthn UI). But in
+  // those cases the UI is still enabled and can be shown e.g. for an
+  // attestation consent prompt.
+  return !disable_ui_;
 }
 
 bool ChromeAuthenticatorRequestDelegate::ShouldDisablePlatformAuthenticators() {
@@ -329,13 +341,9 @@ bool ChromeAuthenticatorRequestDelegate::ShouldDisablePlatformAuthenticators() {
 void ChromeAuthenticatorRequestDelegate::OnTransportAvailabilityEnumerated(
     device::FidoRequestHandlerBase::TransportAvailabilityInfo data) {
 #if !defined(OS_ANDROID)
-  if (data.disable_embedder_ui) {
-    disable_ui_ = true;
+  if (disable_ui_) {
     return;
   }
-
-  if (!IsWebAuthnUIEnabled())
-    return;
 
   weak_dialog_model_->set_incognito_mode(
       Profile::FromBrowserContext(browser_context())->GetProfileType() ==
@@ -344,17 +352,8 @@ void ChromeAuthenticatorRequestDelegate::OnTransportAvailabilityEnumerated(
   weak_dialog_model_->StartFlow(std::move(data), GetLastTransportUsed(),
                                 GetPreviouslyPairedFidoBleDeviceIds());
 
-  if (weak_dialog_model_->should_dialog_be_closed()) {
-    // The model decided to not show the Chrome UI because a different native
-    // UI is shown.
-    //
-    // Disable UI to cause timeout and other errors to bubble up to the caller
-    // immediately rather than waiting for our error dialog to be dismissed.
-    disable_ui_ = true;
-    return;
-  }
-
-  DCHECK(transient_dialog_model_holder_);
+  DCHECK(transient_dialog_model_holder_)
+      << "RegisterActionCallbacks() must be called first";
   ShowAuthenticatorRequestDialog(
       content::WebContents::FromRenderFrameHost(render_frame_host()),
       std::move(transient_dialog_model_holder_));

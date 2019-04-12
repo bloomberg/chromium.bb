@@ -45,10 +45,7 @@ void ShowAuthenticatorRequestDialog(
   if (!manager)
     return;
 
-  // Keep this logic in sync with AuthenticatorRequestDialogViewTestApi::Show.
-  auto dialog = std::make_unique<AuthenticatorRequestDialogView>(
-      web_contents, std::move(model));
-  constrained_window::ShowWebModalDialogViews(dialog.release(), web_contents);
+  new AuthenticatorRequestDialogView(web_contents, std::move(model));
 }
 
 AuthenticatorRequestDialogView::AuthenticatorRequestDialogView(
@@ -63,6 +60,7 @@ AuthenticatorRequestDialogView::AuthenticatorRequestDialogView(
   // Currently, all sheets have a label on top and controls at the bottom.
   // Consider moving this to AuthenticatorRequestSheetView if this changes.
   SetLayoutManager(std::make_unique<views::FillLayout>());
+
   OnStepTransition();
 }
 
@@ -231,11 +229,37 @@ void AuthenticatorRequestDialogView::OnModelDestroyed() {
 
 void AuthenticatorRequestDialogView::OnStepTransition() {
   if (model_->should_dialog_be_closed()) {
-    if (GetWidget())
-      GetWidget()->Close();
+    if (!first_shown_) {
+      // No widget has ever been created for this dialog, thus there will be no
+      // DeleteDelegate() call to delete this view.
+      DCHECK(!GetWidget());
+      delete this;
+      return;
+    }
+    if (GetWidget()) {
+      GetWidget()->Close();  // DeleteDelegate() will delete |this|.
+    }
     return;
   }
+  if (model_->should_dialog_be_hidden()) {
+    if (GetWidget()) {
+      GetWidget()->Hide();
+    }
+    return;
+  }
+
   ReplaceCurrentSheetWith(CreateSheetViewForCurrentStepOf(model_.get()));
+  Show();
+}
+
+void AuthenticatorRequestDialogView::Show() {
+  if (!first_shown_) {
+    constrained_window::ShowWebModalDialogViews(this, web_contents());
+    DCHECK(GetWidget());
+    first_shown_ = true;
+  } else {
+    GetWidget()->Show();
+  }
 }
 
 void AuthenticatorRequestDialogView::OnSheetModelChanged() {

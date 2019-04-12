@@ -108,16 +108,12 @@ class AuthenticatorDialogViewTest : public DialogBrowserTest {
     auto dialog_model = std::make_unique<AuthenticatorRequestDialogModel>();
     dialog_model->SetCurrentStep(
         AuthenticatorRequestDialogModel::Step::kTimedOut);
-    auto dialog = std::make_unique<AuthenticatorRequestDialogView>(
-        web_contents, std::move(dialog_model));
-
-    auto sheet_model = std::make_unique<TestSheetModel>();
-    auto sheet = std::make_unique<TestSheetView>(std::move(sheet_model));
-    test::AuthenticatorRequestDialogViewTestApi::ReplaceCurrentSheet(
-        dialog.get(), std::move(sheet));
-
-    test::AuthenticatorRequestDialogViewTestApi::Show(web_contents,
-                                                      std::move(dialog));
+    AuthenticatorRequestDialogView* dialog =
+        test::AuthenticatorRequestDialogViewTestApi::CreateDialogView(
+            std::move(dialog_model), web_contents);
+    test::AuthenticatorRequestDialogViewTestApi::ShowWithSheet(
+        dialog,
+        std::make_unique<TestSheetView>(std::make_unique<TestSheetModel>()));
   }
 
  private:
