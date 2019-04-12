@@ -106,7 +106,7 @@ cvox.OptionsPage.init = function() {
       'enable-experimental-accessibility-chromevox-language-switching',
       function(enabled) {
         if (!enabled) {
-          $('languageSwitchingOtion').hidden = true;
+          $('languageSwitchingOption').hidden = true;
         }
       });
 
