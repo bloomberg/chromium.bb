@@ -335,6 +335,13 @@ Polymer({
         'languages.forcedSpellCheckLanguages',
         this.getForcedSpellCheckLanguages_(this.languages.enabled));
     // </if>
+
+    // Update translate target language.
+    new Promise(resolve => {
+      this.languageSettingsPrivate_.getTranslateTargetLanguage(resolve);
+    }).then(result => {
+      this.set('languages.translateTarget', result);
+    });
   },
 
   /**
