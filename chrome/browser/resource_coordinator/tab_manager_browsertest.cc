@@ -1562,7 +1562,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest,
   EXPECT_TRUE(IsTabDiscarded(browser4->tab_strip_model()->GetWebContentsAt(1)));
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
 // Flaky: https://crbug.com/918701
 #define MAYBE_UnfreezeTabOnNavigationEvent DISABLED_UnfreezeTabOnNavigationEvent
 #else
