@@ -29,7 +29,7 @@ namespace blink {
 
 inline SVGFETileElement::SVGFETileElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(svg_names::kFETileTag, document),
-      in1_(SVGAnimatedString::Create(this, svg_names::kInAttr)) {
+      in1_(MakeGarbageCollected<SVGAnimatedString>(this, svg_names::kInAttr)) {
   AddToPropertyMap(in1_);
 }
 

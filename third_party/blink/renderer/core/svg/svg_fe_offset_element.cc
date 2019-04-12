@@ -29,9 +29,13 @@ namespace blink {
 
 inline SVGFEOffsetElement::SVGFEOffsetElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(svg_names::kFEOffsetTag, document),
-      dx_(SVGAnimatedNumber::Create(this, svg_names::kDxAttr, 0.0f)),
-      dy_(SVGAnimatedNumber::Create(this, svg_names::kDyAttr, 0.0f)),
-      in1_(SVGAnimatedString::Create(this, svg_names::kInAttr)) {
+      dx_(MakeGarbageCollected<SVGAnimatedNumber>(this,
+                                                  svg_names::kDxAttr,
+                                                  0.0f)),
+      dy_(MakeGarbageCollected<SVGAnimatedNumber>(this,
+                                                  svg_names::kDyAttr,
+                                                  0.0f)),
+      in1_(MakeGarbageCollected<SVGAnimatedString>(this, svg_names::kInAttr)) {
   AddToPropertyMap(dx_);
   AddToPropertyMap(dy_);
   AddToPropertyMap(in1_);
