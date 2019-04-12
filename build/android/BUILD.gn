@@ -67,6 +67,8 @@ python_library("devil_chromium_py") {
   data = [
     "devil_chromium.py",
     "devil_chromium.json",
+    "//third_party/catapult/third_party/gsutil/",
+    "//third_party/catapult/devil/devil/devil_dependencies.json",
   ]
 }
 
@@ -81,8 +83,6 @@ python_library("test_runner_py") {
     "${android_sdk_build_tools}/lib64/libc++.so",
     "${android_sdk_build_tools}/split-select",
     "${android_sdk_root}/platform-tools/adb",
-    "//third_party/catapult/third_party/gsutil/",
-    "//third_party/catapult/devil/devil/devil_dependencies.json",
   ]
   data_deps = [
     ":devil_chromium_py",
@@ -105,6 +105,13 @@ python_library("logdog_wrapper_py") {
 
 python_library("resource_sizes_py") {
   pydeps_file = "resource_sizes.pydeps"
+  data_deps = [
+    ":devil_chromium_py",
+  ]
+  data = [
+    android_build_vars,
+    android_readelf,
+  ]
 }
 
 # Create wrapper scripts in out/bin that takes care of setting the

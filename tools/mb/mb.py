@@ -1153,7 +1153,12 @@ class MetaBuildWrapper(object):
       self.WriteFailureAndRaise('We should not be isolating %s.' % target,
                                 output_path=None)
 
-    if test_type == 'fuzzer':
+    if test_type == 'generated_script':
+      cmdline = [
+          '../../testing/test_env.py',
+          isolate_map[target]['script'],
+      ]
+    elif test_type == 'fuzzer':
       cmdline = [
         '../../testing/test_env.py',
         '../../tools/code_coverage/run_fuzz_target.py',
@@ -1212,11 +1217,6 @@ class MetaBuildWrapper(object):
       cmdline += [
           '../../testing/test_env.py',
           '../../' + self.ToSrcRelPath(isolate_map[target]['script'])
-      ]
-    elif test_type == 'generated_script':
-      cmdline = [
-          '../../testing/test_env.py',
-          isolate_map[target]['script'],
       ]
     elif test_type in ('raw', 'additional_compile_target'):
       cmdline = [

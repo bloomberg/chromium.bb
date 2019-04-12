@@ -614,13 +614,9 @@ def Unzip(zip_file, filename=None):
 
 def _ConfigOutDirAndToolsPrefix(out_dir):
   if out_dir:
-    constants.SetOutputDirectory(os.path.abspath(out_dir))
+    constants.SetOutputDirectory(out_dir)
   else:
-    try:
-      out_dir = constants.GetOutDirectory()
-      devil_chromium.Initialize()
-    except EnvironmentError:
-      pass
+    out_dir = constants.GetOutDirectory()
   if out_dir:
     build_vars = build_utils.ReadBuildVars(
         os.path.join(out_dir, "build_vars.txt"))
@@ -704,6 +700,7 @@ def main():
   argparser.add_argument(
       '--chromium-output-directory',
       dest='out_dir',
+      type=os.path.realpath,
       help='Location of the build artifacts.')
   argparser.add_argument(
       '--chartjson',
@@ -745,6 +742,8 @@ def main():
 
   argparser.add_argument('input', help='Path to .apk or .apks file to measure.')
   args = argparser.parse_args()
+
+  devil_chromium.Initialize(output_directory=args.out_dir)
 
   # TODO(bsheedy): Remove this once uses of --chartjson have been removed.
   if args.chartjson:
