@@ -448,8 +448,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void QueueSyntheticGestureCompleteImmediately(
       std::unique_ptr<SyntheticGesture> synthetic_gesture);
 
-  void CancelUpdateTextDirection();
-
   // Update the composition node of the renderer (or WebKit).
   // WebKit has a special node (a composition node) for input method to change
   // its text without affecting any other DOM nodes. When the input method
@@ -1061,11 +1059,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Set when we update the text direction of the selected input element.
   bool text_direction_updated_ = false;
   blink::WebTextDirection text_direction_ = blink::kWebTextDirectionLeftToRight;
-
-  // Set when we cancel updating the text direction.
-  // This flag also ignores succeeding update requests until we call
-  // NotifyTextDirection().
-  bool text_direction_canceled_ = false;
 
   // Indicates if Char and KeyUp events should be suppressed or not. Usually all
   // events are sent to the renderer directly in sequence. However, if a
