@@ -765,7 +765,7 @@ LayerTreeHostImpl::EventListenerTypeForTouchStartOrMoveAt(
         gfx::PointF(planar_point.x(), planar_point.y());
     const auto& region = layer_impl_with_touch_handler->touch_action_region();
     gfx::Point point = gfx::ToRoundedPoint(hit_test_point_in_layer_space);
-    *out_touch_action = region.GetWhiteListedTouchAction(point);
+    *out_touch_action = region.GetAllowedTouchAction(point);
   }
 
   if (!CurrentlyScrollingNode())
