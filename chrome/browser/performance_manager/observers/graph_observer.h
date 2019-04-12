@@ -66,6 +66,7 @@ class GraphObserver {
   }
 
   // FrameNodeImpl notifications.
+  virtual void OnIsCurrentChanged(FrameNodeImpl* frame_node) {}
   virtual void OnNetworkAlmostIdleChanged(FrameNodeImpl* frame_node) {}
 
   // PageNodeImpl notifications.

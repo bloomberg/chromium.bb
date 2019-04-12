@@ -120,10 +120,12 @@ void PerformanceManagerTabHelper::RenderFrameCreated(
       process_node, page_node_.get(), parent_frame_node,
       render_frame_host->GetFrameTreeNodeId(),
       base::BindOnce(
-          [](const GURL& url, FrameNodeImpl* frame_node) {
+          [](const GURL& url, bool is_current, FrameNodeImpl* frame_node) {
             frame_node->set_url(url);
+            frame_node->SetIsCurrent(is_current);
           },
-          render_frame_host->GetLastCommittedURL()));
+          render_frame_host->GetLastCommittedURL(),
+          render_frame_host->IsCurrent()));
 
   frames_[render_frame_host] = std::move(frame);
 }
@@ -135,6 +137,56 @@ void PerformanceManagerTabHelper::RenderFrameDeleted(
 
   performance_manager_->DeleteNode(std::move(it->second));
   frames_.erase(it);
+}
+
+void PerformanceManagerTabHelper::RenderFrameHostChanged(
+    content::RenderFrameHost* old_host,
+    content::RenderFrameHost* new_host) {
+  // |old_host| is null when a new frame tree position is being created and a
+  // new frame is its first occupant.
+  FrameNodeImpl* old_frame = nullptr;
+  if (old_host) {
+    auto it = frames_.find(old_host);
+    if (it != frames_.end()) {
+      // This can be received for a frame that hasn't yet been created. We can
+      // safely ignore this. It would be nice to track those frames too, but
+      // since they're not yet "created" we'd have no guarantee of seeing a
+      // corresponding delete and the frames can be leaked.
+      old_frame = it->second.get();
+    }
+  }
+
+  // It's entirely possible that this is the first time we're seeing this frame.
+  // We'll eventually see a corresponding RenderFrameCreated if the frame ends
+  // up actually being needed, so we can ignore it until that time. Artificially
+  // creating the frame causes problems because we aren't guaranteed to see a
+  // subsequent RenderFrameCreated call, meaning we won't see a
+  // RenderFrameDeleted, and the frame node will be leaked until process tear
+  // down.
+  DCHECK(new_host);
+  FrameNodeImpl* new_frame = nullptr;
+  auto it = frames_.find(new_host);
+  if (it != frames_.end())
+    new_frame = it->second.get();
+
+  // If neither frame could be looked up there's nothing to do.
+  if (!old_frame && !new_frame)
+    return;
+
+  // Perform the swap in the graph.
+  performance_manager_->task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(
+                     [](FrameNodeImpl* old_frame, FrameNodeImpl* new_frame) {
+                       if (old_frame) {
+                         DCHECK(old_frame->is_current());
+                         old_frame->SetIsCurrent(false);
+                       }
+                       if (new_frame) {
+                         DCHECK(!new_frame->is_current());
+                         new_frame->SetIsCurrent(true);
+                       }
+                     },
+                     base::Unretained(old_frame), base::Unretained(new_frame)));
 }
 
 void PerformanceManagerTabHelper::DidStartLoading() {
