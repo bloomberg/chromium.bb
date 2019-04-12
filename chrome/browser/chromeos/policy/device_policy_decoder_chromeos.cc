@@ -1270,6 +1270,21 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
                     std::make_unique<base::Value>(container.source()), nullptr);
     }
   }
+
+  if (policy.has_device_advanced_battery_charge_mode()) {
+    const em::DeviceAdvancedBatteryChargeModeProto& container(
+        policy.device_advanced_battery_charge_mode());
+    if (container.has_enabled()) {
+      policies->Set(
+          key::kDeviceAdvancedBatteryChargeModeEnabled, POLICY_LEVEL_MANDATORY,
+          POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+          std::make_unique<base::Value>(container.enabled()), nullptr);
+    }
+    if (container.has_day_configs()) {
+      SetJsonDevicePolicy(key::kDeviceAdvancedBatteryChargeModeDayConfig,
+                          container.day_configs(), policies);
+    }
+  }
 }
 
 }  // namespace

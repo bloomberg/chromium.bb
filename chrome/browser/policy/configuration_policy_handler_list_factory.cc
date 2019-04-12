@@ -743,6 +743,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kSamlInSessionPasswordChangeEnabled,
     prefs::kSamlInSessionPasswordChangeEnabled,
     base::Value::Type::BOOLEAN },
+ {  key::kDeviceAdvancedBatteryChargeModeEnabled,
+    ash::prefs::kDeviceAdvancedBatteryChargeModeEnabled,
+    base::Value::Type::BOOLEAN },
+  { key::kDeviceAdvancedBatteryChargeModeDayConfig,
+    ash::prefs::kDeviceAdvancedBatteryChargeModeDayConfig,
+    base::Value::Type::DICTIONARY },
 #endif  // defined(OS_CHROMEOS)
 
 // Metrics reporting is controlled by a platform specific policy for ChromeOS
