@@ -206,7 +206,7 @@ void NGBoxFragmentPainter::RecordHitTestData(const PaintInfo& paint_info,
   HitTestDisplayItem::Record(
       paint_info.context, box_fragment_,
       HitTestRect(border_box.ToLayoutRect(),
-                  physical_fragment.EffectiveWhitelistedTouchAction()));
+                  physical_fragment.EffectiveAllowedTouchAction()));
 }
 
 void NGBoxFragmentPainter::RecordHitTestDataForLine(
@@ -218,7 +218,7 @@ void NGBoxFragmentPainter::RecordHitTestDataForLine(
   HitTestDisplayItem::Record(
       paint_info.context, line,
       HitTestRect(border_box.ToLayoutRect(),
-                  PhysicalFragment().EffectiveWhitelistedTouchAction()));
+                  PhysicalFragment().EffectiveAllowedTouchAction()));
 }
 
 void NGBoxFragmentPainter::PaintObject(

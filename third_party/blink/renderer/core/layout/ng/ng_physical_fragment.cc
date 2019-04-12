@@ -412,9 +412,9 @@ const Vector<NGInlineItem>& NGPhysicalFragment::InlineItemsOfContainingBlock()
   return To<NGInlineNode>(node).ItemsData(false).items;
 }
 
-TouchAction NGPhysicalFragment::EffectiveWhitelistedTouchAction() const {
+TouchAction NGPhysicalFragment::EffectiveAllowedTouchAction() const {
   DCHECK(GetLayoutObject());
-  return GetLayoutObject()->EffectiveWhitelistedTouchAction();
+  return GetLayoutObject()->EffectiveAllowedTouchAction();
 }
 
 UBiDiLevel NGPhysicalFragment::BidiLevel() const {

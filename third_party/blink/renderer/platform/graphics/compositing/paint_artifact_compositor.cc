@@ -325,7 +325,7 @@ void PaintArtifactCompositor::UpdateTouchActionRects(
       layout_rect.MoveBy(
           LayoutPoint(FloatPoint(-layer_offset.x(), -layer_offset.y())));
       touch_action_rects_in_layer_space.emplace_back(
-          HitTestRect(layout_rect, touch_action_rect.whitelisted_touch_action));
+          HitTestRect(layout_rect, touch_action_rect.allowed_touch_action));
     }
   }
   layer->SetTouchActionRegion(

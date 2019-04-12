@@ -17,7 +17,7 @@ cc::TouchActionRegion HitTestRect::BuildRegion(
   base::flat_map<TouchAction, cc::Region> region_map;
   region_map.reserve(hit_test_rects.size());
   for (const HitTestRect& hit_test_rect : hit_test_rects) {
-    const TouchAction& action = hit_test_rect.whitelisted_touch_action;
+    const TouchAction& action = hit_test_rect.allowed_touch_action;
     const LayoutRect& rect = hit_test_rect.rect;
     region_map[action].Union(EnclosingIntRect(rect));
   }
@@ -36,7 +36,7 @@ LayoutRect HitTestRect::GetBounds(const Vector<HitTestRect>& hit_test_rects) {
 }
 
 String HitTestRect::ToString() const {
-  // TODO(pdr): Print the value of |whitelisted_touch_action|.
+  // TODO(pdr): Print the value of |allowed_touch_action|.
   return rect.ToString();
 }
 

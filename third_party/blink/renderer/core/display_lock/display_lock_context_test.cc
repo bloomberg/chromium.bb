@@ -1278,7 +1278,7 @@ TEST_F(DisplayLockContextTest, ElementInTemplate) {
             MakeRGB(0, 0, 255));
 }
 
-TEST_F(DisplayLockContextTest, AncestorWhitelistedTouchAction) {
+TEST_F(DisplayLockContextTest, AncestorAllowedTouchAction) {
   SetHtmlInnerHTML(R"HTML(
     <style>
     #locked {
@@ -1319,22 +1319,19 @@ TEST_F(DisplayLockContextTest, AncestorWhitelistedTouchAction) {
   auto* locked_object = locked_element->GetLayoutObject();
   auto* lockedchild_object = lockedchild_element->GetLayoutObject();
 
-  EXPECT_FALSE(ancestor_object->EffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(handler_object->EffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(descendant_object->EffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(locked_object->EffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(lockedchild_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(ancestor_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(handler_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(descendant_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(locked_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(lockedchild_object->EffectiveAllowedTouchActionChanged());
 
+  EXPECT_FALSE(ancestor_object->DescendantEffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(handler_object->DescendantEffectiveAllowedTouchActionChanged());
   EXPECT_FALSE(
-      ancestor_object->DescendantEffectiveWhitelistedTouchActionChanged());
+      descendant_object->DescendantEffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(locked_object->DescendantEffectiveAllowedTouchActionChanged());
   EXPECT_FALSE(
-      handler_object->DescendantEffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(
-      descendant_object->DescendantEffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(
-      locked_object->DescendantEffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(
-      lockedchild_object->DescendantEffectiveWhitelistedTouchActionChanged());
+      lockedchild_object->DescendantEffectiveAllowedTouchActionChanged());
 
   EXPECT_FALSE(ancestor_object->InsideBlockingTouchEventHandler());
   EXPECT_FALSE(handler_object->InsideBlockingTouchEventHandler());
@@ -1345,40 +1342,34 @@ TEST_F(DisplayLockContextTest, AncestorWhitelistedTouchAction) {
   auto* callback = MakeGarbageCollected<DisplayLockEmptyEventListener>();
   handler_element->addEventListener(event_type_names::kTouchstart, callback);
 
-  EXPECT_FALSE(ancestor_object->EffectiveWhitelistedTouchActionChanged());
-  EXPECT_TRUE(handler_object->EffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(descendant_object->EffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(locked_object->EffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(lockedchild_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(ancestor_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_TRUE(handler_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(descendant_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(locked_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(lockedchild_object->EffectiveAllowedTouchActionChanged());
 
-  EXPECT_TRUE(
-      ancestor_object->DescendantEffectiveWhitelistedTouchActionChanged());
+  EXPECT_TRUE(ancestor_object->DescendantEffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(handler_object->DescendantEffectiveAllowedTouchActionChanged());
   EXPECT_FALSE(
-      handler_object->DescendantEffectiveWhitelistedTouchActionChanged());
+      descendant_object->DescendantEffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(locked_object->DescendantEffectiveAllowedTouchActionChanged());
   EXPECT_FALSE(
-      descendant_object->DescendantEffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(
-      locked_object->DescendantEffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(
-      lockedchild_object->DescendantEffectiveWhitelistedTouchActionChanged());
+      lockedchild_object->DescendantEffectiveAllowedTouchActionChanged());
 
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_FALSE(ancestor_object->EffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(handler_object->EffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(descendant_object->EffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(locked_object->EffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(lockedchild_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(ancestor_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(handler_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(descendant_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(locked_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(lockedchild_object->EffectiveAllowedTouchActionChanged());
 
+  EXPECT_FALSE(ancestor_object->DescendantEffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(handler_object->DescendantEffectiveAllowedTouchActionChanged());
   EXPECT_FALSE(
-      ancestor_object->DescendantEffectiveWhitelistedTouchActionChanged());
+      descendant_object->DescendantEffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(locked_object->DescendantEffectiveAllowedTouchActionChanged());
   EXPECT_FALSE(
-      handler_object->DescendantEffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(
-      descendant_object->DescendantEffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(
-      locked_object->DescendantEffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(
-      lockedchild_object->DescendantEffectiveWhitelistedTouchActionChanged());
+      lockedchild_object->DescendantEffectiveAllowedTouchActionChanged());
 
   EXPECT_FALSE(ancestor_object->InsideBlockingTouchEventHandler());
   EXPECT_TRUE(handler_object->InsideBlockingTouchEventHandler());
@@ -1391,22 +1382,19 @@ TEST_F(DisplayLockContextTest, AncestorWhitelistedTouchAction) {
     locked_element->GetDisplayLockContext()->commit(script_state);
   }
 
-  EXPECT_FALSE(ancestor_object->EffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(handler_object->EffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(descendant_object->EffectiveWhitelistedTouchActionChanged());
-  EXPECT_TRUE(locked_object->EffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(lockedchild_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(ancestor_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(handler_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(descendant_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_TRUE(locked_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(lockedchild_object->EffectiveAllowedTouchActionChanged());
 
+  EXPECT_TRUE(ancestor_object->DescendantEffectiveAllowedTouchActionChanged());
+  EXPECT_TRUE(handler_object->DescendantEffectiveAllowedTouchActionChanged());
   EXPECT_TRUE(
-      ancestor_object->DescendantEffectiveWhitelistedTouchActionChanged());
-  EXPECT_TRUE(
-      handler_object->DescendantEffectiveWhitelistedTouchActionChanged());
-  EXPECT_TRUE(
-      descendant_object->DescendantEffectiveWhitelistedTouchActionChanged());
+      descendant_object->DescendantEffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(locked_object->DescendantEffectiveAllowedTouchActionChanged());
   EXPECT_FALSE(
-      locked_object->DescendantEffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(
-      lockedchild_object->DescendantEffectiveWhitelistedTouchActionChanged());
+      lockedchild_object->DescendantEffectiveAllowedTouchActionChanged());
 
   EXPECT_FALSE(ancestor_object->InsideBlockingTouchEventHandler());
   EXPECT_TRUE(handler_object->InsideBlockingTouchEventHandler());
@@ -1415,22 +1403,19 @@ TEST_F(DisplayLockContextTest, AncestorWhitelistedTouchAction) {
   EXPECT_FALSE(lockedchild_object->InsideBlockingTouchEventHandler());
 
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_FALSE(ancestor_object->EffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(handler_object->EffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(descendant_object->EffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(locked_object->EffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(lockedchild_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(ancestor_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(handler_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(descendant_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(locked_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(lockedchild_object->EffectiveAllowedTouchActionChanged());
 
+  EXPECT_FALSE(ancestor_object->DescendantEffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(handler_object->DescendantEffectiveAllowedTouchActionChanged());
   EXPECT_FALSE(
-      ancestor_object->DescendantEffectiveWhitelistedTouchActionChanged());
+      descendant_object->DescendantEffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(locked_object->DescendantEffectiveAllowedTouchActionChanged());
   EXPECT_FALSE(
-      handler_object->DescendantEffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(
-      descendant_object->DescendantEffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(
-      locked_object->DescendantEffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(
-      lockedchild_object->DescendantEffectiveWhitelistedTouchActionChanged());
+      lockedchild_object->DescendantEffectiveAllowedTouchActionChanged());
 
   EXPECT_FALSE(ancestor_object->InsideBlockingTouchEventHandler());
   EXPECT_TRUE(handler_object->InsideBlockingTouchEventHandler());
@@ -1439,7 +1424,7 @@ TEST_F(DisplayLockContextTest, AncestorWhitelistedTouchAction) {
   EXPECT_TRUE(lockedchild_object->InsideBlockingTouchEventHandler());
 }
 
-TEST_F(DisplayLockContextTest, DescendantWhitelistedTouchAction) {
+TEST_F(DisplayLockContextTest, DescendantAllowedTouchAction) {
   SetHtmlInnerHTML(R"HTML(
     <style>
     #locked {
@@ -1476,19 +1461,16 @@ TEST_F(DisplayLockContextTest, DescendantWhitelistedTouchAction) {
   auto* locked_object = locked_element->GetLayoutObject();
   auto* handler_object = handler_element->GetLayoutObject();
 
-  EXPECT_FALSE(ancestor_object->EffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(descendant_object->EffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(locked_object->EffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(handler_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(ancestor_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(descendant_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(locked_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(handler_object->EffectiveAllowedTouchActionChanged());
 
+  EXPECT_FALSE(ancestor_object->DescendantEffectiveAllowedTouchActionChanged());
   EXPECT_FALSE(
-      ancestor_object->DescendantEffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(
-      descendant_object->DescendantEffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(
-      locked_object->DescendantEffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(
-      handler_object->DescendantEffectiveWhitelistedTouchActionChanged());
+      descendant_object->DescendantEffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(locked_object->DescendantEffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(handler_object->DescendantEffectiveAllowedTouchActionChanged());
 
   EXPECT_FALSE(ancestor_object->InsideBlockingTouchEventHandler());
   EXPECT_FALSE(descendant_object->InsideBlockingTouchEventHandler());
@@ -1498,34 +1480,28 @@ TEST_F(DisplayLockContextTest, DescendantWhitelistedTouchAction) {
   auto* callback = MakeGarbageCollected<DisplayLockEmptyEventListener>();
   handler_element->addEventListener(event_type_names::kTouchstart, callback);
 
-  EXPECT_FALSE(ancestor_object->EffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(descendant_object->EffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(locked_object->EffectiveWhitelistedTouchActionChanged());
-  EXPECT_TRUE(handler_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(ancestor_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(descendant_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(locked_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_TRUE(handler_object->EffectiveAllowedTouchActionChanged());
 
+  EXPECT_FALSE(ancestor_object->DescendantEffectiveAllowedTouchActionChanged());
   EXPECT_FALSE(
-      ancestor_object->DescendantEffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(
-      descendant_object->DescendantEffectiveWhitelistedTouchActionChanged());
-  EXPECT_TRUE(
-      locked_object->DescendantEffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(
-      handler_object->DescendantEffectiveWhitelistedTouchActionChanged());
+      descendant_object->DescendantEffectiveAllowedTouchActionChanged());
+  EXPECT_TRUE(locked_object->DescendantEffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(handler_object->DescendantEffectiveAllowedTouchActionChanged());
 
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_FALSE(ancestor_object->EffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(descendant_object->EffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(locked_object->EffectiveWhitelistedTouchActionChanged());
-  EXPECT_TRUE(handler_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(ancestor_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(descendant_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(locked_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_TRUE(handler_object->EffectiveAllowedTouchActionChanged());
 
+  EXPECT_FALSE(ancestor_object->DescendantEffectiveAllowedTouchActionChanged());
   EXPECT_FALSE(
-      ancestor_object->DescendantEffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(
-      descendant_object->DescendantEffectiveWhitelistedTouchActionChanged());
-  EXPECT_TRUE(
-      locked_object->DescendantEffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(
-      handler_object->DescendantEffectiveWhitelistedTouchActionChanged());
+      descendant_object->DescendantEffectiveAllowedTouchActionChanged());
+  EXPECT_TRUE(locked_object->DescendantEffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(handler_object->DescendantEffectiveAllowedTouchActionChanged());
 
   EXPECT_FALSE(ancestor_object->InsideBlockingTouchEventHandler());
   EXPECT_FALSE(descendant_object->InsideBlockingTouchEventHandler());
@@ -1535,19 +1511,16 @@ TEST_F(DisplayLockContextTest, DescendantWhitelistedTouchAction) {
   // Do the same check again. For now, nothing is expected to change. However,
   // when we separate self and child layout, then some flags would be different.
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_FALSE(ancestor_object->EffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(descendant_object->EffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(locked_object->EffectiveWhitelistedTouchActionChanged());
-  EXPECT_TRUE(handler_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(ancestor_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(descendant_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(locked_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_TRUE(handler_object->EffectiveAllowedTouchActionChanged());
 
+  EXPECT_FALSE(ancestor_object->DescendantEffectiveAllowedTouchActionChanged());
   EXPECT_FALSE(
-      ancestor_object->DescendantEffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(
-      descendant_object->DescendantEffectiveWhitelistedTouchActionChanged());
-  EXPECT_TRUE(
-      locked_object->DescendantEffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(
-      handler_object->DescendantEffectiveWhitelistedTouchActionChanged());
+      descendant_object->DescendantEffectiveAllowedTouchActionChanged());
+  EXPECT_TRUE(locked_object->DescendantEffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(handler_object->DescendantEffectiveAllowedTouchActionChanged());
 
   EXPECT_FALSE(ancestor_object->InsideBlockingTouchEventHandler());
   EXPECT_FALSE(descendant_object->InsideBlockingTouchEventHandler());
@@ -1559,19 +1532,16 @@ TEST_F(DisplayLockContextTest, DescendantWhitelistedTouchAction) {
     locked_element->GetDisplayLockContext()->commit(script_state);
   }
 
-  EXPECT_FALSE(ancestor_object->EffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(descendant_object->EffectiveWhitelistedTouchActionChanged());
-  EXPECT_TRUE(locked_object->EffectiveWhitelistedTouchActionChanged());
-  EXPECT_TRUE(handler_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(ancestor_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(descendant_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_TRUE(locked_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_TRUE(handler_object->EffectiveAllowedTouchActionChanged());
 
+  EXPECT_TRUE(ancestor_object->DescendantEffectiveAllowedTouchActionChanged());
   EXPECT_TRUE(
-      ancestor_object->DescendantEffectiveWhitelistedTouchActionChanged());
-  EXPECT_TRUE(
-      descendant_object->DescendantEffectiveWhitelistedTouchActionChanged());
-  EXPECT_TRUE(
-      locked_object->DescendantEffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(
-      handler_object->DescendantEffectiveWhitelistedTouchActionChanged());
+      descendant_object->DescendantEffectiveAllowedTouchActionChanged());
+  EXPECT_TRUE(locked_object->DescendantEffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(handler_object->DescendantEffectiveAllowedTouchActionChanged());
 
   EXPECT_FALSE(ancestor_object->InsideBlockingTouchEventHandler());
   EXPECT_FALSE(descendant_object->InsideBlockingTouchEventHandler());
@@ -1579,19 +1549,16 @@ TEST_F(DisplayLockContextTest, DescendantWhitelistedTouchAction) {
   EXPECT_FALSE(handler_object->InsideBlockingTouchEventHandler());
 
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_FALSE(ancestor_object->EffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(descendant_object->EffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(locked_object->EffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(handler_object->EffectiveWhitelistedTouchActionChanged());
+  EXPECT_FALSE(ancestor_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(descendant_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(locked_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(handler_object->EffectiveAllowedTouchActionChanged());
 
+  EXPECT_FALSE(ancestor_object->DescendantEffectiveAllowedTouchActionChanged());
   EXPECT_FALSE(
-      ancestor_object->DescendantEffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(
-      descendant_object->DescendantEffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(
-      locked_object->DescendantEffectiveWhitelistedTouchActionChanged());
-  EXPECT_FALSE(
-      handler_object->DescendantEffectiveWhitelistedTouchActionChanged());
+      descendant_object->DescendantEffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(locked_object->DescendantEffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(handler_object->DescendantEffectiveAllowedTouchActionChanged());
 
   EXPECT_FALSE(ancestor_object->InsideBlockingTouchEventHandler());
   EXPECT_FALSE(descendant_object->InsideBlockingTouchEventHandler());

@@ -1998,15 +1998,15 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // |SetShouldInvalidateSelection| on all selected children.
   void InvalidateSelectedChildrenOnStyleChange();
 
-  // The whitelisted touch action is the union of the effective touch action
+  // The allowed touch action is the union of the effective touch action
   // (from style) and blocking touch event handlers.
-  TouchAction EffectiveWhitelistedTouchAction() const {
+  TouchAction EffectiveAllowedTouchAction() const {
     if (InsideBlockingTouchEventHandler())
       return TouchAction::kTouchActionNone;
     return StyleRef().GetEffectiveTouchAction();
   }
-  bool HasEffectiveWhitelistedTouchAction() const {
-    return EffectiveWhitelistedTouchAction() != TouchAction::kTouchActionAuto;
+  bool HasEffectiveAllowedTouchAction() const {
+    return EffectiveAllowedTouchAction() != TouchAction::kTouchActionAuto;
   }
 
   // Whether this object's Node has a blocking touch event handler on itself
@@ -2014,15 +2014,15 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool InsideBlockingTouchEventHandler() const {
     return bitfields_.InsideBlockingTouchEventHandler();
   }
-  // Mark this object as having a |EffectiveWhitelistedTouchAction| changed, and
+  // Mark this object as having a |EffectiveAllowedTouchAction| changed, and
   // mark all ancestors as having a descendant that changed. This will cause a
-  // PrePaint tree walk to update effective whitelisted touch action.
-  void MarkEffectiveWhitelistedTouchActionChanged();
-  bool EffectiveWhitelistedTouchActionChanged() const {
-    return bitfields_.EffectiveWhitelistedTouchActionChanged();
+  // PrePaint tree walk to update effective allowed touch action.
+  void MarkEffectiveAllowedTouchActionChanged();
+  bool EffectiveAllowedTouchActionChanged() const {
+    return bitfields_.EffectiveAllowedTouchActionChanged();
   }
-  bool DescendantEffectiveWhitelistedTouchActionChanged() const {
-    return bitfields_.DescendantEffectiveWhitelistedTouchActionChanged();
+  bool DescendantEffectiveAllowedTouchActionChanged() const {
+    return bitfields_.DescendantEffectiveAllowedTouchActionChanged();
   }
   void UpdateInsideBlockingTouchEventHandler(bool inside) {
     bitfields_.SetInsideBlockingTouchEventHandler(inside);
@@ -2043,10 +2043,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       layout_object_.bitfields_.SetNeedsPaintPropertyUpdate(false);
       layout_object_.bitfields_.ResetSubtreePaintPropertyUpdateReasons();
       layout_object_.bitfields_.SetDescendantNeedsPaintPropertyUpdate(false);
-      layout_object_.bitfields_.SetEffectiveWhitelistedTouchActionChanged(
+      layout_object_.bitfields_.SetEffectiveAllowedTouchActionChanged(false);
+      layout_object_.bitfields_.SetDescendantEffectiveAllowedTouchActionChanged(
           false);
-      layout_object_.bitfields_
-          .SetDescendantEffectiveWhitelistedTouchActionChanged(false);
     }
     void SetShouldCheckForPaintInvalidation() {
       layout_object_.SetShouldCheckForPaintInvalidation();
@@ -2068,8 +2067,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     void EnsureIsReadyForPaintInvalidation() {
       layout_object_.EnsureIsReadyForPaintInvalidation();
     }
-    void MarkEffectiveWhitelistedTouchActionChanged() {
-      layout_object_.MarkEffectiveWhitelistedTouchActionChanged();
+    void MarkEffectiveAllowedTouchActionChanged() {
+      layout_object_.MarkEffectiveAllowedTouchActionChanged();
     }
 
     // The following setters store the current values as calculated during the
@@ -2657,8 +2656,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           previous_outline_may_be_affected_by_descendants_(false),
           is_truncated_(false),
           inside_blocking_touch_event_handler_(false),
-          effective_whitelisted_touch_action_changed_(true),
-          descendant_effective_whitelisted_touch_action_changed_(false),
+          effective_allowed_touch_action_changed_(true),
+          descendant_effective_allowed_touch_action_changed_(false),
           is_effective_root_scroller_(false),
           is_global_root_scroller_(false),
           pending_update_first_line_image_observers_(false),
@@ -2892,18 +2891,18 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     ADD_BOOLEAN_BITFIELD(inside_blocking_touch_event_handler_,
                          InsideBlockingTouchEventHandler);
 
-    // Set when |EffectiveWhitelistedTouchAction| changes (i.e., blocking touch
+    // Set when |EffectiveAllowedTouchAction| changes (i.e., blocking touch
     // event handlers change or effective touch action style changes). This only
     // needs to be set on the object that changes as the PrePaint walk will
     // ensure descendants are updated.
-    ADD_BOOLEAN_BITFIELD(effective_whitelisted_touch_action_changed_,
-                         EffectiveWhitelistedTouchActionChanged);
+    ADD_BOOLEAN_BITFIELD(effective_allowed_touch_action_changed_,
+                         EffectiveAllowedTouchActionChanged);
 
-    // Set when a descendant's |EffectiveWhitelistedTouchAction| changes. This
+    // Set when a descendant's |EffectiveAllowedTouchAction| changes. This
     // is used to ensure the PrePaint tree walk processes objects with
-    // |effective_whitelisted_touch_action_changed_|.
-    ADD_BOOLEAN_BITFIELD(descendant_effective_whitelisted_touch_action_changed_,
-                         DescendantEffectiveWhitelistedTouchActionChanged);
+    // |effective_allowed_touch_action_changed_|.
+    ADD_BOOLEAN_BITFIELD(descendant_effective_allowed_touch_action_changed_,
+                         DescendantEffectiveAllowedTouchActionChanged);
 
     // See page/scrolling/README.md for an explanation of root scroller and how
     // it works.

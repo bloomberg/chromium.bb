@@ -47,8 +47,8 @@ class CORE_EXPORT PrePaintTreeWalk {
               parent_context.ancestor_overflow_paint_layer),
           inside_blocking_touch_event_handler(
               parent_context.inside_blocking_touch_event_handler),
-          effective_whitelisted_touch_action_changed(
-              parent_context.effective_whitelisted_touch_action_changed),
+          effective_allowed_touch_action_changed(
+              parent_context.effective_allowed_touch_action_changed),
           clip_changed(parent_context.clip_changed) {
       if (needs_tree_builder_context || DCHECK_IS_ON()) {
         DCHECK(parent_context.tree_builder_context);
@@ -72,9 +72,9 @@ class CORE_EXPORT PrePaintTreeWalk {
     // Whether there is a blocking touch event handler on any ancestor.
     bool inside_blocking_touch_event_handler = false;
 
-    // When the effective whitelisted touch action changes on an ancestor, the
+    // When the effective allowed touch action changes on an ancestor, the
     // entire subtree may need to update.
-    bool effective_whitelisted_touch_action_changed = false;
+    bool effective_allowed_touch_action_changed = false;
 
     // This is set to true once we see tree_builder_context->clip_changed is
     // true. It will be propagated to descendant contexts even if we don't
@@ -111,14 +111,13 @@ class CORE_EXPORT PrePaintTreeWalk {
   void UpdateAuxiliaryObjectProperties(const LayoutObject&,
                                        PrePaintTreeWalkContext&);
 
-  bool NeedsEffectiveWhitelistedTouchActionUpdate(
-      const LayoutObject&,
-      PrePaintTreeWalkContext&) const;
+  bool NeedsEffectiveAllowedTouchActionUpdate(const LayoutObject&,
+                                              PrePaintTreeWalkContext&) const;
   // Updates |LayoutObject::InsideBlockingTouchEventHandler|. Also ensures
-  // |PrePaintTreeWalkContext.effective_whitelisted_touch_action_changed| is set
+  // |PrePaintTreeWalkContext.effective_allowed_touch_action_changed| is set
   // which will ensure the subtree is updated too.
-  void UpdateEffectiveWhitelistedTouchAction(const LayoutObject&,
-                                             PrePaintTreeWalkContext&);
+  void UpdateEffectiveAllowedTouchAction(const LayoutObject&,
+                                         PrePaintTreeWalkContext&);
   void InvalidatePaintForHitTesting(const LayoutObject&,
                                     PrePaintTreeWalkContext&);
 

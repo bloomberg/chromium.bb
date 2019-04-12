@@ -342,7 +342,7 @@ void InlineFlowBoxPainter::RecordHitTestData(const PaintInfo& paint_info,
   if (layout_object->StyleRef().Visibility() != EVisibility::kVisible)
     return;
 
-  auto touch_action = layout_object->EffectiveWhitelistedTouchAction();
+  auto touch_action = layout_object->EffectiveAllowedTouchAction();
   if (touch_action == TouchAction::kTouchActionAuto)
     return;
 

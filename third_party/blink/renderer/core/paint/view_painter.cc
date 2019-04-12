@@ -36,8 +36,7 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
   if (layout_view_.StyleRef().Visibility() != EVisibility::kVisible)
     return;
 
-  bool has_touch_action_rect =
-      layout_view_.HasEffectiveWhitelistedTouchAction();
+  bool has_touch_action_rect = layout_view_.HasEffectiveAllowedTouchAction();
   if (!layout_view_.HasBoxDecorationBackground() && !has_touch_action_rect)
     return;
 

@@ -2395,7 +2395,7 @@ void LayoutObject::StyleWillChange(StyleDifference diff,
       registry.DidRemoveEventHandler(*GetNode(),
                                      EventHandlerRegistry::kTouchAction);
     }
-    MarkEffectiveWhitelistedTouchActionChanged();
+    MarkEffectiveAllowedTouchActionChanged();
   }
 }
 
@@ -4130,19 +4130,19 @@ void LayoutObject::InvalidateSelectedChildrenOnStyleChange() {
   }
 }
 
-void LayoutObject::MarkEffectiveWhitelistedTouchActionChanged() {
-  bitfields_.SetEffectiveWhitelistedTouchActionChanged(true);
+void LayoutObject::MarkEffectiveAllowedTouchActionChanged() {
+  bitfields_.SetEffectiveAllowedTouchActionChanged(true);
   // If we're locked, mark our descendants as needing this change. This is used
-  // a signal to ensure we mark the element as needing effective whitelisted
+  // a signal to ensure we mark the element as needing effective allowed
   // touch action recalculation when the element becomes unlocked.
   if (PrePaintBlockedByDisplayLock()) {
-    bitfields_.SetDescendantEffectiveWhitelistedTouchActionChanged(true);
+    bitfields_.SetDescendantEffectiveAllowedTouchActionChanged(true);
     return;
   }
 
   LayoutObject* obj = ParentCrossingFrames();
-  while (obj && !obj->DescendantEffectiveWhitelistedTouchActionChanged()) {
-    obj->bitfields_.SetDescendantEffectiveWhitelistedTouchActionChanged(true);
+  while (obj && !obj->DescendantEffectiveAllowedTouchActionChanged()) {
+    obj->bitfields_.SetDescendantEffectiveAllowedTouchActionChanged(true);
     if (obj->PrePaintBlockedByDisplayLock())
       break;
 

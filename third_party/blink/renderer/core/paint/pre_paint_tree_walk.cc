@@ -141,12 +141,12 @@ void PrePaintTreeWalk::Walk(LocalFrameView& frame_view) {
   context_storage_.pop_back();
 }
 
-bool PrePaintTreeWalk::NeedsEffectiveWhitelistedTouchActionUpdate(
+bool PrePaintTreeWalk::NeedsEffectiveAllowedTouchActionUpdate(
     const LayoutObject& object,
     PrePaintTreeWalk::PrePaintTreeWalkContext& context) const {
-  return context.effective_whitelisted_touch_action_changed ||
-         object.EffectiveWhitelistedTouchActionChanged() ||
-         object.DescendantEffectiveWhitelistedTouchActionChanged();
+  return context.effective_allowed_touch_action_changed ||
+         object.EffectiveAllowedTouchActionChanged() ||
+         object.DescendantEffectiveAllowedTouchActionChanged();
 }
 
 namespace {
@@ -182,13 +182,13 @@ bool HasBlockingTouchEventHandler(const LayoutObject& object) {
 }
 }  // namespace
 
-void PrePaintTreeWalk::UpdateEffectiveWhitelistedTouchAction(
+void PrePaintTreeWalk::UpdateEffectiveAllowedTouchAction(
     const LayoutObject& object,
     PrePaintTreeWalk::PrePaintTreeWalkContext& context) {
-  if (object.EffectiveWhitelistedTouchActionChanged())
-    context.effective_whitelisted_touch_action_changed = true;
+  if (object.EffectiveAllowedTouchActionChanged())
+    context.effective_allowed_touch_action_changed = true;
 
-  if (context.effective_whitelisted_touch_action_changed) {
+  if (context.effective_allowed_touch_action_changed) {
     object.GetMutableForPainting().UpdateInsideBlockingTouchEventHandler(
         context.inside_blocking_touch_event_handler ||
         HasBlockingTouchEventHandler(object));
@@ -205,7 +205,7 @@ void PrePaintTreeWalk::InvalidatePaintForHitTesting(
       PaintInvalidatorContext::kSubtreeNoInvalidation)
     return;
 
-  if (!context.effective_whitelisted_touch_action_changed)
+  if (!context.effective_allowed_touch_action_changed)
     return;
 
   context.paint_invalidator_context.painting_layer->SetNeedsRepaint();
@@ -256,15 +256,14 @@ bool PrePaintTreeWalk::NeedsTreeBuilderContextUpdate(
 
 bool PrePaintTreeWalk::ObjectRequiresPrePaint(const LayoutObject& object) {
   return object.ShouldCheckForPaintInvalidation() ||
-         object.EffectiveWhitelistedTouchActionChanged() ||
-         object.DescendantEffectiveWhitelistedTouchActionChanged();
+         object.EffectiveAllowedTouchActionChanged() ||
+         object.DescendantEffectiveAllowedTouchActionChanged();
 }
 
 bool PrePaintTreeWalk::ContextRequiresPrePaint(
     const PrePaintTreeWalkContext& context) {
   return context.paint_invalidator_context.NeedsSubtreeWalk() ||
-         context.effective_whitelisted_touch_action_changed ||
-         context.clip_changed;
+         context.effective_allowed_touch_action_changed || context.clip_changed;
 }
 
 bool PrePaintTreeWalk::ObjectRequiresTreeBuilderContext(
@@ -334,8 +333,8 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
   }
 
   // This must happen before paint invalidation because background painting
-  // depends on the effective whitelisted touch action.
-  UpdateEffectiveWhitelistedTouchAction(object, context);
+  // depends on the effective allowed touch action.
+  UpdateEffectiveAllowedTouchAction(object, context);
 
   if (paint_invalidator_.InvalidatePaint(
           object, base::OptionalOrNullptr(context.tree_builder_context),
@@ -415,14 +414,14 @@ void PrePaintTreeWalk::Walk(const LayoutObject& object) {
     // same bits on the parent context.
     if (ContextRequiresTreeBuilderContext(parent_context(), object) ||
         ContextRequiresPrePaint(parent_context())) {
-      // Note that effective whitelisted touch action changed is special in that
+      // Note that effective allowed touch action changed is special in that
       // it requires us to specifically recalculate this value on each subtree
       // element. Other flags simply need a subtree walk. Some consideration
       // needs to be given to |clip_changed| which ensures that we repaint every
       // layer, but for the purposes of PrePaint, this flag is just forcing a
       // subtree walk.
       object.GetDisplayLockContext()->SetNeedsPrePaintSubtreeWalk(
-          parent_context().effective_whitelisted_touch_action_changed);
+          parent_context().effective_allowed_touch_action_changed);
     }
     return;
   }

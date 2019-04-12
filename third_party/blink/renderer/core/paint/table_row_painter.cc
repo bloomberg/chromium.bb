@@ -79,7 +79,7 @@ void TableRowPainter::RecordHitTestData(const PaintInfo& paint_info,
   if (layout_table_row_.StyleRef().Visibility() != EVisibility::kVisible)
     return;
 
-  auto touch_action = layout_table_row_.EffectiveWhitelistedTouchAction();
+  auto touch_action = layout_table_row_.EffectiveAllowedTouchAction();
   if (touch_action == TouchAction::kTouchActionAuto)
     return;
 

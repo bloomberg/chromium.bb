@@ -46,7 +46,7 @@ void SVGTextPainter::RecordHitTestData(const PaintInfo& paint_info) {
   if (paint_info.phase != PaintPhase::kForeground)
     return;
 
-  auto touch_action = layout_svg_text_.EffectiveWhitelistedTouchAction();
+  auto touch_action = layout_svg_text_.EffectiveAllowedTouchAction();
   if (touch_action == TouchAction::kTouchActionAuto)
     return;
 

@@ -629,10 +629,10 @@ bool DisplayLockContext::MarkAncestorsForPrePaintIfNeeded() {
     // update, then ensure to mark self as needing the update. This sets up the
     // correct flags for PrePaint to recompute the necessary values and
     // propagate the information into the subtree.
-    if (needs_effective_whitelisted_touch_action_update_ ||
-        layout_object->EffectiveWhitelistedTouchActionChanged() ||
-        layout_object->DescendantEffectiveWhitelistedTouchActionChanged()) {
-      layout_object->MarkEffectiveWhitelistedTouchActionChanged();
+    if (needs_effective_allowed_touch_action_update_ ||
+        layout_object->EffectiveAllowedTouchActionChanged() ||
+        layout_object->DescendantEffectiveAllowedTouchActionChanged()) {
+      layout_object->MarkEffectiveAllowedTouchActionChanged();
     }
     return true;
   }
@@ -670,7 +670,7 @@ bool DisplayLockContext::IsElementDirtyForPrePaint() const {
     return PrePaintTreeWalk::ObjectRequiresPrePaint(*layout_object) ||
            PrePaintTreeWalk::ObjectRequiresTreeBuilderContext(*layout_object) ||
            needs_prepaint_subtree_walk_ ||
-           needs_effective_whitelisted_touch_action_update_;
+           needs_effective_allowed_touch_action_update_;
   }
   return false;
 }
