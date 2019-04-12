@@ -2924,6 +2924,14 @@ const char kMacViewsTaskManagerName[] = "Toolkit-Views Task Manager.";
 const char kMacViewsTaskManagerDescription[] =
     "Controls whether to use the Toolkit-Views based Task Manager.";
 
+const char kMacSystemMediaPermissionsInfoUiName[] =
+    "System media permissions info UI";
+const char kMacSystemMediaPermissionsInfoUiDescription[] =
+    "In case a website is trying to use the camera/microphone, but Chrome "
+    "itself is blocked on the system level to access these, show an icon in "
+    "the Omnibox, which, when clicked, displays a bubble with information on "
+    "how to toggle Chrome's system-level media permissions.";
+
 #endif
 
 // Chrome OS -------------------------------------------------------------------

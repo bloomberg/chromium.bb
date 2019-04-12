@@ -252,6 +252,11 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kMacMaterialDesignDownloadShelf;
 #endif
 
+#if defined(OS_MACOSX)
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kMacSystemMediaPermissionsInfoUi;
+#endif
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAcknowledgeNtpOverrideOnDeactivate;

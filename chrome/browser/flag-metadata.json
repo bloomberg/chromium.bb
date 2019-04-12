@@ -2220,6 +2220,11 @@
     "expiry_milestone": 78
   },
   {
+    "name": "mac-system-media-permissions-info-ui",
+    "owners": [ "grunell", "engedy", "hkamila" ],
+    "expiry_milestone": 78
+  },
+  {
     "name": "mac-views-task-manager",
     "owners": [ "ellyjones" ],
     "expiry_milestone": 77

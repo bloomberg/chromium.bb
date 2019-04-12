@@ -34088,6 +34088,7 @@ from previous Chrome versions.
   <int value="1095061640" label="enable-prominent-url-app-flow"/>
   <int value="1096477444" label="AssistantVoiceMatch:enabled"/>
   <int value="1098823967" label="ash-enable-window-cycle-ui"/>
+  <int value="1100244809" label="MacSystemMediaPermissionsInfoUI:disabled"/>
   <int value="1104948452" label="manual-enhanced-bookmarks-optout"/>
   <int value="1105439588" label="enable-swipe-selection"/>
   <int value="1106307305" label="AutofillPrimaryInfoStyleExperiment:enabled"/>
@@ -34413,6 +34414,7 @@ from previous Chrome versions.
   <int value="1597880096" label="FocusMode:disabled"/>
   <int value="1600850069" label="MobileIdentityConsistency:disabled"/>
   <int value="1600926040" label="TranslateCompactUI:enabled"/>
+  <int value="1605398303" label="MacSystemMediaPermissionsInfoUI:enabled"/>
   <int value="1605611615" label="enable-webrtc-srtp-aes-gcm"/>
   <int value="1611522475" label="AutofillPrimaryInfoStyleExperiment:disabled"/>
   <int value="1612206633" label="CCTModuleCustomHeader:enabled"/>
