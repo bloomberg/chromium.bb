@@ -25,6 +25,7 @@ import tempfile
 import zipfile
 from xml.etree import ElementTree
 
+
 from util import build_utils
 from util import resource_utils
 
@@ -46,6 +47,27 @@ _PNG_WEBP_BLACKLIST_PATTERN = re.compile('|'.join([
     # Daydream requires pngs for icon files.
     r'.*daydream_icon_.*\.png']))
 
+# Regular expression for package declaration in 'aapt dump resources' output.
+_RE_PACKAGE_DECLARATION = re.compile(
+    r'^Package Group ([0-9]+) id=0x([0-9a-fA-F]+)')
+
+
+def _PackageIdArgument(x):
+  """Convert a string into a package ID while checking its range.
+
+  Args:
+    x: argument string.
+  Returns:
+    the package ID as an int, or -1 in case of error.
+  """
+  try:
+    x = int(x, 0)
+    if x < 0 or x > 127:
+      x = -1
+  except ValueError:
+    x = -1
+  return x
+
 
 def _ListToDictionary(lst, separator):
   """Splits each element of the passed-in |lst| using |separator| and creates
@@ -62,10 +84,9 @@ def _ParseArgs(args):
   """
   parser, input_opts, output_opts = resource_utils.ResourceArgsParser()
 
-  input_opts.add_argument(
-      '--aapt2-path', required=True, help='Path to the Android aapt2 tool.')
   input_opts.add_argument('--android-manifest', required=True,
                           help='AndroidManifest.xml path')
+
   input_opts.add_argument(
       '--shared-resources',
       action='store_true',
@@ -78,23 +99,6 @@ def _ParseArgs(args):
       action='store_true',
       help='Same as --shared-resources, but also ensures all resource IDs are '
            'directly usable from the APK loaded as an application.')
-
-  input_opts.add_argument(
-      '--package-id',
-      help='Custom package ID for resources (instead of 0x7f). Cannot be used '
-      'with --shared-resources.')
-
-  input_opts.add_argument(
-      '--package-name-to-id-mapping',
-      help='List containing mapping from package name to package IDs that will '
-      'be assigned.')
-
-  input_opts.add_argument(
-      '--package-name',
-      help='Package name that will be used to determine package ID.')
-
-  input_opts.add_argument(
-      '--arsc-package-name', help='Package name to use for resources.arsc file')
 
   input_opts.add_argument(
       '--shared-resources-whitelist',
@@ -161,8 +165,19 @@ def _ParseArgs(args):
   input_opts.add_argument(
       '--resources-config-path', help='Path to aapt2 resources config file.')
   input_opts.add_argument(
-      '--optimized-resources-path',
-      help='Output for `aapt2 optimize` (also enables the step).')
+      '--optimize-resources',
+      default=False,
+      action='store_true',
+      help='Whether to run the `aapt2 optimize` step on the resources.')
+  input_opts.add_argument(
+      '--unoptimized-resources-path',
+      help='Path to output the intermediate apk before running '
+      '`aapt2 optimize`.')
+
+  input_opts.add_argument(
+      '--check-resources-pkg-id', type=_PackageIdArgument,
+      help='Check the package ID of the generated resources table. '
+           'Value must be integer in [0..127] range.')
 
   output_opts.add_argument('--apk-path', required=True,
                            help='Path to output (partial) apk.')
@@ -198,6 +213,11 @@ def _ParseArgs(args):
   options.resource_blacklist_exceptions = build_utils.ParseGnList(
       options.resource_blacklist_exceptions)
 
+  if options.check_resources_pkg_id is not None:
+    if options.check_resources_pkg_id < 0:
+      raise Exception(
+          'Package resource id should be integer in [0..127] range.')
+
   if options.shared_resources and options.app_as_shared_lib:
     raise Exception('Only one of --app-as-shared-lib or --shared-resources '
                     'can be used.')
@@ -209,6 +229,28 @@ def _ParseArgs(args):
         package_names_list, '=')
 
   return options
+
+
+def _ExtractPackageIdFromApk(apk_path, aapt_path):
+  """Extract the package ID of a given APK (even intermediate ones).
+
+  Args:
+    apk_path: Input apk path.
+    aapt_path: Path to aapt tool.
+  Returns:
+    An integer corresponding to the APK's package id.
+  Raises:
+    Exception if there is no resources table in the input file.
+  """
+  cmd_args = [ aapt_path, 'dump', 'resources', apk_path ]
+  output = build_utils.CheckOutput(cmd_args)
+
+  for line in output.splitlines():
+    m = _RE_PACKAGE_DECLARATION.match(line)
+    if m:
+      return int(m.group(2), 16)
+
+  raise Exception("No resources in this APK!")
 
 
 def _SortZip(original_path, sorted_path):
@@ -359,17 +401,23 @@ def _MoveImagesToNonMdpiFolders(res_root):
   return renamed_paths
 
 
-def _PackageIdFromOptions(options):
-  package_id = None
-  if options.package_id:
-    package_id = options.package_id
-  if options.package_name:
-    package_id = options.package_name_to_id_mapping.get(options.package_name)
-    if package_id is None:
-      raise Exception(
-          'Package name %s is not present in package_name_to_id_mapping.' %
-          options.package_name)
-  return package_id
+def _GetLinkOptionsForPackage(options):
+  """Returns package-specific link options for aapt2 based on package_name and
+  package_name_to_id_mapping passed through command-line options."""
+  link_options = []
+  if not options.package_name:
+    return link_options
+
+  if options.package_name in options.package_name_to_id_mapping:
+    package_id = options.package_name_to_id_mapping[options.package_name]
+    link_options += ['--package-id', package_id]
+    if int(package_id, 16) < 0x7f:
+      link_options.append('--allow-reserved-package-id')
+  else:
+    raise Exception(
+        'Package name %s is not present in package_name_to_id_mapping.' %
+        options.package_name)
+  return link_options
 
 
 def _CreateLinkApkArgs(options):
@@ -413,11 +461,26 @@ def _CreateLinkApkArgs(options):
   if options.no_xml_namespaces:
     link_command.append('--no-xml-namespaces')
 
-  package_id = _PackageIdFromOptions(options)
-  if package_id is not None:
-    link_command += ['--package-id', package_id, '--allow-reserved-package-id']
+  link_command += _GetLinkOptionsForPackage(options)
 
   return link_command
+
+
+def _ExtractVersionFromSdk(aapt_path, sdk_path):
+  """Extract version code and name from Android SDK .jar file.
+
+  Args:
+    aapt_path: Path to 'aapt' build tool.
+    sdk_path: Path to SDK-specific android.jar file.
+  Returns:
+    A (version_code, version_name) pair of strings.
+  """
+  output = build_utils.CheckOutput(
+      [aapt_path, 'dump', 'badging', sdk_path],
+      print_stdout=False, print_stderr=False)
+  version_code = re.search(r"versionCode='(.*?)'", output).group(1)
+  version_name = re.search(r"versionName='(.*?)'", output).group(1)
+  return version_code, version_name,
 
 
 def _FixManifest(options, temp_dir):
@@ -431,13 +494,18 @@ def _FixManifest(options, temp_dir):
     options: The command-line arguments tuple.
     temp_dir: A temporary directory where the fixed manifest will be written to.
   Returns:
-    Tuple of:
-     * Manifest path within |temp_dir|.
-     * Original package_name (if different from arsc_package_name).
+    Path to the fixed manifest within |temp_dir|.
   """
+  debug_manifest_path = os.path.join(temp_dir, 'AndroidManifest.xml')
+  _ANDROID_NAMESPACE = 'http://schemas.android.com/apk/res/android'
+  _TOOLS_NAMESPACE = 'http://schemas.android.com/tools'
+  ElementTree.register_namespace('android', _ANDROID_NAMESPACE)
+  ElementTree.register_namespace('tools', _TOOLS_NAMESPACE)
+  original_manifest = ElementTree.parse(options.android_manifest)
+
   def maybe_extract_version(j):
     try:
-      return resource_utils.ExtractBinaryManifestValues(options.aapt2_path, j)
+      return _ExtractVersionFromSdk(options.aapt_path, j)
     except build_utils.CalledProcessError:
       return None
 
@@ -454,27 +522,26 @@ def _FixManifest(options, temp_dir):
     raise Exception(
         'Found multiple android SDK jars among candidates: %s'
             % ', '.join(android_sdk_jars))
-  version_code, version_name = successful_extractions.pop()[:2]
+  version_code, version_name = successful_extractions.pop()
 
-  debug_manifest_path = os.path.join(temp_dir, 'AndroidManifest.xml')
-  doc, manifest_node, app_node = resource_utils.ParseAndroidManifest(
-      options.android_manifest)
+  # ElementTree.find does not work if the required tag is the root.
+  if original_manifest.getroot().tag == 'manifest':
+    manifest_node = original_manifest.getroot()
+  else:
+    manifest_node = original_manifest.find('manifest')
 
   manifest_node.set('platformBuildVersionCode', version_code)
   manifest_node.set('platformBuildVersionName', version_name)
 
-  orig_package = manifest_node.get('package')
-  if options.arsc_package_name:
-    manifest_node.set('package', options.arsc_package_name)
-
   if options.debuggable:
-    app_node.set('{%s}%s' % (resource_utils.ANDROID_NAMESPACE, 'debuggable'),
-                 'true')
+    app_node = original_manifest.find('application')
+    app_node.set('{%s}%s' % (_ANDROID_NAMESPACE, 'debuggable'), 'true')
 
   with open(debug_manifest_path, 'w') as debug_manifest:
-    debug_manifest.write(ElementTree.tostring(doc.getroot(), encoding='UTF-8'))
+    debug_manifest.write(ElementTree.tostring(
+        original_manifest.getroot(), encoding='UTF-8'))
 
-  return debug_manifest_path, orig_package
+  return debug_manifest_path
 
 
 def _ResourceNameFromPath(path):
@@ -698,14 +765,19 @@ def _PackageApk(options, dep_subdirs, temp_dir, gen_dir, r_txt_path):
   for directory in dep_subdirs:
     renamed_paths.update(_MoveImagesToNonMdpiFolders(directory))
 
+  if options.optimize_resources:
+    if options.unoptimized_resources_path:
+      unoptimized_apk_path = options.unoptimized_resources_path
+    else:
+      unoptimized_apk_path = os.path.join(gen_dir, 'intermediate.ap_')
+  else:
+    unoptimized_apk_path = options.apk_path
   link_command = _CreateLinkApkArgs(options)
   # TODO(digit): Is this below actually required for R.txt generation?
   link_command += ['--java', gen_dir]
 
-  fixed_manifest, orig_package = _FixManifest(options, temp_dir)
-  link_command += [
-      '--manifest', fixed_manifest, '--rename-manifest-package', orig_package
-  ]
+  fixed_manifest = _FixManifest(options, temp_dir)
+  link_command += ['--manifest', fixed_manifest]
 
   partials = _CompileDeps(options.aapt2_path, dep_subdirs, temp_dir)
   for partial in partials:
@@ -713,7 +785,7 @@ def _PackageApk(options, dep_subdirs, temp_dir, gen_dir, r_txt_path):
 
   # Creates a .zip with AndroidManifest.xml, resources.arsc, res/*
   # Also creates R.txt
-  with build_utils.AtomicOutput(options.apk_path) as unoptimized, \
+  with build_utils.AtomicOutput(unoptimized_apk_path) as unoptimized, \
       build_utils.AtomicOutput(r_txt_path) as r_txt, \
       _MaybeCreateStableIdsFile(options) as stable_ids:
     if stable_ids:
@@ -723,9 +795,10 @@ def _PackageApk(options, dep_subdirs, temp_dir, gen_dir, r_txt_path):
     build_utils.CheckOutput(
         link_command, print_stdout=False, print_stderr=False)
 
-    if options.optimized_resources_path:
-      with build_utils.AtomicOutput(options.optimized_resources_path) as opt:
-        _OptimizeApk(opt.name, options, temp_dir, unoptimized.name, r_txt.name)
+    if options.optimize_resources:
+      with build_utils.AtomicOutput(options.apk_path) as optimized:
+        _OptimizeApk(optimized.name, options, temp_dir, unoptimized.name,
+                     r_txt.name)
 
   _CreateResourceInfoFile(
       renamed_paths, options.apk_info_path, options.dependencies_res_zips)
@@ -893,16 +966,13 @@ def main(args):
     if options.srcjar_out:
       build_utils.ZipDir(options.srcjar_out, build.srcjar_dir)
 
-    # Sanity check that the created resources have the expected package ID.
-    expected_id = _PackageIdFromOptions(options)
-    if expected_id is None:
-      expected_id = '0x00' if options.shared_resources else '0x7f'
-    expected_id = int(expected_id, 16)
-    _, package_id = resource_utils.ExtractArscPackage(options.aapt2_path,
-                                                      options.apk_path)
-    if package_id != expected_id:
-      raise Exception(
-          'Invalid package ID 0x%x (expected 0x%x)' % (package_id, expected_id))
+    if options.check_resources_pkg_id is not None:
+      expected_id = options.check_resources_pkg_id
+      package_id = _ExtractPackageIdFromApk(options.apk_path,
+                                            options.aapt_path)
+      if package_id != expected_id:
+        raise Exception('Invalid package ID 0x%x (expected 0x%x)' %
+                        (package_id, expected_id))
 
   if options.depfile:
     build_utils.WriteDepfile(
