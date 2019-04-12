@@ -354,6 +354,8 @@ void OverviewSession::OnGridEmpty(OverviewGrid* grid) {
       for (const auto& grid : grid_list_)
         grid->Shutdown();
       grid_list_.clear();
+    } else {
+      MaybeCreateAndPositionNoWindowsWidget();
     }
   } else {
     for (auto iter = grid_list_.begin(); iter != grid_list_.end(); ++iter) {
@@ -866,6 +868,7 @@ void OverviewSession::OnSplitViewDividerPositionChanged() {
                               /*divider_changed=*/true));
   }
   PositionWindows(/*animate=*/false);
+  MaybeCreateAndPositionNoWindowsWidget();
 }
 
 void OverviewSession::ResetFocusRestoreWindow(bool focus) {

@@ -1101,10 +1101,8 @@ TEST_F(SplitViewControllerTest, StartDraggingDividerDuringSnapAnimation) {
   GetEventGenerator()->ReleaseLeftButton();
 }
 
-// Verifies that by long pressing on the overview button tray, split view gets
-// activated iff we have two or more windows in the mru list.
 TEST_F(SplitViewControllerTest, LongPressEntersSplitView) {
-  // Verify that with no active windows, split view does not get activated.
+  // Tests that with no active windows, split view does not get activated.
   LongPressOnOverivewButtonTray();
   EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
 
@@ -1112,13 +1110,7 @@ TEST_F(SplitViewControllerTest, LongPressEntersSplitView) {
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   wm::ActivateWindow(window1.get());
 
-  // Verify that with only one window, split view does not get activated.
-  LongPressOnOverivewButtonTray();
-  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
-
-  // Verify that with two windows, split view gets activated.
-  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
-  wm::ActivateWindow(window2.get());
+  // Tests that with split view gets activated with an active window.
   LongPressOnOverivewButtonTray();
   EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
 }
@@ -1198,17 +1190,6 @@ TEST_F(SplitViewControllerTest, LongPressEntersSplitViewWithTransientChild) {
   std::unique_ptr<aura::Window> child(
       CreateWindow(bounds, aura::client::WINDOW_TYPE_POPUP));
   ::wm::AddTransientChild(parent.get(), child.get());
-  ::wm::ActivateWindow(parent.get());
-  ::wm::ActivateWindow(child.get());
-
-  // Verify that long press on the overview button will not enter split view
-  // mode, as there needs to be two non-transient child windows.
-  LongPressOnOverivewButtonTray();
-  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
-
-  // Add a third window. Focus the transient child.
-  std::unique_ptr<aura::Window> third_window(CreateWindow(bounds));
-  ::wm::ActivateWindow(third_window.get());
   ::wm::ActivateWindow(parent.get());
   ::wm::ActivateWindow(child.get());
 
