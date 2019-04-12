@@ -63,6 +63,8 @@ class MockObserver : public PluginVmImageManager::Observer {
                     int64_t unzipping_bytes_per_sec));
   MOCK_METHOD0(OnUnzipped, void());
   MOCK_METHOD0(OnUnzippingFailed, void());
+  MOCK_METHOD0(OnRegistered, void());
+  MOCK_METHOD0(OnRegistrationFailed, void());
 };
 
 class PluginVmImageManagerTest : public testing::Test {
@@ -107,14 +109,35 @@ class PluginVmImageManagerTest : public testing::Test {
     plugin_vm_image->SetKey("hash", base::Value(hash));
   }
 
-  void ProcessImage() {
+  void ProcessImageUntilUnzipping() {
     manager_->StartDownload();
     test_browser_thread_bundle_.RunUntilIdle();
+  }
+
+  void ProcessImageUntilRegistration() {
+    ProcessImageUntilUnzipping();
+
     // Faking downloaded file for testing.
     manager_->SetDownloadedPluginVmImageArchiveForTesting(
         fake_downloaded_plugin_vm_image_archive_);
     manager_->StartUnzipping();
     test_browser_thread_bundle_.RunUntilIdle();
+  }
+
+  void ProcessImageUntilConfigured() {
+    ProcessImageUntilRegistration();
+
+    manager_->StartRegistration();
+    test_browser_thread_bundle_.RunUntilIdle();
+  }
+
+  void EnsurePluginVmImageIsRemoved() {
+    base::FilePath plugin_vm_image_unzipped =
+        profile_->GetPath()
+            .AppendASCII(kCrosvmDir)
+            .AppendASCII(kPvmDir)
+            .AppendASCII(kPluginVmImageDir);
+    EXPECT_FALSE(base::DirectoryExists(plugin_vm_image_unzipped));
   }
 
   base::FilePath CreateZipFile() {
@@ -162,6 +185,7 @@ TEST_F(PluginVmImageManagerTest, DownloadPluginVmImageParamsTest) {
   EXPECT_CALL(*observer_, OnUnzippingProgressUpdated(kContentSize, kContentSize,
                                                      testing::_));
   EXPECT_CALL(*observer_, OnUnzipped());
+  EXPECT_CALL(*observer_, OnRegistered());
 
   manager_->StartDownload();
 
@@ -180,6 +204,8 @@ TEST_F(PluginVmImageManagerTest, DownloadPluginVmImageParamsTest) {
       fake_downloaded_plugin_vm_image_archive_);
   manager_->StartUnzipping();
   test_browser_thread_bundle_.RunUntilIdle();
+  manager_->StartRegistration();
+  test_browser_thread_bundle_.RunUntilIdle();
 }
 
 TEST_F(PluginVmImageManagerTest, OnlyOneImageIsProcessedTest) {
@@ -189,6 +215,7 @@ TEST_F(PluginVmImageManagerTest, OnlyOneImageIsProcessedTest) {
   EXPECT_CALL(*observer_, OnUnzippingProgressUpdated(kContentSize, kContentSize,
                                                      testing::_));
   EXPECT_CALL(*observer_, OnUnzipped());
+  EXPECT_CALL(*observer_, OnRegistered());
 
   manager_->StartDownload();
 
@@ -199,11 +226,23 @@ TEST_F(PluginVmImageManagerTest, OnlyOneImageIsProcessedTest) {
   manager_->SetDownloadedPluginVmImageArchiveForTesting(
       fake_downloaded_plugin_vm_image_archive_);
 
+  EXPECT_TRUE(manager_->IsProcessingImage());
+
   manager_->StartUnzipping();
 
   EXPECT_TRUE(manager_->IsProcessingImage());
 
   test_browser_thread_bundle_.RunUntilIdle();
+
+  EXPECT_TRUE(manager_->IsProcessingImage());
+
+  manager_->StartRegistration();
+
+  EXPECT_TRUE(manager_->IsProcessingImage());
+
+  test_browser_thread_bundle_.RunUntilIdle();
+
+  EXPECT_FALSE(manager_->IsProcessingImage());
 }
 
 TEST_F(PluginVmImageManagerTest, CanProceedWithANewImageWhenSucceededTest) {
@@ -215,14 +254,15 @@ TEST_F(PluginVmImageManagerTest, CanProceedWithANewImageWhenSucceededTest) {
                                                      testing::_))
       .Times(2);
   EXPECT_CALL(*observer_, OnUnzipped()).Times(2);
+  EXPECT_CALL(*observer_, OnRegistered()).Times(2);
 
-  ProcessImage();
+  ProcessImageUntilConfigured();
 
   EXPECT_FALSE(manager_->IsProcessingImage());
 
   // As it is deleted after successful unzipping.
   fake_downloaded_plugin_vm_image_archive_ = CreateZipFile();
-  ProcessImage();
+  ProcessImageUntilConfigured();
 }
 
 TEST_F(PluginVmImageManagerTest, CanProceedWithANewImageWhenFailedTest) {
@@ -233,6 +273,7 @@ TEST_F(PluginVmImageManagerTest, CanProceedWithANewImageWhenFailedTest) {
   EXPECT_CALL(*observer_, OnUnzippingProgressUpdated(kContentSize, kContentSize,
                                                      testing::_));
   EXPECT_CALL(*observer_, OnUnzipped());
+  EXPECT_CALL(*observer_, OnRegistered());
 
   manager_->StartDownload();
   std::string guid = manager_->GetCurrentDownloadGuidForTesting();
@@ -241,7 +282,7 @@ TEST_F(PluginVmImageManagerTest, CanProceedWithANewImageWhenFailedTest) {
 
   EXPECT_FALSE(manager_->IsProcessingImage());
 
-  ProcessImage();
+  ProcessImageUntilConfigured();
 }
 
 TEST_F(PluginVmImageManagerTest, CancelledDownloadTest) {
@@ -262,8 +303,9 @@ TEST_F(PluginVmImageManagerTest, UnzipDownloadedImageTest) {
   EXPECT_CALL(*observer_, OnUnzippingProgressUpdated(kContentSize, kContentSize,
                                                      testing::_));
   EXPECT_CALL(*observer_, OnUnzipped());
+  EXPECT_CALL(*observer_, OnRegistered());
 
-  ProcessImage();
+  ProcessImageUntilConfigured();
 
   // Checking that all files are in place.
   base::FilePath plugin_vm_image_unzipped =
@@ -295,36 +337,49 @@ TEST_F(PluginVmImageManagerTest, UnzipNonExistingImageTest) {
   EXPECT_CALL(*observer_, OnDownloadCompleted());
   EXPECT_CALL(*observer_, OnUnzippingFailed());
 
-  manager_->StartDownload();
-  test_browser_thread_bundle_.RunUntilIdle();
+  ProcessImageUntilUnzipping();
+  // Should fail as fake downloaded file isn't set.
   manager_->StartUnzipping();
   test_browser_thread_bundle_.RunUntilIdle();
 
-  // Checking that directory with PluginVm image has been deleted.
-  base::FilePath plugin_vm_image_unzipped = profile_->GetPath()
-                                                .AppendASCII(kCrosvmDir)
-                                                .AppendASCII(kPvmDir)
-                                                .AppendASCII(kPluginVmImageDir);
-  EXPECT_FALSE(base::DirectoryExists(plugin_vm_image_unzipped));
+  EnsurePluginVmImageIsRemoved();
 }
 
 TEST_F(PluginVmImageManagerTest, CancelUnzippingTest) {
+  EXPECT_CALL(*observer_, OnDownloadCompleted());
+  EXPECT_CALL(*observer_, OnUnzippingProgressUpdated(kContent1Size,
+                                                     kContentSize, testing::_));
   EXPECT_CALL(*observer_, OnUnzippingFailed());
+
+  ProcessImageUntilUnzipping();
 
   // Faking downloaded file for testing.
   manager_->SetDownloadedPluginVmImageArchiveForTesting(
       fake_downloaded_plugin_vm_image_archive_);
-
   manager_->StartUnzipping();
   manager_->CancelUnzipping();
   test_browser_thread_bundle_.RunUntilIdle();
 
-  // Checking that directory with PluginVm image has been deleted.
-  base::FilePath plugin_vm_image_unzipped = profile_->GetPath()
-                                                .AppendASCII(kCrosvmDir)
-                                                .AppendASCII(kPvmDir)
-                                                .AppendASCII(kPluginVmImageDir);
-  EXPECT_FALSE(base::DirectoryExists(plugin_vm_image_unzipped));
+  EnsurePluginVmImageIsRemoved();
+}
+
+TEST_F(PluginVmImageManagerTest, CancelRegistrationTest) {
+  EXPECT_CALL(*observer_, OnDownloadCompleted());
+  EXPECT_CALL(*observer_, OnUnzippingProgressUpdated(kContent1Size,
+                                                     kContentSize, testing::_));
+  EXPECT_CALL(*observer_, OnUnzippingProgressUpdated(kContentSize, kContentSize,
+                                                     testing::_));
+  EXPECT_CALL(*observer_, OnUnzipped());
+  EXPECT_CALL(*observer_, OnRegistered()).Times(0);
+  EXPECT_CALL(*observer_, OnRegistrationFailed()).Times(0);
+
+  ProcessImageUntilRegistration();
+
+  manager_->StartRegistration();
+  manager_->CancelRegistration();
+  test_browser_thread_bundle_.RunUntilIdle();
+
+  EnsurePluginVmImageIsRemoved();
 }
 
 TEST_F(PluginVmImageManagerTest, EmptyPluginVmImageUrlTest) {
@@ -332,8 +387,7 @@ TEST_F(PluginVmImageManagerTest, EmptyPluginVmImageUrlTest) {
 
   EXPECT_CALL(*observer_, OnDownloadFailed());
 
-  manager_->StartDownload();
-  test_browser_thread_bundle_.RunUntilIdle();
+  ProcessImageUntilUnzipping();
 }
 
 TEST_F(PluginVmImageManagerTest, VerifyDownloadTest) {

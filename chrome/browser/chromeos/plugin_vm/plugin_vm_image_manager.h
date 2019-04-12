@@ -29,12 +29,17 @@ constexpr char kPvmDir[] = "pvm";
 constexpr char kPluginVmImageDir[] = "default";
 
 // PluginVmImageManager is responsible for management of PluginVm image
-// including downloading this image from url specified by user policy and
-// unzipping downloaded image archive to the specified location.
+// including downloading this image from url specified by the user policy,
+// unzipping downloaded image archive to the specified location and registering
+// final image.
 //
 // Only one PluginVm image at a time is allowed to be processed.
-// IsProcessingImage() should be called to check whether any image is being
-// processed at the moment.
+// Methods StartDownload(), StartUnzipping() and StartRegistration() should be
+// called according to this order, image processing might be interrupted by
+// calling according cancel methods. If one of the methods mentioned is called
+// not in the correct order or before previous state is finished then associated
+// fail method will be called by manager and image processing will be
+// interrupted.
 class PluginVmImageManager : public KeyedService {
  public:
   // Observer class for the PluginVm image related events.
@@ -55,33 +60,42 @@ class PluginVmImageManager : public KeyedService {
         int64_t unzipping_bytes_per_sec) = 0;
     virtual void OnUnzipped() = 0;
     virtual void OnUnzippingFailed() = 0;
+    virtual void OnRegistered() = 0;
+    virtual void OnRegistrationFailed() = 0;
   };
 
   explicit PluginVmImageManager(Profile* profile);
 
   // Returns true if manager is processing PluginVm image at the moment.
   bool IsProcessingImage();
-  // Doesn't start to download PluginVm image and calls OnDownloadFailed() in
-  // case IsProcessingImage() returns true otherwise starts processing PluginVm
-  // image by downloading it.
   void StartDownload();
   // Cancels the download of PluginVm image finishing the image processing.
   // Downloaded PluginVm image archive is being deleted.
   void CancelDownload();
 
-  // Should be called when download of PluginVm image has been completed
-  // successfully. If called in other cases - unzipping is not started
-  // and OnUnzipped(false /* success */) is called.
+  // Should be called when download of PluginVm image is successfully completed.
+  // If called in other cases - unzipping is not started and
+  // OnUnzipped(false /* success */) is called.
   void StartUnzipping();
   // Sets flag that indicates that unzipping is cancelled. This flag is further
   // checked in PluginVmImageWriterDelegate and in cases it is set to true
-  // OnUnzipped(false /* success */) called.
+  // OnUnzipped(false /* success */) called to interrupt unzipping and
+  // remove PluginVm image.
   void CancelUnzipping();
+
+  // Should be called when download and unzipping of PluginVm are successfully
+  // completed. If called in other cases - registration is not started and
+  // OnRegistered(false /* success */) is called.
+  void StartRegistration();
+  // Sets flag that indicates that registration is cancelled. This flag is
+  // further checked when OnRegistered(bool success) is called.
+  void CancelRegistration();
 
   void SetObserver(Observer* observer);
   void RemoveObserver();
 
-  // Called by PluginVmImageDownloadClient.
+  // Called by PluginVmImageDownloadClient, are not supposed to be used by other
+  // classes.
   void OnDownloadStarted();
   void OnDownloadProgressUpdated(uint64_t bytes_downloaded,
                                  int64_t content_length);
@@ -89,13 +103,15 @@ class PluginVmImageManager : public KeyedService {
   void OnDownloadCancelled();
   void OnDownloadFailed();
 
+  // Called by PluginVmImageWriterDelegate, are not supposed to be used by other
+  // classes.
   void OnUnzippingProgressUpdated(int new_bytes_unzipped);
-  // Finishes the processing of PluginVm image. Deletes downloaded PluginVm
-  // image archive. In case |success| is false also deletes PluginVm image.
+  // Deletes downloaded PluginVm image archive. In case |success| is false also
+  // deletes PluginVm image.
   void OnUnzipped(bool success);
 
   // Returns true in case downloaded PluginVm image archive passes verification
-  // and false otherwise.
+  // and false otherwise. Public for testing purposes.
   bool VerifyDownload(const std::string& downloaded_archive_hash);
 
   void SetDownloadServiceForTesting(
@@ -105,11 +121,27 @@ class PluginVmImageManager : public KeyedService {
   std::string GetCurrentDownloadGuidForTesting();
 
  private:
+  enum class State {
+    NOT_STARTED,
+    DOWNLOADING,
+    DOWNLOAD_CANCELLED,
+    DOWNLOADED,
+    UNZIPPING,
+    UNZIPPING_CANCELLED,
+    UNZIPPED,
+    REGISTERING,
+    REGISTRATION_CANCELLED,
+    REGISTERED,
+    CONFIGURED,
+    DOWNLOAD_FAILED,
+    UNZIPPING_FAILED,
+    REGISTRATION_FAILED,
+  };
+
   Profile* profile_ = nullptr;
   Observer* observer_ = nullptr;
   download::DownloadService* download_service_ = nullptr;
-  bool processing_image_ = false;
-  bool unzipping_cancelled_ = false;
+  State state_ = State::NOT_STARTED;
   std::string current_download_guid_;
   base::FilePath downloaded_plugin_vm_image_archive_;
   base::FilePath plugin_vm_image_dir_;
@@ -141,12 +173,14 @@ class PluginVmImageManager : public KeyedService {
 
   ~PluginVmImageManager() override;
 
+  // Get string representation of state for logging purposes.
+  std::string GetStateName(State state);
+
   GURL GetPluginVmImageDownloadUrl();
   download::DownloadParams GetDownloadParams(const GURL& url);
 
   void OnStartDownload(const std::string& download_guid,
                        download::DownloadParams::StartResult start_result);
-  bool IsDownloading();
 
   void CalculatePluginVmImageSize();
   bool UnzipDownloadedPluginVmImageArchive();
@@ -156,6 +190,9 @@ class PluginVmImageManager : public KeyedService {
       const base::FilePath& entry_path);
   bool CreateDirectory(const base::FilePath& entry_path);
   bool FilterFilesInPluginVmImageArchive(const base::FilePath& file);
+
+  // Finishes the processing of PluginVm image.
+  void OnRegistered(bool success);
 
   bool EnsureDownloadedPluginVmImageArchiveIsPresent();
   // Creates directory for PluginVm image if one doesn't exists.
