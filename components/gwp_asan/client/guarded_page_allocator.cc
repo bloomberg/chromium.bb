@@ -130,8 +130,15 @@ void* GuardedPageAllocator::Allocate(size_t size, size_t align) {
 
   void* alloc = reinterpret_cast<void*>(free_page + offset);
 
-  // Initialize slot metadata.
+  // Initialize slot metadata and only then update slot_to_metadata_idx so that
+  // the mapping never points to an incorrect metadata mapping.
   RecordAllocationMetadata(free_metadata, size, alloc);
+  {
+    // Lock to avoid race with the slot_to_metadata_idx_ check/write in
+    // ReserveSlotAndMetadata().
+    base::AutoLock lock(lock_);
+    slot_to_metadata_idx_[free_slot] = free_metadata;
+  }
 
   return alloc;
 }
@@ -227,7 +234,6 @@ bool GuardedPageAllocator::ReserveSlotAndMetadata(
   free_slots_.pop_back();
   DCHECK_EQ(free_slots_.size(), state_.total_pages - num_alloced_pages_);
 
-  slot_to_metadata_idx_[*slot] = *metadata_idx;
   return true;
 }
 
