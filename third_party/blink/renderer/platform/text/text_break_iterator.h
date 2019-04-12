@@ -112,6 +112,11 @@ enum class BreakSpaceType {
   // opportunities between white spaces.
   // LayoutNG line breaker uses this type.
   kBeforeSpaceRun,
+
+  // white-spaces:break-spaces allows breaking after any preserved white-space,
+  // even when these are leading spaces so that we can avoid breaking
+  // the word in case of overflow.
+  kAfterEverySpace,
 };
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, LineBreakType);

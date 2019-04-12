@@ -644,12 +644,10 @@ void NGLineBreaker::BreakText(NGInlineItemResult* item_result,
   if (item_result->end_offset < item.EndOffset()) {
     item_result->can_break_after = true;
 
-    DCHECK_EQ(break_iterator_.BreakSpace(), BreakSpaceType::kBeforeSpaceRun);
     if (UNLIKELY(break_iterator_.BreakType() ==
                  LineBreakType::kBreakCharacter)) {
       trailing_whitespace_ = WhitespaceState::kUnknown;
     } else {
-      DCHECK(!IsBreakableSpace(Text()[item_result->end_offset - 1]));
       trailing_whitespace_ = WhitespaceState::kNone;
     }
   } else {
@@ -860,7 +858,7 @@ void NGLineBreaker::HandleTrailingSpaces(const NGInlineItem& item,
     NGInlineItemResults* item_results = line_info->MutableResults();
     DCHECK(!item_results->IsEmpty());
     item_results->back().can_break_after = true;
-  } else {
+  } else if (style.WhiteSpace() != EWhiteSpace::kBreakSpaces) {
     // Find the end of the run of space characters in this item.
     // Other white space characters (e.g., tab) are not included in this item.
     DCHECK(style.BreakOnlyAfterWhiteSpace());
@@ -1604,6 +1602,9 @@ void NGLineBreaker::SetCurrentStyle(const ComputedStyle& style) {
 
     enable_soft_hyphen_ = style.GetHyphens() != Hyphens::kNone;
     hyphenation_ = style.GetHyphenation();
+
+    if (style.WhiteSpace() == EWhiteSpace::kBreakSpaces)
+      break_iterator_.SetBreakSpace(BreakSpaceType::kAfterEverySpace);
   }
 
   // The above calls are cheap & necessary. But the following are expensive
