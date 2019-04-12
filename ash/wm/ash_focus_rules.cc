@@ -15,6 +15,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 namespace {
@@ -130,12 +131,20 @@ aura::Window* AshFocusRules::GetNextActivatableWindow(
     aura::Window* ignore) const {
   DCHECK(ignore);
 
-  // Start from the container of the most-recently-used window. If the list of
-  // MRU windows is empty, then start from the container of the window that just
-  // lost focus |ignore|.
-  MruWindowTracker* mru = Shell::Get()->mru_window_tracker();
-  aura::Window::Windows windows = mru->BuildMruWindowList();
-  aura::Window* starting_window = windows.empty() ? ignore : windows[0];
+  // If the window that just lost focus |ignore| has a transient parent, then
+  // start from the container of that parent, otherwise start from the container
+  // of the most-recently-used window. If the list of MRU windows is empty, then
+  // start from the container of |ignore|.
+  aura::Window* starting_window = nullptr;
+  aura::Window* transient_parent = ::wm::GetTransientParent(ignore);
+  if (transient_parent) {
+    starting_window = transient_parent;
+  } else {
+    MruWindowTracker* mru = Shell::Get()->mru_window_tracker();
+    aura::Window::Windows windows = mru->BuildMruWindowList();
+    starting_window = windows.empty() ? ignore : windows[0];
+  }
+  DCHECK(starting_window);
 
   // Look for windows to focus in |starting_window|'s container. If none are
   // found, we look in all the containers in front of |starting_window|'s

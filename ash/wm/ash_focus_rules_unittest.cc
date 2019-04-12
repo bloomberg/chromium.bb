@@ -22,6 +22,7 @@
 #include "ui/views/test/widget_test.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 
@@ -100,6 +101,10 @@ class LockScreenAshFocusRulesTest : public AshTestBase {
 
   aura::Window* CreateWindowInActiveDesk() {
     return CreateWindowInContainer(desks_util::GetActiveDeskContainerId());
+  }
+
+  aura::Window* CreateWindowInAppListContainer() {
+    return CreateWindowInContainer(kShellWindowId_AppListContainer);
   }
 
   aura::Window* CreateWindowInAlwaysOnTopContainer() {
@@ -273,6 +278,23 @@ TEST_F(LockScreenAshFocusRulesTest,
 
   wm::ActivateWindow(lock_shelf_window.get());
   EXPECT_TRUE(wm::IsActiveWindow(lock_shelf_window.get()));
+}
+
+// Simulates a transient child dialog of the applist when it gets closed and
+// loses focus, the focus should be returned to the applist transient parent,
+// not to another window in the MRU list. https://crbug.com/950469.
+TEST_F(LockScreenAshFocusRulesTest, TransientChildLosingFocus) {
+  std::unique_ptr<aura::Window> normal_window(CreateWindowInActiveDesk());
+  std::unique_ptr<aura::Window> transient_parent(
+      CreateWindowInAppListContainer());
+  std::unique_ptr<aura::Window> transient_child(
+      CreateWindowInAppListContainer());
+  ::wm::AddTransientChild(transient_parent.get(), transient_child.get());
+  wm::ActivateWindow(transient_child.get());
+  EXPECT_TRUE(wm::IsActiveWindow(transient_child.get()));
+
+  transient_child->Hide();
+  EXPECT_TRUE(wm::IsActiveWindow(transient_parent.get()));
 }
 
 }  // namespace ash
