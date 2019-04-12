@@ -129,8 +129,20 @@ bool IsBrowserManaged() {
 
 std::string GetAccountDomain(Profile* profile) {
   auto username = profile->GetProfileUserName();
-  return username.empty() ? std::string()
-                          : gaia::ExtractDomainName(std::move(username));
+  size_t email_separator_pos = username.find('@');
+  bool is_email = email_separator_pos != std::string::npos &&
+                  email_separator_pos < username.length() - 1;
+
+  if (!is_email)
+    return std::string();
+
+  const std::string domain = gaia::ExtractDomainName(std::move(username));
+
+  auto consumer_domain_pos = domain.find("gmail.com");
+  if (consumer_domain_pos == std::string::npos)
+    consumer_domain_pos = domain.find("googlemail.com");
+
+  return consumer_domain_pos == std::string::npos ? domain : std::string();
 }
 
 #if !defined(OS_CHROMEOS)
