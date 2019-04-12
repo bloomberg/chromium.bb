@@ -421,14 +421,6 @@ const char kMonitoringDestinationID[]       = "monitoring-destination-id";
 // description of their meaning.
 const char kNetLogCaptureMode[]             = "net-log-capture-mode";
 
-// Controls the position of the new tab button within the tabstrip.
-const char kNewTabButtonPosition[] = "new-tab-button-position";
-// Possible values for this switch.
-const char kNewTabButtonPositionOppositeCaption[] = "opposite-caption";
-const char kNewTabButtonPositionLeading[] = "leading";
-const char kNewTabButtonPositionAfterTabs[] = "after-tabs";
-const char kNewTabButtonPositionTrailing[] = "trailing";
-
 // Disables the default browser check. Useful for UI/browser tests where we
 // want to avoid having the default browser info-bar displayed.
 const char kNoDefaultBrowserCheck[]         = "no-default-browser-check";

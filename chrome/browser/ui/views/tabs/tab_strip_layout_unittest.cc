@@ -41,7 +41,6 @@ struct TestCase {
   int num_pinned_tabs = 0;
   int num_tabs = 0;
   int active_index = 0;
-  int start_x = 0;
   int tabstrip_width = 0;
 };
 
@@ -68,8 +67,8 @@ CalculateTabBoundsResult CalculateTabBounds(TestCase test_case) {
   int inactive_width;
   std::vector<gfx::Rect> tab_bounds = CalculateTabBounds(
       size_info, test_case.num_pinned_tabs, test_case.num_tabs,
-      test_case.active_index, test_case.start_x, test_case.tabstrip_width,
-      &active_width, &inactive_width);
+      test_case.active_index, test_case.tabstrip_width, &active_width,
+      &inactive_width);
 
   CalculateTabBoundsResult result;
   result.bounds = tab_bounds;
@@ -104,16 +103,6 @@ TEST(TabStripLayoutTest, Basics) {
     EXPECT_EQ(0, bounds.y());
     EXPECT_EQ(kStandardHeight, bounds.height());
   }
-}
-
-TEST(TabStripLayoutTest, HasXOffset) {
-  TestCase test_case;
-  test_case.tabstrip_width = 1000;
-  test_case.num_tabs = 3;
-  test_case.start_x = 80;
-
-  auto result = CalculateTabBounds(test_case);
-  EXPECT_EQ("80 176 272", TabXPositionsAsString(result.bounds));
 }
 
 TEST(TabStripLayoutTest, AllPinnedTabs) {

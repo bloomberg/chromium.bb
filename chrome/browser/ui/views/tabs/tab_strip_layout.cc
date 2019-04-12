@@ -49,10 +49,9 @@ void CalculateNormalTabWidths(const TabSizeInfo& tab_size_info,
 int CalculateBoundsForPinnedTabs(const TabSizeInfo& tab_size_info,
                                  int num_pinned_tabs,
                                  int num_tabs,
-                                 int start_x,
                                  std::vector<gfx::Rect>* tab_bounds) {
   DCHECK_EQ(static_cast<size_t>(num_tabs), tab_bounds->size());
-  int next_x = start_x;
+  int next_x = 0;
   const int tab_height = tab_size_info.standard_size.height();
   for (int index = 0; index < num_pinned_tabs; ++index) {
     (*tab_bounds)[index].SetRect(next_x, 0, tab_size_info.pinned_tab_width,
@@ -66,7 +65,6 @@ std::vector<gfx::Rect> CalculateTabBounds(const TabSizeInfo& tab_size_info,
                                           int num_pinned_tabs,
                                           int num_tabs,
                                           int active_index,
-                                          int start_x,
                                           int width,
                                           int* active_width,
                                           int* inactive_width) {
@@ -77,10 +75,10 @@ std::vector<gfx::Rect> CalculateTabBounds(const TabSizeInfo& tab_size_info,
   *active_width = *inactive_width = tab_size_info.standard_size.width();
 
   int next_x = CalculateBoundsForPinnedTabs(tab_size_info, num_pinned_tabs,
-                                            num_tabs, start_x, &tab_bounds);
+                                            num_tabs, &tab_bounds);
   if (num_pinned_tabs == num_tabs)
     return tab_bounds;
-  width -= next_x - start_x;
+  width -= next_x;
 
   const bool is_active_tab_normal = active_index >= num_pinned_tabs;
   const int num_normal_tabs = num_tabs - num_pinned_tabs;

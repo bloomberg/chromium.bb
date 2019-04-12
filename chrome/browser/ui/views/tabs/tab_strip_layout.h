@@ -38,7 +38,6 @@ struct TabSizeInfo {
 int CalculateBoundsForPinnedTabs(const TabSizeInfo& tab_size_info,
                                  int num_pinned_tabs,
                                  int num_tabs,
-                                 int start_x,
                                  std::vector<gfx::Rect>* tab_bounds);
 
 // Calculates and returns the bounds of the tabs. |width| is the available
@@ -49,7 +48,6 @@ std::vector<gfx::Rect> CalculateTabBounds(const TabSizeInfo& tab_size_info,
                                           int num_pinned_tabs,
                                           int num_tabs,
                                           int active_index,
-                                          int start_x,
                                           int width,
                                           int* active_width,
                                           int* inactive_width);

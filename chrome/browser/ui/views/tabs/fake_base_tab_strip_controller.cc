@@ -144,11 +144,6 @@ bool FakeBaseTabStripController::IsCompatibleWith(TabStrip* other) const {
   return false;
 }
 
-NewTabButtonPosition FakeBaseTabStripController::GetNewTabButtonPosition()
-    const {
-  return AFTER_TABS;
-}
-
 void FakeBaseTabStripController::CreateNewTab() {
   AddTab(num_tabs_, true);
 }

@@ -95,9 +95,6 @@ class TabStripController {
   // Compatible tab strips can transfer tabs during drag and drop.
   virtual bool IsCompatibleWith(TabStrip* other) const = 0;
 
-  // Returns the position of the new tab button within the strip.
-  virtual NewTabButtonPosition GetNewTabButtonPosition() const = 0;
-
   // Creates the new tab.
   virtual void CreateNewTab() = 0;
 

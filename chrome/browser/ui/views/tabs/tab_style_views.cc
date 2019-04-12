@@ -562,29 +562,23 @@ TabStyle::SeparatorOpacities GM2TabStyle::GetSeparatorOpacities(
     }
   }
 
-  // For the first or last tab in the strip, fade the leading or trailing
-  // separator based on the NTB position and how close to the target bounds this
-  // tab is.  In the steady state, this hides separators on the opposite end of
-  // the strip from the NTB; it fades out the separators as tabs animate into
-  // these positions, after they pass by the other tabs; and it snaps the
-  // separators to full visibility immediately when animating away from these
-  // positions, which seems desirable.
-  const NewTabButtonPosition ntb_position =
-      tab_->controller()->GetNewTabButtonPosition();
+  // For the first or (when tab shapes are visible) last tab in the strip, fade
+  // the leading or trailing separator based on how close to the target bounds
+  // this tab is.  In the steady state, this hides the leading separator; it
+  // fades out the separators as tabs animate into these positions, after they
+  // pass by the other tabs; and it snaps the separators to full visibility
+  // immediately when animating away from these positions, which seems
+  // desirable.
   const gfx::Rect target_bounds =
       tab_->controller()->GetTabAnimationTargetBounds(tab_);
   const int tab_width = std::max(tab_->width(), target_bounds.width());
   const float target_opacity =
       float{std::min(std::abs(tab_->x() - target_bounds.x()), tab_width)} /
       tab_width;
-  // If the tab shapes are visible, never draw end separators.
-  const bool always_hide_separators_on_ends =
-      tab_->controller()->HasVisibleBackgroundTabShapes();
-  if (tab_->controller()->IsFirstVisibleTab(tab_) &&
-      (ntb_position != LEADING || always_hide_separators_on_ends))
+  if (tab_->controller()->IsFirstVisibleTab(tab_))
     leading_opacity = target_opacity;
   if (tab_->controller()->IsLastVisibleTab(tab_) &&
-      (ntb_position != AFTER_TABS || always_hide_separators_on_ends))
+      tab_->controller()->HasVisibleBackgroundTabShapes())
     trailing_opacity = target_opacity;
 
   // Return the opacities in physical order, rather than logical.

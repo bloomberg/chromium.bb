@@ -34,11 +34,6 @@ class TabController {
   // Returns true if multiple selection is supported.
   virtual bool SupportsMultipleSelection() = 0;
 
-  // Returns where the new tab button should be placed. This is needed to
-  // determine which tab separators need to be faded in/out while animating into
-  // position.
-  virtual NewTabButtonPosition GetNewTabButtonPosition() const = 0;
-
   // Returns true if the close button for the given tab is forced to be hidden.
   virtual bool ShouldHideCloseButtonForTab(Tab* tab) const = 0;
 
