@@ -26,7 +26,7 @@ using trace_analyzer::Query;
 
 namespace {
 
-// Trace events
+// Trace events.
 static const char kStartRenderEventName[] =
     "RemoteVideoSourceDelegate::RenderFrame";
 static const char kEnqueueFrameEventName[] =
@@ -38,6 +38,10 @@ static const char kGetFrameEventName[] =
 static const char kVideoResourceEventName[] =
     "VideoResourceUpdater::ObtainFrameResources";
 static const char kVsyncEventName[] = "Display::DrawAndSwap";
+
+// VideoFrameSubmitter dumps the delay from the handover of a decoded remote
+// VideoFrame from webrtc to the moment the OS acknowledges the swap buffers.
+static const char kVideoFrameSubmitterEventName[] = "VideoFrameSubmitter";
 
 static const char kEventMatchKey[] = "Timestamp";
 static const char kTestResultString[] = "TestVideoDisplayPerf";
@@ -189,6 +193,7 @@ class WebRtcVideoDisplayPerfBrowserTest
     ASSERT_TRUE(tracing::EndTracing(&json_events));
     std::unique_ptr<trace_analyzer::TraceAnalyzer> analyzer(
         trace_analyzer::TraceAnalyzer::Create(json_events));
+    analyzer->AssociateAsyncBeginEndEvents();
 
     HangUp(left_tab);
     HangUp(right_tab);
@@ -294,6 +299,31 @@ class WebRtcVideoDisplayPerfBrowserTest
     // Calculate the percentage by dividing by the number of frames received.
     skipped_frame_percentage_ =
         100.0 * skipped_frame_count / start_render_events.size();
+
+    // |kVideoFrameSubmitterEventName| is in itself an ASYNC latency measurement
+    // from the point where the remote video decode is available (i.e.
+    // kStartRenderEventName) until the platform-dependent swap buffers, so by
+    // definition is larger than the |total_duration|.
+    TraceEventVector video_frame_submitter_events;
+    analyzer->FindEvents(Query::MatchAsyncBeginWithNext() &&
+                             Query::EventNameIs(kVideoFrameSubmitterEventName),
+                         &video_frame_submitter_events);
+    for (const auto* event : video_frame_submitter_events) {
+      // kVideoFrameSubmitterEventName is divided into a BEGIN, a PAST and an
+      // END steps. AssociateAsyncBeginEndEvents paired BEGIN with PAST, but we
+      // have to get to the END. Note that if there's no intermediate PAST, it
+      // means this wasn't a remote feed VideoFrame, we should not have those in
+      // this test. If there's no END, then tracing was cut short.
+      if (!event->has_other_event() ||
+          event->other_event->phase != TRACE_EVENT_PHASE_ASYNC_STEP_PAST ||
+          !event->other_event->has_other_event()) {
+        continue;
+      }
+      const auto begin = event->timestamp;
+      const auto end = event->other_event->other_event->timestamp;
+      video_frame_submmitter_latencies_.push_back(end - begin);
+    }
+
     return true;
   }
 
@@ -325,6 +355,9 @@ class WebRtcVideoDisplayPerfBrowserTest
     PrintMeanAndMax("Total Controlled Latency", name_modifier,
                     total_controlled_durations_);
     PrintMeanAndMax("Total Latency", name_modifier, total_durations_);
+
+    PrintMeanAndMax("Post-decode-to-raster latency", name_modifier,
+                    video_frame_submmitter_latencies_);
   }
 
   VideoDisplayPerfTestConfig test_config_;
@@ -337,6 +370,8 @@ class WebRtcVideoDisplayPerfBrowserTest
   std::vector<double> vsync_durations_;
   std::vector<double> total_controlled_durations_;
   std::vector<double> total_durations_;
+
+  std::vector<double> video_frame_submmitter_latencies_;
 };
 
 INSTANTIATE_TEST_SUITE_P(WebRtcVideoDisplayPerfBrowserTests,
