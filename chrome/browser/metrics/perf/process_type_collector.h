@@ -16,6 +16,10 @@ namespace metrics {
 // Enables collection of process and thread types for Chrome PIDs and TIDs.
 class ProcessTypeCollector {
  public:
+  // NOTE: ChromeProcessTypes and ChromeThreadTypes methods make blocking call
+  // to base::GetAppOutput. Callers, who are calling these methods from a scope
+  // that disallows blocking, should post a task with MayBlock() task trait to
+  // execute these methods or make sure to call these methods asynchronously.
   // Collects process types by running ps command and returns a map of Chrome
   // PIDs to their process types.
   static std::map<uint32_t, Process> ChromeProcessTypes();
