@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/xml_names.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -79,10 +80,11 @@ SVGTextContentElement::SVGTextContentElement(const QualifiedName& tag_name,
     : SVGGraphicsElement(tag_name, document),
       text_length_(SVGAnimatedTextLength::Create(this)),
       text_length_is_specified_by_user_(false),
-      length_adjust_(SVGAnimatedEnumeration<SVGLengthAdjustType>::Create(
-          this,
-          svg_names::kLengthAdjustAttr,
-          kSVGLengthAdjustSpacing)) {
+      length_adjust_(
+          MakeGarbageCollected<SVGAnimatedEnumeration<SVGLengthAdjustType>>(
+              this,
+              svg_names::kLengthAdjustAttr,
+              kSVGLengthAdjustSpacing)) {
   AddToPropertyMap(text_length_);
   AddToPropertyMap(length_adjust_);
 }

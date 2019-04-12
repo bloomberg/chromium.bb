@@ -33,6 +33,7 @@
 
 #include "third_party/blink/renderer/core/svg/properties/svg_property.h"
 #include "third_party/blink/renderer/core/svg/svg_parsing_error.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -51,9 +52,9 @@ class SVGString final : public SVGPropertyBase {
   SVGString() = default;
   explicit SVGString(const String& value) : value_(value) {}
 
-  SVGString* Clone() const { return Create(value_); }
+  SVGString* Clone() const { return MakeGarbageCollected<SVGString>(value_); }
   SVGPropertyBase* CloneForAnimation(const String& value) const override {
-    return Create(value);
+    return MakeGarbageCollected<SVGString>(value);
   }
 
   String ValueAsString() const override { return value_; }
