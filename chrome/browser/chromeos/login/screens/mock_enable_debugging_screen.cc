@@ -20,14 +20,13 @@ void MockEnableDebuggingScreen::ExitScreen() {
 MockEnableDebuggingScreenView::MockEnableDebuggingScreenView() = default;
 
 MockEnableDebuggingScreenView::~MockEnableDebuggingScreenView() {
-  if (delegate_)
-    delegate_->OnViewDestroyed(this);
+  if (screen_)
+    screen_->OnViewDestroyed(this);
 }
 
-void MockEnableDebuggingScreenView::SetDelegate(
-    EnableDebuggingScreenView::Delegate* delegate) {
-  delegate_ = delegate;
-  MockSetDelegate(delegate);
+void MockEnableDebuggingScreenView::SetDelegate(EnableDebuggingScreen* screen) {
+  screen_ = screen;
+  MockSetDelegate(screen_);
 }
 
 }  // namespace chromeos
