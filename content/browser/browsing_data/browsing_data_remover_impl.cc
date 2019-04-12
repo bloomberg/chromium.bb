@@ -18,6 +18,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/browsing_data/storage_partition_http_cache_data_remover.h"
 #include "content/public/browser/browser_context.h"
@@ -41,6 +42,10 @@ using base::UserMetricsAction;
 namespace content {
 
 namespace {
+
+// Timeout after which the History.ClearBrowsingData.Duration.SlowTasks180s
+// histogram is recorded.
+const base::TimeDelta kSlowTaskTimeout = base::TimeDelta::FromSeconds(180);
 
 base::OnceClosure RunsOrPostOnCurrentTaskRunner(base::OnceClosure closure) {
   return base::BindOnce(
@@ -231,6 +236,14 @@ void BrowsingDataRemoverImpl::RunNextTask() {
   DCHECK(!task_queue_.empty());
   RemovalTask& removal_task = task_queue_.front();
   removal_task.task_started = base::Time::Now();
+
+  // To detect tasks that are causing slow deletions, record running sub tasks
+  // after a delay.
+  slow_pending_tasks_closure_.Reset(base::BindRepeating(
+      &BrowsingDataRemoverImpl::RecordUnfinishedSubTasks, GetWeakPtr()));
+  base::PostDelayedTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                                  slow_pending_tasks_closure_.callback(),
+                                  kSlowTaskTimeout);
 
   RemoveImpl(removal_task.delete_begin, removal_task.delete_end,
              removal_task.remove_mask, *removal_task.filter_builder,
@@ -597,6 +610,8 @@ void BrowsingDataRemoverImpl::Notify() {
     return;
   }
 
+  slow_pending_tasks_closure_.Cancel();
+
   // Yield to the UI thread before executing the next removal task.
   // TODO(msramek): Consider also adding a backoff if too many tasks
   // are scheduled.
@@ -610,12 +625,13 @@ void BrowsingDataRemoverImpl::OnTaskComplete(TracingDataType data_type) {
   // clearing (what about other things such as passwords, etc.?) and wait for
   // them to complete before continuing.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK_GT(num_pending_tasks_, 0);
-  num_pending_tasks_--;
+  size_t num_erased = pending_sub_tasks_.erase(data_type);
+  DCHECK_EQ(num_erased, 1U);
+
   TRACE_EVENT_ASYNC_END1("browsing_data", "BrowsingDataRemoverImpl",
                          static_cast<int>(data_type), "data_type",
                          static_cast<int>(data_type));
-  if (num_pending_tasks_ > 0)
+  if (!pending_sub_tasks_.empty())
     return;
 
   if (!would_complete_callback_.is_null()) {
@@ -630,7 +646,9 @@ void BrowsingDataRemoverImpl::OnTaskComplete(TracingDataType data_type) {
 base::OnceClosure BrowsingDataRemoverImpl::CreateTaskCompletionClosure(
     TracingDataType data_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  num_pending_tasks_++;
+  auto result = pending_sub_tasks_.insert(data_type);
+  DCHECK(result.second) << "Task already started: "
+                        << static_cast<int>(data_type);
   TRACE_EVENT_ASYNC_BEGIN1("browsing_data", "BrowsingDataRemoverImpl",
                            static_cast<int>(data_type), "data_type",
                            static_cast<int>(data_type));
@@ -645,6 +663,14 @@ base::OnceClosure BrowsingDataRemoverImpl::CreateTaskCompletionClosureForMojo(
       CreateTaskCompletionClosure(data_type),
       base::BindOnce(&BrowsingDataRemoverImpl::OnTaskComplete, GetWeakPtr(),
                      data_type)));
+}
+
+void BrowsingDataRemoverImpl::RecordUnfinishedSubTasks() {
+  DCHECK(!pending_sub_tasks_.empty());
+  for (TracingDataType task : pending_sub_tasks_) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "History.ClearBrowsingData.Duration.SlowTasks180s", task);
+  }
 }
 
 base::WeakPtr<BrowsingDataRemoverImpl> BrowsingDataRemoverImpl::GetWeakPtr() {
