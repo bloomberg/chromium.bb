@@ -259,7 +259,12 @@ class DeviceInfoSyncBridgeTest : public testing::Test,
   void InitializeAndMergeInitialData() {
     InitializeAndPump();
     bridge()->OnSyncStarting(TestDataTypeActivationRequest());
-    bridge()->MergeSyncData(bridge()->CreateMetadataChangeList(),
+
+    std::unique_ptr<MetadataChangeList> metadata_change_list =
+        bridge()->CreateMetadataChangeList();
+
+    metadata_change_list->UpdateModelTypeState(StateWithEncryption(""));
+    bridge()->MergeSyncData(std::move(metadata_change_list),
                             EntityChangeList());
   }
 
@@ -880,25 +885,27 @@ TEST_F(DeviceInfoSyncBridgeTest, SendLocalData) {
   EXPECT_EQ(2, change_count());
 }
 
-TEST_F(DeviceInfoSyncBridgeTest, ApplyStopSyncChanges) {
+TEST_F(DeviceInfoSyncBridgeTest, ApplyStopSyncChangesWithClearData) {
   InitializeAndMergeInitialData();
   ASSERT_EQ(1u, bridge()->GetAllDeviceInfo().size());
   ASSERT_EQ(1, change_count());
   ASSERT_FALSE(ReadAllFromStore().empty());
+  ASSERT_TRUE(bridge()->IsPulseTimerRunningForTest());
 
   const DeviceInfoSpecifics specifics = CreateSpecifics(1);
   auto error = bridge()->ApplySyncChanges(bridge()->CreateMetadataChangeList(),
                                           EntityAddList({specifics}));
 
-  EXPECT_FALSE(error);
-  EXPECT_EQ(2u, bridge()->GetAllDeviceInfo().size());
-  EXPECT_EQ(2, change_count());
+  ASSERT_FALSE(error);
+  ASSERT_EQ(2u, bridge()->GetAllDeviceInfo().size());
+  ASSERT_EQ(2, change_count());
 
   // Should clear out all local data and notify observers.
   bridge()->ApplyStopSyncChanges(bridge()->CreateMetadataChangeList());
   EXPECT_EQ(0u, bridge()->GetAllDeviceInfo().size());
   EXPECT_EQ(3, change_count());
   EXPECT_TRUE(ReadAllFromStore().empty());
+  EXPECT_FALSE(bridge()->IsPulseTimerRunningForTest());
 
   // Reloading from storage shouldn't contain remote data.
   RestartBridge();
@@ -911,6 +918,35 @@ TEST_F(DeviceInfoSyncBridgeTest, ApplyStopSyncChanges) {
                           EntityChangeList());
   // Local device.
   EXPECT_EQ(1u, bridge()->GetAllDeviceInfo().size());
+  EXPECT_TRUE(bridge()->IsPulseTimerRunningForTest());
+}
+
+TEST_F(DeviceInfoSyncBridgeTest, ApplyStopSyncChangesWithKeepData) {
+  InitializeAndMergeInitialData();
+  ASSERT_EQ(1u, bridge()->GetAllDeviceInfo().size());
+  ASSERT_EQ(1, change_count());
+  ASSERT_FALSE(ReadAllFromStore().empty());
+  ASSERT_TRUE(bridge()->IsPulseTimerRunningForTest());
+
+  const DeviceInfoSpecifics specifics = CreateSpecifics(1);
+  auto error = bridge()->ApplySyncChanges(bridge()->CreateMetadataChangeList(),
+                                          EntityAddList({specifics}));
+
+  ASSERT_FALSE(error);
+  ASSERT_EQ(2u, bridge()->GetAllDeviceInfo().size());
+  ASSERT_EQ(2, change_count());
+
+  // Should clear out all local data and notify observers.
+  bridge()->ApplyStopSyncChanges(/*delete_metadata_change_list=*/nullptr);
+  EXPECT_EQ(2u, bridge()->GetAllDeviceInfo().size());
+  EXPECT_EQ(2, change_count());
+  EXPECT_FALSE(ReadAllFromStore().empty());
+  EXPECT_TRUE(bridge()->IsPulseTimerRunningForTest());
+
+  // Reloading from storage should still contain remote data.
+  RestartBridge();
+  EXPECT_EQ(2u, bridge()->GetAllDeviceInfo().size());
+  EXPECT_TRUE(bridge()->IsPulseTimerRunningForTest());
 }
 
 }  // namespace
