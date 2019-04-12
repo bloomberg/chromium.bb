@@ -79,7 +79,16 @@ const AtomicString& PortalActivateEvent::InterfaceName() const {
   return event_type_names::kPortalactivate;
 }
 
-HTMLPortalElement* PortalActivateEvent::adoptPredecessor() {
+HTMLPortalElement* PortalActivateEvent::adoptPredecessor(
+    ExceptionState& exception_state) {
+  if (!predecessor_portal_ptr_) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The PortalActivateEvent is not associated with a predecessor browsing "
+        "context");
+    return nullptr;
+  }
+
   HTMLPortalElement* portal = MakeGarbageCollected<HTMLPortalElement>(
       *document_, predecessor_portal_token_,
       std::move(predecessor_portal_ptr_));

@@ -50,7 +50,7 @@ class CORE_EXPORT PortalActivateEvent : public Event {
 
   // IDL implementation.
   ScriptValue data(ScriptState*);
-  HTMLPortalElement* adoptPredecessor();
+  HTMLPortalElement* adoptPredecessor(ExceptionState& exception_state);
 
  private:
   Member<Document> document_;
