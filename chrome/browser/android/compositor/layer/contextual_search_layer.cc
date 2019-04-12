@@ -54,6 +54,7 @@ void ContextualSearchLayer::SetProperties(
     bool search_promo_visible,
     float search_promo_height,
     float search_promo_opacity,
+    int search_promo_background_color,
     bool search_bar_banner_visible,
     float search_bar_banner_height,
     float search_bar_banner_padding,
@@ -282,6 +283,8 @@ void ContextualSearchLayer::SetProperties(
       search_promo_container_->SetBounds(search_promo_size);
       search_promo_container_->SetPosition(gfx::PointF(0.f, search_bar_bottom));
       search_promo_container_->SetMasksToBounds(true);
+      search_promo_container_->SetBackgroundColor(
+          search_promo_background_color);
 
       // Search Promo
       if (search_promo_->parent() != search_promo_container_)

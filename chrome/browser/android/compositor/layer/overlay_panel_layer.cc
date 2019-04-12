@@ -18,9 +18,6 @@
 
 namespace {
 
-const SkColor kBarBackgroundColor = SkColorSetRGB(0xff, 0xff, 0xff);
-const SkColor kBarBorderColor = SkColorSetRGB(0xf1, 0xf1, 0xf1);
-
 // This is the default width for any icon displayed on an OverlayPanel.
 const float kDefaultIconWidthDp = 36.0f;
 
@@ -240,6 +237,7 @@ void OverlayPanelLayer::SetProperties(
     bar_border_->SetBounds(bar_border_size);
     bar_border_->SetPosition(
         gfx::PointF(0.f, border_y));
+    bar_border_->SetBackgroundColor(bar_background_color);
     layer_->AddChild(bar_border_);
   } else if (bar_border_.get() && bar_border_->parent()) {
     bar_border_->RemoveFromParent();
@@ -323,6 +321,8 @@ OverlayPanelLayer::OverlayPanelLayer(ui::ResourceManager* resource_manager)
       bar_border_(cc::SolidColorLayer::Create()),
       progress_bar_(cc::NinePatchLayer::Create()),
       progress_bar_background_(cc::NinePatchLayer::Create()) {
+  // Background colors for each widget are set in SetProperties, where variable
+  // colors are available.
   layer_->SetMasksToBounds(false);
   layer_->SetIsDrawable(true);
 
@@ -333,7 +333,6 @@ OverlayPanelLayer::OverlayPanelLayer(ui::ResourceManager* resource_manager)
 
   // Bar Background
   bar_background_->SetIsDrawable(true);
-  bar_background_->SetBackgroundColor(kBarBackgroundColor);
   layer_->AddChild(bar_background_);
 
   // Bar Text
@@ -353,12 +352,10 @@ OverlayPanelLayer::OverlayPanelLayer(ui::ResourceManager* resource_manager)
 
   // Content Container
   content_container_->SetIsDrawable(true);
-  content_container_->SetBackgroundColor(kBarBackgroundColor);
   layer_->AddChild(content_container_);
 
   // Bar Border
   bar_border_->SetIsDrawable(true);
-  bar_border_->SetBackgroundColor(kBarBorderColor);
 
   // Bar Shadow
   bar_shadow_->SetIsDrawable(true);
