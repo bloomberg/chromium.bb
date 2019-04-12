@@ -53,47 +53,6 @@ void HttpStreamRequest::Complete(bool was_alpn_negotiated,
   using_spdy_ = using_spdy;
 }
 
-void HttpStreamRequest::OnSpdySessionAvailable(
-    bool was_alpn_negotiated,
-    NextProto negotiated_protocol,
-    bool using_spdy,
-    const SSLConfig& used_ssl_config,
-    const ProxyInfo& used_proxy_info,
-    NetLogSource source_dependency,
-    base::WeakPtr<SpdySession> spdy_session) {
-  DCHECK(spdy_session);
-  Complete(was_alpn_negotiated, negotiated_protocol, using_spdy);
-  if (stream_type_ == HttpStreamRequest::BIDIRECTIONAL_STREAM) {
-    helper_->OnBidirectionalStreamImplReadyOnPooledConnection(
-        used_ssl_config, used_proxy_info,
-        std::make_unique<BidirectionalStreamSpdyImpl>(spdy_session,
-                                                      source_dependency));
-  } else {
-    helper_->OnStreamReadyOnPooledConnection(
-        used_ssl_config, used_proxy_info,
-        std::make_unique<SpdyHttpStream>(spdy_session, kNoPushedStreamFound,
-                                         source_dependency));
-  }
-}
-
-void HttpStreamRequest::OnStreamReadyOnPooledConnection(
-    const SSLConfig& used_ssl_config,
-    const ProxyInfo& used_proxy_info,
-    std::unique_ptr<HttpStream> stream) {
-  DCHECK(completed_);
-  helper_->OnStreamReadyOnPooledConnection(used_ssl_config, used_proxy_info,
-                                           std::move(stream));
-}
-
-void HttpStreamRequest::OnBidirectionalStreamImplReadyOnPooledConnection(
-    const SSLConfig& used_ssl_config,
-    const ProxyInfo& used_proxy_info,
-    std::unique_ptr<BidirectionalStreamImpl> stream) {
-  DCHECK(completed_);
-  helper_->OnBidirectionalStreamImplReadyOnPooledConnection(
-      used_ssl_config, used_proxy_info, std::move(stream));
-}
-
 int HttpStreamRequest::RestartTunnelWithProxyAuth() {
   return helper_->RestartTunnelWithProxyAuth();
 }

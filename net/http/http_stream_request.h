@@ -37,8 +37,7 @@ class SSLCertRequestInfo;
 // created, this object is the creator's handle for interacting with the
 // HttpStream creation process.  The request is cancelled by deleting it, after
 // which no callbacks will be invoked.
-class NET_EXPORT_PRIVATE HttpStreamRequest
-    : public SpdySessionPool::SpdySessionRequest::Delegate {
+class NET_EXPORT_PRIVATE HttpStreamRequest {
  public:
   // Indicates which type of stream is requested.
   enum StreamType {
@@ -169,18 +168,6 @@ class NET_EXPORT_PRIVATE HttpStreamRequest
 
     // Called when the priority of transaction changes.
     virtual void SetPriority(RequestPriority priority) = 0;
-
-    // Called when SpdySessionPool notifies the Request
-    // that it can be served on a SpdySession created by another Request,
-    // therefore the Jobs can be destroyed.
-    virtual void OnStreamReadyOnPooledConnection(
-        const SSLConfig& used_ssl_config,
-        const ProxyInfo& proxy_info,
-        std::unique_ptr<HttpStream> stream) = 0;
-    virtual void OnBidirectionalStreamImplReadyOnPooledConnection(
-        const SSLConfig& used_ssl_config,
-        const ProxyInfo& used_proxy_info,
-        std::unique_ptr<BidirectionalStreamImpl> stream) = 0;
   };
 
   // Request will notify |job_controller| when it's destructed.
@@ -193,7 +180,7 @@ class NET_EXPORT_PRIVATE HttpStreamRequest
                     const NetLogWithSource& net_log,
                     StreamType stream_type);
 
-  ~HttpStreamRequest() override;
+  ~HttpStreamRequest();
 
   // When a HttpStream creation process is stalled due to necessity
   // of Proxy authentication credentials, the delegate OnNeedsProxyAuth
@@ -213,25 +200,6 @@ class NET_EXPORT_PRIVATE HttpStreamRequest
   // Called by |helper_| to record connection attempts made by the socket
   // layer in an attached Job for this stream request.
   void AddConnectionAttempts(const ConnectionAttempts& attempts);
-
-  // SpdySessionRequest::Delegate implementation:
-  //
-  // TODO(mmenke): Move this to HttpStreamFactory::Job.
-  void OnSpdySessionAvailable(bool was_alpn_negotiated,
-                              NextProto negotiated_protocol,
-                              bool using_spdy,
-                              const SSLConfig& used_ssl_config,
-                              const ProxyInfo& used_proxy_info,
-                              NetLogSource source_dependency,
-                              base::WeakPtr<SpdySession> spdy_session) override;
-
-  void OnStreamReadyOnPooledConnection(const SSLConfig& used_ssl_config,
-                                       const ProxyInfo& used_proxy_info,
-                                       std::unique_ptr<HttpStream> stream);
-  void OnBidirectionalStreamImplReadyOnPooledConnection(
-      const SSLConfig& used_ssl_config,
-      const ProxyInfo& used_proxy_info,
-      std::unique_ptr<BidirectionalStreamImpl> stream);
 
   // Returns the LoadState for the request.
   LoadState GetLoadState() const;

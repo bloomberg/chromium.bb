@@ -183,7 +183,6 @@ LoadState HttpStreamFactory::JobController::GetLoadState() const {
 void HttpStreamFactory::JobController::OnRequestComplete() {
   DCHECK(request_);
 
-  RemoveRequestFromSpdySessionRequestMap();
   CancelJobs();
   request_ = nullptr;
   if (bound_job_) {
@@ -210,40 +209,6 @@ void HttpStreamFactory::JobController::SetPriority(RequestPriority priority) {
   if (alternative_job_) {
     alternative_job_->SetPriority(priority);
   }
-}
-
-void HttpStreamFactory::JobController::OnStreamReadyOnPooledConnection(
-    const SSLConfig& used_ssl_config,
-    const ProxyInfo& proxy_info,
-    std::unique_ptr<HttpStream> stream) {
-  DCHECK(request_->completed());
-  DCHECK(!is_websocket_);
-  DCHECK_EQ(HttpStreamRequest::HTTP_STREAM, request_->stream_type());
-
-  main_job_.reset();
-  alternative_job_.reset();
-  ResetErrorStatusForJobs();
-
-  factory_->OnStreamReady(proxy_info, request_info_.privacy_mode);
-
-  delegate_->OnStreamReady(used_ssl_config, proxy_info, std::move(stream));
-}
-
-void HttpStreamFactory::JobController::
-    OnBidirectionalStreamImplReadyOnPooledConnection(
-        const SSLConfig& used_ssl_config,
-        const ProxyInfo& used_proxy_info,
-        std::unique_ptr<BidirectionalStreamImpl> stream) {
-  DCHECK(request_->completed());
-  DCHECK(!is_websocket_);
-  DCHECK_EQ(HttpStreamRequest::BIDIRECTIONAL_STREAM, request_->stream_type());
-
-  main_job_.reset();
-  alternative_job_.reset();
-  ResetErrorStatusForJobs();
-
-  delegate_->OnBidirectionalStreamImplReady(used_ssl_config, used_proxy_info,
-                                            std::move(stream));
 }
 
 void HttpStreamFactory::JobController::OnStreamReady(
@@ -386,6 +351,52 @@ void HttpStreamFactory::JobController::OnStreamFailed(
   }
   delegate_->OnStreamFailed(status, *job->net_error_details(), used_ssl_config,
                             job->proxy_info());
+}
+
+void HttpStreamFactory::JobController::OnStreamReadyOnPooledConnection(
+    bool was_alpn_negotiated,
+    NextProto negotiated_protocol,
+    bool using_spdy,
+    const SSLConfig& used_ssl_config,
+    const ProxyInfo& proxy_info,
+    std::unique_ptr<HttpStream> stream) {
+  // This isn't supported on orphaned jobs.
+  DCHECK(request_);
+  DCHECK(!is_websocket_);
+  DCHECK_EQ(HttpStreamRequest::HTTP_STREAM, request_->stream_type());
+
+  request_->Complete(was_alpn_negotiated, negotiated_protocol, using_spdy);
+
+  main_job_.reset();
+  alternative_job_.reset();
+  ResetErrorStatusForJobs();
+
+  factory_->OnStreamReady(proxy_info, request_info_.privacy_mode);
+
+  delegate_->OnStreamReady(used_ssl_config, proxy_info, std::move(stream));
+}
+
+void HttpStreamFactory::JobController::
+    OnBidirectionalStreamImplReadyOnPooledConnection(
+        bool was_alpn_negotiated,
+        NextProto negotiated_protocol,
+        bool using_spdy,
+        const SSLConfig& used_ssl_config,
+        const ProxyInfo& used_proxy_info,
+        std::unique_ptr<BidirectionalStreamImpl> stream) {
+  // This isn't supported on orphaned jobs.
+  DCHECK(request_);
+  DCHECK(!is_websocket_);
+  DCHECK_EQ(HttpStreamRequest::BIDIRECTIONAL_STREAM, request_->stream_type());
+
+  request_->Complete(was_alpn_negotiated, negotiated_protocol, using_spdy);
+
+  main_job_.reset();
+  alternative_job_.reset();
+  ResetErrorStatusForJobs();
+
+  delegate_->OnBidirectionalStreamImplReady(used_ssl_config, used_proxy_info,
+                                            std::move(stream));
 }
 
 void HttpStreamFactory::JobController::OnFailedOnDefaultNetwork(Job* job) {
@@ -661,38 +672,6 @@ bool HttpStreamFactory::JobController::ShouldWait(Job* job) {
   return true;
 }
 
-void HttpStreamFactory::JobController::SetSpdySessionKey(
-    Job* job,
-    const SpdySessionKey& spdy_session_key) {
-  DCHECK(!job->using_quic());
-
-  if (is_preconnect_ || IsJobOrphaned(job) || spdy_session_request_)
-    return;
-
-  spdy_session_request_ =
-      session_->spdy_session_pool()->CreateRequestForSpdySession(
-          spdy_session_key, request_);
-}
-
-void HttpStreamFactory::JobController::
-    RemoveRequestFromSpdySessionRequestMapForJob(Job* job) {
-  DCHECK(!job->using_quic());
-
-  if (is_preconnect_ || IsJobOrphaned(job))
-    return;
-
-  spdy_session_request_.reset();
-}
-
-void HttpStreamFactory::JobController::
-    RemoveRequestFromSpdySessionRequestMap() {
-  // Since |spdy_session_request_| references |request_|, |request_| should
-  // still be live at this point.
-  DCHECK(request_);
-
-  spdy_session_request_.reset();
-}
-
 const NetLogWithSource* HttpStreamFactory::JobController::GetNetLog() const {
   return &net_log_;
 }
@@ -949,7 +928,6 @@ void HttpStreamFactory::JobController::CancelJobs() {
 void HttpStreamFactory::JobController::OrphanUnboundJob() {
   DCHECK(request_);
   DCHECK(bound_job_);
-  RemoveRequestFromSpdySessionRequestMap();
 
   if (bound_job_->job_type() == MAIN && alternative_job_) {
     DCHECK(!is_websocket_);
@@ -1373,8 +1351,6 @@ int HttpStreamFactory::JobController::ReconsiderProxyAfterError(Job* job,
     return error;
   }
 
-  if (!job->using_quic())
-    RemoveRequestFromSpdySessionRequestMap();
   // Abandon all Jobs and start over.
   job_bound_ = false;
   bound_job_ = nullptr;

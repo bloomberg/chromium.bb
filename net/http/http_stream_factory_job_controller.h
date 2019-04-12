@@ -78,18 +78,6 @@ class HttpStreamFactory::JobController
   // Called when the priority of transaction changes.
   void SetPriority(RequestPriority priority) override;
 
-  // Called when SpdySessionPool notifies the Request
-  // that it can be served on a SpdySession created by another Request,
-  // therefore the Jobs can be destroyed.
-  void OnStreamReadyOnPooledConnection(
-      const SSLConfig& used_ssl_config,
-      const ProxyInfo& proxy_info,
-      std::unique_ptr<HttpStream> stream) override;
-  void OnBidirectionalStreamImplReadyOnPooledConnection(
-      const SSLConfig& used_ssl_config,
-      const ProxyInfo& used_proxy_info,
-      std::unique_ptr<BidirectionalStreamImpl> stream) override;
-
   // From HttpStreamFactory::Job::Delegate.
   // Invoked when |job| has an HttpStream ready.
   void OnStreamReady(Job* job, const SSLConfig& used_ssl_config) override;
@@ -111,6 +99,22 @@ class HttpStreamFactory::JobController
   void OnStreamFailed(Job* job,
                       int status,
                       const SSLConfig& used_ssl_config) override;
+
+  void OnStreamReadyOnPooledConnection(
+      bool was_alpn_negotiated,
+      NextProto negotiated_protocol,
+      bool using_spdy,
+      const SSLConfig& used_ssl_config,
+      const ProxyInfo& proxy_info,
+      std::unique_ptr<HttpStream> stream) override;
+
+  void OnBidirectionalStreamImplReadyOnPooledConnection(
+      bool was_alpn_negotiated,
+      NextProto negotiated_protocol,
+      bool using_spdy,
+      const SSLConfig& used_ssl_config,
+      const ProxyInfo& used_proxy_info,
+      std::unique_ptr<BidirectionalStreamImpl> stream) override;
 
   // Invoked when |job| fails on the default network.
   void OnFailedOnDefaultNetwork(Job* job) override;
@@ -166,16 +170,6 @@ class HttpStreamFactory::JobController
   // Return false if |job| can advance to the next state. Otherwise, |job|
   // will wait for Job::Resume() to be called before advancing.
   bool ShouldWait(Job* job) override;
-
-  // Called when |job| determines the appropriate |spdy_session_key| for the
-  // Request. Note that this does not mean that SPDY is necessarily supported
-  // for this SpdySessionKey, since we may need to wait for NPN to complete
-  // before knowing if SPDY is available.
-  void SetSpdySessionKey(Job* job,
-                         const SpdySessionKey& spdy_session_key) override;
-
-  // Remove session from the SpdySessionRequestMap.
-  void RemoveRequestFromSpdySessionRequestMapForJob(Job* job) override;
 
   const NetLogWithSource* GetNetLog() const override;
 
@@ -295,9 +289,6 @@ class HttpStreamFactory::JobController
   quic::QuicTransportVersion SelectQuicVersion(
       const quic::QuicTransportVersionVector& advertised_versions);
 
-  // Remove session from the SpdySessionRequestMap.
-  void RemoveRequestFromSpdySessionRequestMap();
-
   // Returns true if the |request_| can be fetched via an alternative
   // proxy server, and sets |alternative_proxy_info| to the alternative proxy
   // server configuration. |alternative_proxy_info| should not be null,
@@ -398,7 +389,6 @@ class HttpStreamFactory::JobController
   int num_streams_;
   HttpStreamRequest::StreamType stream_type_;
   RequestPriority priority_;
-  std::unique_ptr<SpdySessionPool::SpdySessionRequest> spdy_session_request_;
   const NetLogWithSource net_log_;
 
   base::WeakPtrFactory<JobController> ptr_factory_;
