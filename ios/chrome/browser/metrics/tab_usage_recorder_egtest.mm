@@ -405,7 +405,7 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
       std::make_unique<HtmlResponseProvider>(responses), kSlowURLDelay));
 
   NSError* switchError = SwitchToNormalMode();
-  // TODO(crbug.com/951600): We avoid asserting directly unless the test fails,
+  // TODO(crbug.com/951600): Avoid asserting directly unless the test fails,
   // due to timing issues.
   if (switchError != nil) {
     GREYAssert(false, switchError.localizedDescription);
@@ -457,7 +457,7 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
       std::make_unique<HtmlResponseProvider>(responses), kSlowURLDelay));
 
   NSError* switchError = SwitchToNormalMode();
-  // TODO(crbug.com/951600): We avoid asserting directly unless the test fails,
+  // TODO(crbug.com/951600): Avoid asserting directly unless the test fails,
   // due to timing issues.
   if (switchError != nil) {
     GREYAssert(false, switchError.localizedDescription);
@@ -541,7 +541,7 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
   web::test::SetUpHttpServer(std::make_unique<web::DelayedResponseProvider>(
       std::make_unique<HtmlResponseProvider>(responses), kSlowURLDelay));
   NSError* switchError = SwitchToNormalMode();
-  // TODO(crbug.com/951600): We avoid asserting directly unless the test fails,
+  // TODO(crbug.com/951600): Avoid asserting directly unless the test fails,
   // due to timing issues.
   if (switchError != nil) {
     GREYAssert(false, switchError.localizedDescription);
