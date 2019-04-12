@@ -216,7 +216,7 @@ class LayerTreeHostBlendingPixelTest
     if (test_type_ != PIXEL_TEST_GL && flags & kForceShaders)
       return;
 
-    SCOPED_TRACE(test_type_ == PIXEL_TEST_GL ? "GL" : "Software");
+    SCOPED_TRACE(TestTypeToString(test_type_));
     SCOPED_TRACE(SkBlendMode_Name(current_blend_mode()));
 
     scoped_refptr<SolidColorLayer> root = CreateSolidColorLayer(
