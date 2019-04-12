@@ -26,13 +26,25 @@ StorageBlock<T>::StorageBlock(MappedFile* file, Addr address)
       extended_(false) {
   if (address.num_blocks() > 1)
     extended_ = true;
-  DCHECK(!address.is_initialized() || sizeof(*data_) == address.BlockSize());
+  DCHECK(!address.is_initialized() || sizeof(*data_) == address.BlockSize())
+      << address.value();
 }
 
 template<typename T> StorageBlock<T>::~StorageBlock() {
   if (modified_)
     Store();
   DeleteData();
+}
+
+template <typename T>
+void StorageBlock<T>::CopyFrom(StorageBlock<T>* other) {
+  DCHECK(!modified_);
+  DCHECK(!other->modified_);
+  Discard();
+  *Data() = *other->Data();
+  file_ = other->file_;
+  address_ = other->address_;
+  extended_ = other->extended_;
 }
 
 template<typename T> void* StorageBlock<T>::buffer() const {

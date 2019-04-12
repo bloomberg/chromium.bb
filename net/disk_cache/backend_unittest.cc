@@ -189,6 +189,7 @@ class DiskCacheBackendTest : public DiskCacheTestWithCache {
   void BackendEviction();
   void BackendOpenOrCreateEntry();
   void BackendDeadOpenNextEntry();
+  void BackendIteratorConcurrentDoom();
 };
 
 int DiskCacheBackendTest::GeneratePendingIO(net::TestCompletionCallback* cb) {
@@ -4872,6 +4873,64 @@ TEST_F(DiskCacheBackendTest, SimpleBackendDeadOpenNextEntry) {
 TEST_F(DiskCacheBackendTest, InMemorySimpleBackendDeadOpenNextEntry) {
   SetMemoryOnlyMode();
   BackendDeadOpenNextEntry();
+}
+
+void DiskCacheBackendTest::BackendIteratorConcurrentDoom() {
+  disk_cache::Entry* entry1 = nullptr;
+  disk_cache::Entry* entry2 = nullptr;
+  EXPECT_EQ(net::OK, CreateEntry("Key0", &entry1));
+  EXPECT_EQ(net::OK, CreateEntry("Key1", &entry2));
+
+  std::unique_ptr<disk_cache::Backend::Iterator> iter =
+      cache_->CreateIterator();
+
+  disk_cache::Entry* entry3 = nullptr;
+  EXPECT_EQ(net::OK, OpenEntry("Key0", &entry3));
+
+  net::TestCompletionCallback cb;
+  disk_cache::Entry* entry_iter = nullptr;
+  int rv = iter->OpenNextEntry(&entry_iter, cb.callback());
+  EXPECT_EQ(net::OK, cb.GetResult(rv));
+
+  net::TestCompletionCallback cb_doom;
+  int rv_doom = cache_->DoomAllEntries(cb_doom.callback());
+  EXPECT_EQ(net::OK, cb_doom.GetResult(rv_doom));
+
+  net::TestCompletionCallback cb2;
+  disk_cache::Entry* entry_iter2 = nullptr;
+  int rv2 = iter->OpenNextEntry(&entry_iter2, cb2.callback());
+
+  rv2 = cb2.GetResult(rv2);
+  EXPECT_TRUE(rv2 == net::ERR_FAILED || rv2 == net::OK);
+
+  entry1->Close();
+  entry2->Close();
+  entry3->Close();
+  if (entry_iter)
+    entry_iter->Close();
+  if (entry_iter2)
+    entry_iter2->Close();
+}
+
+TEST_F(DiskCacheBackendTest, BlockFileIteratorConcurrentDoom) {
+  // Init in normal mode, bug not reproducible with kNoRandom. Still need to
+  // let the test fixture know the new eviction algorithm will be on.
+  CleanupCacheDir();
+  SetNewEviction();
+  CreateBackend(disk_cache::kNone);
+  BackendIteratorConcurrentDoom();
+}
+
+TEST_F(DiskCacheBackendTest, SimpleIteratorConcurrentDoom) {
+  SetSimpleCacheMode();
+  InitCache();
+  BackendIteratorConcurrentDoom();
+}
+
+TEST_F(DiskCacheBackendTest, InMemoryConcurrentDoom) {
+  SetMemoryOnlyMode();
+  InitCache();
+  BackendIteratorConcurrentDoom();
 }
 
 TEST_F(DiskCacheBackendTest, EmptyCorruptSimpleCacheRecovery) {
