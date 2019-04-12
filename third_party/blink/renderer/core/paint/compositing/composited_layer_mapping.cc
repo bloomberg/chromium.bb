@@ -1925,8 +1925,8 @@ void CompositedLayerMapping::UpdateDrawsContentAndPaintsHitTest() {
   // paints content, regardless of whether the descendant content is a hit test)
   // but an exhaustive check of descendants that paint hit tests would be too
   // expensive.
-  bool paints_hit_test = has_painted_content ||
-                         GetLayoutObject().HasEffectiveWhitelistedTouchAction();
+  bool paints_hit_test =
+      has_painted_content || GetLayoutObject().HasEffectiveAllowedTouchAction();
   graphics_layer_->SetPaintsHitTest(paints_hit_test);
 
   if (scrolling_layer_) {

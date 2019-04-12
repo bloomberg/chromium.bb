@@ -90,7 +90,7 @@ bool NGFragmentPainter::ShouldRecordHitTestData(
   if (fragment.Style().Visibility() != EVisibility::kVisible)
     return false;
 
-  auto touch_action = fragment.EffectiveWhitelistedTouchAction();
+  auto touch_action = fragment.EffectiveAllowedTouchAction();
   if (touch_action == TouchAction::kTouchActionAuto)
     return false;
 

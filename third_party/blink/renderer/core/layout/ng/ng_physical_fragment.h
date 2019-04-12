@@ -196,9 +196,9 @@ class CORE_EXPORT NGPhysicalFragment
   NGPhysicalOffsetRect ScrollableOverflowForPropagation(
       const LayoutObject* container) const;
 
-  // The whitelisted touch action is the union of the effective touch action
+  // The allowed touch action is the union of the effective touch action
   // (from style) and blocking touch event handlers.
-  TouchAction EffectiveWhitelistedTouchAction() const;
+  TouchAction EffectiveAllowedTouchAction() const;
 
   // Returns the bidi level of a text or atomic inline fragment.
   UBiDiLevel BidiLevel() const;
