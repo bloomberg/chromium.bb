@@ -6116,4 +6116,24 @@ TEST_F(HostResolverManagerDnsTest, SrvDnsQuery) {
                                             HostPortPair("google.com", 5)));
 }
 
+TEST_F(HostResolverManagerDnsTest, SetRequestContext) {
+  URLRequestContext context;
+
+  MockDnsClientRuleList rules;
+  rules.emplace_back("host", dns_protocol::kTypeA, SecureDnsMode::AUTOMATIC,
+                     MockDnsClientRule::Result(MockDnsClientRule::OK),
+                     false /* delay */, &context);
+  rules.emplace_back("host", dns_protocol::kTypeAAAA, SecureDnsMode::AUTOMATIC,
+                     MockDnsClientRule::Result(MockDnsClientRule::OK),
+                     false /* delay */, &context);
+
+  CreateResolver();
+  resolver_->SetRequestContext(&context);
+  UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("host", 109), NetLogWithSource(), base::nullopt));
+  EXPECT_THAT(response.result_error(), IsOk());
+}
+
 }  // namespace net
