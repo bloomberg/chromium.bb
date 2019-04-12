@@ -28,6 +28,7 @@
 
 #include <algorithm>
 #include "base/optional.h"
+#include "base/strings/string_util.h"
 #include "third_party/blink/renderer/platform/wtf/dtoa/dtoa.h"
 #include "third_party/blink/renderer/platform/wtf/text/integer_to_string_conversion.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -243,6 +244,28 @@ void StringBuilder::AppendNumber(float number) {
 void StringBuilder::AppendNumber(double number, unsigned precision) {
   NumberToStringBuffer buffer;
   Append(NumberToFixedPrecisionString(number, precision, buffer));
+}
+
+void StringBuilder::AppendFormat(const char* format, ...) {
+  va_list args;
+
+  static constexpr unsigned kDefaultSize = 256;
+  Vector<char, kDefaultSize> buffer(kDefaultSize);
+
+  va_start(args, format);
+  int length = base::vsnprintf(buffer.data(), kDefaultSize, format, args);
+  va_end(args);
+  DCHECK_GE(length, 0);
+
+  if (length >= static_cast<int>(kDefaultSize)) {
+    buffer.Grow(length + 1);
+    va_start(args, format);
+    length = base::vsnprintf(buffer.data(), buffer.size(), format, args);
+    va_end(args);
+  }
+
+  DCHECK_LT(static_cast<wtf_size_t>(length), buffer.size());
+  Append(reinterpret_cast<const LChar*>(buffer.data()), length);
 }
 
 void StringBuilder::erase(unsigned index) {

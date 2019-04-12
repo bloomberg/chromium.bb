@@ -7,7 +7,6 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/uuid.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
-#include "third_party/blink/renderer/platform/wtf/hex_number.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -416,14 +415,7 @@ String BluetoothUUID::getDescriptor(StringOrUnsignedLong name,
 
 // static
 String BluetoothUUID::canonicalUUID(unsigned alias) {
-  StringBuilder builder;
-  builder.ReserveCapacity(36 /* 36 chars or 128 bits, length of a UUID */);
-  HexNumber::AppendUnsignedAsHexFixedSize(
-      alias, builder, 8 /* 8 chars or 32 bits, prefix length */,
-      HexNumber::kLowercase);
-
-  builder.Append("-0000-1000-8000-00805f9b34fb");
-  return builder.ToString();
+  return String::Format("%08x-0000-1000-8000-00805f9b34fb", alias);
 }
 
 }  // namespace blink

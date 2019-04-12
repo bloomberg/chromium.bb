@@ -39,7 +39,6 @@
 #include "third_party/blink/renderer/platform/graphics/skia/image_pixel_locker.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/image-encoders/image_encoder.h"
-#include "third_party/blink/renderer/platform/wtf/hex_number.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/skia/include/core/SkImage.h"
@@ -322,12 +321,9 @@ std::unique_ptr<JSONObject> ObjectForSkShader(const SkShader& shader) {
   return std::make_unique<JSONObject>();
 }
 
-String StringForSkColor(const SkColor& color) {
+String StringForSkColor(SkColor color) {
   // #AARRGGBB.
-  Vector<LChar, 9> result;
-  result.push_back('#');
-  HexNumber::AppendUnsignedAsHex(color, result);
-  return String(result.data(), result.size());
+  return String::Format("#%08X", color);
 }
 
 void AppendFlagToString(StringBuilder* flags_string,

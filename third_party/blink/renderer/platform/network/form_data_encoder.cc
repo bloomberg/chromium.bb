@@ -27,7 +27,6 @@
 
 #include <limits>
 #include "base/rand_util.h"
-#include "third_party/blink/renderer/platform/wtf/hex_number.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 
@@ -47,8 +46,9 @@ static inline void Append(Vector<char>& buffer, const CString& string) {
 }
 
 static inline void AppendPercentEncoded(Vector<char>& buffer, unsigned char c) {
-  Append(buffer, '%');
-  HexNumber::AppendByteAsHex(c, buffer);
+  const char kHexChars[] = "0123456789ABCDEF";
+  const char tmp[] = {'%', kHexChars[c / 16], kHexChars[c % 16]};
+  buffer.Append(tmp, sizeof(tmp));
 }
 
 static void AppendQuotedString(Vector<char>& buffer, const CString& string) {
