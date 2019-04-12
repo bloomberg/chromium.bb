@@ -2259,7 +2259,7 @@
           'walleye',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_angle_deqp_gles2_vulkan_tests',
+          'gtest_tests': 'gpu_angle_deqp_android_vulkan_gtests',
         },
       },
       'Android FYI 32 dEQP Vk Release (Pixel XL)': {
@@ -2271,7 +2271,7 @@
           'pie',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_angle_deqp_gles2_vulkan_tests',
+          'gtest_tests': 'gpu_angle_deqp_android_vulkan_gtests',
         },
       },
       'Android FYI 64 Vk Release (Pixel 2)': {
@@ -2309,7 +2309,7 @@
           'walleye',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_angle_deqp_gles2_vulkan_tests',
+          'gtest_tests': 'gpu_angle_deqp_android_vulkan_gtests',
         },
       },
       'Android FYI 64 dEQP Vk Release (Pixel XL)': {
@@ -2321,7 +2321,7 @@
           'pie',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_angle_deqp_gles2_vulkan_tests',
+          'gtest_tests': 'gpu_angle_deqp_android_vulkan_gtests',
         },
       },
       'Android FYI Release (NVIDIA Shield TV)': {
