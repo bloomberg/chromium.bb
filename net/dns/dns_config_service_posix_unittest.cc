@@ -9,8 +9,11 @@
 #include "base/cancelable_callback.h"
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
+#include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/sys_byteorder.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
@@ -185,14 +188,35 @@ TEST(DnsConfigServicePosixTest, RejectEmptyNameserver) {
 TEST(DnsConfigServicePosixTest, DestroyWhileJobsWorking) {
   // Regression test to verify crash does not occur if DnsConfigServicePosix
   // instance is destroyed while SerialWorker jobs have posted to worker pool.
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::ScopedTaskEnvironment scoped_task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::IO);
 
   std::unique_ptr<internal::DnsConfigServicePosix> service(
       new internal::DnsConfigServicePosix());
-  service->ReadConfig(base::Bind(&DummyConfigCallback));
+  // Call WatchConfig() which also tests ReadConfig().
+  service->WatchConfig(base::BindRepeating(&DummyConfigCallback));
   service.reset();
   scoped_task_environment.RunUntilIdle();
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(1000));
+}
+
+TEST(DnsConfigServicePosixTest, DestroyOnDifferentThread) {
+  // Regression test to verify crash does not occur if DnsConfigServicePosix
+  // instance is destroyed on another thread.
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+
+  scoped_refptr<base::SequencedTaskRunner> runner =
+      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
+  std::unique_ptr<internal::DnsConfigServicePosix, base::OnTaskRunnerDeleter>
+      service(new internal::DnsConfigServicePosix(),
+              base::OnTaskRunnerDeleter(runner));
+
+  runner->PostTask(FROM_HERE,
+                   base::BindOnce(&internal::DnsConfigServicePosix::WatchConfig,
+                                  base::Unretained(service.get()),
+                                  base::BindRepeating(&DummyConfigCallback)));
+  service.reset();
+  scoped_task_environment.RunUntilIdle();
 }
 
 }  // namespace
