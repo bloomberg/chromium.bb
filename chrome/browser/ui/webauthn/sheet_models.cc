@@ -624,56 +624,6 @@ AuthenticatorBleActivateSheetModel::GetOtherTransportsMenuModel() {
   return other_transports_menu_model_.get();
 }
 
-// AuthenticatorTouchIdSheetModel -----------------------------------------
-
-AuthenticatorTouchIdSheetModel::AuthenticatorTouchIdSheetModel(
-    AuthenticatorRequestDialogModel* dialog_model)
-    : AuthenticatorSheetModelBase(dialog_model),
-      other_transports_menu_model_(std::make_unique<OtherTransportsMenuModel>(
-          dialog_model,
-          AuthenticatorTransport::kInternal)) {}
-
-AuthenticatorTouchIdSheetModel::~AuthenticatorTouchIdSheetModel() = default;
-
-bool AuthenticatorTouchIdSheetModel::IsActivityIndicatorVisible() const {
-  return true;
-}
-
-bool AuthenticatorTouchIdSheetModel::IsBackButtonVisible() const {
-  // Clicking back would not dismiss the native Touch ID dialog, which would be
-  // confusing. The user can cancel the native dialog to dismiss it.
-  return false;
-}
-
-gfx::ImageSkia* AuthenticatorTouchIdSheetModel::GetStepIllustration(
-    ImageColorScheme color_scheme) const {
-#if defined(OS_MACOSX)
-  return GetImage(color_scheme == ImageColorScheme::kDark
-                      ? IDR_WEBAUTHN_ILLUSTRATION_TOUCHID_DARK
-                      : IDR_WEBAUTHN_ILLUSTRATION_TOUCHID);
-#else
-  // Avoid bundling the PNG on platforms where it's not needed.
-  return nullptr;
-#endif  // defined(OS_MACOSX)
-}
-
-base::string16 AuthenticatorTouchIdSheetModel::GetStepTitle() const {
-#if defined(OS_MACOSX)
-  return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_TOUCH_ID_TITLE,
-                                    GetRelyingPartyIdString(dialog_model()));
-#else
-  return base::string16();
-#endif  // defined(OS_MACOSX)
-}
-
-base::string16 AuthenticatorTouchIdSheetModel::GetStepDescription() const {
-  return base::string16();
-}
-
-ui::MenuModel* AuthenticatorTouchIdSheetModel::GetOtherTransportsMenuModel() {
-  return other_transports_menu_model_.get();
-}
-
 // AuthenticatorTouchIdIncognitoBumpSheetModel
 // -----------------------------------------
 
@@ -742,7 +692,7 @@ AuthenticatorTouchIdIncognitoBumpSheetModel::GetAcceptButtonLabel() const {
 }
 
 void AuthenticatorTouchIdIncognitoBumpSheetModel::OnAccept() {
-  dialog_model()->TryTouchId();
+  dialog_model()->HideDialogAndTryTouchId();
 }
 
 // AuthenticatorPaaskSheetModel -----------------------------------------

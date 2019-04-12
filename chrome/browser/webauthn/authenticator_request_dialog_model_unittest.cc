@@ -140,7 +140,7 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
        {AuthenticatorTransport::kInternal},
        {},
        {TransportAvailabilityParam::kHasTouchIdCredential},
-       Step::kTouchId},
+       Step::kNotStarted},
       {RequestType::kGetAssertion,
        {AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy},
        base::nullopt,
@@ -167,7 +167,7 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
        kAllTransports,
        AuthenticatorTransport::kUsbHumanInterfaceDevice,
        {TransportAvailabilityParam::kHasTouchIdCredential},
-       Step::kTouchId},
+       Step::kNotStarted},
 
       // The KeyChain does not contain an allowed Touch ID credential.
       {RequestType::kGetAssertion,
@@ -267,7 +267,7 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
        {AuthenticatorTransport::kInternal},
        base::nullopt,
        {},
-       Step::kTouchId},
+       Step::kNotStarted},
       {RequestType::kMakeCredential,
        {AuthenticatorTransport::kBluetoothLowEnergy},
        base::nullopt,
@@ -572,8 +572,7 @@ TEST_F(AuthenticatorRequestDialogModelTest,
   // Simulate switching back and forth between transports. The request callback
   // should only be invoked once (USB is not dispatched through the UI).
   model.StartGuidedFlowForTransport(AuthenticatorTransport::kInternal);
-  EXPECT_EQ(AuthenticatorRequestDialogModel::Step::kTouchId,
-            model.current_step());
+  EXPECT_TRUE(model.should_dialog_be_hidden());
   task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, num_called);
   model.StartGuidedFlowForTransport(
@@ -583,8 +582,7 @@ TEST_F(AuthenticatorRequestDialogModelTest,
   task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, num_called);
   model.StartGuidedFlowForTransport(AuthenticatorTransport::kInternal);
-  EXPECT_EQ(AuthenticatorRequestDialogModel::Step::kTouchId,
-            model.current_step());
+  EXPECT_TRUE(model.should_dialog_be_hidden());
   task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, num_called);
 }

@@ -81,7 +81,6 @@ class AuthenticatorRequestDialogModel {
     kBleVerifying,
 
     // Touch ID.
-    kTouchId,
     kTouchIdIncognitoSpeedBump,
 
     // Phone as a security key.
@@ -187,7 +186,7 @@ class AuthenticatorRequestDialogModel {
   //
   // Valid action when at step: kNotStarted, kWelcomeScreen,
   // kTransportSelection, and steps where the other transports menu is shown,
-  // namely, kUsbInsertAndActivate, kTouchId, kBleActivate, kCableActivate.
+  // namely, kUsbInsertAndActivate, kBleActivate, kCableActivate.
   void StartGuidedFlowForTransport(
       AuthenticatorTransport transport,
       bool pair_with_new_device_for_bluetooth_low_energy = false);
@@ -204,7 +203,7 @@ class AuthenticatorRequestDialogModel {
   //
   // Valid action when at step: kNotStarted, kWelcomeScreen,
   // kTransportSelection, and steps where the other transports menu is shown,
-  // namely, kUsbInsertAndActivate, kTouchId, kBleActivate, kCableActivate.
+  // namely, kUsbInsertAndActivate, kBleActivate, kCableActivate.
   void EnsureBleAdapterIsPoweredBeforeContinuingWithStep(Step step);
 
   // Continues with the BLE/caBLE flow now that the Bluetooth adapter is
@@ -259,7 +258,7 @@ class AuthenticatorRequestDialogModel {
   // Proceeds straight to the Touch ID prompt.
   //
   // Valid action when at all steps.
-  void TryTouchId();
+  void HideDialogAndTryTouchId();
 
   // Cancels the flow as a result of the user clicking `Cancel` on the UI.
   //
@@ -386,10 +385,8 @@ class AuthenticatorRequestDialogModel {
   }
 
  private:
-  void DispatchRequestAsync(AuthenticatorReference* authenticator,
-                            base::TimeDelta delay);
-  void DispatchRequestAsyncInternal(const std::string& authenticator_id,
-                                    base::TimeDelta delay);
+  void DispatchRequestAsync(AuthenticatorReference* authenticator);
+  void DispatchRequestAsyncInternal(const std::string& authenticator_id);
 
   // The current step of the request UX flow that is currently shown.
   Step current_step_ = Step::kNotStarted;

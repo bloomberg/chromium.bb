@@ -323,25 +323,6 @@ class AuthenticatorBleActivateSheetModel : public AuthenticatorSheetModelBase {
   std::unique_ptr<OtherTransportsMenuModel> other_transports_menu_model_;
 };
 
-class AuthenticatorTouchIdSheetModel : public AuthenticatorSheetModelBase {
- public:
-  explicit AuthenticatorTouchIdSheetModel(
-      AuthenticatorRequestDialogModel* dialog_model);
-  ~AuthenticatorTouchIdSheetModel() override;
-
- private:
-  // AuthenticatorSheetModelBase:
-  bool IsActivityIndicatorVisible() const override;
-  bool IsBackButtonVisible() const override;
-  gfx::ImageSkia* GetStepIllustration(
-      ImageColorScheme color_scheme) const override;
-  base::string16 GetStepTitle() const override;
-  base::string16 GetStepDescription() const override;
-  ui::MenuModel* GetOtherTransportsMenuModel() override;
-
-  std::unique_ptr<OtherTransportsMenuModel> other_transports_menu_model_;
-};
-
 class AuthenticatorTouchIdIncognitoBumpSheetModel
     : public AuthenticatorSheetModelBase {
  public:
