@@ -440,9 +440,6 @@ void View::SetVisible(bool visible) {
                                         false);
     }
 
-    for (ViewObserver& observer : observers_)
-      observer.OnViewVisibilityChanged(this);
-
     // This notifies all sub-views recursively.
     PropagateVisibilityNotifications(this, visible_);
     UpdateLayerVisibility();
@@ -2236,6 +2233,8 @@ void View::PropagateVisibilityNotifications(View* start, bool is_visible) {
 
 void View::VisibilityChangedImpl(View* starting_from, bool is_visible) {
   VisibilityChanged(starting_from, is_visible);
+  for (ViewObserver& observer : observers_)
+    observer.OnViewVisibilityChanged(this, starting_from);
 }
 
 void View::SnapLayerToPixelBoundary(const LayerOffsetData& offset_data) {

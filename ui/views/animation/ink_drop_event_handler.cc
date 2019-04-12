@@ -11,6 +11,7 @@
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
 
 namespace views {
 InkDropEventHandler::InkDropEventHandler(View* host_view, Delegate* delegate)
@@ -115,9 +116,15 @@ void InkDropEventHandler::OnMouseEvent(ui::MouseEvent* event) {
   }
 }
 
-void InkDropEventHandler::OnViewVisibilityChanged(View* observed_view) {
+void InkDropEventHandler::OnViewVisibilityChanged(View* observed_view,
+                                                  View* starting_view) {
   DCHECK_EQ(host_view_, observed_view);
-  if (!host_view_->visible() && delegate_->HasInkDrop()) {
+  // A View is *actually* visible if its visible flag is set, all its ancestors'
+  // visible flags are set, it's in a Widget, and the Widget is
+  // visible. |View::IsDrawn()| captures the first two conditions.
+  const bool is_visible = host_view_->IsDrawn() && host_view_->GetWidget() &&
+                          host_view_->GetWidget()->IsVisible();
+  if (!is_visible && delegate_->HasInkDrop()) {
     delegate_->GetInkDrop()->AnimateToState(InkDropState::HIDDEN);
     delegate_->GetInkDrop()->SetHovered(false);
   }

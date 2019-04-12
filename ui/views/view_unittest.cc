@@ -5032,8 +5032,9 @@ class ViewObserverTest : public ViewTest, public ViewObserver {
     child_view_removed_parent_ = parent;
   }
 
-  void OnViewVisibilityChanged(View* view) override {
+  void OnViewVisibilityChanged(View* view, View* starting_view) override {
     view_visibility_changed_ = view;
+    view_visibility_changed_starting_ = starting_view;
   }
 
   void OnViewBoundsChanged(View* view) override { view_bounds_changed_ = view; }
@@ -5073,6 +5074,9 @@ class ViewObserverTest : public ViewTest, public ViewObserver {
   const View* view_visibility_changed() const {
     return view_visibility_changed_;
   }
+  const View* view_visibility_changed_starting() const {
+    return view_visibility_changed_starting_;
+  }
   const View* view_bounds_changed() const { return view_bounds_changed_; }
   const View* view_reordered() const { return view_reordered_; }
 
@@ -5085,6 +5089,7 @@ class ViewObserverTest : public ViewTest, public ViewObserver {
   View* child_view_removed_ = nullptr;
   View* child_view_removed_parent_ = nullptr;
   View* view_visibility_changed_ = nullptr;
+  View* view_visibility_changed_starting_ = nullptr;
   View* view_bounds_changed_ = nullptr;
   View* view_reordered_ = nullptr;
 
@@ -5123,10 +5128,26 @@ TEST_F(ViewObserverTest, ViewParentChanged) {
 }
 
 TEST_F(ViewObserverTest, ViewVisibilityChanged) {
-  std::unique_ptr<View> view = NewView();
+  std::unique_ptr<View> parent(new View);
+  View* view = parent->AddChildView(NewView());
+
+  // Ensure setting |view| itself not visible calls the observer.
   view->SetVisible(false);
-  EXPECT_EQ(view.get(), view_visibility_changed());
-  EXPECT_FALSE(view->visible());
+  EXPECT_EQ(view, view_visibility_changed());
+  EXPECT_EQ(view, view_visibility_changed_starting());
+  reset();
+
+  // Ditto for setting it visible.
+  view->SetVisible(true);
+  EXPECT_EQ(view, view_visibility_changed());
+  EXPECT_EQ(view, view_visibility_changed_starting());
+  reset();
+
+  // Ensure setting |parent| not visible also calls the
+  // observer. |view->visible()| should still return true however.
+  parent->SetVisible(false);
+  EXPECT_EQ(view, view_visibility_changed());
+  EXPECT_EQ(parent.get(), view_visibility_changed_starting());
 }
 
 TEST_F(ViewObserverTest, ViewBoundsChanged) {

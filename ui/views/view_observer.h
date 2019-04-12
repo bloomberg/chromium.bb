@@ -22,9 +22,11 @@ class VIEWS_EXPORT ViewObserver {
   // Called when |child| is removed as a child of |observed_view|.
   virtual void OnChildViewRemoved(View* observed_view, View* child) {}
 
-  // Called when View::SetVisible() is called with a new value. See
-  // View::IsDrawn() for details on how visibility and drawn differ.
-  virtual void OnViewVisibilityChanged(View* observed_view) {}
+  // Called when |observed_view|, an ancestor, or its Widget has its visibility
+  // changed. |starting_view| is who |View::SetVisible()| was called on (or null
+  // if the Widget visibility changed).
+  virtual void OnViewVisibilityChanged(View* observed_view,
+                                       View* starting_view) {}
 
   // Called from View::PreferredSizeChanged().
   virtual void OnViewPreferredSizeChanged(View* observed_view) {}
