@@ -66,11 +66,6 @@ public class KeyboardAccessoryTabLayoutCoordinator {
          * either this function or {@link #onActiveTabChanged(Integer)} is called. Never both.
          */
         void onActiveTabReselected();
-
-        /**
-         * Called when tabs are inserted, removed or changed.
-         */
-        void onTabsChanged();
     }
 
     /**

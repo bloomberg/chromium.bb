@@ -69,6 +69,15 @@ class ManualFillingState {
         mWebContents.addObserver(mWebContentsObserver);
     }
 
+    /**
+     * Repeats the latest data that known {@link CachedProviderAdapter}s cached to all
+     * {@link Provider.Observer}s.
+     */
+    void notifyObservers() {
+        if (mActionsProvider != null) mActionsProvider.notifyAboutCachedItems();
+        if (mPasswordSheetDataProvider != null) mPasswordSheetDataProvider.notifyAboutCachedItems();
+    }
+
     KeyboardAccessoryData.Tab[] getTabs() {
         ArrayList<KeyboardAccessoryData.Tab> tabs = new ArrayList<>();
         if (mPasswordAccessorySheet != null) tabs.add(mPasswordAccessorySheet.getTab());

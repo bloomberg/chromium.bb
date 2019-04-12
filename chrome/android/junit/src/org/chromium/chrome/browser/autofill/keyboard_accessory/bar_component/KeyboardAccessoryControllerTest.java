@@ -137,7 +137,7 @@ public class KeyboardAccessoryControllerTest {
         mCoordinator.registerActionProvider(testProvider);
 
         // If the coordinator receives an initial actions, the model should report an insertion.
-        mCoordinator.requestShowing();
+        mCoordinator.show();
 
         Action testAction = new Action(null, 0, null);
         testProvider.notifyObservers(new Action[] {testAction});
@@ -173,7 +173,7 @@ public class KeyboardAccessoryControllerTest {
         mCoordinator.registerActionProvider(testProvider);
 
         // If the coordinator receives an initial action, the model should report an insertion.
-        mCoordinator.requestShowing();
+        mCoordinator.show();
 
         Action testAction = new Action(null, 0, null);
         testProvider.notifyObservers(new Action[] {testAction});
@@ -217,65 +217,11 @@ public class KeyboardAccessoryControllerTest {
     }
 
     @Test
-    public void testIsVisibleWithSuggestionsBeforeKeyboardComesUp() {
-        PropertyProvider<AutofillSuggestion[]> autofillSuggestionProvider =
-                new PropertyProvider<>(AUTOFILL_SUGGESTION);
-        AutofillSuggestion suggestion =
-                new AutofillSuggestion("Label", "sublabel", 0, false, 0, false, false, false);
-        mCoordinator.registerAutofillProvider(autofillSuggestionProvider, mMockAutofillDelegate);
-
-        // Without suggestions, the accessory should remain invisible - even if the keyboard shows.
-        assertThat(mModel.get(BAR_ITEMS).size(), is(0));
-        assertThat(mModel.get(VISIBLE), is(false));
-        mCoordinator.requestShowing();
-        assertThat(mModel.get(VISIBLE), is(false));
-        mCoordinator.requestClosing();
-
-        // Adding suggestions doesn't change the visibility by itself.
-        autofillSuggestionProvider.notifyObservers(
-                new AutofillSuggestion[] {suggestion, suggestion});
-        assertThat(mModel.get(BAR_ITEMS).size(), is(2));
-        assertThat(mModel.get(VISIBLE), is(false));
-
-        // But as soon as the keyboard comes up, it should be showing.
-        mCoordinator.requestShowing();
+    public void testTogglesVisibility() {
+        mCoordinator.show();
         assertThat(mModel.get(VISIBLE), is(true));
-    }
-
-    @Test
-    public void testIsVisibleWithSuggestionsAfterKeyboardComesUp() {
-        PropertyProvider<AutofillSuggestion[]> autofillSuggestionProvider =
-                new PropertyProvider<>(AUTOFILL_SUGGESTION);
-        AutofillSuggestion suggestion =
-                new AutofillSuggestion("Label", "sublabel", 0, false, 0, false, false, false);
-        mCoordinator.registerAutofillProvider(autofillSuggestionProvider, mMockAutofillDelegate);
-
-        // Without any suggestions, the accessory should remain invisible.
+        mCoordinator.dismiss();
         assertThat(mModel.get(VISIBLE), is(false));
-        assertThat(mModel.get(BAR_ITEMS).size(), is(0));
-
-        // If the keyboard comes up, but there are no suggestions set, keep the accessory hidden.
-        mCoordinator.requestShowing();
-        assertThat(mModel.get(VISIBLE), is(false));
-
-        // Adding suggestions while the keyboard is visible triggers the accessory.
-        autofillSuggestionProvider.notifyObservers(
-                new AutofillSuggestion[] {suggestion, suggestion});
-        assertThat(mModel.get(BAR_ITEMS).size(), is(2));
-        assertThat(mModel.get(VISIBLE), is(true));
-    }
-
-    @Test
-    public void testIsVisibleWithActions() {
-        // Without any actions, the accessory should remain invisible.
-        assertThat(mModel.get(BAR_ITEMS).size(), is(0));
-        mCoordinator.requestShowing();
-        assertThat(mModel.get(VISIBLE), is(false));
-
-        // Adding actions while the keyboard is visible triggers the accessory.
-        mModel.get(BAR_ITEMS).add(new BarItem(
-                BarItem.Type.SUGGESTION, new Action("Suggestion", AUTOFILL_SUGGESTION, (a) -> {})));
-        assertThat(mModel.get(VISIBLE), is(true));
     }
 
     @Test
@@ -368,31 +314,19 @@ public class KeyboardAccessoryControllerTest {
     @Test
     public void testGenerationActionsRemovedWhenNotVisible() {
         // Make the accessory visible and add an action to it.
-        mCoordinator.requestShowing();
+        mCoordinator.show();
         mModel.get(BAR_ITEMS).add(new BarItem(
                 BarItem.Type.ACTION_BUTTON, new Action(null, GENERATE_PASSWORD_AUTOMATIC, null)));
 
         // Hiding the accessory should also remove actions.
-        mCoordinator.requestClosing();
+        mCoordinator.dismiss();
         assertThat(mModel.get(BAR_ITEMS).size(), is(0));
-    }
-
-    @Test
-    public void testIsVisibleWithTabs() {
-        // Without any actions, the accessory should remain invisible.
-        assertThat(mModel.get(BAR_ITEMS).size(), is(0));
-        mCoordinator.requestShowing();
-        assertThat(mModel.get(VISIBLE), is(false));
-
-        // Adding actions while the keyboard is visible triggers the accessory.
-        setTabs(new KeyboardAccessoryData.Tab[] {mTestTab});
-        assertThat(mModel.get(VISIBLE), is(true));
     }
 
     @Test
     public void testShowsTitleForActiveTabs() {
         // Add an inactive tab and ensure the sheet title isn't already set.
-        mCoordinator.requestShowing();
+        mCoordinator.show();
         setTabs(new KeyboardAccessoryData.Tab[] {mTestTab});
         mModel.set(SHEET_TITLE, "");
         assertThat(mCoordinator.hasActiveTab(), is(false));
@@ -411,30 +345,30 @@ public class KeyboardAccessoryControllerTest {
 
         // Adding a tab contributes to the tabs and the total bucket.
         setTabs(new KeyboardAccessoryData.Tab[] {mTestTab});
-        mCoordinator.requestShowing();
+        mCoordinator.show();
 
         assertThat(getShownMetricsCount(AccessoryBarContents.WITH_TABS), is(1));
         assertThat(getShownMetricsCount(AccessoryBarContents.ANY_CONTENTS), is(1));
 
         // Adding an action contributes to the actions bucket. Tabs and total are logged again.
-        mCoordinator.requestClosing(); // Hide, so it's brought up again.
+        mCoordinator.dismiss(); // Hide, so it's brought up again.
         mModel.get(BAR_ITEMS).add(new BarItem(
                 BarItem.Type.ACTION_BUTTON, new Action(null, GENERATE_PASSWORD_AUTOMATIC, null)));
-        mCoordinator.requestShowing();
+        mCoordinator.show();
 
         assertThat(getShownMetricsCount(AccessoryBarContents.WITH_ACTIONS), is(1));
         assertThat(getShownMetricsCount(AccessoryBarContents.WITH_TABS), is(2));
         assertThat(getShownMetricsCount(AccessoryBarContents.ANY_CONTENTS), is(2));
 
         // Adding suggestions adds to the suggestions bucket - and again to tabs and total.
-        mCoordinator.requestClosing(); // Hide, so it's brought up again.
+        mCoordinator.dismiss(); // Hide, so it's brought up again.
         PropertyProvider<AutofillSuggestion[]> autofillSuggestionProvider =
                 new PropertyProvider<>(AUTOFILL_SUGGESTION);
         AutofillSuggestion suggestion =
                 new AutofillSuggestion("Label", "sublabel", 0, false, 0, false, false, false);
         mCoordinator.registerAutofillProvider(autofillSuggestionProvider, mMockAutofillDelegate);
         autofillSuggestionProvider.notifyObservers(new AutofillSuggestion[] {suggestion});
-        mCoordinator.requestShowing();
+        mCoordinator.show();
 
         // Hiding the keyboard clears actions, so don't log more actions from here on out.
         assertThat(getShownMetricsCount(AccessoryBarContents.WITH_AUTOFILL_SUGGESTIONS), is(1));
@@ -443,9 +377,9 @@ public class KeyboardAccessoryControllerTest {
         assertThat(getShownMetricsCount(AccessoryBarContents.ANY_CONTENTS), is(3));
 
         // Removing suggestions adds to everything but the suggestions bucket. The value remains.
-        mCoordinator.requestClosing(); // Hide, so it's brought up again.
+        mCoordinator.dismiss(); // Hide, so it's brought up again.
         autofillSuggestionProvider.notifyObservers(new AutofillSuggestion[0]);
-        mCoordinator.requestShowing();
+        mCoordinator.show();
 
         assertThat(getShownMetricsCount(AccessoryBarContents.WITH_AUTOFILL_SUGGESTIONS), is(1));
         assertThat(getShownMetricsCount(AccessoryBarContents.WITH_ACTIONS), is(1));
@@ -461,7 +395,7 @@ public class KeyboardAccessoryControllerTest {
 
         // First showing contains tabs only.
         setTabs(new KeyboardAccessoryData.Tab[] {mTestTab});
-        mCoordinator.requestShowing();
+        mCoordinator.show();
 
         assertThat(getShownMetricsCount(AccessoryBarContents.WITH_TABS), is(1));
         assertThat(getShownMetricsCount(AccessoryBarContents.ANY_CONTENTS), is(1));
@@ -494,7 +428,7 @@ public class KeyboardAccessoryControllerTest {
 
         // Add a tab and show, so the accessory is permanently visible.
         setTabs(new KeyboardAccessoryData.Tab[] {mTestTab});
-        mCoordinator.requestShowing();
+        mCoordinator.show();
 
         // Adding an action fills the bar impression bucket and the actions set once.
         mModel.get(BAR_ITEMS).set(
@@ -529,7 +463,6 @@ public class KeyboardAccessoryControllerTest {
     private void setTabs(KeyboardAccessoryData.Tab[] tabs) {
         mCoordinator.setTabs(tabs);
         when(mMockTabSwitchingDelegate.hasTabs()).thenReturn(true);
-        mCoordinator.getMediatorForTesting().onTabsChanged();
     }
 
     private void setActiveTab(KeyboardAccessoryData.Tab tab) {

@@ -16,7 +16,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.bar_component.KeyboardAccessoryCoordinator;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.data.KeyboardAccessoryData;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.tab_layout_component.KeyboardAccessoryTabLayoutCoordinator.AccessoryTabObserver;
-import org.chromium.ui.modelutil.ListObservable;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyObservable;
@@ -29,7 +28,7 @@ import java.util.Set;
  * a {@link TabLayout}. It manages {@link ViewPager.OnPageChangeListener}s.
  */
 class KeyboardAccessoryTabLayoutMediator
-        implements ListObservable.ListObserver<Void>, TabLayout.OnTabSelectedListener,
+        implements TabLayout.OnTabSelectedListener,
                    PropertyObservable.PropertyObserver<PropertyKey>,
                    KeyboardAccessoryCoordinator.TabSwitchingDelegate {
     private final PropertyModel mModel;
@@ -39,7 +38,6 @@ class KeyboardAccessoryTabLayoutMediator
     KeyboardAccessoryTabLayoutMediator(PropertyModel model) {
         mModel = model;
         mModel.addObserver(this);
-        mModel.get(TABS).addObserver(this);
         mModel.set(TAB_SELECTION_CALLBACKS, this);
     }
 
@@ -112,25 +110,6 @@ class KeyboardAccessoryTabLayoutMediator
     @Override
     public boolean hasTabs() {
         return mModel.get(TABS).size() > 0;
-    }
-
-    @Override
-    public void onItemRangeInserted(ListObservable source, int index, int count) {
-        assert source == mModel.get(TABS);
-        if (mAccessoryTabObserver != null) mAccessoryTabObserver.onTabsChanged();
-    }
-
-    @Override
-    public void onItemRangeRemoved(ListObservable source, int index, int count) {
-        assert source == mModel.get(TABS);
-        if (mAccessoryTabObserver != null) mAccessoryTabObserver.onTabsChanged();
-    }
-
-    @Override
-    public void onItemRangeChanged(
-            ListObservable<Void> source, int index, int count, @Nullable Void payload) {
-        assert source == mModel.get(TABS);
-        if (mAccessoryTabObserver != null) mAccessoryTabObserver.onTabsChanged();
     }
 
     @Override
