@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/overview/delayed_animation_observer_impl.h"
+#include "ash/wm/overview/start_animation_observer.h"
 
-#include "ash/wm/overview/overview_delegate.h"
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 
@@ -48,24 +47,6 @@ void StartAnimationObserver::SetOwner(OverviewDelegate* owner) {
 }
 
 void StartAnimationObserver::Shutdown() {
-  owner_ = nullptr;
-}
-
-ExitAnimationObserver::ExitAnimationObserver() = default;
-
-ExitAnimationObserver::~ExitAnimationObserver() = default;
-
-void ExitAnimationObserver::OnImplicitAnimationsCompleted() {
-  if (owner_)
-    owner_->RemoveAndDestroyExitAnimationObserver(this);
-}
-
-void ExitAnimationObserver::SetOwner(OverviewDelegate* owner) {
-  DCHECK(!owner_);
-  owner_ = owner;
-}
-
-void ExitAnimationObserver::Shutdown() {
   owner_ = nullptr;
 }
 

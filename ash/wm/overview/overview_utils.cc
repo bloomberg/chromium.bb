@@ -13,9 +13,9 @@
 #include "ash/scoped_animation_disabler.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
-#include "ash/wm/overview/delayed_animation_observer_impl.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
+#include "ash/wm/overview/start_animation_observer.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/window_state.h"
@@ -107,7 +107,7 @@ void FadeOutWidgetAndMaybeSlideOnExit(std::unique_ptr<views::Widget> widget,
   views::Widget* widget_ptr = widget.get();
   auto observer = std::make_unique<CleanupAnimationObserver>(std::move(widget));
   animation_settings.AddObserver(observer.get());
-  controller->AddExitAnimationObserver(std::move(observer));
+  controller->AddDelayedAnimationObserver(std::move(observer));
   widget_ptr->SetOpacity(0.f);
 
   // Slide |widget| towards to top of screen if exit overview to home launcher.

@@ -16,12 +16,12 @@
 #include "ash/wallpaper/wallpaper_view.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/mru_window_tracker.h"
-#include "ash/wm/overview/delayed_animation_observer_impl.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_utils.h"
+#include "ash/wm/overview/start_animation_observer.h"
 #include "ash/wm/root_window_finder.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
@@ -401,7 +401,7 @@ bool OverviewController::ToggleOverview(
 }
 
 void OverviewController::OnStartingAnimationComplete(bool canceled) {
-  if (IsBlurAllowed() && !canceled)
+  if (IsBlurAllowed())
     overview_blur_controller_->Blur(/*animate_only=*/true);
 
   for (auto& observer : observers_)
@@ -613,13 +613,13 @@ void OverviewController::OnSelectionEnded() {
     OnEndingAnimationComplete(/*canceled=*/false);
 }
 
-void OverviewController::AddExitAnimationObserver(
+void OverviewController::AddDelayedAnimationObserver(
     std::unique_ptr<DelayedAnimationObserver> animation_observer) {
   animation_observer->SetOwner(this);
   delayed_animations_.push_back(std::move(animation_observer));
 }
 
-void OverviewController::RemoveAndDestroyExitAnimationObserver(
+void OverviewController::RemoveAndDestroyAnimationObserver(
     DelayedAnimationObserver* animation_observer) {
   const bool previous_empty = delayed_animations_.empty();
   base::EraseIf(delayed_animations_,

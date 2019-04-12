@@ -34,13 +34,13 @@ class TestOverviewDelegate : public OverviewDelegate {
   // OverviewDelegate:
   void OnSelectionEnded() override {}
 
-  void AddExitAnimationObserver(
+  void AddDelayedAnimationObserver(
       std::unique_ptr<DelayedAnimationObserver> animation_observer) override {
     animation_observer->SetOwner(this);
     observers_.push_back(std::move(animation_observer));
   }
 
-  void RemoveAndDestroyExitAnimationObserver(
+  void RemoveAndDestroyAnimationObserver(
       DelayedAnimationObserver* animation_observer) override {
     base::EraseIf(observers_, base::MatchesUniquePtr(animation_observer));
   }
@@ -105,7 +105,7 @@ TEST_F(CleanupAnimationObserverTest, CreateDestroy) {
   TestOverviewDelegate delegate;
   std::unique_ptr<views::Widget> widget = CreateWindowWidget(gfx::Rect(40, 40));
   auto observer = std::make_unique<CleanupAnimationObserver>(std::move(widget));
-  delegate.AddExitAnimationObserver(std::move(observer));
+  delegate.AddDelayedAnimationObserver(std::move(observer));
 }
 
 // Tests that completing animation deletes the animation observer and the
@@ -126,7 +126,7 @@ TEST_F(CleanupAnimationObserverTest, CreateAnimateComplete) {
     auto observer =
         std::make_unique<CleanupAnimationObserver>(std::move(widget));
     animation_settings.AddObserver(observer.get());
-    delegate.AddExitAnimationObserver(std::move(observer));
+    delegate.AddDelayedAnimationObserver(std::move(observer));
 
     widget_window->SetBounds(gfx::Rect(50, 50, 60, 60));
   }
@@ -160,7 +160,7 @@ TEST_F(CleanupAnimationObserverTest, CreateAnimateShutdown) {
     auto observer =
         std::make_unique<CleanupAnimationObserver>(std::move(widget));
     animation_settings.AddObserver(observer.get());
-    delegate.AddExitAnimationObserver(std::move(observer));
+    delegate.AddDelayedAnimationObserver(std::move(observer));
 
     widget_window->SetBounds(gfx::Rect(50, 50, 60, 60));
   }
