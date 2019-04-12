@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 
+#include "base/command_line.h"
+#include "services/ws/proxy_window.h"
 #include "services/ws/public/cpp/property_type_converters.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
 #include "services/ws/top_level_proxy_window.h"
@@ -19,6 +21,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/display/display_switches.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/transform.h"
 
@@ -300,6 +303,22 @@ TEST(ClientRootTest, TransformShouldntAffectBounds) {
   EXPECT_EQ(
       setup.changes()->end(),
       FirstChangeOfType(*setup.changes(), CHANGE_TYPE_NODE_BOUNDS_CHANGED));
+}
+
+TEST(ClientRootTest, SurfaceIdGeneratedWhenSizeChangesWithFractionalScale) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kForceDeviceScaleFactor, ".9");
+  WindowServiceTestSetup setup;
+  aura::Window* top_level =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  top_level->SetBounds(gfx::Rect(50, 60, 500, 200));
+  ProxyWindow* top_level_proxy_window = ProxyWindow::GetMayBeNull(top_level);
+  ASSERT_TRUE(top_level_proxy_window->local_surface_id_allocation());
+  auto initial_lsi = *top_level_proxy_window->local_surface_id_allocation();
+  top_level->SetBounds(gfx::Rect(50, 60, 501, 200));
+  ASSERT_TRUE(top_level_proxy_window->local_surface_id_allocation());
+  EXPECT_NE(*top_level_proxy_window->local_surface_id_allocation(),
+            initial_lsi);
 }
 
 }  // namespace
