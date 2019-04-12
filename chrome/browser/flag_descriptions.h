@@ -920,9 +920,6 @@ extern const char kOnTheFlyMhtmlHashComputationDescription[];
 extern const char kOopRasterizationName[];
 extern const char kOopRasterizationDescription[];
 
-extern const char kOriginTrialsName[];
-extern const char kOriginTrialsDescription[];
-
 extern const char kOverlayScrollbarsName[];
 extern const char kOverlayScrollbarsDescription[];
 

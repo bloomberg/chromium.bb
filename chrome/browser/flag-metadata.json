@@ -1457,11 +1457,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-origin-trials",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-osk-overscroll",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
