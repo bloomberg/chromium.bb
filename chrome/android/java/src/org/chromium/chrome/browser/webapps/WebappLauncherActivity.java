@@ -23,6 +23,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
@@ -189,6 +190,7 @@ public class WebappLauncherActivity extends Activity {
             ApiCompatibilityUtils.finishAndRemoveTask(launchingActivity);
         } else {
             launchingActivity.finish();
+            launchingActivity.overridePendingTransition(0, R.anim.no_anim);
         }
     }
 
