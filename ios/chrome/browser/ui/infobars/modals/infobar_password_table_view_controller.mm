@@ -101,9 +101,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [[TableViewTextEditItem alloc] initWithType:ItemTypePassword];
   self.passwordItem.textFieldName =
       l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_PASSWORD);
-  // TODO(crbug.com/927064): Set the number of dots depending on Password
-  // length?
-  self.passwordItem.textFieldValue = @"•••••••••";
+  self.passwordItem.textFieldValue = self.maskedPassword;
   self.passwordItem.textFieldEnabled = YES;
   [model addItem:self.passwordItem
       toSectionWithIdentifier:SectionIdentifierContent];

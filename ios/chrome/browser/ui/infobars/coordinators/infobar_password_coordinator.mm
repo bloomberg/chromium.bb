@@ -52,8 +52,12 @@
   self.bannerViewController.titleText =
       base::SysUTF16ToNSString(self.passwordInfoBarDelegate->GetMessageText());
   NSString* username = self.passwordInfoBarDelegate->GetUserNameText();
+  NSString* password = self.passwordInfoBarDelegate->GetPasswordText();
+  password = [@"" stringByPaddingToLength:[password length]
+                               withString:@"•"
+                          startingAtIndex:0];
   self.bannerViewController.subTitleText =
-      [NSString stringWithFormat:@"%@ •••••••••", username];
+      [NSString stringWithFormat:@"%@ %@", username, password];
   self.bannerViewController.buttonText =
       base::SysUTF16ToNSString(self.passwordInfoBarDelegate->GetButtonLabel(
           ConfirmInfoBarDelegate::BUTTON_OK));
@@ -81,6 +85,12 @@
   self.modalViewController.infobarModalDelegate = self;
   self.modalViewController.username =
       self.passwordInfoBarDelegate->GetUserNameText();
+  NSString* password = self.passwordInfoBarDelegate->GetPasswordText();
+  self.modalViewController.maskedPassword =
+      [@"" stringByPaddingToLength:[password length]
+                        withString:@"•"
+                   startingAtIndex:0];
+  self.modalViewController.unmaskedPassword = password;
   self.modalViewController.saveButtonText =
       base::SysUTF16ToNSString(self.passwordInfoBarDelegate->GetButtonLabel(
           ConfirmInfoBarDelegate::BUTTON_OK));
