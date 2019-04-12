@@ -23,7 +23,7 @@ class InvalidationService;
 
 namespace syncer {
 
-class DeviceInfoSyncService;
+class LocalDeviceInfoProvider;
 class SyncApiComponentFactory;
 class SyncableService;
 class SyncService;
@@ -49,8 +49,9 @@ class SyncClient {
   // It is only used when sync is running against a local backend.
   virtual base::FilePath GetLocalSyncBackendFolder() = 0;
 
-  // TODO(crbug.com/922971): Move this away elsewhere.
-  virtual syncer::DeviceInfoSyncService* GetDeviceInfoSyncService() = 0;
+  // Provides access to information about the local device.
+  virtual const syncer::LocalDeviceInfoProvider*
+  GetLocalDeviceInfoProvider() = 0;
 
   // Returns a vector with all supported datatypes and their controllers.
   virtual DataTypeController::TypeVector CreateDataTypeControllers(

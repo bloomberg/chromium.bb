@@ -22,14 +22,12 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/sync/base/hash_util.h"
-#include "components/sync/device_info/device_info_sync_service.h"
 #include "components/sync/engine/data_type_activation_response.h"
 #include "components/sync/model/data_type_activation_request.h"
 #include "components/sync/model/model_type_controller_delegate.h"
@@ -182,8 +180,6 @@ void ExtensionSessionsTest::SetUpCommandLine(base::CommandLine* command_line) {
 
 void ExtensionSessionsTest::SetUpOnMainThread() {
   CreateTestExtension();
-  DeviceInfoSyncServiceFactory::GetForProfile(browser()->profile())
-      ->InitLocalCacheGuid(kTestCacheGuid, "machine name");
 }
 
 void ExtensionSessionsTest::CreateTestExtension() {

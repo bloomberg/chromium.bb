@@ -33,17 +33,6 @@ class DeviceInfoSyncService : public KeyedService {
   // Returns the ModelTypeControllerDelegate for DEVICE_INFO.
   virtual base::WeakPtr<ModelTypeControllerDelegate>
   GetControllerDelegate() = 0;
-
-  // Used by ProfileSyncService when sync is starting.
-  // TODO(crbug.com/906611): Ideally this API could be avoided if |session_name|
-  // were part of DataTypeActivationRequest, such that the bridge would receive
-  // the information directly during sync start. This could also allow removing
-  // LocalDeviceInfoProvider::RegisterOnInitializedCallback().
-  virtual void InitLocalCacheGuid(const std::string& cache_guid,
-                                  const std::string& session_name) = 0;
-
-  // Used by ProfileSyncService when sync is disabled.
-  virtual void ClearLocalCacheGuid() = 0;
 };
 
 }  // namespace syncer

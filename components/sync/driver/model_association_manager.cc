@@ -27,8 +27,8 @@ namespace syncer {
 namespace {
 
 static const ModelType kStartOrder[] = {
-    NIGORI,                  //  Listed for completeness.
-    DEVICE_INFO,             //  Listed for completeness.
+    NIGORI,  //  Listed for completeness.
+    DEVICE_INFO,
     DEPRECATED_EXPERIMENTS,  //  Listed for completeness.
     PROXY_TABS,              //  Listed for completeness.
 

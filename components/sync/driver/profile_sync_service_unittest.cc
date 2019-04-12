@@ -18,7 +18,6 @@
 #include "base/values.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/sync/base/pref_names.h"
-#include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/fake_data_type_controller.h"
 #include "components/sync/driver/profile_sync_service_bundle.h"
@@ -278,11 +277,6 @@ class ProfileSyncServiceTest : public ::testing::Test {
 
   SyncApiComponentFactoryMock* component_factory() {
     return profile_sync_service_bundle_.component_factory();
-  }
-
-  const LocalDeviceInfoProvider* local_device_info_provider() {
-    return profile_sync_service_bundle_.device_info_sync_service()
-        ->GetLocalDeviceInfoProvider();
   }
 
  private:
@@ -809,7 +803,7 @@ TEST_F(ProfileSyncServiceTest, SignOutRevokeAccessToken) {
 }
 #endif
 
-// Verify that LastSyncedTime and local DeviceInfo is cleared on sign out.
+// Verify that LastSyncedTime.
 TEST_F(ProfileSyncServiceTest, ClearDataOnSignOut) {
   SignIn();
   CreateService(ProfileSyncService::AUTO_START);
@@ -819,7 +813,6 @@ TEST_F(ProfileSyncServiceTest, ClearDataOnSignOut) {
   base::Time last_synced_time = service()->GetLastSyncedTime();
   ASSERT_LT(base::Time::Now() - last_synced_time,
             base::TimeDelta::FromMinutes(1));
-  ASSERT_TRUE(local_device_info_provider()->GetLocalDeviceInfo());
 
   // Sign out.
   service()->StopAndClear();
@@ -831,7 +824,6 @@ TEST_F(ProfileSyncServiceTest, ClearDataOnSignOut) {
   EXPECT_FALSE(service()->IsSyncFeatureEnabled());
 
   EXPECT_NE(service()->GetLastSyncedTime(), last_synced_time);
-  EXPECT_TRUE(local_device_info_provider()->GetLocalDeviceInfo());
 }
 
 TEST_F(ProfileSyncServiceTest, CancelSyncAfterSignOut) {
@@ -1100,7 +1092,6 @@ TEST_F(ProfileSyncServiceTest, DisableSyncOnClient) {
             service()->GetTransportState());
   ASSERT_LT(base::Time::Now() - service()->GetLastSyncedTime(),
             base::TimeDelta::FromMinutes(1));
-  ASSERT_TRUE(local_device_info_provider()->GetLocalDeviceInfo());
 
   SyncProtocolError client_cmd;
   client_cmd.action = DISABLE_SYNC_ON_CLIENT;
@@ -1123,7 +1114,6 @@ TEST_F(ProfileSyncServiceTest, DisableSyncOnClient) {
   EXPECT_EQ(SyncService::TransportState::DISABLED,
             service()->GetTransportState());
   EXPECT_TRUE(service()->GetLastSyncedTime().is_null());
-  EXPECT_FALSE(local_device_info_provider()->GetLocalDeviceInfo());
 #endif
 
   EXPECT_FALSE(service()->IsSyncFeatureEnabled());

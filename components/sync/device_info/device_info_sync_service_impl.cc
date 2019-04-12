@@ -9,50 +9,46 @@
 #include "base/bind_helpers.h"
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/device_info/device_info.h"
+#include "components/sync/device_info/device_info_sync_bridge.h"
 #include "components/sync/device_info/device_info_tracker.h"
-#include "components/sync/device_info/local_device_info_provider_impl.h"
+#include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"
 
 namespace syncer {
 
 DeviceInfoSyncServiceImpl::DeviceInfoSyncServiceImpl(
     OnceModelTypeStoreFactory model_type_store_factory,
-    std::unique_ptr<LocalDeviceInfoProviderImpl> local_device_info_provider)
-    : local_device_info_provider_(std::move(local_device_info_provider)),
-      bridge_(local_device_info_provider_.get(),
-              std::move(model_type_store_factory),
-              std::make_unique<ClientTagBasedModelTypeProcessor>(
-                  DEVICE_INFO,
-                  /*dump_stack=*/base::BindRepeating(
-                      &ReportUnrecoverableError,
-                      local_device_info_provider_->GetChannel()))) {
-  DCHECK(local_device_info_provider_);
+    std::unique_ptr<MutableLocalDeviceInfoProvider>
+        local_device_info_provider) {
+  DCHECK(local_device_info_provider);
+
+  // Make a copy of the channel to avoid relying on argument evaluation order.
+  const version_info::Channel channel =
+      local_device_info_provider->GetChannel();
+
+  bridge_ = std::make_unique<DeviceInfoSyncBridge>(
+      std::move(local_device_info_provider),
+      std::move(model_type_store_factory),
+      std::make_unique<ClientTagBasedModelTypeProcessor>(
+          DEVICE_INFO,
+          /*dump_stack=*/base::BindRepeating(&ReportUnrecoverableError,
+                                             channel)));
 }
 
 DeviceInfoSyncServiceImpl::~DeviceInfoSyncServiceImpl() {}
 
 LocalDeviceInfoProvider*
 DeviceInfoSyncServiceImpl::GetLocalDeviceInfoProvider() {
-  return local_device_info_provider_.get();
+  return bridge_->GetLocalDeviceInfoProvider();
 }
 
 DeviceInfoTracker* DeviceInfoSyncServiceImpl::GetDeviceInfoTracker() {
-  return &bridge_;
+  return bridge_.get();
 }
 
 base::WeakPtr<ModelTypeControllerDelegate>
 DeviceInfoSyncServiceImpl::GetControllerDelegate() {
-  return bridge_.change_processor()->GetControllerDelegate();
-}
-
-void DeviceInfoSyncServiceImpl::InitLocalCacheGuid(
-    const std::string& cache_guid,
-    const std::string& session_name) {
-  local_device_info_provider_->Initialize(cache_guid, session_name);
-}
-
-void DeviceInfoSyncServiceImpl::ClearLocalCacheGuid() {
-  local_device_info_provider_->Clear();
+  return bridge_->change_processor()->GetControllerDelegate();
 }
 
 }  // namespace syncer

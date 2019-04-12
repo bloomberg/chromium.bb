@@ -21,7 +21,7 @@ class LocalDeviceInfoProvider {
  public:
   using Subscription = base::CallbackList<void(void)>::Subscription;
 
-  virtual ~LocalDeviceInfoProvider() {}
+  virtual ~LocalDeviceInfoProvider() = default;
 
   virtual version_info::Channel GetChannel() const = 0;
 
@@ -41,7 +41,14 @@ class LocalDeviceInfoProvider {
   // returned Subscription is destroyed, which must occur before the
   // CallbackList is destroyed.
   virtual std::unique_ptr<Subscription> RegisterOnInitializedCallback(
-      const base::RepeatingClosure& callback) = 0;
+      const base::RepeatingClosure& callback) WARN_UNUSED_RESULT = 0;
+};
+
+class MutableLocalDeviceInfoProvider : public LocalDeviceInfoProvider {
+ public:
+  virtual void Initialize(const std::string& cache_guid,
+                          const std::string& session_name) = 0;
+  virtual void Clear() = 0;
 };
 
 }  // namespace syncer
