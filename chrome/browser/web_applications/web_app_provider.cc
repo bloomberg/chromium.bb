@@ -99,6 +99,11 @@ WebAppPolicyManager* WebAppProvider::policy_manager() {
   return web_app_policy_manager_.get();
 }
 
+WebAppUiDelegate& WebAppProvider::ui_delegate() {
+  DCHECK(ui_delegate_);
+  return *ui_delegate_;
+}
+
 void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
   database_factory_ = std::make_unique<WebAppDatabaseFactory>(profile);
   database_ = std::make_unique<WebAppDatabase>(database_factory_.get());
