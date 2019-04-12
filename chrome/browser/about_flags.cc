@@ -2798,6 +2798,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTabGroupsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kTabGroups)},
 
+    {"scrollable-tabstrip", flag_descriptions::kScrollableTabStripName,
+     flag_descriptions::kScrollableTabStripDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kScrollableTabStrip)},
+
 #if defined(OS_ANDROID)
     {"dont-prefetch-libraries", flag_descriptions::kDontPrefetchLibrariesName,
      flag_descriptions::kDontPrefetchLibrariesDescription, kOsAndroid,

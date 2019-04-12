@@ -2932,6 +2932,11 @@
     "expiry_milestone": 82
   },
   {
+    "name": "scrollable-tabstrip",
+    "owners": ["chrome-desktop-ui-seattle@google.com", "tbergquist"],
+    "expiry_milestone": 82
+  },
+  {
     "name": "tint-gl-composited-content",
     "owners": [ "chromeos-gfx@google.com" ],
     // This flag is used for QA & development on ChromeOS, which has no way to

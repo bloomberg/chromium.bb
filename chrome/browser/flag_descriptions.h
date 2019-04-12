@@ -1030,6 +1030,9 @@ extern const char kSamplingHeapProfilerDescription[];
 extern const char kSaveasMenuLabelExperimentName[];
 extern const char kSaveasMenuLabelExperimentDescription[];
 
+extern const char kScrollableTabStripName[];
+extern const char kScrollableTabStripDescription[];
+
 extern const char kSendTabToSelfName[];
 extern const char kSendTabToSelfDescription[];
 

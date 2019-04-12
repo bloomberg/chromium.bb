@@ -32038,6 +32038,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2143328006"
       label="enable-fill-on-account-select-no-highlighting"/>
   <int value="-2143113994" label="enable-ephemeral-apps-in-webstore"/>
+  <int value="-2142665444" label="ScrollableTabStrip:disabled"/>
   <int value="-2141661938" label="AnimatedAppMenuIcon:enabled"/>
   <int value="-2141247271" label="AndroidOmniboxPreviewsBadge:enabled"/>
   <int value="-2134333982" label="ShowArcFilesApp:enabled"/>
@@ -34659,6 +34660,7 @@ from previous Chrome versions.
   <int value="1938279796" label="PromosOnLocalNtp:disabled"/>
   <int value="1939413645" label="enable-invalid-cert-collection"/>
   <int value="1940625534" label="NewOverviewUi:disabled"/>
+  <int value="1941845443" label="ScrollableTabStrip:enabled"/>
   <int value="1942911276" label="enable-grouped-history"/>
   <int value="1944156526" label="sync-url"/>
   <int value="1947350992" label="drop-sync-credential:disabled"/>
