@@ -133,8 +133,10 @@ autofill::FormData GenerateWithDataAccessor(
         static_cast<uint32_t>(accessor->ConsumeNumber(6) - 32);
     if (predictions) {
       PasswordFieldPrediction field_prediction;
-      if (MaybeGenerateFieldPrediction(accessor, &field_prediction))
-        (*predictions)[result.fields[i].unique_renderer_id] = field_prediction;
+      if (MaybeGenerateFieldPrediction(accessor, &field_prediction)) {
+        field_prediction.renderer_id = result.fields[i].unique_renderer_id;
+        predictions->push_back(field_prediction);
+      }
     }
 
 #if defined(OS_IOS)
@@ -158,9 +160,9 @@ autofill::FormData GenerateWithDataAccessor(
     for (size_t i = 0; i < n_predictions; ++i) {
       if (MaybeGenerateFieldPrediction(accessor, &field_prediction)) {
         // Check both positive and negavites numbers for renderer ids.
-        uint32_t unique_renderer_id =
+        field_prediction.renderer_id =
             static_cast<uint32_t>(accessor->ConsumeNumber(6) - 32);
-        (*predictions)[unique_renderer_id] = field_prediction;
+        predictions->push_back(field_prediction);
       }
     }
   }
