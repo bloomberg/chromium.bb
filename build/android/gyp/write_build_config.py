@@ -1075,9 +1075,9 @@ def main(argv):
 
   if options.type == 'android_apk' and options.tested_apk_config:
     tested_apk_deps = Deps([options.tested_apk_config])
-    tested_apk_config = tested_apk_deps.Direct()[0]
+    tested_apk_name = tested_apk_deps.Direct()[0]['name']
     tested_apk_resources_deps = tested_apk_deps.All('android_resources')
-    gradle['apk_under_test'] = tested_apk_config['name']
+    gradle['apk_under_test'] = tested_apk_name
     all_resources_deps = [
         d for d in all_resources_deps if not d in tested_apk_resources_deps]
 
@@ -1274,9 +1274,6 @@ def main(argv):
     config['resources']['dependency_zips'] = dependency_zips
     config['resources']['extra_package_names'] = extra_package_names
     config['resources']['extra_r_text_files'] = extra_r_text_files
-    if options.type == 'android_apk' and options.tested_apk_config:
-      config['resources']['arsc_package_name'] = (
-          tested_apk_config['package_name'])
 
   if is_apk_or_module_target:
     deps_dex_files = [c['dex_path'] for c in all_library_deps]
@@ -1469,6 +1466,8 @@ def main(argv):
   # apk-under-test still has all of its code in its classes.dex, none of it is
   # used at runtime because the copy of it within the test apk takes precidence.
   if options.type == 'android_apk' and options.tested_apk_config:
+    tested_apk_config = GetDepConfig(options.tested_apk_config)
+
     if tested_apk_config['proguard_enabled']:
       assert options.proguard_enabled, ('proguard must be enabled for '
           'instrumentation apks if it\'s enabled for the tested apk.')

@@ -877,6 +877,7 @@ template("stack_script") {
 if (enable_java_templates) {
   android_sdk_jar = "$android_sdk/android.jar"
   android_default_aapt_path = "$android_sdk_build_tools/aapt"
+  android_default_aapt2_path = "$android_sdk_build_tools/aapt2"
 
   template("android_lint") {
     action_with_pydeps(target_name) {
@@ -2085,15 +2086,6 @@ if (enable_java_templates) {
   #     used to determine which package ID to assign if package_name variable
   #     was passed in.
   #
-  #   package_id: (optional)
-  #     Use a custom package ID in resource IDs (same purpose as
-  #    package_name_to_id_mapping)
-  #
-  #   arsc_package_name: (optional)
-  #     Use this package name in the arsc file rather than the package name
-  #     found in the AndroidManifest.xml. Does not affect the package name
-  #     used in AndroidManifest.xml.
-  #
   # Output variables:
   #   output:  Path to a zip file containing the compiled resources.
   #
@@ -2169,6 +2161,8 @@ if (enable_java_templates) {
         "--depfile",
         rebase_path(depfile, root_build_dir),
         "--include-resources=@FileArg($_rebased_build_config:android:sdk_jars)",
+        "--aapt-path",
+        rebase_path(_android_aapt_path, root_build_dir),
         "--aapt2-path",
         rebase_path(_android_aapt2_path, root_build_dir),
         "--dependencies-res-zips=@FileArg($_rebased_build_config:resources:dependency_zips)",
@@ -2181,6 +2175,12 @@ if (enable_java_templates) {
         "--android-manifest",
         rebase_path(invoker.android_manifest, root_build_dir),
       ]
+
+      if (defined(invoker.package_name_to_id_mapping)) {
+        args += [
+          "--package-name-to-id-mapping=${invoker.package_name_to_id_mapping}",
+        ]
+      }
 
       if (defined(invoker.no_xml_namespaces) && invoker.no_xml_namespaces) {
         args += [ "--no-xml-namespaces" ]
@@ -2212,19 +2212,22 @@ if (enable_java_templates) {
         ]
       }
 
-      if (defined(invoker.optimized_resources_path)) {
-        args += [
-          "--optimized-resources-path",
-          rebase_path(invoker.optimized_resources_path, root_build_dir),
-        ]
-        outputs += [ invoker.optimized_resources_path ]
-
+      if (defined(invoker.optimize_resources) && invoker.optimize_resources) {
+        args += [ "--optimize-resources" ]
         if (defined(invoker.resources_config_path)) {
           inputs += [ invoker.resources_config_path ]
           args += [
             "--resources-config-path",
             rebase_path(invoker.resources_config_path, root_build_dir),
           ]
+        }
+
+        if (defined(invoker.unoptimized_resources_path)) {
+          args += [
+            "--unoptimized-resources-path",
+            rebase_path(invoker.unoptimized_resources_path, root_build_dir),
+          ]
+          outputs += [ invoker.unoptimized_resources_path ]
         }
       }
 
@@ -2267,26 +2270,21 @@ if (enable_java_templates) {
       # generated resources table is correct. It should be 0x02 for runtime
       # shared libraries, and 0x7f otherwise.
 
+      _expected_resources_pkg_id = "0x7f"
       if (defined(invoker.shared_resources) && invoker.shared_resources) {
         args += [ "--shared-resources" ]
-      }
-      if (defined(invoker.app_as_shared_lib) && invoker.app_as_shared_lib) {
+        _expected_resources_pkg_id = "0x02"
+      } else if (defined(invoker.app_as_shared_lib) &&
+                 invoker.app_as_shared_lib) {
         args += [ "--app-as-shared-lib" ]
       }
-      if (defined(invoker.package_id)) {
-        args += [ "--package-id=${invoker.package_id}" ]
-      }
-      if (defined(invoker.package_name)) {
-        args += [
-          "--package-name=${invoker.package_name}",
-          "--package-name-to-id-mapping=${invoker.package_name_to_id_mapping}",
-        ]
-      }
-      if (defined(invoker.arsc_package_name)) {
-        args += [
-          "--arsc-package-name",
-          invoker.arsc_package_name,
-        ]
+
+      # NOTE: It is not possible to check the resources package ID of
+      # proto-compiled APKs at the moment.
+      if (!_proto_format) {
+        args += [ "--check-resources-pkg-id=$_expected_resources_pkg_id" ]
+      } else {
+        assert(_expected_resources_pkg_id != "")  # Mark as used.
       }
 
       if (defined(invoker.shared_resources_whitelist)) {
@@ -2351,6 +2349,10 @@ if (enable_java_templates) {
 
       if (defined(invoker.args)) {
         args += invoker.args
+      }
+
+      if (defined(invoker.package_name)) {
+        args += [ "--package-name=${invoker.package_name}" ]
       }
 
       if (defined(invoker.emit_ids_out_path)) {
@@ -2676,6 +2678,7 @@ if (enable_java_templates) {
                                "assets_build_config",
                                "native_lib_placeholders",
                                "native_libs_filearg",
+                               "packaged_resources_path",
                                "secondary_native_lib_placeholders",
                                "secondary_abi_native_libs_filearg",
                                "secondary_abi_loadable_modules",
@@ -2685,12 +2688,6 @@ if (enable_java_templates) {
                              ])
       if (!defined(uncompress_shared_libraries)) {
         uncompress_shared_libraries = _load_library_from_apk
-      }
-      if (defined(invoker.optimized_resources_path)) {
-        packaged_resources_path = invoker.optimized_resources_path
-        not_needed(invoker, [ "packaged_resources_path" ])
-      } else {
-        packaged_resources_path = invoker.packaged_resources_path
       }
       deps = _deps
       native_libs = _native_libs + _native_libs_even_when_incremental
@@ -2720,6 +2717,16 @@ if (enable_java_templates) {
       _incremental_compiled_resources_path = "${_base_path}_incremental.ap_"
       _incremental_compile_resources_target_name =
           "${target_name}_incremental__compile_resources"
+      _incremental_android_manifest =
+          get_label_info(_incremental_compile_resources_target_name,
+                         "target_gen_dir") + "/AndroidManifest.xml"
+
+      if (defined(invoker.unoptimized_resources_path)) {
+        _incremental_packaged_resources_path =
+            invoker.unoptimized_resources_path
+      } else {
+        _incremental_packaged_resources_path = invoker.packaged_resources_path
+      }
 
       _rebased_build_config =
           rebase_path(invoker.assets_build_config, root_build_dir)
@@ -2731,21 +2738,26 @@ if (enable_java_templates) {
         inputs = [
           _android_manifest,
           invoker.assets_build_config,
-          invoker.packaged_resources_path,
+          _incremental_packaged_resources_path,
         ]
         outputs = [
+          # Output the non-compiled manifest for easy debugging (as opposed to
+          # generating to a temp file).
+          _incremental_android_manifest,
           _incremental_compiled_resources_path,
         ]
 
         args = [
           "--src-manifest",
           rebase_path(_android_manifest, root_build_dir),
+          "--out-manifest",
+          rebase_path(_incremental_android_manifest, root_build_dir),
           "--in-apk",
-          rebase_path(invoker.packaged_resources_path, root_build_dir),
+          rebase_path(_incremental_packaged_resources_path, root_build_dir),
           "--out-apk",
           rebase_path(_incremental_compiled_resources_path, root_build_dir),
-          "--aapt2-path",
-          rebase_path(android_sdk_tools_bundle_aapt2, root_build_dir),
+          "--aapt-path",
+          rebase_path(android_default_aapt_path, root_build_dir),
           "--android-sdk-jars=@FileArg($_rebased_build_config:android:sdk_jars)",
         ]
         if (disable_incremental_isolated_processes) {
