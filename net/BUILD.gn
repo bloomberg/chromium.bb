@@ -6219,30 +6219,32 @@ fuzzer_test("net_gzip_source_stream_fuzzer") {
   ]
 }
 
-fuzzer_test("net_ftp_ctrl_response_fuzzer") {
-  sources = [
-    "ftp/ftp_ctrl_response_fuzzer.cc",
-  ]
-  deps = [
-    ":net_fuzzer_test_support",
-    "//base",
-    "//net",
-  ]
-}
+if (!disable_ftp_support) {
+  fuzzer_test("net_ftp_ctrl_response_fuzzer") {
+    sources = [
+      "ftp/ftp_ctrl_response_fuzzer.cc",
+    ]
+    deps = [
+      ":net_fuzzer_test_support",
+      "//base",
+      "//net",
+    ]
+  }
 
-fuzzer_test("net_ftp_directory_listing_fuzzer") {
-  sources = [
-    "ftp/ftp_directory_listing_fuzzer.cc",
-  ]
-  deps = [
-    ":net_fuzzer_test_support",
-    "//base",
-    "//net",
-  ]
+  fuzzer_test("net_ftp_directory_listing_fuzzer") {
+    sources = [
+      "ftp/ftp_directory_listing_fuzzer.cc",
+    ]
+    deps = [
+      ":net_fuzzer_test_support",
+      "//base",
+      "//net",
+    ]
 
-  # TODO(https://crbug.com/921297): Re-enable once source of timeout is
-  # understood (probably just needs to restrict maximum input size).
-  additional_configs = [ "//testing/libfuzzer:no_clusterfuzz" ]
+    # TODO(https://crbug.com/921297): Re-enable once source of timeout is
+    # understood (probably just needs to restrict maximum input size).
+    additional_configs = [ "//testing/libfuzzer:no_clusterfuzz" ]
+  }
 }
 
 fuzzer_test("net_unescape_url_component_fuzzer") {
