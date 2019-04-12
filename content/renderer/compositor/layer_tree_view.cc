@@ -260,11 +260,6 @@ void LayerTreeView::SetBrowserControlsShownRatio(float ratio) {
   layer_tree_host_->SetBrowserControlsShownRatio(ratio);
 }
 
-void LayerTreeView::SetOverscrollBehavior(
-    const cc::OverscrollBehavior& behavior) {
-  layer_tree_host_->SetOverscrollBehavior(behavior);
-}
-
 void LayerTreeView::WillBeginMainFrame() {
   delegate_->WillBeginCompositorFrame();
 }

@@ -107,6 +107,11 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // they should be rendered by WebKit (which is the default).
   static bool UseExternalPopupMenus();
 
+  // Returns whether frames under this WebView are backed by a compositor. When
+  // false there may be no WebWidgetClient present. When true, there must be a
+  // WebWidgetClient while a local main frame is attached.
+  bool does_composite() const { return does_composite_; }
+
   // WebView methods:
   void DidAttachLocalMainFrame(WebWidgetClient*) override;
   void DidAttachRemoteMainFrame(WebWidgetClient*) override;
@@ -360,8 +365,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // Called anytime browser controls layout height or content offset have
   // changed.
   void DidUpdateBrowserControls();
-
-  void SetOverscrollBehavior(const cc::OverscrollBehavior&);
 
   void ForceNextWebGLContextCreationToFail() override;
   void ForceNextDrawingBufferCreationToFail() override;

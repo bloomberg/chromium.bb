@@ -1351,12 +1351,6 @@ void WebViewImpl::DidUpdateBrowserControls() {
   }
 }
 
-void WebViewImpl::SetOverscrollBehavior(
-    const cc::OverscrollBehavior& overscroll_behavior) {
-  if (layer_tree_view_)
-    layer_tree_view_->SetOverscrollBehavior(overscroll_behavior);
-}
-
 BrowserControls& WebViewImpl::GetBrowserControls() {
   return GetPage()->GetBrowserControls();
 }

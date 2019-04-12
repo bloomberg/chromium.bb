@@ -96,8 +96,9 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   void DidOverscroll(const FloatSize&,
                      const FloatSize&,
                      const FloatPoint&,
-                     const FloatSize&,
-                     const cc::OverscrollBehavior&) override {}
+                     const FloatSize&) override {}
+  void SetOverscrollBehavior(LocalFrame& frame,
+                             const cc::OverscrollBehavior&) override {}
 
   void BeginLifecycleUpdates() override {}
   void StartDeferringCommits(base::TimeDelta timeout) override {}

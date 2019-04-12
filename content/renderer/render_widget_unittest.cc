@@ -239,8 +239,7 @@ class InteractiveRenderWidget : public RenderWidget {
                                         event.data.scroll_update.delta_y),
                     event.PositionInWidget(),
                     blink::WebFloatSize(event.data.scroll_update.velocity_x,
-                                        event.data.scroll_update.velocity_y),
-                    cc::OverscrollBehavior());
+                                        event.data.scroll_update.velocity_y));
       return true;
     }
 

@@ -402,7 +402,11 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
                                 float bottom_height,
                                 bool shrink);
   void SetBrowserControlsShownRatio(float ratio);
+
   void SetOverscrollBehavior(const OverscrollBehavior& overscroll_behavior);
+  const OverscrollBehavior& overscroll_behavior() const {
+    return overscroll_behavior_;
+  }
 
   void SetPageScaleFactorAndLimits(float page_scale_factor,
                                    float min_page_scale_factor,

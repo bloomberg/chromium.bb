@@ -281,14 +281,23 @@ Page* ChromeClientImpl::CreateWindowDelegate(
 void ChromeClientImpl::DidOverscroll(const FloatSize& overscroll_delta,
                                      const FloatSize& accumulated_overscroll,
                                      const FloatPoint& position_in_viewport,
-                                     const FloatSize& velocity_in_viewport,
-                                     const cc::OverscrollBehavior& behavior) {
-  if (!web_view_->WidgetClient())
+                                     const FloatSize& velocity_in_viewport) {
+  if (!web_view_->does_composite())
     return;
-
   web_view_->WidgetClient()->DidOverscroll(
       overscroll_delta, accumulated_overscroll, position_in_viewport,
-      velocity_in_viewport, behavior);
+      velocity_in_viewport);
+}
+
+void ChromeClientImpl::SetOverscrollBehavior(
+    LocalFrame& main_frame,
+    const cc::OverscrollBehavior& overscroll_behavior) {
+  DCHECK(main_frame.IsMainFrame());
+  if (!web_view_->does_composite())
+    return;
+  WebWidgetClient* client =
+      WebLocalFrameImpl::FromFrame(main_frame)->FrameWidgetImpl()->Client();
+  client->SetOverscrollBehavior(overscroll_behavior);
 }
 
 void ChromeClientImpl::Show(NavigationPolicy navigation_policy) {
@@ -1184,11 +1193,6 @@ TransformationMatrix ChromeClientImpl::GetDeviceEmulationTransform() const {
 
 void ChromeClientImpl::DidUpdateBrowserControls() const {
   web_view_->DidUpdateBrowserControls();
-}
-
-void ChromeClientImpl::SetOverscrollBehavior(
-    const cc::OverscrollBehavior& overscroll_behavior) {
-  web_view_->SetOverscrollBehavior(overscroll_behavior);
 }
 
 void ChromeClientImpl::RegisterPopupOpeningObserver(

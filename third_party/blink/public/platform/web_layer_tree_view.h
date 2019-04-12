@@ -29,7 +29,6 @@
 #include "base/callback.h"
 #include "cc/input/browser_controls_state.h"
 #include "cc/input/event_listener_properties.h"
-#include "cc/input/overscroll_behavior.h"
 #include "cc/layers/layer.h"
 #include "cc/paint/paint_worklet_layer_painter.h"
 #include "cc/trees/element_id.h"
@@ -69,10 +68,6 @@ class WebLayerTreeView {
   virtual void SetBrowserControlsHeight(float top_height,
                                         float bottom_height,
                                         bool shrink_viewport) {}
-
-  // Set the browser's behavior when overscroll happens, e.g. whether to glow
-  // or navigate.
-  virtual void SetOverscrollBehavior(const cc::OverscrollBehavior&) {}
 
   // Flow control and scheduling ---------------------------------------
 

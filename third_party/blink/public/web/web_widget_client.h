@@ -34,6 +34,7 @@
 #include <memory>
 
 #include "cc/input/layer_selection_bound.h"
+#include "cc/input/overscroll_behavior.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
@@ -163,8 +164,11 @@ class WebWidgetClient {
   virtual void DidOverscroll(const WebFloatSize& overscroll_delta,
                              const WebFloatSize& accumulated_overscroll,
                              const WebFloatPoint& position_in_viewport,
-                             const WebFloatSize& velocity_in_viewport,
-                             const cc::OverscrollBehavior& behavior) {}
+                             const WebFloatSize& velocity_in_viewport) {}
+
+  // Set the browser's behavior when overscroll happens, e.g. whether to glow
+  // or navigate.
+  virtual void SetOverscrollBehavior(const cc::OverscrollBehavior&) {}
 
   // Called to update if pointerrawmove events should be sent.
   virtual void HasPointerRawMoveEventHandlers(bool) {}

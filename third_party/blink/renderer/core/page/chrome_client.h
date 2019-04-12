@@ -28,6 +28,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/optional.h"
 #include "cc/input/event_listener_properties.h"
+#include "cc/input/overscroll_behavior.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
@@ -167,12 +168,19 @@ class CORE_EXPORT ChromeClient
   // All the parameters should be in viewport space. That is, if an event
   // scrolls by 10 px, but due to a 2X page scale we apply a 5px scroll to the
   // root frame, all of which is handled as overscroll, we should return 10px
-  // as the overscrollDelta.
+  // as the |overscroll_delta|.
   virtual void DidOverscroll(const FloatSize& overscroll_delta,
                              const FloatSize& accumulated_overscroll,
                              const FloatPoint& position_in_viewport,
-                             const FloatSize& velocity_in_viewport,
-                             const cc::OverscrollBehavior&) = 0;
+                             const FloatSize& velocity_in_viewport) = 0;
+
+  // Set the browser's behavior when overscroll happens, e.g. whether to glow
+  // or navigate. This may only be called for the main frame, and takes it as
+  // reference to make it clear that callers may only call this while a local
+  // main frame is present and the values do not persist between instances of
+  // local main frames.
+  virtual void SetOverscrollBehavior(LocalFrame& main_frame,
+                                     const cc::OverscrollBehavior&) = 0;
 
   virtual bool ShouldReportDetailedMessageForSource(LocalFrame&,
                                                     const String& source) = 0;
@@ -365,8 +373,6 @@ class CORE_EXPORT ChromeClient
   virtual void OnMouseDown(Node&) {}
 
   virtual void DidUpdateBrowserControls() const {}
-
-  virtual void SetOverscrollBehavior(const cc::OverscrollBehavior&) {}
 
   virtual void RegisterPopupOpeningObserver(PopupOpeningObserver*) = 0;
   virtual void UnregisterPopupOpeningObserver(PopupOpeningObserver*) = 0;
