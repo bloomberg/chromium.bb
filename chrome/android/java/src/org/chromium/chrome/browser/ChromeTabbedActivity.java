@@ -15,7 +15,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.ShortcutManager;
-import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -130,7 +129,6 @@ import org.chromium.chrome.browser.tab.TabAssociatedApp;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tab.TabStateBrowserControlsVisibilityDelegate;
-import org.chromium.chrome.browser.tab.TabThemeColorHelper;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
@@ -151,7 +149,6 @@ import org.chromium.chrome.browser.toolbar.ToolbarButtonInProductHelpController;
 import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
 import org.chromium.chrome.browser.usage_stats.UsageStatsService;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
-import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
@@ -167,7 +164,6 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsAccessibility;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.content_public.common.Referrer;
-import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -1606,22 +1602,6 @@ public class ChromeTabbedActivity
 
         mTabModelSelectorImpl.addObserver(new EmptyTabModelSelectorObserver() {
             @Override
-            public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
-                if (isInOverviewMode()) {
-                    // The passed-in color is ignored when the tab switcher is open. This call
-                    // causes the toolbar color to change (if necessary) based on whether or not
-                    // we're in incognito mode.
-                    setStatusBarColor(null, Color.BLACK);
-                } else {
-                    // When opening a new Incognito Tab from a normal Tab (or vice versa), the
-                    // status bar color is updated. However, this update is triggered after the
-                    // animation, so we update here for the duration of the new Tab animation.
-                    setStatusBarColor(null, ColorUtils.getDefaultThemeColor(
-                            getResources(), newModel.isIncognito()));
-                }
-            }
-
-            @Override
             public void onTabStateInitialized() {
                 if (!mCreatedTabOnStartup) return;
 
@@ -2348,7 +2328,6 @@ public class ChromeTabbedActivity
         if (getFindToolbarManager() != null) getFindToolbarManager().hideToolbar();
         if (getAssistStatusHandler() != null) getAssistStatusHandler().updateAssistState();
         if (getAppMenuHandler() != null) getAppMenuHandler().hideAppMenu();
-        setStatusBarColor(null, Color.BLACK);
     }
 
     @Override
@@ -2362,36 +2341,6 @@ public class ChromeTabbedActivity
     @Override
     public void onOverviewModeFinishedHiding() {
         if (getAssistStatusHandler() != null) getAssistStatusHandler().updateAssistState();
-        if (getActivityTab() != null) {
-            setStatusBarColor(getActivityTab(), TabThemeColorHelper.getColor(getActivityTab()));
-        }
-    }
-
-    @Override
-    protected void setStatusBarColor(@Nullable Tab tab, int color) {
-        if (isTablet() || UiUtils.isSystemUiThemingDisabled()) return;
-
-        if (!isInOverviewMode()) {
-            super.setStatusBarColor(tab, color);
-            return;
-        }
-
-        boolean supportsDarkStatusIcons = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
-        if (!supportsDarkStatusIcons) {
-            super.setStatusBarColor(tab, Color.BLACK);
-            return;
-        }
-
-        if (!ChromeFeatureList.isInitialized()
-                || (!ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)
-                           && !DeviceClassManager.enableAccessibilityLayout())) {
-            super.setStatusBarColor(tab, ColorUtils.getDefaultThemeColor(getResources(), false));
-            return;
-        }
-
-        boolean incognito =
-                mTabModelSelectorImpl != null && mTabModelSelectorImpl.isIncognitoSelected();
-        super.setStatusBarColor(tab, ColorUtils.getDefaultThemeColor(getResources(), incognito));
     }
 
     @Override

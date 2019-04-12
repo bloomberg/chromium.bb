@@ -69,6 +69,7 @@ import org.chromium.chrome.browser.toolbar.KeyboardNavigationListener;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.TabCountProvider.TabCountObserver;
 import org.chromium.chrome.browser.toolbar.TabSwitcherDrawable;
+import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator.UrlExpansionObserver;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
@@ -716,13 +717,15 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         Resources res = getResources();
         switch (visualState) {
             case VisualState.NEW_TAB_NORMAL:
-                if (mUrlExpansionPercent == 1.f) {
-                    // When the location bar reaches the top of the screen, the background needs
-                    // to change back to the default, solid color so that the NTP content is
-                    // not visible beneath the toolbar.
-                    return ColorUtils.getDefaultThemeColor(getResources(), false);
-                }
-                return Color.TRANSPARENT;
+                // When the NTP fake search box is visible, the background color should be
+                // transparent. When the location bar reaches the top of the screen (i.e. location
+                // bar is fully expanded), the background needs to change back to the default
+                // toolbar color so that the NTP content is not visible beneath the toolbar. In
+                // between the transition, we set a translucent default toolbar color based on
+                // the expansion percentage of the toolbar.
+                return android.support.v4.graphics.ColorUtils.setAlphaComponent(
+                        ColorUtils.getDefaultThemeColor(getResources(), false),
+                        Math.round(mUrlExpansionPercent * 255));
             case VisualState.NORMAL:
                 return ColorUtils.getDefaultThemeColor(getResources(), false);
             case VisualState.INCOGNITO:
@@ -912,6 +915,9 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
 
     private void updateUrlExpansionPercent() {
         mUrlExpansionPercent = Math.max(mNtpSearchBoxScrollPercent, mUrlFocusChangePercent);
+        for (UrlExpansionObserver observer : mUrlExpansionObservers) {
+            observer.onUrlExpansionPercentageChanged(mUrlExpansionPercent);
+        }
         assert mUrlExpansionPercent >= 0;
         assert mUrlExpansionPercent <= 1;
     }
