@@ -37,7 +37,7 @@
 - (void)viewDidLoad {
   [super viewDidLoad];
   [self setShouldHideDoneButton:YES];
-  [self updateEditButton];
+  [self updateUIForEditState];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
