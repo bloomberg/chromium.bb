@@ -339,8 +339,6 @@ enum class EnterTabSwitcherSnapshotResult {
 
   // Navigation View controller for the settings.
   SettingsNavigationController* _settingsNavigationController;
-  // Coordinator to display the Google services settings.
-  GoogleServicesNavigationCoordinator* _googleServicesNavigationCoordinator;
 
   // TabSwitcher object -- the tab grid.
   id<TabSwitcher> _tabSwitcher;
@@ -433,6 +431,10 @@ enum class EnterTabSwitcherSnapshotResult {
 // while the UI is presented.
 @property(nonatomic, strong)
     SigninInteractionCoordinator* signinInteractionCoordinator;
+
+// Coordinator to display the Google services settings.
+@property(nonatomic, strong)
+    GoogleServicesNavigationCoordinator* googleServicesNavigationCoordinator;
 
 // Activates |mainBVC| and |otrBVC| and sets |currentBVC| as primary iff
 // |currentBVC| can be made active.
@@ -1679,13 +1681,13 @@ enum class EnterTabSwitcherSnapshotResult {
   }
   // If the settings dialog is not already opened, start a new
   // GoogleServicesNavigationCoordinator.
-  _googleServicesNavigationCoordinator =
+  self.googleServicesNavigationCoordinator =
       [[GoogleServicesNavigationCoordinator alloc]
           initWithBaseViewController:baseViewController
                         browserState:_mainBrowserState];
-  _googleServicesNavigationCoordinator.delegate = self;
-  _googleServicesNavigationCoordinator.dispatcher = self;
-  [_googleServicesNavigationCoordinator start];
+  self.googleServicesNavigationCoordinator.delegate = self;
+  self.googleServicesNavigationCoordinator.dispatcher = self;
+  [self.googleServicesNavigationCoordinator start];
 }
 
 // TODO(crbug.com/779791) : Remove show settings commands from MainController.
@@ -2438,6 +2440,10 @@ enum class EnterTabSwitcherSnapshotResult {
   // First, cancel the signin interaction.
   [self.signinInteractionCoordinator cancel];
 
+  [self.googleServicesNavigationCoordinator dismissAnimated:NO];
+  // Need to stop and set |self.googleServicesNavigationCoordinator| to nil.
+  [self stopGoogleServicesNavigationCoordinator];
+
   // Then, depending on what the SSO view controller is presented on, dismiss
   // it.
   ProceduralBlock completionWithBVC = ^{
@@ -2660,8 +2666,18 @@ enum class EnterTabSwitcherSnapshotResult {
 
 - (void)googleServicesNavigationCoordinatorDidClose:
     (GoogleServicesNavigationCoordinator*)coordinator {
-  DCHECK_EQ(_googleServicesNavigationCoordinator, coordinator);
-  _googleServicesNavigationCoordinator = nil;
+  DCHECK_EQ(self.googleServicesNavigationCoordinator, coordinator);
+  // Need to stop and set |self.googleServicesNavigationCoordinator| to nil.
+  DCHECK(self.googleServicesNavigationCoordinator);
+  [self stopGoogleServicesNavigationCoordinator];
+}
+
+#pragma mark - GoogleServicesNavigationCoordinator helpers
+
+- (void)stopGoogleServicesNavigationCoordinator {
+  self.googleServicesNavigationCoordinator.delegate = nil;
+  [self.googleServicesNavigationCoordinator stop];
+  self.googleServicesNavigationCoordinator = nil;
 }
 
 @end
