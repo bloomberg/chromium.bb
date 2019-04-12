@@ -45,9 +45,9 @@ struct CORE_EXPORT PaintInvalidatorContext {
         painting_layer(ParentContext()->painting_layer) {}
 
   // Maps a rect in the object's local coordinates in flipped blocks direction
-  // to a visual rect in the local transform space. This is for non-SVG-child,
-  // LayoutSVGText (when mapping caret rect) and LayoutSVGInlineText (when
-  // mapping selection rect).
+  // to a visual rect in the local transform space. This is for non-SVG objects
+  // to map any local rect, and SVG child derived from non-SVG layout objects to
+  // map local rect of caret, selection, etc.
   IntRect MapLocalRectToVisualRect(const LayoutObject&,
                                    const LayoutRect&) const;
 
