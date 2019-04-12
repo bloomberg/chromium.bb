@@ -150,7 +150,6 @@ void AuthenticatorRequestDialogModel::StartGuidedFlowForTransport(
   DCHECK(current_step() == Step::kTransportSelection ||
          current_step() == Step::kWelcomeScreen ||
          current_step() == Step::kUsbInsertAndActivate ||
-         current_step() == Step::kTouchId ||
          current_step() == Step::kBleActivate ||
          current_step() == Step::kCableActivate ||
          current_step() == Step::kNotStarted);
@@ -193,8 +192,7 @@ void AuthenticatorRequestDialogModel::
   // There is no AuthenticatorReference for the Windows authenticator,
   // hence directly call DispatchRequestAsyncInternal here.
   DispatchRequestAsyncInternal(
-      transport_availability()->win_native_api_authenticator_id,
-      base::TimeDelta());
+      transport_availability()->win_native_api_authenticator_id);
 
   HideDialog();
 }
@@ -204,7 +202,6 @@ void AuthenticatorRequestDialogModel::
   DCHECK(current_step() == Step::kTransportSelection ||
          current_step() == Step::kWelcomeScreen ||
          current_step() == Step::kUsbInsertAndActivate ||
-         current_step() == Step::kTouchId ||
          current_step() == Step::kBleActivate ||
          current_step() == Step::kCableActivate ||
          current_step() == Step::kNotStarted);
@@ -253,7 +250,7 @@ void AuthenticatorRequestDialogModel::InitiatePairingDevice(
 // with WebAuthn request for MacOS.
 #if defined(OS_MACOSX)
   SetCurrentStep(Step::kBleVerifying);
-  DispatchRequestAsync(selected_authenticator, base::TimeDelta());
+  DispatchRequestAsync(selected_authenticator);
 #else
   SetCurrentStep(Step::kBlePinEntry);
 #endif
@@ -295,7 +292,7 @@ void AuthenticatorRequestDialogModel::OnPairingSuccess() {
   DCHECK(ble_device_paired_callback_);
   ble_device_paired_callback_.Run(*selected_authenticator_id_);
 
-  DispatchRequestAsync(authenticator, base::TimeDelta());
+  DispatchRequestAsync(authenticator);
 }
 
 void AuthenticatorRequestDialogModel::OnPairingFailure() {
@@ -325,11 +322,11 @@ void AuthenticatorRequestDialogModel::StartTouchIdFlow() {
     return;
   }
 
-  TryTouchId();
+  HideDialogAndTryTouchId();
 }
 
-void AuthenticatorRequestDialogModel::TryTouchId() {
-  SetCurrentStep(Step::kTouchId);
+void AuthenticatorRequestDialogModel::HideDialogAndTryTouchId() {
+  HideDialog();
 
   auto& authenticators = saved_authenticators_.authenticator_list();
   auto touch_id_authenticator_it =
@@ -343,9 +340,7 @@ void AuthenticatorRequestDialogModel::TryTouchId() {
     return;
   }
 
-  static base::TimeDelta kTouchIdDispatchDelay =
-      base::TimeDelta::FromMilliseconds(1250);
-  DispatchRequestAsync(&*touch_id_authenticator_it, kTouchIdDispatchDelay);
+  DispatchRequestAsync(&*touch_id_authenticator_it);
 }
 
 void AuthenticatorRequestDialogModel::Cancel() {
@@ -501,7 +496,7 @@ void AuthenticatorRequestDialogModel::AddAuthenticator(
   if (authenticator_reference.is_paired() &&
       authenticator_reference.transport() ==
           AuthenticatorTransport::kBluetoothLowEnergy) {
-    DispatchRequestAsync(&authenticator_reference, base::TimeDelta());
+    DispatchRequestAsync(&authenticator_reference);
   }
   saved_authenticators_.AddAuthenticator(std::move(authenticator_reference));
 }
@@ -512,25 +507,24 @@ void AuthenticatorRequestDialogModel::RemoveAuthenticator(
 }
 
 void AuthenticatorRequestDialogModel::DispatchRequestAsync(
-    AuthenticatorReference* authenticator,
-    base::TimeDelta delay) {
+    AuthenticatorReference* authenticator) {
   // Dispatching to the same authenticator twice may result in unexpected
   // behavior.
-  if (authenticator->dispatched())
+  if (authenticator->dispatched()) {
     return;
+  }
 
-  DispatchRequestAsyncInternal(authenticator->authenticator_id(), delay);
+  DispatchRequestAsyncInternal(authenticator->authenticator_id());
   authenticator->SetDispatched(true);
 }
 
 void AuthenticatorRequestDialogModel::DispatchRequestAsyncInternal(
-    const std::string& authenticator_id,
-    base::TimeDelta delay) {
+    const std::string& authenticator_id) {
   if (!request_callback_)
     return;
 
-  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::BindOnce(request_callback_, authenticator_id), delay);
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(request_callback_, authenticator_id));
 }
 
 void AuthenticatorRequestDialogModel::UpdateAuthenticatorReferencePairingMode(

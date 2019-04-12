@@ -84,8 +84,6 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
     } else if (name == "ble_activate") {
       model->SetCurrentStep(
           AuthenticatorRequestDialogModel::Step::kBleActivate);
-    } else if (name == "touchid") {
-      model->SetCurrentStep(AuthenticatorRequestDialogModel::Step::kTouchId);
     } else if (name == "touchid_incognito") {
       model->SetCurrentStep(
           AuthenticatorRequestDialogModel::Step::kTouchIdIncognitoSpeedBump);
