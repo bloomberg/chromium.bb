@@ -59,7 +59,7 @@ class BuildStore(object):
     # This value is only to be used by read functions that are ready for
     # transition to Buildbucket. The plan is to move more and more functions
     # to depend on this till we can finally eliminate it.
-    self._transitioning_to_bb = True
+    self._transitioning_to_bb = False
     self._write_to_bb = _write_to_bb
     self._write_to_cidb = _write_to_cidb
     self.cidb_creds = cidb_creds
