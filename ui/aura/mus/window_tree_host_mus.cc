@@ -268,6 +268,8 @@ void WindowTreeHostMus::SetBounds(
   // Compositor).
   // Do not use ConvertRectToPixel, enclosing rects cause problems. In
   // particular, ConvertRectToPixel's result varies based on the location.
+  // This *must* match the conversion used by ClientRoot, otherwise the two will
+  // be out of sync. See // https://crbug.com/952095 for more details.
   const float dsf = ui::GetScaleFactorForNativeView(window());
   const gfx::Rect pixel_bounds(
       gfx::ScaleToFlooredPoint(bounds_in_dip.origin(), dsf),

@@ -70,6 +70,15 @@ gfx::Rect GetBoundsToSend(aura::Window* window) {
   return bounds;
 }
 
+// Converts the size of the window to pixels. This function must match that used
+// by WindowTreeHostMus (otherwise this code may not generate a new
+// LocalSurfaceId when the client believes one should be generated). See
+// https://crbug.com/952095 for more details.
+gfx::Size ConvertWindowSizeToPixels(aura::Window* window) {
+  return gfx::ScaleToCeiledSize(window->bounds().size(),
+                                window->layer()->device_scale_factor());
+}
+
 }  // namespace
 
 ClientRoot::ClientRoot(WindowTree* window_tree,
@@ -142,8 +151,7 @@ void ClientRoot::GenerateLocalSurfaceIdIfNecessary() {
   if (!ShouldAssignLocalSurfaceId())
     return;
 
-  gfx::Size size_in_pixels =
-      ui::ConvertSizeToPixel(window_->layer(), window_->bounds().size());
+  gfx::Size size_in_pixels = ConvertWindowSizeToPixels(window_);
   ProxyWindow* proxy_window = ProxyWindow::GetMayBeNull(window_);
   // It's expected by cc code that any time the size changes a new
   // LocalSurfaceId is used.
@@ -158,9 +166,8 @@ void ClientRoot::GenerateLocalSurfaceIdIfNecessary() {
 void ClientRoot::UpdateSurfacePropertiesCache() {
   ProxyWindow::GetMayBeNull(window_)->set_local_surface_id_allocation(
       parent_local_surface_id_allocator_->GetCurrentLocalSurfaceIdAllocation());
-  last_surface_size_in_pixels_ =
-      ui::ConvertSizeToPixel(window_->layer(), window_->bounds().size());
   last_device_scale_factor_ = window_->layer()->device_scale_factor();
+  last_surface_size_in_pixels_ = ConvertWindowSizeToPixels(window_);
 }
 
 bool ClientRoot::SetBoundsInScreenFromClient(
