@@ -58,6 +58,7 @@ source_set("unit_tests") {
     ":extensions",
     "//chrome/browser",
     "//chrome/browser/web_applications:web_app_group",
+    "//chrome/browser/web_applications:web_applications_on_extensions",
     "//chrome/browser/web_applications:web_applications_test_support",
     "//chrome/browser/web_applications/bookmark_apps",
     "//chrome/browser/web_applications/components",

@@ -103,7 +103,7 @@ void WebAppPolicyManager::ReinstallPlaceholderAppIfNecessary(const GURL& url) {
 
   // If the app is not a placeholder app, PendingAppManager will ignore the
   // request.
-  pending_app_manager_->ReinstallPlaceholderApp(
+  pending_app_manager_->ReinstallPlaceholderAppIfUnused(
       GetInstallOptionsForPolicyEntry(*it), base::DoNothing());
 }
 

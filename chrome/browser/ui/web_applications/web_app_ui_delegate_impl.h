@@ -20,6 +20,9 @@ class WebAppUiDelegateImpl : public KeyedService, public WebAppUiDelegate {
   explicit WebAppUiDelegateImpl(Profile* profile);
   ~WebAppUiDelegateImpl() override;
 
+  // WebAppUiDelegate
+  size_t GetNumWindowsForApp(const AppId& app_id) override;
+
  private:
   Profile* profile_;
 

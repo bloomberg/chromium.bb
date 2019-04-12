@@ -83,6 +83,12 @@ class PendingAppManager {
   virtual void ReinstallPlaceholderApp(InstallOptions install_options,
                                        OnceInstallCallback callback) = 0;
 
+  // Same as ReinstallPlaceholderApp but only succeeds if the are no opened
+  // windows for the app.
+  virtual void ReinstallPlaceholderAppIfUnused(
+      InstallOptions install_options,
+      OnceInstallCallback callback) = 0;
+
   // Returns the URLs of those apps installed from |install_source|.
   virtual std::vector<GURL> GetInstalledAppUrls(
       InstallSource install_source) const = 0;

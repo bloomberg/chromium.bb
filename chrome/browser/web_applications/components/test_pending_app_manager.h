@@ -54,6 +54,8 @@ class TestPendingAppManager : public PendingAppManager {
                      const UninstallCallback& callback) override;
   void ReinstallPlaceholderApp(InstallOptions install_options,
                                OnceInstallCallback callback) override;
+  void ReinstallPlaceholderAppIfUnused(InstallOptions install_options,
+                                       OnceInstallCallback callback) override;
   std::vector<GURL> GetInstalledAppUrls(
       InstallSource install_source) const override;
   base::Optional<AppId> LookupAppId(const GURL& url) const override;
