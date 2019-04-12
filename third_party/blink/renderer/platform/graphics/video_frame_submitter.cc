@@ -491,9 +491,19 @@ viz::CompositorFrame VideoFrameSubmitter::CreateCompositorFrame(
   compositor_frame.metadata.begin_frame_ack = begin_frame_ack;
   compositor_frame.metadata.frame_token = ++next_frame_token_;
 
-  TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP0("media", "VideoFrameSubmitter",
-                                          *next_frame_token_,
-                                          base::TimeTicks::Now());
+  base::TimeTicks value;
+  if (video_frame &&
+      video_frame->metadata()->GetTimeTicks(
+          media::VideoFrameMetadata::DECODE_COMPLETE_TIMESTAMP, &value)) {
+    TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP0("media", "VideoFrameSubmitter",
+                                            *next_frame_token_, value);
+    TRACE_EVENT_ASYNC_STEP_PAST0("media", "VideoFrameSubmitter",
+                                 *next_frame_token_, "Pre-submit buffering");
+  } else {
+    TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(
+        "media", "VideoFrameSubmitter", *next_frame_token_,
+        base::TimeTicks::Now(), "empty video frame?", !video_frame);
+  }
 
   // We don't assume that the ack is marked as having damage.  However, we're
   // definitely emitting a CompositorFrame that damages the entire surface.

@@ -190,6 +190,9 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
     video_frame->metadata()->SetTimeTicks(
         media::VideoFrameMetadata::REFERENCE_TIME, render_time);
   }
+  video_frame->metadata()->SetTimeTicks(
+      media::VideoFrameMetadata::DECODE_COMPLETE_TIMESTAMP,
+      base::TimeTicks::Now());
 
   io_task_runner_->PostTask(
       FROM_HERE,
