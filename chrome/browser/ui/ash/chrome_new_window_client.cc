@@ -9,6 +9,8 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/timer/elapsed_timer.h"
 #include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_url_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
@@ -97,6 +99,9 @@ class CustomTabSessionImpl : public arc::mojom::CustomTabSession {
     return ptr;
   }
 
+  // arc::mojom::CustomTabSession override:
+  void OnOpenInChromeClicked() override { forwarded_to_normal_tab_ = true; }
+
  private:
   CustomTabSessionImpl(Profile* profile,
                        const GURL& url,
@@ -112,7 +117,31 @@ class CustomTabSessionImpl : public arc::mojom::CustomTabSession {
     window->Show();
   }
 
-  ~CustomTabSessionImpl() override = default;
+  ~CustomTabSessionImpl() override {
+    // Keep in sync with ArcCustomTabsSessionEndReason in
+    // //tools/metrics/histograms/enums.xml.
+    enum class SessionEndReason {
+      CLOSED = 0,
+      FORWARDED_TO_NORMAL_TAB = 1,
+      kMaxValue = FORWARDED_TO_NORMAL_TAB,
+    } session_end_reason = forwarded_to_normal_tab_
+                               ? SessionEndReason::FORWARDED_TO_NORMAL_TAB
+                               : SessionEndReason::CLOSED;
+    UMA_HISTOGRAM_ENUMERATION("Arc.CustomTabs.SessionEndReason",
+                              session_end_reason);
+    auto elapsed = lifetime_timer_.Elapsed();
+    UMA_HISTOGRAM_MEDIUM_TIMES("Arc.CustomTabs.SessionLifetime.All", elapsed);
+    switch (session_end_reason) {
+      case SessionEndReason::CLOSED:
+        UMA_HISTOGRAM_MEDIUM_TIMES("Arc.CustomTabs.SessionLifetime.Closed",
+                                   elapsed);
+        break;
+      case SessionEndReason::FORWARDED_TO_NORMAL_TAB:
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "Arc.CustomTabs.SessionLifetime.ForwardedToNormalTab", elapsed);
+        break;
+    }
+  }
 
   void Bind(arc::mojom::CustomTabSessionPtr* ptr) {
     binding_.Bind(mojo::MakeRequest(ptr));
@@ -162,6 +191,8 @@ class CustomTabSessionImpl : public arc::mojom::CustomTabSession {
   ash::mojom::ArcCustomTabViewPtr view_;
   std::unique_ptr<content::WebContents> web_contents_;
   std::unique_ptr<views::RemoteViewProvider> remote_view_provider_;
+  base::ElapsedTimer lifetime_timer_;
+  bool forwarded_to_normal_tab_ = false;
   base::WeakPtrFactory<CustomTabSessionImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomTabSessionImpl);

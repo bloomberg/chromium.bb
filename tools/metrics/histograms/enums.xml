@@ -2252,6 +2252,11 @@ Unknown properties are collapsed to zero. -->
   <int value="3" label="Crashed"/>
 </enum>
 
+<enum name="ArcCustomTabsSessionEndReason">
+  <int value="0" label="Closed"/>
+  <int value="1" label="Forwarded to a normal tab"/>
+</enum>
+
 <enum name="ArcEnableState">
   <int value="0" label="Enabled not managed"/>
   <int value="1" label="Disabled not managed"/>
@@ -2289,6 +2294,17 @@ Unknown properties are collapsed to zero. -->
   <int value="0" label="ARC"/>
   <int value="1" label="Chrome"/>
   <int value="2" label="Progressive web app"/>
+</enum>
+
+<enum name="ArcIntentHelperOpenType">
+  <summary>Types of things opened via ARC IntentHelperHost interface.</summary>
+  <int value="0" label="Downloads"/>
+  <int value="1" label="URL"/>
+  <int value="2" label="Custom Tab"/>
+  <int value="3" label="Wallpaper picker"/>
+  <int value="4" label="Volume control"/>
+  <int value="5" label="Chrome page"/>
+  <int value="6" label="Web app"/>
 </enum>
 
 <enum name="ArcNativeBridgeType">
