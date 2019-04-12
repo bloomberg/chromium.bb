@@ -41,6 +41,17 @@ class ResetScreen : public BaseScreen, public UpdateEngineClient::Observer {
   // Registers Local State preferences.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
+  using TpmFirmwareUpdateAvailabilityCallback = base::OnceCallback<void(
+      const std::set<tpm_firmware_update::Mode>& modes)>;
+  using TpmFirmwareUpdateAvailabilityChecker = base::RepeatingCallback<void(
+      TpmFirmwareUpdateAvailabilityCallback callback,
+      base::TimeDelta delay)>;
+  // Overrides the method used to determine TPM firmware update availability.
+  // It should be called before the ResetScreen is created, otherwise it will
+  // have no effect.
+  static void SetTpmFirmwareUpdateCheckerForTesting(
+      TpmFirmwareUpdateAvailabilityChecker* checker);
+
  private:
   // BaseScreen implementation:
   void Show() override;
@@ -69,6 +80,9 @@ class ResetScreen : public BaseScreen, public UpdateEngineClient::Observer {
 
   // Help application used for help dialogs.
   scoped_refptr<HelpAppLauncher> help_app_;
+
+  // Callback used to check whether a TPM firnware update is available.
+  TpmFirmwareUpdateAvailabilityChecker tpm_firmware_update_checker_;
 
   base::WeakPtrFactory<ResetScreen> weak_ptr_factory_;
 

@@ -297,6 +297,7 @@ void FakeSessionManagerClient::ClearForcedReEnrollmentVpd(
 
 void FakeSessionManagerClient::StartTPMFirmwareUpdate(
     const std::string& update_mode) {
+  last_tpm_firmware_update_mode_ = update_mode;
   start_tpm_firmware_update_call_count_++;
 }
 
