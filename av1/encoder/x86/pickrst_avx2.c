@@ -22,9 +22,9 @@ static INLINE void acc_stat_avx2(int32_t *dst, const uint8_t *src,
                                  const __m128i *shuffle, const __m256i *kl) {
   const __m128i s = _mm_shuffle_epi8(xx_loadu_128(src), *shuffle);
   const __m256i d0 = _mm256_madd_epi16(*kl, _mm256_cvtepu8_epi16(s));
-  const __m256i dst0 = yy_loadu_256(dst);
+  const __m256i dst0 = yy_load_256(dst);
   const __m256i r0 = _mm256_add_epi32(dst0, d0);
-  yy_storeu_256(dst, r0);
+  yy_store_256(dst, r0);
 }
 
 static INLINE void acc_stat_win7_one_line_avx2(
@@ -74,7 +74,9 @@ static INLINE void compute_stats_win7_opt_avx2(
 
   int32_t M_int32[WIENER_WIN][WIENER_WIN] = { { 0 } };
   int64_t M_int64[WIENER_WIN][WIENER_WIN] = { { 0 } };
-  int32_t H_int32[WIENER_WIN2][WIENER_WIN * 8] = { { 0 } };
+
+  DECLARE_ALIGNED(32, int32_t,
+                  H_int32[WIENER_WIN2][WIENER_WIN * 8]) = { { 0 } };
   int64_t H_int64[WIENER_WIN2][WIENER_WIN * 8] = { { 0 } };
   int32_t sumY[WIENER_WIN][WIENER_WIN] = { { 0 } };
   int32_t sumX = 0;
@@ -423,7 +425,9 @@ static INLINE void compute_stats_win5_opt_avx2(
 
   int32_t M_int32[WIENER_WIN_CHROMA][WIENER_WIN_CHROMA] = { { 0 } };
   int64_t M_int64[WIENER_WIN_CHROMA][WIENER_WIN_CHROMA] = { { 0 } };
-  int32_t H_int32[WIENER_WIN2_CHROMA][WIENER_WIN_CHROMA * 8] = { { 0 } };
+  DECLARE_ALIGNED(
+      32, int32_t,
+      H_int32[WIENER_WIN2_CHROMA][WIENER_WIN_CHROMA * 8]) = { { 0 } };
   int64_t H_int64[WIENER_WIN2_CHROMA][WIENER_WIN_CHROMA * 8] = { { 0 } };
   int32_t sumY[WIENER_WIN_CHROMA][WIENER_WIN_CHROMA] = { { 0 } };
   int32_t sumX = 0;
