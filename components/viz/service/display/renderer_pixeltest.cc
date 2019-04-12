@@ -4559,6 +4559,98 @@ TYPED_TEST(RendererPixelTest, RoundedCornerMultiRadii) {
   }
 }
 
+TYPED_TEST(RendererPixelTest, RoundedCornerMultipleQads) {
+  const gfx::Rect viewport_rect(this->device_viewport_size_);
+  constexpr std::array<uint32_t, 4> kCornerRadii = {5, 15, 25, 35};
+  constexpr int kInset = 20;
+
+  int root_pass_id = 1;
+  std::unique_ptr<RenderPass> root_pass =
+      CreateTestRootRenderPass(root_pass_id, viewport_rect);
+
+  gfx::Rect pass_rect(this->device_viewport_size_);
+  pass_rect.Inset(kInset, kInset);
+  gfx::RRectF rounded_corner_bounds_ul(gfx::RectF(pass_rect), kCornerRadii[0],
+                                       kCornerRadii[0], 0, 0, 0, 0, 0, 0);
+  gfx::RRectF rounded_corner_bounds_ur(gfx::RectF(pass_rect), 0, 0,
+                                       kCornerRadii[1], kCornerRadii[1], 0, 0,
+                                       0, 0);
+  gfx::RRectF rounded_corner_bounds_lr(gfx::RectF(pass_rect), 0, 0, 0, 0,
+                                       kCornerRadii[2], kCornerRadii[2], 0, 0);
+  gfx::RRectF rounded_corner_bounds_ll(gfx::RectF(pass_rect), 0, 0, 0, 0, 0, 0,
+                                       kCornerRadii[3], kCornerRadii[3]);
+
+  gfx::Rect ul_rect = pass_rect;
+  ul_rect.set_height(ul_rect.height() / 2);
+  ul_rect.set_width(ul_rect.width() / 2);
+
+  gfx::Rect ur_rect = pass_rect;
+  ur_rect.set_x(ul_rect.right());
+  ur_rect.set_width(pass_rect.right() - ur_rect.x());
+  ur_rect.set_height(ul_rect.height());
+
+  gfx::Rect lr_rect = pass_rect;
+  lr_rect.set_y(ur_rect.bottom());
+  lr_rect.set_x(ur_rect.x());
+  lr_rect.set_width(ur_rect.width());
+  lr_rect.set_height(pass_rect.bottom() - lr_rect.y());
+
+  gfx::Rect ll_rect = pass_rect;
+  ll_rect.set_y(lr_rect.y());
+  ll_rect.set_width(ul_rect.width());
+  ll_rect.set_height(lr_rect.height());
+
+  SharedQuadState* shared_state_normal_ul = CreateTestSharedQuadState(
+      gfx::Transform(), pass_rect, root_pass.get(), rounded_corner_bounds_ul);
+
+  SharedQuadState* shared_state_normal_ur = CreateTestSharedQuadState(
+      gfx::Transform(), pass_rect, root_pass.get(), rounded_corner_bounds_ur);
+
+  SharedQuadState* shared_state_normal_lr = CreateTestSharedQuadState(
+      gfx::Transform(), pass_rect, root_pass.get(), rounded_corner_bounds_lr);
+
+  SharedQuadState* shared_state_normal_ll = CreateTestSharedQuadState(
+      gfx::Transform(), pass_rect, root_pass.get(), rounded_corner_bounds_ll);
+
+  auto* ul = root_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+  auto* ur = root_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+  auto* lr = root_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+  auto* ll = root_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+
+  ul->SetNew(shared_state_normal_ul, ul_rect, ul_rect, SK_ColorRED, false);
+  ur->SetNew(shared_state_normal_ur, ur_rect, ur_rect, SK_ColorGREEN, false);
+  lr->SetNew(shared_state_normal_lr, lr_rect, lr_rect, SK_ColorBLUE, false);
+  ll->SetNew(shared_state_normal_ll, ll_rect, ll_rect, SK_ColorYELLOW, false);
+
+  SharedQuadState* sqs_white = CreateTestSharedQuadState(
+      gfx::Transform(), viewport_rect, root_pass.get(), gfx::RRectF());
+  gfx::Rect white_rect = gfx::Rect(this->device_viewport_size_);
+  auto* white = root_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+  white->SetNew(sqs_white, white_rect, white_rect, SK_ColorWHITE, false);
+
+  RenderPassList pass_list;
+  pass_list.push_back(std::move(root_pass));
+
+  // GL Renderer should have an exact match as that is the reference point.
+  // Software/skia renderer use skia rrect to create rounded corner clip.
+  // This results in a different corner path due to a different anti aliasing
+  // approach than the fragment shader in gl renderer.
+  const bool use_exact_comparator =
+      std::is_same<TypeParam, GLRenderer>() ||
+      std::is_same<TypeParam, cc::GLRendererWithExpandedViewport>();
+  std::unique_ptr<cc::PixelComparator> comparator;
+  comparator.reset(
+      use_exact_comparator
+          ? static_cast<cc::PixelComparator*>(
+                new cc::ExactPixelComparator(true))
+          : static_cast<cc::PixelComparator*>(
+                new cc::FuzzyPixelComparator(true, 0.55f, 0.f, 255.f, 255, 0)));
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list,
+      base::FilePath(FILE_PATH_LITERAL("rounded_corner_multi_quad.png")),
+      *comparator));
+}
+
 template <typename RendererType>
 class RendererPixelTestWithOverdrawFeedback
     : public RendererPixelTest<RendererType> {
