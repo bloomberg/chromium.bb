@@ -3184,16 +3184,19 @@ base::Optional<viz::SurfaceId> WebMediaPlayerImpl::GetSurfaceId() {
   return bridge_->GetSurfaceId();
 }
 
-bool WebMediaPlayerImpl::ShouldPauseVideoWhenHidden() const {
+bool WebMediaPlayerImpl::ShouldPausePlaybackWhenHidden() const {
+  // Audio only stream is allowed to play when in background.
+  // TODO: We should check IsBackgroundOptimizationCandidate here. But we need
+  // to move the logic of checking video frames out of that function.
+  if (!HasVideo())
+    return false;
+
   if (!is_background_video_playback_enabled_)
     return true;
 
   // If suspending background video, pause any video that's not remoted or
   // not unlocked to play in the background.
   if (IsBackgroundSuspendEnabled(this)) {
-    if (!HasVideo())
-      return false;
-
 #if defined(OS_ANDROID)
     if (is_flinging_)
       return false;
@@ -3262,7 +3265,7 @@ bool WebMediaPlayerImpl::IsBackgroundOptimizationCandidate() const {
 
 void WebMediaPlayerImpl::UpdateBackgroundVideoOptimizationState() {
   if (IsHidden()) {
-    if (ShouldPauseVideoWhenHidden()) {
+    if (ShouldPausePlaybackWhenHidden()) {
       PauseVideoIfNeeded();
     } else if (update_background_status_cb_.IsCancelled()) {
       // Only trigger updates when we don't have one already scheduled.

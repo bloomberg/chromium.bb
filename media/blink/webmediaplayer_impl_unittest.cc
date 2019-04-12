@@ -1821,8 +1821,8 @@ class WebMediaPlayerImplBackgroundBehaviorTest
     return wmpi_->ShouldDisableVideoWhenHidden();
   }
 
-  bool ShouldPauseVideoWhenHidden() const {
-    return wmpi_->ShouldPauseVideoWhenHidden();
+  bool ShouldPausePlaybackWhenHidden() const {
+    return wmpi_->ShouldPausePlaybackWhenHidden();
   }
 
   bool IsBackgroundOptimizationCandidate() const {
@@ -1837,8 +1837,7 @@ TEST_P(WebMediaPlayerImplBackgroundBehaviorTest, AudioOnly) {
   // Never optimize or pause an audio-only player.
   SetMetadata(true, false);
   EXPECT_FALSE(IsBackgroundOptimizationCandidate());
-  EXPECT_FALSE(IsBackgroundVideoPlaybackEnabled() &&
-               ShouldPauseVideoWhenHidden());
+  EXPECT_FALSE(ShouldPausePlaybackWhenHidden());
   EXPECT_FALSE(ShouldDisableVideoWhenHidden());
 }
 
@@ -1858,7 +1857,7 @@ TEST_P(WebMediaPlayerImplBackgroundBehaviorTest, VideoOnly) {
   bool should_pause = !IsBackgroundVideoPlaybackEnabled() ||
                       IsMediaSuspendOn() ||
                       (IsBackgroundPauseOn() && matches_requirements);
-  EXPECT_EQ(should_pause, ShouldPauseVideoWhenHidden());
+  EXPECT_EQ(should_pause, ShouldPausePlaybackWhenHidden());
 }
 
 TEST_P(WebMediaPlayerImplBackgroundBehaviorTest, AudioVideo) {
@@ -1880,7 +1879,7 @@ TEST_P(WebMediaPlayerImplBackgroundBehaviorTest, AudioVideo) {
   // videos are on by default on Android and off on desktop.
   EXPECT_EQ(!IsBackgroundVideoPlaybackEnabled() ||
                 (IsMediaSuspendOn() && IsResumeBackgroundVideoEnabled()),
-            ShouldPauseVideoWhenHidden());
+            ShouldPausePlaybackWhenHidden());
 
   if (!IsBackgroundOptimizationOn() || !matches_requirements ||
       !ShouldDisableVideoWhenHidden() || IsMediaSuspendOn()) {

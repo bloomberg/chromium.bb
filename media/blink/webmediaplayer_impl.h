@@ -461,11 +461,11 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // is intended for android.
   bool DoesOverlaySupportMetadata() const;
 
-  // Whether the video should be paused when hidden. Uses metadata so has
+  // Whether the playback should be paused when hidden. Uses metadata so has
   // meaning only after the pipeline has started, otherwise returns false.
-  // Doesn't check if the video can actually be paused depending on the
+  // Doesn't check if the playback can actually be paused depending on the
   // pipeline's state.
-  bool ShouldPauseVideoWhenHidden() const;
+  bool ShouldPausePlaybackWhenHidden() const;
 
   // Whether the video track should be disabled when hidden. Uses metadata so
   // has meaning only after the pipeline has started, otherwise returns false.
@@ -894,7 +894,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   base::Optional<base::TimeDelta> pipeline_media_duration_for_test_;
 
   // Whether the video requires a user gesture to resume after it was paused in
-  // the background. Affects the value of ShouldPauseVideoWhenHidden().
+  // the background. Affects the value of ShouldPausePlaybackWhenHidden().
   bool video_locked_when_paused_when_hidden_ = false;
 
   // Whether embedded media experience is currently enabled.
@@ -964,7 +964,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   bool is_background_suspend_enabled_ = false;
 
   // If disabled, video will be auto paused when in background. Affects the
-  // value of ShouldPauseVideoWhenHidden().
+  // value of ShouldPausePlaybackWhenHidden().
   bool is_background_video_playback_enabled_ = true;
 
   // Whether background video optimization is supported on current platform.
