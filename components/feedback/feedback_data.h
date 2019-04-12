@@ -30,9 +30,8 @@ class FeedbackData : public FeedbackCommon {
   // Called once we've updated all the data from the feedback page.
   void OnFeedbackPageDataComplete();
 
-  // Sets the system information for this instance and kicks off its
-  // compression.
-  void SetAndCompressSystemInfo(std::unique_ptr<SystemLogsMap> sys_info);
+  // Kicks off compression of the system information for this instance.
+  void CompressSystemInfo();
 
   // Sets the histograms for this instance and kicks off its
   // compression.

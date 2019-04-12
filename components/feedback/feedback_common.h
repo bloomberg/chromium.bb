@@ -40,7 +40,7 @@ class FeedbackCommon : public base::RefCountedThreadSafe<FeedbackCommon> {
 
   void AddFile(const std::string& filename, std::string data);
 
-  void AddLog(const std::string& name, const std::string& value);
+  void AddLog(std::string name, std::string value);
   void AddLogs(SystemLogsMap logs);
 
   // Fill in |feedback_data| with all the data that we have collected.

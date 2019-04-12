@@ -114,34 +114,33 @@ void FakeDebugDaemonClient::GetPerfOutput(
     int file_descriptor,
     DBusMethodCallback<uint64_t> error_callback) {}
 
-void FakeDebugDaemonClient::GetScrubbedLogs(const GetLogsCallback& callback) {
+void FakeDebugDaemonClient::GetScrubbedLogs(GetLogsCallback callback) {
   std::map<std::string, std::string> sample;
   sample["Sample Scrubbed Log"] = "Your email address is xxxxxxxx";
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, false, sample));
+      FROM_HERE, base::BindOnce(std::move(callback), false, sample));
 }
 
-void FakeDebugDaemonClient::GetScrubbedBigLogs(
-    const GetLogsCallback& callback) {
+void FakeDebugDaemonClient::GetScrubbedBigLogs(GetLogsCallback callback) {
   std::map<std::string, std::string> sample;
   sample["Sample Scrubbed Big Log"] = "Your email address is xxxxxxxx";
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, false, sample));
+      FROM_HERE, base::BindOnce(std::move(callback), false, sample));
 }
 
-void FakeDebugDaemonClient::GetAllLogs(const GetLogsCallback& callback) {
+void FakeDebugDaemonClient::GetAllLogs(GetLogsCallback callback) {
   std::map<std::string, std::string> sample;
   sample["Sample Log"] = "Your email address is abc@abc.com";
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, false, sample));
+      FROM_HERE, base::BindOnce(std::move(callback), false, sample));
 }
 
-void FakeDebugDaemonClient::GetUserLogFiles(const GetLogsCallback& callback) {
+void FakeDebugDaemonClient::GetUserLogFiles(GetLogsCallback callback) {
   std::map<std::string, std::string> user_logs;
   user_logs["preferences"] = "Preferences";
   user_logs["invalid_file"] = "Invalid File";
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, true, user_logs));
+      FROM_HERE, base::BindOnce(std::move(callback), true, user_logs));
 }
 
 void FakeDebugDaemonClient::GetLog(const std::string& log_name,

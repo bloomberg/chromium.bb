@@ -177,24 +177,34 @@ ChromeFeedbackPrivateDelegate::CreateSingleLogSource(
   }
 }
 
-void ChromeFeedbackPrivateDelegate::FetchAndMergeIwlwifiDumpLogsIfPresent(
-    std::unique_ptr<FeedbackCommon::SystemLogsMap> original_sys_logs,
-    content::BrowserContext* context,
-    system_logs::SysLogsFetcherCallback callback) const {
-  if (!original_sys_logs ||
-      !system_logs::ContainsIwlwifiLogs(original_sys_logs.get())) {
-    VLOG(1) << "WiFi dump logs are not present.";
-    std::move(callback).Run(std::move(original_sys_logs));
-    return;
+void OnFetchedExtraLogs(
+    scoped_refptr<feedback::FeedbackData> feedback_data,
+    FetchExtraLogsCallback callback,
+    std::unique_ptr<system_logs::SystemLogsResponse> response) {
+  using system_logs::kIwlwifiDumpKey;
+  if (response && response->count(kIwlwifiDumpKey)) {
+    feedback_data->AddLog(kIwlwifiDumpKey,
+                          std::move(response->at(kIwlwifiDumpKey)));
   }
+  std::move(callback).Run(feedback_data);
+}
 
-  VLOG(1) << "Fetching WiFi dump logs.";
-  system_logs::SystemLogsFetcher* fetcher =
-      new system_logs::SystemLogsFetcher(true /* scrub_data */);
-  fetcher->AddSource(std::make_unique<system_logs::IwlwifiDumpLogSource>());
-  fetcher->Fetch(base::BindOnce(&system_logs::MergeIwlwifiLogs,
-                                std::move(original_sys_logs),
-                                std::move(callback)));
+void ChromeFeedbackPrivateDelegate::FetchExtraLogs(
+    scoped_refptr<feedback::FeedbackData> feedback_data,
+    FetchExtraLogsCallback callback) const {
+  // Anonymize data.
+  constexpr bool scrub = true;
+
+  if (system_logs::ContainsIwlwifiLogs(feedback_data->sys_info())) {
+    VLOG(1) << "Fetching WiFi dump logs.";
+    system_logs::SystemLogsFetcher* fetcher =
+        new system_logs::SystemLogsFetcher(scrub);
+    fetcher->AddSource(std::make_unique<system_logs::IwlwifiDumpLogSource>());
+    fetcher->Fetch(base::BindOnce(&OnFetchedExtraLogs, feedback_data,
+                                  std::move(callback)));
+  } else {
+    VLOG(1) << "WiFi dump logs are not present.";
+  }
 }
 
 void ChromeFeedbackPrivateDelegate::UnloadFeedbackExtension(

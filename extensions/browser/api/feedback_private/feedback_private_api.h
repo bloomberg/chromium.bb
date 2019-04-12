@@ -140,11 +140,9 @@ class FeedbackPrivateSendFeedbackFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 
  private:
-  void OnAllLogsFetched(
-      scoped_refptr<feedback::FeedbackData> feedback_data,
-      bool send_histograms,
-      bool send_bluetooth_logs,
-      std::unique_ptr<FeedbackCommon::SystemLogsMap> sys_logs);
+  void OnAllLogsFetched(bool send_histograms,
+                        bool send_bluetooth_logs,
+                        scoped_refptr<feedback::FeedbackData> feedback_data);
   void OnCompleted(api::feedback_private::LandingPageType type, bool success);
 };
 

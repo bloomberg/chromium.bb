@@ -90,22 +90,22 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DebugDaemonClient
 
   // Callback type for GetScrubbedLogs(), GetAllLogs() or GetUserLogFiles().
   using GetLogsCallback =
-      base::Callback<void(bool succeeded,
-                          const std::map<std::string, std::string>& logs)>;
+      base::OnceCallback<void(bool succeeded,
+                              const std::map<std::string, std::string>& logs)>;
 
   // Gets scrubbed logs from debugd.
-  virtual void GetScrubbedLogs(const GetLogsCallback& callback) = 0;
+  virtual void GetScrubbedLogs(GetLogsCallback callback) = 0;
 
   // Gets the scrubbed logs from debugd that are very large and cannot be
   // returned directly from D-Bus. These logs will include ARC and cheets
   // system information.
-  virtual void GetScrubbedBigLogs(const GetLogsCallback& callback) = 0;
+  virtual void GetScrubbedBigLogs(GetLogsCallback callback) = 0;
 
   // Gets all logs collected by debugd.
-  virtual void GetAllLogs(const GetLogsCallback& callback) = 0;
+  virtual void GetAllLogs(GetLogsCallback callback) = 0;
 
   // Gets list of user log files that must be read by Chrome.
-  virtual void GetUserLogFiles(const GetLogsCallback& callback) = 0;
+  virtual void GetUserLogFiles(GetLogsCallback callback) = 0;
 
   // Gets an individual log source provided by debugd.
   virtual void GetLog(const std::string& log_name,

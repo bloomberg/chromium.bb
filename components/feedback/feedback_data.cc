@@ -53,8 +53,7 @@ void FeedbackData::OnFeedbackPageDataComplete() {
   SendReport();
 }
 
-void FeedbackData::SetAndCompressSystemInfo(
-    std::unique_ptr<FeedbackData::SystemLogsMap> sys_info) {
+void FeedbackData::CompressSystemInfo() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (trace_id_ != 0) {
@@ -69,14 +68,11 @@ void FeedbackData::SetAndCompressSystemInfo(
     }
   }
 
-  if (sys_info) {
-    ++pending_op_count_;
-    AddLogs(std::move(*sys_info));
-    base::PostTaskWithTraitsAndReply(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-        base::BindOnce(&FeedbackData::CompressLogs, this),
-        base::BindOnce(&FeedbackData::OnCompressComplete, this));
-  }
+  ++pending_op_count_;
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(&FeedbackData::CompressLogs, this),
+      base::BindOnce(&FeedbackData::OnCompressComplete, this));
 }
 
 void FeedbackData::SetAndCompressHistograms(std::string histograms) {
