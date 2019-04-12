@@ -86,7 +86,8 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
 
   struct SurfaceState {
     SurfaceState();
-    explicit SurfaceState(const SurfaceControl::Surface& parent);
+    SurfaceState(const SurfaceControl::Surface& parent,
+                 const std::string& name);
     ~SurfaceState();
 
     SurfaceState(SurfaceState&& other);
@@ -131,6 +132,9 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
       PresentationCallback presentation_callback,
       ResourceRefs released_resources,
       SurfaceControl::TransactionStats transaction_stats);
+
+  const std::string root_surface_name_;
+  const std::string child_surface_name_;
 
   // The rect of the native window backing this surface.
   gfx::Rect window_rect_;

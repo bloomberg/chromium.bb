@@ -7,8 +7,10 @@
 #include <utility>
 
 #include "base/android/android_hardware_buffer_compat.h"
+#include "base/android/build_info.h"
 #include "base/android/scoped_hardware_buffer_fence_sync.h"
 #include "base/bind.h"
+#include "base/strings/strcat.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gl/gl_context.h"
@@ -27,16 +29,24 @@ gfx::Size GetBufferSize(const AHardwareBuffer* buffer) {
   return gfx::Size(desc.width, desc.height);
 }
 
+std::string BuildSurfaceName(const char* suffix) {
+  return base::StrCat(
+      {base::android::BuildInfo::GetInstance()->package_name(), "/", suffix});
+}
+
 }  // namespace
 
 GLSurfaceEGLSurfaceControl::GLSurfaceEGLSurfaceControl(
     ANativeWindow* window,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : window_rect_(0,
+    : root_surface_name_(BuildSurfaceName(kRootSurfaceName)),
+      child_surface_name_(BuildSurfaceName(kChildSurfaceName)),
+      window_rect_(0,
                    0,
                    ANativeWindow_getWidth(window),
                    ANativeWindow_getHeight(window)),
-      root_surface_(new SurfaceControl::Surface(window, kRootSurfaceName)),
+      root_surface_(
+          new SurfaceControl::Surface(window, root_surface_name_.c_str())),
       gpu_task_runner_(std::move(task_runner)),
       weak_factory_(this) {}
 
@@ -205,7 +215,7 @@ bool GLSurfaceEGLSurfaceControl::ScheduleOverlayPlane(
   bool uninitialized = false;
   if (pending_surfaces_count_ == surface_list_.size()) {
     uninitialized = true;
-    surface_list_.emplace_back(*root_surface_);
+    surface_list_.emplace_back(*root_surface_, child_surface_name_);
   }
   pending_surfaces_count_++;
   auto& surface_state = surface_list_.at(pending_surfaces_count_ - 1);
@@ -367,8 +377,9 @@ void GLSurfaceEGLSurfaceControl::OnTransactionAckOnGpuThread(
 }
 
 GLSurfaceEGLSurfaceControl::SurfaceState::SurfaceState(
-    const SurfaceControl::Surface& parent)
-    : surface(new SurfaceControl::Surface(parent, kChildSurfaceName)) {}
+    const SurfaceControl::Surface& parent,
+    const std::string& name)
+    : surface(new SurfaceControl::Surface(parent, name.c_str())) {}
 
 GLSurfaceEGLSurfaceControl::SurfaceState::SurfaceState() = default;
 GLSurfaceEGLSurfaceControl::SurfaceState::SurfaceState(SurfaceState&& other) =
