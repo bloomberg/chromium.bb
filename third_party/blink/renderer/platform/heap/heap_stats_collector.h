@@ -45,6 +45,8 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
     kMarkProcessWorklist,
     kMarkNotFullyConstructedObjects,
     kMarkWeakProcessing,
+    kUnifiedMarkingAtomicPrologue,
+    kUnifiedMarkingStep,
     kVisitCrossThreadPersistents,
     kVisitDOMWrappers,
     kVisitPersistentRoots,
@@ -87,6 +89,10 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
         return "BlinkGC.MarkProcessWorklist";
       case Id::kMarkWeakProcessing:
         return "BlinkGC.MarkWeakProcessing";
+      case kUnifiedMarkingAtomicPrologue:
+        return "BlinkGC.UnifiedMarkingAtomicPrologue";
+      case kUnifiedMarkingStep:
+        return "BlinkGC.UnifiedMarkingStep";
       case Id::kVisitCrossThreadPersistents:
         return "BlinkGC.VisitCrossThreadPersistents";
       case Id::kVisitDOMWrappers:
