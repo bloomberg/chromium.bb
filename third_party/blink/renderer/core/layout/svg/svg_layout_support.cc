@@ -76,10 +76,11 @@ FloatRect SVGLayoutSupport::LocalVisualRect(const LayoutObject& object) {
 
 LayoutRect SVGLayoutSupport::VisualRectInAncestorSpace(
     const LayoutObject& object,
-    const LayoutBoxModelObject& ancestor) {
+    const LayoutBoxModelObject& ancestor,
+    VisualRectFlags flags) {
   LayoutRect rect;
   MapToVisualRectInAncestorSpace(object, &ancestor, LocalVisualRect(object),
-                                 rect);
+                                 rect, flags);
   return rect;
 }
 

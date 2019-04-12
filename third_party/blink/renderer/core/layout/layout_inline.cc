@@ -1410,10 +1410,10 @@ LayoutRect LayoutInline::LinesVisualOverflowBoundingBox() const {
   return rect;
 }
 
-LayoutRect LayoutInline::VisualRectInDocument() const {
+LayoutRect LayoutInline::VisualRectInDocument(VisualRectFlags flags) const {
   if (!Continuation()) {
     LayoutRect rect = VisualOverflowRect();
-    MapToVisualRectInAncestorSpace(View(), rect);
+    MapToVisualRectInAncestorSpace(View(), rect, flags);
     return rect;
   }
   Vector<LayoutRect> outlines;
@@ -1424,7 +1424,7 @@ LayoutRect LayoutInline::VisualRectInDocument() const {
   for (const auto& outline : outlines)
     context(outline);
   LayoutRect int_result(EnclosingIntRect(float_result));
-  MapToVisualRectInAncestorSpace(View(), int_result);
+  MapToVisualRectInAncestorSpace(View(), int_result, flags);
   return int_result;
 }
 
