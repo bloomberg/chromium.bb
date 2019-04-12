@@ -223,6 +223,8 @@ CastContentBrowserClient::CastContentBrowserClient(
       std::make_unique<CastNetworkContexts>(url_request_context_factory_.get());
   cast_feature_list_creator_->SetExtraEnableFeatures({
     ::media::kInternalMediaSession,
+    network::features::kNetworkService,
+    features::kNetworkServiceInProcess,
 #if defined(OS_ANDROID)
         // TODO(awolter): Remove this once the feature is on by default.
         features::kAudioServiceAudioStreams,
