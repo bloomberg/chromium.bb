@@ -22,6 +22,7 @@
 
 #include "third_party/blink/renderer/core/svg/svg_animation_element.h"
 #include "third_party/blink/renderer/core/svg/svg_parser_utilities.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -43,7 +44,7 @@ SVGParsingError SVGNumberList::Parse(const CharType*& ptr,
     float number = 0;
     if (!ParseNumber(ptr, end, number))
       return SVGParsingError(SVGParseStatus::kExpectedNumber, ptr - list_start);
-    Append(SVGNumber::Create(number));
+    Append(MakeGarbageCollected<SVGNumber>(number));
   }
   return SVGParseStatus::kNoError;
 }

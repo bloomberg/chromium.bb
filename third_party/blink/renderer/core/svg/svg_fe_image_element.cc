@@ -155,13 +155,12 @@ FilterEffect* SVGFEImageElement::Build(SVGFilterBuilder*, Filter* filter) {
     // Don't use the broken image icon on image loading errors.
     scoped_refptr<Image> image =
         cached_image_->ErrorOccurred() ? nullptr : cached_image_->GetImage();
-    return FEImage::CreateWithImage(filter, image,
-                                    preserve_aspect_ratio_->CurrentValue());
+    return MakeGarbageCollected<FEImage>(
+        filter, image, preserve_aspect_ratio_->CurrentValue());
   }
 
-  return FEImage::CreateWithIRIReference(
-      filter, GetTreeScope(), HrefString(),
-      preserve_aspect_ratio_->CurrentValue());
+  return MakeGarbageCollected<FEImage>(filter, GetTreeScope(), HrefString(),
+                                       preserve_aspect_ratio_->CurrentValue());
 }
 
 bool SVGFEImageElement::TaintsOrigin() const {
