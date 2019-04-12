@@ -432,9 +432,9 @@ TEST(Enroll, EnrollToGoogleMdmIfNeeded_NotEnabled) {
   InitializeRegistryOverrideForTesting(&registry_override);
 
   // EnrollToGoogleMdmIfNeeded() should be a noop.
-  base::DictionaryValue properties;
-  properties.SetString(kKeyEmail, "foo@gmail.com");
-  properties.SetString(kKeyMdmIdToken, "token");
+  base::Value properties(base::Value::Type::DICTIONARY);
+  properties.SetStringKey(kKeyEmail, "foo@gmail.com");
+  properties.SetStringKey(kKeyMdmIdToken, "token");
   ASSERT_EQ(S_OK, EnrollToGoogleMdmIfNeeded(properties));
 }
 
@@ -445,14 +445,14 @@ TEST(Enroll, EnrollToGoogleMdmIfNeeded_MissingArgs) {
 
   // EnrollToGoogleMdmIfNeeded() should fail if email and/or id token are
   // not provided.
-  base::DictionaryValue properties;
+  base::Value properties(base::Value::Type::DICTIONARY);
   ASSERT_NE(S_OK, EnrollToGoogleMdmIfNeeded(properties));
 
-  properties.SetString(kKeyEmail, "foo@gmail.com");
+  properties.SetStringKey(kKeyEmail, "foo@gmail.com");
   ASSERT_NE(S_OK, EnrollToGoogleMdmIfNeeded(properties));
 
-  properties.Remove(kKeyEmail, nullptr);
-  properties.SetString(kKeyMdmIdToken, "token");
+  properties.RemoveKey(kKeyEmail);
+  properties.SetStringKey(kKeyMdmIdToken, "token");
   ASSERT_NE(S_OK, EnrollToGoogleMdmIfNeeded(properties));
 }
 

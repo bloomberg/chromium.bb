@@ -49,7 +49,7 @@ constexpr int kProfilePictureSizes[] = {32, 40, 48, 96, 192, 240, 448};
 std::string GetEncryptedRefreshToken(
     base::win::ScopedHandle::Handle logon_handle,
     const base::Value& properties) {
-  std::string refresh_token = GetDictStringUTF8(&properties, kKeyRefreshToken);
+  std::string refresh_token = GetDictStringUTF8(properties, kKeyRefreshToken);
   if (refresh_token.empty()) {
     LOGFN(ERROR) << "Refresh token is empty";
     return std::string();
@@ -434,25 +434,25 @@ HRESULT ScopedUserProfile::ExtractAssociationInformation(
   DCHECK(email);
   DCHECK(token_handle);
 
-  *sid = GetDictString(&properties, kKeySID);
+  *sid = GetDictString(properties, kKeySID);
   if (sid->empty()) {
     LOGFN(ERROR) << "SID is empty";
     return E_INVALIDARG;
   }
 
-  *id = GetDictString(&properties, kKeyId);
+  *id = GetDictString(properties, kKeyId);
   if (id->empty()) {
     LOGFN(ERROR) << "Id is empty";
     return E_INVALIDARG;
   }
 
-  *email = GetDictString(&properties, kKeyEmail);
+  *email = GetDictString(properties, kKeyEmail);
   if (email->empty()) {
     LOGFN(ERROR) << "Email is empty";
     return E_INVALIDARG;
   }
 
-  *token_handle = GetDictString(&properties, kKeyTokenHandle);
+  *token_handle = GetDictString(properties, kKeyTokenHandle);
   if (token_handle->empty()) {
     LOGFN(ERROR) << "Token handle is empty";
     return E_INVALIDARG;
@@ -550,7 +550,7 @@ HRESULT ScopedUserProfile::SaveAccountInfo(const base::Value& properties) {
 
   // This code for setting profile pictures is specific for windows 8+.
   if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
-    base::string16 picture_url = GetDictString(&properties, kKeyPicture);
+    base::string16 picture_url = GetDictString(properties, kKeyPicture);
     if (!picture_url.empty() && !sid.empty()) {
       wchar_t old_picture_url[512];
       ULONG url_size = base::size(old_picture_url);

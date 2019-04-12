@@ -82,7 +82,7 @@ base::string16 GetEmailDomains() {
 // since only local users can be created. |sid| will be empty until the user is
 // created later on. |is_consumer_account| will be set to true if the email used
 // to sign in is gmail or googlemail.
-void MakeUsernameForAccount(const base::Value* result,
+void MakeUsernameForAccount(const base::Value& result,
                             base::string16* gaia_id,
                             wchar_t* username,
                             DWORD username_length,
@@ -210,16 +210,13 @@ HRESULT WaitForLoginUIAndGetResult(
 // This function validates the response from GLS and makes sure it contained
 // all the fields required to proceed with logon.  This does not necessarily
 // guarantee that the logon will succeed, only that GLS response seems correct.
-HRESULT ValidateResult(const base::Value* result, BSTR* status_text) {
-  DCHECK(result);
+HRESULT ValidateResult(const base::Value& result, BSTR* status_text) {
   DCHECK(status_text);
 
   // Check the exit_code to see if any errors were detected by the GLS.
-  const base::Value* exit_code_value =
-      result->FindKeyOfType(kKeyExitCode, base::Value::Type::INTEGER);
-  int exit_code = exit_code_value->GetInt();
-  if (exit_code != kUiecSuccess) {
-    switch (exit_code) {
+  base::Optional<int> exit_code = result.FindIntKey(kKeyExitCode);
+  if (exit_code.value() != kUiecSuccess) {
+    switch (exit_code.value()) {
       case kUiecAbort:
         // This case represents a user abort and no error message is shown.
         return E_ABORT;
@@ -1332,9 +1329,8 @@ HRESULT CGaiaCredentialBase::ForkGaiaLogonStub(
   return S_OK;
 }
 
-HRESULT CGaiaCredentialBase::ForkSaveAccountInfoStub(
-    const std::unique_ptr<base::Value>& dict,
-    BSTR* status_text) {
+HRESULT CGaiaCredentialBase::ForkSaveAccountInfoStub(const base::Value& dict,
+                                                     BSTR* status_text) {
   LOGFN(INFO);
   DCHECK(status_text);
 
@@ -1384,7 +1380,7 @@ HRESULT CGaiaCredentialBase::ForkSaveAccountInfoStub(
   // the credentials from the credential provider and will need to sign in
   // manually.  TODO(crbug.com/902911): Figure out how to handle this.
   std::string json;
-  if (base::JSONWriter::Write(*dict, &json)) {
+  if (base::JSONWriter::Write(dict, &json)) {
     DWORD written;
     if (!::WriteFile(parent_handles.hstdin_write.Get(), json.c_str(),
                      json.length() + 1, &written, /*lpOverlapped=*/nullptr)) {
@@ -1468,25 +1464,25 @@ unsigned __stdcall CGaiaCredentialBase::WaitForLoginUI(void* param) {
 HRESULT CGaiaCredentialBase::SaveAccountInfo(const base::Value& properties) {
   LOGFN(INFO);
 
-  base::string16 sid = GetDictString(&properties, kKeySID);
+  base::string16 sid = GetDictString(properties, kKeySID);
   if (sid.empty()) {
     LOGFN(ERROR) << "SID is empty";
     return E_INVALIDARG;
   }
 
-  base::string16 username = GetDictString(&properties, kKeyUsername);
+  base::string16 username = GetDictString(properties, kKeyUsername);
   if (username.empty()) {
     LOGFN(ERROR) << "Username is empty";
     return E_INVALIDARG;
   }
 
-  base::string16 password = GetDictString(&properties, kKeyPassword);
+  base::string16 password = GetDictString(properties, kKeyPassword);
   if (password.empty()) {
     LOGFN(ERROR) << "Password is empty";
     return E_INVALIDARG;
   }
 
-  base::string16 domain = GetDictString(&properties, kKeyDomain);
+  base::string16 domain = GetDictString(properties, kKeyDomain);
 
   // Load the user's profile so that their registry hive is available.
   auto profile = ScopedUserProfile::Create(sid, domain, username, password);
@@ -1532,7 +1528,8 @@ HRESULT CGaiaCredentialBase::ReportResult(
     // should match what is stored in username_ and password_ so the
     // SaveAccountInfo process can be forked.
     CComBSTR status_text;
-    HRESULT hr = ForkSaveAccountInfoStub(authentication_results_, &status_text);
+    HRESULT hr =
+        ForkSaveAccountInfoStub(*authentication_results_, &status_text);
     if (FAILED(hr))
       LOGFN(ERROR) << "ForkSaveAccountInfoStub hr=" << putHR(hr);
   }
@@ -1573,7 +1570,7 @@ void CGaiaCredentialBase::TerminateLogonProcess() {
   }
 }
 
-HRESULT CGaiaCredentialBase::ValidateOrCreateUser(const base::Value* result,
+HRESULT CGaiaCredentialBase::ValidateOrCreateUser(const base::Value& result,
                                                   BSTR* domain,
                                                   BSTR* username,
                                                   BSTR* sid,
@@ -1690,8 +1687,8 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
   base::UTF16ToUTF8(OLE2CW(authentication_info),
                     ::SysStringLen(authentication_info), &json_string);
 
-  std::unique_ptr<base::Value> properties = base::JSONReader::ReadDeprecated(
-      json_string, base::JSON_ALLOW_TRAILING_COMMAS);
+  base::Optional<base::Value> properties =
+      base::JSONReader::Read(json_string, base::JSON_ALLOW_TRAILING_COMMAS);
 
   ::RtlSecureZeroMemory(const_cast<char*>(json_string.data()),
                         json_string.size());
@@ -1707,7 +1704,7 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
     base::ScopedClosureRunner zero_dict_on_exit(base::BindOnce(
         &SecurelyClearDictionaryValue, base::Unretained(&properties)));
 
-    HRESULT hr = ValidateResult(properties.get(), status_text);
+    HRESULT hr = ValidateResult(*properties, status_text);
     if (FAILED(hr)) {
       LOGFN(ERROR) << "ValidateResult hr=" << putHR(hr);
       return hr;
@@ -1716,8 +1713,8 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
     // The value in |dict| is now known to contain everything that is needed
     // from the GLS. Try to validate the user that wants to sign in and then
     // add additional information into |dict| as needed.
-    hr = ValidateOrCreateUser(properties.get(), &domain_, &username_,
-                              &user_sid_, status_text);
+    hr = ValidateOrCreateUser(*properties, &domain_, &username_, &user_sid_,
+                              status_text);
     if (FAILED(hr)) {
       LOGFN(ERROR) << "ValidateOrCreateUser hr=" << putHR(hr);
       return hr;
@@ -1728,7 +1725,7 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
   }
 
   base::string16 local_password =
-      GetDictString(authentication_results_, kKeyPassword);
+      GetDictString(*authentication_results_, kKeyPassword);
   password_ = ::SysAllocString(local_password.c_str());
   ::RtlSecureZeroMemory(
       const_cast<wchar_t*>(local_password.data()),

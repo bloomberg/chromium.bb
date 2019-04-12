@@ -170,8 +170,8 @@ HRESULT EnrollToGoogleMdmIfNeeded(const base::Value& properties) {
   USES_CONVERSION;
   LOGFN(INFO);
 
-  base::string16 email = GetDictString(&properties, kKeyEmail);
-  base::string16 token = GetDictString(&properties, kKeyMdmIdToken);
+  base::string16 email = GetDictString(properties, kKeyEmail);
+  base::string16 token = GetDictString(properties, kKeyMdmIdToken);
 
   if (email.empty()) {
     LOGFN(ERROR) << "Email is empty";
@@ -200,9 +200,9 @@ HRESULT EnrollToGoogleMdmIfNeeded(const base::Value& properties) {
     return -1;
   }
 
-  base::DictionaryValue registration_data;
-  registration_data.SetString("serial_number", serial_number);
-  registration_data.SetString("id_token", token);
+  base::Value registration_data(base::Value::Type::DICTIONARY);
+  registration_data.SetStringKey("serial_number", serial_number);
+  registration_data.SetStringKey("id_token", token);
   std::string registration_data_str;
   if (!base::JSONWriter::Write(registration_data, &registration_data_str)) {
     LOGFN(ERROR) << "JSONWriter::Write(registration_data)";

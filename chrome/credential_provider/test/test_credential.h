@@ -109,7 +109,7 @@ class ATL_NO_VTABLE CTestCredentialBase : public T, public ITestCredential {
       CGaiaCredentialBase::UIProcessInfo* uiprocinfo) override;
 
   // Overrides to directly save to a fake scoped user profile.
-  HRESULT ForkSaveAccountInfoStub(const std::unique_ptr<base::Value>& dict,
+  HRESULT ForkSaveAccountInfoStub(const base::Value& dict,
                                   BSTR* status_text) override;
 
   UiExitCodes default_exit_code_ = kUiecSuccess;
@@ -174,18 +174,16 @@ BSTR CTestCredentialBase<T>::GetFinalUsername() {
 
 template <class T>
 std::string CTestCredentialBase<T>::GetFinalEmail() {
-  const base::Value* results = this->get_authentication_results();
+  auto& results = this->get_authentication_results();
 
   if (!results)
     return std::string();
 
-  const base::Value* email_value =
-      results->FindKeyOfType(kKeyEmail, base::Value::Type::STRING);
+  const std::string* email_value = results->FindStringKey(kKeyEmail);
 
   if (!email_value)
     return std::string();
-
-  return email_value->GetString();
+  return *email_value;
 }
 
 template <class T>
@@ -250,10 +248,9 @@ HRESULT CTestCredentialBase<T>::ForkGaiaLogonStub(
 }
 
 template <class T>
-HRESULT CTestCredentialBase<T>::ForkSaveAccountInfoStub(
-    const std::unique_ptr<base::Value>& dict,
-    BSTR* status_text) {
-  return CGaiaCredentialBase::SaveAccountInfo(*dict);
+HRESULT CTestCredentialBase<T>::ForkSaveAccountInfoStub(const base::Value& dict,
+                                                        BSTR* status_text) {
+  return CGaiaCredentialBase::SaveAccountInfo(dict);
 }
 
 template <class T>
