@@ -18,6 +18,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/work_area_insets.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
@@ -107,6 +108,12 @@ ash::ShelfLayoutManager* GetShelfLayoutManagerForDisplay(
     const display::Display& display) {
   auto* root = ash::Shell::GetRootWindowForDisplayId(display.id());
   return ash::Shelf::ForWindow(root)->shelf_layout_manager();
+}
+
+ash::WorkAreaInsets* GetWorkAreaInsetsForDisplay(
+    const display::Display& display) {
+  auto* root = ash::Shell::GetRootWindowForDisplayId(display.id());
+  return ash::WorkAreaInsets::ForWindow(root);
 }
 
 int Component(uint32_t direction) {
@@ -746,7 +753,7 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
         gfx::Insets stable_insets_in_client_pixel =
             GetWorkAreaInsetsInClientPixel(
                 display, default_dsf, size_in_client_pixel,
-                shelf_layout_manager->ComputeStableWorkArea());
+                GetWorkAreaInsetsForDisplay(display)->ComputeStableWorkArea());
         int systemui_visibility =
             shelf_layout_manager->visibility_state() == ash::SHELF_AUTO_HIDE
                 ? ZCR_REMOTE_SURFACE_V1_SYSTEMUI_VISIBILITY_STATE_AUTOHIDE_NON_STICKY

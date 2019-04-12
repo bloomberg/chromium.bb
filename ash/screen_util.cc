@@ -58,7 +58,7 @@ gfx::Rect GetDisplayWorkAreaBoundsInParent(aura::Window* window) {
 }
 
 gfx::Rect GetDisplayWorkAreaBoundsInParentForLockScreen(aura::Window* window) {
-  gfx::Rect bounds = Shelf::ForWindow(window)->GetUserWorkAreaBounds();
+  gfx::Rect bounds = WorkAreaInsets::ForWindow(window)->user_work_area_bounds();
   ::wm::ConvertRectFromScreen(window->parent(), &bounds);
   return bounds;
 }

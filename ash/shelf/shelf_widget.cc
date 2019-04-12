@@ -32,6 +32,7 @@
 #include "ui/compositor/layer_owner.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/skbitmap_operations.h"
+#include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/layout/fill_layout.h"

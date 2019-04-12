@@ -43,6 +43,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
+#include "ash/wm/work_area_insets.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -70,6 +71,7 @@
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/keyboard/keyboard_controller.h"
+#include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/keyboard/keyboard_ui.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/views/view.h"
@@ -988,7 +990,8 @@ TEST_F(ShelfLayoutManagerTest, SetVisible) {
             display.bounds().bottom());
   EXPECT_GE(shelf_widget->status_area_widget()->GetNativeView()->bounds().y(),
             display.bounds().bottom());
-  EXPECT_EQ(stable_work_area, GetShelfLayoutManager()->ComputeStableWorkArea());
+  EXPECT_EQ(stable_work_area,
+            GetPrimaryWorkAreaInsets()->ComputeStableWorkArea());
 
   // And show it again.
   SetState(manager, SHELF_VISIBLE);
@@ -998,7 +1001,8 @@ TEST_F(ShelfLayoutManagerTest, SetVisible) {
   EXPECT_EQ(SHELF_VISIBLE, manager->visibility_state());
   display = display::Screen::GetScreen()->GetPrimaryDisplay();
   EXPECT_EQ(shelf_height, display.GetWorkAreaInsets().bottom());
-  EXPECT_EQ(stable_work_area, GetShelfLayoutManager()->ComputeStableWorkArea());
+  EXPECT_EQ(stable_work_area,
+            GetPrimaryWorkAreaInsets()->ComputeStableWorkArea());
 
   // Make sure the bounds of the two widgets changed.
   shelf_bounds = shelf_widget->GetNativeView()->bounds();
@@ -1095,7 +1099,8 @@ TEST_F(ShelfLayoutManagerTest, AutoHide) {
   EXPECT_EQ(display_bottom - kHiddenShelfInScreenPortion,
             GetShelfWidget()->GetWindowBoundsInScreen().y());
   EXPECT_EQ(display_bottom, display.work_area().bottom());
-  EXPECT_EQ(stable_work_area, GetShelfLayoutManager()->ComputeStableWorkArea());
+  EXPECT_EQ(stable_work_area,
+            GetPrimaryWorkAreaInsets()->ComputeStableWorkArea());
 
   // Move the mouse to the bottom of the screen.
   generator->MoveMouseTo(0, display_bottom - 1);
@@ -1107,7 +1112,8 @@ TEST_F(ShelfLayoutManagerTest, AutoHide) {
   EXPECT_EQ(display_bottom - layout_manager->GetIdealBounds().height(),
             GetShelfWidget()->GetWindowBoundsInScreen().y());
   EXPECT_EQ(display_bottom, display.work_area().bottom());
-  EXPECT_EQ(stable_work_area, GetShelfLayoutManager()->ComputeStableWorkArea());
+  EXPECT_EQ(stable_work_area,
+            GetPrimaryWorkAreaInsets()->ComputeStableWorkArea());
 
   // Tap the system tray when shelf is shown should open the system tray menu.
   generator->GestureTapAt(
@@ -1122,7 +1128,8 @@ TEST_F(ShelfLayoutManagerTest, AutoHide) {
   layout_manager->LayoutShelf();
   EXPECT_EQ(display_bottom - kHiddenShelfInScreenPortion,
             GetShelfWidget()->GetWindowBoundsInScreen().y());
-  EXPECT_EQ(stable_work_area, GetShelfLayoutManager()->ComputeStableWorkArea());
+  EXPECT_EQ(stable_work_area,
+            GetPrimaryWorkAreaInsets()->ComputeStableWorkArea());
 
   // Drag mouse to bottom of screen.
   generator->PressLeftButton();
@@ -1694,7 +1701,8 @@ TEST_F(ShelfLayoutManagerTest, SetAlignment) {
   EXPECT_GE(shelf_bounds.width(),
             GetShelfWidget()->GetContentsView()->GetPreferredSize().width());
   EXPECT_EQ(SHELF_ALIGNMENT_LEFT, GetPrimaryShelf()->alignment());
-  EXPECT_EQ(display.work_area(), layout_manager->ComputeStableWorkArea());
+  EXPECT_EQ(display.work_area(),
+            GetPrimaryWorkAreaInsets()->ComputeStableWorkArea());
 
   StatusAreaWidget* status_area_widget = GetShelfWidget()->status_area_widget();
   gfx::Rect status_bounds(status_area_widget->GetWindowBoundsInScreen());
@@ -1725,7 +1733,8 @@ TEST_F(ShelfLayoutManagerTest, SetAlignment) {
   EXPECT_GE(shelf_bounds.width(),
             GetShelfWidget()->GetContentsView()->GetPreferredSize().width());
   EXPECT_EQ(SHELF_ALIGNMENT_RIGHT, GetPrimaryShelf()->alignment());
-  EXPECT_EQ(display.work_area(), layout_manager->ComputeStableWorkArea());
+  EXPECT_EQ(display.work_area(),
+            GetPrimaryWorkAreaInsets()->ComputeStableWorkArea());
 
   status_bounds = gfx::Rect(status_area_widget->GetWindowBoundsInScreen());
   // TODO(estade): Re-enable this check. See crbug.com/660928.
@@ -1748,7 +1757,8 @@ TEST_F(ShelfLayoutManagerTest, SetAlignment) {
   display = display::Screen::GetScreen()->GetPrimaryDisplay();
   EXPECT_EQ(0, display.GetWorkAreaInsets().right());
   EXPECT_EQ(0, display.bounds().right() - display.work_area().right());
-  EXPECT_EQ(stable_work_area, layout_manager->ComputeStableWorkArea());
+  EXPECT_EQ(stable_work_area,
+            GetPrimaryWorkAreaInsets()->ComputeStableWorkArea());
 }
 
 TEST_F(ShelfLayoutManagerTest, GestureDrag) {
@@ -2901,13 +2911,14 @@ class ShelfLayoutManagerKeyboardTest : public AshTestBase {
   void NotifyKeyboardChanging(ShelfLayoutManager* layout_manager,
                               bool is_locked,
                               const gfx::Rect& bounds) {
+    WorkAreaInsets* work_area_insets = GetPrimaryWorkAreaInsets();
     keyboard::KeyboardStateDescriptor state;
     state.visual_bounds = bounds;
     state.occluded_bounds = bounds;
     state.displaced_bounds = is_locked ? bounds : gfx::Rect();
     state.is_visible = !bounds.IsEmpty();
-    layout_manager->OnKeyboardVisibilityStateChanged(state.is_visible);
-    layout_manager->OnKeyboardAppearanceChanged(state);
+    work_area_insets->OnKeyboardVisibilityStateChanged(state.is_visible);
+    work_area_insets->OnKeyboardAppearanceChanged(state);
   }
 
   const gfx::Rect& keyboard_bounds() const { return keyboard_bounds_; }

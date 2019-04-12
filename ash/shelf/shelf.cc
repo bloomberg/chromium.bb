@@ -19,6 +19,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
+#include "ash/wm/work_area_insets.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "ui/display/types/display_constants.h"
@@ -142,8 +143,12 @@ bool Shelf::IsVisible() const {
   return shelf_layout_manager_->IsVisible();
 }
 
-aura::Window* Shelf::GetWindow() {
+const aura::Window* Shelf::GetWindow() const {
   return shelf_widget_ ? shelf_widget_->GetNativeWindow() : nullptr;
+}
+
+aura::Window* Shelf::GetWindow() {
+  return const_cast<aura::Window*>(const_cast<const Shelf*>(this)->GetWindow());
 }
 
 void Shelf::SetAlignment(ShelfAlignment alignment) {
@@ -248,11 +253,6 @@ gfx::Rect Shelf::GetIdealBounds() const {
   return shelf_layout_manager_->GetIdealBounds();
 }
 
-gfx::Rect Shelf::GetUserWorkAreaBounds() const {
-  return shelf_layout_manager_ ? shelf_layout_manager_->user_work_area_bounds()
-                               : gfx::Rect();
-}
-
 gfx::Rect Shelf::GetScreenBoundsOfItemIconForWindow(aura::Window* window) {
   if (!shelf_widget_)
     return gfx::Rect();
@@ -293,7 +293,7 @@ TrayBackgroundView* Shelf::GetSystemTrayAnchorView() const {
 }
 
 gfx::Rect Shelf::GetSystemTrayAnchorRect() const {
-  gfx::Rect work_area = GetUserWorkAreaBounds();
+  gfx::Rect work_area = GetWorkAreaInsets()->user_work_area_bounds();
   switch (alignment_) {
     case SHELF_ALIGNMENT_BOTTOM:
     case SHELF_ALIGNMENT_BOTTOM_LOCKED:
@@ -322,13 +322,14 @@ void Shelf::SetVirtualKeyboardBoundsForTesting(const gfx::Rect& bounds) {
   state.visual_bounds = bounds;
   state.occluded_bounds = bounds;
   state.displaced_bounds = gfx::Rect();
-  shelf_layout_manager_->OnKeyboardVisibilityStateChanged(state.is_visible);
-  shelf_layout_manager_->OnKeyboardVisibleBoundsChanged(state.visual_bounds);
-  shelf_layout_manager_->OnKeyboardWorkspaceOccludedBoundsChanged(
+  WorkAreaInsets* work_area_insets = GetWorkAreaInsets();
+  work_area_insets->OnKeyboardVisibilityStateChanged(state.is_visible);
+  work_area_insets->OnKeyboardVisibleBoundsChanged(state.visual_bounds);
+  work_area_insets->OnKeyboardWorkspaceOccludedBoundsChanged(
       state.occluded_bounds);
-  shelf_layout_manager_->OnKeyboardWorkspaceDisplacingBoundsChanged(
+  work_area_insets->OnKeyboardWorkspaceDisplacingBoundsChanged(
       state.displaced_bounds);
-  shelf_layout_manager_->OnKeyboardAppearanceChanged(state);
+  work_area_insets->OnKeyboardAppearanceChanged(state);
 }
 
 ShelfLockingManager* Shelf::GetShelfLockingManagerForTesting() {
@@ -371,6 +372,12 @@ void Shelf::OnBackgroundUpdated(ShelfBackgroundType background_type,
     return;
   for (auto& observer : observers_)
     observer.OnBackgroundTypeChanged(background_type, change_type);
+}
+
+WorkAreaInsets* Shelf::GetWorkAreaInsets() const {
+  const aura::Window* window = GetWindow();
+  DCHECK(window);
+  return WorkAreaInsets::ForWindow(window->GetRootWindow());
 }
 
 }  // namespace ash

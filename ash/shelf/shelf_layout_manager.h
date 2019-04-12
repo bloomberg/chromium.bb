@@ -24,10 +24,10 @@
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "base/timer/timer.h"
+#include "ui/display/display.h"
 #include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
 
 namespace ui {
@@ -57,7 +57,6 @@ class ASH_EXPORT ShelfLayoutManager
       public ShellObserver,
       public OverviewObserver,
       public ::wm::ActivationChangeObserver,
-      public keyboard::KeyboardControllerObserver,
       public LockStateObserver,
       public wm::WmSnapToPixelLayoutManager,
       public display::DisplayObserver,
@@ -124,7 +123,7 @@ class ASH_EXPORT ShelfLayoutManager
 
   // ShellObserver:
   void OnShelfAutoHideBehaviorChanged(aura::Window* root_window) override;
-  void OnAccessibilityInsetsChanged(aura::Window* root_window) override;
+  void OnUserWorkAreaInsetsChanged(aura::Window* root_window) override;
   void OnPinnedStateChanged(aura::Window* pinned_window) override;
   void OnSplitViewModeStarted() override;
   void OnSplitViewModeEnded() override;
@@ -148,11 +147,6 @@ class ASH_EXPORT ShelfLayoutManager
                          aura::Window* gained_active,
                          aura::Window* lost_active) override;
 
-  // keyboard::KeyboardControllerObserver:
-  void OnKeyboardAppearanceChanged(
-      const keyboard::KeyboardStateDescriptor& state) override;
-  void OnKeyboardVisibilityStateChanged(bool is_visible) override;
-
   // LockStateObserver:
   void OnLockStateEvent(LockStateObserver::EventType event) override;
 
@@ -170,19 +164,6 @@ class ASH_EXPORT ShelfLayoutManager
 
   // LocaleChangeObserver:
   void OnLocaleChanged() override;
-
-  // Returns the bounds within the root window not occupied by the shelf nor the
-  // virtual keyboard.
-  const gfx::Rect& user_work_area_bounds() const {
-    return user_work_area_bounds_;
-  }
-
-  // Returns the stable work area which is the work area when the shelf is
-  // visible.
-  // TODO(agawronska): Wondering if work area computation should belong to
-  // ShelfLayoutManager. Work area depends on the size of independent components
-  // like accessibility panel.
-  gfx::Rect ComputeStableWorkArea() const;
 
   ShelfVisibilityState visibility_state() const {
     return state_.visibility_state;
@@ -238,7 +219,7 @@ class ASH_EXPORT ShelfLayoutManager
     gfx::Rect shelf_bounds;            // Bounds of the shelf within the screen
     gfx::Rect shelf_bounds_in_shelf;   // Bounds of the shelf minus status area
     gfx::Rect status_bounds_in_shelf;  // Bounds of status area within shelf
-    gfx::Insets work_area_insets;
+    gfx::Insets shelf_insets;          // Shelf insets within the screen
   };
 
   struct State {
@@ -296,9 +277,6 @@ class ASH_EXPORT ShelfLayoutManager
                               bool animate,
                               ui::ImplicitAnimationObserver* observer);
 
-  // Returns whether the virtual keyboard is currently being shown.
-  bool IsKeyboardShown() const;
-
   // Returns true if a maximized or fullscreen window is being dragged from the
   // top of the display or from the caption area. Note currently for this case
   // it's only allowed in tablet mode, not in laptop mode.
@@ -307,10 +285,10 @@ class ASH_EXPORT ShelfLayoutManager
   // Stops any animations and progresses them to the end.
   void StopAnimating();
 
-  // Calculates the target bounds assuming visibility of
-  // |state.visibilty_state|, and returns the work area.
-  gfx::Rect CalculateTargetBounds(const State& state,
-                                  TargetBounds* target_bounds) const;
+  // Calculates shelf target bounds assuming visibility of
+  // |state.visibilty_state|.
+  void CalculateTargetBounds(const State& state,
+                             TargetBounds* target_bounds) const;
 
   // Calculate the target bounds using |state_|, and updates the
   // |user_work_area_bounds_|.
@@ -364,8 +342,6 @@ class ASH_EXPORT ShelfLayoutManager
 
   // Returns true if |window| is a descendant of the status area.
   bool IsStatusAreaWindow(aura::Window* window);
-
-  int GetWorkAreaInsets(const State& state, int size) const;
 
   // Called when the LoginUI changes from visible to invisible.
   void UpdateShelfVisibilityAfterLoginUIChange();
@@ -484,18 +460,6 @@ class ASH_EXPORT ShelfLayoutManager
 
   // Used to delay updating shelf background.
   UpdateShelfObserver* update_shelf_observer_ = nullptr;
-
-  // The occluded bounds of the keyboard. See
-  // ui/keyboard/keyboard_controller_observer.h for details.
-  gfx::Rect keyboard_occluded_bounds_;
-
-  // The displaced bounds of the keyboard. See
-  // ui/keyboard/keyboard_controller_observer.h for details.
-  gfx::Rect keyboard_displaced_bounds_;
-
-  // The bounds within the root window not occupied by the shelf nor the virtual
-  // keyboard.
-  gfx::Rect user_work_area_bounds_;
 
   // Whether background blur is enabled.
   const bool is_background_blur_enabled_;

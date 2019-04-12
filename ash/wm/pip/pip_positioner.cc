@@ -12,6 +12,7 @@
 #include "ash/shell.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/work_area_insets.h"
 #include "base/logging.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/insets.h"
@@ -217,18 +218,9 @@ gfx::Point ComputeBestCandidatePoint(const gfx::Point& center,
 }  // namespace
 
 gfx::Rect PipPositioner::GetMovementArea(const display::Display& display) {
-  gfx::Rect work_area = display.work_area();
-
-  // Include keyboard if it's not floating.
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
-  if (keyboard_controller->IsEnabled() &&
-      keyboard_controller->GetActiveContainerType() !=
-          keyboard::mojom::ContainerType::kFloating) {
-    gfx::Rect keyboard_bounds = keyboard_controller->visual_bounds_in_screen();
-    ::wm::ConvertRectToScreen(Shell::GetRootWindowForDisplayId(display.id()),
-                              &keyboard_bounds);
-    work_area.Subtract(keyboard_bounds);
-  }
+  gfx::Rect work_area =
+      WorkAreaInsets::ForWindow(Shell::GetRootWindowForDisplayId(display.id()))
+          ->user_work_area_bounds();
 
   work_area.Inset(kPipWorkAreaInsetsDp, kPipWorkAreaInsetsDp);
   return work_area;

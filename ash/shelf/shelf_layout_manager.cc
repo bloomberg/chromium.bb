@@ -54,7 +54,6 @@
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_handler.h"
-#include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/border.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -128,6 +127,11 @@ wm::WorkspaceWindowState GetShelfWorkspaceWindowState(
   DCHECK(controller);
 
   return controller->GetWindowState();
+}
+
+// Returns shelf's work area inset for given |visibility_state| and |size|.
+int GetShelfInset(ShelfVisibilityState visibility_state, int size) {
+  return visibility_state == SHELF_VISIBLE ? size : 0;
 }
 
 }  // namespace
@@ -224,7 +228,6 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget, Shelf* shelf)
   Shell::Get()->activation_client()->AddObserver(this);
   Shell::Get()->locale_update_controller()->AddObserver(this);
   state_.session_state = Shell::Get()->session_controller()->GetSessionState();
-  keyboard::KeyboardController::Get()->AddObserver(this);
   wallpaper_controller_observer_.Add(Shell::Get()->wallpaper_controller());
   display::Screen::GetScreen()->AddObserver(this);
 }
@@ -236,7 +239,6 @@ ShelfLayoutManager::~ShelfLayoutManager() {
   for (auto& observer : observers_)
     observer.WillDeleteShelfLayoutManager();
   display::Screen::GetScreen()->RemoveObserver(this);
-  keyboard::KeyboardController::Get()->RemoveObserver(this);
   Shell::Get()->locale_update_controller()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
   Shell::Get()->lock_state_controller()->RemoveObserver(this);
@@ -551,7 +553,7 @@ void ShelfLayoutManager::OnShelfAutoHideBehaviorChanged(
   UpdateVisibilityState();
 }
 
-void ShelfLayoutManager::OnAccessibilityInsetsChanged(
+void ShelfLayoutManager::OnUserWorkAreaInsetsChanged(
     aura::Window* root_window) {
   LayoutShelf();
 }
@@ -637,26 +639,6 @@ void ShelfLayoutManager::OnWindowActivated(ActivationReason reason,
                                            aura::Window* gained_active,
                                            aura::Window* lost_active) {
   UpdateAutoHideStateNow();
-}
-
-void ShelfLayoutManager::OnKeyboardAppearanceChanged(
-    const keyboard::KeyboardStateDescriptor& state) {
-  keyboard_occluded_bounds_ = state.occluded_bounds;
-  keyboard_displaced_bounds_ = state.displaced_bounds;
-
-  LayoutShelfAndUpdateBounds();
-}
-
-void ShelfLayoutManager::OnKeyboardVisibilityStateChanged(
-    const bool is_visible) {
-  // On login screen if keyboard has been just hidden, update bounds just once
-  // but ignore target_bounds.work_area_insets since shelf overlaps with login
-  // window.
-  if (Shell::Get()->session_controller()->IsUserSessionBlocked() &&
-      !is_visible) {
-    Shell::Get()->SetDisplayWorkAreaInsets(shelf_widget_->GetNativeWindow(),
-                                           gfx::Insets());
-  }
 }
 
 void ShelfLayoutManager::OnLockStateEvent(LockStateObserver::EventType event) {
@@ -929,8 +911,12 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
       // If user session is blocked (login to new user session or add user to
       // the existing session - multi-profile) then give 100% of work area only
       // if keyboard is not shown.
-      if (!state_.IsAddingSecondaryUser() || IsKeyboardShown())
-        insets = target_bounds.work_area_insets;
+      // TODO(agawronska): Could this be called from WorkAreaInsets?
+      const WorkAreaInsets* const work_area =
+          WorkAreaInsets::ForWindow(shelf_widget_->GetNativeWindow());
+      if (!state_.IsAddingSecondaryUser() || work_area->IsKeyboardShown())
+        insets = work_area->user_work_area_insets();
+
       Shell::Get()->SetDisplayWorkAreaInsets(shelf_widget_->GetNativeWindow(),
                                              insets);
     }
@@ -947,10 +933,6 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
   // animate. Set the visibility property without an animation.
   if (target_bounds.status_opacity)
     status_widget->Show();
-}
-
-bool ShelfLayoutManager::IsKeyboardShown() const {
-  return !keyboard_displaced_bounds_.IsEmpty();
 }
 
 bool ShelfLayoutManager::IsDraggingWindowFromTopOrCaptionArea() const {
@@ -979,43 +961,31 @@ void ShelfLayoutManager::StopAnimating() {
   GetLayer(shelf_widget_->status_area_widget())->GetAnimator()->StopAnimating();
 }
 
-gfx::Rect ShelfLayoutManager::ComputeStableWorkArea() const {
-  TargetBounds target_bounds;
-  State state = state_;
-  state.visibility_state = SHELF_VISIBLE;
-  return CalculateTargetBounds(state, &target_bounds);
-}
-
 bool ShelfLayoutManager::IsShowingStatusAreaWithoutShelf() const {
   return state_.is_status_area_visible &&
          state_.visibility_state == SHELF_HIDDEN;
 }
 
-gfx::Rect ShelfLayoutManager::CalculateTargetBounds(
+void ShelfLayoutManager::CalculateTargetBounds(
     const State& state,
     TargetBounds* target_bounds) const {
   const int shelf_size = ShelfConstants::shelf_size();
   // By default, show the whole shelf on the screen.
   int shelf_in_screen_portion = shelf_size;
+  const WorkAreaInsets* const work_area =
+      WorkAreaInsets::ForWindow(shelf_widget_->GetNativeWindow());
 
   if (state.IsShelfAutoHidden()) {
     shelf_in_screen_portion = kHiddenShelfInScreenPortion;
-  } else if (state.visibility_state == SHELF_HIDDEN || IsKeyboardShown()) {
+  } else if (state.visibility_state == SHELF_HIDDEN ||
+             work_area->IsKeyboardShown()) {
     shelf_in_screen_portion = 0;
   }
 
-  aura::Window* shelf_window = shelf_widget_->GetNativeWindow();
-  const WorkAreaInsets* const work_area_insets =
-      WorkAreaInsets::ForWindow(shelf_window);
-  const int accessibility_panel_height =
-      work_area_insets->accessibility_panel_height();
-  const int docked_magnifier_height =
-      work_area_insets->docked_magnifier_height();
-
   gfx::Rect available_bounds =
-      screen_util::GetDisplayBoundsWithShelf(shelf_window);
-  available_bounds.Inset(
-      0, accessibility_panel_height + docked_magnifier_height, 0, 0);
+      screen_util::GetDisplayBoundsWithShelf(shelf_widget_->GetNativeWindow());
+  available_bounds.Inset(work_area->GetAccessibilityInsets());
+
   int shelf_width = PrimaryAxisValue(available_bounds.width(), shelf_size);
   int shelf_height = PrimaryAxisValue(shelf_size, available_bounds.height());
   const int shelf_primary_position = SelectValueForShelfAlignment(
@@ -1047,26 +1017,6 @@ gfx::Rect ShelfLayoutManager::CalculateTargetBounds(
     status_origin.set_x(shelf_width - status_size.width());
   target_bounds->status_bounds_in_shelf = gfx::Rect(status_origin, status_size);
 
-  target_bounds->work_area_insets = SelectValueForShelfAlignment(
-      gfx::Insets(0, 0, GetWorkAreaInsets(state, shelf_height), 0),
-      gfx::Insets(0, GetWorkAreaInsets(state, shelf_width), 0, 0),
-      gfx::Insets(0, 0, 0, GetWorkAreaInsets(state, shelf_width)));
-
-  // TODO(varkha): The functionality of managing insets for display areas
-  // should probably be pushed to a separate component. This would simplify or
-  // remove entirely the dependency on keyboard and dock.
-
-  if (!keyboard_displaced_bounds_.IsEmpty()) {
-    // Also push in the work area inset for the keyboard if it is visible.
-    gfx::Insets keyboard_insets(0, 0, keyboard_displaced_bounds_.height(), 0);
-    target_bounds->work_area_insets += keyboard_insets;
-  }
-
-  // Also push in the work area insets for both the ChromeVox panel and the
-  // Docked Magnifier.
-  target_bounds->work_area_insets += gfx::Insets(
-      accessibility_panel_height + docked_magnifier_height, 0, 0, 0);
-
   bool is_showing_status_area_without_shelf =
       state_.is_status_area_visible && state_.visibility_state == SHELF_HIDDEN;
   target_bounds->shelf_opacity = ComputeTargetOpacity(state);
@@ -1079,9 +1029,13 @@ gfx::Rect ShelfLayoutManager::CalculateTargetBounds(
     target_bounds->status_opacity = target_bounds->shelf_opacity;
   }
 
-  if (gesture_drag_status_ == GESTURE_DRAG_IN_PROGRESS) {
+  if (gesture_drag_status_ == GESTURE_DRAG_IN_PROGRESS)
     UpdateShelfTargetBoundsForGesture(target_bounds);
-  }
+
+  target_bounds->shelf_insets = SelectValueForShelfAlignment(
+      gfx::Insets(0, 0, GetShelfInset(state.visibility_state, shelf_height), 0),
+      gfx::Insets(0, GetShelfInset(state.visibility_state, shelf_width), 0, 0),
+      gfx::Insets(0, 0, 0, GetShelfInset(state.visibility_state, shelf_width)));
 
   // This needs to happen after calling UpdateTargetBoundsForGesture(), because
   // that can change the size of the shelf.
@@ -1092,18 +1046,14 @@ gfx::Rect ShelfLayoutManager::CalculateTargetBounds(
                 shelf_height - status_size.height()),
       gfx::Rect(0, 0, target_bounds->shelf_bounds.width(),
                 shelf_height - status_size.height()));
-
-  available_bounds.Subtract(target_bounds->shelf_bounds);
-  available_bounds.Subtract(keyboard_occluded_bounds_);
-
-  aura::Window* root = shelf_window->GetRootWindow();
-  ::wm::ConvertRectToScreen(root, &available_bounds);
-  return available_bounds;
 }
 
 void ShelfLayoutManager::CalculateTargetBoundsAndUpdateWorkArea(
     TargetBounds* target_bounds) {
-  user_work_area_bounds_ = CalculateTargetBounds(state_, target_bounds);
+  CalculateTargetBounds(state_, target_bounds);
+  WorkAreaInsets::ForWindow(shelf_widget_->GetNativeWindow())
+      ->SetShelfBoundsAndInsets(target_bounds->shelf_bounds,
+                                target_bounds->shelf_insets);
 }
 
 void ShelfLayoutManager::UpdateShelfTargetBoundsForGesture(
@@ -1352,17 +1302,6 @@ bool ShelfLayoutManager::IsStatusAreaWindow(aura::Window* window) {
   const aura::Window* status_window =
       shelf_widget_->status_area_widget()->GetNativeWindow();
   return status_window && status_window->Contains(window);
-}
-
-int ShelfLayoutManager::GetWorkAreaInsets(const State& state, int size) const {
-  // The virtual keyboard always hides the shelf (in any orientation).
-  // Therefore, if the keyboard is shown, there is no need to reduce the work
-  // area by the size of the shelf.
-  if (IsKeyboardShown())
-    return 0;
-  if (state.visibility_state == SHELF_VISIBLE)
-    return size;
-  return 0;
 }
 
 void ShelfLayoutManager::UpdateShelfVisibilityAfterLoginUIChange() {

@@ -612,9 +612,9 @@ void Shell::NotifyPinnedStateChanged(aura::Window* pinned_window) {
     observer.OnPinnedStateChanged(pinned_window);
 }
 
-void Shell::NotifyAccessibilityInsetsChanged(aura::Window* root_window) {
+void Shell::NotifyUserWorkAreaInsetsChanged(aura::Window* root_window) {
   for (auto& observer : shell_observers_)
-    observer.OnAccessibilityInsetsChanged(root_window);
+    observer.OnUserWorkAreaInsetsChanged(root_window);
 }
 
 void Shell::NotifyShelfAlignmentChanged(aura::Window* root_window) {
