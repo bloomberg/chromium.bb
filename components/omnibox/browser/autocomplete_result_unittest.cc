@@ -1125,6 +1125,60 @@ TEST_F(AutocompleteResultTest, ConvertsOpenTabsCorrectly) {
   EXPECT_FALSE(result.match_at(2)->has_tab_match);
 }
 
+TEST_F(AutocompleteResultTest, DocumentSuggestionsCanMergeButNotToDefault) {
+  // Types are populated below to avoid introducing a new test data creation
+  // process.
+  TestData data[] = {
+      {1, 4, 500, false},   // DOCUMENT result for url [1].
+      {1, 1, 1100, false},  // HISTORY result for url [1], higher priority.
+      {2, 4, 600, false},   // DOCUMENT result for [2].
+      {2, 1, 1200, true},   // HISTORY result for url [2], higher priority,
+                            // Can be default.
+      {3, 4, 1000, false},  // DOCUMENT result for [3], higher priority
+      {3, 1, 400, false},   // HISTORY result for url [3].
+  };
+  ACMatches matches;
+  PopulateAutocompleteMatches(data, base::size(data), &matches);
+  matches[0].type = AutocompleteMatchType::DOCUMENT_SUGGESTION;
+  matches[1].type = AutocompleteMatchType::HISTORY_URL;
+  matches[2].type = AutocompleteMatchType::DOCUMENT_SUGGESTION;
+  matches[3].type = AutocompleteMatchType::HISTORY_URL;
+  matches[4].type = AutocompleteMatchType::DOCUMENT_SUGGESTION;
+  matches[5].type = AutocompleteMatchType::HISTORY_URL;
+
+  AutocompleteInput input(base::ASCIIToUTF16("a"),
+                          metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+  AutocompleteResult result;
+  result.AppendMatches(input, matches);
+  result.SortAndCull(input, template_url_service_.get());
+
+  // We expect three results:
+  // The document result for [1] may override the history result.
+  // The document result for [2] cannot override a potentially-default result.
+  // The document result for [3] is already higher-priority.
+  EXPECT_EQ(result.size(), 3u);
+
+  // First result should be the default with its original top-ranking score.
+  EXPECT_EQ(result.match_at(0)->relevance, 1200);
+  EXPECT_EQ(AutocompleteMatchType::HISTORY_URL, result.match_at(0)->type);
+  EXPECT_TRUE(result.match_at(0)->allowed_to_be_default_match);
+
+  // Second result should be a document result with elevated score.
+  // The second DOCUMENT result is deduped and effectively dropped.
+  EXPECT_EQ(result.match_at(1)->relevance, 1100);
+  EXPECT_EQ(AutocompleteMatchType::DOCUMENT_SUGGESTION,
+            result.match_at(1)->type);
+  EXPECT_FALSE(result.match_at(1)->allowed_to_be_default_match);
+
+  // Third result should be a document with original score. The history result
+  // it duped against is lower-priority.
+  EXPECT_EQ(result.match_at(2)->relevance, 1000);
+  EXPECT_EQ(AutocompleteMatchType::DOCUMENT_SUGGESTION,
+            result.match_at(2)->type);
+  EXPECT_FALSE(result.match_at(2)->allowed_to_be_default_match);
+}
+
 TEST_F(AutocompleteResultTest, PedalSuggestionsCantBeDefaultMatch) {
   TestData data[] = {
       {1, 1, 500, true},
