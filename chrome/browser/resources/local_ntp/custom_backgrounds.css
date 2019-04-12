@@ -584,7 +584,7 @@ html[darkmode=true] .selected-check::after {
   line-height: 1.6;
   min-height: 32px;
   overflow: hidden;
-  padding: 0 16px;
+  padding: 8px 16px;
   position: absolute;
   text-overflow: ellipsis;
   user-select: none;
