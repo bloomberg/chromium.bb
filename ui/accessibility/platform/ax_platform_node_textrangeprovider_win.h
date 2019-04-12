@@ -82,7 +82,10 @@ class __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
 
  private:
   using AXPositionInstance = AXNodePosition::AXPositionInstance;
-  using AXNodeRange = AXRange<AXNodePosition::AXPositionInstance::element_type>;
+  using AXPositionInstanceType = typename AXPositionInstance::element_type;
+  using AXNodeRange = AXRange<AXPositionInstanceType>;
+  using CreateNextPositionFunction =
+      AXPositionInstance (AXPositionInstanceType::*)(AXBoundaryBehavior) const;
 
   friend class AXPlatformNodeTextRangeProviderTest;
   friend class AXPlatformNodeTextProviderTest;
@@ -91,15 +94,28 @@ class __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
 
   AXPositionInstance MoveEndpointByCharacter(const AXPositionInstance& endpoint,
                                              const int count,
-                                             int* count_moved);
-
+                                             int* units_moved);
+  AXPositionInstance MoveEndpointByWord(const AXPositionInstance& endpoint,
+                                        bool endpoint_is_start,
+                                        const int count,
+                                        int* units_moved);
+  AXPositionInstance MoveEndpointByLine(const AXPositionInstance& endpoint,
+                                        bool endpoint_is_start,
+                                        const int count,
+                                        int* units_moved);
   AXPositionInstance MoveEndpointByDocument(const AXPositionInstance& endpoint,
                                             const int count,
                                             int* units_moved);
 
-  AXNodePosition::AXPositionInstance start_;
-  AXNodePosition::AXPositionInstance end_;
+  AXPositionInstance MoveEndpointByUnitHelper(
+      const AXPositionInstance& endpoint,
+      CreateNextPositionFunction create_next_position,
+      const int count,
+      int* units_moved);
+
   CComPtr<ui::AXPlatformNodeWin> owner_;
+  AXPositionInstance start_;
+  AXPositionInstance end_;
 };
 
 }  // namespace ui
