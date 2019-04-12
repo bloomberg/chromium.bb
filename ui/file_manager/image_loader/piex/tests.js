@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-const example = 'node tests http://localhost:8123/tests.html [options]';
+const example = 'node tests tests.html [options]';
 
 const program = require('commander');
 
-program.usage('server [options]')
+program.usage('test-page [options]')
   .description('piex wasm raw image preview test runner')
   .option('-d, --debug', 'enable debug mode');
 
@@ -32,6 +32,9 @@ process.on('unhandledRejection', (error) => {
   console.log('unhandledRejection', error);
   process.exit(1);
 });
+
+const server = require('http-server').createServer();
+server.listen(8123);
 
 const puppeteer = require('puppeteer');
 
@@ -64,7 +67,7 @@ const puppeteer = require('puppeteer');
     console.log(message.text());
   });
 
-  const url = process.argv[2];
+  const url = 'http://localhost:8123/' + process.argv[2];
   await page.goto(url, {waitUntil: 'networkidle2'}).catch((error) => {
     console.log(error.message, url);
     process.exit(1);
@@ -123,5 +126,6 @@ const puppeteer = require('puppeteer');
 
   console.log('test: done total time', testTime.toFixed(3));
   browser.close();
+  server.close();
 
 })();
