@@ -25,10 +25,44 @@ constexpr SkColor kMediaNotificationDefaultBackgroundColor = SK_ColorWHITE;
 // The ratio for a background color option to be considered very popular.
 constexpr double kMediaNotificationBackgroundColorVeryPopularRatio = 2.5;
 
+// The ratio for the most popular foreground color to be used.
+constexpr double kMediaNotificationForegroundColorMostPopularRatio = 0.01;
+
+// The minimum saturation for the most popular foreground color to be used.
+constexpr double kMediaNotificationForegroundColorMostPopularMinSaturation =
+    0.19;
+
+// The ratio for the more vibrant foreground color to use.
+constexpr double kMediaNotificationForegroundColorMoreVibrantRatio = 1.0;
+
 bool IsNearlyWhiteOrBlack(SkColor color) {
   color_utils::HSL hsl;
   color_utils::SkColorToHSL(color, &hsl);
   return hsl.l >= 0.9 || hsl.l <= 0.08;
+}
+
+int GetHueDegrees(const SkColor& color) {
+  color_utils::HSL hsl;
+  color_utils::SkColorToHSL(color, &hsl);
+  return hsl.h * 360;
+}
+
+double GetSaturation(const color_utils::Swatch& swatch) {
+  color_utils::HSL hsl;
+  color_utils::SkColorToHSL(swatch.color, &hsl);
+  return hsl.s;
+}
+
+bool IsForegroundColorSwatchAllowed(const SkColor& background,
+                                    const SkColor& candidate) {
+  if (IsNearlyWhiteOrBlack(candidate))
+    return false;
+
+  if (IsNearlyWhiteOrBlack(background))
+    return true;
+
+  int diff = abs(GetHueDegrees(candidate) - GetHueDegrees(background));
+  return diff > 10 && diff < 350;
 }
 
 base::Optional<SkColor> GetNotificationBackgroundColor(const SkBitmap* source) {
@@ -38,7 +72,7 @@ base::Optional<SkColor> GetNotificationBackgroundColor(const SkBitmap* source) {
   std::vector<color_utils::Swatch> swatches =
       color_utils::CalculateColorSwatches(
           *source, 16, gfx::Rect(source->width() / 2, source->height()),
-          false /* exclude_uninteresting */);
+          base::nullopt);
 
   if (swatches.empty())
     return base::nullopt;
@@ -79,6 +113,120 @@ base::Optional<SkColor> GetNotificationBackgroundColor(const SkBitmap* source) {
   }
 
   return non_white_black->color;
+}
+
+color_utils::Swatch SelectVibrantSwatch(const color_utils::Swatch& more_vibrant,
+                                        const color_utils::Swatch& vibrant) {
+  if ((static_cast<double>(more_vibrant.population) / vibrant.population) <
+      kMediaNotificationForegroundColorMoreVibrantRatio) {
+    return vibrant;
+  }
+
+  return more_vibrant;
+}
+
+color_utils::Swatch SelectMutedSwatch(const color_utils::Swatch& muted,
+                                      const color_utils::Swatch& more_muted) {
+  double population_ratio =
+      static_cast<double>(muted.population) / more_muted.population;
+
+  // Use the swatch with the higher saturation ratio.
+  return (GetSaturation(muted) * population_ratio > GetSaturation(more_muted))
+             ? muted
+             : more_muted;
+}
+
+base::Optional<SkColor> GetNotificationForegroundColor(
+    const base::Optional<SkColor>& background_color,
+    const SkBitmap* source) {
+  if (!background_color || !source || source->empty() || source->isNull())
+    return base::nullopt;
+
+  const bool is_light =
+      color_utils::GetRelativeLuminance(*background_color) > 0.5;
+  const SkColor fallback_color = is_light ? SK_ColorBLACK : SK_ColorWHITE;
+
+  gfx::Rect bitmap_area(source->width(), source->height());
+  bitmap_area.Inset(source->width() * 0.4, 0, 0, 0);
+
+  // If the background color is dark we want to look for colors that are darker
+  // and vice versa.
+  const color_utils::LumaRange more_luma_range =
+      is_light ? color_utils::LumaRange::DARK : color_utils::LumaRange::LIGHT;
+
+  std::vector<color_utils::ColorProfile> color_profiles;
+  color_profiles.push_back(color_utils::ColorProfile(
+      more_luma_range, color_utils::SaturationRange::VIBRANT));
+  color_profiles.push_back(color_utils::ColorProfile(
+      color_utils::LumaRange::NORMAL, color_utils::SaturationRange::VIBRANT));
+  color_profiles.push_back(color_utils::ColorProfile(
+      color_utils::LumaRange::NORMAL, color_utils::SaturationRange::MUTED));
+  color_profiles.push_back(color_utils::ColorProfile(
+      more_luma_range, color_utils::SaturationRange::MUTED));
+  color_profiles.push_back(color_utils::ColorProfile(
+      color_utils::LumaRange::ANY, color_utils::SaturationRange::ANY));
+
+  std::vector<color_utils::Swatch> best_swatches =
+      color_utils::CalculateProminentColorsOfBitmap(
+          *source, color_profiles, &bitmap_area,
+          base::BindRepeating(&IsForegroundColorSwatchAllowed,
+                              background_color.value()));
+
+  if (best_swatches.empty())
+    return fallback_color;
+
+  DCHECK_EQ(5u, best_swatches.size());
+
+  const color_utils::Swatch& more_vibrant = best_swatches[0];
+  const color_utils::Swatch& vibrant = best_swatches[1];
+  const color_utils::Swatch& muted = best_swatches[2];
+  const color_utils::Swatch& more_muted = best_swatches[3];
+  const color_utils::Swatch& most_popular = best_swatches[4];
+
+  // We are looking for a fraction that is at least 0.2% of the image.
+  const size_t population_min =
+      std::min(bitmap_area.width() * bitmap_area.height(),
+               color_utils::kMaxConsideredPixelsForSwatches) *
+      0.002;
+
+  // This selection algorithm is an implementation of MediaNotificationProcessor
+  // from Android. It will select more vibrant colors first since they stand out
+  // better against the background. If not, it will fallback to muted colors,
+  // the most popular color and then either white/black. Any swatch has to be
+  // above a minimum population threshold to be determined significant enough in
+  // the artwork to be used.
+  base::Optional<color_utils::Swatch> swatch;
+  if (more_vibrant.population > population_min &&
+      vibrant.population > population_min) {
+    swatch = SelectVibrantSwatch(more_vibrant, vibrant);
+  } else if (more_vibrant.population > population_min) {
+    swatch = more_vibrant;
+  } else if (vibrant.population > population_min) {
+    swatch = vibrant;
+  } else if (muted.population > population_min &&
+             more_muted.population > population_min) {
+    swatch = SelectMutedSwatch(muted, more_muted);
+  } else if (muted.population > population_min) {
+    swatch = muted;
+  } else if (more_muted.population > population_min) {
+    swatch = more_muted;
+  } else if (most_popular.population > population_min) {
+    return most_popular.color;
+  } else {
+    return fallback_color;
+  }
+
+  if (most_popular == *swatch)
+    return swatch->color;
+
+  if (static_cast<double>(swatch->population) / most_popular.population <
+          kMediaNotificationForegroundColorMostPopularRatio &&
+      GetSaturation(most_popular) >
+          kMediaNotificationForegroundColorMostPopularMinSaturation) {
+    return most_popular.color;
+  }
+
+  return swatch->color;
 }
 
 }  // namespace
@@ -164,6 +312,8 @@ void MediaNotificationBackground::UpdateArtwork(const gfx::ImageSkia& image) {
 
   artwork_ = image;
   background_color_ = GetNotificationBackgroundColor(artwork_.bitmap());
+  foreground_color_ =
+      GetNotificationForegroundColor(background_color_, artwork_.bitmap());
   owner_->SchedulePaint();
 }
 

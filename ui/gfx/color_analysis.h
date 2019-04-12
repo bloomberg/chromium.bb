@@ -122,12 +122,14 @@ GFX_EXPORT SkColor CalculateKMeanColorOfBitmap(const SkBitmap& bitmap);
 // tend to be brighter and more saturated. The best combination of color
 // attributes depends on how you plan to apply the color.
 enum class LumaRange {
+  ANY,
   LIGHT,
   NORMAL,
   DARK,
 };
 
 enum class SaturationRange {
+  ANY,
   VIBRANT,
   MUTED,
 };
@@ -142,6 +144,8 @@ struct ColorProfile {
 
 // A color value with an associated weight.
 struct Swatch {
+  Swatch() : Swatch(SK_ColorTRANSPARENT, 0) {}
+
   Swatch(SkColor color, size_t population)
       : color(color), population(population) {}
 
@@ -155,27 +159,38 @@ struct Swatch {
   }
 };
 
+// Used to filter colors from swatches. Called with the candidate color and will
+// return true if the color should be allowed.
+using ColorSwatchFilter = base::RepeatingCallback<bool(const SkColor&)>;
+
+// The maximum number of pixels to consider when generating swatches.
+GFX_EXPORT extern const int kMaxConsideredPixelsForSwatches;
+
 // Returns a vector of |Swatch| that represent the prominent colors of the
 // bitmap within |region|. The |max_swatches| is the maximum number of swatches.
 // For landscapes, good values are in the range 12-16. For images which are
 // largely made up of people's faces then this value should be increased to
-// 24-32. |exclude_uninteresting| will exclude colors that are not interesting
-// (e.g. too white or black).
+// 24-32. |filter| is an optional filter that can filter out unwanted colors.
 // This is an implementation of the Android Palette API:
 // https://developer.android.com/reference/android/support/v7/graphics/Palette
 GFX_EXPORT std::vector<Swatch> CalculateColorSwatches(
     const SkBitmap& bitmap,
     size_t max_swatches,
     const gfx::Rect& region,
-    bool exclude_uninteresting);
+    base::Optional<ColorSwatchFilter> filter);
 
 // Returns a vector of RGB colors that represents the bitmap based on the
 // |color_profiles| provided. For each value, if a value is succesfully
 // calculated, the calculated value is fully opaque. For failure, the calculated
-// value is transparent.
-GFX_EXPORT std::vector<SkColor> CalculateProminentColorsOfBitmap(
+// value is transparent. |region| can be provided to select a specific area of
+// the bitmap. |filter| is an optional filter that can filter out unwanted
+// colors. If |filter| is not provided then we will filter out uninteresting
+// colors.
+GFX_EXPORT std::vector<Swatch> CalculateProminentColorsOfBitmap(
     const SkBitmap& bitmap,
-    const std::vector<ColorProfile>& color_profiles);
+    const std::vector<ColorProfile>& color_profiles,
+    gfx::Rect* region,
+    ColorSwatchFilter filter);
 
 // Compute color covariance matrix for the input bitmap.
 GFX_EXPORT gfx::Matrix3F ComputeColorCovariance(const SkBitmap& bitmap);

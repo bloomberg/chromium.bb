@@ -247,6 +247,10 @@ std::vector<ColorProfile> GetProminentColorProfiles() {
 ColorProfileType GetColorProfileType(ColorProfile color_profile) {
   bool vibrant = color_profile.saturation == SaturationRange::VIBRANT;
   switch (color_profile.luma) {
+    case LumaRange::ANY:
+      // There should be no color profiles with the ANY luma range.
+      NOTREACHED();
+      break;
     case LumaRange::DARK:
       return vibrant ? ColorProfileType::DARK_VIBRANT
                      : ColorProfileType::DARK_MUTED;

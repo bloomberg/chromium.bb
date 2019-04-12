@@ -10,11 +10,27 @@
 #include "base/i18n/base_i18n_switches.h"
 #include "base/test/icu_test_util.h"
 #include "base/test/scoped_command_line.h"
+#include "ui/gfx/color_analysis.h"
+#include "ui/gfx/color_utils.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/views/test/test_views.h"
 
 namespace ash {
 
 namespace {
+
+constexpr double kLightLuma = 0.9;
+constexpr double kNormalLuma = 0.5;
+constexpr double kDarkLuma = 0.2;
+
+constexpr double kMutedSaturation = 0.2;
+constexpr double kVibrantSaturation = 0.8;
+
+constexpr int kDefaultForegroundArtworkHeight = 100;
+
+SkColor GetColorFromSL(double s, double l) {
+  return color_utils::HSLToSkColor({0.2, s, l}, SK_AlphaOPAQUE);
+}
 
 gfx::ImageSkia CreateTestBackgroundImage(SkColor first_color,
                                          SkColor second_color,
@@ -79,6 +95,10 @@ class MediaNotificationBackgroundTest : public AshTestBase {
     return background_->background_color_;
   }
 
+  base::Optional<SkColor> GetForegroundColor() const {
+    return background_->foreground_color_;
+  }
+
  private:
   std::unique_ptr<views::StaticSizedView> owner_;
   std::unique_ptr<MediaNotificationBackground> background_;
@@ -112,7 +132,29 @@ TEST_F(MediaNotificationBackgroundTest,
 // parameter that is either black or white.
 class MediaNotificationBackgroundBlackWhiteTest
     : public MediaNotificationBackgroundTest,
-      public testing::WithParamInterface<SkColor> {};
+      public testing::WithParamInterface<SkColor> {
+ public:
+  bool IsBlack() const { return GetParam() == SK_ColorBLACK; }
+
+  gfx::ImageSkia CreateTestForegroundArtwork(const SkColor& first,
+                                             const SkColor& second,
+                                             int first_width,
+                                             int second_height) {
+    gfx::Rect area(100, 100);
+
+    SkBitmap bitmap;
+    bitmap.allocN32Pixels(area.width(), area.height());
+    bitmap.eraseColor(GetParam());
+
+    area.Inset(40, 0, 0, 0);
+    bitmap.erase(first, gfx::RectToSkIRect(area));
+
+    area.Inset(first_width, area.height() - second_height, 0, 0);
+    bitmap.erase(second, gfx::RectToSkIRect(area));
+
+    return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
+  }
+};
 
 INSTANTIATE_TEST_SUITE_P(,
                          MediaNotificationBackgroundBlackWhiteTest,
@@ -143,6 +185,133 @@ TEST_P(MediaNotificationBackgroundBlackWhiteTest,
   background()->UpdateArtwork(
       CreateTestBackgroundImage(GetParam(), kTestColor, 40));
   EXPECT_EQ(kTestColor, GetBackgroundColor());
+}
+
+// If there are multiple vibrant colors then the foreground color should be the
+// most popular one.
+TEST_P(MediaNotificationBackgroundBlackWhiteTest,
+       DeriveForegroundColor_Palette_MultiVibrant) {
+  const SkColor kTestColor = SK_ColorCYAN;
+
+  background()->UpdateArtwork(CreateTestForegroundArtwork(
+      kTestColor, GetColorFromSL(kVibrantSaturation, kDarkLuma), 59,
+      kDefaultForegroundArtworkHeight));
+
+  EXPECT_EQ(GetParam(), GetBackgroundColor());
+  EXPECT_EQ(kTestColor, GetForegroundColor());
+}
+
+// If there is a vibrant and muted color then the foreground color should be the
+// more vibrant one.
+TEST_P(MediaNotificationBackgroundBlackWhiteTest,
+       DeriveForegroundColor_Palette_Vibrant) {
+  const SkColor kTestColor = GetColorFromSL(kVibrantSaturation, kNormalLuma);
+
+  background()->UpdateArtwork(CreateTestForegroundArtwork(
+      kTestColor, GetColorFromSL(kMutedSaturation, kNormalLuma), 30,
+      kDefaultForegroundArtworkHeight));
+
+  EXPECT_EQ(GetParam(), GetBackgroundColor());
+  EXPECT_EQ(kTestColor, GetForegroundColor());
+}
+
+// If there are multiple muted colors then the foreground color should be the
+// most popular one.
+TEST_P(MediaNotificationBackgroundBlackWhiteTest,
+       DeriveForegroundColor_Palette_MultiMuted) {
+  const SkColor kTestColor = GetColorFromSL(kMutedSaturation, kNormalLuma);
+
+  background()->UpdateArtwork(CreateTestForegroundArtwork(
+      kTestColor, GetColorFromSL(kMutedSaturation, kDarkLuma), 59,
+      kDefaultForegroundArtworkHeight));
+
+  EXPECT_EQ(GetParam(), GetBackgroundColor());
+  EXPECT_EQ(kTestColor, GetForegroundColor());
+}
+
+// If there is a normal and light muted color then the foreground color should
+// be the normal one.
+TEST_P(MediaNotificationBackgroundBlackWhiteTest,
+       DeriveForegroundColor_Palette_Muted) {
+  const SkColor kTestColor = GetColorFromSL(kMutedSaturation, kNormalLuma);
+  const SkColor kSecondColor =
+      GetColorFromSL(kMutedSaturation, IsBlack() ? kDarkLuma : kLightLuma);
+
+  background()->UpdateArtwork(CreateTestForegroundArtwork(
+      kTestColor, kSecondColor, 30, kDefaultForegroundArtworkHeight));
+
+  EXPECT_EQ(GetParam(), GetBackgroundColor());
+  EXPECT_EQ(kTestColor, GetForegroundColor());
+}
+
+// If the best color is not the most popular one, but the most popular one is
+// not that popular then we should use the best color.
+TEST_P(MediaNotificationBackgroundBlackWhiteTest,
+       DeriveForegroundColor_Palette_NotPopular) {
+  const SkColor kTestColor = SK_ColorMAGENTA;
+
+  background()->UpdateArtwork(CreateTestForegroundArtwork(
+      kTestColor, GetColorFromSL(kMutedSaturation, kNormalLuma), 25,
+      kDefaultForegroundArtworkHeight));
+
+  EXPECT_EQ(GetParam(), GetBackgroundColor());
+  EXPECT_EQ(kTestColor, GetForegroundColor());
+}
+
+// If we do not have a best color but we have a popular one over a threshold
+// then we should use that one.
+TEST_P(MediaNotificationBackgroundBlackWhiteTest,
+       DeriveForegroundColor_MostPopular) {
+  const SkColor kTestColor = GetColorFromSL(kMutedSaturation, kNormalLuma);
+
+  background()->UpdateArtwork(CreateTestForegroundArtwork(
+      kTestColor, GetColorFromSL(kVibrantSaturation, kNormalLuma), 59, 50));
+
+  EXPECT_EQ(GetParam(), GetBackgroundColor());
+  EXPECT_EQ(kTestColor, GetForegroundColor());
+}
+
+// If the background color is dark then we should select for a lighter color,
+// otherwise we should select for a darker one.
+TEST_P(MediaNotificationBackgroundBlackWhiteTest,
+       DeriveForegroundColor_Palette_MoreVibrant) {
+  const SkColor kTestColor =
+      GetColorFromSL(kVibrantSaturation, IsBlack() ? kLightLuma : kDarkLuma);
+
+  background()->UpdateArtwork(CreateTestForegroundArtwork(
+      kTestColor, GetColorFromSL(kVibrantSaturation, kNormalLuma), 30,
+      kDefaultForegroundArtworkHeight));
+
+  EXPECT_EQ(GetParam(), GetBackgroundColor());
+  EXPECT_EQ(kTestColor, GetForegroundColor());
+}
+
+// If the background color is dark then we should select for a lighter color,
+// otherwise we should select for a darker one.
+TEST_P(MediaNotificationBackgroundBlackWhiteTest,
+       DeriveForegroundColor_Palette_MoreMuted) {
+  const SkColor kTestColor =
+      GetColorFromSL(kMutedSaturation, IsBlack() ? kLightLuma : kDarkLuma);
+  const SkColor kSecondColor =
+      GetColorFromSL(kMutedSaturation, IsBlack() ? kDarkLuma : kLightLuma);
+
+  background()->UpdateArtwork(CreateTestForegroundArtwork(
+      kTestColor, kSecondColor, 30, kDefaultForegroundArtworkHeight));
+
+  EXPECT_EQ(GetParam(), GetBackgroundColor());
+  EXPECT_EQ(kTestColor, GetForegroundColor());
+}
+
+// If we do not have any colors then we should use the fallback color based on
+// the background color.
+TEST_P(MediaNotificationBackgroundBlackWhiteTest,
+       DeriveForegroundColor_Fallback) {
+  background()->UpdateArtwork(CreateTestForegroundArtwork(
+      SK_ColorTRANSPARENT, SK_ColorTRANSPARENT, 0, 0));
+
+  EXPECT_EQ(GetParam(), GetBackgroundColor());
+  EXPECT_EQ(GetParam() == SK_ColorBLACK ? SK_ColorWHITE : SK_ColorBLACK,
+            GetForegroundColor());
 }
 
 // MediaNotificationBackgroundRTLTest will repeat these tests with RTL disabled
