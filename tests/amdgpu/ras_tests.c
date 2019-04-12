@@ -196,6 +196,7 @@ static int amdgpu_ras_lookup_id(drmDevicePtr device)
 
 	for (i = 0; i < MAX_CARDS_SUPPORTED; i++) {
 		memset(str, 0, sizeof(str));
+		memset(&info, 0, sizeof(info));
 		sprintf(path, "/sys/kernel/debug/dri/%d/name", i);
 		if (get_file_contents(path, str, sizeof(str)) <= 0)
 			continue;
