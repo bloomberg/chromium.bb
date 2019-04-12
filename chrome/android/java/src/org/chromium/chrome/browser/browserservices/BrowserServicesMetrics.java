@@ -61,6 +61,14 @@ public class BrowserServicesMetrics {
     }
 
     /**
+     * Returns a {@link TimingMetric} that records the amount of time taken to check if a package
+     * handles a Browsable intent.
+     */
+    public static TimingMetric getBrowsableIntentResolutionTimingContext() {
+        return new TimingMetric("BrowserServices.BrowsableIntentCheck");
+    }
+
+    /**
      * A class to be used with a try-with-resources to record the elapsed time within the try block.
      */
     public static class TimingMetric implements AutoCloseable {

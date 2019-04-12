@@ -19,9 +19,12 @@ import java.lang.annotation.RetentionPolicy;
 
 import javax.inject.Inject;
 
+import dagger.Reusable;
+
 /**
  * Encapsulates Uma recording actions related to Trusted Web Activities.
  */
+@Reusable
 public class TrustedWebActivityUmaRecorder {
     @IntDef({DelegatedNotificationSmallIconFallback.NO_FALLBACK,
             DelegatedNotificationSmallIconFallback.FALLBACK_ICON_NOT_PROVIDED,

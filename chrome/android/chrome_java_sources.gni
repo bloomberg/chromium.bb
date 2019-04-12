@@ -197,6 +197,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/browserservices/VerificationResultStore.java",
   "java/src/org/chromium/chrome/browser/browserservices/permissiondelegation/InstalledWebappBridge.java",
   "java/src/org/chromium/chrome/browser/browserservices/permissiondelegation/NotificationChannelPreserver.java",
+  "java/src/org/chromium/chrome/browser/browserservices/permissiondelegation/NotificationPermissionUpdater.java",
   "java/src/org/chromium/chrome/browser/browserservices/permissiondelegation/TrustedWebActivityPermissionManager.java",
   "java/src/org/chromium/chrome/browser/browserservices/permissiondelegation/TrustedWebActivityPermissionStore.java",
   "java/src/org/chromium/chrome/browser/browserservices/trustedwebactivityui/TrustedWebActivityCoordinator.java",
