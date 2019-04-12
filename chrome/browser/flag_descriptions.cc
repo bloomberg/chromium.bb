@@ -3234,6 +3234,11 @@ const char kGestureTypingDescription[] =
     "Enable/Disable gesture typing option in the settings page for the virtual "
     "keyboard.";
 
+const char kHideArcMediaNotificationsName[] = "Hide ARC media notifications";
+const char kHideArcMediaNotificationsDescription[] =
+    "Hides media notifications for ARC apps. Requires "
+    "#enable-media-session-notifications to be enabled.";
+
 const char kImeInputLogicFstName[] = "Enable FST Input Logic on IME";
 const char kImeInputLogicFstDescription[] =
     "Enable FST Input Logic to replace the IME legacy input logic on NaCl";
@@ -3254,6 +3259,11 @@ const char kMashOopVizName[] = "Out-of-process viz for mash";
 const char kMashOopVizDescription[] =
     "Runs viz in a separate process when mash is enabled (otherwise viz would "
     "run in ash process)";
+
+const char kMediaSessionNotificationsName[] = "Media session notifications";
+const char kMediaSessionNotificationsDescription[] =
+    "Shows notifications for media sessions showing the currently playing "
+    "media and providing playback controls";
 
 const char kMemoryPressureThresholdName[] =
     "Memory discard strategy for advanced pressure handling";

@@ -1182,6 +1182,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-hide-arc-media-notifications",
+    "owners": [ "beccahughes", "media-dev" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "enable-history-entry-requires-user-gesture",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
@@ -1323,6 +1328,11 @@
     "name": "enable-md-rounded-corners-on-dialogs",
     "owners": ["bsep", "sajadm"],
     "expiry_milestone": 78
+  },
+  {
+    "name": "enable-media-session-notifications",
+    "owners": [ "beccahughes", "media-dev" ],
+    "expiry_milestone": 80
   },
   {
     "name": "enable-media-session-service",

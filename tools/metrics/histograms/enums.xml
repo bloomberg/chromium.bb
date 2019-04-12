@@ -32475,6 +32475,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1478876902" label="disable-permission-action-reporting"/>
   <int value="-1477560322" label="kiosk"/>
   <int value="-1476930281" label="Windows10CustomTitlebar:enabled"/>
+  <int value="-1473878093" label="HideArcMediaNotifications:disabled"/>
   <int value="-1473668019" label="token-binding:disabled"/>
   <int value="-1473136627" label="enable-web-payments"/>
   <int value="-1471021059"
@@ -33093,6 +33094,7 @@ from previous Chrome versions.
   <int value="-531810064" label="saveas-menu-label"/>
   <int value="-531792555" label="UseModernMediaControls:disabled"/>
   <int value="-531651776" label="NewRemotePlaybackPipeline:enabled"/>
+  <int value="-531379517" label="MediaSessionNotification:disabled"/>
   <int value="-528927088" label="AutofillCreditCardPopupLayout:disabled"/>
   <int value="-528149352" label="WebRtcUseEchoCanceller3:enabled"/>
   <int value="-523030434" label="EnableBackgroundBlur:enabled"/>
@@ -33218,6 +33220,7 @@ from previous Chrome versions.
   <int value="-340023285" label="WebNFC:enabled"/>
   <int value="-339103761" label="ArcGraphicBuffersVisualizationTool:enabled"/>
   <int value="-338978205" label="NavigationMojoResponse:enabled"/>
+  <int value="-334873793" label="MediaSessionNotification:enabled"/>
   <int value="-329727402" label="disable-files-quick-view"/>
   <int value="-328361990" label="enable-experimental-extension-apis"/>
   <int value="-326083626" label="AppBanners:disabled"/>
@@ -33293,6 +33296,7 @@ from previous Chrome versions.
   <int value="-192389983" label="NoStatePrefetch:enabled"/>
   <int value="-191256027" label="AvoidFlashBetweenNavigation:disabled"/>
   <int value="-189478545" label="ArcCustomTabsExperiment:enabled"/>
+  <int value="-186707397" label="HideArcMediaNotifications:enabled"/>
   <int value="-185162926" label="IncreaseInputAudioBufferSize:enabled"/>
   <int value="-184091779"
       label="OmniboxUIExperimentWhiteBackgroundOnBlur:enabled"/>
