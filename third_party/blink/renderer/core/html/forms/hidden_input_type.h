@@ -49,6 +49,7 @@ class HiddenInputType final : public InputType, private InputTypeView {
   using InputType::GetElement;
 
  private:
+  void CountUsage() override;
   InputTypeView* CreateView() override;
   const AtomicString& FormControlType() const override;
   bool ShouldSaveAndRestoreFormControlState() const override;

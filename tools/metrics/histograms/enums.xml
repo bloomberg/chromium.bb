@@ -22726,6 +22726,14 @@ Called by update_net_error_codes.py.-->
   <int value="2847" label="HTMLImportsOnReverseOriginTrials"/>
   <int value="2848" label="ElementCreateShadowRootOnReverseOriginTrials"/>
   <int value="2849" label="DocumentRegisterElementOnReverseOriginTrials"/>
+  <int value="2850" label="InputTypeRadio"/>
+  <int value="2851" label="InputTypeCheckbox"/>
+  <int value="2852" label="InputTypeImage"/>
+  <int value="2853" label="InputTypeButton"/>
+  <int value="2854" label="InputTypeHidden"/>
+  <int value="2855" label="InputTypeReset"/>
+  <int value="2856" label="SelectElementSingle"/>
+  <int value="2857" label="SelectElementMultiple"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
