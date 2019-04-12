@@ -18,9 +18,9 @@ class SwitchAccess {
 
     /**
      * User preferences.
-     * @private {SwitchAccessPrefs}
+     * @private {SwitchAccessPreferences}
      */
-    this.switchAccessPrefs_ = null;
+    this.switchAccessPreferences_ = null;
 
     /**
      * Handles changes to auto-scan.
@@ -63,7 +63,7 @@ class SwitchAccess {
    */
   init_() {
     this.commands_ = new Commands(this);
-    this.switchAccessPrefs_ = new SwitchAccessPrefs(this);
+    this.switchAccessPreferences_ = new SwitchAccessPreferences(this);
     this.autoScanManager_ = new AutoScanManager(this);
     this.keyboardHandler_ = new KeyboardHandler(this);
 
@@ -200,14 +200,15 @@ class SwitchAccess {
 
   /**
    * Set the value of the preference |key| to |value| in chrome.storage.sync.
-   * this.prefs_ is not set until handleStorageChange_.
+   * Once the storage is set, the Switch Access preferences/behavior are
+   * updated.
    *
    * @override
    * @param {string} key
    * @param {boolean|string|number} value
    */
-  setPref(key, value) {
-    this.switchAccessPrefs_.setPref(key, value);
+  setPreference(key, value) {
+    this.switchAccessPreferences_.setPreference(key, value);
   }
 
   /**
@@ -218,8 +219,8 @@ class SwitchAccess {
    * @param  {string} key
    * @return {boolean}
    */
-  getBooleanPref(key) {
-    return this.switchAccessPrefs_.getBooleanPref(key);
+  getBooleanPreference(key) {
+    return this.switchAccessPreferences_.getBooleanPreference(key);
   }
 
   /**
@@ -230,8 +231,8 @@ class SwitchAccess {
    * @param  {string} key
    * @return {number}
    */
-  getNumberPref(key) {
-    return this.switchAccessPrefs_.getNumberPref(key);
+  getNumberPreference(key) {
+    return this.switchAccessPreferences_.getNumberPreference(key);
   }
 
   /**
@@ -243,7 +244,7 @@ class SwitchAccess {
    * @return {boolean}
    */
   keyCodeIsUsed(keyCode) {
-    return this.switchAccessPrefs_.keyCodeIsUsed(keyCode);
+    return this.switchAccessPreferences_.keyCodeIsUsed(keyCode);
   }
 
   /**

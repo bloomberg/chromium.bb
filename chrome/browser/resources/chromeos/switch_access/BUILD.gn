@@ -57,7 +57,7 @@ run_jsbundler("switch_access_copied_files") {
     "options.css",
     "options.html",
     "options.js",
-    "prefs.js",
+    "preferences.js",
     "switch_access.js",
     "switch_access_constants.js",
     "switch_access_predicate.js",
@@ -165,7 +165,7 @@ js_type_check("closure_compile") {
     ":menu_panel_interface",
     ":navigation_manager",
     ":options",
-    ":prefs",
+    ":preferences",
     ":switch_access",
     ":switch_access_constants",
     ":switch_access_interface",
@@ -248,7 +248,7 @@ js_library("options") {
   externs_list = [ "$externs_path/chrome_extensions.js" ]
 }
 
-js_library("prefs") {
+js_library("preferences") {
   deps = [
     ":switch_access_interface",
   ]
@@ -262,7 +262,7 @@ js_library("switch_access") {
     ":keyboard_handler",
     ":menu_panel_interface",
     ":navigation_manager",
-    ":prefs",
+    ":preferences",
   ]
   externs_list = [
     "$externs_path/automation.js",

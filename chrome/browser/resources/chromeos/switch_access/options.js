@@ -30,13 +30,13 @@ class SwitchAccessOptions {
    */
   init_() {
     document.getElementById('enableAutoScan').checked =
-        this.switchAccess_.getBooleanPref('enableAutoScan');
+        this.switchAccess_.getBooleanPreference('enableAutoScan');
     document.getElementById('autoScanTime').value =
-        this.switchAccess_.getNumberPref('autoScanTime') / 1000;
+        this.switchAccess_.getNumberPreference('autoScanTime') / 1000;
 
     for (const command of this.switchAccess_.getCommands()) {
       document.getElementById(command).value =
-          String.fromCharCode(this.switchAccess_.getNumberPref(command));
+          String.fromCharCode(this.switchAccess_.getNumberPreference(command));
     }
   }
 
@@ -50,15 +50,15 @@ class SwitchAccessOptions {
     const input = event.target;
     switch (input.id) {
       case 'enableAutoScan':
-        this.switchAccess_.setPref(input.id, input.checked);
+        this.switchAccess_.setPreference(input.id, input.checked);
         break;
       case 'autoScanTime':
-        const oldVal = this.switchAccess_.getNumberPref(input.id);
+        const oldVal = this.switchAccess_.getNumberPreference(input.id);
         const val = Number(input.value) * 1000;
         const min = Number(input.min) * 1000;
         if (this.isValidScanTimeInput_(val, oldVal, min)) {
           input.value = Number(input.value);
-          this.switchAccess_.setPref(input.id, val);
+          this.switchAccess_.setPreference(input.id, val);
         } else {
           input.value = oldVal;
         }
@@ -68,9 +68,9 @@ class SwitchAccessOptions {
           const keyCode = input.value.toUpperCase().charCodeAt(0);
           if (this.isValidKeyCode_(keyCode)) {
             input.value = input.value.toUpperCase();
-            this.switchAccess_.setPref(input.id, keyCode);
+            this.switchAccess_.setPreference(input.id, keyCode);
           } else {
-            const oldKeyCode = this.switchAccess_.getNumberPref(input.id);
+            const oldKeyCode = this.switchAccess_.getNumberPreference(input.id);
             input.value = String.fromCharCode(oldKeyCode);
           }
         }
