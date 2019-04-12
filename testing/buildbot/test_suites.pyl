@@ -2887,12 +2887,11 @@
           '--enable-xml-result-parsing',
           '--shard-timeout=500',
         ],
-        # Only pass the display type to desktop. The Android runner doesn't support
-        # passing args to the executable but only one display type is supported on
-        # Android anyways. Regardless, this test is only run on Android right now.
+        'args': [
+          '--deqp-egl-display-type=angle-gles',
+        ],
         'desktop_args': [
           '--test-launcher-batch-limit=400',
-          '--deqp-egl-display-type=angle-gles',
         ],
         'should_retry_with_patch': False,
         'swarming': {
@@ -2904,9 +2903,15 @@
 
     'gpu_angle_deqp_egl_vulkan_tests': {
       'angle_deqp_egl_vulkan_tests': {
+        'android_args': [
+          '--enable-xml-result-parsing',
+          '--shard-timeout=500'
+        ],
         'args': [
-          '--test-launcher-batch-limit=400',
           '--deqp-egl-display-type=angle-vulkan',
+        ],
+        'desktop_args': [
+          '--test-launcher-batch-limit=400',
         ],
         'should_retry_with_patch': False,
         'swarming': {
@@ -3014,6 +3019,26 @@
         'args': [
           '--test-launcher-batch-limit=400',
           '--deqp-egl-display-type=angle-gl',
+        ],
+        'should_retry_with_patch': False,
+        'swarming': {
+          'shards': 12,
+        },
+        'test': 'angle_deqp_gles3_tests',
+      },
+    },
+
+    'gpu_angle_deqp_gles3_vulkan_tests': {
+      'angle_deqp_gles3_vulkan_tests': {
+        'android_args': [
+          '--enable-xml-result-parsing',
+          '--shard-timeout=500'
+        ],
+        'args': [
+          '--deqp-egl-display-type=angle-vulkan',
+        ],
+        'desktop_args': [
+          '--test-launcher-batch-limit=400',
         ],
         'should_retry_with_patch': False,
         'swarming': {
@@ -3452,7 +3477,7 @@
           '--enable-gpu-rasterization',
           '--enable-raster-to-sk-image',
           '--force-gpu-rasterization',
-	  '--disable-software-compositing-fallback',
+          '--disable-software-compositing-fallback',
         ],
         'linux_args': [ '--no-xvfb' ],
         'test': 'content_browsertests',
@@ -3653,7 +3678,7 @@
     'leak_detection_isolated_scripts': {
       'memory.leak_detection': {
         'args': [
-	  '--pageset-repeat=1',
+          '--pageset-repeat=1',
           '--test-shard-map-filename=linux_leak_detection_shard_map.json',
           '--upload-results',
           '--output-format=histograms',
@@ -3690,7 +3715,7 @@
       },
      },
 
-		#1
+    #1
     'linux_chromeos_specific_gtests': {
       # Chrome OS only.
       'app_list_unittests': {},
@@ -3880,7 +3905,7 @@
     'memory_infra_isolated_scripts': {
       'heap_profiling.mobile': {
         'args': [
-	  '--pageset-repeat=1',
+          '--pageset-repeat=1',
           '--benchmarks=heap_profiling.mobile.disabled,heap_profiling.mobile.native,heap_profiling.mobile.pseudo',
           '-v',
           '--output-format=chartjson',
@@ -4218,7 +4243,7 @@
     'performance_smoke_test_isolated_scripts': {
       'performance_test_suite': {
         'args': [
-	  '--pageset-repeat=1',
+          '--pageset-repeat=1',
           '--test-shard-map-filename=smoke_test_benchmark_shard_map.json',
         ],
         'swarming': {
@@ -4717,10 +4742,19 @@
       'gpu_angle_deqp_gles_gtests',
     ],
 
+    'gpu_angle_deqp_android_vulkan_gtests': [
+      'gpu_angle_deqp_egl_vulkan_tests',
+      'gpu_angle_deqp_gles2_vulkan_tests',
+      'gpu_angle_deqp_gles3_vulkan_tests',
+    ],
+
     'gpu_angle_deqp_linux_nvidia_gtests': [
       'gpu_angle_deqp_egl_gl_tests',
+      'gpu_angle_deqp_egl_vulkan_tests',
       'gpu_angle_deqp_gles2_gl_tests',
+      'gpu_angle_deqp_gles2_vulkan_tests',
       'gpu_angle_deqp_gles3_gl_tests',
+      'gpu_angle_deqp_gles3_vulkan_tests',
       'gpu_angle_deqp_gles31_gl_tests',
     ],
 
@@ -4742,10 +4776,11 @@
       'gpu_angle_deqp_gles2_d3d11_tests',
       'gpu_angle_deqp_gles2_gl_tests',
       'gpu_angle_deqp_gles2_vulkan_tests',
-      'gpu_angle_deqp_gles31_d3d11_tests',
-      'gpu_angle_deqp_gles31_gl_tests',
       'gpu_angle_deqp_gles3_d3d11_tests',
       'gpu_angle_deqp_gles3_gl_tests',
+      'gpu_angle_deqp_gles3_vulkan_tests',
+      'gpu_angle_deqp_gles31_d3d11_tests',
+      'gpu_angle_deqp_gles31_gl_tests',
     ],
 
     'gpu_angle_fyi_win_optional_isolated_scripts': [
