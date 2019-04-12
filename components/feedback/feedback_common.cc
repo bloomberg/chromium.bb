@@ -131,8 +131,8 @@ void FeedbackCommon::AddFile(const std::string& filename, std::string data) {
   attachments_.emplace_back(filename, std::move(data));
 }
 
-void FeedbackCommon::AddLog(const std::string& name, const std::string& value) {
-  logs_[name] = value;
+void FeedbackCommon::AddLog(std::string name, std::string value) {
+  logs_[std::move(name)] = std::move(value);
 }
 
 void FeedbackCommon::AddLogs(SystemLogsMap logs) {

@@ -50,11 +50,11 @@ const int kBigLogsDBusTimeoutMS = 120 * 1000;
 // the requester.
 class PipeReaderWrapper : public base::SupportsWeakPtr<PipeReaderWrapper> {
  public:
-  explicit PipeReaderWrapper(const DebugDaemonClient::GetLogsCallback& callback)
+  explicit PipeReaderWrapper(DebugDaemonClient::GetLogsCallback callback)
       : pipe_reader_(base::CreateTaskRunnerWithTraits(
             {base::MayBlock(),
              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
-        callback_(callback) {}
+        callback_(std::move(callback)) {}
 
   base::ScopedFD Initialize() {
     return pipe_reader_.StartIO(
@@ -92,9 +92,9 @@ class PipeReaderWrapper : public base::SupportsWeakPtr<PipeReaderWrapper> {
   void RunCallbackAndDestroy(
       base::Optional<std::map<std::string, std::string>> result) {
     if (result.has_value()) {
-      callback_.Run(true, result.value());
+      std::move(callback_).Run(true, std::move(result.value()));
     } else {
-      callback_.Run(false, std::map<std::string, std::string>());
+      std::move(callback_).Run(false, std::map<std::string, std::string>());
     }
     delete this;
   }
@@ -236,22 +236,22 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void GetScrubbedLogs(const GetLogsCallback& callback) override {
+  void GetScrubbedLogs(GetLogsCallback callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kGetFeedbackLogs);
     debugdaemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&DebugDaemonClientImpl::OnGetAllLogs,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void GetScrubbedBigLogs(const GetLogsCallback& callback) override {
+  void GetScrubbedBigLogs(GetLogsCallback callback) override {
     // The PipeReaderWrapper is a self-deleting object; we don't have to worry
     // about ownership or lifetime. We need to create a new one for each Big
     // Logs requests in order to queue these requests. One request can take a
     // long time to be processed and a new request should never be ignored nor
     // cancels the on-going one.
-    PipeReaderWrapper* pipe_reader = new PipeReaderWrapper(callback);
+    PipeReaderWrapper* pipe_reader = new PipeReaderWrapper(std::move(callback));
     base::ScopedFD pipe_write_end = pipe_reader->Initialize();
 
     dbus::MethodCall method_call(debugd::kDebugdInterface,
@@ -267,22 +267,22 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                        pipe_reader->AsWeakPtr()));
   }
 
-  void GetAllLogs(const GetLogsCallback& callback) override {
+  void GetAllLogs(GetLogsCallback callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kGetAllLogs);
     debugdaemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&DebugDaemonClientImpl::OnGetAllLogs,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void GetUserLogFiles(const GetLogsCallback& callback) override {
+  void GetUserLogFiles(GetLogsCallback callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kGetUserLogFiles);
     debugdaemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&DebugDaemonClientImpl::OnGetUserLogFiles,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void GetLog(const std::string& log_name,
@@ -605,13 +605,12 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     std::move(callback).Run(std::move(routes));
   }
 
-  void OnGetAllLogs(const GetLogsCallback& callback,
-                    dbus::Response* response) {
+  void OnGetAllLogs(GetLogsCallback callback, dbus::Response* response) {
     std::map<std::string, std::string> logs;
     bool broken = false;  // did we see a broken (k,v) pair?
     dbus::MessageReader sub_reader(NULL);
     if (!response || !dbus::MessageReader(response).PopArray(&sub_reader)) {
-      callback.Run(false, logs);
+      std::move(callback).Run(false, logs);
       return;
     }
     while (sub_reader.HasMoreData()) {
@@ -625,12 +624,11 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
       }
       logs[key] = value;
     }
-    callback.Run(!sub_reader.HasMoreData() && !broken, logs);
+    std::move(callback).Run(!sub_reader.HasMoreData() && !broken, logs);
   }
 
-  void OnGetUserLogFiles(const GetLogsCallback& callback,
-                         dbus::Response* response) {
-    return OnGetAllLogs(callback, response);
+  void OnGetUserLogFiles(GetLogsCallback callback, dbus::Response* response) {
+    return OnGetAllLogs(std::move(callback), response);
   }
 
   void OnBigFeedbackLogsResponse(base::WeakPtr<PipeReaderWrapper> pipe_reader,

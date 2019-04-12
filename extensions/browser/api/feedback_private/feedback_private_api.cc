@@ -316,13 +316,10 @@ ExtensionFunction::ResponseAction FeedbackPrivateSendFeedbackFunction::Run() {
     feedback_data->set_screenshot_uuid(*feedback_info.screenshot_blob_uuid);
   }
 
-  auto sys_logs = std::make_unique<FeedbackData::SystemLogsMap>();
-  const SystemInformationList* sys_info =
-      feedback_info.system_information.get();
-  if (sys_info) {
-    for (const SystemInformation& info : *sys_info)
-      sys_logs->emplace(info.key, info.value);
-  }
+  const bool send_histograms =
+      feedback_info.send_histograms && *feedback_info.send_histograms;
+  const bool send_bluetooth_logs =
+      feedback_info.send_bluetooth_logs && *feedback_info.send_bluetooth_logs;
 
 #if defined(OS_CHROMEOS)
   feedback_data->set_from_assistant(feedback_info.from_assistant &&
@@ -330,31 +327,32 @@ ExtensionFunction::ResponseAction FeedbackPrivateSendFeedbackFunction::Run() {
   feedback_data->set_assistant_debug_info_allowed(
       feedback_info.assistant_debug_info_allowed &&
       *feedback_info.assistant_debug_info_allowed);
-
-  delegate->FetchAndMergeIwlwifiDumpLogsIfPresent(
-      std::move(sys_logs), browser_context(),
-      base::BindOnce(
-          &FeedbackPrivateSendFeedbackFunction::OnAllLogsFetched, this,
-          feedback_data,
-          feedback_info.send_histograms && *feedback_info.send_histograms,
-          feedback_info.send_bluetooth_logs &&
-              *feedback_info.send_bluetooth_logs));
-#else
-  OnAllLogsFetched(feedback_data, false /* send_histograms */,
-                   false /* send_bluetooth_logs */, std::move(sys_logs));
 #endif  // defined(OS_CHROMEOS)
+
+  if (params->feedback.system_information) {
+    for (SystemInformation& info : *params->feedback.system_information)
+      feedback_data->AddLog(std::move(info.key), std::move(info.value));
+#if defined(OS_CHROMEOS)
+    delegate->FetchExtraLogs(
+        feedback_data,
+        base::BindOnce(&FeedbackPrivateSendFeedbackFunction::OnAllLogsFetched,
+                       this, send_histograms, send_bluetooth_logs));
+    return RespondLater();
+#endif  // defined(OS_CHROMEOS)
+  }
+
+  OnAllLogsFetched(send_histograms, send_bluetooth_logs, feedback_data);
 
   return RespondLater();
 }
 
 void FeedbackPrivateSendFeedbackFunction::OnAllLogsFetched(
-    scoped_refptr<FeedbackData> feedback_data,
     bool send_histograms,
     bool send_bluetooth_logs,
-    std::unique_ptr<system_logs::SystemLogsResponse> sys_logs) {
+    scoped_refptr<feedback::FeedbackData> feedback_data) {
   VLOG(1) << "All logs have been fetched. Proceeding with sending the report.";
 
-  feedback_data->SetAndCompressSystemInfo(std::move(sys_logs));
+  feedback_data->CompressSystemInfo();
 
   if (send_histograms) {
     std::string histograms =
