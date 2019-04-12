@@ -16,7 +16,6 @@
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
-#include "components/sync/base/get_session_name.h"
 #include "components/sync/base/invalidation_adapter.h"
 #include "components/sync/base/sync_base_switches.h"
 #include "components/sync/device_info/local_device_info_provider_impl.h"
@@ -443,8 +442,7 @@ void SyncEngineBackend::DoInitialProcessControlTypes() {
       FROM_HERE, &SyncEngineImpl::HandleInitializationSuccessOnFrontendLoop,
       registrar_->GetLastConfiguredTypes(), js_backend_, debug_info_listener_,
       base::Passed(sync_manager_->GetModelTypeConnectorProxy()),
-      sync_manager_->cache_guid(), GetSessionNameBlocking(),
-      user_share->directory->store_birthday(),
+      sync_manager_->cache_guid(), user_share->directory->store_birthday(),
       user_share->directory->bag_of_chips());
 
   js_backend_.Reset();
