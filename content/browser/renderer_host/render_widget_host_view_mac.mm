@@ -271,6 +271,9 @@ void RenderWidgetHostViewMac::MigrateNSViewBridge(
   ns_view_client_binding_.Close();
   ns_view_bridge_remote_.reset();
 
+  // Enable accessibility focus overriding for remote NSViews.
+  accessibility_focus_overrider_.SetAppIsRemote(bridge_factory_host != nullptr);
+
   // If no host is specified, then use the locally hosted NSView.
   if (!bridge_factory_host) {
     ns_view_bridge_ = ns_view_bridge_local_.get();
@@ -1446,11 +1449,7 @@ id RenderWidgetHostViewMac::GetRootBrowserAccessibilityElement() {
 }
 
 id RenderWidgetHostViewMac::GetFocusedBrowserAccessibilityElement() {
-  // This function should never be called because
-  // |accessibility_focus_overrider_| override the application focus query.
-  DLOG(ERROR) << "GetFocusedBrowserAccessibilityElement should not be reached "
-                 "in-process.";
-  return nil;
+  return GetAccessibilityFocusedUIElement();
 }
 
 void RenderWidgetHostViewMac::SetAccessibilityWindow(NSWindow* window) {
