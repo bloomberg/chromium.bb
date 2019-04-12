@@ -481,8 +481,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   void RemoveOrDestroyChildren();
 
   // Overrides from ui::PropertyHandler
-  std::unique_ptr<ui::PropertyData> BeforePropertyChange(const void* key)
-      override;
+  std::unique_ptr<ui::PropertyData> BeforePropertyChange(
+      const void* key,
+      bool is_value_changing) override;
   void AfterPropertyChange(const void* key,
                            int64_t old_value,
                            std::unique_ptr<ui::PropertyData> data) override;

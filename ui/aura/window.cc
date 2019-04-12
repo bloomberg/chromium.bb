@@ -812,8 +812,10 @@ void Window::RemoveOrDestroyChildren() {
 }
 
 std::unique_ptr<ui::PropertyData> Window::BeforePropertyChange(
-    const void* key) {
-  return port_ ? port_->OnWillChangeProperty(key) : nullptr;
+    const void* key,
+    bool is_value_changing) {
+  return (is_value_changing && port_) ? port_->OnWillChangeProperty(key)
+                                      : nullptr;
 }
 
 void Window::AfterPropertyChange(const void* key,
