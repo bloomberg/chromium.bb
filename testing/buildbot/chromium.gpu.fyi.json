@@ -20903,6 +20903,91 @@
       }
     ]
   },
+  "Win10 FYI Exp LinuxVM Testing (NVIDIA)": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "--gtest-benchmark-name=angle_perftests",
+          "-v",
+          "--one-frame-only"
+        ],
+        "isolate_name": "angle_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "angle_perftests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "nvidia-quadro-p400-win10-stable",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
+          "--gtest-benchmark-name=passthrough_command_buffer_perftests",
+          "-v",
+          "--use-cmd-decoder=passthrough",
+          "--use-angle=gl-null",
+          "--fast-run"
+        ],
+        "isolate_name": "command_buffer_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "passthrough_command_buffer_perftests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "nvidia-quadro-p400-win10-stable",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
+          "--gtest-benchmark-name=validating_command_buffer_perftests",
+          "-v",
+          "--use-cmd-decoder=validating",
+          "--use-stub",
+          "--fast-run"
+        ],
+        "isolate_name": "command_buffer_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "validating_command_buffer_perftests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "nvidia-quadro-p400-win10-stable",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        }
+      }
+    ]
+  },
   "Win10 FYI Exp Release (Intel HD 630)": {
     "gtest_tests": [
       {
