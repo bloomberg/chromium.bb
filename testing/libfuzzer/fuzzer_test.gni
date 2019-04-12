@@ -74,6 +74,12 @@ template("fuzzer_test") {
           }
         }
 
+        # Tell the script not to actually zip the seed corpus if we have been
+        # instructed not to build it.
+        if (!archive_seed_corpus) {
+          args += [ "--dry_run" ]
+        }
+
         outputs = [
           out,
         ]
