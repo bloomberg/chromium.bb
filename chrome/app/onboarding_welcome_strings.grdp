@@ -33,6 +33,9 @@
   <message name="IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_DESCRIPTION" desc="Description of what this section in the onboarding workflow does.">
     Add bookmarks to your favorite Google Apps
   </message>
+  <message name="IDS_ONBOARDING_WELCOME_NUX_GOOGLE_GMAIL" desc="Label for a button that creates a bookmark to gmail.com, this should be the name of the brand.">
+    Gmail
+  </message>
   <message name="IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_MAPS" desc="Label for a button that creates a bookmark to maps.google.com, this should be the name of the brand.">
     Maps
   </message>
@@ -41,9 +44,6 @@
   </message>
   <message name="IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_TRANSLATE" desc="Label for a button that creates a bookmark to translate.google.com, this should be the name of the brand.">
     Translate
-  </message>
-  <message name="IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_WEB_STORE" desc="Label for a button that creates a bookmark to chrome.google.com/webstore, this should be the name of the brand.">
-    Web Store
   </message>
   <message name="IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_YOUTUBE" desc="Label for a button that creates a bookmark to youtube.com, this should be the name of the brand.">
     YouTube
