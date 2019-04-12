@@ -22,7 +22,16 @@ EnableDebuggingScreen::EnableDebuggingScreen(
 
 EnableDebuggingScreen::~EnableDebuggingScreen() {
   if (view_)
-    view_->SetDelegate(NULL);
+    view_->SetDelegate(nullptr);
+}
+
+void EnableDebuggingScreen::OnExit(bool success) {
+  exit_callback_.Run();
+}
+
+void EnableDebuggingScreen::OnViewDestroyed(EnableDebuggingScreenView* view) {
+  if (view_ == view)
+    view_ = nullptr;
 }
 
 void EnableDebuggingScreen::Show() {
@@ -33,15 +42,6 @@ void EnableDebuggingScreen::Show() {
 void EnableDebuggingScreen::Hide() {
   if (view_)
     view_->Hide();
-}
-
-void EnableDebuggingScreen::OnExit(bool success) {
-  exit_callback_.Run();
-}
-
-void EnableDebuggingScreen::OnViewDestroyed(EnableDebuggingScreenView* view) {
-  if (view_ == view)
-    view_ = NULL;
 }
 
 }  // namespace chromeos
