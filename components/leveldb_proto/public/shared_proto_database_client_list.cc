@@ -43,6 +43,10 @@ std::string SharedProtoDatabaseClientList::ProtoDbTypeToString(
       return "DomDistillerStore";
     case ProtoDbType::CACHED_IMAGE_METADATA_STORE:
       return "CachedImageFetcherDatabase";
+    case ProtoDbType::FEED_CONTENT_DATABASE:
+      return "FeedContentDatabase";
+    case ProtoDbType::FEED_JOURNAL_DATABASE:
+      return "FeedJournalDatabase";
     case ProtoDbType::LAST:
       NOTREACHED();
       break;
