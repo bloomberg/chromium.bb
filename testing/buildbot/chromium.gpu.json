@@ -1694,18 +1694,6 @@
           "shards": 2
         }
       }
-    ],
-    "scripts": [
-      {
-        "name": "check_static_initializers",
-        "script": "check_static_initializers.py",
-        "swarming": {}
-      },
-      {
-        "name": "webkit_lint",
-        "script": "blink_lint_expectations.py",
-        "swarming": {}
-      }
     ]
   },
   "Mac Retina Debug (AMD)": {
@@ -2402,18 +2390,6 @@
           "idempotent": false,
           "shards": 2
         }
-      }
-    ],
-    "scripts": [
-      {
-        "name": "check_static_initializers",
-        "script": "check_static_initializers.py",
-        "swarming": {}
-      },
-      {
-        "name": "webkit_lint",
-        "script": "blink_lint_expectations.py",
-        "swarming": {}
       }
     ]
   },

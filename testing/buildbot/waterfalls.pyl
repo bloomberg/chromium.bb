@@ -2079,7 +2079,6 @@
         'test_suites': {
           'gtest_tests': 'gpu_desktop_gtests',
           'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
-          'scripts': 'chromium_mac_scripts',
         },
       },
       'Mac Retina Debug (AMD)': {
@@ -2102,7 +2101,6 @@
         'test_suites': {
           'gtest_tests': 'gpu_desktop_gtests',
           'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
-          'scripts': 'chromium_mac_scripts',
         },
       },
       'Win10 Debug (NVIDIA)': {
