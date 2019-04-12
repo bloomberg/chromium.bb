@@ -161,6 +161,11 @@ class MEDIA_EXPORT VideoFrameMetadata {
     TOP_CONTROLS_HEIGHT,
     TOP_CONTROLS_SHOWN_RATIO,
 
+    // If present, this field represents the local time at which the VideoFrame
+    // was decoded from whichever format it was encoded in.
+    // Use Get/SetTimeTicks() for this key.
+    DECODE_COMPLETE_TIMESTAMP,
+
     NUM_KEYS
   };
 

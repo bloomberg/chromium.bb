@@ -218,6 +218,12 @@ PostDecodeAction DecoderStreamTraits<DemuxerStream::VIDEO>::OnDecodeDone(
                                      it->second.duration);
   }
 
+  // Add a timestamp here (after decoding completed) to enable buffering delay
+  // measurements down the line.
+  buffer->metadata()->SetTimeTicks(
+      media::VideoFrameMetadata::DECODE_COMPLETE_TIMESTAMP,
+      base::TimeTicks::Now());
+
   // We erase from the beginning onward to our target frame since frames should
   // be returned in presentation order. It's possible to accumulate entries in
   // this queue if playback begins at a non-keyframe; those frames may never be
