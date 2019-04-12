@@ -12175,7 +12175,7 @@
       'type': 'int-enum',
       'schema': {
         'type': 'integer',
-        'enum': [ 0, 1, 2, 3, 4, 5],
+        'enum': [ 0, 1, 2, 4],
       },
       'items': [
         {
@@ -12194,20 +12194,10 @@
           'caption': '''Wipe the user’s ecryptfs home directory and start with a fresh ext4-encrypted home directory.''',
         },
         {
-          'name': 'AskUser',
-          'value': 3,
-          'caption': '''Ask the user if they would like to migrate or skip migration and disallow ARC.''',
-        },
-        {
           'name': 'MinimalMigrate',
           'value': 4,
           'caption': '''Similar to Wipe (value 2), but tries to preserve login tokens so the user does not have to sign in again.''',
         },
-        {
-          'name': 'AskForEcryptfsArcUsers',
-          'value': 5,
-          'caption': '''If the client device model already supported ARC before migration to ext4 was necessary to run ARC and if the ArcEnabled policy is set to true, this option will behave as AskUser (value 3). In all other cases (if the device model did not support ARC before, or if ArcEnabled policy is set to false), this value is equivalent to DisallowArc (value 0).''',
-        }
       ],
       'supported_on': ['chrome_os:61-'],
       'device_only': False,
@@ -12215,11 +12205,11 @@
         'dynamic_refresh': False,
         'per_profile': False,
       },
-      'example_value': 3,
+      'example_value': 2,
       'id': 376,
       'caption': '''Migration strategy for ecryptfs''',
       'tags': [],
-      'desc': '''Specifies the action that should be taken when the user's home directory was created with ecryptfs encryption and needs to transition to ext4 encryption.
+      'desc': '''Specifies the action that should be taken when the user's home directory was created with ecryptfs encryption.
 
       If you set this policy to 'DisallowArc', Android apps will be disabled for the user and no migration from ecryptfs to ext4 encryption will be performed. Android apps will not be prevented from running when the home directory is already ext4-encrypted.
 
@@ -12227,7 +12217,9 @@
 
       If you set this policy to 'Wipe', ecryptfs-encrypted home directories will be deleted on sign-in and new ext4-encrypted home directories will be created instead. Warning: This removes the user's local data.
 
-      If you set this policy to 'AskUser', users with ecryptfs-encrypted home directories will be offered to migrate.
+      If you set this policy to 'MinimalMigrate', ecryptfs-encrypted home directories will be deleted on sign-in and new ext4-encrypted home directories will be created instead. However, it will be attempted to preserve login tokens so that the user does not have to sign in again. Warning: This removes the user's local data.
+
+      If you set this policy to an option that is no longer supported ('AskUser' or 'AskForEcryptfsArcUsers'), it will be treated as if you had selected 'Migrate' instead.
 
       This policy does not apply to kiosk users. If this policy is left not set, the device will behave as if 'DisallowArc' was chosen.''',
     },
