@@ -153,8 +153,8 @@ TEST_P(CaretDisplayItemClientTest, CaretMovesBetweenBlocks) {
   auto* block_element1 = AppendBlock("Block1");
   auto* block_element2 = AppendBlock("Block2");
   UpdateAllLifecyclePhasesForTest();
-  auto* block1 = ToLayoutBlockFlow(block_element1->GetLayoutObject());
-  auto* block2 = ToLayoutBlockFlow(block_element2->GetLayoutObject());
+  auto* block1 = To<LayoutBlockFlow>(block_element1->GetLayoutObject());
+  auto* block2 = To<LayoutBlockFlow>(block_element2->GetLayoutObject());
 
   // Focus the body.
   GetDocument().body()->focus();

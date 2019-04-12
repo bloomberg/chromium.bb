@@ -35,12 +35,12 @@ bool HasNonPsuedoNode(const LayoutObject& parent) {
 }
 
 bool CanBeInlineContentsContainer(const LayoutObject& layout_object) {
-  if (!layout_object.IsLayoutBlockFlow())
+  const auto* block_flow = DynamicTo<LayoutBlockFlow>(layout_object);
+  if (!block_flow)
     return false;
-  const LayoutBlockFlow& block_flow = ToLayoutBlockFlow(layout_object);
-  if (!block_flow.ChildrenInline() || block_flow.IsAtomicInlineLevel())
+  if (!block_flow->ChildrenInline() || block_flow->IsAtomicInlineLevel())
     return false;
-  if (block_flow.NonPseudoNode()) {
+  if (block_flow->NonPseudoNode()) {
     // It is OK as long as |block_flow| is associated to non-pseudo |Node| even
     // if it is empty block or containing only anonymous objects.
     // See LinkSelectionClickEventsTest.SingleAndDoubleClickWillBeHandled
@@ -49,7 +49,7 @@ bool CanBeInlineContentsContainer(const LayoutObject& layout_object) {
   // Since we can't create |EphemeralRange|, we exclude a |LayoutBlockFlow| if
   // its entire subtree is anonymous, e.g. |LayoutMultiColumnSet|,
   // and with anonymous layout objects.
-  return HasNonPsuedoNode(block_flow);
+  return HasNonPsuedoNode(*block_flow);
 }
 
 // Returns outer most nested inline formatting context.
@@ -61,7 +61,7 @@ const LayoutBlockFlow& RootInlineContentsContainerOf(
        runner = runner->ContainingBlock()) {
     if (!runner->IsLayoutBlockFlow() || !runner->ChildrenInline())
       break;
-    root_block_flow = ToLayoutBlockFlow(runner);
+    root_block_flow = To<LayoutBlockFlow>(runner);
   }
   DCHECK(!root_block_flow->IsAtomicInlineLevel())
       << block_flow << ' ' << root_block_flow;
@@ -91,29 +91,29 @@ const LayoutBlockFlow& RootInlineContentsContainerOf(
 // |LayoutBlockFlow|.
 const LayoutBlockFlow* ComputeInlineContentsAsBlockFlow(
     const LayoutObject& layout_object) {
-  const LayoutBlock* block = DynamicTo<LayoutBlock>(layout_object);
+  const auto* block = DynamicTo<LayoutBlock>(layout_object);
   if (!block)
     block = layout_object.ContainingBlock();
 
   DCHECK(block) << layout_object;
-  if (!block->IsLayoutBlockFlow())
+  const auto* block_flow = DynamicTo<LayoutBlockFlow>(block);
+  if (!block_flow)
     return nullptr;
-  const LayoutBlockFlow& block_flow = ToLayoutBlockFlow(*block);
-  if (!block_flow.ChildrenInline())
+  if (!block_flow->ChildrenInline())
     return nullptr;
-  if (block_flow.IsAtomicInlineLevel() ||
-      block_flow.IsFloatingOrOutOfFlowPositioned()) {
+  if (block_flow->IsAtomicInlineLevel() ||
+      block_flow->IsFloatingOrOutOfFlowPositioned()) {
     const LayoutBlockFlow& root_block_flow =
-        RootInlineContentsContainerOf(block_flow);
+        RootInlineContentsContainerOf(*block_flow);
     // Skip |root_block_flow| if it's an anonymous wrapper created for
     // pseudo elements. See test AnonymousBlockFlowWrapperForFloatPseudo.
     if (!CanBeInlineContentsContainer(root_block_flow))
       return nullptr;
     return &root_block_flow;
   }
-  if (!CanBeInlineContentsContainer(block_flow))
+  if (!CanBeInlineContentsContainer(*block_flow))
     return nullptr;
-  return &block_flow;
+  return block_flow;
 }
 
 TextOffsetMapping::InlineContents CreateInlineContentsFromBlockFlow(

@@ -512,14 +512,14 @@ void LayoutBlock::UpdateBlockLayout(bool) {
 
 void LayoutBlock::AddVisualOverflowFromChildren() {
   if (ChildrenInline())
-    ToLayoutBlockFlow(this)->AddVisualOverflowFromInlineChildren();
+    To<LayoutBlockFlow>(this)->AddVisualOverflowFromInlineChildren();
   else
     AddVisualOverflowFromBlockChildren();
 }
 
 void LayoutBlock::AddLayoutOverflowFromChildren() {
   if (ChildrenInline())
-    ToLayoutBlockFlow(this)->AddLayoutOverflowFromInlineChildren();
+    To<LayoutBlockFlow>(this)->AddLayoutOverflowFromInlineChildren();
   else
     AddLayoutOverflowFromBlockChildren();
 }
@@ -579,9 +579,10 @@ void LayoutBlock::AddVisualOverflowFromBlockChildren() {
     // the layout of continuations might not be up-to-date at that time.
     // Re-add overflow from inline children to ensure its overflow covers
     // the outline which may enclose continuations.
-    if (child->IsLayoutBlockFlow() &&
-        ToLayoutBlockFlow(child)->ContainsInlineWithOutlineAndContinuation())
-      ToLayoutBlockFlow(child)->AddVisualOverflowFromInlineChildren();
+    auto* child_block_flow = DynamicTo<LayoutBlockFlow>(child);
+    if (child_block_flow &&
+        child_block_flow->ContainsInlineWithOutlineAndContinuation())
+      child_block_flow->AddVisualOverflowFromInlineChildren();
     AddVisualOverflowFromChild(*child);
   }
 }
@@ -598,9 +599,10 @@ void LayoutBlock::AddLayoutOverflowFromBlockChildren() {
     // the layout of continuations might not be up-to-date at that time.
     // Re-add overflow from inline children to ensure its overflow covers
     // the outline which may enclose continuations.
-    if (child->IsLayoutBlockFlow() &&
-        ToLayoutBlockFlow(child)->ContainsInlineWithOutlineAndContinuation())
-      ToLayoutBlockFlow(child)->AddLayoutOverflowFromInlineChildren();
+    auto* child_block_flow = DynamicTo<LayoutBlockFlow>(child);
+    if (child_block_flow &&
+        child_block_flow->ContainsInlineWithOutlineAndContinuation())
+      child_block_flow->AddLayoutOverflowFromInlineChildren();
 
     AddLayoutOverflowFromChild(*child);
   }
@@ -664,7 +666,7 @@ void LayoutBlock::UpdateBlockChildDirtyBitsBeforeLayout(bool relayout_children,
       (height_available_to_children_changed_ &&
        ChangeInAvailableLogicalHeightAffectsChild(this, child)) ||
       (child.IsListMarker() && IsListItem() &&
-       ToLayoutBlockFlow(this)->ContainsFloats())) {
+       To<LayoutBlockFlow>(this)->ContainsFloats())) {
     if (child.IsLayoutNGMixin())
       child.SetSelfNeedsLayoutForAvailableSpace(true);
     else
@@ -675,7 +677,7 @@ void LayoutBlock::UpdateBlockChildDirtyBitsBeforeLayout(bool relayout_children,
 void LayoutBlock::SimplifiedNormalFlowLayout() {
   if (ChildrenInline()) {
     SECURITY_DCHECK(IsLayoutBlockFlow());
-    LayoutBlockFlow* block_flow = ToLayoutBlockFlow(this);
+    auto* block_flow = To<LayoutBlockFlow>(this);
     block_flow->SimplifiedNormalFlowInlineLayout();
   } else {
     for (LayoutBox* box = FirstChildBox(); box; box = box->NextSiblingBox()) {
@@ -1487,7 +1489,7 @@ void LayoutBlock::ComputeIntrinsicLogicalWidths(
 
   if (ChildrenInline()) {
     // FIXME: Remove this const_cast.
-    ToLayoutBlockFlow(const_cast<LayoutBlock*>(this))
+    To<LayoutBlockFlow>(const_cast<LayoutBlock*>(this))
         ->ComputeInlinePreferredLogicalWidths(min_logical_width,
                                               max_logical_width);
   } else {
@@ -1949,13 +1951,13 @@ const LayoutBlock* LayoutBlock::EnclosingFirstLineStyleBlock() const {
 
 LayoutBlockFlow* LayoutBlock::NearestInnerBlockWithFirstLine() {
   if (ChildrenInline())
-    return ToLayoutBlockFlow(this);
+    return To<LayoutBlockFlow>(this);
   for (LayoutObject* child = FirstChild();
        child && !child->IsFloatingOrOutOfFlowPositioned() &&
        child->IsLayoutBlockFlow();
        child = To<LayoutBlock>(child)->FirstChild()) {
     if (child->ChildrenInline())
-      return ToLayoutBlockFlow(child);
+      return To<LayoutBlockFlow>(child);
   }
   return nullptr;
 }
@@ -2168,7 +2170,7 @@ bool LayoutBlock::RecalcChildLayoutOverflow() {
   if (ChildrenInline()) {
     SECURITY_DCHECK(IsLayoutBlockFlow());
     children_layout_overflow_changed =
-        ToLayoutBlockFlow(this)->RecalcInlineChildrenLayoutOverflow();
+        To<LayoutBlockFlow>(this)->RecalcInlineChildrenLayoutOverflow();
   } else {
     for (LayoutBox* box = FirstChildBox(); box; box = box->NextSiblingBox()) {
       if (RecalcNormalFlowChildLayoutOverflowIfNeeded(box))
@@ -2185,7 +2187,7 @@ void LayoutBlock::RecalcChildVisualOverflow() {
 
   if (ChildrenInline()) {
     SECURITY_DCHECK(IsLayoutBlockFlow());
-    ToLayoutBlockFlow(this)->RecalcInlineChildrenVisualOverflow();
+    To<LayoutBlockFlow>(this)->RecalcInlineChildrenVisualOverflow();
   } else {
     for (LayoutBox* box = FirstChildBox(); box; box = box->NextSiblingBox()) {
       RecalcNormalFlowChildVisualOverflowIfNeeded(box);
