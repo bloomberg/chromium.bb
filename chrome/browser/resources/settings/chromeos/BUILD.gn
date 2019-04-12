@@ -63,3 +63,10 @@ if (optimize_webui) {
     output_dir = "$root_gen_dir/chrome/browser/resources/settings/chromeos"
   }
 }
+
+group("closure_compile") {
+  deps = [
+    "settings_menu:closure_compile",
+    "settings_ui:closure_compile",
+  ]
+}
