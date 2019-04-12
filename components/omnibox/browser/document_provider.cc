@@ -559,6 +559,7 @@ const GURL DocumentProvider::GetURLForDeduping(const GURL& url) {
   // We aim to prevent duplicate Drive URLs to appear between the Drive document
   // search provider and history/bookmark entries.
   // Drive URLs take on two core forms, and may have request parameters.
+  // Additionally, we may have redirector URLs which wrap a drive URL.
   // All URLs are canonicalized to a GURL form only used for deduplication and
   // not guaranteed to be usable for navigation.
   // URLs of the following forms are handled:
@@ -566,6 +567,7 @@ const GURL DocumentProvider::GetURLForDeduping(const GURL& url) {
   // https://docs.google.com/document/d/(id)/edit
   // https://docs.google.com/spreadsheets/d/(id)/edit#gid=12345
   // https://docs.google.com/presentation/d/(id)/edit#slide=id.g12345a_0_26
+  // https://www.google.com/url?[...]url=https://drive.google.com/a/google.com/open?id%3D1fkxx6KYRYnSqljThxShJVliQJLdKzuJBnzogzL3n8rE&[...]
   // where id is comprised of characters in [0-9A-Za-z\-_] = [\w\-]
   std::string id;
   if (url.host() == "drive.google.com" && url.path() == "/open") {
@@ -574,6 +576,12 @@ const GURL DocumentProvider::GetURLForDeduping(const GURL& url) {
     static re2::LazyRE2 doc_link_regex = {
         "^/(?:document|spreadsheets|presentation|forms)/d/([\\w-]+)/"};
     RE2::PartialMatch(url.path(), *doc_link_regex, &id);
+  } else if (url.host() == "www.google.com" && url.path() == "/url") {
+    // Redirect links wrapping a drive.google.com/open?id= link.
+    static re2::LazyRE2 redirect_link_regex = {
+        "^[^#]*url=https://drive\\.google\\.com/(?:a/[\\w\\.]+/"
+        ")?open\\?id%3D([^#&]*)"};
+    RE2::PartialMatch(url.query(), *redirect_link_regex, &id);
   }
 
   if (id.empty()) {

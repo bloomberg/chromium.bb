@@ -554,9 +554,31 @@ TEST_F(DocumentProviderTest, GetURLForDeduping) {
   CheckDeduper(
       "https://docs.google.com/spreadsheets/d/the_doc-id/preview?x=1#y=2",
       "the_doc-id");
+  CheckDeduper(
+      "https://www.google.com/"
+      "url?sa=t&rct=j&esrc=s&source=appssearch&uact=8&cd=0&cad=rja&q&sig2=sig&"
+      "url=https://drive.google.com/a/google.com/"
+      "open?id%3D1fkxx6KYRYnSqljThxShJVliQJLdKzuJBnzogzL3n8rE&usg=X",
+      "1fkxx6KYRYnSqljThxShJVliQJLdKzuJBnzogzL3n8rE");
+  CheckDeduper(
+      "https://www.google.com/url?url=https://drive.google.com/a/google.com/"
+      "open?id%3Dthe_doc_id",
+      "the_doc_id");
+  CheckDeduper(
+      "https://www.google.com/url?url=https://drive.google.com/a/foo.edu/"
+      "open?id%3Dthe_doc_id",
+      "the_doc_id");
+  CheckDeduper(
+      "https://www.google.com/url?url=https://drive.google.com/"
+      "open?id%3Dthe_doc_id",
+      "the_doc_id");
 
   // URLs that do not represent documents:
   CheckDeduper("https://docs.google.com/help?id=d123", "");
   CheckDeduper("https://www.google.com", "");
   CheckDeduper("https://docs.google.com/kittens/d/d123/preview?x=1#y=2", "");
+  CheckDeduper(
+      "https://www.google.com/url?url=https://drive.google.com/homepage", "");
+  CheckDeduper("https://www.google.com/url?url=https://www.youtube.com/view",
+               "");
 }
