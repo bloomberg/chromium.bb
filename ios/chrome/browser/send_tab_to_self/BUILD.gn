@@ -15,6 +15,7 @@ source_set("send_tab_to_self") {
     "//components/keyed_service/core",
     "//components/keyed_service/ios",
     "//components/send_tab_to_self",
+    "//components/sync",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/sync",

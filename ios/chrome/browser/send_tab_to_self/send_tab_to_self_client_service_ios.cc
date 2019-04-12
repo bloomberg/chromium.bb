@@ -8,7 +8,9 @@
 #include <string>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/logging.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 
 namespace send_tab_to_self {
@@ -32,11 +34,17 @@ void SendTabToSelfClientServiceIOS::SendTabToSelfModelLoaded() {
 
 void SendTabToSelfClientServiceIOS::EntriesAddedRemotely(
     const std::vector<const SendTabToSelfEntry*>& new_entries) {
+  if (!base::FeatureList::IsEnabled(switches::kSyncSendTabToSelf)) {
+    return;
+  }
   NOTIMPLEMENTED();
 }
 
 void SendTabToSelfClientServiceIOS::EntriesRemovedRemotely(
     const std::vector<std::string>& guids) {
+  if (!base::FeatureList::IsEnabled(switches::kSyncSendTabToSelf)) {
+    return;
+  }
   NOTIMPLEMENTED();
 }
 
