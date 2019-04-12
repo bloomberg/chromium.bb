@@ -48,6 +48,7 @@
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/metadata/metadata_types.h"
 #include "ui/views/paint_info.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view_observer.h"
@@ -4980,6 +4981,24 @@ TEST_F(ViewTest, AttachChildViewWithComplicatedLayers) {
   EXPECT_EQ(layers_after_attached[1], child_view1->layer());
 }
 
+TEST_F(ViewTest, TestEnabledPropertyMetadata) {
+  View test_view;
+  bool enabled_changed = false;
+  auto subscription = test_view.AddEnabledChangedCallback(base::BindRepeating(
+      [](bool* enabled_changed) { *enabled_changed = true; },
+      &enabled_changed));
+  views::metadata::ClassMetaData* view_metadata = View::MetaData();
+  ASSERT_TRUE(view_metadata);
+  views::metadata::MemberMetaDataBase* enabled_property =
+      view_metadata->FindMemberData("Enabled");
+  ASSERT_TRUE(enabled_property);
+  base::string16 false_value = base::ASCIIToUTF16("false");
+  enabled_property->SetValueAsString(&test_view, false_value);
+  EXPECT_TRUE(enabled_changed);
+  EXPECT_FALSE(test_view.GetEnabled());
+  EXPECT_EQ(enabled_property->GetValueAsString(&test_view), false_value);
+}
+
 TEST_F(ViewTest, TestEnabledChangedCallback) {
   View test_view;
   bool enabled_changed = false;
@@ -4988,7 +5007,7 @@ TEST_F(ViewTest, TestEnabledChangedCallback) {
       &enabled_changed));
   test_view.SetEnabled(false);
   EXPECT_TRUE(enabled_changed);
-  EXPECT_FALSE(test_view.enabled());
+  EXPECT_FALSE(test_view.GetEnabled());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

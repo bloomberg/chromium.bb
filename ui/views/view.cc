@@ -2711,4 +2711,10 @@ bool View::DoDrag(const ui::LocatedEvent& event,
   return true;
 }
 
+// This block requires the existence of METADATA_HEADER(View) in the class
+// declaration for View.
+BEGIN_METADATA(View)
+ADD_PROPERTY_METADATA(View, bool, Enabled)
+END_METADATA()
+
 }  // namespace views
