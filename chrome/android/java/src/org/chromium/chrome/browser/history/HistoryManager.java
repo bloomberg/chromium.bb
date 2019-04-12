@@ -124,7 +124,7 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
 
         // 3. Initialize toolbar.
         mToolbar = (HistoryManagerToolbar) mSelectableListLayout.initializeToolbar(
-                R.layout.history_toolbar, mSelectionDelegate, R.string.menu_history, null,
+                R.layout.history_toolbar, mSelectionDelegate, R.string.menu_history,
                 R.id.normal_menu_group, R.id.selection_mode_menu_group, this, true,
                 isSeparateActivity);
         mToolbar.setManager(this);
