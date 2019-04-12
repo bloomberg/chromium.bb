@@ -157,8 +157,10 @@ public class FeedNewTabPage extends NewTabPage {
 
         @Override
         public Drawable getCardBackground() {
-            return ApiCompatibilityUtils.getDrawable(
-                    mResources, R.drawable.hairline_border_card_background);
+            return ApiCompatibilityUtils.getDrawable(mResources,
+                    FeedConfiguration.getFeedUiEnabled()
+                            ? R.drawable.hairline_border_card_background_with_inset
+                            : R.drawable.hairline_border_card_background);
         }
 
         @Override
