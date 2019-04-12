@@ -1985,9 +1985,6 @@ const FeatureEntry kFeatureEntries[] = {
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableInputImeAPI,
                                switches::kDisableInputImeAPI)},
 #endif  // OS_WIN || OS_LINUX
-    {"enable-origin-trials", flag_descriptions::kOriginTrialsName,
-     flag_descriptions::kOriginTrialsDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kOriginTrials)},
     {"enable-brotli", flag_descriptions::kEnableBrotliName,
      flag_descriptions::kEnableBrotliDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kBrotliEncoding)},
