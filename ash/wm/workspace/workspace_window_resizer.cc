@@ -97,9 +97,8 @@ std::unique_ptr<WindowResizer> CreateWindowResizerForTabletMode(
     std::unique_ptr<WindowResizer> window_resizer =
         std::make_unique<TabletModeWindowDragController>(
             window_state, std::make_unique<TabletModeAppWindowDragDelegate>());
-    window_resizer = std::make_unique<DragWindowResizer>(
-        std::move(window_resizer), window_state);
-    return window_resizer;
+    return std::make_unique<DragWindowResizer>(std::move(window_resizer),
+                                               window_state);
   }
 
   // Only allow drag that happens on caption or top area. Note: for a maxmized
@@ -125,9 +124,8 @@ std::unique_ptr<WindowResizer> CreateWindowResizerForTabletMode(
       std::make_unique<TabletModeWindowDragController>(
           window_state,
           std::make_unique<TabletModeBrowserWindowDragDelegate>());
-  window_resizer = std::make_unique<DragWindowResizer>(
-      std::move(window_resizer), window_state);
-  return window_resizer;
+  return std::make_unique<DragWindowResizer>(std::move(window_resizer),
+                                             window_state);
 }
 
 }  // namespace
@@ -140,28 +138,14 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
   DCHECK(window);
 
   wm::WindowState* window_state = wm::GetWindowState(window);
-  // No need to return a resizer when the window cannot get resized or when a
-  // resizer already exists for this window.
-  if ((!window_state->CanResize() && window_component != HTCAPTION) ||
-      window_state->drag_details()) {
-    return nullptr;
-  }
 
-  // TODO(varkha): The chaining of window resizers causes some of the logic
-  // to be repeated and the logic flow difficult to control. With some windows
-  // classes using reparenting during drag operations it becomes challenging to
-  // implement proper transition from one resizer to another during or at the
-  // end of the drag. This also causes http://crbug.com/247085.
-  // We should have a better way of doing this, perhaps by having a way of
-  // observing drags or having a generic drag window wrapper which informs a
-  // layout manager that a drag has started or stopped. It may be possible to
-  // refactor and eliminate chaining.
-  std::unique_ptr<WindowResizer> window_resizer;
+  // A resizer already exists; don't create a new one.
+  if (window_state->drag_details())
+    return nullptr;
 
   if (window_state->IsPip()) {
     window_state->CreateDragDetails(point_in_parent, window_component, source);
-    window_resizer = std::make_unique<PipWindowResizer>(window_state);
-    return window_resizer;
+    return std::make_unique<PipWindowResizer>(window_state);
   }
 
   if (Shell::Get()
@@ -170,6 +154,10 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
     return CreateWindowResizerForTabletMode(window, point_in_parent,
                                             window_component, source);
   }
+
+  // No need to return a resizer when the window cannot get resized.
+  if (!window_state->CanResize() && window_component != HTCAPTION)
+    return nullptr;
 
   if (!window_state->IsNormalOrSnapped())
     return nullptr;
@@ -182,6 +170,17 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
   window_state->CreateDragDetails(point_in_parent, window_component, source);
   const int parent_shell_window_id =
       window->parent() ? window->parent()->id() : -1;
+
+  // TODO(varkha): The chaining of window resizers causes some of the logic
+  // to be repeated and the logic flow difficult to control. With some windows
+  // classes using reparenting during drag operations it becomes challenging to
+  // implement proper transition from one resizer to another during or at the
+  // end of the drag. This also causes http://crbug.com/247085.
+  // We should have a better way of doing this, perhaps by having a way of
+  // observing drags or having a generic drag window wrapper which informs a
+  // layout manager that a drag has started or stopped. It may be possible to
+  // refactor and eliminate chaining.
+  std::unique_ptr<WindowResizer> window_resizer;
   if (window->parent() &&
       // TODO(afakhry): Maybe use switchable containers?
       (desks_util::IsDeskContainerId(parent_shell_window_id) ||
@@ -191,9 +190,8 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
   } else {
     window_resizer.reset(DefaultWindowResizer::Create(window_state));
   }
-  window_resizer = std::make_unique<DragWindowResizer>(
-      std::move(window_resizer), window_state);
-  return window_resizer;
+  return std::make_unique<DragWindowResizer>(std::move(window_resizer),
+                                             window_state);
 }
 
 namespace {
