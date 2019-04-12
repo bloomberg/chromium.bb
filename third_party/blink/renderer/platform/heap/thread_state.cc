@@ -1057,9 +1057,16 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
       (event.object_size_in_bytes_before_sweeping >
        kMinObjectSizeForReportingThroughput)) {
     DCHECK_GT(marking_duration.InMillisecondsF(), 0.0);
+    // For marking throughput computation all marking steps, independent of
+    // whether they are triggered from V8 or Blink, are relevant.
+    const WTF::TimeDelta blink_marking_duration =
+        marking_duration +
+        event.scope_data
+            [ThreadHeapStatsCollector::kUnifiedMarkingAtomicPrologue] +
+        event.scope_data[ThreadHeapStatsCollector::kUnifiedMarkingStep];
     const int main_thread_marking_throughput_mb_per_s = static_cast<int>(
         static_cast<double>(event.object_size_in_bytes_before_sweeping) /
-        marking_duration.InMillisecondsF() * 1000 / 1024 / 1024);
+        blink_marking_duration.InMillisecondsF() * 1000 / 1024 / 1024);
     UMA_HISTOGRAM_COUNTS_100000("BlinkGC.MainThreadMarkingThroughput",
                                 main_thread_marking_throughput_mb_per_s);
   }

@@ -55,9 +55,14 @@ void UnifiedHeapController::EnterFinalPause(EmbedderStackState stack_state) {
       ThreadHeapStatsCollector::kAtomicPhase);
   thread_state_->EnterAtomicPause();
   thread_state_->EnterGCForbiddenScope();
-  thread_state_->AtomicPauseMarkPrologue(ToBlinkGCStackState(stack_state),
-                                         BlinkGC::kIncrementalMarking,
-                                         BlinkGC::GCReason::kUnifiedHeapGC);
+  {
+    ThreadHeapStatsCollector::Scope mark_prologue_scope(
+        thread_state_->Heap().stats_collector(),
+        ThreadHeapStatsCollector::kUnifiedMarkingAtomicPrologue);
+    thread_state_->AtomicPauseMarkPrologue(ToBlinkGCStackState(stack_state),
+                                           BlinkGC::kIncrementalMarking,
+                                           BlinkGC::GCReason::kUnifiedHeapGC);
+  }
 }
 
 void UnifiedHeapController::TraceEpilogue() {
@@ -108,6 +113,9 @@ void UnifiedHeapController::RegisterV8References(
 
 bool UnifiedHeapController::AdvanceTracing(double deadline_in_ms) {
   VLOG(2) << "UnifiedHeapController::AdvanceTracing";
+  ThreadHeapStatsCollector::Scope advance_tracing_scope(
+      thread_state_->Heap().stats_collector(),
+      ThreadHeapStatsCollector::kUnifiedMarkingStep);
 
   if (!thread_state_->in_atomic_pause()) {
     // V8 calls into embedder tracing from its own marking to ensure
