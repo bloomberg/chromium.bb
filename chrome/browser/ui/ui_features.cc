@@ -10,6 +10,10 @@ namespace features {
 const base::Feature kExtensionsToolbarMenu{"ExtensionsToolbarMenu",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables tabs to scroll in the tabstrip. https://crbug.com/951078
+const base::Feature kScrollableTabStrip{"ScrollableTabStrip",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables grouping tabs together in the tab strip. https://crbug.com/905491
 const base::Feature kTabGroups{"TabGroups", base::FEATURE_DISABLED_BY_DEFAULT};
 

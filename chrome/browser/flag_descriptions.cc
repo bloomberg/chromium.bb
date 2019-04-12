@@ -1724,6 +1724,11 @@ const char kSaveasMenuLabelExperimentDescription[] =
     "Enables an experiment to switch menu labels that use 'Save as...' to "
     "'Download'.";
 
+const char kScrollableTabStripName[] = "Scrollable TabStrip";
+const char kScrollableTabStripDescription[] =
+    "Allows users to access tabs by scrolling when they no longer fit in the "
+    "tabstrip.";
+
 const char kSendTabToSelfName[] = "Send tab to self";
 const char kSendTabToSelfDescription[] =
     "Allows users to receive tabs from other synced devices, in order to "
