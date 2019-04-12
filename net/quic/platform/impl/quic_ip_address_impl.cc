@@ -38,12 +38,6 @@ QuicIpAddressImpl QuicIpAddressImpl::Any6() {
 QuicIpAddressImpl::QuicIpAddressImpl(const net::IPAddress& addr)
     : ip_address_(addr) {}
 
-QuicIpAddressImpl::QuicIpAddressImpl(const in_addr& ipv4_address)
-    : ip_address_() {}
-
-QuicIpAddressImpl::QuicIpAddressImpl(const in6_addr& ipv6_address)
-    : ip_address_() {}
-
 bool operator==(QuicIpAddressImpl lhs, QuicIpAddressImpl rhs) {
   return lhs.ip_address_ == rhs.ip_address_;
 }

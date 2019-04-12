@@ -305,7 +305,6 @@ const struct QuicErrorMapping {
     {quic::QUIC_MAX_STREAM_ID_ERROR, "quic.stream.id.in.max_stream_id.frame"},
     {quic::QUIC_HTTP_DECODER_ERROR, "quic.http.decoder.error"},
     {quic::QUIC_STALE_CONNECTION_CANCELLED, "quic.stale.connection.cancelled"},
-    {quic::QUIC_IETF_GQUIC_ERROR_MISSING, "quic.ietf.gquic.error_missing"},
 
     // No error. Used as bound while iterating.
     {quic::QUIC_LAST_ERROR, "quic.last_error"}};

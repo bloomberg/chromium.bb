@@ -79,7 +79,7 @@ quic::WriteResult QuicSimpleServerPacketWriter::WritePacket(
 
 quic::QuicByteCount QuicSimpleServerPacketWriter::GetMaxPacketSize(
     const quic::QuicSocketAddress& peer_address) const {
-  return quic::kMaxOutgoingPacketSize;
+  return quic::kMaxPacketSize;
 }
 
 bool QuicSimpleServerPacketWriter::SupportsReleaseTime() const {
