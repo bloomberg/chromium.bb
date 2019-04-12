@@ -93,7 +93,7 @@ class SVGNumberAcceptPercentage final : public SVGNumber {
     return MakeGarbageCollected<SVGNumberAcceptPercentage>(value);
   }
 
-  explicit SVGNumberAcceptPercentage(float);
+  explicit SVGNumberAcceptPercentage(float = 0);
 
   SVGNumber* Clone() const override;
   SVGParsingError SetValueAsString(const String&) override;
