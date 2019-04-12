@@ -428,6 +428,7 @@ void FrameRendererThumbnail::DeleteTexture(const gpu::Mailbox& mailbox,
                                            const gpu::SyncToken&) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(renderer_sequence_checker_);
 
+  AutoGLContext auto_gl_context(this);
   base::AutoLock auto_lock(renderer_lock_);
   auto it = mailbox_texture_map_.find(mailbox);
   ASSERT_NE(it, mailbox_texture_map_.end());
