@@ -251,7 +251,8 @@ void AssistantMainStage::OnViewPreferredSizeChanged(views::View* view) {
   PreferredSizeChanged();
 }
 
-void AssistantMainStage::OnViewVisibilityChanged(views::View* view) {
+void AssistantMainStage::OnViewVisibilityChanged(views::View* view,
+                                                 views::View* starting_view) {
   PreferredSizeChanged();
 }
 
