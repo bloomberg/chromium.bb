@@ -39,14 +39,16 @@ const SVGEnumerationMap& GetEnumerationMap<MorphologyOperatorType>() {
 inline SVGFEMorphologyElement::SVGFEMorphologyElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(svg_names::kFEMorphologyTag,
                                            document),
-      radius_(SVGAnimatedNumberOptionalNumber::Create(this,
-                                                      svg_names::kRadiusAttr,
-                                                      0.0f)),
-      in1_(SVGAnimatedString::Create(this, svg_names::kInAttr)),
-      svg_operator_(SVGAnimatedEnumeration<MorphologyOperatorType>::Create(
+      radius_(MakeGarbageCollected<SVGAnimatedNumberOptionalNumber>(
           this,
-          svg_names::kOperatorAttr,
-          FEMORPHOLOGY_OPERATOR_ERODE)) {
+          svg_names::kRadiusAttr,
+          0.0f)),
+      in1_(MakeGarbageCollected<SVGAnimatedString>(this, svg_names::kInAttr)),
+      svg_operator_(
+          MakeGarbageCollected<SVGAnimatedEnumeration<MorphologyOperatorType>>(
+              this,
+              svg_names::kOperatorAttr,
+              FEMORPHOLOGY_OPERATOR_ERODE)) {
   AddToPropertyMap(radius_);
   AddToPropertyMap(in1_);
   AddToPropertyMap(svg_operator_);

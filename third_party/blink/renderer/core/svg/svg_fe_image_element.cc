@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/svg/svg_preserve_aspect_ratio.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
@@ -37,9 +38,10 @@ namespace blink {
 inline SVGFEImageElement::SVGFEImageElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(svg_names::kFEImageTag, document),
       SVGURIReference(this),
-      preserve_aspect_ratio_(SVGAnimatedPreserveAspectRatio::Create(
-          this,
-          svg_names::kPreserveAspectRatioAttr)) {
+      preserve_aspect_ratio_(
+          MakeGarbageCollected<SVGAnimatedPreserveAspectRatio>(
+              this,
+              svg_names::kPreserveAspectRatioAttr)) {
   AddToPropertyMap(preserve_aspect_ratio_);
 }
 
