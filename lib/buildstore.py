@@ -484,11 +484,16 @@ class BuildStore(object):
       for buildbucket_id in buildbucket_ids:
         bb_list = self.bb_client.GetStageFailures(int(buildbucket_id))
         for stage in bb_list:
-          for key in failure_message_lib.FAILURE_KEYS:
-            if key not in stage:
-              stage[key] = None
-
-          failure_list.append(failure_message_lib.StageFailure(*stage))
+          failure_list.append(failure_message_lib.StageFailure(
+              id=None, build_stage_id=None, outer_failure_id=None,
+              exception_type=None, exception_message=None,
+              exception_category=None, extra_info=None, timestamp=None,
+              stage_name=stage['stage_name'], board=None,
+              stage_status=stage['stage_status'], build_id=None,
+              master_build_id=None, builder_name=None, build_number=None,
+              build_config=stage['build_config'],
+              build_status=stage['build_status'],
+              important=stage['important'], buildbucket_id=buildbucket_id))
       return failure_list
     else:
       return self.cidb_conn.GetBuildsFailures(buildbucket_ids)
