@@ -45,6 +45,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/test/content_browser_sanity_checker.h"
 #include "gpu/config/gpu_switches.h"
+#include "media/base/media_switches.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -141,6 +142,7 @@ BrowserTestBase::BrowserTestBase()
     : field_trial_list_(std::make_unique<base::FieldTrialList>(nullptr)),
       expected_exit_code_(0),
       enable_pixel_output_(false),
+      enable_audio_output_(false),
       use_software_compositing_(false),
       set_up_called_(false) {
   ui::test::EnableTestConfigForPlatformWindows();
@@ -261,6 +263,11 @@ void BrowserTestBase::SetUp() {
 
   if (use_software_gl && !use_software_compositing_)
     command_line->AppendSwitch(switches::kOverrideUseSoftwareGLForTests);
+
+  // Disable audio output to avoid unnecessary error log output from platform
+  // audio layers, unless audio has been specifically requested.
+  if (!enable_audio_output_)
+    command_line->AppendSwitch(switches::kDisableAudioOutput);
 
   // Use an sRGB color profile to ensure that the machine's color profile does
   // not affect the results.
@@ -483,6 +490,11 @@ void BrowserTestBase::PostTaskToInProcessRendererAndWait(
 }
 
 void BrowserTestBase::EnablePixelOutput() { enable_pixel_output_ = true; }
+
+void BrowserTestBase::EnableAudioOutput() {
+  DCHECK(!set_up_called_);
+  enable_audio_output_ = true;
+}
 
 void BrowserTestBase::UseSoftwareCompositing() {
   use_software_compositing_ = true;
