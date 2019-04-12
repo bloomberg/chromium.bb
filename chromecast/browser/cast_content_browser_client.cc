@@ -805,8 +805,8 @@ void CastContentBrowserClient::ExposeInterfacesToMediaService(
       CastNavigationUIData::GetSessionIdForWebContents(
           content::WebContents::FromRenderFrameHost(render_frame_host));
   registry->AddInterface(base::BindRepeating(
-      &media::CreateApplicationSessionIdManager, render_frame_host,
-      std::move(application_session_id)));
+      &media::CreateApplicationMediaInfoManager, render_frame_host,
+      std::move(application_session_id), true));
 }
 
 void CastContentBrowserClient::HandleServiceRequest(

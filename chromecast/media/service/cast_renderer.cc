@@ -99,63 +99,69 @@ void CastRenderer::Initialize(::media::MediaResource* media_resource,
                               const ::media::PipelineStatusCB& init_cb) {
   LOG(INFO) << __FUNCTION__ << ": " << this;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(!application_session_id_manager_ptr_);
+  DCHECK(!application_media_info_manager_ptr_);
 
-  // Retrieve application_session_id if it is available via
-  // ApplicationSessionIdManager.
-
-  // If a CastRenderer is created for a purpose other than a web application,
-  // the ApplicationSessionIdManager interface is not available, and application
-  // session ID will be an empty string.
+  // Retrieve application_media_info_manager_ptr_ if it is available via
+  // CastApplicationMediaInfoManager.
 
   if (host_interfaces_) {
-    service_manager::GetInterface<::media::mojom::ApplicationSessionIdManager>(
-        host_interfaces_, &application_session_id_manager_ptr_);
+    service_manager::GetInterface<
+        ::media::mojom::CastApplicationMediaInfoManager>(
+        host_interfaces_, &application_media_info_manager_ptr_);
   }
 
-  if (application_session_id_manager_ptr_) {
-    application_session_id_manager_ptr_->GetApplicationSessionId(base::BindOnce(
-        &CastRenderer::OnApplicationSessionIdReceived,
-        weak_factory_.GetWeakPtr(), media_resource, client, init_cb));
+  if (application_media_info_manager_ptr_) {
+    application_media_info_manager_ptr_->GetCastApplicationMediaInfo(
+        base::BindOnce(&CastRenderer::OnApplicationMediaInfoReceived,
+                       weak_factory_.GetWeakPtr(), media_resource, client,
+                       init_cb));
   } else {
-    OnApplicationSessionIdReceived(media_resource, client, init_cb,
-                                   std::string());
+    // If a CastRenderer is created for a purpose other than a web application,
+    // the CastApplicationMediaInfoManager interface is not available, and
+    // default CastApplicationMediaInfo value below will be used.
+    OnApplicationMediaInfoReceived(
+        media_resource, client, init_cb,
+        ::media::mojom::CastApplicationMediaInfo::New(std::string(), true));
   }
 }
 
-void CastRenderer::OnApplicationSessionIdReceived(
+void CastRenderer::OnApplicationMediaInfoReceived(
     ::media::MediaResource* media_resource,
     ::media::RendererClient* client,
     const ::media::PipelineStatusCB& init_cb,
-    const std::string& application_session_id) {
+    ::media::mojom::CastApplicationMediaInfoPtr application_media_info) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  if (application_session_id.empty()) {
-    OnGetMultiroomInfo(media_resource, client, init_cb, application_session_id,
+  if (application_media_info->application_session_id.empty()) {
+    OnGetMultiroomInfo(media_resource, client, init_cb,
+                       std::move(application_media_info),
                        chromecast::mojom::MultiroomInfo::New());
     return;
   }
   connector_->BindInterface(chromecast::mojom::kChromecastServiceName,
                             &multiroom_manager_);
-  multiroom_manager_.set_connection_error_handler(
-      base::BindOnce(&CastRenderer::OnGetMultiroomInfo, base::Unretained(this),
-                     media_resource, client, init_cb, application_session_id,
-                     chromecast::mojom::MultiroomInfo::New()));
+  multiroom_manager_.set_connection_error_handler(base::BindOnce(
+      &CastRenderer::OnGetMultiroomInfo, base::Unretained(this), media_resource,
+      client, init_cb, application_media_info.Clone(),
+      chromecast::mojom::MultiroomInfo::New()));
   multiroom_manager_->GetMultiroomInfo(
-      application_session_id,
+      application_media_info->application_session_id,
       base::BindOnce(&CastRenderer::OnGetMultiroomInfo, base::Unretained(this),
-                     media_resource, client, init_cb, application_session_id));
+                     media_resource, client, init_cb,
+                     std::move(application_media_info)));
 }
 
 void CastRenderer::OnGetMultiroomInfo(
     ::media::MediaResource* media_resource,
     ::media::RendererClient* client,
     const ::media::PipelineStatusCB& init_cb,
-    const std::string& application_session_id,
+    ::media::mojom::CastApplicationMediaInfoPtr application_media_info,
     chromecast::mojom::MultiroomInfoPtr multiroom_info) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(multiroom_info);
   LOG(INFO) << __FUNCTION__ << ": " << this
-            << " session_id=" << application_session_id
+            << " session_id=" << application_media_info->application_session_id
+            << ", mixer_audio_enabled="
+            << application_media_info->mixer_audio_enabled
             << ", multiroom=" << multiroom_info->multiroom
             << ", audio_channel=" << multiroom_info->audio_channel;
   // Close the MultiroomManager message pipe so that a connection error does not
@@ -185,7 +191,7 @@ void CastRenderer::OnGetMultiroomInfo(
   MediaPipelineDeviceParams params(sync_type, backend_task_runner_.get(),
                                    content_type, audio_device_id_);
   params.connector = connector_;
-  params.session_id = application_session_id;
+  params.session_id = application_media_info->application_session_id;
   params.multiroom = multiroom_info->multiroom;
   params.audio_channel = multiroom_info->audio_channel;
   params.output_delay_us = multiroom_info->output_delay.InMicroseconds();
