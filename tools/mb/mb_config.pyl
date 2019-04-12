@@ -152,6 +152,7 @@
       'ToTWin': 'clang_tot_official_minimal_symbols_static_release_x86',
       'ToTWin(dbg)': 'clang_tot_shared_debug_x86',
       'ToTWin(dll)': 'clang_tot_minimal_symbols_shared_release_x86_dcheck',
+      'ToTWinOfficial': 'clang_tot_win_official_full_symbols_static_x86',
       'ToTWin64': 'clang_tot_official_minimal_symbols_static_release',
       'ToTWin64(dbg)': 'clang_tot_shared_debug',
       'ToTWin64(dll)': 'clang_tot_shared_release_dcheck',
@@ -1321,6 +1322,10 @@
 
     'clang_tot_minimal_symbols_shared_release_x86_dcheck': [
       'clang_tot', 'minimal_symbols', 'shared', 'release', 'x86', 'dcheck_always_on',
+    ],
+
+    'clang_tot_win_official_full_symbols_static_x86': [
+      'clang_tot', 'official', 'full_symbols', 'static', 'x86', 'win_linker_timing',
     ],
 
     'clang_tot_win_official_full_symbols_thin_lto_static': [
