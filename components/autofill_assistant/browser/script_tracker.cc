@@ -136,45 +136,6 @@ bool ScriptTracker::Terminate() {
   return true;
 }
 
-base::Value ScriptTracker::GetDebugContext() const {
-  base::Value dict(base::Value::Type::DICTIONARY);
-
-  std::string last_global_payload_js = last_global_payload_;
-  base::Base64Encode(last_global_payload_js, &last_global_payload_js);
-  dict.SetKey("last-global-payload", base::Value(last_global_payload_js));
-
-  std::string last_script_payload_js = last_script_payload_;
-  base::Base64Encode(last_script_payload_js, &last_script_payload_js);
-  dict.SetKey("last-script-payload", base::Value(last_script_payload_js));
-
-  std::vector<base::Value> scripts_state_js;
-  for (const auto& entry : scripts_state_) {
-    base::Value script_js = base::Value(base::Value::Type::DICTIONARY);
-    script_js.SetKey(entry.first, base::Value(entry.second));
-    scripts_state_js.push_back(std::move(script_js));
-  }
-  dict.SetKey("executed-scripts", base::Value(scripts_state_js));
-
-  std::vector<base::Value> available_scripts_js;
-  for (const auto& entry : available_scripts_)
-    available_scripts_js.push_back(base::Value(entry.second->handle.path));
-  dict.SetKey("available-scripts", base::Value(available_scripts_js));
-
-  std::vector<base::Value> runnable_scripts_js;
-  for (const auto& entry : runnable_scripts_) {
-    base::Value script_js = base::Value(base::Value::Type::DICTIONARY);
-    script_js.SetKey("name", base::Value(entry.name));
-    script_js.SetKey("path", base::Value(entry.path));
-    script_js.SetKey("initial_prompt", base::Value(entry.initial_prompt));
-    script_js.SetKey("autostart", base::Value(entry.autostart));
-    script_js.SetKey("chip_type", base::Value(entry.chip_type));
-    runnable_scripts_js.push_back(std::move(script_js));
-  }
-  dict.SetKey("runnable-scripts", base::Value(runnable_scripts_js));
-
-  return dict;
-}
-
 void ScriptTracker::OnScriptRun(
     const std::string& script_path,
     ScriptExecutor::RunScriptCallback original_callback,

@@ -20,11 +20,6 @@ class Details {
   const DetailsChangesProto& changes() const { return change_flags_; }
   const std::string GetDatetime() const { return datetime_; }
 
-  // Returns a dictionary describing the current execution context, which
-  // is intended to be serialized as JSON string. The execution context is
-  // useful when analyzing feedback forms and for debugging in general.
-  base::Value GetDebugContext() const;
-
   // Update details from the given parameters. Returns true if changes were
   // made.
   // If one of the generic detail parameter is present then vertical specific

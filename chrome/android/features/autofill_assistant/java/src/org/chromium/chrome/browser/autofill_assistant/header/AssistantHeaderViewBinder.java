@@ -27,14 +27,12 @@ class AssistantHeaderViewBinder
         final View mHeader;
         final TextView mStatusMessage;
         final AnimatedProgressBar mProgressBar;
-        final View mFeedbackButton;
 
         public ViewHolder(View bottomBarView, AnimatedPoodle poodle) {
             mPoodle = poodle;
             mHeader = bottomBarView.findViewById(R.id.header);
             mStatusMessage = bottomBarView.findViewById(R.id.status_message);
             mProgressBar = new AnimatedProgressBar(bottomBarView.findViewById(R.id.progress_bar));
-            mFeedbackButton = bottomBarView.findViewById(R.id.feedback_button);
         }
     }
 
@@ -54,9 +52,6 @@ class AssistantHeaderViewBinder
             setProgressBarVisibility(view, model);
         } else if (AssistantHeaderModel.SPIN_POODLE == propertyKey) {
             view.mPoodle.setSpinEnabled(model.get(AssistantHeaderModel.SPIN_POODLE));
-        } else if (AssistantHeaderModel.FEEDBACK_BUTTON_CALLBACK == propertyKey) {
-            Runnable listener = model.get(AssistantHeaderModel.FEEDBACK_BUTTON_CALLBACK);
-            view.mFeedbackButton.setOnClickListener(unusedView -> listener.run());
         } else {
             assert false : "Unhandled property detected in AssistantHeaderViewBinder!";
         }

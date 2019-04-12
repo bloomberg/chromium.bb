@@ -11,7 +11,6 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "chrome/browser/android/autofill_assistant/assistant_header_delegate.h"
 #include "chrome/browser/android/autofill_assistant/assistant_overlay_delegate.h"
 #include "chrome/browser/android/autofill_assistant/assistant_payment_request_delegate.h"
 #include "components/autofill_assistant/browser/chip.h"
@@ -74,9 +73,6 @@ class UiControllerAndroid : public UiController {
   void UpdateTouchableArea();
   void OnUserInteractionInsideTouchableArea();
 
-  // Called by AssistantHeaderDelegate:
-  void OnFeedbackButtonClicked();
-
   // Called by AssistantPaymentRequestDelegate:
   void OnShippingAddressChanged(
       std::unique_ptr<autofill::AutofillProfile> address);
@@ -126,7 +122,6 @@ class UiControllerAndroid : public UiController {
   // A pointer to the ui_delegate. nullptr until Attach() is called.
   UiDelegate* ui_delegate_ = nullptr;
   AssistantOverlayDelegate overlay_delegate_;
-  AssistantHeaderDelegate header_delegate_;
   AssistantPaymentRequestDelegate payment_request_delegate_;
 
   // What to do if undo is not pressed on the current snackbar.
@@ -143,7 +138,6 @@ class UiControllerAndroid : public UiController {
   void AllowShowingSoftKeyboard(bool enabled);
   void ExpandBottomSheet();
   void SetSpinPoodle(bool enabled);
-  std::string GetDebugContext();
   void DestroySelf();
   void Shutdown(Metrics::DropOutReason reason);
   void UpdateActions();
@@ -161,10 +155,6 @@ class UiControllerAndroid : public UiController {
 
   // Makes the whole of AA invisible or visible again.
   void SetVisible(bool visible);
-
-  // Debug context captured previously. If non-empty, GetDebugContext() returns
-  // this context.
-  std::string captured_debug_context_;
 
   // Java-side AutofillAssistantUiController object.
   base::android::ScopedJavaGlobalRef<jobject> java_object_;

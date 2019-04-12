@@ -78,7 +78,6 @@ UiControllerAndroid::UiControllerAndroid(
     JNIEnv* env,
     const base::android::JavaRef<jobject>& jactivity)
     : overlay_delegate_(this),
-      header_delegate_(this),
       payment_request_delegate_(this),
       weak_ptr_factory_(this) {
   java_object_ = Java_AutofillAssistantUiController_create(
@@ -90,10 +89,6 @@ UiControllerAndroid::UiControllerAndroid(
   // Register overlay_delegate_ as delegate for the overlay.
   Java_AssistantOverlayModel_setDelegate(env, GetOverlayModel(),
                                          overlay_delegate_.GetJavaObject());
-
-  // Register header_delegate_ as delegate for clicks on header buttons.
-  Java_AssistantHeaderModel_setDelegate(env, GetHeaderModel(),
-                                        header_delegate_.GetJavaObject());
 
   // Register payment_request_delegate_ as delegate for the payment request UI.
   Java_AssistantPaymentRequestModel_setDelegate(
@@ -109,7 +104,6 @@ void UiControllerAndroid::Attach(content::WebContents* web_contents,
 
   client_ = client;
   ui_delegate_ = ui_delegate;
-  captured_debug_context_.clear();
 
   JNIEnv* env = AttachCurrentThread();
   auto java_web_contents = web_contents->GetJavaWebContents();
@@ -256,13 +250,6 @@ void UiControllerAndroid::SetSpinPoodle(bool enabled) {
                                           GetHeaderModel(), enabled);
 }
 
-void UiControllerAndroid::OnFeedbackButtonClicked() {
-  JNIEnv* env = AttachCurrentThread();
-  Java_AutofillAssistantUiController_showFeedback(
-      env, java_object_,
-      base::android::ConvertUTF8ToJavaString(env, GetDebugContext()));
-}
-
 void UiControllerAndroid::Shutdown(Metrics::DropOutReason reason) {
   client_->Shutdown(reason);
 }
@@ -296,13 +283,6 @@ void UiControllerAndroid::SnackbarResult(
     return;
   }
   std::move(action).Run();
-}
-
-std::string UiControllerAndroid::GetDebugContext() {
-  if (captured_debug_context_.empty() && ui_delegate_) {
-    return ui_delegate_->GetDebugContext();
-  }
-  return captured_debug_context_;
 }
 
 void UiControllerAndroid::DestroySelf() {
@@ -521,7 +501,6 @@ void UiControllerAndroid::WillShutdown(Metrics::DropOutReason reason) {
   // Capture the debug context, for including into a feedback possibly sent
   // later, after the delegate has been possibly destroyed.
   DCHECK(ui_delegate_);
-  captured_debug_context_ = ui_delegate_->GetDebugContext();
   AutofillAssistantState final_state = ui_delegate_->GetState();
   ui_delegate_ = nullptr;
 
