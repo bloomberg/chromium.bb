@@ -10,6 +10,7 @@
 @protocol AutocompleteSuggestion;
 @protocol ImageRetriever;
 @class OmniboxPopupRowCell;
+@protocol FaviconRetriever;
 
 namespace {
 NSString* OmniboxPopupRowCellReuseIdentifier = @"OmniboxPopupRowCell";
@@ -33,6 +34,8 @@ NSString* OmniboxPopupRowCellReuseIdentifier = @"OmniboxPopupRowCell";
                               incognito:(BOOL)incognito;
 
 @property(nonatomic, weak) id<OmniboxPopupRowCellDelegate> delegate;
+// Used to fetch favicons.
+@property(nonatomic, weak) id<FaviconRetriever> faviconRetriever;
 
 @property(nonatomic, weak) id<ImageRetriever> imageRetriever;
 

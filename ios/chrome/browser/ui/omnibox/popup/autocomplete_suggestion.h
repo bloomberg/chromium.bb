@@ -39,6 +39,8 @@ class GURL;
 - (BOOL)hasImage;
 // URL of the image, if |hasImage| is true.
 - (GURL)imageURL;
+// Page URL to be used to retrieve the favicon.
+- (GURL)faviconPageURL;
 
 @end
 

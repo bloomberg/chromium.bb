@@ -9,6 +9,7 @@
 #include "components/omnibox/browser/autocomplete_result.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_legacy_view_controller.h"
@@ -60,9 +61,11 @@
       std::make_unique<image_fetcher::IOSImageDataFetcherWrapper>(
           self.browserState->GetSharedURLLoaderFactory());
 
-  self.mediator =
-      [[OmniboxPopupMediator alloc] initWithFetcher:std::move(imageFetcher)
-                                           delegate:_popupView.get()];
+  self.mediator = [[OmniboxPopupMediator alloc]
+      initWithFetcher:std::move(imageFetcher)
+        faviconLoader:IOSChromeFaviconLoaderFactory::GetForBrowserState(
+                          self.browserState)
+             delegate:_popupView.get()];
   self.mediator.dispatcher = (id<BrowserCommands>)self.dispatcher;
   self.mediator.webStateList = self.webStateList;
   if (base::FeatureList::IsEnabled(kNewOmniboxPopupLayout)) {
@@ -80,6 +83,7 @@
                  popupViewController:self.popupViewController
                            incognito:isIncognito];
   self.popupViewController.imageRetriever = self.mediator;
+  self.popupViewController.faviconRetriever = self.mediator;
   self.popupViewController.delegate = self.mediator;
   [self.dispatcher
       startDispatchingToTarget:self.popupViewController

@@ -199,6 +199,10 @@ UIColor* DimColorIncognito() {
   return _match.answer->second_line().image_url();
 }
 
+- (GURL)faviconPageURL {
+  return _match.destination_url;
+}
+
 - (UIImage*)suggestionTypeIcon {
   DCHECK(
       !(self.isIncognito && _match.type == AutocompleteMatchType::CALCULATOR))
