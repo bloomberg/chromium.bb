@@ -1975,6 +1975,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'falco',
       'fizz',
       'fizz-accelerator',
+      'fizz-moblab',
       'flapjack',
       'gale',
       'glados',
