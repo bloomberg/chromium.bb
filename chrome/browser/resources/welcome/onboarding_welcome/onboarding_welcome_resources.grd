@@ -14,17 +14,11 @@
   </outputs>
   <release seq="1">
     <includes>
-      <include name="IDR_NUX_EMAIL_GMAIL_1X"
+      <include name="IDR_NUX_GOOGLE_APPS_GMAIL_1X"
                file="images/gmail_1x.png"
                type="BINDATA" />
-      <include name="IDR_NUX_EMAIL_GMAIL_2X"
+      <include name="IDR_NUX_GOOGLE_APPS_GMAIL_2X"
                file="images/gmail_2x.png"
-               type="BINDATA" />
-      <include name="IDR_NUX_GOOGLE_APPS_CHROME_STORE_1X"
-               file="images/chrome_store_1x.png"
-               type="BINDATA" />
-      <include name="IDR_NUX_GOOGLE_APPS_CHROME_STORE_2X"
-               file="images/chrome_store_2x.png"
                type="BINDATA" />
       <include name="IDR_NUX_GOOGLE_APPS_MAPS_1X"
                file="images/maps_1x.png"

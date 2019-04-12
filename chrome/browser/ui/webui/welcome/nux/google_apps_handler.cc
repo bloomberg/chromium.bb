@@ -27,12 +27,12 @@ namespace nux {
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 enum class GoogleApps {
-  kGmailDoNotUse = 0,  // Deprecated.
+  kGmail = 0,
   kYouTube = 1,
   kMaps = 2,
   kTranslate = 3,
   kNews = 4,
-  kChromeWebStore = 5,
+  kChromeWebStoreDoNotUse = 5,  // Deprecated.
   kCount,
 };
 
@@ -45,6 +45,10 @@ GoogleAppsHandler::GoogleAppsHandler()
     :  // Do not translate icon name as it is not human visible and needs to
        // match CSS.
       google_apps_{{
+          {static_cast<int>(GoogleApps::kGmail),
+           l10n_util::GetStringUTF8(IDS_ONBOARDING_WELCOME_NUX_GOOGLE_GMAIL),
+           "gmail", "https://accounts.google.com/b/0/AddMailService",
+           IDR_NUX_GOOGLE_APPS_GMAIL_1X},
           {static_cast<int>(GoogleApps::kYouTube),
            l10n_util::GetStringUTF8(
                IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_YOUTUBE),
@@ -62,11 +66,6 @@ GoogleAppsHandler::GoogleAppsHandler()
                IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_TRANSLATE),
            "translate", "https://translate.google.com",
            IDR_NUX_GOOGLE_APPS_TRANSLATE_1X},
-          {static_cast<int>(GoogleApps::kChromeWebStore),
-           l10n_util::GetStringUTF8(
-               IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_WEB_STORE),
-           "web-store", "https://chrome.google.com/webstore",
-           IDR_NUX_GOOGLE_APPS_CHROME_STORE_1X},
       }} {}
 
 GoogleAppsHandler::~GoogleAppsHandler() {}
