@@ -43,6 +43,10 @@ const std::string kExtendedInfoKey1 = "key 1";
 const std::string kExtendedInfoKey2 = "key 2";
 const std::string kExtendedInfoValue1 = "value 1";
 const std::string kExtendedInfoValue2 = "value 2";
+const int64_t kTaskId = 2;
+const int64_t kParentTaskId = 1;
+const int64_t kRootTaskId = 0;
+const std::vector<int64_t> kChildrenTaskIds{3, 4, 5};
 
 }  // namespace test_data
 
@@ -107,6 +111,10 @@ SerializedNavigationEntryTestHelper::CreateNavigationForTest() {
   navigation.redirect_chain_.push_back(test_data::kRedirectURL0);
   navigation.redirect_chain_.push_back(test_data::kRedirectURL1);
   navigation.redirect_chain_.push_back(test_data::kVirtualURL);
+  navigation.task_id_ = test_data::kTaskId;
+  navigation.parent_task_id_ = test_data::kParentTaskId;
+  navigation.root_task_id_ = test_data::kRootTaskId;
+  navigation.children_task_ids_ = test_data::kChildrenTaskIds;
   return navigation;
 }
 
