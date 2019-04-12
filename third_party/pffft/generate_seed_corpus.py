@@ -11,7 +11,7 @@ import os
 import random
 import sys
 
-MAX_INPUT_SIZE = int(1e6)
+MAX_INPUT_SIZE = 5000  # < 1 MB so we don't blow up fuzzer build sizes.
 MAX_FLOAT32 = 3.4028235e+38
 
 
