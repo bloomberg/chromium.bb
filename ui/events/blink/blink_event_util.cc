@@ -463,9 +463,6 @@ void Coalesce(const WebGestureEvent& event_to_coalesce,
         event_to_coalesce.data.scroll_update.delta_x;
     event->data.scroll_update.delta_y +=
         event_to_coalesce.data.scroll_update.delta_y;
-    DCHECK_EQ(event->data.scroll_update.previous_update_in_sequence_prevented,
-              event_to_coalesce.data.scroll_update
-                  .previous_update_in_sequence_prevented);
   } else if (event->GetType() == WebInputEvent::kGesturePinchUpdate) {
     event->data.pinch_update.scale *= event_to_coalesce.data.pinch_update.scale;
     // Ensure the scale remains bounded above 0 and below Infinity so that
@@ -798,8 +795,6 @@ WebGestureEvent CreateWebGestureEvent(const GestureEventDetails& details,
       gesture.data.scroll_update.delta_units =
           static_cast<blink::WebGestureEvent::ScrollUnits>(
               details.scroll_update_units());
-      gesture.data.scroll_update.previous_update_in_sequence_prevented =
-          details.previous_scroll_update_in_sequence_prevented();
       break;
     case ET_GESTURE_SCROLL_END:
       gesture.SetType(WebInputEvent::kGestureScrollEnd);

@@ -76,7 +76,6 @@ struct MouseData {
 struct ScrollUpdate {
   float velocity_x;
   float velocity_y;
-  bool previous_update_in_sequence_prevented;
 };
 
 struct ScrollData {
