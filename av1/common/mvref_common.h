@@ -189,7 +189,7 @@ static INLINE int16_t av1_mode_context_analyzer(
   return comp_ctx;
 }
 
-static INLINE uint8_t av1_drl_ctx(const int *ref_mv_weight, int ref_idx) {
+static INLINE uint8_t av1_drl_ctx(const uint16_t *ref_mv_weight, int ref_idx) {
   if (ref_mv_weight[ref_idx] >= REF_CAT_LEVEL &&
       ref_mv_weight[ref_idx + 1] >= REF_CAT_LEVEL)
     return 0;
@@ -250,7 +250,7 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                       MB_MODE_INFO *mi, MV_REFERENCE_FRAME ref_frame,
                       uint8_t ref_mv_count[MODE_CTX_REF_FRAMES],
                       CANDIDATE_MV ref_mv_stack[][MAX_REF_MV_STACK_SIZE],
-                      int ref_mv_weight[][MAX_REF_MV_STACK_SIZE],
+                      uint16_t ref_mv_weight[][MAX_REF_MV_STACK_SIZE],
                       int_mv mv_ref_list[][MAX_MV_REF_CANDIDATES],
                       int_mv *global_mvs, int mi_row, int mi_col,
                       int16_t *mode_context);
