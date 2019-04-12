@@ -13,14 +13,4 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_WEBGPU_IMPLEMENTATION_UNITTEST_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_CLIENT_WEBGPU_IMPLEMENTATION_UNITTEST_AUTOGEN_H_
 
-TEST_F(WebGPUImplementationTest, Dummy) {
-  struct Cmds {
-    cmds::Dummy cmd;
-  };
-  Cmds expected;
-  expected.cmd.Init();
-
-  gl_->Dummy();
-  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_WEBGPU_IMPLEMENTATION_UNITTEST_AUTOGEN_H_

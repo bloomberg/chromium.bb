@@ -20,11 +20,4 @@ void DawnCommands(uint32_t commands_shm_id,
   }
 }
 
-void Dummy() {
-  webgpu::cmds::Dummy* c = GetCmdSpace<webgpu::cmds::Dummy>();
-  if (c) {
-    c->Init();
-  }
-}
-
 #endif  // GPU_COMMAND_BUFFER_CLIENT_WEBGPU_CMD_HELPER_AUTOGEN_H_

@@ -453,12 +453,6 @@ error::Error WebGPUDecoderImpl::DoCommands(unsigned int num_commands,
   return result;
 }
 
-error::Error WebGPUDecoderImpl::HandleDummy(uint32_t immediate_data_size,
-                                            const volatile void* cmd_data) {
-  DLOG(ERROR) << "WebGPUDecoderImpl::HandleDummy";
-  return error::kNoError;
-}
-
 error::Error WebGPUDecoderImpl::HandleDawnCommands(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
