@@ -83,8 +83,8 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   const CComBSTR& get_current_windows_password() const {
     return current_windows_password_;
   }
-  const base::Value* get_authentication_results() const {
-    return authentication_results_.get();
+  const base::Optional<base::Value>& get_authentication_results() const {
+    return authentication_results_;
   }
   void set_current_windows_password(BSTR password) {
     current_windows_password_ = password;
@@ -150,9 +150,8 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   virtual void DisplayErrorInUI(LONG status, LONG substatus, BSTR status_text);
 
   // Forks a stub process to save account information for a user.
-  virtual HRESULT ForkSaveAccountInfoStub(
-      const std::unique_ptr<base::Value>& dict,
-      BSTR* status_text);
+  virtual HRESULT ForkSaveAccountInfoStub(const base::Value& dict,
+                                          BSTR* status_text);
 
   // Forks the logon stub process and waits for it to start.
   virtual HRESULT ForkGaiaLogonStub(OSProcessManager* process_manager,
@@ -260,7 +259,7 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   // The caller must take ownership of this memory.
   // On failure |error_text| will be allocated and filled with an error message.
   // The caller must take ownership of this memory.
-  HRESULT ValidateOrCreateUser(const base::Value* result,
+  HRESULT ValidateOrCreateUser(const base::Value& result,
                                BSTR* domain,
                                BSTR* username,
                                BSTR* sid,
@@ -290,7 +289,7 @@ class ATL_NO_VTABLE CGaiaCredentialBase
 
   // Contains the information about the Gaia account that signed in.  See the
   // kKeyXXX constants for the data that is stored here.
-  std::unique_ptr<base::Value> authentication_results_;
+  base::Optional<base::Value> authentication_results_;
 
   // Holds information about the success or failure of the sign in.
   NTSTATUS result_status_ = STATUS_SUCCESS;

@@ -173,8 +173,8 @@ void CALLBACK SaveAccountInfoW(HWND /*hwnd*/,
   // Don't log |buffer| since it contains sensitive info like password.
 
   HRESULT hr = S_OK;
-  std::unique_ptr<base::Value> properties = base::JSONReader::ReadDeprecated(
-      buffer, base::JSON_ALLOW_TRAILING_COMMAS);
+  base::Optional<base::Value> properties =
+      base::JSONReader::Read(buffer, base::JSON_ALLOW_TRAILING_COMMAS);
 
   ::RtlSecureZeroMemory(buffer, base::size(buffer));
 

@@ -640,7 +640,7 @@ base::string16 GetSelectedLanguage() {
   return GetLanguageSelector().matched_candidate();
 }
 
-void SecurelyClearDictionaryValue(std::unique_ptr<base::Value>* value) {
+void SecurelyClearDictionaryValue(base::Optional<base::Value>* value) {
   if (!value || !(*value) || !((*value)->is_dict()))
     return;
 
@@ -653,29 +653,29 @@ void SecurelyClearDictionaryValue(std::unique_ptr<base::Value>* value) {
   (*value).reset();
 }
 
-base::string16 GetDictString(const base::Value* dict, const char* name) {
+base::string16 GetDictString(const base::Value& dict, const char* name) {
   DCHECK(name);
-  DCHECK(dict->is_dict());
-  auto* value = dict->FindKey(name);
+  DCHECK(dict.is_dict());
+  auto* value = dict.FindKey(name);
   return value && value->is_string() ? base::UTF8ToUTF16(value->GetString())
                                      : base::string16();
 }
 
 base::string16 GetDictString(const std::unique_ptr<base::Value>& dict,
                              const char* name) {
-  return GetDictString(dict.get(), name);
+  return GetDictString(*dict, name);
 }
 
-std::string GetDictStringUTF8(const base::Value* dict, const char* name) {
+std::string GetDictStringUTF8(const base::Value& dict, const char* name) {
   DCHECK(name);
-  DCHECK(dict->is_dict());
-  auto* value = dict->FindKey(name);
+  DCHECK(dict.is_dict());
+  auto* value = dict.FindKey(name);
   return value && value->is_string() ? value->GetString() : std::string();
 }
 
 std::string GetDictStringUTF8(const std::unique_ptr<base::Value>& dict,
                               const char* name) {
-  return GetDictStringUTF8(dict.get(), name);
+  return GetDictStringUTF8(*dict, name);
 }
 
 base::FilePath::StringType GetInstallParentDirectoryName() {

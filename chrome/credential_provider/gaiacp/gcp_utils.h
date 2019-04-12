@@ -210,14 +210,14 @@ base::string16 GetSelectedLanguage();
 
 // Securely clear a base::Value that may be a dictionary value that may
 // have a password field.
-void SecurelyClearDictionaryValue(std::unique_ptr<base::Value>* value);
+void SecurelyClearDictionaryValue(base::Optional<base::Value>* value);
 
 // Helpers to get strings from base::Values that are expected to be
 // DictionaryValues.
-base::string16 GetDictString(const base::Value* dict, const char* name);
+base::string16 GetDictString(const base::Value& dict, const char* name);
 base::string16 GetDictString(const std::unique_ptr<base::Value>& dict,
                              const char* name);
-std::string GetDictStringUTF8(const base::Value* dict, const char* name);
+std::string GetDictStringUTF8(const base::Value& dict, const char* name);
 std::string GetDictStringUTF8(const std::unique_ptr<base::Value>& dict,
                               const char* name);
 
