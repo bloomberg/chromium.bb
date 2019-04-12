@@ -58,6 +58,7 @@ PerformanceManagerTabHelper::PerformanceManagerTabHelper(
   for (content::RenderFrameHost* frame : existing_frames) {
     // Only send notifications for live frames, the non-live ones will generate
     // creation notifications when animated.
+    // TODO(siggi): Add an IsRenderFrameCreated accessor to WebContents.
     if (frame->IsRenderFrameLive())
       RenderFrameCreated(frame);
   }
@@ -133,10 +134,17 @@ void PerformanceManagerTabHelper::RenderFrameCreated(
 void PerformanceManagerTabHelper::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
   auto it = frames_.find(render_frame_host);
-  DCHECK(it != frames_.end());
-
-  performance_manager_->DeleteNode(std::move(it->second));
-  frames_.erase(it);
+  // Apparently there exists a condition where the construction-time iteration
+  // fails to turn up every frame that has been created, and for which there
+  // will be an enventual deletion notification. This is because
+  // IsRenderFrameLive() will return false if the associated process is dead
+  // at the time of query. The process can however be later resurrected, so
+  // the condition can't be tested here.
+  // See https://crbug.com/948088.
+  if (it != frames_.end()) {
+    performance_manager_->DeleteNode(std::move(it->second));
+    frames_.erase(it);
+  }
 }
 
 void PerformanceManagerTabHelper::RenderFrameHostChanged(
