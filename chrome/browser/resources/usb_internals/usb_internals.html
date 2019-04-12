@@ -141,23 +141,45 @@
       <div class="descriptor-button">
         <button id="device-descriptor-button">Get Device Descriptor</button>
       </div>
-      <div class="device-descriptor-panel"></div>
+      <div class="device-descriptor-panel" hidden></div>
       <div class="descriptor-button">
         <button id="configuration-descriptor-button">
           Get Configuration Descriptor
         </button>
       </div>
-      <div class="configuration-descriptor-panel"></div>
+      <div class="configuration-descriptor-panel" hidden></div>
+      <div class="descriptor-button">
+        <button id="string-descriptor-button">Get String Descriptor</button>
+      </div>
+      <div class="string-descriptor-panel" hidden>
+        String Descriptor Index: 
+        <input id="index-input" type="number" min="1" list="indexes">
+        <datalist id="indexes"></datalist>
+        Language Code: 
+        <input id="language-code-input" list="languages">
+        <datalist id="languages"></datalist>
+        <button>GET</button>
+      </div>
     </tabpanel>
   </template>
 
   <template id="descriptor-panel-template">
-    <tree id="raw-data-tree-view"></tree>
-    <div id="raw-data"></div>
+    <div class="descriptor-panel">
+      <tree id="raw-data-tree-view"></tree>
+      <div id="raw-data-byte-view"></div>
+    </div>
   </template>
 
-  <template id="raw-data-byte">
+  <template id="raw-data-byte-container-template">
+    <div></div>>
+  </template>
+
+  <template id="raw-data-byte-template">
     <span></span>
+  </template>
+
+  <template id="raw-data-tree-button">
+    <button>GET</button>
   </template>
 
   <template id="error">

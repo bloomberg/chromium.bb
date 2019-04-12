@@ -76,8 +76,7 @@ cr.define('devices_page', function() {
       const tabId = device.guid;
 
       if (null == $(tabId)) {
-        const devicePage = new DevicePage(this.usbManager_);
-        devicePage.renderTab(device);
+        const devicePage = new DevicePage(this.usbManager_, device);
       }
       $(tabId).selected = true;
     }
@@ -90,15 +89,13 @@ cr.define('devices_page', function() {
   class DevicePage {
     /**
      * @param {!device.mojom.UsbDeviceManagerProxy} usbManager
+     * @param {!device.mojom.UsbDeviceInfo} device
      */
-    constructor(usbManager) {
+    constructor(usbManager, device) {
       /** @private {device.mojom.UsbDeviceManagerProxy} */
       this.usbManager_ = usbManager;
 
-      /** @private {boolean} */
-      this.showDeviceDescriptor_ = false;
-      /** @private {boolean} */
-      this.showConfigurationDescriptor_ = false;
+      this.renderTab(device);
     }
 
     /**
@@ -144,20 +141,37 @@ cr.define('devices_page', function() {
       const usbDeviceProxy = new UsbDeviceProxy;
       this.usbManager_.getDevice(device.guid, usbDeviceProxy.$.createRequest());
 
+      const getStringDescriptorButton =
+          tabPanelClone.querySelector('#string-descriptor-button');
+      const stringDescriptorElement =
+          tabPanelClone.querySelector('.string-descriptor-panel');
+      const stringDescriptorPanel = new descriptor_panel.DescriptorPanel(
+          usbDeviceProxy, stringDescriptorElement);
+      stringDescriptorPanel.initialStringDescriptorPanel(tab.id);
+      getStringDescriptorButton.addEventListener('click', () => {
+        stringDescriptorElement.hidden = !stringDescriptorElement.hidden;
+
+        // Clear the panel before rendering new data.
+        stringDescriptorPanel.clearView();
+
+        if (!stringDescriptorElement.hidden) {
+          stringDescriptorPanel.getAllLanguageCodes();
+        }
+      });
+
       const getDeviceDescriptorButton =
           tabPanelClone.querySelector('#device-descriptor-button');
       const deviceDescriptorElement =
           tabPanelClone.querySelector('.device-descriptor-panel');
-
       const deviceDescriptorPanel = new descriptor_panel.DescriptorPanel(
-          usbDeviceProxy, deviceDescriptorElement);
+          usbDeviceProxy, deviceDescriptorElement, stringDescriptorPanel);
       getDeviceDescriptorButton.addEventListener('click', () => {
-        this.showDeviceDescriptor_ = !this.showDeviceDescriptor_;
+        deviceDescriptorElement.hidden = !deviceDescriptorElement.hidden;
 
         // Clear the panel before rendering new data.
         deviceDescriptorPanel.clearView();
 
-        if (this.showDeviceDescriptor_) {
+        if (!deviceDescriptorElement.hidden) {
           deviceDescriptorPanel.renderDeviceDescriptor();
         }
       });
@@ -167,14 +181,16 @@ cr.define('devices_page', function() {
       const configurationDescriptorElement =
           tabPanelClone.querySelector('.configuration-descriptor-panel');
       const configurationDescriptorPanel = new descriptor_panel.DescriptorPanel(
-          usbDeviceProxy, configurationDescriptorElement);
+          usbDeviceProxy, configurationDescriptorElement,
+          stringDescriptorPanel);
       getConfigurationDescriptorButton.addEventListener('click', () => {
-        this.showConfigurationDescriptor_ = !this.showConfigurationDescriptor_;
+        configurationDescriptorElement.hidden =
+            !configurationDescriptorElement.hidden;
 
         // Clear the panel before rendering new data.
         configurationDescriptorPanel.clearView();
 
-        if (this.showConfigurationDescriptor_) {
+        if (!configurationDescriptorElement.hidden) {
           configurationDescriptorPanel.renderConfigurationDescriptor();
         }
       });
