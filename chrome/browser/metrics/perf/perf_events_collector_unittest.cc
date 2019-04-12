@@ -13,6 +13,7 @@
 
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/metrics/perf/cpu_identity.h"
@@ -140,8 +141,9 @@ class TestPerfCollector : public PerfCollector {
 class PerfCollectorTest : public testing::Test {
  public:
   PerfCollectorTest()
-      : task_runner_(base::MakeRefCounted<base::TestSimpleTaskRunner>()),
-        task_runner_handle_(task_runner_) {}
+      : scoped_task_environment_(
+            std::make_unique<base::test::ScopedTaskEnvironment>()),
+        task_runner_(base::MakeRefCounted<base::TestSimpleTaskRunner>()) {}
 
   void SetUp() override {
     // PerfCollector requires chromeos::LoginState and
@@ -165,8 +167,11 @@ class PerfCollectorTest : public testing::Test {
  protected:
   std::unique_ptr<TestPerfCollector> perf_collector_;
 
+  // scoped_task_environment_ must be the first member (or at least before any
+  // member that cares about tasks) to be initialized first and destroyed last.
+  std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
+
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  base::ThreadTaskRunnerHandle task_runner_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(PerfCollectorTest);
 };
@@ -199,6 +204,13 @@ TEST_F(PerfCollectorTest, IncognitoWindowOpened) {
       TestPerfCollector::PerfProtoType::PERF_TYPE_DATA,
       perf_data_proto.SerializeAsString());
 
+  // Run the (Thread|Sequenced)TaskRunnerHandle queue until both the
+  // (Thread|Sequenced)TaskRunnerHandle queue and the TaskSchedule queue are
+  // empty as the above ParseOutputProtoIfValid call posts a task to
+  // asynchronously collect process and thread types and the profile cache will
+  // be updated only after this collection completes.
+  scoped_task_environment_->RunUntilIdle();
+
   std::vector<SampledProfile> stored_profiles1;
   EXPECT_TRUE(perf_collector_->GetSampledProfiles(&stored_profiles1));
   ASSERT_EQ(1U, stored_profiles1.size());
@@ -219,6 +231,8 @@ TEST_F(PerfCollectorTest, IncognitoWindowOpened) {
       std::move(sampled_profile),
       TestPerfCollector::PerfProtoType::PERF_TYPE_STAT,
       perf_stat_proto.SerializeAsString());
+
+  scoped_task_environment_->RunUntilIdle();
 
   std::vector<SampledProfile> stored_profiles2;
   EXPECT_TRUE(perf_collector_->GetSampledProfiles(&stored_profiles2));
@@ -242,6 +256,8 @@ TEST_F(PerfCollectorTest, IncognitoWindowOpened) {
       TestPerfCollector::PerfProtoType::PERF_TYPE_DATA,
       perf_data_proto.SerializeAsString());
 
+  scoped_task_environment_->RunUntilIdle();
+
   std::vector<SampledProfile> stored_profiles_empty;
   EXPECT_FALSE(perf_collector_->GetSampledProfiles(&stored_profiles_empty));
 
@@ -253,6 +269,8 @@ TEST_F(PerfCollectorTest, IncognitoWindowOpened) {
       std::move(sampled_profile),
       TestPerfCollector::PerfProtoType::PERF_TYPE_STAT,
       perf_stat_proto.SerializeAsString());
+
+  scoped_task_environment_->RunUntilIdle();
 
   EXPECT_FALSE(perf_collector_->GetSampledProfiles(&stored_profiles_empty));
 
@@ -266,6 +284,8 @@ TEST_F(PerfCollectorTest, IncognitoWindowOpened) {
       std::move(sampled_profile),
       TestPerfCollector::PerfProtoType::PERF_TYPE_DATA,
       perf_data_proto.SerializeAsString());
+
+  scoped_task_environment_->RunUntilIdle();
 
   std::vector<SampledProfile> stored_profiles3;
   EXPECT_TRUE(perf_collector_->GetSampledProfiles(&stored_profiles3));
