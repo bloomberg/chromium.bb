@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_RESOURCE_COORDINATOR_CHROME_BROWSER_MAIN_EXTRA_PARTS_RESOURCE_COORDINATOR_H_
-#define CHROME_BROWSER_RESOURCE_COORDINATOR_CHROME_BROWSER_MAIN_EXTRA_PARTS_RESOURCE_COORDINATOR_H_
+#ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_CHROME_BROWSER_MAIN_EXTRA_PARTS_PERFORMANCE_MANAGER_H_
+#define CHROME_BROWSER_PERFORMANCE_MANAGER_CHROME_BROWSER_MAIN_EXTRA_PARTS_PERFORMANCE_MANAGER_H_
 
 #include <memory>
 
@@ -16,11 +16,11 @@ class BrowserChildProcessWatcher;
 class PerformanceManager;
 }  // namespace performance_manager
 
-class ChromeBrowserMainExtraPartsResourceCoordinator
+class ChromeBrowserMainExtraPartsPerformanceManager
     : public ChromeBrowserMainExtraParts {
  public:
-  ChromeBrowserMainExtraPartsResourceCoordinator();
-  ~ChromeBrowserMainExtraPartsResourceCoordinator() override;
+  ChromeBrowserMainExtraPartsPerformanceManager();
+  ~ChromeBrowserMainExtraPartsPerformanceManager() override;
 
  private:
   // ChromeBrowserMainExtraParts overrides.
@@ -33,7 +33,7 @@ class ChromeBrowserMainExtraPartsResourceCoordinator
   std::unique_ptr<performance_manager::BrowserChildProcessWatcher>
       browser_child_process_watcher_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsResourceCoordinator);
+  DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsPerformanceManager);
 };
 
-#endif  // CHROME_BROWSER_RESOURCE_COORDINATOR_CHROME_BROWSER_MAIN_EXTRA_PARTS_RESOURCE_COORDINATOR_H_
+#endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_CHROME_BROWSER_MAIN_EXTRA_PARTS_PERFORMANCE_MANAGER_H_

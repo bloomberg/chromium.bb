@@ -2,22 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/resource_coordinator/chrome_browser_main_extra_parts_resource_coordinator.h"
+#include "chrome/browser/performance_manager/chrome_browser_main_extra_parts_performance_manager.h"
 
 #include <utility>
 
-#include "base/process/process.h"
 #include "chrome/browser/performance_manager/browser_child_process_watcher.h"
 #include "chrome/browser/performance_manager/performance_manager.h"
 #include "chrome/browser/performance_manager/performance_manager_tab_helper.h"
 #include "chrome/browser/performance_manager/render_process_user_data.h"
 
-ChromeBrowserMainExtraPartsResourceCoordinator::
-    ChromeBrowserMainExtraPartsResourceCoordinator() = default;
-ChromeBrowserMainExtraPartsResourceCoordinator::
-    ~ChromeBrowserMainExtraPartsResourceCoordinator() = default;
+ChromeBrowserMainExtraPartsPerformanceManager::
+    ChromeBrowserMainExtraPartsPerformanceManager() = default;
+ChromeBrowserMainExtraPartsPerformanceManager::
+    ~ChromeBrowserMainExtraPartsPerformanceManager() = default;
 
-void ChromeBrowserMainExtraPartsResourceCoordinator::
+void ChromeBrowserMainExtraPartsPerformanceManager::
     ServiceManagerConnectionStarted(
         content::ServiceManagerConnection* connection) {
   performance_manager_ = performance_manager::PerformanceManager::Create();
@@ -26,7 +25,7 @@ void ChromeBrowserMainExtraPartsResourceCoordinator::
       std::make_unique<performance_manager::BrowserChildProcessWatcher>();
 }
 
-void ChromeBrowserMainExtraPartsResourceCoordinator::PostMainMessageLoopRun() {
+void ChromeBrowserMainExtraPartsPerformanceManager::PostMainMessageLoopRun() {
   // Release all graph nodes before destroying the performance manager.
   // First release the browser and GPU process nodes.
   browser_child_process_watcher_.reset();
