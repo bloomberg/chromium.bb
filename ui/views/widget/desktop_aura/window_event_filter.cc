@@ -24,7 +24,7 @@
 namespace views {
 
 WindowEventFilter::WindowEventFilter(DesktopWindowTreeHost* window_tree_host)
-    : window_tree_host_(window_tree_host), click_component_(HTNOWHERE) {}
+    : window_tree_host_(window_tree_host) {}
 
 WindowEventFilter::~WindowEventFilter() = default;
 
