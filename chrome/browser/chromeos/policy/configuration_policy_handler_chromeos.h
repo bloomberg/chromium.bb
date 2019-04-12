@@ -191,7 +191,11 @@ class ScreenBrightnessPercentPolicyHandler
 
 // Supported values for the |ArcBackupRestoreServiceEnabled| and
 // |ArcGoogleLocationServicesEnabled| policies.
-enum class ArcServicePolicyValue { kDisabled = 0, kUnderUserControl = 1 };
+enum class ArcServicePolicyValue {
+  kDisabled = 0,
+  kUnderUserControl = 1,
+  kEnabled = 2
+};
 
 // Instantiated once each for the |ArcBackupRestoreServiceEnabled| and
 // |ArcGoogleLocationServicesEnabled| policies to handle their special logic:

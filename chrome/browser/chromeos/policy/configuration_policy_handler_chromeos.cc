@@ -527,16 +527,28 @@ ArcServicePolicyHandler::ArcServicePolicyHandler(const char* policy,
     : IntRangePolicyHandlerBase(
           policy,
           static_cast<int>(ArcServicePolicyValue::kDisabled),
-          static_cast<int>(ArcServicePolicyValue::kUnderUserControl),
+          static_cast<int>(ArcServicePolicyValue::kEnabled),
           false /* clamp */),
       pref_(pref) {}
 
 void ArcServicePolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
                                                   PrefValueMap* prefs) {
   const base::Value* const value = policies.GetValue(policy_name());
-  if (value &&
-      value->GetInt() == static_cast<int>(ArcServicePolicyValue::kDisabled)) {
+  if (!value) {
+    return;
+  }
+  const base::Value* current_value = nullptr;
+  if (prefs->GetValue(pref_, &current_value)) {
+    // If a value for this policy was already set by another handler, do not
+    // clobber it. This is necessary so that the DefaultGeolocationSetting
+    // policy can take precedence over ArcLocationServiceEnabled.
+    return;
+  }
+  if (value->GetInt() == static_cast<int>(ArcServicePolicyValue::kDisabled)) {
     prefs->SetBoolean(pref_, false);
+  } else if (value->GetInt() ==
+             static_cast<int>(ArcServicePolicyValue::kEnabled)) {
+    prefs->SetBoolean(pref_, true);
   }
 }
 

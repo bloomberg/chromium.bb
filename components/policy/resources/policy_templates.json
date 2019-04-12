@@ -13661,7 +13661,7 @@
       'type': 'int-enum',
       'schema': {
         'type': 'integer',
-        'enum': [ 0, 1 ],
+        'enum': [ 0, 1, 2 ],
       },
       'items': [
         {
@@ -13673,6 +13673,11 @@
           'name': 'BackupAndRestoreUnderUserControl',
           'value': 1,
           'caption': '''User decides whether to enable backup and restore''',
+        },
+        {
+          'name': 'BackupAndRestoreEnabled',
+          'value': 2,
+          'caption': '''Backup and restore enabled''',
         },
       ],
       'supported_on': ['chrome_os:68-'],
@@ -13686,18 +13691,22 @@
       'caption': '''Control Android backup and restore service''',
       'tags': ['google-sharing'],
       'desc':
-      '''This policy controls the availability of Android backup and restore.
+      '''This policy controls the initial state of Android backup and restore.
 
-      When this policy is not configured or set to <ph name="BR_DISABLED">BackupAndRestoreDisabled</ph>, Android backup and restore is disabled and cannot be enabled by the user.
+      When this policy is not configured or set to <ph name="BR_DISABLED">BackupAndRestoreDisabled</ph>, Android backup and restore is initially disabled.
 
-      When this policy is set to <ph name="BR_UNDER_USER_CONTROL">BackupAndRestoreUnderUserControl</ph>, the user is asked to choose whether to use Android backup and restore. If the user enables backup and restore, Android app data is uploaded to Android backup servers and restored from them upon app re-installations for compatible apps.''',
+      When this policy is set to <ph name="BR_ENABLED">BackupAndRestoreEnabled</ph>, Android backup and restore is initially enabled.
+
+      When this policy is set to <ph name="BR_UNDER_USER_CONTROL">BackupAndRestoreUnderUserControl</ph>, the user is asked to choose whether to use Android backup and restore. If the user enables backup and restore, Android app data is uploaded to Android backup servers and restored from them upon app re-installations for compatible apps.
+
+      Note that this policy controls the state of Android backup and restore during initial setup only. The user can open Android settings afterward and turn Android backup and restore on/off.''',
     },
     {
       'name': 'ArcGoogleLocationServicesEnabled',
       'type': 'int-enum',
       'schema': {
         'type': 'integer',
-        'enum': [ 0, 1 ],
+        'enum': [ 0, 1, 2 ],
       },
       'items': [
         {
@@ -13709,6 +13718,11 @@
           'name': 'GoogleLocationServicesUnderUserControl',
           'value': 1,
           'caption': '''User decides whether to enable Google location services''',
+        },
+        {
+          'name': 'GoogleLocationServicesEnabled',
+          'value': 2,
+          'caption': '''Google location services enabled''',
         },
       ],
       'supported_on': ['chrome_os:68-'],
@@ -13722,11 +13736,15 @@
       'caption': '''Control Android Google location services''',
       'tags': ['google-sharing'],
       'desc':
-      '''This policy controls the availability of Google location services.
+      '''This policy controls the initial state of Google location services.
 
-      When this policy is not configured or set to <ph name="GLS_DISABLED">GoogleLocationServicesDisabled</ph>, Google location services are disabled and cannot be enabled by the user.
+      When this policy is not configured or set to <ph name="GLS_DISABLED">GoogleLocationServicesDisabled</ph>, Google location services are initially disabled.
+
+      When this policy is set to <ph name="GLS_ENABLED">GoogleLocationServicesEnabled</ph>, Google location services are initially enabled.
 
       When this policy is set to <ph name="GLS_UNDER_USER_CONTROL">GoogleLocationServicesUnderUserControl</ph>, the user is asked to choose whether to use Google location services. This will allow Android apps to use the services to query the device location, and also will enable submitting of anonymous location data to Google.
+
+      Note that this policy controls the state of Google location services during initial setup only. The user can open Android settings afterward and turn Google location services on/off.
 
       Note that this policy is ignored and Google location services are always disabled when the <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME">DefaultGeolocationSetting</ph> policy is set to <ph name="BLOCK_GEOLOCATION_SETTING">BlockGeolocation</ph>.''',
     },

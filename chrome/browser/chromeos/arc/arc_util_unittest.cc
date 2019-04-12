@@ -547,26 +547,36 @@ TEST_F(ChromeArcUtilTest, AreArcAllOptInPreferencesIgnorableForProfile) {
       prefs::kArcLocationServiceEnabled, std::make_unique<base::Value>(false));
   EXPECT_FALSE(AreArcAllOptInPreferencesIgnorableForProfile(profile()));
 
-  // Backup-restore pref is set to managed/ON, and the function returns false.
-  profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kArcBackupRestoreEnabled, std::make_unique<base::Value>(true));
-  profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kArcLocationServiceEnabled, std::make_unique<base::Value>(false));
-  EXPECT_FALSE(AreArcAllOptInPreferencesIgnorableForProfile(profile()));
-
-  // Location-service pref is set to managed/ON, and the function returns false.
-  profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kArcBackupRestoreEnabled, std::make_unique<base::Value>(false));
-  profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kArcLocationServiceEnabled, std::make_unique<base::Value>(true));
-  EXPECT_FALSE(AreArcAllOptInPreferencesIgnorableForProfile(profile()));
-
   // Both OptIn prefs are set to managed/OFF values, and the function returns
   // true.
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kArcBackupRestoreEnabled, std::make_unique<base::Value>(false));
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kArcLocationServiceEnabled, std::make_unique<base::Value>(false));
+  EXPECT_TRUE(AreArcAllOptInPreferencesIgnorableForProfile(profile()));
+
+  // Backup-restore pref is set to managed/ON, while location-service pref is
+  // set to managed/OFF, and the function returns true.
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcBackupRestoreEnabled, std::make_unique<base::Value>(true));
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcLocationServiceEnabled, std::make_unique<base::Value>(false));
+  EXPECT_TRUE(AreArcAllOptInPreferencesIgnorableForProfile(profile()));
+
+  // Location-service pref is set to managed/ON, while location-service pref is
+  // set to managed/OFF, and the function returns true.
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcBackupRestoreEnabled, std::make_unique<base::Value>(false));
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcLocationServiceEnabled, std::make_unique<base::Value>(true));
+  EXPECT_TRUE(AreArcAllOptInPreferencesIgnorableForProfile(profile()));
+
+  // Both OptIn prefs are set to managed/ON values, and the function returns
+  // true.
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcBackupRestoreEnabled, std::make_unique<base::Value>(true));
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcLocationServiceEnabled, std::make_unique<base::Value>(true));
   EXPECT_TRUE(AreArcAllOptInPreferencesIgnorableForProfile(profile()));
 }
 
@@ -624,20 +634,20 @@ TEST_F(ChromeArcUtilTest, TermsOfServiceNegotiationNeededForManagedUser) {
       prefs::kArcBackupRestoreEnabled, std::make_unique<base::Value>(true));
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kArcLocationServiceEnabled, std::make_unique<base::Value>(false));
-  EXPECT_TRUE(IsArcTermsOfServiceNegotiationNeeded(profile()));
-  EXPECT_TRUE(IsArcTermsOfServiceOobeNegotiationNeeded());
+  EXPECT_FALSE(IsArcTermsOfServiceNegotiationNeeded(profile()));
+  EXPECT_FALSE(IsArcTermsOfServiceOobeNegotiationNeeded());
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kArcBackupRestoreEnabled, std::make_unique<base::Value>(false));
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kArcLocationServiceEnabled, std::make_unique<base::Value>(true));
-  EXPECT_TRUE(IsArcTermsOfServiceNegotiationNeeded(profile()));
-  EXPECT_TRUE(IsArcTermsOfServiceOobeNegotiationNeeded());
+  EXPECT_FALSE(IsArcTermsOfServiceNegotiationNeeded(profile()));
+  EXPECT_FALSE(IsArcTermsOfServiceOobeNegotiationNeeded());
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kArcBackupRestoreEnabled, std::make_unique<base::Value>(true));
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kArcLocationServiceEnabled, std::make_unique<base::Value>(true));
-  EXPECT_TRUE(IsArcTermsOfServiceNegotiationNeeded(profile()));
-  EXPECT_TRUE(IsArcTermsOfServiceOobeNegotiationNeeded());
+  EXPECT_FALSE(IsArcTermsOfServiceNegotiationNeeded(profile()));
+  EXPECT_FALSE(IsArcTermsOfServiceOobeNegotiationNeeded());
 }
 
 TEST_F(ChromeArcUtilTest, TermsOfServiceOobeNegotiationNeededNoLogin) {
