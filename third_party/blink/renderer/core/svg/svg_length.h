@@ -58,6 +58,7 @@ class SVGLength final : public SVGPropertyBase {
   static SVGLength* Create(Initial, SVGLengthMode);
 
   explicit SVGLength(SVGLengthMode = SVGLengthMode::kOther);
+  SVGLength(Initial, SVGLengthMode);
   SVGLength(const CSSPrimitiveValue&, SVGLengthMode);
   SVGLength(const SVGLength&);
 

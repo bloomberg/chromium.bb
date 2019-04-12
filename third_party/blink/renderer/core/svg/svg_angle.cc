@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/svg/svg_animation_element.h"
 #include "third_party/blink/renderer/core/svg/svg_enumeration_map.h"
 #include "third_party/blink/renderer/core/svg/svg_parser_utilities.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -84,14 +85,14 @@ float SVGMarkerOrientEnumeration::CalculateDistance(
 SVGAngle::SVGAngle()
     : unit_type_(kSvgAngletypeUnspecified),
       value_in_specified_units_(0),
-      orient_type_(SVGMarkerOrientEnumeration::Create(this)) {}
+      orient_type_(MakeGarbageCollected<SVGMarkerOrientEnumeration>(this)) {}
 
 SVGAngle::SVGAngle(SVGAngleType unit_type,
                    float value_in_specified_units,
                    SVGMarkerOrientType orient_type)
     : unit_type_(unit_type),
       value_in_specified_units_(value_in_specified_units),
-      orient_type_(SVGMarkerOrientEnumeration::Create(this)) {
+      orient_type_(MakeGarbageCollected<SVGMarkerOrientEnumeration>(this)) {
   orient_type_->SetEnumValue(orient_type);
 }
 
