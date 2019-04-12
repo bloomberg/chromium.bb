@@ -341,6 +341,14 @@ public class BottomSheet
         }
 
         /**
+         * @return Whether the sheet should be hidden when it is in the PEEK state and the user
+         *         scrolls down the page.
+         */
+        default boolean hideOnScroll() {
+            return true;
+        }
+
+        /**
          * @return The resource id of the content description for the bottom sheet. This is
          *         generally the name of the feature/content that is showing. 'Swipe down to close.'
          *         will be automatically appended after the content description.
@@ -1071,6 +1079,8 @@ public class BottomSheet
      * @return Get the height in px that the peeking bar is offset due to the browser controls.
      */
     private float getOffsetFromBrowserControls() {
+        if (mSheetContent != null && !mSheetContent.hideOnScroll()) return 0;
+
         float peekHeight = getPeekRatio() * mContainerHeight;
         return peekHeight * mFullscreenManager.getBrowserControlHiddenRatio();
     }
