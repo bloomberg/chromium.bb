@@ -187,6 +187,7 @@ class MockTransaction : public DnsTransaction,
                   const std::string& hostname,
                   uint16_t qtype,
                   SecureDnsMode secure_dns_mode,
+                  URLRequestContext* url_request_context,
                   DnsTransactionFactory::CallbackType callback)
       : result_(MockDnsClientRule::FAIL),
         hostname_(hostname),
@@ -195,14 +196,16 @@ class MockTransaction : public DnsTransaction,
         secure_(false),
         started_(false),
         delayed_(false) {
-    // Find the relevant rule which matches |qtype|, |secure_dns_mode|, and
-    // prefix of |hostname|.
+    // Find the relevant rule which matches |qtype|, |secure_dns_mode|, prefix
+    // of |hostname|, and |url_request_context| (iff the rule context is not
+    // null).
     for (size_t i = 0; i < rules.size(); ++i) {
       const std::string& prefix = rules[i].prefix;
       if ((rules[i].qtype == qtype) &&
           rules[i].secure_dns_mode == secure_dns_mode &&
           (hostname.size() >= prefix.size()) &&
-          (hostname.compare(0, prefix.size(), prefix) == 0)) {
+          (hostname.compare(0, prefix.size(), prefix) == 0) &&
+          (!rules[i].context || rules[i].context == url_request_context)) {
         const MockDnsClientRule::Result* result = &rules[i].result;
         result_ = MockDnsClientRule::Result(result->type);
         secure_ = result->secure;
@@ -444,6 +447,21 @@ MockDnsClientRule::Result MockDnsClientRule::CreateSecureResult(
   return result;
 }
 
+MockDnsClientRule::MockDnsClientRule(const std::string& prefix,
+                                     uint16_t qtype,
+                                     SecureDnsMode secure_dns_mode,
+                                     Result result,
+                                     bool delay,
+                                     URLRequestContext* context)
+    : result(std::move(result)),
+      prefix(prefix),
+      qtype(qtype),
+      secure_dns_mode(secure_dns_mode),
+      delay(delay),
+      context(context) {}
+
+MockDnsClientRule::MockDnsClientRule(MockDnsClientRule&& rule) = default;
+
 // A DnsTransactionFactory which creates MockTransaction.
 class MockDnsClient::MockTransactionFactory : public DnsTransactionFactory {
  public:
@@ -461,7 +479,8 @@ class MockDnsClient::MockTransactionFactory : public DnsTransactionFactory {
       URLRequestContext* url_request_context) override {
     std::unique_ptr<MockTransaction> transaction =
         std::make_unique<MockTransaction>(rules_, hostname, qtype,
-                                          secure_dns_mode, std::move(callback));
+                                          secure_dns_mode, url_request_context,
+                                          std::move(callback));
     if (transaction->delayed())
       delayed_transactions_.push_back(transaction->AsWeakPtr());
     return transaction;
