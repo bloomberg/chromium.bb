@@ -32,7 +32,6 @@ import org.chromium.chrome.browser.autofill.keyboard_accessory.tab_layout_compon
 import org.chromium.components.autofill.AutofillDelegate;
 import org.chromium.components.autofill.AutofillSuggestion;
 import org.chromium.components.autofill.PopupItemId;
-import org.chromium.ui.modelutil.ListObservable;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyObservable;
@@ -49,14 +48,11 @@ import java.util.List;
  * trigger when selecting them.
  */
 class KeyboardAccessoryMediator
-        implements ListObservable.ListObserver<Void>,
-                   PropertyObservable.PropertyObserver<PropertyKey>, Provider.Observer<Action[]>,
+        implements PropertyObservable.PropertyObserver<PropertyKey>, Provider.Observer<Action[]>,
                    KeyboardAccessoryTabLayoutCoordinator.AccessoryTabObserver {
     private final PropertyModel mModel;
     private final VisibilityDelegate mVisibilityDelegate;
     private final TabSwitchingDelegate mTabSwitcher;
-
-    private boolean mShowIfNotEmpty;
 
     KeyboardAccessoryMediator(PropertyModel model, VisibilityDelegate visibilityDelegate,
             TabSwitchingDelegate tabSwitcher,
@@ -71,7 +67,6 @@ class KeyboardAccessoryMediator
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)) {
             mModel.get(BAR_ITEMS).add(mModel.get(TAB_LAYOUT_ITEM));
         }
-        mModel.get(BAR_ITEMS).addObserver(this);
         mModel.addObserver(this);
     }
 
@@ -167,39 +162,13 @@ class KeyboardAccessoryMediator
         throw new IllegalArgumentException("Unhandled action type:" + accessoryAction);
     }
 
-    void requestShowing() {
-        mShowIfNotEmpty = true;
-        updateVisibility();
-    }
-
-    void close() {
-        mShowIfNotEmpty = false;
-        updateVisibility();
+    void show() {
+        mModel.set(VISIBLE, true);
     }
 
     void dismiss() {
         mTabSwitcher.closeActiveTab();
-        close();
-    }
-
-    @Override
-    public void onItemRangeInserted(ListObservable source, int index, int count) {
-        assert source == mModel.get(BAR_ITEMS);
-        updateVisibility();
-    }
-
-    @Override
-    public void onItemRangeRemoved(ListObservable source, int index, int count) {
-        assert source == mModel.get(BAR_ITEMS);
-        updateVisibility();
-    }
-
-    @Override
-    public void onItemRangeChanged(
-            ListObservable source, int index, int count, @Nullable Void payload) {
-        assert source == mModel.get(BAR_ITEMS);
-        assert payload == null;
-        updateVisibility();
+        mModel.set(VISIBLE, false);
     }
 
     @Override
@@ -209,7 +178,6 @@ class KeyboardAccessoryMediator
         if (propertyKey == VISIBLE) {
             // When the accessory just (dis)appeared, there should be no active tab.
             mTabSwitcher.closeActiveTab();
-            mVisibilityDelegate.onBottomControlSpaceChanged();
             if (!mModel.get(VISIBLE)) {
                 // TODO(fhorschig|ioanap): Maybe the generation bridge should take care of that.
                 onItemAvailable(AccessoryAction.GENERATE_PASSWORD_AUTOMATIC, new Action[0]);
@@ -233,7 +201,6 @@ class KeyboardAccessoryMediator
         mModel.set(KEYBOARD_TOGGLE_VISIBLE, activeTab != null);
         if (activeTab == null) {
             mVisibilityDelegate.onCloseAccessorySheet();
-            updateVisibility();
             return;
         }
         mVisibilityDelegate.onChangeAccessorySheet(activeTab);
@@ -244,34 +211,29 @@ class KeyboardAccessoryMediator
         closeSheet();
     }
 
-    @Override
-    public void onTabsChanged() {
-        updateVisibility();
-    }
-
     private void closeSheet() {
         assert mTabSwitcher.getActiveTab() != null;
         ManualFillingMetricsRecorder.recordSheetTrigger(
                 mTabSwitcher.getActiveTab().getRecordingType(), AccessorySheetTrigger.MANUAL_CLOSE);
         mModel.set(KEYBOARD_TOGGLE_VISIBLE, false);
-        mVisibilityDelegate.onOpenKeyboard(); // This will close the active tab gently.
+        mVisibilityDelegate.onCloseAccessorySheet();
     }
 
-    boolean hasContents() {
+    /**
+     * @return True if neither suggestions nor tabs are available.
+     */
+    boolean empty() {
+        return !hasSuggestions() && !mTabSwitcher.hasTabs();
+    }
+
+    /**
+     * @return True if the bar contains any suggestions next to the tabs.
+     */
+    private boolean hasSuggestions() {
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)) {
-            return mModel.get(BAR_ITEMS).size() > 1
-                    || mTabSwitcher.hasTabs(); // Ignore tab switcher item.
+            return mModel.get(BAR_ITEMS).size() > 1; // Ignore tab switcher item.
         }
-        return mModel.get(BAR_ITEMS).size() > 0 || mTabSwitcher.hasTabs();
-    }
-
-    private boolean shouldShowAccessory() {
-        if (!mShowIfNotEmpty && mTabSwitcher.getActiveTab() == null) return false;
-        return hasContents();
-    }
-
-    private void updateVisibility() {
-        mModel.set(VISIBLE, shouldShowAccessory());
+        return mModel.get(BAR_ITEMS).size() > 0;
     }
 
     void setBottomOffset(@Px int bottomOffset) {

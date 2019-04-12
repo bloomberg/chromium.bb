@@ -54,17 +54,6 @@ public class KeyboardAccessoryCoordinator {
          * Called when the sheet needs to be hidden.
          */
         void onCloseAccessorySheet();
-
-        /**
-         * Called when the normal keyboard should be brought back (e.g. the user dismissed a bottom
-         * sheet manually because they didn't find a suitable suggestion).
-         */
-        void onOpenKeyboard();
-
-        /**
-         * Called when the keyboard accessory or a sheet changes visibility or size.
-         */
-        void onBottomControlSpaceChanged();
     }
 
     /**
@@ -218,19 +207,10 @@ public class KeyboardAccessoryCoordinator {
     }
 
     /**
-     * Closes the accessory bar. This sends signals to close the active tab and recalculate bottom
-     * offsets.
+     * Triggers the accessory to be shown.
      */
-    public void requestClosing() {
-        mMediator.close();
-    }
-
-    /**
-     * Triggers the accessory to be shown if there are contents to be shown. Effect might therefore
-     * be delayed until contents (e.g. tabs, actions, chips) arrive.
-     */
-    public void requestShowing() {
-        mMediator.requestShowing();
+    public void show() {
+        mMediator.show();
     }
 
     /**
@@ -244,11 +224,11 @@ public class KeyboardAccessoryCoordinator {
 
     /**
      * This method returns whether the accessory has any contents that justify showing it. A single
-     * tab, action or suggestion chip would already allow that.
-     * @return True if there is any content to be shown. False otherwise.
+     * tab, action or suggestion chip would already mean it is not empty.
+     * @return False if there is any content to be shown. True otherwise.
      */
-    public boolean hasContents() {
-        return mMediator.hasContents();
+    public boolean empty() {
+        return mMediator.empty();
     }
 
     /**
@@ -267,10 +247,5 @@ public class KeyboardAccessoryCoordinator {
     @VisibleForTesting
     public KeyboardAccessoryMediator getMediatorForTesting() {
         return mMediator;
-    }
-
-    @VisibleForTesting
-    public KeyboardAccessoryTabLayoutCoordinator getTabLayoutForTesting() {
-        return mTabLayout;
     }
 }

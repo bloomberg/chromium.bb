@@ -91,14 +91,15 @@ public class ManualFillingTestHelper {
     }
 
     public void loadTestPage(String url, boolean isRtl) throws InterruptedException {
-        loadTestPage(url, isRtl, false);
+        loadTestPage(url, isRtl, false, FakeKeyboard::new);
     }
 
-    public void loadTestPage(String url, boolean isRtl, boolean waitForNode)
+    public void loadTestPage(String url, boolean isRtl, boolean waitForNode,
+            ChromeWindow.KeyboardVisibilityDelegateFactory keyboardDelegate)
             throws InterruptedException {
         mEmbeddedTestServer = EmbeddedTestServer.createAndStartServer(
                 InstrumentationRegistry.getInstrumentation().getContext());
-        ChromeWindow.setKeyboardVisibilityDelegateFactory(FakeKeyboard::new);
+        ChromeWindow.setKeyboardVisibilityDelegateFactory(keyboardDelegate);
         mActivityTestRule.startMainActivityWithURL(mEmbeddedTestServer.getURL(url));
         setRtlForTesting(isRtl);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -162,8 +163,12 @@ public class ManualFillingTestHelper {
 
     public void clickNodeAndShowKeyboard(String node)
             throws TimeoutException, InterruptedException {
-        DOMUtils.clickNode(mWebContentsRef.get(), node);
+        clickNode(node);
         getKeyboard().showKeyboard(mActivityTestRule.getActivity().getCurrentFocus());
+    }
+
+    public void clickNode(String node) throws TimeoutException, InterruptedException {
+        DOMUtils.clickNode(mWebContentsRef.get(), node);
     }
 
     /**

@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,8 +41,6 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.autofill.AutofillTestHelper;
-import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.infobar.SimpleConfirmInfoBarBuilder;
 import org.chromium.chrome.browser.snackbar.Snackbar;
@@ -55,17 +53,13 @@ import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.ui.DropdownPopupWindowInterface;
 import org.chromium.ui.test.util.UiRestriction;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * Integration tests for password accessory views. This integration test currently stops testing at
- * the bridge - ideally, there should be an easy way to add a temporary account with temporary
- * passwords.
+ * Integration tests for keyboard accessory and accessory sheet with other Chrome components.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @EnableFeatures({ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY,
@@ -90,12 +84,6 @@ public class ManualFillingIntegrationTest {
 
         assertNotNull("Controller for Manual filling should be available.",
                 mHelper.getManualFillingCoordinator());
-        assertNotNull("Keyboard accessory should have an instance.",
-                mHelper.getManualFillingCoordinator()
-                        .getMediatorForTesting()
-                        .getKeyboardAccessory());
-        assertNotNull("Accessory Sheet should have an instance.",
-                mHelper.getManualFillingCoordinator().getMediatorForTesting().getAccessorySheet());
     }
 
     @Test
@@ -190,7 +178,7 @@ public class ManualFillingIntegrationTest {
 
     @Test
     @SmallTest
-    @Features.DisableFeatures({ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY})
+    @Features.DisableFeatures(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)
     public void testHidingSheetBringsBackKeyboard() throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
 
@@ -210,35 +198,6 @@ public class ManualFillingIntegrationTest {
         mHelper.waitForKeyboardAccessoryToBeShown();
         onView(withId(R.id.keyboard_accessory)).check(matches(isDisplayed()));
         waitToBeHidden(withChild(withId(R.id.keyboard_accessory_sheet)));
-    }
-
-    @Test
-    @SmallTest
-    @Features.DisableFeatures({ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY})
-    public void testOpeningSheetDismissesAutofill()
-            throws InterruptedException, TimeoutException, ExecutionException {
-        mHelper.loadTestPage(
-                "/chrome/test/data/password/autocomplete_email_as_username.html", false);
-        new AutofillTestHelper().setProfile(new PersonalDataManager.AutofillProfile("",
-                "https://www.example.com/", "Alan Turing", "", "Street Ave 4", "", "Capitaltown",
-                "", "80666", "", "Disneyland", "1", "a.turing@enigma.com", "DE"));
-
-        // Focus the field to bring up the autofill popup.
-        mHelper.clickEmailField(false);
-        DropdownPopupWindowInterface popup = mHelper.waitForAutofillPopup("a.tu");
-
-        // Force a accessory here because the autofill popup doesn't trigger on password fields.
-        mHelper.clickEmailField(true);
-        mHelper.waitForKeyboardAccessoryToBeShown();
-        assertThat(popup.isShowing(), is(true));
-
-        // Click the tab to show the sheet and hide keyboard and popup.
-        whenDisplayed(allOf(isDisplayed(), isKeyboardAccessoryTabLayout()))
-                .perform(selectTabAtPosition(0));
-        mHelper.waitForKeyboardToDisappear();
-        whenDisplayed(withChild(withId(R.id.keyboard_accessory_sheet)));
-
-        assertThat(popup.isShowing(), is(false));
     }
 
     @Test
