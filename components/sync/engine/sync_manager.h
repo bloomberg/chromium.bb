@@ -219,10 +219,7 @@ class SyncManager {
     // Must outlive SyncManager.
     ChangeDelegate* change_delegate;
 
-    // Credentials to be used when talking to the sync server.
-    // TODO(crbug.com/948148): Replace this by just the account ID. At the point
-    // this is populated, we don't have an access token yet anyway.
-    SyncCredentials credentials;
+    std::string authenticated_account_id;
 
     // Unqiuely identifies this client to the invalidation notification server.
     std::string invalidator_client_id;

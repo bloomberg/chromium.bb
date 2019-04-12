@@ -63,9 +63,7 @@ class SyncEngine : public ModelTypeConfigurer {
     GURL service_url;
     std::string sync_user_agent;
     SyncEngine::HttpPostProviderFactoryGetter http_factory_getter;
-    // TODO(crbug.com/948148): Replace this by just the account ID. At the point
-    // this is populated, we don't have an access token yet anyway.
-    SyncCredentials credentials;
+    std::string authenticated_account_id;
     std::string invalidator_client_id;
     std::unique_ptr<SyncManagerFactory> sync_manager_factory;
     bool delete_sync_data_folder = false;

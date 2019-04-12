@@ -933,11 +933,6 @@ class SyncManagerTest : public testing::Test,
 
     extensions_activity_ = new ExtensionsActivity();
 
-    SyncCredentials credentials;
-    credentials.account_id = "foo@bar.com";
-    credentials.email = "foo@bar.com";
-    credentials.access_token = "sometoken";
-
     sync_manager_.AddObserver(&manager_observer_);
     EXPECT_CALL(manager_observer_, OnInitializationComplete(_, _, _, _))
         .WillOnce(DoAll(SaveArg<0>(&js_backend_),
@@ -962,7 +957,7 @@ class SyncManagerTest : public testing::Test,
     args.extensions_activity = extensions_activity_.get(),
     args.change_delegate = this;
     if (!enable_local_sync_backend)
-      args.credentials = credentials;
+      args.authenticated_account_id = "foo@bar.com";
     args.invalidator_client_id = "fake_invalidator_client_id";
     args.enable_local_sync_backend = enable_local_sync_backend;
     args.local_sync_backend_folder = temp_dir_.GetPath();
