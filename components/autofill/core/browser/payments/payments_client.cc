@@ -13,6 +13,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -422,16 +423,11 @@ class GetUploadDetailsRequest : public PaymentsRequest {
     if (dictionary_value)
       legal_message_ = std::make_unique<base::Value>(dictionary_value->Clone());
 
-    const base::Value* list_ptr = response.FindKeyOfType(
-        "supported_card_bin_ranges", base::Value::Type::LIST);
-    if (list_ptr) {
-      for (const base::Value& result : list_ptr->GetList()) {
-        DCHECK(result.is_dict());
-        base::Optional<int> start = result.FindIntKey("start");
-        base::Optional<int> end = result.FindIntKey("end");
-        supported_card_bin_ranges_.push_back(std::make_pair(*start, *end));
-      }
-    }
+    const auto* supported_card_bin_ranges_string =
+        response.FindStringKey("supported_card_bin_ranges_string");
+    supported_card_bin_ranges_ = ParseSupportedCardBinRangesString(
+        supported_card_bin_ranges_string ? *supported_card_bin_ranges_string
+                                         : base::EmptyString());
   }
 
   bool IsResponseComplete() override {
@@ -444,6 +440,35 @@ class GetUploadDetailsRequest : public PaymentsRequest {
   }
 
  private:
+  // Helper for ParseResponse(). Input format should be :"1234,30000-55555,765",
+  // where ranges are separated by commas and items separated with a dash means
+  // the start and ends of the range. Items without a dash have the same start
+  // and end (ex. 1234-1234)
+  std::vector<std::pair<int, int>> ParseSupportedCardBinRangesString(
+      const std::string& supported_card_bin_ranges_string) {
+    std::vector<std::pair<int, int>> supported_card_bin_ranges;
+    std::vector<std::string> range_strings =
+        base::SplitString(supported_card_bin_ranges_string, ",",
+                          base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+    for (std::string& range_string : range_strings) {
+      std::vector<std::string> range = base::SplitString(
+          range_string, "-", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+      DCHECK(range.size() <= 2);
+      int start;
+      base::StringToInt(range[0], &start);
+      if (range.size() == 1) {
+        supported_card_bin_ranges.push_back(std::make_pair(start, start));
+      } else {
+        int end;
+        base::StringToInt(range[1], &end);
+        DCHECK_LE(start, end);
+        supported_card_bin_ranges.push_back(std::make_pair(start, end));
+      }
+    }
+    return supported_card_bin_ranges;
+  }
+
   const std::vector<AutofillProfile> addresses_;
   const int detected_values_;
   const std::vector<const char*> active_experiments_;

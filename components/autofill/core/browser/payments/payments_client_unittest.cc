@@ -597,24 +597,23 @@ TEST_F(PaymentsClientTest, GetDetailsMissingLegalMessage) {
 
 TEST_F(PaymentsClientTest, SupportedCardBinRangesParsesCorrectly) {
   StartGettingUploadDetails();
-  ReturnResponse(net::HTTP_OK,
-                 "{"
-                 "  \"context_token\" : \"some_token\","
-                 "  \"legal_message\" : {},"
-                 "  \"supported_card_bin_ranges\" : [ {"
-                 "    \"start\": 35, \"end\": 38"
-                 "  }, {"
-                 "    \"start\": 123, \"end\": 123"
-                 "  } ] "
-                 "}");
+  ReturnResponse(
+      net::HTTP_OK,
+      "{"
+      "  \"context_token\" : \"some_token\","
+      "  \"legal_message\" : {},"
+      "  \"supported_card_bin_ranges_string\" : \"1234,300000-555555,765\""
+      "}");
   EXPECT_EQ(AutofillClient::SUCCESS, result_);
   // Check that |supported_card_bin_ranges_| has the two entries specified in
   // ReturnResponse(~) above.
-  ASSERT_EQ(2U, supported_card_bin_ranges_.size());
-  EXPECT_EQ(35, supported_card_bin_ranges_[0].first);
-  EXPECT_EQ(38, supported_card_bin_ranges_[0].second);
-  EXPECT_EQ(123, supported_card_bin_ranges_[1].first);
-  EXPECT_EQ(123, supported_card_bin_ranges_[1].second);
+  ASSERT_EQ(3U, supported_card_bin_ranges_.size());
+  EXPECT_EQ(1234, supported_card_bin_ranges_[0].first);
+  EXPECT_EQ(1234, supported_card_bin_ranges_[0].second);
+  EXPECT_EQ(300000, supported_card_bin_ranges_[1].first);
+  EXPECT_EQ(555555, supported_card_bin_ranges_[1].second);
+  EXPECT_EQ(765, supported_card_bin_ranges_[2].first);
+  EXPECT_EQ(765, supported_card_bin_ranges_[2].second);
 }
 
 TEST_F(PaymentsClientTest, GetUploadAccountFromSyncTest) {
