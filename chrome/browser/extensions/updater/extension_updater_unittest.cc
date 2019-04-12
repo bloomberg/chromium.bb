@@ -61,6 +61,7 @@
 #include "extensions/browser/updater/extension_downloader.h"
 #include "extensions/browser/updater/extension_downloader_delegate.h"
 #include "extensions/browser/updater/extension_downloader_test_delegate.h"
+#include "extensions/browser/updater/extension_downloader_test_helper.h"
 #include "extensions/browser/updater/manifest_fetch_data.h"
 #include "extensions/browser/updater/request_queue_impl.h"
 #include "extensions/common/extension.h"
@@ -150,70 +151,6 @@ const ManifestFetchData::PingData kNeverPingedData(
     ManifestFetchData::kNeverPinged,
     true,
     0);
-
-class MockExtensionDownloaderDelegate : public ExtensionDownloaderDelegate {
- public:
-  MOCK_METHOD4(OnExtensionDownloadFailed, void(const std::string&,
-                                               Error,
-                                               const PingResult&,
-                                               const std::set<int>&));
-  MOCK_METHOD7(OnExtensionDownloadFinished,
-               void(const extensions::CRXFileInfo&,
-                    bool,
-                    const GURL&,
-                    const std::string&,
-                    const PingResult&,
-                    const std::set<int>&,
-                    const InstallCallback&));
-  MOCK_METHOD0(OnExtensionDownloadRetryForTests, void());
-  MOCK_METHOD2(GetPingDataForExtension,
-               bool(const std::string&, ManifestFetchData::PingData*));
-  MOCK_METHOD1(GetUpdateUrlData, std::string(const std::string&));
-  MOCK_METHOD1(IsExtensionPending, bool(const std::string&));
-  MOCK_METHOD2(GetExtensionExistingVersion,
-               bool(const std::string&, std::string*));
-
-  void Wait() {
-    scoped_refptr<content::MessageLoopRunner> runner =
-        new content::MessageLoopRunner;
-    quit_closure_ = runner->QuitClosure();
-    runner->Run();
-    quit_closure_.Reset();
-  }
-
-  void Quit() {
-    quit_closure_.Run();
-  }
-
-  void DelegateTo(ExtensionDownloaderDelegate* delegate) {
-    ON_CALL(*this, OnExtensionDownloadFailed(_, _, _, _))
-        .WillByDefault(Invoke(delegate,
-            &ExtensionDownloaderDelegate::OnExtensionDownloadFailed));
-    ON_CALL(*this, OnExtensionDownloadFinished(_, _, _, _, _, _, _))
-        .WillByDefault(
-            Invoke(delegate,
-                   &ExtensionDownloaderDelegate::OnExtensionDownloadFinished));
-    ON_CALL(*this, OnExtensionDownloadRetryForTests())
-        .WillByDefault(Invoke(
-            delegate,
-            &ExtensionDownloaderDelegate::OnExtensionDownloadRetryForTests));
-    ON_CALL(*this, GetPingDataForExtension(_, _))
-        .WillByDefault(Invoke(delegate,
-            &ExtensionDownloaderDelegate::GetPingDataForExtension));
-    ON_CALL(*this, GetUpdateUrlData(_))
-        .WillByDefault(Invoke(delegate,
-            &ExtensionDownloaderDelegate::GetUpdateUrlData));
-    ON_CALL(*this, IsExtensionPending(_))
-        .WillByDefault(Invoke(delegate,
-            &ExtensionDownloaderDelegate::IsExtensionPending));
-    ON_CALL(*this, GetExtensionExistingVersion(_, _))
-        .WillByDefault(Invoke(delegate,
-            &ExtensionDownloaderDelegate::GetExtensionExistingVersion));
-  }
-
- private:
-  base::Closure quit_closure_;
-};
 
 const int kNotificationsObserved[] = {
     extensions::NOTIFICATION_EXTENSION_UPDATING_STARTED,
@@ -325,10 +262,6 @@ class MockService : public TestExtensionService {
 
   Profile* profile() { return prefs_->profile(); }
 
-  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory() {
-    return test_shared_url_loader_factory_;
-  }
-
   ExtensionPrefs* extension_prefs() { return prefs_->prefs(); }
 
   PrefService* pref_service() { return prefs_->pref_service(); }
@@ -386,7 +319,7 @@ class MockService : public TestExtensionService {
       ExtensionDownloaderDelegate* delegate) {
     std::unique_ptr<ExtensionDownloader> downloader =
         ChromeExtensionDownloaderFactory::CreateForURLLoaderFactory(
-            url_loader_factory(),
+            test_shared_url_loader_factory_,
             downloader_delegate_override_ ? downloader_delegate_override_
                                           : delegate,
             /*connector=*/nullptr, GetTestVerifierFormat());
@@ -662,9 +595,6 @@ class ExtensionUpdaterTest : public testing::Test {
  public:
   ExtensionUpdaterTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-        test_shared_url_loader_factory_(
-            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-                &test_url_loader_factory_)),
         testing_local_state_(TestingBrowserProcess::GetGlobal()) {}
 
   void SetUp() override {
@@ -712,8 +642,8 @@ class ExtensionUpdaterTest : public testing::Test {
 
   void TestExtensionUpdateCheckRequests(bool pending) {
     // Create an extension with an update_url.
-    ServiceForManifestTests service(prefs_.get(),
-                                    test_shared_url_loader_factory_);
+    ExtensionDownloaderTestHelper helper;
+    ServiceForManifestTests service(prefs_.get(), helper.url_loader_factory());
     std::string update_url("http://foo.com/bar");
     ExtensionList extensions;
     NotificationsObserver observer;
@@ -830,11 +760,8 @@ class ExtensionUpdaterTest : public testing::Test {
       ManifestFetchData::FetchPriority fetch_priority,
       int num_extensions,
       bool should_include_traffic_management_headers) {
-    MockService service(prefs_.get(), test_shared_url_loader_factory_);
-    MockExtensionDownloaderDelegate delegate;
-    ExtensionDownloader downloader(&delegate, service.url_loader_factory(),
-                                   data_decoder_service_connector(),
-                                   GetTestVerifierFormat());
+    ExtensionDownloaderTestHelper helper;
+    MockService service(prefs_.get(), helper.url_loader_factory());
     ExtensionList extensions;
 
     service.CreateTestExtensions(1, num_extensions, &extensions, &update_url,
@@ -842,29 +769,29 @@ class ExtensionUpdaterTest : public testing::Test {
 
     for (int i = 0; i < num_extensions; ++i) {
       const std::string& id = extensions[i]->id();
-      EXPECT_CALL(delegate, GetPingDataForExtension(id, _));
+      EXPECT_CALL(helper.delegate(), GetPingDataForExtension(id, _));
 
-      downloader.AddExtension(*extensions[i], 0, fetch_priority);
+      helper.downloader().AddExtension(*extensions[i], 0, fetch_priority);
     }
 
     // Get the headers our loader was asked to fetch.
     base::RunLoop loop;
     net::HttpRequestHeaders last_request_headers;
-    test_url_loader_factory_.SetInterceptor(base::BindLambdaForTesting(
+    helper.test_url_loader_factory().SetInterceptor(base::BindLambdaForTesting(
         [&](const network::ResourceRequest& request) {
           last_request_headers = request.headers;
           loop.Quit();
         }));
 
-    downloader.StartAllPending(NULL);
-    EXPECT_TRUE(downloader.manifest_loader_);
+    helper.downloader().StartAllPending(NULL);
+    EXPECT_TRUE(helper.downloader().manifest_loader_);
 
     loop.Run();
 
     // Make sure that extensions that update from the gallery ignore any
     // update URL data.
     const ManifestFetchData& fetch =
-        *downloader.manifests_queue_.active_request();
+        *helper.downloader().manifests_queue_.active_request();
     const std::string& fetcher_url = fetch.full_url().spec();
     std::string::size_type x = fetcher_url.find("x=");
     EXPECT_NE(std::string::npos, x);
@@ -951,10 +878,7 @@ class ExtensionUpdaterTest : public testing::Test {
   }
 
   void TestDetermineUpdates() {
-    MockExtensionDownloaderDelegate delegate;
-    ExtensionDownloader downloader(&delegate, test_shared_url_loader_factory_,
-                                   data_decoder_service_connector(),
-                                   GetTestVerifierFormat());
+    ExtensionDownloaderTestHelper helper;
 
     // Check passing an empty list of parse results to DetermineUpdates
     std::unique_ptr<ManifestFetchData> fetch_data(
@@ -963,8 +887,8 @@ class ExtensionUpdaterTest : public testing::Test {
     std::vector<UpdateManifestResult*> updateable;
     std::set<std::string> not_updateable;
     std::set<std::string> errors;
-    downloader.DetermineUpdates(*fetch_data, updates, &updateable,
-                                &not_updateable, &errors);
+    helper.downloader().DetermineUpdates(*fetch_data, updates, &updateable,
+                                         &not_updateable, &errors);
     EXPECT_TRUE(updateable.empty());
     EXPECT_TRUE(not_updateable.empty());
     EXPECT_TRUE(errors.empty());
@@ -983,19 +907,18 @@ class ExtensionUpdaterTest : public testing::Test {
                              ManifestFetchData::FetchPriority::BACKGROUND);
     AddParseResult(id2, "2.0.0.0", "http://localhost/e2_2.0.crx", &updates);
 
-    EXPECT_CALL(delegate, IsExtensionPending(_)).WillRepeatedly(Return(false));
-    EXPECT_CALL(delegate, GetExtensionExistingVersion(id1, _))
-        .WillOnce(DoAll(SetArgPointee<1>("1.0.0.0"),
-                        Return(true)));
-    EXPECT_CALL(delegate, GetExtensionExistingVersion(id2, _))
-        .WillOnce(DoAll(SetArgPointee<1>("2.0.0.0"),
-                        Return(true)));
+    EXPECT_CALL(helper.delegate(), IsExtensionPending(_))
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(helper.delegate(), GetExtensionExistingVersion(id1, _))
+        .WillOnce(DoAll(SetArgPointee<1>("1.0.0.0"), Return(true)));
+    EXPECT_CALL(helper.delegate(), GetExtensionExistingVersion(id2, _))
+        .WillOnce(DoAll(SetArgPointee<1>("2.0.0.0"), Return(true)));
 
     updateable.clear();
     not_updateable.clear();
     errors.clear();
-    downloader.DetermineUpdates(*fetch_data, updates, &updateable,
-                                &not_updateable, &errors);
+    helper.downloader().DetermineUpdates(*fetch_data, updates, &updateable,
+                                         &not_updateable, &errors);
     EXPECT_TRUE(errors.empty());
     EXPECT_THAT(not_updateable, testing::ElementsAre(id2));
     ASSERT_EQ(1u, updateable.size());
@@ -1003,10 +926,8 @@ class ExtensionUpdaterTest : public testing::Test {
   }
 
   void TestDetermineUpdatesError() {
-    MockExtensionDownloaderDelegate delegate;
-    ExtensionDownloader downloader(&delegate, test_shared_url_loader_factory_,
-                                   data_decoder_service_connector(),
-                                   GetTestVerifierFormat());
+    ExtensionDownloaderTestHelper helper;
+    MockExtensionDownloaderDelegate& delegate = helper.delegate();
 
     std::unique_ptr<ManifestFetchData> fetch_data(
         CreateManifestFetchData(GURL("http://localhost/foo")));
@@ -1073,8 +994,8 @@ class ExtensionUpdaterTest : public testing::Test {
     std::vector<UpdateManifestResult*> updateable;
     std::set<std::string> not_updateable;
     std::set<std::string> errors;
-    downloader.DetermineUpdates(*fetch_data, updates, &updateable,
-                                &not_updateable, &errors);
+    helper.downloader().DetermineUpdates(*fetch_data, updates, &updateable,
+                                         &not_updateable, &errors);
     EXPECT_THAT(not_updateable, testing::UnorderedElementsAre(id2, id3));
     EXPECT_THAT(errors, testing::UnorderedElementsAre(id4, id5, id6));
     ASSERT_EQ(1u, updateable.size());
@@ -1083,16 +1004,13 @@ class ExtensionUpdaterTest : public testing::Test {
 
   void TestDetermineUpdatesPending() {
     // Create a set of test extensions
-    ServiceForManifestTests service(prefs_.get(),
-                                    test_shared_url_loader_factory_);
+    ExtensionDownloaderTestHelper helper;
+    ServiceForManifestTests service(prefs_.get(), helper.url_loader_factory());
     PendingExtensionManager* pending_extension_manager =
         service.pending_extension_manager();
     SetupPendingExtensionManagerForTest(3, GURL(), pending_extension_manager);
 
-    MockExtensionDownloaderDelegate delegate;
-    ExtensionDownloader downloader(&delegate, test_shared_url_loader_factory_,
-                                   data_decoder_service_connector(),
-                                   GetTestVerifierFormat());
+    MockExtensionDownloaderDelegate& delegate = helper.delegate();
 
     std::unique_ptr<ManifestFetchData> fetch_data(
         CreateManifestFetchData(GURL("http://localhost/foo")));
@@ -1116,8 +1034,8 @@ class ExtensionUpdaterTest : public testing::Test {
     std::vector<UpdateManifestResult*> updateable;
     std::set<std::string> not_updateable;
     std::set<std::string> errors;
-    downloader.DetermineUpdates(*fetch_data, updates, &updateable,
-                                &not_updateable, &errors);
+    helper.downloader().DetermineUpdates(*fetch_data, updates, &updateable,
+                                         &not_updateable, &errors);
     // All the apps should be updateable.
     EXPECT_EQ(3u, updateable.size());
     EXPECT_TRUE(not_updateable.empty());
@@ -1126,10 +1044,8 @@ class ExtensionUpdaterTest : public testing::Test {
 
   void TestDetermineUpdatesDuplicates() {
     base::HistogramTester histogram_tester;
-    MockExtensionDownloaderDelegate delegate;
-    ExtensionDownloader downloader(&delegate, test_shared_url_loader_factory_,
-                                   data_decoder_service_connector(),
-                                   GetTestVerifierFormat());
+    ExtensionDownloaderTestHelper helper;
+    MockExtensionDownloaderDelegate& delegate = helper.delegate();
 
     const std::string id1 = crx_file::id_util::GenerateId("1");
     const std::string id2 = crx_file::id_util::GenerateId("2");
@@ -1193,8 +1109,8 @@ class ExtensionUpdaterTest : public testing::Test {
     std::vector<UpdateManifestResult*> updateable;
     std::set<std::string> not_updateable;
     std::set<std::string> errors;
-    downloader.DetermineUpdates(*fetch_data, updates, &updateable,
-                                &not_updateable, &errors);
+    helper.downloader().DetermineUpdates(*fetch_data, updates, &updateable,
+                                         &not_updateable, &errors);
     EXPECT_THAT(not_updateable, testing::UnorderedElementsAre(id1, id4));
     EXPECT_THAT(errors, testing::UnorderedElementsAre(id2, id5, id7));
     EXPECT_THAT(histogram_tester.GetAllSamples(
@@ -1207,12 +1123,9 @@ class ExtensionUpdaterTest : public testing::Test {
   }
 
   void TestMultipleManifestDownloading() {
-    MockService service(prefs_.get(), test_shared_url_loader_factory_);
-    MockExtensionDownloaderDelegate delegate;
-    ExtensionDownloader downloader(&delegate, service.url_loader_factory(),
-                                   data_decoder_service_connector(),
-                                   GetTestVerifierFormat());
-    downloader.manifests_queue_.set_backoff_policy(&kNoBackoffPolicy);
+    ExtensionDownloaderTestHelper helper;
+    MockExtensionDownloaderDelegate& delegate = helper.delegate();
+    helper.downloader().manifests_queue_.set_backoff_policy(&kNoBackoffPolicy);
 
     GURL kUpdateUrl("http://localhost/manifest1");
 
@@ -1245,16 +1158,16 @@ class ExtensionUpdaterTest : public testing::Test {
     GURL fetch2_url = fetch2->full_url();
     GURL fetch3_url = fetch3->full_url();
     GURL fetch4_url = fetch4->full_url();
-    downloader.StartUpdateCheck(std::move(fetch1));
-    downloader.StartUpdateCheck(std::move(fetch2));
-    downloader.StartUpdateCheck(std::move(fetch3));
-    downloader.StartUpdateCheck(std::move(fetch4));
+    helper.downloader().StartUpdateCheck(std::move(fetch1));
+    helper.downloader().StartUpdateCheck(std::move(fetch2));
+    helper.downloader().StartUpdateCheck(std::move(fetch3));
+    helper.downloader().StartUpdateCheck(std::move(fetch4));
     RunUntilIdle();
 
     // fetch1_url
     {
-      test_url_loader_factory_.AddResponse(fetch1_url.spec(), "",
-                                           net::HTTP_BAD_REQUEST);
+      helper.test_url_loader_factory().AddResponse(fetch1_url.spec(), "",
+                                                   net::HTTP_BAD_REQUEST);
       EXPECT_CALL(
           delegate,
           OnExtensionDownloadFailed(
@@ -1271,8 +1184,8 @@ class ExtensionUpdaterTest : public testing::Test {
     // fetch2_url
     {
       const std::string kInvalidXml = "invalid xml";
-      test_url_loader_factory_.AddResponse(fetch2_url.spec(), kInvalidXml,
-                                           net::HTTP_OK);
+      helper.test_url_loader_factory().AddResponse(fetch2_url.spec(),
+                                                   kInvalidXml, net::HTTP_OK);
       EXPECT_CALL(
           delegate,
           OnExtensionDownloadFailed(
@@ -1297,8 +1210,8 @@ class ExtensionUpdaterTest : public testing::Test {
           "               version='3.0.0.0' prodversionmin='3.0.0.0' />"
           " </app>"
           "</gupdate>";
-      test_url_loader_factory_.AddResponse(fetch3_url.spec(), kNoUpdate,
-                                           net::HTTP_OK);
+      helper.test_url_loader_factory().AddResponse(fetch3_url.spec(), kNoUpdate,
+                                                   net::HTTP_OK);
       // The third fetcher doesn't have an update available.
       EXPECT_CALL(delegate, IsExtensionPending("3333")).WillOnce(Return(false));
       EXPECT_CALL(delegate, GetExtensionExistingVersion("3333", _))
@@ -1329,8 +1242,8 @@ class ExtensionUpdaterTest : public testing::Test {
           "               version='4.0.42.0' prodversionmin='4.0.42.0' />"
           " </app>"
           "</gupdate>";
-      test_url_loader_factory_.AddResponse(fetch4_url.spec(), kUpdateAvailable,
-                                           net::HTTP_OK);
+      helper.test_url_loader_factory().AddResponse(
+          fetch4_url.spec(), kUpdateAvailable, net::HTTP_OK);
       EXPECT_CALL(delegate, IsExtensionPending("4444")).WillOnce(Return(false));
       EXPECT_CALL(delegate, GetExtensionExistingVersion("4444", _))
           .WillOnce(DoAll(SetArgPointee<1>("4.0.0.0"), Return(true)));
@@ -1342,25 +1255,15 @@ class ExtensionUpdaterTest : public testing::Test {
       EXPECT_TRUE(observer.Updated("4444"));
       fetch4_url = GURL();
     }
-    if (downloader.manifest_loader_)
+    if (helper.downloader().manifest_loader_)
       ADD_FAILURE() << "Unexpected load";
-  }
-
-  network::TestURLLoaderFactory::PendingRequest* GetPendingRequest(
-      size_t index = 0) {
-    if (index >= test_url_loader_factory_.pending_requests()->size())
-      return nullptr;
-    return &(*test_url_loader_factory_.pending_requests())[index];
   }
 
   void TestManifestRetryDownloading() {
     NotificationsObserver observer;
-    MockService service(prefs_.get(), test_shared_url_loader_factory_);
-    MockExtensionDownloaderDelegate delegate;
-    ExtensionDownloader downloader(&delegate, service.url_loader_factory(),
-                                   data_decoder_service_connector(),
-                                   GetTestVerifierFormat());
-    downloader.manifests_queue_.set_backoff_policy(&kNoBackoffPolicy);
+    ExtensionDownloaderTestHelper helper;
+    MockExtensionDownloaderDelegate& delegate = helper.delegate();
+    helper.downloader().manifests_queue_.set_backoff_policy(&kNoBackoffPolicy);
 
     GURL kUpdateUrl("http://localhost/manifest1");
 
@@ -1372,21 +1275,21 @@ class ExtensionUpdaterTest : public testing::Test {
                         ManifestFetchData::FetchPriority::BACKGROUND);
 
     // This will start the first fetcher.
-    downloader.StartUpdateCheck(std::move(fetch));
+    helper.downloader().StartUpdateCheck(std::move(fetch));
     RunUntilIdle();
 
     // ExtensionDownloader should retry kMaxRetries times and then fail.
     EXPECT_CALL(delegate, OnExtensionDownloadFailed(
         "1111", ExtensionDownloaderDelegate::MANIFEST_FETCH_FAILED, _, _));
-    test_url_loader_factory_.SetInterceptor(base::BindLambdaForTesting(
+    helper.test_url_loader_factory().SetInterceptor(base::BindLambdaForTesting(
         [&](const network::ResourceRequest& request) {
           EXPECT_TRUE(request.load_flags == kExpectedLoadFlags);
         }));
     for (int i = 0; i <= ExtensionDownloader::kMaxRetries; ++i) {
       // All fetches will fail.
-      auto* request = GetPendingRequest(0);
+      auto* request = helper.GetPendingRequest(0);
       // Code 5xx causes ExtensionDownloader to retry.
-      test_url_loader_factory_.SimulateResponseForPendingRequest(
+      helper.test_url_loader_factory().SimulateResponseForPendingRequest(
           request->request.url, network::URLLoaderCompletionStatus(net::OK),
           network::CreateResourceResponseHead(net::HTTP_INTERNAL_SERVER_ERROR),
           "");
@@ -1402,7 +1305,7 @@ class ExtensionUpdaterTest : public testing::Test {
                         ManifestFetchData::FetchPriority::BACKGROUND);
 
     // This will start the first fetcher.
-    downloader.StartUpdateCheck(std::move(fetch));
+    helper.downloader().StartUpdateCheck(std::move(fetch));
     RunUntilIdle();
 
     EXPECT_CALL(delegate, OnExtensionDownloadFailed(
@@ -1410,8 +1313,8 @@ class ExtensionUpdaterTest : public testing::Test {
 
     // The first fetch will fail, and require retrying.
     {
-      auto* request = GetPendingRequest(0);
-      test_url_loader_factory_.SimulateResponseForPendingRequest(
+      auto* request = helper.GetPendingRequest(0);
+      helper.test_url_loader_factory().SimulateResponseForPendingRequest(
           request->request.url, network::URLLoaderCompletionStatus(net::OK),
           network::CreateResourceResponseHead(net::HTTP_INTERNAL_SERVER_ERROR),
           "");
@@ -1421,8 +1324,8 @@ class ExtensionUpdaterTest : public testing::Test {
     // The second fetch will fail with response 400 and should not cause
     // ExtensionDownloader to retry.
     {
-      auto* request = GetPendingRequest(0);
-      test_url_loader_factory_.SimulateResponseForPendingRequest(
+      auto* request = helper.GetPendingRequest(0);
+      helper.test_url_loader_factory().SimulateResponseForPendingRequest(
           request->request.url, network::URLLoaderCompletionStatus(net::OK),
           network::CreateResourceResponseHead(net::HTTP_BAD_REQUEST), "");
     }
@@ -1433,9 +1336,10 @@ class ExtensionUpdaterTest : public testing::Test {
 
   void TestSingleExtensionDownloading(bool pending, bool retry, bool fail) {
     ExtensionUpdater::ScopedSkipScheduledCheckForTest skip_scheduled_checks;
+    ExtensionDownloaderTestHelper helper;
     std::unique_ptr<ServiceForDownloadTests> service =
-        std::make_unique<ServiceForDownloadTests>(
-            prefs_.get(), test_shared_url_loader_factory_);
+        std::make_unique<ServiceForDownloadTests>(prefs_.get(),
+                                                  helper.url_loader_factory());
     ExtensionUpdater updater(service.get(),
                              service->extension_prefs(),
                              service->pref_service(),
@@ -1488,11 +1392,10 @@ class ExtensionUpdaterTest : public testing::Test {
           .WillOnce(DoAll(
               InvokeWithoutArgs(&delegate,
                                 &MockExtensionDownloaderDelegate::Quit),
-              InvokeWithoutArgs(
-                  this,
-                  &ExtensionUpdaterTest::ClearURLLoaderFactoryResponses)));
-      test_url_loader_factory_.AddResponse(test_url.spec(), "",
-                                           net::HTTP_INTERNAL_SERVER_ERROR);
+              InvokeWithoutArgs(&helper, &ExtensionDownloaderTestHelper::
+                                             ClearURLLoaderFactoryResponses)));
+      helper.test_url_loader_factory().AddResponse(
+          test_url.spec(), "", net::HTTP_INTERNAL_SERVER_ERROR);
       delegate.Wait();
       EXPECT_TRUE(updater.downloader_->extension_loader_);
     }
@@ -1502,12 +1405,11 @@ class ExtensionUpdaterTest : public testing::Test {
           .WillOnce(DoAll(
               InvokeWithoutArgs(&delegate,
                                 &MockExtensionDownloaderDelegate::Quit),
-              InvokeWithoutArgs(
-                  this,
-                  &ExtensionUpdaterTest::ClearURLLoaderFactoryResponses)));
-      test_url_loader_factory_.AddResponse(test_url.spec(),
-                                           "Any content. It is irrelevant.",
-                                           net::HTTP_NOT_FOUND);
+              InvokeWithoutArgs(&helper, &ExtensionDownloaderTestHelper::
+                                             ClearURLLoaderFactoryResponses)));
+      helper.test_url_loader_factory().AddResponse(
+          test_url.spec(), "Any content. It is irrelevant.",
+          net::HTTP_NOT_FOUND);
       delegate.Wait();
     } else {
       EXPECT_TRUE(updater.downloader_->extension_loader_);
@@ -1517,8 +1419,8 @@ class ExtensionUpdaterTest : public testing::Test {
               DoAll(testing::SaveArg<0>(&crx_file_info),
                     InvokeWithoutArgs(&delegate,
                                       &MockExtensionDownloaderDelegate::Quit)));
-      test_url_loader_factory_.AddResponse(test_url.spec(),
-                                           "Any content. It is irrelevant.");
+      helper.test_url_loader_factory().AddResponse(
+          test_url.spec(), "Any content. It is irrelevant.");
       delegate.Wait();
     }
 
@@ -1534,10 +1436,6 @@ class ExtensionUpdaterTest : public testing::Test {
     }
   }
 
-  void ClearURLLoaderFactoryResponses() {
-    test_url_loader_factory_.ClearResponses();
-  }
-
   // Update a single extension in an environment where the download request
   // initially responds with a 403 status. If |identity_provider| is not NULL,
   // this will first expect a request which includes an Authorization header
@@ -1549,9 +1447,10 @@ class ExtensionUpdaterTest : public testing::Test {
       bool succeed_with_oauth2,
       int valid_authuser,
       int max_authuser) {
+    ExtensionDownloaderTestHelper helper;
     std::unique_ptr<ServiceForDownloadTests> service =
-        std::make_unique<ServiceForDownloadTests>(
-            prefs_.get(), test_shared_url_loader_factory_);
+        std::make_unique<ServiceForDownloadTests>(prefs_.get(),
+                                                  helper.url_loader_factory());
     const ExtensionDownloader::Factory& downloader_factory =
         enable_oauth2 ? service->GetAuthenticatedDownloaderFactory()
             : service->GetDownloaderFactory();
@@ -1594,10 +1493,10 @@ class ExtensionUpdaterTest : public testing::Test {
         .WillOnce(DoAll(
             InvokeWithoutArgs(&delegate,
                               &MockExtensionDownloaderDelegate::Quit),
-            InvokeWithoutArgs(
-                this, &ExtensionUpdaterTest::ClearURLLoaderFactoryResponses)));
-    test_url_loader_factory_.AddResponse(test_url.spec(), "",
-                                         net::HTTP_FORBIDDEN);
+            InvokeWithoutArgs(&helper, &ExtensionDownloaderTestHelper::
+                                           ClearURLLoaderFactoryResponses)));
+    helper.test_url_loader_factory().AddResponse(test_url.spec(), "",
+                                                 net::HTTP_FORBIDDEN);
     delegate.Wait();
 
     // Only call out to WaitForAccessTokenRequest(...) method below if
@@ -1667,14 +1566,14 @@ class ExtensionUpdaterTest : public testing::Test {
       } else {
         // Simulate OAuth2 failure and ensure that we fall back on cookies.
         EXPECT_CALL(delegate, OnExtensionDownloadRetryForTests())
-            .WillOnce(DoAll(
-                InvokeWithoutArgs(&delegate,
-                                  &MockExtensionDownloaderDelegate::Quit),
-                InvokeWithoutArgs(
-                    this,
-                    &ExtensionUpdaterTest::ClearURLLoaderFactoryResponses)));
-        test_url_loader_factory_.AddResponse(test_url.spec(), "",
-                                             net::HTTP_FORBIDDEN);
+            .WillOnce(
+                DoAll(InvokeWithoutArgs(&delegate,
+                                        &MockExtensionDownloaderDelegate::Quit),
+                      InvokeWithoutArgs(&helper,
+                                        &ExtensionDownloaderTestHelper::
+                                            ClearURLLoaderFactoryResponses)));
+        helper.test_url_loader_factory().AddResponse(test_url.spec(), "",
+                                                     net::HTTP_FORBIDDEN);
         delegate.Wait();
 
         const ExtensionDownloader::ExtensionFetch& fetch =
@@ -1716,14 +1615,14 @@ class ExtensionUpdaterTest : public testing::Test {
             expected_load_flags,
             updater.downloader_->last_extension_loader_load_flags_for_testing_);
         EXPECT_CALL(delegate, OnExtensionDownloadRetryForTests())
-            .WillOnce(DoAll(
-                InvokeWithoutArgs(&delegate,
-                                  &MockExtensionDownloaderDelegate::Quit),
-                InvokeWithoutArgs(
-                    this,
-                    &ExtensionUpdaterTest::ClearURLLoaderFactoryResponses)));
-        test_url_loader_factory_.AddResponse(fetch.url.spec(), "whatever",
-                                             net::HTTP_FORBIDDEN);
+            .WillOnce(
+                DoAll(InvokeWithoutArgs(&delegate,
+                                        &MockExtensionDownloaderDelegate::Quit),
+                      InvokeWithoutArgs(&helper,
+                                        &ExtensionDownloaderTestHelper::
+                                            ClearURLLoaderFactoryResponses)));
+        helper.test_url_loader_factory().AddResponse(
+            fetch.url.spec(), "whatever", net::HTTP_FORBIDDEN);
         delegate.Wait();
       }
 
@@ -1732,8 +1631,8 @@ class ExtensionUpdaterTest : public testing::Test {
         const ExtensionDownloader::ExtensionFetch& fetch =
             *updater.downloader_->extensions_queue_.active_request();
         EXPECT_TRUE(updater.downloader_->extension_loader_);
-        test_url_loader_factory_.AddResponse(fetch.url.spec(), std::string(),
-                                             net::HTTP_UNAUTHORIZED);
+        helper.test_url_loader_factory().AddResponse(
+            fetch.url.spec(), std::string(), net::HTTP_UNAUTHORIZED);
         EXPECT_CALL(delegate, OnExtensionDownloadFailed(_, _, _, _))
             .WillOnce(InvokeWithoutArgs(
                 &delegate, &MockExtensionDownloaderDelegate::Quit));
@@ -1753,7 +1652,8 @@ class ExtensionUpdaterTest : public testing::Test {
               DoAll(testing::SaveArg<0>(&crx_file_info),
                     InvokeWithoutArgs(&delegate,
                                       &MockExtensionDownloaderDelegate::Quit)));
-      test_url_loader_factory_.AddResponse(fetch.url.spec(), "whatever");
+      helper.test_url_loader_factory().AddResponse(fetch.url.spec(),
+                                                   "whatever");
       delegate.Wait();
 
       // Verify installation would proceed as normal.
@@ -1768,8 +1668,8 @@ class ExtensionUpdaterTest : public testing::Test {
   // the test is responsible for creating fake CrxInstallers.  Otherwise,
   // UpdateExtension() returns false, signaling install failures.
   void TestMultipleExtensionDownloading(bool updates_start_running) {
-    ServiceForDownloadTests service(prefs_.get(),
-                                    test_shared_url_loader_factory_);
+    ExtensionDownloaderTestHelper helper;
+    ServiceForDownloadTests service(prefs_.get(), helper.url_loader_factory());
     ExtensionUpdater updater(&service,
                              service.extension_prefs(),
                              service.pref_service(),
@@ -1839,7 +1739,7 @@ class ExtensionUpdaterTest : public testing::Test {
       // starting the install.
     }
 
-    test_url_loader_factory_.AddResponse(
+    helper.test_url_loader_factory().AddResponse(
         url1.spec(), "Any content. This is irrelevant.", net::HTTP_OK);
     content::RunAllTasksUntilIdle();
 
@@ -1856,7 +1756,7 @@ class ExtensionUpdaterTest : public testing::Test {
         kExpectedLoadFlags,
         updater.downloader_->last_extension_loader_load_flags_for_testing_);
 
-    test_url_loader_factory_.AddResponse(
+    helper.test_url_loader_factory().AddResponse(
         url2.spec(), "Any other content. This is irrelevant.", net::HTTP_OK);
     content::RunAllTasksUntilIdle();
 
@@ -1933,8 +1833,8 @@ class ExtensionUpdaterTest : public testing::Test {
     // without.
     prefs_ = std::make_unique<TestExtensionPrefs>(
         base::ThreadTaskRunnerHandle::Get());
-    ServiceForManifestTests service(prefs_.get(),
-                                    test_shared_url_loader_factory_);
+    ExtensionDownloaderTestHelper helper;
+    ServiceForManifestTests service(prefs_.get(), helper.url_loader_factory());
     ExtensionList tmp;
     GURL url1("http://clients2.google.com/service/update2/crx");
     GURL url2("http://www.somewebsite.com");
@@ -1986,8 +1886,8 @@ class ExtensionUpdaterTest : public testing::Test {
     const ManifestFetchData& fetch =
         *updater.downloader_->manifests_queue_.active_request();
     fetched_urls.push_back(fetch.full_url());
-    test_url_loader_factory_.AddResponse(fetched_urls[0].spec(), std::string(),
-                                         net::HTTP_INTERNAL_SERVER_ERROR);
+    helper.test_url_loader_factory().AddResponse(
+        fetched_urls[0].spec(), std::string(), net::HTTP_INTERNAL_SERVER_ERROR);
     RunUntilIdle();
 
     const ManifestFetchData& fetch2 =
@@ -2066,8 +1966,8 @@ class ExtensionUpdaterTest : public testing::Test {
   // the first time we fetched the extension, or 2) We sent a ping value of
   // >= 1 day for the extension.
   void TestHandleManifestResults() {
-    ServiceForManifestTests service(prefs_.get(),
-                                    test_shared_url_loader_factory_);
+    ExtensionDownloaderTestHelper helper;
+    ServiceForManifestTests service(prefs_.get(), helper.url_loader_factory());
     GURL update_url("http://www.google.com/manifest");
     ExtensionList tmp;
     service.CreateTestExtensions(1, 1, &tmp, &update_url.spec(),
@@ -2111,8 +2011,8 @@ class ExtensionUpdaterTest : public testing::Test {
   // disabled extension we want.
   void TestPingMetrics(int num_enabled,
                        const std::vector<int>& disabled) {
-    ServiceForManifestTests service(prefs_.get(),
-                                    test_shared_url_loader_factory_);
+    ExtensionDownloaderTestHelper helper;
+    ServiceForManifestTests service(prefs_.get(), helper.url_loader_factory());
     ExtensionList enabled_extensions;
     ExtensionList disabled_extensions;
 
@@ -2232,9 +2132,6 @@ class ExtensionUpdaterTest : public testing::Test {
  protected:
   std::unique_ptr<TestExtensionPrefs> prefs_;
   content::TestBrowserThreadBundle thread_bundle_;
-  network::TestURLLoaderFactory test_url_loader_factory_;
-  scoped_refptr<network::SharedURLLoaderFactory>
-      test_shared_url_loader_factory_;
 
   ManifestFetchData* CreateManifestFetchData(
       const GURL& update_url,
@@ -2249,15 +2146,10 @@ class ExtensionUpdaterTest : public testing::Test {
         update_url, ManifestFetchData::FetchPriority::BACKGROUND);
   }
 
-  service_manager::Connector* data_decoder_service_connector() const {
-    return test_data_decoder_service_.connector();
-  }
-
  private:
   content::InProcessUtilityThreadHelper in_process_utility_thread_helper_;
 
   ScopedTestingLocalState testing_local_state_;
-  data_decoder::TestDataDecoderService test_data_decoder_service_;
 
 #if defined OS_CHROMEOS
   chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
@@ -2429,8 +2321,8 @@ TEST_F(ExtensionUpdaterTest, TestHandleManifestResults) {
 }
 
 TEST_F(ExtensionUpdaterTest, TestNonAutoUpdateableLocations) {
-  ServiceForManifestTests service(prefs_.get(),
-                                  test_shared_url_loader_factory_);
+  ExtensionDownloaderTestHelper helper;
+  ServiceForManifestTests service(prefs_.get(), helper.url_loader_factory());
   ExtensionUpdater updater(&service,
                            service.extension_prefs(),
                            service.pref_service(),
@@ -2461,8 +2353,8 @@ TEST_F(ExtensionUpdaterTest, TestNonAutoUpdateableLocations) {
 }
 
 TEST_F(ExtensionUpdaterTest, TestUpdatingDisabledExtensions) {
-  ServiceForManifestTests service(prefs_.get(),
-                                  test_shared_url_loader_factory_);
+  ExtensionDownloaderTestHelper helper;
+  ServiceForManifestTests service(prefs_.get(), helper.url_loader_factory());
   ExtensionUpdater updater(&service,
                            service.extension_prefs(),
                            service.pref_service(),
@@ -2498,86 +2390,77 @@ TEST_F(ExtensionUpdaterTest, TestUpdatingDisabledExtensions) {
 }
 
 TEST_F(ExtensionUpdaterTest, TestManifestFetchesBuilderAddExtension) {
-  MockService service(prefs_.get(), test_shared_url_loader_factory_);
-  MockExtensionDownloaderDelegate delegate;
-  std::unique_ptr<ExtensionDownloader> downloader =
-      std::make_unique<ExtensionDownloader>(
-          &delegate, service.url_loader_factory(),
-          data_decoder_service_connector(), GetTestVerifierFormat());
-  EXPECT_EQ(0u, ManifestFetchersCount(downloader.get()));
+  auto helper = std::make_unique<ExtensionDownloaderTestHelper>();
+  EXPECT_EQ(0u, ManifestFetchersCount(&helper->downloader()));
 
   // First, verify that adding valid extensions does invoke the callbacks on
   // the delegate.
   std::string id = crx_file::id_util::GenerateId("foo");
-  EXPECT_CALL(delegate, GetPingDataForExtension(id, _)).WillOnce(Return(false));
-  EXPECT_TRUE(downloader->AddPendingExtension(
+  EXPECT_CALL(helper->delegate(), GetPingDataForExtension(id, _))
+      .WillOnce(Return(false));
+  EXPECT_TRUE(helper->downloader().AddPendingExtension(
       id, GURL("http://example.com/update"), Manifest::INTERNAL, false, 0,
       ManifestFetchData::FetchPriority::BACKGROUND));
-  downloader->StartAllPending(NULL);
-  Mock::VerifyAndClearExpectations(&delegate);
-  EXPECT_EQ(1u, ManifestFetchersCount(downloader.get()));
+  helper->downloader().StartAllPending(NULL);
+  Mock::VerifyAndClearExpectations(&helper->delegate());
+  EXPECT_EQ(1u, ManifestFetchersCount(&helper->downloader()));
 
   // Extensions with invalid update URLs should be rejected.
   id = crx_file::id_util::GenerateId("foo2");
-  EXPECT_FALSE(downloader->AddPendingExtension(
+  EXPECT_FALSE(helper->downloader().AddPendingExtension(
       id, GURL("http:google.com:foo"), Manifest::INTERNAL, false, 0,
       ManifestFetchData::FetchPriority::BACKGROUND));
-  downloader->StartAllPending(NULL);
-  EXPECT_EQ(1u, ManifestFetchersCount(downloader.get()));
+  helper->downloader().StartAllPending(NULL);
+  EXPECT_EQ(1u, ManifestFetchersCount(&helper->downloader()));
 
   // Extensions with empty IDs should be rejected.
-  EXPECT_FALSE(downloader->AddPendingExtension(
+  EXPECT_FALSE(helper->downloader().AddPendingExtension(
       std::string(), GURL(), Manifest::INTERNAL, false, 0,
       ManifestFetchData::FetchPriority::BACKGROUND));
-  downloader->StartAllPending(NULL);
-  EXPECT_EQ(1u, ManifestFetchersCount(downloader.get()));
+  helper->downloader().StartAllPending(NULL);
+  EXPECT_EQ(1u, ManifestFetchersCount(&helper->downloader()));
 
   // TODO(akalin): Test that extensions with empty update URLs
   // converted from user scripts are rejected.
 
   // Reset the ExtensionDownloader so that it drops the current fetcher.
-  downloader = std::make_unique<ExtensionDownloader>(
-      &delegate, service.url_loader_factory(), data_decoder_service_connector(),
-      GetTestVerifierFormat());
-  EXPECT_EQ(0u, ManifestFetchersCount(downloader.get()));
+  helper = std::make_unique<ExtensionDownloaderTestHelper>();
+  EXPECT_EQ(0u, ManifestFetchersCount(&helper->downloader()));
 
   // Extensions with empty update URLs should have a default one
   // filled in.
   id = crx_file::id_util::GenerateId("foo3");
-  EXPECT_CALL(delegate, GetPingDataForExtension(id, _)).WillOnce(Return(false));
-  EXPECT_TRUE(downloader->AddPendingExtension(
+  EXPECT_CALL(helper->delegate(), GetPingDataForExtension(id, _))
+      .WillOnce(Return(false));
+  EXPECT_TRUE(helper->downloader().AddPendingExtension(
       id, GURL(), Manifest::INTERNAL, false, 0,
       ManifestFetchData::FetchPriority::BACKGROUND));
-  downloader->StartAllPending(NULL);
-  EXPECT_EQ(1u, ManifestFetchersCount(downloader.get()));
+  helper->downloader().StartAllPending(NULL);
+  EXPECT_EQ(1u, ManifestFetchersCount(&helper->downloader()));
 
   RunUntilIdle();
-  auto* request = &(*test_url_loader_factory_.pending_requests())[1];
+  auto* request = &(*helper->test_url_loader_factory().pending_requests())[0];
   ASSERT_TRUE(request);
   EXPECT_FALSE(request->request.url.is_empty());
 }
 
 TEST_F(ExtensionUpdaterTest, TestStartUpdateCheckMemory) {
-  MockService service(prefs_.get(), test_shared_url_loader_factory_);
-  MockExtensionDownloaderDelegate delegate;
-  ExtensionDownloader downloader(&delegate, service.url_loader_factory(),
-                                 data_decoder_service_connector(),
-                                 GetTestVerifierFormat());
+  ExtensionDownloaderTestHelper helper;
 
-  StartUpdateCheck(&downloader,
+  StartUpdateCheck(&helper.downloader(),
                    CreateManifestFetchData(GURL("http://localhost/foo")));
   // This should delete the newly-created ManifestFetchData.
-  StartUpdateCheck(&downloader,
+  StartUpdateCheck(&helper.downloader(),
                    CreateManifestFetchData(GURL("http://localhost/foo")));
   // This should add into |manifests_pending_|.
-  StartUpdateCheck(&downloader,
+  StartUpdateCheck(&helper.downloader(),
                    CreateManifestFetchData(GURL("http://www.google.com")));
   // The dtor of |downloader| should delete the pending fetchers.
 }
 
 TEST_F(ExtensionUpdaterTest, TestCheckSoon) {
-  ServiceForManifestTests service(prefs_.get(),
-                                  test_shared_url_loader_factory_);
+  ExtensionDownloaderTestHelper helper;
+  ServiceForManifestTests service(prefs_.get(), helper.url_loader_factory());
   ExtensionUpdater updater(&service,
                            service.extension_prefs(),
                            service.pref_service(),
@@ -2617,8 +2500,8 @@ TEST_F(ExtensionUpdaterTest, TestDisabledReasons3) {
 }
 
 TEST_F(ExtensionUpdaterTest, TestUninstallWhileUpdateCheck) {
-  ServiceForManifestTests service(prefs_.get(),
-                                  test_shared_url_loader_factory_);
+  ExtensionDownloaderTestHelper helper;
+  ServiceForManifestTests service(prefs_.get(), helper.url_loader_factory());
   ExtensionList tmp;
   service.CreateTestExtensions(1, 1, &tmp, nullptr, Manifest::INTERNAL);
   service.set_extensions(tmp, ExtensionList());

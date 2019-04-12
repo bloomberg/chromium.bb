@@ -529,6 +529,8 @@ jumbo_source_set("test_support") {
     "preload_check_test_util.h",
     "test_event_router_observer.cc",
     "test_event_router_observer.h",
+    "updater/extension_downloader_test_helper.cc",
+    "updater/extension_downloader_test_helper.h",
     "value_store/test_value_store_factory.cc",
     "value_store/test_value_store_factory.h",
     "value_store/testing_value_store.cc",
@@ -537,11 +539,15 @@ jumbo_source_set("test_support") {
 
   deps = [
     "//base",
+    "//base/test:test_support",
     "//content/public/browser",
     "//extensions/browser",
     "//extensions/browser/api/declarative_net_request:test_support",
     "//extensions/common",
     "//extensions/common:test_support",
+    "//services/data_decoder:lib",
+    "//services/data_decoder/public/cpp:test_support",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 }
@@ -628,6 +634,7 @@ source_set("unit_tests") {
     "runtime_data_unittest.cc",
     "sandboxed_unpacker_unittest.cc",
     "service_worker/worker_id_set_unittest.cc",
+    "updater/extension_downloader_unittest.cc",
     "updater/extension_installer_unittest.cc",
     "updater/safe_manifest_parser_unittest.cc",
     "updater/update_data_provider_unittest.cc",
@@ -678,6 +685,7 @@ source_set("unit_tests") {
     "//services/data_decoder/public/cpp:test_support",
     "//services/device/public/mojom",
     "//services/network:test_support",
+    "//services/network/public/cpp",
     "//services/service_manager/public/cpp/test:test_support",
     "//storage/browser:test_support",
     "//third_party/leveldatabase",

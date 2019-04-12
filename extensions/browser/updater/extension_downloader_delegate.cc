@@ -18,6 +18,10 @@ ExtensionDownloaderDelegate::PingResult::~PingResult() {
 ExtensionDownloaderDelegate::~ExtensionDownloaderDelegate() {
 }
 
+void ExtensionDownloaderDelegate::OnExtensionDownloadStageChanged(
+    const std::string& id,
+    ExtensionDownloaderDelegate::Stage stage) {}
+
 void ExtensionDownloaderDelegate::OnExtensionDownloadFailed(
     const std::string& id,
     ExtensionDownloaderDelegate::Error error,
