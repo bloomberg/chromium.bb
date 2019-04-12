@@ -824,10 +824,10 @@ void OverviewItem::UpdateHeaderLayout(OverviewAnimationType animation_type) {
   // Create a start animation observer if this is an enter overview layout
   // animation.
   if (animation_type == OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_ON_ENTER) {
-    auto start_observer = std::make_unique<StartAnimationObserver>();
-    animation_settings.AddObserver(start_observer.get());
-    Shell::Get()->overview_controller()->AddStartAnimationObserver(
-        std::move(start_observer));
+    auto enter_observer = std::make_unique<EnterAnimationObserver>();
+    animation_settings.AddObserver(enter_observer.get());
+    Shell::Get()->overview_controller()->AddEnterAnimationObserver(
+        std::move(enter_observer));
   }
 
   // |widget_window| is sized to the same bounds as the original window plus

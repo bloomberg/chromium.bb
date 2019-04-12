@@ -45,9 +45,9 @@ class TestOverviewDelegate : public OverviewDelegate {
     base::EraseIf(observers_, base::MatchesUniquePtr(animation_observer));
   }
 
-  void AddStartAnimationObserver(
+  void AddEnterAnimationObserver(
       std::unique_ptr<DelayedAnimationObserver> animation_observer) override {}
-  void RemoveAndDestroyStartAnimationObserver(
+  void RemoveAndDestroyEnterAnimationObserver(
       DelayedAnimationObserver* animation_observer) override {}
 
  private:

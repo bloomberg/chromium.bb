@@ -13,6 +13,9 @@
 namespace ash {
 class OverviewDelegate;
 
+// An observer that does not watch any animation, but instead has a timeout
+// before telling its owner to destroy it. It is used when entering overview
+// without any animations but we still want to delay some tasks.
 class ASH_EXPORT ForceDelayObserver : public DelayedAnimationObserver {
  public:
   explicit ForceDelayObserver(base::TimeDelta delay);
@@ -33,11 +36,11 @@ class ASH_EXPORT ForceDelayObserver : public DelayedAnimationObserver {
 
 // An observer which watches a overview enter animation and signals its owner
 // when the animation it is watching finishes.
-class ASH_EXPORT StartAnimationObserver : public ui::ImplicitAnimationObserver,
+class ASH_EXPORT EnterAnimationObserver : public ui::ImplicitAnimationObserver,
                                           public DelayedAnimationObserver {
  public:
-  StartAnimationObserver();
-  ~StartAnimationObserver() override;
+  EnterAnimationObserver();
+  ~EnterAnimationObserver() override;
 
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override;
@@ -49,9 +52,11 @@ class ASH_EXPORT StartAnimationObserver : public ui::ImplicitAnimationObserver,
  private:
   OverviewDelegate* owner_ = nullptr;
 
-  DISALLOW_COPY_AND_ASSIGN(StartAnimationObserver);
+  DISALLOW_COPY_AND_ASSIGN(EnterAnimationObserver);
 };
 
+// An observer which watches a overview exit animation and signals its owner
+// when the animation it is watching finishes.
 class ASH_EXPORT ExitAnimationObserver : public ui::ImplicitAnimationObserver,
                                          public DelayedAnimationObserver {
  public:

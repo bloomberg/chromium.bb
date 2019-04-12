@@ -30,24 +30,24 @@ void ForceDelayObserver::Shutdown() {
 
 void ForceDelayObserver::Finish() {
   if (owner_)
-    owner_->RemoveAndDestroyStartAnimationObserver(this);
+    owner_->RemoveAndDestroyEnterAnimationObserver(this);
 }
 
-StartAnimationObserver::StartAnimationObserver() = default;
+EnterAnimationObserver::EnterAnimationObserver() = default;
 
-StartAnimationObserver::~StartAnimationObserver() = default;
+EnterAnimationObserver::~EnterAnimationObserver() = default;
 
-void StartAnimationObserver::OnImplicitAnimationsCompleted() {
+void EnterAnimationObserver::OnImplicitAnimationsCompleted() {
   if (owner_)
-    owner_->RemoveAndDestroyStartAnimationObserver(this);
+    owner_->RemoveAndDestroyEnterAnimationObserver(this);
 }
 
-void StartAnimationObserver::SetOwner(OverviewDelegate* owner) {
+void EnterAnimationObserver::SetOwner(OverviewDelegate* owner) {
   DCHECK(!owner_);
   owner_ = owner;
 }
 
-void StartAnimationObserver::Shutdown() {
+void EnterAnimationObserver::Shutdown() {
   owner_ = nullptr;
 }
 
