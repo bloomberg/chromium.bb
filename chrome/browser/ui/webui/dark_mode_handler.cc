@@ -65,7 +65,6 @@ std::unique_ptr<base::DictionaryValue> DarkModeHandler::GetDataSourceUpdate()
   auto update = std::make_unique<base::DictionaryValue>();
   bool use_dark_mode = UseDarkMode();
   update->SetKey("dark", base::Value(use_dark_mode ? "dark" : ""));
-  update->SetKey("darkMode", base::Value(use_dark_mode));
   return update;
 }
 

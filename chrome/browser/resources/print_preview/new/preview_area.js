@@ -324,8 +324,7 @@ Polymer({
     }
 
     this.pluginLoaded_ = false;
-    if (document.documentElement.hasAttribute('dark') &&
-        this.newPrintPreviewLayout) {
+    if (inDarkMode() && this.newPrintPreviewLayout) {
       this.pluginProxy_.darkModeChanged(true);
     }
     this.pluginProxy_.resetPrintPreviewMode(
