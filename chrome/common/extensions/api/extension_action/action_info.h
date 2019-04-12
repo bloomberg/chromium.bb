@@ -43,6 +43,9 @@ struct ActionInfo {
                                           const base::DictionaryValue* dict,
                                           base::string16* error);
 
+  // Returns the action specified under the "action" key, if any.
+  static const ActionInfo* GetExtensionActionInfo(const Extension* extension);
+
   // Returns the extension's browser action, if any.
   static const ActionInfo* GetBrowserActionInfo(const Extension* extension);
 
