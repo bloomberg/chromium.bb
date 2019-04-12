@@ -371,6 +371,7 @@ void BridgedNativeWidgetHostImpl::CreateLocalBridge(
 void BridgedNativeWidgetHostImpl::CreateRemoteBridge(
     BridgeFactoryHost* bridge_factory_host,
     views_bridge_mac::mojom::CreateWindowParamsPtr window_create_params) {
+  accessibility_focus_overrider_.SetAppIsRemote(true);
   bridge_factory_host_ = bridge_factory_host;
   bridge_factory_host_->AddObserver(this);
 
