@@ -198,9 +198,6 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   // crashes, instead you should always ask for it using the accessor.
   virtual RenderWidgetHostView* GetView() = 0;
 
-  // Returns true if the renderer is loading, false if not.
-  virtual bool IsLoading() = 0;
-
   // Returns true if the renderer is considered unresponsive.
   virtual bool IsCurrentlyUnresponsive() = 0;
 
