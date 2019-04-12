@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "services/network/test/test_cookie_manager.h"
-#include "net/cookies/canonical_cookie.h"
 
 #include <utility>
+
+#include "base/callback.h"
+#include "net/cookies/canonical_cookie.h"
 
 namespace network {
 
@@ -18,8 +20,10 @@ void TestCookieManager::SetCanonicalCookie(
     const std::string& source_scheme,
     const net::CookieOptions& cookie_options,
     SetCanonicalCookieCallback callback) {
-  std::move(callback).Run(
-      net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR);
+  if (callback) {
+    std::move(callback).Run(
+        net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR);
+  }
 }
 
 void TestCookieManager::AddCookieChangeListener(
