@@ -139,7 +139,7 @@ public class NoTouchActivity extends SingleTabActivity {
         getFullscreenManager().setTab(getActivityTab());
 
         mUiController = AppHooks.get().createTouchlessUiController(this);
-        AppHooks.get().createTouchlessMenuCoordinator(this);
+        AppHooks.get().attachTouchlessMenuCoordinator(this);
         super.finishNativeInitialization();
     }
 

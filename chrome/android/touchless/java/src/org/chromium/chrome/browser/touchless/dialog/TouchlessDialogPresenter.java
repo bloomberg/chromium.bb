@@ -64,6 +64,12 @@ public class TouchlessDialogPresenter extends Presenter {
         mDialog = new Dialog(mActivity, R.style.Theme_Chromium_DialogWhenLarge);
         mDialog.setOnCancelListener(dialogInterface
                 -> dismissCurrentDialog(DialogDismissalCause.NAVIGATE_BACK_OR_TOUCH_OUTSIDE));
+        mDialog.setOnShowListener(dialog
+                -> AppHooks.get().getTouchlessUiControllerForActivity((ChromeActivity) mActivity)
+                .addModelToQueue(model));
+        mDialog.setOnDismissListener(dialog
+                -> AppHooks.get().getTouchlessUiControllerForActivity((ChromeActivity) mActivity)
+                .removeModelFromQueue(model));
         // Cancel on touch outside should be disabled by default. The ModelChangeProcessor wouldn't
         // notify change if the property is not set during initialization.
         mDialog.setCanceledOnTouchOutside(false);
