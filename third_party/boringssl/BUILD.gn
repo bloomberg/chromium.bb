@@ -163,11 +163,6 @@ test("boringssl_crypto_tests") {
     sources += [ "gtest_main_chromium.cc" ]
     deps += [ "//base/test:test_support" ]
   }
-
-  # TODO(crbug.com/936651): Remove this after fixing deprecated API usage.
-  if (is_clang) {
-    cflags = [ "-Wno-deprecated-declarations" ]
-  }
 }
 
 test("boringssl_ssl_tests") {
@@ -193,11 +188,6 @@ test("boringssl_ssl_tests") {
     ]
     sources += [ "gtest_main_chromium.cc" ]
     deps += [ "//base/test:test_support" ]
-  }
-
-  # TODO(crbug.com/936651): Remove this after fixing deprecated API usage.
-  if (is_clang) {
-    cflags = [ "-Wno-deprecated-declarations" ]
   }
 }
 
