@@ -1508,4 +1508,20 @@ void AXPlatformNodeBase::ComputeHypertextRemovedAndInserted(
   *new_len = new_text.size() - common_prefix - common_suffix;
 }
 
+int AXPlatformNodeBase::FindTextBoundary(
+    TextBoundaryType boundary_type,
+    int offset,
+    TextBoundaryDirection direction,
+    ax::mojom::TextAffinity affinity) const {
+  base::Optional<int> boundary = GetDelegate()->FindTextBoundary(
+      boundary_type, offset, direction, affinity);
+  if (boundary.has_value())
+    return *boundary;
+
+  std::vector<int32_t> unused_line_start_offsets;
+  return static_cast<int>(
+      FindAccessibleTextBoundary(GetText(), unused_line_start_offsets,
+                                 boundary_type, offset, direction, affinity));
+}
+
 }  // namespace ui

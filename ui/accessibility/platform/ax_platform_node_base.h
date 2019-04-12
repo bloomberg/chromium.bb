@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_text_utils.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/base/buildflags.h"
 #include "ui/gfx/geometry/rect.h"
@@ -217,6 +218,15 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
 
   // Return the number of instances of AXPlatformNodeBase, for leak testing.
   static size_t GetInstanceCountForTesting();
+
+  // This method finds text boundaries in the text used for platform text APIs.
+  // Implementations may use side-channel data such as line or word indices to
+  // produce appropriate results.
+  virtual int FindTextBoundary(TextBoundaryType boundary_type,
+                               int offset,
+                               TextBoundaryDirection direction,
+                               ax::mojom::TextAffinity affinity =
+                                   ax::mojom::TextAffinity::kDownstream) const;
 
   //
   // Delegate.  This is a weak reference which owns |this|.

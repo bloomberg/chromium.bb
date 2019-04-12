@@ -356,8 +356,8 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_textAtOffset(
   if (offset == text_len && boundary_type != IA2_TEXT_BOUNDARY_LINE)
     return S_FALSE;
 
-  LONG start = FindBoundary(boundary_type, offset, ui::BACKWARDS_DIRECTION);
-  LONG end = FindBoundary(boundary_type, start, ui::FORWARDS_DIRECTION);
+  LONG start = FindIA2Boundary(boundary_type, offset, ui::BACKWARDS_DIRECTION);
+  LONG end = FindIA2Boundary(boundary_type, start, ui::FORWARDS_DIRECTION);
   if (end < offset)
     return S_FALSE;
 
@@ -395,7 +395,8 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_textBeforeOffset(
   if (boundary_type == IA2_TEXT_BOUNDARY_SENTENCE)
     return S_FALSE;
 
-  *start_offset = FindBoundary(boundary_type, offset, ui::BACKWARDS_DIRECTION);
+  *start_offset =
+      FindIA2Boundary(boundary_type, offset, ui::BACKWARDS_DIRECTION);
   *end_offset = offset;
   return get_text(*start_offset, *end_offset, text);
 }
@@ -430,7 +431,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_textAfterOffset(
     return S_FALSE;
 
   *start_offset = offset;
-  *end_offset = FindBoundary(boundary_type, offset, ui::FORWARDS_DIRECTION);
+  *end_offset = FindIA2Boundary(boundary_type, offset, ui::FORWARDS_DIRECTION);
   return get_text(*start_offset, *end_offset, text);
 }
 
@@ -2147,11 +2148,12 @@ void BrowserAccessibilityComWin::SetIA2HypertextSelection(LONG start_offset,
       AXPlatformRange(std::move(start_position), std::move(end_position)));
 }
 
-LONG BrowserAccessibilityComWin::FindBoundary(
+LONG BrowserAccessibilityComWin::FindIA2Boundary(
     IA2TextBoundaryType ia2_boundary,
     LONG start_offset,
     ui::TextBoundaryDirection direction) {
   HandleSpecialTextOffset(&start_offset);
+
   // If the |start_offset| is equal to the location of the caret, then use the
   // focus affinity, otherwise default to downstream affinity.
   ax::mojom::TextAffinity affinity = ax::mojom::TextAffinity::kDownstream;
@@ -2160,53 +2162,9 @@ LONG BrowserAccessibilityComWin::FindBoundary(
   if (selection_end >= 0 && start_offset == selection_end)
     affinity = Manager()->GetTreeData().sel_focus_affinity;
 
-  if (ia2_boundary == IA2_TEXT_BOUNDARY_WORD) {
-    switch (direction) {
-      case ui::FORWARDS_DIRECTION: {
-        BrowserAccessibilityPositionInstance position =
-            owner()->CreatePositionAt(static_cast<int>(start_offset), affinity);
-        BrowserAccessibilityPositionInstance next_word =
-            position->CreateNextWordStartPosition(
-                ui::AXBoundaryBehavior::StopAtAnchorBoundary);
-        return next_word->text_offset();
-      }
-      case ui::BACKWARDS_DIRECTION: {
-        BrowserAccessibilityPositionInstance position =
-            owner()->CreatePositionAt(static_cast<int>(start_offset), affinity);
-        BrowserAccessibilityPositionInstance previous_word =
-            position->CreatePreviousWordStartPosition(
-                ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
-        return previous_word->text_offset();
-      }
-    }
-  }
-
-  if (ia2_boundary == IA2_TEXT_BOUNDARY_LINE) {
-    switch (direction) {
-      case ui::FORWARDS_DIRECTION: {
-        BrowserAccessibilityPositionInstance position =
-            owner()->CreatePositionAt(static_cast<int>(start_offset), affinity);
-        BrowserAccessibilityPositionInstance next_line =
-            position->CreateNextLineStartPosition(
-                ui::AXBoundaryBehavior::StopAtAnchorBoundary);
-        return next_line->text_offset();
-      }
-      case ui::BACKWARDS_DIRECTION: {
-        BrowserAccessibilityPositionInstance position =
-            owner()->CreatePositionAt(static_cast<int>(start_offset), affinity);
-        BrowserAccessibilityPositionInstance previous_line =
-            position->CreatePreviousLineStartPosition(
-                ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
-        return previous_line->text_offset();
-      }
-    }
-  }
-
-  // TODO(nektar): |AXPosition| can handle other types of boundaries as well.
   ui::TextBoundaryType boundary = IA2TextBoundaryToTextBoundary(ia2_boundary);
-  return ui::FindAccessibleTextBoundary(
-      GetText(), owner()->GetLineStartOffsets(), boundary, start_offset,
-      direction, affinity);
+  return static_cast<LONG>(
+      FindTextBoundary(boundary, start_offset, direction, affinity));
 }
 
 LONG BrowserAccessibilityComWin::FindStartOfStyle(

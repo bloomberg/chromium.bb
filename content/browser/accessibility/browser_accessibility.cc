@@ -1110,41 +1110,53 @@ const ui::AXUniqueId& BrowserAccessibility::GetUniqueId() const {
   return unique_id_;
 }
 
-ui::AXPlatformNodeDelegate::EnclosingBoundaryOffsets
-BrowserAccessibility::FindTextBoundariesAtOffset(
+base::Optional<int> BrowserAccessibility::FindTextBoundary(
     ui::TextBoundaryType boundary_type,
     int offset,
+    ui::TextBoundaryDirection direction,
     ax::mojom::TextAffinity affinity) const {
   switch (boundary_type) {
     case ui::WORD_BOUNDARY: {
       BrowserAccessibilityPositionInstance position =
           CreatePositionAt(static_cast<int>(offset), affinity);
-      BrowserAccessibilityPositionInstance previous_word_start =
-          position->CreatePreviousWordStartPosition(
-              ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
-      BrowserAccessibilityPositionInstance next_word_start =
-          position->CreateNextWordStartPosition(
-              ui::AXBoundaryBehavior::StopAtAnchorBoundary);
-      return std::make_pair(previous_word_start->text_offset(),
-                            next_word_start->text_offset());
+      switch (direction) {
+        case ui::BACKWARDS_DIRECTION:
+          return position
+              ->CreatePreviousWordStartPosition(
+                  ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary)
+              ->text_offset();
+        case ui::FORWARDS_DIRECTION:
+          return position
+              ->CreateNextWordStartPosition(
+                  ui::AXBoundaryBehavior::StopAtAnchorBoundary)
+              ->text_offset();
+      }
     }
     case ui::LINE_BOUNDARY: {
       BrowserAccessibilityPositionInstance position =
           CreatePositionAt(static_cast<int>(offset), affinity);
-      BrowserAccessibilityPositionInstance previous_line_start =
-          position->CreatePreviousLineStartPosition(
-              ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
-      BrowserAccessibilityPositionInstance next_line_start =
-          position->CreateNextLineStartPosition(
-              ui::AXBoundaryBehavior::StopAtAnchorBoundary);
-      return std::make_pair(previous_line_start->text_offset(),
-                            next_line_start->text_offset());
+      switch (direction) {
+        case ui::BACKWARDS_DIRECTION:
+          return position
+              ->CreatePreviousLineStartPosition(
+                  ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary)
+              ->text_offset();
+        case ui::FORWARDS_DIRECTION:
+          return position
+              ->CreateNextLineStartPosition(
+                  ui::AXBoundaryBehavior::StopAtAnchorBoundary)
+              ->text_offset();
+      }
     }
     case ui::CHAR_BOUNDARY:
     case ui::SENTENCE_BOUNDARY:
     case ui::PARAGRAPH_BOUNDARY:
     case ui::ALL_BOUNDARY:
-      return base::nullopt;
+      // TODO(nektar): |AXPosition| can handle other types of boundaries as
+      // well.
+      return ui::FindAccessibleTextBoundary(GetText(), GetLineStartOffsets(),
+                                            boundary_type, offset, direction,
+                                            affinity);
   }
 }
 
