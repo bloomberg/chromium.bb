@@ -508,10 +508,6 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
     Shell::Get()->split_view_controller()->EndSplitView();
   }
 
-  active_window_->ResetOpacityAndTransform();
-  if (secondary_window_)
-    secondary_window_->ResetOpacityAndTransform();
-
   if (is_final_state_show) {
     home_screen_delegate->UpdateAfterHomeLauncherShown();
 
@@ -536,6 +532,10 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
       window->Show();
     }
   }
+
+  active_window_->ResetOpacityAndTransform();
+  if (secondary_window_)
+    secondary_window_->ResetOpacityAndTransform();
 
   // Update the backdrop last as the backdrop controller listens for some
   // state changes like minimizing above which may also alter the backdrop.
