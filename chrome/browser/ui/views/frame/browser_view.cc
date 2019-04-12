@@ -95,7 +95,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
-#include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
+#include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/profiles/profile_menu_view_base.h"
 #include "chrome/browser/ui/views/status_bubble_views.h"
@@ -939,7 +939,7 @@ void BrowserView::ZoomChangedForActiveTab(bool can_show_bubble) {
       toolbar_button_provider()->GetAppMenuButton();
   bool app_menu_showing = app_menu_button && app_menu_button->IsMenuShowing();
   toolbar_button_provider()
-      ->GetPageActionIconContainerView()
+      ->GetOmniboxPageActionIconContainerView()
       ->ZoomChangedForActiveTab(can_show_bubble && !app_menu_showing);
 }
 
@@ -1074,8 +1074,8 @@ void BrowserView::SetToolbarButtonProvider(ToolbarButtonProvider* provider) {
   toolbar_button_provider_ = provider;
 }
 
-PageActionIconContainer* BrowserView::GetPageActionIconContainer() {
-  return toolbar_button_provider_->GetPageActionIconContainerView();
+PageActionIconContainer* BrowserView::GetOmniboxPageActionIconContainer() {
+  return toolbar_button_provider_->GetOmniboxPageActionIconContainerView();
 }
 
 PageActionIconContainer* BrowserView::GetToolbarPageActionIconContainer() {
@@ -1440,7 +1440,7 @@ ShowTranslateBubbleResult BrowserView::ShowTranslateBubble(
 
   PageActionIconView* translate_icon =
       toolbar_button_provider()
-          ->GetPageActionIconContainerView()
+          ->GetOmniboxPageActionIconContainerView()
           ->GetPageActionIconView(PageActionIconType::kTranslate);
   TranslateBubbleView::ShowBubble(
       toolbar_button_provider()->GetAnchorView(), translate_icon, web_contents,
@@ -3179,6 +3179,6 @@ void BrowserView::OnImmersiveModeControllerDestroyed() {
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, banners::AppBannerManager::Observer implementation:
 void BrowserView::OnInstallabilityUpdated() {
-  GetPageActionIconContainer()->UpdatePageActionIcon(
+  GetOmniboxPageActionIconContainer()->UpdatePageActionIcon(
       PageActionIconType::kPwaInstall);
 }

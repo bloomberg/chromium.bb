@@ -54,7 +54,7 @@
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/selected_keyword_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
-#include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
+#include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
 #include "chrome/browser/ui/web_app_browser_controller.h"
@@ -217,7 +217,7 @@ void LocationBarView::Init() {
     AddChildView(image_view);
   }
 
-  PageActionIconContainerView::Params params;
+  OmniboxPageActionIconContainerView::Params params;
   params.types_enabled.push_back(PageActionIconType::kManagePasswords);
   // |browser_| may be null when LocationBarView is used for non-Browser windows
   // such as PresentationReceiverWindowView, which do not support page actions.
@@ -234,8 +234,9 @@ void LocationBarView::Init() {
   params.browser = browser_;
   params.command_updater = command_updater();
   params.page_action_icon_delegate = this;
-  page_action_icon_container_view_ = new PageActionIconContainerView(params);
-  AddChildView(page_action_icon_container_view_);
+  omnibox_page_action_icon_container_view_ =
+      new OmniboxPageActionIconContainerView(params);
+  AddChildView(omnibox_page_action_icon_container_view_);
 
   if (browser_) {
     // Add icons only when feature is not enabled. Otherwise icons will
@@ -545,7 +546,7 @@ void LocationBarView::Layout() {
 
   if (star_view_)
     add_trailing_decoration(star_view_);
-  add_trailing_decoration(page_action_icon_container_view_);
+  add_trailing_decoration(omnibox_page_action_icon_container_view_);
   if (intent_picker_view_)
     add_trailing_decoration(intent_picker_view_);
   if (save_credit_card_icon_view_)
@@ -663,7 +664,7 @@ void LocationBarView::ResetTabState(WebContents* contents) {
 }
 
 bool LocationBarView::ActivateFirstInactiveBubbleForAccessibility() {
-  if (page_action_icon_container_view_
+  if (omnibox_page_action_icon_container_view_
           ->ActivateFirstInactiveBubbleForAccessibility()) {
     return true;
   }
@@ -774,7 +775,7 @@ int LocationBarView::GetMinimumLeadingWidth() const {
 
 int LocationBarView::GetMinimumTrailingWidth() const {
   int trailing_width =
-      IncrementalMinimumWidth(page_action_icon_container_view_) +
+      IncrementalMinimumWidth(omnibox_page_action_icon_container_view_) +
       IncrementalMinimumWidth(star_view_) +
       IncrementalMinimumWidth(save_credit_card_icon_view_) +
       IncrementalMinimumWidth(local_card_migration_icon_view_);
@@ -872,7 +873,7 @@ void LocationBarView::RefreshPageActionIconViews() {
     GetWidget()->non_client_view()->ResetWindowControls();
   }
 
-  page_action_icon_container_view_->UpdateAll();
+  omnibox_page_action_icon_container_view_->UpdateAll();
 
   for (PageActionIconView* icon : page_action_icons_)
     icon->Update();

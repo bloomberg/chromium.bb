@@ -339,7 +339,7 @@ class BrowserView : public BrowserWindow,
   bool ShouldHideUIForFullscreen() const override;
   bool IsFullscreen() const override;
   bool IsFullscreenBubbleVisible() const override;
-  PageActionIconContainer* GetPageActionIconContainer() override;
+  PageActionIconContainer* GetOmniboxPageActionIconContainer() override;
   PageActionIconContainer* GetToolbarPageActionIconContainer() override;
   LocationBar* GetLocationBar() const override;
   void SetFocusToLocationBar(bool select_all) override;

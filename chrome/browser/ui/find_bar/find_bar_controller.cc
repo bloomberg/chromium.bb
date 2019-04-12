@@ -143,7 +143,7 @@ void FindBarController::EndFindSession(SelectionAction selection_action,
 }
 
 void FindBarController::FindBarVisibilityChanged() {
-  browser_->window()->GetPageActionIconContainer()->UpdatePageActionIcon(
+  browser_->window()->GetOmniboxPageActionIconContainer()->UpdatePageActionIcon(
       PageActionIconType::kFind);
 }
 

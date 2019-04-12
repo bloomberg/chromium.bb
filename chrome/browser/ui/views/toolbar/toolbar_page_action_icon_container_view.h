@@ -20,9 +20,7 @@ class SaveCardIconView;
 }  // namespace autofill
 
 // A container view for user-account-related PageActionIconViews and the profile
-// avatar icon. This container view is in the toolbar while the other
-// PageActionIconContainerView is in the omnibox and it is used to handle other
-// non user-account-related page action icons.
+// avatar icon.
 class ToolbarPageActionIconContainerView : public ToolbarIconContainerView,
                                            public PageActionIconContainer,
                                            public PageActionIconView::Delegate {

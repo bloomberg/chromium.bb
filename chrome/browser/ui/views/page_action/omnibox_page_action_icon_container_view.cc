@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
+#include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/location_bar/find_bar_icon.h"
@@ -13,10 +13,11 @@
 #include "chrome/browser/ui/views/translate/translate_icon_view.h"
 #include "ui/views/layout/box_layout.h"
 
-PageActionIconContainerView::Params::Params() = default;
-PageActionIconContainerView::Params::~Params() = default;
+OmniboxPageActionIconContainerView::Params::Params() = default;
+OmniboxPageActionIconContainerView::Params::~Params() = default;
 
-PageActionIconContainerView::PageActionIconContainerView(const Params& params)
+OmniboxPageActionIconContainerView::OmniboxPageActionIconContainerView(
+    const Params& params)
     : zoom_observer_(this) {
   DCHECK_GT(params.icon_size, 0);
   DCHECK_NE(params.icon_color, gfx::kPlaceholderColor);
@@ -78,9 +79,9 @@ PageActionIconContainerView::PageActionIconContainerView(const Params& params)
   }
 }
 
-PageActionIconContainerView::~PageActionIconContainerView() {}
+OmniboxPageActionIconContainerView::~OmniboxPageActionIconContainerView() {}
 
-PageActionIconView* PageActionIconContainerView::GetPageActionIconView(
+PageActionIconView* OmniboxPageActionIconContainerView::GetPageActionIconView(
     PageActionIconType type) {
   // TODO(https://crbug.com/788051): Update page action icons here as update
   // methods are migrated out of LocationBar to the PageActionIconContainer
@@ -104,19 +105,19 @@ PageActionIconView* PageActionIconContainerView::GetPageActionIconView(
   return nullptr;
 }
 
-void PageActionIconContainerView::UpdateAll() {
+void OmniboxPageActionIconContainerView::UpdateAll() {
   for (PageActionIconView* icon : page_action_icons_)
     icon->Update();
 }
 
-void PageActionIconContainerView::UpdatePageActionIcon(
+void OmniboxPageActionIconContainerView::UpdatePageActionIcon(
     PageActionIconType type) {
   PageActionIconView* icon = GetPageActionIconView(type);
   if (icon)
     icon->Update();
 }
 
-bool PageActionIconContainerView::
+bool OmniboxPageActionIconContainerView::
     ActivateFirstInactiveBubbleForAccessibility() {
   for (PageActionIconView* icon : page_action_icons_) {
     if (!icon->visible() || !icon->GetBubble())
@@ -131,26 +132,27 @@ bool PageActionIconContainerView::
   return false;
 }
 
-void PageActionIconContainerView::SetIconColor(SkColor icon_color) {
+void OmniboxPageActionIconContainerView::SetIconColor(SkColor icon_color) {
   for (PageActionIconView* icon : page_action_icons_)
     icon->SetIconColor(icon_color);
 }
 
-void PageActionIconContainerView::ZoomChangedForActiveTab(
+void OmniboxPageActionIconContainerView::ZoomChangedForActiveTab(
     bool can_show_bubble) {
   if (zoom_view_)
     zoom_view_->ZoomChangedForActiveTab(can_show_bubble);
 }
 
-void PageActionIconContainerView::ChildPreferredSizeChanged(
+void OmniboxPageActionIconContainerView::ChildPreferredSizeChanged(
     views::View* child) {
   PreferredSizeChanged();
 }
 
-void PageActionIconContainerView::ChildVisibilityChanged(views::View* child) {
+void OmniboxPageActionIconContainerView::ChildVisibilityChanged(
+    views::View* child) {
   PreferredSizeChanged();
 }
 
-void PageActionIconContainerView::OnDefaultZoomLevelChanged() {
+void OmniboxPageActionIconContainerView::OnDefaultZoomLevelChanged() {
   ZoomChangedForActiveTab(false);
 }

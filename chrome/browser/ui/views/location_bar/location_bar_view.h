@@ -47,7 +47,7 @@ class LocationIconView;
 enum class OmniboxPart;
 class OmniboxPopupView;
 enum class OmniboxTint;
-class PageActionIconContainerView;
+class OmniboxPageActionIconContainerView;
 class Profile;
 class SelectedKeywordView;
 class StarView;
@@ -161,8 +161,9 @@ class LocationBarView : public LocationBar,
     return local_card_migration_icon_view_;
   }
 
-  PageActionIconContainerView* page_action_icon_container_view() {
-    return page_action_icon_container_view_;
+  OmniboxPageActionIconContainerView*
+  omnibox_page_action_icon_container_view() {
+    return omnibox_page_action_icon_container_view_;
   }
 
   // Returns the screen coordinates of the omnibox (where the URL text appears,
@@ -402,7 +403,8 @@ class LocationBarView : public LocationBar,
   ContentSettingViews content_setting_views_;
 
   // The page action icons.
-  PageActionIconContainerView* page_action_icon_container_view_ = nullptr;
+  OmniboxPageActionIconContainerView* omnibox_page_action_icon_container_view_ =
+      nullptr;
 
   // The save credit card icon.  It will be null when |browser_| is null.
   autofill::SaveCardIconView* save_credit_card_icon_view_ = nullptr;
