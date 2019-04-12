@@ -28,7 +28,6 @@
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/wtf/dtoa/dtoa.h"
-#include "third_party/blink/renderer/platform/wtf/hex_number.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
@@ -252,10 +251,7 @@ String String::EncodeForDebugging() const {
           builder.Append(static_cast<char>(character));
         } else {
           // Print "\uXXXX" for control or non-ASCII characters.
-          builder.Append("\\u");
-          HexNumber::AppendByteAsHex(character >> 8, builder,
-                                     HexNumber::kUppercase);
-          HexNumber::AppendByteAsHex(character, builder, HexNumber::kUppercase);
+          builder.AppendFormat("\\u%04X", character);
         }
         break;
     }

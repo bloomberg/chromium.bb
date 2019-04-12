@@ -88,7 +88,6 @@ jumbo_component("wtf") {
     "hash_table.h",
     "hash_table_deleted_value_type.h",
     "hash_traits.h",
-    "hex_number.h",
     "leak_annotations.h",
     "linked_hash_set.h",
     "list_hash_set.h",
