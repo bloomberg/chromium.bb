@@ -14,6 +14,7 @@
 
 #include "base/mac/scoped_authorizationref.h"
 #import "base/mac/scoped_nsobject.h"
+#include "chrome/common/mac/staging_watcher.h"
 
 // Possible outcomes of various operations.  A version may accompany some of
 // these, but beware: a version is never required.  For statuses that can be
@@ -96,6 +97,9 @@ extern NSString* const kAutoupdateStatusErrorMessages;
 
   // YES if an update was ever successfully installed by -installUpdate.
   BOOL updateSuccessfullyInstalled_;
+
+  // The object to use to watch for the staging key.
+  base::scoped_nsobject<CrStagingKeyWatcher> stagingKeyWatcher_;
 }
 
 // Return the default Keystone Glue object.
