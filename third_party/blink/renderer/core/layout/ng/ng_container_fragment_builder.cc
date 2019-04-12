@@ -263,9 +263,9 @@ void NGContainerFragmentBuilder::GetAndClearOutOfFlowDescendantCandidates(
 
 String NGContainerFragmentBuilder::ToString() const {
   StringBuilder builder;
-  builder.Append(String::Format("ContainerFragment %.2fx%.2f, Children %u\n",
-                                InlineSize().ToFloat(), BlockSize().ToFloat(),
-                                children_.size()));
+  builder.AppendFormat("ContainerFragment %.2fx%.2f, Children %u\n",
+                       InlineSize().ToFloat(), BlockSize().ToFloat(),
+                       children_.size());
   for (auto& child : children_) {
     builder.Append(child->DumpFragmentTree(
         NGPhysicalFragment::DumpAll & ~NGPhysicalFragment::DumpHeaderText));

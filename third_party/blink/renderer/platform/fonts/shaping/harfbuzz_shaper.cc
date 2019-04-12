@@ -84,7 +84,7 @@ void CheckShapeResultRange(const ShapeResult* result,
       break;
     log.Append(", ");
   }
-  log.Append(String::Format("', %f", font_description.ComputedSize()));
+  log.AppendFormat("', %f", font_description.ComputedSize());
 
   // Log the primary font with its family name in the font file.
   const SimpleFontData* font_data = font->PrimaryFont();
@@ -97,10 +97,10 @@ void CheckShapeResultRange(const ShapeResult* result,
   }
 
   // Log the text to shape.
-  log.Append(String::Format(": %u-%u -> %u-%u:", start, end,
-                            result->StartIndex(), result->EndIndex()));
+  log.AppendFormat(": %u-%u -> %u-%u:", start, end, result->StartIndex(),
+                   result->EndIndex());
   for (unsigned i = start; i < end; ++i)
-    log.Append(String::Format(" %02X", text[i]));
+    log.AppendFormat(" %02X", text[i]);
 
   log.Append(", result=");
   result->ToString(&log);

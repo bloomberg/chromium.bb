@@ -759,15 +759,13 @@ String AXPosition::ToString() const {
   if (IsTextPosition()) {
     builder.Append("AX text position in ");
     builder.Append(container_object_->ToString());
-    builder.Append(", ");
-    builder.Append(String::Format("%d", TextOffset()));
+    builder.AppendFormat(", %d", TextOffset());
     return builder.ToString();
   }
 
   builder.Append("AX object anchored position in ");
   builder.Append(container_object_->ToString());
-  builder.Append(", ");
-  builder.Append(String::Format("%d", ChildIndex()));
+  builder.AppendFormat(", %d", ChildIndex());
   return builder.ToString();
 }
 

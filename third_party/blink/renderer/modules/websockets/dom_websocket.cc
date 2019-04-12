@@ -210,7 +210,7 @@ static String EncodeSubprotocolString(const String& protocol) {
   StringBuilder builder;
   for (wtf_size_t i = 0; i < protocol.length(); i++) {
     if (protocol[i] < 0x20 || protocol[i] > 0x7E)
-      builder.Append(String::Format("\\u%04X", protocol[i]));
+      builder.AppendFormat("\\u%04X", protocol[i]);
     else if (protocol[i] == 0x5c)
       builder.Append("\\\\");
     else

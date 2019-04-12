@@ -26,18 +26,17 @@ static_assert(sizeof(PaintChunk) == sizeof(SameSizeAsPaintChunk),
 
 String PaintChunk::ToString() const {
   StringBuilder sb;
-  sb.Append("PaintChunk(");
-  sb.Append(String::Format(
-      "begin=%zu, end=%zu, id=%s cacheable=%d props=(%s) bounds=%s "
+  sb.AppendFormat(
+      "PaintChunk(begin=%zu, end=%zu, id=%s cacheable=%d props=(%s) bounds=%s "
       "known_to_be_opaque=%d",
       begin_index, end_index, id.ToString().Utf8().data(), is_cacheable,
       properties.ToString().Utf8().data(), bounds.ToString().Utf8().data(),
-      known_to_be_opaque));
+      known_to_be_opaque);
   if (hit_test_data) {
     sb.Append(", hit_test_data=");
     sb.Append(hit_test_data->ToString());
   }
-  sb.Append(")");
+  sb.Append(')');
   return sb.ToString();
 }
 

@@ -962,7 +962,7 @@ void DocumentMarkerController::ShowMarkers() const {
   StringBuilder builder;
   for (auto& node_iterator : markers_) {
     const Text* node = node_iterator.key;
-    builder.Append(String::Format("%p", node));
+    builder.AppendFormat("%p", node);
     MarkerLists* markers = markers_.at(node);
     for (DocumentMarker::MarkerType type : DocumentMarker::MarkerTypes::All()) {
       DocumentMarkerList* const list = ListForType(markers, type);
@@ -972,17 +972,13 @@ void DocumentMarkerController::ShowMarkers() const {
       const HeapVector<Member<DocumentMarker>>& markers_in_list =
           list->GetMarkers();
       for (const DocumentMarker* marker : markers_in_list) {
-        builder.Append(" ");
-        builder.AppendNumber(static_cast<uint32_t>(marker->GetType()));
-        builder.Append(":[");
-        builder.AppendNumber(marker->StartOffset());
-        builder.Append(":");
-        builder.AppendNumber(marker->EndOffset());
-        builder.Append("](");
-        builder.AppendNumber(type == DocumentMarker::kTextMatch
-                                 ? To<TextMatchMarker>(marker)->IsActiveMatch()
-                                 : 0);
-        builder.Append(")");
+        bool is_active_match = false;
+        if (auto* text_match = DynamicTo<TextMatchMarker>(marker))
+          is_active_match = text_match->IsActiveMatch();
+
+        builder.AppendFormat(
+            " %u:[%u:%u](%d)", static_cast<uint32_t>(marker->GetType()),
+            marker->StartOffset(), marker->EndOffset(), is_active_match);
       }
     }
     builder.Append("\n");

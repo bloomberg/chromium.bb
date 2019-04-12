@@ -66,7 +66,7 @@ void PagePopupClient::AddJavaScriptString(const String& str,
       builder.Append("\\x3C");
     } else if (str[i] < 0x20 || str[i] == kLineSeparator ||
                str[i] == kParagraphSeparator) {
-      builder.Append(String::Format("\\u%04X", str[i]));
+      builder.AppendFormat("\\u%04X", str[i]);
     } else {
       builder.Append(str[i]);
     }
