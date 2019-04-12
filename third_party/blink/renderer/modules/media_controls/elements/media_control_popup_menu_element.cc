@@ -172,7 +172,7 @@ void MediaControlPopupMenuElement::Trace(blink::Visitor* visitor) {
 
 MediaControlPopupMenuElement::MediaControlPopupMenuElement(
     MediaControlsImpl& media_controls)
-    : MediaControlDivElement(media_controls, kMediaIgnore) {
+    : MediaControlDivElement(media_controls) {
   SetIsWanted(false);
 }
 

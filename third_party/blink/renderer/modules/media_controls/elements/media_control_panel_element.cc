@@ -78,8 +78,7 @@ class MediaControlPanelElement::TransitionEventListener final
 
 MediaControlPanelElement::MediaControlPanelElement(
     MediaControlsImpl& media_controls)
-    : MediaControlDivElement(media_controls, kMediaIgnore),
-      event_listener_(nullptr) {
+    : MediaControlDivElement(media_controls), event_listener_(nullptr) {
   SetShadowPseudoId(AtomicString("-webkit-media-controls-panel"));
 }
 

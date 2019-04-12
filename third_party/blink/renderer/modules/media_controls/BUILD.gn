@@ -31,7 +31,6 @@ blink_modules_sources("media_controls") {
     "elements/media_control_download_button_element.h",
     "elements/media_control_element_base.cc",
     "elements/media_control_element_base.h",
-    "elements/media_control_element_type.h",
     "elements/media_control_elements_helper.cc",
     "elements/media_control_elements_helper.h",
     "elements/media_control_fullscreen_button_element.cc",

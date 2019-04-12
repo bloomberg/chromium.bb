@@ -26,7 +26,7 @@ namespace blink {
 MediaControlTimeDisplayElement::MediaControlTimeDisplayElement(
     MediaControlsImpl& media_controls,
     blink::WebLocalizedString::Name localized_label)
-    : MediaControlDivElement(media_controls, kMediaIgnore),
+    : MediaControlDivElement(media_controls),
       localized_label_(localized_label) {
   SetAriaLabel();
 }

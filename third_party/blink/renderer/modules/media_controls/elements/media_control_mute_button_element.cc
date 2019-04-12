@@ -15,7 +15,7 @@ namespace blink {
 
 MediaControlMuteButtonElement::MediaControlMuteButtonElement(
     MediaControlsImpl& media_controls)
-    : MediaControlInputElement(media_controls, kMediaIgnore) {
+    : MediaControlInputElement(media_controls) {
   setType(input_type_names::kButton);
   SetShadowPseudoId(AtomicString("-webkit-media-controls-mute-button"));
 }
