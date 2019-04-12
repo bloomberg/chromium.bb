@@ -187,7 +187,7 @@ class VideoDecoderTest : public ::testing::Test {
 // Play video from start to end while measuring performance.
 // TODO(dstaessens@) Add a test to measure capped decode performance, measuring
 // the number of frames dropped.
-TEST_F(VideoDecoderTest, MeasureUncappedPerfomance) {
+TEST_F(VideoDecoderTest, MeasureUncappedPerformance) {
   auto tvp = CreateVideoPlayer(g_env->Video());
 
   performance_evaluator_->StartMeasuring();
