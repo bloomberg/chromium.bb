@@ -503,6 +503,8 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
     // GetBoolean fails.
     dict->GetBoolean(kIncludeSubdomainsKey, &include_subdomains);
 
+    // TODO(chlily): According to the spec we should restrict these sampling
+    // fractions to [0.0, 1.0].
     double success_fraction = 0.0;
     // success_fraction is optional and defaults to 0.0, so it's okay if
     // GetDouble fails.
@@ -687,6 +689,14 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
                                                  bool success) const {
     const double sampling_fraction =
         success ? policy.success_fraction : policy.failure_fraction;
+
+    // Sampling fractions are often either 0.0 or 1.0, so in those cases we
+    // can avoid having to call RandDouble().
+    if (sampling_fraction <= 0.0)
+      return base::nullopt;
+    if (sampling_fraction >= 1.0)
+      return sampling_fraction;
+
     if (base::RandDouble() >= sampling_fraction)
       return base::nullopt;
     return sampling_fraction;
