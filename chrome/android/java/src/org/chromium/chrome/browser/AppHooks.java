@@ -379,7 +379,7 @@ public abstract class AppHooks {
     /**
      * @param activity An activity for access to different features.
      */
-    public void createTouchlessMenuCoordinator(ChromeActivity activity) {}
+    public void attachTouchlessMenuCoordinator(ChromeActivity activity) {}
 
     /**
      * @param activity An activity for access to different features.
