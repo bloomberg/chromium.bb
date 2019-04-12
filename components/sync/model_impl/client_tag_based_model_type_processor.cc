@@ -819,17 +819,20 @@ ConflictResolution::Type ClientTagBasedModelTypeProcessor::ResolveConflict(
   if (entity->MatchesData(remote_data)) {
     // The changes are identical so there isn't a real conflict.
     resolution_type = ConflictResolution::CHANGES_MATCH;
-  } else if (entity->RequiresCommitData() ||
-             entity->MatchesBaseData(entity->commit_data().value())) {
-    // If commit data needs to be loaded at this point, it can only be due to a
-    // re-encryption request. If the commit data matches the base data, it also
-    // must be a re-encryption request. Either way there's no real local change
-    // and the remote data should win.
+  } else if (entity->MatchesOwnBaseData()) {
+    // If there is no real local change, then the entity must be unsynced due to
+    // a pending local re-encryption request. In this case, the remote data
+    // should win.
     resolution_type = ConflictResolution::IGNORE_LOCAL_ENCRYPTION;
   } else if (entity->MatchesBaseData(remote_data)) {
     // The remote data isn't actually changing from the last remote data that
     // was seen, so it must have been a re-encryption and can be ignored.
     resolution_type = ConflictResolution::IGNORE_REMOTE_ENCRYPTION;
+  } else if (entity->RequiresCommitData()) {
+    // TODO(crbug.com/951752): This is wrong, but since we don't have the local
+    // data, this is the best we could do. We should fix this be loading the
+    // local data and resolve the conflict accordingly.
+    resolution_type = ConflictResolution::USE_REMOTE;
   } else {
     // There's a real data conflict here; let the bridge resolve it.
     ConflictResolution resolution =

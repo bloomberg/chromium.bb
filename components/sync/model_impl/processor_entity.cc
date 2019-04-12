@@ -111,6 +111,15 @@ bool ProcessorEntity::MatchesData(const EntityData& data) const {
   return MatchesSpecificsHash(data.specifics);
 }
 
+bool ProcessorEntity::MatchesOwnBaseData() const {
+  DCHECK(IsUnsynced());
+  DCHECK(!metadata_.specifics_hash().empty());
+  if (metadata_.is_deleted()) {
+    return false;
+  }
+  return metadata_.specifics_hash() == metadata_.base_specifics_hash();
+}
+
 bool ProcessorEntity::MatchesBaseData(const EntityData& data) const {
   DCHECK(IsUnsynced());
   if (data.is_deleted() || metadata_.base_specifics_hash().empty()) {
