@@ -314,8 +314,7 @@ void PluginVmLauncherView::OnUnzipped() {
   state_ = State::REGISTERING;
   OnStateUpdated();
 
-  // TODO(https://crbug.com/947014): Add call to register PluginVm image.
-  OnRegistered(true);
+  plugin_vm_image_manager_->StartRegistration();
 }
 
 void PluginVmLauncherView::OnUnzippingFailed() {
@@ -325,19 +324,20 @@ void PluginVmLauncherView::OnUnzippingFailed() {
   OnStateUpdated();
 }
 
-void PluginVmLauncherView::OnRegistered(bool success) {
+void PluginVmLauncherView::OnRegistered() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(state_, State::REGISTERING);
 
-  if (!success) {
-    state_ = State::ERROR;
-    OnStateUpdated();
-    return;
-  }
-
   state_ = State::FINISHED;
   OnStateUpdated();
-  // TODO(https://crbug.com/904848): Mark image as registered.
+}
+
+void PluginVmLauncherView::OnRegistrationFailed() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_EQ(state_, State::REGISTERING);
+
+  state_ = State::ERROR;
+  OnStateUpdated();
 }
 
 base::string16 PluginVmLauncherView::GetBigMessage() {

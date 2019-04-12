@@ -47,6 +47,8 @@ class PluginVmLauncherView : public views::BubbleDialogDelegateView,
                                   int64_t unzipping_bytes_per_sec) override;
   void OnUnzipped() override;
   void OnUnzippingFailed() override;
+  void OnRegistered() override;
+  void OnRegistrationFailed() override;
 
   // Public for testing purposes.
   base::string16 GetBigMessage();
@@ -69,8 +71,6 @@ class PluginVmLauncherView : public views::BubbleDialogDelegateView,
   void AddedToWidget() override;
 
  private:
-  void OnRegistered(bool success);
-
   base::string16 GetMessage() const;
   base::string16 GetDownloadProgressMessage(uint64_t downlaoded_bytes,
                                             int64_t content_length) const;

@@ -38,17 +38,19 @@ int64_t GetSpeed(base::TimeTicks start_tick, int64_t bytes_proceeded) {
 namespace plugin_vm {
 
 bool PluginVmImageManager::IsProcessingImage() {
-  return processing_image_;
+  return State::NOT_STARTED < state_ && state_ < State::CONFIGURED;
 }
 
 void PluginVmImageManager::StartDownload() {
   if (IsProcessingImage()) {
     LOG(ERROR) << "Download of a PluginVm image couldn't be started as"
-               << " another PluginVm image is currently being processed";
+               << " another PluginVm image is currently being processed "
+               << "in state " << GetStateName(state_);
     OnDownloadFailed();
     return;
   }
-  processing_image_ = true;
+
+  state_ = State::DOWNLOADING;
   GURL url = GetPluginVmImageDownloadUrl();
   if (url.is_empty()) {
     OnDownloadFailed();
@@ -58,17 +60,20 @@ void PluginVmImageManager::StartDownload() {
 }
 
 void PluginVmImageManager::CancelDownload() {
+  state_ = State::DOWNLOAD_CANCELLED;
   download_service_->CancelDownload(current_download_guid_);
 }
 
 void PluginVmImageManager::StartUnzipping() {
-  if (IsDownloading()) {
-    LOG(ERROR) << "Unzipping of PluginVm image couldn't be proceeded "
-               << "as image is still being downloaded";
+  if (state_ != State::DOWNLOADED) {
+    LOG(ERROR) << "Unzipping of PluginVm image couldn't proceed as current "
+               << "state is " << GetStateName(state_) << " not "
+               << GetStateName(State::DOWNLOADED);
     OnUnzipped(false);
     return;
   }
 
+  state_ = State::UNZIPPING;
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
       base::BindOnce(&PluginVmImageManager::UnzipDownloadedPluginVmImageArchive,
@@ -78,7 +83,28 @@ void PluginVmImageManager::StartUnzipping() {
 }
 
 void PluginVmImageManager::CancelUnzipping() {
-  unzipping_cancelled_ = true;
+  state_ = State::UNZIPPING_CANCELLED;
+}
+
+void PluginVmImageManager::StartRegistration() {
+  if (state_ != State::UNZIPPED) {
+    LOG(ERROR) << "Registration of PluginVm image couldn't proceed as current "
+               << "state is " << GetStateName(state_) << " not "
+               << GetStateName(State::UNZIPPED);
+    OnRegistered(false);
+    return;
+  }
+
+  state_ = State::REGISTERING;
+  // TODO(https://crbug.com/947014): Add call to register PluginVm image.
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(&PluginVmImageManager::OnRegistered,
+                     weak_ptr_factory_.GetWeakPtr(), true /* success */));
+}
+
+void PluginVmImageManager::CancelRegistration() {
+  state_ = State::REGISTRATION_CANCELLED;
 }
 
 void PluginVmImageManager::SetObserver(Observer* observer) {
@@ -116,22 +142,26 @@ void PluginVmImageManager::OnDownloadCompleted(
     return;
   }
 
+  state_ = State::DOWNLOADED;
   if (observer_)
     observer_->OnDownloadCompleted();
 }
 
 void PluginVmImageManager::OnDownloadCancelled() {
+  DCHECK_EQ(state_, State::DOWNLOAD_CANCELLED);
+
   RemoveTemporaryPluginVmImageArchiveIfExists();
   current_download_guid_.clear();
-  processing_image_ = false;
   if (observer_)
     observer_->OnDownloadCancelled();
+
+  state_ = State::NOT_STARTED;
 }
 
 void PluginVmImageManager::OnDownloadFailed() {
+  state_ = State::DOWNLOAD_FAILED;
   RemoveTemporaryPluginVmImageArchiveIfExists();
   current_download_guid_.clear();
-  processing_image_ = false;
   if (observer_)
     observer_->OnDownloadFailed();
 }
@@ -146,22 +176,45 @@ void PluginVmImageManager::OnUnzippingProgressUpdated(int new_unzipped_bytes) {
 }
 
 void PluginVmImageManager::OnUnzipped(bool success) {
-  unzipping_cancelled_ = false;
   plugin_vm_image_size_ = -1;
   plugin_vm_image_bytes_unzipped_ = 0;
   RemoveTemporaryPluginVmImageArchiveIfExists();
+
   if (!success) {
+    state_ = State::UNZIPPING_FAILED;
     if (observer_)
       observer_->OnUnzippingFailed();
     RemovePluginVmImageDirectoryIfExists();
-    processing_image_ = false;
     return;
   }
+
+  state_ = State::UNZIPPED;
   if (observer_)
     observer_->OnUnzipped();
-  processing_image_ = false;
-  // TODO(okalitova): Populate necessary preferences with information about
-  // PluginVm image that has been successfully downloaded and extracted.
+}
+
+void PluginVmImageManager::OnRegistered(bool success) {
+  // If image registration has been canceled registration call result is just
+  // not being proceeded.
+  if (state_ == State::REGISTRATION_CANCELLED) {
+    RemovePluginVmImageDirectoryIfExists();
+    state_ = State::NOT_STARTED;
+    return;
+  }
+
+  if (!success) {
+    state_ = State::REGISTRATION_FAILED;
+    if (observer_)
+      observer_->OnRegistrationFailed();
+    RemovePluginVmImageDirectoryIfExists();
+    return;
+  }
+
+  state_ = State::REGISTERED;
+  if (observer_)
+    observer_->OnRegistered();
+
+  state_ = State::CONFIGURED;
 }
 
 void PluginVmImageManager::SetDownloadServiceForTesting(
@@ -194,6 +247,39 @@ GURL PluginVmImageManager::GetPluginVmImageDownloadUrl() {
     return GURL();
   }
   return GURL(url_ptr->GetString());
+}
+
+std::string PluginVmImageManager::GetStateName(State state) {
+  switch (state) {
+    case State::NOT_STARTED:
+      return "NOT_STARTED";
+    case State::DOWNLOADING:
+      return "DOWNLOADING";
+    case State::DOWNLOAD_CANCELLED:
+      return "DOWNLOAD_CANCELLED";
+    case State::DOWNLOADED:
+      return "DOWNLOADED";
+    case State::UNZIPPING:
+      return "UNZIPPING";
+    case State::UNZIPPING_CANCELLED:
+      return "UNZIPPING_CANCELLED";
+    case State::UNZIPPED:
+      return "UNZIPPED";
+    case State::REGISTERING:
+      return "REGISTERING";
+    case State::REGISTRATION_CANCELLED:
+      return "REGISTRATION_CANCELLED";
+    case State::REGISTERED:
+      return "REGISTERED";
+    case State::CONFIGURED:
+      return "CONFIGURED";
+    case State::DOWNLOAD_FAILED:
+      return "DOWNLOAD_FAILED";
+    case State::UNZIPPING_FAILED:
+      return "UNZIPPING_FAILED";
+    case State::REGISTRATION_FAILED:
+      return "REGISTRATION_FAILED";
+  }
 }
 
 download::DownloadParams PluginVmImageManager::GetDownloadParams(
@@ -233,10 +319,6 @@ void PluginVmImageManager::OnStartDownload(
     current_download_guid_ = download_guid;
   else
     OnDownloadFailed();
-}
-
-bool PluginVmImageManager::IsDownloading() {
-  return !current_download_guid_.empty();
 }
 
 bool PluginVmImageManager::VerifyDownload(
@@ -326,7 +408,7 @@ bool PluginVmImageManager::UnzipDownloadedPluginVmImageArchive() {
 }
 
 bool PluginVmImageManager::IsUnzippingCancelled() {
-  return unzipping_cancelled_;
+  return state_ == State::UNZIPPING_CANCELLED;
 }
 
 PluginVmImageManager::PluginVmImageWriterDelegate::PluginVmImageWriterDelegate(
