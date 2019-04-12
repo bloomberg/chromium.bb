@@ -31,15 +31,15 @@ class AuthenticatorRequestSheetView;
 // use to connect their security key (either USB, BLE, NFC, or internal), and
 // then guides them through the flow of setting up their security key using the
 // selecting transport protocol, and finally shows success/failure indications.
+//
+// Note that as a DialogDelegateView, AuthenticatorRequestDialogView is
+// deleted when DeleteDelegate() is called.
 class AuthenticatorRequestDialogView
     : public views::DialogDelegateView,
       public AuthenticatorRequestDialogModel::Observer,
       public content::WebContentsObserver,
       public views::ButtonListener {
  public:
-  AuthenticatorRequestDialogView(
-      content::WebContents* web_contents,
-      std::unique_ptr<AuthenticatorRequestDialogModel> model);
   ~AuthenticatorRequestDialogView() override;
 
  protected:
@@ -90,12 +90,24 @@ class AuthenticatorRequestDialogView
 
  private:
   friend class test::AuthenticatorRequestDialogViewTestApi;
+  friend void ShowAuthenticatorRequestDialog(
+      content::WebContents* web_contents,
+      std::unique_ptr<AuthenticatorRequestDialogModel> model);
+
+  // Show by calling ShowAuthenticatorRequestDialog().
+  AuthenticatorRequestDialogView(
+      content::WebContents* web_contents,
+      std::unique_ptr<AuthenticatorRequestDialogModel> model);
+
+  // Shows the dialog after creation or after being hidden.
+  void Show();
 
   std::unique_ptr<AuthenticatorRequestDialogModel> model_;
 
   AuthenticatorRequestSheetView* sheet_ = nullptr;
   views::Button* other_transports_button_ = nullptr;
   std::unique_ptr<views::MenuRunner> other_transports_menu_runner_;
+  bool first_shown_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorRequestDialogView);
 };

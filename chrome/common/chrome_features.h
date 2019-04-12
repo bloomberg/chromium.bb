@@ -461,9 +461,6 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSchedulerConfiguration;
 #endif  // defined(OS_CHROMEOS)
 
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kWebAuthenticationUI;
-
 #if !defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kWebRtcRemoteEventLog;

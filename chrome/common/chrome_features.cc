@@ -748,11 +748,6 @@ const base::Feature kSchedulerConfiguration{"SchedulerConfiguration",
 
 #endif  // defined(OS_CHROMEOS)
 
-// Enable showing a tab-modal dialog while a Web Authentication API request is
-// pending, to help guide the user through the flow of using their security key.
-const base::Feature kWebAuthenticationUI{"WebAuthenticationUI",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
-
 #if !defined(OS_ANDROID)
 // Allow capturing of WebRTC event logs, and uploading of those logs to Crash.
 // Please note that a Chrome policy must also be set, for this to have effect.

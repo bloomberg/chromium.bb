@@ -103,7 +103,7 @@ void OtherTransportsMenuModel::ExecuteCommand(int command_id, int event_flags) {
   if (command_id == kWinNativeApiMenuCommand) {
     DCHECK(dialog_model_->transport_availability()
                ->has_win_native_api_authenticator);
-    dialog_model_->AbandonFlowAndDispatchToNativeWindowsApi();
+    dialog_model_->HideDialogAndDispatchToNativeWindowsApi();
     return;
   }
 #endif  // defined(OS_WIN)

@@ -101,12 +101,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
     // This allows the observer to distinguish it from other
     // authenticators.
     std::string win_native_api_authenticator_id;
-
-    // If true, dispatch of the request cannot be controlled by
-    // the embedder. The embedder must not display a UI for this
-    // request and must ignore all subsequent invocations of the
-    // Observer interface methods.
-    bool disable_embedder_ui = false;
   };
 
   class COMPONENT_EXPORT(DEVICE_FIDO) Observer {

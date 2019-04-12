@@ -95,12 +95,15 @@ void AuthenticatorRequestDialogModel::SetCurrentStep(Step step) {
     observer.OnStepTransition();
 }
 
+void AuthenticatorRequestDialogModel::HideDialog() {
+  SetCurrentStep(Step::kNotStarted);
+}
+
 void AuthenticatorRequestDialogModel::StartFlow(
     TransportAvailabilityInfo transport_availability,
     base::Optional<device::FidoTransportProtocol> last_used_transport,
     const base::ListValue* previously_paired_bluetooth_device_list) {
   DCHECK_EQ(current_step(), Step::kNotStarted);
-  DCHECK(!transport_availability.disable_embedder_ui);
 
   transport_availability_ = std::move(transport_availability);
   last_used_transport_ = last_used_transport;
@@ -125,7 +128,7 @@ void AuthenticatorRequestDialogModel::
   // Windows UI.
   if (transport_availability_.has_win_native_api_authenticator &&
       transport_availability_.available_transports.empty()) {
-    AbandonFlowAndDispatchToNativeWindowsApi();
+    HideDialogAndDispatchToNativeWindowsApi();
     return;
   }
 
@@ -179,10 +182,10 @@ void AuthenticatorRequestDialogModel::StartGuidedFlowForTransport(
 }
 
 void AuthenticatorRequestDialogModel::
-    AbandonFlowAndDispatchToNativeWindowsApi() {
+    HideDialogAndDispatchToNativeWindowsApi() {
   if (!transport_availability()->has_win_native_api_authenticator ||
       transport_availability()->win_native_api_authenticator_id.empty()) {
-    DCHECK(false);
+    NOTREACHED();
     SetCurrentStep(Step::kClosed);
     return;
   }
@@ -193,7 +196,7 @@ void AuthenticatorRequestDialogModel::
       transport_availability()->win_native_api_authenticator_id,
       base::TimeDelta());
 
-  SetCurrentStep(Step::kClosed);
+  HideDialog();
 }
 
 void AuthenticatorRequestDialogModel::
@@ -579,6 +582,7 @@ void AuthenticatorRequestDialogModel::CollectPIN(
 
 void AuthenticatorRequestDialogModel::RequestAttestationPermission(
     base::OnceCallback<void(bool)> callback) {
+  DCHECK(current_step_ != Step::kClosed);
   attestation_callback_ = std::move(callback);
   SetCurrentStep(Step::kAttestationPermissionRequest);
 }

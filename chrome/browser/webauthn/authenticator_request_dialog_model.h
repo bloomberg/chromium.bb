@@ -131,6 +131,9 @@ class AuthenticatorRequestDialogModel {
   void SetCurrentStep(Step step);
   Step current_step() const { return current_step_; }
 
+  // Hides the dialog. A subsequent call to SetCurrentStep() will unhide it.
+  void HideDialog();
+
   // Returns whether the UI is in a state at which the |request_| member of
   // AuthenticatorImpl has completed processing. Note that the request callback
   // is only resolved after the UI is dismissed.
@@ -145,6 +148,9 @@ class AuthenticatorRequestDialogModel {
 
   bool should_dialog_be_closed() const {
     return current_step() == Step::kClosed;
+  }
+  bool should_dialog_be_hidden() const {
+    return current_step() == Step::kNotStarted;
   }
 
   const TransportAvailabilityInfo* transport_availability() const {
@@ -186,9 +192,9 @@ class AuthenticatorRequestDialogModel {
       AuthenticatorTransport transport,
       bool pair_with_new_device_for_bluetooth_low_energy = false);
 
-  // Requests that the step-by-step wizard flow be aborted and the
-  // native Windows WebAuthn UI be shown instead.
-  void AbandonFlowAndDispatchToNativeWindowsApi();
+  // Hides the modal Chrome UI dialog and shows the native Windows WebAuthn
+  // UI instead.
+  void HideDialogAndDispatchToNativeWindowsApi();
 
   // Ensures that the Bluetooth adapter is powered before proceeding to |step|.
   //  -- If the adapter is powered, advanced directly to |step|.
