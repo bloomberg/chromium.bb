@@ -17,10 +17,10 @@
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/ping_loader.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
@@ -51,7 +51,7 @@ void ExecutionContextCSPDelegate::SetAddressSpace(mojom::IPAddressSpace space) {
 }
 
 void ExecutionContextCSPDelegate::SetRequireTrustedTypes() {
-  if (origin_trials::TrustedDOMTypesEnabled(execution_context_))
+  if (RuntimeEnabledFeatures::TrustedDOMTypesEnabled(execution_context_))
     GetSecurityContext().SetRequireTrustedTypes();
 }
 

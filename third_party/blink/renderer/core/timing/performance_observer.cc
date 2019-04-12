@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/performance_entry_names.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/performance_entry.h"
@@ -58,13 +57,13 @@ Vector<AtomicString> PerformanceObserver::supportedEntryTypes(
   Vector<AtomicString> supportedEntryTypes;
   auto* execution_context = ExecutionContext::From(script_state);
   if (execution_context->IsDocument()) {
-    if (origin_trials::ElementTimingEnabled(execution_context))
+    if (RuntimeEnabledFeatures::ElementTimingEnabled(execution_context))
       supportedEntryTypes.push_back(performance_entry_names::kElement);
-    if (origin_trials::EventTimingEnabled(execution_context)) {
+    if (RuntimeEnabledFeatures::EventTimingEnabled(execution_context)) {
       supportedEntryTypes.push_back(performance_entry_names::kEvent);
       supportedEntryTypes.push_back(performance_entry_names::kFirstInput);
     }
-    if (origin_trials::LayoutJankAPIEnabled(execution_context))
+    if (RuntimeEnabledFeatures::LayoutJankAPIEnabled(execution_context))
       supportedEntryTypes.push_back(performance_entry_names::kLayoutJank);
     supportedEntryTypes.push_back(performance_entry_names::kLongtask);
   }

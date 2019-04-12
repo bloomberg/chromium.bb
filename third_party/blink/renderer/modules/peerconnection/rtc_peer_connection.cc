@@ -75,7 +75,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/modules/crypto/crypto_result_impl.h"
 #include "third_party/blink/renderer/modules/mediastream/media_constraints_impl.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
@@ -441,7 +440,7 @@ webrtc::PeerConnectionInterface::RTCConfiguration ParseConfiguration(
         static_cast<int>(configuration->rtcAudioJitterBufferMinDelayMs());
   }
 
-  if (origin_trials::RtcAudioJitterBufferRtxHandlingEnabled(context)) {
+  if (RuntimeEnabledFeatures::RtcAudioJitterBufferRtxHandlingEnabled(context)) {
     UseCounter::Count(context, WebFeature::kRTCAudioJitterBufferRtxHandling);
     web_configuration.audio_jitter_buffer_enable_rtx_handling = true;
   }
@@ -1480,7 +1479,7 @@ RTCConfiguration* RTCPeerConnection::getConfiguration(
   result->setIceCandidatePoolSize(webrtc_configuration.ice_candidate_pool_size);
 
   const auto* context = ExecutionContext::From(script_state);
-  if (origin_trials::RtcAudioJitterBufferMaxPacketsEnabled(context)) {
+  if (RuntimeEnabledFeatures::RtcAudioJitterBufferMaxPacketsEnabled(context)) {
     int audio_jitter_buffer_max_packets =
         webrtc_configuration.audio_jitter_buffer_max_packets;
     result->setRtcAudioJitterBufferMaxPackets(

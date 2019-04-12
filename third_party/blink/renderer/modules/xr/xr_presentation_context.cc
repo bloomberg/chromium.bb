@@ -5,8 +5,8 @@
 #include "third_party/blink/renderer/modules/xr/xr_presentation_context.h"
 
 #include "third_party/blink/renderer/bindings/modules/v8/rendering_context.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -25,7 +25,7 @@ void XRPresentationContext::SetCanvasGetContextResult(
 CanvasRenderingContext* XRPresentationContext::Factory::Create(
     CanvasRenderingContextHost* host,
     const CanvasContextCreationAttributesCore& attrs) {
-  if (!origin_trials::WebXREnabled(host->GetTopExecutionContext()))
+  if (!RuntimeEnabledFeatures::WebXREnabled(host->GetTopExecutionContext()))
     return nullptr;
   return MakeGarbageCollected<XRPresentationContext>(host, attrs);
 }

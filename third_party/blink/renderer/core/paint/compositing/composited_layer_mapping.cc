@@ -52,7 +52,6 @@
 #include "third_party/blink/renderer/core/layout/layout_video.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
@@ -1318,7 +1317,8 @@ void CompositedLayerMapping::UpdateMainGraphicsLayerGeometry(
   if (new_position != old_position && !is_iframe_doc) {
     graphics_layer_->SetPosition(new_position);
 
-    if (origin_trials::JankTrackingEnabled(&layout_object.GetDocument())) {
+    if (RuntimeEnabledFeatures::JankTrackingEnabled(
+            &layout_object.GetDocument())) {
       LocalFrameView* frame_view = layout_object.View()->GetFrameView();
       frame_view->GetJankTracker().NotifyCompositedLayerMoved(
           OwningLayer(), FloatRect(old_position, FloatSize(old_size)),

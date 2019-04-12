@@ -17,7 +17,6 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/modules/picture_in_picture/enter_picture_in_picture_event.h"
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_window.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -347,7 +346,7 @@ void PictureInPictureControllerImpl::PictureInPictureWindowSizeChanged(
 bool PictureInPictureControllerImpl::ShouldShowMuteButton(
     const HTMLVideoElement& element) {
   DCHECK(GetSupplementable());
-  return element.HasAudio() && origin_trials::MuteButtonEnabled(
+  return element.HasAudio() && RuntimeEnabledFeatures::MuteButtonEnabled(
                                    GetSupplementable()->GetExecutionContext());
 }
 

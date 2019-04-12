@@ -30,13 +30,13 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/testing/internal_settings.h"
 #include "third_party/blink/renderer/core/testing/internals.h"
 #include "third_party/blink/renderer/core/testing/worker_internals.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/origin_trial_features.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -94,12 +94,14 @@ void InstallOriginTrialFeaturesForTesting(
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
 
   if (type == V8OriginTrialsTest::GetWrapperTypeInfo()) {
-    if (origin_trials::OriginTrialsSampleAPIEnabled(execution_context)) {
+    if (RuntimeEnabledFeatures::OriginTrialsSampleAPIEnabled(
+            execution_context)) {
       V8OriginTrialsTest::InstallOriginTrialsSampleAPI(
           script_state->GetIsolate(), script_state->World(),
           v8::Local<v8::Object>(), prototype_object, interface_object);
     }
-    if (origin_trials::OriginTrialsSampleAPIImpliedEnabled(execution_context)) {
+    if (RuntimeEnabledFeatures::OriginTrialsSampleAPIImpliedEnabled(
+            execution_context)) {
       V8OriginTrialsTest::InstallOriginTrialsSampleAPIImplied(
           script_state->GetIsolate(), script_state->World(),
           v8::Local<v8::Object>(), prototype_object, interface_object);

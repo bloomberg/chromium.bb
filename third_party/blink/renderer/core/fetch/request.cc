@@ -28,7 +28,6 @@
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/url/url_search_params.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
@@ -386,7 +385,7 @@ Request* Request::CreateRequestWithRequestOrString(
   // mode to it." For more information see Priority Hints at
   // https://crbug.com/821464.
   DCHECK(init->importance().IsNull() ||
-         origin_trials::PriorityHintsEnabled(execution_context));
+         RuntimeEnabledFeatures::PriorityHintsEnabled(execution_context));
   if (!init->importance().IsNull())
     UseCounter::Count(execution_context, WebFeature::kPriorityHints);
 

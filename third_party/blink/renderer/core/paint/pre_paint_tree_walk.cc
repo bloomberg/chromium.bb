@@ -16,7 +16,6 @@
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
@@ -25,6 +24,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_property_tree_printer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -134,7 +134,8 @@ void PrePaintTreeWalk::Walk(LocalFrameView& frame_view) {
 #endif
   }
 
-  if (origin_trials::JankTrackingEnabled(frame_view.GetFrame().GetDocument()))
+  if (RuntimeEnabledFeatures::JankTrackingEnabled(
+          frame_view.GetFrame().GetDocument()))
     frame_view.GetJankTracker().NotifyPrePaintFinished();
 
   context_storage_.pop_back();
@@ -387,7 +388,7 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
 
   CompositingLayerPropertyUpdater::Update(object);
 
-  if (origin_trials::JankTrackingEnabled(&object.GetDocument())) {
+  if (RuntimeEnabledFeatures::JankTrackingEnabled(&object.GetDocument())) {
     object.GetFrameView()->GetJankTracker().NotifyObjectPrePaint(
         object, paint_invalidator_context.old_visual_rect,
         *paint_invalidator_context.painting_layer);

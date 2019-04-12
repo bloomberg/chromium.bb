@@ -1535,11 +1535,9 @@ blink_python_runner("make_core_generated_origin_trials") {
              "../build/scripts/make_origin_trials.py",
              "../platform/runtime_enabled_features.json5",
              "../build/scripts/templates/origin_trials.cc.tmpl",
-             "../build/scripts/templates/origin_trials.h.tmpl",
            ]
   outputs = [
     "$blink_core_output_dir/origin_trials/origin_trials.cc",
-    "$blink_core_output_dir/origin_trials/origin_trials.h",
   ]
 
   args = [

@@ -8,7 +8,6 @@
 #include "third_party/blink/renderer/core/layout/layout_replaced.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/style/style_image.h"
@@ -17,6 +16,7 @@
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
@@ -41,7 +41,8 @@ ImageElementTiming& ImageElementTiming::From(LocalDOMWindow& window) {
 
 ImageElementTiming::ImageElementTiming(LocalDOMWindow& window)
     : Supplement<LocalDOMWindow>(window) {
-  DCHECK(origin_trials::ElementTimingEnabled(GetSupplementable()->document()));
+  DCHECK(RuntimeEnabledFeatures::ElementTimingEnabled(
+      GetSupplementable()->document()));
 }
 
 void ImageElementTiming::NotifyImagePainted(

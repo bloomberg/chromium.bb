@@ -42,7 +42,6 @@
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/timing/performance_element_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_event_timing.h"
@@ -333,7 +332,7 @@ void WindowPerformance::RegisterEventTiming(const AtomicString& event_type,
                                             TimeTicks processing_start,
                                             TimeTicks processing_end,
                                             bool cancelable) {
-  DCHECK(origin_trials::EventTimingEnabled(GetExecutionContext()));
+  DCHECK(RuntimeEnabledFeatures::EventTimingEnabled(GetExecutionContext()));
 
   // |start_time| could be null in some tests that inject input.
   DCHECK(!processing_start.is_null());
@@ -362,7 +361,7 @@ void WindowPerformance::RegisterEventTiming(const AtomicString& event_type,
 
 void WindowPerformance::ReportEventTimings(WebWidgetClient::SwapResult result,
                                            TimeTicks timestamp) {
-  DCHECK(origin_trials::EventTimingEnabled(GetExecutionContext()));
+  DCHECK(RuntimeEnabledFeatures::EventTimingEnabled(GetExecutionContext()));
 
   DOMHighResTimeStamp end_time = MonotonicTimeToDOMHighResTimeStamp(timestamp);
   for (const auto& entry : event_timings_) {
@@ -402,7 +401,7 @@ void WindowPerformance::AddElementTiming(const AtomicString& name,
                                          const AtomicString& identifier,
                                          const IntSize& intrinsic_size,
                                          const AtomicString& id) {
-  DCHECK(origin_trials::ElementTimingEnabled(GetExecutionContext()));
+  DCHECK(RuntimeEnabledFeatures::ElementTimingEnabled(GetExecutionContext()));
   PerformanceElementTiming* entry = PerformanceElementTiming::Create(
       name, rect, MonotonicTimeToDOMHighResTimeStamp(start_time),
       MonotonicTimeToDOMHighResTimeStamp(response_end), identifier,
@@ -418,7 +417,7 @@ void WindowPerformance::AddElementTiming(const AtomicString& name,
 
 void WindowPerformance::DispatchFirstInputTiming(
     PerformanceEventTiming* entry) {
-  DCHECK(origin_trials::EventTimingEnabled(GetExecutionContext()));
+  DCHECK(RuntimeEnabledFeatures::EventTimingEnabled(GetExecutionContext()));
 
   if (!entry)
     return;
@@ -434,7 +433,7 @@ void WindowPerformance::DispatchFirstInputTiming(
 }
 
 void WindowPerformance::AddLayoutJankFraction(double jank_fraction) {
-  DCHECK(origin_trials::LayoutJankAPIEnabled(GetExecutionContext()));
+  DCHECK(RuntimeEnabledFeatures::LayoutJankAPIEnabled(GetExecutionContext()));
   auto* entry = MakeGarbageCollected<PerformanceLayoutJank>(jank_fraction);
   if (HasObserverFor(PerformanceEntry::kLayoutJank))
     NotifyObserversOfEntry(*entry);
