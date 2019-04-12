@@ -1197,7 +1197,8 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
         chrome_sdk=False,
         # Run PGO generate specific stages.
         builder_class_name='pgo_generate_builders.PGOGenerateBuilder',
-        useflags=config_lib.append_useflags(['llvm_pgo_generate']),
+        useflags=config_lib.append_useflags(['llvm_pgo_generate',
+                                             '-llvm_pgo_use']),
         boards=[board],
         images=['base'],
         # Build chrome as C++ training set, and kernel as C training set.
