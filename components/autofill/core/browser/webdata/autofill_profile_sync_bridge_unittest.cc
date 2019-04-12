@@ -267,9 +267,9 @@ class AutofillProfileSyncBridgeTest : public testing::Test {
     real_processor_->OnUpdateReceived(state, std::move(initial_updates));
   }
 
-  void ApplySyncChanges(const EntityChangeList& changes) {
+  void ApplySyncChanges(EntityChangeList changes) {
     const base::Optional<syncer::ModelError> error = bridge()->ApplySyncChanges(
-        bridge()->CreateMetadataChangeList(), changes);
+        bridge()->CreateMetadataChangeList(), std::move(changes));
     EXPECT_FALSE(error) << error->ToString();
   }
 
@@ -860,9 +860,11 @@ TEST_F(AutofillProfileSyncBridgeTest, ApplySyncChanges) {
   EXPECT_CALL(mock_processor(), Delete(_, _)).Times(0);
   EXPECT_CALL(*backend(), CommitChanges());
 
-  ApplySyncChanges(
-      {EntityChange::CreateDelete(kGuidA),
-       EntityChange::CreateAdd(kGuidB, SpecificsToEntity(remote))});
+  syncer::EntityChangeList entity_change_list;
+  entity_change_list.push_back(EntityChange::CreateDelete(kGuidA));
+  entity_change_list.push_back(
+      EntityChange::CreateAdd(kGuidB, SpecificsToEntity(remote)));
+  ApplySyncChanges(std::move(entity_change_list));
 
   EXPECT_THAT(GetAllLocalData(), ElementsAre(CreateAutofillProfile(remote)));
 }
@@ -878,10 +880,13 @@ TEST_F(AutofillProfileSyncBridgeTest, ApplySyncChanges_OmitsInvalidSpecifics) {
 
   EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(0);
   EXPECT_CALL(*backend(), CommitChanges());
-  ApplySyncChanges(
-      {EntityChange::CreateAdd(kGuidA, SpecificsToEntity(remote_valid)),
-       EntityChange::CreateAdd(kGuidInvalid,
-                               SpecificsToEntity(remote_invalid))});
+
+  syncer::EntityChangeList entity_change_list;
+  entity_change_list.push_back(
+      EntityChange::CreateAdd(kGuidA, SpecificsToEntity(remote_valid)));
+  entity_change_list.push_back(
+      EntityChange::CreateAdd(kGuidInvalid, SpecificsToEntity(remote_invalid)));
+  ApplySyncChanges(std::move(entity_change_list));
 
   EXPECT_THAT(GetAllLocalData(),
               ElementsAre(CreateAutofillProfile(remote_valid)));

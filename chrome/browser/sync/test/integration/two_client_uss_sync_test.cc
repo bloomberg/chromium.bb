@@ -85,7 +85,7 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
       std::unique_ptr<syncer::MetadataChangeList> metadata_changes,
       syncer::EntityChangeList entity_changes) override {
     auto error = FakeModelTypeSyncBridge::ApplySyncChanges(
-        std::move(metadata_changes), entity_changes);
+        std::move(metadata_changes), std::move(entity_changes));
     NotifyObservers();
     return error;
   }

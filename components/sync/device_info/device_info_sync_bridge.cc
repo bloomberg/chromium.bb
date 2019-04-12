@@ -164,8 +164,8 @@ base::Optional<ModelError> DeviceInfoSyncBridge::MergeSyncData(
   std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
   for (const auto& change : entity_data) {
     const DeviceInfoSpecifics& specifics =
-        change.data().specifics.device_info();
-    DCHECK_EQ(change.storage_key(), specifics.cache_guid());
+        change->data().specifics.device_info();
+    DCHECK_EQ(change->storage_key(), specifics.cache_guid());
     if (specifics.cache_guid() == local_guid) {
       // Don't Put local data if it's the same as the remote copy.
       if (local_info->Equals(*SpecificsToModel(specifics))) {
@@ -202,19 +202,19 @@ base::Optional<ModelError> DeviceInfoSyncBridge::ApplySyncChanges(
 
   std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
   bool has_changes = false;
-  for (EntityChange& change : entity_changes) {
-    const std::string guid = change.storage_key();
+  for (const std::unique_ptr<EntityChange>& change : entity_changes) {
+    const std::string guid = change->storage_key();
     // Each device is the authoritative source for itself, ignore any remote
     // changes that have our local cache guid.
     if (guid == local_info->guid()) {
       continue;
     }
 
-    if (change.type() == EntityChange::ACTION_DELETE) {
+    if (change->type() == EntityChange::ACTION_DELETE) {
       has_changes |= DeleteSpecifics(guid, batch.get());
     } else {
       const DeviceInfoSpecifics& specifics =
-          change.data().specifics.device_info();
+          change->data().specifics.device_info();
       DCHECK(guid == specifics.cache_guid());
       StoreSpecifics(std::make_unique<DeviceInfoSpecifics>(specifics),
                      batch.get());

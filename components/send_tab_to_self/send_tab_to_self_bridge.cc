@@ -139,20 +139,20 @@ base::Optional<syncer::ModelError> SendTabToSelfBridge::ApplySyncChanges(
   std::unique_ptr<ModelTypeStore::WriteBatch> batch =
       store_->CreateWriteBatch();
 
-  for (syncer::EntityChange& change : entity_changes) {
-    const std::string& guid = change.storage_key();
-    if (change.type() == syncer::EntityChange::ACTION_DELETE) {
+  for (const std::unique_ptr<syncer::EntityChange>& change : entity_changes) {
+    const std::string& guid = change->storage_key();
+    if (change->type() == syncer::EntityChange::ACTION_DELETE) {
       if (entries_.find(guid) != entries_.end()) {
-        entries_.erase(change.storage_key());
+        entries_.erase(change->storage_key());
         batch->DeleteData(guid);
-        removed.push_back(change.storage_key());
+        removed.push_back(change->storage_key());
       }
     } else {
       // syncer::EntityChange::ACTION_UPDATE is not supported by this bridge
-      DCHECK(change.type() == syncer::EntityChange::ACTION_ADD);
+      DCHECK(change->type() == syncer::EntityChange::ACTION_ADD);
 
       const sync_pb::SendTabToSelfSpecifics& specifics =
-          change.data().specifics.send_tab_to_self();
+          change->data().specifics.send_tab_to_self();
 
       std::unique_ptr<SendTabToSelfEntry> entry =
           SendTabToSelfEntry::FromProto(specifics, clock_->Now());

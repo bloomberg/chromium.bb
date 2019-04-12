@@ -128,10 +128,10 @@ base::Optional<ModelError> TypedURLSyncBridge::MergeSyncData(
   // Iterate through entity_data and check for all the urls that
   // sync already knows about. MergeURLWithSync() will remove urls that
   // are the same as the synced ones from |new_db_urls|.
-  for (const EntityChange& entity_change : entity_data) {
-    DCHECK(entity_change.data().specifics.has_typed_url());
+  for (const std::unique_ptr<EntityChange>& entity_change : entity_data) {
+    DCHECK(entity_change->data().specifics.has_typed_url());
     const TypedUrlSpecifics& specifics =
-        entity_change.data().specifics.typed_url();
+        entity_change->data().specifics.typed_url();
     if (ShouldIgnoreUrl(GURL(specifics.url())))
       continue;
 
@@ -159,16 +159,16 @@ base::Optional<ModelError> TypedURLSyncBridge::MergeSyncData(
 
   // Update storage key here first, and then send updated typed URL to sync
   // below, otherwise processor will have duplicate entries.
-  for (const EntityChange& entity_change : entity_data) {
-    DCHECK(entity_change.data().specifics.has_typed_url());
-    std::string storage_key =
-        GetStorageKeyInternal(entity_change.data().specifics.typed_url().url());
+  for (const std::unique_ptr<EntityChange>& entity_change : entity_data) {
+    DCHECK(entity_change->data().specifics.has_typed_url());
+    std::string storage_key = GetStorageKeyInternal(
+        entity_change->data().specifics.typed_url().url());
     if (storage_key.empty()) {
       // ignore entity change
       change_processor()->UntrackEntityForClientTagHash(
-          entity_change.data().client_tag_hash);
+          entity_change->data().client_tag_hash);
     } else {
-      change_processor()->UpdateStorageKey(entity_change.data(), storage_key,
+      change_processor()->UpdateStorageKey(entity_change->data(), storage_key,
                                            metadata_change_list.get());
     }
   }
@@ -199,11 +199,11 @@ base::Optional<ModelError> TypedURLSyncBridge::ApplySyncChanges(
   URLRows updated_synced_urls;
   URLRows new_synced_urls;
 
-  for (const EntityChange& entity_change : entity_changes) {
-    if (entity_change.type() == EntityChange::ACTION_DELETE) {
+  for (const std::unique_ptr<EntityChange>& entity_change : entity_changes) {
+    if (entity_change->type() == EntityChange::ACTION_DELETE) {
       URLRow url_row;
       int64_t url_id = TypedURLSyncMetadataDatabase::StorageKeyToURLID(
-          entity_change.storage_key());
+          entity_change->storage_key());
       if (!history_backend_->GetURLByID(url_id, &url_row)) {
         // Ignoring the case that there is no matching URLRow with URLID
         // |url_id|.
@@ -214,9 +214,9 @@ base::Optional<ModelError> TypedURLSyncBridge::ApplySyncChanges(
       continue;
     }
 
-    DCHECK(entity_change.data().specifics.has_typed_url());
+    DCHECK(entity_change->data().specifics.has_typed_url());
     const TypedUrlSpecifics& specifics =
-        entity_change.data().specifics.typed_url();
+        entity_change->data().specifics.typed_url();
 
     GURL url(specifics.url());
 
@@ -240,16 +240,16 @@ base::Optional<ModelError> TypedURLSyncBridge::ApplySyncChanges(
 
   // New entities were either ignored or written to history DB and assigned a
   // storage key. Notify processor about updated storage keys.
-  for (const EntityChange& entity_change : entity_changes) {
-    if (entity_change.type() == EntityChange::ACTION_ADD) {
+  for (const std::unique_ptr<EntityChange>& entity_change : entity_changes) {
+    if (entity_change->type() == EntityChange::ACTION_ADD) {
       std::string storage_key = GetStorageKeyInternal(
-          entity_change.data().specifics.typed_url().url());
+          entity_change->data().specifics.typed_url().url());
       if (storage_key.empty()) {
         // ignore entity change
         change_processor()->UntrackEntityForClientTagHash(
-            entity_change.data().client_tag_hash);
+            entity_change->data().client_tag_hash);
       } else {
-        change_processor()->UpdateStorageKey(entity_change.data(), storage_key,
+        change_processor()->UpdateStorageKey(entity_change->data(), storage_key,
                                              metadata_change_list.get());
       }
     }

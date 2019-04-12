@@ -503,9 +503,11 @@ TEST_F(DeviceInfoSyncBridgeTest, ApplySyncChangesInMemory) {
   EXPECT_THAT(*info, ModelEqualsSpecifics(specifics));
   EXPECT_EQ(2, change_count());
 
+  syncer::EntityChangeList entity_change_list;
+  entity_change_list.push_back(
+      EntityChange::CreateDelete(specifics.cache_guid()));
   auto error_on_delete = bridge()->ApplySyncChanges(
-      bridge()->CreateMetadataChangeList(),
-      {EntityChange::CreateDelete(specifics.cache_guid())});
+      bridge()->CreateMetadataChangeList(), std::move(entity_change_list));
 
   EXPECT_FALSE(error_on_delete);
   EXPECT_FALSE(bridge()->GetDeviceInfo(specifics.cache_guid()));
@@ -556,9 +558,11 @@ TEST_F(DeviceInfoSyncBridgeTest, ApplySyncChangesWithLocalGuid) {
   EXPECT_FALSE(error_on_add);
   EXPECT_EQ(1, change_count());
 
+  syncer::EntityChangeList entity_change_list;
+  entity_change_list.push_back(
+      EntityChange::CreateDelete(specifics.cache_guid()));
   auto error_on_delete = bridge()->ApplySyncChanges(
-      bridge()->CreateMetadataChangeList(),
-      {EntityChange::CreateDelete(specifics.cache_guid())});
+      bridge()->CreateMetadataChangeList(), std::move(entity_change_list));
   EXPECT_FALSE(error_on_delete);
   EXPECT_EQ(1, change_count());
 }
@@ -567,9 +571,11 @@ TEST_F(DeviceInfoSyncBridgeTest, ApplyDeleteNonexistent) {
   InitializeAndPump();
   ASSERT_EQ(1, change_count());
 
+  syncer::EntityChangeList entity_change_list;
+  entity_change_list.push_back(EntityChange::CreateDelete("guid"));
   EXPECT_CALL(*processor(), Delete(_, _)).Times(0);
   auto error = bridge()->ApplySyncChanges(bridge()->CreateMetadataChangeList(),
-                                          {EntityChange::CreateDelete("guid")});
+                                          std::move(entity_change_list));
   EXPECT_FALSE(error);
   EXPECT_EQ(1, change_count());
 }

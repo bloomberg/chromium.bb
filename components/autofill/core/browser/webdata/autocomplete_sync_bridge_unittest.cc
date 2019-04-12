@@ -261,9 +261,9 @@ class AutocompleteSyncBridgeTest : public testing::Test {
     return data;
   }
 
-  void ApplyChanges(const EntityChangeList& changes) {
+  void ApplyChanges(EntityChangeList changes) {
     const auto error = bridge()->ApplySyncChanges(
-        bridge()->CreateMetadataChangeList(), changes);
+        bridge()->CreateMetadataChangeList(), std::move(changes));
     EXPECT_FALSE(error);
   }
 
@@ -449,7 +449,10 @@ TEST_F(AutocompleteSyncBridgeTest, ApplySyncChangesSimple) {
   EXPECT_CALL(*backend(), CommitChanges());
   EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges());
 
-  ApplyChanges({EntityChange::CreateDelete(GetStorageKey(specifics1))});
+  syncer::EntityChangeList entity_change_list;
+  entity_change_list.push_back(
+      EntityChange::CreateDelete(GetStorageKey(specifics1)));
+  ApplyChanges(std::move(entity_change_list));
   VerifyAllData({specifics2});
 }
 
@@ -485,14 +488,19 @@ TEST_F(AutocompleteSyncBridgeTest,
 // existing ones.
 TEST_F(AutocompleteSyncBridgeTest, ApplySyncChangesWrongChangeType) {
   AutofillSpecifics specifics = CreateSpecifics(1, {1});
-  ApplyChanges({EntityChange::CreateDelete(GetStorageKey(specifics))});
+  syncer::EntityChangeList entity_change_list1;
+  entity_change_list1.push_back(
+      EntityChange::CreateDelete(GetStorageKey(specifics)));
+  ApplyChanges(std::move(entity_change_list1));
   VerifyAllData(std::vector<AutofillSpecifics>());
 
   EXPECT_CALL(*backend(), CommitChanges());
   EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges());
 
-  ApplyChanges({EntityChange::CreateUpdate(GetStorageKey(specifics),
-                                           SpecificsToEntity(specifics))});
+  syncer::EntityChangeList entity_change_list2;
+  entity_change_list2.push_back(EntityChange::CreateUpdate(
+      GetStorageKey(specifics), SpecificsToEntity(specifics)));
+  ApplyChanges(std::move(entity_change_list2));
   VerifyAllData({specifics});
 
   EXPECT_CALL(*backend(), CommitChanges());
@@ -576,9 +584,10 @@ TEST_F(AutocompleteSyncBridgeTest, ApplySyncChangesMinMaxTimestamps) {
 // should never happen in practice because storage keys should be generated at
 // runtime by the bridge and not loaded from disk.
 TEST_F(AutocompleteSyncBridgeTest, ApplySyncChangesBadStorageKey) {
+  syncer::EntityChangeList entity_change_list;
+  entity_change_list.push_back(EntityChange::CreateDelete("bogus storage key"));
   const auto error = bridge()->ApplySyncChanges(
-      bridge()->CreateMetadataChangeList(),
-      {EntityChange::CreateDelete("bogus storage key")});
+      bridge()->CreateMetadataChangeList(), std::move(entity_change_list));
   EXPECT_TRUE(error);
 }
 

@@ -622,7 +622,7 @@ void ClientTagBasedModelTypeProcessor::OnCommitCompleted(
   }
 
   base::Optional<ModelError> error = bridge_->ApplySyncChanges(
-      std::move(metadata_change_list), entity_change_list);
+      std::move(metadata_change_list), std::move(entity_change_list));
   if (error) {
     ReportError(*error);
   }
@@ -1007,8 +1007,8 @@ ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
   }
 
   // Let the bridge handle associating and merging the data.
-  base::Optional<ModelError> error =
-      bridge_->MergeSyncData(std::move(metadata_changes), entity_data);
+  base::Optional<ModelError> error = bridge_->MergeSyncData(
+      std::move(metadata_changes), std::move(entity_data));
   return error;
 }
 
