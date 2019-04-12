@@ -113,8 +113,8 @@ public class ToolbarCoordinator implements SelectionObserver<ListItem> {
         mToolbar = mView.findViewById(R.id.download_toolbar);
         mShadow = mView.findViewById(R.id.shadow);
 
-        mToolbar.initialize(selectionDelegate, 0 /* titleResId */, null /* drawerLayout */,
-                normalMenuGroupId, R.id.selection_mode_menu_group, hasCloseButton);
+        mToolbar.initialize(selectionDelegate, 0 /* titleResId */, normalMenuGroupId,
+                R.id.selection_mode_menu_group, hasCloseButton);
         mToolbar.setOnMenuItemClickListener(this ::onMenuItemClick);
 
         // TODO(crbug.com/881037): Pass the visible group to the toolbar during initialization.

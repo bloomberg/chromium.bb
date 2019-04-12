@@ -233,7 +233,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
                 isLocationEnabled ? R.id.with_settings_close_menu_id : R.id.close_menu_id;
 
         mToolbar = (DownloadManagerToolbar) mSelectableListLayout.initializeToolbar(
-                R.layout.download_manager_toolbar, mBackendProvider.getSelectionDelegate(), 0, null,
+                R.layout.download_manager_toolbar, mBackendProvider.getSelectionDelegate(), 0,
                 normalGroupId, R.id.selection_mode_menu_group, this, true, isSeparateActivity);
         mToolbar.getMenu().setGroupVisible(normalGroupId, true);
         mToolbar.setManager(this);
