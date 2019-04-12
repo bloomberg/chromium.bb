@@ -17,6 +17,7 @@ class PendingAppManager;
 class InstallManager;
 class AppRegistrar;
 class WebAppPolicyManager;
+class WebAppUiDelegate;
 
 class WebAppProviderBase : public KeyedService {
  public:
@@ -37,6 +38,8 @@ class WebAppProviderBase : public KeyedService {
   // TODO(crbug.com/916381): Make a reference once WebAppPolicyManager is always
   // present. It's currently only present for Bookmark Apps.
   virtual WebAppPolicyManager* policy_manager() = 0;
+
+  virtual WebAppUiDelegate& ui_delegate() = 0;
 
   DISALLOW_COPY_AND_ASSIGN(WebAppProviderBase);
 };
