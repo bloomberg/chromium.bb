@@ -177,10 +177,10 @@ class Port(object):
     # The following two constants must match. When adding a new WPT root, also
     # remember to add an alias rule to third_party/wpt/wpt.config.json.
     # WPT_DIRS maps WPT roots on the file system to URL prefixes on wptserve.
-    # The order matters: the empty URL prefix MUST be the last one.
+    # The order matters: '/' MUST be the last URL prefix.
     WPT_DIRS = collections.OrderedDict([
-        ('wpt_internal', 'wpt_internal/'),
-        ('external/wpt', ''),
+        ('wpt_internal', '/wpt_internal/'),
+        ('external/wpt', '/'),
     ])
     # WPT_REGEX captures: 1. the root directory of WPT relative to web_tests
     # (without a trailing slash), 2. the path of the test within WPT (without a
@@ -740,7 +740,7 @@ class Port(object):
                 tests.extend(self._wpt_test_urls_matching_paths(paths))
         else:
             tests.extend(self._all_virtual_tests(suites))
-            tests.extend([wpt_path + test for wpt_path in self.WPT_DIRS
+            tests.extend([wpt_path + self.TEST_PATH_SEPARATOR + test for wpt_path in self.WPT_DIRS
                           for test in self._wpt_manifest(wpt_path).all_urls()])
 
         return tests
@@ -814,8 +814,7 @@ class Port(object):
             return False
         wpt_path = match.group(1)
         path_in_wpt = match.group(2)
-        # WPTManifest.is_slow_test() takes a WPT URL with the leading slash.
-        return self._wpt_manifest(wpt_path).is_slow_test('/' + path_in_wpt)
+        return self._wpt_manifest(wpt_path).is_slow_test(path_in_wpt)
 
     def test_key(self, test_name):
         """Turns a test name into a pair of sublists: the natural sort key of the
@@ -1641,9 +1640,7 @@ class Port(object):
     def _wpt_test_urls(self, wpt_path, paths):
         tests = []
         for test_url_path in self._wpt_manifest(wpt_path).all_urls():
-            if test_url_path[0] == '/':
-                test_url_path = test_url_path[1:]
-
+            assert not test_url_path.startswith('/')
             full_test_url_path = wpt_path + '/' + test_url_path
 
             for path in paths:

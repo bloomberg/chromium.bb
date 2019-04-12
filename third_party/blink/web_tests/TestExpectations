@@ -3024,6 +3024,9 @@ crbug.com/918664 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/939181 external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Failure Crash ]
 crbug.com/939181 virtual/not-site-per-process/external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Failure Timeout ]
 
+crbug.com/952266 external/wpt/workers/modules/dedicated-worker-options-credentials.html [ Timeout ]
+crbug.com/952266 virtual/omt-worker-fetch/external/wpt/workers/modules/dedicated-worker-options-credentials.html [ Timeout ]
+
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Mac10.12 ] external/wpt/media-source/mediasource-config-change-webm-av-framesize.html [ Timeout ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/media-source/mediasource-config-change-webm-av-framesize.html [ Timeout ]

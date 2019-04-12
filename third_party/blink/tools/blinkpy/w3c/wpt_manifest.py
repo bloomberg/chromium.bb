@@ -9,10 +9,10 @@ such as what tests exist, and extra information about each test, including
 test type, options, URLs to use, and reference file paths if applicable.
 
 Naming conventions:
-* A (file) path is a relative file system path from the root of WPT. It does not
-  have a leading slash or a query string.
+* A (file) path is a relative file system path from the root of WPT.
 * A (test) URL is the path (with an optional query string) to the test on
-  wptserve. It always has a leading slash.
+  wptserve relative to url_base.
+Neither has a leading slash.
 """
 
 import json
@@ -28,7 +28,7 @@ MANIFEST_NAME = 'MANIFEST.json'
 # The filename used for the base manifest includes the version as a
 # workaround for trouble landing huge changes to the base manifest when
 # the version changes. See https://crbug.com/876717.
-BASE_MANIFEST_NAME = 'WPT_BASE_MANIFEST_5.json'
+BASE_MANIFEST_NAME = 'WPT_BASE_MANIFEST_6.json'
 
 # TODO(robertma): Use the official wpt.manifest module.
 
@@ -69,8 +69,7 @@ class WPTManifest(object):
         """Finds manifest items for the given WPT path.
 
         Args:
-            path_in_wpt: A file path relative to the root of WPT without a
-                leading slash or a query string.
+            path_in_wpt: A file path relative to the root of WPT.
 
         Returns:
             A list of manifest items, or None if not found.
@@ -87,7 +86,7 @@ class WPTManifest(object):
         """Finds the manifest item for the given WPT URL.
 
         Args:
-            url: A WPT URL (with the leading slash).
+            url: A WPT URL.
 
         Returns:
             A manifest item, or None if not found.
@@ -135,19 +134,19 @@ class WPTManifest(object):
 
     def is_test_file(self, path_in_wpt):
         """Checks if path_in_wpt is a test file according to the manifest."""
+        assert not path_in_wpt.startswith('/')
         return self._items_for_file_path(path_in_wpt) is not None
 
     def is_test_url(self, url):
         """Checks if url is a valid test in the manifest."""
-        if url[0] != '/':
-            raise Exception('Test url missing leading /: %s' % url)
+        assert not url.startswith('/')
         return url in self.all_urls()
 
     def is_slow_test(self, url):
         """Checks if a WPT is slow (long timeout) according to the manifest.
 
         Args:
-            url: A WPT URL (with the leading slash).
+            url: A WPT URL.
 
         Returns:
             True if the test is found and is slow, False otherwise.
@@ -166,8 +165,8 @@ class WPTManifest(object):
 
         The return value is a list of (match/not-match, reference path in wpt)
         pairs, like:
-           [("==", "foo/bar/baz-match.html"),
-            ("!=", "foo/bar/baz-mismatch.html")]
+           [("==", "/foo/bar/baz-match.html"),
+            ("!=", "/foo/bar/baz-mismatch.html")]
         """
         items = self.raw_dict['items']
         if path_in_wpt not in items.get('reftest', {}):
@@ -175,6 +174,10 @@ class WPTManifest(object):
         reftest_list = []
         for item in items['reftest'][path_in_wpt]:
             for ref_path_in_wpt, expectation in item[1]:
+                # Ref URLs in MANIFEST should be absolute, but we double check
+                # just in case.
+                if not ref_path_in_wpt.startswith('/'):
+                    ref_path_in_wpt = '/' + ref_path_in_wpt
                 reftest_list.append((expectation, ref_path_in_wpt))
         return reftest_list
 
