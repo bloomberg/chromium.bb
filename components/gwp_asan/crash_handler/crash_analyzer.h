@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include "base/gtest_prod_util.h"
 #include "components/gwp_asan/common/allocator_state.h"
 #include "components/gwp_asan/crash_handler/crash.pb.h"
 #include "third_party/crashpad/crashpad/util/misc/address_types.h"
@@ -94,6 +95,8 @@ class CrashAnalyzer {
   // SlotMetadata::AllocationInfo struct.
   static void ReadAllocationInfo(const SlotMetadata::AllocationInfo& slot_info,
                                  gwp_asan::Crash_AllocationInfo* proto_info);
+
+  FRIEND_TEST_ALL_PREFIXES(CrashAnalyzerTest, StackTraceCollection);
 };
 
 }  // namespace internal
