@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/svg/svg_number.h"
 #include "third_party/blink/renderer/core/svg/svg_string.h"
 #include "third_party/blink/renderer/core/xlink_names.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -252,24 +253,24 @@ SVGPropertyBase* SVGAnimateElement::CreatePropertyForCSSAnimation(
   // The instance will not have full context info. (e.g. SVGLengthMode)
   switch (type_) {
     case kAnimatedColor:
-      return SVGColorProperty::Create(value);
+      return MakeGarbageCollected<SVGColorProperty>(value);
     case kAnimatedNumber: {
-      SVGNumber* property = SVGNumber::Create();
+      auto* property = MakeGarbageCollected<SVGNumber>();
       property->SetValueAsString(value);
       return property;
     }
     case kAnimatedLength: {
-      SVGLength* property = SVGLength::Create();
+      auto* property = MakeGarbageCollected<SVGLength>();
       property->SetValueAsString(value);
       return property;
     }
     case kAnimatedLengthList: {
-      SVGLengthList* property = SVGLengthList::Create();
+      auto* property = MakeGarbageCollected<SVGLengthList>();
       property->SetValueAsString(value);
       return property;
     }
     case kAnimatedString: {
-      SVGString* property = SVGString::Create();
+      auto* property = MakeGarbageCollected<SVGString>();
       property->SetValueAsString(value);
       return property;
     }
