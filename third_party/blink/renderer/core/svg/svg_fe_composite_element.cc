@@ -46,16 +46,25 @@ const SVGEnumerationMap& GetEnumerationMap<CompositeOperationType>() {
 inline SVGFECompositeElement::SVGFECompositeElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(svg_names::kFECompositeTag,
                                            document),
-      k1_(SVGAnimatedNumber::Create(this, svg_names::kK1Attr, 0.0f)),
-      k2_(SVGAnimatedNumber::Create(this, svg_names::kK2Attr, 0.0f)),
-      k3_(SVGAnimatedNumber::Create(this, svg_names::kK3Attr, 0.0f)),
-      k4_(SVGAnimatedNumber::Create(this, svg_names::kK4Attr, 0.0f)),
-      in1_(SVGAnimatedString::Create(this, svg_names::kInAttr)),
-      in2_(SVGAnimatedString::Create(this, svg_names::kIn2Attr)),
-      svg_operator_(SVGAnimatedEnumeration<CompositeOperationType>::Create(
-          this,
-          svg_names::kOperatorAttr,
-          FECOMPOSITE_OPERATOR_OVER)) {
+      k1_(MakeGarbageCollected<SVGAnimatedNumber>(this,
+                                                  svg_names::kK1Attr,
+                                                  0.0f)),
+      k2_(MakeGarbageCollected<SVGAnimatedNumber>(this,
+                                                  svg_names::kK2Attr,
+                                                  0.0f)),
+      k3_(MakeGarbageCollected<SVGAnimatedNumber>(this,
+                                                  svg_names::kK3Attr,
+                                                  0.0f)),
+      k4_(MakeGarbageCollected<SVGAnimatedNumber>(this,
+                                                  svg_names::kK4Attr,
+                                                  0.0f)),
+      in1_(MakeGarbageCollected<SVGAnimatedString>(this, svg_names::kInAttr)),
+      in2_(MakeGarbageCollected<SVGAnimatedString>(this, svg_names::kIn2Attr)),
+      svg_operator_(
+          MakeGarbageCollected<SVGAnimatedEnumeration<CompositeOperationType>>(
+              this,
+              svg_names::kOperatorAttr,
+              FECOMPOSITE_OPERATOR_OVER)) {
   AddToPropertyMap(k1_);
   AddToPropertyMap(k2_);
   AddToPropertyMap(k3_);

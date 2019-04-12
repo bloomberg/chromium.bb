@@ -42,9 +42,11 @@ const SVGEnumerationMap& GetEnumerationMap<ColorMatrixType>() {
 inline SVGFEColorMatrixElement::SVGFEColorMatrixElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(svg_names::kFEColorMatrixTag,
                                            document),
-      values_(SVGAnimatedNumberList::Create(this, svg_names::kValuesAttr)),
-      in1_(SVGAnimatedString::Create(this, svg_names::kInAttr)),
-      type_(SVGAnimatedEnumeration<ColorMatrixType>::Create(
+      values_(
+          MakeGarbageCollected<SVGAnimatedNumberList>(this,
+                                                      svg_names::kValuesAttr)),
+      in1_(MakeGarbageCollected<SVGAnimatedString>(this, svg_names::kInAttr)),
+      type_(MakeGarbageCollected<SVGAnimatedEnumeration<ColorMatrixType>>(
           this,
           svg_names::kTypeAttr,
           FECOLORMATRIX_TYPE_MATRIX)) {
