@@ -42,6 +42,7 @@ class CONTENT_EXPORT BackgroundSyncController {
   // Calculates the delay after which the next sync event should be fired
   // for a BackgroundSync registration. The delay is based on the |sync_type|.
   virtual base::TimeDelta GetNextEventDelay(
+      const url::Origin& origin,
       int64_t min_interval,
       int num_attempts,
       blink::mojom::BackgroundSyncType sync_type,

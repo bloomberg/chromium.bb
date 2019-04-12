@@ -7,11 +7,13 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/rappor_service_impl.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/background_sync_parameters.h"
+#include "url/gurl.h"
 #include "url/origin.h"
 
 #if defined(OS_ANDROID)
@@ -42,7 +44,11 @@ const char BackgroundSyncControllerImpl::kMaxSyncEventDurationName[] =
     "max_sync_event_duration_sec";
 
 BackgroundSyncControllerImpl::BackgroundSyncControllerImpl(Profile* profile)
-    : profile_(profile) {}
+    : profile_(profile),
+      site_engagement_service_(SiteEngagementService::Get(profile)) {
+  DCHECK(profile_);
+  DCHECK(site_engagement_service_);
+}
 
 BackgroundSyncControllerImpl::~BackgroundSyncControllerImpl() = default;
 
@@ -133,7 +139,33 @@ void BackgroundSyncControllerImpl::RunInBackground() {
 #endif
 }
 
+int BackgroundSyncControllerImpl::GetSiteEngagementPenalty(
+    const GURL& url) const {
+  blink::mojom::EngagementLevel engagement_level =
+      site_engagement_service_->GetEngagementLevel(url);
+
+  switch (engagement_level) {
+    case blink::mojom::EngagementLevel::NONE:
+      // Suspend registration until site_engagement improves.
+      return kEngagementLevelNonePenalty;
+    case blink::mojom::EngagementLevel::MINIMAL:
+      return kEngagementLevelMinimalPenalty;
+    case blink::mojom::EngagementLevel::LOW:
+      return kEngagementLevelLowPenalty;
+    case blink::mojom::EngagementLevel::MEDIUM:
+      return kEngagementLevelMediumPenalty;
+    case blink::mojom::EngagementLevel::HIGH:
+    case blink::mojom::EngagementLevel::MAX:
+      // Very few sites reach max engagement level.
+      return kEngagementLevelHighOrMaxPenalty;
+  }
+
+  NOTREACHED();
+  return kEngagementLevelNonePenalty;
+}
+
 base::TimeDelta BackgroundSyncControllerImpl::GetNextEventDelay(
+    const url::Origin& origin,
     int64_t min_interval,
     int num_attempts,
     blink::mojom::BackgroundSyncType sync_type,
@@ -147,8 +179,10 @@ base::TimeDelta BackgroundSyncControllerImpl::GetNextEventDelay(
       case blink::mojom::BackgroundSyncType::ONE_SHOT:
         return base::TimeDelta();
       case blink::mojom::BackgroundSyncType::PERIODIC:
-        // TODO(crbug.com/925297): Integrate with site engagement data.
-        int site_engagement_factor = 1;
+        int site_engagement_factor = GetSiteEngagementPenalty(origin.GetURL());
+        if (!site_engagement_factor)
+          return base::TimeDelta::Max();
+
         int64_t effective_gap_ms =
             site_engagement_factor *
             kMinGapBetweenPeriodicSyncEvents.InMilliseconds();

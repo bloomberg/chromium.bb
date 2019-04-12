@@ -29,7 +29,11 @@ void MockBackgroundSyncController::GetParameterOverrides(
   *parameters = background_sync_parameters_;
 }
 
+// |origin| can be used to potentially suspend or penalize registrations based
+// on the level of user engagement. That logic isn't tested here, and |origin|
+// remains unused.
 base::TimeDelta MockBackgroundSyncController::GetNextEventDelay(
+    const url::Origin& origin,
     int64_t min_interval,
     int num_attempts,
     blink::mojom::BackgroundSyncType sync_type,
