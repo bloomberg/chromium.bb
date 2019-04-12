@@ -21,13 +21,13 @@ class ProfileKey : public SimpleFactoryKey {
   ~ProfileKey() override;
 
   // Profile-specific APIs needed in reduced mode:
-  ProfileKey* original_key() { return original_key_; }
-  PrefService* prefs() { return prefs_; }
+  ProfileKey* GetOriginalKey() { return original_key_; }
+  PrefService* GetPrefs() { return prefs_; }
 
   static ProfileKey* FromSimpleFactoryKey(SimpleFactoryKey* key);
 
   // SimpleFactoryKey implementation.
-  bool is_off_the_record() const override;
+  bool IsOffTheRecord() const override;
 
  private:
   PrefService* prefs_;

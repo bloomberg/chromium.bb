@@ -55,7 +55,7 @@ KeyedService* SimpleKeyedServiceFactory::GetServiceForKey(SimpleFactoryKey* key,
 SimpleFactoryKey* SimpleKeyedServiceFactory::GetKeyToUse(
     SimpleFactoryKey* key) const {
   // Safe default for Incognito mode: no service.
-  if (key->is_off_the_record())
+  if (key->IsOffTheRecord())
     return nullptr;
 
   return key;
@@ -79,7 +79,7 @@ SimpleKeyedServiceFactory::BuildServiceInstanceFor(void* context) const {
 }
 
 bool SimpleKeyedServiceFactory::IsOffTheRecord(void* context) const {
-  return static_cast<SimpleFactoryKey*>(context)->is_off_the_record();
+  return static_cast<SimpleFactoryKey*>(context)->IsOffTheRecord();
 }
 
 void* SimpleKeyedServiceFactory::GetContextToUse(void* context) const {

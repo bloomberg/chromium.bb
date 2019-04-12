@@ -11,7 +11,7 @@ ProfileKey::ProfileKey(const base::FilePath& path,
 
 ProfileKey::~ProfileKey() = default;
 
-bool ProfileKey::is_off_the_record() const {
+bool ProfileKey::IsOffTheRecord() const {
   return original_key_ != nullptr;
 }
 

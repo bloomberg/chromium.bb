@@ -34,7 +34,7 @@ ProtoDatabaseProviderFactory::~ProtoDatabaseProviderFactory() = default;
 std::unique_ptr<KeyedService>
 ProtoDatabaseProviderFactory::BuildServiceInstanceFor(
     SimpleFactoryKey* key) const {
-  return std::make_unique<ProtoDatabaseProvider>(key->path());
+  return std::make_unique<ProtoDatabaseProvider>(key->GetPath());
 }
 
 }  // namespace leveldb_proto

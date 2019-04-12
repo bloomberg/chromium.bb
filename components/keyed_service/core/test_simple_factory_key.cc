@@ -10,6 +10,6 @@ TestSimpleFactoryKey::TestSimpleFactoryKey(const base::FilePath& path,
 
 TestSimpleFactoryKey::~TestSimpleFactoryKey() = default;
 
-bool TestSimpleFactoryKey::is_off_the_record() const {
+bool TestSimpleFactoryKey::IsOffTheRecord() const {
   return is_off_the_record_;
 }
