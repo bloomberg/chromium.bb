@@ -50,7 +50,7 @@ mojom("interfaces") {
   }
 
   if (is_chromecast) {
-    sources += [ "application_session_id_manager.mojom" ]
+    sources += [ "cast_application_media_info_manager.mojom" ]
   }
 
   public_deps = [

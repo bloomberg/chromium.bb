@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/browser/application_session_id_manager.h"
+#include "chromecast/browser/application_media_info_manager.h"
 
 #include <utility>
 
