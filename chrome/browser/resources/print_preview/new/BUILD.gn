@@ -93,6 +93,7 @@ js_library("print_preview_sidebar") {
     "../data:destination",
     "//ui/webui/resources/cr_elements:cr_container_shadow_behavior",
     "//ui/webui/resources/js:load_time_data",
+    "//ui/webui/resources/js:web_ui_listener_behavior",
   ]
 }
 
@@ -146,6 +147,7 @@ js_library("destination_settings") {
 js_library("destination_select") {
   deps = [
     ":select_behavior",
+    "..:print_preview_utils",
     "../data:destination",
     "../data:user_info",
     "//third_party/polymer/v1_0/components-chromium/iron-meta:iron-meta-extracted",
@@ -241,6 +243,7 @@ js_library("duplex_settings") {
   deps = [
     ":select_behavior",
     ":settings_behavior",
+    "..:print_preview_utils",
   ]
   externs_list = [ "$externs_path/pending.js" ]
 }

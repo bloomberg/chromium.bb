@@ -7,6 +7,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-iconset-svg/iron-iconset-svg.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-meta/iron-meta.html">
 <link rel="import" href="../icons.html">
+<link rel="import" href="../print_preview_utils.html">
 <link rel="import" href="print_preview_shared_css.html">
 <link rel="import" href="select_behavior.html">
 <link rel="import" href="settings_behavior.html">
@@ -50,9 +51,8 @@
         <div slot="title"></div>
         <div slot="controls">
           <select class="md-select" aria-labelledby="duplex"
-              style="background-image:
-                 [[getIconImage_(settings.duplexShortEdge.value)]],
-                 url(chrome://resources/images/arrow_down.svg);"
+              style="background-image: [[getBackgroundImages_(
+                settings.duplexShortEdge.value, dark)]];"
               disabled$="[[getDisabled_(
                 settings.duplexShortEdge.setByPolicy, disabled)]]"
               value="{{selectedValue::change}}">

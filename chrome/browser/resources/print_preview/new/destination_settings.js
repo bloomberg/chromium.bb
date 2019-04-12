@@ -37,6 +37,8 @@ Polymer({
       observer: 'onCloudPrintInterfaceSet_',
     },
 
+    dark: Boolean,
+
     /** @type {?print_preview.Destination} */
     destination: {
       type: Object,

@@ -17,6 +17,7 @@ Polymer({
   behaviors: [
     SettingsBehavior,
     CrContainerShadowBehavior,
+    WebUIListenerBehavior,
   ],
 
   properties: {
@@ -65,6 +66,14 @@ Polymer({
     },
 
     /** @private {boolean} */
+    dark_: {
+      type: Boolean,
+      value: function() {
+        return inDarkMode();
+      },
+    },
+
+    /** @private {boolean} */
     isInAppKioskMode_: {
       type: Boolean,
       value: false,
@@ -87,6 +96,13 @@ Polymer({
           'settings.duplex.available, settings.otherOptions.available, ' +
           'settings.vendorItems.available)',
     },
+  },
+
+  /** @override */
+  attached: function() {
+    this.addWebUIListener('dark-mode-changed', darkMode => {
+      this.dark_ = darkMode;
+    });
   },
 
   /**

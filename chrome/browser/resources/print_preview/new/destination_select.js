@@ -15,6 +15,8 @@ Polymer({
     /** @type {!print_preview.CloudPrintState} */
     cloudPrintState: Number,
 
+    dark: Boolean,
+
     /** @type {!print_preview.Destination} */
     destination: Object,
 
@@ -73,10 +75,11 @@ Polymer({
 
   /**
    * @param {string} icon The icon set and icon to obtain.
-   * @return {string} An inline svg corresponding to |icon|.
+   * @return {string} An inline svg corresponding to |icon| and the image for
+   *     the dropdown arrow.
    * @private
    */
-  getIconImage_: function(icon) {
+  getBackgroundImages_: function(icon) {
     if (!icon) {
       return '';
     }
@@ -88,14 +91,9 @@ Polymer({
     }
     // </if>
     iconSetAndIcon = iconSetAndIcon || icon.split(':');
-    const iconset = /** @type {Polymer.IronIconsetSvg} */ (
+    const iconset = /** @type {!Polymer.IronIconsetSvg} */ (
         this.meta_.byKey(iconSetAndIcon[0]));
-    const serializer = new XMLSerializer();
-    const iconElement = iconset.createIcon(iconSetAndIcon[1], isRTL());
-    iconElement.style.fill = '#80868B';
-    const serializedIcon = serializer.serializeToString(iconElement);
-    return 'url("data:image/svg+xml;charset=utf-8,' +
-        encodeURIComponent(serializedIcon) + '")';
+    return getSelectDropdownBackground(iconset, iconSetAndIcon[1], this);
   },
 
   /** @private */

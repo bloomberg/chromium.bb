@@ -56,3 +56,26 @@ function getStringForCurrentLocale(localizedStrings) {
 function observerDepsDefined(args) {
   return args.every(arg => arg !== undefined);
 }
+
+/**
+ * Returns background images (icon and dropdown arrow) for use in a md-select.
+ * @param {!Polymer.IronIconsetSvg} iconset The iconset the icon is in.
+ * @param {string} iconName The icon name
+ * @param {!HTMLElement} el The element that contains the select.
+ * @return {string} String containing inlined SVG of the icon and
+ *     url(path_to_arrow) separated by a comma.
+ */
+function getSelectDropdownBackground(iconset, iconName, el) {
+  const serializer = new XMLSerializer();
+  const iconElement = iconset.createIcon(iconName, isRTL());
+  const fillColor = getComputedStyle(el).getPropertyValue(
+      inDarkMode() ? '--google-grey-refresh-500' : '--google-grey-600');
+  iconElement.style.fill = fillColor;
+  const serializedIcon = serializer.serializeToString(iconElement);
+  const uri = encodeURIComponent(serializedIcon);
+  const arrowDownPath = inDarkMode() ?
+      'chrome://resources/images/dark/arrow_down.svg' :
+      'chrome://resources/images/arrow_down.svg';
+  return `url("data:image/svg+xml;charset=utf-8,${uri}"),` +
+      `url("${arrowDownPath}")`;
+}
