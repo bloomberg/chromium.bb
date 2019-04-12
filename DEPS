@@ -1002,6 +1002,17 @@ deps = {
       'dep_type': 'cipd',
   },
 
+  'src/third_party/jacoco': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/jacoco',
+              'version': 'O8mNUqIbFxvOcBsSNfbvpdUFvY4nfrPY0QA2kHoO2pQC',
+          },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
+  },
+
   'src/third_party/jsoncpp/source':
     Var('chromium_git') + '/external/github.com/open-source-parsers/jsoncpp.git' + '@' + 'f572e8e42e22cfcf5ab0aea26574f408943edfa4', # from svn 248
 

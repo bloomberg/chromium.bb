@@ -113,6 +113,7 @@
 /instrumented_libraries/scripts/*.tgz
 /instrumented_libraries/scripts/out/*
 /javax_inject/lib/
+/jacoco/lib/
 /jsoncpp/source
 /jsr-305/src
 /junit/src
