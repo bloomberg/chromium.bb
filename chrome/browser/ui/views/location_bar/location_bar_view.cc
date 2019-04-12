@@ -625,6 +625,10 @@ void LocationBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
 
   tint_ = GetTint();
   RefreshBackground();
+
+  // When the native theme changes, so can the colors used for emphasized text.
+  omnibox_view_->EmphasizeURLComponents();
+
   location_icon_view_->Update(/*suppress_animations=*/false);
   RefreshClearAllButtonIcon();
   SchedulePaint();
@@ -840,7 +844,6 @@ void LocationBarView::RefreshBackground() {
   // Keep the views::Textfield in sync. It needs an opaque background to
   // correctly enable subpixel AA.
   omnibox_view_->SetBackgroundColor(background_color);
-  omnibox_view_->EmphasizeURLComponents();
 
   SchedulePaint();
 }
