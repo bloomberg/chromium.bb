@@ -2073,7 +2073,14 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, ServiceWorkerInterception) {
   RunServiceWorkerTest("respond_with_fetch_worker.js");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, EmbeddedPdfGetsFocus) {
+// Flaky on Windows. https://crbug.com/952066
+#if defined(OS_WIN)
+#define MAYBE_EmbeddedPdfGetsFocus DISABLED_EmbeddedPdfGetsFocus
+#else
+#define MAYBE_EmbeddedPdfGetsFocus EmbeddedPdfGetsFocus
+#endif
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, MAYBE_EmbeddedPdfGetsFocus) {
   GURL test_iframe_url(embedded_test_server()->GetURL(
       "/pdf/test-offset-cross-site-iframe.html"));
   ui_test_utils::NavigateToURL(browser(), test_iframe_url);
