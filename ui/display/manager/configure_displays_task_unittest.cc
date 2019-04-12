@@ -9,8 +9,8 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/display/fake/fake_display_snapshot.h"
 #include "ui/display/manager/configure_displays_task.h"
-#include "ui/display/manager/fake_display_snapshot.h"
 #include "ui/display/manager/test/action_logger_util.h"
 #include "ui/display/manager/test/test_native_display_delegate.h"
 

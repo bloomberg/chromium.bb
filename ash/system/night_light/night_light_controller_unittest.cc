@@ -28,9 +28,9 @@
 #include "base/strings/pattern.h"
 #include "components/prefs/pref_service.h"
 #include "ui/compositor/layer.h"
+#include "ui/display/fake/fake_display_snapshot.h"
 #include "ui/display/manager/display_change_observer.h"
 #include "ui/display/manager/display_manager.h"
-#include "ui/display/manager/fake_display_snapshot.h"
 #include "ui/display/manager/test/action_logger_util.h"
 #include "ui/display/manager/test/test_native_display_delegate.h"
 

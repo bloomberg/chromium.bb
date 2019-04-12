@@ -42,7 +42,7 @@ source_set("x11") {
     "//skia",
     "//ui/base",
     "//ui/base/x",
-    "//ui/display/manager",
+    "//ui/display/fake",
     "//ui/events",
     "//ui/events/devices",
     "//ui/events/ozone:events_ozone",
