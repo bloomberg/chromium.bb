@@ -2055,18 +2055,11 @@ void RenderWidgetHostImpl::UpdateTextDirection(WebTextDirection direction) {
   text_direction_ = direction;
 }
 
-void RenderWidgetHostImpl::CancelUpdateTextDirection() {
-  if (text_direction_updated_)
-    text_direction_canceled_ = true;
-}
-
 void RenderWidgetHostImpl::NotifyTextDirection() {
-  if (text_direction_updated_) {
-    if (!text_direction_canceled_)
-      Send(new WidgetMsg_SetTextDirection(GetRoutingID(), text_direction_));
-    text_direction_updated_ = false;
-    text_direction_canceled_ = false;
-  }
+  if (!text_direction_updated_)
+    return;
+  Send(new WidgetMsg_SetTextDirection(GetRoutingID(), text_direction_));
+  text_direction_updated_ = false;
 }
 
 void RenderWidgetHostImpl::ImeSetComposition(
