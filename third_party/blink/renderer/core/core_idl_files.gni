@@ -335,6 +335,7 @@ core_idl_files =
                     "streams/writable_stream_default_controller.idl",
                     "streams/writable_stream_default_writer.idl",
                     "streams/underlying_source_base.idl",
+                    "streams/underlying_sink_base.idl",
                     "svg/svg_a_element.idl",
                     "svg/svg_angle.idl",
                     "svg/svg_animate_element.idl",
