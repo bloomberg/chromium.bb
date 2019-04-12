@@ -22,26 +22,30 @@
 
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_ellipse.h"
 #include "third_party/blink/renderer/core/svg/svg_length.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
 inline SVGCircleElement::SVGCircleElement(Document& document)
     : SVGGeometryElement(svg_names::kCircleTag, document),
-      cx_(SVGAnimatedLength::Create(this,
-                                    svg_names::kCxAttr,
-                                    SVGLengthMode::kWidth,
-                                    SVGLength::Initial::kUnitlessZero,
-                                    CSSPropertyID::kCx)),
-      cy_(SVGAnimatedLength::Create(this,
-                                    svg_names::kCyAttr,
-                                    SVGLengthMode::kHeight,
-                                    SVGLength::Initial::kUnitlessZero,
-                                    CSSPropertyID::kCy)),
-      r_(SVGAnimatedLength::Create(this,
-                                   svg_names::kRAttr,
-                                   SVGLengthMode::kOther,
-                                   SVGLength::Initial::kUnitlessZero,
-                                   CSSPropertyID::kR)) {
+      cx_(MakeGarbageCollected<SVGAnimatedLength>(
+          this,
+          svg_names::kCxAttr,
+          SVGLengthMode::kWidth,
+          SVGLength::Initial::kUnitlessZero,
+          CSSPropertyID::kCx)),
+      cy_(MakeGarbageCollected<SVGAnimatedLength>(
+          this,
+          svg_names::kCyAttr,
+          SVGLengthMode::kHeight,
+          SVGLength::Initial::kUnitlessZero,
+          CSSPropertyID::kCy)),
+      r_(MakeGarbageCollected<SVGAnimatedLength>(
+          this,
+          svg_names::kRAttr,
+          SVGLengthMode::kOther,
+          SVGLength::Initial::kUnitlessZero,
+          CSSPropertyID::kR)) {
   AddToPropertyMap(cx_);
   AddToPropertyMap(cy_);
   AddToPropertyMap(r_);
