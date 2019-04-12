@@ -1476,6 +1476,8 @@
       'Linux FYI Release (AMD R7 240)',
       'Linux FYI Debug (NVIDIA)',
       'Linux FYI Experimental Release (NVIDIA)',
+      'Linux FYI SkiaRenderer Vulkan (NVIDIA)',
+      'Linux FYI Release (NVIDIA)',
       # Consistent hangs crbug.com/940750
       'Linux FYI Experimental Release (Intel HD 630)',
     ],
