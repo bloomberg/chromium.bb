@@ -96,8 +96,12 @@
         margin-top: 1em;
       }
 
-      .overview-messages div + div {
+      .overview-messages {
         margin-top: 0;
+      }
+
+      .overview-messages li {
+        margin-top: 8px;
       }
 
 <if expr="chromeos">
@@ -173,36 +177,27 @@
             [[subtitle_]]
           </section>
           <section class="single-column overview-section">
-<if expr="not chromeos">
-            <p inner-h-t-m-l="[[managementNoticeHtml_]]"></p>
-</if>
+              <if expr="not chromeos">
+                  <p inner-h-t-m-l="[[managementNoticeHtml_]]"></p>
+      </if>
 <if expr="chromeos">
             <div>[[managementOverview_]]</div>
-            <div class="overview-messages"
+            <div>[[deviceManagedInfo_.overview]]</div>
+            <ul class="overview-messages"
                 hidden="[[!deviceManagedInfo_]]">
-              [[deviceManagedInfo_.overview]]
-              <div class="content-indented">
+              <li>
                 [[deviceManagedInfo_.setup]]
                     <a href="$i18nRaw{managementDeviceLearnMoreUrl}"
                       target="_blank">$i18n{learnMore}</a>
-              </div>
-              <div class="content-indented">[[deviceManagedInfo_.data]]</div>
-            </div>
+              </li>
+              <li>[[deviceManagedInfo_.data]]</li>
+            </ul>
 </if>
-            <div class="overview-messages" hidden="[[!accountManagedInfo_]]">
-              [[accountManagedInfo_.overview]]
-              <div class="content-indented">
-<if expr="chromeos">
-                [[accountManagedInfo_.setup]]
-                  <a href="$i18nRaw{managementAccountLearnMoreUrl}"
-                    target="_blank">$i18n{learnMore}</a>
-</if>
-<if expr="not chromeos">
-                [[accountManagedInfo_.setup]]
-</if>
-              </div>
-              <div class="content-indented">[[accountManagedInfo_.data]]</div>
-            </div>
+            <div>[[accountManagedInfo_.overview]]</div>
+            <ul class="overview-messages" hidden="[[!accountManagedInfo_]]">
+              <li>[[accountManagedInfo_.setup]]</li>
+              <li>[[accountManagedInfo_.data]]</li>
+            </ul>
           </section>
 <if expr="chromeos">
           <div hidden="[[!localTrustRoots_]]">

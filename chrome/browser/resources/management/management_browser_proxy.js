@@ -28,6 +28,27 @@ management.ReportingType = {
  */
 management.BrowserReportingResponse;
 
+/**
+ * @typedef {{
+ *   overview: string,
+ *   setup: string,
+ *   data: string,
+ * }}
+ */
+management.ManagedInfo;
+
+/**
+ * @typedef {{
+ *   accountManagedInfo: ?management.ManagedInfo,
+ *   browserManagementNotice: string,
+ *   deviceManagedInfo: ?management.ManagedInfo,
+ *   extensionReportingTitle: string,
+ *   pageSubtitle: string,
+ *   overview: string,
+ * }}
+ */
+management.ManagedDataResponse;
+
 // <if expr="chromeos">
 /**
  * @enum {string} Look at ToJSDeviceReportingType usage in
@@ -52,32 +73,11 @@ management.DeviceReportingType = {
 management.DeviceReportingResponse;
 // </if>
 
-/**
- * @typedef {{
- *   overview: string,
- *   setup: string,
- *   data: string,
- * }}
- */
-management.ManagedInfo;
-
-/**
- * @typedef {{
- *   overview: string,
- *   deviceManagedInfo: ?management.ManagedInfo,
- *   accountManagedInfo: ?management.ManagedInfo,
- * }}
- */
-management.ManagementStatus;
-
 cr.define('management', function() {
   /** @interface */
   class ManagementBrowserProxy {
     /** @return {!Promise<!Array<!management.Extension>>} */
     getExtensions() {}
-
-    /** @return {!Promise<!management.ManagementStatus>} */
-    getManagementStatus() {}
 
     // <if expr="chromeos">
     /**
@@ -93,10 +93,8 @@ cr.define('management', function() {
     getDeviceReportingInfo() {}
     // </if>
 
-    // <if expr="not chromeos">
-    /** @return {string} */
-    getManagementNotice() {}
-    // </if>
+    /** @return {!Promise<!management.ManagedDataResponse>} */
+    getContextualManagedData() {}
 
     /**
      * @return {!Promise<!Array<!management.BrowserReportingResponse>>} The list
@@ -112,11 +110,6 @@ cr.define('management', function() {
       return cr.sendWithPromise('getExtensions');
     }
 
-    /** @override */
-    getManagementStatus() {
-      return cr.sendWithPromise('getManagementStatus');
-    }
-
     // <if expr="chromeos">
     /** @override */
     getLocalTrustRootsInfo() {
@@ -129,12 +122,10 @@ cr.define('management', function() {
     }
     // </if>
 
-    // <if expr="not chromeos">
     /** @override */
-    getManagementNotice() {
-      return loadTimeData.getString('managementNotice');
+    getContextualManagedData() {
+      return cr.sendWithPromise('getContextualManagedData');
     }
-    // </if>
 
     /** @override */
     initBrowserReportingInfo() {

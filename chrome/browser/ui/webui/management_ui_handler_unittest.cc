@@ -32,6 +32,9 @@ struct ContextualManagementSourceUpdate {
   base::string16* extension_reporting_title;
   base::string16* browser_management_notice;
   base::string16* subtitle;
+  base::string16* management_overview;
+  base::string16* management_overview_data_notice;
+  base::string16* management_overview_setup_notice;
 };
 
 class TestManagementUIHandler : public ManagementUIHandler {
@@ -45,9 +48,9 @@ class TestManagementUIHandler : public ManagementUIHandler {
     cloud_reporting_extension_exists_ = enable;
   }
 
-  std::unique_ptr<base::DictionaryValue> GetDataSourceUpdate(
+  base::DictionaryValue GetContextualManagedDataForTesting(
       Profile* profile) const {
-    return GetDataManagementContextualSourceUpdate(profile);
+    return GetContextualManagedData(profile);
   }
 
   base::Value GetExtensionReportingInfo() {
@@ -86,12 +89,19 @@ class ManagementUIHandlerTests : public testing::Test {
   }
 
   void ExtractContextualSourceUpdate(
-      base::DictionaryValue* data,
+      const base::DictionaryValue& data,
       const ContextualManagementSourceUpdate& extracted) {
-    data->GetString("extensionReportingTitle",
-                    extracted.extension_reporting_title);
-    data->GetString("managementNotice", extracted.browser_management_notice);
-    data->GetString("subtitle", extracted.subtitle);
+    data.GetString("extensionReportingTitle",
+                   extracted.extension_reporting_title);
+    data.GetString("browserManagementNotice",
+                   extracted.browser_management_notice);
+    data.GetString("pageSubtitle", extracted.subtitle);
+    data.GetString("accountManagedInfo.overview",
+                   extracted.management_overview);
+    data.GetString("accountManagedInfo.data",
+                   extracted.management_overview_data_notice);
+    data.GetString("accountManagedInfo.setup",
+                   extracted.management_overview_setup_notice);
   }
 
  protected:
@@ -109,14 +119,21 @@ TEST_F(ManagementUIHandlerTests,
   base::string16 extension_reporting_title;
   base::string16 browser_management_notice;
   base::string16 subtitle;
-  ContextualManagementSourceUpdate extracted{
-      &extension_reporting_title, &browser_management_notice, &subtitle};
+  base::string16 management_overview;
+  base::string16 management_overview_data_notice;
+  base::string16 management_overview_setup_notice;
+  ContextualManagementSourceUpdate extracted{&extension_reporting_title,
+                                             &browser_management_notice,
+                                             &subtitle,
+                                             &management_overview,
+                                             &management_overview_data_notice,
+                                             &management_overview_setup_notice};
 
   handler_.SetManagedForTesting(false);
-  auto data = handler_.GetDataSourceUpdate(profile.get());
-  ExtractContextualSourceUpdate(data.get(), extracted);
+  auto data = handler_.GetContextualManagedDataForTesting(profile.get());
+  ExtractContextualSourceUpdate(data, extracted);
 
-  EXPECT_EQ(data->DictSize(), 3u);
+  EXPECT_EQ(data.DictSize(), 3u);
   EXPECT_EQ(extension_reporting_title,
             l10n_util::GetStringUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED));
   EXPECT_EQ(browser_management_notice,
@@ -125,23 +142,33 @@ TEST_F(ManagementUIHandlerTests,
                 base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl)));
   EXPECT_EQ(subtitle,
             l10n_util::GetStringUTF16(IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE));
+  EXPECT_EQ(management_overview, base::string16());
+  EXPECT_EQ(management_overview_data_notice, base::string16());
+  EXPECT_EQ(management_overview_setup_notice, base::string16());
 }
 
 TEST_F(ManagementUIHandlerTests,
-       ManagementContextualSourceUpdateManageNoDomain) {
+       ManagementContextualSourceUpdateManagedNoDomain) {
   auto profile = TestingProfile::Builder().Build();
 
   base::string16 extension_reporting_title;
   base::string16 browser_management_notice;
   base::string16 subtitle;
-  ContextualManagementSourceUpdate extracted{
-      &extension_reporting_title, &browser_management_notice, &subtitle};
+  base::string16 management_overview;
+  base::string16 management_overview_data_notice;
+  base::string16 management_overview_setup_notice;
+  ContextualManagementSourceUpdate extracted{&extension_reporting_title,
+                                             &browser_management_notice,
+                                             &subtitle,
+                                             &management_overview,
+                                             &management_overview_data_notice,
+                                             &management_overview_setup_notice};
 
   handler_.SetManagedForTesting(true);
-  auto data = handler_.GetDataSourceUpdate(profile.get());
-  ExtractContextualSourceUpdate(data.get(), extracted);
+  auto data = handler_.GetContextualManagedDataForTesting(profile.get());
+  ExtractContextualSourceUpdate(data, extracted);
 
-  EXPECT_EQ(data->DictSize(), 3u);
+  EXPECT_EQ(data.DictSize(), 4u);
   EXPECT_EQ(extension_reporting_title,
             l10n_util::GetStringUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED));
   EXPECT_EQ(browser_management_notice,
@@ -149,6 +176,13 @@ TEST_F(ManagementUIHandlerTests,
                 IDS_MANAGEMENT_BROWSER_NOTICE,
                 base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl)));
   EXPECT_EQ(subtitle, l10n_util::GetStringUTF16(IDS_MANAGEMENT_SUBTITLE));
+  EXPECT_EQ(management_overview,
+            l10n_util::GetStringUTF16(
+                IDS_MANAGEMENT_ACCOUNT_MANAGED_CLARIFICATION_UNKNOWN_DOMAIN));
+  EXPECT_EQ(management_overview_data_notice,
+            l10n_util::GetStringUTF16(IDS_MANAGEMENT_ACCOUNT_MANAGED_DATA));
+  EXPECT_EQ(management_overview_setup_notice,
+            l10n_util::GetStringUTF16(IDS_MANAGEMENT_ACCOUNT_MANAGED_SETUP));
 }
 
 TEST_F(ManagementUIHandlerTests,
@@ -160,14 +194,21 @@ TEST_F(ManagementUIHandlerTests,
   base::string16 extensions_installed;
   base::string16 browser_management_notice;
   base::string16 subtitle;
-  ContextualManagementSourceUpdate extracted{
-      &extensions_installed, &browser_management_notice, &subtitle};
+  base::string16 management_overview;
+  base::string16 management_overview_data_notice;
+  base::string16 management_overview_setup_notice;
+  ContextualManagementSourceUpdate extracted{&extensions_installed,
+                                             &browser_management_notice,
+                                             &subtitle,
+                                             &management_overview,
+                                             &management_overview_data_notice,
+                                             &management_overview_setup_notice};
 
   handler_.SetManagedForTesting(true);
-  auto data = handler_.GetDataSourceUpdate(profile.get());
-  ExtractContextualSourceUpdate(data.get(), extracted);
+  auto data = handler_.GetContextualManagedDataForTesting(profile.get());
+  ExtractContextualSourceUpdate(data, extracted);
 
-  EXPECT_EQ(data->DictSize(), 3u);
+  EXPECT_EQ(data.DictSize(), 4u);
   EXPECT_EQ(extensions_installed,
             l10n_util::GetStringUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED));
   EXPECT_EQ(browser_management_notice,
@@ -175,6 +216,13 @@ TEST_F(ManagementUIHandlerTests,
                 IDS_MANAGEMENT_BROWSER_NOTICE,
                 base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl)));
   EXPECT_EQ(subtitle, l10n_util::GetStringUTF16(IDS_MANAGEMENT_SUBTITLE));
+  EXPECT_EQ(management_overview,
+            l10n_util::GetStringUTF16(
+                IDS_MANAGEMENT_ACCOUNT_MANAGED_CLARIFICATION_UNKNOWN_DOMAIN));
+  EXPECT_EQ(management_overview_data_notice,
+            l10n_util::GetStringUTF16(IDS_MANAGEMENT_ACCOUNT_MANAGED_DATA));
+  EXPECT_EQ(management_overview_setup_notice,
+            l10n_util::GetStringUTF16(IDS_MANAGEMENT_ACCOUNT_MANAGED_SETUP));
 }
 
 TEST_F(ManagementUIHandlerTests,
@@ -186,15 +234,22 @@ TEST_F(ManagementUIHandlerTests,
   base::string16 extension_reporting_title;
   base::string16 browser_management_notice;
   base::string16 subtitle;
-  ContextualManagementSourceUpdate extracted{
-      &extension_reporting_title, &browser_management_notice, &subtitle};
+  base::string16 management_overview;
+  base::string16 management_overview_data_notice;
+  base::string16 management_overview_setup_notice;
+  ContextualManagementSourceUpdate extracted{&extension_reporting_title,
+                                             &browser_management_notice,
+                                             &subtitle,
+                                             &management_overview,
+                                             &management_overview_data_notice,
+                                             &management_overview_setup_notice};
 
   handler_.SetManagedForTesting(false);
 
-  auto data = handler_.GetDataSourceUpdate(profile.get());
-  ExtractContextualSourceUpdate(data.get(), extracted);
+  auto data = handler_.GetContextualManagedDataForTesting(profile.get());
+  ExtractContextualSourceUpdate(data, extracted);
 
-  EXPECT_EQ(data->DictSize(), 3u);
+  EXPECT_EQ(data.DictSize(), 3u);
   EXPECT_EQ(extension_reporting_title,
             l10n_util::GetStringFUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED_BY,
                                        base::UTF8ToUTF16("manager.com")));
@@ -204,6 +259,9 @@ TEST_F(ManagementUIHandlerTests,
                 base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl)));
   EXPECT_EQ(subtitle,
             l10n_util::GetStringUTF16(IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE));
+  EXPECT_EQ(management_overview, base::string16());
+  EXPECT_EQ(management_overview_data_notice, base::string16());
+  EXPECT_EQ(management_overview_setup_notice, base::string16());
 }
 
 TEST_F(ManagementUIHandlerTests,
@@ -212,26 +270,36 @@ TEST_F(ManagementUIHandlerTests,
   builder.SetProfileName("managed@googlemail.com");
   auto profile = builder.Build();
 
-  base::string16 extensions_installed;
+  base::string16 extension_reporting_title;
   base::string16 browser_management_notice;
-  base::string16 title;
-  ContextualManagementSourceUpdate extracted{
-      &extensions_installed, &browser_management_notice, &title};
+  base::string16 subtitle;
+  base::string16 management_overview;
+  base::string16 management_overview_data_notice;
+  base::string16 management_overview_setup_notice;
+  ContextualManagementSourceUpdate extracted{&extension_reporting_title,
+                                             &browser_management_notice,
+                                             &subtitle,
+                                             &management_overview,
+                                             &management_overview_data_notice,
+                                             &management_overview_setup_notice};
 
   handler_.SetManagedForTesting(false);
 
-  auto data = handler_.GetDataSourceUpdate(profile.get());
-  ExtractContextualSourceUpdate(data.get(), extracted);
+  auto data = handler_.GetContextualManagedDataForTesting(profile.get());
+  ExtractContextualSourceUpdate(data, extracted);
 
-  EXPECT_EQ(data->DictSize(), 3u);
-  EXPECT_EQ(extensions_installed,
+  EXPECT_EQ(data.DictSize(), 3u);
+  EXPECT_EQ(extension_reporting_title,
             l10n_util::GetStringUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED));
   EXPECT_EQ(browser_management_notice,
             l10n_util::GetStringFUTF16(
                 IDS_MANAGEMENT_NOT_MANAGED_NOTICE,
                 base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl)));
-  EXPECT_EQ(title,
+  EXPECT_EQ(subtitle,
             l10n_util::GetStringUTF16(IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE));
+  EXPECT_EQ(management_overview, base::string16());
+  EXPECT_EQ(management_overview_data_notice, base::string16());
+  EXPECT_EQ(management_overview_setup_notice, base::string16());
 }
 
 TEST_F(ManagementUIHandlerTests,
@@ -243,14 +311,21 @@ TEST_F(ManagementUIHandlerTests,
   base::string16 extension_reporting_title;
   base::string16 browser_management_notice;
   base::string16 subtitle;
-  ContextualManagementSourceUpdate extracted{
-      &extension_reporting_title, &browser_management_notice, &subtitle};
+  base::string16 management_overview;
+  base::string16 management_overview_data_notice;
+  base::string16 management_overview_setup_notice;
+  ContextualManagementSourceUpdate extracted{&extension_reporting_title,
+                                             &browser_management_notice,
+                                             &subtitle,
+                                             &management_overview,
+                                             &management_overview_data_notice,
+                                             &management_overview_setup_notice};
 
   handler_.SetManagedForTesting(true);
-  auto data = handler_.GetDataSourceUpdate(profile.get());
-  ExtractContextualSourceUpdate(data.get(), extracted);
+  auto data = handler_.GetContextualManagedDataForTesting(profile.get());
+  ExtractContextualSourceUpdate(data, extracted);
 
-  EXPECT_EQ(data->DictSize(), 3u);
+  EXPECT_EQ(data.DictSize(), 4u);
   EXPECT_EQ(extension_reporting_title,
             l10n_util::GetStringFUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED_BY,
                                        base::UTF8ToUTF16("manager.com")));
@@ -262,6 +337,14 @@ TEST_F(ManagementUIHandlerTests,
   EXPECT_EQ(subtitle,
             l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED_BY,
                                        base::UTF8ToUTF16("manager.com")));
+  EXPECT_EQ(
+      management_overview,
+      l10n_util::GetStringFUTF16(IDS_MANAGEMENT_ACCOUNT_MANAGED_CLARIFICATION,
+                                 base::UTF8ToUTF16("manager.com")));
+  EXPECT_EQ(management_overview_data_notice,
+            l10n_util::GetStringUTF16(IDS_MANAGEMENT_ACCOUNT_MANAGED_DATA));
+  EXPECT_EQ(management_overview_setup_notice,
+            l10n_util::GetStringUTF16(IDS_MANAGEMENT_ACCOUNT_MANAGED_SETUP));
 }
 
 #endif  // !defined(OS_CHROMEOS)

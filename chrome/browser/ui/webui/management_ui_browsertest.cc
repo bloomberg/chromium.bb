@@ -33,21 +33,14 @@ class ManagementUITest : public InProcessBrowserTest {
 
   void VerifyTexts(base::Value* actual_values,
                    std::map<std::string, base::string16>& expected_values) {
-    base::ListValue* values_as_list = NULL;
-
-    actual_values->GetAsList(&values_as_list);
-    for (size_t i = 0; i < values_as_list->GetSize(); ++i) {
-      base::Value* result = NULL;
-      EXPECT_TRUE(values_as_list->Get(i, &result));
-      auto* name = result->FindStringKey("name");
-      auto* value = result->FindKey("value");
-      DCHECK(name);
-      auto expected_value = base::Value(expected_values[*name]);
-      DCHECK(value);
-      ASSERT_TRUE(value->Equals(&expected_value));
+    base::DictionaryValue* values_as_dict = NULL;
+    actual_values->GetAsDictionary(&values_as_dict);
+    for (const auto& val : expected_values) {
+      base::string16 actual_value;
+      values_as_dict->GetString(val.first, &actual_value);
+      ASSERT_EQ(actual_value, val.second);
     }
   }
-
   policy::MockConfigurationPolicyProvider* provider() { return &provider_; }
 
   policy::ProfilePolicyConnector* profile_policy_connector() {
@@ -68,21 +61,10 @@ IN_PROC_BROWSER_TEST_F(ManagementUITest, ManagementStateChange) {
 
   // The browser is not managed.
   const std::string javascript =
-      "const unmanaged_result = [];"
-      "unmanaged_result.push({"
-      " name: 'browserManagementNotice',"
-      " value: management.ManagementBrowserProxyImpl"
-      "   .getInstance().getManagementNotice()"
-      "});"
-      "unmanaged_result.push({"
-      " name: 'extensionReportingTitle',"
-      " value: loadTimeData.getString('extensionReportingTitle')"
-      "});"
-      "unmanaged_result.push({"
-      " name: 'pageSubtitle',"
-      " value: loadTimeData.getString('subtitle')"
-      "});"
-      "domAutomationController.send(JSON.stringify(unmanaged_result));";
+      "management.ManagementBrowserProxyImpl.getInstance()"
+      "  .getContextualManagedData()"
+      "  .then(managed_result => "
+      "    domAutomationController.send(JSON.stringify(managed_result)));";
 
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -101,6 +83,9 @@ IN_PROC_BROWSER_TEST_F(ManagementUITest, ManagementStateChange) {
        l10n_util::GetStringUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED)},
       {"pageSubtitle",
        l10n_util::GetStringUTF16(IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE)},
+      {"accountManagedInfo.overview", base::string16()},
+      {"accountManagedInfo.data", base::string16()},
+      {"accountManagedInfo.setup", base::string16()},
   };
 
   VerifyTexts(unmanaged_value_ptr.get(), expected_unmanaged_values);
@@ -117,24 +102,8 @@ IN_PROC_BROWSER_TEST_F(ManagementUITest, ManagementStateChange) {
 
   contents = browser()->tab_strip_model()->GetActiveWebContents();
   std::string managed_json;
-  const std::string javascript_2 =
-      "const managed_result = [];"
-      "managed_result.push({"
-      " name: 'browserManagementNotice',"
-      " value: management.ManagementBrowserProxyImpl"
-      "   .getInstance().getManagementNotice()"
-      "});"
-      "managed_result.push({"
-      " name: 'extensionReportingTitle',"
-      " value: loadTimeData.getString('extensionReportingTitle')"
-      "});"
-      "managed_result.push({"
-      " name: 'pageSubtitle',"
-      " value: loadTimeData.getString('subtitle')"
-      "});"
-      "domAutomationController.send(JSON.stringify(managed_result));";
 
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(contents, javascript_2,
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(contents, javascript,
                                                      &managed_json));
 
   std::unique_ptr<base::Value> managed_value_ptr =
@@ -147,6 +116,13 @@ IN_PROC_BROWSER_TEST_F(ManagementUITest, ManagementStateChange) {
       {"extensionReportingTitle",
        l10n_util::GetStringUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED)},
       {"pageSubtitle", l10n_util::GetStringUTF16(IDS_MANAGEMENT_SUBTITLE)},
+      {"accountManagedInfo.overview",
+       l10n_util::GetStringUTF16(
+           IDS_MANAGEMENT_ACCOUNT_MANAGED_CLARIFICATION_UNKNOWN_DOMAIN)},
+      {"accountManagedInfo.data",
+       l10n_util::GetStringUTF16(IDS_MANAGEMENT_ACCOUNT_MANAGED_DATA)},
+      {"accountManagedInfo.setup",
+       l10n_util::GetStringUTF16(IDS_MANAGEMENT_ACCOUNT_MANAGED_SETUP)},
   };
 
   VerifyTexts(managed_value_ptr.get(), expected_managed_values);

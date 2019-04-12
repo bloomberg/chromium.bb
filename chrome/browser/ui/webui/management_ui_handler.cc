@@ -116,10 +116,10 @@ const char kManagementReportNetworkInterfaces[] =
     "managementReportNetworkInterfaces";
 const char kManagementReportUsers[] = "managementReportUsers";
 const char kManagementPrinting[] = "managementPrinting";
+const char kDeviceManagedInfo[] = "deviceManagedInfo";
 #endif  // defined(OS_CHROMEOS)
 
 const char kOverview[] = "overview";
-const char kDeviceManagedInfo[] = "deviceManagedInfo";
 const char kAccountManagedInfo[] = "accountManagedInfo";
 const char kSetup[] = "setup";
 const char kData[] = "data";
@@ -154,53 +154,6 @@ std::string GetAccountDomain(Profile* profile) {
 
   return consumer_domain_pos == std::string::npos ? domain : std::string();
 }
-
-#if !defined(OS_CHROMEOS)
-void GetDataManagementBrowserContextualSourceUpdate(
-    base::DictionaryValue* update,
-    Profile* profile,
-    bool managed) {
-  auto management_domain = GetAccountDomain(profile);
-
-  if (management_domain.empty()) {
-    update->SetString(
-        "extensionReportingTitle",
-        l10n_util::GetStringUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED));
-
-    update->SetString("managementNotice",
-                      l10n_util::GetStringFUTF16(
-                          managed ? IDS_MANAGEMENT_BROWSER_NOTICE
-                                  : IDS_MANAGEMENT_NOT_MANAGED_NOTICE,
-                          base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl)));
-    update->SetString("subtitle",
-                      l10n_util::GetStringUTF16(
-                          managed ? IDS_MANAGEMENT_SUBTITLE
-                                  : IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE));
-
-  } else {
-    update->SetString(
-        "extensionReportingTitle",
-        l10n_util::GetStringFUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED_BY,
-                                   base::UTF8ToUTF16(management_domain)));
-
-    update->SetString(
-        "managementNotice",
-        managed ? l10n_util::GetStringFUTF16(
-                      IDS_MANAGEMENT_MANAGEMENT_BY_NOTICE,
-                      base::UTF8ToUTF16(management_domain),
-                      base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl))
-                : l10n_util::GetStringFUTF16(
-                      IDS_MANAGEMENT_NOT_MANAGED_NOTICE,
-                      base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl)));
-    update->SetString(
-        "subtitle",
-        managed
-            ? l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED_BY,
-                                         base::UTF8ToUTF16(management_domain))
-            : l10n_util::GetStringUTF16(IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE));
-  }
-}
-#endif  // !defined(OS_CHROMEOS)
 
 #if defined(OS_CHROMEOS)
 
@@ -385,17 +338,13 @@ void ManagementUIHandler::InitializeInternal(content::WebUI* web_ui,
   handler->managed_ = IsProfileManaged(profile) || IsBrowserManaged();
 #endif  // defined(OS_CHROMEOS)
 
-  source->AddLocalizedStrings(
-      *handler->GetDataManagementContextualSourceUpdate(profile));
-  handler->web_ui_data_source_name_ = source->GetSource();
-
   web_ui->AddMessageHandler(std::move(handler));
 }
 
 void ManagementUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "getManagementStatus",
-      base::BindRepeating(&ManagementUIHandler::HandleGetManagementStatus,
+      "getContextualManagedData",
+      base::BindRepeating(&ManagementUIHandler::HandleGetContextualManagedData,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getExtensions",
@@ -523,6 +472,57 @@ void ManagementUIHandler::AddExtensionReportingInfo(
   }
 }
 
+base::DictionaryValue ManagementUIHandler::GetContextualManagedData(
+    Profile* profile) const {
+  base::DictionaryValue response;
+  auto management_domain = GetAccountDomain(profile);
+
+  if (management_domain.empty()) {
+    response.SetString(
+        "extensionReportingTitle",
+        l10n_util::GetStringUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED));
+
+#if !defined(OS_CHROMEOS)
+    response.SetString("browserManagementNotice",
+                       l10n_util::GetStringFUTF16(
+                           managed_ ? IDS_MANAGEMENT_BROWSER_NOTICE
+                                    : IDS_MANAGEMENT_NOT_MANAGED_NOTICE,
+                           base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl)));
+    response.SetString("pageSubtitle",
+                       l10n_util::GetStringUTF16(
+                           managed_ ? IDS_MANAGEMENT_SUBTITLE
+                                    : IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE));
+#endif  // !defined(OS_CHROMEOS)
+
+  } else {
+    response.SetString(
+        "extensionReportingTitle",
+        l10n_util::GetStringFUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED_BY,
+                                   base::UTF8ToUTF16(management_domain)));
+
+#if !defined(OS_CHROMEOS)
+    response.SetString(
+        "browserManagementNotice",
+        managed_ ? l10n_util::GetStringFUTF16(
+                       IDS_MANAGEMENT_MANAGEMENT_BY_NOTICE,
+                       base::UTF8ToUTF16(management_domain),
+                       base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl))
+                 : l10n_util::GetStringFUTF16(
+                       IDS_MANAGEMENT_NOT_MANAGED_NOTICE,
+                       base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl)));
+#endif  // !defined(OS_CHROMEOS)
+    response.SetString(
+        "pageSubtitle",
+        managed_
+            ? l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED_BY,
+                                         base::UTF8ToUTF16(management_domain))
+            : l10n_util::GetStringUTF16(IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE));
+  }
+
+  GetManagementStatus(profile, &response);
+  return response;
+}
+
 policy::PolicyService* ManagementUIHandler::GetPolicyService() const {
   return policy::ProfilePolicyConnectorFactory::GetForBrowserContext(
              Profile::FromWebUI(web_ui()))
@@ -536,18 +536,6 @@ const extensions::Extension* ManagementUIHandler::GetEnabledExtension(
                          extensions::ExtensionRegistry::ENABLED);
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-
-std::unique_ptr<base::DictionaryValue>
-ManagementUIHandler::GetDataManagementContextualSourceUpdate(
-    Profile* profile) const {
-  auto update = std::make_unique<base::DictionaryValue>();
-#if !defined(OS_CHROMEOS)
-  GetDataManagementBrowserContextualSourceUpdate(update.get(), profile,
-                                                 managed_);
-#endif  // !defined(OS_CHROMEOS)
-
-  return update;
-}
 
 #if defined(OS_CHROMEOS)
 void AddStatusDeviceManagedInfo(base::Value* status,
@@ -582,9 +570,16 @@ void AddStatusDeviceAndAccountManagedInfo(
 void AddStatusAccountManagedInfo(base::Value* status,
                                  const std::string& account_domain) {
   base::Value info(base::Value::Type::DICTIONARY);
-  info.SetKey(kOverview, base::Value(l10n_util::GetStringFUTF16(
-                             IDS_MANAGEMENT_ACCOUNT_MANAGED_CLARIFICATION,
-                             base::UTF8ToUTF16(account_domain))));
+  if (account_domain.empty()) {
+    info.SetKey(
+        kOverview,
+        base::Value(l10n_util::GetStringUTF16(
+            IDS_MANAGEMENT_ACCOUNT_MANAGED_CLARIFICATION_UNKNOWN_DOMAIN)));
+  } else {
+    info.SetKey(kOverview, base::Value(l10n_util::GetStringFUTF16(
+                               IDS_MANAGEMENT_ACCOUNT_MANAGED_CLARIFICATION,
+                               base::UTF8ToUTF16(account_domain))));
+  }
   info.SetKey(kSetup, base::Value(l10n_util::GetStringUTF16(
                           IDS_MANAGEMENT_ACCOUNT_MANAGED_SETUP)));
   info.SetKey(kData, base::Value(l10n_util::GetStringUTF16(
@@ -633,8 +628,8 @@ void AddStatusOverviewManagedAccount(base::Value* status,
   status->SetKey(kOverview, base::Value(l10n_util::GetStringFUTF16(
                                 IDS_MANAGEMENT_ACCOUNT_MANAGED_BY,
                                 base::UTF8ToUTF16(account_domain))));
-#endif  // defined(OS_CHROMEOS)
   status->SetKey(kDeviceManagedInfo, base::Value());
+#endif  // defined(OS_CHROMEOS)
   AddStatusAccountManagedInfo(status, account_domain);
 }
 
@@ -647,8 +642,8 @@ void AddStatusOverviewNotManaged(base::Value* status) {
 }
 #endif  // defined(OS_CHROMEOS)
 
-void ManagementUIHandler::GetManagementStatus(base::Value* status) {
-  auto* profile = Profile::FromWebUI(web_ui());
+void ManagementUIHandler::GetManagementStatus(Profile* profile,
+                                              base::Value* status) const {
   const std::string account_domain = GetAccountDomain(profile);
 #if defined(OS_CHROMEOS)
   const bool account_managed = IsProfileManaged(profile);
@@ -709,15 +704,6 @@ void ManagementUIHandler::GetManagementStatus(base::Value* status) {
 #endif  // defined(OS_CHROMEOS)
 }
 
-void ManagementUIHandler::HandleGetManagementStatus(
-    const base::ListValue* args) {
-  base::RecordAction(base::UserMetricsAction("ManagementPageViewed"));
-  AllowJavascript();
-  base::Value status(base::Value::Type::DICTIONARY);
-  GetManagementStatus(&status);
-  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */, status);
-}
-
 void ManagementUIHandler::HandleGetExtensions(const base::ListValue* args) {
   AllowJavascript();
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -765,6 +751,13 @@ void ManagementUIHandler::HandleGetDeviceReportingInfo(
 }
 #endif  // defined(OS_CHROMEOS)
 
+void ManagementUIHandler::HandleGetContextualManagedData(
+    const base::ListValue* args) {
+  AllowJavascript();
+  auto result = GetContextualManagedData(Profile::FromWebUI(web_ui()));
+  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
+                            std::move(result));
+}
 
 void ManagementUIHandler::HandleInitBrowserReportingInfo(
     const base::ListValue* args) {
@@ -816,11 +809,7 @@ void ManagementUIHandler::OnManagedStateChanged() {
 
   managed_ = managed;
 
-  auto data_source_update = GetDataManagementContextualSourceUpdate(profile);
-  FireWebUIListener("update-load-time-data", data_source_update->Clone());
-
-  content::WebUIDataSource::Update(profile, web_ui_data_source_name_,
-                                   std::move(data_source_update));
+  FireWebUIListener("managed_state_changed");
 }
 
 void ManagementUIHandler::OnPolicyUpdated(
