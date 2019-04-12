@@ -85,6 +85,7 @@ ConnectivityCheckerImpl::ConnectivityCheckerImpl(
 
 void ConnectivityCheckerImpl::Initialize(
     net::URLRequestContextGetter* url_request_context_getter) {
+  url_request_context_getter_ = url_request_context_getter;
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   base::CommandLine::StringType check_url_str =
