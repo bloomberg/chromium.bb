@@ -12,7 +12,6 @@ namespace syncer {
 namespace {
 
 const char kTestCacheGuid[] = "test-guid";
-const char kTestSessionName[] = "test-session-name";
 const char kTestBirthday[] = "1";
 
 }  // namespace
@@ -25,8 +24,8 @@ void FakeSyncEngine::Initialize(InitParams params) {
   initialized_ = success;
   params.host->OnEngineInitialized(ModelTypeSet(), WeakHandle<JsBackend>(),
                                    WeakHandle<DataTypeDebugInfoListener>(),
-                                   kTestCacheGuid, kTestSessionName,
-                                   kTestBirthday, /*bag_of_chips=*/"", success);
+                                   kTestCacheGuid, kTestBirthday,
+                                   /*bag_of_chips=*/"", success);
 }
 
 bool FakeSyncEngine::IsInitialized() const {
