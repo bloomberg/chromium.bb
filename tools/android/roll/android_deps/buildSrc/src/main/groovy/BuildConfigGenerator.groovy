@@ -217,6 +217,10 @@ class BuildConfigGenerator extends DefaultTask {
                 |
                 |""".stripMargin())
                 break
+            case 'net_sf_kxml_kxml2':
+                sb.append('  # Target needs to exclude *xmlpull* files as already included in Android SDK.\n')
+                sb.append('  jar_excluded_patterns = [ "*xmlpull*" ]\n')
+                break
         }
     }
 
