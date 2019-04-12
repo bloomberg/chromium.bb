@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/svg/svg_animation_element.h"
 #include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -95,7 +96,7 @@ SVGLength* SVGLength::Clone() const {
 }
 
 SVGPropertyBase* SVGLength::CloneForAnimation(const String& value) const {
-  SVGLength* length = Create();
+  auto* length = MakeGarbageCollected<SVGLength>();
   length->unit_mode_ = unit_mode_;
 
   if (length->SetValueAsString(value) != SVGParseStatus::kNoError)
