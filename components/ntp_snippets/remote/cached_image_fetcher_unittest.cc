@@ -10,8 +10,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/files/file_path.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/image_fetcher/core/fake_image_decoder.h"
@@ -58,7 +56,6 @@ class NtpSnippetsCachedImageFetcherTest
     : public testing::TestWithParam<TestType> {
  public:
   NtpSnippetsCachedImageFetcherTest() {
-    EXPECT_TRUE(database_dir_.CreateUniqueTempDir());
     RequestThrottler::RegisterProfilePrefs(pref_service_.registry());
 
     // Setup RemoteSuggestionsDatabase with fake ProtoDBs.
@@ -69,9 +66,9 @@ class NtpSnippetsCachedImageFetcherTest
     suggestion_db_ = suggestion_db.get();
     image_db_ = image_db.get();
     database_ = std::make_unique<RemoteSuggestionsDatabase>(
-        std::move(suggestion_db), std::move(image_db), database_dir_.GetPath());
-    suggestion_db_->InitCallback(true);
-    image_db_->InitCallback(true);
+        std::move(suggestion_db), std::move(image_db));
+    suggestion_db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
+    image_db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
 
     shared_factory_ =
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
@@ -147,7 +144,6 @@ class NtpSnippetsCachedImageFetcherTest
   image_fetcher::FakeImageDecoder* fake_image_decoder_;
 
   std::unique_ptr<RemoteSuggestionsDatabase> database_;
-  base::ScopedTempDir database_dir_;
   std::map<std::string, SnippetProto> suggestion_db_storage_;
   std::map<std::string, SnippetImageProto> image_db_storage_;
 

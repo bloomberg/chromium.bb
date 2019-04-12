@@ -13,8 +13,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/files/file_path.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -295,8 +293,6 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
     RemoteSuggestionsProviderImpl::RegisterProfilePrefs(
         utils_.pref_service()->registry());
     RequestThrottler::RegisterProfilePrefs(utils_.pref_service()->registry());
-
-    EXPECT_TRUE(database_dir_.CreateUniqueTempDir());
   }
 
   ~RemoteSuggestionsProviderImplTest() override {
@@ -374,10 +370,10 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
     suggestion_db_ = suggestion_db.get();
     image_db_ = image_db.get();
     auto database = std::make_unique<RemoteSuggestionsDatabase>(
-        std::move(suggestion_db), std::move(image_db), database_dir_.GetPath());
+        std::move(suggestion_db), std::move(image_db));
     database_ = database.get();
-    suggestion_db_->InitCallback(true);
-    image_db_->InitCallback(true);
+    suggestion_db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
+    image_db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
 
     auto fetch_timeout_timer = std::make_unique<base::OneShotTimer>(
         timer_mock_task_runner_->GetMockTickClock());
@@ -672,7 +668,6 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
 
   RemoteSuggestionsStatusService::StatusChangeCallback status_change_callback_;
 
-  base::ScopedTempDir database_dir_;
   RemoteSuggestionsDatabase* database_;
   std::map<std::string, SnippetProto> suggestion_db_storage_;
   std::map<std::string, SnippetImageProto> image_db_storage_;
