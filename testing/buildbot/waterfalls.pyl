@@ -1000,6 +1000,11 @@
           'gtest_tests': 'chromium_win_gtests',
         },
       },
+      'ToTWinOfficial': {
+        'test_suites': {
+          'gtest_tests': 'chromium_win_gtests',
+        },
+      },
       'ToTWinThinLTO64': {
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',

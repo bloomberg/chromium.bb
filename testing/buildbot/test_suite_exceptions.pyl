@@ -1056,6 +1056,7 @@
       'ToTWin',
       'ToTWin(dbg)',
       'ToTWin(dll)',
+      'ToTWinOfficial',
       'ToTWin64',
       'ToTWin64(dbg)',
       'ToTWin64(dll)',
