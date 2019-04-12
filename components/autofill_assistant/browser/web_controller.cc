@@ -273,6 +273,57 @@ ClientStatus JavaScriptErrorStatus(const std::string& file,
   }
   return status;
 }
+
+// Makes sure that the given EvaluateResult exists, is successful and contain a
+// result.
+template <typename T>
+ClientStatus CheckJavaScriptResult(T* result, const char* file, int line) {
+  if (!result)
+    return JavaScriptErrorStatus(file, line, nullptr);
+  if (result->HasExceptionDetails())
+    return JavaScriptErrorStatus(file, line, result->GetExceptionDetails());
+  if (!result->GetResult())
+    return JavaScriptErrorStatus(file, line, nullptr);
+  return OkClientStatus();
+}
+
+// Safely gets an object id from a RemoteObject
+bool SafeGetObjectId(const runtime::RemoteObject* result, std::string* out) {
+  if (result && result->HasObjectId()) {
+    *out = result->GetObjectId();
+    return true;
+  }
+  return false;
+}
+
+// Safely gets a string value from a RemoteObject
+bool SafeGetStringValue(const runtime::RemoteObject* result, std::string* out) {
+  if (result && result->HasValue() && result->GetValue()->is_string()) {
+    *out = result->GetValue()->GetString();
+    return true;
+  }
+  return false;
+}
+
+// Safely gets a int value from a RemoteObject.
+bool SafeGetIntValue(const runtime::RemoteObject* result, int* out) {
+  if (result && result->HasValue() && result->GetValue()->is_int()) {
+    *out = result->GetValue()->GetInt();
+    return true;
+  }
+  *out = 0;
+  return false;
+}
+
+// Safely gets a boolean value from a RemoteObject
+bool SafeGetBool(const runtime::RemoteObject* result, bool* out) {
+  if (result && result->HasValue() && result->GetValue()->is_bool()) {
+    *out = result->GetValue()->GetBool();
+    return true;
+  }
+  *out = false;
+  return false;
+}
 }  // namespace
 
 class WebController::Worker {
@@ -439,8 +490,9 @@ void WebController::ElementPositionGetter::OnGetBoxModelForStableCheck(
 
 void WebController::ElementPositionGetter::OnScrollIntoView(
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
-  if (!result || result->HasExceptionDetails()) {
-    DVLOG(1) << __func__ << " Failed to scroll the element.";
+  ClientStatus status = CheckJavaScriptResult(result.get(), __FILE__, __LINE__);
+  if (!status.ok()) {
+    DVLOG(1) << __func__ << " Failed to scroll the element: " << status;
     OnError();
     return;
   }
@@ -544,16 +596,22 @@ void WebController::ElementFinder::SendResult(const ClientStatus& status) {
 
 void WebController::ElementFinder::OnGetDocumentElement(
     std::unique_ptr<runtime::EvaluateResult> result) {
+  ClientStatus status = CheckJavaScriptResult(result.get(), __FILE__, __LINE__);
+  if (!status.ok()) {
+    DVLOG(1) << __func__ << " Failed to get document root element.";
+    SendResult(status);
+    return;
+  }
+  std::string object_id;
+  if (!SafeGetObjectId(result->GetResult(), &object_id)) {
+    DVLOG(1) << __func__ << " Failed to get document root element.";
+    SendResult(ClientStatus(ELEMENT_RESOLUTION_FAILED));
+    return;
+  }
   element_result_->container_frame_host = web_contents_->GetMainFrame();
   element_result_->container_frame_selector_index = 0;
   element_result_->object_id = "";
-  if (!result || !result->GetResult() || !result->GetResult()->HasObjectId()) {
-    DVLOG(1) << __func__ << " Failed to get document root element.";
-    SendResult(UnexpectedErrorStatus(__FILE__, __LINE__));
-    return;
-  }
-
-  RecursiveFindElement(result->GetResult()->GetObjectId(), 0);
+  RecursiveFindElement(object_id, 0);
 }
 
 void WebController::ElementFinder::RecursiveFindElement(
@@ -604,21 +662,31 @@ void WebController::ElementFinder::RecursiveFindElement(
 void WebController::ElementFinder::OnQuerySelectorAll(
     size_t index,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
-  if (!result || result->HasExceptionDetails() || !result->GetResult()) {
-    DVLOG(1) << __func__ << "Failed to query selector " << index << " of "
-             << selector_;
-    SendResult(JavaScriptErrorStatus(__FILE__, __LINE__,
-                                     result && result->HasExceptionDetails()
-                                         ? result->GetExceptionDetails()
-                                         : nullptr));
+  if (!result) {
+    // It is possible for a document element to already exist, but not be
+    // available yet to query because the document hasn't been loaded. This
+    // results in OnQuerySelectorAll getting a nullptr result. For this specific
+    // call, it is expected.
+    DVLOG(1) << __func__ << ": Context doesn't exist yet to query selector "
+             << index << " of " << selector_;
+    SendResult(ClientStatus(ELEMENT_RESOLUTION_FAILED));
     return;
   }
-  if (result->GetResult()->HasValue() &&
-      result->GetResult()->GetValue()->GetInt() == TOO_MANY_ELEMENTS) {
+  ClientStatus status = CheckJavaScriptResult(result.get(), __FILE__, __LINE__);
+  if (!status.ok()) {
+    DVLOG(1) << __func__ << ": Failed to query selector " << index << " of "
+             << selector_;
+    SendResult(status);
+    return;
+  }
+  int int_result;
+  if (SafeGetIntValue(result->GetResult(), &int_result)) {
+    DCHECK(int_result == TOO_MANY_ELEMENTS);
     SendResult(ClientStatus(TOO_MANY_ELEMENTS));
     return;
   }
-  if (!result->GetResult()->HasObjectId()) {
+  std::string object_id;
+  if (!SafeGetObjectId(result->GetResult(), &object_id)) {
     SendResult(ClientStatus(ELEMENT_RESOLUTION_FAILED));
     return;
   }
@@ -629,7 +697,7 @@ void WebController::ElementFinder::OnQuerySelectorAll(
     // element inside a pseudo element.
     if (selector_.pseudo_type == PseudoType::UNDEFINED) {
       // Return object id of the element.
-      element_result_->object_id = result->GetResult()->GetObjectId();
+      element_result_->object_id = object_id;
       SendResult(OkClientStatus());
       return;
     }
@@ -643,9 +711,7 @@ void WebController::ElementFinder::OnQuerySelectorAll(
     }
 
     devtools_client_->GetDOM()->DescribeNode(
-        dom::DescribeNodeParams::Builder()
-            .SetObjectId(result->GetResult()->GetObjectId())
-            .Build(),
+        dom::DescribeNodeParams::Builder().SetObjectId(object_id).Build(),
         base::BindOnce(
             &WebController::ElementFinder::OnDescribeNodeForPseudoElement,
             weak_ptr_factory_.GetWeakPtr(), pseudo_type));
@@ -653,12 +719,9 @@ void WebController::ElementFinder::OnQuerySelectorAll(
   }
 
   devtools_client_->GetDOM()->DescribeNode(
-      dom::DescribeNodeParams::Builder()
-          .SetObjectId(result->GetResult()->GetObjectId())
-          .Build(),
+      dom::DescribeNodeParams::Builder().SetObjectId(object_id).Build(),
       base::BindOnce(&WebController::ElementFinder::OnDescribeNode,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     result->GetResult()->GetObjectId(), index));
+                     weak_ptr_factory_.GetWeakPtr(), object_id, index));
 }
 
 void WebController::ElementFinder::OnDescribeNodeForPseudoElement(
@@ -914,12 +977,10 @@ void WebController::OnScrollIntoView(
     base::OnceCallback<void(const ClientStatus&)> callback,
     bool is_a_click,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
-  if (!result || result->HasExceptionDetails()) {
+  ClientStatus status = CheckJavaScriptResult(result.get(), __FILE__, __LINE__);
+  if (!status.ok()) {
     DVLOG(1) << __func__ << " Failed to scroll the element.";
-    std::move(callback).Run(JavaScriptErrorStatus(
-        __FILE__, __LINE__,
-        result->HasExceptionDetails() ? result->GetExceptionDetails()
-                                      : nullptr));
+    std::move(callback).Run(status);
     return;
   }
 
@@ -1049,6 +1110,9 @@ void WebController::OnFindElementForCheck(
     base::OnceCallback<void(bool)> callback,
     const ClientStatus& status,
     std::unique_ptr<FindElementResult> result) {
+  DVLOG_IF(1,
+           !status.ok() && status.proto_status() != ELEMENT_RESOLUTION_FAILED)
+      << __func__ << ": " << status;
   std::move(callback).Run(status.ok());
 }
 
@@ -1118,15 +1182,9 @@ void WebController::OnWaitDocumentToBecomeInteractiveForFocusElement(
 void WebController::OnFocusElement(
     base::OnceCallback<void(const ClientStatus&)> callback,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
-  if (!result || result->HasExceptionDetails()) {
-    DVLOG(1) << __func__ << " Failed to focus on element.";
-    std::move(callback).Run(JavaScriptErrorStatus(
-        __FILE__, __LINE__,
-        result->HasExceptionDetails() ? result->GetExceptionDetails()
-                                      : nullptr));
-    return;
-  }
-  std::move(callback).Run(OkClientStatus());
+  ClientStatus status = CheckJavaScriptResult(result.get(), __FILE__, __LINE__);
+  DVLOG_IF(1, !status.ok()) << __func__ << " Failed to focus on element.";
+  std::move(callback).Run(status);
 }
 
 void WebController::FillAddressForm(
@@ -1264,12 +1322,18 @@ void WebController::OnFindElementForSelectOption(
 void WebController::OnSelectOption(
     base::OnceCallback<void(const ClientStatus&)> callback,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
-  if (!result || result->HasExceptionDetails() ||
-      !result->GetResult()->GetValue()->is_bool()) {
+  ClientStatus status = CheckJavaScriptResult(result.get(), __FILE__, __LINE__);
+  if (!status.ok()) {
     DVLOG(1) << __func__ << " Failed to select option.";
+    std::move(callback).Run(status);
     return;
   }
-  if (!result->GetResult()->GetValue()->GetBool()) {
+  bool found;
+  if (!SafeGetBool(result->GetResult(), &found)) {
+    std::move(callback).Run(UnexpectedErrorStatus(__FILE__, __LINE__));
+    return;
+  }
+  if (!found) {
     DVLOG(1) << __func__ << " Failed to find option.";
     std::move(callback).Run(ClientStatus(OPTION_VALUE_NOT_FOUND));
     return;
@@ -1316,17 +1380,9 @@ void WebController::OnFindElementForHighlightElement(
 void WebController::OnHighlightElement(
     base::OnceCallback<void(const ClientStatus&)> callback,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
-  if (!result || result->HasExceptionDetails() ||
-      !result->GetResult()->GetValue()->GetBool()) {
-    DVLOG(1) << __func__ << " Failed to highlight element.";
-    std::move(callback).Run(JavaScriptErrorStatus(
-        __FILE__, __LINE__,
-        result->HasExceptionDetails() ? result->GetExceptionDetails()
-                                      : nullptr));  // unexpected
-    return;
-  }
-  DCHECK(result->GetResult()->GetValue()->is_bool());
-  std::move(callback).Run(OkClientStatus());
+  ClientStatus status = CheckJavaScriptResult(result.get(), __FILE__, __LINE__);
+  DVLOG_IF(1, !status.ok()) << __func__ << " Failed to highlight element.";
+  std::move(callback).Run(status);
 }
 
 void WebController::FocusElement(
@@ -1374,15 +1430,13 @@ void WebController::OnFindElementForGetFieldValue(
 void WebController::OnGetValueAttribute(
     base::OnceCallback<void(bool, const std::string&)> callback,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
-  if (!result || result->HasExceptionDetails()) {
-    std::move(callback).Run(/* exists= */ true, "");
-    return;
-  }
-
+  std::string value;
+  ClientStatus status = CheckJavaScriptResult(result.get(), __FILE__, __LINE__);
   // Read the result returned from Javascript code.
-  DCHECK(result->GetResult()->GetValue()->is_string());
-  std::move(callback).Run(/* exists= */ true,
-                          result->GetResult()->GetValue()->GetString());
+  DVLOG_IF(1, !status.ok())
+      << __func__ << "Failed to get attribute value: " << status;
+  SafeGetStringValue(result->GetResult(), &value);
+  std::move(callback).Run(/* exists= */ true, value);
 }
 
 void WebController::SetFieldValue(
@@ -1525,12 +1579,7 @@ void WebController::OnSetValueAttribute(
     base::OnceCallback<void(const ClientStatus&)> callback,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
   std::move(callback).Run(
-      result && !result->HasExceptionDetails()
-          ? OkClientStatus()
-          : ClientStatus(JavaScriptErrorStatus(
-                __FILE__, __LINE__,
-                result->HasExceptionDetails() ? result->GetExceptionDetails()
-                                              : nullptr)));
+      CheckJavaScriptResult(result.get(), __FILE__, __LINE__));
 }
 
 void WebController::SetAttribute(
@@ -1589,12 +1638,7 @@ void WebController::OnSetAttribute(
     base::OnceCallback<void(const ClientStatus&)> callback,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
   std::move(callback).Run(
-      result && !result->HasExceptionDetails()
-          ? OkClientStatus()
-          : JavaScriptErrorStatus(__FILE__, __LINE__,
-                                  result->HasExceptionDetails()
-                                      ? result->GetExceptionDetails()
-                                      : nullptr));
+      CheckJavaScriptResult(result.get(), __FILE__, __LINE__));
 }
 
 void WebController::SendKeyboardInput(
@@ -1681,16 +1725,17 @@ void WebController::OnFindElementForPosition(
 void WebController::OnGetElementPositionResult(
     base::OnceCallback<void(bool, const RectF&)> callback,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
-  if (!result || result->HasExceptionDetails()) {
+  ClientStatus status = CheckJavaScriptResult(result.get(), __FILE__, __LINE__);
+  if (!status.ok() || !result->GetResult()->GetValue() ||
+      !result->GetResult()->GetValue()->is_list() ||
+      result->GetResult()->GetValue()->GetList().size() != 8u) {
     RectF empty;
     std::move(callback).Run(false, empty);
     return;
   }
-  const auto* value = result->GetResult()->GetValue();
-  DCHECK(value);
-  DCHECK(value->is_list());
-  const auto& list = value->GetList();
-  DCHECK_EQ(list.size(), 8u);
+  const auto& list = result->GetResult()->GetValue()->GetList();
+  // Value::GetDouble() is safe to call without checking the value type; it'll
+  // return 0.0 if the value has the wrong type.
 
   // getBoundingClientRect returns coordinates in the layout viewport. They need
   // to be transformed into coordinates in the visual viewport, between 0 and 1.
@@ -1735,15 +1780,15 @@ void WebController::OnFindElementForGetOuterHtml(
 void WebController::OnGetOuterHtml(
     base::OnceCallback<void(const ClientStatus&, const std::string&)> callback,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
-  if (!result || result->HasExceptionDetails() || !result->GetResult() ||
-      !result->GetResult()->GetValue()->is_string()) {
+  ClientStatus status = CheckJavaScriptResult(result.get(), __FILE__, __LINE__);
+  if (!status.ok()) {
     DVLOG(2) << __func__ << " Failed to get HTML content for GetOuterHtml";
-    std::move(callback).Run(UnexpectedErrorStatus(__FILE__, __LINE__), "");
+    std::move(callback).Run(status, "");
     return;
   }
-
-  std::move(callback).Run(OkClientStatus(),
-                          result->GetResult()->GetValue()->GetString());
+  std::string value;
+  SafeGetStringValue(result->GetResult(), &value);
+  std::move(callback).Run(OkClientStatus(), value);
 }
 
 void WebController::SetCookie(const std::string& domain,
@@ -1821,8 +1866,8 @@ void WebController::OnWaitForDocumentToBecomeInteractive(
     std::string object_id,
     base::OnceCallback<void(bool)> callback,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
-  if (!result || !result->GetResult() || result->HasExceptionDetails() ||
-      remaining_rounds <= 0) {
+  ClientStatus status = CheckJavaScriptResult(result.get(), __FILE__, __LINE__);
+  if (!status.ok() || remaining_rounds <= 0) {
     DVLOG(1) << __func__
              << " Failed to wait for the document to become interactive with "
                 "remaining_rounds: "
@@ -1831,8 +1876,8 @@ void WebController::OnWaitForDocumentToBecomeInteractive(
     return;
   }
 
-  DCHECK(result->GetResult()->GetValue()->is_bool());
-  if (result->GetResult()->GetValue()->GetBool()) {
+  bool ready;
+  if (SafeGetBool(result->GetResult(), &ready) && ready) {
     std::move(callback).Run(true);
     return;
   }
