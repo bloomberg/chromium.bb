@@ -610,29 +610,6 @@ void Controller::OnUserInteractionInsideTouchableArea() {
   StartPeriodicScriptChecks();
 }
 
-std::string Controller::GetDebugContext() {
-  base::Value dict(base::Value::Type::DICTIONARY);
-
-  dict.SetKey("status", base::Value(status_message_));
-  if (trigger_context_) {
-    std::vector<base::Value> parameters_js;
-    for (const auto& entry : trigger_context_->script_parameters) {
-      base::Value parameter_js = base::Value(base::Value::Type::DICTIONARY);
-      parameter_js.SetKey(entry.first, base::Value(entry.second));
-      parameters_js.push_back(std::move(parameter_js));
-    }
-    dict.SetKey("parameters", base::Value(parameters_js));
-  }
-  dict.SetKey("scripts", script_tracker()->GetDebugContext());
-
-  if (details_)
-    dict.SetKey("details", details_->GetDebugContext());
-
-  std::string output_js;
-  base::JSONWriter::Write(dict, &output_js);
-  return output_js;
-}
-
 const PaymentRequestOptions* Controller::GetPaymentRequestOptions() const {
   return payment_request_options_.get();
 }

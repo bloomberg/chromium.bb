@@ -34,10 +34,6 @@ class UiDelegate {
   // detected. This should cause rerun of preconditions check.
   virtual void OnUserInteractionInsideTouchableArea() = 0;
 
-  // Returns a string describing the current execution context. This is useful
-  // when analyzing feedback forms and for debugging in general.
-  virtual std::string GetDebugContext() = 0;
-
   // Returns the current status message.
   virtual std::string GetStatusMessage() const = 0;
 
