@@ -294,7 +294,7 @@ public class WebApkUpdateManagerUnitTest {
                 manifestData.iconUrlToMurmur2HashMap,
                 new WebApkInfo.ShareTarget(manifestData.shareTargetAction,
                         manifestData.shareTargetParamTitle, null, null),
-                false /* forceNavigation */, false /* useTransparentSplash */, null);
+                false /* forceNavigation */, false /* isSplashProvidedByWebApk */, null);
     }
 
     /**

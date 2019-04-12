@@ -214,12 +214,13 @@ public class WebApkInfo extends WebappInfo {
      * @param source Source that the WebAPK was launched from.
      * @param forceNavigation Whether the WebAPK should navigate to {@link url} if it is already
      *                        running.
-     * @param useTransparentSplash Whether the WebApkActivity should be fully transparent while the
-     *                             page is loading.
+     * @param isSplashProvidedByWebApk Whether the WebAPK provides a splash screen activity which
+     *                                 should be launched to hide the web contents while the page is
+     *                                 loading.
      * @param shareData Shared information from the share intent.
      */
     public static WebApkInfo create(String webApkPackageName, String url, int source,
-            boolean forceNavigation, boolean useTransparentSplash, ShareData shareData) {
+            boolean forceNavigation, boolean isSplashProvidedByWebApk, ShareData shareData) {
         // Unlike non-WebAPK web apps, WebAPK ids are predictable. A malicious actor may send an
         // intent with a valid start URL and arbitrary other data. Only use the start URL, the
         // package name and the ShortcutSource from the launch intent and extract the remaining data
@@ -285,7 +286,7 @@ public class WebApkInfo extends WebappInfo {
                 new Icon(primaryIcon), new Icon(badgeIcon), new Icon(splashIcon), name, shortName,
                 displayMode, orientation, source, themeColor, backgroundColor, webApkPackageName,
                 shellApkVersion, manifestUrl, manifestStartUrl, distributor,
-                iconUrlToMurmur2HashMap, shareTarget, forceNavigation, useTransparentSplash,
+                iconUrlToMurmur2HashMap, shareTarget, forceNavigation, isSplashProvidedByWebApk,
                 shareData);
     }
 

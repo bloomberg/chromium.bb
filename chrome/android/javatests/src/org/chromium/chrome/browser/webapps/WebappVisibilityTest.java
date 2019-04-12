@@ -130,11 +130,12 @@ public class WebappVisibilityTest {
             @WebappScopePolicy.Type int scopePolicy, @WebDisplayMode int displayMode) {
         return scopePolicy == WebappScopePolicy.Type.LEGACY
                 ? WebappInfo.create("", webappStartUrlOrScopeUrl, null, null, null, null,
-                          displayMode, 0, 0, 0, 0, null, false /* isIconGenerated */,
-                          false /* isIconAdaptive */, false /* forceNavigation */)
+                        displayMode, 0, 0, 0, 0, null, false /* isIconGenerated */,
+                        false /* isIconAdaptive */, false /* forceNavigation */)
                 : WebApkInfo.create("", "", webappStartUrlOrScopeUrl, null, null, null, null, null,
-                          displayMode, 0, 0, 0, 0, "", 0, null, "",
-                          WebApkInfo.WebApkDistributor.BROWSER, null, null,
-                          false /* forceNavigation */, false /* useTransparentSplash */, null /* shareData */);
+                        displayMode, 0, 0, 0, 0, "", 0, null, "",
+                        WebApkInfo.WebApkDistributor.BROWSER, null, null,
+                        false /* forceNavigation */, false /* isSplashProvidedByWebApk */,
+                        null /* shareData */);
     }
 }
