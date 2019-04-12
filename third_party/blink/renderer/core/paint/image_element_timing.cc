@@ -25,6 +25,10 @@ namespace blink {
 // TODO(npm): decide on a reasonable value for the threshold.
 constexpr const float kImageTimingSizeThreshold = 0.15f;
 
+// The maximum amount of characters included in Element Timing for inline
+// images.
+constexpr const unsigned kInlineImageMaxChars = 100u;
+
 // static
 const char ImageElementTiming::kSupplementName[] = "ImageElementTiming";
 
@@ -81,9 +85,13 @@ void ImageElementTiming::NotifyImagePaintedInternal(
 
   const AtomicString& id = element->GetIdAttribute();
 
+  const KURL& url = cached_image.Url();
   DCHECK(GetSupplementable()->document() == &layout_object.GetDocument());
   DCHECK(layout_object.GetDocument().GetSecurityOrigin());
-  if (!Performance::PassesTimingAllowCheck(
+  // It's ok to expose rendering timestamp for data URIs so exclude those from
+  // the Timing-Allow-Origin check.
+  if (!url.ProtocolIsData() &&
+      !Performance::PassesTimingAllowCheck(
           cached_image.GetResponse(),
           *layout_object.GetDocument().GetSecurityOrigin(),
           &layout_object.GetDocument())) {
@@ -94,15 +102,22 @@ void ImageElementTiming::NotifyImagePaintedInternal(
          performance->ShouldBufferEntries())) {
       // Create an entry with a |startTime| of 0.
       performance->AddElementTiming(
-          AtomicString(cached_image.Url().GetString()), intersection_rect,
-          TimeTicks(), cached_image.LoadResponseEnd(), attr,
+          AtomicString(url.GetString()), intersection_rect, TimeTicks(),
+          cached_image.LoadResponseEnd(), attr,
           cached_image.IntrinsicSize(kDoNotRespectImageOrientation), id);
     }
     return;
   }
 
+  // If the image URL is a data URL ("data:image/..."), then the |name| of the
+  // PerformanceElementTiming entry should be the URL trimmed to 100 characters.
+  // If it is not, then pass in the full URL regardless of the length to be
+  // consistent with Resource Timing.
+  const String& image_name = url.ProtocolIsData()
+                                 ? url.GetString().Left(kInlineImageMaxChars)
+                                 : url.GetString();
   element_timings_.emplace_back(
-      AtomicString(cached_image.Url().GetString()), intersection_rect,
+      AtomicString(image_name), intersection_rect,
       cached_image.LoadResponseEnd(), attr,
       cached_image.IntrinsicSize(kDoNotRespectImageOrientation), id);
   // Only queue a swap promise when |element_timings_| was empty. All of the
