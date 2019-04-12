@@ -210,11 +210,9 @@ void OverscrollControllerAndroid::OnGestureEventAck(
 
   if (event.GetType() == blink::WebInputEvent::kGestureScrollUpdate &&
       refresh_effect_) {
-    // The effect should only be allowed if both the causal touch events go
-    // unconsumed and the generated scroll events go unconsumed.
+    // The effect should only be allowed if the scroll events go unconsumed.
     if (refresh_effect_->IsAwaitingScrollUpdateAck() &&
-        (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED ||
-         event.data.scroll_update.previous_update_in_sequence_prevented)) {
+        ack_result == INPUT_EVENT_ACK_STATE_CONSUMED) {
       refresh_effect_->Reset();
     }
   }

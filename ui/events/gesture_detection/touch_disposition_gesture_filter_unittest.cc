@@ -1127,8 +1127,6 @@ TEST_F(TouchDispositionGestureFilterTest, PreviousScrollPrevented) {
   SendPacket(MoveTouchPoint(), Gestures(ET_GESTURE_SCROLL_UPDATE));
   SendTouchNotConsumedAckForLastTouch();
   ASSERT_TRUE(GesturesSent());
-  EXPECT_FALSE(last_sent_gesture()
-                   .details.previous_scroll_update_in_sequence_prevented());
   GetAndResetSentGestures();
 
   SendPacket(MoveTouchPoint(), Gestures(ET_GESTURE_SCROLL_UPDATE));
@@ -1138,15 +1136,11 @@ TEST_F(TouchDispositionGestureFilterTest, PreviousScrollPrevented) {
   SendPacket(MoveTouchPoint(), Gestures(ET_GESTURE_SCROLL_UPDATE));
   SendTouchNotConsumedAckForLastTouch();
   ASSERT_TRUE(GesturesSent());
-  EXPECT_TRUE(last_sent_gesture()
-                  .details.previous_scroll_update_in_sequence_prevented());
   GetAndResetSentGestures();
 
   SendPacket(MoveTouchPoint(), Gestures(ET_GESTURE_SCROLL_UPDATE));
   SendTouchNotConsumedAckForLastTouch();
   ASSERT_TRUE(GesturesSent());
-  EXPECT_TRUE(last_sent_gesture()
-                  .details.previous_scroll_update_in_sequence_prevented());
 }
 
 TEST_F(TouchDispositionGestureFilterTest, AckQueueBack) {

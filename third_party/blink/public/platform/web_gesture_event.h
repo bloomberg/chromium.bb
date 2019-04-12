@@ -112,12 +112,6 @@ class WebGestureEvent : public WebInputEvent {
       float delta_y;
       float velocity_x;
       float velocity_y;
-      // Whether any previous GestureScrollUpdate in the current scroll
-      // sequence was suppressed (e.g., the causal touchmove was
-      // preventDefault'ed). This bit is particularly useful for
-      // determining whether the observed scroll update sequence captures
-      // the entirety of the generative motion.
-      bool previous_update_in_sequence_prevented;
       InertialPhaseState inertial_phase;
       // Default initialized to ScrollUnits::PrecisePixels.
       ScrollUnits delta_units;

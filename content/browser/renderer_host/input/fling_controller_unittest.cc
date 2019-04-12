@@ -111,8 +111,6 @@ class FlingControllerTest : public FlingControllerEventSenderClient,
     scroll_update.data.scroll_update.velocity_y = delta.y();
     scroll_update.data.scroll_update.inertial_phase =
         WebGestureEvent::kNonMomentumPhase;
-    scroll_update.data.scroll_update.previous_update_in_sequence_prevented =
-        false;
     scroll_update.data.scroll_update.delta_units =
         WebGestureEvent::kPrecisePixels;
     GestureEventWithLatencyInfo scroll_update_with_latency(scroll_update);
