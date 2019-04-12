@@ -12,7 +12,6 @@
 
 namespace views {
 class EditableCombobox;
-class Label;
 class ToggleImageButton;
 }  // namespace views
 
@@ -77,10 +76,8 @@ class PasswordPendingView : public PasswordBubbleViewBase,
   views::ToggleImageButton* password_view_button_;
   views::View* initially_focused_view_;
 
-  // The view for the password value. Only one of |password_dropdown_| and
-  // |password_label_| should be available.
+  // The view for the password value.
   views::EditableCombobox* password_dropdown_;
-  views::Label* password_label_;
 
   bool are_passwords_revealed_;
 
