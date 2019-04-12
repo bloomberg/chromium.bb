@@ -263,6 +263,25 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
     var url = getEntryURL(entry);
     fileManagerPrivateInternal.getThumbnail(url, cropToSquare, callback);
   });
+
+  apiFunctions.setCustomCallback('searchFiles',
+      function(name, request, callback, response) {
+    if (response && !response.error && response.entries) {
+      response.entries = response.entries.map(function(entry) {
+        return GetExternalFileEntry(entry);
+      });
+    }
+
+    // So |callback| doesn't break if response is not defined.
+    if (!response) {
+      response = {};
+    }
+
+    if (callback) {
+      callback(response.entries);
+    }
+  });
+
 });
 
 bindingUtil.registerEventArgumentMassager(

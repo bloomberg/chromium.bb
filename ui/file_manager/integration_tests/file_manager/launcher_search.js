@@ -56,7 +56,7 @@
 
     const result = JSON.parse(await sendTestMessage({
       name: 'runLauncherSearch',
-      query: '.txt',
+      query: '.Txt',
     }));
     chrome.test.assertEq(
         [

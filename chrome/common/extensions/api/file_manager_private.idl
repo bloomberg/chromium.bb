@@ -587,7 +587,7 @@ dictionary SearchMetadataParams {
 };
 
 // Entry and Drive-related properties representing a search result.
-dictionary SearchResult {
+dictionary DriveMetadataSearchResult {
   // A dictionary object which represents a Drive file. This will be converted
   // into a kind of FileEntry object. See
   // file_browser_handler_custom_bindings.cc for details. For filesystem API's
@@ -732,7 +732,10 @@ callback GetPreferencesCallback = void(Preferences result);
 callback SearchDriveCallback =
     void([instanceOf=Entry] object[] entries, DOMString nextFeed);
 
-callback SearchDriveMetadataCallback = void(SearchResult[] results);
+callback SearchDriveMetadataCallback =
+    void(DriveMetadataSearchResult[] results);
+
+callback SearchFilesCallback = void([instanceOf=Entry] object[] entries);
 
 // |urls| The map of hash and array of FileEntry's URL. The array can be empty
 // if the corresponding file is not found.
@@ -1026,6 +1029,10 @@ interface Functions {
   static void searchFilesByHashes(DOMString volumeId,
                                   DOMString[] hashList,
                                   SearchFilesByHashesCallback callback);
+
+  // Search files in My Files.
+  static void searchFiles(SearchMetadataParams searchParams,
+                          SearchFilesCallback callback);
 
   // Create a zip file for the selected files.
   // |parentEntry| Entry of the directory containing the selected files.
