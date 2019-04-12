@@ -114,7 +114,7 @@ cr.define('system_dialog_browsertest', function() {
             assertTrue(printButton.disabled);
             assertTrue(linkContainer.disabled);
             assertFalse(link.hidden);
-            assertTrue(link.querySelector('button').disabled);
+            assertTrue(link.querySelector('cr-icon-button').disabled);
 
             // No new preview
             assertEquals(previewCalls, nativeLayer.getCallCount('getPreview'));

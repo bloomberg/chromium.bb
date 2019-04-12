@@ -72,7 +72,7 @@ cr.define('link_container_test', function() {
       const validateLinkState = (link, disabled) => {
         assertFalse(link.hidden);
         assertEquals(!disabled, link.hasAttribute('actionable'));
-        assertEquals(disabled, link.querySelector('button').disabled);
+        assertEquals(disabled, link.querySelector('cr-icon-button').disabled);
       };
 
       validateLinkState(systemDialogLink, false);
