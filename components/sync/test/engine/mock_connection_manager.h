@@ -158,7 +158,6 @@ class MockConnectionManager : public ServerConnectionManager {
   void SetLastUpdateClientTag(const std::string& tag);
   void SetLastUpdateOriginatorFields(const std::string& client_id,
                                      const std::string& entry_id);
-  void SetLastUpdatePosition(int64_t position_in_parent);
   void SetNewTimestamp(int ts);
   void SetChangesRemaining(int64_t count);
 
