@@ -91,6 +91,7 @@ class DragToOverviewTest : public UIPerformanceTest {
     command_line->AppendSwitch(ash::switches::kAshEnableTabletMode);
   }
   void SetUpOnMainThread() override {
+    UIPerformanceTest::SetUpOnMainThread();
     test::SetAndWaitForTabletMode(true);
 
     if (base::SysInfo::IsRunningOnChromeOS()) {
