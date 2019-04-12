@@ -264,6 +264,10 @@ class Mirror(object):
     norm_url = parsed.netloc + parsed.path
     if norm_url.endswith('.git'):
       norm_url = norm_url[:-len('.git')]
+
+    # Use the same dir for authenticated URLs and unauthenticated URLs.
+    norm_url = norm_url.replace('googlesource.com/a/', 'googlesource.com/')
+
     return norm_url.replace('-', '--').replace('/', '-').lower()
 
   @staticmethod
