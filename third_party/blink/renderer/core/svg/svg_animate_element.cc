@@ -99,6 +99,9 @@ QualifiedName ConstructQualifiedName(const SVGElement& svg_element,
 
 }  // unnamed namespace
 
+SVGAnimateElement::SVGAnimateElement(Document& document)
+    : SVGAnimateElement(svg_names::kAnimateTag, document) {}
+
 SVGAnimateElement::SVGAnimateElement(const QualifiedName& tag_name,
                                      Document& document)
     : SVGAnimationElement(tag_name, document),

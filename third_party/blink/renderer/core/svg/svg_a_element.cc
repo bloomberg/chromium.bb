@@ -50,7 +50,7 @@ namespace blink {
 
 using namespace html_names;
 
-inline SVGAElement::SVGAElement(Document& document)
+SVGAElement::SVGAElement(Document& document)
     : SVGGraphicsElement(svg_names::kATag, document),
       SVGURIReference(this),
       svg_target_(

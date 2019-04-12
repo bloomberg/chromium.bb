@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/svg/svg_parser_utilities.h"
 #include "third_party/blink/renderer/core/svg/svg_transform_distance.h"
 #include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/parsing_utilities.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -46,7 +47,7 @@ SVGTransform* SVGTransformList::Consolidate() {
   if (!Concatenate(matrix))
     return nullptr;
 
-  return Initialize(SVGTransform::Create(matrix));
+  return Initialize(MakeGarbageCollected<SVGTransform>(matrix));
 }
 
 bool SVGTransformList::Concatenate(AffineTransform& result) const {
@@ -258,7 +259,7 @@ SVGParseStatus ParseTransformArgumentsForType(SVGTransformType type,
 
 SVGTransform* CreateTransformFromValues(SVGTransformType type,
                                         const TransformArguments& arguments) {
-  SVGTransform* transform = SVGTransform::Create();
+  auto* transform = MakeGarbageCollected<SVGTransform>();
   switch (type) {
     case SVGTransformType::kSkewx:
       transform->SetSkewX(arguments[0]);
@@ -419,7 +420,7 @@ SVGTransformList* SVGTransformList::Create(SVGTransformType transform_type,
     at_end_of_value = !SkipOptionalSVGSpaces(ptr, end);
   }
 
-  SVGTransformList* svg_transform_list = SVGTransformList::Create();
+  auto* svg_transform_list = MakeGarbageCollected<SVGTransformList>();
   if (at_end_of_value && status == SVGParseStatus::kNoError)
     svg_transform_list->Append(
         CreateTransformFromValues(transform_type, arguments));
@@ -481,7 +482,7 @@ void SVGTransformList::CalculateAnimatedValue(
       from_list->at(0)->TransformType() == to_transform->TransformType())
     effective_from = from_list->at(0);
   else
-    effective_from = SVGTransform::Create(
+    effective_from = MakeGarbageCollected<SVGTransform>(
         to_transform->TransformType(), SVGTransform::kConstructZeroTransform);
 
   // Never resize the animatedTransformList to the toList size, instead either
@@ -497,8 +498,9 @@ void SVGTransformList::CalculateAnimatedValue(
     SVGTransform* effective_to_at_end =
         !to_at_end_of_duration_list->IsEmpty()
             ? to_at_end_of_duration_list->at(0)
-            : SVGTransform::Create(to_transform->TransformType(),
-                                   SVGTransform::kConstructZeroTransform);
+            : MakeGarbageCollected<SVGTransform>(
+                  to_transform->TransformType(),
+                  SVGTransform::kConstructZeroTransform);
     Append(SVGTransformDistance::AddSVGTransforms(
         current_transform, effective_to_at_end, repeat_count));
   } else {
