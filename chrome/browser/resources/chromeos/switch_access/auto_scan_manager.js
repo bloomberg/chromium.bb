@@ -26,9 +26,9 @@ class AutoScanManager {
      * Length of auto-scan interval in milliseconds.
      * @private {number}
      */
-    this.scanTime_ = switchAccess.getNumberPref('autoScanTime');
+    this.scanTime_ = switchAccess.getNumberPreference('autoScanTime');
 
-    const enabled = switchAccess.getBooleanPref('enableAutoScan');
+    const enabled = switchAccess.getBooleanPreference('enableAutoScan');
     if (enabled)
       this.start_();
   }

@@ -41,7 +41,7 @@ class KeyboardHandler {
 
   /**
    * Update the keyboard keys captured by Switch Access to those stored in
-   * prefs.
+   * preferences.
    */
   updateSwitchAccessKeys() {
     let keyCodes = [];
@@ -97,6 +97,6 @@ class KeyboardHandler {
    * @return {number}
    */
   keyCodeFor_(command) {
-    return this.switchAccess_.getNumberPref(command);
+    return this.switchAccess_.getNumberPreference(command);
   }
 }

@@ -5,7 +5,7 @@
 /**
  * Class to manage user preferences.
  */
-class SwitchAccessPrefs {
+class SwitchAccessPreferences {
   /**
    * @param {!SwitchAccessInterface} switchAccess
    */
@@ -20,30 +20,31 @@ class SwitchAccessPrefs {
      * User preferences, initially set to the default preference values.
      * @private
      */
-    this.prefs_ = Object.assign({}, DEFAULT_PREFS);
+    this.preferences_ = Object.assign({}, DEFAULT_PREFERENCES);
 
     this.init_();
   }
 
   /**
-   * Store any changes from chrome.storage.sync to this.prefs_, if this.prefs_
-   * is not already set to that value. If this.prefs_ changes, fire a
-   * prefsUpdate event.
+   * Store any changes from |chrome.storage.sync| to |this.preferences_|, if
+   * |this.preferences_| is not already set to that value. If
+   * |this.preferences_| changes, fire a |prefsUpdate| event.
    *
    * @param {!Object} storageChanges
    * @param {string} areaName
    * @private
    */
   handleStorageChange_(storageChanges, areaName) {
-    let updatedPrefs = {};
+    let updatedPreferences = {};
     for (const key of Object.keys(storageChanges)) {
-      if (this.prefs_[key] !== storageChanges[key].newValue) {
-        this.prefs_[key] = storageChanges[key].newValue;
-        updatedPrefs[key] = storageChanges[key].newValue;
+      if (this.preferences_[key] !== storageChanges[key].newValue) {
+        this.preferences_[key] = storageChanges[key].newValue;
+        updatedPreferences[key] = storageChanges[key].newValue;
       }
     }
-    if (Object.keys(updatedPrefs).length > 0) {
-      let event = new CustomEvent('prefsUpdate', {'detail': updatedPrefs});
+    if (Object.keys(updatedPreferences).length > 0) {
+      let event =
+          new CustomEvent('prefsUpdate', {'detail': updatedPreferences});
       document.dispatchEvent(event);
     }
   }
@@ -53,49 +54,52 @@ class SwitchAccessPrefs {
    */
   init_() {
     for (const command of this.switchAccess_.getCommands())
-      this.prefs_[command] = this.switchAccess_.getDefaultKeyCodeFor(command);
+      this.preferences_[command] =
+          this.switchAccess_.getDefaultKeyCodeFor(command);
 
-    this.loadPrefs_();
+    this.loadPreferences_();
     chrome.storage.onChanged.addListener(this.handleStorageChange_.bind(this));
   }
 
   /**
-   * Asynchronously load the current preferences from chrome.storage.sync and
-   * store them in this.prefs_, if this.prefs_ is not already set to that value.
-   * If this.prefs_ changes, fire a prefsUpdate event.
+   * Asynchronously load the current preferences from |chrome.storage.sync| and
+   * store them in |this.preferences_|, if |this.preferences_| is not already
+   * set to that value. If |this.preferences_| changes, fire a |prefsUpdate|
+   * event.
    *
    * @private
    */
-  loadPrefs_() {
-    const defaultKeys = Object.keys(this.prefs_);
-    chrome.storage.sync.get(defaultKeys, (loadedPrefs) => {
-      let updatedPrefs = {};
+  loadPreferences_() {
+    const defaultKeys = Object.keys(this.preferences_);
+    chrome.storage.sync.get(defaultKeys, (loadedPreferences) => {
+      let updatedPreferences = {};
 
-      for (const key of Object.keys(loadedPrefs)) {
-        if (this.prefs_[key] !== loadedPrefs[key]) {
-          this.prefs_[key] = loadedPrefs[key];
-          updatedPrefs[key] = loadedPrefs[key];
+      for (const key of Object.keys(loadedPreferences)) {
+        if (this.preferences_[key] !== loadedPreferences[key]) {
+          this.preferences_[key] = loadedPreferences[key];
+          updatedPreferences[key] = loadedPreferences[key];
         }
       }
 
-      if (Object.keys(updatedPrefs).length > 0) {
-        const event = new CustomEvent('prefsUpdate', {'detail': updatedPrefs});
+      if (Object.keys(updatedPreferences).length > 0) {
+        const event =
+            new CustomEvent('prefsUpdate', {'detail': updatedPreferences});
         document.dispatchEvent(event);
       }
     });
   }
 
   /**
-   * Set the value of the preference |key| to |value| in chrome.storage.sync.
-   * this.prefs_ is not set until handleStorageChange_.
+   * Set the value of the preference |key| to |value| in |chrome.storage.sync|.
+   * |this.preferences_| is not set until |handleStorageChange_|.
    *
    * @param {string} key
    * @param {boolean|string|number} value
    */
-  setPref(key, value) {
-    let pref = {};
-    pref[key] = value;
-    chrome.storage.sync.set(pref);
+  setPreference(key, value) {
+    let preference = {};
+    preference[key] = value;
+    chrome.storage.sync.set(preference);
   }
 
   /**
@@ -105,8 +109,8 @@ class SwitchAccessPrefs {
    * @param  {string} key
    * @return {boolean}
    */
-  getBooleanPref(key) {
-    const value = this.prefs_[key];
+  getBooleanPreference(key) {
+    const value = this.preferences_[key];
     if (typeof value === 'boolean')
       return value;
     else
@@ -120,8 +124,8 @@ class SwitchAccessPrefs {
    * @param  {string} key
    * @return {number}
    */
-  getNumberPref(key) {
-    const value = this.prefs_[key];
+  getNumberPreference(key) {
+    const value = this.preferences_[key];
     if (typeof value === 'number')
       return value;
     else
@@ -137,7 +141,7 @@ class SwitchAccessPrefs {
    */
   keyCodeIsUsed(keyCode) {
     for (const command of this.switchAccess_.getCommands()) {
-      if (keyCode === this.prefs_[command])
+      if (keyCode === this.preferences_[command])
         return true;
     }
     return false;
@@ -148,7 +152,7 @@ class SwitchAccessPrefs {
  * The default value of all preferences besides command keyboard bindings.
  * All preferences should be primitives to prevent changes to default values.
  */
-const DEFAULT_PREFS = {
+const DEFAULT_PREFERENCES = {
   'enableAutoScan': false,
   'autoScanTime': 800
 };
