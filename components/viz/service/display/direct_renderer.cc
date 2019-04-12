@@ -80,17 +80,17 @@ gfx::RectF ComputeRoundedCornerBoundingBox(const gfx::RRectF& rrect,
   gfx::RectF bounding_box(radii.x(), radii.y());
   switch (corner) {
     case gfx::RRectF::Corner::kUpperLeft:
-      bounding_box.Offset(rrect.rect().x(), rrect.rect().bottom() - radii.y());
+      bounding_box.Offset(rrect.rect().x(), rrect.rect().y());
       break;
     case gfx::RRectF::Corner::kUpperRight:
+      bounding_box.Offset(rrect.rect().right() - radii.x(), rrect.rect().y());
+      break;
+    case gfx::RRectF::Corner::kLowerRight:
       bounding_box.Offset(rrect.rect().right() - radii.x(),
                           rrect.rect().bottom() - radii.y());
       break;
-    case gfx::RRectF::Corner::kLowerRight:
-      bounding_box.Offset(rrect.rect().right() - radii.x(), rrect.rect().y());
-      break;
     case gfx::RRectF::Corner::kLowerLeft:
-      bounding_box.Offset(rrect.rect().x(), rrect.rect().y());
+      bounding_box.Offset(rrect.rect().x(), rrect.rect().bottom() - radii.y());
       break;
   }
   return bounding_box;
