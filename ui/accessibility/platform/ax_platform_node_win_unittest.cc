@@ -11,6 +11,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/win/atl.h"
 #include "base/win/scoped_bstr.h"
+#include "base/win/scoped_safearray.h"
 #include "base/win/scoped_variant.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -3133,25 +3134,28 @@ TEST_F(AXPlatformNodeWinTest, TestITableProviderGetColumnHeaders) {
       QueryInterfaceFromNode<IRawElementProviderSimple>(
           GetRootNode()->children()[0]->children()[0]));
 
-  SAFEARRAY* safearray = nullptr;
-  EXPECT_HRESULT_SUCCEEDED(root_itableprovider->GetColumnHeaders(&safearray));
-  EXPECT_NE(nullptr, safearray);
-  EXPECT_EQ(1U, ::SafeArrayGetDim(safearray));
+  base::win::ScopedSafearray safearray;
+  EXPECT_HRESULT_SUCCEEDED(
+      root_itableprovider->GetColumnHeaders(safearray.Receive()));
+  EXPECT_NE(nullptr, safearray.Get());
+  EXPECT_EQ(1U, ::SafeArrayGetDim(safearray.Get()));
   EXPECT_EQ(sizeof(IRawElementProviderSimple*),
-            ::SafeArrayGetElemsize(safearray));
+            ::SafeArrayGetElemsize(safearray.Get()));
 
   LONG array_lbound;
-  EXPECT_HRESULT_SUCCEEDED(::SafeArrayGetLBound(safearray, 1, &array_lbound));
+  EXPECT_HRESULT_SUCCEEDED(
+      ::SafeArrayGetLBound(safearray.Get(), 1, &array_lbound));
   EXPECT_EQ(0, array_lbound);
 
   LONG array_ubound;
-  EXPECT_HRESULT_SUCCEEDED(::SafeArrayGetUBound(safearray, 1, &array_ubound));
+  EXPECT_HRESULT_SUCCEEDED(
+      ::SafeArrayGetUBound(safearray.Get(), 1, &array_ubound));
   EXPECT_EQ(0, array_ubound);
 
   LONG index = 0;
   CComPtr<IRawElementProviderSimple> array_element;
   EXPECT_HRESULT_SUCCEEDED(
-      ::SafeArrayGetElement(safearray, &index, &array_element));
+      ::SafeArrayGetElement(safearray.Get(), &index, &array_element));
   EXPECT_NE(nullptr, array_element);
   EXPECT_EQ(array_element, column_header_irawelementprovidersimple.Get());
 }
@@ -3185,25 +3189,28 @@ TEST_F(AXPlatformNodeWinTest, TestITableProviderGetRowHeaders) {
       QueryInterfaceFromNode<IRawElementProviderSimple>(
           GetRootNode()->children()[0]->children()[1]));
 
-  SAFEARRAY* safearray = nullptr;
-  EXPECT_HRESULT_SUCCEEDED(root_itableprovider->GetRowHeaders(&safearray));
-  EXPECT_NE(nullptr, safearray);
-  EXPECT_EQ(1U, ::SafeArrayGetDim(safearray));
+  base::win::ScopedSafearray safearray;
+  EXPECT_HRESULT_SUCCEEDED(
+      root_itableprovider->GetRowHeaders(safearray.Receive()));
+  EXPECT_NE(nullptr, safearray.Get());
+  EXPECT_EQ(1U, ::SafeArrayGetDim(safearray.Get()));
   EXPECT_EQ(sizeof(IRawElementProviderSimple*),
-            ::SafeArrayGetElemsize(safearray));
+            ::SafeArrayGetElemsize(safearray.Get()));
 
   LONG array_lbound;
-  EXPECT_HRESULT_SUCCEEDED(::SafeArrayGetLBound(safearray, 1, &array_lbound));
+  EXPECT_HRESULT_SUCCEEDED(
+      ::SafeArrayGetLBound(safearray.Get(), 1, &array_lbound));
   EXPECT_EQ(0, array_lbound);
 
   LONG array_ubound;
-  EXPECT_HRESULT_SUCCEEDED(::SafeArrayGetUBound(safearray, 1, &array_ubound));
+  EXPECT_HRESULT_SUCCEEDED(
+      ::SafeArrayGetUBound(safearray.Get(), 1, &array_ubound));
   EXPECT_EQ(0, array_ubound);
 
   LONG index = 0;
   CComPtr<IRawElementProviderSimple> array_element;
   EXPECT_HRESULT_SUCCEEDED(
-      ::SafeArrayGetElement(safearray, &index, &array_element));
+      ::SafeArrayGetElement(safearray.Get(), &index, &array_element));
   EXPECT_NE(nullptr, array_element);
   EXPECT_EQ(array_element, row_header_irawelementprovidersimple.Get());
 }
@@ -3795,10 +3802,10 @@ TEST_F(AXPlatformNodeWinTest, TestUIAGetEmbeddedFragmentRoots) {
   ComPtr<IRawElementProviderFragment> root_provider =
       GetRootIRawElementProviderFragment();
 
-  SAFEARRAY* embedded_fragment_roots;
-  EXPECT_HRESULT_SUCCEEDED(
-      root_provider->GetEmbeddedFragmentRoots(&embedded_fragment_roots));
-  EXPECT_EQ(nullptr, embedded_fragment_roots);
+  base::win::ScopedSafearray embedded_fragment_roots;
+  EXPECT_HRESULT_SUCCEEDED(root_provider->GetEmbeddedFragmentRoots(
+      embedded_fragment_roots.Receive()));
+  EXPECT_EQ(nullptr, embedded_fragment_roots.Get());
 }
 
 TEST_F(AXPlatformNodeWinTest, TestUIAGetRuntimeId) {
@@ -3809,27 +3816,26 @@ TEST_F(AXPlatformNodeWinTest, TestUIAGetRuntimeId) {
   ComPtr<IRawElementProviderFragment> root_provider =
       GetRootIRawElementProviderFragment();
 
-  SAFEARRAY* runtime_id;
-  EXPECT_HRESULT_SUCCEEDED(root_provider->GetRuntimeId(&runtime_id));
+  base::win::ScopedSafearray runtime_id;
+  EXPECT_HRESULT_SUCCEEDED(root_provider->GetRuntimeId(runtime_id.Receive()));
 
   LONG array_lower_bound;
   EXPECT_HRESULT_SUCCEEDED(
-      ::SafeArrayGetLBound(runtime_id, 1, &array_lower_bound));
+      ::SafeArrayGetLBound(runtime_id.Get(), 1, &array_lower_bound));
   EXPECT_EQ(0, array_lower_bound);
 
   LONG array_upper_bound;
   EXPECT_HRESULT_SUCCEEDED(
-      ::SafeArrayGetUBound(runtime_id, 1, &array_upper_bound));
+      ::SafeArrayGetUBound(runtime_id.Get(), 1, &array_upper_bound));
   EXPECT_EQ(1, array_upper_bound);
 
   int* array_data;
-  EXPECT_HRESULT_SUCCEEDED(
-      ::SafeArrayAccessData(runtime_id, reinterpret_cast<void**>(&array_data)));
+  EXPECT_HRESULT_SUCCEEDED(::SafeArrayAccessData(
+      runtime_id.Get(), reinterpret_cast<void**>(&array_data)));
   EXPECT_EQ(UiaAppendRuntimeId, array_data[0]);
   EXPECT_NE(-1, array_data[1]);
 
-  EXPECT_HRESULT_SUCCEEDED(::SafeArrayUnaccessData(runtime_id));
-  EXPECT_HRESULT_SUCCEEDED(::SafeArrayDestroy(runtime_id));
+  EXPECT_HRESULT_SUCCEEDED(::SafeArrayUnaccessData(runtime_id.Get()));
 }
 
 TEST_F(AXPlatformNodeWinTest, TestUIAIWindowProviderGetIsModalUnset) {
@@ -4076,21 +4082,20 @@ TEST_F(AXPlatformNodeWinTest, TestISelectionProviderGetSelectionNoneSelected) {
   ComPtr<ISelectionProvider> selection_provider(
       QueryInterfaceFromNode<ISelectionProvider>(GetRootNode()));
 
-  SAFEARRAY* selected_items;
-  EXPECT_HRESULT_SUCCEEDED(selection_provider->GetSelection(&selected_items));
-  EXPECT_NE(nullptr, selected_items);
+  base::win::ScopedSafearray selected_items;
+  EXPECT_HRESULT_SUCCEEDED(
+      selection_provider->GetSelection(selected_items.Receive()));
+  EXPECT_NE(nullptr, selected_items.Get());
 
   LONG array_lower_bound;
   EXPECT_HRESULT_SUCCEEDED(
-      ::SafeArrayGetLBound(selected_items, 1, &array_lower_bound));
+      ::SafeArrayGetLBound(selected_items.Get(), 1, &array_lower_bound));
   EXPECT_EQ(0, array_lower_bound);
 
   LONG array_upper_bound;
   EXPECT_HRESULT_SUCCEEDED(
-      ::SafeArrayGetUBound(selected_items, 1, &array_upper_bound));
+      ::SafeArrayGetUBound(selected_items.Get(), 1, &array_upper_bound));
   EXPECT_EQ(-1, array_upper_bound);
-
-  EXPECT_HRESULT_SUCCEEDED(::SafeArrayDestroy(selected_items));
 }
 
 TEST_F(AXPlatformNodeWinTest,
@@ -4105,27 +4110,26 @@ TEST_F(AXPlatformNodeWinTest,
       QueryInterfaceFromNode<IRawElementProviderSimple>(
           GetRootNode()->children()[1]));
 
-  SAFEARRAY* selected_items;
-  EXPECT_HRESULT_SUCCEEDED(selection_provider->GetSelection(&selected_items));
-  EXPECT_NE(nullptr, selected_items);
+  base::win::ScopedSafearray selected_items;
+  EXPECT_HRESULT_SUCCEEDED(
+      selection_provider->GetSelection(selected_items.Receive()));
+  EXPECT_NE(nullptr, selected_items.Get());
 
   LONG array_lower_bound;
   EXPECT_HRESULT_SUCCEEDED(
-      ::SafeArrayGetLBound(selected_items, 1, &array_lower_bound));
+      ::SafeArrayGetLBound(selected_items.Get(), 1, &array_lower_bound));
   EXPECT_EQ(0, array_lower_bound);
 
   LONG array_upper_bound;
   EXPECT_HRESULT_SUCCEEDED(
-      ::SafeArrayGetUBound(selected_items, 1, &array_upper_bound));
+      ::SafeArrayGetUBound(selected_items.Get(), 1, &array_upper_bound));
   EXPECT_EQ(0, array_upper_bound);
 
   IRawElementProviderSimple** array_data;
   EXPECT_HRESULT_SUCCEEDED(::SafeArrayAccessData(
-      selected_items, reinterpret_cast<void**>(&array_data)));
+      selected_items.Get(), reinterpret_cast<void**>(&array_data)));
   EXPECT_EQ(option2_provider.Get(), array_data[0]);
-
-  EXPECT_HRESULT_SUCCEEDED(::SafeArrayUnaccessData(selected_items));
-  EXPECT_HRESULT_SUCCEEDED(::SafeArrayDestroy(selected_items));
+  EXPECT_HRESULT_SUCCEEDED(::SafeArrayUnaccessData(selected_items.Get()));
 }
 
 TEST_F(AXPlatformNodeWinTest,
@@ -4146,29 +4150,29 @@ TEST_F(AXPlatformNodeWinTest,
       QueryInterfaceFromNode<IRawElementProviderSimple>(
           GetRootNode()->children()[2]));
 
-  SAFEARRAY* selected_items;
-  EXPECT_HRESULT_SUCCEEDED(selection_provider->GetSelection(&selected_items));
-  EXPECT_NE(nullptr, selected_items);
+  base::win::ScopedSafearray selected_items;
+  EXPECT_HRESULT_SUCCEEDED(
+      selection_provider->GetSelection(selected_items.Receive()));
+  EXPECT_NE(nullptr, selected_items.Get());
 
   LONG array_lower_bound;
   EXPECT_HRESULT_SUCCEEDED(
-      ::SafeArrayGetLBound(selected_items, 1, &array_lower_bound));
+      ::SafeArrayGetLBound(selected_items.Get(), 1, &array_lower_bound));
   EXPECT_EQ(0, array_lower_bound);
 
   LONG array_upper_bound;
   EXPECT_HRESULT_SUCCEEDED(
-      ::SafeArrayGetUBound(selected_items, 1, &array_upper_bound));
+      ::SafeArrayGetUBound(selected_items.Get(), 1, &array_upper_bound));
   EXPECT_EQ(2, array_upper_bound);
 
   IRawElementProviderSimple** array_data;
   EXPECT_HRESULT_SUCCEEDED(::SafeArrayAccessData(
-      selected_items, reinterpret_cast<void**>(&array_data)));
+      selected_items.Get(), reinterpret_cast<void**>(&array_data)));
   EXPECT_EQ(option1_provider.Get(), array_data[0]);
   EXPECT_EQ(option2_provider.Get(), array_data[1]);
   EXPECT_EQ(option3_provider.Get(), array_data[2]);
 
-  EXPECT_HRESULT_SUCCEEDED(::SafeArrayUnaccessData(selected_items));
-  EXPECT_HRESULT_SUCCEEDED(::SafeArrayDestroy(selected_items));
+  EXPECT_HRESULT_SUCCEEDED(::SafeArrayUnaccessData(selected_items.Get()));
 }
 
 TEST_F(AXPlatformNodeWinTest, TestComputeUIAControlType) {
@@ -4419,9 +4423,9 @@ TEST_F(AXPlatformNodeWinTest, TestUIAErrorHandling) {
                 simple_provider.GetAddressOf()));
 
   // ISelectionProvider
-  SAFEARRAY* array_result = nullptr;
+  base::win::ScopedSafearray array_result;
   EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
-            selection_provider->GetSelection(&array_result));
+            selection_provider->GetSelection(array_result.Receive()));
   EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
             selection_provider->get_CanSelectMultiple(&bool_result));
   EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
@@ -4430,15 +4434,15 @@ TEST_F(AXPlatformNodeWinTest, TestUIAErrorHandling) {
   // ITableItemProvider
   RowOrColumnMajor row_or_column_major_result;
   EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
-            table_item_provider->GetColumnHeaderItems(&array_result));
+            table_item_provider->GetColumnHeaderItems(array_result.Receive()));
   EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
-            table_item_provider->GetRowHeaderItems(&array_result));
+            table_item_provider->GetRowHeaderItems(array_result.Receive()));
 
   // ITableProvider
   EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
-            table_provider->GetColumnHeaders(&array_result));
+            table_provider->GetColumnHeaders(array_result.Receive()));
   EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
-            table_provider->GetRowHeaders(&array_result));
+            table_provider->GetRowHeaders(array_result.Receive()));
   EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
             table_provider->get_RowOrColumnMajor(&row_or_column_major_result));
 
@@ -4464,18 +4468,18 @@ TEST_F(AXPlatformNodeWinTest, TestUIAErrorHandling) {
 
   // IRawElementProviderFragment
   ComPtr<IRawElementProviderFragment> navigated_to_fragment;
-  SAFEARRAY* safearray = nullptr;
+  base::win::ScopedSafearray safearray;
   UiaRect bounding_rectangle;
   ComPtr<IRawElementProviderFragmentRoot> fragment_root;
   EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
             fragment_provider->Navigate(NavigateDirection_Parent,
                                         &navigated_to_fragment));
   EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
-            fragment_provider->GetRuntimeId(&safearray));
+            fragment_provider->GetRuntimeId(safearray.Receive()));
   EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
             fragment_provider->get_BoundingRectangle(&bounding_rectangle));
   EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
-            fragment_provider->GetEmbeddedFragmentRoots(&safearray));
+            fragment_provider->GetEmbeddedFragmentRoots(safearray.Receive()));
   EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
             fragment_provider->get_FragmentRoot(&fragment_root));
   EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),

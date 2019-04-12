@@ -8,6 +8,7 @@
 #include <UIAutomationClient.h>
 #include <UIAutomationCoreApi.h>
 
+#include "base/win/scoped_safearray.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using Microsoft::WRL::ComPtr;
@@ -42,9 +43,10 @@ TEST_F(AXFragmentRootTest, TestUIAGetRuntimeId) {
   ComPtr<IRawElementProviderFragment> fragment_provider;
   fragment_root_provider.As(&fragment_provider);
 
-  SAFEARRAY* runtime_id;
-  EXPECT_HRESULT_SUCCEEDED(fragment_provider->GetRuntimeId(&runtime_id));
-  EXPECT_EQ(runtime_id, nullptr);
+  base::win::ScopedSafearray runtime_id;
+  EXPECT_HRESULT_SUCCEEDED(
+      fragment_provider->GetRuntimeId(runtime_id.Receive()));
+  EXPECT_EQ(runtime_id.Get(), nullptr);
 }
 
 TEST_F(AXFragmentRootTest, TestUIAElementProviderFromPoint) {
@@ -150,7 +152,7 @@ TEST_F(AXFragmentRootTest, TestUIAErrorHandling) {
   ComPtr<IRawElementProviderSimple> returned_simple_provider;
   ComPtr<IRawElementProviderFragment> returned_fragment_provider;
   ComPtr<IRawElementProviderFragmentRoot> returned_fragment_root_provider;
-  SAFEARRAY* returned_runtime_id;
+  base::win::ScopedSafearray returned_runtime_id;
 
   EXPECT_EQ(
       static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
@@ -161,7 +163,7 @@ TEST_F(AXFragmentRootTest, TestUIAErrorHandling) {
       fragment_provider->get_FragmentRoot(&returned_fragment_root_provider));
 
   EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
-            fragment_provider->GetRuntimeId(&returned_runtime_id));
+            fragment_provider->GetRuntimeId(returned_runtime_id.Receive()));
 
   EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
             fragment_root_provider->ElementProviderFromPoint(
