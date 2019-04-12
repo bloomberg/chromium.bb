@@ -31,6 +31,7 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.StandardNotificationBuilder;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -126,7 +127,8 @@ public class TrustedWebActivityClientTest {
         mTargetContext = InstrumentationRegistry.getTargetContext();
         mBuilder = new StandardNotificationBuilder(mTargetContext);
         mClient = new TrustedWebActivityClient(new TrustedWebActivityServiceConnectionManager(
-                ContextUtils.getApplicationContext()), new TrustedWebActivityUmaRecorder(),
+                ContextUtils.getApplicationContext()),
+                new TrustedWebActivityUmaRecorder(ChromeBrowserInitializer.getInstance()),
                 NotificationUmaTracker.getInstance());
 
         // TestTrustedWebActivityService is in the test support apk.

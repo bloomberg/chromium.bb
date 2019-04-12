@@ -132,7 +132,7 @@ public class NotificationPlatformBridge {
         }
         mTwaClient = new TrustedWebActivityClient(
                 new TrustedWebActivityServiceConnectionManager(context),
-                new TrustedWebActivityUmaRecorder(),
+                new TrustedWebActivityUmaRecorder(ChromeBrowserInitializer.getInstance()),
                 NotificationUmaTracker.getInstance());
     }
 
