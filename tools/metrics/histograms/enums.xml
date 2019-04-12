@@ -18534,6 +18534,10 @@ Called by update_net_error_codes.py.-->
   <int value="18" label="CRX_INSTALL_ERROR_DECLINED"/>
   <int value="19" label="CRX_INSTALL_ERROR_SANDBOXED_UNPACKER_FAILURE"/>
   <int value="20" label="CRX_INSTALL_ERROR_OTHER"/>
+  <int value="21" label="NO_UPDATE_URL"/>
+  <int value="22" label="PENDING_ADD_FAILED"/>
+  <int value="23" label="DOWNLOADER_ADD_FAILED"/>
+  <int value="24" label="IN_PROGRESS"/>
 </enum>
 
 <enum name="ExtensionInstallCause">

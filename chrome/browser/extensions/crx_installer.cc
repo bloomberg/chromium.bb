@@ -27,7 +27,7 @@
 #include "chrome/browser/extensions/convert_web_app.h"
 #include "chrome/browser/extensions/extension_assets_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/forced_extensions/installation_failures.h"
+#include "chrome/browser/extensions/forced_extensions/installation_reporter.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/extensions/load_error_reporter.h"
@@ -965,28 +965,30 @@ void CrxInstaller::NotifyCrxInstallBegin() {
 
 void CrxInstaller::NotifyCrxInstallComplete(
     const base::Optional<CrxInstallError>& error) {
+  const std::string extension_id =
+      expected_id_.empty() && extension() ? extension()->id() : expected_id_;
+  InstallationReporter::ReportInstallationStage(
+      profile_, extension_id, InstallationReporter::Stage::COMPLETE);
   const bool success = !error.has_value();
 
   if (!success && (!expected_id_.empty() || extension())) {
-    const std::string extension_id =
-        expected_id_.empty() ? extension()->id() : expected_id_;
     switch (error->type()) {
       case CrxInstallErrorType::DECLINED:
-        InstallationFailures::ReportCrxInstallError(
+        InstallationReporter::ReportCrxInstallError(
             profile_, extension_id,
-            InstallationFailures::Reason::CRX_INSTALL_ERROR_DECLINED,
+            InstallationReporter::FailureReason::CRX_INSTALL_ERROR_DECLINED,
             error->detail());
         break;
       case CrxInstallErrorType::SANDBOXED_UNPACKER_FAILURE:
-        InstallationFailures::ReportFailure(
+        InstallationReporter::ReportFailure(
             profile_, extension_id,
-            InstallationFailures::Reason::
+            InstallationReporter::FailureReason::
                 CRX_INSTALL_ERROR_SANDBOXED_UNPACKER_FAILURE);
         break;
       case CrxInstallErrorType::OTHER:
-        InstallationFailures::ReportCrxInstallError(
+        InstallationReporter::ReportCrxInstallError(
             profile_, extension_id,
-            InstallationFailures::Reason::CRX_INSTALL_ERROR_OTHER,
+            InstallationReporter::FailureReason::CRX_INSTALL_ERROR_OTHER,
             error->detail());
         break;
       case CrxInstallErrorType::NONE:

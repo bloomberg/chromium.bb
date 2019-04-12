@@ -19,7 +19,7 @@
 #include "chrome/browser/extensions/extension_management_internal.h"
 #include "chrome/browser/extensions/external_policy_loader.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
-#include "chrome/browser/extensions/forced_extensions/installation_failures.h"
+#include "chrome/browser/extensions/forced_extensions/installation_reporter.h"
 #include "chrome/browser/extensions/permissions_based_management_policy_provider.h"
 #include "chrome/browser/extensions/standard_management_policy_provider.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -452,9 +452,10 @@ void ExtensionManagement::Refresh() {
         if (!by_id->Parse(subdict,
                           internal::IndividualSettings::SCOPE_INDIVIDUAL)) {
           settings_by_id_.erase(extension_id);
-          InstallationFailures::ReportFailure(
+          InstallationReporter::ReportFailure(
               profile_, extension_id,
-              InstallationFailures::Reason::MALFORMED_EXTENSION_SETTINGS);
+              InstallationReporter::FailureReason::
+                  MALFORMED_EXTENSION_SETTINGS);
           LOG(WARNING) << "Malformed Extension Management settings for "
                        << extension_id << ".";
         }
@@ -514,8 +515,8 @@ void ExtensionManagement::UpdateForcedExtensions(
   for (base::DictionaryValue::Iterator it(*extension_dict); !it.IsAtEnd();
        it.Advance()) {
     if (!crx_file::id_util::IdIsValid(it.key())) {
-      InstallationFailures::ReportFailure(
-          profile_, it.key(), InstallationFailures::Reason::INVALID_ID);
+      InstallationReporter::ReportFailure(
+          profile_, it.key(), InstallationReporter::FailureReason::INVALID_ID);
       continue;
     }
     const base::DictionaryValue* dict_value = nullptr;
@@ -525,6 +526,12 @@ void ExtensionManagement::UpdateForcedExtensions(
       internal::IndividualSettings* by_id = AccessById(it.key());
       by_id->installation_mode = INSTALLATION_FORCED;
       by_id->update_url = update_url;
+      InstallationReporter::ReportInstallationStage(
+          profile_, it.key(), InstallationReporter::Stage::CREATED);
+    } else {
+      InstallationReporter::ReportFailure(
+          profile_, it.key(),
+          InstallationReporter::FailureReason::NO_UPDATE_URL);
     }
   }
 }
