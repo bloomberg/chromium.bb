@@ -620,6 +620,8 @@ void UiControllerAndroid::OnDetailsChanged(const Details* details) {
           env, proto.image_clickthrough_data().positive_text()),
       base::android::ConvertUTF8ToJavaString(
           env, proto.image_clickthrough_data().negative_text()),
+      base::android::ConvertUTF8ToJavaString(
+          env, proto.image_clickthrough_data().clickthrough_url()),
       proto.show_image_placeholder(),
       base::android::ConvertUTF8ToJavaString(env, proto.total_price_label()),
       base::android::ConvertUTF8ToJavaString(env, proto.total_price()),

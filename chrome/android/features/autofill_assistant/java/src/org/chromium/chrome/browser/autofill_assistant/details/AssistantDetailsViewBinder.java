@@ -382,8 +382,10 @@ class AssistantDetailsViewBinder
                     manager.dismissDialog(model, DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
                 } else {
                     manager.dismissDialog(model, DialogDismissalCause.POSITIVE_BUTTON_CLICKED);
-
-                    CustomTabActivity.showInfoPage(context.getApplicationContext(), imageUrl);
+                    String presentUrl = clickthroughData.getClickthroughUrl().isEmpty()
+                            ? imageUrl
+                            : clickthroughData.getClickthroughUrl();
+                    CustomTabActivity.showInfoPage(context.getApplicationContext(), presentUrl);
                 }
             }
 
@@ -395,14 +397,14 @@ class AssistantDetailsViewBinder
         PropertyModel.Builder builder =
                 new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
                         .with(ModalDialogProperties.CONTROLLER, dialogController);
-        if (clickthroughData.getDescription() != null) {
+        if (!clickthroughData.getDescription().isEmpty()) {
             builder.with(ModalDialogProperties.MESSAGE, clickthroughData.getDescription());
         } else {
             builder.with(ModalDialogProperties.MESSAGE, resources,
                     R.string.autofill_assistant_view_original_image_desc);
         }
 
-        if (clickthroughData.getPositiveText() != null) {
+        if (!clickthroughData.getPositiveText().isEmpty()) {
             builder.with(
                     ModalDialogProperties.POSITIVE_BUTTON_TEXT, clickthroughData.getPositiveText());
         } else {
@@ -410,7 +412,7 @@ class AssistantDetailsViewBinder
                     R.string.autofill_assistant_view_original_image_view);
         }
 
-        if (clickthroughData.getNegativeText() != null) {
+        if (!clickthroughData.getNegativeText().isEmpty()) {
             builder.with(
                     ModalDialogProperties.NEGATIVE_BUTTON_TEXT, clickthroughData.getNegativeText());
         } else {

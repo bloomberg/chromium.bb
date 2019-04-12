@@ -850,6 +850,9 @@ message DetailsProto {
     optional string description = 2;
     optional string positive_text = 3;
     optional string negative_text = 4;
+
+    // The url to present when user did choose to clickthrough.
+    optional string clickthrough_url = 5;
   }
 
   optional ImageClickthroughData image_clickthrough_data = 12;
