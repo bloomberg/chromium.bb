@@ -187,14 +187,20 @@ bool DevToolsManagerDelegateImpl::HasBundledFrontendResources()
 void DevToolsManagerDelegateImpl::DevToolsAgentHostAttached(content::DevToolsAgentHost* agent_host)
 {
     content::WebContents* web_contents = agent_host->GetWebContents();
-    DCHECK(web_contents);
+    if (!web_contents) {
+        return;
+    }
+
     web_contents->DevToolsAgentHostAttached();
 }
 
 void DevToolsManagerDelegateImpl::DevToolsAgentHostDetached(content::DevToolsAgentHost* agent_host)
 {
     content::WebContents* web_contents = agent_host->GetWebContents();
-    DCHECK(web_contents);
+    if (!web_contents) {
+        return;
+    }
+
     web_contents->DevToolsAgentHostDetached();
 }
 
