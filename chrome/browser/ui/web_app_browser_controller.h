@@ -28,15 +28,15 @@ class WebAppBrowserController : public content::WebContentsObserver {
   ~WebAppBrowserController() override;
 
   // Returns whether |browser| uses the experimental hosted app experience.
-  // Convenience wrapper for checking IsForExperimentalHostedAppBrowser() on
+  // Convenience wrapper for checking IsForExperimentalWebAppBrowser() on
   // |browser|'s HostedAppBrowserController if it exists.
-  static bool IsForExperimentalHostedAppBrowser(const Browser* browser);
+  static bool IsForExperimentalWebAppBrowser(const Browser* browser);
 
   // Renders |url|'s origin as Unicode.
   static base::string16 FormatUrlOrigin(const GURL& url);
 
-  // Returns true if this controller is for an experimental hosted app browser.
-  virtual bool IsForExperimentalHostedAppBrowser() const = 0;
+  // Returns true if this controller is for an experimental web app browser.
+  bool IsForExperimentalWebAppBrowser() const;
 
   // Returns whether this controller was created for an installed PWA.
   virtual bool IsHostedApp() const;

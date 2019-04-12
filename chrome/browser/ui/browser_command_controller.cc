@@ -930,7 +930,7 @@ void BrowserCommandController::InitCommandState() {
                                         normal_window || browser_->is_app());
 
   const bool is_experimental_hosted_app =
-      WebAppBrowserController::IsForExperimentalHostedAppBrowser(browser_);
+      WebAppBrowserController::IsForExperimentalWebAppBrowser(browser_);
   // Hosted app browser commands.
   command_updater_.UpdateCommandEnabled(IDC_COPY_URL,
                                         is_experimental_hosted_app);
@@ -1228,7 +1228,7 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
 void BrowserCommandController::UpdateCommandsForHostedAppAvailability() {
   bool has_toolbar =
       browser_->is_type_tabbed() ||
-      WebAppBrowserController::IsForExperimentalHostedAppBrowser(browser_);
+      WebAppBrowserController::IsForExperimentalWebAppBrowser(browser_);
   if (window() && window()->ShouldHideUIForFullscreen())
     has_toolbar = false;
   command_updater_.UpdateCommandEnabled(IDC_FOCUS_TOOLBAR, has_toolbar);

@@ -2601,7 +2601,7 @@ bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
   // Note: Final determination of whether or not the toolbar is shown is made by
   // the |WebAppBrowserController|.
   if (web_app_controller() &&
-      web_app_controller()->IsForExperimentalHostedAppBrowser()) {
+      web_app_controller()->IsForExperimentalWebAppBrowser()) {
     features |= FEATURE_TOOLBAR;
   }
 

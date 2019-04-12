@@ -16,11 +16,6 @@ ManifestWebAppBrowserController::ManifestWebAppBrowserController(
 
 ManifestWebAppBrowserController::~ManifestWebAppBrowserController() = default;
 
-bool ManifestWebAppBrowserController::IsForExperimentalHostedAppBrowser()
-    const {
-  return false;
-}
-
 base::Optional<std::string> ManifestWebAppBrowserController::GetAppId() const {
   return base::nullopt;
 }

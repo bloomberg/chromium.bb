@@ -54,9 +54,6 @@ class HostedAppBrowserController : public TabStripModelObserver,
   // Returns true if this controller is for a System Web App.
   bool IsForSystemWebApp() const;
 
-  // Returns true if this controller is for an experimental hosted app browser.
-  bool IsForExperimentalHostedAppBrowser() const override;
-
   // Whether the browser being controlled should be currently showing the
   // toolbar.
   bool ShouldShowToolbar() const override;
