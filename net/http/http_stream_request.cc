@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "net/http/bidirectional_stream_impl.h"
 #include "net/log/net_log_event_type.h"
+#include "net/spdy/bidirectional_stream_spdy_impl.h"
 #include "net/spdy/spdy_http_stream.h"
 #include "net/spdy/spdy_session.h"
 
@@ -50,6 +51,29 @@ void HttpStreamRequest::Complete(bool was_alpn_negotiated,
   was_alpn_negotiated_ = was_alpn_negotiated;
   negotiated_protocol_ = negotiated_protocol;
   using_spdy_ = using_spdy;
+}
+
+void HttpStreamRequest::OnSpdySessionAvailable(
+    bool was_alpn_negotiated,
+    NextProto negotiated_protocol,
+    bool using_spdy,
+    const SSLConfig& used_ssl_config,
+    const ProxyInfo& used_proxy_info,
+    NetLogSource source_dependency,
+    base::WeakPtr<SpdySession> spdy_session) {
+  DCHECK(spdy_session);
+  Complete(was_alpn_negotiated, negotiated_protocol, using_spdy);
+  if (stream_type_ == HttpStreamRequest::BIDIRECTIONAL_STREAM) {
+    helper_->OnBidirectionalStreamImplReadyOnPooledConnection(
+        used_ssl_config, used_proxy_info,
+        std::make_unique<BidirectionalStreamSpdyImpl>(spdy_session,
+                                                      source_dependency));
+  } else {
+    helper_->OnStreamReadyOnPooledConnection(
+        used_ssl_config, used_proxy_info,
+        std::make_unique<SpdyHttpStream>(spdy_session, kNoPushedStreamFound,
+                                         source_dependency));
+  }
 }
 
 void HttpStreamRequest::OnStreamReadyOnPooledConnection(

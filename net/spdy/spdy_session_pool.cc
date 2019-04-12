@@ -30,8 +30,6 @@
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/client_socket_handle.h"
-#include "net/spdy/bidirectional_stream_spdy_impl.h"
-#include "net/spdy/spdy_http_stream.h"
 #include "net/spdy/spdy_session.h"
 #include "net/third_party/quiche/src/spdy/core/hpack/hpack_constants.h"
 #include "net/third_party/quiche/src/spdy/core/hpack/hpack_huffman_table.h"
@@ -50,6 +48,25 @@ enum SpdySessionGetTypes {
 };
 
 }  // namespace
+
+SpdySessionPool::SpdySessionRequest::Delegate::Delegate() = default;
+SpdySessionPool::SpdySessionRequest::Delegate::~Delegate() = default;
+
+SpdySessionPool::SpdySessionRequest::SpdySessionRequest(
+    const SpdySessionKey& key,
+    Delegate* delegate,
+    SpdySessionPool* spdy_session_pool)
+    : key_(key), delegate_(delegate), spdy_session_pool_(spdy_session_pool) {}
+
+SpdySessionPool::SpdySessionRequest::~SpdySessionRequest() {
+  if (spdy_session_pool_)
+    spdy_session_pool_->RemoveRequestForSpdySession(this);
+}
+
+void SpdySessionPool::SpdySessionRequest::OnRemovedFromPool() {
+  DCHECK(spdy_session_pool_);
+  spdy_session_pool_ = nullptr;
+}
 
 SpdySessionPool::SpdySessionPool(
     HostResolver* resolver,
@@ -406,20 +423,12 @@ void SpdySessionPool::OnNewSpdySessionReady(
     auto iter = spdy_session_request_map_.find(spdy_session_key);
     if (iter == spdy_session_request_map_.end())
       return;
-    HttpStreamRequest* request = *iter->second.begin();
-    request->Complete(was_alpn_negotiated, negotiated_protocol, using_spdy);
-    RemoveRequestFromSpdySessionRequestMap(request);
-    if (request->stream_type() == HttpStreamRequest::BIDIRECTIONAL_STREAM) {
-      request->OnBidirectionalStreamImplReadyOnPooledConnection(
-          used_ssl_config, used_proxy_info,
-          std::make_unique<BidirectionalStreamSpdyImpl>(spdy_session,
-                                                        source_dependency));
-    } else {
-      request->OnStreamReadyOnPooledConnection(
-          used_ssl_config, used_proxy_info,
-          std::make_unique<SpdyHttpStream>(spdy_session, kNoPushedStreamFound,
-                                           source_dependency));
-    }
+    SpdySessionRequest* request = *iter->second.begin();
+    SpdySessionRequest::Delegate* delegate = request->delegate();
+    RemoveRequestForSpdySession(request);
+    delegate->OnSpdySessionAvailable(
+        was_alpn_negotiated, negotiated_protocol, using_spdy, used_ssl_config,
+        used_proxy_info, source_dependency, spdy_session);
   }
   // TODO(mbelshe): Alert other valid requests.
 }
@@ -447,22 +456,23 @@ void SpdySessionPool::ResumePendingRequests(
   }
 }
 
-void SpdySessionPool::AddRequestToSpdySessionRequestMap(
+std::unique_ptr<SpdySessionPool::SpdySessionRequest>
+SpdySessionPool::CreateRequestForSpdySession(
     const SpdySessionKey& spdy_session_key,
-    HttpStreamRequest* request) {
-  if (request->HasSpdySessionKey())
-    return;
+    SpdySessionRequest::Delegate* delegate) {
+  DCHECK(delegate);
+
   RequestSet& request_set = spdy_session_request_map_[spdy_session_key];
-  DCHECK(!base::ContainsKey(request_set, request));
-  request_set.insert(request);
-  request->SetSpdySessionKey(spdy_session_key);
+  auto spdy_session_request =
+      std::make_unique<SpdySessionRequest>(spdy_session_key, delegate, this);
+  request_set.insert(spdy_session_request.get());
+  return spdy_session_request;
 }
 
-void SpdySessionPool::RemoveRequestFromSpdySessionRequestMap(
-    HttpStreamRequest* request) {
-  if (!request->HasSpdySessionKey())
-    return;
-  const SpdySessionKey& spdy_session_key = request->GetSpdySessionKey();
+void SpdySessionPool::RemoveRequestForSpdySession(SpdySessionRequest* request) {
+  DCHECK_EQ(this, request->spdy_session_pool());
+
+  const SpdySessionKey& spdy_session_key = request->key();
   // Resume all pending requests now that |request| is done/canceled.
   ResumePendingRequests(spdy_session_key);
 
@@ -473,8 +483,9 @@ void SpdySessionPool::RemoveRequestFromSpdySessionRequestMap(
   request_set.erase(request);
   if (request_set.empty())
     spdy_session_request_map_.erase(spdy_session_key);
-  // Resets |request|'s SpdySessionKey. This will invalid |spdy_session_key|.
-  request->ResetSpdySessionKey();
+  // Clears |request|'s SpdySessionPool pointer, to prevent it from calling into
+  // this method again.
+  request->OnRemovedFromPool();
 }
 
 void SpdySessionPool::DumpMemoryStats(

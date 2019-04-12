@@ -26,6 +26,7 @@
 #include "net/base/network_change_notifier.h"
 #include "net/base/proxy_server.h"
 #include "net/cert/cert_database.h"
+#include "net/log/net_log_source.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/spdy/http2_push_promise_index.h"
 #include "net/spdy/server_push_delegate.h"
@@ -45,7 +46,6 @@ namespace net {
 class ClientSocketHandle;
 class HostResolver;
 class HttpServerProperties;
-class HttpStreamRequest;
 class NetLogWithSource;
 class NetworkQualityEstimator;
 class SpdySession;
@@ -68,6 +68,69 @@ class NET_EXPORT SpdySessionPool
     uint8_t type;
     uint8_t flags;
     std::string payload;
+  };
+
+  // A request for a SpdySession with a particular SpdySessionKey. These are
+  // created by calling CreateRequestForSpdySession(). The Delegate's
+  // OnSpdySessionAvailable() method will be invoked when a matching SpdySession
+  // is added to the pool, if the consumer that inserts the SpdySession also
+  // calls OnNewSpdySessionReady. The Delegate's OnSpdySessionAvailable() method
+  // will be invoked at most once for a single SpdySessionRequest.
+  //
+  // Destroying the request will stop watching the pool for such a session. The
+  // request must be destroyed before the SpdySessionPool is.
+  //
+  // TODO(mmenke): Remove the dependency on OnNewSpdySessionReady.
+  class SpdySessionRequest {
+   public:
+    // Interface for watching for when a SpdySession with a provided key is
+    // created.
+    class Delegate {
+     public:
+      Delegate();
+      virtual ~Delegate();
+
+      // |spdy_session| will not be null.
+      //
+      // TODO(mmenke): Remove all parameters except |spdy_session| and possibly
+      // |source_dependency|.
+      virtual void OnSpdySessionAvailable(
+          bool was_alpn_negotiated,
+          NextProto negotiated_protocol,
+          bool using_spdy,
+          const SSLConfig& used_ssl_config,
+          const ProxyInfo& used_proxy_info,
+          NetLogSource source_dependency,
+          base::WeakPtr<SpdySession> spdy_session) = 0;
+
+     private:
+      DISALLOW_COPY_AND_ASSIGN(Delegate);
+    };
+
+    // Constructor - this is called by the SpdySessionPool.
+    SpdySessionRequest(const SpdySessionKey& key,
+                       Delegate* delegate,
+                       SpdySessionPool* spdy_session_pool);
+
+    ~SpdySessionRequest();
+
+    // Called by SpdySessionPool to signal that the request has been removed
+    // from the SpdySessionPool.
+    void OnRemovedFromPool();
+
+    const SpdySessionKey& key() const { return key_; }
+    Delegate* delegate() { return delegate_; }
+
+    // The associated SpdySessionPool, or nullptr if OnRemovedFromPool() has
+    // been called.
+    SpdySessionPool* spdy_session_pool() { return spdy_session_pool_; }
+
+   private:
+    const SpdySessionKey key_;
+    Delegate* const delegate_;
+    SpdySessionPool* spdy_session_pool_;
+
+    DISALLOW_COPY_AND_ASSIGN(SpdySessionRequest);
   };
 
   SpdySessionPool(
@@ -217,14 +280,17 @@ class NET_EXPORT SpdySessionPool
   // Resumes pending requests with |spdy_session_key|.
   void ResumePendingRequests(const SpdySessionKey& spdy_session_key);
 
-  // Adds |request| to |spdy_session_request_map_| under |spdy_session_key| Key.
-  // Sets |spdy_session_key| as |request|'s SpdySessionKey.
-  void AddRequestToSpdySessionRequestMap(const SpdySessionKey& spdy_session_key,
-                                         HttpStreamRequest* request);
-
-  // Removes |request| from |spdy_session_request_map_|. No-op if |request| does
-  // not have a SpdySessionKey.
-  void RemoveRequestFromSpdySessionRequestMap(HttpStreamRequest* request);
+  // Create a request and add it to |spdy_session_request_map_| under
+  // |spdy_session_key| Key. |delegate|'s OnSpdySessionAvailable() callback will
+  // be invoked if a consumer calls OnNewSpdySessionReady() with a live
+  // SpdySession. |delegate| must remain valid until either its
+  // OnSpdySessionAvailable() callback has been invoked, or until the returned
+  // SpdySessionRequest has been destroyed.
+  //
+  // TODO(mmenke):  Merge with FindAvailableSession.
+  std::unique_ptr<SpdySessionRequest> CreateRequestForSpdySession(
+      const SpdySessionKey& spdy_session_key,
+      SpdySessionRequest::Delegate* delegate);
 
   void set_network_quality_estimator(
       NetworkQualityEstimator* network_quality_estimator) {
@@ -234,13 +300,16 @@ class NET_EXPORT SpdySessionPool
  private:
   friend class SpdySessionPoolPeer;  // For testing.
 
-  typedef std::set<HttpStreamRequest*> RequestSet;
+  typedef std::set<SpdySessionRequest*> RequestSet;
   typedef std::map<SpdySessionKey, RequestSet> SpdySessionRequestMap;
   typedef std::set<SpdySession*> SessionSet;
   typedef std::vector<base::WeakPtr<SpdySession> > WeakSessionList;
   typedef std::map<SpdySessionKey, base::WeakPtr<SpdySession> >
       AvailableSessionMap;
   typedef std::multimap<IPEndPoint, SpdySessionKey> AliasMap;
+
+  // Removes |request| from |spdy_session_request_map_|.
+  void RemoveRequestForSpdySession(SpdySessionRequest* request);
 
   // Returns true iff |session| is in |available_sessions_|.
   bool IsSessionAvailable(const base::WeakPtr<SpdySession>& session) const;
