@@ -2640,6 +2640,10 @@ jumbo_source_set("browser") {
   }
 
   if (use_mpris) {
+    sources += [
+      "media/mpris_notifier.cc",
+      "media/mpris_notifier.h",
+    ]
     deps += [ "//ui/base/mpris" ]
   }
 }

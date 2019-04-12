@@ -17,6 +17,7 @@ import("//ppapi/buildflags/buildflags.gni")
 import("//testing/test.gni")
 import("//third_party/blink/public/public_features.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
+import("//ui/base/mpris/buildflags/buildflags.gni")
 import("//v8/gni/v8.gni")
 
 # Use a static library here because many test binaries depend on this but don't
@@ -2263,6 +2264,11 @@ test("content_unittests") {
 
   if (use_x11) {
     deps += [ "//ui/gfx/x" ]
+  }
+
+  if (use_mpris) {
+    sources += [ "../browser/media/mpris_notifier_unittest.cc" ]
+    deps += [ "//ui/base/mpris:test_support" ]
   }
 }
 
