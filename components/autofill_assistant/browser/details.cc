@@ -245,6 +245,14 @@ bool Details::MaybeUpdateFromDetailsParameters(
       continue;
     }
 
+    if (key == "DETAILS_IMAGE_CLICKTHROUGH_URL") {
+      proto_.mutable_image_clickthrough_data()->set_allow_clickthrough(true);
+      proto_.mutable_image_clickthrough_data()->set_clickthrough_url(
+          iter.second);
+      details_updated = true;
+      continue;
+    }
+
     if (key == "DETAILS_TOTAL_PRICE_LABEL") {
       proto_.set_total_price_label(iter.second);
       details_updated = true;

@@ -152,9 +152,9 @@ public class AssistantDetails {
     private static AssistantDetails create(String title, String imageUrl,
             boolean allowImageClickthrough, String imageClickthroughDesc,
             String imageClickthroughPostiveText, String imageClickthroughNegativeText,
-            boolean showImagePlaceholder, String totalPriceLabel, String totalPrice,
-            String datetime, long year, int month, int day, int hour, int minute, int second,
-            String descriptionLine1, String descriptionLine2, String descriptionLine3,
+            String imageClickthroughUrl, boolean showImagePlaceholder, String totalPriceLabel,
+            String totalPrice, String datetime, long year, int month, int day, int hour, int minute,
+            int second, String descriptionLine1, String descriptionLine2, String descriptionLine3,
             boolean userApprovalRequired, boolean highlightTitle, boolean highlightLine1,
             boolean highlightLine2, boolean highlightLine3, boolean animatePlaceholders) {
         Date date = null;
@@ -177,7 +177,8 @@ public class AssistantDetails {
 
         return new AssistantDetails(title, imageUrl,
                 new ImageClickthroughData(allowImageClickthrough, imageClickthroughDesc,
-                        imageClickthroughPostiveText, imageClickthroughNegativeText),
+                        imageClickthroughPostiveText, imageClickthroughNegativeText,
+                        imageClickthroughUrl),
                 showImagePlaceholder, totalPriceLabel, totalPrice, date, descriptionLine1,
                 descriptionLine2, descriptionLine3, userApprovalRequired, highlightTitle,
                 highlightLine1, highlightLine2, highlightLine3, animatePlaceholders);

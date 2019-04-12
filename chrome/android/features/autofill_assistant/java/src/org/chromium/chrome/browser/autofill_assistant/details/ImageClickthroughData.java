@@ -13,13 +13,15 @@ package org.chromium.chrome.browser.autofill_assistant.details;
     private final String mDescription;
     private final String mPositiveText;
     private final String mNegativeText;
+    private final String mClickthroughUrl;
 
     ImageClickthroughData(boolean allowClickthrough, String description, String positiveText,
-            String negativeText) {
+            String negativeText, String clickthroughUrl) {
         mAllowClickthrough = allowClickthrough;
-        mDescription = description;
-        mPositiveText = positiveText;
-        mNegativeText = negativeText;
+        mDescription = (description == null) ? "" : description;
+        mPositiveText = (positiveText == null) ? "" : positiveText;
+        mNegativeText = (negativeText == null) ? "" : negativeText;
+        mClickthroughUrl = (clickthroughUrl == null) ? "" : clickthroughUrl;
     }
 
     boolean getAllowClickthrough() {
@@ -45,5 +47,12 @@ package org.chromium.chrome.browser.autofill_assistant.details;
      */
     String getNegativeText() {
         return mNegativeText;
+    }
+
+    /**
+     * The url to present when user did choose to click through.
+     */
+    String getClickthroughUrl() {
+        return mClickthroughUrl;
     }
 }
