@@ -259,25 +259,25 @@ void OfflineInternalsUIMessageHandler::HandleGetNetworkStatus(
 void OfflineInternalsUIMessageHandler::HandleScheduleNwake(
     const base::ListValue* args) {
   AllowJavascript();
-  const base::Value* callback_id;
-  CHECK(args->Get(0, &callback_id));
+  CHECK(!args->GetList().empty());
+  base::Value callback_id = args->GetList()[0].Clone();
 
   if (prefetch_service_) {
     prefetch_service_->GetGCMToken(base::BindOnce(
         &OfflineInternalsUIMessageHandler::ScheduleNwakeWithGCMToken,
-        weak_ptr_factory_.GetWeakPtr(), callback_id));
+        weak_ptr_factory_.GetWeakPtr(), std::move(callback_id)));
   } else {
-    RejectJavascriptCallback(*callback_id,
+    RejectJavascriptCallback(callback_id,
                              base::Value("No prefetch service available."));
   }
 }
 
 void OfflineInternalsUIMessageHandler::ScheduleNwakeWithGCMToken(
-    const base::Value* callback_id,
+    base::Value callback_id,
     const std::string& gcm_token) {
   prefetch_service_->GetPrefetchBackgroundTaskHandler()->EnsureTaskScheduled(
       gcm_token);
-  ResolveJavascriptCallback(*callback_id, base::Value("Scheduled."));
+  ResolveJavascriptCallback(callback_id, base::Value("Scheduled."));
 }
 
 void OfflineInternalsUIMessageHandler::HandleCancelNwake(
