@@ -77,7 +77,7 @@ public class TrustedWebActivityClientTest {
         when(mService.getComponentName()).thenReturn(new ComponentName(CLIENT_PACKAGE_NAME, ""));
         when(mNotificationBuilder.build(any())).thenReturn(mChromeNotification);
 
-        mClient = new TrustedWebActivityClient(mConnection, mRecorder, mNotificationUmaTracker);
+        mClient = new TrustedWebActivityClient(mConnection, mRecorder);
     }
 
     @Test
@@ -139,6 +139,7 @@ public class TrustedWebActivityClientTest {
     }
 
     private void postNotification() {
-        mClient.notifyNotification(Uri.parse(""), "tag", 1, mNotificationBuilder);
+        mClient.notifyNotification(Uri.parse(""), "tag", 1, mNotificationBuilder,
+                mNotificationUmaTracker);
     }
 }

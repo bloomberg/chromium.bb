@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.OriginVerifier;
 import org.chromium.chrome.browser.browserservices.OriginVerifier.OriginVerificationListener;
+import org.chromium.chrome.browser.browserservices.permissiondelegation.NotificationPermissionUpdater;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier.VerificationStatus;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
@@ -80,6 +81,7 @@ public class TrustedWebActivityVerifierTest {
     @Mock OriginVerifier.Factory mOriginVerifierFactory;
     @Mock CustomTabActivityTabProvider mTabProvider;
     @Mock Tab mTab;
+    @Mock NotificationPermissionUpdater mNotificationPermissionUpdater;
     @Mock ChromeActivity mChromeActivity;
     @Captor ArgumentCaptor<TabObserver> mTabObserverCaptor;
 
@@ -99,7 +101,8 @@ public class TrustedWebActivityVerifierTest {
         mVerifier = new TrustedWebActivityVerifier(() -> mClientAppDataRecorder,
                 mIntentDataProvider, mCustomTabsConnection, mLifecycleDispatcher,
                 mTabObserverRegistrar, mOriginVerifierFactory,
-                mTabProvider, mChromeActivity);
+                mTabProvider, mChromeActivity, mNotificationPermissionUpdater);
+        // TODO(peconn): Add check on permission updated being updated.
     }
 
     @Test

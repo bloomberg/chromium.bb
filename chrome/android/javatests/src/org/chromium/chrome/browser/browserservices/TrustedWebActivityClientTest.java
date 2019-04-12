@@ -128,8 +128,7 @@ public class TrustedWebActivityClientTest {
         mBuilder = new StandardNotificationBuilder(mTargetContext);
         mClient = new TrustedWebActivityClient(new TrustedWebActivityServiceConnectionManager(
                 ContextUtils.getApplicationContext()),
-                new TrustedWebActivityUmaRecorder(ChromeBrowserInitializer.getInstance()),
-                NotificationUmaTracker.getInstance());
+                new TrustedWebActivityUmaRecorder(ChromeBrowserInitializer.getInstance()));
 
         // TestTrustedWebActivityService is in the test support apk.
         TrustedWebActivityClient.registerClient(mTargetContext, ORIGIN, TEST_SUPPORT_PACKAGE);
@@ -180,7 +179,8 @@ public class TrustedWebActivityClientTest {
     private void postNotification()
             throws TimeoutException, InterruptedException {
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
-            mClient.notifyNotification(SCOPE, NOTIFICATION_TAG, NOTIFICATION_ID, mBuilder);
+            mClient.notifyNotification(SCOPE, NOTIFICATION_TAG, NOTIFICATION_ID, mBuilder,
+                    NotificationUmaTracker.getInstance());
         });
 
         mResponseHandler.mNotifyNotification.waitForCallback();

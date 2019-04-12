@@ -386,9 +386,6 @@ public class OriginVerifier {
             Log.d(TAG, "Adding: %s for %s", mPackageName, mOrigin);
             VerificationResultStore.addRelationship(new Relationship(mPackageName,
                     mSignatureFingerprint, mOrigin, mRelation));
-
-            TrustedWebActivityClient.registerClient(ContextUtils.getApplicationContext(),
-                    mOrigin, mPackageName);
         }
 
         // We save the result even if there is a failure as a way of overwriting a previously
