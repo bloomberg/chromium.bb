@@ -15,6 +15,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkUnPreMultiply.h"
@@ -317,7 +319,7 @@ class ColorBox {
 
 // Some color values should be ignored for the purposes of determining prominent
 // colors.
-bool IsInterestingColor(SkColor color) {
+bool IsInterestingColor(const SkColor& color) {
   const float average_channel_value =
       (SkColorGetR(color) + SkColorGetG(color) + SkColorGetB(color)) / 3.0f;
   // If a color is too close to white or black, ignore it.
@@ -337,17 +339,18 @@ struct ColorBracket {
   HSL goal = {-1};
 };
 
-std::vector<SkColor> CalculateProminentColors(
+std::vector<Swatch> CalculateProminentColors(
     const SkBitmap& bitmap,
-    const std::vector<ColorBracket>& color_brackets) {
+    const std::vector<ColorBracket>& color_brackets,
+    const gfx::Rect& region,
+    base::Optional<ColorSwatchFilter> filter) {
   DCHECK(!bitmap.empty());
   DCHECK(!bitmap.isNull());
 
-  std::vector<Swatch> box_colors = CalculateColorSwatches(
-      bitmap, 12, gfx::Rect(bitmap.width(), bitmap.height()),
-      true /* exclude_uninteresting */);
+  std::vector<Swatch> box_colors =
+      CalculateColorSwatches(bitmap, 12, region, filter);
 
-  std::vector<SkColor> best_colors(color_brackets.size(), SK_ColorTRANSPARENT);
+  std::vector<Swatch> best_colors(color_brackets.size(), Swatch());
   if (box_colors.empty())
     return best_colors;
 
@@ -375,7 +378,7 @@ std::vector<SkColor> CalculateProminentColors(
           (box_color.population / static_cast<float>(max_weight)) * 0.5;
       if (suitability > best_suitability) {
         best_suitability = suitability;
-        best_colors[i] = box_color.color;
+        best_colors[i] = box_color;
       }
     }
   }
@@ -660,6 +663,8 @@ SkColor CalculateKMeanColorOfBitmap(const SkBitmap& bitmap) {
       true);
 }
 
+const int kMaxConsideredPixelsForSwatches = 10007;
+
 // This algorithm is a port of Android's Palette API. Compare to package
 // android.support.v7.graphics and see that code for additional high-level
 // explanation of this algorithm. There are some minor differences:
@@ -667,10 +672,11 @@ SkColor CalculateKMeanColorOfBitmap(const SkBitmap& bitmap) {
 //   different color profiles.
 //   * This code doesn't try to heuristically derive missing colors from
 //   existing colors.
-std::vector<Swatch> CalculateColorSwatches(const SkBitmap& bitmap,
-                                           size_t max_swatches,
-                                           const gfx::Rect& region,
-                                           bool exclude_uninteresting) {
+std::vector<Swatch> CalculateColorSwatches(
+    const SkBitmap& bitmap,
+    size_t max_swatches,
+    const gfx::Rect& region,
+    base::Optional<ColorSwatchFilter> filter) {
   DCHECK(!bitmap.empty());
   DCHECK(!bitmap.isNull());
   DCHECK(!region.IsEmpty());
@@ -683,9 +689,10 @@ std::vector<Swatch> CalculateColorSwatches(const SkBitmap& bitmap,
   // distributed throughout the image). This has a very minor impact on the
   // outcome but improves runtime substantially for large images. 10,007 is a
   // prime number to reduce the chance of picking an unrepresentative sample.
-  constexpr int kMaxConsideredPixels = 10007;
-  const int pixel_increment = std::max(1, pixel_count / kMaxConsideredPixels);
-  std::unordered_map<SkColor, int> color_counts(kMaxConsideredPixels);
+  const int pixel_increment =
+      std::max(1, pixel_count / kMaxConsideredPixelsForSwatches);
+  std::unordered_map<SkColor, int> color_counts(
+      kMaxConsideredPixelsForSwatches);
 
   // First extract all colors into counts.
   for (int i = 0; i < pixel_count; i += pixel_increment) {
@@ -699,12 +706,12 @@ std::vector<Swatch> CalculateColorSwatches(const SkBitmap& bitmap,
     color_counts[pixel]++;
   }
 
-  // Now throw out some uninteresting colors if |exclude_uninteresting| is true.
+  // Now throw out some uninteresting colors if there is a filter.
   std::vector<SkColor> interesting_colors;
   interesting_colors.reserve(color_counts.size());
   for (auto color_count : color_counts) {
     SkColor color = color_count.first;
-    if (!exclude_uninteresting || IsInterestingColor(color))
+    if (!filter || filter->Run(color))
       interesting_colors.push_back(color);
   }
 
@@ -743,20 +750,27 @@ std::vector<Swatch> CalculateColorSwatches(const SkBitmap& bitmap,
   return box_colors;
 }
 
-std::vector<SkColor> CalculateProminentColorsOfBitmap(
+std::vector<color_utils::Swatch> CalculateProminentColorsOfBitmap(
     const SkBitmap& bitmap,
-    const std::vector<ColorProfile>& color_profiles) {
+    const std::vector<ColorProfile>& color_profiles,
+    gfx::Rect* region,
+    ColorSwatchFilter filter) {
   if (color_profiles.empty())
-    return std::vector<SkColor>();
+    return std::vector<Swatch>();
 
   size_t size = color_profiles.size();
   if (bitmap.empty() || bitmap.isNull())
-    return std::vector<SkColor>(size, SK_ColorTRANSPARENT);
+    return std::vector<Swatch>(size, Swatch());
 
   // The hue is not relevant to our bounds or goal colors.
   std::vector<ColorBracket> color_brackets(size);
   for (size_t i = 0; i < size; ++i) {
     switch (color_profiles[i].luma) {
+      case LumaRange::ANY:
+        color_brackets[i].lower_bound.l = 0;
+        color_brackets[i].upper_bound.l = 1;
+        color_brackets[i].goal.l = 0.5f;
+        break;
       case LumaRange::LIGHT:
         color_brackets[i].lower_bound.l = 0.55f;
         color_brackets[i].upper_bound.l = 1;
@@ -775,6 +789,11 @@ std::vector<SkColor> CalculateProminentColorsOfBitmap(
     }
 
     switch (color_profiles[i].saturation) {
+      case SaturationRange::ANY:
+        color_brackets[i].lower_bound.s = 0;
+        color_brackets[i].upper_bound.s = 1;
+        color_brackets[i].goal.s = 0.5f;
+        break;
       case SaturationRange::VIBRANT:
         color_brackets[i].lower_bound.s = 0.35f;
         color_brackets[i].upper_bound.s = 1;
@@ -788,7 +807,10 @@ std::vector<SkColor> CalculateProminentColorsOfBitmap(
     }
   }
 
-  return CalculateProminentColors(bitmap, color_brackets);
+  return CalculateProminentColors(
+      bitmap, color_brackets,
+      region ? *region : gfx::Rect(bitmap.width(), bitmap.height()),
+      filter.is_null() ? base::BindRepeating(&IsInterestingColor) : filter);
 }
 
 gfx::Matrix3F ComputeColorCovariance(const SkBitmap& bitmap) {
