@@ -145,7 +145,7 @@ class CrostiniManager::CrostiniRestarter
     if (crostini_manager_->skip_restart_for_testing()) {
       base::PostTaskWithTraits(
           FROM_HERE, {content::BrowserThread::UI},
-          base::BindOnce(&CrostiniRestarter::SetUpLxdContainerUserFinished,
+          base::BindOnce(&CrostiniRestarter::StartLxdContainerFinished,
                          base::WrapRefCounted(this), CrostiniResult::SUCCESS));
       return;
     }
@@ -341,27 +341,6 @@ class CrostiniManager::CrostiniRestarter
       FinishRestart(result);
       return;
     }
-    crostini_manager_->StartLxdContainer(
-        vm_name_, container_name_,
-        base::BindOnce(&CrostiniRestarter::StartLxdContainerFinished, this));
-  }
-
-  void StartLxdContainerFinished(CrostiniResult result) {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    CloseCrostiniUpgradeContainerView();
-    // Tell observers.
-    for (auto& observer : observer_list_) {
-      observer.OnContainerStarted(result);
-    }
-    if (is_aborted_) {
-      std::move(abort_callback_).Run();
-      return;
-    }
-    if (result != CrostiniResult::SUCCESS) {
-      LOG(ERROR) << "Failed to Start Lxd Container.";
-      FinishRestart(result);
-      return;
-    }
     crostini_manager_->SetUpLxdContainerUser(
         vm_name_, container_name_, DefaultContainerUserNameForProfile(profile_),
         base::BindOnce(&CrostiniRestarter::SetUpLxdContainerUserFinished,
@@ -370,12 +349,6 @@ class CrostiniManager::CrostiniRestarter
 
   void SetUpLxdContainerUserFinished(CrostiniResult result) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    // The restarter shouldn't outlive the CrostiniManager but it can when
-    // skip_restart_for_testing is set.
-    if (!crostini_manager_) {
-      LOG(ERROR) << "CrostiniManager deleted";
-      return;
-    }
 
     // Tell observers.
     for (auto& observer : observer_list_) {
@@ -391,6 +364,34 @@ class CrostiniManager::CrostiniRestarter
       return;
     }
 
+    crostini_manager_->StartLxdContainer(
+        vm_name_, container_name_,
+        base::BindOnce(&CrostiniRestarter::StartLxdContainerFinished, this));
+  }
+
+  void StartLxdContainerFinished(CrostiniResult result) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    // The restarter shouldn't outlive the CrostiniManager but it can when
+    // skip_restart_for_testing is set.
+    if (!crostini_manager_) {
+      LOG(ERROR) << "CrostiniManager deleted";
+      return;
+    }
+
+    CloseCrostiniUpgradeContainerView();
+    // Tell observers.
+    for (auto& observer : observer_list_) {
+      observer.OnContainerStarted(result);
+    }
+    if (is_aborted_) {
+      std::move(abort_callback_).Run();
+      return;
+    }
+    if (result != CrostiniResult::SUCCESS) {
+      LOG(ERROR) << "Failed to Start Lxd Container.";
+      FinishRestart(result);
+      return;
+    }
     // If default termina/penguin, then do sshfs mount and reshare folders,
     // else we are finished.
     auto info = crostini_manager_->GetContainerInfo(vm_name_, container_name_);
@@ -2111,9 +2112,9 @@ void CrostiniManager::OnStartLxdContainer(
       VLOG(1) << "Awaiting LxdContainerStartingSignal for " << owner_id_ << ", "
               << vm_name << ", " << container_name;
       // The callback will be called when we receive the LxdContainerStarting
-      // signal.
-      start_lxd_container_callbacks_.emplace(
-          ContainerId(vm_name, container_name), std::move(callback));
+      // signal and (if successful) the ContainerStarted signal from Garcon..
+      start_container_callbacks_.emplace(ContainerId(vm_name, container_name),
+                                         std::move(callback));
       break;
     default:
       NOTREACHED();
@@ -2140,12 +2141,6 @@ void CrostiniManager::OnSetUpLxdContainerUser(
     LOG(ERROR) << "Failed to set up container user: "
                << response.failure_reason();
     std::move(callback).Run(CrostiniResult::CONTAINER_START_FAILED);
-    return;
-  }
-
-  if (!GetContainerInfo(vm_name, container_name)) {
-    start_container_callbacks_.emplace(ContainerId(vm_name, container_name),
-                                       std::move(callback));
     return;
   }
   std::move(callback).Run(CrostiniResult::SUCCESS);
@@ -2269,13 +2264,18 @@ void CrostiniManager::OnLxdContainerStarting(
       result = CrostiniResult::UNKNOWN_ERROR;
       break;
   }
+  if (result == CrostiniResult::SUCCESS &&
+      !GetContainerInfo(signal.vm_name(), signal.container_name())) {
+    VLOG(1) << "Awaiting ContainerStarted signal from Garcon";
+    return;
+  }
   // Find the callbacks to call, then erase them from the map.
-  auto range = start_lxd_container_callbacks_.equal_range(
+  auto range = start_container_callbacks_.equal_range(
       std::make_tuple(signal.vm_name(), signal.container_name()));
   for (auto it = range.first; it != range.second; ++it) {
     std::move(it->second).Run(result);
   }
-  start_lxd_container_callbacks_.erase(range.first, range.second);
+  start_container_callbacks_.erase(range.first, range.second);
 }
 
 void CrostiniManager::OnLaunchContainerApplication(

@@ -91,8 +91,8 @@ class CrostiniInstallerView
   void OnVmStarted(crostini::CrostiniResult result) override;
   void OnContainerDownloading(int32_t download_percent) override;
   void OnContainerCreated(crostini::CrostiniResult result) override;
-  void OnContainerStarted(crostini::CrostiniResult result) override;
   void OnContainerSetup(crostini::CrostiniResult result) override;
+  void OnContainerStarted(crostini::CrostiniResult result) override;
   void OnSshKeysFetched(crostini::CrostiniResult result) override;
 
   static CrostiniInstallerView* GetActiveViewForTesting();

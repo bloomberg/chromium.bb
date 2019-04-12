@@ -288,8 +288,8 @@ class CrostiniManager : public KeyedService,
     virtual void OnVmStarted(CrostiniResult result) = 0;
     virtual void OnContainerDownloading(int32_t download_percent) = 0;
     virtual void OnContainerCreated(CrostiniResult result) = 0;
-    virtual void OnContainerStarted(CrostiniResult result) = 0;
     virtual void OnContainerSetup(CrostiniResult result) = 0;
+    virtual void OnContainerStarted(CrostiniResult result) = 0;
     virtual void OnSshKeysFetched(CrostiniResult result) = 0;
   };
 
@@ -859,14 +859,8 @@ class CrostiniManager : public KeyedService,
   // Pending DeleteLxdContainer callbacks are keyed by <vm_name, container_name>
   // string pairs. These are used if DeleteLxdContainer indicates we need to
   // wait for an LxdContainerDelete signal.
-  std::multimap<std::pair<std::string, std::string>, CrostiniResultCallback>
-      delete_lxd_container_callbacks_;
-
-  // Pending StartLxdContainer callbacks are keyed by <vm_name, container_name>
-  // string pairs. These are used if StartLxdContainer indicates we need to
-  // wait for an LxdContainerStarting signal.
   std::multimap<ContainerId, CrostiniResultCallback>
-      start_lxd_container_callbacks_;
+      delete_lxd_container_callbacks_;
 
   // Pending ExportLxdContainer callbacks are keyed by <vm_name, container_name>
   // string pairs. They are invoked once ExportLxdContainerProgressSignal signal
