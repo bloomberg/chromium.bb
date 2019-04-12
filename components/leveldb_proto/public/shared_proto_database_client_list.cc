@@ -47,6 +47,10 @@ std::string SharedProtoDatabaseClientList::ProtoDbTypeToString(
       return "FeedContentDatabase";
     case ProtoDbType::FEED_JOURNAL_DATABASE:
       return "FeedJournalDatabase";
+    case ProtoDbType::REMOTE_SUGGESTIONS_DATABASE:
+      return "NTPSnippets";
+    case ProtoDbType::REMOTE_SUGGESTIONS_IMAGE_DATABASE:
+      return "NTPSnippetImages";
     case ProtoDbType::LAST:
       NOTREACHED();
       break;

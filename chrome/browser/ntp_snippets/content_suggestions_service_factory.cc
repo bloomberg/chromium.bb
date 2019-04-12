@@ -34,6 +34,7 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/language/core/browser/url_language_histogram.h"
+#include "components/leveldb_proto/content/proto_database_provider_factory.h"
 #include "components/ntp_snippets/category_rankers/category_ranker.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/features.h"
@@ -265,7 +266,10 @@ void RegisterArticleProviderIfEnabled(ContentSuggestionsService* service,
       std::move(suggestions_fetcher),
       std::make_unique<ImageFetcherImpl>(std::make_unique<ImageDecoderImpl>(),
                                          url_loader_factory),
-      std::make_unique<RemoteSuggestionsDatabase>(database_dir),
+      std::make_unique<RemoteSuggestionsDatabase>(
+          leveldb_proto::ProtoDatabaseProviderFactory::GetForKey(
+              profile->GetProfileKey()),
+          database_dir),
       std::make_unique<RemoteSuggestionsStatusServiceImpl>(
           identity_manager->HasPrimaryAccount(), pref_service, std::string()),
       std::move(prefetched_pages_tracker),
@@ -308,6 +312,7 @@ ContentSuggestionsServiceFactory::ContentSuggestionsServiceFactory()
   DependsOn(HistoryServiceFactory::GetInstance());
   DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(LargeIconServiceFactory::GetInstance());
+  DependsOn(leveldb_proto::ProtoDatabaseProviderFactory::GetInstance());
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   // Depends on OfflinePageModelFactory in SimpleDependencyManager.
   DependsOn(offline_pages::PrefetchServiceFactory::GetInstance());
