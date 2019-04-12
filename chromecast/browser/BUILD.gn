@@ -44,8 +44,8 @@ cast_source_set("browser") {
   sources = [
     "application_media_capabilities.cc",
     "application_media_capabilities.h",
-    "application_session_id_manager.cc",
-    "application_session_id_manager.h",
+    "application_media_info_manager.cc",
+    "application_media_info_manager.h",
     "bluetooth/cast_bluetooth_chooser.cc",
     "bluetooth/cast_bluetooth_chooser.h",
     "cast_browser_context.cc",

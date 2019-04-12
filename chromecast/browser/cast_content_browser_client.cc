@@ -24,7 +24,7 @@
 #include "chromecast/base/cast_features.h"
 #include "chromecast/base/cast_paths.h"
 #include "chromecast/base/chromecast_switches.h"
-#include "chromecast/browser/application_session_id_manager.h"
+#include "chromecast/browser/application_media_info_manager.h"
 #include "chromecast/browser/browser_buildflags.h"
 #include "chromecast/browser/cast_browser_context.h"
 #include "chromecast/browser/cast_browser_main_parts.h"
