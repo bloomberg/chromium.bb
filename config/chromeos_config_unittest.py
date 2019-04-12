@@ -16,7 +16,7 @@ import unittest
 
 from chromite.cbuildbot import builders
 from chromite.config import chromeos_config
-from chromite.config import chromeos_config_test as chromeos_test
+from chromite.config import chromeos_test_config as chromeos_test
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.cbuildbot.builders import generic_builders

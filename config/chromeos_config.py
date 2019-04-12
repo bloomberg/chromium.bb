@@ -15,12 +15,12 @@ from chromite.lib import constants
 from chromite.lib import factory
 
 from chromite.config import chromeos_config_boards as chromeos_boards
-from chromite.config import chromeos_config_test as chromeos_test
+from chromite.config import chromeos_test_config as chromeos_test
 
 # TODO(yshaul): Restrict the import when we're done splitting
-from chromite.config.chromeos_config_test import HWTestList
-from chromite.config.chromeos_config_test import TRADITIONAL_VM_TESTS_SUPPORTED
-from chromite.config.chromeos_config_test import getInfoVMTest
+from chromite.config.chromeos_test_config import HWTestList
+from chromite.config.chromeos_test_config import TRADITIONAL_VM_TESTS_SUPPORTED
+from chromite.config.chromeos_test_config import getInfoVMTest
 
 
 def remove_images(unsupported_images):
