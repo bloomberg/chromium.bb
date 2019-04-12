@@ -82,6 +82,9 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
 
   ::settings::MdSettingsUI::InitOSWebUIHandlers(profile, web_ui, html_source);
 
+  // TODO(jamescook): Remove after basic_page.html is forked for OS settings.
+  html_source->AddBoolean("showOSSettings", true);
+
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   std::vector<std::string> exclude_from_gzip;
 #endif
