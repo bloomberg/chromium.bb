@@ -539,8 +539,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
     return max_size_for_auto_resize_;
   }
 
-  void DidReceiveRendererFrame();
-
   // Don't check whether we expected a resize ack during web tests.
   static void DisableResizeAckCheckForTesting();
 
