@@ -327,7 +327,7 @@ void ElementRuleCollector::SortAndTransferMatchedRules() {
     const RuleData* rule_data = matched_rules_[i].GetRuleData();
     result_.AddMatchedProperties(
         &rule_data->Rule()->Properties(), rule_data->LinkMatchType(),
-        rule_data->PropertyWhitelist(matching_ua_rules_));
+        rule_data->GetValidPropertyFilter(matching_ua_rules_));
   }
 }
 
