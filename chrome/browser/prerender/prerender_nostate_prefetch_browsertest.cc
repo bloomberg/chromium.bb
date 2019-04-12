@@ -137,6 +137,14 @@ class NoStatePrefetchBrowserTest
   }
 
  protected:
+  // Loads kPrefetchLoaderPath and specifies |target_url| as a query param. The
+  // |loader_url| looks something like:
+  // http://127.0.0.1:port_number/prerender/prefetch_loader.html?replace_text=\
+  // UkVQTEFDRV9XSVRIX1BSRUZFVENIX1VSTA==:aHR0cDovL3d3dy52dlci5odG1s.
+  // When the embedded test server receives the request, it uses the specified
+  // query params to replace the "REPLACE_WITH_PREFETCH_URL" string in the HTML
+  // response with |target_url|. See method UpdateReplacedText() from embedded
+  // test server.
   std::unique_ptr<TestPrerender> PrefetchFromURL(
       const GURL& target_url,
       FinalStatus expected_final_status) {
