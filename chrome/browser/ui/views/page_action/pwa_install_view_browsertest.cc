@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
-#include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
+#include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -50,7 +50,7 @@ class PwaInstallViewBrowserTest : public InProcessBrowserTest {
     pwa_install_view_ =
         BrowserView::GetBrowserViewForBrowser(browser())
             ->toolbar_button_provider()
-            ->GetPageActionIconContainerView()
+            ->GetOmniboxPageActionIconContainerView()
             ->GetPageActionIconView(PageActionIconType::kPwaInstall);
     EXPECT_FALSE(pwa_install_view_->visible());
 

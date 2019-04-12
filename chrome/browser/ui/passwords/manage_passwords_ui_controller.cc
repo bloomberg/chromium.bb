@@ -507,7 +507,7 @@ void ManagePasswordsUIController::UpdateBubbleAndIconVisibility() {
   if (!browser)
     return;
 
-  browser->window()->GetPageActionIconContainer()->UpdatePageActionIcon(
+  browser->window()->GetOmniboxPageActionIconContainer()->UpdatePageActionIcon(
       PageActionIconType::kManagePasswords);
 }
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_PAGE_ACTION_PAGE_ACTION_ICON_CONTAINER_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_PAGE_ACTION_PAGE_ACTION_ICON_CONTAINER_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_PAGE_ACTION_OMNIBOX_PAGE_ACTION_ICON_CONTAINER_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_PAGE_ACTION_OMNIBOX_PAGE_ACTION_ICON_CONTAINER_VIEW_H_
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
@@ -23,9 +23,10 @@ class PwaInstallView;
 class TranslateIconView;
 class ZoomView;
 
-class PageActionIconContainerView : public views::View,
-                                    public PageActionIconContainer,
-                                    public zoom::ZoomEventManagerObserver {
+class OmniboxPageActionIconContainerView
+    : public views::View,
+      public PageActionIconContainer,
+      public zoom::ZoomEventManagerObserver {
  public:
   struct Params {
     Params();
@@ -43,8 +44,8 @@ class PageActionIconContainerView : public views::View,
     DISALLOW_COPY_AND_ASSIGN(Params);
   };
 
-  explicit PageActionIconContainerView(const Params& params);
-  ~PageActionIconContainerView() override;
+  explicit OmniboxPageActionIconContainerView(const Params& params);
+  ~OmniboxPageActionIconContainerView() override;
 
   PageActionIconView* GetPageActionIconView(PageActionIconType type);
 
@@ -83,7 +84,7 @@ class PageActionIconContainerView : public views::View,
   ScopedObserver<zoom::ZoomEventManager, zoom::ZoomEventManagerObserver>
       zoom_observer_;
 
-  DISALLOW_COPY_AND_ASSIGN(PageActionIconContainerView);
+  DISALLOW_COPY_AND_ASSIGN(OmniboxPageActionIconContainerView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_PAGE_ACTION_PAGE_ACTION_ICON_CONTAINER_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_PAGE_ACTION_OMNIBOX_PAGE_ACTION_ICON_CONTAINER_VIEW_H_

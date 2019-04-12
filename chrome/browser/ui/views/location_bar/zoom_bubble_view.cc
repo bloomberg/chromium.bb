@@ -23,7 +23,7 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
-#include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
+#include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/page_action/zoom_view.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/grit/generated_resources.h"
@@ -119,18 +119,19 @@ bool IsBrowserFullscreen(Browser* browser) {
   return browser->window()->IsFullscreen();
 }
 
-PageActionIconContainerView* GetAnchorViewForBrowser(Browser* browser,
-                                                     bool is_fullscreen) {
+OmniboxPageActionIconContainerView* GetAnchorViewForBrowser(
+    Browser* browser,
+    bool is_fullscreen) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   if (!is_fullscreen ||
       browser_view->immersive_mode_controller()->IsRevealed()) {
     return browser_view->toolbar_button_provider()
-        ->GetPageActionIconContainerView();
+        ->GetOmniboxPageActionIconContainerView();
   }
   return nullptr;
 }
 
-PageActionIconContainerView* GetAnchorViewForBrowser(Browser* browser) {
+OmniboxPageActionIconContainerView* GetAnchorViewForBrowser(Browser* browser) {
   const bool is_fullscreen = IsBrowserFullscreen(browser);
   return GetAnchorViewForBrowser(browser, is_fullscreen);
 }
@@ -150,7 +151,7 @@ void ParentToViewsBrowser(Browser* browser,
     zoom_bubble->SetHighlightedButton(
         BrowserView::GetBrowserViewForBrowser(browser)
             ->toolbar_button_provider()
-            ->GetPageActionIconContainerView()
+            ->GetOmniboxPageActionIconContainerView()
             ->GetPageActionIconView(PageActionIconType::kZoom));
   } else {
     // If we do not have an anchor view, parent the bubble to the content area.
@@ -313,7 +314,7 @@ ZoomBubbleView::~ZoomBubbleView() {
 
 base::string16 ZoomBubbleView::GetAccessibleWindowTitle() const {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
-  PageActionIconContainerView* page_action_icon_container_view =
+  OmniboxPageActionIconContainerView* page_action_icon_container_view =
       GetAnchorViewForBrowser(browser);
   if (!page_action_icon_container_view)
     return base::string16();
@@ -583,9 +584,10 @@ void ZoomBubbleView::UpdateZoomIconVisibility() {
   // parent window destruction tearing down its child windows.
   Browser* browser = chrome::FindBrowserWithID(session_id_);
   if (browser && browser->window() &&
-      browser->window()->GetPageActionIconContainer()) {
-    browser->window()->GetPageActionIconContainer()->UpdatePageActionIcon(
-        PageActionIconType::kZoom);
+      browser->window()->GetOmniboxPageActionIconContainer()) {
+    browser->window()
+        ->GetOmniboxPageActionIconContainer()
+        ->UpdatePageActionIcon(PageActionIconType::kZoom);
   }
 }
 

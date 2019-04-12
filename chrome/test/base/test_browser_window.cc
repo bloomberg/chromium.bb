@@ -136,8 +136,9 @@ LocationBar* TestBrowserWindow::GetLocationBar() const {
   return const_cast<TestLocationBar*>(&location_bar_);
 }
 
-PageActionIconContainer* TestBrowserWindow::GetPageActionIconContainer() {
-  return &page_action_icon_container_;
+PageActionIconContainer*
+TestBrowserWindow::GetOmniboxPageActionIconContainer() {
+  return &omnibox_page_action_icon_container_;
 }
 
 PageActionIconContainer*

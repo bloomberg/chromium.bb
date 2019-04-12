@@ -60,7 +60,7 @@
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/location_bar/custom_tab_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
-#include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
+#include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view_base.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
@@ -856,7 +856,7 @@ class HostedAppNonClientFrameViewAshTest
 
   PageActionIconView* GetPageActionIcon(PageActionIconType type) {
     return browser_view_->toolbar_button_provider()
-        ->GetPageActionIconContainerView()
+        ->GetOmniboxPageActionIconContainerView()
         ->GetPageActionIconView(type);
   }
 

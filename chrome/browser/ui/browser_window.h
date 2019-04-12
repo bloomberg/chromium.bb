@@ -237,7 +237,7 @@ class BrowserWindow : public ui::BaseWindow {
   virtual gfx::Size GetContentsSize() const = 0;
 
   // Returns the container of page action icons.
-  virtual PageActionIconContainer* GetPageActionIconContainer() = 0;
+  virtual PageActionIconContainer* GetOmniboxPageActionIconContainer() = 0;
 
   // Returns the container of toolbar page action icons. The page action icon
   // container above is in the omnibox. The toolbar page action icon container

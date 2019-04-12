@@ -88,7 +88,7 @@ class TestBrowserWindow : public BrowserWindow {
   bool IsFullscreen() const override;
   bool IsFullscreenBubbleVisible() const override;
   LocationBar* GetLocationBar() const override;
-  PageActionIconContainer* GetPageActionIconContainer() override;
+  PageActionIconContainer* GetOmniboxPageActionIconContainer() override;
   PageActionIconContainer* GetToolbarPageActionIconContainer() override;
   void SetFocusToLocationBar(bool select_all) override {}
   void UpdateReloadStopState(bool is_loading, bool force) override {}
@@ -212,21 +212,21 @@ class TestBrowserWindow : public BrowserWindow {
     DISALLOW_COPY_AND_ASSIGN(TestLocationBar);
   };
 
-  class TestPageActionIconContainer : public PageActionIconContainer {
+  class TestOmniboxPageActionIconContainer : public PageActionIconContainer {
    public:
-    TestPageActionIconContainer() {}
-    ~TestPageActionIconContainer() override {}
+    TestOmniboxPageActionIconContainer() {}
+    ~TestOmniboxPageActionIconContainer() override {}
 
     // PageActionIconContainer:
     void UpdatePageActionIcon(PageActionIconType type) override {}
 
    private:
-    DISALLOW_COPY_AND_ASSIGN(TestPageActionIconContainer);
+    DISALLOW_COPY_AND_ASSIGN(TestOmniboxPageActionIconContainer);
   };
 
   TestDownloadShelf download_shelf_;
   TestLocationBar location_bar_;
-  TestPageActionIconContainer page_action_icon_container_;
+  TestOmniboxPageActionIconContainer omnibox_page_action_icon_container_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowserWindow);
 };
