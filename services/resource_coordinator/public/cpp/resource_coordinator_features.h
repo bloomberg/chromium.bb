@@ -14,11 +14,6 @@
 
 namespace features {
 
-// The features should be documented alongside the definition of their values
-// in the .cc file.
-extern const COMPONENT_EXPORT(SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_FEATURES)
-    base::Feature kPerformanceMeasurement;
-
 #if defined(OS_WIN)
 extern const COMPONENT_EXPORT(SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_FEATURES)
     base::Feature kEmptyWorkingSet;
