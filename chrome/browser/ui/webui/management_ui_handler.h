@@ -106,22 +106,19 @@ class ManagementUIHandler : public content::WebUIMessageHandler {
 
  protected:
   // Protected for testing.
-  std::unique_ptr<base::DictionaryValue>
-  GetDataManagementContextualSourceUpdate(Profile* profile) const;
   static void InitializeInternal(content::WebUI* web_ui,
                                  content::WebUIDataSource* source,
                                  Profile* profile);
   void AddExtensionReportingInfo(base::Value* report_sources);
 
+  base::DictionaryValue GetContextualManagedData(Profile* profile) const;
   virtual policy::PolicyService* GetPolicyService() const;
   virtual const extensions::Extension* GetEnabledExtension(
       const std::string& extensionId) const;
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
  private:
-  void GetManagementStatus(base::Value* status);
-
-  void HandleGetManagementStatus(const base::ListValue* args);
+  void GetManagementStatus(Profile* profile, base::Value* status) const;
 
 #if defined(OS_CHROMEOS)
   void HandleGetDeviceReportingInfo(const base::ListValue* args);
@@ -133,6 +130,7 @@ class ManagementUIHandler : public content::WebUIMessageHandler {
   void HandleGetLocalTrustRootsInfo(const base::ListValue* args);
 #endif  // defined(OS_CHROMEOS)
 
+  void HandleGetContextualManagedData(const base::ListValue* args);
   void HandleInitBrowserReportingInfo(const base::ListValue* args);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

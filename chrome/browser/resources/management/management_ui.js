@@ -81,8 +81,7 @@ Polymer({
         'browser-reporting-info-updated',
         reportingInfo => this.onBrowserReportingInfoReceived_(reportingInfo));
 
-    this.addWebUIListener('update-load-time-data', data => {
-      loadTimeData.overrideValues(data);
+    this.addWebUIListener('managed_state_changed', () => {
       this.updateManagedFields_();
     });
 
@@ -91,7 +90,6 @@ Polymer({
     this.getDeviceReportingInfo_();
     this.getLocalTrustRootsInfo_();
     // </if>
-    this.getManagementStatus_();
   },
 
   /** @private */
@@ -126,17 +124,6 @@ Polymer({
         Object.keys(reportingInfoMap)
             .sort((a, b) => reportingTypeOrder[a] - reportingTypeOrder[b])
             .map(reportingType => reportingInfoMap[reportingType]);
-  },
-
-  /** @private */
-  getManagementStatus_() {
-    this.browserProxy_.getManagementStatus().then(status => {
-      // <if expr="chromeos">
-      this.managementOverview_ = status.overview;
-      this.deviceManagedInfo_ = status.deviceManagedInfo;
-      // </if>
-      this.accountManagedInfo_ = status.accountManagedInfo;
-    });
   },
 
   /** @private */
@@ -250,11 +237,17 @@ Polymer({
 
   /** @private */
   updateManagedFields_() {
-    this.subtitle_ = loadTimeData.getString('subtitle');
-    // <if expr="not chromeos">
-    this.managementNoticeHtml_ = this.browserProxy_.getManagementNotice();
-    // </if>
-    this.extensionReportingSubtitle_ =
-        loadTimeData.getString('extensionReportingTitle');
+    this.browserProxy_.getContextualManagedData().then(data => {
+      this.extensionReportingSubtitle_ = data.extensionReportingTitle;
+      this.subtitle_ = data.pageSubtitle;
+      this.accountManagedInfo_ = data.accountManagedInfo;
+      // <if expr="chromeos">
+      this.managementOverview_ = data.overview;
+      this.deviceManagedInfo_ = data.deviceManagedInfo;
+      // </if>
+      // <if expr="not chromeos">
+      this.managementNoticeHtml_ = data.browserManagementNotice;
+      // </if>
+    });
   },
 });

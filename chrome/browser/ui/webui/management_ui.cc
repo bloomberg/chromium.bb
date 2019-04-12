@@ -123,8 +123,6 @@ content::WebUIDataSource* CreateManagementUIHtmlSource() {
   source->AddString("managementDeviceLearnMoreUrl",
                     chrome::kLearnMoreEnterpriseURL);
 #endif  // defined(OS_CHROMEOS)
-  source->AddString("managementAccountLearnMoreUrl",
-                    chrome::kManagedUiLearnMoreUrl);
 
   source->SetJsonPath("strings.js");
   // Add required resources.

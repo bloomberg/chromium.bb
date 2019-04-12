@@ -95,7 +95,10 @@
     </message>
   </if>
   <!-- Account managed clarification -->
-  <message name="IDS_MANAGEMENT_ACCOUNT_MANAGED_CLARIFICATION" desc="First part of the sentence of the managed account clarification.">
+  <message name="IDS_MANAGEMENT_ACCOUNT_MANAGED_CLARIFICATION_UNKNOWN_DOMAIN" desc="First part of the sentence for managed account clarification. This is a header over a bullet point list.">
+    The company, school, or organization that manages this account:
+  </message>
+  <message name="IDS_MANAGEMENT_ACCOUNT_MANAGED_CLARIFICATION" desc="First part of the sentence for managed account clarification. This is a header over a bullet point list.">
     As the manager of your account, <ph name="ACCOUNT_DOMAIN">$1<ex>example.com</ex></ph>:
   </message>
   <message name="IDS_MANAGEMENT_ACCOUNT_MANAGED_SETUP" desc="Continuation of the managed account clarification sentence explaining account setup management.">
