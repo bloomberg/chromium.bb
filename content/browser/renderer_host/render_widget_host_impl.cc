@@ -2860,10 +2860,6 @@ void RenderWidgetHostImpl::DetachDelegate() {
   latency_tracker_.reset_delegate();
 }
 
-void RenderWidgetHostImpl::DidReceiveRendererFrame() {
-  view_->DidReceiveRendererFrame();
-}
-
 void RenderWidgetHostImpl::WindowSnapshotReachedScreen(int snapshot_id) {
   DCHECK(base::MessageLoopCurrentForUI::IsSet());
 
