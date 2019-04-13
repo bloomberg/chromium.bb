@@ -227,8 +227,12 @@ void MprisServiceImpl::InitializeDbusInterface() {
 void MprisServiceImpl::OnExported(const std::string& interface_name,
                                   const std::string& method_name,
                                   bool success) {
-  if (success)
-    num_methods_exported_++;
+  if (!success) {
+    service_failed_to_start_ = true;
+    return;
+  }
+
+  num_methods_exported_++;
 
   // Still waiting for more methods to finish exporting.
   if (num_methods_exported_ < kNumMethodsToExport)
@@ -242,8 +246,10 @@ void MprisServiceImpl::OnExported(const std::string& interface_name,
 
 void MprisServiceImpl::OnOwnership(const std::string& service_name,
                                    bool success) {
-  if (!success)
+  if (!success) {
+    service_failed_to_start_ = true;
     return;
+  }
 
   service_ready_ = true;
 
@@ -441,6 +447,12 @@ void MprisServiceImpl::EmitPropertiesChangedSignalDebounced() {
 }
 
 void MprisServiceImpl::EmitPropertiesChangedSignal() {
+  // If we're still trying to start the service, delay emitting.
+  if (!service_ready_ && !service_failed_to_start_) {
+    EmitPropertiesChangedSignalDebounced();
+    return;
+  }
+
   if (!bus_ || !exported_object_ || !service_ready_)
     return;
 

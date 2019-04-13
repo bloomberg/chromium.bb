@@ -132,6 +132,9 @@ class COMPONENT_EXPORT(MPRIS) MprisServiceImpl : public MprisService {
   // True if we have finished creating the DBus service and received ownership.
   bool service_ready_ = false;
 
+  // True if we failed to start the MPRIS DBus service.
+  bool service_failed_to_start_ = false;
+
   // Used to only send 1 PropertiesChanged signal when many properties are
   // changed at once.
   base::OneShotTimer properties_changed_debounce_timer_;
