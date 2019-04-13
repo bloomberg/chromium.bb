@@ -86,6 +86,53 @@ piex wasm raw image preview / thumbnail test page
     }
   }
 
+  function createFileSystem(images) {
+    return new Promise((resolve, reject) => {
+      document.title = 'createFileSystem';
+
+      function failed(error) {
+        reject(new Error('Creating file system: ' + error.name));
+      }
+
+      function createdFileSystem(fileSystem) {
+        console.log('test: created file system', fileSystem.name);
+        window.fileSystem = fileSystem;
+        resolve();
+      }
+
+      const bytes = images * 30 * 1024 * 1024;  // 30M per image.
+      window.webkitRequestFileSystem(
+          window.TEMPORARY, bytes, createdFileSystem, failed);
+    });
+  }
+
+  function writeToFileSystem(image) {
+    return new Promise(async (resolve, reject) => {
+      document.title = image;
+
+      const buffer = await fetch(image).then((response) => {
+        if (!response.ok)
+          throw new Error('Failed to fetch image: ' + image);
+        return response.arrayBuffer();
+      }).catch(reject);
+
+      function failure(error) {
+        reject(new Error('Writing file system: ' + error.name));
+      }
+
+      function writeEntry(fileEntry) {
+        fileEntry.createWriter((writer) => {
+          writer.onerror = failure;
+          writer.onwrite = resolve;
+          writer.write(new Blob([buffer]));
+        }, failure);
+      }
+
+      window.fileSystem.root.getFile(
+          image.replace('images/', ''), {create: true}, writeEntry, failure);
+    });
+  }
+
   function hashUint8Array(data, hash = ~0) {
     for (let i = 0; i < data.byteLength; ++i)
       hash = (hash << 5) - hash + data[i];
