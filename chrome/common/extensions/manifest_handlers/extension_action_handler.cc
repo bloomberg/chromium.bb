@@ -67,7 +67,7 @@ bool ExtensionActionHandler::Parse(Extension* extension,
       return false;  // Failed to parse extension action definition.
 
     if (key == manifest_keys::kAction) {
-      ActionInfo::SetExtensionActionInfo(extension, action_info.release());
+      ActionInfo::SetExtensionActionInfo(extension, std::move(action_info));
     } else {
       if (dict->HasKey(manifest_keys::kActionDefaultState)) {
         *error =
@@ -76,9 +76,9 @@ bool ExtensionActionHandler::Parse(Extension* extension,
       }
 
       if (key == manifest_keys::kPageAction)
-        ActionInfo::SetPageActionInfo(extension, action_info.release());
+        ActionInfo::SetPageActionInfo(extension, std::move(action_info));
       else
-        ActionInfo::SetBrowserActionInfo(extension, action_info.release());
+        ActionInfo::SetBrowserActionInfo(extension, std::move(action_info));
     }
   } else {  // No key, used for synthesizing an action for extensions with none.
     if (Manifest::IsComponentLocation(extension->location()))
@@ -96,7 +96,7 @@ bool ExtensionActionHandler::Parse(Extension* extension,
     // action) because the action should not be seen as enabled on every page.
     std::unique_ptr<ActionInfo> action_info(new ActionInfo());
     action_info->synthesized = true;
-    ActionInfo::SetPageActionInfo(extension, action_info.release());
+    ActionInfo::SetPageActionInfo(extension, std::move(action_info));
   }
 
   return true;
