@@ -112,6 +112,7 @@ void AppListPresenterDelegateImpl::OnClosing() {
   DCHECK(is_visible_);
   DCHECK(view_);
   is_visible_ = false;
+  Shell::Get()->RemovePreTargetHandler(this);
   controller_->ViewClosing();
 }
 
@@ -230,7 +231,7 @@ void AppListPresenterDelegateImpl::ProcessLocatedEvent(
   }
 
   aura::Window* window = view_->GetWidget()->GetNativeView()->parent();
-  if (!window->Contains(target) && !presenter_->CloseOpenedPage() &&
+  if (!window->Contains(target) && !presenter_->HandleCloseOpenFolder() &&
       !app_list::switches::ShouldNotDismissOnBlur() && !IsTabletMode()) {
     const aura::Window* status_window =
         shelf->shelf_widget()->status_area_widget()->GetNativeWindow();
@@ -241,6 +242,10 @@ void AppListPresenterDelegateImpl::ProcessLocatedEvent(
     base::Optional<Shelf::ScopedAutoHideLock> auto_hide_lock;
     if (status_window && status_window->Contains(target))
       auto_hide_lock.emplace(shelf);
+
+    // Since event happened outside the app list, close the open search box if
+    // it is open.
+    presenter_->HandleCloseOpenSearchBox();
 
     // Keep app list opened if event happened in the shelf area.
     if (!shelf_window || !shelf_window->Contains(target))

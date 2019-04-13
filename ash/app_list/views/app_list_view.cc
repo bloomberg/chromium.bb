@@ -421,19 +421,31 @@ void AppListView::Dismiss() {
   GetWidget()->Deactivate();
 }
 
-bool AppListView::CloseOpenedPage() {
-  if (!app_list_main_view_)
-    return false;
+void AppListView::CloseOpenedPage() {
+  if (HandleCloseOpenFolder())
+    return;
 
-  if (app_list_main_view_->contents_view()->IsShowingSearchResults() ||
-      GetAppsContainerView()->IsInFolderView()) {
-    return app_list_main_view_->contents_view()->Back();
+  HandleCloseOpenSearchBox();
+}
+
+bool AppListView::HandleCloseOpenFolder() {
+  if (GetAppsContainerView()->IsInFolderView()) {
+    GetAppsContainerView()->app_list_folder_view()->CloseFolderPage();
+    return true;
   }
   return false;
 }
 
-void AppListView::Back() {
-  app_list_main_view_->contents_view()->Back();
+bool AppListView::HandleCloseOpenSearchBox() {
+  if (app_list_main_view_ &&
+      app_list_main_view_->contents_view()->IsShowingSearchResults()) {
+    return Back();
+  }
+  return false;
+}
+
+bool AppListView::Back() {
+  return app_list_main_view_->contents_view()->Back();
 }
 
 void AppListView::OnPaint(gfx::Canvas* canvas) {
@@ -461,9 +473,8 @@ bool AppListView::AcceleratorPressed(const ui::Accelerator& accelerator) {
     case ui::VKEY_BROWSER_BACK:
       // If the ContentsView does not handle the back action, then this is the
       // top level, so we close the app list.
-      if (!app_list_main_view_->contents_view()->Back() && !is_tablet_mode()) {
+      if (!Back() && !is_tablet_mode())
         Dismiss();
-      }
       break;
     default:
       NOTREACHED();

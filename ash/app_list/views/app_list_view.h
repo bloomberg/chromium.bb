@@ -147,12 +147,18 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Dismisses the UI, cleans up and sets the state to CLOSED.
   void Dismiss();
 
-  // Closes opened folder or search result page if they are opened. Returns
-  // whether the action was handled.
-  bool CloseOpenedPage();
+  // Closes opened folder or search result page if they are opened.
+  void CloseOpenedPage();
+
+  // If a folder is open, close it. Returns whether an opened folder was closed.
+  bool HandleCloseOpenFolder();
+
+  // If a search box is open, close it. Returns whether an open search box was
+  // closed.
+  bool HandleCloseOpenSearchBox();
 
   // Performs the 'back' action for the active page.
-  void Back();
+  bool Back();
 
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
