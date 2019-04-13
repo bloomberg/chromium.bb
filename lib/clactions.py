@@ -87,7 +87,7 @@ class GerritChangeTuple(_GerritChangeTuple):
     site_params = config_lib.GetSiteParams()
     prefix = (site_params.INTERNAL_CHANGE_PREFIX
               if self.internal else site_params.EXTERNAL_CHANGE_PREFIX)
-    return 'CL:%s%s' % (prefix, self.gerrit_number)
+    return '%s%s' % (prefix, self.gerrit_number)
 
   @classmethod
   def FromHostAndNumber(cls, gerrit_host, gerrit_number):
@@ -112,7 +112,7 @@ class GerritPatchTuple(_GerritPatchTuple):
     site_params = config_lib.GetSiteParams()
     prefix = (site_params.INTERNAL_CHANGE_PREFIX
               if self.internal else site_params.EXTERNAL_CHANGE_PREFIX)
-    return 'CL:%s%s#%s' % (prefix, self.gerrit_number, self.patch_number)
+    return '%s%s#%s' % (prefix, self.gerrit_number, self.patch_number)
 
   def GetChangeTuple(self):
     return GerritChangeTuple(self.gerrit_number, self.internal)

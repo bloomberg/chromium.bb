@@ -1164,8 +1164,8 @@ def DefaultSiteParameters():
   chrome_remote = 'chrome'
   aosp_remote = 'aosp'
 
-  internal_change_prefix = '*'
-  external_change_prefix = ''
+  internal_change_prefix = 'chrome-internal:'
+  external_change_prefix = 'chromium:'
 
   # Gerrit instance site parameters.
   default_site_params.update(

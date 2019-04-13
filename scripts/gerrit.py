@@ -89,9 +89,12 @@ def GetGerrit(opts, cl=None):
   """
   gob = opts.gob
   if cl is not None:
-    if cl.startswith('*'):
+    if cl.startswith('*') or cl.startswith('chrome-internal:'):
       gob = config_lib.GetSiteParams().INTERNAL_GOB_INSTANCE
-      cl = cl[1:]
+      if cl.startswith('*'):
+        cl = cl[1:]
+      else:
+        cl = cl[16:]
     elif ':' in cl:
       gob, cl = cl.split(':', 1)
 

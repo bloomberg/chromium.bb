@@ -237,7 +237,7 @@ class UprevChromeCommand(command.CliCommand):
         'TEST=None',
     ]
     if cq_depend:
-      message += ['CQ-DEPEND=%s' % cq_depend]
+      message += ['Cq-Depend: %s' % cq_depend]
     if change_id:
       message += [
           '',
