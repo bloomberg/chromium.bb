@@ -31,14 +31,19 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/core/frame/platform_event_controller.h"
-#include "third_party/blink/renderer/modules/gamepad/gamepad.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+
+namespace device {
+class Gamepad;
+}
 
 namespace blink {
 
 class Document;
+class Gamepad;
 class GamepadDispatcher;
 class GamepadHapticActuator;
 class GamepadList;
