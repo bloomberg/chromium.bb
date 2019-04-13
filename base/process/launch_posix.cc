@@ -575,16 +575,20 @@ static bool GetAppOutputInternal(
       // Adding another element here? Remeber to increase the argument to
       // reserve(), above.
 
-      for (const auto& i : fd_shuffle1)
-        fd_shuffle2.push_back(i);
+      // Cannot use STL iterators here, since debug iterators use locks.
+      // NOLINTNEXTLINE(modernize-loop-convert)
+      for (size_t i = 0; i < fd_shuffle1.size(); ++i)
+        fd_shuffle2.push_back(fd_shuffle1[i]);
 
       if (!ShuffleFileDescriptors(&fd_shuffle1))
         _exit(127);
 
       CloseSuperfluousFds(fd_shuffle2);
 
-      for (const auto& arg : argv)
-        argv_cstr.push_back(const_cast<char*>(arg.c_str()));
+      // Cannot use STL iterators here, since debug iterators use locks.
+      // NOLINTNEXTLINE(modernize-loop-convert)
+      for (size_t i = 0; i < argv.size(); ++i)
+        argv_cstr.push_back(const_cast<char*>(argv[i].c_str()));
       argv_cstr.push_back(nullptr);
 
       if (do_search_path)
