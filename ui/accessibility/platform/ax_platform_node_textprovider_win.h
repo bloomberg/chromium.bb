@@ -5,6 +5,8 @@
 #ifndef UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_TEXTPROVIDER_WIN_H_
 #define UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_TEXTPROVIDER_WIN_H_
 
+#include <string>
+
 #include "ui/accessibility/platform/ax_platform_node_win.h"
 
 namespace ui {

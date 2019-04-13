@@ -68,7 +68,7 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   void NotifyAccessibilityEvent(ax::mojom::Event event_type) override;
 
 #if defined(OS_MACOSX)
-  void AnnounceText(base::string16& text) override;
+  void AnnounceText(const base::string16& text) override;
 #endif
 
   AXPlatformNodeDelegate* GetDelegate() const override;

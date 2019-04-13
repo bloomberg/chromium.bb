@@ -123,7 +123,7 @@ void AXPlatformNodeBase::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
 }
 
 #if defined(OS_MACOSX)
-void AXPlatformNodeBase::AnnounceText(base::string16& text) {}
+void AXPlatformNodeBase::AnnounceText(const base::string16& text) {}
 #endif
 
 AXPlatformNodeDelegate* AXPlatformNodeBase::GetDelegate() const {

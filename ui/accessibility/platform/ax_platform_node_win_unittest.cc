@@ -1,3 +1,4 @@
+//
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -308,7 +309,7 @@ ComPtr<IAccessible2_2> AXPlatformNodeWinTest::ToIAccessible2_2(
   return result;
 }
 
-void AXPlatformNodeWinTest::CheckVariantHasName(ScopedVariant& variant,
+void AXPlatformNodeWinTest::CheckVariantHasName(const ScopedVariant& variant,
                                                 const wchar_t* expected_name) {
   ASSERT_NE(nullptr, variant.ptr());
   ComPtr<IAccessible> accessible;
