@@ -862,7 +862,8 @@ bool ContentBrowserClient::ShouldCreateTaskScheduler() {
 
 std::unique_ptr<AuthenticatorRequestClientDelegate>
 ContentBrowserClient::GetWebAuthenticationRequestDelegate(
-    RenderFrameHost* render_frame_host) {
+    RenderFrameHost* render_frame_host,
+    const std::string& relying_party_id) {
   return std::make_unique<AuthenticatorRequestClientDelegate>();
 }
 

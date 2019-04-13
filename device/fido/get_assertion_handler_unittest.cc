@@ -49,42 +49,6 @@ using TestGetAssertionRequestCallback = test::StatusAndValuesCallbackReceiver<
 
 }  // namespace
 
-class TestObserver : public FidoRequestHandlerBase::Observer {
- public:
-  TestObserver() {}
-  ~TestObserver() override {}
-
-  void set_controls_dispatch(bool controls_dispatch) {
-    controls_dispatch_ = controls_dispatch;
-  }
-
- private:
-  // FidoRequestHandlerBase::Observer:
-  void OnTransportAvailabilityEnumerated(
-      FidoRequestHandlerBase::TransportAvailabilityInfo data) override {}
-  bool EmbedderControlsAuthenticatorDispatch(
-      const FidoAuthenticator&) override {
-    return controls_dispatch_;
-  }
-  void BluetoothAdapterPowerChanged(bool is_powered_on) override {}
-  void FidoAuthenticatorAdded(const FidoAuthenticator& authenticator) override {
-  }
-  void FidoAuthenticatorRemoved(base::StringPiece device_id) override {}
-  void FidoAuthenticatorIdChanged(base::StringPiece old_authenticator_id,
-                                  std::string new_authenticator_id) override {}
-  void FidoAuthenticatorPairingModeChanged(base::StringPiece authenticator_id,
-                                           bool is_in_pairing_mode) override {}
-  bool SupportsPIN() const override { return false; }
-  void CollectPIN(
-      base::Optional<int> attempts,
-      base::OnceCallback<void(std::string)> provide_pin_cb) override {
-    NOTREACHED();
-  }
-  void FinishCollectPIN() override { NOTREACHED(); }
-
-  bool controls_dispatch_ = false;
-};
-
 // FidoGetAssertionHandlerTest allows testing GetAssertionRequestHandler against
 // MockFidoDevices injected via a ScopedFakeFidoDiscoveryFactory.
 class FidoGetAssertionHandlerTest : public ::testing::Test {
@@ -230,8 +194,6 @@ TEST_F(FidoGetAssertionHandlerTest, TransportAvailabilityInfo) {
 
   EXPECT_EQ(FidoRequestHandlerBase::RequestType::kGetAssertion,
             request_handler->transport_availability_info().request_type);
-  EXPECT_EQ(test_data::kRelyingPartyId,
-            request_handler->transport_availability_info().rp_id);
 }
 
 TEST_F(FidoGetAssertionHandlerTest, CtapRequestOnSingleDevice) {
@@ -740,6 +702,44 @@ TEST(GetAssertionRequestHandlerTest, IncorrectTransportType) {
 }
 
 #if defined(OS_WIN)
+
+class TestObserver : public FidoRequestHandlerBase::Observer {
+ public:
+  TestObserver() {}
+  ~TestObserver() override {}
+
+  void set_controls_dispatch(bool controls_dispatch) {
+    controls_dispatch_ = controls_dispatch;
+  }
+
+ private:
+  // FidoRequestHandlerBase::Observer:
+  void OnTransportAvailabilityEnumerated(
+      FidoRequestHandlerBase::TransportAvailabilityInfo data) override {}
+  bool EmbedderControlsAuthenticatorDispatch(
+      const FidoAuthenticator&) override {
+    return controls_dispatch_;
+  }
+  void BluetoothAdapterPowerChanged(bool is_powered_on) override {}
+  void FidoAuthenticatorAdded(const FidoAuthenticator& authenticator) override {
+  }
+  void FidoAuthenticatorRemoved(base::StringPiece device_id) override {}
+  void FidoAuthenticatorIdChanged(base::StringPiece old_authenticator_id,
+                                  std::string new_authenticator_id) override {}
+  void FidoAuthenticatorPairingModeChanged(base::StringPiece authenticator_id,
+                                           bool is_in_pairing_mode) override {}
+  bool SupportsPIN() const override { return false; }
+  void CollectPIN(
+      base::Optional<int> attempts,
+      base::OnceCallback<void(std::string)> provide_pin_cb) override {
+    NOTREACHED();
+  }
+  void FinishCollectPIN() override { NOTREACHED(); }
+  void SetMightCreateResidentCredential(bool v) override {}
+
+  bool controls_dispatch_ = false;
+};
+
 // Verify that the request handler instantiates a HID device backed
 // FidoDeviceAuthenticator or a WinNativeCrossPlatformAuthenticator, depending
 // on API availability.
@@ -779,6 +779,7 @@ TEST(GetAssertionRequestHandlerWinTest, TestWinUsbDiscovery) {
         handler->AuthenticatorsForTesting().begin()->second->GetId());
   }
 }
+
 #endif  // defined(OS_WIN)
 
 }  // namespace device

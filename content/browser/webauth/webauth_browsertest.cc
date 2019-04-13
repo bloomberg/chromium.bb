@@ -289,7 +289,8 @@ class WebAuthBrowserTestContentBrowserClient : public ContentBrowserClient {
 
   std::unique_ptr<AuthenticatorRequestClientDelegate>
   GetWebAuthenticationRequestDelegate(
-      RenderFrameHost* render_frame_host) override {
+      RenderFrameHost* render_frame_host,
+      const std::string& relying_party_id) override {
     test_state_->delegate_create_count++;
     return std::make_unique<WebAuthBrowserTestClientDelegate>(test_state_);
   }

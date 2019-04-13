@@ -42,6 +42,9 @@ bool AuthenticatorRequestClientDelegate::SupportsResidentKeys() {
   return false;
 }
 
+void AuthenticatorRequestClientDelegate::SetMightCreateResidentCredential(
+    bool v) {}
+
 void AuthenticatorRequestClientDelegate::SelectAccount(
     std::vector<device::AuthenticatorGetAssertionResponse> responses,
     base::OnceCallback<void(device::AuthenticatorGetAssertionResponse)>

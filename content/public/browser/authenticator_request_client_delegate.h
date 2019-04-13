@@ -92,6 +92,12 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   // |SelectAccount| will never be called.
   virtual bool SupportsResidentKeys();
 
+  // SetMightCreateResidentCredential indicates whether activating an
+  // authenticator may cause a resident credential to be created. A resident
+  // credential may be discovered by someone with physical access to the
+  // authenticator and thus has privacy implications.
+  void SetMightCreateResidentCredential(bool v) override;
+
   // SelectAccount is called to allow the embedder to select between one or more
   // accounts. This is triggered when the web page requests an unspecified
   // credential (by passing an empty allow-list). In this case, any accounts

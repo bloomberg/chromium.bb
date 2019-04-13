@@ -168,6 +168,18 @@ AuthenticatorRequestSheetView::CreateContentsBelowIllustration() {
   description_label->SetMultiLine(true);
   description_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label_container->AddChildView(description_label.release());
+
+  base::Optional<base::string16> additional_desciption =
+      model()->GetAdditionalDescription();
+  if (additional_desciption) {
+    auto label = std::make_unique<views::Label>(
+        std::move(*additional_desciption),
+        views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT);
+    label->SetMultiLine(true);
+    label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    label_container->AddChildView(label.release());
+  }
+
   contents->AddChildView(label_container.release());
 
   std::unique_ptr<views::View> step_specific_content =

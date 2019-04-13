@@ -1397,7 +1397,8 @@ class TestAuthenticatorContentBrowserClient : public ContentBrowserClient {
  public:
   std::unique_ptr<AuthenticatorRequestClientDelegate>
   GetWebAuthenticationRequestDelegate(
-      RenderFrameHost* render_frame_host) override {
+      RenderFrameHost* render_frame_host,
+      const std::string& relying_party_id) override {
     if (return_null_delegate)
       return nullptr;
     return std::make_unique<TestAuthenticatorRequestDelegate>(
@@ -2682,7 +2683,8 @@ class PINTestAuthenticatorContentBrowserClient : public ContentBrowserClient {
  public:
   std::unique_ptr<AuthenticatorRequestClientDelegate>
   GetWebAuthenticationRequestDelegate(
-      RenderFrameHost* render_frame_host) override {
+      RenderFrameHost* render_frame_host,
+      const std::string& relying_party_id) override {
     return std::make_unique<PINTestAuthenticatorRequestDelegate>(
         supports_pin, expected, &failure_reason);
   }
@@ -3216,9 +3218,11 @@ class ResidentKeyTestAuthenticatorRequestDelegate
  public:
   ResidentKeyTestAuthenticatorRequestDelegate(
       std::string expected_accounts,
-      std::vector<uint8_t> selected_user_id)
+      std::vector<uint8_t> selected_user_id,
+      bool* might_create_resident_credential)
       : expected_accounts_(expected_accounts),
-        selected_user_id_(selected_user_id) {}
+        selected_user_id_(selected_user_id),
+        might_create_resident_credential_(might_create_resident_credential) {}
 
   bool SupportsPIN() const override { return true; }
 
@@ -3267,9 +3271,14 @@ class ResidentKeyTestAuthenticatorRequestDelegate
         FROM_HERE, base::BindOnce(std::move(callback), std::move(*selected)));
   }
 
+  void SetMightCreateResidentCredential(bool v) override {
+    *might_create_resident_credential_ = v;
+  }
+
  private:
   const std::string expected_accounts_;
   const std::vector<uint8_t> selected_user_id_;
+  bool* const might_create_resident_credential_;
   DISALLOW_COPY_AND_ASSIGN(ResidentKeyTestAuthenticatorRequestDelegate);
 };
 
@@ -3278,13 +3287,15 @@ class ResidentKeyTestAuthenticatorContentBrowserClient
  public:
   std::unique_ptr<AuthenticatorRequestClientDelegate>
   GetWebAuthenticationRequestDelegate(
-      RenderFrameHost* render_frame_host) override {
+      RenderFrameHost* render_frame_host,
+      const std::string& relying_party_id) override {
     return std::make_unique<ResidentKeyTestAuthenticatorRequestDelegate>(
-        expected_accounts, selected_user_id);
+        expected_accounts, selected_user_id, &might_create_resident_credential);
   }
 
   std::string expected_accounts;
   std::vector<uint8_t> selected_user_id;
+  bool might_create_resident_credential = false;
 };
 
 class ResidentKeyAuthenticatorImplTest : public UVAuthenticatorImplTest {
@@ -3339,24 +3350,39 @@ class ResidentKeyAuthenticatorImplTest : public UVAuthenticatorImplTest {
 TEST_F(ResidentKeyAuthenticatorImplTest, MakeCredential) {
   TestServiceManagerContext smc;
   AuthenticatorPtr authenticator = ConnectToAuthenticator();
-  TestMakeCredentialCallback callback_receiver;
-  authenticator->MakeCredential(make_credential_options(),
-                                callback_receiver.callback());
-  callback_receiver.WaitForCallback();
-  EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
 
-  EXPECT_TRUE(HasUV(callback_receiver));
-  ASSERT_EQ(1u, virtual_device_.mutable_state()->registrations.size());
-  const device::VirtualFidoDevice::RegistrationData& registration =
-      virtual_device_.mutable_state()->registrations.begin()->second;
-  EXPECT_TRUE(registration.is_resident);
-  ASSERT_TRUE(registration.user.has_value());
-  const auto options = make_credential_options();
-  EXPECT_EQ(options->user->name, registration.user->user_name());
-  EXPECT_EQ(options->user->display_name,
-            registration.user->user_display_name());
-  EXPECT_EQ(options->user->id, registration.user->user_id());
-  EXPECT_EQ(options->user->icon, registration.user->user_icon_url());
+  for (const bool internal_uv : {false, true}) {
+    SCOPED_TRACE(::testing::Message() << "internal_uv=" << internal_uv);
+    test_client_.might_create_resident_credential = false;
+
+    if (internal_uv) {
+      device::VirtualCtap2Device::Config config;
+      config.resident_key_support = true;
+      config.internal_uv_support = true;
+      virtual_device_.SetCtap2Config(config);
+      virtual_device_.mutable_state()->fingerprints_enrolled = true;
+    }
+
+    TestMakeCredentialCallback callback_receiver;
+    authenticator->MakeCredential(make_credential_options(),
+                                  callback_receiver.callback());
+    callback_receiver.WaitForCallback();
+    EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+
+    EXPECT_TRUE(test_client_.might_create_resident_credential);
+    EXPECT_TRUE(HasUV(callback_receiver));
+    ASSERT_EQ(1u, virtual_device_.mutable_state()->registrations.size());
+    const device::VirtualFidoDevice::RegistrationData& registration =
+        virtual_device_.mutable_state()->registrations.begin()->second;
+    EXPECT_TRUE(registration.is_resident);
+    ASSERT_TRUE(registration.user.has_value());
+    const auto options = make_credential_options();
+    EXPECT_EQ(options->user->name, registration.user->user_name());
+    EXPECT_EQ(options->user->display_name,
+              registration.user->user_display_name());
+    EXPECT_EQ(options->user->id, registration.user->user_id());
+    EXPECT_EQ(options->user->icon, registration.user->user_icon_url());
+  }
 }
 
 TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionSingle) {

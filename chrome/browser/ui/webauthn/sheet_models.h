@@ -46,6 +46,7 @@ class AuthenticatorSheetModelBase
   bool IsAcceptButtonVisible() const override;
   bool IsAcceptButtonEnabled() const override;
   base::string16 GetAcceptButtonLabel() const override;
+  base::Optional<base::string16> GetAdditionalDescription() const override;
   ui::MenuModel* GetOtherTransportsMenuModel() override;
   void OnBack() override;
   void OnAccept() override;
@@ -111,6 +112,7 @@ class AuthenticatorInsertAndActivateUsbSheetModel
       ImageColorScheme color_scheme) const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
+  base::Optional<base::string16> GetAdditionalDescription() const override;
   ui::MenuModel* GetOtherTransportsMenuModel() override;
 
   std::unique_ptr<OtherTransportsMenuModel> other_transports_menu_model_;
@@ -318,6 +320,7 @@ class AuthenticatorBleActivateSheetModel : public AuthenticatorSheetModelBase {
       ImageColorScheme color_scheme) const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
+  base::Optional<base::string16> GetAdditionalDescription() const override;
   ui::MenuModel* GetOtherTransportsMenuModel() override;
 
   std::unique_ptr<OtherTransportsMenuModel> other_transports_menu_model_;
@@ -418,6 +421,7 @@ class AuthenticatorClientPinTapAgainSheetModel
       ImageColorScheme color_scheme) const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
+  base::Optional<base::string16> GetAdditionalDescription() const override;
 };
 
 // Generic error dialog that can only be dismissed. Backwards navigation is

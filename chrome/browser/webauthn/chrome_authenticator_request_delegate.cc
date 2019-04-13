@@ -87,8 +87,11 @@ void ChromeAuthenticatorRequestDelegate::RegisterProfilePrefs(
 }
 
 ChromeAuthenticatorRequestDelegate::ChromeAuthenticatorRequestDelegate(
-    content::RenderFrameHost* render_frame_host)
-    : render_frame_host_(render_frame_host), weak_ptr_factory_(this) {}
+    content::RenderFrameHost* render_frame_host,
+    const std::string& relying_party_id)
+    : render_frame_host_(render_frame_host),
+      relying_party_id_(relying_party_id),
+      weak_ptr_factory_(this) {}
 
 ChromeAuthenticatorRequestDelegate::~ChromeAuthenticatorRequestDelegate() {
   // Currently, completion of the request is indicated by //content destroying
@@ -165,7 +168,7 @@ void ChromeAuthenticatorRequestDelegate::RegisterActionCallbacks(
   cancel_callback_ = std::move(cancel_callback);
 
   transient_dialog_model_holder_ =
-      std::make_unique<AuthenticatorRequestDialogModel>();
+      std::make_unique<AuthenticatorRequestDialogModel>(relying_party_id_);
   transient_dialog_model_holder_->SetRequestCallback(request_callback);
   transient_dialog_model_holder_->SetBluetoothAdapterPowerOnCallback(
       bluetooth_adapter_power_on_callback);
@@ -439,6 +442,14 @@ void ChromeAuthenticatorRequestDelegate::CollectPIN(
 void ChromeAuthenticatorRequestDelegate::FinishCollectPIN() {
   weak_dialog_model_->SetCurrentStep(
       AuthenticatorRequestDialogModel::Step::kClientPinTapAgain);
+}
+
+void ChromeAuthenticatorRequestDelegate::SetMightCreateResidentCredential(
+    bool v) {
+  if (!weak_dialog_model_) {
+    return;
+  }
+  weak_dialog_model_->set_might_create_resident_credential(v);
 }
 
 void ChromeAuthenticatorRequestDelegate::OnModelDestroyed() {

@@ -539,9 +539,10 @@ AuthenticatorCommon::~AuthenticatorCommon() {
 
 void AuthenticatorCommon::UpdateRequestDelegate() {
   DCHECK(!request_delegate_);
+  DCHECK(!relying_party_id_.empty());
   request_delegate_ =
       GetContentClient()->browser()->GetWebAuthenticationRequestDelegate(
-          render_frame_host_);
+          render_frame_host_, relying_party_id_);
 }
 
 bool AuthenticatorCommon::IsFocused() const {
@@ -599,6 +600,31 @@ void AuthenticatorCommon::MakeCredential(
   }
   DCHECK(!request_);
 
+  if (!HasValidEffectiveDomain(caller_origin)) {
+    ReportSecurityCheckFailure(
+        RelyingPartySecurityCheckFailure::kOpaqueOrNonSecureOrigin);
+    bad_message::ReceivedBadMessage(render_frame_host_->GetProcess(),
+                                    bad_message::AUTH_INVALID_EFFECTIVE_DOMAIN);
+    InvokeCallbackAndCleanup(std::move(callback),
+                             blink::mojom::AuthenticatorStatus::INVALID_DOMAIN,
+                             nullptr, Focus::kDontCheck);
+    return;
+  }
+
+  if (!IsRelyingPartyIdValid(options->relying_party->id, caller_origin)) {
+    ReportSecurityCheckFailure(
+        RelyingPartySecurityCheckFailure::kRelyingPartyIdInvalid);
+    bad_message::ReceivedBadMessage(render_frame_host_->GetProcess(),
+                                    bad_message::AUTH_INVALID_RELYING_PARTY);
+    InvokeCallbackAndCleanup(std::move(callback),
+                             blink::mojom::AuthenticatorStatus::INVALID_DOMAIN,
+                             nullptr, Focus::kDontCheck);
+    return;
+  }
+
+  caller_origin_ = caller_origin;
+  relying_party_id_ = options->relying_party->id;
+
   UpdateRequestDelegate();
   if (!request_delegate_) {
     InvokeCallbackAndCleanup(std::move(callback),
@@ -610,31 +636,6 @@ void AuthenticatorCommon::MakeCredential(
   if (!IsFocused()) {
     InvokeCallbackAndCleanup(std::move(callback),
                              blink::mojom::AuthenticatorStatus::NOT_FOCUSED);
-    return;
-  }
-
-  caller_origin_ = caller_origin;
-  relying_party_id_ = options->relying_party->id;
-
-  if (!HasValidEffectiveDomain(caller_origin_)) {
-    ReportSecurityCheckFailure(
-        RelyingPartySecurityCheckFailure::kOpaqueOrNonSecureOrigin);
-    bad_message::ReceivedBadMessage(render_frame_host_->GetProcess(),
-                                    bad_message::AUTH_INVALID_EFFECTIVE_DOMAIN);
-    InvokeCallbackAndCleanup(std::move(callback),
-                             blink::mojom::AuthenticatorStatus::INVALID_DOMAIN,
-                             nullptr, Focus::kDontCheck);
-    return;
-  }
-
-  if (!IsRelyingPartyIdValid(relying_party_id_, caller_origin_)) {
-    ReportSecurityCheckFailure(
-        RelyingPartySecurityCheckFailure::kRelyingPartyIdInvalid);
-    bad_message::ReceivedBadMessage(render_frame_host_->GetProcess(),
-                                    bad_message::AUTH_INVALID_RELYING_PARTY);
-    InvokeCallbackAndCleanup(std::move(callback),
-                             blink::mojom::AuthenticatorStatus::INVALID_DOMAIN,
-                             nullptr, Focus::kDontCheck);
     return;
   }
 
@@ -731,6 +732,10 @@ void AuthenticatorCommon::MakeCredential(
       base::BindRepeating(
           &device::FidoRequestHandlerBase::InitiatePairingWithDevice,
           request_->GetWeakPtr()) /* ble_pairing_callback */);
+  if (options->authenticator_selection &&
+      options->authenticator_selection->require_resident_key) {
+    request_delegate_->SetMightCreateResidentCredential(true);
+  }
   request_->set_observer(request_delegate_.get());
 
   request_->SetPlatformAuthenticatorOrMarkUnavailable(
@@ -758,6 +763,31 @@ void AuthenticatorCommon::GetAssertion(
   }
   DCHECK(!request_);
 
+  if (!HasValidEffectiveDomain(caller_origin)) {
+    ReportSecurityCheckFailure(
+        RelyingPartySecurityCheckFailure::kOpaqueOrNonSecureOrigin);
+    bad_message::ReceivedBadMessage(render_frame_host_->GetProcess(),
+                                    bad_message::AUTH_INVALID_EFFECTIVE_DOMAIN);
+    InvokeCallbackAndCleanup(std::move(callback),
+                             blink::mojom::AuthenticatorStatus::INVALID_DOMAIN,
+                             nullptr);
+    return;
+  }
+
+  if (!IsRelyingPartyIdValid(options->relying_party_id, caller_origin)) {
+    ReportSecurityCheckFailure(
+        RelyingPartySecurityCheckFailure::kRelyingPartyIdInvalid);
+    bad_message::ReceivedBadMessage(render_frame_host_->GetProcess(),
+                                    bad_message::AUTH_INVALID_RELYING_PARTY);
+    InvokeCallbackAndCleanup(std::move(callback),
+                             blink::mojom::AuthenticatorStatus::INVALID_DOMAIN,
+                             nullptr);
+    return;
+  }
+
+  caller_origin_ = caller_origin;
+  relying_party_id_ = options->relying_party_id;
+
   UpdateRequestDelegate();
   if (!request_delegate_) {
     InvokeCallbackAndCleanup(std::move(callback),
@@ -765,8 +795,6 @@ void AuthenticatorCommon::GetAssertion(
                              nullptr);
     return;
   }
-
-  caller_origin_ = caller_origin;
 
   // Save client data to return with the authenticator response.
   // TODO(kpaulhamus): Fetch and add the Channel ID/Token Binding ID public key
@@ -785,35 +813,13 @@ void AuthenticatorCommon::GetAssertion(
         std::move(options->challenge));
   }
 
-  if (!HasValidEffectiveDomain(caller_origin_)) {
-    ReportSecurityCheckFailure(
-        RelyingPartySecurityCheckFailure::kOpaqueOrNonSecureOrigin);
-    bad_message::ReceivedBadMessage(render_frame_host_->GetProcess(),
-                                    bad_message::AUTH_INVALID_EFFECTIVE_DOMAIN);
-    InvokeCallbackAndCleanup(std::move(callback),
-                             blink::mojom::AuthenticatorStatus::INVALID_DOMAIN,
-                             nullptr);
-    return;
-  }
-
-  if (!IsRelyingPartyIdValid(options->relying_party_id, caller_origin_)) {
-    ReportSecurityCheckFailure(
-        RelyingPartySecurityCheckFailure::kRelyingPartyIdInvalid);
-    bad_message::ReceivedBadMessage(render_frame_host_->GetProcess(),
-                                    bad_message::AUTH_INVALID_RELYING_PARTY);
-    InvokeCallbackAndCleanup(std::move(callback),
-                             blink::mojom::AuthenticatorStatus::INVALID_DOMAIN,
-                             nullptr);
-    return;
-  }
-
   if (options->allow_credentials.empty() &&
       (!base::FeatureList::IsEnabled(device::kWebAuthResidentKeys) ||
-        !request_delegate_->SupportsResidentKeys())) {
-      InvokeCallbackAndCleanup(
-          std::move(callback),
-          blink::mojom::AuthenticatorStatus::RESIDENT_CREDENTIALS_UNSUPPORTED);
-      return;
+       !request_delegate_->SupportsResidentKeys())) {
+    InvokeCallbackAndCleanup(
+        std::move(callback),
+        blink::mojom::AuthenticatorStatus::RESIDENT_CREDENTIALS_UNSUPPORTED);
+    return;
   }
 
   if (options->appid) {
@@ -879,6 +885,8 @@ void AuthenticatorCommon::GetAssertion(
 void AuthenticatorCommon::IsUserVerifyingPlatformAuthenticatorAvailable(
     blink::mojom::Authenticator::
         IsUserVerifyingPlatformAuthenticatorAvailableCallback callback) {
+  const std::string relying_party_id =
+      render_frame_host_->GetLastCommittedOrigin().host();
   // Use |request_delegate_| if a request is currently in progress; or create a
   // temporary request delegate otherwise.
   //
@@ -888,7 +896,7 @@ void AuthenticatorCommon::IsUserVerifyingPlatformAuthenticatorAvailable(
       request_delegate_
           ? nullptr
           : GetContentClient()->browser()->GetWebAuthenticationRequestDelegate(
-                render_frame_host_);
+                render_frame_host_, relying_party_id);
   AuthenticatorRequestClientDelegate* request_delegate_ptr =
       request_delegate_ ? request_delegate_.get()
                         : maybe_request_delegate.get();
@@ -1331,6 +1339,8 @@ void AuthenticatorCommon::Cleanup() {
   get_assertion_response_callback_.Reset();
   client_data_json_.clear();
   app_id_.reset();
+  caller_origin_ = url::Origin();
+  relying_party_id_.clear();
   attestation_requested_ = false;
   error_awaiting_user_acknowledgement_ =
       blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
