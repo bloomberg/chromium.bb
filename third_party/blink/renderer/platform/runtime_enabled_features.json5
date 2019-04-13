@@ -525,6 +525,9 @@
       name: "FallbackCursorMode",
     },
     {
+      name: "FastBorderRadius",
+    },
+    {
       name: "FastFlatTreeTraversal",
       status: "stable",
     },
