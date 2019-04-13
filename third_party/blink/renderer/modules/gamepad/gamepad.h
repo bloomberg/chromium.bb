@@ -45,7 +45,7 @@ class MODULES_EXPORT Gamepad final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  explicit Gamepad(NavigatorGamepad* navigator_gamepad);
+  explicit Gamepad(NavigatorGamepad* navigator_gamepad, unsigned index);
   ~Gamepad() override;
 
   typedef Vector<double> DoubleVector;
@@ -54,7 +54,6 @@ class MODULES_EXPORT Gamepad final : public ScriptWrappable {
   void SetId(const String& id) { id_ = id; }
 
   unsigned index() const { return index_; }
-  void SetIndex(unsigned val) { index_ = val; }
 
   bool connected() const { return connected_; }
   void SetConnected(bool val) { connected_ = val; }
@@ -99,7 +98,7 @@ class MODULES_EXPORT Gamepad final : public ScriptWrappable {
   String id_;
 
   // The index of this gamepad within the GamepadList.
-  unsigned index_;
+  const unsigned index_;
 
   // True if this gamepad was still connected when gamepad state was captured.
   bool connected_;

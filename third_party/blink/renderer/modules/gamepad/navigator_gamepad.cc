@@ -132,8 +132,8 @@ void NavigatorGamepad::SampleGamepads() {
     } else if (device_gamepad.connected) {
       Gamepad* gamepad = gamepads_back_->item(i);
       if (!gamepad)
-        gamepad = MakeGarbageCollected<Gamepad>(this);
-      SampleGamepad(i, *gamepad, device_gamepad);
+        gamepad = MakeGarbageCollected<Gamepad>(this, i);
+      SampleGamepad(device_gamepad, *gamepad);
       gamepads_back_->Set(i, gamepad);
     } else {
       gamepads_back_->Set(i, nullptr);
@@ -141,9 +141,8 @@ void NavigatorGamepad::SampleGamepads() {
   }
 }
 
-void NavigatorGamepad::SampleGamepad(uint32_t index,
-                                     Gamepad& gamepad,
-                                     const device::Gamepad& device_gamepad) {
+void NavigatorGamepad::SampleGamepad(const device::Gamepad& device_gamepad,
+                                     Gamepad& gamepad) {
   bool newly_connected;
   GamepadComparisons::HasGamepadConnectionChanged(
       gamepad.connected(),                            // Old connected.
@@ -182,7 +181,6 @@ void NavigatorGamepad::SampleGamepad(uint32_t index,
   // gamepad is newly connected.
   if (newly_connected) {
     gamepad.SetId(device_gamepad.id);
-    gamepad.SetIndex(index);
     gamepad.SetMapping(device_gamepad.mapping);
 
     if (device_gamepad.is_xr && device_gamepad.display_id) {

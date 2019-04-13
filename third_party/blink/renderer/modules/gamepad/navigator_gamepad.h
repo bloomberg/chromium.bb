@@ -70,9 +70,7 @@ class MODULES_EXPORT NavigatorGamepad final
 
  private:
   void SampleGamepads();
-  void SampleGamepad(uint32_t index,
-                     Gamepad& gamepad,
-                     const device::Gamepad& device_gamepad);
+  void SampleGamepad(const device::Gamepad& device_gamepad, Gamepad& gamepad);
 
   void DidRemoveGamepadEventListeners();
   bool StartUpdatingIfAttached();
