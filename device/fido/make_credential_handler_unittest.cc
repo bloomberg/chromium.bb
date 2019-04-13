@@ -158,8 +158,6 @@ TEST_F(FidoMakeCredentialHandlerTest, TransportAvailabilityInfo) {
 
   EXPECT_EQ(FidoRequestHandlerBase::RequestType::kMakeCredential,
             request_handler->transport_availability_info().request_type);
-  EXPECT_EQ(test_data::kRelyingPartyId,
-            request_handler->transport_availability_info().rp_id);
 }
 
 TEST_F(FidoMakeCredentialHandlerTest, TestCtap2MakeCredential) {

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_WEBAUTHN_AUTHENTICATOR_REQUEST_SCHEDULER_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 
@@ -30,7 +31,8 @@ class AuthenticatorRequestScheduler {
   // Returns a nullptr delegate if there is already an ongoing request in the
   // same WebContents.
   static std::unique_ptr<ChromeAuthenticatorRequestDelegate>
-  CreateRequestDelegate(content::RenderFrameHost* render_frame_host);
+  CreateRequestDelegate(content::RenderFrameHost* render_frame_host,
+                        const std::string& relying_party_id);
 
   // Returns the current request delegate associated to the |web_contents| or
   // nullptr if there is none.

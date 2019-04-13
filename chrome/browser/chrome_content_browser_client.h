@@ -516,7 +516,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       base::OnceCallback<void(bool, int, int)> callback) override;
   std::unique_ptr<content::AuthenticatorRequestClientDelegate>
   GetWebAuthenticationRequestDelegate(
-      content::RenderFrameHost* render_frame_host) override;
+      content::RenderFrameHost* render_frame_host,
+      const std::string& relying_party_id) override;
 #if defined(OS_MACOSX)
   bool IsWebAuthenticationTouchIdAuthenticatorSupported() override;
 #endif

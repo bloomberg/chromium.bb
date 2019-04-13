@@ -74,10 +74,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
         const TransportAvailabilityInfo& other);
     ~TransportAvailabilityInfo();
 
-    // TODO(hongjunchoi): Factor |rp_id| and |request_type| from
-    // TransportAvailabilityInfo.
+    // TODO(hongjunchoi): Factor |request_type| from TransportAvailabilityInfo.
     // See: https://crbug.com/875011
-    std::string rp_id;
     RequestType request_type = RequestType::kMakeCredential;
 
     // The intersection of transports supported by the client and allowed by the
@@ -149,6 +147,13 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
 
     // CollectClientPin is guaranteed to have been called previously.
     virtual void FinishCollectPIN() = 0;
+
+    // SetMightCreateResidentCredential indicates whether the activation of an
+    // authenticator may cause a resident credential to be created. A resident
+    // credential may be discovered by someone with physical access to the
+    // authenticator and thus has privacy implications. Initially, this is
+    // assumed to be false.
+    virtual void SetMightCreateResidentCredential(bool v) = 0;
   };
 
   // TODO(https://crbug.com/769631): Remove the dependency on Connector once

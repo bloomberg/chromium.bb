@@ -124,7 +124,7 @@ class AuthenticatorRequestDialogModel {
     virtual void OnCancelRequest() {}
   };
 
-  AuthenticatorRequestDialogModel();
+  AuthenticatorRequestDialogModel(const std::string& relying_party_id);
   ~AuthenticatorRequestDialogModel();
 
   void SetCurrentStep(Step step);
@@ -384,9 +384,22 @@ class AuthenticatorRequestDialogModel {
     incognito_mode_ = incognito_mode;
   }
 
+  bool might_create_resident_credential() const {
+    return might_create_resident_credential_;
+  }
+
+  void set_might_create_resident_credential(bool v) {
+    might_create_resident_credential_ = v;
+  }
+
+  const std::string& relying_party_id() const { return relying_party_id_; }
+
  private:
   void DispatchRequestAsync(AuthenticatorReference* authenticator);
   void DispatchRequestAsyncInternal(const std::string& authenticator_id);
+
+  // relying_party_id is the RP ID from Webauthn, essentially a domain name.
+  const std::string relying_party_id_;
 
   // The current step of the request UX flow that is currently shown.
   Step current_step_ = Step::kNotStarted;
@@ -427,6 +440,12 @@ class AuthenticatorRequestDialogModel {
   base::Optional<int> pin_attempts_;
 
   base::OnceCallback<void(bool)> attestation_callback_;
+
+  // might_create_resident_credential_ records whether activating an
+  // authenticator may cause a resident credential to be created. A resident
+  // credential may be discovered by someone with physical access to the
+  // authenticator and thus has privacy implications.
+  bool might_create_resident_credential_ = false;
 
   // responses_ contains possible accounts to select between.
   std::vector<device::AuthenticatorGetAssertionResponse> responses_;

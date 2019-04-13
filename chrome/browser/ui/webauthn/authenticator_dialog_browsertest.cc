@@ -28,10 +28,10 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
     // https://crbug.com/893292.
     set_should_verify_dialog_bounds(false);
 
-    auto model = std::make_unique<AuthenticatorRequestDialogModel>();
+    auto model = std::make_unique<AuthenticatorRequestDialogModel>(
+        /*relying_party_id=*/"example.com");
     ::device::FidoRequestHandlerBase::TransportAvailabilityInfo
         transport_availability;
-    transport_availability.rp_id = "example.com";
     transport_availability.available_transports = {
         AuthenticatorTransport::kBluetoothLowEnergy,
         AuthenticatorTransport::kUsbHumanInterfaceDevice,

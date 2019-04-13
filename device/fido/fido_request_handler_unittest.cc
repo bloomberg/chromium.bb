@@ -135,6 +135,8 @@ class TestObserver : public FidoRequestHandlerBase::Observer {
     NOTREACHED();
   }
 
+  void SetMightCreateResidentCredential(bool v) override {}
+
   void FinishCollectPIN() override { NOTREACHED(); }
 
  private:

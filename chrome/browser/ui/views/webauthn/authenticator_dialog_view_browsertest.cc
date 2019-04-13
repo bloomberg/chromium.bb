@@ -62,6 +62,10 @@ class TestSheetModel : public AuthenticatorRequestSheetModel {
         "Line Because Life Would Be Just Too Simple That Way");
   }
 
+  base::Optional<base::string16> GetAdditionalDescription() const override {
+    return base::ASCIIToUTF16("More description text.");
+  }
+
   ui::MenuModel* GetOtherTransportsMenuModel() override { return nullptr; }
 
   void OnBack() override {}
@@ -105,7 +109,8 @@ class AuthenticatorDialogViewTest : public DialogBrowserTest {
     content::WebContents* const web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
 
-    auto dialog_model = std::make_unique<AuthenticatorRequestDialogModel>();
+    auto dialog_model = std::make_unique<AuthenticatorRequestDialogModel>(
+        /*relying_party_id=*/"example.com");
     dialog_model->SetCurrentStep(
         AuthenticatorRequestDialogModel::Step::kTimedOut);
     AuthenticatorRequestDialogView* dialog =

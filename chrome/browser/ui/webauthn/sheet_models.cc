@@ -24,13 +24,14 @@
 #include "url/gurl.h"
 
 namespace {
+
 base::string16 GetRelyingPartyIdString(
     AuthenticatorRequestDialogModel* dialog_model) {
   static constexpr char kRpIdUrlPrefix[] = "https://";
   // The preferred width of medium snap point modal dialog view is 448 dp, but
   // we leave some room for padding between the text and the modal views.
   static constexpr int kDialogWidth = 300;
-  const auto& rp_id = dialog_model->transport_availability()->rp_id;
+  const auto& rp_id = dialog_model->relying_party_id();
   DCHECK(!rp_id.empty());
   GURL rp_id_url(kRpIdUrlPrefix + rp_id);
   auto max_static_string_length = gfx::GetStringWidthF(
@@ -39,6 +40,18 @@ base::string16 GetRelyingPartyIdString(
   return url_formatter::ElideHost(rp_id_url, gfx::FontList(),
                                   kDialogWidth - max_static_string_length);
 }
+
+// Possibly returns a resident key warning if the model indicates that it's
+// needed.
+base::Optional<base::string16> PossibleResidentKeyWarning(
+    AuthenticatorRequestDialogModel* dialog_model) {
+  if (dialog_model->might_create_resident_credential()) {
+    return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_RESIDENT_KEY_PRIVACY,
+                                      GetRelyingPartyIdString(dialog_model));
+  }
+  return base::nullopt;
+}
+
 }  // namespace
 
 // AuthenticatorSheetModelBase ------------------------------------------------
@@ -90,6 +103,11 @@ bool AuthenticatorSheetModelBase::IsAcceptButtonEnabled() const {
 base::string16 AuthenticatorSheetModelBase::GetAcceptButtonLabel() const {
   NOTREACHED();
   return base::string16();
+}
+
+base::Optional<base::string16>
+AuthenticatorSheetModelBase::GetAdditionalDescription() const {
+  return base::nullopt;
 }
 
 ui::MenuModel* AuthenticatorSheetModelBase::GetOtherTransportsMenuModel() {
@@ -213,6 +231,11 @@ base::string16 AuthenticatorInsertAndActivateUsbSheetModel::GetStepTitle()
 base::string16 AuthenticatorInsertAndActivateUsbSheetModel::GetStepDescription()
     const {
   return l10n_util::GetStringUTF16(IDS_WEBAUTHN_USB_ACTIVATE_DESCRIPTION);
+}
+
+base::Optional<base::string16>
+AuthenticatorInsertAndActivateUsbSheetModel::GetAdditionalDescription() const {
+  return PossibleResidentKeyWarning(dialog_model());
 }
 
 ui::MenuModel*
@@ -619,6 +642,11 @@ base::string16 AuthenticatorBleActivateSheetModel::GetStepDescription() const {
   return l10n_util::GetStringUTF16(IDS_WEBAUTHN_BLE_ACTIVATE_DESCRIPTION);
 }
 
+base::Optional<base::string16>
+AuthenticatorBleActivateSheetModel::GetAdditionalDescription() const {
+  return PossibleResidentKeyWarning(dialog_model());
+}
+
 ui::MenuModel*
 AuthenticatorBleActivateSheetModel::GetOtherTransportsMenuModel() {
   return other_transports_menu_model_.get();
@@ -885,6 +913,11 @@ base::string16 AuthenticatorClientPinTapAgainSheetModel::GetStepTitle() const {
 base::string16 AuthenticatorClientPinTapAgainSheetModel::GetStepDescription()
     const {
   return l10n_util::GetStringUTF16(IDS_WEBAUTHN_PIN_TAP_AGAIN_DESCRIPTION);
+}
+
+base::Optional<base::string16>
+AuthenticatorClientPinTapAgainSheetModel::GetAdditionalDescription() const {
+  return PossibleResidentKeyWarning(dialog_model());
 }
 
 // AuthenticatorGenericErrorSheetModel -----------------------------------
