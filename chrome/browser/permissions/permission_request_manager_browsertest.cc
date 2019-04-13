@@ -38,6 +38,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "media/base/media_switches.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace {
@@ -57,6 +58,10 @@ class PermissionRequestManagerBrowserTest : public InProcessBrowserTest {
     PermissionRequestManager* manager = GetPermissionRequestManager();
     mock_permission_prompt_factory_.reset(
         new MockPermissionPromptFactory(manager));
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kBlockRepeatedNotificationPermissionPrompts);
+
+    host_resolver()->AddRule("*", "127.0.0.1");
   }
 
   void TearDownOnMainThread() override {
@@ -89,7 +94,73 @@ class PermissionRequestManagerBrowserTest : public InProcessBrowserTest {
                                            kPermissionsKillSwitchTestGroup);
   }
 
+  void TriggerAndExpectPromptCooldownToBeStillActiveAfterNavigationAction(
+      void navigation_action(content::WebContents*, const GURL&),
+      bool expect_cooldown) {
+    ASSERT_TRUE(embedded_test_server()->Start());
+
+    const GURL kInitialURL = embedded_test_server()->GetURL(
+        "a.localhost", "/permissions/killswitch_tester.html");
+    const GURL kSecondURL = embedded_test_server()->GetURL(
+        "b.localhost", "/permissions/killswitch_tester.html");
+    const GURL kThirdURL = embedded_test_server()->GetURL(
+        "c.localhost", "/permissions/killswitch_tester.html");
+
+    ui_test_utils::NavigateToURL(browser(), kInitialURL);
+    bubble_factory()->ResetCounts();
+    bubble_factory()->set_response_type(
+        PermissionRequestManager::AutoResponseType::DENY_ALL);
+
+    // Simulate a notification permission request that is denied by the user.
+    std::string result;
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractString(
+        web_contents, "requestNotification();", &result));
+    ASSERT_EQ(1, bubble_factory()->show_count());
+    ASSERT_EQ(1, bubble_factory()->TotalRequestCount());
+    ASSERT_EQ("denied", result);
+
+    // In response, simulate the website automatically triggering a
+    // renderer-initiated cross-origin navigation without user gesture.
+    content::TestNavigationObserver navigation_observer(web_contents);
+    ASSERT_TRUE(content::ExecuteScriptWithoutUserGesture(
+        web_contents, "window.location = \"" + kSecondURL.spec() + "\";"));
+    navigation_observer.Wait();
+
+    bubble_factory()->ResetCounts();
+    bubble_factory()->set_response_type(
+        PermissionRequestManager::AutoResponseType::ACCEPT_ALL);
+
+    // Request the notification permission again from a different origin.
+    // Cross-origin permission prompt cool-down should be in effect.
+    ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractString(
+        web_contents, "requestNotification();", &result));
+    ASSERT_EQ(0, bubble_factory()->show_count());
+    ASSERT_EQ(0, bubble_factory()->TotalRequestCount());
+    ASSERT_EQ("default", result);
+
+    // Now try one of a number other kinds of navigations, and request the
+    // notification permission again.
+    navigation_action(web_contents, kThirdURL);
+    ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+        web_contents, "requestNotification();", &result));
+
+    // Cross-origin prompt cool-down may or may not be in effect anymore
+    // depending on the type of navigation.
+    if (expect_cooldown) {
+      EXPECT_EQ(0, bubble_factory()->show_count());
+      EXPECT_EQ(0, bubble_factory()->TotalRequestCount());
+      EXPECT_EQ("default", result);
+    } else {
+      EXPECT_EQ(1, bubble_factory()->show_count());
+      EXPECT_EQ(1, bubble_factory()->TotalRequestCount());
+      EXPECT_EQ("granted", result);
+    }
+  }
+
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<MockPermissionPromptFactory> mock_permission_prompt_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionRequestManagerBrowserTest);
@@ -449,6 +520,112 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
   EXPECT_EQ("denied", result);
   EXPECT_EQ(1, bubble_factory()->show_count());
   EXPECT_EQ(1, bubble_factory()->TotalRequestCount());
+}
+
+// Regression test for crbug.com/900997.
+IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
+                       CrossOriginPromptCooldown) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const GURL kInitialURL = embedded_test_server()->GetURL(
+      "a.localhost", "/permissions/killswitch_tester.html");
+  const GURL kSecondURL = embedded_test_server()->GetURL(
+      "b.localhost", "/permissions/killswitch_tester.html");
+
+  ui_test_utils::NavigateToURL(browser(), kInitialURL);
+  bubble_factory()->set_response_type(
+      PermissionRequestManager::AutoResponseType::DENY_ALL);
+
+  // Simulate a notification permission request that is denied by the user.
+  std::string result;
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractString(
+      web_contents, "requestNotification();", &result));
+  ASSERT_EQ(1, bubble_factory()->show_count());
+  ASSERT_EQ(1, bubble_factory()->TotalRequestCount());
+  ASSERT_EQ("denied", result);
+
+  // In response, simulate the website automatically triggering a
+  // renderer-initiated cross-origin navigation without user gesture.
+  content::TestNavigationObserver navigation_observer(web_contents);
+  ASSERT_TRUE(content::ExecuteScriptWithoutUserGesture(
+      web_contents, "window.location = \"" + kSecondURL.spec() + "\";"));
+  navigation_observer.Wait();
+
+  // Request the notification permission again from a different origin.
+  // Cross-origin permission prompt cool-down should be in effect.
+  bubble_factory()->ResetCounts();
+  bubble_factory()->set_response_type(
+      PermissionRequestManager::AutoResponseType::ACCEPT_ALL);
+  ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractString(
+      web_contents, "requestNotification();", &result));
+  EXPECT_EQ(0, bubble_factory()->show_count());
+  EXPECT_EQ(0, bubble_factory()->TotalRequestCount());
+  EXPECT_EQ("default", result);
+}
+
+// Regression test for crbug.com/900997.
+IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
+                       CooldownEndsOnUserInitiatedReload) {
+  TriggerAndExpectPromptCooldownToBeStillActiveAfterNavigationAction(
+      [](content::WebContents* web_contents, const GURL& unused_url) {
+        content::NavigationController& controller =
+            web_contents->GetController();
+        controller.Reload(content::ReloadType::NORMAL, false);
+        EXPECT_TRUE(content::WaitForLoadStop(web_contents));
+      },
+      false /* expect_cooldown */);
+}
+
+// Regression test for crbug.com/900997.
+IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
+                       CooldownEndsOnBrowserInitiateNavigation) {
+  TriggerAndExpectPromptCooldownToBeStillActiveAfterNavigationAction(
+      [](content::WebContents* web_contents, const GURL& url) {
+        EXPECT_TRUE(content::NavigateToURL(web_contents, url));
+      },
+      false /* expect_cooldown */);
+}
+
+// Regression test for crbug.com/900997.
+IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
+                       CooldownEndsOnRendererInitiateNavigationWithGesture) {
+  TriggerAndExpectPromptCooldownToBeStillActiveAfterNavigationAction(
+      [](content::WebContents* web_contents, const GURL& url) {
+        content::TestNavigationObserver navigation_observer(web_contents);
+        EXPECT_TRUE(content::ExecuteScript(
+            web_contents, "window.location = \"" + url.spec() + "\";"));
+        navigation_observer.Wait();
+      },
+      false /* expect_cooldown */);
+}
+
+// Regression test for crbug.com/900997.
+IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
+                       CooldownOutlastsRendererInitiatedReload) {
+  TriggerAndExpectPromptCooldownToBeStillActiveAfterNavigationAction(
+      [](content::WebContents* web_contents, const GURL& unused_url) {
+        content::TestNavigationObserver navigation_observer(web_contents);
+        EXPECT_TRUE(content::ExecuteScriptWithoutUserGesture(
+            web_contents, "window.location.reload();"));
+        navigation_observer.Wait();
+      },
+      true /* expect_cooldown */);
+}
+
+// Regression test for crbug.com/900997.
+IN_PROC_BROWSER_TEST_F(
+    PermissionRequestManagerBrowserTest,
+    CooldownOutlastsRendererInitiateNavigationWithoutGesture) {
+  TriggerAndExpectPromptCooldownToBeStillActiveAfterNavigationAction(
+      [](content::WebContents* web_contents, const GURL& url) {
+        content::TestNavigationObserver navigation_observer(web_contents);
+        EXPECT_TRUE(content::ExecuteScriptWithoutUserGesture(
+            web_contents, "window.location = \"" + url.spec() + "\";"));
+        navigation_observer.Wait();
+      },
+      true /* expect_cooldown */);
 }
 
 // Bubble requests should not be shown when the killswitch is on.

@@ -104,6 +104,8 @@ class PermissionRequestManager
   explicit PermissionRequestManager(content::WebContents* web_contents);
 
   // WebContentsObserver:
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void DocumentOnLoadCompletedInMainFrame() override;
@@ -182,6 +184,10 @@ class PermissionRequestManager
 
   base::ObserverList<Observer>::Unchecked observer_list_;
   AutoResponseType auto_response_for_test_;
+
+  // Suppress notification permission prompts in this tab, regardless of the
+  // origin requesting the permission.
+  bool is_notification_prompt_cooldown_active_ = false;
 
   base::WeakPtrFactory<PermissionRequestManager> weak_factory_;
   WEB_CONTENTS_USER_DATA_KEY_DECL();
