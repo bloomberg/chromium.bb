@@ -87,6 +87,21 @@ void TestOAuthTokenGetter::Initialize(base::OnceClosure on_done) {
 
 void TestOAuthTokenGetter::ResetWithAuthenticationFlow(
     base::OnceClosure on_done) {
+  on_authentication_done_.push(std::move(on_done));
+  InvalidateCache();
+}
+
+void TestOAuthTokenGetter::CallWithToken(TokenCallback on_access_token) {
+  token_getter_->CallWithToken(std::move(on_access_token));
+}
+
+void TestOAuthTokenGetter::InvalidateCache() {
+  if (is_authenticating_) {
+    return;
+  }
+
+  is_authenticating_ = true;
+
   static const std::string read_auth_code_prompt = base::StringPrintf(
       "Please authenticate at:\n\n"
       "  %s\n\n"
@@ -105,17 +120,8 @@ void TestOAuthTokenGetter::ResetWithAuthenticationFlow(
       base::DoNothing::Repeatedly<const std::string&, const std::string&>());
 
   // Get the access token so that we can reuse it for next time.
-  token_getter_->CallWithToken(
-      base::BindOnce(&TestOAuthTokenGetter::OnAccessToken,
-                     weak_factory_.GetWeakPtr(), std::move(on_done)));
-}
-
-void TestOAuthTokenGetter::CallWithToken(TokenCallback on_access_token) {
-  token_getter_->CallWithToken(std::move(on_access_token));
-}
-
-void TestOAuthTokenGetter::InvalidateCache() {
-  ResetWithAuthenticationFlow(base::DoNothing());
+  token_getter_->CallWithToken(base::BindOnce(
+      &TestOAuthTokenGetter::OnAccessToken, weak_factory_.GetWeakPtr()));
 }
 
 std::unique_ptr<OAuthTokenGetter>
@@ -133,21 +139,24 @@ TestOAuthTokenGetter::CreateFromIntermediateCredentials(
       /* auto_refresh */ true);
 }
 
-void TestOAuthTokenGetter::OnAccessToken(base::OnceClosure on_done,
-                                         OAuthTokenGetter::Status status,
+void TestOAuthTokenGetter::OnAccessToken(OAuthTokenGetter::Status status,
                                          const std::string& user_email,
                                          const std::string& access_token) {
+  is_authenticating_ = false;
   if (status != OAuthTokenGetter::Status::SUCCESS) {
     fprintf(stderr,
             "Failed to authenticate. Please check if your access  token is "
             "correct.\n");
-    ResetWithAuthenticationFlow(std::move(on_done));
+    InvalidateCache();
     return;
   }
   VLOG(0) << "Received access_token: " << access_token;
   token_storage_->StoreUserEmail(user_email);
   token_storage_->StoreAccessToken(access_token);
-  std::move(on_done).Run();
+  while (!on_authentication_done_.empty()) {
+    std::move(on_authentication_done_.front()).Run();
+    on_authentication_done_.pop();
+  }
 }
 
 }  // namespace test
