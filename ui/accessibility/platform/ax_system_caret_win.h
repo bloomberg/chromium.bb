@@ -47,12 +47,11 @@ class AX_EXPORT AXSystemCaretWin : private AXPlatformNodeDelegateBase {
   AXPlatformNodeWin* caret_;
   gfx::AcceleratedWidget event_target_;
   AXNodeData data_;
+  ui::AXUniqueId unique_id_;
 
   friend class AXPlatformNodeWin;
-  DISALLOW_COPY_AND_ASSIGN(AXSystemCaretWin);
 
- private:
-  ui::AXUniqueId unique_id_;
+  DISALLOW_COPY_AND_ASSIGN(AXSystemCaretWin);
 };
 
 }  // namespace ui

@@ -316,14 +316,14 @@ TEST_F(AXPlatformNodeTextProviderTest, TestITextProviderGetSelection) {
   root_text_provider->GetSelection(selections.Receive());
   ASSERT_NE(nullptr, selections.Get());
 
-  long ubound;
+  LONG ubound;
   EXPECT_HRESULT_SUCCEEDED(SafeArrayGetUBound(selections.Get(), 1, &ubound));
   EXPECT_EQ(0, ubound);
-  long lbound;
+  LONG lbound;
   EXPECT_HRESULT_SUCCEEDED(SafeArrayGetLBound(selections.Get(), 1, &lbound));
   EXPECT_EQ(0, lbound);
 
-  long index = 0;
+  LONG index = 0;
   CComPtr<ITextRangeProvider> text_range_provider;
   EXPECT_HRESULT_SUCCEEDED(
       SafeArrayGetElement(selections.Get(), &index, &text_range_provider));

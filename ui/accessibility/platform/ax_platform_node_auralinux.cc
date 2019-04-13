@@ -235,7 +235,7 @@ AXCoordinateSystem AtkCoordTypeToAXCoordinateSystem(
 }
 
 void IdsToGPtrArray(AXPlatformNodeDelegate* delegate,
-                    std::vector<int32_t>& ids,
+                    const std::vector<int32_t>& ids,
                     GPtrArray* array) {
   for (const auto& node_id : ids) {
     if (AXPlatformNode* header = delegate->GetFromNodeID(node_id)) {

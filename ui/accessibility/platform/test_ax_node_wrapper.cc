@@ -5,6 +5,7 @@
 #include "ui/accessibility/platform/test_ax_node_wrapper.h"
 
 #include <unordered_map>
+#include <utility>
 
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -600,13 +601,13 @@ int32_t TestAXNodeWrapper::GetSetSize() const {
 // descendants for a given node within the descendants vector.
 void TestAXNodeWrapper::Descendants(
     const AXNode* node,
-    std::vector<gfx::NativeViewAccessible>& descendants) const {
+    std::vector<gfx::NativeViewAccessible>* descendants) const {
   std::vector<AXNode*> child_nodes = node->children();
   for (AXNode* child : child_nodes) {
-    descendants.emplace_back(ax_platform_node()
-                                 ->GetDelegate()
-                                 ->GetFromNodeID(child->id())
-                                 ->GetNativeViewAccessible());
+    descendants->emplace_back(ax_platform_node()
+                                  ->GetDelegate()
+                                  ->GetFromNodeID(child->id())
+                                  ->GetNativeViewAccessible());
     Descendants(child, descendants);
   }
 }
@@ -614,7 +615,7 @@ void TestAXNodeWrapper::Descendants(
 const std::vector<gfx::NativeViewAccessible> TestAXNodeWrapper::GetDescendants()
     const {
   std::vector<gfx::NativeViewAccessible> descendants;
-  Descendants(node_, descendants);
+  Descendants(node_, &descendants);
   return descendants;
 }
 

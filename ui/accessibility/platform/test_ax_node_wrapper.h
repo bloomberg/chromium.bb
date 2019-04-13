@@ -6,6 +6,7 @@
 #define UI_ACCESSIBILITY_PLATFORM_TEST_AX_NODE_WRAPPER_H_
 
 #include <set>
+#include <string>
 #include <vector>
 
 #include "build/build_config.h"
@@ -113,7 +114,7 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   int32_t GetSetSize() const override;
   const std::vector<gfx::NativeViewAccessible> GetDescendants() const override;
   void Descendants(const AXNode* node,
-                   std::vector<gfx::NativeViewAccessible>& descendants) const;
+                   std::vector<gfx::NativeViewAccessible>* descendants) const;
 
  private:
   TestAXNodeWrapper(AXTree* tree, AXNode* node);

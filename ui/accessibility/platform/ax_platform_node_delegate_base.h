@@ -8,6 +8,7 @@
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 
 #include <set>
+#include <vector>
 
 namespace ui {
 

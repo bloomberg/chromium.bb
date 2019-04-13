@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_ACCESSIBILITY_AX_PLATFORM_NODE_UNITTEST_H_
-#define UI_ACCESSIBILITY_AX_PLATFORM_NODE_UNITTEST_H_
+#ifndef UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_UNITTEST_H_
+#define UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_UNITTEST_H_
+
+#include <memory>
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_node.h"
@@ -63,4 +65,4 @@ class AXPlatformNodeTest : public testing::Test, public AXTreeManager {
 
 }  // namespace ui
 
-#endif  // UI_ACCESSIBILITY_AX_PLATFORM_NODE_UNITTEST_H_
+#endif  // UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_UNITTEST_H_

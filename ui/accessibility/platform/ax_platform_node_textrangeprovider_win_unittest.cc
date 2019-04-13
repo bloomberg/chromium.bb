@@ -1501,9 +1501,9 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderSelect) {
 
   CComPtr<ITextRangeProvider> selected_text_range_provider;
   base::win::ScopedSafearray selection;
-  long index = 0;
-  long ubound;
-  long lbound;
+  LONG index = 0;
+  LONG ubound;
+  LONG lbound;
 
   // Text range "some text" performs select.
   {

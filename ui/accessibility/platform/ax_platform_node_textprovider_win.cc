@@ -109,7 +109,7 @@ STDMETHODIMP AXPlatformNodeTextProviderWin::GetSelection(
   if (!selections_to_return.Get())
     return E_OUTOFMEMORY;
 
-  long index = 0;
+  LONG index = 0;
   hr = SafeArrayPutElement(selections_to_return.Get(), &index,
                            text_range_provider);
   DCHECK(SUCCEEDED(hr));

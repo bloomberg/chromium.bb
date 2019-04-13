@@ -96,7 +96,7 @@ class AX_EXPORT AXPlatformNode {
 
 #if defined(OS_MACOSX)
   // Fire a platform-specific notification to announce |text|.
-  virtual void AnnounceText(base::string16& text) = 0;
+  virtual void AnnounceText(const base::string16& text) = 0;
 #endif
 
   // Return this object's delegate.
