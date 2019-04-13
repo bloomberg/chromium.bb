@@ -93,6 +93,7 @@ crbug.com/678482 http/tests/devtools/debugger/fetch-breakpoints.js [ Timeout Pas
 crbug.com/678482 virtual/nobinary-for-devtools/http/tests/devtools/debugger/fetch-breakpoints.js [ Timeout Pass ]
 crbug.com/678491 http/tests/misc/webtiming-no-origin.html [ Crash Pass ]
 crbug.com/765779 http/tests/loading/bad-server-subframe.html [ Failure ]
+crbug.com/793127 external/wpt/content-security-policy/securitypolicyviolation/upgrade-insecure-requests-reporting.https.html [ Crash ]
 crbug.com/793127 http/tests/security/upgrade-insecure-requests/iframe-upgrade.https.html [ Crash ]
 crbug.com/793127 virtual/outofblink-cors/http/tests/security/upgrade-insecure-requests/iframe-upgrade.https.html [ Crash ]
 crbug.com/801992 http/tests/misc/iframe-script-modify-attr.html [ Pass Crash ]

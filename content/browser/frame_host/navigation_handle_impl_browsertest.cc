@@ -1410,6 +1410,71 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
   EXPECT_FALSE(NavigateToURL(shell(), kUrl2));
 }
 
+// Verify that a cross-process navigation in a frame for which the current
+// renderer process is not live will not result in leaking a
+// RenderProcessHost. See https://crbug.com/949977.
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
+                       NoLeakFromStartingSiteInstance) {
+  GURL url_a = embedded_test_server()->GetURL("a.com", "/title1.html");
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+
+  // Kill the a.com process, to test what happens with the next navigation.
+  scoped_refptr<SiteInstance> site_instance_a =
+      shell()->web_contents()->GetMainFrame()->GetSiteInstance();
+  EXPECT_TRUE(site_instance_a->HasProcess());
+  RenderProcessHost* process_1 = site_instance_a->GetProcess();
+  RenderProcessHostWatcher process_exit_observer_1(
+      process_1, content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  RenderProcessHostWatcher rph_gone_observer_1(
+      process_1, content::RenderProcessHostWatcher::WATCH_FOR_HOST_DESTRUCTION);
+  process_1->Shutdown(RESULT_CODE_KILLED);
+  process_exit_observer_1.Wait();
+
+  // Start to navigate the sad tab to another site.
+  GURL url_b = embedded_test_server()->GetURL("b.com", "/title2.html");
+  TestNavigationManager navigation_b(shell()->web_contents(), url_b);
+  shell()->web_contents()->GetController().LoadURL(
+      url_b, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
+  EXPECT_TRUE(navigation_b.WaitForRequestStart());
+
+  // The starting SiteInstance should be the SiteInstance of the current
+  // RenderFrameHost.
+  scoped_refptr<SiteInstance> starting_site_instance =
+      navigation_b.GetNavigationHandle()->GetStartingSiteInstance();
+  EXPECT_EQ(shell()->web_contents()->GetMainFrame()->GetSiteInstance(),
+            starting_site_instance);
+  // Because of the sad tab, this is actually the b.com SiteInstance, which
+  // commits immediately after starting the navigation and has a process.
+  EXPECT_EQ(GURL("http://b.com"), starting_site_instance->GetSiteURL());
+  EXPECT_TRUE(starting_site_instance->HasProcess());
+
+  // In https://crbug.com/949977, we used the a.com SiteInstance here and didn't
+  // have a process, and an observer called GetProcess, creating a process. This
+  // process never went away, even after the SiteInstance was gone.
+  RenderProcessHost* rph_2 = starting_site_instance->GetProcess();
+  RenderProcessHostWatcher process_exit_observer_2(
+      rph_2, content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  navigation_b.WaitForNavigationFinished();
+
+  // Ensure RPH 1 is destroyed, which happens at commit time even before the fix
+  // for the bug.
+  rph_gone_observer_1.Wait();
+
+  // Navigate to another process. This isn't necessary to trigger the original
+  // leak (when the starting SiteInstance was a.com), but it lets the test
+  // finish in the case that the starting SiteInstance is b.com, since b.com's
+  // process goes away with this navigation.
+  // TODO(creis): There's still a slight risk that other buggy code could find
+  // site_instance_a and call GetProcess() on it, causing a leak. We'll add a
+  // backup fix and test for that in a followup CL.
+  GURL url_c = embedded_test_server()->GetURL("c.com", "/title1.html");
+  EXPECT_TRUE(NavigateToURL(shell()->web_contents(), url_c));
+
+  // Wait for rph_2 to exit when it's not used. This wouldn't happen when the
+  // bug was present.
+  process_exit_observer_2.Wait();
+}
+
 // Specialized test that verifies the NavigationHandle gets the HTTPS upgraded
 // URL from the very beginning of the navigation.
 class NavigationHandleImplHttpsUpgradeBrowserTest
