@@ -1833,6 +1833,12 @@ TEST_F(ResourceSchedulerTest, NonDelayableToNonDelayableMetrics) {
 
   ExpectSampleIsAtLeastSpecifiedValue(
       histogram_tester_1,
+      "ResourceScheduler.NonDelayableLastStartToNonDelayableStart."
+      "NonDelayableInFlight",
+      high1_start_to_high2_start.InMilliseconds());
+
+  ExpectSampleIsAtLeastSpecifiedValue(
+      histogram_tester_1,
       "ResourceScheduler.NonDelayableLastStartOrEndToNonDelayableStart",
       high1_start_to_high2_start.InMilliseconds());
 
@@ -1864,6 +1870,12 @@ TEST_F(ResourceSchedulerTest, NonDelayableToNonDelayableMetrics) {
   ExpectSampleIsAtLeastSpecifiedValue(
       histogram_tester_2,
       "ResourceScheduler.NonDelayableLastEndToNonDelayableStart",
+      high2_end_to_high3_start.InMilliseconds());
+
+  ExpectSampleIsAtLeastSpecifiedValue(
+      histogram_tester_2,
+      "ResourceScheduler.NonDelayableLastEndToNonDelayableStart."
+      "NonDelayableNotInFlight",
       high2_end_to_high3_start.InMilliseconds());
 
   ExpectSampleIsAtLeastSpecifiedValue(
