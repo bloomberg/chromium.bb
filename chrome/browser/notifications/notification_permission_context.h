@@ -36,6 +36,11 @@ class Profile;
 // CONTENT_SETTING_BLOCK will be returned to reflect the fact that permission
 // cannot be requested.
 //
+// When the user rejects a notification permission request, the WebContents will
+// be prevented from requesting the permission again (regardless of origin)
+// until a user-initiated navigation occurs. This stops users from being locked
+// in to cross-origin request loops that may be hard to escape from.
+//
 // ANDROID O+
 //
 //     On Android O and beyond, notification channels will be used for storing

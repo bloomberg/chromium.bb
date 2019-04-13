@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/circular_deque.h"
+#include "base/feature_list.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string16.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/permission_bubble/permission_prompt.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -95,6 +97,17 @@ void PermissionRequestManager::AddRequest(PermissionRequest* request) {
     return;
   }
 
+  if (is_notification_prompt_cooldown_active_ &&
+      request->GetContentSettingsType() ==
+          CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+    // Short-circuit by canceling rather than denying to avoid creating a large
+    // number of content setting exceptions on Desktop / disabled notification
+    // channels on Android.
+    request->Cancelled();
+    request->RequestFinished();
+    return;
+  }
+
   // TODO(tsergeant): change the UMA to no longer mention bubbles.
   base::RecordAction(base::UserMetricsAction("PermissionBubbleRequest"));
 
@@ -153,6 +166,25 @@ gfx::NativeWindow PermissionRequestManager::GetBubbleWindow() {
   if (view_)
     return view_->GetNativeWindow();
   return nullptr;
+}
+
+void PermissionRequestManager::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame() ||
+      navigation_handle->IsSameDocument()) {
+    return;
+  }
+
+  // Cooldown lasts until the next user-initiated navigation, which is defined
+  // as either a renderer-initiated navigation with a user gesture, or a
+  // browser-initiated navigation.
+  //
+  // TODO(crbug.com/952347): This check has to be done at DidStartNavigation
+  // time, the HasUserGesture state is lost by the time the navigation commits.
+  if (!navigation_handle->IsRendererInitiated() ||
+      navigation_handle->HasUserGesture()) {
+    is_notification_prompt_cooldown_active_ = false;
+  }
 }
 
 void PermissionRequestManager::DidFinishNavigation(
@@ -262,6 +294,20 @@ void PermissionRequestManager::Accept() {
 
 void PermissionRequestManager::Deny() {
   DCHECK(view_);
+
+  // Suppress any further prompts in this WebContents, from any origin, until
+  // there is a user-initiated navigation. This stops users from getting trapped
+  // in request loops where the website automatically navigates cross-origin
+  // (e.g. to another subdomain) to be able to prompt again after a rejection.
+  if (base::FeatureList::IsEnabled(
+          features::kBlockRepeatedNotificationPermissionPrompts) &&
+      std::any_of(requests_.begin(), requests_.end(), [](const auto* request) {
+        return request->GetContentSettingsType() ==
+               CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
+      })) {
+    is_notification_prompt_cooldown_active_ = true;
+  }
+
   std::vector<PermissionRequest*>::iterator requests_iter;
   for (requests_iter = requests_.begin();
        requests_iter != requests_.end();
