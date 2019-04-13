@@ -55,18 +55,21 @@ struct ActionInfo {
   // Returns the extension's system indicator, if any.
   static const ActionInfo* GetSystemIndicatorInfo(const Extension* extension);
 
-  // Sets the extension's action. |extension| takes ownership of |info|.
-  static void SetExtensionActionInfo(Extension* extension, ActionInfo* info);
+  // Sets the extension's action.
+  static void SetExtensionActionInfo(Extension* extension,
+                                     std::unique_ptr<ActionInfo> info);
 
-  // Sets the extension's browser action. |extension| takes ownership of |info|.
-  static void SetBrowserActionInfo(Extension* extension, ActionInfo* info);
+  // Sets the extension's browser action.
+  static void SetBrowserActionInfo(Extension* extension,
+                                   std::unique_ptr<ActionInfo> info);
 
-  // Sets the extension's page action. |extension| takes ownership of |info|.
-  static void SetPageActionInfo(Extension* extension, ActionInfo* info);
+  // Sets the extension's page action.
+  static void SetPageActionInfo(Extension* extension,
+                                std::unique_ptr<ActionInfo> info);
 
-  // Sets the extension's system indicator. |extension| takes ownership of
-  // |info|.
-  static void SetSystemIndicatorInfo(Extension* extension, ActionInfo* info);
+  // Sets the extension's system indicator.
+  static void SetSystemIndicatorInfo(Extension* extension,
+                                     std::unique_ptr<ActionInfo> info);
 
   // Returns true if the extension needs a verbose install message because
   // of its page action.

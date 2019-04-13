@@ -27,15 +27,15 @@ constexpr char kDisabled[] = "disabled";
 // The manifest data container for the ActionInfos for BrowserActions,
 // PageActions and SystemIndicators.
 struct ActionInfoData : public Extension::ManifestData {
-  explicit ActionInfoData(ActionInfo* action_info);
+  explicit ActionInfoData(std::unique_ptr<ActionInfo> action_info);
   ~ActionInfoData() override;
 
   // The action associated with the BrowserAction.
   std::unique_ptr<ActionInfo> action_info;
 };
 
-ActionInfoData::ActionInfoData(ActionInfo* info) : action_info(info) {
-}
+ActionInfoData::ActionInfoData(std::unique_ptr<ActionInfo> info)
+    : action_info(std::move(info)) {}
 
 ActionInfoData::~ActionInfoData() {
 }
@@ -157,28 +157,30 @@ const ActionInfo* ActionInfo::GetSystemIndicatorInfo(
 
 // static
 void ActionInfo::SetExtensionActionInfo(Extension* extension,
-                                        ActionInfo* info) {
+                                        std::unique_ptr<ActionInfo> info) {
   extension->SetManifestData(keys::kAction,
-                             std::make_unique<ActionInfoData>(info));
+                             std::make_unique<ActionInfoData>(std::move(info)));
 }
 
 // static
-void ActionInfo::SetBrowserActionInfo(Extension* extension, ActionInfo* info) {
+void ActionInfo::SetBrowserActionInfo(Extension* extension,
+                                      std::unique_ptr<ActionInfo> info) {
   extension->SetManifestData(keys::kBrowserAction,
-                             std::make_unique<ActionInfoData>(info));
+                             std::make_unique<ActionInfoData>(std::move(info)));
 }
 
 // static
-void ActionInfo::SetPageActionInfo(Extension* extension, ActionInfo* info) {
+void ActionInfo::SetPageActionInfo(Extension* extension,
+                                   std::unique_ptr<ActionInfo> info) {
   extension->SetManifestData(keys::kPageAction,
-                             std::make_unique<ActionInfoData>(info));
+                             std::make_unique<ActionInfoData>(std::move(info)));
 }
 
 // static
 void ActionInfo::SetSystemIndicatorInfo(Extension* extension,
-                                        ActionInfo* info) {
+                                        std::unique_ptr<ActionInfo> info) {
   extension->SetManifestData(keys::kSystemIndicator,
-                             std::make_unique<ActionInfoData>(info));
+                             std::make_unique<ActionInfoData>(std::move(info)));
 }
 
 // static
