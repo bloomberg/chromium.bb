@@ -168,6 +168,13 @@ void XRCompositorCommon::UpdateLayerBounds(int16_t frame_id,
   // merge with vr_shell_gl eventually.
   left_webxr_bounds_ = left_bounds;
   right_webxr_bounds_ = right_bounds;
+
+  // Swap top/bottom to account for differences between D3D and GL coordinates.
+  left_webxr_bounds_.set_y(
+      1 - (left_webxr_bounds_.y() + left_webxr_bounds_.height()));
+  right_webxr_bounds_.set_y(
+      1 - (right_webxr_bounds_.y() + right_webxr_bounds_.height()));
+
   source_size_ = source_size;
 
   OnLayerBoundsChanged();
