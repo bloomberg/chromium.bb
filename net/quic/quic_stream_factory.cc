@@ -51,6 +51,7 @@
 #include "net/socket/socket_performance_watcher.h"
 #include "net/socket/socket_performance_watcher_factory.h"
 #include "net/socket/udp_client_socket.h"
+#include "net/third_party/quiche/src/quic/core/crypto/null_decrypter.h"
 #include "net/third_party/quiche/src/quic/core/crypto/proof_verifier.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
 #include "net/third_party/quiche/src/quic/core/http/quic_client_promised_info.h"
@@ -1869,6 +1870,11 @@ int QuicStreamFactory::CreateSession(
     DLOG(DFATAL) << "Session closed during initialize";
     *session = nullptr;
     return ERR_CONNECTION_CLOSED;
+  }
+  if (connection->version().KnowsWhichDecrypterToUse()) {
+    connection->InstallDecrypter(quic::ENCRYPTION_FORWARD_SECURE,
+                                 quic::QuicMakeUnique<quic::NullDecrypter>(
+                                     quic::Perspective::IS_CLIENT));
   }
   return OK;
 }
