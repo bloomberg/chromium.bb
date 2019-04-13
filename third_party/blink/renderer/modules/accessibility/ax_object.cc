@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/html/html_dialog_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
@@ -3087,8 +3088,11 @@ bool AXObject::NameFromSelectedOption(bool recursive) const {
     case ax::mojom::Role::kComboBoxGrouping:
     case ax::mojom::Role::kComboBoxMenuButton:
     case ax::mojom::Role::kListBox:
-    case ax::mojom::Role::kPopUpButton:
       return recursive;
+    // This can be either a button widget with a non-false value of
+    // aria-haspopup or a select element with size of 1.
+    case ax::mojom::Role::kPopUpButton:
+      return ToHTMLSelectElementOrNull(*GetNode()) ? recursive : false;
     default:
       return false;
   }
