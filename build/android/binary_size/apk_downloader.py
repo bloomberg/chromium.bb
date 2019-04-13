@@ -15,8 +15,8 @@ from pylib.constants import host_paths
 sys.path.append(os.path.join(_BUILD_ANDROID, 'gyp'))
 from util import build_utils
 
-sys.path.append(os.path.join(host_paths.DIR_SOURCE_ROOT, 'build'))
-import find_depot_tools  # pylint: disable=import-error,unused-import
+sys.path.append(
+    os.path.join(host_paths.DIR_SOURCE_ROOT, 'third_party', 'depot_tools'))
 import download_from_google_storage
 import upload_to_google_storage
 
