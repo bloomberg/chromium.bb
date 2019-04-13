@@ -20,7 +20,6 @@
  *   controlledSettingShared: (string|undefined),
  *   controlledSettingWithOwner: string,
  *   controlledSettingNoOwner: string,
- *   controlledSettingWithParent: string,
  * }}
  */
 // eslint-disable-next-line no-var
@@ -35,7 +34,6 @@ const CrPolicyIndicatorType = {
   PRIMARY_USER: 'primary_user',
   RECOMMENDED: 'recommended',
   USER_POLICY: 'userPolicy',
-  PARENT: 'parent',
 };
 
 /** @polymerBehavior */
@@ -102,8 +100,6 @@ const CrPolicyIndicatorBehavior = {
       case CrPolicyIndicatorType.DEVICE_POLICY:
       case CrPolicyIndicatorType.RECOMMENDED:
         return 'cr20:domain';
-      case CrPolicyIndicatorType.PARENT:
-        return 'cr20:kite';
       default:
         assertNotReached();
     }
@@ -139,8 +135,6 @@ const CrPolicyIndicatorBehavior = {
         return opt_matches ?
             CrPolicyStrings.controlledSettingRecommendedMatches :
             CrPolicyStrings.controlledSettingRecommendedDiffers;
-      case CrPolicyIndicatorType.PARENT:
-        return CrPolicyStrings.controlledSettingWithParent;
     }
     return '';
   },
