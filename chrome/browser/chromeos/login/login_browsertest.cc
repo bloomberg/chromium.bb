@@ -20,7 +20,6 @@
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
-#include "chrome/browser/chromeos/login/test/test_condition_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -103,32 +102,51 @@ class LoginTest : public LoginManagerTest {
   ~LoginTest() override {}
 
   void StartGaiaAuthOffline() {
-    auto gaia_screen_waiter = test::CreateOobeScreenWaiter("gaia-signin");
-    test::ExecuteOobeJS("$('error-offline-login-link').onclick();");
-    gaia_screen_waiter->Wait();
-    test::OobeJS().CreateVisibilityWaiter(true, {"offline-gaia"})->Wait();
+    content::DOMMessageQueue message_queue;
+    // clang-format off
+    const std::string js = "(function() {"
+      "var authenticator = $('gaia-signin').gaiaAuthHost_;"
+      "authenticator.addEventListener('ready',"
+        "function f() {"
+          "authenticator.removeEventListener('ready', f);"
+          "window.domAutomationController.send('offlineLoaded');"
+        "});"
+      "$('error-offline-login-link').onclick();"
+    "})();";
+    // clang-format on
+    test::ExecuteOobeJS(js);
+
+    std::string message;
+    do {
+      ASSERT_TRUE(message_queue.WaitForMessage(&message));
+    } while (message != "\"offlineLoaded\"");
   }
 
   void SubmitGaiaAuthOfflineForm(const std::string& user_email,
                                  const std::string& password) {
+    const std::string animated_pages =
+        "document.querySelector('#offline-gaia /deep/ "
+        "#animatedPages')";
+
+    content::DOMMessageQueue message_queue;
     test::OobeJS().ExpectVisible("offline-gaia");
     test::OobeJS().ExpectHidden("signin-frame");
-    test::OobeJS()
-        .CreateDisplayedWaiter(true, {"offline-gaia", "email-section"})
-        ->Wait();
-    test::OobeJS()
-        .CreateDisplayedWaiter(false, {"offline-gaia", "password-section"})
-        ->Wait();
+    const std::string js =
+        animated_pages +
+        ".addEventListener('neon-animation-finish',"
+        "function() {"
+        "window.domAutomationController.send('switchToPassword');"
+        "})";
+    test::ExecuteOobeJS(js);
     test::OobeJS().TypeIntoPath(user_email, {"offline-gaia", "emailInput"});
-    test::OobeJS().TapOnPath({"offline-gaia", "email-input-form", "button"});
-    test::OobeJS()
-        .CreateDisplayedWaiter(false, {"offline-gaia", "email-section"})
-        ->Wait();
-    test::OobeJS()
-        .CreateDisplayedWaiter(true, {"offline-gaia", "password-section"})
-        ->Wait();
+    test::OobeJS().TapOnPath({"offline-gaia", "emailSection", "button"});
+    std::string message;
+    do {
+      ASSERT_TRUE(message_queue.WaitForMessage(&message));
+    } while (message != "\"switchToPassword\"");
+
     test::OobeJS().TypeIntoPath(password, {"offline-gaia", "passwordInput"});
-    test::OobeJS().TapOnPath({"offline-gaia", "password-input-form", "button"});
+    test::OobeJS().TapOnPath({"offline-gaia", "passwordSection", "button"});
   }
 
   void PrepareOfflineLogin() {
@@ -145,6 +163,10 @@ class LoginTest : public LoginManagerTest {
     user_context.SetKey(Key(kPassword));
     SetExpectedCredentials(user_context);
   }
+
+ protected:
+  ScopedCrosSettingsTestHelper settings_helper_{
+      /* create_settings_service= */ false};
 };
 
 // Used to make sure that the system tray is visible and within the screen
@@ -219,10 +241,11 @@ IN_PROC_BROWSER_TEST_F(LoginSigninTest, WebUIVisible) {
 IN_PROC_BROWSER_TEST_F(LoginTest, PRE_GaiaAuthOffline) {
   RegisterUser(AccountId::FromUserEmailGaiaId(kTestUser, kGaiaId));
   StartupUtils::MarkOobeCompleted();
-  CrosSettings::Get()->SetBoolean(kAccountsPrefShowUserNamesOnSignIn, false);
+  settings_helper_.SetBoolean(kAccountsPrefShowUserNamesOnSignIn, false);
 }
 
-IN_PROC_BROWSER_TEST_F(LoginTest, GaiaAuthOffline) {
+// Flaky, see http://crbug/692364.
+IN_PROC_BROWSER_TEST_F(LoginTest, DISABLED_GaiaAuthOffline) {
   PrepareOfflineLogin();
   content::WindowedNotificationObserver session_start_waiter(
       chrome::NOTIFICATION_SESSION_STARTED,
