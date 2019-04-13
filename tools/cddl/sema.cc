@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "tools/cddl/logging.h"
 #include "tools/cddl/sema.h"
 
 #include <string.h>
@@ -21,6 +20,7 @@
 #include "absl/strings/numbers.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
+#include "tools/cddl/logging.h"
 
 CddlType::CddlType()
     : map(nullptr), op(CddlType::Op::kNone), constraint_type(nullptr) {}
@@ -463,8 +463,10 @@ std::pair<bool, CddlSymbolTable> BuildSymbolTable(const AstNode& rules) {
     if (is_type) {
       CddlType* type = AnalyzeType(&table, *node);
       if (!type) {
-        Logger::Error("Error parsing node with text '%s'."
-                      "Failed to analyze node type.", node->text);
+        Logger::Error(
+            "Error parsing node with text '%s'."
+            "Failed to analyze node type.",
+            node->text);
       }
       table.type_map.emplace(std::string(name), type);
     } else {
@@ -782,10 +784,38 @@ bool HasUniqueKeys(const CppType& type) {
                         });
 }
 
+bool IsUniqueEnumValue(std::vector<uint64_t>* values, uint64_t v) {
+  auto it = std::lower_bound(values->begin(), values->end(), v);
+  if (it == values->end() || *it != v) {
+    values->insert(it, v);
+    return true;
+  }
+  return false;
+}
+
+bool HasUniqueEnumValues(std::vector<uint64_t>* values, const CppType& type) {
+  return absl::c_all_of(type.enum_type.sub_members,
+                        [values](CppType* sub_member) {
+                          return HasUniqueEnumValues(values, *sub_member);
+                        }) &&
+         absl::c_all_of(
+             type.enum_type.members,
+             [values](const std::pair<std::string, uint64_t>& member) {
+               return IsUniqueEnumValue(values, member.second);
+             });
+}
+
+bool HasUniqueEnumValues(const CppType& type) {
+  std::vector<uint64_t> values;
+  return type.which != CppType::Which::kEnum ||
+         HasUniqueEnumValues(&values, type);
+}
+
 bool ValidateCppTypes(const CppSymbolTable& cpp_symbols) {
   return absl::c_all_of(
-      cpp_symbols.cpp_types,
-      [](const std::unique_ptr<CppType>& ptr) { return HasUniqueKeys(*ptr); });
+      cpp_symbols.cpp_types, [](const std::unique_ptr<CppType>& ptr) {
+        return HasUniqueKeys(*ptr) && HasUniqueEnumValues(*ptr);
+      });
 }
 
 void DumpType(CddlType* type, int indent_level) {
@@ -794,7 +824,7 @@ void DumpType(CddlType* type, int indent_level) {
     output += "--";
   switch (type->which) {
     case CddlType::Which::kDirectChoice:
-      output ="kDirectChoice:";
+      output = "kDirectChoice:";
       Logger::Log(output);
       for (auto& option : type->direct_choice)
         DumpType(option, indent_level + 1);
@@ -845,10 +875,9 @@ void DumpGroup(CddlGroup* group, int indent_level) {
       case CddlGroup::Entry::Which::kType:
         output += "kType:";
         if (entry->HasOccurrenceOperator()) {
-          output += "minOccurance: " +
-                    std::to_string(entry->opt_occurrence_min) +
-                    " maxOccurance: " +
-                    std::to_string(entry->opt_occurrence_max);
+          output +=
+              "minOccurance: " + std::to_string(entry->opt_occurrence_min) +
+              " maxOccurance: " + std::to_string(entry->opt_occurrence_max);
         }
         if (!entry->type.opt_key.empty()) {
           output += " " + entry->type.opt_key + "=>";
@@ -858,10 +887,9 @@ void DumpGroup(CddlGroup* group, int indent_level) {
         break;
       case CddlGroup::Entry::Which::kGroup:
         if (entry->HasOccurrenceOperator())
-          output += "minOccurance: " +
-                    std::to_string(entry->opt_occurrence_min) +
-                    " maxOccurance: " +
-                    std::to_string(entry->opt_occurrence_max);
+          output +=
+              "minOccurance: " + std::to_string(entry->opt_occurrence_min) +
+              " maxOccurance: " + std::to_string(entry->opt_occurrence_max);
         Logger::Log(output);
         DumpGroup(entry->group, indent_level + 1);
         break;

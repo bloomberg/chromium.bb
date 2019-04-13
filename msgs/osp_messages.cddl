@@ -67,7 +67,7 @@ request-id = uint
 
 microseconds = uint
 
-; type key 1001 
+; type key 1001
 authentication-request = {
   request
   1: authentication-mechanism ; mechanism
@@ -75,7 +75,7 @@ authentication-request = {
   3: uint ; cost
 }
 
-; type key 1002 
+; type key 1002
 authentication-response = {
   response
   1: authentication-response-result ; result
