@@ -269,8 +269,8 @@ void GuardedPageAllocator::RecordAllocationMetadata(
       base::debug::CollectStackTrace(trace, AllocatorState::kMaxStackFrames);
   metadata_[metadata_idx].alloc.trace_len =
       Pack(reinterpret_cast<uintptr_t*>(trace), len,
-           metadata_[metadata_idx].alloc.packed_trace,
-           sizeof(metadata_[metadata_idx].alloc.packed_trace));
+           metadata_[metadata_idx].stack_trace_pool,
+           sizeof(metadata_[metadata_idx].stack_trace_pool) / 2);
   metadata_[metadata_idx].alloc.tid = ReportTid();
   metadata_[metadata_idx].alloc.trace_collected = true;
 
@@ -287,8 +287,10 @@ void GuardedPageAllocator::RecordDeallocationMetadata(
       base::debug::CollectStackTrace(trace, AllocatorState::kMaxStackFrames);
   metadata_[metadata_idx].dealloc.trace_len =
       Pack(reinterpret_cast<uintptr_t*>(trace), len,
-           metadata_[metadata_idx].dealloc.packed_trace,
-           sizeof(metadata_[metadata_idx].dealloc.packed_trace));
+           metadata_[metadata_idx].stack_trace_pool +
+               metadata_[metadata_idx].alloc.trace_len,
+           sizeof(metadata_[metadata_idx].stack_trace_pool) -
+               metadata_[metadata_idx].alloc.trace_len);
   metadata_[metadata_idx].dealloc.tid = ReportTid();
   metadata_[metadata_idx].dealloc.trace_collected = true;
 }

@@ -169,10 +169,12 @@ GwpAsanCrashAnalysisResult CrashAnalyzer::AnalyzeCrashedAllocator(
     proto->set_allocation_size(metadata.alloc_size);
     if (metadata.alloc.tid != base::kInvalidThreadId ||
         metadata.alloc.trace_len)
-      ReadAllocationInfo(metadata.alloc, proto->mutable_allocation());
+      ReadAllocationInfo(metadata.stack_trace_pool, 0, metadata.alloc,
+                         proto->mutable_allocation());
     if (metadata.dealloc.tid != base::kInvalidThreadId ||
         metadata.dealloc.trace_len)
-      ReadAllocationInfo(metadata.dealloc, proto->mutable_deallocation());
+      ReadAllocationInfo(metadata.stack_trace_pool, metadata.alloc.trace_len,
+                         metadata.dealloc, proto->mutable_deallocation());
   }
 
   proto->set_region_start(valid_state.pages_base_addr);
@@ -185,6 +187,8 @@ GwpAsanCrashAnalysisResult CrashAnalyzer::AnalyzeCrashedAllocator(
 }
 
 void CrashAnalyzer::ReadAllocationInfo(
+    const uint8_t* stack_trace,
+    size_t stack_trace_offset,
     const SlotMetadata::AllocationInfo& slot_info,
     gwp_asan::Crash_AllocationInfo* proto_info) {
   if (slot_info.tid != base::kInvalidThreadId)
@@ -193,15 +197,17 @@ void CrashAnalyzer::ReadAllocationInfo(
   if (!slot_info.trace_len || !slot_info.trace_collected)
     return;
 
-  if (slot_info.trace_len > AllocatorState::kMaxPackedTraceLength) {
+  if (slot_info.trace_len > AllocatorState::kMaxPackedTraceLength ||
+      stack_trace_offset + slot_info.trace_len >
+          AllocatorState::kMaxPackedTraceLength) {
     DLOG(ERROR) << "Stack trace length is corrupted: " << slot_info.trace_len;
     return;
   }
 
   uintptr_t unpacked_stack_trace[AllocatorState::kMaxPackedTraceLength];
   size_t unpacked_len =
-      Unpack(slot_info.packed_trace, slot_info.trace_len, unpacked_stack_trace,
-             AllocatorState::kMaxPackedTraceLength);
+      Unpack(stack_trace + stack_trace_offset, slot_info.trace_len,
+             unpacked_stack_trace, AllocatorState::kMaxPackedTraceLength);
   if (!unpacked_len) {
     DLOG(ERROR) << "Failed to unpack stack trace.";
     return;
