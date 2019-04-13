@@ -148,6 +148,8 @@ CanvasRenderingContext::ContextType CanvasRenderingContext::ContextTypeFromId(
     return kContextImageBitmap;
   if (id == "xrpresent")
     return kContextXRPresent;
+  if (id == "gpupresent" && RuntimeEnabledFeatures::WebGPUEnabled())
+    return kContextGPUPresent;
   return kContextTypeUnknown;
 }
 
