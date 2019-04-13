@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/base/oauth_token_getter.h"
@@ -49,8 +50,7 @@ class TestOAuthTokenGetter final : public OAuthTokenGetter {
       const OAuthTokenGetter::CredentialsUpdatedCallback&
           on_credentials_update);
 
-  void OnAccessToken(base::OnceClosure on_done,
-                     OAuthTokenGetter::Status status,
+  void OnAccessToken(OAuthTokenGetter::Status status,
                      const std::string& user_email,
                      const std::string& access_token);
 
@@ -58,6 +58,8 @@ class TestOAuthTokenGetter final : public OAuthTokenGetter {
       url_loader_factory_owner_;
   TestTokenStorage* token_storage_ = nullptr;
   std::unique_ptr<OAuthTokenGetter> token_getter_;
+  bool is_authenticating_ = false;
+  base::queue<base::OnceClosure> on_authentication_done_;
 
   base::WeakPtrFactory<TestOAuthTokenGetter> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(TestOAuthTokenGetter);

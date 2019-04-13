@@ -10,19 +10,21 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/timer/timer.h"
 #include "remoting/base/oauth_token_getter.h"
 #include "remoting/protocol/client_authentication_config.h"
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/session_manager.h"
+#include "remoting/protocol/webrtc_transport.h"
 #include "remoting/signaling/ftl_messaging_client.h"
 #include "remoting/signaling/ftl_registration_manager.h"
 #include "remoting/signaling/signal_strategy.h"
 
-namespace remoting {
+namespace network {
+class TransitionalURLLoaderFactoryOwner;
+}  // namespace network
 
-namespace protocol {
-class Transport;
-}  // namespace protocol
+namespace remoting {
 
 namespace test {
 class TestOAuthTokenGetter;
@@ -53,7 +55,8 @@ class FtlSignalingPlayground final : public SignalStrategy::Listener,
 
   void SetUpSignaling();
   void TearDownSignaling();
-  void RegisterSession(std::unique_ptr<protocol::Session> session);
+  void RegisterSession(std::unique_ptr<protocol::Session> session,
+                       protocol::TransportRole transport_role);
 
   // SignalStrategy::Listener interface.
   void OnSignalStrategyStateChange(SignalStrategy::State state) override;
@@ -63,16 +66,25 @@ class FtlSignalingPlayground final : public SignalStrategy::Listener,
   // Session::EventHandler interface.
   void OnSessionStateChange(protocol::Session::State state) override;
 
+  void AsyncTearDownAndRunCallback();
+  void TearDownAndRunCallback();
+
   std::unique_ptr<test::TestTokenStorage> storage_;
   std::unique_ptr<test::TestOAuthTokenGetter> token_getter_;
+  std::unique_ptr<network::TransitionalURLLoaderFactoryOwner>
+      url_loader_factory_owner_;
 
   std::unique_ptr<SignalStrategy> signal_strategy_;
   std::unique_ptr<protocol::SessionManager> session_manager_;
-  std::unique_ptr<protocol::Transport> fake_transport_;
+  std::unique_ptr<protocol::WebrtcTransport::EventHandler>
+      transport_event_handler_;
+  std::unique_ptr<protocol::WebrtcTransport> transport_;
   std::unique_ptr<protocol::Session> session_;
 
   base::OnceClosure current_callback_;
   base::OnceClosure on_signaling_connected_callback_;
+
+  base::OneShotTimer tear_down_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(FtlSignalingPlayground);
 };

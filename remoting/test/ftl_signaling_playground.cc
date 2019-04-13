@@ -5,6 +5,7 @@
 #include "remoting/test/ftl_signaling_playground.h"
 
 #include <inttypes.h>
+
 #include <string>
 #include <utility>
 #include <vector>
@@ -20,15 +21,21 @@
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "jingle/glue/thread_wrapper.h"
+#include "remoting/base/chromium_url_request.h"
 #include "remoting/base/logging.h"
 #include "remoting/base/oauth_token_getter_impl.h"
 #include "remoting/base/rsa_key_pair.h"
+#include "remoting/base/service_urls.h"
+#include "remoting/base/url_request_context_getter.h"
 #include "remoting/protocol/auth_util.h"
+#include "remoting/protocol/chromium_port_allocator_factory.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/me2me_host_authenticator_factory.h"
 #include "remoting/protocol/negotiating_client_authenticator.h"
+#include "remoting/protocol/network_settings.h"
 #include "remoting/protocol/pairing_registry.h"
 #include "remoting/protocol/transport.h"
+#include "remoting/protocol/transport_context.h"
 #include "remoting/signaling/ftl_grpc_context.h"
 #include "remoting/signaling/ftl_services.grpc.pb.h"
 #include "remoting/signaling/ftl_signal_strategy.h"
@@ -37,6 +44,8 @@
 #include "remoting/test/test_device_id_provider.h"
 #include "remoting/test/test_oauth_token_getter.h"
 #include "remoting/test/test_token_storage.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/transitional_url_loader_factory_owner.h"
 
 namespace remoting {
 
@@ -62,16 +71,43 @@ const char* SignalStrategyErrorToString(SignalStrategy::Error error) {
   return "";
 }
 
-class FakeTransport : public protocol::Transport {
+class FakeTransportEventHandler final
+    : public protocol::WebrtcTransport::EventHandler {
  public:
-  FakeTransport() = default;
-  ~FakeTransport() override = default;
-
-  void Start(protocol::Authenticator* authenticator,
-             SendTransportInfoCallback send_transport_info_callback) override {}
-  bool ProcessTransportInfo(jingle_xmpp::XmlElement* transport_info) override {
-    return false;
+  explicit FakeTransportEventHandler(base::OnceClosure on_closed) {
+    on_closed_ = std::move(on_closed);
   }
+
+  ~FakeTransportEventHandler() override = default;
+
+  // protocol::WebrtcTransport::EventHandler interface.
+  void OnWebrtcTransportConnecting() override {
+    HOST_LOG << "Webrtc transport is connecting...";
+  }
+
+  void OnWebrtcTransportConnected() override {
+    HOST_LOG << "Webrtc transport is connected!!!";
+    std::move(on_closed_).Run();
+  }
+
+  void OnWebrtcTransportError(protocol::ErrorCode error) override {
+    LOG(ERROR) << "Webrtc transport error: " << error;
+    std::move(on_closed_).Run();
+  }
+
+  void OnWebrtcTransportIncomingDataChannel(
+      const std::string& name,
+      std::unique_ptr<protocol::MessagePipe> pipe) override {}
+
+  void OnWebrtcTransportMediaStreamAdded(
+      scoped_refptr<webrtc::MediaStreamInterface> stream) override {}
+
+  void OnWebrtcTransportMediaStreamRemoved(
+      scoped_refptr<webrtc::MediaStreamInterface> stream) override {}
+
+ private:
+  base::OnceClosure on_closed_;
+  DISALLOW_COPY_AND_ASSIGN(FakeTransportEventHandler);
 };
 
 }  // namespace
@@ -104,6 +140,13 @@ void FtlSignalingPlayground::StartLoop() {
 
   storage_ = test::TestTokenStorage::OnDisk(username, storage_path);
   token_getter_ = std::make_unique<test::TestOAuthTokenGetter>(storage_.get());
+
+  auto url_request_context_getter =
+      base::MakeRefCounted<URLRequestContextGetter>(
+          base::ThreadTaskRunnerHandle::Get());
+  url_loader_factory_owner_ =
+      std::make_unique<network::TransitionalURLLoaderFactoryOwner>(
+          url_request_context_getter);
 
   base::RunLoop initialize_token_getter_loop;
   token_getter_->Initialize(initialize_token_getter_loop.QuitClosure());
@@ -154,7 +197,8 @@ void FtlSignalingPlayground::OnIncomingSession(
     protocol::Session* owned_session,
     protocol::SessionManager::IncomingSessionResponse* response) {
   HOST_LOG << "Received incoming session!\n";
-  RegisterSession(base::WrapUnique(owned_session));
+  RegisterSession(base::WrapUnique(owned_session),
+                  protocol::TransportRole::CLIENT);
   *response = protocol::SessionManager::ACCEPT;
 }
 
@@ -182,7 +226,7 @@ void FtlSignalingPlayground::OnClientSignalingConnected() {
       std::make_unique<protocol::NegotiatingClientAuthenticator>(
           signal_strategy_->GetLocalAddress().id(), host_jid,
           client_auth_config));
-  RegisterSession(std::move(session));
+  RegisterSession(std::move(session), protocol::TransportRole::SERVER);
 }
 
 void FtlSignalingPlayground::FetchSecret(
@@ -202,26 +246,47 @@ void FtlSignalingPlayground::SetUpSignaling() {
 
   session_manager_ =
       std::make_unique<protocol::JingleSessionManager>(signal_strategy_.get());
-  session_manager_->set_protocol_config(
-      protocol::CandidateSessionConfig::CreateDefault());
+  auto protocol_config = protocol::CandidateSessionConfig::CreateDefault();
+  protocol_config->set_webrtc_supported(true);
+  session_manager_->set_protocol_config(std::move(protocol_config));
 
   signal_strategy_->Connect();
 }
 
 void FtlSignalingPlayground::TearDownSignaling() {
+  on_signaling_connected_callback_.Reset();
   session_.reset();
-  fake_transport_.reset();
+  transport_.reset();
+  transport_event_handler_.reset();
   signal_strategy_->RemoveListener(this);
   session_manager_.reset();
   signal_strategy_.reset();
 }
 
 void FtlSignalingPlayground::RegisterSession(
-    std::unique_ptr<protocol::Session> session) {
+    std::unique_ptr<protocol::Session> session,
+    protocol::TransportRole transport_role) {
   session_ = std::move(session);
-  fake_transport_ = std::make_unique<FakeTransport>();
+  protocol::NetworkSettings network_settings(
+      protocol::NetworkSettings::NAT_TRAVERSAL_FULL);
+  auto transport_context = base::MakeRefCounted<protocol::TransportContext>(
+      signal_strategy_.get(),
+      std::make_unique<protocol::ChromiumPortAllocatorFactory>(),
+      std::make_unique<ChromiumUrlRequestFactory>(
+          url_loader_factory_owner_->GetURLLoaderFactory()),
+      network_settings, transport_role);
+  transport_context->set_ice_config_url(
+      ServiceUrls::GetInstance()->ice_config_url(), token_getter_.get());
+  std::unique_ptr<protocol::SessionManager> session_manager(
+      new protocol::JingleSessionManager(signal_strategy_.get()));
+  transport_event_handler_ = std::make_unique<FakeTransportEventHandler>(
+      base::BindOnce(&FtlSignalingPlayground::AsyncTearDownAndRunCallback,
+                     base::Unretained(this)));
+  transport_ = std::make_unique<protocol::WebrtcTransport>(
+      jingle_glue::JingleThreadWrapper::current(), transport_context,
+      transport_event_handler_.get());
   session_->SetEventHandler(this);
-  session_->SetTransport(fake_transport_.get());
+  session_->SetTransport(transport_.get());
 }
 
 void FtlSignalingPlayground::OnSignalStrategyStateChange(
@@ -281,7 +346,7 @@ void FtlSignalingPlayground::OnSessionStateChange(
       return;
     case protocol::Session::AUTHENTICATED:
       HOST_LOG << "Session is successfully authenticated!!!";
-      break;
+      return;
 
     case protocol::Session::CLOSED:
     case protocol::Session::FAILED:
@@ -289,6 +354,15 @@ void FtlSignalingPlayground::OnSessionStateChange(
       break;
   }
 
+  TearDownAndRunCallback();
+}
+
+void FtlSignalingPlayground::AsyncTearDownAndRunCallback() {
+  tear_down_timer_.Start(FROM_HERE, base::TimeDelta(), this,
+                         &FtlSignalingPlayground::TearDownAndRunCallback);
+}
+
+void FtlSignalingPlayground::TearDownAndRunCallback() {
   TearDownSignaling();
   if (current_callback_) {
     std::move(current_callback_).Run();
