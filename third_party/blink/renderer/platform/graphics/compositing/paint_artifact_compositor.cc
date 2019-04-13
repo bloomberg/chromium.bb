@@ -1036,6 +1036,8 @@ static bool IsRenderSurfaceCandidate(
       blink_effects[effect.id] &&
       blink_effects[effect.id]->HasActiveOpacityAnimation())
     return true;
+  if (effect.is_fast_rounded_corner)
+    return true;
   return false;
 }
 

@@ -504,6 +504,9 @@ int PropertyTreeManager::EnsureCompositorScrollNode(
 }
 
 void PropertyTreeManager::EmitClipMaskLayer() {
+  if (RuntimeEnabledFeatures::FastBorderRadiusEnabled())
+    return;
+
   cc::EffectNode& mask_isolation = *GetEffectTree().Node(current_.effect_id);
   if (pending_synthetic_mask_layers_.Contains(mask_isolation.id))
     return;
@@ -755,8 +758,15 @@ SkBlendMode PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
     const auto& transform = pending_clip.clip->LocalTransformSpace();
     synthetic_effect.transform_id = EnsureCompositorTransformNode(transform);
     synthetic_effect.double_sided = !transform.IsBackfaceHidden();
-    synthetic_effect.has_render_surface = true;
-    pending_synthetic_mask_layers_.insert(synthetic_effect.id);
+
+    if (RuntimeEnabledFeatures::FastBorderRadiusEnabled()) {
+      synthetic_effect.rounded_corner_bounds =
+          gfx::RRectF(pending_clip.clip->ClipRect());
+      synthetic_effect.is_fast_rounded_corner = true;
+    } else {
+      synthetic_effect.has_render_surface = true;
+      pending_synthetic_mask_layers_.insert(synthetic_effect.id);
+    }
 
     // Clip and kDstIn do not commute. This shall never be reached because
     // kDstIn is only used internally to implement CSS clip-path and mask,
