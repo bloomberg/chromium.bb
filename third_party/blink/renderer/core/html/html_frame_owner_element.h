@@ -133,7 +133,7 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
  protected:
   HTMLFrameOwnerElement(const QualifiedName& tag_name, Document&);
 
-  void SetSandboxFlags(SandboxFlags);
+  void SetSandboxFlags(WebSandboxFlags);
 
   bool LoadOrRedirectSubframe(const KURL&,
                               const AtomicString& frame_name,

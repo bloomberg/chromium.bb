@@ -939,7 +939,7 @@ void LocalFrameClientImpl::DidChangeFramePolicy(
 }
 
 void LocalFrameClientImpl::DidSetFramePolicyHeaders(
-    SandboxFlags sandbox_flags,
+    WebSandboxFlags sandbox_flags,
     const ParsedFeaturePolicy& parsed_header) {
   if (web_frame_->Client()) {
     web_frame_->Client()->DidSetFramePolicyHeaders(

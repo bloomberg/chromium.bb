@@ -166,8 +166,10 @@ class CORE_EXPORT FrameLoader final {
 
   // The following sandbox flags will be forced, regardless of changes to the
   // sandbox attribute of any parent frames.
-  void ForceSandboxFlags(SandboxFlags flags) { forced_sandbox_flags_ |= flags; }
-  SandboxFlags EffectiveSandboxFlags() const;
+  void ForceSandboxFlags(WebSandboxFlags flags) {
+    forced_sandbox_flags_ |= flags;
+  }
+  WebSandboxFlags EffectiveSandboxFlags() const;
 
   void ModifyRequestForCSP(ResourceRequest&,
                            Document*,
@@ -294,7 +296,7 @@ class CORE_EXPORT FrameLoader final {
 
   bool in_restore_scroll_;
 
-  SandboxFlags forced_sandbox_flags_;
+  WebSandboxFlags forced_sandbox_flags_;
 
   bool dispatching_did_clear_window_object_in_main_world_;
   bool detached_;

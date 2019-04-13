@@ -36,22 +36,19 @@
 
 namespace blink {
 
-// TODO(ekaramad): Get rid of these.
-using SandboxFlag = WebSandboxFlags;
-using SandboxFlags = WebSandboxFlags;
-
-SandboxFlags ParseSandboxPolicy(const SpaceSplitString& policy,
-                                String& invalid_tokens_error_message);
+WebSandboxFlags ParseSandboxPolicy(const SpaceSplitString& policy,
+                                   String& invalid_tokens_error_message);
 
 // With FeaturePolicyForSandbox most sandbox flags will be represented with
 // features. This method returns the part of sandbox flags which were not mapped
 // to corresponding features.
-SandboxFlags GetSandboxFlagsNotImplementedAsFeaturePolicy(SandboxFlags);
+WebSandboxFlags GetSandboxFlagsNotImplementedAsFeaturePolicy(WebSandboxFlags);
 
 // Applies the sandbox flags as parsed feature policies; If a flag is present
 // both in the provided flags and in the parsed feature as a feature policy,
 // the parsed policy takes precedence.
-void ApplySandboxFlagsToParsedFeaturePolicy(SandboxFlags, ParsedFeaturePolicy&);
+void ApplySandboxFlagsToParsedFeaturePolicy(WebSandboxFlags,
+                                            ParsedFeaturePolicy&);
 
 }  // namespace blink
 

@@ -135,7 +135,7 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   Page* CreateWindowDelegate(LocalFrame*,
                              const FrameLoadRequest&,
                              const WebWindowFeatures&,
-                             SandboxFlags,
+                             WebSandboxFlags,
                              const FeaturePolicy::FeatureState&,
                              const SessionStorageNamespaceId&) override {
     return nullptr;
