@@ -8,17 +8,24 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "device/base/synchronization/shared_memory_seqlock_buffer.h"
-#include "device/gamepad/public/cpp/gamepads.h"
 #include "device/gamepad/public/mojom/gamepad.mojom-blink.h"
 #include "device/gamepad/public/mojom/gamepad_hardware_buffer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/buffer.h"
-#include "third_party/blink/public/platform/web_gamepad_listener.h"
+
+namespace base {
+class ReadOnlySharedMemoryRegion;
+}
+
+namespace device {
+class Gamepad;
+class Gamepads;
+}  // namespace device
 
 namespace blink {
 
 class LocalFrame;
+class WebGamepadListener;
 
 class GamepadSharedMemoryReader : public device::mojom::blink::GamepadObserver {
  public:

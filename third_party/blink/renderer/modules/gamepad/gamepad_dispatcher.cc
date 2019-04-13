@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/gamepad/gamepad_dispatcher.h"
 
+#include "device/gamepad/public/cpp/gamepads.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/modules/gamepad/gamepad_shared_memory_reader.h"
