@@ -200,7 +200,6 @@ MimeHandlerViewContainerBase::MimeHandlerViewContainerBase(
   DCHECK(!mime_type_.empty());
   g_mime_handler_view_container_base_map.Get()[embedder_render_frame].insert(
       this);
-  RecordInteraction(UMAType::kDidCreateMimeHandlerViewContainerBase);
 }
 
 MimeHandlerViewContainerBase::~MimeHandlerViewContainerBase() {

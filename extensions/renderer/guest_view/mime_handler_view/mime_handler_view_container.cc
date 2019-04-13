@@ -29,6 +29,8 @@ MimeHandlerViewContainer::MimeHandlerViewContainer(
     : GuestViewContainer(render_frame),
       MimeHandlerViewContainerBase(render_frame, info, mime_type, original_url),
       guest_proxy_routing_id_(-1) {
+  RecordInteraction(
+      MimeHandlerViewUMATypes::Type::kDidCreateMimeHandlerViewContainerBase);
   is_embedded_ = !render_frame->GetWebFrame()->GetDocument().IsPluginDocument();
 }
 
