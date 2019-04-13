@@ -97,18 +97,22 @@ ContentCaptureReceiver::GetContentCaptureSender() {
 
 const ContentCaptureData& ContentCaptureReceiver::GetFrameContentCaptureData() {
   base::string16 url = base::UTF8ToUTF16(rfh_->GetLastCommittedURL().spec());
-  if (url != frame_content_capture_data_.value) {
-    if (frame_content_capture_data_.id != 0) {
-      auto* manager = ContentCaptureReceiverManager::FromWebContents(
-          content::WebContents::FromRenderFrameHost(rfh_));
-      manager->DidRemoveSession(this);
-    }
+  if (url == frame_content_capture_data_.value)
+    return frame_content_capture_data_;
 
-    frame_content_capture_data_.id = id_;
-    frame_content_capture_data_.value = url;
-    const base::Optional<gfx::Size>& size = rfh_->GetFrameSize();
-    if (size.has_value())
-      frame_content_capture_data_.bounds = gfx::Rect(size.value());
+  bool should_remove_session = frame_content_capture_data_.id != 0;
+  frame_content_capture_data_.id = id_;
+  frame_content_capture_data_.value = url;
+  const base::Optional<gfx::Size>& size = rfh_->GetFrameSize();
+  if (size.has_value())
+    frame_content_capture_data_.bounds = gfx::Rect(size.value());
+
+  // frame_content_capture_data_ must be set to new value before removing
+  // sesesion, otherwises, it causes infinite loop.
+  if (should_remove_session) {
+    auto* manager = ContentCaptureReceiverManager::FromWebContents(
+        content::WebContents::FromRenderFrameHost(rfh_));
+    manager->DidRemoveSession(this);
   }
   return frame_content_capture_data_;
 }
