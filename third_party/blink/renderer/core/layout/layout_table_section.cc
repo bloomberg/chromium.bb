@@ -1394,19 +1394,6 @@ void LayoutTableSection::ComputeVisualOverflowFromDescendants() {
     for (auto* cell = row->FirstCell(); cell; cell = cell->NextCell()) {
       if (cell->HasSelfPaintingLayer())
         continue;
-      // Let the section's self visual overflow cover the cell's whole collapsed
-      // borders. This ensures correct raster invalidation on section border
-      // style change.
-      // TODO(wangxianzhu): When implementing row as DisplayItemClient of
-      // collapsed borders, the following logic should be replaced by
-      // invalidation of rows on section border style change. crbug.com/663208.
-      if (const auto* collapsed_borders = cell->GetCollapsedBorderValues()) {
-        LayoutRect rect = cell->RectForOverflowPropagation(
-            collapsed_borders->LocalVisualRect());
-        rect.MoveBy(cell->Location());
-        AddSelfVisualOverflow(rect);
-      }
-
       if (force_full_paint_ || !cell->HasVisualOverflow())
         continue;
 
