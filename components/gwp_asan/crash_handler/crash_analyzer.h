@@ -91,9 +91,11 @@ class CrashAnalyzer {
       crashpad::VMAddress gpa_addr,
       gwp_asan::Crash* proto);
 
-  // This method fills out an AllocationInfo protobuf from a
-  // SlotMetadata::AllocationInfo struct.
-  static void ReadAllocationInfo(const SlotMetadata::AllocationInfo& slot_info,
+  // This method fills out an AllocationInfo protobuf from a stack trace
+  // and a SlotMetadata::AllocationInfo struct.
+  static void ReadAllocationInfo(const uint8_t* stack_trace,
+                                 size_t stack_trace_offset,
+                                 const SlotMetadata::AllocationInfo& slot_info,
                                  gwp_asan::Crash_AllocationInfo* proto_info);
 
   FRIEND_TEST_ALL_PREFIXES(CrashAnalyzerTest, StackTraceCollection);
