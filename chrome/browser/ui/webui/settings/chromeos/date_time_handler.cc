@@ -26,19 +26,9 @@ namespace settings {
 
 namespace {
 
-// Returns whether the system time zone automatic detection policy is disabled
-// by a flag.
-bool IsSystemTimezoneAutomaticDetectionPolicyFlagDisabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableSystemTimezoneAutomaticDetectionPolicy);
-}
-
 // Returns whether the system's automatic time zone detection setting is
 // managed, which may override the user's setting.
 bool IsSystemTimezoneAutomaticDetectionManaged() {
-  if (IsSystemTimezoneAutomaticDetectionPolicyFlagDisabled())
-    return false;
-
   return g_browser_process->local_state()->IsManagedPreference(
       prefs::kSystemTimezoneAutomaticDetectionPolicy);
 }
@@ -112,9 +102,6 @@ void DateTimeHandler::OnJavascriptAllowed() {
           base::Bind(&DateTimeHandler::NotifyTimezoneAutomaticDetectionPolicy,
                      weak_ptr_factory_.GetWeakPtr()));
 
-  if (IsSystemTimezoneAutomaticDetectionPolicyFlagDisabled())
-    return;
-
   // The auto-detection policy can force auto-detection on or off.
   local_state_pref_change_registrar_.Init(g_browser_process->local_state());
   local_state_pref_change_registrar_.Add(
@@ -126,9 +113,7 @@ void DateTimeHandler::OnJavascriptAllowed() {
 void DateTimeHandler::OnJavascriptDisallowed() {
   scoped_observer_.RemoveAll();
   system_timezone_policy_subscription_.reset();
-
-  if (!IsSystemTimezoneAutomaticDetectionPolicyFlagDisabled())
-    local_state_pref_change_registrar_.RemoveAll();
+  local_state_pref_change_registrar_.RemoveAll();
 }
 
 void DateTimeHandler::HandleDateTimePageReady(const base::ListValue* args) {

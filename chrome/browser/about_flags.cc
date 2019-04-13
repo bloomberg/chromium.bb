@@ -2126,12 +2126,6 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(
          ::switches::kEnableExperimentalAccessibilityLanguageDetection)},
 #if defined(OS_CHROMEOS)
-    {"disable-system-timezone-automatic-detection",
-     flag_descriptions::kDisableSystemTimezoneAutomaticDetectionName,
-     flag_descriptions::kDisableSystemTimezoneAutomaticDetectionDescription,
-     kOsCrOS,
-     SINGLE_VALUE_TYPE(
-         chromeos::switches::kDisableSystemTimezoneAutomaticDetectionPolicy)},
     {"enable-bulk-printers", flag_descriptions::kBulkPrintersName,
      flag_descriptions::kBulkPrintersDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kBulkPrinters)},

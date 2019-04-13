@@ -278,10 +278,6 @@ const char kDisableSigninFrameClientCerts[] =
 const char kDisableSigninFrameClientCertUserSelection[] =
     "disable-signin-frame-client-cert-user-selection";
 
-// Disables SystemTimezoneAutomaticDetection policy.
-const char kDisableSystemTimezoneAutomaticDetectionPolicy[] =
-    "disable-system-timezone-automatic-detection";
-
 // Disables volume adjust sound.
 const char kDisableVolumeAdjustSound[] = "disable-volume-adjust-sound";
 

@@ -33,11 +33,6 @@ enum ServiceConfiguration {
 // SystemTimezoneAutomaticDetectionPolicy.
 // Returns SHOULD_* if timezone resolver status is controlled by this policy.
 ServiceConfiguration GetServiceConfigurationFromAutomaticDetectionPolicy() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kDisableSystemTimezoneAutomaticDetectionPolicy)) {
-    return UNSPECIFIED;
-  }
-
   PrefService* local_state = g_browser_process->local_state();
   const bool is_managed = local_state->IsManagedPreference(
       prefs::kSystemTimezoneAutomaticDetectionPolicy);
