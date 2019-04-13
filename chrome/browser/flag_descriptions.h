@@ -1848,9 +1848,6 @@ extern const char kCryptAuthV2EnrollmentDescription[];
 extern const char kDisableExplicitDmaFencesName[];
 extern const char kDisableExplicitDmaFencesDescription[];
 
-extern const char kDisableSystemTimezoneAutomaticDetectionName[];
-extern const char kDisableSystemTimezoneAutomaticDetectionDescription[];
-
 extern const char kDisableTabletAutohideTitlebarsName[];
 extern const char kDisableTabletAutohideTitlebarsDescription[];
 
