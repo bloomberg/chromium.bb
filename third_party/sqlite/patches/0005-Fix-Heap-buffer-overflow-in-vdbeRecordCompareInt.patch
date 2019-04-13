@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Darwin Huang <huangdarwin@chromium.org>
 Date: Tue, 5 Mar 2019 13:49:51 -0800
-Subject: [PATCH 05/11] Fix Heap-buffer-overflow in vdbeRecordCompareInt
+Subject: [PATCH 05/13] Fix Heap-buffer-overflow in vdbeRecordCompareInt
 
 This backports https://www.sqlite.org/src/info/c1ac00706bae45fe
 
@@ -24,5 +24,5 @@ index 773be1646914..caa45e507da6 100644
          }
          assert(
 -- 
-2.20.1
+2.21.0.392.gf8f6787159e-goog
 
