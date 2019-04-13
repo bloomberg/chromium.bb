@@ -41,7 +41,7 @@ namespace blink {
 // FeaturePolicies that implement them. Eventually almost all sandbox flags
 // should be converted to feature policies (https://crbug.com/812381).
 using SandboxFlagFeaturePolicyPairs =
-    Vector<std::pair<SandboxFlags, mojom::FeaturePolicyFeature>>;
+    Vector<std::pair<WebSandboxFlags, mojom::FeaturePolicyFeature>>;
 const SandboxFlagFeaturePolicyPairs& SandboxFlagsWithFeaturePolicies() {
   DEFINE_STATIC_LOCAL(
       SandboxFlagFeaturePolicyPairs, array,
@@ -64,8 +64,8 @@ const SandboxFlagFeaturePolicyPairs& SandboxFlagsWithFeaturePolicies() {
 // corresponding feature policies. With FeaturePolicyForSandbox, these flags
 // are always removed from the set of sandbox flags set for a sandboxed
 // <iframe> (those sandbox flags are now contained in the |ContainerPolicy|).
-SandboxFlags SandboxFlagsImplementedByFeaturePolicy() {
-  DEFINE_STATIC_LOCAL(SandboxFlags, mask, (WebSandboxFlags::kNone));
+WebSandboxFlags SandboxFlagsImplementedByFeaturePolicy() {
+  DEFINE_STATIC_LOCAL(WebSandboxFlags, mask, (WebSandboxFlags::kNone));
   if (mask == WebSandboxFlags::kNone) {
     for (const auto& pair : SandboxFlagsWithFeaturePolicies())
       mask |= pair.first;
@@ -73,11 +73,11 @@ SandboxFlags SandboxFlagsImplementedByFeaturePolicy() {
   return mask;
 }
 
-SandboxFlags ParseSandboxPolicy(const SpaceSplitString& policy,
-                                String& invalid_tokens_error_message) {
+WebSandboxFlags ParseSandboxPolicy(const SpaceSplitString& policy,
+                                   String& invalid_tokens_error_message) {
   // http://www.w3.org/TR/html5/the-iframe-element.html#attr-iframe-sandbox
   // Parse the unordered set of unique space-separated tokens.
-  SandboxFlags flags = WebSandboxFlags::kAll;
+  WebSandboxFlags flags = WebSandboxFlags::kAll;
   unsigned length = policy.size();
   unsigned number_of_token_errors = 0;
   StringBuilder token_errors;
@@ -134,14 +134,14 @@ SandboxFlags ParseSandboxPolicy(const SpaceSplitString& policy,
 
 // Removes a certain set of flags from |sandbox_flags| for which we have feature
 // policies implemented.
-SandboxFlags GetSandboxFlagsNotImplementedAsFeaturePolicy(
-    SandboxFlags sandbox_flags) {
+WebSandboxFlags GetSandboxFlagsNotImplementedAsFeaturePolicy(
+    WebSandboxFlags sandbox_flags) {
   // Punch all the sandbox flags which are converted to feature policy.
   return sandbox_flags & ~SandboxFlagsImplementedByFeaturePolicy();
 }
 
 void ApplySandboxFlagsToParsedFeaturePolicy(
-    SandboxFlags sandbox_flags,
+    WebSandboxFlags sandbox_flags,
     ParsedFeaturePolicy& parsed_feature_policy) {
   for (const auto& pair : SandboxFlagsWithFeaturePolicies()) {
     if ((sandbox_flags & pair.first) != WebSandboxFlags::kNone)

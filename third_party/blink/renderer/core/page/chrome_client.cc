@@ -103,7 +103,7 @@ Page* ChromeClient::CreateWindow(
     LocalFrame* frame,
     const FrameLoadRequest& r,
     const WebWindowFeatures& features,
-    SandboxFlags sandbox_flags,
+    WebSandboxFlags sandbox_flags,
     const FeaturePolicy::FeatureState& opener_feature_state,
     const SessionStorageNamespaceId& session_storage_namespace_id) {
   if (!CanOpenUIElementIfDuringPageDismissal(

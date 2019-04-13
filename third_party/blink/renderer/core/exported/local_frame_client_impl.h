@@ -208,7 +208,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void DidEnforceInsecureNavigationsSet(const std::vector<unsigned>&) override;
   void DidChangeFramePolicy(Frame* child_frame, const FramePolicy&) override;
   void DidSetFramePolicyHeaders(
-      SandboxFlags,
+      WebSandboxFlags,
       const ParsedFeaturePolicy& parsed_header) override;
   void DidAddContentSecurityPolicies(
       const blink::WebVector<WebContentSecurityPolicy>&) override;

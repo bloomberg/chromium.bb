@@ -1098,7 +1098,7 @@ class CORE_EXPORT Document : public ContainerNode,
                                const String& context_url,
                                const WTF::OrdinalNumber& context_line);
 
-  void EnforceSandboxFlags(SandboxFlags mask) override;
+  void EnforceSandboxFlags(WebSandboxFlags mask) override;
 
   void StatePopped(scoped_refptr<SerializedScriptValue>);
 

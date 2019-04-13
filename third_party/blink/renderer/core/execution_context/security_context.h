@@ -90,9 +90,9 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
   void SetSecurityOrigin(scoped_refptr<SecurityOrigin>);
   virtual void DidUpdateSecurityOrigin() = 0;
 
-  SandboxFlags GetSandboxFlags() const { return sandbox_flags_; }
-  bool IsSandboxed(SandboxFlag mask) const;
-  virtual void EnforceSandboxFlags(SandboxFlags mask);
+  WebSandboxFlags GetSandboxFlags() const { return sandbox_flags_; }
+  bool IsSandboxed(WebSandboxFlags mask) const;
+  virtual void EnforceSandboxFlags(WebSandboxFlags mask);
 
   void SetAddressSpace(mojom::IPAddressSpace space) { address_space_ = space; }
   mojom::IPAddressSpace AddressSpace() const { return address_space_; }
@@ -181,7 +181,7 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
   // Apply the sandbox flag. In addition, if the origin is not already opaque,
   // the origin is updated to a newly created unique opaque origin, setting the
   // potentially trustworthy bit from |is_potentially_trustworthy|.
-  void ApplySandboxFlags(SandboxFlags mask,
+  void ApplySandboxFlags(WebSandboxFlags mask,
                          bool is_potentially_trustworthy = false);
 
  protected:
@@ -195,7 +195,7 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
   // default value ignoring container, header, and inherited policies.
   virtual bool HasCustomizedFeaturePolicy() const { return true; }
 
-  SandboxFlags sandbox_flags_;
+  WebSandboxFlags sandbox_flags_;
 
  private:
   scoped_refptr<SecurityOrigin> security_origin_;
