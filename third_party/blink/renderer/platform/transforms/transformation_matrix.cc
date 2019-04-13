@@ -2080,26 +2080,11 @@ void TransformationMatrix::ToColumnMajorFloatArray(FloatMatrix4& result) const {
 
 SkMatrix44 TransformationMatrix::ToSkMatrix44(
     const TransformationMatrix& matrix) {
-  // TODO(masonfreed): Replace this with an explicit 16-element constructor
-  // on SkMatrix44, once that's available. This code does a *lot* of extra
-  // work, because each call to setDouble re-calculates the matrix type.
-  SkMatrix44 ret(SkMatrix44::kIdentity_Constructor);
-  ret.setDouble(0, 0, matrix.M11());
-  ret.setDouble(0, 1, matrix.M21());
-  ret.setDouble(0, 2, matrix.M31());
-  ret.setDouble(0, 3, matrix.M41());
-  ret.setDouble(1, 0, matrix.M12());
-  ret.setDouble(1, 1, matrix.M22());
-  ret.setDouble(1, 2, matrix.M32());
-  ret.setDouble(1, 3, matrix.M42());
-  ret.setDouble(2, 0, matrix.M13());
-  ret.setDouble(2, 1, matrix.M23());
-  ret.setDouble(2, 2, matrix.M33());
-  ret.setDouble(2, 3, matrix.M43());
-  ret.setDouble(3, 0, matrix.M14());
-  ret.setDouble(3, 1, matrix.M24());
-  ret.setDouble(3, 2, matrix.M34());
-  ret.setDouble(3, 3, matrix.M44());
+  SkMatrix44 ret(SkMatrix44::kUninitialized_Constructor);
+  ret.set4x4(matrix.M11(), matrix.M12(), matrix.M13(), matrix.M14(),
+             matrix.M21(), matrix.M22(), matrix.M23(), matrix.M24(),
+             matrix.M31(), matrix.M32(), matrix.M33(), matrix.M34(),
+             matrix.M41(), matrix.M42(), matrix.M43(), matrix.M44());
   return ret;
 }
 
