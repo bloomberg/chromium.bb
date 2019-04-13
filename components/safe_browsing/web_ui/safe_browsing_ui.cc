@@ -21,6 +21,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/grit/components_resources.h"
@@ -33,6 +34,8 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 
 #if SAFE_BROWSING_DB_LOCAL
@@ -163,12 +166,23 @@ void WebUIInfoSingleton::LogMessage(const std::string& message) {
   base::Time timestamp = base::Time::Now();
   log_messages_.push_back(std::make_pair(timestamp, message));
 
-  for (auto* webui_listener : webui_instances_)
-    webui_listener->NotifyLogMessageJsListener(timestamp, message);
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(&WebUIInfoSingleton::NotifyLogMessageListeners, timestamp,
+                     message));
 }
 
 void WebUIInfoSingleton::ClearLogMessages() {
   std::vector<std::pair<base::Time, std::string>>().swap(log_messages_);
+}
+
+/* static */ void WebUIInfoSingleton::NotifyLogMessageListeners(
+    const base::Time& timestamp,
+    const std::string& message) {
+  WebUIInfoSingleton* web_ui_info = GetInstance();
+
+  for (auto* webui_listener : web_ui_info->webui_instances())
+    webui_listener->NotifyLogMessageJsListener(timestamp, message);
 }
 
 void WebUIInfoSingleton::RegisterWebUIInstance(SafeBrowsingUIHandler* webui) {
@@ -986,10 +1000,23 @@ SafeBrowsingUI::~SafeBrowsingUI() {}
 
 SafeBrowsingUIHandler::SafeBrowsingUIHandler(content::BrowserContext* context)
     : browser_context_(context) {
-  WebUIInfoSingleton::GetInstance()->RegisterWebUIInstance(this);
 }
 
 SafeBrowsingUIHandler::~SafeBrowsingUIHandler() {
+  WebUIInfoSingleton::GetInstance()->UnregisterWebUIInstance(this);
+}
+
+void SafeBrowsingUIHandler::OnJavascriptAllowed() {
+  // We don't want to register the SafeBrowsingUIHandler with the
+  // WebUIInfoSingleton at construction, since this can lead to
+  // messages being sent to the renderer before it's ready. So register it here.
+  WebUIInfoSingleton::GetInstance()->RegisterWebUIInstance(this);
+}
+
+void SafeBrowsingUIHandler::OnJavascriptDisallowed() {
+  // In certain situations, Javascript can become disallowed before the
+  // destructor is called (e.g. tab refresh/renderer crash). In these situation,
+  // we want to stop receiving JS messages.
   WebUIInfoSingleton::GetInstance()->UnregisterWebUIInstance(this);
 }
 
