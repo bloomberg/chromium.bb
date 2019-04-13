@@ -231,9 +231,7 @@
 #endif
 
 #if defined(FULL_SAFE_BROWSING)
-#include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/ui/webui/reset_password/reset_password_ui.h"
-#include "components/safe_browsing/features.h"
 #endif
 
 using content::WebUI;
@@ -702,13 +700,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   }
 
 #if defined(FULL_SAFE_BROWSING)
-  bool enable_reset_password =
-      base::FeatureList::IsEnabled(
-          safe_browsing::kForceEnableResetPasswordWebUI) ||
-      safe_browsing::ChromePasswordProtectionService::
-          IsPasswordReuseProtectionConfigured(profile);
-  if (url.host_piece() == chrome::kChromeUIResetPasswordHost &&
-      enable_reset_password) {
+  if (url.host_piece() == chrome::kChromeUIResetPasswordHost) {
     return &NewWebUI<ResetPasswordUI>;
   }
 #endif
