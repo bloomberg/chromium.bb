@@ -84,6 +84,11 @@ void MimeHandlerViewFrameContainer::CreateWithFrame(
     const GURL& resource_url,
     const std::string& mime_type,
     const std::string& view_id) {
+  // TODO(ekaramad): Eventually MHVFC should not request the resource which
+  // means this mode of MHVFC is no longer necessary. After intercepting the
+  // response we should just proceed with creating the MimeHandlerViewGuest
+  // and attaching to the inserted <iframe> on the browser side. The current
+  // renderer state for it seems unnecessary.
   new MimeHandlerViewFrameContainer(web_frame, resource_url, mime_type,
                                     view_id);
 }
@@ -102,6 +107,8 @@ MimeHandlerViewFrameContainer::MimeHandlerViewFrameContainer(
       element_instance_id_(content::RenderThread::Get()->GenerateRoutingID()),
       render_frame_lifetime_observer_(
           new RenderFrameLifetimeObserver(this, GetEmbedderRenderFrame())) {
+  RecordInteraction(
+      MimeHandlerViewUMATypes::Type::kDidCreateMimeHandlerViewContainerBase);
   is_embedded_ = true;
   SendResourceRequest();
 }
