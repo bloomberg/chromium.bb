@@ -363,14 +363,15 @@ bool ShouldExcludeForCycleList(const aura::Window* window) {
 }
 
 bool ShouldExcludeForOverview(const aura::Window* window) {
-  // Remove the default snapped window from the window list. The default
-  // snapped window occupies one side of the screen, while the other windows
-  // occupy the other side of the screen in overview mode. The default snap
-  // position is the position where the window was first snapped. See
-  // |default_snap_position_| in SplitViewController for more detail.
-  if (Shell::Get()->IsSplitViewModeActive() &&
-      window ==
-          Shell::Get()->split_view_controller()->GetDefaultSnappedWindow()) {
+  // If we're currently in tablet splitview, remove the default snapped window
+  // from the window list. The default snapped window occupies one side of the
+  // screen, while the other windows occupy the other side of the screen in
+  // overview mode. The default snap position is the position where the window
+  // was first snapped. See |default_snap_position_| in SplitViewController for
+  // more detail.
+  auto* split_view_controller = Shell::Get()->split_view_controller();
+  if (split_view_controller->InTabletSplitViewMode() &&
+      window == split_view_controller->GetDefaultSnappedWindow()) {
     return true;
   }
 

@@ -5,6 +5,7 @@
 #include "ash/wm/splitview/split_view_utils.h"
 
 #include "ash/accessibility/accessibility_controller.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
@@ -217,6 +218,11 @@ void DoSplitviewTransformAnimation(ui::Layer* layer,
   layer->SetTransform(target_transform);
 }
 
+bool IsClamshellSplitViewModeEnabled() {
+  return base::FeatureList::IsEnabled(
+      ash::features::kDragToSnapInClamshellMode);
+}
+
 bool ShouldAllowSplitView() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshDisableTabletSplitView)) {
@@ -225,7 +231,8 @@ bool ShouldAllowSplitView() {
 
   if (!Shell::Get()
            ->tablet_mode_controller()
-           ->IsTabletModeWindowManagerEnabled()) {
+           ->IsTabletModeWindowManagerEnabled() &&
+      !IsClamshellSplitViewModeEnabled()) {
     return false;
   }
 

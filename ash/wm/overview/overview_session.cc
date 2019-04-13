@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "ash/accessibility/accessibility_controller.h"
+#include "ash/app_list/app_list_controller_impl.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/screen_util.h"
@@ -350,7 +351,7 @@ void OverviewSession::OnGridEmpty(OverviewGrid* grid) {
     // not active. Set |index| to -1 so that it does not attempt to select any
     // items.
     index = -1;
-    if (!Shell::Get()->IsSplitViewModeActive()) {
+    if (!Shell::Get()->split_view_controller()->InTabletSplitViewMode()) {
       for (const auto& grid : grid_list_)
         grid->Shutdown();
       grid_list_.clear();
@@ -760,6 +761,15 @@ void OverviewSession::OnWindowDestroying(aura::Window* window) {
 }
 
 void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
+  // If app list is open when overview is active (it can happen in clamshell
+  // mode, when we snap an overview window to one side of the screen and then
+  // open the app list to select an app to snap to the other side), in this case
+  // we let the app list to handle the key event.
+  // TODO(crbug.com/952315): Explore better ways to handle this splitview +
+  // overview + applist case.
+  if (Shell::Get()->app_list_controller()->IsVisible())
+    return;
+
   if (event->type() != ui::ET_KEY_PRESSED)
     return;
 
@@ -831,6 +841,10 @@ void OverviewSession::OnShellDestroying() {
 void OverviewSession::OnSplitViewStateChanged(
     SplitViewController::State previous_state,
     SplitViewController::State state) {
+  // Do nothing if overview is being shutdown.
+  if (!Shell::Get()->overview_controller()->IsSelecting())
+    return;
+
   const bool unsnappable_window_activated =
       state == SplitViewController::NO_SNAP &&
       Shell::Get()->split_view_controller()->end_reason() ==
@@ -842,9 +856,12 @@ void OverviewSession::OnSplitViewStateChanged(
     ResetFocusRestoreWindow(false);
 
   // If two windows were snapped to both sides of the screen or an unsnappable
-  // window was just activated, end overview mode and bail out.
+  // window was just activated, or we're in single split mode in clamshell mode
+  // and there is no window in overview, end overview mode and bail out.
   if (state == SplitViewController::BOTH_SNAPPED ||
-      unsnappable_window_activated) {
+      unsnappable_window_activated ||
+      (Shell::Get()->split_view_controller()->InClamshellSplitViewMode() &&
+       IsEmpty())) {
     CancelSelection();
     return;
   }

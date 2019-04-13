@@ -16,6 +16,10 @@ namespace features {
 // https://crbug.com/709824.
 ASH_PUBLIC_EXPORT extern const base::Feature kDockedMagnifier;
 
+// Enables dragging and snapping an overview window in clamshell mode.
+// TODO(crbug.com/890029): Remove this when the feature is fully launched.
+ASH_PUBLIC_EXPORT extern const base::Feature kDragToSnapInClamshellMode;
+
 // Enables rounded corners in overview mode for testing.
 // TODO(crbug.com/903486): Remove this when new rounded corners implementation
 // has landed.

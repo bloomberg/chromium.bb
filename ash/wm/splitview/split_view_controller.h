@@ -13,6 +13,7 @@
 #include "ash/public/interfaces/split_view.mojom.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/overview/overview_observer.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "ash/wm/window_state_observer.h"
 #include "base/containers/flat_map.h"
@@ -76,6 +77,19 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
     kPipExpanded,
   };
 
+  // The behaviors of split view are very different when in tablet mode and in
+  // clamshell mode. In tablet mode, split view mode will stay active until the
+  // user explicitly ends it (e.g., by pressing home launcher, or long pressing
+  // the overview button, or sliding the divider bar to the edge, etc). However,
+  // in clamshell mode, there is no divider bar, and split view mode only stays
+  // active during overview snapping, i.e., it's only possible that split view
+  // is active when overview is active. Once the user has selected two windows
+  // to snap to both side of the screen, split view mode is no longer active.
+  enum class SplitViewType {
+    kTabletType = 0,
+    kClamshellType,
+  };
+
   class Observer {
    public:
     // Called when split view state changed from |previous_state| to |state|.
@@ -93,8 +107,12 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   // Binds the mojom::SplitViewController interface to this object.
   void BindRequest(mojom::SplitViewControllerRequest request);
 
-  // Returns true if split view mode is active.
+  // Returns true if split view mode is active. Please see SplitViewType above
+  // to see the difference between tablet mode and clamshell mode splitview
+  // mode.
   bool IsSplitViewModeActive() const;
+  bool InClamshellSplitViewMode() const;
+  bool InTabletSplitViewMode() const;
 
   // Snaps window to left/right. It will try to remove |window| from the
   // overview window grid first before snapping it if |window| is currently
@@ -151,6 +169,12 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   void OnWindowDragEnded(aura::Window* dragged_window,
                          SnapPosition desired_snap_position,
                          const gfx::Point& last_location_in_screen);
+  void OnWindowBoundsChanged(aura::Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds,
+                             ui::PropertyChangeReason reason) override;
+  void OnResizeLoopStarted(aura::Window* window) override;
+  void OnResizeLoopEnded(aura::Window* window) override;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -188,7 +212,9 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
                                uint32_t metrics) override;
 
   // TabletModeObserver:
+  void OnTabletModeStarted() override;
   void OnTabletModeEnding() override;
+  void OnTabletControllerDestroyed() override;
 
   // AccessibilityObserver:
   void OnAccessibilityStatusChanged() override;
@@ -389,10 +415,10 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   aura::Window* left_window_ = nullptr;
   aura::Window* right_window_ = nullptr;
 
-  // Split view divider widget. It's a black bar stretching from one edge of the
-  // screen to the other, containing a small white drag bar in the middle. As
-  // the user presses on it and drag it to left or right, the left and right
-  // window will be resized accordingly.
+  // Split view divider widget. Only exist in tablet splitview mode. It's a
+  // black bar stretching from one edge of the screen to the other, containing a
+  // small white drag bar in the middle. As the user presses on it and drag it
+  // to left or right, the left and right window will be resized accordingly.
   std::unique_ptr<SplitViewDivider> split_view_divider_;
 
   // A black scrim layer that fades in over a window when it’s width drops under
@@ -400,7 +426,7 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   // closer to the edge of the screen.
   std::unique_ptr<ui::Layer> black_scrim_layer_;
 
-  // The window observer that obseves the tab-dragged window.
+  // The window observer that obseves the tab-dragged window in tablet mode.
   std::unique_ptr<TabDraggedWindowObserver> dragged_window_observer_;
 
   // The distance between the origin of the divider and the origin of the
@@ -443,6 +469,10 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   // Stores the reason which cause splitview to end.
   EndReason end_reason_ = EndReason::kNormal;
 
+  // The split view type. See SplitViewType for the differences between tablet
+  // split view and clamshell split view.
+  SplitViewType split_view_type_ = SplitViewType::kTabletType;
+
   // The time when splitview starts. Used for metric collection purpose.
   base::Time splitview_start_time_;
 
@@ -452,6 +482,9 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
 
   base::ObserverList<Observer>::Unchecked observers_;
   mojo::InterfacePtrSet<mojom::SplitViewObserver> mojo_observers_;
+
+  ScopedObserver<TabletModeController, TabletModeObserver>
+      tablet_mode_observer_{this};
 
   // Records the presentation time of resize operation in split view mode.
   std::unique_ptr<PresentationTimeRecorder> presentation_time_recorder_;
