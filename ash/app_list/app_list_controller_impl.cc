@@ -985,9 +985,14 @@ bool AppListControllerImpl::ProcessHomeLauncherGesture(
 
 bool AppListControllerImpl::CanProcessEventsOnApplistViews() {
   // Do not allow processing events during overview or while overview is
-  // finished but still animating out.
+  // finished but still animating out. Note in clamshell mode, if overview and
+  // splitview is both active, we still allow the user to open app list and
+  // select an app. The app will be opened in snapped window state and overview
+  // will be ended after the app is opened.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
-  if (overview_controller->IsSelecting() ||
+  auto* split_view_controller = Shell::Get()->split_view_controller();
+  if ((overview_controller->IsSelecting() &&
+       !split_view_controller->InClamshellSplitViewMode()) ||
       overview_controller->IsCompletingShutdownAnimations()) {
     return false;
   }

@@ -79,8 +79,11 @@ void DoSplitviewTransformAnimation(ui::Layer* layer,
                                    SplitviewAnimationType type,
                                    const gfx::Transform& target_transform);
 
-// Returns true if split view mode is supported. Currently the split view
-// mode is only supported in tablet mode.
+// Returns true if we allow dragging an overview window to snap to split view in
+// clamshell mode.
+ASH_EXPORT bool IsClamshellSplitViewModeEnabled();
+
+// Returns true if split view mode is supported.
 ASH_EXPORT bool ShouldAllowSplitView();
 
 // Returns true if |window| can be activated and snapped in split screen in
