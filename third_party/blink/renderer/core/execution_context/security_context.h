@@ -129,9 +129,6 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
   bool GetMixedAutoUpgradeOptOut() { return mixed_autoupgrade_opt_out_; }
 
   FeaturePolicy* GetFeaturePolicy() const { return feature_policy_.get(); }
-  FeaturePolicy* GetReportOnlyFeaturePolicy() const {
-    return report_only_feature_policy_.get();
-  }
   void SetFeaturePolicy(std::unique_ptr<FeaturePolicy> feature_policy);
   // Constructs the enforcement FeaturePolicy struct for this security context.
   // The resulted FeaturePolicy is a combination of:
