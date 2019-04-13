@@ -34,6 +34,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source) {
     {"controlledSettingShared", IDS_CONTROLLED_SETTING_SHARED},
     {"controlledSettingWithOwner", IDS_CONTROLLED_SETTING_WITH_OWNER},
     {"controlledSettingNoOwner", IDS_CONTROLLED_SETTING_NO_OWNER},
+    {"controlledSettingWithParent", IDS_CONTROLLED_SETTING_WITH_PARENT},
 #endif
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
