@@ -19,6 +19,7 @@ namespace content_capture {
 namespace {
 
 static const char kMainFrameUrl[] = "http://foo.com/main.html";
+static const char kMainFrameUrl2[] = "http://foo.com/2.html";
 static const char kChildFrameUrl[] = "http://foo.org/child.html";
 
 // Fake ContentCaptureSender to call ContentCaptureReceiver mojom interface.
@@ -378,7 +379,34 @@ TEST_F(ContentCaptureReceiverTest, ChildFrameCaptureContentFirst) {
   EXPECT_EQ(GetExpectedTestData2(false /* main_frame */),
             content_capture_receiver_manager_helper()->captured_data());
 
-  // When main frame navigates to another URL, the parent session will change.
+  // When main frame navigates to same url, the parent session will not change.
+  NavigateMainFrame(GURL(kMainFrameUrl));
+  SetupChildFrame();
+  DidCaptureContentForChildFrame(test_data2(), true /* first_data */);
+  VerifySession(expected,
+                content_capture_receiver_manager_helper()->parent_session());
+  EXPECT_TRUE(
+      content_capture_receiver_manager_helper()->removed_session().empty());
+
+  // When main frame navigates to same domain, the parent session will change.
+  NavigateMainFrame(GURL(kMainFrameUrl2));
+  SetupChildFrame();
+  DidCaptureContentForChildFrame(test_data2(), true /* first_data */);
+
+  // Intentionally reuse the data.id from previous result, so we know navigating
+  // to same domain didn't create new ContentCaptureReceiver when call
+  // VerifySession(), otherwise, we can't test the code to handle the navigation
+  // in ContentCaptureReceiver.
+  data.value = base::ASCIIToUTF16(kMainFrameUrl2);
+  // Currently, there is no way to fake frame size, set it to 0.
+  data.bounds = gfx::Rect();
+  expected.clear();
+  expected.push_back(data);
+  VerifySession(expected,
+                content_capture_receiver_manager_helper()->parent_session());
+
+  // When main frame navigates to different domain, the parent session will
+  // change.
   NavigateMainFrame(GURL(kChildFrameUrl));
   SetupChildFrame();
   DidCaptureContentForChildFrame(test_data2(), true /* first_data */);
