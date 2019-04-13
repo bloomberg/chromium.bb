@@ -455,17 +455,35 @@ TracingControllerImpl::FinalizeStartupTracingIfNeeded() {
   // There are two cases:
   // 1. Startup duration is not reached.
   // 2. Or if the trace should be saved to file for --trace-config-file flag.
+  base::Optional<base::FilePath> startup_trace_file;
   if (startup_trace_timer_.IsRunning()) {
     startup_trace_timer_.Stop();
     if (startup_trace_file_ != base::FilePath().AppendASCII("none")) {
-      return std::make_unique<BrowserShutdownProfileDumper>(
-          startup_trace_file_);
+      startup_trace_file = startup_trace_file_;
     }
   } else if (tracing::TraceStartupConfig::GetInstance()
                  ->ShouldTraceToResultFile()) {
-    return std::make_unique<BrowserShutdownProfileDumper>(
-        GetStartupTraceFileName());
+    startup_trace_file = GetStartupTraceFileName();
   }
+  if (!startup_trace_file)
+    return nullptr;
+  if (!tracing::TracingUsesPerfettoBackend()) {
+    return std::make_unique<BrowserShutdownProfileDumper>(
+        startup_trace_file.value());
+  }
+  // Perfetto doesn't support shutdown profiling due to complications
+  // around service shutdown timings.
+  // TODO(eseckler): Do something about it.
+  base::RunLoop run_loop;
+  StopTracing(CreateFileEndpoint(
+      startup_trace_file.value(),
+      base::BindRepeating(
+          [](base::FilePath trace_file, base::OnceClosure quit_closure) {
+            OnStoppedStartupTracing(trace_file);
+            std::move(quit_closure).Run();
+          },
+          startup_trace_file.value(), run_loop.QuitClosure())));
+  run_loop.Run();
   return nullptr;
 }
 
