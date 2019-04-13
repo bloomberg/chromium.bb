@@ -31,9 +31,9 @@
 
 namespace blink {
 
-Gamepad::Gamepad(NavigatorGamepad* navigator_gamepad)
+Gamepad::Gamepad(NavigatorGamepad* navigator_gamepad, unsigned index)
     : navigator_gamepad_(navigator_gamepad),
-      index_(0),
+      index_(index),
       timestamp_(0.0),
       has_vibration_actuator_(false),
       vibration_actuator_type_(device::GamepadHapticActuatorType::kDualRumble),
