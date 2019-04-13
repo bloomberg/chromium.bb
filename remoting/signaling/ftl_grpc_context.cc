@@ -10,6 +10,7 @@
 #include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "google_apis/google_api_keys.h"
+#include "remoting/base/service_urls.h"
 #include "third_party/grpc/src/include/grpcpp/channel.h"
 #include "third_party/grpc/src/include/grpcpp/client_context.h"
 #include "third_party/grpc/src/include/grpcpp/grpcpp.h"
@@ -19,9 +20,6 @@ namespace remoting {
 namespace {
 
 constexpr char kChromotingAppIdentifier[] = "CRD";
-
-// TODO(yuweih): We should target different service environments.
-constexpr char kFtlServerEndpoint[] = "instantmessaging-pa.googleapis.com";
 
 static base::NoDestructor<GrpcChannelSharedPtr> g_channel_for_testing;
 
@@ -81,7 +79,8 @@ GrpcChannelSharedPtr FtlGrpcContext::CreateChannel() {
   if (*g_channel_for_testing) {
     return *g_channel_for_testing;
   }
-  return CreateSslChannelForEndpoint(kFtlServerEndpoint);
+  return CreateSslChannelForEndpoint(
+      ServiceUrls::GetInstance()->ftl_server_endpoint());
 }
 
 // static
