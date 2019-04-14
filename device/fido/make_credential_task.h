@@ -73,6 +73,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialTask : public FidoTask {
   std::unique_ptr<SignOperation> silent_sign_operation_;
   MakeCredentialTaskCallback callback_;
   size_t current_credential_ = 0;
+  bool canceled_ = false;
 
   base::WeakPtrFactory<MakeCredentialTask> weak_factory_;
 

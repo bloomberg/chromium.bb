@@ -96,7 +96,8 @@ CtapMakeCredentialRequest MakeCredentialTask::GetTouchRequest(
 }
 
 void MakeCredentialTask::Cancel() {
-  // TODO: should set a flag on this object to stop any more operations.
+  canceled_ = true;
+
   if (register_operation_) {
     register_operation_->Cancel();
   }
@@ -158,6 +159,10 @@ void MakeCredentialTask::HandleResponseToSilentSignRequest(
     CtapDeviceResponseCode response_code,
     base::Optional<AuthenticatorGetAssertionResponse> response_data) {
   DCHECK(request_.exclude_list() && request_.exclude_list()->size() > 0);
+
+  if (canceled_) {
+    return;
+  }
 
   // The authenticator recognized a credential from the exclude list. Send the
   // actual request with only that credential in the exclude list to collect a

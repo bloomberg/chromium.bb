@@ -42,6 +42,10 @@ void U2fRegisterOperation::Start() {
   }
 }
 
+void U2fRegisterOperation::Cancel() {
+  canceled_ = true;
+}
+
 void U2fRegisterOperation::TrySign() {
   DispatchDeviceRequest(
       ConvertToU2fSignCommand(request(), excluded_key_handle()),
@@ -51,6 +55,10 @@ void U2fRegisterOperation::TrySign() {
 
 void U2fRegisterOperation::OnCheckForExcludedKeyHandle(
     base::Optional<std::vector<uint8_t>> device_response) {
+  if (canceled_) {
+    return;
+  }
+
   auto result = apdu::ApduResponse::Status::SW_WRONG_DATA;
   if (device_response) {
     const auto apdu_response =
@@ -115,6 +123,10 @@ void U2fRegisterOperation::TryRegistration() {
 
 void U2fRegisterOperation::OnRegisterResponseReceived(
     base::Optional<std::vector<uint8_t>> device_response) {
+  if (canceled_) {
+    return;
+  }
+
   auto result = apdu::ApduResponse::Status::SW_WRONG_DATA;
   const auto apdu_response =
       device_response
