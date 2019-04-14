@@ -35,7 +35,7 @@
 #include <sys/mman.h>
 #include <signal.h>
 #include <time.h>
-#include <sys/poll.h>
+#include <poll.h>
 #include <float.h>
 #include <math.h>
 
