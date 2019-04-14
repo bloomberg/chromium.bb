@@ -90,6 +90,18 @@ class Ctap2DeviceOperation : public DeviceOperation<Request, Response> {
                        weak_factory_.GetWeakPtr()));
   }
 
+  // Cancel requests that the operation be canceled. This is safe to call at any
+  // time but may not be effective because the operation may have already
+  // completed or the device may not support cancelation. Even if canceled, the
+  // callback will still be invoked, albeit perhaps with a status of
+  // |kCtap2ErrKeepAliveCancel|.
+  void Cancel() override {
+    if (this->token_) {
+      this->device()->Cancel(*this->token_);
+      this->token_.reset();
+    }
+  }
+
   void OnResponseReceived(
       base::Optional<std::vector<uint8_t>> device_response) {
     this->token_.reset();

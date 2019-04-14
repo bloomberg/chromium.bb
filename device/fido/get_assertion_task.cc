@@ -50,6 +50,8 @@ GetAssertionTask::GetAssertionTask(FidoDevice* device,
 GetAssertionTask::~GetAssertionTask() = default;
 
 void GetAssertionTask::Cancel() {
+  canceled_ = true;
+
   if (sign_operation_) {
     sign_operation_->Cancel();
   }
@@ -114,6 +116,10 @@ void GetAssertionTask::U2fSign() {
 void GetAssertionTask::HandleResponse(
     CtapDeviceResponseCode response_code,
     base::Optional<AuthenticatorGetAssertionResponse> response_data) {
+  if (canceled_) {
+    return;
+  }
+
   // Some authenticators will return this error before waiting for a touch if
   // they don't recognise a credential. In other cases the result can be
   // returned immediately.
@@ -137,6 +143,10 @@ void GetAssertionTask::HandleResponseToSilentRequest(
     CtapDeviceResponseCode response_code,
     base::Optional<AuthenticatorGetAssertionResponse> response_data) {
   DCHECK(request_.allow_list() && request_.allow_list()->size() > 0);
+
+  if (canceled_) {
+    return;
+  }
 
   // Credential was recognized by the device. As this authentication was a
   // silent authentication (i.e. user touch was not provided), try again with

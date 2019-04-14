@@ -79,6 +79,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionTask : public FidoTask {
   std::unique_ptr<RegisterOperation> dummy_register_operation_;
   GetAssertionTaskCallback callback_;
   size_t current_credential_ = 0;
+  bool canceled_ = false;
 
   base::WeakPtrFactory<GetAssertionTask> weak_factory_;
 
