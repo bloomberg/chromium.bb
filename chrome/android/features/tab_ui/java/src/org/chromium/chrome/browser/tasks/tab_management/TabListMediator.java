@@ -4,16 +4,20 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import android.content.ComponentCallbacks;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.View;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
@@ -119,6 +123,7 @@ class TabListMediator {
     private final CreateGroupButtonProvider mCreateGroupButtonProvider;
     private final String mComponentName;
     private boolean mCloseAllRelatedTabs;
+    private ComponentCallbacks mComponentCallbacks;
 
     private final TabActionListener mTabSelectedListener = new TabActionListener() {
         @Override
@@ -361,6 +366,23 @@ class TabListMediator {
         };
     }
 
+    void registerOrientationListener(GridLayoutManager manager) {
+        // TODO(yuezhanggg): Try to dynamically determine span counts based on screen width,
+        // minimum card width and padding.
+        mComponentCallbacks = new ComponentCallbacks() {
+            @Override
+            public void onConfigurationChanged(Configuration newConfig) {
+                manager.setSpanCount(newConfig.orientation == Configuration.ORIENTATION_PORTRAIT
+                                ? TabListCoordinator.GRID_LAYOUT_SPAN_COUNT_PORTRAIT
+                                : TabListCoordinator.GRID_LAYOUT_SPAN_COUNT_LANDSCAPE);
+            }
+
+            @Override
+            public void onLowMemory() {}
+        };
+        ContextUtils.getApplicationContext().registerComponentCallbacks(mComponentCallbacks);
+    }
+
     /**
      * Destroy any members that needs clean up.
      */
@@ -374,6 +396,9 @@ class TabListMediator {
         if (mTabModelObserver != null) {
             mTabModelSelector.getTabModelFilterProvider().removeTabModelFilterObserver(
                     mTabModelObserver);
+        }
+        if (mComponentCallbacks != null) {
+            ContextUtils.getApplicationContext().unregisterComponentCallbacks(mComponentCallbacks);
         }
     }
 
