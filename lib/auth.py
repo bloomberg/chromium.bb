@@ -73,6 +73,7 @@ def Login(service_account_json=None):
 
   result = cros_build_lib.RunCommand(
       cmd,
+      print_cmd=False,
       mute_output=True,
       error_code_ok=True)
 
@@ -101,6 +102,7 @@ def Token(service_account_json=None):
 
   result = cros_build_lib.RunCommand(
       cmd,
+      print_cmd=False,
       mute_output=True,
       capture_output=True,
       error_code_ok=True)
