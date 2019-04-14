@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
+import android.support.annotation.Nullable;
+
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 
@@ -43,6 +45,28 @@ public interface TabModel extends TabList {
      * @return true if the tab was found
      */
     public boolean closeTab(Tab tab, boolean animate, boolean uponExit, boolean canUndo);
+
+    /**
+     * Unregisters and destroys the specified tab, and then switches to {@code recommendedNextTab}
+     * if it is not null, otherwise switches to the previous tab.
+     *
+     * @param tab The non-null tab to close.
+     * @param recommendedNextTab The tab to switch to if not null.
+     * @param animate true iff the closing animation should be displayed.
+     * @param uponExit true iff the tab is being closed upon application exit (after user presses
+     *                 the system back button).
+     * @param canUndo Whether or not this action can be undone. If this is {@code true} and
+     *                {@link #supportsPendingClosures()} is {@code true}, this {@link Tab}
+     *                will not actually be closed until {@link #commitTabClosure(int)} or
+     *                {@link #commitAllTabClosures()} is called, but it will be effectively removed
+     *                from this list. To get a comprehensive list of all tabs, including ones that
+     *                have been partially closed, use the {@link TabList} from
+     *                {@link #getComprehensiveModel()}.
+     *
+     * @return true if the tab was found.
+     */
+    public boolean closeTab(Tab tab, @Nullable Tab recommendedNextTab, boolean animate,
+            boolean uponExit, boolean canUndo);
 
     /**
      * Returns which tab would be selected if the specified tab {@code id} were closed.
