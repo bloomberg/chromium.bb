@@ -5752,15 +5752,11 @@ static void highbd_inv_txfm2d_add_4x16_sse4_1(const int32_t *input,
   load_buffer_32bit_input(input_row, input_stride, buf0_cur, txfm_size_row);
   for (int i = 0; i < (txfm_size_row >> 2); i++) {
     row_txfm(buf0 + (i << 2), buf0 + (i << 2),
-             inv_cos_bit_row[txw_idx][txh_idx], 1, bd, -shift[0]);
+             inv_cos_bit_row[txw_idx][txh_idx], 0, bd, -shift[0]);
   }
 
   av1_round_shift_array_32_sse4_1(buf0, buf0, txfm_size_row, -shift[0]);
 
-  const int log_range = AOMMAX(16, bd + 6);
-  const __m128i clamp_lo = _mm_set1_epi32(-(1 << (log_range - 1)));
-  const __m128i clamp_hi = _mm_set1_epi32((1 << (log_range - 1)) - 1);
-  highbd_clamp_epi32_sse4_1(buf0, buf0, &clamp_lo, &clamp_hi, txfm_size_row);
   if (lr_flip) {
     for (int j = 0; j < buf_size_h_div8; ++j) {
       TRANSPOSE_4X4(buf0[4 * j + 3], buf0[4 * j + 2], buf0[4 * j + 1],
@@ -5930,28 +5926,16 @@ void av1_highbd_inv_txfm_add_sse4_1(const tran_low_t *input, uint8_t *dest,
   assert(av1_ext_tx_used[txfm_param->tx_set_type][txfm_param->tx_type]);
   const TX_SIZE tx_size = txfm_param->tx_size;
   switch (tx_size) {
-    case TX_8X8:
-      av1_highbd_inv_txfm_add_8x8_sse4_1(input, dest, stride, txfm_param);
-      break;
     case TX_4X8:
       av1_highbd_inv_txfm_add_4x8_sse4_1(input, dest, stride, txfm_param);
       break;
     case TX_8X4:
       av1_highbd_inv_txfm_add_8x4_sse4_1(input, dest, stride, txfm_param);
       break;
-    case TX_4X4:
-      av1_highbd_inv_txfm_add_4x4_sse4_1(input, dest, stride, txfm_param);
-      break;
-    case TX_16X4:
-      av1_highbd_inv_txfm_add_16x4_sse4_1(input, dest, stride, txfm_param);
-      break;
-    case TX_4X16:
-      av1_highbd_inv_txfm_add_4x16_sse4_1(input, dest, stride, txfm_param);
-      break;
     default:
-      av1_highbd_inv_txfm2d_add_universe_sse4_1(
-          input, dest, stride, txfm_param->tx_type, tx_size, txfm_param->eob,
-          txfm_param->bd);
+      // TODO(http://crbug.com/aomedia/2350): the remaining sse4_1 versions
+      // cause test vector mismatches.
+      av1_highbd_inv_txfm_add_c(input, dest, stride, txfm_param);
       break;
   }
 }
