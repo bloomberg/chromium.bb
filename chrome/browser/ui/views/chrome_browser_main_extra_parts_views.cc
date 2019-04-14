@@ -8,20 +8,20 @@
 
 #include "base/command_line.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/ui/views/chrome_constrained_window_views_client.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_views_delegate.h"
 #include "chrome/browser/ui/views/relaunch_notification/relaunch_notification_controller.h"
 #include "components/constrained_window/constrained_window_views.h"
+#include "components/ui_devtools/switches.h"
+#include "components/ui_devtools/views/devtools_server_util.h"
 #include "services/service_manager/sandbox/switches.h"
 #include "ui/base/material_design/material_design_controller.h"
 
 #if defined(USE_AURA)
 #include "base/run_loop.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/net/system_network_context_manager.h"
-#include "components/ui_devtools/switches.h"
-#include "components/ui_devtools/views/devtools_server_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
@@ -81,15 +81,13 @@ void ChromeBrowserMainExtraPartsViews::PreCreateThreads() {
 }
 
 void ChromeBrowserMainExtraPartsViews::PreProfileInit() {
-#if defined(USE_AURA)
   if (ui_devtools::UiDevToolsServer::IsUiDevToolsEnabled(
           ui_devtools::switches::kEnableUiDevTools)) {
-    // Start the UI Devtools server using Chrome's local aura::Env instance.
+    // Starts the UI Devtools server for the browser UI. On Aura platforms,
     // ChromeBrowserMainExtraPartsAsh wires up Ash UI for SingleProcessMash.
     devtools_server_ = ui_devtools::CreateUiDevToolsServerForViews(
         g_browser_process->system_network_context_manager()->GetContext());
   }
-#endif
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // On the Linux desktop, we want to prevent the user from logging in as root,
