@@ -89,7 +89,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidDevice : public FidoDevice {
     CancelToken token;
   };
 
-  void Transition();
+  void Transition(base::Optional<State> next_state = base::nullopt);
 
   // Open a connection to this device.
   void Connect(device::mojom::HidManager::ConnectCallback callback);
@@ -118,8 +118,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidDevice : public FidoDevice {
   void ArmTimeout();
   void OnTimeout();
   void WriteCancel();
-  void ProcessHidError(FidoHidDeviceCommand cmd,
-                       base::span<const uint8_t> payload);
 
   base::WeakPtr<FidoDevice> GetWeakPtr() override;
 

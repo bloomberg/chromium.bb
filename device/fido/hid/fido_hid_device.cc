@@ -98,8 +98,11 @@ void FidoHidDevice::Cancel(CancelToken token) {
   }
 }
 
-// TODO(agl): maybe Transition should take the next step to move to?
-void FidoHidDevice::Transition() {
+void FidoHidDevice::Transition(base::Optional<State> next_state) {
+  if (next_state) {
+    state_ = *next_state;
+  }
+
   switch (state_) {
     case State::kInit:
       state_ = State::kConnecting;
@@ -164,8 +167,7 @@ void FidoHidDevice::OnConnect(device::mojom::HidConnectionPtr connection) {
   timeout_callback_.Cancel();
 
   if (!connection) {
-    state_ = State::kDeviceError;
-    Transition();
+    Transition(State::kDeviceError);
     return;
   }
 
@@ -194,8 +196,7 @@ void FidoHidDevice::OnInitWriteComplete(std::vector<uint8_t> nonce,
   }
 
   if (!success) {
-    state_ = State::kDeviceError;
-    Transition();
+    Transition(State::kDeviceError);
   }
 
   connection_->Read(base::BindOnce(&FidoHidDevice::OnPotentialInitReply,
@@ -248,8 +249,7 @@ void FidoHidDevice::OnPotentialInitReply(
   }
 
   if (!success) {
-    state_ = State::kDeviceError;
-    Transition();
+    Transition(State::kDeviceError);
     return;
   }
   DCHECK(buf);
@@ -268,8 +268,7 @@ void FidoHidDevice::OnPotentialInitReply(
 
   timeout_callback_.Cancel();
   channel_id_ = *maybe_channel_id;
-  state_ = State::kReady;
-  Transition();
+  Transition(State::kReady);
 }
 
 void FidoHidDevice::WriteMessage(FidoHidMessage message) {
@@ -292,8 +291,7 @@ void FidoHidDevice::PacketWritten(FidoHidMessage message, bool success) {
 
   DCHECK_EQ(State::kBusy, state_);
   if (!success) {
-    state_ = State::kDeviceError;
-    Transition();
+    Transition(State::kDeviceError);
     return;
   }
 
@@ -332,16 +330,14 @@ void FidoHidDevice::OnRead(bool success,
   DCHECK_EQ(State::kBusy, state_);
 
   if (!success) {
-    state_ = State::kDeviceError;
-    Transition();
+    Transition(State::kDeviceError);
     return;
   }
   DCHECK(buf);
 
   auto message = FidoHidMessage::CreateFromSerializedData(*buf);
   if (!message) {
-    state_ = State::kDeviceError;
-    Transition();
+    Transition(State::kDeviceError);
     return;
   }
 
@@ -392,8 +388,7 @@ void FidoHidDevice::OnReadContinuation(
   }
 
   if (!success) {
-    state_ = State::kDeviceError;
-    Transition();
+    Transition(State::kDeviceError);
     return;
   }
   DCHECK(buf);
@@ -415,19 +410,47 @@ void FidoHidDevice::MessageReceived(FidoHidMessage message) {
   const auto cmd = message.cmd();
   auto response = message.GetMessagePayload();
   if (cmd != FidoHidDeviceCommand::kMsg && cmd != FidoHidDeviceCommand::kCbor) {
-    // TODO(agl): inline |ProcessHidError|, or maybe have it call |Transition|.
-    ProcessHidError(cmd, response);
-    Transition();
+    if (cmd != FidoHidDeviceCommand::kError || response.size() != 1) {
+      FIDO_LOG(ERROR) << "Unknown HID message received: "
+                      << static_cast<int>(cmd) << " "
+                      << base::HexEncode(response.data(), response.size());
+      Transition(State::kDeviceError);
+      return;
+    }
+
+    // HID transport layer error constants that are returned to the client.
+    // https://fidoalliance.org/specs/fido-v2.0-rd-20170927/fido-client-to-authenticator-protocol-v2.0-rd-20170927.html#ctaphid-commands
+    enum class HidErrorConstant : uint8_t {
+      kInvalidCommand = 0x01,
+      kInvalidParameter = 0x02,
+      kInvalidLength = 0x03,
+      // (Other errors omitted.)
+    };
+
+    switch (static_cast<HidErrorConstant>(response[0])) {
+      case HidErrorConstant::kInvalidCommand:
+      case HidErrorConstant::kInvalidParameter:
+      case HidErrorConstant::kInvalidLength:
+        Transition(State::kMsgError);
+        break;
+      default:
+        FIDO_LOG(ERROR) << "HID error received: "
+                        << static_cast<int>(response[0]);
+        Transition(State::kDeviceError);
+    }
+
     return;
   }
 
-  state_ = State::kReady;
   DCHECK(!pending_transactions_.empty());
   auto callback = std::move(pending_transactions_.front().callback);
   pending_transactions_.pop_front();
   current_token_ = FidoDevice::kInvalidCancelToken;
 
   base::WeakPtr<FidoHidDevice> self = weak_factory_.GetWeakPtr();
+  // The callback may call back into this object thus |state_| is set ahead of
+  // time.
+  state_ = State::kReady;
   std::move(callback).Run(std::move(response));
 
   // Executing |callback| may have freed |this|. Check |self| first.
@@ -446,44 +469,7 @@ void FidoHidDevice::ArmTimeout() {
 }
 
 void FidoHidDevice::OnTimeout() {
-  state_ = State::kDeviceError;
-  Transition();
-}
-
-void FidoHidDevice::ProcessHidError(FidoHidDeviceCommand cmd,
-                                    base::span<const uint8_t> payload) {
-  if (cmd != FidoHidDeviceCommand::kError || payload.size() != 1) {
-    FIDO_LOG(ERROR) << "Unknown HID message received: " << static_cast<int>(cmd)
-                    << " " << base::HexEncode(payload.data(), payload.size());
-    state_ = State::kDeviceError;
-    return;
-  }
-
-  // HID transport layer error constants that are returned to the client.
-  // Carried in the payload section of the Error command.
-  // https://fidoalliance.org/specs/fido-v2.0-rd-20170927/fido-client-to-authenticator-protocol-v2.0-rd-20170927.html#ctaphid-commands
-  enum class HidErrorConstant : uint8_t {
-    kInvalidCommand = 0x01,
-    kInvalidParameter = 0x02,
-    kInvalidLength = 0x03,
-    kInvalidSequence = 0x04,
-    kTimeout = 0x05,
-    kBusy = 0x06,
-    kLockRequired = 0x0a,
-    kInvalidChannel = 0x0b,
-    kOther = 0x7f,
-  };
-
-  switch (static_cast<HidErrorConstant>(payload[0])) {
-    case HidErrorConstant::kInvalidCommand:
-    case HidErrorConstant::kInvalidParameter:
-    case HidErrorConstant::kInvalidLength:
-      state_ = State::kMsgError;
-      break;
-    default:
-      FIDO_LOG(ERROR) << "HID error received: " << static_cast<int>(payload[0]);
-      state_ = State::kDeviceError;
-  }
+  Transition(State::kDeviceError);
 }
 
 void FidoHidDevice::WriteCancel() {
