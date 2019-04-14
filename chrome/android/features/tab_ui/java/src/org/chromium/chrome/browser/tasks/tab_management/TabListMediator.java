@@ -304,6 +304,8 @@ class TabListMediator {
 
         mTabModelSelector.getTabModelFilterProvider().addTabModelFilterObserver(mTabModelObserver);
 
+        // TODO(meiliang): follow up with unit tests to test the close signal is sent correctly with
+        // the recommendedNextTab.
         mTabClosedListener = new TabActionListener() {
             @Override
             public void run(int tabId) {
@@ -318,9 +320,32 @@ class TabListMediator {
                     }
                 }
                 onTabClosedFrom(tabId, mComponentName);
+
+                Tab currentTab = mTabModelSelector.getCurrentTab();
+                Tab closingTab =
+                        TabModelUtils.getTabById(mTabModelSelector.getCurrentModel(), tabId);
+                Tab nextTab = currentTab == closingTab ? getNextTab(tabId) : null;
+
                 mTabModelSelector.getCurrentModel().closeTab(
-                        TabModelUtils.getTabById(mTabModelSelector.getCurrentModel(), tabId), false,
-                        false, true);
+                        closingTab, nextTab, false, false, true);
+            }
+
+            private Tab getNextTab(int closingTabId) {
+                int closingTabIndex = mModel.indexFromId(closingTabId);
+
+                if (closingTabIndex == TabModel.INVALID_TAB_INDEX) {
+                    assert false;
+                    return null;
+                }
+
+                int nextTabId = Tab.INVALID_TAB_ID;
+                if (mModel.size() > 1) {
+                    nextTabId = closingTabIndex == 0
+                            ? mModel.get(closingTabIndex + 1).get(TabProperties.TAB_ID)
+                            : mModel.get(closingTabIndex - 1).get(TabProperties.TAB_ID);
+                }
+
+                return TabModelUtils.getTabById(mTabModelSelector.getCurrentModel(), nextTabId);
             }
         };
     }

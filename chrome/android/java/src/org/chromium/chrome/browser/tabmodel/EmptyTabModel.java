@@ -111,6 +111,12 @@ public class EmptyTabModel implements TabModel {
     }
 
     @Override
+    public boolean closeTab(
+            Tab tab, Tab recommendedNextTab, boolean animate, boolean uponExit, boolean canUndo) {
+        return closeTab(tab, animate, uponExit, canUndo);
+    }
+
+    @Override
     public TabList getComprehensiveModel() {
         return this;
     }
