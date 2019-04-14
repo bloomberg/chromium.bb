@@ -12,6 +12,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "components/cbor/diagnostic_writer.h"
 #include "components/cbor/reader.h"
 #include "components/cbor/writer.h"
@@ -142,9 +143,19 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
       GetResponseCode(buffer) != CtapDeviceResponseCode::kSuccess)
     return base::nullopt;
 
-  base::Optional<CBOR> decoded_response = cbor::Reader::Read(buffer.subspan(1));
+  cbor::Reader::DecoderError error;
+  base::Optional<CBOR> decoded_response =
+      cbor::Reader::Read(buffer.subspan(1), &error);
 
-  if (!decoded_response || !decoded_response->is_map())
+  if (!decoded_response) {
+    FIDO_LOG(ERROR) << "-> (CBOR parse error from GetInfo response '"
+                    << cbor::Reader::ErrorCodeToString(error)
+                    << "' from raw message "
+                    << base::HexEncode(buffer.data(), buffer.size()) << ")";
+    return base::nullopt;
+  }
+
+  if (!decoded_response->is_map())
     return base::nullopt;
 
   FIDO_LOG(DEBUG) << "-> " << cbor::DiagnosticWriter::Write(*decoded_response);

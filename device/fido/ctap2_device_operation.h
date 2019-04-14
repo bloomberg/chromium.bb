@@ -134,8 +134,9 @@ class Ctap2DeviceOperation : public DeviceOperation<Request, Response> {
       cbor::Reader::DecoderError error;
       cbor = cbor::Reader::Read(cbor_bytes, &error);
       if (!cbor) {
-        FIDO_LOG(ERROR) << "-> (CBOR parse error " << static_cast<int>(error)
-                        << " from "
+        FIDO_LOG(ERROR) << "-> (CBOR parse error '"
+                        << cbor::Reader::ErrorCodeToString(error)
+                        << "' from raw message "
                         << base::HexEncode(device_response->data(),
                                            device_response->size())
                         << ")";
