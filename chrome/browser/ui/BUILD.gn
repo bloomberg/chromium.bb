@@ -2971,6 +2971,7 @@ jumbo_split_static_library("ui") {
       "//components/constrained_window",
       "//components/payments/content",
       "//components/payments/core",
+      "//components/ui_devtools/views",
       "//device/vr/buildflags:buildflags",
       "//services/ws/public/cpp/input_devices",
       "//ui/views:buildflags",
@@ -3050,7 +3051,6 @@ jumbo_split_static_library("ui") {
 
     if (use_aura) {
       deps += [
-        "//components/ui_devtools/views",
         "//services/ws/public/cpp",
         "//services/ws/public/mojom",
       ]

@@ -7,13 +7,19 @@
 #include <memory>
 
 #include "base/command_line.h"
+#include "build/build_config.h"
 #include "components/ui_devtools/css_agent.h"
 #include "components/ui_devtools/devtools_server.h"
 #include "components/ui_devtools/switches.h"
+#include "components/ui_devtools/views/dom_agent_views.h"
+#include "components/ui_devtools/views/overlay_agent_views.h"
+
+#if defined(USE_AURA)
 #include "components/ui_devtools/views/dom_agent_aura.h"
 #include "components/ui_devtools/views/overlay_agent_aura.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
+#endif
 
 namespace ui_devtools {
 
@@ -26,16 +32,16 @@ std::unique_ptr<UiDevToolsServer> CreateUiDevToolsServerForViews(
   DCHECK(server);
   auto client =
       std::make_unique<UiDevToolsClient>("UiDevToolsClient", server.get());
-  aura::Env* env = aura::Env::GetInstance();
-  auto dom_agent_aura = std::make_unique<DOMAgentAura>(env);
-  auto* dom_agent_aura_ptr = dom_agent_aura.get();
-  client->AddAgent(std::move(dom_agent_aura));
-  client->AddAgent(std::make_unique<CSSAgent>(dom_agent_aura_ptr));
-  client->AddAgent(std::make_unique<OverlayAgentAura>(dom_agent_aura_ptr, env));
+  auto dom_agent_views = DOMAgentViews::Create();
+  auto* dom_agent_views_ptr = dom_agent_views.get();
+  client->AddAgent(std::move(dom_agent_views));
+  client->AddAgent(std::make_unique<CSSAgent>(dom_agent_views_ptr));
+  client->AddAgent(OverlayAgentViews::Create(dom_agent_views_ptr));
   server->AttachClient(std::move(client));
   return server;
 }
 
+#if defined(USE_AURA)
 void RegisterAdditionalRootWindowsAndEnv(std::vector<aura::Window*> roots) {
   DCHECK(!roots.empty());
   OverlayAgentAura::GetInstance()->RegisterEnv(roots[0]->env());
@@ -43,5 +49,6 @@ void RegisterAdditionalRootWindowsAndEnv(std::vector<aura::Window*> roots) {
   for (auto* root : roots)
     DOMAgentAura::GetInstance()->RegisterRootWindow(root);
 }
+#endif
 
 }  // namespace ui_devtools

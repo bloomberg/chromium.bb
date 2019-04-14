@@ -4,14 +4,14 @@
 
 #include <memory>
 
-#include "components/ui_devtools/views/dom_agent_aura.h"
+#include "components/ui_devtools/views/dom_agent_views.h"
 
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/ui_devtools/css_agent.h"
 #include "components/ui_devtools/ui_devtools_unittest_utils.h"
 #include "components/ui_devtools/ui_element.h"
-#include "components/ui_devtools/views/overlay_agent_aura.h"
+#include "components/ui_devtools/views/overlay_agent_views.h"
 #include "components/ui_devtools/views/view_element.h"
 #include "components/ui_devtools/views/widget_element.h"
 #include "ui/views/test/views_test_base.h"
@@ -75,7 +75,9 @@ class DOMAgentTest : public views::ViewsTestBase {
     views::Widget* widget = new views::Widget;
     views::Widget::InitParams params;
     params.ownership = views::Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET;
+#if defined(USE_AURA)
     params.parent = GetContext();
+#endif
     widget->Init(params);
     return widget->native_widget_private();
   }
@@ -86,12 +88,15 @@ class DOMAgentTest : public views::ViewsTestBase {
     params.delegate = nullptr;
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.bounds = bounds;
+#if defined(USE_AURA)
     params.parent = GetContext();
+#endif
     widget->Init(params);
     widget->Show();
     return widget;
   }
 
+#if defined(USE_AURA)
   std::unique_ptr<aura::Window> CreateChildWindow(
       aura::Window* parent,
       aura::client::WindowType type = aura::client::WINDOW_TYPE_NORMAL) {
@@ -103,18 +108,18 @@ class DOMAgentTest : public views::ViewsTestBase {
     window->Show();
     return window;
   }
+#endif
 
   void SetUp() override {
     fake_frontend_channel_ = std::make_unique<FakeFrontendChannel>();
     uber_dispatcher_ =
         std::make_unique<UberDispatcher>(fake_frontend_channel_.get());
-    aura::Env* env = aura::Env::GetInstance();
-    dom_agent_ = std::make_unique<DOMAgentAura>(env);
+    dom_agent_ = DOMAgentViews::Create();
     dom_agent_->Init(uber_dispatcher_.get());
     css_agent_ = std::make_unique<CSSAgent>(dom_agent_.get());
     css_agent_->Init(uber_dispatcher_.get());
     css_agent_->enable();
-    overlay_agent_ = std::make_unique<OverlayAgentAura>(dom_agent_.get(), env);
+    overlay_agent_ = OverlayAgentViews::Create(dom_agent_.get());
     overlay_agent_->Init(uber_dispatcher_.get());
     overlay_agent_->enable();
 
@@ -122,11 +127,15 @@ class DOMAgentTest : public views::ViewsTestBase {
     // WindowTreeHosts in ViewTestBase::SetUp().
     views::ViewsTestBase::SetUp();
 
+#if defined(USE_AURA)
     top_window = CreateChildWindow(GetContext());
+#endif
   }
 
   void TearDown() override {
+#if defined(USE_AURA)
     top_window.reset();
+#endif
     css_agent_.reset();
     overlay_agent_.reset();
     dom_agent_.reset();
@@ -239,16 +248,17 @@ class DOMAgentTest : public views::ViewsTestBase {
   FakeFrontendChannel* frontend_channel() {
     return fake_frontend_channel_.get();
   }
-  DOMAgentAura* dom_agent() { return dom_agent_.get(); }
+  DOMAgentViews* dom_agent() { return dom_agent_.get(); }
 
+#if defined(USE_AURA)
   std::unique_ptr<aura::Window> top_window;
-
+#endif
  private:
   std::unique_ptr<UberDispatcher> uber_dispatcher_;
   std::unique_ptr<FakeFrontendChannel> fake_frontend_channel_;
-  std::unique_ptr<DOMAgentAura> dom_agent_;
+  std::unique_ptr<DOMAgentViews> dom_agent_;
   std::unique_ptr<CSSAgent> css_agent_;
-  std::unique_ptr<OverlayAgentAura> overlay_agent_;
+  std::unique_ptr<OverlayAgentViews> overlay_agent_;
 
   DISALLOW_COPY_AND_ASSIGN(DOMAgentTest);
 };
@@ -263,7 +273,7 @@ TEST_F(DOMAgentTest, GetDocumentWithWindowWidgetView) {
   //        child_view
   //   child_window
   std::unique_ptr<views::Widget> widget(
-      CreateTestWidget(gfx::Rect(1, 1, 1, 1)));
+      CreateTestWidget(gfx::Rect(1, 1, 80, 80)));
   aura::Window* parent_window = widget->GetNativeWindow();
   parent_window->SetName("parent_window");
   std::unique_ptr<aura::Window> child_window = CreateChildWindow(parent_window);
@@ -317,10 +327,9 @@ TEST_F(DOMAgentTest, GetDocumentMultipleWidgets) {
   //          child_b121
   //          child_b122
   std::unique_ptr<views::Widget> widget_a(
-      CreateTestWidget(gfx::Rect(1, 1, 1, 1)));
+      CreateTestWidget(gfx::Rect(1, 1, 80, 80)));
   std::unique_ptr<views::Widget> widget_b(
-      CreateTestWidget(gfx::Rect(100, 100, 1, 1)));
-
+      CreateTestWidget(gfx::Rect(100, 100, 80, 80)));
   widget_a->GetRootView()->AddChildView(new TestView("child_a1"));
   widget_a->GetRootView()->AddChildView(new TestView("child_a2"));
 
@@ -447,7 +456,7 @@ TEST_F(DOMAgentTest, WindowStackingChangedChildNodeRemovedAndInserted) {
 
 TEST_F(DOMAgentTest, ViewInserted) {
   std::unique_ptr<views::Widget> widget(
-      CreateTestWidget(gfx::Rect(1, 1, 1, 1)));
+      CreateTestWidget(gfx::Rect(1, 1, 80, 80)));
   widget->Show();
 
   // Initialize DOMAgent
@@ -461,7 +470,7 @@ TEST_F(DOMAgentTest, ViewInserted) {
 
 TEST_F(DOMAgentTest, ViewRemoved) {
   std::unique_ptr<views::Widget> widget(
-      CreateTestWidget(gfx::Rect(1, 1, 1, 1)));
+      CreateTestWidget(gfx::Rect(1, 1, 80, 80)));
   widget->Show();
   views::View* root_view = widget->GetRootView();
 
@@ -481,7 +490,7 @@ TEST_F(DOMAgentTest, ViewRemoved) {
 
 TEST_F(DOMAgentTest, ViewRearranged) {
   std::unique_ptr<views::Widget> widget(
-      CreateTestWidget(gfx::Rect(1, 1, 1, 1)));
+      CreateTestWidget(gfx::Rect(1, 1, 80, 80)));
 
   widget->Show();
   views::View* root_view = widget->GetRootView();
@@ -521,7 +530,7 @@ TEST_F(DOMAgentTest, ViewRearranged) {
 
 TEST_F(DOMAgentTest, ViewRearrangedRemovedAndInserted) {
   std::unique_ptr<views::Widget> widget(
-      CreateTestWidget(gfx::Rect(1, 1, 1, 1)));
+      CreateTestWidget(gfx::Rect(1, 1, 80, 80)));
 
   widget->Show();
   views::View* root_view = widget->GetRootView();

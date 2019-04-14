@@ -22,7 +22,8 @@ class UIElement;
 
 class DOMAgentObserver {
  public:
-  virtual void OnElementBoundsChanged(UIElement* ui_element) = 0;
+  virtual void OnElementBoundsChanged(UIElement* ui_element) {}
+  virtual void OnElementAdded(UIElement* ui_element) {}
 };
 
 class UI_DEVTOOLS_EXPORT DOMAgent

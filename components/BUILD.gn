@@ -178,7 +178,7 @@ test("components_unittests") {
     "//components/webdata/common:unit_tests",
   ]
 
-  if (toolkit_views && use_aura) {
+  if (toolkit_views) {
     deps += [
       "//components/ui_devtools:unit_tests",
       "//components/ui_devtools/views:unit_tests",
