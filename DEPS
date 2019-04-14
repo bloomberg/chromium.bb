@@ -20,10 +20,31 @@ vars = {
     # in Chromium it will correctly be True.
     'build_with_chromium': False,
 
+    'gn_version': 'git_revision:0790d3043387c762a6bacb1ae0a9ebe883188ab2',
     'checkout_chromium_quic_boringssl': False,
 }
 
 deps = {
+    'buildtools/linux64': {
+        'packages': [
+            {
+                'package': 'gn/gn/linux-amd64',
+                'version': Var('gn_version'),
+            },
+        ],
+        'dep_type': 'cipd',
+        'condition': 'checkout_linux',
+    },
+    'buildtools/mac': {
+        'packages': [
+            {
+                'package': 'gn/gn/mac-amd64',
+                'version': Var('gn_version'),
+            },
+        ],
+        'dep_type': 'cipd',
+        'condition': 'checkout_mac',
+    },
     'third_party/googletest/src': {
         'url': Var('chromium_git') +
             '/external/github.com/google/googletest.git' +

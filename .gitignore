@@ -1,4 +1,4 @@
 /out*/
-gn
+buildtools/
 clang-format
 third_party/llvm-build
