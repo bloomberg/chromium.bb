@@ -615,8 +615,15 @@ public class ChromeTabbedActivity
 
                 private void closeIfNoTabsAndHomepageEnabled(boolean isPendingClosure) {
                     if (getTabModelSelector().getTotalTabCount() == 0) {
-                        // If the last tab is closed, and homepage is enabled, then exit Chrome.
-                        if (HomepageManager.shouldCloseAppWithZeroTabs()) {
+                        // If the last tab is closed, and one of the following is true, then exit
+                        // Chrome:
+                        //   1. If homepage is enabled.
+                        //   2. If TabGroupsAndroid is enabled, and isPendingClosure is true.
+                        //      isPendingClosure is used to avoid calling finish() when closing all
+                        //      tabs in tab switcher.
+                        if (HomepageManager.shouldCloseAppWithZeroTabs()
+                                || (FeatureUtilities.isTabGroupsAndroidEnabled()
+                                        && isPendingClosure)) {
                             finish();
                         } else if (isPendingClosure) {
                             NewTabPageUma.recordNTPImpression(

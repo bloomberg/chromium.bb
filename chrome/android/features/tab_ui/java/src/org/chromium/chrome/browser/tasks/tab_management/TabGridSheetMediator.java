@@ -12,7 +12,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.UrlConstants;
-import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
@@ -35,7 +34,7 @@ import java.util.List;
  * with the components' coordinator as well as managing the state of the bottom
  * sheet.
  */
-class TabGridSheetMediator implements Destroyable {
+class TabGridSheetMediator {
     /**
      * Defines an interface for a {@link TabGridSheetMediator} reset event handler.
      */
@@ -58,6 +57,7 @@ class TabGridSheetMediator implements Destroyable {
     private final ThemeColorProvider mThemeColorProvider;
     private final ThemeColorProvider.ThemeColorObserver mThemeColorObserver;
     private final ThemeColorProvider.TintObserver mTintObserver;
+    private final ResetHandler mResetHandler;
 
     TabGridSheetMediator(Context context, BottomSheetController bottomSheetController,
             ResetHandler resetHandler, PropertyModel model, TabModelSelector tabModelSelector,
@@ -68,6 +68,7 @@ class TabGridSheetMediator implements Destroyable {
         mTabModelSelector = tabModelSelector;
         mTabCreatorManager = tabCreatorManager;
         mThemeColorProvider = themeColorProvider;
+        mResetHandler = resetHandler;
 
         // TODO (ayman): Add instrumentation to observer calls.
         mSheetObserver = new EmptyBottomSheetObserver() {
@@ -83,18 +84,23 @@ class TabGridSheetMediator implements Destroyable {
         // register for tab model
         mTabModelObserver = new EmptyTabModelObserver() {
             @Override
-            public void didCloseTab(int tabId, boolean incognito) {
-                updateBottomSheetTitleAndMargin();
+            public void didAddTab(Tab tab, @TabLaunchType int type) {
+                updateBottomSheet();
             }
 
             @Override
-            public void didAddTab(Tab tab, @TabLaunchType int type) {
-                updateBottomSheetTitleAndMargin();
+            public void tabClosureUndone(Tab tab) {
+                updateBottomSheet();
             }
 
             @Override
             public void didSelectTab(Tab tab, int type, int lastId) {
                 if (type == TabSelectionType.FROM_USER) resetHandler.resetWithListOfTabs(null);
+            }
+
+            @Override
+            public void willCloseTab(Tab tab, boolean animate) {
+                updateBottomSheet();
             }
         };
         mThemeColorObserver =
@@ -127,7 +133,6 @@ class TabGridSheetMediator implements Destroyable {
     /**
      * Destroy any members that needs clean up.
      */
-    @Override
     public void destroy() {
         if (mTabModelObserver != null) {
             mTabModelSelector.getTabModelFilterProvider().removeTabModelFilterObserver(
@@ -138,7 +143,7 @@ class TabGridSheetMediator implements Destroyable {
     }
 
     private void showTabGridSheet(TabGridSheetContent sheetContent) {
-        updateBottomSheetTitleAndMargin();
+        updateBottomSheet();
         mBottomSheetController.getBottomSheet().addObserver(mSheetObserver);
         mBottomSheetController.requestShowContent(sheetContent, true);
         mBottomSheetController.expandSheet();
@@ -155,13 +160,18 @@ class TabGridSheetMediator implements Destroyable {
                 : null;
     }
 
-    private void updateBottomSheetTitleAndMargin() {
+    private void updateBottomSheet() {
         Tab currentTab = mTabModelSelector.getCurrentTab();
         if (currentTab == null) return;
         int tabsCount = mTabModelSelector.getTabModelFilterProvider()
                                 .getCurrentTabModelFilter()
                                 .getRelatedTabList(currentTab.getId())
                                 .size();
+        if (tabsCount == 0) {
+            mResetHandler.resetWithListOfTabs(null);
+            return;
+        }
+
         mModel.set(TabGridSheetProperties.HEADER_TITLE,
                 mContext.getResources().getQuantityString(
                         R.plurals.bottom_tab_grid_title_placeholder, tabsCount, tabsCount));
