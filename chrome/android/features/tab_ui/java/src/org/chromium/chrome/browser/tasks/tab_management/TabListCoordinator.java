@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -104,8 +105,11 @@ public class TabListCoordinator implements Destroyable {
         mRecyclerView.setAdapter(adapter);
 
         if (mMode == TabListMode.GRID) {
-            mRecyclerView.setLayoutManager(
-                    new GridLayoutManager(context, GRID_LAYOUT_SPAN_COUNT_PORTRAIT));
+            mRecyclerView.setLayoutManager(new GridLayoutManager(context,
+                    context.getResources().getConfiguration().orientation
+                                    == Configuration.ORIENTATION_PORTRAIT
+                            ? GRID_LAYOUT_SPAN_COUNT_PORTRAIT
+                            : GRID_LAYOUT_SPAN_COUNT_LANDSCAPE));
         } else if (mMode == TabListMode.STRIP) {
             mRecyclerView.setLayoutManager(
                     new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
