@@ -12,12 +12,14 @@ client out of lib/luci/prpc and third_party/infra_libs/buildbucket.
 
 from __future__ import print_function
 
+from ssl import SSLError
 import ast
 
 from google.protobuf import field_mask_pb2
 
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
+from chromite.lib import retry_util
 from chromite.lib.luci import utils
 from chromite.lib.luci.prpc.client import Client, ProtocolError
 
@@ -180,6 +182,7 @@ class BuildbucketV2(object):
     else:
       self.client = Client(BBV2_URL_ENDPOINT_PROD, BuildsServiceDescription)
 
+  @retry_util.WithRetry(max_retry=3, sleep=0.2, exception=SSLError)
   def GetBuild(self, buildbucket_id, properties=None):
     """GetBuild call of a specific build with buildbucket_id.
 
@@ -341,6 +344,7 @@ class BuildbucketV2(object):
           build_status[int_property] = None
     return build_status
 
+  @retry_util.WithRetry(max_retry=3, sleep=0.2, exception=SSLError)
   def SearchBuild(self, build_predicate, fields=None, page_size=100):
     """SearchBuild RPC call wrapping function.
 
