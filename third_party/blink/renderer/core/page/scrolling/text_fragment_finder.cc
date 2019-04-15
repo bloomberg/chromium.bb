@@ -59,4 +59,12 @@ void TextFragmentFinder::FindMatch(Document& document) {
   }
 }
 
+PositionInFlatTree TextFragmentFinder::FindStart() {
+  return PositionInFlatTree();
+}
+
+PositionInFlatTree TextFragmentFinder::FindEnd() {
+  return PositionInFlatTree();
+}
+
 }  // namespace blink
