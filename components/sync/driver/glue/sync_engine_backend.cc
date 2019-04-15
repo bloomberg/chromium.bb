@@ -18,7 +18,6 @@
 #include "components/invalidation/public/object_id_invalidation_map.h"
 #include "components/sync/base/invalidation_adapter.h"
 #include "components/sync/base/sync_base_switches.h"
-#include "components/sync/device_info/local_device_info_provider_impl.h"
 #include "components/sync/engine/cycle/commit_counters.h"
 #include "components/sync/engine/cycle/status_counters.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"

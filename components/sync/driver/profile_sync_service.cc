@@ -21,8 +21,6 @@
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/base/stop_source.h"
 #include "components/sync/base/sync_base_switches.h"
-#include "components/sync/device_info/device_info_sync_service.h"
-#include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/driver/backend_migrator.h"
 #include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/directory_data_type_controller.h"
@@ -140,12 +138,12 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
                               base::Unretained(this)),
           base::BindRepeating(&ProfileSyncService::CredentialsChanged,
                               base::Unretained(this)))),
+      channel_(init_params.channel),
       debug_identifier_(init_params.debug_identifier),
       autofill_enable_account_wallet_storage_(
           init_params.autofill_enable_account_wallet_storage),
-      sync_service_url_(GetSyncServiceURL(
-          *base::CommandLine::ForCurrentProcess(),
-          sync_client_->GetLocalDeviceInfoProvider()->GetChannel())),
+      sync_service_url_(
+          GetSyncServiceURL(*base::CommandLine::ForCurrentProcess(), channel_)),
       crypto_(
           base::BindRepeating(&ProfileSyncService::NotifyObservers,
                               base::Unretained(this)),
@@ -196,9 +194,8 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
                           base::Unretained(this)));
 
   sync_stopped_reporter_ = std::make_unique<SyncStoppedReporter>(
-      sync_service_url_,
-      sync_client_->GetLocalDeviceInfoProvider()->GetSyncUserAgent(),
-      url_loader_factory_, SyncStoppedReporter::ResultCallback());
+      sync_service_url_, MakeUserAgentForSync(channel_), url_loader_factory_,
+      SyncStoppedReporter::ResultCallback());
 
   if (identity_manager_)
     identity_manager_->AddObserver(this);
@@ -459,8 +456,7 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
   params.extensions_activity = sync_client_->GetExtensionsActivity();
   params.event_handler = GetJsEventHandler();
   params.service_url = sync_service_url();
-  params.sync_user_agent =
-      sync_client_->GetLocalDeviceInfoProvider()->GetSyncUserAgent();
+  params.sync_user_agent = MakeUserAgentForSync(channel_);
   params.http_factory_getter = MakeHttpPostProviderFactoryGetter();
   params.authenticated_account_id = GetAuthenticatedAccountInfo().account_id;
   DCHECK(!params.authenticated_account_id.empty() || IsLocalSyncEnabled());
@@ -497,9 +493,8 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
       std::make_unique<EngineComponentsFactoryImpl>(
           EngineSwitchesFromCommandLine());
   params.unrecoverable_error_handler = GetUnrecoverableErrorHandler();
-  params.report_unrecoverable_error_function = base::BindRepeating(
-      ReportUnrecoverableError,
-      sync_client_->GetLocalDeviceInfoProvider()->GetChannel());
+  params.report_unrecoverable_error_function =
+      base::BindRepeating(ReportUnrecoverableError, channel_);
   params.saved_nigori_state = crypto_.TakeSavedNigoriState();
   sync_prefs_.GetInvalidationVersions(&params.invalidation_versions);
   params.poll_interval = sync_prefs_.GetPollInterval();

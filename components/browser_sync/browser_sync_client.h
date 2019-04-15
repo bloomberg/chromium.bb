@@ -55,7 +55,6 @@ class BrowserSyncClient : public syncer::SyncClient {
   ~BrowserSyncClient() override;
 
   base::FilePath GetSyncDataPath() final;
-  const syncer::LocalDeviceInfoProvider* GetLocalDeviceInfoProvider() final;
   virtual syncer::ModelTypeStoreService* GetModelTypeStoreService() = 0;
 
   // Returns a weak pointer to the ModelTypeControllerDelegate specified by

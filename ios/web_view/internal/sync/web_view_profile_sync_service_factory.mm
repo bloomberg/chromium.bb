@@ -14,7 +14,6 @@
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/device_info/local_device_info_provider_impl.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/startup_controller.h"
 #include "components/sync/driver/sync_service.h"
@@ -93,6 +92,7 @@ WebViewProfileSyncServiceFactory::BuildServiceInstanceFor(
   init_params.network_time_update_callback = base::DoNothing();
   init_params.network_connection_tracker =
       ApplicationContext::GetInstance()->GetNetworkConnectionTracker();
+  init_params.channel = version_info::Channel::STABLE;
   init_params.invalidations_identity_providers.push_back(
       WebViewProfileInvalidationProviderFactory::GetForBrowserState(
           browser_state)

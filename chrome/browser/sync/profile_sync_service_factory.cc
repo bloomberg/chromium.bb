@@ -42,6 +42,7 @@
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/buildflags.h"
+#include "chrome/common/channel_info.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/impl/profile_identity_provider.h"
@@ -185,6 +186,7 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
           ->GetURLLoaderFactoryForBrowserProcess();
   init_params.network_connection_tracker =
       content::GetNetworkConnectionTracker();
+  init_params.channel = chrome::GetChannel();
   init_params.debug_identifier = profile->GetDebugName();
   init_params.autofill_enable_account_wallet_storage =
       base::FeatureList::IsEnabled(

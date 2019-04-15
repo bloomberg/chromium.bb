@@ -12,7 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "components/invalidation/impl/fake_invalidation_service.h"
 #include "components/invalidation/impl/profile_identity_provider.h"
-#include "components/sync/device_info/local_device_info_provider_impl.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_api_component_factory_mock.h"
 #include "components/sync/driver/sync_client_mock.h"
@@ -71,13 +70,8 @@ class ProfileSyncServiceBundle {
     return &fake_invalidation_service_;
   }
 
-  LocalDeviceInfoProvider* local_device_info_provider() {
-    return &local_device_info_provider_;
-  }
-
  private:
   sync_preferences::TestingPrefServiceSyncable pref_service_;
-  LocalDeviceInfoProviderImpl local_device_info_provider_;
   identity::IdentityTestEnvironment identity_test_env_;
   testing::NiceMock<SyncApiComponentFactoryMock> component_factory_;
   std::unique_ptr<invalidation::ProfileIdentityProvider> identity_provider_;

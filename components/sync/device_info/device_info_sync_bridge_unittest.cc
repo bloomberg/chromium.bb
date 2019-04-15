@@ -202,11 +202,6 @@ class TestLocalDeviceInfoProvider : public MutableLocalDeviceInfoProvider {
     return local_device_info_.get();
   }
 
-  std::string GetSyncUserAgent() const override {
-    NOTIMPLEMENTED();
-    return std::string();
-  }
-
   std::unique_ptr<Subscription> RegisterOnInitializedCallback(
       const base::RepeatingClosure& callback) override {
     NOTIMPLEMENTED();

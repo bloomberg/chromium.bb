@@ -41,6 +41,7 @@
 #include "components/sync/engine/sync_engine.h"
 #include "components/sync/engine/sync_engine_host.h"
 #include "components/sync/js/sync_js_controller.h"
+#include "components/version_info/channel.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -95,6 +96,7 @@ class ProfileSyncService : public SyncService,
     NetworkTimeUpdateCallback network_time_update_callback;
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;
     network::NetworkConnectionTracker* network_connection_tracker = nullptr;
+    version_info::Channel channel = version_info::Channel::UNKNOWN;
     std::string debug_identifier;
     bool autofill_enable_account_wallet_storage = false;
 
@@ -380,6 +382,8 @@ class ProfileSyncService : public SyncService,
   // Handles tracking of the authenticated account and acquiring access tokens.
   // Only null after Shutdown().
   std::unique_ptr<SyncAuthManager> auth_manager_;
+
+  const version_info::Channel channel_;
 
   // An identifier representing this instance for debugging purposes.
   const std::string debug_identifier_;

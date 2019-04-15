@@ -31,11 +31,6 @@ class LocalDeviceInfoProvider {
   // freed by the caller and should not be stored.
   virtual const DeviceInfo* GetLocalDeviceInfo() const = 0;
 
-  // Constructs a user agent string (ASCII) suitable for use by the syncapi
-  // for any HTTP communication. This string is used by the sync backend for
-  // classifying client types when calculating statistics.
-  virtual std::string GetSyncUserAgent() const = 0;
-
   // Registers a callback to be called when local device info becomes available.
   // The callback will remain registered until the
   // returned Subscription is destroyed, which must occur before the

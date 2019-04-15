@@ -35,11 +35,6 @@ const DeviceInfo* LocalDeviceInfoProviderImpl::GetLocalDeviceInfo() const {
   return local_device_info_.get();
 }
 
-std::string LocalDeviceInfoProviderImpl::GetSyncUserAgent() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return MakeUserAgentForSync(channel_);
-}
-
 std::unique_ptr<LocalDeviceInfoProvider::Subscription>
 LocalDeviceInfoProviderImpl::RegisterOnInitializedCallback(
     const base::RepeatingClosure& callback) {
@@ -54,7 +49,7 @@ void LocalDeviceInfoProviderImpl::Initialize(const std::string& cache_guid,
   DCHECK(!cache_guid.empty());
 
   local_device_info_ = std::make_unique<DeviceInfo>(
-      cache_guid, session_name, version_, GetSyncUserAgent(),
+      cache_guid, session_name, version_, MakeUserAgentForSync(channel_),
       GetLocalDeviceType(), signin_scoped_device_id_callback_.Run());
 
   // Notify observers.
