@@ -19,7 +19,7 @@ WOPT = -Os --llvm-opts 3 \
   -s ENVIRONMENT='web' \
   -s NO_DYNAMIC_EXECUTION=1 \
   -s EXTRA_EXPORTED_RUNTIME_METHODS='$(WAPI)' \
-  -s RESERVED_FUNCTION_POINTERS=2
+  -s RESERVED_FUNCTION_POINTERS=$(shell echo $$((10*2)))
 
 all: a.out.js
 	$(shell cp a.out.* extension)
