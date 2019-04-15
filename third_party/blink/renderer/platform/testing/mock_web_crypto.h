@@ -100,7 +100,6 @@ class MockWebCrypto : public WebCrypto {
                     WebCryptoKeyUsageMask,
                     WebCryptoResult,
                     scoped_refptr<base::SingleThreadTaskRunner>));
-  MOCK_METHOD1(CreateDigestorProxy, WebCryptoDigestor*(WebCryptoAlgorithmId));
   MOCK_METHOD7(DeserializeKeyForClone,
                bool(const WebCryptoKeyAlgorithm&,
                     WebCryptoKeyType,
@@ -113,51 +112,7 @@ class MockWebCrypto : public WebCrypto {
                bool(const WebCryptoKey&, WebVector<unsigned char>&));
 
  protected:
-  std::unique_ptr<WebCryptoDigestor> CreateDigestor(
-      WebCryptoAlgorithmId id) override {
-    return std::unique_ptr<WebCryptoDigestor>(CreateDigestorProxy(id));
-  }
-
   DISALLOW_COPY_AND_ASSIGN(MockWebCrypto);
-};
-
-class MockWebCryptoDigestor : public WebCryptoDigestor {
- public:
-  ~MockWebCryptoDigestor() override = default;
-
-  static MockWebCryptoDigestor* Create() {
-    return new testing::StrictMock<MockWebCryptoDigestor>();
-  }
-
-  void ExpectConsumeAndFinish(const void* input_data,
-                              unsigned input_length,
-                              void* output_data,
-                              unsigned output_length);
-
-  MOCK_METHOD2(Consume, bool(const unsigned char*, unsigned));
-  MOCK_METHOD2(Finish, bool(unsigned char*&, unsigned&));
-
- protected:
-  MockWebCryptoDigestor() = default;
-
-  DISALLOW_COPY_AND_ASSIGN(MockWebCryptoDigestor);
-};
-
-class MockWebCryptoDigestorFactory final {
-  STACK_ALLOCATED();
-
- public:
-  MockWebCryptoDigestorFactory(const void* input_data,
-                               unsigned input_length,
-                               void* output_data,
-                               unsigned output_length);
-  MockWebCryptoDigestor* Create();
-
- private:
-  const void* const input_data_;
-  const unsigned input_length_;
-  void* const output_data_;
-  const unsigned output_length_;
 };
 
 }  // namespace blink
