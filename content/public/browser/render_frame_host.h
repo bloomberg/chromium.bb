@@ -249,6 +249,11 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // of a frame are defined in Blink.
   virtual PageVisibilityState GetVisibilityState() = 0;
 
+  // Returns true if WebContentsObserver::RenderFrameCreate notification has
+  // been dispatched for this frame, and so a RenderFrameDeleted notification
+  // will later be dispatched for this frame.
+  virtual bool IsRenderFrameCreated() = 0;
+
   // Returns whether the RenderFrame in the renderer process has been created
   // and still has a connection.  This is valid for all frames.
   virtual bool IsRenderFrameLive() = 0;
