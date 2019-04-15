@@ -20,7 +20,7 @@ void DiscoverScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {}
 
 void DiscoverScreenHandler::RegisterMessages() {
-  BaseWebUIHandler::RegisterMessages();
+  BaseScreenHandler::RegisterMessages();
   discover_ui_.RegisterMessages(web_ui());
 }
 
