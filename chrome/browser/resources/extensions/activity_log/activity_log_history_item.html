@@ -1,10 +1,10 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="../shared_style.html">
 <link rel="import" href="../shared_vars.html">
 
@@ -14,9 +14,12 @@
       :host {
         border-top: var(--cr-separator-line);
         display: block;
-        /* Unequal padding on left/right side as the paper-icon-button-light's
-         * width is greater than the delete icon's width. */
-        padding: 8px 8px 8px var(--cr-section-padding);
+        /* Unequal padding on left/right side as the cr-icon-button's width is
+         * greater than the delete icon's width. */
+        padding-bottom: 8px;
+        padding-inline-end: 8px;
+        padding-inline-start: var(--cr-section-padding);
+        padding-top: 8px;
       }
 
       #activity-item-main-row {
@@ -93,11 +96,9 @@
           hidden$="[[!isExpandable_]]">
       </cr-expand-button>
       <div class="separator" hidden$="[[!isExpandable_]]"></div>
-      <paper-icon-button-light id="activity-delete" class="icon-delete-gray">
-        <button id="activity-delete-button" aria-describedby="api-call"
-            aria-label="$i18n{clearEntry}" on-click="onDeleteTap_">
-        </button>
-      </paper-icon-button-light>
+      <cr-icon-button id="activity-delete" class="icon-delete-gray"
+          aria-describedby="api-call" aria-label="$i18n{clearEntry}"
+          on-click="onDeleteTap_"></cr-icon-button>
     </div>
     <div id="page-url-list" hidden$="[[!data.expanded]]">
       <template is="dom-repeat" items="[[getPageUrls_(data)]]">

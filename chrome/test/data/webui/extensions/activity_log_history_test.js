@@ -329,7 +329,7 @@ suite('ExtensionsActivityLogHistoryTest', function() {
 
           expectEquals(activityLogItems.length, 3);
           proxyDelegate.resetResolver('getExtensionActivityLog');
-          activityLogItems[0].$$('#activity-delete-button').click();
+          activityLogItems[0].$$('#activity-delete').click();
 
           // We delete the first item so we should only have one item left. This
           // chaining reflects the API calls made from activity_log.js.

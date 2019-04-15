@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_container_shadow_behavior.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_tabs_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
@@ -8,7 +9,6 @@
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-pages/iron-pages.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-tabs/paper-tabs.html">
 <link rel="import" href="activity_log_history.html">
 <link rel="import" href="activity_log_stream.html">
@@ -36,7 +36,7 @@
       }
 
       paper-tabs {
-        border-bottom: 1px solid var(--google-grey-refresh-300); 
+        border-bottom: 1px solid var(--google-grey-refresh-300);
         font-size: inherit;
         height: 40px;
       }
@@ -63,10 +63,9 @@
     <div class="page-container" id="container">
       <div class="page-content">
         <div class="page-header">
-          <paper-icon-button-light class="icon-arrow-back no-overlap">
-            <button id="closeButton" aria-label="$i18n{back}"
-                on-click="onCloseButtonTap_"></button>
-          </paper-icon-button-light>
+          <cr-icon-button class="icon-arrow-back no-overlap" id="closeButton"
+              aria-label="$i18n{back}" on-click="onCloseButtonTap_">
+          </cr-icon-button>
           <img id="icon" src="[[extensionInfo.iconUrl]]"
               alt$="[[appOrExtension(
                   extensionInfo.type,

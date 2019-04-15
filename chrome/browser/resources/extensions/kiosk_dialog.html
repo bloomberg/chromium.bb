@@ -2,8 +2,9 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
@@ -11,7 +12,6 @@
 <link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="item_behavior.html">
 <link rel="import" href="kiosk_browser_proxy.html">
 
@@ -64,6 +64,10 @@
       .list-item:hover .item-controls {
         visibility: visible;
       }
+
+      cr-icon-button {
+        margin: 0;
+      }
     </style>
     <cr-dialog id="dialog" close-text="$i18n{close}"
         ignore-enter-key>
@@ -90,9 +94,8 @@
                       '$i18nPolymer{kioskDisableAutoLaunch}',
                       '$i18nPolymer{kioskEnableAutoLaunch}')]]
                 </paper-button>
-                <paper-icon-button-light class="icon-delete-gray">
-                  <button on-click="onDeleteAppTap_"></button>
-                </paper-icon-button-light>
+                <cr-icon-button class="icon-delete-gray"
+                    on-click="onDeleteAppTap_"></cr-icon-button>
               </div>
             </div>
           </template>
