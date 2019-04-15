@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Darwin Huang <huangdarwin@chromium.org>
 Date: Fri, 12 Apr 2019 18:07:16 -0700
-Subject: [PATCH 12/13] Use fixed-width integer type
+Subject: [PATCH 12/15] Use fixed-width integer type
 
 This backports https://www.sqlite.org/src/info/8820408597341344
 
