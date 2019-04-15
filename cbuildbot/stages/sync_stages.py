@@ -1062,30 +1062,24 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
 
     build_id = self._run.attrs.metadata.GetDict().get('build_id')
 
-    try:
-      # In order to acquire a pool, we need an initialized buildroot.
-      if not git.FindRepoDir(self.repo.directory):
-        self.repo.Initialize()
+    # In order to acquire a pool, we need an initialized buildroot.
+    if not git.FindRepoDir(self.repo.directory):
+      self.repo.Initialize()
 
-      query = constants.CQ_READY_QUERY
-      if self._run.options.cq_gerrit_override:
-        query = (self._run.options.cq_gerrit_override, None)
+    query = constants.CQ_READY_QUERY
+    if self._run.options.cq_gerrit_override:
+      query = (self._run.options.cq_gerrit_override, None)
 
-      self.pool = validation_pool.ValidationPool.AcquirePool(
-          overlays=self._run.config.overlays,
-          repo=self.repo,
-          build_number=self._run.buildnumber,
-          builder_name=self._run.GetBuilderName(),
-          buildbucket_id=self._run.options.buildbucket_id,
-          query=query,
-          dryrun=self._run.options.debug,
-          check_tree_open=(not self._run.options.debug or
-                           self._run.options.mock_tree_status),
-          change_filter=self._ChangeFilter,
-          builder_run=self._run)
-    except validation_pool.TreeIsClosedException as e:
-      logging.warning(str(e))
-      return None
+    self.pool = validation_pool.ValidationPool.AcquirePool(
+        overlays=self._run.config.overlays,
+        repo=self.repo,
+        build_number=self._run.buildnumber,
+        builder_name=self._run.GetBuilderName(),
+        buildbucket_id=self._run.options.buildbucket_id,
+        query=query,
+        dryrun=self._run.options.debug,
+        change_filter=self._ChangeFilter,
+        builder_run=self._run)
 
     build_identifier, _ = self._run.GetCIDBHandle()
     build_id = build_identifier.cidb_id
@@ -1963,7 +1957,6 @@ class PreCQLauncherStage(SyncStage):
         if k.HasReadyFlag() or status_map[k] != constants.CL_STATUS_FAILED
     }
 
-    is_tree_open = tree_status.IsTreeOpen(throttled_ok=True)
     launch_count = 0
     cl_launch_count = 0
     launch_count_limit = (
@@ -1975,10 +1968,7 @@ class PreCQLauncherStage(SyncStage):
       launches.setdefault(frozenset(plan), []).append(config)
 
     for plan, configs in launches.iteritems():
-      if not is_tree_open:
-        logging.info('Tree is closed, not launching configs %r for plan %s.',
-                     configs, cros_patch.GetChangesAsString(plan))
-      elif launch_count >= launch_count_limit:
+      if launch_count >= launch_count_limit:
         logging.info(
             'Hit or exceeded maximum launch count of %s this cycle, '
             'not launching configs %r for plan %s.', launch_count_limit,
@@ -2129,19 +2119,17 @@ class PreCQLauncherStage(SyncStage):
       self._ProcessExpiry(c, v[0], v[1], pool, current_db_time)
 
     # Submit changes that are ready to submit, if we can.
-    if tree_status.IsTreeOpen(throttled_ok=True):
-      pool.SubmitNonManifestChanges(
-          check_tree_open=False, reason=constants.STRATEGY_NONMANIFEST)
-      submit_reason = constants.STRATEGY_PRECQ_SUBMIT
-      will_submit = {c: submit_reason for c in will_submit}
-      submitted, _ = pool.SubmitChanges(will_submit, check_tree_open=False)
+    pool.SubmitNonManifestChanges(reason=constants.STRATEGY_NONMANIFEST)
+    submit_reason = constants.STRATEGY_PRECQ_SUBMIT
+    will_submit = {c: submit_reason for c in will_submit}
+    submitted, _ = pool.SubmitChanges(will_submit)
 
-      # Record stats about submissions in monarch.
-      if db:
-        submitted_change_actions = db.GetActionsForChanges(submitted)
-        strategies = {m: constants.STRATEGY_PRECQ_SUBMIT for m in submitted}
-        clactions_metrics.RecordSubmissionMetrics(
-            clactions.CLActionHistory(submitted_change_actions), strategies)
+    # Record stats about submissions in monarch.
+    if db:
+      submitted_change_actions = db.GetActionsForChanges(submitted)
+      strategies = {m: constants.STRATEGY_PRECQ_SUBMIT for m in submitted}
+      clactions_metrics.RecordSubmissionMetrics(
+          clactions.CLActionHistory(submitted_change_actions), strategies)
 
     self._LaunchPreCQsIfNeeded(pool, changes)
 
@@ -2190,6 +2178,5 @@ class PreCQLauncherStage(SyncStage):
         buildbucket_id=self._run.options.buildbucket_id,
         query=query,
         dryrun=self._run.options.debug,
-        check_tree_open=False,
         change_filter=self.ProcessChanges,
         builder_run=self._run)

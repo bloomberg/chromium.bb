@@ -139,9 +139,6 @@ class _Base(cros_test_lib.MockTestCase):
     self.PatchObject(gob_util, 'CreateHttpConn',
                      side_effect=AssertionError('Test should not contact GoB'))
     self.PatchObject(gob_util, 'CheckChange')
-    self.PatchObject(tree_status, 'IsTreeOpen', return_value=True)
-    self.PatchObject(tree_status, 'WaitForTreeStatus',
-                     return_value=constants.TREE_OPEN)
     self.PatchObject(tree_status, 'GetExperimentalBuilders',
                      return_value=[])
     self.fake_db = fake_cidb.FakeCIDBConnection()
@@ -731,141 +728,24 @@ class TestCoreLogic(_Base):
     acquire_changes_mock = self.PatchObject(
         validation_pool.ValidationPool, 'AcquireChanges', return_value=True)
     self.PatchObject(time, 'sleep')
-    tree_status_mock = self.PatchObject(
-        tree_status, 'WaitForTreeStatus', return_value=constants.TREE_OPEN)
 
     query = constants.CQ_READY_QUERY
-    pool = validation_pool.ValidationPool.AcquirePool(
+    validation_pool.ValidationPool.AcquirePool(
         constants.PUBLIC_OVERLAYS, repo, 1, 'buildname', 'bb_id', query,
-        dryrun=False, check_tree_open=True, builder_run=builder_run)
+        dryrun=False, builder_run=builder_run)
 
-    self.assertTrue(pool.tree_was_open)
-    tree_status_mock.assert_called()
     acquire_changes_mock.assert_called()
 
-    # 2) Test, tree open -> need to loop at least once to get changes.
+    # 2) Test need to loop at least once to get changes.
     acquire_changes_mock.reset_mock()
     acquire_changes_mock.configure_mock(side_effect=iter([False, True]))
 
     query = constants.CQ_READY_QUERY
-    pool = validation_pool.ValidationPool.AcquirePool(
+    validation_pool.ValidationPool.AcquirePool(
         constants.PUBLIC_OVERLAYS, repo, 1, 'buildname', 'bb_id', query,
-        dryrun=False, check_tree_open=True, builder_run=builder_run)
+        dryrun=False, builder_run=builder_run)
 
-    self.assertTrue(pool.tree_was_open)
     self.assertEqual(acquire_changes_mock.call_count, 2)
-
-    # 3) Test, tree throttled -> use exponential fallback logic.
-    acquire_changes_mock.reset_mock()
-    acquire_changes_mock.configure_mock(return_value=True, side_effect=None)
-    tree_status_mock.configure_mock(return_value=constants.TREE_THROTTLED)
-
-    query = constants.CQ_READY_QUERY
-    pool = validation_pool.ValidationPool.AcquirePool(
-        constants.PUBLIC_OVERLAYS, repo, 1, 'buildname', 'bb_id', query,
-        dryrun=False, check_tree_open=True, builder_run=builder_run)
-
-    self.assertFalse(pool.tree_was_open)
-
-
-  def testGetFailStreak(self):
-    """Tests that we're correctly able to calculate a fail streak."""
-    # Leave first build as inflight.
-    builder_name = 'master-paladin'
-    slave_pool = self.MakePool(builder_name=builder_name, fake_db=self.fake_db)
-    self.fake_db.buildTable[0]['status'] = constants.BUILDER_STATUS_INFLIGHT
-    self.fake_db.buildTable[0]['build_config'] = builder_name
-    self.assertEqual(slave_pool._GetFailStreak(), 0)
-
-    # Create a passing build.
-    for i in range(2):
-      self.fake_db.InsertBuild(
-          builder_name, i, builder_name, 'abcdelicious',
-          status=constants.BUILDER_STATUS_PASSED)
-
-    self.assertEqual(slave_pool._GetFailStreak(), 0)
-
-    # Add a fail streak.
-    for i in range(3, 6):
-      self.fake_db.InsertBuild(
-          builder_name, i, builder_name, 'abcdelicious',
-          status=constants.BUILDER_STATUS_FAILED)
-
-    self.assertEqual(slave_pool._GetFailStreak(), 3)
-
-    # Add another success and failure.
-    self.fake_db.InsertBuild(
-        builder_name, 6, builder_name, 'abcdelicious',
-        status=constants.BUILDER_STATUS_PASSED)
-    self.fake_db.InsertBuild(
-        builder_name, 7, builder_name, 'abcdelicious',
-        status=constants.BUILDER_STATUS_FAILED)
-
-    self.assertEqual(slave_pool._GetFailStreak(), 1)
-
-    # Finally just add one last pass and make sure fail streak is wiped.
-    self.fake_db.InsertBuild(
-        builder_name, 8, builder_name, 'abcdelicious',
-        status=constants.BUILDER_STATUS_PASSED)
-
-    self.assertEqual(slave_pool._GetFailStreak(), 0)
-
-  def testFilterChangesForThrottledTree(self):
-    """Tests that we can correctly apply exponential fallback."""
-    patches = self.GetPatches(4)
-    streak_mock = self.PatchObject(
-        validation_pool.ValidationPool, '_GetFailStreak')
-
-    # Perform test.
-    slave_pool = self.MakePool(candidates=patches, tree_was_open=True)
-    slave_pool.FilterChangesForThrottledTree()
-
-    # Validate results.
-    self.assertEqual(len(slave_pool.candidates), 4)
-    self.assertIsNone(slave_pool.filtered_set)
-
-    #
-    # Test when tree is closed with a streak of 1.
-    #
-
-    # pylint: disable=no-value-for-parameter
-    streak_mock.configure_mock(return_value=1)
-
-    # Perform test.
-    slave_pool = self.MakePool(candidates=patches, tree_was_open=False)
-    slave_pool.FilterChangesForThrottledTree()
-
-    # Validate results.
-    self.assertEqual(len(slave_pool.candidates), 2)
-    self.assertEqual(len(slave_pool.filtered_set), 2)
-
-    #
-    # Test when tree is closed with a streak of 2.
-    #
-
-    streak_mock.configure_mock(return_value=2)
-    # Perform test.
-    slave_pool = self.MakePool(candidates=patches, tree_was_open=False)
-    slave_pool.FilterChangesForThrottledTree()
-
-    # Validate results.
-    self.assertEqual(len(slave_pool.candidates), 1)
-    self.assertEqual(len(slave_pool.filtered_set), 3)
-
-    #
-    # Test when tree is closed with a streak of many.
-    #
-
-    # pylint: disable=no-value-for-parameter
-    streak_mock.configure_mock(return_value=200)
-
-    # Perform test.
-    slave_pool = self.MakePool(candidates=patches, tree_was_open=False)
-    slave_pool.FilterChangesForThrottledTree()
-
-    # Validate results.
-    self.assertEqual(len(slave_pool.candidates), 1)
-    self.assertEqual(len(slave_pool.filtered_set), 3)
 
   def _UpdatedDependencyMap(self, dependency_map):
     pool = self.MakePool()
