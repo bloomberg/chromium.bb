@@ -288,6 +288,8 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean(
       "showOSSettings",
       !base::FeatureList::IsEnabled(chromeos::features::kSplitSettings));
+#else
+  html_source->AddBoolean("showOSSettings", false);
 #endif
 
   AddSettingsPageUIHandler(
