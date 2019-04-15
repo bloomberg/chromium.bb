@@ -22,6 +22,7 @@
 #include "base/system/sys_info.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "components/feedback/feedback_report.h"
 #include "components/feedback/system_logs/system_logs_fetcher.h"
 #include "components/feedback/tracing_manager.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -60,6 +61,11 @@ constexpr base::FilePath::CharType kBluetoothLogsFilePath[] =
 
 constexpr char kBluetoothLogsAttachmentName[] = "bluetooth_logs.bz2";
 
+bool IsGoogleEmail(const std::string& email) {
+  return base::EndsWith(email, "@google.com",
+                        base::CompareCase::INSENSITIVE_ASCII);
+}
+
 // Getting the filename of a blob prepends a "C:\fakepath" to the filename.
 // This is undesirable, strip it if it exists.
 std::string StripFakepath(const std::string& path) {
@@ -79,10 +85,8 @@ feedback_private::LandingPageType GetLandingPageType(const std::string& email) {
   if (board.find("eve") == std::string::npos)
     return feedback_private::LANDING_PAGE_TYPE_NORMAL;
 
-  if (!base::EndsWith(email, "@google.com",
-                      base::CompareCase::INSENSITIVE_ASCII)) {
+  if (!IsGoogleEmail(email))
     return feedback_private::LANDING_PAGE_TYPE_NORMAL;
-  }
 
   return feedback_private::LANDING_PAGE_TYPE_TECHSTOP;
 #else
@@ -229,7 +233,21 @@ void FeedbackPrivateGetSystemInformationFunction::OnCompleted(
   SystemInformationList sys_info_list;
   if (sys_info) {
     sys_info_list.reserve(sys_info->size());
+    const bool google_email =
+        IsGoogleEmail(ExtensionsAPIClient::Get()
+                          ->GetFeedbackPrivateDelegate()
+                          ->GetSignedInUserEmail(browser_context()));
     for (auto& itr : *sys_info) {
+      // We only send the list of all the crash report IDs if the user has a
+      // @google.com email. We strip this here so that the system information
+      // view properly reflects what we will be uploading to the server. It is
+      // also stripped later on in the feedback processing for other code paths
+      // that don't go through this.
+      if (itr.first == feedback::FeedbackReport::kAllCrashReportIdsKey &&
+          !google_email) {
+        continue;
+      }
+
       SystemInformation sys_info_entry;
       sys_info_entry.key = std::move(itr.first);
       sys_info_entry.value = std::move(itr.second);

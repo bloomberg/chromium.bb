@@ -61,6 +61,9 @@ FeedbackReport::FeedbackReport(
 const char FeedbackReport::kCrashReportIdsKey[]  = "crash_report_ids";
 
 // static
+const char FeedbackReport::kAllCrashReportIdsKey[] = "all_crash_report_ids";
+
+// static
 void FeedbackReport::LoadReportsAndQueue(const base::FilePath& user_dir,
                                          const QueueCallback& callback) {
   if (user_dir.empty())

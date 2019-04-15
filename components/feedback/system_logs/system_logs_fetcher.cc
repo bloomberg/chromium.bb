@@ -23,7 +23,6 @@ namespace {
 // not be anonymized.
 constexpr const char* const kWhitelistedKeysOfUUIDs[] = {
     "CHROMEOS_BOARD_APPID", "CHROMEOS_CANARY_APPID", "CHROMEOS_RELEASE_APPID",
-    "CLIENT_ID",
 };
 
 // Returns true if the given |key| is anonymizer-whitelisted and whose
