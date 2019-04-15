@@ -1251,7 +1251,7 @@ class MockTransportClientSocketPool : public TransportClientSocketPool {
                      ClientSocketHandle* handle) override;
   void ReleaseSocket(const GroupId& group_id,
                      std::unique_ptr<StreamSocket> socket,
-                     int id) override;
+                     int64_t generation) override;
 
  private:
   ClientSocketFactory* client_socket_factory_;

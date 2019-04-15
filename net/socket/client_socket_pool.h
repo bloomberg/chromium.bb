@@ -282,13 +282,13 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
   // Called to release a socket once the socket is no longer needed.  If the
   // socket still has an established connection, then it will be added to the
   // set of idle sockets to be used to satisfy future RequestSocket calls.
-  // Otherwise, the StreamSocket is destroyed.  |id| is used to differentiate
-  // between updated versions of the same pool instance.  The pool's id will
-  // change when it flushes, so it can use this |id| to discard sockets with
-  // mismatched ids.
+  // Otherwise, the StreamSocket is destroyed.  |generation| is used to
+  // differentiate between updated versions of the same pool instance.  The
+  // pool's generation will change when it flushes, so it can use this
+  // |generation| to discard sockets with mismatched ids.
   virtual void ReleaseSocket(const GroupId& group_id,
                              std::unique_ptr<StreamSocket> socket,
-                             int id) = 0;
+                             int64_t generation) = 0;
 
   // This flushes all state from the ClientSocketPool.  This means that all
   // idle and connecting sockets are discarded with the given |error|.

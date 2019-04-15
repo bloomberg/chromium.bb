@@ -211,7 +211,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
                      ClientSocketHandle* handle) override;
   void ReleaseSocket(const GroupId& group_id,
                      std::unique_ptr<StreamSocket> socket,
-                     int id) override;
+                     int64_t group_generation) override;
   void FlushWithError(int error) override;
   void CloseIdleSockets() override;
   void CloseIdleSocketsInGroup(const GroupId& group_id) override;
@@ -254,6 +254,8 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
   bool HasGroupForTesting(const GroupId& group_id) const {
     return HasGroup(group_id);
   }
+
+  void RefreshGroupForTesting(const GroupId& group_id);
 
   static bool connect_backup_jobs_enabled();
   static bool set_connect_backup_jobs_enabled(bool enabled);
@@ -412,11 +414,13 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
     const Request* BindRequestToConnectJob(ConnectJob* connect_job);
 
     // Finds the request, if any, bound to |connect_job|, and returns it.
-    // Destroys the ConnectJob bound to the request, if there was one. The
-    // pending error if written to |pending_error|. If there is no pending
-    // error, |pending_error| is set to OK.
+    // Destroys the ConnectJob bound to the request, if there was one.
+    // |generation| is set to the group generation that ConnectJob belongs to.
+    // The pending error is written to |pending_error|, if
+    // SetPendingErrorForAllBoundRequests() was called, or OK, otherwise.
     std::unique_ptr<Request> FindAndRemoveBoundRequestForConnectJob(
         ConnectJob* connect_job,
+        int64_t* generation,
         int* pending_error);
 
     // Finds the bound request, if any, corresponding to |client_socket_handle|
@@ -433,6 +437,8 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
     void IncrementActiveSocketCount() { active_socket_count_++; }
     void DecrementActiveSocketCount() { active_socket_count_--; }
 
+    void IncrementGeneration() { generation_++; }
+
     // Whether the request in |unbound_requests_| with a given handle has a job.
     bool RequestWithHandleHasJobForTesting(
         const ClientSocketHandle* handle) const;
@@ -446,18 +452,25 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
     size_t never_assigned_job_count() const {
       return never_assigned_job_count_;
     }
+    int64_t generation() const { return generation_; }
 
    private:
     struct BoundRequest {
       BoundRequest();
       BoundRequest(std::unique_ptr<ConnectJob> connect_job,
-                   std::unique_ptr<Request> request);
+                   std::unique_ptr<Request> request,
+                   int64_t generation);
       BoundRequest(BoundRequest&& other);
       BoundRequest& operator=(BoundRequest&& other);
       ~BoundRequest();
 
       std::unique_ptr<ConnectJob> connect_job;
       std::unique_ptr<Request> request;
+
+      // Generation of |connect_job|. If it doesn't match the current
+      // generation, ConnectJob will be destroyed, and a new one created on
+      // completion.
+      int64_t generation;
 
       // It's not safe to fail a request in a |CancelAllRequestsWithError| call
       // while it's waiting on user input, as the request may have raw pointers
@@ -552,6 +565,14 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
     // The Requests and ConnectJobs in this list do not appear in
     // |unbound_requests_| or |jobs_|.
     std::vector<BoundRequest> bound_requests_;
+
+    // An id for the group.  It gets incremented every time we FlushWithError()
+    // the socket pool, or refresh the group.  This is so that when sockets get
+    // released back to the group, we can make sure that they are discarded
+    // rather than reused. Destroying a group will reset the generation number,
+    // but as that only happens once there are no outstanding sockets or
+    // requests associated with the group, that's harmless.
+    int64_t generation_;
   };
 
   using GroupMap = std::map<GroupId, Group*>;
@@ -724,6 +745,15 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
   // this pool is stalled.
   void TryToCloseSocketsInLayeredPools();
 
+  // If the specified group exists, closes all idle sockets and cancels all
+  // unbound ConnectJobs associated with the group. Also increments the group's
+  // generation number, ensuring any currently existing handed out socket will
+  // be siletly closed when its returned to the socket pool. Bound ConnectJobs
+  // will only be destroyed on once they compelete, as they may be waiting on
+  // user input. No request (including bound ones) will be failed as a result of
+  // this call - instead, new ConnectJobs will be created.
+  void RefreshGroup(const GroupId& group_id);
+
   GroupMap group_map_;
 
   // Map of the ClientSocketHandles for which we have a pending Task to invoke a
@@ -754,11 +784,6 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
 
   // TODO(vandebo) Remove when backup jobs move to TransportClientSocketPool
   bool connect_backup_jobs_enabled_;
-
-  // A unique id for the pool.  It gets incremented every time we
-  // FlushWithError() the pool.  This is so that when sockets get released back
-  // to the pool, we can make sure that they are discarded rather than reused.
-  int pool_generation_number_;
 
   // Pools that create connections through |this|.  |this| will try to close
   // their idle sockets when it stalls.  Must be empty on destruction.

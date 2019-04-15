@@ -156,7 +156,8 @@ void WebSocketTransportClientSocketPool::CancelRequest(
     return;
   std::unique_ptr<StreamSocket> socket = handle->PassSocket();
   if (socket)
-    ReleaseSocket(handle->group_id(), std::move(socket), handle->id());
+    ReleaseSocket(handle->group_id(), std::move(socket),
+                  handle->group_generation());
   if (!DeleteJob(handle))
     pending_callbacks_.erase(handle);
 
@@ -166,7 +167,7 @@ void WebSocketTransportClientSocketPool::CancelRequest(
 void WebSocketTransportClientSocketPool::ReleaseSocket(
     const GroupId& group_id,
     std::unique_ptr<StreamSocket> socket,
-    int id) {
+    int64_t generation) {
   CHECK_GT(handed_out_socket_count_, 0);
   --handed_out_socket_count_;
 
@@ -237,7 +238,6 @@ WebSocketTransportClientSocketPool::GetInfoAsValue(
   dict->SetInteger("idle_socket_count", 0);
   dict->SetInteger("max_socket_count", max_sockets_);
   dict->SetInteger("max_sockets_per_group", max_sockets_);
-  dict->SetInteger("pool_generation_number", 0);
   return dict;
 }
 
@@ -368,7 +368,7 @@ void WebSocketTransportClientSocketPool::HandOutSocket(
   DCHECK_EQ(0, handle->idle_time().InMicroseconds());
 
   handle->SetSocket(std::move(socket));
-  handle->set_pool_id(0);
+  handle->set_group_generation(0);
   handle->set_connect_timing(connect_timing);
 
   net_log.AddEvent(

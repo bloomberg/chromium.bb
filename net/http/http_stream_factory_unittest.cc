@@ -454,7 +454,7 @@ class CapturePreconnectsTransportSocketPool : public TransportClientSocketPool {
   }
   void ReleaseSocket(const ClientSocketPool::GroupId& group_id,
                      std::unique_ptr<StreamSocket> socket,
-                     int id) override {
+                     int64_t generation) override {
     ADD_FAILURE();
   }
   void CloseIdleSockets() override { ADD_FAILURE(); }
