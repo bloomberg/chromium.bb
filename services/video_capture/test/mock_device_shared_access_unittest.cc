@@ -14,6 +14,7 @@
 #include "media/capture/video/video_capture_system_impl.h"
 #include "services/service_manager/public/cpp/service_keepalive.h"
 #include "services/video_capture/device_factory_media_to_mojo_adapter.h"
+#include "services/video_capture/device_media_to_mojo_adapter.h"
 #include "services/video_capture/public/cpp/mock_receiver.h"
 #include "services/video_capture/public/mojom/device_factory_provider.mojom.h"
 #include "services/video_capture/public/mojom/video_source.mojom.h"
@@ -33,8 +34,8 @@ class MockDeviceSharedAccessTest : public ::testing::Test {
   MockDeviceSharedAccessTest()
       : mock_receiver_1_(mojo::MakeRequest(&receiver_1_)),
         mock_receiver_2_(mojo::MakeRequest(&receiver_2_)),
-        service_keepalive_(nullptr, base::nullopt),
-        next_arbitrary_frame_feedback_id_(123) {}
+        next_arbitrary_frame_feedback_id_(123),
+        service_keepalive_(nullptr, base::nullopt) {}
   ~MockDeviceSharedAccessTest() override {}
 
   void SetUp() override {
@@ -259,9 +260,10 @@ class MockDeviceSharedAccessTest : public ::testing::Test {
   mojom::ReceiverPtr receiver_2_;
   MockReceiver mock_receiver_2_;
 
+  int32_t next_arbitrary_frame_feedback_id_;
+
  private:
   service_manager::ServiceKeepalive service_keepalive_;
-  int32_t next_arbitrary_frame_feedback_id_;
 };
 
 // This alias ensures test output is easily attributed to this service's tests.
@@ -427,6 +429,38 @@ TEST_F(MockVideoCaptureDeviceSharedAccessTest, SuspendAndResume) {
 
   subscription_1_->Resume();
   SendFrameAndExpectToArriveAtBothSubscribers();
+}
+
+TEST_F(MockVideoCaptureDeviceSharedAccessTest, SuspendAndResumeSingleClient) {
+  LetClient1ConnectWithRequestableSettingsAndExpectToGetThem();
+  subscription_1_->Activate();
+  {
+    base::RunLoop wait_loop;
+    subscription_1_->Suspend(base::BindOnce(
+        [](base::RunLoop* wait_loop) { wait_loop->Quit(); }, &wait_loop));
+    wait_loop.Run();
+  }
+  EXPECT_CALL(mock_receiver_1_, DoOnFrameReadyInBuffer(_, _, _, _)).Times(0);
+
+  // Send a couple of frames. We want to send at least as many frames as
+  // the maximum buffer count in the video frame pool to make sure that
+  // buffers are properly released and reused.
+  mock_device_.SendOnStarted();
+  for (int i = 0; i < DeviceMediaToMojoAdapter::max_buffer_pool_buffer_count();
+       i++) {
+    const int32_t kArbitraryRotation = 0;
+    const int32_t kArbitraryFrameFeedbackId =
+        next_arbitrary_frame_feedback_id_++;
+    mock_device_.SendStubFrame(requestable_settings_.requested_format,
+                               kArbitraryRotation, kArbitraryFrameFeedbackId);
+    // We need to wait until the frame has arrived at BroadcastingReceiver
+    base::RunLoop().RunUntilIdle();
+  }
+  Mock::VerifyAndClearExpectations(&mock_receiver_1_);
+
+  subscription_1_->Resume();
+  subscription_1_.FlushForTesting();
+  SendFrameAndExpectToArriveOnlyAtSubscriber1();
 }
 
 TEST_F(MockVideoCaptureDeviceSharedAccessTest,

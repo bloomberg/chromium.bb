@@ -288,10 +288,11 @@ void BroadcastingReceiver::OnFrameReadyInBuffer(
   auto buffer_context_iter = FindUnretiredBufferContextFromBufferId(buffer_id);
   CHECK(buffer_context_iter != buffer_contexts_.end());
   auto& buffer_context = *buffer_context_iter;
-  buffer_context.set_access_permission(std::move(access_permission));
   for (auto& client : clients_) {
     if (client.second.is_suspended())
       continue;
+    if (access_permission)
+      buffer_context.set_access_permission(std::move(access_permission));
     mojom::ScopedAccessPermissionPtr consumer_access_permission;
     mojo::MakeStrongBinding(
         std::make_unique<ConsumerAccessPermission>(base::BindOnce(
