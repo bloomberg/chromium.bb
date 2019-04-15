@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/svg/svg_style_element.h"
+#include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
@@ -413,11 +414,10 @@ void CSSStyleSheet::deleteRule(unsigned index,
          child_rule_cssom_wrappers_.size() == contents_->RuleCount());
 
   if (index >= length()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kIndexSizeError,
-        "The index provided (" + String::Number(index) +
-            ") is larger than the maximum index (" +
-            String::Number(length() - 1) + ").");
+    exception_state.ThrowRangeError(
+        ExceptionMessages::IndexOutsideRange<unsigned>(
+            "index", index, 0, ExceptionMessages::kInclusiveBound, length(),
+            ExceptionMessages::kExclusiveBound));
     return;
   }
   RuleMutationScope mutation_scope(this);
