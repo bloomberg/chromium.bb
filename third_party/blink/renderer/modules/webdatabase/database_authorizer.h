@@ -100,7 +100,6 @@ class DatabaseAuthorizer {
   bool HadDeletes() const { return had_deletes_; }
 
  private:
-  void AddWhitelistedFunctions();
   int DenyBasedOnTableName(const String&) const;
   int UpdateDeletesBasedOnTableName(const String&);
   bool AllowWrite();

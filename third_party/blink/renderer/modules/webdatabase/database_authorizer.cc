@@ -59,7 +59,7 @@ void DatabaseAuthorizer::ResetDeletes() {
 namespace {
 using FunctionNameList = HashSet<String, CaseFoldingHash>;
 
-const FunctionNameList& WhitelistedFunctions() {
+const FunctionNameList& AllowedFunctions() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       FunctionNameList, list,
       ({
@@ -309,7 +309,7 @@ int DatabaseAuthorizer::AllowPragma(const String&, const String&) {
 }
 
 int DatabaseAuthorizer::AllowFunction(const String& function_name) {
-  if (security_enabled_ && !WhitelistedFunctions().Contains(function_name))
+  if (security_enabled_ && !AllowedFunctions().Contains(function_name))
     return kSQLAuthDeny;
 
   return kSQLAuthAllow;
