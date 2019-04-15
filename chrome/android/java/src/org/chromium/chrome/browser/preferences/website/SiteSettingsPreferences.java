@@ -102,9 +102,6 @@ public class SiteSettingsPreferences extends PreferenceFragment
             if (!SiteSettingsCategory.adsCategoryEnabled()) {
                 getPreferenceScreen().removePreference(findPreference(Type.ADS));
             }
-            if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CLIPBOARD_CONTENT_SETTING)) {
-                getPreferenceScreen().removePreference(findPreference(Type.CLIPBOARD));
-            }
             // The new Languages Preference *feature* is an advanced version of this translate
             // preference. Once Languages Preference is enabled, remove this setting.
             if (ChromeFeatureList.isEnabled(ChromeFeatureList.LANGUAGES_PREFERENCE)) {
@@ -141,9 +138,7 @@ public class SiteSettingsPreferences extends PreferenceFragment
             }
             websitePrefs.add(Type.BACKGROUND_SYNC);
             websitePrefs.add(Type.CAMERA);
-            if (ChromeFeatureList.isEnabled(ChromeFeatureList.CLIPBOARD_CONTENT_SETTING)) {
-                websitePrefs.add(Type.CLIPBOARD);
-            }
+            websitePrefs.add(Type.CLIPBOARD);
             websitePrefs.add(Type.COOKIES);
             websitePrefs.add(Type.JAVASCRIPT);
             websitePrefs.add(Type.DEVICE_LOCATION);

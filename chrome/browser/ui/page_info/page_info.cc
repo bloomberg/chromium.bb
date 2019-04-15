@@ -177,11 +177,6 @@ bool ShouldShowPermission(
       return true;
   }
 
-  if (info.type == CONTENT_SETTINGS_TYPE_CLIPBOARD_READ) {
-    if (!base::FeatureList::IsEnabled(features::kClipboardContentSetting))
-      return false;
-  }
-
 #if defined(OS_ANDROID)
   // Special geolocation DSE settings apply only on Android, so make sure it
   // gets checked there regardless of default setting on Desktop.

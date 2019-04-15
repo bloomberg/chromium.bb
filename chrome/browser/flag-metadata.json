@@ -352,11 +352,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "clipboard-content-setting",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "composited-layer-borders",
     "owners": [ "ccameron" ],
     "expiry_milestone": 76

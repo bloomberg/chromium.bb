@@ -201,9 +201,6 @@ const SiteSettingsBehaviorImpl = {
         settings.ContentSettingsTypes.ADS,
         'enableSafeBrowsingSubresourceFilter');
     addOrRemoveSettingWithFlag(
-        settings.ContentSettingsTypes.CLIPBOARD,
-        'enableClipboardContentSetting');
-    addOrRemoveSettingWithFlag(
         settings.ContentSettingsTypes.PAYMENT_HANDLER,
         'enablePaymentHandlerContentSetting');
     return this.contentTypes_.slice(0);

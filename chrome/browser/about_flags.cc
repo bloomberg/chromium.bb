@@ -2988,11 +2988,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kStopInBackgroundDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(blink::features::kStopInBackground)},
 
-    {"clipboard-content-setting",
-     flag_descriptions::kClipboardContentSettingName,
-     flag_descriptions::kClipboardContentSettingDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kClipboardContentSetting)},
-
     {"enable-network-logging-to-file",
      flag_descriptions::kEnableNetworkLoggingToFileName,
      flag_descriptions::kEnableNetworkLoggingToFileDescription, kOsAll,
