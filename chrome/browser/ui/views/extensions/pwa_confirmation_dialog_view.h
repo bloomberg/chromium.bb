@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_EXTENSIONS_PWA_CONFIRMATION_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_PWA_CONFIRMATION_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_EXTENSIONS_PWA_CONFIRMATION_DIALOG_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_PWA_CONFIRMATION_DIALOG_VIEW_H_
 
 #include <vector>
 
@@ -13,15 +13,15 @@
 #include "chrome/common/web_application_info.h"
 #include "ui/views/window/dialog_delegate.h"
 
-// PWAConfirmationView provides a dialog for accepting or rejecting the
+// PWAConfirmationDialogView provides a dialog for accepting or rejecting the
 // installation of a PWA (Progressive Web App).
-class PWAConfirmationView : public views::DialogDelegateView {
+class PWAConfirmationDialogView : public views::DialogDelegateView {
  public:
-  // Constructs a PWAConfirmationView. |web_app_info| contains information
+  // Constructs a PWAConfirmationDialogView. |web_app_info| contains information
   // about a web app that has passed the PWA check.
-  PWAConfirmationView(const WebApplicationInfo& web_app_info,
-                      chrome::AppInstallationAcceptanceCallback callback);
-  ~PWAConfirmationView() override;
+  PWAConfirmationDialogView(const WebApplicationInfo& web_app_info,
+                            chrome::AppInstallationAcceptanceCallback callback);
+  ~PWAConfirmationDialogView() override;
 
  private:
   // views::WidgetDelegate:
@@ -46,7 +46,7 @@ class PWAConfirmationView : public views::DialogDelegateView {
   // The callback to be invoked when the dialog is completed.
   chrome::AppInstallationAcceptanceCallback callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(PWAConfirmationView);
+  DISALLOW_COPY_AND_ASSIGN(PWAConfirmationDialogView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_EXTENSIONS_PWA_CONFIRMATION_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_EXTENSIONS_PWA_CONFIRMATION_DIALOG_VIEW_H_

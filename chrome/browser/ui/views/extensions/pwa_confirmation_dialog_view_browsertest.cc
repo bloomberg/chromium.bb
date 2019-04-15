@@ -7,7 +7,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
-#include "chrome/browser/ui/views/extensions/pwa_confirmation_view.h"
+#include "chrome/browser/ui/views/extensions/pwa_confirmation_dialog_view.h"
 #include "chrome/common/web_application_info.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,9 +16,9 @@
 namespace {
 
 // Helper class to display the PWAConfirmationView dialog for testing.
-class PWAConfirmationViewTest : public DialogBrowserTest {
+class PWAConfirmationDialogViewTest : public DialogBrowserTest {
  public:
-  PWAConfirmationViewTest() {}
+  PWAConfirmationDialogViewTest() {}
 
   void ShowUi(const std::string& name) override {
     constexpr int kIconSize = 48;
@@ -47,30 +47,30 @@ class PWAConfirmationViewTest : public DialogBrowserTest {
       web_app_info.app_url = GURL("https://דוגמא.דוגמא.דוגמא.אחד.example.com");
     }
     constrained_window::ShowWebModalDialogViews(
-        new PWAConfirmationView(web_app_info,
-                                chrome::AppInstallationAcceptanceCallback()),
+        new PWAConfirmationDialogView(
+            web_app_info, chrome::AppInstallationAcceptanceCallback()),
         browser()->tab_strip_model()->GetActiveWebContents());
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PWAConfirmationViewTest);
+  DISALLOW_COPY_AND_ASSIGN(PWAConfirmationDialogViewTest);
 };
 
 // Launches an installation confirmation dialog for a PWA with a short name and
 // origin.
-IN_PROC_BROWSER_TEST_F(PWAConfirmationViewTest, InvokeUi_short_text) {
+IN_PROC_BROWSER_TEST_F(PWAConfirmationDialogViewTest, InvokeUi_short_text) {
   ShowAndVerifyUi();
 }
 
 // Launches an installation confirmation dialog for a PWA with name and origin
 // long enough to be elided.
-IN_PROC_BROWSER_TEST_F(PWAConfirmationViewTest, InvokeUi_long_text) {
+IN_PROC_BROWSER_TEST_F(PWAConfirmationDialogViewTest, InvokeUi_long_text) {
   ShowAndVerifyUi();
 }
 
 // Launches an installation confirmation dialog for a PWA with an RTL subdomain
 // which is long enough to be elided.
-IN_PROC_BROWSER_TEST_F(PWAConfirmationViewTest, InvokeUi_rtl) {
+IN_PROC_BROWSER_TEST_F(PWAConfirmationDialogViewTest, InvokeUi_rtl) {
   ShowAndVerifyUi();
 }
 
