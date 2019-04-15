@@ -50,7 +50,8 @@
 #endif
 
 using chrome_test_util::ButtonWithAccessibilityLabelId;
-using chrome_test_util::ClearBrowsingDataCollectionView;
+using chrome_test_util::ClearBrowsingDataButton;
+using chrome_test_util::ClearBrowsingDataView;
 using chrome_test_util::ClearBrowsingHistoryButton;
 using chrome_test_util::ClearCacheButton;
 using chrome_test_util::ClearCookiesButton;
@@ -77,10 +78,6 @@ enum MetricsServiceType {
   kBreakpadFirstLaunch,
 };
 
-// Matcher for the clear browsing data button on the clear browsing data panel.
-id<GREYMatcher> ClearBrowsingDataButton() {
-  return ButtonWithAccessibilityLabelId(IDS_IOS_CLEAR_BUTTON);
-}
 // Matcher for the Send Usage Data cell on the Privacy screen.
 id<GREYMatcher> SendUsageDataButton() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_OPTIONS_SEND_USAGE_DATA);
@@ -182,7 +179,7 @@ id<GREYMatcher> BandwidthSettingsButton() {
 
   // Before returning, make sure that the top of the Clear Browsing Data
   // settings screen is visible to match the state at the start of the method.
-  [[EarlGrey selectElementWithMatcher:ClearBrowsingDataCollectionView()]
+  [[EarlGrey selectElementWithMatcher:ClearBrowsingDataView()]
       performAction:grey_scrollToContentEdge(kGREYContentEdgeTop)];
 }
 
@@ -587,7 +584,7 @@ id<GREYMatcher> BandwidthSettingsButton() {
 - (void)testAccessibilityOnPrivacyClearBrowsingHistoryPage {
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:SettingsMenuPrivacyButton()];
-  [ChromeEarlGreyUI tapPrivacyMenuButton:ClearBrowsingDataButton()];
+  [ChromeEarlGreyUI tapPrivacyMenuButton:ClearBrowsingDataCell()];
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
   [self closeSubSettingsMenu];
 }

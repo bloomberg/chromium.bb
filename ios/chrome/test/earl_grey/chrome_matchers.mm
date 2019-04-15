@@ -364,19 +364,19 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibilityID,
 }
 
 + (id<GREYMatcher>)clearBrowsingDataButton {
-  return [ChromeMatchers buttonWithAccessibilityLabelId:(IDS_IOS_CLEAR_BUTTON)];
+  return grey_accessibilityID(kClearBrowsingDataButtonIdentifier);
 }
 
-+ (id<GREYMatcher>)clearBrowsingDataCollectionView {
-  return grey_accessibilityID(
-      kClearBrowsingDataCollectionViewAccessibilityIdentifier);
++ (id<GREYMatcher>)clearBrowsingDataView {
+  return grey_accessibilityID(kClearBrowsingDataViewAccessibilityIdentifier);
 }
 
 + (id<GREYMatcher>)confirmClearBrowsingDataButton {
   return grey_allOf(
       grey_accessibilityLabel(l10n_util::GetNSString(IDS_IOS_CLEAR_BUTTON)),
       grey_accessibilityTrait(UIAccessibilityTraitButton),
-      grey_not(grey_accessibilityID(kClearBrowsingDataButtonIdentifier)), nil);
+      grey_not(grey_accessibilityID(kClearBrowsingDataButtonIdentifier)),
+      grey_userInteractionEnabled(), nil);
 }
 
 + (id<GREYMatcher>)settingsMenuButton {
@@ -484,7 +484,9 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibilityID,
 }
 
 + (id<GREYMatcher>)clearBrowsingHistoryButton {
-  return grey_accessibilityID(kClearBrowsingHistoryCellAccessibilityIdentifier);
+  return grey_allOf(
+      grey_accessibilityID(kClearBrowsingHistoryCellAccessibilityIdentifier),
+      grey_sufficientlyVisible(), nil);
 }
 
 + (id<GREYMatcher>)clearCookiesButton {
@@ -492,7 +494,9 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibilityID,
 }
 
 + (id<GREYMatcher>)clearCacheButton {
-  return grey_accessibilityID(kClearCacheCellAccessibilityIdentifier);
+  return grey_allOf(
+      grey_accessibilityID(kClearCacheCellAccessibilityIdentifier),
+      grey_sufficientlyVisible(), nil);
 }
 
 + (id<GREYMatcher>)clearSavedPasswordsButton {

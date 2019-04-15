@@ -141,8 +141,8 @@ id<GREYMatcher> ClearBrowsingDataCell();
 // panel.
 id<GREYMatcher> ClearBrowsingDataButton();
 
-// Returns matcher for the clear browsing data collection view.
-id<GREYMatcher> ClearBrowsingDataCollectionView();
+// Returns matcher for the clear browsing data view.
+id<GREYMatcher> ClearBrowsingDataView();
 
 // Matcher for the clear browsing data action sheet item.
 id<GREYMatcher> ConfirmClearBrowsingDataButton();

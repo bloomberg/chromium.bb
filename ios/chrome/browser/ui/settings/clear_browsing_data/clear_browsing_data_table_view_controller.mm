@@ -16,9 +16,11 @@
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/elements/chrome_activity_overlay_coordinator.h"
+#include "ios/chrome/browser/ui/settings/cells/clear_browsing_data_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/table_view_clear_browsing_data_item.h"
 #include "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_local_commands.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_manager.h"
+#import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_ui_constants.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
@@ -107,6 +109,8 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
                 style:UIBarButtonItemStylePlain
                target:self
                action:@selector(showClearBrowsingDataAlertController:)];
+    _clearBrowsingDataBarButton.accessibilityIdentifier =
+        kClearBrowsingDataButtonIdentifier;
     _clearBrowsingDataBarButton.tintColor = [UIColor redColor];
   }
   return _clearBrowsingDataBarButton;
@@ -126,6 +130,8 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
 - (void)viewDidLoad {
   [super viewDidLoad];
   self.styler.tableViewBackgroundColor = UIColor.whiteColor;
+  self.tableView.accessibilityIdentifier =
+      kClearBrowsingDataViewAccessibilityIdentifier;
   self.tableView.backgroundColor = self.styler.tableViewBackgroundColor;
   // TableView configuration
   self.tableView.estimatedRowHeight = 56;

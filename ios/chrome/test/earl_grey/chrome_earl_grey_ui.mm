@@ -29,7 +29,7 @@
 #error "This file requires ARC support."
 #endif
 
-using chrome_test_util::ClearBrowsingDataCollectionView;
+using chrome_test_util::ClearBrowsingDataView;
 using chrome_test_util::SettingsMenuButton;
 using chrome_test_util::ToolsMenuView;
 using base::test::ios::WaitUntilConditionOrTimeout;
@@ -90,8 +90,7 @@ id<GREYAction> ScrollDown() {
       grey_allOf(buttonMatcher, grey_interactable(), nil);
   [[[EarlGrey selectElementWithMatcher:interactableButtonMatcher]
          usingSearchAction:ScrollDown()
-      onElementWithMatcher:ClearBrowsingDataCollectionView()]
-      performAction:grey_tap()];
+      onElementWithMatcher:ClearBrowsingDataView()] performAction:grey_tap()];
 }
 
 + (void)openAndClearBrowsingDataFromHistory {
