@@ -153,6 +153,7 @@ public class TouchlessDialogPresenter extends Presenter {
         ChromeImageView imageView = view.findViewById(R.id.dialog_item_icon);
         TextView textView = view.findViewById(R.id.dialog_item_text);
         if (DialogListItemProperties.ICON == propertyKey) {
+            imageView.setVisibility(View.VISIBLE);
             Drawable icon = model.get(DialogListItemProperties.ICON).mutate();
             icon.clearColorFilter();
             imageView.setImageDrawable(icon);
