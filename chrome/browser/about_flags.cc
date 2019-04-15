@@ -981,6 +981,18 @@ const FeatureEntry::FeatureVariation kTabSwitcherOnReturnVariations[] = {
 };
 #endif  // OS_ANDROID
 
+const FeatureEntry::FeatureParam kVizHitTestDrawQuadEnabled[] = {
+    {"provider", "draw_quad"}};
+
+const FeatureEntry::FeatureParam kVizHitTestSurfaceLayerEnabled[] = {
+    {"provider", "surface_layer"}};
+
+const FeatureEntry::FeatureVariation kVizHitTestVariations[] = {
+    {"DrawQuad", kVizHitTestDrawQuadEnabled,
+     base::size(kVizHitTestDrawQuadEnabled), nullptr},
+    {"SurfaceLayer", kVizHitTestSurfaceLayerEnabled,
+     base::size(kVizHitTestSurfaceLayerEnabled), nullptr}};
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name.
@@ -3076,10 +3088,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kQueryInOmniboxDescription, kOsAll,
      FEATURE_VALUE_TYPE(omnibox::kQueryInOmnibox)},
 
-    {"enable-viz-hit-test-draw-quad",
-     flag_descriptions::kVizHitTestDrawQuadName,
-     flag_descriptions::kVizHitTestDrawQuadDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kEnableVizHitTestDrawQuad)},
+    {"enable-viz-hit-test", flag_descriptions::kVizHitTestName,
+     flag_descriptions::kVizHitTestDescription, kOsAll,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kEnableVizHitTest,
+                                    kVizHitTestVariations,
+                                    "VizHitTestDataSource")},
 
 #if BUILDFLAG(ENABLE_PDF)
 #if defined(OS_CHROMEOS)

@@ -715,14 +715,21 @@ class SitePerProcessHitTestBrowserTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     SitePerProcessBrowserTest::SetUpCommandLine(command_line);
     ui::PlatformEventSource::SetIgnoreNativePlatformEvents(true);
+    const char kParam[] = "provider";
+    std::map<std::string, std::string> parameters;
     if (std::get<0>(GetParam()) == 1) {
-      feature_list_.InitAndEnableFeature(features::kEnableVizHitTestDrawQuad);
+      parameters[kParam] = "draw_quad";
+      feature_list_.InitAndEnableFeatureWithParameters(
+          features::kEnableVizHitTest, parameters);
     } else if (std::get<0>(GetParam()) == 2) {
-      feature_list_.InitWithFeatures({features::kEnableVizHitTestSurfaceLayer},
-                                     {features::kEnableVizHitTestDrawQuad});
+      parameters[kParam] = "surface_layer";
+      feature_list_.InitAndEnableFeatureWithParameters(
+          features::kEnableVizHitTest, parameters);
     } else {
-      feature_list_.InitWithFeatures({}, {features::kEnableVizHitTestDrawQuad,
-                                          features::kVizDisplayCompositor});
+      feature_list_.InitWithFeatures(
+          {},
+          {features::kVizDisplayCompositor, features::kEnableVizHitTestDrawQuad,
+           features::kEnableVizHitTestSurfaceLayer});
     }
   }
 

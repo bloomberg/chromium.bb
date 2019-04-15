@@ -399,9 +399,11 @@ class PDFExtensionHitTestTest : public PDFExtensionTest,
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PDFExtensionTest::SetUpCommandLine(command_line);
     if (GetParam()) {
-      feature_list_.InitAndEnableFeature(features::kEnableVizHitTestDrawQuad);
+      std::map<std::string, std::string> parameters{{"provider", "draw_quad"}};
+      feature_list_.InitAndEnableFeatureWithParameters(
+          features::kEnableVizHitTest, parameters);
     } else {
-      feature_list_.InitAndDisableFeature(features::kEnableVizHitTestDrawQuad);
+      feature_list_.InitAndDisableFeature(features::kEnableVizHitTest);
     }
   }
 

@@ -472,8 +472,8 @@ extern const char kEnableOutOfBlinkCorsDescription[];
 extern const char kVizDisplayCompositorName[];
 extern const char kVizDisplayCompositorDescription[];
 
-extern const char kVizHitTestDrawQuadName[];
-extern const char kVizHitTestDrawQuadDescription[];
+extern const char kVizHitTestName[];
+extern const char kVizHitTestDescription[];
 
 extern const char kMemlogName[];
 extern const char kMemlogDescription[];
