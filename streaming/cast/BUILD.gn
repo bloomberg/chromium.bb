@@ -4,6 +4,7 @@
 
 source_set("cast") {
   sources = [
+    "big_endian.h",
     "clock_drift_smoother.cc",
     "clock_drift_smoother.h",
     "constants.h",
@@ -33,6 +34,7 @@ source_set("cast_unittests") {
   testonly = true
 
   sources = [
+    "big_endian_unittest.cc",
     "expanded_value_base_unittest.cc",
     "ntp_time_unittest.cc",
     "rtp_time_unittest.cc",
