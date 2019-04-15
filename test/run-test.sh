@@ -32,7 +32,6 @@ BASEDIR=`mktemp -d --tmpdir fontconfig.XXXXXXXX`
 FONTDIR="$BASEDIR"/fonts
 CACHEDIR="$BASEDIR"/cache.dir
 EXPECTED=${EXPECTED-"out.expected"}
-LOG_COMPILER=${LOG_COMPILER-"$TESTDIR/wrapper-script.sh"}
 
 ECHO=true
 

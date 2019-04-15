@@ -6,12 +6,15 @@ TEST_EXTENSIONS = \
 AM_TESTS_ENVIRONMENT= \
 	src=${srcdir}; export src; \
 	EXEEXT=${EXEEXT}; export EXEEXT; \
+	LOG_COMPILER=${LOG_COMPILER} ; export LOG_COMPILER; \
 	$(NULL)
 
 BUILT_SOURCES = $(builddir)/out.expected
 
 SH_LOG_COMPILER = sh
+if OS_WIN32
 LOG_COMPILER = ${srcdir}/wrapper-script.sh
+endif
 TESTS=run-test.sh
 
 TESTDATA =			\
