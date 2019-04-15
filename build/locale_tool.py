@@ -282,7 +282,6 @@ def ChromeLocales():
     _ExtractAllChromeLocalesLists()
   return _INTERNAL_CHROME_LOCALES
 
-
 def AndroidOmittedLocales():
   """Reutrn the list of locales omitted from Android APKs."""
   if not _INTERNAL_ANDROID_OMITTED_LOCALES:
@@ -380,7 +379,7 @@ def _ReadJsonList(file_path):
   with open(file_path) as f:
     data = json.load(f)
     assert isinstance(data, list), "JSON file %s is not a list!" % file_path
-  return data
+  return [item.encode('utf8') for item in data]
 
 
 def _ExtractAllChromeLocalesLists():
@@ -409,6 +408,7 @@ def _ExtractAllChromeLocalesLists():
     global _INTERNAL_IOS_UNSUPPORTED_LOCALES
     _INTERNAL_IOS_UNSUPPORTED_LOCALES = _ReadJsonList(
         os.path.join(out_path, 'foo.ios_unsupported_locales'))
+
 
 ##########################################################################
 ##########################################################################
@@ -702,8 +702,38 @@ def _CheckGrdTranslations(grd_file, grd_lines, wanted_locales):
   return errors
 
 
+# Regular expression used to replace the lang attribute inside .xtb files.
+_RE_TRANSLATIONBUNDLE = re.compile('<translationbundle lang="(.*)">')
+
+
+def _CreateFakeXtbFileFrom(src_xtb_path, dst_xtb_path, dst_locale):
+  """Create a fake .xtb file.
+
+  Args:
+    src_xtb_path: Path to source .xtb file to copy from.
+    dst_xtb_path: Path to destination .xtb file to write to.
+    dst_locale: Destination locale, the lang attribute in the source file
+      will be substituted with this value before its lines are written
+      to the destination file.
+  """
+  with open(src_xtb_path) as f:
+    src_xtb_lines = f.readlines()
+
+  def replace_xtb_lang_attribute(line):
+    m = _RE_TRANSLATIONBUNDLE.search(line)
+    if not m:
+      return line
+    return line[:m.start(1)] + dst_locale + line[m.end(1):]
+
+  dst_xtb_lines = [replace_xtb_lang_attribute(line) for line in src_xtb_lines]
+  with build_utils.AtomicOutput(dst_xtb_path) as tmp:
+    tmp.writelines(dst_xtb_lines)
+
+
 def _AddMissingLocalesInGrdTranslations(grd_file, grd_lines, wanted_locales):
   """Fix an input .grd line by adding missing Android outputs.
+
+  This also creates fake .xtb files from the one provided for 'en-GB'.
 
   Args:
     grd_file: Input .grd file path.
@@ -726,7 +756,7 @@ def _AddMissingLocalesInGrdTranslations(grd_file, grd_lines, wanted_locales):
     if not missing_locales:
       continue
 
-    src_locale = 'bg'
+    src_locale = 'en-GB'
     src_lang_attribute = 'lang="%s"' % src_locale
     src_line = None
     for pos in xrange(start, end):
@@ -738,6 +768,10 @@ def _AddMissingLocalesInGrdTranslations(grd_file, grd_lines, wanted_locales):
       raise Exception(
           'Cannot find <file> element with "%s" lang attribute' % src_locale)
 
+    src_path = os.path.join(
+        os.path.dirname(grd_file),
+        _RE_PATH_ATTRIBUTE.search(src_line).group(1))
+
     line_count = end - 1
     for locale in missing_locales:
       dst_line = src_line.replace(
@@ -745,6 +779,10 @@ def _AddMissingLocalesInGrdTranslations(grd_file, grd_lines, wanted_locales):
               '_%s.xtb' % src_locale, '_%s.xtb' % locale)
       grd_lines.insert(line_count, dst_line)
       line_count += 1
+
+      dst_path = src_path.replace('_%s.xtb' % src_locale, '_%s.xtb' % locale)
+      _CreateFakeXtbFileFrom(src_path, dst_path, locale)
+
 
   # Sort the new <output> elements.
   return _SortGrdElementsRanges(grd_lines, _IsTranslationGrdOutputLine)
@@ -929,6 +967,7 @@ def _AddMissingLocalesInAllFiles(input_file, input_lines, wanted_locales):
     lines = _AddMissingLocalesInGnAndroidOutputs(
         input_file, input_lines, wanted_locales)
   return lines
+
 
 ##########################################################################
 ##########################################################################
