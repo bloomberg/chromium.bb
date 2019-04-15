@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/cancelable_callback.h"
 #include "base/location.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_refptr.h"
@@ -4646,6 +4647,39 @@ TEST_P(SequenceManagerTest, UnregisterTaskQueueTriggersScheduleWork) {
   queue_1->ShutdownTaskQueue();
 
   RunLoop().RunUntilIdle();
+}
+
+TEST_P(SequenceManagerTest, ReclaimMemoryRemovesCorrectQueueFromSet) {
+  auto queue1 = CreateTaskQueue();
+  auto queue2 = CreateTaskQueue();
+  auto queue3 = CreateTaskQueue();
+  auto queue4 = CreateTaskQueue();
+
+  std::vector<int> order;
+
+  CancelableClosure cancelable_closure1(
+      BindLambdaForTesting([&]() { order.push_back(10); }));
+  CancelableClosure cancelable_closure2(
+      BindLambdaForTesting([&]() { order.push_back(11); }));
+  queue1->task_runner()->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
+                                    order.push_back(1);
+                                    cancelable_closure1.Cancel();
+                                    cancelable_closure2.Cancel();
+                                    // This should remove |queue4| from the work
+                                    // queue set,
+                                    sequence_manager()->ReclaimMemory();
+                                  }));
+  queue2->task_runner()->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() { order.push_back(2); }));
+  queue3->task_runner()->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() { order.push_back(3); }));
+  queue4->task_runner()->PostTask(FROM_HERE, cancelable_closure1.callback());
+  queue4->task_runner()->PostTask(FROM_HERE, cancelable_closure2.callback());
+
+  RunLoop().RunUntilIdle();
+
+  // Make sure ReclaimMemory didn't prevent the task from |queue2| from running.
+  EXPECT_THAT(order, ElementsAre(1, 2, 3));
 }
 
 }  // namespace sequence_manager_impl_unittest

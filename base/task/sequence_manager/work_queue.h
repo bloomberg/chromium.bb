@@ -168,6 +168,10 @@ class BASE_EXPORT WorkQueue {
   WorkQueueSets* work_queue_sets_ = nullptr;  // NOT OWNED.
   TaskQueueImpl* const task_queue_;           // NOT OWNED.
   size_t work_queue_set_index_ = 0;
+
+  // Iff the queue isn't empty (or appearing to be empty due to a fence) then
+  // |heap_handle_| will be valid and correspond to this queue's location within
+  // an IntrusiveHeap inside the WorkQueueSet.
   base::internal::HeapHandle heap_handle_;
   const char* const name_;
   EnqueueOrder fence_;

@@ -182,6 +182,7 @@ Task WorkQueue::TakeTaskFromWorkQueue() {
     tasks_.MaybeShrinkQueue();
   }
 
+  DCHECK(work_queue_sets_);
 #if DCHECK_IS_ON()
   // If diagnostics are on it's possible task queues are being selected at
   // random so we can't use the (slightly) more efficient OnPopMinQueueInSet.
@@ -249,10 +250,11 @@ void WorkQueue::InsertFenceSilently(EnqueueOrder fence) {
 
 bool WorkQueue::InsertFence(EnqueueOrder fence) {
   bool was_blocked_by_fence = InsertFenceImpl(fence);
+  if (!work_queue_sets_)
+    return false;
 
   // Moving the fence forward may unblock some tasks.
-  if (work_queue_sets_ && !tasks_.empty() && was_blocked_by_fence &&
-      !BlockedByFence()) {
+  if (!tasks_.empty() && was_blocked_by_fence && !BlockedByFence()) {
     work_queue_sets_->OnTaskPushedToEmptyQueue(this);
     return true;
   }
@@ -294,6 +296,7 @@ void WorkQueue::DeletePendingTasks() {
 
   if (work_queue_sets_ && heap_handle().IsValid())
     work_queue_sets_->OnQueuesFrontTaskChanged(this);
+  DCHECK(!heap_handle_.IsValid());
 }
 
 void WorkQueue::PopTaskForTesting() {
