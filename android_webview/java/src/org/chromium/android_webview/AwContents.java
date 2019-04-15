@@ -3219,7 +3219,7 @@ public class AwContents implements SmartClipProvider {
 
     @CalledByNative
     private void updateScrollState(int maxContainerViewScrollOffsetX,
-            int maxContainerViewScrollOffsetY, int contentWidthDip, int contentHeightDip,
+            int maxContainerViewScrollOffsetY, float contentWidthDip, float contentHeightDip,
             float pageScaleFactor, float minPageScaleFactor, float maxPageScaleFactor) {
         mContentWidthDip = contentWidthDip;
         mContentHeightDip = contentHeightDip;
