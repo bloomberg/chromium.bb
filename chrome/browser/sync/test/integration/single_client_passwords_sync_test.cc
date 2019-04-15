@@ -227,10 +227,17 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncUssMigratorTest,
   ASSERT_EQ(2, GetPasswordCount(0));
 }
 
+// TODO(https://crbug.com/952074): re-enable once flakiness is addressed.
+#if defined(THREAD_SANITIZER)
+#define MAYBE_ExerciseUssMigrator DISABLED_ExerciseUssMigrator
+#else
+#define MAYBE_ExerciseUssMigrator ExerciseUssMigrator
+#endif
+
 // Now that local passwords, the local sync directory and the sever are
 // populated with two passwords, USS is enabled for passwords.
 IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncUssMigratorTest,
-                       ExerciseUssMigrator) {
+                       MAYBE_ExerciseUssMigrator) {
   base::test::ScopedFeatureList override_features;
   override_features.InitAndEnableFeature(switches::kSyncUSSPasswords);
 
