@@ -483,7 +483,7 @@ class DescriberText(Describer):
 
   def _DescribeDeltaSizeInfo(self, diff):
     common_metadata = {k: v for k, v in diff.before.metadata.iteritems()
-                       if diff.after.metadata[k] == v}
+                       if diff.after.metadata.get(k) == v}
     before_metadata = {k: v for k, v in diff.before.metadata.iteritems()
                        if k not in common_metadata}
     after_metadata = {k: v for k, v in diff.after.metadata.iteritems()

@@ -2115,12 +2115,6 @@ template("monochrome_public_bundle_tmpl") {
         },
       ]
     }
-    extra_modules += [
-      {
-        name = "tab_ui"
-        module_target = ":${target_name}__tab_ui_bundle_module"
-      },
-    ]
   }
 }
 
