@@ -326,7 +326,6 @@ class EnterXRButton {
     this.setTitle(this.options.textXRNotFoundTitle);
 
     if (options.supportedSessionTypes.length > 0 && navigator.xr) {
-      console.log(options.supportedSessionTypes);
       navigator.xr.addEventListener('devicechange', () => this.__onDeviceChange());
 
       // Force a call now in case the initial event from the page load was missed.
