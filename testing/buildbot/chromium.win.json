@@ -2007,6 +2007,93 @@
     ],
     "isolated_scripts": [
       {
+        "isolate_name": "blink_python_tests",
+        "name": "blink_python_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ]
+        }
+      },
+      {
+        "isolate_name": "chromedriver_replay_unittests",
+        "name": "chromedriver_replay_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
+          "--gtest-benchmark-name=components_perftests"
+        ],
+        "isolate_name": "components_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "components_perftests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ]
+        }
+      },
+      {
+        "isolate_name": "content_shell_crash_test",
+        "name": "content_shell_crash_test",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ]
+        }
+      },
+      {
+        "isolate_name": "flatbuffers_unittests",
+        "name": "flatbuffers_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ]
+        }
+      },
+      {
+        "isolate_name": "metrics_python_tests",
+        "name": "metrics_python_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ]
+        }
+      },
+      {
         "isolate_name": "mini_installer_tests",
         "name": "mini_installer_tests",
         "swarming": {
@@ -2015,6 +2102,42 @@
             {
               "cpu": "x86-64",
               "integrity": "high",
+              "os": "Windows-10-15063"
+            }
+          ]
+        }
+      },
+      {
+        "isolate_name": "telemetry_gpu_unittests",
+        "name": "telemetry_gpu_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ],
+          "idempotent": false
+        }
+      },
+      {
+        "args": [
+          "--gtest-benchmark-name=views_perftests"
+        ],
+        "isolate_name": "views_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "views_perftests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
               "os": "Windows-10-15063"
             }
           ]
