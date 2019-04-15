@@ -104,58 +104,51 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
                      const base::Optional<gfx::RRectF>& rounded_corner_bounds,
                      const gfx::Transform* cdt);
 
+  // The returned DrawQuadParams can be modified by the DrawX calls that accept
+  // params so that they can apply explicit data transforms before sending to
+  // Skia in a consistent manner.
   DrawQuadParams CalculateDrawQuadParams(const DrawQuad* quad,
                                          const gfx::QuadF* draw_region);
   DrawRPDQParams CalculateRPDQParams(const SkImage* src_image,
                                      const RenderPassDrawQuad* quad,
-                                     const DrawQuadParams& params);
+                                     DrawQuadParams* params);
 
-  SkCanvas::ImageSetEntry MakeEntry(const DrawQuadParams& params,
-                                    const SkImage* image,
-                                    const gfx::RectF& src,
+  SkCanvas::ImageSetEntry MakeEntry(const SkImage* image,
                                     int matrix_index,
-                                    bool use_opacity = true);
+                                    const DrawQuadParams& params);
 
   bool MustFlushBatchedQuads(const DrawQuad* new_quad,
                              const DrawQuadParams& params);
-  void AddQuadToBatch(const DrawQuadParams& params,
-                      const SkImage* image,
-                      const gfx::RectF& tex_coords);
+  void AddQuadToBatch(const SkImage* image, DrawQuadParams* params);
   void FlushBatchedQuads();
 
   // Utility to draw a single quad as a filled color
-  void DrawColoredQuad(const DrawQuadParams& params, SkColor color);
+  void DrawColoredQuad(SkColor color, DrawQuadParams* params);
   // Utility to make a single ImageSetEntry and draw it with the complex paint.
-  // Assumes the paint applies the param's opacity.
-  void DrawSingleImage(const DrawQuadParams& params,
-                       const SkImage* image,
-                       const gfx::RectF& src,
-                       const SkPaint* paint);
+  void DrawSingleImage(const SkImage* image,
+                       const SkPaint& paint,
+                       DrawQuadParams* params);
 
   // DebugBorder, Picture, RPDQ, and SolidColor quads cannot be batched. They
   // either are not textures (debug, picture, solid color), or it's very likely
   // the texture will have advanced paint effects (rpdq)
   void DrawDebugBorderQuad(const DebugBorderDrawQuad* quad,
-                           const DrawQuadParams& params);
-  void DrawPictureQuad(const PictureDrawQuad* quad,
-                       const DrawQuadParams& params);
+                           DrawQuadParams* params);
+  void DrawPictureQuad(const PictureDrawQuad* quad, DrawQuadParams* params);
   void DrawRenderPassQuad(const RenderPassDrawQuad* quad,
-                          const DrawQuadParams& params);
+                          DrawQuadParams* params);
   void DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
-                                  const DrawQuadParams& params,
                                   const SkImage* content_image,
-                                  bool needs_mipmap);
+                                  DrawQuadParams* params);
   void DrawSolidColorQuad(const SolidColorDrawQuad* quad,
-                          const DrawQuadParams& state);
+                          DrawQuadParams* params);
 
   void DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
-                           const DrawQuadParams& params);
-  void DrawTextureQuad(const TextureDrawQuad* quad,
-                       const DrawQuadParams& params);
-  void DrawTileDrawQuad(const TileDrawQuad* quad, const DrawQuadParams& params);
-  void DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
-                        const DrawQuadParams& params);
-  void DrawUnsupportedQuad(const DrawQuad* quad, const DrawQuadParams& params);
+                           DrawQuadParams* params);
+  void DrawTextureQuad(const TextureDrawQuad* quad, DrawQuadParams* params);
+  void DrawTileDrawQuad(const TileDrawQuad* quad, DrawQuadParams* params);
+  void DrawYUVVideoQuad(const YUVVideoDrawQuad* quad, DrawQuadParams* params);
+  void DrawUnsupportedQuad(const DrawQuad* quad, DrawQuadParams* params);
 
   const TileDrawQuad* CanPassBeDrawnDirectly(const RenderPass* pass) override;
 
