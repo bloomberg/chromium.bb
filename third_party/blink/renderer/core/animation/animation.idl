@@ -33,8 +33,8 @@
 enum AnimationPlayState { "idle", "pending", "running", "paused", "finished" };
 
 [
+    Exposed=Window,
     Constructor(optional AnimationEffect? effect = null, optional AnimationTimeline? timeline),
-    Exposed(Window WebAnimationsAPI),
     ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor,
     ActiveScriptWrappable
