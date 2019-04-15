@@ -127,8 +127,7 @@ File* File::Create(
     ExecutionContext* context,
     const HeapVector<ArrayBufferOrArrayBufferViewOrBlobOrUSVString>& file_bits,
     const String& file_name,
-    const FilePropertyBag* options,
-    ExceptionState& exception_state) {
+    const FilePropertyBag* options) {
   DCHECK(options->hasType());
 
   double last_modified;

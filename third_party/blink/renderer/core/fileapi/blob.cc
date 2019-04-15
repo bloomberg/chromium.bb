@@ -84,8 +84,7 @@ Blob::~Blob() = default;
 Blob* Blob::Create(
     ExecutionContext* context,
     const HeapVector<ArrayBufferOrArrayBufferViewOrBlobOrUSVString>& blob_parts,
-    const BlobPropertyBag* options,
-    ExceptionState& exception_state) {
+    const BlobPropertyBag* options) {
   DCHECK(options->hasType());
 
   DCHECK(options->hasEndings());
