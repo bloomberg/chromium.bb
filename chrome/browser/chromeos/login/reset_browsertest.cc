@@ -6,12 +6,13 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
+#include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screens/reset_screen.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
+#include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_exit_waiter.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -37,11 +38,9 @@ constexpr char kTestUser1GaiaId[] = "test-user1@gmail.com";
 
 }  // namespace
 
-class ResetTest : public LoginManagerTest {
+class ResetTest : public MixinBasedInProcessBrowserTest {
  public:
-  ResetTest() : LoginManagerTest(false, false /* should_initialize_webui */) {
-    set_force_webui_login(false);
-  }
+  ResetTest() = default;
   ~ResetTest() override = default;
 
   // LoginManagerTest overrides:
@@ -52,12 +51,7 @@ class ResetTest : public LoginManagerTest {
     dbus_setter->SetUpdateEngineClient(
         std::unique_ptr<UpdateEngineClient>(update_engine_client_));
 
-    LoginManagerTest::SetUpInProcessBrowserTestFixture();
-  }
-
-  void RegisterSomeUser() {
-    RegisterUser(AccountId::FromUserEmailGaiaId(kTestUser1, kTestUser1GaiaId));
-    StartupUtils::MarkOobeCompleted();
+    MixinBasedInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
   }
 
   void InvokeResetScreen() {
@@ -100,6 +94,9 @@ class ResetTest : public LoginManagerTest {
   FakeUpdateEngineClient* update_engine_client_ = nullptr;
 
  private:
+  LoginManagerMixin login_manager_mixin_{
+      &mixin_host_,
+      {AccountId::FromUserEmailGaiaId(kTestUser1, kTestUser1GaiaId)}};
   DISALLOW_COPY_AND_ASSIGN(ResetTest);
 };
 
@@ -179,20 +176,12 @@ class ResetTestWithTpmFirmwareUpdate : public ResetTest {
       tpm_firmware_update_checker_callback_;
 };
 
-IN_PROC_BROWSER_TEST_F(ResetTest, PRE_ShowAndCancel) {
-  RegisterSomeUser();
-}
-
 IN_PROC_BROWSER_TEST_F(ResetTest, ShowAndCancel) {
   InvokeResetScreen();
   test::OobeJS().ExpectVisible("reset");
 
   CloseResetScreen();
   test::OobeJS().CreateVisibilityWaiter(false, {"reset"});
-}
-
-IN_PROC_BROWSER_TEST_F(ResetTest, PRE_RestartBeforePowerwash) {
-  RegisterSomeUser();
 }
 
 IN_PROC_BROWSER_TEST_F(ResetTest, RestartBeforePowerwash) {
@@ -211,7 +200,6 @@ IN_PROC_BROWSER_TEST_F(ResetTest, RestartBeforePowerwash) {
 IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, PRE_ViewsLogic) {
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetBoolean(prefs::kFactoryResetRequested, true);
-  RegisterSomeUser();
   update_engine_client_->set_can_rollback_check_result(false);
 }
 
@@ -256,7 +244,6 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, ViewsLogic) {
 IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, PRE_ShowAfterBootIfRequested) {
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetBoolean(prefs::kFactoryResetRequested, true);
-  RegisterSomeUser();
 }
 
 IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, ShowAfterBootIfRequested) {
@@ -269,7 +256,6 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, ShowAfterBootIfRequested) {
 IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, PRE_RollbackUnavailable) {
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetBoolean(prefs::kFactoryResetRequested, true);
-  RegisterSomeUser();
 }
 
 IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, RollbackUnavailable) {
@@ -302,7 +288,6 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback,
                        PRE_RollbackAvailable) {
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetBoolean(prefs::kFactoryResetRequested, true);
-  RegisterSomeUser();
 }
 
 IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback, RollbackAvailable) {
@@ -351,7 +336,6 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback,
                        PRE_ErrorOnRollbackRequested) {
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetBoolean(prefs::kFactoryResetRequested, true);
-  RegisterSomeUser();
 }
 
 IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback,
@@ -378,7 +362,6 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback,
                        PRE_RevertAfterCancel) {
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetBoolean(prefs::kFactoryResetRequested, true);
-  RegisterSomeUser();
 }
 
 IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback, RevertAfterCancel) {
@@ -405,11 +388,6 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback, RevertAfterCancel) {
   test::OobeJS()
       .CreateHasClassWaiter(true, "rollback-proposal-view", {"reset"})
       ->Wait();
-}
-
-IN_PROC_BROWSER_TEST_F(ResetTestWithTpmFirmwareUpdate,
-                       PRE_PRE_ResetFromSigninWithFirmwareUpdate) {
-  RegisterSomeUser();
 }
 
 IN_PROC_BROWSER_TEST_F(ResetTestWithTpmFirmwareUpdate,
@@ -456,7 +434,6 @@ IN_PROC_BROWSER_TEST_F(ResetTestWithTpmFirmwareUpdate,
 
 IN_PROC_BROWSER_TEST_F(ResetTestWithTpmFirmwareUpdate,
                        PRE_TpmFirmwareUpdateAvailableButNotSelected) {
-  RegisterSomeUser();
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetBoolean(prefs::kFactoryResetRequested, true);
 }
@@ -483,7 +460,6 @@ IN_PROC_BROWSER_TEST_F(ResetTestWithTpmFirmwareUpdate,
 
 IN_PROC_BROWSER_TEST_F(ResetTestWithTpmFirmwareUpdate,
                        PRE_ResetWithTpmCleanUp) {
-  RegisterSomeUser();
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetBoolean(prefs::kFactoryResetRequested, true);
   prefs->SetInteger(prefs::kFactoryResetTPMFirmwareUpdateMode,
@@ -517,7 +493,6 @@ IN_PROC_BROWSER_TEST_F(ResetTestWithTpmFirmwareUpdate, ResetWithTpmCleanUp) {
 
 IN_PROC_BROWSER_TEST_F(ResetTestWithTpmFirmwareUpdate,
                        PRE_ResetWithTpmUpdatePreservingDeviceState) {
-  RegisterSomeUser();
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetBoolean(prefs::kFactoryResetRequested, true);
   prefs->SetInteger(
@@ -555,7 +530,6 @@ IN_PROC_BROWSER_TEST_F(ResetTestWithTpmFirmwareUpdate,
 
 IN_PROC_BROWSER_TEST_F(ResetTestWithTpmFirmwareUpdate,
                        PRE_TpmFirmwareUpdateRequestedBeforeShowNotEditable) {
-  RegisterSomeUser();
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetBoolean(prefs::kFactoryResetRequested, true);
   prefs->SetInteger(prefs::kFactoryResetTPMFirmwareUpdateMode,
@@ -599,7 +573,6 @@ IN_PROC_BROWSER_TEST_F(ResetTestWithTpmFirmwareUpdate,
 
 IN_PROC_BROWSER_TEST_F(ResetTestWithTpmFirmwareUpdate,
                        PRE_AvailableTpmUpdateModesChangeDuringRequest) {
-  RegisterSomeUser();
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetBoolean(prefs::kFactoryResetRequested, true);
   prefs->SetInteger(prefs::kFactoryResetTPMFirmwareUpdateMode,

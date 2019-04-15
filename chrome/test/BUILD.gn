@@ -1899,6 +1899,8 @@ test("browser_tests") {
         "../browser/chromeos/login/test/https_forwarder.h",
         "../browser/chromeos/login/test/local_policy_test_server_mixin.cc",
         "../browser/chromeos/login/test/local_policy_test_server_mixin.h",
+        "../browser/chromeos/login/test/login_manager_mixin.cc",
+        "../browser/chromeos/login/test/login_manager_mixin.h",
         "../browser/chromeos/login/test/login_screen_tester.cc",
         "../browser/chromeos/login/test/login_screen_tester.h",
         "../browser/chromeos/login/test/network_portal_detector_mixin.cc",
