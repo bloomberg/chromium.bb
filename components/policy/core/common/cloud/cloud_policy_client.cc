@@ -556,10 +556,11 @@ void CloudPolicyClient::UploadEnterpriseEnrollmentId(
 void CloudPolicyClient::UploadDeviceStatus(
     const em::DeviceStatusReportRequest* device_status,
     const em::SessionStatusReportRequest* session_status,
+    const em::ChildStatusReportRequest* child_status,
     const CloudPolicyClient::StatusCallback& callback) {
   CHECK(is_registered());
   // Should pass in at least one type of status.
-  DCHECK(device_status || session_status);
+  DCHECK(device_status || session_status || child_status);
   std::unique_ptr<DeviceManagementRequestJob> request_job(service_->CreateJob(
       DeviceManagementRequestJob::TYPE_UPLOAD_STATUS, GetURLLoaderFactory()));
   request_job->SetAuthData(DMAuth::FromDMToken(dm_token_));
@@ -572,6 +573,8 @@ void CloudPolicyClient::UploadDeviceStatus(
     *request->mutable_device_status_report_request() = *device_status;
   if (session_status)
     *request->mutable_session_status_report_request() = *session_status;
+  if (child_status)
+    *request->mutable_child_status_report_request() = *child_status;
 
   const DeviceManagementRequestJob::Callback job_callback =
       base::AdaptCallbackForRepeating(base::BindOnce(

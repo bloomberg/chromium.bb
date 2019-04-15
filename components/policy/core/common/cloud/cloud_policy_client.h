@@ -224,13 +224,13 @@ class POLICY_EXPORT CloudPolicyClient {
   virtual void UploadEnterpriseEnrollmentId(const std::string& enrollment_id,
                                             const StatusCallback& callback);
 
-  // Uploads device/session status to the server. As above, the client must be
-  // in a registered state. If non-null, |device_status| and |session_status|
-  // will be included in the upload status request. The |callback| will be
-  // called when the operation completes.
+  // Uploads status to the server. The client must be in a registered state.
+  // Only non-null statuses will be included in the upload status request. The
+  // |callback| will be called when the operation completes.
   virtual void UploadDeviceStatus(
       const enterprise_management::DeviceStatusReportRequest* device_status,
       const enterprise_management::SessionStatusReportRequest* session_status,
+      const enterprise_management::ChildStatusReportRequest* child_status,
       const StatusCallback& callback);
 
   // Uploads Chrome Desktop report to the server. As above, the client must be

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/policy/device_status_collector.h"
+#include "chrome/browser/chromeos/policy/status_collector/device_status_collector.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -178,8 +178,8 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
     kiosk_account_ = std::move(account);
   }
 
-  std::unique_ptr<policy::DeviceLocalAccount> GetAutoLaunchedKioskSessionInfo()
-      override {
+  std::unique_ptr<policy::DeviceLocalAccount>
+  GetAutoLaunchedKioskSessionInfo() override {
     if (kiosk_account_)
       return std::make_unique<policy::DeviceLocalAccount>(*kiosk_account_);
     return std::unique_ptr<policy::DeviceLocalAccount>();
@@ -513,20 +513,18 @@ class DeviceStatusCollectorTest : public testing::Test {
     session_status_.Clear();
     got_session_status_ = false;
     run_loop_.reset(new base::RunLoop());
-    status_collector_->GetDeviceAndSessionStatusAsync(base::BindRepeating(
+    status_collector_->GetStatusAsync(base::BindRepeating(
         &DeviceStatusCollectorTest::OnStatusReceived, base::Unretained(this)));
     run_loop_->Run();
     run_loop_.reset();
   }
 
-  void OnStatusReceived(
-      std::unique_ptr<em::DeviceStatusReportRequest> device_status,
-      std::unique_ptr<em::SessionStatusReportRequest> session_status) {
-    if (device_status)
-      device_status_ = *device_status;
-    got_session_status_ = session_status != nullptr;
+  void OnStatusReceived(StatusCollectorParams callback_params) {
+    if (callback_params.device_status)
+      device_status_ = *callback_params.device_status;
+    got_session_status_ = callback_params.session_status != nullptr;
     if (got_session_status_)
-      session_status_ = *session_status;
+      session_status_ = *callback_params.session_status;
     EXPECT_TRUE(run_loop_);
     run_loop_->Quit();
   }

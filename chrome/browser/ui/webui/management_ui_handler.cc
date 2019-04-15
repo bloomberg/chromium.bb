@@ -34,9 +34,9 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_status_collector.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
+#include "chrome/browser/chromeos/policy/status_collector/device_status_collector.h"
 #include "chrome/browser/chromeos/policy/status_uploader.h"
 #include "chrome/browser/chromeos/policy/system_log_uploader.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -210,24 +210,24 @@ void AddDeviceReportingInfo(base::Value* report_sources, Profile* profile) {
   if (!manager)
     return;
 
-  const policy::DeviceStatusCollector* collector =
-      manager->GetStatusUploader()->device_status_collector();
+  const policy::StatusCollector* collector =
+      manager->GetStatusUploader()->status_collector();
 
   // Elements appear on the page in the order they are added.
-  if (collector->report_activity_times()) {
+  if (collector->ShouldReportActivityTimes()) {
     AddDeviceReportingElement(report_sources, kManagementReportActivityTimes,
                               DeviceReportingType::kDeviceActivity);
   } else {
-    if (collector->report_users()) {
+    if (collector->ShouldReportUsers()) {
       AddDeviceReportingElement(report_sources, kManagementReportUsers,
                                 DeviceReportingType::kSupervisedUser);
     }
   }
-  if (collector->report_hardware_status()) {
+  if (collector->ShouldReportHardwareStatus()) {
     AddDeviceReportingElement(report_sources, kManagementReportHardwareStatus,
                               DeviceReportingType::kDeviceStatistics);
   }
-  if (collector->report_network_interfaces()) {
+  if (collector->ShouldReportNetworkInterfaces()) {
     AddDeviceReportingElement(report_sources,
                               kManagementReportNetworkInterfaces,
                               DeviceReportingType::kDevice);

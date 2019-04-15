@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_POLICY_DEVICE_STATUS_COLLECTOR_H_
-#define CHROME_BROWSER_CHROMEOS_POLICY_DEVICE_STATUS_COLLECTOR_H_
+#ifndef CHROME_BROWSER_CHROMEOS_POLICY_STATUS_COLLECTOR_DEVICE_STATUS_COLLECTOR_H_
+#define CHROME_BROWSER_CHROMEOS_POLICY_STATUS_COLLECTOR_DEVICE_STATUS_COLLECTOR_H_
 
 #include <stdint.h>
 
@@ -25,6 +25,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/child_accounts/usage_time_state_notifier.h"
+#include "chrome/browser/chromeos/policy/status_collector/status_collector.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
@@ -41,7 +42,7 @@ class CrosSettings;
 namespace system {
 class StatisticsProvider;
 }
-}
+}  // namespace chromeos
 
 namespace cryptohome {
 struct TpmStatusInfo;
@@ -112,13 +113,14 @@ class SampledData {
 };
 
 // Collects and summarizes the status of an enterprised-managed ChromeOS device.
-class DeviceStatusCollector : public session_manager::SessionManagerObserver,
+class DeviceStatusCollector : public StatusCollector,
+                              public session_manager::SessionManagerObserver,
                               public chromeos::UsageTimeStateNotifier::Observer,
                               public chromeos::PowerManagerClient::Observer {
  public:
-  using VolumeInfoFetcher = base::Callback<
-    std::vector<enterprise_management::VolumeInfo>(
-        const std::vector<std::string>& mount_points)>;
+  using VolumeInfoFetcher =
+      base::Callback<std::vector<enterprise_management::VolumeInfo>(
+          const std::vector<std::string>& mount_points)>;
 
   // Reads the first CPU line from /proc/stat. Returns an empty string if
   // the cpu data could not be read. Broken out into a callback to enable
@@ -157,12 +159,6 @@ class DeviceStatusCollector : public session_manager::SessionManagerObserver,
   // Gets the ProbeResult/sampled data and passes it to ProbeDataReceiver.
   using ProbeDataFetcher = base::RepeatingCallback<void(ProbeDataReceiver)>;
 
-  // Called in the UI thread after the device and session status have been
-  // collected asynchronously in GetDeviceAndSessionStatusAsync. Null pointers
-  // indicate errors or that device or session status reporting is disabled.
-  using StatusCallback = base::Callback<void(
-      std::unique_ptr<enterprise_management::DeviceStatusReportRequest>,
-      std::unique_ptr<enterprise_management::SessionStatusReportRequest>)>;
   // Constructor. Callers can inject their own *Fetcher callbacks, e.g. for unit
   // testing. A null callback can be passed for any *Fetcher parameter, to use
   // the default implementation. These callbacks are always executed on Blocking
@@ -182,28 +178,16 @@ class DeviceStatusCollector : public session_manager::SessionManagerObserver,
                         bool is_enterprise_reporting);
   ~DeviceStatusCollector() override;
 
-  // Gathers device and session status information and calls the passed response
-  // callback. Null pointers passed into the response indicate errors or that
-  // device or session status reporting is disabled.
-  virtual void GetDeviceAndSessionStatusAsync(const StatusCallback& response);
-
-  // Called after the status information has successfully been submitted to
-  // the server.
-  virtual void OnSubmittedSuccessfully();
+  // StatusCollector:
+  void GetStatusAsync(const StatusCollectorCallback& response) override;
+  void OnSubmittedSuccessfully() override;
+  bool ShouldReportActivityTimes() const override;
+  bool ShouldReportNetworkInterfaces() const override;
+  bool ShouldReportUsers() const override;
+  bool ShouldReportHardwareStatus() const override;
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
-
-  // Returns the DeviceLocalAccount associated with the currently active
-  // kiosk session, if the session was auto-launched with zero delay
-  // (this enables functionality such as network reporting).
-  // Virtual to allow mocking.
-  virtual std::unique_ptr<DeviceLocalAccount> GetAutoLaunchedKioskSessionInfo();
-
-  bool report_activity_times() const { return report_activity_times_; }
-  bool report_network_interfaces() const { return report_network_interfaces_; }
-  bool report_users() const { return report_users_; }
-  bool report_hardware_status() const { return report_hardware_status_; }
 
   // How often, in seconds, to poll to see if the user is idle.
   static const unsigned int kIdlePollIntervalSeconds = 30;
@@ -520,4 +504,4 @@ class DeviceStatusCollector : public session_manager::SessionManagerObserver,
 
 }  // namespace policy
 
-#endif  // CHROME_BROWSER_CHROMEOS_POLICY_DEVICE_STATUS_COLLECTOR_H_
+#endif  // CHROME_BROWSER_CHROMEOS_POLICY_STATUS_COLLECTOR_DEVICE_STATUS_COLLECTOR_H_
