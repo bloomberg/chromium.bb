@@ -104,6 +104,7 @@ source_set("core") {
 }
 
 source_set("earl_grey_test_support") {
+  defines = [ "CHROME_EARL_GREY_1" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
 
@@ -116,6 +117,32 @@ source_set("earl_grey_test_support") {
     "//ios/web/interstitials",
     "//ios/web/public/test",
     "//ios/web/public/test:element_selector",
+    "//net",
+  ]
+
+  sources = [
+    "public/test/earl_grey/js_test_util.h",
+    "public/test/earl_grey/js_test_util.mm",
+    "public/test/earl_grey/web_view_actions.h",
+    "public/test/earl_grey/web_view_actions.mm",
+    "public/test/earl_grey/web_view_matchers.h",
+    "public/test/earl_grey/web_view_matchers.mm",
+  ]
+}
+
+source_set("eg_app_support+eg2") {
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+
+  deps = [
+    ":web",
+    "//base",
+    "//base/test:test_support",
+    "//ios/testing/earl_grey:eg_app_support+eg2",
+    "//ios/third_party/earl_grey2:app_framework+link",
+    "//ios/web/interstitials",
+    "//ios/web/public/test",
     "//net",
   ]
 

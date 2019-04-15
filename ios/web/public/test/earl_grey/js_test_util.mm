@@ -4,11 +4,11 @@
 
 #import "ios/web/public/test/earl_grey/js_test_util.h"
 
-#import <EarlGrey/EarlGrey.h>
 #import <WebKit/WebKit.h>
 
 #import "base/test/ios/wait_util.h"
 #include "base/timer/elapsed_timer.h"
+#import "ios/testing/earl_grey/earl_grey_app.h"
 #import "ios/web/interstitials/web_interstitial_impl.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 

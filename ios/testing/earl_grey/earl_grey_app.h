@@ -18,8 +18,10 @@ typedef MatchesBlock GREYMatchesBlock;
 #elif defined(CHROME_EARL_GREY_2)
 
 #import <AppFramework/Action/GREYActionsShorthand.h>
+#import <AppFramework/Core/GREYElementInteraction.h>
 #import <AppFramework/EarlGreyApp.h>
 #import <AppFramework/Matcher/GREYMatchersShorthand.h>
+#import <CommonLib/Error/GREYErrorConstants.h>
 
 #else
 #error Must define either CHROME_EARL_GREY_1 or CHROME_EARL_GREY_2.
