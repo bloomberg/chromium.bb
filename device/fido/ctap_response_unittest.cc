@@ -742,9 +742,9 @@ TEST(CTAPResponseTest, TestSerializeGetAssertionResponse) {
   response.SetCredential({CredentialType::kPublicKey,
                           fido_parsing_utils::Materialize(kCredentialId)});
   PublicKeyCredentialUserEntity user(fido_parsing_utils::Materialize(kUserId));
-  user.SetDisplayName("John P. Smith");
-  user.SetUserName("johnpsmith@example.com");
-  user.SetIconUrl(GURL("https://pics.acme.com/00/p/aBjjjpqPb.png"));
+  user.display_name = "John P. Smith";
+  user.name = "johnpsmith@example.com";
+  user.icon_url = GURL("https://pics.acme.com/00/p/aBjjjpqPb.png");
   response.SetUserEntity(std::move(user));
   response.SetNumCredentials(1);
 

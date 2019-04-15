@@ -68,7 +68,7 @@ CtapMakeCredentialRequest MakeCredentialTask::GetTouchRequest(
   // created. This does assume that the device supports ECDSA P-256, however.
   PublicKeyCredentialUserEntity user({1} /* user ID */);
   // The user name is incorrectly marked as optional in the CTAP2 spec.
-  user.SetUserName("dummy");
+  user.name = "dummy";
   CtapMakeCredentialRequest req(
       "" /* client_data_json */, PublicKeyCredentialRpEntity(".dummy"),
       std::move(user),

@@ -46,7 +46,8 @@ CtapMakeCredentialRequest::EncodeAsCBOR() const {
   cbor::Value::MapValue cbor_map;
   cbor_map[cbor::Value(1)] = cbor::Value(client_data_hash_);
   cbor_map[cbor::Value(2)] = rp_.ConvertToCBOR();
-  cbor_map[cbor::Value(3)] = user_.ConvertToCBOR();
+  cbor_map[cbor::Value(3)] =
+      PublicKeyCredentialUserEntity::ConvertToCBOR(user_);
   cbor_map[cbor::Value(4)] = public_key_credential_params_.ConvertToCBOR();
   if (exclude_list_) {
     cbor::Value::ArrayValue exclude_list_array;

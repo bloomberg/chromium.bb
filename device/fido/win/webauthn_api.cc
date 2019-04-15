@@ -204,12 +204,11 @@ AuthenticatorMakeCredentialBlocking(WinWebAuthnApi* webauthn_api,
       rp_name.c_str(), rp_icon_url.c_str()};
 
   base::string16 user_name =
-      base::UTF8ToUTF16(request.user().user_name().value_or(""));
-  base::string16 user_icon_url =
-      OptionalGURLToUTF16(request.user().user_icon_url());
+      base::UTF8ToUTF16(request.user().name.value_or(""));
+  base::string16 user_icon_url = OptionalGURLToUTF16(request.user().icon_url);
   base::string16 user_display_name =
-      base::UTF8ToUTF16(request.user().user_display_name().value_or(""));
-  std::vector<uint8_t> user_id = request.user().user_id();
+      base::UTF8ToUTF16(request.user().display_name.value_or(""));
+  std::vector<uint8_t> user_id = request.user().id;
   WEBAUTHN_USER_ENTITY_INFORMATION user_info{
       WEBAUTHN_USER_ENTITY_INFORMATION_CURRENT_VERSION,
       user_id.size(),

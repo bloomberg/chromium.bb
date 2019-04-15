@@ -108,7 +108,8 @@ std::vector<uint8_t> GetSerializedCtapDeviceResponse(
   response_map.emplace(3, response.signature());
 
   if (response.user_entity()) {
-    response_map.emplace(4, response.user_entity()->ConvertToCBOR());
+    response_map.emplace(4, PublicKeyCredentialUserEntity::ConvertToCBOR(
+                                *response.user_entity()));
   }
   if (response.num_credentials()) {
     response_map.emplace(5, response.num_credentials().value());

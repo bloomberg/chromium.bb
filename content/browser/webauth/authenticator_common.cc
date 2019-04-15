@@ -479,7 +479,7 @@ blink::mojom::GetAssertionAuthenticatorResponsePtr CreateGetAssertionResponse(
     response->appid_extension = *echo_appid_extension;
   }
   response_data.user_entity()
-      ? response->user_handle.emplace(response_data.user_entity()->user_id())
+      ? response->user_handle.emplace(response_data.user_entity()->id)
       : response->user_handle.emplace();
   return response;
 }

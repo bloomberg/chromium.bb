@@ -115,7 +115,7 @@ void MakeCredentialOperation::PromptTouchIdDone(bool success) {
   // Delete the key pair for this RP + user handle if one already exists.
   base::Optional<std::string> encoded_rp_id_user_id =
       CredentialMetadata::EncodeRpIdAndUserId(metadata_secret(), RpId(),
-                                              request().user().user_id());
+                                              request().user().id);
   if (!encoded_rp_id_user_id) {
     // Internal error.
     std::move(callback())

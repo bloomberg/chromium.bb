@@ -93,7 +93,7 @@ bool VirtualFidoDevice::State::InjectResidentKey(
   for (const auto& registration : registrations) {
     if (registration.second.is_resident &&
         application_parameter == registration.second.application_parameter &&
-        user_id == registration.second.user->user_id()) {
+        user_id == registration.second.user->id) {
       return false;
     }
   }
@@ -105,9 +105,10 @@ bool VirtualFidoDevice::State::InjectResidentKey(
                                 std::move(application_parameter),
                                 0 /* signature counter */);
   registration.is_resident = true;
-  registration.user = device::PublicKeyCredentialUserEntity(user_id);
-  registration.user->SetUserName(name);
-  registration.user->SetDisplayName(display_name);
+  PublicKeyCredentialUserEntity user(user_id);
+  user.name = name;
+  user.display_name = display_name;
+  registration.user = std::move(user);
 
   bool was_inserted;
   std::tie(std::ignore, was_inserted) =
