@@ -1723,9 +1723,6 @@ class VideoRendererPixelTest : public cc::RendererPixelTest<RendererType> {
 
 TYPED_TEST_SUITE(VideoRendererPixelTest, GLCapableRendererTypes);
 
-// TODO(crbug.com/936822): Remove this once it passes with SkiaRenderer.
-using VideoGLRendererPixelTest = VideoRendererPixelTest<GLRenderer>;
-
 template <typename RendererType>
 class VideoRendererPixelHiLoTest : public VideoRendererPixelTest<RendererType>,
                                    public testing::WithParamInterface<bool> {
@@ -1807,9 +1804,7 @@ TEST_P(VideoSkiaRendererPixelHiLoTest, DISABLED_ClippedYUVRect) {
   ClippedYUVRect();
 }
 
-// TODO(crbug.com/936822): Enable this test for SkiaRenderer
-// TYPED_TEST(VideoRendererPixelTest, OffsetYUVRect) {
-TEST_F(VideoGLRendererPixelTest, OffsetYUVRect) {
+TYPED_TEST(VideoRendererPixelTest, OffsetYUVRect) {
   gfx::Rect rect(this->device_viewport_size_);
 
   int id = 1;
@@ -1923,23 +1918,19 @@ TYPED_TEST(VideoRendererPixelTest, SimpleNV12JRect) {
 
 // Test that a YUV video doesn't bleed outside of its tex coords when the
 // tex coord rect is only a partial subrectangle of the coded contents.
-// TODO(crbug.com/936822): Enable this test for SkiaRenderer
-// TYPED_TEST(VideoRendererPixelTest, YUVEdgeBleed) {
-TEST_F(VideoGLRendererPixelTest, YUVEdgeBleed) {
+TYPED_TEST(VideoRendererPixelTest, YUVEdgeBleed) {
   RenderPassList pass_list;
-  CreateEdgeBleedPass(media::PIXEL_FORMAT_I420, gfx::ColorSpace::CreateJpeg(),
-                      &pass_list);
+  this->CreateEdgeBleedPass(media::PIXEL_FORMAT_I420,
+                            gfx::ColorSpace::CreateJpeg(), &pass_list);
   EXPECT_TRUE(this->RunPixelTest(&pass_list,
                                  base::FilePath(FILE_PATH_LITERAL("green.png")),
                                  cc::FuzzyPixelOffByOneComparator(true)));
 }
 
-// TODO(crbug.com/936822): Enable this test for SkiaRenderer
-// TYPED_TEST(VideoRendererPixelTest, YUVAEdgeBleed) {
-TEST_F(VideoGLRendererPixelTest, YUVAEdgeBleed) {
+TYPED_TEST(VideoRendererPixelTest, YUVAEdgeBleed) {
   RenderPassList pass_list;
-  CreateEdgeBleedPass(media::PIXEL_FORMAT_I420A,
-                      gfx::ColorSpace::CreateREC601(), &pass_list);
+  this->CreateEdgeBleedPass(media::PIXEL_FORMAT_I420A,
+                            gfx::ColorSpace::CreateREC601(), &pass_list);
   // Set the output color space to match the input primaries and transfer.
   pass_list.back()->color_space =
       gfx::ColorSpace(gfx::ColorSpace::PrimaryID::SMPTE170M,
@@ -1974,9 +1965,7 @@ TYPED_TEST(VideoRendererPixelTest, SimpleYUVJRectGrey) {
       cc::FuzzyPixelOffByOneComparator(true)));
 }
 
-// TODO(crbug.com/936822): Enable this test for SkiaRenderer
-// TYPED_TEST(VideoRendererPixelTest, SimpleYUVARect) {
-TEST_F(VideoGLRendererPixelTest, SimpleYUVARect) {
+TYPED_TEST(VideoRendererPixelTest, SimpleYUVARect) {
   gfx::Rect rect(this->device_viewport_size_);
 
   int id = 1;
