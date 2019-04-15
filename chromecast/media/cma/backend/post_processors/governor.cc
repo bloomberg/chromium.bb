@@ -4,10 +4,12 @@
 
 #include "chromecast/media/cma/backend/post_processors/governor.h"
 
+#include <limits>
 #include <memory>
 #include <string>
 
 #include "base/logging.h"
+#include "base/numerics/ranges.h"
 #include "base/values.h"
 #include "chromecast/base/serializers.h"
 #include "chromecast/media/base/slew_volume.h"
@@ -16,7 +18,9 @@ namespace chromecast {
 namespace media {
 
 namespace {
+
 const int kNoVolume = -1;
+const float kEpsilon = std::numeric_limits<float>::epsilon();
 
 // Configuration strings:
 const char kOnsetVolumeKey[] = "onset_volume";
@@ -57,7 +61,8 @@ void Governor::ProcessFrames(float* data,
   DCHECK(data);
   status_.output_buffer = data;
 
-  if (volume != volume_) {
+  // If the volume has changed.
+  if (!base::IsApproximatelyEqual(volume, volume_, kEpsilon)) {
     volume_ = volume;
     slew_volume_.SetVolume(GetGovernorMultiplier());
   }
@@ -66,7 +71,8 @@ void Governor::ProcessFrames(float* data,
 }
 
 float Governor::GetGovernorMultiplier() {
-  if (volume_ >= onset_volume_) {
+  // If |volume_| is greater than or "equal" to |onset_volume_|.
+  if (volume_ > onset_volume_ - kEpsilon) {
     return clamp_multiplier_;
   }
   return 1.0;
