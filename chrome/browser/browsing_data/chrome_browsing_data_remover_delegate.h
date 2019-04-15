@@ -192,6 +192,8 @@ class ChromeBrowsingDataRemoverDelegate
   using WebRtcEventLogManager = webrtc_event_logging::WebRtcEventLogManager;
 
   // For debugging purposes. Please add new deletion tasks at the end.
+  // This enum is recorded in a histogram, so don't change or reuse ids.
+  // Entries must also be added to ChromeBrowsingDataRemoverTasks in enums.xml.
   enum class TracingDataType {
     kSynchronous = 1,
     kHistory = 2,
@@ -245,6 +247,9 @@ class ChromeBrowsingDataRemoverDelegate
   base::OnceClosure CreateTaskCompletionClosureForMojo(
       TracingDataType data_type);
 
+  // Records unfinished tasks from |pending_sub_tasks_| after a delay.
+  void RecordUnfinishedSubTasks();
+
   // Callback for when TemplateURLService has finished loading. Clears the data,
   // clears the respective waiting flag, and invokes NotifyIfDone.
   void OnKeywordsLoaded(base::RepeatingCallback<bool(const GURL&)> url_filter,
@@ -288,8 +293,12 @@ class ChromeBrowsingDataRemoverDelegate
   // Completion callback to call when all data are deleted.
   base::OnceClosure callback_;
 
-  // Keeps track of number of tasks to be completed.
-  int num_pending_tasks_ = 0;
+  // Records which tasks of a deletion are currently active.
+  std::set<TracingDataType> pending_sub_tasks_;
+
+  // Fires after some time to track slow tasks. Cancelled when all tasks
+  // are finished.
+  base::CancelableClosure slow_pending_tasks_closure_;
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   // Used to delete plugin data.
