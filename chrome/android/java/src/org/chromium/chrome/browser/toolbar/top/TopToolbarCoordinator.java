@@ -37,19 +37,6 @@ import org.chromium.chrome.browser.widget.ToolbarProgressBar;
 public class TopToolbarCoordinator implements Toolbar {
     static final int TAB_SWITCHER_MODE_NORMAL_ANIMATION_DURATION_MS = 200;
 
-    /**
-     * Observes toolbar URL expansion percentage change.
-     */
-    public interface UrlExpansionObserver {
-        /**
-         * Notified when toolbar URL expansion percentage changes.
-         * @param percentage The toolbar expansion percentage. 0 indicates that the URL bar is not
-         *                   expanded. 1 indicates that the URL bar is expanded to the maximum
-         *                   width.
-         */
-        void onUrlExpansionPercentageChanged(float percentage);
-    }
-
     private ToolbarLayout mToolbarLayout;
 
     /**
@@ -131,20 +118,6 @@ public class TopToolbarCoordinator implements Toolbar {
         mToolbarLayout.setLayoutUpdateHost(layoutManager);
 
         mToolbarLayout.onNativeLibraryReady();
-    }
-
-    /**
-     * @param urlExpansionObserver The observer that observes URL expansion percentage change.
-     */
-    public void addUrlExpansionObserver(UrlExpansionObserver urlExpansionObserver) {
-        mToolbarLayout.addUrlExpansionObserver(urlExpansionObserver);
-    }
-
-    /**
-     * @param urlExpansionObserver The observer that observes URL expansion percentage change.
-     */
-    public void removeUrlExpansionObserver(UrlExpansionObserver urlExpansionObserver) {
-        mToolbarLayout.removeUrlExpansionObserver(urlExpansionObserver);
     }
 
     /**
