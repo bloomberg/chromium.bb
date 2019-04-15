@@ -17,6 +17,7 @@
   "homepage": "https://github.com/kainino0x/cts-experiment#readme",
   "devDependencies": {
     "@types/node": "^10.14.1",
+    "@webgpu/shaderc": "0.0.2",
     "fast-glob": "^2.2.6",
     "grunt": "^1.0.3",
     "grunt-contrib-clean": "^2.0.0",
