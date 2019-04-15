@@ -6,8 +6,6 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 #include "components/previews/content/proto/hint_cache.pb.h"
 
@@ -44,9 +42,7 @@ enum class PreviewsHintCacheLevelDBStoreLoadMetadataResult {
   kSchemaMetadataMissing = 2,
   kSchemaMetadataWrongVersion = 3,
   kComponentMetadataMissing = 4,
-  kFetchedMetadataMissing = 5,
-  kComponentAndFetchedMetadataMissing = 6,
-  kMaxValue = kComponentAndFetchedMetadataMissing,
+  kMaxValue = kComponentMetadataMissing,
 };
 
 // Util class for recording the result of loading the metadata. The result is
@@ -70,12 +66,6 @@ class ScopedLoadMetadataResultRecorder {
 
 void RecordStatusChange(HintCacheStore::Status status) {
   UMA_HISTOGRAM_ENUMERATION("Previews.HintCacheLevelDBStore.Status", status);
-}
-
-// Returns true if |key_prefix| is a prefix of |key|.
-bool DatabasePrefixFilter(const std::string& key_prefix,
-                          const std::string& key) {
-  return base::StartsWith(key, key_prefix, base::CompareCase::SENSITIVE);
 }
 
 }  // namespace
@@ -152,11 +142,11 @@ HintCacheStore::MaybeCreateComponentUpdateData(
 }
 
 std::unique_ptr<HintCacheStore::ComponentUpdateData>
-HintCacheStore::CreateUpdateDataForFetchedHints(base::Time update_time) const {
+HintCacheStore::CreateUpdateDataForFetchedHints() const {
   // TODO(mcrouse): Currently returns a LevelDBComponentUpdateData, future
-  // refactor will enable the construction of UpdateData with the settings
-  // necessary for the type of hint being updated, fetched or component.
-  return std::make_unique<LevelDBComponentUpdateData>(update_time);
+  // refactor will create a LevelDBFetchedHintsData that will take a cache
+  // expiry time. The version for this object will be ignored.
+  return std::make_unique<LevelDBComponentUpdateData>(base::Version("0.0.1"));
 }
 
 void HintCacheStore::UpdateComponentData(
@@ -219,37 +209,6 @@ void HintCacheStore::UpdateComponentData(
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void HintCacheStore::UpdateFetchedHintsData(
-    std::unique_ptr<ComponentUpdateData> fetched_hints_data,
-    base::OnceClosure callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(fetched_hints_data);
-  DCHECK(!component_data_update_in_flight_);
-
-  if (!IsAvailable()) {
-    std::move(callback).Run();
-    return;
-  }
-
-  fetched_update_time_ = fetched_hints_data->update_time();
-
-  component_data_update_in_flight_ = true;
-
-  hint_entry_keys_.reset();
-
-  LevelDBComponentUpdateData* leveldb_fetched_hints_data =
-      static_cast<LevelDBComponentUpdateData*>(fetched_hints_data.get());
-
-  // This will remove the fetched metadata entry and insert all the entries
-  // currently in |leveldb_fetched_hints_data|.
-  database_->UpdateEntriesWithRemoveFilter(
-      std::move(leveldb_fetched_hints_data->entries_to_save_),
-      base::BindRepeating(&DatabasePrefixFilter,
-                          GetMetadataTypeEntryKey(MetadataType::kFetched)),
-      base::BindOnce(&HintCacheStore::OnUpdateComponentData,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-}
-
 bool HintCacheStore::FindHintEntryKey(const std::string& host_suffix,
                                       EntryKey* out_hint_entry_key) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -281,14 +240,6 @@ void HintCacheStore::LoadHint(const EntryKey& hint_entry_key,
                                      hint_entry_key, std::move(callback)));
 }
 
-base::Time HintCacheStore::FetchedHintsUpdateTime() const {
-  // If the store is not available, the metadata entries have not been loaded
-  // so there are no fetched hints.
-  if (!IsAvailable())
-    return base::Time();
-  return fetched_update_time_;
-}
-
 HintCacheStore::LevelDBComponentUpdateData::LevelDBComponentUpdateData(
     const base::Version& version)
     : ComponentUpdateData(version),
@@ -301,21 +252,6 @@ HintCacheStore::LevelDBComponentUpdateData::LevelDBComponentUpdateData(
   entries_to_save_->emplace_back(
       GetMetadataTypeEntryKey(MetadataType::kComponent),
       std::move(metadata_component_entry));
-}
-
-HintCacheStore::LevelDBComponentUpdateData::LevelDBComponentUpdateData(
-    base::Time update_time)
-    : ComponentUpdateData(update_time),
-      component_hint_entry_key_prefix_(GetFetchedHintEntryKeyPrefix()),
-      entries_to_save_(std::make_unique<EntryVector>()) {
-  // Add fetched metadata entry
-  previews::proto::StoreEntry metadata_fetched_entry;
-  metadata_fetched_entry.set_update_time_secs(
-      update_time.ToDeltaSinceWindowsEpoch().InSeconds());
-
-  entries_to_save_->emplace_back(
-      GetMetadataTypeEntryKey(MetadataType::kFetched),
-      std::move(metadata_fetched_entry));
 }
 
 HintCacheStore::LevelDBComponentUpdateData::~LevelDBComponentUpdateData() =
@@ -361,12 +297,6 @@ HintCacheStore::EntryKeyPrefix HintCacheStore::GetComponentHintEntryKeyPrefix(
     const base::Version& component_version) {
   return GetComponentHintEntryKeyPrefixWithoutVersion() +
          component_version.GetString() + kKeySectionDelimiter;
-}
-
-// static
-HintCacheStore::EntryKeyPrefix HintCacheStore::GetFetchedHintEntryKeyPrefix() {
-  return base::NumberToString(static_cast<int>(EntryType::kFetchedHint)) +
-         kKeySectionDelimiter;
 }
 
 void HintCacheStore::UpdateStatus(Status new_status) {
@@ -553,7 +483,6 @@ void HintCacheStore::OnLoadMetadata(
 
   // If the component metadata entry exists, then use it to set the component
   // version.
-  bool component_metadata_missing = false;
   auto component_entry =
       metadata_entries->find(GetMetadataTypeEntryKey(MetadataType::kComponent));
   if (component_entry != metadata_entries->end()) {
@@ -562,26 +491,6 @@ void HintCacheStore::OnLoadMetadata(
   } else {
     result_recorder.set_result(PreviewsHintCacheLevelDBStoreLoadMetadataResult::
                                    kComponentMetadataMissing);
-    component_metadata_missing = true;
-  }
-
-  auto fetched_entry =
-      metadata_entries->find(GetMetadataTypeEntryKey(MetadataType::kFetched));
-  if (fetched_entry != metadata_entries->end()) {
-    DCHECK(fetched_entry->second.has_update_time_secs());
-    fetched_update_time_ = base::Time::FromDeltaSinceWindowsEpoch(
-        base::TimeDelta::FromSeconds(fetched_entry->second.update_time_secs()));
-  } else {
-    if (component_metadata_missing) {
-      result_recorder.set_result(
-          PreviewsHintCacheLevelDBStoreLoadMetadataResult::
-              kComponentAndFetchedMetadataMissing);
-    } else {
-      result_recorder.set_result(
-          PreviewsHintCacheLevelDBStoreLoadMetadataResult::
-              kFetchedMetadataMissing);
-    }
-    fetched_update_time_ = base::Time();
   }
 
   UpdateStatus(Status::kAvailable);
