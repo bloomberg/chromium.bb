@@ -10,17 +10,23 @@ const kDefaultLimits: w.GPULimits = {
 };
 
 class BindGroup implements w.GPUBindGroup {
+  public label: string | undefined;
 }
 class BindGroupLayout implements w.GPUBindGroupLayout {
+  public label: string | undefined;
 }
 class Buffer implements w.GPUBuffer {
+  public label: string | undefined;
   public readonly mapping: ArrayBuffer | null = null;
   constructor() {}
   public destroy() {}
   public unmap() {}
 
   public async mapReadAsync(): Promise<ArrayBuffer> {
-    return new ArrayBuffer(0)
+    return new ArrayBuffer(0);
+  }
+  public async mapWriteAsync(): Promise<ArrayBuffer> {
+    return new ArrayBuffer(0);
   }
   public setSubData(offset: number, ab: ArrayBuffer): void {}
 }
@@ -44,11 +50,12 @@ class CommandEncoder implements w.GPUCommandEncoder {
 class CommandBuffer implements w.GPUCommandBuffer {
   public label: string | undefined;
 }
-class ProgrammablePassEncoder {
+class ProgrammablePassEncoder implements w.GPUProgrammablePassEncoder {
+  public label: string | undefined;
   constructor() {}
   public endPass(): void {}
   public insertDebugMarker(markerLabel: string): void {}
-  public popDebugGroup(groupLabel: string): void {}
+  public popDebugGroup(): void {}
   public pushDebugGroup(groupLabel: string): void {}
   public setBindGroup(index: number, bindGroup: BindGroup): void {}
   public setPipeline(pipeline: ComputePipeline | RenderPipeline): void {}
@@ -61,7 +68,7 @@ class RenderPassEncoder extends ProgrammablePassEncoder implements w.GPURenderPa
   public label: string | undefined;
   public draw(vertexCount: number, instanceCount: number, firstVertex: number, firstInstance: number): void {}
   public drawIndexed(indexCount: number, instanceCount: number, firstIndex: number, baseVertex: number, firstInstance: number): void {}
-  public setBlendColor(r: number, g: number, b: number, a: number): void {}
+  public setBlendColor(color: w.GPUColor): void {}
   public setIndexBuffer(buffer: Buffer, offset: number): void {}
   public setScissorRect(x: number, y: number, width: number, height: number): void {}
   public setStencilReference(reference: number): void {}
@@ -81,33 +88,41 @@ class Fence implements w.GPUFence {
   }
 }
 class PipelineLayout implements w.GPUPipelineLayout {
+  public label: string | undefined;
 }
 class RenderPipeline implements w.GPURenderPipeline {
   public label: string | undefined;
 }
 class Sampler implements w.GPUSampler {
+  public label: string | undefined;
 }
 class ShaderModule implements w.GPUShaderModule {
   public label: string | undefined;
 }
 class Texture implements w.GPUTexture {
+  public label: string | undefined;
   constructor() {}
-  public createDefaultTextureView(): TextureView {
+  public createDefaultView(): TextureView {
     return new TextureView();
   }
-  public createTextureView(desc: w.GPUTextureViewDescriptor): TextureView {
+  public createView(desc: w.GPUTextureViewDescriptor): TextureView {
     return new TextureView();
   }
   public destroy() {}
 }
-class TextureView {
+class TextureView implements w.GPUTextureView {
+  public label: string | undefined;
   constructor() {}
 }
 class Queue implements w.GPUQueue {
   public label: string | undefined;
+  public createFence(descriptor: w.GPUFenceDescriptor): Fence { return new Fence(); }
   public signal(fence: Fence, signalValue: w.u64): void {}
   public submit(buffers: CommandBuffer[]): void {}
   public wait(fence: Fence, valueToWait: w.u64): void {}
+}
+class SwapChain implements w.GPUSwapChain {
+  public getCurrentTexture(): Texture { return new Texture(); }
 }
 class Device extends EventTarget implements w.GPUDevice {
   public readonly adapter: Adapter;
@@ -124,7 +139,6 @@ class Device extends EventTarget implements w.GPUDevice {
   public createBuffer(descriptor: w.GPUBufferDescriptor): Buffer { return new Buffer(); }
   public createCommandEncoder(descriptor: w.GPUCommandEncoderDescriptor): CommandEncoder { return new CommandEncoder(); }
   public createComputePipeline(descriptor: w.GPUComputePipelineDescriptor): ComputePipeline { return new ComputePipeline(); }
-  public createFence(descriptor: w.GPUFenceDescriptor): Fence { return new Fence(); }
   public createPipelineLayout(descriptor: w.GPUPipelineLayoutDescriptor): PipelineLayout { return new PipelineLayout(); }
   public createRenderPipeline(descriptor: w.GPURenderPipelineDescriptor): RenderPipeline { return new RenderPipeline(); }
   public createSampler(descriptor: w.GPUSamplerDescriptor): Sampler { return new Sampler(); }
@@ -133,19 +147,18 @@ class Device extends EventTarget implements w.GPUDevice {
 
   public getQueue(): Queue { return this.queue; }
 
-  // TODO: temporary
-  public flush(): void {}
+  public createSwapChain(descriptor: w.GPUSwapChainDescriptor): SwapChain { return new SwapChain(); }
+  public async getSwapChainPreferredFormat(context: w.GPUCanvasContext): Promise<w.GPUTextureFormat> { return "rgba8unorm"; }
+
+  public onuncapturederror: Event | undefined;
+  public pushErrorScope(filter: w.GPUErrorFilter): void {}
+  public async popErrorScope(): Promise<w.GPUError | null> { return null; }
 }
 
 class Adapter implements w.GPUAdapter {
   public extensions = kNoExtensions;
   public name = "dummy";
   public async requestDevice(descriptor: w.GPUDeviceDescriptor): Promise<Device> {
-    return new Device(this, descriptor);
-  }
-
-  // TODO: remove.
-  public createDevice(descriptor: w.GPUDeviceDescriptor): Device {
     return new Device(this, descriptor);
   }
 }
