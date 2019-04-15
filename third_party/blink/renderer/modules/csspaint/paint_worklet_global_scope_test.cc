@@ -70,11 +70,8 @@ class PaintWorkletGlobalScopeTest : public PageTestBase {
                                     PaintWorkletProxyClient* proxy_client,
                                     base::WaitableEvent* waitable_event) {
     ASSERT_TRUE(thread->IsCurrentThread());
-    proxy_client->SetGlobalScopeForTesting(
-        static_cast<PaintWorkletGlobalScope*>(
-            To<WorkletGlobalScope>(thread->GlobalScope())));
     CrossThreadPersistent<PaintWorkletGlobalScope> global_scope =
-        proxy_client->global_scope_;
+        To<PaintWorkletGlobalScope>(thread->GlobalScope());
     ScriptState* script_state =
         global_scope->ScriptController()->GetScriptState();
     ASSERT_TRUE(script_state);
@@ -84,8 +81,7 @@ class PaintWorkletGlobalScopeTest : public PageTestBase {
     ScriptState::Scope scope(script_state);
 
     {
-      // registerPaint() with a valid class definition should define an
-      // animator.
+      // registerPaint() with a valid class definition should define a painter.
       String source_code =
           R"JS(
             registerPaint('test', class {
@@ -101,8 +97,8 @@ class PaintWorkletGlobalScopeTest : public PageTestBase {
     }
 
     {
-      // registerPaint() with a null class definition should fail to define
-      // an painter.
+      // registerPaint() with a null class definition should fail to define a
+      // painter.
       String source_code = "registerPaint('null', null);";
       ASSERT_FALSE(global_scope->ScriptController()->Evaluate(
           ScriptSourceCode(source_code), SanitizeScriptErrors::kDoNotSanitize));

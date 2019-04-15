@@ -16,7 +16,6 @@
 #include "third_party/blink/renderer/modules/csspaint/css_paint_definition.h"
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_global_scope.h"
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_messaging_proxy.h"
-#include "third_party/blink/renderer/modules/csspaint/paint_worklet_proxy_client.h"
 #include "third_party/blink/renderer/platform/graphics/paint_generated_image.h"
 
 namespace blink {
@@ -142,6 +141,7 @@ const char PaintWorklet::kSupplementName[] = "PaintWorklet";
 void PaintWorklet::Trace(blink::Visitor* visitor) {
   visitor->Trace(pending_generator_registry_);
   visitor->Trace(document_definition_map_);
+  visitor->Trace(proxy_client_);
   Worklet::Trace(visitor);
   Supplement<LocalDOMWindow>::Trace(visitor);
 }
@@ -158,10 +158,13 @@ WorkletGlobalScopeProxy* PaintWorklet::CreateGlobalScope() {
         pending_generator_registry_, GetNumberOfGlobalScopes() + 1);
   }
 
-  PaintWorkletProxyClient* proxy_client = PaintWorkletProxyClient::Create(
-      To<Document>(GetExecutionContext()), worklet_id_);
+  if (!proxy_client_) {
+    proxy_client_ = PaintWorkletProxyClient::Create(
+        To<Document>(GetExecutionContext()), worklet_id_);
+  }
+
   auto* worker_clients = MakeGarbageCollected<WorkerClients>();
-  ProvidePaintWorkletProxyClientTo(worker_clients, proxy_client);
+  ProvidePaintWorkletProxyClientTo(worker_clients, proxy_client_);
 
   PaintWorkletMessagingProxy* proxy =
       MakeGarbageCollected<PaintWorkletMessagingProxy>(GetExecutionContext());

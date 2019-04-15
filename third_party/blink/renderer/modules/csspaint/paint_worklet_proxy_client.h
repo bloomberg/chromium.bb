@@ -24,8 +24,6 @@ class WorkletGlobalScope;
 //
 // This is constructed on the main thread but it is used in the worklet backing
 // thread.
-//
-// TODO(smcgruer): Add the dispatcher logic.
 class MODULES_EXPORT PaintWorkletProxyClient
     : public GarbageCollectedFinalized<PaintWorkletProxyClient>,
       public Supplement<WorkerClients>,
@@ -49,8 +47,11 @@ class MODULES_EXPORT PaintWorkletProxyClient
   int GetWorkletId() const override { return worklet_id_; }
   sk_sp<PaintRecord> Paint(CompositorPaintWorkletInput*) override;
 
-  virtual void SetGlobalScope(WorkletGlobalScope*);
-  void SetGlobalScopeForTesting(PaintWorkletGlobalScope*);
+  virtual void AddGlobalScope(WorkletGlobalScope*);
+  const Vector<CrossThreadPersistent<PaintWorkletGlobalScope>>&
+  GetGlobalScopesForTesting() const {
+    return global_scopes_;
+  }
   void Dispose();
 
   static PaintWorkletProxyClient* From(WorkerClients*);
@@ -60,11 +61,10 @@ class MODULES_EXPORT PaintWorkletProxyClient
   friend class PaintWorkletProxyClientTest;
   FRIEND_TEST_ALL_PREFIXES(PaintWorkletProxyClientTest,
                            PaintWorkletProxyClientConstruction);
-  FRIEND_TEST_ALL_PREFIXES(PaintWorkletProxyClientTest, SetGlobalScope);
 
   scoped_refptr<PaintWorkletPaintDispatcher> compositor_paintee_;
   const int worklet_id_;
-  CrossThreadPersistent<PaintWorkletGlobalScope> global_scope_;
+  Vector<CrossThreadPersistent<PaintWorkletGlobalScope>> global_scopes_;
   enum RunState { kUninitialized, kWorking, kDisposed } state_;
 };
 

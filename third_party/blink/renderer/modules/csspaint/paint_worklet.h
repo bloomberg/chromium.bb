@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/modules/csspaint/document_paint_definition.h"
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_global_scope_proxy.h"
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_pending_generator_registry.h"
+#include "third_party/blink/renderer/modules/csspaint/paint_worklet_proxy_client.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
@@ -86,6 +87,10 @@ class MODULES_EXPORT PaintWorklet : public Worklet,
   // in PaintWorkletPaintDispatcher::Paint, to identify the right painter, to
   // paint the image.
   int worklet_id_;
+
+  // The proxy client associated with this PaintWorklet. We keep a reference in
+  // to ensure that all global scopes get the same proxy client.
+  Member<PaintWorkletProxyClient> proxy_client_;
 
   DISALLOW_COPY_AND_ASSIGN(PaintWorklet);
 };
