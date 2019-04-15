@@ -1596,6 +1596,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/tabmodel/document/StorageDelegate.java",
   "java/src/org/chromium/chrome/browser/tabmodel/document/TabDelegate.java",
   "java/src/org/chromium/chrome/browser/tasks/ReturnToChromeExperimentsUtil.java",
+  "java/src/org/chromium/chrome/browser/tasks/EngagementTimeUtil.java",
+  "java/src/org/chromium/chrome/browser/tasks/JourneyManager.java",
   "java/src/org/chromium/chrome/browser/tasks/TasksUma.java",
   "java/src/org/chromium/chrome/browser/tasks/tabgroup/TabGroupModelFilter.java",
   "java/src/org/chromium/chrome/browser/tasks/tab_groups/LayoutTabGroupCreationButton.java",

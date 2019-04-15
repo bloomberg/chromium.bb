@@ -312,6 +312,7 @@ public abstract class ChromeFeatureList {
     public static final String SPANNABLE_INLINE_AUTOCOMPLETE = "SpannableInlineAutocomplete";
     public static final String SUBRESOURCE_FILTER = "SubresourceFilter";
     public static final String QUERY_IN_OMNIBOX = "QueryInOmnibox";
+    public static final String TAB_ENGAGEMENT_REPORTING_ANDROID = "TabEngagementReportingAndroid";
     public static final String TAB_GROUPS_ANDROID = "TabGroupsAndroid";
     public static final String TAB_GRID_LAYOUT_ANDROID = "TabGridLayoutAndroid";
     public static final String TAB_REPARENTING = "TabReparenting";

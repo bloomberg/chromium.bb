@@ -3162,16 +3162,19 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-tab-groups", flag_descriptions::kTabGroupsAndroidName,
      flag_descriptions::kTabGroupsAndroidDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kTabGroupsAndroid)},
-#endif  // OS_ANDROID
 
-#if defined(OS_ANDROID)
     {"enable-tab-switcher-on-return",
      flag_descriptions::kTabSwitcherOnReturnName,
      flag_descriptions::kTabSwitcherOnReturnDescription, kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kTabSwitcherOnReturn,
                                     kTabSwitcherOnReturnVariations,
                                     "TabSwitcherOnReturn")},
-#endif
+
+    {"enable-tab-engagement-reporting",
+     flag_descriptions::kTabEngagementReportingName,
+     flag_descriptions::kTabEngagementReportingDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kTabEngagementReportingAndroid)},
+#endif  // OS_ANDROID
 
     {"enable-built-in-module-all", flag_descriptions::kBuiltInModuleAllName,
      flag_descriptions::kBuiltInModuleAllDescription, kOsAll,

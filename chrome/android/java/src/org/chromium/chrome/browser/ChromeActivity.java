@@ -144,6 +144,8 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabWindowManager;
+import org.chromium.chrome.browser.tasks.EngagementTimeUtil;
+import org.chromium.chrome.browser.tasks.JourneyManager;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.toolbar.top.Toolbar;
 import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
@@ -1502,6 +1504,12 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 findViewById(R.id.keyboard_accessory_sheet_stub));
         getCompositorViewHolder().setKeyboardExtensionView(
                 mManualFillingComponent.getKeyboardExtensionSizeManager());
+
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_ENGAGEMENT_REPORTING_ANDROID)) {
+            // The lifetime of this object is managed by the lifecycle dispatcher.
+            new JourneyManager(
+                    mTabModelSelector, getLifecycleDispatcher(), new EngagementTimeUtil());
+        }
 
         // Create after native initialization so subclasses that override this method have a chance
         // to setup.
