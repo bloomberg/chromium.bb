@@ -300,10 +300,29 @@ void OverviewItem::SetBounds(const gfx::RectF& target_bounds,
     UpdateMaskAndShadow();
 
   if (cannot_snap_widget_) {
-    ScopedOverviewAnimationSettings settings(
-        new_animation_type, cannot_snap_widget_->GetNativeWindow());
+    gfx::RectF previous_bounds =
+        gfx::RectF(cannot_snap_widget_->GetNativeWindow()->GetBoundsInScreen());
+    inset_bounds.Inset(
+        gfx::Insets(static_cast<float>(kHeaderHeightDp), 0.f, 0.f, 0.f));
     cannot_snap_widget_->SetBoundsCenteredIn(
         gfx::ToEnclosingRect(inset_bounds));
+    if (new_animation_type != OVERVIEW_ANIMATION_NONE) {
+      // For animations, compute the transform needed to place the widget at its
+      // new bounds back to the old bounds, and then apply the idenity
+      // transform. This so the bounds visually line up with |item_widget_| and
+      // |window_|. This will not happen if we animate the bounds.
+      gfx::RectF current_bounds = gfx::RectF(
+          cannot_snap_widget_->GetNativeWindow()->GetBoundsInScreen());
+      gfx::Transform transform(
+          previous_bounds.width() / current_bounds.width(), 0.f, 0.f,
+          previous_bounds.height() / current_bounds.height(),
+          previous_bounds.x() - current_bounds.x(),
+          previous_bounds.y() - current_bounds.y());
+      cannot_snap_widget_->GetNativeWindow()->SetTransform(transform);
+      ScopedOverviewAnimationSettings settings(
+          new_animation_type, cannot_snap_widget_->GetNativeWindow());
+      cannot_snap_widget_->GetNativeWindow()->SetTransform(gfx::Transform());
+    }
   }
 }
 
@@ -335,6 +354,8 @@ void OverviewItem::AnimateAndCloseWindow(bool up) {
   };
 
   AnimateOpacity(0.0, OVERVIEW_ANIMATION_CLOSE_OVERVIEW_ITEM);
+  if (cannot_snap_widget_)
+    animate_window(cannot_snap_widget_->GetNativeWindow(), transform, false);
   animate_window(item_widget_->GetNativeWindow(), transform, false);
   animate_window(GetWindowForStacking(), transform, true);
 }
@@ -398,7 +419,7 @@ void OverviewItem::UpdateCannotSnapWarningVisibility() {
                                   : SPLITVIEW_ANIMATION_OVERVIEW_ITEM_FADE_OUT);
   gfx::Rect bounds = gfx::ToEnclosingRect(target_bounds());
   bounds.Inset(kWindowMargin, kWindowMargin);
-  bounds.Inset(gfx::Insets(0, kHeaderHeightDp, 0, 0));
+  bounds.Inset(gfx::Insets(kHeaderHeightDp, 0, 0, 0));
   cannot_snap_widget_->SetBoundsCenteredIn(bounds);
 }
 
@@ -587,6 +608,8 @@ void OverviewItem::OnStartingAnimationComplete() {
 void OverviewItem::SetOpacity(float opacity) {
   item_widget_->SetOpacity(opacity);
   transform_window_.SetOpacity(opacity);
+  if (cannot_snap_widget_)
+    cannot_snap_widget_->SetOpacity(opacity);
 }
 
 float OverviewItem::GetOpacity() {
@@ -856,6 +879,14 @@ void OverviewItem::AnimateOpacity(float opacity,
   ScopedOverviewAnimationSettings animation_settings_label(animation_type,
                                                            widget_window);
   widget_window->layer()->SetOpacity(header_opacity);
+
+  if (cannot_snap_widget_) {
+    aura::Window* cannot_snap_widget_window =
+        cannot_snap_widget_->GetNativeWindow();
+    ScopedOverviewAnimationSettings animation_settings_label(
+        animation_type, cannot_snap_widget_window);
+    cannot_snap_widget_window->layer()->SetOpacity(opacity);
+  }
 }
 
 void OverviewItem::StartDrag() {
