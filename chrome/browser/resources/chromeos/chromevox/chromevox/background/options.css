@@ -104,10 +104,8 @@ h2 {
 }
 
 .option .developer-option-icon-button {
-  background-color: #fff;
   float: right;
-  height: 60px;
-  vertical-align: middle;
+  margin-top: 10px;
 }
 
 .option .change-display-style {
@@ -159,4 +157,3 @@ h2 {
     vertical-align: middle;
     width: 646px;
 }
-

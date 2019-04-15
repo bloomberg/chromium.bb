@@ -12,10 +12,10 @@
 <script type="text/javascript" src="options_loader.js"></script>
 <script type="text/javascript" src="../../chromeVoxChromeOptionsScript.js">
 </script>
-<link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 </head>
 
 <body>
@@ -150,12 +150,12 @@
   <!-- Braille Settings -->
   <div class="chromeos option">
     <label>
-      <paper-icon-button icon="cr:expand-more"
-        class="developer-option-icon-button" id="braille-settings-more"
-        name="chromevox-braille-settings"></paper-icon-button>
-      <paper-icon-button icon="cr:expand-less"
-        class="developer-option-icon-button" id="braille-settings-less"
-        name="chromevox-developer-options" hidden></paper-icon-button>
+      <cr-icon-button iron-icon="cr:expand-more"
+          class="developer-option-icon-button" id="braille-settings-more"
+          name="chromevox-braille-settings"></cr-icon-button>
+      <cr-icon-button iron-icon="cr:expand-less"
+          class="developer-option-icon-button" id="braille-settings-less"
+          name="chromevox-developer-options" hidden></cr-icon-button>
       <span class="i18n" msgid="options_braille_settings">
         Braille Settings
       </span>
@@ -194,12 +194,12 @@
   <!-- Bluetooth braille display -->
   <div class="chromeos option">
     <label>
-      <paper-icon-button icon="cr:expand-more"
-        class="developer-option-icon-button" id="bt-braille-settings-more"
-        name="chromevox-braille-settings"></paper-icon-button>
-      <paper-icon-button icon="cr:expand-less"
-        class="developer-option-icon-button" id="bt-braille-settings-less"
-        name="chromevox-developer-options" hidden></paper-icon-button>
+      <cr-icon-button iron-icon="cr:expand-more"
+          class="developer-option-icon-button" id="bt-braille-settings-more"
+          name="chromevox-braille-settings"></cr-icon-button>
+      <cr-icon-button iron-icon="cr:expand-less"
+          class="developer-option-icon-button" id="bt-braille-settings-less"
+          name="chromevox-developer-options" hidden></cr-icon-button>
       <span class="i18n" msgid="options_bluetooth_braille_display_title">
         Bluetooth braille display
       </span>
@@ -211,12 +211,14 @@
   <!-- Virtual braille display -->
   <div class="chromeos option">
     <label>
-      <paper-icon-button icon="cr:expand-more"
-        class="developer-option-icon-button" id="virtual-braille-settings-more"
-        name="chromevox-braille-settings"></paper-icon-button>
-      <paper-icon-button icon="cr:expand-less"
-        class="developer-option-icon-button" id="virtual-braille-settings-less"
-        name="chromevox-developer-options" hidden></paper-icon-button>
+      <cr-icon-button iron-icon="cr:expand-more"
+          class="developer-option-icon-button"
+          id="virtual-braille-settings-more" name="chromevox-braille-settings">
+      </cr-icon-button>
+      <cr-icon-button iron-icon="cr:expand-less"
+          class="developer-option-icon-button"
+          id="virtual-braille-settings-less" name="chromevox-developer-options"
+          hidden></cr-icon-button>
       <span class="i18n settings-description"
         msgid="options_virtual_braille_display">
         Virtual braille display
@@ -275,16 +277,16 @@
   </h2>
   <div class="chromeos option">
     <label>
-      <paper-icon-button icon="cr:expand-more"
-        aria-describedby="developer-options-label" aria-expanded="false"
-        class="developer-option-icon-button"
-        id="chromevox-developer-options-more"
-        name="chromevox-developer-options"></paper-icon-button>
-      <paper-icon-button icon="cr:expand-less"
-        aria-describedby="developer-options-label" aria-expanded="true"
-        class="developer-option-icon-button"
-        id="chromevox-developer-options-less"
-        name="chromevox-developer-options" hidden></paper-icon-button>
+      <cr-icon-button iron-icon="cr:expand-more"
+          aria-describedby="developer-options-label" aria-expanded="false"
+          class="developer-option-icon-button"
+          id="chromevox-developer-options-more"
+          name="chromevox-developer-options"></cr-icon-button>
+      <cr-icon-button iron-icon="cr:expand-less"
+          aria-describedby="developer-options-label" aria-expanded="true"
+          class="developer-option-icon-button"
+          id="chromevox-developer-options-less"
+          name="chromevox-developer-options" hidden></cr-icon-button>
       <span class="i18n" msgid="options_developer_options"
             id="developer-options-label">
         Enable developer options
@@ -327,10 +329,9 @@
     </div>
      <div class="settings-expand-row" id="show-developer-log">
       <label>
-        <paper-icon-button icon="cr:open-in-new"
-          aria-describedby="show-log-label"
-          class="developer-option-icon-button" id="open-developer-log">
-        </paper-icon-button>
+        <cr-icon-button iron-icon="cr:open-in-new"
+          aria-describedby="show-log-label" class="developer-option-icon-button"
+          id="open-developer-log"></cr-icon-button>
         <span class="i18n settings-description" msgid="options_show_log"
               id="show-log-label">
           Show Log</span>
