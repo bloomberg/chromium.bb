@@ -18,8 +18,6 @@ from chromite.lib import cros_collections
 from chromite.lib import cros_logging as logging
 from chromite.lib import hwtest_results
 from chromite.lib import metrics
-from chromite.lib import timeout_util
-from chromite.lib import tree_status
 
 
 class CommitQueueHandleChangesStage(generic_stages.BuilderStage):
@@ -117,39 +115,6 @@ class CommitQueueHandleChangesStage(generic_stages.BuilderStage):
             build_stages_dict, triage_relevant_changes.STAGE_SYNC))
     return builds_passed_sync_stage
 
-  def _CheckToTSanity(self):
-    """Check and return whether Top-of-tree is healthy and the tree is opened.
-
-    Returns:
-      A boolean indicating whether ToT is sane.
-    """
-    tot_sanity = True
-
-    # If the tree was not open when we acquired a pool, do not assume that
-    # tot was sane.
-    if not self.sync_stage.pool.tree_was_open:
-      logging.info('The tree was not open when changes were acquired so we are '
-                   'attributing failures to the broken tree rather than the '
-                   'changes.')
-      tot_sanity = False
-
-    if tot_sanity:
-      try:
-        status = tree_status.WaitForTreeStatus(
-            period=tree_status.DEFAULT_WAIT_FOR_TREE_STATUS_SLEEP,
-            timeout=tree_status.DEFAULT_WAIT_FOR_TREE_STATUS_TIMEOUT,
-            throttled_ok=True)
-        tot_sanity = (status == constants.TREE_OPEN)
-      except timeout_util.TimeoutError:
-        logging.warning('Timed out waiting for getting tree status in %s(s).',
-                        tree_status.DEFAULT_WAIT_FOR_TREE_STATUS_TIMEOUT)
-        tot_sanity = False
-
-      if not tot_sanity:
-        logging.info('The tree is not open now, so we are attributing '
-                     'failures to the broken tree rather than the changes.')
-    return tot_sanity
-
   def _HandleCommitQueueFailure(self, failing, inflight, no_stat,
                                 self_destructed):
     """Handle changes in the validation pool upon build failure or timeout.
@@ -208,14 +173,11 @@ class CommitQueueHandleChangesStage(generic_stages.BuilderStage):
           changes, messages, changes_by_config,
           passed_in_history_slaves_by_change, failing, inflight, no_stat)
 
-    tot_sanity = self._CheckToTSanity()
-
     if not self_destructed and inflight:
       # The master didn't destruct itself and some slave(s) timed out due to
       # unknown causes, so only reject infra changes (probably just chromite
       # changes).
-      self.sync_stage.pool.HandleValidationTimeout(
-          sanity=tot_sanity, changes=changes)
+      self.sync_stage.pool.HandleValidationTimeout(changes=changes)
       return
 
     failed_hwtests = None
@@ -238,7 +200,6 @@ class CommitQueueHandleChangesStage(generic_stages.BuilderStage):
     # what changes to reject.
     self.sync_stage.pool.HandleValidationFailure(
         messages,
-        sanity=tot_sanity,
         changes=changes,
         no_stat=no_stat,
         failed_hwtests=failed_hwtests)
