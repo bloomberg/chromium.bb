@@ -34,15 +34,21 @@ class TestNodeWrapper {
     return TestNodeWrapper<NodeClass>(std::move(node));
   }
 
+  TestNodeWrapper() {}
+
   explicit TestNodeWrapper(std::unique_ptr<NodeClass> impl)
       : impl_(std::move(impl)) {
     DCHECK(impl_.get());
   }
+
+  TestNodeWrapper(TestNodeWrapper&& other) : impl_(std::move(other.impl_)) {}
+
+  void operator=(TestNodeWrapper&& other) { impl_ = std::move(other.impl_); }
+  void operator=(TestNodeWrapper& other) = delete;
+
   ~TestNodeWrapper() { reset(); }
 
   NodeClass* operator->() const { return impl_.get(); }
-
-  TestNodeWrapper(TestNodeWrapper&& other) : impl_(std::move(other.impl_)) {}
 
   NodeClass* get() const { return impl_.get(); }
 
@@ -55,8 +61,6 @@ class TestNodeWrapper {
 
  private:
   std::unique_ptr<NodeClass> impl_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestNodeWrapper);
 };
 
 // This specialization is necessary because the graph has ownership of the

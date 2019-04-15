@@ -40,7 +40,7 @@ class PageNodeImplTest : public GraphTestHarness {
 
 TEST_F(PageNodeImplTest, AddFrameBasic) {
   auto process_node = CreateNode<ProcessNodeImpl>();
-  auto page_node = CreateNode<PageNodeImpl>(nullptr /*TEST*/);
+  auto page_node = CreateNode<PageNodeImpl>(nullptr);
   auto parent_frame = CreateNode<FrameNodeImpl>(process_node.get(),
                                                 page_node.get(), nullptr, 0);
   auto child1_frame = CreateNode<FrameNodeImpl>(
@@ -54,7 +54,7 @@ TEST_F(PageNodeImplTest, AddFrameBasic) {
 
 TEST_F(PageNodeImplTest, RemoveFrame) {
   auto process_node = CreateNode<ProcessNodeImpl>();
-  auto page_node = CreateNode<PageNodeImpl>(nullptr /*TEST*/);
+  auto page_node = CreateNode<PageNodeImpl>(nullptr);
   auto frame_node = CreateNode<FrameNodeImpl>(process_node.get(),
                                               page_node.get(), nullptr, 0);
 
@@ -162,31 +162,6 @@ TEST_F(PageNodeImplTest, IsLoading) {
   EXPECT_FALSE(page_node->is_loading());
 }
 
-TEST_F(PageNodeImplTest, OnAllFramesInPageFrozen) {
-  const auto kRunning = resource_coordinator::mojom::LifecycleState::kRunning;
-  const auto kFrozen = resource_coordinator::mojom::LifecycleState::kFrozen;
-
-  MockSinglePageWithMultipleProcessesGraph mock_graph(graph());
-
-  EXPECT_EQ(kRunning, mock_graph.page->lifecycle_state());
-
-  // 1/2 frames in the page is frozen. Expect the page to still be running.
-  mock_graph.frame->SetLifecycleState(kFrozen);
-  EXPECT_EQ(kRunning, mock_graph.page->lifecycle_state());
-
-  // 2/2 frames in the process are frozen. We expect the page to be frozen.
-  mock_graph.child_frame->SetLifecycleState(kFrozen);
-  EXPECT_EQ(kFrozen, mock_graph.page->lifecycle_state());
-
-  // Unfreeze a frame and expect the page to be running again.
-  mock_graph.frame->SetLifecycleState(kRunning);
-  EXPECT_EQ(kRunning, mock_graph.page->lifecycle_state());
-
-  // Refreeze that frame and expect the page to be frozen again.
-  mock_graph.frame->SetLifecycleState(kFrozen);
-  EXPECT_EQ(kFrozen, mock_graph.page->lifecycle_state());
-}
-
 namespace {
 
 const size_t kInterventionCount =
@@ -227,7 +202,7 @@ void ExpectInitialInterventionPolicyAggregationWorks(
   TestNodeWrapper<ProcessNodeImpl> process =
       TestNodeWrapper<ProcessNodeImpl>::Create(mock_graph);
   TestNodeWrapper<PageNodeImpl> page =
-      TestNodeWrapper<PageNodeImpl>::Create(mock_graph, nullptr /*TEST*/);
+      TestNodeWrapper<PageNodeImpl>::Create(mock_graph, nullptr);
 
   // Check the initial values before any frames are added.
   EXPECT_EQ(0u, page->GetInterventionPolicyFramesReportedForTesting());
@@ -368,7 +343,7 @@ TEST_F(PageNodeImplTest, IncrementalInterventionPolicy) {
   TestNodeWrapper<ProcessNodeImpl> process =
       TestNodeWrapper<ProcessNodeImpl>::Create(mock_graph);
   TestNodeWrapper<PageNodeImpl> page =
-      TestNodeWrapper<PageNodeImpl>::Create(mock_graph, nullptr /*TEST*/);
+      TestNodeWrapper<PageNodeImpl>::Create(mock_graph, nullptr);
 
   // Create two frames and immediately attach them to the page.
   TestNodeWrapper<FrameNodeImpl> f0 = TestNodeWrapper<FrameNodeImpl>::Create(

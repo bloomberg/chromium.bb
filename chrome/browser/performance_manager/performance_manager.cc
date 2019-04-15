@@ -15,6 +15,7 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "build/build_config.h"
+#include "chrome/browser/performance_manager/decorators/frozen_frame_aggregator.h"
 #include "chrome/browser/performance_manager/decorators/page_almost_idle_decorator.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/system_node_impl.h"
@@ -261,6 +262,7 @@ void PerformanceManager::OnStartImpl(
 
   RegisterObserver(std::make_unique<MetricsCollector>());
   RegisterObserver(std::make_unique<PageAlmostIdleDecorator>());
+  RegisterObserver(std::make_unique<FrozenFrameAggregator>());
 
 #if defined(OS_WIN)
   if (base::FeatureList::IsEnabled(features::kEmptyWorkingSet))

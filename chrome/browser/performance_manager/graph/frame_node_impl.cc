@@ -37,15 +37,7 @@ void FrameNodeImpl::SetNetworkAlmostIdle(bool network_almost_idle) {
 void FrameNodeImpl::SetLifecycleState(
     resource_coordinator::mojom::LifecycleState state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (state == lifecycle_state_)
-    return;
-
-  resource_coordinator::mojom::LifecycleState old_state = lifecycle_state_;
-  lifecycle_state_ = state;
-
-  // Notify parents of this change.
-  process_node_->OnFrameLifecycleStateChanged(this, old_state);
-  page_node_->OnFrameLifecycleStateChanged(this, old_state);
+  lifecycle_state_.SetAndMaybeNotify(this, state);
 }
 
 void FrameNodeImpl::SetHasNonEmptyBeforeUnload(bool has_nonempty_beforeunload) {
@@ -109,7 +101,7 @@ const base::flat_set<FrameNodeImpl*>& FrameNodeImpl::child_frame_nodes() const {
 resource_coordinator::mojom::LifecycleState FrameNodeImpl::lifecycle_state()
     const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return lifecycle_state_;
+  return lifecycle_state_.value();
 }
 
 bool FrameNodeImpl::has_nonempty_beforeunload() const {

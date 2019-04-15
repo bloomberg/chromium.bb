@@ -2773,6 +2773,7 @@ test("unit_tests") {
     "../browser/password_manager/password_store_mac_unittest.cc",
     "../browser/password_manager/password_store_x_unittest.cc",
     "../browser/payments/payment_handler_permission_context_unittest.cc",
+    "../browser/performance_manager/decorators/frozen_frame_aggregator_unittest.cc",
     "../browser/performance_manager/decorators/page_almost_idle_decorator_unittest.cc",
     "../browser/performance_manager/graph/frame_node_impl_unittest.cc",
     "../browser/performance_manager/graph/graph_test_harness.cc",

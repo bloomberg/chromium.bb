@@ -52,6 +52,8 @@ class GraphObserver {
 
   // Called whenever an event is received in |node| if the
   // |node| doesn't implement its own EventReceived handler.
+  // TODO(chrisha): Kill these generic event handlers in favor of specific
+  // event handlers.
   virtual void OnEventReceived(NodeBase* node,
                                resource_coordinator::mojom::Event event) {}
   virtual void OnFrameEventReceived(FrameNodeImpl* frame_node,
@@ -68,6 +70,7 @@ class GraphObserver {
   // FrameNodeImpl notifications.
   virtual void OnIsCurrentChanged(FrameNodeImpl* frame_node) {}
   virtual void OnNetworkAlmostIdleChanged(FrameNodeImpl* frame_node) {}
+  virtual void OnLifecycleStateChanged(FrameNodeImpl* frame_node) {}
 
   // PageNodeImpl notifications.
   virtual void OnIsVisibleChanged(PageNodeImpl* page_node) {}

@@ -64,16 +64,10 @@ void PageNodeImpl::AddFrame(FrameNodeImpl* frame_node) {
   DCHECK_EQ(this, frame_node->page_node());
   DCHECK(NodeInGraph(frame_node));
 
-  if (frame_node->parent_frame_node() == nullptr) {
-    main_frame_nodes_.insert(frame_node);
-  }
   ++frame_node_count_;
+  if (frame_node->parent_frame_node() == nullptr)
+    main_frame_nodes_.insert(frame_node);
 
-  OnNumFrozenFramesStateChange(
-      frame_node->lifecycle_state() ==
-              resource_coordinator::mojom::LifecycleState::kFrozen
-          ? 1
-          : 0);
   MaybeInvalidateInterventionPolicies(frame_node, true /* adding_frame */);
 }
 
@@ -89,11 +83,6 @@ void PageNodeImpl::RemoveFrame(FrameNodeImpl* frame_node) {
     DCHECK_EQ(1u, removed);
   }
 
-  OnNumFrozenFramesStateChange(
-      frame_node->lifecycle_state() ==
-              resource_coordinator::mojom::LifecycleState::kFrozen
-          ? -1
-          : 0);
   MaybeInvalidateInterventionPolicies(frame_node, false /* adding_frame */);
 }
 
@@ -271,23 +260,6 @@ void PageNodeImpl::set_has_nonempty_beforeunload(
   has_nonempty_beforeunload_ = has_nonempty_beforeunload;
 }
 
-void PageNodeImpl::OnFrameLifecycleStateChanged(
-    FrameNodeImpl* frame_node,
-    resource_coordinator::mojom::LifecycleState old_state) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(this, frame_node->page_node());
-  DCHECK_NE(old_state, frame_node->lifecycle_state());
-
-  int delta = 0;
-  if (old_state == resource_coordinator::mojom::LifecycleState::kFrozen)
-    delta = -1;
-  else if (frame_node->lifecycle_state() ==
-           resource_coordinator::mojom::LifecycleState::kFrozen)
-    delta = 1;
-  if (delta != 0)
-    OnNumFrozenFramesStateChange(delta);
-}
-
 void PageNodeImpl::OnFrameInterventionPolicyChanged(
     FrameNodeImpl* frame,
     resource_coordinator::mojom::PolicyControlledIntervention intervention,
@@ -352,6 +324,8 @@ void PageNodeImpl::LeaveGraph() {
 }
 
 bool PageNodeImpl::HasFrame(FrameNodeImpl* frame_node) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   bool has_node = false;
   ForAllFrameNodes([&has_node, &frame_node](FrameNodeImpl* node) -> bool {
     if (node != frame_node)
@@ -365,52 +339,19 @@ bool PageNodeImpl::HasFrame(FrameNodeImpl* frame_node) {
 }
 
 void PageNodeImpl::SetPageAlmostIdle(bool page_almost_idle) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   page_almost_idle_.SetAndMaybeNotify(this, page_almost_idle);
+}
+
+void PageNodeImpl::SetLifecycleState(LifecycleState lifecycle_state) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  lifecycle_state_.SetAndMaybeNotify(this, lifecycle_state);
 }
 
 void PageNodeImpl::OnEventReceived(resource_coordinator::mojom::Event event) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : observers())
     observer.OnPageEventReceived(this, event);
-}
-
-void PageNodeImpl::OnNumFrozenFramesStateChange(int num_frozen_frames_delta) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  num_frozen_frames_ += num_frozen_frames_delta;
-  DCHECK_LE(num_frozen_frames_, frame_node_count_);
-
-  const auto kRunning = resource_coordinator::mojom::LifecycleState::kRunning;
-  const auto kFrozen = resource_coordinator::mojom::LifecycleState::kFrozen;
-
-  // We are interested in knowing when we have transitioned to or from
-  // "fully frozen". A page with no frames is considered to be running by
-  // default.
-  bool was_fully_frozen = lifecycle_state_.value() == kFrozen;
-  bool is_fully_frozen =
-      (frame_node_count_ != 0) && num_frozen_frames_ == frame_node_count_;
-  if (was_fully_frozen == is_fully_frozen)
-    return;
-
-  if (is_fully_frozen) {
-    // Aggregate the beforeunload handler information from the entire frame
-    // tree.
-    bool has_nonempty_beforeunload = false;
-    ForAllFrameNodes(
-        [&has_nonempty_beforeunload](FrameNodeImpl* frame_node) -> bool {
-          if (!frame_node->has_nonempty_beforeunload())
-            return true;
-          has_nonempty_beforeunload = true;
-          return false;
-        });
-
-    set_has_nonempty_beforeunload(has_nonempty_beforeunload);
-  }
-
-  // TODO(fdoray): Store the lifecycle state as a member on the
-  // PageCoordinationUnit rather than as a non-typed property.
-  resource_coordinator::mojom::LifecycleState lifecycle_state =
-      is_fully_frozen ? kFrozen : kRunning;
-  lifecycle_state_.SetAndMaybeNotify(this, lifecycle_state);
 }
 
 void PageNodeImpl::InvalidateAllInterventionPolicies() {
@@ -486,6 +427,7 @@ void PageNodeImpl::RecomputeInterventionPolicy(
 
 template <typename MapFunction>
 void PageNodeImpl::ForAllFrameNodes(MapFunction map_function) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto* main_frame_node : main_frame_nodes_)
     ForFrameAndDescendents(main_frame_node, map_function);
 }

@@ -17,60 +17,12 @@ namespace {
 
 class ProcessNodeImplTest : public GraphTestHarness {};
 
-class MockGraphObserver : public GraphObserver {
- public:
-  MockGraphObserver() = default;
-  virtual ~MockGraphObserver() = default;
-
-  bool ShouldObserve(const NodeBase* node) override {
-    return node->id().type ==
-           resource_coordinator::CoordinationUnitType::kProcess;
-  }
-
-  MOCK_METHOD1(OnAllFramesInProcessFrozen, void(ProcessNodeImpl*));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockGraphObserver);
-};
-
 }  // namespace
 
 TEST_F(ProcessNodeImplTest, MeasureCPUUsage) {
   auto process_node = CreateNode<ProcessNodeImpl>();
   process_node->SetCPUUsage(1.0);
   EXPECT_EQ(1.0, process_node->cpu_usage());
-}
-
-TEST_F(ProcessNodeImplTest, OnAllFramesInProcessFrozen) {
-  testing::StrictMock<MockGraphObserver> observer;
-  graph()->RegisterObserver(&observer);
-  MockMultiplePagesInSingleProcessGraph mock_graph(graph());
-
-  // 1/2 frame in the process is frozen.
-  // No call to OnAllFramesInProcessFrozen() is expected.
-  mock_graph.frame->SetLifecycleState(
-      resource_coordinator::mojom::LifecycleState::kFrozen);
-
-  // 2/2 frames in the process are frozen.
-  EXPECT_CALL(observer, OnAllFramesInProcessFrozen(mock_graph.process.get()));
-  mock_graph.other_frame->SetLifecycleState(
-      resource_coordinator::mojom::LifecycleState::kFrozen);
-  testing::Mock::VerifyAndClear(&observer);
-
-  // A frame is unfrozen and frozen.
-  mock_graph.frame->SetLifecycleState(
-      resource_coordinator::mojom::LifecycleState::kRunning);
-  EXPECT_CALL(observer, OnAllFramesInProcessFrozen(mock_graph.process.get()));
-  mock_graph.frame->SetLifecycleState(
-      resource_coordinator::mojom::LifecycleState::kFrozen);
-  testing::Mock::VerifyAndClear(&observer);
-
-  // A frozen frame is frozen again.
-  // No call to OnAllFramesInProcessFrozen() is expected.
-  mock_graph.frame->SetLifecycleState(
-      resource_coordinator::mojom::LifecycleState::kFrozen);
-
-  graph()->UnregisterObserver(&observer);
 }
 
 TEST_F(ProcessNodeImplTest, ProcessLifeCycle) {
