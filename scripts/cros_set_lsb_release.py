@@ -156,7 +156,7 @@ def main(argv):
 
   if opts.keyset is not None:
     fields.update({
-        LSB_KEY_BOARD: opts.keyset,
+        LSB_KEY_KEYSET: opts.keyset,
     })
 
   board = opts.board
