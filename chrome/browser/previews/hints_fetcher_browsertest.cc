@@ -15,6 +15,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
@@ -138,6 +139,27 @@ class OptimizationGuideServiceNoHintsFetcherBrowserTest
     run_loop.Run();
   }
 
+  // Seeds the Site Engagement Service with two HTTP and two HTTPS sites for the
+  // current profile.
+  void SeedSiteEngagementService() {
+    SiteEngagementService* service = SiteEngagementService::Get(
+        Profile::FromBrowserContext(browser()
+                                        ->tab_strip_model()
+                                        ->GetActiveWebContents()
+                                        ->GetBrowserContext()));
+    GURL https_url1("https://images.google.com/");
+    service->AddPointsForTesting(https_url1, 15);
+
+    GURL https_url2("https://news.google.com/");
+    service->AddPointsForTesting(https_url2, 3);
+
+    GURL http_url1("http://photos.google.com/");
+    service->AddPointsForTesting(http_url1, 21);
+
+    GURL http_url2("http://maps.google.com/");
+    service->AddPointsForTesting(http_url2, 2);
+  }
+
   const GURL& https_url() const { return https_url_; }
   const base::HistogramTester* GetHistogramTester() {
     return &histogram_tester_;
@@ -223,4 +245,35 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideServiceNoHintsFetcherBrowserTest,
   // is not enabled.
   histogram_tester->ExpectTotalCount(
       "Previews.HintsFetcher.GetHintsRequest.HostCount", 0);
+}
+
+// This test creates a new browser and seeds the Site Engagement Service with
+// both HTTP and HTTPS sites. The test confirms that PreviewsTopHostProviderImpl
+// used by PreviewsOptimizationGuide to provide a list of hosts to HintsFetcher
+// only returns HTTPS-schemed hosts. We verify this with the UMA histogram
+// logged when the GetHintsRequest is made to the remote Optimization Guide
+// Service.
+IN_PROC_BROWSER_TEST_F(OptimizationGuideServiceHintsFetcherBrowserTest,
+                       PreviewsTopHostProviderHTTPSOnly) {
+  const base::HistogramTester* histogram_tester = GetHistogramTester();
+
+  // Adds two HTTP and two HTTPS sites into the Site Engagement Service.
+  SeedSiteEngagementService();
+
+  // This forces the hint cache to be initialized and hints to be fetched.
+  // Whitelist NoScript for https_url()'s' host.
+  SetUpComponentUpdateHints(https_url());
+
+  // Expect that the browser initialization will record at least one sample as
+  // Hints Fetching is enabled. This also ensures that the histograms have been
+  // updated to verify the correct number of hosts that hints will be requested
+  // for.
+  EXPECT_GE(RetryForHistogramUntilCountReached(
+                histogram_tester,
+                "Previews.HintsFetcher.GetHintsRequest.HostCount", 1),
+            1);
+
+  // Only the 2 HTTPS hosts should be requested hints for.
+  histogram_tester->ExpectBucketCount(
+      "Previews.HintsFetcher.GetHintsRequest.HostCount", 2, 1);
 }
