@@ -24,7 +24,7 @@ class SdkCreateTest(cros_test_lib.MockTestCase):
     self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=False)
 
   def _GetRequest(self, no_replace=False, bootstrap=False, no_use_image=False,
-                  cache_path=None, chrome_path=None, chroot_path=None):
+                  cache_path=None, chroot_path=None):
     """Helper to build a create request message."""
     request = sdk_pb2.CreateRequest()
     request.flags.no_replace = no_replace
@@ -32,11 +32,9 @@ class SdkCreateTest(cros_test_lib.MockTestCase):
     request.flags.no_use_image = no_use_image
 
     if cache_path:
-      request.paths.cache = cache_path
-    if chrome_path:
-      request.paths.chrome = chrome_path
+      request.chroot.cache_dir = cache_path
     if chroot_path:
-      request.paths.chroot = chroot_path
+      request.chroot.path = chroot_path
 
     return request
 
@@ -84,13 +82,10 @@ class SdkCreateTest(cros_test_lib.MockTestCase):
 
     # Test the path arguments get passed through.
     cache_dir = '/cache/dir'
-    chrome_root = '/chrome/path'
     chroot_path = '/chroot/path'
-    request = self._GetRequest(cache_path=cache_dir, chrome_path=chrome_root,
-                               chroot_path=chroot_path)
+    request = self._GetRequest(cache_path=cache_dir, chroot_path=chroot_path)
     sdk_controller.Create(request, response)
-    paths_patch.assert_called_with(cache_dir=cache_dir, chrome_root=chrome_root,
-                                   chroot_path=chroot_path)
+    paths_patch.assert_called_with(cache_dir=cache_dir, chroot_path=chroot_path)
 
 
 class SdkUpdateTest(cros_test_lib.MockTestCase):

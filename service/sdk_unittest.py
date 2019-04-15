@@ -26,11 +26,6 @@ class ChrootPathsTest(cros_test_lib.TestCase):
     obj = sdk.ChrootPaths(cache_dir=cache_dir)
     self.assertListEqual(['--cache-dir', cache_dir], obj.GetArgList())
 
-    # Chrome root provided.
-    chrome_root = '/chrome/root'
-    obj = sdk.ChrootPaths(chrome_root=chrome_root)
-    self.assertListEqual(['--chrome_root', chrome_root], obj.GetArgList())
-
     # Chroot path provided.
     chroot_path = '/chroot/path'
     obj = sdk.ChrootPaths(chroot_path=chroot_path)

@@ -17,16 +17,14 @@ from chromite.lib import cros_sdk_lib
 class ChrootPaths(object):
   """Value object to hold common cros_sdk path arguments."""
 
-  def __init__(self, cache_dir=None, chrome_root=None, chroot_path=None):
+  def __init__(self, cache_dir=None, chroot_path=None):
     """Chroot paths init.
 
     Args:
       cache_dir (str): Override the default cache directory.
-      chrome_root (str): Set the chrome root directory to mount in the chroot.
       chroot_path (str): Set the path the chroot resides (or will be created).
     """
     self.cache_dir = cache_dir
-    self.chrome_root = chrome_root
     self.chroot_path = chroot_path
 
   def GetArgList(self):
@@ -39,9 +37,6 @@ class ChrootPaths(object):
 
     if self.cache_dir:
       args.extend(['--cache-dir', self.cache_dir])
-
-    if self.chrome_root:
-      args.extend(['--chrome_root', self.chrome_root])
 
     if self.chroot_path:
       args.extend(['--chroot', self.chroot_path])
