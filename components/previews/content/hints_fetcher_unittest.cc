@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
@@ -42,12 +43,14 @@ class HintsFetcherTest : public testing::Test {
   ~HintsFetcherTest() override {}
 
   void OnHintsFetched(
-      std::unique_ptr<optimization_guide::proto::GetHintsResponse>
+      base::Optional<
+          std::unique_ptr<optimization_guide::proto::GetHintsResponse>>
           get_hints_response) {
-    hints_fetched_ = true;
+    if (get_hints_response)
+      hints_fetched_ = true;
   }
 
-  bool HintsFetched() { return hints_fetched_; }
+  bool hints_fetched() { return hints_fetched_; }
 
  protected:
   bool FetchHints(const std::vector<std::string>& hosts) {
@@ -99,7 +102,7 @@ TEST_F(HintsFetcherTest, FetchOptimizationGuideServiceHints) {
   EXPECT_TRUE(FetchHints(std::vector<std::string>()));
   VerifyHasPendingFetchRequests();
   EXPECT_TRUE(SimulateResponse(response_content, net::HTTP_OK));
-  EXPECT_TRUE(HintsFetched());
+  EXPECT_TRUE(hints_fetched());
 }
 
 // Tests to ensure that multiple hint fetches by the same object cannot be in
@@ -124,7 +127,7 @@ TEST_F(HintsFetcherTest, FetchReturned404) {
 
   // Send a 404 to HintsFetcher.
   SimulateResponse(response_content, net::HTTP_NOT_FOUND);
-  EXPECT_FALSE(HintsFetched());
+  EXPECT_FALSE(hints_fetched());
 }
 
 TEST_F(HintsFetcherTest, FetchReturnBadResponse) {
@@ -132,7 +135,7 @@ TEST_F(HintsFetcherTest, FetchReturnBadResponse) {
   EXPECT_TRUE(FetchHints(std::vector<std::string>()));
   VerifyHasPendingFetchRequests();
   EXPECT_TRUE(SimulateResponse(response_content, net::HTTP_OK));
-  EXPECT_FALSE(HintsFetched());
+  EXPECT_FALSE(hints_fetched());
 }
 
 }  // namespace previews
