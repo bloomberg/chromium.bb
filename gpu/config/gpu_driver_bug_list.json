@@ -3269,6 +3269,9 @@
       "id": 301,
       "description": "Mesa hangs the system when allocating large textures",
       "cr_bugs": [927470],
+      "os": {
+        "type" : "linux"
+      },
       "driver_vendor": "Mesa",
       "driver_version": {
         "op": ">=",
