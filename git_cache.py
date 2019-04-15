@@ -245,9 +245,14 @@ class Mirror(object):
 
   @property
   def bootstrap_bucket(self):
+    b = os.getenv('OVERRIDE_BOOTSTRAP_BUCKET')
+    if b:
+      return b
     u = urlparse.urlparse(self.url)
     if u.netloc == 'chromium.googlesource.com':
       return 'chromium-git-cache'
+    # TODO(tandrii): delete once LUCI migration is completed.
+    # Only public hosts will be supported going forward.
     elif u.netloc == 'chrome-internal.googlesource.com':
       return 'chrome-git-cache'
     # Not recognized.
