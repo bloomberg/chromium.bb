@@ -61,6 +61,7 @@ class UserSessionManagerTestApi;
 class EasyUnlockKeyManager;
 class InputEventsBlocker;
 class LoginDisplayHost;
+class StubAuthenticatorBuilder;
 
 class UserSessionManagerDelegate {
  public:
@@ -479,10 +480,8 @@ class UserSessionManager
   void CreateTokenUtilIfMissing();
 
   // Test API methods.
-
-  // Injects |user_context| that will be used to create StubAuthenticator
-  // instance when CreateAuthenticator() is called.
-  void InjectStubUserContext(const UserContext& user_context);
+  void InjectAuthenticatorBuilder(
+      std::unique_ptr<StubAuthenticatorBuilder> builer);
 
   // Controls whether browser instance should be launched after sign in
   // (used in tests).
@@ -526,8 +525,7 @@ class UserSessionManager
   scoped_refptr<Authenticator> authenticator_;
   StartSessionType start_session_type_;
 
-  // Injected user context for stub authenticator.
-  std::unique_ptr<UserContext> injected_user_context_;
+  std::unique_ptr<StubAuthenticatorBuilder> injected_authenticator_builder_;
 
   // True if the authentication context's cookie jar contains authentication
   // cookies from the authentication extension login flow.
