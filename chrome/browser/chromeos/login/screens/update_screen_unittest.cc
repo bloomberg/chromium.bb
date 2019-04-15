@@ -82,12 +82,9 @@ class UpdateScreenUnitTest : public testing::Test {
     EXPECT_CALL(*mock_network_portal_detector_, IsEnabled())
         .Times(AnyNumber())
         .WillRepeatedly(Return(false));
-    EXPECT_CALL(mock_base_screen_delegate_, GetErrorScreen())
-        .Times(AnyNumber())
-        .WillRepeatedly(Return(mock_error_screen_.get()));
 
     update_screen_ = std::make_unique<UpdateScreen>(
-        &mock_base_screen_delegate_, &mock_view_,
+        &mock_base_screen_delegate_, &mock_view_, mock_error_screen_.get(),
         base::BindRepeating(&UpdateScreenUnitTest::HandleScreenExit,
                             base::Unretained(this)));
   }

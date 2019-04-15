@@ -362,11 +362,7 @@ class WizardControllerTest : public InProcessBrowserTest {
     command_line->AppendSwitch(switches::kLoginManager);
   }
 
-  ErrorScreen* GetErrorScreen() {
-    return static_cast<BaseScreenDelegate*>(
-               WizardController::default_controller())
-        ->GetErrorScreen();
-  }
+  ErrorScreen* GetErrorScreen() { return GetOobeUI()->GetErrorScreen(); }
 
   OobeUI* GetOobeUI() { return LoginDisplayHost::default_host()->GetOobeUI(); }
 
@@ -619,7 +615,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
     mock_update_view_ = std::make_unique<MockUpdateView>();
     mock_update_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockUpdateScreen>(
-            wizard_controller, mock_update_view_.get(),
+            wizard_controller, mock_update_view_.get(), GetErrorScreen(),
             base::BindRepeating(&WizardController::OnUpdateScreenExit,
                                 base::Unretained(wizard_controller))));
 
@@ -642,7 +638,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
     ExpectSetDelegate(mock_auto_enrollment_check_screen_view_.get());
     mock_auto_enrollment_check_screen_ = MockScreenExpectLifecycle(
         std::make_unique<MockAutoEnrollmentCheckScreen>(
-            wizard_controller, mock_auto_enrollment_check_screen_view_.get(),
+            mock_auto_enrollment_check_screen_view_.get(), GetErrorScreen(),
             base::BindRepeating(
                 &WizardController::OnAutoEnrollmentCheckScreenExit,
                 base::Unretained(wizard_controller))));
@@ -1276,8 +1272,9 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
 
   // The error screen shows up if device state could not be retrieved.
   EXPECT_FALSE(StartupUtils::IsOobeCompleted());
-  EXPECT_EQ(GetErrorScreen(),
-            WizardController::default_controller()->current_screen());
+  CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
+  EXPECT_EQ(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK,
+            GetErrorScreen()->GetParentScreen());
   base::DictionaryValue device_state;
   device_state.SetString(policy::kDeviceStateMode,
                          policy::kDeviceStateRestoreModeDisabled);
@@ -1375,8 +1372,9 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
 
   // The error screen shows up if there's no auto-enrollment decision.
   EXPECT_FALSE(StartupUtils::IsOobeCompleted());
-  EXPECT_EQ(GetErrorScreen(),
-            WizardController::default_controller()->current_screen());
+  CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
+  EXPECT_EQ(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK,
+            GetErrorScreen()->GetParentScreen());
 
   WaitUntilJSIsReady();
   constexpr char guest_session_link_display[] =
@@ -1483,8 +1481,9 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
 
     // The error screen shows up.
     EXPECT_FALSE(StartupUtils::IsOobeCompleted());
-    EXPECT_EQ(GetErrorScreen(),
-              WizardController::default_controller()->current_screen());
+    CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
+    EXPECT_EQ(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK,
+              GetErrorScreen()->GetParentScreen());
 
     WaitUntilJSIsReady();
     constexpr char guest_session_link_display[] =
@@ -1619,8 +1618,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
 
   // The error screen shows up if there's no auto-enrollment decision.
   EXPECT_FALSE(StartupUtils::IsOobeCompleted());
-  EXPECT_EQ(GetErrorScreen(),
-            WizardController::default_controller()->current_screen());
+  EXPECT_EQ(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK,
+            GetErrorScreen()->GetParentScreen());
   base::DictionaryValue device_state;
   device_state.SetString(policy::kDeviceStateMode,
                          policy::kDeviceStateRestoreModeReEnrollmentEnforced);
@@ -1703,8 +1702,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
 
   // The error screen shows up if there's no auto-enrollment decision.
   EXPECT_FALSE(StartupUtils::IsOobeCompleted());
-  EXPECT_EQ(GetErrorScreen(),
-            WizardController::default_controller()->current_screen());
+  EXPECT_EQ(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK,
+            GetErrorScreen()->GetParentScreen());
 
   WaitUntilJSIsReady();
   constexpr char guest_session_link_display[] =

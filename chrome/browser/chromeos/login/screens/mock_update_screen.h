@@ -16,6 +16,7 @@ class MockUpdateScreen : public UpdateScreen {
  public:
   MockUpdateScreen(BaseScreenDelegate* base_screen_delegate,
                    UpdateView* view,
+                   ErrorScreen* error_screen,
                    const ScreenExitCallback& exit_callback);
   virtual ~MockUpdateScreen();
 

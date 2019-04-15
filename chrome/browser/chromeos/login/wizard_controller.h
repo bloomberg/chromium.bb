@@ -250,9 +250,8 @@ class WizardController : public BaseScreenDelegate {
 
   // Overridden from BaseScreenDelegate:
   void ShowCurrentScreen() override;
-  ErrorScreen* GetErrorScreen() override;
-  void ShowErrorScreen() override;
-  void HideErrorScreen(BaseScreen* parent_screen) override;
+  ErrorScreen* GetErrorScreen();
+  void ShowErrorScreen();
 
   void OnHIDScreenNecessityCheck(bool screen_needed);
 

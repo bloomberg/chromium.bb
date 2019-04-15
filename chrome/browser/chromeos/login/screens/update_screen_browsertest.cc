@@ -50,45 +50,21 @@ chromeos::OobeUI* GetOobeUI() {
 
 class TestErrorScreenDelegate : public BaseScreenDelegate {
  public:
-  explicit TestErrorScreenDelegate(ErrorScreen* error_screen)
-      : error_screen_(error_screen) {}
+  TestErrorScreenDelegate() = default;
+  ~TestErrorScreenDelegate() override = default;
 
   void set_parent_screen(UpdateScreen* parent_screen) {
     parent_screen_ = parent_screen;
   }
 
-  bool error_screen_shown() const { return error_screen_shown_; }
-
   // BaseScreenDelegate:
-  void ShowCurrentScreen() override {
-    error_screen_->Hide();
-    parent_screen_->Show();
-    error_screen_shown_ = false;
-  }
-  ErrorScreen* GetErrorScreen() override { return error_screen_; }
-  void ShowErrorScreen() override {
-    parent_screen_->Hide();
-    error_screen_->Show();
-    error_screen_shown_ = true;
-  }
-  void HideErrorScreen(BaseScreen* parent_screen) override {
-    EXPECT_EQ(parent_screen, parent_screen_);
-    error_screen_->Hide();
-    parent_screen_->Show();
-    error_screen_shown_ = false;
-  }
+  void ShowCurrentScreen() override { parent_screen_->Show(); }
 
  private:
-  // Owned by OobeUI.
-  ErrorScreen* const error_screen_;
-
   // The update screen under test, that uses this delegate.
   // Should be set using |set_parent_screen()| after the update screen is
   // created.
   BaseScreen* parent_screen_;
-
-  // Whether the error screen is shown by the delegate.
-  bool error_screen_shown_ = false;
 };
 
 }  // namespace
@@ -112,10 +88,10 @@ class UpdateScreenTest : public MixinBasedInProcessBrowserTest {
 
     tick_clock_.Advance(base::TimeDelta::FromMinutes(1));
 
-    error_delegate_ = std::make_unique<TestErrorScreenDelegate>(
-        GetOobeUI()->GetErrorScreen());
+    error_screen_ = GetOobeUI()->GetErrorScreen();
+    error_delegate_ = std::make_unique<TestErrorScreenDelegate>();
     update_screen_ = std::make_unique<UpdateScreen>(
-        error_delegate_.get(), GetOobeUI()->GetUpdateView(),
+        error_delegate_.get(), GetOobeUI()->GetUpdateView(), error_screen_,
         base::BindRepeating(&UpdateScreenTest::HandleScreenExit,
                             base::Unretained(this)));
     update_screen_->set_tick_clock_for_testing(&tick_clock_);
@@ -149,6 +125,8 @@ class UpdateScreenTest : public MixinBasedInProcessBrowserTest {
 
   std::unique_ptr<TestErrorScreenDelegate> error_delegate_;
   std::unique_ptr<UpdateScreen> update_screen_;
+  // Error screen - owned by OobeUI.
+  ErrorScreen* error_screen_ = nullptr;
 
   FakeUpdateEngineClient* fake_update_engine_client_ = nullptr;  // Unowned.
 
@@ -452,7 +430,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestErrorUpdating) {
             last_screen_result_.value());
 }
 
-IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestTemproraryPortalNetwork) {
+IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestTemporaryPortalNetwork) {
   // Change ethernet state to offline.
   network_portal_detector_.SimulateDefaultNetworkState(
       NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL);
@@ -461,18 +439,16 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestTemproraryPortalNetwork) {
 
   // If the network is a captive portal network, error message is shown with a
   // delay.
-  EXPECT_FALSE(error_delegate_->error_screen_shown());
   EXPECT_TRUE(update_screen_->GetErrorMessageTimerForTesting()->IsRunning());
+  EXPECT_EQ(OobeScreen::SCREEN_UNKNOWN, error_screen_->GetParentScreen());
 
   // If network goes back online, the error message timer should be canceled.
   network_portal_detector_.SimulateDefaultNetworkState(
       NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
-
-  EXPECT_FALSE(error_delegate_->error_screen_shown());
   EXPECT_FALSE(update_screen_->GetErrorMessageTimerForTesting()->IsRunning());
 
   UpdateEngineClient::Status status;
-  status.status = UpdateEngineClient::UPDATE_STATUS_CHECKING_FOR_UPDATE;
+  status.status = UpdateEngineClient::UPDATE_STATUS_UPDATE_AVAILABLE;
 
   fake_update_engine_client_->set_default_status(status);
   fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
@@ -506,12 +482,11 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestTwoOfflineNetworks) {
 
   // Update screen will delay error message about portal state because
   // ethernet is behind captive portal. Simulate the delay timing out.
-  EXPECT_FALSE(error_delegate_->error_screen_shown());
   EXPECT_TRUE(update_screen_->GetErrorMessageTimerForTesting()->IsRunning());
   update_screen_->GetErrorMessageTimerForTesting()->FireNow();
-
   EXPECT_FALSE(update_screen_->GetErrorMessageTimerForTesting()->IsRunning());
-  EXPECT_TRUE(error_delegate_->error_screen_shown());
+
+  ASSERT_EQ(OobeScreen::SCREEN_OOBE_UPDATE, error_screen_->GetParentScreen());
 
   OobeScreenWaiter error_screen_waiter(OobeScreen::SCREEN_ERROR_MESSAGE);
   error_screen_waiter.set_assert_next_screen();
@@ -544,14 +519,13 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestVoidNetwork) {
   // results, so detection is restarted.
   update_screen_->StartNetworkCheck();
 
-  EXPECT_FALSE(error_delegate_->error_screen_shown());
   EXPECT_FALSE(update_screen_->GetErrorMessageTimerForTesting()->IsRunning());
 
   network_portal_detector_.WaitForPortalDetectionRequest();
   network_portal_detector_.SimulateNoNetwork();
 
-  ASSERT_TRUE(error_delegate_->error_screen_shown());
   EXPECT_FALSE(update_screen_->GetErrorMessageTimerForTesting()->IsRunning());
+  ASSERT_EQ(OobeScreen::SCREEN_OOBE_UPDATE, error_screen_->GetParentScreen());
 
   // Second portal detection also returns NULL network and undefined
   // results.  In this case, offline message should be displayed.
@@ -578,6 +552,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestAPReselection) {
   // Force timer expiration.
   EXPECT_TRUE(update_screen_->GetErrorMessageTimerForTesting()->IsRunning());
   update_screen_->GetErrorMessageTimerForTesting()->FireNow();
+  ASSERT_EQ(OobeScreen::SCREEN_OOBE_UPDATE, error_screen_->GetParentScreen());
 
   OobeScreenWaiter error_screen_waiter(OobeScreen::SCREEN_ERROR_MESSAGE);
   error_screen_waiter.set_assert_next_screen();
@@ -586,6 +561,8 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestAPReselection) {
   NetworkHandler::Get()->network_connection_handler()->ConnectToNetwork(
       "fake_path", base::DoNothing(), base::DoNothing(),
       false /* check_error_state */, ConnectCallbackMode::ON_COMPLETED);
+
+  ASSERT_EQ(OobeScreen::SCREEN_UNKNOWN, error_screen_->GetParentScreen());
 
   OobeScreenWaiter update_screen_waiter(OobeScreen::SCREEN_OOBE_UPDATE);
   update_screen_waiter.set_assert_next_screen();

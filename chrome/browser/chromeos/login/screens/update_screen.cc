@@ -94,12 +94,14 @@ UpdateScreen* UpdateScreen::Get(ScreenManager* manager) {
 
 UpdateScreen::UpdateScreen(BaseScreenDelegate* base_screen_delegate,
                            UpdateView* view,
+                           ErrorScreen* error_screen,
                            const ScreenExitCallback& exit_callback)
     : BaseScreen(OobeScreen::SCREEN_OOBE_UPDATE),
       tick_clock_(base::DefaultTickClock::GetInstance()),
       reboot_check_delay_(kWaitForRebootTimeSec),
       base_screen_delegate_(base_screen_delegate),
       view_(view),
+      error_screen_(error_screen),
       exit_callback_(exit_callback),
       histogram_helper_(new ErrorScreensHistogramHelper("Update")),
       weak_factory_(this) {
@@ -487,17 +489,14 @@ void UpdateScreen::OnWaitForRebootTimeElapsed() {
 }
 
 void UpdateScreen::MakeSureScreenIsShown() {
-  if (!is_shown_)
+  if (!is_shown_) {
     base_screen_delegate_->ShowCurrentScreen();
-}
-
-ErrorScreen* UpdateScreen::GetErrorScreen() {
-  return base_screen_delegate_->GetErrorScreen();
+  }
 }
 
 void UpdateScreen::StartUpdateCheck() {
   error_message_timer_.Stop();
-  GetErrorScreen()->HideCaptivePortal();
+  error_screen_->HideCaptivePortal();
 
   network_portal_detector::GetInstance()->RemoveObserver(this);
   connect_request_subscription_.reset();
@@ -520,18 +519,22 @@ void UpdateScreen::ShowErrorMessage() {
 
   error_message_timer_.Stop();
 
+  is_shown_ = false;
   state_ = State::STATE_ERROR;
   connect_request_subscription_ =
-      GetErrorScreen()->RegisterConnectRequestCallback(base::Bind(
+      error_screen_->RegisterConnectRequestCallback(base::BindRepeating(
           &UpdateScreen::OnConnectRequested, base::Unretained(this)));
-  GetErrorScreen()->SetUIState(NetworkError::UI_STATE_UPDATE);
-  base_screen_delegate_->ShowErrorScreen();
-  histogram_helper_->OnErrorShow(GetErrorScreen()->GetErrorState());
+  error_screen_->SetUIState(NetworkError::UI_STATE_UPDATE);
+  error_screen_->SetParentScreen(OobeScreen::SCREEN_OOBE_UPDATE);
+  error_screen_->SetHideCallback(base::BindRepeating(
+      &UpdateScreen::OnErrorScreenHidden, weak_factory_.GetWeakPtr()));
+  error_screen_->Show();
+  histogram_helper_->OnErrorShow(error_screen_->GetErrorState());
 }
 
 void UpdateScreen::HideErrorMessage() {
   LOG(WARNING) << "UpdateScreen::HideErrorMessage()";
-  base_screen_delegate_->HideErrorScreen(this);
+  error_screen_->Hide();
   histogram_helper_->OnErrorHide();
 }
 
@@ -544,21 +547,21 @@ void UpdateScreen::UpdateErrorMessage(
       break;
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN:
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE:
-      GetErrorScreen()->SetErrorState(NetworkError::ERROR_STATE_OFFLINE,
-                                      std::string());
+      error_screen_->SetErrorState(NetworkError::ERROR_STATE_OFFLINE,
+                                   std::string());
       break;
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL:
       DCHECK(network);
-      GetErrorScreen()->SetErrorState(NetworkError::ERROR_STATE_PORTAL,
-                                      network->name());
+      error_screen_->SetErrorState(NetworkError::ERROR_STATE_PORTAL,
+                                   network->name());
       if (is_first_portal_notification_) {
         is_first_portal_notification_ = false;
-        GetErrorScreen()->FixCaptivePortal();
+        error_screen_->FixCaptivePortal();
       }
       break;
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED:
-      GetErrorScreen()->SetErrorState(NetworkError::ERROR_STATE_PROXY,
-                                      std::string());
+      error_screen_->SetErrorState(NetworkError::ERROR_STATE_PROXY,
+                                   std::string());
       break;
     default:
       NOTREACHED();
@@ -588,6 +591,11 @@ void UpdateScreen::OnConnectRequested() {
     LOG(WARNING) << "Hiding error message since AP was reselected";
     StartUpdateCheck();
   }
+}
+
+void UpdateScreen::OnErrorScreenHidden() {
+  error_screen_->SetParentScreen(OobeScreen::SCREEN_UNKNOWN);
+  Show();
 }
 
 }  // namespace chromeos
