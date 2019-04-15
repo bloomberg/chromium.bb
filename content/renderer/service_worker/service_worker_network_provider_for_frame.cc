@@ -9,7 +9,7 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/renderer/render_frame_observer.h"
-#include "content/renderer/loader/request_extra_data.h"
+#include "content/renderer/loader/web_url_loader_impl.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
@@ -66,7 +66,6 @@ ServiceWorkerNetworkProviderForFrame::Create(
   auto provider =
       base::WrapUnique(new ServiceWorkerNetworkProviderForFrame(frame));
   provider->context_ = base::MakeRefCounted<ServiceWorkerProviderContext>(
-      provider_info->provider_id,
       blink::mojom::ServiceWorkerProviderType::kForWindow,
       std::move(provider_info->client_request),
       std::move(provider_info->host_ptr_info), std::move(controller_info),
@@ -94,11 +93,6 @@ ServiceWorkerNetworkProviderForFrame::~ServiceWorkerNetworkProviderForFrame() {
 
 void ServiceWorkerNetworkProviderForFrame::WillSendRequest(
     blink::WebURLRequest& request) {
-  if (!request.GetExtraData())
-    request.SetExtraData(std::make_unique<RequestExtraData>());
-  auto* extra_data = static_cast<RequestExtraData*>(request.GetExtraData());
-  extra_data->set_service_worker_provider_id(provider_id());
-
   // Inject this frame's fetch window id into the request.
   if (context())
     request.SetFetchWindowId(context()->fetch_request_window_id());
@@ -160,12 +154,6 @@ void ServiceWorkerNetworkProviderForFrame::DispatchNetworkQuiet() {
   if (!context())
     return;
   context()->DispatchNetworkQuiet();
-}
-
-int ServiceWorkerNetworkProviderForFrame::provider_id() const {
-  if (!context_)
-    return blink::kInvalidServiceWorkerProviderId;
-  return context_->provider_id();
 }
 
 void ServiceWorkerNetworkProviderForFrame::NotifyExecutionReady() {

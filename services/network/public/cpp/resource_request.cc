@@ -33,7 +33,6 @@ bool ResourceRequest::EqualsForTesting(const ResourceRequest& request) const {
          should_reset_appcache == request.should_reset_appcache &&
          is_external_request == request.is_external_request &&
          cors_preflight_policy == request.cors_preflight_policy &&
-         service_worker_provider_id == request.service_worker_provider_id &&
          originated_from_service_worker ==
              request.originated_from_service_worker &&
          skip_service_worker == request.skip_service_worker &&

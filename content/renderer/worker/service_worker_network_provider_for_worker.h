@@ -61,7 +61,6 @@ class ServiceWorkerNetworkProviderForWorker final
   int64_t ControllerServiceWorkerID() override;
   void DispatchNetworkQuiet() override;
 
-  int provider_id() const;
   ServiceWorkerProviderContext* context() { return context_.get(); }
 
  private:

@@ -1018,7 +1018,6 @@ std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
 ServiceWorkerContextClient::CreateServiceWorkerNetworkProviderOnMainThread() {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   return std::make_unique<ServiceWorkerNetworkProviderForServiceWorker>(
-      service_worker_provider_info_->provider_id,
       std::move(service_worker_provider_info_->script_loader_factory_ptr_info));
 }
 
@@ -1051,7 +1050,6 @@ ServiceWorkerContextClient::CreateServiceWorkerFetchContextOnMainThread(
   return base::MakeRefCounted<ServiceWorkerFetchContextImpl>(
       *renderer_preferences_, script_url_, url_loader_factory_bundle->Clone(),
       std::move(script_loader_factory_info),
-      service_worker_provider_info_->provider_id,
       GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
           URLLoaderThrottleProviderType::kWorker),
       GetContentClient()

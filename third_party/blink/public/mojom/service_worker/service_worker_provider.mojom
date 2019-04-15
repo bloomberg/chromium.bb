@@ -22,7 +22,6 @@ const string kNavigation_ServiceWorkerSpec = "navigation:service_worker";
 // WebServiceWorkerNetworkProvider used for starting a web worker (dedicated
 // worker or shared worker).
 struct ServiceWorkerProviderInfoForWorker {
-  int32 provider_id;
   associated ServiceWorkerContainerHost host_ptr_info;
   associated ServiceWorkerContainer& client_request;
 };
@@ -30,8 +29,6 @@ struct ServiceWorkerProviderInfoForWorker {
 // Sent from the browser process to the renderer. Contains parameters for the
 // WebServiceWorkerNetworkProvider used for starting a service worker.
 struct ServiceWorkerProviderInfoForStartWorker {
-  int32 provider_id;
-
   associated ServiceWorkerContainerHost host_ptr_info;
   associated ServiceWorkerContainer& client_request;
 
@@ -55,7 +52,6 @@ struct ServiceWorkerProviderInfoForStartWorker {
 // ServiceWorkerProviderInfoForWorker, we can unify them as a new struct
 // ServiceWorkerProviderInfoForClient.
 struct ServiceWorkerProviderInfoForWindow {
-  int32 provider_id;
   associated ServiceWorkerContainerHost host_ptr_info;
   associated ServiceWorkerContainer& client_request;
 };

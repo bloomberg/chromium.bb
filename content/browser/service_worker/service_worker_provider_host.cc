@@ -180,7 +180,6 @@ ServiceWorkerProviderHost::PreCreateNavigationHost(
       std::move(client_ptr_info), context));
   host->web_contents_getter_ = std::move(web_contents_getter);
 
-  (*out_provider_info)->provider_id = host->provider_id();
   auto weak_ptr = host->AsWeakPtr();
   RegisterToContextCore(context, std::move(host));
   return weak_ptr;
@@ -202,7 +201,6 @@ ServiceWorkerProviderHost::PreCreateForController(
       std::move(client_ptr_info), context));
   host->running_hosted_version_ = std::move(version);
 
-  (*out_provider_info)->provider_id = host->provider_id();
   auto weak_ptr = host->AsWeakPtr();
   RegisterToContextCore(context, std::move(host));
   return weak_ptr;
@@ -223,7 +221,6 @@ ServiceWorkerProviderHost::PreCreateForSharedWorker(
       std::move(client_ptr_info), context));
   host->SetRenderProcessId(process_id);
 
-  (*out_provider_info)->provider_id = host->provider_id();
   auto weak_ptr = host->AsWeakPtr();
   RegisterToContextCore(context, std::move(host));
   return weak_ptr;

@@ -191,14 +191,10 @@ scoped_refptr<WebWorkerFetchContextImpl> WebWorkerFetchContextImpl::Create(
           ChildThreadImpl::current()->thread_safe_sender(),
           ChildThreadImpl::current()->GetConnector()->Clone()));
   if (provider_context) {
-    worker_fetch_context->set_service_worker_provider_id(
-        provider_context->provider_id());
     worker_fetch_context->set_is_controlled_by_service_worker(
         provider_context->IsControlledByServiceWorker());
     worker_fetch_context->set_client_id(provider_context->client_id());
   } else {
-    worker_fetch_context->set_service_worker_provider_id(
-        blink::kInvalidServiceWorkerProviderId);
     worker_fetch_context->set_is_controlled_by_service_worker(
         blink::mojom::ControllerServiceWorkerMode::kNoController);
   }
@@ -281,7 +277,6 @@ WebWorkerFetchContextImpl::CloneForNestedWorker(
                 std::move(task_runner))
           : nullptr,
       thread_safe_sender_.get(), service_manager_connection_->Clone()));
-  new_context->service_worker_provider_id_ = service_worker_provider_id_;
   new_context->is_controlled_by_service_worker_ =
       is_controlled_by_service_worker_;
   new_context->is_on_sub_frame_ = is_on_sub_frame_;
@@ -368,7 +363,6 @@ void WebWorkerFetchContextImpl::WillSendRequest(blink::WebURLRequest& request) {
   }
 
   auto extra_data = std::make_unique<RequestExtraData>();
-  extra_data->set_service_worker_provider_id(service_worker_provider_id_);
   extra_data->set_render_frame_id(ancestor_frame_id_);
   extra_data->set_frame_request_blocker(frame_request_blocker_);
   extra_data->set_initiated_in_secure_context(is_secure_context_);
@@ -458,10 +452,6 @@ WebWorkerFetchContextImpl::CreateWebSocketHandshakeThrottle(
     return nullptr;
   return websocket_handshake_throttle_provider_->CreateThrottle(
       ancestor_frame_id_, std::move(task_runner));
-}
-
-void WebWorkerFetchContextImpl::set_service_worker_provider_id(int id) {
-  service_worker_provider_id_ = id;
 }
 
 void WebWorkerFetchContextImpl::set_is_controlled_by_service_worker(

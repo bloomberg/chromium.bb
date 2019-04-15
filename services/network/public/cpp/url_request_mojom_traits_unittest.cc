@@ -68,7 +68,6 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
   original.is_external_request = false;
   original.cors_preflight_policy =
       mojom::CorsPreflightPolicy::kConsiderPreflight;
-  original.service_worker_provider_id = -1;
   original.originated_from_service_worker = false;
   original.skip_service_worker = false;
   original.fetch_request_mode = mojom::FetchRequestMode::kNoCors;

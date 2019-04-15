@@ -774,8 +774,6 @@ void EmbeddedWorkerInstance::SendStartWorker(
   inflight_start_task_->set_start_worker_sent_time(base::TimeTicks::Now());
 
   // The host must be alive as long as |params->provider_info| is alive.
-  DCHECK_EQ(params->provider_info->provider_id,
-            owner_version_->provider_host()->provider_id());
   owner_version_->provider_host()->CompleteStartWorkerPreparation(
       process_id(), MakeRequest(&params->provider_info->interface_provider));
   client_->StartWorker(std::move(params));

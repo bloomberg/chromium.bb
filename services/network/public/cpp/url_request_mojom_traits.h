@@ -118,10 +118,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
       const network::ResourceRequest& request) {
     return request.cors_preflight_policy;
   }
-  static int32_t service_worker_provider_id(
-      const network::ResourceRequest& request) {
-    return request.service_worker_provider_id;
-  }
   static bool originated_from_service_worker(
       const network::ResourceRequest& request) {
     return request.originated_from_service_worker;

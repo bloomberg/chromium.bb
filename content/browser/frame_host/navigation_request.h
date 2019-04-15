@@ -582,8 +582,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // redirects.
   // Note: |common_params_| and |begin_params_| are not const as they can be
   // modified during redirects.
-  // Note: |commit_params_| is not const because service_worker_provider_id
-  // and should_create_service_worker will be set in OnResponseStarted.
+  // Note: |commit_params_| is not const because was_discarded will
+  // be set in CreatedNavigationRequest.
   CommonNavigationParams common_params_;
   mojom::BeginNavigationParamsPtr begin_params_;
   CommitNavigationParams commit_params_;

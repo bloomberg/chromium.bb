@@ -175,12 +175,6 @@ struct URLRequest {
   // A policy to decide if CORS-preflight fetch should be performed.
   CorsPreflightPolicy cors_preflight_policy;
 
-  // Indicates which frame (or worker context) the request is being loaded into.
-  // -1 corresponds to kInvalidServiceWorkerProviderId.
-  // TODO(jam): remove this from the struct since network service shouldn't know
-  // about this.
-  int32 service_worker_provider_id;
-
   // True if the request originated from a Service Worker, e.g. due to a
   // fetch() in the Service Worker script.
   bool originated_from_service_worker;
