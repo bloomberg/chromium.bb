@@ -92,6 +92,10 @@
         margin-inline-start: 20px;
       }
 
+      .overview-section {
+        padding-top: 10px;
+      }
+
       .overview-section div + div {
         margin-top: 1em;
       }
@@ -105,22 +109,23 @@
       }
 
 <if expr="chromeos">
-      .device-reporting div {
-        align-items: center;
-        display: flex;
+      .device-reporting-section {
+        padding-bottom: 13px;
       }
 
-      .device-reporting div + div {
+      .device-reporting-section ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .device-reporting-section li + li {
         margin-top: 2em;
       }
 
       .device-reporting iron-icon {
         margin-inline-end: 10px;
         width: 24px;
-      }
-
-      .device-reporting {
-        margin-bottom: 2em;
       }
 </if>
 
@@ -201,25 +206,28 @@
           </section>
 <if expr="chromeos">
           <div hidden="[[!localTrustRoots_]]">
-            <section class="three-line single-column">
+            <section class="single-column">
               <h2>$i18n{localTrustRoots}</h2>
-              <div id="trust-roots-configuration">[[localTrustRoots_]]</div>
+              <div class="subtitle" id="trust-roots-configuration">
+                [[localTrustRoots_]]</div>
             </section>
           </div>
           <template is="dom-if"
               if="[[showDeviceReportingInfo_(deviceReportingInfo_)]]">
-            <section class="single-column">
+            <section class="single-column device-reporting-section">
               <h2>$i18n{deviceReporting}</h2>
               <div class="subtitle">$i18n{deviceConfiguration}</div>
-              <template is="dom-repeat" items="[[deviceReportingInfo_]]">
-                <div class="device-reporting">
-                  <span>
-                    <iron-icon icon="[[getIconForDeviceReportingType_(
-                        item.reportingType)]]"></iron-icon>
-                    [[i18n(item.messageId)]]
-                  </span>
-                </div>
-              </template>
+              <ul>
+                <template is="dom-repeat" items="[[deviceReportingInfo_]]">
+                  <li class="device-reporting">
+                    <span>
+                      <iron-icon icon="[[getIconForDeviceReportingType_(
+                          item.reportingType)]]"></iron-icon>
+                      [[i18n(item.messageId)]]
+                    </span>
+                  </li>
+                </template>
+              </ul>
             </section>
           </template>
 </if>
