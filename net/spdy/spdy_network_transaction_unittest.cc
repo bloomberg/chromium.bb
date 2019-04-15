@@ -1607,9 +1607,11 @@ class KillerCallback : public TestCompletionCallbackBase {
 // closes the socket while we have a pending transaction waiting for
 // a pending stream creation.  http://crbug.com/52901
 TEST_F(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrentSocketClose) {
-  // Construct the request.
+  // Construct the request. Each stream uses a different priority to provide
+  // more useful failure information if the requests are made in an unexpected
+  // order.
   spdy::SpdySerializedFrame req(
-      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, HIGHEST));
   spdy::SpdySerializedFrame resp(
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   spdy::SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, false));
@@ -1618,7 +1620,7 @@ TEST_F(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrentSocketClose) {
   spdy_util_.UpdateWithStreamDestruction(1);
 
   spdy::SpdySerializedFrame req2(
-      spdy_util_.ConstructSpdyGet(nullptr, 0, 3, LOWEST));
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 3, MEDIUM));
   spdy::SpdySerializedFrame resp2(
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 3));
 
@@ -1629,32 +1631,35 @@ TEST_F(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrentSocketClose) {
       spdy_util_.ConstructSpdySettings(settings));
   spdy::SpdySerializedFrame settings_ack(spdy_util_.ConstructSpdySettingsAck());
 
-  MockWrite writes[] = {
-      CreateMockWrite(req, 0), CreateMockWrite(settings_ack, 5),
-      CreateMockWrite(req2, 6),
-  };
+  MockWrite writes[] = {CreateMockWrite(req, 0),
+                        CreateMockWrite(settings_ack, 6),
+                        CreateMockWrite(req2, 7)};
   MockRead reads[] = {
-      CreateMockRead(settings_frame, 1),
-      CreateMockRead(resp, 2),
+      CreateMockRead(settings_frame, 1), CreateMockRead(resp, 2),
       CreateMockRead(body, 3),
-      CreateMockRead(fin_body, 4),
-      CreateMockRead(resp2, 7),
-      MockRead(ASYNC, ERR_CONNECTION_RESET, 8),  // Abort!
+      // Delay the request here. For this test to pass, the three HTTP streams
+      // have to be created in order, but SpdySession doesn't actually guarantee
+      // that (See note in SpdySession::ProcessPendingStreamRequests). As a
+      // workaround, delay finishing up the first stream until the second and
+      // third streams are waiting in the SPDY stream request queue.
+      MockRead(ASYNC, ERR_IO_PENDING, 4), CreateMockRead(fin_body, 5),
+      CreateMockRead(resp2, 8),
+      MockRead(ASYNC, ERR_CONNECTION_RESET, 9),  // Abort!
   };
 
   SequencedSocketData data(reads, writes);
   SequencedSocketData data_placeholder;
 
   TransactionHelperResult out;
-  NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_, nullptr);
+  NormalSpdyTransactionHelper helper(request_, HIGHEST, log_, nullptr);
   helper.RunPreTestSetup();
   helper.AddData(&data);
   // We require placeholder data because three get requests are sent out, so
   // there needs to be three sets of SSL connection data.
   helper.AddData(&data_placeholder);
   helper.AddData(&data_placeholder);
-  HttpNetworkTransaction trans1(DEFAULT_PRIORITY, helper.session());
-  HttpNetworkTransaction trans2(DEFAULT_PRIORITY, helper.session());
+  HttpNetworkTransaction trans1(HIGHEST, helper.session());
+  HttpNetworkTransaction trans2(MEDIUM, helper.session());
   HttpNetworkTransaction* trans3(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
 
@@ -1672,8 +1677,14 @@ TEST_F(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrentSocketClose) {
   ASSERT_EQ(out.rv, ERR_IO_PENDING);
   out.rv = trans3->Start(&request_, callback3.callback(), log_);
   ASSERT_EQ(out.rv, ERR_IO_PENDING);
+
+  // Run until both transactions are in the SpdySession's queue, waiting for the
+  // final request to complete.
+  base::RunLoop().RunUntilIdle();
+  data.Resume();
+
   out.rv = callback3.WaitForResult();
-  ASSERT_THAT(out.rv, IsError(ERR_ABORTED));
+  EXPECT_THAT(out.rv, IsError(ERR_ABORTED));
 
   const HttpResponseInfo* response1 = trans1.GetResponseInfo();
   ASSERT_TRUE(response1);
