@@ -73,7 +73,7 @@ std::string ConvertJSONToCBOR(const std::string& json) {
   std::unique_ptr<StreamingParserHandler> encoder =
       NewCBOREncoder(&cbor, &status);
   ParseJSON(
-      &platform,
+      platform,
       span<uint8_t>(reinterpret_cast<const uint8_t*>(json.data()), json.size()),
       encoder.get());
   if (!status.ok()) {
