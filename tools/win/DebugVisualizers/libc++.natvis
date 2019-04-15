@@ -2,6 +2,28 @@
 <AutoVisualizer
   xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
 
+  <!-- libc++'s __compressed_pair is an internal type used pervasively for
+       doing the empty base class optimization.
+
+       __compressed_pair<U,V> derives from __compressed_pair_elem<U,0> and
+       __compressed_pair_elem<V,1>. __compressed_pair_elem<T> is specialized on
+       a 3rd template parameter:
+       * if T is empty and non-final the 3rd param is 1 and it derives from T
+       * else it has a member variable __value_ of type T
+  -->
+  <Type Name="std::__1::__compressed_pair_elem&lt;*,*,0&gt;">
+    <DisplayString>{__value_}</DisplayString>
+    <Expand>
+      <ExpandedItem>__value_</ExpandedItem>
+    </Expand>
+  </Type>
+  <Type Name="std::__1::__compressed_pair_elem&lt;*,*,1&gt;">
+    <DisplayString>{*($T1*)this}</DisplayString>
+    <Expand>
+      <ExpandedItem>*($T1*)this</ExpandedItem>
+    </Expand>
+  </Type>
+
   <!--libc++'s short string optimization:
       A basic_string is 3 size_t words long. In the "alternate string layout" that we use,
       they are: pointer to data, size, capacity.
@@ -77,6 +99,17 @@
         <ValuePointer Condition="!is_long()">(wchar_t*)this</ValuePointer>
       </ArrayItems>
     </Expand>
+  </Type>
+
+  <Type Name="std::__1::unique_ptr&lt;*&gt;">
+    <Intrinsic Name="value" Expression="*($T1**)&amp;__ptr_" />
+    <SmartPointer Usage="Minimal">value()</SmartPointer>
+      <DisplayString Condition="value() == 0">empty</DisplayString>
+      <DisplayString Condition="value() != 0">
+        unique_ptr {value()}</DisplayString>
+      <Expand>
+        <Item Condition="value() != 0" Name="[ptr]">value()</Item>
+      </Expand>
   </Type>
 
   <Type Name="std::__1::vector&lt;*&gt;">
