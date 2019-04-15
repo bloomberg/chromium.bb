@@ -15,6 +15,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
@@ -32,6 +33,7 @@
 #import "ios/chrome/browser/autofill/form_suggestion_controller.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/passwords/password_form_filler.h"
+#include "ios/chrome/browser/passwords/password_manager_features.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory_mediator.h"
 #include "ios/chrome/browser/web/chrome_web_client.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
@@ -85,6 +87,8 @@ class MockPasswordManagerClient
   ~MockPasswordManagerClient() override = default;
 
   MOCK_CONST_METHOD0(GetLogManager, password_manager::LogManager*(void));
+  MOCK_CONST_METHOD0(GetPasswordSyncState, password_manager::SyncState());
+  MOCK_CONST_METHOD0(IsIncognito, bool());
 
   PrefService* GetPrefs() const override { return prefs_.get(); }
 
@@ -1427,4 +1431,31 @@ TEST_F(PasswordControllerTest, CheckNoAsyncSuggestionsOnNoPasswordForms) {
   }));
 
   EXPECT_FALSE(completion_handler_success);
+}
+
+// Check that if the PasswordController is told (by the PasswordManagerClient)
+// that this is Incognito, it won't enable password generation.
+TEST_F(PasswordControllerTest, IncognitoPasswordGenerationDisabled) {
+  TearDown();
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kPasswordGeneration);
+  ChromeWebTest::SetUp();
+
+  password_manager::NewPasswordFormManager::
+      set_wait_for_server_predictions_for_filling(false);
+
+  auto client =
+      std::make_unique<NiceMock<MockPasswordManagerClient>>(store_.get());
+  weak_client_ = client.get();
+
+  EXPECT_CALL(*weak_client_, GetPasswordSyncState())
+      .WillRepeatedly(
+          Return(password_manager::SyncState::SYNCING_NORMAL_ENCRYPTION));
+  EXPECT_CALL(*weak_client_, IsIncognito()).WillRepeatedly(Return(true));
+
+  passwordController_ =
+      [[PasswordController alloc] initWithWebState:web_state()
+                                            client:std::move(client)];
+
+  EXPECT_FALSE([passwordController_ passwordGenerationHelper]);
 }
