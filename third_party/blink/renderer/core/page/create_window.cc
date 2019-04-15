@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
@@ -201,11 +202,10 @@ static void MaybeLogWindowOpen(LocalFrame& opener_frame) {
   }
 }
 
-Frame* CreateNewWindow(LocalFrame& opener_frame,
-                       FrameLoadRequest& request,
-                       bool& created) {
+Frame* CreateNewWindow(LocalFrame& opener_frame, FrameLoadRequest& request) {
   DCHECK(request.GetResourceRequest().RequestorOrigin() ||
          opener_frame.GetDocument()->Url().IsEmpty());
+  DCHECK_EQ(kNavigationPolicyCurrentTab, request.GetNavigationPolicy());
 
   // Exempting window.open() from this check here is necessary to support a
   // special policy that will be removed in Chrome 82.
@@ -235,6 +235,7 @@ Frame* CreateNewWindow(LocalFrame& opener_frame,
   }
 
   const WebWindowFeatures& features = request.GetWindowFeatures();
+  request.SetNavigationPolicy(NavigationPolicyForCreateWindow(features));
   probe::WindowOpen(opener_frame.GetDocument(), url, request.FrameName(),
                     features,
                     LocalFrame::HasTransientUserActivation(&opener_frame));
@@ -322,7 +323,6 @@ Frame* CreateNewWindow(LocalFrame& opener_frame,
   page->GetChromeClient().Show(request.GetNavigationPolicy());
 
   MaybeLogWindowOpen(opener_frame);
-  created = true;
   return &frame;
 }
 

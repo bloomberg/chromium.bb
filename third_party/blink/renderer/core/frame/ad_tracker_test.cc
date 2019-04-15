@@ -353,7 +353,7 @@ TEST_F(AdTrackerSimTest, InlineAdScriptRunningInNonAdContext) {
 
   // The new sibling frame should also be identified as an ad.
   EXPECT_TRUE(
-      To<LocalFrame>(GetDocument().GetFrame()->Tree().Find("ad_sibling"))
+      To<LocalFrame>(GetDocument().GetFrame()->Tree().ScopedChild("ad_sibling"))
           ->IsAdSubframe());
 }
 

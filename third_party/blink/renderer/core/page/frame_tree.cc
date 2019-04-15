@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_view.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/page/create_window.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
@@ -177,9 +178,38 @@ unsigned FrameTree::ChildCount() const {
   return count;
 }
 
-Frame* FrameTree::Find(const AtomicString& name) const {
+FrameTree::FindResult FrameTree::FindFrameForNavigation(
+    FrameLoadRequest& request) const {
   // Named frame lookup should always be relative to a local frame.
   DCHECK(IsA<LocalFrame>(this_frame_.Get()));
+
+  Frame* frame = FindFrameForNavigationInternal(request);
+  if (frame && !To<LocalFrame>(this_frame_.Get())->CanNavigate(*frame))
+    frame = nullptr;
+  return FindResult(frame, false);
+}
+
+FrameTree::FindResult FrameTree::FindOrCreateFrameForNavigation(
+    FrameLoadRequest& request) const {
+  // Named frame lookup should always be relative to a local frame.
+  DCHECK(IsA<LocalFrame>(this_frame_.Get()));
+  LocalFrame* current_frame = To<LocalFrame>(this_frame_.Get());
+
+  Frame* frame = FindFrameForNavigationInternal(request);
+  bool new_window = false;
+  if (!frame) {
+    frame = CreateNewWindow(*current_frame, request);
+    new_window = true;
+  } else if (!current_frame->CanNavigate(*frame)) {
+    frame = nullptr;
+  }
+
+  return FindResult(frame, new_window);
+}
+
+Frame* FrameTree::FindFrameForNavigationInternal(
+    FrameLoadRequest& request) const {
+  const AtomicString& name = request.FrameName();
 
   if (EqualIgnoringASCIICase(name, "_current")) {
     UseCounter::Count(
@@ -202,11 +232,20 @@ Frame* FrameTree::Find(const AtomicString& name) const {
   if (EqualIgnoringASCIICase(name, "_blank"))
     return nullptr;
 
+  // TODO(japhet): window-open-noopener.html?indexed asserts that the noopener
+  // feature prevents named-window reuse. I can't find anywhere in the spec that
+  // mentions this.
+  if (request.GetWindowFeatures().noopener)
+    return nullptr;
+
+  const KURL& url = request.GetResourceRequest().Url();
   // Search subtree starting with this frame first.
   for (Frame* frame = this_frame_; frame;
        frame = frame->Tree().TraverseNext(this_frame_)) {
-    if (frame->Tree().GetName() == name)
+    if (frame->Tree().GetName() == name &&
+        To<LocalFrame>(this_frame_.Get())->CanNavigate(*frame, url)) {
       return frame;
+    }
   }
 
   // Search the entire tree for this page next.
@@ -218,8 +257,10 @@ Frame* FrameTree::Find(const AtomicString& name) const {
 
   for (Frame* frame = page->MainFrame(); frame;
        frame = frame->Tree().TraverseNext()) {
-    if (frame->Tree().GetName() == name)
+    if (frame->Tree().GetName() == name &&
+        To<LocalFrame>(this_frame_.Get())->CanNavigate(*frame, url)) {
       return frame;
+    }
   }
 
   // Search the entire tree of each of the other pages in this namespace.
@@ -228,8 +269,10 @@ Frame* FrameTree::Find(const AtomicString& name) const {
       continue;
     for (Frame* frame = other_page->MainFrame(); frame;
          frame = frame->Tree().TraverseNext()) {
-      if (frame->Tree().GetName() == name)
+      if (frame->Tree().GetName() == name &&
+          To<LocalFrame>(this_frame_.Get())->CanNavigate(*frame, url)) {
         return frame;
+      }
     }
   }
 
