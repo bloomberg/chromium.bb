@@ -5,14 +5,13 @@ import {
   GPUShaderModule,
 } from "../framework/gpu/interface.js";
 import { CaseRecorder, Fixture, FixtureCreate, IParamsAny } from "../framework/index.js";
-import Shaderc from "../../third_party/shaderc/shaderc.js"
+import * as Shaderc from '@webgpu/shaderc';
 
 interface GPUTestOpts {
   // TODO: update framework/gpu/ to match sketch again
   //device: GPUDevice;
   device: any;
-  // TODO: typeify Shaderc
-  shaderc: any;
+  shaderc: Shaderc.Shaderc;
 }
 
 export function makeGPUTestCreate<FC extends typeof GPUTest, F extends GPUTest>(fixture: FC): FixtureCreate<F> {
@@ -20,7 +19,7 @@ export function makeGPUTestCreate<FC extends typeof GPUTest, F extends GPUTest>(
     const gpu = await getGPU();
     const adapter = await gpu.requestAdapter();
     const device = await adapter.requestDevice({});
-    const shaderc = await Shaderc;
+    const shaderc = await Shaderc.instantiate();
     return new fixture(log, params, {device, shaderc}) as F;
   };
 }
