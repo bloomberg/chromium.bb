@@ -550,15 +550,6 @@ void HttpStreamFactory::Job::RunLoop(int result) {
   // while doing anything other than waiting to establish a connection.
   spdy_session_request_.reset();
 
-  if (!using_quic_) {
-    // Resume all throttled Jobs with the same SpdySessionKey if there are any,
-    // now that this job is done.
-    //
-    // TODO(mmenke): The |spdy_session_request_| call above already does this,
-    // except for preconnects. Make it resume preconnects, too.
-    session_->spdy_session_pool()->ResumePendingRequests(spdy_session_key_);
-  }
-
   if (job_type_ == PRECONNECT) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
@@ -763,15 +754,12 @@ int HttpStreamFactory::Job::DoEvaluateThrottle() {
     return OK;
 
   DCHECK(!spdy_session_request_);
-  if (job_type_ != PRECONNECT) {
-    // Start watching for an available H2 connection. Note that this does not
-    // mean that HTTP/2 is necessarily supported for this SpdySessionKey, since
-    // we may need to wait for ALPN to complete before knowing if HTTP/2 is
-    // available.
-    spdy_session_request_ =
-        session_->spdy_session_pool()->CreateRequestForSpdySession(
-            spdy_session_key_, this);
-  }
+  // Start watching for an available H2 connection. Note that this does not mean
+  // that HTTP/2 is necessarily supported for this SpdySessionKey, since/ we may
+  // need to wait for ALPN to complete before knowing if HTTP/2 is available.
+  spdy_session_request_ =
+      session_->spdy_session_pool()->CreateRequestForSpdySession(
+          spdy_session_key_, this);
 
   // Throttle connect to an HTTP/2 supported server, if there are pending
   // requests with the same SpdySessionKey.
@@ -1296,6 +1284,12 @@ void HttpStreamFactory::Job::OnSpdySessionAvailable(
   // Ignore calls to ResumeInitConnection() from either the timer or the
   // SpdySessionPool.
   init_connection_already_resumed_ = true;
+
+  // If this is a preconnect, nothing left do to.
+  if (job_type_ == PRECONNECT) {
+    OnPreconnectsComplete();
+    return;
+  }
 
   using_spdy_ = true;
   existing_spdy_session_ = spdy_session;
