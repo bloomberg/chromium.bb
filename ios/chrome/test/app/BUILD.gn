@@ -45,6 +45,7 @@ source_set("test_support") {
     "//components/metrics",
     "//components/prefs",
     "//components/signin/core/browser",
+    "//components/sync:device_info",
     "//components/sync:test_support_fake_server",
     "//google_apis",
     "//ios/chrome/app:app_internal",
