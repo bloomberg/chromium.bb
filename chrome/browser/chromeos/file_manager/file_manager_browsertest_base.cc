@@ -38,6 +38,8 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/file_manager_test_util.h"
+#include "chrome/browser/chromeos/file_manager/file_tasks_notifier.h"
+#include "chrome/browser/chromeos/file_manager/file_tasks_observer.h"
 #include "chrome/browser/chromeos/file_manager/mount_test_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
@@ -91,6 +93,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "storage/browser/fileapi/file_system_context.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event.h"
@@ -577,7 +580,66 @@ void UnblockFileTaskRunner() {
   GetLockForBlockingDefaultFileTaskRunner().Release();
 }
 
+struct ExpectFileTasksMessage {
+  static bool ConvertJSONValue(const base::DictionaryValue& value,
+                               ExpectFileTasksMessage* message) {
+    base::JSONValueConverter<ExpectFileTasksMessage> converter;
+    return converter.Convert(value, message);
+  }
+
+  static void RegisterJSONConverter(
+      base::JSONValueConverter<ExpectFileTasksMessage>* converter) {
+    converter->RegisterCustomField(
+        "openType", &ExpectFileTasksMessage::open_type, &MapStringToOpenType);
+    converter->RegisterRepeatedString("fileNames",
+                                      &ExpectFileTasksMessage::file_names);
+  }
+
+  static bool MapStringToOpenType(
+      base::StringPiece value,
+      file_tasks::FileTasksObserver::OpenType* open_type) {
+    using OpenType = file_tasks::FileTasksObserver::OpenType;
+    if (value == "launch") {
+      *open_type = OpenType::kLaunch;
+    } else if (value == "open") {
+      *open_type = OpenType::kOpen;
+    } else if (value == "saveAs") {
+      *open_type = OpenType::kSaveAs;
+    } else if (value == "download") {
+      *open_type = OpenType::kDownload;
+    } else {
+      return false;
+    }
+    return true;
+  }
+
+  std::vector<std::unique_ptr<std::string>> file_names;
+  file_tasks::FileTasksObserver::OpenType open_type;
+};
+
 }  // anonymous namespace
+
+class FileManagerBrowserTestBase::MockFileTasksObserver
+    : public file_tasks::FileTasksObserver {
+ public:
+  explicit MockFileTasksObserver(Profile* profile) : observer_(this) {
+    observer_.Add(file_tasks::FileTasksNotifier::GetForProfile(profile));
+  }
+
+  MOCK_METHOD2(OnFilesOpenedImpl,
+               void(const std::string& path, OpenType open_type));
+
+  void OnFilesOpened(const std::vector<FileOpenEvent>& opens) {
+    ASSERT_TRUE(!opens.empty());
+    for (auto& open : opens) {
+      OnFilesOpenedImpl(open.path.value(), open.open_type);
+    }
+  }
+
+ private:
+  ScopedObserver<file_tasks::FileTasksNotifier, file_tasks::FileTasksObserver>
+      observer_;
+};
 
 // LocalTestVolume: test volume for a local drive.
 class LocalTestVolume : public TestVolume {
@@ -1591,6 +1653,14 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
         android_files_volume_->Mount(profile());
       }
     }
+
+    if (!IsIncognitoModeTest()) {
+      file_tasks_observer_ =
+          std::make_unique<testing::StrictMock<MockFileTasksObserver>>(
+              profile());
+    } else {
+      EXPECT_FALSE(file_tasks::FileTasksNotifier::GetForProfile(profile()));
+    }
   }
 
   display_service_ =
@@ -2160,6 +2230,21 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
 
   if (name == "unblockFileTaskRunner") {
     UnblockFileTaskRunner();
+    return;
+  }
+
+  if (name == "expectFileTask") {
+    ExpectFileTasksMessage message;
+    ASSERT_TRUE(ExpectFileTasksMessage::ConvertJSONValue(value, &message));
+    // FileTasksNotifier is disabled in incognito or guest profiles.
+    if (!file_tasks_observer_) {
+      return;
+    }
+    for (const auto& file_name : message.file_names) {
+      EXPECT_CALL(
+          *file_tasks_observer_,
+          OnFilesOpenedImpl(testing::HasSubstr(*file_name), message.open_type));
+    }
     return;
   }
 

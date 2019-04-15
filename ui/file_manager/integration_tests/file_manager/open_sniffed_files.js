@@ -14,6 +14,12 @@
    * @param {string} path Directory path (Downloads or Drive).
    */
   async function pdfOpen(path) {
+    await sendTestMessage({
+      name: 'expectFileTask',
+      fileNames: [ENTRIES.imgPdf.targetPath],
+      openType: 'launch'
+    });
+
     // Open Files.App on |path|, add imgpdf to Downloads and Drive.
     const appId =
         await setupAndWaitUntilReady(path, [ENTRIES.imgPdf], [ENTRIES.imgPdf]);

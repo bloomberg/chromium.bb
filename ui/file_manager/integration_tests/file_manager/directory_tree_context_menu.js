@@ -647,6 +647,12 @@
    * Tests context menu for a Zip root and a folder inside it.
    */
   testcase.dirContextMenuZip = async () => {
+    await sendTestMessage({
+      name: 'expectFileTask',
+      fileNames: [ENTRIES.zipArchive.targetPath],
+      openType: 'launch'
+    });
+
     const zipMenus = [
       ['#unmount', true],
     ];
