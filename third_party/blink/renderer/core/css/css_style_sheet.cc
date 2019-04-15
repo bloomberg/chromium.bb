@@ -413,11 +413,16 @@ void CSSStyleSheet::deleteRule(unsigned index,
          child_rule_cssom_wrappers_.size() == contents_->RuleCount());
 
   if (index >= length()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kIndexSizeError,
-        "The index provided (" + String::Number(index) +
-            ") is larger than the maximum index (" +
-            String::Number(length() - 1) + ").");
+    if (length()) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kIndexSizeError,
+          "The index provided (" + String::Number(index) +
+              ") is larger than the maximum index (" +
+              String::Number(length() - 1) + ").");
+    } else {
+      exception_state.ThrowDOMException(DOMExceptionCode::kIndexSizeError,
+                                        "Style sheet is empty (length 0).");
+    }
     return;
   }
   RuleMutationScope mutation_scope(this);
