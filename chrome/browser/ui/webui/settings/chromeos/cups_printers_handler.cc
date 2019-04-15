@@ -394,22 +394,16 @@ void CupsPrintersHandler::HandleUpdateCupsPrinter(const base::ListValue* args) {
   if (!profile_->GetPrefs()->GetBoolean(prefs::kUserNativePrintersAllowed)) {
     PRINTER_LOG(DEBUG) << "HandleUpdateCupsPrinter() called when "
                           "kUserNativePrintersAllowed is set to false";
-    // Used to log UMA metrics.
-    OnAddedOrEditedPrinterCommon(
-        printer, PrinterSetupResult::kNativePrintersNotAllowed, false);
+    OnAddedOrEditedPrinterCommon(printer,
+                                 PrinterSetupResult::kNativePrintersNotAllowed,
+                                 false /* is_automatic */);
     // Used to fire the web UI listener.
     OnAddOrEditPrinterError(PrinterSetupResult::kNativePrintersNotAllowed);
     return;
   }
 
-  PRINTER_LOG(USER) << "Comitting printer update";
-  printers_manager_->UpdateConfiguredPrinter(printer);
-
-  // TODO(xdai): Replace "on-add-or-edit-cups-printer" callback with Promise
-  // resolve function.
-  FireWebUIListener("on-add-or-edit-cups-printer",
-                    base::Value(PrinterSetupResult::kEditSuccess),
-                    base::Value(printer_name));
+  OnAddedOrEditedSpecifiedPrinter(printer, true /* is_printer_edit */,
+                                  PrinterSetupResult::kEditSuccess);
 }
 
 void CupsPrintersHandler::HandleRemoveCupsPrinter(const base::ListValue* args) {
