@@ -1749,6 +1749,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-tab-engagement-reporting",
+    "owners": [ "memex-team@google.com" ],
+    "expiry_milestone": 82 
+  },
+  {
     "name": "enable-text-fragment-anchor",
     "owners": [ "bokan", "input-dev" ],
     "expiry_milestone": 77

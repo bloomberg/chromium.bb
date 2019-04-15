@@ -1134,6 +1134,9 @@ extern const char kSyncUSSAutofillWalletDataDescription[];
 extern const char kSyncUSSAutofillWalletMetadataName[];
 extern const char kSyncUSSAutofillWalletMetadataDescription[];
 
+extern const char kTabEngagementReportingName[];
+extern const char kTabEngagementReportingDescription[];
+
 extern const char kTabGridLayoutAndroidName[];
 extern const char kTabGridLayoutAndroidDescription[];
 
