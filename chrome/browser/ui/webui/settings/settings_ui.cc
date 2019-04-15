@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/settings/md_settings_ui.h"
+#include "chrome/browser/ui/webui/settings/settings_ui.h"
 
 #include <stddef.h>
 
@@ -31,7 +31,6 @@
 #include "chrome/browser/ui/webui/settings/downloads_handler.h"
 #include "chrome/browser/ui/webui/settings/extension_control_handler.h"
 #include "chrome/browser/ui/webui/settings/font_handler.h"
-#include "chrome/browser/ui/webui/settings/md_settings_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/metrics_reporting_handler.h"
 #include "chrome/browser/ui/webui/settings/on_startup_handler.h"
 #include "chrome/browser/ui/webui/settings/people_handler.h"
@@ -42,6 +41,7 @@
 #include "chrome/browser/ui/webui/settings/settings_clear_browsing_data_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_cookies_view_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_import_data_handler.h"
+#include "chrome/browser/ui/webui/settings/settings_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/settings_media_devices_selection_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_security_key_handler.h"
@@ -145,7 +145,7 @@
 namespace settings {
 
 // static
-void MdSettingsUI::RegisterProfilePrefs(
+void SettingsUI::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kImportDialogAutofillFormData, true);
   registry->RegisterBooleanPref(prefs::kImportDialogBookmarks, true);
@@ -154,7 +154,7 @@ void MdSettingsUI::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kImportDialogSearchEngine, true);
 }
 
-MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
+SettingsUI::SettingsUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui),
       WebContentsObserver(web_ui->GetWebContents()) {
 #if BUILDFLAG(OPTIMIZE_WEBUI)
@@ -219,8 +219,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
 
     AddSettingsPageUIHandler(
         std::make_unique<chromeos::settings::AccountManagerUIHandler>(
-            account_manager,
-            IdentityManagerFactory::GetForProfile(profile)));
+            account_manager, IdentityManagerFactory::GetForProfile(profile)));
     html_source->AddBoolean(
         "secondaryGoogleAccountSigninAllowed",
         profile->GetPrefs()->GetBoolean(
@@ -316,16 +315,16 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   const bool use_polymer_2 =
       base::FeatureList::IsEnabled(features::kWebUIPolymer2);
-  html_source->AddResourcePath("crisper.js", IDR_MD_SETTINGS_CRISPER_JS);
+  html_source->AddResourcePath("crisper.js", IDR_SETTINGS_CRISPER_JS);
   html_source->AddResourcePath("lazy_load.crisper.js",
-                               IDR_MD_SETTINGS_LAZY_LOAD_CRISPER_JS);
-  html_source->AddResourcePath(
-      "lazy_load.html", use_polymer_2
-                            ? IDR_MD_SETTINGS_LAZY_LOAD_VULCANIZED_P2_HTML
-                            : IDR_MD_SETTINGS_LAZY_LOAD_VULCANIZED_HTML);
+                               IDR_SETTINGS_LAZY_LOAD_CRISPER_JS);
+  html_source->AddResourcePath("lazy_load.html",
+                               use_polymer_2
+                                   ? IDR_SETTINGS_LAZY_LOAD_VULCANIZED_P2_HTML
+                                   : IDR_SETTINGS_LAZY_LOAD_VULCANIZED_HTML);
   html_source->SetDefaultResource(use_polymer_2
-                                      ? IDR_MD_SETTINGS_VULCANIZED_P2_HTML
-                                      : IDR_MD_SETTINGS_VULCANIZED_HTML);
+                                      ? IDR_SETTINGS_VULCANIZED_P2_HTML
+                                      : IDR_SETTINGS_VULCANIZED_HTML);
   html_source->UseGzip(base::BindRepeating(
       [](const std::vector<std::string>& excluded_paths,
          const std::string& path) {
@@ -333,7 +332,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
       },
       std::move(exclude_from_gzip)));
 #if defined(OS_CHROMEOS)
-  html_source->AddResourcePath("manifest.json", IDR_MD_SETTINGS_MANIFEST);
+  html_source->AddResourcePath("manifest.json", IDR_SETTINGS_MANIFEST);
 #endif  // defined (OS_CHROMEOS)
 #else
   // Add all settings resources.
@@ -353,15 +352,15 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
                                 html_source);
 }
 
-MdSettingsUI::~MdSettingsUI() {}
+SettingsUI::~SettingsUI() {}
 
-void MdSettingsUI::AddSettingsPageUIHandler(
+void SettingsUI::AddSettingsPageUIHandler(
     std::unique_ptr<content::WebUIMessageHandler> handler) {
   DCHECK(handler);
   web_ui()->AddMessageHandler(std::move(handler));
 }
 
-void MdSettingsUI::DidStartNavigation(
+void SettingsUI::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   if (navigation_handle->IsSameDocument())
     return;
@@ -369,22 +368,22 @@ void MdSettingsUI::DidStartNavigation(
   load_start_time_ = base::Time::Now();
 }
 
-void MdSettingsUI::DocumentLoadedInFrame(
+void SettingsUI::DocumentLoadedInFrame(
     content::RenderFrameHost* render_frame_host) {
   UMA_HISTOGRAM_TIMES("Settings.LoadDocumentTime.MD",
                       base::Time::Now() - load_start_time_);
 }
 
-void MdSettingsUI::DocumentOnLoadCompletedInMainFrame() {
+void SettingsUI::DocumentOnLoadCompletedInMainFrame() {
   UMA_HISTOGRAM_TIMES("Settings.LoadCompletedTime.MD",
                       base::Time::Now() - load_start_time_);
 }
 
 #if defined(OS_CHROMEOS)
 // static
-void MdSettingsUI::InitOSWebUIHandlers(Profile* profile,
-                                       content::WebUI* web_ui,
-                                       content::WebUIDataSource* html_source) {
+void SettingsUI::InitOSWebUIHandlers(Profile* profile,
+                                     content::WebUI* web_ui,
+                                     content::WebUIDataSource* html_source) {
   web_ui->AddMessageHandler(
       std::make_unique<chromeos::settings::AccessibilityHandler>(web_ui));
   web_ui->AddMessageHandler(

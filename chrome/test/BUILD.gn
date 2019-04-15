@@ -1062,7 +1062,7 @@ test("browser_tests") {
       "../browser/ui/webui/prefs_internals_browsertest.cc",
       "../browser/ui/webui/profile_helper_browsertest.cc",
       "../browser/ui/webui/set_as_default_browser_ui_browsertest_win.cc",
-      "../browser/ui/webui/settings/md_settings_ui_browsertest.cc",
+      "../browser/ui/webui/settings/settings_ui_browsertest.cc",
       "../browser/ui/webui/signin/user_manager_ui_browsertest.cc",
       "../browser/ui/webui/webui_browsertest.cc",
       "../browser/ui/webui/webui_webview_browsertest.cc",

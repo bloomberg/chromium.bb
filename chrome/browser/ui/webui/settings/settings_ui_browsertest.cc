@@ -15,11 +15,11 @@
 #include "content/public/common/url_constants.h"
 #include "url/gurl.h"
 
-typedef InProcessBrowserTest MdSettingsUITest;
+typedef InProcessBrowserTest SettingsUITest;
 
 using ui_test_utils::NavigateToURL;
 
-IN_PROC_BROWSER_TEST_F(MdSettingsUITest, ViewSourceDoesntCrash) {
+IN_PROC_BROWSER_TEST_F(SettingsUITest, ViewSourceDoesntCrash) {
   NavigateToURL(browser(),
                 GURL(content::kViewSourceScheme + std::string(":") +
                      chrome::kChromeUISettingsURL + std::string("strings.js")));
@@ -27,7 +27,7 @@ IN_PROC_BROWSER_TEST_F(MdSettingsUITest, ViewSourceDoesntCrash) {
 
 // Catch lifetime issues in message handlers. There was previously a problem
 // with PrefMember calling Init again after Destroy.
-IN_PROC_BROWSER_TEST_F(MdSettingsUITest, ToggleJavaScript) {
+IN_PROC_BROWSER_TEST_F(SettingsUITest, ToggleJavaScript) {
   NavigateToURL(browser(), GURL(chrome::kChromeUISettingsURL));
 
   const auto& handlers = *browser()

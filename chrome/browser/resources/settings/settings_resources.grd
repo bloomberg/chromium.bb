@@ -34,7 +34,7 @@
         <structure name="IDR_SETTINGS_TTS_SUBPAGE_HTML"
                    file="a11y_page/tts_subpage.html"
                    type="chrome_html" />
-        <structure name="IDR_MD_SETTINGS_MANIFEST"
+        <structure name="IDR_SETTINGS_MANIFEST"
                    file="manifest.json"
                    type="chrome_html" />
 
