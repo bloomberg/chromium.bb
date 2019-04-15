@@ -356,12 +356,14 @@ void TestChangeTracker::OnEmbeddedAppDisconnected(Id window_id) {
 void TestChangeTracker::OnWindowBoundsChanged(
     Id window_id,
     const gfx::Rect& new_bounds,
+    ui::WindowShowState new_state,
     const base::Optional<viz::LocalSurfaceIdAllocation>&
         local_surface_id_allocation) {
   Change change;
   change.type = CHANGE_TYPE_NODE_BOUNDS_CHANGED;
   change.window_id = window_id;
   change.bounds = new_bounds;
+  change.state = new_state;
   change.local_surface_id_allocation = local_surface_id_allocation;
   AddChange(change);
 }

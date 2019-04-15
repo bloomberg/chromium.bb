@@ -85,12 +85,14 @@ InFlightBoundsChange::InFlightBoundsChange(
     WindowTreeClient* window_tree_client,
     WindowMus* window,
     const gfx::Rect& revert_bounds,
+    ui::WindowShowState revert_show_state,
     bool from_server,
     const base::Optional<viz::LocalSurfaceIdAllocation>&
         revert_local_surface_id_allocation)
     : InFlightChange(window, ChangeType::BOUNDS),
       window_tree_client_(window_tree_client),
       revert_bounds_(revert_bounds),
+      revert_show_state_(revert_show_state),
       from_server_(from_server),
       revert_local_surface_id_allocation_(revert_local_surface_id_allocation) {
   // Should always be created with a window.
@@ -100,17 +102,17 @@ InFlightBoundsChange::InFlightBoundsChange(
 InFlightBoundsChange::~InFlightBoundsChange() {}
 
 void InFlightBoundsChange::SetRevertValueFrom(const InFlightChange& change) {
-  from_server_ = static_cast<const InFlightBoundsChange&>(change).from_server_;
-  revert_bounds_ =
-      static_cast<const InFlightBoundsChange&>(change).revert_bounds_;
+  const auto& from = static_cast<const InFlightBoundsChange&>(change);
+  from_server_ = from.from_server_;
+  revert_bounds_ = from.revert_bounds_;
+  revert_show_state_ = from.revert_show_state_;
   revert_local_surface_id_allocation_ =
-      static_cast<const InFlightBoundsChange&>(change)
-          .revert_local_surface_id_allocation_;
+      from.revert_local_surface_id_allocation_;
 }
 
 void InFlightBoundsChange::Revert() {
   window_tree_client_->SetWindowBoundsFromServer(
-      window(), revert_bounds_, from_server_,
+      window(), revert_bounds_, revert_show_state_, from_server_,
       revert_local_surface_id_allocation_);
 }
 

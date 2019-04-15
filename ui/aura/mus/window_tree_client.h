@@ -337,6 +337,7 @@ class AURA_EXPORT WindowTreeClient
   void SetWindowBoundsFromServer(
       WindowMus* window,
       const gfx::Rect& revert_bounds,
+      ui::WindowShowState state,
       bool from_server,
       const base::Optional<viz::LocalSurfaceIdAllocation>&
           local_surface_id_allocation);
@@ -415,6 +416,7 @@ class AURA_EXPORT WindowTreeClient
   void OnWindowBoundsChanged(
       ws::Id window_id,
       const gfx::Rect& new_bounds,
+      ui::WindowShowState state,
       const base::Optional<viz::LocalSurfaceIdAllocation>&
           local_surface_id_allocation) override;
   void OnWindowTransformChanged(ws::Id window_id,

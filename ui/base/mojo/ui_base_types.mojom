@@ -4,6 +4,16 @@
 
 module ui.mojom;
 
+// Window "show" state.
+enum WindowShowState {
+  kDefault,
+  kNormal,
+  kMinimized,
+  kMaximized,
+  kInactive,
+  kFullscreen,
+};
+
 // Dialog button identifiers used to specify which buttons to show the user.
 enum DialogButton {
   NONE,

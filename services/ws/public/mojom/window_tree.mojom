@@ -519,11 +519,14 @@ interface WindowTreeClient {
       bool parent_drawn,
       viz.mojom.LocalSurfaceIdAllocation local_surface_id_allocation);
 
-  // Invoked when a window's bounds have changed. |local_surface_id_allocation|
-  // is only supplied for roots.
+  // Invoked when a window's bounds have changed. |state| is supplied for roots,
+  // and SHOW_STATE_DEFAULT for non-roots. It allows the client to
+  // simultaneously update both bounds and show state, e.g. after a maximize
+  // operation. |local_surface_id_allocation| is only supplied for roots.
   OnWindowBoundsChanged(
       uint64 window,
       gfx.mojom.Rect new_bounds,
+      ui.mojom.WindowShowState state,
       viz.mojom.LocalSurfaceIdAllocation? local_surface_id_allocation);
 
   OnWindowTransformChanged(uint64 window,

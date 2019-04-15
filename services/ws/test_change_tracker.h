@@ -90,6 +90,7 @@ struct Change {
   Id window_id2 = 0;
   Id window_id3 = 0;
   gfx::Rect bounds;
+  ui::WindowShowState state;
   viz::FrameSinkId frame_sink_id;
   base::Optional<viz::LocalSurfaceIdAllocation> local_surface_id_allocation;
   int32_t event_action = 0;
@@ -190,6 +191,7 @@ class TestChangeTracker {
   void OnWindowBoundsChanged(
       Id window_id,
       const gfx::Rect& new_bounds,
+      ui::WindowShowState state,
       const base::Optional<viz::LocalSurfaceIdAllocation>&
           local_surface_id_allocation);
   void OnWindowTransformChanged(Id window_id);

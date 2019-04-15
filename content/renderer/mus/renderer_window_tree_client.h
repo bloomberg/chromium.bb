@@ -138,6 +138,7 @@ class RendererWindowTreeClient : public ws::mojom::WindowTreeClient,
   void OnWindowBoundsChanged(
       ws::Id window_id,
       const gfx::Rect& new_bounds,
+      ui::WindowShowState state,
       const base::Optional<viz::LocalSurfaceIdAllocation>&
           local_surface_id_allocation) override;
   void OnWindowTransformChanged(ws::Id window_id,

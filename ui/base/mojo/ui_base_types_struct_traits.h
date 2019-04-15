@@ -5,9 +5,14 @@
 #ifndef UI_BASE_MOJO_UI_BASE_TYPES_STRUCT_TRAITS_H_
 #define UI_BASE_MOJO_UI_BASE_TYPES_STRUCT_TRAITS_H_
 
+#if defined(OS_WIN)
+#include <windows.h>
+#else
+#include "ui/base/hit_test.h"
+#endif
+
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
-#include "ui/base/hit_test.h"
 #include "ui/base/mojo/ui_base_types.mojom.h"
 #include "ui/base/ui_base_types.h"
 
@@ -243,6 +248,57 @@ struct EnumTraits<ui::mojom::HitTest, int> {
         *out = HTNOWHERE;
         return false;
     }
+  }
+};
+
+template <>
+struct EnumTraits<ui::mojom::WindowShowState, ui::WindowShowState> {
+  static ui::mojom::WindowShowState ToMojom(ui::WindowShowState modal_type) {
+    switch (modal_type) {
+      case ui::SHOW_STATE_DEFAULT:
+        return ui::mojom::WindowShowState::kDefault;
+      case ui::SHOW_STATE_NORMAL:
+        return ui::mojom::WindowShowState::kNormal;
+      case ui::SHOW_STATE_MINIMIZED:
+        return ui::mojom::WindowShowState::kMinimized;
+      case ui::SHOW_STATE_MAXIMIZED:
+        return ui::mojom::WindowShowState::kMaximized;
+      case ui::SHOW_STATE_INACTIVE:
+        return ui::mojom::WindowShowState::kInactive;
+      case ui::SHOW_STATE_FULLSCREEN:
+        return ui::mojom::WindowShowState::kFullscreen;
+      case ui::SHOW_STATE_END:
+        NOTREACHED();
+        break;
+    }
+    NOTREACHED();
+    return ui::mojom::WindowShowState::kDefault;
+  }
+
+  static bool FromMojom(ui::mojom::WindowShowState modal_type,
+                        ui::WindowShowState* out) {
+    switch (modal_type) {
+      case ui::mojom::WindowShowState::kDefault:
+        *out = ui::SHOW_STATE_DEFAULT;
+        return true;
+      case ui::mojom::WindowShowState::kNormal:
+        *out = ui::SHOW_STATE_NORMAL;
+        return true;
+      case ui::mojom::WindowShowState::kMinimized:
+        *out = ui::SHOW_STATE_MINIMIZED;
+        return true;
+      case ui::mojom::WindowShowState::kMaximized:
+        *out = ui::SHOW_STATE_MAXIMIZED;
+        return true;
+      case ui::mojom::WindowShowState::kInactive:
+        *out = ui::SHOW_STATE_INACTIVE;
+        return true;
+      case ui::mojom::WindowShowState::kFullscreen:
+        *out = ui::SHOW_STATE_FULLSCREEN;
+        return true;
+    }
+    NOTREACHED();
+    return false;
   }
 };
 
