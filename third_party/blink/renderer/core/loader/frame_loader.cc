@@ -797,22 +797,32 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   if (!PrepareRequestForThisFrame(request))
     return;
 
-  Frame* target_frame = frame_->FindFrameForNavigation(
-      AtomicString(request.FrameName()), *frame_, url);
+  SetReferrerForFrameRequest(request);
 
-  // Downloads and navigations which specifically target a *new* frame
-  // (e.g. because of a ctrl-click) should ignore the target.
-  bool should_navigate_target_frame =
-      request.GetNavigationPolicy() == kNavigationPolicyCurrentTab;
+  // A GetNavigationPolicy() value other than kNavigationPolicyCurrentTab at
+  // this point indicates that a user event modified the navigation policy
+  // (e.g., a ctrl-click). Let the user's action override any target attribute.
+  if (request.GetNavigationPolicy() == kNavigationPolicyCurrentTab) {
+    Frame* target_frame = frame_->FindFrameForNavigation(
+        AtomicString(request.FrameName()), *frame_, url);
+    if (!target_frame) {
+      request.SetNavigationPolicy(kNavigationPolicyNewForegroundTab);
+      bool created = false;
+      target_frame = CreateNewWindow(*frame_.Get(), request, created);
+      request.SetNavigationPolicy(kNavigationPolicyCurrentTab);
+      if (!target_frame)
+        return;
+    }
 
-  if (target_frame && target_frame != frame_ && should_navigate_target_frame) {
-    bool was_in_same_page = target_frame->GetPage() == frame_->GetPage();
-    request.SetFrameName("_self");
-    target_frame->Navigate(request, frame_load_type);
-    Page* page = target_frame->GetPage();
-    if (!was_in_same_page && page)
-      page->GetChromeClient().Focus(frame_);
-    return;
+    if (target_frame != frame_) {
+      bool was_in_same_page = target_frame->GetPage() == frame_->GetPage();
+      request.SetFrameName("_self");
+      target_frame->Navigate(request, frame_load_type);
+      Page* page = target_frame->GetPage();
+      if (!was_in_same_page && page)
+        page->GetChromeClient().Focus(frame_);
+      return;
+    }
   }
 
   // Block renderer-initiated loads of data: and filesystem: URLs in the top
@@ -835,16 +845,6 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
         "Not allowed to navigate top frame to " + url.Protocol() +
             " URL: " + url.ElidedString()));
     return;
-  }
-
-  SetReferrerForFrameRequest(request);
-
-  if (!target_frame && !request.FrameName().IsEmpty() &&
-      should_navigate_target_frame) {
-    request.SetFrameType(network::mojom::RequestContextFrameType::kAuxiliary);
-    request.SetNavigationPolicy(kNavigationPolicyNewForegroundTab);
-    CreateWindowForRequest(request, *frame_);
-    return;  // Navigation will be handled by the new frame/window.
   }
 
   // TODO(dgozman): merge page dismissal check and FrameNavigationDisabler.

@@ -3542,6 +3542,70 @@ TEST_F(WebViewTest, FocusExistingFrameOnNavigate) {
   web_view_helper.Reset();  // Remove dependency on locally scoped client.
 }
 
+class ViewReusingWebViewClient : public frame_test_helpers::TestWebViewClient {
+ public:
+  ViewReusingWebViewClient() = default;
+
+  // WebViewClient methods
+  WebView* CreateView(WebLocalFrame*,
+                      const WebURLRequest&,
+                      const WebWindowFeatures&,
+                      const WebString& name,
+                      WebNavigationPolicy,
+                      bool,
+                      WebSandboxFlags,
+                      const FeaturePolicy::FeatureState&,
+                      const SessionStorageNamespaceId&) override {
+    return web_view_;
+  }
+
+  void SetWebView(WebView* view) { web_view_ = view; }
+
+ private:
+  WebView* web_view_ = nullptr;
+};
+
+class NavigationPolicyWebFrameClient
+    : public frame_test_helpers::TestWebFrameClient {
+ public:
+  NavigationPolicyWebFrameClient() = default;
+
+  void BeginNavigation(std::unique_ptr<WebNavigationInfo> info) override {
+    begin_navigation_called_ = true;
+    last_navigation_policy_ = info->navigation_policy;
+  }
+
+  bool BeginNavigationWasCalled() const { return begin_navigation_called_; }
+  WebNavigationPolicy LastNavigationPolicy() const {
+    return last_navigation_policy_;
+  }
+
+ private:
+  WebNavigationPolicy last_navigation_policy_ = kWebNavigationPolicyCurrentTab;
+  bool begin_navigation_called_ = false;
+};
+
+TEST_F(WebViewTest,
+       ReuseExistingWindowOnCreateViewUsesCorrectNavigationPolicy) {
+  ViewReusingWebViewClient view_client;
+  NavigationPolicyWebFrameClient frame_client;
+  frame_test_helpers::WebViewHelper web_view_helper;
+  WebViewImpl* web_view_impl =
+      web_view_helper.Initialize(&frame_client, &view_client);
+  view_client.SetWebView(web_view_impl);
+  LocalFrame* frame = To<LocalFrame>(web_view_impl->GetPage()->MainFrame());
+
+  // Request a new window, but the WebViewClient will decline to and instead
+  // return the current window.
+  WebURLRequest web_url_request(KURL("about:blank"));
+  FrameLoadRequest request(frame->GetDocument(),
+                           web_url_request.ToResourceRequest(), "_blank");
+  frame->Loader().StartNavigation(request);
+  ASSERT_TRUE(frame_client.BeginNavigationWasCalled());
+  EXPECT_EQ(kWebNavigationPolicyCurrentTab,
+            frame_client.LastNavigationPolicy());
+}
+
 TEST_F(WebViewTest, DispatchesFocusOutFocusInOnViewToggleFocus) {
   RegisterMockedHttpURLLoad("focusout_focusin_events.html");
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
