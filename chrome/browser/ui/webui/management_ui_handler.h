@@ -100,6 +100,8 @@ class ManagementUIHandler : public content::WebUIMessageHandler {
 
   void SetManagedForTesting(bool managed) { managed_ = managed; }
 
+  static std::string GetAccountDomain(Profile* profile);
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   void OnJavascriptAllowed() override;
   void OnJavascriptDisallowed() override;
