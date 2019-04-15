@@ -1514,8 +1514,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // Create after native initialization so subclasses that override this method have a chance
         // to setup.
         mPageViewTimer = createPageViewTimer();
-        if (shouldInitializeBottomSheet()
-                && FeatureUtilities.areContextualSuggestionsEnabled(this)) {
+        if (mBottomSheet == null && shouldInitializeBottomSheet()) {
+            // TODO(yusufo): Unify initialization.
             initializeBottomSheet(
                     !ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON));
             getComponent().resolveContextualSuggestionsCoordinator();
