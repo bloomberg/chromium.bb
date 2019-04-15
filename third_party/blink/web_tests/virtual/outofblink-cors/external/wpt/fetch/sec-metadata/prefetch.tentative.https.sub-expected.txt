@@ -1,0 +1,7 @@
+This is a testharness.js-based test.
+PASS Browser supports prefetch.
+PASS <link rel='prefetch' href='https://web-platform.test:8444/...'>
+FAIL <link rel='prefetch' href='https://www.web-platform.test:8444/...'> assert_unreached: Reached unreachable code
+FAIL <link rel='prefetch' href='https://www.not-web-platform.test:8444/...'> assert_unreached: Reached unreachable code
+Harness: the test ran to completion.
+
