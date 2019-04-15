@@ -263,6 +263,12 @@ void av1_set_target_rate(struct AV1_COMP *cpi, int width, int height);
 
 int av1_resize_one_pass_cbr(struct AV1_COMP *cpi);
 
+int av1_get_q_and_bounds_constant_quality_two_pass(const struct AV1_COMP *cpi,
+                                                   int width, int height,
+                                                   int *bottom_index,
+                                                   int *top_index, int *arf_q,
+                                                   int gf_index);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

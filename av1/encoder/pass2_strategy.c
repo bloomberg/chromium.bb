@@ -24,6 +24,7 @@
 #include "av1/encoder/encoder.h"
 #include "av1/encoder/firstpass.h"
 #include "av1/encoder/gop_structure.h"
+#include "av1/encoder/ratectrl.h"
 
 // Calculate an active area of the image that discounts formatting
 // bars and partially discounts other 0 energy areas.
@@ -729,6 +730,52 @@ static INLINE int is_almost_static(double gf_zero_motion, int kf_zero_motion) {
 #endif  // GROUP_ADAPTIVE_MAXQ
 #define MIN_FWD_KF_INTERVAL 8
 
+static void assign_q_and_bounds_q_mode(AV1_COMP *cpi) {
+  AV1_COMMON *const cm = &cpi->common;
+  GF_GROUP *const gf_group = &cpi->twopass.gf_group;
+  const int width = cm->width;
+  const int height = cm->height;
+  RATE_CONTROL *const rc = &cpi->rc;
+  const int last_boosted_q = rc->last_boosted_qindex;
+  const int last_kf_q = rc->last_kf_qindex;
+  const int avg_frame_qindex = rc->avg_frame_qindex[INTER_FRAME];
+  int bottom_index, top_index;
+  int q;
+
+  for (int cur_index = 0; cur_index <= gf_group->size; ++cur_index) {
+    const FRAME_UPDATE_TYPE cur_update_type = gf_group->update_type[cur_index];
+    int arf_q = -1;  // Initialize to invalid value, for sanity check later.
+
+    q = av1_get_q_and_bounds_constant_quality_two_pass(
+        cpi, width, height, &bottom_index, &top_index, &arf_q, cur_index);
+    if (cur_update_type == ARF_UPDATE) {
+      cpi->rc.arf_q = arf_q;
+    }
+    gf_group->q_val[cur_index] = q;
+    gf_group->q_upper[cur_index] = top_index;
+    gf_group->q_lower[cur_index] = bottom_index;
+
+    // Update the rate control state necessary to accuratly compute q for
+    // the next frames.
+    // This is used to help set quality in forced key frames to reduce popping
+    if ((q < rc->last_boosted_qindex) || (cur_update_type == KF_UPDATE) ||
+        (!rc->constrained_gf_group && (cur_update_type == ARF_UPDATE ||
+                                       cur_update_type == INTNL_ARF_UPDATE ||
+                                       cur_update_type == GF_UPDATE))) {
+      rc->last_boosted_qindex = q;
+    }
+    // TODO(sarahparker) Investigate whether or not this is actually needed
+    if (cur_update_type == LF_UPDATE)
+      rc->avg_frame_qindex[INTER_FRAME] =
+          ROUND_POWER_OF_TWO(3 * rc->avg_frame_qindex[INTER_FRAME] + q, 2);
+    if (cur_update_type == KF_UPDATE) rc->last_kf_qindex = q;
+  }
+  // Reset all of the modified state to the original values.
+  rc->last_boosted_qindex = last_boosted_q;
+  rc->last_kf_qindex = last_kf_q;
+  rc->avg_frame_qindex[INTER_FRAME] = avg_frame_qindex;
+}
+
 // Analyse and define a gf/arf group.
 static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
                             const EncodeFrameParams *const frame_params) {
@@ -1070,6 +1117,8 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
 
   // Set up the structure of this Group-Of-Pictures (same as GF_GROUP)
   av1_gop_setup_structure(cpi, frame_params);
+
+  if (cpi->oxcf.rc_mode == AOM_Q) assign_q_and_bounds_q_mode(cpi);
 
   // Allocate bits to each of the frames in the GF group.
   allocate_gf_group_bits(cpi, gf_group_bits, gf_group_error_left, gf_arf_bits,
