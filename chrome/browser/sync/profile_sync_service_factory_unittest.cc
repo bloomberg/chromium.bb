@@ -85,6 +85,7 @@ class ProfileSyncServiceFactoryTest : public testing::Test {
     datatypes.push_back(syncer::PRIORITY_PREFERENCES);
     datatypes.push_back(syncer::SESSIONS);
     datatypes.push_back(syncer::PROXY_TABS);
+    datatypes.push_back(syncer::SECURITY_EVENTS);
     datatypes.push_back(syncer::SUPERVISED_USER_SETTINGS);
     datatypes.push_back(syncer::SUPERVISED_USER_WHITELISTS);
     datatypes.push_back(syncer::TYPED_URLS);
@@ -93,8 +94,6 @@ class ProfileSyncServiceFactoryTest : public testing::Test {
     if (base::FeatureList::IsEnabled(switches::kSyncSendTabToSelf)) {
       datatypes.push_back(syncer::SEND_TAB_TO_SELF);
     }
-    // TODO(markusheintz): Add security events once it is enabled.
-    // datatypes.push_back(syncer::SECURITY_EVENTS);
     return datatypes;
   }
 

@@ -25,6 +25,8 @@
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/security_events/security_event_recorder.h"
+#include "chrome/browser/security_events/security_event_recorder_factory.h"
 #include "chrome/browser/sync/bookmark_sync_service_factory.h"
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/browser/sync/glue/theme_data_type_controller.h"
@@ -289,6 +291,15 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
 
   const base::RepeatingClosure dump_stack = base::BindRepeating(
       &syncer::ReportUnrecoverableError, chrome::GetChannel());
+
+  if (!disabled_types.Has(syncer::SECURITY_EVENTS)) {
+    controllers.push_back(std::make_unique<syncer::ModelTypeController>(
+        syncer::SECURITY_EVENTS,
+        std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
+            SecurityEventRecorderFactory::GetForProfile(profile_)
+                ->GetControllerDelegate()
+                .get())));
+  }
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   if (base::FeatureList::IsEnabled(switches::kSyncPseudoUSSSupervisedUsers)) {
@@ -607,10 +618,6 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
           ->change_processor()
           ->GetControllerDelegate();
 #endif  // defined(OS_CHROMEOS)
-    case syncer::SECURITY_EVENTS:
-      // TODO(crbug.com/919489): Return the real delegate once it is wired to
-      // the security event service.
-      return base::WeakPtr<syncer::ModelTypeControllerDelegate>();
     case syncer::USER_CONSENTS:
       return ConsentAuditorFactory::GetForProfile(profile_)
           ->GetControllerDelegate();
@@ -628,6 +635,7 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
     case syncer::AUTOFILL_WALLET_METADATA:
     case syncer::BOOKMARKS:
     case syncer::DEVICE_INFO:
+    case syncer::SECURITY_EVENTS:
     case syncer::SEND_TAB_TO_SELF:
     case syncer::SESSIONS:
     case syncer::TYPED_URLS:
