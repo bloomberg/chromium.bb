@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// <include src="saml_timestamps.js">
+
 /**
  * @fileoverview A utility for extracting password information from SAML
  * authorization response. This requires that the SAML IDP administrator
@@ -57,16 +59,18 @@ cr.define('samlPasswordAttributes', function() {
    * Extract password information from the Attribute elements in the given SAML
    * authorization response.
    * @param {string} xmlStr The SAML response XML, as a string.
-   * @return {!PasswordAttributes} The password information extracted.
+   * @return {!PasswordAttributes} A struct containing all the attributes that
+   * could be extracted, formatted as strings. Some or all of the strings can
+   * be empty if some or all of the attributes could not be extracted.
    */
   function readPasswordAttributes(xmlStr) {
     if (xmlStr.length < MIN_SANE_XML_LENGTH ||
         xmlStr.length > MAX_SANE_XML_LENGTH) {
-      return new PasswordAttributes(null, null, null);
+      return PasswordAttributes.EMPTY;
     }
     const xmlDom = new DOMParser().parseFromString(xmlStr, 'text/xml');
     if (!xmlDom) {
-      return new PasswordAttributes(null, null, null);
+      return PasswordAttributes.EMPTY;
     }
 
     return new PasswordAttributes(
@@ -79,11 +83,11 @@ cr.define('samlPasswordAttributes', function() {
    * Extracts a string from the given XML DOM, using the given query selector.
    * @param {!XMLDocument} xmlDom The XML DOM.
    * @param {string} querySelectorStr The query selector to find the string.
-   * @return {?string} The extracted string (null if failed to extract).
+   * @return {string} The extracted string (empty if failed to extract).
    */
   function extractStringFromXml(xmlDom, querySelectorStr) {
     const element = xmlDom.querySelector(querySelectorStr);
-    return (element && element.textContent) ? element.textContent : null;
+    return (element && element.textContent) ? element.textContent : '';
   }
 
   /**
@@ -91,29 +95,42 @@ cr.define('samlPasswordAttributes', function() {
    * to find it and using {@code samlTimestamps.decodeTimestamp} to decode it.
    * @param {!XMLDocument} xmlDom The XML DOM.
    * @param {string} querySelectorStr The query selector to find the timestamp.
-   * @return {?Date} The decoded timestamp (null if failed to extract).
+   * @return {string} The timestamp as number of ms since 1970, formatted as a
+   * string (or an empty string if the timestamp could not be extracted).
    */
   function extractTimestampFromXml(xmlDom, querySelectorStr) {
     const valueText = extractStringFromXml(xmlDom, querySelectorStr);
-    return valueText ? samlTimestamps.decodeTimestamp(valueText) : null;
+    if (!valueText) return '';
+
+    const timestamp = samlTimestamps.decodeTimestamp(valueText);
+    return timestamp ? String(timestamp.valueOf()) : '';
   }
 
   /**
-   * Struct to hold password attributes.
+   * Immutable struct to hold password attributes. All three fields are strings
+   * and are always present, but they are empty if that information is missing.
+   * Timestamps are in JS time - the number of ms since 1 January 1970 - but
+   * are also formatted as strings, since this struct is sent from JS into C++,
+   * and strings travel easier than int64s across this boundary.
    * @export @final
    */
   class PasswordAttributes {
     constructor(modifiedTimestamp, expirationTimestamp, passwordChangeUrl) {
-      /** @type {?Date} Password last-modified timestamp. */
+      /** @type {string} Password last-modified timestamp. */
       this.modifiedTimestamp = modifiedTimestamp;
 
-      /** @type {?Date} Password expiration timestamp. */
+      /** @type {string} Password expiration timestamp. */
       this.expirationTimestamp = expirationTimestamp;
 
-      /** @type {?string} Password-change URL. */
+      /** @type {string} Password-change URL. */
       this.passwordChangeUrl = passwordChangeUrl;
+
+      Object.freeze(this);  // Make immutable.
     }
   }
+
+  /** An immutable and empty PasswordAttributes struct. */
+  PasswordAttributes.EMPTY = new PasswordAttributes('', '', '');
 
   // Public functions:
   return {
