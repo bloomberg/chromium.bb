@@ -82,7 +82,7 @@ config("compiler") {
 
   if (msvc_use_absolute_paths) {
     # Pass /FC flag to the compiler if needed.
-    cflags += "/FC "
+    cflags += [ "/FC" ]
 
     # Print absolute paths in diagnostics. There is no precedent for doing this
     # on Linux/Mac (GCC doesn't support it), but MSVC does this with /FC and
