@@ -113,11 +113,21 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnit(
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_EXPANDTOENCLOSINGUNIT);
   UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
 
-  // Determine if start is on a TextUnit boundary.
-  // If it is not, move backwards until it is.
-  // Try to move backwards, do not pass boundary.
+  // Determine if start is on a TextUnit boundary. If it is not, move backwards
+  // until it is. Move the end forwards from start until it is on the next
+  // TextUnit boundary, if one exists.
   switch (unit) {
-    case TextUnit_Character:
+    case TextUnit_Character: {
+      // For characters, start_ will always be on a TextUnit boundary. Thus,
+      // end_ is the only position that needs to be moved.
+      AXNodePosition::AXPositionInstance next =
+          start_->CreateNextCharacterPosition(
+              ui::AXBoundaryBehavior::CrossBoundary);
+      if (!next->IsNullPosition()) {
+        end_ = next->Clone();
+      }
+      break;
+    }
     case TextUnit_Format:
     case TextUnit_Word:
     case TextUnit_Paragraph:
@@ -129,10 +139,12 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnit(
     case TextUnit_Document:
       start_ = start_->CreatePositionAtStartOfDocument()->AsLeafTextPosition();
       end_ = start_->CreatePositionAtEndOfDocument();
-      return S_OK;
+      break;
     default:
       return UIA_E_NOTSUPPORTED;
   }
+
+  return S_OK;
 }
 
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::FindAttribute(
