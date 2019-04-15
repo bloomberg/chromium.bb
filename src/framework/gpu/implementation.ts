@@ -1,4 +1,3 @@
-
 import { GPU } from "./interface.js";
 
 type ImplType = Promise<GPU>;

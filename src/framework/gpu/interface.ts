@@ -1,5 +1,6 @@
 /* tslint:disable */
 // https://github.com/gpuweb/gpuweb/blob/9d7622bf366be74e0599122d8c4d0fd1128ae484/design/sketch.webidl
+// plus #261 (approximately)
 
 export type u64 = number;
 
@@ -433,7 +434,7 @@ export interface GPUSamplerDescriptor {
 }
 
 export interface GPUShaderModuleDescriptor {
-  code: ArrayBuffer | string;
+  code: Uint32Array | string;
   label?: string;
 }
 
@@ -509,7 +510,7 @@ export interface GPUBuffer extends GPUDebugLabel {
 
   mapWriteAsync(): Promise<ArrayBuffer>;
   mapReadAsync(): Promise<ArrayBuffer>;
-  setSubData(offset: number, ab: ArrayBuffer): void;
+  setSubData(offset: number, src: ArrayBufferView, srcOffset?: number, byteLength?: number): void;
 }
 
 export interface GPUCommandEncoder extends GPUDebugLabel {

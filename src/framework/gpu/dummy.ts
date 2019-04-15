@@ -28,7 +28,7 @@ class Buffer implements w.GPUBuffer {
   public async mapWriteAsync(): Promise<ArrayBuffer> {
     return new ArrayBuffer(0);
   }
-  public setSubData(offset: number, ab: ArrayBuffer): void {}
+  public setSubData(offset: number, src: ArrayBufferView, srcOffset: number = 0, byteLength: number = 0): void {}
 }
 class CommandEncoder implements w.GPUCommandEncoder {
   public label: string | undefined;
