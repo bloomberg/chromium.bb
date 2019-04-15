@@ -242,6 +242,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   service_manager::InterfaceProvider* GetRemoteInterfaces() override;
   blink::AssociatedInterfaceProvider* GetRemoteAssociatedInterfaces() override;
   content::PageVisibilityState GetVisibilityState() override;
+  bool IsRenderFrameCreated() override;
   bool IsRenderFrameLive() override;
   bool IsCurrent() override;
   size_t GetProxyCount() override;

@@ -899,7 +899,9 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
 
   site_instance_->RemoveObserver(this);
 
-  if (delegate_ && render_frame_created_)
+  const bool was_created = render_frame_created_;
+  render_frame_created_ = false;
+  if (delegate_ && was_created)
     delegate_->RenderFrameDeleted(this);
 
   // Ensure that the render process host has been notified that all audio
@@ -963,7 +965,7 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   // *always* first be unassociated from its corresponding RFHM. Thus, it
   // follows that |GetMainFrame()| will never return the speculative main frame
   // being deleted, since it must have already been unset.
-  if (render_frame_created_ && render_view_host_->GetMainFrame() != this)
+  if (was_created && render_view_host_->GetMainFrame() != this)
     CHECK(!is_active());
 
   GetProcess()->RemoveRoute(routing_id_);
@@ -5263,6 +5265,10 @@ void RenderFrameHostImpl::InsertVisualStateCallback(
   uint64_t key = next_id++;
   Send(new FrameMsg_VisualStateRequest(routing_id_, key));
   visual_state_callbacks_.emplace(key, std::move(callback));
+}
+
+bool RenderFrameHostImpl::IsRenderFrameCreated() {
+  return render_frame_created_;
 }
 
 bool RenderFrameHostImpl::IsRenderFrameLive() {
