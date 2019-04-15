@@ -25,6 +25,7 @@ public class TabGroupUiToolbarView extends FrameLayout {
     private ChromeImageView mLeftButton;
     private ViewGroup mContainerView;
     private TextView mTitleTextView;
+    private View mMainContent;
 
     public TabGroupUiToolbarView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -38,6 +39,7 @@ public class TabGroupUiToolbarView extends FrameLayout {
         mRightButton = findViewById(R.id.toolbar_right_button);
         mContainerView = (ViewGroup) findViewById(R.id.toolbar_container_view);
         mTitleTextView = (TextView) findViewById(R.id.title);
+        mMainContent = findViewById(R.id.main_content);
     }
 
     void setLeftButtonOnClickListener(OnClickListener listener) {
@@ -70,7 +72,7 @@ public class TabGroupUiToolbarView extends FrameLayout {
     }
 
     void setPrimaryColor(int color) {
-        DrawableCompat.setTint(getBackground(), color);
+        mMainContent.setBackgroundColor(color);
     }
 
     void setTint(ColorStateList tint) {
