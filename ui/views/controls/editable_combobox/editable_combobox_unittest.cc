@@ -636,5 +636,25 @@ TEST_F(EditableComboboxTest, ArrowButtonOpensAndClosesMenu) {
   EXPECT_FALSE(IsMenuOpen());
 }
 
+TEST_F(EditableComboboxTest, ShowMenuOnNextFocusBehavior) {
+  std::vector<base::string16> items = {ASCIIToUTF16("item0"),
+                                       ASCIIToUTF16("item1")};
+  InitEditableCombobox(items, /*filter_on_edit=*/false,
+                       /*show_on_empty=*/true);
+
+  dummy_focusable_view_->RequestFocus();
+  combobox_->set_show_menu_on_next_focus(true);
+  combobox_->GetTextfieldForTest()->RequestFocus();
+  EXPECT_TRUE(IsMenuOpen());
+
+  dummy_focusable_view_->RequestFocus();
+  combobox_->set_show_menu_on_next_focus(false);
+  combobox_->GetTextfieldForTest()->RequestFocus();
+  EXPECT_FALSE(IsMenuOpen());
+  dummy_focusable_view_->RequestFocus();
+  combobox_->GetTextfieldForTest()->RequestFocus();
+  EXPECT_TRUE(IsMenuOpen());
+}
+
 }  // namespace
 }  // namespace views

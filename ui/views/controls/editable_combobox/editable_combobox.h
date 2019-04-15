@@ -20,6 +20,7 @@
 
 namespace gfx {
 class FontList;
+class Range;
 }  // namespace gfx
 
 namespace ui {
@@ -80,6 +81,13 @@ class VIEWS_EXPORT EditableCombobox : public View,
     listener_ = listener;
   }
 
+  void set_show_menu_on_next_focus(bool show_menu_on_next_focus) {
+    show_menu_on_next_focus_ = show_menu_on_next_focus;
+  }
+
+  // Selects the specified logical text range for the textfield.
+  void SelectRange(const gfx::Range& range);
+
   // Sets the accessible name. Use SetAssociatedLabel instead if there is a
   // label associated with this combobox.
   void SetAccessibleName(const base::string16& name);
@@ -102,14 +110,13 @@ class VIEWS_EXPORT EditableCombobox : public View,
  private:
   class EditableComboboxMenuModel;
 
+  void CloseMenu();
+
   // Called when an item is selected from the menu.
   void OnItemSelected(int index);
 
   // Notifies listener of new content and updates the menu items to show.
   void HandleNewContent(const base::string16& new_content);
-
-  // Cleans up after the menu is closed.
-  void OnMenuClosed();
 
   // Shows the drop-down menu.
   void ShowDropDownMenu(ui::MenuSourceType source_type = ui::MENU_SOURCE_NONE);
@@ -148,6 +155,10 @@ class VIEWS_EXPORT EditableCombobox : public View,
   const int text_style_;
 
   const Type type_;
+
+  // If false, then the menu won't be shown the next time the View is focused.
+  // Set false on creation to avoid showing the menu on the first focus event.
+  bool show_menu_on_next_focus_ = true;
 
   // Set while the drop-down is showing.
   std::unique_ptr<MenuRunner> menu_runner_;
