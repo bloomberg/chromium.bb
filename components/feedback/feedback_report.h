@@ -38,6 +38,10 @@ class FeedbackReport : public base::RefCountedThreadSafe<FeedbackReport> {
   // the feedback server.
   static const char kCrashReportIdsKey[];
 
+  // The ID of the product specific data for the list of all crash report IDs as
+  // stored by the feedback server. Only used for @google.com emails.
+  static const char kAllCrashReportIdsKey[];
+
   // Loads the reports still on disk and queues then using the given callback.
   // This call blocks on the file reads.
   static void LoadReportsAndQueue(const base::FilePath& user_dir,
