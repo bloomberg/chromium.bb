@@ -311,8 +311,7 @@ void WindowTreeHostMus::SetBoundsFromServer(
       window()->GetProperty(aura::client::kShowStateKey) != state) {
     server_bounds_ = &bounds;
     server_lsia_ = &local_surface_id_allocation;
-    window()->SetProperty(aura::client::kShowStateKey,
-                          ui::WindowShowState(state));
+    window()->SetProperty(aura::client::kShowStateKey, state);
     DCHECK(!server_bounds_);
     DCHECK(!server_lsia_);
     return;
