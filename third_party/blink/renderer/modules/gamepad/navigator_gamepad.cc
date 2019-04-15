@@ -192,17 +192,22 @@ void NavigatorGamepad::SampleGamepad(const device::Gamepad& device_gamepad,
   }
 }
 
-GamepadHapticActuator* NavigatorGamepad::GetVibrationActuator(
-    uint32_t pad_index) {
-  auto* gamepad = gamepads_->item(pad_index);
-  if (!gamepad || !gamepad->HasVibrationActuator())
+GamepadHapticActuator* NavigatorGamepad::GetVibrationActuatorForGamepad(
+    const Gamepad& gamepad) {
+  if (!gamepad.connected()) {
     return nullptr;
+  }
+
+  uint32_t pad_index = gamepad.index();
+  if (!gamepad.HasVibrationActuator()) {
+    return nullptr;
+  }
 
   if (!vibration_actuators_[pad_index]) {
     ExecutionContext* context =
         DomWindow() ? DomWindow()->GetExecutionContext() : nullptr;
     auto* actuator = GamepadHapticActuator::Create(context, pad_index);
-    actuator->SetType(gamepad->GetVibrationActuatorType());
+    actuator->SetType(gamepad.GetVibrationActuatorType());
     vibration_actuators_[pad_index] = actuator;
   }
   return vibration_actuators_[pad_index].Get();
@@ -216,6 +221,7 @@ void NavigatorGamepad::Trace(blink::Visitor* visitor) {
   Supplement<Navigator>::Trace(visitor);
   DOMWindowClient::Trace(visitor);
   PlatformEventController::Trace(visitor);
+  Gamepad::Client::Trace(visitor);
 }
 
 bool NavigatorGamepad::StartUpdatingIfAttached() {

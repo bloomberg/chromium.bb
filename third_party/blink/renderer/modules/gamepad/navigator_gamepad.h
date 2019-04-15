@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/core/frame/platform_event_controller.h"
+#include "third_party/blink/renderer/modules/gamepad/gamepad.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
@@ -43,7 +44,6 @@ class Gamepad;
 namespace blink {
 
 class Document;
-class Gamepad;
 class GamepadDispatcher;
 class GamepadHapticActuator;
 class GamepadList;
@@ -54,7 +54,8 @@ class MODULES_EXPORT NavigatorGamepad final
       public Supplement<Navigator>,
       public DOMWindowClient,
       public PlatformEventController,
-      public LocalDOMWindow::EventListenerObserver {
+      public LocalDOMWindow::EventListenerObserver,
+      public Gamepad::Client {
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorGamepad);
 
  public:
@@ -68,8 +69,6 @@ class MODULES_EXPORT NavigatorGamepad final
 
   static GamepadList* getGamepads(Navigator&);
   GamepadList* Gamepads();
-
-  GamepadHapticActuator* GetVibrationActuator(uint32_t pad_index);
 
   void Trace(blink::Visitor*) override;
 
@@ -95,6 +94,10 @@ class MODULES_EXPORT NavigatorGamepad final
   void DidAddEventListener(LocalDOMWindow*, const AtomicString&) override;
   void DidRemoveEventListener(LocalDOMWindow*, const AtomicString&) override;
   void DidRemoveAllEventListeners(LocalDOMWindow*) override;
+
+  // Gamepad::Client
+  GamepadHapticActuator* GetVibrationActuatorForGamepad(
+      const Gamepad&) override;
 
   // A reference to the buffer containing the last-received gamepad state. May
   // be nullptr if no data has been received yet. Do not overwrite this buffer

@@ -27,12 +27,10 @@
 
 #include <algorithm>
 
-#include "third_party/blink/renderer/modules/gamepad/navigator_gamepad.h"
-
 namespace blink {
 
-Gamepad::Gamepad(NavigatorGamepad* navigator_gamepad, unsigned index)
-    : navigator_gamepad_(navigator_gamepad),
+Gamepad::Gamepad(Client* client, unsigned index)
+    : client_(client),
       index_(index),
       timestamp_(0.0),
       has_vibration_actuator_(false),
@@ -87,11 +85,7 @@ void Gamepad::SetButtons(unsigned count, const device::GamepadButton* data) {
 }
 
 GamepadHapticActuator* Gamepad::vibrationActuator() const {
-  // A disconnected gamepad may share the same index as a newly-connected
-  // gamepad. Return nullptr for disconnected gamepads to avoid returning the
-  // actuator for the connected gamepad.
-  return connected_ ? navigator_gamepad_->GetVibrationActuator(index_)
-                    : nullptr;
+  return client_->GetVibrationActuatorForGamepad(*this);
 }
 
 void Gamepad::SetVibrationActuatorInfo(
@@ -130,7 +124,7 @@ void Gamepad::SetHand(const device::GamepadHand& hand) {
 }
 
 void Gamepad::Trace(blink::Visitor* visitor) {
-  visitor->Trace(navigator_gamepad_);
+  visitor->Trace(client_);
   visitor->Trace(buttons_);
   visitor->Trace(pose_);
   ScriptWrappable::Trace(visitor);
