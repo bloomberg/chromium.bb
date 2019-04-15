@@ -172,6 +172,230 @@ TEST_F(GcpCredentialProviderTest, CpusUnlock) {
   ASSERT_EQ(S_OK, provider->UnAdvise());
 }
 
+TEST_F(GcpCredentialProviderTest, AutoLogonAfterUserRefresh) {
+  USES_CONVERSION;
+  CComPtr<ICredentialProvider> provider;
+  ASSERT_EQ(S_OK,
+            CComCreator<CComObject<CGaiaCredentialProvider>>::CreateInstance(
+                nullptr, IID_ICredentialProvider, (void**)&provider));
+
+  CComPtr<IGaiaCredentialProvider> gaia_provider;
+  ASSERT_EQ(S_OK, provider.QueryInterface(&gaia_provider));
+
+  CComBSTR sid;
+  ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
+                      L"username", L"passowrd", L"Full Name", L"Comment", L"",
+                      L"", &sid));
+  // Start process for logon screen.
+  ASSERT_EQ(S_OK, provider->SetUsageScenario(CPUS_LOGON, 0));
+
+  // Give empty list of users so that only the anonymous credential is created.
+  CComPtr<ICredentialProviderSetUserArray> user_array;
+  ASSERT_EQ(S_OK, provider.QueryInterface(&user_array));
+  FakeCredentialProviderUserArray array;
+  ASSERT_EQ(S_OK, user_array->SetUserArray(&array));
+
+  // Activate the CP.
+  FakeCredentialProviderEvents events;
+  ASSERT_EQ(S_OK, provider->Advise(&events, 0));
+
+  // Only the anonymous credential should exist.
+  DWORD count;
+  DWORD default_index;
+  BOOL autologon;
+  ASSERT_EQ(S_OK,
+            provider->GetCredentialCount(&count, &default_index, &autologon));
+  ASSERT_EQ(1u, count);
+  EXPECT_EQ(CREDENTIAL_PROVIDER_NO_DEFAULT, default_index);
+  EXPECT_FALSE(autologon);
+
+  // Get the anonymous credential.
+  CComPtr<ICredentialProviderCredential> cred;
+  ASSERT_EQ(S_OK, provider->GetCredentialAt(0, &cred));
+
+  // Notify that user access is denied to fake a forced recreation of the users.
+  ICredentialUpdateEventsHandler* update_handler =
+      static_cast<ICredentialUpdateEventsHandler*>(
+          static_cast<CGaiaCredentialProvider*>(provider.p));
+  update_handler->UpdateCredentialsIfNeeded(true);
+
+  // Credential changed event should have been received.
+  EXPECT_TRUE(events.CredentialsChangedReceived());
+  events.ResetCredentialsChangedReceived();
+
+  // At the same time notify that a user has authenticated and requires a
+  // sign in.
+  {
+    // Temporary locker to prevent DCHECKs in OnUserAuthenticated
+    AssociatedUserValidator::ScopedBlockDenyAccessUpdate deny_update_locker(
+        AssociatedUserValidator::Get());
+    ASSERT_EQ(S_OK, gaia_provider->OnUserAuthenticated(
+                        cred, CComBSTR(L"username"), CComBSTR(L"password"), sid,
+                        true));
+  }
+
+  // No credential changed should have been signalled here.
+  EXPECT_FALSE(events.CredentialsChangedReceived());
+
+  // GetCredentialCount should return back the same credential that was just
+  // auto logged on.
+  ASSERT_EQ(S_OK,
+            provider->GetCredentialCount(&count, &default_index, &autologon));
+  ASSERT_EQ(1u, count);
+  EXPECT_EQ(0u, default_index);
+  EXPECT_TRUE(autologon);
+
+  CComPtr<ICredentialProviderCredential> auto_logon_cred;
+  ASSERT_EQ(S_OK, provider->GetCredentialAt(0, &auto_logon_cred));
+  EXPECT_TRUE(auto_logon_cred.IsEqualObject(cred));
+
+  // The next call to GetCredentialCount should return re-created credentials.
+
+  // Fake an update request with no access changes. The pending user refresh
+  // should be queued.
+  update_handler->UpdateCredentialsIfNeeded(false);
+
+  // Credential changed event should have been received.
+  EXPECT_TRUE(events.CredentialsChangedReceived());
+
+  // GetCredentialCount should return new credentials with no auto logon.
+  ASSERT_EQ(S_OK,
+            provider->GetCredentialCount(&count, &default_index, &autologon));
+  ASSERT_EQ(1u, count);
+  EXPECT_EQ(CREDENTIAL_PROVIDER_NO_DEFAULT, default_index);
+  EXPECT_FALSE(autologon);
+
+  CComPtr<ICredentialProviderCredential> new_cred;
+  ASSERT_EQ(S_OK, provider->GetCredentialAt(0, &new_cred));
+  EXPECT_FALSE(new_cred.IsEqualObject(cred));
+
+  // Another request to refresh the credentials should yield no credential
+  // changed event or refresh of credentials.
+  events.ResetCredentialsChangedReceived();
+
+  update_handler->UpdateCredentialsIfNeeded(false);
+
+  // No credential changed event should have been received.
+  EXPECT_FALSE(events.CredentialsChangedReceived());
+
+  // GetCredentialCount should return the same credentials with no change.
+  ASSERT_EQ(S_OK,
+            provider->GetCredentialCount(&count, &default_index, &autologon));
+  ASSERT_EQ(1u, count);
+  EXPECT_EQ(CREDENTIAL_PROVIDER_NO_DEFAULT, default_index);
+  EXPECT_FALSE(autologon);
+
+  CComPtr<ICredentialProviderCredential> unchanged_cred;
+  ASSERT_EQ(S_OK, provider->GetCredentialAt(0, &unchanged_cred));
+  EXPECT_TRUE(new_cred.IsEqualObject(unchanged_cred));
+
+  // Deactivate the CP.
+  ASSERT_EQ(S_OK, provider->UnAdvise());
+}
+
+TEST_F(GcpCredentialProviderTest, AutoLogonBeforeUserRefresh) {
+  USES_CONVERSION;
+  CComPtr<ICredentialProvider> provider;
+  ASSERT_EQ(S_OK,
+            CComCreator<CComObject<CGaiaCredentialProvider>>::CreateInstance(
+                nullptr, IID_ICredentialProvider, (void**)&provider));
+
+  CComPtr<IGaiaCredentialProvider> gaia_provider;
+  ASSERT_EQ(S_OK, provider.QueryInterface(&gaia_provider));
+
+  CComBSTR sid;
+  ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
+                      L"username", L"passowrd", L"Full Name", L"Comment", L"",
+                      L"", &sid));
+  // Start process for logon screen.
+  ASSERT_EQ(S_OK, provider->SetUsageScenario(CPUS_LOGON, 0));
+
+  // Give empty list of users so that only the anonymous credential is created.
+  CComPtr<ICredentialProviderSetUserArray> user_array;
+  ASSERT_EQ(S_OK, provider.QueryInterface(&user_array));
+  FakeCredentialProviderUserArray array;
+  ASSERT_EQ(S_OK, user_array->SetUserArray(&array));
+
+  // Activate the CP.
+  FakeCredentialProviderEvents events;
+  ASSERT_EQ(S_OK, provider->Advise(&events, 0));
+
+  // Only the anonymous credential should exist.
+  DWORD count;
+  DWORD default_index;
+  BOOL autologon;
+  ASSERT_EQ(S_OK,
+            provider->GetCredentialCount(&count, &default_index, &autologon));
+  ASSERT_EQ(1u, count);
+  EXPECT_EQ(CREDENTIAL_PROVIDER_NO_DEFAULT, default_index);
+  EXPECT_FALSE(autologon);
+
+  // Get the anonymous credential.
+  CComPtr<ICredentialProviderCredential> cred;
+  ASSERT_EQ(S_OK, provider->GetCredentialAt(0, &cred));
+
+  ICredentialUpdateEventsHandler* update_handler =
+      static_cast<ICredentialUpdateEventsHandler*>(
+          static_cast<CGaiaCredentialProvider*>(provider.p));
+
+  // Notify user auto logon first and then notify user access denied to ensure
+  // that auto logon always has precedence over user access denied.
+  {
+    // Temporary locker to prevent DCHECKs in OnUserAuthenticated
+    AssociatedUserValidator::ScopedBlockDenyAccessUpdate deny_update_locker(
+        AssociatedUserValidator::Get());
+    ASSERT_EQ(S_OK, gaia_provider->OnUserAuthenticated(
+                        cred, CComBSTR(L"username"), CComBSTR(L"password"), sid,
+                        true));
+  }
+
+  // Credential changed event should have been received.
+  EXPECT_TRUE(events.CredentialsChangedReceived());
+  events.ResetCredentialsChangedReceived();
+
+  // Notify that user access is denied. This should not cause a credential
+  // changed since an event was already processed.
+  update_handler->UpdateCredentialsIfNeeded(true);
+
+  // No credential changed should have been signalled here.
+  EXPECT_FALSE(events.CredentialsChangedReceived());
+
+  // GetCredentialCount should return back the same credential that was just
+  // auto logged on.
+  ASSERT_EQ(S_OK,
+            provider->GetCredentialCount(&count, &default_index, &autologon));
+  ASSERT_EQ(1u, count);
+  EXPECT_EQ(0u, default_index);
+  EXPECT_TRUE(autologon);
+
+  CComPtr<ICredentialProviderCredential> auto_logon_cred;
+  ASSERT_EQ(S_OK, provider->GetCredentialAt(0, &auto_logon_cred));
+  EXPECT_TRUE(auto_logon_cred.IsEqualObject(cred));
+
+  // The next call to GetCredentialCount should return re-created credentials.
+
+  // Fake an update request with no access changes. The pending user refresh
+  // should be queued.
+  update_handler->UpdateCredentialsIfNeeded(false);
+
+  // Credential changed event should have been received.
+  EXPECT_TRUE(events.CredentialsChangedReceived());
+
+  // GetCredentialCount should return new credentials with no auto logon.
+  ASSERT_EQ(S_OK,
+            provider->GetCredentialCount(&count, &default_index, &autologon));
+  ASSERT_EQ(1u, count);
+  EXPECT_EQ(CREDENTIAL_PROVIDER_NO_DEFAULT, default_index);
+  EXPECT_FALSE(autologon);
+
+  CComPtr<ICredentialProviderCredential> new_cred;
+  ASSERT_EQ(S_OK, provider->GetCredentialAt(0, &new_cred));
+  EXPECT_FALSE(new_cred.IsEqualObject(cred));
+
+  // Deactivate the CP.
+  ASSERT_EQ(S_OK, provider->UnAdvise());
+}
+
 TEST_F(GcpCredentialProviderTest, AddPersonAfterUserRemove) {
   FakeAssociatedUserValidator associated_user_validator;
   FakeInternetAvailabilityChecker internet_checker;
