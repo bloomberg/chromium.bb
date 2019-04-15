@@ -2,12 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import <UIKit/UIKit.h>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/run_loop.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/web/find_in_page/find_in_page_constants.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
+#import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
+#import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
 #import "ios/web/public/web_state/web_frame.h"
 #import "ios/web/public/web_state/web_frame_util.h"
 #import "ios/web/public/web_state/web_frames_manager.h"
@@ -18,6 +22,7 @@
 #endif
 
 using base::test::ios::kWaitForJSCompletionTimeout;
+using base::test::ios::kWaitForPageLoadTimeout;
 using base::test::ios::WaitUntilConditionOrTimeout;
 
 namespace {
@@ -221,7 +226,7 @@ TEST_F(FindInPageJsTest, FindHighlightMatch) {
   std::vector<base::Value> highlight_params;
   highlight_params.push_back(base::Value(0));
   main_web_frame()->CallJavaScriptFunction(
-      kFindInPageHighlightMatch, highlight_params,
+      kFindInPageSelectAndScrollToMatch, highlight_params,
       base::BindOnce(^(const base::Value* result) {
         highlight_done = true;
       }),
@@ -266,7 +271,7 @@ TEST_F(FindInPageJsTest, FindHighlightSeparateMatches) {
   std::vector<base::Value> highlight_params;
   highlight_params.push_back(base::Value(0));
   main_web_frame()->CallJavaScriptFunction(
-      kFindInPageHighlightMatch, highlight_params,
+      kFindInPageSelectAndScrollToMatch, highlight_params,
       base::BindOnce(^(const base::Value* result) {
         highlight_done = true;
       }),
@@ -283,7 +288,7 @@ TEST_F(FindInPageJsTest, FindHighlightSeparateMatches) {
   std::vector<base::Value> highlight_second_params;
   highlight_second_params.push_back(base::Value(1));
   main_web_frame()->CallJavaScriptFunction(
-      kFindInPageHighlightMatch, highlight_second_params,
+      kFindInPageSelectAndScrollToMatch, highlight_second_params,
       base::BindOnce(^(const base::Value* result) {
         highlight_done = true;
       }),
@@ -332,7 +337,7 @@ TEST_F(FindInPageJsTest, FindHighlightMatchAtInvalidIndex) {
   std::vector<base::Value> highlight_params;
   highlight_params.push_back(base::Value(0));
   main_web_frame()->CallJavaScriptFunction(
-      kFindInPageHighlightMatch, highlight_params,
+      kFindInPageSelectAndScrollToMatch, highlight_params,
       base::BindOnce(^(const base::Value* result) {
         highlight_done = true;
       }),
@@ -371,6 +376,63 @@ TEST_F(FindInPageJsTest, SearchForNonAscii) {
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
     return message_received;
   }));
+}
+
+// Tests that FindInPage scrolls page to bring selected match into view.
+TEST_F(FindInPageJsTest, CheckFindInPageScrollsToMatch) {
+  // Set frame so that offset can be predictable across devices.
+  web_state()->GetView().frame = CGRectMake(0, 0, 300, 200);
+
+  // Create HTML with div of height 4000px followed by a span below with
+  // searchable text in order to ensure that the text begins outside of screen
+  // on all devices.
+  ASSERT_TRUE(
+      LoadHtml("<div style=\"height: 4000px;\"></div><span>foo</span>"));
+  base::TimeDelta kCallJavascriptFunctionTimeout =
+      base::TimeDelta::FromSeconds(kWaitForJSCompletionTimeout);
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return frames_manager()->GetAllWebFrames().size() == 1;
+  }));
+
+  __block bool message_received = false;
+  std::vector<base::Value> params;
+  params.push_back(base::Value("foo"));
+  params.push_back(base::Value(kPumpSearchTimeout));
+  main_web_frame()->CallJavaScriptFunction(
+      kFindInPageSearch, params, base::BindOnce(^(const base::Value* result) {
+        ASSERT_TRUE(result);
+        ASSERT_TRUE(result->is_double());
+        ASSERT_EQ(1.0, result->GetDouble());
+        message_received = true;
+      }),
+      kCallJavascriptFunctionTimeout);
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    return message_received;
+  }));
+
+  __block bool highlight_done = false;
+  std::vector<base::Value> highlight_params;
+  highlight_params.push_back(base::Value(0));
+  main_web_frame()->CallJavaScriptFunction(
+      kFindInPageSelectAndScrollToMatch, highlight_params,
+      base::BindOnce(^(const base::Value* result) {
+        highlight_done = true;
+      }),
+      kCallJavascriptFunctionTimeout);
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    return highlight_done;
+  }));
+
+  // Check that page has scrolled to the match.
+  __block CGFloat top_scroll_after_select = 0.0;
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    top_scroll_after_select =
+        web_state()->GetWebViewProxy().scrollViewProxy.contentOffset.y;
+    return top_scroll_after_select > 0;
+  }));
+  // Scroll offset should be 1035.333333 for iPhoneX and 1035.500000 for every
+  // other device.
+  EXPECT_NEAR(top_scroll_after_select, 1035.0, 0.5);
 }
 
 }  // namespace web

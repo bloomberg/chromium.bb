@@ -584,11 +584,11 @@ function cleanUp_() {
 };
 
 /**
- * Highlights the match at |index|. Clears currently highlighted match if
- * one exists.
+ * Highlights the match at |index| and scrolls to that match. Clears currently
+ * highlighted match if one exists.
  * @param {Number} index of match to highlight.
  */
-__gCrWeb.findInPage.highlightMatch = function(index) {
+__gCrWeb.findInPage.selectAndScrollToMatch = function(index) {
   if (index >= __gCrWeb.findInPage.matches.length || index < 0) {
     // Do nothing if invalid index is passed.
     return;
@@ -602,58 +602,20 @@ __gCrWeb.findInPage.highlightMatch = function(index) {
 
   selectedMatchIndex_ = index;
 
-  getCurrentSelectedMatch_().addSelectHighlight()
+  getCurrentSelectedMatch_().addSelectHighlight();
+  scrollToCurrentlySelectedMatch_();
 };
 
 /**
- * Normalize coordinates according to the current document dimensions. Don't go
- * too far off the screen in either direction. Try to center if possible.
- * @param {Element} elem Element to find normalized coordinates for.
- * @return {Array<number>} Normalized coordinates.
+ * Scrolls to the position of the currently selected match.
  */
-function getNormalizedCoordinates_(elem) {
-  let pos = findAbsolutePosition_(elem);
-  let maxX = Math.max(getBodyWidth_(), pos[0] + elem.offsetWidth);
-  let maxY = Math.max(getBodyHeight_(), pos[1] + elem.offsetHeight);
-  // Don't go too far off the screen in either direction.  Try to center if
-  // possible.
-  let xPos = Math.max(
-      0, Math.min(maxX - window.innerWidth, pos[0] - (window.innerWidth / 2)));
-  let yPos = Math.max(
-      0,
-      Math.min(maxY - window.innerHeight, pos[1] - (window.innerHeight / 2)));
-  return [xPos, yPos];
-};
-
-/**
- * Scale coordinates according to the width of the screen, in case the screen
- * is zoomed out.
- * @param {Array<number>} coordinates Coordinates to scale.
- * @return {Array<number>} Scaled coordinates.
- */
-function scaleCoordinates_(coordinates) {
-  let scaleFactor = pageWidth_ / window.innerWidth;
-  return [coordinates[0] * scaleFactor, coordinates[1] * scaleFactor];
-};
-
-/**
- * Finds the position of the result.
- * @return {string} JSON encoded array of the scroll coordinates "[x, y]".
- */
-function findScrollDimensions_() {
+function scrollToCurrentlySelectedMatch_() {
   let match = getCurrentSelectedMatch_();
   if (!match) {
-    return '';
+    return;
   }
-  let normalized = getNormalizedCoordinates_(match.nodes[0]);
-  let xPos = normalized[0];
-  let yPos = normalized[1];
 
-  match.addSelectHighlight();
-  let scaled = scaleCoordinates_(normalized);
-  let index = match.visibleIndex;
-  scaled.unshift(index);
-  return __gCrWeb.stringify(scaled);
+  match.nodes[0].scrollIntoView();
 };
 
 /**

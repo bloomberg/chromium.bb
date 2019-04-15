@@ -11,8 +11,8 @@ namespace web {
 extern const char kFindInPageSearch[];
 // The name of JavaScript function which continues an unfinished find.
 extern const char kFindInPagePump[];
-// The name of JavaScript function which highlights a match.
-extern const char kFindInPageHighlightMatch[];
+// The name of JavaScript function which selects and scrolls to a match.
+extern const char kFindInPageSelectAndScrollToMatch[];
 
 }  // namespace web
 

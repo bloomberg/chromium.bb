@@ -372,7 +372,7 @@ void FindInPageManagerImpl::SelectCurrentMatch() {
     params.push_back(
         base::Value(last_find_request_.selected_match_index_in_selected_frame));
     frame->CallJavaScriptFunction(
-        kFindInPageHighlightMatch, params,
+        kFindInPageSelectAndScrollToMatch, params,
         base::BindOnce(&FindInPageManagerImpl::NotifyDelegateDidSelectMatch,
                        weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromSeconds(kJavaScriptFunctionCallTimeout));
