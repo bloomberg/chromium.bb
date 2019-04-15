@@ -756,7 +756,9 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
 }
 
 // Flaky on Win, see https://crbug.com/915135
-#if defined(OS_WIN)
+// Flaky on tsan and asan with accelerated canvases,
+// see https://crbug.com/952381
+#if defined(OS_WIN) || defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
 #define MAYBE_ApplyConstraintsNonDevice DISABLED_ApplyConstraintsNonDevice
 #else
 #define MAYBE_ApplyConstraintsNonDevice ApplyConstraintsNonDevice
