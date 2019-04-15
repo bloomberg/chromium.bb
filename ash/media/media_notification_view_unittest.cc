@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/focus_cycler.h"
 #include "ash/media/media_notification_background.h"
 #include "ash/media/media_notification_constants.h"
 #include "ash/media/media_notification_controller.h"
@@ -231,6 +232,11 @@ class MediaNotificationViewTest : public AshTestBase {
                                ui::EventTimeForNow(), 0, 0));
   }
 
+  void SimulateTab() {
+    ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+    generator.PressKey(ui::KeyboardCode::VKEY_TAB, ui::EventFlags::EF_NONE);
+  }
+
   void ExpectHistogramActionRecorded(MediaSessionAction action) {
     histogram_tester_.ExpectUniqueSample(
         MediaNotificationItem::kUserActionHistogramName,
@@ -317,6 +323,7 @@ TEST_F(MediaNotificationViewTest, ButtonsSanityCheck) {
     EXPECT_TRUE(child->visible());
     EXPECT_LT(kMediaButtonIconSize, child->width());
     EXPECT_LT(kMediaButtonIconSize, child->height());
+    EXPECT_FALSE(child->GetAccessibleName().empty());
   }
 
   EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kPlay));
@@ -327,6 +334,56 @@ TEST_F(MediaNotificationViewTest, ButtonsSanityCheck) {
 
   // |kPause| cannot be present if |kPlay| is.
   EXPECT_FALSE(GetButtonForAction(MediaSessionAction::kPause));
+}
+
+TEST_F(MediaNotificationViewTest, ButtonsFocusCheck) {
+  EnableAllActions();
+
+  Shell::Get()->focus_cycler()->FocusWidget(view()->GetWidget());
+  views::FocusManager* focus_manager = view()->GetFocusManager();
+
+  {
+    // Focus the first action button.
+    auto* button = GetButtonForAction(MediaSessionAction::kPreviousTrack);
+    focus_manager->SetFocusedView(button);
+    EXPECT_EQ(button, focus_manager->GetFocusedView());
+  }
+
+  SimulateTab();
+  EXPECT_EQ(GetButtonForAction(MediaSessionAction::kSeekBackward),
+            focus_manager->GetFocusedView());
+
+  SimulateTab();
+  EXPECT_EQ(GetButtonForAction(MediaSessionAction::kPlay),
+            focus_manager->GetFocusedView());
+
+  SimulateTab();
+  EXPECT_EQ(GetButtonForAction(MediaSessionAction::kSeekForward),
+            focus_manager->GetFocusedView());
+
+  SimulateTab();
+  EXPECT_EQ(GetButtonForAction(MediaSessionAction::kNextTrack),
+            focus_manager->GetFocusedView());
+}
+
+TEST_F(MediaNotificationViewTest, PlayPauseButtonTooltipCheck) {
+  EnableAction(MediaSessionAction::kPlay);
+  EnableAction(MediaSessionAction::kPause);
+
+  auto* button = GetButtonForAction(MediaSessionAction::kPlay);
+  base::string16 tooltip = button->GetTooltipText(gfx::Point());
+  EXPECT_FALSE(tooltip.empty());
+
+  media_session::mojom::MediaSessionInfoPtr session_info(
+      media_session::mojom::MediaSessionInfo::New());
+  session_info->playback_state =
+      media_session::mojom::MediaPlaybackState::kPlaying;
+  session_info->is_controllable = true;
+  GetItem()->MediaSessionInfoChanged(session_info.Clone());
+
+  base::string16 new_tooltip = button->GetTooltipText(gfx::Point());
+  EXPECT_FALSE(new_tooltip.empty());
+  EXPECT_NE(tooltip, new_tooltip);
 }
 
 TEST_F(MediaNotificationViewTest, NextTrackButtonClick) {
