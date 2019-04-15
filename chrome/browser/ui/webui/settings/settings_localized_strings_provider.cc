@@ -23,6 +23,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/webui/localized_string.h"
+#include "chrome/browser/ui/webui/management_ui.h"
 #include "chrome/browser/ui/webui/policy_indicator_localized_strings_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -1816,6 +1817,8 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           base::size(localized_strings));
+  html_source->AddString("managementPage",
+                         ManagementUI::GetManagementPageSubtitle(profile));
 
   // Format numbers to be used on the pin keyboard.
   for (int j = 0; j <= 9; j++) {

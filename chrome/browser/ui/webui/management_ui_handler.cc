@@ -43,6 +43,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
+#include "ui/chromeos/devicetype_utils.h"
 #endif  // defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -136,24 +137,6 @@ bool IsBrowserManaged() {
       ->HasMachineLevelPolicies();
 }
 #endif  // !defined(OS_CHROMEOS)
-
-std::string GetAccountDomain(Profile* profile) {
-  auto username = profile->GetProfileUserName();
-  size_t email_separator_pos = username.find('@');
-  bool is_email = email_separator_pos != std::string::npos &&
-                  email_separator_pos < username.length() - 1;
-
-  if (!is_email)
-    return std::string();
-
-  const std::string domain = gaia::ExtractDomainName(std::move(username));
-
-  auto consumer_domain_pos = domain.find("gmail.com");
-  if (consumer_domain_pos == std::string::npos)
-    consumer_domain_pos = domain.find("googlemail.com");
-
-  return consumer_domain_pos == std::string::npos ? domain : std::string();
-}
 
 #if defined(OS_CHROMEOS)
 
@@ -309,6 +292,26 @@ const char* GetReportingTypeValue(ReportingType reportingType) {
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 }  // namespace
+
+// TODO(raleksandov) Move to util class or smth similar.
+// static
+std::string ManagementUIHandler::GetAccountDomain(Profile* profile) {
+  auto username = profile->GetProfileUserName();
+  size_t email_separator_pos = username.find('@');
+  bool is_email = email_separator_pos != std::string::npos &&
+                  email_separator_pos < username.length() - 1;
+
+  if (!is_email)
+    return std::string();
+
+  const std::string domain = gaia::ExtractDomainName(std::move(username));
+
+  auto consumer_domain_pos = domain.find("gmail.com");
+  if (consumer_domain_pos == std::string::npos)
+    consumer_domain_pos = domain.find("googlemail.com");
+
+  return consumer_domain_pos == std::string::npos ? domain : std::string();
+}
 
 ManagementUIHandler::ManagementUIHandler() {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -492,6 +495,14 @@ base::DictionaryValue ManagementUIHandler::GetContextualManagedData(
                        l10n_util::GetStringUTF16(
                            managed_ ? IDS_MANAGEMENT_SUBTITLE
                                     : IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE));
+#else
+    const auto device_type = ui::GetChromeOSDeviceTypeResourceId();
+    response.SetString(
+        "pageSubtitle",
+        managed_
+            ? l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED,
+                                         l10n_util::GetStringUTF16(device_type))
+            : l10n_util::GetStringUTF16(IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE));
 #endif  // !defined(OS_CHROMEOS)
 
   } else {
@@ -510,15 +521,23 @@ base::DictionaryValue ManagementUIHandler::GetContextualManagedData(
                  : l10n_util::GetStringFUTF16(
                        IDS_MANAGEMENT_NOT_MANAGED_NOTICE,
                        base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl)));
-#endif  // !defined(OS_CHROMEOS)
     response.SetString(
         "pageSubtitle",
         managed_
             ? l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED_BY,
                                          base::UTF8ToUTF16(management_domain))
             : l10n_util::GetStringUTF16(IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE));
+#else
+    const auto device_type = ui::GetChromeOSDeviceTypeResourceId();
+    response.SetString(
+        "pageSubtitle",
+        managed_
+            ? l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED_BY,
+                                         l10n_util::GetStringUTF16(device_type),
+                                         base::UTF8ToUTF16(management_domain))
+            : l10n_util::GetStringUTF16(IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE));
+#endif  // !defined(OS_CHROMEOS)
   }
-
   GetManagementStatus(profile, &response);
   return response;
 }

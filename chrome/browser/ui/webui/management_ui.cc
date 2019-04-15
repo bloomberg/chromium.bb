@@ -8,6 +8,7 @@
 
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/dark_mode_handler.h"
 #include "chrome/browser/ui/webui/localized_string.h"
@@ -32,40 +33,12 @@
 
 namespace {
 
-#if defined(OS_CHROMEOS)
-
-base::string16 GetChromeOSManagementPageSubtitle() {
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  const auto device_type = ui::GetChromeOSDeviceTypeResourceId();
-  if (!connector->IsEnterpriseManaged()) {
-    return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE,
-                                      l10n_util::GetStringUTF16(device_type));
-  }
-
-  std::string display_domain = connector->GetEnterpriseDisplayDomain();
-
-  if (display_domain.empty()) {
-    if (!connector->IsActiveDirectoryManaged()) {
-      return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED,
-                                        l10n_util::GetStringUTF16(device_type));
-    }
-    display_domain = connector->GetRealm();
-  }
-
-  return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED_BY,
-                                    l10n_util::GetStringUTF16(device_type),
-                                    base::UTF8ToUTF16(display_domain));
-}
-#endif  // defined(OS_CHROMEOS)
-
-content::WebUIDataSource* CreateManagementUIHtmlSource() {
+content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIManagementHost);
 
-#if defined(OS_CHROMEOS)
-  source->AddString("subtitle", GetChromeOSManagementPageSubtitle());
-#endif  // defined(OS_CHROMEOS)
+  source->AddString("pageSubtitle",
+                    ManagementUI::GetManagementPageSubtitle(profile));
 
   static constexpr LocalizedString kLocalizedStrings[] = {
 #if defined(OS_CHROMEOS)
@@ -88,6 +61,7 @@ content::WebUIDataSource* CreateManagementUIHtmlSource() {
     {"browserReportingExplanation",
      IDS_MANAGEMENT_BROWSER_REPORTING_EXPLANATION},
     {"extensionReporting", IDS_MANAGEMENT_EXTENSION_REPORTING},
+    {"extensionReportingTitle", IDS_MANAGEMENT_EXTENSIONS_INSTALLED},
     {"extensionName", IDS_MANAGEMENT_EXTENSIONS_NAME},
     {"extensionPermissions", IDS_MANAGEMENT_EXTENSIONS_PERMISSIONS},
     {"title", IDS_MANAGEMENT_TITLE},
@@ -148,8 +122,49 @@ base::RefCountedMemory* ManagementUI::GetFaviconResourceBytes(
       IDR_MANAGEMENT_FAVICON, scale_factor);
 }
 
+// static
+base::string16 ManagementUI::GetManagementPageSubtitle(Profile* profile) {
+#if defined(OS_CHROMEOS)
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  const auto device_type = ui::GetChromeOSDeviceTypeResourceId();
+  if (!connector->IsEnterpriseManaged()) {
+    return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE,
+                                      l10n_util::GetStringUTF16(device_type));
+  }
+
+  std::string display_domain = connector->GetEnterpriseDisplayDomain();
+
+  if (display_domain.empty()) {
+    if (!connector->IsActiveDirectoryManaged()) {
+      return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED,
+                                        l10n_util::GetStringUTF16(device_type));
+    }
+    display_domain = connector->GetRealm();
+  }
+  return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED_BY,
+                                    l10n_util::GetStringUTF16(device_type),
+                                    base::UTF8ToUTF16(display_domain));
+#else   // defined(OS_CHROMEOS)
+  const auto management_domain = ManagementUIHandler::GetAccountDomain(profile);
+  const auto managed =
+      policy::ProfilePolicyConnectorFactory::IsProfileManaged(profile);
+  if (management_domain.empty()) {
+    return l10n_util::GetStringUTF16(managed
+                                         ? IDS_MANAGEMENT_SUBTITLE
+                                         : IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE);
+  }
+  if (managed) {
+    return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED_BY,
+                                      base::UTF8ToUTF16(management_domain));
+  }
+  return l10n_util::GetStringUTF16(IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE);
+#endif  // defined(OS_CHROMEOS)
+}
+
 ManagementUI::ManagementUI(content::WebUI* web_ui) : WebUIController(web_ui) {
-  content::WebUIDataSource* source = CreateManagementUIHtmlSource();
+  content::WebUIDataSource* source =
+      CreateManagementUIHtmlSource(Profile::FromWebUI(web_ui));
   ManagementUIHandler::Initialize(web_ui, source);
   DarkModeHandler::Initialize(web_ui, source);
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
