@@ -128,27 +128,16 @@ static bool IsRectInDirection(SpatialNavigationDirection direction,
   }
 }
 
-// Answers true if |node| is completely outside the user's (visual) viewport.
-// This logic is used by spatnav to rule out offscreen focus candidates and an
-// offscreen activeElement. When activeElement is offscreen, spatnav doesn't use
-// it as the search origin; the search will start at an edge of the visual
-// viewport instead.
-// TODO(crbug.com/889840): Fix VisibleBoundsInVisualViewport().
-// If VisibleBoundsInVisualViewport() would have taken "element-clips" into
-// account, spatnav could have called it directly; no need to check the
-// LayoutObject's VisibleContentRect.
-bool IsOffscreen(const Node* node) {
-  DCHECK(node);
-
-  LocalFrameView* frame_view = node->GetDocument().View();
+FloatRect RectInViewport(const Node& node) {
+  LocalFrameView* frame_view = node.GetDocument().View();
   if (!frame_view)
-    return true;
+    return FloatRect();
 
   DCHECK(!frame_view->NeedsLayout());
 
-  LayoutObject* object = node->GetLayoutObject();
+  LayoutObject* object = node.GetLayoutObject();
   if (!object)
-    return true;
+    return FloatRect();
 
   // Get the rect in the object's own frame. We use VisualRectInDocument for
   // legacy reasons, it has some special cases for inlines that we'd like to
@@ -181,7 +170,21 @@ bool IsOffscreen(const Node* node) {
       FloatRect(FloatPoint(), FloatSize(visual_viewport.Size()));
   rect_in_viewport.Intersect(viewport_rect);
 
-  return rect_in_viewport.IsEmpty();
+  return rect_in_viewport;
+}
+
+// Answers true if |node| is completely outside the user's (visual) viewport.
+// This logic is used by spatnav to rule out offscreen focus candidates and an
+// offscreen activeElement. When activeElement is offscreen, spatnav doesn't use
+// it as the search origin; the search will start at an edge of the visual
+// viewport instead.
+// TODO(crbug.com/889840): Fix VisibleBoundsInVisualViewport().
+// If VisibleBoundsInVisualViewport() would have taken "element-clips" into
+// account, spatnav could have called it directly; no need to check the
+// LayoutObject's VisibleContentRect.
+bool IsOffscreen(const Node* node) {
+  DCHECK(node);
+  return RectInViewport(*node).IsEmpty();
 }
 
 // As IsOffscreen() but returns visibility through the |node|'s frame's viewport
