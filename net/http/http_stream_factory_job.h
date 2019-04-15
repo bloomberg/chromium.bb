@@ -119,12 +119,6 @@ class HttpStreamFactory::Job
     // contained in |proxy_info| can be skipped.
     virtual bool OnInitConnection(const ProxyInfo& proxy_info) = 0;
 
-    // Invoked to notify the HttpStreamRequest and HttpStreamFactory of the
-    // readiness of new SPDY session.
-    virtual void OnNewSpdySessionReady(
-        Job* job,
-        const base::WeakPtr<SpdySession>& spdy_session) = 0;
-
     // Invoked when the |job| finishes pre-connecting sockets.
     virtual void OnPreconnectsComplete(Job* job) = 0;
 
@@ -483,9 +477,6 @@ class HttpStreamFactory::Job
   // 0 if we're not preconnecting. Otherwise, the number of streams to
   // preconnect.
   int num_streams_;
-
-  // Initialized when we create a new SpdySession.
-  base::WeakPtr<SpdySession> new_spdy_session_;
 
   // Initialized when we have an existing SpdySession.
   base::WeakPtr<SpdySession> existing_spdy_session_;

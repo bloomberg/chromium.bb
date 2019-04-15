@@ -435,21 +435,6 @@ void HttpStreamFactory::Job::OnBidirectionalStreamImplReadyCallback() {
   // |this| may be deleted after this call.
 }
 
-void HttpStreamFactory::Job::OnNewSpdySessionReadyCallback() {
-  DCHECK(stream_.get() || bidirectional_stream_impl_.get());
-  DCHECK_NE(job_type_, PRECONNECT);
-  DCHECK(using_spdy_);
-  // Note: an event loop iteration has passed, so |new_spdy_session_| may be
-  // NULL at this point if the SpdySession closed immediately after creation.
-  base::WeakPtr<SpdySession> spdy_session = new_spdy_session_;
-  new_spdy_session_.reset();
-
-  MaybeCopyConnectionAttemptsFromSocketOrHandle();
-
-  delegate_->OnNewSpdySessionReady(this, spdy_session);
-  // |this| may be deleted after this call.
-}
-
 void HttpStreamFactory::Job::OnStreamFailedCallback(int result) {
   DCHECK_NE(job_type_, PRECONNECT);
 
@@ -511,8 +496,6 @@ void HttpStreamFactory::Job::OnHttpsProxyTunnelResponseRedirectCallback(
 }
 
 void HttpStreamFactory::Job::OnPreconnectsComplete() {
-  DCHECK(!new_spdy_session_);
-
   delegate_->OnPreconnectsComplete(this);
   // |this| may be deleted after this call.
 }
@@ -608,11 +591,7 @@ void HttpStreamFactory::Job::RunLoop(int result) {
 
     case OK:
       next_state_ = STATE_DONE;
-      if (new_spdy_session_.get()) {
-        base::ThreadTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE, base::BindOnce(&Job::OnNewSpdySessionReadyCallback,
-                                      ptr_factory_.GetWeakPtr()));
-      } else if (is_websocket_) {
+      if (is_websocket_) {
         DCHECK(websocket_stream_);
         base::ThreadTaskRunnerHandle::Get()->PostTask(
             FROM_HERE,
@@ -1233,7 +1212,6 @@ int HttpStreamFactory::Job::DoCreateStream() {
     return ERR_SPDY_INADEQUATE_TRANSPORT_SECURITY;
   }
 
-  new_spdy_session_ = spdy_session;
   url::SchemeHostPort scheme_host_port(
       using_ssl_ ? url::kHttpsScheme : url::kHttpScheme,
       spdy_session_key_.host_port_pair().host(),
@@ -1245,11 +1223,8 @@ int HttpStreamFactory::Job::DoCreateStream() {
     http_server_properties->SetSupportsSpdy(scheme_host_port, true);
 
   // Create a SpdyHttpStream or a BidirectionalStreamImpl attached to the
-  // session; OnNewSpdySessionReadyCallback is not called until an event loop
-  // iteration later, so if the SpdySession is closed between then, allow
-  // reuse state from the underlying socket, sampled by SpdyHttpStream,
-  // bubble up to the request.
-  return SetSpdyHttpStreamOrBidirectionalStreamImpl(new_spdy_session_);
+  // session.
+  return SetSpdyHttpStreamOrBidirectionalStreamImpl(spdy_session);
 }
 
 int HttpStreamFactory::Job::DoCreateStreamComplete(int result) {
