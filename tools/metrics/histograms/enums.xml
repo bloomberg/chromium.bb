@@ -6881,6 +6881,40 @@ histogram as enum -->
   <int value="10" label="Image was not required for activation."/>
 </enum>
 
+<enum name="ChromeBrowsingDataRemoverTasks">
+  <int value="1" label="kSynchronous"/>
+  <int value="2" label="kHistory"/>
+  <int value="3" label="kHostNameResolution"/>
+  <int value="4" label="kNaclCache"/>
+  <int value="5" label="kPnaclCache"/>
+  <int value="6" label="kAutofillData"/>
+  <int value="7" label="kAutofillOrigins"/>
+  <int value="8" label="kPluginData"/>
+  <int value="9" label="kFlashLsoHelper"/>
+  <int value="10" label="kDomainReliability"/>
+  <int value="11" label="kNetworkPredictor"/>
+  <int value="12" label="kWebrtcLogs"/>
+  <int value="13" label="kVideoDecodeHistory"/>
+  <int value="14" label="kCookies"/>
+  <int value="15" label="kPasswords"/>
+  <int value="16" label="kHttpAuthCache"/>
+  <int value="17" label="kDisableAutoSignin"/>
+  <int value="18" label="kPasswordsStatistics"/>
+  <int value="19" label="kKeywordsModel"/>
+  <int value="20" label="kReportingCache"/>
+  <int value="21" label="kNetworkErrorLogging"/>
+  <int value="22" label="kFlashDeauthorization"/>
+  <int value="23" label="kOfflinePages"/>
+  <int value="24" label="kPrecache"/>
+  <int value="25" label="kExploreSites"/>
+  <int value="26" label="kLegacyStrikes"/>
+  <int value="27" label="kWebrtcEventLogs"/>
+  <int value="28" label="kDrmLicenses"/>
+  <int value="29" label="kHostCache"/>
+  <int value="30" label="kTpmAttestationKeys"/>
+  <int value="31" label="kStrikes"/>
+</enum>
+
 <enum name="ChromeChannelForHistogram">
   <int value="0" label="UNKNOWN"/>
   <int value="1" label="CANARY"/>
