@@ -10,6 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks_observer.h"
+#include "components/download/content/public/all_download_item_notifier.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class Profile;
@@ -29,7 +30,8 @@ struct SelectedFileInfo;
 namespace file_manager {
 namespace file_tasks {
 
-class FileTasksNotifier : public KeyedService {
+class FileTasksNotifier : public KeyedService,
+                          public download::AllDownloadItemNotifier::Observer {
  public:
   enum class FileAvailability {
     // File exists and is accessible.
@@ -59,11 +61,16 @@ class FileTasksNotifier : public KeyedService {
   void NotifyFileDialogSelection(const std::vector<ui::SelectedFileInfo>& files,
                                  bool for_open);
 
+  // download::AllDownloadItemNotifier::Observer:
+  void OnDownloadUpdated(content::DownloadManager* manager,
+                         download::DownloadItem* item) override;
+
  private:
   void NotifyObservers(const std::vector<base::FilePath>& paths,
                        FileTasksObserver::OpenType open_type);
 
   Profile* const profile_;
+  download::AllDownloadItemNotifier download_notifier_;
   base::ObserverList<FileTasksObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(FileTasksNotifier);

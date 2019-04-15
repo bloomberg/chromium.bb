@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/file_manager/file_tasks_notifier_factory.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks_observer.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/download/public/common/download_item.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/common/fileapi/file_system_types.h"
 #include "ui/shell_dialogs/selected_file_info.h"
@@ -29,7 +30,10 @@ bool IsSupportedFileSystemType(storage::FileSystemType type) {
 
 }  // namespace
 
-FileTasksNotifier::FileTasksNotifier(Profile* profile) : profile_(profile) {}
+FileTasksNotifier::FileTasksNotifier(Profile* profile)
+    : profile_(profile),
+      download_notifier_(content::BrowserContext::GetDownloadManager(profile_),
+                         this) {}
 
 FileTasksNotifier::~FileTasksNotifier() = default;
 
@@ -44,6 +48,18 @@ void FileTasksNotifier::AddObserver(FileTasksObserver* observer) {
 
 void FileTasksNotifier::RemoveObserver(FileTasksObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void FileTasksNotifier::OnDownloadUpdated(content::DownloadManager* manager,
+                                          download::DownloadItem* item) {
+  if (item->IsTransient() ||
+      item->GetState() != download::DownloadItem::DownloadState::COMPLETE ||
+      item->GetDownloadCreationType() ==
+          download::DownloadItem::DownloadCreationType::TYPE_HISTORY_IMPORT) {
+    return;
+  }
+  NotifyObservers({item->GetTargetFilePath()},
+                  FileTasksObserver::OpenType::kDownload);
 }
 
 void FileTasksNotifier::NotifyFileTasks(
