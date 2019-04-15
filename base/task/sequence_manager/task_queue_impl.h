@@ -23,7 +23,7 @@
 #include "base/task/sequence_manager/lazily_deallocated_deque.h"
 #include "base/task/sequence_manager/sequenced_task_source.h"
 #include "base/task/sequence_manager/task_queue.h"
-#include "base/task/task_scheduler/scheduler_lock.h"
+#include "base/task/thread_pool/scheduler_lock.h"
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"

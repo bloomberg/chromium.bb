@@ -24,13 +24,13 @@ class AwContentBrowserClientTest : public testing::Test {
   base::test::ScopedFeatureList feature_list_;
 };
 
-TEST_F(AwContentBrowserClientTest, DisableCreatingTaskScheduler) {
+TEST_F(AwContentBrowserClientTest, DisableCreatingThreadPool) {
   AwFeatureListCreator aw_feature_list_creator;
   AwContentBrowserClient client(&aw_feature_list_creator);
-  EXPECT_TRUE(client.ShouldCreateTaskScheduler());
+  EXPECT_TRUE(client.ShouldCreateThreadPool());
 
-  AwContentBrowserClient::DisableCreatingTaskScheduler();
-  EXPECT_FALSE(client.ShouldCreateTaskScheduler());
+  AwContentBrowserClient::DisableCreatingThreadPool();
+  EXPECT_FALSE(client.ShouldCreateThreadPool());
 }
 
 // Tests that constraints on trust for Symantec-issued certificates are not

@@ -47,8 +47,8 @@ struct BASE_EXPORT PendingTask {
   base::TimeTicks delayed_run_time;
 
   // The time at which the task was queued. For SequenceManager tasks and
-  // TaskScheduler non-delayed tasks, this happens at post time. For
-  // TaskScheduler delayed tasks, this happens some time after the task's delay
+  // ThreadPool non-delayed tasks, this happens at post time. For
+  // ThreadPool delayed tasks, this happens some time after the task's delay
   // has expired. This is not set for SequenceManager tasks if
   // SetAddQueueTimeToTasks(true) wasn't call. This defaults to a null TimeTicks
   // if the task hasn't been inserted in a sequence yet.

@@ -15,7 +15,7 @@
 #include "base/task/sequence_manager/lazy_now.h"
 #include "base/task/sequence_manager/tasks.h"
 #include "base/task/task_observer.h"
-#include "base/task/task_scheduler/scheduler_lock.h"
+#include "base/task/thread_pool/scheduler_lock.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 

@@ -5,7 +5,7 @@
 #include "components/data_reduction_proxy/content/common/data_reduction_proxy_url_loader_throttle.h"
 
 #include "base/run_loop.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"

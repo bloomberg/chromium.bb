@@ -5,7 +5,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/tools/fuzzers/fuzz_impl.h"
@@ -33,11 +33,11 @@ void FuzzMessage(const uint8_t* data, size_t size, base::RunLoop* run) {
 }
 
 /* Environment for the fuzzer. Initializes the mojo EDK and sets up a
- * TaskScheduler, because Mojo messages must be sent and processed from
+ * ThreadPool, because Mojo messages must be sent and processed from
  * TaskRunners. */
 struct Environment {
   Environment() : message_loop(base::MessageLoop::TYPE_UI) {
-    base::TaskScheduler::CreateAndStartWithDefaultParams(
+    base::ThreadPool::CreateAndStartWithDefaultParams(
         "MojoParseMessageFuzzerProcess");
     mojo::core::Init();
   }

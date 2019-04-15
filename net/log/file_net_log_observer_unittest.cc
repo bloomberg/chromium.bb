@@ -17,7 +17,7 @@
 #include "base/json/json_writer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "net/base/test_completion_callback.h"
@@ -280,7 +280,7 @@ class FileNetLogObserverTest : public ::testing::TestWithParam<bool>,
     // The log files are written by a sequenced task runner. Drain all the
     // scheduled tasks to ensure that the file writing ones have run before
     // checking if they exist.
-    base::TaskScheduler::GetInstance()->FlushForTesting();
+    base::ThreadPool::GetInstance()->FlushForTesting();
     return base::PathExists(log_path_);
   }
 
@@ -378,7 +378,7 @@ TEST_P(FileNetLogObserverTest,
   ASSERT_TRUE(LogFileExists());
 
   // Should also have the scratch dir, if bounded. (Can be checked since
-  // LogFileExists flushed the task scheduler).
+  // LogFileExists flushed the thread pool).
   if (IsBounded()) {
     ASSERT_TRUE(base::PathExists(scratch_dir_.GetPath()));
   }
@@ -923,7 +923,7 @@ TEST_F(FileNetLogObserverBoundedTest, PreExistingUsesSpecifiedDir) {
       scratch_dir.GetPath(), std::move(file), kLargeFileSize, nullptr);
   logger_->StartObserving(&net_log_, NetLogCaptureMode::Default());
 
-  base::TaskScheduler::GetInstance()->FlushForTesting();
+  base::ThreadPool::GetInstance()->FlushForTesting();
   EXPECT_TRUE(base::PathExists(log_path_));
   EXPECT_TRUE(
       base::PathExists(scratch_dir.GetPath().AppendASCII("constants.json")));

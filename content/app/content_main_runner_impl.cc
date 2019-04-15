@@ -895,10 +895,10 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
       delegate_->PostFieldTrialInitialization();
     }
 
-    if (GetContentClient()->browser()->ShouldCreateTaskScheduler()) {
-      // Create and start the TaskScheduler early to allow upcoming code to use
+    if (GetContentClient()->browser()->ShouldCreateThreadPool()) {
+      // Create and start the ThreadPool early to allow upcoming code to use
       // the post_task.h API.
-      base::TaskScheduler::Create("Browser");
+      base::ThreadPool::Create("Browser");
     }
 
     delegate_->PreCreateMainMessageLoop();
@@ -919,9 +919,9 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
 
     delegate_->PostEarlyInitialization(main_params.ui_task != nullptr);
 
-    if (GetContentClient()->browser()->ShouldCreateTaskScheduler()) {
-      // The FeatureList needs to create before starting the TaskScheduler.
-      StartBrowserTaskScheduler();
+    if (GetContentClient()->browser()->ShouldCreateThreadPool()) {
+      // The FeatureList needs to create before starting the ThreadPool.
+      StartBrowserThreadPool();
     }
 
     BrowserTaskExecutor::PostFeatureListSetup();

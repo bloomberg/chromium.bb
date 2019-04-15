@@ -16,8 +16,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
-#include "base/task/task_scheduler/task_scheduler.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "cc/animation/animation_host.h"
@@ -81,7 +81,7 @@ void LayerTreeView::Initialize(
   params.main_task_runner = main_thread_;
   params.mutator_host = animation_host_.get();
   params.ukm_recorder_factory = std::move(ukm_recorder_factory);
-  if (base::TaskScheduler::GetInstance()) {
+  if (base::ThreadPool::GetInstance()) {
     // The image worker thread needs to allow waiting since it makes discardable
     // shared memory allocations which need to make synchronous calls to the
     // IO thread.

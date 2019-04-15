@@ -11,7 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "build/build_config.h"
 #include "content/browser/browser_process_sub_thread.h"
 #include "content/public/browser/browser_main_runner.h"
@@ -129,11 +129,11 @@ class CONTENT_EXPORT BrowserMainLoop {
 
   static media::AudioManager* GetAudioManager();
 
-  // The TaskScheduler instance must exist but not to be started when building
+  // The ThreadPool instance must exist but not to be started when building
   // BrowserMainLoop.
   explicit BrowserMainLoop(
       const MainFunctionParams& parameters,
-      std::unique_ptr<base::TaskScheduler::ScopedExecutionFence> fence);
+      std::unique_ptr<base::ThreadPool::ScopedExecutionFence> fence);
   virtual ~BrowserMainLoop();
 
   void Init();
@@ -294,10 +294,10 @@ class CONTENT_EXPORT BrowserMainLoop {
   // BrowserMainLoop::CreateThreads() as things initialized before it require an
   // initialize-once happens-before relationship with all eventual content tasks
   // running on other threads. This ScopedExecutionFence ensures that no tasks
-  // posted to TaskScheduler gets to run before CreateThreads(); satisfying this
-  // requirement even though the TaskScheduler is created and started before
+  // posted to ThreadPool gets to run before CreateThreads(); satisfying this
+  // requirement even though the ThreadPool is created and started before
   // content is entered.
-  std::unique_ptr<base::TaskScheduler::ScopedExecutionFence>
+  std::unique_ptr<base::ThreadPool::ScopedExecutionFence>
       scoped_execution_fence_;
 
   // Members initialized in |MainMessageLoopStart()| ---------------------------

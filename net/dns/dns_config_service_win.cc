@@ -639,7 +639,7 @@ class DnsConfigServiceWin::Watcher
   DISALLOW_COPY_AND_ASSIGN(Watcher);
 };
 
-// Reads config from registry and IpHelper. All work performed in TaskScheduler.
+// Reads config from registry and IpHelper. All work performed in ThreadPool.
 class DnsConfigServiceWin::ConfigReader : public SerialWorker {
  public:
   explicit ConfigReader(DnsConfigServiceWin* service)
@@ -684,7 +684,7 @@ class DnsConfigServiceWin::ConfigReader : public SerialWorker {
 };
 
 // Reads hosts from HOSTS file and fills in localhost and local computer name if
-// necessary. All work performed in TaskScheduler.
+// necessary. All work performed in ThreadPool.
 class DnsConfigServiceWin::HostsReader : public SerialWorker {
  public:
   explicit HostsReader(DnsConfigServiceWin* service)

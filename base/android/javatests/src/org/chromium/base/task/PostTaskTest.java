@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Note due to layering concerns we can't test post native functionality in a
  * base javatest. Instead see:
  * content/public/android/javatests/src/org/chromium/content/browser/scheduler/
- * TaskSchedulerTest.java
+ * NativePostTaskTest.java
  */
 @RunWith(BaseJUnit4ClassRunner.class)
 public class PostTaskTest {

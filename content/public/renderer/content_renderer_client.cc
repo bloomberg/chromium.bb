@@ -236,8 +236,8 @@ GURL ContentRendererClient::OverrideFlashEmbedWithHTML(const GURL& url) {
   return GURL();
 }
 
-std::unique_ptr<base::TaskScheduler::InitParams>
-ContentRendererClient::GetTaskSchedulerInitParams() {
+std::unique_ptr<base::ThreadPool::InitParams>
+ContentRendererClient::GetThreadPoolInitParams() {
   return nullptr;
 }
 

@@ -10,7 +10,7 @@
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/memory/ptr_util.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
@@ -156,7 +156,7 @@ class AdapterTest : public testing::Test {
 
   void TearDown() override {
     adapter_.reset();
-    base::TaskScheduler::GetInstance()->FlushForTesting();
+    base::ThreadPool::GetInstance()->FlushForTesting();
     chromeos::PowerManagerClient::Shutdown();
   }
 

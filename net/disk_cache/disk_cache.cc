@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "build/build_config.h"
 #include "net/base/cache_type.h"
 #include "net/base/net_errors.h"
@@ -305,7 +305,7 @@ net::Error CreateCacheBackend(net::CacheType type,
 void FlushCacheThreadForTesting() {
   // For simple backend.
   SimpleBackendImpl::FlushWorkerPoolForTesting();
-  base::TaskScheduler::GetInstance()->FlushForTesting();
+  base::ThreadPool::GetInstance()->FlushForTesting();
 
   // Block backend.
   BackendImpl::FlushForTesting();

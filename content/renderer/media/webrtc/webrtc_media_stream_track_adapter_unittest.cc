@@ -114,7 +114,7 @@ class WebRtcMediaStreamTrackAdapterTest : public ::testing::Test {
 
  protected:
   // The ScopedTaskEnvironment prevents the ChildProcess from leaking a
-  // TaskScheduler.
+  // ThreadPool.
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   ChildProcess child_process_;
 

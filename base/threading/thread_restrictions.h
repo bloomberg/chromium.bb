@@ -53,7 +53,7 @@
 // Avoid using allowances outside of unit tests. In unit tests, use allowances
 // with the suffix "ForTesting".
 //
-// Prefer making blocking calls from tasks posted to base::TaskScheduler with
+// Prefer making blocking calls from tasks posted to base::ThreadPool with
 // base::MayBlock().
 //
 // Instead of waiting on a WaitableEvent or a ConditionVariable, prefer putting

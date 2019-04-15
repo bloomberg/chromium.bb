@@ -113,7 +113,7 @@ using content::WebContents;
 
 namespace android_webview {
 namespace {
-static bool g_should_create_task_scheduler = true;
+static bool g_should_create_thread_pool = true;
 
 #if DCHECK_IS_ON()
 // A boolean value to determine if the NetworkContext has been created yet. This
@@ -905,8 +905,8 @@ bool AwContentBrowserClient::ShouldOverrideUrlLoading(
       url, has_user_gesture, is_redirect, is_main_frame, ignore_navigation);
 }
 
-bool AwContentBrowserClient::ShouldCreateTaskScheduler() {
-  return g_should_create_task_scheduler;
+bool AwContentBrowserClient::ShouldCreateThreadPool() {
+  return g_should_create_thread_pool;
 }
 
 std::unique_ptr<content::LoginDelegate>
@@ -1055,8 +1055,8 @@ AwContentBrowserClient::CreateSpeechRecognitionManagerDelegate() {
 }
 
 // static
-void AwContentBrowserClient::DisableCreatingTaskScheduler() {
-  g_should_create_task_scheduler = false;
+void AwContentBrowserClient::DisableCreatingThreadPool() {
+  g_should_create_thread_pool = false;
 }
 
 }  // namespace android_webview

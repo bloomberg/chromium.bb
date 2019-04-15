@@ -11,7 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/test/mock_callback.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "testing/gtest/include/gtest/gtest.h"

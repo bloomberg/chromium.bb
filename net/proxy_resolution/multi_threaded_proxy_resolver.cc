@@ -376,7 +376,7 @@ void Executor::Destroy() {
   DCHECK(coordinator_);
 
   {
-    // TODO(http://crbug.com/69710): Use TaskScheduler instead of creating a
+    // TODO(http://crbug.com/69710): Use ThreadPool instead of creating a
     // base::Thread.
     MultiThreadedProxyResolverScopedAllowJoinOnIO allow_thread_join;
 

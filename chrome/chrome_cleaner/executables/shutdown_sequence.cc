@@ -3,9 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/chrome_cleaner/executables/shutdown_sequence.h"
-#include "base/task/task_scheduler/task_scheduler.h"
-
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 
 namespace chrome_cleaner {
 
@@ -20,12 +18,12 @@ ShutdownSequence::~ShutdownSequence() {
   if (!mojo_task_runner)
     return;
 
-  auto* task_scheduler = base::TaskScheduler::GetInstance();
-  if (task_scheduler)
-    task_scheduler->Shutdown();
+  auto* thread_pool = base::ThreadPool::GetInstance();
+  if (thread_pool)
+    thread_pool->Shutdown();
 
   // Objects that post messages to themselves with base::Unretained must be
-  // destroyed after TaskScheduler::Shutdown, otherwise some tasks might be
+  // destroyed after ThreadPool::Shutdown, otherwise some tasks might be
   // still referencing recently destroyed objects.
 
   engine_facade.reset();

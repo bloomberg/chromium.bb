@@ -453,7 +453,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                           media::mojom::RemotingSourcePtr source,
                           media::mojom::RemoterRequest request) final;
 #endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING)
-  std::unique_ptr<base::TaskScheduler::InitParams> GetTaskSchedulerInitParams()
+  std::unique_ptr<base::ThreadPool::InitParams> GetThreadPoolInitParams()
       override;
   base::FilePath GetLoggingFileName(
       const base::CommandLine& command_line) override;

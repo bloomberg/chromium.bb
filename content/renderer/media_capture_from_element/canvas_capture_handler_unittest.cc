@@ -134,7 +134,7 @@ class CanvasCaptureHandlerTest
 
   // A ChildProcess is needed to fool the Tracks and Sources believing they are
   // on the right threads. A ScopedTaskEnvironment must be instantiated before
-  // ChildProcess to prevent it from leaking a TaskScheduler.
+  // ChildProcess to prevent it from leaking a ThreadPool.
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   ChildProcess child_process_;
 

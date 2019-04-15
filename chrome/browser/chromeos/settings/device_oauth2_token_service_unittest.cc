@@ -11,7 +11,7 @@
 #include <utility>
 
 #include "base/run_loop.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -112,7 +112,7 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
 
   void TearDown() override {
     oauth2_service_.reset();
-    base::TaskScheduler::GetInstance()->FlushForTesting();
+    base::ThreadPool::GetInstance()->FlushForTesting();
     DeviceSettingsService::Get()->UnsetSessionManager();
     SystemSaltGetter::Shutdown();
     CryptohomeClient::Shutdown();

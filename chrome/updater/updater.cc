@@ -21,8 +21,8 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
-#include "base/task/task_scheduler/initialization_util.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/initialization_util.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/task_runner.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -50,21 +50,21 @@ const uint8_t mimo_hash[] = {0xc8, 0xce, 0x99, 0xba, 0xce, 0x89, 0xf8, 0x20,
                              0xb9, 0x40, 0xc5, 0x55, 0xaf, 0x08, 0x63, 0x70,
                              0x54, 0xf9, 0x56, 0xd3, 0xe7, 0x88, 0xba, 0x8c};
 
-void TaskSchedulerStart() {
-  base::TaskScheduler::Create("Updater");
-  const auto task_scheduler_init_params =
-      std::make_unique<base::TaskScheduler::InitParams>(
+void ThreadPoolStart() {
+  base::ThreadPool::Create("Updater");
+  const auto thread_pool_init_params =
+      std::make_unique<base::ThreadPool::InitParams>(
           base::SchedulerWorkerPoolParams(
               base::RecommendedMaxNumberOfThreadsInPool(3, 8, 0.1, 0),
               base::TimeDelta::FromSeconds(30)),
           base::SchedulerWorkerPoolParams(
               base::RecommendedMaxNumberOfThreadsInPool(8, 32, 0.3, 0),
               base::TimeDelta::FromSeconds(30)));
-  base::TaskScheduler::GetInstance()->Start(*task_scheduler_init_params);
+  base::ThreadPool::GetInstance()->Start(*thread_pool_init_params);
 }
 
-void TaskSchedulerStop() {
-  base::TaskScheduler::GetInstance()->Shutdown();
+void ThreadPoolStop() {
+  base::ThreadPool::GetInstance()->Shutdown();
 }
 
 void QuitLoop(base::OnceClosure quit_closure) {
@@ -117,11 +117,11 @@ void InitializeUpdaterMain() {
   }
   StartCrashReporter(UPDATER_VERSION_STRING);
 
-  TaskSchedulerStart();
+  ThreadPoolStart();
 }
 
 void TerminateUpdaterMain() {
-  TaskSchedulerStop();
+  ThreadPoolStop();
 }
 
 }  // namespace

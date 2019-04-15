@@ -75,17 +75,17 @@ void RunUntilIdleTest(
                           Unretained(&run_until_idle_returned),
                           Unretained(&first_main_thread_task_ran)));
 
-  AtomicFlag first_task_scheduler_task_ran;
+  AtomicFlag first_thread_pool_task_ran;
   PostTask(FROM_HERE, BindOnce(&VerifyRunUntilIdleDidNotReturnAndSetFlag,
                                Unretained(&run_until_idle_returned),
-                               Unretained(&first_task_scheduler_task_ran)));
+                               Unretained(&first_thread_pool_task_ran)));
 
-  AtomicFlag second_task_scheduler_task_ran;
+  AtomicFlag second_thread_pool_task_ran;
   AtomicFlag second_main_thread_task_ran;
   PostTaskAndReply(FROM_HERE,
                    BindOnce(&VerifyRunUntilIdleDidNotReturnAndSetFlag,
                             Unretained(&run_until_idle_returned),
-                            Unretained(&second_task_scheduler_task_ran)),
+                            Unretained(&second_thread_pool_task_ran)),
                    BindOnce(&VerifyRunUntilIdleDidNotReturnAndSetFlag,
                             Unretained(&run_until_idle_returned),
                             Unretained(&second_main_thread_task_ran)));
@@ -94,8 +94,8 @@ void RunUntilIdleTest(
   run_until_idle_returned.Set();
 
   EXPECT_TRUE(first_main_thread_task_ran.IsSet());
-  EXPECT_TRUE(first_task_scheduler_task_ran.IsSet());
-  EXPECT_TRUE(second_task_scheduler_task_ran.IsSet());
+  EXPECT_TRUE(first_thread_pool_task_ran.IsSet());
+  EXPECT_TRUE(second_thread_pool_task_ran.IsSet());
   EXPECT_TRUE(second_main_thread_task_ran.IsSet());
 }
 
@@ -186,7 +186,7 @@ TEST_P(ScopedTaskEnvironmentTest, DelayedTasks) {
           },
           Unretained(&counter)),
       kShortTaskDelay);
-  // TODO(gab): This currently doesn't run because the TaskScheduler's clock
+  // TODO(gab): This currently doesn't run because the ThreadPool's clock
   // isn't mocked but it should be.
   PostDelayedTask(FROM_HERE,
                   BindOnce(
@@ -403,7 +403,7 @@ TEST_F(ScopedTaskEnvironmentTest,
 // Regression test to ensure that ScopedTaskEnvironment enables the MTA in the
 // thread pool (so that the test environment matches that of the browser process
 // and com_init_util.h's assertions are happy in unit tests).
-TEST_F(ScopedTaskEnvironmentTest, TaskSchedulerPoolAllowsMTA) {
+TEST_F(ScopedTaskEnvironmentTest, ThreadPoolPoolAllowsMTA) {
   ScopedTaskEnvironment scoped_task_environment;
   PostTask(FROM_HERE,
            BindOnce(&win::AssertComApartmentType, win::ComApartmentType::MTA));

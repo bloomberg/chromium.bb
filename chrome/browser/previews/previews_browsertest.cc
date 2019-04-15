@@ -9,7 +9,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/values_test_util.h"
@@ -53,7 +53,7 @@ void RetryForHistogramUntilCountReached(base::HistogramTester* histogram_tester,
                                         const std::string& histogram_name,
                                         size_t count) {
   while (true) {
-    base::TaskScheduler::GetInstance()->FlushForTesting();
+    base::ThreadPool::GetInstance()->FlushForTesting();
     base::RunLoop().RunUntilIdle();
 
     content::FetchHistogramsFromChildProcesses();

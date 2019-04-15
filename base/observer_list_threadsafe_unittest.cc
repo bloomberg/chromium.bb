@@ -17,7 +17,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -390,11 +390,11 @@ TEST(ObserverListThreadSafeTest, NotificationOnValidSequence) {
                           BindOnce(&ObserverListThreadSafe<Foo>::AddObserver,
                                    observer_list, Unretained(&observer_2)));
 
-  TaskScheduler::GetInstance()->FlushForTesting();
+  ThreadPool::GetInstance()->FlushForTesting();
 
   observer_list->Notify(FROM_HERE, &Foo::Observe, 1);
 
-  TaskScheduler::GetInstance()->FlushForTesting();
+  ThreadPool::GetInstance()->FlushForTesting();
 
   EXPECT_TRUE(observer_1.called_on_valid_sequence());
   EXPECT_TRUE(observer_2.called_on_valid_sequence());
@@ -460,14 +460,14 @@ TEST(ObserverListThreadSafeTest, RemoveWhileNotificationIsRunning) {
                         WaitableEvent::InitialState::NOT_SIGNALED);
 
   // This must be after the declaration of |barrier| so that tasks posted to
-  // TaskScheduler can safely use |barrier|.
+  // ThreadPool can safely use |barrier|.
   test::ScopedTaskEnvironment scoped_task_environment;
 
   CreateSequencedTaskRunnerWithTraits({MayBlock()})
       ->PostTask(FROM_HERE,
                  base::BindOnce(&ObserverListThreadSafe<Foo>::AddObserver,
                                 observer_list, Unretained(&observer)));
-  TaskScheduler::GetInstance()->FlushForTesting();
+  ThreadPool::GetInstance()->FlushForTesting();
 
   observer_list->Notify(FROM_HERE, &Foo::Observe, 1);
   observer.WaitForNotificationRunning();

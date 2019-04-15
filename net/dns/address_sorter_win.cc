@@ -88,7 +88,7 @@ class AddressSorterWin : public AddressSorter {
 
     ~Job() {}
 
-    // Executed asynchronously in TaskScheduler.
+    // Executed asynchronously in ThreadPool.
     void Run() {
       SOCKET sock = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
       if (sock == INVALID_SOCKET)

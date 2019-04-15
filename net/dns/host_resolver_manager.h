@@ -96,7 +96,7 @@ class NET_EXPORT HostResolverManager
   };
 
   // Creates a HostResolver as specified by |options|. Blocking tasks are run in
-  // TaskScheduler.
+  // ThreadPool.
   //
   // If Options.enable_caching is true, a cache is created using
   // HostCache::CreateDefaultCache(). Otherwise no cache is used.
@@ -417,7 +417,7 @@ class NET_EXPORT HostResolverManager
   bool allow_fallback_to_proctask_;
 
   // Task runner used for DNS lookups using the system resolver. Normally a
-  // TaskScheduler task runner, but can be overridden for tests.
+  // ThreadPool task runner, but can be overridden for tests.
   scoped_refptr<base::TaskRunner> proc_task_runner_;
 
   // Current resolver mode, useful for breaking down histogram data.

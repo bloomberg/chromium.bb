@@ -54,11 +54,11 @@ class CONTENT_EXPORT BrowserThread {
     UI,
 
     // This is the thread that processes non-blocking IO, i.e. IPC and network.
-    // Blocking I/O should happen in TaskScheduler.
+    // Blocking I/O should happen in ThreadPool.
     IO,
 
     // NOTE: do not add new threads here. Instead you should just use
-    // base::Create*TaskRunnerWithTraits to run tasks on the TaskScheduler.
+    // base::Create*TaskRunnerWithTraits to run tasks on the ThreadPool.
 
     // This identifier does not represent a thread.  Instead it counts the
     // number of well-known threads.  Insert new well-known threads before this

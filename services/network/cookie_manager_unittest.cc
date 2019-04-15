@@ -13,7 +13,7 @@
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/task/post_task.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"

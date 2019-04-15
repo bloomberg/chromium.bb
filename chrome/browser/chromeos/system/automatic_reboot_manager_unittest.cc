@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -264,7 +264,7 @@ TestAutomaticRebootManagerTaskRunner::~TestAutomaticRebootManagerTaskRunner() {
 }
 
 void TestAutomaticRebootManagerTaskRunner::OnBeforeSelectingTask() {
-  base::TaskScheduler::GetInstance()->FlushForTesting();
+  base::ThreadPool::GetInstance()->FlushForTesting();
 }
 
 void TestAutomaticRebootManagerTaskRunner::OnAfterTimePassed() {
@@ -272,7 +272,7 @@ void TestAutomaticRebootManagerTaskRunner::OnAfterTimePassed() {
 }
 
 void TestAutomaticRebootManagerTaskRunner::OnAfterTaskRun() {
-  base::TaskScheduler::GetInstance()->FlushForTesting();
+  base::ThreadPool::GetInstance()->FlushForTesting();
 }
 
 MockAutomaticRebootManagerObserver::MockAutomaticRebootManagerObserver()

@@ -188,8 +188,8 @@ TEST_F(TaskAnnotatorBacktraceIntegrationTest, SingleThreadedSimple) {
 TEST_F(TaskAnnotatorBacktraceIntegrationTest, MultipleThreads) {
   test::ScopedTaskEnvironment scoped_task_environment;
 
-  // Use diverse task runners (a task environment main thread, a TaskScheduler
-  // based SequencedTaskRunner, and a TaskScheduler based
+  // Use diverse task runners (a task environment main thread, a ThreadPool
+  // based SequencedTaskRunner, and a ThreadPool based
   // SingleThreadTaskRunner) to verify that TaskAnnotator can capture backtraces
   // for PostTasks back-and-forth between these.
   auto main_thread_a = ThreadTaskRunnerHandle::Get();

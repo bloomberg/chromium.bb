@@ -464,8 +464,8 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, OnFileChanged) {
       "extension_3", base::Bind(&AddFileWatchCallback));
 
   // event_router->addFileWatch create some tasks which are performed on
-  // TaskScheduler. Wait until they are done.
-  base::TaskScheduler::GetInstance()->FlushForTesting();
+  // ThreadPool. Wait until they are done.
+  base::ThreadPool::GetInstance()->FlushForTesting();
   // We also wait the UI thread here, since some tasks which are performed
   // above message loop back results to the UI thread.
   base::RunLoop().RunUntilIdle();
@@ -506,8 +506,8 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, OnFileChanged) {
       "extension_3");
 
   // event_router->addFileWatch create some tasks which are performed on
-  // TaskScheduler. Wait until they are done.
-  base::TaskScheduler::GetInstance()->FlushForTesting();
+  // ThreadPool. Wait until they are done.
+  base::ThreadPool::GetInstance()->FlushForTesting();
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, ContentChecksum) {

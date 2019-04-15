@@ -361,7 +361,7 @@ TEST_F(InstantServiceTest, SetLocalImage) {
   base::FilePath path(profile_path.AppendASCII(
       chrome::kChromeSearchLocalNtpBackgroundFilename));
   base::WriteFile(path, "background_image", 16);
-  base::TaskScheduler::GetInstance()->FlushForTesting();
+  base::ThreadPool::GetInstance()->FlushForTesting();
 
   instant_service_->SelectLocalBackgroundImage(path);
   thread_bundle()->RunUntilIdle();
@@ -386,7 +386,7 @@ TEST_F(InstantServiceTest, SyncPrefOverridesLocalImage) {
   base::FilePath path(profile_path.AppendASCII(
       chrome::kChromeSearchLocalNtpBackgroundFilename));
   base::WriteFile(path, "background_image", 16);
-  base::TaskScheduler::GetInstance()->FlushForTesting();
+  base::ThreadPool::GetInstance()->FlushForTesting();
 
   instant_service_->SelectLocalBackgroundImage(path);
   thread_bundle()->RunUntilIdle();
@@ -521,7 +521,7 @@ TEST_F(InstantServiceTest, LocalImageDoesNotHaveAttribution) {
   base::FilePath path(profile_path.AppendASCII(
       chrome::kChromeSearchLocalNtpBackgroundFilename));
   base::WriteFile(path, "background_image", 16);
-  base::TaskScheduler::GetInstance()->FlushForTesting();
+  base::ThreadPool::GetInstance()->FlushForTesting();
 
   instant_service_->SelectLocalBackgroundImage(path);
   thread_bundle()->RunUntilIdle();

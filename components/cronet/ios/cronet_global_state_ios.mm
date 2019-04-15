@@ -29,7 +29,7 @@ void InitializeOnMainThread() {
   ios_global_state::CreateParams create_params;
   create_params.install_at_exit_manager = true;
   ios_global_state::Create(create_params);
-  ios_global_state::StartTaskScheduler(/*init_params=*/nullptr);
+  ios_global_state::StartThreadPool(/*init_params=*/nullptr);
 
   url::Initialize();
 

@@ -4,7 +4,7 @@
 
 source_set("app") {
   sources = [
-    "task_scheduler_init_params_callback.h",
+    "thread_pool_init_params_callback.h",
     "web_main.h",
     "web_main_delegate.h",
     "web_main_parts.h",

@@ -124,7 +124,7 @@
   X("startup")                                                           \
   X("sync")                                                              \
   X("sync_lock_contention")                                              \
-  X("task_scheduler")                                                    \
+  X("thread_pool")                                                       \
   X("test_gpu")                                                          \
   X("test_tracing")                                                      \
   X("toplevel")                                                          \
@@ -195,7 +195,7 @@
   X(TRACE_DISABLED_BY_DEFAULT("skia.gpu.cache"))                         \
   X(TRACE_DISABLED_BY_DEFAULT("SyncFileSystem"))                         \
   X(TRACE_DISABLED_BY_DEFAULT("system_stats"))                           \
-  X(TRACE_DISABLED_BY_DEFAULT("task_scheduler_diagnostics"))             \
+  X(TRACE_DISABLED_BY_DEFAULT("thread_pool_diagnostics"))                \
   X(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"))                          \
   X(TRACE_DISABLED_BY_DEFAULT("v8.compile"))                             \
   X(TRACE_DISABLED_BY_DEFAULT("v8.cpu_profiler"))                        \

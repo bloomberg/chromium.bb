@@ -17,7 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "build/build_config.h"
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/url_loader_throttle_provider.h"
@@ -387,10 +387,10 @@ class CONTENT_EXPORT ContentRendererClient {
   // An empty URL is returned if the URL is not overriden.
   virtual GURL OverrideFlashEmbedWithHTML(const GURL& url);
 
-  // Provides parameters for initializing the global task scheduler. Default
+  // Provides parameters for initializing the global thread pool. Default
   // params are used if this returns nullptr.
-  virtual std::unique_ptr<base::TaskScheduler::InitParams>
-  GetTaskSchedulerInitParams();
+  virtual std::unique_ptr<base::ThreadPool::InitParams>
+  GetThreadPoolInitParams();
 
   // Whether the renderer allows idle media players to be automatically
   // suspended after a period of inactivity.

@@ -10,7 +10,7 @@
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "net/log/net_log_capture_mode.h"
@@ -75,8 +75,8 @@ class SessionCleanupCookieStoreTest : public testing::Test {
 
   void DestroyStore() {
     store_ = nullptr;
-    // Ensure that |store_|'s destructor has run by flushing TaskScheduler.
-    base::TaskScheduler::GetInstance()->FlushForTesting();
+    // Ensure that |store_|'s destructor has run by flushing ThreadPool.
+    base::ThreadPool::GetInstance()->FlushForTesting();
   }
 
   void SetUp() override { ASSERT_TRUE(temp_dir_.CreateUniqueTempDir()); }

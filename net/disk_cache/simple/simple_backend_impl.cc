@@ -26,7 +26,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -964,7 +964,7 @@ void SimpleBackendImpl::DoomEntriesComplete(
 // static
 void SimpleBackendImpl::FlushWorkerPoolForTesting() {
   // TODO(morlovich): Remove this, move everything over to disk_cache:: use.
-  base::TaskScheduler::GetInstance()->FlushForTesting();
+  base::ThreadPool::GetInstance()->FlushForTesting();
 }
 
 uint32_t SimpleBackendImpl::GetNewEntryPriority(

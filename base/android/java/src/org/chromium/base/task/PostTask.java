@@ -237,7 +237,7 @@ public class PostTask {
     }
 
     @CalledByNative
-    private static void onNativeTaskSchedulerReady() {
+    private static void onNativeSchedulerReady() {
         synchronized (sLock) {
             for (TaskRunner taskRunner : sPreNativeTaskRunners) {
                 taskRunner.initNativeTaskRunner();
@@ -248,7 +248,7 @@ public class PostTask {
 
     // This is here to make C++ tests work.
     @CalledByNative
-    private static void onNativeTaskSchedulerShutdown() {
+    private static void onNativeSchedulerShutdown() {
         synchronized (sLock) {
             sPreNativeTaskRunners =
                     Collections.newSetFromMap(new WeakHashMap<TaskRunner, Boolean>());

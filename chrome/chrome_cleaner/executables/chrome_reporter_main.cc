@@ -23,7 +23,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_com_initializer.h"
@@ -232,7 +232,7 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, wchar_t*, int) {
 
   // Many pieces of code below need a message loop to have been instantiated
   // before them.
-  base::TaskScheduler::CreateAndStartWithDefaultParams("software reporter");
+  base::ThreadPool::CreateAndStartWithDefaultParams("software reporter");
   base::MessageLoopForUI ui_message_loop;
 
   shutdown_sequence.mojo_task_runner = MojoTaskRunner::Create();

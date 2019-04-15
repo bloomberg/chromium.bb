@@ -60,7 +60,7 @@ class MultiThreadedCertVerifierScopedAllowBaseSyncPrimitives
 // fundamentally doing the same verification. CertVerifierJob is similarly
 // thread-unsafe and lives on the origin thread.
 //
-// To do the actual work, CertVerifierJob posts a task to TaskScheduler
+// To do the actual work, CertVerifierJob posts a task to ThreadPool
 // (PostTaskAndReply), and on completion notifies all requests attached to it.
 //
 // Cancellation:
@@ -235,7 +235,7 @@ class CertVerifierJob {
 
   const CertVerifier::RequestParams& key() const { return key_; }
 
-  // Posts a task to TaskScheduler to do the verification. Once the verification
+  // Posts a task to ThreadPool to do the verification. Once the verification
   // has completed, it will call OnJobCompleted() on the origin thread.
   void Start(const scoped_refptr<CertVerifyProc>& verify_proc,
              const CertVerifier::Config& config,

@@ -21,14 +21,14 @@ namespace content {
 namespace {
 
 // TestBrowserThreadBundleTest.RunUntilIdle will run kNumTasks tasks that will
-// hop back-and-forth between TaskScheduler and UI thread kNumHops times.
+// hop back-and-forth between ThreadPool and UI thread kNumHops times.
 // Note: These values are arbitrary.
 constexpr int kNumHops = 13;
 constexpr int kNumTasks = 8;
 
 void PostTaskToUIThread(int iteration, base::subtle::Atomic32* tasks_run);
 
-void PostToTaskScheduler(int iteration, base::subtle::Atomic32* tasks_run) {
+void PostToThreadPool(int iteration, base::subtle::Atomic32* tasks_run) {
   // All iterations but the first come from a task that was posted.
   if (iteration > 0)
     base::subtle::NoBarrier_AtomicIncrement(tasks_run, 1);
@@ -50,7 +50,7 @@ void PostTaskToUIThread(int iteration, base::subtle::Atomic32* tasks_run) {
 
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&PostToTaskScheduler, iteration + 1, tasks_run));
+      base::BindOnce(&PostToThreadPool, iteration + 1, tasks_run));
 }
 
 }  // namespace
@@ -60,11 +60,11 @@ TEST(TestBrowserThreadBundleTest, RunUntilIdle) {
 
   base::subtle::Atomic32 tasks_run = 0;
 
-  // Post half the tasks on TaskScheduler and the other half on the UI thread
+  // Post half the tasks on ThreadPool and the other half on the UI thread
   // so they cross and the last hops aren't all on the same task runner.
   for (int i = 0; i < kNumTasks; ++i) {
     if (i % 2) {
-      PostToTaskScheduler(0, &tasks_run);
+      PostToThreadPool(0, &tasks_run);
     } else {
       PostTaskToUIThread(0, &tasks_run);
     }

@@ -27,7 +27,7 @@
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/memory.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/test/gtest_xml_unittest_result_printer.h"
 #include "base/test/gtest_xml_util.h"
 #include "base/test/icu_test_util.h"
@@ -121,25 +121,25 @@ class CheckForLeakedGlobals : public testing::EmptyTestEventListener {
 
   // Check for leaks in individual tests.
   void OnTestStart(const testing::TestInfo& test) override {
-    scheduler_set_before_test_ = TaskScheduler::GetInstance();
+    thread_pool_set_before_test_ = ThreadPool::GetInstance();
   }
   void OnTestEnd(const testing::TestInfo& test) override {
-    DCHECK_EQ(scheduler_set_before_test_, TaskScheduler::GetInstance())
+    DCHECK_EQ(thread_pool_set_before_test_, ThreadPool::GetInstance())
         << " in test " << test.test_case_name() << "." << test.name();
   }
 
   // Check for leaks in test cases (consisting of one or more tests).
   void OnTestCaseStart(const testing::TestCase& test_case) override {
-    scheduler_set_before_case_ = TaskScheduler::GetInstance();
+    thread_pool_set_before_case_ = ThreadPool::GetInstance();
   }
   void OnTestCaseEnd(const testing::TestCase& test_case) override {
-    DCHECK_EQ(scheduler_set_before_case_, TaskScheduler::GetInstance())
+    DCHECK_EQ(thread_pool_set_before_case_, ThreadPool::GetInstance())
         << " in case " << test_case.name();
   }
 
  private:
-  TaskScheduler* scheduler_set_before_test_ = nullptr;
-  TaskScheduler* scheduler_set_before_case_ = nullptr;
+  ThreadPool* thread_pool_set_before_test_ = nullptr;
+  ThreadPool* thread_pool_set_before_case_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(CheckForLeakedGlobals);
 };

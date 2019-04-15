@@ -18,7 +18,7 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/optional.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -1174,10 +1174,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Returns the RapporService from the browser process.
   virtual ::rappor::RapporService* GetRapporService();
 
-  // Provides parameters for initializing the global task scheduler. Default
+  // Provides parameters for initializing the global thread pool. Default
   // params are used if this returns nullptr.
-  virtual std::unique_ptr<base::TaskScheduler::InitParams>
-  GetTaskSchedulerInitParams();
+  virtual std::unique_ptr<base::ThreadPool::InitParams>
+  GetThreadPoolInitParams();
 
   // Allows the embedder to register one or more URLLoaderThrottles for a
   // navigation request.
@@ -1373,13 +1373,13 @@ class CONTENT_EXPORT ContentBrowserClient {
                               int /* render_process_id */,
                               int /* render_frame_id */)> callback);
 
-  // Returns whether a base::TaskScheduler should be created when
+  // Returns whether a base::ThreadPool should be created when
   // BrowserMainLoop starts.
-  // If false, a task scheduler has been created by the embedder, and
+  // If false, a thread pool has been created by the embedder, and
   // BrowserMainLoop should skip creating a second one.
-  // Note: the embedder should *not* start the TaskScheduler for
+  // Note: the embedder should *not* start the ThreadPool for
   // BrowserMainLoop, BrowserMainLoop itself is responsible for that.
-  virtual bool ShouldCreateTaskScheduler();
+  virtual bool ShouldCreateThreadPool();
 
   // Returns an AuthenticatorRequestClientDelegate subclass instance to provide
   // embedder-specific configuration for a single Web Authentication API request

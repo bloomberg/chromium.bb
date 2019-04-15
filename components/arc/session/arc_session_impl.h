@@ -77,7 +77,7 @@ class ArcSessionImpl : public ArcSession, public ArcClientAdapter::Observer {
   //   SessionManager. Its completion will be notified via ArcInstanceStopped.
   //   Otherwise, it just turns into STOPPED state.
   // CONNECTING_MOJO:
-  //   The main task runs on TaskScheduler's thread, but it is a blocking call.
+  //   The main task runs on ThreadPool's thread, but it is a blocking call.
   //   So, Stop() sends a request to cancel the blocking by closing the pipe
   //   whose read side is also polled. Then, in its callback, similar to
   //   STARTING_{MINI,FULL}_INSTANCE, a request to stop the ARC instance is

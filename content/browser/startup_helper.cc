@@ -7,10 +7,10 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/system/sys_info.h"
-#include "base/task/task_scheduler/initialization_util.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/initialization_util.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "build/build_config.h"
-#include "content/common/task_scheduler.h"
+#include "content/common/thread_pool_util.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_switches.h"
 
@@ -18,11 +18,10 @@ namespace content {
 
 namespace {
 
-std::unique_ptr<base::TaskScheduler::InitParams>
-GetDefaultTaskSchedulerInitParams() {
+std::unique_ptr<base::ThreadPool::InitParams> GetDefaultThreadPoolInitParams() {
 #if defined(OS_ANDROID)
   // Mobile config, for iOS see ios/web/app/web_main_loop.cc.
-  return std::make_unique<base::TaskScheduler::InitParams>(
+  return std::make_unique<base::ThreadPool::InitParams>(
       base::SchedulerWorkerPoolParams(
           base::RecommendedMaxNumberOfThreadsInPool(4, 8, 0.2, 0),
           base::TimeDelta::FromSeconds(30)),
@@ -31,7 +30,7 @@ GetDefaultTaskSchedulerInitParams() {
           base::TimeDelta::FromSeconds(30)));
 #else
   // Desktop config.
-  return std::make_unique<base::TaskScheduler::InitParams>(
+  return std::make_unique<base::ThreadPool::InitParams>(
       base::SchedulerWorkerPoolParams(
           base::RecommendedMaxNumberOfThreadsInPool(6, 8, 0.2, 0),
           base::TimeDelta::FromSeconds(30)),
@@ -40,7 +39,7 @@ GetDefaultTaskSchedulerInitParams() {
           base::TimeDelta::FromSeconds(30))
 #if defined(OS_WIN)
           ,
-      base::TaskScheduler::InitParams::SharedWorkerPoolEnvironment::COM_MTA
+      base::ThreadPool::InitParams::SharedWorkerPoolEnvironment::COM_MTA
 #endif  // defined(OS_WIN)
   );
 #endif
@@ -70,12 +69,12 @@ std::unique_ptr<base::FieldTrialList> SetUpFieldTrialsAndFeatureList() {
   return field_trial_list;
 }
 
-void StartBrowserTaskScheduler() {
-  auto task_scheduler_init_params =
-      GetContentClient()->browser()->GetTaskSchedulerInitParams();
-  if (!task_scheduler_init_params)
-    task_scheduler_init_params = GetDefaultTaskSchedulerInitParams();
-  DCHECK(task_scheduler_init_params);
+void StartBrowserThreadPool() {
+  auto thread_pool_init_params =
+      GetContentClient()->browser()->GetThreadPoolInitParams();
+  if (!thread_pool_init_params)
+    thread_pool_init_params = GetDefaultThreadPoolInitParams();
+  DCHECK(thread_pool_init_params);
 
   // If a renderer lives in the browser process, adjust the number of
   // threads in the foreground pool.
@@ -83,16 +82,16 @@ void StartBrowserTaskScheduler() {
           switches::kSingleProcess)) {
     const base::SchedulerWorkerPoolParams&
         current_foreground_worker_pool_params(
-            task_scheduler_init_params->foreground_worker_pool_params);
-    task_scheduler_init_params->foreground_worker_pool_params =
+            thread_pool_init_params->foreground_worker_pool_params);
+    thread_pool_init_params->foreground_worker_pool_params =
         base::SchedulerWorkerPoolParams(
-            std::max(GetMinThreadsInRendererTaskSchedulerForegroundPool(),
+            std::max(GetMinForegroundThreadsInRendererThreadPool(),
                      current_foreground_worker_pool_params.max_tasks()),
             current_foreground_worker_pool_params.suggested_reclaim_time(),
             current_foreground_worker_pool_params.backward_compatibility());
   }
 
-  base::TaskScheduler::GetInstance()->Start(*task_scheduler_init_params.get());
+  base::ThreadPool::GetInstance()->Start(*thread_pool_init_params.get());
 }
 
 }  // namespace content

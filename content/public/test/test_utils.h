@@ -72,7 +72,7 @@ void RunAllPendingInMessageLoop();
 // rather than flushing entire threads.
 void RunAllPendingInMessageLoop(BrowserThread::ID thread_id);
 
-// Runs all tasks on the current thread and TaskScheduler threads until idle.
+// Runs all tasks on the current thread and ThreadPool threads until idle.
 // Note: Prefer TestBrowserThreadBundle::RunUntilIdle() in unit tests.
 void RunAllTasksUntilIdle();
 

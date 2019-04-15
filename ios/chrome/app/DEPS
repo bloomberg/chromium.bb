@@ -19,7 +19,7 @@ include_rules = [
   "+components/search_engines",
   "+components/suggestions",
   "+components/sync/driver",
-  "+components/task_scheduler_util",
+  "+components/thread_pool_util",
   "+components/ukm/ios",
   "+components/unified_consent",
   "+components/url_formatter",

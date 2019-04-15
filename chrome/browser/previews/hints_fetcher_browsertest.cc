@@ -10,7 +10,7 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -65,7 +65,7 @@ int RetryForHistogramUntilCountReached(
     int count) {
   int total = 0;
   while (true) {
-    base::TaskScheduler::GetInstance()->FlushForTesting();
+    base::ThreadPool::GetInstance()->FlushForTesting();
     base::RunLoop().RunUntilIdle();
 
     total = GetTotalHistogramSamples(histogram_tester, histogram_name);

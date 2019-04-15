@@ -13,7 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/quic/crypto/proof_source_chromium.h"
@@ -45,7 +45,7 @@ std::unique_ptr<quic::ProofSource> CreateProofSource(
 }
 
 int main(int argc, char* argv[]) {
-  base::TaskScheduler::CreateAndStartWithDefaultParams("quic_server");
+  base::ThreadPool::CreateAndStartWithDefaultParams("quic_server");
   base::AtExitManager exit_manager;
   base::MessageLoopForIO message_loop;
 

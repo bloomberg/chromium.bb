@@ -194,7 +194,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
                                 bool is_main_frame,
                                 ui::PageTransition transition,
                                 bool* ignore_navigation) override;
-  bool ShouldCreateTaskScheduler() override;
+  bool ShouldCreateThreadPool() override;
   std::unique_ptr<content::LoginDelegate> CreateLoginDelegate(
       const net::AuthChallengeInfo& auth_info,
       content::WebContents* web_contents,
@@ -251,7 +251,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   content::SpeechRecognitionManagerDelegate*
   CreateSpeechRecognitionManagerDelegate() override;
 
-  static void DisableCreatingTaskScheduler();
+  static void DisableCreatingThreadPool();
 
  private:
   safe_browsing::UrlCheckerDelegate* GetSafeBrowsingUrlCheckerDelegate();

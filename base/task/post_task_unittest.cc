@@ -97,7 +97,7 @@ class PostTaskTestWithExecutor : public ::testing::Test {
   test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
-TEST_F(PostTaskTestWithExecutor, PostTaskToTaskScheduler) {
+TEST_F(PostTaskTestWithExecutor, PostTaskToThreadPool) {
   // Tasks without extension should not go to the TestTaskExecutor.
   EXPECT_TRUE(PostTask(FROM_HERE, DoNothing()));
   EXPECT_FALSE(executor_.runner()->HasPendingTask());

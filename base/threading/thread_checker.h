@@ -89,7 +89,7 @@ class ThreadCheckerDoNothing {
 // Note that ThreadCheckerImpl::CalledOnValidThread() returns false when called
 // from tasks posted to SingleThreadTaskRunners bound to different sequences,
 // even if the tasks happen to run on the same thread (e.g. two independent
-// SingleThreadTaskRunners on the TaskScheduler that happen to share a thread).
+// SingleThreadTaskRunners on the ThreadPool that happen to share a thread).
 #if DCHECK_IS_ON()
 class ThreadChecker : public ThreadCheckerImpl {
 };

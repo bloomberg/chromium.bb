@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "content/renderer/render_process.h"
 
 namespace content {
@@ -41,8 +41,8 @@ class RenderProcessImpl : public RenderProcess {
   void ReleaseProcess() override;
 
  private:
-  RenderProcessImpl(std::unique_ptr<base::TaskScheduler::InitParams>
-                        task_scheduler_init_params);
+  RenderProcessImpl(
+      std::unique_ptr<base::ThreadPool::InitParams> thread_pool_init_params);
 
   // Bitwise-ORed set of extra bindings that have been enabled anywhere in this
   // process.  See BindingsPolicy for details.
