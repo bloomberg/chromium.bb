@@ -55,14 +55,12 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
                                          ULOC_FRENCH,
                                          ULOC_UK,
                                          ULOC_US,
-                                         "da_DK",
-                                         "en_AU",
-                                         "en_IE",
-                                         "en_NZ",
-                                         "en_SE",
-                                         "nl_NL",
-                                         "no_NO",
-                                         "sv_SE"};
+                                         "da",
+                                         "nb",
+                                         "nl",
+                                         "nn",
+                                         "no",
+                                         "sv"};
 
   const PrefService* prefs = profile->GetPrefs();
   std::string pref_locale =
