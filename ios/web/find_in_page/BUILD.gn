@@ -14,6 +14,7 @@ source_set("find_in_page") {
   sources = [
     "find_in_page_constants.h",
     "find_in_page_constants.mm",
+    "find_in_page_manager_delegate_bridge.mm",
     "find_in_page_manager_impl.h",
     "find_in_page_manager_impl.mm",
   ]
@@ -28,12 +29,14 @@ source_set("find_in_page_unittests") {
     "//base",
     "//base/test:test_support",
     "//ios/web/public",
+    "//ios/web/public/find_in_page",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
     "//testing/gtest",
   ]
 
   sources = [
+    "find_in_page_manager_delegate_bridge_unittest.mm",
     "find_in_page_manger_impl_unittest.mm",
   ]
 
