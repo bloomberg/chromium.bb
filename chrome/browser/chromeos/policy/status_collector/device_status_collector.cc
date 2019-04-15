@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/policy/device_status_collector.h"
+#include "chrome/browser/chromeos/policy/status_collector/device_status_collector.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -315,31 +315,6 @@ void ReadTpmStatus(policy::DeviceStatusCollector::TpmStatusReceiver callback) {
           std::move(callback)));
 }
 
-// Returns the DeviceLocalAccount associated with the current kiosk session.
-// Returns null if there is no active kiosk session, or if that kiosk
-// session has been removed from policy since the session started, in which
-// case we won't report its status).
-std::unique_ptr<policy::DeviceLocalAccount> GetCurrentKioskDeviceLocalAccount(
-    chromeos::CrosSettings* settings) {
-  if (!user_manager::UserManager::Get()->IsLoggedInAsKioskApp() &&
-      !user_manager::UserManager::Get()->IsLoggedInAsArcKioskApp()) {
-    return std::unique_ptr<policy::DeviceLocalAccount>();
-  }
-  const user_manager::User* const user =
-      user_manager::UserManager::Get()->GetActiveUser();
-  const std::vector<policy::DeviceLocalAccount> accounts =
-      policy::GetDeviceLocalAccounts(settings);
-
-  for (const auto& device_local_account : accounts) {
-    if (AccountId::FromUserEmail(device_local_account.user_id) ==
-        user->GetAccountId()) {
-      return std::make_unique<policy::DeviceLocalAccount>(device_local_account);
-    }
-  }
-  LOG(WARNING) << "Kiosk app not found in list of device-local accounts";
-  return std::unique_ptr<policy::DeviceLocalAccount>();
-}
-
 base::Version GetPlatformVersion() {
   return base::Version(base::SysInfo::OperatingSystemVersion());
 }
@@ -396,20 +371,20 @@ class GetStatusState : public base::RefCountedThreadSafe<GetStatusState> {
  public:
   explicit GetStatusState(
       const scoped_refptr<base::SequencedTaskRunner> task_runner,
-      const policy::DeviceStatusCollector::StatusCallback& response)
+      const policy::StatusCollectorCallback& response)
       : task_runner_(task_runner), response_(response) {}
 
   inline em::DeviceStatusReportRequest* device_status() {
-    return device_status_.get();
+    return response_params_.device_status.get();
   }
 
   inline em::SessionStatusReportRequest* session_status() {
-    return session_status_.get();
+    return response_params_.session_status.get();
   }
 
-  inline void ResetDeviceStatus() { device_status_.reset(); }
+  inline void ResetDeviceStatus() { response_params_.device_status.reset(); }
 
-  inline void ResetSessionStatus() { session_status_.reset(); }
+  inline void ResetSessionStatus() { response_params_.session_status.reset(); }
 
   // Queues an async callback to query disk volume information.
   void SampleVolumeInfo(const policy::DeviceStatusCollector::VolumeInfoFetcher&
@@ -473,27 +448,26 @@ class GetStatusState : public base::RefCountedThreadSafe<GetStatusState> {
   // not called.
   ~GetStatusState() {
     task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(response_, base::Passed(&device_status_),
-                                  base::Passed(&session_status_)));
+        FROM_HERE, base::BindOnce(response_, base::Passed(&response_params_)));
   }
 
   void OnVolumeInfoReceived(const std::vector<em::VolumeInfo>& volume_info) {
-    device_status_->clear_volume_infos();
+    response_params_.device_status->clear_volume_infos();
     for (const em::VolumeInfo& info : volume_info)
-      *device_status_->add_volume_infos() = info;
+      *response_params_.device_status->add_volume_infos() = info;
   }
 
   void OnCPUTempInfoReceived(
       const std::vector<em::CPUTempInfo>& cpu_temp_info) {
     // Only one of OnProbeDataReceived and OnCPUTempInfoReceived should be
     // called.
-    DCHECK(device_status_->cpu_temp_infos_size() == 0);
+    DCHECK(response_params_.device_status->cpu_temp_infos_size() == 0);
 
     DLOG_IF(WARNING, cpu_temp_info.empty())
         << "Unable to read CPU temp information.";
     base::Time timestamp = base::Time::Now();
     for (const em::CPUTempInfo& info : cpu_temp_info) {
-      auto* new_info = device_status_->add_cpu_temp_infos();
+      auto* new_info = response_params_.device_status->add_cpu_temp_infos();
       *new_info = info;
       new_info->set_timestamp(timestamp.ToJavaTime());
     }
@@ -502,7 +476,7 @@ class GetStatusState : public base::RefCountedThreadSafe<GetStatusState> {
   void OnAndroidInfoReceived(const std::string& status,
                              const std::string& droid_guard_info) {
     em::AndroidStatus* const android_status =
-        session_status_->mutable_android_status();
+        response_params_.session_status->mutable_android_status();
     android_status->set_status_payload(status);
     android_status->set_droid_guard_info(droid_guard_info);
   }
@@ -511,7 +485,7 @@ class GetStatusState : public base::RefCountedThreadSafe<GetStatusState> {
     // Make sure we edit the state on the right thread.
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     em::TpmStatusInfo* const tpm_status_proto =
-        device_status_->mutable_tpm_status_info();
+        response_params_.device_status->mutable_tpm_status_info();
 
     tpm_status_proto->set_enabled(tpm_status_struct.enabled);
     tpm_status_proto->set_owned(tpm_status_struct.owned);
@@ -540,13 +514,13 @@ class GetStatusState : public base::RefCountedThreadSafe<GetStatusState> {
 
     // Only one of OnProbeDataReceived and OnCPUTempInfoReceived should be
     // called.
-    DCHECK(device_status_->cpu_temp_infos_size() == 0);
+    DCHECK(response_params_.device_status->cpu_temp_infos_size() == 0);
 
     // Store CPU measurement samples.
     for (const std::unique_ptr<SampledData>& sample_data : samples) {
       for (auto it = sample_data->cpu_samples.begin();
            it != sample_data->cpu_samples.end(); it++) {
-        auto* new_info = device_status_->add_cpu_temp_infos();
+        auto* new_info = response_params_.device_status->add_cpu_temp_infos();
         *new_info = it->second;
       }
     }
@@ -559,7 +533,7 @@ class GetStatusState : public base::RefCountedThreadSafe<GetStatusState> {
     }
     if (probe_result.value().battery_size() > 0) {
       em::PowerStatus* const power_status =
-          device_status_->mutable_power_status();
+          response_params_.device_status->mutable_power_status();
       for (const auto& battery : probe_result.value().battery()) {
         em::BatteryInfo* const battery_info = power_status->add_batteries();
         battery_info->set_serial(battery.values().serial_number());
@@ -583,7 +557,7 @@ class GetStatusState : public base::RefCountedThreadSafe<GetStatusState> {
     }
     if (probe_result.value().storage_size() > 0) {
       em::StorageStatus* const storage_status =
-          device_status_->mutable_storage_status();
+          response_params_.device_status->mutable_storage_status();
       for (const auto& storage : probe_result.value().storage()) {
         em::DiskInfo* const disk_info = storage_status->add_disks();
         disk_info->set_serial(base::NumberToString(storage.values().serial()));
@@ -597,11 +571,8 @@ class GetStatusState : public base::RefCountedThreadSafe<GetStatusState> {
   }
 
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  policy::DeviceStatusCollector::StatusCallback response_;
-  std::unique_ptr<em::DeviceStatusReportRequest> device_status_ =
-      std::make_unique<em::DeviceStatusReportRequest>();
-  std::unique_ptr<em::SessionStatusReportRequest> session_status_ =
-      std::make_unique<em::SessionStatusReportRequest>();
+  policy::StatusCollectorCallback response_;
+  StatusCollectorParams response_params_;
 };
 
 // Handles storing activity time periods needed for reporting. Provides
@@ -1353,28 +1324,6 @@ void DeviceStatusCollector::UpdateChildUsageTime() {
   last_active_check_ = now;
 }
 
-std::unique_ptr<DeviceLocalAccount>
-DeviceStatusCollector::GetAutoLaunchedKioskSessionInfo() {
-  std::unique_ptr<DeviceLocalAccount> account =
-      GetCurrentKioskDeviceLocalAccount(cros_settings_);
-  if (account) {
-    chromeos::KioskAppManager::App current_app;
-    bool regular_app_auto_launched_with_zero_delay =
-        chromeos::KioskAppManager::Get()->GetApp(account->kiosk_app_id,
-                                                 &current_app) &&
-        current_app.was_auto_launched_with_zero_delay;
-    bool arc_app_auto_launched_with_zero_delay =
-        chromeos::ArcKioskAppManager::Get()
-            ->current_app_was_auto_launched_with_zero_delay();
-    if (regular_app_auto_launched_with_zero_delay ||
-        arc_app_auto_launched_with_zero_delay) {
-      return account;
-    }
-  }
-  // No auto-launched kiosk session active.
-  return std::unique_ptr<DeviceLocalAccount>();
-}
-
 void DeviceStatusCollector::SampleResourceUsage() {
   // Results must be written in the creation thread since that's where they
   // are read from in the Get*StatusAsync methods.
@@ -1787,8 +1736,9 @@ bool DeviceStatusCollector::GetNetworkInterfaces(
 
   // Don't write any network state if we aren't in a kiosk or public session.
   if (!GetAutoLaunchedKioskSessionInfo() &&
-      !user_manager::UserManager::Get()->IsLoggedInAsPublicAccount())
+      !user_manager::UserManager::Get()->IsLoggedInAsPublicAccount()) {
     return anything_reported;
+  }
 
   // Walk the various networks and store their state in the status report.
   chromeos::NetworkStateHandler::NetworkStateList state_list;
@@ -1996,8 +1946,8 @@ bool DeviceStatusCollector::GetRunningKioskApp(
   return true;
 }
 
-void DeviceStatusCollector::GetDeviceAndSessionStatusAsync(
-    const StatusCallback& response) {
+void DeviceStatusCollector::GetStatusAsync(
+    const StatusCollectorCallback& response) {
   // Must be on creation thread since some stats are written to in that thread
   // and accessing them from another thread would lead to race conditions.
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -2200,10 +2150,25 @@ std::string DeviceStatusCollector::GetAppVersion(
   return extension->VersionString();
 }
 
+// TODO(crbug.com/827386): move public API methods above private ones after
+// common methods are extracted.
 void DeviceStatusCollector::OnSubmittedSuccessfully() {
   activity_storage_->TrimActivityPeriods(last_reported_day_,
                                          duration_for_last_reported_day_,
                                          std::numeric_limits<int64_t>::max());
+}
+
+bool DeviceStatusCollector::ShouldReportActivityTimes() const {
+  return report_activity_times_;
+}
+bool DeviceStatusCollector::ShouldReportNetworkInterfaces() const {
+  return report_network_interfaces_;
+}
+bool DeviceStatusCollector::ShouldReportUsers() const {
+  return report_users_;
+}
+bool DeviceStatusCollector::ShouldReportHardwareStatus() const {
+  return report_hardware_status_;
 }
 
 void DeviceStatusCollector::OnOSVersion(const std::string& version) {
