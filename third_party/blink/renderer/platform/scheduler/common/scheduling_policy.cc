@@ -17,6 +17,12 @@ bool SchedulingPolicy::IsFeatureSticky(SchedulingPolicy::Feature feature) {
     case Feature::kMainResourceHasCacheControlNoCache:
     case Feature::kSubresourceHasCacheControlNoStore:
     case Feature::kSubresourceHasCacheControlNoCache:
+    case Feature::kPageShowEventListener:
+    case Feature::kPageHideEventListener:
+    case Feature::kBeforeUnloadEventListener:
+    case Feature::kUnloadEventListener:
+    case Feature::kFreezeEventListener:
+    case Feature::kResumeEventListener:
       return true;
     case Feature::kCount:
       NOTREACHED();

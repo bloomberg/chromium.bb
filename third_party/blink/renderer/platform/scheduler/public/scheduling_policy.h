@@ -24,7 +24,14 @@ struct PLATFORM_EXPORT SchedulingPolicy {
     kSubresourceHasCacheControlNoCache = 4,
     kSubresourceHasCacheControlNoStore = 5,
 
-    kCount = 6
+    kPageShowEventListener = 6,
+    kPageHideEventListener = 7,
+    kBeforeUnloadEventListener = 8,
+    kUnloadEventListener = 9,
+    kFreezeEventListener = 10,
+    kResumeEventListener = 11,
+
+    kCount = 12
   };
 
   // Sticky features can't be unregistered and remain active for the rest

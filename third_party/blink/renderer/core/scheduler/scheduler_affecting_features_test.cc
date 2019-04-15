@@ -148,4 +148,82 @@ TEST_F(SchedulingAffectingFeaturesTest, CacheControl_Navigation) {
               testing::UnorderedElementsAre());
 }
 
+TEST_F(SchedulingAffectingFeaturesTest, EventListener_PageShow) {
+  SimRequest main_resource("https://foo.com/", "text/html");
+  LoadURL("https://foo.com/");
+  main_resource.Complete(
+      "(<script>"
+      " window.addEventListener(\"pageshow\", () => {}); "
+      "</script>)");
+
+  EXPECT_THAT(PageScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
+              testing::UnorderedElementsAre(
+                  SchedulingPolicy::Feature::kPageShowEventListener));
+}
+
+TEST_F(SchedulingAffectingFeaturesTest, EventListener_PageHide) {
+  SimRequest main_resource("https://foo.com/", "text/html");
+  LoadURL("https://foo.com/");
+  main_resource.Complete(
+      "(<script>"
+      " window.addEventListener(\"pagehide\", () => {}); "
+      "</script>)");
+
+  EXPECT_THAT(PageScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
+              testing::UnorderedElementsAre(
+                  SchedulingPolicy::Feature::kPageHideEventListener));
+}
+
+TEST_F(SchedulingAffectingFeaturesTest, EventListener_BeforeUnload) {
+  SimRequest main_resource("https://foo.com/", "text/html");
+  LoadURL("https://foo.com/");
+  main_resource.Complete(
+      "(<script>"
+      " window.addEventListener(\"beforeunload\", () => {}); "
+      "</script>)");
+
+  EXPECT_THAT(PageScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
+              testing::UnorderedElementsAre(
+                  SchedulingPolicy::Feature::kBeforeUnloadEventListener));
+}
+
+TEST_F(SchedulingAffectingFeaturesTest, EventListener_Unload) {
+  SimRequest main_resource("https://foo.com/", "text/html");
+  LoadURL("https://foo.com/");
+  main_resource.Complete(
+      "(<script>"
+      " window.addEventListener(\"unload\", () => {}); "
+      "</script>)");
+
+  EXPECT_THAT(PageScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
+              testing::UnorderedElementsAre(
+                  SchedulingPolicy::Feature::kUnloadEventListener));
+}
+
+TEST_F(SchedulingAffectingFeaturesTest, EventListener_Freeze) {
+  SimRequest main_resource("https://foo.com/", "text/html");
+  LoadURL("https://foo.com/");
+  main_resource.Complete(
+      "(<script>"
+      " window.addEventListener(\"freeze\", () => {}); "
+      "</script>)");
+
+  EXPECT_THAT(PageScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
+              testing::UnorderedElementsAre(
+                  SchedulingPolicy::Feature::kFreezeEventListener));
+}
+
+TEST_F(SchedulingAffectingFeaturesTest, EventListener_Resume) {
+  SimRequest main_resource("https://foo.com/", "text/html");
+  LoadURL("https://foo.com/");
+  main_resource.Complete(
+      "(<script>"
+      " window.addEventListener(\"resume\", () => {}); "
+      "</script>)");
+
+  EXPECT_THAT(PageScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
+              testing::UnorderedElementsAre(
+                  SchedulingPolicy::Feature::kResumeEventListener));
+}
+
 }  // namespace blink
