@@ -63,14 +63,6 @@ class CrosSettings {
   // Helper function to test if the given |path| is a valid cros setting.
   static bool IsCrosSettings(const std::string& path);
 
-  // TODO(https://crbug.com/433840): There are no longer any callers of
-  // CrosSettings::Set. Still TODO: delete CrosSettings::Set, convenience forms
-  // of Set, all implementations of CrosSettingsProvider::Set, and remove any
-  // dependencies that are no longer needed.
-
-  // Sets |in_value| to given |path| in cros settings.
-  void Set(const std::string& path, const base::Value& in_value);
-
   // Returns setting value for the given |path|.
   const base::Value* GetPref(const std::string& path) const;
 
@@ -89,21 +81,6 @@ class CrosSettings {
   //   whether all providers are serving trusted values now.
   virtual CrosSettingsProvider::TrustedStatus PrepareTrustedValues(
       const base::Closure& callback) const;
-
-  // Convenience forms of Set().  These methods will replace any existing
-  // value at that |path|, even if it has a different type.
-  void SetBoolean(const std::string& path, bool in_value);
-  void SetInteger(const std::string& path, int in_value);
-  void SetDouble(const std::string& path, double in_value);
-  void SetString(const std::string& path, const std::string& in_value);
-
-  // Convenience functions for manipulating lists. Note that the following
-  // functions employs a read, modify and write pattern. If underlying settings
-  // provider updates its value asynchronously such as DeviceSettingsProvider,
-  // value cache they read from might not be fresh and multiple calls to those
-  // function would lose data. See http://crbug.com/127215
-  void AppendToList(const std::string& path, const base::Value* value);
-  void RemoveFromList(const std::string& path, const base::Value* value);
 
   // These are convenience forms of Get().  The value will be retrieved
   // and the return value will be true if the |path| is valid and the value at

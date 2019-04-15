@@ -65,8 +65,11 @@ class DeviceSettingsProvider
       PrefValueMap* new_values_cache);
 
  private:
-  // CrosSettingsProvider implementation:
-  void DoSet(const std::string& path, const base::Value& value) override;
+  // TODO(https://crbug.com/433840): There are no longer any actual callers of
+  // DeviceSettingsProvider::DoSet, but it is still called in the unit test.
+  // Still TODO: remove the calls from the test, and remove the extra state
+  // that this class will no longer need (ie, cached written values).
+  void DoSet(const std::string& path, const base::Value& value);
 
   // DeviceSettingsService::Observer implementation:
   void OwnershipStatusChanged() override;
@@ -140,6 +143,11 @@ class DeviceSettingsProvider
   FRIEND_TEST_ALL_PREFIXES(DeviceSettingsProviderTest,
                            PolicyFailedPermanentlyNotification);
   FRIEND_TEST_ALL_PREFIXES(DeviceSettingsProviderTest, PolicyLoadNotification);
+  // TODO(https://crbug.com/433840) Remove these once DoSet is removed.
+  FRIEND_TEST_ALL_PREFIXES(DeviceSettingsProviderTest, SetPrefFailed);
+  FRIEND_TEST_ALL_PREFIXES(DeviceSettingsProviderTest, SetPrefSucceed);
+  FRIEND_TEST_ALL_PREFIXES(DeviceSettingsProviderTest, SetPrefTwice);
+
   DISALLOW_COPY_AND_ASSIGN(DeviceSettingsProvider);
 };
 
