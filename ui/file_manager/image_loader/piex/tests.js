@@ -67,10 +67,8 @@ const puppeteer = require('puppeteer');
     console.log(message.text());
   });
 
-  const url = 'http://localhost:8123/' + process.argv[2];
-  await page.goto(url, {waitUntil: 'networkidle2'}).catch((error) => {
-    console.log(error.message, url);
-    process.exit(1);
+  await page.goto('http://localhost:8123/' + process.argv[2], {
+    waitUntil: 'networkidle2'
   });
 
   await page.mainFrame().waitForFunction('document.title == "READY"');
