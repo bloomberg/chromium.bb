@@ -302,8 +302,6 @@ class ServiceWorkerProviderContextTest : public testing::Test {
 };
 
 TEST_F(ServiceWorkerProviderContextTest, SetController) {
-  const int kProviderId = 10;
-
   {
     auto mock_service_worker_object_host =
         std::make_unique<MockServiceWorkerObjectHost>(200 /* version_id */);
@@ -323,7 +321,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetController) {
     blink::mojom::ServiceWorkerContainerAssociatedRequest container_request =
         mojo::MakeRequestAssociatedWithDedicatedPipe(&container_ptr);
     auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
-        kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow,
+        blink::mojom::ServiceWorkerProviderType::kForWindow,
         std::move(container_request), host_ptr.PassInterface(),
         nullptr /* controller_info */, nullptr /* loader_factory*/);
 
@@ -362,7 +360,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetController) {
     blink::mojom::ServiceWorkerContainerAssociatedRequest container_request =
         mojo::MakeRequestAssociatedWithDedicatedPipe(&container_ptr);
     auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
-        kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow,
+        blink::mojom::ServiceWorkerProviderType::kForWindow,
         std::move(container_request), host_ptr.PassInterface(),
         nullptr /* controller_info */, nullptr /* loader_factory*/);
     auto provider_impl =
@@ -386,8 +384,6 @@ TEST_F(ServiceWorkerProviderContextTest, SetController) {
 // Test that clearing the controller by sending a nullptr object info results in
 // the provider context having a null controller.
 TEST_F(ServiceWorkerProviderContextTest, SetController_Null) {
-  const int kProviderId = 10;
-
   blink::mojom::ServiceWorkerContainerHostAssociatedPtr host_ptr;
   blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request =
       mojo::MakeRequestAssociatedWithDedicatedPipe(&host_ptr);
@@ -396,7 +392,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetController_Null) {
   blink::mojom::ServiceWorkerContainerAssociatedRequest container_request =
       mojo::MakeRequestAssociatedWithDedicatedPipe(&container_ptr);
   auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
-      kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow,
+      blink::mojom::ServiceWorkerProviderType::kForWindow,
       std::move(container_request), host_ptr.PassInterface(),
       nullptr /* controller_info */, nullptr /* loader_factory*/);
   auto provider_impl =
@@ -416,7 +412,6 @@ TEST_F(ServiceWorkerProviderContextTest, SetController_Null) {
 // worker for clients.
 TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   EnableNetworkService();
-  const int kProviderId = 10;
 
   // Make the ServiceWorkerContainerHost implementation and
   // ServiceWorkerContainer request.
@@ -450,7 +445,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   // Make the ServiceWorkerProviderContext, pasing it the controller, container,
   // and container host.
   auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
-      kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow,
+      blink::mojom::ServiceWorkerProviderType::kForWindow,
       std::move(container_request), host_ptr.PassInterface(),
       std::move(controller_info1), loader_factory_);
 
@@ -607,7 +602,6 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
 
 TEST_F(ServiceWorkerProviderContextTest, ControllerWithoutFetchHandler) {
   EnableNetworkService();
-  const int kProviderId = 10;
   auto object_host =
       std::make_unique<MockServiceWorkerObjectHost>(200 /* version_id */);
 
@@ -624,7 +618,7 @@ TEST_F(ServiceWorkerProviderContextTest, ControllerWithoutFetchHandler) {
   blink::mojom::ServiceWorkerContainerAssociatedRequest container_request =
       mojo::MakeRequestAssociatedWithDedicatedPipe(&container_ptr);
   auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
-      kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow,
+      blink::mojom::ServiceWorkerProviderType::kForWindow,
       std::move(container_request), nullptr /* host_ptr_info */,
       std::move(controller_info), loader_factory_);
   base::RunLoop().RunUntilIdle();
@@ -634,8 +628,6 @@ TEST_F(ServiceWorkerProviderContextTest, ControllerWithoutFetchHandler) {
 }
 
 TEST_F(ServiceWorkerProviderContextTest, PostMessageToClient) {
-  const int kProviderId = 10;
-
   auto mock_service_worker_object_host =
       std::make_unique<MockServiceWorkerObjectHost>(200 /* version_id */);
   ASSERT_EQ(0, mock_service_worker_object_host->GetBindingCount());
@@ -651,7 +643,7 @@ TEST_F(ServiceWorkerProviderContextTest, PostMessageToClient) {
   blink::mojom::ServiceWorkerContainerAssociatedRequest container_request =
       mojo::MakeRequestAssociatedWithDedicatedPipe(&container_ptr);
   auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
-      kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow,
+      blink::mojom::ServiceWorkerProviderType::kForWindow,
       std::move(container_request), host_ptr.PassInterface(),
       nullptr /* controller_info */, nullptr /* loader_factory*/);
   auto provider_impl =
@@ -671,8 +663,6 @@ TEST_F(ServiceWorkerProviderContextTest, PostMessageToClient) {
 }
 
 TEST_F(ServiceWorkerProviderContextTest, CountFeature) {
-  const int kProviderId = 10;
-
   blink::mojom::ServiceWorkerContainerHostAssociatedPtr host_ptr;
   blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request =
       mojo::MakeRequestAssociatedWithDedicatedPipe(&host_ptr);
@@ -681,7 +671,7 @@ TEST_F(ServiceWorkerProviderContextTest, CountFeature) {
   blink::mojom::ServiceWorkerContainerAssociatedRequest container_request =
       mojo::MakeRequestAssociatedWithDedicatedPipe(&container_ptr);
   auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
-      kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow,
+      blink::mojom::ServiceWorkerProviderType::kForWindow,
       std::move(container_request), host_ptr.PassInterface(),
       nullptr /* controller_info */, nullptr /* loader_factory*/);
   auto provider_impl =
@@ -732,7 +722,7 @@ TEST_F(ServiceWorkerProviderContextTest, OnNetworkProviderDestroyed) {
 
   // Make the provider context.
   auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
-      11 /* provider_id */, blink::mojom::ServiceWorkerProviderType::kForWindow,
+      blink::mojom::ServiceWorkerProviderType::kForWindow,
       std::move(container_request), host_ptr.PassInterface(),
       std::move(controller_info), loader_factory_);
 

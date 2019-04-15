@@ -64,9 +64,8 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
       public blink::mojom::ServiceWorkerContainer,
       public blink::mojom::ServiceWorkerWorkerClientRegistry {
  public:
-  // |provider_id| is used to identify this provider in IPC messages to the
-  // browser process. |request| is an endpoint which is connected to
-  // the content::ServiceWorkerProviderHost that notifies of changes to the
+  // |request| is an endpoint which is connected to the
+  // content::ServiceWorkerProviderHost that notifies of changes to the
   // registration's and workers' status. |request| is bound with |binding_|.
   //
   // |controller_info| contains the endpoint and object info that is needed to
@@ -77,7 +76,6 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // This is non-null only if the provider is created for controllees, and if
   // the loading context, e.g. a frame, provides it.
   ServiceWorkerProviderContext(
-      int provider_id,
       blink::mojom::ServiceWorkerProviderType provider_type,
       blink::mojom::ServiceWorkerContainerAssociatedRequest request,
       blink::mojom::ServiceWorkerContainerHostAssociatedPtrInfo host_ptr_info,
@@ -87,8 +85,6 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   blink::mojom::ServiceWorkerProviderType provider_type() const {
     return provider_type_;
   }
-
-  int provider_id() const { return provider_id_; }
 
   // Returns version id of the controller service worker object
   // (ServiceWorkerContainer#controller).
@@ -195,7 +191,6 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   bool CanCreateSubresourceLoaderFactory() const;
 
   const blink::mojom::ServiceWorkerProviderType provider_type_;
-  const int provider_id_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   // Mojo binding for the |request| passed to the constructor. This keeps the

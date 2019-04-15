@@ -97,7 +97,6 @@ void DedicatedWorkerHostFactoryClient::OnScriptLoadStarted(
   DCHECK(!service_worker_provider_context_);
   service_worker_provider_context_ =
       base::MakeRefCounted<ServiceWorkerProviderContext>(
-          service_worker_provider_info->provider_id,
           blink::mojom::ServiceWorkerProviderType::kForSharedWorker,
           std::move(service_worker_provider_info->client_request),
           std::move(service_worker_provider_info->host_ptr_info),

@@ -22,7 +22,6 @@ void RequestExtraData::CopyToResourceRequest(
 
   request->allow_download = allow_download_;
   request->transition_type = transition_type_;
-  request->service_worker_provider_id = service_worker_provider_id_;
   request->originated_from_service_worker = originated_from_service_worker_;
 
   request->initiated_in_secure_context = initiated_in_secure_context_;

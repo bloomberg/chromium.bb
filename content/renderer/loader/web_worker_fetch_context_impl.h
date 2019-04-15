@@ -114,7 +114,6 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   // it's copied from the ancestor frame (directly for non-nested workers, or
   // indirectly via its parent worker for nested workers). For shared workers,
   // it's copied from the shadow page.
-  void set_service_worker_provider_id(int id);
   void set_is_controlled_by_service_worker(
       blink::mojom::ControllerServiceWorkerMode mode);
   void set_ancestor_frame_id(int id);
@@ -199,7 +198,6 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   // Consumed on the worker thread to create |fallback_factory_|.
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory_info_;
 
-  int service_worker_provider_id_ = blink::kInvalidServiceWorkerProviderId;
   blink::mojom::ControllerServiceWorkerMode is_controlled_by_service_worker_ =
       blink::mojom::ControllerServiceWorkerMode::kNoController;
 

@@ -280,14 +280,6 @@ class ServiceWorkerContextClientTest : public testing::Test {
     feature_list_.InitAndEnableFeature(network::features::kNetworkService);
   }
 
-  // Creates an empty struct to initialize ServiceWorkerProviderContext.
-  blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr
-  CreateProviderInfo() {
-    auto info = blink::mojom::ServiceWorkerProviderInfoForStartWorker::New();
-    info->provider_id = 10;  // dummy
-    return info;
-  }
-
   // Creates an ContextClient, whose pipes are connected to |out_pipes|, then
   // simulates that the service worker thread has started with |proxy|.
   //
@@ -313,7 +305,8 @@ class ServiceWorkerContextClientTest : public testing::Test {
         false /* is_script_streaming */,
         blink::mojom::RendererPreferences::New(),
         std::move(service_worker_request), std::move(controller_request),
-        embedded_worker_host_ptr.PassInterface(), CreateProviderInfo(),
+        embedded_worker_host_ptr.PassInterface(),
+        blink::mojom::ServiceWorkerProviderInfoForStartWorker::New(),
         embedded_worker_instance_client,
         blink::mojom::EmbeddedWorkerStartTiming::New(),
         nullptr /* preference_watcher_request */,

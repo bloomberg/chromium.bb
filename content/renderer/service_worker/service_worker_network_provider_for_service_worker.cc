@@ -22,11 +22,9 @@ namespace content {
 
 ServiceWorkerNetworkProviderForServiceWorker::
     ServiceWorkerNetworkProviderForServiceWorker(
-        int provider_id,
         network::mojom::URLLoaderFactoryAssociatedPtrInfo
             script_loader_factory_info)
-    : provider_id_(provider_id),
-      script_loader_factory_(std::move(script_loader_factory_info)) {}
+    : script_loader_factory_(std::move(script_loader_factory_info)) {}
 
 ServiceWorkerNetworkProviderForServiceWorker::
     ~ServiceWorkerNetworkProviderForServiceWorker() = default;
@@ -34,7 +32,6 @@ ServiceWorkerNetworkProviderForServiceWorker::
 void ServiceWorkerNetworkProviderForServiceWorker::WillSendRequest(
     blink::WebURLRequest& request) {
   auto extra_data = std::make_unique<RequestExtraData>();
-  extra_data->set_service_worker_provider_id(provider_id_);
   extra_data->set_originated_from_service_worker(true);
   // Service workers are only available in secure contexts, so all requests
   // are initiated in a secure context.

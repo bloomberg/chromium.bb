@@ -192,7 +192,6 @@ bool StructTraits<
   out->appcache_host_id = data.appcache_host_id();
   out->should_reset_appcache = data.should_reset_appcache();
   out->is_external_request = data.is_external_request();
-  out->service_worker_provider_id = data.service_worker_provider_id();
   out->originated_from_service_worker = data.originated_from_service_worker();
   out->skip_service_worker = data.skip_service_worker();
   out->fetch_request_context_type = data.fetch_request_context_type();
