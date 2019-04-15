@@ -246,12 +246,8 @@ gfx::ImageSkia AutofillPopupLayoutModel::GetIconImage(size_t index) const {
 #endif
   }
 
-  if (icon_str == "locationOnIcon") {
-    return gfx::CreateVectorIcon(vector_icons::kLocationOnIcon, kIconSize,
-                                 gfx::kChromeIconGrey);
-  }
-  if (icon_str == "userAccountAvatarIcon") {
-    return gfx::CreateVectorIcon(kUserAccountAvatarIcon, kIconSize,
+  if (icon_str == "accountBoxIcon") {
+    return gfx::CreateVectorIcon(kAccountBoxIcon, kIconSize,
                                  gfx::kChromeIconGrey);
   }
 
