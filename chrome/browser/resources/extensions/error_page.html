@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_container_shadow_behavior.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
@@ -12,7 +13,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 <link rel="import" href="code_section.html">
 <link rel="import" href="item_util.html">
@@ -69,8 +69,8 @@
         padding-inline-start: 0;
       }
 
-      .error-item paper-icon-button-light {
-        margin-inline-end: 0;
+      .error-item cr-icon-button {
+        margin: 0;
       }
 
       .error-item.selected {
@@ -140,11 +140,9 @@
     <div class="page-container" id="container">
       <div class="page-content">
         <div id="heading">
-          <paper-icon-button-light class="icon-arrow-back no-overlap">
-            <button id="closeButton" aria-label="$i18n{back}"
-                on-click="onCloseButtonTap_">
-            </button>
-          </paper-icon-button-light>
+          <cr-icon-button class="icon-arrow-back no-overlap" id="closeButton"
+              aria-label="$i18n{back}" on-click="onCloseButtonTap_">
+          </cr-icon-button>
           <span>$i18n{errorsPageHeading}</span>
           <paper-button on-click="onClearAllTap_" hidden="[[!entries_.length]]">
             $i18n{clearAll}
@@ -170,13 +168,11 @@
                     </div>
                   </div>
                   <div class="separator"></div>
-                  <paper-icon-button-light class="icon-delete-gray">
-                    <button on-click="onDeleteErrorAction_"
-                        aria-describedby$="[[item.id]]"
-                        aria-label="$i18n{clearEntry}"
-                        on-keydown="onDeleteErrorAction_">
-                    </button>
-                  </paper-icon-button-light>
+                  <cr-icon-button class="icon-delete-gray"
+                      on-click="onDeleteErrorAction_"
+                      aria-describedby$="[[item.id]]"
+                      aria-label="$i18n{clearEntry}"
+                      on-keydown="onDeleteErrorAction_"></cr-icon-button>
                 </div>
                 <iron-collapse opened="[[isOpened_(index, selectedEntry_)]]">
                   <div class="devtools-controls">

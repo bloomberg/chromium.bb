@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_container_shadow_behavior.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
@@ -16,7 +17,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 <link rel="import" href="item_behavior.html">
@@ -167,10 +167,9 @@
     <div class="page-container" id="container">
       <div class="page-content">
         <div class="page-header">
-          <paper-icon-button-light class="icon-arrow-back no-overlap">
-            <button id="closeButton" aria-label="$i18n{back}"
-                on-click="onCloseButtonTap_"></button>
-          </paper-icon-button-light>
+          <cr-icon-button class="icon-arrow-back no-overlap" id="closeButton"
+              aria-label="$i18n{back}" on-click="onCloseButtonTap_">
+          </cr-icon-button>
           <img id="icon" src="[[data.iconUrl]]"
               alt$="[[appOrExtension(
                   data.type,

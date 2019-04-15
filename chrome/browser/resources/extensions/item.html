@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
@@ -19,7 +20,6 @@
 <link rel="import" href="strings.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-tooltip/paper-tooltip.html">
 <link rel="import" href="navigation_helper.html">
 
@@ -184,7 +184,7 @@
         color: var(--error-color);
       }
 
-      #dev-reload-button-container {
+      #dev-reload-button {
         margin-inline-end: 12px;
       }
 
@@ -321,12 +321,9 @@
           </template>
         </div>
         <template is="dom-if" if="[[!computeDevReloadButtonHidden_(data.*)]]">
-          <paper-icon-button-light id="dev-reload-button-container"
-              class="icon-refresh no-overlap">
-            <button id="dev-reload-button" aria-label="$i18n{itemReload}"
-                aria-describedby="a11yAssociation" on-click="onReloadTap_">
-            </button>
-          </paper-icon-button-light>
+          <cr-icon-button id="dev-reload-button" class="icon-refresh no-overlap"
+              aria-label="$i18n{itemReload}" aria-describedby="a11yAssociation"
+              on-click="onReloadTap_"></cr-icon-button>
         </template>
         <template is="dom-if" if="[[data.disableReasons.corruptInstall]]">
           <paper-button id="repair-button" class="action-button"
