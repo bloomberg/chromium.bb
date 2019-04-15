@@ -75,8 +75,10 @@ HidConnection::~HidConnection() {
 }
 
 void HidConnection::SetClient(Client* client) {
-  DCHECK(pending_reads_.empty());
-  DCHECK(pending_reports_.empty());
+  if (client) {
+    DCHECK(pending_reads_.empty());
+    DCHECK(pending_reports_.empty());
+  }
   client_ = client;
 }
 
