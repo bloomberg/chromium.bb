@@ -73,7 +73,7 @@ Polymer({
    * @private
    */
   computeCheckboxDisabled_: function(inputValid, disabled, managed) {
-    return inputValid && (disabled || managed);
+    return managed || (inputValid && disabled);
   },
 
   /**
