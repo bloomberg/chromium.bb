@@ -20,7 +20,7 @@ class MODULES_EXPORT CopylessPasteExtractor final {
   STATIC_ONLY(CopylessPasteExtractor);
 
  public:
-  static mojom::document_metadata::blink::WebPagePtr extract(const Document&);
+  static mojom::document_metadata::blink::WebPagePtr Extract(const Document&);
 };
 
 }  // namespace blink
