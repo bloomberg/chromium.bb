@@ -42,6 +42,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "net/base/escape.h"
+#include "net/base/features.h"
 #include "net/base/load_flags.h"
 #include "net/cookies/cookie_store.h"
 #include "net/dns/mock_host_resolver.h"
@@ -211,6 +212,29 @@ class NoStatePrefetchBrowserTest
   DISALLOW_COPY_AND_ASSIGN(NoStatePrefetchBrowserTest);
 };
 
+class NoStatePrefetchBrowserTestHttpCache
+    : public NoStatePrefetchBrowserTest,
+      public testing::WithParamInterface<bool> {
+ protected:
+  void SetUp() override {
+    if (GetParam()) {
+      feature_list_.InitAndEnableFeature(
+          net::features::kSplitCacheByTopFrameOrigin);
+    }
+    NoStatePrefetchBrowserTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(DefaultKeyedHttpCache,
+                         NoStatePrefetchBrowserTestHttpCache,
+                         ::testing::Values(false));
+INSTANTIATE_TEST_SUITE_P(DoubleKeyedHttpCache,
+                         NoStatePrefetchBrowserTestHttpCache,
+                         ::testing::Values(true));
+
 // Checks that a page is correctly prefetched in the case of a
 // <link rel=prerender> tag and the JavaScript on the page is not executed.
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchSimple) {
@@ -239,18 +263,42 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchBigger) {
   WaitForRequestCount(src_server()->GetURL(kPrefetchPngRedirect), 1);
 }
 
-// Checks that a page load following a prefetch reuses preload-scanned
-// resources from cache without failing over to network.
-IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, LoadAfterPrefetch) {
+// Checks that a page load following a prefetch reuses preload-scanned resources
+// and link rel 'prerender' main resource from cache without failing over to
+// network.
+IN_PROC_BROWSER_TEST_P(NoStatePrefetchBrowserTestHttpCache, LoadAfterPrefetch) {
   {
     std::unique_ptr<TestPrerender> test_prerender = PrefetchFromFile(
         kPrefetchPageBigger, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+    WaitForRequestCount(src_server()->GetURL(kPrefetchPageBigger), 1);
     WaitForRequestCount(src_server()->GetURL(kPrefetchJpeg), 1);
     WaitForRequestCount(src_server()->GetURL(kPrefetchPng2), 1);
   }
   ui_test_utils::NavigateToURL(current_browser(),
                                src_server()->GetURL(kPrefetchPageBigger));
   // Check that the request counts did not increase.
+  WaitForRequestCount(src_server()->GetURL(kPrefetchPageBigger), 1);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchJpeg), 1);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchPng2), 1);
+}
+
+// Checks that a page load following a cross origin prefetch reuses
+// preload-scanned resources and link rel 'prerender' main resource
+// from cache without failing over to network.
+IN_PROC_BROWSER_TEST_P(NoStatePrefetchBrowserTestHttpCache,
+                       LoadAfterPrefetchCrossOrigin) {
+  static const std::string kSecondaryDomain = "www.foo.com";
+  GURL cross_domain_url =
+      embedded_test_server()->GetURL(kSecondaryDomain, kPrefetchPageBigger);
+
+  PrefetchFromURL(cross_domain_url, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchPageBigger), 1);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchJpeg), 1);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchPng2), 1);
+
+  ui_test_utils::NavigateToURL(current_browser(), cross_domain_url);
+  // Check that the request counts did not increase.
+  WaitForRequestCount(src_server()->GetURL(kPrefetchPageBigger), 1);
   WaitForRequestCount(src_server()->GetURL(kPrefetchJpeg), 1);
   WaitForRequestCount(src_server()->GetURL(kPrefetchPng2), 1);
 }
