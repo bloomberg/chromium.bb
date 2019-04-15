@@ -110,6 +110,7 @@
 #include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chrome/browser/chromeos/dbus/dbus_helper.h"
+#include "chrome/browser/chromeos/startup_settings_cache.h"
 #include "chromeos/constants/chromeos_paths.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/hugepage_text/hugepage_text.h"
@@ -899,8 +900,14 @@ void ChromeMainDelegate::PreSandboxStartup() {
     // via the preference prefs::kApplicationLocale. The browser process uses
     // the --lang flag to pass the value of the PrefService in here. Maybe
     // this value could be passed in a different way.
-    const std::string locale =
-        command_line.GetSwitchValueASCII(switches::kLang);
+    std::string locale = command_line.GetSwitchValueASCII(switches::kLang);
+#if defined(OS_CHROMEOS)
+    if (process_type == service_manager::switches::kZygoteProcess) {
+      DCHECK(locale.empty());
+      // See comment at ReadAppLocale() for why we do this.
+      locale = chromeos::startup_settings_cache::ReadAppLocale();
+    }
+#endif
 #if defined(OS_ANDROID)
     // The renderer sandbox prevents us from accessing our .pak files directly.
     // Therefore file descriptors to the .pak files that we need are passed in
