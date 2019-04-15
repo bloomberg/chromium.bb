@@ -80,7 +80,8 @@ class FieldTrialToStruct(unittest.TestCase):
                   ],
                   'enable_features': ['A', 'B'],
                   'disable_features': ['C'],
-                  'is_low_end_device': 'Study::OPTIONAL_BOOL_MISSING'
+                  'is_low_end_device': 'Study::OPTIONAL_BOOL_MISSING',
+                  'form_factors': [],
                 },
                 {
                   'name': 'Group2',
@@ -91,7 +92,8 @@ class FieldTrialToStruct(unittest.TestCase):
                   ],
                   'enable_features': ['D', 'E'],
                   'disable_features': ['F'],
-                  'is_low_end_device': 'Study::OPTIONAL_BOOL_MISSING'
+                  'is_low_end_device': 'Study::OPTIONAL_BOOL_MISSING',
+                  'form_factors': [],
                 },
               ],
             },
@@ -101,7 +103,8 @@ class FieldTrialToStruct(unittest.TestCase):
                 {
                   'name': 'OtherGroup',
                   'platforms': ['Study::PLATFORM_WINDOWS'],
-                  'is_low_end_device': 'Study::OPTIONAL_BOOL_MISSING'
+                  'is_low_end_device': 'Study::OPTIONAL_BOOL_MISSING',
+                  'form_factors': [],
                 }
               ]
             },
@@ -112,7 +115,8 @@ class FieldTrialToStruct(unittest.TestCase):
                     'name': 'ForcedGroup',
                     'platforms': ['Study::PLATFORM_WINDOWS'],
                     'forcing_flag': "my-forcing-flag",
-                    'is_low_end_device': 'Study::OPTIONAL_BOOL_MISSING'
+                    'is_low_end_device': 'Study::OPTIONAL_BOOL_MISSING',
+                    'form_factors': [],
                   }
               ]
             },
@@ -185,7 +189,8 @@ class FieldTrialToStruct(unittest.TestCase):
                   ],
                   'enable_features': ['A', 'B'],
                   'disable_features': ['C'],
-                  'is_low_end_device': 'Study::OPTIONAL_BOOL_TRUE'
+                  'is_low_end_device': 'Study::OPTIONAL_BOOL_TRUE',
+                  'form_factors': [],
                 },
                 {
                   'name': 'Group2',
@@ -196,12 +201,14 @@ class FieldTrialToStruct(unittest.TestCase):
                   ],
                   'enable_features': ['D', 'E'],
                   'disable_features': ['F'],
-                  'is_low_end_device': 'Study::OPTIONAL_BOOL_TRUE'
+                  'is_low_end_device': 'Study::OPTIONAL_BOOL_TRUE',
+                  'form_factors': [],
                 },
                 {
                   'name': 'IOSOnly',
                   'platforms': ['Study::PLATFORM_IOS'],
-                  'is_low_end_device': 'Study::OPTIONAL_BOOL_MISSING'
+                  'is_low_end_device': 'Study::OPTIONAL_BOOL_MISSING',
+                  'form_factors': [],
                 },
               ],
             },
@@ -225,7 +232,61 @@ class FieldTrialToStruct(unittest.TestCase):
                 {
                   'name': 'OtherGroup',
                   'platforms': ['Study::PLATFORM_MAC'],
-                  'is_low_end_device': 'Study::OPTIONAL_BOOL_MISSING'
+                  'is_low_end_device': 'Study::OPTIONAL_BOOL_MISSING',
+                  'form_factors': [],
+                },
+              ],
+            },
+          ]
+        }
+      }
+    }
+    self.maxDiff = None
+    self.assertEqual(expected, result)
+
+  _MULTIPLE_FORM_FACTORS_CONFIG = {
+      'Trial1': [
+        {
+          'platforms': ['windows'],
+          'form_factors': ['desktop', 'phone'],
+          'experiments': [{'name': 'Group1'}]
+        }
+      ],
+      'Trial2': [
+        {
+          'platforms': ['windows'],
+          'form_factors': ['tablet'],
+          'experiments': [{'name': 'OtherGroup'}]
+        }
+      ]
+    }
+
+  def test_FieldTrialToDescriptionMultipleFormFactorsTrial(self):
+    result = fieldtrial_to_struct._FieldTrialConfigToDescription(
+        self._MULTIPLE_FORM_FACTORS_CONFIG, ['windows'])
+    expected = {
+      'elements': {
+        'kFieldTrialConfig': {
+          'studies': [
+            {
+              'name': 'Trial1',
+              'experiments': [
+                {
+                  'name': 'Group1',
+                  'platforms': ['Study::PLATFORM_WINDOWS'],
+                  'is_low_end_device': 'Study::OPTIONAL_BOOL_MISSING',
+                  'form_factors': ['Study::DESKTOP', 'Study::PHONE'],
+                },
+              ],
+            },
+            {
+              'name': 'Trial2',
+              'experiments': [
+                {
+                  'name': 'OtherGroup',
+                  'platforms': ['Study::PLATFORM_WINDOWS'],
+                  'is_low_end_device': 'Study::OPTIONAL_BOOL_MISSING',
+                  'form_factors': ['Study::TABLET'],
                 },
               ],
             },
