@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "fuchsia/base/test_navigation_observer.h"
+#include "fuchsia/base/test_navigation_listener.h"
 
 #include <string>
 #include <utility>
@@ -18,9 +18,9 @@ namespace {
 
 void QuitRunLoopAndRunCallback(
     base::RunLoop* run_loop,
-    TestNavigationObserver::BeforeAckCallback before_ack_callback,
-    const chromium::web::NavigationEvent& change,
-    chromium::web::NavigationEventObserver::OnNavigationStateChangedCallback
+    TestNavigationListener::BeforeAckCallback before_ack_callback,
+    const fuchsia::web::NavigationState& change,
+    fuchsia::web::NavigationEventListener::OnNavigationStateChangedCallback
         ack_callback) {
   run_loop->Quit();
   before_ack_callback.Run(change, std::move(ack_callback));
@@ -28,15 +28,15 @@ void QuitRunLoopAndRunCallback(
 
 }  // namespace
 
-TestNavigationObserver::TestNavigationObserver() {
+TestNavigationListener::TestNavigationListener() {
   before_ack_ = base::BindRepeating(
-      [](const chromium::web::NavigationEvent&,
+      [](const fuchsia::web::NavigationState&,
          OnNavigationStateChangedCallback callback) { callback(); });
 }
 
-TestNavigationObserver::~TestNavigationObserver() = default;
+TestNavigationListener::~TestNavigationListener() = default;
 
-void TestNavigationObserver::RunUntilNavigationEquals(
+void TestNavigationListener::RunUntilNavigationEquals(
     const GURL& expected_url,
     const base::Optional<std::string>& expected_title) {
   DCHECK(expected_url.is_valid());
@@ -54,22 +54,22 @@ void TestNavigationObserver::RunUntilNavigationEquals(
   }
 }
 
-void TestNavigationObserver::OnNavigationStateChanged(
-    chromium::web::NavigationEvent change,
+void TestNavigationListener::OnNavigationStateChanged(
+    fuchsia::web::NavigationState change,
     OnNavigationStateChangedCallback callback) {
   DCHECK(before_ack_);
 
   // Update our local cache of the Frame's current state.
-  if (!change.url.is_null())
-    current_url_ = GURL(*change.url);
-  if (!change.title.is_null())
-    current_title_ = *change.title;
+  if (change.has_url())
+    current_url_ = GURL(change.url());
+  if (change.has_title())
+    current_title_ = change.title();
 
   // Signal readiness for the next navigation event.
   before_ack_.Run(change, std::move(callback));
 }
 
-void TestNavigationObserver::SetBeforeAckHook(BeforeAckCallback send_ack_cb) {
+void TestNavigationListener::SetBeforeAckHook(BeforeAckCallback send_ack_cb) {
   DCHECK(send_ack_cb);
   before_ack_ = send_ack_cb;
 }

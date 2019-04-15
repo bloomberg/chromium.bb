@@ -12,9 +12,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
-#include "fuchsia/base/fit_adapter.h"
-#include "fuchsia/base/frame_test_util.h"
-#include "fuchsia/base/result_receiver.h"
 #include "fuchsia/base/test_navigation_listener.h"
 #include "fuchsia/engine/common.h"
 #include "fuchsia/engine/test/web_engine_browser_test.h"
@@ -29,6 +26,10 @@ using testing::_;
 using testing::Field;
 using testing::InvokeWithoutArgs;
 
+// Use a shorter name for NavigationEvent, because it is
+// referenced frequently in this file.
+using NavigationDetails = chromium::web::NavigationEvent;
+
 namespace {
 
 void OnCookiesReceived(net::CookieList* output,
@@ -39,17 +40,19 @@ void OnCookiesReceived(net::CookieList* output,
   std::move(on_received_cb).Run();
 }
 
+}  // namespace
+
 // Defines a suite of tests that exercise browser-level configuration and
 // functionality.
-class ContextImplTest : public cr_fuchsia::WebEngineBrowserTest {
+class ContextImplLegacyTest : public cr_fuchsia::WebEngineBrowserTest {
  public:
-  ContextImplTest() = default;
-  ~ContextImplTest() override = default;
+  ContextImplLegacyTest() = default;
+  ~ContextImplLegacyTest() override = default;
 
  protected:
   // Creates a Frame with |navigation_listener_| attached.
-  fuchsia::web::FramePtr CreateFrame() {
-    return WebEngineBrowserTest::CreateFrame(&navigation_listener_);
+  chromium::web::FramePtr CreateFrame() {
+    return WebEngineBrowserTest::CreateLegacyFrame(&navigation_listener_);
   }
 
   // Synchronously gets a list of cookies for this BrowserContext.
@@ -77,23 +80,20 @@ class ContextImplTest : public cr_fuchsia::WebEngineBrowserTest {
   cr_fuchsia::TestNavigationListener navigation_listener_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ContextImplTest);
+  DISALLOW_COPY_AND_ASSIGN(ContextImplLegacyTest);
 };
-
-}  // namespace
 
 // Verifies that the BrowserContext has a working cookie store by setting
 // cookies in the content layer and then querying the CookieStore afterward.
-IN_PROC_BROWSER_TEST_F(ContextImplTest, VerifyPersistentCookieStore) {
+IN_PROC_BROWSER_TEST_F(ContextImplLegacyTest, VerifyPersistentCookieStore) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL cookie_url(embedded_test_server()->GetURL("/set-cookie?foo=bar"));
-  fuchsia::web::FramePtr frame = CreateFrame();
+  chromium::web::FramePtr frame = CreateFrame();
 
-  fuchsia::web::NavigationControllerPtr navigation_controller;
-  frame->GetNavigationController(navigation_controller.NewRequest());
+  chromium::web::NavigationControllerPtr nav;
+  frame->GetNavigationController(nav.NewRequest());
 
-  cr_fuchsia::LoadUrlAndExpectResponse(
-      &navigation_controller, fuchsia::web::LoadUrlParams(), cookie_url.spec());
+  nav->LoadUrl(cookie_url.spec(), chromium::web::LoadUrlParams());
   navigation_listener_.RunUntilNavigationEquals(cookie_url, {});
 
   auto cookies = GetCookies();
@@ -123,45 +123,44 @@ IN_PROC_BROWSER_TEST_F(ContextImplTest, VerifyPersistentCookieStore) {
 
 // Suite for tests which run the BrowserContext in incognito mode (no data
 // directory).
-class IncognitoContextImplTest : public ContextImplTest {
+class IncognitoContextImplLegacyTest : public ContextImplLegacyTest {
  public:
-  IncognitoContextImplTest() = default;
-  ~IncognitoContextImplTest() override = default;
+  IncognitoContextImplLegacyTest() = default;
+  ~IncognitoContextImplLegacyTest() override = default;
 
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(kIncognitoSwitch);
-    ContextImplTest::SetUp();
+    ContextImplLegacyTest::SetUp();
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(IncognitoContextImplTest);
+  DISALLOW_COPY_AND_ASSIGN(IncognitoContextImplLegacyTest);
 };
 
 // Verify that the browser can be initialized without a persistent data
 // directory.
-IN_PROC_BROWSER_TEST_F(IncognitoContextImplTest, NavigateFrame) {
-  fuchsia::web::FramePtr frame = CreateFrame();
+IN_PROC_BROWSER_TEST_F(IncognitoContextImplLegacyTest, NavigateFrame) {
+  chromium::web::FramePtr frame = CreateFrame();
 
-  fuchsia::web::NavigationControllerPtr controller;
+  chromium::web::NavigationControllerPtr controller;
   frame->GetNavigationController(controller.NewRequest());
 
-  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      &controller, fuchsia::web::LoadUrlParams(), url::kAboutBlankURL));
+  controller->LoadUrl(url::kAboutBlankURL, chromium::web::LoadUrlParams());
   navigation_listener_.RunUntilNavigationEquals(GURL(url::kAboutBlankURL), {});
 
   frame.Unbind();
 }
 
-IN_PROC_BROWSER_TEST_F(IncognitoContextImplTest, VerifyInMemoryCookieStore) {
+IN_PROC_BROWSER_TEST_F(IncognitoContextImplLegacyTest,
+                       VerifyInMemoryCookieStore) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL cookie_url(embedded_test_server()->GetURL("/set-cookie?foo=bar"));
-  fuchsia::web::FramePtr frame = CreateFrame();
+  chromium::web::FramePtr frame = CreateFrame();
 
-  fuchsia::web::NavigationControllerPtr controller;
-  frame->GetNavigationController(controller.NewRequest());
+  chromium::web::NavigationControllerPtr nav;
+  frame->GetNavigationController(nav.NewRequest());
 
-  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      &controller, fuchsia::web::LoadUrlParams(), cookie_url.spec()));
+  nav->LoadUrl(cookie_url.spec(), chromium::web::LoadUrlParams());
   navigation_listener_.RunUntilNavigationEquals(cookie_url, {});
 
   auto cookies = GetCookies();

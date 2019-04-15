@@ -74,7 +74,7 @@ class FakeContext : public fuchsia::web::testing::Context_TestBase {
   void CreateFrame(
       fidl::InterfaceRequest<fuchsia::web::Frame> frame_request) override;
 
-  // fuchsia::web::testing::Frame_TestBase implementation.
+  // fuchsia::web::testing::Context_TestBase implementation.
   void NotImplemented_(const std::string& name) override;
 
  private:

@@ -13,6 +13,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "fuchsia/base/fit_adapter.h"
 #include "fuchsia/base/mem_buffer_util.h"
+#include "fuchsia/base/test_navigation_listener.h"
 #include "fuchsia/engine/browser/frame_impl.h"
 #include "fuchsia/engine/test/web_engine_browser_test.h"
 #include "fuchsia/runners/cast/cast_platform_bindings_ids.h"
@@ -26,13 +27,14 @@ constexpr char kUnimplementedLogMessage[] =
 constexpr char kStubBindingsPath[] =
     FILE_PATH_LITERAL("fuchsia/runners/cast/not_implemented_api_bindings.js");
 
-class StubBindingsTest : public cr_fuchsia::WebEngineBrowserTest,
-                         public chromium::web::NavigationEventObserver {
+class StubBindingsTest : public cr_fuchsia::WebEngineBrowserTest {
  public:
   StubBindingsTest()
       : run_timeout_(TestTimeouts::action_timeout(),
                      base::MakeExpectedNotRunClosure(FROM_HERE)) {
     set_test_server_root(base::FilePath("fuchsia/runners/cast/testdata"));
+    navigation_listener_.SetBeforeAckHook(base::BindRepeating(
+        &StubBindingsTest::OnBeforeAckHook, base::Unretained(this)));
   }
 
   ~StubBindingsTest() override = default;
@@ -43,7 +45,7 @@ class StubBindingsTest : public cr_fuchsia::WebEngineBrowserTest,
     base::ScopedAllowBlockingForTesting allow_blocking;
     ASSERT_TRUE(embedded_test_server()->Start());
 
-    frame_ = WebEngineBrowserTest::CreateFrame(this);
+    frame_ = WebEngineBrowserTest::CreateLegacyFrame(&navigation_listener_);
     FrameImpl* frame_impl = context_impl()->GetFrameImplForTest(&frame_);
     frame_impl->set_javascript_console_message_hook_for_test(
         base::BindRepeating(&StubBindingsTest::OnLogMessage,
@@ -98,10 +100,10 @@ class StubBindingsTest : public cr_fuchsia::WebEngineBrowserTest,
     }
   }
 
-  // chromium::web::NavigationEventObserver implementation.
-  void OnNavigationStateChanged(
-      chromium::web::NavigationEvent change,
-      OnNavigationStateChangedCallback callback) override {
+  void OnBeforeAckHook(
+      const fuchsia::web::NavigationState& change,
+      fuchsia::web::NavigationEventListener::OnNavigationStateChangedCallback
+          callback) {
     if (navigate_run_loop_)
       navigate_run_loop_->Quit();
     callback();
@@ -110,6 +112,7 @@ class StubBindingsTest : public cr_fuchsia::WebEngineBrowserTest,
   std::unique_ptr<base::RunLoop> navigate_run_loop_;
   chromium::web::FramePtr frame_;
   base::OnceClosure on_log_message_received_cb_;
+  cr_fuchsia::TestNavigationListener navigation_listener_;
 
   // Stores accumulated log messages.
   std::vector<std::string> captured_logs_;

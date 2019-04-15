@@ -61,6 +61,11 @@ class FrameImpl : public fuchsia::web::Frame,
   FRIEND_TEST_ALL_PREFIXES(FrameImplTest, NoNavigationObserverAttached);
   FRIEND_TEST_ALL_PREFIXES(FrameImplTest, ReloadFrame);
   FRIEND_TEST_ALL_PREFIXES(FrameImplTest, Stop);
+  FRIEND_TEST_ALL_PREFIXES(FrameImplLegacyTest, DelayedNavigationEventAck);
+  FRIEND_TEST_ALL_PREFIXES(FrameImplLegacyTest, NavigationObserverDisconnected);
+  FRIEND_TEST_ALL_PREFIXES(FrameImplLegacyTest, NoNavigationObserverAttached);
+  FRIEND_TEST_ALL_PREFIXES(FrameImplLegacyTest, ReloadFrame);
+  FRIEND_TEST_ALL_PREFIXES(FrameImplLegacyTest, Stop);
 
   // fuchsia::web::Frame implementation.
   void CreateView(fuchsia::ui::views::ViewToken view_token) override;

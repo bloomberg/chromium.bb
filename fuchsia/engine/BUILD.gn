@@ -205,7 +205,9 @@ source_set("browsertest_core") {
 test("web_engine_browsertests") {
   sources = [
     "browser/context_impl_browsertest.cc",
+    "browser/context_impl_legacy_browsertest.cc",
     "browser/frame_impl_browsertest.cc",
+    "browser/frame_impl_legacy_browsertest.cc",
   ]
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
   data = [
@@ -228,6 +230,7 @@ test("web_engine_browsertests") {
 
 test("web_engine_unittests") {
   sources = [
+    "context_provider_impl_legacy_unittest.cc",
     "context_provider_impl_unittest.cc",
     "fake_context.cc",
     "fake_context.h",
