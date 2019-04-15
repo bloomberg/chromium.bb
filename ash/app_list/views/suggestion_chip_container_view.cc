@@ -65,13 +65,16 @@ int SuggestionChipContainerView::DoUpdate() {
   if (IgnoreUpdateAndLayout())
     return num_results();
 
-  auto exclude_reinstall_filter = [](const SearchResult& r) -> bool {
+  // Need to filter out kArcAppShortcut since it will be confusing to users
+  // if shortcuts are displayed as suggestion chips.
+  auto filter_reinstall_and_shortcut = [](const SearchResult& r) -> bool {
     return r.display_type() == ash::SearchResultDisplayType::kRecommendation &&
-           r.result_type() != ash::SearchResultType::kPlayStoreReinstallApp;
+           r.result_type() != ash::SearchResultType::kPlayStoreReinstallApp &&
+           r.result_type() != ash::SearchResultType::kArcAppShortcut;
   };
   std::vector<SearchResult*> display_results =
       SearchModel::FilterSearchResultsByFunction(
-          results(), base::BindRepeating(exclude_reinstall_filter),
+          results(), base::BindRepeating(filter_reinstall_and_shortcut),
           AppListConfig::instance().num_start_page_tiles());
 
   // Update search results here, but wait until layout to add them as child
