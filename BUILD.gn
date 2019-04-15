@@ -69,11 +69,16 @@ group("gn_all") {
     "//chrome/installer",
     "//chrome/updater",
     "//net:net_unittests",
+    "//services:services_unittests",
+    "//services/service_manager/public/cpp",
     "//skia:skia_unittests",
     "//sql:sql_unittests",
+    "//third_party/flatbuffers:flatbuffers_unittests",
     "//tools/binary_size:binary_size_trybot_py",
     "//tools/ipc_fuzzer:ipc_fuzzer_all",
+    "//tools/metrics:metrics_metadata",
     "//ui/base:ui_base_unittests",
+    "//ui/gfx:gfx_unittests",
     "//url:url_unittests",
   ]
 
@@ -85,14 +90,7 @@ group("gn_all") {
   }
 
   if (!is_fuchsia) {
-    deps += [
-      "//components:components_unittests",
-      "//services:services_unittests",
-      "//services/service_manager/public/cpp",
-      "//third_party/flatbuffers:flatbuffers_unittests",
-      "//tools/metrics:metrics_metadata",
-      "//ui/gfx:gfx_unittests",
-    ]
+    deps += [ "//components:components_unittests" ]
   }
 
   if (closure_compile) {
