@@ -55,11 +55,16 @@ namespace internal {  // for testing.
 // Returns an array with the RGBA color components.
 v8::Local<v8::Value> RGBAColorToArray(v8::Isolate* isolate,
                                       const RGBAColor& color) {
+  v8::Local<v8::Context> context = isolate->GetCurrentContext();
   v8::Local<v8::Array> color_array = v8::Array::New(isolate, 4);
-  color_array->Set(0, v8::Int32::New(isolate, color.r));
-  color_array->Set(1, v8::Int32::New(isolate, color.g));
-  color_array->Set(2, v8::Int32::New(isolate, color.b));
-  color_array->Set(3, v8::Int32::New(isolate, color.a));
+  color_array->CreateDataProperty(context, 0, v8::Int32::New(isolate, color.r))
+      .Check();
+  color_array->CreateDataProperty(context, 1, v8::Int32::New(isolate, color.g))
+      .Check();
+  color_array->CreateDataProperty(context, 2, v8::Int32::New(isolate, color.b))
+      .Check();
+  color_array->CreateDataProperty(context, 3, v8::Int32::New(isolate, color.a))
+      .Check();
   return color_array;
 }
 
@@ -725,12 +730,17 @@ v8::Local<v8::Value> NewTabPageBindings::GetMostVisited(v8::Isolate* isolate) {
 
   std::vector<InstantMostVisitedItemIDPair> instant_mv_items;
   search_box->GetMostVisitedItems(&instant_mv_items);
+  v8::Local<v8::Context> context = isolate->GetCurrentContext();
   v8::Local<v8::Object> v8_mv_items =
       v8::Array::New(isolate, instant_mv_items.size());
   for (size_t i = 0; i < instant_mv_items.size(); ++i) {
     InstantRestrictedID rid = instant_mv_items[i].first;
-    v8_mv_items->Set(i, GenerateMostVisitedItem(isolate, device_pixel_ratio,
-                                                render_view_id, rid));
+    v8_mv_items
+        ->CreateDataProperty(
+            context, i,
+            GenerateMostVisitedItem(isolate, device_pixel_ratio, render_view_id,
+                                    rid))
+        .Check();
   }
   return v8_mv_items;
 }
