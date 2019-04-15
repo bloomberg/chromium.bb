@@ -220,11 +220,8 @@ LocalFrame* LocalFrame::Create(LocalFrameClient* client,
       client, page, owner,
       interface_registry ? interface_registry
                          : InterfaceRegistry::GetEmptyInterfaceRegistry());
+  frame->Initialize();
 
-  if (frame->IsMainFrame()) {
-    if (PageScheduler* page_scheduler = page.GetPageScheduler())
-      page_scheduler->SetIsMainFrameLocal(true);
-  }
   probe::FrameAttachedToParent(frame);
   return frame;
 }

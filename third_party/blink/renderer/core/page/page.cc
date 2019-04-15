@@ -282,14 +282,11 @@ LinkHighlights& Page::GetLinkHighlights() {
 }
 
 void Page::SetMainFrame(Frame* main_frame) {
-  // Should only be called during initialization or swaps between local and
-  // remote frames.
-  // FIXME: Unfortunately we can't assert on this at the moment, because this
-  // is called in the base constructor for both LocalFrame and RemoteFrame,
-  // when the vtables for the derived classes have not yet been setup. Once this
-  // is fixed, also call page_scheduler_->SetIsMainFrameLocal(true) from here
-  // instead of from the callers of this method.
+  // TODO(https://crbug.com/952836): Assert that this is only called during
+  // initialization or swaps between local and remote frames.
   main_frame_ = main_frame;
+
+  page_scheduler_->SetIsMainFrameLocal(main_frame->IsLocalFrame());
 }
 
 LocalFrame* Page::DeprecatedLocalMainFrame() const {
