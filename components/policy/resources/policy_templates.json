@@ -299,30 +299,27 @@
   ],
   'policy_definitions': [
     {
-      'name': 'Homepage',
+      'name': 'Startup',
       'type': 'group',
-      'caption': '''Home page''',
-      'desc': '''Configure the default home page in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing it.
+      'caption': '''Startup, Home page and New Tab page''',
+      'desc': '''Configure the pages to load on startup, the default home page and the default new tab page in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing them.
 
-      The user's home page settings are only completely locked down, if you either select the home page to be the new tab page, or set it to be a URL and specify a home page URL. If you don't specify the home page URL, then the user is still able to set the home page to the new tab page by specifying 'chrome://newtab'.''',
+      The user's home page settings are only completely locked down if you either select the home page to be the new tab page, or set it to be a URL and specify a home page URL. If you don't specify the home page URL, then the user is still able to set the home page to the new tab page by specifying 'chrome://newtab'.
+
+      The policy 'URLs to open on startup' is ignored unless you select 'Open a list of URLs' in 'Action on startup'.''',
       'policies': [
+        'ShowHomeButton',
         'HomepageLocation',
         'HomepageIsNewTabPage',
-      ],
-    },
-    {
-      'name': 'NewTabPage',
-      'type': 'group',
-      'caption': '''New Tab Page''',
-      'desc': '''Configure the default New Tab page in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
-      'policies': [
         'NewTabPageLocation',
+        'RestoreOnStartup',
+        'RestoreOnStartupURLs',
       ],
     },
     {
       'name': 'RemoteAccess',
       'type': 'group',
-      'caption': '''Configure remote access options''',
+      'caption': '''Remote access''',
       'desc': '''Configure remote access options in Chrome Remote Desktop host.
 
       Chrome Remote Desktop host is a native service that runs on the target machine that a user can connect to using Chrome Remote Desktop application.  The native service is packaged and executed separately from the <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> browser.
@@ -389,7 +386,7 @@
     {
       'name': 'HTTPAuthentication',
       'type': 'group',
-      'caption': '''Policies for HTTP authentication''',
+      'caption': '''HTTP authentication''',
       'desc': '''Policies related to integrated HTTP authentication.''',
       'policies': [
         'AuthSchemes',
@@ -419,18 +416,6 @@
         'ExtensionSettings',
         'ExtensionInstallListsMergeEnabled',
         'UninstallBlacklistedExtensions',
-      ],
-    },
-    {
-      'name': 'RestoreOnStartupGroup',
-      'type': 'group',
-      'caption': '''Startup pages''',
-      'desc': '''Allows you to configure the pages that are loaded on startup.
-
-      The policy 'URLs to open on startup' is ignored unless you select 'Open a list of URLs' in 'Action on startup'.''',
-      'policies': [
-        'RestoreOnStartup',
-        'RestoreOnStartupURLs',
       ],
     },
     {
@@ -537,7 +522,7 @@
     {
       'name': 'Drive',
       'type': 'group',
-      'caption': '''Configure Google Drive options''',
+      'caption': '''Google Drive''',
       'desc': '''Configure Google Drive in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>.''',
       'policies': [
         'DriveDisabled',
@@ -649,7 +634,7 @@
     {
       'name': 'QuickUnlock',
       'type': 'group',
-      'caption': '''Quick unlock policies''',
+      'caption': '''Quick unlock''',
       'desc': '''Configures quick unlock related policies.''',
       'policies': [
         'QuickUnlockModeWhitelist',
@@ -3443,7 +3428,7 @@
       },
       'example_value': True,
       'id': 393,
-      'caption': '''Whether NTLMv2 authentication is enabled.''',
+      'caption': '''Enable NTLMv2 authentication.''',
       'tags': ['website-sharing'],
       'desc': '''Controls whether NTLMv2 is enabled.
 
@@ -6530,7 +6515,7 @@
       },
       'example_value': False,
       'id': 129,
-      'caption': '''Whether online OCSP/CRL checks are performed''',
+      'caption': '''Enable online OCSP/CRL checks''',
       'tags': ['website-sharing'],
       'desc': '''In light of the fact that soft-fail, online revocation checks provide no effective security benefit, they are disabled by default in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 19 and later. By setting this policy to true, the previous behavior is restored and online OCSP/CRL checks will be performed.
 
@@ -6547,7 +6532,7 @@
       },
       'example_value': False,
       'id': 235,
-      'caption': '''Whether online OCSP/CRL checks are required for local trust anchors''',
+      'caption': '''Require online OCSP/CRL checks for local trust anchors''',
       'tags': [],
       'desc': '''When this setting is enabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will always perform revocation checking for server certificates that successfully validate and are signed by locally-installed CA certificates.
 
@@ -6566,7 +6551,7 @@
       },
       'example_value': False,
       'id': 340,
-      'caption': '''Whether SHA-1 signed certificates issued by local trust anchors are allowed''',
+      'caption': '''Allow SHA-1 signed certificates issued by local trust anchors''',
       'tags': ['system-security'],
       'desc': '''When this setting is enabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> allows SHA-1 signed certificates as long as they successfully validate and chain to a locally-installed CA certificates.
 
@@ -6586,7 +6571,7 @@
       'deprecated': True,
       'example_value': False,
       'id': 366,
-      'caption': '''Whether to allow certificates issued by local trust anchors that are missing the subjectAlternativeName extension''',
+      'caption': '''Allow certificates issued by local trust anchors without subjectAlternativeName extension''',
       'tags': ['system-security'],
       'desc': '''When this setting is enabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the commonName of a server certificate to match a hostname if the certificate is missing a subjectAlternativeName extension, as long as it successfully validates and chains to a locally-installed CA certificates.
 
@@ -6605,7 +6590,7 @@
       },
       'example_value': False,
       'id': 413,
-      'caption': '''Whether to enable trust in Symantec Corporation's Legacy PKI Infrastructure''',
+      'caption': '''Enable trust in Symantec Corporation's Legacy PKI Infrastructure''',
       'tags': ['system-security'],
       'desc': '''When this setting is enabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> allows certificates issued by Symantec Corporation's Legacy PKI operations to be trusted if they otherwise successfully validate and chain to a recognized CA certificate.
 
@@ -7201,7 +7186,7 @@
       },
       'example_value': False,
       'id': 134,
-      'caption': '''Whether the release channel should be configurable by the user''',
+      'caption': '''Users may configure the Chrome OS release channel''',
       'tags': [],
       'desc': '''If this policy is set to True and the ChromeOsReleaseChannel policy is not specified then users of the enrolling domain will be allowed to change the release channel of the device. If this policy is set to false the device will be locked in whatever channel it was last set.
 
@@ -10369,7 +10354,7 @@
       'deprecated': True,
       'example_value': False,
       'id': 310,
-      'caption': '''Whether RC4 cipher suites in TLS are enabled''',
+      'caption': '''Enable RC4 cipher suites in TLS''',
       'tags': ['system-security'],
       'desc': '''Warning: RC4 will be completely removed from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> after version 52 (around September 2016) and this policy will stop working then.
 
@@ -10393,7 +10378,7 @@
       'deprecated': True,
       'example_value': False,
       'id': 334,
-      'caption': '''Whether DHE cipher suites in TLS are enabled''',
+      'caption': '''Enable DHE cipher suites in TLS''',
       'tags': ['system-security'],
       'desc': '''Warning: DHE will be completely removed from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> after version 57 (around March 2017) and this policy will stop working then.
 
