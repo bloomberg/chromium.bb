@@ -151,8 +151,8 @@ bool IsFingerprintEnabled(Profile* profile) {
   return base::FeatureList::IsEnabled(features::kQuickUnlockFingerprint);
 }
 
-void EnableForTesting() {
-  enable_for_testing_ = true;
+void EnabledForTesting(bool state) {
+  enable_for_testing_ = state;
 }
 
 bool IsEnabledForTesting() {

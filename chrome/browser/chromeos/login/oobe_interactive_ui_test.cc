@@ -80,6 +80,7 @@ class OobeInteractiveUITest
   }
 
   void TearDown() override {
+    quick_unlock::EnabledForTesting(false);
     OobeBaseTest::TearDown();
     params_.reset();
   }
@@ -95,7 +96,7 @@ class OobeInteractiveUITest
     OobeBaseTest::SetUpInProcessBrowserTestFixture();
 
     if (params_->is_quick_unlock_enabled)
-      quick_unlock::EnableForTesting();
+      quick_unlock::EnabledForTesting(true);
   }
 
   void TearDownOnMainThread() override {

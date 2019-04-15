@@ -111,6 +111,13 @@ Polymer({
   canvasCircleProgressColor_: CANVAS_CIRCLE_PROGRESS_COLOR,
 
   /**
+   * Animation ID for fingerprint scan progress bar.
+   * @type {number|undefined}
+   * @private
+   */
+  progressAnimationIntervalId_: undefined,
+
+  /**
    * Timer ID for fingerprint scan success update.
    * @type {number|undefined}
    * @private
@@ -166,6 +173,7 @@ Polymer({
       return;
     }
     this.isComplete_ = isComplete;
+    this.cancelAnimations_();
 
     const slice = 2 * Math.PI / 100;
     const startAngle = prevPercentComplete * slice;
@@ -176,46 +184,59 @@ Polymer({
     // The value to update the angle by each tick.
     const step =
         (endAngle - startAngle) / (ANIMATE_DURATION_MS / ANIMATE_TICKS_MS);
-    const id = setInterval(doAnimate.bind(this), ANIMATE_TICKS_MS);
-    // Circles on html canvas have 0 radians on the positive x-axis and go in
-    // clockwise direction. We want to start at the top of the circle which is
-    // 3pi/2.
-    const start = 3 * Math.PI / 2;
-
     // Function that is called every tick of the interval, draws the arc a bit
     // closer to the final destination each tick, until it reaches the final
     // destination.
-    function doAnimate() {
+    const doAnimate = () => {
       if (currentAngle >= endAngle) {
-        clearInterval(id);
+        if (this.progressAnimationIntervalId_) {
+          clearInterval(this.progressAnimationIntervalId_);
+          this.progressAnimationIntervalId_ = undefined;
+        }
         currentAngle = endAngle;
       }
 
       // Clears the canvas and draws the new progress circle.
       this.clearCanvas_();
-      // Drawing two arcs to form a circle gives a nicer look than drawing an
-      // arc on top of a circle. If |currentAngle| is 0, draw from |start| +
-      // |currentAngle| to 7 * Math.PI / 2 (start is 3 * Math.PI / 2) otherwise
-      // the regular draw from |start| to |currentAngle| will draw nothing which
-      // will cause a flicker for one frame.
+      // Drawing two arcs to form a circle gives a nicer look than drawing
+      // an arc on top of a circle. If |currentAngle| is 0, draw from
+      // |start| + |currentAngle| to 7 * Math.PI / 2 (start is 3 * Math.PI /
+      // 2) otherwise the regular draw from |start| to |currentAngle| will
+      // draw nothing which will cause a flicker for one frame.
       this.drawArc(
           start, start + currentAngle, this.canvasCircleProgressColor_);
       this.drawArc(
           start + currentAngle, currentAngle <= 0 ? 7 * Math.PI / 2 : start,
           this.canvasCircleBackgroundColor_);
       currentAngle += step;
-    }
+    };
 
-    // Clean up any pending animation update.
-    if (this.updateTimerId_ !== undefined) {
-      window.clearTimeout(this.updateTimerId_);
-      this.updateTimerId_ = undefined;
-    }
+    this.progressAnimationIntervalId_ =
+        setInterval(doAnimate, ANIMATE_TICKS_MS);
+    // Circles on html canvas have 0 radians on the positive x-axis and go in
+    // clockwise direction. We want to start at the top of the circle which is
+    // 3pi/2.
+    const start = 3 * Math.PI / 2;
 
     if (isComplete) {
       this.animateScanComplete_();
     } else {
       this.animateScanProgress_();
+    }
+  },
+
+  /*
+   * Cleans up any pending animation update created by setInterval().
+   * @private
+   */
+  cancelAnimations_: function() {
+    if (this.progressAnimationIntervalId_) {
+      clearInterval(this.progressAnimationIntervalId_);
+      this.progressAnimationIntervalId_ = undefined;
+    }
+    if (this.updateTimerId_) {
+      window.clearTimeout(this.updateTimerId_);
+      this.updateTimerId_ = undefined;
     }
   },
 
@@ -259,6 +280,7 @@ Polymer({
    * Reset the element to initial state, when the enrollment just starts.
    */
   reset: function() {
+    this.cancelAnimations_();
     this.clearCanvas_();
     this.isComplete_ = false;
     this.drawBackgroundCircle();

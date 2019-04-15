@@ -158,7 +158,7 @@ class QuickUnlockPrivateUnitTest
     fake_user_manager_->CreateLocalState();
 
     // Rebuild quick unlock state.
-    quick_unlock::EnableForTesting();
+    quick_unlock::EnabledForTesting(true);
     quick_unlock::PinBackend::ResetForTesting();
 
     base::RunLoop().RunUntilIdle();
@@ -185,6 +185,7 @@ class QuickUnlockPrivateUnitTest
   }
 
   void TearDown() override {
+    quick_unlock::EnabledForTesting(false);
     quick_unlock::DisablePinByPolicyForTesting(false);
 
     base::RunLoop().RunUntilIdle();
