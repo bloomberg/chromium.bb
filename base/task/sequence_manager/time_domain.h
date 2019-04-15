@@ -93,15 +93,16 @@ class BASE_EXPORT TimeDomain {
 
   virtual const char* GetName() const = 0;
 
+  // Called when the TimeDomain is registered. |sequence_manager| is expected to
+  // be valid for the duration of TimeDomain's existence.
+  // TODO(scheduler-dev): Pass SequenceManager in the constructor.
+  virtual void OnRegisterWithSequenceManager(
+      internal::SequenceManagerImpl* sequence_manager);
+
  private:
   friend class internal::TaskQueueImpl;
   friend class internal::SequenceManagerImpl;
   friend class TestTimeDomain;
-
-  // Called when the TimeDomain is registered.
-  // TODO(kraynov): Pass SequenceManager in the constructor.
-  void OnRegisterWithSequenceManager(
-      internal::SequenceManagerImpl* sequence_manager);
 
   // Schedule TaskQueue to wake up at certain time, repeating calls with
   // the same |queue| invalidate previous requests.
