@@ -35,6 +35,7 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_provider.h"
+#include "ui/views/view.h"
 #include "ui/views/window/dialog_client_view.h"
 
 namespace {
@@ -170,8 +171,9 @@ std::unique_ptr<views::ToggleImageButton> CreatePasswordViewButton(
   return button;
 }
 
-// Creates a dropdown from |PasswordForm.all_possible_passwords|.
-std::unique_ptr<views::EditableCombobox> CreatePasswordDropdownView(
+// Creates an EditableCombobox from |PasswordForm.all_possible_passwords| or
+// even just |PasswordForm.password_value|.
+std::unique_ptr<views::EditableCombobox> CreatePasswordEditableCombobox(
     const autofill::PasswordForm& form,
     bool are_passwords_revealed) {
   DCHECK(form.federation_origin.opaque());
@@ -200,7 +202,7 @@ PasswordPendingView::PasswordPendingView(content::WebContents* web_contents,
       is_update_bubble_(model()->state() ==
                         password_manager::ui::PENDING_PASSWORD_UPDATE_STATE),
       sign_in_promo_(nullptr),
-      username_field_(nullptr),
+      username_dropdown_(nullptr),
       password_view_button_(nullptr),
       initially_focused_view_(nullptr),
       password_dropdown_(nullptr),
@@ -225,17 +227,12 @@ PasswordPendingView::PasswordPendingView(content::WebContents* web_contents,
     credential_view->SetEnabled(false);
     AddChildView(credential_view);
   } else {
-    if (model()->enable_editing()) {
-      views::Textfield* username_field =
-          CreateUsernameEditable(model()->GetCurrentUsername()).release();
-      username_field->set_controller(this);
-      username_field_ = username_field;
-    } else {
-      username_field_ = CreateUsernameLabel(password_form).release();
-    }
-
+    username_dropdown_ =
+        CreateUsernameEditableCombobox(password_form).release();
+    username_dropdown_->set_listener(this);
+    username_dropdown_->set_show_menu_on_next_focus(false);
     password_dropdown_ =
-        CreatePasswordDropdownView(password_form, are_passwords_revealed_)
+        CreatePasswordEditableCombobox(password_form, are_passwords_revealed_)
             .release();
 
     password_view_button_ =
@@ -244,13 +241,15 @@ PasswordPendingView::PasswordPendingView(content::WebContents* web_contents,
     views::GridLayout* layout =
         SetLayoutManager(std::make_unique<views::GridLayout>(this));
 
-    BuildCredentialRows(layout, username_field_, password_dropdown_,
+    BuildCredentialRows(layout, username_dropdown_, password_dropdown_,
                         password_view_button_);
-    if (model()->enable_editing() &&
-        model()->pending_password().username_value.empty()) {
-      initially_focused_view_ = username_field_;
-    }
+    if (model()->pending_password().username_value.empty())
+      initially_focused_view_ = username_dropdown_;
   }
+}
+
+views::View* PasswordPendingView::GetUsernameTextfieldForTest() const {
+  return username_dropdown_->GetTextfieldForTest();
 }
 
 PasswordPendingView::~PasswordPendingView() = default;
@@ -289,8 +288,8 @@ void PasswordPendingView::ButtonPressed(views::Button* sender,
   TogglePasswordVisibility();
 }
 
-void PasswordPendingView::ContentsChanged(views::Textfield* sender,
-                                          const base::string16& new_contents) {
+void PasswordPendingView::OnContentChanged(
+    views::EditableCombobox* editable_combobox) {
   bool is_update_before = model()->IsCurrentStateUpdate();
   UpdateUsernameAndPasswordInModel();
   // May be the buttons should be updated.
@@ -379,18 +378,12 @@ void PasswordPendingView::TogglePasswordVisibility() {
 }
 
 void PasswordPendingView::UpdateUsernameAndPasswordInModel() {
-  const bool username_editable = model()->enable_editing();
-  if (!username_editable && !password_dropdown_)
-    return;
-
+  DCHECK(username_dropdown_ && password_dropdown_);
   base::string16 new_username = model()->pending_password().username_value;
   base::string16 new_password = model()->pending_password().password_value;
-  if (username_editable) {
-    new_username = static_cast<views::Textfield*>(username_field_)->text();
-    base::TrimString(new_username, base::ASCIIToUTF16(" "), &new_username);
-  }
-  if (password_dropdown_)
-    new_password = password_dropdown_->GetText();
+  new_username = username_dropdown_->GetText();
+  base::TrimString(new_username, base::ASCIIToUTF16(" "), &new_username);
+  new_password = password_dropdown_->GetText();
   model()->OnCredentialEdited(std::move(new_username), std::move(new_password));
 }
 

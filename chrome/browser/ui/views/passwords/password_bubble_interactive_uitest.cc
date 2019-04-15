@@ -108,7 +108,7 @@ IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest, BasicOpenAndClose) {
       PasswordBubbleViewBase::manage_password_bubble());
   // A pending password with empty username should initially focus on the
   // username field.
-  EXPECT_EQ(bubble->username_field(),
+  EXPECT_EQ(bubble->GetUsernameTextfieldForTest(),
             bubble->GetFocusManager()->GetFocusedView());
   PasswordBubbleViewBase::CloseCurrentBubble();
   EXPECT_FALSE(IsBubbleShowing());
