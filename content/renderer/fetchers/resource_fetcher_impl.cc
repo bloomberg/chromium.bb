@@ -6,6 +6,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+#include <string>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -282,6 +286,11 @@ void ResourceFetcherImpl::SetHeader(const std::string& header,
   } else {
     request_.headers.SetHeader(header, value);
   }
+}
+
+void ResourceFetcherImpl::SetFetchRequestMode(
+    network::mojom::FetchRequestMode fetch_request_mode) {
+  request_.fetch_request_mode = fetch_request_mode;
 }
 
 void ResourceFetcherImpl::Start(

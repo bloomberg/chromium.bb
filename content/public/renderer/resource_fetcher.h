@@ -59,6 +59,8 @@ class CONTENT_EXPORT ResourceFetcher {
   virtual void SetBody(const std::string& body) = 0;
   virtual void SetHeader(const std::string& header,
                          const std::string& value) = 0;
+  virtual void SetFetchRequestMode(
+      network::mojom::FetchRequestMode fetch_request_mode) = 0;
 
   // Starts the request using the specified frame.  Calls |callback| when
   // done.
