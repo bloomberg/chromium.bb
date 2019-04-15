@@ -54,13 +54,16 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
   // third_party/icu/source/common/unicode/uloc.h
   const std::string kAllowedLocales[] = {ULOC_CANADA,
                                          ULOC_CANADA_FRENCH,
+                                         ULOC_FRANCE,
                                          ULOC_FRENCH,
                                          ULOC_UK,
                                          ULOC_US,
-                                         "da_DK",
-                                         "nl_NL",
-                                         "no_NO"
-                                         "sv_SE"};
+                                         "da",
+                                         "nb",
+                                         "nl",
+                                         "nn",
+                                         "no",
+                                         "sv"};
 
   const PrefService* prefs = profile->GetPrefs();
   std::string pref_locale =
