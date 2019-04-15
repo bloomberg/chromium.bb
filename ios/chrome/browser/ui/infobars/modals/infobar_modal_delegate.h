@@ -13,8 +13,7 @@
 @protocol InfobarModalDelegate
 
 // Asks the delegate to dismiss the InfobarModal.
-- (void)dismissInfobarModal:(UIButton*)sender
-                 completion:(ProceduralBlock)completion;
+- (void)dismissInfobarModal:(id)sender completion:(ProceduralBlock)completion;
 
 // Called when the InfobarModal "Accept" button was pressed.
 - (void)modalInfobarButtonWasPressed:(UIButton*)sender;

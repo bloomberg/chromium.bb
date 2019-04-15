@@ -117,7 +117,8 @@
 
 - (void)updateCredentialsWithUsername:(NSString*)username
                              password:(NSString*)password {
-  // TODO(crbug.com/945478): Implement once https://crrev.com/c/1560448 lands.
+  self.passwordInfoBarDelegate->UpdateCredentials(username, password);
+  [self dismissInfobarModal:self completion:nil];
 }
 
 @end
