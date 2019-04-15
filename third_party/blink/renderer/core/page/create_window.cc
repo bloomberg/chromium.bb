@@ -296,7 +296,7 @@ Frame* CreateNewWindow(LocalFrame& opener_frame,
     Frame* frame = &opener_frame.Tree().Top();
     if (!opener_frame.CanNavigate(*frame))
       return nullptr;
-    if (request.GetShouldSetOpener() == kMaybeSetOpener)
+    if (!features.noopener)
       frame->Client()->SetOpener(&opener_frame);
     return frame;
   }

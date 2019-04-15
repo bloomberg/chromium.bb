@@ -1483,8 +1483,6 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
   frame_request.SetNavigationPolicy(
       NavigationPolicyForCreateWindow(window_features));
   frame_request.SetFeaturesForWindowOpen(window_features);
-  frame_request.SetShouldSetOpener(window_features.noopener ? kNeverSetOpener
-                                                            : kMaybeSetOpener);
 
   // Normally, FrameLoader would take care of setting the referrer for a
   // navigation that is triggered from javascript. However, creating a window

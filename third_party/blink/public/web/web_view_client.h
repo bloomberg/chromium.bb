@@ -72,7 +72,6 @@ class WebViewClient {
       const WebWindowFeatures& features,
       const WebString& name,
       WebNavigationPolicy policy,
-      bool suppress_opener,
       WebSandboxFlags,
       const FeaturePolicy::FeatureState&,
       const SessionStorageNamespaceId& session_storage_namespace_id) {

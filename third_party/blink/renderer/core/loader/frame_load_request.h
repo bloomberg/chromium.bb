@@ -102,11 +102,6 @@ struct CORE_EXPORT FrameLoadRequest {
     should_send_referrer_ = should_send_referrer;
   }
 
-  ShouldSetOpener GetShouldSetOpener() const { return should_set_opener_; }
-  void SetShouldSetOpener(ShouldSetOpener should_set_opener) {
-    should_set_opener_ = should_set_opener;
-  }
-
   const AtomicString& HrefTranslate() const { return href_translate_; }
   void SetHrefTranslate(const AtomicString& translate) {
     href_translate_ = translate;
@@ -156,6 +151,8 @@ struct CORE_EXPORT FrameLoadRequest {
   }
   bool IsWindowOpen() const { return is_window_open_; }
 
+  void SetNoOpener() { window_features_.noopener = true; }
+
  private:
   Member<Document> origin_document_;
   ResourceRequest resource_request_;
@@ -167,7 +164,6 @@ struct CORE_EXPORT FrameLoadRequest {
       WebTriggeringEventInfo::kNotFromEvent;
   Member<HTMLFormElement> form_;
   ShouldSendReferrer should_send_referrer_;
-  ShouldSetOpener should_set_opener_;
   ContentSecurityPolicyDisposition
       should_check_main_world_content_security_policy_;
   scoped_refptr<base::RefCountedData<mojom::blink::BlobURLTokenPtr>>
