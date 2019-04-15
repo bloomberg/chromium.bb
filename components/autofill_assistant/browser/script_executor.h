@@ -106,9 +106,10 @@ class ScriptExecutor : public ActionDelegate {
                         base::OnceCallback<void()> all_done) override;
   void ShortWaitForElement(const Selector& selector,
                            base::OnceCallback<void(bool)> callback) override;
-  void WaitForElement(
+  void WaitForDom(
       base::TimeDelta max_wait_time,
       bool allow_interrupt,
+      ActionDelegate::SelectorPredicate selector_predicate,
       const Selector& selector,
       base::OnceCallback<void(ProcessedActionStatusProto)> callback) override;
   void SetStatusMessage(const std::string& message) override;
@@ -180,7 +181,7 @@ class ScriptExecutor : public ActionDelegate {
  private:
   // Helper for WaitForElementVisible that keeps track of the state required to
   // run interrupts while waiting for a specific element.
-  class WaitWithInterrupts : public ScriptExecutor::Listener {
+  class WaitForDomOperation : public ScriptExecutor::Listener {
    public:
     // Let the caller know about either the result of looking for the element or
     // of an abnormal result from an interrupt.
@@ -195,11 +196,13 @@ class ScriptExecutor : public ActionDelegate {
                                              const std::set<std::string>&)>;
 
     // |main_script_| must not be null and outlive this instance.
-    WaitWithInterrupts(ScriptExecutor* main_script,
-                       base::TimeDelta max_wait_time,
-                       const Selector& selectors,
-                       WaitWithInterrupts::Callback callback);
-    ~WaitWithInterrupts() override;
+    WaitForDomOperation(ScriptExecutor* main_script,
+                        base::TimeDelta max_wait_time,
+                        bool allow_interrupt,
+                        ActionDelegate::SelectorPredicate selector_predicate,
+                        const Selector& selectors,
+                        WaitForDomOperation::Callback callback);
+    ~WaitForDomOperation() override;
 
     void Run();
     void Terminate();
@@ -234,12 +237,14 @@ class ScriptExecutor : public ActionDelegate {
 
     ScriptExecutor* main_script_;
     const base::TimeDelta max_wait_time_;
+    const bool allow_interrupt_;
+    const ActionDelegate::SelectorPredicate selector_predicate_;
     const Selector selector_;
-    WaitWithInterrupts::Callback callback_;
+    WaitForDomOperation::Callback callback_;
 
     std::unique_ptr<BatchElementChecker> batch_element_checker_;
     std::set<const Script*> runnable_interrupts_;
-    bool element_found_ = false;
+    bool element_check_result_ = false;
 
     // An empty vector of interrupts that can be passed to interrupt_executor_
     // and outlives it. Interrupts must not run interrupts.
@@ -260,11 +265,10 @@ class ScriptExecutor : public ActionDelegate {
 
     RetryTimer retry_timer_;
 
-    base::WeakPtrFactory<WaitWithInterrupts> weak_ptr_factory_;
+    base::WeakPtrFactory<WaitForDomOperation> weak_ptr_factory_;
 
-    DISALLOW_COPY_AND_ASSIGN(WaitWithInterrupts);
+    DISALLOW_COPY_AND_ASSIGN(WaitForDomOperation);
   };
-  friend class WaitWithInterrupts;
 
   void OnGetActions(bool result, const std::string& response);
   bool ProcessNextActionResponse(const std::string& response);
@@ -326,7 +330,7 @@ class ScriptExecutor : public ActionDelegate {
   // vector first should run first.
   const std::vector<Script*>* ordered_interrupts_;
 
-  std::unique_ptr<WaitWithInterrupts> wait_with_interrupts_;
+  std::unique_ptr<WaitForDomOperation> wait_for_dom_;
 
   // Callback set by Prompt(). This is called when the prompt is terminated
   // without selecting any chips. nullptr unless showing a prompt.

@@ -27,20 +27,32 @@ WaitForDomAction::~WaitForDomAction() {}
 
 void WaitForDomAction::InternalProcessAction(ActionDelegate* delegate,
                                              ProcessActionCallback callback) {
-  Selector selector = Selector(proto_.wait_for_dom().wait_until());
-  if (selector.empty()) {
-    DVLOG(1) << __func__ << ": no selector specified for WaitForDom";
-    OnCheckDone(std::move(callback), INVALID_SELECTOR);
-    return;
-  }
-
   base::TimeDelta max_wait_time = kDefaultCheckDuration;
   int timeout_ms = proto_.wait_for_dom().timeout_ms();
   if (timeout_ms > 0)
     max_wait_time = base::TimeDelta::FromMilliseconds(timeout_ms);
 
-  delegate->WaitForElement(
-      max_wait_time, proto_.wait_for_dom().allow_interrupt(), selector,
+  Selector wait_until = Selector(proto_.wait_for_dom().wait_until());
+  Selector wait_while = Selector(proto_.wait_for_dom().wait_while());
+  ActionDelegate::SelectorPredicate selector_predicate;
+  Selector selector;
+  if (!wait_until.empty()) {
+    // wait until the selector matches something
+    selector_predicate = ActionDelegate::SelectorPredicate::kMatches;
+    selector = wait_until;
+  } else if (!wait_while.empty()) {
+    // wait as long as the selector matches something
+    selector_predicate = ActionDelegate::SelectorPredicate::kDoesntMatch;
+    selector = wait_while;
+  } else {
+    DVLOG(1) << __func__ << ": no selector specified for WaitForDom";
+    OnCheckDone(std::move(callback), INVALID_SELECTOR);
+    return;
+  }
+
+  delegate->WaitForDom(
+      max_wait_time, proto_.wait_for_dom().allow_interrupt(),
+      selector_predicate, selector,
       base::BindOnce(&WaitForDomAction::OnCheckDone,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }

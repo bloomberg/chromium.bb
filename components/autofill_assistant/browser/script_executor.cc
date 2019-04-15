@@ -126,27 +126,31 @@ void ScriptExecutor::RunElementChecks(BatchElementChecker* checker,
 void ScriptExecutor::ShortWaitForElement(
     const Selector& selector,
     base::OnceCallback<void(bool)> callback) {
-  WaitForElement(kShortWaitForElementDeadline, selector, std::move(callback));
+  retry_timer_.Start(
+      kShortWaitForElementDeadline,
+      base::BindRepeating(&ScriptExecutor::CheckForElement,
+                          weak_ptr_factory_.GetWeakPtr(), selector),
+      std::move(callback));
 }
 
-void ScriptExecutor::WaitForElement(
+void ScriptExecutor::CheckForElement(const Selector& selector,
+                                     base::OnceCallback<void(bool)> callback) {
+  delegate_->GetWebController()->ElementCheck(selector,
+                                              /* strict= */ false,
+                                              std::move(callback));
+}
+
+void ScriptExecutor::WaitForDom(
     base::TimeDelta max_wait_time,
     bool allow_interrupt,
+    ActionDelegate::SelectorPredicate selector_predicate,
     const Selector& selector,
     base::OnceCallback<void(ProcessedActionStatusProto)> callback) {
-  if (!allow_interrupt || ordered_interrupts_->empty()) {
-    // No interrupts to worry about. Just run normal wait.
-    WaitForElement(
-        max_wait_time, selector,
-        base::BindOnce(&ScriptExecutor::OnWaitForElementVisibleNoInterrupts,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-    return;
-  }
-  wait_with_interrupts_ = std::make_unique<WaitWithInterrupts>(
-      this, max_wait_time, selector,
+  wait_for_dom_ = std::make_unique<WaitForDomOperation>(
+      this, max_wait_time, allow_interrupt, selector_predicate, selector,
       base::BindOnce(&ScriptExecutor::OnWaitForElementVisibleWithInterrupts,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-  wait_with_interrupts_->Run();
+  wait_for_dom_->Run();
 }
 
 void ScriptExecutor::SetStatusMessage(const std::string& message) {
@@ -359,8 +363,8 @@ void ScriptExecutor::Shutdown() {
 }
 
 void ScriptExecutor::Terminate() {
-  if (wait_with_interrupts_)
-    wait_with_interrupts_->Terminate();
+  if (wait_for_dom_)
+    wait_for_dom_->Terminate();
   at_end_ = TERMINATE;
   should_stop_script_ = true;
 
@@ -550,23 +554,6 @@ void ScriptExecutor::OnProcessedAction(
   ProcessNextAction();
 }
 
-void ScriptExecutor::WaitForElement(base::TimeDelta max_wait_time,
-                                    const Selector& selector,
-                                    base::OnceCallback<void(bool)> callback) {
-  retry_timer_.Start(
-      max_wait_time,
-      base::BindRepeating(&ScriptExecutor::CheckForElement,
-                          weak_ptr_factory_.GetWeakPtr(), selector),
-      std::move(callback));
-}
-
-void ScriptExecutor::CheckForElement(const Selector& selector,
-                                     base::OnceCallback<void(bool)> callback) {
-  delegate_->GetWebController()->ElementCheck(selector,
-                                              /* strict= */ false,
-                                              std::move(callback));
-}
-
 void ScriptExecutor::OnWaitForElementVisibleWithInterrupts(
     base::OnceCallback<void(ProcessedActionStatusProto)> callback,
     bool element_found,
@@ -595,31 +582,35 @@ void ScriptExecutor::OnWaitForElementVisibleNoInterrupts(
                                         : ELEMENT_RESOLUTION_FAILED);
 }
 
-ScriptExecutor::WaitWithInterrupts::WaitWithInterrupts(
+ScriptExecutor::WaitForDomOperation::WaitForDomOperation(
     ScriptExecutor* main_script,
     base::TimeDelta max_wait_time,
+    bool allow_interrupt,
+    ActionDelegate::SelectorPredicate selector_predicate,
     const Selector& selector,
-    WaitWithInterrupts::Callback callback)
+    WaitForDomOperation::Callback callback)
     : main_script_(main_script),
       max_wait_time_(max_wait_time),
+      allow_interrupt_(allow_interrupt),
+      selector_predicate_(selector_predicate),
       selector_(selector),
       callback_(std::move(callback)),
       retry_timer_(kPeriodicElementCheck),
       weak_ptr_factory_(this) {}
 
-ScriptExecutor::WaitWithInterrupts::~WaitWithInterrupts() = default;
+ScriptExecutor::WaitForDomOperation::~WaitForDomOperation() = default;
 
-void ScriptExecutor::WaitWithInterrupts::Run() {
+void ScriptExecutor::WaitForDomOperation::Run() {
   retry_timer_.Start(
       max_wait_time_,
-      base::BindRepeating(&ScriptExecutor::WaitWithInterrupts::RunChecks,
+      base::BindRepeating(&ScriptExecutor::WaitForDomOperation::RunChecks,
                           // safe since this instance owns retry_timer_
                           base::Unretained(this)),
-      base::BindOnce(&ScriptExecutor::WaitWithInterrupts::RunCallback,
+      base::BindOnce(&ScriptExecutor::WaitForDomOperation::RunCallback,
                      base::Unretained(this)));
 }
 
-void ScriptExecutor::WaitWithInterrupts::OnServerPayloadChanged(
+void ScriptExecutor::WaitForDomOperation::OnServerPayloadChanged(
     const std::string& global_payload,
     const std::string& script_payload) {
   // Interrupts and main scripts share global payloads, but not script payloads.
@@ -627,57 +618,73 @@ void ScriptExecutor::WaitWithInterrupts::OnServerPayloadChanged(
   main_script_->ReportPayloadsToListener();
 }
 
-void ScriptExecutor::WaitWithInterrupts::OnScriptListChanged(
+void ScriptExecutor::WaitForDomOperation::OnScriptListChanged(
     std::vector<std::unique_ptr<Script>> scripts) {
   main_script_->ReportScriptsUpdateToListener(std::move(scripts));
 }
 
-void ScriptExecutor::WaitWithInterrupts::RunChecks(
+void ScriptExecutor::WaitForDomOperation::RunChecks(
     base::OnceCallback<void(bool)> report_attempt_result) {
   // Reset state possibly left over from previous runs.
-  element_found_ = false;
+  element_check_result_ = false;
   runnable_interrupts_.clear();
   batch_element_checker_ = std::make_unique<BatchElementChecker>();
   batch_element_checker_->AddElementCheck(
-      selector_, base::BindOnce(&WaitWithInterrupts::OnElementCheckDone,
+      selector_, base::BindOnce(&WaitForDomOperation::OnElementCheckDone,
                                 base::Unretained(this)));
-  for (const auto* interrupt : *main_script_->ordered_interrupts_) {
-    if (ran_interrupts_.find(interrupt->handle.path) != ran_interrupts_.end()) {
-      // Only run an interrupt once in a WaitWithInterrupts, to avoid loops.
-      continue;
-    }
+  if (allow_interrupt_) {
+    for (const auto* interrupt : *main_script_->ordered_interrupts_) {
+      if (ran_interrupts_.find(interrupt->handle.path) !=
+          ran_interrupts_.end()) {
+        // Only run an interrupt once in a WaitForDom, to avoid loops.
+        continue;
+      }
 
-    interrupt->precondition->Check(
-        main_script_->delegate_->GetCurrentURL(), batch_element_checker_.get(),
-        main_script_->delegate_->GetTriggerContext()->script_parameters,
-        *main_script_->scripts_state_,
-        base::BindOnce(&WaitWithInterrupts::OnPreconditionCheckDone,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       base::Unretained(interrupt)));
+      interrupt->precondition->Check(
+          main_script_->delegate_->GetCurrentURL(),
+          batch_element_checker_.get(),
+          main_script_->delegate_->GetTriggerContext()->script_parameters,
+          *main_script_->scripts_state_,
+          base::BindOnce(&WaitForDomOperation::OnPreconditionCheckDone,
+                         weak_ptr_factory_.GetWeakPtr(),
+                         base::Unretained(interrupt)));
+    }
+    // The base::Unretained(this) above are safe, since the pointers belong to
+    // the main script, which own this instance.
   }
-  // The base::Unretained(this) above are safe, since the pointers belong to the
-  // main script, which own this instance.
 
   batch_element_checker_->Run(
       main_script_->delegate_->GetWebController(),
-      base::BindOnce(&WaitWithInterrupts::OnAllChecksDone,
+      base::BindOnce(&WaitForDomOperation::OnAllChecksDone,
                      base::Unretained(this), std::move(report_attempt_result)));
 }
 
-void ScriptExecutor::WaitWithInterrupts::OnPreconditionCheckDone(
+void ScriptExecutor::WaitForDomOperation::OnPreconditionCheckDone(
     const Script* interrupt,
     bool precondition_match) {
   if (precondition_match)
     runnable_interrupts_.insert(interrupt);
 }
 
-void ScriptExecutor::WaitWithInterrupts::OnElementCheckDone(bool found) {
-  element_found_ = found;
+void ScriptExecutor::WaitForDomOperation::OnElementCheckDone(bool found) {
+  switch (selector_predicate_) {
+    case ActionDelegate::SelectorPredicate::kMatches:
+      element_check_result_ = found;
+      break;
+
+    case ActionDelegate::SelectorPredicate::kDoesntMatch:
+      element_check_result_ = !found;
+      break;
+
+      // Default intentionally left unset to cause a compilation error if a new
+      // value is added.
+  }
+
   // Wait for all checks to run before reporting that the element was found to
   // the caller, so interrupts have a chance to run.
 }
 
-void ScriptExecutor::WaitWithInterrupts::OnAllChecksDone(
+void ScriptExecutor::WaitForDomOperation::OnAllChecksDone(
     base::OnceCallback<void(bool)> report_attempt_result) {
   if (!runnable_interrupts_.empty()) {
     // We must go through runnable_interrupts_ to make sure priority order is
@@ -689,10 +696,11 @@ void ScriptExecutor::WaitWithInterrupts::OnAllChecksDone(
       }
     }
   }
-  std::move(report_attempt_result).Run(element_found_);
+  std::move(report_attempt_result).Run(element_check_result_);
 }
 
-void ScriptExecutor::WaitWithInterrupts::RunInterrupt(const Script* interrupt) {
+void ScriptExecutor::WaitForDomOperation::RunInterrupt(
+    const Script* interrupt) {
   batch_element_checker_.reset();
   SavePreInterruptState();
   ran_interrupts_.insert(interrupt->handle.path);
@@ -702,12 +710,12 @@ void ScriptExecutor::WaitWithInterrupts::RunInterrupt(const Script* interrupt) {
       /* listener= */ this, main_script_->scripts_state_, &no_interrupts_,
       main_script_->delegate_);
   interrupt_executor_->Run(
-      base::BindOnce(&ScriptExecutor::WaitWithInterrupts::OnInterruptDone,
+      base::BindOnce(&ScriptExecutor::WaitForDomOperation::OnInterruptDone,
                      base::Unretained(this)));
   // base::Unretained(this) is safe because interrupt_executor_ belongs to this
 }
 
-void ScriptExecutor::WaitWithInterrupts::OnInterruptDone(
+void ScriptExecutor::WaitForDomOperation::OnInterruptDone(
     const ScriptExecutor::Result& result) {
   interrupt_executor_.reset();
   if (!result.success || result.at_end != ScriptExecutor::CONTINUE) {
@@ -718,16 +726,16 @@ void ScriptExecutor::WaitWithInterrupts::OnInterruptDone(
 
   // Restart. We use the original wait time since the interruption could have
   // triggered any kind of actions, including actions that wait on the user. We
-  // don't trust a previous element_found_ result, since it could have changed.
+  // don't trust a previous element_check_result_, since it could have changed.
   Run();
 }
 
-void ScriptExecutor::WaitWithInterrupts::RunCallback(bool found) {
+void ScriptExecutor::WaitForDomOperation::RunCallback(bool found) {
   RunCallbackWithResult(found, nullptr);
 }
 
-void ScriptExecutor::WaitWithInterrupts::RunCallbackWithResult(
-    bool found,
+void ScriptExecutor::WaitForDomOperation::RunCallbackWithResult(
+    bool check_result,
     const ScriptExecutor::Result* result) {
   // stop element checking if one is still in progress
   batch_element_checker_.reset();
@@ -735,11 +743,11 @@ void ScriptExecutor::WaitWithInterrupts::RunCallbackWithResult(
   if (!callback_)
     return;
 
-  RestorePreInterruptScroll(found);
-  std::move(callback_).Run(found, result, ran_interrupts_);
+  RestorePreInterruptScroll(check_result);
+  std::move(callback_).Run(check_result, result, ran_interrupts_);
 }
 
-void ScriptExecutor::WaitWithInterrupts::SavePreInterruptState() {
+void ScriptExecutor::WaitForDomOperation::SavePreInterruptState() {
   if (saved_pre_interrupt_state_)
     return;
 
@@ -747,20 +755,21 @@ void ScriptExecutor::WaitWithInterrupts::SavePreInterruptState() {
   saved_pre_interrupt_state_ = true;
 }
 
-void ScriptExecutor::WaitWithInterrupts::RestoreStatusMessage() {
+void ScriptExecutor::WaitForDomOperation::RestoreStatusMessage() {
   if (!saved_pre_interrupt_state_)
     return;
 
   main_script_->delegate_->SetStatusMessage(pre_interrupt_status_);
 }
 
-void ScriptExecutor::WaitWithInterrupts::RestorePreInterruptScroll(
-    bool element_found) {
+void ScriptExecutor::WaitForDomOperation::RestorePreInterruptScroll(
+    bool check_result) {
   if (!saved_pre_interrupt_state_)
     return;
 
   auto* delegate = main_script_->delegate_;
-  if (element_found) {
+  if (check_result &&
+      selector_predicate_ == ActionDelegate::SelectorPredicate::kMatches) {
     delegate->GetWebController()->FocusElement(selector_, base::DoNothing());
   } else if (!main_script_->last_focused_element_selector_.empty()) {
     delegate->GetWebController()->FocusElement(
@@ -768,7 +777,7 @@ void ScriptExecutor::WaitWithInterrupts::RestorePreInterruptScroll(
   }
 }
 
-void ScriptExecutor::WaitWithInterrupts::Terminate() {
+void ScriptExecutor::WaitForDomOperation::Terminate() {
   if (interrupt_executor_)
     interrupt_executor_->Terminate();
 }

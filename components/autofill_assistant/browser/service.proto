@@ -660,9 +660,15 @@ message WaitForDomProto {
   // Fail after waiting this amount of time.
   optional int32 timeout_ms = 1;
 
-  // Wait until there exists at least one element that matches the given
-  // selector.
-  optional ElementReferenceProto wait_until = 5;
+  oneof wait_on {
+    // Wait until there exists at least one element that matches the given
+    // selector.
+    ElementReferenceProto wait_until = 5;
+
+    // Wait as long as there's at least one element that matches the given
+    // reference.
+    ElementReferenceProto wait_while = 6;
+  }
 
   // If true, run scripts flagged with 'interrupt=true' as soon as their
   // preconditions match.
