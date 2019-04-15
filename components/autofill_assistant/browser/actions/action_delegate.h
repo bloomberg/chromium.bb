@@ -63,14 +63,26 @@ class ActionDelegate {
   virtual void ShortWaitForElement(const Selector& selector,
                                    base::OnceCallback<void(bool)> callback) = 0;
 
+  enum class SelectorPredicate {
+    // The selector matches elements
+    kMatches,
+
+    // The selector doesn't match any elements
+    kDoesntMatch
+  };
+
   // Wait for up to |max_wait_time| for the element |selectors| to match
   // element(s) on the page, then call |callback| with true if at least an
   // element matched, false otherwise.
   //
+  // |selector_predicate| specifies the condition that must be satisfied for
+  // WaitForDom to return successfully. It applies to the given |selector|.
+  //
   // If |allow_interrupt| interrupts can run while waiting.
-  virtual void WaitForElement(
+  virtual void WaitForDom(
       base::TimeDelta max_wait_time,
       bool allow_interrupt,
+      SelectorPredicate selector_predicate,
       const Selector& selector,
       base::OnceCallback<void(ProcessedActionStatusProto)> callback) = 0;
 

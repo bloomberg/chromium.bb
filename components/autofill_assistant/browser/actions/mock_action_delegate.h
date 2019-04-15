@@ -33,17 +33,20 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD2(OnShortWaitForElement,
                void(const Selector& selector, base::OnceCallback<void(bool)>&));
 
-  void WaitForElement(
+  void WaitForDom(
       base::TimeDelta max_wait_time,
       bool allow_interrupt,
+      ActionDelegate::SelectorPredicate selector_predicate,
       const Selector& selector,
       base::OnceCallback<void(ProcessedActionStatusProto)> callback) override {
-    OnWaitForElement(max_wait_time, allow_interrupt, selector, callback);
+    OnWaitForDom(max_wait_time, allow_interrupt, selector_predicate, selector,
+                 callback);
   }
 
-  MOCK_METHOD4(OnWaitForElement,
+  MOCK_METHOD5(OnWaitForDom,
                void(base::TimeDelta,
                     bool,
+                    ActionDelegate::SelectorPredicate,
                     const Selector&,
                     base::OnceCallback<void(ProcessedActionStatusProto)>&));
 

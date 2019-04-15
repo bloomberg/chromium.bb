@@ -495,6 +495,64 @@ TEST_F(ScriptExecutorTest, ForwardLastPayloadOnError) {
   EXPECT_EQ("actions payload", last_script_payload_);
 }
 
+TEST_F(ScriptExecutorTest, WaitForDomWaitUntil) {
+  ActionsResponseProto actions_response;
+  auto* wait_for_dom = actions_response.add_actions()->mutable_wait_for_dom();
+  wait_for_dom->mutable_wait_until()->add_selectors("element");
+
+  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
+  std::vector<ProcessedActionProto> processed_actions_capture;
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
+                      RunOnceCallback<4>(true, "")));
+
+  // First check does not find the element, wait for dom waits 1s, then the
+  // element is found, and the action succeeds.
+  EXPECT_CALL(mock_web_controller_,
+              OnElementCheck(Eq(Selector({"element"})), _))
+      .WillOnce(RunOnceCallback<1>(false));
+  executor_->Run(executor_callback_.Get());
+
+  EXPECT_CALL(mock_web_controller_,
+              OnElementCheck(Eq(Selector({"element"})), _))
+      .WillRepeatedly(RunOnceCallback<1>(true));
+  EXPECT_CALL(executor_callback_, Run(_));
+  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  ASSERT_EQ(1u, processed_actions_capture.size());
+  EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[0].status());
+}
+
+TEST_F(ScriptExecutorTest, WaitForDomWaitWhile) {
+  ActionsResponseProto actions_response;
+  auto* wait_for_dom = actions_response.add_actions()->mutable_wait_for_dom();
+  wait_for_dom->mutable_wait_while()->add_selectors("element");
+
+  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
+  std::vector<ProcessedActionProto> processed_actions_capture;
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
+                      RunOnceCallback<4>(true, "")));
+
+  // First check finds the element, wait for dom waits 1s, then the element
+  // disappears, and the action succeeds.
+  EXPECT_CALL(mock_web_controller_,
+              OnElementCheck(Eq(Selector({"element"})), _))
+      .WillOnce(RunOnceCallback<1>(true));
+  executor_->Run(executor_callback_.Get());
+
+  EXPECT_CALL(mock_web_controller_,
+              OnElementCheck(Eq(Selector({"element"})), _))
+      .WillRepeatedly(RunOnceCallback<1>(false));
+  EXPECT_CALL(executor_callback_, Run(_));
+  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  ASSERT_EQ(1u, processed_actions_capture.size());
+  EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[0].status());
+}
+
 TEST_F(ScriptExecutorTest, RunInterrupt) {
   // All elements exist, so first the interrupt should be run, then the element
   // should be reported as found.
