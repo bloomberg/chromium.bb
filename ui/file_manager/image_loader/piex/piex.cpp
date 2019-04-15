@@ -143,11 +143,3 @@ void EMSCRIPTEN_KEEPALIVE image(const char* data, size_t size, int callback) {
 }
 
 }  // extern "C"
-
-int main(int argc, char* argv[]) {
-  // clang-format off
-  return EM_ASM_INT({
-    console.log('[piexwasm] main');
-  });
-  // clang-format on
-}
