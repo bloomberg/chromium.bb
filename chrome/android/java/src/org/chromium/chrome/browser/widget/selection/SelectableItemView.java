@@ -122,10 +122,10 @@ public abstract class SelectableItemView<E> extends SelectableItemViewBase<E> {
     public static void applyModernIconStyle(
             ImageView imageView, Drawable defaultIcon, boolean isSelected) {
         imageView.setBackgroundResource(R.drawable.list_item_icon_modern_bg);
-        imageView.setImageDrawable(isSelected
-                        ? TintedDrawable.constructTintedDrawable(imageView.getContext(),
-                                  R.drawable.ic_check_googblue_24dp, R.color.white_mode_tint)
-                        : defaultIcon);
+        imageView.setImageDrawable(
+                isSelected ? TintedDrawable.constructTintedDrawable(imageView.getContext(),
+                        R.drawable.ic_check_googblue_24dp, R.color.default_icon_color_inverse)
+                           : defaultIcon);
         imageView.getBackground().setLevel(isSelected
                         ? imageView.getResources().getInteger(R.integer.list_item_level_selected)
                         : imageView.getResources().getInteger(R.integer.list_item_level_default));
