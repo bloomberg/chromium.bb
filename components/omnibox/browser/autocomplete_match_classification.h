@@ -24,8 +24,8 @@
 // true, this will return "[ho]w [to] t[ie] a t[ie]."
 TermMatches FindTermMatches(base::string16 find_text,
                             base::string16 text,
-                            bool allow_prefix_matching,
-                            bool allow_mid_word_matching);
+                            bool allow_prefix_matching = true,
+                            bool allow_mid_word_matching = false);
 
 // Return an ACMatchClassifications structure given the |matches| to highlight.
 // |matches| can be retrieved from calling FindTermMatches. |text_length| should

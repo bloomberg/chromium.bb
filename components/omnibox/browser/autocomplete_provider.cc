@@ -80,6 +80,7 @@ ACMatchClassifications AutocompleteProvider::ClassifyAllMatchesInString(
     const base::string16& text,
     const bool text_is_search_query,
     const ACMatchClassifications& original_class) {
+  // TODO (manukh) Move this function to autocomplete_match_classification
   DCHECK(!find_text.empty());
 
   if (text.empty())

@@ -1526,8 +1526,7 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
   match.contents = navigation.match_contents();
   match.contents_class = navigation.match_contents_class();
   match.description = navigation.description();
-  AutocompleteMatch::ClassifyMatchInString(input, match.description,
-      ACMatchClassification::NONE, &match.description_class);
+  match.description_class = navigation.description_class();
 
   match.RecordAdditionalInfo(
       kRelevanceFromServerKey,
