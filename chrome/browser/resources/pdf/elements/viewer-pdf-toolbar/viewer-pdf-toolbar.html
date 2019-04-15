@@ -1,7 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-progress/paper-progress.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="../icons.html">
@@ -51,21 +51,14 @@
         user-select: none;
       }
 
-      paper-icon-button {
-        height: 36px;
+      cr-icon-button {
+        --cr-icon-button-color: rgb(241, 241, 241);
         margin: 6px;
-        padding: 8px;
-        width: 36px;
       }
 
-      paper-icon-button:hover {
+      cr-icon-button:hover {
         background: rgba(255, 255, 255, 0.08);
         border-radius: 50%;
-      }
-
-      paper-icon-button:focus {
-        --paper-icon-button-ink-color:white;
-        --paper-ripple-opacity: 0.24;
       }
 
       paper-progress {
@@ -195,32 +188,24 @@
 
         <div id="buttons" class="invisible">
           <template is="dom-if" if="[[pdfAnnotationsEnabled]]">
-            <paper-icon-button id="annotate" icon="pdf:create"
-                disabled="[[!annotationAvailable]]"
-                on-click="toggleAnnotation"
+            <cr-icon-button id="annotate" iron-icon="pdf:create"
+                disabled="[[!annotationAvailable]]" on-click="toggleAnnotation"
                 aria-label$="{{strings.tooltipAnnotate}}"
-                title$="{{strings.tooltipAnnotate}}">
-            </paper-icon-button>
+                title$="{{strings.tooltipAnnotate}}"></cr-icon-button>
           </template>
 
-          <paper-icon-button id="rotate-right" icon="pdf:rotate-right"
-              disabled="[[annotationMode]]"
-              on-click="rotateRight"
+          <cr-icon-button id="rotate-right" iron-icon="pdf:rotate-right"
+              disabled="[[annotationMode]]" on-click="rotateRight"
               aria-label$="{{strings.tooltipRotateCW}}"
-              title$="{{strings.tooltipRotateCW}}">
-          </paper-icon-button>
+              title$="{{strings.tooltipRotateCW}}"></cr-icon-button>
 
-          <paper-icon-button id="download" icon="cr:file-download"
-              on-click="download"
-              aria-label$="{{strings.tooltipDownload}}"
-              title$="{{strings.tooltipDownload}}">
-          </paper-icon-button>
+          <cr-icon-button id="download" iron-icon="cr:file-download"
+              on-click="download" aria-label$="{{strings.tooltipDownload}}"
+              title$="{{strings.tooltipDownload}}"></cr-icon-button>
 
-          <paper-icon-button id="print" icon="cr:print"
-              on-click="print"
+          <cr-icon-button id="print" iron-icon="cr:print" on-click="print"
               aria-label$="{{strings.tooltipPrint}}"
-              title$="{{strings.tooltipPrint}}">
-          </paper-icon-button>
+              title$="{{strings.tooltipPrint}}"></cr-icon-button>
 
           <viewer-toolbar-dropdown id="bookmarks"
                                    selected
@@ -229,8 +214,8 @@
                                    open-icon="pdf:bookmark"
                                    closed-icon="pdf:bookmark-border"
                                    header="{{strings.bookmarks}}">
-              <viewer-bookmarks-content bookmarks="{{bookmarks}}">
-              </viewer-bookmarks-content>
+            <viewer-bookmarks-content bookmarks="{{bookmarks}}">
+            </viewer-bookmarks-content>
           </viewer-toolbar-dropdown>
         </div>
       </div>
@@ -280,31 +265,23 @@
         </viewer-pen-options>
       </viewer-toolbar-dropdown>
 
-      <paper-icon-button id="eraser"
+      <cr-icon-button id="eraser"
           selected$="[[equal_('eraser', annotationTool.tool)]]"
-          on-click="annotationToolClicked_"
-          icon="pdf:eraser"
+          on-click="annotationToolClicked_" iron-icon="pdf:eraser"
           aria-label$="{{strings.annotationEraser}}"
-          title$="{{strings.annotationEraser}}">
-      </paper-icon-button>
+          title$="{{strings.annotationEraser}}"></cr-icon-button>
 
       <div id="annotation-separator"></div>
 
-      <paper-icon-button id="undo"
-          disabled="[[!canUndoAnnotation]]"
-          icon="pdf:undo"
-          on-click="undo"
+      <cr-icon-button id="undo" disabled="[[!canUndoAnnotation]]"
+          iron-icon="pdf:undo" on-click="undo"
           aria-label$="{{strings.annotationUndo}}"
-          title$="{{strings.annotationUndo}}">
-      </paper-icon-button>
+          title$="{{strings.annotationUndo}}"></cr-icon-button>
 
-      <paper-icon-button id="redo"
-          disabled="[[!canRedoAnnotation]]"
-          icon="pdf:redo"
-          on-click="redo"
+      <cr-icon-button id="redo" disabled="[[!canRedoAnnotation]]"
+          iron-icon="pdf:redo" on-click="redo"
           aria-label$="{{strings.annotationRedo}}"
-          title$="{{strings.annotationRedo}}">
-      </paper-icon-button>
+          title$="{{strings.annotationRedo}}"></cr-icon-button>
     </div>
   </template>
   <script src="viewer-pdf-toolbar.js"></script>
