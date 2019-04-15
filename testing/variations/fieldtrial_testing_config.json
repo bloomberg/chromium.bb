@@ -2867,6 +2867,21 @@
             ]
         }
     ],
+    "MojoChannelMac": [
+        {
+            "platforms": [
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "MojoChannelMac"
+                    ]
+                }
+            ]
+        }
+    ],
     "MseBufferByPts": [
         {
             "platforms": [
