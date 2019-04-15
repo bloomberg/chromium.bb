@@ -97,7 +97,9 @@ class ASH_EXPORT MediaNotificationView : public message_center::MessageView,
 
   // Creates an image button with an icon that matches |action| and adds it
   // to |button_row_|. When clicked it will trigger |action| on the session.
-  void CreateMediaButton(media_session::mojom::MediaSessionAction action);
+  // |accessible_name| is the text used for screen readers.
+  void CreateMediaButton(media_session::mojom::MediaSessionAction action,
+                         const base::string16& accessible_name);
 
   void UpdateActionButtonsVisibility();
   void UpdateViewForExpandedState();

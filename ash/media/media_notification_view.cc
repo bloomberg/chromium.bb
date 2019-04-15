@@ -8,10 +8,12 @@
 #include "ash/media/media_notification_constants.h"
 #include "ash/media/media_notification_controller.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "components/vector_icons/vector_icons.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_list.h"
 #include "ui/message_center/message_center.h"
@@ -165,17 +167,30 @@ MediaNotificationView::MediaNotificationView(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
   main_row_->AddChildView(button_row_);
 
-  CreateMediaButton(MediaSessionAction::kPreviousTrack);
-  CreateMediaButton(MediaSessionAction::kSeekBackward);
+  CreateMediaButton(MediaSessionAction::kPreviousTrack,
+                    l10n_util::GetStringUTF16(
+                        IDS_ASH_MEDIA_NOTIFICATION_ACTION_PREVIOUS_TRACK));
+  CreateMediaButton(MediaSessionAction::kSeekBackward,
+                    l10n_util::GetStringUTF16(
+                        IDS_ASH_MEDIA_NOTIFICATION_ACTION_SEEK_BACKWARD));
 
   // |play_pause_button_| toggles playback.
   play_pause_button_ = views::CreateVectorToggleImageButton(this);
   play_pause_button_->set_tag(static_cast<int>(MediaSessionAction::kPlay));
   play_pause_button_->SetPreferredSize(kMediaButtonSize);
+  play_pause_button_->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
+  play_pause_button_->SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_ASH_MEDIA_NOTIFICATION_ACTION_PLAY));
+  play_pause_button_->SetToggledTooltipText(
+      l10n_util::GetStringUTF16(IDS_ASH_MEDIA_NOTIFICATION_ACTION_PAUSE));
   button_row_->AddChildView(play_pause_button_);
 
-  CreateMediaButton(MediaSessionAction::kSeekForward);
-  CreateMediaButton(MediaSessionAction::kNextTrack);
+  CreateMediaButton(MediaSessionAction::kSeekForward,
+                    l10n_util::GetStringUTF16(
+                        IDS_ASH_MEDIA_NOTIFICATION_ACTION_SEEK_FORWARD));
+  CreateMediaButton(
+      MediaSessionAction::kNextTrack,
+      l10n_util::GetStringUTF16(IDS_ASH_MEDIA_NOTIFICATION_ACTION_NEXT_TRACK));
 
   SetBackground(std::make_unique<MediaNotificationBackground>(
       this, message_center::kNotificationCornerRadius,
@@ -400,10 +415,14 @@ void MediaNotificationView::UpdateViewForExpandedState() {
   UpdateActionButtonsVisibility();
 }
 
-void MediaNotificationView::CreateMediaButton(MediaSessionAction action) {
+void MediaNotificationView::CreateMediaButton(
+    MediaSessionAction action,
+    const base::string16& accessible_name) {
   views::ImageButton* button = views::CreateVectorImageButton(this);
   button->set_tag(static_cast<int>(action));
   button->SetPreferredSize(kMediaButtonSize);
+  button->SetAccessibleName(accessible_name);
+  button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   button_row_->AddChildView(button);
 }
 
