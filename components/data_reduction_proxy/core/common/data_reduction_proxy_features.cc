@@ -43,11 +43,5 @@ const base::Feature kDataReductionProxyBlockOnBadGatewayResponse{
     "DataReductionProxyBlockOnBadGatewayResponse",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables populating the previews page ID from NavigationUIData to the
-// pingbacks.
-const base::Feature kDataReductionProxyPopulatePreviewsPageIDToPingback{
-    "DataReductionProxyPopulatePreviewsPageIDToPingback",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 }  // namespace features
 }  // namespace data_reduction_proxy

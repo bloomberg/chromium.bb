@@ -18,7 +18,6 @@
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_pingback_client.h"
 #include "components/data_reduction_proxy/core/browser/db_data_owner.h"
 #include "components/data_use_measurement/core/data_use_measurement.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
@@ -46,6 +45,7 @@ namespace data_reduction_proxy {
 
 class DataReductionProxyCompressionStats;
 class DataReductionProxyIOData;
+class DataReductionProxyPingbackClient;
 class DataReductionProxyServiceObserver;
 class DataReductionProxySettings;
 
@@ -134,12 +134,6 @@ class DataReductionProxyService
 
   // Sets the reporting fraction in the pingback client.
   void SetPingbackReportingFraction(float pingback_reporting_fraction);
-
-  // Sets |pingback_client_| to be used for testing purposes.
-  void SetPingbackClientForTesting(
-      DataReductionProxyPingbackClient* pingback_client) {
-    pingback_client_.reset(pingback_client);
-  }
 
   // Notifies |this| that the user has requested to clear the browser
   // cache. This method is not called if only a subset of site entries are
