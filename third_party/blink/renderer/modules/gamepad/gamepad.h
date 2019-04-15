@@ -39,13 +39,19 @@
 
 namespace blink {
 
-class NavigatorGamepad;
-
 class MODULES_EXPORT Gamepad final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  explicit Gamepad(NavigatorGamepad* navigator_gamepad, unsigned index);
+  // Objects implementing this interface are garbage-collected.
+  class Client : public GarbageCollectedMixin {
+   public:
+    virtual GamepadHapticActuator* GetVibrationActuatorForGamepad(
+        const Gamepad&) = 0;
+    virtual ~Client() = default;
+  };
+
+  explicit Gamepad(Client* client, unsigned index);
   ~Gamepad() override;
 
   typedef Vector<double> DoubleVector;
@@ -91,8 +97,7 @@ class MODULES_EXPORT Gamepad final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  // A reference to the NavigatorGamepad that created this gamepad.
-  Member<NavigatorGamepad> navigator_gamepad_;
+  Member<Client> client_;
 
   // A string identifying the gamepad model.
   String id_;
