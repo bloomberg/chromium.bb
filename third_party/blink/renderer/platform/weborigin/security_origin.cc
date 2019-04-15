@@ -292,7 +292,7 @@ bool SecurityOrigin::IsSecure(const KURL& url) {
                                     ExtractInnerURL(url).Protocol()))
     return true;
 
-  if (SecurityPolicy::IsUrlWhiteListedTrustworthy(url))
+  if (SecurityPolicy::IsUrlTrustworthySafelisted(url))
     return true;
 
   return false;
@@ -466,7 +466,7 @@ bool SecurityOrigin::IsPotentiallyTrustworthy() const {
     return true;
   }
 
-  if (SecurityPolicy::IsOriginWhiteListedTrustworthy(*this))
+  if (SecurityPolicy::IsOriginTrustworthySafelisted(*this))
     return true;
 
   return false;
