@@ -1099,25 +1099,72 @@ static unsigned TextStyleFlag(ax::mojom::TextStyle text_style_enum) {
   return static_cast<unsigned>(1 << static_cast<int>(text_style_enum));
 }
 
-int32_t AXLayoutObject::GetTextStyle() const {
-  if (!GetLayoutObject())
-    return AXNodeObject::GetTextStyle();
-
+void AXLayoutObject::GetTextStyleAndTextDecorationStyle(
+    int32_t* text_style,
+    ax::mojom::TextDecorationStyle* text_overline_style,
+    ax::mojom::TextDecorationStyle* text_strikethrough_style,
+    ax::mojom::TextDecorationStyle* text_underline_style) const {
+  if (!GetLayoutObject()) {
+    AXNodeObject::GetTextStyleAndTextDecorationStyle(
+        text_style, text_overline_style, text_strikethrough_style,
+        text_underline_style);
+    return;
+  }
   const ComputedStyle* style = GetLayoutObject()->Style();
-  if (!style)
-    return AXNodeObject::GetTextStyle();
+  if (!style) {
+    AXNodeObject::GetTextStyleAndTextDecorationStyle(
+        text_style, text_overline_style, text_strikethrough_style,
+        text_underline_style);
+    return;
+  }
 
-  int32_t text_style = 0;
+  *text_style = 0;
+  *text_overline_style = ax::mojom::TextDecorationStyle::kNone;
+  *text_strikethrough_style = ax::mojom::TextDecorationStyle::kNone;
+  *text_underline_style = ax::mojom::TextDecorationStyle::kNone;
+
   if (style->GetFontWeight() == BoldWeightValue())
-    text_style |= TextStyleFlag(ax::mojom::TextStyle::kBold);
+    *text_style |= TextStyleFlag(ax::mojom::TextStyle::kBold);
   if (style->GetFontDescription().Style() == ItalicSlopeValue())
-    text_style |= TextStyleFlag(ax::mojom::TextStyle::kItalic);
-  if (style->GetTextDecoration() == TextDecoration::kUnderline)
-    text_style |= TextStyleFlag(ax::mojom::TextStyle::kUnderline);
-  if (style->GetTextDecoration() == TextDecoration::kLineThrough)
-    text_style |= TextStyleFlag(ax::mojom::TextStyle::kLineThrough);
+    *text_style |= TextStyleFlag(ax::mojom::TextStyle::kItalic);
 
-  return text_style;
+  for (const auto& decoration : style->AppliedTextDecorations()) {
+    if (EnumHasFlags(decoration.Lines(), TextDecoration::kOverline)) {
+      *text_style |= TextStyleFlag(ax::mojom::TextStyle::kOverline);
+      *text_overline_style =
+          TextDecorationStyleToAXTextDecorationStyle(decoration.Style());
+    }
+    if (EnumHasFlags(decoration.Lines(), TextDecoration::kLineThrough)) {
+      *text_style |= TextStyleFlag(ax::mojom::TextStyle::kLineThrough);
+      *text_strikethrough_style =
+          TextDecorationStyleToAXTextDecorationStyle(decoration.Style());
+    }
+    if (EnumHasFlags(decoration.Lines(), TextDecoration::kUnderline)) {
+      *text_style |= TextStyleFlag(ax::mojom::TextStyle::kUnderline);
+      *text_underline_style =
+          TextDecorationStyleToAXTextDecorationStyle(decoration.Style());
+    }
+  }
+}
+
+ax::mojom::TextDecorationStyle
+AXLayoutObject::TextDecorationStyleToAXTextDecorationStyle(
+    const blink::ETextDecorationStyle text_decoration_style) {
+  switch (text_decoration_style) {
+    case ETextDecorationStyle::kDashed:
+      return ax::mojom::TextDecorationStyle::kDashed;
+    case ETextDecorationStyle::kSolid:
+      return ax::mojom::TextDecorationStyle::kSolid;
+    case ETextDecorationStyle::kDotted:
+      return ax::mojom::TextDecorationStyle::kDotted;
+    case ETextDecorationStyle::kDouble:
+      return ax::mojom::TextDecorationStyle::kDouble;
+    case ETextDecorationStyle::kWavy:
+      return ax::mojom::TextDecorationStyle::kWavy;
+  }
+
+  NOTREACHED();
+  return ax::mojom::TextDecorationStyle::kNone;
 }
 
 //

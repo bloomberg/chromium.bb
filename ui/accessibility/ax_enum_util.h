@@ -74,6 +74,12 @@ AX_EXPORT ax::mojom::StringListAttribute ParseStringListAttribute(
 AX_EXPORT const char* ToString(ax::mojom::MarkerType marker_type);
 AX_EXPORT ax::mojom::MarkerType ParseMarkerType(const char* marker_type);
 
+// ax:mojom::TextDecorationStyle
+AX_EXPORT const char* ToString(
+    ax::mojom::TextDecorationStyle text_decoration_style);
+AX_EXPORT ax::mojom::TextDecorationStyle ParseTextDecorationStyle(
+    const char* text_decoration_style);
+
 // ax::mojom::TextDirection
 AX_EXPORT const char* ToString(ax::mojom::TextDirection text_direction);
 AX_EXPORT ax::mojom::TextDirection ParseTextDirection(

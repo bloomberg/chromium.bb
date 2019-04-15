@@ -85,6 +85,10 @@ std::string IntAttrToString(const BrowserAccessibility& node,
       return ui::ToString(static_cast<ax::mojom::Restriction>(value));
     case ax::mojom::IntAttribute::kSortDirection:
       return ui::ToString(static_cast<ax::mojom::SortDirection>(value));
+    case ax::mojom::IntAttribute::kTextOverlineStyle:
+    case ax::mojom::IntAttribute::kTextStrikethroughStyle:
+    case ax::mojom::IntAttribute::kTextUnderlineStyle:
+      return ui::ToString(static_cast<ax::mojom::TextDecorationStyle>(value));
     case ax::mojom::IntAttribute::kTextDirection:
       return ui::ToString(static_cast<ax::mojom::TextDirection>(value));
     case ax::mojom::IntAttribute::kTextPosition:

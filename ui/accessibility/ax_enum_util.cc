@@ -1503,6 +1503,12 @@ const char* ToString(ax::mojom::IntAttribute int_attribute) {
       return "textPosition";
     case ax::mojom::IntAttribute::kTextStyle:
       return "textStyle";
+    case ax::mojom::IntAttribute::kTextOverlineStyle:
+      return "textOverlineStyle";
+    case ax::mojom::IntAttribute::kTextStrikethroughStyle:
+      return "textStrikethroughStyle";
+    case ax::mojom::IntAttribute::kTextUnderlineStyle:
+      return "textUnderlineStyle";
     case ax::mojom::IntAttribute::kPreviousFocusId:
       return "previousFocusId";
     case ax::mojom::IntAttribute::kNextFocusId:
@@ -1613,6 +1619,12 @@ ax::mojom::IntAttribute ParseIntAttribute(const char* int_attribute) {
     return ax::mojom::IntAttribute::kTextPosition;
   if (0 == strcmp(int_attribute, "textStyle"))
     return ax::mojom::IntAttribute::kTextStyle;
+  if (0 == strcmp(int_attribute, "textOverlineStyle"))
+    return ax::mojom::IntAttribute::kTextOverlineStyle;
+  if (0 == strcmp(int_attribute, "textStrikethroughStyle"))
+    return ax::mojom::IntAttribute::kTextStrikethroughStyle;
+  if (0 == strcmp(int_attribute, "textUnderlineStyle"))
+    return ax::mojom::IntAttribute::kTextUnderlineStyle;
   if (0 == strcmp(int_attribute, "previousFocusId"))
     return ax::mojom::IntAttribute::kPreviousFocusId;
   if (0 == strcmp(int_attribute, "nextFocusId"))
@@ -1962,6 +1974,42 @@ ax::mojom::MarkerType ParseMarkerType(const char* marker_type) {
   return ax::mojom::MarkerType::kNone;
 }
 
+const char* ToString(ax::mojom::TextDecorationStyle text_decoration_style) {
+  switch (text_decoration_style) {
+    case ax::mojom::TextDecorationStyle::kNone:
+      return "none";
+    case ax::mojom::TextDecorationStyle::kSolid:
+      return "solid";
+    case ax::mojom::TextDecorationStyle::kDashed:
+      return "dashed";
+    case ax::mojom::TextDecorationStyle::kDotted:
+      return "dotted";
+    case ax::mojom::TextDecorationStyle::kDouble:
+      return "double";
+    case ax::mojom::TextDecorationStyle::kWavy:
+      return "wavy";
+  }
+
+  return "";
+}
+
+ax::mojom::TextDecorationStyle ParseTextDecorationStyle(
+    const char* text_decoration_style) {
+  if (0 == strcmp(text_decoration_style, "none"))
+    return ax::mojom::TextDecorationStyle::kNone;
+  if (0 == strcmp(text_decoration_style, "solid"))
+    return ax::mojom::TextDecorationStyle::kSolid;
+  if (0 == strcmp(text_decoration_style, "dashed"))
+    return ax::mojom::TextDecorationStyle::kDashed;
+  if (0 == strcmp(text_decoration_style, "dotted"))
+    return ax::mojom::TextDecorationStyle::kDotted;
+  if (0 == strcmp(text_decoration_style, "double"))
+    return ax::mojom::TextDecorationStyle::kDouble;
+  if (0 == strcmp(text_decoration_style, "wavy"))
+    return ax::mojom::TextDecorationStyle::kWavy;
+  return ax::mojom::TextDecorationStyle::kNone;
+}
+
 const char* ToString(ax::mojom::TextDirection text_direction) {
   switch (text_direction) {
     case ax::mojom::TextDirection::kNone:
@@ -2026,6 +2074,8 @@ const char* ToString(ax::mojom::TextStyle text_style) {
       return "underline";
     case ax::mojom::TextStyle::kLineThrough:
       return "lineThrough";
+    case ax::mojom::TextStyle::kOverline:
+      return "overline";
     case ax::mojom::TextStyle::kNone:
       return "none";
   }
@@ -2042,6 +2092,8 @@ ax::mojom::TextStyle ParseTextStyle(const char* text_style) {
     return ax::mojom::TextStyle::kUnderline;
   if (0 == strcmp(text_style, "lineThrough"))
     return ax::mojom::TextStyle::kLineThrough;
+  if (0 == strcmp(text_style, "overline"))
+    return ax::mojom::TextStyle::kOverline;
   return ax::mojom::TextStyle::kNone;
 }
 

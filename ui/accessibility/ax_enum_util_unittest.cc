@@ -135,6 +135,11 @@ TEST(AXEnumUtilTest, DISABLED_MarkerType) {
   TestEnumStringConversion<ax::mojom::MarkerType>(ParseMarkerType);
 }
 
+TEST(AXEnumUtilTest, Text_Decoration_Style) {
+  TestEnumStringConversion<ax::mojom::TextDecorationStyle>(
+      ParseTextDecorationStyle);
+}
+
 TEST(AXEnumUtilTest, TextDirection) {
   TestEnumStringConversion<ax::mojom::TextDirection>(ParseTextDirection);
 }

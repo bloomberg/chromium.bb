@@ -147,6 +147,9 @@ bool IsNodeIdIntAttribute(ax::mojom::IntAttribute attr) {
     case ax::mojom::IntAttribute::kTextDirection:
     case ax::mojom::IntAttribute::kTextPosition:
     case ax::mojom::IntAttribute::kTextStyle:
+    case ax::mojom::IntAttribute::kTextOverlineStyle:
+    case ax::mojom::IntAttribute::kTextStrikethroughStyle:
+    case ax::mojom::IntAttribute::kTextUnderlineStyle:
     case ax::mojom::IntAttribute::kAriaColumnCount:
     case ax::mojom::IntAttribute::kAriaCellColumnIndex:
     case ax::mojom::IntAttribute::kAriaRowCount:
@@ -1058,9 +1061,26 @@ std::string AXNodeData::ToString() const {
           text_style_value += "underline,";
         if (HasTextStyle(ax::mojom::TextStyle::kLineThrough))
           text_style_value += "line-through,";
+        if (HasTextStyle(ax::mojom::TextStyle::kOverline))
+          text_style_value += "overline,";
         result += text_style_value.substr(0, text_style_value.size() - 1);
         break;
       }
+      case ax::mojom::IntAttribute::kTextOverlineStyle:
+        result += std::string(" text_overline_style=") +
+                  ui::ToString(static_cast<ax::mojom::TextDecorationStyle>(
+                      int_attribute.second));
+        break;
+      case ax::mojom::IntAttribute::kTextStrikethroughStyle:
+        result += std::string(" text_strikethrough_style=") +
+                  ui::ToString(static_cast<ax::mojom::TextDecorationStyle>(
+                      int_attribute.second));
+        break;
+      case ax::mojom::IntAttribute::kTextUnderlineStyle:
+        result += std::string(" text_underline_style=") +
+                  ui::ToString(static_cast<ax::mojom::TextDecorationStyle>(
+                      int_attribute.second));
+        break;
       case ax::mojom::IntAttribute::kSetSize:
         result += " setsize=" + value;
         break;

@@ -109,7 +109,11 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   ax::mojom::TextDirection GetTextDirection() const final;
   ax::mojom::TextPosition GetTextPosition() const final;
   int TextLength() const override;
-  int32_t GetTextStyle() const final;
+  void GetTextStyleAndTextDecorationStyle(
+      int32_t* text_style,
+      ax::mojom::TextDecorationStyle* text_overline_style,
+      ax::mojom::TextDecorationStyle* text_strikethrough_style,
+      ax::mojom::TextDecorationStyle* text_underline_style) const final;
 
   // Inline text boxes.
   void LoadInlineTextBoxes() override;
@@ -239,6 +243,10 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   bool CanIgnoreSpaceNextTo(LayoutObject*, bool is_after) const;
   bool HasAriaCellRole(Element*) const;
   bool IsPlaceholder() const;
+
+  static ax::mojom::TextDecorationStyle
+  TextDecorationStyleToAXTextDecorationStyle(
+      const ETextDecorationStyle text_decoration_style);
 
   bool is_autofill_available_;
 

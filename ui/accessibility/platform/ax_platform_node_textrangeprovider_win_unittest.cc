@@ -1482,6 +1482,10 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   text_data.role = ax::mojom::Role::kStaticText;
   text_data.AddStringAttribute(ax::mojom::StringAttribute::kFontFamily, "sans");
   text_data.AddFloatAttribute(ax::mojom::FloatAttribute::kFontWeight, 300);
+  text_data.AddIntAttribute(ax::mojom::IntAttribute::kTextOverlineStyle, 1);
+  text_data.AddIntAttribute(ax::mojom::IntAttribute::kTextStrikethroughStyle,
+                            2);
+  text_data.AddIntAttribute(ax::mojom::IntAttribute::kTextUnderlineStyle, 3);
   text_data.SetName("some text");
 
   ui::AXNodeData more_text_data;
@@ -1561,6 +1565,21 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
 
   EXPECT_UIA_TEXTATTRIBUTE_EQ(document_range_provider, UIA_IsHiddenAttributeId,
                               expected_mixed_variant);
+  expected_variant.Reset();
+
+  expected_variant.Set(TextDecorationLineStyle::TextDecorationLineStyle_Dot);
+  EXPECT_UIA_TEXTATTRIBUTE_EQ(text_range_provider, UIA_OverlineStyleAttributeId,
+                              expected_variant);
+  expected_variant.Reset();
+
+  expected_variant.Set(TextDecorationLineStyle::TextDecorationLineStyle_Dash);
+  EXPECT_UIA_TEXTATTRIBUTE_EQ(
+      text_range_provider, UIA_StrikethroughStyleAttributeId, expected_variant);
+  expected_variant.Reset();
+
+  expected_variant.Set(TextDecorationLineStyle::TextDecorationLineStyle_Single);
+  EXPECT_UIA_TEXTATTRIBUTE_EQ(text_range_provider,
+                              UIA_UnderlineStyleAttributeId, expected_variant);
   expected_variant.Reset();
 
   base::string16 style_name = base::UTF8ToUTF16("");

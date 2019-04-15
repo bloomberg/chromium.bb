@@ -1211,6 +1211,10 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   // Helper to get the UIA StyleName for this node as a BSTR.
   BSTR GetStyleNameAttributeAsBSTR() const;
 
+  // Gets the TextDecorationLineStyle based on the provided int attribute.
+  TextDecorationLineStyle GetUIATextDecorationStyle(
+      const ax::mojom::IntAttribute int_attribute) const;
+
   // IRawElementProviderSimple support methods.
 
   using PatternProviderFactoryMethod = HRESULT (*)(AXPlatformNodeWin*,

@@ -1029,11 +1029,21 @@ ax::mojom::TextPosition WebAXObject::GetTextPosition() const {
   return private_->GetTextPosition();
 }
 
-int WebAXObject::TextStyle() const {
-  if (IsDetached())
-    return 0;
-
-  return private_->GetTextStyle();
+void WebAXObject::GetTextStyleAndTextDecorationStyle(
+    int32_t* text_style,
+    ax::mojom::TextDecorationStyle* text_overline_style,
+    ax::mojom::TextDecorationStyle* text_strikethrough_style,
+    ax::mojom::TextDecorationStyle* text_underline_style) const {
+  if (IsDetached()) {
+    *text_style = 0;
+    *text_overline_style = ax::mojom::TextDecorationStyle::kNone;
+    *text_strikethrough_style = ax::mojom::TextDecorationStyle::kNone;
+    *text_underline_style = ax::mojom::TextDecorationStyle::kNone;
+    return;
+  }
+  private_->GetTextStyleAndTextDecorationStyle(text_style, text_overline_style,
+                                               text_strikethrough_style,
+                                               text_underline_style);
 }
 
 WebURL WebAXObject::Url() const {
