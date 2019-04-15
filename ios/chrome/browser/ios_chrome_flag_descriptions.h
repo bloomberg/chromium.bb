@@ -55,6 +55,11 @@ extern const char kEnableAutofillCreditCardUploadUpdatePromptExplanationName[];
 extern const char
     kEnableAutofillCreditCardUploadUpdatePromptExplanationDescription[];
 
+// Title and description for the flag to control if cards from unsupported
+// networks should be prevented form being uploaded.
+extern const char kEnableAutofillDoNotUploadSaveUnsupportedCardsName[];
+extern const char kEnableAutofillDoNotUploadSaveUnsupportedCardsDescription[];
+
 // Title and description for the flag to control if credit card save should
 // utilize the Autofill StrikeDatabase when determining whether save
 // should be offered.

@@ -598,6 +598,13 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillImportNonFocusableCreditCardForms)},
+    {"enable-autofill-do-not-upload-save-unsupported-cards",
+     flag_descriptions::kEnableAutofillDoNotUploadSaveUnsupportedCardsName,
+     flag_descriptions::
+         kEnableAutofillDoNotUploadSaveUnsupportedCardsDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillDoNotUploadSaveUnsupportedCards)},
 };
 
 // Add all switches from experimental flags to |command_line|.
