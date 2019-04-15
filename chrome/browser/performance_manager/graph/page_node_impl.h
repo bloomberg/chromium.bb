@@ -95,11 +95,6 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
       uint64_t private_footprint_kb_estimate);
   void set_has_nonempty_beforeunload(bool has_nonempty_beforeunload);
 
-  // Invoked when the state of a frame in this page changes.
-  // TODO(chrisha): Move this out to a decorator.
-  void OnFrameLifecycleStateChanged(FrameNodeImpl* frame_node,
-                                    LifecycleState old_state);
-
   // Invoked when a frame belonging to this page changes intervention policy
   // values.
   // TODO(chrisha): Move this out to a decorator.
@@ -134,6 +129,7 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
 
  private:
   friend class FrameNodeImpl;
+  friend class FrozenFrameAggregatorAccess;
   friend class PageAlmostIdleAccess;
 
   void AddFrame(FrameNodeImpl* frame_node);
@@ -145,16 +141,10 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
   bool HasFrame(FrameNodeImpl* frame_node);
 
   void SetPageAlmostIdle(bool page_almost_idle);
+  void SetLifecycleState(LifecycleState lifecycle_state);
 
   // CoordinationUnitInterface implementation.
   void OnEventReceived(resource_coordinator::mojom::Event event) override;
-
-  // This is called whenever |num_frozen_frames_| changes, or whenever
-  // a frame is added to or removed from this page. It is used to synthesize the
-  // value of |has_nonempty_beforeunload| and to update the LifecycleState of
-  // the page. Calling this with |num_frozen_frames_delta == 0| implies that the
-  // number of frames itself has changed.
-  void OnNumFrozenFramesStateChange(int num_frozen_frames_delta);
 
   // Invalidates all currently aggregated intervention policies.
   void InvalidateAllInterventionPolicies();
@@ -203,9 +193,6 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
   base::TimeDelta cumulative_cpu_usage_estimate_;
   // The most current memory footprint estimate.
   uint64_t private_footprint_kb_estimate_ = 0;
-
-  // Counts the number of frames in a page that are frozen.
-  size_t num_frozen_frames_ = 0;
 
   // Indicates whether or not this page has a non-empty beforeunload handler.
   // This is an aggregation of the same value on each frame in the page's frame
@@ -262,6 +249,9 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
 
   // Storage for PageAlmostIdle user data.
   std::unique_ptr<NodeAttachedData> page_almost_idle_data_;
+
+  // Inline storage for FrozenFrameAggregator user data.
+  InternalNodeAttachedDataStorage<sizeof(uintptr_t) + 8> frozen_frame_data_;
 
   DISALLOW_COPY_AND_ASSIGN(PageNodeImpl);
 };

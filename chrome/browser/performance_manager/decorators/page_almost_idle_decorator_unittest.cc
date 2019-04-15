@@ -22,35 +22,6 @@
 
 namespace performance_manager {
 
-namespace {
-
-class LenientMockGraphObserver : public GraphObserver {
- public:
-  LenientMockGraphObserver() = default;
-  ~LenientMockGraphObserver() override = default;
-
-  virtual bool ShouldObserve(const NodeBase* node) {
-    return node->id().type == PageNodeImpl::Type();
-  }
-
-  MOCK_METHOD1(OnPageAlmostIdleChanged, void(PageNodeImpl*));
-
-  void ExpectOnPageAlmostIdleChanged(PageNodeImpl* page_node,
-                                     bool page_almost_idle) {
-    EXPECT_CALL(*this, OnPageAlmostIdleChanged(page_node))
-        .WillOnce(::testing::InvokeWithoutArgs([page_node, page_almost_idle]() {
-          EXPECT_EQ(page_almost_idle, page_node->page_almost_idle());
-        }));
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LenientMockGraphObserver);
-};
-
-using MockGraphObserver = ::testing::StrictMock<LenientMockGraphObserver>;
-
-}  // namespace
-
 class PageAlmostIdleDecoratorTest : public GraphTestHarness {
  protected:
   PageAlmostIdleDecoratorTest() = default;

@@ -125,8 +125,11 @@ class FrameNodeImpl
   const int frame_tree_node_id_;
 
   base::flat_set<FrameNodeImpl*> child_frame_nodes_;
-  resource_coordinator::mojom::LifecycleState lifecycle_state_ =
-      resource_coordinator::mojom::LifecycleState::kRunning;
+  ObservedProperty::NotifiesOnlyOnChanges<
+      resource_coordinator::mojom::LifecycleState,
+      &GraphObserver::OnLifecycleStateChanged>
+      lifecycle_state_{resource_coordinator::mojom::LifecycleState::kRunning};
+
   bool has_nonempty_beforeunload_ = false;
   GURL url_;
 

@@ -11,6 +11,7 @@
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
 #include "base/time/time.h"
+#include "chrome/browser/performance_manager/graph/node_attached_data.h"
 #include "chrome/browser/performance_manager/graph/node_base.h"
 #include "chrome/browser/performance_manager/graph/properties.h"
 #include "chrome/browser/performance_manager/observers/graph_observer.h"
@@ -91,24 +92,18 @@ class ProcessNodeImpl
   // from the destructor of FrameNodeImpl.
   void RemoveFrame(FrameNodeImpl* frame_node);
 
-  // Invoked when the state of a frame hosted by this process changes.
-  void OnFrameLifecycleStateChanged(
-      FrameNodeImpl* frame_node,
-      resource_coordinator::mojom::LifecycleState old_state);
-
  protected:
   void SetProcessImpl(base::Process process,
                       base::ProcessId process_id,
                       base::Time launch_time);
 
  private:
+  friend class FrozenFrameAggregatorAccess;
+
   void LeaveGraph() override;
 
   // CoordinationUnitInterface implementation.
   void OnEventReceived(resource_coordinator::mojom::Event event) override;
-
-  void DecrementNumFrozenFrames();
-  void IncrementNumFrozenFrames();
 
   base::TimeDelta cumulative_cpu_usage_;
   uint64_t private_footprint_kb_ = 0u;
@@ -129,8 +124,8 @@ class ProcessNodeImpl
 
   base::flat_set<FrameNodeImpl*> frame_nodes_;
 
-  // The number of frames hosted by this process that are frozen.
-  int num_frozen_frames_ = 0;
+  // Inline storage for FrozenFrameAggregator user data.
+  InternalNodeAttachedDataStorage<sizeof(uintptr_t) + 8> frozen_frame_data_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessNodeImpl);
 };

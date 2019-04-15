@@ -31,7 +31,7 @@ MockSinglePageInSingleProcessGraph::MockSinglePageInSingleProcessGraph(
     Graph* graph)
     : system(TestNodeWrapper<SystemNodeImpl>::Create(graph)),
       process(TestNodeWrapper<TestProcessNodeImpl>::Create(graph)),
-      page(TestNodeWrapper<PageNodeImpl>::Create(graph, nullptr /*TEST*/)),
+      page(TestNodeWrapper<PageNodeImpl>::Create(graph, nullptr)),
       frame(TestNodeWrapper<FrameNodeImpl>::Create(graph,
                                                    process.get(),
                                                    page.get(),
@@ -51,8 +51,7 @@ MockSinglePageInSingleProcessGraph::~MockSinglePageInSingleProcessGraph() {
 MockMultiplePagesInSingleProcessGraph::MockMultiplePagesInSingleProcessGraph(
     Graph* graph)
     : MockSinglePageInSingleProcessGraph(graph),
-      other_page(
-          TestNodeWrapper<PageNodeImpl>::Create(graph, nullptr /*TEST*/)),
+      other_page(TestNodeWrapper<PageNodeImpl>::Create(graph, nullptr)),
       other_frame(TestNodeWrapper<FrameNodeImpl>::Create(graph,
                                                          process.get(),
                                                          other_page.get(),

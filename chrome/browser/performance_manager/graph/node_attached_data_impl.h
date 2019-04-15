@@ -389,11 +389,8 @@ template <typename DataType>
 template <typename NodeType>
 DataType* NodeAttachedDataImpl<DataType>::NodeAttachedDataInternalOnNodeType<
     NodeType>::GetOrCreate(const NodeType* node) {
-  static_assert(
-      std::is_same<InternalNodeAttachedDataStorage<sizeof(DataType)>*,
-                   typename std::result_of<decltype (
-                       &DataType::GetInternalStorage)(NodeType*)>::type>::value,
-      "NodeType provided internal storage doesn't match size of DataType");
+  // TODO(chrisha): Add a compile test that this is enforced. Otherwise, there's
+  // potential for a OOB reads / security issues. https://www.crbug.com/952864
   InternalNodeAttachedDataStorage<sizeof(DataType)>* storage =
       DataType::GetInternalStorage(const_cast<NodeType*>(node));
   if (!storage->Get()) {

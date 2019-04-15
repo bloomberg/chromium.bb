@@ -20,12 +20,15 @@ ProcessNodeImpl::~ProcessNodeImpl() {
 }
 
 void ProcessNodeImpl::AddFrame(FrameNodeImpl* frame_node) {
-  const bool inserted = frame_nodes_.insert(frame_node).second;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  const bool inserted = frame_nodes_.insert(frame_node).second;
   DCHECK(inserted);
-  if (frame_node->lifecycle_state() ==
-      resource_coordinator::mojom::LifecycleState::kFrozen)
-    IncrementNumFrozenFrames();
+}
+
+void ProcessNodeImpl::RemoveFrame(FrameNodeImpl* frame_node) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(base::ContainsKey(frame_nodes_, frame_node));
+  frame_nodes_.erase(frame_node);
 }
 
 void ProcessNodeImpl::SetCPUUsage(double cpu_usage) {
@@ -90,20 +93,6 @@ ProcessNodeImpl::GetAssociatedPageCoordinationUnits() const {
   return page_nodes;
 }
 
-void ProcessNodeImpl::OnFrameLifecycleStateChanged(
-    FrameNodeImpl* frame_node,
-    resource_coordinator::mojom::LifecycleState old_state) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(base::ContainsKey(frame_nodes_, frame_node));
-  DCHECK_NE(old_state, frame_node->lifecycle_state());
-
-  if (old_state == resource_coordinator::mojom::LifecycleState::kFrozen)
-    DecrementNumFrozenFrames();
-  else if (frame_node->lifecycle_state() ==
-           resource_coordinator::mojom::LifecycleState::kFrozen)
-    IncrementNumFrozenFrames();
-}
-
 void ProcessNodeImpl::SetProcessImpl(base::Process process,
                                      base::ProcessId new_pid,
                                      base::Time launch_time) {
@@ -142,33 +131,6 @@ void ProcessNodeImpl::OnEventReceived(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : observers())
     observer.OnProcessEventReceived(this, event);
-}
-
-void ProcessNodeImpl::RemoveFrame(FrameNodeImpl* frame_node) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(base::ContainsKey(frame_nodes_, frame_node));
-  frame_nodes_.erase(frame_node);
-
-  if (frame_node->lifecycle_state() ==
-      resource_coordinator::mojom::LifecycleState::kFrozen)
-    DecrementNumFrozenFrames();
-}
-
-void ProcessNodeImpl::DecrementNumFrozenFrames() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  --num_frozen_frames_;
-  DCHECK_GE(num_frozen_frames_, 0);
-}
-
-void ProcessNodeImpl::IncrementNumFrozenFrames() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  ++num_frozen_frames_;
-  DCHECK_LE(num_frozen_frames_, static_cast<int>(frame_nodes_.size()));
-
-  if (num_frozen_frames_ == static_cast<int>(frame_nodes_.size())) {
-    for (auto& observer : observers())
-      observer.OnAllFramesInProcessFrozen(this);
-  }
 }
 
 }  // namespace performance_manager
