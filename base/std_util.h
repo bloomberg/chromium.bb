@@ -7,6 +7,8 @@
 
 #include <map>
 
+#include "absl/algorithm/container.h"
+
 namespace openscreen {
 
 template <typename Key, typename Value>
@@ -18,6 +20,18 @@ void RemoveValueFromMap(std::map<Key, Value*>* map, Value* value) {
       ++it;
     }
   }
+}
+
+template <typename ForwardIteratingContainer>
+bool AreElementsSortedAndUnique(const ForwardIteratingContainer& c) {
+  return absl::c_is_sorted(c) && (absl::c_adjacent_find(c) == c.end());
+}
+
+template <typename RandomAccessContainer>
+void SortAndDedupeElements(RandomAccessContainer* c) {
+  std::sort(c->begin(), c->end());
+  const auto new_end = std::unique(c->begin(), c->end());
+  c->erase(new_end, c->end());
 }
 
 }  // namespace openscreen

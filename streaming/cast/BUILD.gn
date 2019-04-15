@@ -16,6 +16,8 @@ source_set("cast") {
     "ntp_time.h",
     "rtp_time.cc",
     "rtp_time.h",
+    "ssrc.cc",
+    "ssrc.h",
   ]
 
   public_deps = [
@@ -34,6 +36,7 @@ source_set("cast_unittests") {
     "expanded_value_base_unittest.cc",
     "ntp_time_unittest.cc",
     "rtp_time_unittest.cc",
+    "ssrc_unittest.cc",
   ]
 
   deps = [
