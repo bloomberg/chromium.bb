@@ -252,7 +252,9 @@ class CONTENT_EXPORT FrameTree {
  private:
   friend class FrameTreeTest;
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest, RemoveFocusedFrame);
-  typedef std::unordered_map<int, RenderViewHostImpl*> RenderViewHostMap;
+  using RenderViewHostMap =
+      std::unordered_map<int /* SiteInstance ID */,
+                         std::unique_ptr<RenderViewHostImpl>>;
 
   // Returns a range to iterate over all FrameTreeNodes in the frame tree in
   // breadth-first traversal order, skipping the subtree rooted at
@@ -266,13 +268,12 @@ class CONTENT_EXPORT FrameTree {
   RenderWidgetHostDelegate* render_widget_delegate_;
   RenderFrameHostManager::Delegate* manager_delegate_;
 
-  // Map of SiteInstance ID to a RenderViewHost.  This allows us to look up the
+  // Map of SiteInstance ID to RenderViewHost. This allows us to look up the
   // RenderViewHost for a given SiteInstance when creating RenderFrameHosts.
-  // Combined with the refcount on RenderViewHost, this allows us to call
-  // Shutdown on the RenderViewHost and remove it from the map when no more
-  // RenderFrameHosts are using it.
+  // Each RenderViewHost maintains a refcount and is deleted when there are no
+  // more RenderFrameHosts using it.
   //
-  // Must be declared before |root_| so that it is deleted afterward.  Otherwise
+  // Must be declared before |root_| so that it is deleted afterward. Otherwise
   // the map will be cleared before we delete the RenderFrameHosts in the tree.
   RenderViewHostMap render_view_host_map_;
 

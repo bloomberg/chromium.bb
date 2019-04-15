@@ -272,6 +272,16 @@ RenderViewHostImpl::RenderViewHostImpl(
 }
 
 RenderViewHostImpl::~RenderViewHostImpl() {
+  // We can't release the SessionStorageNamespace until our peer
+  // in the renderer has wound down.
+  if (GetProcess()->IsInitializedAndNotDead()) {
+    RenderProcessHostImpl::ReleaseOnCloseACK(
+        GetProcess(), delegate_->GetSessionStorageNamespaceMap(),
+        GetWidget()->GetRoutingID());
+  }
+
+  GetWidget()->ShutdownAndDestroyWidget(false);
+
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
@@ -852,19 +862,6 @@ void RenderViewHostImpl::RenderWidgetDidClose() {
   // If the renderer is telling us to close, it has already run the unload
   // events, and we can take the fast path.
   ClosePageIgnoringUnloadEvents();
-}
-
-void RenderViewHostImpl::ShutdownAndDestroy() {
-  // We can't release the SessionStorageNamespace until our peer
-  // in the renderer has wound down.
-  if (GetProcess()->IsInitializedAndNotDead()) {
-    RenderProcessHostImpl::ReleaseOnCloseACK(
-        GetProcess(), delegate_->GetSessionStorageNamespaceMap(),
-        GetWidget()->GetRoutingID());
-  }
-
-  GetWidget()->ShutdownAndDestroyWidget(false);
-  delete this;
 }
 
 void RenderViewHostImpl::CreateNewWidget(int32_t widget_route_id,
