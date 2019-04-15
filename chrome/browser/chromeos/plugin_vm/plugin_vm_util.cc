@@ -5,11 +5,14 @@
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 
 #include <string>
+#include <utility>
 
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/debug_daemon_client.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/prefs/pref_service.h"
 
@@ -71,6 +74,36 @@ bool IsPluginVmEnabled(Profile* profile) {
 // exo application id (crbug.com/940319).
 bool IsPluginVmWindow(const aura::Window* window) {
   return false;
+}
+
+void OnPluginVmDispatcherStarted(Profile* profile,
+                                 PluginVmStartedCallback callback,
+                                 bool success) {
+  if (!success) {
+    LOG(ERROR) << "Failed to start PluginVm dispatcher service";
+    std::move(callback).Run(false);
+    return;
+  }
+
+  // TODO(https://crbug.com/904853): Send dbus call to dispatcher to start
+  // PluginVm.
+  std::move(callback).Run(false);
+}
+
+void StartPluginVmForProfile(Profile* profile,
+                             PluginVmStartedCallback callback) {
+  // Defensive check to prevent starting PluginVm when it is not allowed.
+  if (!IsPluginVmAllowedForProfile(profile)) {
+    LOG(ERROR) << "Attempt to start PluginVm when it is not allowed";
+    std::move(callback).Run(false);
+    return;
+  }
+
+  VLOG(1) << "Starting PluginVm dispatcher service";
+  chromeos::DBusThreadManager::Get()
+      ->GetDebugDaemonClient()
+      ->StartPluginVmDispatcher(base::BindOnce(&OnPluginVmDispatcherStarted,
+                                               profile, std::move(callback)));
 }
 
 std::string GetPluginVmLicenseKey() {

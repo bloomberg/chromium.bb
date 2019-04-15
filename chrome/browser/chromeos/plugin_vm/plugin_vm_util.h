@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "base/callback.h"
+
 namespace aura {
 class Window;
 }  // namespace aura
@@ -14,6 +16,8 @@ class Window;
 class Profile;
 
 namespace plugin_vm {
+
+using PluginVmStartedCallback = base::OnceCallback<void(bool)>;
 
 // Generated as crx_file::id_util::GenerateId("org.chromium.plugin_vm");
 constexpr char kPluginVmAppId[] = "lgjpclljbbmphhnalkeplcmnjpfmmaek";
@@ -34,6 +38,9 @@ void ShowPluginVmLauncherView(Profile* profile);
 
 // Checks if an window is for plugin vm.
 bool IsPluginVmWindow(const aura::Window* window);
+
+void StartPluginVmForProfile(Profile* profile,
+                             PluginVmStartedCallback callback);
 
 // Retrieves the license key to be used for PluginVm. If
 // none is set this will return an empty string.
