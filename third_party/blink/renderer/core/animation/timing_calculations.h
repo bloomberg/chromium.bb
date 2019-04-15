@@ -50,6 +50,12 @@ static inline double MultiplyZeroAlwaysGivesZero(AnimationTimeDelta x,
   return x.is_zero() || y == 0 ? 0 : (x * y).InSecondsF();
 }
 
+static inline bool IsWithinEpsilon(double a, double b) {
+  // Permit 2-bits of quantization error. Threshold based on experimentation
+  // with accuracy of fmod.
+  return std::abs(a - b) <= 2.0 * std::numeric_limits<double>::epsilon();
+}
+
 // https://drafts.csswg.org/web-animations-1/#animation-effect-phases-and-states
 static inline AnimationEffect::Phase CalculatePhase(
     double active_duration,
@@ -170,27 +176,104 @@ static inline double CalculateIterationTime(double iteration_duration,
   return iteration_time;
 }
 
-static inline double CalculateCurrentIteration(double iteration_duration,
-                                               double iteration_time,
-                                               double offset_active_time,
-                                               const Timing& specified) {
-  DCHECK_GT(iteration_duration, 0);
-  DCHECK(IsNull(iteration_time) || iteration_time >= 0);
-
-  if (IsNull(offset_active_time))
+// Calculates the overall progress, which describes the number of iterations
+// that have completed (including partial iterations).
+// https://drafts.csswg.org/web-animations/#calculating-the-overall-progress
+static inline double CalculateOverallProgress(AnimationEffect::Phase phase,
+                                              double active_time,
+                                              double iteration_duration,
+                                              double iteration_count,
+                                              double iteration_start) {
+  // 1. If the active time is unresolved, return unresolved.
+  if (IsNull(active_time))
     return NullValue();
 
-  DCHECK_GE(iteration_time, 0);
-  DCHECK_LE(iteration_time, iteration_duration);
-  DCHECK_GE(offset_active_time, 0);
+  // 2. Calculate an initial value for overall progress.
+  double overall_progress = 0;
+  if (!iteration_duration) {
+    if (phase != AnimationEffect::kPhaseBefore)
+      overall_progress = iteration_count;
+  } else {
+    overall_progress = active_time / iteration_duration;
+  }
 
-  if (!offset_active_time)
-    return 0;
+  return overall_progress + iteration_start;
+}
 
-  if (iteration_time == iteration_duration)
-    return specified.iteration_start + specified.iteration_count - 1;
+// Calculates the simple iteration progress, which is a fraction of the progress
+// through the current iteration that ignores transformations to the time
+// introduced by the playback direction or timing functions applied to the
+// effect.
+// https://drafts.csswg.org/web-animations/#calculating-the-simple-iteration
+// -progress
+static inline double CalculateSimpleIterationProgress(
+    AnimationEffect::Phase phase,
+    double overall_progress,
+    double iteration_start,
+    double active_time,
+    double iteration_duration,
+    double iteration_count) {
+  // 1. If the overall progress is unresolved, return unresolved.
+  if (IsNull(overall_progress))
+    return NullValue();
 
-  return floor(offset_active_time / iteration_duration);
+  // 2. If overall progress is infinity, let the simple iteration progress be
+  // iteration start % 1.0, otherwise, let the simple iteration progress be
+  // overall progress % 1.0.
+  double simple_iteration_progress = std::isinf(overall_progress)
+                                         ? fmod(iteration_start, 1.0)
+                                         : fmod(overall_progress, 1.0);
+
+  const double active_duration = iteration_duration * iteration_count;
+
+  // 3. If all of the following conditions are true,
+  //   * the simple iteration progress calculated above is zero, and
+  //   * the animation effect is in the active phase or the after phase, and
+  //   * the active time is equal to the active duration, and
+  //   * the iteration count is not equal to zero.
+  // let the simple iteration progress be 1.0.
+  if (IsWithinEpsilon(simple_iteration_progress, 0.0) &&
+      (phase == AnimationEffect::kPhaseActive ||
+       phase == AnimationEffect::kPhaseAfter) &&
+      IsWithinEpsilon(active_time, active_duration) &&
+      !IsWithinEpsilon(iteration_count, 0.0)) {
+    simple_iteration_progress = 1.0;
+  }
+
+  // 4. Return simple iteration progress.
+  return simple_iteration_progress;
+}
+
+// https://drafts.csswg.org/web-animations/#calculating-the-current-iteration
+static inline double CalculateCurrentIteration(AnimationEffect::Phase phase,
+                                               double active_time,
+                                               double iteration_duration,
+                                               double iteration_count,
+                                               double iteration_start) {
+  // 1. If the active time is unresolved, return unresolved.
+  if (IsNull(active_time))
+    return NullValue();
+
+  // 2. If the animation effect is in the after phase and the iteration count
+  // is infinity, return infinity.
+  if (phase == AnimationEffect::kPhaseAfter && std::isinf(iteration_count)) {
+    return std::numeric_limits<double>::infinity();
+  }
+
+  const double overall_progress = CalculateOverallProgress(
+      phase, active_time, iteration_duration, iteration_count, iteration_start);
+
+  // 3. If the simple iteration progress is 1.0, return floor(overall progress)
+  // - 1.
+  const double simple_iteration_progress = CalculateSimpleIterationProgress(
+      phase, overall_progress, iteration_start, active_time, iteration_duration,
+      iteration_count);
+
+  if (simple_iteration_progress == 1.0)
+    return floor(overall_progress) - 1;
+
+  // 4. Otherwise, return floor(overall progress).
+  return floor(overall_progress);
 }
 
 static inline double CalculateDirectedTime(double current_iteration,
@@ -201,6 +284,9 @@ static inline double CalculateDirectedTime(double current_iteration,
   DCHECK_GT(iteration_duration, 0);
 
   if (IsNull(iteration_time))
+    return NullValue();
+
+  if (IsNull(current_iteration))
     return NullValue();
 
   DCHECK_GE(current_iteration, 0);

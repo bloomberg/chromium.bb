@@ -208,7 +208,9 @@ void AnimationEffect::UpdateInheritedTime(double inherited_time,
           current_phase, timing_);
 
       current_iteration = CalculateCurrentIteration(
-          iteration_duration, iteration_time, offset_active_time, timing_);
+          current_phase, active_time, iteration_duration,
+          timing_.iteration_count, timing_.iteration_start);
+
       const base::Optional<double> transformed_time = CalculateTransformedTime(
           current_iteration, iteration_duration, iteration_time, timing_);
 
@@ -259,8 +261,11 @@ void AnimationEffect::UpdateInheritedTime(double inherited_time,
           kLocalIterationDuration, local_active_duration, offset_active_time,
           start_offset, current_phase, timing_);
 
-      current_iteration = CalculateCurrentIteration(
-          kLocalIterationDuration, iteration_time, offset_active_time, timing_);
+      current_iteration = CalculateCurrentIteration(current_phase, active_time,
+                                                    /*iteration_duration=*/0,
+                                                    timing_.iteration_count,
+                                                    timing_.iteration_start);
+
       progress = CalculateTransformedTime(
           current_iteration, kLocalIterationDuration, iteration_time, timing_);
     }
