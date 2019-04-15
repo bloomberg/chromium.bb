@@ -757,8 +757,9 @@ void WebRequestAPI::MaybeProxyWebSocket(
   auto authentication_request = mojo::MakeRequest(auth_handler);
 
   network::mojom::TrustedHeaderClientRequest header_client_request;
-  if (ExtensionWebRequestEventRouter::GetInstance()->HasAnyExtraHeadersListener(
-          frame->GetProcess()->GetBrowserContext())) {
+  if (ExtensionWebRequestEventRouter::GetInstance()
+          ->HasAnyExtraHeadersListenerOnUI(
+              frame->GetProcess()->GetBrowserContext())) {
     header_client_request = mojo::MakeRequest(header_client);
   }
 
@@ -1669,8 +1670,18 @@ bool ExtensionWebRequestEventRouter::AddEventListener(
 
   listeners_[browser_context][event_name].push_back(std::move(listener));
 
-  if (extra_info_spec & ExtraInfoSpec::EXTRA_HEADERS)
+  if (extra_info_spec & ExtraInfoSpec::EXTRA_HEADERS) {
+    bool had_previously = extra_headers_listener_count_[browser_context] > 0;
     extra_headers_listener_count_[browser_context]++;
+
+    if (!had_previously) {
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::UI},
+          base::BindOnce(
+              &ExtensionWebRequestEventRouter::UpdateExtraHeadersListenerOnUI,
+              base::Unretained(this), browser_context, true));
+    }
+  }
 
   return true;
 }
@@ -1729,6 +1740,15 @@ void ExtensionWebRequestEventRouter::RemoveEventListener(
         extra_headers_listener_count_[listener->id.browser_context]--;
         DCHECK_GE(extra_headers_listener_count_[listener->id.browser_context],
                   0);
+
+        if (extra_headers_listener_count_[listener->id.browser_context] == 0) {
+          base::PostTaskWithTraits(
+              FROM_HERE, {BrowserThread::UI},
+              base::BindOnce(&ExtensionWebRequestEventRouter::
+                                 UpdateExtraHeadersListenerOnUI,
+                             base::Unretained(this),
+                             listener->id.browser_context, false));
+        }
       }
 
       listeners.erase(it);
@@ -1800,6 +1820,7 @@ bool ExtensionWebRequestEventRouter::HasExtraHeadersListenerForRequest(
 
 bool ExtensionWebRequestEventRouter::HasAnyExtraHeadersListener(
     void* browser_context) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (HasAnyExtraHeadersListenerImpl(browser_context))
     return true;
 
@@ -1810,9 +1831,40 @@ bool ExtensionWebRequestEventRouter::HasAnyExtraHeadersListener(
   return false;
 }
 
+bool ExtensionWebRequestEventRouter::HasAnyExtraHeadersListenerOnUI(
+    content::BrowserContext* browser_context) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (browser_contexts_with_extra_headers_.find(browser_context) !=
+      browser_contexts_with_extra_headers_.end())
+    return true;
+
+  if (browser_context->IsOffTheRecord()) {
+    auto* original_browser_context =
+        ExtensionsBrowserClient::Get()->GetOriginalContext(browser_context);
+    if (browser_contexts_with_extra_headers_.find(original_browser_context) !=
+        browser_contexts_with_extra_headers_.end())
+      return true;
+  }
+
+  return false;
+}
+
 bool ExtensionWebRequestEventRouter::HasAnyExtraHeadersListenerImpl(
     void* browser_context) {
   return extra_headers_listener_count_[browser_context] > 0;
+}
+
+void ExtensionWebRequestEventRouter::UpdateExtraHeadersListenerOnUI(
+    void* browser_context,
+    bool has_extra_headers_listeners) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  auto* browser_context_ptr =
+      static_cast<content::BrowserContext*>(browser_context);
+  if (has_extra_headers_listeners) {
+    browser_contexts_with_extra_headers_.insert(browser_context_ptr);
+  } else {
+    browser_contexts_with_extra_headers_.erase(browser_context_ptr);
+  }
 }
 
 bool ExtensionWebRequestEventRouter::IsPageLoad(
