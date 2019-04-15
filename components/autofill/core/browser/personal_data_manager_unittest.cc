@@ -2572,7 +2572,7 @@ TEST_F(PersonalDataManagerTest,
               &Suggestion::additional_label,
               ConstructLabelLine({base::ASCIIToUTF16("(978) 674-4120"),
                                   base::ASCIIToUTF16("hoa.pham@comcast.net")})),
-          testing::Field(&Suggestion::icon, "userAccountAvatarIcon"))));
+          testing::Field(&Suggestion::icon, "accountBoxIcon"))));
 }
 #endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
 
@@ -2602,7 +2602,7 @@ TEST_F(PersonalDataManagerTest,
                   testing::Field(
                       &Suggestion::additional_label,
                       base::ASCIIToUTF16("401 Merrimack St, Lowell, MA 01852")),
-                  testing::Field(&Suggestion::icon, "locationOnIcon"))));
+                  testing::Field(&Suggestion::icon, "accountBoxIcon"))));
 }
 #endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
 
@@ -2635,7 +2635,7 @@ TEST_F(
               &Suggestion::additional_label,
               ConstructLabelLine({base::ASCIIToUTF16("(978) 674-4120"),
                                   base::ASCIIToUTF16("401 Merrimack St")})),
-          testing::Field(&Suggestion::icon, "locationOnIcon"))));
+          testing::Field(&Suggestion::icon, "accountBoxIcon"))));
 }
 #endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
 
@@ -2668,7 +2668,7 @@ TEST_F(
               &Suggestion::additional_label,
               ConstructLabelLine({base::ASCIIToUTF16("401 Merrimack St"),
                                   base::ASCIIToUTF16("hoa.pham@comcast.net")})),
-          testing::Field(&Suggestion::icon, "locationOnIcon"))));
+          testing::Field(&Suggestion::icon, "accountBoxIcon"))));
 }
 #endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
 

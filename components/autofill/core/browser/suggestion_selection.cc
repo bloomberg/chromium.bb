@@ -248,8 +248,7 @@ void PrepareSuggestions(bool contains_address,
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
     if (base::FeatureList::IsEnabled(
             autofill::features::kAutofillUseImprovedLabelDisambiguation)) {
-      (*suggestions)[i].icon =
-          contains_address ? "locationOnIcon" : "userAccountAvatarIcon";
+      (*suggestions)[i].icon = "accountBoxIcon";
     }
 #endif
   }
