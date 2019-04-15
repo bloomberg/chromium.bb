@@ -280,7 +280,7 @@ void PaintWorkletGlobalScope::RegisterWithProxyClientIfNeeded() {
 
   if (PaintWorkletProxyClient* proxy_client =
           PaintWorkletProxyClient::From(Clients())) {
-    proxy_client->SetGlobalScope(this);
+    proxy_client->AddGlobalScope(this);
     registered_ = true;
   }
 }
