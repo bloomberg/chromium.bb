@@ -75,6 +75,8 @@ config("runtime_library") {
     # and can also result in build failures if libc++'s name for a library
     # does not match ours.
     defines += [ "_LIBCPP_NO_AUTO_LINK" ]
+
+    configs = [ "//tools/win/DebugVisualizers:libc++" ]
   } else {
     cflags_cc += [
       "-nostdinc++",
