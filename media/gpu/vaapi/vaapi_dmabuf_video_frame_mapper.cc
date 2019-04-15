@@ -33,15 +33,16 @@ void DeallocateBuffers(std::unique_ptr<ScopedVAImage> va_image) {
 }
 
 scoped_refptr<VideoFrame> CreateMappedVideoFrame(
-    const VideoFrameLayout& layout,
+    const VideoPixelFormat format,
     const gfx::Rect& visible_rect,
+    const base::TimeDelta timestamp,
     std::unique_ptr<ScopedVAImage> va_image) {
   // ScopedVAImage manages the resource of mapped data. That is, ScopedVAImage's
   // dtor releases the mapped resource.
-  const size_t num_planes = layout.num_planes();
+  const size_t num_planes = VideoFrame::NumPlanes(format);
   if (num_planes != va_image->image()->num_planes) {
-    VLOGF(1) << "The number of planes is not same between layout and VAImage, "
-             << "(layout: " << num_planes
+    VLOGF(1) << "The number of planes of VAImage is not expected. "
+             << "(expected: " << num_planes
              << ", VAImage: " << va_image->image()->num_planes << ")";
     return nullptr;
   }
@@ -57,8 +58,7 @@ scoped_refptr<VideoFrame> CreateMappedVideoFrame(
   }
 
   auto mapped_layout = VideoFrameLayout::CreateWithPlanes(
-      layout.format(),
-      gfx::Size(va_image->image()->width, va_image->image()->height),
+      format, gfx::Size(va_image->image()->width, va_image->image()->height),
       std::move(planes), {va_image->image()->data_size});
   if (!mapped_layout) {
     VLOGF(1) << "Failed to create VideoFrameLayout for VAImage";
@@ -66,7 +66,7 @@ scoped_refptr<VideoFrame> CreateMappedVideoFrame(
   }
   auto video_frame = VideoFrame::WrapExternalYuvDataWithLayout(
       *mapped_layout, visible_rect, visible_rect.size(), addrs[0], addrs[1],
-      addrs[2], base::TimeDelta());
+      addrs[2], timestamp);
   if (!video_frame)
     return nullptr;
 
@@ -149,14 +149,8 @@ scoped_refptr<VideoFrame> VaapiDmaBufVideoFrameMapper::Map(
     return nullptr;
   }
 
-  auto layout =
-      VideoFrameLayout::Create(kConvertedFormat, video_frame->coded_size());
-  if (!layout) {
-    VLOGF(1) << "Failed to create VideoFrameLayout.";
-    return nullptr;
-  }
-  return CreateMappedVideoFrame(*layout, video_frame->visible_rect(),
-                                std::move(va_image));
+  return CreateMappedVideoFrame(kConvertedFormat, video_frame->visible_rect(),
+                                video_frame->timestamp(), std::move(va_image));
 }
 
 }  // namespace media
