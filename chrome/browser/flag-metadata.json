@@ -1809,8 +1809,8 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-viz-hit-test-draw-quad",
-    "owners": [ "riajiang", "rjkroege" ],
+    "name": "enable-viz-hit-test",
+    "owners": [ "riajiang", "sunxd", "rjkroege" ],
     "expiry_milestone": 76
   },
   {
