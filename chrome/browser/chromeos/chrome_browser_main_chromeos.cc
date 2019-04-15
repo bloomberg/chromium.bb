@@ -101,6 +101,7 @@
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/shutdown_policy_forwarder.h"
+#include "chrome/browser/chromeos/startup_settings_cache.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/system/user_removal_manager.h"
 #include "chrome/browser/chromeos/ui/low_disk_notification.h"
@@ -152,6 +153,7 @@
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_util.h"
 #include "components/device_event_log/device_event_log.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/ownership/owner_key_util.h"
 #include "components/prefs/pref_service.h"
@@ -1202,6 +1204,11 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   g_browser_process->platform_part()->ShutdownSessionManager();
   // Ash needs to be closed before UserManager is destroyed.
   g_browser_process->platform_part()->DestroyChromeUserManager();
+
+  // See comment at startup_settings_cache::ReadAppLocale() for why we do this.
+  startup_settings_cache::WriteAppLocale(
+      g_browser_process->local_state()->GetString(
+          language::prefs::kApplicationLocale));
 }
 
 void ChromeBrowserMainPartsChromeos::PostDestroyThreads() {
