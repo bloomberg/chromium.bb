@@ -181,7 +181,10 @@ class ChannelMac : public Channel,
       DCHECK(receive_port_ == MACH_PORT_NULL);
       CHECK(base::mac::CreateMachPort(&receive_port_, nullptr,
                                       MACH_PORT_QLIMIT_LARGE));
-      RequestSendDeadNameNotification();
+      if (!RequestSendDeadNameNotification()) {
+        OnError(Error::kConnectionFailed);
+        return;
+      }
       SendHandshake();
     } else if (receive_port_ != MACH_PORT_NULL) {
       DCHECK(send_port_ == MACH_PORT_NULL);
@@ -219,15 +222,20 @@ class ChannelMac : public Channel,
   // Requests that the kernel notify the |receive_port_| when the receive right
   // connected to |send_port_| becomes a dead name. This should be called as
   // soon as the Channel establishes both the send and receive ports.
-  void RequestSendDeadNameNotification() {
+  bool RequestSendDeadNameNotification() {
     base::mac::ScopedMachSendRight previous;
     kern_return_t kr = mach_port_request_notification(
         mach_task_self(), send_port_.get(), MACH_NOTIFY_DEAD_NAME, 0,
         receive_port_.get(), MACH_MSG_TYPE_MAKE_SEND_ONCE,
         base::mac::ScopedMachSendRight::Receiver(previous).get());
     if (kr != KERN_SUCCESS) {
-      MACH_LOG(ERROR, kr) << "mach_port_request_notification";
+      // If port is already a dead name (i.e. the receiver is already gone),
+      // then the channel should be shut down by the caller.
+      MACH_LOG_IF(ERROR, kr != KERN_INVALID_ARGUMENT, kr)
+          << "mach_port_request_notification";
+      return false;
     }
+    return true;
   }
 
   // SendHandshake() sends to the |receive_port_| a right to |send_port_|,
@@ -285,7 +293,10 @@ class ChannelMac : public Channel,
 
     send_port_ = base::mac::ScopedMachSendRight(message->msgh_remote_port);
 
-    RequestSendDeadNameNotification();
+    if (!RequestSendDeadNameNotification()) {
+      OnError(Error::kConnectionFailed);
+      return false;
+    }
 
     base::AutoLock lock(write_lock_);
     handshake_done_ = true;
