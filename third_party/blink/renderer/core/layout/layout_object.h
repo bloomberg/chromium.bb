@@ -485,16 +485,22 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   UniqueObjectId UniqueId() const { return fragment_.UniqueId(); }
 
+  inline bool ShouldApplyPaintContainment(const ComputedStyle& style) const {
+    return style.ContainsPaint() && (!IsInline() || IsAtomicInlineLevel()) &&
+           !IsRubyText() && (!IsTablePart() || IsLayoutBlockFlow());
+  }
+
   inline bool ShouldApplyPaintContainment() const {
-    return StyleRef().ContainsPaint() &&
-           (!IsInline() || IsAtomicInlineLevel()) && !IsRubyText() &&
-           (!IsTablePart() || IsLayoutBlockFlow());
+    return ShouldApplyPaintContainment(StyleRef());
+  }
+
+  inline bool ShouldApplyLayoutContainment(const ComputedStyle& style) const {
+    return style.ContainsLayout() && (!IsInline() || IsAtomicInlineLevel()) &&
+           !IsRubyText() && (!IsTablePart() || IsLayoutBlockFlow());
   }
 
   inline bool ShouldApplyLayoutContainment() const {
-    return StyleRef().ContainsLayout() &&
-           (!IsInline() || IsAtomicInlineLevel()) && !IsRubyText() &&
-           (!IsTablePart() || IsLayoutBlockFlow());
+    return ShouldApplyLayoutContainment(StyleRef());
   }
 
   inline bool ShouldApplySizeContainment() const {
@@ -1198,6 +1204,13 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
             CanContainAbsolutePositionObjects()) ||
            (position == EPosition::kFixed && CanContainFixedPositionObjects());
   }
+
+  // Returns true if style would make this object an absolute container.
+  bool ComputeIsAbsoluteContainer(const ComputedStyle* style) const;
+
+  // Returns true if style would make this object a fixed container.
+  // This value gets cached by bitfields_.can_contain_fixed_position_objects_.
+  bool ComputeIsFixedContainer(const ComputedStyle* style) const;
 
   virtual LayoutObject* HoverAncestor() const { return Parent(); }
 

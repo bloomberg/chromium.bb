@@ -265,6 +265,9 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
   bool had_layer = HasLayer();
   bool layer_was_self_painting = had_layer && Layer()->IsSelfPaintingLayer();
   bool was_horizontal_writing_mode = IsHorizontalWritingMode();
+  bool could_contain_fixed = ComputeIsFixedContainer(old_style);
+  bool could_contain_absolute =
+      could_contain_fixed || ComputeIsAbsoluteContainer(old_style);
 
   LayoutObject::StyleDidChange(diff, old_style);
   UpdateFromStyle();
@@ -326,10 +329,8 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
   }
 
   if (old_style &&
-      (old_style->CanContainFixedPositionObjects(IsDocumentElement()) !=
-           StyleRef().CanContainFixedPositionObjects(IsDocumentElement()) ||
-       old_style->CanContainAbsolutePositionObjects() !=
-           StyleRef().CanContainAbsolutePositionObjects())) {
+      (could_contain_fixed != CanContainFixedPositionObjects() ||
+       could_contain_absolute != CanContainAbsolutePositionObjects())) {
     // If out of flow element containment changed, then we need to force a
     // subtree paint property update, since the children elements may now be
     // referencing a different container.
@@ -632,6 +633,7 @@ void LayoutBoxModelObject::UpdateFromStyle() {
   SetInline(style_to_use.IsDisplayInlineType());
   SetPositionState(style_to_use.GetPosition());
   SetHorizontalWritingMode(style_to_use.IsHorizontalWritingMode());
+  SetCanContainFixedPositionObjects(ComputeIsFixedContainer(&style_to_use));
 }
 
 LayoutBlock* LayoutBoxModelObject::ContainingBlockForAutoHeightDetection(
