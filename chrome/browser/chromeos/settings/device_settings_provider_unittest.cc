@@ -353,7 +353,7 @@ TEST_F(DeviceSettingsProviderTest, InitializationTestUnowned) {
   EXPECT_CALL(*this, SettingChanged(_)).Times(AnyNumber());
   EXPECT_CALL(*this, SettingChanged(kReleaseChannel)).Times(1);
   base::Value new_value("stable-channel");
-  provider_->Set(kReleaseChannel, new_value);
+  provider_->DoSet(kReleaseChannel, new_value);
   Mock::VerifyAndClearExpectations(this);
 
   // This shouldn't trigger a write.
@@ -396,7 +396,7 @@ TEST_F(DeviceSettingsProviderTest, SetPrefFailed) {
   // If we are not the owner no sets should work.
   base::Value value(true);
   EXPECT_CALL(*this, SettingChanged(kStatsReportingPref)).Times(1);
-  provider_->Set(kStatsReportingPref, value);
+  provider_->DoSet(kStatsReportingPref, value);
   Mock::VerifyAndClearExpectations(this);
 
   // This shouldn't trigger a write.
@@ -421,7 +421,7 @@ TEST_F(DeviceSettingsProviderTest, SetPrefSucceed) {
   base::Value value(true);
   EXPECT_CALL(*this, SettingChanged(_)).Times(AnyNumber());
   EXPECT_CALL(*this, SettingChanged(kStatsReportingPref)).Times(1);
-  provider_->Set(kStatsReportingPref, value);
+  provider_->DoSet(kStatsReportingPref, value);
   Mock::VerifyAndClearExpectations(this);
 
   // Process the store.
@@ -451,9 +451,9 @@ TEST_F(DeviceSettingsProviderTest, SetPrefTwice) {
   EXPECT_CALL(*this, SettingChanged(_)).Times(AnyNumber());
 
   base::Value value1("beta");
-  provider_->Set(kReleaseChannel, value1);
+  provider_->DoSet(kReleaseChannel, value1);
   base::Value value2("dev");
-  provider_->Set(kReleaseChannel, value2);
+  provider_->DoSet(kReleaseChannel, value2);
 
   // Let the changes propagate through the system.
   session_manager_client_.set_device_policy(std::string());
