@@ -2,7 +2,6 @@
 <script src="../resources/gc.js"></script>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <!--
 
@@ -13,7 +12,7 @@ Spec: https://wicg.github.io/aom/spec/
 -->
 
 <script>
-test_after_layout_and_paint(function(t) {
+test(function(t) {
     assert_true(internals.runtimeFlags.accessibilityObjectModelEnabled);
 }, "Make sure that Accessibility Object Model is enabled");
 </script>
@@ -25,7 +24,7 @@ test_after_layout_and_paint(function(t) {
 </div>
 
 <script>
-test_after_layout_and_paint(function(t) {
+test(function(t) {
     var listbox = document.getElementById("listbox");
     var option1 = document.getElementById("option1");
     listbox.focus();
@@ -46,7 +45,7 @@ test_after_layout_and_paint(function(t) {
 <div id="details">Details</div>
 
 <script>
-test_after_layout_and_paint(function(t) {
+test(function(t) {
     var input1 = document.getElementById("input1");
     var details = document.getElementById("details");
     var axInput1 = accessibilityController.accessibleElementById("input1");
@@ -63,7 +62,7 @@ test_after_layout_and_paint(function(t) {
 <div id="errorMessage">ErrorMessage</div>
 
 <script>
-test_after_layout_and_paint(function(t) {
+test(function(t) {
     var input2 = document.getElementById("input2");
     var errorMessage = document.getElementById("errorMessage");
     var axInput2 = accessibilityController.accessibleElementById("input2");

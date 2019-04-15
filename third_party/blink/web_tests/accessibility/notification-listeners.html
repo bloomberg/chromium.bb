@@ -1,13 +1,12 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <select id="select" value="Select"></select>
 
 <div id="slider" tabindex="0" role="slider" aria-valuenow="5">Slider</div>
 
 <script>
-async_test_after_layout_and_paint((t) => {
+async_test((t) => {
     window.selectNotificationCount = 0;
     window.sliderNotificationCount = 0;
     window.globalNotificationCount = 0;

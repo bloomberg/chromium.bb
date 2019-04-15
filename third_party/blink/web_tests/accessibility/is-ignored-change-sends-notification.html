@@ -3,7 +3,6 @@
 <head>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../resources/run-after-layout-and-paint.js"></script>
 </head>
 <body>
 
@@ -40,7 +39,7 @@
 
 <div id="console"></div>
 <script>
-async_test_after_layout_and_paint((t) => {
+async_test((t) => {
     window.setTimeout(() => { assert_unreached("Did not receive all notifications within 1000ms"); }, 1000);
 
     function accessibleElementById(id) {

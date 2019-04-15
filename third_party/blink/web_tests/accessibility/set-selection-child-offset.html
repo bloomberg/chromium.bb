@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <div role="region" id="region">
   <span role="none" id="span1">This is a<a id="link" href="#1">test</a></span>
@@ -29,7 +28,7 @@
     window.lineBreak = span1.nextSibling;
   });
 
-  test_after_layout_and_paint(() => {
+  test(() => {
     axRegion.setSelection(axRegion, 0, axRegion, 0);
     verifySelection(text1, 0, text1, 0, '');
   }, 'Test creating a collapsed selection before the first character of the first span.');

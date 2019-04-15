@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <div id="editable1" contenteditable="true">Hello1</div>
 
@@ -10,7 +9,7 @@
 <h2 id="heading">  Hello2  </h2>
 
 <script>
-  test_after_layout_and_paint(() => {
+  test(() => {
     const editable1 = document.getElementById('editable1');
     assert_class_string(editable1, 'HTMLDivElement');
     const textNode1 = editable1.firstChild;
@@ -35,7 +34,7 @@
     assert_equals(selection.toString(), 'Hello1', 'getSelection.toString()');
   }, 'Using accessible APIs to set selection works when there is no extra whitespace.');
 
-test_after_layout_and_paint(() => {
+test(() => {
     const editable2 = document.getElementById('editable2');
     assert_class_string(editable2, 'HTMLDivElement');
     const textNode2 = editable2.firstChild;
@@ -58,7 +57,7 @@ test_after_layout_and_paint(() => {
     assert_equals(selection.toString(), 'Hello2', 'getSelection.toString()');
   }, 'Using accessible APIs to set selection works even with non-visible whitespace.');
 
-  test_after_layout_and_paint(() => {
+  test(() => {
     const heading = document.getElementById('heading');
     assert_class_string(heading, 'HTMLHeadingElement');
     const headingText = heading.firstChild;

@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <div id="main" role="main">
 
@@ -18,7 +17,7 @@
 </div>
 
 <script>
-    test_after_layout_and_paint(() =>
+    test(() =>
     {
         let selection = window.getSelection();
         let selectionRange = document.createRange();
@@ -54,7 +53,7 @@
         assert_equals(rootAccessible.selectionFocusOffset, 2);
     }, "Test selectNodeContents on an ARIA textbox.");
 
-    test_after_layout_and_paint(() =>
+    test(() =>
     {
         let selection = window.getSelection();
         let selectionRange = document.createRange();
@@ -88,7 +87,7 @@
         assert_equals(rootAccessible.selectionFocusOffset, 2);
     }, "Test selectNodeContents on a contenteditable.");
 
-    test_after_layout_and_paint(() =>
+    test(() =>
     {
         let selection = window.getSelection();
         let selectionRange = document.createRange();
@@ -121,7 +120,7 @@
         assert_equals(rootAccessible.selectionFocusOffset, 6);
     }, "The effects of the setStart and setEnd methods should be reflected in the accessibility API.");
 
-    test_after_layout_and_paint(() =>
+    test(() =>
     {
         let textboxAccessible = accessibilityController.accessibleElementById("contenteditable-textbox");
         let rootAccessible = accessibilityController.rootElement;
@@ -143,7 +142,7 @@
         assert_equals(rootAccessible.selectionFocusOffset, 0);
     }, "Verify that changing the focus removes the selection.");
 
-    test_after_layout_and_paint(() =>
+    test(() =>
     {
         let textboxAccessible = accessibilityController.accessibleElementById("contenteditable-textbox");
         let mainAccessible = accessibilityController.accessibleElementById("main");
@@ -174,7 +173,7 @@
         assert_equals(rootAccessible.selectionFocusOffset, line2.textLength);
     }, "The effects of the textarea.setSelectionRange method should be reflected in the accessibility API.");
 
-    test_after_layout_and_paint(() =>
+    test(() =>
     {
         let textboxAccessible = accessibilityController.accessibleElementById("contenteditable-textbox");
         let mainAccessible = accessibilityController.accessibleElementById("main");
@@ -205,7 +204,7 @@
         assert_equals(rootAccessible.selectionFocusOffset, 5);
     }, "Test the setSelectedTextRange accessibility API function.");
 
-    test_after_layout_and_paint(() =>
+    test(() =>
     {
         let selection = window.getSelection();
         let selectionRange = document.createRange();

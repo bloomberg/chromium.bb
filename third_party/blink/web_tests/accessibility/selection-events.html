@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <p id="para">This is a test</p>
 
 <script>
-    test_after_layout_and_paint(() =>
+    test(() =>
     {
         var para = document.getElementById('para');
         var selectstartCount = 0;

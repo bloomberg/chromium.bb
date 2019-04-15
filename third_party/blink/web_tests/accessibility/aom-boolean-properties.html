@@ -2,7 +2,6 @@
 <script src="../resources/gc.js"></script>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <!--
 
@@ -20,7 +19,7 @@ if (window.internals)
 <div role="region" id="atomic" aria-atomic="true"></div>
 
 <script>
-test_after_layout_and_paint(function(t) {
+test(function(t) {
     var node = document.getElementById("atomic");
     var axNode = accessibilityController.accessibleElementById("atomic");
     assert_equals(axNode.isAtomic, true);
@@ -36,7 +35,7 @@ test_after_layout_and_paint(function(t) {
 <div role="region" id="atomic2"></div>
 
 <script>
-test_after_layout_and_paint(function(t) {
+test(function(t) {
     var node = document.getElementById("atomic2");
     var axNode = accessibilityController.accessibleElementById("atomic2");
     assert_equals(axNode.isAtomic, false);
@@ -48,7 +47,7 @@ test_after_layout_and_paint(function(t) {
 <div role="status" id="busy"></div>
 
 <script>
-test_after_layout_and_paint(function(t) {
+test(function(t) {
     var node = document.getElementById("busy");
     var axNode = accessibilityController.accessibleElementById("busy");
     assert_equals(axNode.isBusy, false);
@@ -60,7 +59,7 @@ test_after_layout_and_paint(function(t) {
 <div role="checkbox" id="disabled"></div>
 
 <script>
-test_after_layout_and_paint(function(t) {
+test(function(t) {
     var node = document.getElementById("disabled");
     var axNode = accessibilityController.accessibleElementById("disabled");
     assert_equals(axNode.restriction, "none");
@@ -72,7 +71,7 @@ test_after_layout_and_paint(function(t) {
 <div role="button" id="expanded"></div>
 
 <script>
-test_after_layout_and_paint(function(t) {
+test(function(t) {
     var node = document.getElementById("expanded");
     var axNode = accessibilityController.accessibleElementById("expanded");
     assert_equals(axNode.isExpanded, false);
@@ -84,7 +83,7 @@ test_after_layout_and_paint(function(t) {
 <div role="region" id="will-be-hidden"></div>
 
 <script>
-test_after_layout_and_paint(function(t) {
+test(function(t) {
     var node = document.getElementById("will-be-hidden");
     var axNode = accessibilityController.accessibleElementById("will-be-hidden");
     assert_true(axNode != null);
@@ -99,7 +98,7 @@ test_after_layout_and_paint(function(t) {
 <div role="dialog" id="modal"></div>
 
 <script>
-test_after_layout_and_paint(function(t) {
+test(function(t) {
     var node = document.getElementById("modal");
     var axNode = accessibilityController.accessibleElementById("modal");
     assert_equals(axNode.isModal, false);
@@ -111,7 +110,7 @@ test_after_layout_and_paint(function(t) {
 <div role="textbox" id="multiline"></div>
 
 <script>
-test_after_layout_and_paint(function(t) {
+test(function(t) {
     var node = document.getElementById("multiline");
     var axNode = accessibilityController.accessibleElementById("multiline");
     assert_equals(axNode.isMultiLine, false);
@@ -123,7 +122,7 @@ test_after_layout_and_paint(function(t) {
 <div role="listbox" id="multiselectable"></div>
 
 <script>
-test_after_layout_and_paint(function(t) {
+test(function(t) {
     var node = document.getElementById("multiselectable");
     var axNode = accessibilityController.accessibleElementById("multiselectable");
     assert_equals(axNode.isMultiSelectable, false);
@@ -135,7 +134,7 @@ test_after_layout_and_paint(function(t) {
 <div role="textbox" id="readOnly" tabindex="0"></div>
 
 <script>
-test_after_layout_and_paint(function(t) {
+test(function(t) {
     var node = document.getElementById("readOnly");
     var axNode = accessibilityController.accessibleElementById("readOnly");
     assert_equals(axNode.isAttributeSettable("AXValue"), true);
@@ -147,7 +146,7 @@ test_after_layout_and_paint(function(t) {
 <div role="textbox" id="required"></div>
 
 <script>
-test_after_layout_and_paint(function(t) {
+test(function(t) {
     var node = document.getElementById("required");
     var axNode = accessibilityController.accessibleElementById("required");
     assert_equals(axNode.isRequired, false);
@@ -159,7 +158,7 @@ test_after_layout_and_paint(function(t) {
 <div role="option" id="selected" tabindex="-1"></div>
 
 <script>
-test_after_layout_and_paint(function(t) {
+test(function(t) {
     var node = document.getElementById("selected");
     var axNode = accessibilityController.accessibleElementById("selected");
     assert_equals(axNode.isSelected, false);
