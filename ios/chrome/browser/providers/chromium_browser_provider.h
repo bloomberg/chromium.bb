@@ -21,9 +21,8 @@ class ChromiumBrowserProvider : public ios::ChromeBrowserProvider {
   UITextField<TextFieldStyling>* CreateStyledTextField(
       CGRect frame) const override NS_RETURNS_RETAINED;
   VoiceSearchProvider* GetVoiceSearchProvider() const override;
-  id<LogoVendor> CreateLogoVendor(ios::ChromeBrowserState* browser_state,
-                                  id<UrlLoader> loader) const override
-      NS_RETURNS_RETAINED;
+  id<LogoVendor> CreateLogoVendor(ios::ChromeBrowserState* browser_state)
+      const override NS_RETURNS_RETAINED;
   UserFeedbackProvider* GetUserFeedbackProvider() const override;
   AppDistributionProvider* GetAppDistributionProvider() const override;
   BrandedImageProvider* GetBrandedImageProvider() const override;
