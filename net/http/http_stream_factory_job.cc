@@ -642,10 +642,6 @@ int HttpStreamFactory::Job::DoLoop(int result) {
       case STATE_WAIT_COMPLETE:
         rv = DoWaitComplete(rv);
         break;
-      case STATE_EVALUATE_THROTTLE:
-        DCHECK_EQ(OK, rv);
-        rv = DoEvaluateThrottle();
-        break;
       case STATE_INIT_CONNECTION:
         DCHECK_EQ(OK, rv);
         rv = DoInitConnection();
@@ -721,47 +717,8 @@ int HttpStreamFactory::Job::DoWait() {
 int HttpStreamFactory::Job::DoWaitComplete(int result) {
   net_log_.EndEvent(NetLogEventType::HTTP_STREAM_JOB_WAITING);
   DCHECK_EQ(OK, result);
-  next_state_ = STATE_EVALUATE_THROTTLE;
-  return OK;
-}
-
-int HttpStreamFactory::Job::DoEvaluateThrottle() {
   next_state_ = STATE_INIT_CONNECTION;
-  if (!using_ssl_)
-    return OK;
-  if (using_quic_)
-    return OK;
-
-  DCHECK(!spdy_session_request_);
-  // Start watching for an available H2 connection. Note that this does not mean
-  // that HTTP/2 is necessarily supported for this SpdySessionKey, since/ we may
-  // need to wait for ALPN to complete before knowing if HTTP/2 is available.
-  spdy_session_request_ =
-      session_->spdy_session_pool()->CreateRequestForSpdySession(
-          spdy_session_key_, this);
-
-  // Throttle connect to an HTTP/2 supported server, if there are pending
-  // requests with the same SpdySessionKey.
-  if (session_->http_server_properties()->RequiresHTTP11(
-          spdy_session_key_.host_port_pair())) {
-    return OK;
-  }
-  url::SchemeHostPort scheme_host_port(
-      using_ssl_ ? url::kHttpsScheme : url::kHttpScheme,
-      spdy_session_key_.host_port_pair().host(),
-      spdy_session_key_.host_port_pair().port());
-  if (!session_->http_server_properties()->GetSupportsSpdy(scheme_host_port))
-    return OK;
-  base::Closure callback = base::Bind(
-      &HttpStreamFactory::Job::ResumeInitConnection, ptr_factory_.GetWeakPtr());
-  if (session_->spdy_session_pool()->StartRequest(spdy_session_key_,
-                                                  callback)) {
-    return OK;
-  }
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, callback, base::TimeDelta::FromMilliseconds(kHTTP2ThrottleMs));
-  net_log_.AddEvent(NetLogEventType::HTTP_STREAM_JOB_THROTTLED);
-  return ERR_IO_PENDING;
+  return OK;
 }
 
 void HttpStreamFactory::Job::ResumeInitConnection() {
@@ -868,10 +825,44 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
           &existing_spdy_session_, &pushed_stream_id_);
     }
     if (!existing_spdy_session_) {
-      existing_spdy_session_ =
-          session_->spdy_session_pool()->FindAvailableSession(
-              spdy_session_key_, enable_ip_based_pooling_,
-              try_websocket_over_http2_, net_log_);
+      if (!spdy_session_request_) {
+        // If not currently watching for an H2 session, use
+        // SpdySessionPool::RequestSession() to check for a session, and start
+        // watching for one.
+        bool should_throttle_connect = ShouldThrottleConnectForSpdy();
+        base::RepeatingClosure resume_callback =
+            should_throttle_connect
+                ? base::BindRepeating(
+                      &HttpStreamFactory::Job::ResumeInitConnection,
+                      ptr_factory_.GetWeakPtr())
+                : base::RepeatingClosure();
+
+        bool is_first_request_for_session;
+        existing_spdy_session_ = session_->spdy_session_pool()->RequestSession(
+            spdy_session_key_, enable_ip_based_pooling_,
+            try_websocket_over_http2_, net_log_, resume_callback, this,
+            &spdy_session_request_, &is_first_request_for_session);
+        if (!existing_spdy_session_ && should_throttle_connect &&
+            !is_first_request_for_session) {
+          net_log_.AddEvent(NetLogEventType::HTTP_STREAM_JOB_THROTTLED);
+          next_state_ = STATE_INIT_CONNECTION;
+          base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+              FROM_HERE, resume_callback,
+              base::TimeDelta::FromMilliseconds(kHTTP2ThrottleMs));
+          return ERR_IO_PENDING;
+        }
+      } else if (enable_ip_based_pooling_) {
+        // If already watching for an H2 session, still need to check for an
+        // existing connection that can be reused through IP pooling, as those
+        // don't post session available notifications.
+        //
+        // TODO(mmenke):  Make sessions created through IP pooling invoke the
+        // callback.
+        existing_spdy_session_ =
+            session_->spdy_session_pool()->FindAvailableSession(
+                spdy_session_key_, enable_ip_based_pooling_,
+                try_websocket_over_http2_, net_log_);
+      }
     }
     if (existing_spdy_session_) {
       // Stop watching for SpdySessions.
@@ -1444,6 +1435,22 @@ HttpStreamFactory::JobFactory::CreateAltProxyJob(
       server_ssl_config, proxy_ssl_config, destination, origin_url,
       kProtoUnknown, quic::QUIC_VERSION_UNSUPPORTED, alternative_proxy_server,
       is_websocket, enable_ip_based_pooling, net_log);
+}
+
+bool HttpStreamFactory::Job::ShouldThrottleConnectForSpdy() const {
+  DCHECK(!using_quic_);
+  DCHECK(!spdy_session_request_);
+
+  // If the job has previously been throttled, don't throttle it again.
+  if (init_connection_already_resumed_)
+    return false;
+
+  url::SchemeHostPort scheme_host_port(
+      using_ssl_ ? url::kHttpsScheme : url::kHttpScheme,
+      spdy_session_key_.host_port_pair().host(),
+      spdy_session_key_.host_port_pair().port());
+  // Only throttle the request if the server is believed to support H2.
+  return session_->http_server_properties()->GetSupportsSpdy(scheme_host_port);
 }
 
 }  // namespace net
