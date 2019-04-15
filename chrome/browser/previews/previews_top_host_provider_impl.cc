@@ -33,15 +33,21 @@ std::vector<std::string> PreviewsTopHostProviderImpl::GetTopHosts(
       SiteEngagementService::Get(profile);
 
   // Create a vector of the top hosts by engagement score up to |max_sites|
-  // size. Currently utilizes just the first |max_sites| entries.
-  // TODO(crbug.com/932707): Select TOP HTTPS hosts from site engagement.
+  // size. Currently utilizes just the first |max_sites| entries. Only HTTPS
+  // schemed hosts are included.
+  //
+  // TODO(mcrouse): Filter to only include Top hosts since Data Saver was
+  // enabled.
   std::vector<mojom::SiteEngagementDetails> engagement_details =
       engagement_service->GetAllDetails();
   for (const auto& detail : engagement_details) {
-    if (top_hosts.size() <= max_sites)
-      top_hosts.push_back(detail.origin.host());
-    else
+    if (top_hosts.size() <= max_sites) {
+      if (detail.origin.SchemeIs(url::kHttpsScheme)) {
+        top_hosts.push_back(detail.origin.host());
+      }
+    } else {
       break;
+    }
   }
 
   return top_hosts;
