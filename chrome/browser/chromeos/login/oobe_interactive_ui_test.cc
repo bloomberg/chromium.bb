@@ -99,6 +99,13 @@ class OobeInteractiveUITest
       quick_unlock::EnabledForTesting(true);
   }
 
+  void SetUpOnMainThread() override {
+    OobeBaseTest::SetUpOnMainThread();
+
+    if (params_->is_tablet)
+      TabletModeClient::Get()->OnTabletModeToggled(true);
+  }
+
   void TearDownOnMainThread() override {
     // If the login display is still showing, exit gracefully.
     if (LoginDisplayHost::default_host()) {
@@ -365,7 +372,7 @@ void OobeInteractiveUITest::SimpleEndToEnd() {
     ExitFingerprintPinSetupScreen();
   }
 
-  if (TabletModeClient::Get()->tablet_mode_enabled()) {
+  if (params_->is_tablet) {
     WaitForDiscoverScreen();
     RunDiscoverScreenChecks();
     ExitDiscoverPinSetupScreen();
