@@ -572,6 +572,7 @@
         'DeviceBatteryChargeMode',
         'DeviceBatteryChargeCustomStartCharging',
         'DeviceBatteryChargeCustomStopCharging',
+        'DeviceUsbPowerShareEnabled'
       ],
     },
     {
@@ -15344,6 +15345,32 @@
           If this policy is left unset, boot on AC is disabled and cannot be enabled by the user.'''
     },
     {
+      'name': 'DeviceUsbPowerShareEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:75-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False
+      },
+      'example_value': True,
+      'id': 553,
+      'caption': '''Enable USB power share''',
+      'tags': [],
+      'desc': '''Enable the USB power share power management policy.
+
+          Certain devices have a specific USB port marked with a lightning bolt or battery icon that can be used to charge devices like a mobile phone using the system battery. This policy affects the charging behavior of this port while the system is in the sleep and shut down modes. This policy does not affect the other USB ports and the charging behavior while the system is awake.
+
+          When awake, the USB port will always provide power.
+
+          When sleeping, if this policy is set to true, then power will be supplied to the USB port when the device is plugged into the wall charger or if the battery level is > 50%. Otherwise no power is supplied.
+
+          When shut down, if this policy is set to true, then power will be supplied to the USB port when the device is plugged into the wall charger. Otherwise no power is supplied.
+
+          If this policy is left unset, the policy is enabled and cannot be disabled by the user.'''
+    },
+    {
       'name': 'SignedHTTPExchangeEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
@@ -15771,5 +15798,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used':  552
+  'highest_id_currently_used':  553
 }

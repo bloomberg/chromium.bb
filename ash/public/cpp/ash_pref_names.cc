@@ -400,6 +400,10 @@ const char kDeviceBatteryChargeCustomStartCharging[] =
 const char kDeviceBatteryChargeCustomStopCharging[] =
     "ash.power.battery_charge_custom_stop_charging";
 
+// A boolean pref that indicates whether USB power share is enabled.
+// For details see "DeviceUsbPowerShareEnabled" in policy_templates.json.
+const char kDeviceUsbPowerShareEnabled[] = "ash.power.usb_power_share_enabled";
+
 // NOTE: New prefs should start with the "ash." prefix. Existing prefs moved
 // into this file should not be renamed, since they may be synced.
 

@@ -151,6 +151,8 @@ ASH_PUBLIC_EXPORT extern const char kDeviceBatteryChargeMode[];
 ASH_PUBLIC_EXPORT extern const char kDeviceBatteryChargeCustomStartCharging[];
 ASH_PUBLIC_EXPORT extern const char kDeviceBatteryChargeCustomStopCharging[];
 
+ASH_PUBLIC_EXPORT extern const char kDeviceUsbPowerShareEnabled[];
+
 }  // namespace prefs
 
 }  // namespace ash

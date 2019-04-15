@@ -256,6 +256,9 @@ void PowerPrefs::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
                                 -1, PrefRegistry::PUBLIC);
   registry->RegisterIntegerPref(prefs::kDeviceBatteryChargeCustomStopCharging,
                                 -1, PrefRegistry::PUBLIC);
+
+  registry->RegisterBooleanPref(prefs::kDeviceUsbPowerShareEnabled, true,
+                                PrefRegistry::PUBLIC);
 }
 
 // static

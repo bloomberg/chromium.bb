@@ -4523,6 +4523,17 @@
     ]
   },
 
+  "DeviceUsbPowerShareEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "DeviceUsbPowerShareEnabled": true },
+    "pref_mappings": [
+      {
+        "pref": "ash.power.usb_power_share_enabled",
+        "local_state": true
+      }
+    ]
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {

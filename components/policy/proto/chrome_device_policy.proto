@@ -1263,6 +1263,12 @@ message DeviceBatteryChargeModeProto {
   optional int32 custom_charge_stop = 3;
 }
 
+// Settings that control USB power share policy.
+message DeviceUsbPowerShareProto {
+  // Setting that controls whether USB power share is enabled on this device.
+  optional bool enabled = 1;
+}
+
 message ChromeDeviceSettingsProto {
   reserved 61;
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
@@ -1372,4 +1378,5 @@ message ChromeDeviceSettingsProto {
   optional DeviceAdvancedBatteryChargeModeProto
       device_advanced_battery_charge_mode = 86;
   optional DeviceBatteryChargeModeProto device_battery_charge_mode = 87;
+  optional DeviceUsbPowerShareProto device_usb_power_share = 88;
 }
