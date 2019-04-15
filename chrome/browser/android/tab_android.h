@@ -219,6 +219,12 @@ class TabAndroid {
 
   bool ShouldEnableEmbeddedMediaExperience() const;
 
+  void SetNightModeEnabled(JNIEnv* env,
+                           const base::android::JavaParamRef<jobject>& obj,
+                           jboolean enabled);
+
+  bool NightModeEnabled() const;
+
   scoped_refptr<content::DevToolsAgentHost> GetDevToolsAgentHost();
 
   void SetDevToolsAgentHost(scoped_refptr<content::DevToolsAgentHost> host);
@@ -250,6 +256,7 @@ class TabAndroid {
   GURL webapp_manifest_scope_;
   bool picture_in_picture_enabled_;
   bool embedded_media_experience_enabled_;
+  bool night_mode_enabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TabAndroid);
 };

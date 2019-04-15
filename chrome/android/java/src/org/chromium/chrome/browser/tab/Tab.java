@@ -1068,6 +1068,9 @@ public class Tab
         mWindowAndroid = windowAndroid;
         WebContents webContents = getWebContents();
         if (webContents != null) webContents.setTopLevelNativeWindow(mWindowAndroid);
+        if (getActivity() != null) {
+            setNightModeEnabled(getActivity().getNightModeStateProvider().isInNightMode());
+        }
     }
 
     /**
@@ -1215,6 +1218,9 @@ public class Tab
                     new TabContextMenuPopulator(
                             mDelegateFactory.createContextMenuPopulator(this), this));
 
+            if (getActivity() != null) {
+                setNightModeEnabled(getActivity().getNightModeStateProvider().isInNightMode());
+            }
             TabHelpers.initWebContentsHelpers(this);
             notifyContentChanged();
         } finally {
@@ -2094,6 +2100,16 @@ public class Tab
         return nativeAreRendererInputEventsIgnored(mNativeTabAndroid);
     }
 
+    /**
+     * Sets night mode enabled/disabled for this Tab. To be used to propagate
+     * the preferred color scheme to the renderer.
+     * @param enabled Whether night mode is enabled or not.
+     */
+    public void setNightModeEnabled(boolean enabled) {
+        if (mNativeTabAndroid == 0) return;
+        nativeSetNightModeEnabled(mNativeTabAndroid, enabled);
+    }
+
     private native void nativeInit();
     private native void nativeDestroy(long nativeTabAndroid);
     private native void nativeInitWebContents(long nativeTabAndroid, boolean incognito,
@@ -2123,4 +2139,5 @@ public class Tab
     private native void nativeEnableEmbeddedMediaExperience(long nativeTabAndroid, boolean enabled);
     private native void nativeAttachDetachedTab(long nativeTabAndroid);
     private native boolean nativeAreRendererInputEventsIgnored(long nativeTabAndroid);
+    private native void nativeSetNightModeEnabled(long nativeTabAndroid, boolean enabled);
 }

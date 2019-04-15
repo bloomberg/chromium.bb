@@ -589,6 +589,22 @@ bool TabAndroid::ShouldEnableEmbeddedMediaExperience() const {
   return embedded_media_experience_enabled_;
 }
 
+void TabAndroid::SetNightModeEnabled(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jboolean enabled) {
+  if (night_mode_enabled_ == enabled)
+    return;
+
+  night_mode_enabled_ = enabled;
+  if (web_contents() && web_contents()->GetRenderViewHost())
+    web_contents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
+}
+
+bool TabAndroid::NightModeEnabled() const {
+  return night_mode_enabled_;
+}
+
 void TabAndroid::SetPictureInPictureEnabled(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,

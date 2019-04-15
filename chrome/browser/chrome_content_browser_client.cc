@@ -3220,6 +3220,10 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
 
       web_prefs->picture_in_picture_enabled =
           tab_android->IsPictureInPictureEnabled();
+
+      web_prefs->preferred_color_scheme =
+          tab_android->NightModeEnabled() ? blink::PreferredColorScheme::kDark
+                                          : blink::PreferredColorScheme::kLight;
     }
 #endif  // defined(OS_ANDROID)
 
