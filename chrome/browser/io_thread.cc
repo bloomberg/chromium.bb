@@ -294,7 +294,7 @@ void IOThread::CleanUp() {
   base::debug::LeakTracker<SystemURLRequestContextGetter>::CheckForLeaks();
 
   if (net_log_)
-    net_log_->ShutDownBeforeTaskScheduler();
+    net_log_->ShutDownBeforeThreadPool();
 }
 
 // static

@@ -12,7 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -62,7 +62,7 @@ class ModelConfigLoaderImplTest : public testing::Test {
   }
 
   ~ModelConfigLoaderImplTest() override {
-    base::TaskScheduler::GetInstance()->FlushForTesting();
+    base::ThreadPool::GetInstance()->FlushForTesting();
   }
 
   void Init(const std::string& model_params,

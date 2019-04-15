@@ -10,7 +10,7 @@
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "build/build_config.h"
 #include "mojo/core/embedder/embedder.h"
 #include "remoting/base/chromium_url_request.h"
@@ -34,7 +34,7 @@ ChromotingClientRuntime* ChromotingClientRuntime::GetInstance() {
 }
 
 ChromotingClientRuntime::ChromotingClientRuntime() {
-  base::TaskScheduler::CreateAndStartWithDefaultParams("Remoting");
+  base::ThreadPool::CreateAndStartWithDefaultParams("Remoting");
 
   DCHECK(!base::MessageLoopCurrent::Get());
 
@@ -71,7 +71,7 @@ ChromotingClientRuntime::~ChromotingClientRuntime() {
   }
 
   // Block until tasks blocking shutdown have completed their execution.
-  base::TaskScheduler::GetInstance()->Shutdown();
+  base::ThreadPool::GetInstance()->Shutdown();
 
   if (delegate_) {
     delegate_->RuntimeDidShutdown();

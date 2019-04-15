@@ -732,8 +732,8 @@ std::vector<std::string> ContentBrowserClient::GetStartupServices() {
   return nullptr;
 }
 
-std::unique_ptr<base::TaskScheduler::InitParams>
-ContentBrowserClient::GetTaskSchedulerInitParams() {
+std::unique_ptr<base::ThreadPool::InitParams>
+ContentBrowserClient::GetThreadPoolInitParams() {
   return nullptr;
 }
 
@@ -856,7 +856,7 @@ bool ContentBrowserClient::ShowPaymentHandlerWindow(
   return false;
 }
 
-bool ContentBrowserClient::ShouldCreateTaskScheduler() {
+bool ContentBrowserClient::ShouldCreateThreadPool() {
   return true;
 }
 

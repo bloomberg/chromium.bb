@@ -8,7 +8,7 @@
 #include "base/test/scoped_task_environment.h"
 
 // TestWebThreadBundle is a convenience class for creating a set of
-// TestWebThreads and a task scheduler in unit tests. For most tests, it is
+// TestWebThreads and a thread pool in unit tests. For most tests, it is
 // sufficient to just instantiate the TestWebThreadBundle as a member variable.
 // It is a good idea to put the TestWebThreadBundle as the first member variable
 // in test classes, so it is destroyed last, and the test threads always exist
@@ -22,7 +22,7 @@
 // To synchronously run tasks posted to TestWebThreads that use the shared
 // MessageLoop, call RunLoop::Run/RunUntilIdle() on the thread where the
 // TestWebThreadBundle lives. The destructor of TestWebThreadBundle runs
-// remaining TestWebThreads tasks and remaining BLOCK_SHUTDOWN task scheduler
+// remaining TestWebThreads tasks and remaining BLOCK_SHUTDOWN thread pool
 // tasks.
 //
 // Some tests using the IO thread expect a MessageLoopForIO. Passing

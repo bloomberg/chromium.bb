@@ -7,7 +7,7 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/version.h"
@@ -100,7 +100,7 @@ class UserDataDowngradeBrowserNoResetTest
 // downgrade.
 IN_PROC_BROWSER_TEST_F(UserDataDowngradeBrowserCopyAndCleanTest, Test) {
   base::ScopedAllowBlockingForTesting allow_blocking;
-  base::TaskScheduler::GetInstance()->FlushForTesting();
+  base::ThreadPool::GetInstance()->FlushForTesting();
   EXPECT_EQ(chrome::kChromeVersion, GetLastVersion(user_data_dir_).GetString());
   ASSERT_FALSE(base::PathExists(other_file_));
 }

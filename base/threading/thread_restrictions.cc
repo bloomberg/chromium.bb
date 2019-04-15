@@ -33,7 +33,7 @@ namespace internal {
 void AssertBlockingAllowed() {
   DCHECK(!g_blocking_disallowed.Get().Get())
       << "Function marked as blocking was called from a scope that disallows "
-         "blocking! If this task is running inside the TaskScheduler, it needs "
+         "blocking! If this task is running inside the ThreadPool, it needs "
          "to have MayBlock() in its TaskTraits. Otherwise, consider making "
          "this blocking work asynchronous or, as a last resort, you may use "
          "ScopedAllowBlocking (see its documentation for best practices).";

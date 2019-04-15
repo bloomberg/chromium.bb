@@ -5,7 +5,7 @@
 #include "content/public/test/browsing_data_remover_test_util.h"
 
 #include "base/bind.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 
 namespace content {
@@ -21,7 +21,7 @@ BrowsingDataRemoverCompletionObserver::
     ~BrowsingDataRemoverCompletionObserver() {}
 
 void BrowsingDataRemoverCompletionObserver::BlockUntilCompletion() {
-  base::TaskScheduler::GetInstance()->FlushAsyncForTesting(base::BindOnce(
+  base::ThreadPool::GetInstance()->FlushAsyncForTesting(base::BindOnce(
       &BrowsingDataRemoverCompletionObserver::FlushForTestingComplete,
       base::Unretained(this)));
   run_loop_.Run();
@@ -79,7 +79,7 @@ void BrowsingDataRemoverCompletionInhibitor::Reset() {
 }
 
 void BrowsingDataRemoverCompletionInhibitor::BlockUntilNearCompletion() {
-  base::TaskScheduler::GetInstance()->FlushAsyncForTesting(base::BindOnce(
+  base::ThreadPool::GetInstance()->FlushAsyncForTesting(base::BindOnce(
       &BrowsingDataRemoverCompletionInhibitor::FlushForTestingComplete,
       base::Unretained(this)));
   run_loop_->Run();

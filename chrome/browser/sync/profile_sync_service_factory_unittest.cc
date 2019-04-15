@@ -10,7 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "build/build_config.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/test/base/testing_profile.h"
@@ -34,7 +34,7 @@ class ProfileSyncServiceFactoryTest : public testing::Test {
   }
 
   void TearDown() override {
-    base::TaskScheduler::GetInstance()->FlushForTesting();
+    base::ThreadPool::GetInstance()->FlushForTesting();
   }
 
  protected:

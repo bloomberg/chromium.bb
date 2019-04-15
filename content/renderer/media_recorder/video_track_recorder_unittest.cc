@@ -148,7 +148,7 @@ class VideoTrackRecorderTest
 
   // A ChildProcess is needed to fool the Tracks and Sources into believing they
   // are on the right threads. A ScopedTaskEnvironment must be instantiated
-  // before ChildProcess to prevent it from leaking a TaskScheduler.
+  // before ChildProcess to prevent it from leaking a ThreadPool.
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   const ChildProcess child_process_;
 

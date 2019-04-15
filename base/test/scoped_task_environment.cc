@@ -15,8 +15,8 @@
 #include "base/task/post_task.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/time_domain.h"
-#include "base/task/task_scheduler/task_scheduler.h"
-#include "base/task/task_scheduler/task_scheduler_impl.h"
+#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_impl.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/test/test_timeouts.h"
@@ -266,7 +266,7 @@ ScopedTaskEnvironment::MockTimeDomain*
     ScopedTaskEnvironment::MockTimeDomain::current_mock_time_domain_ = nullptr;
 
 class ScopedTaskEnvironment::TestTaskTracker
-    : public internal::TaskSchedulerImpl::TaskTrackerImpl {
+    : public internal::ThreadPoolImpl::TaskTrackerImpl {
  public:
   TestTaskTracker();
 
@@ -286,7 +286,7 @@ class ScopedTaskEnvironment::TestTaskTracker
  private:
   friend class ScopedTaskEnvironment;
 
-  // internal::TaskSchedulerImpl::TaskTrackerImpl:
+  // internal::ThreadPoolImpl::TaskTrackerImpl:
   void RunOrSkipTask(internal::Task task,
                      internal::Sequence* sequence,
                      const TaskTraits& traits,
@@ -342,8 +342,8 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
                     MakeExpectedNotRunClosure(FROM_HERE, "Run() timed out."))) {
   CHECK(now_source == NowSource::REAL_TIME || mock_time_domain_)
       << "NowSource must be REAL_TIME unless we're using mock time";
-  CHECK(!TaskScheduler::GetInstance())
-      << "Someone has already initialized TaskScheduler. If nothing in your "
+  CHECK(!ThreadPool::GetInstance())
+      << "Someone has already initialized ThreadPool. If nothing in your "
          "test does so, then a test that ran earlier may have initialized one, "
          "and leaked it. base::TestSuite will trap leaked globals, unless "
          "someone has explicitly disabled it with "
@@ -363,7 +363,7 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
     CompleteInitialization();
   }
 
-  // Instantiate a TaskScheduler with 4 workers per pool. Having multiple
+  // Instantiate a ThreadPool with 4 workers per pool. Having multiple
   // threads prevents deadlocks should some blocking APIs not use
   // ScopedBlockingCall. It also allows enough concurrency to allow TSAN to spot
   // data races.
@@ -371,15 +371,15 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
   const TimeDelta kSuggestedReclaimTime = TimeDelta::Max();
   const SchedulerWorkerPoolParams worker_pool_params(kMaxThreads,
                                                      kSuggestedReclaimTime);
-  TaskScheduler::SetInstance(std::make_unique<internal::TaskSchedulerImpl>(
+  ThreadPool::SetInstance(std::make_unique<internal::ThreadPoolImpl>(
       "ScopedTaskEnvironment", WrapUnique(task_tracker_)));
-  task_scheduler_ = TaskScheduler::GetInstance();
-  TaskScheduler::GetInstance()->Start({
+  thread_pool_ = ThreadPool::GetInstance();
+  ThreadPool::GetInstance()->Start({
     worker_pool_params, worker_pool_params
 #if defined(OS_WIN)
         ,
         // Enable the MTA in unit tests to match the browser process'
-        // TaskScheduler configuration.
+        // ThreadPool configuration.
         //
         // This has the adverse side-effect of enabling the MTA in non-browser
         // unit tests as well but the downside there is not as bad as not having
@@ -389,7 +389,7 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
         // I/O, waits, etc. Such misuse will still be caught in later phases
         // (and COM usage should already be pretty much inexistent in sandboxed
         // processes).
-        TaskScheduler::InitParams::SharedWorkerPoolEnvironment::COM_MTA
+        ThreadPool::InitParams::SharedWorkerPoolEnvironment::COM_MTA
 #endif
   });
 
@@ -418,18 +418,18 @@ ScopedTaskEnvironment::~ScopedTaskEnvironment() {
   // infinite post loop in the remaining work but this isn't possible right now
   // because base::~MessageLoop() didn't use to do this and adding it here would
   // make the migration away from MessageLoop that much harder.
-  CHECK_EQ(TaskScheduler::GetInstance(), task_scheduler_);
+  CHECK_EQ(ThreadPool::GetInstance(), thread_pool_);
   // Without FlushForTesting(), DeleteSoon() and ReleaseSoon() tasks could be
   // skipped, resulting in memory leaks.
   task_tracker_->AllowRunTasks();
-  TaskScheduler::GetInstance()->FlushForTesting();
-  TaskScheduler::GetInstance()->Shutdown();
-  TaskScheduler::GetInstance()->JoinForTesting();
-  // Destroying TaskScheduler state can result in waiting on worker threads.
+  ThreadPool::GetInstance()->FlushForTesting();
+  ThreadPool::GetInstance()->Shutdown();
+  ThreadPool::GetInstance()->JoinForTesting();
+  // Destroying ThreadPool state can result in waiting on worker threads.
   // Make sure this is allowed to avoid flaking tests that have disallowed waits
   // on their main thread.
   ScopedAllowBaseSyncPrimitivesForTesting allow_waits_to_destroy_task_tracker;
-  TaskScheduler::SetInstance(nullptr);
+  ThreadPool::SetInstance(nullptr);
   task_queue_ = nullptr;
   NotifyDestructionObserversAndReleaseSequenceManager();
 }
@@ -516,38 +516,38 @@ void ScopedTaskEnvironment::RunUntilIdle() {
     task_tracker_->AllowRunTasks();
 
     // First run as many tasks as possible on the main thread in parallel with
-    // tasks in TaskScheduler. This increases likelihood of TSAN catching
+    // tasks in ThreadPool. This increases likelihood of TSAN catching
     // threading errors and eliminates possibility of hangs should a
-    // TaskScheduler task synchronously block on a main thread task
-    // (TaskScheduler::FlushForTesting() can't be used here for that reason).
+    // ThreadPool task synchronously block on a main thread task
+    // (ThreadPool::FlushForTesting() can't be used here for that reason).
     RunLoop().RunUntilIdle();
 
-    // Then halt TaskScheduler. DisallowRunTasks() failing indicates that there
-    // were TaskScheduler tasks currently running. In that case, try again from
+    // Then halt ThreadPool. DisallowRunTasks() failing indicates that there
+    // were ThreadPool tasks currently running. In that case, try again from
     // top when DisallowRunTasks() yields control back to this thread as they
     // may have posted main thread tasks.
     if (!task_tracker_->DisallowRunTasks())
       continue;
 
-    // Once TaskScheduler is halted. Run any remaining main thread tasks (which
-    // may have been posted by TaskScheduler tasks that completed between the
-    // above main thread RunUntilIdle() and TaskScheduler DisallowRunTasks()).
+    // Once ThreadPool is halted. Run any remaining main thread tasks (which
+    // may have been posted by ThreadPool tasks that completed between the
+    // above main thread RunUntilIdle() and ThreadPool DisallowRunTasks()).
     // Note: this assumes that no main thread task synchronously blocks on a
-    // TaskScheduler tasks (it certainly shouldn't); this call could otherwise
+    // ThreadPool tasks (it certainly shouldn't); this call could otherwise
     // hang.
     RunLoop().RunUntilIdle();
 
     // The above RunUntilIdle() guarantees there are no remaining main thread
-    // tasks (the TaskScheduler being halted during the last RunUntilIdle() is
+    // tasks (the ThreadPool being halted during the last RunUntilIdle() is
     // key as it prevents a task being posted to it racily with it determining
     // it had no work remaining). Therefore, we're done if there is no more work
-    // on TaskScheduler either (there can be TaskScheduler work remaining if
+    // on ThreadPool either (there can be ThreadPool work remaining if
     // DisallowRunTasks() preempted work and/or the last RunUntilIdle() posted
-    // more TaskScheduler tasks).
+    // more ThreadPool tasks).
     // Note: this last |if| couldn't be turned into a |do {} while();|. A
     // conditional loop makes it such that |continue;| results in checking the
     // condition (not unconditionally loop again) which would be incorrect for
-    // the above logic as it'd then be possible for a TaskScheduler task to be
+    // the above logic as it'd then be possible for a ThreadPool task to be
     // running during the DisallowRunTasks() test, causing it to fail, but then
     // post to the main thread and complete before the loop's condition is
     // verified which could result in HasIncompleteUndelayedTasksForTesting()
@@ -620,7 +620,7 @@ bool ScopedTaskEnvironment::NextTaskIsDelayed() const {
 }
 
 ScopedTaskEnvironment::TestTaskTracker::TestTaskTracker()
-    : internal::TaskSchedulerImpl::TaskTrackerImpl("ScopedTaskEnvironment"),
+    : internal::ThreadPoolImpl::TaskTrackerImpl("ScopedTaskEnvironment"),
       can_run_tasks_cv_(&lock_),
       task_completed_(&lock_) {}
 
@@ -660,7 +660,7 @@ void ScopedTaskEnvironment::TestTaskTracker::RunOrSkipTask(
     ++num_tasks_running_;
   }
 
-  internal::TaskSchedulerImpl::TaskTrackerImpl::RunOrSkipTask(
+  internal::ThreadPoolImpl::TaskTrackerImpl::RunOrSkipTask(
       std::move(task), sequence, traits, can_run_task);
 
   {

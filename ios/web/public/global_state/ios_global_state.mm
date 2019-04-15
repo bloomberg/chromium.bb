@@ -9,7 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
-#include "base/task/task_scheduler/initialization_util.h"
+#include "base/task/thread_pool/initialization_util.h"
 #include "net/base/network_change_notifier.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -22,7 +22,7 @@ base::AtExitManager* g_exit_manager = nullptr;
 base::MessageLoopForUI* g_message_loop = nullptr;
 net::NetworkChangeNotifier* g_network_change_notifer = nullptr;
 
-base::TaskScheduler::InitParams GetDefaultTaskSchedulerInitParams() {
+base::ThreadPool::InitParams GetDefaultThreadPoolInitParams() {
   constexpr int kMinBackgroundThreads = 4;
   constexpr int kMaxBackgroundThreads = 16;
   constexpr double kCoreMultiplierBackgroundThreads = 0.2;
@@ -35,7 +35,7 @@ base::TaskScheduler::InitParams GetDefaultTaskSchedulerInitParams() {
   constexpr int kOffsetForegroundThreads = 0;
   constexpr int kReclaimTimeForeground = 30;
 
-  return base::TaskScheduler::InitParams(
+  return base::ThreadPool::InitParams(
       base::SchedulerWorkerPoolParams(
           base::RecommendedMaxNumberOfThreadsInPool(
               kMinBackgroundThreads, kMaxBackgroundThreads,
@@ -60,7 +60,7 @@ void Create(const CreateParams& create_params) {
     }
     base::CommandLine::Init(create_params.argc, create_params.argv);
 
-    base::TaskScheduler::Create("Browser");
+    base::ThreadPool::Create("Browser");
   });
 }
 
@@ -93,11 +93,11 @@ void DestroyNetworkChangeNotifier() {
   g_network_change_notifer = nullptr;
 }
 
-void StartTaskScheduler(base::TaskScheduler::InitParams* params) {
+void StartThreadPool(base::ThreadPool::InitParams* params) {
   static dispatch_once_t once_token;
   dispatch_once(&once_token, ^{
-    auto init_params = params ? *params : GetDefaultTaskSchedulerInitParams();
-    base::TaskScheduler::GetInstance()->Start(init_params);
+    auto init_params = params ? *params : GetDefaultThreadPoolInitParams();
+    base::ThreadPool::GetInstance()->Start(init_params);
   });
 }
 

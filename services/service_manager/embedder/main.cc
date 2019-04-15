@@ -20,7 +20,7 @@
 #include "base/process/process.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/thread.h"
 #include "base/trace_event/trace_config.h"
 #include "base/trace_event/trace_log.h"
@@ -164,7 +164,7 @@ void NonEmbedderProcessInit() {
   }
 #endif
 
-  base::TaskScheduler::CreateAndStartWithDefaultParams("ServiceManagerProcess");
+  base::ThreadPool::CreateAndStartWithDefaultParams("ServiceManagerProcess");
 }
 
 int RunServiceManager(MainDelegate* delegate) {
@@ -188,7 +188,7 @@ int RunServiceManager(MainDelegate* delegate) {
   run_loop.Run();
 
   ipc_thread.Stop();
-  base::TaskScheduler::GetInstance()->Shutdown();
+  base::ThreadPool::GetInstance()->Shutdown();
 
   return 0;
 }

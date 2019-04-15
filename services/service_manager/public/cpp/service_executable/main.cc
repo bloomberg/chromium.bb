@@ -17,7 +17,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "build/build_config.h"
 #include "services/service_manager/public/cpp/service_executable/service_executable_environment.h"
 #include "services/service_manager/public/cpp/service_executable/service_main.h"
@@ -94,7 +94,7 @@ int main(int argc, char** argv) {
   WaitForDebuggerIfNecessary();
   service_manager::ServiceExecutableEnvironment environment;
   ServiceMain(environment.TakeServiceRequestFromCommandLine());
-  base::TaskScheduler::GetInstance()->Shutdown();
+  base::ThreadPool::GetInstance()->Shutdown();
 
   return 0;
 }

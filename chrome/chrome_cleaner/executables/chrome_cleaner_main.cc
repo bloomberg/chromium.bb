@@ -22,7 +22,7 @@
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
@@ -445,7 +445,7 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, wchar_t*, int) {
       PLOG(ERROR) << "Can't SetPriorityClass to NORMAL_PRIORITY_CLASS";
   }
 
-  base::TaskScheduler::CreateAndStartWithDefaultParams("chrome cleanup tool");
+  base::ThreadPool::CreateAndStartWithDefaultParams("chrome cleanup tool");
 
   chrome_cleaner::SandboxType sandbox_type =
       is_sandbox_target ? chrome_cleaner::SandboxProcessType()

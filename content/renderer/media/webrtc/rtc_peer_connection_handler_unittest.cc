@@ -566,7 +566,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
 
  public:
   // The ScopedTaskEnvironment prevents the ChildProcess from leaking a
-  // TaskScheduler.
+  // ThreadPool.
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   ChildProcess child_process_;
   std::unique_ptr<MockWebRTCPeerConnectionHandlerClient> mock_client_;

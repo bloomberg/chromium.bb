@@ -52,7 +52,7 @@ base::ThreadTicks ThreadNow() {
 const char* kTaskExecutionEventCategory = "toplevel";
 const char* kTaskExecutionEventNames[3] = {"ThreadControllerImpl::RunTask",
                                            "ThreadController::Task",
-                                           "TaskScheduler_RunTask"};
+                                           "ThreadPool_RunTask"};
 
 void AddConvertableToTraceFormat(
     base::trace_event::ConvertableToTraceFormat* value,

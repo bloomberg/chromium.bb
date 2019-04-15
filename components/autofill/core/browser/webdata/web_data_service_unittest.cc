@@ -17,7 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -153,7 +153,7 @@ class WebDataServiceAutofillTest : public WebDataServiceTest {
         &AutofillWebDataService::AddObserver;
     wds_->GetDBTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(add_observer_func, wds_, &observer_));
-    base::TaskScheduler::GetInstance()->FlushForTesting();
+    base::ThreadPool::GetInstance()->FlushForTesting();
   }
 
   void TearDown() override {

@@ -25,7 +25,7 @@ extern const BASE_EXPORT Feature kNoDetachBelowInitialCapacity;
 extern const BASE_EXPORT Feature kMayBlockWithoutDelay;
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
-// Under this feature, TaskScheduler will use a SchedulerWorkerPool backed by a
+// Under this feature, ThreadPool will use a SchedulerWorkerPool backed by a
 // native thread pool implementation. The Windows Thread Pool API and
 // libdispatch are used on Windows and macOS/iOS respectively.
 extern const BASE_EXPORT Feature kUseNativeThreadPool;

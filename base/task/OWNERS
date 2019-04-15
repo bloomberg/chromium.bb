@@ -3,4 +3,4 @@ gab@chromium.org
 robliao@chromium.org
 
 # TEAM: scheduler-dev@chromium.org
-# COMPONENT: Internals>TaskScheduler
+# COMPONENT: Internals>ThreadPool

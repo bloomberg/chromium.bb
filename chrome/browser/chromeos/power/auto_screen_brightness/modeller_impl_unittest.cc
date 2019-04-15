@@ -186,7 +186,7 @@ class ModellerImplTest : public testing::Test {
   }
 
   ~ModellerImplTest() override {
-    base::TaskScheduler::GetInstance()->FlushForTesting();
+    base::ThreadPool::GetInstance()->FlushForTesting();
   }
 
   // Sets up |modeller_| with a FakeTrainer.

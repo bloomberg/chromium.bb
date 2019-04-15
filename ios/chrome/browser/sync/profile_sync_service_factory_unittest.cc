@@ -10,7 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/pref_names.h"
@@ -37,7 +37,7 @@ class ProfileSyncServiceFactoryTest : public PlatformTest {
   }
 
   void TearDown() override {
-    base::TaskScheduler::GetInstance()->FlushForTesting();
+    base::ThreadPool::GetInstance()->FlushForTesting();
   }
 
  protected:

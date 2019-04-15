@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/power/auto_screen_brightness/brightness_monitor_impl.h"
 
 #include "base/memory/ptr_util.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -80,7 +80,7 @@ class BrightnessMonitorImplTest : public testing::Test {
     test_observer_.reset();
     monitor_.reset();
     PowerManagerClient::Shutdown();
-    base::TaskScheduler::GetInstance()->FlushForTesting();
+    base::ThreadPool::GetInstance()->FlushForTesting();
   }
 
   // Creates and initializes |monitor_| and optionally sets initial brightness

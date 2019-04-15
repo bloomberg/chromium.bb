@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "base/test/test_switches.h"
@@ -191,7 +191,7 @@ int main(int argc, char* argv[]) {
 #endif
   }
 
-  base::TaskScheduler::CreateAndStartWithDefaultParams("ChromotingTestDriver");
+  base::ThreadPool::CreateAndStartWithDefaultParams("ChromotingTestDriver");
 
   mojo::core::Init();
 

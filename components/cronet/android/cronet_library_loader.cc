@@ -21,7 +21,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "build/build_config.h"
 #include "components/cronet/android/buildflags.h"
 #include "components/cronet/cronet_global_state.h"
@@ -71,8 +71,8 @@ void NativeInit() {
   base::FeatureList::InitializeInstance(std::string(), std::string());
 #endif
 
-  if (!base::TaskScheduler::GetInstance())
-    base::TaskScheduler::CreateAndStartWithDefaultParams("Cronet");
+  if (!base::ThreadPool::GetInstance())
+    base::ThreadPool::CreateAndStartWithDefaultParams("Cronet");
   url::Initialize();
 }
 
@@ -100,8 +100,8 @@ jint CronetOnLoad(JavaVM* vm, void* reserved) {
 }
 
 void CronetOnUnLoad(JavaVM* jvm, void* reserved) {
-  if (base::TaskScheduler::GetInstance())
-    base::TaskScheduler::GetInstance()->Shutdown();
+  if (base::ThreadPool::GetInstance())
+    base::ThreadPool::GetInstance()->Shutdown();
 
   base::android::LibraryLoaderExitHook();
 }

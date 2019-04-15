@@ -145,7 +145,7 @@ class LocalFileSyncServiceTest
     file_system_->TearDown();
     RevokeSyncableFileSystem();
 
-    base::TaskScheduler::GetInstance()->FlushForTesting();
+    base::ThreadPool::GetInstance()->FlushForTesting();
     content::RunAllPendingInMessageLoop(BrowserThread::IO);
   }
 

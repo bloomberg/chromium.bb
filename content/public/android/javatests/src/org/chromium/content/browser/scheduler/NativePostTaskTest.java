@@ -20,7 +20,7 @@ import org.chromium.base.task.TaskRunner;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.task.SchedulerTestHelpers;
-import org.chromium.base.test.task.TaskSchedulerTestHelpers;
+import org.chromium.base.test.task.ThreadPoolTestHelpers;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.content.app.ContentMain;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
@@ -42,7 +42,7 @@ public class NativePostTaskTest {
 
     @After
     public void tearDown() {
-        TaskSchedulerTestHelpers.disableTaskSchedulerExecutionForTesting();
+        ThreadPoolTestHelpers.disableThreadPoolExecutionForTesting();
     }
 
     @Test
@@ -257,6 +257,6 @@ public class NativePostTaskTest {
     private void startNativeScheduler() throws Exception {
         mNativeLibraryTestRule.loadNativeLibraryNoBrowserProcess();
         ContentMain.start(/* startServiceManagerOnly */ true);
-        TaskSchedulerTestHelpers.enableTaskSchedulerExecutionForTesting();
+        ThreadPoolTestHelpers.enableThreadPoolExecutionForTesting();
     }
 }

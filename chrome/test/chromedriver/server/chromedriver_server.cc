@@ -29,7 +29,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -529,11 +529,11 @@ int main(int argc, char *argv[]) {
 
   mojo::core::Init();
 
-  base::TaskScheduler::CreateAndStartWithDefaultParams("ChromeDriver");
+  base::ThreadPool::CreateAndStartWithDefaultParams("ChromeDriver");
 
   RunServer(port, allow_remote, whitelisted_ips, url_base, adb_port);
 
   // clean up
-  base::TaskScheduler::GetInstance()->Shutdown();
+  base::ThreadPool::GetInstance()->Shutdown();
   return 0;
 }

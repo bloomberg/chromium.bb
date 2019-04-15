@@ -44,7 +44,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "net/base/net_errors.h"
 #include "net/base/privacy_mode.h"
 #include "net/cert/cert_verifier.h"
@@ -142,7 +142,7 @@ int main(int argc, char* argv[]) {
   base::CommandLine::Init(argc, argv);
   base::CommandLine* line = base::CommandLine::ForCurrentProcess();
   const base::CommandLine::StringVector& urls = line->GetArgs();
-  base::TaskScheduler::CreateAndStartWithDefaultParams("quic_client");
+  base::ThreadPool::CreateAndStartWithDefaultParams("quic_client");
 
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;

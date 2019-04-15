@@ -39,7 +39,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/system/system_monitor.h"
 #include "base/task/post_task.h"
-#include "base/task/task_scheduler/initialization_util.h"
+#include "base/task/thread_pool/initialization_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -99,7 +99,7 @@
 #include "content/browser/webui/url_data_manager.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/service_manager/service_manager_connection_impl.h"
-#include "content/common/task_scheduler.h"
+#include "content/common/thread_pool_util.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -539,7 +539,7 @@ media::AudioManager* BrowserMainLoop::GetAudioManager() {
 
 BrowserMainLoop::BrowserMainLoop(
     const MainFunctionParams& parameters,
-    std::unique_ptr<base::TaskScheduler::ScopedExecutionFence>
+    std::unique_ptr<base::ThreadPool::ScopedExecutionFence>
         scoped_execution_fence)
     : parameters_(parameters),
       parsed_command_line_(parameters.command_line),
@@ -548,11 +548,11 @@ BrowserMainLoop::BrowserMainLoop(
       scoped_execution_fence_(std::move(scoped_execution_fence)) {
   DCHECK(!g_current_browser_main_loop);
   DCHECK(scoped_execution_fence_)
-      << "TaskScheduler must be halted before kicking off content.";
+      << "ThreadPool must be halted before kicking off content.";
   g_current_browser_main_loop = this;
 
-  if (GetContentClient()->browser()->ShouldCreateTaskScheduler()) {
-    DCHECK(base::TaskScheduler::GetInstance());
+  if (GetContentClient()->browser()->ShouldCreateThreadPool()) {
+    DCHECK(base::ThreadPool::GetInstance());
   }
 }
 
@@ -950,7 +950,7 @@ void BrowserMainLoop::SynchronouslyFlushStartupTasks() {
 int BrowserMainLoop::CreateThreads() {
   TRACE_EVENT0("startup,rail", "BrowserMainLoop::CreateThreads");
 
-  // Release the TaskScheduler's threads.
+  // Release the ThreadPool's threads.
   scoped_execution_fence_.reset();
 
   // The |io_thread| can have optionally been injected into Init(), but if not,
@@ -1031,7 +1031,7 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   // Also allow waiting to join threads.
   // TODO(https://crbug.com/800808): Ideally this (and the above SetIOAllowed()
   // would be scoped allowances). That would be one of the first step to ensure
-  // no persistent work is being done after TaskScheduler::Shutdown() in order
+  // no persistent work is being done after ThreadPool::Shutdown() in order
   // to move towards atomic shutdown.
   base::ThreadRestrictions::SetWaitAllowed(true);
   base::PostTaskWithTraits(
@@ -1119,8 +1119,8 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   }
 
   {
-    TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:TaskScheduler");
-    base::TaskScheduler::GetInstance()->Shutdown();
+    TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:ThreadPool");
+    base::ThreadPool::GetInstance()->Shutdown();
   }
 
   // Must happen after the IO thread is shutdown since this may be accessed from

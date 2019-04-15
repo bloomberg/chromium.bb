@@ -101,7 +101,7 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
     // to write its data to disk.
     store_ = nullptr;
 
-    // Flush TaskScheduler tasks, causing pending commits to run.
+    // Flush ThreadPool tasks, causing pending commits to run.
     scoped_task_environment_.RunUntilIdle();
 
     store_ = new SQLitePersistentCookieStore(

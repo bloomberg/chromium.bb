@@ -7,7 +7,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 
 inline void QuicRunSystemEventLoopIterationImpl() {
   base::RunLoop().RunUntilIdle();
@@ -16,7 +16,7 @@ inline void QuicRunSystemEventLoopIterationImpl() {
 class QuicSystemEventLoopImpl {
  public:
   QuicSystemEventLoopImpl(std::string context_name) {
-    base::TaskScheduler::CreateAndStartWithDefaultParams(context_name);
+    base::ThreadPool::CreateAndStartWithDefaultParams(context_name);
   }
 
  private:

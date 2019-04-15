@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/task/post_task.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"

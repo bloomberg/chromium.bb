@@ -32,7 +32,7 @@ namespace content {
 
 TestBrowserThreadBundle::~TestBrowserThreadBundle() {
   // This is required to ensure we run all remaining MessageLoop and
-  // TaskScheduler tasks in an atomic step. This is a bit different than
+  // ThreadPool tasks in an atomic step. This is a bit different than
   // production where the main thread is not flushed after it's done running
   // but this approach is preferred in unit tests as running more tasks can
   // merely uncover more issues (e.g. if a bad tasks is posted but never

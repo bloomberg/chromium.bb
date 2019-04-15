@@ -97,7 +97,7 @@ class BASE_EXPORT FileDescriptorWatcher {
   // returned Controller is deleted (deletion must happen on the current
   // sequence). To call these methods, a FileDescriptorWatcher must have been
   // instantiated on the current thread and SequencedTaskRunnerHandle::IsSet()
-  // must return true (these conditions are met at least on all TaskScheduler
+  // must return true (these conditions are met at least on all ThreadPool
   // threads as well as on threads backed by a MessageLoopForIO). |fd| must
   // outlive the returned Controller.
   static std::unique_ptr<Controller> WatchReadable(int fd,

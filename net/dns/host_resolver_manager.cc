@@ -676,7 +676,7 @@ class HostResolverManager::RequestImpl
 
 //------------------------------------------------------------------------------
 
-// Calls HostResolverProc in TaskScheduler. Performs retries if necessary.
+// Calls HostResolverProc in ThreadPool. Performs retries if necessary.
 //
 // In non-test code, the HostResolverProc is always SystemHostResolverProc,
 // which calls a platform API that implements host resolution.
@@ -780,7 +780,7 @@ class HostResolverManager::ProcTask {
     }
   }
 
-  // WARNING: This code runs in TaskScheduler with CONTINUE_ON_SHUTDOWN. The
+  // WARNING: This code runs in ThreadPool with CONTINUE_ON_SHUTDOWN. The
   // shutdown code cannot wait for it to finish, so this code must be very
   // careful about using other objects (like MessageLoops, Singletons, etc).
   // During shutdown these objects may no longer exist.
@@ -1708,7 +1708,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
 
   // TODO(szym): Since DnsTransaction does not consume threads, we can increase
   // the limits on |dispatcher_|. But in order to keep the number of
-  // TaskScheduler threads low, we will need to use an "inner"
+  // ThreadPool threads low, we will need to use an "inner"
   // PrioritizedDispatcher with tighter limits.
   void StartProcTask() {
     DCHECK(!is_running());

@@ -13,7 +13,7 @@
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "base/run_loop.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "build/build_config.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
@@ -145,7 +145,7 @@ int DemoMain() {
 
   // Create the message-loop here before creating the root window.
   base::MessageLoopForUI message_loop;
-  base::TaskScheduler::CreateAndStartWithDefaultParams("demo");
+  base::ThreadPool::CreateAndStartWithDefaultParams("demo");
   ui::InitializeInputMethodForTesting();
 
   // The ContextFactory must exist before any Compositors are created.

@@ -477,7 +477,7 @@ void SiteEngagementService::MaybeRecordMetrics() {
   // purposes.
   //
   // The profile and its KeyedServices are normally destroyed before the
-  // TaskScheduler shuts down background threads, so the task needs to hold a
+  // ThreadPool shuts down background threads, so the task needs to hold a
   // strong reference to HostContentSettingsMap (which supports outliving the
   // profile), and needs to avoid using any members of SiteEngagementService
   // (which does not). See https://crbug.com/900022.

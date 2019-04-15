@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
-#include "base/task/task_scheduler/scheduler_lock_impl.h"
+#include "base/task/thread_pool/scheduler_lock_impl.h"
 #include "services/tracing/public/cpp/perfetto/shared_memory.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/commit_data_request.h"

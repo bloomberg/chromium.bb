@@ -40,7 +40,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/test/gtest_util.h"
 #include "base/test/launcher/test_launcher_tracer.h"
 #include "base/test/launcher/test_results_tracker.h"
@@ -133,19 +133,19 @@ TestLauncherTracer* GetTestLauncherTracer() {
   return tracer;
 }
 
-// Creates and starts a TaskScheduler with |num_parallel_jobs| dedicated to
+// Creates and starts a ThreadPool with |num_parallel_jobs| dedicated to
 // foreground blocking tasks (corresponds to the traits used to launch and wait
 // for child processes).
-void CreateAndStartTaskScheduler(int num_parallel_jobs) {
-  // These values are taken from TaskScheduler::StartWithDefaultParams(), which
+void CreateAndStartThreadPool(int num_parallel_jobs) {
+  // These values are taken from ThreadPool::StartWithDefaultParams(), which
   // is not used directly to allow a custom number of threads in the foreground
   // pool.
   // TODO(etiennep): Change this to 2 in future CL.
   constexpr int kMaxBackgroundThreads = 3;
   constexpr base::TimeDelta kSuggestedReclaimTime =
       base::TimeDelta::FromSeconds(30);
-  base::TaskScheduler::Create("TestLauncher");
-  base::TaskScheduler::GetInstance()->Start(
+  base::ThreadPool::Create("TestLauncher");
+  base::ThreadPool::GetInstance()->Start(
       {{kMaxBackgroundThreads, kSuggestedReclaimTime},
        {num_parallel_jobs, kSuggestedReclaimTime}});
 }
@@ -619,8 +619,8 @@ TestLauncher::TestLauncher(TestLauncherDelegate* launcher_delegate,
       parallel_jobs_(parallel_jobs) {}
 
 TestLauncher::~TestLauncher() {
-  if (base::TaskScheduler::GetInstance()) {
-    base::TaskScheduler::GetInstance()->Shutdown();
+  if (base::ThreadPool::GetInstance()) {
+    base::ThreadPool::GetInstance()->Shutdown();
   }
 }
 
@@ -1029,7 +1029,7 @@ bool TestLauncher::Init() {
   fprintf(stdout, "Using %" PRIuS " parallel jobs.\n", parallel_jobs_);
   fflush(stdout);
 
-  CreateAndStartTaskScheduler(static_cast<int>(parallel_jobs_));
+  CreateAndStartThreadPool(static_cast<int>(parallel_jobs_));
 
   std::vector<std::string> positive_file_filter;
   std::vector<std::string> positive_gtest_filter;

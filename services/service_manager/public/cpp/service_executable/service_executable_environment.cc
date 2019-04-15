@@ -9,7 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "build/build_config.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
@@ -62,7 +62,7 @@ ServiceExecutableEnvironment::ServiceExecutableEnvironment()
 
   mojo::core::Init();
 
-  base::TaskScheduler::CreateAndStartWithDefaultParams("StandaloneService");
+  base::ThreadPool::CreateAndStartWithDefaultParams("StandaloneService");
   ipc_thread_.StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
 

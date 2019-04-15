@@ -628,7 +628,7 @@ void ArcSessionImpl::Stop() {
       return;
 
     case State::CONNECTING_MOJO:
-      // Mojo connection is being waited on TaskScheduler's thread.
+      // Mojo connection is being waited on ThreadPool's thread.
       // Request to cancel it. Following stopping procedure will run
       // in its callback.
       accept_cancel_pipe_.reset();
@@ -673,7 +673,7 @@ void ArcSessionImpl::ArcInstanceStopped(
   container_instance_id_.clear();
 
   // In case that crash happens during before the Mojo channel is connected,
-  // unlock the TaskScheduler's thread.
+  // unlock the ThreadPool's thread.
   accept_cancel_pipe_.reset();
 
   // TODO(hidehiko): In new D-Bus signal, more detailed reason why ARC

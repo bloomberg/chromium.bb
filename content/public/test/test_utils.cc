@@ -18,7 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/sequence_manager/sequence_manager.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -149,7 +149,7 @@ void RunAllTasksUntilIdle() {
     base::MessageLoopCurrent::Get()->AddTaskObserver(&task_observer);
 
     base::RunLoop run_loop;
-    base::TaskScheduler::GetInstance()->FlushAsyncForTesting(
+    base::ThreadPool::GetInstance()->FlushAsyncForTesting(
         run_loop.QuitWhenIdleClosure());
     run_loop.Run();
 

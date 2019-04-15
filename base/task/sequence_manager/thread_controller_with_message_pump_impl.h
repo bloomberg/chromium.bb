@@ -16,7 +16,7 @@
 #include "base/task/sequence_manager/sequenced_task_source.h"
 #include "base/task/sequence_manager/thread_controller.h"
 #include "base/task/sequence_manager/work_deduplicator.h"
-#include "base/task/task_scheduler/scheduler_lock.h"
+#include "base/task/thread_pool/scheduler_lock.h"
 #include "base/thread_annotations.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequence_local_storage_map.h"

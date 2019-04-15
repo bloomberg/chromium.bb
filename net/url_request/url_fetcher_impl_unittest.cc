@@ -567,7 +567,7 @@ TEST_F(URLFetcherTest, DifferentThreadsTest) {
   EXPECT_EQ(kDefaultResponseBody, data);
 }
 
-// Verifies that a URLFetcher works correctly on a TaskScheduler Sequence.
+// Verifies that a URLFetcher works correctly on a ThreadPool Sequence.
 TEST_F(URLFetcherTest, SequencedTaskTest) {
   auto sequenced_task_runner = base::CreateSequencedTaskRunnerWithTraits({});
 

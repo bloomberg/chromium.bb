@@ -14,7 +14,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "mojo/core/embedder/embedder.h"
@@ -134,7 +134,7 @@ int StartHostMain(int argc, char** argv) {
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
   logging::InitLogging(settings);
 
-  base::TaskScheduler::CreateAndStartWithDefaultParams("RemotingHostSetup");
+  base::ThreadPool::CreateAndStartWithDefaultParams("RemotingHostSetup");
 
   mojo::core::Init();
 

@@ -73,7 +73,7 @@ NSString* SystemBrandFilePath(version_info::Channel channel) {
   return [file stringByStandardizingPath];
 }
 
-// Adaptor for scheduling an Objective-C method call in TaskScheduler.
+// Adaptor for scheduling an Objective-C method call in ThreadPool.
 class PerformBridge : public base::RefCountedThreadSafe<PerformBridge> {
  public:
 

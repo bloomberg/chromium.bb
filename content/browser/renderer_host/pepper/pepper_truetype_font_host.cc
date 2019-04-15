@@ -29,7 +29,7 @@ PepperTrueTypeFontHost::PepperTrueTypeFontHost(
       initialize_completed_(false),
       weak_factory_(this) {
   font_ = PepperTrueTypeFont::Create();
-  // Initialize the font on a TaskScheduler thread. This must complete before
+  // Initialize the font on a ThreadPool thread. This must complete before
   // using |font_|.
   task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT});

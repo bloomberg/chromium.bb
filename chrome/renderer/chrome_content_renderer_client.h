@@ -200,7 +200,7 @@ class ChromeContentRendererClient
       const std::string& header_name) override;
   bool ShouldEnforceWebRTCRoutingPreferences() override;
   GURL OverrideFlashEmbedWithHTML(const GURL& url) override;
-  std::unique_ptr<base::TaskScheduler::InitParams> GetTaskSchedulerInitParams()
+  std::unique_ptr<base::ThreadPool::InitParams> GetThreadPoolInitParams()
       override;
   void CreateRendererService(
       service_manager::mojom::ServiceRequest service_request) override;

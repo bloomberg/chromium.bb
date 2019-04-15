@@ -137,7 +137,7 @@ class MediaStreamVideoTrackTest : public ::testing::Test {
 
  private:
   // The ScopedTaskEnvironment prevents the ChildProcess from leaking a
-  // TaskScheduler.
+  // ThreadPool.
   const base::test::ScopedTaskEnvironment scoped_task_environment_;
   const ChildProcess child_process_;
   blink::WebMediaStreamSource blink_source_;

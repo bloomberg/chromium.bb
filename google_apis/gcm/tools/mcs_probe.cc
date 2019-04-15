@@ -25,7 +25,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
@@ -444,7 +444,7 @@ int MCSProbeMain(int argc, char* argv[]) {
   mojo::core::Init();
 
   base::MessageLoopForIO message_loop;
-  base::TaskScheduler::CreateAndStartWithDefaultParams("MCSProbe");
+  base::ThreadPool::CreateAndStartWithDefaultParams("MCSProbe");
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -455,7 +455,7 @@ int MCSProbeMain(int argc, char* argv[]) {
   base::RunLoop run_loop;
   run_loop.Run();
 
-  base::TaskScheduler::GetInstance()->Shutdown();
+  base::ThreadPool::GetInstance()->Shutdown();
 
   return 0;
 }
