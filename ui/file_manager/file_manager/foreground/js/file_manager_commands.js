@@ -122,34 +122,10 @@ CommandUtil.getCurrentVolumeInfo = fileManager => {
 };
 
 /**
- * Obtains an entry from the give navigation model item.
- * @param {!NavigationModelItem} item Navigation model item.
- * @return {Entry} Related entry.
- * @private
- */
-CommandUtil.getEntryFromNavigationModelItem_ = item => {
-  switch (item.type) {
-    case NavigationModelItemType.VOLUME:
-      return /** @type {!NavigationModelVolumeItem} */ (item)
-          .volumeInfo.displayRoot;
-    case NavigationModelItemType.SHORTCUT:
-      return /** @type {!NavigationModelShortcutItem} */ (item).entry;
-  }
-  return null;
-};
-
-/**
- * Checks if command can be executed on drive.
- * @param {!Event} event Command event to mark.
- * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
- */
-CommandUtil.canExecuteEnabledOnDriveOnly = (event, fileManager) => {
-  event.canExecute = fileManager.directoryModel.isOnDrive();
-};
-
-/**
  * Sets the command as visible only when the current volume is drive and it's
  * running as a normal app, not as a modal dialog.
+ * NOTE: This doesn't work for directory tree menu, because user can right-click
+ * on any visible volume.
  * @param {!Event} event Command event to mark.
  * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
  */
