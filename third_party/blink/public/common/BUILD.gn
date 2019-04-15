@@ -28,6 +28,7 @@ source_set("headers") {
     "//content/*",
     "//third_party/blink/*",
     "//components/*",
+    "//services/*",
     "//storage/*",
     ":*",
   ]
