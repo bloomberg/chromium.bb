@@ -103,7 +103,7 @@
 <translation id="5137751499640340777">Google Assistant शुरू करें</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">प्रकटीकरण त्रिकोण</translation>
-<translation id="528468243742722775">समाप्त</translation>
+<translation id="528468243742722775">खत्म</translation>
 <translation id="5329858601952122676">&amp;हटाएं</translation>
 <translation id="5395308026110844773"><ph name="IN_PLACE_APP" /> पर<ph name="DRAGGED_APP_NAME" /> को खींचकर लाया जा रहा है, फ़ोल्डर बनाने के लिए इसे छोड़ें.</translation>
 <translation id="5463830097259460683">इमोजी और चिह्न</translation>
@@ -114,7 +114,7 @@
 <translation id="5613020302032141669">बायां तीर</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 मिनट}one{# मिनट}other{# मिनट}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 दिन और }one{# दिन और }other{# दिन और }}</translation>
-<translation id="5895138241574237353">पुन: प्रारंभ करें</translation>
+<translation id="5895138241574237353">फिर से प्रारंभ करें</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 सेकंड शेष}one{# सेकंड शेष}other{# सेकंड शेष}}</translation>
 <translation id="5941711191222866238">छोटा करें</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 घंटा}one{# घंटे}other{# घंटे}}</translation>
@@ -138,7 +138,7 @@
 <translation id="6567071839949112727">पहले वाले पर क्लिक करें</translation>
 <translation id="6578407462441924264">कोई नाम नहीं</translation>
 <translation id="6612467943526193239">कैलिब्रेशन से बाहर निकलने के लिए Esc दबाएं.</translation>
-<translation id="6620110761915583480">फ़ाइल सहेजें</translation>
+<translation id="6620110761915583480">फ़ाइल सेव करें</translation>
 <translation id="6699343763173986273">मीडिया अगला ट्रैक</translation>
 <translation id="673773751041746814">मिटाना</translation>
 <translation id="6786750046913594791">फ़ोल्डर बंद करें</translation>

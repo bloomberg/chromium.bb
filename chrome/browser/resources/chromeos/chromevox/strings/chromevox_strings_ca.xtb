@@ -196,7 +196,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="2471138580042810658">Capçalera 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{asterisc}other{# asteriscos}}</translation>
 <translation id="2490721194269245365">Marró rosat</translation>
-<translation id="249330843868392562">Obre la configuració de text a veu</translation>
+<translation id="249330843868392562">Obre la configuració de text a parla</translation>
 <translation id="2497706219848005458">Groc verdós</translation>
 <translation id="2523609930580546572">Tutorial de ChromeVox</translation>
 <translation id="2525706221823668172">Tecles de drecera de Chromebook</translation>
@@ -567,7 +567,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="501473567976723023">Gener</translation>
 <translation id="5020651427400641814">Activa el registre de veu</translation>
 <translation id="5041394372352067729">Mou la pantalla Braille a la part superior de la pàgina.</translation>
-<translation id="5042770794184672516">Augmenta el volum de la veu.</translation>
+<translation id="5042770794184672516">Augmenta el volum de la parla</translation>
 <translation id="5042992464904238023">Contingut web</translation>
 <translation id="5050015258024679800">Capçalera del nivell 4 anterior</translation>
 <translation id="5054047268577924192">Element de la llista anterior</translation>
@@ -690,7 +690,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="5866042630553435010">Comprovat parcialment</translation>
 <translation id="5867591286054666064">Durant el tutorial, prem una tecla per sentir-ne el nom.</translation>
 <translation id="5869546221129391014">Quadrícula</translation>
-<translation id="5876817486144482042">Redueix el volum de la veu.</translation>
+<translation id="5876817486144482042">Disminueix el volum de la parla</translation>
 <translation id="5878908838135392163">Blau pàl·lid</translation>
 <translation id="5887397643266327462">Subtítols en braille activats.</translation>
 <translation id="5891934789323004067">Taula</translation>
@@ -861,7 +861,7 @@ Per obrir el menú del navegador Chrome, prem Alt+F.</translation>
 <translation id="7165714724802225287">L'estil de pantalla actual és entrellaçat.</translation>
 <translation id="7167657087543110">retorn de caràcters</translation>
 <translation id="7170733337935166589">Avança durant la lectura contínua</translation>
-<translation id="7173102181852295013">Blau de mitjanit</translation>
+<translation id="7173102181852295013">Blau nit</translation>
 <translation id="7181697990050180700">Per personalitzar les tecles de drecera per a ordres utilitzades amb freqüència, escriviu-les als camps corresponents següents.</translation>
 <translation id="7203150201908454328">Ampliat</translation>
 <translation id="7210211103303402262">minuts</translation>
@@ -875,7 +875,7 @@ Per obrir el menú del navegador Chrome, prem Alt+F.</translation>
 <translation id="7241683698754534149">Obre la descripció llarga en una pestanya nova.</translation>
 <translation id="7248671827512403053">Aplicació</translation>
 <translation id="725969808843520477">Botó d'opció següent</translation>
-<translation id="7261612856573623172">Veu del text a veu del sistema</translation>
+<translation id="7261612856573623172">Veu del text a parla del sistema</translation>
 <translation id="7269119382257320590">Sense cap signe de puntuació.</translation>
 <translation id="7273174640290488576">En blanc</translation>
 <translation id="7274770952766771364">Referència de la nota</translation>

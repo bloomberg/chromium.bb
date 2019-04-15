@@ -510,7 +510,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="1962273523772270623">Tillad indsamling af WebRTC-hændelseslogfiler fra Google-tjenester</translation>
 <translation id="1964634611280150550">Inkognitotilstand er deaktiveret</translation>
 <translation id="1964802606569741174">Denne politik påvirker ikke YouTube-appen til Android. Hvis Beskyttet tilstand på YouTube skal håndhæves, skal installation af YouTube-appen til Android ikke tillades.</translation>
-<translation id="1969212217917526199">Tilsidesætter politikker i fejlfindingsbuilds for hosten for fjernadgang.
+<translation id="1969212217917526199">Tilsidesætter politikker i fejlretningsbuilds for hosten for fjernadgang.
 
           Værdien parses som en JSON-ordbog for politikkens navn til politikkens værditilknytninger.</translation>
 <translation id="1969808853498848952">Kør altid plugins, der kræver godkendelse (udfaset)</translation>

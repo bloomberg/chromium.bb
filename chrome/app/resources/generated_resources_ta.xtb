@@ -3802,7 +3802,7 @@
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">இந்தப் பக்கத்தை <ph name="SOURCE_LANGUAGE" /> மொழியிலிருந்து <ph name="TARGET_LANGUAGE" /> மொழிக்கு Google மொழிபெயர்க்க வேண்டும் என விரும்புகிறீர்களா?</translation>
 <translation id="6675665718701918026">சுட்டும் சாதனம் இணைக்கப்பட்டது</translation>
-<translation id="6676212663108450937">உங்கள் குரலுடன் பொருத்துவதற்காகப் பதிவு செய்யும் போது ஹெட்ஃபோன்களைப் பயன்படுத்தவும்</translation>
+<translation id="6676212663108450937">உங்கள் குரலைப் புரிந்துகொள்ளப் பயிற்சி அளிக்கும்போது ஹெட்ஃபோன்களைப் பயன்படுத்தவும்</translation>
 <translation id="6678717876183468697">வினவல் URL</translation>
 <translation id="6680442031740878064">இருக்கும் இடம்: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">மதிப்பிடு</translation>
@@ -4526,7 +4526,7 @@
 <translation id="7788383851298063850">என்ன நடக்கிறது என்பதை எங்களிடம் கூறவும்</translation>
 <translation id="7788444488075094252">மொழிகள் மற்றும் உள்ளீடு</translation>
 <translation id="7788668840732459509">நிலை:</translation>
-<translation id="7789963078219276159">தொடக்கப் பக்கப் பின்புலம் <ph name="CATEGORY" />க்கு மாற்றப்பட்டது.</translation>
+<translation id="7789963078219276159">தொடக்கப் பக்கத்தின் பின்னணிப் படம் <ph name="CATEGORY" /> வகைக்கு மாற்றப்பட்டது.</translation>
 <translation id="7791543448312431591">சேர்</translation>
 <translation id="7792012425874949788">உள்நுழைவதில் ஏதோ தவறு ஏற்பட்டது</translation>
 <translation id="7792388396321542707">பகிர்தலை நிறுத்து</translation>
@@ -5212,7 +5212,7 @@
 <translation id="8767621466733104912">எல்லாப் பயனர்களுக்கும் தானாகவே Chromeஐப் புதுப்பி</translation>
 <translation id="8770406935328356739">நீட்டிப்பு மூலக் கோப்பகம்</translation>
 <translation id="8770507190024617908">நபர்களை நிர்வகி</translation>
-<translation id="8771300903067484968">தொடக்கப் பக்கத்தின் பின்புலமானது இயல்புநிலைப் பின்புலமாக மீட்டமைக்கப்பட்டது.</translation>
+<translation id="8771300903067484968">தொடக்கப் பக்கத்தின் பின்னணிப் படம் இயல்புநிலைக்கு மீட்டமைக்கப்பட்டது.</translation>
 <translation id="8774934320277480003">மேல் ஓரம்</translation>
 <translation id="8775144690796719618">தவறான URL</translation>
 <translation id="8775404590947523323">உங்கள் திருத்தங்கள் தானாகவே சேமிக்கப்படுகின்றன.<ph name="BREAKS" />அசல் படத்தின் நகலை வைத்திருக்க, "அசலில் மேலெழுது" என்பதை நீக்கவும்</translation>
