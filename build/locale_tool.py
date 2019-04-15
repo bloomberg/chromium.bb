@@ -34,6 +34,7 @@ import re
 import shutil
 import subprocess
 import sys
+import unittest
 
 # Assume this script is under build/
 _SCRIPT_DIR = os.path.dirname(__file__)
@@ -72,6 +73,14 @@ def _FixChromiumLangAttribute(lang):
       'no': 'nb',  # 'no' is used by the Translation Console for Norwegian (nb).
   }
   return _CHROMIUM_LANG_FIXES.get(lang, lang)
+
+
+def _FixTranslationConsoleLocaleName(locale):
+  _FIXES = {
+      'nb': 'no',  # Norwegian.
+      'he': 'iw',  # Hebrew
+  }
+  return _FIXES.get(locale, locale)
 
 
 def _CompareLocaleLists(list_a, list_expected, list_name):
@@ -260,6 +269,47 @@ def _FindGnExecutable():
   return None
 
 
+def _PrettyPrintListAsLines(input_list, available_width, trailing_comma=False):
+  result = []
+  input_str = ', '.join(input_list)
+  while len(input_str) > available_width:
+    pos = input_str.rfind(',', 0, available_width)
+    result.append(input_str[:pos + 1])
+    input_str = input_str[pos + 1:].lstrip()
+  if trailing_comma and input_str:
+    input_str += ','
+  result.append(input_str)
+  return result
+
+
+class _PrettyPrintListAsLinesTest(unittest.TestCase):
+
+  def test_empty_list(self):
+    self.assertListEqual([''], _PrettyPrintListAsLines([], 10))
+
+  def test_wrapping(self):
+    input_list = ['foo', 'bar', 'zoo', 'tool']
+    self.assertListEqual(
+        _PrettyPrintListAsLines(input_list, 8),
+        ['foo,', 'bar,', 'zoo,', 'tool'])
+    self.assertListEqual(
+        _PrettyPrintListAsLines(input_list, 12), ['foo, bar,', 'zoo, tool'])
+    self.assertListEqual(
+        _PrettyPrintListAsLines(input_list, 79), ['foo, bar, zoo, tool'])
+
+  def test_trailing_comma(self):
+    input_list = ['foo', 'bar', 'zoo', 'tool']
+    self.assertListEqual(
+        _PrettyPrintListAsLines(input_list, 8, trailing_comma=True),
+        ['foo,', 'bar,', 'zoo,', 'tool,'])
+    self.assertListEqual(
+        _PrettyPrintListAsLines(input_list, 12, trailing_comma=True),
+        ['foo, bar,', 'zoo, tool,'])
+    self.assertListEqual(
+        _PrettyPrintListAsLines(input_list, 79, trailing_comma=True),
+        ['foo, bar, zoo, tool,'])
+
+
 ##########################################################################
 ##########################################################################
 #####
@@ -281,6 +331,7 @@ def ChromeLocales():
   if not _INTERNAL_CHROME_LOCALES:
     _ExtractAllChromeLocalesLists()
   return _INTERNAL_CHROME_LOCALES
+
 
 def AndroidOmittedLocales():
   """Reutrn the list of locales omitted from Android APKs."""
@@ -932,7 +983,167 @@ def _AddMissingLocalesInGnAndroidOutputs(gn_file, gn_lines, wanted_locales):
   return gn_lines
 
 
-# pylint: enable=unused-argument
+##########################################################################
+##########################################################################
+#####
+#####    T R A N S L A T I O N   E X P E C T A T I O N S
+#####
+##########################################################################
+##########################################################################
+
+_EXPECTATIONS_FILENAME = 'translation_expectations.pyl'
+
+# Technical note: the format of translation_expectations.pyl
+# is a 'Python literal', which defines a python dictionary, so should
+# be easy to parse. However, when modifying it, care should be taken
+# to respect the line comments and the order of keys within the text
+# file.
+
+
+def _ReadPythonLiteralFile(pyl_path):
+  """Read a .pyl file into a Python data structure."""
+  with open(pyl_path) as f:
+    pyl_content = f.read()
+  # Evaluate as a Python data structure, use an empty global
+  # and local dictionary.
+  return eval(pyl_content, dict(), dict())
+
+
+def _UpdateLocalesInExpectationLines(pyl_lines,
+                                     wanted_locales,
+                                     available_width=79):
+  """Update the locales list(s) found in an expectations file.
+
+  Args:
+    pyl_lines: Iterable of input lines from the file.
+    wanted_locales: Set or list of new locale names.
+    available_width: Optional, number of character colums used
+      to word-wrap the new list items.
+  Returns:
+    New list of updated lines.
+  """
+  locales_list = ['"%s"' % loc for loc in sorted(wanted_locales)]
+  result = []
+  line_count = len(pyl_lines)
+  line_num = 0
+  DICT_START = '"languages": ['
+  while line_num < line_count:
+    line = pyl_lines[line_num]
+    line_num += 1
+    result.append(line)
+    # Look for start of "languages" dictionary.
+    pos = line.find(DICT_START)
+    if pos < 0:
+      continue
+
+    start_margin = pos
+    start_line = line_num
+    # Skip over all lines from the list.
+    while (line_num < line_count and
+           not pyl_lines[line_num].rstrip().endswith('],')):
+      line_num += 1
+      continue
+
+    if line_num == line_count:
+      raise Exception('%d: Missing list termination!' % start_line)
+
+    # Format the new list according to the new margin.
+    locale_width = available_width - (start_margin + 2)
+    locale_lines = _PrettyPrintListAsLines(
+        locales_list, locale_width, trailing_comma=True)
+    for locale_line in locale_lines:
+      result.append(' ' * (start_margin + 2) + locale_line)
+    result.append(' ' * start_margin + '],')
+    line_num += 1
+
+  return result
+
+
+class _UpdateLocalesInExpectationLinesTest(unittest.TestCase):
+
+  def test_simple(self):
+    self.maxDiff = 1000
+    input_text = r'''
+# This comment should be preserved
+# 23456789012345678901234567890123456789
+{
+  "android_grd": {
+    "languages": [
+      "aa", "bb", "cc", "dd", "ee",
+      "ff", "gg", "hh", "ii", "jj",
+      "kk"],
+  },
+  # Example with bad indentation in input.
+  "another_grd": {
+         "languages": [
+  "aa", "bb", "cc", "dd", "ee", "ff", "gg", "hh", "ii", "jj", "kk",
+      ],
+  },
+}
+'''
+    expected_text = r'''
+# This comment should be preserved
+# 23456789012345678901234567890123456789
+{
+  "android_grd": {
+    "languages": [
+      "A2", "AA", "BB", "CC", "DD",
+      "E2", "EE", "FF", "GG", "HH",
+      "I2", "II", "JJ", "KK",
+    ],
+  },
+  # Example with bad indentation in input.
+  "another_grd": {
+         "languages": [
+           "A2", "AA", "BB", "CC", "DD",
+           "E2", "EE", "FF", "GG", "HH",
+           "I2", "II", "JJ", "KK",
+         ],
+  },
+}
+'''
+    input_lines = input_text.splitlines()
+    test_locales = ([
+        'AA', 'BB', 'CC', 'DD', 'EE', 'FF', 'GG', 'HH', 'II', 'JJ', 'KK', 'A2',
+        'E2', 'I2'
+    ])
+    expected_lines = expected_text.splitlines()
+    self.assertListEqual(
+        _UpdateLocalesInExpectationLines(input_lines, test_locales, 40),
+        expected_lines)
+
+  def test_missing_list_termination(self):
+    input_lines = r'''
+  "languages": ['
+    "aa", "bb", "cc", "dd"
+'''.splitlines()
+    with self.assertRaises(Exception) as cm:
+      _UpdateLocalesInExpectationLines(input_lines, ['a', 'b'], 40)
+
+    self.assertEqual(str(cm.exception), '2: Missing list termination!')
+
+
+def _UpdateLocalesInExpectationFile(pyl_path, wanted_locales):
+  """Update all locales listed in a given expectations file.
+
+  Args:
+    pyl_path: Path to .pyl file to update.
+    wanted_locales: List of locales that need to be written to
+      the file.
+  """
+  tc_locales = {
+      _FixTranslationConsoleLocaleName(locale)
+      for locale in set(wanted_locales) - set([_DEFAULT_LOCALE])
+  }
+
+  with open(pyl_path) as f:
+    input_lines = [l.rstrip() for l in f.readlines()]
+
+  updated_lines = _UpdateLocalesInExpectationLines(input_lines, tc_locales)
+  print repr(updated_lines)
+  with build_utils.AtomicOutput(pyl_path) as f:
+    f.writelines('\n'.join(updated_lines) + '\n')
+
 
 ##########################################################################
 ##########################################################################
@@ -941,6 +1152,9 @@ def _AddMissingLocalesInGnAndroidOutputs(gn_file, gn_lines, wanted_locales):
 #####
 ##########################################################################
 ##########################################################################
+
+# pylint: enable=unused-argument
+
 
 def _IsAllInputFile(input_file):
   return _IsGritInputFile(input_file) or _IsBuildGnInputFile(input_file)
@@ -1185,13 +1399,66 @@ class _CheckAllCommand(_CheckInputFileBaseCommand):
   fix_func = _AddMissingLocalesInAllFiles
 
 
+class _UpdateExpectationsCommand(_Command):
+  name = 'update-expectations'
+  description = 'Update translation expectations file.'
+  long_description = r'''
+Update %s files to match the current list of locales supported by Chromium.
+This is especially useful to add new locales before updating any GRIT or GN
+input file with the --add-locales option.
+''' % _EXPECTATIONS_FILENAME
+
+  def RegisterExtraArgs(self, group):
+    group.add_argument(
+        '--add-locales',
+        help='Space-separated list of additional locales to use.')
+
+  def Run(self):
+    locales = ChromeLocales()
+    add_locales = self.args.add_locales
+    if add_locales:
+      locales.extend(add_locales.split(' '))
+
+    expectation_paths = [
+        'tools/gritsettings/translation_expectations.pyl',
+        'clank/tools/translation_expectations.pyl',
+    ]
+    missing_expectation_files = []
+    for path in enumerate(expectation_paths):
+      file_path = os.path.join(_TOP_SRC_DIR, path)
+      if not os.path.exists(file_path):
+        missing_expectation_files.append(file_path)
+        continue
+      _UpdateLocalesInExpectationFile(file_path, locales)
+
+    if missing_expectation_files:
+      sys.stderr.write('WARNING: Missing file(s): %s\n' %
+                       (', '.join(missing_expectation_files)))
+
+
+class _UnitTestsCommand(_Command):
+  name = 'unit-tests'
+  description = 'Run internal unit-tests for this script'
+
+  def RegisterExtraArgs(self, group):
+    group.add_argument(
+        '-v', '--verbose', action='count', help='Increase test verbosity.')
+    group.add_argument('args', nargs=argparse.REMAINDER)
+
+  def Run(self):
+    argv = [_SCRIPT_NAME] + self.args.args
+    unittest.main(argv=argv, verbosity=self.args.verbose)
+
+
 # List of all commands supported by this script.
 _COMMANDS = [
-  _ListLocalesCommand,
-  _CheckGrdAndroidOutputsCommand,
-  _CheckGrdTranslationsCommand,
-  _CheckGnAndroidOutputsCommand,
-  _CheckAllCommand,
+    _ListLocalesCommand,
+    _CheckGrdAndroidOutputsCommand,
+    _CheckGrdTranslationsCommand,
+    _CheckGnAndroidOutputsCommand,
+    _CheckAllCommand,
+    _UpdateExpectationsCommand,
+    _UnitTestsCommand,
 ]
 
 
