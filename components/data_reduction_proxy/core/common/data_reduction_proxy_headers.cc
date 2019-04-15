@@ -314,7 +314,6 @@ bool ParseHeadersForBypassInfo(const net::HttpResponseHeaders& headers,
           headers, kChromeProxyActionBlock, &proxy_info->bypass_duration)) {
     proxy_info->bypass_all = true;
     proxy_info->mark_proxies_as_bad = true;
-    proxy_info->bypass_action = BYPASS_ACTION_TYPE_BLOCK;
     return true;
   }
 
@@ -323,7 +322,6 @@ bool ParseHeadersForBypassInfo(const net::HttpResponseHeaders& headers,
           headers, kChromeProxyActionBypass, &proxy_info->bypass_duration)) {
     proxy_info->bypass_all = false;
     proxy_info->mark_proxies_as_bad = true;
-    proxy_info->bypass_action = BYPASS_ACTION_TYPE_BYPASS;
     return true;
   }
 
@@ -336,7 +334,6 @@ bool ParseHeadersForBypassInfo(const net::HttpResponseHeaders& headers,
     proxy_info->bypass_all = true;
     proxy_info->mark_proxies_as_bad = false;
     proxy_info->bypass_duration = base::TimeDelta();
-    proxy_info->bypass_action = BYPASS_ACTION_TYPE_BLOCK_ONCE;
     return true;
   }
 
@@ -390,7 +387,6 @@ DataReductionProxyBypassType GetDataReductionProxyBypassType(
     data_reduction_proxy_info->bypass_all = true;
     data_reduction_proxy_info->mark_proxies_as_bad = false;
     data_reduction_proxy_info->bypass_duration = base::TimeDelta();
-    data_reduction_proxy_info->bypass_action = BYPASS_ACTION_TYPE_BLOCK_ONCE;
     return BYPASS_EVENT_TYPE_URL_REDIRECT_CYCLE;
   }
 

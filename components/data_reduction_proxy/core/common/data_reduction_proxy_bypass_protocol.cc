@@ -226,7 +226,6 @@ bool DataReductionProxyBypassProtocol::HandleInvalidResponseHeadersCase(
   data_reduction_proxy_info->bypass_all = false;
   data_reduction_proxy_info->mark_proxies_as_bad = true;
   data_reduction_proxy_info->bypass_duration = base::TimeDelta::FromMinutes(5);
-  data_reduction_proxy_info->bypass_action = BYPASS_ACTION_TYPE_BYPASS;
   *bypass_type = BYPASS_EVENT_TYPE_MEDIUM;
 
   return true;
