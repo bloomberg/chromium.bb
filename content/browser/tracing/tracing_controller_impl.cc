@@ -23,7 +23,6 @@
 #include "components/tracing/common/trace_startup_config.h"
 #include "components/tracing/common/trace_to_console.h"
 #include "components/tracing/common/tracing_switches.h"
-#include "content/browser/browser_shutdown_profile_dumper.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/tracing/file_tracing_provider_impl.h"
 #include "content/browser/tracing/perfetto_file_tracer.h"
@@ -450,8 +449,7 @@ void TracingControllerImpl::EndStartupTracing() {
       base::BindRepeating(OnStoppedStartupTracing, startup_trace_file_)));
 }
 
-std::unique_ptr<BrowserShutdownProfileDumper>
-TracingControllerImpl::FinalizeStartupTracingIfNeeded() {
+void TracingControllerImpl::FinalizeStartupTracingIfNeeded() {
   // There are two cases:
   // 1. Startup duration is not reached.
   // 2. Or if the trace should be saved to file for --trace-config-file flag.
@@ -466,14 +464,11 @@ TracingControllerImpl::FinalizeStartupTracingIfNeeded() {
     startup_trace_file = GetStartupTraceFileName();
   }
   if (!startup_trace_file)
-    return nullptr;
-  if (!tracing::TracingUsesPerfettoBackend()) {
-    return std::make_unique<BrowserShutdownProfileDumper>(
-        startup_trace_file.value());
-  }
-  // Perfetto doesn't support shutdown profiling due to complications
-  // around service shutdown timings.
-  // TODO(eseckler): Do something about it.
+    return;
+  // Perfetto currently doesn't support tracing during shutdown as the trace
+  // buffer is lost when the service is shut down, so we wait until the trace is
+  // complete. See also crbug.com/944107.
+  // TODO(eseckler): Avoid the nestedRunLoop here somehow.
   base::RunLoop run_loop;
   StopTracing(CreateFileEndpoint(
       startup_trace_file.value(),
@@ -484,7 +479,6 @@ TracingControllerImpl::FinalizeStartupTracingIfNeeded() {
           },
           startup_trace_file.value(), run_loop.QuitClosure())));
   run_loop.Run();
-  return nullptr;
 }
 
 bool TracingControllerImpl::StopTracing(

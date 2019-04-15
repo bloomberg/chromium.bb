@@ -23,7 +23,6 @@
 #include "components/tracing/common/trace_startup_config.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "content/browser/browser_main_loop.h"
-#include "content/browser/browser_shutdown_profile_dumper.h"
 #include "content/browser/notification_service_impl.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/common/content_switches_internal.h"
@@ -182,19 +181,7 @@ void BrowserMainRunnerImpl::Shutdown() {
   main_loop_->PreShutdown();
 
   // Finalize the startup tracing session if it is still active.
-  std::unique_ptr<BrowserShutdownProfileDumper> startup_profiler =
-      TracingControllerImpl::GetInstance()->FinalizeStartupTracingIfNeeded();
-
-  // The shutdown tracing got enabled in AttemptUserExit earlier, but someone
-  // needs to write the result to disc. For that a dumper needs to get created
-  // which will dump the traces to disc when it gets destroyed.
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  std::unique_ptr<BrowserShutdownProfileDumper> shutdown_profiler;
-  if (command_line.HasSwitch(switches::kTraceShutdown)) {
-    shutdown_profiler.reset(new BrowserShutdownProfileDumper(
-        BrowserShutdownProfileDumper::GetShutdownProfileFileName()));
-  }
+  TracingControllerImpl::GetInstance()->FinalizeStartupTracingIfNeeded();
 
   {
     // The trace event has to stay between profiler creation and destruction.

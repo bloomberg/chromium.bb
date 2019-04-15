@@ -123,12 +123,6 @@ void OnShutdownStarting(ShutdownType type) {
   static crash_reporter::CrashKeyString<8> shutdown_type_key("shutdown-type");
   shutdown_type_key.Set(ToShutdownTypeString(type));
 
-#if !defined(OS_CHROMEOS)
-  // Start the shutdown tracing. Note that On ChromeOS this has already been
-  // called in AttemptUserExit().
-  StartShutdownTracing();
-#endif
-
   g_shutdown_type = type;
   // For now, we're only counting the number of renderer processes
   // since we can't safely count the number of plugin processes from this
@@ -365,19 +359,6 @@ void SetTryingToQuit(bool quitting) {
 
 bool IsTryingToQuit() {
   return g_trying_to_quit;
-}
-
-void StartShutdownTracing() {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kTraceShutdown)) {
-    base::trace_event::TraceConfig trace_config(
-        command_line.GetSwitchValueASCII(switches::kTraceShutdown), "");
-    content::TracingController::GetInstance()->StartTracing(
-        trace_config,
-        content::TracingController::StartTracingDoneCallback());
-  }
-  TRACE_EVENT0("shutdown", "StartShutdownTracing");
 }
 
 }  // namespace browser_shutdown

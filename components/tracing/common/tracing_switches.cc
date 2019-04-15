@@ -14,19 +14,6 @@ const char kEnableBackgroundTracing[] = "enable-background-tracing";
 // This flag will be ignored if --trace-startup or --trace-shutdown is provided.
 const char kTraceConfigFile[]               = "trace-config-file";
 
-// Causes TRACE_EVENT flags to be recorded beginning with shutdown. Optionally,
-// can specify the specific trace categories to include (e.g.
-// --trace-shutdown=base,net) otherwise, all events are recorded.
-// --trace-shutdown-file can be used to control where the trace log gets stored
-// to since there is otherwise no way to access the result.
-const char kTraceShutdown[]                 = "trace-shutdown";
-
-// If supplied, sets the file which shutdown tracing will be stored into, if
-// omitted the default will be used "chrometrace.log" in the current directory.
-// Has no effect unless --trace-shutdown is also supplied.
-// Example: --trace-shutdown --trace-shutdown-file=/tmp/trace_event.log
-const char kTraceShutdownFile[]             = "trace-shutdown-file";
-
 // Causes TRACE_EVENT flags to be recorded from startup. Optionally, can
 // specify the specific trace categories to include (e.g.
 // --trace-startup=base,net) otherwise, all events are recorded. Setting this
