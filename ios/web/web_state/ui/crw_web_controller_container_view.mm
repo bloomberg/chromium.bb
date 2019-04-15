@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #import "ios/web/common/crw_content_view.h"
 #import "ios/web/common/crw_web_view_content_view.h"
-#include "ios/web/public/features.h"
+#include "ios/web/common/features.h"
 #import "ios/web/public/web_state/ui/crw_native_content.h"
 #import "ios/web/web_state/ui/crw_web_view_proxy_impl.h"
 

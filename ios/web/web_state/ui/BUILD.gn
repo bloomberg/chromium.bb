@@ -131,6 +131,7 @@ source_set("wk_web_view_configuration_provider") {
   deps = [
     ":crw_wk_script_message_router",
     "//base",
+    "//ios/web/common",
     "//ios/web/public",
     "//ios/web/web_state/js",
     "//ios/web/web_state/js:script_util",

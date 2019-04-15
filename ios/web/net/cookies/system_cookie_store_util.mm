@@ -8,10 +8,10 @@
 
 #import "ios/net/cookies/ns_http_system_cookie_store.h"
 #include "ios/net/cookies/system_cookie_store.h"
+#include "ios/web/common/features.h"
 #import "ios/web/net/cookies/wk_cookie_util.h"
 #import "ios/web/net/cookies/wk_http_system_cookie_store.h"
 #include "ios/web/public/browser_state.h"
-#include "ios/web/public/features.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

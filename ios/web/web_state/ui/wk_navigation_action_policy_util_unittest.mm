@@ -7,7 +7,7 @@
 #import <WebKit/WebKit.h>
 
 #include "base/test/scoped_feature_list.h"
-#include "ios/web/public/features.h"
+#include "ios/web/common/features.h"
 #include "ios/web/web_state/ui/block_universal_links_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"

@@ -37,7 +37,8 @@ source_set("overscroll_actions") {
     "//ios/chrome/browser/ui/voice",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/ui",
-    "//ios/web",
+    "//ios/web/common",
+    "//ios/web/public",
     "//ui/base",
     "//ui/gfx",
   ]
