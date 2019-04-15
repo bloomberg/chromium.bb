@@ -462,9 +462,6 @@ void HttpStreamFactory::JobController::OnNewSpdySessionReady(
 
   bool is_job_orphaned = IsJobOrphaned(job);
 
-  // Cache this so we can still use it if the JobController is deleted.
-  SpdySessionPool* spdy_session_pool = session_->spdy_session_pool();
-
   // Notify |request_|.
   if (!is_preconnect_ && !is_job_orphaned) {
 
@@ -496,11 +493,6 @@ void HttpStreamFactory::JobController::OnNewSpdySessionReady(
                                std::move(stream));
     }
   }
-
-  // Notify other requests that have the same SpdySessionKey.
-  // |request_| and |bound_job_| might be deleted already.
-  if (spdy_session && spdy_session->IsAvailable())
-    spdy_session_pool->OnNewSpdySessionReady(spdy_session);
 
   if (is_job_orphaned)
     OnOrphanedJobComplete(job);

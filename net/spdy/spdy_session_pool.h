@@ -252,18 +252,11 @@ class NET_EXPORT SpdySessionPool
   void DumpMemoryStats(base::trace_event::ProcessMemoryDump* pmd,
                        const std::string& parent_dump_absolute_name) const;
 
-  // Called when a SpdySession is ready. It will find appropriate Requests and
-  // fulfill them.
-  void OnNewSpdySessionReady(const base::WeakPtr<SpdySession>& spdy_session);
-
   // Called when a HttpStreamRequest is started with |spdy_session_key|.
   // Returns true if the request should continue. Returns false if the request
   // should wait until |callback| is invoked before continuing.
   bool StartRequest(const SpdySessionKey& spdy_session_key,
                     const base::Closure& callback);
-
-  // Resumes pending requests with |spdy_session_key|.
-  void ResumePendingRequests(const SpdySessionKey& spdy_session_key);
 
   // Create a request and add it to |spdy_session_request_map_| under
   // |spdy_session_key| Key. |delegate|'s OnSpdySessionAvailable() callback will
@@ -338,6 +331,21 @@ class NET_EXPORT SpdySessionPool
       std::unique_ptr<SpdySession> new_session,
       const NetLogWithSource& source_net_log);
 
+  // If a session with the specified |key| exists, invokes
+  // OnSpdySessionAvailable on all matching members of
+  // |spdy_session_request_map_|, removing them from the map. Regardless of
+  // whether or not such key exists, invokes all corresponding callbacks
+  // currently in |spdy_session_pending_request_map_|.
+  void UpdatePendingRequests(const SpdySessionKey& key);
+
+  // Removes the SpdySessionRequest at |request_set_iterator| from the
+  // RequestSet at |request_map_iterator| and calls OnRemovedFromPool() on the
+  // request. If the RequestSet becomes empty, also removes it from
+  // |spdy_session_request_map_|.
+  void RemoveRequestInternal(
+      SpdySessionRequestMap::iterator request_map_iterator,
+      RequestSet::iterator request_set_iterator);
+
   HttpServerProperties* http_server_properties_;
 
   TransportSecurityState* transport_security_state_;
@@ -394,6 +402,8 @@ class NET_EXPORT SpdySessionPool
   ServerPushDelegate* push_delegate_;
 
   NetworkQualityEstimator* network_quality_estimator_;
+
+  base::WeakPtrFactory<SpdySessionPool> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SpdySessionPool);
 };
