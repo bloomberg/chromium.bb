@@ -108,8 +108,8 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // be null.
   void MoveToParentContainer(aura::Window* parent);
 
-  // Sets the bounds of the keyboard window.
-  void SetKeyboardWindowBounds(const gfx::Rect& new_bounds);
+  // Sets the bounds of the keyboard window, relative to the root window.
+  void SetKeyboardWindowBounds(const gfx::Rect& new_bounds_in_root);
 
   // Reloads the content of the keyboard. No-op if the keyboard content is not
   // loaded yet.
@@ -177,33 +177,35 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
 
   // Returns the bounds in screen for the visible portion of the keyboard. An
   // empty rectangle will get returned when the keyboard is hidden.
-  const gfx::Rect& visual_bounds_in_screen() const {
-    return visual_bounds_in_screen_;
-  }
+  const gfx::Rect& visual_bounds_in_screen() const;
 
   // Returns the current bounds that affect the workspace layout. If the
   // keyboard is not shown or if the keyboard mode should not affect the usable
-  // region of the screen, an empty rectangle will be returned. Bounds are in
-  // screen coordinates.
+  // region of the screen, an empty rectangle will be returned. Bounds are
+  // relative to the root window.
   gfx::Rect GetWorkspaceOccludedBounds() const;
 
   // Returns the current bounds that affect the window layout of the various
-  // lock screens.
+  // lock screens. Bounds are relative to the root window.
   gfx::Rect GetKeyboardLockScreenOffsetBounds() const;
 
   // Set the area on the keyboard window that occlude whatever is behind it.
   void SetOccludedBounds(const gfx::Rect& bounds_in_window);
 
   // Set the areas on the keyboard window where events should be handled.
-  // Does not do anything if there is no keyboard window.
-  void SetHitTestBounds(const std::vector<gfx::Rect>& bounds);
+  // Does not do anything if there is no keyboard window. Bounds are relative to
+  // the keyboard window.
+  void SetHitTestBounds(const std::vector<gfx::Rect>& bounds_in_window);
 
   mojom::ContainerType GetActiveContainerType() const {
     return container_behavior_->GetType();
   }
 
-  gfx::Rect AdjustSetBoundsRequest(const gfx::Rect& display_bounds,
-                                   const gfx::Rect& requested_bounds) const;
+  // Adjusts |requested_bounds| according to the current container behavior.
+  // (e.g. prevent the keyboard from moving off screen).
+  gfx::Rect AdjustSetBoundsRequest(
+      const gfx::Rect& display_bounds,
+      const gfx::Rect& requested_bounds_in_screen) const;
 
   // Returns true if overscroll is currently allowed by the active keyboard
   // container behavior.
@@ -221,7 +223,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // will trigger a hide animation and a subsequent show animation. Otherwise
   // the ContainerBehavior change is synchronous.
   void SetContainerType(mojom::ContainerType type,
-                        const base::Optional<gfx::Rect>& target_bounds,
+                        const base::Optional<gfx::Rect>& target_bounds_in_root,
                         base::OnceCallback<void(bool)> callback);
 
   // Sets floating keyboard draggable rect.
@@ -249,7 +251,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   }
   KeyboardControllerState GetStateForTest() const { return state_; }
   ui::InputMethod* GetInputMethodForTest();
-  void EnsureCaretInWorkAreaForTest(const gfx::Rect& occluded_bounds);
+  void EnsureCaretInWorkAreaForTest(const gfx::Rect& occluded_bounds_in_root);
 
  private:
   // For access to Observer methods for simulation.
@@ -362,7 +364,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
 
   // Notifies observers that the visual or occluded bounds of the keyboard
   // window are changing.
-  void NotifyKeyboardBoundsChanging(const gfx::Rect& new_bounds);
+  void NotifyKeyboardBoundsChanging(const gfx::Rect& new_bounds_in_root);
 
   // Called when the keyboard window has loaded. Shows the keyboard if
   // |show_on_keyboard_window_load_| is true.
@@ -395,7 +397,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
 
   // Ensures caret in current work area (not occluded by virtual keyboard
   // window).
-  void EnsureCaretInWorkArea(const gfx::Rect& occluded_bounds);
+  void EnsureCaretInWorkArea(const gfx::Rect& occluded_bounds_in_root);
 
   // Marks that the keyboard load has started. This is used to measure the time
   // it takes to fully load the keyboard. This should be called before
@@ -435,10 +437,10 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
 
   base::ObserverList<KeyboardControllerObserver>::Unchecked observer_list_;
 
-  // The bounds in screen for the visible portion of the keyboard.
-  // If the keyboard window is visible, this should be the same size as the
-  // keyboard window. If not, this should be empty.
-  gfx::Rect visual_bounds_in_screen_;
+  // The bounds for the visible portion of the keyboard, relative to the root
+  // window. If the keyboard window is visible, this should be the same size as
+  // the keyboard window. If not, this should be empty.
+  gfx::Rect visual_bounds_in_root_;
 
   KeyboardControllerState state_ = KeyboardControllerState::UNKNOWN;
 

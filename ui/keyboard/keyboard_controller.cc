@@ -284,7 +284,7 @@ void KeyboardController::EnableKeyboard() {
   ui_->SetController(this);
   SetContainerBehaviorInternal(mojom::ContainerType::kFullWidth);
   ChangeState(KeyboardControllerState::INITIAL);
-  visual_bounds_in_screen_ = gfx::Rect();
+  visual_bounds_in_root_ = gfx::Rect();
   time_of_last_blur_ = base::Time::UnixEpoch();
   UpdateInputMethodObserver();
 
@@ -383,28 +383,29 @@ void KeyboardController::MoveToParentContainer(aura::Window* parent) {
 
 // private
 void KeyboardController::NotifyKeyboardBoundsChanging(
-    const gfx::Rect& new_bounds) {
-  visual_bounds_in_screen_ = new_bounds;
+    const gfx::Rect& new_bounds_in_root) {
+  visual_bounds_in_root_ = new_bounds_in_root;
   aura::Window* window = GetKeyboardWindow();
   if (window && window->IsVisible()) {
-    const gfx::Rect occluded_bounds_in_screen = GetWorkspaceOccludedBounds();
+    const gfx::Rect occluded_bounds_in_root = GetWorkspaceOccludedBounds();
     notification_manager_.SendNotifications(
-        container_behavior_->OccludedBoundsAffectWorkspaceLayout(), new_bounds,
-        occluded_bounds_in_screen, observer_list_);
+        container_behavior_->OccludedBoundsAffectWorkspaceLayout(),
+        new_bounds_in_root, occluded_bounds_in_root, observer_list_);
   } else {
-    visual_bounds_in_screen_ = gfx::Rect();
+    visual_bounds_in_root_ = gfx::Rect();
   }
 
   EnsureCaretInWorkArea(GetWorkspaceOccludedBounds());
 }
 
-void KeyboardController::SetKeyboardWindowBounds(const gfx::Rect& new_bounds) {
+void KeyboardController::SetKeyboardWindowBounds(
+    const gfx::Rect& new_bounds_in_root) {
   ui::LayerAnimator* animator = GetKeyboardWindow()->layer()->GetAnimator();
   // Stops previous animation if a window resize is requested during animation.
   if (animator->is_animating())
     animator->StopAnimating();
 
-  GetKeyboardWindow()->SetBounds(new_bounds);
+  GetKeyboardWindow()->SetBounds(new_bounds_in_root);
 }
 
 void KeyboardController::NotifyKeyboardWindowLoaded() {
@@ -711,7 +712,7 @@ void KeyboardController::ShowAnimationFinished() {
 
   // Notify observers after animation finished to prevent reveal desktop
   // background during animation.
-  NotifyKeyboardBoundsChanging(GetKeyboardWindow()->bounds());
+  NotifyKeyboardBoundsChanging(GetKeyboardWindow()->GetBoundsInRootWindow());
 }
 
 // private
@@ -750,6 +751,11 @@ void KeyboardController::ShowKeyboardInDisplay(
   ShowKeyboardInternal(layout_delegate_->GetContainerForDisplay(display));
 }
 
+const gfx::Rect& KeyboardController::visual_bounds_in_screen() const {
+  // TODO(https://crbug.com/943446): Convert root window bounds to screen.
+  return visual_bounds_in_root_;
+}
+
 void KeyboardController::LoadKeyboardWindowInBackground() {
   DCHECK_EQ(state_, KeyboardControllerState::INITIAL);
 
@@ -774,8 +780,8 @@ ui::InputMethod* KeyboardController::GetInputMethodForTest() {
 }
 
 void KeyboardController::EnsureCaretInWorkAreaForTest(
-    const gfx::Rect& occluded_bounds) {
-  EnsureCaretInWorkArea(occluded_bounds);
+    const gfx::Rect& occluded_bounds_in_root) {
+  EnsureCaretInWorkArea(occluded_bounds_in_root);
 }
 
 // ContainerBehavior::Delegate overrides
@@ -795,9 +801,9 @@ void KeyboardController::MoveKeyboardWindow(const gfx::Rect& new_bounds) {
 
 void KeyboardController::MoveKeyboardWindowToDisplay(
     const display::Display& display,
-    const gfx::Rect& new_bounds) {
+    const gfx::Rect& new_bounds_in_root) {
   queued_display_change_ =
-      std::make_unique<QueuedDisplayChange>(display, new_bounds);
+      std::make_unique<QueuedDisplayChange>(display, new_bounds_in_root);
   HideKeyboardTemporarilyForTransition();
 }
 
@@ -810,21 +816,19 @@ void KeyboardController::OnWindowAddedToRootWindow(aura::Window* window) {
 
 void KeyboardController::OnWindowBoundsChanged(
     aura::Window* window,
-    const gfx::Rect& old_bounds,
-    const gfx::Rect& new_bounds,
+    const gfx::Rect& old_bounds_in_root,
+    const gfx::Rect& new_bounds_in_root,
     ui::PropertyChangeReason reason) {
   if (!GetKeyboardWindow())
     return;
 
   // |window| could be the root window (for detecting screen rotations) or the
-  // keyboard window (for detecting keyboard bounds changes). For the root
-  // window, |new_bounds| is in screen coordinates. For the keyboard window,
-  // |new_bounds| is also in screen coordinates because VK container has
-  // kUsesScreenCoordinatesKey set.
+  // keyboard window (for detecting keyboard bounds changes).
   if (window == GetRootWindow())
-    container_behavior_->SetCanonicalBounds(GetKeyboardWindow(), new_bounds);
+    container_behavior_->SetCanonicalBounds(GetKeyboardWindow(),
+                                            new_bounds_in_root);
   else if (window == GetKeyboardWindow())
-    NotifyKeyboardBoundsChanging(new_bounds);
+    NotifyKeyboardBoundsChanging(new_bounds_in_root);
 }
 
 // InputMethodObserver overrides
@@ -1036,12 +1040,10 @@ gfx::Rect KeyboardController::GetWorkspaceOccludedBounds() const {
   if (!ui_)
     return gfx::Rect();
 
-  const gfx::Rect visual_bounds_in_window(visual_bounds_in_screen_.size());
+  const gfx::Rect visual_bounds_in_window(visual_bounds_in_root_.size());
   const gfx::Rect occluded_bounds_in_window =
       container_behavior_->GetOccludedBounds(visual_bounds_in_window);
-  // Return occluded bounds that are relative to the screen.
-  return occluded_bounds_in_window +
-         visual_bounds_in_screen_.OffsetFromOrigin();
+  return occluded_bounds_in_window + visual_bounds_in_root_.OffsetFromOrigin();
 }
 
 gfx::Rect KeyboardController::GetKeyboardLockScreenOffsetBounds() const {
@@ -1051,7 +1053,7 @@ gfx::Rect KeyboardController::GetKeyboardLockScreenOffsetBounds() const {
   if (!IsKeyboardOverscrollEnabled() &&
       container_behavior_->GetType() != mojom::ContainerType::kFloating &&
       container_behavior_->GetType() != mojom::ContainerType::kFullscreen) {
-    return visual_bounds_in_screen_;
+    return visual_bounds_in_root_;
   }
   return gfx::Rect();
 }
@@ -1061,23 +1063,23 @@ void KeyboardController::SetOccludedBounds(const gfx::Rect& bounds_in_window) {
 
   // Notify that only the occluded bounds have changed.
   if (IsKeyboardVisible())
-    NotifyKeyboardBoundsChanging(visual_bounds_in_screen_);
+    NotifyKeyboardBoundsChanging(visual_bounds_in_root_);
 }
 
 void KeyboardController::SetHitTestBounds(
-    const std::vector<gfx::Rect>& bounds) {
+    const std::vector<gfx::Rect>& bounds_in_window) {
   if (!GetKeyboardWindow())
     return;
 
   GetKeyboardWindow()->SetEventTargeter(
-      std::make_unique<ShapedWindowTargeter>(bounds));
+      std::make_unique<ShapedWindowTargeter>(bounds_in_window));
 }
 
 gfx::Rect KeyboardController::AdjustSetBoundsRequest(
     const gfx::Rect& display_bounds,
-    const gfx::Rect& requested_bounds) const {
-  return container_behavior_->AdjustSetBoundsRequest(display_bounds,
-                                                     requested_bounds);
+    const gfx::Rect& requested_bounds_in_screen) const {
+  return container_behavior_->AdjustSetBoundsRequest(
+      display_bounds, requested_bounds_in_screen);
 }
 
 bool KeyboardController::IsOverscrollAllowed() const {
@@ -1092,7 +1094,7 @@ bool KeyboardController::HandlePointerEvent(const ui::LocatedEvent& event) {
 
 void KeyboardController::SetContainerType(
     mojom::ContainerType type,
-    const base::Optional<gfx::Rect>& target_bounds,
+    const base::Optional<gfx::Rect>& target_bounds_in_root,
     base::OnceCallback<void(bool)> callback) {
   if (container_behavior_->GetType() == type) {
     std::move(callback).Run(false);
@@ -1103,14 +1105,14 @@ void KeyboardController::SetContainerType(
     // Keyboard is already shown. Hiding the keyboard at first then switching
     // container type.
     queued_container_type_ = std::make_unique<QueuedContainerType>(
-        this, type, target_bounds, std::move(callback));
+        this, type, target_bounds_in_root, std::move(callback));
     HideKeyboard(HIDE_REASON_SYSTEM_TEMPORARY);
   } else {
     // Keyboard is hidden. Switching the container type immediately and invoking
     // the passed callback now.
     SetContainerBehaviorInternal(type);
-    if (target_bounds)
-      SetKeyboardWindowBounds(target_bounds.value());
+    if (target_bounds_in_root)
+      SetKeyboardWindowBounds(*target_bounds_in_root);
     DCHECK_EQ(GetActiveContainerType(), type);
     std::move(callback).Run(true /* change_successful */);
   }
@@ -1172,17 +1174,20 @@ void KeyboardController::UpdateInputMethodObserver() {
 }
 
 void KeyboardController::EnsureCaretInWorkArea(
-    const gfx::Rect& occluded_bounds) {
+    const gfx::Rect& occluded_bounds_in_root) {
   ui::InputMethod* ime = ui_->GetInputMethod();
   if (!ime)
     return;
 
   TRACE_EVENT0("vk", "EnsureCaretInWorkArea");
 
+  // TODO(https://crbug.com/943446): Convert root window bounds to screen.
+  auto occluded_bounds_in_screen = occluded_bounds_in_root;
+
   if (IsOverscrollAllowed()) {
-    ime->SetOnScreenKeyboardBounds(occluded_bounds);
+    ime->SetOnScreenKeyboardBounds(occluded_bounds_in_screen);
   } else if (ime->GetTextInputClient()) {
-    ime->GetTextInputClient()->EnsureCaretNotInRect(occluded_bounds);
+    ime->GetTextInputClient()->EnsureCaretNotInRect(occluded_bounds_in_screen);
   }
 }
 
