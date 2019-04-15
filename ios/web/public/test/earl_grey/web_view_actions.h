@@ -7,12 +7,11 @@
 
 #include <string>
 
-#import <EarlGrey/EarlGrey.h>
-
-#include "ios/web/public/test/element_selector.h"
-#import "ios/web/public/web_state/web_state.h"
+@class ElementSelector;
+@protocol GREYAction;
 
 namespace web {
+class WebState;
 
 // Action wrapper that performs |action| on the webview of |state|.
 // The action will fail (in addition to its own failure modes) if the element
