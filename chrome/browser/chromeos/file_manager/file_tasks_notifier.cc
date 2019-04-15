@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/common/fileapi/file_system_types.h"
+#include "ui/shell_dialogs/selected_file_info.h"
 
 namespace file_manager {
 namespace file_tasks {
@@ -54,6 +55,17 @@ void FileTasksNotifier::NotifyFileTasks(
     }
   }
   NotifyObservers(paths, FileTasksObserver::OpenType::kLaunch);
+}
+
+void FileTasksNotifier::NotifyFileDialogSelection(
+    const std::vector<ui::SelectedFileInfo>& files,
+    bool for_open) {
+  std::vector<base::FilePath> paths;
+  for (const auto& file : files) {
+    paths.push_back(file.file_path);
+  }
+  NotifyObservers(paths, for_open ? FileTasksObserver::OpenType::kOpen
+                                  : FileTasksObserver::OpenType::kSaveAs);
 }
 
 void FileTasksNotifier::NotifyObservers(

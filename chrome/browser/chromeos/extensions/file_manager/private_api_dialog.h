@@ -47,6 +47,7 @@ class FileManagerPrivateSelectFileFunction
  private:
   // A callback method to handle the result of GetSelectedFileInfo.
   void GetSelectedFileInfoResponse(
+      bool for_open,
       int index,
       const std::vector<ui::SelectedFileInfo>& files);
 };
@@ -67,6 +68,7 @@ class FileManagerPrivateSelectFilesFunction
  private:
   // A callback method to handle the result of GetSelectedFileInfo.
   void GetSelectedFileInfoResponse(
+      bool for_open,
       const std::vector<ui::SelectedFileInfo>& files);
 };
 

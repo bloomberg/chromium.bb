@@ -22,6 +22,10 @@ namespace storage {
 class FileSystemURL;
 }  // namespace storage
 
+namespace ui {
+struct SelectedFileInfo;
+}
+
 namespace file_manager {
 namespace file_tasks {
 
@@ -51,6 +55,9 @@ class FileTasksNotifier : public KeyedService {
   void RemoveObserver(FileTasksObserver*);
 
   void NotifyFileTasks(const std::vector<storage::FileSystemURL>& file_urls);
+
+  void NotifyFileDialogSelection(const std::vector<ui::SelectedFileInfo>& files,
+                                 bool for_open);
 
  private:
   void NotifyObservers(const std::vector<base::FilePath>& paths,
