@@ -173,7 +173,9 @@ class InProcessCommandBuffer::SharedImageInterface
                             GpuMemoryBufferManager* gpu_memory_buffer_manager,
                             const gfx::ColorSpace& color_space,
                             uint32_t usage) override {
-    DCHECK(gpu_memory_buffer_manager);
+    DCHECK(gpu_memory_buffer->GetType() == gfx::NATIVE_PIXMAP ||
+           gpu_memory_buffer->GetType() == gfx::ANDROID_HARDWARE_BUFFER ||
+           gpu_memory_buffer_manager);
 
     // TODO(piman): DCHECK GMB format support.
     DCHECK(gpu::IsImageSizeValidForGpuMemoryBufferFormat(

@@ -123,7 +123,9 @@ Mailbox SharedImageInterfaceProxy::CreateSharedImage(
     GpuMemoryBufferManager* gpu_memory_buffer_manager,
     const gfx::ColorSpace& color_space,
     uint32_t usage) {
-  DCHECK(gpu_memory_buffer_manager);
+  DCHECK(gpu_memory_buffer->GetType() == gfx::NATIVE_PIXMAP ||
+         gpu_memory_buffer->GetType() == gfx::ANDROID_HARDWARE_BUFFER ||
+         gpu_memory_buffer_manager);
   GpuChannelMsg_CreateGMBSharedImage_Params params;
   params.mailbox = Mailbox::GenerateForSharedImage();
   params.handle = gpu_memory_buffer->CloneHandle();

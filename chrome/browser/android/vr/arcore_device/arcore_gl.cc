@@ -101,7 +101,10 @@ ArCoreGl::ArCoreGl(std::unique_ptr<ArImageTransport> ar_image_transport)
       environment_binding_(this),
       weak_ptr_factory_(this) {}
 
-ArCoreGl::~ArCoreGl() {}
+ArCoreGl::~ArCoreGl() {
+  DCHECK(IsOnGlThread());
+  ar_image_transport_.reset();
+}
 
 void ArCoreGl::Initialize(vr::ArCoreInstallUtils* install_utils,
                           ArCoreFactory* arcore_factory,
