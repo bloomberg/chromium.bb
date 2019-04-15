@@ -186,8 +186,11 @@ class WebAXObject {
   BLINK_EXPORT WebString StringValue() const;
   BLINK_EXPORT ax::mojom::TextDirection GetTextDirection() const;
   BLINK_EXPORT ax::mojom::TextPosition GetTextPosition() const;
-  // Bitmask from ax::mojom::TextStyle.
-  BLINK_EXPORT int32_t TextStyle() const;
+  BLINK_EXPORT void GetTextStyleAndTextDecorationStyle(
+      int32_t* text_style,
+      ax::mojom::TextDecorationStyle* text_overline_style,
+      ax::mojom::TextDecorationStyle* text_strikethrough_style,
+      ax::mojom::TextDecorationStyle* text_underline_style) const;
   BLINK_EXPORT WebURL Url() const;
 
   // Retrieves the accessible name of the object, an enum indicating where the

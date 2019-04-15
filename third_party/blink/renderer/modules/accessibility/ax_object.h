@@ -695,8 +695,16 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   }
   virtual int TextLength() const { return 0; }
 
-  // Bitmask from ax::mojom::TextStyle.
-  virtual int32_t GetTextStyle() const { return 0; }
+  virtual void GetTextStyleAndTextDecorationStyle(
+      int32_t* text_style,
+      ax::mojom::TextDecorationStyle* text_overline_style,
+      ax::mojom::TextDecorationStyle* text_strikethrough_style,
+      ax::mojom::TextDecorationStyle* text_underline_style) const {
+    *text_style = 0;
+    *text_overline_style = ax::mojom::TextDecorationStyle::kNone;
+    *text_strikethrough_style = ax::mojom::TextDecorationStyle::kNone;
+    *text_underline_style = ax::mojom::TextDecorationStyle::kNone;
+  }
 
   virtual AXObjectVector RadioButtonsInGroup() const {
     return AXObjectVector();

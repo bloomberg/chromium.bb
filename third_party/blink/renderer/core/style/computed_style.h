@@ -1993,7 +1993,8 @@ class ComputedStyle : public ComputedStyleBase,
                             bool override_existing_colors);
   void ClearAppliedTextDecorations();
   void RestoreParentTextDecorations(const ComputedStyle& parent_style);
-  const Vector<AppliedTextDecoration>& AppliedTextDecorations() const;
+  CORE_EXPORT const Vector<AppliedTextDecoration>& AppliedTextDecorations()
+      const;
   TextDecoration TextDecorationsInEffect() const;
 
   // Overflow utility functions.

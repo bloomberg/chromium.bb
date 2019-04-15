@@ -690,9 +690,30 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
                            static_cast<int32_t>(src.GetTextPosition()));
     }
 
-    if (src.TextStyle()) {
-      dst->AddIntAttribute(ax::mojom::IntAttribute::kTextStyle,
-                           src.TextStyle());
+    int32_t text_style = 0;
+    ax::mojom::TextDecorationStyle text_overline_style;
+    ax::mojom::TextDecorationStyle text_strikethrough_style;
+    ax::mojom::TextDecorationStyle text_underline_style;
+    src.GetTextStyleAndTextDecorationStyle(&text_style, &text_overline_style,
+                                           &text_strikethrough_style,
+                                           &text_underline_style);
+    if (text_style) {
+      dst->AddIntAttribute(ax::mojom::IntAttribute::kTextStyle, text_style);
+    }
+
+    if (text_overline_style != ax::mojom::TextDecorationStyle::kNone) {
+      dst->AddIntAttribute(ax::mojom::IntAttribute::kTextOverlineStyle,
+                           static_cast<int32_t>(text_overline_style));
+    }
+
+    if (text_strikethrough_style != ax::mojom::TextDecorationStyle::kNone) {
+      dst->AddIntAttribute(ax::mojom::IntAttribute::kTextStrikethroughStyle,
+                           static_cast<int32_t>(text_strikethrough_style));
+    }
+
+    if (text_underline_style != ax::mojom::TextDecorationStyle::kNone) {
+      dst->AddIntAttribute(ax::mojom::IntAttribute::kTextUnderlineStyle,
+                           static_cast<int32_t>(text_underline_style));
     }
 
     if (dst->role == ax::mojom::Role::kInlineTextBox) {

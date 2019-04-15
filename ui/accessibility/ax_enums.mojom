@@ -587,6 +587,15 @@ enum IntAttribute {
    // Bold, italic, underline, etc.
   kTextStyle,
 
+  // The overline text decoration style.
+  kTextOverlineStyle,
+
+  // The strikethrough text decoration style.
+  kTextStrikethroughStyle,
+
+  // The underline text decoration style.
+  kTextUnderlineStyle,
+
    // Focus traversal in views and Android.
   kPreviousFocusId,
   kNextFocusId,
@@ -775,7 +784,17 @@ enum TextStyle {
   kItalic,
   kUnderline,
   kLineThrough,
+  kOverline,
   kNone,
+};
+
+enum TextDecorationStyle {
+  kNone,
+  kDotted,
+  kDashed,
+  kSolid,
+  kDouble,
+  kWavy,
 };
 
 enum AriaCurrentState {

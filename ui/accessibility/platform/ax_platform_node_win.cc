@@ -4040,9 +4040,24 @@ HRESULT AXPlatformNodeWin::GetTextAttributeValue(TEXTATTRIBUTEID attribute_id,
       V_VT(result) = VT_BOOL;
       V_BOOL(result) = IsInvisibleOrIgnored() ? VARIANT_TRUE : VARIANT_FALSE;
       break;
+    case UIA_OverlineStyleAttributeId:
+      V_VT(result) = VT_I4;
+      V_I4(result) = GetUIATextDecorationStyle(
+          ax::mojom::IntAttribute::kTextOverlineStyle);
+      break;
+    case UIA_StrikethroughStyleAttributeId:
+      V_VT(result) = VT_I4;
+      V_I4(result) = GetUIATextDecorationStyle(
+          ax::mojom::IntAttribute::kTextStrikethroughStyle);
+      break;
     case UIA_StyleNameAttributeId:
       V_VT(result) = VT_BSTR;
       V_BSTR(result) = GetStyleNameAttributeAsBSTR();
+      break;
+    case UIA_UnderlineStyleAttributeId:
+      V_VT(result) = VT_I4;
+      V_I4(result) = GetUIATextDecorationStyle(
+          ax::mojom::IntAttribute::kTextUnderlineStyle);
       break;
     default:
       V_VT(result) = VT_UNKNOWN;
@@ -6575,6 +6590,28 @@ BSTR AXPlatformNodeWin::GetStyleNameAttributeAsBSTR() const {
       GetDelegate()->GetStyleNameAttributeAsLocalizedString();
 
   return SysAllocString(style_name.c_str());
+}
+
+TextDecorationLineStyle AXPlatformNodeWin::GetUIATextDecorationStyle(
+    const ax::mojom::IntAttribute int_attribute) const {
+  const ax::mojom::TextDecorationStyle text_decoration_style =
+      static_cast<ax::mojom::TextDecorationStyle>(
+          GetIntAttribute(int_attribute));
+
+  switch (text_decoration_style) {
+    case ax::mojom::TextDecorationStyle::kNone:
+      return TextDecorationLineStyle::TextDecorationLineStyle_None;
+    case ax::mojom::TextDecorationStyle::kDotted:
+      return TextDecorationLineStyle::TextDecorationLineStyle_Dot;
+    case ax::mojom::TextDecorationStyle::kDashed:
+      return TextDecorationLineStyle::TextDecorationLineStyle_Dash;
+    case ax::mojom::TextDecorationStyle::kSolid:
+      return TextDecorationLineStyle::TextDecorationLineStyle_Single;
+    case ax::mojom::TextDecorationStyle::kDouble:
+      return TextDecorationLineStyle::TextDecorationLineStyle_Double;
+    case ax::mojom::TextDecorationStyle::kWavy:
+      return TextDecorationLineStyle::TextDecorationLineStyle_Wavy;
+  }
 }
 
 // IRawElementProviderSimple support methods.
