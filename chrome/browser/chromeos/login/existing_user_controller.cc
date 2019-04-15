@@ -1065,12 +1065,6 @@ void ExistingUserController::OnPasswordChangeDetected() {
     return;
   }
 
-  if (ChromeUserManager::Get()
-          ->GetUserFlow(last_login_attempt_account_id_)
-          ->HandlePasswordChangeDetected()) {
-    return;
-  }
-
   if (auth_status_consumer_)
     auth_status_consumer_->OnPasswordChangeDetected();
 
