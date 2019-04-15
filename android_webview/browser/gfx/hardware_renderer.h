@@ -57,7 +57,7 @@ class HardwareRenderer : public viz::mojom::CompositorFrameSinkClient {
   explicit HardwareRenderer(RenderThreadManager* state);
   ~HardwareRenderer() override;
 
-  void DrawGL(HardwareRendererDrawParams* params);
+  void Draw(HardwareRendererDrawParams* params);
   void CommitFrame();
 
  private:
