@@ -99,17 +99,6 @@ void ServiceWorkerNetworkProviderForFrame::WillSendRequest(
   auto* extra_data = static_cast<RequestExtraData*>(request.GetExtraData());
   extra_data->set_service_worker_provider_id(provider_id());
 
-  // If the provider does not have a controller at this point, the renderer
-  // expects the request to never be handled by a service worker, so call
-  // SetSkipServiceWorker() with true to skip service workers here. Otherwise,
-  // a service worker that is in the process of becoming the controller (i.e.,
-  // via claim()) on the browser-side could handle the request and break the
-  // assumptions of the renderer.
-  if (IsControlledByServiceWorker() ==
-      blink::mojom::ControllerServiceWorkerMode::kNoController) {
-    request.SetSkipServiceWorker(true);
-  }
-
   // Inject this frame's fetch window id into the request.
   if (context())
     request.SetFetchWindowId(context()->fetch_request_window_id());
