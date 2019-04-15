@@ -4,7 +4,7 @@
 
 // https://wicg.github.io/portals/#the-portal-element
 
-[HTMLConstructor, RuntimeEnabled=Portals]
+[Exposed=Window, HTMLConstructor, RuntimeEnabled=Portals]
 interface HTMLPortalElement : HTMLElement {
   [CEReactions, Reflect, URL, RaisesException=Setter] attribute URLString src;
   [CallWith=ScriptState] Promise<void> activate(optional PortalActivateOptions options);
