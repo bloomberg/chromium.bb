@@ -15,7 +15,7 @@
 #include "ash/app_list/views/search_result_view.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/macros.h"
-#include "base/strings/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -94,11 +94,11 @@ class SearchResultTileItemListViewTest
     for (int i = 0; i < kInstalledApps; ++i) {
       std::unique_ptr<TestSearchResult> result =
           std::make_unique<TestSearchResult>();
-      result->set_result_id(base::StringPrintf("InstalledApp %d", i));
+      result->set_result_id("InstalledApp " + base::NumberToString(i));
       result->set_display_type(ash::SearchResultDisplayType::kTile);
       result->set_result_type(ash::SearchResultType::kInstalledApp);
-      result->set_title(
-          base::UTF8ToUTF16(base::StringPrintf("InstalledApp %d", i)));
+      result->set_title(base::ASCIIToUTF16("InstalledApp ") +
+                        base::NumberToString16(i));
       results->Add(std::move(result));
     }
 
@@ -107,14 +107,14 @@ class SearchResultTileItemListViewTest
       for (int i = 0; i < kPlayStoreApps; ++i) {
         std::unique_ptr<TestSearchResult> result =
             std::make_unique<TestSearchResult>();
-        result->set_result_id(base::StringPrintf("PlayStoreApp %d", i));
+        result->set_result_id("PlayStoreApp " + base::NumberToString(i));
         result->set_display_type(ash::SearchResultDisplayType::kTile);
         result->set_result_type(ash::SearchResultType::kPlayStoreApp);
-        result->set_title(
-            base::UTF8ToUTF16(base::StringPrintf("PlayStoreApp %d", i)));
+        result->set_title(base::ASCIIToUTF16("PlayStoreApp ") +
+                          base::NumberToString16(i));
         result->SetRating(1 + i);
-        result->SetFormattedPrice(
-            base::UTF8ToUTF16(base::StringPrintf("Price %d", i)));
+        result->SetFormattedPrice(base::ASCIIToUTF16("Price ") +
+                                  base::NumberToString16(i));
         results->Add(std::move(result));
       }
     }
@@ -123,11 +123,11 @@ class SearchResultTileItemListViewTest
       for (int i = 0; i < kRecommendedApps; ++i) {
         std::unique_ptr<TestSearchResult> result =
             std::make_unique<TestSearchResult>();
-        result->set_result_id(base::StringPrintf("RecommendedApp %d", i));
+        result->set_result_id("RecommendedApp " + base::NumberToString(i));
         result->set_display_type(ash::SearchResultDisplayType::kRecommendation);
         result->set_result_type(ash::SearchResultType::kPlayStoreReinstallApp);
-        result->set_title(
-            base::UTF8ToUTF16(base::StringPrintf("RecommendedApp %d", i)));
+        result->set_title(base::ASCIIToUTF16("RecommendedApp ") +
+                          base::NumberToString16(i));
         result->SetRating(1 + i);
         results->Add(std::move(result));
       }
@@ -199,7 +199,7 @@ TEST_P(SearchResultTileItemListViewTest, Basic) {
         ->child_at(first_child + i * child_step)
         ->GetAccessibleNodeData(&node_data);
     EXPECT_EQ(ax::mojom::Role::kButton, node_data.role);
-    EXPECT_EQ(base::StringPrintf("InstalledApp %d", i),
+    EXPECT_EQ("InstalledApp " + base::NumberToString(i),
               node_data.GetStringAttribute(ax::mojom::StringAttribute::kName));
   }
 
@@ -214,9 +214,10 @@ TEST_P(SearchResultTileItemListViewTest, Basic) {
         ->child_at(first_child + i * child_step)
         ->GetAccessibleNodeData(&node_data);
     EXPECT_EQ(ax::mojom::Role::kButton, node_data.role);
-    EXPECT_EQ(base::StringPrintf("PlayStoreApp %d, Star rating %d.0, Price %d",
-                                 i - kInstalledApps, i + 1 - kInstalledApps,
-                                 i - kInstalledApps),
+    EXPECT_EQ("PlayStoreApp " + base::NumberToString(i - kInstalledApps) +
+                  ", Star rating " +
+                  base::NumberToString(i + 1 - kInstalledApps) + ".0, Price " +
+                  base::NumberToString(i - kInstalledApps),
               node_data.GetStringAttribute(ax::mojom::StringAttribute::kName));
   }
 
@@ -229,9 +230,9 @@ TEST_P(SearchResultTileItemListViewTest, Basic) {
         ->child_at(first_child + i * child_step)
         ->GetAccessibleNodeData(&node_data);
     EXPECT_EQ(ax::mojom::Role::kButton, node_data.role);
-    EXPECT_EQ(base::StringPrintf(
-                  "RecommendedApp %d, Star rating %d.0, App recommendation",
-                  i - start_index, i + 1 - start_index),
+    EXPECT_EQ("RecommendedApp " + base::NumberToString(i - start_index) +
+                  ", Star rating " + base::NumberToString(i + 1 - start_index) +
+                  ".0, App recommendation",
               node_data.GetStringAttribute(ax::mojom::StringAttribute::kName));
   }
 
