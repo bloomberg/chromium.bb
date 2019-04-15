@@ -2330,6 +2330,18 @@
         },
         {
           "board_name": "octopus",
+          "name": "bloog",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "octopus",
+          "name": "blooguard",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "octopus",
           "name": "bluebird",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
@@ -2541,6 +2553,12 @@
         {
           "board_name": "octopus",
           "name": "unprovisioned_ampton",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "octopus",
+          "name": "unprovisioned_bloog",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         },
