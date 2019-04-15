@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -27,6 +28,7 @@
 #include "ash/app_list/views/folder_header_view.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_answer_card_view.h"
+#include "ash/app_list/views/search_result_container_view.h"
 #include "ash/app_list/views/search_result_list_view.h"
 #include "ash/app_list/views/search_result_page_view.h"
 #include "ash/app_list/views/search_result_suggestion_chip_view.h"
@@ -34,7 +36,6 @@
 #include "ash/app_list/views/search_result_tile_item_view.h"
 #include "ash/app_list/views/search_result_view.h"
 #include "ash/app_list/views/suggestion_chip_container_view.h"
-#include "ash/app_list/views/suggestion_chip_view.h"
 #include "ash/app_list/views/test/apps_grid_view_test_api.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
@@ -572,7 +573,7 @@ class AppListViewFocusTest : public views::ViewsTestBase,
           static_cast<SearchResultSuggestionChipView*>(
               suggestions_container()->child_at(i));
       if (view->visible())
-        suggestions.emplace_back(view->suggestion_chip_view());
+        suggestions.emplace_back(view);
     }
     return suggestions;
   }
