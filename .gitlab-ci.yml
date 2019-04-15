@@ -27,7 +27,7 @@ shared-build:
     name: fontconfig-$CI_COMMIT_SHA-$CI_JOB_ID
     when: always
     paths:
-      - build-*/fontconfig-*.tar.bz2
+      - build-*/fontconfig-*.tar.*
       - build-*/fontconfig*/_build/sub/*.log
       - build-*/fontconfig*/_build/sub/test/*.log
       - build-*/fontconfig*/_build/sub/test/*.trs
