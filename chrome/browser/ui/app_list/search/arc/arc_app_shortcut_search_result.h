@@ -28,9 +28,12 @@ namespace app_list {
 class ArcAppShortcutSearchResult : public ChromeSearchResult,
                                    public AppIconLoaderDelegate {
  public:
+  // Constructor for ArcAppShortcutSearchResult. |is_recommendation|
+  // defines the display type of search results.
   ArcAppShortcutSearchResult(arc::mojom::AppShortcutItemPtr data,
                              Profile* profile,
-                             AppListControllerDelegate* list_controller);
+                             AppListControllerDelegate* list_controller,
+                             bool is_recommendation);
   ~ArcAppShortcutSearchResult() override;
 
   // ChromeSearchResult:

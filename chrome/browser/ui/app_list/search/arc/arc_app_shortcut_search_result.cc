@@ -28,15 +28,21 @@ constexpr char kAppShortcutSearchPrefix[] = "appshortcutsearch://";
 ArcAppShortcutSearchResult::ArcAppShortcutSearchResult(
     arc::mojom::AppShortcutItemPtr data,
     Profile* profile,
-    AppListControllerDelegate* list_controller)
+    AppListControllerDelegate* list_controller,
+    bool is_recommendation)
     : data_(std::move(data)),
       profile_(profile),
       list_controller_(list_controller) {
   SetTitle(base::UTF8ToUTF16(data_->short_label));
   set_id(kAppShortcutSearchPrefix + GetAppId() + "/" + data_->shortcut_id);
-  SetDisplayType(ash::SearchResultDisplayType::kTile);
   SetAccessibleName(ComputeAccessibleName());
   SetResultType(ash::SearchResultType::kArcAppShortcut);
+
+  if (is_recommendation) {
+    SetDisplayType(ash::SearchResultDisplayType::kRecommendation);
+  } else {
+    SetDisplayType(ash::SearchResultDisplayType::kTile);
+  }
 
   const int icon_dimension =
       app_list::AppListConfig::instance().search_tile_icon_dimension();
