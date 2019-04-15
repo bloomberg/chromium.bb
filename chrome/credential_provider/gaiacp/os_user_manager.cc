@@ -8,8 +8,6 @@
 
 #include <lm.h>
 
-#include <Shellapi.h>  // For <Shlobj.h>
-#include <Shlobj.h>    // For SHFileOperation()
 #include <sddl.h>      // For ConvertSidToStringSid()
 #include <userenv.h>   // For GetUserProfileDirectory()
 #include <wincrypt.h>  // For CryptXXX()
@@ -24,6 +22,7 @@
 #include <memory>
 
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/scoped_native_library.h"
 #include "base/stl_util.h"
@@ -565,9 +564,6 @@ HRESULT OSUserManager::RemoveUser(const wchar_t* username,
       if (hr != HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND))
         LOGFN(ERROR) << "GetUserProfileDirectory hr=" << putHR(hr);
       profiledir[0] = 0;
-    } else {
-      // Double null terminate the profile directory for SHFileOperation().
-      profiledir[length] = 0;
     }
   } else {
     LOGFN(ERROR) << "CreateLogonToken hr=" << putHR(hr);
@@ -579,17 +575,8 @@ HRESULT OSUserManager::RemoveUser(const wchar_t* username,
     LOGFN(ERROR) << "NetUserDel nsts=" << nsts;
 
   // Force delete the user's profile directory.
-  if (profiledir[0] != 0) {
-    SHFILEOPSTRUCT op;
-    memset(&op, 0, sizeof(op));
-    op.wFunc = FO_DELETE;
-    op.pFrom = profiledir;  // Double null terminated above.
-    op.fFlags = FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_NO_UI | FOF_SILENT;
-
-    int ret = ::SHFileOperation(&op);
-    if (ret != 0)
-      LOGFN(ERROR) << "SHFileOperation ret=" << ret;
-  }
+  if (*profiledir && !base::DeleteFile(base::FilePath(profiledir), true))
+    LOGFN(ERROR) << "base::DeleteFile";
 
   return S_OK;
 }
