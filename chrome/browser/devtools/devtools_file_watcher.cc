@@ -17,6 +17,7 @@
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
+#include "base/strings/stringprintf.h"
 #include "base/task/lazy_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -85,11 +86,22 @@ bool DevToolsFileWatcher::SharedFileWatcher::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* process_memory_dump) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto* dump = process_memory_dump->CreateAllocatorDump(
-      "devtools/file_watcher_path_count");
-  dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameObjectCount,
-                  base::trace_event::MemoryAllocatorDump::kUnitsObjects,
-                  file_path_times_.size());
+  int index = 0;
+  for (auto& file_path : file_path_times_) {
+    size_t file_paths_size = 0;
+    for (auto& path_and_time : file_path.second) {
+      file_paths_size += path_and_time.first.value().length() *
+                         sizeof(base::FilePath::StringType::value_type);
+    }
+    auto* dump = process_memory_dump->CreateAllocatorDump(
+        base::StringPrintf("devtools/file_watcher_%d", index++));
+    dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameObjectCount,
+                    base::trace_event::MemoryAllocatorDump::kUnitsObjects,
+                    file_path.second.size());
+    dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                    base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                    file_paths_size);
+  }
   return true;
 }
 
