@@ -453,51 +453,6 @@ bool HttpStreamFactory::JobController::OnInitConnection(
                                     request_info_.privacy_mode);
 }
 
-void HttpStreamFactory::JobController::OnNewSpdySessionReady(
-    Job* job,
-    const base::WeakPtr<SpdySession>& spdy_session) {
-  DCHECK(job);
-  DCHECK(job->using_spdy());
-  DCHECK(!is_preconnect_);
-
-  bool is_job_orphaned = IsJobOrphaned(job);
-
-  // Notify |request_|.
-  if (!is_preconnect_ && !is_job_orphaned) {
-
-    DCHECK(request_);
-
-    // The first case is the usual case.
-    if (!job_bound_) {
-      BindJob(job);
-    }
-
-    MarkRequestComplete(job->was_alpn_negotiated(), job->negotiated_protocol(),
-                        job->using_spdy());
-
-    if (is_websocket_) {
-      // TODO(bnc): Re-instate this code when WebSockets over HTTP/2 is
-      // implemented.  https://crbug.com/801564.
-      NOTREACHED();
-    } else if (job->stream_type() == HttpStreamRequest::BIDIRECTIONAL_STREAM) {
-      std::unique_ptr<BidirectionalStreamImpl> bidirectional_stream_impl =
-          job->ReleaseBidirectionalStream();
-      DCHECK(bidirectional_stream_impl);
-      delegate_->OnBidirectionalStreamImplReady(
-          job->server_ssl_config(), job->proxy_info(),
-          std::move(bidirectional_stream_impl));
-    } else {
-      std::unique_ptr<HttpStream> stream = job->ReleaseStream();
-      DCHECK(stream);
-      delegate_->OnStreamReady(job->server_ssl_config(), job->proxy_info(),
-                               std::move(stream));
-    }
-  }
-
-  if (is_job_orphaned)
-    OnOrphanedJobComplete(job);
-}
-
 void HttpStreamFactory::JobController::OnPreconnectsComplete(Job* job) {
   DCHECK_EQ(main_job_.get(), job);
   main_job_.reset();
