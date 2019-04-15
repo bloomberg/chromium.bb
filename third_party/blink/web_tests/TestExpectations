@@ -6306,3 +6306,6 @@ crbug.com/951638 [ Win7 ] virtual/mouseevent_fractional/fast/events/mouse-right-
 crbug.com/951774 [ Linux ] virtual/video-surface-layer/media/controls/modern/overlay-play-button-tap-to-hide.html [ Pass Timeout ]
 crbug.com/951811 [ Mac10.13 ] external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-tokenization-top-left.html [ Pass Timeout ]
 crbug.com/802029 [ Mac10.13 Debug ] fast/dom/shadow/focus-controller-recursion-crash.html [ Pass Timeout ]
+
+# Sheriff 2019-04-15
+crbug.com/952708 external/wpt/css/css-paint-api/parse-input-arguments-018.https.html [ Pass Failure ]
