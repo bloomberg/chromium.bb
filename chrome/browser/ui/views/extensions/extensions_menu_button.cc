@@ -11,10 +11,37 @@
 
 const char ExtensionsMenuButton::kClassName[] = "ExtensionsMenuButton";
 
+namespace {
+
+content::WebContents* GetActiveWebContents(Browser* browser) {
+  return browser->tab_strip_model()->GetActiveWebContents();
+}
+
+void SetIconViewImage(views::ImageView* image_view,
+                      Browser* browser,
+                      ToolbarActionViewController* controller) {
+  image_view->SetImage(
+      controller->GetIcon(GetActiveWebContents(browser), gfx::Size(16, 16))
+          .AsImageSkia());
+}
+
+std::unique_ptr<views::View> CreateIconView(
+    Browser* browser,
+    ToolbarActionViewController* controller) {
+  auto image_view = std::make_unique<views::ImageView>();
+  SetIconViewImage(image_view.get(), browser, controller);
+  return image_view;
+}
+
+}  // namespace
+
 ExtensionsMenuButton::ExtensionsMenuButton(
     Browser* browser,
     std::unique_ptr<ToolbarActionViewController> controller)
-    : HoverButton(this, controller->GetActionName()),
+    : HoverButton(this,
+                  CreateIconView(browser, controller.get()),
+                  controller->GetActionName(),
+                  base::string16()),
       browser_(browser),
       controller_(std::move(controller)) {
   set_context_menu_controller(this);
@@ -49,11 +76,15 @@ views::View* ExtensionsMenuButton::GetReferenceViewForPopup() {
 }
 
 content::WebContents* ExtensionsMenuButton::GetCurrentWebContents() const {
-  return browser_->tab_strip_model()->GetActiveWebContents();
+  return GetActiveWebContents(browser_);
 }
 
 void ExtensionsMenuButton::UpdateState() {
-  SetText(controller_->GetActionName());
+  DCHECK_EQ(views::ImageView::kViewClassName, icon_view()->GetClassName());
+  SetIconViewImage(static_cast<views::ImageView*>(icon_view()), browser_,
+                   controller_.get());
+  SetTitleTextWithHintRange(controller_->GetActionName(),
+                            gfx::Range::InvalidRange());
 }
 
 bool ExtensionsMenuButton::IsMenuRunning() const {
