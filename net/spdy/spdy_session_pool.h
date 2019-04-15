@@ -188,6 +188,36 @@ class NET_EXPORT SpdySessionPool
       bool is_websocket,
       const NetLogWithSource& net_log);
 
+  // Just like FindAvailableSession.
+  //
+  // Additionally, if it returns nullptr, populates |spdy_session_request| with
+  // a request that will invoke |delegate| once a matching SPDY session becomes
+  // available through the creation of a new SpdySession (as opposed to by
+  // creating an alias for an existing session with a new host).
+  //
+  // |is_first_request_for_session| will be set to |true| if this is the first
+  // request for the session. If |on_request_destroyed_callback| is non-null and
+  // there is already at least one pending request for the session (i.e.,
+  // |is_first_request_for_session| is set to false), it will be invoked
+  // asynchronously whenever any matching |spdy_session_request| is destroyed or
+  // a matching SpdySession is created.
+  //
+  // |delegate|, |spdy_session_request|, and |is_first_request_for_session| must
+  // all be non-null.
+  //
+  // TODO(mmenke): Merge this into FindAvailableSession().
+  // TODO(mmenke): Don't invoke |on_request_destroyed_callback| when all
+  // requests for a session have been successfully responded to.
+  base::WeakPtr<SpdySession> RequestSession(
+      const SpdySessionKey& key,
+      bool enable_ip_based_pooling,
+      bool is_websocket,
+      const NetLogWithSource& net_log,
+      base::RepeatingClosure on_request_destroyed_callback,
+      SpdySessionRequest::Delegate* delegate,
+      std::unique_ptr<SpdySessionRequest>* spdy_session_request,
+      bool* is_first_request_for_session);
+
   // Remove all mappings and aliases for the given session, which must
   // still be available. Except for in tests, this must be called by
   // the given session itself.
@@ -251,24 +281,6 @@ class NET_EXPORT SpdySessionPool
 
   void DumpMemoryStats(base::trace_event::ProcessMemoryDump* pmd,
                        const std::string& parent_dump_absolute_name) const;
-
-  // Called when a HttpStreamRequest is started with |spdy_session_key|.
-  // Returns true if the request should continue. Returns false if the request
-  // should wait until |callback| is invoked before continuing.
-  bool StartRequest(const SpdySessionKey& spdy_session_key,
-                    const base::Closure& callback);
-
-  // Create a request and add it to |spdy_session_request_map_| under
-  // |spdy_session_key| Key. |delegate|'s OnSpdySessionAvailable() callback will
-  // be invoked if a consumer calls OnNewSpdySessionReady() with a live
-  // SpdySession. |delegate| must remain valid until either its
-  // OnSpdySessionAvailable() callback has been invoked, or until the returned
-  // SpdySessionRequest has been destroyed.
-  //
-  // TODO(mmenke):  Merge with FindAvailableSession.
-  std::unique_ptr<SpdySessionRequest> CreateRequestForSpdySession(
-      const SpdySessionKey& spdy_session_key,
-      SpdySessionRequest::Delegate* delegate);
 
   void set_network_quality_estimator(
       NetworkQualityEstimator* network_quality_estimator) {
@@ -394,7 +406,7 @@ class NET_EXPORT SpdySessionPool
 
   // TODO(xunjieli): Merge these two.
   SpdySessionRequestMap spdy_session_request_map_;
-  typedef std::map<SpdySessionKey, std::list<base::Closure>>
+  typedef std::map<SpdySessionKey, std::list<base::RepeatingClosure>>
       SpdySessionPendingRequestMap;
   SpdySessionPendingRequestMap spdy_session_pending_request_map_;
 

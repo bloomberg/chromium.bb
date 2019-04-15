@@ -262,7 +262,6 @@ class HttpStreamFactory::Job
     STATE_WAIT,
     STATE_WAIT_COMPLETE,
 
-    STATE_EVALUATE_THROTTLE,
     STATE_INIT_CONNECTION,
     STATE_INIT_CONNECTION_COMPLETE,
     STATE_WAITING_USER_ACTION,
@@ -315,7 +314,6 @@ class HttpStreamFactory::Job
   int DoStart();
   int DoWait();
   int DoWaitComplete(int result);
-  int DoEvaluateThrottle();
   int DoInitConnection();
   int DoInitConnectionComplete(int result);
   int DoWaitingUserAction(int result);
@@ -387,6 +385,10 @@ class HttpStreamFactory::Job
                               bool is_websocket,
                               const AddressList& addresses,
                               const NetLogWithSource& net_log);
+
+  // Returns true if the request should be throttled to allow for only one
+  // connection attempt to be made to an H2 server at a time.
+  bool ShouldThrottleConnectForSpdy() const;
 
   const HttpRequestInfo request_info_;
   RequestPriority priority_;
