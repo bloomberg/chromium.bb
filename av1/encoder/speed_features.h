@@ -386,8 +386,9 @@ typedef struct SPEED_FEATURES {
   int ml_prune_4_partition;
 
   // Use a ML model to adaptively terminate partition search after trying
-  // PARTITION_SPLIT.
-  int ml_early_term_after_part_split;
+  // PARTITION_SPLIT. Can take values 0 - 2, 0 meaning not being enabled, and
+  // 1 - 2 increasing aggressiveness in order.
+  int ml_early_term_after_part_split_level;
 
   int fast_cdef_search;
 

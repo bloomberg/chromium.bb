@@ -899,6 +899,9 @@ void av1_ml_early_term_after_split(AV1_COMP *const cpi, MACROBLOCK *const x,
   }
   if (!nn_config) return;
 
+  // Use more conservative threshold for level 1.
+  if (cpi->sf.ml_early_term_after_part_split_level < 2) thresh -= 0.3f;
+
   const MACROBLOCKD *const xd = &x->e_mbd;
   const int dc_q = av1_dc_quant_QTX(x->qindex, 0, xd->bd) >> (xd->bd - 8);
   const int bs = block_size_wide[bsize];

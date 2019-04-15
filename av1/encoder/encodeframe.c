@@ -2968,15 +2968,16 @@ BEGIN_PARTITION_SEARCH:
     restore_context(x, &x_ctx, mi_row, mi_col, bsize, num_planes);
   }  // if (do_split)
 
-  if (cpi->sf.ml_early_term_after_part_split && !frame_is_intra_only(cm) &&
-      !terminate_partition_search && do_rectangular_split &&
+  if (cpi->sf.ml_early_term_after_part_split_level &&
+      !frame_is_intra_only(cm) && !terminate_partition_search &&
+      do_rectangular_split &&
       (partition_horz_allowed || partition_vert_allowed)) {
     av1_ml_early_term_after_split(cpi, x, pc_tree, bsize, best_rdc.rdcost,
                                   part_none_rd, part_split_rd, split_rd, mi_row,
                                   mi_col, &terminate_partition_search);
   }
 
-  if (!cpi->sf.ml_early_term_after_part_split &&
+  if (!cpi->sf.ml_early_term_after_part_split_level &&
       cpi->sf.ml_prune_rect_partition && !frame_is_intra_only(cm) &&
       (partition_horz_allowed || partition_vert_allowed) &&
       !(prune_horz || prune_vert) && !terminate_partition_search) {
