@@ -12,7 +12,7 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/field_types.h"
-#include "components/autofill/core/browser/label_formatter_test_utils.h"
+#include "components/autofill/core/browser/label_formatter_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -62,12 +62,13 @@ TEST(AddressFormLabelFormatterTest,
   const std::unique_ptr<LabelFormatter> formatter =
       LabelFormatter::Create("en-US", ADDRESS_HOME_LINE1, GetFieldTypes());
 
-  EXPECT_THAT(
-      formatter->GetLabels(std::vector<AutofillProfile*>{&profile1, &profile2,
-                                                         &profile3, &profile4}),
-      ElementsAre(FormatExpectedLabel("John F Kennedy", "Brookline, MA 02445"),
-                  base::ASCIIToUTF16("Hyannis, MA"),
-                  base::ASCIIToUTF16("Paul Revere"), base::string16()));
+  EXPECT_THAT(formatter->GetLabels(std::vector<AutofillProfile*>{
+                  &profile1, &profile2, &profile3, &profile4}),
+              ElementsAre(ConstructLabelLine(
+                              {base::ASCIIToUTF16("John F Kennedy"),
+                               base::ASCIIToUTF16("Brookline, MA 02445")}),
+                          base::ASCIIToUTF16("Hyannis, MA"),
+                          base::ASCIIToUTF16("Paul Revere"), base::string16()));
 }
 
 TEST(AddressFormLabelFormatterTest,
@@ -100,7 +101,8 @@ TEST(AddressFormLabelFormatterTest,
   EXPECT_THAT(
       formatter->GetLabels(std::vector<AutofillProfile*>{&profile1, &profile2,
                                                          &profile3, &profile4}),
-      ElementsAre(FormatExpectedLabel("John F Kennedy", "333 Washington St"),
+      ElementsAre(ConstructLabelLine({base::ASCIIToUTF16("John F Kennedy"),
+                                      base::ASCIIToUTF16("333 Washington St")}),
                   base::ASCIIToUTF16("151 Irving Ave"),
                   base::ASCIIToUTF16("Paul Revere"), base::string16()));
 }
@@ -138,10 +140,11 @@ TEST(AddressFormLabelFormatterTest,
   const std::unique_ptr<LabelFormatter> formatter =
       LabelFormatter::Create("pt-BR", ADDRESS_HOME_LINE1, GetFieldTypes());
 
-  EXPECT_THAT(formatter->GetLabels(std::vector<AutofillProfile*>{&profile1}),
-              ElementsAre(FormatExpectedLabel("Tarsila do Amaral",
-                                              "Vila Mariana, São "
-                                              "Paulo-SP, 04094-050")));
+  EXPECT_THAT(
+      formatter->GetLabels(std::vector<AutofillProfile*>{&profile1}),
+      ElementsAre(ConstructLabelLine(
+          {base::ASCIIToUTF16("Tarsila do Amaral"),
+           base::UTF8ToUTF16("Vila Mariana, São Paulo-SP, 04094-050")})));
 }
 
 TEST(AddressFormLabelFormatterTest,
@@ -156,8 +159,9 @@ TEST(AddressFormLabelFormatterTest,
       LabelFormatter::Create("pt-BR", ADDRESS_HOME_ZIP, GetFieldTypes());
 
   EXPECT_THAT(formatter->GetLabels(std::vector<AutofillProfile*>{&profile1}),
-              ElementsAre(FormatExpectedLabel(
-                  "Tarsila do Amaral", "Av. Pedro Álvares Cabral, 1301")));
+              ElementsAre(ConstructLabelLine(
+                  {base::ASCIIToUTF16("Tarsila do Amaral"),
+                   base::UTF8ToUTF16("Av. Pedro Álvares Cabral, 1301")})));
 }
 
 TEST(AddressFormLabelFormatterTest, GetLabelsForBRProfilesAndFocusedName) {

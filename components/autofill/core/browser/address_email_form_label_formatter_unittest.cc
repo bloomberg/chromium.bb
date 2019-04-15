@@ -14,7 +14,7 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/field_types.h"
-#include "components/autofill/core/browser/label_formatter_test_utils.h"
+#include "components/autofill/core/browser/label_formatter_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -70,7 +70,8 @@ TEST(AddressEmailFormLabelFormatterTest, GetLabelsForUSProfilesAndFocusedName) {
   EXPECT_THAT(
       formatter->GetLabels(std::vector<AutofillProfile*>{&profile1, &profile2,
                                                          &profile3, &profile4}),
-      ElementsAre(FormatExpectedLabel("333 Washington St", "jfk@gmail.com"),
+      ElementsAre(ConstructLabelLine({base::ASCIIToUTF16("333 Washington St"),
+                                      base::ASCIIToUTF16("jfk@gmail.com")}),
                   base::ASCIIToUTF16("151 Irving Ave"),
                   base::ASCIIToUTF16("paul1775@gmail.com"), base::string16()));
 }
@@ -105,7 +106,8 @@ TEST(AddressEmailFormLabelFormatterTest,
   EXPECT_THAT(
       formatter->GetLabels(std::vector<AutofillProfile*>{&profile1, &profile2,
                                                          &profile3, &profile4}),
-      ElementsAre(FormatExpectedLabel("John F Kennedy", "jfk@gmail.com"),
+      ElementsAre(ConstructLabelLine({base::ASCIIToUTF16("John F Kennedy"),
+                                      base::ASCIIToUTF16("jfk@gmail.com")}),
                   base::ASCIIToUTF16("Jackie Kennedy"),
                   base::ASCIIToUTF16("paul1775@gmail.com"), base::string16()));
 }
@@ -140,7 +142,8 @@ TEST(AddressEmailFormLabelFormatterTest,
   EXPECT_THAT(
       formatter->GetLabels(std::vector<AutofillProfile*>{&profile1, &profile2,
                                                          &profile3, &profile4}),
-      ElementsAre(FormatExpectedLabel("333 Washington St", "jfk@gmail.com"),
+      ElementsAre(ConstructLabelLine({base::ASCIIToUTF16("333 Washington St"),
+                                      base::ASCIIToUTF16("jfk@gmail.com")}),
                   base::ASCIIToUTF16("151 Irving Ave"),
                   base::ASCIIToUTF16("paul1775@gmail.com"), base::string16()));
 }
@@ -174,7 +177,8 @@ TEST(AddressEmailFormLabelFormatterTest,
   EXPECT_THAT(
       formatter->GetLabels(std::vector<AutofillProfile*>{&profile1, &profile2,
                                                          &profile3, &profile4}),
-      ElementsAre(FormatExpectedLabel("John F Kennedy", "333 Washington St"),
+      ElementsAre(ConstructLabelLine({base::ASCIIToUTF16("John F Kennedy"),
+                                      base::ASCIIToUTF16("333 Washington St")}),
                   base::ASCIIToUTF16("Jackie Kennedy"), base::string16(),
                   base::ASCIIToUTF16("141 Franklin St")));
 }
@@ -199,10 +203,12 @@ TEST(AddressEmailFormLabelFormatterTest, GetLabelsForBRProfilesAndFocusedName) {
 
   EXPECT_THAT(
       formatter->GetLabels(std::vector<AutofillProfile*>{&profile1, &profile2}),
-      ElementsAre(FormatExpectedLabel("Av. Pedro Álvares Cabral, 1301",
-                                      "tarsila@aol.com"),
-                  FormatExpectedLabel("Estr. Dona Castorina, 110",
-                                      "aavila@uol.com.br")));
+      ElementsAre(
+          ConstructLabelLine(
+              {base::UTF8ToUTF16("Av. Pedro Álvares Cabral, 1301"),
+               base::ASCIIToUTF16("tarsila@aol.com")}),
+          ConstructLabelLine({base::ASCIIToUTF16("Estr. Dona Castorina, 110"),
+                              base::ASCIIToUTF16("aavila@uol.com.br")})));
 }
 
 TEST(AddressEmailFormLabelFormatterTest,
@@ -226,8 +232,11 @@ TEST(AddressEmailFormLabelFormatterTest,
 
   EXPECT_THAT(
       formatter->GetLabels(std::vector<AutofillProfile*>{&profile1, &profile2}),
-      ElementsAre(FormatExpectedLabel("Tarsila do Amaral", "tarsila@aol.com"),
-                  FormatExpectedLabel("Artur Avila", "aavila@uol.com.br")));
+      ElementsAre(
+          ConstructLabelLine({base::ASCIIToUTF16("Tarsila do Amaral"),
+                              base::ASCIIToUTF16("tarsila@aol.com")}),
+          ConstructLabelLine({base::ASCIIToUTF16("Artur Avila"),
+                              base::ASCIIToUTF16("aavila@uol.com.br")})));
 }
 
 TEST(AddressEmailFormLabelFormatterTest,
@@ -251,10 +260,12 @@ TEST(AddressEmailFormLabelFormatterTest,
 
   EXPECT_THAT(
       formatter->GetLabels(std::vector<AutofillProfile*>{&profile1, &profile2}),
-      ElementsAre(FormatExpectedLabel("Av. Pedro Álvares Cabral, 1301",
-                                      "tarsila@aol.com"),
-                  FormatExpectedLabel("Estr. Dona Castorina, 110",
-                                      "aavila@uol.com.br")));
+      ElementsAre(
+          ConstructLabelLine(
+              {base::UTF8ToUTF16("Av. Pedro Álvares Cabral, 1301"),
+               base::ASCIIToUTF16("tarsila@aol.com")}),
+          ConstructLabelLine({base::ASCIIToUTF16("Estr. Dona Castorina, 110"),
+                              base::ASCIIToUTF16("aavila@uol.com.br")})));
 }
 
 TEST(AddressEmailFormLabelFormatterTest,
@@ -278,10 +289,12 @@ TEST(AddressEmailFormLabelFormatterTest,
 
   EXPECT_THAT(
       formatter->GetLabels(std::vector<AutofillProfile*>{&profile1, &profile2}),
-      ElementsAre(
-          FormatExpectedLabel("Tarsila do Amaral",
-                              "Av. Pedro Álvares Cabral, 1301"),
-          FormatExpectedLabel("Artur Avila", "Estr. Dona Castorina, 110")));
+      ElementsAre(ConstructLabelLine(
+                      {base::ASCIIToUTF16("Tarsila do Amaral"),
+                       base::UTF8ToUTF16("Av. Pedro Álvares Cabral, 1301")}),
+                  ConstructLabelLine(
+                      {base::ASCIIToUTF16("Artur Avila"),
+                       base::ASCIIToUTF16("Estr. Dona Castorina, 110")})));
 }
 
 TEST(AddressEmailFormLabelFormatterTest,
@@ -300,7 +313,8 @@ TEST(AddressEmailFormLabelFormatterTest,
   // Checks that only address fields in the form are shown in the label.
   EXPECT_THAT(
       formatter->GetLabels(std::vector<AutofillProfile*>{&profile1}),
-      ElementsAre(FormatExpectedLabel("John F Kennedy", "Brookline, MA")));
+      ElementsAre(ConstructLabelLine({base::ASCIIToUTF16("John F Kennedy"),
+                                      base::ASCIIToUTF16("Brookline, MA")})));
 }
 
 }  // namespace

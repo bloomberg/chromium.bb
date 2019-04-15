@@ -14,7 +14,7 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/field_types.h"
-#include "components/autofill/core/browser/label_formatter_test_utils.h"
+#include "components/autofill/core/browser/label_formatter_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -63,7 +63,8 @@ TEST(ContactFormLabelFormatterTest, GetLabelsForUSProfilesAndFocusedName) {
   EXPECT_THAT(
       formatter->GetLabels(std::vector<AutofillProfile*>{&profile1, &profile2,
                                                          &profile3, &profile4}),
-      ElementsAre(FormatExpectedLabel("(617) 730-2000", "jfk@gmail.com"),
+      ElementsAre(ConstructLabelLine({base::ASCIIToUTF16("(617) 730-2000"),
+                                      base::ASCIIToUTF16("jfk@gmail.com")}),
                   base::ASCIIToUTF16("jackie@outlook.com"),
                   base::ASCIIToUTF16("(617) 523-2338"), base::string16()));
 }
@@ -97,9 +98,11 @@ TEST(ContactFormLabelFormatterTest, GetLabelsForUSProfilesAndFocusedEmail) {
   EXPECT_THAT(
       formatter->GetLabels(std::vector<AutofillProfile*>{&profile1, &profile2,
                                                          &profile3, &profile4}),
-      ElementsAre(FormatExpectedLabel("John F Kennedy", "(617) 730-2000"),
+      ElementsAre(ConstructLabelLine({base::ASCIIToUTF16("John F Kennedy"),
+                                      base::ASCIIToUTF16("(617) 730-2000")}),
                   base::ASCIIToUTF16("Jackie Kennedy"),
-                  FormatExpectedLabel("Paul Revere", "(617) 523-2338"),
+                  ConstructLabelLine({base::ASCIIToUTF16("Paul Revere"),
+                                      base::ASCIIToUTF16("(617) 523-2338")}),
                   base::string16()));
 }
 
@@ -132,9 +135,12 @@ TEST(ContactFormLabelFormatterTest, GetLabelsForUSProfilesAndFocusedPhone) {
   EXPECT_THAT(
       formatter->GetLabels(std::vector<AutofillProfile*>{&profile1, &profile2,
                                                          &profile3, &profile4}),
-      ElementsAre(FormatExpectedLabel("John F Kennedy", "jfk@gmail.com"),
-                  FormatExpectedLabel("Jackie Kennedy", "jackie@outlook.com"),
-                  base::ASCIIToUTF16("Paul Revere"), base::string16()));
+      ElementsAre(
+          ConstructLabelLine({base::ASCIIToUTF16("John F Kennedy"),
+                              base::ASCIIToUTF16("jfk@gmail.com")}),
+          ConstructLabelLine({base::ASCIIToUTF16("Jackie Kennedy"),
+                              base::ASCIIToUTF16("jackie@outlook.com")}),
+          base::ASCIIToUTF16("Paul Revere"), base::string16()));
 }
 
 TEST(ContactFormLabelFormatterTest, GetLabelsForBRProfilesAndFocusedName) {
@@ -157,8 +163,11 @@ TEST(ContactFormLabelFormatterTest, GetLabelsForBRProfilesAndFocusedName) {
 
   EXPECT_THAT(
       formatter->GetLabels(std::vector<AutofillProfile*>{&profile1, &profile2}),
-      ElementsAre(FormatExpectedLabel("(11) 2648-0254", "tarsila@aol.com"),
-                  FormatExpectedLabel("(21) 98765-0000", "aavila@uol.com.br")));
+      ElementsAre(
+          ConstructLabelLine({base::ASCIIToUTF16("(11) 2648-0254"),
+                              base::ASCIIToUTF16("tarsila@aol.com")}),
+          ConstructLabelLine({base::ASCIIToUTF16("(21) 98765-0000"),
+                              base::ASCIIToUTF16("aavila@uol.com.br")})));
 }
 
 TEST(ContactFormLabelFormatterTest, GetLabelsForBRProfilesAndFocusedEmail) {
@@ -181,8 +190,10 @@ TEST(ContactFormLabelFormatterTest, GetLabelsForBRProfilesAndFocusedEmail) {
 
   EXPECT_THAT(
       formatter->GetLabels(std::vector<AutofillProfile*>{&profile1, &profile2}),
-      ElementsAre(FormatExpectedLabel("Tarsila do Amaral", "(11) 2648-0254"),
-                  FormatExpectedLabel("Artur Avila", "(21) 98765-0000")));
+      ElementsAre(ConstructLabelLine({base::ASCIIToUTF16("Tarsila do Amaral"),
+                                      base::ASCIIToUTF16("(11) 2648-0254")}),
+                  ConstructLabelLine({base::ASCIIToUTF16("Artur Avila"),
+                                      base::ASCIIToUTF16("(21) 98765-0000")})));
 }
 
 TEST(ContactFormLabelFormatterTest, GetLabelsForBRProfilesAndFocusedPhone) {
@@ -205,8 +216,11 @@ TEST(ContactFormLabelFormatterTest, GetLabelsForBRProfilesAndFocusedPhone) {
 
   EXPECT_THAT(
       formatter->GetLabels(std::vector<AutofillProfile*>{&profile1, &profile2}),
-      ElementsAre(FormatExpectedLabel("Tarsila do Amaral", "tarsila@aol.com"),
-                  FormatExpectedLabel("Artur Avila", "aavila@uol.com.br")));
+      ElementsAre(
+          ConstructLabelLine({base::ASCIIToUTF16("Tarsila do Amaral"),
+                              base::ASCIIToUTF16("tarsila@aol.com")}),
+          ConstructLabelLine({base::ASCIIToUTF16("Artur Avila"),
+                              base::ASCIIToUTF16("aavila@uol.com.br")})));
 }
 
 TEST(ContactFormLabelFormatterTest, GetLabelsForNameAndPhoneWithFocusedName) {

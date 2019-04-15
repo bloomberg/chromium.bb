@@ -122,10 +122,8 @@ void AddLabelPartIfNotEmpty(const base::string16& part,
 }
 
 base::string16 ConstructLabelLine(const std::vector<base::string16>& parts) {
-  return parts.size() == kMaxNumberOfParts
-             ? l10n_util::GetStringFUTF16(IDS_AUTOFILL_SUGGESTION_LABEL,
-                                          parts.front(), parts.back())
-             : base::JoinString(parts, base::string16());
+  return base::JoinString(parts, l10n_util::GetStringUTF16(
+                                     IDS_AUTOFILL_SUGGESTION_LABEL_SEPARATOR));
 }
 
 base::string16 ConstructLabelLines(const base::string16& top_line,

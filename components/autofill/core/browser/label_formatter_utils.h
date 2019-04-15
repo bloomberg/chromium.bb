@@ -30,8 +30,6 @@ constexpr uint32_t kPhone = 1 << 3;
 
 }  // namespace label_formatter_groups
 
-const size_t kMaxNumberOfParts = 2;
-
 // Indicates where to split the label text when the label spans two lines.
 // This is used in the kAutofillUseImprovedLabelDisambiguation feature.
 constexpr char kMultilineLabelDelimiter[] = "\n";
@@ -76,16 +74,9 @@ std::vector<ServerFieldType> ExtractAddressFieldTypes(
 void AddLabelPartIfNotEmpty(const base::string16& part,
                             std::vector<base::string16>* parts);
 
-// Returns the text to show to the user. |parts| may have 0, 1, or 2 elements.
-//
-// If |parts| is empty, then an empty string is returned. This might happen
-// when (A) a profile has only name and address information and (B) the user
-// with this profile interacts with a contact form, which excludes address
-// fields and includes name, email address, and phone number fields.
-//
-// If |parts| has a single element, then the string is returned. This might
-// happen when (A) a profile has only name and email address information and
-// (B) the user with this profile interacts with a contact form.
+// Returns the text to show to the user. If there is more than one element in
+// |parts|, then a separator, |IDS_AUTOFILL_SUGGESTION_LABEL_SEPARATOR|, is
+// inserted between them.
 base::string16 ConstructLabelLine(const std::vector<base::string16>& parts);
 
 // Returns the text to be displayed in a multiline label plus maybe a

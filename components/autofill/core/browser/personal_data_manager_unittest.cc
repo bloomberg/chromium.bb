@@ -38,7 +38,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_structure.h"
-#include "components/autofill/core/browser/label_formatter_test_utils.h"
+#include "components/autofill/core/browser/label_formatter_utils.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill/core/browser/suggestion_selection.h"
 #include "components/autofill/core/browser/sync_utils.h"
@@ -2566,10 +2566,12 @@ TEST_F(PersonalDataManagerTest,
       ElementsAre(AllOf(
           testing::Field(
               &Suggestion::label,
-              FormatExpectedLabel("(978) 674-4120", "hoa.pham@comcast.net")),
+              ConstructLabelLine({base::ASCIIToUTF16("(978) 674-4120"),
+                                  base::ASCIIToUTF16("hoa.pham@comcast.net")})),
           testing::Field(
               &Suggestion::additional_label,
-              FormatExpectedLabel("(978) 674-4120", "hoa.pham@comcast.net")),
+              ConstructLabelLine({base::ASCIIToUTF16("(978) 674-4120"),
+                                  base::ASCIIToUTF16("hoa.pham@comcast.net")})),
           testing::Field(&Suggestion::icon, "userAccountAvatarIcon"))));
 }
 #endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
@@ -2624,13 +2626,16 @@ TEST_F(
           AutofillType(NAME_FULL), base::string16(), false,
           std::vector<ServerFieldType>{NAME_FULL, ADDRESS_HOME_STREET_ADDRESS,
                                        PHONE_HOME_WHOLE_NUMBER}),
-      ElementsAre(AllOf(testing::Field(&Suggestion::label,
-                                       FormatExpectedLabel("(978) 674-4120",
-                                                           "401 Merrimack St")),
-                        testing::Field(&Suggestion::additional_label,
-                                       FormatExpectedLabel("(978) 674-4120",
-                                                           "401 Merrimack St")),
-                        testing::Field(&Suggestion::icon, "locationOnIcon"))));
+      ElementsAre(AllOf(
+          testing::Field(
+              &Suggestion::label,
+              ConstructLabelLine({base::ASCIIToUTF16("(978) 674-4120"),
+                                  base::ASCIIToUTF16("401 Merrimack St")})),
+          testing::Field(
+              &Suggestion::additional_label,
+              ConstructLabelLine({base::ASCIIToUTF16("(978) 674-4120"),
+                                  base::ASCIIToUTF16("401 Merrimack St")})),
+          testing::Field(&Suggestion::icon, "locationOnIcon"))));
 }
 #endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
 
@@ -2649,18 +2654,21 @@ TEST_F(
       /*enabled_features=*/{features::kAutofillUseImprovedLabelDisambiguation},
       /*disabled_features=*/{});
 
-  EXPECT_THAT(personal_data_->GetProfileSuggestions(
-                  AutofillType(NAME_FULL), base::string16(), false,
-                  std::vector<ServerFieldType>{
-                      NAME_FULL, ADDRESS_HOME_STREET_ADDRESS, EMAIL_ADDRESS}),
-              ElementsAre(AllOf(
-                  testing::Field(&Suggestion::label,
-                                 FormatExpectedLabel("401 Merrimack St",
-                                                     "hoa.pham@comcast.net")),
-                  testing::Field(&Suggestion::additional_label,
-                                 FormatExpectedLabel("401 Merrimack St",
-                                                     "hoa.pham@comcast.net")),
-                  testing::Field(&Suggestion::icon, "locationOnIcon"))));
+  EXPECT_THAT(
+      personal_data_->GetProfileSuggestions(
+          AutofillType(NAME_FULL), base::string16(), false,
+          std::vector<ServerFieldType>{NAME_FULL, ADDRESS_HOME_STREET_ADDRESS,
+                                       EMAIL_ADDRESS}),
+      ElementsAre(AllOf(
+          testing::Field(
+              &Suggestion::label,
+              ConstructLabelLine({base::ASCIIToUTF16("401 Merrimack St"),
+                                  base::ASCIIToUTF16("hoa.pham@comcast.net")})),
+          testing::Field(
+              &Suggestion::additional_label,
+              ConstructLabelLine({base::ASCIIToUTF16("401 Merrimack St"),
+                                  base::ASCIIToUTF16("hoa.pham@comcast.net")})),
+          testing::Field(&Suggestion::icon, "locationOnIcon"))));
 }
 #endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
 
