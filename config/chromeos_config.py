@@ -833,7 +833,7 @@ def GeneralTemplates(site_config):
 
   # Tast is an alternate system for running integration tests.
 
-  # The expression specified here matches the union of the tast.mustpass-*
+  # The expression specified here matches the union of the tast.critical-*
   # Autotest server tests, which are used to run "important" Tast tests on
   # real hardware in the lab.
   site_config.AddTemplate(
@@ -843,7 +843,7 @@ def GeneralTemplates(site_config):
                                       ['(!disabled && !"group:*" && '
                                        '!informational)'])],
   )
-  # The expression specified here matches the union of tast.mustpass-* and
+  # The expression specified here matches the union of tast.critical-* and
   # tast.informational-*.
   site_config.AddTemplate(
       'tast_vm_canary_tests',
