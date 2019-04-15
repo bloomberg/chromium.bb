@@ -64,8 +64,7 @@ class CORE_EXPORT File final : public Blob {
       ExecutionContext*,
       const HeapVector<ArrayBufferOrArrayBufferViewOrBlobOrUSVString>&,
       const String& file_name,
-      const FilePropertyBag*,
-      ExceptionState&);
+      const FilePropertyBag*);
 
   static File* Create(const String& path,
                       ContentTypeLookupPolicy policy = kWellKnownContentTypes) {

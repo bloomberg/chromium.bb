@@ -150,10 +150,8 @@ TEST_F(NavigatorShareTest, ShareFile) {
   file_property_bag.setType(content_type);
 
   HeapVector<Member<File>> files;
-  DummyExceptionStateForTesting exception_state;
   files.push_back(File::Create(ExecutionContext::From(GetScriptState()),
-                               blob_parts, file_name, &file_property_bag,
-                               exception_state));
+                               blob_parts, file_name, &file_property_bag));
 
   ShareData share_data;
   share_data.setFiles(files);
