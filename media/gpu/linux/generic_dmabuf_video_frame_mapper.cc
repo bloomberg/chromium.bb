@@ -42,14 +42,16 @@ void MunmapBuffers(const std::vector<std::pair<uint8_t*, size_t>>& chunks,
 // |chunks| is the vector of pair of (address, size) to be called in munmap().
 // |src_video_frame| is the video frame that owns dmabufs to the mapped planes.
 scoped_refptr<VideoFrame> CreateMappedVideoFrame(
-    const VideoFrameLayout& layout,
-    const gfx::Rect& visible_rect,
+    scoped_refptr<const VideoFrame> src_video_frame,
     uint8_t* plane_addrs[kNumOfYUVPlanes],
-    const std::vector<std::pair<uint8_t*, size_t>>& chunks,
-    scoped_refptr<const VideoFrame> src_video_frame) {
-  auto video_frame = VideoFrame::WrapExternalYuvDataWithLayout(
+    const std::vector<std::pair<uint8_t*, size_t>>& chunks) {
+  scoped_refptr<VideoFrame> video_frame;
+
+  const auto& layout = src_video_frame->layout();
+  const auto& visible_rect = src_video_frame->visible_rect();
+  video_frame = VideoFrame::WrapExternalYuvDataWithLayout(
       layout, visible_rect, visible_rect.size(), plane_addrs[0], plane_addrs[1],
-      plane_addrs[2], base::TimeDelta());
+      plane_addrs[2], src_video_frame->timestamp());
   if (!video_frame) {
     return nullptr;
   }
@@ -71,13 +73,6 @@ scoped_refptr<VideoFrame> GenericDmaBufVideoFrameMapper::Map(
   }
 
   const VideoFrameLayout& layout = video_frame->layout();
-  const VideoPixelFormat pixel_format = layout.format();
-  // GenericDmaBufVideoFrameMapper only supports NV12 and YV12 for output
-  // picture format.
-  if (pixel_format != PIXEL_FORMAT_NV12 && pixel_format != PIXEL_FORMAT_YV12) {
-    NOTIMPLEMENTED() << " Unsupported PixelFormat: " << pixel_format;
-    return nullptr;
-  }
 
   // Map all buffers from their start address.
   const auto& dmabuf_fds = video_frame->DmabufFds();
@@ -110,8 +105,7 @@ scoped_refptr<VideoFrame> GenericDmaBufVideoFrameMapper::Map(
       plane_addrs[i] = buffer_addrs[i] + planes[i].offset;
     }
   }
-  return CreateMappedVideoFrame(layout, video_frame->visible_rect(),
-                                plane_addrs, chunks, std::move(video_frame));
+  return CreateMappedVideoFrame(std::move(video_frame), plane_addrs, chunks);
 }
 
 }  // namespace media
