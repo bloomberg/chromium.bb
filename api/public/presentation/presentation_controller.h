@@ -48,7 +48,8 @@ class ReceiverObserver {
                                      const std::string& service_id) = 0;
 };
 
-class Controller final : public ServiceListener::Observer {
+class Controller final : public ServiceListener::Observer,
+                         public Connection::ParentDelegate {
  public:
   class ReceiverWatch {
    public:
@@ -132,9 +133,16 @@ class Controller final : public ServiceListener::Observer {
   ConnectRequest ReconnectConnection(std::unique_ptr<Connection> connection,
                                      RequestDelegate* delegate);
 
-  // Called by the embedder to report that a presentation has been terminated.
-  void OnPresentationTerminated(const std::string& presentation_id,
-                                TerminationReason reason);
+  // Connection::ParentDelegate overrides.
+  Error CloseConnection(Connection* connection,
+                        Connection::CloseReason reason) override;
+
+  // Also called by the embedder to report that a presentation has been
+  // terminated.
+  Error OnPresentationTerminated(const std::string& presentation_id,
+                                 TerminationReason reason) override;
+
+  void OnConnectionDestroyed(Connection* connection) override;
 
   // Returns an empty string if no such presentation ID is found.
   std::string GetServiceIdForPresentationId(
@@ -143,18 +151,14 @@ class Controller final : public ServiceListener::Observer {
   ProtocolConnection* GetConnectionRequestGroupStream(
       const std::string& service_id);
 
+  // TODO(btolsch): still used?
   void SetConnectionRequestGroupStreamForTest(
       const std::string& service_id,
       std::unique_ptr<ProtocolConnection> stream);
 
-  void OnConnectionDestroyed(Connection* connection);
-
  private:
-  struct TerminateListener;
-  struct InitiationRequest;
-  struct ConnectionRequest;
-  struct TerminationRequest;
-  struct MessageGroupStreams;
+  class TerminationListener;
+  class MessageGroupStreams;
 
   struct ControlledPresentation {
     std::string service_id;
@@ -165,7 +169,12 @@ class Controller final : public ServiceListener::Observer {
   static std::string MakePresentationId(const std::string& url,
                                         const std::string& service_id);
 
-  uint64_t GetNextConnectionId(const std::string& id);
+  void OpenConnection(uint64_t connection_id,
+                      uint64_t endpoint_id,
+                      const std::string& service_id,
+                      RequestDelegate* request_delegate,
+                      std::unique_ptr<Connection>&& connection,
+                      std::unique_ptr<ProtocolConnection>&& stream);
 
   // Cancels compatible receiver monitoring for the given |urls|, |observer|
   // pair.
@@ -198,6 +207,10 @@ class Controller final : public ServiceListener::Observer {
 
   std::unique_ptr<UrlAvailabilityRequester> availability_requester_;
   std::map<std::string, IPEndpoint> receiver_endpoints_;
+
+  std::map<std::string, std::unique_ptr<MessageGroupStreams>> group_streams_;
+  std::map<std::string, std::unique_ptr<TerminationListener>>
+      termination_listener_by_id_;
 };
 
 }  // namespace presentation

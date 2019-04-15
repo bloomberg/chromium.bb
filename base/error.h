@@ -52,6 +52,7 @@ class Error {
     kInitializationFailure,
     kInvalidIPV4Address,
     kInvalidIPV6Address,
+    kConnectionFailed,
 
     kSocketOptionSettingFailure,
     kSocketBindFailure,

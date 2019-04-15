@@ -32,7 +32,7 @@ class MockConnectionDelegate final : public Connection::Delegate {
   MOCK_METHOD0(OnClosedByRemote, void());
   MOCK_METHOD0(OnDiscarded, void());
   MOCK_METHOD1(OnError, void(const absl::string_view message));
-  MOCK_METHOD0(OnTerminatedByRemote, void());
+  MOCK_METHOD0(OnTerminated, void());
   MOCK_METHOD1(OnStringMessage, void(const absl::string_view message));
   MOCK_METHOD1(OnBinaryMessage, void(const std::vector<uint8_t>& data));
 };
@@ -184,7 +184,7 @@ TEST_F(PresentationReceiverTest, StartPresentation) {
 
   MockConnectionDelegate null_connection_delegate;
   Connection connection(Connection::PresentationInfo{presentation_id, url1_},
-                        Connection::Role::kReceiver, &null_connection_delegate);
+                        &null_connection_delegate, Receiver::Get());
   Receiver::Get()->OnPresentationStarted(presentation_id, &connection,
                                          ResponseResult::kSuccess);
   msgs::PresentationStartResponse response;

@@ -19,7 +19,24 @@ namespace openscreen {
 namespace presentation {
 namespace {
 
-msgs::PresentationTerminationEvent_reason GetEventReason(
+msgs::PresentationConnectionCloseEvent_reason GetEventCloseReason(
+    Connection::CloseReason reason) {
+  switch (reason) {
+    case Connection::CloseReason::kDiscarded:
+      return msgs::PresentationConnectionCloseEvent_reason::
+          kConnectionObjectDiscarded;
+
+    case Connection::CloseReason::kError:
+      return msgs::PresentationConnectionCloseEvent_reason::
+          kUnrecoverableErrorWhileSendingOrReceivingMessage;
+
+    case Connection::CloseReason::kClosed:  // fallthrough
+    default:
+      return msgs::PresentationConnectionCloseEvent_reason::kCloseMethodCalled;
+  }
+}
+
+msgs::PresentationTerminationEvent_reason GetEventTerminationReason(
     TerminationReason reason) {
   switch (reason) {
     case TerminationReason::kReceiverUserTerminated:
@@ -225,7 +242,7 @@ ErrorOr<size_t> Receiver::OnStreamMessage(uint64_t endpoint_id,
     }
 
     case msgs::Type::kPresentationTerminationRequest: {
-      OSP_VLOG << "got presentation-termination-open-request";
+      OSP_VLOG << "got presentation-termination-request";
       msgs::PresentationTerminationRequest request;
       const ssize_t result = msgs::DecodePresentationTerminationRequest(
           buffer, buffer_size, &request);
@@ -238,12 +255,17 @@ ErrorOr<size_t> Receiver::OnStreamMessage(uint64_t endpoint_id,
       PresentationID presentation_id(std::move(request.presentation_id));
       OSP_LOG << "Got termination request for: " << presentation_id;
 
-      auto presentation_entry = started_presentations_.end();
-      if (presentation_id) {
-        presentation_entry = started_presentations_.find(presentation_id);
-      }
+      auto presentation_entry = started_presentations_.find(presentation_id);
+      if (presentation_id &&
+          presentation_entry != started_presentations_.end()) {
+        TerminationReason reason =
+            (request.reason == msgs::PresentationTerminationRequest_reason::
+                                   kUserTerminatedViaController)
+                ? TerminationReason::kControllerTerminateCalled
+                : TerminationReason::kControllerUserTerminated;
+        presentation_entry->second.terminate_request_id = request.request_id;
+        delegate_->TerminatePresentation(presentation_id, reason);
 
-      if (presentation_entry != started_presentations_.end()) {
         msgs::PresentationTerminationResponse response;
         response.request_id = request.request_id;
         response.result = msgs::PresentationTerminationResponse_result::
@@ -403,6 +425,23 @@ Error Receiver::OnConnectionCreated(uint64_t request_id,
   return Error::None();
 }
 
+Error Receiver::CloseConnection(Connection* connection,
+                                Connection::CloseReason reason) {
+  std::unique_ptr<ProtocolConnection> protocol_connection =
+      GetProtocolConnection(connection->endpoint_id());
+
+  if (!protocol_connection)
+    return Error::Code::kNoActiveConnection;
+
+  msgs::PresentationConnectionCloseEvent event;
+  event.connection_id = connection->connection_id();
+  event.reason = GetEventCloseReason(reason);
+  event.has_error_message = false;
+  msgs::CborEncodeBuffer buffer;
+  return protocol_connection->WriteMessage(
+      event, msgs::EncodePresentationConnectionCloseEvent);
+}
+
 Error Receiver::OnPresentationTerminated(const std::string& presentation_id,
                                          TerminationReason reason) {
   auto presentation_entry = started_presentations_.find(presentation_id);
@@ -418,7 +457,7 @@ Error Receiver::OnPresentationTerminated(const std::string& presentation_id,
     return Error::Code::kNoActiveConnection;
 
   for (auto* connection : presentation.connections)
-    connection->OnTerminatedByRemote();
+    connection->OnTerminated();
 
   if (presentation.terminate_request_id) {
     // TODO(btolsch): Also timeout if this point isn't reached.
@@ -430,10 +469,9 @@ Error Receiver::OnPresentationTerminated(const std::string& presentation_id,
                                                 protocol_connection.get());
   }
 
-  // TODO(btolsch): Same request/event question as connection-close.
   msgs::PresentationTerminationEvent event;
   event.presentation_id = presentation_id;
-  event.reason = GetEventReason(reason);
+  event.reason = GetEventTerminationReason(reason);
   started_presentations_.erase(presentation_entry);
   return WritePresentationTerminationEvent(event, protocol_connection.get());
 }

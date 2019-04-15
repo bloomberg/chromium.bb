@@ -23,44 +23,21 @@ namespace presentation {
 
 namespace {
 
-msgs::PresentationConnectionCloseEvent_reason GetEventCloseReason(
-    Connection::CloseReason reason) {
-  switch (reason) {
-    case Connection::CloseReason::kDiscarded:
-      return msgs::PresentationConnectionCloseEvent_reason::
-             kConnectionObjectDiscarded;
-
-    case Connection::CloseReason::kError:
-      return msgs::PresentationConnectionCloseEvent_reason::
-             kUnrecoverableErrorWhileSendingOrReceivingMessage;
-
-    case Connection::CloseReason::kClosed:  // fallthrough
-    default:
-      return msgs::PresentationConnectionCloseEvent_reason::kCloseMethodCalled;
-  }
-}
-
 // TODO(jophba): replace Write methods with a unified write message surface
 Error WriteConnectionMessage(const msgs::PresentationConnectionMessage& message,
                              ProtocolConnection* connection) {
   return connection->WriteMessage(message,
                                   msgs::EncodePresentationConnectionMessage);
 }
-
-Error WriteCloseMessage(const msgs::PresentationConnectionCloseEvent& message,
-                        ProtocolConnection* connection) {
-  return connection->WriteMessage(message,
-                                  msgs::EncodePresentationConnectionCloseEvent);
-}
 }  // namespace
 
 Connection::Connection(const PresentationInfo& info,
-                       Role role,
-                       Delegate* delegate)
+                       Delegate* delegate,
+                       ParentDelegate* parent_delegate)
     : presentation_(info),
       state_(State::kConnecting),
       delegate_(delegate),
-      role_(role),
+      parent_delegate_(parent_delegate),
       connection_id_(0),
       protocol_connection_(nullptr) {}
 
@@ -69,13 +46,7 @@ Connection::~Connection() {
     Close(CloseReason::kDiscarded);
     delegate_->OnDiscarded();
   }
-  // TODO(jophba): Let the controller and receiver add themselves as
-  // delegates that get informed about connection destruction, instead
-  // of having the connection know about them.
-  if (role_ == Role::kController)
-    ;  // Controller::Get()->OnConnectionDestroyed(this);
-  else
-    Receiver::Get()->OnConnectionDestroyed(this);
+  parent_delegate_->OnConnectionDestroyed(this);
 }
 
 void Connection::OnConnected(
@@ -112,12 +83,12 @@ void Connection::OnClosedByRemote() {
     delegate_->OnClosedByRemote();
 }
 
-void Connection::OnTerminatedByRemote() {
+void Connection::OnTerminated() {
   if (state_ == State::kTerminated)
     return;
   protocol_connection_.reset();
   state_ = State::kTerminated;
-  delegate_->OnTerminatedByRemote();
+  delegate_->OnTerminated();
 }
 
 Error Connection::SendString(absl::string_view message) {
@@ -160,33 +131,7 @@ Error Connection::Close(CloseReason reason) {
   state_ = State::kClosed;
   protocol_connection_.reset();
 
-  // TODO(jophba): switch to a strategy pattern.
-  switch (role_) {
-    case Role::kController:
-      OSP_DCHECK(false) << "Controller implementation hasn't landed";
-      return Error::Code::kNotImplemented;
-
-    case Role::kReceiver: {
-      // TODO(jophba): replace with bidirectional protocol_connection_
-      // Need to open a stream pointed the other way from ours, otherwise
-      // the receiver has a stream but the controller does not.
-      std::unique_ptr<ProtocolConnection> stream =
-          GetProtocolConnection(endpoint_id_.value());
-
-      if (!stream)
-        return Error::Code::kNoActiveConnection;
-
-      msgs::PresentationConnectionCloseEvent event;
-      event.connection_id = connection_id_.value();
-      // TODO(btolsch): More event/request asymmetry...
-      event.reason = GetEventCloseReason(reason);
-      event.has_error_message = false;
-      msgs::CborEncodeBuffer buffer;
-      return WriteCloseMessage(event, stream.get());
-    } break;
-  }
-
-  return Error::None();
+  return parent_delegate_->CloseConnection(this, reason);
 }
 
 void Connection::Terminate(TerminationReason reason) {
@@ -194,15 +139,9 @@ void Connection::Terminate(TerminationReason reason) {
     return;
   state_ = State::kTerminated;
   protocol_connection_.reset();
-  switch (role_) {
-    case Role::kController:
-      // Controller::Get()->OnPresentationTerminated(presentation_.id, reason);
-      break;
-    case Role::kReceiver:
-      Receiver::Get()->OnPresentationTerminated(presentation_.id, reason);
-      break;
-  }
+  parent_delegate_->OnPresentationTerminated(presentation_.id, reason);
 }
+
 ConnectionManager::ConnectionManager(MessageDemuxer* demuxer) {
   message_watch_ = demuxer->SetDefaultMessageTypeWatch(
       msgs::Type::kPresentationConnectionMessage, this);

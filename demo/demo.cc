@@ -113,13 +113,25 @@ class ReceiverObserver final : public presentation::ReceiverObserver {
   void OnReceiverAvailable(const std::string& presentation_url,
                            const std::string& service_id) override {
     std::string safe_service_id = SanitizeServiceId(service_id);
+    safe_service_ids_.emplace(safe_service_id, service_id);
     OSP_LOG << "available! " << safe_service_id;
   }
   void OnReceiverUnavailable(const std::string& presentation_url,
                              const std::string& service_id) override {
     std::string safe_service_id = SanitizeServiceId(service_id);
+    safe_service_ids_.erase(safe_service_id);
     OSP_LOG << "unavailable! " << safe_service_id;
   }
+
+  const std::string& GetServiceId(const std::string& safe_service_id) {
+    OSP_DCHECK(safe_service_ids_.find(safe_service_id) !=
+               safe_service_ids_.end())
+        << safe_service_id << " not found in map";
+    return safe_service_ids_[safe_service_id];
+  }
+
+ private:
+  std::map<std::string, std::string> safe_service_ids_;
 };
 
 class PublisherObserver final : public ServicePublisher::Observer {
@@ -193,6 +205,45 @@ class ConnectionServerObserver final
       connections_;
 };
 
+class RequestDelegate final : public presentation::RequestDelegate {
+ public:
+  RequestDelegate() = default;
+  ~RequestDelegate() override = default;
+
+  void OnConnection(
+      std::unique_ptr<presentation::Connection> connection) override {
+    OSP_LOG_INFO << "request successful";
+    this->connection = std::move(connection);
+  }
+
+  void OnError(const Error& error) override {
+    OSP_LOG_INFO << "on request error";
+  }
+
+  std::unique_ptr<presentation::Connection> connection;
+};
+
+class ConnectionDelegate final : public presentation::Connection::Delegate {
+ public:
+  ConnectionDelegate() = default;
+  ~ConnectionDelegate() override = default;
+
+  void OnConnected() override {
+    OSP_LOG_INFO << "presentation connection connected";
+  }
+  void OnClosedByRemote() override {
+    OSP_LOG_INFO << "presentation connection closed by remote";
+  }
+  void OnDiscarded() override {}
+  void OnError(const absl::string_view message) override {}
+  void OnTerminated() override { OSP_LOG_INFO << "presentation terminated"; }
+
+  void OnStringMessage(absl::string_view message) override {
+    OSP_LOG_INFO << "got message: " << message;
+  }
+  void OnBinaryMessage(const std::vector<uint8_t>& data) override {}
+};
+
 class ReceiverConnectionDelegate final
     : public presentation::Connection::Delegate {
  public:
@@ -207,7 +258,7 @@ class ReceiverConnectionDelegate final
   }
   void OnDiscarded() override {}
   void OnError(const absl::string_view message) override {}
-  void OnTerminatedByRemote() override { OSP_LOG << "presentation terminated"; }
+  void OnTerminated() override { OSP_LOG << "presentation terminated"; }
 
   void OnStringMessage(const absl::string_view message) override {
     OSP_LOG << "got message: " << message;
@@ -240,7 +291,7 @@ class ReceiverDelegate final : public presentation::ReceiverDelegate {
       const std::vector<msgs::HttpHeader>& http_headers) override {
     presentation_id = info.id;
     connection = std::make_unique<presentation::Connection>(
-        info, presentation::Connection::Role::kReceiver, &cd);
+        info, &cd, presentation::Receiver::Get());
     cd.connection = connection.get();
     presentation::Receiver::Get()->OnPresentationStarted(
         info.id, connection.get(), presentation::ResponseResult::kSuccess);
@@ -253,7 +304,7 @@ class ReceiverDelegate final : public presentation::ReceiverDelegate {
     connection = std::make_unique<presentation::Connection>(
         presentation::Connection::PresentationInfo{
             id, connection->presentation_info().url},
-        presentation::Connection::Role::kReceiver, &cd);
+        &cd, presentation::Receiver::Get());
     cd.connection = connection.get();
     presentation::Receiver::Get()->OnConnectionCreated(
         request_id, connection.get(), presentation::ResponseResult::kSuccess);
@@ -317,7 +368,10 @@ CommandWaitResult WaitForCommand(pollfd* pollfd) {
 
 void RunControllerPollLoop(presentation::Controller* controller) {
   ReceiverObserver receiver_observer;
+  RequestDelegate request_delegate;
+  ConnectionDelegate connection_delegate;
   presentation::Controller::ReceiverWatch watch;
+  presentation::Controller::ConnectRequest connect_request;
 
   pollfd stdin_pollfd{STDIN_FILENO, POLLIN};
 
@@ -333,6 +387,19 @@ void RunControllerPollLoop(presentation::Controller* controller) {
       watch = controller->RegisterReceiverWatch(
           {std::string(command_result.command_line.argument_tail)},
           &receiver_observer);
+    } else if (command_result.command_line.command == "start") {
+      const absl::string_view& argument_tail =
+          command_result.command_line.argument_tail;
+      size_t next_split = argument_tail.find_first_of(' ');
+      const std::string& service_id = receiver_observer.GetServiceId(
+          std::string(argument_tail.substr(next_split + 1)));
+      const std::string url =
+          static_cast<std::string>(argument_tail.substr(0, next_split));
+      connect_request = controller->StartPresentation(
+          url, service_id, &request_delegate, &connection_delegate);
+    } else if (command_result.command_line.command == "term") {
+      request_delegate.connection->Terminate(
+          presentation::TerminationReason::kControllerTerminateCalled);
     }
   } while (true);
 

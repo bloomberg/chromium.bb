@@ -31,9 +31,20 @@ class MockConnectionDelegate final : public Connection::Delegate {
   MOCK_METHOD0(OnClosedByRemote, void());
   MOCK_METHOD0(OnDiscarded, void());
   MOCK_METHOD1(OnError, void(const absl::string_view message));
-  MOCK_METHOD0(OnTerminatedByRemote, void());
+  MOCK_METHOD0(OnTerminated, void());
   MOCK_METHOD1(OnStringMessage, void(const absl::string_view message));
   MOCK_METHOD1(OnBinaryMessage, void(const std::vector<uint8_t>& data));
+};
+
+class MockParentDelegate final : public Connection::ParentDelegate {
+ public:
+  MockParentDelegate() = default;
+  ~MockParentDelegate() override = default;
+
+  MOCK_METHOD2(CloseConnection, Error(Connection*, Connection::CloseReason));
+  MOCK_METHOD2(OnPresentationTerminated,
+               Error(const std::string&, TerminationReason));
+  MOCK_METHOD1(OnConnectionDestroyed, void(Connection*));
 };
 
 class MockConnectRequest final
@@ -78,6 +89,8 @@ class ConnectionTest : public ::testing::Test {
       quic_bridge_.controller_demuxer.get()};
   ConnectionManager receiver_connection_manager_{
       quic_bridge_.receiver_demuxer.get()};
+  MockParentDelegate mock_controller_;
+  MockParentDelegate mock_receiver_;
 };
 
 TEST_F(ConnectionTest, ConnectAndSend) {
@@ -87,10 +100,33 @@ TEST_F(ConnectionTest, ConnectAndSend) {
   MockConnectionDelegate mock_controller_delegate;
   MockConnectionDelegate mock_receiver_delegate;
   Connection controller(Connection::PresentationInfo{id, url},
-                        Connection::Role::kController,
-                        &mock_controller_delegate);
+                        &mock_controller_delegate, &mock_controller_);
   Connection receiver(Connection::PresentationInfo{id, url},
-                      Connection::Role::kReceiver, &mock_receiver_delegate);
+                      &mock_receiver_delegate, &mock_receiver_);
+  ON_CALL(mock_controller_, OnPresentationTerminated(_, _))
+      .WillByDefault(Invoke([&receiver](const std::string& presentation_id,
+                                        TerminationReason reason) {
+        receiver.OnTerminated();
+        return Error::None();
+      }));
+  ON_CALL(mock_controller_, CloseConnection(_, _))
+      .WillByDefault(Invoke(
+          [&receiver](Connection* connection, Connection::CloseReason reason) {
+            receiver.OnClosedByRemote();
+            return Error::None();
+          }));
+  ON_CALL(mock_receiver_, OnPresentationTerminated(_, _))
+      .WillByDefault(Invoke([&controller](const std::string& presentation_id,
+                                          TerminationReason reason) {
+        controller.OnTerminated();
+        return Error::None();
+      }));
+  ON_CALL(mock_receiver_, CloseConnection(_, _))
+      .WillByDefault(Invoke([&controller](Connection* connection,
+                                          Connection::CloseReason reason) {
+        controller.OnClosedByRemote();
+        return Error::None();
+      }));
 
   EXPECT_EQ(id, controller.presentation_info().id);
   EXPECT_EQ(url, controller.presentation_info().url);
@@ -175,9 +211,11 @@ TEST_F(ConnectionTest, ConnectAndSend) {
               OnBinaryMessage(expected_response_data));
   quic_bridge_.RunTasksUntilIdle();
 
-  receiver.Close(Connection::CloseReason::kClosed);
   EXPECT_CALL(mock_controller_delegate, OnClosedByRemote());
+  receiver.Close(Connection::CloseReason::kClosed);
   quic_bridge_.RunTasksUntilIdle();
+  EXPECT_EQ(Connection::State::kClosed, controller.state());
+  EXPECT_EQ(Connection::State::kClosed, receiver.state());
   controller_connection_manager_.RemoveConnection(&controller);
   receiver_connection_manager_.RemoveConnection(&receiver);
 }

@@ -57,7 +57,8 @@ class ReceiverDelegate {
                                      TerminationReason reason) = 0;
 };
 
-class Receiver final : public MessageDemuxer::MessageCallback {
+class Receiver final : public MessageDemuxer::MessageCallback,
+                       public Connection::ParentDelegate {
  public:
   // TODO(issue/31): Remove singletons in the embedder API and protocol
   // implementation layers
@@ -80,11 +81,14 @@ class Receiver final : public MessageDemuxer::MessageCallback {
                             Connection* connection,
                             ResponseResult result);
 
-  // Called by the embedder to report that a presentation has been terminated.
+  // Connection::ParentDelegate overrides.
+  Error CloseConnection(Connection* connection,
+                        Connection::CloseReason reason) override;
+  // Also called by the embedder to report that a presentation has been
+  // terminated.
   Error OnPresentationTerminated(const std::string& presentation_id,
-                                 TerminationReason reason);
-
-  void OnConnectionDestroyed(Connection* connection);
+                                 TerminationReason reason) override;
+  void OnConnectionDestroyed(Connection* connection) override;
 
   // MessageDemuxer::MessageCallback overrides.
   ErrorOr<size_t> OnStreamMessage(uint64_t endpoint_id,
@@ -112,7 +116,7 @@ class Receiver final : public MessageDemuxer::MessageCallback {
   };
 
   Receiver();
-  ~Receiver();
+  ~Receiver() override;
 
   using QueuedResponseIterator = std::vector<QueuedResponse>::const_iterator;
 

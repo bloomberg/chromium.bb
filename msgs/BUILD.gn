@@ -6,6 +6,7 @@ source_set("msgs") {
   sources = [
     target_gen_dir + "/osp_messages.cc",
     target_gen_dir + "/osp_messages.h",
+    "request_response_handler.h",
   ]
 
   public_deps = [
