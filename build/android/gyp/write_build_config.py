@@ -1313,12 +1313,12 @@ def main(argv):
 
     # Deps to add to the compile-time classpath (but not the runtime classpath).
     # TODO(agrieve): Might be less confusing to fold these into bootclasspath.
-    javac_extra_jars = [c['unprocessed_jar_path']
-                  for c in classpath_deps.Direct('java_library')]
-    extra_jars = [c['jar_path']
-                  for c in classpath_deps.Direct('java_library')]
+    javac_extra_jars = [
+        c['unprocessed_jar_path'] for c in classpath_deps.All('java_library')
+    ]
+    extra_jars = [c['jar_path'] for c in classpath_deps.All('java_library')]
     interface_extra_jars = [
-        c['interface_jar_path'] for c in classpath_deps.Direct('java_library')
+        c['interface_jar_path'] for c in classpath_deps.All('java_library')
     ]
 
     # These are jars specified by input_jars_paths that almost never change.
