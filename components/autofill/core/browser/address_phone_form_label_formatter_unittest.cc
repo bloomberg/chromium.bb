@@ -14,7 +14,7 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/field_types.h"
-#include "components/autofill/core/browser/label_formatter_test_utils.h"
+#include "components/autofill/core/browser/label_formatter_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -64,7 +64,8 @@ TEST(AddressPhoneFormLabelFormatterTest, GetLabelsForUSProfilesAndFocusedName) {
   EXPECT_THAT(
       formatter->GetLabels(std::vector<AutofillProfile*>{&profile1, &profile2,
                                                          &profile3, &profile4}),
-      ElementsAre(FormatExpectedLabel("(617) 730-2000", "333 Washington St"),
+      ElementsAre(ConstructLabelLine({base::ASCIIToUTF16("(617) 730-2000"),
+                                      base::ASCIIToUTF16("333 Washington St")}),
                   base::ASCIIToUTF16("151 Irving Ave"),
                   base::ASCIIToUTF16("(617) 523-2338"), base::string16()));
 }
@@ -99,7 +100,8 @@ TEST(AddressPhoneFormLabelFormatterTest,
   EXPECT_THAT(
       formatter->GetLabels(std::vector<AutofillProfile*>{&profile1, &profile2,
                                                          &profile3, &profile4}),
-      ElementsAre(FormatExpectedLabel("John F Kennedy", "(617) 730-2000"),
+      ElementsAre(ConstructLabelLine({base::ASCIIToUTF16("John F Kennedy"),
+                                      base::ASCIIToUTF16("(617) 730-2000")}),
                   base::ASCIIToUTF16("Jackie Kennedy"),
                   base::ASCIIToUTF16("(617) 523-2338"), base::string16()));
 }
@@ -134,7 +136,8 @@ TEST(AddressPhoneFormLabelFormatterTest,
   EXPECT_THAT(
       formatter->GetLabels(std::vector<AutofillProfile*>{&profile1, &profile2,
                                                          &profile3, &profile4}),
-      ElementsAre(FormatExpectedLabel("333 Washington St", "(617) 730-2000"),
+      ElementsAre(ConstructLabelLine({base::ASCIIToUTF16("333 Washington St"),
+                                      base::ASCIIToUTF16("(617) 730-2000")}),
                   base::ASCIIToUTF16("151 Irving Ave"),
                   base::ASCIIToUTF16("(617) 523-2338"), base::string16()));
 }
@@ -169,7 +172,8 @@ TEST(AddressPhoneFormLabelFormatterTest,
   EXPECT_THAT(
       formatter->GetLabels(std::vector<AutofillProfile*>{&profile1, &profile2,
                                                          &profile3, &profile4}),
-      ElementsAre(FormatExpectedLabel("John F Kennedy", "333 Washington St"),
+      ElementsAre(ConstructLabelLine({base::ASCIIToUTF16("John F Kennedy"),
+                                      base::ASCIIToUTF16("333 Washington St")}),
                   base::ASCIIToUTF16("Jackie Kennedy"),
                   base::ASCIIToUTF16("Paul Revere House, 19 North Square"),
                   base::string16()));
@@ -195,10 +199,12 @@ TEST(AddressPhoneFormLabelFormatterTest, GetLabelsForBRProfilesAndFocusedName) {
 
   EXPECT_THAT(
       formatter->GetLabels(std::vector<AutofillProfile*>{&profile1, &profile2}),
-      ElementsAre(
-          FormatExpectedLabel("(11) 2648-0254",
-                              "Av. Pedro Álvares Cabral, 1301"),
-          FormatExpectedLabel("(21) 98765-0000", "Estr. Dona Castorina, 110")));
+      ElementsAre(ConstructLabelLine(
+                      {base::ASCIIToUTF16("(11) 2648-0254"),
+                       base::UTF8ToUTF16("Av. Pedro Álvares Cabral, 1301")}),
+                  ConstructLabelLine(
+                      {base::ASCIIToUTF16("(21) 98765-0000"),
+                       base::ASCIIToUTF16("Estr. Dona Castorina, 110")})));
 }
 
 TEST(AddressPhoneFormLabelFormatterTest,
@@ -222,8 +228,10 @@ TEST(AddressPhoneFormLabelFormatterTest,
 
   EXPECT_THAT(
       formatter->GetLabels(std::vector<AutofillProfile*>{&profile1, &profile2}),
-      ElementsAre(FormatExpectedLabel("Tarsila do Amaral", "(11) 2648-0254"),
-                  FormatExpectedLabel("Artur Avila", "(21) 98765-0000")));
+      ElementsAre(ConstructLabelLine({base::ASCIIToUTF16("Tarsila do Amaral"),
+                                      base::ASCIIToUTF16("(11) 2648-0254")}),
+                  ConstructLabelLine({base::ASCIIToUTF16("Artur Avila"),
+                                      base::ASCIIToUTF16("(21) 98765-0000")})));
 }
 
 TEST(AddressPhoneFormLabelFormatterTest,
@@ -248,9 +256,11 @@ TEST(AddressPhoneFormLabelFormatterTest,
   EXPECT_THAT(
       formatter->GetLabels(std::vector<AutofillProfile*>{&profile1, &profile2}),
       ElementsAre(
-          FormatExpectedLabel("Av. Pedro Álvares Cabral, 1301",
-                              "(11) 2648-0254"),
-          FormatExpectedLabel("Estr. Dona Castorina, 110", "(21) 98765-0000")));
+          ConstructLabelLine(
+              {base::UTF8ToUTF16("Av. Pedro Álvares Cabral, 1301"),
+               base::ASCIIToUTF16("(11) 2648-0254")}),
+          ConstructLabelLine({base::ASCIIToUTF16("Estr. Dona Castorina, 110"),
+                              base::ASCIIToUTF16("(21) 98765-0000")})));
 }
 
 TEST(AddressPhoneFormLabelFormatterTest,
@@ -274,10 +284,12 @@ TEST(AddressPhoneFormLabelFormatterTest,
 
   EXPECT_THAT(
       formatter->GetLabels(std::vector<AutofillProfile*>{&profile1, &profile2}),
-      ElementsAre(
-          FormatExpectedLabel("Tarsila do Amaral",
-                              "Av. Pedro Álvares Cabral, 1301"),
-          FormatExpectedLabel("Artur Avila", "Estr. Dona Castorina, 110")));
+      ElementsAre(ConstructLabelLine(
+                      {base::ASCIIToUTF16("Tarsila do Amaral"),
+                       base::UTF8ToUTF16("Av. Pedro Álvares Cabral, 1301")}),
+                  ConstructLabelLine(
+                      {base::ASCIIToUTF16("Artur Avila"),
+                       base::ASCIIToUTF16("Estr. Dona Castorina, 110")})));
 }
 
 TEST(AddressPhoneFormLabelFormatterTest,
@@ -293,8 +305,10 @@ TEST(AddressPhoneFormLabelFormatterTest,
       {NAME_FULL, PHONE_HOME_WHOLE_NUMBER, ADDRESS_HOME_ZIP});
 
   // Checks that only address fields in the form are shown in the label.
-  EXPECT_THAT(formatter->GetLabels(std::vector<AutofillProfile*>{&profile1}),
-              ElementsAre(FormatExpectedLabel("John F Kennedy", "02445")));
+  EXPECT_THAT(
+      formatter->GetLabels(std::vector<AutofillProfile*>{&profile1}),
+      ElementsAre(ConstructLabelLine({base::ASCIIToUTF16("John F Kennedy"),
+                                      base::ASCIIToUTF16("02445")})));
 }
 
 }  // namespace

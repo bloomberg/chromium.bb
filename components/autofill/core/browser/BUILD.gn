@@ -126,8 +126,6 @@ jumbo_static_library("browser") {
     "form_types.h",
     "label_formatter.cc",
     "label_formatter.h",
-    "label_formatter_test_utils.cc",
-    "label_formatter_test_utils.h",
     "label_formatter_utils.cc",
     "label_formatter_utils.h",
     "metrics/address_form_event_logger.cc",
@@ -489,13 +487,10 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "address_combobox_model_unittest.cc",
-    "address_email_form_label_formatter_unittest.cc",
     "address_field_unittest.cc",
-    "address_form_label_formatter_unittest.cc",
     "address_i18n_unittest.cc",
     "address_normalization_manager_unittest.cc",
     "address_normalizer_impl_unittest.cc",
-    "address_phone_form_label_formatter_unittest.cc",
     "address_rewriter_unittest.cc",
     "address_unittest.cc",
     "autocomplete_history_manager_unittest.cc",
@@ -517,7 +512,6 @@ source_set("unit_tests") {
     "autofill_profile_validator_unittest.cc",
     "autofill_subject_unittest.cc",
     "autofill_type_unittest.cc",
-    "contact_form_label_formatter_unittest.cc",
     "contact_info_unittest.cc",
     "country_combobox_model_unittest.cc",
     "country_names_unittest.cc",
@@ -528,8 +522,6 @@ source_set("unit_tests") {
     "form_data_importer_unittest.cc",
     "form_field_unittest.cc",
     "form_structure_unittest.cc",
-    "label_formatter_unittest.cc",
-    "label_formatter_utils_unittest.cc",
     "name_field_unittest.cc",
     "payments/autofill_wallet_data_type_controller_unittest.cc",
     "payments/credit_card_save_manager_unittest.cc",
@@ -578,6 +570,17 @@ source_set("unit_tests") {
       "autofill_address_policy_handler_unittest.cc",
       "autofill_credit_card_policy_handler_unittest.cc",
       "autofill_policy_handler_unittest.cc",
+    ]
+  }
+
+  if (!is_ios && !is_android) {
+    sources += [
+      "address_email_form_label_formatter_unittest.cc",
+      "address_form_label_formatter_unittest.cc",
+      "address_phone_form_label_formatter_unittest.cc",
+      "contact_form_label_formatter_unittest.cc",
+      "label_formatter_unittest.cc",
+      "label_formatter_utils_unittest.cc",
     ]
   }
 
