@@ -34,7 +34,7 @@
         android:key="can_make_payment"
         android:title="@string/can_make_payment_title"
         android:summary="@string/settings_can_make_payment_toggle_label" />
-    <Preference
+    <org.chromium.chrome.browser.preferences.ChromeBasePreference
         android:key="usage_stats_reporting"
         android:title="@string/usage_stats_setting_title"
         android:persistent="false" />
