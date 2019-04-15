@@ -39,6 +39,8 @@ include_rules = [
     "+base/threading/thread_checker.h",
     "+base/time/time.h",
     "+base/timer/elapsed_timer.h",
+    "+base/trace_event/memory_dump_manager.h",
+    "+base/trace_event/memory_dump_provider.h",
     "+build",
     "+components/crash/core/common/crash_key.h",
     "+services/network/public/mojom",
