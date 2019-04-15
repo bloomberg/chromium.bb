@@ -377,9 +377,16 @@ bool AutomationAXTreeWrapper::IsInFocusChain(int32_t node_id) {
     ui::AXNode* focus = ancestor->tree()->GetFromId(focus_id);
     if (!focus)
       return false;
+
+    const ui::AXTreeID& child_tree_id =
+        child_of_ancestor->tree()->data().tree_id;
+
+    // Either the focused node points to the child tree, or the ancestor tree
+    // points to the child tree via the focused tree id. Exit early if both are
+    // not true.
     if (ui::AXTreeID::FromString(focus->GetStringAttribute(
-            ax::mojom::StringAttribute::kChildTreeId)) !=
-        child_of_ancestor->tree()->data().tree_id)
+            ax::mojom::StringAttribute::kChildTreeId)) != child_tree_id &&
+        ancestor->tree()->data().focused_tree_id != child_tree_id)
       return false;
 
     if (ancestor->IsDesktopTree())
