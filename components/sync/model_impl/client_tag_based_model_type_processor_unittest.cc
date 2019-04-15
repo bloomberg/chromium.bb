@@ -1992,19 +1992,21 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldUpdateStorageKey) {
   // Create update which will be ignored by bridge.
   updates.push_back(
       worker()->GenerateUpdateData(kHash3, GenerateSpecifics(kKey3, kValue3)));
-  bridge()->SetKeyToIgnore(kKey3);
+  bridge()->AddValueToIgnore(kValue3);
   worker()->UpdateFromServer(std::move(updates));
   EXPECT_EQ(1, bridge()->merge_call_count());
   EXPECT_EQ(1U, ProcessorEntityCount());
-  // Metadata should be written under kKey1. This means that UpdateStorageKey
-  // was called and value of storage key got propagated to MetadataChangeList.
-  EXPECT_TRUE(db()->HasMetadata(kKey1));
+  // Metadata should be written under a new storage key. This means that
+  // UpdateStorageKey was called and value of storage key got propagated to
+  // MetadataChangeList.
+  const std::string storage_key1 = bridge()->GetLastGeneratedStorageKey();
+  EXPECT_TRUE(db()->HasMetadata(storage_key1));
   EXPECT_EQ(1U, db()->metadata_count());
   EXPECT_EQ(0, bridge()->get_storage_key_call_count());
 
-  // Local update of kKey1 should affect the same entity. This ensures that
-  // storage key to client tag hash mapping was updated on the previous step.
-  bridge()->WriteItem(kKey1, kValue2);
+  // Local update should affect the same entity. This ensures that storage key
+  // to client tag hash mapping was updated on the previous step.
+  bridge()->WriteItem(storage_key1, kValue2);
   EXPECT_EQ(1U, ProcessorEntityCount());
   EXPECT_EQ(1U, db()->metadata_count());
 
@@ -2012,7 +2014,9 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldUpdateStorageKey) {
   // It should call UpdateStorageKey, not GetStorageKey.
   worker()->UpdateFromServer(kHash2, GenerateSpecifics(kKey2, kValue2));
   EXPECT_EQ(1, bridge()->apply_call_count());
-  EXPECT_TRUE(db()->HasMetadata(kKey2));
+  const std::string storage_key2 = bridge()->GetLastGeneratedStorageKey();
+  EXPECT_NE(storage_key1, storage_key2);
+  EXPECT_TRUE(db()->HasMetadata(storage_key2));
   EXPECT_EQ(2U, db()->metadata_count());
   EXPECT_EQ(0, bridge()->get_storage_key_call_count());
 }
@@ -2041,7 +2045,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldUntrackEntity) {
   // FakeModelTypeSyncBridge to call UpdateStorageKey for new entities and will
   // DCHECK if GetStorageKey gets called.
   bridge()->SetSupportsGetStorageKey(false);
-  bridge()->SetKeyToIgnore(kKey1);
+  bridge()->AddValueToIgnore(kValue1);
   ModelReadyToSync();
   OnSyncStarting();
 

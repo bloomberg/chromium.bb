@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/model/conflict_resolution.h"
 #include "components/sync/model/model_type_store.h"
@@ -131,6 +132,7 @@ bool FakeModelTypeSyncBridge::Store::HasMetadata(const std::string& key) const {
 
 const EntityData& FakeModelTypeSyncBridge::Store::GetData(
     const std::string& key) const {
+  DCHECK(data_store_.count(key) != 0) << " for key " << key;
   return *data_store_.find(key)->second;
 }
 
@@ -227,14 +229,16 @@ base::Optional<ModelError> FakeModelTypeSyncBridge::MergeSyncData(
     std::string storage_key = change->storage_key();
     EXPECT_NE(SupportsGetStorageKey(), storage_key.empty());
     if (storage_key.empty()) {
-      storage_key = GetStorageKeyImpl(change->data());
-      if (base::ContainsKey(keys_to_ignore_, storage_key)) {
+      if (base::ContainsKey(values_to_ignore_,
+                            change->data().specifics.preference().value())) {
         change_processor()->UntrackEntityForClientTagHash(
             change->data().client_tag_hash);
-      } else {
-        change_processor()->UpdateStorageKey(change->data(), storage_key,
-                                             metadata_change_list.get());
+        continue;
       }
+
+      storage_key = GenerateStorageKey(change->data());
+      change_processor()->UpdateStorageKey(change->data(), storage_key,
+                                           metadata_change_list.get());
     }
     remote_storage_keys.insert(storage_key);
     db_->PutData(storage_key, change->data());
@@ -266,7 +270,7 @@ base::Optional<ModelError> FakeModelTypeSyncBridge::ApplySyncChanges(
         std::string storage_key = change->storage_key();
         EXPECT_NE(SupportsGetStorageKey(), storage_key.empty());
         if (storage_key.empty()) {
-          storage_key = GetStorageKeyImpl(change->data());
+          storage_key = GenerateStorageKey(change->data());
           change_processor()->UpdateStorageKey(change->data(), storage_key,
                                                metadata_changes.get());
         }
@@ -338,21 +342,20 @@ std::string FakeModelTypeSyncBridge::GetClientTag(
 std::string FakeModelTypeSyncBridge::GetStorageKey(
     const EntityData& entity_data) {
   DCHECK(supports_get_storage_key_);
-  return GetStorageKeyImpl(entity_data);
+  return GenerateStorageKey(entity_data);
 }
 
-std::string FakeModelTypeSyncBridge::GetStorageKeyImpl(
+std::string FakeModelTypeSyncBridge::GenerateStorageKey(
     const EntityData& entity_data) {
-  return entity_data.specifics.preference().name();
+  if (supports_get_storage_key_) {
+    return entity_data.specifics.preference().name();
+  } else {
+    return base::NumberToString(++last_generated_storage_key_);
+  }
 }
 
 bool FakeModelTypeSyncBridge::SupportsGetStorageKey() const {
   return supports_get_storage_key_;
-}
-
-void FakeModelTypeSyncBridge::SetSupportsGetStorageKey(
-    bool supports_get_storage_key) {
-  supports_get_storage_key_ = supports_get_storage_key;
 }
 
 ConflictResolution FakeModelTypeSyncBridge::ResolveConflict(
@@ -391,8 +394,19 @@ std::unique_ptr<EntityData> FakeModelTypeSyncBridge::CopyEntityData(
   return new_data;
 }
 
-void FakeModelTypeSyncBridge::SetKeyToIgnore(const std::string key) {
-  keys_to_ignore_.insert(key);
+void FakeModelTypeSyncBridge::SetSupportsGetStorageKey(
+    bool supports_get_storage_key) {
+  supports_get_storage_key_ = supports_get_storage_key;
+}
+
+std::string FakeModelTypeSyncBridge::GetLastGeneratedStorageKey() const {
+  // Verify that GenerateStorageKey() was called at least once.
+  EXPECT_NE(0, last_generated_storage_key_);
+  return base::NumberToString(last_generated_storage_key_);
+}
+
+void FakeModelTypeSyncBridge::AddValueToIgnore(const std::string& value) {
+  values_to_ignore_.insert(value);
 }
 
 }  // namespace syncer
