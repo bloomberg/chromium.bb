@@ -13,7 +13,6 @@ import com.google.android.libraries.feed.host.config.Configuration;
 import com.google.android.libraries.feed.host.config.DebugBehavior;
 import com.google.android.libraries.feed.host.network.NetworkClient;
 import com.google.android.libraries.feed.host.stream.TooltipSupportedApi;
-import com.google.android.libraries.feed.hostimpl.logging.LoggingApiImpl;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -137,15 +136,15 @@ public class FeedProcessScopeFactory {
         NetworkClient networkClient = sTestNetworkClient == null ?
             new FeedNetworkBridge(profile) : sTestNetworkClient;
         sFeedLoggingBridge = new FeedLoggingBridge(profile);
-        sFeedProcessScope = new FeedProcessScope
-                                    .Builder(configHostApi, Executors.newSingleThreadExecutor(),
-                                            new LoggingApiImpl(), sFeedLoggingBridge, networkClient,
-                                            schedulerBridge, DebugBehavior.SILENT,
-                                            ContextUtils.getApplicationContext(), applicationInfo,
-                                            new StubFeedTooltiSupportedApi())
-                                    .setContentStorage(contentStorage)
-                                    .setJournalStorage(journalStorage)
-                                    .build();
+        sFeedProcessScope =
+                new FeedProcessScope
+                        .Builder(configHostApi, Executors.newSingleThreadExecutor(),
+                                sFeedLoggingBridge, networkClient, schedulerBridge,
+                                DebugBehavior.SILENT, ContextUtils.getApplicationContext(),
+                                applicationInfo, new StubFeedTooltiSupportedApi())
+                        .setContentStorage(contentStorage)
+                        .setJournalStorage(journalStorage)
+                        .build();
         schedulerBridge.initializeFeedDependencies(
                 sFeedProcessScope.getRequestManager(), sFeedProcessScope.getSessionManager());
 
@@ -179,13 +178,13 @@ public class FeedProcessScopeFactory {
         ApplicationInfo applicationInfo =
                 new ApplicationInfo.Builder(ContextUtils.getApplicationContext()).build();
 
-        sFeedProcessScope = new FeedProcessScope
-                                    .Builder(configHostApi, Executors.newSingleThreadExecutor(),
-                                            new LoggingApiImpl(), sFeedLoggingBridge, networkClient,
-                                            sFeedScheduler, DebugBehavior.SILENT,
-                                            ContextUtils.getApplicationContext(), applicationInfo,
-                                            new StubFeedTooltiSupportedApi())
-                                    .build();
+        sFeedProcessScope =
+                new FeedProcessScope
+                        .Builder(configHostApi, Executors.newSingleThreadExecutor(),
+                                sFeedLoggingBridge, networkClient, sFeedScheduler,
+                                DebugBehavior.SILENT, ContextUtils.getApplicationContext(),
+                                applicationInfo, new StubFeedTooltiSupportedApi())
+                        .build();
     }
 
     /** Use supplied NetworkClient instead of real one, for tests. */
