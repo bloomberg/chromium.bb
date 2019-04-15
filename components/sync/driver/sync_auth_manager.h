@@ -164,6 +164,13 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
   GoogleServiceAuthError last_auth_error_;
   base::Time last_auth_error_time_;
 
+  // Whether Sync is currently connected to the server, i.e. ConnectionOpened()
+  // has been called, but ConnectionClosed() hasn't. While this is false, we
+  // don't try to get an access token. While it's true, we will *usually* have
+  // either an access token or a pending/scheduled request for one, but this is
+  // not guaranteed (e.g. in the case of a persistent auth error).
+  bool connection_open_ = false;
+
   // The current access token. This is mutually exclusive with
   // |ongoing_access_token_fetch_| and |request_access_token_retry_timer_|:
   // We have at most one of a) an access token OR b) a pending request OR c) a

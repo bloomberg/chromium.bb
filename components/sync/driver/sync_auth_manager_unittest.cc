@@ -176,6 +176,8 @@ TEST_F(SyncAuthManagerTest, DoesNotClearAuthErrorOnSyncDisable) {
   ASSERT_EQ(auth_manager->GetLastAuthError().state(),
             GoogleServiceAuthError::NONE);
 
+  auth_manager->ConnectionOpened();
+
   // Force an auth error by revoking the refresh token.
   identity_env()->RemoveRefreshTokenForPrimaryAccount();
   ASSERT_NE(auth_manager->GetLastAuthError().state(),
@@ -511,8 +513,8 @@ TEST_F(SyncAuthManagerTest, ClearsCredentialsOnInvalidRefreshToken) {
   ASSERT_EQ(auth_manager->GetLastAuthError(),
             GoogleServiceAuthError::AuthErrorNone());
 
-  // But now an invalid refresh token gets set. No new access token should get
-  // requested due to this.
+  // But now an invalid refresh token gets set, i.e. we enter the "Sync paused"
+  // state. No new access token should get requested due to this.
   base::MockCallback<base::OnceClosure> access_token_requested;
   EXPECT_CALL(access_token_requested, Run()).Times(0);
   identity_env()->SetCallbackForNextAccessTokenRequest(
@@ -526,9 +528,73 @@ TEST_F(SyncAuthManagerTest, ClearsCredentialsOnInvalidRefreshToken) {
           GoogleServiceAuthError::InvalidGaiaCredentialsReason::
               CREDENTIALS_REJECTED_BY_CLIENT);
   EXPECT_EQ(auth_manager->GetLastAuthError(), invalid_token_error);
+  EXPECT_TRUE(auth_manager->IsSyncPaused());
 
   // No new access token should have been requested. Since the request goes
   // through posted tasks, we have to spin the message loop.
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(SyncAuthManagerTest,
+       RequestsAccessTokenWhenInvalidRefreshTokenResolved) {
+  std::string account_id =
+      identity_env()->MakePrimaryAccountAvailable("test@email.com").account_id;
+  auto auth_manager = CreateAuthManager();
+  auth_manager->RegisterForAuthNotifications();
+  ASSERT_EQ(auth_manager->GetActiveAccountInfo().account_info.account_id,
+            account_id);
+
+  // Sync starts up normally.
+  auth_manager->ConnectionOpened();
+  identity_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+      "access_token", base::Time::Now() + base::TimeDelta::FromHours(1));
+  ASSERT_EQ(auth_manager->GetCredentials().access_token, "access_token");
+  auth_manager->ConnectionStatusChanged(syncer::CONNECTION_OK);
+  ASSERT_EQ(auth_manager->GetCredentials().access_token, "access_token");
+  ASSERT_EQ(auth_manager->GetLastAuthError(),
+            GoogleServiceAuthError::AuthErrorNone());
+
+  // But now an invalid refresh token gets set, i.e. we enter the "Sync paused"
+  // state.
+  identity_env()->SetInvalidRefreshTokenForPrimaryAccount();
+  ASSERT_TRUE(auth_manager->GetCredentials().access_token.empty());
+  ASSERT_TRUE(auth_manager->IsSyncPaused());
+
+  // Once the user signs in again and we have a valid refresh token, we should
+  // also request a new access token.
+  identity_env()->SetRefreshTokenForPrimaryAccount();
+  identity_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+      "access_token_2", base::Time::Now() + base::TimeDelta::FromHours(1));
+  ASSERT_EQ(auth_manager->GetCredentials().access_token, "access_token_2");
+}
+
+TEST_F(SyncAuthManagerTest, DoesNotRequestAccessTokenIfSyncInactive) {
+  std::string account_id =
+      identity_env()->MakePrimaryAccountAvailable("test@email.com").account_id;
+  auto auth_manager = CreateAuthManager();
+  auth_manager->RegisterForAuthNotifications();
+  ASSERT_EQ(auth_manager->GetActiveAccountInfo().account_info.account_id,
+            account_id);
+
+  // Sync is *not* enabled; in particular we don't call ConnectionOpened().
+
+  // An invalid refresh token gets set, i.e. we enter the "Sync paused" state
+  // (only from SyncAuthManager's point of view - Sync as a whole is still
+  // disabled).
+  identity_env()->SetInvalidRefreshTokenForPrimaryAccount();
+  ASSERT_TRUE(auth_manager->GetCredentials().access_token.empty());
+  ASSERT_TRUE(auth_manager->IsSyncPaused());
+
+  // Once the user signs in again and we have a valid refresh token, we should
+  // *not* request a new access token, since Sync isn't active.
+  base::MockCallback<base::OnceClosure> access_token_requested;
+  EXPECT_CALL(access_token_requested, Run()).Times(0);
+  identity_env()->SetCallbackForNextAccessTokenRequest(
+      access_token_requested.Get());
+  identity_env()->SetRefreshTokenForPrimaryAccount();
+
+  // Since the access token request goes through posted tasks, we have to spin
+  // the message loop to make sure it didn't happen.
   base::RunLoop().RunUntilIdle();
 }
 
