@@ -67,7 +67,7 @@
 #include "ios/chrome/browser/web/features.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#include "ios/web/public/features.h"
+#include "ios/web/common/features.h"
 #include "ios/web/public/user_agent.h"
 #include "ios/web/public/web_view_creation_util.h"
 

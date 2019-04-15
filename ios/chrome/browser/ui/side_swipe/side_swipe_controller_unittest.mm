@@ -9,7 +9,7 @@
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_delegate.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
-#include "ios/web/public/features.h"
+#include "ios/web/common/features.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"

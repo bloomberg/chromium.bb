@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_FEATURES_H_
-#define IOS_WEB_PUBLIC_FEATURES_H_
+#ifndef IOS_WEB_COMMON_FEATURES_H_
+#define IOS_WEB_COMMON_FEATURES_H_
 
 #include "base/feature_list.h"
 
@@ -56,4 +56,4 @@ bool WebUISchemeHandlingEnabled();
 }  // namespace features
 }  // namespace web
 
-#endif  // IOS_WEB_PUBLIC_FEATURES_H_
+#endif  // IOS_WEB_COMMON_FEATURES_H_

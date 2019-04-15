@@ -5,7 +5,7 @@
 #include "ios/chrome/browser/reading_list/features.h"
 
 #include "ios/chrome/browser/web/features.h"
-#include "ios/web/public/features.h"
+#include "ios/web/common/features.h"
 
 namespace reading_list {
 

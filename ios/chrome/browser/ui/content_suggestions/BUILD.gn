@@ -131,7 +131,7 @@ source_set("content_suggestions_ui") {
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/util:util",
     "//ios/chrome/common/favicon",
-    "//ios/web/public",
+    "//ios/web/common",
     "//ui/base",
   ]
   public_deps = [
@@ -171,7 +171,7 @@ source_set("content_suggestions_ui_util") {
     "//ios/chrome/browser/ui/ntp_tile_views:constants",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/third_party/material_components_ios",
-    "//ios/web/public",
+    "//ios/web/common",
     "//ui/base",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]

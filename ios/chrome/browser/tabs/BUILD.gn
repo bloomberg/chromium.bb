@@ -194,7 +194,7 @@ source_set("unit_tests") {
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser:test_support",
     "//ios/testing:ocmock_support",
-    "//ios/web",
+    "//ios/web/common",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
     "//ios/web/test/fakes:fakes",
