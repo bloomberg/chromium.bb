@@ -70,10 +70,10 @@ Animator* AnimationWorkletGlobalScope::CreateAnimatorFor(
     const String& name,
     WorkletAnimationOptions options,
     scoped_refptr<SerializedScriptValue> serialized_state,
-    int num_effects) {
+    const std::vector<base::Optional<TimeDelta>>& local_times) {
   DCHECK(!animators_.at(animation_id));
   Animator* animator =
-      CreateInstance(name, options, serialized_state, num_effects);
+      CreateInstance(name, options, serialized_state, local_times);
   if (!animator)
     return nullptr;
   animators_.Set(animation_id, animator);
@@ -103,8 +103,11 @@ void AnimationWorkletGlobalScope::UpdateAnimatorsList(
       options =
           *(static_cast<WorkletAnimationOptions*>(animation.options.get()));
     }
+
+    std::vector<base::Optional<TimeDelta>> local_times(animation.num_effects,
+                                                       base::nullopt);
     CreateAnimatorFor(id, name, options, nullptr /* serialized_state */,
-                      animation.num_effects);
+                      local_times);
   }
 }
 
@@ -230,7 +233,7 @@ Animator* AnimationWorkletGlobalScope::CreateInstance(
     const String& name,
     WorkletAnimationOptions options,
     scoped_refptr<SerializedScriptValue> serialized_state,
-    int num_effects) {
+    const std::vector<base::Optional<TimeDelta>>& local_times) {
   DCHECK(IsContextThread());
   AnimatorDefinition* definition = animator_definitions_.at(name);
   if (!definition)
@@ -260,7 +263,7 @@ Animator* AnimationWorkletGlobalScope::CreateInstance(
   }
 
   return MakeGarbageCollected<Animator>(isolate, definition, instance.V8Value(),
-                                        name, std::move(options), num_effects);
+                                        name, std::move(options), local_times);
 }
 
 bool AnimationWorkletGlobalScope::IsAnimatorStateful(int animation_id) {
@@ -315,7 +318,7 @@ void AnimationWorkletGlobalScope::MigrateAnimatorsTo(
 
     target_global_scope->CreateAnimatorFor(
         animation_id, animator->name(), animator->options(), serialized_state,
-        animator->num_effects());
+        animator->GetLocalTimes());
   }
   animators_.clear();
 }

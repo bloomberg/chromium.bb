@@ -19,14 +19,14 @@ Animator::Animator(v8::Isolate* isolate,
                    v8::Local<v8::Value> instance,
                    const String& name,
                    WorkletAnimationOptions options,
-                   int num_effects)
+                   const std::vector<base::Optional<TimeDelta>>& local_times)
     : definition_(definition),
       instance_(isolate, instance),
       name_(name),
       options_(options),
       group_effect_(
-          MakeGarbageCollected<WorkletGroupEffectProxy>(num_effects)) {
-  DCHECK_GE(num_effects, 1);
+          MakeGarbageCollected<WorkletGroupEffectProxy>(local_times)) {
+  DCHECK_GE(local_times.size(), 1u);
 }
 
 Animator::~Animator() = default;

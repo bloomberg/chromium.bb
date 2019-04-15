@@ -29,7 +29,7 @@ class Animator final : public GarbageCollectedFinalized<Animator>,
            v8::Local<v8::Value> instance,
            const String& name,
            WorkletAnimationOptions options,
-           int num_effects);
+           const std::vector<base::Optional<TimeDelta>>& local_times);
   ~Animator();
   void Trace(blink::Visitor*);
   const char* NameInHeapSnapshot() const override { return "Animator"; }
