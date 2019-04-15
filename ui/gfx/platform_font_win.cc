@@ -37,6 +37,7 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/system_fonts_win.h"
+#include "ui/gfx/win/direct_write.h"
 #include "ui/gfx/win/scoped_set_map_mode.h"
 
 namespace {
@@ -238,8 +239,6 @@ namespace gfx {
 // static
 PlatformFontWin::HFontRef* PlatformFontWin::base_font_ref_;
 
-IDWriteFactory* PlatformFontWin::direct_write_factory_ = nullptr;
-
 // TODO(ananta)
 // Remove the CHECKs in this function once this stabilizes on the field.
 HRESULT GetFamilyNameFromDirectWriteFont(IDWriteFont* dwrite_font,
@@ -275,19 +274,6 @@ PlatformFontWin::PlatformFontWin() : font_ref_(GetBaseFontRef()) {
 PlatformFontWin::PlatformFontWin(const std::string& font_name,
                                  int font_size) {
   InitWithFontNameAndSize(font_name, font_size);
-}
-
-// static
-void PlatformFontWin::SetDirectWriteFactory(IDWriteFactory* factory) {
-  // We grab a reference on the DirectWrite factory. This reference is
-  // leaked, which is ok because skia leaks it as well.
-  factory->AddRef();
-  direct_write_factory_ = factory;
-}
-
-// static
-bool PlatformFontWin::IsDirectWriteEnabled() {
-  return direct_write_factory_ != nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -425,10 +411,7 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRef(HFONT font) {
     GetTextMetricsForFont(screen_dc, font, &font_metrics);
   }
 
-  if (IsDirectWriteEnabled())
-    return CreateHFontRefFromSkia(font, font_metrics);
-
-  return CreateHFontRefFromGDI(font, font_metrics);
+  return CreateHFontRefFromSkia(font, font_metrics);
 }
 
 PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRefFromGDI(
@@ -489,7 +472,7 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRefFromSkia(
   // DirectWrite to calculate the cap height.
   Microsoft::WRL::ComPtr<IDWriteFont> dwrite_font;
   HRESULT hr = GetMatchingDirectWriteFont(
-      &font_info, italic, direct_write_factory_, dwrite_font.GetAddressOf());
+      &font_info, italic, win::GetDirectWriteFactory(), &dwrite_font);
   if (FAILED(hr)) {
     CHECK(false);
     return nullptr;
