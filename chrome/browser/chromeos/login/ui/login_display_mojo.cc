@@ -169,10 +169,6 @@ void LoginDisplayMojo::ShowWhitelistCheckFailedError() {
   host_->ShowWhitelistCheckFailedError();
 }
 
-void LoginDisplayMojo::ShowUnrecoverableCrypthomeErrorDialog() {
-  host_->ShowUnrecoverableCrypthomeErrorDialog();
-}
-
 void LoginDisplayMojo::Login(const UserContext& user_context,
                              const SigninSpecifics& specifics) {
   if (delegate_)

@@ -92,7 +92,6 @@ class LoginDisplayWebUIHandler {
   virtual void ShowPasswordChangedDialog(bool show_password_error,
                                          const std::string& email) = 0;
   virtual void ShowWhitelistCheckFailedError() = 0;
-  virtual void ShowUnrecoverableCrypthomeErrorDialog() = 0;
   virtual void LoadUsers(const user_manager::UserList& users,
                          const base::ListValue& users_list) = 0;
 
@@ -295,7 +294,6 @@ class SigninScreenHandler
                                  const std::string& email) override;
   void ShowErrorScreen(LoginDisplay::SigninError error_id) override;
   void ShowWhitelistCheckFailedError() override;
-  void ShowUnrecoverableCrypthomeErrorDialog() override;
   void LoadUsers(const user_manager::UserList& users,
                  const base::ListValue& users_list) override;
 
@@ -371,7 +369,6 @@ class SigninScreenHandler
   void HandleFirstIncorrectPasswordAttempt(const AccountId& account_id);
   void HandleMaxIncorrectPasswordAttempts(const AccountId& account_id);
   void HandleSendFeedback();
-  void HandleSendFeedbackAndResyncUserData();
 
   // Implements user sign-in.
   void AuthenticateExistingUser(const AccountId& account_id,

@@ -43,7 +43,6 @@ const char* kScreenNames[] = {
     "confirm-password",                // SCREEN_CONFIRM_PASSWORD
     "fatal-error",                     // SCREEN_FATAL_ERROR
     "device-disabled",                 // SCREEN_DEVICE_DISABLED
-    "unrecoverable-cryptohome-error",  // SCREEN_UNRECOVERABLE_CRYPTOHOME_ERROR
     "userBoard",                       // SCREEN_USER_SELECTION
     "ad-password-change",            // SCREEN_ACTIVE_DIRECTORY_PASSWORD_CHANGE
     "encryption-migration",          // SCREEN_ENCRYPTION_MIGRATION

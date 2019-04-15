@@ -45,7 +45,6 @@ class LoginDisplayMojo : public LoginDisplay,
                                  const std::string& email) override;
   void ShowSigninUI(const std::string& email) override;
   void ShowWhitelistCheckFailedError() override;
-  void ShowUnrecoverableCrypthomeErrorDialog() override;
 
   // SigninScreenHandlerDelegate:
   void Login(const UserContext& user_context,
