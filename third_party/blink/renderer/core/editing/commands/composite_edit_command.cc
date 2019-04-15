@@ -969,8 +969,8 @@ HTMLBRElement* CompositeEditCommand::AddBlockPlaceholderIfNeeded(
 
   GetDocument().UpdateStyleAndLayout();
 
-  auto* block = To<LayoutBlockFlow>(container->GetLayoutObject());
-  if (!container->GetLayoutObject() || !block)
+  auto* block = DynamicTo<LayoutBlockFlow>(container->GetLayoutObject());
+  if (!block)
     return nullptr;
 
   // append the placeholder to make sure it follows
