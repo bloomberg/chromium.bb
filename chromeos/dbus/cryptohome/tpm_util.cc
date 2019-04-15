@@ -14,13 +14,6 @@
 namespace chromeos {
 namespace tpm_util {
 
-namespace {
-
-constexpr char kAttrMode[] = "enterprise.mode";
-constexpr char kDeviceModeEnterpriseAD[] = "enterprise_ad";
-
-}  // namespace
-
 bool TpmIsEnabled() {
   bool result = false;
   CryptohomeClient::Get()->CallTpmIsEnabledAndBlock(&result);
@@ -85,19 +78,6 @@ bool InstallAttributesIsFirstInstall() {
   bool result = false;
   CryptohomeClient::Get()->InstallAttributesIsFirstInstall(&result);
   return result;
-}
-
-bool IsActiveDirectoryLocked() {
-  std::string mode;
-  return InstallAttributesGet(kAttrMode, &mode) &&
-         mode == kDeviceModeEnterpriseAD;
-}
-
-bool LockDeviceActiveDirectoryForTesting(const std::string& realm) {
-  return InstallAttributesSet("enterprise.owned", "true") &&
-         InstallAttributesSet(kAttrMode, kDeviceModeEnterpriseAD) &&
-         InstallAttributesSet("enterprise.realm", realm) &&
-         InstallAttributesFinalize();
 }
 
 }  // namespace tpm_util

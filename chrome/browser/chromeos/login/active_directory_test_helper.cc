@@ -4,82 +4,40 @@
 
 #include "chrome/browser/chromeos/login/active_directory_test_helper.h"
 
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/strings/string_split.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/authpolicy/authpolicy_helper.h"
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/constants/chromeos_paths.h"
-#include "chromeos/dbus/auth_policy/active_directory_info.pb.h"
-#include "chromeos/dbus/auth_policy/auth_policy_client.h"
-#include "chromeos/dbus/cryptohome/tpm_util.h"
-#include "chromeos/dbus/upstart/upstart_client.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
 
 namespace active_directory_test_helper {
 
-namespace {
-
-constexpr char kAdMachineName[] = "ad-machine-name";
-constexpr char kDmToken[] = "dm-token";
-
-}  // namespace
-
-void PrepareLogin(const std::string& user_principal_name) {
-  std::vector<std::string> user_and_domain = base::SplitString(
-      user_principal_name, "@", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
-  ASSERT_EQ(2u, user_and_domain.size());
-
-  // Start the D-Bus service.
-  chromeos::UpstartClient::Get()->StartAuthPolicyService();
-
-  // Join the AD domain.
-  chromeos::AuthPolicyHelper helper;
-  {
-    base::RunLoop loop;
-    helper.set_dm_token(kDmToken);
-    helper.JoinAdDomain(
-        kAdMachineName, "" /* distinguished_name */,
-        authpolicy::KerberosEncryptionTypes::ENC_TYPES_STRONG,
-        user_principal_name, "" /* password */,
-        base::BindOnce(
-            [](base::OnceClosure closure, const std::string& expected_domain,
-               authpolicy::ErrorType error, const std::string& domain) {
-              EXPECT_EQ(authpolicy::ERROR_NONE, error);
-              EXPECT_EQ(expected_domain, domain);
-              std::move(closure).Run();
-            },
-            loop.QuitClosure(), user_and_domain[1]));
-    loop.Run();
-  }
-
-  // Lock the device to AD mode. Paths need to be set here, so install attribs
-  // can be saved to disk.
-  ASSERT_TRUE(
-      tpm_util::LockDeviceActiveDirectoryForTesting(user_and_domain[1]));
-
-  // Fetch device policy.
-  {
-    base::RunLoop run_loop;
-    AuthPolicyClient::Get()->RefreshDevicePolicy(base::BindOnce(
-        [](base::OnceClosure quit_closure, authpolicy::ErrorType error) {
-          EXPECT_EQ(authpolicy::ERROR_NONE, error);
-          std::move(quit_closure).Run();
-        },
-        run_loop.QuitClosure()));
-    run_loop.Run();
-  }
+InstallAttributes::LockResult LockDevice(const std::string& domain) {
+  base::RunLoop run_loop;
+  InstallAttributes::LockResult return_lock_result;
+  InstallAttributes::Get()->LockDevice(
+      policy::DEVICE_MODE_ENTERPRISE_AD, "", domain, "device_id",
+      base::AdaptCallbackForRepeating(base::BindOnce(
+          [](base::OnceClosure closure,
+             InstallAttributes::LockResult* return_lock_result,
+             InstallAttributes::LockResult lock_result) {
+            *return_lock_result = lock_result;
+            std::move(closure).Run();
+          },
+          run_loop.QuitClosure(), &return_lock_result)));
+  run_loop.Run();
+  return return_lock_result;
 }
 
 void OverridePaths() {
   base::FilePath user_data_dir;
-  ASSERT_TRUE(base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
+  CHECK(base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
 
   base::ScopedAllowBlockingForTesting allow_io;
   RegisterStubPathOverrides(user_data_dir);

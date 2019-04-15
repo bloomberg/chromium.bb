@@ -15,7 +15,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/authpolicy/authpolicy_helper.h"
 #include "chrome/browser/chromeos/authpolicy/kerberos_files_handler.h"
 #include "chrome/browser/chromeos/login/active_directory_test_helper.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
@@ -32,6 +31,7 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/auth_policy/fake_auth_policy_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/common/network_service_util.h"
@@ -84,7 +84,11 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
         // Using the same realm as supervised user domain. Should be treated as
         // normal realm.
         test_realm_(user_manager::kSupervisedUserDomain),
-        test_user_(kTestActiveDirectoryUser + ("@" + test_realm_)) {}
+        test_user_(kTestActiveDirectoryUser + ("@" + test_realm_)),
+        install_attributes_(
+            chromeos::StubInstallAttributes::CreateActiveDirectoryManaged(
+                test_realm_,
+                "device_id")) {}
 
   ~ActiveDirectoryLoginTest() override = default;
 
@@ -112,11 +116,6 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
         ->signin_screen_handler()
         ->SetOfflineTimeoutForTesting(base::TimeDelta::Max());
     LoginManagerTest::SetUpOnMainThread();
-  }
-
-  void MarkAsActiveDirectoryEnterprise() {
-    StartupUtils::MarkOobeCompleted();
-    active_directory_test_helper::PrepareLogin(test_user_);
   }
 
   void TriggerPasswordChangeScreen() {
@@ -316,6 +315,7 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
   std::string autocomplete_realm_;
 
  private:
+  chromeos::ScopedStubInstallAttributes install_attributes_;
 
   DISALLOW_COPY_AND_ASSIGN(ActiveDirectoryLoginTest);
 };
@@ -338,11 +338,11 @@ class ActiveDirectoryLoginAutocompleteTest : public ActiveDirectoryLoginTest {
 };
 }  // namespace
 
-// Declares a PRE_ test that calls MarkAsActiveDirectoryEnterprise() and the
+// Declares a PRE_ test that calls StartupUtils::MarkOobeCompleted() and the
 // test itself.
 #define IN_PROC_BROWSER_TEST_F_WITH_PRE(class_name, test_name) \
   IN_PROC_BROWSER_TEST_F(class_name, PRE_##test_name) {        \
-    MarkAsActiveDirectoryEnterprise();                         \
+    StartupUtils::MarkOobeCompleted();                         \
   }                                                            \
   IN_PROC_BROWSER_TEST_F(class_name, test_name)
 

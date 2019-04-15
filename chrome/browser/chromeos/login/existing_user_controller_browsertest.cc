@@ -41,13 +41,13 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/auth_policy/fake_auth_policy_client.h"
-#include "chromeos/dbus/cryptohome/tpm_util.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/mock_url_fetchers.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/cros_settings_provider.h"
+#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
@@ -763,7 +763,11 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
 class ExistingUserControllerActiveDirectoryTest
     : public ExistingUserControllerTest {
  public:
-  ExistingUserControllerActiveDirectoryTest() = default;
+  ExistingUserControllerActiveDirectoryTest()
+      : install_attributes_(
+            chromeos::StubInstallAttributes::CreateActiveDirectoryManaged(
+                kActiveDirectoryRealm,
+                "device_id")) {}
 
   // Overriden from DevicePolicyCrosBrowserTest:
   void MarkOwnership() override {}
@@ -780,8 +784,6 @@ class ExistingUserControllerActiveDirectoryTest
     // Required for tpm_util. Will be destroyed in browser shutdown.
     chromeos::CryptohomeClient::InitializeFake();
 
-    ASSERT_TRUE(
-        tpm_util::LockDeviceActiveDirectoryForTesting(kActiveDirectoryRealm));
     RefreshDevicePolicy();
     EXPECT_CALL(policy_provider_, IsInitializationComplete(_))
         .WillRepeatedly(Return(true));
@@ -895,6 +897,7 @@ class ExistingUserControllerActiveDirectoryTest
   }
 
  private:
+  chromeos::ScopedStubInstallAttributes install_attributes_;
   policy::MockConfigurationPolicyProvider policy_provider_;
 };
 

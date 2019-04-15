@@ -27,6 +27,7 @@
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
+#include "chromeos/tpm/install_attributes.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/user_manager/user.h"
@@ -49,6 +50,7 @@ namespace policy {
 namespace {
 
 constexpr char kAffiliatedUser[] = "affiliated-user@example.com";
+constexpr char kAffiliatedDomain[] = "example.com";
 constexpr char kAffiliatedUserGaiaId[] = "1234567890";
 constexpr char kAffiliatedUserObjGuid[] =
     "{11111111-1111-1111-1111-111111111111}";
@@ -285,8 +287,9 @@ class UserAffiliationBrowserTest
 IN_PROC_BROWSER_TEST_P(UserAffiliationBrowserTest, PRE_PRE_TestAffiliation) {
   AffiliationTestHelper::PreLoginUser(account_id_);
   if (GetParam().active_directory) {
-    chromeos::active_directory_test_helper::PrepareLogin(
-        account_id_.GetUserEmail());
+    ASSERT_EQ(
+        chromeos::InstallAttributes::LOCK_SUCCESS,
+        chromeos::active_directory_test_helper::LockDevice(kAffiliatedDomain));
   }
 }
 

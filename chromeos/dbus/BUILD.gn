@@ -183,6 +183,7 @@ source_set("unit_tests") {
     "//chromeos/dbus/power:test_support",
     "//chromeos/dbus/session_manager",
     "//chromeos/dbus/shill:test_support",
+    "//chromeos/tpm:test_support",
     "//components/account_id",
     "//dbus",
     "//dbus:test_support",

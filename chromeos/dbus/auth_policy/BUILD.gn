@@ -13,13 +13,15 @@ component("auth_policy") {
     ":authpolicy_proto",
     "//base",
     "//chromeos/dbus:common",
-    "//chromeos/dbus/cryptohome",
+    "//components/account_id",
+    "//dbus",
+
+    # For FakeAuthPolicyClient
     "//chromeos/dbus/cryptohome:cryptohome_proto",
     "//chromeos/dbus/session_manager",
-    "//components/account_id",
+    "//chromeos/tpm",
     "//components/policy:cloud_policy_proto_generated_compile",
     "//components/policy/proto",
-    "//dbus",
   ]
 
   sources = [
