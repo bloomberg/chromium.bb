@@ -721,7 +721,8 @@ void ClientTagBasedModelTypeProcessor::OnUpdateReceived(
 
 ProcessorEntity* ClientTagBasedModelTypeProcessor::ProcessUpdate(
     std::unique_ptr<UpdateResponseData> update,
-    EntityChangeList* entity_changes) {
+    EntityChangeList* entity_changes,
+    std::string* storage_key_to_clear) {
   const EntityData& data = *update->entity;
   const std::string& client_tag_hash = data.client_tag_hash;
 
@@ -767,7 +768,8 @@ ProcessorEntity* ClientTagBasedModelTypeProcessor::ProcessUpdate(
   ConflictResolution::Type resolution_type = ConflictResolution::TYPE_SIZE;
   if (entity && entity->IsUnsynced()) {
     // Handle conflict resolution.
-    resolution_type = ResolveConflict(*update, entity, entity_changes);
+    resolution_type =
+        ResolveConflict(*update, entity, entity_changes, storage_key_to_clear);
     UMA_HISTOGRAM_ENUMERATION("Sync.ResolveConflict", resolution_type,
                               ConflictResolution::TYPE_SIZE);
   } else {
@@ -830,7 +832,8 @@ ProcessorEntity* ClientTagBasedModelTypeProcessor::ProcessUpdate(
 ConflictResolution::Type ClientTagBasedModelTypeProcessor::ResolveConflict(
     const UpdateResponseData& update,
     ProcessorEntity* entity,
-    EntityChangeList* changes) {
+    EntityChangeList* changes,
+    std::string* storage_key_to_clear) {
   const EntityData& remote_data = *update.entity;
 
   ConflictResolution::Type resolution_type = ConflictResolution::TYPE_SIZE;
@@ -840,6 +843,9 @@ ConflictResolution::Type ClientTagBasedModelTypeProcessor::ResolveConflict(
   if (entity->MatchesData(remote_data)) {
     // The changes are identical so there isn't a real conflict.
     resolution_type = ConflictResolution::CHANGES_MATCH;
+  } else if (entity->metadata().is_deleted()) {
+    // Local tombstone vs remote update (non-deletion). Should be undeleted.
+    resolution_type = ConflictResolution::USE_REMOTE;
   } else if (entity->MatchesOwnBaseData()) {
     // If there is no real local change, then the entity must be unsynced due to
     // a pending local re-encryption request. In this case, the remote data
@@ -876,17 +882,28 @@ ConflictResolution::Type ClientTagBasedModelTypeProcessor::ResolveConflict(
       break;
     case ConflictResolution::USE_REMOTE:
     case ConflictResolution::IGNORE_LOCAL_ENCRYPTION:
-      // Squash the pending commit.
-      entity->RecordForcedUpdate(update);
       // Update client data to match server.
       if (update.entity->is_deleted()) {
+        DCHECK(!entity->metadata().is_deleted());
         changes->push_back(EntityChange::CreateDelete(entity->storage_key()));
-      } else {
+      } else if (!entity->metadata().is_deleted()) {
         changes->push_back(EntityChange::CreateUpdate(entity->storage_key(),
                                                       update.entity->Clone()));
+      } else {
+        // Remote undeletion. This could imply a new storage key for some
+        // bridges, so we may need to wait until UpdateStorageKey() is called.
+        if (!bridge_->SupportsGetStorageKey()) {
+          *storage_key_to_clear = entity->storage_key();
+          entity->ClearStorageKey();
+        }
+        changes->push_back(EntityChange::CreateAdd(entity->storage_key(),
+                                                   update.entity->Clone()));
       }
+      // Squash the pending commit.
+      entity->RecordForcedUpdate(update);
       break;
     case ConflictResolution::USE_NEW:
+      DCHECK(!entity->metadata().is_deleted());
       // Record that we received the update.
       entity->RecordIgnoredUpdate(update);
       // Make a new pending commit to update the server.
@@ -1060,7 +1077,9 @@ ClientTagBasedModelTypeProcessor::OnIncrementalUpdateReceived(
 
   for (std::unique_ptr<syncer::UpdateResponseData>& update : updates) {
     DCHECK(update);
-    ProcessorEntity* entity = ProcessUpdate(std::move(update), &entity_changes);
+    std::string storage_key_to_clear;
+    ProcessorEntity* entity = ProcessUpdate(std::move(update), &entity_changes,
+                                            &storage_key_to_clear);
 
     if (!entity) {
       // The update is either of the following:
@@ -1079,8 +1098,19 @@ ClientTagBasedModelTypeProcessor::OnIncrementalUpdateReceived(
     if (entity->storage_key().empty()) {
       // Storage key of this entity is not known yet. Don't update metadata, it
       // will be done from UpdateStorageKey.
+
+      // If this is the result of a conflict resolution (where a remote
+      // undeletion was preferred), then need to clear a metadata entry from
+      // the database.
+      if (!storage_key_to_clear.empty()) {
+        metadata_changes->ClearMetadata(storage_key_to_clear);
+        storage_key_to_tag_hash_.erase(storage_key_to_clear);
+      }
       continue;
     }
+
+    DCHECK(storage_key_to_clear.empty());
+
     if (entity->CanClearMetadata()) {
       metadata_changes->ClearMetadata(entity->storage_key());
       storage_key_to_tag_hash_.erase(entity->storage_key());

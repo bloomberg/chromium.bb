@@ -111,6 +111,10 @@ class ProcessorEntity {
   // an entity initialized with empty storage key.
   void SetStorageKey(const std::string& storage_key);
 
+  // Undoes SetStorageKey(), which is needed in certain conflict resolution
+  // scenarios.
+  void ClearStorageKey();
+
   // Takes the passed commit data updates its fields with values from metadata
   // and caches it in the instance.
   void SetCommitData(std::unique_ptr<EntityData> data);

@@ -140,9 +140,11 @@ class FakeModelTypeSyncBridge : public ModelTypeSyncBridge {
   // test code here, this function is needed to manually copy it.
   static std::unique_ptr<EntityData> CopyEntityData(const EntityData& old_data);
 
-  // Influences the way the bridge produces storage key. If set to true, it
-  // will return autoincrement-like storage keys that cannot be inferred from
-  // specifics.
+  // Influences the way the bridge produces storage key. If set to true, the
+  // bridge will compute a storage key deterministically from specifics, via
+  // GetStorageKey(). If set to false, it will return autoincrement-like storage
+  // keys that cannot be inferred from specifics, and exercise
+  // UpdateStorageKey() for remote changes to report storage keys.
   void SetSupportsGetStorageKey(bool supports_get_storage_key);
 
   // Returns the last generated autoincrement-like storage key, applicable only

@@ -80,6 +80,11 @@ void ProcessorEntity::SetStorageKey(const std::string& storage_key) {
   storage_key_ = storage_key;
 }
 
+void ProcessorEntity::ClearStorageKey() {
+  DCHECK(metadata_.is_deleted());
+  storage_key_.clear();
+}
+
 void ProcessorEntity::SetCommitData(std::unique_ptr<EntityData> data) {
   DCHECK(data);
   // Update data's fields from metadata.
@@ -113,10 +118,10 @@ bool ProcessorEntity::MatchesData(const EntityData& data) const {
 
 bool ProcessorEntity::MatchesOwnBaseData() const {
   DCHECK(IsUnsynced());
-  DCHECK(!metadata_.specifics_hash().empty());
   if (metadata_.is_deleted()) {
     return false;
   }
+  DCHECK(!metadata_.specifics_hash().empty());
   return metadata_.specifics_hash() == metadata_.base_specifics_hash();
 }
 
