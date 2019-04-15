@@ -157,6 +157,13 @@ class GaiaScreenHandler : public BaseScreenHandler,
                                        const std::string& gaia_id);
   void HandleUpdateSigninUIState(int state);
 
+  // Allows for a password expiry notification to be shown using information
+  // extracted from the SAML response during SAML auth flow.
+  void HandleUpdatePasswordAttributes(
+      const std::string& passwordModifiedTimestamp,
+      const std::string& passwordExpirationTimestamp,
+      const std::string& passwordChangeUrl);
+
   // Allows WebUI to control the login shelf's guest button visibility during
   // OOBE.
   void HandleShowGuestInOobe(bool show);

@@ -487,6 +487,10 @@ void GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent(
 
   params.SetString("webviewPartitionName", partition_name);
 
+  params.SetBoolean(
+      "extractSamlPasswordAttributes",
+      base::FeatureList::IsEnabled(features::kInSessionPasswordChange));
+
   frame_state_ = FRAME_STATE_LOADING;
   CallJS("login.GaiaSigninScreen.loadAuthExtension", params);
 }
@@ -615,6 +619,11 @@ void GaiaScreenHandler::RegisterMessages() {
   AddCallback("updateSigninUIState",
               &GaiaScreenHandler::HandleUpdateSigninUIState);
   AddCallback("showGuestInOobe", &GaiaScreenHandler::HandleShowGuestInOobe);
+
+  if (base::FeatureList::IsEnabled(features::kInSessionPasswordChange)) {
+     AddCallback("updatePasswordAttributes",
+                 &GaiaScreenHandler::HandleUpdatePasswordAttributes);
+  }
 
   // Allow UMA metrics collection from JS.
   web_ui()->AddMessageHandler(std::make_unique<MetricsHandler>());
@@ -937,6 +946,24 @@ void GaiaScreenHandler::HandleUpdateSigninUIState(int state) {
     auto dialog_state = static_cast<ash::mojom::OobeDialogState>(state);
     DCHECK(ash::mojom::IsKnownEnumValue(dialog_state));
     LoginDisplayHost::default_host()->UpdateOobeDialogState(dialog_state);
+  }
+}
+
+void GaiaScreenHandler::HandleUpdatePasswordAttributes(
+    const std::string& passwordModifiedTimestamp,
+    const std::string& passwordExpirationTimestamp,
+    const std::string& passwordChangeUrl) {
+  CHECK(base::FeatureList::IsEnabled(features::kInSessionPasswordChange));
+  // TODO(olsen): Store this information in the user's session, use it to show a
+  // notification when the user's password is expired / is soon to expire.
+  if (passwordModifiedTimestamp.empty() &&
+      passwordExpirationTimestamp.empty() && passwordChangeUrl.empty()) {
+    VLOG(4) << "No password attributes extracted from SAML response";
+  } else {
+    VLOG(4) << "Extracted password attributes from SAML response: {";
+    VLOG(4) << "passwordModifiedTimestamp: " << passwordModifiedTimestamp;
+    VLOG(4) << "passwordExpirationTimestamp: " << passwordExpirationTimestamp;
+    VLOG(4) << "passwordChangeUrl: " << passwordChangeUrl << " }";
   }
 }
 

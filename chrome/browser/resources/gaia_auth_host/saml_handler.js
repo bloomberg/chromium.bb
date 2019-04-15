@@ -4,6 +4,7 @@
 
 // <include src="post_message_channel.js">
 // <include src="webview_event_manager.js">
+// <include src="../chromeos/login/saml_password_attributes.js">
 
 /**
  * @fileoverview Saml support for webview based auth.
@@ -148,12 +149,19 @@ cr.define('cr.login', function() {
        */
       this.apiPasswordBytes_ = null;
 
-      /*
+      /**
        * Whether to abort the authentication flow and show an error messagen
        * when content served over an unencrypted connection is detected.
        * @type {boolean}
        */
       this.blockInsecureContent = false;
+
+      /**
+       * Whether to attempt to extract password attributes from the SAMLResponse
+       * XML. See ../chromeos/login/saml_password_attributes.js
+       * @type {boolean}
+       */
+      this.extractSamlPasswordAttributes = false;
 
       this.webviewEventManager_ = WebviewEventManager.create();
 
@@ -169,6 +177,12 @@ cr.define('cr.login', function() {
           this.webview_.request.onBeforeRequest,
           this.onInsecureRequest.bind(this),
           {urls: ['http://*/*', 'file://*/*', 'ftp://*/*']}, ['blocking']);
+
+      this.webviewEventManager_.addWebRequestEventListener(
+          this.webview_.request.onBeforeRequest,
+          this.onMainFrameWebRequest.bind(this),
+          {urls: ['http://*/*', 'https://*/*'], types: ['main_frame']},
+          ['requestBody']);
 
       if (!this.startsOnSamlPage_) {
         this.webviewEventManager_.addEventListener(
@@ -342,6 +356,37 @@ cr.define('cr.login', function() {
       this.dispatchEvent(new CustomEvent(
           'insecureContentBlocked', {detail: {url: strippedUrl}}));
       return {cancel: true};
+    }
+
+    /**
+     * Handler for webRequest.onBeforeRequest that looks for the Base64
+     * encoded SAMLResponse in the POST-ed formdata sent from the SAML page.
+     * Non-blocking.
+     * @param {Object} details The web-request details.
+     */
+    onMainFrameWebRequest(details) {
+      if (!this.extractSamlPasswordAttributes) return;
+      if (!this.isSamlPage_ || details.method != 'POST') return;
+
+      const formData = details.requestBody.formData;
+      let samlResponse = (formData && formData.SAMLResponse);
+      if (!samlResponse) {
+        samlResponse = new URL(details.url).searchParams.get('SAMLResponse');
+      }
+      if (!samlResponse) return;
+
+      try {
+        // atob means asciiToBinary, which actually means base64Decode:
+        samlResponse = window.atob(samlResponse);
+      } catch (decodingError) {
+        console.warn('SAMLResponse is not Base64 encoded');
+        return;
+      }
+
+      const attr = samlPasswordAttributes.readPasswordAttributes(samlResponse);
+      chrome.send('updatePasswordAttributes', [
+        attr.modifiedTimestamp, attr.expirationTimestamp, attr.passwordChangeUrl
+      ]);
     }
 
     /**

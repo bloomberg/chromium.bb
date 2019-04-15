@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/public/cpp/ash_features.h"
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -175,6 +176,7 @@ class FakeSamlIdp {
   void SetLoginAuthHTMLTemplate(const std::string& template_file);
   void SetRefreshURL(const GURL& refresh_url);
   void SetCookieValue(const std::string& cookie_value);
+  void SetSamlResponseFile(const std::string& xml_file);
 
   std::unique_ptr<HttpResponse> HandleRequest(const HttpRequest& request);
 
@@ -185,6 +187,7 @@ class FakeSamlIdp {
       const std::string& next_path);
 
   base::FilePath html_template_dir_;
+  base::FilePath saml_response_dir_;
 
   std::string login_path_;
   std::string login_auth_path_;
@@ -194,6 +197,7 @@ class FakeSamlIdp {
   GURL gaia_assertion_url_;
   GURL refresh_url_;
   std::string cookie_value_;
+  std::string saml_response_{"fake_response"};
 
   DISALLOW_COPY_AND_ASSIGN(FakeSamlIdp);
 };
@@ -205,7 +209,9 @@ FakeSamlIdp::~FakeSamlIdp() {}
 void FakeSamlIdp::SetUp(const std::string& base_path, const GURL& gaia_url) {
   base::FilePath test_data_dir;
   ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
+  // NOTE: Ideally testdata would all be in chromeos/login, to match the test.
   html_template_dir_ = test_data_dir.Append("login");
+  saml_response_dir_ = test_data_dir.Append("chromeos").Append("login");
 
   login_path_ = base_path;
   login_auth_path_ = base_path + "Auth";
@@ -222,6 +228,13 @@ void FakeSamlIdp::SetLoginAuthHTMLTemplate(const std::string& template_file) {
   base::ScopedAllowBlockingForTesting allow_io;
   EXPECT_TRUE(base::ReadFileToString(html_template_dir_.Append(template_file),
                                      &login_auth_html_template_));
+}
+
+void FakeSamlIdp::SetSamlResponseFile(const std::string& xml_file) {
+  base::ScopedAllowBlockingForTesting allow_io;
+  EXPECT_TRUE(base::ReadFileToString(saml_response_dir_.Append(xml_file),
+                                     &saml_response_));
+  base::Base64Encode(saml_response_, &saml_response_);
 }
 
 void FakeSamlIdp::SetRefreshURL(const GURL& refresh_url) {
@@ -261,7 +274,7 @@ std::unique_ptr<HttpResponse> FakeSamlIdp::HandleRequest(
   }
 
   redirect_url =
-      net::AppendQueryParameter(redirect_url, "SAMLResponse", "fake_response");
+      net::AppendQueryParameter(redirect_url, "SAMLResponse", saml_response_);
   redirect_url =
       net::AppendQueryParameter(redirect_url, kRelayState, relay_state);
 
@@ -781,6 +794,42 @@ IN_PROC_BROWSER_TEST_F(SamlTest, MetaRefreshToHTTPDisallowed) {
   EXPECT_EQ(l10n_util::GetStringFUTF8(IDS_LOGIN_FATAL_ERROR_TEXT_INSECURE_URL,
                                       base::UTF8ToUTF16(url.spec())),
             WaitForAndGetFatalErrorMessage());
+}
+
+// Verifies that information about the user's password (specifically, whether
+// is has expired) can be extracted from the SAMLResponse from the IdP.
+IN_PROC_BROWSER_TEST_F(SamlTest, ExtractPasswordAttributes) {
+  // TODO(https://crbug.com/930109): Replace this with an end-to-end test that
+  // tests the actual functionality, once this is implemented.
+
+  fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
+  fake_saml_idp()->SetSamlResponseFile("saml_with_password_attributes.xml");
+  StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
+
+  ASSERT_TRUE(content::ExecuteScript(GetLoginUI()->GetWebContents(),
+      "$('gaia-signin').gaiaAuthHost_.samlHandler_"
+      ".extractSamlPasswordAttributes = true;"));
+
+  base::Value attrs;
+  GetLoginUI()->RegisterMessageCallback("updatePasswordAttributes",
+      base::BindLambdaForTesting(
+          [&](const base::ListValue* val) { attrs = val->Clone(); }));
+
+  SigninFrameJS().TypeIntoPath("fake_user", {"Email"});
+  SigninFrameJS().TypeIntoPath("fake_password", {"Password"});
+
+  content::WindowedNotificationObserver session_start_waiter(
+      chrome::NOTIFICATION_SESSION_STARTED,
+      content::NotificationService::AllSources());
+  SigninFrameJS().TapOn("Submit");
+  session_start_waiter.Wait();
+
+  ASSERT_TRUE(attrs.is_list());
+  ASSERT_EQ(3ul, attrs.GetList().size());
+  EXPECT_EQ("1550836258421", attrs.GetList()[0].GetString());
+  EXPECT_EQ("1551873058421", attrs.GetList()[1].GetString());
+  EXPECT_EQ("https://example.com/adfs/portal/updatepassword/",
+            attrs.GetList()[2].GetString());
 }
 
 class SAMLEnrollmentTest : public SamlTest {
