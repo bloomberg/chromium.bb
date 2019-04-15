@@ -297,8 +297,12 @@ extern const char kSearchEnginesSubPage[];
 extern const char kSignOutSubPage[];
 extern const char kSyncSetupSubPage[];
 extern const char kTriggeredResetProfileSettingsSubPage[];
+
 #if defined(OS_CHROMEOS)
+// Entry points for OS settings sub-pages.
 extern const char kAccessibilitySubPage[];
+extern const char kAndroidAppsDetailsSubPage[];
+extern const char kAssistantSubPage[];
 extern const char kBluetoothSubPage[];
 extern const char kCrostiniSharedUsbDevicesSubPage[];
 extern const char kDateTimeSubPage[];
@@ -309,10 +313,17 @@ extern const char kConnectedDevicesSubPage[];
 extern const char kLockScreenSubPage[];
 extern const char kNetworkDetailSubPage[];
 extern const char kPowerSubPage[];
+extern const char kSmartLockSettingsSubPage[];
 extern const char kSmbSharesPage[];
 extern const char kSmbSharesPageAddDialog[];
+extern const char kStorageSubPage[];
 extern const char kStylusSubPage[];
-#endif
+extern const char kTetherSettingsSubPage[];
+
+// Returns true if the sub-page is one of the above.
+bool IsOSSettingsSubPage(const std::string& sub_page);
+#endif  // defined(OS_CHROMEOS)
+
 #if defined(OS_WIN)
 extern const char kCleanupSubPage[];
 #endif

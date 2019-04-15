@@ -304,8 +304,12 @@ const char kSignOutSubPage[] = "signOut";
 const char kSyncSetupSubPage[] = "syncSetup";
 const char kTriggeredResetProfileSettingsSubPage[] =
     "triggeredResetProfileSettings";
+
 #if defined(OS_CHROMEOS)
+// NOTE: Add new OS settings to IsOSSettingsSubPage() below.
 const char kAccessibilitySubPage[] = "accessibility";
+const char kAndroidAppsDetailsSubPage[] = "androidApps/details";
+const char kAssistantSubPage[] = "googleAssistant";
 const char kBluetoothSubPage[] = "bluetoothDevices";
 const char kCrostiniSharedUsbDevicesSubPage[] = "crostini/sharedUsbDevices";
 const char kDateTimeSubPage[] = "dateTime";
@@ -317,8 +321,37 @@ const char kConnectedDevicesSubPage[] = "multidevice/features";
 const char kLockScreenSubPage[] = "lockScreen";
 const char kNetworkDetailSubPage[] = "networkDetail";
 const char kPowerSubPage[] = "power";
+const char kSmartLockSettingsSubPage[] = "multidevice/features/smartLock";
 const char kSmbSharesPageAddDialog[] = "smbShares?showAddShare=true";
+const char kStorageSubPage[] = "storage";
 const char kStylusSubPage[] = "stylus";
+const char kTetherSettingsSubPage[] = "networks?type=Tether";
+
+bool IsOSSettingsSubPage(const std::string& sub_page) {
+  const char* const kSubPages[] = {kAccessibilitySubPage,
+                                   kAndroidAppsDetailsSubPage,
+                                   kAssistantSubPage,
+                                   kBluetoothSubPage,
+                                   kCrostiniSharedUsbDevicesSubPage,
+                                   kDateTimeSubPage,
+                                   kDisplaySubPage,
+                                   kHelpSubPage,
+                                   kInternetSubPage,
+                                   kConnectedDevicesSubPage,
+                                   kLockScreenSubPage,
+                                   kNetworkDetailSubPage,
+                                   kPowerSubPage,
+                                   kSmartLockSettingsSubPage,
+                                   kSmbSharesPageAddDialog,
+                                   kStorageSubPage,
+                                   kStylusSubPage,
+                                   kTetherSettingsSubPage};
+  for (const char* p : kSubPages) {
+    if (sub_page == p)
+      return true;
+  }
+  return false;
+}
 #else
 const char kCreateProfileSubPage[] = "createProfile";
 const char kManageProfileSubPage[] = "manageProfile";
