@@ -930,8 +930,15 @@ void StoragePartitionImpl::OpenLocalStorage(
     const url::Origin& origin,
     blink::mojom::StorageAreaRequest request) {
   int process_id = bindings_.dispatch_context();
-  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanAccessDataForOrigin(
-          process_id, origin)) {
+  // TODO(943887): Replace HasSecurityState() call with something that can
+  // preserve security state after process shutdown. The security state check
+  // is a temporary solution to avoid crashes when this method is run after the
+  // process associated with |process_id| has been destroyed.
+  // It temporarily restores the old behavior of always allowing access if the
+  // process is gone.
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  if (!policy->CanAccessDataForOrigin(process_id, origin) &&
+      policy->HasSecurityState(process_id)) {
     SYSLOG(WARNING) << "Killing renderer: illegal localStorage request.";
     bindings_.ReportBadMessage("Access denied for localStorage request");
     return;
