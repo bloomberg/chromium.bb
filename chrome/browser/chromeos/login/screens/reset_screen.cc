@@ -10,7 +10,6 @@
 #include "base/task/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/chromeos/login/screens/reset_view.h"
@@ -88,12 +87,12 @@ void ResetScreen::SetTpmFirmwareUpdateCheckerForTesting(
   g_tpm_firmware_update_checker = checker;
 }
 
-ResetScreen::ResetScreen(BaseScreenDelegate* base_screen_delegate,
-                         ResetView* view,
+ResetScreen::ResetScreen(ResetView* view,
+                         ErrorScreen* error_screen,
                          const base::RepeatingClosure& exit_callback)
     : BaseScreen(OobeScreen::SCREEN_OOBE_RESET),
-      base_screen_delegate_(base_screen_delegate),
       view_(view),
+      error_screen_(error_screen),
       exit_callback_(exit_callback),
       tpm_firmware_update_checker_(
           g_tpm_firmware_update_checker
@@ -355,9 +354,8 @@ void ResetScreen::UpdateStatusChanged(
           UpdateEngineClient::UPDATE_STATUS_REPORTING_ERROR_EVENT) {
     view_->SetScreenState(ResetView::State::kError);
     // Show error screen.
-    base_screen_delegate_->GetErrorScreen()->SetUIState(
-        NetworkError::UI_STATE_ROLLBACK_ERROR);
-    base_screen_delegate_->ShowErrorScreen();
+    error_screen_->SetUIState(NetworkError::UI_STATE_ROLLBACK_ERROR);
+    error_screen_->Show();
   } else if (status.status ==
              UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT) {
     PowerManagerClient::Get()->RequestRestart(

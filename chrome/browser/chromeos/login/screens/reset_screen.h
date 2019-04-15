@@ -22,7 +22,7 @@ class PrefRegistrySimple;
 
 namespace chromeos {
 
-class BaseScreenDelegate;
+class ErrorScreen;
 class ResetView;
 
 // Representation independent class that controls screen showing reset to users.
@@ -30,8 +30,8 @@ class ResetView;
 // will end up in the device restart.
 class ResetScreen : public BaseScreen, public UpdateEngineClient::Observer {
  public:
-  ResetScreen(BaseScreenDelegate* base_screen_delegate,
-              ResetView* view,
+  ResetScreen(ResetView* view,
+              ErrorScreen* error_screen,
               const base::RepeatingClosure& exit_callback);
   ~ResetScreen() override;
 
@@ -74,8 +74,8 @@ class ResetScreen : public BaseScreen, public UpdateEngineClient::Observer {
 
   void ShowHelpArticle(HelpAppLauncher::HelpTopic topic);
 
-  BaseScreenDelegate* const base_screen_delegate_;
   ResetView* view_;
+  ErrorScreen* error_screen_;
   base::RepeatingClosure exit_callback_;
 
   // Help application used for help dialogs.

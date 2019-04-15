@@ -402,7 +402,7 @@ std::vector<std::unique_ptr<BaseScreen>> WizardController::CreateScreens() {
       base::BindRepeating(&WizardController::OnNetworkScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<UpdateScreen>(
-      this, oobe_ui->GetUpdateView(),
+      this, oobe_ui->GetUpdateView(), oobe_ui->GetErrorScreen(),
       base::BindRepeating(&WizardController::OnUpdateScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<EulaScreen>(
@@ -414,7 +414,7 @@ std::vector<std::unique_ptr<BaseScreen>> WizardController::CreateScreens() {
       base::BindRepeating(&WizardController::OnEnrollmentScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<chromeos::ResetScreen>(
-      this, oobe_ui->GetResetView(),
+      oobe_ui->GetResetView(), oobe_ui->GetErrorScreen(),
       base::BindRepeating(&WizardController::OnResetScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<chromeos::DemoSetupScreen>(
@@ -466,7 +466,7 @@ std::vector<std::unique_ptr<BaseScreen>> WizardController::CreateScreens() {
       base::BindRepeating(&WizardController::OnHidDetectionScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<AutoEnrollmentCheckScreen>(
-      this, oobe_ui->GetAutoEnrollmentCheckScreenView(),
+      oobe_ui->GetAutoEnrollmentCheckScreenView(), oobe_ui->GetErrorScreen(),
       base::BindRepeating(&WizardController::OnAutoEnrollmentCheckScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<DeviceDisabledScreen>(
@@ -681,9 +681,7 @@ void WizardController::SkipUpdateEnrollAfterEula() {
 }
 
 void WizardController::OnScreenExit(OobeScreen screen, int exit_code) {
-  DCHECK(current_screen_->screen_id() == screen ||
-         (current_screen_->screen_id() == OobeScreen::SCREEN_ERROR_MESSAGE &&
-          previous_screen_->screen_id() == screen));
+  DCHECK(current_screen_->screen_id() == screen);
 
   VLOG(1) << "Wizard screen " << GetOobeScreenName(screen)
           << " exited with code: " << exit_code;
@@ -1467,12 +1465,6 @@ void WizardController::SimulateDemoModeSetupForTesting(
 // WizardController, BaseScreenDelegate overrides:
 void WizardController::ShowErrorScreen() {
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_ERROR_MESSAGE));
-}
-
-void WizardController::HideErrorScreen(BaseScreen* parent_screen) {
-  DCHECK(parent_screen);
-  VLOG(1) << "Hiding error screen.";
-  SetCurrentScreen(parent_screen);
 }
 
 void WizardController::OnAccessibilityStatusChanged(

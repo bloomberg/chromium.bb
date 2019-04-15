@@ -7,19 +7,12 @@
 
 namespace chromeos {
 
-class BaseScreen;
-class ErrorScreen;
-
 // Interface that handles notifications received from any of login wizard
 // screens.
 class BaseScreenDelegate {
  public:
   // Forces current screen showing.
   virtual void ShowCurrentScreen() = 0;
-
-  virtual ErrorScreen* GetErrorScreen() = 0;
-  virtual void ShowErrorScreen() = 0;
-  virtual void HideErrorScreen(BaseScreen* parent_screen) = 0;
 
  protected:
   virtual ~BaseScreenDelegate() {}

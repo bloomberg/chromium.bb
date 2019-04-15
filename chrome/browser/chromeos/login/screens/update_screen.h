@@ -70,6 +70,7 @@ class UpdateScreen : public BaseScreen,
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
   UpdateScreen(BaseScreenDelegate* base_screen_delegate,
                UpdateView* view,
+               ErrorScreen* error_screen,
                const ScreenExitCallback& exit_callback);
   ~UpdateScreen() override;
 
@@ -166,6 +167,10 @@ class UpdateScreen : public BaseScreen,
   // The user requested an attempt to connect to the network should be made.
   void OnConnectRequested();
 
+  // Callback passed to |error_screen_| when it's shown. Called when the error
+  // screen gets hidden.
+  void OnErrorScreenHidden();
+
   // Timer for the interval to wait for the reboot.
   // If reboot didn't happen - ask user to reboot manually.
   base::OneShotTimer reboot_timer_;
@@ -193,7 +198,8 @@ class UpdateScreen : public BaseScreen,
   bool ignore_idle_status_ = true;
 
   BaseScreenDelegate* base_screen_delegate_;
-  UpdateView* view_ = nullptr;
+  UpdateView* view_;
+  ErrorScreen* error_screen_;
   ScreenExitCallback exit_callback_;
 
   // Time of the first notification from the downloading stage.
