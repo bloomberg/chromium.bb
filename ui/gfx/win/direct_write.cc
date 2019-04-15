@@ -17,6 +17,21 @@
 namespace gfx {
 namespace win {
 
+namespace {
+
+// Pointer to the global IDWriteFactory interface.
+IDWriteFactory* g_direct_write_factory = nullptr;
+
+void SetDirectWriteFactory(IDWriteFactory* factory) {
+  DCHECK(!g_direct_write_factory);
+  // We grab a reference on the DirectWrite factory. This reference is
+  // leaked, which is ok because skia leaks it as well.
+  factory->AddRef();
+  g_direct_write_factory = factory;
+}
+
+}  // anonymous namespace
+
 void CreateDWriteFactory(IDWriteFactory** factory) {
   Microsoft::WRL::ComPtr<IUnknown> factory_unknown;
   HRESULT hr =
@@ -40,6 +55,7 @@ void InitializeDirectWrite() {
   Microsoft::WRL::ComPtr<IDWriteFactory> factory;
   CreateDWriteFactory(factory.GetAddressOf());
   CHECK(!!factory);
+  SetDirectWriteFactory(factory.Get());
 
   // The skia call to create a new DirectWrite font manager instance can fail
   // if we are unable to get the system font collection from the DirectWrite
@@ -50,8 +66,19 @@ void InitializeDirectWrite() {
       SkFontMgr_New_DirectWrite(factory.Get());
   CHECK(!!direct_write_font_mgr);
 
+  // Override the default skia font manager. This must be called before any
+  // use of the skia font manager is done (e.g. before any call to
+  // SkFontMgr::RefDefault()).
   skia::OverrideDefaultSkFontMgr(std::move(direct_write_font_mgr));
-  gfx::PlatformFontWin::SetDirectWriteFactory(factory.Get());
+}
+
+IDWriteFactory* GetDirectWriteFactory() {
+  // Some unittests may access this accessor without any previous call to
+  // |InitializeDirectWrite|. A call to |InitializeDirectWrite| after this
+  // function being called is still invalid.
+  if (!g_direct_write_factory)
+    InitializeDirectWrite();
+  return g_direct_write_factory;
 }
 
 }  // namespace win

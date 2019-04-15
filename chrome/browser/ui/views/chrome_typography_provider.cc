@@ -15,7 +15,6 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
-#include "ui/gfx/platform_font_win.h"
 #include "ui/native_theme/native_theme_win.h"
 #endif
 
@@ -111,20 +110,18 @@ SkColor GetHarmonyTextColorForNonStandardNativeTheme(
 #if defined(OS_WIN)
 // static
 int ChromeTypographyProvider::GetPlatformFontHeight(int font_context) {
-  const bool direct_write_enabled =
-      gfx::PlatformFontWin::IsDirectWriteEnabled();
   const bool windows_10 = base::win::GetVersion() >= base::win::VERSION_WIN10;
   switch (font_context) {
     case CONTEXT_HEADLINE:
-      return windows_10 && direct_write_enabled ? 27 : 28;
+      return windows_10 ? 27 : 28;
     case views::style::CONTEXT_DIALOG_TITLE:
-      return windows_10 || !direct_write_enabled ? 20 : 21;
+      return windows_10 ? 20 : 21;
     case CONTEXT_BODY_TEXT_LARGE:
     case CONTEXT_TAB_HOVER_CARD_TITLE:
     case views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT:
-      return direct_write_enabled ? 18 : 17;
+      return 18;
     case CONTEXT_BODY_TEXT_SMALL:
-      return windows_10 && direct_write_enabled ? 16 : 15;
+      return windows_10 ? 16 : 15;
   }
   NOTREACHED();
   return 0;

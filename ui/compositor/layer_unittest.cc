@@ -61,6 +61,10 @@
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/skia_util.h"
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 using cc::MatchesPNGFile;
 using cc::WritePNGFile;
 
@@ -134,7 +138,7 @@ class LayerWithRealCompositorTest : public testing::Test {
   LayerWithRealCompositorTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI) {
-    gfx::FontList::SetDefaultFontDescription("Arial, Times New Roman, 15px");
+    gfx::FontList::SetDefaultFontDescription("Segoe UI, 15px");
   }
   ~LayerWithRealCompositorTest() override {}
 
@@ -1890,7 +1894,12 @@ TEST_F(LayerWithRealCompositorTest, CanvasDrawFadedString) {
   ReadPixels(&bitmap);
   ASSERT_FALSE(bitmap.empty());
 
-  base::FilePath ref_img = test_data_dir().AppendASCII("string_faded.png");
+  std::string filename;
+  if (base::win::GetVersion() < base::win::VERSION_WIN10)
+    filename = "string_faded_win7.png";
+  else
+    filename = "string_faded_win10.png";
+  base::FilePath ref_img = test_data_dir().AppendASCII(filename);
   // WritePNGFile(bitmap, ref_img, true);
 
   float percentage_pixels_large_error = 8.0f;  // 200px / (50*50)

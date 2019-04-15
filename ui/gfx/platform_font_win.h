@@ -60,8 +60,6 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
   // from skia and DirectWrite.
   static void SetDirectWriteFactory(IDWriteFactory* factory);
 
-  static bool IsDirectWriteEnabled();
-
  private:
   FRIEND_TEST_ALL_PREFIXES(PlatformFontWinTest, Metrics_SkiaVersusGDI);
   FRIEND_TEST_ALL_PREFIXES(PlatformFontWinTest, DirectWriteFontSubstitution);
@@ -190,9 +188,6 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
 
   // Indirect reference to the HFontRef, which references the underlying HFONT.
   scoped_refptr<HFontRef> font_ref_;
-
-  // Pointer to the global IDWriteFactory interface.
-  static IDWriteFactory* direct_write_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformFontWin);
 };

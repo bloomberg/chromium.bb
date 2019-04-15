@@ -17,6 +17,9 @@ GFX_EXPORT void InitializeDirectWrite();
 // Creates a DirectWrite factory.
 GFX_EXPORT void CreateDWriteFactory(IDWriteFactory** factory);
 
+// Returns the global DirectWrite factory.
+GFX_EXPORT IDWriteFactory* GetDirectWriteFactory();
+
 }  // namespace win
 }  // namespace gfx
 
