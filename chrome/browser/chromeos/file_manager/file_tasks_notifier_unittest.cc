@@ -9,6 +9,7 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks_observer.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/test/fake_download_item.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/common/fileapi/file_system_types.h"
@@ -74,11 +75,20 @@ class FileTasksNotifierTest : public testing::Test {
   MockFileTasksObserver& observer() { return *observer_; }
   FileTasksNotifier& notifier() { return *notifier_; }
 
+  download::DownloadItem* CreateCompletedDownloadItem(
+      const base::FilePath& path) {
+    download_item_ = std::make_unique<content::FakeDownloadItem>();
+    download_item_->SetTargetFilePath(path);
+    download_item_->SetState(download::DownloadItem::DownloadState::COMPLETE);
+    return download_item_.get();
+  }
+
  private:
   content::TestBrowserThreadBundle threads_;
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<FileTasksNotifier> notifier_;
   std::unique_ptr<MockFileTasksObserver> observer_;
+  std::unique_ptr<content::FakeDownloadItem> download_item_;
 };
 
 TEST_F(FileTasksNotifierTest, FileTask_Local) {
@@ -280,6 +290,65 @@ TEST_F(FileTasksNotifierTest, DialogSelection_Multiple) {
        CreateSelectedFileInfo(legacy_drive_path),
        CreateSelectedFileInfo(removable_path)},
       false);
+}
+
+TEST_F(FileTasksNotifierTest, Download_Local) {
+  base::FilePath path = profile().GetPath().Append("file");
+  EXPECT_CALL(observer(),
+              OnFilesOpenedImpl(path, FileTasksObserver::OpenType::kDownload));
+  notifier().OnDownloadUpdated(nullptr, CreateCompletedDownloadItem(path));
+}
+
+TEST_F(FileTasksNotifierTest, Download_DriveFs) {
+  base::FilePath path("/media/fuse/drivefs/root/file");
+  EXPECT_CALL(observer(),
+              OnFilesOpenedImpl(path, FileTasksObserver::OpenType::kDownload));
+  notifier().OnDownloadUpdated(nullptr, CreateCompletedDownloadItem(path));
+}
+
+TEST_F(FileTasksNotifierTest, Download_Arc) {
+  base::FilePath path("/run/arc/sdcard/write/emulated/0/file");
+  EXPECT_CALL(observer(),
+              OnFilesOpenedImpl(path, FileTasksObserver::OpenType::kDownload));
+  notifier().OnDownloadUpdated(nullptr, CreateCompletedDownloadItem(path));
+}
+
+TEST_F(FileTasksNotifierTest, Download_Crostini) {
+  base::FilePath path("/media/fuse/crostini-abcdef/file");
+  EXPECT_CALL(observer(),
+              OnFilesOpenedImpl(path, FileTasksObserver::OpenType::kDownload));
+  notifier().OnDownloadUpdated(nullptr, CreateCompletedDownloadItem(path));
+}
+
+TEST_F(FileTasksNotifierTest, Download_UnknownPath) {
+  base::FilePath path("/some/other/path");
+  EXPECT_CALL(observer(), OnFilesOpenedImpl(_, _)).Times(0);
+  notifier().OnDownloadUpdated(nullptr, CreateCompletedDownloadItem(path));
+}
+
+TEST_F(FileTasksNotifierTest, Download_RemovableMedia) {
+  base::FilePath path("/media/removable/device/file");
+  EXPECT_CALL(observer(), OnFilesOpenedImpl(_, _)).Times(0);
+  notifier().OnDownloadUpdated(nullptr, CreateCompletedDownloadItem(path));
+}
+
+TEST_F(FileTasksNotifierTest, Download_LegacyDrive) {
+  base::FilePath path("/special/drive/root/file");
+  EXPECT_CALL(observer(), OnFilesOpenedImpl(_, _)).Times(0);
+  notifier().OnDownloadUpdated(nullptr, CreateCompletedDownloadItem(path));
+}
+
+TEST_F(FileTasksNotifierTest, Download_Incomplete) {
+  EXPECT_CALL(observer(), OnFilesOpenedImpl(_, _)).Times(0);
+  content::FakeDownloadItem download_item;
+  download_item.SetTargetFilePath(profile().GetPath().Append("file"));
+
+  for (auto state : {download::DownloadItem::DownloadState::IN_PROGRESS,
+                     download::DownloadItem::DownloadState::CANCELLED,
+                     download::DownloadItem::DownloadState::INTERRUPTED}) {
+    download_item.SetState(state);
+    notifier().OnDownloadUpdated(nullptr, &download_item);
+  }
 }
 
 }  // namespace
