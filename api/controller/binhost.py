@@ -10,6 +10,8 @@ from __future__ import print_function
 import urlparse
 
 from chromite.api.gen.chromite.api import binhost_pb2
+from chromite.lib import constants
+from chromite.lib import cros_build_lib
 from chromite.lib import gs
 from chromite.service import binhost
 
@@ -63,3 +65,26 @@ def SetBinhost(input_proto, output_proto):
   private = input_proto.private
   output_proto.output_file = binhost.SetBinhost(target, key, uri,
                                                 private=private)
+
+_overlay_type_to_name = {
+    binhost_pb2.OVERLAYTYPE_PUBLIC: constants.PUBLIC_OVERLAYS,
+    binhost_pb2.OVERLAYTYPE_PRIVATE: constants.PRIVATE_OVERLAYS,
+    binhost_pb2.OVERLAYTYPE_BOTH: constants.BOTH_OVERLAYS,
+    binhost_pb2.OVERLAYTYPE_NONE: None
+}
+
+def RegenBuildCache(input_proto):
+  """Regenerate the Build Cache for a build target.
+
+  See BinhostService documentation in api/proto/binhost.proto.
+
+  Args:
+    input_proto (RegenBuildCacheRequest): The input proto.
+    output_proto (RegenBuildCacheResponse): The output proto.
+  """
+  overlay_type = input_proto.overlay_type
+  sysroot = input_proto.sysroot
+  if overlay_type in _overlay_type_to_name:
+    binhost.RegenBuildCache(_overlay_type_to_name[overlay_type], sysroot.path)
+  else:
+    cros_build_lib.Die('Overlay_type must be specified.')

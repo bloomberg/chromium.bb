@@ -13,6 +13,8 @@ from chromite.lib import binpkg
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
+from chromite.lib import parallel
+from chromite.lib import portage_util
 
 
 def _ValidateBinhostConf(path, key):
@@ -167,3 +169,14 @@ def SetBinhost(target, key, uri, private=True):
   _ValidateBinhostConf(conf_path, key)
   osutils.WriteFile(conf_path, '%s="%s"' % (key, uri))
   return conf_path
+
+def RegenBuildCache(overlay_type, sysroot_path):
+  """Regenerate the Build Cache for the given target.
+
+  Args:
+    overlay_type: one of "private", "public", or "both".
+    sysroot_path: Sysroot to update.
+  """
+  overlays = portage_util.FindOverlays(overlay_type, buildroot=sysroot_path)
+  task_inputs = [[o] for o in overlays if os.path.isdir(o)]
+  parallel.RunTasksInProcessPool(portage_util.RegenCache, task_inputs)
