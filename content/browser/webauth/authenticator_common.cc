@@ -569,7 +569,7 @@ std::string AuthenticatorCommon::SerializeCollectedClientDataToJson(
     // unreasonably specific assumptions about the clientData JSON. This is
     // done in the fashion of
     // https://tools.ietf.org/html/draft-davidben-tls-grease-01
-    client_data.SetKey("new_keys_may_be_added_here",
+    client_data.SetKey("extra_keys_may_be_added_here",
                        base::Value("do not compare clientDataJSON against a "
                                    "template. See https://goo.gl/yabPex"));
   }
