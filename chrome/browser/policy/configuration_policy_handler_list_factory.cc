@@ -758,6 +758,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kDeviceBatteryChargeCustomStopCharging,
     ash::prefs::kDeviceBatteryChargeCustomStopCharging,
     base::Value::Type::INTEGER },
+  { key::kDeviceUsbPowerShareEnabled,
+    ash::prefs::kDeviceUsbPowerShareEnabled,
+    base::Value::Type::BOOLEAN },
 #endif  // defined(OS_CHROMEOS)
 
 // Metrics reporting is controlled by a platform specific policy for ChromeOS
