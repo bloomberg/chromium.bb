@@ -205,13 +205,8 @@ const base::Feature kAutofillUseApi{"AutofillUseApi",
 
 // Controls whether password generation is offered automatically on fields
 // perceived as eligible for generation.
-#if defined(OS_ANDROID)
-const base::Feature kAutomaticPasswordGeneration = {
-    "AutomaticPasswordGeneration", base::FEATURE_DISABLED_BY_DEFAULT};
-#else
 const base::Feature kAutomaticPasswordGeneration = {
     "AutomaticPasswordGeneration", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
 
 #if defined(OS_ANDROID)
 // Controls whether the Autofill manual fallback for Addresses and Payments is
