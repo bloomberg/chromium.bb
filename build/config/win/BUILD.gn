@@ -292,7 +292,7 @@ config("runtime_library") {
 config("winver") {
   defines = [
     "NTDDI_VERSION=NTDDI_WIN10_RS2",
-    
+
     # We can't say `=_WIN32_WINNT_WIN10` here because some files do
     # `#if WINVER < 0x0600` without including windows.h before,
     # and then _WIN32_WINNT_WIN10 isn't yet known to be 0x0A00.
@@ -377,9 +377,8 @@ config("cfi_linker") {
   # lots of child processes, so this means things are really slow. Disable CFG
   # for now. https://crbug.com/846966
   if (!is_debug && !is_component_build && !is_asan) {
-    # Turn on CFG in msvc linker, regardless of compiler used. Turn off CFG for
-    # longjmp (new in VS 2017) because it relies on compiler support which we do
-    # not have enabled.
+    # Turn on CFG, except for longjmp because it relies on compiler support
+    # which clang doesn't have yet.
     ldflags = [ "/guard:cf,nolongjmp" ]
   }
 }
