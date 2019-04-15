@@ -12,15 +12,6 @@
 
 namespace blink {
 
-// Performs the IPC towards the browser process for font unique name
-// matching. This class operates in one of two lookup modes, depending on
-// lookup_mode_. On Windows 10 or when IDWriteFontFactory3 is available, direct
-// individual sync Mojo IPC calls are made too lookup fonts - and the class
-// reponds synchronously.  On Windows 7 & 8, a shared memory region is retrieved
-// asynchronously, then lookups are performed against that table. When the
-// asynchronous request to retrieve the table completes, the clients are
-// notified. And once the table was retrieved, this class returns to operating
-// in synchronous mode as matching can be performed instantly.
 class FontUniqueNameLookupWin : public FontUniqueNameLookup {
  public:
   FontUniqueNameLookupWin();
@@ -35,16 +26,8 @@ class FontUniqueNameLookupWin : public FontUniqueNameLookup {
  private:
   void EnsureServiceConnected();
 
-  sk_sp<SkTypeface> MatchUniqueNameLookupTable(const String& font_unique_name);
-  sk_sp<SkTypeface> MatchUniqueNameSingleLookup(const String& font_unique_name);
-
-  sk_sp<SkTypeface> InstantiateFromPathAndTtcIndex(
-      base::FilePath font_file_path,
-      uint32_t ttc_index);
-
   mojom::blink::DWriteFontProxyPtr service_;
   WTF::Deque<NotifyFontUniqueNameLookupReady> pending_callbacks_;
-  base::Optional<blink::mojom::UniqueFontLookupMode> lookup_mode_;
   base::Optional<bool> sync_available_;
   void ReceiveReadOnlySharedMemoryRegion(
       base::ReadOnlySharedMemoryRegion shared_memory_region);
