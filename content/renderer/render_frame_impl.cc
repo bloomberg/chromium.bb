@@ -3827,10 +3827,28 @@ void RenderFrameImpl::UpdateSubresourceLoaderFactories(
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factories) {
   DCHECK(loader_factories_);
-  // TODO(crbug/916625): CHECKing for crbug.com/916625.
-  CHECK(loader_factories_->IsHostChildURLLoaderFactoryBundle());
-  static_cast<HostChildURLLoaderFactoryBundle*>(loader_factories_.get())
-      ->UpdateThisAndAllClones(std::move(subresource_loader_factories));
+  if (loader_factories_->IsHostChildURLLoaderFactoryBundle()) {
+    static_cast<HostChildURLLoaderFactoryBundle*>(loader_factories_.get())
+        ->UpdateThisAndAllClones(std::move(subresource_loader_factories));
+  } else {
+#if DCHECK_IS_ON()
+    // In presence of the NetworkService, this situation should happen only if
+    // the frame hosts a document that isn't related to a real navigation (i.e.
+    // if the frame should "inherit" the factories from its opener/parent - for
+    // example for about:blank or about:srcdoc or about:blank#someHref frames,
+    // or for frames with no URL - like the initial frame opened by window('',
+    // 'popup')).
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      WebURL url = GetWebFrame()->GetDocument().Url();
+      if (url.IsValid() && !url.IsEmpty())
+        DCHECK(url.ProtocolIs(url::kAboutScheme));
+    }
+#endif
+    auto partial_bundle = base::MakeRefCounted<ChildURLLoaderFactoryBundle>();
+    static_cast<blink::URLLoaderFactoryBundle*>(partial_bundle.get())
+        ->Update(std::move(subresource_loader_factories));
+    loader_factories_->Update(partial_bundle->PassInterface());
+  }
 }
 
 void RenderFrameImpl::MarkInitiatorAsRequiringSeparateURLLoaderFactory(

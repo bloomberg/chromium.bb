@@ -407,6 +407,41 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, PageTranslationSuccess) {
   EXPECT_EQ(translate::TranslateErrors::NONE, GetPageTranslatedResult());
 }
 
+// Test that the translation was successful in an about:blank page.
+// This is a regression test for https://crbug.com/943685.
+IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, PageTranslationAboutBlank) {
+  SetTranslateScript(kTestValidScript);
+  ResetObserver();
+  AddTabAtIndex(0, GURL(embedded_test_server()->GetURL("/french_page.html")),
+                ui::PAGE_TRANSITION_TYPED);
+
+  // Open a pop-up window and leave it at the initial about:blank URL.
+  content::WebContentsAddedObserver popup_observer;
+  ASSERT_TRUE(
+      content::ExecJs(browser()->tab_strip_model()->GetActiveWebContents(),
+                      "window.open('about:blank', 'popup')"));
+  content::WebContents* popup = popup_observer.GetWebContents();
+
+  // A round-trip to the renderer process helps avoid a race where the
+  // browser-side translate structures are not yet ready for the translate call.
+  EXPECT_EQ("ping", content::EvalJs(popup, "'ping'"));
+
+  // Translate the about:blank page.
+  ChromeTranslateClient* chrome_translate_client =
+      ChromeTranslateClient::FromWebContents(popup);
+  translate::TranslateManager* manager =
+      chrome_translate_client->GetTranslateManager();
+  manager->TranslatePage("fr", "en", true);
+
+  // Verify that the crash from https://crbug.com/943685 didn't happen.
+  EXPECT_EQ("still alive", content::EvalJs(popup, "'still alive'"));
+
+  // Wait for translation to finish and verify it was successful.
+  WaitUntilPageTranslated();
+  EXPECT_FALSE(chrome_translate_client->GetLanguageState().translation_error());
+  EXPECT_EQ(translate::TranslateErrors::NONE, GetPageTranslatedResult());
+}
+
 // Test that hrefTranslate is propagating properly
 IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, HrefTranslateSuccess) {
   ChromeTranslateClient* chrome_translate_client = GetChromeTranslateClient();
