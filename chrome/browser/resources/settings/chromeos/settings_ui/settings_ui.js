@@ -10,7 +10,6 @@
  *
  *    <settings-ui prefs="{{prefs}}"></settings-ui>
  */
-// TODO(hsuregan): Create new route.js for OS, and use 'os-settings' instead.
 cr.exportPath('settings');
 assert(
     !settings.defaultResourceLoaded,
