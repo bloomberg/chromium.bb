@@ -672,6 +672,46 @@ class DataReductionProxyResourceTypeBrowsertest
   net::EmbeddedTestServer core_server_;
 };
 
+IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
+                       ProxyBypassedOn502Error) {
+  base::HistogramTester histogram_tester;
+  net::EmbeddedTestServer test_server;
+  test_server.RegisterRequestHandler(
+      base::BindRepeating(&BasicResponse, kDummyBody));
+  ASSERT_TRUE(test_server.Start());
+
+  SetStatusCode(net::HTTP_BAD_GATEWAY);
+
+  ui_test_utils::NavigateToURL(browser(),
+                               GetURLWithMockHost(test_server, "/echo"));
+  EXPECT_THAT(GetBody(), kSecondaryResponse);
+  histogram_tester.ExpectUniqueSample(
+      "DataReductionProxy.BypassTypePrimary",
+      BYPASS_EVENT_TYPE_STATUS_502_HTTP_BAD_GATEWAY, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
+                       ProxyShortBypassedOn502ErrorWithFeature) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kDataReductionProxyBlockOnBadGatewayResponse,
+      {{"block_duration_seconds", "10"}});
+  base::HistogramTester histogram_tester;
+  net::EmbeddedTestServer test_server;
+  test_server.RegisterRequestHandler(
+      base::BindRepeating(&BasicResponse, kDummyBody));
+  ASSERT_TRUE(test_server.Start());
+
+  SetStatusCode(net::HTTP_BAD_GATEWAY);
+
+  ui_test_utils::NavigateToURL(browser(),
+                               GetURLWithMockHost(test_server, "/echo"));
+  // Both the proxies should be blocked.
+  EXPECT_THAT(GetBody(), kDummyBody);
+  histogram_tester.ExpectUniqueSample("DataReductionProxy.BlockTypePrimary",
+                                      BYPASS_EVENT_TYPE_SHORT, 1);
+}
+
 IN_PROC_BROWSER_TEST_F(DataReductionProxyResourceTypeBrowsertest,
                        CoreProxyUsedForMedia) {
   ui_test_utils::NavigateToURL(

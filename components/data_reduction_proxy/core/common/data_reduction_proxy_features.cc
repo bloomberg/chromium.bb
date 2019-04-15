@@ -46,5 +46,12 @@ const base::Feature kDataReductionProxyEnabledWithNetworkService{
     "DataReductionProxyEnabledWithNetworkService",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables block action of all proxies when 502 is received with no
+// Chrome-Proxy header. The block duration is configurable via field trial with
+// a default of one second.
+const base::Feature kDataReductionProxyBlockOnBadGatewayResponse{
+    "DataReductionProxyBlockOnBadGatewayResponse",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace data_reduction_proxy
