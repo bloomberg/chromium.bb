@@ -68,7 +68,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kAllowStartingServiceManagerOnly,
     &features::kAppNotificationStatusMessaging,
     &features::kClearOldBrowsingData,
-    &features::kClipboardContentSetting,
     &features::kDownloadsLocationChange,
     &features::kExperimentalAppBanners,
     &features::kIncognitoStrings,

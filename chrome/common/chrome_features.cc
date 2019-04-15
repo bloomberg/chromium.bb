@@ -178,11 +178,6 @@ const base::Feature kImmersiveFullscreen{"ImmersiveFullscreen",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-// Enables a site-wide permission in the UI which controls access to the
-// asynchronous Clipboard web API.
-const base::Feature kClipboardContentSetting{"ClipboardContentSetting",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
 #if defined(OS_CHROMEOS)
 // Enable project Crostini, Linux VMs on Chrome OS.
 const base::Feature kCrostini{"Crostini", base::FEATURE_DISABLED_BY_DEFAULT};

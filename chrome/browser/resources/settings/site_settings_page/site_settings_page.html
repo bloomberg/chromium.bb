@@ -218,15 +218,15 @@
         on-click="onTapNavigate_" start-icon="settings:protected-content">
     </cr-link-row>
 
-    <template is="dom-if" if="[[enableClipboardContentSetting_]]">
-      <cr-link-row class="hr two-line" data-route="SITE_SETTINGS_CLIPBOARD"
-          id="clipboard" label="$i18n{siteSettingsClipboard}"
-          on-click="onTapNavigate_" start-icon="settings:clipboard"
-          sub-label="[[defaultSettingLabel_(
-              default_.clipboard,
-              '$i18nPolymer{siteSettingsAskBeforeAccessing}',
-              '$i18nPolymer{siteSettingsBlocked}')]]"></cr-link-row>
-    </template>
+    <cr-link-row class="hr two-line" data-route="SITE_SETTINGS_CLIPBOARD"
+        id="clipboard" label="$i18n{siteSettingsClipboard}"
+        on-click="onTapNavigate_" start-icon="settings:clipboard"
+        sub-label="[[defaultSettingLabel_(
+            default_.clipboard,
+            '$i18nPolymer{siteSettingsAskBeforeAccessing}',
+            '$i18nPolymer{siteSettingsBlocked}')]]">
+    </cr-link-row>
+
     <template is="dom-if" if="[[enablePaymentHandlerContentSetting_]]">
       <cr-link-row class="hr two-line"
           data-route="SITE_SETTINGS_PAYMENT_HANDLER" id="paymentHandler"

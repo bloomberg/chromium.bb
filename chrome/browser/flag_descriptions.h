@@ -160,9 +160,6 @@ extern const char kBypassAppBannerEngagementChecksDescription[];
 extern const char kClickToOpenPDFName[];
 extern const char kClickToOpenPDFDescription[];
 
-extern const char kClipboardContentSettingName[];
-extern const char kClipboardContentSettingDescription[];
-
 extern const char kCloudImportName[];
 extern const char kCloudImportDescription[];
 
