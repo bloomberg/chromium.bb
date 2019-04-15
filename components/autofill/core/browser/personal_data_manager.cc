@@ -485,7 +485,7 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
   }
 }
 
-void PersonalDataManager::AutofillMultipleChanged() {
+void PersonalDataManager::AutofillMultipleChangedBySync() {
   // After each change coming from sync we go through a two-step process:
   //  - First, we post a task on the DB sequence to (potentially) convert server
   // addresses to local addresses and update cards accordingly.

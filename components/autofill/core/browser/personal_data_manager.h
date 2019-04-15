@@ -111,7 +111,7 @@ class PersonalDataManager : public KeyedService,
       std::unique_ptr<WDTypedResult> result) override;
 
   // AutofillWebDataServiceObserverOnUISequence:
-  void AutofillMultipleChanged() override;
+  void AutofillMultipleChangedBySync() override;
   void AutofillAddressConversionCompleted() override;
   void SyncStarted(syncer::ModelType model_type) override;
 
