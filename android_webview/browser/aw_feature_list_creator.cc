@@ -85,8 +85,8 @@ std::unique_ptr<PrefService> CreatePrefService(
   pref_registry->RegisterStringPref(
       android_webview::prefs::kWebRestrictionsAuthority, std::string());
 
-  android_webview::AwURLRequestContextGetter::RegisterPrefs(
-      pref_registry.get());
+  AwBrowserContext::RegisterPrefs(pref_registry.get());
+
   metrics::MetricsService::RegisterPrefs(pref_registry.get());
   variations::VariationsService::RegisterPrefs(pref_registry.get());
   safe_browsing::RegisterProfilePrefs(pref_registry.get());

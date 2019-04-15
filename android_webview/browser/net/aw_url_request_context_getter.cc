@@ -338,13 +338,6 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
 }
 
 // static
-void AwURLRequestContextGetter::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterStringPref(prefs::kAuthServerWhitelist, std::string());
-  registry->RegisterStringPref(prefs::kAuthAndroidNegotiateAccountType,
-                               std::string());
-}
-
-// static
 void AwURLRequestContextGetter::set_check_cleartext_permitted(bool permitted) {
 #if DCHECK_IS_ON()
   DCHECK(!g_created_url_request_context_builder);
@@ -374,17 +367,12 @@ void AwURLRequestContextGetter::SetHandlersAndInterceptors(
 
 std::unique_ptr<net::HttpAuthHandlerFactory>
 AwURLRequestContextGetter::CreateAuthHandlerFactory() {
-  // In Chrome this is configurable via the AuthSchemes policy. For WebView
-  // there is no interest to have it available so far.
-  std::vector<std::string> supported_schemes = {"basic", "digest", "ntlm",
-                                                "negotiate"};
-
   http_auth_preferences_.reset(new net::HttpAuthPreferences());
   UpdateServerWhitelist();
   UpdateAndroidAuthNegotiateAccountType();
 
   return net::HttpAuthHandlerRegistryFactory::Create(
-      http_auth_preferences_.get(), supported_schemes);
+      http_auth_preferences_.get(), AwBrowserContext::GetAuthSchemes());
 }
 
 void AwURLRequestContextGetter::UpdateServerWhitelist() {
