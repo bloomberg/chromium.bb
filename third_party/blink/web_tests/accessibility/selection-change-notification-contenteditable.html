@@ -14,6 +14,7 @@
 </div>
 
 <script>
+// Wait until layout has settled to avoid notification spam.
 async_test_after_layout_and_paint((t) => {
     var element = document.getElementById('contentEditable');
     element.focus();

@@ -3,7 +3,6 @@
 <head>
   <script src="../resources/testharness.js"></script>
   <script src="../resources/testharnessreport.js"></script>
-  <script src="../resources/run-after-layout-and-paint.js"></script>
 <style>
 .container {
   padding: 100px;
@@ -34,7 +33,7 @@
 
 <script>
 
-async_test_after_layout_and_paint((t) => {
+async_test((t) => {
   var container = document.getElementById('container');
 
   accessibilityController.addNotificationListener(t.step_func((target, notification) => {

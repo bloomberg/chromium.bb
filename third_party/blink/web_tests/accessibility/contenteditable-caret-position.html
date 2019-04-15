@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <div id="main" role="main">
 
@@ -25,7 +24,7 @@
 </div>
 
 <script>
-    test_after_layout_and_paint(function()
+    test(function()
     {
         let mainAccessible = accessibilityController.accessibleElementById("main");
 
@@ -35,7 +34,7 @@
         assert_equals(mainAccessible.selectionFocusOffset, -1);
     }, "Initially there should be no selection under the main object.");
 
-    test_after_layout_and_paint(function()
+    test(function()
     {
         let rootAccessible = accessibilityController.rootElement;
 
@@ -45,7 +44,7 @@
         assert_equals(rootAccessible.selectionFocusOffset, -1);
     }, "Initially there should be no selection on the root object.");
 
-    test_after_layout_and_paint(function()
+    test(function()
     {
         let textbox = document.getElementById("contenteditable-textbox");
         textbox.focus();
@@ -57,7 +56,7 @@
         assert_equals(textboxAccessible.selectionFocusOffset, 0);
     }, "Moving the focus to an ARIA textbox should place the caret at its beginning.");
 
-    test_after_layout_and_paint(function()
+    test(function()
     {
         let selection = window.getSelection();
         let selectionRange = document.createRange();
@@ -89,7 +88,7 @@
         assert_equals(rootAccessible.selectionFocusOffset, 1);
     }, "Setting a new caret position in the ARIA textbox should be reflected in the accessibility APIs.");
 
-    test_after_layout_and_paint(function()
+    test(function()
     {
         let selection = window.getSelection();
         let textboxAccessible = accessibilityController.accessibleElementById("contenteditable-textbox");
@@ -114,7 +113,7 @@
         assert_equals(rootAccessible.selectionFocusOffset, -1);
     }, "Removing the selection should remove the caret completely.");
 
-    test_after_layout_and_paint(function()
+    test(function()
     {
         let selection = window.getSelection();
         let textboxAccessible = accessibilityController.accessibleElementById("contenteditable-textbox");
@@ -141,7 +140,7 @@
         assert_equals(rootAccessible.selectionFocusOffset, 2);
     }, "Positioning the caret using the accessibility API instead of the DOM should work.");
 
-    test_after_layout_and_paint(function()
+    test(function()
     {
         let line2Accessible = accessibilityController.accessibleElementById("contenteditable-line2");
         let textboxAccessible = accessibilityController.accessibleElementById("contenteditable-textbox");
@@ -165,7 +164,7 @@
         assert_equals(mainAccessible.selectionFocusOffset, 0);
     }, "Moving the focus into a textarea should remove the caret from the ARIA textbox.");
 
-    test_after_layout_and_paint(function()
+    test(function()
     {
         document.getElementById("contenteditable-line2").focus();
         let rootAccessible = accessibilityController.rootElement;
@@ -182,7 +181,7 @@
         assert_equals(line2Accessible.selectionFocusOffset, 0);
     }, "Standard text fields start with the caret at the beginning of their contents.");
 
-    test_after_layout_and_paint(function()
+    test(function()
     {
         let line2 = document.getElementById("contenteditable-line2");
         line2.focus();
@@ -196,7 +195,7 @@
         assert_equals(line2Accessible.selectionFocusOffset, 3);
     }, "Setting a new caret position in the textarea should be exposed in the accessibility APIs.");
 
-    test_after_layout_and_paint(function()
+    test(function()
     {
         let textboxAccessible = accessibilityController.accessibleElementById("contenteditable-textbox");
         let mainAccessible = accessibilityController.accessibleElementById("main");
@@ -220,7 +219,7 @@
         assert_equals(rootAccessible.selectionFocusOffset, 3);
     }, "Offsets in text fields should be reported from the beginning of the field and not from the top of the container.");
 
-    test_after_layout_and_paint(function()
+    test(function()
     {
         var line1Accessible = accessibilityController.accessibleElementById("contenteditable-line1");
         var line2Accessible = accessibilityController.accessibleElementById("contenteditable-line2");
@@ -235,7 +234,7 @@
         assert_equals(line2Accessible.selectionFocusOffset, 3);
     }, "The caret position should be retrievable from any object.");
 
-    test_after_layout_and_paint(function()
+    test(function()
     {
         const selection = window.getSelection();
         const selectionRange = document.createRange();
@@ -296,7 +295,7 @@
 
     }, "Test moving the caret across two paragraphs by re-creating the selection.");
 
-    test_after_layout_and_paint(function()
+    test(function()
     {
         const selection = window.getSelection();
         const selectionRange = document.createRange();
@@ -345,7 +344,7 @@
         
     }, "Test moving the caret across two paragraphs by modifying the existing selection.");
 
-    test_after_layout_and_paint(function()
+    test(function()
     {
         const selection = window.getSelection();
         const selectionRange = document.createRange();

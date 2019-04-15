@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <div id="editable" contenteditable="true">
     Hello
@@ -9,7 +8,7 @@
 </div>
 
 <script>
-  test_after_layout_and_paint(() => {
+  test(() => {
     let editable = accessibilityController.accessibleElementById('editable');
     assert_not_equals(editable, null);
     assert_equals(editable.childrenCount, 2);

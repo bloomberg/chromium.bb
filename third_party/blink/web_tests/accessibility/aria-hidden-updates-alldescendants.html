@@ -3,7 +3,6 @@
 <head>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../resources/run-after-layout-and-paint.js"></script>
 </head>
 <body id="body">
 
@@ -29,7 +28,7 @@ function axElementById(id) {
     return accessibilityController.accessibleElementById(id);
 }
 
-test_after_layout_and_paint((t) => {
+test((t) => {
     var main = axElementById("main");
     assert_equals(main.childrenCount, 1);
 
