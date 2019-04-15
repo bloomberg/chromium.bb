@@ -543,18 +543,6 @@ NavigationRequest::NavigationRequest(
     bindings_ = entry->bindings();
   }
 
-  // This is needed to get site URLs and assign the expected RenderProcessHost.
-  // This is not always the same as |source_site_instance|, as it only depends
-  // on the current frame host, and does not depend on |entry|.
-  starting_site_instance_ =
-      frame_tree_node->current_frame_host()->GetSiteInstance();
-
-  // TODO(alexmos): Using |starting_site_instance_|'s IsolationContext may not
-  // be correct for cross-BrowsingInstance redirects.
-  site_url_ = SiteInstanceImpl::GetSiteForURL(
-      starting_site_instance_->GetBrowserContext(),
-      starting_site_instance_->GetIsolationContext(), common_params_.url);
-
   // Update the load flags with cache information.
   UpdateLoadFlagsWithCacheFlags(&begin_params_->load_flags,
                                 common_params_.navigation_type,
@@ -771,6 +759,22 @@ void NavigationRequest::SetWaitingForRendererResponse() {
 void NavigationRequest::CreateNavigationHandle(bool is_for_commit) {
   DCHECK(frame_tree_node_->navigation_request() == this || is_for_commit);
   FrameTreeNode* frame_tree_node = frame_tree_node_;
+
+  // This is needed to get site URLs and assign the expected RenderProcessHost.
+  // This is not always the same as |source_site_instance_|, as it only depends
+  // on the current frame host, and does not depend on |entry|.
+  // The |starting_site_instance_| needs to be set here instead of the
+  // constructor since a navigation can be started after the constructor and
+  // before here, which can set a different RenderFrameHost and a different
+  // starting SiteInstance.
+  starting_site_instance_ =
+      frame_tree_node->current_frame_host()->GetSiteInstance();
+
+  // TODO(alexmos): Using |starting_site_instance_|'s IsolationContext may not
+  // be correct for cross-BrowsingInstance redirects.
+  site_url_ = SiteInstanceImpl::GetSiteForURL(
+      starting_site_instance_->GetBrowserContext(),
+      starting_site_instance_->GetIsolationContext(), common_params_.url);
 
   // Compute the redirect chain.
   // TODO(clamy): Try to simplify this and have the redirects be part of
