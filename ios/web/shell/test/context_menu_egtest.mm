@@ -2,21 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <EarlGrey/EarlGrey.h>
 #import <UIKit/UIKit.h>
 #import <WebKit/WebKit.h>
 #import <XCTest/XCTest.h>
 
 #import "base/ios/block_types.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/testing/earl_grey/matchers.h"
 #include "ios/web/public/test/element_selector.h"
-#import "ios/web/public/test/web_view_interaction_test_util.h"
-#import "ios/web/shell/test/app/web_shell_test_util.h"
-#include "ios/web/shell/test/app/web_view_interaction_test_util.h"
 #import "ios/web/shell/test/earl_grey/shell_actions.h"
 #import "ios/web/shell/test/earl_grey/shell_earl_grey.h"
 #import "ios/web/shell/test/earl_grey/shell_matchers.h"
-#import "ios/web/shell/test/earl_grey/shell_matchers_shorthand.h"
 #import "ios/web/shell/test/earl_grey/web_shell_test_case.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 

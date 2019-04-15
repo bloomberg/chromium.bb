@@ -3,14 +3,13 @@
 // found in the LICENSE file.
 
 #import <CoreGraphics/CoreGraphics.h>
-#import <EarlGrey/EarlGrey.h>
 #import <Foundation/Foundation.h>
 #import <XCTest/XCTest.h>
 
 #include "base/strings/string_number_conversions.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/web/shell/test/earl_grey/shell_earl_grey.h"
 #import "ios/web/shell/test/earl_grey/shell_matchers.h"
-#import "ios/web/shell/test/earl_grey/shell_matchers_shorthand.h"
 #import "ios/web/shell/test/earl_grey/web_shell_test_case.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
