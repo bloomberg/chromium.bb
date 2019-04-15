@@ -27,8 +27,7 @@ class SwitchAccessPreferences {
 
   /**
    * Store any changes from |chrome.storage.sync| to |this.preferences_|, if
-   * |this.preferences_| is not already set to that value. If
-   * |this.preferences_| changes, fire a |prefsUpdate| event.
+   * |this.preferences_| is not already set to that value.
    *
    * @param {!Object} storageChanges
    * @param {string} areaName
@@ -42,11 +41,8 @@ class SwitchAccessPreferences {
         updatedPreferences[key] = storageChanges[key].newValue;
       }
     }
-    if (Object.keys(updatedPreferences).length > 0) {
-      let event =
-          new CustomEvent('prefsUpdate', {'detail': updatedPreferences});
-      document.dispatchEvent(event);
-    }
+    if (Object.keys(updatedPreferences).length > 0)
+      this.switchAccess_.onPreferencesChanged(updatedPreferences);
   }
 
   /**
@@ -64,8 +60,7 @@ class SwitchAccessPreferences {
   /**
    * Asynchronously load the current preferences from |chrome.storage.sync| and
    * store them in |this.preferences_|, if |this.preferences_| is not already
-   * set to that value. If |this.preferences_| changes, fire a |prefsUpdate|
-   * event.
+   * set to that value.
    *
    * @private
    */
@@ -81,11 +76,8 @@ class SwitchAccessPreferences {
         }
       }
 
-      if (Object.keys(updatedPreferences).length > 0) {
-        const event =
-            new CustomEvent('prefsUpdate', {'detail': updatedPreferences});
-        document.dispatchEvent(event);
-      }
+      if (Object.keys(updatedPreferences).length > 0)
+        this.switchAccess_.onPreferencesChanged(updatedPreferences);
     });
   }
 

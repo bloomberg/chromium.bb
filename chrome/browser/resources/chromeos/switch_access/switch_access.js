@@ -73,9 +73,6 @@ class SwitchAccess {
       if (this.navReadyCallback_)
         this.navReadyCallback_();
     }.bind(this));
-
-    document.addEventListener(
-        'prefsUpdate', this.handlePrefsUpdate_.bind(this));
   }
 
   /**
@@ -178,18 +175,16 @@ class SwitchAccess {
 
   /**
    * Handle a change in user preferences.
-   * @param {!Event} event
-   * @private
+   * @param {!Object} changes
    */
-  handlePrefsUpdate_(event) {
-    const updatedPrefs = event.detail;
-    for (const key of Object.keys(updatedPrefs)) {
+  onPreferencesChanged(changes) {
+    for (const key of Object.keys(changes)) {
       switch (key) {
         case 'enableAutoScan':
-          this.autoScanManager_.setEnabled(updatedPrefs[key]);
+          this.autoScanManager_.setEnabled(changes[key]);
           break;
         case 'autoScanTime':
-          this.autoScanManager_.setScanTime(updatedPrefs[key]);
+          this.autoScanManager_.setScanTime(changes[key]);
           break;
         default:
           if (this.commands_.getCommands().includes(key))
