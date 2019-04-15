@@ -2101,34 +2101,29 @@ static INLINE void load_pred_mv(MACROBLOCK *x,
 static int rd_try_subblock(AV1_COMP *const cpi, ThreadData *td,
                            TileDataEnc *tile_data, TOKENEXTRA **tp, int is_last,
                            int mi_row, int mi_col, BLOCK_SIZE subsize,
-                           RD_STATS *best_rdc, RD_STATS *sum_rdc,
-                           RD_STATS *this_rdc, PARTITION_TYPE partition,
+                           int64_t best_rdcost, RD_STATS *sum_rdc,
+                           PARTITION_TYPE partition,
                            PICK_MODE_CONTEXT *prev_ctx,
                            PICK_MODE_CONTEXT *this_ctx) {
-#define RTS_X_RATE_NOCOEF_ARG
-#define RTS_MAX_RDCOST best_rdc->rdcost
-
   MACROBLOCK *const x = &td->mb;
 
   if (cpi->sf.adaptive_motion_search) load_pred_mv(x, prev_ctx);
 
-  const int64_t rdcost_remaining = best_rdc->rdcost == INT64_MAX
-                                       ? INT64_MAX
-                                       : (best_rdc->rdcost - sum_rdc->rdcost);
+  const int64_t rdcost_remaining =
+      best_rdcost == INT64_MAX ? INT64_MAX : (best_rdcost - sum_rdc->rdcost);
+  RD_STATS this_rdc;
+  pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &this_rdc, partition,
+                subsize, this_ctx, rdcost_remaining, PICK_MODE_RD);
 
-  pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, this_rdc,
-                RTS_X_RATE_NOCOEF_ARG partition, subsize, this_ctx,
-                rdcost_remaining, PICK_MODE_RD);
-
-  if (this_rdc->rate == INT_MAX) {
+  if (this_rdc.rate == INT_MAX) {
     sum_rdc->rdcost = INT64_MAX;
   } else {
-    sum_rdc->rate += this_rdc->rate;
-    sum_rdc->dist += this_rdc->dist;
-    sum_rdc->rdcost += this_rdc->rdcost;
+    sum_rdc->rate += this_rdc.rate;
+    sum_rdc->dist += this_rdc.dist;
+    sum_rdc->rdcost += this_rdc.rdcost;
   }
 
-  if (sum_rdc->rdcost >= RTS_MAX_RDCOST) return 0;
+  if (sum_rdc->rdcost >= best_rdcost) return 0;
 
   if (!is_last) {
     update_state(cpi, tile_data, td, this_ctx, mi_row, mi_col, subsize, 1);
@@ -2137,9 +2132,6 @@ static int rd_try_subblock(AV1_COMP *const cpi, ThreadData *td,
   }
 
   return 1;
-
-#undef RTS_X_RATE_NOCOEF_ARG
-#undef RTS_MAX_RDCOST
 }
 
 static void rd_test_partition3(AV1_COMP *const cpi, ThreadData *td,
@@ -2153,20 +2145,20 @@ static void rd_test_partition3(AV1_COMP *const cpi, ThreadData *td,
                                int mi_row2, int mi_col2, BLOCK_SIZE subsize2) {
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
-  RD_STATS sum_rdc, this_rdc;
+  RD_STATS sum_rdc;
 #define RTP_STX_TRY_ARGS
   int pl = partition_plane_context(xd, mi_row, mi_col, bsize);
   av1_init_rd_stats(&sum_rdc);
   sum_rdc.rate = x->partition_cost[pl][partition];
   sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, 0);
   if (!rd_try_subblock(cpi, td, tile_data, tp, 0, mi_row0, mi_col0, subsize0,
-                       best_rdc, &sum_rdc, &this_rdc,
-                       RTP_STX_TRY_ARGS partition, ctx, &ctxs[0]))
+                       best_rdc->rdcost, &sum_rdc, RTP_STX_TRY_ARGS partition,
+                       ctx, &ctxs[0]))
     return;
 
   if (!rd_try_subblock(cpi, td, tile_data, tp, 0, mi_row1, mi_col1, subsize1,
-                       best_rdc, &sum_rdc, &this_rdc,
-                       RTP_STX_TRY_ARGS partition, &ctxs[0], &ctxs[1]))
+                       best_rdc->rdcost, &sum_rdc, RTP_STX_TRY_ARGS partition,
+                       &ctxs[0], &ctxs[1]))
     return;
 
   // With the new layout of mixed partitions for PARTITION_HORZ_B and
@@ -2177,8 +2169,8 @@ static void rd_test_partition3(AV1_COMP *const cpi, ThreadData *td,
   const int try_block2 = 1;
   if (try_block2 &&
       !rd_try_subblock(cpi, td, tile_data, tp, 1, mi_row2, mi_col2, subsize2,
-                       best_rdc, &sum_rdc, &this_rdc,
-                       RTP_STX_TRY_ARGS partition, &ctxs[1], &ctxs[2]))
+                       best_rdc->rdcost, &sum_rdc, RTP_STX_TRY_ARGS partition,
+                       &ctxs[1], &ctxs[2]))
     return;
 
   if (sum_rdc.rdcost >= best_rdc->rdcost) return;
@@ -4037,7 +4029,7 @@ BEGIN_PARTITION_SEARCH:
 
       ctx_this->rd_mode_is_ready = 0;
       if (!rd_try_subblock(cpi, td, tile_data, tp, (i == 3), this_mi_row,
-                           mi_col, subsize, &best_rdc, &sum_rdc, &this_rdc,
+                           mi_col, subsize, best_rdc.rdcost, &sum_rdc,
                            PARTITION_HORZ_4, ctx_prev, ctx_this))
         break;
 
@@ -4092,7 +4084,7 @@ BEGIN_PARTITION_SEARCH:
 
       ctx_this->rd_mode_is_ready = 0;
       if (!rd_try_subblock(cpi, td, tile_data, tp, (i == 3), mi_row,
-                           this_mi_col, subsize, &best_rdc, &sum_rdc, &this_rdc,
+                           this_mi_col, subsize, best_rdc.rdcost, &sum_rdc,
                            PARTITION_VERT_4, ctx_prev, ctx_this))
         break;
 
