@@ -57,20 +57,22 @@ class DawnCallback<BaseCallbackTemplate<R(Args...)>> {
 
   void Reset() { callback_.Reset(); }
 
-  UnboundCallbackFunction UnboundCallback() {
-    return [](Args... args, DawnCallbackUserdata handle) {
-      // After this non-repeating callback is run, it should delete itself.
-      auto callback =
-          std::unique_ptr<DawnCallback>(DawnCallback::FromUserdata(handle));
-      return std::move(*callback).Run(std::forward<Args>(args)...);
-    };
+  static R CallUnboundCallback(Args... args, DawnCallbackUserdata handle) {
+    // After this non-repeating callback is run, it should delete itself.
+    auto callback =
+        std::unique_ptr<DawnCallback>(DawnCallback::FromUserdata(handle));
+    return std::move(*callback).Run(std::forward<Args>(args)...);
   }
 
+  static R CallUnboundRepeatingCallback(Args... args,
+                                        DawnCallbackUserdata handle) {
+    return DawnCallback::FromUserdata(handle)->Run(std::forward<Args>(args)...);
+  }
+
+  UnboundCallbackFunction UnboundCallback() { return CallUnboundCallback; }
+
   UnboundCallbackFunction UnboundRepeatingCallback() {
-    return [](Args... args, DawnCallbackUserdata handle) {
-      return DawnCallback::FromUserdata(handle)->Run(
-          std::forward<Args>(args)...);
-    };
+    return CallUnboundRepeatingCallback;
   }
 
   DawnCallbackUserdata AsUserdata() {
