@@ -67,18 +67,19 @@ source_set("zlib_adler32_simd") {
 
 if (use_arm_neon_optimizations) {
   config("zlib_arm_crc32_config") {
-    # Restrictions:
-    #  - Disabled for iPhones, as described in DDI0487C_a_armv8_arm:
-    #     "All implementations of the ARMv8.1 architecture are required to
-    #      implement the CRC32* instructions. These are optional in ARMv8.0."
-    #  - Fuchsia just added a syscall for feature detection.
-    # TODO(cavalcantii): crbug.com/810125.
-    if (!is_ios && !is_fuchsia) {
+    # Disabled for iPhone, as described in DDI0487C_a_armv8_arm:
+    #  "All implementations of the ARMv8.1 architecture are required to
+    #   implement the CRC32* instructions. These are optional in ARMv8.0."
+    if (!is_ios) {
       defines = [ "CRC32_ARMV8_CRC32" ]
       if (is_android) {
         defines += [ "ARMV8_OS_ANDROID" ]
       } else if (is_linux || is_chromeos) {
         defines += [ "ARMV8_OS_LINUX" ]
+      } else if (is_fuchsia) {
+        defines += [ "ARMV8_OS_FUCHSIA" ]
+      } else {
+        assert(false, "Unsupported ARM OS")
       }
     }
   }
@@ -86,7 +87,7 @@ if (use_arm_neon_optimizations) {
   source_set("zlib_arm_crc32") {
     visibility = [ ":*" ]
 
-    if (is_clang && (!is_ios && !is_fuchsia)) {
+    if (is_clang && !is_ios) {
       include_dirs = [ "." ]
 
       if (is_android) {
@@ -95,6 +96,8 @@ if (use_arm_neon_optimizations) {
           deps = [
             "//third_party/android_sdk:cpu_features",
           ]
+        } else {
+          assert(false, "CPU detection requires the Android NDK")
         }
       }
 
@@ -149,8 +152,7 @@ source_set("zlib_inflate_chunk_simd") {
 
     if (use_arm_neon_optimizations && !is_debug) {
       # Here we trade better performance on newer/bigger ARMv8 cores
-      # for less perf on ARMv7. For details, check:
-      # https://bugs.chromium.org/p/chromium/issues/detail?id=772870#c40
+      # for less perf on ARMv7, per crbug.com/772870#c40
       configs -= [ "//build/config/compiler:default_optimization" ]
       configs += [ "//build/config/compiler:optimize_speed" ]
     }
