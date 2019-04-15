@@ -43,7 +43,8 @@ class QuickUnlockStorageUnitTest : public testing::Test {
   ~QuickUnlockStorageUnitTest() override {}
 
   // testing::Test:
-  void SetUp() override { quick_unlock::EnableForTesting(); }
+  void SetUp() override { quick_unlock::EnabledForTesting(true); }
+  void TearDown() override { quick_unlock::EnabledForTesting(false); }
 
   void ExpireAuthToken() {
     quick_unlock::QuickUnlockFactory::GetForProfile(profile_.get())

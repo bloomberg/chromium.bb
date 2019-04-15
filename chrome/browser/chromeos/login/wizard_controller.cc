@@ -980,12 +980,7 @@ void WizardController::OnSyncConsentScreenExit() {
 }
 
 void WizardController::OnSyncConsentFinished() {
-  if (chromeos::quick_unlock::IsFingerprintEnabled(
-          ProfileManager::GetActiveUserProfile())) {
-    ShowFingerprintSetupScreen();
-  } else {
-    ShowDiscoverScreen();
-  }
+  ShowFingerprintSetupScreen();
 }
 
 void WizardController::OnFingerprintSetupScreenExit() {

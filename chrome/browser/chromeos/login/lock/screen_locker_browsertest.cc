@@ -70,8 +70,10 @@ class ScreenLockerTest : public InProcessBrowserTest {
             ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
   }
 
+  void TearDown() override { quick_unlock::EnabledForTesting(false); }
+
   void EnrollFingerprint() {
-    quick_unlock::EnableForTesting();
+    quick_unlock::EnabledForTesting(true);
 
     FakeBiodClient::Get()->StartEnrollSession(
         "test-user", std::string(),
