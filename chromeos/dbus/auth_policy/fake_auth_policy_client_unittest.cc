@@ -7,9 +7,8 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "chromeos/dbus/cryptohome/cryptohome_client.h"
-#include "chromeos/dbus/cryptohome/tpm_util.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
+#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/account_id/account_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,7 +36,6 @@ class FakeAuthPolicyClientTest : public ::testing::Test {
 
   void SetUp() override {
     ::testing::Test::SetUp();
-    CryptohomeClient::InitializeFake();
     SessionManagerClient::InitializeFakeInMemory();
     AuthPolicyClient::InitializeFake();
     authpolicy_client()->DisableOperationDelayForTesting();
@@ -46,7 +44,6 @@ class FakeAuthPolicyClientTest : public ::testing::Test {
   void TearDown() override {
     AuthPolicyClient::Shutdown();
     SessionManagerClient::Shutdown();
-    CryptohomeClient::Shutdown();
   }
 
   void JoinAdDomain(const std::string& machine_name,
@@ -81,10 +78,6 @@ class FakeAuthPolicyClientTest : public ::testing::Test {
                                           std::move(callback));
   }
 
-  void LockDeviceActiveDirectory() {
-    EXPECT_TRUE(tpm_util::LockDeviceActiveDirectoryForTesting(std::string()));
-  }
-
   void WaitForServiceToBeAvailable() {
     authpolicy_client()->WaitForServiceToBeAvailable(base::BindOnce(
         &FakeAuthPolicyClientTest::OnWaitForServiceToBeAvailableCalled,
@@ -96,9 +89,15 @@ class FakeAuthPolicyClientTest : public ::testing::Test {
     service_is_available_called_num_++;
   }
 
+  void LockDevice() {
+    install_attributes_.Get()->SetActiveDirectoryManaged("example.com",
+                                                         "device_id");
+  }
+
   int service_is_available_called_num_ = 0;
 
  private:
+  ScopedStubInstallAttributes install_attributes_;
   base::MessageLoop loop_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAuthPolicyClientTest);
@@ -240,7 +239,7 @@ TEST_F(FakeAuthPolicyClientTest, JoinAdDomain_NotSupportedEncType) {
 // Test AuthenticateUser.
 TEST_F(FakeAuthPolicyClientTest, AuthenticateUser_ByAccountId) {
   authpolicy_client()->SetStarted(true);
-  LockDeviceActiveDirectory();
+  LockDevice();
   // Check that account_id do not change.
   AuthenticateUser(
       kCorrectUserName, kAccountId,
@@ -260,7 +259,7 @@ TEST_F(FakeAuthPolicyClientTest, NotStartedAuthPolicyService) {
                      EXPECT_EQ(authpolicy::ERROR_DBUS_FAILURE, error);
                      EXPECT_TRUE(domain.empty());
                    }));
-  LockDeviceActiveDirectory();
+  LockDevice();
   AuthenticateUser(
       kCorrectUserName, std::string() /* account_id */,
       base::BindOnce([](authpolicy::ErrorType error,
@@ -291,7 +290,7 @@ TEST_F(FakeAuthPolicyClientTest, NotLockedDeviceCachesPolicy) {
       base::BindOnce([](authpolicy::ErrorType error) {
         EXPECT_EQ(authpolicy::ERROR_DEVICE_POLICY_CACHED_BUT_NOT_SENT, error);
       }));
-  LockDeviceActiveDirectory();
+  LockDevice();
   base::RunLoop loop;
   authpolicy_client()->RefreshDevicePolicy(base::BindOnce(
       [](base::OnceClosure closure, authpolicy::ErrorType error) {
@@ -305,7 +304,7 @@ TEST_F(FakeAuthPolicyClientTest, NotLockedDeviceCachesPolicy) {
 // Tests that RefreshDevicePolicy stores device policy in the session manager.
 TEST_F(FakeAuthPolicyClientTest, RefreshDevicePolicyStoresPolicy) {
   authpolicy_client()->SetStarted(true);
-  LockDeviceActiveDirectory();
+  LockDevice();
 
   {
     // Call RefreshDevicePolicy.

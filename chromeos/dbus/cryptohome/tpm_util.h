@@ -43,15 +43,6 @@ COMPONENT_EXPORT(CRYPTOHOME_CLIENT) bool InstallAttributesFinalize();
 COMPONENT_EXPORT(CRYPTOHOME_CLIENT) bool InstallAttributesIsInvalid();
 COMPONENT_EXPORT(CRYPTOHOME_CLIENT) bool InstallAttributesIsFirstInstall();
 
-// Blocking call to InstallAttributesGet. Checks if the device is locked for
-// Active Directory management.
-COMPONENT_EXPORT(CRYPTOHOME_CLIENT) bool IsActiveDirectoryLocked();
-
-// Blocking calls to InstallAttributesSet. Sets install attributes for an Active
-// Directory managed device and persists them on disk.
-COMPONENT_EXPORT(CRYPTOHOME_CLIENT)
-bool LockDeviceActiveDirectoryForTesting(const std::string& realm);
-
 }  // namespace tpm_util
 }  // namespace chromeos
 

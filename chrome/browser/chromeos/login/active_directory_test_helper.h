@@ -7,14 +7,14 @@
 
 #include <string>
 
+#include "chromeos/tpm/install_attributes.h"
+
 namespace chromeos {
 
 namespace active_directory_test_helper {
 
-// Starts AuthPolicyService, joins the Active Directory domain using
-// |user_principal_name| for authentication (user@example.com), locks the device
-// to Active Directory mode and fetches device policy.
-void PrepareLogin(const std::string& user_principal_name);
+// Locks the device to Active Directory mode.
+InstallAttributes::LockResult LockDevice(const std::string& domain);
 
 // Sets stub path overrides.
 void OverridePaths();

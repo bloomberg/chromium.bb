@@ -15,8 +15,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
-#include "chromeos/dbus/cryptohome/tpm_util.h"
 #include "chromeos/dbus/login_manager/policy_descriptor.pb.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/tpm/stub_install_attributes.h"
@@ -78,16 +76,6 @@ class ComponentActiveDirectoryPolicyTest
     builder_.policy_data().set_policy_type(
         dm_protocol::kChromeExtensionPolicyType);
     builder_.policy_data().set_settings_entity_id(kTestExtensionId);
-  }
-
-  void SetUp() override {
-    // CryptohomeClient needs to be initialized before
-    // tpm_util::LockDeviceActiveDirectoryForTesting.
-    chromeos::CryptohomeClient::InitializeFake();
-
-    ASSERT_TRUE(
-        chromeos::tpm_util::LockDeviceActiveDirectoryForTesting(kTestDomain));
-    ExtensionBrowserTest::SetUp();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
