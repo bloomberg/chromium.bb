@@ -20,6 +20,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.CommandLineInitUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.DiscardableReferencePool;
+import org.chromium.base.JNIUtils;
 import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.MainDex;
@@ -134,6 +135,7 @@ public class ChromeApplication extends Application {
             }
         }
         AsyncTask.takeOverAndroidThreadPool();
+        JNIUtils.setClassLoader(getClassLoader());
     }
 
     private static Boolean shouldUseDebugFlags() {
