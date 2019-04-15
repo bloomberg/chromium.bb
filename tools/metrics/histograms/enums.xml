@@ -22805,6 +22805,8 @@ Called by update_net_error_codes.py.-->
   <int value="2855" label="InputTypeReset"/>
   <int value="2856" label="SelectElementSingle"/>
   <int value="2857" label="SelectElementMultiple"/>
+  <int value="2858" label="V8Animation_Effect_AttributeGetter"/>
+  <int value="2859" label="V8Animation_Effect_AttributeSetter"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

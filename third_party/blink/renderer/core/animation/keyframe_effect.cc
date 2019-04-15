@@ -63,7 +63,6 @@ KeyframeEffect* KeyframeEffect::Create(
     const ScriptValue& keyframes,
     const UnrestrictedDoubleOrKeyframeEffectOptions& options,
     ExceptionState& exception_state) {
-  DCHECK(RuntimeEnabledFeatures::WebAnimationsAPIEnabled());
   if (element) {
     UseCounter::Count(
         element->GetDocument(),
@@ -92,7 +91,6 @@ KeyframeEffect* KeyframeEffect::Create(ScriptState* script_state,
                                        Element* element,
                                        const ScriptValue& keyframes,
                                        ExceptionState& exception_state) {
-  DCHECK(RuntimeEnabledFeatures::WebAnimationsAPIEnabled());
   if (element) {
     UseCounter::Count(
         element->GetDocument(),
