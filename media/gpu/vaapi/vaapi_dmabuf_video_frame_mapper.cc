@@ -46,18 +46,27 @@ scoped_refptr<VideoFrame> CreateMappedVideoFrame(
     return nullptr;
   }
 
-  std::vector<int32_t> strides(num_planes, 0);
+  // All the planes are stored in the same buffer, VAImage.va_buffer.
+  std::vector<VideoFrameLayout::Plane> planes(num_planes);
   std::vector<uint8_t*> addrs(num_planes, nullptr);
   for (size_t i = 0; i < num_planes; i++) {
-    strides[i] = va_image->image()->pitches[i];
+    planes[i].stride = va_image->image()->pitches[i];
+    planes[i].offset = va_image->image()->offsets[i];
     addrs[i] = static_cast<uint8_t*>(va_image->va_buffer()->data()) +
                va_image->image()->offsets[i];
   }
 
-  auto video_frame = VideoFrame::WrapExternalYuvData(
-      layout.format(), layout.coded_size(), visible_rect, visible_rect.size(),
-      strides[0], strides[1], strides[2], addrs[0], addrs[1], addrs[2],
-      base::TimeDelta());
+  auto mapped_layout = VideoFrameLayout::CreateWithPlanes(
+      layout.format(),
+      gfx::Size(va_image->image()->width, va_image->image()->height),
+      std::move(planes), {va_image->image()->data_size});
+  if (!mapped_layout) {
+    VLOGF(1) << "Failed to create VideoFrameLayout for VAImage";
+    return nullptr;
+  }
+  auto video_frame = VideoFrame::WrapExternalYuvDataWithLayout(
+      *mapped_layout, visible_rect, visible_rect.size(), addrs[0], addrs[1],
+      addrs[2], base::TimeDelta());
   if (!video_frame)
     return nullptr;
 

@@ -47,13 +47,8 @@ scoped_refptr<VideoFrame> CreateMappedVideoFrame(
     uint8_t* plane_addrs[kNumOfYUVPlanes],
     const std::vector<std::pair<uint8_t*, size_t>>& chunks,
     scoped_refptr<const VideoFrame> src_video_frame) {
-  int32_t strides[kNumOfYUVPlanes] = {};
-  for (size_t i = 0; i < layout.num_planes(); i++) {
-    strides[i] = layout.planes()[i].stride;
-  }
-  auto video_frame = VideoFrame::WrapExternalYuvData(
-      layout.format(), layout.coded_size(), visible_rect, visible_rect.size(),
-      strides[0], strides[1], strides[2], plane_addrs[0], plane_addrs[1],
+  auto video_frame = VideoFrame::WrapExternalYuvDataWithLayout(
+      layout, visible_rect, visible_rect.size(), plane_addrs[0], plane_addrs[1],
       plane_addrs[2], base::TimeDelta());
   if (!video_frame) {
     return nullptr;
