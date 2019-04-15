@@ -10909,12 +10909,18 @@
       },
       {
         "args": [
+          "--num-retries=3",
           "--additional-driver-flag=--no-sandbox",
-          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%8m.profraw",
-          "--num-retries=3"
+          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%8m.profraw"
         ],
         "isolate_coverage_data": true,
         "isolate_name": "blink_web_tests_exparchive",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
         "name": "webkit_layout_tests",
         "results_handler": "layout tests",
         "swarming": {
