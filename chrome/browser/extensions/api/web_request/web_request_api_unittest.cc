@@ -177,8 +177,7 @@ std::unique_ptr<net::URLRequest> CreateRequestHelper(
       content::ResourceInterceptPolicy::kAllowNone, false /* is_async */,
       content::PREVIEWS_OFF,
       ChromeNavigationUIData::CreateForMainFrameNavigation(
-          nullptr /* web_contents */, WindowOpenDisposition::CURRENT_TAB,
-          0 /* data_reduction_proxy_page_id */));
+          nullptr /* web_contents */, WindowOpenDisposition::CURRENT_TAB));
   return request;
 }
 

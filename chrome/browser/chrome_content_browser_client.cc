@@ -208,7 +208,6 @@
 #include "components/data_reduction_proxy/content/common/data_reduction_proxy_url_loader_throttle.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/dom_distiller/core/url_constants.h"
@@ -4656,21 +4655,13 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
     io_data = ProfileIOData::FromResourceContext(resource_context);
   }
 
-  ChromeNavigationUIData* chrome_navigation_ui_data =
-      static_cast<ChromeNavigationUIData*>(navigation_ui_data);
-  if (chrome_navigation_ui_data && io_data &&
-      io_data->data_reduction_proxy_io_data() &&
+  if (io_data && io_data->data_reduction_proxy_io_data() &&
       data_reduction_proxy::params::IsEnabledWithNetworkService()) {
     net::HttpRequestHeaders headers;
     data_reduction_proxy::DataReductionProxyRequestOptions* request_options =
         io_data->data_reduction_proxy_io_data()->request_options();
-    uint64_t page_id =
-        base::FeatureList::IsEnabled(
-            data_reduction_proxy::features::
-                kDataReductionProxyPopulatePreviewsPageIDToPingback)
-            ? chrome_navigation_ui_data->data_reduction_proxy_page_id()
-            : request_options->GeneratePageId();
-    request_options->AddPageIDRequestHeader(&headers, page_id);
+    request_options->AddPageIDRequestHeader(&headers,
+                                            request_options->GeneratePageId());
     result.push_back(std::make_unique<
                      data_reduction_proxy::DataReductionProxyURLLoaderThrottle>(
         headers,
@@ -4700,6 +4691,8 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
   }
 #endif  // defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
 
+  ChromeNavigationUIData* chrome_navigation_ui_data =
+      static_cast<ChromeNavigationUIData*>(navigation_ui_data);
   if (chrome_navigation_ui_data &&
       chrome_navigation_ui_data->prerender_mode() != prerender::NO_PRERENDER) {
     result.push_back(std::make_unique<prerender::PrerenderURLLoaderThrottle>(
