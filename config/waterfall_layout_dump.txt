@@ -424,7 +424,6 @@
     beaglebone-postsubmit
     beaglebone_servo-postsubmit
     betty-arc64-postsubmit
-    betty-arcnext-postsubmit
     betty-postsubmit
     bob-postsubmit
     buddy-postsubmit
@@ -464,8 +463,6 @@
     gnawty-postsubmit
     gonzo-postsubmit
     grunt-postsubmit
-    guado-accelerator-postsubmit
-    guado-postsubmit
     guado_moblab-postsubmit
     hana-postsubmit
     hatch-postsubmit
@@ -2716,7 +2713,6 @@
     beaglebone-postsubmit-tryjob
     beaglebone_servo-postsubmit-tryjob
     betty-arc64-postsubmit-tryjob
-    betty-arcnext-postsubmit-tryjob
     betty-postsubmit-tryjob
     bob-postsubmit-tryjob
     buddy-postsubmit-tryjob
@@ -2756,8 +2752,6 @@
     gnawty-postsubmit-tryjob
     gonzo-postsubmit-tryjob
     grunt-postsubmit-tryjob
-    guado-accelerator-postsubmit-tryjob
-    guado-postsubmit-tryjob
     guado_moblab-postsubmit-tryjob
     hana-postsubmit-tryjob
     hatch-postsubmit-tryjob

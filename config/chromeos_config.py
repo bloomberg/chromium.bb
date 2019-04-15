@@ -1948,12 +1948,10 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'amd64-generic',
       'arm-generic',
       'arm64-generic',
-      'auron_paine',
       'auron_yuna',
       'beaglebone',
       'betty',
       'betty-arc64',
-      'betty-arcnext',
       'bob',
       'capri',
       'capri-zfpga',
@@ -1975,15 +1973,11 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'falco',
       'fizz',
       'fizz-accelerator',
-      'fizz-moblab',
       'flapjack',
       'gale',
       'glados',
       'gonzo',
       'grunt',
-      'guado',
-      'guado-accelerator',
-      'guado_moblab',
       'hana',
       'hatch',
       'kalista',
@@ -2068,7 +2062,13 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # Paladin configs that exist and should stay as experimental until further
   # notice, preferably with a comment indicating why and a bug.
   _paladin_experimental_boards = _paladin_new_boards | frozenset([
+      'auron_paine', # crbug.com/950751
+      'betty-arcnext', # crbug.com/949603
       'eve-arcnext', # contact: ihf@ (crbug.com/826755)
+      'fizz-moblab', # crbug.com/952619
+      'guado', # crbug.com/939135
+      'guado-accelerator', # crbug.com/948113
+      'guado_moblab', # crbug.com/952619
       'kevin-arcnext', # contact: linben@
       'mistral', # contact: roopeshr@
   ])
