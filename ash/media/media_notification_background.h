@@ -41,6 +41,9 @@ class ASH_EXPORT MediaNotificationBackground : public views::Background {
   void UpdateArtwork(const gfx::ImageSkia& image);
   void UpdateArtworkMaxWidthPct(double max_width_pct);
 
+  SkColor GetBackgroundColor() const;
+  SkColor GetForegroundColor() const;
+
  private:
   friend class MediaNotificationBackgroundTest;
   friend class MediaNotificationViewTest;
