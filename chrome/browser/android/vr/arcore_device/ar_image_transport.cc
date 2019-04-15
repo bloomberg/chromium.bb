@@ -9,6 +9,7 @@
 #include "base/containers/queue.h"
 #include "base/trace_event/traced_value.h"
 #include "chrome/browser/android/vr/mailbox_to_surface_bridge.h"
+#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl_android_hardware_buffer.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gl/gl_bindings.h"
@@ -40,9 +41,7 @@ struct SharedFrameBuffer {
       shared_gpu_memory_buffer;
 
   // Resources in the remote GPU process command buffer context
-  std::unique_ptr<gpu::MailboxHolder> mailbox_holder;
-  GLuint remote_texture_id = 0;
-  GLuint remote_image_id = 0;
+  gpu::MailboxHolder mailbox_holder;
 
   // Resources in the local GL context
   GLuint local_texture_id = 0;
@@ -66,7 +65,21 @@ ArImageTransport::ArImageTransport(
       mailbox_bridge_(std::move(mailbox_bridge)),
       swap_chain_(std::make_unique<SharedFrameBufferSwapChain>()) {}
 
-ArImageTransport::~ArImageTransport() {}
+ArImageTransport::~ArImageTransport() {
+  DCHECK(IsOnGlThread());
+  while (!swap_chain_->buffers.empty()) {
+    std::unique_ptr<SharedFrameBuffer> buffer =
+        std::move(swap_chain_->buffers.front());
+    swap_chain_->buffers.pop();
+    if (!buffer->mailbox_holder.mailbox.IsZero()) {
+      DVLOG(2) << ": DestroySharedImage, mailbox="
+               << buffer->mailbox_holder.mailbox.ToDebugString();
+      // Note: the sync token in mailbox_holder may not be accurate. See comment
+      // in TransferFrame below.
+      mailbox_bridge_->DestroySharedImage(buffer->mailbox_holder);
+    }
+  }
+}
 
 bool ArImageTransport::Initialize() {
   DCHECK(IsOnGlThread());
@@ -96,12 +109,12 @@ void ArImageTransport::ResizeSharedBuffer(const gfx::Size& size,
 
   TRACE_EVENT0("gpu", __FUNCTION__);
   // Unbind previous image (if any).
-  if (buffer->remote_image_id) {
-    DVLOG(2) << ": UnbindSharedBuffer, remote_image="
-             << buffer->remote_image_id;
-    mailbox_bridge_->UnbindSharedBuffer(buffer->remote_image_id,
-                                        buffer->remote_texture_id);
-    buffer->remote_image_id = 0;
+  if (!buffer->mailbox_holder.mailbox.IsZero()) {
+    DVLOG(2) << ": DestroySharedImage, mailbox="
+             << buffer->mailbox_holder.mailbox.ToDebugString();
+    // Note: the sync token in mailbox_holder may not be accurate. See comment
+    // in TransferFrame below.
+    mailbox_bridge_->DestroySharedImage(buffer->mailbox_holder);
   }
 
   DVLOG(2) << __FUNCTION__ << ": width=" << size.width()
@@ -118,11 +131,14 @@ void ArImageTransport::ResizeSharedBuffer(const gfx::Size& size,
           kBufferId, size, format, usage,
           gpu::GpuMemoryBufferImpl::DestructionCallback());
 
-  buffer->remote_image_id = mailbox_bridge_->BindSharedBufferImage(
-      buffer->shared_gpu_memory_buffer.get(), size, format, usage,
-      buffer->remote_texture_id);
-  DVLOG(2) << ": BindSharedBufferImage, remote_image="
-           << buffer->remote_image_id;
+  uint32_t shared_image_usage = gpu::SHARED_IMAGE_USAGE_SCANOUT |
+                                gpu::SHARED_IMAGE_USAGE_DISPLAY |
+                                gpu::SHARED_IMAGE_USAGE_GLES2;
+  buffer->mailbox_holder =
+      mailbox_bridge_->CreateSharedImage(buffer->shared_gpu_memory_buffer.get(),
+                                         gfx::ColorSpace(), shared_image_usage);
+  DVLOG(2) << ": CreateSharedImage, mailbox="
+           << buffer->mailbox_holder.mailbox.ToDebugString();
 
   auto img = base::MakeRefCounted<gl::GLImageAHardwareBuffer>(size);
 
@@ -151,11 +167,6 @@ void ArImageTransport::SetupHardwareBuffers() {
   for (int i = 0; i < kSharedBufferSwapChainSize; ++i) {
     std::unique_ptr<SharedFrameBuffer> buffer =
         std::make_unique<SharedFrameBuffer>();
-    // Remote resources
-    buffer->mailbox_holder = std::make_unique<gpu::MailboxHolder>();
-    buffer->mailbox_holder->texture_target = GL_TEXTURE_2D;
-    buffer->remote_texture_id =
-        mailbox_bridge_->CreateMailboxTexture(&buffer->mailbox_holder->mailbox);
 
     // Local resources
     glGenTextures(1, &buffer->local_texture_id);
@@ -173,6 +184,9 @@ gpu::MailboxHolder ArImageTransport::TransferFrame(
   DCHECK(IsOnGlThread());
   // TODO(klausw): find out when a buffer is actually done being used
   // including by GL so we can know if we are overwriting one.
+  // A sync token needs to be returned by the client and stashed into
+  // shared_buffer->mailbox_holder.sync_token, then waited upon before reusing
+  // the buffer.
   DCHECK(swap_chain_->buffers.size() > 0);
 
   glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, transfer_fbo_);
@@ -213,10 +227,14 @@ gpu::MailboxHolder ArImageTransport::TransferFrame(
   // Make a GpuFence and place it in the GPU stream for sequencing.
   std::unique_ptr<gl::GLFence> gl_fence = gl::GLFence::CreateForGpuFence();
   std::unique_ptr<gfx::GpuFence> gpu_fence = gl_fence->GetGpuFence();
-  mailbox_bridge_->WaitForClientGpuFence(gpu_fence.get());
-  mailbox_bridge_->GenSyncToken(&shared_buffer->mailbox_holder->sync_token);
 
-  gpu::MailboxHolder rendered_frame_holder = *shared_buffer->mailbox_holder;
+  // Have GL wait on both the client fence and the creation/return sync token.
+  // TODO(piman): this should probably do an UpdateSharedImage.
+  mailbox_bridge_->WaitSyncToken(shared_buffer->mailbox_holder.sync_token);
+  mailbox_bridge_->WaitForClientGpuFence(gpu_fence.get());
+  mailbox_bridge_->GenSyncToken(&shared_buffer->mailbox_holder.sync_token);
+
+  gpu::MailboxHolder rendered_frame_holder = shared_buffer->mailbox_holder;
 
   // Done with the shared buffer.
   swap_chain_->buffers.push(std::move(shared_buffer));
