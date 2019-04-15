@@ -53,6 +53,7 @@
     auron_yuna-paladin
     beaglebone-paladin
     betty-arc64-paladin
+    betty-arcnext-paladin
     betty-paladin
     bob-paladin
     capri-paladin
@@ -85,12 +86,14 @@
     gonzo-paladin
     grunt-paladin
     grunt-unittest-only-paladin
+    guado-accelerator-paladin
     guado-paladin
     guado_moblab-paladin
     hana-paladin
     hatch-paladin
     incremental-paladin
     kalista-paladin
+    kevin-arcnext-paladin
     kevin-paladin
     kevin64-paladin
     kip-paladin
@@ -421,6 +424,7 @@
     beaglebone-postsubmit
     beaglebone_servo-postsubmit
     betty-arc64-postsubmit
+    betty-arcnext-postsubmit
     betty-postsubmit
     bob-postsubmit
     buddy-postsubmit
@@ -460,6 +464,7 @@
     gnawty-postsubmit
     gonzo-postsubmit
     grunt-postsubmit
+    guado-accelerator-postsubmit
     guado_moblab-postsubmit
     hana-postsubmit
     hatch-postsubmit
@@ -2594,6 +2599,7 @@
     auron_yuna-paladin-tryjob
     beaglebone-paladin-tryjob
     betty-arc64-paladin-tryjob
+    betty-arcnext-paladin-tryjob
     betty-paladin-tryjob
     bob-paladin-tryjob
     capri-paladin-tryjob
@@ -2626,12 +2632,14 @@
     gonzo-paladin-tryjob
     grunt-paladin-tryjob
     grunt-unittest-only-paladin-tryjob
+    guado-accelerator-paladin-tryjob
     guado-paladin-tryjob
     guado_moblab-paladin-tryjob
     hana-paladin-tryjob
     hatch-paladin-tryjob
     incremental-paladin-tryjob
     kalista-paladin-tryjob
+    kevin-arcnext-paladin-tryjob
     kevin-paladin-tryjob
     kevin64-paladin-tryjob
     kip-paladin-tryjob
@@ -2707,6 +2715,7 @@
     beaglebone-postsubmit-tryjob
     beaglebone_servo-postsubmit-tryjob
     betty-arc64-postsubmit-tryjob
+    betty-arcnext-postsubmit-tryjob
     betty-postsubmit-tryjob
     bob-postsubmit-tryjob
     buddy-postsubmit-tryjob
@@ -2746,6 +2755,7 @@
     gnawty-postsubmit-tryjob
     gonzo-postsubmit-tryjob
     grunt-postsubmit-tryjob
+    guado-accelerator-postsubmit-tryjob
     guado_moblab-postsubmit-tryjob
     hana-postsubmit-tryjob
     hatch-postsubmit-tryjob
