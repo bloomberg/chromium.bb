@@ -1191,18 +1191,24 @@ static void search_wiener(const RestorationTileLimits *limits,
   const int wiener_win =
       (rsc->plane == AOM_PLANE_Y) ? WIENER_WIN : WIENER_WIN_CHROMA;
 
+  int reduced_wiener_win = wiener_win;
+  if (rsc->sf->reduce_wiener_window_size) {
+    reduced_wiener_win =
+        (rsc->plane == AOM_PLANE_Y) ? WIENER_WIN_REDUCED : WIENER_WIN_CHROMA;
+  }
+
   int64_t M[WIENER_WIN2];
   int64_t H[WIENER_WIN2 * WIENER_WIN2];
   int32_t vfilter[WIENER_WIN], hfilter[WIENER_WIN];
 
   const AV1_COMMON *const cm = rsc->cm;
   if (cm->seq_params.use_highbitdepth) {
-    av1_compute_stats_highbd(wiener_win, rsc->dgd_buffer, rsc->src_buffer,
-                             limits->h_start, limits->h_end, limits->v_start,
-                             limits->v_end, rsc->dgd_stride, rsc->src_stride, M,
-                             H, cm->seq_params.bit_depth);
+    av1_compute_stats_highbd(reduced_wiener_win, rsc->dgd_buffer,
+                             rsc->src_buffer, limits->h_start, limits->h_end,
+                             limits->v_start, limits->v_end, rsc->dgd_stride,
+                             rsc->src_stride, M, H, cm->seq_params.bit_depth);
   } else {
-    av1_compute_stats(wiener_win, rsc->dgd_buffer, rsc->src_buffer,
+    av1_compute_stats(reduced_wiener_win, rsc->dgd_buffer, rsc->src_buffer,
                       limits->h_start, limits->h_end, limits->v_start,
                       limits->v_end, rsc->dgd_stride, rsc->src_stride, M, H);
   }
@@ -1210,7 +1216,7 @@ static void search_wiener(const RestorationTileLimits *limits,
   const MACROBLOCK *const x = rsc->x;
   const int64_t bits_none = x->wiener_restore_cost[0];
 
-  if (!wiener_decompose_sep_sym(wiener_win, M, H, vfilter, hfilter)) {
+  if (!wiener_decompose_sep_sym(reduced_wiener_win, M, H, vfilter, hfilter)) {
     rsc->bits += bits_none;
     rsc->sse += rusi->sse[RESTORE_NONE];
     rusi->best_rtype[RESTORE_WIENER - 1] = RESTORE_NONE;
@@ -1221,13 +1227,13 @@ static void search_wiener(const RestorationTileLimits *limits,
   RestorationUnitInfo rui;
   memset(&rui, 0, sizeof(rui));
   rui.restoration_type = RESTORE_WIENER;
-  finalize_sym_filter(wiener_win, vfilter, rui.wiener_info.vfilter);
-  finalize_sym_filter(wiener_win, hfilter, rui.wiener_info.hfilter);
+  finalize_sym_filter(reduced_wiener_win, vfilter, rui.wiener_info.vfilter);
+  finalize_sym_filter(reduced_wiener_win, hfilter, rui.wiener_info.hfilter);
 
   // Filter score computes the value of the function x'*A*x - x'*b for the
   // learned filter and compares it against identity filer. If there is no
   // reduction in the function, the filter is reverted back to identity
-  if (compute_score(wiener_win, M, H, rui.wiener_info.vfilter,
+  if (compute_score(reduced_wiener_win, M, H, rui.wiener_info.vfilter,
                     rui.wiener_info.hfilter) > 0) {
     rsc->bits += bits_none;
     rsc->sse += rusi->sse[RESTORE_NONE];
@@ -1238,11 +1244,11 @@ static void search_wiener(const RestorationTileLimits *limits,
 
   aom_clear_system_state();
 
-  rusi->sse[RESTORE_WIENER] =
-      finer_tile_search_wiener(rsc, limits, tile_rect, &rui, wiener_win);
+  rusi->sse[RESTORE_WIENER] = finer_tile_search_wiener(
+      rsc, limits, tile_rect, &rui, reduced_wiener_win);
   rusi->wiener = rui.wiener_info;
 
-  if (wiener_win != WIENER_WIN) {
+  if (reduced_wiener_win != WIENER_WIN) {
     assert(rui.wiener_info.vfilter[0] == 0 &&
            rui.wiener_info.vfilter[WIENER_WIN - 1] == 0);
     assert(rui.wiener_info.hfilter[0] == 0 &&

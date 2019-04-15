@@ -678,6 +678,9 @@ typedef struct SPEED_FEATURES {
   // Disable loop restoration for Chroma plane
   int disable_loop_restoration_chroma;
 
+  // Reduce the wiener filter win size for luma
+  int reduce_wiener_window_size;
+
   // Flag used to control the extent of coeff R-D optimization
   int perform_coeff_opt;
 
