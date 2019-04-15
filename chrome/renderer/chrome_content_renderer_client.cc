@@ -410,13 +410,13 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 #endif
 
   for (auto& origin_or_hostname_pattern : network::GetSecureOriginAllowlist()) {
-    WebSecurityPolicy::AddOriginTrustworthyWhiteList(
+    WebSecurityPolicy::AddOriginToTrustworthySafelist(
         WebString::FromUTF8(origin_or_hostname_pattern));
   }
 
   for (auto& scheme :
        secure_origin_whitelist::GetSchemesBypassingSecureContextCheck()) {
-    WebSecurityPolicy::AddSchemeToBypassSecureContextWhitelist(
+    WebSecurityPolicy::AddSchemeToSecureContextSafelist(
         WebString::FromASCII(scheme));
   }
 

@@ -204,7 +204,7 @@ TEST_F(SecurityOriginTest, IsSecureViaTrustworthy) {
   for (const char* test : urls) {
     KURL url(test);
     EXPECT_FALSE(SecurityOrigin::IsSecure(url));
-    SecurityPolicy::AddOriginTrustworthyWhiteList(
+    SecurityPolicy::AddOriginToTrustworthySafelist(
         SecurityOrigin::CreateFromString(url)->ToRawString());
     EXPECT_TRUE(SecurityOrigin::IsSecure(url));
   }
@@ -213,7 +213,7 @@ TEST_F(SecurityOriginTest, IsSecureViaTrustworthy) {
 TEST_F(SecurityOriginTest, IsSecureViaTrustworthyHostnamePattern) {
   KURL url("http://bar.foo.com");
   EXPECT_FALSE(SecurityOrigin::IsSecure(url));
-  SecurityPolicy::AddOriginTrustworthyWhiteList("*.foo.com");
+  SecurityPolicy::AddOriginToTrustworthySafelist("*.foo.com");
   EXPECT_TRUE(SecurityOrigin::IsSecure(url));
 }
 
@@ -221,7 +221,7 @@ TEST_F(SecurityOriginTest, IsSecureViaTrustworthyHostnamePattern) {
 TEST_F(SecurityOriginTest, IsSecureViaTrustworthyHostnamePatternEmptyHostname) {
   KURL url("file://foo");
   EXPECT_FALSE(SecurityOrigin::IsSecure(url));
-  SecurityPolicy::AddOriginTrustworthyWhiteList("*.foo.com");
+  SecurityPolicy::AddOriginToTrustworthySafelist("*.foo.com");
   EXPECT_FALSE(SecurityOrigin::IsSecure(url));
 }
 
