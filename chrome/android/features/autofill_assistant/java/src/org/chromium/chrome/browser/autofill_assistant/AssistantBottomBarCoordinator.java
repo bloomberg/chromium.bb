@@ -287,6 +287,11 @@ class AssistantBottomBarCoordinator {
         }
 
         @Override
+        public boolean hideOnScroll() {
+            return false;
+        }
+
+        @Override
         public int getSheetContentDescriptionStringId() {
             return R.string.autofill_assistant_sheet_content_description;
         }
