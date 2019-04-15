@@ -23,7 +23,6 @@ class InvalidationService;
 
 namespace syncer {
 
-class LocalDeviceInfoProvider;
 class SyncApiComponentFactory;
 class SyncableService;
 class SyncService;
@@ -48,10 +47,6 @@ class SyncClient {
   // Returns the path to the folder used for storing the local sync database.
   // It is only used when sync is running against a local backend.
   virtual base::FilePath GetLocalSyncBackendFolder() = 0;
-
-  // Provides access to information about the local device.
-  virtual const syncer::LocalDeviceInfoProvider*
-  GetLocalDeviceInfoProvider() = 0;
 
   // Returns a vector with all supported datatypes and their controllers.
   virtual DataTypeController::TypeVector CreateDataTypeControllers(

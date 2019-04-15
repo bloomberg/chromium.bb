@@ -34,7 +34,6 @@ class LocalDeviceInfoProviderImpl : public MutableLocalDeviceInfoProvider {
   void Clear() override;
   version_info::Channel GetChannel() const override;
   const DeviceInfo* GetLocalDeviceInfo() const override;
-  std::string GetSyncUserAgent() const override;
   std::unique_ptr<Subscription> RegisterOnInitializedCallback(
       const base::RepeatingClosure& callback) override;
 
