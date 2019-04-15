@@ -1132,6 +1132,25 @@ class _DevicesCommand(_Command):
     print _GenerateAvailableDevicesMessage(self.devices)
 
 
+class _PackageInfoCommand(_Command):
+  name = 'package-info'
+  # TODO(ntfschr): Support this by figuring out how to construct
+  # self.apk_helper for bundles (http://crbug.com/952443).
+  description = 'Show various attributes of this APK.'
+  need_device_args = False
+  needs_package_name = True
+  needs_apk_path = True
+
+  def Run(self):
+    # Format all (even ints) as strings, to handle cases where APIs return None
+    print 'Package name: "%s"' % self.args.package_name
+    print 'versionCode: %s' % self.apk_helper.GetVersionCode()
+    print 'versionName: "%s"' % self.apk_helper.GetVersionName()
+    print 'minSdkVersion: %s' % self.apk_helper.GetMinSdkVersion()
+    print 'targetSdkVersion: "%s"' % self.apk_helper.GetTargetSdkVersion()
+    print 'Supported ABIs: %r' % self.apk_helper.GetAbis()
+
+
 class _InstallCommand(_Command):
   name = 'install'
   description = 'Installs the APK or bundle to one or more devices.'
@@ -1184,7 +1203,7 @@ class _SetWebViewProviderCommand(_Command):
   def Run(self):
     if self.is_bundle:
       # TODO(ntfschr): Support this by figuring out how to construct
-      # self.apk_helper for bundles.
+      # self.apk_helper for bundles (http://crbug.com/952443).
       raise Exception(
           'Switching WebView providers not supported for bundles yet!')
     if not _IsWebViewProvider(self.apk_helper):
@@ -1532,6 +1551,7 @@ class _ManifestCommand(_Command):
 # Shared commands for regular APKs and app bundles.
 _COMMANDS = [
     _DevicesCommand,
+    _PackageInfoCommand,
     _InstallCommand,
     _UninstallCommand,
     _SetWebViewProviderCommand,
