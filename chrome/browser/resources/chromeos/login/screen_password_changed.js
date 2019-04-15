@@ -33,7 +33,8 @@ login.createScreen('PasswordChangedScreen', 'password-changed', function() {
     cancel: function() {
       if (!this.gaiaPasswordChanged_.disabled) {
         chrome.send(
-            'cancelPasswordChangedFlow', [this.gaiaPasswordChanged_.email]);
+            'cancelPasswordChangedFlow',
+            [this.gaiaPasswordChanged_.email || '']);
       }
     },
 

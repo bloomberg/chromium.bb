@@ -448,6 +448,12 @@ void LoginDisplayHostMojo::OnAuthSuccess(const UserContext& user_context) {
   }
 }
 
+void LoginDisplayHostMojo::OnPasswordChangeDetected() {}
+
+void LoginDisplayHostMojo::OnOldEncryptionDetected(
+    const UserContext& user_context,
+    bool has_incomplete_migration) {}
+
 void LoginDisplayHostMojo::LoadOobeDialog() {
   if (dialog_)
     return;

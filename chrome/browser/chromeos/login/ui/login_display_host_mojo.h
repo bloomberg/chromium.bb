@@ -116,6 +116,9 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   // AuthStatusConsumer:
   void OnAuthFailure(const AuthFailure& error) override;
   void OnAuthSuccess(const UserContext& user_context) override;
+  void OnPasswordChangeDetected() override;
+  void OnOldEncryptionDetected(const UserContext& user_context,
+                               bool has_incomplete_migration) override;
 
  private:
   void LoadOobeDialog();

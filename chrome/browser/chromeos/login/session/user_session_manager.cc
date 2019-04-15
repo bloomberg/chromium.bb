@@ -117,7 +117,7 @@
 #include "chromeos/dbus/cryptohome/tpm_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
-#include "chromeos/login/auth/stub_authenticator.h"
+#include "chromeos/login/auth/stub_authenticator_builder.h"
 #include "chromeos/network/network_cert_loader.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "chromeos/network/portal_detector/network_portal_detector_strategy.h"
@@ -588,9 +588,8 @@ scoped_refptr<Authenticator> UserSessionManager::CreateAuthenticator(
   }
 
   if (authenticator_.get() == NULL) {
-    if (injected_user_context_) {
-      authenticator_ =
-          new StubAuthenticator(consumer, *injected_user_context_.get());
+    if (injected_authenticator_builder_) {
+      authenticator_ = injected_authenticator_builder_->Create(consumer);
     } else {
       authenticator_ = new ChromeCryptohomeAuthenticator(consumer);
     }
@@ -2227,9 +2226,9 @@ void UserSessionManager::RemoveProfileForTesting(Profile* profile) {
   default_ime_states_.erase(profile);
 }
 
-void UserSessionManager::InjectStubUserContext(
-    const UserContext& user_context) {
-  injected_user_context_.reset(new UserContext(user_context));
+void UserSessionManager::InjectAuthenticatorBuilder(
+    std::unique_ptr<StubAuthenticatorBuilder> builder) {
+  injected_authenticator_builder_ = std::move(builder);
   authenticator_ = NULL;
 }
 

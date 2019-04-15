@@ -59,6 +59,8 @@ component("auth") {
     "login_performer.h",
     "stub_authenticator.cc",
     "stub_authenticator.h",
+    "stub_authenticator_builder.cc",
+    "stub_authenticator_builder.h",
     "test_attempt_state.cc",
     "test_attempt_state.h",
     "user_context.cc",
