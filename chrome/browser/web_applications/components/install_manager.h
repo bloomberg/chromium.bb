@@ -52,6 +52,7 @@ class InstallManager {
   // Starts a web app installation process for a given |web_contents|.
   // |force_shortcut_app| forces the creation of a shortcut app instead of a PWA
   // even if installation is available.
+  // TODO(loyso): Rename InstallWebApp to InstallWebAppFromManifestWithFallback.
   virtual void InstallWebApp(content::WebContents* web_contents,
                              bool force_shortcut_app,
                              WebappInstallSource install_source,
@@ -60,6 +61,7 @@ class InstallManager {
 
   // Starts a web app installation process for a given |web_contents|, initiated
   // by WebApp script. Bypasses the GetWebApplicationInfo from renderer step.
+  // TODO(loyso): Rename InstallWebAppFromBanner to InstallWebAppFromManifest.
   virtual void InstallWebAppFromBanner(
       content::WebContents* web_contents,
       WebappInstallSource install_source,

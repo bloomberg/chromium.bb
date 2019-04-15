@@ -172,10 +172,10 @@ TEST_F(BookmarkAppInstallManagerTest,
 
   install_manager_->SetDataRetrieverFactoryForTesting(
       base::BindLambdaForTesting([&]() {
-        WebApplicationInfo info;
-        info.app_url = app_url;
-        auto data_retriever = std::make_unique<web_app::TestDataRetriever>(
-            std::make_unique<WebApplicationInfo>(std::move(info)));
+        auto info = std::make_unique<WebApplicationInfo>();
+        info->app_url = app_url;
+        auto data_retriever = std::make_unique<web_app::TestDataRetriever>();
+        data_retriever->SetRendererWebApplicationInfo(std::move(info));
 
         return std::unique_ptr<web_app::WebAppDataRetriever>(
             std::move(data_retriever));
@@ -264,10 +264,10 @@ TEST_F(BookmarkAppInstallManagerTest,
 
   install_manager_->SetDataRetrieverFactoryForTesting(
       base::BindLambdaForTesting([&]() {
-        WebApplicationInfo info;
-        info.app_url = app_url;
-        auto data_retriever = std::make_unique<web_app::TestDataRetriever>(
-            std::make_unique<WebApplicationInfo>(std::move(info)));
+        auto info = std::make_unique<WebApplicationInfo>();
+        info->app_url = app_url;
+        auto data_retriever = std::make_unique<web_app::TestDataRetriever>();
+        data_retriever->SetRendererWebApplicationInfo(std::move(info));
 
         return std::unique_ptr<web_app::WebAppDataRetriever>(
             std::move(data_retriever));
