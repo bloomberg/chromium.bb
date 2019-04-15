@@ -3009,10 +3009,10 @@
             ],
             "experiments": [
                 {
-                    "name": "AppsBackgroundUS-005",
+                    "name": "AppsBackground-007",
                     "params": {
                         "new-user-modules": "nux-google-apps,nux-ntp-background,nux-set-as-default,signin-view",
-                        "onboarding-group": "AppsBackgroundUSSynthetic-005",
+                        "onboarding-group": "AppsBackgroundSynthetic-007",
                         "returning-user-modules": "nux-set-as-default"
                     },
                     "enable_features": [
