@@ -239,9 +239,8 @@ class StatusMediator {
         @ColorRes
         int textColor = 0;
         if (mPageIsPreview) {
-            // There will never be a Preview in Incognito and the site theme color is not used. So
-            // ignore useDarkColors.
-            textColor = R.color.locationbar_status_preview_color;
+            textColor = mDarkTheme ? R.color.locationbar_status_preview_color
+                                   : R.color.locationbar_status_preview_color_light;
         } else if (mPageIsOffline) {
             textColor = mDarkTheme ? R.color.locationbar_status_offline_color
                                    : R.color.locationbar_status_offline_color_light;
@@ -305,6 +304,11 @@ class StatusMediator {
             tint = mSecurityIconTintRes;
             description = mSecurityIconDescriptionRes;
             toast = R.string.menu_page_info;
+        }
+
+        if (mPageIsPreview) {
+            tint = mDarkTheme ? R.color.locationbar_status_preview_color
+                              : R.color.locationbar_status_preview_color_light;
         }
 
         mModel.set(StatusProperties.STATUS_ICON_RES, icon);
