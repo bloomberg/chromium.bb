@@ -396,7 +396,7 @@ void DWriteFontLookupTableBuilder::PrepareFontUniqueNameTable() {
   }
   // Post a task to catch timeouts should one of the
   // tasks will eventually not reply.
-  timeout_callback_.Reset(base::BindRepeating(
+  timeout_callback_.Reset(base::BindOnce(
       &DWriteFontLookupTableBuilder::OnTimeout, base::Unretained(this)));
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, timeout_callback_.callback(), kFontIndexingTimeout);
@@ -629,8 +629,8 @@ void DWriteFontLookupTableBuilder::FinalizeFontTable() {
 }
 
 void DWriteFontLookupTableBuilder::OnTimeout() {
-  if (!font_table_built_.IsSignaled())
-    FinalizeFontTable();
+  DCHECK(!font_table_built_.IsSignaled());
+  FinalizeFontTable();
 }
 
 void DWriteFontLookupTableBuilder::SetSlowDownIndexingForTesting(

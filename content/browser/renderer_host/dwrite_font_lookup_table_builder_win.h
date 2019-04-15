@@ -170,7 +170,7 @@ class CONTENT_EXPORT DWriteFontLookupTableBuilder {
 
   bool caching_enabled_ = true;
   base::Optional<base::WaitableEvent> hang_event_for_testing_;
-  base::CancelableCallback<void()> timeout_callback_;
+  base::CancelableOnceCallback<void()> timeout_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(DWriteFontLookupTableBuilder);
 };
