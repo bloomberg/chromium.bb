@@ -783,11 +783,17 @@ class BuildSpecsManager(object):
         self._latest_build['status'] == constants.BUILDER_STATUS_PASSED):
       latest_spec_file = '%s.xml' % os.path.join(
           self.all_specs_dir, self.latest)
+      logging.info('Found previous successful build manifest: %s',
+                   latest_spec_file)
       # We've built this checkout before if the manifest isn't different than
       # the last one we've built.
-      return not self.cros_source.IsManifestDifferent(latest_spec_file)
+      to_return = not self.cros_source.IsManifestDifferent(latest_spec_file)
+      logging.info('Is this checkout the same as the last build: %s',
+                   to_return)
+      return to_return
     else:
       # We've never built this manifest before so this checkout is always new.
+      logging.info('No successful build on this branch before')
       return False
 
   def CreateManifest(self):
@@ -970,21 +976,27 @@ class BuildSpecsManager(object):
         self.InitializeManifestVariables(version_info)
 
         if not self.force and self.HasCheckoutBeenBuilt():
+          logging.info('Build is not forced and this checkout already built')
           return None
 
         # If we're the master, always create a new build spec. Otherwise,
         # only create a new build spec if we've already built the existing
         # spec.
         if self.master or not self.latest_unprocessed:
+          logging.info('Build is master or build latest unprocessed is None')
           git.CreatePushBranch(PUSH_BRANCH, self.manifest_dir, sync=False)
           version = self.GetNextVersion(version_info)
           new_manifest = self.CreateManifest()
+          logging.info('Publishing the new manifest version')
           self.PublishManifest(new_manifest, version, build_id=build_id)
         else:
           version = self.latest_unprocessed
 
         self.current_version = version
-        return self.GetLocalManifest(version)
+        logging.info('current_version: %s', self.current_version)
+        to_return = self.GetLocalManifest(version)
+        logging.info('Local manifest for version: %s', to_return)
+        return to_return
       except cros_build_lib.RunCommandError as e:
         last_error = 'Failed to generate buildspec. error: %s' % e
         logging.error(last_error)

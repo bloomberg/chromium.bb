@@ -664,6 +664,7 @@ class ManifestVersionedSyncStage(SyncStage):
     build_id = self._run.attrs.metadata.GetDict().get('build_id')
 
     to_return = self.manifest_manager.GetNextBuildSpec(build_id=build_id)
+    logging.info('Found next version to build: %s', to_return)
     previous_version = self.manifest_manager.GetLatestPassingSpec()
     target_version = self.manifest_manager.current_version
 
