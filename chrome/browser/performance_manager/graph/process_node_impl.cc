@@ -70,7 +70,9 @@ void ProcessNodeImpl::SetProcess(base::Process process,
 }
 
 void ProcessNodeImpl::OnRendererIsBloated() {
-  SendEvent(resource_coordinator::mojom::Event::kRendererIsBloated);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  for (auto& observer : observers())
+    observer.OnRendererIsBloated(this);
 }
 
 const base::flat_set<FrameNodeImpl*>& ProcessNodeImpl::GetFrameNodes() const {
@@ -82,15 +84,23 @@ const base::flat_set<FrameNodeImpl*>& ProcessNodeImpl::GetFrameNodes() const {
 // pages. However, frames are children of both processes and frames, so we
 // find all of the pages that are reachable from the process's child
 // frames.
-base::flat_set<PageNodeImpl*>
-ProcessNodeImpl::GetAssociatedPageCoordinationUnits() const {
+base::flat_set<PageNodeImpl*> ProcessNodeImpl::GetAssociatedPageNodes() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::flat_set<PageNodeImpl*> page_nodes;
-  for (auto* frame_node : frame_nodes_) {
-    if (auto* page_node = frame_node->page_node())
-      page_nodes.insert(page_node);
-  }
+  for (auto* frame_node : frame_nodes_)
+    page_nodes.insert(frame_node->page_node());
   return page_nodes;
+}
+
+PageNodeImpl* ProcessNodeImpl::GetPageNodeIfExclusive() const {
+  PageNodeImpl* page_node = nullptr;
+  for (auto* frame_node : frame_nodes_) {
+    if (!page_node)
+      page_node = frame_node->page_node();
+    if (page_node != frame_node->page_node())
+      return nullptr;
+  }
+  return page_node;
 }
 
 void ProcessNodeImpl::SetProcessImpl(base::Process process,
@@ -124,13 +134,6 @@ void ProcessNodeImpl::LeaveGraph() {
 
   // All child frames should have been removed before the process is removed.
   DCHECK(frame_nodes_.empty());
-}
-
-void ProcessNodeImpl::OnEventReceived(
-    resource_coordinator::mojom::Event event) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (auto& observer : observers())
-    observer.OnProcessEventReceived(this, event);
 }
 
 }  // namespace performance_manager

@@ -23,7 +23,7 @@ namespace performance_manager {
 
 // The PageSignalGenerator is a dedicated |GraphObserver| for
 // calculating and emitting page-scoped signals. This observer observes
-// PageCoordinationUnits, ProcessCoordinationUnits and FrameNodes,
+// PageNodes, ProcessNodes and FrameNodes,
 // combining information from the graph to generate page level signals.
 class PageSignalGeneratorImpl
     : public GraphObserver,
@@ -40,17 +40,13 @@ class PageSignalGeneratorImpl
   bool ShouldObserve(const NodeBase* node) override;
   void OnNodeAdded(NodeBase* node) override;
   void OnBeforeNodeRemoved(NodeBase* node) override;
-  void OnFrameEventReceived(FrameNodeImpl* frame_node,
-                            resource_coordinator::mojom::Event event) override;
-  void OnProcessEventReceived(
-      ProcessNodeImpl* page_node,
-      resource_coordinator::mojom::Event event) override;
-  void OnSystemEventReceived(SystemNodeImpl* system_node,
-                             resource_coordinator::mojom::Event event) override;
+  void OnNonPersistentNotificationCreated(FrameNodeImpl* frame_node) override;
   void OnPageAlmostIdleChanged(PageNodeImpl* page_node) override;
   void OnLifecycleStateChanged(PageNodeImpl* page_node) override;
   void OnExpectedTaskQueueingDurationSample(
       ProcessNodeImpl* process_node) override;
+  void OnRendererIsBloated(ProcessNodeImpl* process_node) override;
+  void OnProcessCPUUsageReady(SystemNodeImpl* system_node) override;
 
   void BindToInterface(
       resource_coordinator::mojom::PageSignalGeneratorRequest request,

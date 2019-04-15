@@ -201,9 +201,7 @@ TEST_F(PageSignalGeneratorImplTest, NonPersistentNotificationCreatedEvent) {
   // Send a
   // resource_coordinator::mojom::Event::kNonPersistentNotificationCreated event
   // and wait for the receiver to get it.
-  page_signal_generator()->OnFrameEventReceived(
-      frame_node,
-      resource_coordinator::mojom::Event::kNonPersistentNotificationCreated);
+  page_signal_generator()->OnNonPersistentNotificationCreated(frame_node);
   run_loop.Run();
 
   ::testing::Mock::VerifyAndClear(&mock_receiver);

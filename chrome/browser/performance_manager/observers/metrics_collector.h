@@ -39,12 +39,11 @@ class MetricsCollector : public GraphObserver {
   bool ShouldObserve(const NodeBase* node) override;
   void OnNodeAdded(NodeBase* node) override;
   void OnBeforeNodeRemoved(NodeBase* node) override;
-  void OnFrameEventReceived(FrameNodeImpl* frame_node,
-                            resource_coordinator::mojom::Event event) override;
-  void OnPageEventReceived(PageNodeImpl* page_node,
-                           resource_coordinator::mojom::Event event) override;
+  void OnNonPersistentNotificationCreated(FrameNodeImpl* frame_node) override;
   void OnIsVisibleChanged(PageNodeImpl* page_node) override;
   void OnUkmSourceIdChanged(PageNodeImpl* page_node) override;
+  void OnFaviconUpdated(PageNodeImpl* page_node) override;
+  void OnTitleUpdated(PageNodeImpl* page_node) override;
   void OnExpectedTaskQueueingDurationSample(
       ProcessNodeImpl* process_node) override;
 

@@ -85,13 +85,8 @@ void PageSignalGeneratorImpl::OnBeforeNodeRemoved(NodeBase* cu) {
   DCHECK_EQ(1u, count);  // This should always erase exactly one CU.
 }
 
-void PageSignalGeneratorImpl::OnFrameEventReceived(
-    FrameNodeImpl* frame_node,
-    resource_coordinator::mojom::Event event) {
-  if (event !=
-      resource_coordinator::mojom::Event::kNonPersistentNotificationCreated)
-    return;
-
+void PageSignalGeneratorImpl::OnNonPersistentNotificationCreated(
+    FrameNodeImpl* frame_node) {
   auto* page_node = frame_node->page_node();
   if (!page_node)
     return;
@@ -99,57 +94,6 @@ void PageSignalGeneratorImpl::OnFrameEventReceived(
   DispatchPageSignal(page_node,
                      &resource_coordinator::mojom::PageSignalReceiver::
                          NotifyNonPersistentNotificationCreated);
-}
-
-void PageSignalGeneratorImpl::OnProcessEventReceived(
-    ProcessNodeImpl* process_node,
-    resource_coordinator::mojom::Event event) {
-  if (event == resource_coordinator::mojom::Event::kRendererIsBloated) {
-    base::flat_set<PageNodeImpl*> page_nodes =
-        process_node->GetAssociatedPageCoordinationUnits();
-    // Currently bloated renderer handling supports only a single page.
-    if (page_nodes.size() == 1u) {
-      auto* page_node = *page_nodes.begin();
-      DispatchPageSignal(page_node,
-                         &resource_coordinator::mojom::PageSignalReceiver::
-                             NotifyRendererIsBloated);
-      RecordBloatedRendererHandling(
-          BloatedRendererHandlingInResourceCoordinator::kForwardedToBrowser);
-    } else {
-      RecordBloatedRendererHandling(
-          BloatedRendererHandlingInResourceCoordinator::
-              kIgnoredDueToMultiplePages);
-    }
-  }
-}
-
-void PageSignalGeneratorImpl::OnSystemEventReceived(
-    SystemNodeImpl* system_node,
-    resource_coordinator::mojom::Event event) {
-  if (event == resource_coordinator::mojom::Event::kProcessCPUUsageReady) {
-    base::TimeTicks measurement_start =
-        system_node->last_measurement_start_time();
-
-    for (auto& entry : page_data_) {
-      const PageNodeImpl* page = entry.first;
-      PageData* data = &entry.second;
-      // TODO(siggi): Figure "recency" here, to avoid firing a measurement event
-      //     for state transitions that happened "too long" before a
-      //     measurement started. Alternatively perhaps this bit of policy is
-      //     better done in the observer, in which case it needs the time stamps
-      //     involved.
-      if (page->page_almost_idle() && !data->performance_estimate_issued &&
-          data->last_state_change < measurement_start) {
-        DispatchPageSignal(page,
-                           &resource_coordinator::mojom::PageSignalReceiver::
-                               OnLoadTimePerformanceEstimate,
-                           page->TimeSinceLastNavigation(),
-                           page->cumulative_cpu_usage_estimate(),
-                           page->private_footprint_kb_estimate());
-        data->performance_estimate_issued = true;
-      }
-    }
-  }
 }
 
 void PageSignalGeneratorImpl::OnPageAlmostIdleChanged(PageNodeImpl* page_node) {
@@ -184,6 +128,48 @@ void PageSignalGeneratorImpl::OnExpectedTaskQueueingDurationSample(
                        &resource_coordinator::mojom::PageSignalReceiver::
                            SetExpectedTaskQueueingDuration,
                        sample);
+  }
+}
+
+void PageSignalGeneratorImpl::OnRendererIsBloated(
+    ProcessNodeImpl* process_node) {
+  // Currently bloated renderer handling supports only a single page.
+  auto* page_node = process_node->GetPageNodeIfExclusive();
+  if (page_node) {
+    DispatchPageSignal(page_node,
+                       &resource_coordinator::mojom::PageSignalReceiver::
+                           NotifyRendererIsBloated);
+    RecordBloatedRendererHandling(
+        BloatedRendererHandlingInResourceCoordinator::kForwardedToBrowser);
+  } else {
+    RecordBloatedRendererHandling(BloatedRendererHandlingInResourceCoordinator::
+                                      kIgnoredDueToMultiplePages);
+  }
+}
+
+void PageSignalGeneratorImpl::OnProcessCPUUsageReady(
+    SystemNodeImpl* system_node) {
+  base::TimeTicks measurement_start =
+      system_node->last_measurement_start_time();
+
+  for (auto& entry : page_data_) {
+    const PageNodeImpl* page = entry.first;
+    PageData* data = &entry.second;
+    // TODO(siggi): Figure "recency" here, to avoid firing a measurement event
+    //     for state transitions that happened "too long" before a
+    //     measurement started. Alternatively perhaps this bit of policy is
+    //     better done in the observer, in which case it needs the time stamps
+    //     involved.
+    if (page->page_almost_idle() && !data->performance_estimate_issued &&
+        data->last_state_change < measurement_start) {
+      DispatchPageSignal(page,
+                         &resource_coordinator::mojom::PageSignalReceiver::
+                             OnLoadTimePerformanceEstimate,
+                         page->TimeSinceLastNavigation(),
+                         page->cumulative_cpu_usage_estimate(),
+                         page->private_footprint_kb_estimate());
+      data->performance_estimate_issued = true;
+    }
   }
 }
 

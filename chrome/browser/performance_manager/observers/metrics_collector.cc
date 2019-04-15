@@ -38,10 +38,8 @@ const int kDefaultFrequencyUkmEQTReported = 5u;
 // coordination unit.
 size_t GetNumCoresidentTabs(const PageNodeImpl* page_node) {
   std::set<NodeBase*> coresident_tabs;
-  for (auto* process_node :
-       page_node->GetAssociatedProcessCoordinationUnits()) {
-    for (auto* associated_page_node :
-         process_node->GetAssociatedPageCoordinationUnits()) {
+  for (auto* process_node : page_node->GetAssociatedProcessNodes()) {
+    for (auto* associated_page_node : process_node->GetAssociatedPageNodes()) {
       coresident_tabs.insert(associated_page_node);
     }
   }
@@ -76,47 +74,18 @@ void MetricsCollector::OnBeforeNodeRemoved(NodeBase* node) {
   }
 }
 
-void MetricsCollector::OnFrameEventReceived(
-    FrameNodeImpl* frame_node,
-    resource_coordinator::mojom::Event event) {
-  if (event ==
-      resource_coordinator::mojom::Event::kNonPersistentNotificationCreated) {
-    auto* page_node = frame_node->page_node();
-    // Only record metrics while it is backgrounded.
-    if (!page_node || page_node->is_visible() ||
-        !ShouldReportMetrics(page_node)) {
-      return;
-    }
-    MetricsReportRecord& record =
-        metrics_report_record_map_.find(page_node->id())->second;
-    record.first_non_persistent_notification_created.OnSignalReceived(
-        frame_node->IsMainFrame(), page_node->TimeSinceLastVisibilityChange(),
-        graph()->ukm_recorder());
-  }
-}
+void MetricsCollector::OnNonPersistentNotificationCreated(
+    FrameNodeImpl* frame_node) {
+  // Only record metrics while a page is backgrounded.
+  auto* page_node = frame_node->page_node();
+  if (page_node->is_visible() || !ShouldReportMetrics(page_node))
+    return;
 
-void MetricsCollector::OnPageEventReceived(
-    PageNodeImpl* page_node,
-    resource_coordinator::mojom::Event event) {
-  if (event == resource_coordinator::mojom::Event::kTitleUpdated) {
-    // Only record metrics while it is backgrounded.
-    if (page_node->is_visible() || !ShouldReportMetrics(page_node))
-      return;
-    MetricsReportRecord& record =
-        metrics_report_record_map_.find(page_node->id())->second;
-    record.first_title_updated.OnSignalReceived(
-        true, page_node->TimeSinceLastVisibilityChange(),
-        graph()->ukm_recorder());
-  } else if (event == resource_coordinator::mojom::Event::kFaviconUpdated) {
-    // Only record metrics while it is backgrounded.
-    if (page_node->is_visible() || !ShouldReportMetrics(page_node))
-      return;
-    MetricsReportRecord& record =
-        metrics_report_record_map_.find(page_node->id())->second;
-    record.first_favicon_updated.OnSignalReceived(
-        true, page_node->TimeSinceLastVisibilityChange(),
-        graph()->ukm_recorder());
-  }
+  MetricsReportRecord& record =
+      metrics_report_record_map_.find(page_node->id())->second;
+  record.first_non_persistent_notification_created.OnSignalReceived(
+      frame_node->IsMainFrame(), page_node->TimeSinceLastVisibilityChange(),
+      graph()->ukm_recorder());
 }
 
 void MetricsCollector::OnIsVisibleChanged(PageNodeImpl* page_node) {
@@ -133,6 +102,28 @@ void MetricsCollector::OnUkmSourceIdChanged(PageNodeImpl* page_node) {
   MetricsReportRecord& record =
       metrics_report_record_map_.find(page_node_id)->second;
   record.UpdateUkmSourceID(ukm_source_id);
+}
+
+void MetricsCollector::OnFaviconUpdated(PageNodeImpl* page_node) {
+  // Only record metrics while it is backgrounded.
+  if (page_node->is_visible() || !ShouldReportMetrics(page_node))
+    return;
+  MetricsReportRecord& record =
+      metrics_report_record_map_.find(page_node->id())->second;
+  record.first_favicon_updated.OnSignalReceived(
+      true, page_node->TimeSinceLastVisibilityChange(),
+      graph()->ukm_recorder());
+}
+
+void MetricsCollector::OnTitleUpdated(PageNodeImpl* page_node) {
+  // Only record metrics while it is backgrounded.
+  if (page_node->is_visible() || !ShouldReportMetrics(page_node))
+    return;
+  MetricsReportRecord& record =
+      metrics_report_record_map_.find(page_node->id())->second;
+  record.first_title_updated.OnSignalReceived(
+      true, page_node->TimeSinceLastVisibilityChange(),
+      graph()->ukm_recorder());
 }
 
 void MetricsCollector::OnExpectedTaskQueueingDurationSample(

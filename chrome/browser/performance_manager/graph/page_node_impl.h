@@ -52,8 +52,7 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
   // There is no direct relationship between processes and pages. However,
   // frames are accessible by both processes and frames, so we find all of the
   // processes that are reachable from the pages's accessible frames.
-  base::flat_set<ProcessNodeImpl*> GetAssociatedProcessCoordinationUnits()
-      const;
+  base::flat_set<ProcessNodeImpl*> GetAssociatedProcessNodes() const;
 
   // Returns the average CPU usage that can be attributed to this page over the
   // last measurement period. CPU usage is expressed as the average percentage
@@ -142,9 +141,6 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
 
   void SetPageAlmostIdle(bool page_almost_idle);
   void SetLifecycleState(LifecycleState lifecycle_state);
-
-  // CoordinationUnitInterface implementation.
-  void OnEventReceived(resource_coordinator::mojom::Event event) override;
 
   // Invalidates all currently aggregated intervention policies.
   void InvalidateAllInterventionPolicies();

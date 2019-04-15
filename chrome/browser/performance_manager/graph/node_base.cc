@@ -46,15 +46,4 @@ bool NodeBase::NodeInGraph(const NodeBase* other_node) const {
   return graph_->GetNodeByID(other_node->id()) == other_node;
 }
 
-void NodeBase::OnEventReceived(resource_coordinator::mojom::Event event) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (auto& observer : observers())
-    observer.OnEventReceived(this, event);
-}
-
-void NodeBase::SendEvent(resource_coordinator::mojom::Event event) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  OnEventReceived(event);
-}
-
 }  // namespace performance_manager

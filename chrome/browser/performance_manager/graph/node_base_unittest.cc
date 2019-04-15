@@ -20,90 +20,86 @@ using NodeBaseDeathTest = NodeBaseTest;
 
 }  // namespace
 
-TEST_F(NodeBaseTest,
-       GetAssociatedCoordinationUnitsForSinglePageInSingleProcess) {
+TEST_F(NodeBaseTest, GetAssociatedNodesForSinglePageInSingleProcess) {
   MockSinglePageInSingleProcessGraph mock_graph(graph());
 
   auto pages_associated_with_process =
-      mock_graph.process->GetAssociatedPageCoordinationUnits();
+      mock_graph.process->GetAssociatedPageNodes();
   EXPECT_EQ(1u, pages_associated_with_process.size());
   EXPECT_EQ(1u, pages_associated_with_process.count(mock_graph.page.get()));
 
   auto processes_associated_with_page =
-      mock_graph.page->GetAssociatedProcessCoordinationUnits();
+      mock_graph.page->GetAssociatedProcessNodes();
   EXPECT_EQ(1u, processes_associated_with_page.size());
   EXPECT_EQ(1u, processes_associated_with_page.count(mock_graph.process.get()));
 }
 
-TEST_F(NodeBaseTest,
-       GetAssociatedCoordinationUnitsForMultiplePagesInSingleProcess) {
+TEST_F(NodeBaseTest, GetAssociatedNodesForMultiplePagesInSingleProcess) {
   MockMultiplePagesInSingleProcessGraph mock_graph(graph());
 
   auto pages_associated_with_process =
-      mock_graph.process->GetAssociatedPageCoordinationUnits();
+      mock_graph.process->GetAssociatedPageNodes();
   EXPECT_EQ(2u, pages_associated_with_process.size());
   EXPECT_EQ(1u, pages_associated_with_process.count(mock_graph.page.get()));
   EXPECT_EQ(1u,
             pages_associated_with_process.count(mock_graph.other_page.get()));
 
   auto processes_associated_with_page =
-      mock_graph.page->GetAssociatedProcessCoordinationUnits();
+      mock_graph.page->GetAssociatedProcessNodes();
   EXPECT_EQ(1u, processes_associated_with_page.size());
   EXPECT_EQ(1u, processes_associated_with_page.count(mock_graph.process.get()));
 
   auto processes_associated_with_other_page =
-      mock_graph.other_page->GetAssociatedProcessCoordinationUnits();
+      mock_graph.other_page->GetAssociatedProcessNodes();
   EXPECT_EQ(1u, processes_associated_with_other_page.size());
   EXPECT_EQ(1u, processes_associated_with_page.count(mock_graph.process.get()));
 }
 
-TEST_F(NodeBaseTest,
-       GetAssociatedCoordinationUnitsForSinglePageWithMultipleProcesses) {
+TEST_F(NodeBaseTest, GetAssociatedNodesForSinglePageWithMultipleProcesses) {
   MockSinglePageWithMultipleProcessesGraph mock_graph(graph());
 
   auto pages_associated_with_process =
-      mock_graph.process->GetAssociatedPageCoordinationUnits();
+      mock_graph.process->GetAssociatedPageNodes();
   EXPECT_EQ(1u, pages_associated_with_process.size());
   EXPECT_EQ(1u, pages_associated_with_process.count(mock_graph.page.get()));
 
   auto pages_associated_with_other_process =
-      mock_graph.other_process->GetAssociatedPageCoordinationUnits();
+      mock_graph.other_process->GetAssociatedPageNodes();
   EXPECT_EQ(1u, pages_associated_with_other_process.size());
   EXPECT_EQ(1u,
             pages_associated_with_other_process.count(mock_graph.page.get()));
 
   auto processes_associated_with_page =
-      mock_graph.page->GetAssociatedProcessCoordinationUnits();
+      mock_graph.page->GetAssociatedProcessNodes();
   EXPECT_EQ(2u, processes_associated_with_page.size());
   EXPECT_EQ(1u, processes_associated_with_page.count(mock_graph.process.get()));
   EXPECT_EQ(
       1u, processes_associated_with_page.count(mock_graph.other_process.get()));
 }
 
-TEST_F(NodeBaseTest,
-       GetAssociatedCoordinationUnitsForMultiplePagesWithMultipleProcesses) {
+TEST_F(NodeBaseTest, GetAssociatedNodesForMultiplePagesWithMultipleProcesses) {
   MockMultiplePagesWithMultipleProcessesGraph mock_graph(graph());
 
   auto pages_associated_with_process =
-      mock_graph.process->GetAssociatedPageCoordinationUnits();
+      mock_graph.process->GetAssociatedPageNodes();
   EXPECT_EQ(2u, pages_associated_with_process.size());
   EXPECT_EQ(1u, pages_associated_with_process.count(mock_graph.page.get()));
   EXPECT_EQ(1u,
             pages_associated_with_process.count(mock_graph.other_page.get()));
 
   auto pages_associated_with_other_process =
-      mock_graph.other_process->GetAssociatedPageCoordinationUnits();
+      mock_graph.other_process->GetAssociatedPageNodes();
   EXPECT_EQ(1u, pages_associated_with_other_process.size());
   EXPECT_EQ(1u, pages_associated_with_other_process.count(
                     mock_graph.other_page.get()));
 
   auto processes_associated_with_page =
-      mock_graph.page->GetAssociatedProcessCoordinationUnits();
+      mock_graph.page->GetAssociatedProcessNodes();
   EXPECT_EQ(1u, processes_associated_with_page.size());
   EXPECT_EQ(1u, processes_associated_with_page.count(mock_graph.process.get()));
 
   auto processes_associated_with_other_page =
-      mock_graph.other_page->GetAssociatedProcessCoordinationUnits();
+      mock_graph.other_page->GetAssociatedProcessNodes();
   EXPECT_EQ(2u, processes_associated_with_other_page.size());
   EXPECT_EQ(
       1u, processes_associated_with_other_page.count(mock_graph.process.get()));
