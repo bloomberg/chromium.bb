@@ -2024,10 +2024,12 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
     deltas.push_back(std::move(d0));
   }
   bool request_headers_modified0;
+  std::set<std::string> ignore1, ignore2;
   net::HttpRequestHeaders headers0;
   headers0.MergeFrom(base_headers);
   MergeOnBeforeSendHeadersResponses(GURL(), deltas, &headers0, &ignored_actions,
-                                    &logger, &request_headers_modified0);
+                                    &logger, &ignore1, &ignore2,
+                                    &request_headers_modified0);
   ASSERT_TRUE(headers0.GetHeader("key1", &header_value));
   EXPECT_EQ("value 1", header_value);
   ASSERT_TRUE(headers0.GetHeader("key2", &header_value));
@@ -2047,11 +2049,14 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
   deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
   ignored_actions.clear();
   logger.clear();
+  ignore1.clear();
+  ignore2.clear();
   bool request_headers_modified1;
   net::HttpRequestHeaders headers1;
   headers1.MergeFrom(base_headers);
   MergeOnBeforeSendHeadersResponses(GURL(), deltas, &headers1, &ignored_actions,
-                                    &logger, &request_headers_modified1);
+                                    &logger, &ignore1, &ignore2,
+                                    &request_headers_modified1);
   EXPECT_FALSE(headers1.HasHeader("key1"));
   ASSERT_TRUE(headers1.GetHeader("key2", &header_value));
   EXPECT_EQ("value 3", header_value);
@@ -2073,11 +2078,14 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
   deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
   ignored_actions.clear();
   logger.clear();
+  ignore1.clear();
+  ignore2.clear();
   bool request_headers_modified2;
   net::HttpRequestHeaders headers2;
   headers2.MergeFrom(base_headers);
   MergeOnBeforeSendHeadersResponses(GURL(), deltas, &headers2, &ignored_actions,
-                                    &logger, &request_headers_modified2);
+                                    &logger, &ignore1, &ignore2,
+                                    &request_headers_modified2);
   EXPECT_FALSE(headers2.HasHeader("key1"));
   ASSERT_TRUE(headers2.GetHeader("key2", &header_value));
   EXPECT_EQ("value 3", header_value);
@@ -2103,11 +2111,14 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
   deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
   ignored_actions.clear();
   logger.clear();
+  ignore1.clear();
+  ignore2.clear();
   bool request_headers_modified3;
   net::HttpRequestHeaders headers3;
   headers3.MergeFrom(base_headers);
   MergeOnBeforeSendHeadersResponses(GURL(), deltas, &headers3, &ignored_actions,
-                                    &logger, &request_headers_modified3);
+                                    &logger, &ignore1, &ignore2,
+                                    &request_headers_modified3);
   EXPECT_FALSE(headers3.HasHeader("key1"));
   ASSERT_TRUE(headers3.GetHeader("key2", &header_value));
   EXPECT_EQ("value 3", header_value);
@@ -2169,11 +2180,13 @@ TEST(ExtensionWebRequestHelpersTest,
   }
   deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
   bool request_headers_modified1;
+  std::set<std::string> ignore1, ignore2;
   net::HttpRequestHeaders headers1;
   headers1.MergeFrom(base_headers);
   ignored_actions.clear();
   MergeOnBeforeSendHeadersResponses(GURL(), deltas, &headers1, &ignored_actions,
-                                    &logger, &request_headers_modified1);
+                                    &logger, &ignore1, &ignore2,
+                                    &request_headers_modified1);
   EXPECT_TRUE(headers1.HasHeader("Cookie"));
   ASSERT_TRUE(headers1.GetHeader("Cookie", &header_value));
   EXPECT_EQ("name=new value; name2=new value; name4=\"value 4\"", header_value);
