@@ -199,7 +199,6 @@ void CloseAllBrowsers() {
 void AttemptUserExit() {
 #if defined(OS_CHROMEOS)
   VLOG(1) << "AttemptUserExit";
-  browser_shutdown::StartShutdownTracing();
   chromeos::BootTimesRecorder::Get()->AddLogoutTimeMarker("LogoutStarted",
                                                           false);
 

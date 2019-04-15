@@ -81,11 +81,8 @@ class TracingControllerImpl : public TracingController,
 
   // Should be called before browser main loop shutdown. If startup tracing is
   // tracing to a file and is still active, this stops the duration timer if it
-  // exists and returns a BrowserShutdownProfileDumper that will finalize the
-  // trace file upon its destruction (i.e. startup tracing becomes a version of
-  // shutdown tracing).
-  std::unique_ptr<BrowserShutdownProfileDumper>
-  FinalizeStartupTracingIfNeeded();
+  // exists.
+  void FinalizeStartupTracingIfNeeded();
 
  private:
   friend std::default_delete<TracingControllerImpl>;
