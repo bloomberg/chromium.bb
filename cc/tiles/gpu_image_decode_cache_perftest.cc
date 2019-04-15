@@ -151,7 +151,7 @@ TEST_P(GpuImageDecodeCachePerfTestNoSw, DecodeWithMips) {
       surface->getCanvas()->drawImageRect(decoded_image.image().get(),
                                           SkRect::MakeWH(1024, 2048),
                                           SkRect::MakeWH(614, 1229), &paint);
-      surface->prepareForExternalIO();
+      surface->flush();
     }
 
     cache_->DrawWithImageFinished(image, decoded_image);

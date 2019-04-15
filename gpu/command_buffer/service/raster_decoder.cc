@@ -2178,7 +2178,7 @@ void RasterDecoderImpl::DoEndRasterCHROMIUM() {
     // hangs.
     gl::ScopedProgressReporter report_progress(
         shared_context_state_->progress_reporter());
-    sk_surface_->prepareForExternalIO();
+    sk_surface_->flush();
   }
 
   if (!shared_image_) {
@@ -2190,7 +2190,7 @@ void RasterDecoderImpl::DoEndRasterCHROMIUM() {
   }
 
   // Unlock all font handles. This needs to be deferred until
-  // SkSurface::prepareForExternalIO since that flushes batched Gr operations
+  // SkSurface::flush since that flushes batched Gr operations
   // in skia that access the glyph data.
   // TODO(khushalsagar): We just unlocked a bunch of handles, do we need to
   // give a call to skia to attempt to purge any unlocked handles?
@@ -2201,7 +2201,7 @@ void RasterDecoderImpl::DoEndRasterCHROMIUM() {
   locked_handles_.clear();
 
   // We just flushed a tile's worth of GPU work from the SkSurface in
-  // prepareForExternalIO above. Use kDeferLaterCommands to ensure we yield to
+  // flush above. Use kDeferLaterCommands to ensure we yield to
   // the Scheduler before processing more commands.
   current_decoder_error_ = error::kDeferLaterCommands;
 }

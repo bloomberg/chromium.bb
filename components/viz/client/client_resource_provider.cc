@@ -388,7 +388,7 @@ ClientResourceProvider::ScopedSkSurface::ScopedSkSurface(
 
 ClientResourceProvider::ScopedSkSurface::~ScopedSkSurface() {
   if (surface_)
-    surface_->prepareForExternalIO();
+    surface_->flush();
 }
 
 SkSurfaceProps ClientResourceProvider::ScopedSkSurface::ComputeSurfaceProps(
