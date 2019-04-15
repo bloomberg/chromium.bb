@@ -143,15 +143,23 @@ Polymer({
     };
     // </if>
 
-    this.showAndroidApps_ = loadTimeData.valueExists('androidAppsVisible') &&
+    // The SplitSettings feature hides OS settings in the browser settings page.
+    // https://crbug.com/950007
+    const showOSSettings = loadTimeData.getBoolean('showOSSettings');
+    this.showAndroidApps_ = showOSSettings &&
+        loadTimeData.valueExists('androidAppsVisible') &&
         loadTimeData.getBoolean('androidAppsVisible');
-    this.showKioskNextShell_ = loadTimeData.valueExists('showKioskNextShell') &&
+    this.showKioskNextShell_ = showOSSettings &&
+        loadTimeData.valueExists('showKioskNextShell') &&
         loadTimeData.getBoolean('showKioskNextShell');
-    this.showCrostini_ = loadTimeData.valueExists('showCrostini') &&
+    this.showCrostini_ = showOSSettings &&
+        loadTimeData.valueExists('showCrostini') &&
         loadTimeData.getBoolean('showCrostini');
-    this.showPluginVm_ = loadTimeData.valueExists('showPluginVm') &&
+    this.showPluginVm_ = showOSSettings &&
+        loadTimeData.valueExists('showPluginVm') &&
         loadTimeData.getBoolean('showPluginVm');
-    this.havePlayStoreApp_ = loadTimeData.valueExists('havePlayStoreApp') &&
+    this.havePlayStoreApp_ = showOSSettings &&
+        loadTimeData.valueExists('havePlayStoreApp') &&
         loadTimeData.getBoolean('havePlayStoreApp');
 
     this.addEventListener('show-container', () => {

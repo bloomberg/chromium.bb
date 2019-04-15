@@ -66,8 +66,7 @@ cr.define('settings', function() {
    */
   let pageVisibility;
 
-  const showOSSettings = loadTimeData.valueExists('showOSSettings') &&
-      loadTimeData.getBoolean('showOSSettings');
+  const showOSSettings = loadTimeData.getBoolean('showOSSettings');
 
   if (loadTimeData.getBoolean('isGuest')) {
     // "if not chromeos" and "if chromeos" in two completely separate blocks
