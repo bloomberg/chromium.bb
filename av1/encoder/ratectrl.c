@@ -1026,6 +1026,184 @@ static int rc_pick_q_and_bounds_one_pass_cq(const AV1_COMP *cpi, int width,
 #endif  // USE_UNRESTRICTED_Q_IN_CQ_MODE
 
 #define STATIC_MOTION_THRESH 95
+static void get_intra_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
+                                            int height, int *active_best,
+                                            int *active_worst, int *arf_q,
+                                            int cq_level) {
+  const AV1_COMMON *const cm = &cpi->common;
+  const RATE_CONTROL *const rc = &cpi->rc;
+  const AV1EncoderConfig *const oxcf = &cpi->oxcf;
+  int active_best_quality;
+  int active_worst_quality = *active_worst;
+  const int bit_depth = cm->seq_params.bit_depth;
+
+  if (rc->frames_to_key == 1 && oxcf->rc_mode == AOM_Q) {
+    // If the next frame is also a key frame or the current frame is the
+    // only frame in the sequence in AOM_Q mode, just use the cq_level
+    // as q.
+    active_best_quality = cq_level;
+    active_worst_quality = cq_level;
+  } else if (cm->current_frame.frame_type == KEY_FRAME && cm->show_frame == 0) {
+    // Handle the special case for forward reference key frames.
+    // Increase the boost because this keyframe is used as a forward and
+    // backward reference.
+    const int qindex = rc->last_boosted_qindex;
+    const double last_boosted_q = av1_convert_qindex_to_q(qindex, bit_depth);
+    const int delta_qindex = av1_compute_qdelta(
+        rc, last_boosted_q, last_boosted_q * 0.25, bit_depth);
+    active_best_quality = AOMMAX(qindex + delta_qindex, rc->best_quality);
+    // Update the arf_q since the forward keyframe is replacing the ALTREF
+    *arf_q = active_best_quality;
+  } else if (rc->this_key_frame_forced) {
+    // Handle the special case for key frames forced when we have reached
+    // the maximum key frame interval. Here force the Q to a range
+    // based on the ambient Q to reduce the risk of popping.
+    double last_boosted_q;
+    int delta_qindex;
+    int qindex;
+
+    if (cpi->twopass.last_kfgroup_zeromotion_pct >= STATIC_MOTION_THRESH) {
+      qindex = AOMMIN(rc->last_kf_qindex, rc->last_boosted_qindex);
+      active_best_quality = qindex;
+      last_boosted_q = av1_convert_qindex_to_q(qindex, bit_depth);
+      delta_qindex = av1_compute_qdelta(rc, last_boosted_q,
+                                        last_boosted_q * 1.25, bit_depth);
+      active_worst_quality =
+          AOMMIN(qindex + delta_qindex, active_worst_quality);
+    } else {
+      qindex = rc->last_boosted_qindex;
+      last_boosted_q = av1_convert_qindex_to_q(qindex, bit_depth);
+      delta_qindex = av1_compute_qdelta(rc, last_boosted_q,
+                                        last_boosted_q * 0.50, bit_depth);
+      active_best_quality = AOMMAX(qindex + delta_qindex, rc->best_quality);
+    }
+  } else {
+    // Not forced keyframe.
+    double q_adj_factor = 1.0;
+    double q_val;
+
+    // Baseline value derived from cpi->active_worst_quality and kf boost.
+    active_best_quality =
+        get_kf_active_quality(rc, active_worst_quality, bit_depth);
+
+    if (cpi->twopass.kf_zeromotion_pct >= STATIC_KF_GROUP_THRESH) {
+      active_best_quality /= 3;
+    }
+
+    // Allow somewhat lower kf minq with small image formats.
+    if ((width * height) <= (352 * 288)) {
+      q_adj_factor -= 0.25;
+    }
+
+    // Make a further adjustment based on the kf zero motion measure.
+    q_adj_factor += 0.05 - (0.001 * (double)cpi->twopass.kf_zeromotion_pct);
+
+    // Convert the adjustment factor to a qindex delta
+    // on active_best_quality.
+    q_val = av1_convert_qindex_to_q(active_best_quality, bit_depth);
+    active_best_quality +=
+        av1_compute_qdelta(rc, q_val, q_val * q_adj_factor, bit_depth);
+
+    // Tweak active_best_quality for AOM_Q mode when superres is on, as this
+    // will be used directly as 'q' later.
+    if (oxcf->rc_mode == AOM_Q &&
+        (oxcf->superres_mode == SUPERRES_QTHRESH ||
+         oxcf->superres_mode == SUPERRES_AUTO) &&
+        cm->superres_scale_denominator != SCALE_NUMERATOR) {
+      active_best_quality =
+          AOMMAX(active_best_quality -
+                     ((cm->superres_scale_denominator - SCALE_NUMERATOR) * 4),
+                 0);
+    }
+  }
+
+  *active_best = active_best_quality;
+  *active_worst = active_worst_quality;
+}
+
+// Does some final adjustments to the q value and bounds.
+static void postprocess_q_and_bounds(const AV1_COMP *cpi, int width, int height,
+                                     int *active_worst, int *active_best,
+                                     int *q_out, int is_intrl_arf_boost) {
+  const AV1_COMMON *const cm = &cpi->common;
+  const RATE_CONTROL *const rc = &cpi->rc;
+  const AV1EncoderConfig *oxcf = &cpi->oxcf;
+  const int bit_depth = cpi->common.seq_params.bit_depth;
+  int active_best_quality = *active_best;
+  int active_worst_quality = *active_worst;
+  int q;
+
+  // Extension to max or min Q if undershoot or overshoot is outside
+  // the permitted range.
+  if (cpi->oxcf.rc_mode != AOM_Q) {
+    if (frame_is_intra_only(cm) ||
+        (!rc->is_src_frame_alt_ref &&
+         (cpi->refresh_golden_frame || is_intrl_arf_boost ||
+          cpi->refresh_alt_ref_frame))) {
+      active_best_quality -=
+          (cpi->twopass.extend_minq + cpi->twopass.extend_minq_fast);
+      active_worst_quality += (cpi->twopass.extend_maxq / 2);
+    } else {
+      active_best_quality -=
+          (cpi->twopass.extend_minq + cpi->twopass.extend_minq_fast) / 2;
+      active_worst_quality += cpi->twopass.extend_maxq;
+    }
+  }
+
+  aom_clear_system_state();
+  // Static forced key frames Q restrictions dealt with elsewhere.
+  if (!(frame_is_intra_only(cm)) || !rc->this_key_frame_forced ||
+      (cpi->twopass.last_kfgroup_zeromotion_pct < STATIC_MOTION_THRESH)) {
+    const int qdelta = av1_frame_type_qdelta(cpi, active_worst_quality);
+    active_worst_quality =
+        AOMMAX(active_worst_quality + qdelta, active_best_quality);
+  }
+
+  // Modify active_best_quality for downscaled normal frames.
+  if (av1_frame_scaled(cm) && !frame_is_kf_gf_arf(cpi)) {
+    int qdelta = av1_compute_qdelta_by_rate(
+        rc, cm->current_frame.frame_type, active_best_quality, 2.0, bit_depth);
+    active_best_quality =
+        AOMMAX(active_best_quality + qdelta, rc->best_quality);
+  }
+
+  active_best_quality =
+      clamp(active_best_quality, rc->best_quality, rc->worst_quality);
+  active_worst_quality =
+      clamp(active_worst_quality, active_best_quality, rc->worst_quality);
+
+  if (oxcf->rc_mode == AOM_Q ||
+      (frame_is_intra_only(cm) && !rc->this_key_frame_forced &&
+       cpi->twopass.kf_zeromotion_pct >= STATIC_KF_GROUP_THRESH &&
+       rc->frames_to_key > 1)) {
+    q = active_best_quality;
+    // Special case code to try and match quality with forced key frames.
+  } else if (frame_is_intra_only(cm) && rc->this_key_frame_forced) {
+    // If static since last kf use better of last boosted and last kf q.
+    if (cpi->twopass.last_kfgroup_zeromotion_pct >= STATIC_MOTION_THRESH) {
+      q = AOMMIN(rc->last_kf_qindex, rc->last_boosted_qindex);
+    } else {
+      q = AOMMIN(rc->last_boosted_qindex,
+                 (active_best_quality + active_worst_quality) / 2);
+    }
+  } else {
+    q = av1_rc_regulate_q(cpi, rc->this_frame_target, active_best_quality,
+                          active_worst_quality, width, height);
+    if (q > active_worst_quality) {
+      // Special case when we are targeting the max allowed rate.
+      if (rc->this_frame_target >= rc->max_frame_bandwidth)
+        active_worst_quality = q;
+      else
+        q = active_worst_quality;
+    }
+  }
+  clamp(q, active_best_quality, active_worst_quality);
+
+  *active_best = active_best_quality;
+  *active_worst = active_worst_quality;
+  *q_out = q;
+}
+
 static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
                                          int height, int *bottom_index,
                                          int *top_index, int *arf_q) {
@@ -1044,88 +1222,9 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
 
   const int is_intrl_arf_boost =
       gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE;
-
   if (frame_is_intra_only(cm)) {
-    if (rc->frames_to_key == 1 && oxcf->rc_mode == AOM_Q) {
-      // If the next frame is also a key frame or the current frame is the
-      // only frame in the sequence in AOM_Q mode, just use the cq_level
-      // as q.
-      active_best_quality = cq_level;
-      active_worst_quality = cq_level;
-    } else if (cm->current_frame.frame_type == KEY_FRAME &&
-               cm->show_frame == 0) {
-      // Handle the special case for forward reference key frames.
-      // Increase the boost because this keyframe is used as a forward and
-      // backward reference.
-      const int qindex = rc->last_boosted_qindex;
-      const double last_boosted_q = av1_convert_qindex_to_q(qindex, bit_depth);
-      const int delta_qindex = av1_compute_qdelta(
-          rc, last_boosted_q, last_boosted_q * 0.25, bit_depth);
-      active_best_quality = AOMMAX(qindex + delta_qindex, rc->best_quality);
-      // Update the arf_q since the forward keyframe is replacing the ALTREF
-      *arf_q = active_best_quality;
-    } else if (rc->this_key_frame_forced) {
-      // Handle the special case for key frames forced when we have reached
-      // the maximum key frame interval. Here force the Q to a range
-      // based on the ambient Q to reduce the risk of popping.
-      double last_boosted_q;
-      int delta_qindex;
-      int qindex;
-
-      if (cpi->twopass.last_kfgroup_zeromotion_pct >= STATIC_MOTION_THRESH) {
-        qindex = AOMMIN(rc->last_kf_qindex, rc->last_boosted_qindex);
-        active_best_quality = qindex;
-        last_boosted_q = av1_convert_qindex_to_q(qindex, bit_depth);
-        delta_qindex = av1_compute_qdelta(rc, last_boosted_q,
-                                          last_boosted_q * 1.25, bit_depth);
-        active_worst_quality =
-            AOMMIN(qindex + delta_qindex, active_worst_quality);
-      } else {
-        qindex = rc->last_boosted_qindex;
-        last_boosted_q = av1_convert_qindex_to_q(qindex, bit_depth);
-        delta_qindex = av1_compute_qdelta(rc, last_boosted_q,
-                                          last_boosted_q * 0.50, bit_depth);
-        active_best_quality = AOMMAX(qindex + delta_qindex, rc->best_quality);
-      }
-    } else {
-      // Not forced keyframe.
-      double q_adj_factor = 1.0;
-      double q_val;
-
-      // Baseline value derived from cpi->active_worst_quality and kf boost.
-      active_best_quality =
-          get_kf_active_quality(rc, active_worst_quality, bit_depth);
-
-      if (cpi->twopass.kf_zeromotion_pct >= STATIC_KF_GROUP_THRESH) {
-        active_best_quality /= 3;
-      }
-
-      // Allow somewhat lower kf minq with small image formats.
-      if ((width * height) <= (352 * 288)) {
-        q_adj_factor -= 0.25;
-      }
-
-      // Make a further adjustment based on the kf zero motion measure.
-      q_adj_factor += 0.05 - (0.001 * (double)cpi->twopass.kf_zeromotion_pct);
-
-      // Convert the adjustment factor to a qindex delta
-      // on active_best_quality.
-      q_val = av1_convert_qindex_to_q(active_best_quality, bit_depth);
-      active_best_quality +=
-          av1_compute_qdelta(rc, q_val, q_val * q_adj_factor, bit_depth);
-
-      // Tweak active_best_quality for AOM_Q mode when superres is on, as this
-      // will be used directly as 'q' later.
-      if (oxcf->rc_mode == AOM_Q &&
-          (oxcf->superres_mode == SUPERRES_QTHRESH ||
-           oxcf->superres_mode == SUPERRES_AUTO) &&
-          cm->superres_scale_denominator != SCALE_NUMERATOR) {
-        active_best_quality =
-            AOMMAX(active_best_quality -
-                       ((cm->superres_scale_denominator - SCALE_NUMERATOR) * 4),
-                   0);
-      }
-    }
+    get_intra_q_and_bounds_two_pass(cpi, width, height, &active_best_quality,
+                                    &active_worst_quality, arf_q, cq_level);
   } else if (!rc->is_src_frame_alt_ref &&
              (cpi->refresh_golden_frame || is_intrl_arf_boost ||
               cpi->refresh_alt_ref_frame)) {
@@ -1213,71 +1312,8 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
     }
   }
 
-  // Extension to max or min Q if undershoot or overshoot is outside
-  // the permitted range.
-  if (cpi->oxcf.rc_mode != AOM_Q) {
-    if (frame_is_intra_only(cm) ||
-        (!rc->is_src_frame_alt_ref &&
-         (cpi->refresh_golden_frame || is_intrl_arf_boost ||
-          cpi->refresh_alt_ref_frame))) {
-      active_best_quality -=
-          (cpi->twopass.extend_minq + cpi->twopass.extend_minq_fast);
-      active_worst_quality += (cpi->twopass.extend_maxq / 2);
-    } else {
-      active_best_quality -=
-          (cpi->twopass.extend_minq + cpi->twopass.extend_minq_fast) / 2;
-      active_worst_quality += cpi->twopass.extend_maxq;
-    }
-  }
-
-  aom_clear_system_state();
-  // Static forced key frames Q restrictions dealt with elsewhere.
-  if (!(frame_is_intra_only(cm)) || !rc->this_key_frame_forced ||
-      (cpi->twopass.last_kfgroup_zeromotion_pct < STATIC_MOTION_THRESH)) {
-    const int qdelta = av1_frame_type_qdelta(cpi, active_worst_quality);
-    active_worst_quality =
-        AOMMAX(active_worst_quality + qdelta, active_best_quality);
-  }
-
-  // Modify active_best_quality for downscaled normal frames.
-  if (av1_frame_scaled(cm) && !frame_is_kf_gf_arf(cpi)) {
-    int qdelta = av1_compute_qdelta_by_rate(
-        rc, cm->current_frame.frame_type, active_best_quality, 2.0, bit_depth);
-    active_best_quality =
-        AOMMAX(active_best_quality + qdelta, rc->best_quality);
-  }
-
-  active_best_quality =
-      clamp(active_best_quality, rc->best_quality, rc->worst_quality);
-  active_worst_quality =
-      clamp(active_worst_quality, active_best_quality, rc->worst_quality);
-
-  if (oxcf->rc_mode == AOM_Q ||
-      (frame_is_intra_only(cm) && !rc->this_key_frame_forced &&
-       cpi->twopass.kf_zeromotion_pct >= STATIC_KF_GROUP_THRESH &&
-       rc->frames_to_key > 1)) {
-    q = active_best_quality;
-    // Special case code to try and match quality with forced key frames.
-  } else if (frame_is_intra_only(cm) && rc->this_key_frame_forced) {
-    // If static since last kf use better of last boosted and last kf q.
-    if (cpi->twopass.last_kfgroup_zeromotion_pct >= STATIC_MOTION_THRESH) {
-      q = AOMMIN(rc->last_kf_qindex, rc->last_boosted_qindex);
-    } else {
-      q = AOMMIN(rc->last_boosted_qindex,
-                 (active_best_quality + active_worst_quality) / 2);
-    }
-  } else {
-    q = av1_rc_regulate_q(cpi, rc->this_frame_target, active_best_quality,
-                          active_worst_quality, width, height);
-    if (q > active_worst_quality) {
-      // Special case when we are targeting the max allowed rate.
-      if (rc->this_frame_target >= rc->max_frame_bandwidth)
-        active_worst_quality = q;
-      else
-        q = active_worst_quality;
-    }
-  }
-  clamp(q, active_best_quality, active_worst_quality);
+  postprocess_q_and_bounds(cpi, width, height, &active_worst_quality,
+                           &active_best_quality, &q, is_intrl_arf_boost);
 
   *top_index = active_worst_quality;
   *bottom_index = active_best_quality;
