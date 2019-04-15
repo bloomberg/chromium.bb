@@ -24,6 +24,10 @@ struct CookieManagerParams {
 
   // Schemes that unconditionally allow third party cookies.
   array<string> third_party_cookies_allowed_schemes;
+
+  // Whether or not to allow cookies for file:// URLs. Can be overridden by
+  // CookieManager.AllowFileSchemeCookies().
+  bool allow_file_scheme_cookies = false;
 };
 
 enum CookiePriority {
@@ -267,9 +271,10 @@ interface CookieManager {
   FlushCookieStore() => ();
 
   // Configure this CookieManager to allow/disallow setting cookies for file://
-  // URLs (the default is to disallow such cookies). This should be called
-  // before the first use of the backing store, otherwise this will have no
-  // effect on the CookieManager, returning false to indicate so.
+  // URLs. If this is not called, the CookieManager follows
+  // CookieManagerParams.allow_file_scheme_cookies. This should be called before
+  // the first use of the backing store, otherwise this will have no effect on
+  // the CookieManager, returning false to indicate so.
   AllowFileSchemeCookies(bool allow) => (bool success);
 
   // Sets content settings for cookies. These are used to determine cookie

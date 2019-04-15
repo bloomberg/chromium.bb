@@ -11,6 +11,3 @@
 # android_webview/tools/cts_config/expected_failure_on_bot.json.
 
 # Tests that fail with NetworkService feature enabled. https://crbug.com/923938
-
-# https://crbug.com/933461
--com.android.cts.webkit.WebViewDeviceSideStartupTest.testCookieManagerBlockingUiThread

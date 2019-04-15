@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/process/process.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
@@ -58,6 +59,9 @@ CookieManager::CookieManager(
         params->matching_scheme_cookies_allowed_schemes);
     cookie_settings_.set_third_party_cookies_allowed_schemes(
         params->third_party_cookies_allowed_schemes);
+    // Don't wait for callback, the work happens synchronously.
+    AllowFileSchemeCookies(params->allow_file_scheme_cookies,
+                           base::DoNothing());
   }
 }
 

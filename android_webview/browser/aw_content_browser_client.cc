@@ -29,7 +29,6 @@
 #include "android_webview/browser/cookie_manager.h"
 #include "android_webview/browser/net/aw_proxy_config_monitor.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
-#include "android_webview/browser/network_service/aw_cookie_manager_wrapper.h"
 #include "android_webview/browser/network_service/aw_proxying_url_loader_factory.h"
 #include "android_webview/browser/network_service/aw_url_loader_throttle.h"
 #include "android_webview/browser/network_service/net_helpers.h"
@@ -215,19 +214,16 @@ void DummyBindPasswordManagerDriver(
     autofill::mojom::PasswordManagerDriverRequest request,
     content::RenderFrameHost* render_frame_host) {}
 
-void PassCookieManagerToCookieManagerWrapper(
+void PassMojoCookieManagerToAwCookieManager(
     const network::mojom::NetworkContextPtr& network_context) {
   // Get the CookieManager from the NetworkContext.
   network::mojom::CookieManagerPtrInfo cookie_manager_info;
   network_context->GetCookieManager(mojo::MakeRequest(&cookie_manager_info));
 
-  // Pass the CookieManagerPtrInfo to AwCookieManagerWrapper, so it can use that
-  // CookieManager to implement its APIs on the correct thread.
-  CookieManager* aw_cookie_manager = CookieManager::GetInstance();
-  aw_cookie_manager->GetCookieStoreTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&CookieManager::SetMojoCookieManager,
-                                base::Unretained(aw_cookie_manager),
-                                std::move(cookie_manager_info)));
+  // Pass the CookieManagerPtrInfo to android_webview::CookieManager, so it can
+  // implement its APIs with this mojo CookieManager.
+  CookieManager::GetInstance()->SetMojoCookieManager(
+      std::move(cookie_manager_info));
 }
 
 }  // anonymous namespace
@@ -331,7 +327,7 @@ network::mojom::NetworkContextPtr AwContentBrowserClient::CreateNetworkContext(
 
   // Pass a CookieManager to the code supporting AwCookieManager.java (i.e., the
   // Cookies APIs).
-  PassCookieManagerToCookieManagerWrapper(network_context);
+  PassMojoCookieManagerToAwCookieManager(network_context);
 
   return network_context;
 }
@@ -357,6 +353,10 @@ AwContentBrowserClient::GetNetworkContextParams() {
   context_params->cookie_path = AwBrowserContext::GetCookieStorePath();
   context_params->restore_old_session_cookies = true;
   context_params->persist_session_cookies = true;
+  context_params->cookie_manager_params =
+      network::mojom::CookieManagerParams::New();
+  context_params->cookie_manager_params->allow_file_scheme_cookies =
+      CookieManager::GetInstance()->AllowFileSchemeCookies();
 
   context_params->initial_ssl_config = network::mojom::SSLConfig::New();
   // Allow SHA-1 to be used for locally-installed trust anchors, as WebView
