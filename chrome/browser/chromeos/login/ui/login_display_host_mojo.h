@@ -50,9 +50,6 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   // signin but whitelist check fails.
   void ShowWhitelistCheckFailedError();
 
-  // Show unrecoverable cryptohome error dialog.
-  void ShowUnrecoverableCrypthomeErrorDialog();
-
   // Displays detailed error screen for error with ID |error_id|.
   void ShowErrorScreen(LoginDisplay::SigninError error_id);
 

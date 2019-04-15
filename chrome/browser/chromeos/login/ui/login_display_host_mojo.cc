@@ -91,12 +91,6 @@ void LoginDisplayHostMojo::ShowWhitelistCheckFailedError() {
   dialog_->Show();
 }
 
-void LoginDisplayHostMojo::ShowUnrecoverableCrypthomeErrorDialog() {
-  DCHECK(GetOobeUI());
-  GetOobeUI()->signin_screen_handler()->ShowUnrecoverableCrypthomeErrorDialog();
-  dialog_->Show();
-}
-
 void LoginDisplayHostMojo::ShowErrorScreen(LoginDisplay::SigninError error_id) {
   DCHECK(GetOobeUI());
   GetOobeUI()->signin_screen_handler()->ShowErrorScreen(error_id);

@@ -35,8 +35,6 @@
 /** @const */ var SCREEN_WRONG_HWID = 'wrong-hwid';
 /** @const */ var SCREEN_DEVICE_DISABLED = 'device-disabled';
 /** @const */ var SCREEN_UPDATE_REQUIRED = 'update-required';
-/** @const */ var SCREEN_UNRECOVERABLE_CRYPTOHOME_ERROR =
-    'unrecoverable-cryptohome-error';
 /** @const */ var SCREEN_ACTIVE_DIRECTORY_PASSWORD_CHANGE =
     'ad-password-change';
 /** @const */ var SCREEN_SYNC_CONSENT = 'sync-consent';

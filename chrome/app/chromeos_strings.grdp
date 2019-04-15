@@ -869,22 +869,6 @@
   <message name="IDS_LOGIN_PASSWORD_CHANGED_TRY_AGAIN" desc="Label for the retry button on the proceed anyway step in the the GAIA password changed flow">
     Try again
   </message>
-  <message name="IDS_LOGIN_UNRECOVERABLE_CRYPTOHOME_ERROR_TITLE" desc="Title for the fatal cryptohome error dialog box">
-    Can't sign in
-  </message>
-  <message name="IDS_LOGIN_UNRECOVERABLE_CRYPTOHOME_ERROR_MESSAGE" desc="Message for the fatal cryptohome error dialog box">
-    We're sorry. We can't access your profile. Files and data stored on this device may have been lost.<ph name="BR">&lt;br&gt;</ph>
-    <ph name="BR">&lt;br&gt;</ph>
-    You'll have to set up your profile again.<ph name="BR">&lt;br&gt;</ph>
-    <ph name="BR">&lt;br&gt;</ph>
-    On the next screen, please send feedback to help us fix the issue.
-  </message>
-  <message name="IDS_LOGIN_UNRECOVERABLE_CRYPTOHOME_ERROR_CONTINUE" desc="Label of the button to continue with re-creating cryptohome for the fatal cryptohome error dialog box">
-    Continue
-  </message>
-  <message name="IDS_LOGIN_UNRECOVERABLE_CRYPTOHOME_ERROR_WAIT_MESSAGE" desc="Message to show when the fatal cryptohome error dialog box is waiting for user profile re-creation to be closed.">
-    Re-creating profile, please wait...
-  </message>
   <message name="IDS_LOGIN_SAML_NOTICE" desc="Text message displayed above SAML portal to early indicate that the user is being redirected to another sign-in provider. This is the version of the string used in the GAIA flow.">
     This sign-in service is hosted by <ph name="SAML_DOMAIN">$1<ex>saml.com</ex></ph>
   </message>

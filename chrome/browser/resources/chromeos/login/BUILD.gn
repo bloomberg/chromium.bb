@@ -49,7 +49,6 @@ js_type_check("closure_compile") {
     ":saml_interstitial",
     ":sync_consent",
     ":throbber_notice",
-    ":unrecoverable_cryptohome_error_card",
     ":update_required_card",
   ]
 }
@@ -334,9 +333,6 @@ js_library("sync_consent") {
 }
 
 js_library("throbber_notice") {
-}
-
-js_library("unrecoverable_cryptohome_error_card") {
 }
 
 js_library("update_required_card") {

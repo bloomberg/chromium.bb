@@ -428,15 +428,6 @@ void SigninScreenHandler::DeclareLocalizedValues(
                IDS_ENTERPRISE_ENROLLMENT_AUTH_FATAL_ERROR);
   builder->Add("insecureURLEnrollmentError",
                IDS_ENTERPRISE_ENROLLMENT_AUTH_INSECURE_URL_ERROR);
-
-  builder->Add("unrecoverableCryptohomeErrorMessageTitle",
-               IDS_LOGIN_UNRECOVERABLE_CRYPTOHOME_ERROR_TITLE);
-  builder->Add("unrecoverableCryptohomeErrorMessage",
-               IDS_LOGIN_UNRECOVERABLE_CRYPTOHOME_ERROR_MESSAGE);
-  builder->Add("unrecoverableCryptohomeErrorContinue",
-               IDS_LOGIN_UNRECOVERABLE_CRYPTOHOME_ERROR_CONTINUE);
-  builder->Add("unrecoverableCryptohomeErrorRecreatingProfile",
-               IDS_LOGIN_UNRECOVERABLE_CRYPTOHOME_ERROR_WAIT_MESSAGE);
 }
 
 void SigninScreenHandler::RegisterMessages() {
@@ -483,8 +474,6 @@ void SigninScreenHandler::RegisterMessages() {
   AddCallback("maxIncorrectPasswordAttempts",
               &SigninScreenHandler::HandleMaxIncorrectPasswordAttempts);
   AddCallback("sendFeedback", &SigninScreenHandler::HandleSendFeedback);
-  AddCallback("sendFeedbackAndResyncUserData",
-              &SigninScreenHandler::HandleSendFeedbackAndResyncUserData);
 }
 
 void SigninScreenHandler::Show(const LoginScreenContext& context,
@@ -978,10 +967,6 @@ void SigninScreenHandler::ShowWhitelistCheckFailedError() {
   gaia_screen_handler_->ShowWhitelistCheckFailedError();
 }
 
-void SigninScreenHandler::ShowUnrecoverableCrypthomeErrorDialog() {
-  CallJS("login.UnrecoverableCryptohomeErrorScreen.show");
-}
-
 void SigninScreenHandler::Observe(int type,
                                   const content::NotificationSource& source,
                                   const content::NotificationDetails& details) {
@@ -1416,21 +1401,6 @@ void SigninScreenHandler::HandleSendFeedback() {
                                     weak_factory_.GetWeakPtr()));
 }
 
-void SigninScreenHandler::HandleSendFeedbackAndResyncUserData() {
-  const std::string description = base::StringPrintf(
-      "Auto generated feedback for http://crbug.com/547857.\n"
-      "(uniquifier:%s)",
-      base::NumberToString(base::Time::Now().ToInternalValue()).c_str());
-
-  login_feedback_ =
-      std::make_unique<LoginFeedback>(Profile::FromWebUI(web_ui()));
-  login_feedback_->Request(
-      description,
-      base::BindOnce(
-          &SigninScreenHandler::OnUnrecoverableCryptohomeFeedbackFinished,
-          weak_factory_.GetWeakPtr()));
-}
-
 bool SigninScreenHandler::AllWhitelistedUsersPresent() {
   CrosSettings* cros_settings = CrosSettings::Get();
   bool allow_new_user = false;
@@ -1491,15 +1461,6 @@ void SigninScreenHandler::OnCapsLockChanged(bool enabled) {
 }
 
 void SigninScreenHandler::OnFeedbackFinished() {
-  login_feedback_.reset();
-}
-
-void SigninScreenHandler::OnUnrecoverableCryptohomeFeedbackFinished() {
-  CallJS("login.UnrecoverableCryptohomeErrorScreen.resumeAfterFeedbackUI");
-
-  // Recreate user's cryptohome after the feedback is attempted.
-  HandleResyncUserData();
-
   login_feedback_.reset();
 }
 

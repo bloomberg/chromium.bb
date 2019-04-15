@@ -1068,21 +1068,6 @@ void ExistingUserController::OnPasswordChangeDetected() {
   if (auth_status_consumer_)
     auth_status_consumer_->OnPasswordChangeDetected();
 
-  // If the password change happens after an online auth, do a TokenHandle check
-  // to find out whether the user password is really changed or not.
-  // TODO(xiyuan): Remove channel restriction. See http://crbug.com/585530
-  if (chrome::GetChannel() <= version_info::Channel::DEV &&
-      auth_mode() == LoginPerformer::AUTH_MODE_EXTENSION) {
-    token_handle_util_.reset(new TokenHandleUtil);
-    if (token_handle_util_->HasToken(last_login_attempt_account_id_)) {
-      token_handle_util_->CheckToken(
-          last_login_attempt_account_id_,
-          base::Bind(&ExistingUserController::OnTokenHandleChecked,
-                     weak_factory_.GetWeakPtr()));
-      return;
-    }
-  }
-
   ShowPasswordChangedDialog();
 }
 
@@ -1818,24 +1803,6 @@ void ExistingUserController::OnOAuth2TokensFetched(
   }
   UserSessionManager::GetInstance()->OnOAuth2TokensFetched(user_context);
   PerformLogin(user_context, LoginPerformer::AUTH_MODE_EXTENSION);
-}
-
-void ExistingUserController::OnTokenHandleChecked(
-    const AccountId&,
-    TokenHandleUtil::TokenHandleStatus token_handle_status) {
-  // If TokenHandle is invalid or unknown, continue with regular password
-  // changed flow.
-  if (token_handle_status != TokenHandleUtil::VALID) {
-    VLOG(1) << "Checked TokenHandle status=" << token_handle_status;
-    ShowPasswordChangedDialog();
-    return;
-  }
-
-  // Otherwise, show the unrecoverable cryptohome error UI and ask user's
-  // permission to collect a feedback.
-  RecordPasswordChangeFlow(LOGIN_PASSWORD_CHANGE_FLOW_CRYPTOHOME_FAILURE);
-  VLOG(1) << "Show unrecoverable cryptohome error dialog.";
-  GetLoginDisplay()->ShowUnrecoverableCrypthomeErrorDialog();
 }
 
 void ExistingUserController::ClearRecordedNames() {
