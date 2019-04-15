@@ -12,7 +12,6 @@
 #include "fuchsia/engine/common.h"
 #include "fuchsia/engine/test/web_engine_browser_test.h"
 #include "fuchsia/engine/web_engine_main_delegate.h"
-#include "fuchsia/fidl/chromium/web/cpp/fidl.h"
 #include "ui/ozone/public/ozone_switches.h"
 
 namespace {
@@ -50,8 +49,6 @@ class WebEngineTestLauncherDelegate : public content::TestLauncherDelegate {
   }
 
  private:
-  chromium::web::ContextPtr context_;
-
   DISALLOW_COPY_AND_ASSIGN(WebEngineTestLauncherDelegate);
 };
 

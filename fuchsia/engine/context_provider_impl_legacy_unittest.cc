@@ -4,7 +4,6 @@
 
 #include "fuchsia/engine/context_provider_impl.h"
 
-#include <fuchsia/web/cpp/fidl.h>
 #include <lib/fdio/directory.h>
 #include <lib/fidl/cpp/binding.h>
 #include <zircon/processargs.h>
@@ -35,6 +34,7 @@
 #include "fuchsia/engine/common.h"
 #include "fuchsia/engine/fake_context.h"
 #include "fuchsia/engine/legacy_context_provider_bridge.h"
+#include "fuchsia/fidl/chromium/web/cpp/fidl_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 
@@ -44,52 +44,6 @@ constexpr char kTestDataFileIn[] = "DataFileIn";
 constexpr char kTestDataFileOut[] = "DataFileOut";
 constexpr char kUrl[] = "chrome://:emorhc";
 constexpr char kTitle[] = "Palindrome";
-
-MULTIPROCESS_TEST_MAIN(SpawnContextServer) {
-  base::MessageLoopForIO message_loop;
-
-  base::FilePath data_dir;
-  CHECK(base::PathService::Get(base::DIR_APP_DATA, &data_dir));
-  if (!data_dir.empty()) {
-    if (base::PathExists(data_dir.AppendASCII(kTestDataFileIn))) {
-      auto out_file = data_dir.AppendASCII(kTestDataFileOut);
-      EXPECT_EQ(base::WriteFile(out_file, nullptr, 0), 0);
-    }
-  }
-
-  fidl::InterfaceRequest<fuchsia::web::Context> fuchsia_context(
-      zx::channel(zx_take_startup_handle(kContextRequestHandleId)));
-  CHECK(fuchsia_context);
-
-  FakeContext context;
-  fidl::Binding<fuchsia::web::Context> context_binding(
-      &context, std::move(fuchsia_context));
-
-  // When a Frame's NavigationEventListener is bound, immediately broadcast a
-  // navigation event to its listeners.
-  context.set_on_create_frame_callback(
-      base::BindRepeating([](FakeFrame* frame) {
-        frame->set_on_set_listener_callback(base::BindOnce(
-            [](FakeFrame* frame) {
-              fuchsia::web::NavigationState state;
-              state.set_url(kUrl);
-              state.set_title(kTitle);
-              frame->listener()->OnNavigationStateChanged(std::move(state),
-                                                          []() {});
-            },
-            frame));
-      }));
-
-  // Quit the process when the context is destroyed.
-  base::RunLoop run_loop;
-  context_binding.set_error_handler([&run_loop](zx_status_t status) {
-    EXPECT_EQ(status, ZX_ERR_PEER_CLOSED);
-    run_loop.Quit();
-  });
-  run_loop.Run();
-
-  return 0;
-}
 
 base::Process LaunchFakeContextProcess(const base::CommandLine& command_line,
                                        const base::LaunchOptions& options) {
@@ -101,16 +55,23 @@ base::Process LaunchFakeContextProcess(const base::CommandLine& command_line,
 
 }  // namespace
 
-class ContextProviderImplTest : public base::MultiProcessTest {
+class ContextProviderImplLegacyTest : public base::MultiProcessTest {
  public:
-  ContextProviderImplTest()
-      : provider_(std::make_unique<ContextProviderImpl>()) {
-    provider_->SetLaunchCallbackForTest(
+  ContextProviderImplLegacyTest()
+      : context_provider_(std::make_unique<ContextProviderImpl>()) {
+    fuchsia::web::ContextProviderPtr fuchsia_context_provider;
+    legacy_binding_ =
+        std::make_unique<fidl::Binding<fuchsia::web::ContextProvider>>(
+            context_provider_.get(), fuchsia_context_provider.NewRequest());
+    provider_ = std::make_unique<LegacyContextProviderBridge>(
+        std::move(fuchsia_context_provider));
+
+    context_provider_->SetLaunchCallbackForTest(
         base::BindRepeating(&LaunchFakeContextProcess));
     bindings_.AddBinding(provider_.get(), provider_ptr_.NewRequest());
   }
 
-  ~ContextProviderImplTest() override {
+  ~ContextProviderImplLegacyTest() override {
     provider_ptr_.Unbind();
     base::RunLoop().RunUntilIdle();
   }
@@ -118,8 +79,8 @@ class ContextProviderImplTest : public base::MultiProcessTest {
   // Check if a Context is responsive by creating a Frame from it and then
   // listening for an event.
   void CheckContextResponsive(
-      fidl::InterfacePtr<fuchsia::web::Context>* context) {
-    // Call a Context method and wait for it to invoke a listener call.
+      fidl::InterfacePtr<chromium::web::Context>* context) {
+    // Call a Context method and wait for it to invoke an observer call.
     base::RunLoop run_loop;
     context->set_error_handler([&run_loop](zx_status_t status) {
       ZX_LOG(ERROR, status) << " Context lost.";
@@ -127,7 +88,7 @@ class ContextProviderImplTest : public base::MultiProcessTest {
       run_loop.Quit();
     });
 
-    fuchsia::web::FramePtr frame_ptr;
+    chromium::web::FramePtr frame_ptr;
     frame_ptr.set_error_handler([&run_loop](zx_status_t status) {
       ZX_LOG(ERROR, status) << " Frame lost.";
       ADD_FAILURE();
@@ -136,40 +97,38 @@ class ContextProviderImplTest : public base::MultiProcessTest {
     (*context)->CreateFrame(frame_ptr.NewRequest());
 
     // Create a Frame and expect to see a navigation event.
-    CapturingNavigationStateObserver change_listener(run_loop.QuitClosure());
-    fidl::Binding<fuchsia::web::NavigationEventListener>
-        change_listener_binding(&change_listener);
-    frame_ptr->SetNavigationEventListener(change_listener_binding.NewBinding());
+    CapturingNavigationEventObserver change_observer(run_loop.QuitClosure());
+    fidl::Binding<chromium::web::NavigationEventObserver>
+        change_observer_binding(&change_observer);
+    frame_ptr->SetNavigationEventObserver(change_observer_binding.NewBinding());
     run_loop.Run();
 
-    ASSERT_TRUE(change_listener.captured_state()->has_url());
-    EXPECT_EQ(change_listener.captured_state()->url(), kUrl);
-    ASSERT_TRUE(change_listener.captured_state()->has_title());
-    EXPECT_EQ(change_listener.captured_state()->title(), kTitle);
+    EXPECT_EQ(change_observer.captured_event().url, kUrl);
+    EXPECT_EQ(change_observer.captured_event().title, kTitle);
   }
 
-  fuchsia::web::CreateContextParams BuildCreateContextParams() {
+  chromium::web::CreateContextParams BuildCreateContextParams() {
     fidl::InterfaceHandle<fuchsia::io::Directory> directory;
     zx_status_t result =
         fdio_service_connect(base::fuchsia::kServiceDirectoryPath,
                              directory.NewRequest().TakeChannel().release());
     ZX_CHECK(result == ZX_OK, result) << "Failed to open /svc";
 
-    fuchsia::web::CreateContextParams output;
+    chromium::web::CreateContextParams output;
     output.set_service_directory(std::move(directory));
     return output;
   }
 
   // Checks that the Context channel was dropped.
   void CheckContextUnresponsive(
-      fidl::InterfacePtr<fuchsia::web::Context>* context) {
+      fidl::InterfacePtr<chromium::web::Context>* context) {
     base::RunLoop run_loop;
     context->set_error_handler([&run_loop](zx_status_t status) {
       EXPECT_EQ(status, ZX_ERR_PEER_CLOSED);
       run_loop.Quit();
     });
 
-    fuchsia::web::FramePtr frame;
+    chromium::web::FramePtr frame;
     (*context)->CreateFrame(frame.NewRequest());
 
     // The error handler should be called here.
@@ -178,54 +137,57 @@ class ContextProviderImplTest : public base::MultiProcessTest {
 
  protected:
   base::MessageLoopForIO message_loop_;
-  std::unique_ptr<ContextProviderImpl> provider_;
-  fuchsia::web::ContextProviderPtr provider_ptr_;
-  fidl::BindingSet<fuchsia::web::ContextProvider> bindings_;
+  std::unique_ptr<LegacyContextProviderBridge> provider_;
+  std::unique_ptr<fidl::Binding<fuchsia::web::ContextProvider>> legacy_binding_;
+  chromium::web::ContextProviderPtr provider_ptr_;
+  fidl::BindingSet<chromium::web::ContextProvider> bindings_;
 
  private:
-  struct CapturingNavigationStateObserver
-      : public fuchsia::web::NavigationEventListener {
+  struct CapturingNavigationEventObserver
+      : public chromium::web::NavigationEventObserver {
    public:
-    explicit CapturingNavigationStateObserver(base::OnceClosure on_change_cb)
+    explicit CapturingNavigationEventObserver(base::OnceClosure on_change_cb)
         : on_change_cb_(std::move(on_change_cb)) {}
-    ~CapturingNavigationStateObserver() override = default;
+    ~CapturingNavigationEventObserver() override = default;
 
     void OnNavigationStateChanged(
-        fuchsia::web::NavigationState change,
+        chromium::web::NavigationEvent change,
         OnNavigationStateChangedCallback callback) override {
-      captured_state_ = std::move(change);
+      captured_event_ = std::move(change);
       std::move(on_change_cb_).Run();
     }
 
-    fuchsia::web::NavigationState* captured_state() { return &captured_state_; }
+    chromium::web::NavigationEvent captured_event() { return captured_event_; }
 
    private:
     base::OnceClosure on_change_cb_;
-    fuchsia::web::NavigationState captured_state_;
+    chromium::web::NavigationEvent captured_event_;
   };
 
-  DISALLOW_COPY_AND_ASSIGN(ContextProviderImplTest);
+  std::unique_ptr<ContextProviderImpl> context_provider_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContextProviderImplLegacyTest);
 };
 
-TEST_F(ContextProviderImplTest, LaunchContext) {
+TEST_F(ContextProviderImplLegacyTest, LaunchContext) {
   // Connect to a new context process.
-  fidl::InterfacePtr<fuchsia::web::Context> context;
-  fuchsia::web::CreateContextParams create_params = BuildCreateContextParams();
+  fidl::InterfacePtr<chromium::web::Context> context;
+  chromium::web::CreateContextParams create_params = BuildCreateContextParams();
   provider_ptr_->Create(std::move(create_params), context.NewRequest());
   CheckContextResponsive(&context);
 }
 
-TEST_F(ContextProviderImplTest, MultipleConcurrentClients) {
+TEST_F(ContextProviderImplLegacyTest, MultipleConcurrentClients) {
   // Bind a Provider connection, and create a Context from it.
-  fuchsia::web::ContextProviderPtr provider_1_ptr;
+  chromium::web::ContextProviderPtr provider_1_ptr;
   bindings_.AddBinding(provider_.get(), provider_1_ptr.NewRequest());
-  fuchsia::web::ContextPtr context_1;
+  chromium::web::ContextPtr context_1;
   provider_1_ptr->Create(BuildCreateContextParams(), context_1.NewRequest());
 
   // Do the same on another Provider connection.
-  fuchsia::web::ContextProviderPtr provider_2_ptr;
+  chromium::web::ContextProviderPtr provider_2_ptr;
   bindings_.AddBinding(provider_.get(), provider_2_ptr.NewRequest());
-  fuchsia::web::ContextPtr context_2;
+  chromium::web::ContextPtr context_2;
   provider_2_ptr->Create(BuildCreateContextParams(), context_2.NewRequest());
 
   CheckContextResponsive(&context_1);
@@ -233,17 +195,17 @@ TEST_F(ContextProviderImplTest, MultipleConcurrentClients) {
 
   // Ensure that the initial ContextProvider connection is still usable, by
   // creating and verifying another Context from it.
-  fuchsia::web::ContextPtr context_3;
+  chromium::web::ContextPtr context_3;
   provider_2_ptr->Create(BuildCreateContextParams(), context_3.NewRequest());
   CheckContextResponsive(&context_3);
 }
 
-TEST_F(ContextProviderImplTest, WithProfileDir) {
+TEST_F(ContextProviderImplLegacyTest, WithProfileDir) {
   base::ScopedTempDir profile_temp_dir;
 
   // Connect to a new context process.
-  fidl::InterfacePtr<fuchsia::web::Context> context;
-  fuchsia::web::CreateContextParams create_params = BuildCreateContextParams();
+  fidl::InterfacePtr<chromium::web::Context> context;
+  chromium::web::CreateContextParams create_params = BuildCreateContextParams();
 
   // Setup data dir.
   EXPECT_TRUE(profile_temp_dir.CreateUniqueTempDir());
@@ -265,12 +227,12 @@ TEST_F(ContextProviderImplTest, WithProfileDir) {
       profile_temp_dir.GetPath().AppendASCII(kTestDataFileOut)));
 }
 
-TEST_F(ContextProviderImplTest, FailsDataDirectoryIsFile) {
+TEST_F(ContextProviderImplLegacyTest, FailsDataDirectoryIsFile) {
   base::FilePath temp_file_path;
 
   // Connect to a new context process.
-  fidl::InterfacePtr<fuchsia::web::Context> context;
-  fuchsia::web::CreateContextParams create_params = BuildCreateContextParams();
+  fidl::InterfacePtr<chromium::web::Context> context;
+  chromium::web::CreateContextParams create_params = BuildCreateContextParams();
 
   // Pass in a handle to a file instead of a directory.
   CHECK(base::CreateTemporaryFile(&temp_file_path));
@@ -291,7 +253,7 @@ static bool WaitUntilJobIsEmpty(zx::unowned_job job, zx::duration timeout) {
 }
 
 // Regression test for https://crbug.com/927403 (Job leak per-Context).
-TEST_F(ContextProviderImplTest, CleansUpContextJobs) {
+TEST_F(ContextProviderImplLegacyTest, CleansUpContextJobs) {
   // Replace the default job with one that is guaranteed to be empty.
   zx::job job;
   ASSERT_EQ(base::GetDefaultJob()->duplicate(ZX_RIGHT_SAME_RIGHTS, &job),
@@ -299,14 +261,14 @@ TEST_F(ContextProviderImplTest, CleansUpContextJobs) {
   base::ScopedDefaultJobForTest empty_default_job(std::move(job));
 
   // Bind to the ContextProvider.
-  fuchsia::web::ContextProviderPtr provider;
+  chromium::web::ContextProviderPtr provider;
   bindings_.AddBinding(provider_.get(), provider.NewRequest());
 
   // Verify that our current default job is still empty.
   ASSERT_TRUE(WaitUntilJobIsEmpty(base::GetDefaultJob(), zx::duration()));
 
   // Create a Context and verify that it is functional.
-  fuchsia::web::ContextPtr context;
+  chromium::web::ContextPtr context;
   provider->Create(BuildCreateContextParams(), context.NewRequest());
   CheckContextResponsive(&context);
 

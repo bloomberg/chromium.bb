@@ -7,7 +7,7 @@
 #include "fuchsia/base/fit_adapter.h"
 #include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/base/result_receiver.h"
-#include "fuchsia/base/test_navigation_observer.h"
+#include "fuchsia/base/test_navigation_listener.h"
 #include "fuchsia/engine/test/web_engine_browser_test.h"
 #include "fuchsia/fidl/chromium/web/cpp/fidl.h"
 #include "fuchsia/runners/cast/fake_queryable_data.h"
@@ -28,12 +28,12 @@ class QueryableDataBindingsTest : public cr_fuchsia::WebEngineBrowserTest {
   void SetUpOnMainThread() override {
     cr_fuchsia::WebEngineBrowserTest::SetUpOnMainThread();
     base::ScopedAllowBlockingForTesting allow_blocking;
-    frame_ = WebEngineBrowserTest::CreateFrame(&navigation_observer_);
+    frame_ = WebEngineBrowserTest::CreateLegacyFrame(&navigation_listener_);
 
     ASSERT_TRUE(embedded_test_server()->Start());
     test_url_ = embedded_test_server()->GetURL("/query_platform_value.html");
 
-    navigation_observer_.SetBeforeAckHook(base::BindRepeating(
+    navigation_listener_.SetBeforeAckHook(base::BindRepeating(
         &QueryableDataBindingsTest::OnBeforeAckHook, base::Unretained(this)));
 
     connector_.Register(
@@ -56,7 +56,7 @@ class QueryableDataBindingsTest : public cr_fuchsia::WebEngineBrowserTest {
         chromium::web::ExecuteMode::IMMEDIATE_ONCE,
         [](bool success) { ASSERT_TRUE(success); });
 
-    navigation_observer_.RunUntilNavigationEquals(test_url_, unique_title);
+    navigation_listener_.RunUntilNavigationEquals(test_url_, unique_title);
   }
 
   // Communicates with the page to read an entry from its QueryableData store.
@@ -97,10 +97,10 @@ class QueryableDataBindingsTest : public cr_fuchsia::WebEngineBrowserTest {
 
  protected:
   void OnBeforeAckHook(
-      const chromium::web::NavigationEvent& change,
-      chromium::web::NavigationEventObserver::OnNavigationStateChangedCallback
+      const fuchsia::web::NavigationState& change,
+      fuchsia::web::NavigationEventListener::OnNavigationStateChangedCallback
           callback) {
-    if (!change.url.is_null())
+    if (change.has_url())
       connector_.NotifyPageLoad(frame_.get());
 
     callback();
@@ -111,7 +111,7 @@ class QueryableDataBindingsTest : public cr_fuchsia::WebEngineBrowserTest {
   GURL test_url_;
   NamedMessagePortConnector connector_;
   FakeQueryableData queryable_data_service_;
-  cr_fuchsia::TestNavigationObserver navigation_observer_;
+  cr_fuchsia::TestNavigationListener navigation_listener_;
   fidl::Binding<chromium::cast::QueryableData> queryable_data_service_binding_;
   base::OnceClosure on_query_port_received_cb_;
   base::OnceClosure on_navigate_cb_;
@@ -139,7 +139,7 @@ IN_PROC_BROWSER_TEST_F(QueryableDataBindingsTest, VariousTypes) {
   frame_->GetNavigationController(controller.NewRequest());
   frame_->SetJavaScriptLogLevel(chromium::web::LogLevel::INFO);
   controller->LoadUrl(test_url_.spec(), chromium::web::LoadUrlParams());
-  navigation_observer_.RunUntilNavigationEquals(test_url_, {});
+  navigation_listener_.RunUntilNavigationEquals(test_url_, {});
 
   EXPECT_EQ(CallQueryPlatformValue("string"), "\"foo\"");
   EXPECT_EQ(CallQueryPlatformValue("number"), "123");
@@ -157,7 +157,7 @@ IN_PROC_BROWSER_TEST_F(QueryableDataBindingsTest, NoValues) {
   frame_->GetNavigationController(controller.NewRequest());
   frame_->SetJavaScriptLogLevel(chromium::web::LogLevel::INFO);
   controller->LoadUrl(test_url_.spec(), chromium::web::LoadUrlParams());
-  navigation_observer_.RunUntilNavigationEquals(test_url_, {});
+  navigation_listener_.RunUntilNavigationEquals(test_url_, {});
 
   EXPECT_EQ(CallQueryPlatformValue("string"), "null");
 }
@@ -176,7 +176,7 @@ IN_PROC_BROWSER_TEST_F(QueryableDataBindingsTest, AtPageRuntime) {
   frame_->GetNavigationController(controller.NewRequest());
   frame_->SetJavaScriptLogLevel(chromium::web::LogLevel::INFO);
   controller->LoadUrl(test_url_.spec(), chromium::web::LoadUrlParams());
-  navigation_observer_.RunUntilNavigationEquals(test_url_, {});
+  navigation_listener_.RunUntilNavigationEquals(test_url_, {});
 
   SynchronizeWithPage();
 
@@ -213,7 +213,7 @@ IN_PROC_BROWSER_TEST_F(QueryableDataBindingsTest, AtPageLoad) {
   frame_->GetNavigationController(controller.NewRequest());
   frame_->SetJavaScriptLogLevel(chromium::web::LogLevel::INFO);
   controller->LoadUrl(test_url_.spec(), chromium::web::LoadUrlParams());
-  navigation_observer_.RunUntilNavigationEquals(test_url_, {});
+  navigation_listener_.RunUntilNavigationEquals(test_url_, {});
 
   SynchronizeWithPage();
 

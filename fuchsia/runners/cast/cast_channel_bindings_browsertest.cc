@@ -15,6 +15,7 @@
 #include "fuchsia/base/fit_adapter.h"
 #include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/base/result_receiver.h"
+#include "fuchsia/base/test_navigation_listener.h"
 #include "fuchsia/engine/test/web_engine_browser_test.h"
 #include "fuchsia/runners/cast/cast_channel_bindings.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,7 +28,6 @@ namespace {
 using NavigationDetails = chromium::web::NavigationEvent;
 
 class CastChannelBindingsTest : public cr_fuchsia::WebEngineBrowserTest,
-                                public chromium::web::NavigationEventObserver,
                                 public chromium::cast::CastChannel {
  public:
   CastChannelBindingsTest()
@@ -35,6 +35,8 @@ class CastChannelBindingsTest : public cr_fuchsia::WebEngineBrowserTest,
         run_timeout_(TestTimeouts::action_timeout(),
                      base::MakeExpectedNotRunClosure(FROM_HERE)) {
     set_test_server_root(base::FilePath("fuchsia/runners/cast/testdata"));
+    navigation_listener_.SetBeforeAckHook(base::BindRepeating(
+        &CastChannelBindingsTest::OnBeforeAckHook, base::Unretained(this)));
   }
 
   ~CastChannelBindingsTest() override = default;
@@ -43,13 +45,14 @@ class CastChannelBindingsTest : public cr_fuchsia::WebEngineBrowserTest,
   void SetUpOnMainThread() override {
     cr_fuchsia::WebEngineBrowserTest::SetUpOnMainThread();
     base::ScopedAllowBlockingForTesting allow_blocking;
-    frame_ = WebEngineBrowserTest::CreateFrame(this);
+    frame_ = WebEngineBrowserTest::CreateLegacyFrame(&navigation_listener_);
     connector_ = std::make_unique<NamedMessagePortConnector>();
   }
 
-  void OnNavigationStateChanged(
-      chromium::web::NavigationEvent change,
-      OnNavigationStateChangedCallback callback) override {
+  void OnBeforeAckHook(
+      const fuchsia::web::NavigationState& change,
+      fuchsia::web::NavigationEventListener::OnNavigationStateChangedCallback
+          callback) {
     connector_->NotifyPageLoad(frame_.get());
     if (navigate_run_loop_)
       navigate_run_loop_->Quit();
@@ -113,6 +116,7 @@ class CastChannelBindingsTest : public cr_fuchsia::WebEngineBrowserTest,
   chromium::web::FramePtr frame_;
   std::unique_ptr<NamedMessagePortConnector> connector_;
   fidl::Binding<chromium::cast::CastChannel> receiver_binding_;
+  cr_fuchsia::TestNavigationListener navigation_listener_;
 
   // The connected Cast Channel.
   chromium::web::MessagePortPtr connected_channel_;

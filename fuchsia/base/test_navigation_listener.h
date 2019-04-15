@@ -2,28 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FUCHSIA_BASE_TEST_NAVIGATION_OBSERVER_H_
-#define FUCHSIA_BASE_TEST_NAVIGATION_OBSERVER_H_
+#ifndef FUCHSIA_BASE_TEST_NAVIGATION_LISTENER_H_
+#define FUCHSIA_BASE_TEST_NAVIGATION_LISTENER_H_
 
+#include <fuchsia/web/cpp/fidl.h>
 #include <string>
 
 #include "base/callback.h"
 #include "base/optional.h"
-#include "fuchsia/fidl/chromium/web/cpp/fidl.h"
 #include "url/gurl.h"
 
 namespace cr_fuchsia {
 
 // Observes navigation events and enables test code to block until a desired
 // navigational state is observed.
-class TestNavigationObserver : public chromium::web::NavigationEventObserver {
+class TestNavigationListener : public fuchsia::web::NavigationEventListener {
  public:
   using BeforeAckCallback =
-      base::RepeatingCallback<void(const chromium::web::NavigationEvent& change,
+      base::RepeatingCallback<void(const fuchsia::web::NavigationState& change,
                                    OnNavigationStateChangedCallback)>;
 
-  TestNavigationObserver();
-  ~TestNavigationObserver() override;
+  TestNavigationListener();
+  ~TestNavigationListener() final;
 
   // Spins a RunLoop until the page navigates to |expected_url| and the page's
   // title is |expected_title| (if set).
@@ -37,10 +37,10 @@ class TestNavigationObserver : public chromium::web::NavigationEventObserver {
   void SetBeforeAckHook(BeforeAckCallback before_ack);
 
  private:
-  // chromium::web::NavigationEventObserver implementation.
+  // fuchsia::web::NavigationEventListener implementation.
   void OnNavigationStateChanged(
-      chromium::web::NavigationEvent change,
-      OnNavigationStateChangedCallback callback) override;
+      fuchsia::web::NavigationState change,
+      OnNavigationStateChangedCallback callback) final;
 
   GURL current_url_;
   std::string current_title_;
@@ -51,9 +51,9 @@ class TestNavigationObserver : public chromium::web::NavigationEventObserver {
   // expectations set by WaitForNavigation.
   bool IsFulfilled();
 
-  DISALLOW_COPY_AND_ASSIGN(TestNavigationObserver);
+  DISALLOW_COPY_AND_ASSIGN(TestNavigationListener);
 };
 
 }  // namespace cr_fuchsia
 
-#endif  // FUCHSIA_BASE_TEST_NAVIGATION_OBSERVER_H_
+#endif  // FUCHSIA_BASE_TEST_NAVIGATION_LISTENER_H_

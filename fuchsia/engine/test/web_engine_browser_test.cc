@@ -10,7 +10,7 @@
 #include "fuchsia/engine/browser/web_engine_browser_context.h"
 #include "fuchsia/engine/browser/web_engine_browser_main_parts.h"
 #include "fuchsia/engine/browser/web_engine_content_browser_client.h"
-#include "fuchsia/engine/legacy_context_bridge.h"
+#include "fuchsia/engine/legacy_frame_bridge.h"
 #include "fuchsia/engine/web_engine_main_delegate.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 
@@ -25,12 +25,9 @@ WebEngineBrowserTest::WebEngineBrowserTest() = default;
 WebEngineBrowserTest::~WebEngineBrowserTest() = default;
 
 void WebEngineBrowserTest::PreRunTestOnMainThread() {
-  fuchsia::web::ContextPtr fuchsia_context;
-  zx_status_t result = fuchsia_context.Bind(zx::channel(g_context_channel));
+  zx_status_t result = context_.Bind(zx::channel(g_context_channel));
   ZX_DCHECK(result == ZX_OK, result) << "Context::Bind";
   g_context_channel = ZX_HANDLE_INVALID;
-
-  new LegacyContextBridge(context_.NewRequest(), std::move(fuchsia_context));
 
   net::test_server::RegisterDefaultHandlers(embedded_test_server());
   if (!test_server_root_.empty()) {
@@ -44,25 +41,31 @@ void WebEngineBrowserTest::PostRunTestOnMainThread() {
 }
 
 void WebEngineBrowserTest::TearDownOnMainThread() {
-  navigation_observer_bindings_.CloseAll();
+  navigation_listener_bindings_.CloseAll();
 }
 
-chromium::web::FramePtr WebEngineBrowserTest::CreateFrame(
-    chromium::web::NavigationEventObserver* observer) {
-  chromium::web::FramePtr frame;
+fuchsia::web::FramePtr WebEngineBrowserTest::CreateFrame(
+    fuchsia::web::NavigationEventListener* listener) {
+  fuchsia::web::FramePtr frame;
   context_->CreateFrame(frame.NewRequest());
 
-  if (observer) {
-    fidl::InterfaceRequest<chromium::web::NavigationEventObserver>
-        observer_request;
-    frame->SetNavigationEventObserver(
-        navigation_observer_bindings_.AddBinding(observer));
+  if (listener) {
+    frame->SetNavigationEventListener(
+        navigation_listener_bindings_.AddBinding(listener));
   }
 
   // Pump the messages so that the caller can use the Frame instance
   // immediately after this function returns.
   base::RunLoop().RunUntilIdle();
 
+  return frame;
+}
+
+chromium::web::FramePtr WebEngineBrowserTest::CreateLegacyFrame(
+    fuchsia::web::NavigationEventListener* listener) {
+  fuchsia::web::FramePtr fuchsia_frame = CreateFrame(listener);
+  chromium::web::FramePtr frame;
+  new LegacyFrameBridge(frame.NewRequest(), std::move(fuchsia_frame));
   return frame;
 }
 
