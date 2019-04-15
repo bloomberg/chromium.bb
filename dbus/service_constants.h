@@ -33,6 +33,7 @@
 #include "vm_cicerone/dbus-constants.h"
 #include "vm_concierge/dbus-constants.h"
 #include "vm_plugin_dispatcher/dbus-constants.h"
+#include "wilco_dtc_supportd/dbus-constants.h"
 
 namespace dbus {
 const char kDBusInterface[] = "org.freedesktop.DBus";
