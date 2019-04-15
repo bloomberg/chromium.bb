@@ -3849,6 +3849,9 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
 // bubble is shown instead of silent update.
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
                        NoSilentOverwriteOnPSLMatch) {
+  // The test matches the behavior of the new password form manager.
+  base::test::ScopedFeatureList scoped_feature_list;
+  SetNewParsingForSaving(&scoped_feature_list, true);
   // Store a password at origin A.
   const GURL url_A = embedded_test_server()->GetURL("abc.foo.com", "/");
   scoped_refptr<password_manager::TestPasswordStore> password_store =
