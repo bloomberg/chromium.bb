@@ -1771,28 +1771,41 @@ bool LayoutObject::MapToVisualRectInAncestorSpaceInternalFastPath(
     LayoutRect& rect,
     VisualRectFlags visual_rect_flags,
     bool& intersects) const {
-  if (!(visual_rect_flags & kUseGeometryMapper) ||
-      !FirstFragment().HasLocalBorderBoxProperties() || !ancestor ||
-      !ancestor->FirstFragment().HasLocalBorderBoxProperties()) {
-    intersects = true;
+  intersects = true;
+  if (!(visual_rect_flags & kUseGeometryMapper) || !ancestor ||
+      !ancestor->FirstFragment().HasLocalBorderBoxProperties())
     return false;
-  }
 
-  if (ancestor == this) {
-    intersects = true;
+  if (ancestor == this)
     return true;
+
+  const auto* property_container = this;
+  AncestorSkipInfo skip_info(ancestor);
+  while (!property_container->FirstFragment().HasLocalBorderBoxProperties()) {
+    property_container = property_container->Container(&skip_info);
+    if (!property_container || skip_info.AncestorSkipped())
+      return false;
   }
 
+  // This works because it's not possible to have any intervening clips,
+  // effects, transforms between |this| and |property_container|, and therefore
+  // FirstFragment().PaintOffset() is relative to the transform space defined by
+  // FirstFragment().LocalBorderBoxProperties() (if this == property_container)
+  // or property_container->FirstFragment().ContentsProperties().
   rect.MoveBy(FirstFragment().PaintOffset());
-  FloatClipRect clip_rect((FloatRect(rect)));
-  intersects = GeometryMapper::LocalToAncestorVisualRect(
-      FirstFragment().LocalBorderBoxProperties(),
-      ancestor->FirstFragment().ContentsProperties(), clip_rect,
-      kIgnorePlatformOverlayScrollbarSize,
-      (visual_rect_flags & kEdgeInclusive) ? kInclusiveIntersect
-                                           : kNonInclusiveIntersect);
-
-  rect = LayoutRect(clip_rect.Rect());
+  if (property_container != ancestor) {
+    FloatClipRect clip_rect((FloatRect(rect)));
+    const auto& local_state =
+        property_container == this
+            ? FirstFragment().LocalBorderBoxProperties()
+            : property_container->FirstFragment().ContentsProperties();
+    intersects = GeometryMapper::LocalToAncestorVisualRect(
+        local_state, ancestor->FirstFragment().ContentsProperties(), clip_rect,
+        kIgnorePlatformOverlayScrollbarSize,
+        (visual_rect_flags & kEdgeInclusive) ? kInclusiveIntersect
+                                             : kNonInclusiveIntersect);
+    rect = LayoutRect(clip_rect.Rect());
+  }
   rect.MoveBy(-ancestor->FirstFragment().PaintOffset());
 
   return true;
