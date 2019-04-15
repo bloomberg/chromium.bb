@@ -152,17 +152,17 @@ class Tab : public View {
 
   TabbedPane* tabbed_pane() { return tabbed_pane_; }
 
-  // Called whenever |tab_state_| changes.
+  // Called whenever |state_| changes.
   virtual void OnStateChanged();
 
  private:
-  enum TabState {
-    TAB_INACTIVE,
-    TAB_ACTIVE,
-    TAB_HOVERED,
+  enum class State {
+    kInactive,
+    kActive,
+    kHovered,
   };
 
-  void SetState(TabState tab_state);
+  void SetState(State state);
 
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
@@ -170,7 +170,7 @@ class Tab : public View {
   TabbedPane* tabbed_pane_;
   Label* title_;
   gfx::Size preferred_title_size_;
-  TabState tab_state_;
+  State state_;
   // The content view associated with this tab.
   View* contents_;
 
