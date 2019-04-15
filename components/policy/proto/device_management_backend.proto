@@ -163,6 +163,23 @@ message DeviceRegisterRequest {
 
   // Previous DMToken that should be reused for re-registration.
   optional string reregistration_dm_token = 13;
+
+  // MAC address for onboard network (ethernet) interface.
+  // The format is twelve (12) hexadecimal digits without any delimiter
+  // (uppercase letters).
+  // This field might be set only if register type == DEVICE.
+  optional string ethernet_mac_address = 14;
+
+  // Built-in MAC address for the docking station that the device can be
+  // connected to.
+  // The format is twelve (12) hexadecimal digits without any delimiter
+  // (uppercase letters).
+  // This field might be set only if register type == DEVICE.
+  optional string dock_mac_address = 15;
+
+  // The date the device was manufactured in yyyy-mm-dd format.
+  // This field might be set only if register type == DEVICE.
+  optional string manufacture_date = 16;
 }
 
 // Response from server to device register request.
