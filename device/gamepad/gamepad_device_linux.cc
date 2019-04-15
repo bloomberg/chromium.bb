@@ -54,9 +54,9 @@ static inline bool test_bit(int bit, const unsigned long* data) {
   return data[bit / LONG_BITS] & (1UL << (bit % LONG_BITS));
 }
 
-GamepadBusType GetEvdevBusType(int fd) {
+GamepadBusType GetEvdevBusType(const base::ScopedFD& fd) {
   struct input_id input_info;
-  if (HANDLE_EINTR(ioctl(fd, EVIOCGID, &input_info)) >= 0) {
+  if (HANDLE_EINTR(ioctl(fd.get(), EVIOCGID, &input_info)) >= 0) {
     if (input_info.bustype == BUS_USB)
       return GAMEPAD_BUS_USB;
     if (input_info.bustype == BUS_BLUETOOTH)
@@ -65,12 +65,12 @@ GamepadBusType GetEvdevBusType(int fd) {
   return GAMEPAD_BUS_UNKNOWN;
 }
 
-bool HasRumbleCapability(int fd) {
+bool HasRumbleCapability(const base::ScopedFD& fd) {
   unsigned long evbit[BITS_TO_LONGS(EV_MAX)];
   unsigned long ffbit[BITS_TO_LONGS(FF_MAX)];
 
-  if (HANDLE_EINTR(ioctl(fd, EVIOCGBIT(0, EV_MAX), evbit)) < 0 ||
-      HANDLE_EINTR(ioctl(fd, EVIOCGBIT(EV_FF, FF_MAX), ffbit)) < 0) {
+  if (HANDLE_EINTR(ioctl(fd.get(), EVIOCGBIT(0, EV_MAX), evbit)) < 0 ||
+      HANDLE_EINTR(ioctl(fd.get(), EVIOCGBIT(EV_FF, FF_MAX), ffbit)) < 0) {
     return false;
   }
 
@@ -85,15 +85,16 @@ bool HasRumbleCapability(int fd) {
 // aren't reported by joydev. If a special key is found, the corresponding entry
 // of the |has_special_key| vector is set to true. Returns the number of
 // special keys found.
-size_t CheckSpecialKeys(int fd, std::vector<bool>* has_special_key) {
+size_t CheckSpecialKeys(const base::ScopedFD& fd,
+                        std::vector<bool>* has_special_key) {
   DCHECK(has_special_key);
   unsigned long evbit[BITS_TO_LONGS(EV_MAX)];
   unsigned long keybit[BITS_TO_LONGS(KEY_MAX)];
   size_t found_special_keys = 0;
 
   has_special_key->clear();
-  if (HANDLE_EINTR(ioctl(fd, EVIOCGBIT(0, EV_MAX), evbit)) < 0 ||
-      HANDLE_EINTR(ioctl(fd, EVIOCGBIT(EV_KEY, KEY_MAX), keybit)) < 0) {
+  if (HANDLE_EINTR(ioctl(fd.get(), EVIOCGBIT(0, EV_MAX), evbit)) < 0 ||
+      HANDLE_EINTR(ioctl(fd.get(), EVIOCGBIT(EV_KEY, KEY_MAX), keybit)) < 0) {
     return 0;
   }
 
@@ -112,12 +113,12 @@ size_t CheckSpecialKeys(int fd, std::vector<bool>* has_special_key) {
   return found_special_keys;
 }
 
-bool GetHidrawDevinfo(int fd,
+bool GetHidrawDevinfo(const base::ScopedFD& fd,
                       GamepadBusType* bus_type,
                       uint16_t* vendor_id,
                       uint16_t* product_id) {
   struct hidraw_devinfo info;
-  if (HANDLE_EINTR(ioctl(fd, HIDIOCGRAWINFO, &info)) < 0)
+  if (HANDLE_EINTR(ioctl(fd.get(), HIDIOCGRAWINFO, &info)) < 0)
     return false;
   if (bus_type) {
     if (info.bustype == BUS_USB)
@@ -134,7 +135,7 @@ bool GetHidrawDevinfo(int fd,
   return true;
 }
 
-int StoreRumbleEffect(int fd,
+int StoreRumbleEffect(const base::ScopedFD& fd,
                       int effect_id,
                       uint16_t duration,
                       uint16_t start_delay,
@@ -149,23 +150,23 @@ int StoreRumbleEffect(int fd,
   effect.u.rumble.strong_magnitude = strong_magnitude;
   effect.u.rumble.weak_magnitude = weak_magnitude;
 
-  if (HANDLE_EINTR(ioctl(fd, EVIOCSFF, (const void*)&effect)) < 0)
+  if (HANDLE_EINTR(ioctl(fd.get(), EVIOCSFF, (const void*)&effect)) < 0)
     return kInvalidEffectId;
   return effect.id;
 }
 
-void DestroyEffect(int fd, int effect_id) {
-  HANDLE_EINTR(ioctl(fd, EVIOCRMFF, effect_id));
+void DestroyEffect(const base::ScopedFD& fd, int effect_id) {
+  HANDLE_EINTR(ioctl(fd.get(), EVIOCRMFF, effect_id));
 }
 
-bool StartOrStopEffect(int fd, int effect_id, bool do_start) {
+bool StartOrStopEffect(const base::ScopedFD& fd, int effect_id, bool do_start) {
   struct input_event start_stop;
   memset(&start_stop, 0, sizeof(start_stop));
   start_stop.type = EV_FF;
   start_stop.code = effect_id;
   start_stop.value = do_start ? 1 : 0;
-  ssize_t nbytes =
-      HANDLE_EINTR(write(fd, (const void*)&start_stop, sizeof(start_stop)));
+  ssize_t nbytes = HANDLE_EINTR(
+      write(fd.get(), (const void*)&start_stop, sizeof(start_stop)));
   return nbytes == sizeof(start_stop);
 }
 
@@ -198,18 +199,19 @@ void GamepadDeviceLinux::DoShutdown() {
 }
 
 bool GamepadDeviceLinux::IsEmpty() const {
-  return joydev_fd_ < 0 && evdev_fd_ < 0 && hidraw_fd_ < 0;
+  return !joydev_fd_.is_valid() && !evdev_fd_.is_valid() &&
+         !hidraw_fd_.is_valid();
 }
 
 bool GamepadDeviceLinux::SupportsVibration() const {
   if (dualshock4_ || hid_haptics_)
     return true;
 
-  return supports_force_feedback_ && evdev_fd_ >= 0;
+  return supports_force_feedback_ && evdev_fd_.is_valid();
 }
 
 void GamepadDeviceLinux::ReadPadState(Gamepad* pad) {
-  DCHECK_GE(joydev_fd_, 0);
+  DCHECK(joydev_fd_.is_valid());
 
   // Read button and axis events from the joydev device.
   bool pad_updated = ReadJoydevState(pad);
@@ -234,13 +236,14 @@ bool GamepadDeviceLinux::ReadJoydevState(Gamepad* pad) {
   DCHECK(polling_runner_->RunsTasksInCurrentSequence());
   DCHECK(pad);
 
-  if (joydev_fd_ < 0)
+  if (!joydev_fd_.is_valid())
     return false;
 
   // Read button and axis events from the joydev device.
   bool pad_updated = false;
   js_event event;
-  while (HANDLE_EINTR(read(joydev_fd_, &event, sizeof(struct js_event))) > 0) {
+  while (HANDLE_EINTR(read(joydev_fd_.get(), &event, sizeof(struct js_event))) >
+         0) {
     size_t item = event.number;
     if (event.type & JS_EVENT_AXIS) {
       if (item >= Gamepad::kAxesLengthCap)
@@ -274,7 +277,7 @@ bool GamepadDeviceLinux::ReadJoydevState(Gamepad* pad) {
 
 void GamepadDeviceLinux::InitializeEvdevSpecialKeys() {
   DCHECK(polling_runner_->RunsTasksInCurrentSequence());
-  if (evdev_fd_ < 0)
+  if (!evdev_fd_.is_valid())
     return;
 
   // Do some one-time initialization to decide indices for the evdev special
@@ -316,15 +319,15 @@ bool GamepadDeviceLinux::ReadEvdevSpecialKeys(Gamepad* pad) {
   DCHECK(polling_runner_->RunsTasksInCurrentSequence());
   DCHECK(pad);
 
-  if (evdev_fd_ < 0)
+  if (!evdev_fd_.is_valid())
     return false;
 
   // Read special button events through evdev.
   bool pad_updated = false;
   input_event ev;
   ssize_t bytes_read;
-  while ((bytes_read =
-              HANDLE_EINTR(read(evdev_fd_, &ev, sizeof(input_event)))) > 0) {
+  while ((bytes_read = HANDLE_EINTR(
+              read(evdev_fd_.get(), &ev, sizeof(input_event)))) > 0) {
     if (size_t{bytes_read} < sizeof(input_event))
       break;
     if (ev.type != EV_KEY)
@@ -362,8 +365,9 @@ bool GamepadDeviceLinux::OpenJoydevNode(const UdevGamepadLinux& pad_info,
   DCHECK(pad_info.syspath_prefix == syspath_prefix_);
 
   CloseJoydevNode();
-  joydev_fd_ = open(pad_info.path.c_str(), O_RDONLY | O_NONBLOCK);
-  if (joydev_fd_ < 0)
+  joydev_fd_ =
+      base::ScopedFD(open(pad_info.path.c_str(), O_RDONLY | O_NONBLOCK));
+  if (!joydev_fd_.is_valid())
     return false;
 
   udev_device* parent_device =
@@ -422,10 +426,7 @@ bool GamepadDeviceLinux::OpenJoydevNode(const UdevGamepadLinux& pad_info,
 
 void GamepadDeviceLinux::CloseJoydevNode() {
   DCHECK(polling_runner_->RunsTasksInCurrentSequence());
-  if (joydev_fd_ >= 0) {
-    close(joydev_fd_);
-    joydev_fd_ = -1;
-  }
+  joydev_fd_.reset();
   joydev_index_ = -1;
   vendor_id_ = 0;
   product_id_ = 0;
@@ -444,8 +445,8 @@ bool GamepadDeviceLinux::OpenEvdevNode(const UdevGamepadLinux& pad_info) {
   DCHECK(pad_info.syspath_prefix == syspath_prefix_);
 
   CloseEvdevNode();
-  evdev_fd_ = open(pad_info.path.c_str(), O_RDWR | O_NONBLOCK);
-  if (evdev_fd_ < 0)
+  evdev_fd_ = base::ScopedFD(open(pad_info.path.c_str(), O_RDWR | O_NONBLOCK));
+  if (!evdev_fd_.is_valid())
     return false;
 
   supports_force_feedback_ = HasRumbleCapability(evdev_fd_);
@@ -456,14 +457,13 @@ bool GamepadDeviceLinux::OpenEvdevNode(const UdevGamepadLinux& pad_info) {
 
 void GamepadDeviceLinux::CloseEvdevNode() {
   DCHECK(polling_runner_->RunsTasksInCurrentSequence());
-  if (evdev_fd_ >= 0) {
+  if (evdev_fd_.is_valid()) {
     if (effect_id_ != kInvalidEffectId) {
       DestroyEffect(evdev_fd_, effect_id_);
       effect_id_ = kInvalidEffectId;
     }
-    close(evdev_fd_);
-    evdev_fd_ = -1;
   }
+  evdev_fd_.reset();
   supports_force_feedback_ = false;
 
   // Clear any entries in |button_indices_used_| that were taken by evdev.
@@ -520,7 +520,7 @@ void GamepadDeviceLinux::OnOpenHidrawNodeComplete(
 void GamepadDeviceLinux::InitializeHidraw(base::ScopedFD fd) {
   DCHECK(polling_runner_->RunsTasksInCurrentSequence());
   DCHECK(fd.is_valid());
-  hidraw_fd_ = fd.release();
+  hidraw_fd_ = std::move(fd);
 
   uint16_t vendor_id;
   uint16_t product_id;
@@ -550,10 +550,7 @@ void GamepadDeviceLinux::CloseHidrawNode() {
   if (hid_haptics_)
     hid_haptics_->Shutdown();
   hid_haptics_.reset();
-  if (hidraw_fd_ >= 0) {
-    close(hidraw_fd_);
-    hidraw_fd_ = -1;
-  }
+  hidraw_fd_.reset();
 }
 
 #if defined(OS_CHROMEOS)
