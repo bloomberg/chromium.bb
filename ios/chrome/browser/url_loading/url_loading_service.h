@@ -9,7 +9,6 @@
 #import <UIKit/UIKit.h>
 
 #include "components/keyed_service/core/keyed_service.h"
-#import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -40,11 +39,8 @@ class UrlLoadingService : public KeyedService {
   void SetDelegate(id<URLLoadingServiceDelegate> delegate);
   void SetBrowser(Browser* browser);
 
-  // TODO(crbug.com/907527): deprecate this when possible.
-  id<UrlLoader> GetUrlLoader();
-
   // Opens a url depending on |params.disposition|.  Applies load strategy then
-  // calls| Dispatch|.
+  // calls |Dispatch|.
   virtual void Load(const UrlLoadParams& params);
 
  private:
@@ -64,7 +60,6 @@ class UrlLoadingService : public KeyedService {
   AppUrlLoadingService* app_service_;
   Browser* browser_;
   UrlLoadingNotifier* notifier_;
-  id<UrlLoader> url_loader_;
 };
 
 #endif  // IOS_CHROME_BROWSER_URL_LOADING_URL_LOADING_SERVICE_H_

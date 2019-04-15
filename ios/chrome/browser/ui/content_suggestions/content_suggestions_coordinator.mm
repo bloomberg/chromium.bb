@@ -123,8 +123,7 @@
                                self.browserState)
          urlLoadingService:urlLoadingService
                 logoVendor:ios::GetChromeBrowserProvider()->CreateLogoVendor(
-                               self.browserState,
-                               urlLoadingService->GetUrlLoader())];
+                               self.browserState)];
 
   BOOL voiceSearchEnabled = ios::GetChromeBrowserProvider()
                                 ->GetVoiceSearchProvider()

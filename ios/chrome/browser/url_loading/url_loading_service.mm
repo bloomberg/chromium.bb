@@ -61,47 +61,6 @@ void InduceBrowserCrash(const GURL& url) {
 }
 }
 
-@interface UrlLoadingServiceUrlLoader : NSObject <UrlLoader>
-- (instancetype)initWithUrlLoadingService:(UrlLoadingService*)service;
-@end
-
-@implementation UrlLoadingServiceUrlLoader {
-  UrlLoadingService* service_;
-}
-
-- (instancetype)initWithUrlLoadingService:(UrlLoadingService*)service {
-  DCHECK(service);
-  if (self = [super init]) {
-    service_ = service;
-  }
-  return self;
-}
-
-- (void)loadURLWithParams:(const ChromeLoadParams&)chromeParams {
-  web::NavigationManager::WebLoadParams params = chromeParams.web_params;
-  if (chromeParams.disposition == WindowOpenDisposition::SWITCH_TO_TAB) {
-    service_->Load(UrlLoadParams::SwitchToTab(chromeParams.web_params));
-  } else {
-    service_->Load(UrlLoadParams::InCurrentTab(chromeParams.web_params));
-  }
-}
-
-- (void)webPageOrderedOpen:(OpenNewTabCommand*)command {
-  UrlLoadParams params =
-      UrlLoadParams::InNewTab(command.URL, command.virtualURL);
-  params.SetInBackground(command.inBackground);
-  params.web_params.referrer = command.referrer;
-  params.in_incognito = command.inIncognito;
-  params.append_to = command.appendTo;
-  params.origin_point = command.originPoint;
-  params.from_chrome = command.fromChrome;
-  params.user_initiated = command.userInitiated;
-  params.should_focus_omnibox = command.shouldFocusOmnibox;
-  service_->Load(params);
-}
-
-@end
-
 UrlLoadingService::UrlLoadingService(UrlLoadingNotifier* notifier)
     : notifier_(notifier) {}
 
@@ -315,12 +274,4 @@ void UrlLoadingService::LoadUrlInNewTab(const UrlLoadParams& params) {
   } else {
     [delegate_ animateOpenBackgroundTabFromParams:params completion:openTab];
   }
-}
-
-id<UrlLoader> UrlLoadingService::GetUrlLoader() {
-  if (!url_loader_) {
-    url_loader_ =
-        [[UrlLoadingServiceUrlLoader alloc] initWithUrlLoadingService:this];
-  }
-  return url_loader_;
 }

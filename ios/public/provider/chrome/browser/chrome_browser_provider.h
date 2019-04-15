@@ -41,7 +41,6 @@ class WebState;
 @class TabModel;
 @class UITextField;
 @class UIView;
-@protocol UrlLoader;
 
 namespace ios {
 
@@ -130,10 +129,6 @@ class ChromeBrowserProvider {
 
   // Creates and returns an object that can fetch and vend search engine logos.
   // The caller assumes ownership of the returned object.
-  virtual id<LogoVendor> CreateLogoVendor(
-      ios::ChromeBrowserState* browser_state,
-      id<UrlLoader> loader) const NS_RETURNS_RETAINED;
-
   virtual id<LogoVendor> CreateLogoVendor(
       ios::ChromeBrowserState* browser_state) const NS_RETURNS_RETAINED;
 

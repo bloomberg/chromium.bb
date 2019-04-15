@@ -69,8 +69,7 @@ VoiceSearchProvider* ChromiumBrowserProvider::GetVoiceSearchProvider() const {
 }
 
 id<LogoVendor> ChromiumBrowserProvider::CreateLogoVendor(
-    ios::ChromeBrowserState* browser_state,
-    id<UrlLoader> loader) const {
+    ios::ChromeBrowserState* browser_state) const {
   return [[ChromiumLogoController alloc] init];
 }
 
