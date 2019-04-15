@@ -84,6 +84,11 @@ async function setUpFileEntrySet(volume) {
 async function openFileDialogClickOkButton(
     volume, name, useBrowserOpen = false) {
   const okButton = '.button-panel button.ok:enabled';
+  if (volume !== 'drive' ||
+      await sendTestMessage({name: 'getDriveFsEnabled'}) === 'true') {
+    await sendTestMessage(
+        {name: 'expectFileTask', fileNames: [name], openType: 'open'});
+  }
   let closer = clickOpenFileDialogButton.bind(null, name, okButton);
 
   const entrySet = await setUpFileEntrySet(volume);
@@ -108,6 +113,12 @@ async function openFileDialogClickOkButton(
  */
 async function saveFileDialogClickOkButton(volume, name) {
   const caller = getCaller();
+
+  if (volume !== 'drive' ||
+      await sendTestMessage({name: 'getDriveFsEnabled'}) === 'true') {
+    await sendTestMessage(
+        {name: 'expectFileTask', fileNames: [name], openType: 'saveAs'});
+  }
 
   let closer = async (appId) => {
     const okButton = '.button-panel button.ok:enabled';
