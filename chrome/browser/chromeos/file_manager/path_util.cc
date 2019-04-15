@@ -366,9 +366,7 @@ bool ConvertPathToArcUrl(const base::FilePath& path, GURL* arc_url_out) {
       GetDownloadsFolderForProfile(primary_profile);
   base::FilePath result_path(kArcDownloadRoot);
   if (primary_downloads.AppendRelativePath(path, &result_path)) {
-    // TODO(niwa): Switch to using kFileSystemFileproviderUrl once we completely
-    // move FileProvider to arc.file_system (b/111816608).
-    *arc_url_out = GURL(arc::kIntentHelperFileproviderUrl)
+    *arc_url_out = GURL(arc::kFileSystemFileproviderUrl)
                        .Resolve(net::EscapePath(result_path.AsUTF8Unsafe()));
     return true;
   }
@@ -377,8 +375,7 @@ bool ConvertPathToArcUrl(const base::FilePath& path, GURL* arc_url_out) {
   result_path = base::FilePath(kArcExternalFilesRoot);
   if (base::FilePath(kAndroidFilesPath)
           .AppendRelativePath(path, &result_path)) {
-    // TODO(niwa): Switch to using kFileSystemFileproviderUrl.
-    *arc_url_out = GURL(arc::kIntentHelperFileproviderUrl)
+    *arc_url_out = GURL(arc::kFileSystemFileproviderUrl)
                        .Resolve(net::EscapePath(result_path.AsUTF8Unsafe()));
     return true;
   }

@@ -781,7 +781,7 @@ TEST_F(FileManagerPathUtilConvertUrlTest, ConvertPathToArcUrl_Downloads) {
       chromeos::ProfileHelper::Get()->GetProfileByUserIdHashForTest(
           "user@gmail.com-hash"));
   EXPECT_TRUE(ConvertPathToArcUrl(downloads.AppendASCII("a/b/c"), &url));
-  EXPECT_EQ(GURL("content://org.chromium.arc.intent_helper.fileprovider/"
+  EXPECT_EQ(GURL("content://org.chromium.arc.file_system.fileprovider/"
                  "download/a/b/c"),
             url);
 }
@@ -906,7 +906,7 @@ TEST_F(FileManagerPathUtilConvertUrlTest, ConvertToContentUrls_Downloads) {
             run_loop->Quit();
             ASSERT_EQ(1U, urls.size());
             EXPECT_EQ(
-                GURL("content://org.chromium.arc.intent_helper.fileprovider/"
+                GURL("content://org.chromium.arc.file_system.fileprovider/"
                      "download/a/b/c"),
                 urls[0]);
           },
@@ -1015,7 +1015,7 @@ TEST_F(FileManagerPathUtilConvertUrlTest, ConvertToContentUrls_AndroidFiles) {
             run_loop->Quit();
             ASSERT_EQ(1U, urls.size());
             EXPECT_EQ(
-                GURL("content://org.chromium.arc.intent_helper.fileprovider/"
+                GURL("content://org.chromium.arc.file_system.fileprovider/"
                      "external_files/Pictures/a/b.jpg"),
                 urls[0]);
           },
@@ -1061,7 +1061,7 @@ TEST_F(FileManagerPathUtilConvertUrlTest, ConvertToContentUrls_MultipleUrls) {
                            "2Fb%2Fc"),
                       urls[2]);
             EXPECT_EQ(
-                GURL("content://org.chromium.arc.intent_helper.fileprovider/"
+                GURL("content://org.chromium.arc.file_system.fileprovider/"
                      "external_files/a/b/c"),
                 urls[3]);
           },
