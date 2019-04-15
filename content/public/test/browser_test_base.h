@@ -138,6 +138,10 @@ class BrowserTestBase : public testing::Test {
   // Call this before SetUp() to cause the test to generate pixel output.
   void EnablePixelOutput();
 
+  // Call this before SetUp() to cause audio to be sent to platform audio
+  // devices.
+  void EnableAudioOutput();
+
   // Call this before SetUp() to not use GL, but use software compositing
   // instead.
   void UseSoftwareCompositing();
@@ -177,6 +181,9 @@ class BrowserTestBase : public testing::Test {
   // When true, the compositor will produce pixel output that can be read back
   // for pixel tests.
   bool enable_pixel_output_;
+
+  // When true, audio is sent to a real audio device.
+  bool enable_audio_output_;
 
   // When true, do compositing with the software backend instead of using GL.
   bool use_software_compositing_;

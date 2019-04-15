@@ -47,6 +47,8 @@ void WebRtcContentBrowserTestBase::SetUpCommandLine(
 void WebRtcContentBrowserTestBase::SetUp() {
   // We need pixel output when we dig pixels out of video tags for verification.
   EnablePixelOutput();
+  // Some tests capture the audio played out.
+  EnableAudioOutput();
 #if defined(OS_CHROMEOS)
   chromeos::CrasAudioClient::InitializeFake();
   chromeos::CrasAudioHandler::InitializeForTesting();
