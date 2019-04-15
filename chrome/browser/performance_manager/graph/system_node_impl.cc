@@ -27,10 +27,6 @@ SystemNodeImpl::~SystemNodeImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void SystemNodeImpl::OnProcessCPUUsageReady() {
-  SendEvent(resource_coordinator::mojom::Event::kProcessCPUUsageReady);
-}
-
 void SystemNodeImpl::DistributeMeasurementBatch(
     std::unique_ptr<ProcessResourceMeasurementBatch> measurement_batch) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -155,14 +151,8 @@ void SystemNodeImpl::DistributeMeasurementBatch(
     DCHECK_EQ(last_measurement_end_time_, page->usage_estimate_time());
   }
 
-  // Fire the end update signal.
-  OnProcessCPUUsageReady();
-}
-
-void SystemNodeImpl::OnEventReceived(resource_coordinator::mojom::Event event) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : observers())
-    observer.OnSystemEventReceived(this, event);
+    observer.OnProcessCPUUsageReady(this);
 }
 
 }  // namespace performance_manager

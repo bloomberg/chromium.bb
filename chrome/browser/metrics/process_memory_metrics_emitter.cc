@@ -764,7 +764,7 @@ void ProcessMemoryMetricsEmitter::GetProcessToPageInfoMap(
     process_info.launch_time = process_node->launch_time();
 
     base::flat_set<performance_manager::PageNodeImpl*> page_nodes =
-        process_node->GetAssociatedPageCoordinationUnits();
+        process_node->GetAssociatedPageNodes();
     for (performance_manager::PageNodeImpl* page_node : page_nodes) {
       if (page_node->ukm_source_id() == ukm::kInvalidSourceId)
         continue;

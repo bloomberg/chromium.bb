@@ -50,45 +50,31 @@ class GraphObserver {
   // Called when the |node| is about to be destroyed.
   virtual void OnBeforeNodeRemoved(NodeBase* node) {}
 
-  // Called whenever an event is received in |node| if the
-  // |node| doesn't implement its own EventReceived handler.
-  // TODO(chrisha): Kill these generic event handlers in favor of specific
-  // event handlers.
-  virtual void OnEventReceived(NodeBase* node,
-                               resource_coordinator::mojom::Event event) {}
-  virtual void OnFrameEventReceived(FrameNodeImpl* frame_node,
-                                    resource_coordinator::mojom::Event event) {}
-  virtual void OnPageEventReceived(PageNodeImpl* page_node,
-                                   resource_coordinator::mojom::Event event) {}
-  virtual void OnProcessEventReceived(
-      ProcessNodeImpl* process_node,
-      resource_coordinator::mojom::Event event) {}
-  virtual void OnSystemEventReceived(SystemNodeImpl* system_node,
-                                     resource_coordinator::mojom::Event event) {
-  }
-
   // FrameNodeImpl notifications.
   virtual void OnIsCurrentChanged(FrameNodeImpl* frame_node) {}
   virtual void OnNetworkAlmostIdleChanged(FrameNodeImpl* frame_node) {}
   virtual void OnLifecycleStateChanged(FrameNodeImpl* frame_node) {}
+  virtual void OnNonPersistentNotificationCreated(FrameNodeImpl* frame_node) {}
 
   // PageNodeImpl notifications.
   virtual void OnIsVisibleChanged(PageNodeImpl* page_node) {}
   virtual void OnIsLoadingChanged(PageNodeImpl* page_node) {}
   virtual void OnUkmSourceIdChanged(PageNodeImpl* page_node) {}
   virtual void OnLifecycleStateChanged(PageNodeImpl* page_node) {}
+  virtual void OnPageAlmostIdleChanged(PageNodeImpl* page_node) {}
+  virtual void OnFaviconUpdated(PageNodeImpl* page_node) {}
+  virtual void OnTitleUpdated(PageNodeImpl* page_node) {}
+  virtual void OnMainFrameNavigationCommitted(PageNodeImpl* page_node) {}
 
   // ProcessNodeImpl notifications.
   virtual void OnExpectedTaskQueueingDurationSample(
       ProcessNodeImpl* process_node) {}
   virtual void OnMainThreadTaskLoadIsLow(ProcessNodeImpl* process_node) {}
-
-  // Called when page almost idle state changes. This is a computed property and
-  // will only be maintained if a PageAlmostIdleDecorator exists on the graph.
-  virtual void OnPageAlmostIdleChanged(PageNodeImpl* page_node) {}
-
-  // Called when all the frames in a process become frozen.
+  virtual void OnRendererIsBloated(ProcessNodeImpl* process_node) {}
   virtual void OnAllFramesInProcessFrozen(ProcessNodeImpl* process_node) {}
+
+  // SystemNodeImpl notifications.
+  virtual void OnProcessCPUUsageReady(SystemNodeImpl* system_node) {}
 
   void set_node_graph(Graph* graph) { node_graph_ = graph; }
 

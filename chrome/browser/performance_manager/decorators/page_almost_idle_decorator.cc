@@ -74,27 +74,22 @@ bool PageAlmostIdleDecorator::ShouldObserve(const NodeBase* node) {
   NOTREACHED();
 }
 
-void PageAlmostIdleDecorator::OnPageEventReceived(
-    PageNodeImpl* page_node,
-    resource_coordinator::mojom::Event event) {
-  // Only the navigation committed event is of interest.
-  if (event != resource_coordinator::mojom::Event::kNavigationCommitted)
-    return;
-
-  // Reset the load-idle state associated with this page as a new navigation has
-  // started.
-  auto* data = DataImpl::GetOrCreate(page_node);
-  data->load_idle_state_ = LoadIdleState::kLoadingNotStarted;
-  PageAlmostIdleAccess::SetPageAlmostIdle(page_node, false);
-  UpdateLoadIdleStatePage(page_node);
-}
-
 void PageAlmostIdleDecorator::OnNetworkAlmostIdleChanged(
     FrameNodeImpl* frame_node) {
   UpdateLoadIdleStateFrame(frame_node);
 }
 
 void PageAlmostIdleDecorator::OnIsLoadingChanged(PageNodeImpl* page_node) {
+  UpdateLoadIdleStatePage(page_node);
+}
+
+void PageAlmostIdleDecorator::OnMainFrameNavigationCommitted(
+    PageNodeImpl* page_node) {
+  // Reset the load-idle state associated with this page as a new navigation has
+  // started.
+  auto* data = DataImpl::GetOrCreate(page_node);
+  data->load_idle_state_ = LoadIdleState::kLoadingNotStarted;
+  PageAlmostIdleAccess::SetPageAlmostIdle(page_node, false);
   UpdateLoadIdleStatePage(page_node);
 }
 

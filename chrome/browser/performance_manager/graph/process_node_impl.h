@@ -66,7 +66,11 @@ class ProcessNodeImpl
   base::TimeDelta cumulative_cpu_usage() const { return cumulative_cpu_usage_; }
 
   const base::flat_set<FrameNodeImpl*>& GetFrameNodes() const;
-  base::flat_set<PageNodeImpl*> GetAssociatedPageCoordinationUnits() const;
+  base::flat_set<PageNodeImpl*> GetAssociatedPageNodes() const;
+
+  // If this process is associated with only one page, returns that page.
+  // Otherwise, returns nullptr.
+  PageNodeImpl* GetPageNodeIfExclusive() const;
 
   // Use process_id() in preference to process().Pid(). It's always valid to
   // access, but will return kNullProcessId when the process is not valid. It
@@ -101,9 +105,6 @@ class ProcessNodeImpl
   friend class FrozenFrameAggregatorAccess;
 
   void LeaveGraph() override;
-
-  // CoordinationUnitInterface implementation.
-  void OnEventReceived(resource_coordinator::mojom::Event event) override;
 
   base::TimeDelta cumulative_cpu_usage_;
   uint64_t private_footprint_kb_ = 0u;

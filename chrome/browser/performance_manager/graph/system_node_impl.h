@@ -54,7 +54,6 @@ class SystemNodeImpl : public TypedNodeBase<SystemNodeImpl> {
   explicit SystemNodeImpl(Graph* graph);
   ~SystemNodeImpl() override;
 
-  void OnProcessCPUUsageReady();
   void DistributeMeasurementBatch(
       std::unique_ptr<ProcessResourceMeasurementBatch> measurement_batch);
 
@@ -70,9 +69,6 @@ class SystemNodeImpl : public TypedNodeBase<SystemNodeImpl> {
  private:
   base::TimeTicks last_measurement_start_time_;
   base::TimeTicks last_measurement_end_time_;
-
-  // CoordinationUnitInterface implementation:
-  void OnEventReceived(resource_coordinator::mojom::Event event) override;
 
   DISALLOW_COPY_AND_ASSIGN(SystemNodeImpl);
 };

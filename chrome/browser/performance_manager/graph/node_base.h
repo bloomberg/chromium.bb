@@ -62,10 +62,6 @@ class NodeBase {
   // Returns true if |other_node| is in the same graph.
   bool NodeInGraph(const NodeBase* other_node) const;
 
-  virtual void OnEventReceived(resource_coordinator::mojom::Event event);
-
-  void SendEvent(resource_coordinator::mojom::Event event);
-
   Graph* const graph_;
   const resource_coordinator::CoordinationUnitID id_;
 

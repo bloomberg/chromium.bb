@@ -111,9 +111,6 @@ class FrameNodeImpl
   void JoinGraph() override;
   void LeaveGraph() override;
 
-  // CoordinationUnitInterface implementation.
-  void OnEventReceived(resource_coordinator::mojom::Event event) override;
-
   bool HasFrameNodeInAncestors(FrameNodeImpl* frame_node) const;
   bool HasFrameNodeInDescendants(FrameNodeImpl* frame_node) const;
 

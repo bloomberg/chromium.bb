@@ -105,11 +105,15 @@ void PageNodeImpl::SetUkmSourceId(ukm::SourceId ukm_source_id) {
 }
 
 void PageNodeImpl::OnFaviconUpdated() {
-  SendEvent(resource_coordinator::mojom::Event::kFaviconUpdated);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  for (auto& observer : observers())
+    observer.OnFaviconUpdated(this);
 }
 
 void PageNodeImpl::OnTitleUpdated() {
-  SendEvent(resource_coordinator::mojom::Event::kTitleUpdated);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  for (auto& observer : observers())
+    observer.OnTitleUpdated(this);
 }
 
 void PageNodeImpl::OnMainFrameNavigationCommitted(
@@ -120,11 +124,12 @@ void PageNodeImpl::OnMainFrameNavigationCommitted(
   navigation_committed_time_ = navigation_committed_time;
   main_frame_url_ = url;
   navigation_id_ = navigation_id;
-  SendEvent(resource_coordinator::mojom::Event::kNavigationCommitted);
+  for (auto& observer : observers())
+    observer.OnMainFrameNavigationCommitted(this);
 }
 
-base::flat_set<ProcessNodeImpl*>
-PageNodeImpl::GetAssociatedProcessCoordinationUnits() const {
+base::flat_set<ProcessNodeImpl*> PageNodeImpl::GetAssociatedProcessNodes()
+    const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::flat_set<ProcessNodeImpl*> process_nodes;
   ForAllFrameNodes([&process_nodes](FrameNodeImpl* frame_node) -> bool {
@@ -139,9 +144,8 @@ double PageNodeImpl::GetCPUUsage() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   double cpu_usage = 0;
 
-  for (auto* process_node : GetAssociatedProcessCoordinationUnits()) {
-    size_t pages_in_process =
-        process_node->GetAssociatedPageCoordinationUnits().size();
+  for (auto* process_node : GetAssociatedProcessNodes()) {
+    size_t pages_in_process = process_node->GetAssociatedPageNodes().size();
     DCHECK_LE(1u, pages_in_process);
     cpu_usage += process_node->cpu_usage() / pages_in_process;
   }
@@ -346,12 +350,6 @@ void PageNodeImpl::SetPageAlmostIdle(bool page_almost_idle) {
 void PageNodeImpl::SetLifecycleState(LifecycleState lifecycle_state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   lifecycle_state_.SetAndMaybeNotify(this, lifecycle_state);
-}
-
-void PageNodeImpl::OnEventReceived(resource_coordinator::mojom::Event event) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (auto& observer : observers())
-    observer.OnPageEventReceived(this, event);
 }
 
 void PageNodeImpl::InvalidateAllInterventionPolicies() {

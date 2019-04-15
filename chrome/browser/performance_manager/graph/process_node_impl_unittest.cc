@@ -76,4 +76,28 @@ TEST_F(ProcessNodeImplTest, ProcessLifeCycle) {
   EXPECT_EQ(base::TimeDelta(), process_node->cumulative_cpu_usage());
 }
 
+TEST_F(ProcessNodeImplTest, GetPageNodeIfExclusive) {
+  {
+    MockSinglePageInSingleProcessGraph g(graph());
+    EXPECT_EQ(g.page.get(), g.process.get()->GetPageNodeIfExclusive());
+  }
+
+  {
+    MockSinglePageWithMultipleProcessesGraph g(graph());
+    EXPECT_EQ(g.page.get(), g.process.get()->GetPageNodeIfExclusive());
+  }
+
+  {
+    MockMultiplePagesInSingleProcessGraph g(graph());
+    EXPECT_FALSE(g.process.get()->GetPageNodeIfExclusive());
+  }
+
+  {
+    MockMultiplePagesWithMultipleProcessesGraph g(graph());
+    EXPECT_FALSE(g.process.get()->GetPageNodeIfExclusive());
+    EXPECT_EQ(g.other_page.get(),
+              g.other_process.get()->GetPageNodeIfExclusive());
+  }
+}
+
 }  // namespace performance_manager

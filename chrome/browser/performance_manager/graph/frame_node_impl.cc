@@ -73,8 +73,9 @@ void FrameNodeImpl::SetInterventionPolicy(
 }
 
 void FrameNodeImpl::OnNonPersistentNotificationCreated() {
-  SendEvent(
-      resource_coordinator::mojom::Event::kNonPersistentNotificationCreated);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  for (auto& observer : observers())
+    observer.OnNonPersistentNotificationCreated(this);
 }
 
 FrameNodeImpl* FrameNodeImpl::parent_frame_node() const {
@@ -255,12 +256,6 @@ void FrameNodeImpl::LeaveGraph() {
   // And leave the process.
   DCHECK(NodeInGraph(process_node_));
   process_node_->RemoveFrame(this);
-}
-
-void FrameNodeImpl::OnEventReceived(resource_coordinator::mojom::Event event) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (auto& observer : observers())
-    observer.OnFrameEventReceived(this, event);
 }
 
 bool FrameNodeImpl::HasFrameNodeInAncestors(FrameNodeImpl* frame_node) const {
