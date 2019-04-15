@@ -5668,6 +5668,9 @@ crbug.com/869492 virtual/video-surface-layer/external/wpt/feature-policy/experim
 crbug.com/869492 external/wpt/feature-policy/experimental-features/lazyload/lazyload-disabled-tentative.sub.html [ Failure ]
 crbug.com/869492 virtual/threaded/external/wpt/feature-policy/experimental-features/lazyload/lazyload-enabled-tentative.sub.html [ Failure ]
 crbug.com/869492 virtual/video-surface-layer/external/wpt/feature-policy/experimental-features/lazyload/lazyload-disabled-tentative.sub.html [ Failure ]
+crbug.com/869492 external/wpt/feature-policy/experimental-features/lazyload/loading-frame-default-eager-disabled-tentative.sub.html [ Failure ]
+crbug.com/869492 virtual/threaded/external/wpt/feature-policy/experimental-features/lazyload/loading-frame-default-eager-disabled-tentative.sub.html [ Failure ]
+crbug.com/869492 virtual/unified-autoplay/external/wpt/feature-policy/experimental-features/lazyload/loading-frame-default-eager-disabled-tentative.sub.html [ Failure ]
 
 crbug.com/914441 external/wpt/user-timing/mark-measure-feature-detection.html [ Failure ]
 

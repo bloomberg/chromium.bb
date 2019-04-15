@@ -107,6 +107,11 @@
       depends_on: ["ExperimentalProductivityFeatures"],
     },
     {
+      name: "LoadingFrameDefaultEager",
+      feature_policy_name: "loading-frame-default-eager",
+      depends_on: ["ExperimentalProductivityFeatures"]
+    },
+    {
       name: "Magnetometer",
       feature_policy_name: "magnetometer",
       depends_on: ["Sensor"],

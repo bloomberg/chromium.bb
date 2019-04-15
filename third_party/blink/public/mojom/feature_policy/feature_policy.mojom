@@ -91,6 +91,7 @@ enum FeaturePolicyFeature {
   // which interfere with document's input stream (document.write(),
   // document.close(), etc.).
   kDocumentWrite = 28,
+  // TODO(ekaramad): kLazyLoad is deprecated; remove.
   // Used to enforce lazyloading for a frame and any nested <iframe> or image.
   kLazyLoad = 29,
   // Restricts the usage of layout-causing animations in a document.
@@ -125,6 +126,9 @@ enum FeaturePolicyFeature {
   kUnoptimizedLossyImages = 45,
   kUnoptimizedLosslessImages = 46,
   kUnoptimizedLosslessImagesStrict = 47,
+
+  // Loading policies.
+  kLoadingFrameDefaultEager = 48,
 
   // Don't change assigned numbers of any item, and don't reuse removed slots.
   // Add new features at the end of the enum.

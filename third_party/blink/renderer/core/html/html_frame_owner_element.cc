@@ -445,12 +445,16 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
   if (IsPlugin())
     request.SetSkipServiceWorker(true);
 
+  // When the feature policy "loading-frame-default-eager" is disabled in
+  // the document, loading attribute value "auto" (or unset/invalid values) will
+  // also be interpreted as "lazy".
+  const auto& loading_attr = FastGetAttribute(html_names::kLoadingAttr);
+  bool loading_lazy_set = EqualIgnoringASCIICase(loading_attr, "lazy") ||
+                          (IsLoadingFrameDefaultEagerEnforced() &&
+                           !EqualIgnoringASCIICase(loading_attr, "eager"));
   if (!lazy_load_frame_observer_ &&
-      IsFrameLazyLoadable(
-          GetDocument(), url,
-          EqualIgnoringASCIICase(FastGetAttribute(html_names::kLoadingAttr),
-                                 "lazy"),
-          should_lazy_load_children_)) {
+      IsFrameLazyLoadable(GetDocument(), url, loading_lazy_set,
+                          should_lazy_load_children_)) {
     // By default, avoid deferring subresources inside a lazily loaded frame.
     // This will make it possible for subresources in hidden frames to load that
     // will never be visible, as well as make it so that deferred frames that
@@ -520,6 +524,12 @@ void HTMLFrameOwnerElement::Trace(Visitor* visitor) {
   visitor->Trace(lazy_load_frame_observer_);
   HTMLElement::Trace(visitor);
   FrameOwner::Trace(visitor);
+}
+
+bool HTMLFrameOwnerElement::IsLoadingFrameDefaultEagerEnforced() const {
+  return RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
+         !GetDocument().IsFeatureEnabled(
+             mojom::FeaturePolicyFeature::kLoadingFrameDefaultEager);
 }
 
 }  // namespace blink
