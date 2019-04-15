@@ -270,6 +270,11 @@ void OmniboxViewIOS::UpdatePopup() {
   if (model())
     model()->StartAutocomplete(current_selection_.length != 0,
                                prevent_inline_autocomplete);
+
+  UpdatePopupAppearance();
+}
+
+void OmniboxViewIOS::UpdatePopupAppearance() {
   DCHECK(popup_provider_);
   popup_provider_->SetTextAlignment([field_ bestTextAlignment]);
   popup_provider_->SetSemanticContentAttribute(
@@ -373,6 +378,10 @@ void OmniboxViewIOS::OnDidBeginEditing() {
   // strip them out by calling setText (as opposed to setAttributedText).
   [field_ setText:[field_ text]];
   OnBeforePossibleChange();
+
+  // Make sure the omnibox popup's semantic content attribute is set correctly.
+  popup_provider_->SetSemanticContentAttribute(
+      [field_ bestSemanticContentAttribute]);
 
   if (model()) {
     // In the case where the user taps the fakebox on the Google landing page,

@@ -28,6 +28,23 @@
          forCellReuseIdentifier:OmniboxPopupRowCellReuseIdentifier];
 }
 
+- (void)setSemanticContentAttribute:
+    (UISemanticContentAttribute)semanticContentAttribute {
+  [super setSemanticContentAttribute:semanticContentAttribute];
+
+  // If there are any visible cells, update them right away.
+  for (UITableViewCell* cell in self.tableView.visibleCells) {
+    if ([cell isKindOfClass:[OmniboxPopupRowCell class]]) {
+      OmniboxPopupRowCell* rowCell =
+          base::mac::ObjCCastStrict<OmniboxPopupRowCell>(cell);
+      // This has to be set here because the cell's content view has its
+      // semantic content attribute reset before the cell is displayed (and
+      // before this method is called).
+      rowCell.omniboxSemanticContentAttribute = self.semanticContentAttribute;
+    }
+  }
+}
+
 #pragma mark - UIScrollViewDelegate
 
 - (void)scrollViewDidScroll:(UIScrollView*)scrollView {

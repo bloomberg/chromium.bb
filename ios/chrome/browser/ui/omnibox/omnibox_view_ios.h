@@ -121,6 +121,9 @@ class OmniboxViewIOS : public OmniboxView,
   // Updates this edit view to show the proper text, highlight and images.
   void UpdateAppearance();
 
+  // Updates the appearance of popup to have proper text alignment.
+  void UpdatePopupAppearance();
+
   // Clears the text from the omnibox.
   void ClearText();
 
