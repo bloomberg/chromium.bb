@@ -30,5 +30,9 @@ find src/src/main/java/com/google/android/libraries/feed/testing/conformance -wh
     env LC_COLLATE=en_US.ASCII sort | sed 's/^\(.*\)$/  "\1",/g' >> java_sources.gni
 find src/src/main/java/com/google/android/libraries/feed/testing/requestmanager -wholename "*.java" |\
     env LC_COLLATE=en_US.ASCII sort | sed 's/^\(.*\)$/  "\1",/g' >> java_sources.gni
+find src/src/main/java/com/google/android/libraries/feed/testing/host -wholename "*.java" |\
+    env LC_COLLATE=en_US.ASCII sort | sed 's/^\(.*\)$/  "\1",/g' >> java_sources.gni
+find src/src/main/java/com/google/android/libraries/feed/testing/modelprovider -wholename "*.java" |\
+    env LC_COLLATE=en_US.ASCII sort | sed 's/^\(.*\)$/  "\1",/g' >> java_sources.gni
 echo "]" >> java_sources.gni
 echo "java_sources.gni generated successfully"

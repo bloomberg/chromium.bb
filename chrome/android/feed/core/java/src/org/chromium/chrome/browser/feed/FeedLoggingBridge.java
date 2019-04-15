@@ -16,7 +16,9 @@ import com.google.android.libraries.feed.host.logging.RequestReason;
 import com.google.android.libraries.feed.host.logging.ScrollType;
 import com.google.android.libraries.feed.host.logging.SessionEvent;
 import com.google.android.libraries.feed.host.logging.SpinnerType;
+import com.google.android.libraries.feed.host.logging.Task;
 import com.google.android.libraries.feed.host.logging.ZeroStateShowReason;
+import com.google.search.now.ui.action.FeedActionProto;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
@@ -133,23 +135,20 @@ public class FeedLoggingBridge implements BasicLoggingApi {
     }
 
     @Override
-    public void onNotInterestedInSource(ContentLoggingData data, boolean wasCommitted) {
+    public void onNotInterestedIn(int interestType, ContentLoggingData data, boolean wasCommitted) {
         // Bridge could have been destroyed for policy when this is called.
         // See https://crbug.com/901414.
         if (mNativeFeedLoggingBridge == 0) return;
 
-        nativeOnNotInterestedInSource(
-                mNativeFeedLoggingBridge, data.getPositionInStream(), wasCommitted);
-    }
-
-    @Override
-    public void onNotInterestedInTopic(ContentLoggingData data, boolean wasCommitted) {
-        // Bridge could have been destroyed for policy when this is called.
-        // See https://crbug.com/901414.
-        if (mNativeFeedLoggingBridge == 0) return;
-
-        nativeOnNotInterestedInTopic(
-                mNativeFeedLoggingBridge, data.getPositionInStream(), wasCommitted);
+        // TODO(crbug.com/935602): Fail to compile when new values are added to NotInterestedInData.
+        if (interestType == FeedActionProto.NotInterestedInData.RecordedInterestType.TOPIC_VALUE) {
+            nativeOnNotInterestedInTopic(
+                    mNativeFeedLoggingBridge, data.getPositionInStream(), wasCommitted);
+        } else if (interestType
+                == FeedActionProto.NotInterestedInData.RecordedInterestType.SOURCE_VALUE) {
+            nativeOnNotInterestedInSource(
+                    mNativeFeedLoggingBridge, data.getPositionInStream(), wasCommitted);
+        }
     }
 
     @Override
@@ -270,6 +269,11 @@ public class FeedLoggingBridge implements BasicLoggingApi {
 
     @Override
     public void onScroll(@ScrollType int scrollType, int distanceScrolled) {
+        // TODO(https://crbug.com/924739): Implementation.
+    }
+
+    @Override
+    public void onTaskFinished(@Task int task, int delayTime, int taskTime) {
         // TODO(https://crbug.com/924739): Implementation.
     }
 
