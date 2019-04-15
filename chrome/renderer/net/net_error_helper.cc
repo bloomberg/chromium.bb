@@ -483,6 +483,12 @@ void NetErrorHelper::FetchNavigationCorrections(
   correction_fetcher_->SetBody(navigation_correction_request_body);
   correction_fetcher_->SetHeader("Content-Type", "application/json");
 
+  // Since the page is trying to fetch cross-origin resources (which would
+  // be protected by CORB in no-cors mode), we need to ask for CORS.  See also
+  // https://crbug.com/932542.
+  correction_fetcher_->SetFetchRequestMode(
+      network::mojom::FetchRequestMode::kCors);
+
   // Prevent CORB from triggering on this request by setting an Origin header.
   correction_fetcher_->SetHeader("Origin", "null");
 
