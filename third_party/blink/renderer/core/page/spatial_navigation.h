@@ -71,6 +71,7 @@ struct FocusCandidate {
 };
 
 CORE_EXPORT bool HasRemoteFrame(const Node*);
+CORE_EXPORT FloatRect RectInViewport(const Node&);
 CORE_EXPORT bool IsOffscreen(const Node*);
 bool ScrollInDirection(Node* container, SpatialNavigationDirection);
 CORE_EXPORT bool IsScrollableNode(const Node* node);

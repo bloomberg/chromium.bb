@@ -75,6 +75,12 @@ class CORE_EXPORT SpatialNavigationController
   Node* StartingNode();
   void MoveInterestTo(Node* next_node);
 
+  // Dispatches a fake mouse move event at the center of the given element to
+  // produce hover state and mouse enter/exit events. If no element is given,
+  // we dispatch a mouse event outside of the page to simulate the pointer
+  // leaving the page (and clearing hover, producing mouse leave).
+  void DispatchMouseMoveAt(Element* element);
+
   // Returns true if the element should be considered for navigation.
   bool IsValidCandidate(const Element& element) const;
 

@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
+#include "third_party/blink/renderer/core/events/web_input_event_conversion.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
@@ -400,8 +401,13 @@ void SpatialNavigationController::MoveInterestTo(Node* next_node) {
       layout_object->ScrollRectToVisible(
           element->BoundingBoxForScrollIntoView(), WebScrollIntoViewParams());
     }
+
+    DispatchMouseMoveAt(interest_element_);
+
     return;
   }
+
+  DispatchMouseMoveAt(element);
 
   if (!element)
     return;
@@ -414,6 +420,28 @@ void SpatialNavigationController::MoveInterestTo(Node* next_node) {
 
   element->focus(FocusParams(SelectionBehaviorOnFocus::kReset,
                              kWebFocusTypeSpatialNavigation, nullptr));
+}
+
+void SpatialNavigationController::DispatchMouseMoveAt(Element* element) {
+  FloatPoint event_position =
+      element ? RectInViewport(*element).Location() : FloatPoint(-1, -1);
+
+  // TODO(bokan): Can we get better screen coordinates?
+  FloatPoint event_position_screen = event_position;
+  int click_count = 0;
+  WebMouseEvent fake_mouse_move_event(
+      WebInputEvent::kMouseMove, event_position, event_position_screen,
+      WebPointerProperties::Button::kNoButton, click_count,
+      WebInputEvent::kRelativeMotionEvent, CurrentTimeTicks());
+  Vector<WebMouseEvent> coalesced_events, predicted_events;
+
+  DCHECK(IsA<LocalFrame>(page_->MainFrame()));
+  LocalFrame* frame = DynamicTo<LocalFrame>(page_->MainFrame());
+
+  DCHECK(frame);
+  frame->GetEventHandler().HandleMouseMoveEvent(
+      TransformWebMouseEvent(frame->View(), fake_mouse_move_event),
+      coalesced_events, predicted_events);
 }
 
 bool SpatialNavigationController::IsValidCandidate(
