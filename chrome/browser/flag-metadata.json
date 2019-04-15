@@ -470,7 +470,7 @@
   },
   {
     "name": "delegate-overscroll-swipes",
-    // "owners": [ "your-team" ],
+    "owners": [ "chrome-android-app@chromium.org" ],
     "expiry_milestone": 88
   },
   {
