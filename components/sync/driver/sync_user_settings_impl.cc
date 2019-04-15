@@ -187,9 +187,13 @@ ModelTypeSet SyncUserSettingsImpl::GetPreferredDataTypes() const {
     types.RetainAll(registered_types_);
   }
 
+  static_assert(44 == ModelType::NUM_ENTRIES,
+                "If adding a new sync data type, update the list below below if"
+                " you want to disable the new data type for local sync.");
   types.PutAll(ControlTypes());
   if (prefs_->IsLocalSyncEnabled()) {
     types.Remove(APP_LIST);
+    types.Remove(SECURITY_EVENTS);
     types.Remove(USER_CONSENTS);
     types.Remove(USER_EVENTS);
   }
