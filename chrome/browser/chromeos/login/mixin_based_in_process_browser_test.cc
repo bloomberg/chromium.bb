@@ -27,6 +27,9 @@ void InProcessBrowserTestMixin::SetUpDefaultCommandLine(
 
 void InProcessBrowserTestMixin::SetUpInProcessBrowserTestFixture() {}
 
+void InProcessBrowserTestMixin::CreatedBrowserMainParts(
+    content::BrowserMainParts* browser_main_parts) {}
+
 void InProcessBrowserTestMixin::SetUpOnMainThread() {}
 
 void InProcessBrowserTestMixin::TearDownOnMainThread() {}
@@ -59,6 +62,12 @@ void InProcessBrowserTestMixinHost::SetUpDefaultCommandLine(
 void InProcessBrowserTestMixinHost::SetUpInProcessBrowserTestFixture() {
   for (InProcessBrowserTestMixin* mixin : mixins_)
     mixin->SetUpInProcessBrowserTestFixture();
+}
+
+void InProcessBrowserTestMixinHost::CreatedBrowserMainParts(
+    content::BrowserMainParts* browser_main_parts) {
+  for (InProcessBrowserTestMixin* mixin : mixins_)
+    mixin->CreatedBrowserMainParts(browser_main_parts);
 }
 
 void InProcessBrowserTestMixinHost::SetUpOnMainThread() {
@@ -105,6 +114,12 @@ void MixinBasedInProcessBrowserTest::SetUpDefaultCommandLine(
 void MixinBasedInProcessBrowserTest::SetUpInProcessBrowserTestFixture() {
   mixin_host_.SetUpInProcessBrowserTestFixture();
   InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
+}
+
+void MixinBasedInProcessBrowserTest::CreatedBrowserMainParts(
+    content::BrowserMainParts* browser_main_parts) {
+  mixin_host_.CreatedBrowserMainParts(browser_main_parts);
+  InProcessBrowserTest::CreatedBrowserMainParts(browser_main_parts);
 }
 
 void MixinBasedInProcessBrowserTest::SetUpOnMainThread() {
