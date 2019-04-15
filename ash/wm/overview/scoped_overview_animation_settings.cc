@@ -52,6 +52,10 @@ constexpr base::TimeDelta kDropTargetFadeIn =
 constexpr base::TimeDelta kOverviewTitleFade =
     base::TimeDelta::FromMilliseconds(167);
 
+// Delay before the show animation of the overview title bar.
+constexpr base::TimeDelta kOverviewTitleFadeInDelay =
+    base::TimeDelta::FromMilliseconds(83);
+
 base::TimeDelta GetAnimationDuration(OverviewAnimationType animation_type) {
   switch (animation_type) {
     case OVERVIEW_ANIMATION_NONE:
@@ -252,7 +256,7 @@ ScopedOverviewAnimationSettings::ScopedOverviewAnimationSettings(
       animation_settings_->SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
       animation_settings_->SetPreemptionStrategy(
           ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
-      animator->SchedulePauseForProperties(kOverviewTitleFade,
+      animator->SchedulePauseForProperties(kOverviewTitleFadeInDelay,
                                            ui::LayerAnimationElement::OPACITY);
       break;
     case OVERVIEW_ANIMATION_OVERVIEW_TITLE_FADE_OUT:
