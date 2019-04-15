@@ -1079,15 +1079,14 @@ void GaiaCookieManagerService::StartFetchingUbertoken() {
       account_id, access_token_, token_service_,
       base::BindOnce(&GaiaCookieManagerService::OnUbertokenFetchComplete,
                      base::Unretained(this)),
-      GetURLLoaderFactory(),
       base::BindRepeating(
-          [](SigninClient* client, GaiaAuthConsumer* consumer,
-             scoped_refptr<network::SharedURLLoaderFactory> url_loader)
-              -> std::unique_ptr<GaiaAuthFetcher> {
+          [](SigninClient* client,
+             scoped_refptr<network::SharedURLLoaderFactory> url_loader,
+             GaiaAuthConsumer* consumer) -> std::unique_ptr<GaiaAuthFetcher> {
             return client->CreateGaiaAuthFetcher(
                 consumer, gaia::GaiaSource::kChrome, url_loader);
           },
-          base::Unretained(signin_client_)));
+          base::Unretained(signin_client_), GetURLLoaderFactory()));
 }
 
 void GaiaCookieManagerService::StartFetchingMultiLogin(
