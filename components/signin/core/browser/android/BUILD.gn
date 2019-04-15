@@ -20,6 +20,7 @@ android_library("java") {
     "$google_play_services_package:google_play_services_basement_java",
     "//base:base_java",
     "//net/android:net_java",
+    "//third_party/android_deps:android_support_v4_java",
     "//third_party/android_deps:com_android_support_support_annotations_java",
   ]
 
@@ -38,7 +39,9 @@ android_library("java") {
     "java/src/org/chromium/components/signin/GmsAvailabilityException.java",
     "java/src/org/chromium/components/signin/GmsJustUpdatedException.java",
     "java/src/org/chromium/components/signin/util/PatternMatcher.java",
+    "java/src/org/chromium/components/signin/MutableObservableValue.java",
     "java/src/org/chromium/components/signin/OAuth2TokenService.java",
+    "java/src/org/chromium/components/signin/ObservableValue.java",
     "java/src/org/chromium/components/signin/ProfileDataSource.java",
     "java/src/org/chromium/components/signin/SystemAccountManagerDelegate.java",
   ]
@@ -48,6 +51,7 @@ junit_binary("components_signin_junit_tests") {
   java_files = [
     "junit/src/org/chromium/components/signin/test/AccountManagerFacadeRobolectricTest.java",
     "junit/src/org/chromium/components/signin/test/PatternMatcherTest.java",
+    "junit/src/org/chromium/components/signin/test/ObservableValueTest.java",
   ]
   deps = [
     ":java",
