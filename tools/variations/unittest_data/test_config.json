@@ -58,5 +58,17 @@
       "is_low_end_device": false,
       "experiments": [{"name": "TestGroup2"}]
     }
+  ],
+  "TrialWithFormFactors": [
+    {
+      "platforms": ["windows"],
+      "form_factors": ["desktop", "phone"],
+      "experiments": [{"name": "TestGroup1"}]
+    },
+    {
+      "platforms": ["windows"],
+      "form_factors": ["tablet"],
+      "experiments": [{"name": "TestGroup2"}]
+    }
   ]
 }
