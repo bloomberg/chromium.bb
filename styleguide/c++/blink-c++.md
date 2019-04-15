@@ -66,6 +66,8 @@ for more details on Blink directories and their type usage.
   std::unordered_map<int, std::deque<url::Origin>> origins;
 ```
 
+When interacting with WTF types, use `wtf_size_t` instead of `size_t`.
+
 ## Do not use `new` and `delete`
 
 Object lifetime should not be managed using raw `new` and `delete`. Prefer to
