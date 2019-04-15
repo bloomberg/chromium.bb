@@ -21,6 +21,10 @@ int ZLIB_INTERNAL arm_cpu_enable_pmull = 0;
 #elif defined(ARMV8_OS_LINUX)
 #include <asm/hwcap.h>
 #include <sys/auxv.h>
+#elif defined(ARMV8_OS_FUCHSIA)
+#include <zircon/features.h>
+#include <zircon/syscalls.h>
+#include <zircon/types.h>
 #else
 #error arm_features.c ARM feature detection in not defined for your platform
 #endif
@@ -57,8 +61,14 @@ static void _arm_check_features(void)
     unsigned long features = getauxval(AT_HWCAP2);
     arm_cpu_enable_crc32 = !!(features & HWCAP2_CRC32);
     arm_cpu_enable_pmull = !!(features & HWCAP2_PMULL);
+#elif defined(ARMV8_OS_FUCHSIA)
+    uint32_t features;
+    zx_status_t rc = zx_system_get_features(ZX_FEATURE_KIND_CPU, &features);
+    if (rc != ZX_OK || (features & ZX_ARM64_FEATURE_ISA_ASIMD) == 0)
+        return;  /* Report nothing if ASIMD(NEON) is missing */
+    arm_cpu_enable_crc32 = !!(features & ZX_ARM64_FEATURE_ISA_CRC32);
+    arm_cpu_enable_pmull = !!(features & ZX_ARM64_FEATURE_ISA_PMULL);
 #endif
-    /* TODO(crbug.com/810125): add ARMV8_OS_ZIRCON support for fucshia */
 }
 
 #else /* _MSC_VER */
