@@ -31,6 +31,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/range/range.h"
 #include "ui/gfx/render_text.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/native_theme/native_theme.h"
@@ -299,6 +300,10 @@ const gfx::FontList& EditableCombobox::GetFontList() const {
   return style::GetFont(text_context_, text_style_);
 }
 
+void EditableCombobox::SelectRange(const gfx::Range& range) {
+  textfield_->SelectRange(range);
+}
+
 void EditableCombobox::SetAccessibleName(const base::string16& name) {
   textfield_->SetAccessibleName(name);
 }
@@ -356,11 +361,13 @@ void EditableCombobox::ContentsChanged(Textfield* sender,
 }
 
 void EditableCombobox::OnViewBlurred(View* observed_view) {
-  menu_runner_.reset();
+  CloseMenu();
 }
 
 void EditableCombobox::OnViewFocused(View* observed_view) {
-  ShowDropDownMenu();
+  if (show_menu_on_next_focus_)
+    ShowDropDownMenu();
+  show_menu_on_next_focus_ = true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -368,7 +375,7 @@ void EditableCombobox::OnViewFocused(View* observed_view) {
 
 void EditableCombobox::ButtonPressed(Button* sender, const ui::Event& event) {
   if (menu_runner_ && menu_runner_->IsRunning()) {
-    menu_runner_.reset();
+    CloseMenu();
     return;
   }
   textfield_->RequestFocus();
@@ -382,6 +389,10 @@ void EditableCombobox::ButtonPressed(Button* sender, const ui::Event& event) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // EditableCombobox, Private methods:
+
+void EditableCombobox::CloseMenu() {
+  menu_runner_.reset();
+}
 
 void EditableCombobox::OnItemSelected(int index) {
   // We set |showing_password_text_| to true before calling GetLabelAt on the
@@ -417,17 +428,13 @@ void EditableCombobox::HandleNewContent(const base::string16& new_content) {
   menu_model_->UpdateItemsShown();
 }
 
-void EditableCombobox::OnMenuClosed() {
-  menu_runner_.reset();
-}
-
 void EditableCombobox::ShowDropDownMenu(ui::MenuSourceType source_type) {
   constexpr int kMenuBorderWidthLeft = 1;
   constexpr int kMenuBorderWidthTop = 1;
   constexpr int kMenuBorderWidthRight = 1;
 
   if (!menu_model_->GetItemCount()) {
-    menu_runner_.reset();
+    CloseMenu();
     return;
   }
   if (!textfield_->HasFocus() || (menu_runner_ && menu_runner_->IsRunning()))
@@ -446,7 +453,7 @@ void EditableCombobox::ShowDropDownMenu(ui::MenuSourceType source_type) {
 
   menu_runner_ = std::make_unique<MenuRunner>(
       menu_model_.get(), MenuRunner::EDITABLE_COMBOBOX,
-      base::BindRepeating(&EditableCombobox::OnMenuClosed,
+      base::BindRepeating(&EditableCombobox::CloseMenu,
                           base::Unretained(this)));
   menu_runner_->RunMenuAt(GetWidget(), nullptr, bounds,
                           MenuAnchorPosition::kTopLeft, source_type);
