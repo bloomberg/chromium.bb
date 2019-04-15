@@ -33,13 +33,17 @@
 }
 #endif
 
-// Set up called once for the class.
-+ (void)setUp {
-  [super setUp];
-}
-
 - (void)setUp {
+#if defined(CHROME_EARL_GREY_2)
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    XCUIApplication* application = [[XCUIApplication alloc] init];
+    [application launch];
+  });
+#endif
+
   [CoverageUtils configureCoverageReportPath];
+
   [super setUp];
 }
 

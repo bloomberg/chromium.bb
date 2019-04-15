@@ -5,10 +5,6 @@
 #ifndef IOS_WEB_SHELL_TEST_EARL_GREY_SHELL_ACTIONS_H_
 #define IOS_WEB_SHELL_TEST_EARL_GREY_SHELL_ACTIONS_H_
 
-#include <string>
-
-#import <Foundation/Foundation.h>
-
 @class ElementSelector;
 @protocol GREYAction;
 

@@ -4,10 +4,9 @@
 
 #import "ios/web/shell/test/earl_grey/shell_earl_grey_app_interface.h"
 
-#import <EarlGrey/EarlGrey.h>
-
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#import "ios/testing/earl_grey/earl_grey_app.h"
 #import "ios/web/public/test/earl_grey/js_test_util.h"
 #import "ios/web/public/test/navigation_test_util.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
