@@ -35,7 +35,8 @@ class CORE_EXPORT TextFragmentFinder final {
   Client& client_;
   const TextFragmentSelector selector_;
 
-  String search_text_;
+  PositionInFlatTree FindStart();
+  PositionInFlatTree FindEnd();
 };
 
 }  // namespace blink
