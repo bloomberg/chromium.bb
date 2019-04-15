@@ -87,6 +87,7 @@ html[darkmode=true] .ep-enhanced #edit-bg-icon {
 
 #edit-bg-text {
   display: none;
+  user-select: none;
 }
 
 .ep-enhanced #edit-bg-text {
