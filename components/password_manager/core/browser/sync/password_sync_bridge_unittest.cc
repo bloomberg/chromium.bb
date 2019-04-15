@@ -93,17 +93,12 @@ autofill::PasswordForm MakePasswordForm(const std::string& signon_realm) {
   return form;
 }
 
-// Creates an EntityData/EntityDataPtr around a copy of the given specifics.
-syncer::EntityDataPtr SpecificsToEntity(
+// Creates an EntityData around a copy of the given specifics.
+std::unique_ptr<syncer::EntityData> SpecificsToEntity(
     const sync_pb::PasswordSpecifics& specifics) {
-  syncer::EntityData data;
-  // These tests do not care about the tag hash, but EntityData and friends
-  // cannot differentiate between the default EntityData object if the hash
-  // is unset, which causes pass/copy operations to no-op and things start to
-  // break, so we throw in a junk value and forget about it.
-  data.client_tag_hash = "junk";
-  *data.specifics.mutable_password() = specifics;
-  return data.PassToPtr();
+  auto data = std::make_unique<syncer::EntityData>();
+  *data->specifics.mutable_password() = specifics;
+  return data;
 }
 
 // A mini database class the supports Add/Update/Remove functionality. It also

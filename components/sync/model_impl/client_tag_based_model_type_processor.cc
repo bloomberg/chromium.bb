@@ -642,8 +642,8 @@ void PopulateClientTagsForWalletData(const ModelType& type,
       // wallet_data entity has a client tag.
       continue;
     }
-    update->entity = update->entity->UpdateClientTagHash(GenerateSyncableHash(
-        type, bridge->GetClientTag(update->entity.value())));
+    update->entity->client_tag_hash =
+        GenerateSyncableHash(type, bridge->GetClientTag(*update->entity));
   }
 }
 
@@ -688,9 +688,9 @@ void ClientTagBasedModelTypeProcessor::OnUpdateReceived(
   // has.
   bool is_initial_sync = !model_type_state_.initial_sync_done();
   if (is_initial_sync || HasClearAllDirective(model_type_state)) {
-    error = OnFullUpdateReceived(model_type_state, updates);
+    error = OnFullUpdateReceived(model_type_state, std::move(updates));
   } else {
-    error = OnIncrementalUpdateReceived(model_type_state, updates);
+    error = OnIncrementalUpdateReceived(model_type_state, std::move(updates));
     ExpireEntriesIfNeeded(model_type_state.progress_marker());
   }
 
@@ -720,9 +720,9 @@ void ClientTagBasedModelTypeProcessor::OnUpdateReceived(
 }
 
 ProcessorEntity* ClientTagBasedModelTypeProcessor::ProcessUpdate(
-    const UpdateResponseData& update,
+    std::unique_ptr<UpdateResponseData> update,
     EntityChangeList* entity_changes) {
-  const EntityData& data = update.entity.value();
+  const EntityData& data = *update->entity;
   const std::string& client_tag_hash = data.client_tag_hash;
 
   // Filter out updates without a client tag hash (including permanent nodes,
@@ -752,57 +752,78 @@ ProcessorEntity* ClientTagBasedModelTypeProcessor::ProcessUpdate(
   }
 
   if (entity) {
-    entity->RecordEntityUpdateLatency(update.response_version, type_);
+    entity->RecordEntityUpdateLatency(update->response_version, type_);
   }
 
-  if (entity && entity->UpdateIsReflection(update.response_version)) {
+  if (entity && entity->UpdateIsReflection(update->response_version)) {
     // Seen this update before; just ignore it.
     return nullptr;
   }
 
+  // Grab a raw pointer in case the entity data needs to be cloned later if the
+  // received entity has an out of date encryption.
+  EntityData* entity_data = update->entity.get();
+
+  ConflictResolution::Type resolution_type = ConflictResolution::TYPE_SIZE;
   if (entity && entity->IsUnsynced()) {
     // Handle conflict resolution.
-    ConflictResolution::Type resolution_type =
-        ResolveConflict(update, entity, entity_changes);
+    resolution_type = ResolveConflict(*update, entity, entity_changes);
     UMA_HISTOGRAM_ENUMERATION("Sync.ResolveConflict", resolution_type,
                               ConflictResolution::TYPE_SIZE);
   } else {
     // Handle simple create/delete/update.
+    base::Optional<EntityChange::ChangeType> change_type;
+
     if (entity == nullptr) {
       entity = CreateEntity(data);
-      entity_changes->push_back(
-          EntityChange::CreateAdd(entity->storage_key(), update.entity));
+      change_type = EntityChange::ACTION_ADD;
     } else if (data.is_deleted()) {
-      // The entity was deleted; inform the bridge. Note that the local data
-      // can never be deleted at this point because it would have either been
-      // acked (the add case) or pending (the conflict case).
       DCHECK(!entity->metadata().is_deleted());
-      entity_changes->push_back(
-          EntityChange::CreateDelete(entity->storage_key()));
+      change_type = EntityChange::ACTION_DELETE;
     } else if (!entity->MatchesData(data)) {
-      // Specifics have changed, so update the bridge.
-      entity_changes->push_back(
-          EntityChange::CreateUpdate(entity->storage_key(), update.entity));
+      change_type = EntityChange::ACTION_UPDATE;
     }
-    entity->RecordAcceptedUpdate(update);
+    entity->RecordAcceptedUpdate(*update);
+    // Inform the bridge about the changes if needed.
+    if (change_type) {
+      switch (change_type.value()) {
+        case EntityChange::ACTION_ADD:
+          entity_changes->push_back(EntityChange::CreateAdd(
+              entity->storage_key(), std::move(update->entity)));
+          break;
+        case EntityChange::ACTION_DELETE:
+          // The entity was deleted; inform the bridge. Note that the local data
+          // can never be deleted at this point because it would have either
+          // been acked (the add case) or pending (the conflict case).
+          entity_changes->push_back(
+              EntityChange::CreateDelete(entity->storage_key()));
+          break;
+        case EntityChange::ACTION_UPDATE:
+          // Specifics have changed, so update the bridge.
+          entity_changes->push_back(EntityChange::CreateUpdate(
+              entity->storage_key(), std::move(update->entity)));
+          break;
+      }
+    }
   }
 
   // If the received entity has out of date encryption, we schedule another
   // commit to fix it.
-  if (model_type_state_.encryption_key_name() != update.encryption_key_name) {
+  if (model_type_state_.encryption_key_name() != update->encryption_key_name) {
     DVLOG(2) << ModelTypeToString(type_) << ": Requesting re-encrypt commit "
-             << update.encryption_key_name << " -> "
+             << update->encryption_key_name << " -> "
              << model_type_state_.encryption_key_name();
 
     entity->IncrementSequenceNumber(base::Time::Now());
-    if (entity->RequiresCommitData()) {
-      // If there is no pending commit data, then either this update wasn't
+    if (resolution_type != ConflictResolution::USE_LOCAL &&
+        resolution_type != ConflictResolution::IGNORE_REMOTE_ENCRYPTION &&
+        entity->RequiresCommitData()) {
+      // If there is no pending commit data, and then either this update wasn't
       // in conflict or the remote data won; either way the remote data is
       // the right data to re-queue for commit.
-      entity->CacheCommitData(update.entity);
+      entity->CacheCommitData(entity_data->Clone());
     }
   }
-
   return entity;
 }
 
@@ -810,7 +831,7 @@ ConflictResolution::Type ClientTagBasedModelTypeProcessor::ResolveConflict(
     const UpdateResponseData& update,
     ProcessorEntity* entity,
     EntityChangeList* changes) {
-  const EntityData& remote_data = update.entity.value();
+  const EntityData& remote_data = *update.entity;
 
   ConflictResolution::Type resolution_type = ConflictResolution::TYPE_SIZE;
   std::unique_ptr<EntityData> new_data;
@@ -836,7 +857,7 @@ ConflictResolution::Type ClientTagBasedModelTypeProcessor::ResolveConflict(
   } else {
     // There's a real data conflict here; let the bridge resolve it.
     ConflictResolution resolution =
-        bridge_->ResolveConflict(entity->commit_data().value(), remote_data);
+        bridge_->ResolveConflict(entity->commit_data(), remote_data);
     resolution_type = resolution.type();
     new_data = resolution.ExtractData();
   }
@@ -861,8 +882,8 @@ ConflictResolution::Type ClientTagBasedModelTypeProcessor::ResolveConflict(
       if (update.entity->is_deleted()) {
         changes->push_back(EntityChange::CreateDelete(entity->storage_key()));
       } else {
-        changes->push_back(
-            EntityChange::CreateUpdate(entity->storage_key(), update.entity));
+        changes->push_back(EntityChange::CreateUpdate(entity->storage_key(),
+                                                      update.entity->Clone()));
       }
       break;
     case ConflictResolution::USE_NEW:
@@ -871,8 +892,8 @@ ConflictResolution::Type ClientTagBasedModelTypeProcessor::ResolveConflict(
       // Make a new pending commit to update the server.
       entity->MakeLocalChange(std::move(new_data));
       // Update the client with the new entity.
-      changes->push_back(EntityChange::CreateUpdate(entity->storage_key(),
-                                                    entity->commit_data()));
+      changes->push_back(EntityChange::CreateUpdate(
+          entity->storage_key(), entity->commit_data().Clone()));
       break;
     case ConflictResolution::TYPE_SIZE:
       NOTREACHED();
@@ -944,7 +965,7 @@ bool ClientTagBasedModelTypeProcessor::ValidateUpdate(
 base::Optional<ModelError>
 ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
     const sync_pb::ModelTypeState& model_type_state,
-    const UpdateResponseDataList& updates) {
+    UpdateResponseDataList updates) {
   std::unique_ptr<MetadataChangeList> metadata_changes =
       bridge_->CreateMetadataChangeList();
   DCHECK(model_ready_to_sync_);
@@ -984,9 +1005,8 @@ ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
       continue;
     }
     if (bridge_->SupportsGetClientTag() &&
-        client_tag_hash !=
-            GenerateSyncableHash(
-                type_, bridge_->GetClientTag(update->entity.value()))) {
+        client_tag_hash != GenerateSyncableHash(
+                               type_, bridge_->GetClientTag(*update->entity))) {
       DLOG(WARNING) << "Received unexpected client tag hash: "
                     << client_tag_hash << " for " << ModelTypeToString(type_);
       continue;
@@ -1001,10 +1021,11 @@ ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
                   << " for " << ModelTypeToString(type_);
     }
 #endif  // DCHECK_IS_ON()
-    ProcessorEntity* entity = CreateEntity(update->entity.value());
+    ProcessorEntity* entity = CreateEntity(*update->entity);
     entity->RecordAcceptedUpdate(*update);
     const std::string& storage_key = entity->storage_key();
-    entity_data.push_back(EntityChange::CreateAdd(storage_key, update->entity));
+    entity_data.push_back(
+        EntityChange::CreateAdd(storage_key, std::move(update->entity)));
     if (!storage_key.empty())
       metadata_changes->UpdateMetadata(storage_key, entity->metadata());
   }
@@ -1018,7 +1039,7 @@ ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
 base::Optional<ModelError>
 ClientTagBasedModelTypeProcessor::OnIncrementalUpdateReceived(
     const sync_pb::ModelTypeState& model_type_state,
-    const UpdateResponseDataList& updates) {
+    UpdateResponseDataList updates) {
   DCHECK(model_ready_to_sync_);
   DCHECK(model_type_state.initial_sync_done());
 
@@ -1037,9 +1058,9 @@ ClientTagBasedModelTypeProcessor::OnIncrementalUpdateReceived(
   // re-encryption phase at the end.
   std::unordered_set<std::string> already_updated;
 
-  for (const std::unique_ptr<syncer::UpdateResponseData>& update : updates) {
+  for (std::unique_ptr<syncer::UpdateResponseData>& update : updates) {
     DCHECK(update);
-    ProcessorEntity* entity = ProcessUpdate(*update, &entity_changes);
+    ProcessorEntity* entity = ProcessUpdate(std::move(update), &entity_changes);
 
     if (!entity) {
       // The update is either of the following:
@@ -1115,7 +1136,7 @@ void ClientTagBasedModelTypeProcessor::ConsumeDataBatch(
     if (entity != nullptr && entity->RequiresCommitData()) {
       // SetCommitData will update EntityData's fields with values from
       // metadata.
-      entity->SetCommitData(data.second.get());
+      entity->SetCommitData(std::move(data.second));
     }
   }
 

@@ -54,7 +54,7 @@ std::unique_ptr<UpdateResponseData> GenerateUpdate(
   data->id = id;
   data->modification_time = mtime;
   auto update = std::make_unique<UpdateResponseData>();
-  update->entity = data->PassToPtr();
+  update->entity = std::move(data);
   update->response_version = version;
   return update;
 }
@@ -72,7 +72,7 @@ std::unique_ptr<UpdateResponseData> GenerateTombstone(
   data->id = id;
   data->modification_time = mtime;
   auto update = std::make_unique<UpdateResponseData>();
-  update->entity = data->PassToPtr();
+  update->entity = std::move(data);
   update->response_version = version;
   return update;
 }
@@ -177,7 +177,7 @@ TEST_F(ProcessorEntityTest, NewLocalItem) {
   EXPECT_FALSE(entity->UpdateIsReflection(1));
   EXPECT_TRUE(entity->HasCommitData());
 
-  EXPECT_EQ(kValue1, entity->commit_data()->specifics.preference().value());
+  EXPECT_EQ(kValue1, entity->commit_data().specifics.preference().value());
 
   // Generate a commit request. The metadata should not change.
   const sync_pb::EntityMetadata metadata_v1 = entity->metadata();
@@ -191,9 +191,8 @@ TEST_F(ProcessorEntityTest, NewLocalItem) {
   EXPECT_FALSE(entity->RequiresCommitData());
   EXPECT_FALSE(entity->CanClearMetadata());
   EXPECT_FALSE(entity->UpdateIsReflection(1));
-  EXPECT_TRUE(entity->HasCommitData());
 
-  const EntityData& data = request.entity.value();
+  const EntityData& data = *request.entity;
   EXPECT_EQ("", data.id);
   EXPECT_EQ(kHash, data.client_tag_hash);
   EXPECT_EQ(kName, data.non_unique_name);
@@ -411,7 +410,7 @@ TEST_F(ProcessorEntityTest, LocalDeletion) {
   EXPECT_FALSE(entity->CanClearMetadata());
   EXPECT_FALSE(entity->HasCommitData());
 
-  const EntityData& data = request.entity.value();
+  const EntityData& data = *request.entity;
   EXPECT_EQ(kId, data.id);
   EXPECT_EQ(kHash, data.client_tag_hash);
   EXPECT_EQ("", data.non_unique_name);
@@ -478,7 +477,6 @@ TEST_F(ProcessorEntityTest, LocalChangesInterleaved) {
   EXPECT_FALSE(entity->RequiresCommitRequest());
   EXPECT_FALSE(entity->RequiresCommitData());
   EXPECT_FALSE(entity->CanClearMetadata());
-  EXPECT_TRUE(entity->HasCommitData());
 
   // Ack the first commit.
   entity->ReceiveCommitResponse(GenerateAckData(request_v1, kId, 2), false);
@@ -493,7 +491,8 @@ TEST_F(ProcessorEntityTest, LocalChangesInterleaved) {
   EXPECT_FALSE(entity->RequiresCommitRequest());
   EXPECT_FALSE(entity->RequiresCommitData());
   EXPECT_FALSE(entity->CanClearMetadata());
-  EXPECT_TRUE(entity->HasCommitData());
+  // Commit data has been moved already to the request.
+  EXPECT_FALSE(entity->HasCommitData());
 
   // Ack the second commit.
   entity->ReceiveCommitResponse(GenerateAckData(request_v2, kId, 3), false);
@@ -546,7 +545,7 @@ TEST_F(ProcessorEntityTest, RestoredLocalChangeWithUpdatedSpecifics) {
   // to SetCommitData.
   entity = RestoreFromMetadata(std::move(entity_metadata));
   auto entity_data = GenerateEntityData(kHash, kName, kValue2);
-  entity->SetCommitData(entity_data.get());
+  entity->SetCommitData(std::move(entity_data));
 
   // No verification is necessary. SetCommitData shouldn't DCHECK.
 }
@@ -564,14 +563,6 @@ TEST_F(ProcessorEntityTest, LocalCreationConflictsWithServerTombstone) {
   ASSERT_TRUE(entity->HasCommitData());
   ASSERT_FALSE(entity->metadata().is_deleted());
   ASSERT_TRUE(entity->metadata().server_id().empty());
-
-  {
-    // Local creation should use a temporary server ID (which in this entity
-    // involves an empty string).
-    CommitRequestData request;
-    entity->InitializeCommitRequestData(&request);
-    EXPECT_TRUE(request.entity->id.empty());
-  }
 
   // Before anything gets committed, we receive a remote tombstone, but local
   // would usually win so the remote update is ignored.

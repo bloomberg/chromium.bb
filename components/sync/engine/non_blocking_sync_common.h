@@ -25,7 +25,7 @@ struct CommitRequestData {
   ~CommitRequestData();
 
   // Fields sent to the sync server.
-  EntityDataPtr entity;
+  std::unique_ptr<EntityData> entity;
   int64_t base_version = 0;
 
   // Fields not sent to the sync server. However, they are kept to be sent back
@@ -63,7 +63,7 @@ struct UpdateResponseData {
   UpdateResponseData();
   ~UpdateResponseData();
 
-  EntityDataPtr entity;
+  std::unique_ptr<EntityData> entity;
 
   int64_t response_version = 0;
   std::string encryption_key_name;

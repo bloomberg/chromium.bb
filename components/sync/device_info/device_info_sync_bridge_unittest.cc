@@ -138,16 +138,12 @@ ModelTypeState StateWithEncryption(const std::string& encryption_key_name) {
   return state;
 }
 
-// Creates an EntityData/EntityDataPtr around a copy of the given specifics.
-EntityDataPtr SpecificsToEntity(const DeviceInfoSpecifics& specifics) {
-  EntityData data;
-  // These tests do not care about the tag hash, but EntityData and friends
-  // cannot differentiate between the default EntityData object if the hash
-  // is unset, which causes pass/copy operations to no-op and things start to
-  // break, so we throw in a junk value and forget about it.
-  data.client_tag_hash = "junk";
-  *data.specifics.mutable_device_info() = specifics;
-  return data.PassToPtr();
+// Creates an EntityData around a copy of the given specifics.
+std::unique_ptr<EntityData> SpecificsToEntity(
+    const DeviceInfoSpecifics& specifics) {
+  auto data = std::make_unique<EntityData>();
+  *data->specifics.mutable_device_info() = specifics;
+  return data;
 }
 
 std::string CacheGuidToTag(const std::string& guid) {

@@ -243,21 +243,21 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
     const sync_pb::SyncEntity& update_entity,
     UpdateResponseData* response_data) {
   response_data->response_version = update_entity.version();
-  EntityData data;
+  auto data = std::make_unique<syncer::EntityData>();
   // Prepare the message for the model thread.
-  data.id = update_entity.id_string();
-  data.client_tag_hash = update_entity.client_defined_unique_tag();
-  data.creation_time = ProtoTimeToTime(update_entity.ctime());
-  data.modification_time = ProtoTimeToTime(update_entity.mtime());
-  data.non_unique_name = update_entity.name();
-  data.is_folder = update_entity.folder();
-  data.parent_id = update_entity.parent_id_string();
+  data->id = update_entity.id_string();
+  data->client_tag_hash = update_entity.client_defined_unique_tag();
+  data->creation_time = ProtoTimeToTime(update_entity.ctime());
+  data->modification_time = ProtoTimeToTime(update_entity.mtime());
+  data->non_unique_name = update_entity.name();
+  data->is_folder = update_entity.folder();
+  data->parent_id = update_entity.parent_id_string();
 
   // Handle deprecated positioning fields. Relevant only for bookmarks.
   bool has_position_scheme = false;
   SyncPositioningScheme sync_positioning_scheme;
   if (update_entity.has_unique_position()) {
-    data.unique_position = update_entity.unique_position();
+    data->unique_position = update_entity.unique_position();
     has_position_scheme = true;
     sync_positioning_scheme = SyncPositioningScheme::UNIQUE_POSITION;
   } else if (update_entity.has_position_in_parent() ||
@@ -278,7 +278,7 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
                       update_entity.originator_client_item_id());
 
     if (update_entity.has_position_in_parent()) {
-      data.unique_position =
+      data->unique_position =
           UniquePosition::FromInt64(update_entity.position_in_parent(), suffix)
               .ToProto();
       has_position_scheme = true;
@@ -286,7 +286,7 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
     } else {
       // If update_entity has insert_after_item_id, use 0 index.
       DCHECK(update_entity.has_insert_after_item_id());
-      data.unique_position = UniquePosition::FromInt64(0, suffix).ToProto();
+      data->unique_position = UniquePosition::FromInt64(0, suffix).ToProto();
       has_position_scheme = true;
       sync_positioning_scheme = SyncPositioningScheme::INSERT_AFTER_ITEM_ID;
     }
@@ -303,10 +303,10 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
 
   // Populate |originator_cache_guid| and |originator_client_item_id|. This is
   // relevant only for bookmarks.
-  data.originator_cache_guid = update_entity.originator_cache_guid();
-  data.originator_client_item_id = update_entity.originator_client_item_id();
+  data->originator_cache_guid = update_entity.originator_cache_guid();
+  data->originator_client_item_id = update_entity.originator_client_item_id();
 
-  data.server_defined_unique_tag = update_entity.server_defined_unique_tag();
+  data->server_defined_unique_tag = update_entity.server_defined_unique_tag();
 
   // Deleted entities must use the default instance of EntitySpecifics in
   // order for EntityData to correctly reflect that they are deleted.
@@ -324,38 +324,39 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
     // Make sure the worker defers password entities if the encryption key
     // hasn't been received yet.
     if (!cryptographer->CanDecrypt(specifics.password().encrypted())) {
-      data.specifics = specifics;
-      response_data->entity = data.PassToPtr();
+      data->specifics = specifics;
+      response_data->entity = std::move(data);
       return DECRYPTION_PENDING;
     }
     response_data->encryption_key_name =
         specifics.password().encrypted().key_name();
-    if (!DecryptPasswordSpecifics(*cryptographer, specifics, &data.specifics)) {
+    if (!DecryptPasswordSpecifics(*cryptographer, specifics,
+                                  &data->specifics)) {
       return FAILED_TO_DECRYPT;
     }
-    response_data->entity = data.PassToPtr();
+    response_data->entity = std::move(data);
     return SUCCESS;
   }
 
   // Check if specifics are encrypted and try to decrypt if so.
   if (!specifics.has_encrypted()) {
     // No encryption.
-    data.specifics = specifics;
-    response_data->entity = data.PassToPtr();
+    data->specifics = specifics;
+    response_data->entity = std::move(data);
     return SUCCESS;
   }
   if (cryptographer && cryptographer->CanDecrypt(specifics.encrypted())) {
     // Encrypted and we know the key.
-    if (!DecryptSpecifics(*cryptographer, specifics, &data.specifics)) {
+    if (!DecryptSpecifics(*cryptographer, specifics, &data->specifics)) {
       return FAILED_TO_DECRYPT;
     }
-    response_data->entity = data.PassToPtr();
+    response_data->entity = std::move(data);
     response_data->encryption_key_name = specifics.encrypted().key_name();
     return SUCCESS;
   }
   // Can't decrypt right now.
-  data.specifics = specifics;
-  response_data->entity = data.PassToPtr();
+  data->specifics = specifics;
+  response_data->entity = std::move(data);
   return DECRYPTION_PENDING;
 }
 
@@ -569,32 +570,32 @@ void ModelTypeWorker::DecryptStoredEntities() {
   for (auto it = entries_pending_decryption_.begin();
        it != entries_pending_decryption_.end();) {
     const UpdateResponseData& encrypted_update = *it->second;
-    EntityDataPtr data = encrypted_update.entity;
+    const EntityData& data = *encrypted_update.entity;
 
     sync_pb::EntitySpecifics specifics;
     std::string encryption_key_name;
 
-    if (data->specifics.password().has_encrypted()) {
-      encryption_key_name = data->specifics.password().encrypted().key_name();
-      if (!cryptographer_->CanDecrypt(data->specifics.password().encrypted())) {
+    if (data.specifics.password().has_encrypted()) {
+      encryption_key_name = data.specifics.password().encrypted().key_name();
+      if (!cryptographer_->CanDecrypt(data.specifics.password().encrypted())) {
         ++it;
         continue;
       }
-      if (!DecryptPasswordSpecifics(*cryptographer_, data->specifics,
+      if (!DecryptPasswordSpecifics(*cryptographer_, data.specifics,
                                     &specifics)) {
         ++it;
         continue;
       }
     } else {
-      DCHECK(data->specifics.has_encrypted());
-      encryption_key_name = data->specifics.encrypted().key_name();
+      DCHECK(data.specifics.has_encrypted());
+      encryption_key_name = data.specifics.encrypted().key_name();
 
-      if (!cryptographer_->CanDecrypt(data->specifics.encrypted())) {
+      if (!cryptographer_->CanDecrypt(data.specifics.encrypted())) {
         ++it;
         continue;
       }
 
-      if (!DecryptSpecifics(*cryptographer_, data->specifics, &specifics)) {
+      if (!DecryptSpecifics(*cryptographer_, data.specifics, &specifics)) {
         // Decryption error should be permanent (e.g. corrupt data), since
         // CanDecrypt() above claims decryption keys are up-to-date. Let's
         // ignore this update to avoid blocking other updates.
@@ -606,7 +607,8 @@ void ModelTypeWorker::DecryptStoredEntities() {
     auto decrypted_update = std::make_unique<UpdateResponseData>();
     decrypted_update->response_version = encrypted_update.response_version;
     decrypted_update->encryption_key_name = encryption_key_name;
-    decrypted_update->entity = data->UpdateSpecifics(specifics);
+    decrypted_update->entity = std::move(it->second->entity);
+    decrypted_update->entity->specifics = std::move(specifics);
     pending_updates_.push_back(std::move(decrypted_update));
     it = entries_pending_decryption_.erase(it);
   }

@@ -31,7 +31,6 @@ using syncer::DataBatch;
 using syncer::EntityChange;
 using syncer::EntityChangeList;
 using syncer::EntityData;
-using syncer::EntityDataPtr;
 using syncer::KeyAndData;
 using syncer::MetadataBatch;
 using syncer::MetadataChangeList;
@@ -401,11 +400,11 @@ class TypedURLSyncBridgeTest : public testing::Test {
     return bridge()->GetStorageKeyInternal(url);
   }
 
-  EntityDataPtr SpecificsToEntity(const TypedUrlSpecifics& specifics) {
-    EntityData data;
-    data.client_tag_hash = "ignored";
-    *data.specifics.mutable_typed_url() = specifics;
-    return data.PassToPtr();
+  std::unique_ptr<EntityData> SpecificsToEntity(
+      const TypedUrlSpecifics& specifics) {
+    auto data = std::make_unique<EntityData>();
+    *data->specifics.mutable_typed_url() = specifics;
+    return data;
   }
 
   EntityChangeList CreateEntityChangeList(
