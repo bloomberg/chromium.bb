@@ -68,6 +68,12 @@ const char kEnableAutofillCreditCardUploadUpdatePromptExplanationDescription[] =
     "If enabled, changes the server save card prompt's explanation to mention "
     "the saving of the billing address.";
 
+const char kEnableAutofillDoNotUploadSaveUnsupportedCardsName[] =
+    "Prevents upload save on cards from unsupported networks";
+const char kEnableAutofillDoNotUploadSaveUnsupportedCardsDescription[] =
+    "If enabled, cards from unsupported networks will not be offered upload "
+    "save, and will instead be offered local save.";
+
 const char kEnableAutofillSaveCreditCardUsesStrikeSystemName[] =
     "Enable limit on offering to save the same credit card repeatedly";
 const char kEnableAutofillSaveCreditCardUsesStrikeSystemDescription[] =
