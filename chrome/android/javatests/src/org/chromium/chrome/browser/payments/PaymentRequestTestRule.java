@@ -439,6 +439,12 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
                 .trim());
     }
 
+    /** Returns the amount text corresponding to the line item at the specified |index|. */
+    protected int getNumberOfLineItems() throws ExecutionException {
+        return ThreadUtils.runOnUiThreadBlocking(
+                () -> mUI.getOrderSummarySectionForTest().getNumberOfLineItemsForTest());
+    }
+
     /**
      * Returns the label corresponding to the contact detail suggestion at the specified
      * |suggestionIndex|.

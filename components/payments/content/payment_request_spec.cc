@@ -88,8 +88,12 @@ PaymentRequestSpec::PaymentRequestSpec(
       current_update_reason_(UpdateReason::NONE) {
   if (observer)
     AddObserver(observer);
+  if (!details_->display_items)
+    details_->display_items = std::vector<mojom::PaymentItemPtr>();
   if (!details_->shipping_options)
     details_->shipping_options = std::vector<mojom::PaymentShippingOptionPtr>();
+  if (!details_->modifiers)
+    details_->modifiers = std::vector<mojom::PaymentDetailsModifierPtr>();
   UpdateSelectedShippingOption(/*after_update=*/false);
   PopulateValidatedMethodData(
       method_data_, &supported_card_networks_, &basic_card_specified_networks_,
@@ -104,11 +108,11 @@ void PaymentRequestSpec::UpdateWith(mojom::PaymentDetailsPtr details) {
   DCHECK(details_->total || details->total);
   if (details->total)
     details_->total = std::move(details->total);
-  if (!details->display_items.empty())
+  if (details->display_items)
     details_->display_items = std::move(details->display_items);
   if (details->shipping_options)
     details_->shipping_options = std::move(details->shipping_options);
-  if (!details->modifiers.empty())
+  if (details->modifiers)
     details_->modifiers = std::move(details->modifiers);
   details_->error = std::move(details->error);
   if (details->shipping_address_errors)
@@ -116,6 +120,10 @@ void PaymentRequestSpec::UpdateWith(mojom::PaymentDetailsPtr details) {
         std::move(details->shipping_address_errors);
   if (details->id)
     details_->id = std::move(details->id);
+  DCHECK(details_->total);
+  DCHECK(details_->display_items);
+  DCHECK(details_->shipping_options);
+  DCHECK(details_->modifiers);
   RecomputeSpecForDetails();
 }
 
@@ -299,9 +307,10 @@ void PaymentRequestSpec::StartWaitingForUpdateWith(
 }
 
 bool PaymentRequestSpec::IsMixedCurrency() const {
+  DCHECK(details_->display_items);
   const std::string& total_currency = details_->total->amount->currency;
-  return std::any_of(details_->display_items.begin(),
-                     details_->display_items.end(),
+  return std::any_of(details_->display_items->begin(),
+                     details_->display_items->end(),
                      [&total_currency](const mojom::PaymentItemPtr& item) {
                        return item->amount->currency != total_currency;
                      });
@@ -319,7 +328,8 @@ std::vector<const mojom::PaymentItemPtr*> PaymentRequestSpec::GetDisplayItems(
   std::vector<const mojom::PaymentItemPtr*> display_items;
   const mojom::PaymentDetailsModifierPtr* modifier =
       GetApplicableModifier(selected_instrument);
-  for (const auto& item : details_->display_items) {
+  DCHECK(details_->display_items);
+  for (const auto& item : *details_->display_items) {
     display_items.push_back(&item);
   }
 
@@ -344,7 +354,8 @@ PaymentRequestSpec::GetApplicableModifier(
       !base::FeatureList::IsEnabled(features::kWebPaymentsModifiers))
     return nullptr;
 
-  for (const auto& modifier : details_->modifiers) {
+  DCHECK(details_->modifiers);
+  for (const auto& modifier : *details_->modifiers) {
     std::set<std::string> supported_card_networks_set;
     std::set<autofill::CreditCard::CardType> supported_types;
     // The following 4 are unused but required by PopulateValidatedMethodData.

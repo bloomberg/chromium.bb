@@ -10,16 +10,43 @@
  */
 function buy() {  // eslint-disable-line no-unused-vars
   try {
-    new PaymentRequest(
+    var request = new PaymentRequest(
         [{supportedMethods: 'basic-card'}], {
           total: {
             label: 'Total',
-            amount: {currency: 'USD', value: '1.00'},
+            amount: {currency: 'USD', value: '3.00'},
           },
-        })
-        .show(Promise.resolve({}))
+          displayItems: [{
+            label: 'Display item',
+            amount: {currency: 'USD', value: '1.00'},
+          }],
+          modifiers: [{
+            supportedMethods: 'basic-card',
+            additionalDisplayItems: [{
+              label: 'Modifier',
+              pending: true,
+              amount: {currency: 'USD', value: '1.00'},
+            }],
+          }],
+          shippingOptions: [{
+            label: 'Shipping option',
+            id: 'shipping-option-identifier',
+            selected: true,
+            amount: {currency: 'USD', value: '1.00'},
+          }],
+        },
+        {requestShipping: true});
+
+    // Should NOT clear out any of the items.
+    // Payment sheet should NOT display a message to "select an address",
+    // because the shipping option in the constructor is selected and is not
+    // cleared out.
+    request.show(Promise.resolve({}))
         .then(function(result) {
-          print(JSON.stringify(result.details));
+          print(JSON.stringify({
+            details: result.details,
+            shippingOption: request.shippingOption,
+          }));
           return result.complete('success');
         })
         .catch(function(error) {

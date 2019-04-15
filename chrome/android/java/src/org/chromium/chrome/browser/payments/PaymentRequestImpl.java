@@ -999,35 +999,42 @@ public class PaymentRequestImpl
             mRawTotal = details.total;
         }
 
-        if (mRawLineItems == null || details.displayItems.length != 0) {
-            mRawLineItems = Collections.unmodifiableList(Arrays.asList(details.displayItems));
+        if (mRawLineItems == null || details.displayItems != null) {
+            mRawLineItems = Collections.unmodifiableList(details.displayItems != null
+                            ? Arrays.asList(details.displayItems)
+                            : new ArrayList<>());
         }
 
         loadCurrencyFormattersForPaymentDetails(details);
 
-        if (mRawTotal != null) {
-            // Total is never pending.
-            CurrencyFormatter formatter = getOrCreateCurrencyFormatter(mRawTotal.amount);
-            LineItem uiTotal = new LineItem(mRawTotal.label, formatter.getFormattedCurrencyCode(),
-                    formatter.format(mRawTotal.amount.value), /* isPending */ false);
+        // Total is never pending.
+        CurrencyFormatter formatter = getOrCreateCurrencyFormatter(mRawTotal.amount);
+        LineItem uiTotal = new LineItem(mRawTotal.label, formatter.getFormattedCurrencyCode(),
+                formatter.format(mRawTotal.amount.value), /* isPending */ false);
 
-            List<LineItem> uiLineItems = getLineItems(mRawLineItems);
+        List<LineItem> uiLineItems = getLineItems(mRawLineItems);
 
-            mUiShoppingCart = new ShoppingCart(uiTotal, uiLineItems);
-        }
+        mUiShoppingCart = new ShoppingCart(uiTotal, uiLineItems);
 
         if (mUiShippingOptions == null || details.shippingOptions != null) {
             mUiShippingOptions = getShippingOptions(details.shippingOptions);
         }
 
-        for (int i = 0; i < details.modifiers.length; i++) {
-            PaymentDetailsModifier modifier = details.modifiers[i];
-            String method = modifier.methodData.supportedMethod;
-            if (mModifiers == null) mModifiers = new ArrayMap<>();
-            mModifiers.put(method, modifier);
+        if (details.modifiers != null) {
+            if (details.modifiers.length == 0) mModifiers.clear();
+
+            for (int i = 0; i < details.modifiers.length; i++) {
+                PaymentDetailsModifier modifier = details.modifiers[i];
+                String method = modifier.methodData.supportedMethod;
+                if (mModifiers == null) mModifiers = new ArrayMap<>();
+                mModifiers.put(method, modifier);
+            }
         }
 
         updateInstrumentModifiedTotals();
+
+        assert mRawTotal != null;
+        assert mRawLineItems != null;
 
         return true;
     }

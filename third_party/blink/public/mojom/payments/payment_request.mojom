@@ -169,10 +169,14 @@ struct PaymentDetailsModifier {
 
 struct PaymentDetails {
   PaymentItem? total;
-  array<PaymentItem> display_items;
-  // Shipping options can be null if updateWith() is called w/o shippingOptions
+
+  // If any of these lists is null, then PaymentRequest.UpdateWith() ignores
+  // them. If any of these lists are empty, then PaymentRequest.UpdateWith()
+  // clears the corresponding lists in the browser.
+  array<PaymentItem>? display_items;
   array<PaymentShippingOption>? shipping_options;
-  array<PaymentDetailsModifier> modifiers;
+  array<PaymentDetailsModifier>? modifiers;
+
   string error = "";
   AddressErrors? shipping_address_errors;
   // Identifier identifying the payment request, to be exposed
