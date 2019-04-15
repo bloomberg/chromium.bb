@@ -270,7 +270,6 @@ Page* ChromeClientImpl::CreateWindowDelegate(
           WebLocalFrameImpl::FromFrame(frame),
           WrappedResourceRequest(r.GetResourceRequest()), features, frame_name,
           static_cast<WebNavigationPolicy>(r.GetNavigationPolicy()),
-          r.GetShouldSetOpener() == kNeverSetOpener,
           static_cast<WebSandboxFlags>(sandbox_flags), opener_feature_state,
           session_storage_namespace_id));
   if (!new_view)

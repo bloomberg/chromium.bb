@@ -1330,7 +1330,6 @@ WebView* RenderViewImpl::CreateView(
     const WebWindowFeatures& features,
     const WebString& frame_name,
     WebNavigationPolicy policy,
-    bool suppress_opener,
     WebSandboxFlags sandbox_flags,
     const blink::FeaturePolicy::FeatureState& opener_feature_state,
     const blink::SessionStorageNamespaceId& session_storage_namespace_id) {
@@ -1362,7 +1361,7 @@ WebView* RenderViewImpl::CreateView(
   const std::string& frame_name_utf8 = frame_name.Utf8(
       WebString::UTF8ConversionMode::kStrictReplacingErrorsWithFFFD);
   params->frame_name = frame_name_utf8;
-  params->opener_suppressed = suppress_opener;
+  params->opener_suppressed = features.noopener;
   params->disposition = NavigationPolicyToDisposition(policy);
   if (!request.IsNull()) {
     params->target_url = request.Url();

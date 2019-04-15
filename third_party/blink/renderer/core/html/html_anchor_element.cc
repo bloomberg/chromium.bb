@@ -430,10 +430,10 @@ void HTMLAnchorElement::HandleClick(Event& event) {
   frame_request.SetNavigationPolicy(NavigationPolicyFromEvent(&event));
   if (HasRel(kRelationNoReferrer)) {
     frame_request.SetShouldSendReferrer(kNeverSendReferrer);
-    frame_request.SetShouldSetOpener(kNeverSetOpener);
+    frame_request.SetNoOpener();
   }
   if (HasRel(kRelationNoOpener))
-    frame_request.SetShouldSetOpener(kNeverSetOpener);
+    frame_request.SetNoOpener();
   if (RuntimeEnabledFeatures::HrefTranslateEnabled(&GetDocument()) &&
       hasAttribute(kHreftranslateAttr)) {
     frame_request.SetHrefTranslate(FastGetAttribute(kHreftranslateAttr));
