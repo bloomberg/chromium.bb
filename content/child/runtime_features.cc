@@ -387,7 +387,7 @@ void SetIndividualRuntimeFeatures(
           "restrict-lazy-load-frames-to-data-saver-only", false));
   WebRuntimeFeatures::EnableRestrictLazyImageLoadingToDataSaver(
       base::GetFieldTrialParamByFeatureAsBool(
-          features::kLazyFrameLoading,
+          features::kLazyImageLoading,
           "restrict-lazy-load-images-to-data-saver-only", false));
 
   WebRuntimeFeatures::EnablePictureInPicture(
