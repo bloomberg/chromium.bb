@@ -16,7 +16,7 @@ OZONE_BASE_EXPORT extern const char kOzoneDumpFile[];
 
 OZONE_BASE_EXPORT extern const char kEnableWaylandIme[];
 
-OZONE_BASE_EXPORT extern const char kEnableExplicitDmaFences[];
+OZONE_BASE_EXPORT extern const char kDisableExplicitDmaFences[];
 
 }  // namespace switches
 
