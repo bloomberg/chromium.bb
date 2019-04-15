@@ -9,6 +9,7 @@
 
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/tabs/tab_style.h"
@@ -35,6 +36,10 @@
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
+
+#if defined(OS_WIN)
+#include "ui/base/win/shell.h"
+#endif
 
 namespace {
 
@@ -84,6 +89,14 @@ base::TimeDelta GetMaximumTriggerDelay() {
     default:
       return base::TimeDelta::FromMilliseconds(0);
   }
+}
+
+bool CustomShadowsSupported() {
+#if defined(OS_WIN)
+  return ui::win::IsAeroGlassEnabled();
+#else
+  return true;
+#endif
 }
 
 }  // namespace
@@ -239,8 +252,11 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
 
   GetBubbleFrameView()->set_preferred_arrow_adjustment(
       views::BubbleFrameView::PreferredArrowAdjustment::kOffset);
-  GetBubbleFrameView()->bubble_border()->SetCornerRadius(
-      ChromeLayoutProvider::Get()->GetCornerRadiusMetric(views::EMPHASIS_HIGH));
+
+  if (CustomShadowsSupported())
+    GetBubbleFrameView()->bubble_border()->SetCornerRadius(
+        ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
+            views::EMPHASIS_HIGH));
 }
 
 TabHoverCardBubbleView::~TabHoverCardBubbleView() = default;
