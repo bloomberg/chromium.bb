@@ -578,8 +578,7 @@ class MailtoExternalProtocolHandlerDelegate
   content::WebContents* web_contents() { return web_contents_; }
 
   void RunExternalProtocolDialog(const GURL& url,
-                                 int render_process_host_id,
-                                 int routing_id,
+                                 content::WebContents* web_contents,
                                  ui::PageTransition page_transition,
                                  bool has_user_gesture) override {}
 
