@@ -101,4 +101,9 @@ test("shell_dialogs_unittests") {
     "//ui/resources:ui_test_pak_data",
     "//ui/strings",
   ]
+
+  # TODO: Remove once http://crbug.com/951419 is fixed.
+  if (is_android) {
+    deps += [ "//ui/android:ui_java" ]
+  }
 }
