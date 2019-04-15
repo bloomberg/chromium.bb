@@ -5247,6 +5247,13 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
       return;
     }
 
+    if (error.code == web::kWebKitErrorUrlBlockedByContentFilter &&
+        web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+      // If URL is blocked due to Restriction, do not take any further action as
+      // WKWebView will show a built-in error.
+      return;
+    }
+
     if (error.code == web::kWebKitErrorFrameLoadInterruptedByPolicyChange) {
       // This method should not be called if the navigation was cancelled by
       // embedder.
