@@ -80,12 +80,7 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
                      int32_t main_frame_routing_id,
                      bool swapped_out,
                      bool has_initialized_audio_host);
-  // TODO(ajwong): Make destructor private. Deletion of this object should only
-  // be done via ShutdownAndDestroy(). https://crbug.com/545684
   ~RenderViewHostImpl() override;
-
-  // Shuts down this RenderViewHost and deletes it.
-  void ShutdownAndDestroy();
 
   // RenderViewHost implementation.
   bool Send(IPC::Message* msg) override;
