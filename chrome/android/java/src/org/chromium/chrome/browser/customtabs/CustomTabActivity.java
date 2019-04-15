@@ -268,8 +268,8 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
             getToolbarManager().setShouldUpdateToolbarPrimaryColor(false);
         }
 
-        getStatusBarColorController().updateStatusBarColor(ColorUtils.isUsingDefaultToolbarColor(
-                getResources(), false, getBaseStatusBarColor()));
+        super.setStatusBarColor(toolbarColor,
+                ColorUtils.isUsingDefaultToolbarColor(getResources(), false, toolbarColor));
 
         // Properly attach tab's infobar to the view hierarchy, as the main tab might have been
         // initialized prior to inflation.
@@ -511,15 +511,16 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
                 if (tab.isPreview()) {
                     final int defaultColor = ColorUtils.getDefaultThemeColor(getResources(), false);
                     manager.onThemeColorChanged(defaultColor, false);
+                    setStatusBarColor(defaultColor, false);
                     mTriggeredPreviewChange = true;
                 } else if (mOriginalColor != manager.getPrimaryColor() && mTriggeredPreviewChange) {
                     manager.onThemeColorChanged(mOriginalColor, false);
+                    setStatusBarColor(mOriginalColor, false);
 
                     mTriggeredPreviewChange = false;
                     mOriginalColor = 0;
                 }
 
-                getStatusBarColorController().updateStatusBarColor(false);
                 manager.setShouldUpdateToolbarPrimaryColor(shouldUpdateOriginal);
             }
         });
@@ -773,12 +774,10 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     }
 
     @Override
-    public int getBaseStatusBarColor() {
-        if (mIntentDataProvider.isOpenedByChrome()) return super.getBaseStatusBarColor();
-        if (getActivityTab() != null && getActivityTab().isPreview()) {
-            return ColorUtils.getDefaultThemeColor(getResources(), false);
-        }
-        return mIntentDataProvider.getToolbarColor();
+    protected void setStatusBarColor(Tab tab, int color) {
+        // Intentionally do nothing as CustomTabActivity explicitly sets status bar color.  Except
+        // for Custom Tabs opened by Chrome.
+        if (mIntentDataProvider.isOpenedByChrome()) super.setStatusBarColor(tab, color);
     }
 
     /**

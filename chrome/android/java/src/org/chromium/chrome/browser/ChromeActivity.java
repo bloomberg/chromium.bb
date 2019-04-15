@@ -14,6 +14,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -132,6 +133,7 @@ import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabThemeColorHelper;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModel;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
@@ -140,14 +142,15 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabWindowManager;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.toolbar.top.Toolbar;
 import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
 import org.chromium.chrome.browser.translate.TranslateBridge;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
-import org.chromium.chrome.browser.ui.system.StatusBarColorController;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.vr.ArDelegate;
@@ -198,8 +201,7 @@ import java.util.Set;
 public abstract class ChromeActivity<C extends ChromeActivityComponent>
         extends AsyncInitializationActivity
         implements TabCreatorManager, AccessibilityStateChangeListener, PolicyChangeListener,
-                   ContextualSearchTabPromotionDelegate, SnackbarManageable, SceneChangeObserver,
-                   StatusBarColorController.StatusBarColorProvider {
+                   ContextualSearchTabPromotionDelegate, SnackbarManageable, SceneChangeObserver {
     /**
      * Factory which creates the AppMenuHandler.
      */
@@ -250,6 +252,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     private TabModelSelector mTabModelSelector;
     private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
+    private ActivityTabProvider.ActivityTabTabObserver mStatusBarColorTabObserver;
     private TabCreatorManager.TabCreator mRegularTabCreator;
     private TabCreatorManager.TabCreator mIncognitoTabCreator;
     private TabContentManager mTabContentManager;
@@ -297,7 +300,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private BottomSheetController mBottomSheetController;
     private BottomSheet mBottomSheet;
     private ScrimView mScrimView;
-    private StatusBarColorController mStatusBarColorController;
+    private float mStatusBarScrimFraction;
+    private int mBaseStatusBarColor;
+    private int mScrimColor;
 
     // Timestamp in ms when initial layout inflation begins
     private long mInflateInitialLayoutBeginMs;
@@ -438,8 +443,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             super.performPostInflationStartup();
 
             ViewGroup coordinator = findViewById(R.id.coordinator);
-            mScrimView = new ScrimView(
-                    this, getStatusBarColorController().getStatusBarScrimDelegate(), coordinator);
+            mScrimView = new ScrimView(this, (fraction) -> {
+                mStatusBarScrimFraction = fraction;
+                setStatusBarColor(null, mBaseStatusBarColor);
+            }, coordinator);
 
             Intent intent = getIntent();
             if (intent != null && getSavedInstanceState() == null) {
@@ -608,8 +615,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     @Override
     protected void onInitialLayoutInflationComplete() {
         mInflateInitialLayoutEndMs = SystemClock.elapsedRealtime();
-
-        getStatusBarColorController().updateStatusBarColor(true);
+        // Set the status bar color to white by default.
+        boolean isTablet = DeviceFormFactor.isNonMultiDisplayContextOnTablet(this);
+        setStatusBarColor(
+                isTablet ? Color.BLACK : ColorUtils.getDefaultThemeColor(getResources(), false),
+                true);
 
         ViewGroup rootView = (ViewGroup) getWindow().getDecorView().getRootView();
         mCompositorViewHolder = (CompositorViewHolder) findViewById(R.id.compositor_view_holder);
@@ -693,7 +703,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         mActivityTabProvider.setTabModelSelector(mTabModelSelector);
         mTabThemeColorProvider = new TabThemeColorProvider(this);
         mTabThemeColorProvider.setActivityTabProvider(mActivityTabProvider);
-        getStatusBarColorController().setTabModelSelector(mTabModelSelector);
 
         if (mTabModelSelector == null) {
             assert isFinishing();
@@ -725,6 +734,27 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             @Override
             public void onCrash(Tab tab) {
                 postDeferredStartupIfNeeded();
+            }
+        };
+
+        mStatusBarColorTabObserver =
+                new ActivityTabProvider.ActivityTabTabObserver(getActivityTabProvider()) {
+            @Override
+            public void onShown(Tab tab, @TabSelectionType int type) {
+                setStatusBarColor(tab, TabThemeColorHelper.getColor(tab));
+            }
+
+            @Override
+            public void onDidChangeThemeColor(Tab tab, int color) {
+                setStatusBarColor(tab, color);
+            }
+
+            @Override
+            protected void onObservingDifferentTab(Tab tab) {
+                // |tab == null| means we're switching tabs - by the tab switcher or by swiping
+                // on the omnibox. These cases are dealt with differently, elsewhere.
+                if (tab == null) return;
+                setStatusBarColor(tab, TabThemeColorHelper.getColor(tab));
             }
         };
 
@@ -913,21 +943,50 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     /**
-     * @return The {@link StatusBarColorController} that adjusts the status bar color.
+     * Set device status bar to a given color.
+     * @param tab The tab that is currently showing, used to determine whether {@code color} is the
+     *            default theme color.
+     * @param color The color that the status bar should be set to.
      */
-    public final StatusBarColorController getStatusBarColorController() {
-        // TODO(https://crbug.com/943371): Initialize in SystemUiCoordinator. This requires
-        // SystemUiCoordinator to be created before WebappActivty#onResume().
-        if (mStatusBarColorController == null) {
-            mStatusBarColorController = new StatusBarColorController(this);
-        }
-
-        return mStatusBarColorController;
+    protected void setStatusBarColor(@Nullable Tab tab, int color) {
+        setStatusBarColor(color, tab != null && TabThemeColorHelper.get(tab).isDefaultColor());
     }
 
-    @Override
-    public int getBaseStatusBarColor() {
-        return StatusBarColorController.UNDEFINED_STATUS_BAR_COLOR;
+    /**
+     * Set device status bar to a given color.
+     * @param color The color that the status bar should be set to.
+     * @param isDefaultThemeColor Whether {@code color} is the default theme color.
+     */
+    // TODO(danielpark): Move status bar & status bar icon color logic into helper class.
+    //                   See crbug.com/855079.
+    protected void setStatusBarColor(int color, boolean isDefaultThemeColor) {
+        if (UiUtils.isSystemUiThemingDisabled()) return;
+
+        int statusBarColor = color;
+        boolean supportsDarkStatusIcons = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
+        View root = getWindow().getDecorView().getRootView();
+        if (supportsDarkStatusIcons) {
+            mBaseStatusBarColor = color;
+
+            if (mScrimColor == 0) {
+                mScrimColor =
+                        ApiCompatibilityUtils.getColor(getResources(), R.color.black_alpha_65);
+            }
+            // Apply a color overlay if the scrim is showing.
+            float scrimColorAlpha = (mScrimColor >>> 24) / 255f;
+            int scrimColorOpaque = mScrimColor & 0xFF000000;
+            statusBarColor = ColorUtils.getColorWithOverlay(
+                    statusBarColor, scrimColorOpaque, mStatusBarScrimFraction * scrimColorAlpha);
+
+            boolean needsDarkStatusBarIcons =
+                    !ColorUtils.shouldUseLightForegroundOnBackground(statusBarColor);
+            ApiCompatibilityUtils.setStatusBarIconColor(root, needsDarkStatusBarIcons);
+        } else {
+            statusBarColor = isDefaultThemeColor ? Color.BLACK
+                                                 : ColorUtils.getDarkenedColorForStatusBar(color);
+        }
+
+        ApiCompatibilityUtils.setStatusBarColor(getWindow(), statusBarColor);
     }
 
     private void createContextReporterIfNeeded() {
@@ -1286,6 +1345,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         if (mTabModelSelectorTabObserver != null) {
             mTabModelSelectorTabObserver.destroy();
             mTabModelSelectorTabObserver = null;
+        }
+
+        if (mStatusBarColorTabObserver != null) {
+            mStatusBarColorTabObserver.destroy();
+            mStatusBarColorTabObserver = null;
         }
 
         if (mCompositorViewHolder != null) {

@@ -339,7 +339,6 @@ public class ToolbarManager
 
         setMenuHandler(menuHandler);
         mToolbar.initialize(mLocationBarModel, this, mAppMenuButtonHelper);
-        mToolbar.addUrlExpansionObserver(activity.getStatusBarColorController());
 
         mAppMenuPropertiesDelegate = appMenuPropertiesDelegate;
 
@@ -1172,8 +1171,6 @@ public class ToolbarManager
         if (mLocationBar != null) {
             mLocationBar.removeUrlFocusChangeListener(this);
         }
-
-        mToolbar.removeUrlExpansionObserver(mActivity.getStatusBarColorController());
         mToolbar.destroy();
 
         if (mTabObserver != null) {
