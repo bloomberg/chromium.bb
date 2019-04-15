@@ -245,6 +245,7 @@ class GridTabSwitcherMediator
             mTabModelSelector.openNewTab(new LoadUrlParams(UrlConstants.NTP_URL),
                     TabLaunchType.FROM_CHROME_UI, parentTab,
                     mTabModelSelector.isIncognitoSelected());
+            RecordUserAction.record("TabGroup.Created.TabSwitcher");
         };
     }
 
