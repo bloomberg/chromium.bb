@@ -92,6 +92,7 @@ void SkiaOutputDeviceVulkan::CreateVulkanSurface() {
     LOG(FATAL) << "Failed to initialize vulkan surface.";
   }
   vulkan_surface_ = std::move(vulkan_surface);
+  sk_surfaces_.resize(vulkan_surface_->GetSwapChain()->num_images());
 }
 
 void SkiaOutputDeviceVulkan::UpdateDrawSurface() {
