@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/previews/core/previews_experiments.h"
@@ -35,19 +36,21 @@ class HintsFetcher {
   // to pass back the fetched hints response from the remote Optimization Guide
   // Service.
   using HintsFetchedCallback = base::OnceCallback<void(
-      std::unique_ptr<optimization_guide::proto::GetHintsResponse>)>;
+      base::Optional<
+          std::unique_ptr<optimization_guide::proto::GetHintsResponse>>)>;
 
  public:
   HintsFetcher(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       GURL optimization_guide_service_url);
-  ~HintsFetcher();
+  virtual ~HintsFetcher();
 
-  // Requests hints from the Optimization Guide Service if a request for
-  // them is not already in progress. Returns whether a new request was
-  // issued. |hints_fetched_callback| is only run if a fetch was successful
-  // and GetHintsResponse can be returned.
-  bool FetchOptimizationGuideServiceHints(
+  // Requests hints from the Optimization Guide Service if a request for them is
+  // not already in progress. Returns whether a new request was issued.
+  // |hints_fetched_callback| is run, passing a GetHintsResponse object, if a
+  // fetch was successful or passes nullopt if the fetch fails. Virtualized for
+  // testing.
+  virtual bool FetchOptimizationGuideServiceHints(
       const std::vector<std::string>& hosts,
       HintsFetchedCallback hints_fetched_callback);
 

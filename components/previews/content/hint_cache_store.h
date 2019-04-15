@@ -71,9 +71,12 @@ class HintCacheStore {
         : version_(version) {
       DCHECK(version_.IsValid());
     }
+    explicit ComponentUpdateData(base::Time update_time)
+        : update_time_(update_time) {}
     virtual ~ComponentUpdateData() = default;
 
     const base::Version& version() const { return version_; }
+    base::Time update_time() const { return update_time_; }
 
     // Pure virtual function for moving a hint into ComponentUpdateData. After
     // MoveHintIntoUpdateData() is called, |hint| is no longer valid.
@@ -83,6 +86,9 @@ class HintCacheStore {
    private:
     // The component version of the update data.
     base::Version version_;
+
+    // The time when hints in the update data need to be updated.
+    base::Time update_time_;
   };
 
   HintCacheStore(const base::FilePath& database_dir,
@@ -114,7 +120,7 @@ class HintCacheStore {
   // Service so the store can expire old hints, remove hints specified by the
   // server, and store the fresh hints.
   std::unique_ptr<HintCacheStore::ComponentUpdateData>
-  CreateUpdateDataForFetchedHints() const;
+  CreateUpdateDataForFetchedHints(base::Time update_time) const;
 
   // Updates the component data (both version and hints) contained within the
   // store. When this is called, all pre-existing component data within the
@@ -123,6 +129,18 @@ class HintCacheStore {
   // asynchronously.
   void UpdateComponentData(std::unique_ptr<ComponentUpdateData> component_data,
                            base::OnceClosure callback);
+
+  // Updates the fetched hints data contained in the store, including the
+  // metadata entry. The callback is run asynchronously after the database
+  // stores the hints.
+  //
+  // TODO(mcrouse): When called, fetched hint data in the store that has expired
+  // specified by |expiry_time_secs| will be purged and only the new hints and
+  // non-expired hints are retained.
+
+  void UpdateFetchedHintsData(
+      std::unique_ptr<ComponentUpdateData> fetched_hints_data,
+      base::OnceClosure callback);
 
   // Finds a hint entry key associated with the specified host suffix. Returns
   // true if a hint entry key is found, in which case |out_hint_entry_key| is
@@ -136,6 +154,10 @@ class HintCacheStore {
   // Depending on the load result, the callback may be synchronous or
   // asynchronous.
   void LoadHint(const EntryKey& hint_entry_key, HintLoadedCallback callback);
+
+  // Returns the time that the fetched hints in the store can be updated. If
+  // |this| is not available, base::Time() is returned.
+  base::Time FetchedHintsUpdateTime() const;
 
  private:
   friend class HintCacheStoreTest;
@@ -165,6 +187,7 @@ class HintCacheStore {
   enum class EntryType {
     kMetadata = 1,
     kComponentHint = 2,
+    kFetchedHint = 3,
   };
 
   // Metadata types within the store. The metadata type appears at the end of
@@ -178,17 +201,23 @@ class HintCacheStore {
   enum class MetadataType {
     kSchema = 1,
     kComponent = 2,
+    kFetched = 3,
   };
 
   // HintCacheStore's concrete implementation of ComponentUpdateData.
-  // LevelDBComponentUpdateData is private within HintCacheStore. All
-  // classes outside of HintCacheStore can only interact with the
-  // ComponentUpdateData base class. LevelDBComponentUpdateData is created by
-  // HintCacheStore when MaybeCreateComponentUpdateData() is called and
-  // used to update the store's component data during UpdateComponentData().
+  // LevelDBComponentUpdateData is private within HintCacheStore. All classes
+  // outside of HintCacheStore can only interact with the ComponentUpdateData
+  // base class. LevelDBComponentUpdateData is created by HintCacheStore when
+  // MaybeCreateComponentUpdateData() is called and used to update the store's
+  // component data during UpdateComponentData().
+  //
+  // TODO(mcrouse): Bug: 932707.
+  // This class should be refactored so that there is a single constructor and
+  // the base class removed. The class will also be moved out of |this|.
   class LevelDBComponentUpdateData : public ComponentUpdateData {
    public:
     explicit LevelDBComponentUpdateData(const base::Version& version);
+    explicit LevelDBComponentUpdateData(base::Time update_time);
     ~LevelDBComponentUpdateData() override;
 
     // ComponentUpdateData overrides:
@@ -226,6 +255,9 @@ class HintCacheStore {
   // component version: "2_[component_version]_"
   static EntryKeyPrefix GetComponentHintEntryKeyPrefix(
       const base::Version& component_version);
+
+  // Returns prefix of the key of every fetched hint entry: "3_".
+  static EntryKeyPrefix GetFetchedHintEntryKeyPrefix();
 
   // Updates the status of the store to the specified value, validates the
   // transition, and destroys the database in the case where the status
@@ -330,6 +362,10 @@ class HintCacheStore {
   // If a component data update is in the middle of being processed; when this
   // is true, keys and hints will not be returned by the store.
   bool component_data_update_in_flight_;
+
+  // The next update time for the fetched hints that are currently in the
+  // store.
+  base::Time fetched_update_time_;
 
   // The keys of the hints available within the store.
   std::unique_ptr<EntryKeySet> hint_entry_keys_;
