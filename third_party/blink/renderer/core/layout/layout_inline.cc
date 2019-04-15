@@ -332,12 +332,8 @@ void LayoutInline::StyleDidChange(StyleDifference diff,
     }
   }
 
-  bool old_style_is_containing_block =
-      old_style && (old_style->CanContainAbsolutePositionObjects() ||
-                    old_style->HasFilter());
-  bool new_style_is_containing_block =
-      old_style &&
-      (new_style.CanContainAbsolutePositionObjects() || new_style.HasFilter());
+  bool old_style_is_containing_block = ComputeIsAbsoluteContainer(old_style);
+  bool new_style_is_containing_block = CanContainAbsolutePositionObjects();
   // If we are changing to/from static, we need to reposition
   // out-of-flow positioned descendants.
   if (old_style_is_containing_block != new_style_is_containing_block) {
@@ -354,9 +350,6 @@ void LayoutInline::StyleDidChange(StyleDifference diff,
   }
 
   PropagateStyleToAnonymousChildren();
-
-  // Only filtered inlines can contain fixed position elements.
-  SetCanContainFixedPositionObjects(new_style.HasFilter());
 }
 
 void LayoutInline::UpdateAlwaysCreateLineBoxes(bool full_layout) {

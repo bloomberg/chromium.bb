@@ -1203,6 +1203,41 @@ LayoutBlock* LayoutObject::ContainingBlock(AncestorSkipInfo* skip_info) const {
   return DynamicTo<LayoutBlock>(object);
 }
 
+bool LayoutObject::ComputeIsFixedContainer(const ComputedStyle* style) const {
+  if (!style)
+    return false;
+  // https://www.w3.org/TR/filter-effects-1/#FilterProperty
+  if (style->HasFilter() && !this->IsDocumentElement())
+    return true;
+  // The LayoutView is always a container of fixed positioned descendants. In
+  // addition, SVG foreignObjects become such containers, so that descendants
+  // of a foreignObject cannot escape it. Similarly, text controls let authors
+  // select elements inside that are created by user agent shadow DOM, and we
+  // have (C++) code that assumes that the elements are indeed contained by the
+  // text control. So just make sure this is the case.
+  if (this->IsLayoutView() || this->IsSVGForeignObject() ||
+      this->IsTextControl())
+    return true;
+  // https://www.w3.org/TR/css-transforms-1/#containing-block-for-all-descendants
+  if (style->HasTransformRelatedProperty()) {
+    if (!this->IsInline() || this->IsAtomicInlineLevel())
+      return true;
+  }
+  // https://www.w3.org/TR/css-contain-1/#containment-layout
+  if (this->ShouldApplyPaintContainment(*style) ||
+      this->ShouldApplyLayoutContainment(*style))
+    return true;
+  return false;
+}
+
+bool LayoutObject::ComputeIsAbsoluteContainer(
+    const ComputedStyle* style) const {
+  if (!style)
+    return false;
+  return style->CanContainAbsolutePositionObjects() ||
+         ComputeIsFixedContainer(style);
+}
+
 FloatRect LayoutObject::AbsoluteBoundingBoxFloatRect(
     MapCoordinatesFlags flags) const {
   Vector<FloatQuad> quads;

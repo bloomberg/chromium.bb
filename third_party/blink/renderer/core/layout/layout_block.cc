@@ -258,19 +258,6 @@ void LayoutBlock::StyleDidChange(StyleDifference diff,
 
   PropagateStyleToAnonymousChildren();
 
-  // The LayoutView is always a container of fixed positioned descendants. In
-  // addition, SVG foreignObjects become such containers, so that descendants
-  // of a foreignObject cannot escape it. Similarly, text controls let authors
-  // select elements inside that are created by user agent shadow DOM, and we
-  // have (C++) code that assumes that the elements are indeed contained by the
-  // text control. So just make sure this is the case. Finally, computed style
-  // may turn us into a container of all things, e.g. if the element is
-  // transformed, or contain:paint is specified.
-  SetCanContainFixedPositionObjects(
-      IsLayoutView() || IsSVGForeignObject() || IsTextControl() ||
-      new_style.CanContainFixedPositionObjects(IsDocumentElement()) ||
-      ShouldApplyPaintContainment() || ShouldApplyLayoutContainment());
-
   // It's possible for our border/padding to change, but for the overall logical
   // width or height of the block to end up being the same. We keep track of
   // this change so in layoutBlock, we can know to set relayoutChildren=true.
