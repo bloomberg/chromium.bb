@@ -62,6 +62,7 @@ source_set("metrics") {
     "//components/rappor",
     "//components/signin/core/browser",
     "//components/sync",
+    "//components/sync:device_info",
     "//components/ukm",
     "//components/ukm:observers",
     "//components/variations",
