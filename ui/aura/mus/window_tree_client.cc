@@ -967,7 +967,7 @@ gfx::Point WindowTreeClient::GetCursorScreenPoint() {
 
 void WindowTreeClient::OnEarlyShutdown() {
   if (compositor_context_factory_)
-    compositor_context_factory_->ResetSharedWorkerContextProvider();
+    compositor_context_factory_->ResetContextProviders();
 }
 
 void WindowTreeClient::OnEventObserverAdded(

@@ -10,8 +10,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/gpu/context_provider.h"
+#include "gpu/command_buffer/common/context_result.h"
+#include "services/ws/public/cpp/gpu/shared_worker_context_provider_factory.h"
 #include "services/ws/public/cpp/raster_thread_helper.h"
 #include "services/ws/public/mojom/window_tree.mojom.h"
 #include "ui/aura/aura_export.h"
@@ -19,11 +20,7 @@
 
 namespace gpu {
 class GpuChannelHost;
-}
-
-namespace ws {
-class Gpu;
-class SharedWorkerContextProviderFactory;
+class GpuChannelEstablishFactory;
 }
 
 namespace aura {
@@ -31,14 +28,21 @@ namespace aura {
 // ContextFactory implementation that can be used with Mus.
 class AURA_EXPORT MusContextFactory : public ui::ContextFactory {
  public:
-  explicit MusContextFactory(ws::Gpu* gpu);
+  explicit MusContextFactory(
+      gpu::GpuChannelEstablishFactory* gpu_channel_establish_factory);
   ~MusContextFactory() override;
 
-  // Drops the references to the RasterContextProvider. This may be called to
-  // ensure a particular shutdown ordering.
-  void ResetSharedWorkerContextProvider();
+  // Drops the references to ContextProviders. This may be called to ensure a
+  // particular shutdown ordering.
+  void ResetContextProviders();
 
  private:
+  // Validates the shared main thread context provider exists and hasn't been
+  // lost. |main_context_provider_| will only be non-null when this function
+  // returns kSuccess.
+  gpu::ContextResult ValidateMainContextProvider(
+      scoped_refptr<gpu::GpuChannelHost> gpu_channel);
+
   // Callback function for Gpu::EstablishGpuChannel().
   void OnEstablishedGpuChannel(base::WeakPtr<ui::Compositor> compositor,
                                scoped_refptr<gpu::GpuChannelHost> gpu_channel);
@@ -55,13 +59,14 @@ class AURA_EXPORT MusContextFactory : public ui::ContextFactory {
   void RemoveObserver(ui::ContextFactoryObserver* observer) override {}
   bool SyncTokensRequiredForDisplayCompositor() override;
 
+  gpu::GpuChannelEstablishFactory* const gpu_channel_establish_factory_;
   ws::RasterThreadHelper raster_thread_helper_;
-  ws::Gpu* gpu_;
-  scoped_refptr<viz::ContextProvider> shared_main_thread_context_provider_;
-  std::unique_ptr<ws::SharedWorkerContextProviderFactory>
+  // Shared context provider for anything on the main thread.
+  scoped_refptr<viz::ContextProvider> main_context_provider_;
+  ws::SharedWorkerContextProviderFactory
       shared_worker_context_provider_factory_;
 
-  base::WeakPtrFactory<MusContextFactory> weak_ptr_factory_;
+  base::WeakPtrFactory<MusContextFactory> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MusContextFactory);
 };
