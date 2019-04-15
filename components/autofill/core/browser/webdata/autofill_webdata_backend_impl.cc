@@ -125,7 +125,7 @@ void AutofillWebDataBackendImpl::NotifyOfMultipleAutofillChanges() {
 
   // DB sequence notification.
   for (auto& db_observer : db_observer_list_)
-    db_observer.AutofillMultipleChanged();
+    db_observer.AutofillMultipleChangedBySync();
 
   // UI sequence notification.
   ui_task_runner_->PostTask(FROM_HERE, on_changed_callback_);

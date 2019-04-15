@@ -351,7 +351,7 @@ AutofillWebDataService::~AutofillWebDataService() {
 void AutofillWebDataService::NotifyAutofillMultipleChangedOnUISequence() {
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
   for (auto& ui_observer : ui_observer_list_)
-    ui_observer.AutofillMultipleChanged();
+    ui_observer.AutofillMultipleChangedBySync();
 }
 
 void AutofillWebDataService::

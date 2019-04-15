@@ -79,7 +79,7 @@ class AutofillWalletMetadataSyncableService
   // AutofillWebDataServiceObserverOnDBSequence implementation.
   void AutofillProfileChanged(const AutofillProfileChange& change) override;
   void CreditCardChanged(const CreditCardChange& change) override;
-  void AutofillMultipleChanged() override;
+  void AutofillMultipleChangedBySync() override;
 
   // Creates a new AutofillWalletMetadataSyncableService and hangs it off of
   // |web_data_service|, which takes ownership. This method should only be

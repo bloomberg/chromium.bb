@@ -549,8 +549,8 @@ syncer::SyncError AutofillWalletMetadataSyncableService::ProcessSyncChanges(
     status = SendChangesToSyncServer(changes_to_sync);
   if (is_any_local_modified) {
     // TODO(crbug.com/900607): Remove the need to listen to
-    // AutofillMultipleChanged() in the new USS implementation so that we can
-    // get rid of this hack.
+    // AutofillMultipleChangedBySync() in the new USS implementation so that we
+    // can get rid of this hack.
     DCHECK(!ignore_multiple_changed_notification_);
     ignore_multiple_changed_notification_ = true;
     web_data_backend_->NotifyOfMultipleAutofillChanges();
@@ -609,7 +609,7 @@ void AutofillWalletMetadataSyncableService::CreditCardChanged(
     if (it == cache_.end())
       return;
     // Deletions and creations are treated by Wallet data sync (and propagated
-    // here by AutofillMultipleChanged()). We only treat updates here.
+    // here by AutofillMultipleChangedBySync()). We only treat updates here.
     if (change.type() != AutofillProfileChange::UPDATE) {
       return;
     }
@@ -630,11 +630,11 @@ void AutofillWalletMetadataSyncableService::CreditCardChanged(
   }
 }
 
-void AutofillWalletMetadataSyncableService::AutofillMultipleChanged() {
+void AutofillWalletMetadataSyncableService::AutofillMultipleChangedBySync() {
   if (ignore_multiple_changed_notification_) {
     // TODO(crbug.com/900607): Remove the need to listen to
-    // AutofillMultipleChanged() in the new USS implementation so that we can
-    // get rid of this hack.
+    // AutofillMultipleChangedBySync() in the new USS implementation so that we
+    // can get rid of this hack.
     return;
   }
 
@@ -795,8 +795,8 @@ syncer::SyncMergeResult AutofillWalletMetadataSyncableService::MergeData(
     result.set_error(SendChangesToSyncServer(changes_to_sync));
   if (is_any_local_modified) {
     // TODO(crbug.com/900607): Remove the need to listen to
-    // AutofillMultipleChanged() in the new USS implementation so that we can
-    // get rid of this hack.
+    // AutofillMultipleChangedBySync() in the new USS implementation so that we
+    // can get rid of this hack.
     DCHECK(!ignore_multiple_changed_notification_);
     ignore_multiple_changed_notification_ = true;
     web_data_backend_->NotifyOfMultipleAutofillChanges();
