@@ -180,6 +180,38 @@ class VerticalResizingView : public View {
   DISALLOW_COPY_AND_ASSIGN(VerticalResizingView);
 };
 
+class TestScrollBarThumb : public BaseScrollBarThumb {
+ public:
+  using BaseScrollBarThumb::BaseScrollBarThumb;
+
+  // BaseScrollBarThumb:
+  gfx::Size CalculatePreferredSize() const override { return gfx::Size(1, 1); }
+  void OnPaint(gfx::Canvas* canvas) override {}
+};
+
+class TestScrollBar : public ScrollBar {
+ public:
+  TestScrollBar(bool horizontal, bool overlaps_content, int thickness)
+      : ScrollBar(horizontal),
+        overlaps_content_(overlaps_content),
+        thickness_(thickness) {
+    SetThumb(new TestScrollBarThumb(this));
+  }
+
+  // ScrollBar:
+  int GetThickness() const override { return thickness_; }
+  bool OverlapsContent() const override { return overlaps_content_; }
+  gfx::Rect GetTrackBounds() const override {
+    gfx::Rect bounds = GetLocalBounds();
+    bounds.set_width(GetThickness());
+    return bounds;
+  }
+
+ private:
+  const bool overlaps_content_ = false;
+  const int thickness_ = 0;
+};
+
 }  // namespace
 
 using test::ScrollViewTestApi;
@@ -1466,6 +1498,31 @@ TEST_F(ScrollViewTest, VerticalWithHeaderOverflowIndicators) {
   // As above, no other overflow indicators should be visible.
   EXPECT_FALSE(test_api.more_content_left()->visible());
   EXPECT_FALSE(test_api.more_content_right()->visible());
+}
+
+// Ensure ScrollView::Layout succeeds if a hidden scrollbar's overlap style
+// does not match the other scrollbar.
+TEST_F(ScrollViewTest, IgnoreOverlapWithHiddenHorizontalScroll) {
+  ScrollViewTestApi test_api(scroll_view_.get());
+
+  constexpr int kThickness = 1;
+  // Assume horizontal scroll bar is the default and is overlapping.
+  scroll_view_->SetHorizontalScrollBar(new TestScrollBar(
+      /* horizontal */ true, /* overlaps_content */ true, kThickness));
+  // Assume vertical scroll bar is custom and it we want it to not overlap.
+  scroll_view_->SetVerticalScrollBar(new TestScrollBar(
+      /* horizontal */ false, /* overlaps_content */ false, kThickness));
+
+  // Also, let's turn off horizontal scroll bar.
+  scroll_view_->set_hide_horizontal_scrollbar(true);
+
+  View* contents = InstallContents();
+  contents->SetBoundsRect(gfx::Rect(0, 0, 300, 300));
+  scroll_view_->Layout();
+
+  gfx::Size expected_size = scroll_view_->size();
+  expected_size.Enlarge(-kThickness, 0);
+  EXPECT_EQ(expected_size, test_api.contents_viewport()->size());
 }
 
 // Test scrolling behavior when clicking on the scroll track.
