@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <vector>
 
+#include "build/build_config.h"
 #include "components/autofill/core/browser/field_types.h"
 
 namespace autofill {
@@ -30,7 +31,11 @@ CredentialFieldType DeriveFromServerFieldType(autofill::ServerFieldType type);
 
 // Contains server predictions for a field.
 struct PasswordFieldPrediction {
+  // Field identifier generated in Blink on non-iOS platforms.
   uint32_t renderer_id;
+#if defined(OS_IOS)
+  base::string16 unique_id;
+#endif
   autofill::ServerFieldType type;
   bool may_use_prefilled_placeholder = false;
 };
