@@ -14,7 +14,7 @@ namespace blink {
 struct WebPaymentItem {
   WebString label;
   WebPaymentCurrencyAmount amount;
-  bool pending;
+  bool pending = false;
 };
 
 }  // namespace blink

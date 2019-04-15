@@ -26,18 +26,19 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
- * A payment integration test for the show promise that resolves with an empty dictionary.
+ * A payment integration test for the show promise that resolves with empty lists of display
+ * items, modifiers, and shipping options, which clears out the Payment Request data.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-public class PaymentRequestShowPromiseEmptyTest implements MainActivityStartCallback {
+public class PaymentRequestShowPromiseEmptyListsTest implements MainActivityStartCallback {
     // Disable animations to reduce flakiness.
     @ClassRule
     public static DisableAnimationsTestRule sNoAnimationsRule = new DisableAnimationsTestRule();
 
     @Rule
     public PaymentRequestTestRule mRule =
-            new PaymentRequestTestRule("show_promise/resolve_with_empty_dictionary.html", this);
+            new PaymentRequestTestRule("show_promise/resolve_with_empty_lists.html", this);
 
     @Override
     public void onMainActivityStarted()
@@ -50,26 +51,21 @@ public class PaymentRequestShowPromiseEmptyTest implements MainActivityStartCall
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testResolveWithEmptyDictionary()
+    public void testResolveWithEmptyLists()
             throws InterruptedException, ExecutionException, TimeoutException {
         mRule.installPaymentApp("basic-card", PaymentRequestTestRule.HAVE_INSTRUMENTS,
                 PaymentRequestTestRule.IMMEDIATE_RESPONSE);
-        mRule.triggerUIAndWait(mRule.getReadyToPay());
+        mRule.triggerUIAndWait(mRule.getReadyForInput());
 
-        Assert.assertEquals("USD $3.00", mRule.getOrderSummaryTotal());
+        Assert.assertEquals("USD $1.00", mRule.getOrderSummaryTotal());
 
-        mRule.clickInOrderSummaryAndWait(mRule.getReadyToPay());
+        mRule.clickInOrderSummaryAndWait(mRule.getReadyForInput());
 
-        Assert.assertEquals(2, mRule.getNumberOfLineItems());
-        Assert.assertEquals("$1.00", mRule.getLineItemAmount(0));
-        Assert.assertEquals("$1.00", mRule.getLineItemAmount(1));
+        Assert.assertEquals(0, mRule.getNumberOfLineItems());
 
-        mRule.clickInShippingAddressAndWait(R.id.payments_section, mRule.getReadyToPay());
+        mRule.clickInShippingAddressAndWait(R.id.payments_section, mRule.getReadyForInput());
 
-        Assert.assertEquals(null, mRule.getShippingAddressDescriptionLabel());
-
-        mRule.clickAndWait(R.id.button_primary, mRule.getDismissed());
-
-        mRule.expectResultContains(new String[] {"3.00", "shipping-option-identifier"});
+        Assert.assertEquals("To see shipping methods and requirements, select an address",
+                mRule.getShippingAddressDescriptionLabel());
     }
 }

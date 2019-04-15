@@ -59,6 +59,16 @@ class PaymentRequestShowPromiseTest : public PaymentRequestBrowserTestBase {
               GetLabelText(DialogViewID::ORDER_SUMMARY_TOTAL_AMOUNT_LABEL));
   }
 
+  // Verifies that there're no payment items.
+  void ExpectNoDisplayItems() {
+    views::View* view = dialog_view()->GetViewByID(
+        static_cast<int>(DialogViewID::ORDER_SUMMARY_LINE_ITEM_1));
+    EXPECT_TRUE(!view || !view->visible() ||
+                static_cast<views::Label*>(view)->text().empty())
+        << "Found unexpected display item: "
+        << static_cast<views::Label*>(view)->text();
+  }
+
   // Verifies that the shipping address section does not display any warning
   // messages.
   void ExpectNoShippingWarningMessage() {
@@ -296,21 +306,53 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShowPromiseTest, InvalidDetails) {
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestShowPromiseTest,
-                       OptionalTotalWhenResolvingShowPromise) {
+                       ResolveWithEmptyDictionary) {
   NavigateTo("/show_promise/resolve_with_empty_dictionary.html");
   InstallEchoPaymentHandlerForBasicCard();
+  AddAutofillProfile(autofill::test::GetFullProfile());
   ShowBrowserPaymentSheet();
 
   EXPECT_TRUE(IsPayButtonEnabled());
 
   OpenOrderSummaryScreen();
 
-  ExpectTotal("$1.00");
+  ExpectTotal("$3.00");
+  EXPECT_EQ(base::ASCIIToUTF16("$1.00"),
+            GetLabelText(DialogViewID::ORDER_SUMMARY_LINE_ITEM_1));
+  EXPECT_EQ(base::ASCIIToUTF16("$1.00"),
+            GetLabelText(DialogViewID::ORDER_SUMMARY_LINE_ITEM_2));
+
+  ClickOnBackArrow();
+  OpenShippingAddressSectionScreen();
+
+  ExpectNoShippingWarningMessage();
 
   ClickOnBackArrow();
   Pay();
 
-  ExpectBodyContains({R"({"currency":"USD","value":"1.00"})"});
+  ExpectBodyContains({R"("details":{"currency":"USD","value":"3.00"})",
+                      R"("shippingOption":"shipping-option-identifier")"});
+}
+
+IN_PROC_BROWSER_TEST_F(PaymentRequestShowPromiseTest,
+                       ResolveWithEmptyListsOfItems) {
+  NavigateTo("/show_promise/resolve_with_empty_lists.html");
+  InstallEchoPaymentHandlerForBasicCard();
+  AddAutofillProfile(autofill::test::GetFullProfile());
+  ShowBrowserPaymentSheet();
+
+  EXPECT_FALSE(IsPayButtonEnabled());
+
+  OpenOrderSummaryScreen();
+
+  ExpectTotal("$1.00");
+  ExpectNoDisplayItems();
+
+  ClickOnBackArrow();
+  OpenShippingAddressSectionScreen();
+
+  ExpectShippingWarningMessage(
+      "To see shipping methods and requirements, select an address");
 }
 
 }  // namespace

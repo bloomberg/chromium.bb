@@ -783,6 +783,12 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
         public TextView getLineItemAmountForTest(int index) {
             return mLineItemAmountsForTest.get(index);
         }
+
+        /** @return The number of line items. */
+        @VisibleForTesting
+        public int getNumberOfLineItemsForTest() {
+            return mLineItemAmountsForTest.size();
+        }
     }
 
     /**

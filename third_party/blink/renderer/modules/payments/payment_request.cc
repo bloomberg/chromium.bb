@@ -604,8 +604,9 @@ void ValidateAndConvertPaymentDetailsBase(const PaymentDetailsBase* input,
                                           ExecutionContext& execution_context,
                                           ExceptionState& exception_state) {
   if (input->hasDisplayItems()) {
+    output->display_items = Vector<PaymentItemPtr>();
     ValidateAndConvertDisplayItems(input->displayItems(), "display items",
-                                   output->display_items, execution_context,
+                                   *output->display_items, execution_context,
                                    exception_state);
     if (exception_state.HadException())
       return;
@@ -625,8 +626,9 @@ void ValidateAndConvertPaymentDetailsBase(const PaymentDetailsBase* input,
   }
 
   if (input->hasModifiers()) {
+    output->modifiers = Vector<PaymentDetailsModifierPtr>();
     ValidateAndConvertPaymentDetailsModifiers(
-        input->modifiers(), output->modifiers, execution_context,
+        input->modifiers(), *output->modifiers, execution_context,
         exception_state);
   }
 }

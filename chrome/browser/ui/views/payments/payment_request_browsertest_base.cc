@@ -297,15 +297,6 @@ void PaymentRequestBrowserTestBase::ExpectBodyContains(
   }
 }
 
-void PaymentRequestBrowserTestBase::ExpectBodyContains(
-    const std::vector<base::string16>& expected_strings) {
-  std::vector<std::string> converted(expected_strings.size());
-  std::transform(expected_strings.begin(), expected_strings.end(),
-                 converted.begin(),
-                 [](const base::string16& s) { return base::UTF16ToUTF8(s); });
-  ExpectBodyContains(converted);
-}
-
 void PaymentRequestBrowserTestBase::OpenOrderSummaryScreen() {
   ResetEventWaiter(DialogEvent::ORDER_SUMMARY_OPENED);
 
