@@ -56,6 +56,8 @@ jumbo_component("controller") {
       "memory_usage_monitor_android.h",
       "oom_intervention_impl.cc",
       "oom_intervention_impl.h",
+      "user_level_memory_pressure_signal_generator.cc",
+      "user_level_memory_pressure_signal_generator.h",
     ]
   }
   if (is_mac) {
@@ -153,6 +155,7 @@ jumbo_source_set("blink_unittests_sources") {
       "memory_usage_monitor_android_test.cc",
       "memory_usage_monitor_test.cc",
       "oom_intervention_impl_test.cc",
+      "user_level_memory_pressure_signal_generator_test.cc",
     ]
   }
 
