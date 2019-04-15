@@ -117,6 +117,8 @@ class HoverButton : public views::MenuButton, public views::MenuButtonListener {
                            SetTitleLabel);
   FRIEND_TEST_ALL_PREFIXES(media_router::CastDialogSinkButtonTest,
                            SetStatusLabel);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionsMenuButtonTest,
+                           UpdatesToDisplayCorrectActionTitle);
 
   views::StyledLabel* title_;
   views::Label* subtitle_;
