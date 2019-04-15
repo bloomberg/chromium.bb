@@ -1385,6 +1385,71 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
 }
 
 TEST_F(ClientTagBasedModelTypeProcessorTest,
+       ShouldResolveConflictToRemoteUndeletion) {
+  InitializeToReadyState();
+  WriteItemAndAck(kKey1, kValue1);
+  ASSERT_EQ(0U, worker()->GetNumPendingCommits());
+
+  bridge()->DeleteItem(kKey1);
+  ASSERT_EQ(1U, worker()->GetNumPendingCommits());
+  worker()->VerifyPendingCommits({{kHash1}});
+  ASSERT_TRUE(worker()->GetLatestPendingCommitForHash(kHash1));
+  ASSERT_TRUE(
+      worker()->GetLatestPendingCommitForHash(kHash1)->entity->is_deleted());
+  ASSERT_EQ(2U, db()->data_change_count());
+  ASSERT_EQ(3U, db()->metadata_change_count());
+  ASSERT_TRUE(type_processor()->IsTrackingEntityForTest(kKey1));
+
+  worker()->UpdateFromServer(kHash1, GenerateSpecifics(kKey1, kValue2));
+
+  // Updated client data and metadata; no new commit request.
+  EXPECT_TRUE(type_processor()->IsTrackingEntityForTest(kKey1));
+  EXPECT_EQ(3U, db()->data_change_count());
+  EXPECT_EQ(kValue2, db()->GetValue(kKey1));
+  EXPECT_EQ(4U, db()->metadata_change_count());
+  EXPECT_EQ(2, db()->GetMetadata(kKey1).server_version());
+  worker()->VerifyPendingCommits({{kHash1}});
+}
+
+TEST_F(ClientTagBasedModelTypeProcessorTest,
+       ShouldResolveConflictToRemoteUndeletionWithUpdateStorageKey) {
+  bridge()->SetSupportsGetStorageKey(false);
+  InitializeToReadyState();
+  WriteItemAndAck(kKey1, kValue1);
+  ASSERT_EQ(0U, worker()->GetNumPendingCommits());
+
+  bridge()->DeleteItem(kKey1);
+  ASSERT_EQ(1U, worker()->GetNumPendingCommits());
+  worker()->VerifyPendingCommits({{kHash1}});
+  ASSERT_TRUE(worker()->GetLatestPendingCommitForHash(kHash1));
+  ASSERT_TRUE(
+      worker()->GetLatestPendingCommitForHash(kHash1)->entity->is_deleted());
+  ASSERT_EQ(2U, db()->data_change_count());
+  ASSERT_EQ(3U, db()->metadata_change_count());
+  ASSERT_TRUE(type_processor()->IsTrackingEntityForTest(kKey1));
+
+  worker()->UpdateFromServer(kHash1, GenerateSpecifics(kKey1, kValue2));
+
+  // A new storage key should have been generated, which should replace the
+  // previous when it comes to storing data and metadata.
+  const std::string new_storage_key = bridge()->GetLastGeneratedStorageKey();
+  ASSERT_NE(kKey1, new_storage_key);
+  EXPECT_TRUE(db()->HasData(new_storage_key));
+  EXPECT_TRUE(db()->HasMetadata(new_storage_key));
+  EXPECT_TRUE(type_processor()->IsTrackingEntityForTest(new_storage_key));
+  EXPECT_FALSE(db()->HasData(kKey1));
+  EXPECT_FALSE(db()->HasMetadata(kKey1));
+  EXPECT_FALSE(type_processor()->IsTrackingEntityForTest(kKey1));
+
+  // Updated client data and metadata; no new commit request.
+  EXPECT_EQ(3U, db()->data_change_count());
+  EXPECT_EQ(kValue2, db()->GetValue(new_storage_key));
+  EXPECT_EQ(5U, db()->metadata_change_count());
+  EXPECT_EQ(2, db()->GetMetadata(new_storage_key).server_version());
+  worker()->VerifyPendingCommits({{kHash1}});
+}
+
+TEST_F(ClientTagBasedModelTypeProcessorTest,
        ShouldResolveConflictToRemoteVersion) {
   InitializeToReadyState();
   bridge()->WriteItem(kKey1, kValue1);

@@ -131,13 +131,18 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   // Helper function to process the update for a single entity. If a local data
   // change is required, it will be added to |entity_changes|. The return value
   // is the tracked entity, or nullptr if the update should be ignored.
+  // |storage_key_to_clear| must not be null and allows the implementation to
+  // indicate that a certain storage key is now obsolete and should be cleared,
+  // which is leveraged in certain conflict resolution scenarios.
   ProcessorEntity* ProcessUpdate(std::unique_ptr<UpdateResponseData> update,
-                                 EntityChangeList* entity_changes);
+                                 EntityChangeList* entity_changes,
+                                 std::string* storage_key_to_clear);
 
   // Resolve a conflict between |update| and the pending commit in |entity|.
   ConflictResolution::Type ResolveConflict(const UpdateResponseData& update,
                                            ProcessorEntity* entity,
-                                           EntityChangeList* changes);
+                                           EntityChangeList* changes,
+                                           std::string* storage_key_to_clear);
 
   // Recommit all entities for encryption except those in |already_updated|.
   void RecommitAllForEncryption(
