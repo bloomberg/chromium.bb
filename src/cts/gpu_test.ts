@@ -14,13 +14,14 @@ interface GPUTestOpts {
   shaderc: Shaderc.Shaderc;
 }
 
+const shaderc: Shaderc.Shaderc = Shaderc.instantiate();
+
 export function makeGPUTestCreate<FC extends typeof GPUTest, F extends GPUTest>(fixture: FC): FixtureCreate<F> {
   return async (log: CaseRecorder, params: IParamsAny) => {
     const gpu = await getGPU();
     const adapter = await gpu.requestAdapter();
     const device = await adapter.requestDevice({});
-    const shaderc = await Shaderc.instantiate();
-    return new fixture(log, params, {device, shaderc}) as F;
+    return new fixture(log, params, {device, shaderc: await shaderc}) as F;
   };
 }
 

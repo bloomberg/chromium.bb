@@ -1,0 +1,14 @@
+{
+    "presets": [
+        "@babel/preset-typescript"
+    ],
+    "plugins": [
+        "@babel/plugin-syntax-dynamic-import",
+        ["module-resolver", {
+            "root": ["./src"],
+            "alias": {
+                "@webgpu/shaderc": "./src/shaderc.js"
+            }
+        }]
+    ]
+}

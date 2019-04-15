@@ -4,6 +4,8 @@ const parseArgs = require("minimist");
 const path = require("path");
 const process = require("process");
 
+global.fetch = require("node-fetch");
+
 function die() {
   console.error(new Error());
   console.error("");

@@ -27,6 +27,25 @@ module.exports = function(grunt) {
       "demos":       mkRun(false, "src/demos", "--run"),
       "debug-demos": mkRun(true,  "src/demos", "--run"),
       "list-demos":  mkRun(false, "src/demos", "--generate-listing=out/demos/listing.json"),
+      "build-out": {
+        cmd: "npx",
+        args: [
+          "babel",
+          "--source-maps", "true",
+          "--extensions", ".ts",
+          "--out-dir", "out/",
+          "src/",
+        ]
+      },
+      "build-shaderc": {
+        cmd: "npx",
+        args: [
+          "babel",
+          "--plugins", "babel-plugin-transform-commonjs-es2015-modules",
+          "node_modules/@webgpu/shaderc/dist/index.js",
+          "-o", "out/shaderc.js",
+        ]
+      }
     },
 
     "http-server": {
@@ -81,7 +100,8 @@ module.exports = function(grunt) {
   ]);
   publishedTasks.push({ name: "tslint", desc: "Run tslint" });
   publishTask("build", "Build out/", [
-    "ts:out/",
+    "run:build-shaderc",
+    "run:build-out",
     "run:list-cts",
     "run:list-unittests",
     "run:list-demos",

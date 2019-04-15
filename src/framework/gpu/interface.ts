@@ -195,7 +195,7 @@ export type GPUVertexFormat =
   | "int4";
 
 export type GPUBufferUsageFlags = number;
-export const enum GPUBufferUsage {
+export enum GPUBufferUsage {
   NONE = 0,
   MAP_READ = 1,
   MAP_WRITE = 2,
@@ -208,7 +208,7 @@ export const enum GPUBufferUsage {
 }
 
 export type GPUColorWriteFlags = number;
-export const enum GPUColorWriteBits {
+export enum GPUColorWriteBits {
   NONE = 0,
   RED = 1,
   GREEN = 2,
@@ -218,7 +218,7 @@ export const enum GPUColorWriteBits {
 }
 
 export type GPUShaderStageFlags = number;
-export const enum GPUShaderStageBit {
+export enum GPUShaderStageBit {
   NONE = 0,
   VERTEX = 1,
   FRAGMENT = 2,
@@ -226,14 +226,14 @@ export const enum GPUShaderStageBit {
 }
 
 export type GPUTextureAspectFlags = number;
-export const enum GPUTextureAspect {
+export enum GPUTextureAspect {
   COLOR = 1,
   DEPTH = 2,
   STENCIL = 4,
 }
 
 export type GPUTextureUsageFlags = number;
-export const enum GPUTextureUsage {
+export enum GPUTextureUsage {
   NONE = 0,
   TRANSFER_SRC = 1,
   TRANSFER_DST = 2,
