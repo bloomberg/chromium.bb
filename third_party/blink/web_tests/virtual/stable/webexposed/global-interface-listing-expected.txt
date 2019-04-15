@@ -42,6 +42,7 @@ interface AnalyserNode : AudioNode
 interface Animation : EventTarget
     attribute @@toStringTag
     getter currentTime
+    getter effect
     getter id
     getter oncancel
     getter onfinish
@@ -55,11 +56,18 @@ interface Animation : EventTarget
     method play
     method reverse
     setter currentTime
+    setter effect
     setter id
     setter oncancel
     setter onfinish
     setter playbackRate
     setter startTime
+interface AnimationEffect
+    attribute @@toStringTag
+    method constructor
+    method getComputedTiming
+    method getTiming
+    method updateTiming
 interface AnimationEvent : Event
     attribute @@toStringTag
     getter animationName
@@ -3726,6 +3734,11 @@ interface KeyboardLayoutMap
     method has
     method keys
     method values
+interface KeyframeEffect : AnimationEffect
+    attribute @@toStringTag
+    getter target
+    method constructor
+    setter target
 interface LinearAccelerationSensor : Accelerometer
     attribute @@toStringTag
     method constructor

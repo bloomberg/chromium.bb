@@ -2263,6 +2263,8 @@ enum WebFeature {
   kInputTypeReset = 2855,
   kSelectElementSingle = 2856,
   kSelectElementMultiple = 2857,
+  kV8Animation_Effect_AttributeGetter = 2858,
+  kV8Animation_Effect_AttributeSetter = 2859,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
