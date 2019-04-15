@@ -229,9 +229,9 @@ label.mode-item>span {
   display: inline-block;
   font-family: 'Roboto', sans-serif;
   font-size: 14px;
-  font-weight: 400;
+  font-weight: 500;
   padding: 10px 15px;
-  text-shadow: 2px 3px 3px rgba(32, 33, 36, 0.5);
+  text-shadow: 2px 3px 3px rgba(32, 33, 36, 0.3);
 }
 
 .mode-item>input {
@@ -241,7 +241,7 @@ label.mode-item>span {
 }
 
 .mode-item>input:checked + span {
-  background: rgb(238, 238, 238);
+  background: white;
   color: black;
   text-shadow: none;
 }
@@ -484,6 +484,12 @@ body.timersettings #settings {
   --modes-height: 120px;
   --modes-bottom: calc((var(--bottom-line) + (var(--big-icon)/2)) + 24px);
   --small-icon: 40px;
+}
+
+@media screen and (min-height: 800px) {
+  #camera {
+    --modes-height: 220px;
+  }
 }
 
 body.w-letterbox.w-letterbox-s #camera {
