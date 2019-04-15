@@ -57,7 +57,6 @@ using sync_pb::ModelTypeState;
 using syncer::DataBatch;
 using syncer::EntityChange;
 using syncer::EntityData;
-using syncer::EntityDataPtr;
 using syncer::HasInitialSyncDone;
 using syncer::KeyAndData;
 using syncer::MockModelTypeChangeProcessor;
@@ -329,11 +328,12 @@ class AutofillWalletSyncBridgeTest : public UssSwitchToggler,
     EXPECT_EQ(addresses_count, addresses_metadata.size());
   }
 
-  EntityData SpecificsToEntity(const AutofillWalletSpecifics& specifics) {
-    EntityData data;
-    *data.specifics.mutable_autofill_wallet() = specifics;
-    data.client_tag_hash = syncer::GenerateSyncableHash(
-        syncer::AUTOFILL_WALLET_DATA, bridge()->GetClientTag(data));
+  std::unique_ptr<EntityData> SpecificsToEntity(
+      const AutofillWalletSpecifics& specifics) {
+    auto data = std::make_unique<EntityData>();
+    *data->specifics.mutable_autofill_wallet() = specifics;
+    data->client_tag_hash = syncer::GenerateSyncableHash(
+        syncer::AUTOFILL_WALLET_DATA, bridge()->GetClientTag(*data));
     return data;
   }
 
@@ -353,7 +353,7 @@ class AutofillWalletSyncBridgeTest : public UssSwitchToggler,
   std::unique_ptr<syncer::UpdateResponseData> SpecificsToUpdateResponse(
       const AutofillWalletSpecifics& specifics) {
     auto data = std::make_unique<syncer::UpdateResponseData>();
-    data->entity = SpecificsToEntity(specifics).PassToPtr();
+    data->entity = SpecificsToEntity(specifics);
     return data;
   }
 
@@ -392,14 +392,14 @@ class AutofillWalletSyncBridgeTest : public UssSwitchToggler,
 TEST_P(AutofillWalletSyncBridgeTest, GetClientTagForAddress) {
   AutofillWalletSpecifics specifics =
       CreateAutofillWalletSpecificsForAddress(kAddr1SpecificsId);
-  EXPECT_EQ(bridge()->GetClientTag(SpecificsToEntity(specifics)),
+  EXPECT_EQ(bridge()->GetClientTag(*SpecificsToEntity(specifics)),
             kAddr1SyncTag);
 }
 
 TEST_P(AutofillWalletSyncBridgeTest, GetClientTagForCard) {
   AutofillWalletSpecifics specifics =
       CreateAutofillWalletSpecificsForCard(kCard1SpecificsId);
-  EXPECT_EQ(bridge()->GetClientTag(SpecificsToEntity(specifics)),
+  EXPECT_EQ(bridge()->GetClientTag(*SpecificsToEntity(specifics)),
             kCard1SyncTag);
 }
 
@@ -407,7 +407,7 @@ TEST_P(AutofillWalletSyncBridgeTest, GetClientTagForCustomerData) {
   AutofillWalletSpecifics specifics =
       CreateAutofillWalletSpecificsForPaymentsCustomerData(
           kCustomerDataSyncTag);
-  EXPECT_EQ(bridge()->GetClientTag(SpecificsToEntity(specifics)),
+  EXPECT_EQ(bridge()->GetClientTag(*SpecificsToEntity(specifics)),
             kCustomerDataSyncTag);
 }
 
@@ -415,21 +415,21 @@ TEST_P(AutofillWalletSyncBridgeTest, GetClientTagForCustomerData) {
 TEST_P(AutofillWalletSyncBridgeTest, GetStorageKeyForAddress) {
   AutofillWalletSpecifics specifics1 =
       CreateAutofillWalletSpecificsForAddress(kAddr1SpecificsId);
-  EXPECT_EQ(bridge()->GetStorageKey(SpecificsToEntity(specifics1)),
+  EXPECT_EQ(bridge()->GetStorageKey(*SpecificsToEntity(specifics1)),
             kAddr1SpecificsId);
 }
 
 TEST_P(AutofillWalletSyncBridgeTest, GetStorageKeyForCard) {
   AutofillWalletSpecifics specifics2 =
       CreateAutofillWalletSpecificsForCard(kCard1SpecificsId);
-  EXPECT_EQ(bridge()->GetStorageKey(SpecificsToEntity(specifics2)),
+  EXPECT_EQ(bridge()->GetStorageKey(*SpecificsToEntity(specifics2)),
             kCard1SpecificsId);
 }
 
 TEST_P(AutofillWalletSyncBridgeTest, GetStorageKeyForCustomerData) {
   AutofillWalletSpecifics specifics3 =
       CreateAutofillWalletSpecificsForPaymentsCustomerData(kCustomerDataId);
-  EXPECT_EQ(bridge()->GetStorageKey(SpecificsToEntity(specifics3)),
+  EXPECT_EQ(bridge()->GetStorageKey(*SpecificsToEntity(specifics3)),
             kCustomerDataId);
 }
 

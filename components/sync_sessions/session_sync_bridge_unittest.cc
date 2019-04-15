@@ -78,15 +78,15 @@ MATCHER_P(EntityDataHasSpecifics, session_specifics_matcher, "") {
                                                    result_listener);
 }
 
-syncer::EntityDataPtr SpecificsToEntity(
+std::unique_ptr<syncer::EntityData> SpecificsToEntity(
     const sync_pb::SessionSpecifics& specifics,
     base::Time mtime = base::Time::Now()) {
-  syncer::EntityData data;
-  data.client_tag_hash = syncer::GenerateSyncableHash(
+  auto data = std::make_unique<syncer::EntityData>();
+  data->client_tag_hash = syncer::GenerateSyncableHash(
       syncer::SESSIONS, SessionStore::GetClientTag(specifics));
-  *data.specifics.mutable_session() = specifics;
-  data.modification_time = mtime;
-  return data.PassToPtr();
+  *data->specifics.mutable_session() = specifics;
+  data->modification_time = mtime;
+  return data;
 }
 
 std::unique_ptr<syncer::UpdateResponseData> SpecificsToUpdateResponse(
@@ -108,12 +108,13 @@ std::map<std::string, std::unique_ptr<EntityData>> BatchToEntityDataMap(
 
 std::unique_ptr<syncer::UpdateResponseData> CreateTombstone(
     const std::string& client_tag) {
-  EntityData tombstone;
-  tombstone.client_tag_hash =
+  auto tombstone = std::make_unique<syncer::EntityData>();
+
+  tombstone->client_tag_hash =
       syncer::GenerateSyncableHash(syncer::SESSIONS, client_tag);
 
   auto data = std::make_unique<syncer::UpdateResponseData>();
-  data->entity = tombstone.PassToPtr();
+  data->entity = std::move(tombstone);
   data->response_version = 2;
   return data;
 }

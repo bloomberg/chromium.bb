@@ -98,7 +98,7 @@ bool NodesMatch(const bookmarks::BookmarkNode* local_node,
 size_t FindMatchingChildFor(const UpdateResponseData* remote_node,
                             const bookmarks::BookmarkNode* local_parent,
                             size_t search_starting_child_index) {
-  const EntityData& remote_node_update_entity = remote_node->entity.value();
+  const EntityData& remote_node_update_entity = *remote_node->entity;
   for (int i = search_starting_child_index; i < local_parent->child_count();
        ++i) {
     const bookmarks::BookmarkNode* local_child = local_parent->GetChild(i);
@@ -112,9 +112,9 @@ size_t FindMatchingChildFor(const UpdateResponseData* remote_node,
 bool UniquePositionLessThan(const UpdateResponseData* a,
                             const UpdateResponseData* b) {
   const syncer::UniquePosition a_pos =
-      syncer::UniquePosition::FromProto(a->entity.value().unique_position);
+      syncer::UniquePosition::FromProto(a->entity->unique_position);
   const syncer::UniquePosition b_pos =
-      syncer::UniquePosition::FromProto(b->entity.value().unique_position);
+      syncer::UniquePosition::FromProto(b->entity->unique_position);
   return a_pos.LessThan(b_pos);
 }
 
@@ -139,7 +139,7 @@ BuildUpdatesTreeWithoutTombstonesWithSortedChildren(
   // model. Hence, we ignore tombstones.
   for (const std::unique_ptr<syncer::UpdateResponseData>& update : *updates) {
     DCHECK(update);
-    const EntityData& update_entity = update->entity.value();
+    const EntityData& update_entity = *update->entity;
     if (update_entity.is_deleted()) {
       continue;
     }
@@ -148,7 +148,7 @@ BuildUpdatesTreeWithoutTombstonesWithSortedChildren(
 
   for (const std::unique_ptr<UpdateResponseData>& update : *updates) {
     DCHECK(update);
-    const EntityData& update_entity = update->entity.value();
+    const EntityData& update_entity = *update->entity;
     if (update_entity.is_deleted()) {
       continue;
     }
@@ -220,7 +220,7 @@ void BookmarkModelMerger::Merge() {
   // Associate permanent folders.
   for (const std::unique_ptr<UpdateResponseData>& update : *updates_) {
     DCHECK(update);
-    const EntityData& update_entity = update->entity.value();
+    const EntityData& update_entity = *update->entity;
     const bookmarks::BookmarkNode* permanent_folder =
         GetPermanentFolder(update_entity);
     if (!permanent_folder) {
@@ -237,7 +237,7 @@ void BookmarkModelMerger::Merge() {
 void BookmarkModelMerger::MergeSubtree(
     const bookmarks::BookmarkNode* local_node,
     const UpdateResponseData* remote_update) {
-  const EntityData& remote_update_entity = remote_update->entity.value();
+  const EntityData& remote_update_entity = *remote_update->entity;
   bookmark_tracker_->Add(
       remote_update_entity.id, local_node, remote_update->response_version,
       remote_update_entity.creation_time, remote_update_entity.unique_position,
@@ -290,7 +290,7 @@ void BookmarkModelMerger::ProcessRemoteCreation(
     const UpdateResponseData* remote_update,
     const bookmarks::BookmarkNode* local_parent,
     int index) {
-  const EntityData& remote_update_entity = remote_update->entity.value();
+  const EntityData& remote_update_entity = *remote_update->entity;
   const bookmarks::BookmarkNode* bookmark_node =
       CreateBookmarkNodeFromSpecifics(
           remote_update_entity.specifics.bookmark(), local_parent, index,

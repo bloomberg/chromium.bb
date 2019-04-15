@@ -52,20 +52,20 @@ std::unique_ptr<syncer::UpdateResponseData> CreateUpdateResponseData(
     bool is_deletion,
     int version,
     const syncer::UniquePosition& unique_position) {
-  syncer::EntityData data;
-  data.id = server_id;
-  data.parent_id = parent_id;
-  data.unique_position = unique_position.ToProto();
+  auto data = std::make_unique<syncer::EntityData>();
+  data->id = server_id;
+  data->parent_id = parent_id;
+  data->unique_position = unique_position.ToProto();
 
   // EntityData would be considered a deletion if its specifics hasn't been set.
   if (!is_deletion) {
     sync_pb::BookmarkSpecifics* bookmark_specifics =
-        data.specifics.mutable_bookmark();
+        data->specifics.mutable_bookmark();
     bookmark_specifics->set_title(title);
   }
-  data.is_folder = true;
+  data->is_folder = true;
   auto response_data = std::make_unique<syncer::UpdateResponseData>();
-  response_data->entity = data.PassToPtr();
+  response_data->entity = std::move(data);
   response_data->response_version = version;
   return response_data;
 }
@@ -84,16 +84,16 @@ std::unique_ptr<syncer::UpdateResponseData> CreateUpdateResponseData(
 }
 
 std::unique_ptr<syncer::UpdateResponseData> CreateBookmarkRootUpdateData() {
-  syncer::EntityData data;
-  data.id = syncer::ModelTypeToRootTag(syncer::BOOKMARKS);
-  data.parent_id = kRootParentId;
-  data.server_defined_unique_tag =
+  auto data = std::make_unique<syncer::EntityData>();
+  data->id = syncer::ModelTypeToRootTag(syncer::BOOKMARKS);
+  data->parent_id = kRootParentId;
+  data->server_defined_unique_tag =
       syncer::ModelTypeToRootTag(syncer::BOOKMARKS);
 
-  data.specifics.mutable_bookmark();
+  data->specifics.mutable_bookmark();
 
   auto response_data = std::make_unique<syncer::UpdateResponseData>();
-  response_data->entity = data.PassToPtr();
+  response_data->entity = std::move(data);
   // Similar to what's done in the loopback_server.
   response_data->response_version = 0;
   return response_data;
@@ -102,15 +102,15 @@ std::unique_ptr<syncer::UpdateResponseData> CreateBookmarkRootUpdateData() {
 std::unique_ptr<syncer::UpdateResponseData> CreatePermanentFolderUpdateData(
     const std::string& id,
     const std::string& tag) {
-  syncer::EntityData data;
-  data.id = id;
-  data.parent_id = "root_id";
-  data.server_defined_unique_tag = tag;
+  auto data = std::make_unique<syncer::EntityData>();
+  data->id = id;
+  data->parent_id = "root_id";
+  data->server_defined_unique_tag = tag;
 
-  data.specifics.mutable_bookmark();
+  data->specifics.mutable_bookmark();
 
   auto response_data = std::make_unique<syncer::UpdateResponseData>();
-  response_data->entity = data.PassToPtr();
+  response_data->entity = std::move(data);
   // Similar to what's done in the loopback_server.
   response_data->response_version = 0;
   return response_data;
@@ -231,12 +231,12 @@ TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
   // This is test is over verifying since the order requirements are
   // within subtrees only. (e.g it doesn't matter whether node1 comes before or
   // after node4). However, it's implemented this way for simplicity.
-  EXPECT_THAT(ordered_updates[0]->entity.value().id, Eq(ids[4]));
-  EXPECT_THAT(ordered_updates[1]->entity.value().id, Eq(ids[5]));
-  EXPECT_THAT(ordered_updates[2]->entity.value().id, Eq(ids[0]));
-  EXPECT_THAT(ordered_updates[3]->entity.value().id, Eq(ids[1]));
-  EXPECT_THAT(ordered_updates[4]->entity.value().id, Eq(ids[2]));
-  EXPECT_THAT(ordered_updates[5]->entity.value().id, Eq(ids[6]));
+  EXPECT_THAT(ordered_updates[0]->entity->id, Eq(ids[4]));
+  EXPECT_THAT(ordered_updates[1]->entity->id, Eq(ids[5]));
+  EXPECT_THAT(ordered_updates[2]->entity->id, Eq(ids[0]));
+  EXPECT_THAT(ordered_updates[3]->entity->id, Eq(ids[1]));
+  EXPECT_THAT(ordered_updates[4]->entity->id, Eq(ids[2]));
+  EXPECT_THAT(ordered_updates[5]->entity->id, Eq(ids[6]));
 }
 
 TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
@@ -583,22 +583,22 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
   const GURL kIconUrl("http://www.icon-url.com");
 
   syncer::UpdateResponseDataList updates;
-  syncer::EntityData data;
-  data.id = "server_id";
-  data.parent_id = kBookmarkBarId;
-  data.unique_position = syncer::UniquePosition::InitialPosition(
-                             syncer::UniquePosition::RandomSuffix())
-                             .ToProto();
+  auto data = std::make_unique<syncer::EntityData>();
+  data->id = "server_id";
+  data->parent_id = kBookmarkBarId;
+  data->unique_position = syncer::UniquePosition::InitialPosition(
+                              syncer::UniquePosition::RandomSuffix())
+                              .ToProto();
   sync_pb::BookmarkSpecifics* bookmark_specifics =
-      data.specifics.mutable_bookmark();
+      data->specifics.mutable_bookmark();
   // Use the server id as the title for simplicity.
   bookmark_specifics->set_title(kTitle);
   bookmark_specifics->set_url(kUrl.spec());
   bookmark_specifics->set_icon_url(kIconUrl.spec());
   bookmark_specifics->set_favicon("PNG");
-  data.is_folder = false;
+  data->is_folder = false;
   auto response_data = std::make_unique<syncer::UpdateResponseData>();
-  response_data->entity = data.PassToPtr();
+  response_data->entity = std::move(data);
   // Similar to what's done in the loopback_server.
   response_data->response_version = 0;
 
@@ -621,20 +621,20 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
   const GURL kUrl("http://www.url.com");
 
   syncer::UpdateResponseDataList updates;
-  syncer::EntityData data;
-  data.id = "server_id";
-  data.parent_id = kBookmarkBarId;
-  data.unique_position = syncer::UniquePosition::InitialPosition(
-                             syncer::UniquePosition::RandomSuffix())
-                             .ToProto();
+  auto data = std::make_unique<syncer::EntityData>();
+  data->id = "server_id";
+  data->parent_id = kBookmarkBarId;
+  data->unique_position = syncer::UniquePosition::InitialPosition(
+                              syncer::UniquePosition::RandomSuffix())
+                              .ToProto();
   sync_pb::BookmarkSpecifics* bookmark_specifics =
-      data.specifics.mutable_bookmark();
+      data->specifics.mutable_bookmark();
   // Use the server id as the title for simplicity.
   bookmark_specifics->set_title(kTitle);
   bookmark_specifics->set_url(kUrl.spec());
-  data.is_folder = false;
+  data->is_folder = false;
   auto response_data = std::make_unique<syncer::UpdateResponseData>();
-  response_data->entity = data.PassToPtr();
+  response_data->entity = std::move(data);
   // Similar to what's done in the loopback_server.
   response_data->response_version = 0;
 
@@ -693,19 +693,19 @@ TEST(BookmarkRemoteUpdatesHandlerTest,
 
   // Now receive an update with the actual server id.
   syncer::UpdateResponseDataList updates;
-  syncer::EntityData data;
-  data.id = kSyncId;
-  data.originator_cache_guid = kCacheGuid;
-  data.originator_client_item_id = kOriginatorClientItemId;
+  auto data = std::make_unique<syncer::EntityData>();
+  data->id = kSyncId;
+  data->originator_cache_guid = kCacheGuid;
+  data->originator_client_item_id = kOriginatorClientItemId;
   // Set the other required fields.
-  data.unique_position = syncer::UniquePosition::InitialPosition(
-                             syncer::UniquePosition::RandomSuffix())
-                             .ToProto();
-  data.specifics = specifics;
-  data.is_folder = true;
+  data->unique_position = syncer::UniquePosition::InitialPosition(
+                              syncer::UniquePosition::RandomSuffix())
+                              .ToProto();
+  data->specifics = specifics;
+  data->is_folder = true;
 
   auto response_data = std::make_unique<syncer::UpdateResponseData>();
-  response_data->entity = data.PassToPtr();
+  response_data->entity = std::move(data);
   // Similar to what's done in the loopback_server.
   response_data->response_version = 0;
   updates.push_back(std::move(response_data));

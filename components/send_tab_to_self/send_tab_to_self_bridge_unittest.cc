@@ -108,7 +108,8 @@ class SendTabToSelfBridgeTest : public testing::Test {
     ON_CALL(mock_processor_, IsTrackingMetadata()).WillByDefault(Return(false));
   }
 
-  syncer::EntityDataPtr MakeEntityData(const SendTabToSelfEntry& entry) {
+  std::unique_ptr<syncer::EntityData> MakeEntityData(
+      const SendTabToSelfEntry& entry) {
     SendTabToSelfLocal specifics = entry.AsLocalProto();
 
     auto entity_data = std::make_unique<syncer::EntityData>();
@@ -116,10 +117,7 @@ class SendTabToSelfBridgeTest : public testing::Test {
     *(entity_data->specifics.mutable_send_tab_to_self()) =
         specifics.specifics();
     entity_data->non_unique_name = entry.GetURL().spec();
-    // The client_tag_hash field is unused by the send_tab_to_self_bridge, but
-    // is required for a valid entity_data.
-    entity_data->client_tag_hash = "someclienttaghash";
-    return entity_data->PassToPtr();
+    return entity_data;
   }
 
   // Helper method to reduce duplicated code between tests. Wraps the given
@@ -133,12 +131,9 @@ class SendTabToSelfBridgeTest : public testing::Test {
 
       *(entity_data->specifics.mutable_send_tab_to_self()) = specifics;
       entity_data->non_unique_name = specifics.url();
-      // The client_tag_hash field is unused by the send_tab_to_self_bridge, but
-      // is required for a valid entity_data.
-      entity_data->client_tag_hash = "someclienttaghash";
 
       changes.push_back(syncer::EntityChange::CreateAdd(
-          specifics.guid(), entity_data->PassToPtr()));
+          specifics.guid(), std::move(entity_data)));
     }
     return changes;
   }

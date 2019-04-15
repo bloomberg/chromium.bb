@@ -72,24 +72,24 @@ std::unique_ptr<CommitRequestData> MockModelTypeProcessor::CommitRequest(
     const sync_pb::EntitySpecifics& specifics) {
   const int64_t base_version = GetBaseVersion(tag_hash);
 
-  EntityData data;
+  auto data = std::make_unique<syncer::EntityData>();
 
   if (HasServerAssignedId(tag_hash)) {
-    data.id = GetServerAssignedId(tag_hash);
+    data->id = GetServerAssignedId(tag_hash);
   }
 
-  data.client_tag_hash = tag_hash;
-  data.specifics = specifics;
+  data->client_tag_hash = tag_hash;
+  data->specifics = specifics;
 
   // These fields are not really used for much, but we set them anyway
   // to make this item look more realistic.
-  data.creation_time = base::Time::UnixEpoch() + base::TimeDelta::FromDays(1);
-  data.modification_time =
-      data.creation_time + base::TimeDelta::FromSeconds(base_version);
-  data.non_unique_name = "Name: " + tag_hash;
+  data->creation_time = base::Time::UnixEpoch() + base::TimeDelta::FromDays(1);
+  data->modification_time =
+      data->creation_time + base::TimeDelta::FromSeconds(base_version);
+  data->non_unique_name = "Name: " + tag_hash;
 
   auto request_data = std::make_unique<CommitRequestData>();
-  request_data->entity = data.PassToPtr();
+  request_data->entity = std::move(data);
   request_data->sequence_number = GetNextSequenceNumber(tag_hash);
   request_data->base_version = base_version;
   base::Base64Encode(base::SHA1HashString(specifics.SerializeAsString()),
@@ -102,24 +102,24 @@ std::unique_ptr<CommitRequestData> MockModelTypeProcessor::DeleteRequest(
     const std::string& tag_hash) {
   const int64_t base_version = GetBaseVersion(tag_hash);
 
-  EntityData data;
+  auto data = std::make_unique<syncer::EntityData>();
 
   if (HasServerAssignedId(tag_hash)) {
-    data.id = GetServerAssignedId(tag_hash);
+    data->id = GetServerAssignedId(tag_hash);
   }
 
-  data.client_tag_hash = tag_hash;
+  data->client_tag_hash = tag_hash;
 
   // These fields have little or no effect on behavior.  We set them anyway to
   // make the test more realistic.
-  data.creation_time = base::Time::UnixEpoch() + base::TimeDelta::FromDays(1);
-  data.non_unique_name = "Name deleted";
+  data->creation_time = base::Time::UnixEpoch() + base::TimeDelta::FromDays(1);
+  data->non_unique_name = "Name deleted";
 
-  data.modification_time =
-      data.creation_time + base::TimeDelta::FromSeconds(base_version);
+  data->modification_time =
+      data->creation_time + base::TimeDelta::FromSeconds(base_version);
 
   auto request_data = std::make_unique<CommitRequestData>();
-  request_data->entity = data.PassToPtr();
+  request_data->entity = std::move(data);
   request_data->sequence_number = GetNextSequenceNumber(tag_hash);
   request_data->base_version = base_version;
 

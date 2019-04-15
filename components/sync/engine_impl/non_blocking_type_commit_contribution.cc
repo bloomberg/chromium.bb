@@ -180,7 +180,7 @@ size_t NonBlockingTypeCommitContribution::GetNumEntries() const {
 void NonBlockingTypeCommitContribution::PopulateCommitProto(
     const CommitRequestData& commit_entity,
     sync_pb::SyncEntity* commit_proto) {
-  const EntityData& entity_data = commit_entity.entity.value();
+  const EntityData& entity_data = *commit_entity.entity;
   commit_proto->set_id_string(entity_data.id);
   // Populate client_defined_unique_tag only for non-bookmark data types.
   if (!entity_data.specifics.has_bookmark()) {

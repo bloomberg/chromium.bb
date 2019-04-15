@@ -602,7 +602,7 @@ SyncChangeList SyncableServiceBasedBridge::StoreAndConvertRemoteChanges(
             FROM_HERE, SyncChange::ACTION_DELETE,
             SyncData::CreateRemoteData(
                 /*id=*/kInvalidNodeId, in_memory_store_[storage_key],
-                change->data().client_tag_hash));
+                /*client_tag_hash=*/""));
 
         // For tombstones, there is no actual data, which means no client tag
         // hash either, but the processor provides the storage key.

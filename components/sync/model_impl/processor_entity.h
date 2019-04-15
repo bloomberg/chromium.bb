@@ -10,6 +10,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/time/time.h"
 #include "components/sync/base/model_type.h"
@@ -43,7 +44,7 @@ class ProcessorEntity {
 
   const std::string& storage_key() const { return storage_key_; }
   const sync_pb::EntityMetadata& metadata() const { return metadata_; }
-  const EntityDataPtr& commit_data() const { return commit_data_; }
+  const EntityData& commit_data() { return *commit_data_; }
   base::Time unsynced_time() const { return unsynced_time_; }
 
   // Returns true if this data is out of sync with the server.
@@ -111,12 +112,10 @@ class ProcessorEntity {
   void SetStorageKey(const std::string& storage_key);
 
   // Takes the passed commit data updates its fields with values from metadata
-  // and caches it in the instance. The data is swapped from the input struct
-  // without copying.
-  void SetCommitData(EntityData* data);
+  // and caches it in the instance.
+  void SetCommitData(std::unique_ptr<EntityData> data);
 
-  // Caches the a copy of |data_ptr|, which doesn't copy the data itself.
-  void CacheCommitData(const EntityDataPtr& data_ptr);
+  void CacheCommitData(std::unique_ptr<EntityData> data);
 
   // Check if the instance has cached commit data.
   bool HasCommitData() const;
@@ -157,9 +156,9 @@ class ProcessorEntity {
   // Serializable Sync metadata.
   sync_pb::EntityMetadata metadata_;
 
-  // Sync data that exists for items being committed only.
-  // The data is reset once commit confirmation is received.
-  EntityDataPtr commit_data_;
+  // Sync data that exists for items being committed only. The data is moved
+  // away when sending the commit request.
+  std::unique_ptr<EntityData> commit_data_;
 
   // The sequence number of the last item sent to the sync thread.
   int64_t commit_requested_sequence_number_;

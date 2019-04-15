@@ -53,7 +53,6 @@ using syncer::DataBatch;
 using syncer::EntityChange;
 using syncer::EntityChangeList;
 using syncer::EntityData;
-using syncer::EntityDataPtr;
 using syncer::KeyAndData;
 using syncer::MockModelTypeChangeProcessor;
 using syncer::ModelType;
@@ -293,12 +292,13 @@ class AutofillProfileSyncBridgeTest : public testing::Test {
     return data;
   }
 
-  EntityDataPtr SpecificsToEntity(const AutofillProfileSpecifics& specifics) {
-    EntityData data;
-    *data.specifics.mutable_autofill_profile() = specifics;
-    data.client_tag_hash = syncer::GenerateSyncableHash(
-        syncer::AUTOFILL_PROFILE, bridge()->GetClientTag(data));
-    return data.PassToPtr();
+  std::unique_ptr<EntityData> SpecificsToEntity(
+      const AutofillProfileSpecifics& specifics) {
+    auto data = std::make_unique<EntityData>();
+    *data->specifics.mutable_autofill_profile() = specifics;
+    data->client_tag_hash = syncer::GenerateSyncableHash(
+        syncer::AUTOFILL_PROFILE, bridge()->GetClientTag(*data));
+    return data;
   }
 
   std::unique_ptr<syncer::UpdateResponseData> SpecificsToUpdateResponse(

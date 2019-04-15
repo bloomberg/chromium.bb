@@ -40,10 +40,10 @@ syncer::CommitRequestDataList BookmarkLocalChangesBuilder::BuildCommitRequests(
     DCHECK(entity->IsUnsynced());
     const sync_pb::EntityMetadata* metadata = entity->metadata();
 
-    syncer::EntityData data;
-    data.id = metadata->server_id();
-    data.creation_time = syncer::ProtoTimeToTime(metadata->creation_time());
-    data.modification_time =
+    auto data = std::make_unique<syncer::EntityData>();
+    data->id = metadata->server_id();
+    data->creation_time = syncer::ProtoTimeToTime(metadata->creation_time());
+    data->modification_time =
         syncer::ProtoTimeToTime(metadata->modification_time());
     if (!metadata->is_deleted()) {
       const bookmarks::BookmarkNode* node = entity->bookmark_node();
@@ -52,23 +52,23 @@ syncer::CommitRequestDataList BookmarkLocalChangesBuilder::BuildCommitRequests(
       const SyncedBookmarkTracker::Entity* parent_entity =
           bookmark_tracker_->GetEntityForBookmarkNode(parent);
       DCHECK(parent_entity);
-      data.parent_id = parent_entity->metadata()->server_id();
+      data->parent_id = parent_entity->metadata()->server_id();
       // TODO(crbug.com/516866): Double check that custom passphrase works well
       // with this implementation, because:
       // 1. NonBlockingTypeCommitContribution::AdjustCommitProto() clears the
       //    title out.
       // 2. Bookmarks (maybe ancient legacy bookmarks only?) use/used |name| to
       //    encode the title.
-      data.is_folder = node->is_folder();
-      data.unique_position = metadata->unique_position();
+      data->is_folder = node->is_folder();
+      data->unique_position = metadata->unique_position();
       // Assign specifics only for the non-deletion case. In case of deletion,
       // EntityData should contain empty specifics to indicate deletion.
-      data.specifics = CreateSpecificsFromBookmarkNode(
+      data->specifics = CreateSpecificsFromBookmarkNode(
           node, bookmark_model_, /*force_favicon_load=*/true);
-      data.non_unique_name = data.specifics.bookmark().title();
+      data->non_unique_name = data->specifics.bookmark().title();
     }
     auto request = std::make_unique<syncer::CommitRequestData>();
-    request->entity = data.PassToPtr();
+    request->entity = std::move(data);
     request->sequence_number = metadata->sequence_number();
     request->base_version = metadata->server_version();
     // Specifics hash has been computed in the tracker when this entity has been

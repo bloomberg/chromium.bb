@@ -730,7 +730,7 @@ TEST_F(ModelTypeWorkerTest, ReceiveUpdates) {
 
   ASSERT_TRUE(processor()->HasUpdateResponse(kHash1));
   const UpdateResponseData& update = processor()->GetUpdateResponse(kHash1);
-  const EntityData& entity = update.entity.value();
+  const EntityData& entity = *update.entity;
 
   EXPECT_FALSE(entity.id.empty());
   EXPECT_EQ(tag_hash, entity.client_tag_hash);
@@ -1465,7 +1465,7 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseData) {
   EXPECT_EQ(ModelTypeWorker::SUCCESS,
             ModelTypeWorker::PopulateUpdateResponseData(&cryptographer, entity,
                                                         &response_data));
-  const EntityData& data = response_data.entity.value();
+  const EntityData& data = *response_data.entity;
   EXPECT_FALSE(data.id.empty());
   EXPECT_FALSE(data.parent_id.empty());
   EXPECT_FALSE(data.is_folder);
@@ -1501,7 +1501,7 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataWithPositionInParent) {
   EXPECT_EQ(ModelTypeWorker::SUCCESS,
             ModelTypeWorker::PopulateUpdateResponseData(&cryptographer, entity,
                                                         &response_data));
-  const EntityData& data = response_data.entity.value();
+  const EntityData& data = *response_data.entity;
   EXPECT_TRUE(
       syncer::UniquePosition::FromProto(data.unique_position).IsValid());
 
@@ -1529,7 +1529,7 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataWithInsertAfterItemId) {
   EXPECT_EQ(ModelTypeWorker::SUCCESS,
             ModelTypeWorker::PopulateUpdateResponseData(&cryptographer, entity,
                                                         &response_data));
-  const EntityData& data = response_data.entity.value();
+  const EntityData& data = *response_data.entity;
   EXPECT_TRUE(
       syncer::UniquePosition::FromProto(data.unique_position).IsValid());
   histogram_tester.ExpectUniqueSample(
@@ -1559,7 +1559,7 @@ TEST_F(ModelTypeWorkerTest,
   EXPECT_EQ(ModelTypeWorker::SUCCESS,
             ModelTypeWorker::PopulateUpdateResponseData(&cryptographer, entity,
                                                         &response_data));
-  const EntityData& data = response_data.entity.value();
+  const EntityData& data = *response_data.entity;
   EXPECT_FALSE(
       syncer::UniquePosition::FromProto(data.unique_position).IsValid());
   histogram_tester.ExpectUniqueSample("Sync.Entities.PositioningScheme",
@@ -1584,7 +1584,7 @@ TEST_F(ModelTypeWorkerTest,
   EXPECT_EQ(ModelTypeWorker::SUCCESS,
             ModelTypeWorker::PopulateUpdateResponseData(&cryptographer, entity,
                                                         &response_data));
-  const EntityData& data = response_data.entity.value();
+  const EntityData& data = *response_data.entity;
   EXPECT_FALSE(
       syncer::UniquePosition::FromProto(data.unique_position).IsValid());
   histogram_tester.ExpectTotalCount("Sync.Entities.PositioningScheme",

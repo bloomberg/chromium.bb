@@ -80,7 +80,7 @@ void ProcessorEntity::SetStorageKey(const std::string& storage_key) {
   storage_key_ = storage_key;
 }
 
-void ProcessorEntity::SetCommitData(EntityData* data) {
+void ProcessorEntity::SetCommitData(std::unique_ptr<EntityData> data) {
   DCHECK(data);
   // Update data's fields from metadata.
   data->client_tag_hash = metadata_.client_tag_hash();
@@ -90,17 +90,17 @@ void ProcessorEntity::SetCommitData(EntityData* data) {
   data->modification_time = ProtoTimeToTime(metadata_.modification_time());
 
   commit_data_.reset();
-  CacheCommitData(data->PassToPtr());
+  CacheCommitData(std::move(data));
 }
 
-void ProcessorEntity::CacheCommitData(const EntityDataPtr& data_ptr) {
+void ProcessorEntity::CacheCommitData(std::unique_ptr<EntityData> data) {
   DCHECK(RequiresCommitData());
-  commit_data_ = data_ptr;
+  commit_data_ = std::move(data);
   DCHECK(HasCommitData());
 }
 
 bool ProcessorEntity::HasCommitData() const {
-  return !commit_data_->client_tag_hash.empty();
+  return commit_data_ && !commit_data_->client_tag_hash.empty();
 }
 
 bool ProcessorEntity::MatchesData(const EntityData& data) const {
@@ -182,7 +182,7 @@ void ProcessorEntity::RecordIgnoredUpdate(const UpdateResponseData& update) {
   // update id in cached commit data.
   if (HasCommitData() && commit_data_->id != metadata_.server_id()) {
     DCHECK(commit_data_->id.empty());
-    commit_data_ = commit_data_->UpdateId(metadata_.server_id());
+    commit_data_->id = metadata_.server_id();
   }
 }
 
@@ -221,9 +221,8 @@ void ProcessorEntity::MakeLocalChange(std::unique_ptr<EntityData> data) {
   metadata_.set_modification_time(TimeToProtoTime(modification_time));
   metadata_.set_is_deleted(false);
 
-  // SetCommitData will update data's fields from metadata and wrap it into
-  // immutable EntityDataPtr.
-  SetCommitData(data.get());
+  // SetCommitData will update data's fields from metadata.
+  SetCommitData(std::move(data));
 }
 
 bool ProcessorEntity::Delete() {
@@ -253,16 +252,16 @@ void ProcessorEntity::InitializeCommitRequestData(CommitRequestData* request) {
     DCHECK(HasCommitData());
     DCHECK_EQ(commit_data_->client_tag_hash, metadata_.client_tag_hash());
     DCHECK_EQ(commit_data_->id, metadata_.server_id());
-    request->entity = commit_data_;
+    request->entity = std::move(commit_data_);
   } else {
     // Make an EntityData with empty specifics to indicate deletion. This is
     // done lazily here to simplify loading a pending deletion on startup.
-    EntityData data;
-    data.client_tag_hash = metadata_.client_tag_hash();
-    data.id = metadata_.server_id();
-    data.creation_time = ProtoTimeToTime(metadata_.creation_time());
-    data.modification_time = ProtoTimeToTime(metadata_.modification_time());
-    request->entity = data.PassToPtr();
+    auto data = std::make_unique<syncer::EntityData>();
+    data->client_tag_hash = metadata_.client_tag_hash();
+    data->id = metadata_.server_id();
+    data->creation_time = ProtoTimeToTime(metadata_.creation_time());
+    data->modification_time = ProtoTimeToTime(metadata_.modification_time());
+    request->entity = std::move(data);
   }
 
   request->sequence_number = metadata_.sequence_number();
@@ -303,7 +302,7 @@ void ProcessorEntity::ReceiveCommitResponse(const CommitResponseData& data,
     // update id in cached commit data.
     if (HasCommitData() && commit_data_->id != metadata_.server_id()) {
       DCHECK(commit_data_->id.empty());
-      commit_data_ = commit_data_->UpdateId(metadata_.server_id());
+      commit_data_->id = metadata_.server_id();
     }
   }
 }

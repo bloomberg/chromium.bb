@@ -131,7 +131,7 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   // Helper function to process the update for a single entity. If a local data
   // change is required, it will be added to |entity_changes|. The return value
   // is the tracked entity, or nullptr if the update should be ignored.
-  ProcessorEntity* ProcessUpdate(const UpdateResponseData& update,
+  ProcessorEntity* ProcessUpdate(std::unique_ptr<UpdateResponseData> update,
                                  EntityChangeList* entity_changes);
 
   // Resolve a conflict between |update| and the pending commit in |entity|.
@@ -155,13 +155,13 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   // any server update.
   base::Optional<ModelError> OnFullUpdateReceived(
       const sync_pb::ModelTypeState& type_state,
-      const UpdateResponseDataList& updates);
+      UpdateResponseDataList updates);
 
   // Handle any incremental updates received from the server after being
   // enabled.
   base::Optional<ModelError> OnIncrementalUpdateReceived(
       const sync_pb::ModelTypeState& type_state,
-      const UpdateResponseDataList& updates);
+      UpdateResponseDataList updates);
 
   // ModelTypeSyncBridge::GetData() callback for pending loading data upon
   // GetLocalChanges call.
