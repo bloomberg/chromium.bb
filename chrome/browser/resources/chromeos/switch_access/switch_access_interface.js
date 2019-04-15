@@ -70,6 +70,12 @@ class SwitchAccessInterface {
   performedUserAction() {}
 
   /**
+   * Handle a change in user preferences.
+   * @param {!Object} changes
+   */
+  onPreferencesChanged(changes) {}
+
+  /**
    * Set the value of the preference |key| to |value| in chrome.storage.sync.
    * The behavior is not updated until the storage update is complete.
    *
