@@ -3339,6 +3339,7 @@ Unknown properties are collapsed to zero. -->
   <int value="13" label="Max strikes, did not show infobar (mobile only)"/>
   <int value="14" label="User requested to provide expiration date"/>
   <int value="15" label="Card was not in a supported bin range"/>
+  <int value="16" label="Upload was offered for a dynamic form"/>
 </enum>
 
 <enum name="AutofillCardUploadEnabled">
