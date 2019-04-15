@@ -2009,7 +2009,8 @@ WebLocalFrameImpl* WebLocalFrameImpl::LocalRoot() {
 }
 
 WebFrame* WebLocalFrameImpl::FindFrameByName(const WebString& name) {
-  Frame* result = GetFrame()->Tree().Find(name);
+  FrameLoadRequest request(nullptr, ResourceRequest(), name);
+  Frame* result = GetFrame()->Tree().FindFrameForNavigation(request).frame;
   return WebFrame::FromFrame(result);
 }
 
