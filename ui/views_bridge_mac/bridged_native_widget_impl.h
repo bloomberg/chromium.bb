@@ -345,6 +345,13 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   // can not currently be changed.
   bool in_fullscreen_transition_ = false;
 
+  // Trying to close an NSWindow during a fullscreen transition will cause the
+  // window to lock up. Use this to track if CloseWindow was called during a
+  // fullscreen transition, to defer the -[NSWindow close] call until the
+  // transition is complete.
+  // https://crbug.com/945237
+  bool has_deferred_window_close_ = false;
+
   // Stores the value last read from -[NSWindow isVisible], to detect visibility
   // changes.
   bool window_visible_ = false;

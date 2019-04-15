@@ -555,6 +555,9 @@ void BridgedNativeWidgetImpl::CreateContentView(uint64_t ns_view_id,
 }
 
 void BridgedNativeWidgetImpl::CloseWindow() {
+  if (has_deferred_window_close_)
+    return;
+
   // Keep |window| on the stack so that the ObjectiveC block below can capture
   // it and properly increment the reference count bound to the posted task.
   NSWindow* window = ns_window();
@@ -589,6 +592,12 @@ void BridgedNativeWidgetImpl::CloseWindow() {
   // like -performClose:, first remove the window from AppKit's display
   // list to avoid crashes like http://crbug.com/156101.
   [window orderOut:nil];
+
+  // Defer closing windows until after fullscreen transitions complete.
+  if (in_fullscreen_transition_) {
+    has_deferred_window_close_ = true;
+    return;
+  }
 
   // Many tests assume that base::RunLoop().RunUntilIdle() is always sufficient
   // to execute a close. However, in rare cases, -performSelector:..afterDelay:0
@@ -777,6 +786,14 @@ void BridgedNativeWidgetImpl::SetCursor(NSCursor* cursor) {
 }
 
 void BridgedNativeWidgetImpl::OnWindowWillClose() {
+  // If a window closes while in a fullscreen transition, then the window will
+  // hang in a zombie-like state.
+  // https://crbug.com/945237
+  if (in_fullscreen_transition_) {
+    DLOG(ERROR) << "-[NSWindow close] while in fullscreen transition will "
+                   "trigger zombie windows.";
+  }
+
   [window_ setCommandHandler:nil];
   [window_ setCommandDispatcherDelegate:nil];
 
@@ -826,6 +843,11 @@ void BridgedNativeWidgetImpl::OnFullscreenTransitionStart(
 void BridgedNativeWidgetImpl::OnFullscreenTransitionComplete(
     bool actual_fullscreen_state) {
   in_fullscreen_transition_ = false;
+
+  if (has_deferred_window_close_) {
+    [ns_window() close];
+    return;
+  }
 
   if (target_fullscreen_state_ == actual_fullscreen_state) {
     host_->OnWindowFullscreenTransitionComplete(actual_fullscreen_state);
