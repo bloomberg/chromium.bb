@@ -32,9 +32,9 @@ class OverviewAnimationsTest
 
     int additional_browsers = std::get<0>(GetParam()) - 1;
     bool blank_page = std::get<1>(GetParam());
-    bool tablet_mode = std::get<2>(GetParam());
+    tablet_mode_ = std::get<2>(GetParam());
 
-    if (tablet_mode)
+    if (tablet_mode_)
       test::SetAndWaitForTabletMode(true);
 
     GURL ntp_url("chrome://newtab");
@@ -59,15 +59,16 @@ class OverviewAnimationsTest
 
   // UIPerformanceTest:
   std::vector<std::string> GetUMAHistogramNames() const override {
-    return {
-        "Ash.Overview.AnimationSmoothness.Enter.ClamshellMode",
-        "Ash.Overview.AnimationSmoothness.Enter.TabletMode",
-        "Ash.Overview.AnimationSmoothness.Exit.ClamshellMode",
-        "Ash.Overview.AnimationSmoothness.Exit.TabletMode",
-    };
+    if (tablet_mode_) {
+      return {"Ash.Overview.AnimationSmoothness.Enter.TabletMode",
+              "Ash.Overview.AnimationSmoothness.Exit.TabletMode"};
+    }
+    return {"Ash.Overview.AnimationSmoothness.Enter.ClamshellMode",
+            "Ash.Overview.AnimationSmoothness.Exit.ClamshellMode"};
   }
 
  private:
+  bool tablet_mode_ = false;
   DISALLOW_COPY_AND_ASSIGN(OverviewAnimationsTest);
 };
 
