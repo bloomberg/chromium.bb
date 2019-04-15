@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Darwin Huang <huangdarwin@chromium.org>
 Date: Fri, 12 Apr 2019 18:09:06 -0700
-Subject: [PATCH 13/13] Do early detection for corrupt schema
+Subject: [PATCH 13/15] Do early detection for corrupt schema
 
 This backports https://www.sqlite.org/src/info/af1e5873d44d3146
 
