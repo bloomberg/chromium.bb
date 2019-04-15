@@ -68,9 +68,9 @@ class TestPlatform : public json::Platform {
   }
 };
 
-json::Platform* GetTestPlatform() {
+const json::Platform& GetTestPlatform() {
   static TestPlatform* platform = new TestPlatform;
-  return platform;
+  return *platform;
 }
 
 // =============================================================================
@@ -670,7 +670,7 @@ TEST(JsonCborRoundtrip, EncodingDecoding) {
   // And now we roundtrip, decoding the message we just encoded.
   std::string decoded;
   std::unique_ptr<StreamingParserHandler> json_encoder =
-      NewJSONEncoder(GetTestPlatform(), &decoded, &status);
+      NewJSONEncoder(&GetTestPlatform(), &decoded, &status);
   ParseCBOR(span<uint8_t>(encoded.data(), encoded.size()), json_encoder.get());
   EXPECT_EQ(Error::OK, status.error);
   EXPECT_EQ(json, decoded);
@@ -691,7 +691,7 @@ TEST(JsonCborRoundtrip, MoreRoundtripExamples) {
     ParseJSON(GetTestPlatform(), ascii_in, encoder.get());
     std::string decoded;
     std::unique_ptr<StreamingParserHandler> json_writer =
-        NewJSONEncoder(GetTestPlatform(), &decoded, &status);
+        NewJSONEncoder(&GetTestPlatform(), &decoded, &status);
     ParseCBOR(span<uint8_t>(encoded.data(), encoded.size()), json_writer.get());
     EXPECT_EQ(Error::OK, status.error);
     EXPECT_EQ(json, decoded);
@@ -724,7 +724,7 @@ TEST(JSONToCBOREncoderTest, HelloWorldBinary_WithTripToJson) {
   // Now drive the json writer via the CBOR decoder.
   std::string decoded;
   std::unique_ptr<StreamingParserHandler> json_writer =
-      NewJSONEncoder(GetTestPlatform(), &decoded, &status);
+      NewJSONEncoder(&GetTestPlatform(), &decoded, &status);
   ParseCBOR(SpanFromVector(encoded), json_writer.get());
   EXPECT_EQ(Error::OK, status.error);
   EXPECT_EQ(Status::npos(), status.pos);
@@ -744,7 +744,7 @@ TEST(ParseCBORTest, ParseEmptyCBORMessage) {
   std::string out;
   Status status;
   std::unique_ptr<StreamingParserHandler> json_writer =
-      NewJSONEncoder(GetTestPlatform(), &out, &status);
+      NewJSONEncoder(&GetTestPlatform(), &out, &status);
   ParseCBOR(span<uint8_t>(in.data(), in.size()), json_writer.get());
   EXPECT_EQ(Error::OK, status.error);
   EXPECT_EQ("{}", out);
@@ -768,7 +768,7 @@ TEST(ParseCBORTest, ParseCBORHelloWorld) {
   std::string out;
   Status status;
   std::unique_ptr<StreamingParserHandler> json_writer =
-      NewJSONEncoder(GetTestPlatform(), &out, &status);
+      NewJSONEncoder(&GetTestPlatform(), &out, &status);
   ParseCBOR(span<uint8_t>(bytes.data(), bytes.size()), json_writer.get());
   EXPECT_EQ(Error::OK, status.error);
   EXPECT_EQ("{\"msg\":\"Hello, \\ud83c\\udf0e.\"}", out);
@@ -793,7 +793,7 @@ TEST(ParseCBORTest, UTF8IsSupportedInKeys) {
   std::string out;
   Status status;
   std::unique_ptr<StreamingParserHandler> json_writer =
-      NewJSONEncoder(GetTestPlatform(), &out, &status);
+      NewJSONEncoder(&GetTestPlatform(), &out, &status);
   ParseCBOR(span<uint8_t>(bytes.data(), bytes.size()), json_writer.get());
   EXPECT_EQ(Error::OK, status.error);
   EXPECT_EQ("{\"\\ud83c\\udf0e\":\"\\u263e\"}", out);
@@ -804,7 +804,7 @@ TEST(ParseCBORTest, NoInputError) {
   std::string out;
   Status status;
   std::unique_ptr<StreamingParserHandler> json_writer =
-      NewJSONEncoder(GetTestPlatform(), &out, &status);
+      NewJSONEncoder(&GetTestPlatform(), &out, &status);
   ParseCBOR(span<uint8_t>(in.data(), in.size()), json_writer.get());
   EXPECT_EQ(Error::CBOR_NO_INPUT, status.error);
   EXPECT_EQ("", out);
@@ -818,7 +818,7 @@ TEST(ParseCBORTest, InvalidStartByteError) {
   std::string out;
   Status status;
   std::unique_ptr<StreamingParserHandler> json_writer =
-      NewJSONEncoder(GetTestPlatform(), &out, &status);
+      NewJSONEncoder(&GetTestPlatform(), &out, &status);
   ParseCBOR(SpanFromStdString(json), json_writer.get());
   EXPECT_EQ(Error::CBOR_INVALID_START_BYTE, status.error);
   EXPECT_EQ("", out);
@@ -834,7 +834,7 @@ TEST(ParseCBORTest, UnexpectedEofExpectedValueError) {
   std::string out;
   Status status;
   std::unique_ptr<StreamingParserHandler> json_writer =
-      NewJSONEncoder(GetTestPlatform(), &out, &status);
+      NewJSONEncoder(&GetTestPlatform(), &out, &status);
   ParseCBOR(span<uint8_t>(bytes.data(), bytes.size()), json_writer.get());
   EXPECT_EQ(Error::CBOR_UNEXPECTED_EOF_EXPECTED_VALUE, status.error);
   EXPECT_EQ(static_cast<int64_t>(bytes.size()), status.pos);
@@ -852,7 +852,7 @@ TEST(ParseCBORTest, UnexpectedEofInArrayError) {
   std::string out;
   Status status;
   std::unique_ptr<StreamingParserHandler> json_writer =
-      NewJSONEncoder(GetTestPlatform(), &out, &status);
+      NewJSONEncoder(&GetTestPlatform(), &out, &status);
   ParseCBOR(span<uint8_t>(bytes.data(), bytes.size()), json_writer.get());
   EXPECT_EQ(Error::CBOR_UNEXPECTED_EOF_IN_ARRAY, status.error);
   EXPECT_EQ(static_cast<int64_t>(bytes.size()), status.pos);
@@ -867,7 +867,7 @@ TEST(ParseCBORTest, UnexpectedEofInMapError) {
   std::string out;
   Status status;
   std::unique_ptr<StreamingParserHandler> json_writer =
-      NewJSONEncoder(GetTestPlatform(), &out, &status);
+      NewJSONEncoder(&GetTestPlatform(), &out, &status);
   ParseCBOR(span<uint8_t>(bytes.data(), bytes.size()), json_writer.get());
   EXPECT_EQ(Error::CBOR_UNEXPECTED_EOF_IN_MAP, status.error);
   EXPECT_EQ(7, status.pos);
@@ -884,7 +884,7 @@ TEST(ParseCBORTest, InvalidMapKeyError) {
   std::string out;
   Status status;
   std::unique_ptr<StreamingParserHandler> json_writer =
-      NewJSONEncoder(GetTestPlatform(), &out, &status);
+      NewJSONEncoder(&GetTestPlatform(), &out, &status);
   ParseCBOR(span<uint8_t>(bytes.data(), bytes.size()), json_writer.get());
   EXPECT_EQ(Error::CBOR_INVALID_MAP_KEY, status.error);
   EXPECT_EQ(7, status.pos);
@@ -915,7 +915,7 @@ TEST(ParseCBORTest, StackLimitExceededError) {
     std::string out;
     Status status;
     std::unique_ptr<StreamingParserHandler> json_writer =
-        NewJSONEncoder(GetTestPlatform(), &out, &status);
+        NewJSONEncoder(&GetTestPlatform(), &out, &status);
     ParseCBOR(span<uint8_t>(bytes.data(), bytes.size()), json_writer.get());
     EXPECT_EQ(Error::OK, status.error);
     EXPECT_EQ(Status::npos(), status.pos);
@@ -926,7 +926,7 @@ TEST(ParseCBORTest, StackLimitExceededError) {
     std::string out;
     Status status;
     std::unique_ptr<StreamingParserHandler> json_writer =
-        NewJSONEncoder(GetTestPlatform(), &out, &status);
+        NewJSONEncoder(&GetTestPlatform(), &out, &status);
     ParseCBOR(span<uint8_t>(bytes.data(), bytes.size()), json_writer.get());
     EXPECT_EQ(Error::OK, status.error);
     EXPECT_EQ(Status::npos(), status.pos);
@@ -946,7 +946,7 @@ TEST(ParseCBORTest, StackLimitExceededError) {
     std::string out;
     Status status;
     std::unique_ptr<StreamingParserHandler> json_writer =
-        NewJSONEncoder(GetTestPlatform(), &out, &status);
+        NewJSONEncoder(&GetTestPlatform(), &out, &status);
     ParseCBOR(span<uint8_t>(bytes.data(), bytes.size()), json_writer.get());
     EXPECT_EQ(Error::CBOR_STACK_LIMIT_EXCEEDED, status.error);
     EXPECT_EQ(opening_segment_size * 301, status.pos);
@@ -956,7 +956,7 @@ TEST(ParseCBORTest, StackLimitExceededError) {
     std::string out;
     Status status;
     std::unique_ptr<StreamingParserHandler> json_writer =
-        NewJSONEncoder(GetTestPlatform(), &out, &status);
+        NewJSONEncoder(&GetTestPlatform(), &out, &status);
     ParseCBOR(span<uint8_t>(bytes.data(), bytes.size()), json_writer.get());
     EXPECT_EQ(Error::CBOR_STACK_LIMIT_EXCEEDED, status.error);
     EXPECT_EQ(opening_segment_size * 301, status.pos);
@@ -975,7 +975,7 @@ TEST(ParseCBORTest, UnsupportedValueError) {
   std::string out;
   Status status;
   std::unique_ptr<StreamingParserHandler> json_writer =
-      NewJSONEncoder(GetTestPlatform(), &out, &status);
+      NewJSONEncoder(&GetTestPlatform(), &out, &status);
   ParseCBOR(span<uint8_t>(bytes.data(), bytes.size()), json_writer.get());
   EXPECT_EQ(Error::CBOR_UNSUPPORTED_VALUE, status.error);
   EXPECT_EQ(error_pos, status.pos);
@@ -998,7 +998,7 @@ TEST(ParseCBORTest, InvalidString16Error) {
   std::string out;
   Status status;
   std::unique_ptr<StreamingParserHandler> json_writer =
-      NewJSONEncoder(GetTestPlatform(), &out, &status);
+      NewJSONEncoder(&GetTestPlatform(), &out, &status);
   ParseCBOR(span<uint8_t>(bytes.data(), bytes.size()), json_writer.get());
   EXPECT_EQ(Error::CBOR_INVALID_STRING16, status.error);
   EXPECT_EQ(error_pos, status.pos);
@@ -1018,7 +1018,7 @@ TEST(ParseCBORTest, InvalidString8Error) {
   std::string out;
   Status status;
   std::unique_ptr<StreamingParserHandler> json_writer =
-      NewJSONEncoder(GetTestPlatform(), &out, &status);
+      NewJSONEncoder(&GetTestPlatform(), &out, &status);
   ParseCBOR(span<uint8_t>(bytes.data(), bytes.size()), json_writer.get());
   EXPECT_EQ(Error::CBOR_INVALID_STRING8, status.error);
   EXPECT_EQ(error_pos, status.pos);
@@ -1040,7 +1040,7 @@ TEST(ParseCBORTest, InvalidBinaryError) {
   std::string out;
   Status status;
   std::unique_ptr<StreamingParserHandler> json_writer =
-      NewJSONEncoder(GetTestPlatform(), &out, &status);
+      NewJSONEncoder(&GetTestPlatform(), &out, &status);
   ParseCBOR(span<uint8_t>(bytes.data(), bytes.size()), json_writer.get());
   EXPECT_EQ(Error::CBOR_INVALID_BINARY, status.error);
   EXPECT_EQ(error_pos, status.pos);
@@ -1061,7 +1061,7 @@ TEST(ParseCBORTest, InvalidDoubleError) {
   std::string out;
   Status status;
   std::unique_ptr<StreamingParserHandler> json_writer =
-      NewJSONEncoder(GetTestPlatform(), &out, &status);
+      NewJSONEncoder(&GetTestPlatform(), &out, &status);
   ParseCBOR(span<uint8_t>(bytes.data(), bytes.size()), json_writer.get());
   EXPECT_EQ(Error::CBOR_INVALID_DOUBLE, status.error);
   EXPECT_EQ(error_pos, status.pos);
@@ -1082,7 +1082,7 @@ TEST(ParseCBORTest, InvalidSignedError) {
   std::string out;
   Status status;
   std::unique_ptr<StreamingParserHandler> json_writer =
-      NewJSONEncoder(GetTestPlatform(), &out, &status);
+      NewJSONEncoder(&GetTestPlatform(), &out, &status);
   ParseCBOR(span<uint8_t>(bytes.data(), bytes.size()), json_writer.get());
   EXPECT_EQ(Error::CBOR_INVALID_INT32, status.error);
   EXPECT_EQ(error_pos, status.pos);
@@ -1105,7 +1105,7 @@ TEST(ParseCBORTest, TrailingJunk) {
   std::string out;
   Status status;
   std::unique_ptr<StreamingParserHandler> json_writer =
-      NewJSONEncoder(GetTestPlatform(), &out, &status);
+      NewJSONEncoder(&GetTestPlatform(), &out, &status);
   ParseCBOR(span<uint8_t>(bytes.data(), bytes.size()), json_writer.get());
   EXPECT_EQ(Error::CBOR_TRAILING_JUNK, status.error);
   EXPECT_EQ(error_pos, status.pos);
@@ -1127,7 +1127,7 @@ TEST(JsonStdStringWriterTest, HelloWorld) {
   std::string out;
   Status status;
   std::unique_ptr<StreamingParserHandler> writer =
-      NewJSONEncoder(GetTestPlatform(), &out, &status);
+      NewJSONEncoder(&GetTestPlatform(), &out, &status);
   writer->HandleMapBegin();
   WriteUTF8AsUTF16(writer.get(), "msg1");
   WriteUTF8AsUTF16(writer.get(), "Hello, 🌎.");
@@ -1171,7 +1171,7 @@ TEST(JsonStdStringWriterTest, RepresentingNonFiniteValuesAsNull) {
   std::string out;
   Status status;
   std::unique_ptr<StreamingParserHandler> writer =
-      NewJSONEncoder(GetTestPlatform(), &out, &status);
+      NewJSONEncoder(&GetTestPlatform(), &out, &status);
   writer->HandleMapBegin();
   writer->HandleString8(SpanFromStdString("Infinity"));
   writer->HandleDouble(std::numeric_limits<double>::infinity());
@@ -1192,7 +1192,7 @@ TEST(JsonStdStringWriterTest, BinaryEncodedAsJsonString) {
     std::string out;
     Status status;
     std::unique_ptr<StreamingParserHandler> writer =
-        NewJSONEncoder(GetTestPlatform(), &out, &status);
+        NewJSONEncoder(&GetTestPlatform(), &out, &status);
     writer->HandleBinary(SpanFromVector(std::vector<uint8_t>({'M', 'a', 'n'})));
     EXPECT_TRUE(status.ok());
     EXPECT_EQ("\"TWFu\"", out);
@@ -1201,7 +1201,7 @@ TEST(JsonStdStringWriterTest, BinaryEncodedAsJsonString) {
     std::string out;
     Status status;
     std::unique_ptr<StreamingParserHandler> writer =
-        NewJSONEncoder(GetTestPlatform(), &out, &status);
+        NewJSONEncoder(&GetTestPlatform(), &out, &status);
     writer->HandleBinary(SpanFromVector(std::vector<uint8_t>({'M', 'a'})));
     EXPECT_TRUE(status.ok());
     EXPECT_EQ("\"TWE=\"", out);
@@ -1210,7 +1210,7 @@ TEST(JsonStdStringWriterTest, BinaryEncodedAsJsonString) {
     std::string out;
     Status status;
     std::unique_ptr<StreamingParserHandler> writer =
-        NewJSONEncoder(GetTestPlatform(), &out, &status);
+        NewJSONEncoder(&GetTestPlatform(), &out, &status);
     writer->HandleBinary(SpanFromVector(std::vector<uint8_t>({'M'})));
     EXPECT_TRUE(status.ok());
     EXPECT_EQ("\"TQ==\"", out);
@@ -1219,7 +1219,7 @@ TEST(JsonStdStringWriterTest, BinaryEncodedAsJsonString) {
     std::string out;
     Status status;
     std::unique_ptr<StreamingParserHandler> writer =
-        NewJSONEncoder(GetTestPlatform(), &out, &status);
+        NewJSONEncoder(&GetTestPlatform(), &out, &status);
     writer->HandleBinary(SpanFromVector(std::vector<uint8_t>(
         {'H', 'e', 'l', 'l', 'o', ',', ' ', 'w', 'o', 'r', 'l', 'd', '.'})));
     EXPECT_TRUE(status.ok());
@@ -1233,7 +1233,7 @@ TEST(JsonStdStringWriterTest, HandlesErrors) {
   std::string out;
   Status status;
   std::unique_ptr<StreamingParserHandler> writer =
-      NewJSONEncoder(GetTestPlatform(), &out, &status);
+      NewJSONEncoder(&GetTestPlatform(), &out, &status);
   writer->HandleMapBegin();
   WriteUTF8AsUTF16(writer.get(), "msg1");
   writer->HandleError(Status{Error::JSON_PARSER_VALUE_EXPECTED, 42});
@@ -1609,6 +1609,25 @@ TEST_F(JsonParserTest, ValueExpectedError) {
   EXPECT_EQ(Error::JSON_PARSER_VALUE_EXPECTED, log_.status().error);
   EXPECT_EQ(0, log_.status().pos);
   EXPECT_EQ("", log_.str());
+}
+
+TEST(ConvertJSONToCBOR, RoundTripValidJson) {
+  std::string json = "{\"msg\":\"Hello, world.\"}";
+  std::string cbor;
+  {
+    Status status =
+        ConvertJSONToCBOR(GetTestPlatform(), SpanFromStdString(json), &cbor);
+    EXPECT_EQ(Error::OK, status.error);
+    EXPECT_EQ(Status::npos(), status.pos);
+  }
+  std::string roundtrip_json;
+  {
+    Status status = ConvertCBORToJSON(GetTestPlatform(),
+                                      SpanFromStdString(cbor), &roundtrip_json);
+    EXPECT_EQ(Error::OK, status.error);
+    EXPECT_EQ(Status::npos(), status.pos);
+  }
+  EXPECT_EQ(json, roundtrip_json);
 }
 }  // namespace json
 }  // namespace inspector_protocol_encoding

@@ -80,8 +80,8 @@ static constexpr uint8_t kExpectedConversionToBase64Tag =
 
 // Writes the bytes for |v| to |out|, starting with the most significant byte.
 // See also: https://commandcenter.blogspot.com/2012/04/byte-order-fallacy.html
-template <typename T>
-void WriteBytesMostSignificantByteFirst(T v, std::vector<uint8_t>* out) {
+template <typename T, class C>
+void WriteBytesMostSignificantByteFirst(T v, C* out) {
   for (int shift_bytes = sizeof(T) - 1; shift_bytes >= 0; --shift_bytes)
     out->push_back(0xff & (v >> (shift_bytes * 8)));
 }
@@ -151,9 +151,8 @@ int8_t ReadTokenStart(span<uint8_t> bytes, MajorType* type, uint64_t* value) {
 
 // Writes the start of a token with |type|. The |value| may indicate the size,
 // or it may be the payload if the value is an unsigned integer.
-void WriteTokenStart(MajorType type,
-                     uint64_t value,
-                     std::vector<uint8_t>* encoded) {
+template <class C>
+void WriteTokenStartTmpl(MajorType type, uint64_t value, C* encoded) {
   if (value < 24) {
     // Values 0-23 are encoded directly into the additional info of the
     // initial byte.
@@ -182,6 +181,14 @@ void WriteTokenStart(MajorType type,
   // 64 bit uint: 1 initial byte + 8 bytes payload.
   encoded->push_back(EncodeInitialByte(type, kAdditionalInformation8Bytes));
   WriteBytesMostSignificantByteFirst<uint64_t>(value, encoded);
+}
+void WriteTokenStart(MajorType type,
+                     uint64_t value,
+                     std::vector<uint8_t>* encoded) {
+  WriteTokenStartTmpl(type, value, encoded);
+}
+void WriteTokenStart(MajorType type, uint64_t value, std::string* encoded) {
+  WriteTokenStartTmpl(type, value, encoded);
 }
 }  // namespace internals
 
@@ -226,7 +233,8 @@ uint8_t EncodeStop() {
   return kStopByte;
 }
 
-void EncodeInt32(int32_t value, std::vector<uint8_t>* out) {
+template <class C>
+void EncodeInt32Tmpl(int32_t value, C* out) {
   if (value >= 0) {
     internals::WriteTokenStart(MajorType::UNSIGNED, value, out);
   } else {
@@ -234,8 +242,15 @@ void EncodeInt32(int32_t value, std::vector<uint8_t>* out) {
     internals::WriteTokenStart(MajorType::NEGATIVE, representation, out);
   }
 }
+void EncodeInt32(int32_t value, std::vector<uint8_t>* out) {
+  EncodeInt32Tmpl(value, out);
+}
+void EncodeInt32(int32_t value, std::string* out) {
+  EncodeInt32Tmpl(value, out);
+}
 
-void EncodeString16(span<uint16_t> in, std::vector<uint8_t>* out) {
+template <class C>
+void EncodeString16Tmpl(span<uint16_t> in, C* out) {
   uint64_t byte_length = static_cast<uint64_t>(in.size_bytes());
   internals::WriteTokenStart(MajorType::BYTE_STRING, byte_length, out);
   // When emitting UTF16 characters, we always write the least significant byte
@@ -252,14 +267,28 @@ void EncodeString16(span<uint16_t> in, std::vector<uint8_t>* out) {
     out->push_back(two_bytes >> 8);
   }
 }
+void EncodeString16(span<uint16_t> in, std::vector<uint8_t>* out) {
+  EncodeString16Tmpl(in, out);
+}
+void EncodeString16(span<uint16_t> in, std::string* out) {
+  EncodeString16Tmpl(in, out);
+}
 
-void EncodeString8(span<uint8_t> in, std::vector<uint8_t>* out) {
+template <class C>
+void EncodeString8Tmpl(span<uint8_t> in, C* out) {
   internals::WriteTokenStart(MajorType::STRING,
                              static_cast<uint64_t>(in.size_bytes()), out);
   out->insert(out->end(), in.begin(), in.end());
 }
+void EncodeString8(span<uint8_t> in, std::vector<uint8_t>* out) {
+  EncodeString8Tmpl(in, out);
+}
+void EncodeString8(span<uint8_t> in, std::string* out) {
+  EncodeString8Tmpl(in, out);
+}
 
-void EncodeFromLatin1(span<uint8_t> latin1, std::vector<uint8_t>* out) {
+template <class C>
+void EncodeFromLatin1Tmpl(span<uint8_t> latin1, C* out) {
   for (std::ptrdiff_t ii = 0; ii < latin1.size(); ++ii) {
     if (latin1[ii] <= 127)
       continue;
@@ -279,8 +308,15 @@ void EncodeFromLatin1(span<uint8_t> latin1, std::vector<uint8_t>* out) {
   }
   EncodeString8(latin1, out);
 }
+void EncodeFromLatin1(span<uint8_t> latin1, std::vector<uint8_t>* out) {
+  EncodeFromLatin1Tmpl(latin1, out);
+}
+void EncodeFromLatin1(span<uint8_t> latin1, std::string* out) {
+  EncodeFromLatin1Tmpl(latin1, out);
+}
 
-void EncodeFromUTF16(span<uint16_t> utf16, std::vector<uint8_t>* out) {
+template <class C>
+void EncodeFromUTF16Tmpl(span<uint16_t> utf16, C* out) {
   // If there's at least one non-ASCII char, encode as STRING16 (UTF16).
   for (uint16_t ch : utf16) {
     if (ch <= 127)
@@ -293,12 +329,25 @@ void EncodeFromUTF16(span<uint16_t> utf16, std::vector<uint8_t>* out) {
                              static_cast<uint64_t>(utf16.size()), out);
   out->insert(out->end(), utf16.begin(), utf16.end());
 }
+void EncodeFromUTF16(span<uint16_t> utf16, std::vector<uint8_t>* out) {
+  EncodeFromUTF16Tmpl(utf16, out);
+}
+void EncodeFromUTF16(span<uint16_t> utf16, std::string* out) {
+  EncodeFromUTF16Tmpl(utf16, out);
+}
 
-void EncodeBinary(span<uint8_t> in, std::vector<uint8_t>* out) {
+template <class C>
+void EncodeBinaryTmpl(span<uint8_t> in, C* out) {
   out->push_back(kExpectedConversionToBase64Tag);
   uint64_t byte_length = static_cast<uint64_t>(in.size_bytes());
   internals::WriteTokenStart(MajorType::BYTE_STRING, byte_length, out);
   out->insert(out->end(), in.begin(), in.end());
+}
+void EncodeBinary(span<uint8_t> in, std::vector<uint8_t>* out) {
+  EncodeBinaryTmpl(in, out);
+}
+void EncodeBinary(span<uint8_t> in, std::string* out) {
+  EncodeBinaryTmpl(in, out);
 }
 
 // A double is encoded with a specific initial byte
@@ -310,7 +359,8 @@ constexpr std::ptrdiff_t kEncodedDoubleSize = 1 + sizeof(uint64_t);
 // bit wide length, plus a 32 bit length for that string.
 constexpr std::ptrdiff_t kEncodedEnvelopeHeaderSize = 1 + 1 + sizeof(uint32_t);
 
-void EncodeDouble(double value, std::vector<uint8_t>* out) {
+template <class C>
+void EncodeDoubleTmpl(double value, C* out) {
   // The additional_info=27 indicates 64 bits for the double follow.
   // See RFC 7049 Section 2.3, Table 1.
   out->push_back(kInitialByteForDouble);
@@ -321,33 +371,57 @@ void EncodeDouble(double value, std::vector<uint8_t>* out) {
   reinterpret.from_double = value;
   WriteBytesMostSignificantByteFirst<uint64_t>(reinterpret.to_uint64, out);
 }
+void EncodeDouble(double value, std::vector<uint8_t>* out) {
+  EncodeDoubleTmpl(value, out);
+}
+void EncodeDouble(double value, std::string* out) {
+  EncodeDoubleTmpl(value, out);
+}
 
 // =============================================================================
 // cbor::EnvelopeEncoder - for wrapping submessages
 // =============================================================================
 
-void EnvelopeEncoder::EncodeStart(std::vector<uint8_t>* out) {
-  assert(byte_size_pos_ == 0);
+template <class C>
+void EncodeStartTmpl(C* out, std::size_t& byte_size_pos) {
+  assert(byte_size_pos == 0);
   out->push_back(kInitialByteForEnvelope);
   out->push_back(kInitialByteFor32BitLengthByteString);
-  byte_size_pos_ = out->size();
+  byte_size_pos = out->size();
   out->resize(out->size() + sizeof(uint32_t));
 }
 
-bool EnvelopeEncoder::EncodeStop(std::vector<uint8_t>* out) {
-  assert(byte_size_pos_ != 0);
+void EnvelopeEncoder::EncodeStart(std::vector<uint8_t>* out) {
+  EncodeStartTmpl<std::vector<uint8_t>>(out, byte_size_pos_);
+}
+
+void EnvelopeEncoder::EncodeStart(std::string* out) {
+  EncodeStartTmpl<std::string>(out, byte_size_pos_);
+}
+
+template <class C>
+bool EncodeStopTmpl(C* out, std::size_t& byte_size_pos) {
+  assert(byte_size_pos != 0);
   // The byte size is the size of the payload, that is, all the
   // bytes that were written past the byte size position itself.
-  uint64_t byte_size = out->size() - (byte_size_pos_ + sizeof(uint32_t));
+  uint64_t byte_size = out->size() - (byte_size_pos + sizeof(uint32_t));
   // We store exactly 4 bytes, so at most INT32MAX, with most significant
   // byte first.
   if (byte_size > std::numeric_limits<uint32_t>::max())
     return false;
   for (int shift_bytes = sizeof(uint32_t) - 1; shift_bytes >= 0;
        --shift_bytes) {
-    (*out)[byte_size_pos_++] = 0xff & (byte_size >> (shift_bytes * 8));
+    (*out)[byte_size_pos++] = 0xff & (byte_size >> (shift_bytes * 8));
   }
   return true;
+}
+
+bool EnvelopeEncoder::EncodeStop(std::vector<uint8_t>* out) {
+  return EncodeStopTmpl(out, byte_size_pos_);
+}
+
+bool EnvelopeEncoder::EncodeStop(std::string* out) {
+  return EncodeStopTmpl(out, byte_size_pos_);
 }
 
 // =============================================================================
@@ -355,10 +429,10 @@ bool EnvelopeEncoder::EncodeStop(std::vector<uint8_t>* out) {
 // =============================================================================
 
 namespace {
+template <class C>
 class CBOREncoder : public StreamingParserHandler {
  public:
-  CBOREncoder(std::vector<uint8_t>* out, Status* status)
-      : out_(out), status_(status) {
+  CBOREncoder(C* out, Status* status) : out_(out), status_(status) {
     *status_ = Status();
   }
 
@@ -419,7 +493,7 @@ class CBOREncoder : public StreamingParserHandler {
   }
 
  private:
-  std::vector<uint8_t>* out_;
+  C* out_;
   std::vector<EnvelopeEncoder> envelopes_;
   Status* status_;
 };
@@ -428,7 +502,13 @@ class CBOREncoder : public StreamingParserHandler {
 std::unique_ptr<StreamingParserHandler> NewCBOREncoder(
     std::vector<uint8_t>* out,
     Status* status) {
-  return std::unique_ptr<StreamingParserHandler>(new CBOREncoder(out, status));
+  return std::unique_ptr<StreamingParserHandler>(
+      new CBOREncoder<std::vector<uint8_t>>(out, status));
+}
+std::unique_ptr<StreamingParserHandler> NewCBOREncoder(std::string* out,
+                                                       Status* status) {
+  return std::unique_ptr<StreamingParserHandler>(
+      new CBOREncoder<std::string>(out, status));
 }
 
 // =============================================================================
@@ -861,10 +941,11 @@ namespace json {
 
 namespace {
 // Prints |value| to |out| with 4 hex digits, most significant chunk first.
-void PrintHex(uint16_t value, std::string* out) {
+template <class C>
+void PrintHex(uint16_t value, C* out) {
   for (int ii = 3; ii >= 0; --ii) {
     int four_bits = 0xf & (value >> (4 * ii));
-    out->append(1, four_bits + ((four_bits <= 9) ? '0' : ('a' - 10)));
+    out->push_back(four_bits + ((four_bits <= 9) ? '0' : ('a' - 10)));
   }
 }
 
@@ -882,6 +963,9 @@ enum class Container {
 class State {
  public:
   explicit State(Container container) : container_(container) {}
+  void StartElement(std::vector<uint8_t>* out) {
+    // FIXME!!!
+  }
   void StartElement(std::string* out) {
     assert(container_ != Container::NONE || size_ == 0);
     if (size_ != 0) {
@@ -901,7 +985,8 @@ constexpr char kBase64Table[] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     "abcdefghijklmnopqrstuvwxyz0123456789+/";
 
-void Base64Encode(const span<uint8_t>& in, std::string* out) {
+template <class C>
+void Base64Encode(const span<uint8_t>& in, C* out) {
   // The following three cases are based on the tables in the example
   // section in https://en.wikipedia.org/wiki/Base64. We process three
   // input bytes at a time, emitting 4 output bytes at a time.
@@ -933,9 +1018,10 @@ void Base64Encode(const span<uint8_t>& in, std::string* out) {
 }
 
 // Implements a handler for JSON parser events to emit a JSON string.
+template <class C>
 class JSONEncoder : public StreamingParserHandler {
  public:
-  JSONEncoder(const Platform* platform, std::string* out, Status* status)
+  JSONEncoder(const Platform* platform, C* out, Status* status)
       : platform_(platform), out_(out), status_(status) {
     *status_ = Status();
     state_.emplace(Container::NONE);
@@ -947,7 +1033,7 @@ class JSONEncoder : public StreamingParserHandler {
     assert(!state_.empty());
     state_.top().StartElement(out_);
     state_.emplace(Container::MAP);
-    out_->append("{");
+    Emit('{');
   }
 
   void HandleMapEnd() override {
@@ -955,7 +1041,7 @@ class JSONEncoder : public StreamingParserHandler {
       return;
     assert(state_.size() >= 2 && state_.top().container() == Container::MAP);
     state_.pop();
-    out_->append("}");
+    Emit('}');
   }
 
   void HandleArrayBegin() override {
@@ -963,7 +1049,7 @@ class JSONEncoder : public StreamingParserHandler {
       return;
     state_.top().StartElement(out_);
     state_.emplace(Container::ARRAY);
-    out_->append("[");
+    Emit('[');
   }
 
   void HandleArrayEnd() override {
@@ -971,64 +1057,64 @@ class JSONEncoder : public StreamingParserHandler {
       return;
     assert(state_.size() >= 2 && state_.top().container() == Container::ARRAY);
     state_.pop();
-    out_->append("]");
+    Emit(']');
   }
 
   void HandleString16(span<uint16_t> chars) override {
     if (!status_->ok())
       return;
     state_.top().StartElement(out_);
-    out_->append("\"");
+    Emit('"');
     for (const uint16_t ch : chars) {
       if (ch == '"') {
-        out_->append("\\\"");
+        Emit("\\\"");
       } else if (ch == '\\') {
-        out_->append("\\\\");
+        Emit("\\\\");
       } else if (ch == '\b') {
-        out_->append("\\b");
+        Emit("\\b");
       } else if (ch == '\f') {
-        out_->append("\\f");
+        Emit("\\f");
       } else if (ch == '\n') {
-        out_->append("\\n");
+        Emit("\\n");
       } else if (ch == '\r') {
-        out_->append("\\r");
+        Emit("\\r");
       } else if (ch == '\t') {
-        out_->append("\\t");
+        Emit("\\t");
       } else if (ch >= 32 && ch <= 126) {
-        out_->append(1, ch);
+        Emit(ch);
       } else {
-        out_->append("\\u");
+        Emit("\\u");
         PrintHex(ch, out_);
       }
     }
-    out_->append("\"");
+    Emit('"');
   }
 
   void HandleString8(span<uint8_t> chars) override {
     if (!status_->ok())
       return;
     state_.top().StartElement(out_);
-    out_->append("\"");
+    Emit('"');
     for (std::ptrdiff_t ii = 0; ii < chars.size(); ++ii) {
       uint8_t c = chars[ii];
       if (c == '"') {
-        out_->append("\\\"");
+        Emit("\\\"");
       } else if (c == '\\') {
-        out_->append("\\\\");
+        Emit("\\\\");
       } else if (c == '\b') {
-        out_->append("\\b");
+        Emit("\\b");
       } else if (c == '\f') {
-        out_->append("\\f");
+        Emit("\\f");
       } else if (c == '\n') {
-        out_->append("\\n");
+        Emit("\\n");
       } else if (c == '\r') {
-        out_->append("\\r");
+        Emit("\\r");
       } else if (c == '\t') {
-        out_->append("\\t");
+        Emit("\\t");
       } else if (c >= 32 && c <= 126) {
-        out_->append(1, c);
+        Emit(c);
       } else if (c < 32) {
-        out_->append("\\u");
+        Emit("\\u");
         PrintHex(static_cast<uint16_t>(c), out_);
       } else {
         // Inspect the leading byte to figure out how long the utf8
@@ -1079,29 +1165,29 @@ class JSONEncoder : public StreamingParserHandler {
         // using the math described at https://en.wikipedia.org/wiki/UTF-16,
         // for either one or two 16 bit characters.
         if (codepoint < 0xffff) {
-          out_->append("\\u");
+          Emit("\\u");
           PrintHex(static_cast<uint16_t>(codepoint), out_);
           continue;
         }
         codepoint -= 0x10000;
         // high surrogate
-        out_->append("\\u");
+        Emit("\\u");
         PrintHex(static_cast<uint16_t>((codepoint >> 10) + 0xd800), out_);
         // low surrogate
-        out_->append("\\u");
+        Emit("\\u");
         PrintHex(static_cast<uint16_t>((codepoint & 0x3ff) + 0xdc00), out_);
       }
     }
-    out_->append("\"");
+    Emit('"');
   }
 
   void HandleBinary(span<uint8_t> bytes) override {
     if (!status_->ok())
       return;
     state_.top().StartElement(out_);
-    out_->append("\"");
+    Emit('"');
     Base64Encode(bytes, out_);
-    out_->append("\"");
+    Emit('"');
   }
 
   void HandleDouble(double value) override {
@@ -1111,7 +1197,7 @@ class JSONEncoder : public StreamingParserHandler {
     // JSON cannot represent NaN or Infinity. So, for compatibility,
     // we behave like the JSON object in web browsers: emit 'null'.
     if (!std::isfinite(value)) {
-      out_->append("null");
+      Emit("null");
       return;
     }
     std::unique_ptr<char[]> str_value = platform_->DToStr(value);
@@ -1123,33 +1209,33 @@ class JSONEncoder : public StreamingParserHandler {
     // we probe for this and emit the leading 0 anyway if necessary.
     const char* chars = str_value.get();
     if (chars[0] == '.') {
-      out_->append("0");
+      Emit('0');
     } else if (chars[0] == '-' && chars[1] == '.') {
-      out_->append("-0");
+      Emit("-0");
       ++chars;
     }
-    out_->append(chars);
+    Emit(chars);
   }
 
   void HandleInt32(int32_t value) override {
     if (!status_->ok())
       return;
     state_.top().StartElement(out_);
-    out_->append(std::to_string(value));
+    Emit(std::to_string(value));
   }
 
   void HandleBool(bool value) override {
     if (!status_->ok())
       return;
     state_.top().StartElement(out_);
-    out_->append(value ? "true" : "false");
+    Emit(value ? "true" : "false");
   }
 
   void HandleNull() override {
     if (!status_->ok())
       return;
     state_.top().StartElement(out_);
-    out_->append("null");
+    Emit("null");
   }
 
   void HandleError(Status error) override {
@@ -1159,18 +1245,33 @@ class JSONEncoder : public StreamingParserHandler {
   }
 
  private:
+  void Emit(char c) { out_->push_back(c); }
+  void Emit(const char* str) {
+    out_->insert(out_->end(), str, str + strlen(str));
+  }
+  void Emit(const std::string& str) {
+    out_->insert(out_->end(), str.begin(), str.end());
+  }
+
   const Platform* platform_;
-  std::string* out_;
+  C* out_;
   Status* status_;
   std::stack<State> state_;
 };
 }  // namespace
 
+std::unique_ptr<StreamingParserHandler> NewJSONEncoder(
+    const Platform* platform,
+    std::vector<uint8_t>* out,
+    Status* status) {
+  return std::unique_ptr<StreamingParserHandler>(
+      new JSONEncoder<std::vector<uint8_t>>(platform, out, status));
+}
 std::unique_ptr<StreamingParserHandler> NewJSONEncoder(const Platform* platform,
                                                        std::string* out,
                                                        Status* status) {
   return std::unique_ptr<StreamingParserHandler>(
-      new JSONEncoder(platform, out, status));
+      new JSONEncoder<std::string>(platform, out, status));
 }
 
 // =============================================================================
@@ -1786,18 +1887,64 @@ class JsonParser {
 };
 }  // namespace
 
-void ParseJSON(const Platform* platform,
+void ParseJSON(const Platform& platform,
                span<uint8_t> chars,
                StreamingParserHandler* handler) {
-  JsonParser<uint8_t> parser(platform, handler);
+  JsonParser<uint8_t> parser(&platform, handler);
   parser.Parse(chars.data(), chars.size());
 }
 
-void ParseJSON(const Platform* platform,
+void ParseJSON(const Platform& platform,
                span<uint16_t> chars,
                StreamingParserHandler* handler) {
-  JsonParser<uint16_t> parser(platform, handler);
+  JsonParser<uint16_t> parser(&platform, handler);
   parser.Parse(chars.data(), chars.size());
+}
+
+// =============================================================================
+// json::ConvertCBORToJSON, json::ConvertJSONToCBOR - for transcoding
+// =============================================================================
+template <class C>
+Status ConvertCBORToJSONTmpl(const Platform& platform,
+                             span<uint8_t> cbor,
+                             C* json) {
+  Status status;
+  std::unique_ptr<StreamingParserHandler> json_writer =
+      NewJSONEncoder(&platform, json, &status);
+  cbor::ParseCBOR(cbor, json_writer.get());
+  return status;
+}
+
+Status ConvertCBORToJSON(const Platform& platform,
+                         span<uint8_t> cbor,
+                         std::vector<uint8_t>* json) {
+  return ConvertCBORToJSONTmpl(platform, cbor, json);
+}
+Status ConvertCBORToJSON(const Platform& platform,
+                         span<uint8_t> cbor,
+                         std::string* json) {
+  return ConvertCBORToJSONTmpl(platform, cbor, json);
+}
+
+template <class C>
+Status ConvertJSONToCBORTmpl(const Platform& platform,
+                             span<uint8_t> json,
+                             C* cbor) {
+  Status status;
+  std::unique_ptr<StreamingParserHandler> encoder =
+      cbor::NewCBOREncoder(cbor, &status);
+  ParseJSON(platform, json, encoder.get());
+  return status;
+}
+Status ConvertJSONToCBOR(const Platform& platform,
+                         span<uint8_t> json,
+                         std::string* cbor) {
+  return ConvertJSONToCBORTmpl(platform, json, cbor);
+}
+Status ConvertJSONToCBOR(const Platform& platform,
+                         span<uint8_t> json,
+                         std::vector<uint8_t>* cbor) {
+  return ConvertJSONToCBORTmpl(platform, json, cbor);
 }
 }  // namespace json
 }  // namespace inspector_protocol_encoding
