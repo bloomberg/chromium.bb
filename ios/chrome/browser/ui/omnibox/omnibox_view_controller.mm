@@ -106,18 +106,18 @@ const CGFloat kClearButtonSize = 28.0f;
   self.textField.placeholder = l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT);
   [self setupClearButton];
 
+  [NSNotificationCenter.defaultCenter
+      addObserver:self
+         selector:@selector(textInputModeDidChange)
+             name:UITextInputCurrentInputModeDidChangeNotification
+           object:nil];
+
   // TODO(crbug.com/866446): Use UITextFieldDelegate instead.
   [[NSNotificationCenter defaultCenter]
       addObserver:self
          selector:@selector(textFieldDidBeginEditing)
              name:UITextFieldTextDidBeginEditingNotification
            object:self.textField];
-
-  [NSNotificationCenter.defaultCenter
-      addObserver:self
-         selector:@selector(textInputModeDidChange)
-             name:UITextInputCurrentInputModeDidChangeNotification
-           object:nil];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -136,15 +136,6 @@ const CGFloat kClearButtonSize = 28.0f;
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
   [self updateLeadingImageVisibility];
-}
-
-- (void)textInputModeDidChange {
-  if (!self.textField.isFirstResponder) {
-    return;
-  }
-
-  [self.textField updateTextDirection];
-  [self updateSemanticContentAttribute];
 }
 
 #pragma mark - public methods
@@ -205,7 +196,20 @@ const CGFloat kClearButtonSize = 28.0f;
                                  ? self.defaultLeadingImage
                                  : self.emptyTextLeadingImage];
 
-  [self updateSemanticContentAttribute];
+  self.semanticContentAttribute = [self.textField bestSemanticContentAttribute];
+}
+
+// Called on UITextInputCurrentInputModeDidChangeNotification for self.textField
+- (void)textInputModeDidChange {
+  // Only respond to language changes when the omnibox is first responder.
+  if (![self.textField isFirstResponder]) {
+    return;
+  }
+
+  [self.textField updateTextDirection];
+  self.semanticContentAttribute = [self.textField bestSemanticContentAttribute];
+
+  [self.delegate omniboxViewControllerTextInputModeDidChange:self];
 }
 
 #pragma mark clear button
@@ -267,7 +271,7 @@ const CGFloat kClearButtonSize = 28.0f;
   }
 
   [self updateClearButtonVisibility];
-  [self updateSemanticContentAttribute];
+  self.semanticContentAttribute = [self.textField bestSemanticContentAttribute];
 }
 
 // Hides the clear button if the textfield is empty; shows it otherwise.
@@ -277,15 +281,18 @@ const CGFloat kClearButtonSize = 28.0f;
                                            : UITextFieldViewModeNever];
 }
 
-// Updates the semantic content attribute based on the textField's current text.
-- (void)updateSemanticContentAttribute {
+// Handle the updates to semanticContentAttribute by passing the changes along
+// to the necessary views.
+- (void)setSemanticContentAttribute:
+    (UISemanticContentAttribute)semanticContentAttribute {
+  _semanticContentAttribute = semanticContentAttribute;
+
   if (!base::FeatureList::IsEnabled(kNewOmniboxPopupLayout)) {
     return;
   }
-  UISemanticContentAttribute bestAttribute =
-      [self.textField bestSemanticContentAttribute];
-  self.view.semanticContentAttribute = bestAttribute;
-  self.textField.semanticContentAttribute = bestAttribute;
+
+  self.view.semanticContentAttribute = self.semanticContentAttribute;
+  self.textField.semanticContentAttribute = self.semanticContentAttribute;
 }
 
 #pragma mark - UIMenuItem
