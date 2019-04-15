@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/extensions/pwa_confirmation_view.h"
+#include "chrome/browser/ui/views/extensions/pwa_confirmation_dialog_view.h"
 
 #include <memory>
 #include <utility>
@@ -32,13 +32,13 @@
 
 namespace {
 
-constexpr int kPWAConfirmationViewIconSize = 48;
+constexpr int kPWAConfirmationDialogViewIconSize = 48;
 
 bool g_auto_accept_pwa_for_testing = false;
 
 }  // namespace
 
-PWAConfirmationView::PWAConfirmationView(
+PWAConfirmationDialogView::PWAConfirmationDialogView(
     const WebApplicationInfo& web_app_info,
     chrome::AppInstallationAcceptanceCallback callback)
     : web_app_info_(web_app_info), callback_(std::move(callback)) {
@@ -55,9 +55,9 @@ PWAConfirmationView::PWAConfirmationView(
     Accept();
 }
 
-PWAConfirmationView::~PWAConfirmationView() {}
+PWAConfirmationDialogView::~PWAConfirmationDialogView() {}
 
-gfx::Size PWAConfirmationView::CalculatePreferredSize() const {
+gfx::Size PWAConfirmationDialogView::CalculatePreferredSize() const {
   int bubble_width = ChromeLayoutProvider::Get()->GetDistanceMetric(
       DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH);
 
@@ -66,30 +66,30 @@ gfx::Size PWAConfirmationView::CalculatePreferredSize() const {
   return size;
 }
 
-ui::ModalType PWAConfirmationView::GetModalType() const {
+ui::ModalType PWAConfirmationDialogView::GetModalType() const {
   return ui::MODAL_TYPE_CHILD;
 }
 
-base::string16 PWAConfirmationView::GetWindowTitle() const {
+base::string16 PWAConfirmationDialogView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(
       IDS_INSTALL_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE);
 }
 
-bool PWAConfirmationView::ShouldShowCloseButton() const {
+bool PWAConfirmationDialogView::ShouldShowCloseButton() const {
   return false;
 }
 
-void PWAConfirmationView::WindowClosing() {
+void PWAConfirmationDialogView::WindowClosing() {
   if (callback_)
     std::move(callback_).Run(false, web_app_info_);
 }
 
-bool PWAConfirmationView::Accept() {
+bool PWAConfirmationDialogView::Accept() {
   std::move(callback_).Run(true, web_app_info_);
   return true;
 }
 
-base::string16 PWAConfirmationView::GetDialogButtonLabel(
+base::string16 PWAConfirmationDialogView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK
                                        ? IDS_INSTALL_PWA_BUTTON_LABEL
@@ -101,10 +101,10 @@ namespace {
 // Returns an ImageView containing the app icon.
 std::unique_ptr<views::ImageView> CreateIconView(
     const std::vector<WebApplicationInfo::IconInfo>& icons) {
-  gfx::ImageSkia image(
-      std::make_unique<WebAppInfoImageSource>(kPWAConfirmationViewIconSize,
-                                              icons),
-      gfx::Size(kPWAConfirmationViewIconSize, kPWAConfirmationViewIconSize));
+  gfx::ImageSkia image(std::make_unique<WebAppInfoImageSource>(
+                           kPWAConfirmationDialogViewIconSize, icons),
+                       gfx::Size(kPWAConfirmationDialogViewIconSize,
+                                 kPWAConfirmationDialogViewIconSize));
 
   auto icon_image_view = std::make_unique<views::ImageView>();
   icon_image_view->SetImage(image);
@@ -139,7 +139,7 @@ std::unique_ptr<views::Label> CreateOriginLabel(const url::Origin& origin) {
 
 }  // namespace
 
-void PWAConfirmationView::InitializeView() {
+void PWAConfirmationDialogView::InitializeView() {
   const ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
 
   // Use CONTROL insets, because the icon is non-text (see documentation for
@@ -171,7 +171,8 @@ void ShowPWAInstallDialog(content::WebContents* web_contents,
                           const WebApplicationInfo& web_app_info,
                           AppInstallationAcceptanceCallback callback) {
   constrained_window::ShowWebModalDialogViews(
-      new PWAConfirmationView(web_app_info, std::move(callback)), web_contents);
+      new PWAConfirmationDialogView(web_app_info, std::move(callback)),
+      web_contents);
 }
 
 void SetAutoAcceptPWAInstallDialogForTesting(bool auto_accept) {
