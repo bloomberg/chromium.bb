@@ -84,8 +84,9 @@ void HardwareRenderer::CommitFrame() {
   child_frame_queue_.emplace_back(std::move(child_frames.front()));
 }
 
-void HardwareRenderer::DrawGL(HardwareRendererDrawParams* params) {
-  TRACE_EVENT0("android_webview", "HardwareRenderer::DrawGL");
+void HardwareRenderer::Draw(HardwareRendererDrawParams* params) {
+  TRACE_EVENT1("android_webview", "HardwareRenderer::Draw", "vulkan",
+               surfaces_->is_using_vulkan());
 
   for (auto& pruned_frame : WaitAndPruneFrameQueue(&child_frame_queue_))
     ReturnChildFrame(std::move(pruned_frame));
@@ -103,7 +104,7 @@ void HardwareRenderer::DrawGL(HardwareRendererDrawParams* params) {
     // We need to watch if the current Android context has changed and enforce a
     // clean-up in the compositor.
     EGLContext current_context = eglGetCurrentContext();
-    DCHECK(current_context) << "DrawGL called without EGLContext";
+    DCHECK(current_context) << "Draw called without EGLContext";
 
     // TODO(boliu): Handle context loss.
     if (last_egl_context_ != current_context)

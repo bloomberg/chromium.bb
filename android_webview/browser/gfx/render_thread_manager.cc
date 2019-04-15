@@ -192,7 +192,7 @@ void RenderThreadManager::DrawOnRT(bool save_restore,
   }
 
   if (hardware_renderer_)
-    hardware_renderer_->DrawGL(params);
+    hardware_renderer_->Draw(params);
 }
 
 void RenderThreadManager::DestroyHardwareRendererOnRT(bool save_restore) {
