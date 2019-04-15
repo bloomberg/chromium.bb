@@ -358,6 +358,14 @@ base::string16 PaymentRequestSheetController::GetSecondaryButtonLabel() {
   return l10n_util::GetStringUTF16(IDS_PAYMENTS_CANCEL_PAYMENT);
 }
 
+int PaymentRequestSheetController::GetSecondaryButtonTag() {
+  return static_cast<int>(PaymentRequestCommonTags::CLOSE_BUTTON_TAG);
+}
+
+int PaymentRequestSheetController::GetSecondaryButtonId() {
+  return static_cast<int>(DialogViewID::CANCEL_BUTTON);
+}
+
 bool PaymentRequestSheetController::ShouldShowSecondaryButton() {
   return true;
 }
@@ -512,9 +520,8 @@ void PaymentRequestSheetController::AddSecondaryButton(views::View* container) {
         views::MdTextButton::CreateSecondaryUiButton(
             this, GetSecondaryButtonLabel()));
     secondary_button_->set_owned_by_client();
-    secondary_button_->set_tag(
-        static_cast<int>(PaymentRequestCommonTags::CLOSE_BUTTON_TAG));
-    secondary_button_->set_id(static_cast<int>(DialogViewID::CANCEL_BUTTON));
+    secondary_button_->set_tag(GetSecondaryButtonTag());
+    secondary_button_->set_id(GetSecondaryButtonId());
     secondary_button_->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
     container->AddChildView(secondary_button_.get());
   }
