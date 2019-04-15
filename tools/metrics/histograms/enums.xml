@@ -3341,6 +3341,23 @@ Unknown properties are collapsed to zero. -->
   <int value="15" label="Card was not in a supported bin range"/>
 </enum>
 
+<enum name="AutofillCardUploadEnabled">
+  <int value="0" label="Sync service is null"/>
+  <int value="1" label="Sync service throws a persistent auth error"/>
+  <int value="2"
+      label="Sync service missing AUTOFILL_WALLET_DATA active data type"/>
+  <int value="3"
+      label="Sync service missing AUTOFILL_PROFILE active data type"/>
+  <int value="4" label="Account wallet storage upload disabled"/>
+  <int value="5" label="User has a secondary sync passphrase"/>
+  <int value="6" label="Local sync is enabled"/>
+  <int value="7" label="Payments integration user setting is disabled"/>
+  <int value="8" label="User email is empty"/>
+  <int value="9" label="User is logged into an unsupported domain"/>
+  <int value="10" label="Card upload feature flag disabled"/>
+  <int value="11" label="Success, card upload enabled"/>
+</enum>
+
 <enum name="AutofillCreditCardInfoBar">
   <int value="0" label="Shown"/>
   <int value="1" label="Accepted"/>

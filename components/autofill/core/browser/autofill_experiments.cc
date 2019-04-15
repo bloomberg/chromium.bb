@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/payments/payments_util.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/suggestion.h"
@@ -35,9 +36,24 @@ namespace autofill {
 bool IsCreditCardUploadEnabled(const PrefService* pref_service,
                                const syncer::SyncService* sync_service,
                                const std::string& user_email) {
-  if (!sync_service || sync_service->GetAuthError().IsPersistentError() ||
-      !sync_service->GetActiveDataTypes().Has(syncer::AUTOFILL_WALLET_DATA)) {
+  if (!sync_service) {
     // If credit card sync is not active, we're not offering to upload cards.
+    AutofillMetrics::LogCardUploadEnabledMetric(
+        AutofillMetrics::CardUploadEnabledMetric::SYNC_SERVICE_NULL);
+    return false;
+  }
+
+  if (sync_service->GetAuthError().IsPersistentError()) {
+    AutofillMetrics::LogCardUploadEnabledMetric(
+        AutofillMetrics::CardUploadEnabledMetric::
+            SYNC_SERVICE_PERSISTENT_AUTH_ERROR);
+    return false;
+  }
+
+  if (!sync_service->GetActiveDataTypes().Has(syncer::AUTOFILL_WALLET_DATA)) {
+    AutofillMetrics::LogCardUploadEnabledMetric(
+        AutofillMetrics::CardUploadEnabledMetric::
+            SYNC_SERVICE_MISSING_AUTOFILL_WALLET_DATA_ACTIVE_TYPE);
     return false;
   }
 
@@ -45,6 +61,9 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
     if (!sync_service->GetActiveDataTypes().Has(syncer::AUTOFILL_PROFILE)) {
       // In full sync mode, we only allow card upload when addresses are also
       // active, because we upload potential billing addresses with the card.
+      AutofillMetrics::LogCardUploadEnabledMetric(
+          AutofillMetrics::CardUploadEnabledMetric::
+              SYNC_SERVICE_MISSING_AUTOFILL_PROFILE_ACTIVE_TYPE);
       return false;
     }
   } else {
@@ -56,6 +75,9 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
             features::kAutofillEnableAccountWalletStorageUpload)) {
       // We're not enabling uploads in the account wallet mode, so suppress
       // the upload prompt.
+      AutofillMetrics::LogCardUploadEnabledMetric(
+          AutofillMetrics::CardUploadEnabledMetric::
+              ACCOUNT_WALLET_STORAGE_UPLOAD_DISABLED);
       return false;
     }
   }
@@ -64,21 +86,35 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
   // Users who have enabled a passphrase have chosen to not make their sync
   // information accessible to Google. Since upload makes credit card data
   // available to other Google systems, disable it for passphrase users.
-  if (sync_service->GetUserSettings()->IsUsingSecondaryPassphrase())
+  if (sync_service->GetUserSettings()->IsUsingSecondaryPassphrase()) {
+    AutofillMetrics::LogCardUploadEnabledMetric(
+        AutofillMetrics::CardUploadEnabledMetric::
+            USING_SECONDARY_SYNC_PASSPHRASE);
     return false;
+  }
 
   // Don't offer upload for users that are only syncing locally, since they
   // won't receive the cards back from Google Payments.
-  if (sync_service->IsLocalSyncEnabled())
+  if (sync_service->IsLocalSyncEnabled()) {
+    AutofillMetrics::LogCardUploadEnabledMetric(
+        AutofillMetrics::CardUploadEnabledMetric::LOCAL_SYNC_ENABLED);
     return false;
+  }
 
   // Check Payments integration user setting.
-  if (!prefs::IsPaymentsIntegrationEnabled(pref_service))
+  if (!prefs::IsPaymentsIntegrationEnabled(pref_service)) {
+    AutofillMetrics::LogCardUploadEnabledMetric(
+        AutofillMetrics::CardUploadEnabledMetric::
+            PAYMENTS_INTEGRATION_DISABLED);
     return false;
+  }
 
   // Check that the user is logged into a supported domain.
-  if (user_email.empty())
+  if (user_email.empty()) {
+    AutofillMetrics::LogCardUploadEnabledMetric(
+        AutofillMetrics::CardUploadEnabledMetric::EMAIL_EMPTY);
     return false;
+  }
 
   std::string domain = gaia::ExtractDomainName(user_email);
   // If the "allow all email domains" flag is off, restrict credit card upload
@@ -91,10 +127,20 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
       !(domain == "googlemail.com" || domain == "gmail.com" ||
         domain == "google.com" || domain == "chromium.org" ||
         domain == "example.com")) {
+    AutofillMetrics::LogCardUploadEnabledMetric(
+        AutofillMetrics::CardUploadEnabledMetric::EMAIL_DOMAIN_NOT_SUPPORTED);
     return false;
   }
 
-  return base::FeatureList::IsEnabled(features::kAutofillUpstream);
+  if (!base::FeatureList::IsEnabled(features::kAutofillUpstream)) {
+    AutofillMetrics::LogCardUploadEnabledMetric(
+        AutofillMetrics::CardUploadEnabledMetric::AUTOFILL_UPSTREAM_DISABLED);
+    return false;
+  }
+
+  AutofillMetrics::LogCardUploadEnabledMetric(
+      AutofillMetrics::CardUploadEnabledMetric::CARD_UPLOAD_ENABLED);
+  return true;
 }
 
 bool IsCreditCardMigrationEnabled(PersonalDataManager* personal_data_manager,
