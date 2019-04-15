@@ -388,13 +388,6 @@ void WebWorkerFetchContextImpl::WillSendRequest(blink::WebURLRequest& request) {
   request.SetExtraData(std::move(extra_data));
   request.SetAppCacheHostID(appcache_host_id_);
 
-  if (IsControlledByServiceWorker() ==
-      blink::mojom::ControllerServiceWorkerMode::kNoController) {
-    // TODO(falken): Is still this needed? It used to set kForeign for foreign
-    // fetch.
-    request.SetSkipServiceWorker(true);
-  }
-
   if (g_rewrite_url)
     request.SetURL(g_rewrite_url(request.Url().GetString().Utf8(), false));
 
