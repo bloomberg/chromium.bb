@@ -133,6 +133,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // fullscreen app list feature is set.
   void Initialize(const InitParams& params);
 
+  // Resets AppListView to be re-shown after being dismissed.
+  void ResetForHomeLauncherShow();
+
   // If |drag_and_drop_host| is not NULL it will be called upon drag and drop
   // operations outside the application list. This has to be called after
   // Initialize was called since the app list object needs to exist so that

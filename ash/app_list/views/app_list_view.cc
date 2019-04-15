@@ -404,6 +404,11 @@ void AppListView::Initialize(const InitParams& params) {
   RecordFolderMetrics();
 }
 
+void AppListView::ResetForHomeLauncherShow() {
+  GetInitiallyFocusedView()->RequestFocus();
+  CloseOpenedPage();
+}
+
 void AppListView::SetDragAndDropHostOfCurrentAppList(
     ApplicationDragAndDropHost* drag_and_drop_host) {
   app_list_main_view_->SetDragAndDropHostOfCurrentAppList(drag_and_drop_host);
