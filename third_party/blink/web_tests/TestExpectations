@@ -6309,3 +6309,4 @@ crbug.com/802029 [ Mac10.13 Debug ] fast/dom/shadow/focus-controller-recursion-c
 
 # Sheriff 2019-04-15
 crbug.com/952708 external/wpt/css/css-paint-api/parse-input-arguments-018.https.html [ Pass Failure ]
+crbug.com/952717 [ Mac10.13 ] virtual/outofblink-cors/http/tests/xmlhttprequest/redirect-cross-origin-post.html [ Pass Timeout ]
