@@ -90,6 +90,12 @@
   async function audioOpenClose(path) {
     const track = [ENTRIES.beautiful];
 
+    await sendTestMessage({
+      name: 'expectFileTask',
+      fileNames: [ENTRIES.beautiful.targetPath],
+      openType: 'launch'
+    });
+
     // Open Files.App on |path|, add an audio file to Downloads and Drive.
     const appId = await setupAndWaitUntilReady(path, track, track);
 
@@ -116,6 +122,12 @@
    */
   async function audioOpenTrackDownloads() {
     const track = [ENTRIES.beautiful];
+
+    await sendTestMessage({
+      name: 'expectFileTask',
+      fileNames: [ENTRIES.beautiful.targetPath],
+      openType: 'launch'
+    });
 
     // Open Files.App on Downloads, add an audio file to Downloads.
     const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, track, []);
@@ -146,6 +158,16 @@
    */
   async function audioOpenMultipleTracksDrive() {
     const tracks = [ENTRIES.beautiful, ENTRIES.newlyAdded];
+
+    // File open events are not reported for legacy Drive.
+    if (await sendTestMessage({name: 'getDriveFsEnabled'}) === 'true') {
+      await sendTestMessage({
+        name: 'expectFileTask',
+        fileNames:
+            [ENTRIES.beautiful.targetPath, ENTRIES.newlyAdded.targetPath],
+        openType: 'launch'
+      });
+    }
 
     // Open Files.App on Drive, add the audio files to Drive.
     const appId = await setupAndWaitUntilReady(RootPath.DRIVE, [], tracks);
@@ -203,6 +225,12 @@
   async function audioAutoAdvance(path) {
     const tracks = [ENTRIES.beautiful, ENTRIES.newlyAdded];
 
+    await sendTestMessage({
+      name: 'expectFileTask',
+      fileNames: [ENTRIES.beautiful.targetPath],
+      openType: 'launch'
+    });
+
     // Open Files.App on |path|, add audio files to Downloads and Drive.
     const appId = await setupAndWaitUntilReady(path, tracks, tracks);
 
@@ -235,6 +263,12 @@
    */
   async function audioRepeatAllModeSingleFile(path) {
     const track = [ENTRIES.beautiful];
+
+    await sendTestMessage({
+      name: 'expectFileTask',
+      fileNames: [ENTRIES.beautiful.targetPath],
+      openType: 'launch'
+    });
 
     // Open Files.App on |path|, add an audio file to Downloads and Drive.
     const appId = await setupAndWaitUntilReady(path, track, track);
@@ -277,6 +311,12 @@
   async function audioNoRepeatModeSingleFile(path) {
     const track = [ENTRIES.beautiful];
 
+    await sendTestMessage({
+      name: 'expectFileTask',
+      fileNames: [ENTRIES.beautiful.targetPath],
+      openType: 'launch'
+    });
+
     // Open Files.App on |path|, add an audio file to Downloads and Drive.
     const appId = await setupAndWaitUntilReady(path, track, track);
 
@@ -310,6 +350,12 @@
    */
   async function audioRepeatOneModeSingleFile(path) {
     const track = [ENTRIES.beautiful];
+
+    await sendTestMessage({
+      name: 'expectFileTask',
+      fileNames: [ENTRIES.beautiful.targetPath],
+      openType: 'launch'
+    });
 
     // Open Files.App on |path|, add an audio file to Downloads and Drive.
     const appId = await setupAndWaitUntilReady(path, track, track);
@@ -359,6 +405,12 @@
   async function audioRepeatAllModeMultipleFile(path) {
     const tracks = [ENTRIES.beautiful, ENTRIES.newlyAdded];
 
+    await sendTestMessage({
+      name: 'expectFileTask',
+      fileNames: [ENTRIES.newlyAdded.targetPath],
+      openType: 'launch'
+    });
+
     // Open Files.App on |path|, add audio files to Downloads and Drive.
     const appId = await setupAndWaitUntilReady(path, tracks, tracks);
 
@@ -406,6 +458,12 @@
   async function audioNoRepeatModeMultipleFile(path) {
     const tracks = [ENTRIES.beautiful, ENTRIES.newlyAdded];
 
+    await sendTestMessage({
+      name: 'expectFileTask',
+      fileNames: [ENTRIES.newlyAdded.targetPath],
+      openType: 'launch'
+    });
+
     // Open Files.App on |path|, add audio files to Downloads and Drive.
     const appId = await setupAndWaitUntilReady(path, tracks, tracks);
 
@@ -439,6 +497,12 @@
    */
   async function audioRepeatOneModeMultipleFile(path) {
     const tracks = [ENTRIES.beautiful, ENTRIES.newlyAdded];
+
+    await sendTestMessage({
+      name: 'expectFileTask',
+      fileNames: [ENTRIES.newlyAdded.targetPath],
+      openType: 'launch'
+    });
 
     // Open Files.App on |path|, add audio files to Downloads and Drive.
     const appId = await setupAndWaitUntilReady(path, tracks, tracks);

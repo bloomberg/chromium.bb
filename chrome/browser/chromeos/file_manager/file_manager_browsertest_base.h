@@ -73,6 +73,8 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
   void StartTest();
 
  private:
+  class MockFileTasksObserver;
+
   // Returns true if the test requires incognito mode.
   bool IsIncognitoModeTest() const { return GetGuestMode() == IN_INCOGNITO; }
 
@@ -164,6 +166,8 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
 
   std::unique_ptr<NotificationDisplayServiceTester> display_service_;
   std::unique_ptr<arc::FakeFileSystemInstance> arc_file_system_instance_;
+
+  std::unique_ptr<MockFileTasksObserver> file_tasks_observer_;
 
   // Not owned.
   SelectFileDialogExtensionTestFactory* select_factory_;

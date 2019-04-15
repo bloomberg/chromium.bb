@@ -14,6 +14,12 @@
   testcase.launcherOpenSearchResult = async () => {
     const imageName = ENTRIES.desktop.nameText;
 
+    await sendTestMessage({
+      name: 'expectFileTask',
+      fileNames: [ENTRIES.desktop.targetPath],
+      openType: 'launch'
+    });
+
     // Create an image file in Drive.
     await addEntries(['drive'], [ENTRIES.desktop]);
 

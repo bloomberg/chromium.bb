@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/file_manager/arc_file_tasks.h"
 #include "chrome/browser/chromeos/file_manager/crostini_file_tasks.h"
 #include "chrome/browser/chromeos/file_manager/file_browser_handlers.h"
+#include "chrome/browser/chromeos/file_manager/file_tasks_notifier.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/open_util.h"
 #include "chrome/browser/chromeos/file_manager/open_with_browser.h"
@@ -356,6 +357,10 @@ bool ExecuteFileTask(Profile* profile,
   } else {
     UMA_HISTOGRAM_ENUMERATION("FileBrowser.ViewingTaskType.Online",
                               task.task_type, NUM_TASK_TYPE);
+  }
+
+  if (auto* notifier = FileTasksNotifier::GetForProfile(profile)) {
+    notifier->NotifyFileTasks(file_urls);
   }
 
   // ARC apps needs mime types for launching. Retrieve them first.
