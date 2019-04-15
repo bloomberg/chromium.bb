@@ -294,6 +294,17 @@ AwContentBrowserClient::AwContentBrowserClient(
 
 AwContentBrowserClient::~AwContentBrowserClient() {}
 
+void AwContentBrowserClient::OnNetworkServiceCreated(
+    network::mojom::NetworkService* network_service) {
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
+  network::mojom::HttpAuthStaticParamsPtr auth_static_params =
+      network::mojom::HttpAuthStaticParams::New();
+  auth_static_params->supported_schemes = AwBrowserContext::GetAuthSchemes();
+  content::GetNetworkService()->SetUpHttpAuth(std::move(auth_static_params));
+}
+
 network::mojom::NetworkContextPtr AwContentBrowserClient::CreateNetworkContext(
     content::BrowserContext* context,
     bool in_memory,
@@ -301,6 +312,12 @@ network::mojom::NetworkContextPtr AwContentBrowserClient::CreateNetworkContext(
   DCHECK(context);
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
     return nullptr;
+
+  // There is only one BrowserContext in WebView, so initialize this now as it
+  // depends on the PrefService which is owned by the BrowserContext.
+  auto* aw_context = static_cast<AwBrowserContext*>(context);
+  content::GetNetworkService()->ConfigureHttpAuthPrefs(
+      aw_context->CreateHttpAuthDynamicParams());
 
   network::mojom::NetworkContextPtr network_context;
   network::mojom::NetworkContextParamsPtr context_params =
