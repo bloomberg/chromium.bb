@@ -2,9 +2,9 @@
 
 ```sh
 cd cts-experiment/
-npm install
+yarn install
 
-npm install -g grunt-cli
+yarn global add grunt-cli  # install grunt globally
 grunt  # shows available grunt commands
 ```
 
@@ -17,4 +17,4 @@ After `build` and `serve`, open:
 ## TODO
 
 * `--gtest_filter` equivalent
-  * `npm run unittests` = `npm run cts -- --filter='unittests'`
+  * `yarn run unittests` = `yarn run cts -- --filter='unittests'`
