@@ -229,7 +229,8 @@ void UkmRecorderImpl::PageSampling::Set(uint64_t event_id, bool sampled_in) {
 }
 
 bool UkmRecorderImpl::PageSampling::Find(uint64_t event_id,
-                                         bool* out_sampled_in) const {
+                                         bool* out_sampled_in) {
+  modified_ = true;
   auto found = event_sampling_.find(event_id);
   if (found == event_sampling_.end())
     return false;
