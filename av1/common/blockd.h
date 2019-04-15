@@ -220,7 +220,6 @@ typedef struct MB_MODE_INFO {
   // TODO(debargha): Consolidate these flags
   int interintra_wedge_index;
   int interintra_wedge_sign;
-  int overlappable_neighbors[2];
   int current_qindex;
   int delta_lf_from_base;
   int delta_lf[FRAME_LF_COUNT];
@@ -229,17 +228,11 @@ typedef struct MB_MODE_INFO {
   int mi_row;
   int mi_col;
 #endif
-  int num_proj_ref;
-
   // Index of the alpha Cb and alpha Cr combination
   int cfl_alpha_idx;
   // Joint sign of alpha Cb and alpha Cr
   int cfl_alpha_signs;
 
-  // Indicate if masked compound is used(1) or not(0).
-  int comp_group_idx;
-  // If comp_group_idx=0, indicate if dist_wtd_comp(0) or avg_comp(1) is used.
-  int compound_idx;
 #if CONFIG_INSPECTION
   int16_t tx_skip[TXK_TYPE_BUF_LEN];
 #endif
@@ -267,6 +260,12 @@ typedef struct MB_MODE_INFO {
   /* deringing gain *per-superblock* */
   int8_t cdef_strength;
   uint8_t ref_mv_idx;
+  // Indicate if masked compound is used(1) or not(0).
+  uint8_t comp_group_idx;
+  // If comp_group_idx=0, indicate if dist_wtd_comp(0) or avg_comp(1) is used.
+  uint8_t compound_idx;
+  uint8_t num_proj_ref;
+  uint8_t overlappable_neighbors[2];
 } MB_MODE_INFO;
 
 static INLINE int is_intrabc_block(const MB_MODE_INFO *mbmi) {

@@ -1105,14 +1105,14 @@ static INLINE void record_samples(MB_MODE_INFO *mbmi, int *pts, int *pts_inref,
 }
 
 // Select samples according to the motion vector difference.
-int av1_selectSamples(MV *mv, int *pts, int *pts_inref, int len,
-                      BLOCK_SIZE bsize) {
+uint8_t av1_selectSamples(MV *mv, int *pts, int *pts_inref, int len,
+                          BLOCK_SIZE bsize) {
   const int bw = block_size_wide[bsize];
   const int bh = block_size_high[bsize];
   const int thresh = clamp(AOMMAX(bw, bh), 16, 112);
   int pts_mvd[SAMPLES_ARRAY_SIZE] = { 0 };
   int i, j, k, l = len;
-  int ret = 0;
+  uint8_t ret = 0;
   assert(len <= LEAST_SQUARES_SAMPLES_MAX);
 
   // Obtain the motion vector difference.
@@ -1153,13 +1153,14 @@ int av1_selectSamples(MV *mv, int *pts, int *pts_inref, int len,
 // Note: Samples returned are at 1/8-pel precision
 // Sample are the neighbor block center point's coordinates relative to the
 // left-top pixel of current block.
-int av1_findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row,
-                    int mi_col, int *pts, int *pts_inref) {
+uint8_t av1_findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row,
+                        int mi_col, int *pts, int *pts_inref) {
   MB_MODE_INFO *const mbmi0 = xd->mi[0];
   int ref_frame = mbmi0->ref_frame[0];
   int up_available = xd->up_available;
   int left_available = xd->left_available;
-  int i, mi_step = 1, np = 0;
+  int i, mi_step = 1;
+  uint8_t np = 0;
 
   const TileInfo *const tile = &xd->tile;
   int do_tl = 1;

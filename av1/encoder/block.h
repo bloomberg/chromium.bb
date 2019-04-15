@@ -328,8 +328,6 @@ struct macroblock {
   int skip_mode;  // 0: off; 1: on
   int skip_mode_cost[SKIP_CONTEXTS][2];
 
-  int compound_idx;
-
   LV_MAP_COEFF_COST coeff_costs[TX_SIZES][PLANE_TYPES];
   LV_MAP_EOB_COST eob_costs[7][2];
   uint16_t cb_offset;
@@ -426,6 +424,7 @@ struct macroblock {
   // The strongest edge strength seen along the x/y axis.
   uint16_t edge_strength_x;
   uint16_t edge_strength_y;
+  uint8_t compound_idx;
 
   // [Saved stat index]
   COMP_RD_STATS comp_rd_stats[MAX_COMP_RD_STATS];
