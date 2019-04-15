@@ -44,8 +44,8 @@ bool ResponseValid(const FidoAuthenticator& authenticator,
   // published.
   const auto& user_entity = response.user_entity();
   const bool has_user_identifying_info =
-      user_entity && (user_entity->user_display_name() ||
-                      user_entity->user_name() || user_entity->user_icon_url());
+      user_entity &&
+      (user_entity->display_name || user_entity->name || user_entity->icon_url);
   if (!response.auth_data().obtained_user_verification() &&
       has_user_identifying_info) {
     return false;

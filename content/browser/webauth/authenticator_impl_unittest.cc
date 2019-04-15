@@ -258,7 +258,7 @@ PublicKeyCredentialUserEntityPtr GetTestPublicKeyCredentialUserEntity() {
   std::vector<uint8_t> id(32, 0x0A);
   entity->id = id;
   entity->name = "username@example.com";
-  entity->icon = GURL("fakeurl2.png");
+  entity->icon = GURL("https://gstatic.com/fakeurl2.png");
   return entity;
 }
 
@@ -3244,7 +3244,7 @@ class ResidentKeyTestAuthenticatorRequestDelegate
     std::sort(responses.begin(), responses.end(),
               [](const device::AuthenticatorGetAssertionResponse& a,
                  const device::AuthenticatorGetAssertionResponse& b) {
-                return a.user_entity()->user_id() < b.user_entity()->user_id();
+                return a.user_entity()->id < b.user_entity()->id;
               });
 
     std::vector<std::string> string_reps;
@@ -3253,9 +3253,8 @@ class ResidentKeyTestAuthenticatorRequestDelegate
         [](const device::AuthenticatorGetAssertionResponse& response) {
           const device::PublicKeyCredentialUserEntity& user =
               response.user_entity().value();
-          return base::HexEncode(user.user_id().data(), user.user_id().size()) +
-                 ":" + user.user_name().value_or("") + ":" +
-                 user.user_display_name().value_or("");
+          return base::HexEncode(user.id.data(), user.id.size()) + ":" +
+                 user.name.value_or("") + ":" + user.display_name.value_or("");
         });
 
     EXPECT_EQ(expected_accounts_, base::JoinString(string_reps, "/"));
@@ -3263,7 +3262,7 @@ class ResidentKeyTestAuthenticatorRequestDelegate
     const auto selected = std::find_if(
         responses.begin(), responses.end(),
         [this](const device::AuthenticatorGetAssertionResponse& response) {
-          return response.user_entity()->user_id() == selected_user_id_;
+          return response.user_entity()->id == selected_user_id_;
         });
     ASSERT_TRUE(selected != responses.end());
 
@@ -3377,11 +3376,10 @@ TEST_F(ResidentKeyAuthenticatorImplTest, MakeCredential) {
     EXPECT_TRUE(registration.is_resident);
     ASSERT_TRUE(registration.user.has_value());
     const auto options = make_credential_options();
-    EXPECT_EQ(options->user->name, registration.user->user_name());
-    EXPECT_EQ(options->user->display_name,
-              registration.user->user_display_name());
-    EXPECT_EQ(options->user->id, registration.user->user_id());
-    EXPECT_EQ(options->user->icon, registration.user->user_icon_url());
+    EXPECT_EQ(options->user->name, registration.user->name);
+    EXPECT_EQ(options->user->display_name, registration.user->display_name);
+    EXPECT_EQ(options->user->id, registration.user->id);
+    EXPECT_EQ(options->user->icon, registration.user->icon_url);
   }
 }
 

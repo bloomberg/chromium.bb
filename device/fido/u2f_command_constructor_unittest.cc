@@ -24,9 +24,9 @@ CtapMakeCredentialRequest ConstructMakeCredentialRequest() {
 
   PublicKeyCredentialUserEntity user(
       fido_parsing_utils::Materialize(test_data::kUserId));
-  user.SetUserName("johnpsmith@example.com")
-      .SetDisplayName("John P. Smith")
-      .SetIconUrl(GURL("https://pics.acme.com/00/p/aBjjjpqPb.png"));
+  user.name = "johnpsmith@example.com";
+  user.display_name = "John P. Smith";
+  user.icon_url = GURL("https://pics.acme.com/00/p/aBjjjpqPb.png");
 
   return CtapMakeCredentialRequest(
       test_data::kClientDataJson, std::move(rp), std::move(user),
@@ -77,9 +77,9 @@ TEST(U2fCommandConstructorTest, TestU2fRegisterCredentialAlgorithmRequirement) {
 
   PublicKeyCredentialUserEntity user(
       fido_parsing_utils::Materialize(test_data::kUserId));
-  user.SetUserName("johnpsmith@example.com")
-      .SetDisplayName("John P. Smith")
-      .SetIconUrl(GURL("https://pics.acme.com/00/p/aBjjjpqPb.png"));
+  user.name = "johnpsmith@example.com";
+  user.display_name = "John P. Smith";
+  user.icon_url = GURL("https://pics.acme.com/00/p/aBjjjpqPb.png");
 
   CtapMakeCredentialRequest make_credential_param(
       test_data::kClientDataJson, std::move(rp), std::move(user),

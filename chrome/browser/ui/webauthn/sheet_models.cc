@@ -1063,9 +1063,9 @@ base::string16 AuthenticatorSelectAccountSheetModel::GetText(int row,
   const auto user = dialog_model()->responses()[row].user_entity();
 
   if (column_id == IDS_WEBAUTHN_ACCOUNT_COLUMN) {
-    return base::UTF8ToUTF16(user->user_name().value_or(""));
+    return base::UTF8ToUTF16(user->name.value_or(""));
   } else {
-    return base::UTF8ToUTF16(user->user_display_name().value_or(""));
+    return base::UTF8ToUTF16(user->display_name.value_or(""));
   }
 }
 

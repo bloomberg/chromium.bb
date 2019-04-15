@@ -23,9 +23,9 @@ TEST(CTAPRequestTest, TestConstructMakeCredentialRequestParam) {
 
   PublicKeyCredentialUserEntity user(
       fido_parsing_utils::Materialize(test_data::kUserId));
-  user.SetUserName("johnpsmith@example.com")
-      .SetDisplayName("John P. Smith")
-      .SetIconUrl(GURL("https://pics.acme.com/00/p/aBjjjpqPb.png"));
+  user.name = "johnpsmith@example.com";
+  user.display_name = "John P. Smith";
+  user.icon_url = GURL("https://pics.acme.com/00/p/aBjjjpqPb.png");
 
   CtapMakeCredentialRequest make_credential_param(
       test_data::kClientDataJson, std::move(rp), std::move(user),
@@ -94,15 +94,15 @@ TEST(VirtualCtap2DeviceTest, ParseMakeCredentialRequestForVirtualCtapKey) {
               ::testing::ElementsAreArray(test_data::kClientDataHash));
   EXPECT_EQ(test_data::kRelyingPartyId, request.rp().rp_id());
   EXPECT_EQ("Acme", request.rp().rp_name());
-  EXPECT_THAT(request.user().user_id(),
+  EXPECT_THAT(request.user().id,
               ::testing::ElementsAreArray(test_data::kUserId));
-  ASSERT_TRUE(request.user().user_name());
-  EXPECT_EQ("johnpsmith@example.com", *request.user().user_name());
-  ASSERT_TRUE(request.user().user_display_name());
-  EXPECT_EQ("John P. Smith", *request.user().user_display_name());
-  ASSERT_TRUE(request.user().user_icon_url());
+  ASSERT_TRUE(request.user().name);
+  EXPECT_EQ("johnpsmith@example.com", *request.user().name);
+  ASSERT_TRUE(request.user().display_name);
+  EXPECT_EQ("John P. Smith", *request.user().display_name);
+  ASSERT_TRUE(request.user().icon_url);
   EXPECT_EQ("https://pics.acme.com/00/p/aBjjjpqPb.png",
-            request.user().user_icon_url()->spec());
+            request.user().icon_url->spec());
   ASSERT_EQ(2u, request.public_key_credential_params()
                     .public_key_credential_params()
                     .size());

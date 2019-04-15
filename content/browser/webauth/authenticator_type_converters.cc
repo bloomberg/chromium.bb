@@ -181,9 +181,10 @@ TypeConverter<::device::PublicKeyCredentialUserEntity,
               PublicKeyCredentialUserEntityPtr>::
     Convert(const PublicKeyCredentialUserEntityPtr& input) {
   device::PublicKeyCredentialUserEntity user_entity(input->id);
-  user_entity.SetUserName(input->name).SetDisplayName(input->display_name);
+  user_entity.name = input->name;
+  user_entity.display_name = input->display_name;
   if (input->icon)
-    user_entity.SetIconUrl(*input->icon);
+    user_entity.icon_url = *input->icon;
 
   return user_entity;
 }

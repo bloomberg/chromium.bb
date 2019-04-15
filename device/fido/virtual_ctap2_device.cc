@@ -644,7 +644,7 @@ CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(
     for (const auto& registration : mutable_state()->registrations) {
       if (registration.second.is_resident &&
           rp_id_hash == registration.second.application_parameter &&
-          registration.second.user->user_id() == request.user().user_id()) {
+          registration.second.user->id == request.user().id) {
         mutable_state()->registrations.erase(registration.first);
         break;
       }

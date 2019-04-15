@@ -134,8 +134,8 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
         device::AuthenticatorGetAssertionResponse response(
             std::move(auth_data), {10, 11, 12, 13} /* signature */);
         device::PublicKeyCredentialUserEntity user({1, 2, 3, 4});
-        user.SetUserName(info.first);
-        user.SetDisplayName(info.second);
+        user.name = info.first;
+        user.display_name = info.second;
         response.SetUserEntity(std::move(user));
         responses.emplace_back(std::move(response));
       }
