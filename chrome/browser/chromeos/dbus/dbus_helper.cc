@@ -13,6 +13,7 @@
 #include "chromeos/dbus/audio/cras_audio_client.h"
 #include "chromeos/dbus/auth_policy/auth_policy_client.h"
 #include "chromeos/dbus/biod/biod_client.h"
+#include "chromeos/dbus/cups_proxy/cups_proxy_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/kerberos/kerberos_client.h"
 #include "chromeos/dbus/machine_learning/machine_learning_client.h"
@@ -57,6 +58,7 @@ void InitializeDBus() {
     BiodClient::Initialize(bus);  // For device::Fingerprint.
     CrasAudioClient::Initialize(bus);
     CryptohomeClient::Initialize(bus);
+    CupsProxyClient::Initialize(bus);
     KerberosClient::Initialize(bus);
     MachineLearningClient::Initialize(bus);
     MediaAnalyticsClient::Initialize(bus);
@@ -70,6 +72,7 @@ void InitializeDBus() {
     BiodClient::InitializeFake();  // For device::Fingerprint.
     CrasAudioClient::InitializeFake();
     CryptohomeClient::InitializeFake();
+    CupsProxyClient::InitializeFake();
     KerberosClient::InitializeFake();
     MachineLearningClient::InitializeFake();
     MediaAnalyticsClient::InitializeFake();
@@ -96,6 +99,7 @@ void ShutdownDBus() {
   MediaAnalyticsClient::Shutdown();
   MachineLearningClient::Shutdown();
   KerberosClient::Shutdown();
+  CupsProxyClient::Shutdown();
   CryptohomeClient::Shutdown();
   CrasAudioClient::Shutdown();
   BiodClient::Shutdown();
