@@ -276,6 +276,11 @@ Frame::Frame(FrameClient* client,
       devtools_frame_token_(client->GetDevToolsFrameToken()),
       create_stack_(base::debug::StackTrace()) {
   InstanceCounters::IncrementCounter(InstanceCounters::kFrameCounter);
+}
+
+void Frame::Initialize() {
+  // This frame must either be local or remote.
+  DCHECK_NE(IsLocalFrame(), IsRemoteFrame());
 
   if (owner_)
     owner_->SetContentFrame(*this);

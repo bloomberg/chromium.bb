@@ -251,6 +251,10 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
  protected:
   Frame(FrameClient*, Page&, FrameOwner*, WindowProxyManager*);
 
+  // Perform initialization that must happen after the constructor has run so
+  // that vtables are initialized.
+  void Initialize();
+
   // DetachImpl() may be re-entered multiple times, if a frame is detached while
   // already being detached.
   virtual void DetachImpl(FrameDetachType) = 0;
