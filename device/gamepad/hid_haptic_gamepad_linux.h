@@ -9,20 +9,22 @@
 
 #include <memory>
 
+#include "base/files/scoped_file.h"
+
 namespace device {
 
 class HidHapticGamepadLinux : public HidHapticGamepadBase {
  public:
-  HidHapticGamepadLinux(int fd, const HapticReportData& data);
+  HidHapticGamepadLinux(const base::ScopedFD& fd, const HapticReportData& data);
   ~HidHapticGamepadLinux() override;
 
-  static std::unique_ptr<HidHapticGamepadLinux> Create(uint16_t vendor_id,
-                                                       uint16_t product_id,
-                                                       int fd);
+  static std::unique_ptr<HidHapticGamepadLinux>
+  Create(uint16_t vendor_id, uint16_t product_id, const base::ScopedFD& fd);
 
   size_t WriteOutputReport(void* report, size_t report_length) override;
 
  private:
+  // Not owned.
   int fd_;
 };
 

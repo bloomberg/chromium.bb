@@ -28,8 +28,8 @@ namespace device {
 // evdev interface. A gamepad must be enumerated through joydev to be usable,
 // but the evdev interface is only required for haptic effects.
 //
-// Dualshock4 haptics are not supported through evdev and are instead sent
-// through the raw HID (hidraw) interface.
+// For some devices, haptics are not supported through evdev and are instead
+// sent through the raw HID (hidraw) interface.
 class GamepadDeviceLinux : public AbstractHapticGamepad {
  public:
   using OpenDeviceNodeCallback = base::OnceCallback<void(GamepadDeviceLinux*)>;
@@ -124,9 +124,8 @@ class GamepadDeviceLinux : public AbstractHapticGamepad {
   // the syspath prefix up to the subsystem.
   std::string syspath_prefix_;
 
-  // The file descriptor for the device's joydev node, or -1 if no joydev node
-  // is associated with this device.
-  int joydev_fd_ = -1;
+  // The file descriptor for the device's joydev node.
+  base::ScopedFD joydev_fd_;
 
   // The index of the device's joydev node, or -1 if unknown.
   // The joydev index is the integer at the end of the joydev node path and is
@@ -150,9 +149,8 @@ class GamepadDeviceLinux : public AbstractHapticGamepad {
   // A string identifying the manufacturer and model of the device.
   std::string name_;
 
-  // The file descriptor for the device's evdev node, or -1 if no evdev node is
-  // associated with this device.
-  int evdev_fd_ = -1;
+  // The file descriptor for the device's evdev node.
+  base::ScopedFD evdev_fd_;
 
   // The ID of the haptic effect stored on the device, or -1 if none is stored.
   int effect_id_ = -1;
@@ -168,9 +166,8 @@ class GamepadDeviceLinux : public AbstractHapticGamepad {
   // button is not mapped. Empty if no special buttons are mapped.
   std::vector<int> special_button_map_;
 
-  // The file descriptor for the device's hidraw node, or -1 if no hidraw node
-  // is associated with this device.
-  int hidraw_fd_ = -1;
+  // The file descriptor for the device's hidraw node.
+  base::ScopedFD hidraw_fd_;
 
   // The type of the bus through which the device is connected, or
   // GAMEPAD_BUS_UNKNOWN if the bus type could not be determined.
