@@ -34,14 +34,16 @@ using ScopedPathUnlinker =
 bool CheckFDAccessMode(int fd, int expected_mode) {
   int fd_status = fcntl(fd, F_GETFL);
   if (fd_status == -1) {
-    DPLOG(ERROR) << "fcntl(" << fd << ", F_GETFL) failed";
+    // TODO(crbug.com/838365): convert to DLOG when bug fixed.
+    PLOG(ERROR) << "fcntl(" << fd << ", F_GETFL) failed";
     return false;
   }
 
   int mode = fd_status & O_ACCMODE;
   if (mode != expected_mode) {
-    DLOG(ERROR) << "Descriptor access mode (" << mode
-                << ") differs from expected (" << expected_mode << ")";
+    // TODO(crbug.com/838365): convert to DLOG when bug fixed.
+    LOG(ERROR) << "Descriptor access mode (" << mode
+               << ") differs from expected (" << expected_mode << ")";
     return false;
   }
 
@@ -301,7 +303,8 @@ bool PlatformSharedMemoryRegion::CheckPlatformHandlePermissionsCorrespondToMode(
 
   // The second descriptor must be invalid in kReadOnly and kUnsafe modes.
   if (handle.readonly_fd != -1) {
-    DLOG(ERROR) << "The second descriptor must be invalid";
+    // TODO(crbug.com/838365): convert to DLOG when bug fixed.
+    LOG(ERROR) << "The second descriptor must be invalid";
     return false;
   }
 
