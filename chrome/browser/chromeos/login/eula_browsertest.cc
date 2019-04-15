@@ -280,7 +280,8 @@ IN_PROC_BROWSER_TEST_F(EulaTest, DisplaysTpmPassword) {
 
 // Verifies statistic collection accepted flow.
 // Advaces to the next screen and verifies stats collection is enabled.
-IN_PROC_BROWSER_TEST_F(EulaTest, EnableUsageStats) {
+// Flaky on LSAN/ASAN: crbug.com/952482.
+IN_PROC_BROWSER_TEST_F(EulaTest, DISABLED_EnableUsageStats) {
   ShowEulaScreen();
 
   // Verify that toggle is enabled by default.
