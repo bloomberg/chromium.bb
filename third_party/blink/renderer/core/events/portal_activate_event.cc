@@ -8,10 +8,12 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/event_type_names.h"
+#include "third_party/blink/renderer/core/events/portal_activate_event_init.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/portal/html_portal_element.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
@@ -26,6 +28,12 @@ PortalActivateEvent* PortalActivateEvent::Create(
       frame->GetDocument(), predecessor_portal_token,
       std::move(predecessor_portal_ptr),
       SerializedScriptValue::Unpack(std::move(data)), ports);
+}
+
+PortalActivateEvent* PortalActivateEvent::Create(
+    const AtomicString& type,
+    const PortalActivateEventInit* init) {
+  return MakeGarbageCollected<PortalActivateEvent>(type, init);
 }
 
 PortalActivateEvent::PortalActivateEvent(
@@ -44,12 +52,24 @@ PortalActivateEvent::PortalActivateEvent(
       data_(data),
       ports_(ports) {}
 
+PortalActivateEvent::PortalActivateEvent(const AtomicString& type,
+                                         const PortalActivateEventInit* init)
+    : Event(type, init) {
+  if (init->hasData()) {
+    data_from_init_.Set(V8PerIsolateData::MainThreadIsolate(),
+                        init->data().V8Value());
+  }
+
+  // Remaining fields, such as |document_|, are left null.
+  // All accessors and operations must handle this case.
+}
+
 PortalActivateEvent::~PortalActivateEvent() = default;
 
 ScriptValue PortalActivateEvent::data(ScriptState* script_state) {
   v8::Isolate* isolate = script_state->GetIsolate();
   v8::HandleScope handle_scope(isolate);
-  if (!data_)
+  if (!data_ && data_from_init_.IsEmpty())
     return ScriptValue(script_state, v8::Null(isolate));
 
   auto result =
@@ -60,9 +80,16 @@ ScriptValue PortalActivateEvent::data(ScriptState* script_state) {
   if (!result.is_new_entry)
     return ScriptValue(script_state, relevant_data.NewLocal(isolate));
 
-  SerializedScriptValue::DeserializeOptions options;
-  options.message_ports = ports_.Get();
-  v8::Local<v8::Value> value = data_->Deserialize(isolate, options);
+  v8::Local<v8::Value> value;
+  if (data_) {
+    SerializedScriptValue::DeserializeOptions options;
+    options.message_ports = ports_.Get();
+    value = data_->Deserialize(isolate, options);
+  } else {
+    DCHECK(!data_from_init_.IsEmpty());
+    value = data_from_init_.GetAcrossWorld(script_state);
+  }
+
   relevant_data.Set(isolate, value);
   return ScriptValue(script_state, value);
 }
@@ -71,8 +98,9 @@ void PortalActivateEvent::Trace(blink::Visitor* visitor) {
   Event::Trace(visitor);
   visitor->Trace(document_);
   visitor->Trace(data_);
-  visitor->Trace(v8_data_);
   visitor->Trace(ports_);
+  visitor->Trace(data_from_init_);
+  visitor->Trace(v8_data_);
 }
 
 const AtomicString& PortalActivateEvent::InterfaceName() const {
