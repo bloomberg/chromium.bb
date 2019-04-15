@@ -116,16 +116,25 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   SkCanvas::ImageSetEntry MakeEntry(const SkImage* image,
                                     int matrix_index,
                                     const DrawQuadParams& params);
+  // Returns overall constraint to pass to Skia, and modifies |params| to
+  // emulate content area clamping different from the provided texture coords.
+  SkCanvas::SrcRectConstraint ResolveTextureConstraints(
+      const SkImage* image,
+      const gfx::RectF& valid_texel_bounds,
+      DrawQuadParams* params);
 
   bool MustFlushBatchedQuads(const DrawQuad* new_quad,
                              const DrawQuadParams& params);
-  void AddQuadToBatch(const SkImage* image, DrawQuadParams* params);
+  void AddQuadToBatch(const SkImage* image,
+                      const gfx::RectF& valid_texel_bounds,
+                      DrawQuadParams* params);
   void FlushBatchedQuads();
 
   // Utility to draw a single quad as a filled color
   void DrawColoredQuad(SkColor color, DrawQuadParams* params);
   // Utility to make a single ImageSetEntry and draw it with the complex paint.
   void DrawSingleImage(const SkImage* image,
+                       const gfx::RectF& valid_texel_bounds,
                        const SkPaint& paint,
                        DrawQuadParams* params);
 
@@ -218,6 +227,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
     base::Optional<gfx::RRectF> rounded_corner_bounds;
     SkBlendMode blend_mode;
     SkFilterQuality filter_quality;
+    SkCanvas::SrcRectConstraint constraint;
 
     BatchedQuadState();
   };

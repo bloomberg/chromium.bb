@@ -295,6 +295,44 @@ SkFilterQuality GetFilterQuality(const DrawQuad* quad) {
   return nearest_neighbor ? kNone_SkFilterQuality : kLow_SkFilterQuality;
 }
 
+// Returns kFast if sampling outside of vis_tex_coords due to AA or bilerp will
+// not go outside of the content area, or if the content area is the full image
+// (in which case hardware clamping handles it automatically). Different quad
+// types have different rules for the content area within the image.
+SkCanvas::SrcRectConstraint GetTextureConstraint(
+    const SkImage* image,
+    const gfx::RectF& vis_tex_coords,
+    const gfx::RectF& valid_texel_bounds) {
+  bool fills_left = valid_texel_bounds.x() <= 0.f;
+  bool fills_right = valid_texel_bounds.right() >= image->width();
+  bool fills_top = valid_texel_bounds.y() <= 0.f;
+  bool fills_bottom = valid_texel_bounds.y() >= image->height();
+  if (fills_left && fills_right && fills_top && fills_bottom) {
+    // The entire image is contained in the content area, so hardware clamping
+    // ensures only content texels are sampled
+    return SkCanvas::kFast_SrcRectConstraint;
+  }
+
+  gfx::RectF safe_texels = valid_texel_bounds;
+  safe_texels.Inset(0.5f, 0.5f);
+
+  // Check each axis independently; tile quads may only need clamping on one
+  // side (e.g. right or bottom) and this logic doesn't fully match a simple
+  // contains() check.
+  if ((!fills_left && vis_tex_coords.x() < safe_texels.x()) ||
+      (!fills_right && vis_tex_coords.right() > safe_texels.right())) {
+    return SkCanvas::kStrict_SrcRectConstraint;
+  }
+  if ((!fills_top && vis_tex_coords.y() < safe_texels.y()) ||
+      (!fills_bottom && vis_tex_coords.bottom() > safe_texels.bottom())) {
+    return SkCanvas::kStrict_SrcRectConstraint;
+  }
+
+  // The texture coordinates are far enough from the content area that even with
+  // bilerp and AA, it won't sample outside the content area
+  return SkCanvas::kFast_SrcRectConstraint;
+}
+
 // Return a color filter that multiplies the incoming color by the fixed alpha
 sk_sp<SkColorFilter> MakeOpacityFilter(float alpha, sk_sp<SkColorFilter> in) {
   SkColor alpha_as_color = SkColorSetA(SK_ColorWHITE, 255 * alpha);
@@ -941,6 +979,49 @@ SkCanvas::ImageSetEntry SkiaRenderer::MakeEntry(const SkImage* image,
        params.aa_flags, params.draw_region.has_value()});
 }
 
+SkCanvas::SrcRectConstraint SkiaRenderer::ResolveTextureConstraints(
+    const SkImage* image,
+    const gfx::RectF& valid_texel_bounds,
+    DrawQuadParams* params) {
+  if (params->aa_flags == SkCanvas::kNone_QuadAAFlags &&
+      params->filter_quality == kNone_SkFilterQuality) {
+    // Non-AA and no bilinear filtering so rendering won't filter outside the
+    // provided texture coordinates.
+    return SkCanvas::kFast_SrcRectConstraint;
+  }
+
+  // Resolve texture coordinates against the valid content area of the image
+  SkCanvas::SrcRectConstraint constraint =
+      GetTextureConstraint(image, params->vis_tex_coords, valid_texel_bounds);
+
+  // Skia clamps to the provided texture coordinates, not the content_area. If
+  // there is a mismatch, have to update the draw params to account for the new
+  // constraint
+  if (constraint == SkCanvas::kFast_SrcRectConstraint ||
+      valid_texel_bounds == params->vis_tex_coords) {
+    return constraint;
+  }
+
+  // To get |valid_texel_bounds| as the constraint, it must be sent as the tex
+  // coords. To draw the right shape, store |visible_rect| as the |draw_region|
+  // and change the visible rect so that the mapping from |visible_rect| to
+  // |valid_texel_bounds| causes |draw_region| to map to original
+  // |vis_tex_coords|
+  if (!params->draw_region.has_value()) {
+    params->draw_region.emplace(gfx::QuadF(params->visible_rect));
+  }
+
+  // Preserve the src-to-dst transformation for the padded texture coords
+  SkMatrix src_to_dst = SkMatrix::MakeRectToRect(
+      gfx::RectFToSkRect(params->vis_tex_coords),
+      gfx::RectFToSkRect(params->visible_rect), SkMatrix::kFill_ScaleToFit);
+  params->visible_rect = gfx::SkRectToRectF(
+      src_to_dst.mapRect(gfx::RectFToSkRect(valid_texel_bounds)));
+  params->vis_tex_coords = valid_texel_bounds;
+
+  return SkCanvas::kStrict_SrcRectConstraint;
+}
+
 bool SkiaRenderer::MustFlushBatchedQuads(const DrawQuad* new_quad,
                                          const DrawQuadParams& params) {
   if (batched_quads_.empty())
@@ -969,14 +1050,25 @@ bool SkiaRenderer::MustFlushBatchedQuads(const DrawQuad* new_quad,
 }
 
 void SkiaRenderer::AddQuadToBatch(const SkImage* image,
+                                  const gfx::RectF& valid_texel_bounds,
                                   DrawQuadParams* params) {
+  SkCanvas::SrcRectConstraint constraint =
+      ResolveTextureConstraints(image, valid_texel_bounds, params);
+  // Last check for flushing the batch, since constraint can't be known until
+  // the last minute.
+  if (!batched_quads_.empty() && batched_quad_state_.constraint != constraint) {
+    FlushBatchedQuads();
+  }
+
   // Configure batch state if it's the first
   if (batched_quads_.empty()) {
     batched_quad_state_.scissor_rect = params->scissor_rect;
     batched_quad_state_.rounded_corner_bounds = params->rounded_corner_bounds;
     batched_quad_state_.blend_mode = params->blend_mode;
     batched_quad_state_.filter_quality = params->filter_quality;
+    batched_quad_state_.constraint = constraint;
   }
+  DCHECK(batched_quad_state_.constraint == constraint);
 
   // Add entry, with optional clip quad and shared transform
   if (params->draw_region.has_value()) {
@@ -1008,7 +1100,8 @@ void SkiaRenderer::FlushBatchedQuads() {
   paint.setBlendMode(batched_quad_state_.blend_mode);
   current_canvas_->experimental_DrawEdgeAAImageSet(
       &batched_quads_.front(), batched_quads_.size(),
-      &batched_draw_regions_.front(), &batched_cdt_matrices_.front(), &paint);
+      &batched_draw_regions_.front(), &batched_cdt_matrices_.front(), &paint,
+      batched_quad_state_.constraint);
 
   batched_quads_.clear();
   batched_draw_regions_.clear();
@@ -1033,6 +1126,7 @@ void SkiaRenderer::DrawColoredQuad(SkColor color, DrawQuadParams* params) {
 }
 
 void SkiaRenderer::DrawSingleImage(const SkImage* image,
+                                   const gfx::RectF& valid_texel_bounds,
                                    const SkPaint& paint,
                                    DrawQuadParams* params) {
   DCHECK(batched_quads_.empty());
@@ -1041,12 +1135,16 @@ void SkiaRenderer::DrawSingleImage(const SkImage* image,
   SkAutoCanvasRestore acr(current_canvas_, true /* do_save */);
   PrepareCanvas(params->scissor_rect, params->rounded_corner_bounds,
                 &params->content_device_transform);
+
+  SkCanvas::SrcRectConstraint constraint =
+      ResolveTextureConstraints(image, valid_texel_bounds, params);
+
   // Use -1 for matrix index since the cdt is set on the canvas.
   SkCanvas::ImageSetEntry entry = MakeEntry(image, -1, *params);
   const SkPoint* draw_region =
       params->draw_region.has_value() ? params->draw_region->points : nullptr;
   current_canvas_->experimental_DrawEdgeAAImageSet(&entry, 1, draw_region,
-                                                   nullptr, &paint);
+                                                   nullptr, &paint, constraint);
 }
 
 void SkiaRenderer::DrawDebugBorderQuad(const DebugBorderDrawQuad* quad,
@@ -1157,7 +1255,15 @@ void SkiaRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
       image->width(), image->height());
   params->vis_tex_coords = cc::MathUtil::ScaleRectProportional(
       uv_rect, gfx::RectF(quad->rect), params->visible_rect);
-  AddQuadToBatch(image, params);
+
+  // Use provided resource size if not empty, otherwise use the full image size
+  // as the content area
+  gfx::RectF valid_texel_bounds =
+      quad->resource_size_in_pixels().IsEmpty()
+          ? gfx::RectF(image->width(), image->height())
+          : gfx::RectF(gfx::SizeF(quad->resource_size_in_pixels()));
+
+  AddQuadToBatch(image, valid_texel_bounds, params);
 }
 
 void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
@@ -1175,6 +1281,13 @@ void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
   params->vis_tex_coords = cc::MathUtil::ScaleRectProportional(
       uv_rect, gfx::RectF(quad->rect), params->visible_rect);
 
+  // Use provided resource size if not empty, otherwise use the full image size
+  // as the content area
+  gfx::RectF valid_texel_bounds =
+      quad->resource_size_in_pixels().IsEmpty()
+          ? gfx::RectF(image->width(), image->height())
+          : gfx::RectF(gfx::SizeF(quad->resource_size_in_pixels()));
+
   // There are two scenarios where a texture quad cannot be put into a batch:
   // 1. It needs to be blended with a constant background color.
   // 2. The vertex opacities are not all 1s.
@@ -1187,7 +1300,7 @@ void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
   if (!blend_background && !vertex_alpha) {
     // This is a simple texture draw and can go into the batching system
     DCHECK(!MustFlushBatchedQuads(quad, *params));
-    AddQuadToBatch(image, params);
+    AddQuadToBatch(image, valid_texel_bounds, params);
     return;
   }
   // This needs a color filter for background blending and/or a mask filter
@@ -1264,7 +1377,7 @@ void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
   // Override the default paint opacity since it may not be params.opacity
   paint.setAlphaf(quad_alpha);
 
-  DrawSingleImage(image, paint, params);
+  DrawSingleImage(image, valid_texel_bounds, paint, params);
 }
 
 void SkiaRenderer::DrawTileDrawQuad(const TileDrawQuad* quad,
@@ -1283,7 +1396,21 @@ void SkiaRenderer::DrawTileDrawQuad(const TileDrawQuad* quad,
 
   params->vis_tex_coords = cc::MathUtil::ScaleRectProportional(
       quad->tex_coord_rect, gfx::RectF(quad->rect), params->visible_rect);
-  AddQuadToBatch(image, params);
+  // When a tile is at the right or bottom edge of the entire tiled area, its
+  // images won't be fully filled so use the unclipped texture coords. On
+  // interior tiles or left/top tiles, the image has been filled with
+  // overlapping content so the entire image is valid for sampling.
+  gfx::RectF valid_texel_bounds(gfx::SizeF(quad->texture_size));
+  if (quad->IsRightEdge()) {
+    // Restrict the width to match tex coords
+    valid_texel_bounds.set_width(quad->tex_coord_rect.width());
+  }
+  if (quad->IsBottomEdge()) {
+    // Restrict the height to match tex coords
+    valid_texel_bounds.set_height(quad->tex_coord_rect.height());
+  }
+
+  AddQuadToBatch(image, valid_texel_bounds, params);
 }
 
 void SkiaRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
@@ -1321,7 +1448,10 @@ void SkiaRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
   if (color_filter)
     paint.setColorFilter(color_filter);
 
-  DrawSingleImage(image, paint, params);
+  // Use provided, unclipped texture coordinates as the content area, which will
+  // force coord clamping unless the geometry was clipped, or they span the
+  // entire YUV image.
+  DrawSingleImage(image, quad->ya_tex_coord_rect, paint, params);
 }
 
 void SkiaRenderer::DrawUnsupportedQuad(const DrawQuad* quad,
@@ -1567,13 +1697,16 @@ void SkiaRenderer::DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
 
   params->vis_tex_coords = cc::MathUtil::ScaleRectProportional(
       quad->tex_coord_rect, gfx::RectF(quad->rect), params->visible_rect);
+  gfx::RectF valid_texel_bounds(content_image->width(),
+                                content_image->height());
+
   if (params->filter_quality < kMedium_SkFilterQuality &&
       !rpdq_params.image_filter && !rpdq_params.backdrop_filter &&
       !rpdq_params.mask_image) {
     // We've checked enough to know that this is a plain textured draw that
     // is compatible with any batched images, so preserve that
     DCHECK(!MustFlushBatchedQuads(quad, *params));
-    AddQuadToBatch(content_image, params);
+    AddQuadToBatch(content_image, valid_texel_bounds, params);
     return;
   }
 
@@ -1592,7 +1725,7 @@ void SkiaRenderer::DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
               &rpdq_params.mask_to_quad_matrix)));
       DCHECK(paint.getMaskFilter());
     }
-    DrawSingleImage(content_image, paint, params);
+    DrawSingleImage(content_image, valid_texel_bounds, paint, params);
     return;
   }
 
@@ -1656,11 +1789,13 @@ void SkiaRenderer::DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
   SkPaint content_paint;
   content_paint.setFilterQuality(paint.getFilterQuality());
 
+  SkCanvas::SrcRectConstraint constraint =
+      ResolveTextureConstraints(content_image, valid_texel_bounds, params);
   SkCanvas::ImageSetEntry entry = MakeEntry(content_image, -1, *params);
   const SkPoint* draw_region =
       params->draw_region.has_value() ? params->draw_region->points : nullptr;
-  current_canvas_->experimental_DrawEdgeAAImageSet(&entry, 1, draw_region,
-                                                   nullptr, &content_paint);
+  current_canvas_->experimental_DrawEdgeAAImageSet(
+      &entry, 1, draw_region, nullptr, &content_paint, constraint);
 
   // And the saved layer will be auto-restored when |acr| is destructed
 }
