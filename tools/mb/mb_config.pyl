@@ -569,7 +569,6 @@
     'chromium.webrtc': {
       'WebRTC Chromium Android Builder': 'android_debug_static_bot_arm64',
       'WebRTC Chromium Linux Builder': 'gpu_tests_release_bot',
-      'WebRTC Chromium Linux Builder (RBE)': 'gpu_tests_release_bot',
       'WebRTC Chromium Mac Builder': 'gpu_tests_release_bot',
       'WebRTC Chromium Win Builder': 'release_bot_x86_minimal_symbols_no_com_init_hooks_with_codecs',
     },
@@ -579,9 +578,7 @@
       'WebRTC Chromium FYI Android Builder (dbg)': 'android_debug_static_bot',
       'WebRTC Chromium FYI Android Builder ARM64 (dbg)': 'android_debug_static_bot_arm64',
       'WebRTC Chromium FYI Linux Builder': 'gpu_tests_release_bot',
-      'WebRTC Chromium FYI Linux Builder (RBE)': 'gpu_tests_release_bot',
       'WebRTC Chromium FYI Linux Builder (dbg)': 'debug_bot',
-      'WebRTC Chromium FYI Linux Builder (dbg) (RBE)': 'debug_bot',
       'WebRTC Chromium FYI Mac Builder': 'gpu_tests_release_bot',
       'WebRTC Chromium FYI Mac Builder (dbg)': 'debug_bot',
       'WebRTC Chromium FYI Win Builder': 'release_bot_x86_minimal_symbols_no_com_init_hooks_with_codecs',
