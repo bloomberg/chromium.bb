@@ -47,6 +47,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "extensions/browser/extension_registry.h"
 #else
 #include "chrome/browser/ui/signin_view_controller.h"
@@ -289,18 +290,25 @@ void ShowSettingsSubPage(Browser* browser, const std::string& sub_page) {
 
 void ShowSettingsSubPageForProfile(Profile* profile,
                                    const std::string& sub_page) {
-  std::string sub_page_path = sub_page;
-
 #if defined(OS_CHROMEOS)
-  base::RecordAction(base::UserMetricsAction("ShowOptions"));
-  SettingsWindowManager::GetInstance()->ShowChromePageForProfile(
-      profile, GetSettingsUrl(sub_page_path));
-#else
+  SettingsWindowManager* settings = SettingsWindowManager::GetInstance();
+  if (!base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)) {
+    base::RecordAction(base::UserMetricsAction("ShowOptions"));
+    settings->ShowChromePageForProfile(profile, GetSettingsUrl(sub_page));
+    return;
+  }
+  // TODO(jamescook): When SplitSettings is close to shipping, change this to
+  // a DCHECK that the |sub_page| is not an OS-specific setting.
+  if (chrome::IsOSSettingsSubPage(sub_page)) {
+    settings->ShowOSSettings(profile, sub_page);
+    return;
+  }
+  // Fall through and open browser settings in a tab.
+#endif
   Browser* browser = chrome::FindTabbedBrowser(profile, false);
   if (!browser)
     browser = new Browser(Browser::CreateParams(profile, true));
-  ShowSettingsSubPageInTabbedBrowser(browser, sub_page_path);
-#endif
+  ShowSettingsSubPageInTabbedBrowser(browser, sub_page);
 }
 
 void ShowSettingsSubPageInTabbedBrowser(Browser* browser,

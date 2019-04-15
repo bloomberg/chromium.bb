@@ -9,8 +9,9 @@
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/webui_url_constants.h"
 #include "components/prefs/pref_service.h"
 
 namespace {
@@ -28,7 +29,8 @@ void ArcTermsOfServiceScreen::MaybeLaunchArcSettings(Profile* profile) {
     // TODO(jhorwich) Handle the case where the user chooses to review both ARC
     // settings and sync settings - currently the Settings window will only
     // show one settings page. See crbug.com/901184#c4 for details.
-    chrome::ShowSettingsSubPageForProfile(profile, "androidApps/details");
+    chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+        profile, chrome::kAndroidAppsDetailsSubPage);
   }
 }
 

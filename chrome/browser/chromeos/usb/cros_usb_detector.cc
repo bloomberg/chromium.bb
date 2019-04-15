@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/notifications/system_notification_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -104,7 +104,7 @@ class CrosUsbNotificationDelegate
   }
 
   void HandleShowSettings() {
-    chrome::ShowSettingsSubPageForProfile(
+    chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
         profile(), chrome::kCrostiniSharedUsbDevicesSubPage);
     Close(false);
   }

@@ -28,9 +28,9 @@
 #include "chrome/browser/ui/ash/ksv/keyboard_shortcut_viewer_util.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
-#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/discover_window_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
@@ -283,7 +283,7 @@ void OpenInternalApp(const std::string& app_id,
   if (app_id == kInternalAppIdKeyboardShortcutViewer) {
     keyboard_shortcut_viewer_util::ToggleKeyboardShortcutViewer();
   } else if (app_id == kInternalAppIdSettings) {
-    chrome::ShowSettingsSubPageForProfile(profile, std::string());
+    chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(profile);
   } else if (app_id == kInternalAppIdCamera) {
     // In case Camera app is already running, use it to prevent appearing double
     // apps, from Chrome and Android domains.

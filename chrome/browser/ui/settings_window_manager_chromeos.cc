@@ -110,11 +110,18 @@ void SettingsWindowManager::ShowChromePageForProfile(Profile* profile,
 }
 
 void SettingsWindowManager::ShowOSSettings(Profile* profile) {
-  if (base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)) {
-    ShowChromePageForProfile(profile, GURL(kChromeUIOSSettingsURL));
-    return;
-  }
-  ShowChromePageForProfile(profile, GURL(kChromeUISettingsURL));
+  ShowOSSettings(profile, std::string());
+}
+
+void SettingsWindowManager::ShowOSSettings(Profile* profile,
+                                           const std::string& sub_page) {
+  DCHECK(sub_page.empty() || chrome::IsOSSettingsSubPage(sub_page)) << sub_page;
+  std::string url =
+      base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)
+          ? kChromeUIOSSettingsURL
+          : kChromeUISettingsURL;
+  url += sub_page;
+  ShowChromePageForProfile(profile, GURL(url));
 }
 
 Browser* SettingsWindowManager::FindBrowserForProfile(Profile* profile) {

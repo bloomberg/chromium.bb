@@ -67,8 +67,8 @@ namespace {
 SystemTrayClient* g_system_tray_client_instance = nullptr;
 
 void ShowSettingsSubPageForActiveUser(const std::string& sub_page) {
-  chrome::ShowSettingsSubPageForProfile(ProfileManager::GetActiveUserProfile(),
-                                        sub_page);
+  chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+      ProfileManager::GetActiveUserProfile(), sub_page);
 }
 
 // Returns the severity of a pending Chrome / Chrome OS update.
@@ -222,8 +222,7 @@ void SystemTrayClient::ShowBluetoothPairingDialog(
 void SystemTrayClient::ShowDateSettings() {
   base::RecordAction(base::UserMetricsAction("ShowDateOptions"));
   // Everybody can change the time zone (even though it is a device setting).
-  chrome::ShowSettingsSubPageForProfile(ProfileManager::GetActiveUserProfile(),
-                                        chrome::kDateTimeSubPage);
+  ShowSettingsSubPageForActiveUser(chrome::kDateTimeSubPage);
 }
 
 void SystemTrayClient::ShowSetTimeDialog() {
