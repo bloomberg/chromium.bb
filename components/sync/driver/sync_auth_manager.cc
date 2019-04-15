@@ -144,6 +144,9 @@ syncer::SyncCredentials SyncAuthManager::GetCredentials() const {
 
 void SyncAuthManager::ConnectionOpened() {
   DCHECK(registered_for_auth_notifications_);
+  DCHECK(!connection_open_);
+
+  connection_open_ = true;
 
   // At this point, we must not already have an access token or an attempt to
   // get one.
@@ -156,6 +159,7 @@ void SyncAuthManager::ConnectionOpened() {
 
 void SyncAuthManager::ConnectionStatusChanged(syncer::ConnectionStatus status) {
   DCHECK(registered_for_auth_notifications_);
+  DCHECK(connection_open_);
 
   partial_token_status_.connection_status_update_time = base::Time::Now();
   partial_token_status_.connection_status = status;
@@ -221,6 +225,8 @@ void SyncAuthManager::ConnectionStatusChanged(syncer::ConnectionStatus status) {
 }
 
 void SyncAuthManager::InvalidateAccessToken() {
+  DCHECK(registered_for_auth_notifications_);
+
   if (access_token_.empty()) {
     return;
   }
@@ -253,9 +259,12 @@ void SyncAuthManager::ScheduleAccessTokenRequest() {
 
 void SyncAuthManager::ConnectionClosed() {
   DCHECK(registered_for_auth_notifications_);
+  DCHECK(connection_open_);
 
   partial_token_status_ = syncer::SyncTokenStatus();
   ClearAccessTokenAndRequest();
+
+  connection_open_ = false;
 }
 
 void SyncAuthManager::OnPrimaryAccountSet(
@@ -312,14 +321,13 @@ void SyncAuthManager::OnRefreshTokenUpdatedForAccount(
   if (!access_token_.empty() || request_access_token_retry_timer_.IsRunning()) {
     DCHECK(!ongoing_access_token_fetch_);
     RequestAccessToken();
-  } else if (last_auth_error_ != GoogleServiceAuthError::AuthErrorNone()) {
+  } else if (last_auth_error_ != GoogleServiceAuthError::AuthErrorNone() &&
+             connection_open_) {
     // If we were in an auth error state, then now's also a good time to try
     // again. In this case it's possible that there is already a pending
     // request, in which case RequestAccessToken will simply do nothing.
     // Note: This is necessary to get out of the "Sync paused" state (see
     // above), or to recover if the refresh token was previously removed.
-    // TODO(crbug.com/948148): This can cause us to fetch an access token even
-    // if Sync is disabled.
     RequestAccessToken();
   }
 }
@@ -374,6 +382,8 @@ syncer::SyncAccountInfo SyncAuthManager::DetermineAccountToUse() const {
 }
 
 bool SyncAuthManager::UpdateSyncAccountIfNecessary() {
+  DCHECK(registered_for_auth_notifications_);
+
   syncer::SyncAccountInfo new_account = DetermineAccountToUse();
   // If we're already using this account and its |is_primary| bit hasn't changed
   // (or there was and is no account to use), then there's nothing to do.
@@ -391,7 +401,8 @@ bool SyncAuthManager::UpdateSyncAccountIfNecessary() {
     sync_account_ = syncer::SyncAccountInfo();
     // Also clear any pending request or auth errors we might have, since they
     // aren't meaningful anymore.
-    ConnectionClosed();
+    partial_token_status_ = syncer::SyncTokenStatus();
+    ClearAccessTokenAndRequest();
     SetLastAuthError(GoogleServiceAuthError::AuthErrorNone());
     account_state_changed_callback_.Run();
   }
@@ -407,6 +418,9 @@ bool SyncAuthManager::UpdateSyncAccountIfNecessary() {
 }
 
 void SyncAuthManager::RequestAccessToken() {
+  DCHECK(registered_for_auth_notifications_);
+  DCHECK(connection_open_);
+
   // Only one active request at a time.
   if (ongoing_access_token_fetch_) {
     DCHECK(access_token_.empty());
@@ -439,6 +453,8 @@ void SyncAuthManager::RequestAccessToken() {
 void SyncAuthManager::AccessTokenFetched(
     GoogleServiceAuthError error,
     identity::AccessTokenInfo access_token_info) {
+  DCHECK(registered_for_auth_notifications_);
+
   DCHECK(ongoing_access_token_fetch_);
   ongoing_access_token_fetch_.reset();
   DCHECK(!request_access_token_retry_timer_.IsRunning());

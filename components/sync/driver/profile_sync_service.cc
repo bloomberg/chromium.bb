@@ -508,13 +508,13 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
         base::TimeDelta::FromSeconds(kDefaultPollIntervalSeconds);
   }
 
-  engine_->Initialize(std::move(params));
-
-  ReportPreviousSessionMemoryWarningCount();
-
   if (!IsLocalSyncEnabled()) {
     auth_manager_->ConnectionOpened();
   }
+
+  engine_->Initialize(std::move(params));
+
+  ReportPreviousSessionMemoryWarningCount();
 }
 
 void ProfileSyncService::Shutdown() {
