@@ -90,6 +90,8 @@ LLVM_REPO_URL='https://llvm.org/svn/llvm-project'
 if 'LLVM_REPO_URL' in os.environ:
   LLVM_REPO_URL = os.environ['LLVM_REPO_URL']
 
+BUG_REPORT_URL = ('https://crbug.com and run tools/clang/scripts/upload_crash.py'
+                  ' (only works inside Google) which will upload a report')
 
 
 def DownloadUrl(url, output_file):
@@ -559,6 +561,7 @@ def UpdateClang(args):
                      '-DCLANG_ENABLE_ARCMT=OFF',
                      # TODO(crbug.com/929645): Use newer toolchain to host.
                      '-DLLVM_TEMPORARILY_ALLOW_OLD_TOOLCHAIN=ON',
+                     '-DBUG_REPORT_URL=' + BUG_REPORT_URL,
                      ]
 
   if sys.platform != 'win32':
