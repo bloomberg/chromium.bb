@@ -62,14 +62,32 @@ constexpr MediaSessionAction kMediaNotificationPreferredActions[] = {
     MediaSessionAction::kSeekBackward,  MediaSessionAction::kSeekForward,
 };
 
-SkColor GetMediaNotificationColor(const views::View& view) {
-  return views::style::GetColor(view, views::style::CONTEXT_LABEL,
-                                views::style::STYLE_PRIMARY);
-}
-
 void RecordMetadataHistogram(MediaNotificationView::Metadata metadata) {
   UMA_HISTOGRAM_ENUMERATION(MediaNotificationView::kMetadataHistogramName,
                             metadata);
+}
+
+const gfx::VectorIcon* GetVectorIconForMediaAction(MediaSessionAction action) {
+  switch (action) {
+    case MediaSessionAction::kPreviousTrack:
+      return &vector_icons::kMediaPreviousTrackIcon;
+    case MediaSessionAction::kSeekBackward:
+      return &vector_icons::kMediaSeekBackwardIcon;
+    case MediaSessionAction::kPlay:
+      return &vector_icons::kPlayArrowIcon;
+    case MediaSessionAction::kPause:
+      return &vector_icons::kPauseIcon;
+    case MediaSessionAction::kSeekForward:
+      return &vector_icons::kMediaSeekForwardIcon;
+    case MediaSessionAction::kNextTrack:
+      return &vector_icons::kMediaNextTrackIcon;
+    case MediaSessionAction::kStop:
+    case MediaSessionAction::kSkipAd:
+      NOTREACHED();
+      break;
+  }
+
+  return nullptr;
 }
 
 }  // namespace
@@ -147,33 +165,23 @@ MediaNotificationView::MediaNotificationView(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
   main_row_->AddChildView(button_row_);
 
-  CreateMediaButton(vector_icons::kMediaPreviousTrackIcon,
-                    MediaSessionAction::kPreviousTrack);
-  CreateMediaButton(vector_icons::kMediaSeekBackwardIcon,
-                    MediaSessionAction::kSeekBackward);
+  CreateMediaButton(MediaSessionAction::kPreviousTrack);
+  CreateMediaButton(MediaSessionAction::kSeekBackward);
 
   // |play_pause_button_| toggles playback.
   play_pause_button_ = views::CreateVectorToggleImageButton(this);
   play_pause_button_->set_tag(static_cast<int>(MediaSessionAction::kPlay));
   play_pause_button_->SetPreferredSize(kMediaButtonSize);
-  SkColor play_button_color = GetMediaNotificationColor(*play_pause_button_);
-  views::SetImageFromVectorIcon(play_pause_button_,
-                                vector_icons::kPlayArrowIcon,
-                                kMediaButtonIconSize, play_button_color);
-  views::SetToggledImageFromVectorIcon(play_pause_button_,
-                                       vector_icons::kPauseIcon,
-                                       kMediaButtonIconSize, play_button_color);
   button_row_->AddChildView(play_pause_button_);
 
-  CreateMediaButton(vector_icons::kMediaSeekForwardIcon,
-                    MediaSessionAction::kSeekForward);
-  CreateMediaButton(vector_icons::kMediaNextTrackIcon,
-                    MediaSessionAction::kNextTrack);
+  CreateMediaButton(MediaSessionAction::kSeekForward);
+  CreateMediaButton(MediaSessionAction::kNextTrack);
 
   SetBackground(std::make_unique<MediaNotificationBackground>(
       this, message_center::kNotificationCornerRadius,
       message_center::kNotificationCornerRadius, kMediaImageMaxWidthPct));
 
+  UpdateForegroundColor();
   UpdateControlButtonsVisibilityWithNotification(notification);
   UpdateCornerRadius(message_center::kNotificationCornerRadius,
                      message_center::kNotificationCornerRadius);
@@ -318,6 +326,8 @@ void MediaNotificationView::UpdateWithMediaArtwork(
 
   UMA_HISTOGRAM_BOOLEAN(kArtworkHistogramName, has_artwork_);
 
+  UpdateForegroundColor();
+
   PreferredSizeChanged();
   Layout();
   SchedulePaint();
@@ -390,12 +400,9 @@ void MediaNotificationView::UpdateViewForExpandedState() {
   UpdateActionButtonsVisibility();
 }
 
-void MediaNotificationView::CreateMediaButton(const gfx::VectorIcon& icon,
-                                              MediaSessionAction action) {
+void MediaNotificationView::CreateMediaButton(MediaSessionAction action) {
   views::ImageButton* button = views::CreateVectorImageButton(this);
   button->set_tag(static_cast<int>(action));
-  views::SetImageFromVectorIcon(button, icon, kMediaButtonIconSize,
-                                GetMediaNotificationColor(*button));
   button->SetPreferredSize(kMediaButtonSize);
   button_row_->AddChildView(button);
 }
@@ -440,6 +447,54 @@ std::set<MediaSessionAction> MediaNotificationView::CalculateVisibleActions(
   }
 
   return visible_actions;
+}
+
+void MediaNotificationView::UpdateForegroundColor() {
+  const SkColor background =
+      GetMediaNotificationBackground()->GetBackgroundColor();
+  const SkColor foreground =
+      GetMediaNotificationBackground()->GetForegroundColor();
+
+  title_label_->SetEnabledColor(foreground);
+  artist_label_->SetEnabledColor(foreground);
+  header_row_->SetAccentColor(foreground);
+
+  title_label_->SetBackgroundColor(background);
+  artist_label_->SetBackgroundColor(background);
+  header_row_->SetBackgroundColor(background);
+
+  // Update play/pause button images.
+  views::SetImageFromVectorIcon(
+      play_pause_button_,
+      *GetVectorIconForMediaAction(MediaSessionAction::kPlay),
+      kMediaButtonIconSize, foreground);
+  views::SetToggledImageFromVectorIcon(
+      play_pause_button_,
+      *GetVectorIconForMediaAction(MediaSessionAction::kPause),
+      kMediaButtonIconSize, foreground);
+
+  // Update action buttons.
+  for (int i = 0; i < button_row_->child_count(); ++i) {
+    views::View* child = button_row_->child_at(i);
+
+    // Skip the play pause button since it is a special case.
+    if (child == play_pause_button_)
+      continue;
+
+    // Skip if the view is not an image button.
+    if (child->GetClassName() != views::ImageButton::kViewClassName)
+      continue;
+
+    views::ImageButton* button = static_cast<views::ImageButton*>(child);
+
+    views::SetImageFromVectorIcon(
+        button,
+        *GetVectorIconForMediaAction(
+            static_cast<MediaSessionAction>(button->tag())),
+        kMediaButtonIconSize, foreground);
+
+    button->SchedulePaint();
+  }
 }
 
 }  // namespace ash

@@ -266,11 +266,13 @@ NotificationHeaderView::NotificationHeaderView(
 
 void NotificationHeaderView::SetAppIcon(const gfx::ImageSkia& img) {
   app_icon_view_->SetImage(img);
+  using_default_app_icon_ = false;
 }
 
 void NotificationHeaderView::ClearAppIcon() {
   app_icon_view_->SetImage(
       gfx::CreateVectorIcon(kProductIcon, kSmallImageSizeMD, accent_color_));
+  using_default_app_icon_ = true;
 }
 
 void NotificationHeaderView::SetAppName(const base::string16& name) {
@@ -360,6 +362,19 @@ void NotificationHeaderView::SetAccentColor(SkColor color) {
   summary_text_view_->SetEnabledColor(accent_color_);
   summary_text_divider_->SetEnabledColor(accent_color_);
   SetExpanded(is_expanded_);
+
+  // If we are using the default app icon we should clear it so we refresh it
+  // with the new accent color.
+  if (using_default_app_icon_)
+    ClearAppIcon();
+}
+
+void NotificationHeaderView::SetBackgroundColor(SkColor color) {
+  app_name_view_->SetBackgroundColor(color);
+  summary_text_divider_->SetBackgroundColor(color);
+  summary_text_view_->SetBackgroundColor(color);
+  timestamp_divider_->SetBackgroundColor(color);
+  timestamp_view_->SetBackgroundColor(color);
 }
 
 bool NotificationHeaderView::IsExpandButtonEnabled() {

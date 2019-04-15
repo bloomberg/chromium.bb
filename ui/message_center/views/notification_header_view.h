@@ -41,9 +41,15 @@ class MESSAGE_CENTER_EXPORT NotificationHeaderView : public views::Button {
   void SetSettingsButtonEnabled(bool enabled);
   void SetCloseButtonEnabled(bool enabled);
   void SetControlButtonsVisible(bool visible);
+
   // Set the unified theme color used among the app icon, app name, and expand
   // button.
   void SetAccentColor(SkColor color);
+
+  // Sets the background color of the notification. This is used to ensure that
+  // the accent color has enough contrast against the background.
+  void SetBackgroundColor(SkColor color);
+
   void ClearAppIcon();
   void ClearProgress();
   void ClearTimestamp();
@@ -86,6 +92,7 @@ class MESSAGE_CENTER_EXPORT NotificationHeaderView : public views::Button {
   bool has_progress_ = false;
   bool has_timestamp_ = false;
   bool is_expanded_ = false;
+  bool using_default_app_icon_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationHeaderView);
 };

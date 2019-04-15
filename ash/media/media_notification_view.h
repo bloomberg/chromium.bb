@@ -95,10 +95,9 @@ class ASH_EXPORT MediaNotificationView : public message_center::MessageView,
   void UpdateControlButtonsVisibilityWithNotification(
       const message_center::Notification& notification);
 
-  // Creates an image button with |icon| and adds it to |button_row_|. When
-  // clicked it will trigger |action| on the sesssion.
-  void CreateMediaButton(const gfx::VectorIcon& icon,
-                         media_session::mojom::MediaSessionAction action);
+  // Creates an image button with an icon that matches |action| and adds it
+  // to |button_row_|. When clicked it will trigger |action| on the session.
+  void CreateMediaButton(media_session::mojom::MediaSessionAction action);
 
   void UpdateActionButtonsVisibility();
   void UpdateViewForExpandedState();
@@ -110,6 +109,8 @@ class ASH_EXPORT MediaNotificationView : public message_center::MessageView,
 
   std::set<media_session::mojom::MediaSessionAction> CalculateVisibleActions(
       bool expanded) const;
+
+  void UpdateForegroundColor();
 
   // View containing close and settings buttons.
   std::unique_ptr<message_center::NotificationControlButtonsView>

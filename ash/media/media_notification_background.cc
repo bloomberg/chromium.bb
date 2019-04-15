@@ -12,6 +12,7 @@
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/scoped_canvas.h"
+#include "ui/views/style/typography.h"
 #include "ui/views/view.h"
 
 namespace ash {
@@ -335,6 +336,17 @@ void MediaNotificationBackground::UpdateArtworkMaxWidthPct(
 
   artwork_max_width_pct_ = max_width_pct;
   owner_->SchedulePaint();
+}
+
+SkColor MediaNotificationBackground::GetBackgroundColor() const {
+  return background_color_.value_or(kMediaNotificationDefaultBackgroundColor);
+}
+
+SkColor MediaNotificationBackground::GetForegroundColor() const {
+  return color_utils::GetColorWithMinimumContrast(
+      foreground_color_.value_or(views::style::GetColor(
+          *owner_, views::style::CONTEXT_LABEL, views::style::STYLE_PRIMARY)),
+      GetBackgroundColor());
 }
 
 int MediaNotificationBackground::GetArtworkWidth(

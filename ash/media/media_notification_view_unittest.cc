@@ -675,11 +675,12 @@ TEST_F(MediaNotificationViewTest, ActionButtonsToggleVisbility) {
 
 TEST_F(MediaNotificationViewTest, UpdateArtworkFromItem) {
   int title_artist_width = title_artist_row()->width();
+  const SkColor accent = header_row()->accent_color_for_testing();
   gfx::Size size = view()->size();
 
   SkBitmap image;
   image.allocN32Pixels(10, 10);
-  image.eraseColor(SK_ColorWHITE);
+  image.eraseColor(SK_ColorMAGENTA);
 
   EXPECT_TRUE(GetArtworkImage().isNull());
 
@@ -697,6 +698,7 @@ TEST_F(MediaNotificationViewTest, UpdateArtworkFromItem) {
   EXPECT_FALSE(GetArtworkImage().isNull());
   EXPECT_EQ(gfx::Size(10, 10), GetArtworkImage().size());
   EXPECT_EQ(size, view()->size());
+  EXPECT_NE(accent, header_row()->accent_color_for_testing());
 
   GetItem()->MediaControllerImageChanged(
       media_session::mojom::MediaSessionImageType::kArtwork, SkBitmap());
@@ -711,6 +713,7 @@ TEST_F(MediaNotificationViewTest, UpdateArtworkFromItem) {
   // affected.
   EXPECT_TRUE(GetArtworkImage().isNull());
   EXPECT_EQ(size, view()->size());
+  EXPECT_EQ(accent, header_row()->accent_color_for_testing());
 }
 
 TEST_F(MediaNotificationViewTest, UpdateIconFromItem) {
