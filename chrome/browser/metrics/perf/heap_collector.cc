@@ -171,7 +171,7 @@ bool PrintProcSelfMaps(base::File* out, const std::string& proc_maps) {
     // The devices major / minor values and the inode are not filled by
     // ParseProcMaps, so write them as zero values. They are not relevant for
     // symbolization.
-    std::string row = base::StringPrintf("%08" PRIx64 "-%08" PRIx64
+    std::string row = base::StringPrintf("%08" PRIxPTR "-%08" PRIxPTR
                                          " %c%c%c%c %08llx 00:00 0 %s\n",
                                          region.start, region.end, r, w, x, p,
                                          region.offset, region.path.c_str());
