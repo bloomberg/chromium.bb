@@ -406,6 +406,8 @@ cr.define('cr.ui.login', function() {
           // In this case update check will be skipped and OOBE will
           // proceed straight to enrollment screen when EULA is accepted.
           chrome.send('skipUpdateEnrollAfterEula');
+        } else {
+          console.warn('No action for current step ID: ' + currentStepId);
         }
       } else if (name == ACCELERATOR_KIOSK_ENABLE) {
         if (attributes.toggleKioskAllowed ||
