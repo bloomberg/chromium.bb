@@ -165,11 +165,11 @@ class BookmarkAppInstallationTaskTest : public ChromeRenderViewHostTestHarness {
 
     install_manager->SetDataRetrieverFactoryForTesting(
         base::BindLambdaForTesting([this]() {
-          WebApplicationInfo info;
-          info.app_url = app_url_;
-          info.title = base::UTF8ToUTF16(kWebAppTitle);
-          auto data_retriever = std::make_unique<web_app::TestDataRetriever>(
-              std::make_unique<WebApplicationInfo>(std::move(info)));
+          auto info = std::make_unique<WebApplicationInfo>();
+          info->app_url = app_url_;
+          info->title = base::UTF8ToUTF16(kWebAppTitle);
+          auto data_retriever = std::make_unique<web_app::TestDataRetriever>();
+          data_retriever->SetRendererWebApplicationInfo(std::move(info));
 
           return std::unique_ptr<web_app::WebAppDataRetriever>(
               std::move(data_retriever));

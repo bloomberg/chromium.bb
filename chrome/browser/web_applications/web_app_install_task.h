@@ -36,7 +36,19 @@ class WebAppInstallTask : content::WebContentsObserver {
   WebAppInstallTask(Profile* profile, InstallFinalizer* install_finalizer);
   ~WebAppInstallTask() override;
 
-  void InstallWebApp(
+  // Checks a WebApp installability, retrieves manifest and icons and
+  // than performs the actual installation.
+  void InstallWebAppFromManifest(
+      content::WebContents* web_contents,
+      WebappInstallSource install_source,
+      InstallManager::WebAppInstallDialogCallback dialog_callback,
+      InstallManager::OnceInstallCallback callback);
+
+  // This method infers WebApp info from the blink renderer process
+  // and than retrieves a manifest in a way similar to
+  // |InstallWebAppFromManifest|. If manifest is incomplete or missing, the
+  // inferred info is used.
+  void InstallWebAppFromManifestWithFallback(
       content::WebContents* web_contents,
       bool force_shortcut_app,
       WebappInstallSource install_source,
@@ -51,6 +63,8 @@ class WebAppInstallTask : content::WebContentsObserver {
   void SetInstallFinalizerForTesting(InstallFinalizer* install_finalizer);
 
  private:
+  void CheckInstallPreconditions();
+
   // Calling the callback may destroy |this| task. Callers shoudln't work with
   // any |this| class members after calling it.
   void CallInstallCallback(const AppId& app_id, InstallResultCode code);

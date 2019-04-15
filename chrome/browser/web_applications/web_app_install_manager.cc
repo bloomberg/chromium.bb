@@ -41,7 +41,7 @@ void WebAppInstallManager::InstallWebApp(
   DCHECK(AreWebAppsUserInstallable(profile_));
 
   auto task = std::make_unique<WebAppInstallTask>(profile_, install_finalizer_);
-  task->InstallWebApp(
+  task->InstallWebAppFromManifestWithFallback(
       contents, force_shortcut_app, install_source, std::move(dialog_callback),
       base::BindOnce(&WebAppInstallManager::OnTaskCompleted,
                      base::Unretained(this), task.get(), std::move(callback)));
@@ -54,8 +54,13 @@ void WebAppInstallManager::InstallWebAppFromBanner(
     WebappInstallSource install_source,
     WebAppInstallDialogCallback dialog_callback,
     OnceInstallCallback callback) {
-  // TODO(loyso): Implement it.
-  NOTIMPLEMENTED();
+  auto task = std::make_unique<WebAppInstallTask>(profile_, install_finalizer_);
+  task->InstallWebAppFromManifest(
+      contents, install_source, std::move(dialog_callback),
+      base::BindOnce(&WebAppInstallManager::OnTaskCompleted,
+                     base::Unretained(this), task.get(), std::move(callback)));
+
+  tasks_.insert(std::move(task));
 }
 
 void WebAppInstallManager::InstallWebAppFromInfo(

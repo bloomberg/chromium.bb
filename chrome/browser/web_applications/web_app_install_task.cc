@@ -30,18 +30,34 @@ WebAppInstallTask::WebAppInstallTask(Profile* profile,
 
 WebAppInstallTask::~WebAppInstallTask() = default;
 
-void WebAppInstallTask::InstallWebApp(
+void WebAppInstallTask::InstallWebAppFromManifest(
+    content::WebContents* contents,
+    WebappInstallSource install_source,
+    InstallManager::WebAppInstallDialogCallback dialog_callback,
+    InstallManager::OnceInstallCallback install_callback) {
+  CheckInstallPreconditions();
+
+  Observe(contents);
+  dialog_callback_ = std::move(dialog_callback);
+  install_callback_ = std::move(install_callback);
+  install_source_ = install_source;
+
+  auto web_app_info = std::make_unique<WebApplicationInfo>();
+
+  data_retriever_->CheckInstallabilityAndRetrieveManifest(
+      web_contents(),
+      base::BindOnce(&WebAppInstallTask::OnDidPerformInstallableCheck,
+                     base::Unretained(this), std::move(web_app_info),
+                     /*force_shortcut_app=*/false));
+}
+
+void WebAppInstallTask::InstallWebAppFromManifestWithFallback(
     content::WebContents* contents,
     bool force_shortcut_app,
     WebappInstallSource install_source,
     InstallManager::WebAppInstallDialogCallback dialog_callback,
     InstallManager::OnceInstallCallback install_callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(AreWebAppsUserInstallable(profile_));
-
-  // Concurrent calls are not allowed.
-  DCHECK(!web_contents());
-  CHECK(!install_callback_);
+  CheckInstallPreconditions();
 
   Observe(contents);
   dialog_callback_ = std::move(dialog_callback);
@@ -51,7 +67,7 @@ void WebAppInstallTask::InstallWebApp(
   data_retriever_->GetWebApplicationInfo(
       web_contents(),
       base::BindOnce(&WebAppInstallTask::OnGetWebApplicationInfo,
-                     weak_ptr_factory_.GetWeakPtr(), force_shortcut_app));
+                     base::Unretained(this), force_shortcut_app));
 }
 
 void WebAppInstallTask::WebContentsDestroyed() {
@@ -66,6 +82,15 @@ void WebAppInstallTask::SetDataRetrieverForTesting(
 void WebAppInstallTask::SetInstallFinalizerForTesting(
     InstallFinalizer* install_finalizer) {
   install_finalizer_ = install_finalizer;
+}
+
+void WebAppInstallTask::CheckInstallPreconditions() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(AreWebAppsUserInstallable(profile_));
+
+  // Concurrent calls are not allowed.
+  DCHECK(!web_contents());
+  CHECK(!install_callback_);
 }
 
 void WebAppInstallTask::CallInstallCallback(const AppId& app_id,
@@ -103,7 +128,7 @@ void WebAppInstallTask::OnGetWebApplicationInfo(
   data_retriever_->CheckInstallabilityAndRetrieveManifest(
       web_contents(),
       base::BindOnce(&WebAppInstallTask::OnDidPerformInstallableCheck,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(web_app_info),
+                     base::Unretained(this), std::move(web_app_info),
                      force_shortcut_app));
 }
 
@@ -138,7 +163,7 @@ void WebAppInstallTask::OnDidPerformInstallableCheck(
   data_retriever_->GetIcons(
       web_contents(), icon_urls, skip_page_fav_icons,
       base::BindOnce(&WebAppInstallTask::OnIconsRetrieved,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(web_app_info),
+                     base::Unretained(this), std::move(web_app_info),
                      for_installable_site));
 }
 
