@@ -75,7 +75,7 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
                      ClientSocketHandle* handle) override;
   void ReleaseSocket(const GroupId& group_id,
                      std::unique_ptr<StreamSocket> socket,
-                     int id) override;
+                     int64_t generation) override;
   void FlushWithError(int error) override;
   void CloseIdleSockets() override;
   void CloseIdleSocketsInGroup(const GroupId& group_id) override;

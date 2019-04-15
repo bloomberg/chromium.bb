@@ -5335,6 +5335,152 @@ TEST_F(ClientSocketPoolBaseTest, ProxyAuthStaysBound) {
   EXPECT_EQ(0, auth_helper4.auth_count());
 }
 
+TEST_F(ClientSocketPoolBaseTest, RefreshGroupCreatesNewConnectJobs) {
+  CreatePool(kDefaultMaxSockets, kDefaultMaxSocketsPerGroup);
+  const ClientSocketPool::GroupId kGroupId = TestGroupId("a");
+
+  // First job will be waiting until it gets aborted.
+  connect_job_factory_->set_job_type(TestConnectJob::kMockWaitingJob);
+
+  ClientSocketHandle handle;
+  TestCompletionCallback callback;
+  EXPECT_THAT(
+      handle.Init(kGroupId, params_, DEFAULT_PRIORITY, SocketTag(),
+                  ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
+                  ClientSocketPool::ProxyAuthCallback(), pool_.get(),
+                  NetLogWithSource()),
+      IsError(ERR_IO_PENDING));
+
+  // Switch connect job types, so creating a new ConnectJob will result in
+  // success.
+  connect_job_factory_->set_job_type(TestConnectJob::kMockJob);
+
+  pool_->RefreshGroupForTesting(kGroupId);
+  EXPECT_EQ(OK, callback.WaitForResult());
+  ASSERT_TRUE(handle.socket());
+  EXPECT_EQ(0, pool_->IdleSocketCount());
+  ASSERT_TRUE(pool_->HasGroupForTesting(kGroupId));
+  EXPECT_EQ(0u, pool_->IdleSocketCountInGroup(kGroupId));
+  EXPECT_EQ(0u, pool_->NumConnectJobsInGroupForTesting(kGroupId));
+  EXPECT_EQ(1, pool_->NumActiveSocketsInGroupForTesting(kGroupId));
+}
+
+TEST_F(ClientSocketPoolBaseTest, RefreshGroupClosesIdleConnectJobs) {
+  CreatePool(kDefaultMaxSockets, kDefaultMaxSocketsPerGroup);
+  const ClientSocketPool::GroupId kGroupId = TestGroupId("a");
+
+  pool_->RequestSockets(kGroupId, params_, 2, NetLogWithSource());
+  ASSERT_TRUE(pool_->HasGroupForTesting(kGroupId));
+  EXPECT_EQ(2, pool_->IdleSocketCount());
+  EXPECT_EQ(2u, pool_->IdleSocketCountInGroup(kGroupId));
+
+  pool_->RefreshGroupForTesting(kGroupId);
+  EXPECT_EQ(0, pool_->IdleSocketCount());
+  EXPECT_FALSE(pool_->HasGroupForTesting(kGroupId));
+}
+
+TEST_F(ClientSocketPoolBaseTest,
+       RefreshGroupDoesNotCloseIdleConnectJobsInOtherGroup) {
+  CreatePool(kDefaultMaxSockets, kDefaultMaxSocketsPerGroup);
+  const ClientSocketPool::GroupId kGroupId = TestGroupId("a");
+  const ClientSocketPool::GroupId kOtherGroupId = TestGroupId("b");
+
+  pool_->RequestSockets(kOtherGroupId, params_, 2, NetLogWithSource());
+  ASSERT_TRUE(pool_->HasGroupForTesting(kOtherGroupId));
+  EXPECT_EQ(2, pool_->IdleSocketCount());
+  EXPECT_EQ(2u, pool_->IdleSocketCountInGroup(kOtherGroupId));
+
+  pool_->RefreshGroupForTesting(kGroupId);
+  ASSERT_TRUE(pool_->HasGroupForTesting(kOtherGroupId));
+  EXPECT_EQ(2, pool_->IdleSocketCount());
+  EXPECT_EQ(2u, pool_->IdleSocketCountInGroup(kOtherGroupId));
+}
+
+TEST_F(ClientSocketPoolBaseTest, RefreshGroupPreventsSocketReuse) {
+  CreatePool(kDefaultMaxSockets, kDefaultMaxSocketsPerGroup);
+  const ClientSocketPool::GroupId kGroupId = TestGroupId("a");
+
+  ClientSocketHandle handle;
+  TestCompletionCallback callback;
+  EXPECT_THAT(
+      handle.Init(kGroupId, params_, DEFAULT_PRIORITY, SocketTag(),
+                  ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
+                  ClientSocketPool::ProxyAuthCallback(), pool_.get(),
+                  NetLogWithSource()),
+      IsOk());
+  ASSERT_TRUE(pool_->HasGroupForTesting(kGroupId));
+  EXPECT_EQ(1, pool_->NumActiveSocketsInGroupForTesting(kGroupId));
+
+  pool_->RefreshGroupForTesting(kGroupId);
+
+  handle.Reset();
+  EXPECT_EQ(0, pool_->IdleSocketCount());
+  EXPECT_FALSE(pool_->HasGroupForTesting(kGroupId));
+}
+
+TEST_F(ClientSocketPoolBaseTest,
+       RefreshGroupDoesNotPreventSocketReuseInOtherGroup) {
+  CreatePool(kDefaultMaxSockets, kDefaultMaxSocketsPerGroup);
+  const ClientSocketPool::GroupId kGroupId = TestGroupId("a");
+  const ClientSocketPool::GroupId kOtherGroupId = TestGroupId("b");
+
+  ClientSocketHandle handle;
+  TestCompletionCallback callback;
+  EXPECT_THAT(
+      handle.Init(kOtherGroupId, params_, DEFAULT_PRIORITY, SocketTag(),
+                  ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
+                  ClientSocketPool::ProxyAuthCallback(), pool_.get(),
+                  NetLogWithSource()),
+      IsOk());
+  ASSERT_TRUE(pool_->HasGroupForTesting(kOtherGroupId));
+  EXPECT_EQ(1, pool_->NumActiveSocketsInGroupForTesting(kOtherGroupId));
+
+  pool_->RefreshGroupForTesting(kGroupId);
+
+  handle.Reset();
+  EXPECT_EQ(1, pool_->IdleSocketCount());
+  ASSERT_TRUE(pool_->HasGroupForTesting(kOtherGroupId));
+  EXPECT_EQ(1u, pool_->IdleSocketCountInGroup(kOtherGroupId));
+}
+
+TEST_F(ClientSocketPoolBaseTest, RefreshGroupReplacesBoundConnectJobOnConnect) {
+  CreatePool(1, 1);
+  const ClientSocketPool::GroupId kGroupId = TestGroupId("a");
+  connect_job_factory_->set_job_type(TestConnectJob::kMockAuthChallengeOnceJob);
+
+  TestAuthHelper auth_helper;
+  auth_helper.InitHandle(params_, pool_.get(), DEFAULT_PRIORITY,
+                         ClientSocketPool::RespectLimits::ENABLED, kGroupId);
+  EXPECT_EQ(1u, pool_->NumConnectJobsInGroupForTesting(kGroupId));
+
+  auth_helper.WaitForAuth();
+
+  // This should update the generation, but not cancel the old ConnectJob - it's
+  // not safe to do anything while waiting on the original ConnectJob.
+  pool_->RefreshGroupForTesting(kGroupId);
+
+  // Providing auth credentials and restarting the request with them will cause
+  // the ConnectJob to complete successfully, but the result will be discarded
+  // because of the generation mismatch.
+  auth_helper.RestartWithAuth();
+
+  // Despite using ConnectJobs that simulate a single challenge, a second
+  // challenge will be seen, due to using a new ConnectJob.
+  auth_helper.WaitForAuth();
+  auth_helper.RestartWithAuth();
+
+  EXPECT_THAT(auth_helper.WaitForResult(), IsOk());
+  EXPECT_TRUE(auth_helper.handle()->socket());
+  EXPECT_EQ(2, auth_helper.auth_count());
+
+  // When released, the socket will be returned to the socket pool, and
+  // available for reuse.
+  auth_helper.handle()->Reset();
+  EXPECT_EQ(1, pool_->IdleSocketCount());
+  ASSERT_TRUE(pool_->HasGroupForTesting(kGroupId));
+  EXPECT_EQ(1u, pool_->IdleSocketCountInGroup(kGroupId));
+}
+
 }  // namespace
 
 }  // namespace net

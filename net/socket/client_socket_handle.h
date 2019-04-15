@@ -152,7 +152,9 @@ class NET_EXPORT ClientSocketHandle {
 
   void set_reuse_type(SocketReuseType reuse_type) { reuse_type_ = reuse_type; }
   void set_idle_time(base::TimeDelta idle_time) { idle_time_ = idle_time; }
-  void set_pool_id(int id) { pool_id_ = id; }
+  void set_group_generation(int64_t group_generation) {
+    group_generation_ = group_generation;
+  }
   void set_is_ssl_error(bool is_ssl_error) { is_ssl_error_ = is_ssl_error; }
   void set_ssl_cert_request_info(
       scoped_refptr<SSLCertRequestInfo> ssl_cert_request_info) {
@@ -196,7 +198,7 @@ class NET_EXPORT ClientSocketHandle {
 
   // These may only be used if is_initialized() is true.
   const ClientSocketPool::GroupId& group_id() const { return group_id_; }
-  int id() const { return pool_id_; }
+  int64_t group_generation() const { return group_generation_; }
   bool is_reused() const { return reuse_type_ == REUSED_IDLE; }
   base::TimeDelta idle_time() const { return idle_time_; }
   SocketReuseType reuse_type() const { return reuse_type_; }
@@ -231,7 +233,8 @@ class NET_EXPORT ClientSocketHandle {
   SocketReuseType reuse_type_;
   CompletionOnceCallback callback_;
   base::TimeDelta idle_time_;
-  int pool_id_;  // See ClientSocketPool::ReleaseSocket() for an explanation.
+  // See ClientSocketPool::ReleaseSocket() for an explanation.
+  int64_t group_generation_;
   bool is_ssl_error_;
   scoped_refptr<SSLCertRequestInfo> ssl_cert_request_info_;
   std::unique_ptr<StreamSocket> pending_http_proxy_socket_;

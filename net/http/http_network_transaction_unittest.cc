@@ -693,7 +693,7 @@ class CaptureGroupIdTransportSocketPool : public TransportClientSocketPool {
                      ClientSocketHandle* handle) override {}
   void ReleaseSocket(const ClientSocketPool::GroupId& group_id,
                      std::unique_ptr<StreamSocket> socket,
-                     int id) override {}
+                     int64_t generation) override {}
   void CloseIdleSockets() override {}
   void CloseIdleSocketsInGroup(
       const ClientSocketPool::GroupId& group_id) override {}

@@ -2122,7 +2122,7 @@ int MockTransportClientSocketPool::RequestSocket(
   MockConnectJob* job = new MockConnectJob(
       std::move(socket), handle, socket_tag, std::move(callback), priority);
   job_list_.push_back(base::WrapUnique(job));
-  handle->set_pool_id(1);
+  handle->set_group_generation(1);
   return job->Connect();
 }
 
@@ -2153,8 +2153,8 @@ void MockTransportClientSocketPool::CancelRequest(
 void MockTransportClientSocketPool::ReleaseSocket(
     const ClientSocketPool::GroupId& group_id,
     std::unique_ptr<StreamSocket> socket,
-    int id) {
-  EXPECT_EQ(1, id);
+    int64_t generation) {
+  EXPECT_EQ(1, generation);
   release_count_++;
 }
 

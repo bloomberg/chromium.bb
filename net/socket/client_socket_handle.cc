@@ -24,6 +24,7 @@ ClientSocketHandle::ClientSocketHandle()
       pool_(nullptr),
       higher_pool_(nullptr),
       reuse_type_(ClientSocketHandle::UNUSED),
+      group_generation_(-1),
       is_ssl_error_(false) {}
 
 ClientSocketHandle::~ClientSocketHandle() {
@@ -86,7 +87,7 @@ void ClientSocketHandle::ResetInternal(bool cancel) {
         socket_->NetLog().EndEvent(NetLogEventType::SOCKET_IN_USE);
         // Release the socket back to the ClientSocketPool so it can be
         // deleted or reused.
-        pool_->ReleaseSocket(group_id_, std::move(socket_), pool_id_);
+        pool_->ReleaseSocket(group_id_, std::move(socket_), group_generation_);
       } else {
         // If the handle has been initialized, we should still have a
         // socket.
@@ -114,7 +115,7 @@ void ClientSocketHandle::ResetInternal(bool cancel) {
   // longer results in following a redirect.
   if (!pending_http_proxy_socket_)
     connect_timing_ = LoadTimingInfo::ConnectTiming();
-  pool_id_ = -1;
+  group_generation_ = -1;
 }
 
 void ClientSocketHandle::ResetErrorState() {
@@ -242,7 +243,8 @@ void ClientSocketHandle::HandleInitCompletion(int result) {
     return;
   }
   is_initialized_ = true;
-  CHECK_NE(-1, pool_id_) << "Pool should have set |pool_id_| to a valid value.";
+  CHECK_NE(-1, group_generation_)
+      << "Pool should have set |group_generation_| to a valid value.";
 
   // Broadcast that the socket has been acquired.
   // TODO(eroman): This logging is not complete, in particular set_socket() and
