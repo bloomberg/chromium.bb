@@ -1,6 +1,6 @@
 <!doctype html>
 <html dir="$i18n{textdirection}" lang="$i18n{language}" class="loading"
-    $i18n{dark}>
+    $i18n{dark} $i18n{newprintpreviewlayout}>
 <head>
   <meta charset="utf-8">
   <style>
@@ -14,6 +14,14 @@
       background: rgb(189, 193, 198);  /* --google-grey-400 */
     }
 
+    html[new-print-preview-layout] {
+      background: rgb(218, 220, 224);  /* --google-grey-refresh-300 */
+    }
+
+    html[new-print-preview-layout][dark] {
+      background: rgb(95, 99, 104);  /* --google-grey-refresh-700 */
+    }
+
     html,
     body {
       height: 100%;
@@ -22,18 +30,36 @@
       width: 100%;
     }
 
+    .loading body {
+      display: flex;
+    }
+
+    [new-print-preview-layout].loading body {
+      flex-direction: row-reverse;
+    }
+
     .loading body::before {
       background: white;
-      border-inline-end: 1px solid rgb(232, 234, 237);
+      border-bottom-width: 0;
+      border-color: rgb(232, 234, 237);
+      border-inline-end-width: 1px;
+      border-inline-start-width: 0;
+      border-style: solid;
+      border-top-width: 0;
       content: '';
       display: block;
       height: 100%;
       width: 311px;
     }
 
+    [new-print-preview-layout].loading body::before {
+      border-inline-end-width: 0;
+      border-inline-start-width: 1px;
+    }
+
     [dark].loading body::before {
       background: rgb(40, 41, 44);
-      border-inline-end-color: rgba(255, 255, 255, .04);
+      border-color: rgba(255, 255, 255, .04);
     }
   </style>
 </head>
