@@ -183,6 +183,9 @@ FormData GetFormDataAndExpectation(const FormParsingTestCase& test_case,
       field.name = ASCIIToUTF16(field_description.name);
     }
     field.name_attribute = field.name;
+#if defined(OS_IOS)
+    field.unique_id = StampUniqueSuffix("unique_id");
+#endif
     field.form_control_type = field_description.form_control_type;
     field.is_focusable = field_description.is_focusable;
     field.is_enabled = field_description.is_enabled;
@@ -212,6 +215,9 @@ FormData GetFormDataAndExpectation(const FormParsingTestCase& test_case,
     if (field_description.prediction.type != autofill::MAX_VALID_FIELD_TYPE) {
       predictions->push_back(field_description.prediction);
       predictions->back().renderer_id = renderer_id;
+#if defined(OS_IOS)
+      predictions->back().unique_id = field.unique_id;
+#endif
     }
     if (field_description.predicted_username >= 0) {
       size_t index = static_cast<size_t>(field_description.predicted_username);

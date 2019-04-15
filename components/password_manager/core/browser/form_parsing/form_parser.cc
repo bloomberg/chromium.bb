@@ -223,13 +223,22 @@ bool IsFieldInSignificantFields(const SignificantFields& significant_fields,
          significant_fields.confirmation_password == field;
 }
 
-// Returns the first element of |fields| which has the specified
-// |unique_renderer_id|, or null if there is no such element.
-ProcessedField* FindFieldWithUniqueRendererId(
-    std::vector<ProcessedField>* processed_fields,
-    uint32_t unique_renderer_id) {
+bool DoesPredictionCorrespondToField(
+    const FormFieldData& field,
+    const PasswordFieldPrediction& prediction) {
+#if defined(OS_IOS)
+  return field.unique_id == prediction.unique_id;
+#else
+  return field.unique_renderer_id == prediction.renderer_id;
+#endif
+}
+
+// Returns the first element of |fields| which corresponds to |prediction|, or
+// null if there is no such element.
+ProcessedField* FindField(std::vector<ProcessedField>* processed_fields,
+                          const PasswordFieldPrediction& prediction) {
   for (ProcessedField& processed_field : *processed_fields) {
-    if (processed_field.field->unique_renderer_id == unique_renderer_id)
+    if (DoesPredictionCorrespondToField(*processed_field.field, prediction))
       return &processed_field;
   }
   return nullptr;
@@ -266,14 +275,12 @@ void ParseUsingPredictions(std::vector<ProcessedField>* processed_fields,
     switch (field_type) {
       case CredentialFieldType::kUsername:
         if (!result->username) {
-          processed_field = FindFieldWithUniqueRendererId(
-              processed_fields, prediction.renderer_id);
+          processed_field = FindField(processed_fields, prediction);
           if (processed_field) {
             result->username = processed_field->field;
           }
         } else if (!second_username) {
-          processed_field = FindFieldWithUniqueRendererId(
-              processed_fields, prediction.renderer_id);
+          processed_field = FindField(processed_fields, prediction);
           if (processed_field) {
             second_username = processed_field->field;
           }
@@ -285,8 +292,7 @@ void ParseUsingPredictions(std::vector<ProcessedField>* processed_fields,
         if (result->password) {
           prevent_handling_two_usernames = true;
         } else {
-          processed_field = FindFieldWithUniqueRendererId(
-              processed_fields, prediction.renderer_id);
+          processed_field = FindField(processed_fields, prediction);
           if (processed_field) {
             if (!processed_field->is_password)
               continue;
@@ -306,8 +312,7 @@ void ParseUsingPredictions(std::vector<ProcessedField>* processed_fields,
         // before the user has thought of and typed their new password
         // elsewhere. See https://crbug.com/902700 for more details.
         if (!result->new_password) {
-          processed_field = FindFieldWithUniqueRendererId(
-              processed_fields, prediction.renderer_id);
+          processed_field = FindField(processed_fields, prediction);
           if (processed_field) {
             if (!processed_field->is_password)
               continue;
@@ -316,8 +321,7 @@ void ParseUsingPredictions(std::vector<ProcessedField>* processed_fields,
         }
         break;
       case CredentialFieldType::kConfirmationPassword:
-        processed_field = FindFieldWithUniqueRendererId(processed_fields,
-                                                        prediction.renderer_id);
+        processed_field = FindField(processed_fields, prediction);
         if (processed_field) {
           if (!processed_field->is_password)
             continue;
@@ -357,8 +361,7 @@ void ParseUsingPredictions(std::vector<ProcessedField>* processed_fields,
   for (const PasswordFieldPrediction& prediction : predictions) {
     if (prediction.type == autofill::CREDIT_CARD_VERIFICATION_CODE ||
         prediction.type == autofill::NOT_PASSWORD) {
-      ProcessedField* processed_field = FindFieldWithUniqueRendererId(
-          processed_fields, prediction.renderer_id);
+      ProcessedField* processed_field = FindField(processed_fields, prediction);
       if (processed_field)
         processed_field->server_hints_not_password = true;
     }
