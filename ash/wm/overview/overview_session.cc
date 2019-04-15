@@ -532,6 +532,8 @@ void OverviewSession::ActivateDraggedWindow() {
 
 void OverviewSession::ResetDraggedWindowGesture() {
   window_drag_controller_->ResetGesture();
+  for (std::unique_ptr<OverviewGrid>& grid : grid_list_)
+    grid->OnSelectorItemDragEnded();
 }
 
 void OverviewSession::OnWindowDragStarted(aura::Window* dragged_window,
