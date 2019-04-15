@@ -95,16 +95,7 @@ void ContentUrlsResolved(mojom::FileSystemHost::SelectFilesCallback callback,
                          const std::vector<GURL>& content_urls) {
   mojom::SelectFilesResultPtr result = mojom::SelectFilesResult::New();
   for (const GURL& content_url : content_urls) {
-    // Replace intent_helper.fileprovider with file_system.fileprovider in URL.
-    // TODO(niwa): Remove this and update path_util to use
-    // file_system.fileprovider by default once we complete migration.
-    std::string url_string = content_url.spec();
-    if (base::StartsWith(url_string, arc::kIntentHelperFileproviderUrl,
-                         base::CompareCase::INSENSITIVE_ASCII)) {
-      url_string.replace(0, strlen(arc::kIntentHelperFileproviderUrl),
-                         arc::kFileSystemFileproviderUrl);
-    }
-    result->urls.push_back(GURL(url_string));
+    result->urls.push_back(content_url);
   }
   std::move(callback).Run(std::move(result));
 }
