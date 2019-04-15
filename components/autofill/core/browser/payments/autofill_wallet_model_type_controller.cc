@@ -10,7 +10,9 @@
 #include "base/bind_helpers.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/prefs/pref_service.h"
+#include "components/sync/driver/sync_auth_util.h"
 #include "components/sync/driver/sync_service.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 
 namespace browser_sync {
 
@@ -24,8 +26,10 @@ AutofillWalletModelTypeController::AutofillWalletModelTypeController(
       sync_service_(sync_service) {
   DCHECK(type == syncer::AUTOFILL_WALLET_DATA ||
          type == syncer::AUTOFILL_WALLET_METADATA);
-  currently_enabled_ = IsEnabled();
   SubscribeToPrefChanges();
+  // TODO(crbug.com/906995): remove this observing mechanism once all sync
+  // datatypes are stopped by ProfileSyncService, when sync is paused.
+  sync_service_->AddObserver(this);
 }
 
 AutofillWalletModelTypeController::AutofillWalletModelTypeController(
@@ -41,11 +45,15 @@ AutofillWalletModelTypeController::AutofillWalletModelTypeController(
       sync_service_(sync_service) {
   DCHECK(type == syncer::AUTOFILL_WALLET_DATA ||
          type == syncer::AUTOFILL_WALLET_METADATA);
-  currently_enabled_ = IsEnabled();
   SubscribeToPrefChanges();
+  // TODO(crbug.com/906995): remove this observing mechanism once all sync
+  // datatypes are stopped by ProfileSyncService, when sync is paused.
+  sync_service_->AddObserver(this);
 }
 
-AutofillWalletModelTypeController::~AutofillWalletModelTypeController() {}
+AutofillWalletModelTypeController::~AutofillWalletModelTypeController() {
+  sync_service_->RemoveObserver(this);
+}
 
 void AutofillWalletModelTypeController::Stop(
     syncer::ShutdownReason shutdown_reason,
@@ -66,28 +74,16 @@ void AutofillWalletModelTypeController::Stop(
 
 bool AutofillWalletModelTypeController::ReadyForStart() const {
   DCHECK(CalledOnValidThread());
-  return currently_enabled_;
+  return pref_service_->GetBoolean(
+             autofill::prefs::kAutofillWalletImportEnabled) &&
+         pref_service_->GetBoolean(
+             autofill::prefs::kAutofillCreditCardEnabled) &&
+         !syncer::IsWebSignout(sync_service_->GetAuthError());
 }
 
 void AutofillWalletModelTypeController::OnUserPrefChanged() {
   DCHECK(CalledOnValidThread());
-
-  bool newly_enabled = IsEnabled();
-  if (currently_enabled_ == newly_enabled) {
-    return;  // No change to sync state.
-  }
-
-  currently_enabled_ = newly_enabled;
   sync_service_->ReadyForStartChanged(type());
-}
-
-bool AutofillWalletModelTypeController::IsEnabled() const {
-  DCHECK(CalledOnValidThread());
-
-  // Require two user-visible prefs to be enabled to sync Wallet data/metadata.
-  return pref_service_->GetBoolean(
-             autofill::prefs::kAutofillWalletImportEnabled) &&
-         pref_service_->GetBoolean(autofill::prefs::kAutofillCreditCardEnabled);
 }
 
 void AutofillWalletModelTypeController::SubscribeToPrefChanges() {
@@ -100,6 +96,12 @@ void AutofillWalletModelTypeController::SubscribeToPrefChanges() {
       autofill::prefs::kAutofillCreditCardEnabled,
       base::BindRepeating(&AutofillWalletModelTypeController::OnUserPrefChanged,
                           base::Unretained(this)));
+}
+
+void AutofillWalletModelTypeController::OnStateChanged(
+    syncer::SyncService* sync) {
+  DCHECK(CalledOnValidThread());
+  sync_service_->ReadyForStartChanged(type());
 }
 
 }  // namespace browser_sync

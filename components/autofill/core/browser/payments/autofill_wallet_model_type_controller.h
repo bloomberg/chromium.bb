@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sync/driver/model_type_controller.h"
+#include "components/sync/driver/sync_service_observer.h"
 
 class PrefService;
 
@@ -21,7 +22,8 @@ class SyncService;
 namespace browser_sync {
 
 // Controls syncing of AUTOFILL_WALLET_DATA and AUTOFILL_WALLET_METADATA.
-class AutofillWalletModelTypeController : public syncer::ModelTypeController {
+class AutofillWalletModelTypeController : public syncer::ModelTypeController,
+                                          public syncer::SyncServiceObserver {
  public:
   // The delegates and |sync_client| must not be null. Furthermore,
   // |sync_client| must outlive this object.
@@ -43,6 +45,9 @@ class AutofillWalletModelTypeController : public syncer::ModelTypeController {
             StopCallback callback) override;
   bool ReadyForStart() const override;
 
+  // syncer::SyncServiceObserver implementation.
+  void OnStateChanged(syncer::SyncService* sync) override;
+
  private:
   // Callback for changes to the autofill pref.
   void OnUserPrefChanged();
@@ -54,8 +59,6 @@ class AutofillWalletModelTypeController : public syncer::ModelTypeController {
   syncer::SyncService* const sync_service_;
 
   PrefChangeRegistrar pref_registrar_;
-
-  bool currently_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillWalletModelTypeController);
 };
