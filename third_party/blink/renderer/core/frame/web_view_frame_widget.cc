@@ -70,11 +70,11 @@ void WebViewFrameWidget::EndRafAlignedInput() {
 }
 
 void WebViewFrameWidget::BeginUpdateLayers() {
-  web_view_->BeginRafAlignedInput();
+  web_view_->BeginUpdateLayers();
 }
 
 void WebViewFrameWidget::EndUpdateLayers() {
-  web_view_->EndRafAlignedInput();
+  web_view_->EndUpdateLayers();
 }
 
 void WebViewFrameWidget::BeginCommitCompositorFrame() {

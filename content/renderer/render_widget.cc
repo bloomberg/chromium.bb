@@ -1339,7 +1339,7 @@ void RenderWidget::BeginUpdateLayers() {
 
 void RenderWidget::EndUpdateLayers() {
   if (GetWebWidget())
-    GetWebWidget()->BeginUpdateLayers();
+    GetWebWidget()->EndUpdateLayers();
 }
 
 void RenderWidget::WillBeginCompositorFrame() {

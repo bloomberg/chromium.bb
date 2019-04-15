@@ -237,6 +237,10 @@ TEST_F(LocalFrameUkmAggregatorTest, EventsRecordedAtIntervals) {
     elapsed_time += Now() - start_time;
   }
 
+  // Should be no more samples.
+  VerifyEntries(2u, millisecond_per_frame, millisecond_per_step,
+                expected_percentage);
+
   // If we record, then the next interval is still shorter than the last frame,
   // we should sample again. Set a short sample period to generate 2 events
   // for the next update. The calculation below ensures we get 2 events for

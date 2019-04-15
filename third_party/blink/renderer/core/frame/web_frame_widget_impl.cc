@@ -324,9 +324,8 @@ void WebFrameWidgetImpl::EndRafAlignedInput() {
 }
 
 void WebFrameWidgetImpl::BeginUpdateLayers() {
-  if (LocalRootImpl()) {
+  if (LocalRootImpl())
     update_layers_start_time_.emplace(CurrentTimeTicks());
-  }
 }
 
 void WebFrameWidgetImpl::EndUpdateLayers() {

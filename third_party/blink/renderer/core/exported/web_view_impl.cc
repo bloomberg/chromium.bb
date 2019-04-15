@@ -1528,9 +1528,8 @@ void WebViewImpl::EndRafAlignedInput() {
 }
 
 void WebViewImpl::BeginUpdateLayers() {
-  if (MainFrameImpl()) {
+  if (MainFrameImpl())
     update_layers_start_time_.emplace(CurrentTimeTicks());
-  }
 }
 
 void WebViewImpl::EndUpdateLayers() {
