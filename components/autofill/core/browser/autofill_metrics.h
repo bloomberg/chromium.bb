@@ -761,6 +761,24 @@ class AutofillMetrics {
   // To record whether or not the upload event was sent,
   enum class UploadEventStatus { kNotSent, kSent, kMaxValue = kSent };
 
+  // Log all the scenarios that lead to making the decision whether card upload
+  // is enabled or not.
+  enum class CardUploadEnabledMetric {
+    SYNC_SERVICE_NULL = 0,
+    SYNC_SERVICE_PERSISTENT_AUTH_ERROR = 1,
+    SYNC_SERVICE_MISSING_AUTOFILL_WALLET_DATA_ACTIVE_TYPE = 2,
+    SYNC_SERVICE_MISSING_AUTOFILL_PROFILE_ACTIVE_TYPE = 3,
+    ACCOUNT_WALLET_STORAGE_UPLOAD_DISABLED = 4,
+    USING_SECONDARY_SYNC_PASSPHRASE = 5,
+    LOCAL_SYNC_ENABLED = 6,
+    PAYMENTS_INTEGRATION_DISABLED = 7,
+    EMAIL_EMPTY = 8,
+    EMAIL_DOMAIN_NOT_SUPPORTED = 9,
+    AUTOFILL_UPSTREAM_DISABLED = 10,
+    CARD_UPLOAD_ENABLED = 11,
+    kMaxValue = CARD_UPLOAD_ENABLED,
+  };
+
   // Utility to log URL keyed form interaction events.
   class FormInteractionsUkmLogger {
    public:
@@ -1236,6 +1254,10 @@ class AutofillMetrics {
   // sync transport mode for Wallet. This should only be logged if the user had
   // server cards to be shown.
   static void LogWalletSyncTransportCardsOptIn(bool is_opted_in);
+
+  // Records the reason for why (or why not) card upload was enabled for the
+  // user.
+  static void LogCardUploadEnabledMetric(CardUploadEnabledMetric metric);
 
   static const char* GetMetricsSyncStateSuffix(
       AutofillSyncSigninState sync_state);

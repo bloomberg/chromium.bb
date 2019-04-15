@@ -1887,6 +1887,11 @@ void AutofillMetrics::LogWalletSyncTransportCardsOptIn(bool is_opted_in) {
       "Autofill.HadUserOptedIn_To_WalletSyncTransportServerCards", is_opted_in);
 }
 
+void AutofillMetrics::LogCardUploadEnabledMetric(
+    CardUploadEnabledMetric metric) {
+  UMA_HISTOGRAM_ENUMERATION("Autofill.CardUploadEnabled", metric);
+}
+
 // static
 const char* AutofillMetrics::GetMetricsSyncStateSuffix(
     AutofillSyncSigninState sync_state) {
