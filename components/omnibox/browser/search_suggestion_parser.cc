@@ -24,6 +24,7 @@
 #include "base/values.h"
 #include "components/omnibox/browser/autocomplete_i18n.h"
 #include "components/omnibox/browser/autocomplete_input.h"
+#include "components/omnibox/browser/autocomplete_match_classification.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/url_prefix.h"
@@ -231,7 +232,11 @@ SearchSuggestionParser::NavigationResult::NavigationResult(
       description_(description) {
   DCHECK(url_.is_valid());
   CalculateAndClassifyMatchContents(true, input_text);
+  ClassifyDescription(input_text);
 }
+
+SearchSuggestionParser::NavigationResult::NavigationResult(
+    const NavigationResult& other) = default;
 
 SearchSuggestionParser::NavigationResult::~NavigationResult() {}
 
@@ -284,6 +289,14 @@ int SearchSuggestionParser::NavigationResult::CalculateRelevance(
     const AutocompleteInput& input,
     bool keyword_provider_requested) const {
   return (from_keyword_ || !keyword_provider_requested) ? 800 : 150;
+}
+
+void SearchSuggestionParser::NavigationResult::ClassifyDescription(
+    const base::string16& input_text) {
+  TermMatches term_matches = FindTermMatches(input_text, description_);
+  description_class_ = ClassifyTermMatches(term_matches, description_.size(),
+                                           ACMatchClassification::MATCH,
+                                           ACMatchClassification::NONE);
 }
 
 // SearchSuggestionParser::Results ---------------------------------------------
