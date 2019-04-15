@@ -94,6 +94,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_USERNAME);
   self.usernameItem.textFieldValue = self.username;
   self.usernameItem.textFieldEnabled = YES;
+  self.usernameItem.autoCapitalizationType = UITextAutocapitalizationTypeNone;
   [model addItem:self.usernameItem
       toSectionWithIdentifier:SectionIdentifierContent];
 
@@ -103,6 +104,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_PASSWORD);
   self.passwordItem.textFieldValue = self.maskedPassword;
   self.passwordItem.textFieldEnabled = YES;
+  self.passwordItem.autoCapitalizationType = UITextAutocapitalizationTypeNone;
   [model addItem:self.passwordItem
       toSectionWithIdentifier:SectionIdentifierContent];
 
