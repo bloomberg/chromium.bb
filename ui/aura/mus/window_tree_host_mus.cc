@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/input_method_mus.h"
 #include "ui/aura/mus/mus_types.h"
@@ -165,7 +166,11 @@ WindowTreeHostMus::WindowTreeHostMus(WindowTreeHostMusInitParams init_params)
           std::make_unique<Window>(nullptr,
                                    std::move(init_params.window_port))),
       display_id_(init_params.display_id),
-      delegate_(init_params.window_tree_client) {
+      delegate_(init_params.window_tree_client),
+      show_state_observer_(
+          window(),
+          base::BindRepeating(&WindowTreeHostMus::OnWindowShowStateDidChange,
+                              base::Unretained(this))) {
   gfx::Rect bounds_in_pixels;
   window()->SetProperty(kWindowTreeHostMusKey, this);
   // TODO(sky): find a cleaner way to set this! Revisit this now that
@@ -294,8 +299,24 @@ void WindowTreeHostMus::SetBounds(
 
 void WindowTreeHostMus::SetBoundsFromServer(
     const gfx::Rect& bounds,
+    ui::WindowShowState state,
     const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
   base::AutoReset<bool> resetter(&is_server_setting_bounds_, true);
+  // When there's a non-default |state|, we want to set that property and then
+  // the bounds, so that by the time client code observes a bounds change the
+  // show state is already updated, and by the time client code observes a state
+  // change the bounds are already updated as well. To do this, we set the state
+  // here, and as the first WindowObserver on |window()|, update the bounds.
+  if (state != ui::SHOW_STATE_DEFAULT &&
+      window()->GetProperty(aura::client::kShowStateKey) != state) {
+    server_bounds_ = &bounds;
+    server_lsia_ = &local_surface_id_allocation;
+    window()->SetProperty(aura::client::kShowStateKey,
+                          ui::WindowShowState(state));
+    DCHECK(!server_bounds_);
+    DCHECK(!server_lsia_);
+    return;
+  }
   SetBounds(bounds, local_surface_id_allocation);
 }
 
@@ -429,14 +450,52 @@ bool WindowTreeHostMus::ConnectToImeEngine(
   return true;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// WindowTreeHostMus, protected:
+
 void WindowTreeHostMus::SetBoundsInPixels(
     const gfx::Rect& bounds,
     const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
   // As UI code operates in DIPs (as does the window-service APIs), this
-  // function is very seldomly uses, and so converts to DIPs.
+  // function is very seldomly used, and so converts to DIPs.
   SetBounds(
       gfx::ConvertRectToDIP(ui::GetScaleFactorForNativeView(window()), bounds),
       local_surface_id_allocation);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// WindowTreeHostMus, private:
+
+void WindowTreeHostMus::OnWindowShowStateDidChange() {
+  if (!server_bounds_)
+    return;
+
+  DCHECK(is_server_setting_bounds_);
+  DCHECK(server_lsia_);
+  SetBounds(*server_bounds_, *server_lsia_);
+  server_bounds_ = nullptr;
+  server_lsia_ = nullptr;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// WindowTreeHostMus::WindowShowStateChangeObserver, public:
+
+WindowTreeHostMus::WindowShowStateChangeObserver::WindowShowStateChangeObserver(
+    aura::Window* window,
+    base::RepeatingClosure show_state_changed_callback)
+    : show_state_changed_callback_(show_state_changed_callback) {
+  window->AddObserver(this);
+}
+
+WindowTreeHostMus::WindowShowStateChangeObserver::
+    ~WindowShowStateChangeObserver() = default;
+
+void WindowTreeHostMus::WindowShowStateChangeObserver::OnWindowPropertyChanged(
+    aura::Window* window,
+    const void* key,
+    intptr_t old) {
+  if (key == client::kShowStateKey)
+    show_state_changed_callback_.Run();
 }
 
 }  // namespace aura

@@ -155,6 +155,7 @@ class InFlightBoundsChange : public InFlightChange {
   InFlightBoundsChange(WindowTreeClient* window_tree_client,
                        WindowMus* window,
                        const gfx::Rect& revert_bounds,
+                       ui::WindowShowState revert_show_state,
                        bool from_server,
                        const base::Optional<viz::LocalSurfaceIdAllocation>&
                            local_surface_id_allocation);
@@ -168,6 +169,7 @@ class InFlightBoundsChange : public InFlightChange {
  private:
   WindowTreeClient* window_tree_client_;
   gfx::Rect revert_bounds_;
+  ui::WindowShowState revert_show_state_;
   // If true the change originated from the server. If false, the change was
   // initiated by this client.
   bool from_server_;

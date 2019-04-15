@@ -18,6 +18,7 @@
 #include "services/ws/top_level_proxy_window.h"
 #include "services/ws/window_service.h"
 #include "services/ws/window_tree.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/client_surface_embedder.h"
 #include "ui/aura/mus/property_converter.h"
@@ -344,6 +345,7 @@ void ClientRoot::NotifyClientOfNewBounds() {
                          TRACE_EVENT_FLAG_FLOW_OUT);
   window_tree_->window_tree_client_->OnWindowBoundsChanged(
       window_tree_->TransportIdForWindow(window_), last_bounds_,
+      window_->GetProperty(aura::client::kShowStateKey),
       ProxyWindow::GetMayBeNull(window_)->local_surface_id_allocation());
 }
 

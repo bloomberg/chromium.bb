@@ -718,6 +718,14 @@ void WindowPortMus::OnPropertyChanged(const void* key,
   if (key == client::kDragDropDelegateKey) {
     SetCanAcceptDrops(window_->GetProperty(client::kDragDropDelegateKey) !=
                       nullptr);
+  } else if (key == client::kShowStateKey &&
+             WindowTreeHostMus::ForWindow(window_) &&
+             WindowTreeHostMus::ForWindow(window_)
+                 ->is_server_setting_bounds()) {
+    // When the server is setting the bounds, it also provides a show state.
+    // When that's being applied, don't report the show state back to the
+    // server.
+    return;
   }
 
   ServerChangeData change_data;

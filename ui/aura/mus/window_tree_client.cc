@@ -510,7 +510,8 @@ std::unique_ptr<WindowTreeHostMus> WindowTreeClient::CreateWindowTreeHost(
                              window_data.visible);
   WindowMus* window = WindowMus::Get(window_tree_host->window());
 
-  SetWindowBoundsFromServer(window, window_data.bounds, /* from_server */ true,
+  SetWindowBoundsFromServer(window, window_data.bounds, window_data.state,
+                            /* from_server */ true,
                             local_surface_id_allocation);
   return window_tree_host;
 }
@@ -634,6 +635,7 @@ void WindowTreeClient::OnReceivedCursorLocationMemory(
 void WindowTreeClient::SetWindowBoundsFromServer(
     WindowMus* window,
     const gfx::Rect& revert_bounds,
+    ui::WindowShowState state,
     bool from_server,
     const base::Optional<viz::LocalSurfaceIdAllocation>&
         local_surface_id_allocation) {
@@ -661,7 +663,7 @@ void WindowTreeClient::SetWindowBoundsFromServer(
     window_tree_host->TakePendingLocalSurfaceIdFromServer();
   window->UpdateLocalSurfaceIdFromParent(*local_surface_id_allocation);
 
-  window_tree_host->SetBoundsFromServer(revert_bounds,
+  window_tree_host->SetBoundsFromServer(revert_bounds, state,
                                         window->GetLocalSurfaceIdAllocation());
 
   window->DidSetWindowTreeHostBoundsFromServer();
@@ -681,7 +683,7 @@ void WindowTreeClient::ApplyPendingSurfaceIdFromServer(WindowMus* window) {
     const viz::LocalSurfaceIdAllocation lsia =
         window->GetWindow()->GetLocalSurfaceIdAllocation();
     window_tree_host->SetBoundsFromServer(window_tree_host->bounds_in_dip(),
-                                          lsia);
+                                          ui::SHOW_STATE_DEFAULT, lsia);
     // Send the newly generated id to the server. This does *not* use
     // WindowTreeHost:SetBounds() (which notifies the server of a bounds and id)
     // as WindowTreeHost::SetBounds() leads to race conditions. In particular,
@@ -691,7 +693,7 @@ void WindowTreeClient::ApplyPendingSurfaceIdFromServer(WindowMus* window) {
     tree_->UpdateLocalSurfaceIdFromChild(window->server_id(), lsia);
   } else {
     window_tree_host->SetBoundsFromServer(
-        window_tree_host->bounds_in_dip(),
+        window_tree_host->bounds_in_dip(), ui::SHOW_STATE_DEFAULT,
         window->GetLocalSurfaceIdAllocation());
   }
   DCHECK(!window_tree_host->has_pending_local_surface_id_from_server());
@@ -741,8 +743,8 @@ void WindowTreeClient::ScheduleInFlightBoundsChange(
   }
   const uint32_t change_id =
       ScheduleInFlightChange(std::make_unique<InFlightBoundsChange>(
-          this, window, old_bounds_in_dip, /* from_server */ false,
-          local_surface_id_allocation));
+          this, window, old_bounds_in_dip, ui::SHOW_STATE_DEFAULT,
+          /* from_server */ false, local_surface_id_allocation));
   tree_->SetWindowBounds(change_id, window->server_id(), new_bounds_in_dip,
                          local_surface_id_allocation);
 }
@@ -1173,7 +1175,7 @@ void WindowTreeClient::OnTopLevelCreated(
 
   const gfx::Rect bounds(data->bounds);
   {
-    InFlightBoundsChange bounds_change(this, window, bounds,
+    InFlightBoundsChange bounds_change(this, window, bounds, data->state,
                                        /* from_server */ true,
                                        local_surface_id_allocation);
     InFlightChange* current_change =
@@ -1186,12 +1188,14 @@ void WindowTreeClient::OnTopLevelCreated(
           local_surface_id_allocation);
     } else if (window->GetWindow()->GetBoundsInScreen() != bounds) {
       window->UpdateLocalSurfaceIdFromParent(local_surface_id_allocation);
-      SetWindowBoundsFromServer(window, bounds, /* from_server */ true,
+      SetWindowBoundsFromServer(window, bounds, data->state,
+                                /* from_server */ true,
                                 window->GetLocalSurfaceIdAllocation());
     } else {
       // No pending changes and the bounds match that of the server. Call
       // SetWindowBoundsFromServer() to apply |local_surface_id_allocation|.
-      SetWindowBoundsFromServer(window, bounds, /* from_server */ true,
+      SetWindowBoundsFromServer(window, bounds, data->state,
+                                /* from_server */ true,
                                 local_surface_id_allocation);
     }
   }
@@ -1219,6 +1223,7 @@ void WindowTreeClient::OnTopLevelCreated(
 void WindowTreeClient::OnWindowBoundsChanged(
     ws::Id window_id,
     const gfx::Rect& new_bounds,
+    ui::WindowShowState state,
     const base::Optional<viz::LocalSurfaceIdAllocation>&
         local_surface_id_allocation) {
   WindowMus* window = GetWindowByServerId(window_id);
@@ -1233,7 +1238,7 @@ void WindowTreeClient::OnWindowBoundsChanged(
   }
   TRACE_EVENT0("ui", "WindowTreeClient::OnWindowBoundsChanged");
 
-  InFlightBoundsChange new_change(this, window, new_bounds,
+  InFlightBoundsChange new_change(this, window, new_bounds, state,
                                   /* from_server */ true,
                                   local_surface_id_allocation);
 
@@ -1263,7 +1268,7 @@ void WindowTreeClient::OnWindowBoundsChanged(
     return;
   }
 
-  SetWindowBoundsFromServer(window, new_bounds, /* from_server */ true,
+  SetWindowBoundsFromServer(window, new_bounds, state, /* from_server */ true,
                             local_surface_id_allocation);
 }
 

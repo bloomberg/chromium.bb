@@ -1175,7 +1175,8 @@ TEST_F(DesktopWindowTreeHostMusTest, ServerBoundsChangeIngoresMinMax) {
   // Changes to the bounds from the server should not consider the min/max.
   const gfx::Rect server_bounds(1, 2, 250, 251);
   static_cast<aura::WindowTreeHostMus*>(widget->GetNativeWindow()->GetHost())
-      ->SetBoundsFromServer(server_bounds, viz::LocalSurfaceIdAllocation());
+      ->SetBoundsFromServer(server_bounds, ui::SHOW_STATE_DEFAULT,
+                            viz::LocalSurfaceIdAllocation());
   EXPECT_EQ(server_bounds, widget->GetWindowBoundsInScreen());
 }
 

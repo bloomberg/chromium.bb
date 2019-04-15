@@ -15,4 +15,5 @@ type_mappings = [
 
   # Note that HitTestCompat can't be used because it's not defined in Windows.
   "ui.mojom.HitTest=int",
+  "ui.mojom.WindowShowState=ui::WindowShowState",
 ]

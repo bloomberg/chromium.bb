@@ -4,6 +4,7 @@
 
 module ws.mojom;
 
+import "ui/base/mojo/ui_base_types.mojom";
 import "ui/display/mojo/display.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
@@ -29,6 +30,8 @@ struct WindowData {
   uint64 transient_parent_id;
 
   gfx.mojom.Rect bounds;
+
+  ui.mojom.WindowShowState state = ui.mojom.WindowShowState.kDefault;
 
   // Arbitrary key/value pairs. The interpretation of these is left to the
   // client. See SetWindowProperty() for more information.

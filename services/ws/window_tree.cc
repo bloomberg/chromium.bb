@@ -705,6 +705,9 @@ mojom::WindowDataPtr WindowTree::WindowToWindowData(aura::Window* window) {
                        : kInvalidTransportId;
   window_data->bounds =
       is_top_level ? window->GetBoundsInScreen() : window->bounds();
+  window_data->state = is_top_level
+                           ? window->GetProperty(aura::client::kShowStateKey)
+                           : ui::SHOW_STATE_DEFAULT;
   window_data->properties =
       window_service_->property_converter()->GetTransportProperties(window);
   window_data->visible = (!IsClientRootWindow(window) || is_top_level)
@@ -1298,9 +1301,10 @@ bool WindowTree::SetWindowBoundsImpl(
   // The window's bounds changed, but not to the value the client requested.
   // Tell the client the new value, and return false, which triggers the client
   // to use the value supplied to OnWindowBoundsChanged().
-  window_tree_client_->OnWindowBoundsChanged(TransportIdForWindow(window),
-                                             window->bounds(),
-                                             local_surface_id_allocation);
+  window_tree_client_->OnWindowBoundsChanged(
+      TransportIdForWindow(window), window->bounds(),
+      window->GetProperty(aura::client::kShowStateKey),
+      local_surface_id_allocation);
   return false;
 }
 

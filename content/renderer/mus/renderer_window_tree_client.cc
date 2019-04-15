@@ -265,6 +265,7 @@ void RendererWindowTreeClient::OnTopLevelCreated(
 void RendererWindowTreeClient::OnWindowBoundsChanged(
     ws::Id window_id,
     const gfx::Rect& new_bounds,
+    ui::WindowShowState state,
     const base::Optional<viz::LocalSurfaceIdAllocation>&
         local_surface_id_allocation) {}
 

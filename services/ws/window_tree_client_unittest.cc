@@ -325,6 +325,7 @@ class TestWindowTreeClient2 : public TestWindowTreeClient {
   void OnWindowBoundsChanged(
       Id window_id,
       const gfx::Rect& new_bounds,
+      ui::WindowShowState state,
       const base::Optional<viz::LocalSurfaceIdAllocation>&
           local_surface_id_allocation) override {
     // The bounds of the root may change during startup on Android at random
@@ -332,7 +333,7 @@ class TestWindowTreeClient2 : public TestWindowTreeClient {
     // it is ignored.
     if (window_id == root_window_id_ && !track_root_bounds_changes_)
       return;
-    tracker()->OnWindowBoundsChanged(window_id, new_bounds,
+    tracker()->OnWindowBoundsChanged(window_id, new_bounds, state,
                                      local_surface_id_allocation);
   }
   void OnWindowTransformChanged(Id window_id,
