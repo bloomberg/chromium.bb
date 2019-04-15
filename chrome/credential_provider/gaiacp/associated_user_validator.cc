@@ -153,6 +153,18 @@ AssociatedUserValidator::TokenHandleInfo::TokenHandleInfo(
       last_update(update_time),
       pending_query_thread(thread_handle) {}
 
+AssociatedUserValidator::ScopedBlockDenyAccessUpdate::
+    ScopedBlockDenyAccessUpdate(AssociatedUserValidator* validator)
+    : validator_(validator) {
+  DCHECK(validator_);
+  validator_->BlockDenyAccessUpdate();
+}
+
+AssociatedUserValidator::ScopedBlockDenyAccessUpdate::
+    ~ScopedBlockDenyAccessUpdate() {
+  validator_->UnblockDenyAccessUpdate();
+}
+
 // static
 AssociatedUserValidator* AssociatedUserValidator::Get() {
   return *GetInstanceStorage();
@@ -215,14 +227,12 @@ HRESULT AssociatedUserValidator::UpdateAssociatedSids(
   return S_OK;
 }
 
-std::set<base::string16> AssociatedUserValidator::GetUpdatedAssociatedSids() {
+size_t AssociatedUserValidator::GetAssociatedUsersCount() {
+  base::AutoLock locker(validator_lock_);
+
   UpdateAssociatedSids(nullptr);
 
-  std::set<base::string16> associated_sids;
-  for (const auto& it : user_to_token_handle_info_)
-    associated_sids.insert(it.first);
-
-  return associated_sids;
+  return user_to_token_handle_info_.size();
 }
 
 bool AssociatedUserValidator::IsUserAccessBlockingEnforced(
@@ -239,37 +249,48 @@ bool AssociatedUserValidator::IsUserAccessBlockingEnforced(
   return true;
 }
 
-void AssociatedUserValidator::DenySigninForUsersWithInvalidTokenHandles(
+bool AssociatedUserValidator::DenySigninForUsersWithInvalidTokenHandles(
     CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus) {
+  base::AutoLock locker(validator_lock_);
+
+  if (block_deny_access_update_)
+    return false;
+
   if (!IsUserAccessBlockingEnforced(cpus))
-    return;
+    return false;
 
   HRESULT hr = UpdateAssociatedSids(nullptr);
   if (FAILED(hr)) {
     LOGFN(ERROR) << "UpdateAssociatedSids hr=" << putHR(hr);
-    return;
+    return false;
   }
 
   auto policy = ScopedLsaPolicy::Create(POLICY_ALL_ACCESS);
 
+  bool user_denied_signin = false;
   for (const auto& user_info : user_to_token_handle_info_) {
     const base::string16& sid = user_info.first;
     if (locked_user_sids_.find(sid) != locked_user_sids_.end())
       continue;
 
-    if (!IsTokenHandleValidForUser(sid)) {
+    if (!IsTokenHandleValidForUserInternal(sid)) {
       LOGFN(INFO) << "Revoking access for sid=" << sid;
       HRESULT hr = ModifyUserAccess(policy, sid, false);
       if (FAILED(hr)) {
         LOGFN(ERROR) << "ModifyUserAccess sid=" << sid << " hr=" << putHR(hr);
       } else {
         locked_user_sids_.insert(sid);
+        user_denied_signin = true;
       }
     }
   }
+
+  return user_denied_signin;
 }
 
 HRESULT AssociatedUserValidator::RestoreUserAccess(const base::string16& sid) {
+  base::AutoLock locker(validator_lock_);
+
   if (locked_user_sids_.erase(sid)) {
     auto policy = ScopedLsaPolicy::Create(POLICY_ALL_ACCESS);
     return ModifyUserAccess(policy, sid, true);
@@ -280,6 +301,8 @@ HRESULT AssociatedUserValidator::RestoreUserAccess(const base::string16& sid) {
 
 void AssociatedUserValidator::AllowSigninForAllAssociatedUsers(
     CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus) {
+  base::AutoLock locker(validator_lock_);
+
   if (!MdmEnrollmentEnabled() ||
       !CGaiaCredentialProvider::IsUsageScenarioSupported(cpus))
     return;
@@ -299,6 +322,8 @@ void AssociatedUserValidator::AllowSigninForAllAssociatedUsers(
 }
 
 void AssociatedUserValidator::AllowSigninForUsersWithInvalidTokenHandles() {
+  base::AutoLock locker(validator_lock_);
+
   LOGFN(INFO);
   auto policy = ScopedLsaPolicy::Create(POLICY_ALL_ACCESS);
   for (auto& sid : locked_user_sids_) {
@@ -310,6 +335,8 @@ void AssociatedUserValidator::AllowSigninForUsersWithInvalidTokenHandles() {
 }
 
 void AssociatedUserValidator::StartRefreshingTokenHandleValidity() {
+  base::AutoLock locker(validator_lock_);
+
   std::map<base::string16, base::string16> sid_to_handle;
   HRESULT hr = UpdateAssociatedSids(&sid_to_handle);
 
@@ -404,6 +431,12 @@ void AssociatedUserValidator::StartTokenValidityQuery(
 
 bool AssociatedUserValidator::IsTokenHandleValidForUser(
     const base::string16& sid) {
+  base::AutoLock locker(validator_lock_);
+  return IsTokenHandleValidForUserInternal(sid);
+}
+
+bool AssociatedUserValidator::IsTokenHandleValidForUserInternal(
+    const base::string16& sid) {
   // All token handles are valid when no internet connection is available.
   if (!HasInternetConnection())
     return true;
@@ -467,6 +500,28 @@ bool AssociatedUserValidator::IsTokenHandleValidForUser(
   }
 
   return validity_it->second->is_valid;
+}
+
+void AssociatedUserValidator::BlockDenyAccessUpdate() {
+  base::AutoLock locker(validator_lock_);
+  ++block_deny_access_update_;
+}
+
+void AssociatedUserValidator::UnblockDenyAccessUpdate() {
+  base::AutoLock locker(validator_lock_);
+  DCHECK(block_deny_access_update_ > 0);
+  --block_deny_access_update_;
+}
+
+bool AssociatedUserValidator::IsDenyAccessUpdateBlocked() const {
+  base::AutoLock locker(validator_lock_);
+  return block_deny_access_update_ > 0;
+}
+
+bool AssociatedUserValidator::IsUserAccessBlocked(
+    const base::string16& sid) const {
+  base::AutoLock locker(validator_lock_);
+  return locked_user_sids_.find(sid) != locked_user_sids_.end();
 }
 
 }  // namespace credential_provider

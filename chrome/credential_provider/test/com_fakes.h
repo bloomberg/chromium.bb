@@ -85,6 +85,9 @@ class FakeCredentialProviderEvents : public ICredentialProviderEvents {
   ULONG STDMETHODCALLTYPE Release(void) override;
   IFACEMETHODIMP CredentialsChanged(UINT_PTR upAdviseContext) override;
 
+  bool CredentialsChangedReceived() const { return did_change_; }
+  void ResetCredentialsChangedReceived() { did_change_ = false; }
+
  private:
   bool did_change_ = false;
 };

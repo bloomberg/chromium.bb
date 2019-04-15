@@ -294,9 +294,7 @@ class FakeAssociatedUserValidator : public AssociatedUserValidator {
   explicit FakeAssociatedUserValidator(base::TimeDelta validation_timeout);
   ~FakeAssociatedUserValidator() override;
 
-  // Returns whether the user should be locked out of sign in (only used in
-  // tests).
-  bool IsUserAccessBlocked(const base::string16& sid) const;
+  using AssociatedUserValidator::IsUserAccessBlocked;
 
  private:
   AssociatedUserValidator* original_validator_ = nullptr;
