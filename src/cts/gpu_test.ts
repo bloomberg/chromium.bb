@@ -76,11 +76,10 @@ export class GPUTest extends Fixture {
 
     this.queue.submit([c.finish()]);
 
-    const exp = new Uint8Array(expected.buffer);
-    const actual = new Uint8Array(await dst.mapReadAsync());
+    const actual = new expected.constructor(await dst.mapReadAsync());
     for (let i = 0; i < size; ++i) {
-      if (actual[i] !== exp[i]) {
-        this.rec.fail(`at [${i}], expected ${exp[i]}, got ${actual[i]}`);
+      if (actual[i] !== expected[i]) {
+        this.rec.fail(`at [${i}], expected ${expected[i]}, got ${actual[i]}`);
         // TODO: limit number of fail logs for one expectContents?
       }
     }

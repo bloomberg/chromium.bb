@@ -54,5 +54,5 @@ group.test("memcpy", GPUTest, async (t) => {
   pass.endPass();
   t.device.getQueue().submit([encoder.finish()]);
 
-  await t.expectContents(dst, new Uint8Array(data));
+  await t.expectContents(dst, data);
 });

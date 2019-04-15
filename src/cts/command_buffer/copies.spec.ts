@@ -22,7 +22,7 @@ group.test("b2b", CopyTest, async (t) => {
   encoder.copyBufferToBuffer(src, 0, dst, 0, 4);
   t.device.getQueue().submit([encoder.finish()]);
 
-  await t.expectContents(dst, new Uint8Array(data));
+  await t.expectContents(dst, data);
 });
 
 group.test("b2t2b", CopyTest, async (t) => {
@@ -48,7 +48,7 @@ group.test("b2t2b", CopyTest, async (t) => {
     { width: 1, height: 1, depth: 1 });
   t.device.getQueue().submit([encoder.finish()]);
 
-  await t.expectContents(dst, new Uint8Array(data));
+  await t.expectContents(dst, data);
 });
 
 group.test("b2t2t2b", CopyTest, async (t) => {
@@ -80,5 +80,5 @@ group.test("b2t2t2b", CopyTest, async (t) => {
     { width: 1, height: 1, depth: 1 });
   t.device.getQueue().submit([encoder.finish()]);
 
-  await t.expectContents(dst, new Uint8Array(data));
+  await t.expectContents(dst, data);
 });
