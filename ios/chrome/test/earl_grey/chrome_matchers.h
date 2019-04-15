@@ -144,8 +144,8 @@
 // panel.
 + (id<GREYMatcher>)clearBrowsingDataButton;
 
-// Returns matcher for the clear browsing data collection view.
-+ (id<GREYMatcher>)clearBrowsingDataCollectionView;
+// Returns matcher for the clear browsing data view.
++ (id<GREYMatcher>)clearBrowsingDataView;
 
 // Matcher for the clear browsing data action sheet item.
 + (id<GREYMatcher>)confirmClearBrowsingDataButton;

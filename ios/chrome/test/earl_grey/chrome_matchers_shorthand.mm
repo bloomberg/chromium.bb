@@ -175,8 +175,8 @@ id<GREYMatcher> ClearBrowsingDataButton() {
   return [ChromeMatchers clearBrowsingDataButton];
 }
 
-id<GREYMatcher> ClearBrowsingDataCollectionView() {
-  return [ChromeMatchers clearBrowsingDataCollectionView];
+id<GREYMatcher> ClearBrowsingDataView() {
+  return [ChromeMatchers clearBrowsingDataView];
 }
 
 id<GREYMatcher> ConfirmClearBrowsingDataButton() {

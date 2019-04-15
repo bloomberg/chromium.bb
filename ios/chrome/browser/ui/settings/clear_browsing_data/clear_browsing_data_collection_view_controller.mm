@@ -89,7 +89,7 @@
 
     self.title = l10n_util::GetNSString(IDS_IOS_CLEAR_BROWSING_DATA_TITLE);
     self.collectionViewAccessibilityIdentifier =
-        kClearBrowsingDataCollectionViewAccessibilityIdentifier;
+        kClearBrowsingDataViewAccessibilityIdentifier;
   }
   return self;
 }
