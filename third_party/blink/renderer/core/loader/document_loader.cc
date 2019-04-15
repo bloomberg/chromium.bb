@@ -1576,6 +1576,16 @@ void DocumentLoader::ReplaceDocumentWhileExecutingJavaScriptURL(
     Document* owner_document,
     GlobalObjectReusePolicy global_object_reuse_policy,
     const String& source) {
+  // This is necessary because extensions look at DocumentLoader::url_ when
+  // deciding whether to inject a content script. In the case where the content
+  // script can be injected into blank frames, and an iframe is created with
+  // a javascript url as its src attribute, url_ will be empty here as the
+  // javascript url was run in the context of the initial empty document.
+  // However, the document's url will be about:blank, and content scripts
+  // should be allowed to inject into this document.
+  if (url_.IsEmpty())
+    url_ = BlankURL();
+
   InstallNewDocument(url, nullptr, owner_document, global_object_reuse_policy,
                      MimeType(), response_.TextEncodingName(),
                      InstallNewDocumentReason::kJavascriptURL,
