@@ -89,11 +89,10 @@ void PaintWorkletImageCache::PaintImageInTask(const PaintImage& paint_image) {
 std::pair<sk_sp<PaintRecord>, base::OnceCallback<void()>>
 PaintWorkletImageCache::GetPaintRecordAndRef(PaintWorkletInput* input) {
   base::AutoLock hold(records_lock_);
-  // If the |painter_| is null, then GetTaskForPaintWorkletImage will return a
-  // null TileTask, and hence there will be no cache entry for this input.
-  if (!painter_)
+  // If the |painter_| was null when GetTaskForPaintWorkletImage was called
+  // there will be no cache entry for this input.
+  if (records_.find(input) == records_.end())
     return std::make_pair(sk_make_sp<PaintOpBuffer>(), base::DoNothing::Once());
-  DCHECK(records_.find(input) != records_.end());
   records_[input].used_ref_count++;
   records_[input].num_of_frames_not_accessed = 0u;
   // The PaintWorkletImageCache object lives as long as the LayerTreeHostImpl,
