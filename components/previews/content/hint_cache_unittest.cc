@@ -59,15 +59,12 @@ class HintCacheTest : public testing::Test {
     loaded_hint_ = nullptr;
     is_store_initialized_ = false;
     is_component_data_updated_ = false;
-    on_load_hint_callback_called_ = false;
-    is_fetched_data_stored_ = false;
+    on_load_hint_callback_called = false;
 
     RunUntilIdle();
   }
 
   HintCache* hint_cache() { return hint_cache_.get(); }
-
-  bool is_fetched_data_stored() { return is_fetched_data_stored_; }
 
   // Updates the cache with |component_data| and waits for callback indicating
   // that the update is complete.
@@ -85,27 +82,21 @@ class HintCacheTest : public testing::Test {
 
   bool StoreFetchedHints(
       std::unique_ptr<optimization_guide::proto::GetHintsResponse>
-          get_hints_response,
-      base::Time stored_time) {
-    is_fetched_data_stored_ = false;
-    bool result = hint_cache_->StoreFetchedHints(
-        std::move(get_hints_response), stored_time,
-        base::BindOnce(&HintCacheTest::OnHintStored, base::Unretained(this)));
+          get_hints_response) {
+    bool result = hint_cache_->StoreFetchedHints(std::move(get_hints_response));
 
     RunUntilIdle();
     return result;
   }
 
-  void OnHintStored() { is_fetched_data_stored_ = true; }
-
   // Loads hint for the specified host from the cache and waits for callback
   // indicating that loading the hint is complete.
   void LoadHint(const std::string& host) {
-    on_load_hint_callback_called_ = false;
+    on_load_hint_callback_called = false;
     loaded_hint_ = nullptr;
     hint_cache_->LoadHint(host, base::BindOnce(&HintCacheTest::OnLoadHint,
                                                base::Unretained(this)));
-    while (!on_load_hint_callback_called_) {
+    while (!on_load_hint_callback_called) {
       RunUntilIdle();
     }
   }
@@ -123,7 +114,7 @@ class HintCacheTest : public testing::Test {
   void OnStoreInitialized() { is_store_initialized_ = true; }
   void OnUpdateComponentData() { is_component_data_updated_ = true; }
   void OnLoadHint(const optimization_guide::proto::Hint* hint) {
-    on_load_hint_callback_called_ = true;
+    on_load_hint_callback_called = true;
     loaded_hint_ = hint;
   }
 
@@ -135,8 +126,7 @@ class HintCacheTest : public testing::Test {
 
   bool is_store_initialized_;
   bool is_component_data_updated_;
-  bool on_load_hint_callback_called_;
-  bool is_fetched_data_stored_;
+  bool on_load_hint_callback_called;
 
   DISALLOW_COPY_AND_ASSIGN(HintCacheTest);
 };
@@ -496,12 +486,9 @@ TEST_F(HintCacheTest, TestMemoryCacheLoadCallback) {
   EXPECT_EQ(hint_key, GetLoadedHint()->key());
 }
 
-TEST_F(HintCacheTest, StoreValidFetchedHints) {
+TEST_F(HintCacheTest, ParseValidFetchedHints) {
   const int kMemoryCacheSize = 5;
   CreateAndInitializeHintCache(kMemoryCacheSize);
-
-  // Default update time for empty hint cache store is base::Time().
-  EXPECT_EQ(hint_cache()->FetchedHintsUpdateTime(), base::Time());
 
   std::unique_ptr<optimization_guide::proto::GetHintsResponse>
       get_hints_response =
@@ -513,12 +500,7 @@ TEST_F(HintCacheTest, StoreValidFetchedHints) {
   optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
   page_hint->set_page_pattern("page pattern");
 
-  base::Time stored_time = base::Time().Now();
-  EXPECT_TRUE(StoreFetchedHints(std::move(get_hints_response), stored_time));
-  EXPECT_TRUE(is_fetched_data_stored());
-
-  // Next update time for hints should be updated.
-  EXPECT_EQ(hint_cache()->FetchedHintsUpdateTime(), stored_time);
+  EXPECT_TRUE(StoreFetchedHints(std::move(get_hints_response)));
 }
 
 TEST_F(HintCacheTest, ParseEmptyFetchedHints) {
@@ -529,9 +511,7 @@ TEST_F(HintCacheTest, ParseEmptyFetchedHints) {
       get_hints_response =
           std::make_unique<optimization_guide::proto::GetHintsResponse>();
 
-  EXPECT_FALSE(
-      StoreFetchedHints(std::move(get_hints_response), base::Time().Now()));
-  EXPECT_FALSE(is_fetched_data_stored());
+  EXPECT_FALSE(StoreFetchedHints(std::move(get_hints_response)));
 }
 
 }  // namespace

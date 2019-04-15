@@ -33,11 +33,6 @@ const char kClearLitePageRedirectLocalBlacklist[] =
 // valid value to this switch causes Chrome startup to block on hints parsing.
 const char kHintsProtoOverride[] = "optimization_guide_hints_override";
 
-// Overrides scheduling and time delays for fetching hints and causes a hints
-// fetch immediately on start up using the provided comma separate lists of
-// hosts.
-const char kFetchHintsOverride[] = "optimization-guide-fetch-hints-override";
-
 // Overrides the Optimization Guide Service URL that the HintsFetcher will
 // request remote hints from.
 const char kOptimizationGuideServiceURL[] = "optimization_guide_service_url";

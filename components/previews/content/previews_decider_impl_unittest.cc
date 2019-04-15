@@ -22,7 +22,6 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
@@ -152,13 +151,11 @@ class TestPreviewsOptimizationGuide : public PreviewsOptimizationGuide {
   TestPreviewsOptimizationGuide(
       optimization_guide::OptimizationGuideService* optimization_guide_service,
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
-      const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
       const base::FilePath& test_path,
       PreviewsTopHostProvider* previews_top_host_provider,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
       : PreviewsOptimizationGuide(optimization_guide_service,
                                   ui_task_runner,
-                                  background_task_runner,
                                   test_path,
                                   previews_top_host_provider,
                                   url_loader_factory) {}
@@ -405,8 +402,6 @@ class PreviewsDeciderImplTest : public testing::Test {
         std::make_unique<TestPreviewsOptimizationGuide>(
             &optimization_guide_service_,
             scoped_task_environment_.GetMainThreadTaskRunner(),
-            base::CreateSequencedTaskRunnerWithTraits(
-                {base::MayBlock(), base::TaskPriority::BEST_EFFORT}),
             temp_dir_.GetPath(), &previews_top_host_provider_,
             url_loader_factory_),
         base::BindRepeating(&IsPreviewFieldTrialEnabled),

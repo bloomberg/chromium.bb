@@ -45734,8 +45734,6 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="SchemaMetadataMissing"/>
   <int value="3" label="SchemaMetadataWrongVersion"/>
   <int value="4" label="ComponentMetadataMissing"/>
-  <int value="5" label="FetchedMetadataMissing"/>
-  <int value="6" label="ComponentAndFetchedMetadataMissing"/>
 </enum>
 
 <enum name="PreviewsHintCacheLevelDBStoreStatus">

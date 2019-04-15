@@ -112,8 +112,6 @@ class OptimizationGuideServiceNoHintsFetcherBrowserTest
     // only provides the URL.
     cmd->AppendSwitchASCII(previews::switches::kOptimizationGuideServiceURL,
                            https_server_->base_url().spec());
-    cmd->AppendSwitchASCII(previews::switches::kFetchHintsOverride,
-                           "example1.com, example2.com");
   }
 
   // Creates hint data for the |hint_setup_url|'s so that OnHintsUpdated in

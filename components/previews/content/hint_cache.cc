@@ -87,9 +87,9 @@ HintCache::MaybeCreateComponentUpdateData(const base::Version& version) const {
 }
 
 std::unique_ptr<HintCacheStore::ComponentUpdateData>
-HintCache::CreateUpdateDataForFetchedHints(base::Time update_time) const {
+HintCache::CreateUpdateDataForFetchedHints() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return hint_store_->CreateUpdateDataForFetchedHints(update_time);
+  return hint_store_->CreateUpdateDataForFetchedHints();
 }
 
 void HintCache::UpdateComponentData(
@@ -108,18 +108,16 @@ void HintCache::UpdateComponentData(
 
 bool HintCache::StoreFetchedHints(
     std::unique_ptr<optimization_guide::proto::GetHintsResponse>
-        get_hints_response,
-    base::Time update_time,
-    base::OnceClosure callback) {
+        get_hints_response) {
   std::unique_ptr<HintCacheStore::ComponentUpdateData>
-      fetched_hints_update_data = CreateUpdateDataForFetchedHints(update_time);
-  if (ProcessGetHintsResponse(get_hints_response.get(),
-                              fetched_hints_update_data.get())) {
-    hint_store_->UpdateFetchedHintsData(std::move(fetched_hints_update_data),
-                                        std::move(callback));
-    return true;
+      fetched_hints_update_data = CreateUpdateDataForFetchedHints();
+  if (!ProcessGetHintsResponse(get_hints_response.get(),
+                               fetched_hints_update_data.get())) {
+    return false;
   }
-  return false;
+
+  // TODO(mcrouse): Provide the |hint_store_| with UpdateData to stored.
+  return true;
 }
 
 bool HintCache::HasHint(const std::string& host) const {
@@ -171,13 +169,6 @@ const optimization_guide::proto::Hint* HintCache::GetHintIfLoaded(
   }
 
   return nullptr;
-}
-
-base::Time HintCache::FetchedHintsUpdateTime() const {
-  if (!hint_store_) {
-    return base::Time();
-  }
-  return hint_store_->FetchedHintsUpdateTime();
 }
 
 void HintCache::OnStoreInitialized(base::OnceClosure callback) {

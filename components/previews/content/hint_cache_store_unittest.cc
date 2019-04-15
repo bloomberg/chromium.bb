@@ -57,9 +57,7 @@ class HintCacheStoreTest : public testing::Test {
   // Initializes the entries contained within the database on startup.
   void SeedInitialData(
       MetadataSchemaState state,
-      base::Optional<size_t> component_hint_count = base::Optional<size_t>(),
-      base::Optional<base::Time> fetched_hints_update =
-          base::Optional<base::Time>()) {
+      base::Optional<size_t> component_hint_count = base::Optional<size_t>()) {
     db_store_.clear();
 
     // Add a metadata schema entry if its state isn't kMissing. The version
@@ -78,9 +76,7 @@ class HintCacheStoreTest : public testing::Test {
     // If the database is being seeded with component hints, it is indicated
     // with a provided count. Add the component metadata with the default
     // component version and then add the indicated number of component hints.
-    // if (component_hint_count && component_hint_count >
-    // static_cast<size_t>(0)) {
-    if (component_hint_count && component_hint_count > 0u) {
+    if (component_hint_count) {
       db_store_[HintCacheStore::GetMetadataTypeEntryKey(
                     HintCacheStore::MetadataType::kComponent)]
           .set_version(kDefaultComponentVersion);
@@ -96,12 +92,6 @@ class HintCacheStoreTest : public testing::Test {
         optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
         page_hint->set_page_pattern("page pattern " + std::to_string(i));
       }
-    }
-    if (fetched_hints_update) {
-      db_store_[HintCacheStore::GetMetadataTypeEntryKey(
-                    HintCacheStore::MetadataType::kFetched)]
-          .set_update_time_secs(
-              fetched_hints_update->ToDeltaSinceWindowsEpoch().InSeconds());
     }
   }
 
@@ -183,23 +173,6 @@ class HintCacheStoreTest : public testing::Test {
         HintCacheStore::MetadataType::kSchema));
   }
 
-  // Verifies that the fetched metadata has the expected next update time.
-  void ExpectFetchedMetadata(base::Time update_time) const {
-    const auto& metadata_entry =
-        db_store_.find(HintCacheStore::GetMetadataTypeEntryKey(
-            HintCacheStore::MetadataType::kFetched));
-    if (metadata_entry != db_store_.end()) {
-      // The next update time should have same time up to the second as the
-      // metadata entry is stored in seconds.
-      EXPECT_TRUE(
-          base::Time::FromDeltaSinceWindowsEpoch(base::TimeDelta::FromSeconds(
-              metadata_entry->second.update_time_secs())) -
-              update_time <
-          base::TimeDelta::FromSeconds(1));
-    } else {
-      FAIL() << "No fetched metadata found";
-    }
-  }
   // Verifies that the component metadata has the expected version and all
   // expected component hints are present.
   void ExpectComponentHintsPresent(const std::string& version,
@@ -464,7 +437,7 @@ TEST_F(HintCacheStoreTest,
 TEST_F(HintCacheStoreTest, InitializeFailedOnLoadHintEntryKeysWithInitialData) {
   base::HistogramTester histogram_tester;
 
-  SeedInitialData(MetadataSchemaState::kValid, 10, base::Time().Now());
+  SeedInitialData(MetadataSchemaState::kValid, 10);
   CreateDatabase();
   InitializeDatabase(true /*=success*/);
 
@@ -562,13 +535,7 @@ TEST_F(HintCacheStoreTest, InitializeSucceededWithValidSchemaEntry) {
 
   histogram_tester.ExpectBucketCount(
       "Previews.HintCacheLevelDBStore.LoadMetadataResult",
-      4 /* kComponentMetadataMissing*/, 0);
-  histogram_tester.ExpectBucketCount(
-      "Previews.HintCacheLevelDBStore.LoadMetadataResult",
-      5 /* kFetchedMetadataMissing*/, 0);
-  histogram_tester.ExpectBucketCount(
-      "Previews.HintCacheLevelDBStore.LoadMetadataResult",
-      6 /* kComponentAndFetchedMetadataMissing*/, 1);
+      4 /* kComponentMetadataMissing */, 1);
 
   histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
                                      0 /* kUninitialized */, 1);
@@ -643,38 +610,6 @@ TEST_F(HintCacheStoreTest,
 
   MetadataSchemaState schema_state = MetadataSchemaState::kValid;
   size_t component_hint_count = 10;
-  SeedInitialData(schema_state, component_hint_count, base::Time().Now());
-  CreateDatabase();
-  InitializeStore(schema_state);
-
-  // The store should contain the schema metadata entry, the component metadata
-  // entry, and all of the initial component hints.
-  EXPECT_EQ(GetDBStoreEntryCount(),
-            static_cast<size_t>(component_hint_count + 3));
-  EXPECT_EQ(GetStoreHintEntryKeyCount(), component_hint_count);
-
-  EXPECT_TRUE(IsMetadataSchemaEntryKeyPresent());
-  ExpectComponentHintsPresent(kDefaultComponentVersion, component_hint_count);
-
-  histogram_tester.ExpectBucketCount(
-      "Previews.HintCacheLevelDBStore.LoadMetadataResult", 0 /* kSuccess */, 1);
-
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     0 /* kUninitialized */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     1 /* kInitializing */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     2 /* kAvailable */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     3 /* kFailed */, 0);
-}
-
-TEST_F(HintCacheStoreTest,
-       InitializeSucceededWithValidSchemaEntryAndComponentDataOnly) {
-  base::HistogramTester histogram_tester;
-
-  MetadataSchemaState schema_state = MetadataSchemaState::kValid;
-  size_t component_hint_count = 10;
   SeedInitialData(schema_state, component_hint_count);
   CreateDatabase();
   InitializeStore(schema_state);
@@ -689,46 +624,7 @@ TEST_F(HintCacheStoreTest,
   ExpectComponentHintsPresent(kDefaultComponentVersion, component_hint_count);
 
   histogram_tester.ExpectBucketCount(
-      "Previews.HintCacheLevelDBStore.LoadMetadataResult",
-      4 /* kComponentMetadataMissing*/, 0);
-  histogram_tester.ExpectBucketCount(
-      "Previews.HintCacheLevelDBStore.LoadMetadataResult",
-      5 /* kFetchedMetadataMissing*/, 1);
-  histogram_tester.ExpectBucketCount(
-      "Previews.HintCacheLevelDBStore.LoadMetadataResult",
-      6 /* kComponentAndFetchedMetadataMissing*/, 0);
-
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     0 /* kUninitialized */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     1 /* kInitializing */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     2 /* kAvailable */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     3 /* kFailed */, 0);
-}
-
-TEST_F(HintCacheStoreTest,
-       InitializeSucceededWithValidSchemaEntryAndFetchedMetaData) {
-  base::HistogramTester histogram_tester;
-
-  MetadataSchemaState schema_state = MetadataSchemaState::kValid;
-  size_t component_hint_count = 0;
-  SeedInitialData(schema_state, component_hint_count, base::Time().Now());
-  CreateDatabase();
-  InitializeStore(schema_state);
-
-  // The store should contain the schema metadata entry, the component metadata
-  // entry, and all of the initial component hints.
-  EXPECT_EQ(GetDBStoreEntryCount(),
-            static_cast<size_t>(component_hint_count + 2));
-  EXPECT_EQ(GetStoreHintEntryKeyCount(), component_hint_count);
-
-  EXPECT_TRUE(IsMetadataSchemaEntryKeyPresent());
-
-  histogram_tester.ExpectBucketCount(
-      "Previews.HintCacheLevelDBStore.LoadMetadataResult",
-      4 /* kComponentMetadataMissing*/, 1);
+      "Previews.HintCacheLevelDBStore.LoadMetadataResult", 0 /* kSuccess */, 1);
 
   histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
                                      0 /* kUninitialized */, 1);
@@ -1114,13 +1010,4 @@ TEST_F(HintCacheStoreTest, FindHintEntryKeyUpdateData) {
   }
 }
 
-TEST_F(HintCacheStoreTest, FetchedHintsMetadataStored) {
-  MetadataSchemaState schema_state = MetadataSchemaState::kValid;
-  base::Time update_time = base::Time().Now();
-  SeedInitialData(schema_state, 10, update_time);
-  CreateDatabase();
-  InitializeStore(schema_state);
-
-  ExpectFetchedMetadata(update_time);
-}
 }  // namespace previews
