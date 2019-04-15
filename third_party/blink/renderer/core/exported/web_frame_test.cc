@@ -11076,6 +11076,18 @@ TEST_F(WebFrameTest, LoadJavascriptURLInNewFrame) {
                 ->Url());
 }
 
+TEST_F(WebFrameTest, EmptyJavascriptFrameUrl) {
+  std::string url = "data:text/html,<iframe src=\"javascript:''\"></iframe>";
+  frame_test_helpers::WebViewHelper helper;
+  helper.InitializeAndLoad(url);
+  RunPendingTasks();
+
+  LocalFrame* child = To<LocalFrame>(
+      helper.GetWebView()->GetPage()->MainFrame()->Tree().FirstChild());
+  EXPECT_EQ(BlankURL(), child->GetDocument()->Url());
+  EXPECT_EQ(BlankURL(), child->Loader().GetDocumentLoader()->Url());
+}
+
 class TestResourcePriorityWebFrameClient
     : public frame_test_helpers::TestWebFrameClient {
  public:
