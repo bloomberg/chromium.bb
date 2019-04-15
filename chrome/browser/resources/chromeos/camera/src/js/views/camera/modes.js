@@ -54,6 +54,12 @@ cca.views.camera.Modes = function(doSwitchMode, doSavePicture) {
   this.stream_ = null;
 
   /**
+   * @type {HTMLElement}
+   * @private
+   */
+  this.modesGroup_ = document.querySelector('#modes-group');
+
+  /**
    * Mode classname and related functions and attributes.
    * @type {Object<string, Object>}
    * @private
@@ -136,7 +142,13 @@ cca.views.camera.Modes.prototype.updateModeUI_ = function(mode) {
   Object.keys(this.allModes).forEach((m) => cca.state.set(m, m == mode));
   const element = document.querySelector(`.mode-item>input[data-mode=${mode}]`);
   element.checked = true;
-  element.focus();
+  const wrapper = element.parentElement;
+  this.modesGroup_.scrollTo({
+    left: 0,
+    top: wrapper.offsetTop - this.modesGroup_.offsetHeight / 2 +
+        wrapper.offsetHeight / 2,
+    behavior: 'smooth',
+  });
 };
 
 /**
