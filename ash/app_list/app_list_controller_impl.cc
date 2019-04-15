@@ -665,6 +665,7 @@ void AppListControllerImpl::OnUiVisibilityChanged(
 void AppListControllerImpl::OnHomeLauncherAnimationComplete(
     bool shown,
     int64_t display_id) {
+  ResetHomeLauncherIfShown();
   CloseAssistantUi(shown ? AssistantExitPoint::kLauncherOpen
                          : AssistantExitPoint::kLauncherClose);
 }
@@ -1154,7 +1155,8 @@ void AppListControllerImpl::ResetHomeLauncherIfShown() {
   auto* const keyboard_controller = keyboard::KeyboardController::Get();
   if (keyboard_controller->IsKeyboardVisible())
     keyboard_controller->HideKeyboardByUser();
-  presenter_.GetView()->CloseOpenedPage();
+
+  presenter_.GetView()->ResetForHomeLauncherShow();
 
   // Refresh the suggestion chips with empty query.
   StartSearch(base::string16());
