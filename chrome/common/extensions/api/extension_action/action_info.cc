@@ -135,6 +135,20 @@ std::unique_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
 }
 
 // static
+const ActionInfo* ActionInfo::GetAnyActionInfo(const Extension* extension) {
+  // TODO(devlin): Since all actions are mutually exclusive, we can store
+  // them all under the same key. For now, we don't do that because some callers
+  // need to differentiate between action types.
+  const ActionInfo* info = GetActionInfo(extension, keys::kBrowserAction);
+  if (info)
+    return info;
+  info = GetActionInfo(extension, keys::kPageAction);
+  if (info)
+    return info;
+  return GetActionInfo(extension, keys::kAction);
+}
+
+// static
 const ActionInfo* ActionInfo::GetExtensionActionInfo(
     const Extension* extension) {
   return GetActionInfo(extension, keys::kAction);
