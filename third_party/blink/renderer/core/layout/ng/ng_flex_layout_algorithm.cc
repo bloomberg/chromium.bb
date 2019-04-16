@@ -284,16 +284,17 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
 
 void NGFlexLayoutAlgorithm::GiveLinesAndItemsFinalPositionAndSize() {
   // TODO(dgrogan): This needs to eventually encompass all of the behavior in
-  // LayoutFlexibleBox::RepositionLogicalHeightDependentFlexItems, but for now
-  // it only does stretch alignment.
+  // LayoutFlexibleBox::RepositionLogicalHeightDependentFlexItems. It currently
+  // does AlignFlexLines and the stretch part of AlignChildren.
   LayoutUnit final_content_cross_size =
-      container_builder_.BlockSize() - border_scrollbar_padding_.BlockSum();
-  if (is_column_) {
-    final_content_cross_size =
-        border_box_size_.inline_size - border_scrollbar_padding_.InlineSum();
-  }
+      is_column_ ? container_builder_.InlineSize() -
+                       border_scrollbar_padding_.InlineSum()
+                 : container_builder_.BlockSize() -
+                       border_scrollbar_padding_.BlockSum();
   if (!algorithm_->IsMultiline() && !algorithm_->FlexLines().IsEmpty())
     algorithm_->FlexLines()[0].cross_axis_extent = final_content_cross_size;
+
+  algorithm_->AlignFlexLines(final_content_cross_size);
 
   for (FlexLine& line_context : algorithm_->FlexLines()) {
     for (wtf_size_t child_number = 0;

@@ -404,7 +404,8 @@ void LayoutFlexibleBox::PaintChildren(const PaintInfo& paint_info,
 }
 
 void LayoutFlexibleBox::RepositionLogicalHeightDependentFlexItems(
-    Vector<FlexLine>& line_contexts) {
+    FlexLayoutAlgorithm& algorithm) {
+  Vector<FlexLine>& line_contexts = algorithm.FlexLines();
   LayoutUnit cross_axis_start_edge = line_contexts.IsEmpty()
                                          ? LayoutUnit()
                                          : line_contexts[0].cross_axis_offset;
@@ -415,7 +416,7 @@ void LayoutFlexibleBox::RepositionLogicalHeightDependentFlexItems(
     line_contexts[0].cross_axis_extent = CrossAxisContentExtent();
   }
 
-  AlignFlexLines(line_contexts);
+  AlignFlexLines(algorithm);
 
   AlignChildren(line_contexts);
 
@@ -924,7 +925,7 @@ void LayoutFlexibleBox::LayoutFlexItems(bool relayout_children,
     SetIntrinsicContentLogicalHeight(
         flex_algorithm.IntrinsicContentBlockSize());
   }
-  RepositionLogicalHeightDependentFlexItems(flex_algorithm.FlexLines());
+  RepositionLogicalHeightDependentFlexItems(flex_algorithm);
 }
 
 bool LayoutFlexibleBox::HasAutoMarginsInCrossAxis(
@@ -1528,7 +1529,8 @@ void LayoutFlexibleBox::LayoutColumnReverse(FlexItemVectorView& children,
   }
 }
 
-void LayoutFlexibleBox::AlignFlexLines(Vector<FlexLine>& line_contexts) {
+void LayoutFlexibleBox::AlignFlexLines(FlexLayoutAlgorithm& algorithm) {
+  Vector<FlexLine>& line_contexts = algorithm.FlexLines();
   const StyleContentAlignmentData align_content =
       FlexLayoutAlgorithm::ResolvedAlignContent(StyleRef());
   if (align_content.GetPosition() == ContentPosition::kFlexStart)
@@ -1539,30 +1541,13 @@ void LayoutFlexibleBox::AlignFlexLines(Vector<FlexLine>& line_contexts) {
                       WebFeature::kFlexboxSingleLineAlignContent);
   }
 
-  if (line_contexts.IsEmpty() || !IsMultiline())
-    return;
-
-  LayoutUnit available_cross_axis_space = CrossAxisContentExtent();
-  for (const FlexLine& line : line_contexts)
-    available_cross_axis_space -= line.cross_axis_extent;
-
-  LayoutUnit line_offset = FlexLayoutAlgorithm::InitialContentPositionOffset(
-      available_cross_axis_space, align_content, line_contexts.size());
+  algorithm.AlignFlexLines(CrossAxisContentExtent());
   for (unsigned line_number = 0; line_number < line_contexts.size();
        ++line_number) {
     FlexLine& line_context = line_contexts[line_number];
-    line_context.cross_axis_offset += line_offset;
-    for (FlexItem& flex_item : line_context.line_items)
-      AdjustAlignmentForChild(*flex_item.box, line_offset);
-
-    if (align_content.Distribution() == ContentDistributionType::kStretch &&
-        available_cross_axis_space > 0)
-      line_contexts[line_number].cross_axis_extent +=
-          available_cross_axis_space /
-          static_cast<unsigned>(line_contexts.size());
-
-    line_offset += FlexLayoutAlgorithm::ContentDistributionSpaceBetweenChildren(
-        available_cross_axis_space, align_content, line_contexts.size());
+    for (FlexItem& flex_item : line_context.line_items) {
+      ResetAlignmentForChild(*flex_item.box, flex_item.desired_location.Y());
+    }
   }
 }
 
@@ -1572,6 +1557,13 @@ void LayoutFlexibleBox::AdjustAlignmentForChild(LayoutBox& child,
 
   SetFlowAwareLocationForChild(child, FlowAwareLocationForChild(child) +
                                           LayoutSize(LayoutUnit(), delta));
+}
+
+void LayoutFlexibleBox::ResetAlignmentForChild(
+    LayoutBox& child,
+    LayoutUnit new_cross_axis_position) {
+  SetFlowAwareLocationForChild(
+      child, {FlowAwareLocationForChild(child).X(), new_cross_axis_position});
 }
 
 void LayoutFlexibleBox::AlignChildren(Vector<FlexLine>& line_contexts) {

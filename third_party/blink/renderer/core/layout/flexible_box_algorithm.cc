@@ -517,6 +517,37 @@ LayoutUnit FlexLayoutAlgorithm::IntrinsicContentBlockSize() const {
          flex_lines_.front().cross_axis_offset;
 }
 
+void FlexLayoutAlgorithm::AlignFlexLines(LayoutUnit cross_axis_content_extent) {
+  const StyleContentAlignmentData align_content = ResolvedAlignContent(*style_);
+  if (align_content.GetPosition() == ContentPosition::kFlexStart)
+    return;
+  if (flex_lines_.IsEmpty() || !IsMultiline())
+    return;
+  LayoutUnit available_cross_axis_space = cross_axis_content_extent;
+  for (const FlexLine& line : flex_lines_)
+    available_cross_axis_space -= line.cross_axis_extent;
+
+  LayoutUnit line_offset = InitialContentPositionOffset(
+      available_cross_axis_space, align_content, flex_lines_.size());
+  for (FlexLine& line_context : flex_lines_) {
+    line_context.cross_axis_offset += line_offset;
+
+    for (FlexItem& flex_item : line_context.line_items) {
+      flex_item.desired_location.SetY(flex_item.desired_location.Y() +
+                                      line_offset);
+    }
+    if (align_content.Distribution() == ContentDistributionType::kStretch &&
+        available_cross_axis_space > 0) {
+      line_context.cross_axis_extent +=
+          available_cross_axis_space /
+          static_cast<unsigned>(flex_lines_.size());
+    }
+
+    line_offset += ContentDistributionSpaceBetweenChildren(
+        available_cross_axis_space, align_content, flex_lines_.size());
+  }
+}
+
 TransformedWritingMode FlexLayoutAlgorithm::GetTransformedWritingMode() const {
   return GetTransformedWritingMode(*style_);
 }
