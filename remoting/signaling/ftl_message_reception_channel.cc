@@ -9,9 +9,9 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "remoting/base/grpc_support/scoped_grpc_server_stream.h"
 #include "remoting/signaling/ftl_grpc_context.h"
 #include "remoting/signaling/ftl_services.grpc.pb.h"
-#include "remoting/signaling/grpc_support/scoped_grpc_server_stream.h"
 
 namespace remoting {
 

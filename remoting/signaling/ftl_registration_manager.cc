@@ -10,11 +10,11 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/time/time.h"
+#include "remoting/base/grpc_support/grpc_async_unary_request.h"
+#include "remoting/base/grpc_support/grpc_authenticated_executor.h"
+#include "remoting/base/grpc_support/grpc_executor.h"
 #include "remoting/signaling/ftl_device_id_provider.h"
 #include "remoting/signaling/ftl_grpc_context.h"
-#include "remoting/signaling/grpc_support/grpc_async_unary_request.h"
-#include "remoting/signaling/grpc_support/grpc_authenticated_executor.h"
-#include "remoting/signaling/grpc_support/grpc_executor.h"
 
 namespace remoting {
 

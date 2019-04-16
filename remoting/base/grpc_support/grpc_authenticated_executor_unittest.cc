@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/signaling/grpc_support/grpc_authenticated_executor.h"
+#include "remoting/base/grpc_support/grpc_authenticated_executor.h"
 
 #include <memory>
 #include <utility>
@@ -12,9 +12,9 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "remoting/base/fake_oauth_token_getter.h"
+#include "remoting/base/grpc_support/grpc_async_unary_request.h"
+#include "remoting/base/grpc_support/grpc_support_test_services.pb.h"
 #include "remoting/base/oauth_token_getter.h"
-#include "remoting/signaling/grpc_support/grpc_async_unary_request.h"
-#include "remoting/signaling/grpc_support/grpc_support_test_services.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

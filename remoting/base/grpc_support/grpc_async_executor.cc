@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/signaling/grpc_support/grpc_async_executor.h"
+#include "remoting/base/grpc_support/grpc_async_executor.h"
 
 #include <algorithm>
 #include <utility>
@@ -12,7 +12,7 @@
 #include "base/no_destructor.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
-#include "remoting/signaling/grpc_support/grpc_async_request.h"
+#include "remoting/base/grpc_support/grpc_async_request.h"
 #include "third_party/grpc/src/include/grpcpp/completion_queue.h"
 
 namespace remoting {

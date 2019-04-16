@@ -11,10 +11,10 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "remoting/base/grpc_support/grpc_authenticated_executor.h"
 #include "remoting/base/oauth_token_getter.h"
 #include "remoting/signaling/ftl_messaging_client.h"
 #include "remoting/signaling/ftl_registration_manager.h"
-#include "remoting/signaling/grpc_support/grpc_authenticated_executor.h"
 
 namespace remoting {
 

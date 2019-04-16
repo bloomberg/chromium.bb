@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_SIGNALING_GRPC_SUPPORT_GRPC_ASYNC_SERVER_STREAMING_REQUEST_H_
-#define REMOTING_SIGNALING_GRPC_SUPPORT_GRPC_ASYNC_SERVER_STREAMING_REQUEST_H_
+#ifndef REMOTING_BASE_GRPC_SUPPORT_GRPC_ASYNC_SERVER_STREAMING_REQUEST_H_
+#define REMOTING_BASE_GRPC_SUPPORT_GRPC_ASYNC_SERVER_STREAMING_REQUEST_H_
 
 #include <memory>
 #include <utility>
@@ -13,8 +13,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "remoting/signaling/grpc_support/grpc_async_request.h"
-#include "remoting/signaling/grpc_support/scoped_grpc_server_stream.h"
+#include "remoting/base/grpc_support/grpc_async_request.h"
+#include "remoting/base/grpc_support/scoped_grpc_server_stream.h"
 #include "third_party/grpc/src/include/grpcpp/support/async_stream.h"
 
 namespace remoting {
@@ -156,4 +156,4 @@ CreateGrpcAsyncServerStreamingRequest(
 
 }  // namespace remoting
 
-#endif  // REMOTING_SIGNALING_GRPC_SUPPORT_GRPC_ASYNC_SERVER_STREAMING_REQUEST_H_
+#endif  // REMOTING_BASE_GRPC_SUPPORT_GRPC_ASYNC_SERVER_STREAMING_REQUEST_H_

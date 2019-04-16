@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/signaling/grpc_support/grpc_channel.h"
+#include "remoting/base/grpc_support/grpc_channel.h"
 
 #include "third_party/grpc/src/include/grpcpp/grpcpp.h"
 
@@ -10,7 +10,7 @@ namespace remoting {
 
 namespace {
 
-#include "remoting/signaling/grpc_support/root_certs_prod.inc"
+#include "remoting/base/grpc_support/root_certs_prod.inc"
 
 }  // namespace
 

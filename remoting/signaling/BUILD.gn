@@ -64,7 +64,7 @@ static_library("signaling") {
     "//jingle:jingle_glue",
     "//net",
     "//remoting/base",
-    "//remoting/signaling/grpc_support",
+    "//remoting/base/grpc_support",
     "//third_party/grpc:grpcpp",
   ]
 
@@ -88,7 +88,7 @@ static_library("signaling") {
     ]
     deps -= [
       "//google_apis",
-      "//remoting/signaling/grpc_support",
+      "//remoting/base/grpc_support",
       "//third_party/grpc:grpcpp",
     ]
     public_deps -= [ ":ftl_grpc_library" ]
@@ -140,7 +140,7 @@ source_set("unit_tests") {
   deps = [
     ":test_support",
     "//net:test_support",
-    "//remoting/signaling/grpc_support:unit_tests",
+    "//remoting/base/grpc_support:unit_tests",
     "//testing/gmock",
     "//testing/gtest",
   ]
