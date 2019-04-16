@@ -230,6 +230,36 @@ IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, MAYBE_Update) {
 
 // Flaky on TSAN: crbug.com/915219
 #if defined(THREAD_SANITIZER)
+#define MAYBE_AddTwice DISABLED_AddTwice
+#else
+#define MAYBE_AddTwice AddTwice
+#endif
+IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, MAYBE_AddTwice) {
+  // Password store supports adding the same form twice, so this is testing this
+  // behaviour.
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(AllProfilesContainSamePasswordForms());
+
+  PasswordForm form = CreateTestPasswordForm(0);
+  AddLogin(GetPasswordStore(0), form);
+  ASSERT_EQ(1, GetPasswordCount(0));
+
+  // Wait for client 0 to commit and client 1 to receive the update.
+  ASSERT_TRUE(SamePasswordFormsChecker().Wait());
+  ASSERT_EQ(1, GetPasswordCount(1));
+
+  // Update the password and add it again to client 0.
+  form.password_value = base::ASCIIToUTF16("new_password");
+  AddLogin(GetPasswordStore(0), form);
+  ASSERT_EQ(1, GetPasswordCount(0));
+
+  // Wait for client 1 to receive the update.
+  ASSERT_TRUE(SamePasswordFormsChecker().Wait());
+  ASSERT_EQ(1, GetPasswordCount(1));
+}
+
+// Flaky on TSAN: crbug.com/915219
+#if defined(THREAD_SANITIZER)
 #define MAYBE_Delete DISABLED_Delete
 #else
 #define MAYBE_Delete Delete

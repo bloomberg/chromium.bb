@@ -391,12 +391,30 @@ void ClientTagBasedModelTypeProcessor::Put(
       DCHECK_EQ(data->client_tag_hash,
                 GenerateSyncableHash(type_, bridge_->GetClientTag(*data)));
     }
-
-    if (data->creation_time.is_null())
-      data->creation_time = base::Time::Now();
-    if (data->modification_time.is_null())
-      data->modification_time = data->creation_time;
-    entity = CreateEntity(storage_key, *data);
+    // If another entity exists for the same client_tag_hash, it could be the
+    // case that the bridge has deleted this entity but the tombstone hasn't
+    // been sent to the server yet, and the bridge is trying to re-create this
+    // entity with a new storage key. In such case, we should reuse the existing
+    // entity.
+    entity = GetEntityForTagHash(data->client_tag_hash);
+    if (entity != nullptr) {
+      DCHECK(storage_key != entity->storage_key());
+      DCHECK(entity->metadata().is_deleted());
+      // Remove the old storage key from the processor, the entity, and the
+      // corresponding metadata record.
+      storage_key_to_tag_hash_.erase(entity->storage_key());
+      metadata_change_list->ClearMetadata(entity->storage_key());
+      entity->ClearStorageKey();
+      // Populate the new storage key in the existing entity.
+      entity->SetStorageKey(storage_key);
+      storage_key_to_tag_hash_[storage_key] = data->client_tag_hash;
+    } else {
+      if (data->creation_time.is_null())
+        data->creation_time = base::Time::Now();
+      if (data->modification_time.is_null())
+        data->modification_time = data->creation_time;
+      entity = CreateEntity(storage_key, *data);
+    }
   } else if (entity->MatchesData(*data)) {
     // Ignore changes that don't actually change anything.
     UMA_HISTOGRAM_ENUMERATION("Sync.ModelTypeRedundantPut",
