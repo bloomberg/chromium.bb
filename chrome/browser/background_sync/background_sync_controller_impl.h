@@ -11,21 +11,22 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "chrome/browser/background_sync/background_sync_metrics.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/blink/public/mojom/background_sync/background_sync.mojom.h"
 
 namespace content {
 struct BackgroundSyncParameters;
-}
+}  // namespace content
 
 namespace rappor {
 class RapporServiceImpl;
-}
+}  // namespace rappor
 
 namespace url {
 class Origin;
-}
+}  // namespace url
 
 class Profile;
 class SiteEngagementService;
@@ -54,7 +55,13 @@ class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
   // content::BackgroundSyncController overrides.
   void GetParameterOverrides(
       content::BackgroundSyncParameters* parameters) const override;
-  void NotifyBackgroundSyncRegistered(const url::Origin& origin) override;
+  void NotifyBackgroundSyncRegistered(const url::Origin& origin,
+                                      bool can_fire,
+                                      bool is_reregistered) override;
+  void NotifyBackgroundSyncCompleted(const url::Origin& origin,
+                                     blink::ServiceWorkerStatusCode status_code,
+                                     int num_attempts,
+                                     int max_attempts) override;
   void RunInBackground() override;
   base::TimeDelta GetNextEventDelay(
       const url::Origin& origin,
@@ -79,6 +86,8 @@ class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
 
   // Same lifetime as |profile_|.
   SiteEngagementService* site_engagement_service_;
+
+  BackgroundSyncMetrics background_sync_metrics_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundSyncControllerImpl);
 };

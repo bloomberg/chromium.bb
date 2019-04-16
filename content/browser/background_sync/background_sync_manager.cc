@@ -111,7 +111,9 @@ blink::mojom::PermissionStatus GetBackgroundSyncPermissionOnUIThread(
 
 void NotifyBackgroundSyncRegisteredOnUIThread(
     scoped_refptr<ServiceWorkerContextWrapper> sw_context_wrapper,
-    const url::Origin& origin) {
+    const url::Origin& origin,
+    bool can_fire,
+    bool is_reregistered) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BackgroundSyncController* background_sync_controller =
@@ -120,7 +122,26 @@ void NotifyBackgroundSyncRegisteredOnUIThread(
   if (!background_sync_controller)
     return;
 
-  background_sync_controller->NotifyBackgroundSyncRegistered(origin);
+  background_sync_controller->NotifyBackgroundSyncRegistered(origin, can_fire,
+                                                             is_reregistered);
+}
+
+void NotifyBackgroundSyncCompletedOnUIThread(
+    scoped_refptr<ServiceWorkerContextWrapper> sw_context_wrapper,
+    const url::Origin& origin,
+    blink::ServiceWorkerStatusCode status_code,
+    int num_attempts,
+    int max_attempts) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  BackgroundSyncController* background_sync_controller =
+      GetBackgroundSyncControllerOnUIThread(std::move(sw_context_wrapper));
+
+  if (!background_sync_controller)
+    return;
+
+  background_sync_controller->NotifyBackgroundSyncCompleted(
+      origin, status_code, num_attempts, max_attempts);
 }
 
 void RunInBackgroundOnUIThread(
@@ -599,17 +620,25 @@ void BackgroundSyncManager::RegisterDidAskForPermission(
     return;
   }
 
-  // TODO(crbug.com/925297): Record Periodic Sync metrics.
-  url::Origin origin =
-      url::Origin::Create(sw_registration->scope().GetOrigin());
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&NotifyBackgroundSyncRegisteredOnUIThread,
-                     service_worker_context_, origin));
-
   BackgroundSyncRegistration* existing_registration =
       LookupActiveRegistration(blink::mojom::BackgroundSyncRegistrationInfo(
           sw_registration_id, options.tag, GetBackgroundSyncType(options)));
+
+  url::Origin origin =
+      url::Origin::Create(sw_registration->scope().GetOrigin());
+
+  // TODO(crbug.com/925297): Record Periodic Sync metrics.
+  if (GetBackgroundSyncType(options) ==
+      blink::mojom::BackgroundSyncType::ONE_SHOT) {
+    bool is_reregistered =
+        existing_registration && existing_registration->IsFiring();
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(
+            &NotifyBackgroundSyncRegisteredOnUIThread, service_worker_context_,
+            origin, /* can_fire= */ AreOptionConditionsMet(), is_reregistered));
+  }
+
   if (existing_registration) {
     DCHECK(existing_registration->options()->Equals(options));
 
@@ -1404,6 +1433,16 @@ void BackgroundSyncManager::EventCompleteDidGetDelay(
           /* event_name= */ "sync complete",
           /* instance_id= */ registration_info->tag,
           {{"status", GetEventStatusString(status_code)}});
+    }
+
+    if (registration_info->sync_type ==
+        blink::mojom::BackgroundSyncType::ONE_SHOT) {
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::UI},
+          base::BindOnce(&NotifyBackgroundSyncCompletedOnUIThread,
+                         service_worker_context_, origin, status_code,
+                         registration->num_attempts(),
+                         parameters_->max_sync_attempts));
     }
 
     RemoveActiveRegistration(*registration_info);
