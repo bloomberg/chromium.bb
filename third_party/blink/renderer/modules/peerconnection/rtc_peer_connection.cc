@@ -113,10 +113,12 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/instance_counters.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_answer_options_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_offer_options_platform.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 #include "third_party/webrtc/api/dtls_transport_interface.h"
@@ -2002,7 +2004,7 @@ ScriptPromise RTCPeerConnection::PromiseBasedGetStats(
     auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
     ScriptPromise promise = resolver->Promise();
     peer_handler_->GetStats(
-        std::make_unique<WebRTCStatsReportCallbackResolver>(resolver),
+        WTF::Bind(WebRTCStatsReportCallbackResolver, WrapPersistent(resolver)),
         GetExposedGroupIds(script_state));
 
     return promise;

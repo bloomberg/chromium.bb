@@ -152,7 +152,7 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
                                        bool result);
 
   void GetStats(const blink::WebRTCStatsRequest& request) override;
-  void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback> callback,
+  void GetStats(blink::WebRTCStatsReportCallback callback,
                 const std::vector<webrtc::NonStandardGroupId>&
                     exposed_group_ids) override;
   webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>>

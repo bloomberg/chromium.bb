@@ -218,26 +218,13 @@ class MockPeerConnectionTracker : public PeerConnectionTracker {
                      const blink::WebMediaStreamTrack& track));
 };
 
-class MockRTCStatsReportCallback : public blink::WebRTCStatsReportCallback {
- public:
-  explicit MockRTCStatsReportCallback(
-      std::unique_ptr<blink::WebRTCStatsReport>* result)
-      : main_thread_(blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
-        result_(result) {
-    DCHECK(result_);
-  }
-
-  void OnStatsDelivered(
-      std::unique_ptr<blink::WebRTCStatsReport> report) override {
-    EXPECT_TRUE(main_thread_->BelongsToCurrentThread());
-    EXPECT_TRUE(report);
-    result_->reset(report.release());
-  }
-
- private:
-  scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
-  std::unique_ptr<blink::WebRTCStatsReport>* result_;
-};
+void OnStatsDelivered(std::unique_ptr<blink::WebRTCStatsReport>* result,
+                      scoped_refptr<base::SingleThreadTaskRunner> main_thread,
+                      std::unique_ptr<blink::WebRTCStatsReport> report) {
+  EXPECT_TRUE(main_thread->BelongsToCurrentThread());
+  EXPECT_TRUE(report);
+  result->reset(report.release());
+}
 
 template<typename T>
 std::vector<T> ToSequence(T value) {
@@ -943,9 +930,10 @@ TEST_F(RTCPeerConnectionHandlerTest, GetRTCStats) {
 
   pc_handler_->native_peer_connection()->SetGetStatsReport(report);
   std::unique_ptr<blink::WebRTCStatsReport> result;
-  pc_handler_->GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>(
-                            new MockRTCStatsReportCallback(&result)),
-                        {});
+  pc_handler_->GetStats(
+      base::BindOnce(OnStatsDelivered, &result,
+                     blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
+      {});
   RunMessageLoopsUntilIdle();
   EXPECT_TRUE(result);
 

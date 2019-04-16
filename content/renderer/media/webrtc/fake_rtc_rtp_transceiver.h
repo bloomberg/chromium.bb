@@ -48,7 +48,7 @@ class FakeRTCRtpSender : public blink::WebRTCRtpSender {
   void SetParameters(blink::WebVector<webrtc::RtpEncodingParameters>,
                      webrtc::DegradationPreference,
                      blink::WebRTCVoidRequest) override;
-  void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>,
+  void GetStats(blink::WebRTCStatsReportCallback,
                 const std::vector<webrtc::NonStandardGroupId>&) override;
 
  private:
@@ -74,7 +74,7 @@ class FakeRTCRtpReceiver : public blink::WebRTCRtpReceiver {
   blink::WebVector<blink::WebString> StreamIds() const override;
   blink::WebVector<std::unique_ptr<blink::WebRTCRtpSource>> GetSources()
       override;
-  void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>,
+  void GetStats(blink::WebRTCStatsReportCallback,
                 const std::vector<webrtc::NonStandardGroupId>&) override;
   std::unique_ptr<webrtc::RtpParameters> GetParameters() const override;
   void SetJitterBufferMinimumDelay(
