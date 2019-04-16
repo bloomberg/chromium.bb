@@ -440,6 +440,10 @@ void HTMLInputElement::UpdateType() {
 
   has_been_password_field_ |= new_type_name == input_type_names::kPassword;
 
+  // 7. Let previouslySelectable be true if setRangeText() previously applied
+  // to the element, and false otherwise.
+  const bool previously_selectable = input_type_->SupportsSelectionAPI();
+
   input_type_ = new_type;
   input_type_view_ = input_type_->CreateView();
   if (input_type_view_->NeedsShadowSubtree()) {
@@ -549,7 +553,19 @@ void HTMLInputElement::UpdateType() {
   // TODO(tkent): Should we dispatch a change event?
   ClearValueBeforeFirstUserEdit();
 
+  // 5. Signal a type change for the element. (The Radio Button state uses
+  // this, in particular.)
   AddToRadioButtonGroup();
+
+  // 8. Let nowSelectable be true if setRangeText() now applies to the element,
+  // and false otherwise.
+  const bool now_selectable = input_type_->SupportsSelectionAPI();
+
+  // 9. If previouslySelectable is false and nowSelectable is true, set the
+  // element's text entry cursor position to the beginning of the text control,
+  // and set its selection direction to "none".
+  if (!previously_selectable && now_selectable)
+    SetSelectionRange(0, 0, kSelectionHasNoDirection);
 
   SetNeedsValidityCheck();
   if ((could_be_successful_submit_button || CanBeSuccessfulSubmitButton()) &&
