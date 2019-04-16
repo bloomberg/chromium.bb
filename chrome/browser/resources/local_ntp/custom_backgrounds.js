@@ -1121,6 +1121,12 @@ customBackgrounds.initCustomBackgrounds = function(showErrorNotification) {
       backInteraction(event);
     }
   };
+  // Pressing Spacebar on the back arrow shouldn't scroll the dialog.
+  $(customBackgrounds.IDS.BACK_CIRCLE).onkeydown = function(event) {
+    if (event.keyCode === customBackgrounds.KEYCODES.SPACE) {
+      event.stopPropagation();
+    }
+  };
 
   // Interactions with the cancel button on the background picker dialog.
   $(customBackgrounds.IDS.CANCEL).onclick = function(event) {
