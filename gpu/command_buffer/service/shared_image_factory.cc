@@ -123,8 +123,28 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
                                            const gfx::ColorSpace& color_space,
                                            uint32_t usage,
                                            base::span<const uint8_t> data) {
+  // For now, restrict this to SHARED_IMAGE_USAGE_DISPLAY with optional
+  // SHARED_IMAGE_USAGE_SCANOUT.
+  // TODO(ericrk): SCANOUT support for Vulkan by ensuring all interop factories
+  // support this, and allowing them to be chosen here.
+  constexpr uint32_t allowed_usage =
+      SHARED_IMAGE_USAGE_DISPLAY | SHARED_IMAGE_USAGE_SCANOUT;
+  if (usage & ~allowed_usage) {
+    LOG(ERROR) << "Unsupported usage for SharedImage with initial data upload.";
+    return false;
+  }
+
+  // Currently we only perform data uploads via two paths,
+  // |gl_backing_factory_| for GL and |wrapped_sk_image_factory_| for Vulkan.
+  // TODO(ericrk): Make this generic in the future.
   bool allow_legacy_mailbox = false;
-  auto* factory = GetFactoryByUsage(usage, &allow_legacy_mailbox);
+  SharedImageBackingFactory* factory = nullptr;
+  if (!using_vulkan_) {
+    allow_legacy_mailbox = true;
+    factory = gl_backing_factory_.get();
+  } else {
+    factory = wrapped_sk_image_factory_.get();
+  }
   if (!factory)
     return false;
   auto backing = factory->CreateSharedImage(mailbox, format, size, color_space,
