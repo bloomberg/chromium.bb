@@ -286,7 +286,8 @@ class ReceiverDelegate final : public presentation::ReceiverDelegate {
     return result;
   }
 
-  bool StartPresentation(const presentation::Connection::PresentationInfo& info,
+  bool StartPresentation(
+      const presentation::Connection::PresentationInfo& info,
       uint64_t source_id,
       const std::vector<msgs::HttpHeader>& http_headers) override {
     presentation_id = info.id;

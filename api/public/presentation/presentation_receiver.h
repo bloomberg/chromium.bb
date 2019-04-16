@@ -35,14 +35,15 @@ class ReceiverDelegate {
   // for specific URLs is needed to be supplied by the delegate.
   // See "#presentation-protocol" spec section.
   // Returns a list of url availabilities.
-  virtual std::vector<msgs::UrlAvailability>
-  OnUrlAvailabilityRequest(uint64_t watch_id,
-                           uint64_t watch_duration,
-                           std::vector<std::string> urls) = 0;
+  virtual std::vector<msgs::UrlAvailability> OnUrlAvailabilityRequest(
+      uint64_t watch_id,
+      uint64_t watch_duration,
+      std::vector<std::string> urls) = 0;
 
   // Called when a new presentation is requested by a controller.  This should
   // return true if the presentation was accepted, false otherwise.
-  virtual bool StartPresentation(const Connection::PresentationInfo& info,
+  virtual bool StartPresentation(
+      const Connection::PresentationInfo& info,
       uint64_t source_id,
       const std::vector<msgs::HttpHeader>& http_headers) = 0;
 

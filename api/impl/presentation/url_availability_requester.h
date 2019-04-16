@@ -135,8 +135,7 @@ class UrlAvailabilityRequester {
     MessageDemuxer::MessageWatch event_watch;
     std::map<uint64_t, Watch> watch_by_id;
 
-    std::map<std::string, msgs::UrlAvailability>
-        known_availability_by_url;
+    std::map<std::string, msgs::UrlAvailability> known_availability_by_url;
   };
 
   const platform::ClockNowFunctionPtr now_function_;

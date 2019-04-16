@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "tools/cddl/logging.h"
 #include "tools/cddl/parse.h"
 
 #include <unistd.h>
@@ -16,6 +15,7 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/match.h"
 #include "platform/api/logging.h"
+#include "tools/cddl/logging.h"
 
 static_assert(sizeof(absl::string_view::size_type) == sizeof(size_t),
               "We assume string_view's size_type is the same as size_t. If "
@@ -937,7 +937,8 @@ ParseResult ParseCddl(absl::string_view data) {
   do {
     AstNode* next = ParseRule(&p);
     if (!next) {
-      Logger::Error("Failed to parse next node. Failed starting at: '%s'", p.data);
+      Logger::Error("Failed to parse next node. Failed starting at: '%s'",
+                    p.data);
       return {nullptr, {}};
     }
 

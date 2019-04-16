@@ -255,8 +255,7 @@ ErrorOr<size_t> ConnectionManager::OnStreamMessage(
 }
 
 Connection* ConnectionManager::GetConnection(uint64_t connection_id) {
-  auto entry =
-      connections_.find(connection_id);
+  auto entry = connections_.find(connection_id);
   if (entry != connections_.end()) {
     return entry->second;
   }

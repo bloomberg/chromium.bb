@@ -15,9 +15,9 @@ source_set("quic") {
   ]
 
   deps = [
-    "../../public:api",
     "../../../base",
     "../../../platform",
+    "../../public:api",
   ]
   configs += [ "../../..:root_config_overrides" ]
 }

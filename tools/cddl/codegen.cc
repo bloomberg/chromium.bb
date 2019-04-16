@@ -81,9 +81,9 @@ std::string CppTypeToString(const CppType& cpp_type) {
 }
 
 bool WriteEnumEqualityOperatorSwitchCases(int fd,
-                                         const CppType& parent,
-                                         std::string child_name,
-                                         std::string parent_name) {
+                                          const CppType& parent,
+                                          std::string child_name,
+                                          std::string parent_name) {
   for (const auto& x : parent.enum_type.members) {
     std::string enum_value = "k" + ToCamelCase(x.first);
     dprintf(fd, "    case %s::%s: return parent == %s::%s;\n",
@@ -134,8 +134,8 @@ bool WriteEnumEqualityOperator(int fd,
 }
 
 bool WriteEnumStreamOperatorSwitchCases(int fd,
-                                       const CppType& type,
-                                       std::string name) {
+                                        const CppType& type,
+                                        std::string name) {
   for (const auto& x : type.enum_type.members) {
     std::string enum_value = "k" + ToCamelCase(x.first);
     dprintf(fd, "    case %s::%s: os << \"%s\"; break;\n", name.c_str(),
@@ -159,8 +159,9 @@ bool WriteEnumOperators(int fd, const CppType& type) {
   if (!WriteEnumStreamOperatorSwitchCases(fd, type, name)) {
     return false;
   }
-  dprintf(fd, "    default: os << \"Unknown Value: \" << static_cast<int>(val);"
-    "\n      break;\n    }\n  return os;\n}\n");
+  dprintf(fd,
+          "    default: os << \"Unknown Value: \" << static_cast<int>(val);"
+          "\n      break;\n    }\n  return os;\n}\n");
 
   // Write equality operators.
   return absl::c_all_of(type.enum_type.sub_members,

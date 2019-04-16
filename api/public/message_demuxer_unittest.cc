@@ -248,8 +248,7 @@ TEST_F(MessageDemuxerTest, WatchAfterMultipleData) {
   ssize_t decode_result1 = 0;
   ssize_t decode_result2 = 0;
   MessageDemuxer::MessageWatch init_watch = demuxer_.WatchMessageType(
-      endpoint_id_, msgs::Type::kPresentationStartRequest,
-      &mock_init_callback);
+      endpoint_id_, msgs::Type::kPresentationStartRequest, &mock_init_callback);
   EXPECT_CALL(
       mock_callback_,
       OnStreamMessage(endpoint_id_, connection_id_,
@@ -263,19 +262,18 @@ TEST_F(MessageDemuxerTest, WatchAfterMultipleData) {
                 buffer, buffer_size, &received_request);
             return ConvertDecodeResult(decode_result1);
           }));
-  EXPECT_CALL(
-      mock_init_callback,
-      OnStreamMessage(endpoint_id_, connection_id_,
-                      msgs::Type::kPresentationStartRequest, _, _, _))
-      .WillOnce(Invoke([&decode_result2, &received_init_request](
-                           uint64_t endpoint_id, uint64_t connection_id,
-                           msgs::Type message_type, const uint8_t* buffer,
-                           size_t buffer_size,
-                           platform::Clock::time_point now) {
-        decode_result2 = msgs::DecodePresentationStartRequest(
-            buffer, buffer_size, &received_init_request);
-        return ConvertDecodeResult(decode_result2);
-      }));
+  EXPECT_CALL(mock_init_callback,
+              OnStreamMessage(endpoint_id_, connection_id_,
+                              msgs::Type::kPresentationStartRequest, _, _, _))
+      .WillOnce(
+          Invoke([&decode_result2, &received_init_request](
+                     uint64_t endpoint_id, uint64_t connection_id,
+                     msgs::Type message_type, const uint8_t* buffer,
+                     size_t buffer_size, platform::Clock::time_point now) {
+            decode_result2 = msgs::DecodePresentationStartRequest(
+                buffer, buffer_size, &received_init_request);
+            return ConvertDecodeResult(decode_result2);
+          }));
   MessageDemuxer::MessageWatch watch = demuxer_.WatchMessageType(
       endpoint_id_, msgs::Type::kPresentationConnectionOpenRequest,
       &mock_callback_);
