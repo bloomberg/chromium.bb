@@ -90,9 +90,6 @@ source_set("lib") {
     "proto_conversion.h",
     "scheduler_config.cc",
     "scheduler_config.h",
-    "scheduler_model.h",
-    "scheduler_model_impl.cc",
-    "scheduler_model_impl.h",
     "scheduler_utils.cc",
     "scheduler_utils.h",
   ]
