@@ -24,7 +24,7 @@
     "base": "animations/animationworklet",
     "args": ["--enable-threaded-compositing"]
   },
-   {
+  {
     "prefix": "threaded",
     "base": "external/wpt/animation-worklet",
     "args": ["--enable-threaded-compositing"]
