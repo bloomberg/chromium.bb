@@ -995,14 +995,6 @@ void WebFrameWidgetImpl::SetLayerTreeView(WebLayerTreeView* layer_tree_view,
 
   GetPage()->LayerTreeViewInitialized(*layer_tree_view_, *animation_host_,
                                       LocalRootImpl()->GetFrame()->View());
-
-  // TODO(kenrb): Currently GPU rasterization is always enabled for OOPIFs.
-  // This is okay because it is only necessarily to set the trigger to false
-  // for certain cases that affect the top-level frame, but it would be better
-  // to be consistent with the top-level frame. Ideally the logic should
-  // be moved from WebViewImpl into WebFrameWidget and used for all local
-  // frame roots. https://crbug.com/712794
-  layer_tree_view_->HeuristicsForGpuRasterizationUpdated(true);
 }
 
 void WebFrameWidgetImpl::SetIsAcceleratedCompositingActive(bool active) {
@@ -1028,27 +1020,7 @@ PaintLayerCompositor* WebFrameWidgetImpl::Compositor() const {
 
 void WebFrameWidgetImpl::SetRootGraphicsLayer(GraphicsLayer* layer) {
   root_graphics_layer_ = layer;
-  root_layer_ = layer ? layer->CcLayer() : nullptr;
-
-  SetIsAcceleratedCompositingActive(!!layer);
-
-  // TODO(danakj): Is this called after Close?? (With a null layer?)
-  if (!layer_tree_view_)
-    return;
-
-  // WebFrameWidgetImpl is used for child frames, which always have a
-  // transparent background color.
-  Client()->SetBackgroundColor(SK_ColorTRANSPARENT);
-  // Pass the limits even though this is for subframes, as the limits will
-  // be needed in setting the raster scale.
-  // TODO(wjmaclean): In an OOPIF where the main frame is remote, are these
-  // limits even useful?
-  Client()->SetPageScaleFactorAndLimits(1.f, View()->MinimumPageScaleFactor(),
-                                        View()->MaximumPageScaleFactor());
-
-  // TODO(danakj): SetIsAcceleratedCompositingActive() also sets the root layer
-  // if it's not null..
-  Client()->SetRootLayer(root_layer_);
+  SetRootLayer(layer ? layer->CcLayer() : nullptr);
 }
 
 void WebFrameWidgetImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
@@ -1067,6 +1039,14 @@ void WebFrameWidgetImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
   // be needed in setting the raster scale.
   Client()->SetPageScaleFactorAndLimits(1.f, View()->MinimumPageScaleFactor(),
                                         View()->MaximumPageScaleFactor());
+
+  // TODO(kenrb): Currently GPU rasterization is always enabled for OOPIFs.
+  // This is okay because it is only necessarily to set the trigger to false
+  // for certain cases that affect the top-level frame, but it would be better
+  // to be consistent with the top-level frame. Ideally the logic should
+  // be moved from WebViewImpl into WebFrameWidget and used for all local
+  // frame roots. https://crbug.com/712794
+  Client()->SetAllowGpuRasterization(true);
 
   // TODO(danakj): SetIsAcceleratedCompositingActive() also sets the root layer
   // if it's not null..

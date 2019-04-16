@@ -38,6 +38,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "cc/layers/picture_layer.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_image.h"
 #include "third_party/blink/public/platform/web_input_event.h"
@@ -2591,16 +2592,16 @@ void WebViewImpl::UpdatePageDefinedViewportConstraints(
   // for non-viewport-specified pages in order to avoid crashes or other
   // problems on mobile devices with gpu rasterization.
   bool viewport_enabled = GetSettings()->ViewportEnabled();
-  bool gpu_rasterization_allowed =
-      viewport_enabled ? description.MatchesHeuristicsForGpuRasterization()
-                       : true;
 
-  // 1. Non-composited WebViews do not worry about gpu rasterization.
-  // 2. After removing the LayerTreeView during shutdown, but before the frame
-  //    is detached, we may do layout still.
-  if (layer_tree_view_) {
-    layer_tree_view_->HeuristicsForGpuRasterizationUpdated(
-        gpu_rasterization_allowed);
+  if (does_composite_) {
+    bool gpu_rasterization_allowed = true;
+    if (viewport_enabled) {
+      static bool viewport_disables_gpu_raster = base::FeatureList::IsEnabled(
+          features::kEnableGpuRasterizationViewportRestriction);
+      if (viewport_disables_gpu_raster && !description.IsSpecifiedByAuthor())
+        gpu_rasterization_allowed = false;
+    }
+    AsWidget().client->SetAllowGpuRasterization(gpu_rasterization_allowed);
   }
 
   if (!viewport_enabled) {
