@@ -289,6 +289,8 @@ used when committed.
 *   [Piranha Plant](piranha_plant.md) - Future architecture of MediaStreams
 *   [Video Decode/Encode Accelerator Tests](media/gpu/vdatest_usage.md) - How to
     use the accelerated video decoder/encoder test programs.
+*   [Video Decoder Tests](media/gpu/video_decoder_test_usage.md) - Running the
+    new video decoder tests.
 
 ### Accessibility
 *   [Accessibility Overview](accessibility/overview.md) - Overview of
