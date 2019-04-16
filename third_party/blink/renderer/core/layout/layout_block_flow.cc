@@ -1738,13 +1738,13 @@ LayoutUnit LayoutBlockFlow::AdjustedMarginBeforeForPagination(
 static LayoutBlockFlow* PreviousBlockFlowInFormattingContext(
     const LayoutBox& child) {
   LayoutObject* prev = child.PreviousSibling();
-  while (prev && (!prev->IsLayoutBlockFlow() ||
-                  To<LayoutBlockFlow>(prev)->CreatesNewFormattingContext())) {
+  auto* prev_block_flow = DynamicTo<LayoutBlockFlow>(prev);
+  while (prev &&
+         (!prev_block_flow || prev_block_flow->CreatesNewFormattingContext())) {
     prev = prev->PreviousSibling();
+    prev_block_flow = DynamicTo<LayoutBlockFlow>(prev);
   }
-  if (prev)
-    return To<LayoutBlockFlow>(prev);
-  return nullptr;
+  return prev_block_flow;
 }
 
 LayoutUnit LayoutBlockFlow::CollapseMargins(
@@ -2827,13 +2827,13 @@ void LayoutBlockFlow::MarkAllDescendantsWithFloatsForLayout(
       if ((!float_to_remove && child->IsFloatingOrOutOfFlowPositioned()) ||
           !child->IsLayoutBlock())
         continue;
-      if (!child->IsLayoutBlockFlow()) {
+      auto* child_block_flow = DynamicTo<LayoutBlockFlow>(child);
+      if (!child_block_flow) {
         auto* child_block = To<LayoutBlock>(child);
         if (child_block->ShrinkToAvoidFloats() && child_block->EverHadLayout())
           child_block->SetChildNeedsLayout(mark_parents);
         continue;
       }
-      auto* child_block_flow = To<LayoutBlockFlow>(child);
       if ((float_to_remove ? child_block_flow->ContainsFloat(float_to_remove)
                            : child_block_flow->ContainsFloats()) ||
           child_block_flow->ShrinkToAvoidFloats())
@@ -4411,10 +4411,10 @@ bool LayoutBlockFlow::AllowsPaginationStrut() const {
     // But currently we have no mechanism in place to handle this.
     return false;
   }
-  const LayoutBlock* containing_block = ContainingBlock();
-  if (!containing_block || !containing_block->IsLayoutBlockFlow())
+  const auto* containing_block_flow =
+      DynamicTo<LayoutBlockFlow>(ContainingBlock());
+  if (!containing_block_flow)
     return false;
-  const auto* containing_block_flow = To<LayoutBlockFlow>(containing_block);
   // If children are inline, allow the strut. We are probably a float.
   if (containing_block_flow->ChildrenInline())
     return true;
