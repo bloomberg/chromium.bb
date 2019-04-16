@@ -2998,7 +2998,9 @@ crbug.com/832071 virtual/outofblink-cors/external/wpt/service-workers/service-wo
 
 # failures in external/wpt/css/css-animations/ and web-animations/ from Mozilla tests
 crbug.com/849859 external/wpt/css/css-animations/CSSAnimation-pausing.tentative.html [ Failure ]
+crbug.com/849859 virtual/threaded/external/wpt/css/css-animations/CSSAnimation-pausing.tentative.html [ Failure ]
 crbug.com/849859 external/wpt/css/css-animations/Element-getAnimations-dynamic-changes.tentative.html [ Failure ]
+crbug.com/849859 virtual/threaded/external/wpt/css/css-animations/Element-getAnimations-dynamic-changes.tentative.html [ Failure ]
 crbug.com/849859 external/wpt/web-animations/timing-model/animations/pausing-an-animation.html [ Failure ]
 crbug.com/875622 external/wpt/css/css-transitions/AnimationEffect-getComputedTiming.tentative.html [ Pass Failure ]
 
@@ -3681,7 +3683,9 @@ crbug.com/626703 external/wpt/css/css-scoping/shadow-directionality-001.tentativ
 crbug.com/626703 external/wpt/screen-orientation/orientation-reading.html [ Timeout ]
 crbug.com/626703 external/wpt/html/browsers/browsing-the-web/unloading-documents/prompt-and-unload-script-closeable.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-animations/CSSAnimation-effect.tentative.html [ Timeout ]
+crbug.com/626703 virtual/threaded/external/wpt/css/css-animations/CSSAnimation-effect.tentative.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-animations/event-dispatch.tentative.html [ Timeout ]
+crbug.com/626703 virtual/threaded/external/wpt/css/css-animations/event-dispatch.tentative.html [ Timeout ]
 crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/navigation.sub.html?encoding=x-cp1251 [ Timeout ]
 crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/navigation.sub.html?encoding=utf8 [ Timeout ]
 crbug.com/626703 external/wpt/css/css-transforms/transform-box/view-box-mutation.html [ Failure ]
@@ -3873,6 +3877,7 @@ crbug.com/626703 external/wpt/css/css-transitions/transition-property-025.html [
 crbug.com/626703 external/wpt/css/css-transitions/transition-property-013.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-writing-modes/available-size-019.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-animations/animation-delay-010.html [ Failure ]
+crbug.com/626703 virtual/threaded/external/wpt/css/css-animations/animation-delay-010.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-numeric.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/descriptor-suffix-invalid.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/descriptor-range.html [ Failure ]
@@ -5304,6 +5309,7 @@ crbug.com/847697 virtual/video-surface-layer/media/controls/overflow-menu-always
 
 # Sheriff 2018-06-06
 crbug.com/849975 external/wpt/css/css-animations/Element-getAnimations.tentative.html [ Pass Failure ]
+crbug.com/849975 virtual/threaded/external/wpt/css/css-animations/Element-getAnimations.tentative.html [ Pass Failure ]
 
 # These won't pass as layout tests until the linked bug is fixed.
 crbug.com/828858 external/wpt/css/selectors/focus-visible-007.html [ Failure ]
