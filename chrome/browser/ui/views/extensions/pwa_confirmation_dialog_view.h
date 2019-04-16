@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/views/extensions/pwa_confirmation.h"
 #include "chrome/common/web_application_info.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -37,14 +38,7 @@ class PWAConfirmationDialogView : public views::DialogDelegateView {
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
 
-  // Lays out the dialog.
-  void InitializeView();
-
-  // The WebApplicationInfo that describes the app to be installed.
-  WebApplicationInfo web_app_info_;
-
-  // The callback to be invoked when the dialog is completed.
-  chrome::AppInstallationAcceptanceCallback callback_;
+  PWAConfirmation pwa_confirmation_;
 
   DISALLOW_COPY_AND_ASSIGN(PWAConfirmationDialogView);
 };

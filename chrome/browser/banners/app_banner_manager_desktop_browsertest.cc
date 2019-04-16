@@ -91,7 +91,7 @@ class AppBannerManagerDesktopBrowserTest
   void SetUpOnMainThread() override {
     // Trigger banners instantly.
     AppBannerSettingsHelper::SetTotalEngagementToTrigger(0);
-    chrome::SetAutoAcceptPWAInstallDialogForTesting(true);
+    chrome::SetAutoAcceptPWAInstallConfirmationForTesting(true);
 
     feature_list_.InitWithFeatures(
         {features::kExperimentalAppBanners, features::kDesktopPWAWindowing},
@@ -101,7 +101,7 @@ class AppBannerManagerDesktopBrowserTest
   }
 
   void TearDown() override {
-    chrome::SetAutoAcceptPWAInstallDialogForTesting(false);
+    chrome::SetAutoAcceptPWAInstallConfirmationForTesting(false);
   }
 
  private:

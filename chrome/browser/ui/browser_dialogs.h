@@ -112,16 +112,24 @@ void ShowBookmarkAppDialog(content::WebContents* web_contents,
 // user interaction.
 void SetAutoAcceptBookmarkAppDialogForTesting(bool auto_accept);
 
-// Shows the PWA installation confirmation bubble.
+// Shows the PWA installation confirmation modal dialog.
 //
 // |web_app_info| is the WebApplicationInfo to be installed.
 void ShowPWAInstallDialog(content::WebContents* web_contents,
                           const WebApplicationInfo& web_app_info,
                           AppInstallationAcceptanceCallback callback);
 
-// Sets whether |ShowPWAInstallDialog| should accept immediately without any
-// user interaction.
-void SetAutoAcceptPWAInstallDialogForTesting(bool auto_accept);
+// Shows the PWA installation confirmation bubble anchored off the PWA install
+// icon in the omnibox.
+//
+// |web_app_info| is the WebApplicationInfo to be installed.
+void ShowPWAInstallBubble(content::WebContents* web_contents,
+                          const WebApplicationInfo& web_app_info,
+                          AppInstallationAcceptanceCallback callback);
+
+// Sets whether |ShowPWAInstallDialog| and |ShowPWAInstallBubble| should accept
+// immediately without any user interaction.
+void SetAutoAcceptPWAInstallConfirmationForTesting(bool auto_accept);
 
 #if defined(OS_MACOSX)
 
