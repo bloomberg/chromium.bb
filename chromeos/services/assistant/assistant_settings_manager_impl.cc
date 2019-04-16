@@ -167,30 +167,8 @@ void AssistantSettingsManagerImpl::StopSpeakerIdEnrollment(
 void AssistantSettingsManagerImpl::SyncSpeakerIdEnrollmentStatus() {
   DCHECK(service_->main_task_runner()->RunsTasksInCurrentSequence());
 
-  if (service_->assistant_state()->allowed_state() !=
-          ash::mojom::AssistantAllowedState::ALLOWED ||
-      !base::FeatureList::IsEnabled(
-          assistant::features::kAssistantVoiceMatch)) {
-    return;
-  }
-
-  // TODO(updowndota): Add a dedicate API for fetching enrollment status.
-  assistant_client::SpeakerIdEnrollmentConfig client_config;
-  client_config.user_id = kUserID;
-  client_config.skip_cloud_enrollment = false;
-
-  assistant_manager_service_->assistant_manager_internal()
-      ->StartSpeakerIdEnrollment(
-          client_config,
-          [weak_ptr = weak_factory_.GetWeakPtr(),
-           task_runner = service_->main_task_runner()](
-              const assistant_client::SpeakerIdEnrollmentUpdate& update) {
-            task_runner->PostTask(
-                FROM_HERE,
-                base::BindOnce(&AssistantSettingsManagerImpl::
-                                   HandleSpeakerIdEnrollmentStatusSync,
-                               weak_ptr, update));
-          });
+  // Disable status check on M74 since we do not have the API available.
+  return;
 }
 
 void AssistantSettingsManagerImpl::HandleSpeakerIdEnrollmentUpdate(
@@ -214,34 +192,6 @@ void AssistantSettingsManagerImpl::HandleSpeakerIdEnrollmentUpdate(
     case SpeakerIdEnrollmentState::FAILURE:
       speaker_id_enrollment_client_->OnSpeakerIdEnrollmentFailure();
       break;
-    case SpeakerIdEnrollmentState::INIT:
-    case SpeakerIdEnrollmentState::CHECK:
-    case SpeakerIdEnrollmentState::UPLOAD:
-    case SpeakerIdEnrollmentState::FETCH:
-      break;
-  }
-}
-
-void AssistantSettingsManagerImpl::HandleSpeakerIdEnrollmentStatusSync(
-    const assistant_client::SpeakerIdEnrollmentUpdate& update) {
-  DCHECK(service_->main_task_runner()->RunsTasksInCurrentSequence());
-  switch (update.state) {
-    case SpeakerIdEnrollmentState::LISTEN:
-      speaker_id_enrollment_done_ = false;
-      // Stop the enrollment since we already get the status.
-      if (!speaker_id_enrollment_client_) {
-        StopSpeakerIdEnrollment(base::DoNothing());
-        // If there is no voice model found, launch the enrollment flow.
-        service_->assistant_controller()->StartSpeakerIdEnrollmentFlow();
-      }
-      break;
-    case SpeakerIdEnrollmentState::DONE:
-      speaker_id_enrollment_done_ = true;
-      assistant_manager_service_->UpdateInternalOptions(
-          assistant_manager_service_->assistant_manager_internal());
-      break;
-    case SpeakerIdEnrollmentState::PROCESS:
-    case SpeakerIdEnrollmentState::FAILURE:
     case SpeakerIdEnrollmentState::INIT:
     case SpeakerIdEnrollmentState::CHECK:
     case SpeakerIdEnrollmentState::UPLOAD:
