@@ -3,7 +3,7 @@
 <link rel="import" href="shared_style.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 
 <dom-module id="app-management-permission-view-header">
   <template>
@@ -29,20 +29,16 @@
         text-overflow: ellipsis;
       }
 
-      paper-icon-button-light {
-        margin-inline-start: 0;
+      cr-icon-button {
+        margin: 0;
       }
 
       #uninstall-button {
         background: white;
       }
     </style>
-    <paper-icon-button-light class="icon-arrow-back">
-      <button id="closeButton" on-click="onClickBackButton_"
-      aria-label="$i18n{back}">
-        <paper-ripple class="circle"></paper-ripple>
-      </button>
-    </paper-icon-button-light>
+    <cr-icon-button class="icon-arrow-back" id="closeButton"
+        on-click="onClickBackButton_" aria-label="$i18n{back}"></cr-icon-button>
     <img id="permission-view-header-icon" src="[[iconUrlFromId_(app_)]]">
     <div class="page-title">[[app_.title]]</div>
     <slot name="extra-right-buttons"></slot>
