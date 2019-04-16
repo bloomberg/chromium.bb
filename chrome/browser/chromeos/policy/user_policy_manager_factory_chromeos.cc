@@ -30,7 +30,6 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/policy/schema_registry_service.h"
-#include "chrome/browser/policy/schema_registry_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -137,9 +136,7 @@ UserPolicyManagerFactoryChromeOS::CreateForProfile(
 UserPolicyManagerFactoryChromeOS::UserPolicyManagerFactoryChromeOS()
     : BrowserContextKeyedBaseFactory(
           "UserCloudPolicyManagerChromeOS",
-          BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(SchemaRegistryServiceFactory::GetInstance());
-}
+          BrowserContextDependencyManager::GetInstance()) {}
 
 UserPolicyManagerFactoryChromeOS::~UserPolicyManagerFactoryChromeOS() {}
 
@@ -366,8 +363,7 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
                        MetricUserPolicyChromeOSSessionAbortType::
                            kInitWithActiveDirectoryManagement),
         std::move(store), std::move(external_data_manager));
-    manager->Init(
-        SchemaRegistryServiceFactory::GetForContext(profile)->registry());
+    manager->Init(profile->GetPolicySchemaRegistryService()->registry());
 
     active_directory_managers_[profile] = manager.get();
     return std::move(manager);
@@ -391,8 +387,7 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
       manager->EnableWildcardLoginCheck(account_id.GetUserEmail());
     }
 
-    manager->Init(
-        SchemaRegistryServiceFactory::GetForContext(profile)->registry());
+    manager->Init(profile->GetPolicySchemaRegistryService()->registry());
     manager->Connect(g_browser_process->local_state(),
                      device_management_service,
                      g_browser_process->shared_url_loader_factory());

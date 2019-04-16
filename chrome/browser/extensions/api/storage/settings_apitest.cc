@@ -13,7 +13,6 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/policy/schema_registry_service.h"
-#include "chrome/browser/policy/schema_registry_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
@@ -419,7 +418,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ExtensionsSchemas) {
   message_.clear();
 
   policy::SchemaRegistry* registry =
-      policy::SchemaRegistryServiceFactory::GetForContext(profile)->registry();
+      profile->GetPolicySchemaRegistryService()->registry();
   ASSERT_TRUE(registry);
   EXPECT_FALSE(registry->schema_map()->GetSchema(policy::PolicyNamespace(
       policy::POLICY_DOMAIN_EXTENSIONS, kManagedStorageExtensionId)));

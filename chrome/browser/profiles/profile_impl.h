@@ -140,6 +140,7 @@ class ProfileImpl : public Profile {
 #endif
   PrefService* GetOffTheRecordPrefs() override;
   PrefService* GetReadOnlyOffTheRecordPrefs() override;
+  policy::SchemaRegistryService* GetPolicySchemaRegistryService() override;
   net::URLRequestContextGetter* GetRequestContext() override;
   base::OnceCallback<net::CookieStore*()> GetExtensionsCookieStoreGetter()
       override;
