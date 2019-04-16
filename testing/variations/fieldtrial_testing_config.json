@@ -2583,13 +2583,22 @@
     "LazyLoad": [
         {
             "platforms": [
-                "android"
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
             ],
             "experiments": [
                 {
                     "name": "Enabled",
+                    "params": {
+                        "restrict-lazy-load-frames-to-data-saver-only": "true",
+                        "restrict-lazy-load-images-to-data-saver-only": "true"
+                    },
                     "enable_features": [
-                        "LazyFrameLoading"
+                        "LazyFrameLoading",
+                        "LazyImageLoading"
                     ]
                 }
             ]
