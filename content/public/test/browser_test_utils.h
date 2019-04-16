@@ -1661,6 +1661,31 @@ class RenderWidgetHostMouseEventMonitor {
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostMouseEventMonitor);
 };
 
+// Helper class to track and allow waiting for navigation start events.
+class DidStartNavigationObserver : public WebContentsObserver {
+ public:
+  explicit DidStartNavigationObserver(WebContents* web_contents);
+  ~DidStartNavigationObserver() override;
+
+  void Wait() { run_loop_.Run(); }
+  bool observed() { return observed_; }
+
+  // If the navigation was observed and is still not finished yet, this returns
+  // its handle, otherwise it returns nullptr.
+  NavigationHandle* navigation_handle() { return navigation_handle_; }
+
+  // WebContentsObserver override:
+  void DidStartNavigation(NavigationHandle* navigation_handle) override;
+  void DidFinishNavigation(NavigationHandle* navigation_handle) override;
+
+ private:
+  bool observed_ = false;
+  base::RunLoop run_loop_;
+  NavigationHandle* navigation_handle_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(DidStartNavigationObserver);
+};
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_TEST_BROWSER_TEST_UTILS_H_

@@ -107,31 +107,6 @@ class ChromeNavigationBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(ChromeNavigationBrowserTest);
 };
 
-// Helper class to track and allow waiting for navigation start events.
-class DidStartNavigationObserver : public content::WebContentsObserver {
- public:
-  explicit DidStartNavigationObserver(content::WebContents* web_contents)
-      : content::WebContentsObserver(web_contents),
-        message_loop_runner_(new content::MessageLoopRunner) {}
-  ~DidStartNavigationObserver() override {}
-
-  // Runs a nested run loop and blocks until the full load has
-  // completed.
-  void Wait() { message_loop_runner_->Run(); }
-
- private:
-  // WebContentsObserver
-  void DidStartNavigation(content::NavigationHandle* handle) override {
-    if (message_loop_runner_->loop_running())
-      message_loop_runner_->Quit();
-  }
-
-  // The MessageLoopRunner used to spin the message loop.
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(DidStartNavigationObserver);
-};
-
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
 // Fails on chromium.memory/Linux Chromium OS ASan LSan:
 // https://crbug.com/897879
@@ -197,7 +172,7 @@ IN_PROC_BROWSER_TEST_F(
   // Navigate again the opened window to the same page. It should not cause
   // WebContents::GetVisibleURL to return the last committed one.
   {
-    DidStartNavigationObserver nav_observer(new_web_contents);
+    content::DidStartNavigationObserver nav_observer(new_web_contents);
     EXPECT_TRUE(content::ExecuteScript(
         main_web_contents, "navigate('" + error_url.spec() + "');"));
     nav_observer.Wait();

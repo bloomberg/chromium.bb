@@ -3274,4 +3274,21 @@ RenderWidgetHostMouseEventMonitor::~RenderWidgetHostMouseEventMonitor() {
   host_->RemoveMouseEventCallback(mouse_callback_);
 }
 
+DidStartNavigationObserver::DidStartNavigationObserver(WebContents* contents)
+    : WebContentsObserver(contents) {}
+DidStartNavigationObserver::~DidStartNavigationObserver() = default;
+
+void DidStartNavigationObserver::DidStartNavigation(NavigationHandle* handle) {
+  if (observed_)
+    return;
+  observed_ = true;
+  navigation_handle_ = handle;
+  run_loop_.Quit();
+}
+
+void DidStartNavigationObserver::DidFinishNavigation(NavigationHandle* handle) {
+  if (navigation_handle_ == handle)
+    navigation_handle_ = nullptr;
+}
+
 }  // namespace content
