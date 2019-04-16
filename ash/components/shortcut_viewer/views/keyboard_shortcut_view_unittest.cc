@@ -151,7 +151,7 @@ TEST_F(KeyboardShortcutViewTest, TopLineCenterAlignedInItemView) {
     if (item_view->category() != ShortcutCategory::kPopular)
       continue;
 
-    DCHECK(item_view->child_count() == 2);
+    DCHECK_EQ(2u, item_view->children().size());
 
     // The top lines in both |description_label_view_| and
     // |shortcut_label_view_| should be center aligned. Only need to check one

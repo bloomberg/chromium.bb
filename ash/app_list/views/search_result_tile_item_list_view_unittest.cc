@@ -26,10 +26,10 @@
 namespace app_list {
 
 namespace {
-constexpr int kMaxNumSearchResultTiles = 6;
-constexpr int kInstalledApps = 4;
-constexpr int kPlayStoreApps = 2;
-constexpr int kRecommendedApps = 1;
+constexpr size_t kMaxNumSearchResultTiles = 6;
+constexpr size_t kInstalledApps = 4;
+constexpr size_t kPlayStoreApps = 2;
+constexpr size_t kRecommendedApps = 1;
 }  // namespace
 
 class SearchResultTileItemListViewTest
@@ -91,7 +91,7 @@ class SearchResultTileItemListViewTest
     SearchModel::SearchResults* results = GetResults();
 
     // Populate results for installed applications.
-    for (int i = 0; i < kInstalledApps; ++i) {
+    for (size_t i = 0; i < kInstalledApps; ++i) {
       std::unique_ptr<TestSearchResult> result =
           std::make_unique<TestSearchResult>();
       result->set_result_id("InstalledApp " + base::NumberToString(i));
@@ -104,7 +104,7 @@ class SearchResultTileItemListViewTest
 
     // Populate results for Play Store search applications.
     if (IsPlayStoreAppSearchEnabled()) {
-      for (int i = 0; i < kPlayStoreApps; ++i) {
+      for (size_t i = 0; i < kPlayStoreApps; ++i) {
         std::unique_ptr<TestSearchResult> result =
             std::make_unique<TestSearchResult>();
         result->set_result_id("PlayStoreApp " + base::NumberToString(i));
@@ -120,7 +120,7 @@ class SearchResultTileItemListViewTest
     }
 
     if (IsReinstallAppRecommendationEnabled()) {
-      for (int i = 0; i < kRecommendedApps; ++i) {
+      for (size_t i = 0; i < kRecommendedApps; ++i) {
         std::unique_ptr<TestSearchResult> result =
             std::make_unique<TestSearchResult>();
         result->set_result_id("RecommendedApp " + base::NumberToString(i));
@@ -138,8 +138,8 @@ class SearchResultTileItemListViewTest
     RunPendingMessages();
   }
 
-  int GetOpenResultCount(int ranking) {
-    int result = view_delegate_.open_search_result_counts()[ranking];
+  size_t GetOpenResultCount(int ranking) {
+    size_t result = view_delegate_.open_search_result_counts()[ranking];
     return result;
   }
 
@@ -147,7 +147,7 @@ class SearchResultTileItemListViewTest
     view_delegate_.open_search_result_counts().clear();
   }
 
-  int GetResultCount() const { return view_->num_results(); }
+  size_t GetResultCount() const { return view_->num_results(); }
 
   bool KeyPress(ui::KeyboardCode key_code) {
     ui::KeyEvent event(ui::ET_KEY_PRESSED, key_code, ui::EF_NONE);
@@ -167,8 +167,8 @@ TEST_P(SearchResultTileItemListViewTest, Basic) {
   CreateSearchResultTileItemListView();
   SetUpSearchResults();
 
-  const int results = GetResultCount();
-  int expected_results = kInstalledApps;
+  const size_t results = GetResultCount();
+  size_t expected_results = kInstalledApps;
 
   if (IsPlayStoreAppSearchEnabled()) {
     expected_results += kPlayStoreApps;
@@ -178,41 +178,39 @@ TEST_P(SearchResultTileItemListViewTest, Basic) {
   }
   expected_results = std::min(kMaxNumSearchResultTiles, expected_results);
 
-  EXPECT_EQ(expected_results, results);
+  ASSERT_EQ(expected_results, results);
 
   const bool separators_enabled =
       IsPlayStoreAppSearchEnabled() || IsReinstallAppRecommendationEnabled();
   // When the Play Store app search feature or app reinstallation feature is
   // enabled, for each result, we added a separator for result type grouping.
-  const int expected_child_count = separators_enabled
-                                       ? kMaxNumSearchResultTiles * 2
-                                       : kMaxNumSearchResultTiles;
-  EXPECT_EQ(expected_child_count, view()->child_count());
+  const size_t expected_child_count = separators_enabled
+                                          ? kMaxNumSearchResultTiles * 2
+                                          : kMaxNumSearchResultTiles;
+  EXPECT_EQ(expected_child_count, view()->children().size());
 
   /// Test accessibility descriptions of tile views.
-  const int first_child = separators_enabled ? 1 : 0;
-  const int child_step = separators_enabled ? 2 : 1;
+  const size_t first_child = separators_enabled ? 1 : 0;
+  const size_t child_step = separators_enabled ? 2 : 1;
 
-  for (int i = 0; i < kInstalledApps; ++i) {
+  for (size_t i = 0; i < kInstalledApps; ++i) {
     ui::AXNodeData node_data;
-    view()
-        ->child_at(first_child + i * child_step)
-        ->GetAccessibleNodeData(&node_data);
+    view()->children()[first_child + i * child_step]->GetAccessibleNodeData(
+        &node_data);
     EXPECT_EQ(ax::mojom::Role::kButton, node_data.role);
     EXPECT_EQ("InstalledApp " + base::NumberToString(i),
               node_data.GetStringAttribute(ax::mojom::StringAttribute::kName));
   }
 
-  const int expected_install_apps =
+  const size_t expected_install_apps =
       expected_results -
       (IsReinstallAppRecommendationEnabled() ? kRecommendedApps : 0) -
       kInstalledApps;
-  for (int i = kInstalledApps; i < (kInstalledApps + expected_install_apps);
+  for (size_t i = kInstalledApps; i < (kInstalledApps + expected_install_apps);
        ++i) {
     ui::AXNodeData node_data;
-    view()
-        ->child_at(first_child + i * child_step)
-        ->GetAccessibleNodeData(&node_data);
+    view()->children()[first_child + i * child_step]->GetAccessibleNodeData(
+        &node_data);
     EXPECT_EQ(ax::mojom::Role::kButton, node_data.role);
     EXPECT_EQ("PlayStoreApp " + base::NumberToString(i - kInstalledApps) +
                   ", Star rating " +
@@ -222,13 +220,12 @@ TEST_P(SearchResultTileItemListViewTest, Basic) {
   }
 
   // Recommendations.
-  const int start_index = kInstalledApps + expected_install_apps;
-  for (int i = kInstalledApps + expected_install_apps; i < expected_results;
+  const size_t start_index = kInstalledApps + expected_install_apps;
+  for (size_t i = kInstalledApps + expected_install_apps; i < expected_results;
        ++i) {
     ui::AXNodeData node_data;
-    view()
-        ->child_at(first_child + i * child_step)
-        ->GetAccessibleNodeData(&node_data);
+    view()->children()[first_child + i * child_step]->GetAccessibleNodeData(
+        &node_data);
     EXPECT_EQ(ax::mojom::Role::kButton, node_data.role);
     EXPECT_EQ("RecommendedApp " + base::NumberToString(i - start_index) +
                   ", Star rating " + base::NumberToString(i + 1 - start_index) +
@@ -237,9 +234,9 @@ TEST_P(SearchResultTileItemListViewTest, Basic) {
   }
 
   ResetOpenResultCount();
-  for (int i = 0; i < results; ++i) {
+  for (size_t i = 0; i < results; ++i) {
     ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::EF_NONE);
-    for (int j = 0; j <= i; ++j)
+    for (size_t j = 0; j <= i; ++j)
       view()->tile_views_for_test()[i]->OnKeyEvent(&event);
     // When both app reinstalls and play store apps are enabled, we actually
     // instantiate 7 results, but only show 6. So we have to look, for exactly 1

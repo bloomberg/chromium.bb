@@ -81,8 +81,7 @@ TEST_F(ShelfTooltipManagerTest, DoNotShowForInvalidView) {
   item.type = TYPE_PINNED_APP;
   const int index = model->Add(item);
   // Note: There's no easy way to correlate shelf a model index/id to its view.
-  tooltip_manager_->ShowTooltipWithDelay(
-      shelf_view_->child_at(shelf_view_->child_count() - 1));
+  tooltip_manager_->ShowTooltipWithDelay(shelf_view_->children().back());
   EXPECT_TRUE(IsTimerRunning());
 
   // Removing the view won't stop the timer, but the tooltip shouldn't be shown.

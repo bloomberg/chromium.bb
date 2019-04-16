@@ -313,7 +313,7 @@ TEST_F(MediaNotificationViewTest, ButtonsSanityCheck) {
   EXPECT_GT(button_row()->width(), 0);
   EXPECT_GT(button_row()->height(), 0);
 
-  EXPECT_EQ(5, button_row()->child_count());
+  EXPECT_EQ(5u, button_row()->children().size());
 
   for (int i = 0; i < button_row()->child_count(); ++i) {
     const views::Button* child =

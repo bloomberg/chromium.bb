@@ -266,9 +266,9 @@ void PageSwitcher::TotalPagesChanged() {
 }
 
 void PageSwitcher::SelectedPageChanged(int old_selected, int new_selected) {
-  if (old_selected >= 0 && old_selected < buttons_->child_count())
+  if (old_selected >= 0 && size_t{old_selected} < buttons_->children().size())
     GetButtonByIndex(buttons_, old_selected)->SetSelected(false);
-  if (new_selected >= 0 && new_selected < buttons_->child_count())
+  if (new_selected >= 0 && size_t{new_selected} < buttons_->children().size())
     GetButtonByIndex(buttons_, new_selected)->SetSelected(true);
 }
 

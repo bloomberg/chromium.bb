@@ -88,7 +88,7 @@ bool TrayItemView::IsHorizontalAlignment() const {
 }
 
 gfx::Size TrayItemView::CalculatePreferredSize() const {
-  DCHECK_EQ(1, child_count());
+  DCHECK_EQ(1u, children().size());
   gfx::Size size = views::View::CalculatePreferredSize();
   if (image_view_) {
     size = gfx::Size(kUnifiedTrayIconSize, kUnifiedTrayIconSize);

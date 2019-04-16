@@ -61,7 +61,7 @@ class LayerControlView : public views::View {
     display::ManagedDisplayInfo info =
         Shell::Get()->display_manager()->GetDisplayInfo(display.id());
 
-    DCHECK_EQ(1, child_count());
+    DCHECK_EQ(1u, children().size());
     views::View* child = child_at(0);
     child->SetBounds(0, 0, display.size().width(), display.size().height());
     gfx::Transform transform;

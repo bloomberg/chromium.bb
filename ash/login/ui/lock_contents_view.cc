@@ -924,7 +924,7 @@ void LockContentsView::OnSystemInfoChanged(
   };
 
   // Initialize the system info view.
-  if (system_info_->child_count() == 0) {
+  if (system_info_->children().empty()) {
     for (int i = 0; i < 3; ++i)
       system_info_->AddChildView(create_info_label());
   }
