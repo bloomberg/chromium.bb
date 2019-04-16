@@ -15457,6 +15457,32 @@
       If this policy is set, the user cannot change or override it.''',
     },
     {
+      'name': 'SamlPasswordExpirationAdvanceWarningDays',
+      'type': 'int',
+      'schema': {
+        'type': 'integer',
+        'minimum': 0,
+        'maximum': 90
+      },
+      'supported_on': ['chrome_os:76-'],
+      'future': True,
+      'tags': [],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': 14,
+      'id': 555,
+      'caption': '''How many days in advance to notify SAML users when their password is due to expire''',
+      'desc': '''This policy has no effect unless SamlInSessionPasswordChangeEnabled is true.
+      If that policy is true, and this policy is set to (for example) 14, that means SAML users will be notified 14 days in advance that their password is due to expire on a certain date.
+      Then they can deal with this immediately by doing an in-session password change and updating their password before it expires.
+      But, these notifications will only be shown if password expiry information is sent to the device by the SAML identity provider during the SAML login flow.
+      Setting this policy to zero means the users will not be notified in advance - they will only be notified once the password has already expired.
+
+      If this policy is set, the user cannot change or override it.''',
+    },
+    {
       'name': 'DeviceAdvancedBatteryChargeModeEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
@@ -15823,5 +15849,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used':  554
+  'highest_id_currently_used':  555
 }

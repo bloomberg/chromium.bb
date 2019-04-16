@@ -661,6 +661,7 @@ extern const char
     kAutoScreenBrightnessMetricsUnsupportedAlsUserAdjustmentCount[];
 extern const char kKnownUserParentAccessCodeConfig[];
 extern const char kSamlInSessionPasswordChangeEnabled[];
+extern const char kSamlPasswordExpirationAdvanceWarningDays[];
 #endif  // defined(OS_CHROMEOS)
 
 extern const char kClearPluginLSODataEnabled[];
