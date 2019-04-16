@@ -3313,6 +3313,11 @@ void RenderWidget::FallbackCursorModeSetCursorVisibility(bool visible) {
   widget_input_handler_manager_->FallbackCursorModeSetCursorVisibility(visible);
 }
 
+void RenderWidget::SetAllowGpuRasterization(bool allow_gpu_raster) {
+  layer_tree_view_->layer_tree_host()->SetHasGpuRasterizationTrigger(
+      allow_gpu_raster);
+}
+
 void RenderWidget::SetPageScaleFactorAndLimits(float page_scale_factor,
                                                float minimum,
                                                float maximum) {

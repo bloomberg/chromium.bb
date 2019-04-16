@@ -49,8 +49,6 @@ class WebLayerTreeView {
 
   // View properties ---------------------------------------------------
 
-  virtual void HeuristicsForGpuRasterizationUpdated(bool) {}
-
   // Sets the amount that the browser controls are showing, from 0 (hidden) to 1
   // (fully shown).
   virtual void SetBrowserControlsShownRatio(float) {}

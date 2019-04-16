@@ -129,7 +129,6 @@ class CONTENT_EXPORT LayerTreeView
   // blink::WebLayerTreeView implementation.
   viz::FrameSinkId GetFrameSinkId() override;
   void SetNonBlinkManagedRootLayer(scoped_refptr<cc::Layer> layer);
-  void HeuristicsForGpuRasterizationUpdated(bool matches_heuristics) override;
   std::unique_ptr<cc::ScopedDeferMainFrameUpdate> DeferMainFrameUpdate()
       override;
   void StartDeferringCommits(base::TimeDelta timeout) override;

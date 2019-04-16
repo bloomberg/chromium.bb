@@ -439,6 +439,7 @@ class CONTENT_EXPORT RenderWidget
                                     bool up,
                                     bool down) override;
   void FallbackCursorModeSetCursorVisibility(bool visible) override;
+  void SetAllowGpuRasterization(bool allow_gpu_raster) override;
   void SetPageScaleFactorAndLimits(float page_scale_factor,
                                    float minimum,
                                    float maximum) override;

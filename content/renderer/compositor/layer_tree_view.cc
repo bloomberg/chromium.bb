@@ -185,11 +185,6 @@ void LayerTreeView::SetNonBlinkManagedRootLayer(
   layer_tree_host_->SetNonBlinkManagedRootLayer(std::move(layer));
 }
 
-void LayerTreeView::HeuristicsForGpuRasterizationUpdated(
-    bool matches_heuristics) {
-  layer_tree_host_->SetHasGpuRasterizationTrigger(matches_heuristics);
-}
-
 void LayerTreeView::SetNeedsBeginFrame() {
   layer_tree_host_->SetNeedsAnimate();
 }

@@ -637,6 +637,10 @@ void TestWebWidgetClient::SetBackgroundColor(SkColor color) {
   layer_tree_host()->set_background_color(color);
 }
 
+void TestWebWidgetClient::SetAllowGpuRasterization(bool allow) {
+  layer_tree_host()->SetHasGpuRasterizationTrigger(allow);
+}
+
 void TestWebWidgetClient::SetPageScaleFactorAndLimits(float page_scale_factor,
                                                       float minimum,
                                                       float maximum) {
