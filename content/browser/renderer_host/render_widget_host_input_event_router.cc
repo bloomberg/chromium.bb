@@ -1423,17 +1423,18 @@ bool RenderWidgetHostInputEventRouter::ViewMapIsEmpty() const {
 namespace {
 
 bool IsPinchCurrentlyAllowedInTarget(RenderWidgetHostViewBase* target) {
-  base::Optional<cc::TouchAction> target_allowed_touch_action(
+  base::Optional<cc::TouchAction> target_active_touch_action(
       cc::kTouchActionNone);
   if (target) {
-    target_allowed_touch_action =
+    target_active_touch_action =
         (static_cast<RenderWidgetHostImpl*>(target->GetRenderWidgetHost()))
             ->input_router()
-            ->AllowedTouchAction();
+            ->ActiveTouchAction();
   }
-  if (!target_allowed_touch_action)
-    target_allowed_touch_action = cc::kTouchActionNone;
-  return (target_allowed_touch_action.value() &
+  // This function is called on GesturePinchBegin, by which time there should
+  // be an active touch action assessed for the target.
+  DCHECK(target_active_touch_action.has_value());
+  return (target_active_touch_action.value() &
           cc::TouchAction::kTouchActionPinchZoom);
 }
 

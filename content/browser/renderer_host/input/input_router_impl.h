@@ -82,6 +82,7 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
   void SetFrameTreeNodeId(int frame_tree_node_id) override;
   void SetForceEnableZoom(bool enabled) override;
   base::Optional<cc::TouchAction> AllowedTouchAction() override;
+  base::Optional<cc::TouchAction> ActiveTouchAction() override;
   void BindHost(mojom::WidgetInputHandlerHostRequest request,
                 bool frame_handler) override;
   void StopFling() override;

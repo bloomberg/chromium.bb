@@ -42,6 +42,7 @@ class MockInputRouter : public InputRouter {
   void SetDeviceScaleFactor(float device_scale_factor) override {}
   void SetFrameTreeNodeId(int frameTreeNodeId) override {}
   base::Optional<cc::TouchAction> AllowedTouchAction() override;
+  base::Optional<cc::TouchAction> ActiveTouchAction() override;
   void SetForceEnableZoom(bool enabled) override {}
   void BindHost(mojom::WidgetInputHandlerHostRequest request,
                 bool frame_handler) override {}
