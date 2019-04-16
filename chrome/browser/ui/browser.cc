@@ -133,6 +133,7 @@
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
+#include "chrome/browser/ui/manifest_web_app_browser_controller.h"
 #include "chrome/browser/ui/permission_bubble/chooser_bubble_delegate.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/singleton_tabs.h"
@@ -293,6 +294,8 @@ std::unique_ptr<WebAppBrowserController> MaybeCreateWebAppController(
   if (extension && extension->is_hosted_app())
     return std::make_unique<extensions::HostedAppBrowserController>(browser);
 #endif
+  if (browser->is_focus_mode())
+    return std::make_unique<ManifestWebAppBrowserController>(browser);
   return nullptr;
 }
 

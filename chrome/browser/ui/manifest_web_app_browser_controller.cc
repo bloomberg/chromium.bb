@@ -26,8 +26,7 @@ bool ManifestWebAppBrowserController::ShouldShowToolbar() const {
 
 bool ManifestWebAppBrowserController::ShouldShowHostedAppButtonContainer()
     const {
-  // System Web Apps don't get the Hosted App buttons.
-  return false;
+  return true;
 }
 
 gfx::ImageSkia ManifestWebAppBrowserController::GetWindowAppIcon() const {
@@ -87,5 +86,5 @@ base::string16 ManifestWebAppBrowserController::GetFormattedUrlOrigin() const {
 }
 
 GURL ManifestWebAppBrowserController::GetAppLaunchURL() const {
-  return browser()->tab_strip_model()->GetActiveWebContents()->GetURL();
+  return GURL();
 }
