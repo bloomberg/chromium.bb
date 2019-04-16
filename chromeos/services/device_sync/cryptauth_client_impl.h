@@ -80,6 +80,25 @@ class CryptAuthClientImpl : public CryptAuthClient {
   void EnrollKeys(const cryptauthv2::EnrollKeysRequest& request,
                   const EnrollKeysCallback& callback,
                   const ErrorCallback& error_callback) override;
+  void SyncMetadata(const cryptauthv2::SyncMetadataRequest& request,
+                    const SyncMetadataCallback& callback,
+                    const ErrorCallback& error_callback) override;
+  void ShareGroupPrivateKey(
+      const cryptauthv2::ShareGroupPrivateKeyRequest& request,
+      const ShareGroupPrivateKeyCallback& callback,
+      const ErrorCallback& error_callback) override;
+  void BatchNotifyGroupDevices(
+      const cryptauthv2::BatchNotifyGroupDevicesRequest& request,
+      const BatchNotifyGroupDevicesCallback& callback,
+      const ErrorCallback& error_callback) override;
+  void BatchGetFeatureStatuses(
+      const cryptauthv2::BatchGetFeatureStatusesRequest& request,
+      const BatchGetFeatureStatusesCallback& callback,
+      const ErrorCallback& error_callback) override;
+  void BatchSetFeatureStatuses(
+      const cryptauthv2::BatchSetFeatureStatusesRequest& request,
+      const BatchSetFeatureStatusesCallback& callback,
+      const ErrorCallback& error_callback) override;
   std::string GetAccessTokenUsed() override;
 
  private:
