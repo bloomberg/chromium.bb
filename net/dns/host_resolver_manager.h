@@ -362,6 +362,7 @@ class NET_EXPORT HostResolverManager
   void UpdateModeForHistogram(const DnsConfig& dns_config);
 
   // Cache of host resolution results.
+  // TODO(crbug.com/934402): Remove the manager-wide HostCache.
   std::unique_ptr<HostCache> cache_;
 
   // Used for multicast DNS tasks. Created on first use using

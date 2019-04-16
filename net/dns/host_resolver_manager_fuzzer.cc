@@ -204,9 +204,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     net::HostResolver::Options options;
     options.max_concurrent_resolves =
         data_provider.ConsumeIntegralInRange(1, 8);
-    options.enable_caching = data_provider.ConsumeBool();
-    net::FuzzedContextHostResolver host_resolver(options, &net_log,
-                                                 &data_provider);
+    bool enable_caching = data_provider.ConsumeBool();
+    options.enable_caching = enable_caching;
+    net::FuzzedContextHostResolver host_resolver(
+        options, &net_log, &data_provider, enable_caching);
     host_resolver.SetDnsClientEnabled(data_provider.ConsumeBool());
 
     std::vector<std::unique_ptr<DnsRequest>> dns_requests;

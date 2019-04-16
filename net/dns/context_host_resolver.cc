@@ -12,6 +12,7 @@
 #include "base/time/tick_clock.h"
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_config.h"
+#include "net/dns/host_cache.h"
 #include "net/dns/host_resolver_manager.h"
 #include "net/dns/host_resolver_proc.h"
 #include "net/url_request/url_request_context.h"
@@ -79,14 +80,18 @@ class ContextHostResolver::WrappedRequest
   DISALLOW_COPY_AND_ASSIGN(WrappedRequest);
 };
 
-ContextHostResolver::ContextHostResolver(HostResolverManager* manager)
-    : manager_(manager) {
+ContextHostResolver::ContextHostResolver(HostResolverManager* manager,
+                                         std::unique_ptr<HostCache> host_cache)
+    : manager_(manager), host_cache_(std::move(host_cache)) {
   DCHECK(manager_);
 }
 
 ContextHostResolver::ContextHostResolver(
-    std::unique_ptr<HostResolverManager> owned_manager)
-    : manager_(owned_manager.get()), owned_manager_(std::move(owned_manager)) {
+    std::unique_ptr<HostResolverManager> owned_manager,
+    std::unique_ptr<HostCache> host_cache)
+    : manager_(owned_manager.get()),
+      owned_manager_(std::move(owned_manager)),
+      host_cache_(std::move(host_cache)) {
   DCHECK(manager_);
 }
 

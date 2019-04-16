@@ -126,6 +126,8 @@ class NET_EXPORT HostResolver {
 
     size_t max_concurrent_resolves;
     size_t max_retry_attempts;
+    // TODO(crbug.com/934402): Remove once caching is fully handled and enabled
+    // at the per-context level.
     bool enable_caching;
   };
 
@@ -138,13 +140,15 @@ class NET_EXPORT HostResolver {
     // See HostResolver::CreateResolver.
     virtual std::unique_ptr<HostResolver> CreateResolver(
         HostResolverManager* manager,
-        base::StringPiece host_mapping_rules);
+        base::StringPiece host_mapping_rules,
+        bool enable_caching);
 
     // See HostResolver::CreateStandaloneResolver.
     virtual std::unique_ptr<HostResolver> CreateStandaloneResolver(
         NetLog* net_log,
         const Options& options,
-        base::StringPiece host_mapping_rules);
+        base::StringPiece host_mapping_rules,
+        bool enable_caching);
   };
 
   // Parameter-grouping struct for additional optional parameters for
@@ -320,7 +324,8 @@ class NET_EXPORT HostResolver {
   // requests.  See MappedHostResolver for details.
   static std::unique_ptr<HostResolver> CreateResolver(
       HostResolverManager* manager,
-      base::StringPiece host_mapping_rules = "");
+      base::StringPiece host_mapping_rules = "",
+      bool enable_caching = true);
 
   // Creates a HostResolver independent of any global HostResolverManager. Only
   // for tests and standalone tools not part of the browser.
@@ -330,13 +335,15 @@ class NET_EXPORT HostResolver {
   static std::unique_ptr<HostResolver> CreateStandaloneResolver(
       NetLog* net_log,
       base::Optional<Options> options = base::nullopt,
-      base::StringPiece host_mapping_rules = "");
+      base::StringPiece host_mapping_rules = "",
+      bool enable_caching = true);
   // Same, but explicitly returns the implementing ContextHostResolver. Only
   // used by tests and by StaleHostResolver in Cronet. No mapping rules can be
   // applied because doing so requires wrapping the ContextHostResolver.
   static std::unique_ptr<ContextHostResolver> CreateStandaloneContextResolver(
       NetLog* net_log,
-      base::Optional<Options> options = base::nullopt);
+      base::Optional<Options> options = base::nullopt,
+      bool enable_caching = true);
 
   // Helpers for interacting with HostCache and ProcResolver.
   static AddressFamily DnsQueryTypeToAddressFamily(DnsQueryType query_type);

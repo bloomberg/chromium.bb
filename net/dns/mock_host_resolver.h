@@ -295,6 +295,11 @@ class MockCachingHostResolver : public MockHostResolverBase {
 };
 
 // Factory that will always create and return Mock(Caching)HostResolvers.
+//
+// The default behavior is to create a non-caching mock, even if the tested code
+// requests caching enabled (via the |enable_caching| parameter in the creation
+// methods). A caching mock will only be created if both |use_caching| is set on
+// factory construction and |enable_caching| is set in the creation method.
 class MockHostResolverFactory : public HostResolver::Factory {
  public:
   MockHostResolverFactory(
@@ -305,11 +310,13 @@ class MockHostResolverFactory : public HostResolver::Factory {
 
   std::unique_ptr<HostResolver> CreateResolver(
       HostResolverManager* manager,
-      base::StringPiece host_mapping_rules) override;
+      base::StringPiece host_mapping_rules,
+      bool enable_caching) override;
   std::unique_ptr<HostResolver> CreateStandaloneResolver(
       NetLog* net_log,
       const HostResolver::Options& options,
-      base::StringPiece host_mapping_rules) override;
+      base::StringPiece host_mapping_rules,
+      bool enable_caching) override;
 
  private:
   const scoped_refptr<RuleBasedHostResolverProc> rules_;

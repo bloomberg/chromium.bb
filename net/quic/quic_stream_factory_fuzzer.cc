@@ -84,7 +84,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   base::FuzzedDataProvider data_provider(data, size);
 
   FuzzedContextHostResolver host_resolver(HostResolver::Options(), nullptr,
-                                          &data_provider);
+                                          &data_provider,
+                                          true /* enable_caching */);
   FuzzedSocketFactory socket_factory(&data_provider);
 
   // Initialize this on each loop since some options mutate this.
