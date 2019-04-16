@@ -18,7 +18,7 @@ namespace blink {
 // (3) Writing the contents to a blob.
 class ClipboardReader {
  public:
-  static std::unique_ptr<ClipboardReader> Create(String mime_type);
+  static std::unique_ptr<ClipboardReader> Create(const String& mime_type);
   virtual ~ClipboardReader();
 
   virtual Blob* ReadFromSystem() = 0;

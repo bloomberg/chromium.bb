@@ -104,7 +104,7 @@ class ClipboardTextWriter final : public ClipboardWriter {
 
 // static
 std::unique_ptr<ClipboardWriter> ClipboardWriter::Create(
-    String mime_type,
+    const String& mime_type,
     ClipboardPromise* promise) {
   if (mime_type == kMimeTypeImagePng)
     return std::make_unique<ClipboardImageWriter>(promise);
