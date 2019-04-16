@@ -1776,9 +1776,6 @@ void UserSessionManager::RestoreAuthSessionImpl(
     return;
   }
 
-  // Remove legacy OAuth1 token if we have one. If it's valid, we should already
-  // have OAuth2 refresh token in OAuth2TokenService that could be used to
-  // retrieve all other tokens and user_context.
   OAuth2LoginManager* login_manager =
       OAuth2LoginManagerFactory::GetInstance()->GetForProfile(profile);
   login_manager->AddObserver(this);
