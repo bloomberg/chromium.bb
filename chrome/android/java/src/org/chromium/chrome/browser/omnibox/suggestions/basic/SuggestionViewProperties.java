@@ -107,6 +107,9 @@ public class SuggestionViewProperties {
 
     /** The suggestion icon type shown. */
     public static final WritableIntPropertyKey SUGGESTION_ICON_TYPE = new WritableIntPropertyKey();
+    /** Bitmap (typically site favicon) to be displayed as a suggestion icon. */
+    public static final WritableObjectPropertyKey<Bitmap> SUGGESTION_ICON_BITMAP =
+            new WritableObjectPropertyKey<>();
 
     /**
      * The sizing information for the first line of text.
@@ -152,7 +155,7 @@ public class SuggestionViewProperties {
             HAS_ANSWER_IMAGE, ANSWER_IMAGE, REFINABLE, SUGGESTION_ICON_TYPE, TEXT_LINE_1_SIZING,
             TEXT_LINE_1_MAX_LINES, TEXT_LINE_1_TEXT_COLOR, TEXT_LINE_1_TEXT_DIRECTION,
             TEXT_LINE_1_TEXT, TEXT_LINE_2_SIZING, TEXT_LINE_2_MAX_LINES, TEXT_LINE_2_TEXT_COLOR,
-            TEXT_LINE_2_TEXT_DIRECTION, TEXT_LINE_2_TEXT};
+            TEXT_LINE_2_TEXT_DIRECTION, TEXT_LINE_2_TEXT, SUGGESTION_ICON_BITMAP};
 
     public static final PropertyKey[] ALL_KEYS =
             PropertyModel.concatKeys(ALL_UNIQUE_KEYS, SuggestionCommonProperties.ALL_KEYS);
