@@ -27,6 +27,11 @@ class VIZ_SERVICE_EXPORT OverlayCandidateValidator {
   // Visuals (Windows only).
   virtual bool AllowDCLayerOverlays() = 0;
 
+  // Returns true if the platform supports hw overlays and surface occluding
+  // damage rect needs to be computed since it will be used by overlay
+  // processor.
+  virtual bool NeedsSurfaceOccludingDamageRect() = 0;
+
   // A list of possible overlay candidates is presented to this function.
   // The expected result is that those candidates that can be in a separate
   // plane are marked with |overlay_handled| set to true, otherwise they are

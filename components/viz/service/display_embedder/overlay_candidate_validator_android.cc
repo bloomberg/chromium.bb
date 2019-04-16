@@ -50,6 +50,10 @@ bool OverlayCandidateValidatorAndroid::AllowDCLayerOverlays() {
   return false;
 }
 
+bool OverlayCandidateValidatorAndroid::NeedsSurfaceOccludingDamageRect() {
+  return false;
+}
+
 void OverlayCandidateValidatorAndroid::CheckOverlaySupport(
     OverlayCandidateList* surfaces) {
   DCHECK(!surfaces->empty());

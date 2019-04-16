@@ -23,6 +23,7 @@ class VIZ_SERVICE_EXPORT CompositorOverlayCandidateValidatorWin
   void CheckOverlaySupport(OverlayCandidateList* surfaces) override;
   bool AllowCALayerOverlays() override;
   bool AllowDCLayerOverlays() override;
+  bool NeedsSurfaceOccludingDamageRect() override;
 
   void SetSoftwareMirrorMode(bool enabled) override;
 
