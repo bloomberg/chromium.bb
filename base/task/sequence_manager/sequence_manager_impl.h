@@ -54,6 +54,7 @@ namespace internal {
 
 class RealTimeDomain;
 class TaskQueueImpl;
+class ThreadControllerImpl;
 
 // The task queue manager provides N task queues and a selector interface for
 // choosing which task queue to service next. Each task queue consists of two
@@ -71,8 +72,7 @@ class BASE_EXPORT SequenceManagerImpl
     : public SequenceManager,
       public internal::SequencedTaskSource,
       public internal::TaskQueueSelector::Observer,
-      public RunLoop::NestingObserver,
-      public MessageLoopBase {
+      public RunLoop::NestingObserver {
  public:
   using Observer = SequenceManager::Observer;
 
@@ -96,8 +96,6 @@ class BASE_EXPORT SequenceManagerImpl
   static std::unique_ptr<SequenceManagerImpl> CreateSequenceFunneled(
       scoped_refptr<SingleThreadTaskRunner> task_runner,
       SequenceManager::Settings settings);
-
-  void BindToMessageLoop(MessageLoopBase* message_loop_base);
 
   // SequenceManager implementation:
   void BindToCurrentThread() override;
@@ -130,33 +128,31 @@ class BASE_EXPORT SequenceManagerImpl
   bool HasPendingHighResolutionTasks() override;
   bool OnSystemIdle() override;
 
-  // MessageLoopBase implementation:
-  void AddTaskObserver(MessageLoop::TaskObserver* task_observer) override;
-  void RemoveTaskObserver(MessageLoop::TaskObserver* task_observer) override;
+  void AddTaskObserver(MessageLoop::TaskObserver* task_observer);
+  void RemoveTaskObserver(MessageLoop::TaskObserver* task_observer);
   void AddDestructionObserver(
-      MessageLoopCurrent::DestructionObserver* destruction_observer) override;
+      MessageLoopCurrent::DestructionObserver* destruction_observer);
   void RemoveDestructionObserver(
-      MessageLoopCurrent::DestructionObserver* destruction_observer) override;
+      MessageLoopCurrent::DestructionObserver* destruction_observer);
   // TODO(alexclarke): Remove this as part of https://crbug.com/825327.
-  void SetTaskRunner(
-      scoped_refptr<SingleThreadTaskRunner> task_runner) override;
+  void SetTaskRunner(scoped_refptr<SingleThreadTaskRunner> task_runner);
   // TODO(alexclarke): Remove this as part of https://crbug.com/825327.
-  scoped_refptr<SingleThreadTaskRunner> GetTaskRunner() override;
-  std::string GetThreadName() const override;
-  bool IsBoundToCurrentThread() const override;
-  MessagePump* GetMessagePump() const override;
-  bool IsType(MessageLoop::Type type) const override;
-  void SetAddQueueTimeToTasks(bool enable) override;
-  void SetTaskExecutionAllowed(bool allowed) override;
-  bool IsTaskExecutionAllowed() const override;
+  scoped_refptr<SingleThreadTaskRunner> GetTaskRunner();
+  std::string GetThreadName() const;
+  bool IsBoundToCurrentThread() const;
+  MessagePump* GetMessagePump() const;
+  bool IsType(MessageLoop::Type type) const;
+  void SetAddQueueTimeToTasks(bool enable);
+  void SetTaskExecutionAllowed(bool allowed);
+  bool IsTaskExecutionAllowed() const;
 #if defined(OS_IOS)
-  void AttachToMessagePump() override;
+  void AttachToMessagePump();
 #endif
   bool IsIdleForTesting() override;
-  void BindToCurrentThread(std::unique_ptr<MessagePump> pump) override;
-  void DeletePendingTasks() override;
-  bool HasTasks() override;
-  MessageLoop::Type GetType() const override;
+  void BindToCurrentThread(std::unique_ptr<MessagePump> pump);
+  void DeletePendingTasks();
+  bool HasTasks();
+  MessageLoop::Type GetType() const;
 
   // Requests that a task to process work is scheduled.
   void ScheduleWork();

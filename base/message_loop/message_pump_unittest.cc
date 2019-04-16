@@ -28,9 +28,9 @@ namespace base {
 
 namespace {
 
-bool PumpTypeUsesDoSomeWork(MessageLoopBase::Type type) {
+bool PumpTypeUsesDoSomeWork(MessageLoop::Type type) {
   switch (type) {
-    case MessageLoopBase::Type::TYPE_DEFAULT:
+    case MessageLoop::Type::TYPE_DEFAULT:
 #if defined(OS_IOS)
       // iOS uses a MessagePumpCFRunLoop instead of MessagePumpDefault for
       // TYPE_DEFAULT. TODO(gab): migrate MessagePumpCFRunLoop too.
@@ -39,7 +39,7 @@ bool PumpTypeUsesDoSomeWork(MessageLoopBase::Type type) {
       return true;
 #endif
 
-    case MessageLoopBase::Type::TYPE_UI:
+    case MessageLoop::Type::TYPE_UI:
 #if defined(OS_IOS)
       // iOS uses a MessagePumpDefault for UI in unit tests, ref.
       // test_support_ios.mm::CreateMessagePumpForUIForTests().
@@ -56,7 +56,7 @@ bool PumpTypeUsesDoSomeWork(MessageLoopBase::Type type) {
       return false;
 #endif
 
-    case MessageLoopBase::Type::TYPE_IO:
+    case MessageLoop::Type::TYPE_IO:
 #if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
       return true;
 #elif defined(OS_POSIX) && !defined(OS_NACL_SFI)
@@ -69,9 +69,9 @@ bool PumpTypeUsesDoSomeWork(MessageLoopBase::Type type) {
       return false;
 #endif
 
-    case MessageLoopBase::Type::TYPE_CUSTOM:
+    case MessageLoop::Type::TYPE_CUSTOM:
 #if defined(OS_ANDROID)
-    case MessageLoopBase::Type::TYPE_JAVA:
+    case MessageLoop::Type::TYPE_JAVA:
 #endif  // defined(OS_ANDROID)
       // Not tested in this file.
       NOTREACHED();
@@ -96,7 +96,7 @@ class MockMessagePumpDelegate : public MessagePump::Delegate {
   DISALLOW_COPY_AND_ASSIGN(MockMessagePumpDelegate);
 };
 
-class MessagePumpTest : public ::testing::TestWithParam<MessageLoopBase::Type> {
+class MessagePumpTest : public ::testing::TestWithParam<MessageLoop::Type> {
  public:
   MessagePumpTest()
       : message_pump_(MessageLoop::CreateMessagePumpForType(GetParam())) {}
