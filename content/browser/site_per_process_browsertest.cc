@@ -672,21 +672,6 @@ class UpdateViewportIntersectionMessageFilter
   DISALLOW_COPY_AND_ASSIGN(UpdateViewportIntersectionMessageFilter);
 };
 
-// Observes navigation start.
-class DidStartNavigationObserver : public WebContentsObserver {
- public:
-  explicit DidStartNavigationObserver(WebContents* web_contents)
-      : WebContentsObserver(web_contents) {}
-  void DidStartNavigation(NavigationHandle* navigation_handle) override {
-    observed_ = true;
-  }
-  bool observed() { return observed_; }
-
- private:
-  bool observed_ = false;
-  DISALLOW_COPY_AND_ASSIGN(DidStartNavigationObserver);
-};
-
 }  // namespace
 
 //
