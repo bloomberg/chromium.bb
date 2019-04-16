@@ -491,8 +491,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #endif
 #if defined(OS_CHROMEOS)
   if (url.host_piece() == chrome::kChromeUIPasswordChangeHost) {
-    if (!base::FeatureList::IsEnabled(features::kInSessionPasswordChange))
+    if (!profile->GetPrefs()->GetBoolean(
+            prefs::kSamlInSessionPasswordChangeEnabled)) {
       return nullptr;
+    }
     return &NewWebUI<chromeos::InSessionPasswordChangeUI>;
   }
   if (url.host_piece() == chrome::kChromeUIAccountManagerWelcomeHost)

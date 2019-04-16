@@ -1250,6 +1250,8 @@ source_set("chromeos") {
     "login/saml/saml_offline_signin_limiter.h",
     "login/saml/saml_offline_signin_limiter_factory.cc",
     "login/saml/saml_offline_signin_limiter_factory.h",
+    "login/saml/saml_profile_prefs.cc",
+    "login/saml/saml_profile_prefs.h",
     "login/screen_manager.cc",
     "login/screen_manager.h",
     "login/screens/app_downloading_screen.cc",

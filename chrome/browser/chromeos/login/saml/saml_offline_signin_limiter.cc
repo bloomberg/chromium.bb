@@ -18,26 +18,11 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
-#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 
 namespace chromeos {
-
-namespace {
-
-const int kDefaultSAMLOfflineSigninTimeLimit = 14 * 24 * 60 * 60;  // 14 days.
-
-}  // namespace
-
-// static
-void SAMLOfflineSigninLimiter::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterIntegerPref(prefs::kSAMLOfflineSigninTimeLimit,
-                                kDefaultSAMLOfflineSigninTimeLimit);
-  registry->RegisterInt64Pref(prefs::kSAMLLastGAIASignInTime, 0);
-}
 
 void SAMLOfflineSigninLimiter::SignedIn(UserContext::AuthFlow auth_flow) {
   PrefService* prefs = profile_->GetPrefs();

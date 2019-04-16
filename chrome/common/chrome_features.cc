@@ -355,13 +355,6 @@ const base::Feature kIncompatibleApplicationsWarning{
     "IncompatibleApplicationsWarning", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-#if defined(OS_CHROMEOS)
-// Enables or disables In-Session password change. Mostly for SAML users.
-// TODO(rsorokin): Remove this when launched (https://crbug.com/930109).
-const base::Feature kInSessionPasswordChange{"InSessionPasswordChange",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // defined(OS_CHROMEOS)
-
 #if defined(OS_ANDROID)
 // Enables or disables the installable ambient badge infobar.
 const base::Feature kInstallableAmbientBadgeInfoBar{

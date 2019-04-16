@@ -3965,11 +3965,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kUseSkiaRenderer)},
 
 #if defined(OS_CHROMEOS)
-    {"in-session-password-change",
-     flag_descriptions::kInSessionPasswordChangeName,
-     flag_descriptions::kInSessionPasswordChangeDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kInSessionPasswordChange)},
-
     {"enable-streamlined-usb-printer-setup",
      flag_descriptions::kStreamlinedUsbPrinterSetupName,
      flag_descriptions::kStreamlinedUsbPrinterSetupDescription, kOsCrOS,

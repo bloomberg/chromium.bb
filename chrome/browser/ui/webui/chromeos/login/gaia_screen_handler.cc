@@ -487,9 +487,9 @@ void GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent(
 
   params.SetString("webviewPartitionName", partition_name);
 
-  params.SetBoolean(
-      "extractSamlPasswordAttributes",
-      base::FeatureList::IsEnabled(features::kInSessionPasswordChange));
+  params.SetBoolean("extractSamlPasswordAttributes",
+                    Profile::FromWebUI(web_ui())->GetPrefs()->GetBoolean(
+                        prefs::kSamlInSessionPasswordChangeEnabled));
 
   frame_state_ = FRAME_STATE_LOADING;
   CallJS("login.GaiaSigninScreen.loadAuthExtension", params);
@@ -620,9 +620,10 @@ void GaiaScreenHandler::RegisterMessages() {
               &GaiaScreenHandler::HandleUpdateSigninUIState);
   AddCallback("showGuestInOobe", &GaiaScreenHandler::HandleShowGuestInOobe);
 
-  if (base::FeatureList::IsEnabled(features::kInSessionPasswordChange)) {
-     AddCallback("updatePasswordAttributes",
-                 &GaiaScreenHandler::HandleUpdatePasswordAttributes);
+  if (Profile::FromWebUI(web_ui())->GetPrefs()->GetBoolean(
+          prefs::kSamlInSessionPasswordChangeEnabled)) {
+    AddCallback("updatePasswordAttributes",
+                &GaiaScreenHandler::HandleUpdatePasswordAttributes);
   }
 
   // Allow UMA metrics collection from JS.
@@ -953,7 +954,8 @@ void GaiaScreenHandler::HandleUpdatePasswordAttributes(
     const std::string& passwordModifiedTimestamp,
     const std::string& passwordExpirationTimestamp,
     const std::string& passwordChangeUrl) {
-  CHECK(base::FeatureList::IsEnabled(features::kInSessionPasswordChange));
+  CHECK(Profile::FromWebUI(web_ui())->GetPrefs()->GetBoolean(
+      prefs::kSamlInSessionPasswordChangeEnabled));
   // TODO(olsen): Store this information in the user's session, use it to show a
   // notification when the user's password is expired / is soon to expire.
   if (passwordModifiedTimestamp.empty() &&
