@@ -277,12 +277,12 @@ class SkiaOutputSurfaceImpl::YUVAPromiseTextureHelper {
 SkiaOutputSurfaceImpl::SkiaOutputSurfaceImpl(
     GpuServiceImpl* gpu_service,
     gpu::SurfaceHandle surface_handle,
-    SyntheticBeginFrameSource* synthetic_begin_frame_source,
+    UpdateVSyncParametersCallback update_vsync_callback,
     const RendererSettings& renderer_settings)
     : gpu_service_(gpu_service),
       is_using_vulkan_(gpu_service->is_using_vulkan()),
       surface_handle_(surface_handle),
-      synthetic_begin_frame_source_(synthetic_begin_frame_source),
+      update_vsync_callback_(std::move(update_vsync_callback)),
       renderer_settings_(renderer_settings),
       weak_ptr_factory_(this) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -729,13 +729,13 @@ void SkiaOutputSurfaceImpl::BufferPresented(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(client_);
   client_->DidReceivePresentationFeedback(feedback);
-  if (synthetic_begin_frame_source_ &&
+  if (update_vsync_callback_ &&
       feedback.flags & gfx::PresentationFeedback::kVSync) {
     // TODO(brianderson): We should not be receiving 0 intervals.
-    synthetic_begin_frame_source_->OnUpdateVSyncParameters(
-        feedback.timestamp, feedback.interval.is_zero()
-                                ? BeginFrameArgs::DefaultInterval()
-                                : feedback.interval);
+    update_vsync_callback_.Run(feedback.timestamp,
+                               feedback.interval.is_zero()
+                                   ? BeginFrameArgs::DefaultInterval()
+                                   : feedback.interval);
   }
 }
 

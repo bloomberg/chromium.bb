@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "components/viz/common/display/update_vsync_parameters_callback.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display_embedder/viz_process_context_provider.h"
 #include "gpu/command_buffer/client/context_support.h"
@@ -14,14 +15,12 @@
 
 namespace viz {
 
-class SyntheticBeginFrameSource;
-
 // An OutputSurface implementation that directly draws and
 // swaps to an actual GL surface.
 class GLOutputSurface : public OutputSurface {
  public:
   GLOutputSurface(scoped_refptr<VizProcessContextProvider> context_provider,
-                  SyntheticBeginFrameSource* synthetic_begin_frame_source);
+                  UpdateVSyncParametersCallback update_vsync_callback);
   ~GLOutputSurface() override;
 
   // OutputSurface implementation
@@ -68,12 +67,10 @@ class GLOutputSurface : public OutputSurface {
   void OnGpuSwapBuffersCompleted(std::vector<ui::LatencyInfo> latency_info,
                                  const gfx::Size& pixel_size,
                                  const gpu::SwapBuffersCompleteParams& params);
-  void OnVSyncParametersUpdated(base::TimeTicks timebase,
-                                base::TimeDelta interval);
   void OnPresentation(const gfx::PresentationFeedback& feedback);
 
   OutputSurfaceClient* client_ = nullptr;
-  SyntheticBeginFrameSource* const synthetic_begin_frame_source_;
+  const bool wants_vsync_parameter_updates_;
   ui::LatencyTracker latency_tracker_;
 
   bool set_draw_rectangle_for_frame_ = false;

@@ -25,8 +25,8 @@ constexpr ResourceFormat kFboTextureFormat = RGBA_8888;
 
 GLOutputSurfaceOffscreen::GLOutputSurfaceOffscreen(
     scoped_refptr<VizProcessContextProvider> context_provider,
-    SyntheticBeginFrameSource* synthetic_begin_frame_source)
-    : GLOutputSurface(context_provider, synthetic_begin_frame_source),
+    UpdateVSyncParametersCallback update_vsync_callback)
+    : GLOutputSurface(context_provider, std::move(update_vsync_callback)),
       weak_ptr_factory_(this) {}
 
 GLOutputSurfaceOffscreen::~GLOutputSurfaceOffscreen() {}

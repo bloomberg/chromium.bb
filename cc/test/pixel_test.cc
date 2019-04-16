@@ -20,6 +20,7 @@
 #include "cc/test/pixel_test_utils.h"
 #include "cc/test/test_in_process_context_provider.h"
 #include "components/viz/client/client_resource_provider.h"
+#include "components/viz/common/display/update_vsync_parameters_callback.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
@@ -62,15 +63,13 @@ namespace {
 // for tests.
 class PixelTestSkiaOutputSurfaceImpl : public viz::SkiaOutputSurfaceImpl {
  public:
-  PixelTestSkiaOutputSurfaceImpl(
-      viz::GpuServiceImpl* gpu_service,
-      gpu::SurfaceHandle surface_handle,
-      viz::SyntheticBeginFrameSource* synthetic_begin_frame_source,
-      const viz::RendererSettings& renderer_settings,
-      bool flipped_output_surface)
+  PixelTestSkiaOutputSurfaceImpl(viz::GpuServiceImpl* gpu_service,
+                                 gpu::SurfaceHandle surface_handle,
+                                 const viz::RendererSettings& renderer_settings,
+                                 bool flipped_output_surface)
       : SkiaOutputSurfaceImpl(gpu_service,
                               surface_handle,
-                              synthetic_begin_frame_source,
+                              viz::UpdateVSyncParametersCallback(),
                               renderer_settings),
         flipped_output_surface_(flipped_output_surface) {}
 
@@ -353,8 +352,7 @@ void PixelTest::SetUpSkiaRenderer(bool flipped_output_surface) {
 
   // Set up the skia renderer.
   output_surface_ = std::make_unique<PixelTestSkiaOutputSurfaceImpl>(
-      gpu_service_.get(), gpu::kNullSurfaceHandle,
-      nullptr /* synthetic_begin_frame_source */, renderer_settings_,
+      gpu_service_.get(), gpu::kNullSurfaceHandle, renderer_settings_,
       flipped_output_surface);
   output_surface_->BindToClient(output_surface_client_.get());
   resource_provider_ = std::make_unique<viz::DisplayResourceProvider>(

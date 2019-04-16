@@ -437,8 +437,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
     }
   }
 
-  BrowserCompositorOutputSurface::UpdateVSyncParametersCallback vsync_callback =
-      base::Bind(&ui::Compositor::SetDisplayVSyncParameters, compositor);
+  auto vsync_callback = base::BindRepeating(
+      &ui::Compositor::SetDisplayVSyncParameters, compositor);
   std::unique_ptr<BrowserCompositorOutputSurface> display_output_surface;
   if (!use_gpu_compositing) {
     if (!is_gpu_compositing_disabled_ &&

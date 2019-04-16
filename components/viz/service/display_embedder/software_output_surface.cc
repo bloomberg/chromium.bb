@@ -23,10 +23,9 @@ namespace viz {
 
 SoftwareOutputSurface::SoftwareOutputSurface(
     std::unique_ptr<SoftwareOutputDevice> software_device,
-    SyntheticBeginFrameSource* synthetic_begin_frame_source)
+    UpdateVSyncParametersCallback update_vsync_callback)
     : OutputSurface(std::move(software_device)),
-      synthetic_begin_frame_source_(synthetic_begin_frame_source),
-      weak_factory_(this) {}
+      update_vsync_callback_(std::move(update_vsync_callback)) {}
 
 SoftwareOutputSurface::~SoftwareOutputSurface() = default;
 
@@ -78,9 +77,9 @@ void SoftwareOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
       &SoftwareOutputSurface::SwapBuffersCallback, weak_factory_.GetWeakPtr()));
 
   gfx::VSyncProvider* vsync_provider = software_device()->GetVSyncProvider();
-  if (vsync_provider && synthetic_begin_frame_source_) {
+  if (vsync_provider && update_vsync_callback_) {
     vsync_provider->GetVSyncParameters(
-        base::BindOnce(&SoftwareOutputSurface::UpdateVSyncParametersCallback,
+        base::BindOnce(&SoftwareOutputSurface::UpdateVSyncParameters,
                        weak_factory_.GetWeakPtr()));
   }
 }
@@ -129,13 +128,12 @@ void SoftwareOutputSurface::SwapBuffersCallback() {
       gfx::PresentationFeedback(now, interval_to_next_refresh, 0u));
 }
 
-void SoftwareOutputSurface::UpdateVSyncParametersCallback(
-    base::TimeTicks timebase,
-    base::TimeDelta interval) {
-  DCHECK(synthetic_begin_frame_source_);
+void SoftwareOutputSurface::UpdateVSyncParameters(base::TimeTicks timebase,
+                                                  base::TimeDelta interval) {
+  DCHECK(update_vsync_callback_);
   refresh_timebase_ = timebase;
   refresh_interval_ = interval;
-  synthetic_begin_frame_source_->OnUpdateVSyncParameters(timebase, interval);
+  update_vsync_callback_.Run(timebase, interval);
 }
 
 unsigned SoftwareOutputSurface::UpdateGpuFence() {

@@ -86,6 +86,7 @@ viz_component("common") {
     "display/overlay_strategy.h",
     "display/renderer_settings.cc",
     "display/renderer_settings.h",
+    "display/update_vsync_parameters_callback.h",
     "features.cc",
     "features.h",
     "frame_sinks/begin_frame_args.cc",

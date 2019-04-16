@@ -90,8 +90,8 @@ std::unique_ptr<Display> FuzzerSoftwareDisplayProvider::CreateDisplay(
     gpu::SurfaceHandle surface_handle,
     bool gpu_compositing,
     mojom::DisplayClient* display_client,
-    ExternalBeginFrameSource* external_begin_frame_source,
-    SyntheticBeginFrameSource* synthetic_begin_frame_source,
+    BeginFrameSource* begin_frame_source,
+    UpdateVSyncParametersCallback update_vsync_callback,
     const RendererSettings& renderer_settings,
     bool send_swap_size_notifications) {
   auto task_runner = base::ThreadTaskRunnerHandle::Get();
@@ -102,7 +102,7 @@ std::unique_ptr<Display> FuzzerSoftwareDisplayProvider::CreateDisplay(
                     : std::make_unique<SoftwareOutputDevice>();
 
   auto output_surface = std::make_unique<SoftwareOutputSurface>(
-      std::move(software_output_device), synthetic_begin_frame_source);
+      std::move(software_output_device), std::move(update_vsync_callback));
 
   auto scheduler = std::make_unique<DisplayScheduler>(
       begin_frame_source_.get(), task_runner.get(),

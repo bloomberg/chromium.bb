@@ -23,9 +23,9 @@ namespace viz {
 
 GLOutputSurface::GLOutputSurface(
     scoped_refptr<VizProcessContextProvider> context_provider,
-    SyntheticBeginFrameSource* synthetic_begin_frame_source)
+    UpdateVSyncParametersCallback update_vsync_callback)
     : OutputSurface(context_provider),
-      synthetic_begin_frame_source_(synthetic_begin_frame_source),
+      wants_vsync_parameter_updates_(!update_vsync_callback.is_null()),
       use_gpu_fence_(
           context_provider->ContextCapabilities().chromium_gpu_fence &&
           context_provider->ContextCapabilities()
@@ -41,8 +41,7 @@ GLOutputSurface::GLOutputSurface(
   capabilities_.max_frames_pending =
       context_provider->ContextCapabilities().num_surface_buffers - 1;
   context_provider->SetUpdateVSyncParametersCallback(
-      base::BindRepeating(&GLOutputSurface::OnVSyncParametersUpdated,
-                          weak_ptr_factory_.GetWeakPtr()));
+      std::move(update_vsync_callback));
 }
 
 GLOutputSurface::~GLOutputSurface() {
@@ -97,7 +96,7 @@ void GLOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
   DCHECK(context_provider_);
 
   uint32_t flags = 0;
-  if (synthetic_begin_frame_source_)
+  if (wants_vsync_parameter_updates_)
     flags |= gpu::SwapBuffersFlags::kVSyncParams;
 
   auto swap_callback = base::BindOnce(
@@ -179,16 +178,6 @@ void GLOutputSurface::OnGpuSwapBuffersCompleted(
 
   if (needs_swap_size_notifications_)
     client_->DidSwapWithSize(pixel_size);
-}
-
-void GLOutputSurface::OnVSyncParametersUpdated(base::TimeTicks timebase,
-                                               base::TimeDelta interval) {
-  if (synthetic_begin_frame_source_) {
-    // TODO(brianderson): We should not be receiving 0 intervals.
-    synthetic_begin_frame_source_->OnUpdateVSyncParameters(
-        timebase,
-        interval.is_zero() ? BeginFrameArgs::DefaultInterval() : interval);
-  }
 }
 
 void GLOutputSurface::OnPresentation(
