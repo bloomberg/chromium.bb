@@ -111,14 +111,17 @@ void PromptAction::UpdateChips() {
 
   auto chips = std::make_unique<std::vector<Chip>>();
   for (int i = 0; i < proto_.prompt().choices_size(); i++) {
-    if (!precondition_results_[i])  // chip disabled
-      continue;
-
     auto& choice_proto = proto_.prompt().choices(i);
+    if (!precondition_results_[i] && !choice_proto.allow_disabling()) {
+      // hide chip.
+      continue;
+    }
+
     chips->emplace_back();
     Chip& chip = chips->back();
     chip.text = choice_proto.name();
     chip.type = choice_proto.chip_type();
+    chip.disabled = !precondition_results_[i];
     chips->back().callback = base::BindOnce(&PromptAction::OnSuggestionChosen,
                                             weak_ptr_factory_.GetWeakPtr(), i);
   }
