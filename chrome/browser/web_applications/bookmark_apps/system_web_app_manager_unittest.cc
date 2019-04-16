@@ -176,4 +176,94 @@ TEST_F(SystemWebAppManagerTest, UninstallAppInstalledInPreviousSession) {
             pending_app_manager()->uninstall_requests());
 }
 
+TEST_F(SystemWebAppManagerTest, AlwaysUpdate) {
+  system_web_app_manager()->SetUpdatePolicy(
+      SystemWebAppManager::UpdatePolicy::kAlwaysUpdate);
+
+  base::flat_map<SystemAppType, GURL> system_apps;
+  system_apps[SystemAppType::SETTINGS] = GURL(kAppUrl1);
+  system_web_app_manager()->SetSystemApps(system_apps);
+
+  system_web_app_manager()->set_current_version(base::Version("1.0.0.0"));
+  system_web_app_manager()->Start();
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, pending_app_manager()->install_requests().size());
+
+  // Create another app. The version hasn't changed but the app should still
+  // install.
+  system_apps[SystemAppType::DISCOVER] = GURL(kAppUrl2);
+  system_web_app_manager()->SetSystemApps(system_apps);
+  system_web_app_manager()->Start();
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(3u, pending_app_manager()->install_requests().size());
+
+  {
+    // Disabling System Web Apps uninstalls without a version change.
+    base::test::ScopedFeatureList disable_feature_list;
+    disable_feature_list.InitWithFeatures({}, {features::kSystemWebApps});
+
+    system_web_app_manager()->Start();
+
+    base::RunLoop().RunUntilIdle();
+    EXPECT_EQ(2u, pending_app_manager()->uninstall_requests().size());
+  }
+
+  // Re-enabling System Web Apps installs without a version change.
+  system_web_app_manager()->Start();
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(5u, pending_app_manager()->install_requests().size());
+}
+
+TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
+  system_web_app_manager()->SetUpdatePolicy(
+      SystemWebAppManager::UpdatePolicy::kOnVersionChange);
+
+  base::flat_map<SystemAppType, GURL> system_apps;
+  system_apps[SystemAppType::SETTINGS] = GURL(kAppUrl1);
+  system_web_app_manager()->SetSystemApps(system_apps);
+
+  system_web_app_manager()->set_current_version(base::Version("1.0.0.0"));
+  system_web_app_manager()->Start();
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, pending_app_manager()->install_requests().size());
+
+  // Create another app. The version hasn't changed so the install won't
+  // process.
+  system_apps[SystemAppType::DISCOVER] = GURL(kAppUrl2);
+  system_web_app_manager()->SetSystemApps(system_apps);
+  system_web_app_manager()->Start();
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, pending_app_manager()->install_requests().size());
+
+  // Bump the version number, and the install will trigger, and request
+  // installation of both apps.
+  system_web_app_manager()->set_current_version(base::Version("2.0.0.0"));
+  system_web_app_manager()->Start();
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(3u, pending_app_manager()->install_requests().size());
+
+  {
+    // Disabling System Web Apps uninstalls even without a version change.
+    base::test::ScopedFeatureList disable_feature_list;
+    disable_feature_list.InitWithFeatures({}, {features::kSystemWebApps});
+
+    system_web_app_manager()->Start();
+
+    base::RunLoop().RunUntilIdle();
+    EXPECT_EQ(2u, pending_app_manager()->uninstall_requests().size());
+  }
+
+  // Re-enabling System Web Apps installs even without a version change.
+  system_web_app_manager()->Start();
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(5u, pending_app_manager()->install_requests().size());
+}
+
 }  // namespace web_app

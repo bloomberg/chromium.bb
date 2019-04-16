@@ -41,6 +41,7 @@ source_set("web_applications") {
     ":web_app_group",
     "//chrome/browser/web_applications/components",
     "//chrome/common",
+    "//components/pref_registry",
     "//components/sync",
     "//content/public/browser",
     "//skia",

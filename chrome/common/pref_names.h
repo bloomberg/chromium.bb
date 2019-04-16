@@ -570,6 +570,7 @@ extern const char kWebAppCreateInQuickLaunchBar[];
 extern const char kWebAppInstallForceList[];
 
 extern const char kWebAppsExtensionIDs[];
+extern const char kSystemWebAppLastUpdateVersion[];
 
 extern const char kDefaultAudioCaptureDevice[];
 extern const char kDefaultVideoCaptureDevice[];
