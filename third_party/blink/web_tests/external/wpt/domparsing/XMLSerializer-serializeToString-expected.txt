@@ -1,5 +1,6 @@
 This is a testharness.js-based test.
 PASS check XMLSerializer.serializeToString method could parsing xmldoc to string
+PASS check XMLSerializer.serializeToString method could parsing document to string
 PASS Check if the default namespace is correctly reset.
 PASS Check if there is no redundant empty namespace declaration.
 FAIL Check if redundant xmlns="..." is dropped. assert_equals: expected "<root><child/></root>" but got "<root><child xmlns=\"\"/></root>"
