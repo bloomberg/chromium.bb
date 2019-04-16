@@ -1672,6 +1672,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldReencryptUpdatesWithNewKey) {
   // Receive a separate update that was encrypted with key k1.
   worker()->UpdateFromServer(kHash4, GenerateSpecifics(kKey4, kValue1), 1,
                              "k1");
+  OnCommitDataLoaded();
   // Receipt of updates encrypted with old key also forces a re-encrypt commit.
   worker()->VerifyPendingCommits({{kHash1, kHash2}, {kHash4}});
 
@@ -1716,6 +1717,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   // Unencrypted update needs to be re-commited with key k1.
   EntitySpecifics specifics = GenerateSpecifics(kKey1, kValue2);
   worker()->UpdateFromServer(kHash1, specifics, 1, "");
+  OnCommitDataLoaded();
 
   // Ensure the re-commit has the correct value.
   EXPECT_EQ(2U, worker()->GetNumPendingCommits());
@@ -1750,20 +1752,17 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   // Update key so that it needs to fetch data to re-commit.
   worker()->UpdateWithEncryptionKey("k1");
   EXPECT_EQ(0U, worker()->GetNumPendingCommits());
+  OnCommitDataLoaded();
 
   // Unencrypted update needs to be re-commited with key k1.
   EntitySpecifics specifics = GenerateSpecifics(kKey1, kValue2);
   worker()->UpdateFromServer(kHash1, specifics, 1, "");
+  OnCommitDataLoaded();
 
   // Ensure the re-commit has the correct value.
-  EXPECT_EQ(1U, worker()->GetNumPendingCommits());
-  worker()->VerifyNthPendingCommit(0, {kHash1}, {specifics});
-  EXPECT_EQ(kValue2, db()->GetValue(kKey1));
-
-  // Data load completing should add no commit requests.
-  OnCommitDataLoaded();
   EXPECT_EQ(2U, worker()->GetNumPendingCommits());
-  worker()->VerifyNthPendingCommit(1, {}, {});
+  worker()->VerifyNthPendingCommit(1, {kHash1}, {specifics});
+  EXPECT_EQ(kValue2, db()->GetValue(kKey1));
 }
 
 // Tests that a real remote change wins over a local encryption-only change.
@@ -2099,6 +2098,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   update.push_back(worker()->GenerateUpdateData(
       kHash1, GenerateSpecifics(kKey1, kValue1), 1, "ek1"));
   worker()->UpdateWithEncryptionKey("ek2", std::move(update));
+  OnCommitDataLoaded();
   worker()->VerifyPendingCommits({{kHash1}});
 }
 
