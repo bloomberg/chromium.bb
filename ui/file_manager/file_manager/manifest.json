@@ -89,6 +89,9 @@
         "xhtml",
         "svg",
         "txt"
+      ],
+      "types": [
+        "text/plain"
       ]
     },
     "open-hosted-generic": {

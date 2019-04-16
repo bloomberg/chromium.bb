@@ -9,24 +9,23 @@
 
 (() => {
   /**
-   * Tests opening a PDF with missing filename extension from Files app.
+   * Tests opening a file with missing filename extension from Files app.
    *
    * @param {string} path Directory path (Downloads or Drive).
+   * @param {Object<TestEntryInfo>} entry FileSystem entry to use.
    */
-  async function pdfOpen(path) {
+  async function sniffedFileOpen(path, entry) {
     await sendTestMessage({
       name: 'expectFileTask',
-      fileNames: [ENTRIES.imgPdf.targetPath],
+      fileNames: [entry.targetPath],
       openType: 'launch'
     });
-
     // Open Files.App on |path|, add imgpdf to Downloads and Drive.
-    const appId =
-        await setupAndWaitUntilReady(path, [ENTRIES.imgPdf], [ENTRIES.imgPdf]);
+    const appId = await setupAndWaitUntilReady(path, [entry], [entry]);
 
     // Open the pdf file from Files app.
     chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-        'openFile', appId, [ENTRIES.imgPdf.targetPath]));
+        'openFile', appId, [entry.targetPath]));
     // Wait for a browser window to appear.
     const browserWindows = await getBrowserWindows();
     // Find the main (normal) browser window.
@@ -44,14 +43,22 @@
     chrome.test.assertTrue(tabs.length === 1);
     // Check the end of the URL matches the file we tried to open.
     const tail = tabs[0].url.replace(/.*\//, '');
-    chrome.test.assertTrue(tail === ENTRIES.imgPdf.targetPath);
+    chrome.test.assertTrue(tail === entry.targetPath);
   }
 
   testcase.pdfOpenDownloads = () => {
-    return pdfOpen(RootPath.DOWNLOADS);
+    return sniffedFileOpen(RootPath.DOWNLOADS, ENTRIES.imgPdf);
   };
 
   testcase.pdfOpenDrive = () => {
-    return pdfOpen(RootPath.DRIVE);
+    return sniffedFileOpen(RootPath.DRIVE, ENTRIES.imgPdf);
+  };
+
+  testcase.textOpenDownloads = () => {
+    return sniffedFileOpen(RootPath.DOWNLOADS, ENTRIES.plainText);
+  };
+
+  testcase.textOpenDrive = () => {
+    return sniffedFileOpen(RootPath.DRIVE, ENTRIES.plainText);
   };
 })();

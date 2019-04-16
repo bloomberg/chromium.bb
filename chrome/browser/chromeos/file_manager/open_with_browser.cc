@@ -168,7 +168,8 @@ bool OpenFileWithBrowser(Profile* profile,
   // For things supported natively by the browser, we should open it
   // in a tab.
   if (IsViewableInBrowser(file_path) ||
-      ShouldBeOpenedWithPlugin(profile, file_path.Extension(), action_id)) {
+      ShouldBeOpenedWithPlugin(profile, file_path.Extension(), action_id) ||
+      (action_id == "view-in-browser" && file_path.Extension() == "")) {
     // Use external file URL if it is provided for the file system.
     GURL page_url = chromeos::FileSystemURLToExternalFileURL(file_system_url);
     if (page_url.is_empty())
