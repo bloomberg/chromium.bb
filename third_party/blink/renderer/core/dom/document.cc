@@ -6661,6 +6661,10 @@ void Document::CancelFocusAppearanceUpdate() {
   update_focus_appearance_after_layout_ = false;
 }
 
+bool Document::WillUpdateFocusAppearance() const {
+  return update_focus_appearance_after_layout_;
+}
+
 void Document::UpdateFocusAppearance() {
   update_focus_appearance_after_layout_ = false;
   Element* element = FocusedElement();
