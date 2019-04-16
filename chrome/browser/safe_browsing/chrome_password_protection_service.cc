@@ -416,11 +416,6 @@ void ChromePasswordProtectionService::OnModalWarningShownForSignInPassword(
   LogWarningAction(WarningUIType::MODAL_DIALOG, WarningAction::SHOWN,
                    PasswordReuseEvent::SIGN_IN_PASSWORD, GetSyncAccountType());
 
-  if (GetSyncAccountType() == PasswordReuseEvent::GSUITE) {
-    OnPolicySpecifiedPasswordReuseDetected(web_contents->GetLastCommittedURL(),
-                                           /*is_phishing_url=*/true);
-  }
-
   if (!IsIncognito()) {
     DictionaryPrefUpdate update(
         profile_->GetPrefs(), prefs::kSafeBrowsingUnhandledSyncPasswordReuses);
@@ -476,12 +471,6 @@ void ChromePasswordProtectionService::ShowInterstitial(
 
   LogWarningAction(WarningUIType::INTERSTITIAL, WarningAction::SHOWN,
                    password_type, GetSyncAccountType());
-
-  if (password_type == PasswordReuseEvent::ENTERPRISE_PASSWORD ||
-      GetSyncAccountType() == PasswordReuseEvent::GSUITE) {
-    OnPolicySpecifiedPasswordReuseDetected(trigger_url,
-                                           /*is_phishing_url=*/false);
-  }
 }
 
 void ChromePasswordProtectionService::OnUserAction(
@@ -603,10 +592,7 @@ bool ChromePasswordProtectionService::IsPingingEnabled(
 
     PasswordProtectionTrigger trigger_level =
         GetPasswordProtectionWarningTriggerPref();
-    if (trigger_level == PASSWORD_REUSE) {
-      *reason = RequestOutcome::PASSWORD_ALERT_MODE;
-      return false;
-    } else if (trigger_level == PASSWORD_PROTECTION_OFF) {
+    if (trigger_level == PASSWORD_PROTECTION_OFF) {
       *reason = RequestOutcome::TURNED_OFF_BY_ADMIN;
       return false;
     }
@@ -952,7 +938,7 @@ void ChromePasswordProtectionService::OnGaiaPasswordChanged() {
   for (auto& observer : observer_list_)
     observer.OnGaiaPasswordChanged();
   if (GetSyncAccountType() == PasswordReuseEvent::GSUITE)
-    OnPolicySpecifiedPasswordChanged();
+    ReportPasswordChanged();
 }
 
 bool ChromePasswordProtectionService::UserClickedThroughSBInterstitial(
@@ -1167,18 +1153,19 @@ MaybeCreateNavigationThrottle(content::NavigationHandle* navigation_handle) {
 PasswordProtectionTrigger
 ChromePasswordProtectionService::GetPasswordProtectionWarningTriggerPref()
     const {
-  bool is_policy_managed = profile_->GetPrefs()->HasPrefPath(
-      prefs::kPasswordProtectionWarningTrigger);
-  PasswordProtectionTrigger trigger_level =
-      static_cast<PasswordProtectionTrigger>(profile_->GetPrefs()->GetInteger(
-          prefs::kPasswordProtectionWarningTrigger));
   PasswordReuseEvent::SyncAccountType account_type = GetSyncAccountType();
   switch (account_type) {
     case (PasswordReuseEvent::GMAIL):
-      return is_policy_managed ? trigger_level : PHISHING_REUSE;
+      return PHISHING_REUSE;
     case (PasswordReuseEvent::NOT_SIGNED_IN):
     case (PasswordReuseEvent::GSUITE): {
-      return is_policy_managed ? trigger_level : PASSWORD_PROTECTION_OFF;
+      bool is_policy_managed = profile_->GetPrefs()->HasPrefPath(
+          prefs::kPasswordProtectionWarningTrigger);
+      PasswordProtectionTrigger trigger_level =
+          static_cast<PasswordProtectionTrigger>(
+              profile_->GetPrefs()->GetInteger(
+                  prefs::kPasswordProtectionWarningTrigger));
+      return is_policy_managed ? trigger_level : PHISHING_REUSE;
     }
   }
   NOTREACHED();
@@ -1251,17 +1238,22 @@ std::string ChromePasswordProtectionService::GetOrganizationName(
   return email.empty() ? std::string() : gaia::ExtractDomainName(email);
 }
 
-void ChromePasswordProtectionService::OnPolicySpecifiedPasswordReuseDetected(
-    const GURL& url,
+void ChromePasswordProtectionService::MaybeReportPasswordReuseDetected(
+    content::WebContents* web_contents,
+    ReusedPasswordType reused_password_type,
     bool is_phishing_url) {
-  if (!IsIncognito()) {
+  bool can_log_password_reuse_event =
+      (reused_password_type == PasswordReuseEvent::ENTERPRISE_PASSWORD ||
+       GetSyncAccountType() == PasswordReuseEvent::GSUITE);
+  if (!IsIncognito() && can_log_password_reuse_event) {
     extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
-        ->OnPolicySpecifiedPasswordReuseDetected(url, GetAccountInfo().email,
-                                                 is_phishing_url);
+        ->OnPolicySpecifiedPasswordReuseDetected(
+            web_contents->GetLastCommittedURL(), GetAccountInfo().email,
+            is_phishing_url);
   }
 }
 
-void ChromePasswordProtectionService::OnPolicySpecifiedPasswordChanged() {
+void ChromePasswordProtectionService::ReportPasswordChanged() {
   if (!IsIncognito()) {
     extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
         ->OnPolicySpecifiedPasswordChanged(GetAccountInfo().email);

@@ -472,14 +472,14 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
           ->empty());
 }
 
-IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
-                       VerifyIsPasswordReuseProtectionConfigured) {
+IN_PROC_BROWSER_TEST_F(
+    ChromePasswordProtectionServiceBrowserTest,
+    VerifyIsPasswordReuseProtectionConfiguredForNonDomainUser) {
   Profile* profile = browser()->profile();
   ChromePasswordProtectionService* service = GetService(/*is_incognito=*/false);
   // If prefs::kPasswordProtectionWarningTrigger isn't set to PASSWORD_REUSE,
   // |IsPasswordReuseProtectionConfigured(..)| returns false.
-  EXPECT_EQ(PASSWORD_PROTECTION_OFF,
-            service->GetPasswordProtectionWarningTriggerPref());
+  EXPECT_EQ(PHISHING_REUSE, service->GetPasswordProtectionWarningTriggerPref());
   EXPECT_FALSE(
       ChromePasswordProtectionService::IsPasswordReuseProtectionConfigured(
           profile));
@@ -487,7 +487,25 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   SetUpPrimaryAccountWithHostedDomain(kNoHostedDomainFound);
   profile->GetPrefs()->SetInteger(prefs::kPasswordProtectionWarningTrigger,
                                   PasswordProtectionTrigger::PASSWORD_REUSE);
-  // Otherwise, |IsPasswordReuseProtectionConfigured(..)| returns true.
+  // Otherwise, |IsPasswordReuseProtectionConfigured(..)| returns false for
+  // GMAIL users.
+  EXPECT_FALSE(
+      ChromePasswordProtectionService::IsPasswordReuseProtectionConfigured(
+          profile));
+}
+
+IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
+                       VerifyIsPasswordReuseProtectionConfiguredForDomainUser) {
+  Profile* profile = browser()->profile();
+  ChromePasswordProtectionService* service = GetService(/*is_incognito=*/false);
+  SetUpPrimaryAccountWithHostedDomain("domain.com");
+  EXPECT_EQ(PHISHING_REUSE, service->GetPasswordProtectionWarningTriggerPref());
+  EXPECT_FALSE(
+      ChromePasswordProtectionService::IsPasswordReuseProtectionConfigured(
+          profile));
+
+  profile->GetPrefs()->SetInteger(prefs::kPasswordProtectionWarningTrigger,
+                                  PasswordProtectionTrigger::PASSWORD_REUSE);
   EXPECT_TRUE(
       ChromePasswordProtectionService::IsPasswordReuseProtectionConfigured(
           profile));
