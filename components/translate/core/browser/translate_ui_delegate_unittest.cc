@@ -93,7 +93,6 @@ TEST_F(TranslateUIDelegateTest, CheckDeclinedFalse) {
   EXPECT_CALL(*ranker_, RecordTranslateEvent(
                             metrics::TranslateEventProto::USER_IGNORE, _, _))
       .Times(1);
-  EXPECT_CALL(*client_, RecordTranslateEvent(_)).Times(1);
 
   std::unique_ptr<TranslatePrefs> prefs(client_->GetTranslatePrefs());
   for (int i = 0; i < 10; i++) {
@@ -117,7 +116,6 @@ TEST_F(TranslateUIDelegateTest, CheckDeclinedTrue) {
   EXPECT_CALL(*ranker_, RecordTranslateEvent(
                             metrics::TranslateEventProto::USER_DECLINE, _, _))
       .Times(1);
-  EXPECT_CALL(*client_, RecordTranslateEvent(_)).Times(1);
 
   std::unique_ptr<TranslatePrefs> prefs(client_->GetTranslatePrefs());
   for (int i = 0; i < 10; i++) {
@@ -141,7 +139,6 @@ TEST_F(TranslateUIDelegateTest, SetLanguageBlocked) {
       RecordTranslateEvent(
           metrics::TranslateEventProto::USER_NEVER_TRANSLATE_LANGUAGE, _, _))
       .Times(1);
-  EXPECT_CALL(*client_, RecordTranslateEvent(_)).Times(1);
 
   std::unique_ptr<TranslatePrefs> prefs(client_->GetTranslatePrefs());
   manager_->GetLanguageState().SetTranslateEnabled(true);

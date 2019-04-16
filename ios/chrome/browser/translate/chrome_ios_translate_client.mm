@@ -139,9 +139,6 @@ std::unique_ptr<infobars::InfoBar> ChromeIOSTranslateClient::CreateInfoBar(
   return std::make_unique<InfoBarIOS>(controller, std::move(delegate));
 }
 
-void ChromeIOSTranslateClient::RecordTranslateEvent(
-    const metrics::TranslateEventProto& translate_event) {}
-
 bool ChromeIOSTranslateClient::ShowTranslateUI(
     translate::TranslateStep step,
     const std::string& source_language,
@@ -192,9 +189,6 @@ ChromeIOSTranslateClient::GetTranslateAcceptLanguages() {
 int ChromeIOSTranslateClient::GetInfobarIconID() const {
   return IDR_IOS_INFOBAR_TRANSLATE;
 }
-
-void ChromeIOSTranslateClient::RecordLanguageDetectionEvent(
-    const translate::LanguageDetectionDetails& details) const {}
 
 bool ChromeIOSTranslateClient::IsTranslatableURL(const GURL& url) {
   return TranslateServiceIOS::IsTranslatableURL(url);

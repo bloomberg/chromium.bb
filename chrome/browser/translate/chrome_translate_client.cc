@@ -18,7 +18,6 @@
 #include "chrome/browser/language/language_model_manager_factory.h"
 #include "chrome/browser/language/url_language_histogram_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/browser/translate/translate_accept_languages_factory.h"
 #include "chrome/browser/translate/translate_ranker_factory.h"
 #include "chrome/browser/translate/translate_service.h"
@@ -34,9 +33,6 @@
 #include "components/language/core/browser/language_model_manager.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "components/sync/driver/sync_driver_switches.h"
-#include "components/sync/protocol/user_event_specifics.pb.h"
-#include "components/sync/user_events/user_event_service.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/page_translated_details.h"
 #include "components/translate/core/browser/translate_accept_languages.h"
@@ -181,9 +177,6 @@ void ChromeTranslateClient::GetTranslateLanguages(
                                  ->GetPrimaryModel());
 }
 
-void ChromeTranslateClient::RecordTranslateEvent(
-    const TranslateEventProto& translate_event) {}
-
 translate::TranslateManager* ChromeTranslateClient::GetTranslateManager() {
   return translate_manager_.get();
 }
@@ -276,9 +269,6 @@ void ChromeTranslateClient::SetPredefinedTargetLanguage(
   manager->SetPredefinedTargetLanguage(translate_language_code);
 }
 
-void ChromeTranslateClient::RecordLanguageDetectionEvent(
-    const translate::LanguageDetectionDetails& details) const {}
-
 bool ChromeTranslateClient::IsTranslatableURL(const GURL& url) {
   return TranslateService::IsTranslatableURL(url);
 }
@@ -318,8 +308,6 @@ void ChromeTranslateClient::OnLanguageDetermined(
       chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
       content::Source<content::WebContents>(web_contents()),
       content::Details<const translate::LanguageDetectionDetails>(&details));
-
-  RecordLanguageDetectionEvent(details);
 
 #if defined(OS_ANDROID)
   // See ChromeTranslateClient::ManualTranslateOnReady

@@ -94,8 +94,6 @@ void IOSTranslateDriver::OnLanguageDetermined(
   translate_manager_->GetLanguageState().LanguageDetermined(
       details.adopted_language, true);
 
-  translate_manager_->translate_client()->RecordLanguageDetectionEvent(details);
-
   if (web_state_)
     translate_manager_->InitiateTranslation(details.adopted_language);
 }
