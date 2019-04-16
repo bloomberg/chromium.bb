@@ -404,7 +404,11 @@
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chromeos/constants/chromeos_constants.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/services/cellular_setup/cellular_setup_service.h"
+#include "chromeos/services/cellular_setup/public/mojom/cellular_setup.mojom.h"
+#include "chromeos/services/cellular_setup/public/mojom/constants.mojom.h"
 #include "chromeos/services/ime/public/mojom/constants.mojom.h"
 #include "chromeos/services/secure_channel/public/mojom/constants.mojom.h"
 #include "chromeos/services/secure_channel/secure_channel_service.h"
@@ -4025,6 +4029,14 @@ void ChromeContentBrowserClient::HandleServiceRequest(
 #endif
 
 #if defined(OS_CHROMEOS)
+  if (service_name == chromeos::cellular_setup::mojom::kServiceName &&
+      base::FeatureList::IsEnabled(
+          chromeos::features::kUpdatedCellularActivationUi)) {
+    service_manager::Service::RunAsyncUntilTermination(
+        std::make_unique<chromeos::cellular_setup::CellularSetupService>(
+            std::move(request)));
+  }
+
   if (service_name == chromeos::secure_channel::mojom::kServiceName) {
     service_manager::Service::RunAsyncUntilTermination(
         std::make_unique<chromeos::secure_channel::SecureChannelService>(

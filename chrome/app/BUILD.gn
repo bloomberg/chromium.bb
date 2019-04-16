@@ -624,6 +624,7 @@ source_set("chrome_packaged_service_manifests") {
       "//ash/public/cpp:manifest",
       "//chrome/browser/chromeos:ash_pref_connector_manifest",
       "//chrome/services/cups_ipp_parser/public/cpp:manifest",
+      "//chromeos/services/cellular_setup/public/cpp:manifest",
       "//chromeos/services/ime/public/cpp:manifest",
       "//chromeos/services/secure_channel/public/cpp:manifest",
       "//services/ws/public/mojom/input_devices",

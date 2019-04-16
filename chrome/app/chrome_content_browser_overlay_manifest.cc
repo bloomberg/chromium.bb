@@ -144,6 +144,7 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
             // Only used in the classic Ash case
             .RequireCapability("ash_pref_connector", "pref_connector")
             .RequireCapability("assistant", "assistant")
+            .RequireCapability("cellular_setup", "cellular_setup")
             // Only used in the classic Ash case
             .RequireCapability("chrome", "input_device_controller")
             .RequireCapability("chrome_printing", "converter")
