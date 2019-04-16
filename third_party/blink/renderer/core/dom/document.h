@@ -1052,7 +1052,7 @@ class CORE_EXPORT Document : public ContainerNode,
   // there is no such element.
   HTMLLinkElement* LinkCanonical() const;
 
-  void UpdateFocusAppearanceLater();
+  void UpdateFocusAppearanceAfterLayout();
   void CancelFocusAppearanceUpdate();
 
   bool IsDNSPrefetchEnabled() const { return is_dns_prefetch_enabled_; }
@@ -1609,7 +1609,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void UpdateTitle(const String&);
   void DispatchDidReceiveTitle();
-  void UpdateFocusAppearanceTimerFired(TimerBase*);
+  void UpdateFocusAppearance();
   void UpdateBaseURL();
 
   void ExecuteScriptsWaitingForResources();
@@ -1799,7 +1799,7 @@ class CORE_EXPORT Document : public ContainerNode,
   Member<AXObjectCache> ax_object_cache_;
   Member<DocumentMarkerController> markers_;
 
-  TaskRunnerTimer<Document> update_focus_appearance_timer_;
+  bool update_focus_appearance_after_layout_ = false;
 
   Member<Element> css_target_;
 
