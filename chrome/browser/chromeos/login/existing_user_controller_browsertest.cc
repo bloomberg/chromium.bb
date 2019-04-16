@@ -47,7 +47,6 @@
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/cros_settings_provider.h"
-#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
@@ -90,7 +89,6 @@ const char kUserWhitelist[] = "*@gmail.com";
 const char kUserNotMatchingWhitelist[] = "user@another_mail.com";
 const char kSupervisedUserID[] = "supervised_user@locally-managed.localhost";
 const char kPassword[] = "test_password";
-const char kActiveDirectoryRealm[] = "active.directory.realm";
 
 const char kPublicSessionUserEmail[] = "public_session_user@localhost";
 const int kAutoLoginNoDelay = 0;
@@ -763,16 +761,15 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
 class ExistingUserControllerActiveDirectoryTest
     : public ExistingUserControllerTest {
  public:
-  ExistingUserControllerActiveDirectoryTest()
-      : install_attributes_(
-            chromeos::StubInstallAttributes::CreateActiveDirectoryManaged(
-                kActiveDirectoryRealm,
-                "device_id")) {}
-
-  // Overriden from DevicePolicyCrosBrowserTest:
-  void MarkOwnership() override {}
+  ExistingUserControllerActiveDirectoryTest() = default;
 
   // Overriden from ExistingUserControllerTest:
+  void SetUp() override {
+    device_state_.SetState(
+        DeviceStateMixin::State::OOBE_COMPLETED_ACTIVE_DIRECTORY_ENROLLED);
+    ExistingUserControllerTest::SetUp();
+  }
+
   void SetUpInProcessBrowserTestFixture() override {
     ExistingUserControllerTest::SetUpInProcessBrowserTestFixture();
 
@@ -897,7 +894,6 @@ class ExistingUserControllerActiveDirectoryTest
   }
 
  private:
-  chromeos::ScopedStubInstallAttributes install_attributes_;
   policy::MockConfigurationPolicyProvider policy_provider_;
 };
 

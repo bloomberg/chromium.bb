@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/file_manager/fake_disk_mount_manager.h"
 #include "chrome/browser/chromeos/login/app_launch_controller.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/network_portal_detector_mixin.h"
@@ -2197,8 +2198,6 @@ class KioskEnterpriseTest : public KioskTest {
   KioskEnterpriseTest() { set_use_consumer_kiosk_mode(false); }
 
   void SetUpInProcessBrowserTestFixture() override {
-    policy::DevicePolicyCrosTestHelper::MarkAsEnterpriseOwnedBy(
-        test_owner_account_id_.GetUserEmail());
     settings_helper_.SetCurrentUserIsOwner(false);
 
     KioskTest::SetUpInProcessBrowserTestFixture();
@@ -2262,6 +2261,10 @@ class KioskEnterpriseTest : public KioskTest {
 
  private:
   FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
+
+  DeviceStateMixin device_state_{
+      &mixin_host_,
+      chromeos::DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
 
   DISALLOW_COPY_AND_ASSIGN(KioskEnterpriseTest);
 };

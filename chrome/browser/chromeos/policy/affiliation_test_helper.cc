@@ -124,7 +124,6 @@ void AffiliationTestHelper::SetDeviceAffiliationIDs(
     // Create keys and sign policy. Note that Active Directory policy is
     // unsigned.
     test_helper->InstallOwnerKey();
-    test_helper->MarkAsEnterpriseOwned();
     device_policy->SetDefaultSigningKey();
   }
   device_policy->Build();

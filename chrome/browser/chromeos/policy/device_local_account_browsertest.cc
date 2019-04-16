@@ -479,9 +479,6 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
                argv.end());
     command_line->InitFromArgv(argv);
 
-    InstallOwnerKey();
-    MarkAsEnterpriseOwned();
-
     InitializePolicy();
   }
 

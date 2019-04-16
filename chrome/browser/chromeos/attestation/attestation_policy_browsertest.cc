@@ -34,7 +34,6 @@ class AttestationDevicePolicyTest
 
   void SetUpInProcessBrowserTestFixture() override {
     DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
-    InstallOwnerKey();
     RefreshDevicePolicy();
   }
 

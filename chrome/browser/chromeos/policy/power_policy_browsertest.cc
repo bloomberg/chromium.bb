@@ -129,7 +129,6 @@ class PowerPolicyBrowserTestBase : public DevicePolicyCrosBrowserTest {
   PowerPolicyBrowserTestBase();
 
   // DevicePolicyCrosBrowserTest:
-  void SetUpInProcessBrowserTestFixture() override;
   void SetUpOnMainThread() override;
 
   void InstallUserKey();
@@ -183,14 +182,6 @@ class PowerPolicyInSessionBrowserTest : public PowerPolicyBrowserTestBase {
 };
 
 PowerPolicyBrowserTestBase::PowerPolicyBrowserTestBase() = default;
-
-void PowerPolicyBrowserTestBase::SetUpInProcessBrowserTestFixture() {
-  DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
-
-  // Initialize device policy.
-  InstallOwnerKey();
-  MarkAsEnterpriseOwned();
-}
 
 void PowerPolicyBrowserTestBase::SetUpOnMainThread() {
   DevicePolicyCrosBrowserTest::SetUpOnMainThread();

@@ -19,6 +19,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/signin_partition_manager.h"
+#include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
@@ -542,7 +543,6 @@ class WebviewClientCertsLoginTest : public WebviewLoginTest {
 
   void SetUpInProcessBrowserTestFixture() override {
     device_policy_test_helper_.InstallOwnerKey();
-    device_policy_test_helper_.MarkAsEnterpriseOwned();
 
     // Override FakeSessionManagerClient. This will be shut down by the browser.
     chromeos::SessionManagerClient::InitializeFakeInMemory();
@@ -604,6 +604,9 @@ class WebviewClientCertsLoginTest : public WebviewLoginTest {
   std::unique_ptr<crypto::ScopedTestSystemNSSKeySlot> test_system_slot_;
   scoped_refptr<net::X509Certificate> client_cert_;
   std::unique_ptr<net::SpawnedTestServer> https_server_;
+
+  DeviceStateMixin device_state_{
+      &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
 
   DISALLOW_COPY_AND_ASSIGN(WebviewClientCertsLoginTest);
 };
@@ -897,7 +900,6 @@ class WebviewProxyAuthLoginTest : public WebviewLoginTest {
     WebviewLoginTest::SetUpInProcessBrowserTestFixture();
 
     device_policy_test_helper_.InstallOwnerKey();
-    device_policy_test_helper_.MarkAsEnterpriseOwned();
 
     FakeSessionManagerClient::Get()->set_device_policy(
         device_policy_builder()->GetBlob());
@@ -977,6 +979,9 @@ class WebviewProxyAuthLoginTest : public WebviewLoginTest {
   std::unique_ptr<net::SpawnedTestServer> auth_proxy_server_;
   LocalPolicyTestServerMixin local_policy_mixin_{&mixin_host_};
   policy::DevicePolicyCrosTestHelper device_policy_test_helper_;
+
+  DeviceStateMixin device_state_{
+      &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
 
   DISALLOW_COPY_AND_ASSIGN(WebviewProxyAuthLoginTest);
 };

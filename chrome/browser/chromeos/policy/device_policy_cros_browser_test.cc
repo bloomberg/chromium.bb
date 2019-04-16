@@ -30,36 +30,9 @@ using ::testing::Return;
 
 namespace policy {
 
-namespace {
-
-void WriteInstallAttributesFile(const std::string& install_attrs_blob) {
-  base::FilePath install_attrs_file;
-  ASSERT_TRUE(base::PathService::Get(
-      chromeos::dbus_paths::FILE_INSTALL_ATTRIBUTES, &install_attrs_file));
-  base::ScopedAllowBlockingForTesting allow_io;
-  ASSERT_EQ(base::checked_cast<int>(install_attrs_blob.size()),
-            base::WriteFile(install_attrs_file, install_attrs_blob.c_str(),
-                            install_attrs_blob.size()));
-}
-
-}  // namespace
-
 DevicePolicyCrosTestHelper::DevicePolicyCrosTestHelper() {}
 
 DevicePolicyCrosTestHelper::~DevicePolicyCrosTestHelper() {}
-
-// static
-void DevicePolicyCrosTestHelper::MarkAsEnterpriseOwnedBy(
-    const std::string& user_name) {
-  OverridePaths();
-  WriteInstallAttributesFile(
-      chromeos::InstallAttributes::
-          GetEnterpriseOwnedInstallAttributesBlobForTesting(user_name));
-}
-
-void DevicePolicyCrosTestHelper::MarkAsEnterpriseOwned() {
-  MarkAsEnterpriseOwnedBy(device_policy_.policy_data().username());
-}
 
 void DevicePolicyCrosTestHelper::InstallOwnerKey() {
   OverridePaths();
@@ -100,16 +73,7 @@ void DevicePolicyCrosBrowserTest::SetUp() {
 
 void DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture() {
   InstallOwnerKey();
-  MarkOwnership();
   chromeos::MixinBasedInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
-}
-
-void DevicePolicyCrosBrowserTest::MarkOwnership() {
-  MarkAsEnterpriseOwned();
-}
-
-void DevicePolicyCrosBrowserTest::MarkAsEnterpriseOwned() {
-  test_helper_.MarkAsEnterpriseOwned();
 }
 
 void DevicePolicyCrosBrowserTest::InstallOwnerKey() {

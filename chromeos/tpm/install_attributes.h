@@ -46,10 +46,6 @@ class COMPONENT_EXPORT(CHROMEOS_TPM) InstallAttributes {
   // A callback to handle responses of methods returning a LockResult value.
   typedef base::Callback<void(LockResult lock_result)> LockResultCallback;
 
-  // Return serialized InstallAttributes of an enterprise-owned configuration.
-  static std::string GetEnterpriseOwnedInstallAttributesBlobForTesting(
-      const std::string& user_name);
-
   // Manage singleton instance.
   static void Initialize();
   static bool IsInitialized();

@@ -116,8 +116,6 @@ class KeyRotationDeviceCloudPolicyTest : public DevicePolicyCrosBrowserTest {
 
   void SetUpInProcessBrowserTestFixture() override {
     DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
-    InstallOwnerKey();
-    MarkAsEnterpriseOwned();
     SetFakeDevicePolicy();
   }
 
@@ -286,8 +284,6 @@ class SigninExtensionsDeviceCloudPolicyBrowserTest
 
   void SetUpInProcessBrowserTestFixture() override {
     DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
-    InstallOwnerKey();
-    MarkAsEnterpriseOwned();
     SetFakeDevicePolicy();
 
     EXPECT_TRUE(

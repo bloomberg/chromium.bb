@@ -120,24 +120,6 @@ void InstallAttributes::ShutdownForTesting() {
   g_using_install_attributes_for_testing = false;
 }
 
-// static
-std::string
-InstallAttributes::GetEnterpriseOwnedInstallAttributesBlobForTesting(
-    const std::string& user_name) {
-  cryptohome::SerializedInstallAttributes install_attrs_proto;
-  cryptohome::SerializedInstallAttributes::Attribute* attribute = nullptr;
-
-  attribute = install_attrs_proto.add_attributes();
-  attribute->set_name(InstallAttributes::kAttrEnterpriseOwned);
-  attribute->set_value("true");
-
-  attribute = install_attrs_proto.add_attributes();
-  attribute->set_name(InstallAttributes::kAttrEnterpriseUser);
-  attribute->set_value(user_name);
-
-  return install_attrs_proto.SerializeAsString();
-}
-
 InstallAttributes::InstallAttributes(CryptohomeClient* cryptohome_client)
     : cryptohome_client_(cryptohome_client), weak_ptr_factory_(this) {}
 

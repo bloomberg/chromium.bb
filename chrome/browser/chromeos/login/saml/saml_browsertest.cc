@@ -32,6 +32,7 @@
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/screens/gaia_view.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/enrollment_ui_mixin.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/https_forwarder.h"
@@ -960,6 +961,10 @@ class SAMLPolicyTest : public SamlTest {
   policy::DevicePolicyBuilder* device_policy_;
   policy::MockConfigurationPolicyProvider provider_;
   net::CookieList cookie_list_;
+
+  chromeos::DeviceStateMixin device_state_{
+      &mixin_host_,
+      chromeos::DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SAMLPolicyTest);
