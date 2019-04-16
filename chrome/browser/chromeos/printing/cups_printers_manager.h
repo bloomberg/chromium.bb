@@ -34,10 +34,10 @@ class CupsPrintersManager : public KeyedService {
   // Classes of printers tracked.  See doc/cups_printer_management.md for
   // details on what these mean.
   enum PrinterClass {
-    kConfigured,
     kEnterprise,
     kAutomatic,
     kDiscovered,
+    kSaved,
     kNumPrinterClasses
   };
 
@@ -84,15 +84,15 @@ class CupsPrintersManager : public KeyedService {
   virtual void RemoveUnavailablePrinters(
       std::vector<Printer>* printers) const = 0;
 
-  // Update or save a printer as a configured printer.  If this is the same as
-  // an existing configured printer, the entry will be updated.  If the printer
-  // appears in a class other than configured, it will be moved to the
-  // configured class.
-  virtual void UpdateConfiguredPrinter(const Printer& printer) = 0;
+  // Update or save a printer as a saved printer.  If this is the same as
+  // an existing saved printer, the entry will be updated.  If the printer
+  // appears in a class other than saved, it will be moved to the
+  // saved class.
+  virtual void UpdateSavedPrinter(const Printer& printer) = 0;
 
-  // Remove the configured printer with the given id.  This is a NOP if
-  // the printer_id is not that of a configured printer.
-  virtual void RemoveConfiguredPrinter(const std::string& printer_id) = 0;
+  // Remove the saved printer with the given id.  This is a NOP if
+  // the printer_id is not that of a saved printer.
+  virtual void RemoveSavedPrinter(const std::string& printer_id) = 0;
 
   // Add or remove observers.  Observers must be on the same
   // sequence as the CupsPrintersManager.  Callbacks for a given observer
@@ -101,10 +101,10 @@ class CupsPrintersManager : public KeyedService {
   virtual void RemoveObserver(Observer* observer) = 0;
 
   // Record that the given printers has been installed in CUPS for usage.  If
-  // |printer| is not a configured or enterprise printer, this will have the
-  // side effect of moving |printer| into the configured class.
+  // |printer| is not a saved or enterprise printer, this will have the
+  // side effect of moving |printer| into the saved class.
   // Parameter |is_automatic| should be set to true if the printer was
-  // configured automatically (without requesting additional information
+  // saved automatically (without requesting additional information
   // from the user).
   virtual void PrinterInstalled(const Printer& printer, bool is_automatic) = 0;
 

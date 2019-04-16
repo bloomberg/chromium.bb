@@ -163,7 +163,7 @@ std::unique_ptr<base::DictionaryValue> MakeDictionaryFromNotification(
 
 std::string GetPrinterType(chromeos::CupsPrintersManager::PrinterClass type) {
   switch (type) {
-    case chromeos::CupsPrintersManager::PrinterClass::kConfigured:
+    case chromeos::CupsPrintersManager::PrinterClass::kSaved:
       return "configured";
     case chromeos::CupsPrintersManager::PrinterClass::kEnterprise:
       return "enterprise";
@@ -1194,7 +1194,7 @@ void AutotestPrivateGetPrinterListFunction::RespondWithSuccess() {
 void AutotestPrivateGetPrinterListFunction::OnEnterprisePrintersInitialized() {
   // We are ready to get the list of printers and finish.
   std::vector<chromeos::CupsPrintersManager::PrinterClass> printer_type = {
-      chromeos::CupsPrintersManager::PrinterClass::kConfigured,
+      chromeos::CupsPrintersManager::PrinterClass::kSaved,
       chromeos::CupsPrintersManager::PrinterClass::kEnterprise,
       chromeos::CupsPrintersManager::PrinterClass::kAutomatic};
   base::Value::ListStorage& vresults = results_->GetList();
@@ -1253,7 +1253,7 @@ ExtensionFunction::ResponseAction AutotestPrivateUpdatePrinterFunction::Run() {
   }
   auto printers_manager = chromeos::CupsPrintersManager::Create(
       Profile::FromBrowserContext(browser_context()));
-  printers_manager->UpdateConfiguredPrinter(printer);
+  printers_manager->UpdateSavedPrinter(printer);
   return RespondNow(NoArguments());
 }
 
@@ -1272,7 +1272,7 @@ ExtensionFunction::ResponseAction AutotestPrivateRemovePrinterFunction::Run() {
 
   auto printers_manager = chromeos::CupsPrintersManager::Create(
       Profile::FromBrowserContext(browser_context()));
-  printers_manager->RemoveConfiguredPrinter(params->printer_id);
+  printers_manager->RemoveSavedPrinter(params->printer_id);
   return RespondNow(NoArguments());
 }
 
