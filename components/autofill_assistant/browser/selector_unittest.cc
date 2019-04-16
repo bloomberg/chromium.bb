@@ -16,6 +16,7 @@ TEST(SelectorTest, FromProto) {
   proto.add_selectors("a");
   proto.add_selectors("b");
   proto.set_inner_text_pattern("c");
+  proto.set_value_pattern("d");
   proto.set_visibility_requirement(MUST_BE_VISIBLE);
   proto.set_pseudo_type(PseudoType::BEFORE);
 
@@ -23,6 +24,7 @@ TEST(SelectorTest, FromProto) {
   EXPECT_THAT(selector.selectors, testing::ElementsAre("a", "b"));
   EXPECT_TRUE(selector.must_be_visible);
   EXPECT_EQ("c", selector.inner_text_pattern);
+  EXPECT_EQ("d", selector.value_pattern);
   EXPECT_EQ(PseudoType::BEFORE, selector.pseudo_type);
 }
 
@@ -50,6 +52,13 @@ TEST(SelectorTest, Comparison) {
             Selector({"a"}).MatchingInnerText("b"));
   EXPECT_TRUE(Selector({"a"}).MatchingInnerText("a") ==
               Selector({"a"}).MatchingInnerText("a"));
+
+  EXPECT_FALSE(Selector({"a"}).MatchingValue("a") ==
+               Selector({"a"}).MatchingValue("b"));
+  EXPECT_LT(Selector({"a"}).MatchingValue("a"),
+            Selector({"a"}).MatchingValue("b"));
+  EXPECT_TRUE(Selector({"a"}).MatchingValue("a") ==
+              Selector({"a"}).MatchingValue("a"));
 }
 
 }  // namespace

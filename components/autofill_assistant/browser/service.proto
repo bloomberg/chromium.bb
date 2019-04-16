@@ -523,6 +523,14 @@ message ElementReferenceProto {
   // trying to get the pseudo_type, if any was set.
   optional string inner_text_pattern = 4;
 
+  // If non-empty, only take into accounts the elements matched by selector
+  // whose value matches the given JavaScript regex. This does a search,
+  // not a full match. Add ^ and $ as necessary.
+  //
+  // This is used to filter the elements matching the last selector, before
+  // trying to get the pseudo_type, if any was set.
+  optional string value_pattern = 6;
+
   // Specifies whether the matched element(s) must be visible.
   //
   // Visibility applies to the element matched in selectors; the pseudo type is

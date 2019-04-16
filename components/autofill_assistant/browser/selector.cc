@@ -16,6 +16,7 @@ Selector::Selector(const ElementReferenceProto& proto) {
   }
   must_be_visible = proto.visibility_requirement() == MUST_BE_VISIBLE;
   inner_text_pattern = proto.inner_text_pattern();
+  value_pattern = proto.value_pattern();
   pseudo_type = proto.pseudo_type();
 }
 
@@ -31,14 +32,17 @@ Selector& Selector::operator=(const Selector& other) = default;
 Selector& Selector::operator=(Selector&& other) = default;
 
 bool Selector::operator<(const Selector& other) const {
-  return std::tie(selectors, inner_text_pattern, must_be_visible, pseudo_type) <
+  return std::tie(selectors, inner_text_pattern, value_pattern, must_be_visible,
+                  pseudo_type) <
          std::tie(other.selectors, other.inner_text_pattern,
-                  other.must_be_visible, other.pseudo_type);
+                  other.value_pattern, other.must_be_visible,
+                  other.pseudo_type);
 }
 
 bool Selector::operator==(const Selector& other) const {
   return selectors == other.selectors &&
          inner_text_pattern == other.inner_text_pattern &&
+         value_pattern == other.value_pattern &&
          must_be_visible == other.must_be_visible &&
          pseudo_type == other.pseudo_type;
 }
@@ -116,6 +120,11 @@ std::ostream& operator<<(std::ostream& out, const Selector& selector) {
   if (!selector.inner_text_pattern.empty()) {
     out << " innerText =~ /";
     out << selector.inner_text_pattern;
+    out << "/";
+  }
+  if (!selector.value_pattern.empty()) {
+    out << " value =~ /";
+    out << selector.value_pattern;
     out << "/";
   }
   if (selector.must_be_visible) {

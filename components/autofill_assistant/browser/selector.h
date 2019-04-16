@@ -30,6 +30,10 @@ struct Selector {
   // of the element(s) matching selectors.
   std::string inner_text_pattern;
 
+  // If non-empty, this must be a regular expression that matches the value
+  // of the element(s) matching selectors.
+  std::string value_pattern;
+
   // An optional pseudo type. This pseudo type is associated to the final
   // element matched by |selectors|, which means that we currently don't handle
   // matching an element inside a pseudo element.
@@ -65,6 +69,12 @@ struct Selector {
   // Convenience function to set inner_text_pattern in a fluent style.
   Selector& MatchingInnerText(const std::string& pattern) {
     inner_text_pattern = pattern;
+    return *this;
+  }
+
+  // Convenience function to set inner_text_pattern in a fluent style.
+  Selector& MatchingValue(const std::string& pattern) {
+    value_pattern = pattern;
     return *this;
   }
 };
