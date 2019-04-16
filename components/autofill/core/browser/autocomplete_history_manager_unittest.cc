@@ -400,6 +400,21 @@ TEST_F(AutocompleteHistoryManagerTest,
                               /*is_off_the_record=*/false);
 }
 
+// Tests that the Init function will not crash even if we don't have a DB.
+TEST_F(AutocompleteHistoryManagerTest, Init_NullDB_NoCrash) {
+  // Enable the feature, and set the major version.
+  scoped_features.InitAndEnableFeature(
+      features::kAutocompleteRetentionPolicyEnabled);
+  prefs_->SetInteger(prefs::kAutocompleteLastVersionRetentionPolicy,
+                     CHROME_VERSION_MAJOR - 1);
+
+  EXPECT_CALL(*web_data_service_,
+              RemoveExpiredAutocompleteEntries(autocomplete_manager_.get()))
+      .Times(0);
+  autocomplete_manager_->Init(nullptr, prefs_.get(),
+                              /*is_off_the_record=*/false);
+}
+
 // Tests that the Init function will not trigger the Autocomplete Retention
 // Policy when running in a major version that was already cleaned.
 TEST_F(AutocompleteHistoryManagerTest,
