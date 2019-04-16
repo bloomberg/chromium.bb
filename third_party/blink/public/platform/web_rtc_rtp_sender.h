@@ -47,7 +47,7 @@ class BLINK_PLATFORM_EXPORT WebRTCRtpSender {
   virtual void SetParameters(blink::WebVector<webrtc::RtpEncodingParameters>,
                              webrtc::DegradationPreference,
                              WebRTCVoidRequest) = 0;
-  virtual void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>,
+  virtual void GetStats(blink::WebRTCStatsReportCallback,
                         const std::vector<webrtc::NonStandardGroupId>&) = 0;
 };
 

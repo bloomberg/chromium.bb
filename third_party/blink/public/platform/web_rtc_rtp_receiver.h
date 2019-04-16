@@ -42,7 +42,7 @@ class BLINK_PLATFORM_EXPORT WebRTCRtpReceiver {
   virtual const WebMediaStreamTrack& Track() const = 0;
   virtual WebVector<WebString> StreamIds() const = 0;
   virtual WebVector<std::unique_ptr<WebRTCRtpSource>> GetSources() = 0;
-  virtual void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>,
+  virtual void GetStats(blink::WebRTCStatsReportCallback,
                         const std::vector<webrtc::NonStandardGroupId>&) = 0;
   virtual std::unique_ptr<webrtc::RtpParameters> GetParameters() const = 0;
   virtual void SetJitterBufferMinimumDelay(

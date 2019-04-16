@@ -102,7 +102,7 @@ class RTCStatsCollectorCallbackImpl : public webrtc::RTCStatsCollectorCallback {
  public:
   static rtc::scoped_refptr<RTCStatsCollectorCallbackImpl> Create(
       scoped_refptr<base::SingleThreadTaskRunner> main_thread,
-      std::unique_ptr<blink::WebRTCStatsReportCallback> callback,
+      blink::WebRTCStatsReportCallback callback,
       const std::vector<webrtc::NonStandardGroupId>& exposed_group_ids);
 
   void OnStatsDelivered(
@@ -111,7 +111,7 @@ class RTCStatsCollectorCallbackImpl : public webrtc::RTCStatsCollectorCallback {
  protected:
   RTCStatsCollectorCallbackImpl(
       scoped_refptr<base::SingleThreadTaskRunner> main_thread,
-      blink::WebRTCStatsReportCallback* callback,
+      blink::WebRTCStatsReportCallback callback2,
       const std::vector<webrtc::NonStandardGroupId>& exposed_group_ids);
   ~RTCStatsCollectorCallbackImpl() override;
 
@@ -119,7 +119,7 @@ class RTCStatsCollectorCallbackImpl : public webrtc::RTCStatsCollectorCallback {
       rtc::scoped_refptr<const webrtc::RTCStatsReport> report);
 
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
-  std::unique_ptr<blink::WebRTCStatsReportCallback> callback_;
+  blink::WebRTCStatsReportCallback callback_;
   std::vector<webrtc::NonStandardGroupId> exposed_group_ids_;
 };
 

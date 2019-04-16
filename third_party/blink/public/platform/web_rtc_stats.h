@@ -89,12 +89,8 @@ class BLINK_PLATFORM_EXPORT WebRTCStatsMember {
   virtual WebVector<WebString> ValueSequenceString() const = 0;
 };
 
-class BLINK_PLATFORM_EXPORT WebRTCStatsReportCallback {
- public:
-  virtual ~WebRTCStatsReportCallback();
-
-  virtual void OnStatsDelivered(std::unique_ptr<WebRTCStatsReport>) = 0;
-};
+using WebRTCStatsReportCallback =
+    base::OnceCallback<void(std::unique_ptr<WebRTCStatsReport>)>;
 
 }  // namespace blink
 

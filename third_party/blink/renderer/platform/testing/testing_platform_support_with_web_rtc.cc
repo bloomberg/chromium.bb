@@ -79,7 +79,7 @@ class DummyWebRTCRtpSender : public WebRTCRtpSender {
   void SetParameters(blink::WebVector<webrtc::RtpEncodingParameters>,
                      webrtc::DegradationPreference,
                      WebRTCVoidRequest) override {}
-  void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>,
+  void GetStats(WebRTCStatsReportCallback,
                 const std::vector<webrtc::NonStandardGroupId>&) override {}
 
  private:
@@ -133,7 +133,7 @@ class DummyWebRTCRtpReceiver : public WebRTCRtpReceiver {
   WebVector<std::unique_ptr<WebRTCRtpSource>> GetSources() override {
     return WebVector<std::unique_ptr<WebRTCRtpSource>>();
   }
-  void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>,
+  void GetStats(WebRTCStatsReportCallback,
                 const std::vector<webrtc::NonStandardGroupId>&) override {}
   std::unique_ptr<webrtc::RtpParameters> GetParameters() const override {
     return nullptr;
@@ -317,7 +317,7 @@ webrtc::RTCErrorType MockWebRTCPeerConnectionHandler::SetConfiguration(
 void MockWebRTCPeerConnectionHandler::GetStats(const WebRTCStatsRequest&) {}
 
 void MockWebRTCPeerConnectionHandler::GetStats(
-    std::unique_ptr<WebRTCStatsReportCallback>,
+    blink::WebRTCStatsReportCallback,
     const std::vector<webrtc::NonStandardGroupId>&) {}
 
 webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>>

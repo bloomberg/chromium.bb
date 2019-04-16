@@ -18,7 +18,9 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_void_request_script_promise_resolver_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/web_rtc_stats_report_callback_resolver.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
@@ -455,7 +457,7 @@ ScriptPromise RTCRtpSender::getStats(ScriptState* script_state) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   sender_->GetStats(
-      std::make_unique<WebRTCStatsReportCallbackResolver>(resolver),
+      WTF::Bind(WebRTCStatsReportCallbackResolver, WrapPersistent(resolver)),
       GetExposedGroupIds(script_state));
   return promise;
 }
