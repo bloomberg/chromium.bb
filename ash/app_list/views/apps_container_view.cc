@@ -103,14 +103,20 @@ void AppsContainerView::ShowActiveFolder(AppListFolderItem* folder_item) {
 
   SetShowState(SHOW_ACTIVE_FOLDER, false);
 
-  // Avoid announcing search box focus since it is overlapped with opening
-  // folder alert.
-  auto* search_box = contents_view_->GetSearchBoxView()->search_box();
-  search_box->GetViewAccessibility().OverrideIsIgnored(true);
-
+  // If there is no selected view in the root grid when a folder is opened,
+  // silently focus the first item in the folder to avoid showing the selection
+  // highlight or announcing to A11y, but still ensuring the arrow keys navigate
+  // from the first item.
+  AppListItemView* first_item_view_in_folder_grid =
+      app_list_folder_view_->items_grid_view()->view_model()->view_at(0);
+  if (!apps_grid_view()->has_selected_view()) {
+    first_item_view_in_folder_grid->SilentlyRequestFocus();
+  } else {
+    first_item_view_in_folder_grid->RequestFocus();
+  }
   // Disable all the items behind the folder so that they will not be reached
   // during focus traversal.
-  search_box->RequestFocus();
+
   DisableFocusForShowingActiveFolder(true);
 }
 

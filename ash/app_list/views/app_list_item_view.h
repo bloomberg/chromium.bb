@@ -66,6 +66,9 @@ class APP_LIST_EXPORT AppListItemView
 
   void SetAsAttemptedFolderTarget(bool is_target_folder);
 
+  // Sets focus without a11y announcements or focus ring.
+  void SilentlyRequestFocus();
+
   AppListItem* item() const { return item_weak_; }
 
   views::Label* title() { return title_; }
@@ -236,6 +239,10 @@ class APP_LIST_EXPORT AppListItemView
   bool mouse_dragging_ = false;
   // True if the drag host proxy is crated for mouse dragging.
   bool mouse_drag_proxy_created_ = false;
+
+  // Whether AppsGridView should not be notified of a focus event, triggering
+  // A11y alerts and a focus ring.
+  bool focus_silently_ = false;
 
   // The animation that runs when dragged view enters or exits this view.
   std::unique_ptr<gfx::SlideAnimation> dragged_view_hover_animation_;

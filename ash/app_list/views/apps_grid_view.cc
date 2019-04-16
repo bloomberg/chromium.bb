@@ -2522,7 +2522,18 @@ void AppsGridView::SelectedPageChanged(int old_selected, int new_selected) {
     Layout();
     MaybeStartPageFlipTimer(last_drag_point_);
   } else {
-    ClearSelectedView(selected_view_);
+    // If |selected_view_| is no longer on the page, select the first item in
+    // the page relative to the page swap in order to keep keyboard focus
+    // movement predictable.
+    if (selected_view_ && GetIndexOfView(selected_view_).page != new_selected) {
+      GetViewAtIndex(
+          GridIndex(new_selected, (old_selected < new_selected)
+                                      ? 0
+                                      : (GetItemsNumOfPage(new_selected) - 1)))
+          ->RequestFocus();
+    } else {
+      ClearSelectedView(selected_view_);
+    }
     Layout();
   }
 }

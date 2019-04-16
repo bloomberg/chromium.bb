@@ -305,6 +305,8 @@ class AppListViewFocusTest : public views::ViewsTestBase,
 
   void Show() { view_->ShowWhenReady(); }
 
+  AppsGridViewTestApi* test_api() { return test_api_.get(); }
+
   void SimulateKeyPress(ui::KeyboardCode key_code,
                         bool shift_down,
                         bool ctrl_down = false) {
@@ -792,7 +794,6 @@ TEST_P(AppListViewFocusTest, LinearFocusTraversalInFolder) {
   EXPECT_TRUE(contents_view()->GetAppsContainerView()->IsInFolderView());
 
   std::vector<views::View*> forward_view_list;
-  forward_view_list.push_back(search_box_view()->search_box());
   const views::ViewModelT<AppListItemView>* view_model =
       app_list_folder_view()->items_grid_view()->view_model();
   for (int i = 0; i < view_model->view_size(); ++i)
@@ -800,6 +801,7 @@ TEST_P(AppListViewFocusTest, LinearFocusTraversalInFolder) {
   forward_view_list.push_back(
       app_list_folder_view()->folder_header_view()->GetFolderNameViewForTest());
   forward_view_list.push_back(search_box_view()->search_box());
+  forward_view_list.push_back(view_model->view_at(0));
   std::vector<views::View*> backward_view_list = forward_view_list;
   std::reverse(backward_view_list.begin(), backward_view_list.end());
 
@@ -937,7 +939,6 @@ TEST_F(AppListViewFocusTest, VerticalFocusTraversalInFirstPageOfFolder) {
   EXPECT_TRUE(contents_view()->GetAppsContainerView()->IsInFolderView());
 
   std::vector<views::View*> forward_view_list;
-  forward_view_list.push_back(search_box_view()->search_box());
   const views::ViewModelT<AppListItemView>* view_model =
       app_list_folder_view()->items_grid_view()->view_model();
   for (size_t i = 0; i < AppListConfig::instance().max_folder_items_per_page();
@@ -947,11 +948,13 @@ TEST_F(AppListViewFocusTest, VerticalFocusTraversalInFirstPageOfFolder) {
   forward_view_list.push_back(
       app_list_folder_view()->folder_header_view()->GetFolderNameViewForTest());
   forward_view_list.push_back(search_box_view()->search_box());
+  forward_view_list.push_back(view_model->view_at(0));
 
   // Test traversal triggered by down.
   TestFocusTraversal(forward_view_list, ui::VKEY_DOWN, false);
 
   std::vector<views::View*> backward_view_list;
+  backward_view_list.push_back(view_model->view_at(0));
   backward_view_list.push_back(search_box_view()->search_box());
   backward_view_list.push_back(
       app_list_folder_view()->folder_header_view()->GetFolderNameViewForTest());
@@ -981,7 +984,6 @@ TEST_F(AppListViewFocusTest, VerticalFocusTraversalInSecondPageOfFolder) {
       1, false /* animate */);
 
   std::vector<views::View*> forward_view_list;
-  forward_view_list.push_back(search_box_view()->search_box());
   const views::ViewModelT<AppListItemView>* view_model =
       app_list_folder_view()->items_grid_view()->view_model();
   for (int i = AppListConfig::instance().max_folder_items_per_page();
@@ -992,11 +994,15 @@ TEST_F(AppListViewFocusTest, VerticalFocusTraversalInSecondPageOfFolder) {
   forward_view_list.push_back(
       app_list_folder_view()->folder_header_view()->GetFolderNameViewForTest());
   forward_view_list.push_back(search_box_view()->search_box());
+  forward_view_list.push_back(view_model->view_at(
+      AppListConfig::instance().max_folder_items_per_page()));
 
   // Test traversal triggered by down.
   TestFocusTraversal(forward_view_list, ui::VKEY_DOWN, false);
 
   std::vector<views::View*> backward_view_list;
+  backward_view_list.push_back(view_model->view_at(
+      AppListConfig::instance().max_folder_items_per_page()));
   backward_view_list.push_back(search_box_view()->search_box());
   backward_view_list.push_back(
       app_list_folder_view()->folder_header_view()->GetFolderNameViewForTest());
@@ -1011,7 +1017,8 @@ TEST_F(AppListViewFocusTest, VerticalFocusTraversalInSecondPageOfFolder) {
   TestFocusTraversal(backward_view_list, ui::VKEY_UP, false);
 }
 
-// Tests that the focus is set back onto search box after state transition.
+// Tests that the focus is set back onto search box after all state transitions
+// besides those going to/from an activated folder.
 TEST_F(AppListViewFocusTest, FocusResetAfterStateTransition) {
   Show();
 
@@ -1021,6 +1028,7 @@ TEST_F(AppListViewFocusTest, FocusResetAfterStateTransition) {
   const int kTileResults = 3;
   const int kListResults = 2;
   SetUpSearchResults(kTileResults, kListResults, true);
+
   EXPECT_EQ(app_list_view()->app_list_state(),
             ash::mojom::AppListViewState::kHalf);
   EXPECT_EQ(search_box_view()->search_box(), focused_view());
@@ -1028,6 +1036,7 @@ TEST_F(AppListViewFocusTest, FocusResetAfterStateTransition) {
   // Move focus to the first search result, then transition to PEEKING state.
   SimulateKeyPress(ui::VKEY_TAB, false);
   SimulateKeyPress(ui::VKEY_TAB, false);
+
   SetAppListState(ash::mojom::AppListViewState::kPeeking);
   EXPECT_EQ(app_list_view()->app_list_state(),
             ash::mojom::AppListViewState::kPeeking);
@@ -1041,15 +1050,25 @@ TEST_F(AppListViewFocusTest, FocusResetAfterStateTransition) {
             ash::mojom::AppListViewState::kFullscreenAllApps);
   EXPECT_EQ(search_box_view()->search_box(), focused_view());
 
-  // Move focus to first suggestion app, then open the folder.
+  // Move focus to the folder and open it.
   folder_item_view()->RequestFocus();
   SimulateKeyPress(ui::VKEY_RETURN, false);
-  EXPECT_TRUE(contents_view()->GetAppsContainerView()->IsInFolderView());
-  EXPECT_EQ(search_box_view()->search_box(), focused_view());
 
-  // Move focus to the first app, then transition to PEEKING state.
-  SimulateKeyPress(ui::VKEY_TAB, false);
+  //  Test that the first item in the folder is focused.
+  EXPECT_TRUE(contents_view()->GetAppsContainerView()->IsInFolderView());
+  EXPECT_EQ(app_list_folder_view()->items_grid_view()->view_model()->view_at(0),
+            focused_view());
+
+  // Close the folder.
+  SimulateKeyPress(ui::VKEY_ESCAPE, false);
+
+  // Test that focus is on the previously activated folder item
+  EXPECT_EQ(folder_item_view(), focused_view());
+
+  // Transition to PEEKING state.
   SetAppListState(ash::mojom::AppListViewState::kPeeking);
+
+  // Test that the searchbox is focused.
   EXPECT_EQ(app_list_view()->app_list_state(),
             ash::mojom::AppListViewState::kPeeking);
   EXPECT_EQ(search_box_view()->search_box(), focused_view());
@@ -1433,6 +1452,90 @@ TEST_P(AppListViewFocusTest, FocusResetAfterHittingEnterOnFolderName) {
   SimulateKeyPress(ui::VKEY_RETURN, false);
   search_box_view()->search_box()->RequestFocus();
   EXPECT_FALSE(contents_view()->GetAppsContainerView()->IsInFolderView());
+}
+
+// Tests that the selection highlight follows the page change.
+TEST_F(AppListViewFocusTest, SelectionHighlightFollowsChangingPage) {
+  // Move the focus to the first app in the grid.
+  Show();
+  SetAppListState(ash::mojom::AppListViewState::kFullscreenAllApps);
+  const views::ViewModelT<AppListItemView>* view_model =
+      apps_grid_view()->view_model();
+  AppListItemView* first_item_view = view_model->view_at(0);
+  first_item_view->RequestFocus();
+  ASSERT_EQ(0, apps_grid_view()->pagination_model()->selected_page());
+
+  // Select the second page.
+  apps_grid_view()->pagination_model()->SelectPage(1, false);
+
+  // Test that focus followed to the next page.
+  EXPECT_EQ(view_model->view_at(test_api()->TilesPerPage(0)),
+            apps_grid_view()->GetSelectedView());
+
+  // Select the first page.
+  apps_grid_view()->pagination_model()->SelectPage(0, false);
+
+  // Test that focus followed.
+  EXPECT_EQ(view_model->view_at(test_api()->TilesPerPage(0) - 1),
+            apps_grid_view()->GetSelectedView());
+}
+
+// Tests that the selection highlight only shows up inside a folder if the
+// selection highlight existed on the folder before it opened.
+TEST_F(AppListViewFocusTest, SelectionDoesNotShowInFolderIfNotSelected) {
+  // Open a folder without making the view selected.
+  Show();
+  SetAppListState(ash::mojom::AppListViewState::kFullscreenAllApps);
+  const gfx::Point folder_item_view_bounds =
+      folder_item_view()->bounds().CenterPoint();
+  ui::GestureEvent tap(folder_item_view_bounds.x(), folder_item_view_bounds.y(),
+                       0, base::TimeTicks(),
+                       ui::GestureEventDetails(ui::ET_GESTURE_TAP));
+  folder_item_view()->OnGestureEvent(&tap);
+  ASSERT_TRUE(contents_view()->GetAppsContainerView()->IsInFolderView());
+
+  // Test that there is no selected view in the folders grid view, but the first
+  // item is focused.
+  AppsGridView* items_grid_view = app_list_folder_view()->items_grid_view();
+  EXPECT_FALSE(items_grid_view->has_selected_view());
+  EXPECT_EQ(items_grid_view->view_model()->view_at(0), focused_view());
+
+  // Hide the folder, expect that the folder is not selected, but is focused.
+  app_list_view()->AcceleratorPressed(
+      ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
+  EXPECT_FALSE(apps_grid_view()->has_selected_view());
+  EXPECT_EQ(folder_item_view(), focused_view());
+}
+
+// Tests that the selection highlight only shows on the activated folder if it
+// existed within the folder.
+TEST_F(AppListViewFocusTest, SelectionGoesIntoFolderIfSelected) {
+  // Open a folder without making the view selected.
+  Show();
+  SetAppListState(ash::mojom::AppListViewState::kFullscreenAllApps);
+
+  folder_item_view()->RequestFocus();
+  ASSERT_TRUE(apps_grid_view()->IsSelectedView(folder_item_view()));
+
+  // Show the folder.
+  const gfx::Point folder_item_view_bounds =
+      folder_item_view()->bounds().CenterPoint();
+  ui::GestureEvent tap(folder_item_view_bounds.x(), folder_item_view_bounds.y(),
+                       0, base::TimeTicks(),
+                       ui::GestureEventDetails(ui::ET_GESTURE_TAP));
+  folder_item_view()->OnGestureEvent(&tap);
+  ASSERT_TRUE(contents_view()->GetAppsContainerView()->IsInFolderView());
+
+  // Test that the focused view is also selected.
+  AppsGridView* items_grid_view = app_list_folder_view()->items_grid_view();
+  EXPECT_EQ(items_grid_view->GetSelectedView(), focused_view());
+  EXPECT_EQ(items_grid_view->view_model()->view_at(0), focused_view());
+
+  // Hide the folder, expect that the folder is selected and focused.
+  app_list_view()->AcceleratorPressed(
+      ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
+  EXPECT_TRUE(apps_grid_view()->IsSelectedView(folder_item_view()));
+  EXPECT_EQ(folder_item_view(), focused_view());
 }
 
 // Tests that opening the app list opens in peeking mode by default.
