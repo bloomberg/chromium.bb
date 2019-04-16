@@ -354,6 +354,103 @@
             .then(task.done.bind(task));
       });
 
+      audit.define('cancel future setTarget', (task, should) => {
+        const context =
+            new OfflineAudioContext(1, renderDuration * sampleRate, sampleRate);
+        const src = new ConstantSourceNode(context);
+        src.connect(context.destination);
+
+        src.offset.setValueAtTime(0.5, 0);
+        src.offset.setTargetAtTime(0, 0.75 * renderDuration, 0.1);
+        // Now cancel the effect of the setTarget.
+        src.offset.cancelAndHoldAtTime(0.5 * renderDuration);
+
+        src.start();
+        context.startRendering()
+            .then(buffer => {
+              let actual = buffer.getChannelData(0);
+              // Because the setTarget was cancelled, the output should be a
+              // constant.
+              should(actual, 'After cancelling future setTarget event, output')
+                  .beConstantValueOf(0.5);
+            })
+            .then(task.done.bind(task));
+      });
+
+      audit.define('cancel setTarget now', (task, should) => {
+        const context =
+            new OfflineAudioContext(1, renderDuration * sampleRate, sampleRate);
+        const src = new ConstantSourceNode(context);
+        src.connect(context.destination);
+
+        src.offset.setValueAtTime(0.5, 0);
+        src.offset.setTargetAtTime(0, 0.5 * renderDuration, 0.1);
+        // Now cancel the effect of the setTarget.
+        src.offset.cancelAndHoldAtTime(0.5 * renderDuration);
+
+        src.start();
+        context.startRendering()
+            .then(buffer => {
+              let actual = buffer.getChannelData(0);
+              // Because the setTarget was cancelled, the output should be a
+              // constant.
+              should(
+                  actual,
+                  'After cancelling setTarget event starting now, output')
+                  .beConstantValueOf(0.5);
+            })
+            .then(task.done.bind(task));
+      });
+
+      audit.define('cancel future setValueCurve', (task, should) => {
+        const context =
+            new OfflineAudioContext(1, renderDuration * sampleRate, sampleRate);
+        const src = new ConstantSourceNode(context);
+        src.connect(context.destination);
+
+        src.offset.setValueAtTime(0.5, 0);
+        src.offset.setValueCurveAtTime([-1, 1], 0.75 * renderDuration, 0.1);
+        // Now cancel the effect of the setTarget.
+        src.offset.cancelAndHoldAtTime(0.5 * renderDuration);
+
+        src.start();
+        context.startRendering()
+            .then(buffer => {
+              let actual = buffer.getChannelData(0);
+              // Because the setTarget was cancelled, the output should be a
+              // constant.
+              should(
+                  actual, 'After cancelling future setValueCurve event, output')
+                  .beConstantValueOf(0.5);
+            })
+            .then(task.done.bind(task));
+      });
+
+      audit.define('cancel setValueCurve now', (task, should) => {
+        const context =
+            new OfflineAudioContext(1, renderDuration * sampleRate, sampleRate);
+        const src = new ConstantSourceNode(context);
+        src.connect(context.destination);
+
+        src.offset.setValueAtTime(0.5, 0);
+        src.offset.setValueCurveAtTime([-1, 1], 0.5 * renderDuration, 0.1);
+        // Now cancel the effect of the setTarget.
+        src.offset.cancelAndHoldAtTime(0.5 * renderDuration);
+
+        src.start();
+        context.startRendering()
+            .then(buffer => {
+              let actual = buffer.getChannelData(0);
+              // Because the setTarget was cancelled, the output should be a
+              // constant.
+              should(
+                  actual,
+                  'After cancelling current setValueCurve event starting now, output')
+                  .beConstantValueOf(0.5);
+            })
+            .then(task.done.bind(task));
+      });
+
       audit.run();
 
       // Common function for doing a linearRamp test.  This just does a linear
