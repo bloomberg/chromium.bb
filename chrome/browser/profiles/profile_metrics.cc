@@ -152,6 +152,24 @@ enum ProfileAvatar {
   AVATAR_ORIGAMI_PINKBUTTERFLY = 37,
   AVATAR_ORIGAMI_RABBIT = 38,
   AVATAR_ORIGAMI_UNICORN = 39,
+  AVATAR_ILLUSTRATION_BASKETBALL = 40,
+  AVATAR_ILLUSTRATION_BIKE = 41,
+  AVATAR_ILLUSTRATION_BIRD = 42,
+  AVATAR_ILLUSTRATION_CHEESE = 43,
+  AVATAR_ILLUSTRATION_FOOTBALL = 44,
+  AVATAR_ILLUSTRATION_RAMEN = 45,
+  AVATAR_ILLUSTRATION_SUNGLASSES = 46,
+  AVATAR_ILLUSTRATION_SUSHI = 47,
+  AVATAR_ILLUSTRATION_TAMAGOTCHI = 48,
+  AVATAR_ILLUSTRATION_VINYL = 49,
+  AVATAR_ABSTRACT_AVOCADO = 50,
+  AVATAR_ABSTRACT_CAPPUCCINO = 51,
+  AVATAR_ABSTRACT_ICECREAM = 52,
+  AVATAR_ABSTRACT_ICEWATER = 53,
+  AVATAR_ABSTRACT_MELON = 54,
+  AVATAR_ABSTRACT_ONIGIRI = 55,
+  AVATAR_ABSTRACT_PIZZA = 56,
+  AVATAR_ABSTRACT_SANDWICH = 57,
   NUM_PROFILE_AVATAR_METRICS
 };
 
@@ -335,6 +353,60 @@ void ProfileMetrics::LogProfileAvatarSelection(size_t icon_index) {
       break;
     case 37:
       icon_name = AVATAR_ORIGAMI_UNICORN;
+      break;
+    case 38:
+      icon_name = AVATAR_ILLUSTRATION_BASKETBALL;
+      break;
+    case 39:
+      icon_name = AVATAR_ILLUSTRATION_BIKE;
+      break;
+    case 40:
+      icon_name = AVATAR_ILLUSTRATION_BIRD;
+      break;
+    case 41:
+      icon_name = AVATAR_ILLUSTRATION_CHEESE;
+      break;
+    case 42:
+      icon_name = AVATAR_ILLUSTRATION_FOOTBALL;
+      break;
+    case 43:
+      icon_name = AVATAR_ILLUSTRATION_RAMEN;
+      break;
+    case 44:
+      icon_name = AVATAR_ILLUSTRATION_SUNGLASSES;
+      break;
+    case 45:
+      icon_name = AVATAR_ILLUSTRATION_SUSHI;
+      break;
+    case 46:
+      icon_name = AVATAR_ILLUSTRATION_TAMAGOTCHI;
+      break;
+    case 47:
+      icon_name = AVATAR_ILLUSTRATION_VINYL;
+      break;
+    case 48:
+      icon_name = AVATAR_ABSTRACT_AVOCADO;
+      break;
+    case 49:
+      icon_name = AVATAR_ABSTRACT_CAPPUCCINO;
+      break;
+    case 50:
+      icon_name = AVATAR_ABSTRACT_ICECREAM;
+      break;
+    case 51:
+      icon_name = AVATAR_ABSTRACT_ICEWATER;
+      break;
+    case 52:
+      icon_name = AVATAR_ABSTRACT_MELON;
+      break;
+    case 53:
+      icon_name = AVATAR_ABSTRACT_ONIGIRI;
+      break;
+    case 54:
+      icon_name = AVATAR_ABSTRACT_PIZZA;
+      break;
+    case 55:
+      icon_name = AVATAR_ABSTRACT_SANDWICH;
       break;
     case SIZE_MAX:
       icon_name = AVATAR_GAIA;
