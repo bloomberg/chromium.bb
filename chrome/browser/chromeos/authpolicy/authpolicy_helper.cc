@@ -14,6 +14,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
 #include "chromeos/tpm/install_attributes.h"
+#include "components/account_id/account_id.h"
 #include "crypto/encryptor.h"
 #include "crypto/hmac.h"
 #include "crypto/symmetric_key.h"
@@ -120,7 +121,10 @@ std::string DoDecrypt(const std::string& encrypted_data,
 
 }  // namespace
 
-AuthPolicyHelper::AuthPolicyHelper() : weak_factory_(this) {}
+AuthPolicyHelper::AuthPolicyHelper() : weak_factory_(this) {
+  AuthPolicyClient::Get()->WaitForServiceToBeAvailable(base::BindOnce(
+      &AuthPolicyHelper::OnServiceAvailable, weak_factory_.GetWeakPtr()));
+}
 
 // static
 void AuthPolicyHelper::TryAuthenticateUser(const std::string& username,
@@ -154,6 +158,7 @@ void AuthPolicyHelper::JoinAdDomain(const std::string& machine_name,
                                     const std::string& username,
                                     const std::string& password,
                                     JoinCallback callback) {
+  DCHECK(service_is_available_);
   DCHECK(!InstallAttributes::Get()->IsActiveDirectoryManaged());
   DCHECK(!weak_factory_.HasWeakPtrs()) << "Another operation is in progress";
   authpolicy::JoinDomainRequest request;
@@ -182,6 +187,7 @@ void AuthPolicyHelper::AuthenticateUser(const std::string& username,
                                         const std::string& object_guid,
                                         const std::string& password,
                                         AuthCallback callback) {
+  DCHECK(service_is_available_);
   DCHECK(!weak_factory_.HasWeakPtrs()) << "Another operation is in progress";
   authpolicy::AuthenticateUserRequest request;
   request.set_user_principal_name(username);
@@ -192,10 +198,37 @@ void AuthPolicyHelper::AuthenticateUser(const std::string& username,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
+void AuthPolicyHelper::RefreshDevicePolicy(RefreshPolicyCallback callback) {
+  if (service_is_available_) {
+    AuthPolicyClient::Get()->RefreshDevicePolicy(std::move(callback));
+    return;
+  }
+  DCHECK(!device_policy_callback_);
+  device_policy_callback_ = std::move(callback);
+}
+
+void AuthPolicyHelper::RefreshUserPolicy(const AccountId& account_id,
+                                         RefreshPolicyCallback callback) const {
+  DCHECK(service_is_available_);
+  AuthPolicyClient::Get()->RefreshUserPolicy(account_id, std::move(callback));
+}
+
 void AuthPolicyHelper::CancelRequestsAndRestart() {
   weak_factory_.InvalidateWeakPtrs();
   dm_token_.clear();
   AuthPolicyHelper::Restart();
+  service_is_available_ = false;
+  AuthPolicyClient::Get()->WaitForServiceToBeAvailable(base::BindOnce(
+      &AuthPolicyHelper::OnServiceAvailable, weak_factory_.GetWeakPtr()));
+}
+
+void AuthPolicyHelper::OnServiceAvailable(bool service_is_available) {
+  DCHECK(service_is_available);
+  service_is_available_ = true;
+  if (device_policy_callback_) {
+    AuthPolicyClient::Get()->RefreshDevicePolicy(
+        std::move(device_policy_callback_));
+  }
 }
 
 void AuthPolicyHelper::OnJoinCallback(JoinCallback callback,
@@ -229,6 +262,7 @@ void AuthPolicyHelper::OnAuthCallback(
     AuthCallback callback,
     authpolicy::ErrorType error,
     const authpolicy::ActiveDirectoryAccountInfo& account_info) {
+  DCHECK_NE(authpolicy::ERROR_DBUS_FAILURE, error);
   std::move(callback).Run(error, account_info);
 }
 

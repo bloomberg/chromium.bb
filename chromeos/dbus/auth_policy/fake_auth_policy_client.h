@@ -12,6 +12,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/auth_policy/auth_policy_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
@@ -125,6 +126,10 @@ class COMPONENT_EXPORT(AUTH_POLICY) FakeAuthPolicyClient
     device_affiliation_ids_ = std::move(ids);
   }
 
+  void set_refresh_user_policy_error(authpolicy::ErrorType error) {
+    refresh_user_policy_error_ = error;
+  }
+
   void DisableOperationDelayForTesting() {
     dbus_operation_delay_ = disk_operation_delay_ =
         base::TimeDelta::FromSeconds(0);
@@ -170,6 +175,8 @@ class COMPONENT_EXPORT(AUTH_POLICY) FakeAuthPolicyClient
 
   std::vector<WaitForServiceToBeAvailableCallback>
       wait_for_service_to_be_available_callbacks_;
+
+  base::Optional<authpolicy::ErrorType> refresh_user_policy_error_;
 
   base::WeakPtrFactory<FakeAuthPolicyClient> weak_factory_{this};
 

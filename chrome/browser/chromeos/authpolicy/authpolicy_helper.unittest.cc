@@ -17,7 +17,7 @@ constexpr char kDMToken[] = "dm_token";
 
 class MockAuthPolicyClient : public FakeAuthPolicyClient {
  public:
-  MockAuthPolicyClient() = default;
+  MockAuthPolicyClient() { SetStarted(true); }
   ~MockAuthPolicyClient() override = default;
 
   void JoinAdDomain(const authpolicy::JoinDomainRequest& request,
