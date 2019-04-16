@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.notifications.NotificationBuilderBase;
 import org.chromium.chrome.browser.notifications.NotificationMetadata;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.webapk.lib.client.WebApkServiceConnectionManager;
 import org.chromium.webapk.lib.runtime_library.IWebApkApi;
 
@@ -72,8 +73,8 @@ public class WebApkServiceClient {
     }
 
     private WebApkServiceClient() {
-        mConnectionManager =
-                new WebApkServiceConnectionManager(CATEGORY_WEBAPK_API, null /* action */);
+        mConnectionManager = new WebApkServiceConnectionManager(
+                UiThreadTaskTraits.DEFAULT, CATEGORY_WEBAPK_API, null /* action */);
     }
 
     /**

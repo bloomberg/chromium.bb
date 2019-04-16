@@ -15,11 +15,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
+import org.robolectric.android.util.concurrent.RoboExecutorService;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowLooper;
 
-import org.chromium.base.task.test.CustomShadowAsyncTask;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 import org.chromium.webapk.lib.common.identity_service.IIdentityService;
@@ -29,8 +31,7 @@ import org.chromium.webapk.test.WebApkTestHelper;
  * Unit tests for {@link org.chromium.webapk.lib.client.WebApkIdentityServiceClient}.
  */
 @RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, packageName = WebApkIdentityServiceClientTest.BROWSER_PACKAGE_NAME,
-        shadows = {CustomShadowAsyncTask.class})
+@Config(manifest = Config.NONE, packageName = WebApkIdentityServiceClientTest.BROWSER_PACKAGE_NAME)
 public class WebApkIdentityServiceClientTest {
     static final String BROWSER_PACKAGE_NAME = "browser";
 
@@ -68,11 +69,13 @@ public class WebApkIdentityServiceClientTest {
     @Before
     public void setUp() {
         mShadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
+        PostTask.setPrenativeThreadPoolExecutorForTesting(new RoboExecutorService());
     }
 
     @After
     public void tearDown() {
         WebApkIdentityServiceClient.disconnectAll(RuntimeEnvironment.application);
+        PostTask.resetPrenativeThreadPoolExecutorForTesting();
     }
 
     /**
@@ -86,6 +89,8 @@ public class WebApkIdentityServiceClientTest {
         registerWebApk(ANOTHER_BROWSER_PACKAGE_NAME /*webApkRuntimeHost*/,
                 WebApkIdentityServiceClient.SHELL_APK_VERSION_SUPPORTING_SWITCH_RUNTIME_HOST - 1
                 /*shellApkVersion*/);
+        mShadowApplication.declareActionUnbindable(
+                WebApkIdentityServiceClient.ACTION_WEBAPK_IDENTITY_SERVICE);
 
         Assert.assertFalse(doesBrowserBackWebApk());
     }
@@ -101,6 +106,8 @@ public class WebApkIdentityServiceClientTest {
         registerWebApk(BROWSER_PACKAGE_NAME /*webApkRuntimeHost*/,
                 WebApkIdentityServiceClient.SHELL_APK_VERSION_SUPPORTING_SWITCH_RUNTIME_HOST - 1
                 /*shellApkVersion*/);
+        mShadowApplication.declareActionUnbindable(
+                WebApkIdentityServiceClient.ACTION_WEBAPK_IDENTITY_SERVICE);
 
         Assert.assertTrue(doesBrowserBackWebApk());
     }
@@ -115,6 +122,8 @@ public class WebApkIdentityServiceClientTest {
         registerWebApk(BROWSER_PACKAGE_NAME /*webApkRuntimeHost*/,
                 WebApkIdentityServiceClient.SHELL_APK_VERSION_SUPPORTING_SWITCH_RUNTIME_HOST
                 /*shellApkVersion*/);
+        mShadowApplication.declareActionUnbindable(
+                WebApkIdentityServiceClient.ACTION_WEBAPK_IDENTITY_SERVICE);
 
         Assert.assertFalse(doesBrowserBackWebApk());
     }
@@ -162,8 +171,9 @@ public class WebApkIdentityServiceClientTest {
     /** Checks whether the browser backs the WebAPK. */
     private boolean doesBrowserBackWebApk() {
         TestCheckBacksWebApkCallback callback = new TestCheckBacksWebApkCallback();
-        WebApkIdentityServiceClient.getInstance().checkBrowserBacksWebApkAsync(
-                RuntimeEnvironment.application, WEBAPK_PACKAGE_NAME, callback);
+        WebApkIdentityServiceClient.getInstance(TaskTraits.BEST_EFFORT_MAY_BLOCK)
+                .checkBrowserBacksWebApkAsync(
+                        RuntimeEnvironment.application, WEBAPK_PACKAGE_NAME, callback);
         ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
 
         Assert.assertTrue(callback.mIsCalled);
