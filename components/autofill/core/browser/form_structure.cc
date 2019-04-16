@@ -9,6 +9,8 @@
 #include <algorithm>
 #include <map>
 #include <memory>
+#include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -459,6 +461,22 @@ void EncodeFieldMetadataForQuery(const FormFieldData& field,
       base::UTF16ToUTF8(field.css_classes));
   metadata->mutable_placeholder()->set_encoded_bits(
       base::UTF16ToUTF8(field.placeholder));
+}
+
+// Creates the type relationship rules map. The keys represent the type that has
+// rules, and the value represents the list of required types for the given
+// key. In order to respect the rule, only one of the required types is needed.
+// For example, for Autofill to support fields of type
+// "PHONE_HOME_COUNTRY_CODE", there would need to be at least one other field
+// of type "PHONE_HOME_NUMBER" or "PHONE_HOME_CITY_AND_NUMBER".
+const std::unordered_map<ServerFieldType, ServerFieldTypeSet>&
+GetTypeRelationshipMap() {
+  // Initialized and cached on first use.
+  static const auto* const rules =
+      new std::unordered_map<ServerFieldType, ServerFieldTypeSet>(
+          {{PHONE_HOME_COUNTRY_CODE,
+            {PHONE_HOME_NUMBER, PHONE_HOME_CITY_AND_NUMBER}}});
+  return *rules;
 }
 
 }  // namespace
@@ -1720,6 +1738,7 @@ void FormStructure::RationalizeFieldTypePredictions() {
       field->SetTypeTo(field->Type());
     }
   }
+  RationalizeTypeRelationships();
 }
 
 void FormStructure::EncodeFormForQuery(
@@ -2028,6 +2047,40 @@ base::string16 FormStructure::GetIdentifierForRefill() const {
 void FormStructure::set_randomized_encoder(
     std::unique_ptr<RandomizedEncoder> encoder) {
   randomized_encoder_ = std::move(encoder);
+}
+
+void FormStructure::RationalizeTypeRelationships() {
+  // Create a local set of all the types for faster lookup.
+  std::unordered_set<ServerFieldType> types;
+  for (const auto& field : fields_) {
+    types.insert(field->Type().GetStorableType());
+  }
+
+  const auto& type_relationship_rules = GetTypeRelationshipMap();
+
+  for (const auto& field : fields_) {
+    ServerFieldType field_type = field->Type().GetStorableType();
+    const auto& ruleset_iterator = type_relationship_rules.find(field_type);
+    if (ruleset_iterator != type_relationship_rules.end()) {
+      // We have relationship rules for this type. Verify that at least one of
+      // the required related type is present.
+      bool found = false;
+      for (ServerFieldType required_type : ruleset_iterator->second) {
+        if (types.find(required_type) != types.end()) {
+          // Found a required type, we can break as we only need one required
+          // type to respect the rule.
+          found = true;
+          break;
+        }
+      }
+
+      if (!found) {
+        // No required type was found, the current field failed the relationship
+        // requirements for its type. Disabling Autofill for this field.
+        field->SetTypeTo(AutofillType(UNKNOWN_TYPE));
+      }
+    }
+  }
 }
 
 }  // namespace autofill

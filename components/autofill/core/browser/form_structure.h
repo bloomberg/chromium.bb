@@ -442,6 +442,10 @@ class FormStructure {
   // Tunes the fields with identical predictions.
   void RationalizeRepeatedFields(AutofillMetrics::FormInteractionsUkmLogger*);
 
+  // Filters out fields that don't meet the relationship ruleset for their type
+  // defined in |type_relationships_rules_|.
+  void RationalizeTypeRelationships();
+
   // A helper function to review the predictions and do appropriate adjustments
   // when it considers necessary.
   void RationalizeFieldTypePredictions();
