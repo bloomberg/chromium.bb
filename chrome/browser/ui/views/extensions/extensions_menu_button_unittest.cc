@@ -16,7 +16,8 @@
 class ExtensionsMenuButtonTest : public BrowserWithTestWindowTest {
  protected:
   ExtensionsMenuButtonTest()
-      : initial_extension_name_(base::ASCIIToUTF16("Initial Extension Name")) {}
+      : initial_extension_name_(base::ASCIIToUTF16("Initial Extension Name")),
+        initial_tooltip_(base::ASCIIToUTF16("Initial tooltip")) {}
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
 
@@ -41,6 +42,7 @@ class ExtensionsMenuButtonTest : public BrowserWithTestWindowTest {
         std::make_unique<TestToolbarActionViewController>("hello");
     controller_ = controller.get();
     controller_->SetActionName(initial_extension_name_);
+    controller_->SetTooltip(initial_tooltip_);
     button_ = std::make_unique<ExtensionsMenuButton>(browser(),
                                                      std::move(controller));
     button_->set_owned_by_client();
@@ -63,6 +65,7 @@ class ExtensionsMenuButtonTest : public BrowserWithTestWindowTest {
   }
 
   const base::string16 initial_extension_name_;
+  const base::string16 initial_tooltip_;
   std::unique_ptr<views::Widget> widget_;
   std::unique_ptr<ExtensionsMenuButton> button_;
   TestToolbarActionViewController* controller_ = nullptr;
@@ -81,4 +84,13 @@ TEST_F(ExtensionsMenuButtonTest, NotifyClickExecutesAction) {
   EXPECT_EQ(0, controller_->execute_action_count());
   TriggerNotifyClick();
   EXPECT_EQ(1, controller_->execute_action_count());
+}
+
+TEST_F(ExtensionsMenuButtonTest, UpdatesToDisplayTooltip) {
+  EXPECT_EQ(button_->GetTooltipText(gfx::Point()), initial_tooltip_);
+
+  base::string16 tooltip = base::ASCIIToUTF16("New Tooltip");
+  controller_->SetTooltip(tooltip);
+
+  EXPECT_EQ(button_->GetTooltipText(gfx::Point()), tooltip);
 }
