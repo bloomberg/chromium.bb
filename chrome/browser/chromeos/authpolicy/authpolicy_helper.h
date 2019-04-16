@@ -22,15 +22,15 @@ class AuthPolicyHelper {
  public:
   using AuthCallback = AuthPolicyClient::AuthCallback;
   using JoinCallback = AuthPolicyClient::JoinCallback;
+  using RefreshPolicyCallback = AuthPolicyClient::RefreshPolicyCallback;
   using OnDecryptedCallback =
       base::OnceCallback<void(std::string decrypted_data)>;
 
   AuthPolicyHelper();
   ~AuthPolicyHelper();
 
-  // Try to get Kerberos TGT. To get an error code of this call one should use
-  // last_auth_error_ returned from AuthPolicyClient::GetUserStatus afterwards.
-  // (see https://crbug.com/710452).
+  // Tries to get Kerberos TGT. To get TGT and password statuses one should use
+  // AuthPolicyClient::GetUserStatus afterwards.
   static void TryAuthenticateUser(const std::string& username,
                                   const std::string& object_guid,
                                   const std::string& password);
@@ -72,7 +72,17 @@ class AuthPolicyHelper {
                         const std::string& password,
                         AuthCallback callback);
 
-  // Cancel pending requests and restarts AuthPolicy service.
+  // Refreshes device policy. Waits for authpolicy D-Bus service to start if
+  // needed. When Chrome starts it tries to refresh device policy immediately.
+  // If authpolicy daemon being started at the same time - device policy fetch
+  // could fail. Could happen after reboot only on the login screen. So handle
+  // it for device policy only.
+  void RefreshDevicePolicy(RefreshPolicyCallback callback);
+  // Does not wait for authpolicyd D-Bus service. Added for symmetry.
+  void RefreshUserPolicy(const AccountId& account_id,
+                         RefreshPolicyCallback callback) const;
+
+  // Cancels pending requests and restarts AuthPolicy service.
   void CancelRequestsAndRestart();
 
   // Sets the DM token. Will be sent to authpolicy with the domain join call.
@@ -80,6 +90,8 @@ class AuthPolicyHelper {
   void set_dm_token(const std::string& dm_token) { dm_token_ = dm_token; }
 
  private:
+  void OnServiceAvailable(bool service_is_available);
+
   // Called from AuthPolicyClient::JoinAdDomain.
   void OnJoinCallback(JoinCallback callback,
                       authpolicy::ErrorType error,
@@ -98,6 +110,9 @@ class AuthPolicyHelper {
       const authpolicy::ActiveDirectoryAccountInfo& account_info);
 
   std::string dm_token_;
+
+  bool service_is_available_ = false;
+  RefreshPolicyCallback device_policy_callback_;
 
   base::WeakPtrFactory<AuthPolicyHelper> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(AuthPolicyHelper);

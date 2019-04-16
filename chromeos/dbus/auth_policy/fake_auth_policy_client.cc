@@ -210,6 +210,13 @@ void FakeAuthPolicyClient::RefreshDevicePolicy(RefreshPolicyCallback callback) {
 
 void FakeAuthPolicyClient::RefreshUserPolicy(const AccountId& account_id,
                                              RefreshPolicyCallback callback) {
+  if (refresh_user_policy_error_.has_value()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  refresh_user_policy_error_.value()));
+    refresh_user_policy_error_.reset();
+    return;
+  }
   DCHECK(InstallAttributes::Get()->IsActiveDirectoryManaged());
   if (!started_) {
     LOG(ERROR) << "authpolicyd not started";
@@ -254,9 +261,9 @@ void FakeAuthPolicyClient::ConnectToSignal(
 void FakeAuthPolicyClient::WaitForServiceToBeAvailable(
     dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback) {
   if (started_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(callback), true /* service_is_available */));
+    // Explicitly violate async pattern so testing code would not have to wait
+    // the callback.
+    std::move(callback).Run(true /* service_is_available */);
     return;
   }
   wait_for_service_to_be_available_callbacks_.push_back(std::move(callback));
