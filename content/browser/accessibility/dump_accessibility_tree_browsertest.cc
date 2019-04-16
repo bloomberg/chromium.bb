@@ -860,8 +860,9 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunAriaTest(FILE_PATH_LITERAL("aria-sort-aria-grid.html"));
 }
 
+// Flaky. http://crbug.com/952904
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       AccessibilityAriaSetCountsWithTreeLevels) {
+                       DISABLED_AccessibilityAriaSetCountsWithTreeLevels) {
   RunAriaTest(FILE_PATH_LITERAL("aria-set-counts-with-tree-levels.html"));
 }
 
