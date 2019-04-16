@@ -28,15 +28,23 @@ void SkiaOutputDeviceOffscreen::Reshape(const gfx::Size& size,
                                         float device_scale_factor,
                                         const gfx::ColorSpace& color_space,
                                         bool has_alpha) {
-  image_info_ = SkImageInfo::Make(
-      size.width(), size.height(),
-      has_alpha_ ? kRGBA_8888_SkColorType : kRGB_888x_SkColorType,
-      has_alpha_ ? kPremul_SkAlphaType : kOpaque_SkAlphaType);
+  // Some Vulkan drivers do not support kRGB_888x_SkColorType. Always use
+  // kRGBA_8888_SkColorType instead and initialize surface to opaque alpha.
+  image_info_ =
+      SkImageInfo::Make(size.width(), size.height(), kRGBA_8888_SkColorType,
+                        has_alpha_ ? kPremul_SkAlphaType : kOpaque_SkAlphaType);
   draw_surface_ = SkSurface::MakeRenderTarget(
       gr_context_, SkBudgeted::kNo, image_info_, 0 /* sampleCount */,
       capabilities_.flipped_output_surface ? kTopLeft_GrSurfaceOrigin
                                            : kBottomLeft_GrSurfaceOrigin,
       nullptr /* surfaceProps */);
+  DCHECK(!!draw_surface_);
+
+  // Initialize alpha channel to opaque.
+  if (!has_alpha_) {
+    auto* canvas = draw_surface_->getCanvas();
+    canvas->clear(SkColorSetARGB(255, 0, 0, 0));
+  }
 }
 
 gfx::SwapResponse SkiaOutputDeviceOffscreen::PostSubBuffer(
