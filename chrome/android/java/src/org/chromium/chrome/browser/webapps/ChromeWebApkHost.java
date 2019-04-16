@@ -12,6 +12,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromeVersionInfo;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.webapk.lib.client.WebApkIdentityServiceClient;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
@@ -59,7 +60,8 @@ public class ChromeWebApkHost {
             ApplicationStatus.registerApplicationStateListener(sListener);
         }
 
-        WebApkIdentityServiceClient.getInstance().checkBrowserBacksWebApkAsync(
-                ContextUtils.getApplicationContext(), webApkPackageName, callback);
+        WebApkIdentityServiceClient.getInstance(UiThreadTaskTraits.DEFAULT)
+                .checkBrowserBacksWebApkAsync(
+                        ContextUtils.getApplicationContext(), webApkPackageName, callback);
     }
 }
