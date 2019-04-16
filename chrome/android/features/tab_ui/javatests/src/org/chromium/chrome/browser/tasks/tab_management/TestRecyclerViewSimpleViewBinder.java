@@ -20,8 +20,7 @@ import org.chromium.ui.modelutil.SimpleRecyclerViewMcpBase;
  */
 public class TestRecyclerViewSimpleViewBinder<VH extends RecyclerView.ViewHolder>
         implements PropertyModelChangeProcessor.ViewBinder<PropertyModel, VH, PropertyKey> {
-    private SimpleRecyclerViewMcpBase
-            .ViewBinder<PropertyModel, VH, PropertyKey> mInternalViewBinder;
+    SimpleRecyclerViewMcpBase.ViewBinder<PropertyModel, VH, PropertyKey> mInternalViewBinder;
 
     /**
      * Main constructor
