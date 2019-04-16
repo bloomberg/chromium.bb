@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContentViewD
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchInternalStateController.InternalState;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchSelectionController.SelectionType;
+import org.chromium.chrome.browser.contextualsearch.ResolvedSearchTerm.CardTag;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationParams;
@@ -670,19 +671,22 @@ public class ContextualSearchManager
      *        to the server along with user action results in a subsequent request.
      * @param searchUrlFull The URL for the full search to present in the overlay, or empty.
      * @param searchUrlPreload The URL for the search to preload into the overlay, or empty.
+     * @param cocaCardTag The primary internal Coca card tag for the response, or {@code 0} if none.
      */
     @CalledByNative
     public void onSearchTermResolutionResponse(boolean isNetworkUnavailable, int responseCode,
             final String searchTerm, final String displayText, final String alternateTerm,
             final String mid, boolean doPreventPreload, int selectionStartAdjust,
             int selectionEndAdjust, final String contextLanguage, final String thumbnailUrl,
-            final String caption, final String quickActionUri, final int quickActionCategory,
-            final long loggedEventId, final String searchUrlFull, final String searchUrlPreload) {
-        mNetworkCommunicator.handleSearchTermResolutionResponse(
-                new ResolvedSearchTerm(isNetworkUnavailable, responseCode, searchTerm, displayText,
-                        alternateTerm, mid, doPreventPreload, selectionStartAdjust,
-                        selectionEndAdjust, contextLanguage, thumbnailUrl, caption, quickActionUri,
-                        quickActionCategory, loggedEventId, searchUrlFull, searchUrlPreload));
+            final String caption, final String quickActionUri,
+            @QuickActionCategory final int quickActionCategory, final long loggedEventId,
+            final String searchUrlFull, final String searchUrlPreload,
+            @CardTag final int cocaCardTag) {
+        mNetworkCommunicator.handleSearchTermResolutionResponse(new ResolvedSearchTerm(
+                isNetworkUnavailable, responseCode, searchTerm, displayText, alternateTerm, mid,
+                doPreventPreload, selectionStartAdjust, selectionEndAdjust, contextLanguage,
+                thumbnailUrl, caption, quickActionUri, quickActionCategory, loggedEventId,
+                searchUrlFull, searchUrlPreload, cocaCardTag));
     }
 
     @Override
@@ -742,6 +746,7 @@ public class ContextualSearchManager
                 quickActionShown, resolvedSearchTerm.quickActionCategory());
         mSearchPanel.getPanelMetrics().setWasQuickActionShown(
                 quickActionShown, resolvedSearchTerm.quickActionCategory());
+        ContextualSearchUma.logCardTag(resolvedSearchTerm.cardTagEnum());
 
         // If there was an error, fall back onto a literal search for the selection.
         // Since we're showing the panel, there must be a selection.

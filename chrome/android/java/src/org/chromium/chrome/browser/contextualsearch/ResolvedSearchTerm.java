@@ -4,10 +4,36 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
+import android.support.annotation.IntDef;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 /**
  * Encapsulates the results of a server Resolve request into a single immutable object.
  */
 public class ResolvedSearchTerm {
+    @IntDef({CardTag.CT_NONE, CardTag.CT_OTHER, CardTag.CT_HAS_ENTITY, CardTag.CT_BUSINESS,
+            CardTag.CT_PRODUCT, CardTag.CT_CONTACT, CardTag.CT_EMAIL, CardTag.CT_LOCATION,
+            CardTag.CT_URL, CardTag.CT_DEFINITION, CardTag.CT_TRANSLATE,
+            CardTag.CT_CONTEXTUAL_DEFINITION})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface CardTag {
+        int CT_NONE = 0;
+        int CT_OTHER = 1;
+        int CT_HAS_ENTITY = 2;
+        int CT_BUSINESS = 3;
+        int CT_PRODUCT = 4;
+        int CT_CONTACT = 5;
+        int CT_EMAIL = 6;
+        int CT_LOCATION = 7;
+        int CT_URL = 8;
+        int CT_DEFINITION = 9;
+        int CT_TRANSLATE = 10;
+        int CT_CONTEXTUAL_DEFINITION = 11;
+        int NUM_ENTRIES = 12;
+    }
+
     private final boolean mIsNetworkUnavailable;
     private final int mResponseCode;
     private final String mSearchTerm;
@@ -26,6 +52,8 @@ public class ResolvedSearchTerm {
     private final long mLoggedEventId;
     private final String mSearchUrlFull;
     private final String mSearchUrlPreload;
+    @CardTag
+    private final int mCardTagEnum;
 
     /**
      * Called in response to the
@@ -53,13 +81,15 @@ public class ResolvedSearchTerm {
      *        to the server along with user action results in a subsequent request.
      * @param searchUrlFull The URL for the full search to present in the overlay, or empty.
      * @param searchUrlPreload The URL for the search to preload into the overlay, or empty.
+     * @param cardTag The primary internal Coca card tag for the resolution, or {@code 0} if none.
      */
     ResolvedSearchTerm(boolean isNetworkUnavailable, int responseCode, final String searchTerm,
             final String displayText, final String alternateTerm, final String mid,
             boolean doPreventPreload, int selectionStartAdjust, int selectionEndAdjust,
             final String contextLanguage, final String thumbnailUrl, final String caption,
-            final String quickActionUri, final int quickActionCategory, final long loggedEventId,
-            final String searchUrlFull, final String searchUrlPreload) {
+            final String quickActionUri, @QuickActionCategory final int quickActionCategory,
+            final long loggedEventId, final String searchUrlFull, final String searchUrlPreload,
+            final int cardTag) {
         mIsNetworkUnavailable = isNetworkUnavailable;
         mResponseCode = responseCode;
         mSearchTerm = searchTerm;
@@ -77,6 +107,7 @@ public class ResolvedSearchTerm {
         mLoggedEventId = loggedEventId;
         mSearchUrlFull = searchUrlFull;
         mSearchUrlPreload = searchUrlPreload;
+        mCardTagEnum = fromCocaCardTag(cardTag);
     }
 
     /**
@@ -94,7 +125,7 @@ public class ResolvedSearchTerm {
     ResolvedSearchTerm(boolean isNetworkUnavailable, int responseCode, final String searchTerm,
             final String displayText, final String alternateTerm, boolean doPreventPreload) {
         this(isNetworkUnavailable, responseCode, searchTerm, displayText, alternateTerm, "",
-                doPreventPreload, 0, 0, "", "", "", "", QuickActionCategory.NONE, 0L, "", "");
+                doPreventPreload, 0, 0, "", "", "", "", QuickActionCategory.NONE, 0L, "", "", 0);
     }
 
     public boolean isNetworkUnavailable() {
@@ -163,5 +194,38 @@ public class ResolvedSearchTerm {
 
     public String searchUrlPreload() {
         return mSearchUrlPreload;
+    }
+
+    public @CardTag int cardTagEnum() {
+        return mCardTagEnum;
+    }
+
+    public static @CardTag int fromCocaCardTag(int internalCocaCardTag) {
+        switch (internalCocaCardTag) {
+            case 0:
+                return CardTag.CT_NONE;
+            case 43:
+                return CardTag.CT_HAS_ENTITY;
+            case 5:
+                return CardTag.CT_BUSINESS;
+            case 26:
+                return CardTag.CT_PRODUCT;
+            case 8:
+                return CardTag.CT_CONTACT;
+            case 13:
+                return CardTag.CT_EMAIL;
+            case 21:
+                return CardTag.CT_LOCATION;
+            case 40:
+                return CardTag.CT_URL;
+            case 11:
+                return CardTag.CT_DEFINITION;
+            case 39:
+                return CardTag.CT_TRANSLATE;
+            case 47:
+                return CardTag.CT_CONTEXTUAL_DEFINITION;
+            default:
+                return CardTag.CT_OTHER;
+        }
     }
 }

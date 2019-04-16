@@ -9329,6 +9329,21 @@ Called by update_net_error_codes.py.-->
   <int value="11" label="Misc, Not Seen"/>
 </enum>
 
+<enum name="ContextualSearchCardTag">
+  <int value="0" label="None"/>
+  <int value="1" label="CT_OTHER"/>
+  <int value="2" label="CT_HAS_ENTITY"/>
+  <int value="3" label="CT_BUSINESS"/>
+  <int value="4" label="CT_PRODUCT"/>
+  <int value="5" label="CT_CONTACT"/>
+  <int value="6" label="CT_EMAIL"/>
+  <int value="7" label="CT_LOCATION"/>
+  <int value="8" label="CT_URL"/>
+  <int value="9" label="CT_DEFINITION"/>
+  <int value="10" label="CT_TRANSLATE"/>
+  <int value="11" label="CT_CONTEXTUAL_DEFINITION"/>
+</enum>
+
 <enum name="ContextualSearchEnterClosedStateChange">
   <int value="0" label="From Other"/>
   <int value="1" label="From Peeked (back press)"/>

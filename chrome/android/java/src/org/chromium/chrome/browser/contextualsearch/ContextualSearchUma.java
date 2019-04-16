@@ -12,6 +12,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
+import org.chromium.chrome.browser.contextualsearch.ResolvedSearchTerm.CardTag;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.components.sync.AndroidSyncSettings;
 
@@ -1430,6 +1431,16 @@ public class ContextualSearchUma {
                 "Search.ContextualSearchQuickActions.Clicked."
                         + getLabelForQuickActionCategory(quickActionCategory),
                  wasClicked);
+    }
+
+    /**
+     * Logs the primary CoCa {@link CardTag} for a recent resolve, including {@codeCardTag.CT_NONE}
+     * when no card or tag, and {@codeCardTag.CT_OTHER} when it's one we do not recognize.
+     * @param cardTagEnum The primary CoCa card Tag for the result.
+     */
+    public static void logCardTag(@CardTag int cardTagEnum) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "Search.ContextualSearch.CardTag", cardTagEnum, CardTag.NUM_ENTRIES);
     }
 
     /**
