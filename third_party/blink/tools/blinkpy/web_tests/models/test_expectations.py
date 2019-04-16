@@ -719,7 +719,7 @@ class TestExpectationsModel(object):
 
     def get_expectations_string(self, test):
         """Returns the expectations for the given test as an uppercase string.
-        If there are no expectations for the test, then "PASS" is returned.
+        If there are no expectations for the test, KeyError is raised.
         """
         if self.get_expectation_line(test).is_extra_skipped_test:
             return 'NOTRUN'
