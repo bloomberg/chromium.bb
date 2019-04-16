@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_APP_MODE_KIOSK_OEM_MANIFEST_PARSER_H_
-#define CHROMEOS_APP_MODE_KIOSK_OEM_MANIFEST_PARSER_H_
+#ifndef CHROMEOS_SYSTEM_KIOSK_OEM_MANIFEST_PARSER_H_
+#define CHROMEOS_SYSTEM_KIOSK_OEM_MANIFEST_PARSER_H_
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 
 namespace chromeos {
 
 // Parser for app kiosk OEM manifest files.
-class CHROMEOS_EXPORT KioskOemManifestParser {
+class COMPONENT_EXPORT(CHROMEOS_SYSTEM) KioskOemManifestParser {
  public:
   // Kiosk OEM manifest.
   struct Manifest {
@@ -33,8 +33,7 @@ class CHROMEOS_EXPORT KioskOemManifestParser {
 
   // Loads manifest from |kiosk_oem_file|. Returns true if manifest was
   // found and successfully parsed.
-  static bool Load(const base::FilePath& kiosk_oem_file,
-                   Manifest* manifest);
+  static bool Load(const base::FilePath& kiosk_oem_file, Manifest* manifest);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(KioskOemManifestParser);
@@ -42,4 +41,4 @@ class CHROMEOS_EXPORT KioskOemManifestParser {
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_APP_MODE_KIOSK_OEM_MANIFEST_PARSER_H_
+#endif  // CHROMEOS_SYSTEM_KIOSK_OEM_MANIFEST_PARSER_H_

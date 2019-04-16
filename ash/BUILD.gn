@@ -1331,12 +1331,12 @@ component("ash") {
     "//cc",
     "//cc/debug",
     "//cc/paint:paint",
-    "//chromeos",
     "//chromeos/assistant:buildflags",
 
     # TODO(stevenjb): Investigate whether this is OK. https://crbug.com/644336.
     "//chromeos/audio",
     "//chromeos/components/multidevice/logging",
+    "//chromeos/constants",
     "//chromeos/dbus",
 
     # TODO(stevenjb): Investigate whether this is OK. https://crbug.com/644336.
@@ -1354,6 +1354,7 @@ component("ash") {
     "//chromeos/services/multidevice_setup/public/mojom",
     "//chromeos/settings",
     "//chromeos/strings",
+    "//chromeos/system",
     "//components/account_id",
     "//components/device_event_log",
     "//components/discardable_memory/service",
@@ -1534,13 +1535,14 @@ static_library("ash_shell_lib_with_content") {
     "//ash/public/cpp:manifest_for_tests",
     "//base:i18n",
     "//chrome:packed_resources",
-    "//chromeos",
 
     # TODO(stevenjb): Investigate whether this is OK. https://crbug.com/644336.
     "//chromeos/audio",
+    "//chromeos/constants",
     "//chromeos/dbus",
     "//chromeos/dbus/biod",
     "//chromeos/dbus/power",
+    "//chromeos/system",
     "//components/discardable_memory/public/interfaces",
     "//components/services/font:lib",
     "//components/services/font/public/interfaces",
@@ -1939,11 +1941,11 @@ test("ash_unittests") {
     "//ash/system/message_center/arc:test_support",
     "//base",
     "//base/test:test_support",
-    "//chromeos",
     "//chromeos:test_support",
 
     # TODO(stevenjb): Investigate whether this is OK. https://crbug.com/644336.
     "//chromeos/audio",
+    "//chromeos/constants",
     "//chromeos/dbus:test_support",
     "//chromeos/dbus/hammerd",
     "//chromeos/dbus/power",
@@ -1954,6 +1956,7 @@ test("ash_unittests") {
     "//chromeos/services/assistant:test_support",
     "//chromeos/services/multidevice_setup/public/cpp:test_support",
     "//chromeos/services/multidevice_setup/public/mojom",
+    "//chromeos/system",
     "//components/account_id",
     "//components/arc:notification_test_support",
     "//components/exo",
@@ -2220,11 +2223,11 @@ static_library("test_support") {
     "//base:i18n",
     "//base/test:test_support",
     "//cc:test_support",
-    "//chromeos",
 
     # TODO(https://crbug.com/644336): Move CrasAudioHandler to Chrome or Ash
     # only and add a mojo client.
     "//chromeos/audio",
+    "//chromeos/constants",
     "//chromeos/dbus:test_support",
 
     # TODO(https://crbug.com/644336): Remove dependencies on CrasAudioClient.
@@ -2234,6 +2237,7 @@ static_library("test_support") {
 
     # TODO(stevenjb): Remove this dependency, https://crbug.com/644355.
     "//chromeos/network:test_support",
+    "//chromeos/system",
     "//components/account_id",
     "//components/prefs:test_support",
     "//components/user_manager:user_manager",

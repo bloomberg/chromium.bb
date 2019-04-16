@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/app_mode/kiosk_oem_manifest_parser.h"
+#include "chromeos/system/kiosk_oem_manifest_parser.h"
 
 #include "chromeos/test/chromeos_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -14,7 +14,7 @@ typedef testing::Test KioskOemManifestParserTest;
 TEST_F(KioskOemManifestParserTest, LoadTest) {
   base::FilePath test_data_dir;
   ASSERT_TRUE(chromeos::test_utils::GetTestDataPath(
-                  "app_mode", "kiosk_manifest", &test_data_dir));
+      "app_mode", "kiosk_manifest", &test_data_dir));
   base::FilePath kiosk_oem_file =
       test_data_dir.AppendASCII("kiosk_manifest.json");
   KioskOemManifestParser::Manifest manifest;

@@ -1824,6 +1824,7 @@ jumbo_split_static_library("ui") {
       "//chromeos/services/multidevice_setup/public/mojom",
       "//chromeos/settings",
       "//chromeos/strings",
+      "//chromeos/system",
       "//components/arc",
       "//components/captive_portal",
       "//components/consent_auditor:consent_auditor",
