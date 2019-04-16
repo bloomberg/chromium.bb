@@ -8976,6 +8976,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="ContentSuggestionsBreakingNewsMessageAction">
+  <obsolete>
+    Removed 04/2019. Breaking News feature removed.
+  </obsolete>
   <int value="0" label="No action"/>
   <int value="1" label="Invalid action"/>
   <int value="2" label="Push-by-value"/>
@@ -8996,6 +8999,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="ContentSuggestionsBreakingNewsTokenValidationOutcome">
+  <obsolete>
+    Removed 04/2019. Breaking News feature removed.
+  </obsolete>
   <int value="0" label="Token invalid"/>
   <int value="1" label="Token revalidated"/>
 </enum>

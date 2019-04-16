@@ -22,7 +22,6 @@
 #include "components/image_fetcher/ios/ios_image_decoder_impl.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
-#include "components/ntp_snippets/breaking_news/breaking_news_listener.h"
 #include "components/ntp_snippets/category_rankers/category_ranker.h"
 #include "components/ntp_snippets/category_rankers/click_based_category_ranker.h"
 #include "components/ntp_snippets/category_rankers/constant_category_ranker.h"
@@ -184,8 +183,7 @@ void RegisterRemoteSuggestionsProvider(ContentSuggestionsService* service,
       std::make_unique<RemoteSuggestionsDatabase>(db_provider, database_dir),
       std::make_unique<RemoteSuggestionsStatusServiceImpl>(
           identity_manager->HasPrimaryAccount(), prefs, pref_name),
-      /*prefetched_pages_tracker=*/nullptr,
-      /*breaking_news_raw_data_provider*/ nullptr, service->debug_logger(),
+      /*prefetched_pages_tracker=*/nullptr, service->debug_logger(),
       std::make_unique<base::OneShotTimer>());
 
   service->remote_suggestions_scheduler()->SetProvider(provider.get());

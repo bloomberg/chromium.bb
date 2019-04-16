@@ -75,20 +75,5 @@ const char kClickBasedCategoryRankerOrderWithClicks[] =
 const char kClickBasedCategoryRankerLastDecayTime[] =
     "ntp_suggestions.click_based_category_ranker.last_decay_time";
 
-const char kBreakingNewsSubscriptionDataToken[] =
-    "ntp_suggestions.breaking_news_subscription_data.token";
-
-const char kBreakingNewsSubscriptionDataIsAuthenticated[] =
-    "ntp_suggestions.breaking_news_subscription_data.is_authenticated";
-
-const char kBreakingNewsGCMSubscriptionTokenCache[] =
-    "ntp_suggestions.breaking_news_gcm_subscription_token_cache";
-
-const char kBreakingNewsGCMLastTokenValidationTime[] =
-    "ntp_suggestions.breaking_news_gcm_last_token_validation_time";
-
-const char kBreakingNewsGCMLastForcedSubscriptionTime[] =
-    "ntp_suggestions.breaking_news_gcm_last_forced_subscription_time";
-
 }  // namespace prefs
 }  // namespace ntp_snippets
