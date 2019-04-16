@@ -473,8 +473,9 @@ IN_PROC_BROWSER_TEST_P(
   EXPECT_EQ(kEvenLaterTime, credit_cards[0]->use_date());
 }
 
+// Flaky. http://crbug.com/917498
 IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
-                       ServerAddressConvertsToSameLocalAddress) {
+                       DISABLED_ServerAddressConvertsToSameLocalAddress) {
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
        CreateDefaultSyncPaymentsCustomerData()});
