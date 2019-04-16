@@ -9,6 +9,8 @@
 #include "base/strings/string_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_test_waiter.h"
 #include "chrome/browser/profiles/profile.h"
@@ -17,6 +19,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client_test_utils.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_pingback_client.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_util.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
@@ -444,6 +448,48 @@ class DataReductionProxyFallbackBrowsertest
   net::EmbeddedTestServer primary_server_;
   net::EmbeddedTestServer secondary_server_;
 };
+
+class TestDataReductionProxyPingbackClient
+    : public DataReductionProxyPingbackClient {
+ public:
+  bool received_valid_pingback() { return received_valid_pingback_; }
+
+ private:
+  void SendPingback(const DataReductionProxyData& data,
+                    const DataReductionProxyPageLoadTiming& timing) override {
+    ASSERT_TRUE(data.used_data_reduction_proxy());
+    ASSERT_EQ(kSessionKey, data.session_key());
+    ASSERT_GT(data.page_id(), 0U);
+    received_valid_pingback_ = true;
+  }
+
+  void SetPingbackReportingFraction(
+      float pingback_reporting_fraction) override {}
+
+  bool received_valid_pingback_ = false;
+};
+
+IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, PingbackSent) {
+  net::EmbeddedTestServer primary_server;
+  SetConfig(CreateConfigForServer(primary_server));
+
+  // Pingback client is owned by the DRP service.
+  TestDataReductionProxyPingbackClient* pingback_client =
+      new TestDataReductionProxyPingbackClient();
+  DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+      browser()->profile())
+      ->data_reduction_proxy_service()
+      ->SetPingbackClientForTesting(pingback_client);
+
+  // Proxy will be used, so it shouldn't matter if the host cannot be resolved.
+  ui_test_utils::NavigateToURL(browser(), GURL("http://does.not.resolve/echo"));
+  // EXPECT_THAT(GetBody(), kPrimaryResponse);
+
+  // Navigate away for the metrics to be recorded.
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+
+  ASSERT_TRUE(pingback_client->received_valid_pingback());
+}
 
 IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
                        FallbackProxyUsedOnNetError) {

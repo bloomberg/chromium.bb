@@ -70,6 +70,8 @@ class PreviewsLitePageDecider
   // Sets that the user has seen the UI notification.
   void SetUserHasSeenUINotification();
 
+  uint64_t GeneratePageID() override;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(PreviewsLitePageDeciderTest, TestServerUnavailable);
   FRIEND_TEST_ALL_PREFIXES(PreviewsLitePageDeciderTest, TestSingleBypass);
@@ -79,7 +81,6 @@ class PreviewsLitePageDecider
   bool IsServerUnavailable() override;
   void AddSingleBypass(std::string url) override;
   bool CheckSingleBypass(std::string url) override;
-  uint64_t GeneratePageID() override;
   void ReportDataSavings(int64_t network_bytes,
                          int64_t original_bytes,
                          const std::string& host) override;
