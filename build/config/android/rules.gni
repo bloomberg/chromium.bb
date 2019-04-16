@@ -2090,15 +2090,29 @@ if (enable_java_templates) {
     _final_apk_path_no_ext = _final_apk_path_no_ext_list[0]
     assert(_final_apk_path_no_ext != "")  # Mark as used.
 
+    # Non-base bundle modules create only proto resources.
+    if (!_is_bundle_module || _is_base_module) {
+      _packaged_resources_path = "$target_out_dir/$target_name.ap_"
+    }
     if (_is_bundle_module) {
       # Path to the intermediate proto-format resources zip file.
-      _packaged_resources_path = "$target_gen_dir/$target_name.proto.ap_"
+      _proto_resources_path = "$target_gen_dir/$target_name.proto.ap_"
     } else {
       # resource_sizes.py needs to be able to find the unpacked resources.arsc
-      # file based on apk name.
-      _packaged_resources_path =
-          "$root_gen_dir/arsc/" +
+      # file based on apk name to compute normatlized size.
+      _resource_sizes_arsc_path =
+          "$root_out_dir/arsc/" +
           rebase_path(_final_apk_path_no_ext, root_build_dir) + ".ap_"
+    }
+    _optimize_resources =
+        defined(invoker.optimize_resources) && invoker.optimize_resources
+    if (_optimize_resources) {
+      _optimized_resources_path = "$target_out_dir/$_template_name.optimized."
+      if (_is_bundle_module) {
+        _optimized_resources_path += ".proto.ap_"
+      } else {
+        _optimized_resources_path += ".ap_"
+      }
     }
 
     if (defined(invoker.version_code)) {
@@ -2215,7 +2229,8 @@ if (enable_java_templates) {
       }
     }
 
-    if (_shared_libraries_is_valid || _secondary_abi_shared_libraries_is_valid) {
+    if (_shared_libraries_is_valid ||
+        _secondary_abi_shared_libraries_is_valid) {
       _native_lib_version_rule = ""
       if (defined(invoker.native_lib_version_rule)) {
         _native_lib_version_rule = invoker.native_lib_version_rule
@@ -2298,13 +2313,6 @@ if (enable_java_templates) {
       _android_sdk_dep = "//third_party/android_sdk:android_sdk_java"
     }
 
-    _optimize_resources =
-        defined(invoker.optimize_resources) && invoker.optimize_resources
-    if (_optimize_resources) {
-      _unoptimized_resources_path =
-          "$target_out_dir/$_template_name.unoptimized.ap_"
-    }
-
     if (defined(invoker.shared_resources_whitelist_target)) {
       _whitelist_gen_dir =
           get_label_info(invoker.shared_resources_whitelist_target,
@@ -2321,12 +2329,8 @@ if (enable_java_templates) {
     _compile_resources_target = "${_template_name}__compile_resources"
     _compile_resources_rtxt_out =
         "${target_gen_dir}/${_compile_resources_target}_R.txt"
-    _emit_resource_ids =
-        defined(invoker.emit_resource_ids) && invoker.emit_resource_ids
-    if (_emit_resource_ids) {
-      _compile_resources_emit_ids_out =
-          "${target_gen_dir}/${_compile_resources_target}.resource_ids"
-    }
+    _compile_resources_emit_ids_out =
+        "${target_gen_dir}/${_compile_resources_target}.resource_ids"
     compile_resources(_compile_resources_target) {
       forward_variables_from(invoker,
                              [
@@ -2353,17 +2357,10 @@ if (enable_java_templates) {
       }
       srcjar_path = "${target_gen_dir}/${target_name}.srcjar"
       r_text_out_path = _compile_resources_rtxt_out
-      if (_emit_resource_ids) {
-        emit_ids_out_path = _compile_resources_emit_ids_out
-      }
+      emit_ids_out_path = _compile_resources_emit_ids_out
       proguard_file = _generated_proguard_config
       if (_enable_main_dex_list) {
         proguard_file_main_dex = _generated_proguard_main_dex_config
-      }
-      output = _packaged_resources_path
-      if (_optimize_resources) {
-        optimize_resources = true
-        unoptimized_resources_path = _unoptimized_resources_path
       }
 
       build_config = _build_config
@@ -2373,13 +2370,40 @@ if (enable_java_templates) {
                _android_sdk_dep,
              ]
 
+      if (defined(invoker.apk_under_test)) {
+        # Set the arsc package name to match the apk_under_test package name
+        # So that test resources can references under_test resources via
+        # @type/name syntax.
+        arsc_package_name =
+            "@FileArg($_rebased_build_config:resources:arsc_package_name)"
+
+        # Passing in the --emit-ids mapping will cause aapt2 to assign resources
+        # IDs that do not conflict with those from apk_under_test.
+        assert(!defined(resource_ids_provider_dep))
+        resource_ids_provider_dep = invoker.apk_under_test
+
+        deps += [ "${invoker.apk_under_test}__compile_resources" ]
+        include_resource =
+            get_label_info(invoker.apk_under_test, "target_out_dir") + "/" +
+            get_label_info(invoker.apk_under_test, "name") + ".ap_"
+      }
+
       if (_is_bundle_module) {
         proto_format = true
-        if (defined(invoker.base_module_arsc_resource_target)) {
-          assert(defined(invoker.base_module_arsc_resource))
-          include_resource = "${invoker.base_module_arsc_resource}"
-          deps += [ invoker.base_module_arsc_resource_target ]
+        output = _proto_resources_path
+
+        if (defined(invoker.base_module_target)) {
+          deps += [ "${invoker.base_module_target}__compile_arsc_resources" ]
+          include_resource =
+              get_label_info(invoker.base_module_target, "target_out_dir") +
+              "/" + get_label_info(invoker.base_module_target, "name") + ".ap_"
         }
+      } else {
+        output = _packaged_resources_path
+      }
+
+      if (_optimize_resources) {
+        optimized_resources_path = _optimized_resources_path
       }
 
       if (defined(invoker.shared_resources_whitelist_target)) {
@@ -2388,6 +2412,23 @@ if (enable_java_templates) {
         shared_resources_whitelist = _whitelist_r_txt_path
         deps += [ _whitelist_deps ]
       }
+    }
+    if (defined(_resource_sizes_arsc_path)) {
+      _copy_arsc_target = "${_template_name}__copy_arsc"
+      copy(_copy_arsc_target) {
+        deps = [
+          ":$_compile_resources_target",
+        ]
+
+        # resource_sizes.py doesn't care if it gets the optimized .arsc.
+        sources = [
+          _packaged_resources_path,
+        ]
+        outputs = [
+          _resource_sizes_arsc_path,
+        ]
+      }
+      _final_deps += [ ":$_copy_arsc_target" ]
     }
 
     if (!_is_bundle_module) {
@@ -2433,7 +2474,7 @@ if (enable_java_templates) {
         version_name = _version_name
 
         proto_format = false
-        output = "$target_gen_dir/$_template_name.arsc.ap_"
+        output = _packaged_resources_path
 
         build_config = _build_config
         deps = _deps + [
@@ -2586,8 +2627,7 @@ if (enable_java_templates) {
                                "android_manifest",
                                "android_manifest_dep",
                                "apk_under_test",
-                               "base_module_build_config",
-                               "base_module_build_config_target",
+                               "base_module_target",
                                "chromium_code",
                                "classpath_deps",
                                "emma_never_instrument",
@@ -2616,11 +2656,9 @@ if (enable_java_templates) {
       final_dex_path = _final_dex_path
 
       if (_is_bundle_module) {
-        proto_resources_path = _packaged_resources_path
+        proto_resources_path = _proto_resources_path
         module_rtxt_path = _compile_resources_rtxt_out
-      }
-
-      if (!_is_bundle_module) {
+      } else {
         apk_path = _final_apk_path
         incremental_allowed = _incremental_allowed
         if (_incremental_allowed) {
@@ -2815,6 +2853,10 @@ if (enable_java_templates) {
                                  "uncompress_dex",
                                ])
         packaged_resources_path = _packaged_resources_path
+        if (_optimize_resources) {
+          optimized_resources_path = _optimized_resources_path
+        }
+
         apk_path = _final_apk_path
         assets_build_config = _build_config
         dex_path = _final_dex_path
@@ -2828,9 +2870,6 @@ if (enable_java_templates) {
         if (_incremental_allowed) {
           android_manifest = _android_manifest
           base_path = _base_path
-          if (_optimize_resources) {
-            unoptimized_resources_path = _unoptimized_resources_path
-          }
         }
 
         # Incremental apk does not use native libs nor final dex.
@@ -3168,11 +3207,10 @@ if (enable_java_templates) {
     # that come from the fact that the resources get compiled in the bundle
     # module target, but bundle modules have to have certain flags in
     # common or bundle modules have to know information about the base module.
-    # Those flags include version_code, version_name,
-    # base_module_arsc_resource and base_module_arsc_resource_target. It would
-    # be better to move the resource compile target into the bundle target. By
-    # doing so we can keep the bundle modules independent from the bundle and
-    # potentially reuse the same bundle modules for multiple bundles.
+    # Those flags include version_code, version_name, and base_module_target.
+    # It would be better to move the resource compile target into the bundle
+    # target. Doing so would keep the bundle modules independent from the bundle
+    # and potentially reuse the same bundle modules for multiple bundles.
     android_apk_or_module(target_name) {
       forward_variables_from(invoker,
                              [
@@ -3182,8 +3220,7 @@ if (enable_java_templates) {
                                "android_manifest",
                                "android_manifest_dep",
                                "app_as_shared_lib",
-                               "base_module_arsc_resource",
-                               "base_module_arsc_resource_target",
+                               "base_module_target",
                                "chromium_code",
                                "classpath_deps",
                                "data",
@@ -3290,21 +3327,6 @@ if (enable_java_templates) {
       no_build_hooks = !_is_base_module
       if (defined(invoker.module_name)) {
         name = invoker.module_name
-      }
-      if (defined(invoker.base_module_target)) {
-        _base_module_target = invoker.base_module_target
-        _base_module_target_gen_dir =
-            get_label_info(_base_module_target, "target_gen_dir")
-        _base_module_target_name = get_label_info(_base_module_target, "name")
-
-        base_module_arsc_resource =
-            "$_base_module_target_gen_dir/$_base_module_target_name.arsc.ap_"
-        base_module_arsc_resource_target =
-            "${_base_module_target}__compile_arsc_resources"
-        base_module_build_config = "$_base_module_target_gen_dir/" +
-                                   "$_base_module_target_name.build_config"
-        base_module_build_config_target =
-            "${_base_module_target}$build_config_target_suffix"
       }
     }
   }
