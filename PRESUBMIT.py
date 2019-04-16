@@ -711,7 +711,7 @@ _BANNED_CPP_FUNCTIONS = (
       ),
     ),
     (
-      'mojo::DataPipe',
+      r'/\bmojo::DataPipe\b',
       (
         'mojo::DataPipe is deprecated. Use mojo::CreateDataPipe instead.',
       ),

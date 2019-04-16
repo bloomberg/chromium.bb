@@ -1779,12 +1779,15 @@ class BannedFunctionCheckTest(unittest.TestCase):
                ['mojo::DataPipe();']),
       MockFile('some/cpp/ok/file.cc',
                ['CreateDataPipe();']),
+      MockFile('some/cpp/ok/file2.cc',
+               ['mojo::DataPipeDrainer();']),
     ]
 
     errors = PRESUBMIT._CheckNoBannedFunctions(input_api, MockOutputApi())
     self.assertEqual(1, len(errors))
     self.assertTrue('some/cpp/problematic/file.cc' in errors[0].message)
     self.assertTrue('some/cpp/ok/file.cc' not in errors[0].message)
+    self.assertTrue('some/cpp/ok/file2.cc' not in errors[0].message)
 
 
 class NoProductionCodeUsingTestOnlyFunctionsTest(unittest.TestCase):
