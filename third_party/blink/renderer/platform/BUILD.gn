@@ -1579,8 +1579,6 @@ jumbo_static_library("test_support") {
     "testing/layer_tree_host_embedder.cc",
     "testing/layer_tree_host_embedder.h",
     "testing/message_loop_for_mojo.h",
-    "testing/mock_web_crypto.cc",
-    "testing/mock_web_crypto.h",
     "testing/paint_property_test_helpers.h",
     "testing/paint_test_configurations.h",
     "testing/picture_matchers.cc",

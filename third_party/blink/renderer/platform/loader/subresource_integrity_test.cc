@@ -16,7 +16,6 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_scheduler.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
-#include "third_party/blink/renderer/platform/loader/testing/crypto_testing_platform_support.h"
 #include "third_party/blink/renderer/platform/loader/testing/mock_fetch_context.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -241,7 +240,6 @@ class SubresourceIntegrityTest : public testing::Test {
   KURL sec_url;
   KURL insec_url;
 
-  ScopedTestingPlatformSupport<CryptoTestingPlatformSupport> platform_;
   Persistent<MockFetchContext> context;
 };
 
