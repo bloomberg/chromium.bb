@@ -7,14 +7,15 @@
 
 #include <memory>
 
-#include "third_party/blink/renderer/core/geometry/dom_point_init.h"
-#include "third_party/blink/renderer/core/geometry/dom_point_read_only.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
 
 namespace blink {
 
+class DOMPointInit;
+class DOMPointReadOnly;
 class TransformationMatrix;
 class XRRigidTransform;
 
