@@ -50,6 +50,9 @@ const base::Feature kEnableTextQueriesWithClientDiscourseContext{
 const base::Feature kTimerTicks{"ChromeOSAssistantTimerTicks",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kEnableAssistantAlarmTimerManager{
+    "EnableAssistantAlarmTimerManager", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kEnablePowerManager{"ChromeOSAssistantEnablePowerManager",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -64,6 +67,10 @@ const base::Feature kScreenContextQuery{"ChromeOSAssistantScreenContextQuery",
 
 const base::Feature kEnableMediaSessionIntegration{
     "AssistantEnableMediaSessionIntegration", base::FEATURE_ENABLED_BY_DEFAULT};
+
+bool IsAlarmTimerManagerEnabled() {
+  return base::FeatureList::IsEnabled(kEnableAssistantAlarmTimerManager);
+}
 
 bool IsAppSupportEnabled() {
   return base::FeatureList::IsEnabled(

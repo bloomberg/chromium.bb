@@ -31,6 +31,8 @@
 #include "chromeos/services/assistant/service.h"
 #include "chromeos/services/assistant/utils.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
+#include "libassistant/shared/internal_api/alarm_timer_manager.h"
+#include "libassistant/shared/internal_api/alarm_timer_types.h"
 #include "libassistant/shared/internal_api/assistant_manager_delegate.h"
 #include "libassistant/shared/internal_api/assistant_manager_internal.h"
 #include "libassistant/shared/public/media_manager.h"
@@ -106,6 +108,20 @@ action::AppStatus GetActionAppStatus(mojom::AppStatus status) {
       return action::VERSION_MISMATCH;
     case mojom::AppStatus::DISABLED:
       return action::DISABLED;
+  }
+}
+
+ash::mojom::AssistantTimerState GetTimerState(
+    assistant_client::Timer::State state) {
+  switch (state) {
+    case assistant_client::Timer::State::UNKNOWN:
+      return ash::mojom::AssistantTimerState::kUnknown;
+    case assistant_client::Timer::State::SCHEDULED:
+      return ash::mojom::AssistantTimerState::kScheduled;
+    case assistant_client::Timer::State::PAUSED:
+      return ash::mojom::AssistantTimerState::kPaused;
+    case assistant_client::Timer::State::FIRED:
+      return ash::mojom::AssistantTimerState::kFired;
   }
 }
 
@@ -240,6 +256,22 @@ void AssistantManagerServiceImpl::AddMediaControllerObserver() {
     media_controller_observer_binding_.Bind(mojo::MakeRequest(&observer));
     media_controller_->AddObserver(std::move(observer));
   }
+}
+
+void AssistantManagerServiceImpl::RegisterAlarmsTimersListener() {
+  if (!assistant_manager_internal_)
+    return;
+
+  auto* alarm_timer_manager =
+      assistant_manager_internal_->GetAlarmTimerManager();
+
+  alarm_timer_manager->RegisterRingingStateListener([this]() {
+    service_->main_task_runner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &AssistantManagerServiceImpl::OnAlarmTimerStateChangedOnMainThread,
+            weak_factory_.GetWeakPtr()));
+  });
 }
 
 void AssistantManagerServiceImpl::EnableListening(bool enable) {
@@ -1020,15 +1052,25 @@ void AssistantManagerServiceImpl::OnStartFinished() {
     SetArcPlayStoreEnabled(
         service_->assistant_state()->arc_play_store_enabled().value());
   }
+
+  if (assistant::features::IsAlarmTimerManagerEnabled()) {
+    RegisterAlarmsTimersListener();
+  }
 }
 
 void AssistantManagerServiceImpl::OnTimerSoundingStarted() {
+  if (assistant::features::IsAlarmTimerManagerEnabled())
+    return;
+
   ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnTimerSoundingStarted);
   if (service_->assistant_alarm_timer_controller())
     service_->assistant_alarm_timer_controller()->OnTimerSoundingStarted();
 }
 
 void AssistantManagerServiceImpl::OnTimerSoundingFinished() {
+  if (assistant::features::IsAlarmTimerManagerEnabled())
+    return;
+
   ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnTimerSoundingFinished);
   if (service_->assistant_alarm_timer_controller())
     service_->assistant_alarm_timer_controller()->OnTimerSoundingFinished();
@@ -1259,6 +1301,47 @@ void AssistantManagerServiceImpl::OnSpeechLevelUpdatedOnMainThread(
     const float speech_level) {
   interaction_subscribers_.ForAllPtrs(
       [&speech_level](auto* ptr) { ptr->OnSpeechLevelUpdated(speech_level); });
+}
+
+void AssistantManagerServiceImpl::OnAlarmTimerStateChangedOnMainThread() {
+  // Currently, we only handle ringing events here. After some AlarmTimerManager
+  // API improvement, we will be handling other alarm/timer events.
+  auto* alarm_timer_manager =
+      assistant_manager_internal_->GetAlarmTimerManager();
+  // TODO(llin): Use GetAllEvents after the AlarmTimerManager API improvement is
+  // ready (b/128701326).
+  const assistant_client::AlarmTimerEvent& ringing_event =
+      alarm_timer_manager->GetRingingEvent();
+
+  switch (ringing_event.type) {
+    case assistant_client::AlarmTimerEvent::NONE:
+      service_->assistant_alarm_timer_controller()->OnAlarmTimerStateChanged(
+          nullptr);
+      break;
+    case assistant_client::AlarmTimerEvent::TIMER: {
+      ash::mojom::AssistantAlarmTimerEventPtr alarm_timer_event_ptr =
+          ash::mojom::AssistantAlarmTimerEvent::New();
+      alarm_timer_event_ptr->type =
+          ash::mojom::AssistantAlarmTimerEventType::kTimer;
+
+      if (ringing_event.type == assistant_client::AlarmTimerEvent::TIMER) {
+        alarm_timer_event_ptr->data = ash::mojom::AlarmTimerData::New();
+        ash::mojom::AssistantTimerPtr timer_data_ptr =
+            ash::mojom::AssistantTimer::New();
+        timer_data_ptr->state = GetTimerState(ringing_event.timer_data.state);
+        timer_data_ptr->timer_id = ringing_event.timer_data.timer_id;
+        alarm_timer_event_ptr->data->set_timer_data(std::move(timer_data_ptr));
+      }
+
+      service_->assistant_alarm_timer_controller()->OnAlarmTimerStateChanged(
+          std::move(alarm_timer_event_ptr));
+      break;
+    }
+    case assistant_client::AlarmTimerEvent::ALARM:
+      // TODO(llin): Handle alarm.
+      NOTREACHED();
+      break;
+  }
 }
 
 void AssistantManagerServiceImpl::CacheScreenContext(

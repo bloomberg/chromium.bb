@@ -236,6 +236,7 @@ class AssistantManagerServiceImpl
           recognition_result);
   void OnRespondingStartedOnMainThread(bool is_error_response);
   void OnSpeechLevelUpdatedOnMainThread(const float speech_level);
+  void OnAlarmTimerStateChangedOnMainThread();
   void OnModifySettingsAction(const std::string& modify_setting_args_proto);
   void OnOpenMediaAndroidIntentOnMainThread(
       const std::string play_media_args_proto,
@@ -246,6 +247,7 @@ class AssistantManagerServiceImpl
 
   void RegisterFallbackMediaHandler();
   void AddMediaControllerObserver();
+  void RegisterAlarmsTimersListener();
 
   void CacheAssistantStructure(
       base::OnceClosure on_done,
