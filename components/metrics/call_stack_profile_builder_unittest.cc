@@ -405,24 +405,22 @@ TEST(CallStackProfileBuilderTest, WorkIds) {
 }
 
 TEST(CallStackProfileBuilderTest, MetadataRecorder) {
-  class TestMetadataRecorder : public MetadataRecorder {
-   public:
-    std::pair<uint64_t, int64_t> GetHashAndValue() const override {
-      return std::make_pair(0x5A105E8B9D40E132ull, current_value);
-    }
-    int64_t current_value;
-  };
-
-  TestMetadataRecorder metadata_recorder;
+  MetadataRecorder metadata_recorder;
   auto profile_builder = std::make_unique<TestingCallStackProfileBuilder>(
       kProfileParams, nullptr, &metadata_recorder);
 
   TestModule module;
   base::Frame frame = {0x10, &module};
 
-  metadata_recorder.current_value = 5;
+  metadata_recorder.Set(100, 10);
+  metadata_recorder.Set(200, 20);
+  metadata_recorder.Set(300, 30);
+  profile_builder->RecordMetadata();
   profile_builder->OnSampleCompleted({frame});
-  metadata_recorder.current_value = 8;
+  metadata_recorder.Remove(300);
+  metadata_recorder.Set(200, 21);
+  metadata_recorder.Set(400, 40);
+  profile_builder->RecordMetadata();
   profile_builder->OnSampleCompleted({frame});
 
   profile_builder->OnProfileCompleted(base::TimeDelta::FromMilliseconds(500),
@@ -433,17 +431,29 @@ TEST(CallStackProfileBuilderTest, MetadataRecorder) {
   ASSERT_TRUE(proto.has_call_stack_profile());
   const CallStackProfile& profile = proto.call_stack_profile();
 
+  ASSERT_EQ(4, profile.metadata_name_hash_size());
+  EXPECT_EQ(100u, profile.metadata_name_hash(0));
+  EXPECT_EQ(200u, profile.metadata_name_hash(1));
+  EXPECT_EQ(300u, profile.metadata_name_hash(2));
+  EXPECT_EQ(400u, profile.metadata_name_hash(3));
+
   ASSERT_EQ(2, profile.stack_sample_size());
-  EXPECT_EQ(1, profile.stack_sample(0).metadata_size());
-  EXPECT_EQ(1, profile.stack_sample(1).metadata_size());
 
-  ASSERT_EQ(1, profile.metadata_name_hash_size());
-  EXPECT_EQ(0x5A105E8B9D40E132ull, profile.metadata_name_hash(0));
-
+  ASSERT_EQ(3, profile.stack_sample(0).metadata_size());
   EXPECT_EQ(0, profile.stack_sample(0).metadata(0).name_hash_index());
-  EXPECT_EQ(5, profile.stack_sample(0).metadata(0).value());
+  EXPECT_EQ(10, profile.stack_sample(0).metadata(0).value());
+  EXPECT_EQ(1, profile.stack_sample(0).metadata(1).name_hash_index());
+  EXPECT_EQ(20, profile.stack_sample(0).metadata(1).value());
+  EXPECT_EQ(2, profile.stack_sample(0).metadata(2).name_hash_index());
+  EXPECT_EQ(30, profile.stack_sample(0).metadata(2).value());
+
+  ASSERT_EQ(3, profile.stack_sample(1).metadata_size());
   EXPECT_EQ(0, profile.stack_sample(1).metadata(0).name_hash_index());
-  EXPECT_EQ(8, profile.stack_sample(1).metadata(0).value());
+  EXPECT_EQ(10, profile.stack_sample(1).metadata(0).value());
+  EXPECT_EQ(1, profile.stack_sample(1).metadata(1).name_hash_index());
+  EXPECT_EQ(21, profile.stack_sample(1).metadata(1).value());
+  EXPECT_EQ(3, profile.stack_sample(1).metadata(2).name_hash_index());
+  EXPECT_EQ(40, profile.stack_sample(1).metadata(2).value());
 }
 
 }  // namespace metrics

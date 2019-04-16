@@ -279,10 +279,12 @@ source_set("child_call_stack_profile_builder") {
   public = [
     "call_stack_profile_builder.h",
     "child_call_stack_profile_collector.h",
+    "metadata_recorder.h",
   ]
   sources = [
     "call_stack_profile_builder.cc",
     "child_call_stack_profile_collector.cc",
+    "metadata_recorder.cc",
   ]
   public_deps = [
     ":call_stack_profile_params",
@@ -374,6 +376,7 @@ source_set("unit_tests") {
     "file_metrics_provider_unittest.cc",
     "histogram_encoder_unittest.cc",
     "machine_id_provider_win_unittest.cc",
+    "metadata_recorder_unittest.cc",
     "metrics_log_manager_unittest.cc",
     "metrics_log_store_unittest.cc",
     "metrics_log_unittest.cc",
