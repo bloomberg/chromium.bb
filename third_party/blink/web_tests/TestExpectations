@@ -6319,3 +6319,6 @@ crbug.com/945893 external/wpt/FileAPI/blob/Blob-text.any.worker.html [ Skip ]
 # Sheriff 2019-04-16
 crbug.com/953153 virtual/speech-with-unified-autoplay/external/wpt/speech-api/idlharness.window.html [ Pass Failure ]
 crbug.com/953153 external/wpt/speech-api/idlharness.window.html [ Pass Failure ]
+
+# portals-adopt-predecessor occasionally times out.
+crbug.com/952584 external/wpt/portals/portals-adopt-predecessor.html [ Pass Timeout ]
