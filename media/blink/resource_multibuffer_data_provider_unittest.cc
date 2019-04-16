@@ -22,6 +22,8 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_util.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_network_state_notifier.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_error.h"
@@ -42,6 +44,7 @@ using blink::WebURLResponse;
 namespace media {
 
 const char kHttpUrl[] = "http://test";
+const char kHttpsUrl[] = "https://test";
 const char kHttpRedirect[] = "http://test/ing";
 const char kEtag[] = "\"arglebargle glopy-glyf?\"";
 
@@ -51,13 +54,14 @@ const int kHttpPartialContent = 206;
 
 enum NetworkState { NONE, LOADED, LOADING };
 
-static bool got_frfr = false;
+static bool want_frfr = false;
 
-// Predicate that tests that request disallows compressed data.
+// Predicate that checks the Chrome-Proxy and Accept-Encoding request headers.
 static bool CorrectAcceptEncodingAndProxy(const blink::WebURLRequest& request) {
   std::string chrome_proxy =
       request.HttpHeaderField(WebString::FromUTF8("chrome-proxy")).Utf8();
-  if (chrome_proxy != (got_frfr ? "" : "frfr")) {
+  bool has_frfr = chrome_proxy == "frfr";
+  if (has_frfr != want_frfr) {
     return false;
   }
 
@@ -82,6 +86,7 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
   }
 
   void Initialize(const char* url, int first_position) {
+    want_frfr = false;
     gurl_ = GURL(url);
     url_data_ = url_index_->GetByUrl(gurl_, UrlData::CORS_UNSPECIFIED);
     url_data_->set_etag(kEtag);
@@ -101,7 +106,6 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
   }
 
   void Start() {
-    got_frfr = false;
     loader_->Start();
   }
 
@@ -319,6 +323,53 @@ TEST_F(ResourceMultiBufferDataProviderTest, TestRedirects) {
   Redirect(kHttpRedirect);
   FullResponse(1024);
   StopWhenLoad();
+}
+
+TEST_F(ResourceMultiBufferDataProviderTest, TestChromeProxyHeader) {
+  struct TestCase {
+    std::string label;
+    bool enable_save_data;
+    std::string url;
+    bool want_chrome_proxy;
+  };
+  const TestCase kTestCases[]{
+      {
+          "SaveData on, HTTP URL: chrome-proxy should exist.",
+          true,
+          kHttpUrl,
+          true,
+      },
+      {
+          "SaveData off, HTTP URL: chrome-proxy should not exist.",
+          false,
+          kHttpUrl,
+          false,
+      },
+      {
+          "SaveData on, HTTPS URL: chrome-proxy should not exist.",
+          true,
+          kHttpsUrl,
+          false,
+      },
+      {
+          "SaveData off, HTTPS URL: chrome-proxy should not exist.",
+          false,
+          kHttpsUrl,
+          false,
+      },
+  };
+  for (const TestCase& test_case : kTestCases) {
+    SCOPED_TRACE(test_case.label);
+    blink::WebNetworkStateNotifier::SetSaveDataEnabled(
+        test_case.enable_save_data);
+
+    Initialize(test_case.url.c_str(), 0);
+    want_frfr = test_case.want_chrome_proxy;
+
+    Start();
+    FullResponse(1024);
+    StopWhenLoad();
+  }
 }
 
 }  // namespace media

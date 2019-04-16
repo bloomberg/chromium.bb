@@ -60,4 +60,8 @@ void WebNetworkStateNotifier::SetSaveDataEnabled(bool enabled) {
   GetNetworkStateNotifier().SetSaveDataEnabled(enabled);
 }
 
+bool WebNetworkStateNotifier::SaveDataEnabled() {
+  return GetNetworkStateNotifier().SaveDataEnabled();
+}
+
 }  // namespace blink
