@@ -28,6 +28,6 @@ apiBridge.registerCustomHook(function(api) {
       }
     }
     bindingUtil.sendRequest(
-        'ttsEngine.updateVoices', [voices], undefined, undefined);
+        'ttsEngine.updateVoices', [voices], undefined);
   });
 }.bind(this));

@@ -46,7 +46,7 @@ apiBridge.registerCustomHook(function(api) {
       // Balanced in eventHandler.
       lazyBG.IncrementKeepaliveCount();
     }
-    bindingUtil.sendRequest('tts.speak', args, undefined, undefined);
+    bindingUtil.sendRequest('tts.speak', args, undefined);
     return id;
   });
 });

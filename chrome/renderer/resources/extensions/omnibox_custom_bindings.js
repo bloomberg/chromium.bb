@@ -91,7 +91,7 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
   apiFunctions.setHandleRequest('setDefaultSuggestion', function(details) {
     var parseResult = parseOmniboxDescription(details.description);
     bindingUtil.sendRequest('omnibox.setDefaultSuggestion', [parseResult],
-                            undefined, undefined);
+                            undefined);
   });
 
   apiFunctions.setUpdateArgumentsPostValidate(

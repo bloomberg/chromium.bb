@@ -55,7 +55,7 @@ apiBridge.registerCustomHook(function(api) {
             'in Chrome 71.');
       }
     }
-    bindingUtil.sendRequest('tts.speak', args, undefined, undefined);
+    bindingUtil.sendRequest('tts.speak', args, undefined);
     return id;
   });
 });

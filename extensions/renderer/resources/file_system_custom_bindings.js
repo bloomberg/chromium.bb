@@ -41,7 +41,7 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
 
     bindingUtil.sendRequest(
         'fileSystem.retainEntry', [id, fileSystemName, relativePath],
-        undefined, undefined);
+        undefined);
     return id;
   });
 
@@ -52,7 +52,7 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
       safeCallbackApply('fileSystem.isRestorable', {}, callback, [true]);
     } else {
       bindingUtil.sendRequest('fileSystem.isRestorable', [id, callback],
-                              undefined, undefined);
+                              undefined);
     }
   });
 
