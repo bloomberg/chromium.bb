@@ -232,9 +232,10 @@ void StackingNotificationCounterView::OnPaint(gfx::Canvas* canvas) {
 
   // We draw a border here than use a views::Border so the ink drop highlight
   // of the clear all button overlays the border.
-  canvas->Draw1pxLine(gfx::PointF(bounds.bottom_left() - gfx::Vector2d(0, 1)),
-                      gfx::PointF(bounds.bottom_right() - gfx::Vector2d(0, 1)),
-                      kStackingNotificationCounterBorderColor);
+  canvas->DrawSharpLine(
+      gfx::PointF(bounds.bottom_left() - gfx::Vector2d(0, 1)),
+      gfx::PointF(bounds.bottom_right() - gfx::Vector2d(0, 1)),
+      kStackingNotificationCounterBorderColor);
 
   if (features::IsNotificationStackingBarRedesignEnabled())
     return;
