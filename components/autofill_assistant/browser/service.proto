@@ -735,11 +735,15 @@ message PromptProto {
     // Auto-select this choice if the given element exist.
     optional ElementReferenceProto auto_select_if_element_exists = 4;
 
-    // The chip is only visible if all the given element exists.
+    // The chip is only visible or enabled if all the given element exists.
     repeated ElementReferenceProto show_only_if_element_exists = 6;
 
-    // The chip is only visible if all the form values match.
+    // The chip is only visible or enabled if all the form values match.
     repeated FormValueMatchProto show_only_if_form_value_matches = 8;
+
+    // Disable the chip instead of hiding it completely, if the preconditions
+    // don't match.
+    optional bool allow_disabling = 9;
 
     // Server payload originally sent by the server. This should
     // be transmitted as-is by the client without interpreting.

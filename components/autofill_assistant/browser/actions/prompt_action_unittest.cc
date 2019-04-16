@@ -132,6 +132,32 @@ TEST_F(PromptActionTest, ShowOnlyIfElementExists) {
   ASSERT_THAT(chips_, Pointee(IsEmpty()));
 }
 
+TEST_F(PromptActionTest, DisabledUnlessElementExists) {
+  auto* ok_proto = prompt_proto_->add_choices();
+  ok_proto->set_name("Ok");
+  ok_proto->set_chip_type(HIGHLIGHTED_ACTION);
+  ok_proto->set_server_payload("ok");
+  ok_proto->set_allow_disabling(true);
+  ok_proto->add_show_only_if_element_exists()->add_selectors("element");
+
+  PromptAction action(proto_);
+  action.ProcessAction(&mock_action_delegate_, callback_.Get());
+
+  EXPECT_CALL(mock_web_controller_,
+              OnElementCheck(Eq(Selector({"element"})), _))
+      .WillRepeatedly(RunOnceCallback<1>(true));
+  task_env_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  ASSERT_THAT(chips_, Pointee(SizeIs(1)));
+  EXPECT_FALSE((*chips_)[0].disabled);
+
+  EXPECT_CALL(mock_web_controller_,
+              OnElementCheck(Eq(Selector({"element"})), _))
+      .WillRepeatedly(RunOnceCallback<1>(false));
+  task_env_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  ASSERT_THAT(chips_, Pointee(SizeIs(1)));
+  EXPECT_TRUE((*chips_)[0].disabled);
+}
+
 TEST_F(PromptActionTest, AutoSelect) {
   auto* choice_proto = prompt_proto_->add_choices();
   choice_proto->set_server_payload("auto-select");
