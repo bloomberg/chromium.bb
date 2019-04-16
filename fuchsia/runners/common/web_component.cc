@@ -61,16 +61,18 @@ WebComponent::~WebComponent() {
 
 void WebComponent::LoadUrl(const GURL& url) {
   DCHECK(url.is_valid());
-  chromium::web::NavigationControllerPtr navigation_controller;
+  fuchsia::web::NavigationControllerPtr navigation_controller;
   frame()->GetNavigationController(navigation_controller.NewRequest());
 
   // Set the page activation flag on the initial load, so that features like
   // autoplay work as expected when a WebComponent first loads the specified
   // content.
-  chromium::web::LoadUrlParams params;
+  fuchsia::web::LoadUrlParams params;
   params.set_was_user_activated(true);
 
-  navigation_controller->LoadUrl(url.spec(), std::move(params));
+  navigation_controller->LoadUrl(
+      url.spec(), std::move(params),
+      [](fuchsia::web::NavigationController_LoadUrl_Result) {});
 }
 
 void WebComponent::Kill() {

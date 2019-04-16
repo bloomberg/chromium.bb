@@ -130,7 +130,7 @@ void LegacyFrameBridge::PostMessage(
     std::string target_origin,
     chromium::web::Frame::PostMessageCallback callback) {
   base::Optional<fuchsia::web::WebMessage> converted =
-      LegacyMessagePortBridge::ConvertFromLegacyWebMessage(message);
+      cr_fuchsia::LegacyMessagePortBridge::ConvertFromLegacyWebMessage(message);
   if (!converted) {
     callback(false);
     return;

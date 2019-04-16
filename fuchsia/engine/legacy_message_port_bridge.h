@@ -5,11 +5,13 @@
 #ifndef FUCHSIA_ENGINE_LEGACY_MESSAGE_PORT_BRIDGE_H_
 #define FUCHSIA_ENGINE_LEGACY_MESSAGE_PORT_BRIDGE_H_
 
+#include <fuchsia/web/cpp/fidl.h>
 #include <lib/fidl/cpp/binding.h>
 
 #include "base/optional.h"
-#include "fuchsia/engine/browser/message_port_impl.h"
 #include "fuchsia/fidl/chromium/web/cpp/fidl.h"
+
+namespace cr_fuchsia {
 
 // Allows chromium::web::MessagePort clients to connect to
 // fuchsia::web::MessagePort instances.
@@ -18,14 +20,14 @@
 // the connection with either end is terminated.
 class LegacyMessagePortBridge : public chromium::web::MessagePort {
  public:
-  static base::Optional<fuchsia::web::WebMessage> ConvertFromLegacyWebMessage(
-      chromium::web::WebMessage& message);
-
- private:
   explicit LegacyMessagePortBridge(
       fidl::InterfaceRequest<chromium::web::MessagePort> request,
       fuchsia::web::MessagePortPtr handle);
 
+  static base::Optional<fuchsia::web::WebMessage> ConvertFromLegacyWebMessage(
+      chromium::web::WebMessage& message);
+
+ private:
   // Non-public to ensure that only this object may destroy itself.
   ~LegacyMessagePortBridge() override;
 
@@ -39,5 +41,7 @@ class LegacyMessagePortBridge : public chromium::web::MessagePort {
 
   DISALLOW_COPY_AND_ASSIGN(LegacyMessagePortBridge);
 };
+
+}  // namespace cr_fuchsia
 
 #endif  // FUCHSIA_ENGINE_LEGACY_MESSAGE_PORT_BRIDGE_H_

@@ -6,6 +6,8 @@
 
 #include "base/fuchsia/fuchsia_logging.h"
 
+namespace cr_fuchsia {
+
 // static
 base::Optional<fuchsia::web::WebMessage>
 LegacyMessagePortBridge::ConvertFromLegacyWebMessage(
@@ -88,3 +90,5 @@ void LegacyMessagePortBridge::ReceiveMessage(ReceiveMessageCallback callback) {
     callback(std::move(converted));
   });
 }
+
+}  // namespace cr_fuchsia

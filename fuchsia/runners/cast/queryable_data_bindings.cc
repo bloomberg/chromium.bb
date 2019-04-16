@@ -69,19 +69,21 @@ base::Optional<fuchsia::mem::Buffer> BuildScriptFromEntries(Iterator begin,
 }  // namespace
 
 QueryableDataBindings::QueryableDataBindings(
-    chromium::web::Frame* frame,
+    fuchsia::web::Frame* frame,
     fidl::InterfaceHandle<chromium::cast::QueryableData> service)
     : frame_(frame), service_(service.Bind()) {
   DCHECK(frame_);
 
   base::FilePath assets_path;
   CHECK(base::PathService::Get(base::DIR_ASSETS, &assets_path));
-  frame_->AddJavaScriptBindings(
+  frame_->AddBeforeLoadJavaScript(
       static_cast<uint64_t>(CastPlatformBindingsId::QUERYABLE_DATA), {"*"},
       cr_fuchsia::MemBufferFromFile(
           base::File(assets_path.AppendASCII(kBindingsPath),
                      base::File::FLAG_OPEN | base::File::FLAG_READ)),
-      [](bool success) { DCHECK(success) << "JavaScript injection error."; });
+      [](fuchsia::web::Frame_AddBeforeLoadJavaScript_Result result) {
+        CHECK(result.is_response()) << "JavaScript injection error.";
+      });
 
   service_->GetChangedEntries(
       fit::bind_member(this, &QueryableDataBindings::OnEntriesReceived));
@@ -104,10 +106,11 @@ void QueryableDataBindings::OnEntriesReceived(
   if (!update_script)
     return;
 
-  frame_->ExecuteJavaScript(
+  frame_->ExecuteJavaScriptNoResult(
       {"*"}, std::move(*update_script),
-      chromium::web::ExecuteMode::IMMEDIATE_ONCE,
-      [](bool success) { DCHECK(success) << "JavaScript injection error."; });
+      [](fuchsia::web::Frame_ExecuteJavaScriptNoResult_Result result) {
+        DCHECK(result.is_response()) << "JavaScript injection error.";
+      });
 
   // Update the cached values by merging in the new entries.
   cached_entries_.insert(new_entries.begin(), new_entries.end(),
@@ -118,10 +121,12 @@ void QueryableDataBindings::OnEntriesReceived(
       BuildScriptFromEntries(cached_entries_.begin(), cached_entries_.end());
   if (!on_load_script)
     return;
-  frame_->AddJavaScriptBindings(
+  frame_->AddBeforeLoadJavaScript(
       static_cast<uint64_t>(CastPlatformBindingsId::QUERYABLE_DATA_VALUES),
       {"*"}, std::move(*on_load_script),
-      [](bool success) { CHECK(success) << "JavaScript injection error."; });
+      [](fuchsia::web::Frame_AddBeforeLoadJavaScript_Result result) {
+        CHECK(result.is_response()) << "JavaScript injection error.";
+      });
 
   // Request more changes from the FIDL service.
   service_->GetChangedEntries(

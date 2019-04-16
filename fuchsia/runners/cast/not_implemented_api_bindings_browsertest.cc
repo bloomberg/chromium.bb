@@ -13,6 +13,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "fuchsia/base/fit_adapter.h"
 #include "fuchsia/base/mem_buffer_util.h"
+#include "fuchsia/base/result_receiver.h"
 #include "fuchsia/base/test_navigation_listener.h"
 #include "fuchsia/engine/browser/frame_impl.h"
 #include "fuchsia/engine/test/web_engine_browser_test.h"
@@ -45,12 +46,12 @@ class StubBindingsTest : public cr_fuchsia::WebEngineBrowserTest {
     base::ScopedAllowBlockingForTesting allow_blocking;
     ASSERT_TRUE(embedded_test_server()->Start());
 
-    frame_ = WebEngineBrowserTest::CreateLegacyFrame(&navigation_listener_);
+    frame_ = WebEngineBrowserTest::CreateFrame(&navigation_listener_);
     FrameImpl* frame_impl = context_impl()->GetFrameImplForTest(&frame_);
     frame_impl->set_javascript_console_message_hook_for_test(
         base::BindRepeating(&StubBindingsTest::OnLogMessage,
                             base::Unretained(this)));
-    frame_->SetJavaScriptLogLevel(chromium::web::LogLevel::INFO);
+    frame_->SetJavaScriptLogLevel(fuchsia::web::ConsoleLogLevel::INFO);
 
     base::FilePath stub_path;
     CHECK(base::PathService::Get(base::DIR_ASSETS, &stub_path));
@@ -59,18 +60,26 @@ class StubBindingsTest : public cr_fuchsia::WebEngineBrowserTest {
     fuchsia::mem::Buffer stub_buf = cr_fuchsia::MemBufferFromFile(
         base::File(stub_path, base::File::FLAG_OPEN | base::File::FLAG_READ));
     CHECK(stub_buf.vmo);
-    frame_->AddJavaScriptBindings(
+    frame_->AddBeforeLoadJavaScript(
         static_cast<uint64_t>(CastPlatformBindingsId::NOT_IMPLEMENTED_API),
         {"*"}, std::move(stub_buf),
-        [](bool result) { CHECK(result) << "Couldn't inject stub bindings."; });
+        [](fuchsia::web::Frame_AddBeforeLoadJavaScript_Result result) {
+          ASSERT_TRUE(result.is_response());
+        });
 
-    chromium::web::NavigationControllerPtr controller;
+    fuchsia::web::NavigationControllerPtr controller;
     frame_->GetNavigationController(controller.NewRequest());
     const GURL page_url(embedded_test_server()->GetURL("/defaultresponse"));
     navigate_run_loop_ = std::make_unique<base::RunLoop>();
-    controller->LoadUrl(page_url.spec(), chromium::web::LoadUrlParams());
+    cr_fuchsia::ResultReceiver<
+        fuchsia::web::NavigationController_LoadUrl_Result>
+        result;
+    controller->LoadUrl(
+        page_url.spec(), fuchsia::web::LoadUrlParams(),
+        cr_fuchsia::CallbackToFitFunction(result.GetReceiveCallback()));
     navigate_run_loop_->Run();
     navigate_run_loop_.reset();
+    EXPECT_TRUE(result->is_response());
   }
 
   void OnLogMessage(base::StringPiece message) {
@@ -110,7 +119,7 @@ class StubBindingsTest : public cr_fuchsia::WebEngineBrowserTest {
   }
 
   std::unique_ptr<base::RunLoop> navigate_run_loop_;
-  chromium::web::FramePtr frame_;
+  fuchsia::web::FramePtr frame_;
   base::OnceClosure on_log_message_received_cb_;
   cr_fuchsia::TestNavigationListener navigation_listener_;
 
@@ -178,13 +187,14 @@ IN_PROC_BROWSER_TEST_F(StubBindingsTest, ApiCoverage) {
   };
 
   for (const auto& expectation : kExpectations) {
-    frame_->ExecuteJavaScript(
+    frame_->ExecuteJavaScriptNoResult(
         {"*"},
         cr_fuchsia::MemBufferFromString(
             base::StringPrintf("try { cast.__platform__.%s(); } catch {}",
                                expectation.function_name.c_str())),
-        chromium::web::ExecuteMode::IMMEDIATE_ONCE,
-        [](bool success) { EXPECT_TRUE(success); });
+        [](fuchsia::web::Frame_ExecuteJavaScriptNoResult_Result result) {
+          ASSERT_TRUE(result.is_response());
+        });
 
     WaitForLogMessage(base::StringPrintf("%s%s(", kUnimplementedLogMessage,
                                          expectation.function_name.c_str()));
@@ -194,12 +204,13 @@ IN_PROC_BROWSER_TEST_F(StubBindingsTest, ApiCoverage) {
 }
 
 IN_PROC_BROWSER_TEST_F(StubBindingsTest, FunctionArgumentsInLogMessage) {
-  frame_->ExecuteJavaScript(
+  frame_->ExecuteJavaScriptNoResult(
       {"*"},
       cr_fuchsia::MemBufferFromString(
           "cast.__platform__.sendAssistantRequest(1,2,'foo');"),
-      chromium::web::ExecuteMode::IMMEDIATE_ONCE,
-      [](bool success) { EXPECT_TRUE(success); });
+      [](fuchsia::web::Frame_ExecuteJavaScriptNoResult_Result result) {
+        ASSERT_TRUE(result.is_response());
+      });
 
   WaitForLogMessage(base::StringPrintf("%ssendAssistantRequest(1, 2, \"foo\")",
                                        kUnimplementedLogMessage));

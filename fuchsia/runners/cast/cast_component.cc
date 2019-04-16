@@ -35,13 +35,13 @@ CastComponent::CastComponent(
     std::unique_ptr<cr_fuchsia::AgentManager> agent_manager)
     : WebComponent(runner, std::move(context), std::move(controller_request)),
       agent_manager_(std::move(agent_manager)),
-      navigation_observer_binding_(this) {
+      navigation_listener_binding_(this) {
   base::AutoReset<bool> constructor_active_reset(&constructor_active_, true);
 
   InitializeCastPlatformBindings();
 
-  frame()->SetNavigationEventObserver(
-      navigation_observer_binding_.NewBinding());
+  frame()->SetNavigationEventListener(
+      navigation_listener_binding_.NewBinding());
 }
 
 CastComponent::~CastComponent() = default;
@@ -54,9 +54,9 @@ void CastComponent::DestroyComponent(int termination_exit_code,
 }
 
 void CastComponent::OnNavigationStateChanged(
-    chromium::web::NavigationEvent change,
+    fuchsia::web::NavigationState change,
     OnNavigationStateChangedCallback callback) {
-  if (change.url)
+  if (change.has_url())
     connector_.NotifyPageLoad(frame());
   callback();
 }
@@ -69,10 +69,12 @@ void CastComponent::InitializeCastPlatformBindings() {
   fuchsia::mem::Buffer stub_buf = cr_fuchsia::MemBufferFromFile(
       base::File(stub_path, base::File::FLAG_OPEN | base::File::FLAG_READ));
   CHECK(stub_buf.vmo);
-  frame()->AddJavaScriptBindings(
+  frame()->AddBeforeLoadJavaScript(
       static_cast<uint64_t>(CastPlatformBindingsId::NOT_IMPLEMENTED_API), {"*"},
       std::move(stub_buf),
-      [](bool result) { CHECK(result) << "Couldn't inject stub bindings."; });
+      [](fuchsia::web::Frame_AddBeforeLoadJavaScript_Result result) {
+        CHECK(result.is_response()) << "Couldn't inject stub bindings.";
+      });
 
   cast_channel_ = std::make_unique<CastChannelBindings>(
       frame(), &connector_,

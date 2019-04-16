@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <fuchsia/web/cpp/fidl.h>
+
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "fuchsia/base/fit_adapter.h"
+#include "fuchsia/base/frame_test_util.h"
 #include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/base/result_receiver.h"
 #include "fuchsia/base/test_navigation_listener.h"
 #include "fuchsia/engine/test/web_engine_browser_test.h"
-#include "fuchsia/fidl/chromium/web/cpp/fidl.h"
 #include "fuchsia/runners/cast/fake_queryable_data.h"
 #include "fuchsia/runners/cast/named_message_port_connector.h"
 #include "fuchsia/runners/cast/queryable_data_bindings.h"
@@ -28,7 +30,7 @@ class QueryableDataBindingsTest : public cr_fuchsia::WebEngineBrowserTest {
   void SetUpOnMainThread() override {
     cr_fuchsia::WebEngineBrowserTest::SetUpOnMainThread();
     base::ScopedAllowBlockingForTesting allow_blocking;
-    frame_ = WebEngineBrowserTest::CreateLegacyFrame(&navigation_listener_);
+    frame_ = WebEngineBrowserTest::CreateFrame(&navigation_listener_);
 
     ASSERT_TRUE(embedded_test_server()->Start());
     test_url_ = embedded_test_server()->GetURL("/query_platform_value.html");
@@ -49,12 +51,13 @@ class QueryableDataBindingsTest : public cr_fuchsia::WebEngineBrowserTest {
   void SynchronizeWithPage() {
     std::string unique_title =
         base::StringPrintf("sync-%d", current_sync_id_++);
-    frame_->ExecuteJavaScript(
+    frame_->ExecuteJavaScriptNoResult(
         {"*"},
         cr_fuchsia::MemBufferFromString(
             base::StringPrintf("document.title = '%s'", unique_title.c_str())),
-        chromium::web::ExecuteMode::IMMEDIATE_ONCE,
-        [](bool success) { ASSERT_TRUE(success); });
+        [](fuchsia::web::Frame_ExecuteJavaScriptNoResult_Result result) {
+          ASSERT_TRUE(result.is_response());
+        });
 
     navigation_listener_.RunUntilNavigationEquals(test_url_, unique_title);
   }
@@ -66,30 +69,35 @@ class QueryableDataBindingsTest : public cr_fuchsia::WebEngineBrowserTest {
       base::RunLoop run_loop;
       on_query_port_received_cb_ = run_loop.QuitClosure();
       run_loop.Run();
-      DCHECK(query_port_);
+      if (!query_port_)
+        return "";
     }
 
     // Send the request to the page.
-    chromium::web::WebMessage message;
-    message.data = cr_fuchsia::MemBufferFromString(key);
-    query_port_->PostMessage(std::move(message),
-                             [](bool success) { DCHECK(success); });
+    fuchsia::web::WebMessage message;
+    message.set_data(cr_fuchsia::MemBufferFromString(key));
+    query_port_->PostMessage(
+        std::move(message),
+        [](fuchsia::web::MessagePort_PostMessage_Result result) {
+          ASSERT_TRUE(result.is_response());
+        });
 
     // Return the response from the page.
     base::RunLoop response_loop;
-    cr_fuchsia::ResultReceiver<chromium::web::WebMessage> response(
+    cr_fuchsia::ResultReceiver<fuchsia::web::WebMessage> response(
         response_loop.QuitClosure());
     query_port_->ReceiveMessage(
         cr_fuchsia::CallbackToFitFunction(response.GetReceiveCallback()));
     response_loop.Run();
+    if (!response->has_data())
+      return "";
     std::string response_string;
-    bool success =
-        cr_fuchsia::StringFromMemBuffer(response->data, &response_string);
-    CHECK(success);
+    if (!cr_fuchsia::StringFromMemBuffer(response->data(), &response_string))
+      return "";
     return response_string;
   }
 
-  void ReceiveMessagePort(chromium::web::MessagePortPtr port) {
+  void ReceiveMessagePort(fuchsia::web::MessagePortPtr port) {
     query_port_ = std::move(port);
     if (on_query_port_received_cb_)
       std::move(on_query_port_received_cb_).Run();
@@ -106,7 +114,7 @@ class QueryableDataBindingsTest : public cr_fuchsia::WebEngineBrowserTest {
     callback();
   }
 
-  chromium::web::FramePtr frame_;
+  fuchsia::web::FramePtr frame_;
 
   GURL test_url_;
   NamedMessagePortConnector connector_;
@@ -115,7 +123,7 @@ class QueryableDataBindingsTest : public cr_fuchsia::WebEngineBrowserTest {
   fidl::Binding<chromium::cast::QueryableData> queryable_data_service_binding_;
   base::OnceClosure on_query_port_received_cb_;
   base::OnceClosure on_navigate_cb_;
-  chromium::web::MessagePortPtr query_port_;
+  fuchsia::web::MessagePortPtr query_port_;
   int current_sync_id_ = 0;
 
  private:
@@ -135,10 +143,11 @@ IN_PROC_BROWSER_TEST_F(QueryableDataBindingsTest, VariousTypes) {
   QueryableDataBindings bindings(
       frame_.get(), queryable_data_service_binding_.NewBinding().Bind());
 
-  chromium::web::NavigationControllerPtr controller;
+  fuchsia::web::NavigationControllerPtr controller;
   frame_->GetNavigationController(controller.NewRequest());
-  frame_->SetJavaScriptLogLevel(chromium::web::LogLevel::INFO);
-  controller->LoadUrl(test_url_.spec(), chromium::web::LoadUrlParams());
+  frame_->SetJavaScriptLogLevel(fuchsia::web::ConsoleLogLevel::INFO);
+  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+      &controller, fuchsia::web::LoadUrlParams(), test_url_.spec()));
   navigation_listener_.RunUntilNavigationEquals(test_url_, {});
 
   EXPECT_EQ(CallQueryPlatformValue("string"), "\"foo\"");
@@ -153,10 +162,11 @@ IN_PROC_BROWSER_TEST_F(QueryableDataBindingsTest, NoValues) {
   QueryableDataBindings bindings(
       frame_.get(), queryable_data_service_binding_.NewBinding().Bind());
 
-  chromium::web::NavigationControllerPtr controller;
+  fuchsia::web::NavigationControllerPtr controller;
   frame_->GetNavigationController(controller.NewRequest());
-  frame_->SetJavaScriptLogLevel(chromium::web::LogLevel::INFO);
-  controller->LoadUrl(test_url_.spec(), chromium::web::LoadUrlParams());
+  frame_->SetJavaScriptLogLevel(fuchsia::web::ConsoleLogLevel::INFO);
+  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+      &controller, fuchsia::web::LoadUrlParams(), test_url_.spec()));
   navigation_listener_.RunUntilNavigationEquals(test_url_, {});
 
   EXPECT_EQ(CallQueryPlatformValue("string"), "null");
@@ -172,10 +182,11 @@ IN_PROC_BROWSER_TEST_F(QueryableDataBindingsTest, AtPageRuntime) {
   QueryableDataBindings bindings(
       frame_.get(), queryable_data_service_binding_.NewBinding().Bind());
 
-  chromium::web::NavigationControllerPtr controller;
+  fuchsia::web::NavigationControllerPtr controller;
   frame_->GetNavigationController(controller.NewRequest());
-  frame_->SetJavaScriptLogLevel(chromium::web::LogLevel::INFO);
-  controller->LoadUrl(test_url_.spec(), chromium::web::LoadUrlParams());
+  frame_->SetJavaScriptLogLevel(fuchsia::web::ConsoleLogLevel::INFO);
+  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+      &controller, fuchsia::web::LoadUrlParams(), test_url_.spec()));
   navigation_listener_.RunUntilNavigationEquals(test_url_, {});
 
   SynchronizeWithPage();
@@ -209,10 +220,11 @@ IN_PROC_BROWSER_TEST_F(QueryableDataBindingsTest, AtPageLoad) {
   QueryableDataBindings bindings(
       frame_.get(), queryable_data_service_binding_.NewBinding().Bind());
 
-  chromium::web::NavigationControllerPtr controller;
+  fuchsia::web::NavigationControllerPtr controller;
   frame_->GetNavigationController(controller.NewRequest());
-  frame_->SetJavaScriptLogLevel(chromium::web::LogLevel::INFO);
-  controller->LoadUrl(test_url_.spec(), chromium::web::LoadUrlParams());
+  frame_->SetJavaScriptLogLevel(fuchsia::web::ConsoleLogLevel::INFO);
+  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+      &controller, fuchsia::web::LoadUrlParams(), test_url_.spec()));
   navigation_listener_.RunUntilNavigationEquals(test_url_, {});
 
   SynchronizeWithPage();

@@ -60,8 +60,21 @@ repack("web_engine_pak") {
   visibility = [ ":*" ]
 }
 
+source_set("legacy_message_port_bridge") {
+  sources = [
+    "legacy_message_port_bridge.cc",
+    "legacy_message_port_bridge.h",
+  ]
+  deps = [
+    "//base",
+    "//fuchsia:web_fidl",
+    "//third_party/fuchsia-sdk/sdk:web",
+  ]
+}
+
 component("web_engine_core") {
   deps = [
+    ":legacy_message_port_bridge",
     ":mojom",
     ":web_engine_pak",
     "//base",
@@ -132,8 +145,6 @@ component("web_engine_core") {
     "legacy_context_provider_bridge.h",
     "legacy_frame_bridge.cc",
     "legacy_frame_bridge.h",
-    "legacy_message_port_bridge.cc",
-    "legacy_message_port_bridge.h",
     "legacy_navigation_controller_bridge.cc",
     "legacy_navigation_controller_bridge.h",
     "legacy_navigation_event_listener_bridge.cc",
