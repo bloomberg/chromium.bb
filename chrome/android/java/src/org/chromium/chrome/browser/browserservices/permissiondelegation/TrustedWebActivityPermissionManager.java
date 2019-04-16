@@ -4,13 +4,21 @@
 
 package org.chromium.chrome.browser.browserservices.permissiondelegation;
 
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.support.annotation.Nullable;
+import android.text.TextUtils;
+
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -34,6 +42,10 @@ public class TrustedWebActivityPermissionManager {
 
     // Use a Lazy instance so we don't instantiate it on Android versions pre-O.
     private final Lazy<NotificationChannelPreserver> mPermissionPreserver;
+
+    public static TrustedWebActivityPermissionManager get() {
+        return ChromeApplication.getComponent().resolveTwaPermissionManager();
+    }
 
     @Inject
     public TrustedWebActivityPermissionManager(TrustedWebActivityPermissionStore store,
@@ -62,21 +74,71 @@ public class TrustedWebActivityPermissionManager {
         return permissions.toArray(new InstalledWebappBridge.Permission[permissions.size()]);
     }
 
-    void register(Origin origin, boolean notificationsEnabled) {
-        // TODO: Only trigger if this is for the first time?
-        NotificationChannelPreserver.deleteChannelIfNeeded(mPermissionPreserver, origin);
+    void register(Origin origin, String packageName, boolean notificationsEnabled) {
+        // TODO(peconn): Only trigger if this is for the first time?
 
-        mStore.setNotificationState(origin, notificationsEnabled);
+        String appName = getAppNameForPackage(packageName);
+        if (appName == null) return;
+
+        // It's important that we set the state before we destroy the notification channel. If we
+        // did it the other way around there'd be a small moment in time where the website's
+        // notification permission could flicker from SET -> UNSET -> SET. This way we transition
+        // straight from the channel's permission to the app's permission.
+        mStore.setStateForOrigin(origin, packageName, appName, notificationsEnabled);
+
+        NotificationChannelPreserver.deleteChannelIfNeeded(mPermissionPreserver, origin);
     }
 
     void unregister(Origin origin) {
-        NotificationChannelPreserver.restoreChannelIfNeeded(mPermissionPreserver, origin);
-
         mStore.removeOrigin(origin);
+
+        NotificationChannelPreserver.restoreChannelIfNeeded(mPermissionPreserver, origin);
+    }
+
+    /**
+     * Returns the user visible name of the app that will handle permission delegation for the
+     * origin.
+     */
+    @Nullable
+    public String getDelegateAppName(Origin origin) {
+        return mStore.getAppName(origin);
+    }
+
+    /** Returns the package of the app that will handle permission delegation for the origin. */
+    @Nullable
+    public String getDelegatePackageName(Origin origin) {
+        return mStore.getPackageName(origin);
+    }
+
+    /** Gets all the origins that we delegate permissions for. */
+    public Set<String> getAllDelegatedOrigins() {
+        return mStore.getStoredOrigins();
     }
 
     @VisibleForTesting
     void clearForTesting() {
         mStore.clearForTesting();
+    }
+
+    @Nullable
+    private static String getAppNameForPackage(String packageName) {
+        // TODO(peconn): Dedupe logic with ClientAppDataRecorder.
+        try {
+            PackageManager pm = ContextUtils.getApplicationContext().getPackageManager();
+            int getAppInfoFlags = 0;
+            ApplicationInfo ai = pm.getApplicationInfo(packageName, getAppInfoFlags);
+
+            String appLabel = pm.getApplicationLabel(ai).toString();
+
+            if (TextUtils.isEmpty(appLabel)) {
+                Log.e(TAG,"Invalid details for client package: %s", appLabel);
+                return null;
+            }
+
+            return appLabel;
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.e(TAG, "Couldn't find name for client package: %s", packageName);
+            return null;
+        }
     }
 }

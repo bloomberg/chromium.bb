@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.browserservices.permissiondelegation;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.support.annotation.Nullable;
 import android.support.annotation.WorkerThread;
 
 import org.chromium.base.ContextUtils;
@@ -28,6 +29,12 @@ import java.util.Set;
  * up, we don't want the first permission check to cause loading separate Preferences files for
  * each installed TWA.
  *
+ * A key difference between this class and the
+ * {@link org.chromium.chrome.browser.browserservices.ClientAppDataRegister} is that the register
+ * stores data keyed by the client app, where as this class stores data keyed by the origin. There
+ * may be two client apps installed for the same origin, the ClientAppDataRegister will hold two
+ * entries, whereas this class will hold data for one client app that will be used for permission
+ * delegation.
  *
  * Lifecycle: This class is designed to be owned by
  * {@link org.chromium.chrome.browser.webapps.WebappRegistry}, get it from there, don't create your
@@ -41,10 +48,12 @@ public class TrustedWebActivityPermissionStore {
     private static final String SHARED_PREFS_FILE = "twa_permission_registry";
 
     private static final String KEY_ALL_ORIGINS = "origins";
-    private static final String KEY_NOTIFICATION_PERMISSION_PREFIX = "notification_permission.";
 
-    private static final String KEY_PRE_TWA_NOTIFICATION_PERMISSION
-            = "pre_twa_notification_permission";
+    private static final String KEY_NOTIFICATION_PERMISSION_PREFIX = "notification_permission.";
+    private static final String KEY_PACKAGE_NAME_PREFIX = "package_name.";
+    private static final String KEY_APP_NAME_PREFIX = "app_name.";
+    private static final String KEY_PRE_TWA_NOTIFICATION_PERMISSION_PREFIX
+            = "pre_twa_notification_permission.";
 
     private final SharedPreferences mPreferences;
 
@@ -70,7 +79,17 @@ public class TrustedWebActivityPermissionStore {
     public Boolean areNotificationsEnabled(Origin origin) {
         String key = createNotificationPermissionKey(origin);
         if (!mPreferences.contains(key)) return null;
-        return mPreferences.getBoolean(createNotificationPermissionKey(origin), false);
+        return mPreferences.getBoolean(key, false);
+    }
+
+    @Nullable
+    String getAppName(Origin origin) {
+        return mPreferences.getString(createAppNameKey(origin), null);
+    }
+
+    @Nullable
+    String getPackageName(Origin origin) {
+        return mPreferences.getString(createPackageNameKey(origin), null);
     }
 
     /** Gets all the origins of registered TWAs. */
@@ -84,11 +103,13 @@ public class TrustedWebActivityPermissionStore {
     }
 
     /** Sets the notification state for the origin. */
-    void setNotificationState(Origin origin, boolean enabled) {
+    void setStateForOrigin(Origin origin, String packageName, String appName, boolean enabled) {
         addOrigin(origin);
 
         SharedPreferences.Editor editor = mPreferences.edit();
         editor.putBoolean(createNotificationPermissionKey(origin), enabled);
+        editor.putString(createPackageNameKey(origin), packageName);
+        editor.putString(createAppNameKey(origin), appName);
         editor.apply();
     }
 
@@ -100,13 +121,15 @@ public class TrustedWebActivityPermissionStore {
         SharedPreferences.Editor editor = mPreferences.edit();
         editor.putStringSet(KEY_ALL_ORIGINS, origins);
         editor.remove(createNotificationPermissionKey(origin));
+        editor.remove(createAppNameKey(origin));
+        editor.remove(createPackageNameKey(origin));
         editor.apply();
     }
 
     /** Stores the notification state the origin had before the TWA was installed. */
     void setPreTwaNotificationState(Origin origin, boolean enabled) {
         SharedPreferences.Editor editor = mPreferences.edit();
-        editor.putBoolean(createNotificationPreTwaPermission(origin), enabled);
+        editor.putBoolean(createNotificationPreTwaPermissionKey(origin), enabled);
         editor.apply();
     }
 
@@ -114,8 +137,9 @@ public class TrustedWebActivityPermissionStore {
      * Retrieves the notification state the origin had before the TWA was installed. {@code null} if
      * no state is stored. If a value was stored, calling this method removes it.
      */
+    @Nullable
     Boolean getPreTwaNotificationState(Origin origin) {
-        String key = createNotificationPreTwaPermission(origin);
+        String key = createNotificationPreTwaPermissionKey(origin);
         if (!mPreferences.contains(key)) return null;
 
         boolean enabled = mPreferences.getBoolean(key, false);
@@ -148,7 +172,15 @@ public class TrustedWebActivityPermissionStore {
         return KEY_NOTIFICATION_PERMISSION_PREFIX + origin.toString();
     }
 
-    private String createNotificationPreTwaPermission(Origin origin) {
-        return KEY_PRE_TWA_NOTIFICATION_PERMISSION + origin.toString();
+    private String createNotificationPreTwaPermissionKey(Origin origin) {
+        return KEY_PRE_TWA_NOTIFICATION_PERMISSION_PREFIX + origin.toString();
+    }
+
+    private String createPackageNameKey(Origin origin) {
+        return KEY_PACKAGE_NAME_PREFIX + origin.toString();
+    }
+
+    private String createAppNameKey(Origin origin) {
+        return KEY_APP_NAME_PREFIX + origin.toString();
     }
 }

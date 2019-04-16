@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.browserservices.permissiondelegation;
 
 import static org.chromium.chrome.browser.dependency_injection.ChromeCommonQualifiers.APP_CONTEXT;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -52,13 +53,10 @@ public class NotificationPermissionUpdater {
     /**
      * To be called when an origin is verified with a package. It sets the notification permission
      * for that origin according to the following:
-     * - If the package doesn't handle browsable intents for the origin, it does nothing.
-     * - If the package does handle browsable intents for the origin, but there is no
-     *   TrustedWebActivityService (on the entire system), it will *block* notifications for that
-     *   origin.
-     * - If the package handles browsable intents for the origin and a TrustedwebActivityService
+     * - If the package handles browsable intents for the origin and a TrustedWebActivityService
      *   is found, it updates Chrome's notification permission for that origin to match Android's
      *   notification permission for the package.
+     * - Otherwise, it does nothing.
      */
     public void onOriginVerified(Origin origin, String packageName) {
         // If the client doesn't handle browsable Intents for the URL, we don't do anything special
@@ -70,13 +68,12 @@ public class NotificationPermissionUpdater {
 
         // It's important to note here that the client we connect to to check for the notification
         // permission may not be the client that triggered this method call.
-        boolean couldConnect = mTrustedWebActivityClient.checkNotificationPermission(origin,
-                enabled -> updatePermission(origin, enabled));
 
-        if (!couldConnect) {
-            Log.w(TAG, "No TWAService found for origin, disabling notifications");
-            mPermissionManager.register(origin, false);
-        }
+        // The function passed to this method call may not be executed in the case of the app not
+        // having a TrustedWebActivityService. That's fine because we only want to update the
+        // permission if a TrustedWebActivityService exists.
+        mTrustedWebActivityClient.checkNotificationPermission(origin,
+                (app, enabled) -> updatePermission(origin, app, enabled));
     }
 
     /**
@@ -88,7 +85,7 @@ public class NotificationPermissionUpdater {
         // See if there is any other app installed that could handle the notifications (and update
         // to that apps notification permission if it exists).
         boolean couldConnect = mTrustedWebActivityClient.checkNotificationPermission(origin,
-                enabled -> updatePermission(origin, enabled));
+                (app, enabled) -> updatePermission(origin, app, enabled));
 
         // If not, we return notification state to what it was before installation.
         if (!couldConnect) {
@@ -97,11 +94,11 @@ public class NotificationPermissionUpdater {
     }
 
     @WorkerThread
-    private void updatePermission(Origin origin, boolean enabled) {
+    private void updatePermission(Origin origin, ComponentName app, boolean enabled) {
         // This method will be called by the TrustedWebActivityClient on a background thread, so
         // hop back over to the UI thread to deal with the result.
         PostTask.postTask(UiThreadTaskTraits.USER_VISIBLE, () -> {
-            mPermissionManager.register(origin, enabled);
+            mPermissionManager.register(origin, app.getPackageName(), enabled);
             Log.d(TAG, "Updating origin notification permissions to: %b", enabled);
         });
     }
