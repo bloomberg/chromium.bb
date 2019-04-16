@@ -38,6 +38,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/webdata/token_web_data.h"
+#include "components/user_manager/user.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 #include "services/identity/public/cpp/accounts_in_cookie_jar_info.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -168,7 +169,8 @@ class AccountMigrationBaseStep : public AccountMigrationRunner::Step {
 class DeviceAccountMigration : public AccountMigrationBaseStep,
                                public WebDataServiceConsumer {
  public:
-  DeviceAccountMigration(AccountManager::AccountKey device_account,
+  DeviceAccountMigration(const AccountManager::AccountKey& device_account,
+                         const std::string& device_account_raw_email,
                          AccountManager* account_manager,
                          identity::IdentityManager* identity_manager,
                          scoped_refptr<TokenWebData> token_web_data)
@@ -176,7 +178,8 @@ class DeviceAccountMigration : public AccountMigrationBaseStep,
                                  account_manager,
                                  identity_manager),
         token_web_data_(token_web_data),
-        device_account_(device_account) {}
+        device_account_(device_account),
+        device_account_raw_email_(device_account_raw_email) {}
   ~DeviceAccountMigration() override = default;
 
  private:
@@ -233,7 +236,7 @@ class DeviceAccountMigration : public AccountMigrationBaseStep,
       }
 
       account_manager()->UpsertAccount(
-          device_account_, identity_manager()->GetPrimaryAccountInfo().email,
+          device_account_, device_account_raw_email_ /* raw_email */,
           it->second /* token */);
       is_success = true;
       break;
@@ -253,6 +256,9 @@ class DeviceAccountMigration : public AccountMigrationBaseStep,
 
   // Device Account on Chrome OS.
   const AccountManager::AccountKey device_account_;
+
+  // Raw, un-canonicalized email for the device account.
+  const std::string device_account_raw_email_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -521,7 +527,11 @@ void AccountManagerMigrator::AddMigrationSteps() {
       IdentityManagerFactory::GetForProfile(profile_);
 
   migration_runner_.AddStep(std::make_unique<DeviceAccountMigration>(
-      GetDeviceAccount(profile_), account_manager, identity_manager,
+      GetDeviceAccount(profile_),
+      ProfileHelper::Get()
+          ->GetUserByProfile(profile_)
+          ->display_email() /* device_account_raw_email */,
+      account_manager, identity_manager,
       WebDataServiceFactory::GetTokenWebDataForProfile(
           profile_, ServiceAccessType::EXPLICIT_ACCESS) /* token_web_data */));
 
