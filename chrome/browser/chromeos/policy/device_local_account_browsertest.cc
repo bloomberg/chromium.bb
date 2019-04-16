@@ -2606,11 +2606,6 @@ class TermsOfServiceDownloadTest : public DeviceLocalAccountTest,
 };
 
 IN_PROC_BROWSER_TEST_P(TermsOfServiceDownloadTest, TermsOfServiceScreen) {
-  // TODO(crbug.com/898701): Running test with existant TOS path flakes, so this
-  // has been disabled.
-  if (GetParam())
-    return;
-
   // Specify Terms of Service URL.
   ASSERT_TRUE(embedded_test_server()->Start());
   device_local_account_policy_.payload().mutable_termsofserviceurl()->set_value(
