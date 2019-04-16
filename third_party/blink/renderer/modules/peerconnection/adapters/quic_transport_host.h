@@ -71,8 +71,10 @@ class QuicTransportHost final : public P2PQuicTransport::Delegate {
   void OnRemoteStopped() override;
   void OnConnectionFailed(const std::string& error_details,
                           bool from_remote) override;
-  void OnConnected() override;
+  void OnConnected(P2PQuicNegotiatedParams negotiated_params) override;
   void OnStream(P2PQuicStream* stream) override;
+  void OnDatagramSent() override;
+  void OnReceivedDatagram(Vector<uint8_t> datagram) override;
 
   std::unique_ptr<P2PQuicTransportFactory> quic_transport_factory_;
   std::unique_ptr<P2PQuicTransport> quic_transport_;
