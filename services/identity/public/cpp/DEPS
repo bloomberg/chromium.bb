@@ -6,6 +6,7 @@ include_rules = [
   "+components/signin/core/browser/account_info.h",
   "+components/signin/core/browser/child_account_info_fetcher_android.h",
   "+components/signin/core/browser/gaia_cookie_manager_service.h",
+  "+components/signin/core/browser/identity_manager_wrapper.h",
   "+components/signin/core/browser/list_accounts_test_utils.h",
   "+components/signin/core/browser/oauth2_token_service_delegate_android.h",
   "+components/signin/core/browser/signin_buildflags.h",
