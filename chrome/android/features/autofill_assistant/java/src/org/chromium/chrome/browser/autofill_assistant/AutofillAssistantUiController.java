@@ -219,13 +219,14 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     }
 
     @CalledByNative
-    private void setSuggestions(String[] texts, boolean[] disabled) {
+    private void setSuggestions(int[] icons, String[] texts, boolean[] disabled) {
+        assert texts.length == icons.length;
         assert texts.length == disabled.length;
         List<AssistantChip> chips = new ArrayList<>();
         for (int i = 0; i < texts.length; i++) {
             final int suggestionIndex = i;
-            chips.add(new AssistantChip(AssistantChip.Type.CHIP_ASSISTIVE, texts[i], disabled[i],
-                    () -> safeNativeOnSuggestionSelected(suggestionIndex)));
+            chips.add(new AssistantChip(AssistantChip.Type.CHIP_ASSISTIVE, icons[i], texts[i],
+                    disabled[i], () -> safeNativeOnSuggestionSelected(suggestionIndex)));
         }
         AssistantCarouselModel model = getModel().getSuggestionsModel();
         model.set(ALIGNMENT, AssistantCarouselModel.Alignment.START);
@@ -243,8 +244,8 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
      */
     @CalledByNative
     private void addActionButton(
-            List<AssistantChip> chips, String text, int actionIndex, boolean disabled) {
-        chips.add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE, text, disabled,
+            List<AssistantChip> chips, int icon, String text, int actionIndex, boolean disabled) {
+        chips.add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE, icon, text, disabled,
                 () -> safeNativeOnActionSelected(actionIndex)));
     }
 
@@ -254,8 +255,8 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
      */
     @CalledByNative
     private void addHighlightedActionButton(
-            List<AssistantChip> chips, String text, int actionIndex, boolean disabled) {
-        chips.add(new AssistantChip(Type.BUTTON_FILLED_BLUE, text, disabled,
+            List<AssistantChip> chips, int icon, String text, int actionIndex, boolean disabled) {
+        chips.add(new AssistantChip(Type.BUTTON_FILLED_BLUE, icon, text, disabled,
                 () -> safeNativeOnActionSelected(actionIndex)));
     }
 
@@ -265,8 +266,8 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
      */
     @CalledByNative
     private void addCancelButton(
-            List<AssistantChip> chips, String text, int actionIndex, boolean disabled) {
-        chips.add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE, text, disabled,
+            List<AssistantChip> chips, int icon, String text, int actionIndex, boolean disabled) {
+        chips.add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE, icon, text, disabled,
                 () -> safeNativeOnCancelButtonClicked(actionIndex)));
     }
 
@@ -274,8 +275,9 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
      * Adds a close action button to the chip list, which shuts down Autofill Assistant.
      */
     @CalledByNative
-    private void addCloseButton(List<AssistantChip> chips, String text, boolean disabled) {
-        chips.add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE, text, disabled,
+    private void addCloseButton(
+            List<AssistantChip> chips, int icon, String text, boolean disabled) {
+        chips.add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE, icon, text, disabled,
                 this::safeNativeOnCloseButtonClicked));
     }
 

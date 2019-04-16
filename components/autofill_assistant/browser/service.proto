@@ -103,6 +103,9 @@ message SupportedScriptProto {
     // name field.
     optional ChipType chip_type = 10;
 
+    // An icon the should be shown next to the chip text.
+    optional ChipIcon chip_icon = 11;
+
     // When set to true this script can be run in 'autostart mode'. Chip won't
     // be shown; name and chip_type are ignored.
     optional bool autostart = 8;
@@ -148,6 +151,19 @@ enum ChipType {
   // cancel button. Otherwise, buttons of this type work and look like a
   // HIGHLIGHTED_ACTION.
   DONE_ACTION = 6;
+}
+
+enum ChipIcon {
+  NO_ICON = 0;
+
+  // https://icons.googleplex.com/#icon=ic_clear
+  ICON_CLEAR = 1;
+
+  // https://icons.googleplex.com/#icon=ic_done
+  ICON_DONE = 2;
+
+  // https://icons.googleplex.com/#icon=ic_refresh
+  ICON_REFRESH = 3;
 }
 
 enum ScriptStatusProto {
@@ -739,6 +755,9 @@ message PromptProto {
     // Describes the chip to be shown. The name of the chip is set by the
     // name field.
     optional ChipType chip_type = 7;
+
+    // An icon the should be shown next to the chip text.
+    optional ChipIcon chip_icon = 10;
 
     // Auto-select this choice if the given element exist.
     optional ElementReferenceProto auto_select_if_element_exists = 4;

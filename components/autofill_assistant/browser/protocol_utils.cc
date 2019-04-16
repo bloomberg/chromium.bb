@@ -88,6 +88,7 @@ void ProtocolUtils::AddScript(const SupportedScriptProto& script_proto,
   script->handle.interrupt = presentation.interrupt();
   script->handle.initial_prompt = presentation.initial_prompt();
   script->handle.chip_type = presentation.chip_type();
+  script->handle.chip_icon = presentation.chip_icon();
   script->precondition = ScriptPrecondition::FromProto(
       script_proto.path(), presentation.precondition());
   script->priority = presentation.priority();

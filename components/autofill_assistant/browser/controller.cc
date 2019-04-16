@@ -779,6 +779,7 @@ void Controller::OnRunnableScriptsChanged(
       chips->emplace_back();
       chips->back().text = script.name;
       chips->back().type = script.chip_type;
+      chips->back().icon = script.chip_icon;
       chips->back().callback =
           base::BindOnce(&Controller::OnScriptSelected,
                          weak_ptr_factory_.GetWeakPtr(), script.path);
