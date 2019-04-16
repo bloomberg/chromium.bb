@@ -745,6 +745,18 @@ int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
       case OBU_FRAME_HEADER:
       case OBU_REDUNDANT_FRAME_HEADER:
       case OBU_FRAME:
+        if (obu_header.type == OBU_REDUNDANT_FRAME_HEADER) {
+          if (!pbi->seen_frame_header) {
+            cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
+            return -1;
+          }
+        } else {
+          // OBU_FRAME_HEADER or OBU_FRAME.
+          if (pbi->seen_frame_header) {
+            cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
+            return -1;
+          }
+        }
         // Only decode first frame header received
         if (!pbi->seen_frame_header ||
             (cm->large_scale_tile && !pbi->camera_frame_header_ready)) {
