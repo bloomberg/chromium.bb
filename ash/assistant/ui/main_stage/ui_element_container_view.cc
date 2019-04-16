@@ -257,9 +257,8 @@ void UiElementContainerView::OnCardElementAdded(
     // The first card requires a top margin of |GetFirstCardMarginTopDip()|, but
     // we need to account for child spacing because the first card is not
     // necessarily the first UI element.
-    const int top_margin_dip = child_count() == 0
-                                   ? GetFirstCardMarginTopDip()
-                                   : GetFirstCardMarginTopDip() - kSpacingDip;
+    const int top_margin_dip =
+        GetFirstCardMarginTopDip() - (children().empty() ? 0 : kSpacingDip);
 
     // We effectively create a top margin by applying an empty border.
     card_element_view->SetBorder(

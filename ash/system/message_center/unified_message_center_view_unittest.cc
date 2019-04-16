@@ -166,8 +166,9 @@ class UnifiedMessageCenterViewTest : public AshTestBase,
       return nullptr;
 
     message_center::MessageView* focused_message_view = nullptr;
-    const int max_focus_toggles = 5 * GetMessageListView()->child_count();
-    for (int i = 0; i < max_focus_toggles; ++i) {
+    const size_t max_focus_toggles =
+        GetMessageListView()->children().size() * 5;
+    for (size_t i = 0; i < max_focus_toggles; ++i) {
       focus_manager->AdvanceFocus(reverse);
       auto* focused_view = focus_manager->GetFocusedView();
       // The MessageView is wrapped in container view in the MessageList.

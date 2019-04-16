@@ -220,7 +220,7 @@ int UnifiedMessageListView::CountNotificationsAboveY(int y_offset) const {
 }
 
 int UnifiedMessageListView::GetTotalNotificationCount() const {
-  return child_count();
+  return int{children().size()};
 }
 
 void UnifiedMessageListView::ChildPreferredSizeChanged(views::View* child) {
@@ -257,10 +257,7 @@ gfx::Rect UnifiedMessageListView::GetNotificationBounds(
 }
 
 gfx::Rect UnifiedMessageListView::GetLastNotificationBounds() const {
-  if (child_count() == 0)
-    return gfx::Rect();
-
-  return GetContainer(child_count() - 1)->bounds();
+  return children().empty() ? gfx::Rect() : children().back()->bounds();
 }
 
 gfx::Rect UnifiedMessageListView::GetNotificationBoundsBelowY(
@@ -421,15 +418,14 @@ void UnifiedMessageListView::CollapseAllNotifications() {
 }
 
 void UnifiedMessageListView::UpdateBorders() {
+  // When the stacking bar is shown, there should never be a top notification.
+  bool is_top = !features::IsNotificationStackingBarRedesignEnabled() ||
+                children().size() == 1;
   for (int i = 0; i < child_count(); ++i) {
-    bool is_top = i == 0;
-    // When the stacking bar is shown, there should never be a top notification.
-    if (features::IsNotificationStackingBarRedesignEnabled() &&
-        GetTotalNotificationCount() > 1) {
-      is_top = false;
-    }
-    const bool is_bottom = i == child_count() - 1;
-    GetContainer(i)->UpdateBorder(is_top, is_bottom);
+    auto* child = GetContainer(i);
+    const bool is_bottom = child == children().back();
+    child->UpdateBorder(is_top, is_bottom);
+    is_top = false;
   }
 }
 

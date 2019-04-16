@@ -106,7 +106,7 @@ StatusAreaWidget::~StatusAreaWidget() {
   flag_warning_tray_.reset();
 
   // All child tray views have been removed.
-  DCHECK_EQ(0, GetContentsView()->child_count());
+  DCHECK(GetContentsView()->children().empty());
 }
 
 void StatusAreaWidget::UpdateAfterShelfAlignmentChange() {

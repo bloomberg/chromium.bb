@@ -439,7 +439,7 @@ void NetworkListView::UpdateNetworkChild(int index, const NetworkInfo* info) {
 void NetworkListView::PlaceViewAtIndex(views::View* view, int index) {
   if (view->parent() != scroll_content()) {
     scroll_content()->AddChildViewAt(view, index);
-  } else if (index < scroll_content()->child_count() &&
+  } else if (index > 0 && size_t{index} < scroll_content()->children().size() &&
              scroll_content()->child_at(index) == view) {
     // ReorderChildView() would no-op in this case, but we still want to avoid
     // setting |needs_relayout_|.

@@ -244,7 +244,7 @@ void SearchResultActionsView::SetActions(const SearchResult::Actions& actions) {
 
 void SearchResultActionsView::SetSelectedAction(int action_index) {
   // Clamp |action_index| in [-1, child_count()].
-  action_index = std::min(child_count(), std::max(-1, action_index));
+  action_index = std::min(int{children().size()}, std::max(-1, action_index));
 
   if (selected_action_ == action_index)
     return;
@@ -259,7 +259,7 @@ void SearchResultActionsView::SetSelectedAction(int action_index) {
 }
 
 bool SearchResultActionsView::IsValidActionIndex(int action_index) const {
-  return action_index >= 0 && action_index < child_count();
+  return action_index >= 0 && size_t{action_index} < children().size();
 }
 
 bool SearchResultActionsView::IsSearchResultHoveredOrSelected() const {
