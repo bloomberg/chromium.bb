@@ -1734,6 +1734,11 @@ compilePassOpcode(FileInfo *nested, TranslationTableOpcode opcode,
 			passGetDots(&passLine, &passLinepos, &passHoldString, passNested);
 		testDoCharsDots:
 			if (passHoldString.length == 0) return 0;
+			if (passIC >= MAXSTRING) {
+				compileError(passNested,
+						"@ operand in test part of multipass operand too long");
+				return 0;
+			}
 			passInstructions[passIC++] = passHoldString.length;
 			for (kk = 0; kk < passHoldString.length; kk++) {
 				if (passIC >= MAXSTRING) {
@@ -1893,6 +1898,11 @@ compilePassOpcode(FileInfo *nested, TranslationTableOpcode opcode,
 			passInstructions[passIC++] = pass_dots;
 		actionDoCharsDots:
 			if (passHoldString.length == 0) return 0;
+			if (passIC >= MAXSTRING) {
+				compileError(passNested,
+						"@ operand in action part of multipass operand too long");
+				return 0;
+			}
 			passInstructions[passIC++] = passHoldString.length;
 			for (kk = 0; kk < passHoldString.length; kk++) {
 				if (passIC >= MAXSTRING) {
