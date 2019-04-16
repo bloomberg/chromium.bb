@@ -460,6 +460,7 @@ source_set("blink_headers") {
     "web/web_language_detection_details.h",
     "web/web_local_frame.h",
     "web/web_local_frame_client.h",
+    "web/web_manifest_fetcher.h",
     "web/web_manifest_parser.h",
     "web/web_meaningful_layout.h",
     "web/web_media_player_action.h",
