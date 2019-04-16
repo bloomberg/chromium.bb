@@ -1208,14 +1208,6 @@ void Element::ScrollFrameTo(const ScrollToOptions* scroll_to_options) {
   viewport->SetScrollOffset(new_offset, kProgrammaticScroll, scroll_behavior);
 }
 
-bool Element::HasNonEmptyLayoutSize() const {
-  GetDocument().UpdateStyleAndLayout();
-
-  if (LayoutBoxModelObject* box = GetLayoutBoxModelObject())
-    return box->HasNonEmptyLayoutSize();
-  return false;
-}
-
 IntRect Element::BoundsInViewport() const {
   GetDocument().EnsurePaintLocationDataValidForNode(this);
 

@@ -331,8 +331,6 @@ class CORE_EXPORT Element : public ContainerNode {
   DOMRectList* getClientRects();
   DOMRect* getBoundingClientRect();
 
-  bool HasNonEmptyLayoutSize() const;
-
   const AtomicString& computedRole();
   String computedName();
 
