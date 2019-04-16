@@ -242,6 +242,10 @@ base::Optional<cc::TouchAction> InputRouterImpl::AllowedTouchAction() {
   return touch_action_filter_.allowed_touch_action();
 }
 
+base::Optional<cc::TouchAction> InputRouterImpl::ActiveTouchAction() {
+  return touch_action_filter_.active_touch_action();
+}
+
 void InputRouterImpl::BindHost(mojom::WidgetInputHandlerHostRequest request,
                                bool frame_handler) {
   if (frame_handler) {

@@ -79,6 +79,9 @@ class InputRouter {
   // Return the currently allowed touch-action.
   virtual base::Optional<cc::TouchAction> AllowedTouchAction() = 0;
 
+  // Return the currently active touch-action.
+  virtual base::Optional<cc::TouchAction> ActiveTouchAction() = 0;
+
   virtual void SetForceEnableZoom(bool enabled) = 0;
 
   // Associate this InputRouter with a remote host channel.
