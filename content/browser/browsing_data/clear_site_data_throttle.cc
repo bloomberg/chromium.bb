@@ -15,7 +15,6 @@
 #include "base/task/post_task.h"
 #include "base/values.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
-#include "content/browser/service_worker/service_worker_response_info.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -276,27 +275,6 @@ bool ClearSiteDataThrottle::HandleHeader() {
         "and other local data.",
         blink::mojom::ConsoleMessageLevel::kError);
     return false;
-  }
-
-  // Service workers can handle fetches of third-party resources and inject
-  // arbitrary headers. Ignore responses that came from a service worker,
-  // as supporting Clear-Site-Data would give them the power to delete data from
-  // any website.
-  // See https://w3c.github.io/webappsec-clear-site-data/#service-workers
-  // for more information.
-  const ServiceWorkerResponseInfo* response_info =
-      ServiceWorkerResponseInfo::ForRequest(request_);
-  if (response_info) {
-    network::ResourceResponseInfo extra_response_info;
-    response_info->GetExtraResponseInfo(&extra_response_info);
-
-    if (extra_response_info.was_fetched_via_service_worker) {
-      delegate_->AddMessage(
-          GetCurrentURL(),
-          "Ignoring, as the response came from a service worker.",
-          blink::mojom::ConsoleMessageLevel::kError);
-      return false;
-    }
   }
 
   bool clear_cookies;

@@ -475,8 +475,6 @@ class ServiceWorkerNavigationLoaderTest
 
  protected:
   // ServiceWorkerNavigationLoader::Delegate -----------------------------------
-  void OnPrepareToRestart() override {}
-
   ServiceWorkerVersion* GetServiceWorkerVersion(
       ServiceWorkerMetrics::URLRequestJobResult* result) override {
     return version_.get();

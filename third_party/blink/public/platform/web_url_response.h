@@ -232,13 +232,11 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT void SetWasFetchedViaSPDY(bool);
 
   // Flag whether this request was loaded via a ServiceWorker. See
-  // ServiceWorkerResponseInfo::was_fetched_via_service_worker() for details.
+  // network::ResourceResponseInfo::was_fetched_via_service_worker for details.
   BLINK_PLATFORM_EXPORT bool WasFetchedViaServiceWorker() const;
   BLINK_PLATFORM_EXPORT void SetWasFetchedViaServiceWorker(bool);
 
-  // Flag whether the fallback request with skip service worker flag was
-  // required. See ServiceWorkerResponseInfo::was_fallback_required() for
-  // details.
+  // See network::ResourceResponseInfo::was_fallback_required_by_service_worker.
   BLINK_PLATFORM_EXPORT void SetWasFallbackRequiredByServiceWorker(bool);
 
   // https://fetch.spec.whatwg.org/#concept-response-type
@@ -246,8 +244,8 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT network::mojom::FetchResponseType GetType() const;
 
   // The URL list of the Response object the ServiceWorker passed to
-  // respondWith(). See ServiceWorkerResponseInfo::url_list_via_service_worker()
-  // for details.
+  // respondWith(). See
+  // network::ResourceResponseInfo::url_list_via_service_worker for details.
   BLINK_PLATFORM_EXPORT void SetUrlListViaServiceWorker(
       const WebVector<WebURL>&);
   // Returns true if the URL list is not empty.
@@ -264,8 +262,7 @@ class WebURLResponse {
       const WebVector<WebString>&);
 
   // Whether service worker navigation preload occurred.
-  // See ServiceWorkerResponseInfo::did_navigation_preload() for
-  // details.
+  // See network::ResourceResponseInfo::did_navigation_preload for details.
   BLINK_PLATFORM_EXPORT void SetDidServiceWorkerNavigationPreload(bool);
 
   // Remote IP address of the socket which fetched this resource.

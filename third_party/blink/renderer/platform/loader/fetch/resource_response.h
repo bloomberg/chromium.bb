@@ -296,7 +296,7 @@ class PLATFORM_EXPORT ResourceResponse final {
   bool WasFetchedViaSPDY() const { return was_fetched_via_spdy_; }
   void SetWasFetchedViaSPDY(bool value) { was_fetched_via_spdy_ = value; }
 
-  // See ServiceWorkerResponseInfo::was_fetched_via_service_worker.
+  // See network::ResourceResponseInfo::was_fetched_via_service_worker.
   bool WasFetchedViaServiceWorker() const {
     return was_fetched_via_service_worker_;
   }
@@ -304,7 +304,7 @@ class PLATFORM_EXPORT ResourceResponse final {
     was_fetched_via_service_worker_ = value;
   }
 
-  // See ServiceWorkerResponseInfo::was_fallback_required.
+  // See network::ResourceResponseInfo::was_fallback_required_by_service_worker.
   bool WasFallbackRequiredByServiceWorker() const {
     return was_fallback_required_by_service_worker_;
   }
@@ -325,7 +325,7 @@ class PLATFORM_EXPORT ResourceResponse final {
     return network::cors::IsCorsCrossOriginResponseType(response_type_);
   }
 
-  // See ServiceWorkerResponseInfo::url_list_via_service_worker.
+  // See network::ResourceResponseInfo::url_list_via_service_worker.
   const Vector<KURL>& UrlListViaServiceWorker() const {
     return url_list_via_service_worker_;
   }
