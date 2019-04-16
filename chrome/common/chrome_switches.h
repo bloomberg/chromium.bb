@@ -183,7 +183,6 @@ extern const char kTestName[];
 extern const char kTrustedDownloadSources[];
 extern const char kTryChromeAgain[];
 extern const char kUnlimitedStorage[];
-extern const char kUnsafePacUrl[];
 extern const char kUserAgent[];
 extern const char kUserDataDir[];
 extern const char kValidateCrx[];

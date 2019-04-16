@@ -172,14 +172,6 @@ class NET_EXPORT URLRequestContextBuilder {
     pac_quick_check_enabled_ = pac_quick_check_enabled;
   }
 
-  // Sets policy for sanitizing URLs before passing them to a PAC. Defaults to
-  // ProxyResolutionService::SanitizeUrlPolicy::SAFE. Ignored if
-  // a ProxyResolutionService is set directly.
-  void set_pac_sanitize_url_policy(
-      ProxyResolutionService::SanitizeUrlPolicy pac_sanitize_url_policy) {
-    pac_sanitize_url_policy_ = pac_sanitize_url_policy;
-  }
-
   // Sets the proxy service. If one is not provided, by default, uses system
   // libraries to evaluate PAC scripts, if available (And if not, skips PAC
   // resolution). Subclasses may override CreateProxyResolutionService for
@@ -422,8 +414,6 @@ class NET_EXPORT URLRequestContextBuilder {
   HostResolver::Factory* host_resolver_factory_ = nullptr;
   std::unique_ptr<ProxyConfigService> proxy_config_service_;
   bool pac_quick_check_enabled_ = true;
-  ProxyResolutionService::SanitizeUrlPolicy pac_sanitize_url_policy_ =
-      ProxyResolutionService::SanitizeUrlPolicy::SAFE;
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
   std::unique_ptr<SSLConfigService> ssl_config_service_;
   std::unique_ptr<NetworkDelegate> network_delegate_;

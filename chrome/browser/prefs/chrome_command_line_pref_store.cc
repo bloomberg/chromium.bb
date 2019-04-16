@@ -86,7 +86,6 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
         {chromeos::switches::kEnableCastReceiver, prefs::kCastReceiverEnabled,
          true},
 #endif
-        {switches::kUnsafePacUrl, prefs::kPacHttpsUrlStrippingEnabled, false},
         {switches::kEnableLocalSyncBackend,
          syncer::prefs::kEnableLocalSyncBackend, true},
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)

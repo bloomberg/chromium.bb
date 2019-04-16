@@ -788,7 +788,6 @@ extern const char kPartnerBookmarkMappings[];
 #endif  // defined(OS_ANDROID)
 
 extern const char kQuickCheckEnabled[];
-extern const char kPacHttpsUrlStrippingEnabled[];
 extern const char kBrowserGuestModeEnabled[];
 extern const char kBrowserAddPersonEnabled[];
 extern const char kForceBrowserSignin[];

@@ -549,8 +549,6 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
         context->net_log());
     proxy_resolution_service_->set_quick_check_enabled(
         pac_quick_check_enabled_);
-    proxy_resolution_service_->set_sanitize_url_policy(
-        pac_sanitize_url_policy_);
   }
   ProxyResolutionService* proxy_resolution_service =
       proxy_resolution_service_.get();

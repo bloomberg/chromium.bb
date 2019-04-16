@@ -135,11 +135,6 @@ struct TestCase {
   NetworkContextType network_context_type;
 };
 
-network::mojom::NetworkContextParamsPtr CreateDefaultNetworkContextParams() {
-  return g_browser_process->system_network_context_manager()
-      ->CreateDefaultNetworkContextParams();
-}
-
 // Tests the system, profile, and incognito profile NetworkContexts.
 class NetworkContextConfigurationBrowserTest
     : public InProcessBrowserTest,
@@ -1820,70 +1815,6 @@ class NetworkContextConfigurationHttpsStrippingPacBrowserTest
                                     "data:," + pac_script);
   }
 };
-
-// Start Chrome and check that PAC HTTPS path stripping is enabled.
-IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpsStrippingPacBrowserTest,
-                       PRE_PacHttpsUrlStripping) {
-  if (IsRestartStateWithInProcessNetworkService())
-    return;
-  ASSERT_FALSE(CreateDefaultNetworkContextParams()
-                   ->dangerously_allow_pac_access_to_secure_urls);
-
-  std::unique_ptr<network::ResourceRequest> request =
-      std::make_unique<network::ResourceRequest>();
-  // This URL should be directed to the proxy that fails with
-  // ERR_TUNNEL_CONNECTION_FAILED.
-  request->url = GURL("https://does.not.resolve.test:1872/foo");
-
-  content::SimpleURLLoaderTestHelper simple_loader_helper;
-  std::unique_ptr<network::SimpleURLLoader> simple_loader =
-      network::SimpleURLLoader::Create(std::move(request),
-                                       TRAFFIC_ANNOTATION_FOR_TESTS);
-
-  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      loader_factory(), simple_loader_helper.GetCallback());
-  simple_loader_helper.WaitForCallback();
-  EXPECT_FALSE(simple_loader_helper.response_body());
-  EXPECT_EQ(net::ERR_TUNNEL_CONNECTION_FAILED, simple_loader->NetError());
-
-  // Disable stripping paths from HTTPS PAC URLs for the next test.
-  g_browser_process->local_state()->SetBoolean(
-      prefs::kPacHttpsUrlStrippingEnabled, false);
-  // Check that the changed setting is reflected in the network context params.
-  // The changes aren't applied to existing URLRequestContexts, however, so have
-  // to restart to see the setting change respected.
-  EXPECT_TRUE(CreateDefaultNetworkContextParams()
-                  ->dangerously_allow_pac_access_to_secure_urls);
-}
-
-// Restart Chrome and check the case where PAC HTTPS path stripping is disabled.
-// Have to restart Chrome because the setting is only checked on NetworkContext
-// creation.
-// Flaky. See https://crbug.com/840127.
-IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpsStrippingPacBrowserTest,
-                       DISABLED_PacHttpsUrlStripping) {
-  if (IsRestartStateWithInProcessNetworkService())
-    return;
-  ASSERT_TRUE(CreateDefaultNetworkContextParams()
-                  ->dangerously_allow_pac_access_to_secure_urls);
-
-  std::unique_ptr<network::ResourceRequest> request =
-      std::make_unique<network::ResourceRequest>();
-  // This URL should be directed to the proxy that fails with
-  // ERR_PROXY_CONNECTION_FAILED.
-  request->url = GURL("https://does.not.resolve.test:1872/foo");
-
-  content::SimpleURLLoaderTestHelper simple_loader_helper;
-  std::unique_ptr<network::SimpleURLLoader> simple_loader =
-      network::SimpleURLLoader::Create(std::move(request),
-                                       TRAFFIC_ANNOTATION_FOR_TESTS);
-
-  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      loader_factory(), simple_loader_helper.GetCallback());
-  simple_loader_helper.WaitForCallback();
-  EXPECT_FALSE(simple_loader_helper.response_body());
-  EXPECT_EQ(net::ERR_PROXY_CONNECTION_FAILED, simple_loader->NetError());
-}
 
 // Instiates tests with a prefix indicating which NetworkContext is being
 // tested, and a suffix of "/0" if the network service is disabled, "/1" if it's
