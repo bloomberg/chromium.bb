@@ -30,9 +30,9 @@ class SwitchAccess {
 
     /**
      * Handles keyboard input.
-     * @private {KeyboardHandler}
+     * @private {KeyEventHandler}
      */
-    this.keyboardHandler_ = null;
+    this.keyEventHandler_ = null;
 
     /**
      * Handles interactions with the accessibility tree, including moving to and
@@ -65,7 +65,7 @@ class SwitchAccess {
     this.commands_ = new Commands(this);
     this.switchAccessPreferences_ = new SwitchAccessPreferences(this);
     this.autoScanManager_ = new AutoScanManager(this);
-    this.keyboardHandler_ = new KeyboardHandler(this);
+    this.keyEventHandler_ = new KeyEventHandler(this);
 
     chrome.automation.getDesktop(function(desktop) {
       this.navigationManager_ = new NavigationManager(desktop);
@@ -145,14 +145,14 @@ class SwitchAccess {
    * @param {function(number)} callback
    */
   listenForKeycodes(callback) {
-    this.keyboardHandler_.listenForKeycodes(callback);
+    this.keyEventHandler_.listenForKeycodes(callback);
   }
 
   /**
    * Stops forwarding keycodes.
    */
   stopListeningForKeycodes() {
-    this.keyboardHandler_.stopListeningForKeycodes();
+    this.keyEventHandler_.stopListeningForKeycodes();
   }
 
   /**
@@ -188,7 +188,7 @@ class SwitchAccess {
           break;
         default:
           if (this.commands_.getCommands().includes(key))
-            this.keyboardHandler_.updateSwitchAccessKeys();
+            this.keyEventHandler_.updateSwitchAccessKeys();
       }
     }
   }
