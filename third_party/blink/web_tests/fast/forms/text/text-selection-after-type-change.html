@@ -18,7 +18,7 @@ test(() => {
   element.type = 'button';
   assert_equals(element.selectionStart, null, 'After changing to button');
   element.type = 'text';
-  assert_equals(element.selectionStart, 1, 'After changing back to text');
+  assert_equals(element.selectionStart, 0, 'After changing back to text');
 }, 'selectionStart/selectionEnd should be kept after input type changes.');
 </script>
 </body>
