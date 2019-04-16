@@ -8,20 +8,8 @@
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
-
-namespace {
-
-// Testing factory that creates a FakeProfileOAuth2TokenService.
-std::unique_ptr<KeyedService> BuildFakeProfileOAuth2TokenService(
-    content::BrowserContext* context) {
-  Profile* profile = Profile::FromBrowserContext(context);
-  std::unique_ptr<FakeProfileOAuth2TokenService> service(
-      new FakeProfileOAuth2TokenService(profile->GetPrefs()));
-  return std::move(service);
-}
-}  // namespace
+#include "components/signin/core/browser/identity_manager_wrapper.h"
 
 // static
 std::unique_ptr<TestingProfile> IdentityTestEnvironmentProfileAdaptor::
@@ -77,11 +65,24 @@ void IdentityTestEnvironmentProfileAdaptor::
 // static
 TestingProfile::TestingFactories
 IdentityTestEnvironmentProfileAdaptor::GetIdentityTestEnvironmentFactories() {
-  return {{ProfileOAuth2TokenServiceFactory::GetInstance(),
-           base::BindRepeating(&BuildFakeProfileOAuth2TokenService)}};
+  return {{IdentityManagerFactory::GetInstance(),
+           base::BindRepeating(&BuildIdentityManagerForTests)}};
+}
+
+// static
+std::unique_ptr<KeyedService>
+IdentityTestEnvironmentProfileAdaptor::BuildIdentityManagerForTests(
+    content::BrowserContext* context) {
+  Profile* profile = Profile::FromBrowserContext(context);
+  auto fake_token_service =
+      std::make_unique<FakeProfileOAuth2TokenService>(profile->GetPrefs());
+
+  return identity::IdentityTestEnvironment::BuildIdentityManagerForTests(
+      ChromeSigninClientFactory::GetForProfile(profile), profile->GetPrefs(),
+      std::move(fake_token_service),
+      AccountTrackerServiceFactory::GetForProfile(profile));
 }
 
 IdentityTestEnvironmentProfileAdaptor::IdentityTestEnvironmentProfileAdaptor(
     Profile* profile)
-    : identity_test_env_(
-          IdentityManagerFactory::GetForProfile(profile)) {}
+    : identity_test_env_(IdentityManagerFactory::GetForProfile(profile)) {}

@@ -40,8 +40,7 @@ class PrefRegistrySimple;
 // Note: requests should be started from the UI thread. To start a
 // request from other thread, please use OAuth2TokenServiceRequest.
 class ProfileOAuth2TokenService : public OAuth2TokenService,
-                                  public OAuth2TokenService::Observer,
-                                  public KeyedService {
+                                  public OAuth2TokenService::Observer {
  public:
   ProfileOAuth2TokenService(
       PrefService* user_prefs,
@@ -51,8 +50,7 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
   // Registers per-profile prefs.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
-  // KeyedService implementation.
-  void Shutdown() override;
+  void Shutdown();
 
   // Loads credentials from a backing persistent store to make them available
   // after service is used between profile restarts.

@@ -80,6 +80,11 @@ class IdentityTestEnvironmentProfileAdaptor {
   }
 
  private:
+  // Testing factory that creates an IdentityManager
+  // with a FakeProfileOAuth2TokenService.
+  static std::unique_ptr<KeyedService> BuildIdentityManagerForTests(
+      content::BrowserContext* context);
+
   identity::IdentityTestEnvironment identity_test_env_;
 
   DISALLOW_COPY_AND_ASSIGN(IdentityTestEnvironmentProfileAdaptor);

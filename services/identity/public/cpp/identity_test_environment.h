@@ -7,11 +7,15 @@
 
 #include "base/optional.h"
 #include "components/signin/core/browser/account_consistency_method.h"
+#include "services/identity/public/cpp/accounts_cookie_mutator_impl.h"
+#include "services/identity/public/cpp/diagnostics_provider_impl.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
 
 class AccountTrackerService;
 class FakeProfileOAuth2TokenService;
+class Profile;
+class IdentityManagerWrapper;
 class IdentityTestEnvironmentChromeBrowserStateAdaptor;
 class IdentityTestEnvironmentProfileAdaptor;
 class PrefService;
@@ -337,10 +341,6 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // IdentityTestEnvironment's constructor.
   std::unique_ptr<AccountTrackerService> owned_account_tracker_service_;
 
-  // This will be null if a FakeProfileOAuth2TokenService was provided to
-  // IdentityTestEnvironment's constructor.
-  std::unique_ptr<FakeProfileOAuth2TokenService> owned_token_service_;
-
   // Depending on which constructor is used, exactly one of these will be
   // non-null. See the documentation on the constructor wherein IdentityManager
   // is passed in for required lifetime invariants in that case.
@@ -353,10 +353,10 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   std::vector<AccessTokenRequestState> requesters_;
 
   // Create an IdentityManager instance for tests.
-  static std::unique_ptr<IdentityManager> BuildIdentityManagerForTests(
+  static std::unique_ptr<IdentityManagerWrapper> BuildIdentityManagerForTests(
       SigninClient* signin_client,
-      sync_preferences::TestingPrefServiceSyncable* test_pref_service,
-      FakeProfileOAuth2TokenService* token_service,
+      PrefService* pref_service,
+      std::unique_ptr<FakeProfileOAuth2TokenService> token_service,
       AccountTrackerService* account_tracker_service,
       signin::AccountConsistencyMethod account_consistency =
           signin::AccountConsistencyMethod::kDisabled,
