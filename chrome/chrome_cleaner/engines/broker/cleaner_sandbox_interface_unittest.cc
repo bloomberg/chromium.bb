@@ -158,7 +158,6 @@ class CleanerSandboxInterfaceDeleteFileTest : public ::testing::Test {
     file_remover_ = std::make_unique<chrome_cleaner::FileRemover>(
         /*digest_verifier=*/nullptr, /*archiver=*/nullptr,
         chrome_cleaner::LayeredServiceProviderWrapper(),
-        chrome_cleaner::FilePathSet(),
         base::BindRepeating(
             &CleanerSandboxInterfaceDeleteFileTest::RebootRequired,
             base::Unretained(this)));
@@ -223,7 +222,7 @@ TEST_F(CleanerSandboxInterfaceDeleteFileTest, DirectoryDeletionFails) {
   EXPECT_TRUE(base::DirectoryExists(dir_path));
 }
 
-TEST_F(CleanerSandboxInterfaceDeleteFileTest, NotActiveFileType) {
+TEST_F(CleanerSandboxInterfaceDeleteFileTest, NotExecutableFileType) {
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
   base::FilePath file_path = temp.GetPath().Append(L"temp_file.txt");
@@ -231,7 +230,7 @@ TEST_F(CleanerSandboxInterfaceDeleteFileTest, NotActiveFileType) {
       file_path.DirName(), file_path.BaseName().value().c_str()));
 
   chrome_cleaner::VerifyRemoveNowSuccess(file_path, file_remover_.get());
-  EXPECT_TRUE(base::PathExists(file_path));
+  EXPECT_FALSE(base::PathExists(file_path));
 }
 
 TEST_F(CleanerSandboxInterfaceDeleteFileTest, DeleteFile_RelativeFilePath) {
@@ -439,7 +438,7 @@ TEST_F(CleanerSandboxInterfaceDeleteFileTest,
   EXPECT_FALSE(base::PathExists(executable_path));
 }
 
-TEST_F(CleanerSandboxInterfaceDeleteFileTest, IgnoreTextWithDefaultStream) {
+TEST_F(CleanerSandboxInterfaceDeleteFileTest, TextWithDefaultStream) {
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
   base::FilePath file_path = temp.GetPath().Append(L"temp_file.txt");
@@ -452,40 +451,6 @@ TEST_F(CleanerSandboxInterfaceDeleteFileTest, IgnoreTextWithDefaultStream) {
 
   chrome_cleaner::VerifyRemoveNowSuccess(path_with_datatype,
                                          file_remover_.get());
-  EXPECT_TRUE(base::PathExists(file_path));
-}
-
-TEST_F(CleanerSandboxInterfaceDeleteFileTest, DeleteDosMzExecutables) {
-  base::ScopedTempDir temp;
-  ASSERT_TRUE(temp.CreateUniqueTempDir());
-  base::FilePath file_path = temp.GetPath().Append(L"temp_file.txt");
-  const char kExecutableFileContents[] = "MZ I am so executable";
-  chrome_cleaner::CreateFileWithContent(file_path, kExecutableFileContents,
-                                        sizeof(kExecutableFileContents));
-
-  chrome_cleaner::VerifyRemoveNowSuccess(file_path, file_remover_.get());
-  EXPECT_FALSE(base::PathExists(file_path));
-}
-
-TEST_F(CleanerSandboxInterfaceDeleteFileTest, DeletesWhitelisted) {
-  base::ScopedTempDir temp;
-  ASSERT_TRUE(temp.CreateUniqueTempDir());
-  base::FilePath file_path = temp.GetPath().Append(L"temp_file.txt");
-  ASSERT_TRUE(chrome_cleaner::CreateFileInFolder(
-      file_path.DirName(), file_path.BaseName().value().c_str()));
-
-  chrome_cleaner::VerifyRemoveNowSuccess(file_path, file_remover_.get());
-  EXPECT_TRUE(base::PathExists(file_path));
-
-  chrome_cleaner::FilePathSet whitelist;
-  whitelist.Insert(file_path);
-  auto remover_with_whitelist = std::make_unique<chrome_cleaner::FileRemover>(
-      /*digest_verifier=*/nullptr, /*archiver=*/nullptr,
-      chrome_cleaner::LayeredServiceProviderWrapper(), whitelist,
-      base::DoNothing());
-
-  chrome_cleaner::VerifyRemoveNowSuccess(file_path,
-                                         remover_with_whitelist.get());
   EXPECT_FALSE(base::PathExists(file_path));
 }
 
@@ -500,27 +465,11 @@ TEST_F(CleanerSandboxInterfaceDeleteFileTest, RecognizedDigest) {
       std::make_unique<chrome_cleaner::FileRemover>(
           chrome_cleaner::DigestVerifier::CreateFromFile(file_path),
           /*archiver=*/nullptr, chrome_cleaner::LayeredServiceProviderWrapper(),
-          chrome_cleaner::FilePathSet(), base::DoNothing());
+          base::DoNothing());
 
   chrome_cleaner::VerifyRemoveNowFailure(file_path,
                                          remover_with_digest_verifier.get());
   EXPECT_TRUE(base::PathExists(file_path));
-
-  // The whitelist should not override the DigestVerifier.
-  base::FilePath txt_file_path = temp.GetPath().Append(L"temp_file.txt");
-  ASSERT_TRUE(chrome_cleaner::CreateFileInFolder(
-      txt_file_path.DirName(), txt_file_path.BaseName().value().c_str()));
-
-  chrome_cleaner::FilePathSet whitelist;
-  whitelist.Insert(txt_file_path);
-  auto remover_with_whitelist = std::make_unique<chrome_cleaner::FileRemover>(
-      chrome_cleaner::DigestVerifier::CreateFromFile(txt_file_path),
-      /*archiver=*/nullptr, chrome_cleaner::LayeredServiceProviderWrapper(),
-      whitelist, base::DoNothing());
-
-  chrome_cleaner::VerifyRemoveNowFailure(txt_file_path,
-                                         remover_with_whitelist.get());
-  EXPECT_TRUE(base::PathExists(txt_file_path));
 }
 
 class CleanerInterfaceRegistryTest : public ::testing::Test {

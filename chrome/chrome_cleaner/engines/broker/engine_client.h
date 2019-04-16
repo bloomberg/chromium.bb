@@ -29,6 +29,7 @@
 #include "chrome/chrome_cleaner/ipc/sandbox.h"
 #include "chrome/chrome_cleaner/pup_data/pup_data.h"
 #include "chrome/chrome_cleaner/settings/settings_types.h"
+#include "chrome/chrome_cleaner/zip_archiver/zip_archiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
 namespace chrome_cleaner {
@@ -164,7 +165,7 @@ class EngineClient : public base::RefCountedThreadSafe<EngineClient> {
 
   void InitializeReadOnlyCallbacks();
   bool InitializeCleaningCallbacks(const std::vector<UwSId>& enabled_uws);
-  bool InitializeQuarantine(std::unique_ptr<SandboxedZipArchiver>* archiver);
+  bool InitializeQuarantine(std::unique_ptr<ZipArchiver>* archiver);
 
   // TODO(joenotcharles): When the synchronous Initialize method is removed,
   // rename this to Initialize and name the public accessor PostInitialize.
@@ -228,6 +229,9 @@ class EngineClient : public base::RefCountedThreadSafe<EngineClient> {
   // Handler for cleaning requests from the sandbox that have to run outside the
   // sandbox.
   std::unique_ptr<CleanerEngineRequestsImpl> sandbox_cleaner_requests_;
+
+  // Allow tests overwrite the archiver used.
+  std::unique_ptr<ZipArchiver> archiver_for_testing_;
 
   // Keep track of if this cleaning requires a reboot to be fully completed.
   bool needs_reboot_ = false;

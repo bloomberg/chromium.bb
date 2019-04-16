@@ -78,12 +78,6 @@ typedef std::set<const wchar_t*, ExtensionsCompare> ExtensionSet;
 // Return true if |path| has a active file extension.
 bool PathHasActiveExtension(const base::FilePath& file_path);
 
-// Return true if an alternate file stream is specified in |file_path|.
-bool HasAlternateFileStream(const base::FilePath& file_path);
-
-// Returns true if the file at |path| contains a DOS executable file header.
-bool HasDosExecutableHeader(const base::FilePath& path);
-
 // Expand environment variables in path into expanded_path. When called
 // expanded_path must be an empty path. If any component of path contains
 // environment variables expands to more than MAX_PATH characters the function

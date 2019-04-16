@@ -659,27 +659,6 @@ TEST_F(PUPDataTest, GetUwSIds) {
   EXPECT_FALSE(base::ContainsValue(*pup_ids, k12ID));
 }
 
-TEST_F(PUPDataTest, GetFilesDetectedInServices) {
-  test_data().AddPUP(k12ID,
-                     PUPData::FLAGS_ACTION_REMOVE,
-                     nullptr,
-                     PUPData::kMaxFilesToRemoveSmallUwS);
-  pup_data().GetPUP(k12ID)->AddDiskFootprintTraceLocation(
-      base::FilePath(k12DiskPath), UwS::FOUND_IN_SERVICE);
-
-  test_data().AddPUP(k24ID,
-                     PUPData::FLAGS_ACTION_REMOVE,
-                     nullptr,
-                     PUPData::kMaxFilesToRemoveSmallUwS);
-  pup_data().GetPUP(k24ID)->AddDiskFootprintTraceLocation(
-      base::FilePath(k42AbsoluteDiskPath), UwS::FOUND_IN_MEMORY);
-
-  FilePathSet expected_files_from_services = {k12DiskPath};
-  FilePathSet files_from_services =
-      PUPData::GetFilesDetectedInServices({k12ID, k24ID});
-  EXPECT_EQ(expected_files_from_services, files_from_services);
-}
-
 TEST_F(PUPDataTest, InitializeTest) {
   PUPData::InitializePUPData({});
   EXPECT_EQ(PUPData::GetUwSIds()->size(), 0UL);

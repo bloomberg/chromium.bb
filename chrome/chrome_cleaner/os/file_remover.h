@@ -17,7 +17,7 @@
 #include "chrome/chrome_cleaner/os/file_path_set.h"
 #include "chrome/chrome_cleaner/os/file_remover_api.h"
 #include "chrome/chrome_cleaner/os/layered_service_provider_api.h"
-#include "chrome/chrome_cleaner/zip_archiver/sandboxed_zip_archiver.h"
+#include "chrome/chrome_cleaner/zip_archiver/zip_archiver.h"
 
 namespace chrome_cleaner {
 
@@ -30,9 +30,8 @@ class FileRemover : public FileRemoverAPI {
   // If it is an instance of DigestVerifier, any files known to the
   // DigestVerifier will not be removed.
   FileRemover(scoped_refptr<DigestVerifier> digest_verifier,
-              std::unique_ptr<SandboxedZipArchiver> archiver,
+              std::unique_ptr<ZipArchiver> archiver,
               const LayeredServiceProviderAPI& lsp,
-              const FilePathSet& deletion_allowed_paths,
               base::RepeatingClosure reboot_needed_callback);
 
   ~FileRemover() override;
@@ -58,9 +57,8 @@ class FileRemover : public FileRemoverAPI {
                        QuarantineStatus quarantine_status) const;
 
   scoped_refptr<DigestVerifier> digest_verifier_;
-  std::unique_ptr<SandboxedZipArchiver> archiver_;
+  std::unique_ptr<ZipArchiver> archiver_;
   FilePathSet deletion_forbidden_paths_;
-  FilePathSet deletion_allowed_paths_;
   base::RepeatingClosure reboot_needed_callback_;
 };
 

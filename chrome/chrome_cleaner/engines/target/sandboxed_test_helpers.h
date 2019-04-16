@@ -64,7 +64,7 @@ class MaybeSandboxedParentProcess : public BaseClass {
           std::make_unique<chrome_cleaner::FileRemover>(
               verifier, /*archiver=*/nullptr,
               chrome_cleaner::LayeredServiceProviderWrapper(),
-              chrome_cleaner::FilePathSet(), base::DoNothing::Repeatedly());
+              base::DoNothing::Repeatedly());
       cleaner_impl_ = std::make_unique<CleanerEngineRequestsImpl>(
           this->mojo_task_runner(), metadata_observer, std::move(file_remover));
       cleanup_results_impl_ =
