@@ -26,10 +26,10 @@
 #include "third_party/blink/renderer/platform/text/locale_mac.h"
 
 #include <memory>
+#include "base/mac/mac_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/date_components.h"
-#include "third_party/blink/renderer/platform/mac/version_util_mac.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/wtf/date_math.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
@@ -228,7 +228,7 @@ TEST_F(LocaleMacTest, formatTime) {
   // (which is a non-breaking space) instead of \x20 for those spaces. The
   // 10.13+ behavior is probably more correct, but there does not appear to be a
   // way to configure NSDateFormatter to behave that way on < 10.13.
-  bool expect_ar_nbsp = !IsOS10_10() && !IsOS10_11() && !IsOS10_12();
+  const bool expect_ar_nbsp = base::mac::IsAtLeastOS10_13();
 
   EXPECT_STREQ("1:23 PM",
                FormatTime("en_US", 13, 23, 00, 000, true).Utf8().data());

@@ -3,6 +3,7 @@ include_rules = [
     "+base/barrier_closure.h",
     "+base/files/file.h",
     "+base/mac/foundation_util.h",
+    "+base/mac/mac_util.h",
     "+base/mac/scoped_cftyperef.h",
     "+base/mac/scoped_nsobject.h",
     "+base/memory/scoped_policy.h",
