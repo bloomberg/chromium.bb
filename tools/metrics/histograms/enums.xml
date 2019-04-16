@@ -57682,6 +57682,7 @@ Full version information for the fingerprint enum values:
   <int value="6" label="WriteDataFailed"/>
   <int value="7" label="UserInstallDeclined"/>
   <int value="8" label="InstallManagerDestroyed"/>
+  <int value="9" label="WindowOpened"/>
 </enum>
 
 <enum name="WebAppInstallSource">

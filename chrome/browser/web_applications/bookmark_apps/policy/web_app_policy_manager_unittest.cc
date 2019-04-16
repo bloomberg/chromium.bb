@@ -408,11 +408,13 @@ TEST_F(WebAppPolicyManagerTest, ReinstallPlaceholderApp) {
   policy_manager()->ReinstallPlaceholderAppIfNecessary(GURL(kWindowedUrl));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(expected_options_list, install_options_list);
+  auto reinstall_options = GetWindowedInstallOptions();
+  reinstall_options.install_placeholder = false;
+  reinstall_options.reinstall_placeholder = true;
+  reinstall_options.stop_if_window_opened = true;
+  expected_options_list.push_back(std::move(reinstall_options));
 
-  const auto& reinstall_options_list =
-      pending_app_manager()->reinstall_requests();
-  EXPECT_EQ(expected_options_list, reinstall_options_list);
+  EXPECT_EQ(expected_options_list, install_options_list);
 }
 
 TEST_F(WebAppPolicyManagerTest, TryToInexistentPlaceholderApp) {
@@ -428,14 +430,12 @@ TEST_F(WebAppPolicyManagerTest, TryToInexistentPlaceholderApp) {
 
   const auto& install_options_list = pending_app_manager()->install_requests();
   EXPECT_EQ(expected_options_list, install_options_list);
-  EXPECT_TRUE(pending_app_manager()->reinstall_requests().empty());
 
   // Try to reinstall for app not installed by policy.
   policy_manager()->ReinstallPlaceholderAppIfNecessary(GURL(kTabbedUrl));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(expected_options_list, install_options_list);
-  EXPECT_TRUE(pending_app_manager()->reinstall_requests().empty());
 }
 
 }  // namespace web_app

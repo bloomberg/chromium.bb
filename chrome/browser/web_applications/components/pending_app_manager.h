@@ -75,20 +75,6 @@ class PendingAppManager {
   virtual void UninstallApps(std::vector<GURL> uninstall_urls,
                              const UninstallCallback& callback) = 0;
 
-  // If there is a placeholder app for |install_options.url| removes that app
-  // and tries to install the app again.
-  // TODO(ortuno): Temporarily use the same callback as Install. We should
-  // figure out if we want a separate enum for reinstall results or just re-use
-  // the InstallResult enum for both methods.
-  virtual void ReinstallPlaceholderApp(InstallOptions install_options,
-                                       OnceInstallCallback callback) = 0;
-
-  // Same as ReinstallPlaceholderApp but only succeeds if the are no opened
-  // windows for the app.
-  virtual void ReinstallPlaceholderAppIfUnused(
-      InstallOptions install_options,
-      OnceInstallCallback callback) = 0;
-
   // Returns the URLs of those apps installed from |install_source|.
   virtual std::vector<GURL> GetInstalledAppUrls(
       InstallSource install_source) const = 0;
