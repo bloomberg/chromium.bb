@@ -99,6 +99,7 @@
 <translation id="1616111909442424068">小麦色</translation>
 <translation id="1618597272655350600">读出关于当前位置的完整说明</translation>
 <translation id="1627222324347828322">苍白色</translation>
+<translation id="1630688379087270943">表示斜体：</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{1个大于号}other{#个大于号}}</translation>
 <translation id="1653266918374749391">上一个3级标题</translation>
 <translation id="1657616855184033958">显示事件流过滤条件</translation>
@@ -319,6 +320,7 @@
 <translation id="3286390186030710347">滑块</translation>
 <translation id="3299925995433437805">不存在下一个访问过的链接。</translation>
 <translation id="3300348286427369683">支持富文本。ChromeVox 现在支持富文本字段，包括跳转命令、盲文光标路由、选择等等。</translation>
+<translation id="3304756947457041303">自定义富文本标志</translation>
 <translation id="3307886118343381874">转到表格末尾</translation>
 <translation id="3311969765485641742">按Alt+Shift+A即可查看所有提醒</translation>
 <translation id="3312997241656799641">下一个访问过的链接</translation>
@@ -405,6 +407,7 @@
 <translation id="3930498801443296724">重要引述</translation>
 <translation id="3936394396199829062">薰衣草紫红色</translation>
 <translation id="3941269780691800708">说出鼠标指针下方的文字。</translation>
+<translation id="394953087167197343">表示拼写错误：</translation>
 <translation id="3962990492275676168">从当前位置开始读</translation>
 <translation id="3970951409746498040">沙棕色</translation>
 <translation id="3989324057180830702">切换按钮</translation>
@@ -451,6 +454,7 @@
 <translation id="42164919740161077">军服蓝</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{1个破折号}other{#个破折号}}</translation>
 <translation id="421884353938374759">颜色选择器</translation>
+<translation id="4221071177874897997">表示粗体：</translation>
 <translation id="4229646983878045487">日期时间</translation>
 <translation id="4230834257931120629">亮岩灰色</translation>
 <translation id="4231102694147661229">启用开发者选项</translation>
@@ -753,6 +757,7 @@
 <translation id="6348869651006731065">暗灰色</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{1 个项目符号}other{# 个项目符号}}</translation>
 <translation id="6355910664415701303">不存在上一个列表项。</translation>
+<translation id="6360318852623800555">富文本属性</translation>
 <translation id="6364795331201459219">6级标题标记</translation>
 <translation id="6368143427468974988">上一个标题</translation>
 <translation id="6376999910001533545">栗色</translation>
@@ -928,6 +933,7 @@
 <translation id="762020119231868829">暂停目前正在播放的所有媒体微件</translation>
 <translation id="7625690649919402823">下一个表格</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />)，等级：<ph name="GRADE" /></translation>
+<translation id="763535765081585392">表示下划线：</translation>
 <translation id="7639968568612851608">深灰色</translation>
 <translation id="7641134354185483015">不存在上一个3级标题。</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />，<ph name="NAME" />，文本框</translation>
@@ -1163,6 +1169,7 @@
 <translation id="8943175951035496220">不存在右侧单元格。</translation>
 <translation id="8943282376843390568">绿黄色</translation>
 <translation id="8946628535652548639">行 <ph name="TABLECELLROWINDEX" />，列 <ph name="TABLECELLCOLUMNINDEX" /></translation>
+<translation id="8957142051395645063">朗读</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">不保存</translation>
 <translation id="900114243503212879">文件</translation>

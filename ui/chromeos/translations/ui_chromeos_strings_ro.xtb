@@ -284,6 +284,7 @@
 <translation id="4572815280350369984">Fișier <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Mai multe...</translation>
 <translation id="4582497162516204941">Instalează cu Linux (Beta)</translation>
+<translation id="4584780943629874245">Permite accesul pentru Plugin VM</translation>
 <translation id="4631887759990505102">Artist</translation>
 <translation id="4656293982926141856">Acest computer</translation>
 <translation id="4669606053856530811">Membrii „<ph name="SOURCE_NAME" />” vor pierde accesul, exceptând cazul în care li se permite accesul la aceste articole.</translation>
@@ -524,6 +525,7 @@
 <translation id="7339898014177206373">Fereastră nouă</translation>
 <translation id="7348749398828259943">Tastatură S.U.A. Workman internațională</translation>
 <translation id="7359359531237882347">Se copiază <ph name="NUMBER_OF_ITEMS" /> elemente.</translation>
+<translation id="7379734276381389090"><ph name="NUMBER_OF_ITEMS" /> dosare cu acces permis pentru Plugin VM</translation>
 <translation id="7389722738210761877">Tastatură thailandeză (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Tastatură hindi (Fonetică)</translation>
 <translation id="7417453074306512035">Tastatură etiopiană</translation>
@@ -586,6 +588,7 @@
 <translation id="7969525169268594403">Slovenă</translation>
 <translation id="7982283708762922719">Înălțime</translation>
 <translation id="7987485481246785146">Tastatură kurdă sorani bazată pe arabă</translation>
+<translation id="7990715602172183602">Un folder cu acces permis pentru Plugin VM</translation>
 <translation id="799547531016638432">Eliminați comanda rapidă</translation>
 <translation id="799923393800005025">Poate vedea</translation>
 <translation id="8008366997883261463">Terier</translation>
@@ -626,6 +629,7 @@
 <translation id="8342318071240498787">Un fișier sau un director cu același nume există deja.</translation>
 <translation id="8391950649760071442">Transliterație (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Dimensiuni</translation>
+<translation id="8400874747056634633">Gestionează utilizarea comună cu Plugin VM</translation>
 <translation id="8412586565681117057">Metoda de introducere rapidă a textului</translation>
 <translation id="8418113698656761985">Tastatură română</translation>
 <translation id="8432745813735585631">Tastatură S.U.A. Colemak</translation>

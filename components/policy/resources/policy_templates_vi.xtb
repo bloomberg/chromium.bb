@@ -200,7 +200,6 @@
       Yêu cầu hợp nhất gửi tới các máy chủ khác nhau qua đường kết nối dùng chứng chỉ ứng dụng khách có thể gây ra các vấn đề về bảo mật và quyền riêng tư, bởi vì tất cả các yêu cầu đều được cấp phép rộng rãi, kể cả khi người dùng không cho phép rõ ràng. Chính sách này là tạm thời và sẽ bị xóa bỏ trong bản phát hành tương lai. Hãy truy cập vào https://crbug.com/855690 để tìm hiểu thêm.
 
       Nếu bạn không đặt chính sách này, thì hoạt động mặc định sẽ được sử dụng, trong đó không cho phép hợp nhất đường kết nối HTTP/2 đối với các đường kết nối sử dụng chứng chỉ ứng dụng khách.</translation>
-<translation id="1353966721814789986">Trang khởi động</translation>
 <translation id="1354424209129232709">Tối đa:</translation>
 <translation id="1354452738176731363">Khi bạn đặt chính sách này thành false, sẽ không thể sử dụng đầu ra âm thanh trên thiết bị khi người dùng đã đăng nhập.
 
@@ -224,7 +223,6 @@
       Nếu bạn không đặt chính sách này, mã nối mạng có thể chạy ngoài quá trình chạy trình duyệt tùy theo kết quả thử nghiệm thực tế của thử nghiệm NetworkService.</translation>
 <translation id="1384459581748403878">Tham khảo: <ph name="REFERENCE_URL" /></translation>
 <translation id="1384653327213929024">Cho phép người dùng quản lý các chứng chỉ đã cài đặt.</translation>
-<translation id="1387596372902085462">Xem có cho phép tin cậy Cơ sở hạ tầng khóa công khai (KPI) cũ của Symantec Corporation hay không</translation>
 <translation id="1393485621820363363">Đã bật máy in kết nối với thiết bị dành cho doanh nghiệp</translation>
 <translation id="1397855852561539316">URL đề xuất của nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="1404043648050567997">Dịch vụ Duyệt web an toàn hiển thị một trang cảnh báo khi người dùng truy cập các trang web bị gắn cờ là có thể độc hại. Khi bạn bật mục cài đặt này, người dùng sẽ không thể tiếp tục truy cập vào trang web độc hại từ trang cảnh báo đó.
@@ -411,7 +409,6 @@
 
       Chính sách này chỉ có trên các phiên bản Windows liên kết với miền <ph name="MS_AD_NAME" /> hoặc phiên bản Windows 10 Pro hay Enterprise đã đăng ký quản lý thiết bị.</translation>
 <translation id="172374442286684480">Cho phép tất cả trang web lưu dữ liệu trên máy</translation>
-<translation id="1734716591049455502">Định cấu hình tùy chọn truy cập từ xa</translation>
 <translation id="1736269219679256369">Cho phép tiến hành từ trang cảnh báo SSL</translation>
 <translation id="1745780278307622857">Xác định xem <ph name="PRODUCT_NAME" /> có cho phép tải xuống mà không cần tính năng Duyệt web an toàn kiểm tra hay không khi tệp đến từ một nguồn đáng tin cậy.
 
@@ -543,7 +540,6 @@
       Nếu bạn tắt tùy chọn cài đặt này, thì tính năng Tự động điền sẽ không bao giờ gợi ý hoặc điền thông tin địa chỉ, đồng thời sẽ không lưu thông tin địa chỉ bổ sung mà người dùng có thể gửi trong khi duyệt web.
 
       Nếu bạn bật hoặc không đặt giá trị nào cho tùy chọn cài đặt này, thì người dùng có thể kiểm soát tính năng Tự động điền cho địa chỉ trong giao diện người dùng.</translation>
-<translation id="1960840544413786116">Có cho phép chứng chỉ được cấp bởi mẩu neo đáng tin cậy cục bộ bị thiếu tiện ích subjectAlternativeName hay không</translation>
 <translation id="1962273523772270623">Cho phép thu thập nhật ký sự kiện WebRTC từ các dịch vụ của Google</translation>
 <translation id="1964634611280150550">Đã tắt chế độ ẩn danh</translation>
 <translation id="1964802606569741174">Chính sách này không ảnh hưởng đến ứng dụng YouTube trên Android. Nếu bị buộc phải sử dụng Chế độ an toàn trên YouTube thì việc cài đặt ứng dụng YouTube trên Android sẽ không được cho phép.</translation>
@@ -747,7 +743,6 @@
       Đối với các thiết bị được quản lý bằng Active Directory, chính sách này hỗ trợ mở rộng <ph name="MACHINE_NAME_VARIABLE" /> thành tên máy Active Directory hoặc chuỗi con của tên máy đó. Ví dụ: nếu tên máy là <ph name="MACHINE_NAME_EXAMPLE" />, thì <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> sẽ được thay thế bằng 4 ký tự bắt đầu sau vị trí thứ 6, có nghĩa là <ph name="MACHINE_NAME_PART_EXAMPLE" />. Lưu ý rằng vị trí này dựa trên giá trị 0.
       </translation>
 <translation id="2294382669900758280">Video đang phát trong các ứng dụng Android không được xem xét ngay cả khi chính sách này được đặt thành <ph name="TRUE" />.</translation>
-<translation id="2298647742290373702">Định cấu hình trang Tab mới mặc định trong <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Chỉ định danh sách plugin được phép</translation>
 <translation id="2303795211377219696">Bật tính năng Tự động điền cho thẻ tín dụng</translation>
 <translation id="2309390639296060546">Cài đặt vị trí địa lý mặc định</translation>
@@ -951,11 +946,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Để xem phần mô tả đầy đủ về các tùy chọn cài đặt có thể có và cấu trúc của chính sách này, vui lòng truy cập vào https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           </translation>
 <translation id="2753637905605932878">Hạn chế phạm vi của cổng UDP cục bộ do WebRTC sử dụng</translation>
-<translation id="2755385841634849932">Chính sách này kiểm soát khả năng sử dụng tính năng sao lưu và khôi phục trên Android.
-
-      Khi chính sách này chưa được định cấu hình hoặc khi được đặt thành <ph name="BR_DISABLED" />, tính năng sao lưu và khôi phục trên Android sẽ bị tắt và người dùng không thể bật được.
-
-      Khi chính sách này được đặt thành <ph name="BR_UNDER_USER_CONTROL" />, người dùng được yêu cầu chọn có sử dụng tính năng sao lưu và khôi phục trên Android hay không. Nếu người dùng bật tính năng sao lưu và khôi phục, thì đối với các ứng dụng tương thích, dữ liệu ứng dụng Android sẽ được tải lên các máy chủ sao lưu của Android và được khôi phục từ các máy chủ đó khi cài đặt lại ứng dụng.</translation>
 <translation id="2757054304033424106">Các loại tiện ích/ứng dụng được phép cài đặt</translation>
 <translation id="2758084448533744848">Chỉ định múi giờ bắt buộc để sử dụng cho thiết bị. Khi bạn đặt chính sách này, thì người dùng không thể ghi đè múi giờ đã chỉ định trên thiết bị. Nếu bạn chỉ định một giá trị không hợp lệ, thì chính sách này vẫn sẽ được kích hoạt bằng "GMT". Nếu bạn chỉ định một chuỗi trống, thì chính sách này sẽ bị bỏ qua.
 
@@ -1102,7 +1092,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="2959898425599642200">Quy tắc bỏ qua proxy</translation>
 <translation id="2960128438010718932">Lịch trình thử nghiệm cho việc áp dụng bản cập nhật mới</translation>
 <translation id="2960691910306063964">Bật hoặc tắt xác thực không có mã PIN cho các máy chủ truy cập từ xa</translation>
-<translation id="2972261849442778817">Hỏi người dùng xem họ muốn di chuyển hay bỏ qua việc di chuyển và không cho phép App Runtime for Chrome (ARC).</translation>
 <translation id="2976002782221275500">Chỉ định khoảng thời gian không có thao tác nhập của người dùng mà sau khoảng thời gian đó màn hình bị mờ đi khi chạy trên nguồn pin.
 
           Khi được đặt thành một giá trị lớn hơn không, chính sách này chỉ định khoảng thời gian mà người dùng phải duy trì chế độ không sử dụng trước khi <ph name="PRODUCT_OS_NAME" /> làm mờ màn hình.
@@ -1246,15 +1235,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu cài đặt này được bật hoặc không được định cấu hình, người dùng có thể bật proxy máy in máy chủ ảo bằng cách xác thực bằng tài khoản Google của họ.
 
       Nếu cài đặt này được bật, người dùng không thể bật proxy và máy sẽ không được phép chia sẻ máy in với <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="3307746730474515290">Kiểm soát các loại ứng dụng/tiện ích được phép cài đặt và giới hạn truy cập thời gian chạy.
-
-          Cài đặt này liệt kê các loại tiện ích/ứng dụng được cho phép có thể cài đặt được trong <ph name="PRODUCT_NAME" /> và loại máy chủ lưu trữ mà chúng có thể tương tác. Giá trị là một danh sách chuỗi, mỗi chuỗi phải là một trong số loại sau: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Xem tài liệu về tiện ích <ph name="PRODUCT_NAME" /> để biết thêm thông tin về các loại này.
-
-          Xin lưu ý rằng chính sách này cũng ảnh hưởng đến tiện ích và ứng dụng được buộc cài đặt qua ExtensionInstallForcelist.
-
-          Nếu cài đặt này được định cấu hình, tiện ích/ứng dụng có loại không nằm trong danh sách sẽ không được cài đặt.
-
-          Nếu cài đặt này không được định cấu hình, không có giới hạn về loại tiện ích/ứng dụng được chấp nhận nào được đặt ra.</translation>
 <translation id="3322771899429619102">Cho phép bạn thiết lập danh sách các mẫu URL chỉ định những trang web được phép sử dụng tạo khóa. Nếu một mẫu URL nằm trong 'KeygenBlockedForUrls', chính sách đó sẽ ghi đè các ngoại lệ này.
 
           Nếu không thiết lập chính sách này, giá trị mặc định chung sẽ được sử dụng cho tất cả trang web từ chính sách 'DefaultKeygenSetting' nếu chính sách này được đặt hoặc từ cấu hình cá nhân của người dùng.</translation>
@@ -1368,7 +1348,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Chính sách này chỉ được tuân theo nếu kích hoạt chính sách 'DefaultSearchProviderEnabled'.</translation>
 <translation id="350797926066071931">Bật tính năng Dịch</translation>
-<translation id="3512226956150568738">Nếu cần có kiểu thiết bị khách đã hỗ trợ ARC trước khi di chuyển sang ext4 để chạy ARC và nếu chính sách ArcEnabled được đặt thành true thì tùy chọn này sẽ hoạt động giống như AskUser (giá trị 3). Trong tất cả các trường hợp khác (nếu kiểu thiết bị không hỗ trợ ARC từ trước hoặc nếu chính sách ArcEnabled được đặt thành false), thì giá trị này sẽ tương đương với DisallowArc (giá trị 0).</translation>
 <translation id="3513655665999652754">Máy chủ Quirks cung cấp các tệp cấu hình dành riêng cho phần cứng, chẳng hạn như
       Cấu hình hiển thị ICC để hiệu chỉnh màn hình.
 
@@ -1559,7 +1538,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Đặt chính sách này thành tắt sẽ cho phép sử dụng SPDY.
 
       Nếu chính sách này chưa được đặt, SPDY sẽ khả dụng.</translation>
-<translation id="3890999316834333174">Chính sách mở khóa nhanh</translation>
 <translation id="3891357445869647828">Bật JavaScript</translation>
 <translation id="3895557476567727016">Định cấu hình thư mục mặc định mà <ph name="PRODUCT_NAME" /> sẽ sử dụng để tải các tệp xuống.
 
@@ -1634,13 +1612,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Thông thường, chính sách này được tắt nhằm đề phòng hoạt động lừa đảo. Nếu không thiết lập chính sách này, chính sách sẽ bị tắt và nội dung phụ bên thứ ba sẽ không được phép bật lên hộp thoại Xác thực cơ bản HTTP.</translation>
 <translation id="4056910949759281379">Vô hiệu hóa giao thức SPDY</translation>
-<translation id="4059515172917655545">Chính sách này kiểm soát khả năng sử dụng các dịch vụ vị trí của Google.
-
-      Khi chính sách này chưa được định cấu hình hoặc khi được đặt thành <ph name="GLS_DISABLED" />, các dịch vụ vị trí của Google sẽ bị tắt và người dùng không thể bật được.
-
-      Khi chính sách này được đặt thành <ph name="GLS_UNDER_USER_CONTROL" />, người dùng được yêu cầu chọn có sử dụng các dịch vụ vị trí của Google hay không. Việc người dùng chọn sử dụng dịch vụ vị trí của Google sẽ cho phép các ứng dụng Android dùng các dịch vụ này để truy vấn vị trí thiết bị cũng như sẽ cho phép gửi dữ liệu vị trí ẩn danh tới Google.
-
-      Xin lưu ý rằng chính sách này sẽ bị bỏ qua và các dịch vụ vị trí của Google sẽ luôn tắt khi chính sách <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> được đặt thành <ph name="BLOCK_GEOLOCATION_SETTING" />.</translation>
 <translation id="408029843066770167">Cho phép gửi truy vấn tới dịch vụ thời gian của Google</translation>
 <translation id="408076456549153854">Cho phép đăng nhập vào trình duyệt</translation>
 <translation id="4088589230932595924">Bắt buộc chế độ ẩn danh</translation>
@@ -1657,9 +1628,9 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Khi chính sách này không được đặt, khoảng thời gian mặc định sẽ được sử dụng.
 
           Phải chỉ định giá trị chính sách bằng mili giây.</translation>
-<translation id="4105884561459127998">Định cấu hình loại xác thực cho đăng nhập SAML.
+<translation id="4105884561459127998">Định cấu hình loại xác thực đăng nhập qua SAML.
 
-      Khi bạn đặt hoặc không đặt chính sách này thành Default (giá trị 0), hành vi đăng nhập SAML sẽ do trình duyệt xác định dựa trên các yếu tố khác. Trong tình huống cơ bản nhất, tính năng xác thực người dùng và bảo vệ dữ liệu người dùng đã lưu vào bộ nhớ đệm được dựa trên mật khẩu mà người dùng nhập theo cách thủ công.
+      Khi bạn không đặt hoặc đặt chính sách này thành Default (giá trị 0), hành vi đăng nhập qua SAML sẽ do trình duyệt xác định dựa trên các yếu tố khác. Trong tình huống cơ bản nhất, tính năng xác thực người dùng và bảo vệ dữ liệu người dùng đã lưu vào bộ nhớ đệm là dựa trên mật khẩu mà người dùng nhập theo cách thủ công.
 
       Khi bạn đặt chính sách này thành ClientCertificate (giá trị 1), tính năng xác thực chứng chỉ ứng dụng khách được dùng cho người dùng mới thêm đăng nhập qua SAML. Không có mật khẩu nào dùng cho những người dùng đó và dữ liệu đã lưu vào bộ nhớ đệm trên máy được bảo vệ bằng cách sử dụng các khóa mật mã tương ứng. Ví dụ: tùy chọn cài đặt này cho phép định cấu hình thẻ thông minh dựa trên tính năng xác thực người dùng (xin lưu ý rằng bạn phải cài đặt ứng dụng trung gian của thẻ thông minh thông qua chính sách DeviceLoginScreenExtensions).
 
@@ -1695,7 +1666,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="4144164749344898721">Chính sách này kiểm soát nhiều tùy chọn cài đặt cho chiến lược quản lý nguồn khi người dùng ở chế độ không sử dụng.
 
           Có 4 loại hành động sau đây:
-          * Màn hình sẽ mờ nếu người dùng không sử dụng trong khoảng thời gian do |ScreenDim| chỉ định.
+          * Màn hình sẽ giảm ánh sáng nếu người dùng không sử dụng trong khoảng thời gian do |ScreenDim| chỉ định.
           * Màn hình sẽ tắt nếu người dùng không sử dụng trong khoảng thời gian do |ScreenOff| chỉ định.
           * Hộp thoại cảnh báo sẽ hiển thị nếu người dùng không sử dụng trong khoảng thời gian do |IdleWarning| chỉ định, qua đó cho người dùng biết hành động khi không sử dụng nào sắp được thực hiện. Thông báo cảnh báo chỉ hiển thị nếu hành động ở chế độ không sử dụng là hành động đăng xuất hoặc tắt nguồn.
           * Hành động mà |IdleAction| chỉ định sẽ được thực hiện nếu người dùng ở chế độ không sử dụng trong khoảng thời gian do |Idle| chỉ định.
@@ -1795,7 +1766,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Lưu ý rằng chính sách chứa ID ứng dụng không nhất thiết có nghĩa là người dùng sẽ có thể bật ứng dụng làm ứng dụng ghi chú trên màn hình khóa - ví dụ: trên Chrome 61, tập hợp các ứng dụng hiện có bị nền tảng hạn chế thêm.
 
       Nếu không đặt chính sách thì sẽ không có hạn chế nào được chính sách áp dụng cho tập hợp các ứng dụng mà người dùng có thể bật trên màn hình khóa.</translation>
-<translation id="4309640770189628899">Bộ mã hóa DHE trong TLS có được bật hay không</translation>
 <translation id="4322842393287974810">Cho phép ứng dụng kiosk tự động khởi chạy với độ trễ bằng không kiểm soát phiên bản <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Thêm một nút đăng xuất vào khay hệ thống</translation>
 <translation id="4332177773549877617">Ghi lại các sự kiện cho lượt cài đặt ứng dụng Android</translation>
@@ -1803,7 +1773,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Khi bạn đặt, chính sách này sẽ chỉ định khoảng thời gian người dùng phải duy trì chế độ không sử dụng trước khi <ph name="PRODUCT_OS_NAME" /> hiển thị hộp thoại cảnh báo cho người dùng biết rằng hành động ở chế độ không sử dụng đó sắp được thực hiện.
 
-          Khi bạn không đặt chính sách này, sẽ không có hộp thoại cảnh báo nào được hiển thị.
+          Khi bạn không đặt chính sách này, sẽ không có hộp thoại cảnh báo nào hiển thị.
 
           Phải chỉ định giá trị của chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn hoặc bằng thời gian chờ khi ở chế độ không sử dụng.
 
@@ -1925,17 +1895,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="4613508646038788144">Nếu bạn đặt chính sách thành false thì phần mềm của bên thứ ba sẽ được phép đưa mã thực thi vào các quy trình của Chrome. Nếu bạn không đặt hoặc đặt chính sách thành true thì phần mềm của bên thứ ba sẽ không được đưa đoạn mã thực thi vào các quy trình của Chrome.</translation>
 <translation id="4617338332148204752">Bỏ qua kiểm tra thẻ meta trong <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Định cấu hình danh sách trắng cài đặt tiện ích</translation>
-<translation id="463224920692183755">Chỉ định hành động sẽ thực hiện khi thư mục gốc của người dùng được tạo bằng loại mã hóa ecryptfs và cần chuyển đổi sang loại mã hóa ext4.
-
-      Nếu bạn đặt chính sách này thành 'DisallowArc', các ứng dụng Android sẽ bị tắt cho người dùng và việc di chuyển từ loại mã hóa ecryptfs sang ext4 sẽ không được thực hiện. Các ứng dụng Android sẽ vẫn chạy trong trường hợp thư mục gốc đã được mã hóa ext4.
-
-      Nếu bạn đặt chính sách này thành 'Migrate', các thư mục gốc đã mã hóa ecryptfs sẽ tự động được chuyển sang loại mã hóa ext4 khi đăng nhập mà không cần yêu cầu sự đồng ý của người dùng.
-
-      Nếu bạn đặt chính sách này thành 'Wipe', các thư mục gốc đã mã hóa ecryptfs sẽ bị xóa khi đăng nhập và các thư mục gốc mới đã mã hóa ext4 sẽ được tạo. Cảnh báo: Thao tác này sẽ xóa dữ liệu trên máy của người dùng.
-
-      Nếu bạn đặt chính sách này thành 'AskUser', những người dùng có thư mục gốc đã mã hóa ecryptfs sẽ được đề nghị chuyển.
-
-      Chính sách này không áp dụng cho người dùng kiosk. Nếu bạn không đặt chính sách này, thiết bị sẽ hoạt động giống như bạn đã chọn 'DisallowArc'.</translation>
 <translation id="4632343302005518762">Cho phép <ph name="PRODUCT_FRAME_NAME" /> xử lý các loại nội dung được liệt kê</translation>
 <translation id="4632566332417930481">Không cho phép sử dụng Công cụ dành cho nhà phát triển trên các tiện ích được cài đặt theo chính sách doanh nghiệp, nhưng lại cho phép sử dụng Công cụ dành cho nhà phát triển trong các ngữ cảnh khác</translation>
 <translation id="4633786464238689684">Thay đổi trạng thái mặc định của các phím hàng trên cùng thành các phím chức năng.
@@ -2044,7 +2003,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="4983201894483989687">Cho phép chạy các plugin đã lỗi thời</translation>
 <translation id="4986560318567565414">Đường dẫn tới Chrome để chuyển từ trình duyệt thay thế.</translation>
 <translation id="4988291787868618635">Hành động cần thực hiện khi đạt tới độ trễ khi không sử dụng</translation>
-<translation id="4995548127349206948">Cho dù có bật xác thực NTLMv2 hay không.</translation>
 <translation id="5030889661505907084">
       Nếu bạn đặt chính sách này thành true, chính sách đám mây sẽ được ưu tiên trong trường hợp xung đột với chính sách nền tảng.
       Nếu bạn đặt chính sách này thành false hoặc không định cấu hình chính sách này, thì chính sách nền tảng sẽ được ưu tiên trong trường hợp xung đột với chính sách đám mây.
@@ -2139,7 +2097,6 @@ Khi bạn đặt chính sách này thì mỗi mục được coi là một quy t
 
 Không giống như <ph name="URL_LIST_POLICY_NAME" />, các quy tắc áp dụng cho cả hai chiều. Tức là, khi có tiện ích bổ trợ Internet Explorer và tiện ích này được bật, thì chính sách này cũng sẽ kiểm soát việc <ph name="IE_PRODUCT_NAME" /> có mở những URL này trong <ph name="PRODUCT_NAME" /> hay không.</translation>
 <translation id="5124368997194894978">Bật tính năng khởi động trên AC (dòng điện xoay chiều)</translation>
-<translation id="5130288486815037971">Bộ mã hóa RC4 trong TLS có được bật không</translation>
 <translation id="5141670636904227950">Đặt loại kính lúp màn hình mặc định được bật trên màn hình đăng nhập</translation>
 <translation id="5142301680741828703">Luôn hiển thị các mẫu URL sau đây trong <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="5148753489738115745">Cho phép bạn chỉ định tham số bổ sung được sử dụng khi <ph name="PRODUCT_FRAME_NAME" /> chạy <ph name="PRODUCT_NAME" />.
@@ -2820,7 +2777,6 @@ Afrikaans Nam Phi, tiếng Bungari, tiếng Catalan, tiếng Séc, tiếng Đan 
           Chính sách này là tùy chọn. Nếu không đặt, yêu cầu tìm kiếm sẽ được gửi bằng phương thức GET.
 
           Chính sách này chỉ được tuân theo nếu kích hoạt chính sách 'DefaultSearchProviderEnabled'.</translation>
-<translation id="6367755442345892511">Kênh phát hành có thể được định cấu hình bởi người dùng hay không</translation>
 <translation id="6368011194414932347">Định cấu hình URL trang chủ</translation>
 <translation id="6368403635025849609">Cho phép JavaScript trên các trang web này</translation>
 <translation id="6376659517206731212">Có thể bắt buộc</translation>
@@ -3124,6 +3080,7 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Khi màn hình sắp tối đi, mô hình giảm độ sáng thông minh sẽ đánh giá xem có nên làm chậm quá trình giảm độ sáng màn hình hay không. Nếu mô hình giảm độ sáng thông minh làm chậm quá trình giảm độ sáng màn hình, thì có nghĩa mô hình này đã kéo dài được thời gian cho đến khi màn hình tối đi. Trong trường hợp này, độ trễ tắt màn hình, độ trễ khóa màn hình và độ trễ khi không hoạt động sẽ được điều chỉnh để duy trì cùng khoảng cách với độ trễ giảm độ sáng màn hình như được định cấu hình ban đầu.
       Nếu bạn đặt chính sách này là True hoặc không đặt, thì mô hình giảm độ sáng thông minh sẽ bật và được phép kéo dài thời gian cho đến khi màn hình tối đi. Nếu bạn đặt chính sách này là False, thì mô hình giảm độ sáng thông minh sẽ không ảnh hưởng tới quá trình giảm độ sáng màn hình.</translation>
 <translation id="6972540544240464302">Chọn cấu hình trình lập lịch biểu việc cần làm</translation>
+<translation id="6979158407327259162">Google Drive</translation>
 <translation id="6994082778848658360">Chỉ định cách bạn có thể sử dụng phần cứng tích hợp phần tử bảo mật để cung cấp xác thực hai yếu tố nếu tương thích với tính năng này. Nút nguồn của máy dùng để phát hiện sự hiện diện của người dùng.
 
       Nếu bạn chọn 'Đã tắt' thì sẽ không nhận được hai yếu tố.
@@ -3131,7 +3088,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Nếu bạn chọn 'U2F', hai yếu tố đã tích hợp sẽ tuân theo thông số FIDO U2F.
 
       Nếu bạn chọn 'U2F_EXTENDED', hai yếu tố đã tích hợp sẽ cung cấp các chức năng của U2F cùng với một số tiện ích để chứng thực cá nhân.</translation>
-<translation id="6997592395211691850">Có bắt buộc kiểm tra OCSP/CRL trực tuyến cho mẩu neo tin cậy nội bộ hay không</translation>
 <translation id="7003334574344702284">Chính sách này nếu được bật sẽ buộc mật khẩu đã lưu phải được nhập từ trình duyệt mặc định trước đó. Nếu được bật, chính sách này cũng ảnh hưởng đến hộp thoại nhập.
 
       Nếu tắt chính sách này, sẽ không có mật khẩu đã lưu nào được nhập.
@@ -3387,10 +3343,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 <translation id="7458437477941640506">Không thể khôi phục về phiên bản đích nếu phiên bản hệ điều hành mới hơn phiên bản đích. Các bản cập nhật cũng sẽ bị tắt.</translation>
 <translation id="7464991223784276288">Hạn chế cookie so khớp các URL với phiên hiện tại</translation>
 <translation id="7469554574977894907">Bật đề xuất tìm kiếm</translation>
-<translation id="7474249562477552702">Có cho phép chứng chỉ có chữ ký SHA-1 do mẩu neo tin cậy nội bộ phát hành hay không</translation>
-<translation id="747851715060942420">Cho phép bạn định cấu hình các trang được tải khi khởi động.
-
-      Chính sách 'Các URL sẽ mở khi khởi động' sẽ bị bỏ qua trừ khi bạn chọn mục 'Mở danh sách các URL' trong 'Hành động khi khởi động'.</translation>
 <translation id="7485481791539008776">Quy tắc chọn máy in mặc định</translation>
 <translation id="7485730741952775732">Nếu bạn đặt chính sách này, máy chủ truy cập từ xa sẽ dùng URL này để xác thực mã xác thực từ các ứng dụng truy cập từ xa để chấp nhận kết nối. Phải sử dụng chính sách này cùng với RemoteAccessHostTokenUrl.
 
@@ -3408,7 +3360,7 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 
           Nếu bạn không đặt hoặc đặt chính sách này thành Enabled (Bật), Google Chrome sẽ chấp nhận các nội dung web được phân phối dưới dạng Signed HTTP Exchanges.
 
-          Nếu bạn đặt chính sách này thành Disabled (Tắt), thì sẽ không thể tải được Signed HTTP Exchanges.</translation>
+          Nếu bạn đặt chính sách này thành Disabled (Tắt), thì Signed HTTP Exchanges sẽ không thể tải được.</translation>
 <translation id="7511361072385293666">Nếu chính sách này được đặt thành true hoặc không được đặt thì được phép sử dụng giao thức QUIC trong <ph name="PRODUCT_NAME" />.
       Nếu chính sách này được đặt thành false thì không được phép sử dụng giao thức QUIC.</translation>
 <translation id="7517845714620372896">Nêu rõ phần trăm độ sáng màn hình.
@@ -3552,14 +3504,13 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 
           Khi bạn đặt, chính sách này sẽ chỉ định khoảng thời gian người dùng phải duy trì chế độ không sử dụng trước khi <ph name="PRODUCT_OS_NAME" /> hiển thị hộp thoại cảnh báo cho người dùng biết rằng hành động ở chế độ không sử dụng đó sắp được thực hiện.
 
-          Khi bạn không đặt chính sách này, sẽ không có hộp thoại cảnh báo nào được hiển thị.
+          Khi bạn không đặt chính sách này, sẽ không có hộp thoại cảnh báo nào hiển thị.
 
           Phải chỉ định giá trị của chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn hoặc bằng thời gian chờ khi ở chế độ không sử dụng.
 
           Thông báo cảnh báo chỉ hiển thị nếu hành động ở chế độ không sử dụng là hành động đăng xuất hoặc tắt nguồn.</translation>
 <translation id="7774768074957326919">Sử dụng cài đặt proxy hệ thống</translation>
 <translation id="7777535871204167559">Coi thiết bị lưu trữ bên ngoài là thiết bị chỉ đọc</translation>
-<translation id="7781069478569868053">Trang tab mới</translation>
 <translation id="7788511847830146438">Cho mỗi hồ sơ</translation>
 <translation id="780603170519840350">Tắt buộc thực thi các yêu cầu về Tính minh bạch của chứng chỉ cho một danh sách các hàm băm subjectPublicKeyInfo.
 
@@ -3587,7 +3538,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 
       Nếu không đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ sử dụng giá trị mặc định là 5000 mili giây.</translation>
 <translation id="7841880500990419427">Phiên bản TLS tối thiểu để dự phòng sang</translation>
-<translation id="7842869978353666042">Định cấu hình tùy chọn Google Drive</translation>
 <translation id="7858404742201086014">Nếu bạn bật tùy chọn cài đặt này, các plugin lỗi thời sẽ được sử dụng như những plugin bình thường.
 
       Nếu bạn tắt tùy chọn cài đặt này, các plugin lỗi thời sẽ không được sử dụng và người dùng sẽ không được yêu cầu cấp quyền để chạy các plugin đó.
@@ -3611,6 +3561,7 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 <translation id="793134539373873765">Chỉ định có sử dụng p2p cho các phần tải dữ liệu cập nhật OS không. Nếu được đặt thành True, các thiết bị sẽ chia sẻ và cố gắng sử dụng các phần tải dữ liệu cập nhật trên LAN, có thể làm giảm nghẽn và mức sử dụng băng thông Internet. Nếu phần tải dữ liệu cập nhật không khả dụng trên LAN, thiết bị sẽ quay lại tải xuống từ máy chủ cập nhật. Nếu được đặt thành False hay không được định cấu hình, p2p sẽ không được sử dụng.</translation>
 <translation id="7933141401888114454">Cho phép tạo người dùng được giám sát</translation>
 <translation id="793473937901685727">Đặt mức độ khả dụng của chứng chỉ cho ứng dụng ARC</translation>
+<translation id="7937491150792971922">Các chính sách hợp nhất danh sách cài đặt tiện ích từ nhiều nguồn</translation>
 <translation id="7937766917976512374">Cho phép hoặc từ chối quay video</translation>
 <translation id="7941975817681987555">Không dự đoán tác vụ mạng trên kết nối mạng bất kỳ</translation>
 <translation id="7952958573604504839">Chính sách này không còn dùng trong M48 nữa mà thay vào đó là <ph name="NETWORK_PREDICTION_OPTIONS_POLICY_NAME" />, và đã bị xóa trong M54.
@@ -3854,7 +3805,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 
       Để biết thêm thông tin về chính sách <ph name="IEEM_SITELIST_POLICY" /> của Internet Explorer, hãy truy cập vào trang web sau: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="8402079500086185021">Luôn mở các tệp PDF từ bên ngoài</translation>
-<translation id="8412312801707973447">Liệu các kiểm tra OCSP/CRL trực tuyến có được thực hiện hay không</translation>
 <translation id="8417305981081876834">Đặt độ dài tối đa của mã PIN màn hình khóa</translation>
 <translation id="841977920223099909">Trình kích hoạt cảnh báo bảo vệ mật khẩu</translation>
 <translation id="8424255554404582727">Đặt chế độ xoay màn hình mặc định, được áp dụng lại mỗi lần khởi động lại</translation>
@@ -4042,7 +3992,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="8818768076343557335">Dự đoán các tác vụ mạng trên bất kỳ mạng nào không phải là mạng di động.
           (Không được dùng nữa là 50, đã xóa 52. Sau 52, nếu được đặt thì giá trị 1 sẽ được coi là 0 - dự đoán tác vụ mạng trên kết nối mạng bất kỳ.)</translation>
 <translation id="8825782996899863372">Cảnh báo bảo vệ mật khẩu được kích hoạt bằng cách sử dụng lại mật khẩu trên trang lừa đảo</translation>
-<translation id="8828766846428537606">Định cấu hình trang chủ mặc định trong <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi cấu hình đó. Cài đặt trang chủ của người dùng chỉ được khóa hoàn toàn nếu bạn chọn trang chủ là trang tab mới hoặc đặt trang chủ là một URL và chỉ định URL trang chủ. Nếu bạn không chỉ định URL trang chủ, người dùng sẽ vẫn có thể đặt trang chủ là trang tab mới bằng cách chỉ định 'chrome://newtab'.</translation>
 <translation id="8833109046074170275">Xác thực thông qua luồng GAIA mặc định</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> lưu các ứng dụng và tiện ích vào bộ nhớ đệm để cài đặt bởi nhiều người dùng trên một thiết bị nhằm giúp người dùng không phải tải xuống lại chúng.
       Nếu chính sách này không được định cấu hình hoặc giá trị nhỏ hơn 1 MB, <ph name="PRODUCT_OS_NAME" /> sẽ sử dụng kích thước bộ nhớ đệm mặc định.</translation>
@@ -4078,7 +4027,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Nếu bạn bật hoặc tắt cài đặt này, người dùng không thể thay đổi hoặc ghi đè cài đặt này trong <ph name="PRODUCT_NAME" />.
 
       Nếu bạn không thiết lập cài đặt này, người dùng có thể quyết định có sử dụng chức năng này hay không.</translation>
-<translation id="8870318296973696995">Trang chủ</translation>
 <translation id="8876188741456358123">Ghi đè chế độ in hai mặt mặc định. Nếu không có chế độ này thì chính sách sẽ bị bỏ qua.</translation>
 <translation id="8882006618241293596">Chặn plugin <ph name="FLASH_PLUGIN_NAME" /> trên các trang web này</translation>
 <translation id="8906768759089290519">Bật chế độ khách</translation>
@@ -4190,7 +4138,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 
       Nếu bạn không đặt chính sách này, người dùng có thể chọn hình đại diện cho họ trên màn hình đăng nhập.</translation>
 <translation id="9035964157729712237">Các ID tiện ích được miễn khỏi danh sách đen</translation>
-<translation id="9038058011835642205">Chỉ định danh sách gồm các trang web được cài đặt tự động mà không có sự tương tác của người dùng và người dùng không thể gỡ cài đặt cũng như tắt.
+<translation id="9038058011835642205">Chỉ định danh sách các trang web được cài đặt tự động mà không có sự tương tác của người dùng và người dùng không thể gỡ cài đặt cũng như tắt.
 
       Mỗi mục trong danh sách của chính sách này là một đối tượng có một thành phần bắt buộc: "url" và hai thành phần không bắt buộc: "default_launch_container" và "create_desktop_shortcut". "url" phải là URL của ứng dụng web cần cài đặt, "launch_container" phải là "cửa sổ" hoặc "tab" để xác định cách mở Ứng dụng web sau khi cài đặt và "create_desktop_shortcut" phải có giá trị true nếu lối tắt trên màn hình được tạo trên Linux và Windows. Nếu bỏ qua mục "default_launch_container", ứng dụng sẽ mở trong tab theo mặc định. Người dùng có thể thay đổi vùng chứa nơi mở ứng dụng bất kể "default_launch_container"có giá trị nào. Nếu bỏ qua mục "create_desktop_shortcuts", thì sẽ không có lối tắt trên màn hình nào được tạo.</translation>
 <translation id="9038839118379817310">Bật Wi-Fi</translation>
@@ -4204,7 +4152,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="9042911395677044526">Cho phép áp dụng cấu hình mạng cho mỗi người dùng thiết bị <ph name="PRODUCT_OS_NAME" />. Cấu hình mạng là chuỗi có định dạng JSON như được định nghĩa theo định dạng Cấu hình mạng mở được mô tả tại <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9050853837490399534">Chính sách này kiểm soát việc có cập nhật thiết bị lên Bản dựng Quick Fix hay không.
 
-      Nếu bạn đặt giá trị của chính sách thành mã thông báo tương ứng với Bản dựng Quick Fix, thì thiết bị sẽ được cập nhật lên Bản dựng Quick Fix tương ứng nếu không có chính sách nào khác chặn quá trình cập nhật này.
+      Nếu bạn đặt giá trị của chính sách thành một mã thông báo tương ứng với Bản dựng Quick Fix, thì thiết bị sẽ được cập nhật lên Bản dựng Quick Fix tương ứng nếu không có chính sách nào khác chặn quá trình cập nhật này.
 
       Nếu bạn không đặt chính sách này hoặc giá trị của chính sách không tương ứng với Bản dựng Quick Fix, thì thiết bị sẽ không được cập nhật lên Bản dựng Quick Fix. Nếu thiết bị đang chạy Bản dựng Quick Fix và bạn không đặt chính sách này nữa hoặc giá trị của chính sách không còn tương ứng với Bản dựng Quick Fix, thì thiết bị sẽ được cập nhật lên bản dựng thông thường nếu không có chính sách nào khác chặn quá trình cập nhật này.</translation>
 <translation id="906631898352326790">
@@ -4235,7 +4183,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="9094064873808699479">Hạ cấp và tiếp tục sử dụng phiên bản đích nếu phiên bản hệ điều hành mới hơn phiên bản đích. Hãy tìm cách chuyển sang cấu hình cấp thiết bị (bao gồm cả thông tin truy cập mạng) thông qua quá trình hạ cấp, nếu có thể, nhưng hãy thực hiện quá trình hạ cấp bằng chức năng powerwash đầy đủ ngay cả khi không thể khôi phục dữ liệu (vì phiên bản đích không hỗ trợ khôi phục dữ liệu hoặc do một sự thay đổi không tương thích ngược).
           Hỗ trợ trên <ph name="PRODUCT_OS_NAME" /> phiên bản 70 trở lên. Với các ứng dụng cũ, giá trị này nghĩa là khả năng hạ cấp đã bị vô hiệu hóa.</translation>
 <translation id="9096086085182305205">Danh sách trắng máy chủ xác thực</translation>
-<translation id="9098553063150791878">Chính sách xác thực HTTP</translation>
 <translation id="9105265795073104888">Chỉ một tập hợp con các tùy chọn cấu hình proxy được cung cấp cho các ứng dụng Android. Các ứng dụng Android có thể chọn sử dụng proxy một cách tự nguyện. Bạn không thể buộc các ứng dụng này sử dụng proxy.</translation>
 <translation id="9106865192244721694">Cho phép WebUSB trên các trang web này</translation>
 <translation id="9112727953998243860">Tệp cấu hình máy in dành cho doanh nghiệp</translation>

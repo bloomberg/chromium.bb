@@ -284,6 +284,7 @@
 <translation id="4572815280350369984">Tệp <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Thêm...</translation>
 <translation id="4582497162516204941">Cài đặt bằng Linux (Beta)</translation>
+<translation id="4584780943629874245">Chia sẻ với máy chủ ảo plugin</translation>
 <translation id="4631887759990505102">Nghệ sĩ</translation>
 <translation id="4656293982926141856">Máy tính này</translation>
 <translation id="4669606053856530811">Thành viên của '<ph name="SOURCE_NAME" />' sẽ mất quyền truy cập trừ khi bạn chia sẻ các mục này với họ.</translation>
@@ -524,6 +525,7 @@
 <translation id="7339898014177206373">Cửa sổ mới</translation>
 <translation id="7348749398828259943">Bàn phím quốc tế Workman Hoa Kỳ</translation>
 <translation id="7359359531237882347">Đang sao chép <ph name="NUMBER_OF_ITEMS" /> mục...</translation>
+<translation id="7379734276381389090"><ph name="NUMBER_OF_ITEMS" /> thư mục được chia sẻ với máy chủ ảo plugin</translation>
 <translation id="7389722738210761877">Bàn phím tiếng Thái (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Bàn phím tiếng Hindi (Phiên âm)</translation>
 <translation id="7417453074306512035">Bàn phím tiếng Ethiopic</translation>
@@ -586,6 +588,7 @@
 <translation id="7969525169268594403">Tiếng Sloven</translation>
 <translation id="7982283708762922719">Chiều cao</translation>
 <translation id="7987485481246785146">Bàn phím tiếng Kurd Sorani dựa trên tiếng Ả Rập</translation>
+<translation id="7990715602172183602">1 thư mục được chia sẻ với máy chủ ảo plugin</translation>
 <translation id="799547531016638432">Xóa lối tắt</translation>
 <translation id="799923393800005025">Có thể xem</translation>
 <translation id="8008366997883261463">Chó</translation>
@@ -626,6 +629,7 @@
 <translation id="8342318071240498787">Tệp hoặc thư mục có cùng tên đã tồn tại.</translation>
 <translation id="8391950649760071442">Chuyển ngữ (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Kích thước</translation>
+<translation id="8400874747056634633">Quản lý việc chia sẻ với máy chủ ảo plugin</translation>
 <translation id="8412586565681117057">Phương thức nhập nhanh</translation>
 <translation id="8418113698656761985">Bàn phím tiếng Rumani</translation>
 <translation id="8432745813735585631">Bàn phím Colemak Hoa Kỳ</translation>

@@ -284,6 +284,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> ഫയൽ</translation>
 <translation id="457386861538956877">കൂടുതൽ‍‌...</translation>
 <translation id="4582497162516204941">Linux (ബീറ്റ) ഉപയോഗിച്ച് ഇൻസ്‌റ്റാൾ ചെയ്യുക</translation>
+<translation id="4584780943629874245">Plugin VM ഉപയോഗിച്ച് പങ്കിടുക</translation>
 <translation id="4631887759990505102">ആര്‍ട്ടിസ്റ്റ്</translation>
 <translation id="4656293982926141856">ഈ കമ്പ്യൂട്ടറിൽ</translation>
 <translation id="4669606053856530811">'<ph name="SOURCE_NAME" />' എന്നതിലെ അംഗങ്ങളുമായി ഈ ഇനങ്ങൾ പങ്കിട്ടില്ലെങ്കിൽ അവർക്ക് അവയിലേക്കുള്ള ആക്‌സസ് ‌നഷ്‌ടമാകും.</translation>
@@ -524,6 +525,7 @@
 <translation id="7339898014177206373">പുതിയ വിന്‍ഡോ</translation>
 <translation id="7348749398828259943">യുഎസ് വർക്ക്മാൻ ഇന്റർനാഷണൽ കീബോർഡ്</translation>
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> ഇനങ്ങൾ പകർത്തുന്നു...</translation>
+<translation id="7379734276381389090"><ph name="NUMBER_OF_ITEMS" /> ഫോൾഡറുകൾ Plugin VM ഉപയോഗിച്ച് പങ്കിട്ടു</translation>
 <translation id="7389722738210761877">തായ് കീബോർഡ് (TIS 820-2531)</translation>
 <translation id="7396038720194014279">ഹിന്ദി കീബോർഡ് (സ്വരസൂചകം)</translation>
 <translation id="7417453074306512035">എത്യോപിക് കീബോർഡ്</translation>
@@ -586,6 +588,7 @@
 <translation id="7969525169268594403">സ്ലോവേനിയന്‍</translation>
 <translation id="7982283708762922719">ഉയരം</translation>
 <translation id="7987485481246785146">സൊറാനി കുർദ്ദിഷ് അറബിക് അധിഷ്‌ഠിത കീബോർഡ്</translation>
+<translation id="7990715602172183602">Plugin VM ഉപയോഗിച്ച് ഒരു ഫോൾഡർ പങ്കിട്ടു</translation>
 <translation id="799547531016638432">കുറുക്കുവഴി നീക്കംചെയ്യുക</translation>
 <translation id="799923393800005025">കാണാനാകുന്നത്</translation>
 <translation id="8008366997883261463">ജാക്ക് റസ്സൽ ടെറിയർ</translation>
@@ -626,6 +629,7 @@
 <translation id="8342318071240498787">സമാന പേരിലുള്ള ഒരു ഫയൽ അല്ലെങ്കിൽ ഡയറക്‌ടറി ഇതിനകം നിലവിലുണ്ട്.</translation>
 <translation id="8391950649760071442">ലിപ്യന്തരണം (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">തലങ്ങൾ</translation>
+<translation id="8400874747056634633">Plugin VM ഉപയോഗിച്ച് പങ്കിടൽ മാനേജ് ചെയ്യുക</translation>
 <translation id="8412586565681117057">ക്വിക്ക് ടൈപ്പുചെയ്യൽ രീതി</translation>
 <translation id="8418113698656761985">റൊമാനിയന്‍ കീബോര്‍ഡ്</translation>
 <translation id="8432745813735585631">യുഎസ് കോള്‍മാക്ക് കീബോര്‍ഡ്</translation>

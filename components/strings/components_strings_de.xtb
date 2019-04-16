@@ -205,7 +205,6 @@
 <translation id="2053111141626950936">Seiten auf <ph name="LANGUAGE" /> werden nicht übersetzt.</translation>
 <translation id="2053553514270667976">Postleitzahl</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 Vorschlag}other{# Vorschläge}}</translation>
-<translation id="2068124040035837596">Ihr Konto wird durch <ph name="ENROLLMENT_DOMAIN" /> verwaltet. Das bedeutet, dass der Administrator Ihr Konto per Remotezugriff konfigurieren kann.</translation>
 <translation id="2068663545051464999">ID des hochgeladenen Absturzberichts: <ph name="CRASH_ID" /> (lokaler Kontext: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="2079545284768500474">Rückgängig machen</translation>
 <translation id="20817612488360358">Die System-Proxy-Einstellungen sind zur Verwendung angegeben, gleichzeitig wurde aber auch eine explizite Proxy-Konfiguration festgelegt.</translation>
@@ -271,7 +270,6 @@
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wurde möglicherweise widerrufen. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="2418081434543109369">Der Server <ph name="ORIGIN" />, zu dem Sie gehen, verlangt, dass auf alle an ihn gerichteten Anfragen eine Sicherheitsrichtlinie angewendet wird. Aber er hat keine Richtlinie bereitgestellt, was den Browser daran hindert, Ihre Anfrage für <ph name="SITE" /> auszuführen.</translation>
-<translation id="244665789865330679">Ihr Gerät und Ihr Konto werden durch <ph name="ENROLLMENT_DOMAIN" /> verwaltet. Dies bedeutet, dass der Administrator Ihr Gerät und Ihr Konto per Remotezugriff konfigurieren kann.</translation>
 <translation id="2463193859425327265">Startseite ändern</translation>
 <translation id="2463739503403862330">Ausfüllen</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -472,7 +470,6 @@
 <translation id="358285529439630156">Kredit- und Prepaidkarten werden akzeptiert.</translation>
 <translation id="3582930987043644930">Namen hinzufügen</translation>
 <translation id="3583757800736429874">&amp;Verschieben wiederholen</translation>
-<translation id="35866233670761917">Die Inhalte der von Ihnen besuchten Websites können nicht von den Administratoren eingesehen werden</translation>
 <translation id="3586931643579894722">Details ausblenden</translation>
 <translation id="3592413004129370115">Italian (Umschlag)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
@@ -739,7 +736,6 @@
 <translation id="5095208057601539847">Provinz</translation>
 <translation id="5097099694988056070">Gerätestatistiken, z. B. CPU/RAM-Nutzung</translation>
 <translation id="5097501891273180634">A2</translation>
-<translation id="5098222253617183465">Ihr Gerät wird durch <ph name="ENROLLMENT_DOMAIN" /> und Ihr Konto durch <ph name="ACCOUNT_DOMAIN" /> verwaltet. Das bedeutet, dass die Administratoren Ihr Gerät und Ihr Konto per Remotezugriff konfigurieren können.</translation>
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64-Bit)</translation>
@@ -895,7 +891,6 @@
 <translation id="5967592137238574583">Kontaktdaten bearbeiten</translation>
 <translation id="5967867314010545767">Aus Verlauf entfernen</translation>
 <translation id="5975083100439434680">Verkleinern</translation>
-<translation id="5977489021191000276">Ihr Gerät wird nicht von einem Administrator verwaltet.</translation>
 <translation id="5977976211062815271">Auf diesem Gerät</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">Fehler beim Öffnen der Zahlungs-App</translation>
@@ -1041,7 +1036,6 @@
 <translation id="6903319715792422884">Sie können uns dabei helfen, Safe Browsing weiter zu verbessern, indem Sie einige <ph name="BEGIN_WHITEPAPER_LINK" />Systeminformationen und Seiteninhalte<ph name="END_WHITEPAPER_LINK" /> an Google senden. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">Nutzer:</translation>
 <translation id="6934672428414710184">Dieser Name stammt aus Ihrem Google-Konto</translation>
-<translation id="6939583532829045966">Ihr Gerät wird durch <ph name="ENROLLMENT_DOMAIN" /> verwaltet. Dies bedeutet, dass der Administrator Ihr Gerät per Remotezugriff konfigurieren kann.</translation>
 <translation id="6944692733090228304">Sie haben Ihr Passwort auf einer Website eingegeben, die nicht von <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> verwaltet wird. Zum Schutz Ihres Kontos sollten Sie das Passwort nicht für andere Apps und Websites verwenden.</translation>
 <translation id="6945221475159498467">Auswählen</translation>
 <translation id="6948701128805548767">Wählen Sie eine Adresse aus, um Abholoptionen und -anforderungen zu sehen</translation>
@@ -1051,7 +1045,6 @@
 <translation id="6957887021205513506">Das Zertifikat des Servers ist möglicherweise eine Fälschung.</translation>
 <translation id="6964255747740675745">Netzwerkkonfiguration konnte nicht geparst werden (ungültige JSON-Datei).</translation>
 <translation id="6965382102122355670">Ok</translation>
-<translation id="6965456981923010628"><ph name="LEFT_PART" /> • <ph name="RIGHT_PART" /></translation>
 <translation id="6965978654500191972">Gerät</translation>
 <translation id="6970216967273061347">Bezirk</translation>
 <translation id="6973656660372572881">Sowohl feste Proxyserver als auch eine PAC-Skript-URL sind festgelegt.</translation>
@@ -1199,6 +1192,7 @@ Weitere Details:
 <translation id="7668654391829183341">Unbekanntes Gerät</translation>
 <translation id="7669271284792375604">Unbefugte Dritte auf dieser Website versuchen eventuell, Sie zur Installation von Programmen zu bewegen, die sich nachteilig auf Ihre Browsernutzung auswirken. Dabei kann zum Beispiel Ihre Startseite geändert werden oder es erscheinen zusätzliche Anzeigen auf von Ihnen besuchten Websites.</translation>
 <translation id="7676643023259824263">Nach Text aus Zwischenablage suchen: <ph name="TEXT" /></translation>
+<translation id="7679176406634891508">Plattform und Cloud</translation>
 <translation id="7681101578153515023">Suchmaschine ändern</translation>
 <translation id="7682287625158474539">Versand</translation>
 <translation id="7687186412095877299">Zahlungsformulare werden mit Ihren gespeicherten Zahlungsmethoden ausgefüllt</translation>
@@ -1403,7 +1397,6 @@ Weitere Details:
 <translation id="8932102934695377596">Ihre Uhr geht nach</translation>
 <translation id="893332455753468063">Namen hinzufügen</translation>
 <translation id="8938939909778640821">Akzeptierte Kredit- und Prepaidkarten</translation>
-<translation id="894185898663964645">Ihr Administrator hat benutzerdefinierte Root-Zertifikate konfiguriert, mit denen er unter Umständen die Inhalte der von Ihnen besuchten Websites sehen kann.</translation>
 <translation id="8943282376843390568">Limone</translation>
 <translation id="8957210676456822347">Erfassungsportal-Autorisierung</translation>
 <translation id="8968766641738584599">Karte speichern</translation>
@@ -1417,6 +1410,7 @@ Weitere Details:
 <translation id="8996941253935762404">Die Website, die Sie aufrufen möchten, enthält schädliche Programme</translation>
 <translation id="8997023839087525404">Der Server präsentierte ein Zertifikat, das nicht gemäß der Richtlinie zur Zertifikatstransparenz öffentlich offengelegt wurde. Dies ist für einige Zertifikate jedoch eine Voraussetzung, mit der sichergestellt wird, dass sie vertrauenswürdig sind und vor Angriffen schützen.</translation>
 <translation id="9001074447101275817">Für den Proxy <ph name="DOMAIN" /> sind ein Nutzername und ein Passwort erforderlich.</translation>
+<translation id="9004367719664099443">VR-Sitzung läuft</translation>
 <translation id="9005998258318286617">Fehler beim Laden des PDF-Dokuments.</translation>
 <translation id="9008201768610948239">Ignorieren</translation>
 <translation id="9011424611726486705">Website-Einstellungen öffnen</translation>

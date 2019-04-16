@@ -29,6 +29,7 @@
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1302880136325416935">Visa Bluetooth-inställningar. <ph name="STATE_TEXT" /></translation>
 <translation id="1316069254387866896">Visa alltid hyllan</translation>
+<translation id="1341651618736211726">Fler alternativ</translation>
 <translation id="1346748346194534595">Höger</translation>
 <translation id="1351937230027495976">Komprimera menyn</translation>
 <translation id="1383876407941801731">Sök</translation>
@@ -360,7 +361,6 @@
 <translation id="6700713906295497288">IME-menyknapp</translation>
 <translation id="6713285437468012787">Bluetooth-enheten <ph name="DEVICE_NAME" /> har kopplats och är nu tillgänglig för alla användare. Du kan ta bort kopplingen i Inställningar.</translation>
 <translation id="6715542151869432661">Inga mobila enheter hittades.</translation>
-<translation id="671928215901716392">Lås skärmen</translation>
 <translation id="6723839937902243910">Batteri</translation>
 <translation id="6751826523481687655">Prestandaspårning har aktiverats</translation>
 <translation id="6785414152754474415">Batteriet är fullt till <ph name="PERCENTAGE" /> % och laddas.</translation>

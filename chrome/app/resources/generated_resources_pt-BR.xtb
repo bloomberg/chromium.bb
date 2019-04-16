@@ -7,6 +7,7 @@
 <translation id="1006873397406093306">Esta extensão pode ler e alterar seus dados em sites. É possível controlar a quais sites a extensão terá acesso.</translation>
 <translation id="1007408791287232274">Não foi possível carregar os dispositivos.</translation>
 <translation id="1008186147501209563">Exportar favoritos</translation>
+<translation id="1008557486741366299">Não agora</translation>
 <translation id="1010833424573920260">{NUM_PAGES,plural, =1{Página sem resposta}one{Páginas sem resposta}other{Páginas sem resposta}}</translation>
 <translation id="1012794136286421601">Seus arquivos do Google Docs, Planilhas, Apresentações e Desenhos estão sendo sincronizados. Abra o aplicativo Google Drive para acessá-los on-line ou off-line.</translation>
 <translation id="1012876632442809908">Dispositivo USB-C (porta frontal)</translation>
@@ -30,7 +31,6 @@
 <translation id="1038168778161626396">Somente codificar</translation>
 <translation id="1039337018183941703">Arquivo inválido ou corrompido</translation>
 <translation id="1042174272890264476">Seu computador já vem com a biblioteca RLZ do <ph name="SHORT_PRODUCT_NAME" /> integrada. O RLZ atribui uma tag não exclusiva e sem identificação pessoal para medir as pesquisas e o uso do <ph name="SHORT_PRODUCT_NAME" /> gerados por uma campanha promocional específica. Esses marcadores às vezes aparecem em consultas da Pesquisa Google no <ph name="PRODUCT_NAME" />.</translation>
-<translation id="104447754757905612">Este Chromebook pode ser monitorado</translation>
 <translation id="1046059554679513793">Ops. Este nome já está em uso.</translation>
 <translation id="1046635659603195359">Parece que você já configurou o "Voice Match" com seu Google Assistente em outro dispositivo. Essas gravações anteriores podem ser usadas para criar um modelo de voz neste dispositivo. Isso levará menos de um minuto.</translation>
 <translation id="1047431265488717055">Copiar te&amp;xto do link</translation>
@@ -92,6 +92,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Editar mecanismo de pesquisa</translation>
 <translation id="1134009406053225289">Abrir em uma janela anônima</translation>
+<translation id="1136712381129578788">A chave de segurança está bloqueada porque o PIN incorreto foi inserido muitas vezes. Remova e insira a chave novamente para desbloqueá-la.</translation>
 <translation id="1137673463384776352">Abrir link no <ph name="APP" /></translation>
 <translation id="1140351953533677694">Acessar seus dispositivos de série e Bluetooth</translation>
 <translation id="1140610710803014750">Para ter seus favoritos em todos os seus dispositivos, faça login e ative a sincronização.</translation>
@@ -146,11 +147,6 @@
 <translation id="1211364473545090084">Use a Web sem salvar seu histórico de navegação com uma janela anônima</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" /> impressões digitais configuradas</translation>
 <translation id="1215411991991485844">Novo aplicativo de fundo adicionado</translation>
-<translation id="1216659994753476700">Não é possível acessar seu perfil. Arquivos e dados armazenados neste dispositivo podem ter sido perdidos.<ph name="BR" />
-    <ph name="BR" />
-    Será necessário configurar seu perfil novamente.<ph name="BR" />
-    <ph name="BR" />
-    Na próxima tela, envie um feedback para nos ajudar a corrigir o problema.</translation>
 <translation id="1217668622537098248">Reverter para o clique com botão esquerdo após a ação</translation>
 <translation id="121783623783282548">As senhas não correspondem.</translation>
 <translation id="1218839827383191197"><ph name="BEGIN_PARAGRAPH1" />O serviço de localização do Google usa fontes como redes móveis, Wi‑Fi e sensores para ajudar a estimar o local do dispositivo.<ph name="END_PARAGRAPH1" />
@@ -164,6 +160,7 @@
 <translation id="1227507814927581609">Falha na autenticação ao conectar-se com "<ph name="DEVICE_NAME" />".</translation>
 <translation id="1231733316453485619">Ativar sincronização?</translation>
 <translation id="1232569758102978740">Sem título</translation>
+<translation id="1233497634904001272">Toque na chave de segurança novamente para concluir a solicitação.</translation>
 <translation id="1233721473400465416">Localidade</translation>
 <translation id="1234808891666923653">Service Workers</translation>
 <translation id="1235458158152011030">Redes conhecidas</translation>
@@ -205,6 +202,7 @@
 <translation id="1303671224831497365">Nenhum dispositivo Bluetooth encontrado</translation>
 <translation id="130491383855577612">Os apps e arquivos do Linux foram substituídos</translation>
 <translation id="1306606229401759371">Alterar configurações</translation>
+<translation id="1307165550267142340">Seu PIN foi criado</translation>
 <translation id="1307559529304613120">Ops. O sistema encontrou uma falha ao armazenar um token de acesso de longo prazo à API para este dispositivo.</translation>
 <translation id="1313405956111467313">Configuração automática de proxy</translation>
 <translation id="131364520783682672">Caps Lock</translation>
@@ -259,6 +257,7 @@
 <translation id="1399511500114202393">Nenhum certificado do usuário</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (supervisionado)</translation>
 <translation id="1406500794671479665">Verificando...</translation>
+<translation id="140723521119632973">Ativação da rede celular</translation>
 <translation id="1407489512183974736">Cortar para centralizar</translation>
 <translation id="1408504635543854729">Explore o conteúdo do dispositivo no app Arquivos. O conteúdo é restrito por um administrador e não pode ser modificado.</translation>
 <translation id="1408789165795197664">Avançado...</translation>
@@ -446,6 +445,7 @@
 <translation id="1688935057616748272">Digite uma letra</translation>
 <translation id="168991973552362966">Adicionar uma impressora próxima</translation>
 <translation id="1689945336726856614">Copiar &amp;URL</translation>
+<translation id="1692109533452028989">O Chrome envia o texto que você digita no navegador para o Google</translation>
 <translation id="1692115862433274081">Usar outra conta</translation>
 <translation id="1692602667007917253">Ops... Algo deu errado.</translation>
 <translation id="1692799361700686467">Cookies de vários sites foram permitidos.</translation>
@@ -728,6 +728,7 @@
 <translation id="2154710561487035718">Copiar URL</translation>
 <translation id="2155772377859296191">Resolução: <ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="2156283799932971644">Você pode ajudar a melhorar o recurso "Navegação segura" enviando algumas informações do sistema e conteúdo da página para o Google.</translation>
+<translation id="2156294658807918600">Service worker: <ph name="SCRIPT_URL" /></translation>
 <translation id="215753907730220065">Sair do modo tela cheia</translation>
 <translation id="2157875535253991059">Esta página está no modo de tela inteira.</translation>
 <translation id="216169395504480358">Adicionar Wi-Fi...</translation>
@@ -735,6 +736,7 @@
 <translation id="2163470535490402084">Conecte-se à Internet para fazer login no seu <ph name="DEVICE_TYPE" />.</translation>
 <translation id="2166369534954157698">Jane quer LP, fax, CD, giz, TV e bom whisky.</translation>
 <translation id="2169062631698640254">Fazer login assim mesmo</translation>
+<translation id="2172784515318616985">Continuar</translation>
 <translation id="2173801458090845390">Adicionar código de requisição para este dispositivo</translation>
 <translation id="2175042898143291048">Sempre fazer isso</translation>
 <translation id="2175607476662778685">Barra de inicialização rápida</translation>
@@ -908,7 +910,6 @@
 <translation id="2436707352762155834">Mínima</translation>
 <translation id="2439545803278355377">Digite seu novo PIN. Um PIN precisa ter pelo menos quatro caracteres e pode conter letras, números e outros caracteres.</translation>
 <translation id="2440604414813129000">Exibir &amp;código fonte</translation>
-<translation id="2442182690962765671">A página não está respondendo. Você pode esperar ou tirar o headset.</translation>
 <translation id="2445081178310039857">O diretório raiz da extensão é obrigatório.</translation>
 <translation id="2445484935443597917">Criar um novo perfil</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> quer verificar sua identidade</translation>
@@ -980,6 +981,7 @@
 <translation id="253434972992662860">&amp;Pausar</translation>
 <translation id="2534460670861217804">Proxy HTTP seguro</translation>
 <translation id="253557089021624350">Contagem de manutenção de atividade</translation>
+<translation id="2535799430745250929">Não há nenhuma rede celular</translation>
 <translation id="2538361623464451692">Sincronização desativada</translation>
 <translation id="2540449034743108469">Pressione "Iniciar" para ouvir as atividades da extensão</translation>
 <translation id="2541002089857695151">Otimizar transmissão em tela cheia?</translation>
@@ -1003,7 +1005,6 @@
 <translation id="2572032849266859634">Foi concedido acesso apenas de leitura a <ph name="VOLUME_NAME" />.</translation>
 <translation id="2575247648642144396">Este ícone ficará visível quando a extensão puder agir na página atual. Para usar essa extensão, clique no ícone ou pressione <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="257779572837908839">Configurar como Chromebox para reuniões</translation>
-<translation id="2579575372772932244">Recriando perfil. Aguarde…</translation>
 <translation id="2580889980133367162">Sempre permitir que <ph name="HOST" /> faça download de vários arquivos</translation>
 <translation id="2580924999637585241">Total: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Longo</translation>
@@ -1044,6 +1045,7 @@
 <translation id="2635094637295383009">Twitter</translation>
 <translation id="2635276683026132559">Assinatura</translation>
 <translation id="2636625531157955190">O Google Chrome não pode acessar a imagem.</translation>
+<translation id="2637400434494156704">PIN incorreto. Você tem apenas uma tentativa restante.</translation>
 <translation id="2638087589890736295">É necessária uma senha longa para iniciar a sincronização</translation>
 <translation id="2642111877055905627">Bola de futebol</translation>
 <translation id="2643698698624765890">Gerencie suas extensões clicando em Extensões no menu Janela.</translation>
@@ -1118,7 +1120,6 @@
 <translation id="274290345632688601">Restaurando apps e arquivos do Linux</translation>
 <translation id="2743387203779672305">Copiar para a área de trabalho</translation>
 <translation id="2745080116229976798">Subordinação qualificada da Microsoft</translation>
-<translation id="2745305015456260872"><ph name="ENROLLMENT_DOMAIN" /> gerencia este dispositivo e tem acesso a todas as atividades do usuário, incluindo páginas visitadas, senhas e e-mail. Ver detalhes.</translation>
 <translation id="2749756011735116528">Fazer login no <ph name="PRODUCT_NAME" /></translation>
 <translation id="2749881179542288782">Verificar a gramática com a ortografia</translation>
 <translation id="2751739896257479635">Autenticação EAP Fase 2</translation>
@@ -1468,12 +1469,13 @@
 <translation id="3317459757438853210">Frente e verso</translation>
 <translation id="3317678681329786349">Câmera e microfone bloqueados</translation>
 <translation id="3319048459796106952">Nova janela &amp;anônima</translation>
-<translation id="3325910708063135066">A câmera e o microfone estão desativados nas Preferências do sistema Mac</translation>
+<translation id="3325910708063135066">A câmera e o microfone estão desativados nas preferências do sistema do Mac</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET" />) <ph name="LONGTZNAME" /> (<ph name="EXEMPLARCITY" />)</translation>
 <translation id="3331974543021145906">Informações sobre o aplicativo</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> - Vídeo reproduzido em picture-in-picture</translation>
 <translation id="3335947283844343239">Reabrir guia fechada</translation>
 <translation id="3336664756920573711">Desbloqueie seu <ph name="DEVICE_TYPE" /> com o smartphone Android</translation>
+<translation id="3341699307020049241">PIN incorreto. Você tem <ph name="RETRIES" /> tentativas restantes.</translation>
 <translation id="3341703758641437857">Permitir acesso aos URLs do arquivo</translation>
 <translation id="3342361181740736773">"<ph name="TRIGGERING_EXTENSION_NAME" />" quer remover essa extensão.</translation>
 <translation id="3345886924813989455">Não foi encontrado um navegador suportado</translation>
@@ -1500,6 +1502,7 @@
 <translation id="3382200254148930874">Parando a supervisão…</translation>
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">Separador</translation>
+<translation id="3387614642886316601">Usar a verificação ortográfica aprimorada</translation>
 <translation id="3389312115541230716">Clique com o botão direito do mouse no ícone <ph name="SMALL_PRODUCT_LOGO" /> na barra de tarefas</translation>
 <translation id="3393352139658145068">Ativar o Assistente quando alguém disser “Ok Google”. Para economizar bateria, a hotword “Ok Google” só é ativada quando o dispositivo está conectado a uma fonte de energia.</translation>
 <translation id="3396800784455899911">Ao clicar no botão "Aceitar e concluir", você aceita o processo descrito acima para esses serviços do Google.</translation>
@@ -1734,6 +1737,7 @@
 <translation id="3729506734996624908">Sites permitidos</translation>
 <translation id="3731997362820527097">Selecionar chave de segurança</translation>
 <translation id="3732078975418297900">Erro na linha <ph name="ERROR_LINE" /></translation>
+<translation id="3732530910372558017">O PIN precisa ter no máximo 63 caracteres</translation>
 <translation id="3733127536501031542">Servidor SSL com Step-up</translation>
 <translation id="3735740477244556633">Classificar por</translation>
 <translation id="3737274407993947948">Erro ao instalar o Linux…</translation>
@@ -1766,6 +1770,7 @@
 <translation id="3776796446459804932">Esta extensão viola a política da Chrome Web Store.</translation>
 <translation id="3777806571986431400">Extensão ativada</translation>
 <translation id="3778152852029592020">O download foi cancelado.</translation>
+<translation id="3778208826288864398">A chave de segurança está bloqueada porque o PIN incorreto foi inserido muitas vezes. Redefina a chave de segurança.</translation>
 <translation id="3778740492972734840">Ferramentas do &amp;desenvolvedor</translation>
 <translation id="3778868487658107119">Faça perguntas ou diga a ele o que fazer. É o seu Google pessoal, sempre pronto para ajudar.</translation>
 <translation id="378312418865624974">Ler o identificador exclusivo deste computador</translation>
@@ -1776,6 +1781,7 @@
 <translation id="3789841737615482174">Instalar</translation>
 <translation id="379082410132524484">Seu cartão expirou</translation>
 <translation id="3792890930871100565">Desconectar impressoras</translation>
+<translation id="3792938779249970121">Selecionar conta</translation>
 <translation id="3796648294839530037">Redes favoritas:</translation>
 <translation id="3797739167230984533">Seu <ph name="BEGIN_LINK" /><ph name="DEVICE_TYPE" /> é gerenciado<ph name="END_LINK" /> pela sua organização</translation>
 <translation id="3797900183766075808">&amp;Pesquisar “<ph name="SEARCH_TERMS" />” no <ph name="SEARCH_ENGINE" /></translation>
@@ -1864,7 +1870,7 @@
 <translation id="3915280005470252504">Pesquisar por voz</translation>
 <translation id="3916445069167113093">Este tipo de arquivo pode danificar seu computador. Quer manter o arquivo <ph name="FILE_NAME" /> mesmo assim?</translation>
 <translation id="3918972485393593704">Informar detalhes ao Google</translation>
-<translation id="3919145445993746351">Para ter todas as suas extensões em todos os seus computadores, ative a sincronização</translation>
+<translation id="3919145445993746351">Para ver suas extensões em todos os seus computadores, ative a sincronização</translation>
 <translation id="3920504717067627103">Diretivas de certificação</translation>
 <translation id="392089482157167418">Ativar ChromeVox (feedback falado)</translation>
 <translation id="3924145049010392604">Meta</translation>
@@ -1967,6 +1973,7 @@
 <translation id="407520071244661467">Escala</translation>
 <translation id="4075639477629295004">Não foi possível transmitir o arquivo <ph name="FILE_NAME" /></translation>
 <translation id="4077917118009885966">Anúncios bloqueados neste site</translation>
+<translation id="4079140982534148664">Usar a verificação ortográfica aprimorada</translation>
 <translation id="4081242589061676262">Não foi possível transmitir o arquivo.</translation>
 <translation id="4084682180776658562">Favorito</translation>
 <translation id="4084835346725913160">Fechar <ph name="TAB_NAME" /></translation>
@@ -1982,6 +1989,7 @@
 <translation id="4090947011087001172">Redefinir permissões de site para <ph name="SITE" />?</translation>
 <translation id="4091434297613116013">folhas de papel</translation>
 <translation id="4093955363990068916">Arquivo local:</translation>
+<translation id="4095264805865317199">Abrir IU de ativação da rede celular</translation>
 <translation id="4095507791297118304">Tela principal</translation>
 <translation id="409579654357498729">Adicionar ao Google Cloud Print</translation>
 <translation id="4096508467498758490">Desativar extensões no modo de desenvolvedor</translation>
@@ -1999,8 +2007,10 @@
 <translation id="4115002065223188701">Rede fora de alcance</translation>
 <translation id="4115080753528843955">Alguns serviços de conteúdo usam identificadores exclusivos para autorizar o acesso a conteúdo protegido</translation>
 <translation id="4118579674665737931">Reinicialize o dispositivo e tente novamente.</translation>
+<translation id="4120388883569225797">Não é possível redefinir esta chave de segurança</translation>
 <translation id="4120817667028078560">Caminho muito longo</translation>
 <translation id="4121428309786185360">Expira em</translation>
+<translation id="4124823734405044952">Sua chave de segurança foi redefinida</translation>
 <translation id="4124935795427217608">Unicórnio</translation>
 <translation id="412730574613779332">Mascarado</translation>
 <translation id="412940972494182898">Executar Flash desta vez</translation>
@@ -2102,7 +2112,6 @@
 <translation id="4314815835985389558">Gerenciar sincronização</translation>
 <translation id="4316850752623536204">Website do desenvolvedor</translation>
 <translation id="4320177379694898372">Sem conexão com a Internet</translation>
-<translation id="4320948194796820126">Adicione seu e-mail aos favoritos</translation>
 <translation id="4321442524549817090">M&amp;ostrar URL</translation>
 <translation id="4322394346347055525">Fechar outras guias</translation>
 <translation id="4324577459193912240">Arquivo incompleto</translation>
@@ -2326,6 +2335,7 @@
 <translation id="4711638718396952945">Restaurar configurações</translation>
 <translation id="4715553623069266137">muito curto (0,8 seg)</translation>
 <translation id="4716483597559580346">Executar Powerwash para maior segurança</translation>
+<translation id="4718490098585891067">Selecione uma conta para fazer login:</translation>
 <translation id="4720113199587244118">Adicionar dispositivos</translation>
 <translation id="4720185134442950733">Rede de dados móveis</translation>
 <translation id="4722735765955348426">Senha para <ph name="USERNAME" /></translation>
@@ -2355,6 +2365,7 @@
 <translation id="4756388243121344051">&amp;Histórico</translation>
 <translation id="4759238208242260848">Downloads</translation>
 <translation id="4761104368405085019">Usar microfone</translation>
+<translation id="476166673298332917">O administrador deste dispositivo poderá monitorar sua atividade de navegação.</translation>
 <translation id="4762718786438001384">Dispositivo com espaço em disco criticamente baixo</translation>
 <translation id="4763408175235639573">Os cookies a seguir foram definidos quando você visualizou esta página</translation>
 <translation id="4763830802490665879">Os cookies de vários sites serão apagados na saída.</translation>
@@ -2565,6 +2576,7 @@
 <translation id="5111692334209731439">&amp;Gerenciador de favoritos</translation>
 <translation id="5112577000029535889">Ferramentas do &amp;desenvolvedor</translation>
 <translation id="5113739826273394829">Se você clicar neste ícone, este <ph name="DEVICE_TYPE" /> será bloqueado manualmente. Na próxima vez, será necessário digitar sua senha para entrar.</translation>
+<translation id="51143538739122961">Insira sua chave de segurança e toque nela</translation>
 <translation id="5115309401544567011">Conecte seu <ph name="DEVICE_TYPE" /> a uma fonte de energia.</translation>
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">Sal&amp;var áudio como...</translation>
@@ -2688,6 +2700,7 @@
 <translation id="5305688511332277257">Nenhum instalado</translation>
 <translation id="5307030433605830021">Fonte incompatível</translation>
 <translation id="5308380583665731573">Conectar-se</translation>
+<translation id="5310281978693206542">Enviar link para seus dispositivos</translation>
 <translation id="5311304534597152726">Login como</translation>
 <translation id="5315873049536339193">Identidade</translation>
 <translation id="5317780077021120954">Salvar</translation>
@@ -2729,7 +2742,7 @@
 <translation id="537813040452600081">As páginas que você visualiza nesta janela não aparecerão no histórico do navegador nem deixarão outros rastros, como cookies, no computador depois que você sair. Os downloads que você fizer e os favoritos que criar não serão preservados.</translation>
 <translation id="5379140238605961210">Continuar bloqueando o acesso ao microfone</translation>
 <translation id="5382591305415226340">Gerenciar links compatíveis</translation>
-<translation id="5383377866517186886">A câmera está desativada nas Preferências do sistema do Mac</translation>
+<translation id="5383377866517186886">A câmera está desativada nas preferências do sistema do Mac</translation>
 <translation id="5384883051496921101">Este site está prestes a compartilhar informações com um app fora do modo de navegação anônima.</translation>
 <translation id="5388885445722491159">Emparelhado</translation>
 <translation id="5389237414310520250">Não foi possível criar o novo usuário. Verifique o espaço no seu disco rígido e suas permissões e tente novamente.</translation>
@@ -3125,6 +3138,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5973605538625120605">Alterar um PIN</translation>
 <translation id="5975792506968920132">Percentual de carga da bateria</translation>
 <translation id="5976160379964388480">Outros</translation>
+<translation id="5978277834170881274">Usar a verificação ortográfica básica</translation>
 <translation id="5979421442488174909">&amp;Traduzir para o <ph name="LANGUAGE" /></translation>
 <translation id="5979469435153841984">Para adicionar páginas aos favoritos, clique na estrela na barra de endereço</translation>
 <translation id="5984222099446776634">Visitados recentemente</translation>
@@ -3181,6 +3195,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="6057381398996433816">Este site foi impedido de usar sensores de luz e movimento.</translation>
 <translation id="6059652578941944813">Hierarquia de certificados</translation>
 <translation id="6059925163896151826">Dispositivos USB</translation>
+<translation id="6061882183774845124">Enviar link para seus dispositivos</translation>
 <translation id="6064217302520318294">Bloqueio de tela</translation>
 <translation id="6065289257230303064">Atributos do diretório do requerente do certificado</translation>
 <translation id="6069671174561668781">Defina o plano de fundo</translation>
@@ -3224,6 +3239,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="6122095009389448667">Continuar impedindo que esse site veja a área de transferência</translation>
 <translation id="6122875415561139701">A operação de escrita não é permitida em: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="6124650939968185064">As extensões a seguir dependem desta extensão:</translation>
+<translation id="6124698108608891449">Este site precisa de outras permissões.</translation>
 <translation id="6125479973208104919">Adicione sua conta a esse <ph name="DEVICE_TYPE" /> novamente.</translation>
 <translation id="6129691635767514872">Os dados selecionados foram removidos do Chrome e dos dispositivos sincronizados. É possível que sua Conta do Google tenha outras formas de histórico de navegação, como pesquisas e atividades de outros serviços do Google em <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6129938384427316298">Comentário do certificado do Netscape</translation>
@@ -3403,6 +3419,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="641081527798843608">Correspondência de assunto</translation>
 <translation id="6412931879992742813">Nova janela anônima</translation>
 <translation id="6415900369006735853">Conecte-se à internet pelo smartphone</translation>
+<translation id="6416743254476733475">Permita ou bloqueie no seu computador.</translation>
 <translation id="6417265370957905582">Google Assistente</translation>
 <translation id="6418160186546245112">Revertendo para a versão anteriormente instalada de <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="6418481728190846787">Remover permanentemente o acesso a todos os aplicativos</translation>
@@ -3485,7 +3502,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6544215763872433504">O navegador da Web do Google para você</translation>
 <translation id="6545665334409411530">Taxa de repetição</translation>
 <translation id="6545834809683560467">Utilizar o serviço de previsão para ajudar a completar pesquisas e URLs digitados na barra de endereço ou na caixa de pesquisa do Acesso rápido aos apps</translation>
-<translation id="6545867563032584178">O microfone está desativado nas Preferências do sistema do Mac</translation>
+<translation id="6545867563032584178">O microfone está desativado nas preferências do sistema do Mac</translation>
 <translation id="6547316139431024316">Não avisar novamente para esta extensão</translation>
 <translation id="6547354035488017500">Libere pelo menos 512 MB de espaço. Caso contrário, seu dispositivo deixará de responder. Para liberar espaço, exclua arquivos do armazenamento do dispositivo.</translation>
 <translation id="6550675742724504774">Opções</translation>
@@ -3501,6 +3518,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6564072216966459757">Remover apps do Linux para o <ph name="DEVICE_TYPE" /></translation>
 <translation id="6567688344210276845">Não foi possível carregar o ícone "<ph name="ICON" />" para a ação da página.</translation>
 <translation id="6571979863037191371">Desconecte o smartphone do Chromebook. Eles não serão mais conectados automaticamente.</translation>
+<translation id="6573998787994398565">O arquivo <ph name="FILE_NAME" /> não costuma ser transferido por download e pode ser perigoso. Você pode contar com o Proteção Avançada.</translation>
 <translation id="657402800789773160">&amp;Recarregar esta página</translation>
 <translation id="6577284282025554716">Download cancelado: <ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">Criptografar senhas sincronizadas com seu nome de usuário e senha do Google</translation>
@@ -3536,11 +3554,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6628328486509726751">Horário do envio: <ph name="WEBRTC_LOG_UPLOAD_TIME" /></translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" /> deseja acesso permanente a um certificado para autenticar-se no seu nome.</translation>
 <translation id="6635956300022133031">Selecionar e personalizar as vozes da conversão de texto em voz</translation>
-<translation id="6637585982786704944">Apps e sites que têm sua permissão podem acessar as informações da conta necessárias para o funcionamento adequado.
-
-    Se você não quiser adicionar uma conta, faça login como convidado ou abra uma janela anônima para navegar na Web.
-
-    Acesse "Configurações" -&gt; "Contas do Google" para ver e gerenciar todas as contas.</translation>
 <translation id="6639554308659482635">Memória SQLite</translation>
 <translation id="6641138807883536517">A senha do módulo de segurança gerada aleatoriamente não está disponível. Isso é normal após um Powerwash.</translation>
 <translation id="6643016212128521049">Limpar</translation>
@@ -3733,6 +3746,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6951153907720526401">Gerenciadores de pagamento</translation>
 <translation id="6953878494808481632">Informações relacionadas</translation>
 <translation id="6955446738988643816">Inspecionar pop-up</translation>
+<translation id="6957044667612803194">Esta chave de segurança não é compatível com PINs</translation>
 <translation id="6957231940976260713">Nome do serviço</translation>
 <translation id="6964390816189577014">Hero</translation>
 <translation id="6964760285928603117">Remover do grupo</translation>
@@ -3758,6 +3772,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6985607387932385770">Impressoras</translation>
 <translation id="6990778048354947307">Tema escuro</translation>
 <translation id="6991665348624301627">Selecione um destino</translation>
+<translation id="6992554835374084304">Ativar a verificação ortográfica aprimorada</translation>
 <translation id="6997642619627518301"><ph name="NAME_PH" />: registro de atividades</translation>
 <translation id="6997707937646349884">Nos seus dispositivos:</translation>
 <translation id="6998793565256476099">Cadastre o dispositivo para videoconferência</translation>
@@ -3802,7 +3817,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7063129466199351735">Processando atalhos...</translation>
 <translation id="7063311912041006059">URL com <ph name="SPECIAL_SYMBOL" /> no lugar da consulta</translation>
 <translation id="7063957500469387217">Configurar ou gerenciar impressoras no Google Cloud Print.</translation>
-<translation id="7064482796689484940">Essa chave de segurança não é compatível com nenhum método de identificação pessoal (por exemplo, leitor de impressões digitais ou entrada de PIN), mas esse recurso foi solicitado.</translation>
 <translation id="7065223852455347715">Este dispositivo está bloqueado de tal modo que impede a inscrição de empresas. Se quiser inscrever o dispositivo, primeiro é necessário executar a recuperação dele.</translation>
 <translation id="7065534935986314333">Sobre o sistema</translation>
 <translation id="706626672220389329">Erro ao ativar o compartilhamento. O compartilhamento especificado já está ativado.</translation>
@@ -3900,6 +3914,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="720715819012336933">{NUM_PAGES,plural, =1{Sair da página}one{Sair da página}other{Sair das páginas}}</translation>
 <translation id="7207631048330366454">Pesquisar apps</translation>
 <translation id="7210499381659830293">Impressoras de extensão</translation>
+<translation id="7212097698621322584">Insira seu PIN atual para alterá-lo. Se você não sabe seu PIN, redefina a chave de segurança e crie um novo.</translation>
 <translation id="721467499098558573">Toque no botão da sua chave de segurança e mantenha-o pressionado por pelo menos cinco segundos</translation>
 <translation id="7216409898977639127">Operadora de celular</translation>
 <translation id="7216595297012131718">Ordenar idiomas com base na sua preferência</translation>
@@ -3923,6 +3938,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7241443820034350811">Se sua chave de segurança não estiver na lista, pressione o botão dela por pelo menos cinco segundos.</translation>
 <translation id="7243632151880336635">Limpar e sair</translation>
 <translation id="7245628041916450754"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (Melhor)</translation>
+<translation id="7246230585855757313">Reinsira sua chave de segurança e tente novamente</translation>
 <translation id="7246947237293279874">Proxy FTP</translation>
 <translation id="725109152065019550">Seu administrador desabilitou o armazenamento externo em sua conta.</translation>
 <translation id="7251346854160851420">Plano de fundo padrão</translation>
@@ -4056,7 +4072,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7453008956351770337">Ao selecionar esta impressora, você concede permissão para acessar sua impressora à seguinte extensão:</translation>
 <translation id="7456142309650173560">dev</translation>
 <translation id="7456847797759667638">Abrir local...</translation>
-<translation id="7458168200501453431">Usa o mesmo corretor ortográfico usado na Pesquisa Google. O texto que você digita no navegador é enviado para o Google.</translation>
+<translation id="7458168200501453431">Usa o mesmo corretor ortográfico da Pesquisa Google. O texto que você digita no navegador é enviado para o Google.</translation>
 <translation id="7461924472993315131">Fixar</translation>
 <translation id="746216226901520237">Na próxima vez, o smartphone desbloqueará o <ph name="DEVICE_TYPE" />. É possível desativar o Smart Lock nas configurações.</translation>
 <translation id="7463006580194749499">Adicionar pessoa</translation>
@@ -4072,6 +4088,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="748138892655239008">Restrições básicas do certificado </translation>
 <translation id="7487067081878637334">Tecnologia</translation>
 <translation id="7487099628810939106">Atraso antes de clicar:</translation>
+<translation id="7487141338393529395">Ativar a verificação ortográfica aprimorada</translation>
 <translation id="7487969577036436319">Nenhum componente instalado</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{&amp;Abrir tudo}=1{&amp;Abrir favorito}one{&amp;Abrir tudo (#)}other{&amp;Abrir tudo (#)}}</translation>
 <translation id="749028671485790643">Pessoa <ph name="VALUE" /></translation>
@@ -4182,9 +4199,11 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7663719505383602579">Destinatário: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7664620655576155379">Dispositivo Bluetooth não suportado: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="7665369617277396874">Adicionar conta</translation>
+<translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{PIN incorreto. Você tem apenas uma tentativa restante.}one{PIN incorreto. Você tem apenas # tentativa restante.}other{PIN incorreto. Você tem apenas # tentativas restantes.}}</translation>
 <translation id="7671130400130574146">Usar barra de título e bordas do sistema</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, neste site: <ph name="PAGE_TITLE" />.</translation>
 <translation id="7676867886086876795">Envie sua voz para que o Google permita que o ditado seja usado em qualquer campo de texto.</translation>
+<translation id="7678280409648629969">Os dados de login serão armazenados no Chrome depois que você sair do modo de navegação anônima. Isso permitirá utilizar o Touch ID nesse site novamente.</translation>
 <translation id="7681095912841365527">O site pode usar o Bluetooth</translation>
 <translation id="7683373461016844951">Para continuar, clique em OK e depois em Adicionar pessoa para criar um novo perfil para seu endereço de e-mail do <ph name="DOMAIN" />.</translation>
 <translation id="7684212569183643648">Instalada pelo administrador</translation>
@@ -4195,6 +4214,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7690294790491645610">Confirmar nova senha</translation>
 <translation id="7690378713476594306">Escolher na lista</translation>
 <translation id="7690853182226561458">Adicionar &amp;pasta...</translation>
+<translation id="7691077781194517083">Não é possível redefinir esta chave de segurança. Erro <ph name="ERROR_CODE" />.</translation>
 <translation id="769569204874261517"><ph name="USER_DISPLAY_NAME" /> (já neste dispositivo)</translation>
 <translation id="7696063401938172191">No seu "<ph name="PHONE_NAME" />":</translation>
 <translation id="7698408911093959127">{COUNT,plural, =1{1 item na lista de favoritos}one{# item na lista de favoritos}other{# itens na lista de favoritos}}</translation>
@@ -4229,7 +4249,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7737238973539693982">Excluir o Linux (Beta)</translation>
 <translation id="773905249182896430">Protege você e seu dispositivo de sites perigosos</translation>
 <translation id="7740996059027112821">Padrão</translation>
-<translation id="7742008146327708230">Apps abertos recentemente</translation>
 <translation id="7750228210027921155">Picture-in-picture</translation>
 <translation id="7751260505918304024">Exibir todos</translation>
 <translation id="7754704193130578113">Perguntar onde salvar cada arquivo antes de fazer download</translation>
@@ -4393,6 +4412,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7966241909927244760">C&amp;opiar endereço da imagem</translation>
 <translation id="7968742106503422125">Ler e modificar os dados que você copia e cola</translation>
 <translation id="7968833647796919681">Ativar coleta de dados de desempenho</translation>
+<translation id="7968982339740310781">Visualizar detalhes</translation>
 <translation id="7969046989155602842">Command</translation>
 <translation id="7972714317346275248">PKCS #1 SHA-384 com criptografia RSA</translation>
 <translation id="7973962044839454485">Falha da autenticação PPC devido a senha ou nome de usuário incorreto</translation>
@@ -4408,6 +4428,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7982083145464587921">Reinicie seu dispositivo para corrigir este erro.</translation>
 <translation id="7982789257301363584">Rede</translation>
 <translation id="7984068253310542383">Espelhar <ph name="DISPLAY_NAME" /></translation>
+<translation id="7985283639530788531">Quer usar o Touch ID com <ph name="APP_NAME" /> no modo de navegação anônima?</translation>
 <translation id="7986295104073916105">Ler e alterar as configurações de senhas salvas</translation>
 <translation id="7987814697832569482">Sempre se conectar usando esta VPN</translation>
 <translation id="798835209536175951">Envie e receba mensagens de texto no seu Chromebook.<ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" /></translation>
@@ -4505,6 +4526,7 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8133676275609324831">&amp;Mostrar na pasta</translation>
 <translation id="8135557862853121765"><ph name="NUM_KILOBYTES" />K</translation>
+<translation id="8136269678443988272">Os PINs que você digitou não coincidem</translation>
 <translation id="8137559199583651773">Gerenciar extensões</translation>
 <translation id="8138082791834443598">Opcional: inserir novas informações ou atualizar as já existentes para serem associadas a esse dispositivo.</translation>
 <translation id="813913629614996137">Inicializando…</translation>
@@ -4568,6 +4590,7 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8242426110754782860">Continuar</translation>
 <translation id="8244514732452879619">Está quase na hora de dormir</translation>
 <translation id="8246209727385807362">Operadora desconhecida</translation>
+<translation id="8246776524656196770">Proteja sua chave de segurança com um número de identificação pessoal (PIN, na sigla em inglês)</translation>
 <translation id="8248050856337841185">&amp;Colar</translation>
 <translation id="8249048954461686687">Pasta do OEM</translation>
 <translation id="8249615410597138718">Enviar para seus dispositivos</translation>
@@ -4798,6 +4821,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8642171459927087831">Token de acesso</translation>
 <translation id="8642947597466641025">Aumentar o texto</translation>
 <translation id="8643418457919840804">Para continuar, escolha uma opção:</translation>
+<translation id="8644655801811752511">Não é possível redefinir esta chave de segurança. Tente redefinir a chave imediatamente após inseri-la.</translation>
 <translation id="8645354835496065562">Continuar permitindo acesso ao sensor</translation>
 <translation id="8647834505253004544">Não é um endereço da Web válido</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> ou <ph name="RE_SCAN_LINK" /></translation>
@@ -4971,7 +4995,6 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8879284080359814990">&amp;Mostrar como guia</translation>
 <translation id="8883847527783433352">Sincronizar com outra conta</translation>
 <translation id="8885197664446363138">O Smart Lock não está disponível</translation>
-<translation id="88870264962436283">Usar Touch ID com <ph name="APP_NAME" /></translation>
 <translation id="8888253246822647887">O app será aberto após a conclusão do upgrade. Os upgrades podem levar alguns minutos.</translation>
 <translation id="8888432776533519951">Cor:</translation>
 <translation id="8890516388109605451">Fontes</translation>
@@ -4979,6 +5002,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8893801527741465188">Desinstalação concluída</translation>
 <translation id="8893928184421379330">O dispositivo <ph name="DEVICE_LABEL" /> não foi reconhecido.</translation>
 <translation id="8895454554629927345">Lista de favoritos</translation>
+<translation id="8896022254727357590">O PIN precisa ter pelo menos quatro caracteres</translation>
 <translation id="8898786835233784856">Selecionar próxima guia</translation>
 <translation id="8898840733695078011">Intensidade do sinal</translation>
 <translation id="8899851313684471736">Abrir link em uma nova &amp;janela</translation>
@@ -5013,6 +5037,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8944964446326379280">O app <ph name="APP_NAME" /> está compartilhando uma janela com <ph name="TAB_NAME" />.</translation>
 <translation id="8946359700442089734">Os recursos de depuração não foram completamente ativados neste dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="894871326938397531">Sair do modo de navegação anônima?</translation>
+<translation id="8948939328578167195"><ph name="WEBSITE" /> quer ver a marca e o modelo da sua chave de segurança</translation>
 <translation id="8951256747718668828">Ocorreu um erro e não foi possível concluir a restauração</translation>
 <translation id="895347679606913382">Iniciando...</translation>
 <translation id="895944840846194039">Memória JavaScript</translation>
@@ -5069,6 +5094,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571">Atualizar senha para <ph name="ORIGIN" />?</translation>
 <translation id="9041692268811217999">O acesso a arquivos locais no seu computador foi desativado pelo administrador</translation>
+<translation id="9041909613332246191">Esse arquivo não é transferido com frequência e pode ser perigoso. Você pode contar com o Proteção Avançada.</translation>
 <translation id="9042893549633094279">Privacidade e segurança</translation>
 <translation id="904451693890288097">Insira a chave de acesso para "<ph name="DEVICE_NAME" />":</translation>
 <translation id="9044646465488564462">Falha na conexão à rede: <ph name="DETAILS" /></translation>

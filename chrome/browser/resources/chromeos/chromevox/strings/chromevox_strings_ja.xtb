@@ -99,6 +99,7 @@
 <translation id="1616111909442424068">ウィート</translation>
 <translation id="1618597272655350600">現在位置の詳細な説明を読み上げます</translation>
 <translation id="1627222324347828322">ゴースト ホワイト</translation>
+<translation id="1630688379087270943">斜体を表す:</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{大なり}other{# 個の大なり記号}}</translation>
 <translation id="1653266918374749391">前のレベル 3 見出し</translation>
 <translation id="1657616855184033958">イベント ストリーム フィルタを表示する</translation>
@@ -320,6 +321,7 @@
 <translation id="3286390186030710347">スライダ</translation>
 <translation id="3299925995433437805">次にアクセスしたリンクはありません。</translation>
 <translation id="3300348286427369683">リッチテキストのサポート。リッチテキスト フィールド（ジャンプ コマンド、点字ディスプレイでのカーソル移動、選択など）が ChromeVox でサポートされるようになりました。</translation>
+<translation id="3304756947457041303">リッチテキストの通知をカスタマイズする</translation>
 <translation id="3307886118343381874">表の末尾に移動</translation>
 <translation id="3311969765485641742">アラートを確認するには Alt+Shift+A を押してください</translation>
 <translation id="3312997241656799641">次にアクセスしたリンク</translation>
@@ -406,6 +408,7 @@
 <translation id="3930498801443296724">引用</translation>
 <translation id="3936394396199829062">ラベンダー ブラッシュ</translation>
 <translation id="3941269780691800708">カーソル部分のテキストを読み上げます。</translation>
+<translation id="394953087167197343">つづり間違いを表す:</translation>
 <translation id="3962990492275676168">現在の場所から読み上げを開始</translation>
 <translation id="3970951409746498040">サンディ ブラウン</translation>
 <translation id="3989324057180830702">切り替えボタン</translation>
@@ -452,6 +455,7 @@
 <translation id="42164919740161077">カデットブルー</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{ダッシュ}other{# 個のダッシュ}}</translation>
 <translation id="421884353938374759">色の選択</translation>
+<translation id="4221071177874897997">太字を表す:</translation>
 <translation id="4229646983878045487">日時</translation>
 <translation id="4230834257931120629">ライト スレートグレー</translation>
 <translation id="4231102694147661229">デベロッパー向けオプションを有効にする</translation>
@@ -754,6 +758,7 @@
 <translation id="6348869651006731065">ディムグレー</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{箇条書き}other{# 件の箇条書き}}</translation>
 <translation id="6355910664415701303">前のリスト項目はありません。</translation>
+<translation id="6360318852623800555">リッチテキスト属性</translation>
 <translation id="6364795331201459219">見出し 6</translation>
 <translation id="6368143427468974988">前の見出し</translation>
 <translation id="6376999910001533545">マルーン</translation>
@@ -929,6 +934,7 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="762020119231868829">現在再生中のメディア ウィジェットをすべて一時停止します</translation>
 <translation id="7625690649919402823">次の表</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" />（<ph name="VARIANT" />）、グレード <ph name="GRADE" /></translation>
+<translation id="763535765081585392">下線を表す:</translation>
 <translation id="7639968568612851608">ダークグレー</translation>
 <translation id="7641134354185483015">前のレベル 3 見出しはありません。</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />、<ph name="NAME" />、テキスト ボックス</translation>
@@ -1164,6 +1170,7 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="8943175951035496220">右にセルはありません。</translation>
 <translation id="8943282376843390568">ライム</translation>
 <translation id="8946628535652548639">行<ph name="TABLECELLROWINDEX" />列<ph name="TABLECELLCOLUMNINDEX" /></translation>
+<translation id="8957142051395645063">読み上げる</translation>
 <translation id="8978496506222343566">ツールチップ</translation>
 <translation id="8986362086234534611">削除</translation>
 <translation id="900114243503212879">ファイル</translation>

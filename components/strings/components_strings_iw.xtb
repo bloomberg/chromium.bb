@@ -205,7 +205,6 @@
 <translation id="2053111141626950936">דפים ב<ph name="LANGUAGE" /> לא יתורגמו.</translation>
 <translation id="2053553514270667976">מספר / מיקוד</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{הצעה אחת}two{שתי הצעות}many{# הצעות}other{# הצעות}}</translation>
-<translation id="2068124040035837596">החשבון שלך מנוהל על-ידי <ph name="ENROLLMENT_DOMAIN" />. המשמעות היא שמנהל המערכת יכול להגדיר מרחוק את תצורת החשבון.</translation>
 <translation id="2068663545051464999">הועלה דוח קריסה עם המזהה <ph name="CRASH_ID" /> (הקשר מקומי: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="2079545284768500474">ביטול הפעולה</translation>
 <translation id="20817612488360358">‏נקבע שימוש בהגדרות שרת Proxy של מערכת אך בנוסף מצוינת גם תצורה מפורשת של שרת Proxy.</translation>
@@ -271,7 +270,6 @@
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />. ייתכן שאישור האבטחה שלו בוטל. הסיבה לכך עשויה להיות הגדרה שגויה או תוקף המיירט את החיבור שלך.</translation>
 <translation id="2418081434543109369">השרת שאליו ביקשת לעבור, <ph name="ORIGIN" />, ביקש להחיל מדיניות אבטחה על כל הבקשות הנשלחות אליו. עם זאת, עכשיו הוא לא הצליח לספק מדיניות, ומצב זה מונע מהדפדפן למלא את הבקשה לעבור אל <ph name="SITE" />.</translation>
-<translation id="244665789865330679">המכשיר והחשבון מנוהלים על-ידי <ph name="ENROLLMENT_DOMAIN" />. המשמעות היא שמנהל המערכת יכול להגדיר מרחוק את תצורת המכשיר והחשבון.</translation>
 <translation id="2463193859425327265">שינוי דף הבית</translation>
 <translation id="2463739503403862330">מלא</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -473,7 +471,6 @@
 <translation id="358285529439630156">אפשר לשלם באמצעות כרטיסי אשראי וכרטיסים משולמים מראש.</translation>
 <translation id="3582930987043644930">הוסף שם</translation>
 <translation id="3583757800736429874">&amp;ביצוע מחדש של העברה</translation>
-<translation id="35866233670761917">התוכן של אתרים שביקרת בהם לא גלוי למנהלי המערכת שלך</translation>
 <translation id="3586931643579894722">הסתר פרטים</translation>
 <translation id="3592413004129370115">Italian (Envelope)‎</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
@@ -745,7 +742,6 @@ Del</translation>
 <translation id="5095208057601539847">פרובינציה</translation>
 <translation id="5097099694988056070">‏נתונים סטטיסטיים של המכשיר, כמו ניצול יחידת העיבוד המרכזית (CPU)/זיכרון RAM</translation>
 <translation id="5097501891273180634">A2</translation>
-<translation id="5098222253617183465">המכשיר מנוהל על-ידי <ph name="ENROLLMENT_DOMAIN" /> והחשבון מנוהל על-ידי <ph name="ACCOUNT_DOMAIN" />. המשמעות היא שמנהלי המערכות יכולים להגדיר מרחוק את תצורת המכשיר והחשבון.</translation>
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64 סיביות)</translation>
@@ -777,7 +773,7 @@ Del</translation>
 <translation id="5252000469029418751">C7 (Envelope)‎</translation>
 <translation id="5254958791078852567">E1</translation>
 <translation id="5283044957620376778">B1</translation>
-<translation id="528468243742722775">End</translation>
+<translation id="528468243742722775">סיום</translation>
 <translation id="5284909709419567258">כתובות רשת</translation>
 <translation id="5285570108065881030">הצגת כל הסיסמאות השמורות</translation>
 <translation id="5287240709317226393">‏הצגת קובצי Cookie</translation>
@@ -902,7 +898,6 @@ Del</translation>
 <translation id="5967592137238574583">עריכת הפרטים ליצירת קשר</translation>
 <translation id="5967867314010545767">הסר מההיסטוריה</translation>
 <translation id="5975083100439434680">התרחק</translation>
-<translation id="5977489021191000276">המכשיר לא מנוהל על-ידי מנהל מערכת.</translation>
 <translation id="5977976211062815271">במכשיר הזה</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">לא ניתן לפתוח את אפליקציית התשלומים</translation>
@@ -1048,7 +1043,6 @@ Del</translation>
 <translation id="6903319715792422884">‏על-ידי שליחה של חלק מ<ph name="BEGIN_WHITEPAPER_LINK" />פרטי המערכת ותוכן הדפים<ph name="END_WHITEPAPER_LINK" /> אל Google, אפשר לעזור בשיפור של 'גלישה בטוחה'. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">משתמש:</translation>
 <translation id="6934672428414710184">‏השם הזה הוא מחשבון Google שלך</translation>
-<translation id="6939583532829045966">המכשיר מנוהל על-ידי <ph name="ENROLLMENT_DOMAIN" />. המשמעות היא שמנהל המערכת יכול להגדיר מרחוק את תצורת המכשיר.</translation>
 <translation id="6944692733090228304">הזנת את הסיסמה שלך באתר שלא מנוהל על ידי <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />. כדי להגן על החשבון, מומלץ לא להשתמש בסיסמה שלך באפליקציות ובאתרים אחרים.</translation>
 <translation id="6945221475159498467">בחירה</translation>
 <translation id="6948701128805548767">עליך לבחור כתובת כדי לראות שיטות איסוף ודרישות</translation>
@@ -1058,7 +1052,6 @@ Del</translation>
 <translation id="6957887021205513506">נראה שהאישור של השרת מזויף.</translation>
 <translation id="6964255747740675745">‏ניתוח תצורת הרשת נכשל (JSON לא חוקי).</translation>
 <translation id="6965382102122355670">אישור</translation>
-<translation id="6965456981923010628"><ph name="LEFT_PART" /> • <ph name="RIGHT_PART" /></translation>
 <translation id="6965978654500191972">התקן</translation>
 <translation id="6970216967273061347">מחוז</translation>
 <translation id="6973656660372572881">‏צוינו שרתי Proxy קבועים וכתובת אתר של הסקריפט מסוג ‎.Pac</translation>
@@ -1206,6 +1199,7 @@ Del</translation>
 <translation id="7668654391829183341">מכשיר לא ידוע</translation>
 <translation id="7669271284792375604">תוקפים באתר הזה עשויים לגרום לך, בדרכי מרמה, להתקין תוכניות שיפגעו בחוויית הגלישה שלך (לדוגמה, על ידי שינוי דף הבית או הצגת מודעות נוספות באתרים שבהם אתה מבקר).</translation>
 <translation id="7676643023259824263">חיפוש טקסט בלוח, <ph name="TEXT" /></translation>
+<translation id="7679176406634891508">פלטפורמה וענן</translation>
 <translation id="7681101578153515023">שינוי מנוע החיפוש</translation>
 <translation id="7682287625158474539">משלוח</translation>
 <translation id="7687186412095877299">ממלא בטופסי תשלום את אמצעי התשלום ששמרת</translation>
@@ -1410,7 +1404,6 @@ Del</translation>
 <translation id="8932102934695377596">השעון שלך מאחר</translation>
 <translation id="893332455753468063">הוספת שם</translation>
 <translation id="8938939909778640821">כרטיסי אשראי וכרטיסים משולמים מראש שהסוחר מקבל</translation>
-<translation id="894185898663964645">מנהל המערכת הגדיר אישורי בסיס מותאמים אישית, וייתכן שיש לו אפשרות לראות את תוכן האתרים שנכנסת אליהם.</translation>
 <translation id="8943282376843390568">ליים</translation>
 <translation id="8957210676456822347">הרשאת פורטל חובה</translation>
 <translation id="8968766641738584599">שמירת הכרטיס</translation>
@@ -1424,6 +1417,7 @@ Del</translation>
 <translation id="8996941253935762404">האתר הבא מכיל תוכניות מזיקות</translation>
 <translation id="8997023839087525404">השרת הציג אישור שלא נחשף באופן ציבורי בעזרת מדיניות 'שקיפות אישורים'. זוהי דרישה עבור חלק מהאישורים, ומטרתה לוודא שהם מהימנים וכדי להגן מפני תוקפים.</translation>
 <translation id="9001074447101275817">‏שרת ה-proxy ‏<ph name="DOMAIN" /> מצריך שם משתמש וסיסמה.</translation>
+<translation id="9004367719664099443">‏יש עכשיו סשן VR פעיל</translation>
 <translation id="9005998258318286617">‏הטעינה של מסמך ה-PDF נכשלה.</translation>
 <translation id="9008201768610948239">התעלם</translation>
 <translation id="9011424611726486705">פתיחת הגדרות האתר</translation>

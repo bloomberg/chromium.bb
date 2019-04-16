@@ -208,7 +208,6 @@
 <translation id="2053111141626950936"><ph name="LANGUAGE" /> மொழியில் உள்ள பக்கங்கள் மொழிபெயர்க்கப்படாது.</translation>
 <translation id="2053553514270667976">ஜிப் குறியீடு</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 பரிந்துரை}other{# பரிந்துரைகள்}}</translation>
-<translation id="2068124040035837596">உங்கள் கணக்கை <ph name="ENROLLMENT_DOMAIN" /> நிர்வகிக்கிறது. அதாவது உங்கள் நிர்வாகி உங்கள் கணக்கைத் தொலைநிலையிலிருந்து உள்ளமைக்க முடியும்.</translation>
 <translation id="2068663545051464999">பதிவேற்றப்பட்ட சிதைவு அறிக்கை ஐடி <ph name="CRASH_ID" /> (அகச் சூழல்: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="2079545284768500474">செயல்தவிர்</translation>
 <translation id="20817612488360358">கணினி ப்ராக்ஸி அமைப்புகள் பயன்படுத்த அமைக்கப்பட்டுள்ளது. வெளிப்படையான ப்ராக்ஸி உள்ளமைவும் குறிப்பிடப்பட்டுள்ளது.</translation>
@@ -279,7 +278,6 @@
     <ph name="SITE" />க்கான உங்கள் கோரிக்கையை நிறைவுசெய்ய
     முடியாத வகையில்
     உலாவி தடுக்கப்பட்டுள்ளது.</translation>
-<translation id="244665789865330679">உங்கள் சாதனத்தையும் கணக்கையும் <ph name="ENROLLMENT_DOMAIN" /> நிர்வகிக்கிறது. அதாவது உங்கள் நிர்வாகி இவற்றைத் தொலைநிலையிலிருந்து உள்ளமைக்க முடியும்.</translation>
 <translation id="2463193859425327265">முகப்புப் பக்கத்தை மாற்று</translation>
 <translation id="2463739503403862330">நிரப்பு</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -473,7 +471,6 @@
 <translation id="358285529439630156">கிரெடிட் மற்றும் ப்ரீபெய்டு கார்டுகள் ஏற்கப்படுகின்றன.</translation>
 <translation id="3582930987043644930">பெயரைச் சேர்</translation>
 <translation id="3583757800736429874">&amp;நகர்த்தலை மீண்டும் செய்</translation>
-<translation id="35866233670761917">நீங்கள் செல்லும் இணையதளங்களின் உள்ளடக்கங்களை நிர்வாகிகள் பார்ப்பதில்லை</translation>
 <translation id="3586931643579894722">விவரங்களை மறை</translation>
 <translation id="3592413004129370115">Italian (என்வலப்)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
@@ -740,7 +737,6 @@
 <translation id="5095208057601539847">பிராந்தியம்</translation>
 <translation id="5097099694988056070">CPU/RAM உபயோகம் போன்ற சாதனப் புள்ளிவிவரங்கள்</translation>
 <translation id="5097501891273180634">A2</translation>
-<translation id="5098222253617183465">உங்கள் சாதனத்தை <ph name="ENROLLMENT_DOMAIN" /> நிர்வகிக்கிறது, உங்கள் கணக்கை <ph name="ACCOUNT_DOMAIN" /> நிர்வகிக்கிறது. உங்கள் சாதனத்தையும் கணக்கையும் உங்கள் நிர்வாகிகள் தொலைநிலையிலிருந்து உள்ளமைக்க முடியும்.</translation>
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64-பிட்)</translation>
@@ -895,7 +891,6 @@
 <translation id="5967592137238574583">தொடர்புத் தகவலைத் திருத்தவும்</translation>
 <translation id="5967867314010545767">வரலாற்றிலிருந்து அகற்று</translation>
 <translation id="5975083100439434680">சிறிதாக்கு</translation>
-<translation id="5977489021191000276">உங்கள் சாதனம் நிர்வாகியால் நிர்வகிக்கப்படவில்லை.</translation>
 <translation id="5977976211062815271">இந்தச் சாதனத்தில்</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">பேமெண்ட் பயன்பாட்டைத் திறக்க முடியவில்லை</translation>
@@ -1037,7 +1032,6 @@
 <translation id="6903319715792422884">Googleளுக்குச் சில <ph name="BEGIN_WHITEPAPER_LINK" />சாதனத் தகவல்களையும் பக்க உள்ளடக்கத்தையும்<ph name="END_WHITEPAPER_LINK" /> அனுப்புவதன் மூலம் பாதுகாப்பான உலாவலை மேம்படுத்த உதவுங்கள். <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">பயனர்:</translation>
 <translation id="6934672428414710184">இந்தப் பெயர் உங்கள் ‘Google கணக்கிலிருந்து’ பெறப்பட்டது</translation>
-<translation id="6939583532829045966">உங்கள் சாதனத்தை <ph name="ENROLLMENT_DOMAIN" /> நிர்வகிக்கிறது. அதாவது உங்கள் நிர்வாகி உங்கள் சாதனத்தைத் தொலைநிலையிலிருந்து உள்ளமைக்க முடியும்.</translation>
 <translation id="6944692733090228304"><ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> நிர்வகிக்காத ஒரு தளத்தில் உங்கள் கடவுச்சொல்லை உள்ளிட்டுள்ளீர்கள். உங்கள் கணக்கைப் பாதுகாக்க, பிற ஆப்ஸிலும் தளங்களிலும் உங்கள் கடவுச்சொல்லை மீண்டும் பயன்படுத்த வேண்டாம்.</translation>
 <translation id="6945221475159498467">தேர்ந்தெடு</translation>
 <translation id="6948701128805548767">பிக்அப் முறைகளையும் தேவைகளையும் பார்க்க, முகவரியைத் தேர்ந்தெடுக்கவும்</translation>
@@ -1047,7 +1041,6 @@
 <translation id="6957887021205513506">சேவையகத்தின் சான்றிதழ் போலியானது போல் தெரிகிறது.</translation>
 <translation id="6964255747740675745">நெட்வொர்க் உள்ளமைவைப் பாகுபடுத்த முடியவில்லை (தவறான JSON).</translation>
 <translation id="6965382102122355670">சரி</translation>
-<translation id="6965456981923010628"><ph name="LEFT_PART" /> • <ph name="RIGHT_PART" /></translation>
 <translation id="6965978654500191972">சாதனம்</translation>
 <translation id="6970216967273061347">மாவட்டம்</translation>
 <translation id="6973656660372572881">நிலையான ப்ராக்ஸி சேவையகங்களும் .pac ஸ்கிரிப்ட் URL ஆகிய இரண்டும் குறிப்பிடப்பட்டுள்ளது.</translation>
@@ -1400,7 +1393,6 @@
 <translation id="8932102934695377596">உங்கள் கடிகாரம் மிகவும் பின்தங்கி இருக்கிறது</translation>
 <translation id="893332455753468063">பெயரைச் சேர்க்கவும்</translation>
 <translation id="8938939909778640821">ஏற்கப்படும் கிரெடிட் மற்றும் ப்ரீபெய்டு கார்டுகள்</translation>
-<translation id="894185898663964645">பிரத்தியேகமான முதன்மை சான்றிதழ்களை உங்கள் நிர்வாகி உள்ளமைத்துள்ளார், இதன் மூலம் நீங்கள் பார்வையிடும் இணையதளங்களின் உள்ளடக்கங்களை நிர்வாகியால் பார்க்க முடியும்.</translation>
 <translation id="8943282376843390568">சுண்ணாம்பு நிறம்</translation>
 <translation id="8957210676456822347">கேப்டிவ் போர்டல் அங்கீகாரம்</translation>
 <translation id="8968766641738584599">கார்டைச் சேமி</translation>

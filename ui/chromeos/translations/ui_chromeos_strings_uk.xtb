@@ -284,6 +284,7 @@
 <translation id="4572815280350369984">Файл <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Інші...</translation>
 <translation id="4582497162516204941">Установити з Linux (бета-версія)</translation>
+<translation id="4584780943629874245">Надіслати за допомогою плагіна віртуальної машини</translation>
 <translation id="4631887759990505102">Виконавець</translation>
 <translation id="4656293982926141856">На цьому комп’ютері</translation>
 <translation id="4669606053856530811">Учасники, які мають доступ до розташування "<ph name="SOURCE_NAME" />", втратять доступ до елементів, якими з ними не поділилися.</translation>
@@ -524,6 +525,7 @@
 <translation id="7339898014177206373">Нове вікно</translation>
 <translation id="7348749398828259943">Міжнародна клавіатура US Workman</translation>
 <translation id="7359359531237882347">Копіювання елементів (<ph name="NUMBER_OF_ITEMS" />)…</translation>
+<translation id="7379734276381389090">Плагін віртуальної машини має доступ до стількох папок: <ph name="NUMBER_OF_ITEMS" /></translation>
 <translation id="7389722738210761877">Тайська клавіатура (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Клавіатура гінді (фонетична)</translation>
 <translation id="7417453074306512035">Ефіопська клавіатура</translation>
@@ -586,6 +588,7 @@
 <translation id="7969525169268594403">Словенська</translation>
 <translation id="7982283708762922719">Висота</translation>
 <translation id="7987485481246785146">Курдська клавіатура сорані на основі арабської мови</translation>
+<translation id="7990715602172183602">Плагін віртуальної машини має доступ до 1 папки</translation>
 <translation id="799547531016638432">Видалити ярлик</translation>
 <translation id="799923393800005025">Може переглядати</translation>
 <translation id="8008366997883261463">Собака</translation>
@@ -626,6 +629,7 @@
 <translation id="8342318071240498787">Файл або каталог з таким же ім’ям уже існує.</translation>
 <translation id="8391950649760071442">Транслітерація (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Розміри</translation>
+<translation id="8400874747056634633">Керувати доступом плагіна віртуальної машини</translation>
 <translation id="8412586565681117057">Спрощений метод введення для стандарту цанцзе</translation>
 <translation id="8418113698656761985">Румунська розкладка</translation>
 <translation id="8432745813735585631">Розкладка клавіатури Colemak (США)</translation>

@@ -284,6 +284,7 @@
 <translation id="4572815280350369984">ไฟล์ <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">เพิ่มเติม...</translation>
 <translation id="4582497162516204941">ติดตั้งด้วย Linux (เบต้า)</translation>
+<translation id="4584780943629874245">แชร์กับ Plugin VM</translation>
 <translation id="4631887759990505102">ศิลปิน</translation>
 <translation id="4656293982926141856">คอมพิวเตอร์เครื่องนี้</translation>
 <translation id="4669606053856530811">สมาชิกของ "<ph name="SOURCE_NAME" />" จะสูญเสียสิทธิ์เข้าถึง เว้นแต่มีการแชร์รายการเหล่านี้กับสมาชิกดังกล่าว</translation>
@@ -524,6 +525,7 @@
 <translation id="7339898014177206373">หน้าต่างใหม่</translation>
 <translation id="7348749398828259943">แป้นพิมพ์ Workman สหรัฐฯ แบบสากล</translation>
 <translation id="7359359531237882347">กำลังคัดลอก <ph name="NUMBER_OF_ITEMS" /> รายการ...</translation>
+<translation id="7379734276381389090">แชร์กับ Plugin VM แล้ว <ph name="NUMBER_OF_ITEMS" /> โฟลเดอร์</translation>
 <translation id="7389722738210761877">แป้นพิมพ์ภาษาไทย (มอก. 820-2531)</translation>
 <translation id="7396038720194014279">แป้นพิมพ์ภาษาฮินดี (คำที่ใช้ออกเสียง)</translation>
 <translation id="7417453074306512035">แป้นพิมพ์ภาษาเอธิโอเปีย</translation>
@@ -586,6 +588,7 @@
 <translation id="7969525169268594403">สโลวีเนีย</translation>
 <translation id="7982283708762922719">ความสูง</translation>
 <translation id="7987485481246785146">แป้นพิมพ์ภาษาเคิร์ดโซรานีแบบอารบิก</translation>
+<translation id="7990715602172183602">แชร์กับ Plugin VM แล้ว 1 โฟลเดอร์</translation>
 <translation id="799547531016638432">ลบทางลัด</translation>
 <translation id="799923393800005025">สามารถดูได้</translation>
 <translation id="8008366997883261463">สุนัข</translation>
@@ -626,6 +629,7 @@
 <translation id="8342318071240498787">มีไฟล์หรือไดเรกทอรีที่มีชื่อเดียวกันนี้อยู่แล้ว</translation>
 <translation id="8391950649760071442">การทับศัพท์ (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">มิติข้อมูล</translation>
+<translation id="8400874747056634633">จัดการการแชร์กับ Plugin VM</translation>
 <translation id="8412586565681117057">วิธีการป้อนข้อมูลอย่างรวดเร็ว</translation>
 <translation id="8418113698656761985">แป้นพิมพ์ภาษาโรมาเนีย</translation>
 <translation id="8432745813735585631">แป้นพิมพ์ Colemak สหรัฐอเมริกา</translation>

@@ -284,6 +284,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-fil</translation>
 <translation id="457386861538956877">Flere...</translation>
 <translation id="4582497162516204941">Installer med Linux (beta)</translation>
+<translation id="4584780943629874245">Del med Plugin VM</translation>
 <translation id="4631887759990505102">Kunstner</translation>
 <translation id="4656293982926141856">Denne computer</translation>
 <translation id="4669606053856530811">Medlemmer af "<ph name="SOURCE_NAME" />" mister adgang, medmindre disse elementer deles med dem.</translation>
@@ -524,6 +525,7 @@
 <translation id="7339898014177206373">Nyt vindue</translation>
 <translation id="7348749398828259943">Internationalt amerikansk Workman-tastatur</translation>
 <translation id="7359359531237882347">Kopierer <ph name="NUMBER_OF_ITEMS" /> elementer...</translation>
+<translation id="7379734276381389090"><ph name="NUMBER_OF_ITEMS" /> mapper blev delt med Plugin VM</translation>
 <translation id="7389722738210761877">Thailandsk tastatur (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Hindi-tastatur (fonetisk)</translation>
 <translation id="7417453074306512035">Etiopisk tastatur</translation>
@@ -586,6 +588,7 @@
 <translation id="7969525169268594403">Slovensk</translation>
 <translation id="7982283708762922719">Højde</translation>
 <translation id="7987485481246785146">Sorani-kurdisk tastatur (arabiskbaseret)</translation>
+<translation id="7990715602172183602">1 mappe blev delt med Plugin VM</translation>
 <translation id="799547531016638432">Fjern genvej</translation>
 <translation id="799923393800005025">Kan se</translation>
 <translation id="8008366997883261463">Jack Russell-terrier</translation>
@@ -626,6 +629,7 @@
 <translation id="8342318071240498787">Der findes allerede en fil eller en mappe med samme navn.</translation>
 <translation id="8391950649760071442">Translitteration (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Mål</translation>
+<translation id="8400874747056634633">Administrer deling af Plugin VM</translation>
 <translation id="8412586565681117057">Hurtig indtastningsmetode</translation>
 <translation id="8418113698656761985">Rumænsk tastatur</translation>
 <translation id="8432745813735585631">Amerikansk (Colemak) tastatur</translation>

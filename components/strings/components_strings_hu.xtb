@@ -210,7 +210,6 @@
 <translation id="2053111141626950936">A(z) <ph name="LANGUAGE" /> nyelvű oldalak nem lesznek lefordítva.</translation>
 <translation id="2053553514270667976">Irányítószám</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 javaslat}other{# javaslat}}</translation>
-<translation id="2068124040035837596">Fiókját a(z) <ph name="ENROLLMENT_DOMAIN" /> kezeli. A rendszergazda távolról módosíthatja a fiók beállításait.</translation>
 <translation id="2068663545051464999">Feltöltött hibajelentés azonosítója: <ph name="CRASH_ID" /> (helyi kontextus: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="2079545284768500474">Visszavonás</translation>
 <translation id="20817612488360358">A rendszer proxybeállításai konfigurálva vannak a használathoz, de kifejezett proxykonfiguráció is meg van adva.</translation>
@@ -279,7 +278,6 @@
     alkalmazását kérte az összes hozzá irányuló kérés esetében. De most nem sikerült
     bemutatnia a házirendet, így a böngésző nem tudja teljesíteni
     a(z) <ph name="SITE" /> webhelyre irányuló kérelmet.</translation>
-<translation id="244665789865330679">Eszközét és fiókját a(z) <ph name="ENROLLMENT_DOMAIN" /> kezeli. A rendszergazda távolról módosíthatja az eszköz és a fiók beállításait.</translation>
 <translation id="2463193859425327265">Kezdőlap módosítása</translation>
 <translation id="2463739503403862330">Kitöltés</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -479,7 +477,6 @@
 <translation id="358285529439630156">Elfogadott hitel- és feltöltőkártyák.</translation>
 <translation id="3582930987043644930">Név hozzáadása</translation>
 <translation id="3583757800736429874">&amp;Áthelyezés újra</translation>
-<translation id="35866233670761917">Az Ön által felkeresett webhelyek tartalmát a rendszergazdák nem láthatják</translation>
 <translation id="3586931643579894722">Részletek elrejtése</translation>
 <translation id="3592413004129370115">Italian (boríték)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
@@ -747,7 +744,6 @@
 <translation id="5095208057601539847">Tartomány</translation>
 <translation id="5097099694988056070">Eszközstatisztikák, például processzor- és memóriahasználat</translation>
 <translation id="5097501891273180634">A2</translation>
-<translation id="5098222253617183465">Eszközét a(z) <ph name="ENROLLMENT_DOMAIN" />, fiókját pedig a(z) <ph name="ACCOUNT_DOMAIN" /> kezeli. A rendszergazdák távolról módosíthatják eszköze és fiókja beállításait.</translation>
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64 bites)</translation>
@@ -903,7 +899,6 @@
 <translation id="5967592137238574583">Kapcsolattartási adatok szerkesztése</translation>
 <translation id="5967867314010545767">Eltávolítás az előzmények közül</translation>
 <translation id="5975083100439434680">Kicsinyítés</translation>
-<translation id="5977489021191000276">Eszközét nem kezeli rendszergazda.</translation>
 <translation id="5977976211062815271">Ezen az eszközön</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">Nem sikerült megnyitni a fizetőalkalmazást</translation>
@@ -1049,7 +1044,6 @@
 <translation id="6903319715792422884">Segítse a Biztonságos Böngészés fejlesztését azzal, hogy bizonyos <ph name="BEGIN_WHITEPAPER_LINK" />rendszer-információkat és oldaltartalmakat<ph name="END_WHITEPAPER_LINK" /> elküld a Google-nak. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">Felhasználó:</translation>
 <translation id="6934672428414710184">Ez a név a Google-fiókjából származik</translation>
-<translation id="6939583532829045966">Eszközét a(z) <ph name="ENROLLMENT_DOMAIN" /> kezeli. A rendszergazda távolról módosíthatja az eszköz beállításait.</translation>
 <translation id="6944692733090228304">Olyan webhelyen adta meg a jelszavát, amelyet nem a(z) <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> kezel. Fiókja védelme érdekében ne használja fel újra a jelszót más alkalmazásokban és webhelyeken.</translation>
 <translation id="6945221475159498467">Kiválasztás</translation>
 <translation id="6948701128805548767">Az átvételi módok és követelmények megtekintéséhez válassza ki a címet</translation>
@@ -1059,7 +1053,6 @@
 <translation id="6957887021205513506">A szerver tanúsítványa hamisítványnak tűnik.</translation>
 <translation id="6964255747740675745">A hálózati konfiguráció szintaktikai elemzése sikertelen (érvénytelen JSON).</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="6965456981923010628"><ph name="LEFT_PART" /> • <ph name="RIGHT_PART" /></translation>
 <translation id="6965978654500191972">Készülék</translation>
 <translation id="6970216967273061347">Körzet</translation>
 <translation id="6973656660372572881">Mindkét fix proxyszerver és egy .Pac típusú szkript URL-címe meg van adva.</translation>
@@ -1210,6 +1203,7 @@ További részletek:
 <translation id="7668654391829183341">Ismeretlen eszköz</translation>
 <translation id="7669271284792375604">A webhelyen lévő támadók megpróbálhatják csellel rávenni Önt olyan programok telepítésére, amelyek károsak a böngészési élmény szempontjából (például módosítják a kezdőlapot, vagy plusz hirdetéseket jelenítenek meg a felkeresett webhelyeken).</translation>
 <translation id="7676643023259824263">Vágólapon lévő szöveg keresése, <ph name="TEXT" /></translation>
+<translation id="7679176406634891508">Platform és felhő</translation>
 <translation id="7681101578153515023">Keresőmotor megváltoztatása</translation>
 <translation id="7682287625158474539">Szállítási cím</translation>
 <translation id="7687186412095877299">Kitölti a fizetési űrlapokat az Ön mentett fizetési módjaival</translation>
@@ -1414,7 +1408,6 @@ További részletek:
 <translation id="8932102934695377596">Késik az órája</translation>
 <translation id="893332455753468063">Név hozzáadása</translation>
 <translation id="8938939909778640821">Elfogadott hitel- és feltöltőkártyák</translation>
-<translation id="894185898663964645">A rendszergazda egyéni gyökérszintű tanúsítványokat állított be, amelyekkel láthatja az Ön által meglátogatott webhelyek tartalmát.</translation>
 <translation id="8943282376843390568">Limezöld</translation>
 <translation id="8957210676456822347">Hitelesítés hitelesítési portállal</translation>
 <translation id="8968766641738584599">Kártya mentése</translation>
@@ -1428,6 +1421,7 @@ További részletek:
 <translation id="8996941253935762404">A felkeresni kívánt webhely ártalmas programokat tartalmaz</translation>
 <translation id="8997023839087525404">A szerver olyan tanúsítványt mutatott be, amelyet nem A tanúsítványok átláthatósága keretrendszer segítségével hoztak nyilvánosságra. Ez egyes tanúsítványoknál követelmény annak biztosítása érdekében, hogy az adott tanúsítványok megbízhatók, és védelmet nyújtanak a támadók ellen.</translation>
 <translation id="9001074447101275817">A(z) <ph name="DOMAIN" /> proxy felhasználónevet és jelszót kér.</translation>
+<translation id="9004367719664099443">VR-munkamenet folyamatban</translation>
 <translation id="9005998258318286617">A PDF-dokumentum betöltése sikertelen.</translation>
 <translation id="9008201768610948239">Mellőzés</translation>
 <translation id="9011424611726486705">Webhelybeállítások megnyitása</translation>

@@ -284,6 +284,7 @@
 <translation id="4572815280350369984">Датотека <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Још...</translation>
 <translation id="4582497162516204941">Инсталирај за Linux (бета)</translation>
+<translation id="4584780943629874245">Дели са додатном компонентом VM</translation>
 <translation id="4631887759990505102">Извођач</translation>
 <translation id="4656293982926141856">Овај рачунар</translation>
 <translation id="4669606053856530811">Чланови из „<ph name="SOURCE_NAME" />“ ће изгубити приступ ако се ове ставке не деле са њима.</translation>
@@ -524,6 +525,7 @@
 <translation id="7339898014177206373">Нови прозор</translation>
 <translation id="7348749398828259943">Америчка Workman интернационална тастатура</translation>
 <translation id="7359359531237882347">Копирају се ставке (<ph name="NUMBER_OF_ITEMS" />)...</translation>
+<translation id="7379734276381389090">Директоријуми (<ph name="NUMBER_OF_ITEMS" />) се деле са додатном компонентом VM</translation>
 <translation id="7389722738210761877">Тајска тастатура (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Хинди тастатура (фонетска)</translation>
 <translation id="7417453074306512035">Етиопљанска тастатура</translation>
@@ -586,6 +588,7 @@
 <translation id="7969525169268594403">словеначки</translation>
 <translation id="7982283708762922719">Висина</translation>
 <translation id="7987485481246785146">Сорани курдска тастатура заснована на арапском</translation>
+<translation id="7990715602172183602">1 директоријум се дели са додатном компонентом VM</translation>
 <translation id="799547531016638432">Уклони пречицу</translation>
 <translation id="799923393800005025">Може да прегледа</translation>
 <translation id="8008366997883261463">Пас</translation>
@@ -626,6 +629,7 @@
 <translation id="8342318071240498787">Већ постоји датотека или директоријум са истим називом.</translation>
 <translation id="8391950649760071442">Транслитерација (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Димензије</translation>
+<translation id="8400874747056634633">Управљајте дељењем додатне компоненте VM</translation>
 <translation id="8412586565681117057">Брзи метод уноса</translation>
 <translation id="8418113698656761985">Језик тастатуре: румунски</translation>
 <translation id="8432745813735585631">Језик тастатуре: енглески (САД Colemak)</translation>

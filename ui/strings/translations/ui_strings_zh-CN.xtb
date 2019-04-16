@@ -101,6 +101,7 @@
 <translation id="4730374152663651037">常用应用</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{还有 1 个月的时间}other{还有 # 个月的时间}}</translation>
 <translation id="4841881773802181781">插入</translation>
+<translation id="4881695831933465202">打开</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 秒}other{# 秒}}</translation>
 <translation id="4971687151119236543">媒体上一曲</translation>
 <translation id="5046499563572181734">点按此处</translation>
@@ -108,6 +109,7 @@
 <translation id="5137751499640340777">启动 Google 助理</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">开合三角标记</translation>
+<translation id="5278860589123563674">发送失败</translation>
 <translation id="528468243742722775">End</translation>
 <translation id="5329858601952122676">删除(&amp;D)</translation>
 <translation id="5395308026110844773">“<ph name="DRAGGED_APP_NAME" />”已拖至“<ph name="IN_PLACE_APP" />”上，松开即可创建文件夹。</translation>

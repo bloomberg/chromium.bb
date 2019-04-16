@@ -117,9 +117,9 @@
 <translation id="1883903952484604915">माझ्या फायली</translation>
 <translation id="1887786770086287077">या डिव्हाइससाठी स्थान अ‍ॅक्सेस बंद आहे, <ph name="BEGIN_LINK" />Android सेटिंग्‍ज<ph name="END_LINK" /> मध्‍ये हे चालू करा.</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" /> हे Chrome मध्ये उघडेल. सुरू ठेवण्याने, तुम्ही Chrome च्या <ph name="BEGIN_LINK1" />सेवा अटी<ph name="END_LINK1" /> आणि <ph name="BEGIN_LINK2" />गोपनीयता सूचनां<ph name="END_LINK2" /> शी सहमती दाखवता.</translation>
-<translation id="189172778771606813">नेव्हिगेशन ड्रॉवर बंद करा</translation>
 <translation id="1919345977826869612">जाहिराती</translation>
 <translation id="1919950603503897840">संपर्क निवडा</translation>
+<translation id="1922076542920281912">Chrome ला तुमच्या स्थानाचा अ‍ॅक्सेस द्या, <ph name="BEGIN_LINK" />Android सेटिंग्ज<ph name="END_LINK" /> मध्ये देखील स्थान सुरू करा.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="19288952978244135">Chrome पुन्हा उघडा.</translation>
 <translation id="1933845786846280168">निवडलेला टॅब</translation>
@@ -145,6 +145,7 @@
 <translation id="2018707881002649255">तुम्ही खाली निवडलेले संपर्क <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> वेबसाइटसोबत शेअर केले जातील.</translation>
 <translation id="2021896219286479412">फुल स्क्रीन साइट नियंत्रणे</translation>
 <translation id="2038563949887743358">डेस्कटॉप साइट विनंती चालू करा</translation>
+<translation id="2041019821020695769">Chrome ला तुम्हाला सूचना पाठवण्यासाठी, <ph name="BEGIN_LINK" />Android सेटिंग्ज<ph name="END_LINK" /> मध्ये देखील सूचना सुरू करा.</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" />चा Chrome मध्ये देखील डेटा आहे</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB अन्य अ‍ॅप्स</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -267,7 +268,6 @@
 <translation id="2923908459366352541">नाव अवैध आहे</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> स्टोरेज</translation>
 <translation id="2956410042958133412">हे खाते <ph name="PARENT_NAME_1" /> आणि <ph name="PARENT_NAME_2" /> द्वारे व्यवस्थापित केले आहे.</translation>
-<translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. सर्व हक्क राखीव.</translation>
 <translation id="2962095958535813455">गुप्त टॅबवर स्विच केले</translation>
 <translation id="2968755619301702150">सर्टिफिकेट दर्शक</translation>
 <translation id="2979025552038692506">निवडलेला गुप्त टॅब</translation>
@@ -361,6 +361,7 @@
 <translation id="3712575778697986964">डेटा बचतकर्ता रीसेट करायचा का?</translation>
 <translation id="3714981814255182093">शोध बार उघडा</translation>
 <translation id="3716182511346448902">हे पेज खूपच जास्त मेमरी वापरत असल्यामुळे Chrome ने ते थांबवून ठेवलेले आहे.</translation>
+<translation id="3730075448226062617">Chrome ला तुमच्या मायक्रोफोनचा अॅक्सेस द्या, <ph name="BEGIN_LINK" />Android सेटिंग्ज<ph name="END_LINK" /> मध्ये देखील मायक्रोफोन सुरू करा.</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> मध्ये बुकमार्क केले</translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB अन्य अ‍ॅप्स</translation>
 <translation id="3744111561329211289">पार्श्वभूमी संकालन</translation>
@@ -555,7 +556,6 @@
 <translation id="5087580092889165836">कार्ड जोडा</translation>
 <translation id="5100237604440890931">संकुचित केले - विस्तृत करण्यासाठी क्लिक करा.</translation>
 <translation id="510275257476243843">1 तास शिल्लक</translation>
-<translation id="51149521070059886">तुमच्या डिव्हाइसचे पॉवर सेव्हर सुरू असेल तेव्हा गडद थीम सुरू करा</translation>
 <translation id="5123685120097942451">गुप्त टॅब</translation>
 <translation id="5127805178023152808">संकालन बंद आहे</translation>
 <translation id="5129038482087801250">वेब अ‍ॅप इंस्टॉल करा</translation>
@@ -565,7 +565,6 @@
 <translation id="5152843274749979095">कोणतेही समर्थित अॅप्स इंस्टॉल केले नाहीत</translation>
 <translation id="5161254044473106830">शीर्षक आवश्यक</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{एक डाउनलोड होऊ शकला नाही.}one{# डाउनलोड होऊ शकला नाही.}other{# डाउनलोड होऊ शकले नाहीत.}}</translation>
-<translation id="5168917394043976756">नेव्हिगेशन ड्रॉवर उघडा</translation>
 <translation id="5184329579814168207">Chrome मध्ये उघडा</translation>
 <translation id="5199929503336119739">कार्य प्रोफाइल</translation>
 <translation id="5210286577605176222">मागील टॅबवर जा</translation>
@@ -676,6 +675,7 @@
 <translation id="5937580074298050696"><ph name="AMOUNT" /> वाचवला</translation>
 <translation id="5939518447894949180">रीसेट करा</translation>
 <translation id="5942872142862698679">शोध करण्‍यासाठी Google वापरत आहे</translation>
+<translation id="5944669582486359588">लाइट मोडमध्ये, Chrome पेज आणखी जलद लोड करते आणि ६० टक्क्यांपर्यंत कमी डेटा वापरते. Google चे क्लाउड तंत्रज्ञान तुम्ही भेट देत असलेल्या पेज ना ऑप्टिमाइझ करते.</translation>
 <translation id="5952764234151283551">तुम्ही ज्या पेजवर पोहोचण्याचा प्रयत्न करत अाहात त्याची URL Google ला पाठवते</translation>
 <translation id="5956665950594638604">नवीन टॅबमध्ये Chrome मदत केंद्र उघडा</translation>
 <translation id="5958275228015807058">तुमच्या फायली आणि पेज डाउनलोडमध्ये शोधा</translation>
@@ -706,6 +706,7 @@
 <translation id="618993374665929060">यासारखे आणखी पूर्ण उंचीवर उघडले</translation>
 <translation id="6192333916571137726">फाइल डाउनलोड करा</translation>
 <translation id="6192792657125177640">अपवाद</translation>
+<translation id="6194112207524046168">Chrome ला तुमच्या कॅमेराचा अॅक्सेस द्या, <ph name="BEGIN_LINK" />Android सेटिंग्ज<ph name="END_LINK" /> मध्ये देखील कॅमेरा सुरू करा.</translation>
 <translation id="6196640612572343990">तृतीय-पक्ष कुकीज अवरोधित करा</translation>
 <translation id="6206551242102657620">कनेक्शन सुरक्षित आहे. साइट माहिती</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> नाही?</translation>

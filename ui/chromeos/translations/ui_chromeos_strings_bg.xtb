@@ -284,6 +284,7 @@
 <translation id="4572815280350369984">Файл от тип <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Още...</translation>
 <translation id="4582497162516204941">Инсталиране чрез Linux (бета)</translation>
+<translation id="4584780943629874245">Споделяне с Plugin VM</translation>
 <translation id="4631887759990505102">Изпълнител</translation>
 <translation id="4656293982926141856">Този компютър</translation>
 <translation id="4669606053856530811">Членовете на „<ph name="SOURCE_NAME" />“ ще загубят достъп, ако тези елементи не са споделени с тях.</translation>
@@ -524,6 +525,7 @@
 <translation id="7339898014177206373">Нов прозорец</translation>
 <translation id="7348749398828259943">Американска (Уъркман) международна клавиатура</translation>
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> елемента се копират...</translation>
+<translation id="7379734276381389090"><ph name="NUMBER_OF_ITEMS" /> папки са споделени с Plugin VM</translation>
 <translation id="7389722738210761877">Тайландска клавиатура (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Клавиатура на хинди (фонетична)</translation>
 <translation id="7417453074306512035">Етиопска клавиатура</translation>
@@ -586,6 +588,7 @@
 <translation id="7969525169268594403">словенски</translation>
 <translation id="7982283708762922719">Височина</translation>
 <translation id="7987485481246785146">Кюрдски (сорани), базирана на арабски клавиатура</translation>
+<translation id="7990715602172183602">1 папка е споделена с Plugin VM</translation>
 <translation id="799547531016638432">Премахване на прекия път</translation>
 <translation id="799923393800005025">Може да преглежда</translation>
 <translation id="8008366997883261463">Джак Ръсел териер</translation>
@@ -626,6 +629,7 @@
 <translation id="8342318071240498787">Вече съществува файл или директория със същото име.</translation>
 <translation id="8391950649760071442">Транслитерация (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Размери</translation>
+<translation id="8400874747056634633">Управление на споделянето с Plugin VM</translation>
 <translation id="8412586565681117057">Бърз метод на въвеждане</translation>
 <translation id="8418113698656761985">Румънска клавиатура</translation>
 <translation id="8432745813735585631">Американска (Коулмак) клавиатура</translation>

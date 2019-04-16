@@ -85,6 +85,7 @@
 <translation id="213900355088104901">要想私密地浏览，请打开一个无痕式标签页</translation>
 <translation id="2139867232736819575">搜索您复制的文字</translation>
 <translation id="2149973817440762519">修改书签</translation>
+<translation id="2179182049312275900">您随时可在“设置”中开启同步功能。</translation>
 <translation id="2198757192731523470">Google 可能会利用您的历史记录为您提供个性化的 Google 搜索、广告和其他 Google 服务。</translation>
 <translation id="2207590065820824892">阅读清单中有 <ph name="UNREAD_COUNT" /> 篇未读文章。</translation>
 <translation id="2230173723195178503">已加载网页</translation>
@@ -202,6 +203,7 @@
 <translation id="4038354071007134711">此设备上没有可以打开该文件的应用。</translation>
 <translation id="4042870976416480368">在网页上查找</translation>
 <translation id="4049507953662678203">请确保已连接到网络，然后重试。</translation>
+<translation id="4071530748369333746">取消同步？</translation>
 <translation id="4082688844002261427">控制 Google 如何利用您的浏览记录为您提供个性化的搜索、广告和其他服务</translation>
 <translation id="408404951701638773">现在可以更方便地使用搜索栏</translation>
 <translation id="411254640334432676">下载失败。</translation>
@@ -215,7 +217,6 @@
 <translation id="4272631900155121838">要扫描 QR 码，请从设置中启用相机功能</translation>
 <translation id="4281844954008187215">服务条款</translation>
 <translation id="430793432425771671">同步所有内容</translation>
-<translation id="4342284590510997375">新工具</translation>
 <translation id="4359125752503270327">此页面将在其他应用中打开。</translation>
 <translation id="4370827530403103842">同步功能无法正常运行。点按即可修复此问题。</translation>
 <translation id="4375040482473363939">QR 码搜索</translation>
@@ -271,6 +272,7 @@
 <translation id="5197255632782567636">互联网</translation>
 <translation id="5228579091201413441">启用同步功能</translation>
 <translation id="5244474230056479698">同步到 <ph name="EMAIL" /></translation>
+<translation id="5245322853195994030">取消同步</translation>
 <translation id="5300589172476337783">显示</translation>
 <translation id="5317780077021120954">保存</translation>
 <translation id="5327248766486351172">名称</translation>

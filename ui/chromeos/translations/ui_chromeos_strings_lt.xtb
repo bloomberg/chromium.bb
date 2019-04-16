@@ -284,6 +284,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> failas</translation>
 <translation id="457386861538956877">Daugiau...</translation>
 <translation id="4582497162516204941">Diegimas sistemoje „Linux“ (beta vers.)</translation>
+<translation id="4584780943629874245">Bendrinti su papildinio VM</translation>
 <translation id="4631887759990505102">Atlikėjas</translation>
 <translation id="4656293982926141856">Šis kompiuteris</translation>
 <translation id="4669606053856530811">„<ph name="SOURCE_NAME" />“ nariai praras prieigą, nebent šie elementai bus bendrinami su jais.</translation>
@@ -524,6 +525,7 @@
 <translation id="7339898014177206373">Naujas langas</translation>
 <translation id="7348749398828259943">JAV „Workman“ tarptautinė klaviatūra</translation>
 <translation id="7359359531237882347">Kopijuojama elementų: <ph name="NUMBER_OF_ITEMS" />...</translation>
+<translation id="7379734276381389090">Aplankų, bendrinamų su papildinio VM: <ph name="NUMBER_OF_ITEMS" /></translation>
 <translation id="7389722738210761877">Tailandietiška klaviatūra (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Hindi klaviatūra (fonetinė)</translation>
 <translation id="7417453074306512035">Etiopiška klaviatūra</translation>
@@ -586,6 +588,7 @@
 <translation id="7969525169268594403">Slovėnija</translation>
 <translation id="7982283708762922719">Aukštis</translation>
 <translation id="7987485481246785146">Soranių kurdų arabiška klaviatūra</translation>
+<translation id="7990715602172183602">1 aplankas bendrinamas su papildinio VM</translation>
 <translation id="799547531016638432">Pašalinti spartųjį klavišą</translation>
 <translation id="799923393800005025">Galima peržiūrėti</translation>
 <translation id="8008366997883261463">Džeko Raselo terjeras</translation>
@@ -626,6 +629,7 @@
 <translation id="8342318071240498787">Failas ar katalogas tokiu pačiu pavadinimu jau yra.</translation>
 <translation id="8391950649760071442">Transliteracija (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Aspektai</translation>
+<translation id="8400874747056634633">Tvarkyti papildinio VM bendrinimą</translation>
 <translation id="8412586565681117057">Greitasis įvesties metodas</translation>
 <translation id="8418113698656761985">Rumuniška klaviatūra</translation>
 <translation id="8432745813735585631">JAV „Colemak“ klaviatūra</translation>

@@ -210,7 +210,6 @@
 <translation id="2053111141626950936">Kielellä <ph name="LANGUAGE" /> kirjoitettuja sivuja ei käännetä.</translation>
 <translation id="2053553514270667976">Postinumero</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 ehdotus}other{# ehdotusta}}</translation>
-<translation id="2068124040035837596"><ph name="ENROLLMENT_DOMAIN" /> ylläpitää tiliäsi. Järjestelmänvalvoja voi siis määrittää tilin etäyhteydellä.</translation>
 <translation id="2068663545051464999">Kaatumisraportti lähetetty, raporttitunnus: <ph name="CRASH_ID" /> (paikallinen konteksti: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="2079545284768500474">Kumoa</translation>
 <translation id="20817612488360358">Järjestelmän välityspalvelinasetukset on määritetty käytettäviksi, mutta erilliset välityspalvelimen asetukset on myös määritetty.</translation>
@@ -279,7 +278,6 @@
     tietosuojakäytännön soveltamista kaikkiin sen saamiin pyyntöihin. Se ei ole
     palauttanut käytäntöä, joten selain ei nyt voi
     toteuttaa <ph name="SITE" />-pyyntöä.</translation>
-<translation id="244665789865330679"><ph name="ENROLLMENT_DOMAIN" /> ylläpitää laitettasi ja tiliäsi. Järjestelmänvalvoja voi siis määrittää laitteen ja tilin etäyhteydellä.</translation>
 <translation id="2463193859425327265">Vaihda etusivua</translation>
 <translation id="2463739503403862330">Täytä</translation>
 <translation id="2465402087343596252">Arkkitehti-E</translation>
@@ -482,7 +480,6 @@
 <translation id="358285529439630156">Luotto- ja prepaid-kortit hyväksytään.</translation>
 <translation id="3582930987043644930">Lisää nimi</translation>
 <translation id="3583757800736429874">&amp;Toista siirto</translation>
-<translation id="35866233670761917">Järjestelmänvalvojat eivät näet avaamiesi sivustojen sisältöä</translation>
 <translation id="3586931643579894722">Piilota lisätiedot</translation>
 <translation id="3592413004129370115">Italialainen (kirjekuori)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
@@ -750,7 +747,6 @@
 <translation id="5095208057601539847">Provinssi</translation>
 <translation id="5097099694988056070">Laitetilastot esim. CPU:n/RAM-muistin käytöstä</translation>
 <translation id="5097501891273180634">A2</translation>
-<translation id="5098222253617183465"><ph name="ENROLLMENT_DOMAIN" /> ylläpitää laitettasi ja <ph name="ACCOUNT_DOMAIN" /> tiliäsi. Järjestelmänvalvojat voivat siis määrittää laitteen ja tilin etäyhteydellä.</translation>
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">Eurooppalainen-Edp</translation>
 <translation id="5115563688576182185">(64-bittinen)</translation>
@@ -782,7 +778,7 @@
 <translation id="5252000469029418751">C7 (kirjekuori)</translation>
 <translation id="5254958791078852567">E1</translation>
 <translation id="5283044957620376778">B1</translation>
-<translation id="528468243742722775">End</translation>
+<translation id="528468243742722775">Loppu</translation>
 <translation id="5284909709419567258">Verkko-osoitteet</translation>
 <translation id="5285570108065881030">Näytä kaikki tallennetut salasanat</translation>
 <translation id="5287240709317226393">Näytä evästeet</translation>
@@ -906,7 +902,6 @@
 <translation id="5967592137238574583">Muokkaa yhteystietoja</translation>
 <translation id="5967867314010545767">Poista historiasta</translation>
 <translation id="5975083100439434680">Loitonna</translation>
-<translation id="5977489021191000276">Järjestelmänvalvoja ei ylläpidä laitettasi.</translation>
 <translation id="5977976211062815271">Tällä laitteella</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">Maksusovelluksen avaaminen ei onnistu.</translation>
@@ -1052,7 +1047,6 @@
 <translation id="6903319715792422884">Auta kehittämään Selaussuojaa lähettämällä <ph name="BEGIN_WHITEPAPER_LINK" />järjestelmätietoja ja sivujen sisältöä<ph name="END_WHITEPAPER_LINK" /> Googlelle. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">Käyttäjä:</translation>
 <translation id="6934672428414710184">Tämä nimi on peräisin Google-tililtäsi</translation>
-<translation id="6939583532829045966"><ph name="ENROLLMENT_DOMAIN" /> ylläpitää laitettasi. Järjestelmänvalvoja voi siis määrittää laitteen etäyhteydellä.</translation>
 <translation id="6944692733090228304">Kirjoitit salasanan sivustolle, jota <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> ei ylläpidä. Älä käytä samaa salasanaa muissa sovelluksissa tai muilla sivustoilla tilisi turvallisuuden vuoksi.</translation>
 <translation id="6945221475159498467">Valitse</translation>
 <translation id="6948701128805548767">Valitse osoite, niin näet noutotavat ja vaatimukset.</translation>
@@ -1062,7 +1056,6 @@
 <translation id="6957887021205513506">Palvelimen varmenne näyttää olevan väärennös.</translation>
 <translation id="6964255747740675745">Verkkoasetuksia ei voitu jäsentää (virheellinen JSON).</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="6965456981923010628"><ph name="LEFT_PART" /> • <ph name="RIGHT_PART" /></translation>
 <translation id="6965978654500191972">Laite</translation>
 <translation id="6970216967273061347">Alue</translation>
 <translation id="6973656660372572881">Sekä kiinteät välityspalvelimet että .pac-URL-osoite on määritetty.</translation>
@@ -1213,6 +1206,7 @@ Lisätietoja:
 <translation id="7668654391829183341">Tuntematon laite</translation>
 <translation id="7669271284792375604">Tämän sivuston hyökkääjät saattavat yrittää huijata sinua asentamaan ohjelmia, jotka ovat haitallisia selauskokemuksellesi (esimerkiksi vaihtamalla aloitussivusi tai näyttämällä ylimääräisiä mainoksia käymilläsi sivustoilla).</translation>
 <translation id="7676643023259824263">Hae leikepöydän tekstiä <ph name="TEXT" /></translation>
+<translation id="7679176406634891508">Alusta ja pilvipalvelu</translation>
 <translation id="7681101578153515023">Vaihda hakukonetta</translation>
 <translation id="7682287625158474539">Toimitus</translation>
 <translation id="7687186412095877299">Täyttää tallennetut maksutapasi maksulomakkeisiin</translation>
@@ -1417,7 +1411,6 @@ Lisätietoja:
 <translation id="8932102934695377596">Kellosi jätättää</translation>
 <translation id="893332455753468063">Lisää nimi</translation>
 <translation id="8938939909778640821">Hyväksytyt luotto- ja prepaid-kortit</translation>
-<translation id="894185898663964645">Järjestelmänvalvoja on määrittänyt yksilöidyt juurivarmenteet, joiden avulla hän voi mahdollisesti nähdä avaamiesi verkkosivustojen sisällön.</translation>
 <translation id="8943282376843390568">Lime</translation>
 <translation id="8957210676456822347">Captive portal -valtuutus</translation>
 <translation id="8968766641738584599">Tallenna kortti</translation>
@@ -1431,6 +1424,7 @@ Lisätietoja:
 <translation id="8996941253935762404">Sivusto sisältää haitallisia ohjelmia</translation>
 <translation id="8997023839087525404">Palvelimen lähettämän varmenteen tietoja ei ole annettu yleiseen käyttöön Certificate Transparency ‑käytännön mukaisesti. Tietojen antamista edellytetään joiltakin varmenteilta, jotta niiden luotettavuus voidaan varmistaa ja käyttäjiä suojella hyökkääjiltä.</translation>
 <translation id="9001074447101275817">Välityspalvelin <ph name="DOMAIN" /> vaatii käyttäjänimen ja salasanan.</translation>
+<translation id="9004367719664099443">VR-istunto on käynnissä</translation>
 <translation id="9005998258318286617">PDF-asiakirjan lataaminen epäonnistui.</translation>
 <translation id="9008201768610948239">Ohita</translation>
 <translation id="9011424611726486705">Avaa sivustoasetukset</translation>

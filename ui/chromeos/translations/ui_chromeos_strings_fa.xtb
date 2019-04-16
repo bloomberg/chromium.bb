@@ -284,6 +284,7 @@
 <translation id="4572815280350369984">فایل <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">بیشتر...</translation>
 <translation id="4582497162516204941">‏نصب با Linux (بتا)</translation>
+<translation id="4584780943629874245">‏هم‌رسانی ازطریق Plugin VM</translation>
 <translation id="4631887759990505102">هنرمند</translation>
 <translation id="4656293982926141856">این رایانه</translation>
 <translation id="4669606053856530811">اگر این موارد با اعضای «<ph name="SOURCE_NAME" />» هم‌رسانی نشوند، دسترسی را از دست خواهند داد.</translation>
@@ -524,6 +525,7 @@
 <translation id="7339898014177206373">پنجرهٔ جدید</translation>
 <translation id="7348749398828259943">‏صفحه‌کلید بین‌المللی US Workman</translation>
 <translation id="7359359531237882347">در حال کپی کردن <ph name="NUMBER_OF_ITEMS" /> مورد…</translation>
+<translation id="7379734276381389090">‏<ph name="NUMBER_OF_ITEMS" /> پوشه بااستفاده از Plugin VM هم‌رسانی شد</translation>
 <translation id="7389722738210761877">‏صفحه‌کلید تایلندی (TIS 820-2531)</translation>
 <translation id="7396038720194014279">صفحه‌‌کلید هندی (آوایی)</translation>
 <translation id="7417453074306512035">صفحه‌کلید اتیوپیایی</translation>
@@ -586,6 +588,7 @@
 <translation id="7969525169268594403">اسلوونیایی</translation>
 <translation id="7982283708762922719">ارتفاع</translation>
 <translation id="7987485481246785146">صفحه‌کلید کردی مبتنی بر عربی</translation>
+<translation id="7990715602172183602">‏۱ پوشه بااستفاده از Plugin VM هم‌رسانی شد</translation>
 <translation id="799547531016638432">حذف میان‌بر</translation>
 <translation id="799923393800005025">می‌تواند مشاهده کند</translation>
 <translation id="8008366997883261463">جک راسل تریر</translation>
@@ -626,6 +629,7 @@
 <translation id="8342318071240498787">یک فایل یا یک پوشه با همین نام از قبل وجود دارد.</translation>
 <translation id="8391950649760071442">‏نویسه‌گردانی (emandi ← ‏ఏమండీ)</translation>
 <translation id="8395901698320285466">ابعاد</translation>
+<translation id="8400874747056634633">‏مدیریت هم‌رسانی ازطریق Plugin VM</translation>
 <translation id="8412586565681117057">روش ورودی سریع</translation>
 <translation id="8418113698656761985">صفحه‌کلید رومانیایی</translation>
 <translation id="8432745813735585631">صفحه‌کلید کلماک آمریکایی</translation>

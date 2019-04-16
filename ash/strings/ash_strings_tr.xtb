@@ -29,6 +29,7 @@
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1302880136325416935">Bluetooth ayarlarını göster. <ph name="STATE_TEXT" /></translation>
 <translation id="1316069254387866896">Rafı her zaman göster</translation>
+<translation id="1341651618736211726">Taşma</translation>
 <translation id="1346748346194534595">Sağa</translation>
 <translation id="1351937230027495976">Menüyü daralt</translation>
 <translation id="1383876407941801731">Ara</translation>
@@ -361,7 +362,6 @@
 <translation id="6700713906295497288">IME menü düğmesi</translation>
 <translation id="6713285437468012787">"<ph name="DEVICE_NAME" />" adlı Bluetooth cihaz eşlendi ve artık tüm kullanıcılar tarafından kullanılabilir. Bu eşlemeyi Ayarlar'ı kullanarak kaldırabilirsiniz.</translation>
 <translation id="6715542151869432661">Mobil cihaz bulunamadı.</translation>
-<translation id="671928215901716392">Kilit ekranı</translation>
 <translation id="6723839937902243910">Güç</translation>
 <translation id="6751826523481687655">Performans izleme açık</translation>
 <translation id="6785414152754474415">Pil %<ph name="PERCENTAGE" /> dolu ve şarj oluyor.</translation>

@@ -32,6 +32,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1929939181775079593">Chromium is unresponsive. Relaunch now?</translation>
 <translation id="1966382378801805537">Chromium cannot determine or set the default browser</translation>
 <translation id="2008474315282236005">This will delete 1 item from this device. To retrieve your data later, sign in to Chromium as <ph name="USER_EMAIL" />.</translation>
+<translation id="2037988709973327241"><ph name="FILE_NAME" /> is dangerous, so Chromium has blocked it. You're defended by Advanced Protection.</translation>
 <translation id="2117378023188580026">Your administrator asks that you relaunch Chromium to apply this update</translation>
 <translation id="2119636228670142020">About &amp;Chromium OS</translation>
 <translation id="2178765360243863853">You should restart Chromium now</translation>
@@ -63,6 +64,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="3068515742935458733">Help make Chromium better by sending crash reports and <ph name="UMA_LINK" /> to Google</translation>
 <translation id="3103660991484857065">The installer failed to uncompress archive. Please download Chromium again.</translation>
 <translation id="3130323860337406239">Chromium is using your microphone.</translation>
+<translation id="3154325651427862069"><ph name="FILE_NAME" /> may be dangerous, so Chromium has blocked it. You're defended by Advanced Protection.</translation>
 <translation id="3155163173539279776">Relaunch Chromium</translation>
 <translation id="3179665906251668410">Open Link in Chromium Inco&amp;gnito Window</translation>
 <translation id="3190315855212034486">Whoa! Chromium has crashed. Relaunch now?</translation>
@@ -90,6 +92,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="388648406173476553">Customise and control Chromium. Something needs your attention – click for details.</translation>
 <translation id="3889543394854987837">Click your name to open Chromium and start browsing.</translation>
 <translation id="3898493977366060150">Web browsing with Google smarts</translation>
+<translation id="3931244652999881512">This file is dangerous, so Chromium has blocked it. You're defended by Advanced Protection.</translation>
 <translation id="3965668104013180445">{0,plural, =1{Chromium OS will restart in an hour}other{Chromium OS will restart in # hours}}</translation>
 <translation id="4036079820698952681">Help make Chromium better by reporting the <ph name="BEGIN_LINK" />current settings<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">Important security improvements and new features are available in the latest version.</translation>
@@ -140,6 +143,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="5680901439334282664">sign in to Chromium</translation>
 <translation id="5698481217667032250">Display Chromium in this language</translation>
 <translation id="5712253116097046984">Your administrator asks that you restart Chromium OS to apply this update</translation>
+<translation id="5726979195371243087">This file may be dangerous, so Chromium has blocked it. You're defended by Advanced Protection.</translation>
 <translation id="5756484659843248772">This language is used to display the Chromium OS UI</translation>
 <translation id="5768914737813585044">Display Chromium OS in this language</translation>
 <translation id="5796460469508169315">Chromium is almost ready.</translation>
@@ -254,6 +258,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="8667808506758191620">Your <ph name="DEVICE_TYPE" /> is up to date.</translation>
 <translation id="8697124171261953979">It also controls what page is shown when you start Chromium or search from the Omnibox.</translation>
 <translation id="8704119203788522458">This is your Chromium</translation>
+<translation id="8704255848199359374">This uses the same spellchecker that's used in Google search. Text that you type in the browser is sent to Google. You can always change this behaviour in settings.</translation>
 <translation id="8796602469536043152">Chromium needs permission to access your camera and microphone for this site</translation>
 <translation id="8803635938069941624">Chromium OS terms</translation>
 <translation id="8821041990367117597">Chromium could not sync your data because your account sign-in details are out of date.</translation>

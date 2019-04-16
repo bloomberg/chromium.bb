@@ -284,6 +284,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> dosyası</translation>
 <translation id="457386861538956877">Diğer...</translation>
 <translation id="4582497162516204941">Linux (Beta) ile yükle</translation>
+<translation id="4584780943629874245">Plugin VM ile paylaş</translation>
 <translation id="4631887759990505102">Sanatçı</translation>
 <translation id="4656293982926141856">Bu bilgisayar</translation>
 <translation id="4669606053856530811">"<ph name="SOURCE_NAME" />" kaynağının üyeleri, bu öğeler kendileriyle paylaşılmadığı sürece erişimi kaybedecektir.</translation>
@@ -524,6 +525,7 @@
 <translation id="7339898014177206373">Yeni pencere</translation>
 <translation id="7348749398828259943">ABD Workman uluslararası klavye</translation>
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> öğe kopyalanıyor.</translation>
+<translation id="7379734276381389090">Plugin VM ile <ph name="NUMBER_OF_ITEMS" /> dosya paylaşıldı</translation>
 <translation id="7389722738210761877">Tayca klavye (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Hintçe klavye (Fonetik)</translation>
 <translation id="7417453074306512035">Etiyopya dili klavye</translation>
@@ -586,6 +588,7 @@
 <translation id="7969525169268594403">Slovence</translation>
 <translation id="7982283708762922719">Yükseklik</translation>
 <translation id="7987485481246785146">Sorani Kürtçe Arapça temelli klavye</translation>
+<translation id="7990715602172183602">Eklenti VM ile 1 dosya paylaşıldı</translation>
 <translation id="799547531016638432">Kısayolu kaldır</translation>
 <translation id="799923393800005025">Görüntüleyebilir</translation>
 <translation id="8008366997883261463">Jack Russell Teriyeri</translation>
@@ -626,6 +629,7 @@
 <translation id="8342318071240498787">Aynı adda bir dosya veya dizin zaten var.</translation>
 <translation id="8391950649760071442">Harf çevirisi (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Boyutlar</translation>
+<translation id="8400874747056634633">Plugin VM Paylaşımını Yönet</translation>
 <translation id="8412586565681117057">Hızlı giriş yöntemi</translation>
 <translation id="8418113698656761985">Romence klavye</translation>
 <translation id="8432745813735585631">ABD Colemak klavye</translation>

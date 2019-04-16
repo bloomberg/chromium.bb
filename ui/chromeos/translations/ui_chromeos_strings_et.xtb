@@ -284,6 +284,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-file</translation>
 <translation id="457386861538956877">Rohkem ...</translation>
 <translation id="4582497162516204941">Installimine Linuxiga (beetaversioon)</translation>
+<translation id="4584780943629874245">Jaga Plugin VM-iga</translation>
 <translation id="4631887759990505102">Esitaja</translation>
 <translation id="4656293982926141856">See arvuti</translation>
 <translation id="4669606053856530811">Üksuse „<ph name="SOURCE_NAME" />” liikmed kaotavad juurdepääsu, kui neid üksusi nendega ei jagata.</translation>
@@ -524,6 +525,7 @@
 <translation id="7339898014177206373">Uus aken</translation>
 <translation id="7348749398828259943">USA Workmani rahvusvaheline klaviatuur</translation>
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> üksuse kopeerimine …</translation>
+<translation id="7379734276381389090">Plugin VM-iga jagati <ph name="NUMBER_OF_ITEMS" /> kausta</translation>
 <translation id="7389722738210761877">Tai klaviatuur (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Hindi klaviatuur (foneetiline)</translation>
 <translation id="7417453074306512035">Etioopia klaviatuur</translation>
@@ -586,6 +588,7 @@
 <translation id="7969525169268594403">sloveeni keel</translation>
 <translation id="7982283708762922719">Kõrgus</translation>
 <translation id="7987485481246785146">Sorani kurdi araabia keele põhine klaviatuur</translation>
+<translation id="7990715602172183602">Plugin VM-iga jagati ühte kausta</translation>
 <translation id="799547531016638432">Eemalda otsetee</translation>
 <translation id="799923393800005025">Saab vaadata</translation>
 <translation id="8008366997883261463">Jack Russelli terjer</translation>
@@ -626,6 +629,7 @@
 <translation id="8342318071240498787">Sama nimega fail või kataloog on juba olemas.</translation>
 <translation id="8391950649760071442">Transliteratsioon (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Dimensioonid</translation>
+<translation id="8400874747056634633">Plugin VM-iga jagamise haldamine</translation>
 <translation id="8412586565681117057">Kiire sisestusmeetod</translation>
 <translation id="8418113698656761985">Rumeenia klaviatuur</translation>
 <translation id="8432745813735585631">US Colemaki klaviatuur</translation>
