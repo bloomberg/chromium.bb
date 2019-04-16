@@ -102,13 +102,11 @@ class DragToOverviewTest : public UIPerformanceTest {
     }
   }
   std::vector<std::string> GetUMAHistogramNames() const override {
-    if (tab_drag_test_) {
-      return {"Ash.SwipeDownDrag.Tab.PresentationTime.TabletMode",
-              "Ash.SwipeDownDrag.Tab.PresentationTime.MaxLatency.TabletMode"};
-    }
     return {
         "Ash.SwipeDownDrag.Window.PresentationTime.TabletMode",
         "Ash.SwipeDownDrag.Window.PresentationTime.MaxLatency.TabletMode",
+        "Ash.SwipeDownDrag.Tab.PresentationTime.TabletMode",
+        "Ash.SwipeDownDrag.Tab.PresentationTime.MaxLatency.TabletMode",
     };
   }
 
@@ -146,11 +144,7 @@ class DragToOverviewTest : public UIPerformanceTest {
     ContinueDrag(start_position, delta, count);
   }
 
-  void set_tab_drag_test(bool tab_drag_test) { tab_drag_test_ = tab_drag_test; }
-
  private:
-  bool tab_drag_test_ = false;
-
   DISALLOW_COPY_AND_ASSIGN(DragToOverviewTest);
 };
 
@@ -184,8 +178,6 @@ IN_PROC_BROWSER_TEST_F(DragToOverviewTest, DragWindow) {
 }
 
 IN_PROC_BROWSER_TEST_F(DragToOverviewTest, DragTab) {
-  set_tab_drag_test(true);
-
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   aura::Window* browser_window = browser_view->GetWidget()->GetNativeWindow();
 

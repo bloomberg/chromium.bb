@@ -246,8 +246,8 @@ class OverviewWindowDragTest
   // UIPerformanceTest:
   std::vector<std::string> GetUMAHistogramNames() const override {
     return {
-        "Ash.Overview.WindowDrag.PresentationTime.TabletMode",
-        "Ash.Overview.WindowDrag.PresentationTime.MaxLatency.TabletMode",
+        "Ash.Overview.WindowDrag.Presentation.TabletMode",
+        "Ash.Overview.WindowDrag.Presentation.MaxLatency.TabletMode",
     };
   }
 
