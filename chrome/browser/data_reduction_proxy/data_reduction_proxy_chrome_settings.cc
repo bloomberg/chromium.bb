@@ -25,6 +25,7 @@
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/pref_names.h"
 #include "components/data_reduction_proxy/content/browser/data_reduction_proxy_pingback_client_impl.h"
@@ -34,6 +35,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_store.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/prefs/pref_service.h"
@@ -281,9 +283,6 @@ DataReductionProxyChromeSettings::CreateDataFromNavigationHandle(
     return nullptr;
 
   // TODO(721403): Need to fill in:
-  //  - client_lofi_requestd_
-  //  - session_key_
-  //  - page_id_
   //  - request_info_
   auto data = std::make_unique<data_reduction_proxy::DataReductionProxyData>();
   data->set_request_url(handle->GetURL());
@@ -322,6 +321,23 @@ DataReductionProxyChromeSettings::CreateDataFromNavigationHandle(
     case data_reduction_proxy::TRANSFORM_NONE:
     case data_reduction_proxy::TRANSFORM_UNKNOWN:
       break;
+  }
+
+  const ChromeNavigationUIData* chrome_navigation_ui_data =
+      static_cast<const ChromeNavigationUIData*>(handle->GetNavigationUIData());
+  if (data_reduction_proxy::params::IsEnabledWithNetworkService() &&
+      base::FeatureList::IsEnabled(
+          data_reduction_proxy::features::
+              kDataReductionProxyPopulatePreviewsPageIDToPingback)) {
+    if (chrome_navigation_ui_data) {
+      data->set_page_id(
+          chrome_navigation_ui_data->data_reduction_proxy_page_id());
+    }
+    const auto session_key =
+        data_reduction_proxy::DataReductionProxyRequestOptions::
+            GetSessionKeyFromRequestHeaders(GetProxyRequestHeaders());
+    if (session_key)
+      data->set_session_key(session_key.value());
   }
   return data;
 }
