@@ -110,7 +110,11 @@ ProfileMenuViewBase::ProfileMenuViewBase(views::Button* anchor_button,
   // TODO(sajadm): Remove when fixing https://crbug.com/822075
   // The sign in webview will be clipped on the bottom corners without these
   // margins, see related bug <http://crbug.com/593203>.
+#if defined(OS_CHROMEOS)
+  set_margins(gfx::Insets(2, 0));
+#else
   set_margins(gfx::Insets(0, 0, 2, 0));
+#endif
   if (anchor_button) {
     anchor_button->AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
   } else {
