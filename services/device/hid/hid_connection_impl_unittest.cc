@@ -176,19 +176,24 @@ class HidConnectionImplTest : public DeviceServiceTestBase {
         kMaxReportSizeBytes, kMaxReportSizeBytes, 0);
   }
 
+  std::vector<uint8_t> CreateTestReportBuffer(uint8_t report_id, size_t size) {
+    std::vector<uint8_t> buffer(size);
+    buffer[0] = report_id;
+    for (size_t i = 1; i < size; ++i)
+      buffer[i] = i;
+    return buffer;
+  }
+
   std::unique_ptr<HidConnectionImpl> hid_connection_impl_;
   scoped_refptr<FakeHidConnection> fake_connection_;
   std::unique_ptr<TestHidConnectionClient> connection_client_;
 };
 
 TEST_F(HidConnectionImplTest, ReadWrite) {
-  CreateHidConnection(false);
-  // Buffer contents: [0x42 0x01 0x02 0x03 0x04 0x05 0x06 0x07 0x08 0x09]
+  CreateHidConnection(/*with_connection_client=*/false);
   const size_t kTestBufferSize = kMaxReportSizeBytes;
-  std::vector<uint8_t> buffer_vec(kTestBufferSize);
-  buffer_vec[0] = kTestReportId;
-  for (size_t i = 1; i < kTestBufferSize; ++i)
-    buffer_vec[i] = i;
+  std::vector<uint8_t> buffer_vec =
+      CreateTestReportBuffer(kTestReportId, kTestBufferSize);
 
   // Simulate an output report (host to device).
   TestIoCallback write_callback;
@@ -216,13 +221,10 @@ TEST_F(HidConnectionImplTest, ReadWrite) {
 }
 
 TEST_F(HidConnectionImplTest, ReadWriteWithConnectionClient) {
-  CreateHidConnection(true);
-  // Buffer contents: [0x42 0x01 0x02 0x03 0x04 0x05 0x06 0x07 0x08 0x09]
+  CreateHidConnection(/*with_connection_client=*/true);
   const size_t kTestBufferSize = kMaxReportSizeBytes;
-  std::vector<uint8_t> buffer_vec(kTestBufferSize);
-  buffer_vec[0] = kTestReportId;
-  for (size_t i = 1; i < kTestBufferSize; ++i)
-    buffer_vec[i] = i;
+  std::vector<uint8_t> buffer_vec =
+      CreateTestReportBuffer(kTestReportId, kTestBufferSize);
 
   // Simulate an output report (host to device).
   TestIoCallback write_callback;
@@ -244,6 +246,32 @@ TEST_F(HidConnectionImplTest, ReadWriteWithConnectionClient) {
     EXPECT_EQ(in_buffer[i - 1], buffer_vec[i])
         << "Mismatch at index " << i << ".";
   }
+}
+
+TEST_F(HidConnectionImplTest, DestroyWithPendingInputReport) {
+  CreateHidConnection(/*with_connection_client=*/false);
+  const size_t kTestBufferSize = kMaxReportSizeBytes;
+  std::vector<uint8_t> buffer_vec =
+      CreateTestReportBuffer(kTestReportId, kTestBufferSize);
+
+  // Simulate an input report (device to host).
+  auto buffer = base::MakeRefCounted<base::RefCountedBytes>(buffer_vec);
+  ASSERT_EQ(buffer->size(), kTestBufferSize);
+  fake_connection_->SimulateInputReport(buffer);
+
+  // Destroy the connection without reading the report.
+  hid_connection_impl_.reset();
+}
+
+TEST_F(HidConnectionImplTest, DestroyWithPendingRead) {
+  CreateHidConnection(/*with_connection_client=*/false);
+
+  // Simulate reading an input report.
+  TestIoCallback read_callback;
+  hid_connection_impl_->Read(read_callback.GetReadCallback());
+
+  // Destroy the connection without receiving an input report.
+  hid_connection_impl_.reset();
 }
 
 }  // namespace device
