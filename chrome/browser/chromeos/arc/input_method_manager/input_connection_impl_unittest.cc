@@ -332,4 +332,16 @@ TEST_F(InputConnectionImplTest, SendKeyEvent) {
   engine()->FocusOut();
 }
 
+TEST_F(InputConnectionImplTest, InputContextHandlerIsNull) {
+  auto connection = createNewConnection(1);
+  ui::IMEBridge::Get()->SetInputContextHandler(nullptr);
+
+  connection->CommitText(base::ASCIIToUTF16("text"), 1);
+  connection->DeleteSurroundingText(1, 1);
+  connection->FinishComposingText();
+  connection->SetComposingText(base::ASCIIToUTF16("text"), 0, base::nullopt);
+  connection->SetSelection(gfx::Range(2, 4));
+  connection->GetTextInputState(true);
+}
+
 }  // namespace arc
