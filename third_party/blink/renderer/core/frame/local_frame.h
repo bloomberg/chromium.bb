@@ -161,6 +161,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // context to the current document.
   void DidAttachDocument();
 
+  Frame* FindFrameForNavigation(const AtomicString& name,
+                                LocalFrame& active_frame,
+                                const KURL& destination_url);
   void Reload(WebFrameLoadType);
 
   // Note: these two functions are not virtual but intentionally shadow the

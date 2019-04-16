@@ -535,6 +535,15 @@ void LocalFrame::DidAttachDocument() {
   previews_resource_loading_hints_receiver_.reset();
 }
 
+Frame* LocalFrame::FindFrameForNavigation(const AtomicString& name,
+                                          LocalFrame& active_frame,
+                                          const KURL& destination_url) {
+  Frame* frame = Tree().Find(name);
+  if (!frame || !active_frame.CanNavigate(*frame, destination_url))
+    return nullptr;
+  return frame;
+}
+
 void LocalFrame::Reload(WebFrameLoadType load_type) {
   DCHECK(IsReloadLoadType(load_type));
   if (!loader_.GetDocumentLoader()->GetHistoryItem())

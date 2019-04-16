@@ -82,6 +82,7 @@
 #include "third_party/blink/renderer/core/loader/navigation_scheduler.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/create_window.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/plugin_script_forbidden_scope.h"
@@ -802,11 +803,17 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   // this point indicates that a user event modified the navigation policy
   // (e.g., a ctrl-click). Let the user's action override any target attribute.
   if (request.GetNavigationPolicy() == kNavigationPolicyCurrentTab) {
-    Frame* target_frame =
-        frame_->Tree().FindOrCreateFrameForNavigation(request).frame;
-    request.SetNavigationPolicy(kNavigationPolicyCurrentTab);
-    if (!target_frame)
-      return;
+    Frame* target_frame = frame_->FindFrameForNavigation(
+        AtomicString(request.FrameName()), *frame_, url);
+    if (!target_frame) {
+      request.SetNavigationPolicy(kNavigationPolicyNewForegroundTab);
+      bool created = false;
+      target_frame = CreateNewWindow(*frame_.Get(), request, created);
+      request.SetNavigationPolicy(kNavigationPolicyCurrentTab);
+      if (!target_frame)
+        return;
+    }
+
     if (target_frame != frame_) {
       bool was_in_same_page = target_frame->GetPage() == frame_->GetPage();
       request.SetFrameName("_self");
