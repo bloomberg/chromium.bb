@@ -2139,46 +2139,33 @@ static void rd_test_partition3(AV1_COMP *const cpi, ThreadData *td,
                                int mi_row0, int mi_col0, BLOCK_SIZE subsize0,
                                int mi_row1, int mi_col1, BLOCK_SIZE subsize1,
                                int mi_row2, int mi_col2, BLOCK_SIZE subsize2) {
-  MACROBLOCK *const x = &td->mb;
-  MACROBLOCKD *const xd = &x->e_mbd;
+  const MACROBLOCK *const x = &td->mb;
+  const MACROBLOCKD *const xd = &x->e_mbd;
+  const int pl = partition_plane_context(xd, mi_row, mi_col, bsize);
   RD_STATS sum_rdc;
-#define RTP_STX_TRY_ARGS
-  int pl = partition_plane_context(xd, mi_row, mi_col, bsize);
   av1_init_rd_stats(&sum_rdc);
   sum_rdc.rate = x->partition_cost[pl][partition];
   sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, 0);
   if (!rd_try_subblock(cpi, td, tile_data, tp, 0, mi_row0, mi_col0, subsize0,
-                       best_rdc->rdcost, &sum_rdc, RTP_STX_TRY_ARGS partition,
-                       ctx, &ctxs[0]))
+                       best_rdc->rdcost, &sum_rdc, partition, ctx, &ctxs[0]))
     return;
 
   if (!rd_try_subblock(cpi, td, tile_data, tp, 0, mi_row1, mi_col1, subsize1,
-                       best_rdc->rdcost, &sum_rdc, RTP_STX_TRY_ARGS partition,
-                       &ctxs[0], &ctxs[1]))
+                       best_rdc->rdcost, &sum_rdc, partition, &ctxs[0],
+                       &ctxs[1]))
     return;
 
-  // With the new layout of mixed partitions for PARTITION_HORZ_B and
-  // PARTITION_VERT_B, the last subblock might start past halfway through the
-  // main block, so we might signal it even though the subblock lies strictly
-  // outside the image. In that case, we won't spend any bits coding it and the
-  // difference (obviously) doesn't contribute to the error.
-  const int try_block2 = 1;
-  if (try_block2 &&
-      !rd_try_subblock(cpi, td, tile_data, tp, 1, mi_row2, mi_col2, subsize2,
-                       best_rdc->rdcost, &sum_rdc, RTP_STX_TRY_ARGS partition,
-                       &ctxs[1], &ctxs[2]))
+  if (!rd_try_subblock(cpi, td, tile_data, tp, 1, mi_row2, mi_col2, subsize2,
+                       best_rdc->rdcost, &sum_rdc, partition, &ctxs[1],
+                       &ctxs[2]))
     return;
 
   if (sum_rdc.rdcost >= best_rdc->rdcost) return;
-
   sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, sum_rdc.dist);
-
   if (sum_rdc.rdcost >= best_rdc->rdcost) return;
 
   *best_rdc = sum_rdc;
   pc_tree->partitioning = partition;
-
-#undef RTP_STX_TRY_ARGS
 }
 
 static void reset_partition(PC_TREE *pc_tree, BLOCK_SIZE bsize) {
