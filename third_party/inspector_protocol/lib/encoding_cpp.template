@@ -158,7 +158,7 @@ int8_t ReadTokenStart(span<uint8_t> bytes, MajorType* type, uint64_t* value) {
 
 // Writes the start of a token with |type|. The |value| may indicate the size,
 // or it may be the payload if the value is an unsigned integer.
-template <class C>
+template <typename C>
 void WriteTokenStartTmpl(MajorType type, uint64_t value, C* encoded) {
   if (value < 24) {
     // Values 0-23 are encoded directly into the additional info of the
@@ -240,7 +240,7 @@ uint8_t EncodeStop() {
   return kStopByte;
 }
 
-template <class C>
+template <typename C>
 void EncodeInt32Tmpl(int32_t value, C* out) {
   if (value >= 0) {
     internals::WriteTokenStart(MajorType::UNSIGNED, value, out);
@@ -256,7 +256,7 @@ void EncodeInt32(int32_t value, std::string* out) {
   EncodeInt32Tmpl(value, out);
 }
 
-template <class C>
+template <typename C>
 void EncodeString16Tmpl(span<uint16_t> in, C* out) {
   uint64_t byte_length = static_cast<uint64_t>(in.size_bytes());
   internals::WriteTokenStart(MajorType::BYTE_STRING, byte_length, out);
@@ -281,7 +281,7 @@ void EncodeString16(span<uint16_t> in, std::string* out) {
   EncodeString16Tmpl(in, out);
 }
 
-template <class C>
+template <typename C>
 void EncodeString8Tmpl(span<uint8_t> in, C* out) {
   internals::WriteTokenStart(MajorType::STRING,
                              static_cast<uint64_t>(in.size_bytes()), out);
@@ -294,7 +294,7 @@ void EncodeString8(span<uint8_t> in, std::string* out) {
   EncodeString8Tmpl(in, out);
 }
 
-template <class C>
+template <typename C>
 void EncodeFromLatin1Tmpl(span<uint8_t> latin1, C* out) {
   for (std::ptrdiff_t ii = 0; ii < latin1.size(); ++ii) {
     if (latin1[ii] <= 127)
@@ -310,7 +310,7 @@ void EncodeFromLatin1Tmpl(span<uint8_t> latin1, C* out) {
         utf8.push_back((latin1[ii] | 0x80) & 0xbf);
       }
     }
-    EncodeString8(SpanFromVector(utf8), out);
+    EncodeString8(SpanFrom(utf8), out);
     return;
   }
   EncodeString8(latin1, out);
@@ -322,7 +322,7 @@ void EncodeFromLatin1(span<uint8_t> latin1, std::string* out) {
   EncodeFromLatin1Tmpl(latin1, out);
 }
 
-template <class C>
+template <typename C>
 void EncodeFromUTF16Tmpl(span<uint16_t> utf16, C* out) {
   // If there's at least one non-ASCII char, encode as STRING16 (UTF16).
   for (uint16_t ch : utf16) {
@@ -343,7 +343,7 @@ void EncodeFromUTF16(span<uint16_t> utf16, std::string* out) {
   EncodeFromUTF16Tmpl(utf16, out);
 }
 
-template <class C>
+template <typename C>
 void EncodeBinaryTmpl(span<uint8_t> in, C* out) {
   out->push_back(kExpectedConversionToBase64Tag);
   uint64_t byte_length = static_cast<uint64_t>(in.size_bytes());
@@ -366,7 +366,7 @@ constexpr std::ptrdiff_t kEncodedDoubleSize = 1 + sizeof(uint64_t);
 // bit wide length, plus a 32 bit length for that string.
 constexpr std::ptrdiff_t kEncodedEnvelopeHeaderSize = 1 + 1 + sizeof(uint32_t);
 
-template <class C>
+template <typename C>
 void EncodeDoubleTmpl(double value, C* out) {
   // The additional_info=27 indicates 64 bits for the double follow.
   // See RFC 7049 Section 2.3, Table 1.
@@ -389,7 +389,7 @@ void EncodeDouble(double value, std::string* out) {
 // cbor::EnvelopeEncoder - for wrapping submessages
 // =============================================================================
 
-template <class C>
+template <typename C>
 void EncodeStartTmpl(C* out, std::size_t& byte_size_pos) {
   assert(byte_size_pos == 0);
   out->push_back(kInitialByteForEnvelope);
@@ -406,7 +406,7 @@ void EnvelopeEncoder::EncodeStart(std::string* out) {
   EncodeStartTmpl<std::string>(out, byte_size_pos_);
 }
 
-template <class C>
+template <typename C>
 bool EncodeStopTmpl(C* out, std::size_t& byte_size_pos) {
   assert(byte_size_pos != 0);
   // The byte size is the size of the payload, that is, all the
@@ -436,7 +436,7 @@ bool EnvelopeEncoder::EncodeStop(std::string* out) {
 // =============================================================================
 
 namespace {
-template <class C>
+template <typename C>
 class CBOREncoder : public StreamingParserHandler {
  public:
   CBOREncoder(C* out, Status* status) : out_(out), status_(status) {
@@ -938,6 +938,56 @@ void ParseCBOR(span<uint8_t> bytes, StreamingParserHandler* out) {
   }
   out->HandleError(Status{Error::CBOR_TRAILING_JUNK, tokenizer.Status().pos});
 }
+
+// =============================================================================
+// cbor::AppendString8EntryToMap - for limited in-place editing of messages
+// =============================================================================
+
+template <typename C>
+Status AppendString8EntryToCBORMapTmpl(span<uint8_t> string8_key,
+                                       span<uint8_t> string8_value,
+                                       C* cbor) {
+  span<uint8_t> bytes(reinterpret_cast<const uint8_t*>(cbor->data()),
+                      cbor->size());
+  CBORTokenizer tokenizer(bytes);
+  if (tokenizer.TokenTag() == CBORTokenTag::ERROR_VALUE)
+    return tokenizer.Status();
+  if (tokenizer.TokenTag() != CBORTokenTag::ENVELOPE)
+    return Status(Error::CBOR_INVALID_ENVELOPE, 0);
+  std::ptrdiff_t envelope_size = tokenizer.GetEnvelopeContents().size();
+  std::size_t old_size = cbor->size();
+  if (old_size != std::size_t(envelope_size) + kEncodedEnvelopeHeaderSize)
+    return Status(Error::CBOR_INVALID_ENVELOPE, 0);
+  if (envelope_size == 0 ||
+      (tokenizer.GetEnvelopeContents()[0] != EncodeIndefiniteLengthMapStart()))
+    return Status(Error::CBOR_MAP_START_EXPECTED, kEncodedEnvelopeHeaderSize);
+  if (cbor->back() != EncodeStop())
+    return Status(Error::CBOR_MAP_STOP_EXPECTED, cbor->size() - 1);
+  cbor->pop_back();
+  EncodeString8(string8_key, cbor);
+  EncodeString8(string8_value, cbor);
+  cbor->push_back(EncodeStop());
+  std::size_t new_envelope_size = envelope_size + (cbor->size() - old_size);
+  if (new_envelope_size > std::numeric_limits<uint32_t>::max())
+    return Status(Error::CBOR_ENVELOPE_SIZE_LIMIT_EXCEEDED, 0);
+  std::size_t size_pos = cbor->size() - new_envelope_size - sizeof(uint32_t);
+  uint8_t* out = reinterpret_cast<uint8_t*>(&cbor->at(size_pos));
+  *(out++) = (new_envelope_size >> 24) & 0xff;
+  *(out++) = (new_envelope_size >> 16) & 0xff;
+  *(out++) = (new_envelope_size >> 8) & 0xff;
+  *(out) = new_envelope_size & 0xff;
+  return Status();
+}
+Status AppendString8EntryToCBORMap(span<uint8_t> string8_key,
+                                   span<uint8_t> string8_value,
+                                   std::vector<uint8_t>* cbor) {
+  return AppendString8EntryToCBORMapTmpl(string8_key, string8_value, cbor);
+}
+Status AppendString8EntryToCBORMap(span<uint8_t> string8_key,
+                                   span<uint8_t> string8_value,
+                                   std::string* cbor) {
+  return AppendString8EntryToCBORMapTmpl(string8_key, string8_value, cbor);
+}
 }  // namespace cbor
 
 namespace json {
@@ -948,7 +998,7 @@ namespace json {
 
 namespace {
 // Prints |value| to |out| with 4 hex digits, most significant chunk first.
-template <class C>
+template <typename C>
 void PrintHex(uint16_t value, C* out) {
   for (int ii = 3; ii >= 0; --ii) {
     int four_bits = 0xf & (value >> (4 * ii));
@@ -992,7 +1042,7 @@ constexpr char kBase64Table[] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     "abcdefghijklmnopqrstuvwxyz0123456789+/";
 
-template <class C>
+template <typename C>
 void Base64Encode(const span<uint8_t>& in, C* out) {
   // The following three cases are based on the tables in the example
   // section in https://en.wikipedia.org/wiki/Base64. We process three
@@ -1025,7 +1075,7 @@ void Base64Encode(const span<uint8_t>& in, C* out) {
 }
 
 // Implements a handler for JSON parser events to emit a JSON string.
-template <class C>
+template <typename C>
 class JSONEncoder : public StreamingParserHandler {
  public:
   JSONEncoder(const Platform* platform, C* out, Status* status)
@@ -1911,7 +1961,7 @@ void ParseJSON(const Platform& platform,
 // =============================================================================
 // json::ConvertCBORToJSON, json::ConvertJSONToCBOR - for transcoding
 // =============================================================================
-template <class C>
+template <typename C>
 Status ConvertCBORToJSONTmpl(const Platform& platform,
                              span<uint8_t> cbor,
                              C* json) {
@@ -1933,7 +1983,7 @@ Status ConvertCBORToJSON(const Platform& platform,
   return ConvertCBORToJSONTmpl(platform, cbor, json);
 }
 
-template <class C>
+template <typename C>
 Status ConvertJSONToCBORTmpl(const Platform& platform,
                              span<uint8_t> json,
                              C* cbor) {

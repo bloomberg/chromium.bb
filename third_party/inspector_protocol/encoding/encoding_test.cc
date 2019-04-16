@@ -133,14 +133,14 @@ namespace cbor {
 
 TEST(IsCBORMessage, SomeSmokeTests) {
   std::vector<uint8_t> empty;
-  EXPECT_FALSE(IsCBORMessage(SpanFromVector(empty)));
+  EXPECT_FALSE(IsCBORMessage(SpanFrom(empty)));
   std::vector<uint8_t> hello = {'H', 'e', 'l', 'o', ' ', 't',
                                 'h', 'e', 'r', 'e', '!'};
-  EXPECT_FALSE(IsCBORMessage(SpanFromVector(hello)));
+  EXPECT_FALSE(IsCBORMessage(SpanFrom(hello)));
   std::vector<uint8_t> example = {0xd8, 0x5a, 0, 0, 0, 0};
-  EXPECT_TRUE(IsCBORMessage(SpanFromVector(example)));
+  EXPECT_TRUE(IsCBORMessage(SpanFrom(example)));
   std::vector<uint8_t> one = {0xd8, 0x5a, 0, 0, 0, 1, 1};
-  EXPECT_TRUE(IsCBORMessage(SpanFromVector(one)));
+  EXPECT_TRUE(IsCBORMessage(SpanFrom(one)));
 }
 
 // =============================================================================
@@ -161,7 +161,7 @@ TEST(EncodeDecodeInt32Test, Roundtrips23) {
   EXPECT_THAT(encoded, ElementsAreArray(std::array<uint8_t, 1>{{23}}));
 
   // Reverse direction: decode with CBORTokenizer.
-  CBORTokenizer tokenizer(SpanFromVector(encoded));
+  CBORTokenizer tokenizer(SpanFrom(encoded));
   EXPECT_EQ(CBORTokenTag::INT32, tokenizer.TokenTag());
   EXPECT_EQ(23, tokenizer.GetInt32());
   tokenizer.Next();
@@ -179,7 +179,7 @@ TEST(EncodeDecodeInt32Test, RoundtripsUint8) {
   EXPECT_THAT(encoded, ElementsAreArray(std::array<uint8_t, 2>{{24, 42}}));
 
   // Reverse direction: decode with CBORTokenizer.
-  CBORTokenizer tokenizer(SpanFromVector(encoded));
+  CBORTokenizer tokenizer(SpanFrom(encoded));
   EXPECT_EQ(CBORTokenTag::INT32, tokenizer.TokenTag());
   EXPECT_EQ(42, tokenizer.GetInt32());
   tokenizer.Next();
@@ -199,7 +199,7 @@ TEST(EncodeDecodeInt32Test, RoundtripsUint16) {
   EXPECT_EQ(0xf4, encoded[2]);
 
   // Reverse direction: decode with CBORTokenizer.
-  CBORTokenizer tokenizer(SpanFromVector(encoded));
+  CBORTokenizer tokenizer(SpanFrom(encoded));
   EXPECT_EQ(CBORTokenTag::INT32, tokenizer.TokenTag());
   EXPECT_EQ(500, tokenizer.GetInt32());
   tokenizer.Next();
@@ -218,7 +218,7 @@ TEST(EncodeDecodeInt32Test, RoundtripsInt32Max) {
       ElementsAreArray(std::array<uint8_t, 5>{{26, 0x7f, 0xff, 0xff, 0xff}}));
 
   // Reverse direction: decode with CBORTokenizer.
-  CBORTokenizer tokenizer(SpanFromVector(encoded));
+  CBORTokenizer tokenizer(SpanFrom(encoded));
   EXPECT_EQ(CBORTokenTag::INT32, tokenizer.TokenTag());
   EXPECT_EQ(std::numeric_limits<int32_t>::max(), tokenizer.GetInt32());
   tokenizer.Next();
@@ -241,7 +241,7 @@ TEST(EncodeDecodeInt32Test, CantRoundtripUint32) {
       ElementsAreArray(std::array<uint8_t, 5>{{26, 0xde, 0xad, 0xbe, 0xef}}));
 
   // Now try to decode; we treat this as an invalid INT32.
-  CBORTokenizer tokenizer(SpanFromVector(encoded));
+  CBORTokenizer tokenizer(SpanFrom(encoded));
   // 0xdeadbeef is > std::numerical_limits<int32_t>::max().
   EXPECT_EQ(CBORTokenTag::ERROR_VALUE, tokenizer.TokenTag());
   EXPECT_EQ(Error::CBOR_INVALID_INT32, tokenizer.Status().error);
@@ -263,7 +263,7 @@ TEST(EncodeDecodeInt32Test, DecodeErrorCases) {
 
   for (const TestCase& test : tests) {
     SCOPED_TRACE(test.msg);
-    CBORTokenizer tokenizer(SpanFromVector(test.data));
+    CBORTokenizer tokenizer(SpanFrom(test.data));
     EXPECT_EQ(CBORTokenTag::ERROR_VALUE, tokenizer.TokenTag());
     EXPECT_EQ(Error::CBOR_INVALID_INT32, tokenizer.Status().error);
   }
@@ -282,7 +282,7 @@ TEST(EncodeDecodeInt32Test, RoundtripsMinus24) {
   EXPECT_THAT(encoded, ElementsAreArray(std::array<uint8_t, 1>{{1 << 5 | 23}}));
 
   // Reverse direction: decode with CBORTokenizer.
-  CBORTokenizer tokenizer(SpanFromVector(encoded));
+  CBORTokenizer tokenizer(SpanFrom(encoded));
   EXPECT_EQ(CBORTokenTag::INT32, tokenizer.TokenTag());
   EXPECT_EQ(-24, tokenizer.GetInt32());
   tokenizer.Next();
@@ -304,7 +304,7 @@ TEST(EncodeDecodeInt32Test, RoundtripsAdditionalNegativeExamples) {
     SCOPED_TRACE(std::string("example ") + std::to_string(example));
     std::vector<uint8_t> encoded;
     EncodeInt32(example, &encoded);
-    CBORTokenizer tokenizer(SpanFromVector(encoded));
+    CBORTokenizer tokenizer(SpanFrom(encoded));
     EXPECT_EQ(CBORTokenTag::INT32, tokenizer.TokenTag());
     EXPECT_EQ(example, tokenizer.GetInt32());
     tokenizer.Next();
@@ -326,7 +326,7 @@ TEST(EncodeDecodeString16Test, RoundtripsEmpty) {
   EXPECT_EQ(2 << 5, encoded[0]);
 
   // Reverse direction: decode with CBORTokenizer.
-  CBORTokenizer tokenizer(SpanFromVector(encoded));
+  CBORTokenizer tokenizer(SpanFrom(encoded));
   EXPECT_EQ(CBORTokenTag::STRING16, tokenizer.TokenTag());
   span<uint8_t> decoded_string16_wirerep = tokenizer.GetString16WireRep();
   EXPECT_TRUE(decoded_string16_wirerep.empty());
@@ -364,7 +364,7 @@ TEST(EncodeDecodeString16Test, RoundtripsHelloWorld) {
   EXPECT_THAT(encoded, ElementsAreArray(encoded_expected));
 
   // Now decode to complete the roundtrip.
-  CBORTokenizer tokenizer(SpanFromVector(encoded));
+  CBORTokenizer tokenizer(SpanFrom(encoded));
   EXPECT_EQ(CBORTokenTag::STRING16, tokenizer.TokenTag());
   std::vector<uint16_t> decoded =
       String16WireRepToHost(tokenizer.GetString16WireRep());
@@ -374,7 +374,7 @@ TEST(EncodeDecodeString16Test, RoundtripsHelloWorld) {
 
   // For bonus points, we look at the decoded message in UTF8 as well so we can
   // easily see it on the terminal screen.
-  std::string utf8_decoded = UTF16ToUTF8(SpanFromVector(decoded));
+  std::string utf8_decoded = UTF16ToUTF8(SpanFrom(decoded));
   EXPECT_EQ("Hello, 🌎.", utf8_decoded);
 }
 
@@ -399,7 +399,7 @@ TEST(EncodeDecodeString16Test, Roundtrips500) {
   EXPECT_EQ(0xf4, encoded[2]);
 
   // Now decode to complete the roundtrip.
-  CBORTokenizer tokenizer(SpanFromVector(encoded));
+  CBORTokenizer tokenizer(SpanFrom(encoded));
   EXPECT_EQ(CBORTokenTag::STRING16, tokenizer.TokenTag());
   std::vector<uint16_t> decoded =
       String16WireRepToHost(tokenizer.GetString16WireRep());
@@ -419,7 +419,7 @@ TEST(EncodeDecodeString16Test, ErrorCases) {
        TestCase{{2 << 5 | 29}, "additional info = 29 isn't recognized"}}};
   for (const TestCase& test : tests) {
     SCOPED_TRACE(test.msg);
-    CBORTokenizer tokenizer(SpanFromVector(test.data));
+    CBORTokenizer tokenizer(SpanFrom(test.data));
     EXPECT_EQ(CBORTokenTag::ERROR_VALUE, tokenizer.TokenTag());
     EXPECT_EQ(Error::CBOR_INVALID_STRING16, tokenizer.Status().error);
   }
@@ -434,7 +434,7 @@ TEST(EncodeDecodeString8Test, RoundtripsHelloWorld) {
   std::string utf8_msg = "Hello, 🌎.";
   std::vector<uint8_t> msg(utf8_msg.begin(), utf8_msg.end());
   std::vector<uint8_t> encoded;
-  EncodeString8(SpanFromStdString(utf8_msg), &encoded);
+  EncodeString8(SpanFrom(utf8_msg), &encoded);
   // This will be encoded as STRING of length 12, so the 12 is encoded in
   // the additional info part of the initial byte. Payload is one byte per
   // utf8 byte.
@@ -445,7 +445,7 @@ TEST(EncodeDecodeString8Test, RoundtripsHelloWorld) {
   EXPECT_THAT(encoded, ElementsAreArray(encoded_expected));
 
   // Now decode to complete the roundtrip.
-  CBORTokenizer tokenizer(SpanFromVector(encoded));
+  CBORTokenizer tokenizer(SpanFrom(encoded));
   EXPECT_EQ(CBORTokenTag::STRING8, tokenizer.TokenTag());
   std::vector<uint8_t> decoded(tokenizer.GetString8().begin(),
                                tokenizer.GetString8().end());
@@ -467,8 +467,8 @@ TEST(EncodeFromLatin1Test, ConvertsToUTF8IfNeeded) {
     const std::string& latin1 = example.first;
     const std::string& expected_utf8 = example.second;
     std::vector<uint8_t> encoded;
-    EncodeFromLatin1(SpanFromStdString(latin1), &encoded);
-    CBORTokenizer tokenizer(SpanFromVector(encoded));
+    EncodeFromLatin1(SpanFrom(latin1), &encoded);
+    CBORTokenizer tokenizer(SpanFrom(encoded));
     EXPECT_EQ(CBORTokenTag::STRING8, tokenizer.TokenTag());
     std::vector<uint8_t> decoded(tokenizer.GetString8().begin(),
                                  tokenizer.GetString8().end());
@@ -482,7 +482,7 @@ TEST(EncodeFromUTF16Test, ConvertsToUTF8IfEasy) {
   std::vector<uint8_t> encoded;
   EncodeFromUTF16(span<uint16_t>(ascii.data(), ascii.size()), &encoded);
 
-  CBORTokenizer tokenizer(SpanFromVector(encoded));
+  CBORTokenizer tokenizer(SpanFrom(encoded));
   EXPECT_EQ(CBORTokenTag::STRING8, tokenizer.TokenTag());
   std::vector<uint8_t> decoded(tokenizer.GetString8().begin(),
                                tokenizer.GetString8().end());
@@ -499,11 +499,11 @@ TEST(EncodeFromUTF16Test, EncodesAsString16IfNeeded) {
   std::vector<uint8_t> encoded;
   EncodeFromUTF16(span<uint16_t>(msg.data(), msg.size()), &encoded);
 
-  CBORTokenizer tokenizer(SpanFromVector(encoded));
+  CBORTokenizer tokenizer(SpanFrom(encoded));
   EXPECT_EQ(CBORTokenTag::STRING16, tokenizer.TokenTag());
   std::vector<uint16_t> decoded =
       String16WireRepToHost(tokenizer.GetString16WireRep());
-  std::string utf8_decoded = UTF16ToUTF8(SpanFromVector(decoded));
+  std::string utf8_decoded = UTF16ToUTF8(SpanFrom(decoded));
   EXPECT_EQ("Hello, 🌎.", utf8_decoded);
 }
 
@@ -523,7 +523,7 @@ TEST(EncodeDecodeBinaryTest, RoundtripsHelloWorld) {
            (2 << 5 | 13),  // BYTE_STRING (type 2) of length 13
            'H', 'e', 'l', 'l', 'o', ',', ' ', 'w', 'o', 'r', 'l', 'd', '.'}}));
   std::vector<uint8_t> decoded;
-  CBORTokenizer tokenizer(SpanFromVector(encoded));
+  CBORTokenizer tokenizer(SpanFrom(encoded));
   EXPECT_EQ(CBORTokenTag::BINARY, tokenizer.TokenTag());
   EXPECT_EQ(0, int(tokenizer.Status().error));
   decoded = std::vector<uint8_t>(tokenizer.GetBinary().begin(),
@@ -552,7 +552,7 @@ TEST(EncodeDecodeDoubleTest, RoundtripsWikipediaExample) {
           {7 << 5 | 27, 0x3f, 0xd5, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55}}));
 
   // Reverse direction: decode and compare with original value.
-  CBORTokenizer tokenizer(SpanFromVector(encoded));
+  CBORTokenizer tokenizer(SpanFrom(encoded));
   EXPECT_EQ(CBORTokenTag::DOUBLE, tokenizer.TokenTag());
   EXPECT_THAT(tokenizer.GetDouble(), testing::DoubleEq(kOriginalValue));
   tokenizer.Next();
@@ -572,7 +572,7 @@ TEST(EncodeDecodeDoubleTest, RoundtripsAdditionalExamples) {
     SCOPED_TRACE(std::string("example ") + std::to_string(example));
     std::vector<uint8_t> encoded;
     EncodeDouble(example, &encoded);
-    CBORTokenizer tokenizer(SpanFromVector(encoded));
+    CBORTokenizer tokenizer(SpanFrom(encoded));
     EXPECT_EQ(CBORTokenTag::DOUBLE, tokenizer.TokenTag());
     if (std::isnan(example))
       EXPECT_TRUE(std::isnan(tokenizer.GetDouble()));
@@ -588,7 +588,7 @@ TEST(EncodeDecodeDoubleTest, RoundtripsAdditionalExamples) {
 // =============================================================================
 
 void EncodeUTF8ForTest(const std::string& key, std::vector<uint8_t>* out) {
-  EncodeString8(SpanFromStdString(key), out);
+  EncodeString8(SpanFrom(key), out);
 }
 TEST(JSONToCBOREncoderTest, SevenBitStrings) {
   // When a string can be represented as 7 bit ASCII, the encoder will use the
@@ -625,7 +625,7 @@ TEST(JsonCborRoundtrip, EncodingDecoding) {
   Status status;
   std::unique_ptr<StreamingParserHandler> encoder =
       NewCBOREncoder(&encoded, &status);
-  span<uint8_t> ascii_in = SpanFromStdString(json);
+  span<uint8_t> ascii_in = SpanFrom(json);
   json::ParseJSON(GetTestPlatform(), ascii_in, encoder.get());
   std::vector<uint8_t> expected = {
       0xd8,            // envelope
@@ -633,7 +633,7 @@ TEST(JsonCborRoundtrip, EncodingDecoding) {
       0,    0, 0, 94,  // length is 94 bytes
   };
   expected.push_back(0xbf);  // indef length map start
-  EncodeString8(SpanFromStdString("string"), &expected);
+  EncodeString8(SpanFrom("string"), &expected);
   // This is followed by the encoded string for "Hello, 🌎."
   // So, it's the same bytes that we tested above in
   // EncodeDecodeString16Test.RoundtripsHelloWorld.
@@ -642,17 +642,17 @@ TEST(JsonCborRoundtrip, EncodingDecoding) {
            {'H', 0, 'e', 0, 'l',  0,    'l',  0,    'o', 0,
             ',', 0, ' ', 0, 0x3c, 0xd8, 0x0e, 0xdf, '.', 0}})
     expected.push_back(ch);
-  EncodeString8(SpanFromStdString("double"), &expected);
+  EncodeString8(SpanFrom("double"), &expected);
   EncodeDouble(3.1415, &expected);
-  EncodeString8(SpanFromStdString("int"), &expected);
+  EncodeString8(SpanFrom("int"), &expected);
   EncodeInt32(1, &expected);
-  EncodeString8(SpanFromStdString("negative int"), &expected);
+  EncodeString8(SpanFrom("negative int"), &expected);
   EncodeInt32(-1, &expected);
-  EncodeString8(SpanFromStdString("bool"), &expected);
+  EncodeString8(SpanFrom("bool"), &expected);
   expected.push_back(7 << 5 | 21);  // RFC 7049 Section 2.3, Table 2: true
-  EncodeString8(SpanFromStdString("null"), &expected);
+  EncodeString8(SpanFrom("null"), &expected);
   expected.push_back(7 << 5 | 22);  // RFC 7049 Section 2.3, Table 2: null
-  EncodeString8(SpanFromStdString("array"), &expected);
+  EncodeString8(SpanFrom("array"), &expected);
   expected.push_back(0xd8);  // envelope
   expected.push_back(0x5a);  // byte string with 32 bit length
   // the length is 5 bytes (that's up to end indef length array below).
@@ -687,7 +687,7 @@ TEST(JsonCborRoundtrip, MoreRoundtripExamples) {
     Status status;
     std::unique_ptr<StreamingParserHandler> encoder =
         NewCBOREncoder(&encoded, &status);
-    span<uint8_t> ascii_in = SpanFromStdString(json);
+    span<uint8_t> ascii_in = SpanFrom(json);
     ParseJSON(GetTestPlatform(), ascii_in, encoder.get());
     std::string decoded;
     std::unique_ptr<StreamingParserHandler> json_writer =
@@ -713,10 +713,10 @@ TEST(JSONToCBOREncoderTest, HelloWorldBinary_WithTripToJson) {
   encoder->HandleMapBegin();
   // Emit a key.
   std::vector<uint16_t> key = {'f', 'o', 'o'};
-  encoder->HandleString16(SpanFromVector(key));
+  encoder->HandleString16(SpanFrom(key));
   // Emit the binary payload, an arbitrary array of bytes that happens to
   // be the ascii message "Hello, world.".
-  encoder->HandleBinary(SpanFromVector(std::vector<uint8_t>{
+  encoder->HandleBinary(SpanFrom(std::vector<uint8_t>{
       'H', 'e', 'l', 'l', 'o', ',', ' ', 'w', 'o', 'r', 'l', 'd', '.'}));
   encoder->HandleMapEnd();
   EXPECT_EQ(Error::OK, status.error);
@@ -725,7 +725,7 @@ TEST(JSONToCBOREncoderTest, HelloWorldBinary_WithTripToJson) {
   std::string decoded;
   std::unique_ptr<StreamingParserHandler> json_writer =
       NewJSONEncoder(&GetTestPlatform(), &decoded, &status);
-  ParseCBOR(SpanFromVector(encoded), json_writer.get());
+  ParseCBOR(SpanFrom(encoded), json_writer.get());
   EXPECT_EQ(Error::OK, status.error);
   EXPECT_EQ(Status::npos(), status.pos);
   // "Hello, world." in base64 is "SGVsbG8sIHdvcmxkLg==".
@@ -754,7 +754,7 @@ TEST(ParseCBORTest, ParseCBORHelloWorld) {
   const uint8_t kPayloadLen = 27;
   std::vector<uint8_t> bytes = {0xd8, 0x5a, 0, 0, 0, kPayloadLen};
   bytes.push_back(0xbf);                            // start indef length map.
-  EncodeString8(SpanFromStdString("msg"), &bytes);  // key: msg
+  EncodeString8(SpanFrom("msg"), &bytes);           // key: msg
   // Now write the value, the familiar "Hello, 🌎." where the globe is expressed
   // as two utf16 chars.
   bytes.push_back(/*major type=*/2 << 5 | /*additional info=*/20);
@@ -784,9 +784,9 @@ TEST(ParseCBORTest, UTF8IsSupportedInKeys) {
                                 kPayloadLen};
   bytes.push_back(cbor::EncodeIndefiniteLengthMapStart());
   // Two UTF16 chars.
-  EncodeString8(SpanFromStdString("🌎"), &bytes);
+  EncodeString8(SpanFrom("🌎"), &bytes);
   // Can be encoded as a single UTF16 char.
-  EncodeString8(SpanFromStdString("☾"), &bytes);
+  EncodeString8(SpanFrom("☾"), &bytes);
   bytes.push_back(cbor::EncodeStop());
   EXPECT_EQ(kPayloadLen, bytes.size() - 6);
 
@@ -819,7 +819,7 @@ TEST(ParseCBORTest, InvalidStartByteError) {
   Status status;
   std::unique_ptr<StreamingParserHandler> json_writer =
       NewJSONEncoder(&GetTestPlatform(), &out, &status);
-  ParseCBOR(SpanFromStdString(json), json_writer.get());
+  ParseCBOR(SpanFrom(json), json_writer.get());
   EXPECT_EQ(Error::CBOR_INVALID_START_BYTE, status.error);
   EXPECT_EQ("", out);
 }
@@ -829,7 +829,7 @@ TEST(ParseCBORTest, UnexpectedEofExpectedValueError) {
   std::vector<uint8_t> bytes = {0xd8, 0x5a, 0, 0, 0, kPayloadLen,  // envelope
                                 0xbf};                             // map start
   // A key; so value would be next.
-  EncodeString8(SpanFromStdString("key"), &bytes);
+  EncodeString8(SpanFrom("key"), &bytes);
   EXPECT_EQ(kPayloadLen, bytes.size() - 6);
   std::string out;
   Status status;
@@ -846,7 +846,7 @@ TEST(ParseCBORTest, UnexpectedEofInArrayError) {
   std::vector<uint8_t> bytes = {0xd8, 0x5a, 0, 0, 0, kPayloadLen,  // envelope
                                 0xbf};  // The byte for starting a map.
   // A key; so value would be next.
-  EncodeString8(SpanFromStdString("array"), &bytes);
+  EncodeString8(SpanFrom("array"), &bytes);
   bytes.push_back(0x9f);  // byte for indefinite length array start.
   EXPECT_EQ(kPayloadLen, bytes.size() - 6);
   std::string out;
@@ -898,9 +898,9 @@ std::vector<uint8_t> MakeNestedCBOR(int depth) {
     envelopes.emplace_back();
     envelopes.back().EncodeStart(&bytes);
     bytes.push_back(0xbf);  // indef length map start
-    EncodeString8(SpanFromStdString("key"), &bytes);
+    EncodeString8(SpanFrom("key"), &bytes);
   }
-  EncodeString8(SpanFromStdString("innermost_value"), &bytes);
+  EncodeString8(SpanFrom("innermost_value"), &bytes);
   for (int ii = 0; ii < depth; ++ii) {
     bytes.push_back(0xff);  // stop byte, finishes map.
     envelopes.back().EncodeStop(&bytes);
@@ -967,7 +967,7 @@ TEST(ParseCBORTest, UnsupportedValueError) {
   constexpr uint8_t kPayloadLen = 6;
   std::vector<uint8_t> bytes = {0xd8, 0x5a, 0, 0, 0, kPayloadLen,  // envelope
                                 0xbf};                             // map start
-  EncodeString8(SpanFromStdString("key"), &bytes);
+  EncodeString8(SpanFrom("key"), &bytes);
   int64_t error_pos = bytes.size();
   bytes.push_back(6 << 5 | 5);  // tags aren't supported yet.
   EXPECT_EQ(kPayloadLen, bytes.size() - 6);
@@ -986,7 +986,7 @@ TEST(ParseCBORTest, InvalidString16Error) {
   constexpr uint8_t kPayloadLen = 11;
   std::vector<uint8_t> bytes = {0xd8, 0x5a, 0, 0, 0, kPayloadLen,  // envelope
                                 0xbf};                             // map start
-  EncodeString8(SpanFromStdString("key"), &bytes);
+  EncodeString8(SpanFrom("key"), &bytes);
   int64_t error_pos = bytes.size();
   // a BYTE_STRING of length 5 as value; since we interpret these as string16,
   // it's going to be invalid as each character would need two bytes, but
@@ -1009,7 +1009,7 @@ TEST(ParseCBORTest, InvalidString8Error) {
   constexpr uint8_t kPayloadLen = 6;
   std::vector<uint8_t> bytes = {0xd8, 0x5a, 0, 0, 0, kPayloadLen,  // envelope
                                 0xbf};                             // map start
-  EncodeString8(SpanFromStdString("key"), &bytes);
+  EncodeString8(SpanFrom("key"), &bytes);
   int64_t error_pos = bytes.size();
   // a STRING of length 5 as value, but we're at the end of the bytes array
   // so it can't be decoded successfully.
@@ -1029,7 +1029,7 @@ TEST(ParseCBORTest, InvalidBinaryError) {
   constexpr uint8_t kPayloadLen = 9;
   std::vector<uint8_t> bytes = {0xd8, 0x5a, 0, 0, 0, kPayloadLen,  // envelope
                                 0xbf};                             // map start
-  EncodeString8(SpanFromStdString("key"), &bytes);
+  EncodeString8(SpanFrom("key"), &bytes);
   int64_t error_pos = bytes.size();
   bytes.push_back(6 << 5 | 22);  // base64 hint for JSON; indicates binary
   bytes.push_back(2 << 5 | 10);  // BYTE_STRING (major type 2) of length 10
@@ -1051,7 +1051,7 @@ TEST(ParseCBORTest, InvalidDoubleError) {
   constexpr uint8_t kPayloadLen = 8;
   std::vector<uint8_t> bytes = {0xd8, 0x5a, 0, 0, 0, kPayloadLen,  // envelope
                                 0xbf};                             // map start
-  EncodeString8(SpanFromStdString("key"), &bytes);
+  EncodeString8(SpanFrom("key"), &bytes);
   int64_t error_pos = bytes.size();
   bytes.push_back(7 << 5 | 27);  // initial byte for double
   // Just two garbage bytes, not enough to represent an actual double.
@@ -1072,7 +1072,7 @@ TEST(ParseCBORTest, InvalidSignedError) {
   constexpr uint8_t kPayloadLen = 14;
   std::vector<uint8_t> bytes = {0xd8, 0x5a, 0, 0, 0, kPayloadLen,  // envelope
                                 0xbf};                             // map start
-  EncodeString8(SpanFromStdString("key"), &bytes);
+  EncodeString8(SpanFrom("key"), &bytes);
   int64_t error_pos = bytes.size();
   // uint64_t max is a perfectly fine value to encode as CBOR unsigned,
   // but we don't support this since we only cover the int32_t range.
@@ -1093,11 +1093,11 @@ TEST(ParseCBORTest, TrailingJunk) {
   constexpr uint8_t kPayloadLen = 35;
   std::vector<uint8_t> bytes = {0xd8, 0x5a, 0, 0, 0, kPayloadLen,  // envelope
                                 0xbf};                             // map start
-  EncodeString8(SpanFromStdString("key"), &bytes);
-  EncodeString8(SpanFromStdString("value"), &bytes);
+  EncodeString8(SpanFrom("key"), &bytes);
+  EncodeString8(SpanFrom("value"), &bytes);
   bytes.push_back(0xff);  // Up to here, it's a perfectly fine msg.
   int64_t error_pos = bytes.size();
-  EncodeString8(SpanFromStdString("trailing junk"), &bytes);
+  EncodeString8(SpanFrom("trailing junk"), &bytes);
 
   internals::WriteTokenStart(MajorType::UNSIGNED,
                              std::numeric_limits<uint64_t>::max(), &bytes);
@@ -1111,6 +1111,113 @@ TEST(ParseCBORTest, TrailingJunk) {
   EXPECT_EQ(error_pos, status.pos);
   EXPECT_EQ("", out);
 }
+
+// =============================================================================
+// cbor::AppendString8EntryToMap - for limited in-place editing of messages
+// =============================================================================
+
+TEST(AppendString8EntryToMapTest, AppendsEntrySuccessfully) {
+  constexpr uint8_t kPayloadLen = 12;
+  std::vector<uint8_t> bytes = {0xd8, 0x5a, 0, 0, 0, kPayloadLen,  // envelope
+                                0xbf};                             // map start
+  size_t pos_before_payload = bytes.size() - 1;
+  EncodeString8(SpanFrom("key"), &bytes);
+  EncodeString8(SpanFrom("value"), &bytes);
+  bytes.push_back(0xff);  // A perfectly fine cbor message.
+  EXPECT_EQ(kPayloadLen, bytes.size() - pos_before_payload);
+
+  Status status =
+      AppendString8EntryToCBORMap(SpanFrom("foo"), SpanFrom("bar"), &bytes);
+  EXPECT_EQ(Error::OK, status.error);
+  EXPECT_EQ(-1, status.pos);
+  std::string out;
+  std::unique_ptr<StreamingParserHandler> json_writer =
+      NewJSONEncoder(&GetTestPlatform(), &out, &status);
+  ParseCBOR(span<uint8_t>(bytes.data(), bytes.size()), json_writer.get());
+  EXPECT_EQ("{\"key\":\"value\",\"foo\":\"bar\"}", out);
+  EXPECT_EQ(Error::OK, status.error);
+  EXPECT_EQ(-1, status.pos);
+}
+
+TEST(AppendString8EntryToMapTest, AppendThreeEntries) {
+  std::vector<uint8_t> encoded = {
+      0xd8, 0x5a, 0, 0, 0, 2, EncodeIndefiniteLengthMapStart(), EncodeStop()};
+  EXPECT_EQ(Error::OK, AppendString8EntryToCBORMap(SpanFrom("key"),
+                                                   SpanFrom("value"), &encoded)
+                           .error);
+  EXPECT_EQ(Error::OK, AppendString8EntryToCBORMap(SpanFrom("key1"),
+                                                   SpanFrom("value1"), &encoded)
+                           .error);
+  EXPECT_EQ(Error::OK, AppendString8EntryToCBORMap(SpanFrom("key2"),
+                                                   SpanFrom("value2"), &encoded)
+                           .error);
+
+  std::string out;
+  Status status;
+  std::unique_ptr<StreamingParserHandler> json_writer =
+      NewJSONEncoder(&GetTestPlatform(), &out, &status);
+  ParseCBOR(SpanFrom(encoded), json_writer.get());
+  EXPECT_EQ("{\"key\":\"value\",\"key1\":\"value1\",\"key2\":\"value2\"}", out);
+  EXPECT_EQ(Error::OK, status.error);
+  EXPECT_EQ(-1, status.pos);
+}
+
+TEST(AppendString8EntryToMapTest, MapStartExpected_Error) {
+  std::vector<uint8_t> bytes = {
+      0xd8, 0x5a, 0, 0, 0, 1, EncodeIndefiniteLengthArrayStart()};
+
+  Status status =
+      AppendString8EntryToCBORMap(SpanFrom("key"), SpanFrom("value"), &bytes);
+  EXPECT_EQ(Error::CBOR_MAP_START_EXPECTED, status.error);
+  EXPECT_EQ(6, status.pos);
+}
+
+TEST(AppendString8EntryToMapTest, MapStopExpected_Error) {
+  std::vector<uint8_t> bytes = {
+      0xd8, 0x5a, 0, 0, 0, 2, EncodeIndefiniteLengthMapStart(), 42};
+
+  Status status =
+      AppendString8EntryToCBORMap(SpanFrom("key"), SpanFrom("value"), &bytes);
+  EXPECT_EQ(Error::CBOR_MAP_STOP_EXPECTED, status.error);
+  EXPECT_EQ(7, status.pos);
+}
+
+TEST(AppendString8EntryToMapTest, InvalidEnvelope_Error) {
+  {  // Second byte is wrong.
+    std::vector<uint8_t> bytes = {
+        0x5a, 0, 0, 0, 2, EncodeIndefiniteLengthMapStart(), EncodeStop(), 0};
+    Status status =
+        AppendString8EntryToCBORMap(SpanFrom("key"), SpanFrom("value"), &bytes);
+    EXPECT_EQ(Error::CBOR_INVALID_ENVELOPE, status.error);
+    EXPECT_EQ(0, status.pos);
+  }
+  {  // Second byte is wrong.
+    std::vector<uint8_t> bytes = {
+        0xd8, 0x7a, 0, 0, 0, 2, EncodeIndefiniteLengthMapStart(), EncodeStop()};
+    Status status =
+        AppendString8EntryToCBORMap(SpanFrom("key"), SpanFrom("value"), &bytes);
+    EXPECT_EQ(Error::CBOR_INVALID_ENVELOPE, status.error);
+    EXPECT_EQ(0, status.pos);
+  }
+  {  // Invalid envelope size example.
+    std::vector<uint8_t> bytes = {
+        0xd8, 0x5a, 0, 0, 0, 3, EncodeIndefiniteLengthMapStart(), EncodeStop(),
+    };
+    Status status =
+        AppendString8EntryToCBORMap(SpanFrom("key"), SpanFrom("value"), &bytes);
+    EXPECT_EQ(Error::CBOR_INVALID_ENVELOPE, status.error);
+    EXPECT_EQ(0, status.pos);
+  }
+  {  // Invalid envelope size example.
+    std::vector<uint8_t> bytes = {
+        0xd8, 0x5a, 0, 0, 0, 1, EncodeIndefiniteLengthMapStart(), EncodeStop(),
+    };
+    Status status =
+        AppendString8EntryToCBORMap(SpanFrom("key"), SpanFrom("value"), &bytes);
+    EXPECT_EQ(Error::CBOR_INVALID_ENVELOPE, status.error);
+    EXPECT_EQ(0, status.pos);
+  }
+}
 }  // namespace cbor
 
 namespace json {
@@ -1120,7 +1227,7 @@ namespace json {
 // =============================================================================
 
 void WriteUTF8AsUTF16(StreamingParserHandler* writer, const std::string& utf8) {
-  writer->HandleString16(SpanFromVector(UTF8ToUTF16(SpanFromStdString(utf8))));
+  writer->HandleString16(SpanFrom(UTF8ToUTF16(SpanFrom(utf8))));
 }
 
 TEST(JsonStdStringWriterTest, HelloWorld) {
@@ -1133,8 +1240,8 @@ TEST(JsonStdStringWriterTest, HelloWorld) {
   WriteUTF8AsUTF16(writer.get(), "Hello, 🌎.");
   std::string key = "msg1-as-utf8";
   std::string value = "Hello, 🌎.";
-  writer->HandleString8(SpanFromStdString(key));
-  writer->HandleString8(SpanFromStdString(value));
+  writer->HandleString8(SpanFrom(key));
+  writer->HandleString8(SpanFrom(value));
   WriteUTF8AsUTF16(writer.get(), "msg2");
   WriteUTF8AsUTF16(writer.get(), "\\\b\r\n\t\f\"");
   WriteUTF8AsUTF16(writer.get(), "nested");
@@ -1173,11 +1280,11 @@ TEST(JsonStdStringWriterTest, RepresentingNonFiniteValuesAsNull) {
   std::unique_ptr<StreamingParserHandler> writer =
       NewJSONEncoder(&GetTestPlatform(), &out, &status);
   writer->HandleMapBegin();
-  writer->HandleString8(SpanFromStdString("Infinity"));
+  writer->HandleString8(SpanFrom("Infinity"));
   writer->HandleDouble(std::numeric_limits<double>::infinity());
-  writer->HandleString8(SpanFromStdString("-Infinity"));
+  writer->HandleString8(SpanFrom("-Infinity"));
   writer->HandleDouble(-std::numeric_limits<double>::infinity());
-  writer->HandleString8(SpanFromStdString("NaN"));
+  writer->HandleString8(SpanFrom("NaN"));
   writer->HandleDouble(std::numeric_limits<double>::quiet_NaN());
   writer->HandleMapEnd();
   EXPECT_TRUE(status.ok());
@@ -1193,7 +1300,7 @@ TEST(JsonStdStringWriterTest, BinaryEncodedAsJsonString) {
     Status status;
     std::unique_ptr<StreamingParserHandler> writer =
         NewJSONEncoder(&GetTestPlatform(), &out, &status);
-    writer->HandleBinary(SpanFromVector(std::vector<uint8_t>({'M', 'a', 'n'})));
+    writer->HandleBinary(SpanFrom(std::vector<uint8_t>({'M', 'a', 'n'})));
     EXPECT_TRUE(status.ok());
     EXPECT_EQ("\"TWFu\"", out);
   }
@@ -1202,7 +1309,7 @@ TEST(JsonStdStringWriterTest, BinaryEncodedAsJsonString) {
     Status status;
     std::unique_ptr<StreamingParserHandler> writer =
         NewJSONEncoder(&GetTestPlatform(), &out, &status);
-    writer->HandleBinary(SpanFromVector(std::vector<uint8_t>({'M', 'a'})));
+    writer->HandleBinary(SpanFrom(std::vector<uint8_t>({'M', 'a'})));
     EXPECT_TRUE(status.ok());
     EXPECT_EQ("\"TWE=\"", out);
   }
@@ -1211,7 +1318,7 @@ TEST(JsonStdStringWriterTest, BinaryEncodedAsJsonString) {
     Status status;
     std::unique_ptr<StreamingParserHandler> writer =
         NewJSONEncoder(&GetTestPlatform(), &out, &status);
-    writer->HandleBinary(SpanFromVector(std::vector<uint8_t>({'M'})));
+    writer->HandleBinary(SpanFrom(std::vector<uint8_t>({'M'})));
     EXPECT_TRUE(status.ok());
     EXPECT_EQ("\"TQ==\"", out);
   }
@@ -1220,7 +1327,7 @@ TEST(JsonStdStringWriterTest, BinaryEncodedAsJsonString) {
     Status status;
     std::unique_ptr<StreamingParserHandler> writer =
         NewJSONEncoder(&GetTestPlatform(), &out, &status);
-    writer->HandleBinary(SpanFromVector(std::vector<uint8_t>(
+    writer->HandleBinary(SpanFrom(std::vector<uint8_t>(
         {'H', 'e', 'l', 'l', 'o', ',', ' ', 'w', 'o', 'r', 'l', 'd', '.'})));
     EXPECT_TRUE(status.ok());
     EXPECT_EQ("\"SGVsbG8sIHdvcmxkLg==\"", out);
@@ -1335,7 +1442,7 @@ class JsonParserTest : public ::testing::Test {
 
 TEST_F(JsonParserTest, SimpleDictionary) {
   std::string json = "{\"foo\": 42}";
-  ParseJSON(GetTestPlatform(), SpanFromStdString(json), &log_);
+  ParseJSON(GetTestPlatform(), SpanFrom(json), &log_);
   EXPECT_TRUE(log_.status().ok());
   EXPECT_EQ(
       "map begin\n"
@@ -1347,7 +1454,7 @@ TEST_F(JsonParserTest, SimpleDictionary) {
 
 TEST_F(JsonParserTest, Whitespace) {
   std::string json = "\n  {\n\"msg\"\n: \v\"Hello, world.\"\t\r}\t";
-  ParseJSON(GetTestPlatform(), SpanFromStdString(json), &log_);
+  ParseJSON(GetTestPlatform(), SpanFrom(json), &log_);
   EXPECT_TRUE(log_.status().ok());
   EXPECT_EQ(
       "map begin\n"
@@ -1359,7 +1466,7 @@ TEST_F(JsonParserTest, Whitespace) {
 
 TEST_F(JsonParserTest, NestedDictionary) {
   std::string json = "{\"foo\": {\"bar\": {\"baz\": 1}, \"bar2\": 2}}";
-  ParseJSON(GetTestPlatform(), SpanFromStdString(json), &log_);
+  ParseJSON(GetTestPlatform(), SpanFrom(json), &log_);
   EXPECT_TRUE(log_.status().ok());
   EXPECT_EQ(
       "map begin\n"
@@ -1379,7 +1486,7 @@ TEST_F(JsonParserTest, NestedDictionary) {
 
 TEST_F(JsonParserTest, Doubles) {
   std::string json = "{\"foo\": 3.1415, \"bar\": 31415e-4}";
-  ParseJSON(GetTestPlatform(), SpanFromStdString(json), &log_);
+  ParseJSON(GetTestPlatform(), SpanFrom(json), &log_);
   EXPECT_TRUE(log_.status().ok());
   EXPECT_EQ(
       "map begin\n"
@@ -1394,7 +1501,7 @@ TEST_F(JsonParserTest, Doubles) {
 TEST_F(JsonParserTest, Unicode) {
   // Globe character. 0xF0 0x9F 0x8C 0x8E in utf8, 0xD83C 0xDF0E in utf16.
   std::string json = "{\"msg\": \"Hello, \\uD83C\\uDF0E.\"}";
-  ParseJSON(GetTestPlatform(), SpanFromStdString(json), &log_);
+  ParseJSON(GetTestPlatform(), SpanFrom(json), &log_);
   EXPECT_TRUE(log_.status().ok());
   EXPECT_EQ(
       "map begin\n"
@@ -1411,8 +1518,8 @@ TEST_F(JsonParserTest, Unicode_ParseUtf16) {
   // We provide the moon with json escape, but the earth as utf16 input.
   // Either way they arrive as utf8 (after decoding in log_.str()).
   std::vector<uint16_t> json =
-      UTF8ToUTF16(SpanFromStdString("{\"space\": \"🌎 \\uD83C\\uDF19.\"}"));
-  ParseJSON(GetTestPlatform(), SpanFromVector(json), &log_);
+      UTF8ToUTF16(SpanFrom("{\"space\": \"🌎 \\uD83C\\uDF19.\"}"));
+  ParseJSON(GetTestPlatform(), SpanFrom(json), &log_);
   EXPECT_TRUE(log_.status().ok());
   EXPECT_EQ(
       "map begin\n"
@@ -1438,7 +1545,7 @@ TEST_F(JsonParserTest, Unicode_ParseUtf8) {
       "\"3 byte\":\"屋\","
       "\"4 byte\":\"🌎\""
       "}";
-  ParseJSON(GetTestPlatform(), SpanFromStdString(json), &log_);
+  ParseJSON(GetTestPlatform(), SpanFrom(json), &log_);
   EXPECT_TRUE(log_.status().ok());
   EXPECT_EQ(
       "map begin\n"
@@ -1459,7 +1566,7 @@ TEST_F(JsonParserTest, UnprocessedInputRemainsError) {
   std::string json = "{\"foo\": 3.1415} junk";
   int64_t junk_idx = json.find("junk");
   EXPECT_GT(junk_idx, 0);
-  ParseJSON(GetTestPlatform(), SpanFromStdString(json), &log_);
+  ParseJSON(GetTestPlatform(), SpanFrom(json), &log_);
   EXPECT_EQ(Error::JSON_PARSER_UNPROCESSED_INPUT_REMAINS, log_.status().error);
   EXPECT_EQ(junk_idx, log_.status().pos);
   EXPECT_EQ("", log_.str());
@@ -1475,11 +1582,11 @@ std::string MakeNestedJson(int depth) {
   return json;
 }
 
-TEST_F(JsonParserTest, StackLimitExceededError) {
-  // kStackLimit is 1000 (see json_parser.cc). First let's
+TEST_F(JsonParserTest, StackLimitExceededError_BelowLimit) {
+  // kStackLimit is 300 (see json_parser.cc). First let's
   // try with a small nested example.
   std::string json_3 = MakeNestedJson(3);
-  ParseJSON(GetTestPlatform(), SpanFromStdString(json_3), &log_);
+  ParseJSON(GetTestPlatform(), SpanFrom(json_3), &log_);
   EXPECT_TRUE(log_.status().ok());
   EXPECT_EQ(
       "map begin\n"
@@ -1493,26 +1600,31 @@ TEST_F(JsonParserTest, StackLimitExceededError) {
       "map end\n"
       "map end\n",
       log_.str());
+}
 
+TEST_F(JsonParserTest, StackLimitExceededError_AtLimit) {
   // Now with kStackLimit (300).
-  log_ = Log();
   std::string json_limit = MakeNestedJson(300);
   ParseJSON(GetTestPlatform(),
             span<uint8_t>(reinterpret_cast<const uint8_t*>(json_limit.data()),
                           json_limit.size()),
             &log_);
   EXPECT_TRUE(log_.status().ok());
-  // Now with kStackLimit + 1 (1001) - it exceeds in the innermost instance.
-  log_ = Log();
-  std::string exceeded = MakeNestedJson(1001);
-  ParseJSON(GetTestPlatform(), SpanFromStdString(exceeded), &log_);
+}
+
+TEST_F(JsonParserTest, StackLimitExceededError_AboveLimit) {
+  // Now with kStackLimit + 1 (301) - it exceeds in the innermost instance.
+  std::string exceeded = MakeNestedJson(301);
+  ParseJSON(GetTestPlatform(), SpanFrom(exceeded), &log_);
   EXPECT_EQ(Error::JSON_PARSER_STACK_LIMIT_EXCEEDED, log_.status().error);
   EXPECT_EQ(static_cast<std::ptrdiff_t>(strlen("{\"foo\":") * 301),
             log_.status().pos);
+}
+
+TEST_F(JsonParserTest, StackLimitExceededError_WayAboveLimit) {
   // Now way past the limit. Still, the point of exceeding is 301.
-  log_ = Log();
   std::string far_out = MakeNestedJson(320);
-  ParseJSON(GetTestPlatform(), SpanFromStdString(far_out), &log_);
+  ParseJSON(GetTestPlatform(), SpanFrom(far_out), &log_);
   EXPECT_EQ(Error::JSON_PARSER_STACK_LIMIT_EXCEEDED, log_.status().error);
   EXPECT_EQ(static_cast<std::ptrdiff_t>(strlen("{\"foo\":") * 301),
             log_.status().pos);
@@ -1520,7 +1632,7 @@ TEST_F(JsonParserTest, StackLimitExceededError) {
 
 TEST_F(JsonParserTest, NoInputError) {
   std::string json = "";
-  ParseJSON(GetTestPlatform(), SpanFromStdString(json), &log_);
+  ParseJSON(GetTestPlatform(), SpanFrom(json), &log_);
   EXPECT_EQ(Error::JSON_PARSER_NO_INPUT, log_.status().error);
   EXPECT_EQ(0, log_.status().pos);
   EXPECT_EQ("", log_.str());
@@ -1528,7 +1640,7 @@ TEST_F(JsonParserTest, NoInputError) {
 
 TEST_F(JsonParserTest, InvalidTokenError) {
   std::string json = "|";
-  ParseJSON(GetTestPlatform(), SpanFromStdString(json), &log_);
+  ParseJSON(GetTestPlatform(), SpanFrom(json), &log_);
   EXPECT_EQ(Error::JSON_PARSER_INVALID_TOKEN, log_.status().error);
   EXPECT_EQ(0, log_.status().pos);
   EXPECT_EQ("", log_.str());
@@ -1537,7 +1649,7 @@ TEST_F(JsonParserTest, InvalidTokenError) {
 TEST_F(JsonParserTest, InvalidNumberError) {
   // Mantissa exceeds max (the constant used here is int64_t max).
   std::string json = "1E9223372036854775807";
-  ParseJSON(GetTestPlatform(), SpanFromStdString(json), &log_);
+  ParseJSON(GetTestPlatform(), SpanFrom(json), &log_);
   EXPECT_EQ(Error::JSON_PARSER_INVALID_NUMBER, log_.status().error);
   EXPECT_EQ(0, log_.status().pos);
   EXPECT_EQ("", log_.str());
@@ -1546,7 +1658,7 @@ TEST_F(JsonParserTest, InvalidNumberError) {
 TEST_F(JsonParserTest, InvalidStringError) {
   // \x22 is an unsupported escape sequence
   std::string json = "\"foo\\x22\"";
-  ParseJSON(GetTestPlatform(), SpanFromStdString(json), &log_);
+  ParseJSON(GetTestPlatform(), SpanFrom(json), &log_);
   EXPECT_EQ(Error::JSON_PARSER_INVALID_STRING, log_.status().error);
   EXPECT_EQ(0, log_.status().pos);
   EXPECT_EQ("", log_.str());
@@ -1554,7 +1666,7 @@ TEST_F(JsonParserTest, InvalidStringError) {
 
 TEST_F(JsonParserTest, UnexpectedArrayEndError) {
   std::string json = "[1,2,]";
-  ParseJSON(GetTestPlatform(), SpanFromStdString(json), &log_);
+  ParseJSON(GetTestPlatform(), SpanFrom(json), &log_);
   EXPECT_EQ(Error::JSON_PARSER_UNEXPECTED_ARRAY_END, log_.status().error);
   EXPECT_EQ(5, log_.status().pos);
   EXPECT_EQ("", log_.str());
@@ -1562,7 +1674,7 @@ TEST_F(JsonParserTest, UnexpectedArrayEndError) {
 
 TEST_F(JsonParserTest, CommaOrArrayEndExpectedError) {
   std::string json = "[1,2 2";
-  ParseJSON(GetTestPlatform(), SpanFromStdString(json), &log_);
+  ParseJSON(GetTestPlatform(), SpanFrom(json), &log_);
   EXPECT_EQ(Error::JSON_PARSER_COMMA_OR_ARRAY_END_EXPECTED,
             log_.status().error);
   EXPECT_EQ(5, log_.status().pos);
@@ -1572,7 +1684,7 @@ TEST_F(JsonParserTest, CommaOrArrayEndExpectedError) {
 TEST_F(JsonParserTest, StringLiteralExpectedError) {
   // There's an error because the key bar, a string, is not terminated.
   std::string json = "{\"foo\": 3.1415, \"bar: 31415e-4}";
-  ParseJSON(GetTestPlatform(), SpanFromStdString(json), &log_);
+  ParseJSON(GetTestPlatform(), SpanFrom(json), &log_);
   EXPECT_EQ(Error::JSON_PARSER_STRING_LITERAL_EXPECTED, log_.status().error);
   EXPECT_EQ(16, log_.status().pos);
   EXPECT_EQ("", log_.str());
@@ -1580,7 +1692,7 @@ TEST_F(JsonParserTest, StringLiteralExpectedError) {
 
 TEST_F(JsonParserTest, ColonExpectedError) {
   std::string json = "{\"foo\", 42}";
-  ParseJSON(GetTestPlatform(), SpanFromStdString(json), &log_);
+  ParseJSON(GetTestPlatform(), SpanFrom(json), &log_);
   EXPECT_EQ(Error::JSON_PARSER_COLON_EXPECTED, log_.status().error);
   EXPECT_EQ(6, log_.status().pos);
   EXPECT_EQ("", log_.str());
@@ -1588,7 +1700,7 @@ TEST_F(JsonParserTest, ColonExpectedError) {
 
 TEST_F(JsonParserTest, UnexpectedMapEndError) {
   std::string json = "{\"foo\": 42, }";
-  ParseJSON(GetTestPlatform(), SpanFromStdString(json), &log_);
+  ParseJSON(GetTestPlatform(), SpanFrom(json), &log_);
   EXPECT_EQ(Error::JSON_PARSER_UNEXPECTED_MAP_END, log_.status().error);
   EXPECT_EQ(12, log_.status().pos);
   EXPECT_EQ("", log_.str());
@@ -1597,7 +1709,7 @@ TEST_F(JsonParserTest, UnexpectedMapEndError) {
 TEST_F(JsonParserTest, CommaOrMapEndExpectedError) {
   // The second separator should be a comma.
   std::string json = "{\"foo\": 3.1415: \"bar\": 0}";
-  ParseJSON(GetTestPlatform(), SpanFromStdString(json), &log_);
+  ParseJSON(GetTestPlatform(), SpanFrom(json), &log_);
   EXPECT_EQ(Error::JSON_PARSER_COMMA_OR_MAP_END_EXPECTED, log_.status().error);
   EXPECT_EQ(14, log_.status().pos);
   EXPECT_EQ("", log_.str());
@@ -1605,7 +1717,7 @@ TEST_F(JsonParserTest, CommaOrMapEndExpectedError) {
 
 TEST_F(JsonParserTest, ValueExpectedError) {
   std::string json = "}";
-  ParseJSON(GetTestPlatform(), SpanFromStdString(json), &log_);
+  ParseJSON(GetTestPlatform(), SpanFrom(json), &log_);
   EXPECT_EQ(Error::JSON_PARSER_VALUE_EXPECTED, log_.status().error);
   EXPECT_EQ(0, log_.status().pos);
   EXPECT_EQ("", log_.str());
@@ -1615,15 +1727,14 @@ TEST(ConvertJSONToCBOR, RoundTripValidJson) {
   std::string json = "{\"msg\":\"Hello, world.\"}";
   std::string cbor;
   {
-    Status status =
-        ConvertJSONToCBOR(GetTestPlatform(), SpanFromStdString(json), &cbor);
+    Status status = ConvertJSONToCBOR(GetTestPlatform(), SpanFrom(json), &cbor);
     EXPECT_EQ(Error::OK, status.error);
     EXPECT_EQ(Status::npos(), status.pos);
   }
   std::string roundtrip_json;
   {
-    Status status = ConvertCBORToJSON(GetTestPlatform(),
-                                      SpanFromStdString(cbor), &roundtrip_json);
+    Status status =
+        ConvertCBORToJSON(GetTestPlatform(), SpanFrom(cbor), &roundtrip_json);
     EXPECT_EQ(Error::OK, status.error);
     EXPECT_EQ(Status::npos(), status.pos);
   }

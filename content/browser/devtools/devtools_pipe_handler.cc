@@ -45,7 +45,7 @@ const int kWriteFD = 4;
 // also tells us the message size on the wire.
 // The details of the encoding are implemented in
 // third_party/inspector_protocol/encoding/encoding.h.
-using inspector_protocol_encoding::SpanFromStdString;
+using inspector_protocol_encoding::SpanFrom;
 using inspector_protocol_encoding::cbor::InitialByteFor32BitLengthByteString;
 using inspector_protocol_encoding::cbor::InitialByteForEnvelope;
 using inspector_protocol_encoding::cbor::IsCBORMessage;
@@ -160,7 +160,7 @@ void WriteIntoPipeASCIIZ(int write_fd, const std::string& message) {
 }
 
 void WriteIntoPipeCBOR(int write_fd, const std::string& message) {
-  DCHECK(IsCBORMessage(SpanFromStdString(message)));
+  DCHECK(IsCBORMessage(SpanFrom(message)));
 
   WriteBytes(write_fd, message.data(), message.size());
 }
