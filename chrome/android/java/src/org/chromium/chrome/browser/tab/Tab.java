@@ -67,11 +67,9 @@ import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.ChildProcessImportance;
-import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsAccessibility;
-import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.content_public.common.ResourceRequestBody;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
@@ -255,12 +253,7 @@ public class Tab
 
     private FullscreenManager mFullscreenManager;
 
-    /** The current browser controls constraints. -1 if not set. */
-    private @BrowserControlsState int mBrowserConstrolsConstraints = -1;
-
     private TabDelegateFactory mDelegateFactory;
-
-    private BrowserControlsVisibilityDelegate mBrowserControlsVisibilityDelegate;
 
     /** Listens for views related to the tab to be attached or detached. */
     private OnAttachStateChangeListener mAttachStateChangeListener;
@@ -734,11 +727,6 @@ public class Tab
             // Ensure that it's restored appropriately.
             loadIfNeeded();
         }
-
-        // When resuming the activity, force an update to the fullscreen state to ensure a
-        // subactivity did not change the fullscreen configuration of this ChromeTab's renderer in
-        // the case where it was shared.
-        updateFullscreenEnabledState();
     }
 
     /**
@@ -898,8 +886,7 @@ public class Tab
 
             RevenueStats.getInstance().tabCreated(this);
 
-            mBrowserControlsVisibilityDelegate =
-                    mDelegateFactory.createBrowserControlsVisibilityDelegate(this);
+            mDelegateFactory.createBrowserControlsState(this);
 
             // If there is a frozen WebContents state or a pending lazy load, don't create a new
             // WebContents.
@@ -1040,8 +1027,7 @@ public class Tab
         // Update the delegate factory, then recreate and propagate all delegates.
         mDelegateFactory = tabDelegateFactory;
         mWebContentsDelegate = mDelegateFactory.createWebContentsDelegate(this);
-        mBrowserControlsVisibilityDelegate =
-                mDelegateFactory.createBrowserControlsVisibilityDelegate(this);
+        mDelegateFactory.createBrowserControlsState(this);
 
         // Reload the NativePage (if any), since the old NativePage has a reference to the old
         // activity.
@@ -1838,80 +1824,6 @@ public class Tab
     }
 
     /**
-     * Push state about whether or not the browser controls can show or hide to the renderer.
-     */
-    public void updateFullscreenEnabledState() {
-        if (isFrozen()) return;
-
-        int constraints = getBrowserControlsStateConstraints();
-
-        updateBrowserControlsState(constraints, BrowserControlsState.BOTH,
-                constraints != BrowserControlsState.HIDDEN);
-
-        if (mWebContents != null) {
-            GestureListenerManager gestureManager =
-                    GestureListenerManager.fromWebContents(mWebContents);
-            if (gestureManager != null && mFullscreenManager != null) {
-                gestureManager.updateMultiTouchZoomSupport(
-                        !mFullscreenManager.getPersistentFullscreenMode());
-            }
-        }
-    }
-
-    /**
-     * Updates the browser controls state for this tab.  As these values are set at the renderer
-     * level, there is potential for this impacting other tabs that might share the same
-     * process.
-     *
-     * @param constraints The constraints that determine whether the controls can be shown
-     *                    or hidden at all.
-     * @param current The desired current state for the controls.  Pass
-     *                {@link BrowserControlsState#BOTH} to preserve the current position.
-     * @param animate Whether the controls should animate to the specified ending condition or
-     *                should jump immediately.
-     */
-    protected void updateBrowserControlsState(@BrowserControlsState int constraints,
-            @BrowserControlsState int current, boolean animate) {
-        if (mNativeTabAndroid == 0) return;
-        nativeUpdateBrowserControlsState(mNativeTabAndroid, constraints, current, animate);
-
-        if (constraints == mBrowserConstrolsConstraints) return;
-        mBrowserConstrolsConstraints = constraints;
-        for (TabObserver observer : mObservers) {
-            observer.onBrowserControlsConstraintsUpdated(this, constraints);
-        }
-    }
-
-    /**
-     * Updates the browser controls state for this tab.  As these values are set at the renderer
-     * level, there is potential for this impacting other tabs that might share the same
-     * process.
-     *
-     * @param current The desired current state for the controls.  Pass
-     *                {@link BrowserControlsState#BOTH} to preserve the current position.
-     * @param animate Whether the controls should animate to the specified ending condition or
-     *                should jump immediately.
-     */
-    public void updateBrowserControlsState(int current, boolean animate) {
-        int constraints = getBrowserControlsStateConstraints();
-        // Do nothing if current and constraints conflict to avoid error in
-        // renderer.
-        if ((constraints == BrowserControlsState.HIDDEN && current == BrowserControlsState.SHOWN)
-                || (constraints == BrowserControlsState.SHOWN
-                           && current == BrowserControlsState.HIDDEN)) {
-            return;
-        }
-        updateBrowserControlsState(getBrowserControlsStateConstraints(), current, animate);
-    }
-
-    /**
-     * @return Whether hiding browser controls is enabled or not.
-     */
-    private boolean canAutoHideBrowserControls() {
-        return mBrowserControlsVisibilityDelegate.canAutoHideBrowserControls();
-    }
-
-    /**
      * Performs any subclass-specific tasks when the Tab crashes.
      */
     void handleTabCrash() {
@@ -1920,28 +1832,6 @@ public class Tab
         RewindableIterator<TabObserver> observers = getTabObservers();
         while (observers.hasNext()) observers.next().onCrash(this);
         mIsBeingRestored = false;
-    }
-
-    /**
-     * @return Whether showing browser controls is enabled or not.
-     */
-    public boolean canShowBrowserControls() {
-        return mBrowserControlsVisibilityDelegate.canShowBrowserControls();
-    }
-
-    /**
-     * @return The current visibility constraints for the display of browser controls.
-     *         {@link BrowserControlsState} defines the valid return options.
-     */
-    @BrowserControlsState
-    public int getBrowserControlsStateConstraints() {
-        int constraints = BrowserControlsState.BOTH;
-        if (!canShowBrowserControls()) {
-            constraints = BrowserControlsState.HIDDEN;
-        } else if (!canAutoHideBrowserControls()) {
-            constraints = BrowserControlsState.SHOWN;
-        }
-        return constraints;
     }
 
     /**
@@ -2129,8 +2019,6 @@ public class Tab
     private native void nativeSetActiveNavigationEntryTitleForUrl(long nativeTabAndroid, String url,
             String title);
     private native void nativeCreateHistoricalTab(long nativeTabAndroid);
-    private native void nativeUpdateBrowserControlsState(
-            long nativeTabAndroid, int constraints, int current, boolean animate);
     private native void nativeLoadOriginalImage(long nativeTabAndroid);
     private native long nativeGetBookmarkId(long nativeTabAndroid, boolean onlyEditable);
     private native boolean nativeHasPrerenderedUrl(long nativeTabAndroid, String url);

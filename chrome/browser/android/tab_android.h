@@ -175,13 +175,6 @@ class TabAndroid {
   static void CreateHistoricalTabFromContents(
       content::WebContents* web_contents);
 
-  void UpdateBrowserControlsState(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      jint constraints,
-      jint current,
-      jboolean animate);
-
   void LoadOriginalImage(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj);
 

@@ -53,6 +53,7 @@ import org.chromium.chrome.browser.suggestions.TileGroupDelegateImpl;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
+import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
@@ -425,7 +426,8 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
                 ((ViewGroup.MarginLayoutParams) view.getLayoutParams());
         if (layoutParams == null) return;
 
-        final @BrowserControlsState int constraints = mTab.getBrowserControlsStateConstraints();
+        final @BrowserControlsState int constraints =
+                TabBrowserControlsState.get(mTab).getConstraints();
         layoutParams.bottomMargin = (constraints != BrowserControlsState.HIDDEN)
                 ? mFullscreenManager.getBottomControlsHeight()
                 : 0;

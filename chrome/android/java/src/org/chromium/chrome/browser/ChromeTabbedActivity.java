@@ -124,9 +124,9 @@ import org.chromium.chrome.browser.snackbar.undo.UndoBarController;
 import org.chromium.chrome.browser.suggestions.SuggestionsEventReporterBridge;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
 import org.chromium.chrome.browser.survey.ChromeSurveyController;
-import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAssociatedApp;
+import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tab.TabStateBrowserControlsVisibilityDelegate;
@@ -449,10 +449,11 @@ public class ChromeTabbedActivity
 
     private class TabbedModeTabDelegateFactory extends TabDelegateFactory {
         @Override
-        public BrowserControlsVisibilityDelegate createBrowserControlsVisibilityDelegate(Tab tab) {
-            return new ComposedBrowserControlsVisibilityDelegate(
-                    new TabbedModeBrowserControlsVisibilityDelegate(tab),
-                    getFullscreenManager().getBrowserVisibilityDelegate());
+        public void createBrowserControlsState(Tab tab) {
+            TabBrowserControlsState.create(tab,
+                    new ComposedBrowserControlsVisibilityDelegate(
+                            new TabbedModeBrowserControlsVisibilityDelegate(tab),
+                            getFullscreenManager().getBrowserVisibilityDelegate()));
         }
     }
 

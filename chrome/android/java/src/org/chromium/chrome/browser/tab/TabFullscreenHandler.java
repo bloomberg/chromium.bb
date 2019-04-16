@@ -4,7 +4,9 @@
 
 package org.chromium.chrome.browser.tab;
 
+import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
+import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.ImeEventObserver;
 import org.chromium.content_public.browser.SelectionPopupController;
@@ -27,13 +29,21 @@ public final class TabFullscreenHandler extends TabWebContentsUserData implement
         tab.getUserDataHost().setUserData(USER_DATA_KEY, new TabFullscreenHandler(tab));
     }
 
+    /**
+     * Push state about whether or not the browser controls can show or hide to the renderer.
+     */
+    public static void updateEnabledState(Tab tab) {
+        if (tab == null) return;
+        TabFullscreenHandler.get(tab).updateEnabledState();
+    }
+
     private TabFullscreenHandler(Tab tab) {
         super(tab);
         mTab = tab;
         mTab.addObserver(new EmptyTabObserver() {
             @Override
             public void onSSLStateUpdated(Tab tab) {
-                tab.updateFullscreenEnabledState();
+                updateEnabledState();
             }
 
             @Override
@@ -79,10 +89,9 @@ public final class TabFullscreenHandler extends TabWebContentsUserData implement
                     tab.getFullscreenManager().enterPersistentFullscreenMode(options);
                 }
 
-                if (tab.getWebContents() != null) {
-                    SelectionPopupController controller =
-                            SelectionPopupController.fromWebContents(tab.getWebContents());
-                    controller.destroySelectActionMode();
+                WebContents webContents = tab.getWebContents();
+                if (webContents != null) {
+                    SelectionPopupController.fromWebContents(webContents).destroySelectActionMode();
                 }
             }
 
@@ -90,15 +99,15 @@ public final class TabFullscreenHandler extends TabWebContentsUserData implement
             public void onRendererResponsiveStateChanged(Tab tab, boolean isResponsive) {
                 if (tab.getFullscreenManager() == null) return;
                 if (isResponsive) {
-                    tab.updateFullscreenEnabledState();
+                    updateEnabledState();
                 } else {
-                    tab.updateBrowserControlsState(BrowserControlsState.SHOWN, false);
+                    TabBrowserControlsState.get(mTab).update(BrowserControlsState.SHOWN, false);
                 }
             }
 
             @Override
             public void onPageLoadFinished(Tab tab, String url) {
-                tab.updateFullscreenEnabledState();
+                updateEnabledState();
             }
 
             @Override
@@ -125,6 +134,25 @@ public final class TabFullscreenHandler extends TabWebContentsUserData implement
     @Override
     public void onNodeAttributeUpdated(boolean editable, boolean password) {
         if (mTab.getFullscreenManager() == null) return;
-        mTab.updateFullscreenEnabledState();
+        updateEnabledState();
+    }
+
+    private void updateEnabledState() {
+        if (mTab.isFrozen()) return;
+
+        TabBrowserControlsState browserControls = TabBrowserControlsState.get(mTab);
+        browserControls.update(BrowserControlsState.BOTH,
+                browserControls.getConstraints() != BrowserControlsState.HIDDEN);
+
+        WebContents webContents = mTab.getWebContents();
+        if (webContents != null) {
+            GestureListenerManager gestureManager =
+                    GestureListenerManager.fromWebContents(webContents);
+            FullscreenManager fullscreenManager = mTab.getFullscreenManager();
+            if (gestureManager != null && fullscreenManager != null) {
+                gestureManager.updateMultiTouchZoomSupport(
+                        !fullscreenManager.getPersistentFullscreenMode());
+            }
+        }
     }
 }

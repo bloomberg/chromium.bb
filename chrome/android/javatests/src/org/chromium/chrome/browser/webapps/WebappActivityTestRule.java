@@ -20,6 +20,7 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
+import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -147,11 +148,10 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
         waitUntilIdle();
     }
 
-    public static void assertToolbarShowState(
-            final ChromeActivity activity, final boolean showState) {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertEquals(showState, activity.getActivityTab().canShowBrowserControls());
-        });
+    public static void assertToolbarShowState(ChromeActivity activity, boolean showState) {
+        Assert.assertEquals(showState,
+                TestThreadUtils.runOnUiThreadBlockingNoException(
+                        () -> TabBrowserControlsState.get(activity.getActivityTab()).canShow()));
     }
 
     /**
