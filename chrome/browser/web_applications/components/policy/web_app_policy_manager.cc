@@ -26,7 +26,10 @@ namespace web_app {
 
 namespace {
 
-InstallOptions GetInstallOptionsForPolicyEntry(const base::Value& entry) {
+void ParseInstallOptionsFromPolicyEntry(const base::Value& entry,
+                                        InstallOptions* install_options) {
+  DCHECK(install_options);
+
   const base::Value& url = *entry.FindKey(kUrlKey);
   const base::Value* default_launch_container =
       entry.FindKey(kDefaultLaunchContainerKey);
@@ -39,36 +42,32 @@ InstallOptions GetInstallOptionsForPolicyEntry(const base::Value& entry) {
          default_launch_container->GetString() ==
              kDefaultLaunchContainerTabValue);
 
-  LaunchContainer launch_container;
+  install_options->url = GURL(url.GetString());
+  install_options->install_source = web_app::InstallSource::kExternalPolicy;
+
   if (!default_launch_container) {
-    launch_container = LaunchContainer::kTab;
+    install_options->launch_container = LaunchContainer::kTab;
   } else if (default_launch_container->GetString() ==
              kDefaultLaunchContainerTabValue) {
-    launch_container = LaunchContainer::kTab;
+    install_options->launch_container = LaunchContainer::kTab;
   } else {
-    launch_container = LaunchContainer::kWindow;
+    install_options->launch_container = LaunchContainer::kWindow;
   }
-
-  InstallOptions install_options(GURL(url.GetString()), launch_container,
-                                 web_app::InstallSource::kExternalPolicy);
 
   bool create_shortcut = false;
   if (create_desktop_shortcut)
     create_shortcut = create_desktop_shortcut->GetBool();
 
-  install_options.add_to_applications_menu = create_shortcut;
-  install_options.add_to_desktop = create_shortcut;
+  install_options->add_to_applications_menu = create_shortcut;
+  install_options->add_to_desktop = create_shortcut;
 
   // It's not yet clear how pinning to shelf will work for policy installed
   // Web Apps, but for now never pin them. See crbug.com/880125.
-  install_options.add_to_quick_launch_bar = false;
-
-  install_options.install_placeholder = true;
-
-  return install_options;
+  install_options->add_to_quick_launch_bar = false;
 }
 
 }  // namespace
+
 WebAppPolicyManager::WebAppPolicyManager(Profile* profile,
                                          PendingAppManager* pending_app_manager)
     : profile_(profile),
@@ -101,10 +100,12 @@ void WebAppPolicyManager::ReinstallPlaceholderAppIfNecessary(const GURL& url) {
   if (it == web_apps_list.end())
     return;
 
-  auto install_options = GetInstallOptionsForPolicyEntry(*it);
-  install_options.install_placeholder = false;
-  install_options.reinstall_placeholder = true;
+  InstallOptions install_options;
+  ParseInstallOptionsFromPolicyEntry(*it, &install_options);
+
+  // No need to install a placeholder because there should be one already.
   install_options.stop_if_window_opened = true;
+  install_options.reinstall_placeholder = true;
 
   // If the app is not a placeholder app, PendingAppManager will ignore the
   // request.
@@ -135,7 +136,16 @@ void WebAppPolicyManager::RefreshPolicyInstalledApps() {
   // are using a SimpleSchemaValidatingPolicyHandler which should validate them
   // for us.
   for (const base::Value& entry : web_apps->GetList()) {
-    install_options_list.push_back(GetInstallOptionsForPolicyEntry(entry));
+    InstallOptions install_options;
+    ParseInstallOptionsFromPolicyEntry(entry, &install_options);
+
+    install_options.install_placeholder = true;
+    // When the policy gets refreshed, we should try to reinstall placeholder
+    // apps but only if they are not being used.
+    install_options.stop_if_window_opened = true;
+    install_options.reinstall_placeholder = true;
+
+    install_options_list.push_back(std::move(install_options));
   }
 
   pending_app_manager_->SynchronizeInstalledApps(
