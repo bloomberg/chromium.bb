@@ -676,40 +676,6 @@ cr.define('languages_page_tests', function() {
         Polymer.dom.flush();
         assertFalse(moreInfo.hidden);
       });
-
-      test('disabling all languages disables spellcheck', () => {
-        if (cr.isMac) {
-          return;
-        }
-
-        languageHelper.setPrefValue('browser.enable_spellchecking', true);
-        const spellCheckToggles =
-            languagesPage.$.spellCheckCollapse.querySelectorAll(
-                '.list-item cr-toggle');
-        spellCheckToggles.forEach((language) => {
-          language.click();
-        });
-        assertFalse(
-            languageHelper.getPref('browser.enable_spellchecking').value);
-      });
-
-      test('enabling spellcheck should enable all spellcheck', () => {
-        if (cr.isMac) {
-          return;
-        }
-
-        languagesPage.setPrefValue('browser.enable_spellchecking', false);
-        languagesPage.setPrefValue('spellcheck.dictionaries', []);
-        languagesPage.$.enableSpellcheckingToggle.click();
-
-        // Assert that the enabled languages are all the languages that have
-        // spell check enabled in FakeLanguageSettingsPrivate.
-        const enabledLanguages =
-            languageHelper.getPref('spellcheck.dictionaries').value;
-        assertEquals(enabledLanguages.length, 2);
-        assertEquals(enabledLanguages[0], 'en-US');
-        assertEquals(enabledLanguages[1], 'sw');
-      });
     });
 
     suite(TestNames.SpellcheckOfficialBuild, function() {
