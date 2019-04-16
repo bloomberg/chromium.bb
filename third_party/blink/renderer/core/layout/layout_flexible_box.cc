@@ -264,7 +264,7 @@ void LayoutFlexibleBox::MergeAnonymousFlexItems(LayoutObject* remove_child) {
   if (!next || !next->IsAnonymousBlock())
     return;
   ToLayoutBoxModelObject(next)->MoveAllChildrenTo(ToLayoutBoxModelObject(prev));
-  ToLayoutBlockFlow(next)->DeleteLineBoxTree();
+  To<LayoutBlockFlow>(next)->DeleteLineBoxTree();
   next->Destroy();
   intrinsic_size_along_main_axis_.erase(next);
 }

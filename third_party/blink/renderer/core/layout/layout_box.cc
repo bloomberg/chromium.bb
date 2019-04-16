@@ -197,8 +197,8 @@ void LayoutBox::RemoveFloatingOrPositionedChildFromBlockLists() {
   if (IsFloating()) {
     LayoutBlockFlow* parent_block_flow = nullptr;
     for (LayoutObject* curr = Parent(); curr; curr = curr->Parent()) {
-      if (curr->IsLayoutBlockFlow()) {
-        LayoutBlockFlow* curr_block_flow = ToLayoutBlockFlow(curr);
+      auto* curr_block_flow = DynamicTo<LayoutBlockFlow>(curr);
+      if (curr_block_flow) {
         if (!parent_block_flow || curr_block_flow->ContainsFloat(this))
           parent_block_flow = curr_block_flow;
       }
@@ -280,10 +280,11 @@ void LayoutBox::StyleDidChange(StyleDifference diff,
   if (HasReflection() && !HasLayer())
     SetHasReflection(false);
 
+  auto* parent_flow_block = DynamicTo<LayoutBlockFlow>(Parent());
   if (IsFloatingOrOutOfFlowPositioned() && old_style &&
       !old_style->IsFloating() && !old_style->HasOutOfFlowPosition() &&
-      Parent() && Parent()->IsLayoutBlockFlow())
-    ToLayoutBlockFlow(Parent())->ChildBecameFloatingOrOutOfFlow(this);
+      parent_flow_block)
+    parent_flow_block->ChildBecameFloatingOrOutOfFlow(this);
 
   const ComputedStyle& new_style = StyleRef();
   if (NeedsLayout() && old_style)
@@ -2171,8 +2172,9 @@ LayoutUnit LayoutBox::ContainingBlockLogicalHeightForContent(
 
 LayoutUnit LayoutBox::ContainingBlockAvailableLineWidth() const {
   LayoutBlock* cb = ContainingBlock();
-  if (cb->IsLayoutBlockFlow()) {
-    return ToLayoutBlockFlow(cb)->AvailableLogicalWidthForAvoidingFloats(
+  auto* child_block_flow = DynamicTo<LayoutBlockFlow>(cb);
+  if (child_block_flow) {
+    return child_block_flow->AvailableLogicalWidthForAvoidingFloats(
         LogicalTop(), AvailableLogicalHeight(kIncludeMarginBorderPadding));
   }
   return LayoutUnit();
@@ -3101,12 +3103,13 @@ LayoutUnit LayoutBox::ComputeLogicalWidthUsing(
   LayoutUnit logical_width_result =
       FillAvailableMeasure(available_logical_width, margin_start, margin_end);
 
-  if (ShrinkToAvoidFloats() && cb->IsLayoutBlockFlow() &&
-      ToLayoutBlockFlow(cb)->ContainsFloats())
-    logical_width_result =
-        std::min(logical_width_result,
-                 ShrinkLogicalWidthToAvoidFloats(margin_start, margin_end,
-                                                 ToLayoutBlockFlow(cb)));
+  auto* child_block_flow = DynamicTo<LayoutBlockFlow>(cb);
+  if (ShrinkToAvoidFloats() && child_block_flow &&
+      child_block_flow->ContainsFloats()) {
+    logical_width_result = std::min(
+        logical_width_result, ShrinkLogicalWidthToAvoidFloats(
+                                  margin_start, margin_end, child_block_flow));
+  }
 
   if (width_type == kMainOrPreferredSize &&
       SizesLogicalWidthToFitContent(logical_width)) {
@@ -3273,8 +3276,9 @@ void LayoutBox::ComputeMarginsForDirection(MarginDirection flow_direction,
       MinimumValueForLength(margin_end_length, container_width);
 
   LayoutUnit available_width = container_width;
-  if (CreatesNewFormattingContext() && containing_block->IsLayoutBlockFlow() &&
-      ToLayoutBlockFlow(containing_block)->ContainsFloats()) {
+  auto* containing_block_flow = DynamicTo<LayoutBlockFlow>(containing_block);
+  if (CreatesNewFormattingContext() && containing_block_flow &&
+      containing_block_flow->ContainsFloats()) {
     available_width = ContainingBlockAvailableLineWidth();
     if (ShrinkToAvoidFloats() && available_width < container_width) {
       margin_start = std::max(LayoutUnit(), margin_start_width);
@@ -5873,12 +5877,13 @@ static void MarkBoxForRelayoutAfterSplit(LayoutBox* box) {
 
 static void CollapseLoneAnonymousBlockChild(LayoutBox* parent,
                                             LayoutObject* child) {
-  if (!child->IsAnonymousBlock() || !child->IsLayoutBlockFlow())
+  auto* child_block_flow = DynamicTo<LayoutBlockFlow>(child);
+  auto* parent_block_flow = DynamicTo<LayoutBlockFlow>(parent);
+  if (!child->IsAnonymousBlock() || !child_block_flow)
     return;
-  if (!parent->IsLayoutBlockFlow())
+  if (!parent_block_flow)
     return;
-  ToLayoutBlockFlow(parent)->CollapseAnonymousBlockChild(
-      ToLayoutBlockFlow(child));
+  parent_block_flow->CollapseAnonymousBlockChild(child_block_flow);
 }
 
 LayoutObject* LayoutBox::SplitAnonymousBoxesAroundChild(

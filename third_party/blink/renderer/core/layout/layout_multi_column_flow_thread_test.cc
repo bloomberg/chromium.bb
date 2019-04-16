@@ -30,8 +30,8 @@ class MultiColumnRenderingTest : public RenderingTest {
 
 LayoutMultiColumnFlowThread* MultiColumnRenderingTest::FindFlowThread(
     const char* id) const {
-  if (LayoutBlockFlow* multicol_container =
-          ToLayoutBlockFlow(GetLayoutObjectByElementId(id)))
+  if (auto* multicol_container =
+          To<LayoutBlockFlow>(GetLayoutObjectByElementId(id)))
     return multicol_container->MultiColumnFlowThread();
   return nullptr;
 }
@@ -68,8 +68,8 @@ TEST_F(MultiColumnRenderingTest, OneBlockWithInDepthTreeStructureCheck) {
   // Examine the layout tree established by a simple multicol container with a
   // block with some text inside.
   SetMulticolHTML("<div id='mc'><div>xxx</div></div>");
-  LayoutBlockFlow* multicol_container =
-      ToLayoutBlockFlow(GetLayoutObjectByElementId("mc"));
+  auto* multicol_container =
+      To<LayoutBlockFlow>(GetLayoutObjectByElementId("mc"));
   ASSERT_TRUE(multicol_container);
   LayoutMultiColumnFlowThread* flow_thread =
       multicol_container->MultiColumnFlowThread();
@@ -81,7 +81,7 @@ TEST_F(MultiColumnRenderingTest, OneBlockWithInDepthTreeStructureCheck) {
   ASSERT_TRUE(column_set);
   EXPECT_EQ(column_set->PreviousSibling(), flow_thread);
   EXPECT_FALSE(column_set->NextSibling());
-  LayoutBlockFlow* block = ToLayoutBlockFlow(flow_thread->FirstChild());
+  auto* block = To<LayoutBlockFlow>(flow_thread->FirstChild());
   ASSERT_TRUE(block);
   EXPECT_FALSE(block->NextSibling());
   ASSERT_TRUE(block->FirstChild());
@@ -607,10 +607,9 @@ void MultiColumnTreeModifyingTest::DestroyLayoutObject(const char* child_id) {
 TEST_F(MultiColumnTreeModifyingTest, InsertFirstContentAndRemove) {
   SetMulticolHTML("<div id='block'></div><div id='mc'></div>");
   LayoutMultiColumnFlowThread* flow_thread = FindFlowThread("mc");
-  LayoutBlockFlow* block =
-      ToLayoutBlockFlow(GetLayoutObjectByElementId("block"));
-  LayoutBlockFlow* multicol_container =
-      ToLayoutBlockFlow(GetLayoutObjectByElementId("mc"));
+  auto* block = To<LayoutBlockFlow>(GetLayoutObjectByElementId("block"));
+  auto* multicol_container =
+      To<LayoutBlockFlow>(GetLayoutObjectByElementId("mc"));
   block->Remove();
   multicol_container->AddChild(block);
   EXPECT_EQ(block->Parent(), flow_thread);
@@ -651,10 +650,9 @@ TEST_F(MultiColumnTreeModifyingTest, InsertContentAfterContentAndRemove) {
 TEST_F(MultiColumnTreeModifyingTest, InsertSpannerAndRemove) {
   SetMulticolHTML("<div id='spanner'></div><div id='mc'></div>");
   LayoutMultiColumnFlowThread* flow_thread = FindFlowThread("mc");
-  LayoutBlockFlow* spanner =
-      ToLayoutBlockFlow(GetLayoutObjectByElementId("spanner"));
-  LayoutBlockFlow* multicol_container =
-      ToLayoutBlockFlow(GetLayoutObjectByElementId("mc"));
+  auto* spanner = To<LayoutBlockFlow>(GetLayoutObjectByElementId("spanner"));
+  auto* multicol_container =
+      To<LayoutBlockFlow>(GetLayoutObjectByElementId("mc"));
   spanner->Remove();
   multicol_container->AddChild(spanner);
   EXPECT_EQ(spanner->Parent(), flow_thread);

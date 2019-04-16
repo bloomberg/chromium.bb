@@ -79,9 +79,10 @@ LayoutMultiColumnSet* LayoutMultiColumnFlowThread::LastMultiColumnSet() const {
 }
 
 static inline bool IsMultiColumnContainer(const LayoutObject& object) {
-  if (!object.IsLayoutBlockFlow())
+  auto* block_flow = DynamicTo<LayoutBlockFlow>(object);
+  if (!block_flow)
     return false;
-  return ToLayoutBlockFlow(object).MultiColumnFlowThread();
+  return block_flow->MultiColumnFlowThread();
 }
 
 // Return true if there's nothing that prevents the specified object from being
@@ -101,13 +102,13 @@ static inline bool IsMultiColumnContainer(const LayoutObject& object) {
 // spanners inside objects that don't support fragmentation.
 static inline bool CanContainSpannerInParentFragmentationContext(
     const LayoutObject& object) {
-  if (!object.IsLayoutBlockFlow())
+  const auto* block_flow = DynamicTo<LayoutBlockFlow>(object);
+  if (!block_flow)
     return false;
-  const LayoutBlockFlow& block_flow = ToLayoutBlockFlow(object);
-  return !block_flow.CreatesNewFormattingContext() &&
-         !block_flow.StyleRef().CanContainFixedPositionObjects(false) &&
-         block_flow.GetPaginationBreakability() != LayoutBox::kForbidBreaks &&
-         !IsMultiColumnContainer(block_flow);
+  return !block_flow->CreatesNewFormattingContext() &&
+         !block_flow->StyleRef().CanContainFixedPositionObjects(false) &&
+         block_flow->GetPaginationBreakability() != LayoutBox::kForbidBreaks &&
+         !IsMultiColumnContainer(*block_flow);
 }
 
 static inline bool HasAnyColumnSpanners(

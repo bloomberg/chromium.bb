@@ -27,11 +27,11 @@ class LayoutMultiColumnSpannerPlaceholder final : public LayoutBox {
       LayoutBox&);
 
   LayoutBlockFlow* MultiColumnBlockFlow() const {
-    return ToLayoutBlockFlow(Parent());
+    return To<LayoutBlockFlow>(Parent());
   }
 
   LayoutMultiColumnFlowThread* FlowThread() const {
-    return ToLayoutBlockFlow(Parent())->MultiColumnFlowThread();
+    return To<LayoutBlockFlow>(Parent())->MultiColumnFlowThread();
   }
 
   LayoutBox* LayoutObjectInFlowThread() const {

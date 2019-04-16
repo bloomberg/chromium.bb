@@ -184,7 +184,7 @@ LayoutInline* LayoutInline::InlineElementContinuation() const {
   LayoutBoxModelObject* continuation = Continuation();
   if (!continuation || continuation->IsInline())
     return ToLayoutInline(continuation);
-  return ToLayoutBlockFlow(continuation)->InlineElementContinuation();
+  return To<LayoutBlockFlow>(continuation)->InlineElementContinuation();
 }
 
 void LayoutInline::UpdateFromStyle() {
@@ -216,7 +216,7 @@ static void UpdateInFlowPositionOfAnonymousBlockContinuations(
   for (; block && block != containing_block_of_end_of_continuation &&
          block->IsAnonymousBlock();
        block = block->NextSibling()) {
-    LayoutBlockFlow* block_flow = ToLayoutBlockFlow(block);
+    auto* block_flow = To<LayoutBlockFlow>(block);
     if (!block_flow->IsAnonymousBlockContinuation())
       continue;
 
@@ -484,7 +484,7 @@ void LayoutInline::AddChild(LayoutObject* new_child,
 static LayoutBoxModelObject* NextContinuation(LayoutObject* layout_object) {
   if (layout_object->IsInline() && !layout_object->IsAtomicInlineLevel())
     return ToLayoutInline(layout_object)->Continuation();
-  return ToLayoutBlockFlow(layout_object)->InlineElementContinuation();
+  return To<LayoutBlockFlow>(layout_object)->InlineElementContinuation();
 }
 
 LayoutBoxModelObject* LayoutInline::ContinuationBefore(
@@ -679,7 +679,7 @@ void LayoutInline::SplitFlow(LayoutObject* before_child,
                              LayoutBlockFlow* new_block_box,
                              LayoutObject* new_child,
                              LayoutBoxModelObject* old_cont) {
-  LayoutBlockFlow* block = ToLayoutBlockFlow(ContainingBlock());
+  auto* block = To<LayoutBlockFlow>(ContainingBlock());
   LayoutBlockFlow* pre = nullptr;
 
   // Delete our line boxes before we do the inline split into continuations.
@@ -695,16 +695,16 @@ void LayoutInline::SplitFlow(LayoutObject* before_child,
       block->RemovePositionedObjects(nullptr);
       block->RemoveFloatingObjects();
       pre = block;
-      block = ToLayoutBlockFlow(outer_containing_block);
+      block = To<LayoutBlockFlow>(outer_containing_block);
       reused_anonymous_block = true;
     }
   }
 
   // No anonymous block available for use. Make one.
   if (!reused_anonymous_block)
-    pre = ToLayoutBlockFlow(block->CreateAnonymousBlock());
+    pre = To<LayoutBlockFlow>(block->CreateAnonymousBlock());
 
-  LayoutBlockFlow* post = ToLayoutBlockFlow(pre->CreateAnonymousBlock());
+  auto* post = To<LayoutBlockFlow>(pre->CreateAnonymousBlock());
 
   LayoutObject* box_first =
       !reused_anonymous_block ? block->FirstChild() : pre->NextSibling();
@@ -1171,7 +1171,8 @@ PositionWithAffinity LayoutInline::PositionForPoint(
   while (continuation) {
     if (continuation->IsInline() || continuation->SlowFirstChild())
       return continuation->PositionForPoint(point);
-    continuation = ToLayoutBlockFlow(continuation)->InlineElementContinuation();
+    continuation =
+        To<LayoutBlockFlow>(continuation)->InlineElementContinuation();
   }
 
   if (const LayoutBlockFlow* ng_block_flow = ContainingNGBlockFlow())
@@ -1551,8 +1552,8 @@ PaintLayerType LayoutInline::LayerTypeRequired() const {
 
 void LayoutInline::ChildBecameNonInline(LayoutObject* child) {
   // We have to split the parent flow.
-  LayoutBlockFlow* new_box =
-      ToLayoutBlockFlow(ContainingBlock()->CreateAnonymousBlock());
+  auto* new_box =
+      To<LayoutBlockFlow>(ContainingBlock()->CreateAnonymousBlock());
   LayoutBoxModelObject* old_continuation = Continuation();
   SetContinuation(new_box);
   LayoutObject* before_child = child->NextSibling();

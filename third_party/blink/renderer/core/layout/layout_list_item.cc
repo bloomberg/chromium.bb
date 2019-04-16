@@ -140,7 +140,8 @@ LayoutObject* GetParentOfFirstLineBox(LayoutBlockFlow* curr,
     if (curr->HasOverflowClip())
       return curr;
 
-    if (!curr_child->IsLayoutBlockFlow() ||
+    auto* child_block_flow = DynamicTo<LayoutBlockFlow>(curr_child);
+    if (!child_block_flow ||
         (curr_child->IsBox() && ToLayoutBox(curr_child)->IsWritingModeRoot()))
       return curr_child;
 
@@ -149,8 +150,7 @@ LayoutObject* GetParentOfFirstLineBox(LayoutBlockFlow* curr,
          IsHTMLOListElement(*curr_child->GetNode())))
       break;
 
-    LayoutObject* line_box =
-        GetParentOfFirstLineBox(ToLayoutBlockFlow(curr_child), marker);
+    LayoutObject* line_box = GetParentOfFirstLineBox(child_block_flow, marker);
     if (line_box)
       return line_box;
   }
@@ -338,11 +338,12 @@ void LayoutListItem::AlignMarkerInBlockDirection() {
 
   InlineBox* marker_inline_box = marker_->InlineBoxWrapper();
   RootInlineBox& marker_root = marker_inline_box->Root();
-  if (line_box_parent_block && line_box_parent_block->IsLayoutBlockFlow()) {
+  auto* line_box_parent_block_flow =
+      DynamicTo<LayoutBlockFlow>(line_box_parent_block);
+  if (line_box_parent_block && line_box_parent_block_flow) {
     // If marker_ and line_box_parent_block share a same RootInlineBox, no need
     // to align marker.
-    if (ToLayoutBlockFlow(line_box_parent_block)->FirstRootBox() ==
-        &marker_root)
+    if (line_box_parent_block_flow->FirstRootBox() == &marker_root)
       return;
   }
 
