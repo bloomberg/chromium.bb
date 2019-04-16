@@ -112,6 +112,8 @@ group("metrics_python_tests") {
 
     "//tools/metrics/ukm/ukm_model.py",
     "//tools/metrics/ukm/ukm_model_test.py",
+    "//tools/metrics/ukm/xml_validations.py",
+    "//tools/metrics/ukm/xml_validations_test.py",
 
     "//tools/python/google/path_utils.py",
 
