@@ -10,7 +10,6 @@ source_set("ui") {
     "chrome_load_params.mm",
     "native_content_controller.h",
     "native_content_controller.mm",
-    "prerender_final_status.h",
   ]
   public_deps = [
     ":network_activity_indicator_manager",

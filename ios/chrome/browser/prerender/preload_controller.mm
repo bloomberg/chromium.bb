@@ -27,7 +27,6 @@
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_helper_util.h"
 #import "ios/chrome/browser/tabs/tab_private.h"
-#include "ios/chrome/browser/ui/prerender_final_status.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/web_state/ui/crw_native_content.h"
@@ -46,6 +45,16 @@
 using web::WebStatePolicyDecider;
 
 namespace {
+
+// PrerenderFinalStatus values are used in the "Prerender.FinalStatus" histogram
+// and new values needs to be kept in sync with histogram.xml.
+enum PrerenderFinalStatus {
+  PRERENDER_FINAL_STATUS_USED = 0,
+  PRERENDER_FINAL_STATUS_MEMORY_LIMIT_EXCEEDED = 12,
+  PRERENDER_FINAL_STATUS_CANCELLED = 32,
+  PRERENDER_FINAL_STATUS_MAX = 52,
+};
+
 // Delay before starting to prerender a URL.
 const NSTimeInterval kPrerenderDelay = 0.5;
 
