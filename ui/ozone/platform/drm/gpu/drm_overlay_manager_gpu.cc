@@ -49,7 +49,7 @@ void DrmOverlayManagerGpu::ReceiveOverlayValidationResponse(
   TRACE_EVENT_ASYNC_END0(
       "hwoverlays", "DrmOverlayManagerGpu::SendOverlayValidationRequest", this);
 
-  UpdateCacheForOverlayCandidates(candidates, status);
+  UpdateCacheForOverlayCandidates(candidates, widget, status);
 }
 
 }  // namespace ui
