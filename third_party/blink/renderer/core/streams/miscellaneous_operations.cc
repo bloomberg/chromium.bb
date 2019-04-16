@@ -26,38 +26,6 @@ namespace blink {
 
 namespace {
 
-// ResolveMethod implements part of CreateAlgorithmFromUnderlyingMethod and
-// CallOrNoop1.
-v8::MaybeLocal<v8::Value> ResolveMethod(ScriptState* script_state,
-                                        v8::Local<v8::Object> object,
-                                        const char* method_name,
-                                        const char* name_for_error,
-                                        ExceptionState& exception_state) {
-  auto* isolate = script_state->GetIsolate();
-  v8::TryCatch try_catch(isolate);
-
-  // Algorithm steps from CreateAlgorithmFromUnderlyingMethod in the standard.
-  // https://streams.spec.whatwg.org/#create-algorithm-from-underlying-method
-  // 5. Let method be ? GetV(underlyingObject, methodName).
-  auto method_maybe = object->Get(script_state->GetContext(),
-                                  V8AtomicString(isolate, method_name));
-  v8::Local<v8::Value> method;
-  if (!method_maybe.ToLocal(&method)) {
-    exception_state.RethrowV8Exception(try_catch.Exception());
-    return v8::MaybeLocal<v8::Value>();
-  }
-
-  // 6. If method is not undefined,
-  //    a. If ! IsCallable(method) is false, throw a TypeError exception.
-  if (!method->IsFunction() && !method->IsUndefined()) {
-    exception_state.ThrowTypeError(String(name_for_error) +
-                                   " must be a function or undefined");
-    return v8::MaybeLocal<v8::Value>();
-  }
-
-  return method;
-}
-
 // PromiseRejectInternal() implements Promise.reject(_r_) from the ECMASCRIPT
 // standard, https://tc39.github.io/ecma262/#sec-promise.reject.
 // The |recursion_depth| argument is used to prevent infinite recursion in the
@@ -306,6 +274,47 @@ CORE_EXPORT StreamAlgorithm* CreateAlgorithmFromUnderlyingMethod(
     // 7. Return an algorithm which returns a promise resolved with undefined.
     return MakeGarbageCollected<TrivialStreamAlgorithm>();
   }
+
+  return CreateAlgorithmFromResolvedMethod(script_state, underlying_object,
+                                           method, extra_arg);
+}
+
+CORE_EXPORT v8::MaybeLocal<v8::Value> ResolveMethod(
+    ScriptState* script_state,
+    v8::Local<v8::Object> object,
+    const char* method_name,
+    const char* name_for_error,
+    ExceptionState& exception_state) {
+  auto* isolate = script_state->GetIsolate();
+  v8::TryCatch try_catch(isolate);
+
+  // Algorithm steps from CreateAlgorithmFromUnderlyingMethod in the standard.
+  // https://streams.spec.whatwg.org/#create-algorithm-from-underlying-method
+  // 5. Let method be ? GetV(underlyingObject, methodName).
+  auto method_maybe = object->Get(script_state->GetContext(),
+                                  V8AtomicString(isolate, method_name));
+  v8::Local<v8::Value> method;
+  if (!method_maybe.ToLocal(&method)) {
+    exception_state.RethrowV8Exception(try_catch.Exception());
+    return v8::MaybeLocal<v8::Value>();
+  }
+
+  // 6. If method is not undefined,
+  //    a. If ! IsCallable(method) is false, throw a TypeError exception.
+  if (!method->IsFunction() && !method->IsUndefined()) {
+    exception_state.ThrowTypeError(String(name_for_error) +
+                                   " must be a function or undefined");
+    return v8::MaybeLocal<v8::Value>();
+  }
+
+  return method;
+}
+
+CORE_EXPORT StreamAlgorithm* CreateAlgorithmFromResolvedMethod(
+    ScriptState* script_state,
+    v8::Local<v8::Object> underlying_object,
+    v8::Local<v8::Value> method,
+    v8::MaybeLocal<v8::Value> extra_arg) {
   DCHECK(method->IsFunction());
 
   auto* isolate = script_state->GetIsolate();
