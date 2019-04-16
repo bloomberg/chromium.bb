@@ -1672,9 +1672,8 @@ void LayoutText::SetTextWithOffset(scoped_refptr<StringImpl> text,
   if (!force && Equal(text_.Impl(), text.get()))
     return;
 
-  if (CanOptimizeSetText() &&
-      // Check that we are replacing the whole text.
-      offset == 0 && len == TextLength()) {
+  // Check that we are replacing the whole text.
+  if (offset == 0 && len == TextLength() && CanOptimizeSetText()) {
     const ComputedStyle* style_to_use =
         FirstTextBox()->GetLineLayoutItem().Style(
             FirstTextBox()->IsFirstLineStyle());
