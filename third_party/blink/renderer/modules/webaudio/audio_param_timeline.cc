@@ -739,42 +739,49 @@ void AudioParamTimeline::CancelAndHoldAtTime(double cancel_time,
                                                       std::move(saved_event));
     } break;
     case ParamEvent::kSetTarget: {
-      // Don't want to remove the SetTarget event, so bump the index.  But
-      // we do want to insert a cancelEvent so that we stop this
-      // automation and hold the value when we get there.
-      ++cancelled_event_index;
+      if (cancelled_event->Time() < cancel_time) {
+        // Don't want to remove the SetTarget event if it started before the
+        // cancel time, so bump the index.  But we do want to insert a
+        // cancelEvent so that we stop this automation and hold the value when
+        // we get there.
+        ++cancelled_event_index;
 
-      new_event = ParamEvent::CreateCancelValuesEvent(cancel_time, nullptr);
+        new_event = ParamEvent::CreateCancelValuesEvent(cancel_time, nullptr);
+      }
     } break;
     case ParamEvent::kSetValueCurve: {
-      double new_duration = cancel_time - cancelled_event->Time();
+      // If the setValueCurve event started strictly before the cancel time,
+      // there might be something to do....
+      if (cancelled_event->Time() < cancel_time) {
+        if (cancel_time >
+            cancelled_event->Time() + cancelled_event->Duration()) {
+          // If the cancellation time is past the end of the curve there's
+          // nothing to do except remove the following events.
+          ++cancelled_event_index;
+        } else {
+          // Cancellation time is in the middle of the curve.  Therefore,
+          // create a new SetValueCurve event with the appropriate new
+          // parameters to cancel this event properly.  Since it's illegal
+          // to insert any event within a SetValueCurve event, we can
+          // compute the new end value now instead of doing when running
+          // the timeline.
+          double new_duration = cancel_time - cancelled_event->Time();
+          float end_value = ValueCurveAtTime(
+              cancel_time, cancelled_event->Time(), cancelled_event->Duration(),
+              cancelled_event->Curve().data(), cancelled_event->Curve().size());
 
-      if (cancel_time > cancelled_event->Time() + cancelled_event->Duration()) {
-        // If the cancellation time is past the end of the curve,
-        // there's nothing to do except remove the following events.
-        ++cancelled_event_index;
-      } else {
-        // Cancellation time is in the middle of the curve.  Therefore,
-        // create a new SetValueCurve event with the appropriate new
-        // parameters to cancel this event properly.  Since it's illegal
-        // to insert any event within a SetValueCurve event, we can
-        // compute the new end value now instead of doing when running
-        // the timeline.
-        float end_value = ValueCurveAtTime(
-            cancel_time, cancelled_event->Time(), cancelled_event->Duration(),
-            cancelled_event->Curve().data(), cancelled_event->Curve().size());
+          // Replace the existing SetValueCurve with this new one that is
+          // identical except for the duration.
+          new_event = ParamEvent::CreateGeneralEvent(
+              event_type, cancelled_event->Value(), cancelled_event->Time(),
+              cancelled_event->InitialValue(), cancelled_event->CallTime(),
+              cancelled_event->TimeConstant(), new_duration,
+              cancelled_event->Curve(), cancelled_event->CurvePointsPerSecond(),
+              end_value, nullptr);
 
-        // Replace the existing SetValueCurve with this new one that is
-        // identical except for the duration.
-        new_event = ParamEvent::CreateGeneralEvent(
-            event_type, cancelled_event->Value(), cancelled_event->Time(),
-            cancelled_event->InitialValue(), cancelled_event->CallTime(),
-            cancelled_event->TimeConstant(), new_duration,
-            cancelled_event->Curve(), cancelled_event->CurvePointsPerSecond(),
-            end_value, nullptr);
-
-        new_set_value_event = ParamEvent::CreateSetValueEvent(
-            end_value, cancelled_event->Time() + new_duration);
+          new_set_value_event = ParamEvent::CreateSetValueEvent(
+              end_value, cancelled_event->Time() + new_duration);
+        }
       }
     } break;
     case ParamEvent::kSetValue:
