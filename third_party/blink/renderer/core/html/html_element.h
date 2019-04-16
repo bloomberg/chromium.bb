@@ -198,8 +198,7 @@ class CORE_EXPORT HTMLElement : public Element {
   bool SelfOrAncestorHasDirAutoAttribute() const;
   void AdjustDirectionalityIfNeededAfterChildAttributeChanged(Element* child);
   void AdjustDirectionalityIfNeededAfterChildrenChanged(const ChildrenChange&);
-  TextDirection Directionality(
-      Node** strong_directionality_text_node = nullptr) const;
+  TextDirection Directionality() const;
 
   TranslateAttributeMode GetTranslateAttributeMode() const;
 

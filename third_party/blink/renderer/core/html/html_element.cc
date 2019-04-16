@@ -1031,18 +1031,11 @@ TextDirection HTMLElement::DirectionalityIfhasDirAutoAttribute(
   return Directionality();
 }
 
-TextDirection HTMLElement::Directionality(
-    Node** strong_directionality_text_node) const {
+TextDirection HTMLElement::Directionality() const {
   if (auto* input_element = ToHTMLInputElementOrNull(*this)) {
     bool has_strong_directionality;
     TextDirection text_direction = DetermineDirectionality(
         input_element->value(), &has_strong_directionality);
-    if (strong_directionality_text_node) {
-      *strong_directionality_text_node =
-          has_strong_directionality
-              ? const_cast<HTMLInputElement*>(input_element)
-              : nullptr;
-    }
     return text_direction;
   }
 
@@ -1072,16 +1065,11 @@ TextDirection HTMLElement::Directionality(
       bool has_strong_directionality;
       TextDirection text_direction = DetermineDirectionality(
           node->textContent(true), &has_strong_directionality);
-      if (has_strong_directionality) {
-        if (strong_directionality_text_node)
-          *strong_directionality_text_node = node;
+      if (has_strong_directionality)
         return text_direction;
-      }
     }
     node = FlatTreeTraversal::Next(*node, this);
   }
-  if (strong_directionality_text_node)
-    *strong_directionality_text_node = nullptr;
   return TextDirection::kLtr;
 }
 
