@@ -23,6 +23,7 @@
 #include "net/http/http_byte_range.h"
 #include "net/http/http_request_headers.h"
 #include "services/network/public/cpp/cors/cors.h"
+#include "third_party/blink/public/platform/web_network_state_notifier.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_response.h"
@@ -90,7 +91,9 @@ void ResourceMultiBufferDataProvider::Start() {
           net::HttpByteRange::RightUnbounded(byte_pos()).GetHeaderValue()));
 
   if (url_data_->length() == kPositionNotSpecified &&
-      url_data_->CachedSize() == 0 && url_data_->BytesReadFromCache() == 0) {
+      url_data_->CachedSize() == 0 && url_data_->BytesReadFromCache() == 0 &&
+      blink::WebNetworkStateNotifier::SaveDataEnabled() &&
+      url_data_->url().SchemeIs(url::kHttpScheme)) {
     // This lets the data reduction proxy know that we don't have anything
     // previously cached data for this resource. We can only send it if this is
     // the first request for this resource.
