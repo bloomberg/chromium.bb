@@ -59,7 +59,7 @@ public class SuspendedTab extends EmptyTabObserver implements UserData {
         mFqdn = fqdn;
         mTab.addObserver(this);
         mTab.stopLoading();
-        if (isShowing()) {
+        if (isViewAttached()) {
             updateFqdnText();
         } else {
             attachView();
@@ -75,9 +75,14 @@ public class SuspendedTab extends EmptyTabObserver implements UserData {
         mFqdn = null;
     }
 
-    /** @return the fqdn this SuspendedTab was last shown for. */
+    /** @return the fqdn this SuspendedTab is currently showing for; null if not showing. */
     public String getFqdn() {
         return mFqdn;
+    }
+
+    /** @return Whether this SuspendedTab is currently showing. */
+    public boolean isShowing() {
+        return mFqdn != null;
     }
 
     private View createView() {
@@ -116,6 +121,10 @@ public class SuspendedTab extends EmptyTabObserver implements UserData {
                         LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
     }
 
+    private boolean isViewAttached() {
+        return mView != null && mView.getParent() == mTab.getContentView();
+    }
+
     private void updateFqdnText() {
         Context context = mTab.getContext();
         TextView explanationText = (TextView) mView.findViewById(R.id.suspended_tab_explanation);
@@ -124,13 +133,9 @@ public class SuspendedTab extends EmptyTabObserver implements UserData {
     }
 
     private void removeViewIfPresent() {
-        if (isShowing()) {
+        if (isViewAttached()) {
             mTab.getContentView().removeView(mView);
         }
-    }
-
-    private boolean isShowing() {
-        return mView != null && mView.getParent() == mTab.getContentView();
     }
 
     private void removeSelfIfFqdnChanged(String url) {
