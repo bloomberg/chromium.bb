@@ -2446,6 +2446,36 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   EXPECT_NE(nullptr, GetEntityForStorageKey(kKey1));
 }
 
+// This tests the case when the bridge deletes an item, and before it's
+// committed to the server, it created again with a different storage key.
+TEST_F(ClientTagBasedModelTypeProcessorTest,
+       ShouldDeleteItemAndRecreaeItWithDifferentStorageKey) {
+  const std::string kStorageKey1 = "StorageKey1";
+  const std::string kStorageKey2 = "StorageKey2";
+
+  // This verifies that the processor doesn't use GetStorageKey() method.
+  bridge()->SetSupportsGetStorageKey(false);
+
+  InitializeToReadyState();
+
+  std::unique_ptr<EntityData> entity_data1 = GenerateEntityData(kKey1, kValue1);
+  bridge()->WriteItem(kStorageKey1, std::move(entity_data1));
+
+  worker()->AckOnePendingCommit();
+
+  EXPECT_TRUE(type_processor()->IsTrackingEntityForTest(kStorageKey1));
+
+  // Delete the data associated with the first storage key.
+  bridge()->DeleteItem(kStorageKey1);
+  // // Add the same data under a different storage key.
+  std::unique_ptr<EntityData> entity_data2 = GenerateEntityData(kKey1, kValue1);
+  bridge()->WriteItem(kStorageKey2, std::move(entity_data2));
+
+  EXPECT_FALSE(type_processor()->IsTrackingEntityForTest(kStorageKey1));
+  EXPECT_FALSE(db()->HasMetadata(kStorageKey1));
+  EXPECT_TRUE(type_processor()->IsTrackingEntityForTest(kStorageKey2));
+}
+
 class CommitOnlyClientTagBasedModelTypeProcessorTest
     : public ClientTagBasedModelTypeProcessorTest {
  protected:
