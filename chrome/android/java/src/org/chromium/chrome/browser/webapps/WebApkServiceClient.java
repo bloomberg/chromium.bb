@@ -160,6 +160,11 @@ public class WebApkServiceClient {
                 ContextUtils.getApplicationContext(), webApkPackage, connectionCallback);
     }
 
+    /** Returns whether there are any WebAPK service API calls in progress. */
+    public static boolean hasPendingWork() {
+        return sInstance != null && !sInstance.mConnectionManager.didAllConnectCallbacksRun();
+    }
+
     /** Disconnects all the connections to WebAPK services. */
     public static void disconnectAll() {
         if (sInstance == null) return;
