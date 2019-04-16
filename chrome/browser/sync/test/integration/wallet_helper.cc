@@ -140,10 +140,14 @@ bool WalletDataAndMetadataMatchAndAddressesHaveConverted(
 }
 
 void WaitForCurrentTasksToComplete(base::SequencedTaskRunner* task_runner) {
-  base::RunLoop loop;
-  task_runner->PostTask(
-      FROM_HERE, base::BindOnce(&base::RunLoop::Quit, base::Unretained(&loop)));
-  loop.Run();
+  // We are fine with the UI thread getting blocked. If using RunLoop here, in
+  // some uses of this functions, we would get nested RunLoops that tend to
+  // cause troubles. This is a more robust solution.
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
+  task_runner->PostTask(FROM_HERE, base::BindOnce(&base::WaitableEvent::Signal,
+                                                  base::Unretained(&event)));
+  event.Wait();
 }
 
 void WaitForPDMToRefresh(int profile) {
