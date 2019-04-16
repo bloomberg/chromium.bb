@@ -809,7 +809,7 @@ LayoutBlockFlow* LayoutObject::ContainingNGBlockFlow() const {
     DCHECK(box);
     if (NGBlockNode::CanUseNewLayout(*box)) {
       DCHECK(box->IsLayoutBlockFlow());
-      return ToLayoutBlockFlow(box);
+      return To<LayoutBlockFlow>(box);
     }
   }
   return nullptr;
@@ -1343,7 +1343,7 @@ inline const LayoutObject* EndOfContinuations(
     if (cur->IsLayoutInline())
       cur = ToLayoutInline(cur)->Continuation();
     else
-      cur = ToLayoutBlockFlow(cur)->Continuation();
+      cur = To<LayoutBlockFlow>(cur)->Continuation();
   }
 
   return prev;
@@ -1946,9 +1946,11 @@ void LayoutObject::ShowLayoutTreeForThis() const {
 
 void LayoutObject::ShowLineTreeForThis() const {
   if (const LayoutBlock* cb = InclusiveContainingBlock()) {
-    if (cb->IsLayoutBlockFlow())
-      ToLayoutBlockFlow(cb)->ShowLineTreeAndMark(nullptr, nullptr, nullptr,
-                                                 nullptr, this);
+    auto* child_block_flow = DynamicTo<LayoutBlockFlow>(cb);
+    if (child_block_flow) {
+      child_block_flow->ShowLineTreeAndMark(nullptr, nullptr, nullptr, nullptr,
+                                            this);
+    }
   }
 }
 
@@ -2613,8 +2615,9 @@ void LayoutObject::PropagateStyleToAnonymousChildren() {
     // Preserve the position style of anonymous block continuations as they can
     // have relative position when they contain block descendants of relative
     // positioned inlines.
-    if (child->IsInFlowPositioned() && child->IsLayoutBlockFlow() &&
-        ToLayoutBlockFlow(child)->IsAnonymousBlockContinuation())
+    auto* child_block_flow = DynamicTo<LayoutBlockFlow>(child);
+    if (child->IsInFlowPositioned() && child_block_flow &&
+        child_block_flow->IsAnonymousBlockContinuation())
       new_style->SetPosition(child->StyleRef().GetPosition());
 
     if (child->IsLayoutNGListMarker())
@@ -3476,8 +3479,10 @@ void LayoutObject::DestroyAndCleanupAnonymousWrappers() {
                     destroy_root_parent = destroy_root_parent->Parent()) {
     // Anonymous block continuations are tracked and destroyed elsewhere (see
     // the bottom of LayoutBlockFlow::RemoveChild)
-    if (destroy_root_parent->IsLayoutBlockFlow() &&
-        ToLayoutBlockFlow(destroy_root_parent)->IsAnonymousBlockContinuation())
+    auto* destroy_root_parent_block =
+        DynamicTo<LayoutBlockFlow>(destroy_root_parent);
+    if (destroy_root_parent_block &&
+        destroy_root_parent_block->IsAnonymousBlockContinuation())
       break;
     // A flow thread is tracked by its containing block. Whether its children
     // are removed or not is irrelevant.

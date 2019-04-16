@@ -153,7 +153,7 @@ class CORE_EXPORT LayoutMultiColumnFlowThread final
   bool IsLayoutMultiColumnFlowThread() const final { return true; }
 
   LayoutBlockFlow* MultiColumnBlockFlow() const {
-    return ToLayoutBlockFlow(Parent());
+    return To<LayoutBlockFlow>(Parent());
   }
 
   LayoutMultiColumnSet* FirstMultiColumnSet() const;

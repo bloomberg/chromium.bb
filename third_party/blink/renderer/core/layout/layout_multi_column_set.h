@@ -127,7 +127,7 @@ class CORE_EXPORT LayoutMultiColumnSet final : public LayoutBlockFlow {
   LayoutFlowThread* FlowThread() const { return flow_thread_; }
 
   LayoutBlockFlow* MultiColumnBlockFlow() const {
-    return ToLayoutBlockFlow(Parent());
+    return To<LayoutBlockFlow>(Parent());
   }
   LayoutMultiColumnFlowThread* MultiColumnFlowThread() const {
     return ToLayoutMultiColumnFlowThread(FlowThread());

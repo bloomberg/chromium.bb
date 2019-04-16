@@ -532,9 +532,9 @@ void LayoutBoxModelObject::AddOutlineRectsForNormalChildren(
     // Outline of an element continuation or anonymous block continuation is
     // added when we iterate the continuation chain.
     // See LayoutBlock::addOutlineRects() and LayoutInline::addOutlineRects().
+    auto* child_block_flow = DynamicTo<LayoutBlockFlow>(child);
     if (child->IsElementContinuation() ||
-        (child->IsLayoutBlockFlow() &&
-         ToLayoutBlockFlow(child)->IsAnonymousBlockContinuation()))
+        (child_block_flow && child_block_flow->IsAnonymousBlockContinuation()))
       continue;
 
     AddOutlineRectsForDescendant(*child, rects, additional_offset,
@@ -619,10 +619,11 @@ void LayoutBoxModelObject::AbsoluteQuads(Vector<FloatQuad>& quads,
   for (const LayoutBoxModelObject* continuation_object = Continuation();
        continuation_object;
        continuation_object = continuation_object->Continuation()) {
+    auto* continuation_block_flow =
+        DynamicTo<LayoutBlockFlow>(continuation_object);
     DCHECK(continuation_object->IsLayoutInline() ||
-           (continuation_object->IsLayoutBlockFlow() &&
-            ToLayoutBlockFlow(continuation_object)
-                ->IsAnonymousBlockContinuation()));
+           (continuation_block_flow &&
+            continuation_block_flow->IsAnonymousBlockContinuation()));
     continuation_object->AbsoluteQuadsForSelf(quads, mode);
   }
 }
@@ -1388,10 +1389,11 @@ void LayoutBoxModelObject::MoveChildTo(
   // anonymous block. Remove all floats from their float-lists immediately as
   // markAllDescendantsWithFloatsForLayout won't attempt to remove floats from
   // parents that have inline-flow if we try later.
-  if (child->IsLayoutBlockFlow() && to_box_model_object->ChildrenInline() &&
+  auto* child_block_flow = DynamicTo<LayoutBlockFlow>(child);
+  if (child_block_flow && to_box_model_object->ChildrenInline() &&
       !ChildrenInline()) {
-    ToLayoutBlockFlow(child)->RemoveFloatingObjectsFromDescendants();
-    DCHECK(!ToLayoutBlockFlow(child)->ContainsFloats());
+    child_block_flow->RemoveFloatingObjectsFromDescendants();
+    DCHECK(!child_block_flow->ContainsFloats());
   }
 
   if (full_remove_insert && IsLayoutBlock() && child->IsBox())
@@ -1424,8 +1426,9 @@ void LayoutBoxModelObject::MoveChildrenTo(
   if (full_remove_insert && block) {
     block->RemovePositionedObjects(nullptr);
     block->RemoveFromPercentHeightContainer();
-    if (block->IsLayoutBlockFlow())
-      ToLayoutBlockFlow(block)->RemoveFloatingObjects();
+    auto* block_flow = DynamicTo<LayoutBlockFlow>(block);
+    if (block_flow)
+      block_flow->RemoveFloatingObjects();
   }
 
   DCHECK(!before_child || to_box_model_object == before_child->Parent());

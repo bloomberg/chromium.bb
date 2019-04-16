@@ -74,8 +74,7 @@ TEST_F(LayoutInlineTest, SimpleContinuation) {
             GetLayoutObjectByElementId("before"));
   EXPECT_FALSE(split_inline_part1->FirstChild()->NextSibling());
 
-  LayoutBlockFlow* block =
-      ToLayoutBlockFlow(split_inline_part1->Continuation());
+  auto* block = To<LayoutBlockFlow>(split_inline_part1->Continuation());
   ASSERT_TRUE(block);
   ASSERT_TRUE(block->FirstChild());
   EXPECT_EQ(block->FirstChild(), GetLayoutObjectByElementId("blockChild"));
@@ -137,7 +136,7 @@ TEST_F(LayoutInlineTest, RegionHitTest) {
     return;
   }
 
-  const LayoutBlockFlow* div = ToLayoutBlockFlow(lots_of_boxes->Parent());
+  const auto* div = To<LayoutBlockFlow>(lots_of_boxes->Parent());
   for (const NGPaintFragment* line : div->PaintFragment()->Children()) {
     DCHECK(line->PhysicalFragment().IsLineBox());
     bool hit_outcome = lots_of_boxes->HitTestCulledInline(hit_result, location,

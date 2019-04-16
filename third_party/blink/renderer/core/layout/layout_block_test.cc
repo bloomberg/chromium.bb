@@ -83,8 +83,7 @@ TEST_F(LayoutBlockTest, NestedInlineVisualOverflow) {
       <input type="radio" style="margin-left: -15px">
     </label>
   )HTML");
-  LayoutBlockFlow* body =
-      ToLayoutBlockFlow(GetDocument().body()->GetLayoutObject());
+  auto* body = To<LayoutBlockFlow>(GetDocument().body()->GetLayoutObject());
   RootInlineBox* box = body->FirstRootBox();
 #if defined(OS_MACOSX)
   EXPECT_EQ(LayoutRect(-17, 0, 16, 19),

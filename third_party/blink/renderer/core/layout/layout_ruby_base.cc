@@ -118,8 +118,8 @@ void LayoutRubyBase::MoveBlockChildren(LayoutRubyBase* to_base,
       first_child_here->ChildrenInline() && last_child_there &&
       last_child_there->IsAnonymousBlock() &&
       last_child_there->ChildrenInline()) {
-    LayoutBlockFlow* anon_block_here = ToLayoutBlockFlow(first_child_here);
-    LayoutBlockFlow* anon_block_there = ToLayoutBlockFlow(last_child_there);
+    auto* anon_block_here = To<LayoutBlockFlow>(first_child_here);
+    auto* anon_block_there = To<LayoutBlockFlow>(last_child_there);
     anon_block_here->MoveAllChildrenTo(anon_block_there,
                                        anon_block_there->Children());
     anon_block_here->DeleteLineBoxTree();
