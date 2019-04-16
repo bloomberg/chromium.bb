@@ -2336,13 +2336,13 @@ void AXNodeObject::AddChildren() {
   AddInlineTextBoxChildren(false);
   AddAccessibleNodeChildren();
 
+  for (const auto& owned_child : owned_children)
+    AddChild(owned_child);
+
   for (const auto& child : children_) {
     if (!child->CachedParentObject())
       child->SetParent(this);
   }
-
-  for (const auto& owned_child : owned_children)
-    AddChild(owned_child);
 }
 
 void AXNodeObject::AddChild(AXObject* child) {
@@ -2350,7 +2350,7 @@ void AXNodeObject::AddChild(AXObject* child) {
   InsertChild(child, index);
 }
 
-void AXNodeObject::InsertChild(AXObject* child, unsigned& index) {
+void AXNodeObject::InsertChild(AXObject* child, unsigned index) {
   if (!child)
     return;
 
@@ -2364,13 +2364,11 @@ void AXNodeObject::InsertChild(AXObject* child, unsigned& index) {
   if (child->AccessibilityIsIgnored()) {
     const auto& children = child->Children();
     wtf_size_t length = children.size();
-    for (wtf_size_t i = 0; i < length; ++i) {
-      InsertChild(children[i], index);
-    }
+    for (wtf_size_t i = 0; i < length; ++i)
+      children_.insert(index + i, children[i]);
   } else if (!child->IsMenuListOption()) {
     // MenuListOptions must only added in AXMenuListPopup::AddChildren
     children_.insert(index, child);
-    index++;
   }
 }
 

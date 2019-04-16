@@ -3460,7 +3460,7 @@ void AXLayoutObject::AddImageMapChildren() {
 }
 
 void AXLayoutObject::AddListMarker() {
-  if (!CanHaveChildren() || !GetLayoutObject() ||
+  if (!CanHaveChildren() || !GetLayoutObject() || AccessibilityIsIgnored() ||
       !GetLayoutObject()->IsListItemIncludingNG()) {
     return;
   }
