@@ -113,38 +113,46 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnit(
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_EXPANDTOENCLOSINGUNIT);
   UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
 
-  // Determine if start is on a TextUnit boundary. If it is not, move backwards
-  // until it is. Move the end forwards from start until it is on the next
-  // TextUnit boundary, if one exists.
+  // Determine if start is on a boundary of the specified TextUnit, if it is
+  // not, move backwards until it is. Move the end forwards from start until it
+  // is on the next TextUnit boundary, if one exists.
   switch (unit) {
     case TextUnit_Character: {
-      // For characters, start_ will always be on a TextUnit boundary. Thus,
-      // end_ is the only position that needs to be moved.
+      // For characters, start_ will always be on a TextUnit boundary.
+      // Thus, end_ is the only position that needs to be moved.
       AXNodePosition::AXPositionInstance next =
           start_->CreateNextCharacterPosition(
               ui::AXBoundaryBehavior::CrossBoundary);
-      if (!next->IsNullPosition()) {
+      if (!next->IsNullPosition())
         end_ = next->Clone();
-      }
-      break;
+      return S_OK;
     }
     case TextUnit_Format:
-    case TextUnit_Word:
-    case TextUnit_Paragraph:
-    case TextUnit_Line:
       return E_NOTIMPL;
-    // Page unit is not supported.
-    // Substituting it by the next larger unit (Document).
+    case TextUnit_Word:
+      start_ = start_->CreatePreviousWordStartPosition(
+          ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+      end_ = start_->CreateNextWordEndPosition(
+          ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+      return S_OK;
+    case TextUnit_Line:
+      start_ = start_->CreatePreviousLineStartPosition(
+          ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+      end_ = start_->CreateNextLineEndPosition(
+          ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+      return S_OK;
+    case TextUnit_Paragraph:
+      return E_NOTIMPL;
+    // Since web content is not paginated, TextUnit_Page is not supported.
+    // Substituting it by the next larger unit: TextUnit_Document.
     case TextUnit_Page:
     case TextUnit_Document:
       start_ = start_->CreatePositionAtStartOfDocument()->AsLeafTextPosition();
       end_ = start_->CreatePositionAtEndOfDocument();
-      break;
+      return S_OK;
     default:
       return UIA_E_NOTSUPPORTED;
   }
-
-  return S_OK;
 }
 
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::FindAttribute(
