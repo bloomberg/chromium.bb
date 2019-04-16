@@ -34,7 +34,7 @@ bool TestLocalCardMigrationManager::IsCreditCardMigrationEnabled() {
 
   bool sync_feature_enabled =
       (personal_data_manager_->GetSyncSigninState() ==
-       AutofillSyncSigninState::kSignedInAndSyncFeature);
+       AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled);
 
   return migration_experiment_enabled && has_google_payments_account &&
          (sync_feature_enabled ||

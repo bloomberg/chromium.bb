@@ -7686,7 +7686,7 @@ TEST_F(PersonalDataManagerTest, GetSyncSigninState) {
 
   // Check that the sync state is |SignedInAndSyncFeature| if the sync feature
   // is enabled.
-  EXPECT_EQ(AutofillSyncSigninState::kSignedInAndSyncFeature,
+  EXPECT_EQ(AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled,
             personal_data_->GetSyncSigninState());
 
   // Check that the sync state is |SignedInAndSyncFeature| if the the sync
@@ -7698,7 +7698,7 @@ TEST_F(PersonalDataManagerTest, GetSyncSigninState) {
         /*enabled_features=*/{features::kAutofillEnableAccountWalletStorage,
                               features::kAutofillGetPaymentsIdentityFromSync},
         /*disabled_features=*/{});
-    EXPECT_EQ(AutofillSyncSigninState::kSignedInAndSyncFeature,
+    EXPECT_EQ(AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled,
               personal_data_->GetSyncSigninState());
   }
 }
@@ -7784,7 +7784,7 @@ TEST_F(PersonalDataManagerTest, OnUserAcceptedUpstreamOffer) {
   identity_test_env_.SetPrimaryAccount(active_info.email);
   sync_service_.SetIsAuthenticatedAccountPrimary(true);
   {
-    EXPECT_EQ(AutofillSyncSigninState::kSignedInAndSyncFeature,
+    EXPECT_EQ(AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled,
               personal_data_->GetSyncSigninState());
 
     // Make sure an opt-in does not get recorded even if the user accepted an
