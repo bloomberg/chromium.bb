@@ -1244,36 +1244,23 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
       (!params.prevent_inline_autocomplete ||
        (inline_autocomplete_offset >= match.fill_into_edit.length()));
 
-  // Get the adjusted (for match contents) match start and end offsets.
-  std::vector<size_t> offsets = {
-      history_match.input_location,
-      history_match.input_location + params.input.text().length()};
-
   const auto format_types = AutocompleteMatch::GetFormatTypes(
       params.input.parts().scheme.len > 0 || !params.trim_http ||
           history_match.match_in_scheme,
       history_match.match_in_subdomain);
-  match.contents = url_formatter::FormatUrlWithOffsets(
-      info.url(), format_types, net::UnescapeRule::SPACES, nullptr, nullptr,
-      &offsets);
+  match.contents = url_formatter::FormatUrl(info.url(), format_types,
+                                            net::UnescapeRule::SPACES, nullptr,
+                                            nullptr, nullptr);
+  auto term_matches = FindTermMatches(params.input.text(), match.contents);
+  match.contents_class = ClassifyTermMatches(
+      term_matches, match.contents.size(),
+      ACMatchClassification::URL | ACMatchClassification::MATCH,
+      ACMatchClassification::URL);
 
-  size_t match_start = offsets[0];
-  size_t match_end = offsets[1];
-
-  if (match_start != base::string16::npos &&
-      match_end != base::string16::npos && match_end != match_start) {
-    DCHECK_GT(match_end, match_start);
-    AutocompleteMatch::ClassifyLocationInString(
-        match_start, match_end - match_start, match.contents.length(),
-        ACMatchClassification::URL, &match.contents_class);
-  } else {
-    AutocompleteMatch::ClassifyLocationInString(base::string16::npos, 0,
-        match.contents.length(), ACMatchClassification::URL,
-        &match.contents_class);
-  }
   match.description = info.title();
   match.description_class =
       ClassifyDescription(params.input.text(), match.description);
+
   RecordAdditionalInfoFromUrlRow(info, &match);
   return match;
 }
