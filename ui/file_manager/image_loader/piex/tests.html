@@ -226,16 +226,16 @@ piex wasm raw image preview / thumbnail test page
   }
 
   window.Module = {
-    onRuntimeInitialized: piexModuleReady,
+    onRuntimeInitialized: onPiexModuleReady,
   };
 
-  window.onload = function piexModuleLoad() {
+  window.onload = function loadPiexModule() {
     let script = document.createElement('script');
     document.head.appendChild(script);
     script.src = '/a.out.js';
   };
 
-  function piexModuleReady() {
+  window.onPiexModuleReady = () => {
     document.title = 'READY';
   }
 
