@@ -678,7 +678,6 @@ void OverviewItem::HandleGestureEndEvent() {
   if (!IsDragItem())
     return;
 
-  OnSelectorItemDragEnded();
   overview_session_->ResetDraggedWindowGesture();
 }
 
