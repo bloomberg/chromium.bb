@@ -6,8 +6,6 @@ import("//build/config/ios/rules.gni")
 
 source_set("ui") {
   sources = [
-    "chrome_load_params.h",
-    "chrome_load_params.mm",
     "native_content_controller.h",
     "native_content_controller.mm",
   ]
