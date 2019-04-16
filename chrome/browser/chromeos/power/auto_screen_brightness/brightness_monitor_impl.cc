@@ -9,9 +9,11 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/utils.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
 
@@ -32,6 +34,15 @@ BrightnessMonitorImpl::BrightnessMonitorImpl(
   power_manager_client_->WaitForServiceToBeAvailable(
       base::BindOnce(&BrightnessMonitorImpl::OnPowerManagerServiceAvailable,
                      weak_ptr_factory_.GetWeakPtr()));
+
+  const int brightness_sample_delay_seconds = GetFieldTrialParamByFeatureAsInt(
+      features::kAutoScreenBrightness, "brightness_sample_delay_seconds",
+      kBrightnessSampleDelay.InSeconds());
+
+  brightness_sample_delay_ =
+      brightness_sample_delay_seconds < 0
+          ? kBrightnessSampleDelay
+          : base::TimeDelta::FromSeconds(brightness_sample_delay_seconds);
 }
 
 BrightnessMonitorImpl::~BrightnessMonitorImpl() = default;
@@ -92,6 +103,11 @@ void BrightnessMonitorImpl::ScreenBrightnessChanged(
   stable_brightness_percent_ = brightness_percent_received;
 }
 
+base::TimeDelta BrightnessMonitorImpl::GetBrightnessSampleDelayForTesting()
+    const {
+  return brightness_sample_delay_;
+}
+
 void BrightnessMonitorImpl::OnPowerManagerServiceAvailable(
     const bool service_is_ready) {
   if (!service_is_ready) {
@@ -135,7 +151,7 @@ void BrightnessMonitorImpl::OnInitializationComplete() {
 void BrightnessMonitorImpl::StartBrightnessSampleTimer() {
   // It's ok if the timer is already running, we simply wait a bit longer.
   brightness_sample_timer_.Start(
-      FROM_HERE, kBrightnessSampleDelay, this,
+      FROM_HERE, brightness_sample_delay_, this,
       &BrightnessMonitorImpl::NotifyUserBrightnessChanged);
 }
 
