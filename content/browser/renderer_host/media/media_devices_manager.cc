@@ -707,29 +707,30 @@ void MediaDevicesManager::OnDevicesEnumerated(
       has_permissions[blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT] &&
       request_audio_input_capabilities;
 
-  std::vector<blink::WebMediaDeviceInfoArray> result(
+  std::vector<blink::WebMediaDeviceInfoArray> translation(
       blink::NUM_MEDIA_DEVICE_TYPES);
   for (size_t i = 0; i < blink::NUM_MEDIA_DEVICE_TYPES; ++i) {
     if (!requested_types[i])
       continue;
 
     for (const auto& device_info : enumeration[i]) {
-      result[i].push_back(TranslateMediaDeviceInfo(
+      translation[i].push_back(TranslateMediaDeviceInfo(
           has_permissions[i], salt_and_origin, device_info));
     }
   }
 
   GetAudioInputCapabilities(video_input_capabilities_requested,
                             audio_input_capabilities_requested,
-                            std::move(callback), enumeration, result);
+                            std::move(callback), enumeration, translation);
 }
 
 void MediaDevicesManager::GetAudioInputCapabilities(
     bool request_video_input_capabilities,
     bool request_audio_input_capabilities,
     EnumerateDevicesCallback callback,
-    const MediaDeviceEnumeration& enumeration,
-    const std::vector<blink::WebMediaDeviceInfoArray>& enumeration_results) {
+    const MediaDeviceEnumeration& raw_enumeration_results,
+    const std::vector<blink::WebMediaDeviceInfoArray>&
+        hashed_enumeration_results) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   EnumerationState state;
@@ -737,10 +738,10 @@ void MediaDevicesManager::GetAudioInputCapabilities(
   state.video_input_capabilities_requested = request_video_input_capabilities;
   state.audio_input_capabilities_requested = request_audio_input_capabilities;
   state.completion_cb = std::move(callback);
-  state.enumeration = std::move(enumeration);
-  state.enumeration_results = std::move(enumeration_results);
+  state.raw_enumeration_results = std::move(raw_enumeration_results);
+  state.hashed_enumeration_results = std::move(hashed_enumeration_results);
   state.num_pending_audio_input_capabilities =
-      enumeration_results[blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT].size();
+      hashed_enumeration_results[blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT].size();
 
   if (!state.audio_input_capabilities_requested ||
       state.num_pending_audio_input_capabilities == 0) {
@@ -749,11 +750,20 @@ void MediaDevicesManager::GetAudioInputCapabilities(
   }
 
   enumeration_states_[state_id] = std::move(state);
-  for (const auto& result :
-       enumeration_results[blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT]) {
+  DCHECK_EQ(
+      raw_enumeration_results[blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT].size(),
+      hashed_enumeration_results[blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT].size());
+  std::size_t num_audio_input_devices =
+      raw_enumeration_results[blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT].size();
+  for (std::size_t i = 0; i < num_audio_input_devices; i++) {
+    auto raw_device_info =
+        raw_enumeration_results[blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT][i];
+    auto hashed_device_info =
+        hashed_enumeration_results[blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT][i];
+
     AudioInputDeviceCapabilitiesPtr capabilities =
         blink::mojom::AudioInputDeviceCapabilities::New();
-    capabilities->device_id = result.device_id;
+    capabilities->device_id = hashed_device_info.device_id;
     capabilities->parameters =
         media::AudioParameters::UnavailableDeviceParams();
     enumeration_states_[state_id].audio_capabilities.push_back(
@@ -769,7 +779,7 @@ void MediaDevicesManager::GetAudioInputCapabilities(
                          media::AudioParameters::UnavailableDeviceParams()));
     } else {
       audio_system_->GetInputStreamParameters(
-          result.device_id,
+          raw_device_info.device_id,
           base::BindOnce(&MediaDevicesManager::GotAudioInputCapabilities,
                          weak_factory_.GetWeakPtr(), state_id,
                          capabilities_index));
@@ -812,12 +822,12 @@ void MediaDevicesManager::GotAudioInputCapabilities(
 void MediaDevicesManager::FinalizeDevicesEnumerated(
     EnumerationState enumeration_state) {
   std::move(enumeration_state.completion_cb)
-      .Run(std::move(enumeration_state.enumeration_results),
+      .Run(std::move(enumeration_state.hashed_enumeration_results),
            enumeration_state.video_input_capabilities_requested
                ? ComputeVideoInputCapabilities(
-                     enumeration_state
-                         .enumeration[blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT],
-                     enumeration_state.enumeration_results
+                     enumeration_state.raw_enumeration_results
+                         [blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT],
+                     enumeration_state.hashed_enumeration_results
                          [blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT])
                : std::vector<VideoInputDeviceCapabilitiesPtr>(),
            std::move(enumeration_state.audio_capabilities));

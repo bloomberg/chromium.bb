@@ -192,8 +192,8 @@ class CONTENT_EXPORT MediaDevicesManager
     EnumerateDevicesCallback completion_cb;
     std::vector<AudioInputDeviceCapabilitiesPtr> audio_capabilities;
     int num_pending_audio_input_capabilities;
-    std::vector<blink::WebMediaDeviceInfoArray> enumeration_results;
-    MediaDeviceEnumeration enumeration;
+    MediaDeviceEnumeration raw_enumeration_results;
+    std::vector<blink::WebMediaDeviceInfoArray> hashed_enumeration_results;
   };
 
   // The NO_CACHE policy is such that no previous results are used when
