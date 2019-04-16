@@ -98,6 +98,31 @@ namespace ui {
     EXPECT_STREQ(expected_content, provider_content);       \
   }
 
+#define EXPECT_UIA_FIND_TEXT(text_range_provider, search_term, ignore_case) \
+  {                                                                         \
+    base::win::ScopedBstr find_string(search_term);                         \
+    CComPtr<ITextRangeProvider> text_range_provider_found;                  \
+    EXPECT_HRESULT_SUCCEEDED(text_range_provider->FindText(                 \
+        find_string, false, ignore_case, &text_range_provider_found));      \
+    base::win::ScopedBstr found_content;                                    \
+    EXPECT_HRESULT_SUCCEEDED(                                               \
+        text_range_provider_found->GetText(-1, found_content.Receive()));   \
+    if (ignore_case)                                                        \
+      EXPECT_EQ(0, _wcsicmp(found_content, find_string));                   \
+    else                                                                    \
+      EXPECT_EQ(0, wcscmp(found_content, find_string));                     \
+  }
+
+#define EXPECT_UIA_FIND_TEXT_NO_MATCH(text_range_provider, search_term, \
+                                      ignore_case)                      \
+  {                                                                     \
+    base::win::ScopedBstr find_string(search_term);                     \
+    CComPtr<ITextRangeProvider> text_range_provider_found;              \
+    EXPECT_HRESULT_SUCCEEDED(text_range_provider->FindText(             \
+        find_string, false, ignore_case, &text_range_provider_found));  \
+    EXPECT_EQ(nullptr, text_range_provider_found);                      \
+  }
+
 class AXPlatformNodeTextRangeProviderTest : public ui::AXPlatformNodeWinTest {
  public:
   const AXNodePosition::AXPositionInstance& GetStart(
@@ -1768,6 +1793,143 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderSelect) {
     selected_text_range_provider.Release();
     selection.Reset();
   }
+}
+
+TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderFindText) {
+  ui::AXNodeData some_text_data;
+  some_text_data.id = 2;
+  some_text_data.role = ax::mojom::Role::kStaticText;
+  some_text_data.SetName("some text");
+
+  ui::AXNodeData more_text_data;
+  more_text_data.id = 3;
+  more_text_data.role = ax::mojom::Role::kStaticText;
+  more_text_data.SetName("more text");
+
+  ui::AXNodeData root_data;
+  root_data.id = 1;
+  root_data.role = ax::mojom::Role::kRootWebArea;
+  root_data.SetName("root");
+  root_data.child_ids = {2, 3};
+
+  ui::AXTreeUpdate update;
+  ui::AXTreeData tree_data;
+  tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+  update.tree_data = tree_data;
+  update.has_tree_data = true;
+  update.root_id = root_data.id;
+  update.nodes.push_back(root_data);
+  update.nodes.push_back(some_text_data);
+  update.nodes.push_back(more_text_data);
+
+  Init(update);
+  AXNodePosition::SetTreeForTesting(tree_.get());
+
+  AXNode* root_node = GetRootNode();
+  AXNode* some_text_node = root_node->children()[0];
+  AXNode* more_text_node = root_node->children()[1];
+
+  ComPtr<ITextRangeProvider> range;
+
+  // Test Leaf kStaticText search
+  GetTextRangeProviderFromTextNode(range, some_text_node);
+  EXPECT_UIA_FIND_TEXT(range, L"some text", false);
+  EXPECT_UIA_FIND_TEXT(range, L"SoMe TeXt", true);
+  GetTextRangeProviderFromTextNode(range, more_text_node);
+  EXPECT_UIA_FIND_TEXT(range, L"more", false);
+  EXPECT_UIA_FIND_TEXT(range, L"MoRe", true);
+
+  // Test searching for leaf content from ancestor
+  GetTextRangeProviderFromTextNode(range, root_node);
+  EXPECT_UIA_FIND_TEXT(range, L"some text", false);
+  EXPECT_UIA_FIND_TEXT(range, L"SoMe TeXt", true);
+  EXPECT_UIA_FIND_TEXT(range, L"more text", false);
+  EXPECT_UIA_FIND_TEXT(range, L"MoRe TeXt", true);
+  EXPECT_UIA_FIND_TEXT(range, L"more", false);
+  // Test finding text that crosses a node boundary
+  EXPECT_UIA_FIND_TEXT(range, L"textmore", false);
+  // Test no match
+  EXPECT_UIA_FIND_TEXT_NO_MATCH(range, L"no match", false);
+}
+
+TEST_F(AXPlatformNodeTextRangeProviderTest,
+       TestITextRangeProviderFindTextBackwards) {
+  ui::AXNodeData text_data1;
+  text_data1.id = 2;
+  text_data1.role = ax::mojom::Role::kStaticText;
+  text_data1.SetName("text");
+
+  ui::AXNodeData text_data2;
+  text_data2.id = 3;
+  text_data2.role = ax::mojom::Role::kStaticText;
+  text_data2.SetName("some");
+
+  ui::AXNodeData text_data3;
+  text_data3.id = 4;
+  text_data3.role = ax::mojom::Role::kStaticText;
+  text_data3.SetName("text");
+
+  ui::AXNodeData root_data;
+  root_data.id = 1;
+  root_data.role = ax::mojom::Role::kRootWebArea;
+  root_data.SetName("root");
+  root_data.child_ids = {2, 3, 4};
+
+  ui::AXTreeUpdate update;
+  ui::AXTreeData tree_data;
+  tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+  update.tree_data = tree_data;
+  update.has_tree_data = true;
+  update.root_id = root_data.id;
+  update.nodes.push_back(root_data);
+  update.nodes.push_back(text_data1);
+  update.nodes.push_back(text_data2);
+  update.nodes.push_back(text_data3);
+
+  Init(update);
+  AXNodePosition::SetTreeForTesting(tree_.get());
+
+  AXNode* root_node = GetRootNode();
+  AXNode* text_node1 = root_node->children()[0];
+  AXNode* text_node3 = root_node->children()[2];
+
+  ComPtr<ITextRangeProvider> root_range_provider;
+  GetTextRangeProviderFromTextNode(root_range_provider, root_node);
+  ComPtr<ITextRangeProvider> text_node1_range;
+  GetTextRangeProviderFromTextNode(text_node1_range, text_node1);
+  ComPtr<ITextRangeProvider> text_node3_range;
+  GetTextRangeProviderFromTextNode(text_node3_range, text_node3);
+
+  CComPtr<ITextRangeProvider> text_range_provider_found;
+  base::win::ScopedBstr find_string(L"text");
+  base::win::ScopedBstr found_content;
+  BOOL range_equal;
+
+  // Forward search finds the text_node1
+  EXPECT_HRESULT_SUCCEEDED(root_range_provider->FindText(
+      find_string, false, false, &text_range_provider_found));
+  EXPECT_HRESULT_SUCCEEDED(
+      text_range_provider_found->GetText(-1, found_content.Receive()));
+  EXPECT_STREQ(found_content, find_string);
+  found_content.Reset();
+
+  range_equal = false;
+  EXPECT_HRESULT_SUCCEEDED(
+      text_range_provider_found->Compare(text_node1_range.Get(), &range_equal));
+  EXPECT_TRUE(range_equal);
+
+  // Backwards search finds the text_node3
+  EXPECT_HRESULT_SUCCEEDED(root_range_provider->FindText(
+      find_string, true, false, &text_range_provider_found));
+  EXPECT_HRESULT_SUCCEEDED(
+      text_range_provider_found->GetText(-1, found_content.Receive()));
+  EXPECT_STREQ(found_content, find_string);
+  found_content.Reset();
+
+  range_equal = false;
+  EXPECT_HRESULT_SUCCEEDED(
+      text_range_provider_found->Compare(text_node3_range.Get(), &range_equal));
+  EXPECT_TRUE(range_equal);
 }
 
 }  // namespace ui

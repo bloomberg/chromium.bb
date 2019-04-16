@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/i18n/string_search.h"
 #include "base/win/scoped_variant.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
@@ -170,7 +171,27 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::FindText(
     BOOL ignore_case,
     ITextRangeProvider** result) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_FINDTEXT);
-  return E_NOTIMPL;
+  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
+  if (!result || !string)
+    return E_INVALIDARG;
+
+  *result = nullptr;
+  base::string16 search_string(string);
+
+  if (search_string.length() <= 0)
+    return E_INVALIDARG;
+
+  base::string16 text_range = GetString();
+  size_t find_start;
+  size_t find_length;
+  if (base::i18n::StringSearch(search_string, text_range, &find_start,
+                               &find_length, !ignore_case, !backwards)) {
+    const AXPlatformNodeDelegate* delegate = owner()->GetDelegate();
+    return CreateTextRangeProvider(
+        owner_, delegate->CreateTextPositionAt(find_start),
+        delegate->CreateTextPositionAt(find_start + find_length), result);
+  }
+  return S_OK;
 }
 
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetAttributeValue(
