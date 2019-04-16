@@ -4,7 +4,6 @@
 
 #include "base/profiler/native_unwinder_mac.h"
 
-#include <libunwind.h>
 #include <mach-o/compact_unwind_encoding.h>
 #include <mach/mach.h>
 #include <mach/vm_map.h>
@@ -162,113 +161,153 @@ UnwindResult NativeUnwinderMac::TryUnwind(x86_thread_state64_t* thread_context,
   unw_cursor_t unwind_cursor;
   unw_init_local(&unwind_cursor, &unwind_context);
 
-  int step_result;
   for (;;) {
-    // First frame unwind step, check pre-conditions for attempting a frame
-    // unwind.
-    if (!stack->back().module) {
-      // There's no loaded module containing the instruction pointer. This is
-      // due to either executing code that is not in a module (e.g. V8
-      // runtime-generated code), or to a previous bad unwind.
-      //
-      // The bad unwind scenario can occur in frameless (non-DWARF) unwinding,
-      // which works by fetching the function's stack size from the unwind
-      // encoding or stack, and adding it to the stack pointer to determine the
-      // function's return address.
-      //
-      // If we're in a function prologue or epilogue, the actual stack size may
-      // be smaller than it will be during the normal course of execution. When
-      // libunwind adds the expected stack size, it will look for the return
-      // address in the wrong place. This check ensures we don't continue trying
-      // to unwind using the resulting bad IP value.
-      //
-      // We return UNRECOGNIZED_FRAME on the optimistic assumption that this may
-      // be a frame the AuxUnwinder knows how to handle (e.g. a frame in V8
-      // generated code).
-      return UnwindResult::UNRECOGNIZED_FRAME;
-    }
+    Optional<UnwindResult> result =
+        CheckPreconditions(&stack->back(), &unwind_cursor, stack_top);
+    if (result.has_value())
+      return *result;
 
-    // Don't continue if we're in sigtramp. Unwinding this from another thread
-    // is very fragile. It's a complex DWARF unwind that needs to restore the
-    // entire thread context which was saved by the kernel when the interrupt
-    // occurred.
-    if (stack->back().instruction_pointer >= sigtramp_start_ &&
-        stack->back().instruction_pointer < sigtramp_end_) {
-      return UnwindResult::ABORTED;
-    }
+    unw_word_t prev_rsp;
+    unw_get_reg(&unwind_cursor, UNW_REG_SP, &prev_rsp);
 
-    // Don't continue if rbp appears to be invalid (due to a previous bad
-    // unwind).
-    if (!HasValidRbp(&unwind_cursor, stack_top))
-      return UnwindResult::ABORTED;
+    int step_result = UnwindStep(&unwind_context, &unwind_cursor,
+                                 stack->size() == 1, module_cache);
 
-    // Second frame unwind step: do the unwind.
-    unw_word_t prev_stack_pointer;
-    unw_get_reg(&unwind_cursor, UNW_REG_SP, &prev_stack_pointer);
-    step_result = unw_step(&unwind_cursor);
+    unw_word_t rip;
+    unw_get_reg(&unwind_cursor, UNW_REG_IP, &rip);
+    unw_word_t rsp;
+    unw_get_reg(&unwind_cursor, UNW_REG_SP, &rsp);
 
-    if (step_result == 0 && stack->size() == 1u) {
-      // libunwind is designed to be triggered by user code on their own thread,
-      // if it hits a library that has no unwind info for the function that is
-      // being executed, it just stops. This isn't a problem in the normal case,
-      // but in the case where this is the first frame unwind, it's quite
-      // possible that the stack being walked is stopped in a function that
-      // bridges to the kernel and thus is missing the unwind info.
+    bool successfully_unwound;
+    result = CheckPostconditions(step_result, prev_rsp, rsp, stack_top,
+                                 &successfully_unwound);
 
-      // For now, just unwind the single case where the thread is stopped in a
-      // function in libsystem_kernel.
-      uint64_t& rsp = unwind_context.data[7];
-      uint64_t& rip = unwind_context.data[16];
-      if (module_cache->GetModuleForAddress(rip) == libsystem_kernel_module_) {
-        rip = *reinterpret_cast<uint64_t*>(rsp);
-        rsp += 8;
-        // Reset the cursor.
-        unw_init_local(&unwind_cursor, &unwind_context);
-        // Mock a successful step_result.
-        step_result = 1;
-      }
-    }
+    if (successfully_unwound)
+      stack->emplace_back(rip, module_cache->GetModuleForAddress(rip));
 
-    // Third frame unwind step: check the result of the unwind.
-    if (step_result < 0)
-      return UnwindResult::ABORTED;
-
-    // Fourth frame unwind step: record the frame to which we just unwound.
-    unw_word_t instruction_pointer;
-    unw_get_reg(&unwind_cursor, UNW_REG_IP, &instruction_pointer);
-    unw_word_t stack_pointer;
-    unw_get_reg(&unwind_cursor, UNW_REG_SP, &stack_pointer);
-
-    // Record the frame if the last step was successful.
-    if (step_result > 0 ||
-        // libunwind considers the unwind complete and returns 0 if no unwind
-        // info was found for the current instruction pointer. It performs this
-        // check both before *and* after stepping the cursor. In the former case
-        // no action is taken, but in the latter case an unwind was successfully
-        // performed prior to the check. Distinguish these cases by checking
-        // whether the stack pointer was moved by unw_step. If so, record the
-        // new frame to enable non-native unwinders to continue the unwinding.
-        (step_result == 0 && stack_pointer > prev_stack_pointer)) {
-      stack->emplace_back(
-          instruction_pointer,
-          module_cache->GetModuleForAddress(instruction_pointer));
-    }
-
-    // libunwind returns 0 if it can't continue because no unwind info was found
-    // for the current instruction pointer. This could be due to unwinding past
-    // the entry point, in which case the unwind would be complete. It could
-    // also be due to unwinding to a function that simply doesn't have unwind
-    // info, in which case the unwind should be aborted. Or it could be due to
-    // unwinding to code not in a module, in which case the unwind might be
-    // continuable by a non-native unwinder. We don't have a good way to
-    // distinguish these cases, so return UNRECOGNIZED_FRAME to at least
-    // signify that we couldn't unwind further.
-    if (step_result == 0)
-      return UnwindResult::UNRECOGNIZED_FRAME;
+    if (result.has_value())
+      return *result;
   }
 
   NOTREACHED();
   return UnwindResult::COMPLETED;
+}
+
+// Checks preconditions for attempting an unwind. If any conditions fail,
+// returns corresponding UnwindResult. Otherwise returns nullopt.
+Optional<UnwindResult> NativeUnwinderMac::CheckPreconditions(
+    const Frame* current_frame,
+    unw_cursor_t* unwind_cursor,
+    uintptr_t stack_top) const {
+  if (!current_frame->module) {
+    // There's no loaded module containing the instruction pointer. This is
+    // due to either executing code that is not in a module (e.g. V8
+    // runtime-generated code), or to a previous bad unwind.
+    //
+    // The bad unwind scenario can occur in frameless (non-DWARF) unwinding,
+    // which works by fetching the function's stack size from the unwind
+    // encoding or stack, and adding it to the stack pointer to determine the
+    // function's return address.
+    //
+    // If we're in a function prologue or epilogue, the actual stack size may
+    // be smaller than it will be during the normal course of execution. When
+    // libunwind adds the expected stack size, it will look for the return
+    // address in the wrong place. This check ensures we don't continue trying
+    // to unwind using the resulting bad IP value.
+    //
+    // We return UNRECOGNIZED_FRAME on the optimistic assumption that this may
+    // be a frame the AuxUnwinder knows how to handle (e.g. a frame in V8
+    // generated code).
+    return UnwindResult::UNRECOGNIZED_FRAME;
+  }
+
+  // Don't continue if we're in sigtramp. Unwinding this from another thread
+  // is very fragile. It's a complex DWARF unwind that needs to restore the
+  // entire thread context which was saved by the kernel when the interrupt
+  // occurred.
+  if (current_frame->instruction_pointer >= sigtramp_start_ &&
+      current_frame->instruction_pointer < sigtramp_end_) {
+    return UnwindResult::ABORTED;
+  }
+
+  // Don't continue if rbp appears to be invalid (due to a previous bad
+  // unwind).
+  if (!HasValidRbp(unwind_cursor, stack_top))
+    return UnwindResult::ABORTED;
+
+  return nullopt;
+}
+
+// Attempts to unwind the current frame using unw_step, and returns its return
+// value.
+int NativeUnwinderMac::UnwindStep(unw_context_t* unwind_context,
+                                  unw_cursor_t* unwind_cursor,
+                                  bool at_first_frame,
+                                  ModuleCache* module_cache) const {
+  int step_result = unw_step(unwind_cursor);
+
+  if (step_result == 0 && at_first_frame) {
+    // libunwind is designed to be triggered by user code on their own thread,
+    // if it hits a library that has no unwind info for the function that is
+    // being executed, it just stops. This isn't a problem in the normal case,
+    // but in the case where this is the first frame unwind, it's quite
+    // possible that the stack being walked is stopped in a function that
+    // bridges to the kernel and thus is missing the unwind info.
+
+    // For now, just unwind the single case where the thread is stopped in a
+    // function in libsystem_kernel.
+    uint64_t& rsp = unwind_context->data[7];
+    uint64_t& rip = unwind_context->data[16];
+    if (module_cache->GetModuleForAddress(rip) == libsystem_kernel_module_) {
+      rip = *reinterpret_cast<uint64_t*>(rsp);
+      rsp += 8;
+      // Reset the cursor.
+      unw_init_local(unwind_cursor, unwind_context);
+      // Mock a successful step_result.
+      return 1;
+    }
+  }
+
+  return step_result;
+}
+
+// Checks postconditions after attempting an unwind. If any conditions fail,
+// returns corresponding UnwindResult. Otherwise returns nullopt. Sets
+// *|successfully_unwound| if the unwind succeeded (and hence the frame should
+// be recorded).
+Optional<UnwindResult> NativeUnwinderMac::CheckPostconditions(
+    int step_result,
+    unw_word_t prev_rsp,
+    unw_word_t rsp,
+    uintptr_t stack_top,
+    bool* successfully_unwound) const {
+  *successfully_unwound =
+      step_result > 0 ||
+      // libunwind considers the unwind complete and returns 0 if no unwind
+      // info was found for the current instruction pointer. It performs this
+      // check both before *and* after stepping the cursor. In the former case
+      // no action is taken, but in the latter case an unwind was successfully
+      // performed prior to the check. Distinguish these cases by checking
+      // whether the stack pointer was moved by unw_step. If so, record the
+      // new frame to enable non-native unwinders to continue the unwinding.
+      (step_result == 0 && rsp > prev_rsp);
+
+  if (step_result < 0)
+    return UnwindResult::ABORTED;
+
+  // libunwind returns 0 if it can't continue because no unwind info was found
+  // for the current instruction pointer. This could be due to unwinding past
+  // the entry point, in which case the unwind would be complete. It could
+  // also be due to unwinding to a function that simply doesn't have unwind
+  // info, in which case the unwind should be aborted. Or it could be due to
+  // unwinding to code not in a module, in which case the unwind might be
+  // continuable by a non-native unwinder. We don't have a good way to
+  // distinguish these cases, so return UNRECOGNIZED_FRAME to at least
+  // signify that we couldn't unwind further.
+  if (step_result == 0)
+    return UnwindResult::UNRECOGNIZED_FRAME;
+
+  return nullopt;
 }
 
 std::unique_ptr<Unwinder> CreateNativeUnwinder(ModuleCache* module_cache) {
