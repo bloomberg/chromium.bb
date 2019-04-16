@@ -678,7 +678,6 @@ crbug.com/591099 external/wpt/css/css-sizing/intrinsic-percent-non-replaced-004.
 crbug.com/591099 external/wpt/css/css-sizing/intrinsic-percent-non-replaced-005.html [ Failure ]
 crbug.com/591099 external/wpt/css/cssom-view/elementsFromPoint-inline-vrl-ltr.html [ Failure ]
 crbug.com/591099 external/wpt/css/cssom-view/elementsFromPoint-inline-vrl-rtl.html [ Failure ]
-crbug.com/591099 external/wpt/css/cssom-view/offsetTopLeftInline.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-writing-modes/inline-box-border-vlr-001.html [ Failure ]
 crbug.com/591099 external/wpt/css/filter-effects/filtered-inline-applies-to-float.html [ Failure ]
 crbug.com/591099 tables/mozilla/bugs/bug14159-1.html [ Failure ]
