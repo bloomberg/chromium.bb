@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/containers/flat_set.h"
+#include "base/files/file_util.h"
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
