@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/strings/string16.h"
@@ -175,8 +176,6 @@ void ExplainCertificateSecurity(
     }
   }
 
-  security_style_explanations->pkp_bypassed =
-      visible_security_state.pkp_bypassed;
   if (visible_security_state.pkp_bypassed) {
     security_style_explanations->info_explanations.push_back(
         content::SecurityStyleExplanation(
@@ -289,18 +288,11 @@ void ExplainConnectionSecurity(
 void ExplainContentSecurity(
     const security_state::VisibleSecurityState& visible_security_state,
     content::SecurityStyleExplanations* security_style_explanations) {
-  security_style_explanations->ran_insecure_content_style =
-      SecurityLevelToSecurityStyle(security_state::kRanInsecureContentLevel);
-  security_style_explanations->displayed_insecure_content_style =
-      SecurityLevelToSecurityStyle(
-          security_state::kDisplayedInsecureContentLevel);
 
   // Add the secure explanation unless there is an issue.
   bool add_secure_explanation = true;
 
-  security_style_explanations->ran_mixed_content =
-      visible_security_state.ran_mixed_content;
-  if (security_style_explanations->ran_mixed_content) {
+  if (visible_security_state.ran_mixed_content) {
     add_secure_explanation = false;
     security_style_explanations->insecure_explanations.push_back(
         content::SecurityStyleExplanation(
@@ -310,9 +302,7 @@ void ExplainContentSecurity(
             nullptr, blink::WebMixedContentContextType::kBlockable));
   }
 
-  security_style_explanations->displayed_mixed_content =
-      visible_security_state.displayed_mixed_content;
-  if (security_style_explanations->displayed_mixed_content) {
+  if (visible_security_state.displayed_mixed_content) {
     add_secure_explanation = false;
     security_style_explanations->neutral_explanations.push_back(
         content::SecurityStyleExplanation(
@@ -322,9 +312,7 @@ void ExplainContentSecurity(
             nullptr, blink::WebMixedContentContextType::kOptionallyBlockable));
   }
 
-  security_style_explanations->contained_mixed_form =
-      visible_security_state.contained_mixed_form;
-  if (security_style_explanations->contained_mixed_form) {
+  if (visible_security_state.contained_mixed_form) {
     add_secure_explanation = false;
     security_style_explanations->neutral_explanations.push_back(
         content::SecurityStyleExplanation(
@@ -344,9 +332,7 @@ void ExplainContentSecurity(
   bool is_cert_status_minor_error =
       net::IsCertStatusMinorError(visible_security_state.cert_status);
   if (!is_cert_status_error || is_cert_status_minor_error) {
-    security_style_explanations->ran_content_with_cert_errors =
-        visible_security_state.ran_content_with_cert_errors;
-    if (security_style_explanations->ran_content_with_cert_errors) {
+    if (visible_security_state.ran_content_with_cert_errors) {
       add_secure_explanation = false;
       security_style_explanations->insecure_explanations.push_back(
           content::SecurityStyleExplanation(
@@ -356,9 +342,7 @@ void ExplainContentSecurity(
                   IDS_CERT_ERROR_ACTIVE_CONTENT_DESCRIPTION)));
     }
 
-    security_style_explanations->displayed_content_with_cert_errors =
-        visible_security_state.displayed_content_with_cert_errors;
-    if (security_style_explanations->displayed_content_with_cert_errors) {
+    if (visible_security_state.displayed_content_with_cert_errors) {
       add_secure_explanation = false;
       security_style_explanations->neutral_explanations.push_back(
           content::SecurityStyleExplanation(

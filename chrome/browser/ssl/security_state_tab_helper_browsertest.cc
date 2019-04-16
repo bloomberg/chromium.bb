@@ -264,7 +264,6 @@ void CheckBrokenSecurityStyle(const SecurityStyleTestObserver& observer,
       observer.latest_explanations();
   EXPECT_EQ(0u, expired_explanation.neutral_explanations.size());
   ASSERT_EQ(1u, expired_explanation.insecure_explanations.size());
-  EXPECT_FALSE(expired_explanation.pkp_bypassed);
   EXPECT_TRUE(expired_explanation.info_explanations.empty());
 
   // Check that the summary and description are as expected.
@@ -369,7 +368,6 @@ void CheckSecurityInfoForSecure(
     bool expect_sha1_in_chain,
     bool expect_displayed_mixed_content,
     bool expect_ran_mixed_content,
-    bool pkp_bypassed,
     bool expect_cert_error) {
   ASSERT_TRUE(contents);
 
@@ -387,7 +385,6 @@ void CheckSecurityInfoForSecure(
             visible_security_state->ran_mixed_content);
   EXPECT_TRUE(
       security_state::IsSchemeCryptographic(visible_security_state->url));
-  EXPECT_EQ(pkp_bypassed, visible_security_state->pkp_bypassed);
   EXPECT_EQ(expect_cert_error,
             net::IsCertStatusError(visible_security_state->cert_status));
   EXPECT_TRUE(visible_security_state->connection_info_initialized);
@@ -644,7 +641,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, HttpsPage) {
                                https_server_.GetURL("/ssl/google.html"));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::SECURE, false, false, false, false,
+      security_state::SECURE, false, false, false,
       false /* expect cert status error */);
 }
 
@@ -693,7 +690,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, SHA1CertificateBlocked) {
                                https_server_.GetURL("/ssl/google.html"));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::DANGEROUS, true, false, false, false,
+      security_state::DANGEROUS, true, false, false,
       true /* expect cert status error */);
 
   const content::SecurityStyleExplanations& interstitial_explanation =
@@ -708,7 +705,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, SHA1CertificateBlocked) {
 
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::DANGEROUS, true, false, false, false,
+      security_state::DANGEROUS, true, false, false,
       true /* expect cert status error */);
 
   const content::SecurityStyleExplanations& page_explanation =
@@ -731,7 +728,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, SHA1CertificateWarning) {
                                https_server_.GetURL("/ssl/google.html"));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::NONE, true, false, false, false,
+      security_state::NONE, true, false, false,
       false /* expect cert status error */);
 
   const content::SecurityStyleExplanations& explanation =
@@ -756,7 +753,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, MixedContent) {
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::NONE, false, true, false, false,
+      security_state::NONE, false, true, false,
       false /* expect cert status error */);
 
   // Navigate to an HTTPS page that displays mixed content dynamically.
@@ -766,7 +763,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, MixedContent) {
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::SECURE, false, false, false, false,
+      security_state::SECURE, false, false, false,
       false /* expect cert status error */);
   // Load the insecure image.
   bool js_result = false;
@@ -776,7 +773,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, MixedContent) {
   EXPECT_TRUE(js_result);
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::NONE, false, true, false, false,
+      security_state::NONE, false, true, false,
       false /* expect cert status error */);
 
   // Navigate to an HTTPS page that runs mixed content.
@@ -786,7 +783,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, MixedContent) {
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::DANGEROUS, false, false, true, false,
+      security_state::DANGEROUS, false, false, true,
       false /* expect cert status error */);
 
   // Navigate to an HTTPS page that runs and displays mixed content.
@@ -796,7 +793,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, MixedContent) {
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::DANGEROUS, false, true, true, false,
+      security_state::DANGEROUS, false, true, true,
       false /* expect cert status error */);
 
   // Navigate to an HTTPS page that runs mixed content in an iframe.
@@ -809,7 +806,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, MixedContent) {
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::DANGEROUS, false, false, true, false,
+      security_state::DANGEROUS, false, false, true,
       false /* expect cert status error */);
 }
 
@@ -915,7 +912,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, MixedContentWithSHA1Cert) {
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::NONE, true, true, false, false,
+      security_state::NONE, true, true, false,
       false /* expect cert status error */);
 
   // Navigate to an HTTPS page that displays mixed content dynamically.
@@ -925,7 +922,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, MixedContentWithSHA1Cert) {
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::NONE, true, false, false, false,
+      security_state::NONE, true, false, false,
       false /* expect cert status error */);
   // Load the insecure image.
   bool js_result = false;
@@ -935,7 +932,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, MixedContentWithSHA1Cert) {
   EXPECT_TRUE(js_result);
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::NONE, true, true, false, false,
+      security_state::NONE, true, true, false,
       false /* expect cert status error */);
 
   // Navigate to an HTTPS page that runs mixed content.
@@ -945,7 +942,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, MixedContentWithSHA1Cert) {
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::DANGEROUS, true, false, true, false,
+      security_state::DANGEROUS, true, false, true,
       false /* expect cert status error */);
 
   // Navigate to an HTTPS page that runs and displays mixed content.
@@ -955,7 +952,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, MixedContentWithSHA1Cert) {
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::DANGEROUS, true, true, true, false,
+      security_state::DANGEROUS, true, true, true,
       false /* expect cert status error */);
 }
 
@@ -976,7 +973,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, MixedContentStrictBlocking) {
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::SECURE, false, false, false, false,
+      security_state::SECURE, false, false, false,
       false /* expect cert status error */);
 }
 
@@ -988,7 +985,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, BrokenHTTPS) {
                                https_server_.GetURL("/ssl/google.html"));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::DANGEROUS, false, false, false, false,
+      security_state::DANGEROUS, false, false, false,
       true /* expect cert status error */);
 
   ProceedThroughInterstitial(
@@ -996,7 +993,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, BrokenHTTPS) {
 
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::DANGEROUS, false, false, false, false,
+      security_state::DANGEROUS, false, false, false,
       true /* expect cert status error */);
 
   // Navigate to a broken HTTPS page that displays mixed content.
@@ -1007,7 +1004,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, BrokenHTTPS) {
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::DANGEROUS, false, true, false, false,
+      security_state::DANGEROUS, false, true, false,
       true /* expect cert status error */);
 }
 
@@ -1263,11 +1260,10 @@ IN_PROC_BROWSER_TEST_P(PKPModelClientTest, PKPBypass) {
 
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::SECURE, false, false, false, true, false);
+      security_state::SECURE, false, false, false, false);
 
   const content::SecurityStyleExplanations& explanation =
       observer.latest_explanations();
-  EXPECT_TRUE(explanation.pkp_bypassed);
   EXPECT_FALSE(explanation.info_explanations.empty());
 }
 
@@ -1354,7 +1350,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateLoadingTest, NavigationStateChanges) {
                                https_server_.GetURL("/ssl/google.html"));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::SECURE, false, false, false, false,
+      security_state::SECURE, false, false, false,
       false /* expect cert status error */);
 
   // Navigate to a page that doesn't finish loading. Test that the
@@ -1552,14 +1548,14 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, AddedTab) {
                      ui::PAGE_TRANSITION_TYPED, std::string());
   EXPECT_TRUE(content::WaitForLoadStop(new_contents.get()));
   CheckSecurityInfoForSecure(new_contents.get(), security_state::SECURE, false,
-                             false, false, false,
+                             false, false,
                              false /* expect cert status error */);
 
   content::WebContents* raw_new_contents = new_contents.get();
   browser()->tab_strip_model()->InsertWebContentsAt(0, std::move(new_contents),
                                                     TabStripModel::ADD_NONE);
   CheckSecurityInfoForSecure(raw_new_contents, security_state::SECURE, false,
-                             false, false, false,
+                             false, false,
                              false /* expect cert status error */);
 }
 
@@ -1589,10 +1585,7 @@ IN_PROC_BROWSER_TEST_P(DidChangeVisibleSecurityStateTest,
   EXPECT_EQ(0u, observer.latest_explanations().insecure_explanations.size());
   EXPECT_EQ(0u, observer.latest_explanations().secure_explanations.size());
   EXPECT_FALSE(observer.latest_explanations().scheme_is_cryptographic);
-  EXPECT_FALSE(observer.latest_explanations().pkp_bypassed);
   EXPECT_TRUE(observer.latest_explanations().info_explanations.empty());
-  EXPECT_FALSE(observer.latest_explanations().ran_mixed_content);
-  EXPECT_FALSE(observer.latest_explanations().displayed_mixed_content);
   // Localhost is considered a secure origin, so we expect the summary to
   // reflect this.
   EXPECT_EQ(l10n_util::GetStringUTF8(IDS_NON_CRYPTO_SECURE_SUMMARY),
@@ -1618,15 +1611,8 @@ IN_PROC_BROWSER_TEST_P(DidChangeVisibleSecurityStateTest,
   CheckSecureConnectionExplanation(
       mixed_content_explanation.secure_explanations[1], browser());
   EXPECT_TRUE(mixed_content_explanation.scheme_is_cryptographic);
-  EXPECT_FALSE(observer.latest_explanations().pkp_bypassed);
   EXPECT_TRUE(observer.latest_explanations().info_explanations.empty());
   EXPECT_TRUE(observer.latest_explanations().summary.empty());
-  EXPECT_TRUE(mixed_content_explanation.displayed_mixed_content);
-  EXPECT_FALSE(mixed_content_explanation.ran_mixed_content);
-  EXPECT_EQ(blink::kWebSecurityStyleNeutral,
-            mixed_content_explanation.displayed_insecure_content_style);
-  EXPECT_EQ(blink::kWebSecurityStyleInsecure,
-            mixed_content_explanation.ran_insecure_content_style);
 
   // Visit a broken HTTPS url.
   GURL expired_url(https_test_server_expired.GetURL("/title1.html"));
@@ -1643,10 +1629,7 @@ IN_PROC_BROWSER_TEST_P(DidChangeVisibleSecurityStateTest,
   CheckSecureSubresourcesExplanation(
       observer.latest_explanations().secure_explanations[1]);
   EXPECT_TRUE(observer.latest_explanations().scheme_is_cryptographic);
-  EXPECT_FALSE(observer.latest_explanations().pkp_bypassed);
   EXPECT_TRUE(observer.latest_explanations().info_explanations.empty());
-  EXPECT_FALSE(observer.latest_explanations().displayed_mixed_content);
-  EXPECT_FALSE(observer.latest_explanations().ran_mixed_content);
   EXPECT_TRUE(observer.latest_explanations().summary.empty());
 
   // Before clicking through, navigate to a different page, and then go
@@ -1665,10 +1648,7 @@ IN_PROC_BROWSER_TEST_P(DidChangeVisibleSecurityStateTest,
   CheckSecureSubresourcesExplanation(
       observer.latest_explanations().secure_explanations[2]);
   EXPECT_TRUE(observer.latest_explanations().scheme_is_cryptographic);
-  EXPECT_FALSE(observer.latest_explanations().pkp_bypassed);
   EXPECT_TRUE(observer.latest_explanations().info_explanations.empty());
-  EXPECT_FALSE(observer.latest_explanations().displayed_mixed_content);
-  EXPECT_FALSE(observer.latest_explanations().ran_mixed_content);
   EXPECT_TRUE(observer.latest_explanations().summary.empty());
 
   // After going back to the interstitial, an event for a broken lock
@@ -1683,10 +1663,7 @@ IN_PROC_BROWSER_TEST_P(DidChangeVisibleSecurityStateTest,
   CheckSecureSubresourcesExplanation(
       observer.latest_explanations().secure_explanations[1]);
   EXPECT_TRUE(observer.latest_explanations().scheme_is_cryptographic);
-  EXPECT_FALSE(observer.latest_explanations().pkp_bypassed);
   EXPECT_TRUE(observer.latest_explanations().info_explanations.empty());
-  EXPECT_FALSE(observer.latest_explanations().displayed_mixed_content);
-  EXPECT_FALSE(observer.latest_explanations().ran_mixed_content);
   EXPECT_TRUE(observer.latest_explanations().summary.empty());
 
   // Since the next expected style is the same as the previous, clear
@@ -1706,10 +1683,7 @@ IN_PROC_BROWSER_TEST_P(DidChangeVisibleSecurityStateTest,
   CheckSecureSubresourcesExplanation(
       observer.latest_explanations().secure_explanations[1]);
   EXPECT_TRUE(observer.latest_explanations().scheme_is_cryptographic);
-  EXPECT_FALSE(observer.latest_explanations().pkp_bypassed);
   EXPECT_TRUE(observer.latest_explanations().info_explanations.empty());
-  EXPECT_FALSE(observer.latest_explanations().displayed_mixed_content);
-  EXPECT_FALSE(observer.latest_explanations().ran_mixed_content);
   EXPECT_TRUE(observer.latest_explanations().summary.empty());
 }
 
@@ -1787,10 +1761,7 @@ IN_PROC_BROWSER_TEST_P(DidChangeVisibleSecurityStateTest,
   CheckSecureSubresourcesExplanation(
       observer.latest_explanations().secure_explanations[2]);
   EXPECT_TRUE(observer.latest_explanations().scheme_is_cryptographic);
-  EXPECT_FALSE(observer.latest_explanations().pkp_bypassed);
   EXPECT_TRUE(observer.latest_explanations().info_explanations.empty());
-  EXPECT_FALSE(observer.latest_explanations().displayed_mixed_content);
-  EXPECT_FALSE(observer.latest_explanations().ran_mixed_content);
 
   // Navigate to a bad HTTPS page on a different host, and then click
   // Back to verify that the previous good security style is seen again.
@@ -1816,10 +1787,7 @@ IN_PROC_BROWSER_TEST_P(DidChangeVisibleSecurityStateTest,
   CheckSecureSubresourcesExplanation(
       observer.latest_explanations().secure_explanations[1]);
   EXPECT_TRUE(observer.latest_explanations().scheme_is_cryptographic);
-  EXPECT_FALSE(observer.latest_explanations().pkp_bypassed);
   EXPECT_TRUE(observer.latest_explanations().info_explanations.empty());
-  EXPECT_FALSE(observer.latest_explanations().displayed_mixed_content);
-  EXPECT_FALSE(observer.latest_explanations().ran_mixed_content);
 
   content::WindowedNotificationObserver back_nav_load_observer(
       content::NOTIFICATION_LOAD_STOP,
@@ -1840,10 +1808,7 @@ IN_PROC_BROWSER_TEST_P(DidChangeVisibleSecurityStateTest,
   CheckSecureSubresourcesExplanation(
       observer.latest_explanations().secure_explanations[2]);
   EXPECT_TRUE(observer.latest_explanations().scheme_is_cryptographic);
-  EXPECT_FALSE(observer.latest_explanations().pkp_bypassed);
   EXPECT_TRUE(observer.latest_explanations().info_explanations.empty());
-  EXPECT_FALSE(observer.latest_explanations().displayed_mixed_content);
-  EXPECT_FALSE(observer.latest_explanations().ran_mixed_content);
 }
 
 // After AddNonsecureUrlHandler() is called, requests to this hostname
