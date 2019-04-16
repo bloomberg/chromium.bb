@@ -550,51 +550,6 @@ TEST_F(NetworkServiceTest, DnsOverHttpsEnableDisable) {
       service()->host_resolver_manager()->GetDnsOverHttpsServersForTesting());
 }
 
-// Make sure that enabling DNS over HTTP without a primary NetworkContext fails.
-TEST_F(NetworkServiceTest,
-       DnsOverHttpsEnableDoesNothingWithoutPrimaryNetworkContext) {
-  // HostResolver::GetDnsClientForTesting() returns nullptr if the stub resolver
-  // is disabled.
-  EXPECT_FALSE(service()->host_resolver_manager()->GetDnsConfigAsValue());
-
-  // Try to enable DnsClient and DNS over HTTPS. Only the first should take
-  // effect.
-  std::vector<mojom::DnsOverHttpsServerPtr> dns_over_https_servers;
-  mojom::DnsOverHttpsServerPtr dns_over_https_server =
-      mojom::DnsOverHttpsServer::New();
-  dns_over_https_server->server_template = "https://foo/{?dns}";
-  dns_over_https_servers.emplace_back(std::move(dns_over_https_server));
-  service()->ConfigureStubHostResolver(true /* stub_resolver_enabled */,
-                                       std::move(dns_over_https_servers));
-  // DnsClient is enabled.
-  EXPECT_TRUE(service()->host_resolver_manager()->GetDnsConfigAsValue());
-  // DNS over HTTPS is not.
-  EXPECT_FALSE(
-      service()->host_resolver_manager()->GetDnsOverHttpsServersForTesting());
-
-  // Create a NetworkContext that is not the primary one.
-  mojom::NetworkContextPtr network_context;
-  service()->CreateNetworkContext(mojo::MakeRequest(&network_context),
-                                  CreateContextParams());
-  // There should be no change in host resolver state.
-  EXPECT_TRUE(service()->host_resolver_manager()->GetDnsConfigAsValue());
-  EXPECT_FALSE(
-      service()->host_resolver_manager()->GetDnsOverHttpsServersForTesting());
-
-  // Try to enable DNS over HTTPS again, which should not work, since there's
-  // still no primary NetworkContext.
-  dns_over_https_servers.clear();
-  dns_over_https_server = mojom::DnsOverHttpsServer::New();
-  dns_over_https_server->server_template = "https://foo2/{?dns}";
-  dns_over_https_servers.emplace_back(std::move(dns_over_https_server));
-  service()->ConfigureStubHostResolver(true /* stub_resolver_enabled */,
-                                       std::move(dns_over_https_servers));
-  // There should be no change in host resolver state.
-  EXPECT_TRUE(service()->host_resolver_manager()->GetDnsConfigAsValue());
-  EXPECT_FALSE(
-      service()->host_resolver_manager()->GetDnsOverHttpsServersForTesting());
-}
-
 #endif  // !defined(OS_IOS)
 
 // |ntlm_v2_enabled| is only supported on POSIX platforms.

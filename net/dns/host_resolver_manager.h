@@ -25,7 +25,6 @@
 #include "net/dns/host_resolver.h"
 #include "net/dns/host_resolver_proc.h"
 #include "net/dns/public/dns_query_type.h"
-#include "net/url_request/url_request_context.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -42,6 +41,7 @@ class MDnsClient;
 class MDnsSocketFactory;
 class NetLog;
 class NetLogWithSource;
+class URLRequestContext;
 
 // Scheduler and controller of host resolution requests. Because of the global
 // nature of host resolutions, this class is generally expected to be singleton
@@ -122,7 +122,8 @@ class NET_EXPORT HostResolverManager
   std::unique_ptr<CancellableRequest> CreateRequest(
       const HostPortPair& host,
       const NetLogWithSource& net_log,
-      const base::Optional<ResolveHostParameters>& optional_parameters);
+      const base::Optional<ResolveHostParameters>& optional_parameters,
+      URLRequestContext* request_context);
   std::unique_ptr<MdnsListener> CreateMdnsListener(const HostPortPair& host,
                                                    DnsQueryType query_type);
   void SetDnsClientEnabled(bool enabled);
@@ -146,7 +147,6 @@ class NET_EXPORT HostResolverManager
 
   void SetDnsConfigOverrides(const DnsConfigOverrides& overrides);
 
-  void SetRequestContext(URLRequestContext* request_context);
   const std::vector<DnsConfig::DnsOverHttpsServerConfig>*
   GetDnsOverHttpsServersForTesting() const;
 
@@ -186,12 +186,12 @@ class NET_EXPORT HostResolverManager
   friend class HostResolverManagerTest;
   FRIEND_TEST_ALL_PREFIXES(HostResolverManagerDnsTest, ModeForHistogram);
   class Job;
+  struct JobKey;
   class ProcTask;
   class LoopbackProbeJob;
   class DnsTask;
   class RequestImpl;
-  using Key = HostCache::Key;
-  using JobMap = std::map<Key, std::unique_ptr<Job>>;
+  using JobMap = std::map<JobKey, std::unique_ptr<Job>>;
 
   // Current resolver mode, useful for breaking down histograms.
   enum ModeForHistogram {
@@ -223,8 +223,8 @@ class NET_EXPORT HostResolverManager
   // or ERR_DNS_CACHE_MISS if the host could not be resolved using local
   // sources.
   //
-  // On ERR_DNS_CACHE_MISS and OK, the cache key for the request is written to
-  // |out_key|. On other errors, it may not be.
+  // On ERR_DNS_CACHE_MISS and OK, effective request parameters are written to
+  // |out_effective_query_type| and |out_effective_host_resolver_flags|.
   //
   // If results are returned from the host cache, |out_stale_info| will be
   // filled in with information on how stale or fresh the result is. Otherwise,
@@ -239,17 +239,21 @@ class NET_EXPORT HostResolverManager
       HostResolverFlags flags,
       ResolveHostParameters::CacheUsage cache_usage,
       const NetLogWithSource& request_net_log,
-      Key* out_key,
+      DnsQueryType* out_effective_query_type,
+      HostResolverFlags* out_effective_host_resolver_flags,
       base::Optional<HostCache::EntryStaleness>* out_stale_info);
 
   // Attempts to create and start a Job to asynchronously attempt to resolve
-  // |key|. On success, returns ERR_IO_PENDING and attaches the Job to
+  // |request|. On success, returns ERR_IO_PENDING and attaches the Job to
   // |request|. On error, marks |request| completed and returns the error.
-  int CreateAndStartJob(const Key& key, RequestImpl* request);
+  int CreateAndStartJob(DnsQueryType effective_query_type,
+                        HostResolverFlags effective_host_resolver_flags,
+                        RequestImpl* request);
 
   // Tries to resolve |key| and its possible IP address representation,
   // |ip_address|. Returns a results entry iff the input can be resolved.
-  base::Optional<HostCache::Entry> ResolveAsIP(const Key& key,
+  base::Optional<HostCache::Entry> ResolveAsIP(DnsQueryType query_type,
+                                               bool resolve_canonname,
                                                const IPAddress* ip_address);
 
   // Returns the result iff a positive match is found for |key| in the cache.
@@ -259,27 +263,32 @@ class NET_EXPORT HostResolverManager
   //
   // If |allow_stale| is true, then stale cache entries can be returned.
   base::Optional<HostCache::Entry> ServeFromCache(
-      const Key& key,
+      const HostCache::Key& key,
       bool allow_stale,
       base::Optional<HostCache::EntryStaleness>* out_stale_info);
 
   // Iff we have a DnsClient with a valid DnsConfig, and |key| can be resolved
   // from the HOSTS file, return the results.
-  base::Optional<HostCache::Entry> ServeFromHosts(const Key& key);
+  base::Optional<HostCache::Entry> ServeFromHosts(
+      base::StringPiece hostname,
+      DnsQueryType query_type,
+      bool default_family_due_to_no_ipv6);
 
   // Iff |key| is for a localhost name (RFC 6761) and address DNS query type,
   // returns a results entry with the loopback IP.
-  base::Optional<HostCache::Entry> ServeLocalhost(const Key& key);
+  base::Optional<HostCache::Entry> ServeLocalhost(
+      base::StringPiece hostname,
+      DnsQueryType query_type,
+      bool default_family_due_to_no_ipv6);
 
-  // Returns the (hostname, address_family) key to use for |info|, choosing an
-  // "effective" address family by inheriting the resolver's default address
-  // family when the request leaves it unspecified.
-  Key GetEffectiveKeyForRequest(const std::string& hostname,
-                                DnsQueryType dns_query_type,
-                                HostResolverSource source,
-                                HostResolverFlags flags,
-                                const IPAddress* ip_address,
-                                const NetLogWithSource& net_log);
+  // Determines "effective" request parameters using manager properties and IPv6
+  // reachability.
+  void GetEffectiveParametersForRequest(DnsQueryType dns_query_type,
+                                        HostResolverFlags flags,
+                                        const IPAddress* ip_address,
+                                        const NetLogWithSource& net_log,
+                                        DnsQueryType* out_effective_type,
+                                        HostResolverFlags* out_effective_flags);
 
   // Probes IPv6 support and returns true if IPv6 support is enabled.
   // Results are cached, i.e. when called repeatedly this method returns result
@@ -294,7 +303,7 @@ class NET_EXPORT HostResolverManager
   virtual void RunLoopbackProbeJob();
 
   // Records the result in cache if cache is present.
-  void CacheResult(const Key& key,
+  void CacheResult(const HostCache::Key& key,
                    const HostCache::Entry& entry,
                    base::TimeDelta ttl);
 
@@ -303,8 +312,8 @@ class NET_EXPORT HostResolverManager
                        bool from_cache,
                        base::TimeDelta duration) const;
 
-  // Removes |job| from |jobs_| and return, only if it exists.
-  std::unique_ptr<Job> RemoveJob(Job* job);
+  // Removes |job_it| from |jobs_| and return.
+  std::unique_ptr<Job> RemoveJob(JobMap::iterator job_it);
 
   // Aborts all in progress jobs with ERR_NETWORK_CHANGED and notifies their
   // requests. Might start new jobs.
@@ -422,8 +431,6 @@ class NET_EXPORT HostResolverManager
 
   // Current resolver mode, useful for breaking down histogram data.
   ModeForHistogram mode_for_histogram_;
-
-  URLRequestContext* url_request_context_;
 
   // Shared tick clock, overridden for testing.
   const base::TickClock* tick_clock_;

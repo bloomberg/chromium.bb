@@ -458,27 +458,13 @@ void NetworkService::ConfigureStubHostResolver(
     return;
   }
 
-  for (auto* network_context : network_contexts_) {
-    if (!network_context->IsPrimaryNetworkContext())
-      continue;
-
-    host_resolver_manager_->SetRequestContext(
-        network_context->url_request_context());
-
-    net::DnsConfigOverrides overrides;
-    overrides.dns_over_https_servers.emplace();
-    for (const auto& doh_server : *dns_over_https_servers) {
-      overrides.dns_over_https_servers.value().emplace_back(
-          doh_server->server_template, doh_server->use_post);
-    }
-    host_resolver_manager_->SetDnsConfigOverrides(overrides);
-
-    return;
+  net::DnsConfigOverrides overrides;
+  overrides.dns_over_https_servers.emplace();
+  for (const auto& doh_server : *dns_over_https_servers) {
+    overrides.dns_over_https_servers.value().emplace_back(
+        doh_server->server_template, doh_server->use_post);
   }
-
-  // Execution should generally not reach this line, but could run into races
-  // with teardown, or restarting a crashed network process, that could
-  // theoretically result in reaching it.
+  host_resolver_manager_->SetDnsConfigOverrides(overrides);
 }
 
 void NetworkService::DisableQuic() {
@@ -691,6 +677,16 @@ void NetworkService::OnBindInterface(
 }
 
 void NetworkService::DestroyNetworkContexts() {
+  // If DNS over HTTPS is enabled, the HostResolver is currently using
+  // NetworkContexts to do DNS lookups, so need to tell the HostResolver
+  // to stop using DNS over HTTPS before destroying any NetworkContexts.
+  // The SetDnsConfigOverrides() call will will fail any in-progress DNS
+  // lookups, but only if there are current config overrides (which there will
+  // be if DNS over HTTPS is currently enabled).
+  if (host_resolver_manager_) {
+    host_resolver_manager_->SetDnsConfigOverrides(net::DnsConfigOverrides());
+  }
+
   // Delete NetworkContexts. If there's a primary NetworkContext, it must be
   // deleted after all other NetworkContexts, to avoid use-after-frees.
   for (auto it = owned_network_contexts_.begin();
@@ -699,17 +695,6 @@ void NetworkService::DestroyNetworkContexts() {
     ++it;
     if (!(*last)->IsPrimaryNetworkContext())
       owned_network_contexts_.erase(last);
-  }
-
-  // If DNS over HTTPS is enabled, the HostResolver is currently using the
-  // primary NetworkContext to do DNS lookups, so need to tell the HostResolver
-  // to stop using DNS over HTTPS before destroying the primary NetworkContext.
-  // The SetDnsConfigOverrides() call will will fail any in-progress DNS
-  // lookups, but only if there are current config overrides (which there will
-  // be if DNS over HTTPS is currently enabled).
-  if (host_resolver_manager_) {
-    host_resolver_manager_->SetDnsConfigOverrides(net::DnsConfigOverrides());
-    host_resolver_manager_->SetRequestContext(nullptr);
   }
 
   DCHECK_LE(owned_network_contexts_.size(), 1u);
