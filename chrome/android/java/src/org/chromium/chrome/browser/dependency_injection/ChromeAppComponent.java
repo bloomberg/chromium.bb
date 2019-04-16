@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.dependency_injection;
 import org.chromium.chrome.browser.AppHooksModule;
 import org.chromium.chrome.browser.browserservices.ClearDataDialogResultRecorder;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityClient;
+import org.chromium.chrome.browser.browserservices.permissiondelegation.NotificationPermissionUpdater;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedWebActivityPermissionManager;
 import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsModule;
 import org.chromium.chrome.browser.contextual_suggestions.EnabledStateMonitor;
@@ -38,6 +39,7 @@ public interface ChromeAppComponent {
     ChromePreferenceManager resolvePreferenceManager();
     ClearDataDialogResultRecorder resolveTwaClearDataDialogRecorder();
     TrustedWebActivityPermissionManager resolveTwaPermissionManager();
+    NotificationPermissionUpdater resolveTwaPermissionUpdater();
     TrustedWebActivityClient resolveTrustedWebActivityClient();
 
     // Temporary getters for DI migration process. All of these getters
