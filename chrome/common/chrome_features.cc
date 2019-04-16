@@ -114,6 +114,13 @@ const base::Feature kBlockPromptsIfDismissedOften{
 const base::Feature kBlockPromptsIfIgnoredOften{
     "BlockPromptsIfIgnoredOften", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Once the user declines a notification permission prompt in a WebContents,
+// automatically dismiss subsequent prompts in the same WebContents, from any
+// origin, until the next user-initiated navigation.
+const base::Feature kBlockRepeatedNotificationPermissionPrompts{
+    "BlockRepeatedNotificationPermissionPrompts",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
 #if defined(OS_MACOSX)
 // Enables the new bookmark app system (e.g. Add To Applications on Mac).
 const base::Feature kBookmarkApps{"BookmarkAppsMac",

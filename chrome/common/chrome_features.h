@@ -81,6 +81,9 @@ COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kBookmarkApps;
 #endif
 
 COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kBlockRepeatedNotificationPermissionPrompts;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kBrowserHangFixesExperiment;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
