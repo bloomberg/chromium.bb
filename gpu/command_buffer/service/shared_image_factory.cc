@@ -232,22 +232,22 @@ bool SharedImageFactory::IsSharedBetweenThreads(uint32_t usage) {
 SharedImageBackingFactory* SharedImageFactory::GetFactoryByUsage(
     uint32_t usage,
     bool* allow_legacy_mailbox) {
+  bool using_dawn = usage & SHARED_IMAGE_USAGE_WEBGPU;
+  bool vulkan_usage = using_vulkan_ && (usage & SHARED_IMAGE_USAGE_DISPLAY);
+  bool gl_usage = usage & SHARED_IMAGE_USAGE_GLES2;
+  bool share_between_threads = IsSharedBetweenThreads(usage);
+  bool share_between_gl_vulkan = gl_usage && vulkan_usage;
+  bool using_interop_factory =
+      share_between_threads || share_between_gl_vulkan || using_dawn;
   // wrapped_sk_image_factory_ is only used for OOPR and supports
   // a limited number of flags (e.g. no SHARED_IMAGE_USAGE_SCANOUT).
   constexpr auto kWrappedSkImageUsage = SHARED_IMAGE_USAGE_RASTER |
                                         SHARED_IMAGE_USAGE_OOP_RASTERIZATION |
                                         SHARED_IMAGE_USAGE_DISPLAY;
-  bool using_wrapped_sk_image =
-      wrapped_sk_image_factory_ && (usage == kWrappedSkImageUsage);
-  bool using_dawn = usage & SHARED_IMAGE_USAGE_WEBGPU;
-
-  bool vulkan_usage = using_vulkan_ && (usage & SHARED_IMAGE_USAGE_DISPLAY);
-  bool gl_usage = usage & SHARED_IMAGE_USAGE_GLES2;
-  bool share_between_threads = IsSharedBetweenThreads(usage);
-  bool share_between_gl_vulkan = gl_usage && vulkan_usage;
-  bool using_interop_factory = share_between_threads ||
-                               share_between_gl_vulkan || using_dawn ||
-                               (vulkan_usage && !using_wrapped_sk_image);
+  bool using_wrapped_sk_image = wrapped_sk_image_factory_ &&
+                                (usage == kWrappedSkImageUsage) &&
+                                !using_interop_factory;
+  using_interop_factory |= vulkan_usage && !using_wrapped_sk_image;
 
   *allow_legacy_mailbox =
       !using_wrapped_sk_image && !using_interop_factory && !using_vulkan_;

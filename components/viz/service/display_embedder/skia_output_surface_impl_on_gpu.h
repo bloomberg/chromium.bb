@@ -46,7 +46,6 @@ class GLSurface;
 
 namespace gpu {
 class SyncPointClientState;
-class SharedImageRepresentationSkia;
 }
 
 namespace ui {
@@ -57,6 +56,7 @@ class PlatformWindowSurface;
 
 namespace viz {
 
+struct ImageContext;
 class DirectContextProvider;
 class GLRendererCopier;
 class GpuServiceImpl;
@@ -120,6 +120,7 @@ class SkiaOutputSurfaceImplOnGpu {
   void FinishPaintCurrentFrame(
       std::unique_ptr<SkDeferredDisplayList> ddl,
       std::unique_ptr<SkDeferredDisplayList> overdraw_ddl,
+      std::vector<ImageContext*> image_contexts,
       std::vector<gpu::SyncToken> sync_tokens,
       uint64_t sync_fence_release);
   void SwapBuffers(OutputSurfaceFrame frame);
@@ -127,34 +128,24 @@ class SkiaOutputSurfaceImplOnGpu {
   void DiscardBackbuffer() { output_device_->DiscardBackbuffer(); }
   void FinishPaintRenderPass(RenderPassId id,
                              std::unique_ptr<SkDeferredDisplayList> ddl,
+                             std::vector<ImageContext*> image_contexts,
                              std::vector<gpu::SyncToken> sync_tokens,
                              uint64_t sync_fence_release);
-  void RemoveRenderPassResource(std::vector<RenderPassId> ids);
+  void RemoveRenderPassResource(
+      std::vector<std::unique_ptr<ImageContext>> image_contexts);
   void CopyOutput(RenderPassId id,
                   const copy_output::RenderPassGeometry& geometry,
                   const gfx::ColorSpace& color_space,
                   std::unique_ptr<CopyOutputRequest> request);
 
-  // Fulfill callback for promise SkImage created from a resource.
-  sk_sp<SkPromiseImageTexture> FulfillPromiseTexture(
-      const gpu::MailboxHolder& mailbox_holder,
-      const gfx::Size& size,
-      const ResourceFormat resource_format,
-      std::unique_ptr<gpu::SharedImageRepresentationSkia>* shared_image_out);
-  // Fulfill callback for promise SkImage created from a render pass.
-  // |shared_image_out| is ignored for render passes, as these aren't based on
-  // SharedImage.
-  sk_sp<SkPromiseImageTexture> FulfillPromiseTexture(
-      const RenderPassId id,
-      std::unique_ptr<gpu::SharedImageRepresentationSkia>* shared_image_out);
+  void BeginAccessImages(const std::vector<ImageContext*>& image_contexts);
+  void EndAccessImages(const std::vector<ImageContext*>& image_contexts);
 
   sk_sp<GrContextThreadSafeProxy> GetGrContextThreadSafeProxy();
   const gl::GLVersionInfo* gl_version_info() const { return gl_version_info_; }
 
-  void DestroySkImages(std::vector<sk_sp<SkImage>>&& images,
-                       uint64_t sync_fence_release);
-
-  void CreateFallbackPromiseImage(SkColorType color_type);
+  void ReleaseSkImages(
+      std::vector<std::unique_ptr<ImageContext>> image_contexts);
 
   bool was_context_lost() { return context_state_->context_lost(); }
 
@@ -164,6 +155,8 @@ class SkiaOutputSurfaceImplOnGpu {
       const OutputSurface::Capabilities& capabilities);
 
  private:
+  class ScopedPromiseImageAccess;
+
   void InitializeForGLWithGpuService(GpuServiceImpl* gpu_service);
   void InitializeForVulkan(GpuServiceImpl* gpu_service);
 
