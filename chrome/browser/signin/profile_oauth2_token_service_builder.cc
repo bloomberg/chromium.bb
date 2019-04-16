@@ -31,9 +31,9 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/account_manager/account_manager_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chromeos/components/account_manager/account_manager_factory.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service_delegate_chromeos.h"
 #include "components/user_manager/user_manager.h"
 #endif  // defined(OS_CHROMEOS)
@@ -54,9 +54,13 @@ CreateCrOsOAuthDelegate(Profile* profile) {
       factory->GetAccountManager(profile->GetPath().value());
   DCHECK(account_manager);
 
+  const bool is_regular_profile =
+      !chromeos::ProfileHelper::IsSigninProfile(profile) &&
+      !chromeos::ProfileHelper::IsLockScreenAppProfile(profile);
   return std::make_unique<signin::ProfileOAuth2TokenServiceDelegateChromeOS>(
       AccountTrackerServiceFactory::GetInstance()->GetForProfile(profile),
-      content::GetNetworkConnectionTracker(), account_manager);
+      content::GetNetworkConnectionTracker(), account_manager,
+      is_regular_profile);
 }
 #endif  // defined(OS_CHROMEOS)
 
@@ -116,15 +120,15 @@ std::unique_ptr<OAuth2TokenServiceDelegate> CreateOAuth2TokenServiceDelegate(
 #else  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
-  if (chromeos::IsAccountManagerAvailable(profile)) {
+  if (chromeos::switches::IsAccountManagerEnabled()) {
     return CreateCrOsOAuthDelegate(profile);
   }
 #endif  // defined(OS_CHROMEOS)
 
   // Fall back to |MutableProfileOAuth2TokenServiceDelegate|:
   // 1. On all platforms other than Android and Chrome OS.
-  // 2. On Chrome OS, if |ProfileOAuth2TokenServiceDelegateChromeOS| cannot be
-  // used for this |profile|. See |chromeos::IsAccountManagerAvailable|.
+  // 2. On Chrome OS, if Account Manager has not been switched on yet
+  // (chromeos::switches::IsAccountManagerEnabled).
   return CreateMutableProfileOAuthDelegate(profile);
 
 #endif  // defined(OS_ANDROID)

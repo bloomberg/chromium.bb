@@ -104,6 +104,8 @@ class TokenServiceObserver : public OAuth2TokenService::Observer {
     batch_change_records_.rbegin()->emplace_back(account_id);
   }
 
+  void OnRefreshTokensLoaded() override { refresh_tokens_loaded_ = true; }
+
   void OnRefreshTokenRevoked(const std::string& account_id) override {
     if (!is_inside_batch_)
       StartBatchChanges();
@@ -123,6 +125,7 @@ class TokenServiceObserver : public OAuth2TokenService::Observer {
   GoogleServiceAuthError last_err_;
   std::set<std::string> account_ids_;
   bool is_inside_batch_ = false;
+  bool refresh_tokens_loaded_ = false;
 
   // Records batch changes for later verification. Each index of this vector
   // represents a batch change. Each batch change is a vector of account ids for
@@ -161,8 +164,8 @@ class CrOSOAuthDelegateTest : public testing::Test {
 
     delegate_ = std::make_unique<ProfileOAuth2TokenServiceDelegateChromeOS>(
         &account_tracker_service_,
-        network::TestNetworkConnectionTracker::GetInstance(),
-        &account_manager_);
+        network::TestNetworkConnectionTracker::GetInstance(), &account_manager_,
+        true /* is_regular_profile */);
     delegate_->LoadCredentials(
         account_info_.account_id /* primary_account_id */);
   }
@@ -213,6 +216,29 @@ class CrOSOAuthDelegateTest : public testing::Test {
  private:
   DISALLOW_COPY_AND_ASSIGN(CrOSOAuthDelegateTest);
 };
+
+// Refresh tokens should load successfully for non-regular (Signin and Lock
+// Screen) Profiles.
+TEST_F(CrOSOAuthDelegateTest, RefreshTokensAreLoadedForNonRegularProfiles) {
+  // Create an instance of Account Manager but do not
+  // |AccountManager::Initialize| it. This mimics Signin and Lock Screen Profile
+  // behaviour.
+  chromeos::AccountManager account_manager;
+
+  auto delegate = std::make_unique<ProfileOAuth2TokenServiceDelegateChromeOS>(
+      &account_tracker_service_,
+      network::TestNetworkConnectionTracker::GetInstance(), &account_manager,
+      false /* is_regular_profile */);
+  TokenServiceObserver observer(delegate.get());
+
+  // Test that LoadCredentials works as expected.
+  EXPECT_FALSE(observer.refresh_tokens_loaded_);
+  delegate->LoadCredentials("" /* primary_account_id */);
+  EXPECT_TRUE(observer.refresh_tokens_loaded_);
+  EXPECT_EQ(OAuth2TokenServiceDelegate::LoadCredentialsState::
+                LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
+            delegate->load_credentials_state());
+}
 
 TEST_F(CrOSOAuthDelegateTest,
        RefreshTokenIsAvailableReturnsTrueForValidGaiaTokens) {
@@ -364,7 +390,8 @@ TEST_F(CrOSOAuthDelegateTest, BatchChangeObserversAreNotifiedOncePerBatch) {
   // initialized.
   auto delegate = std::make_unique<ProfileOAuth2TokenServiceDelegateChromeOS>(
       &account_tracker_service_,
-      network::TestNetworkConnectionTracker::GetInstance(), &account_manager);
+      network::TestNetworkConnectionTracker::GetInstance(), &account_manager,
+      true /* is_regular_profile */);
   delegate->LoadCredentials(account1.account_id /* primary_account_id */);
   TokenServiceObserver observer(delegate.get());
   // Wait until chromeos::AccountManager is fully initialized.

@@ -33,7 +33,8 @@ class ProfileOAuth2TokenServiceDelegateChromeOS
   ProfileOAuth2TokenServiceDelegateChromeOS(
       AccountTrackerService* account_tracker_service,
       network::NetworkConnectionTracker* network_connection_tracker,
-      chromeos::AccountManager* account_manager);
+      chromeos::AccountManager* account_manager,
+      bool is_regular_profile);
   ~ProfileOAuth2TokenServiceDelegateChromeOS() override;
 
   // OAuth2TokenServiceDelegate overrides.
@@ -81,14 +82,9 @@ class ProfileOAuth2TokenServiceDelegateChromeOS
   void OnGetAccounts(
       const std::vector<chromeos::AccountManager::Account>& accounts);
 
-  // A non-owning pointer.
+  // Non-owning pointers.
   AccountTrackerService* const account_tracker_service_;
-
-  // A non-owning pointer.
   network::NetworkConnectionTracker* const network_connection_tracker_;
-
-  // A non-owning pointer. |chromeos::AccountManager| is available
-  // throughout the lifetime of a user session.
   chromeos::AccountManager* const account_manager_;
 
   // A cache of AccountKeys.
@@ -100,6 +96,9 @@ class ProfileOAuth2TokenServiceDelegateChromeOS
   // Used to rate-limit token fetch requests so as to not overload the server.
   net::BackoffEntry backoff_entry_;
   GoogleServiceAuthError backoff_error_;
+
+  // Is |this| attached to a regular (non-Signin && non-LockScreen) Profile.
+  const bool is_regular_profile_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<ProfileOAuth2TokenServiceDelegateChromeOS> weak_factory_;

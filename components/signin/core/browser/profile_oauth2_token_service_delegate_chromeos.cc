@@ -69,12 +69,14 @@ ProfileOAuth2TokenServiceDelegateChromeOS::
     ProfileOAuth2TokenServiceDelegateChromeOS(
         AccountTrackerService* account_tracker_service,
         network::NetworkConnectionTracker* network_connection_tracker,
-        chromeos::AccountManager* account_manager)
+        chromeos::AccountManager* account_manager,
+        bool is_regular_profile)
     : account_tracker_service_(account_tracker_service),
       network_connection_tracker_(network_connection_tracker),
       account_manager_(account_manager),
       backoff_entry_(&kBackoffPolicy),
       backoff_error_(GoogleServiceAuthError::NONE),
+      is_regular_profile_(is_regular_profile),
       weak_factory_(this) {
   network_connection_tracker_->AddNetworkConnectionObserver(this);
 }
@@ -202,8 +204,19 @@ void ProfileOAuth2TokenServiceDelegateChromeOS::LoadCredentials(
   if (load_credentials_state() != LOAD_CREDENTIALS_NOT_STARTED) {
     return;
   }
-
   set_load_credentials_state(LOAD_CREDENTIALS_IN_PROGRESS);
+
+  if (!is_regular_profile_) {
+    // |LoadCredentials| needs to complete successfully for a successful Profile
+    // initialization, but for Signin Profile and Lock Screen Profile this is a
+    // no-op: they do not and must not have a working Account Manager available
+    // to them. Note: They do have access to an Account Manager instance, but
+    // that instance is never set up (|AccountManager::Initialize|). Also, see
+    // http://crbug.com/891818
+    set_load_credentials_state(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS);
+    FireRefreshTokensLoaded();
+    return;
+  }
 
   DCHECK(account_manager_);
   account_manager_->AddObserver(this);
