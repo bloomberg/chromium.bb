@@ -51,20 +51,6 @@ void WebWidgetTestProxy::RequestPresentation(
     ScheduleAnimationInternal(/*do_raster=*/true);
 }
 
-void WebWidgetTestProxy::RequestPresentationForPixelDump(
-    PresentationTimeCallback callback) {
-  RenderWidget::RequestPresentation(std::move(callback));
-
-  // Like WebWidgetTestProxy::RequestPresentation, except:
-  // We don't check TestIsRunning() here because this path is used to get a
-  // callback at end of each test, which can race with TestIsRunning().
-  //
-  // TestIsRunning() races with the presentation request because the first comes
-  // from various signals including IPC messages, while the second comes from a
-  // IPC message on a different mojo channel.
-  ScheduleAnimationInternal(/*do_raster=*/true);
-}
-
 void WebWidgetTestProxy::ScheduleAnimation() {
   if (GetTestRunner()->TestIsRunning())
     ScheduleAnimationInternal(GetTestRunner()->animation_requires_raster());

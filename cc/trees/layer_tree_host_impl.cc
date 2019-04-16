@@ -1352,11 +1352,9 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
   frame->may_contain_video = false;
 
   if (active_tree_->RootRenderSurface()) {
-    gfx::Rect device_viewport_damage_rect = viewport_damage_rect_;
-    viewport_damage_rect_ = gfx::Rect();
-
     active_tree_->RootRenderSurface()->damage_tracker()->AddDamageNextUpdate(
-        device_viewport_damage_rect);
+        viewport_damage_rect_);
+    viewport_damage_rect_ = gfx::Rect();
   }
 
   DrawResult draw_result = CalculateRenderPasses(frame);

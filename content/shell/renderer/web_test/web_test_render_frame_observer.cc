@@ -55,6 +55,8 @@ void WebTestRenderFrameObserver::CaptureDump(CaptureDumpCallback callback) {
 
 void WebTestRenderFrameObserver::CompositeWithRaster(
     CompositeWithRasterCallback callback) {
+  // When the TestFinished() occurred, if the browser is capturing pixels, it
+  // asks each composited RenderFrame to submit a new frame via here.
   render_frame()->UpdateAllLifecyclePhasesAndCompositeForTesting();
   std::move(callback).Run();
 }

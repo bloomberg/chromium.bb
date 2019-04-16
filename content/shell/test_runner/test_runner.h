@@ -86,7 +86,8 @@ class TestRunner : public WebTestRunner {
   bool IsRecursiveLayoutDumpRequested() override;
   std::string DumpLayout(blink::WebLocalFrame* frame) override;
   bool ShouldDumpSelectionRect() const override;
-  bool DumpPixelsAsync(
+  bool CanDumpPixelsFromRenderer() const override;
+  void DumpPixelsAsync(
       content::RenderView* render_view,
       base::OnceCallback<void(const SkBitmap&)> callback) override;
   void ReplicateWebTestRuntimeFlagsChanges(

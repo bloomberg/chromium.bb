@@ -450,48 +450,54 @@ void BlinkTestRunner::TestFinished() {
   // below.
   dump_result_ = mojom::WebTestDump::New();
 
-  CaptureLocalAudioDump();
-  // TODO(vmpstr): Sometimes the web isn't stable, which means that if we
-  // just ask the browser to ask us to do a dump, the layout would be different
-  // compared to if we do it now. This probably needs to be rebaselined. But for
-  // now, just capture a local web first.
-  CaptureLocalLayoutDump();
-  // TODO(vmpstr): This code should move to the browser, but since again some
-  // tests seem to be timing dependent, capture a local pixels dump first. Note
-  // that this returns a value indicating if we should defer the pixel dump to
-  // the browser instead. We want to switch all tests to use this for pixel
-  // dumps.
-  // TODO(danakj): When not printing, this call doesn't do anything useful
-  // except cause the full viewport to be damaged and insert a presentation
-  // callback. Since we already get a callback from the browser side when the
-  // pixel capture is done, this callback seems redundant and probably this only
-  // really was needed for causing damage. Now WebWidgetTestProxy does that
-  // damage itself when a RequestPresentationForPixelDump() is performed so we
-  // could probably stop doing CaptureLocalLayoutDump() at all when not printing
-  // and not wait for the callback.
-  bool browser_should_capture_pixels = CaptureLocalPixelsDump();
+  bool browser_should_dump_back_forward_list =
+      interfaces->TestRunner()->ShouldDumpBackForwardList();
 
-  // Add the current selection rect to the dump result, if requested.
-  if (browser_should_capture_pixels &&
-      interfaces->TestRunner()->ShouldDumpSelectionRect()) {
-    dump_result_->selection_rect =
-        web_frame->GetSelectionBoundsRectForTesting();
+  if (interfaces->TestRunner()->ShouldDumpAsAudio()) {
+    CaptureLocalAudioDump();
+
+    Send(new WebTestHostMsg_InitiateCaptureDump(
+        routing_id(), browser_should_dump_back_forward_list,
+        /*browser_should_capture_pixels=*/false));
+    return;
   }
 
-  // Request the browser to send us a callback through which we will return the
-  // results.
+  // TODO(vmpstr): Sometimes the web isn't stable, which means that if we
+  // just ask the browser to ask us to do a dump, the layout would be
+  // different compared to if we do it now. This probably needs to be
+  // rebaselined. But for now, just capture a local web first.
+  CaptureLocalLayoutDump();
+
+  if (!interfaces->TestRunner()->ShouldGeneratePixelResults()) {
+    Send(new WebTestHostMsg_InitiateCaptureDump(
+        routing_id(), browser_should_dump_back_forward_list,
+        /*browser_should_capture_pixels=*/false));
+    return;
+  }
+
+  if (interfaces->TestRunner()->CanDumpPixelsFromRenderer()) {
+    // This does the capture in the renderer when possible, otherwise
+    // we will ask the browser to initiate it.
+    CaptureLocalPixelsDump();
+  } else {
+    // If the browser should capture pixels, then we shouldn't be waiting
+    // for layout dump results. Any test can only require the browser to
+    // dump one or the other at this time.
+    DCHECK(!waiting_for_layout_dump_results_);
+    if (interfaces->TestRunner()->ShouldDumpSelectionRect()) {
+      dump_result_->selection_rect =
+          web_frame->GetSelectionBoundsRectForTesting();
+    }
+  }
   Send(new WebTestHostMsg_InitiateCaptureDump(
-      routing_id(), interfaces->TestRunner()->ShouldDumpBackForwardList(),
-      browser_should_capture_pixels));
+      routing_id(), browser_should_dump_back_forward_list,
+      !interfaces->TestRunner()->CanDumpPixelsFromRenderer()));
 }
 
 void BlinkTestRunner::CaptureLocalAudioDump() {
   TRACE_EVENT0("shell", "BlinkTestRunner::CaptureLocalAudioDump");
   test_runner::WebTestInterfaces* interfaces =
       WebTestRenderThreadObserver::GetInstance()->test_interfaces();
-  if (!interfaces->TestRunner()->ShouldDumpAsAudio())
-    return;
-
   dump_result_->audio.emplace();
   interfaces->TestRunner()->GetAudioData(&*dump_result_->audio);
 }
@@ -500,10 +506,6 @@ void BlinkTestRunner::CaptureLocalLayoutDump() {
   TRACE_EVENT0("shell", "BlinkTestRunner::CaptureLocalLayoutDump");
   test_runner::WebTestInterfaces* interfaces =
       WebTestRenderThreadObserver::GetInstance()->test_interfaces();
-
-  if (interfaces->TestRunner()->ShouldDumpAsAudio())
-    return;
-
   std::string layout;
   if (interfaces->TestRunner()->HasCustomTextDump(&layout)) {
     dump_result_->layout.emplace(layout + "\n");
@@ -518,29 +520,20 @@ void BlinkTestRunner::CaptureLocalLayoutDump() {
   }
 }
 
-bool BlinkTestRunner::CaptureLocalPixelsDump() {
+void BlinkTestRunner::CaptureLocalPixelsDump() {
   TRACE_EVENT0("shell", "BlinkTestRunner::CaptureLocalPixelsDump");
-  test_runner::WebTestInterfaces* interfaces =
-      WebTestRenderThreadObserver::GetInstance()->test_interfaces();
-  if (!interfaces->TestRunner()->ShouldGeneratePixelResults() ||
-      interfaces->TestRunner()->ShouldDumpAsAudio()) {
-    return false;
-  }
 
   // Test finish should only be processed in the BlinkTestRunner associated
   // with the current, non-swapped-out RenderView.
   DCHECK(render_view()->GetWebView()->MainFrame()->IsWebLocalFrame());
 
   waiting_for_pixels_dump_result_ = true;
-  bool browser_should_capture_pixels =
-      interfaces->TestRunner()->DumpPixelsAsync(
-          render_view(), base::BindOnce(&BlinkTestRunner::OnPixelsDumpCompleted,
-                                        base::Unretained(this)));
 
-  // If the browser should capture pixels, then we shouldn't be waiting for dump
-  // results.
-  DCHECK(!browser_should_capture_pixels || !waiting_for_layout_dump_results_);
-  return browser_should_capture_pixels;
+  test_runner::WebTestInterfaces* interfaces =
+      WebTestRenderThreadObserver::GetInstance()->test_interfaces();
+  interfaces->TestRunner()->DumpPixelsAsync(
+      render_view(), base::BindOnce(&BlinkTestRunner::OnPixelsDumpCompleted,
+                                    base::Unretained(this)));
 }
 
 void BlinkTestRunner::OnLayoutDumpCompleted(std::string completed_layout_dump) {
