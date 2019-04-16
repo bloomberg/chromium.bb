@@ -105,7 +105,8 @@ public class ClientAppBroadcastReceiver extends BroadcastReceiver {
             String packageName = intent.getData().getSchemeSpecificPart();
             if (packageName != null
                     && packageName.startsWith(WebApkConstants.WEBAPK_PACKAGE_PREFIX)) {
-                WebApkUma.recordWebApkUninstalled();
+                // Native is likely not loaded. Defer recording UMA till the next browser launch.
+                WebApkUma.deferRecordWebApkUninstalled();
             }
         }
 
