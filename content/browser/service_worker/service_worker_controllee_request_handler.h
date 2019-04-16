@@ -107,7 +107,6 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
           disallow_controller);
 
   // ServiceWorkerNavigationLoader::Delegate implementation:
-  void OnPrepareToRestart() override;
   ServiceWorkerVersion* GetServiceWorkerVersion(
       ServiceWorkerMetrics::URLRequestJobResult* result) override;
   bool RequestStillValid(
@@ -135,11 +134,6 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
   ResourceContext* resource_context_;
   GURL stripped_url_;
   bool force_update_started_;
-
-  // True if the next time this request is started, the response should be
-  // delivered from the network, bypassing the ServiceWorker. Cleared after the
-  // next intercept opportunity, for main frame requests.
-  bool use_network_;
 
   base::WeakPtrFactory<ServiceWorkerControlleeRequestHandler> weak_factory_;
 

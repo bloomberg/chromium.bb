@@ -48,11 +48,6 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
    public:
     virtual ~Delegate() {}
 
-    // Will be invoked before the request is restarted. The caller can use this
-    // opportunity to grab state from the ServiceWorkerNavigationLoader to
-    // determine how it should behave when the request is restarted.
-    virtual void OnPrepareToRestart() = 0;
-
     // Returns the ServiceWorkerVersion fetch events for this request job should
     // be dispatched to. If no appropriate worker can be determined, returns
     // nullptr and sets |*result| to an appropriate error.

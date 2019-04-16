@@ -15,7 +15,6 @@
 #include "content/browser/service_worker/service_worker_navigation_loader.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
-#include "content/browser/service_worker/service_worker_response_info.h"
 #include "content/common/navigation_subresource_loader_params.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/content_browser_client.h"
@@ -116,7 +115,6 @@ ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
       frame_type_(frame_type),
       body_(std::move(body)),
       force_update_started_(false),
-      use_network_(false),
       weak_factory_(this) {
   DCHECK(ServiceWorkerUtils::IsMainResourceType(resource_type));
 }
@@ -159,10 +157,6 @@ void ServiceWorkerControlleeRequestHandler::MaybeCreateLoader(
     std::move(callback).Run({});
     return;
   }
-
-  // In fallback cases we basically 'forward' the request, so we should
-  // never see use_network_ gets true.
-  DCHECK(!use_network_);
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   // Fall back for the subsequent offline page interceptor to load the offline
@@ -540,11 +534,6 @@ void ServiceWorkerControlleeRequestHandler::OnUpdatedVersionStatusChanged(
       &ServiceWorkerControlleeRequestHandler::OnUpdatedVersionStatusChanged,
       weak_factory_.GetWeakPtr(), std::move(registration), version,
       std::move(disallow_controller)));
-}
-
-void ServiceWorkerControlleeRequestHandler::OnPrepareToRestart() {
-  use_network_ = true;
-  ClearJob();
 }
 
 ServiceWorkerVersion*
