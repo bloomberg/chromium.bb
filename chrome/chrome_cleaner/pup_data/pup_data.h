@@ -395,9 +395,6 @@ class PUPData {
   static bool HasFlaggedPUP(const std::vector<UwSId>& input_pup_list,
                             bool (*chooser)(Flags));
 
-  // Returns set of files found in service registrations of |uws|.
-  static FilePathSet GetFilesDetectedInServices(const std::vector<UwSId>& uws);
-
   // Convert a RegistryRoot to its corresponding HKEY. If
   // |registry_root| is a group policy, and |policy_file| is not null, the path
   // to the group policy file is set in |policy_file|.

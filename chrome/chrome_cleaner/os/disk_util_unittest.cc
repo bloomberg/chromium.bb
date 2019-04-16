@@ -543,31 +543,6 @@ TEST(DiskUtilTests, PathHasActiveExtension) {
   EXPECT_FALSE(PathHasActiveExtension(base::FilePath(L"C:\\file.txt::$DATA")));
 }
 
-TEST(DiskUtilTests, HasDosExecutableHeader) {
-  base::ScopedTempDir temp;
-  ASSERT_TRUE(temp.CreateUniqueTempDir());
-  base::FilePath executable = temp.GetPath().Append(L"executable.txt");
-  const char kExecutableFileContents[] = "MZ I am executable";
-  chrome_cleaner::CreateFileWithContent(executable, kExecutableFileContents,
-                                        sizeof(kExecutableFileContents));
-  EXPECT_TRUE(HasDosExecutableHeader(executable));
-
-  base::FilePath non_executable = temp.GetPath().Append(L"text.exe");
-  const char kTextFileContents[] = "I am benign text";
-  chrome_cleaner::CreateFileWithContent(non_executable, kTextFileContents,
-                                        sizeof(kTextFileContents));
-  EXPECT_FALSE(HasDosExecutableHeader(non_executable));
-}
-
-TEST(DiskUtilTests, HasAlternateFileStream) {
-  EXPECT_FALSE(HasAlternateFileStream(base::FilePath(L"C:\\file.txt")));
-  EXPECT_FALSE(HasAlternateFileStream(base::FilePath(L"C:\\file.txt::$DATA")));
-
-  EXPECT_TRUE(HasAlternateFileStream(base::FilePath(L"C:\\file.txt:stream")));
-  EXPECT_TRUE(
-      HasAlternateFileStream(base::FilePath(L"C:\\file.txt:stream:$TYPE")));
-}
-
 TEST(DiskUtilTests, ExpandEnvPath) {
   ASSERT_TRUE(
       ::SetEnvironmentVariable(L"CLEANER_TEST_VAR", L"CLEANER_TEST_VALUE"));

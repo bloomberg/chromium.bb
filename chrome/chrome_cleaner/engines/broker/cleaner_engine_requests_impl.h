@@ -15,7 +15,7 @@
 #include "chrome/chrome_cleaner/engines/broker/interface_metadata_observer.h"
 #include "chrome/chrome_cleaner/interfaces/cleaner_engine_requests.mojom.h"
 #include "chrome/chrome_cleaner/ipc/mojo_task_runner.h"
-#include "chrome/chrome_cleaner/zip_archiver/sandboxed_zip_archiver.h"
+#include "chrome/chrome_cleaner/zip_archiver/zip_archiver.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 
 namespace chrome_cleaner {
@@ -23,7 +23,7 @@ namespace chrome_cleaner {
 std::unique_ptr<chrome_cleaner::FileRemoverAPI>
 CreateFileRemoverWithDigestVerifier(
     const std::vector<UwSId>& enabled_uws,
-    std::unique_ptr<SandboxedZipArchiver> archiver,
+    std::unique_ptr<ZipArchiver> archiver,
     const base::RepeatingClosure& reboot_needed_callback);
 
 class CleanerEngineRequestsImpl : public mojom::CleanerEngineRequests {

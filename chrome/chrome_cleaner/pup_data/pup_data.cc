@@ -257,24 +257,6 @@ bool PUPData::HasFlaggedPUP(const std::vector<UwSId>& input_pup_list,
 }
 
 // static
-FilePathSet PUPData::GetFilesDetectedInServices(
-    const std::vector<UwSId>& uws_list) {
-  FilePathSet detected_in_services;
-  for (chrome_cleaner::UwSId uws_id : uws_list) {
-    const PUP* uws = GetPUP(uws_id);
-    for (auto path_location_it = uws->disk_footprints_info.map().begin();
-         path_location_it != uws->disk_footprints_info.map().end();
-         ++path_location_it) {
-      const std::set<UwS::TraceLocation>& found_in =
-          path_location_it->second.found_in;
-      if (found_in.find(UwS::FOUND_IN_SERVICE) != found_in.end())
-        detected_in_services.Insert(path_location_it->first);
-    }
-  }
-  return detected_in_services;
-}
-
-// static
 bool PUPData::GetRootKeyFromRegistryRoot(RegistryRoot registry_root,
                                          HKEY* key,
                                          base::FilePath* policy_file) {

@@ -101,13 +101,11 @@ void OnArchiveDone(FileRemover::QuarantineResultCallback archival_done_callback,
 }  // namespace
 
 FileRemover::FileRemover(scoped_refptr<DigestVerifier> digest_verifier,
-                         std::unique_ptr<SandboxedZipArchiver> archiver,
+                         std::unique_ptr<ZipArchiver> archiver,
                          const LayeredServiceProviderAPI& lsp,
-                         const FilePathSet& deletion_allowed_paths,
                          base::RepeatingClosure reboot_needed_callback)
     : digest_verifier_(digest_verifier),
       archiver_(std::move(archiver)),
-      deletion_allowed_paths_(deletion_allowed_paths),
       reboot_needed_callback_(reboot_needed_callback) {
   LSPPathToGUIDs providers;
   GetLayeredServiceProviders(lsp, &providers);
@@ -128,11 +126,6 @@ void FileRemover::RemoveNow(const base::FilePath& path,
       removal_status_updater->UpdateRemovalStatus(
           path, REMOVAL_STATUS_BLACKLISTED_FOR_REMOVAL);
       std::move(callback).Run(false);
-      return;
-    case DeletionValidationStatus::INACTIVE:
-      removal_status_updater->UpdateRemovalStatus(
-          path, REMOVAL_STATUS_NOT_REMOVED_INACTIVE_EXTENSION);
-      std::move(callback).Run(true);
       return;
     case DeletionValidationStatus::ALLOWED:
       // No-op. Proceed to removal.
@@ -160,11 +153,6 @@ void FileRemover::RegisterPostRebootRemoval(const base::FilePath& file_path,
       removal_status_updater->UpdateRemovalStatus(
           file_path, REMOVAL_STATUS_BLACKLISTED_FOR_REMOVAL);
       std::move(callback).Run(false);
-      return;
-    case DeletionValidationStatus::INACTIVE:
-      removal_status_updater->UpdateRemovalStatus(
-          file_path, REMOVAL_STATUS_NOT_REMOVED_INACTIVE_EXTENSION);
-      std::move(callback).Run(true);
       return;
     case DeletionValidationStatus::ALLOWED:
       // No-op. Proceed to removal.
@@ -210,36 +198,12 @@ FileRemoverAPI::DeletionValidationStatus FileRemover::CanRemove(
   if (base::DirectoryExists(file))
     return DeletionValidationStatus::FORBIDDEN;
 
-  // If the file was blacklisted, allow its deletion regardless of the extension
-  if (deletion_allowed_paths_.Contains(file))
-    return DeletionValidationStatus::ALLOWED;
-
-  // Allow deletion of files with active (i.e. executable) extensions, files
-  // with explicit alternate file streams specified and files with DOS
-  // executable headers regardless of the extension.
-  if (chrome_cleaner::PathHasActiveExtension(file) ||
-      chrome_cleaner::HasAlternateFileStream(file) ||
-      chrome_cleaner::HasDosExecutableHeader(file)) {
-    return DeletionValidationStatus::ALLOWED;
-  }
-
-  if (archiver_) {
-    // Quarantine is enabled. Allow deletion of "non-executable" files.
-    return DeletionValidationStatus::ALLOWED;
-    // TODO(veranika): enable quarantine for all runs and remove the concept
-    // of "inactive" files.
-  } else {
-    // If this line is reached, the file has a non-executable file extension.
-    LOG(ERROR) << "Cannot delete non-executable file with extension '"
-               << file.Extension() << "'. Full path '"
-               << chrome_cleaner::SanitizePath(file) << "'";
-    return DeletionValidationStatus::INACTIVE;
-  }
+  return DeletionValidationStatus::ALLOWED;
 }
 
 void FileRemover::TryToQuarantine(const base::FilePath& path,
                                   QuarantineResultCallback callback) const {
-  // The quarantine feature is disabled.
+  // Archiver may not be provided in tests.
   if (archiver_ == nullptr) {
     std::move(callback).Run(QUARANTINE_STATUS_DISABLED);
     return;

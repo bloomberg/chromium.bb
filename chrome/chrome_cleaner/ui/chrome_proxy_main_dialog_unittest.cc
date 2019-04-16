@@ -99,8 +99,8 @@ TEST_P(ConfirmCleanupChromeProxyMainDialogTest, ConfirmCleanup) {
               set_logs_allowed_in_cleanup_mode(Eq(logs_allowed)))
       .Times(1);
 
-  // Add a PUP and some disk footprints. Both the normal and forced-active
-  // footprints should be passed along via the IPC.
+  // Add a PUP and some disk footprints. Footprints should be passed along via
+  // the IPC.
   TestPUPData test_pup_data;
   test_pup_data.AddPUP(kFakePupId, PUPData::FLAGS_ACTION_REMOVE, "",
                        PUPData::kMaxFilesToRemoveSmallUwS);
@@ -109,7 +109,6 @@ TEST_P(ConfirmCleanupChromeProxyMainDialogTest, ConfirmCleanup) {
       base::FilePath(FILE_PATH_LITERAL("c:\\file1.exe"))));
   EXPECT_TRUE(pup->AddDiskFootprint(
       base::FilePath(FILE_PATH_LITERAL("c:\\file2.exe"))));
-  // This inactive file path should not be included in what is sent.
   EXPECT_TRUE(pup->AddDiskFootprint(
       base::FilePath(FILE_PATH_LITERAL("c:\\file3.txt"))));
 
@@ -131,7 +130,7 @@ TEST_P(ConfirmCleanupChromeProxyMainDialogTest, ConfirmCleanup) {
 
   StrictMock<MockChromePromptIPC> chrome_prompt_ipc;
   EXPECT_CALL(chrome_prompt_ipc,
-              MockPostPromptUserTask(/*files_to_delete*/ SizeIs(2),
+              MockPostPromptUserTask(/*files_to_delete*/ SizeIs(3),
                                      /*registry_keys*/ SizeIs(1),
                                      /*extensions*/ SizeIs(0), _))
       .WillOnce(Invoke([prompt_acceptance](

@@ -18,14 +18,10 @@ bool CollectRemovablePupFiles(const std::vector<UwSId>& pup_ids,
                               FilePathSet* pup_files) {
   bool valid_removal = true;
 
-  FilePathSet files_detected_in_services =
-      PUPData::GetFilesDetectedInServices(pup_ids);
-
   auto lsp = chrome_cleaner::LayeredServiceProviderWrapper();
   chrome_cleaner::FileRemover file_remover(digest_verifier,
                                            /*archiver=*/nullptr,
                                            lsp,
-                                           files_detected_in_services,
                                            base::DoNothing());
 
   for (const auto& pup_id : pup_ids) {

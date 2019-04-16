@@ -49,6 +49,7 @@
 #include "chrome/chrome_cleaner/test/test_pup_data.h"
 #include "chrome/chrome_cleaner/test/test_settings_util.h"
 #include "chrome/chrome_cleaner/ui/silent_main_dialog.h"
+#include "chrome/chrome_cleaner/zip_archiver/zip_archiver.h"
 #include "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom-test-utils.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -111,6 +112,13 @@ class TestMainController : public MainController {
     }
     void UnregisterPostRebootRun() override {}
   } test_rebooter_;
+};
+
+class NoopZipArchiver : public ZipArchiver {
+  void Archive(const base::FilePath& /*src_file_path*/,
+               ArchiveResultCallback callback) override {
+    std::move(callback).Run(mojom::ZipArchiverResultCode::kSuccess);
+  }
 };
 
 base::FilePath CreateStartupDirectory() {
@@ -277,13 +285,15 @@ class ExtensionCleanupTest : public base::MultiProcessTest {
       chrome_cleaner::UwS_TraceLocation_FOUND_IN_SHELL};
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
-  scoped_refptr<chrome_cleaner::EngineClient> SetupEngineClient() {
-    chrome_cleaner::SandboxConnectionErrorCallback connection_error_callback =
+  scoped_refptr<EngineClient> SetupEngineClient() {
+    SandboxConnectionErrorCallback connection_error_callback =
         base::BindRepeating(&ExtensionCleanupTest::SandboxErrorCallback,
                             base::Unretained(this));
-    return EngineClient::CreateEngineClient(
-        chrome_cleaner::Engine::TEST_ONLY, base::DoNothing::Repeatedly<int>(),
+    scoped_refptr<EngineClient> client = EngineClient::CreateEngineClient(
+        Engine::TEST_ONLY, base::DoNothing::Repeatedly<int>(),
         std::move(connection_error_callback), mojo_task_runner_.get());
+    client->archiver_for_testing_ = std::make_unique<NoopZipArchiver>();
+    return client;
   }
 
   void SandboxErrorCallback(SandboxType type) {

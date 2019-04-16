@@ -368,34 +368,6 @@ bool PathHasActiveExtension(const base::FilePath& file_path) {
          g_active_extensions.end();
 }
 
-bool HasAlternateFileStream(const base::FilePath& path) {
-  // Detect if an alternate file stream is specified in the file path.
-  // The full name of a stream is "filename:stream_name:stream_type", but the
-  // type is optional, so "filename:stream_name" is also possible.
-  // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364404%28v=vs.85%29.aspx
-
-  // Unless the default stream is specified, simply detect colons in the base
-  // name.
-  if (base::EndsWith(path.value(), kDefaultDataStream,
-                     base::CompareCase::INSENSITIVE_ASCII)) {
-    return false;
-  }
-  base::string16 base_name = path.BaseName().value();
-  CHECK_EQ(base::FilePath::StringType::npos, base_name.find(L"::"))
-      << "Stream type other than $DATA was specified for default file stream: "
-      << base_name;
-  return base_name.find(L':') != base::FilePath::StringType::npos;
-}
-
-bool HasDosExecutableHeader(const base::FilePath& path) {
-  // DOS executable files start with "MZ" magic number.
-  constexpr char kDosExecutableMagicNumber[] = "MZ";
-  std::string file_header;
-  base::ReadFileToStringWithMaxSize(path, &file_header,
-                                    strlen(kDosExecutableMagicNumber));
-  return file_header == kDosExecutableMagicNumber;
-}
-
 void InitializeDiskUtil() {
   // Only do this once.
   static bool init_once = []() -> bool {

@@ -1267,8 +1267,10 @@ TEST_P(CleanerLoggingServiceTest, UpdateRemovalStatus) {
   // by the cleaner code. Also, ensures that all RemovalStatus enumerators are
   // checked.
   std::vector<RemovalStatus> all_removal_status;
-  for (int i = RemovalStatus_MIN + 1; i <= RemovalStatus_MAX; ++i)
-    all_removal_status.push_back(static_cast<RemovalStatus>(i));
+  for (int i = RemovalStatus_MIN + 1; i <= RemovalStatus_MAX; ++i) {
+    if (RemovalStatus_IsValid(i))
+      all_removal_status.push_back(static_cast<RemovalStatus>(i));
+  }
 
   FileRemovalStatusUpdater* removal_status_updater =
       FileRemovalStatusUpdater::GetInstance();
