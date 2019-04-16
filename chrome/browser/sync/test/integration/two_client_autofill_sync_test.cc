@@ -521,12 +521,13 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, DeleteAndUpdate) {
                                LOCAL_DELETION, 1);
 }
 
+// Disabled due to flakiness, (crbug.com/952933)
 // Tests that modifying a profile at the same time on two clients while
 // syncing results in a conflict where the update wins. This only works with
 // a server that supports a strong consistency model and is hence capable of
 // detecting conflicts server-side.
 IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
-                       DeleteAndUpdateWithStrongConsistency) {
+                       DISABLED_DeleteAndUpdateWithStrongConsistency) {
   if (GetParam() == false) {
     // TODO(crbug.com/890746): There seems to be a bug in directory code that
     // resolves conflicts in a way that local deletion wins over a remote
