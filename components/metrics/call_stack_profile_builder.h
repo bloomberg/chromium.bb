@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "components/metrics/call_stack_profile_params.h"
 #include "components/metrics/child_call_stack_profile_collector.h"
+#include "components/metrics/metadata_recorder.h"
 #include "third_party/metrics_proto/sampled_profile.pb.h"
 
 namespace metrics {
@@ -37,17 +38,6 @@ class WorkIdRecorder {
 
   WorkIdRecorder(const WorkIdRecorder&) = delete;
   WorkIdRecorder& operator=(const WorkIdRecorder&) = delete;
-};
-
-// Records a metadata item to associate with the sample.
-// TODO(crbug.com/913570): Extend to support multiple metadata items per sample.
-class MetadataRecorder {
- public:
-  MetadataRecorder() = default;
-  virtual ~MetadataRecorder() = default;
-  virtual std::pair<uint64_t, int64_t> GetHashAndValue() const = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(MetadataRecorder);
 };
 
 // An instance of the class is meant to be passed to base::StackSamplingProfiler
@@ -129,6 +119,10 @@ class CallStackProfileBuilder : public base::ProfileBuilder {
 
   // The start time of a profile collection.
   const base::TimeTicks profile_start_time_;
+
+  // The data fetched from the MetadataRecorder for each sample.
+  MetadataRecorder::ItemArray metadata_items_;
+  size_t metadata_item_count_ = 0;
 
   // Maps metadata hash to index in |metadata_name_hash| array.
   std::unordered_map<uint64_t, int> metadata_hashes_cache_;

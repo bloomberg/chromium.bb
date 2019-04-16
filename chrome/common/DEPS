@@ -24,6 +24,7 @@ include_rules = [
   "+components/metrics/call_stack_profile_params.h",
   "+components/metrics/child_call_stack_profile_collector.h",
   "+components/metrics/client_info.h",
+  "+components/metrics/metadata_recorder.h",
   "+components/metrics/metrics_pref_names.h",
   "+components/nacl/common",
   "+components/net_log",
