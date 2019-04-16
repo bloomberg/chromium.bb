@@ -324,8 +324,6 @@ void AuthenticationService::SignIn(ChromeIdentity* identity,
 
   // The account info needs to be seeded for the primary account id before
   // signing in.
-  // TODO(msarda): http://crbug.com/478770 Seed account information for
-  // all secondary accounts.
   AccountInfo info;
   info.gaia = base::SysNSStringToUTF8([identity gaiaID]);
   info.email = GetCanonicalizedEmailForIdentity(identity);
