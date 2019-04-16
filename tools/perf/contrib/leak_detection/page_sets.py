@@ -187,7 +187,8 @@ class LeakDetectionStorySet(story_module.StorySet):
       'http://www.airbnb.ch',
       'http://www.livedoor.jp',
       'http://www.blu-ray.com',
-      'http://www.block.io',
+      # TODO(953195): Test times out.
+      # 'http://www.block.io',
       'http://www.hockeybuzz.com',
       'http://www.silverpop.com',
       'http://www.ansa.it',
