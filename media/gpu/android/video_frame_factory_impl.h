@@ -26,7 +26,6 @@
 namespace media {
 class CodecImageGroup;
 class GpuVideoFrameFactory;
-class SharedImagePool;
 
 // VideoFrameFactoryImpl creates CodecOutputBuffer backed VideoFrames and tries
 // to eagerly render them to their surface to release the buffers back to the
@@ -100,8 +99,6 @@ class GpuVideoFrameFactory
       gfx::Size natural_size,
       PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
       scoped_refptr<VideoFrame>* video_frame_out,
-      std::unique_ptr<gpu::SharedImageRepresentationFactoryRef>*
-          shared_image_ref_out,
       CodecImage** codec_image_out);
 
   void OnWillDestroyStub(bool have_context) override;
@@ -126,9 +123,6 @@ class GpuVideoFrameFactory
   // Current image group to which new images (frames) will be added.  We'll
   // replace this when SetImageGroup() is called.
   scoped_refptr<CodecImageGroup> image_group_;
-
-  // Pool which owns all the shared image refs that we create.
-  scoped_refptr<SharedImagePool> shared_image_pool_;
 
   THREAD_CHECKER(thread_checker_);
   base::WeakPtrFactory<GpuVideoFrameFactory> weak_factory_;
