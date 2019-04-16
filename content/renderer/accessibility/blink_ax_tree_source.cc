@@ -681,6 +681,11 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
       dst->SetCheckedState(src.CheckedState());
     }
 
+    if (dst->role == ax::mojom::Role::kListItem &&
+        src.GetListStyle() != ax::mojom::ListStyle::kNone) {
+      dst->SetListStyle(src.GetListStyle());
+    }
+
     if (src.GetTextDirection() != ax::mojom::TextDirection::kNone) {
       dst->SetTextDirection(src.GetTextDirection());
     }

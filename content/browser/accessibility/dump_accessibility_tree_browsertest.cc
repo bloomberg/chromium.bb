@@ -1615,6 +1615,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityListMarkers) {
   RunHtmlTest(FILE_PATH_LITERAL("list-markers.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityListMarkerStyles) {
+  RunHtmlTest(FILE_PATH_LITERAL("list-marker-styles.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityLongText) {
   RunHtmlTest(FILE_PATH_LITERAL("long-text.html"));
 }

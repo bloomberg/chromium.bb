@@ -997,6 +997,36 @@ String AXLayoutObject::ImageDataUrl(const IntSize& max_size) const {
   return buffer->ToDataURL(kMimeTypePng, 1.0);
 }
 
+ax::mojom::ListStyle AXLayoutObject::GetListStyle() const {
+  const LayoutObject* layout_object = GetLayoutObject();
+  if (!layout_object)
+    return AXNodeObject::GetListStyle();
+
+  const ComputedStyle* computed_style = layout_object->Style();
+  if (!computed_style)
+    return AXNodeObject::GetListStyle();
+
+  const StyleImage* style_image = computed_style->ListStyleImage();
+  if (style_image && !style_image->ErrorOccurred())
+    return ax::mojom::ListStyle::kImage;
+
+  switch (computed_style->ListStyleType()) {
+    case EListStyleType::kNone:
+      return ax::mojom::ListStyle::kNone;
+    case EListStyleType::kDisc:
+      return ax::mojom::ListStyle::kDisc;
+    case EListStyleType::kCircle:
+      return ax::mojom::ListStyle::kCircle;
+    case EListStyleType::kSquare:
+      return ax::mojom::ListStyle::kSquare;
+    case EListStyleType::kDecimal:
+    case EListStyleType::kDecimalLeadingZero:
+      return ax::mojom::ListStyle::kNumeric;
+    default:
+      return ax::mojom::ListStyle::kOther;
+  }
+}
+
 String AXLayoutObject::GetText() const {
   if (IsPasswordFieldAndShouldHideValue()) {
     if (!GetLayoutObject())

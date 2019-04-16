@@ -1584,10 +1584,47 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   mark_text_data.SetTextDirection(ax::mojom::TextDirection::kRtl);
   mark_text_data.SetName("marked text");
 
+  ui::AXNodeData list_data;
+  list_data.id = 7;
+  list_data.role = ax::mojom::Role::kList;
+  list_data.child_ids = {8, 10};
+
+  ui::AXNodeData list_item_data;
+  list_item_data.id = 8;
+  list_item_data.role = ax::mojom::Role::kListItem;
+  list_item_data.child_ids = {9};
+  list_item_data.AddIntAttribute(
+      ax::mojom::IntAttribute::kListStyle,
+      static_cast<int>(ax::mojom::ListStyle::kOther));
+
+  ui::AXNodeData list_item_text_data;
+  list_item_text_data.id = 9;
+  list_item_text_data.role = ax::mojom::Role::kStaticText;
+  list_item_text_data.AddIntAttribute(ax::mojom::IntAttribute::kBackgroundColor,
+                                      0xDEADBEEFU);
+  list_item_text_data.AddIntAttribute(ax::mojom::IntAttribute::kColor,
+                                      0xDEADC0DEU);
+
+  ui::AXNodeData list_item2_data;
+  list_item2_data.id = 10;
+  list_item2_data.role = ax::mojom::Role::kListItem;
+  list_item2_data.child_ids = {11};
+  list_item2_data.AddIntAttribute(
+      ax::mojom::IntAttribute::kListStyle,
+      static_cast<int>(ax::mojom::ListStyle::kDisc));
+
+  ui::AXNodeData list_item2_text_data;
+  list_item2_text_data.id = 11;
+  list_item2_text_data.role = ax::mojom::Role::kStaticText;
+  list_item2_text_data.AddIntAttribute(
+      ax::mojom::IntAttribute::kBackgroundColor, 0xDEADBEEFU);
+  list_item2_text_data.AddIntAttribute(ax::mojom::IntAttribute::kColor,
+                                       0xDEADC0DEU);
+
   ui::AXNodeData root_data;
   root_data.id = 1;
   root_data.role = ax::mojom::Role::kRootWebArea;
-  root_data.child_ids = {2, 3, 5};
+  root_data.child_ids = {2, 3, 5, 7};
 
   ui::AXTreeUpdate update;
   ui::AXTreeData tree_data;
@@ -1601,6 +1638,11 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   update.nodes.push_back(heading_text_data);
   update.nodes.push_back(mark_data);
   update.nodes.push_back(mark_text_data);
+  update.nodes.push_back(list_data);
+  update.nodes.push_back(list_item_data);
+  update.nodes.push_back(list_item_text_data);
+  update.nodes.push_back(list_item2_data);
+  update.nodes.push_back(list_item2_text_data);
 
   Init(update);
   AXNodePosition::SetTreeForTesting(tree_.get());
@@ -1612,6 +1654,11 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   AXNode* heading_text_node = heading_node->children()[0];
   AXNode* mark_node = root_node->children()[2];
   AXNode* mark_text_node = mark_node->children()[0];
+  AXNode* list_node = root_node->children()[3];
+  AXNode* list_item_node = list_node->children()[0];
+  AXNode* list_item_text_node = list_item_node->children()[0];
+  AXNode* list_item2_node = list_node->children()[1];
+  AXNode* list_item2_text_node = list_item2_node->children()[0];
 
   ComPtr<ITextRangeProvider> document_range_provider;
   GetTextRangeProviderFromTextNode(document_range_provider, root_node);
@@ -1622,6 +1669,12 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
                                    heading_text_node);
   ComPtr<ITextRangeProvider> mark_text_range_provider;
   GetTextRangeProviderFromTextNode(mark_text_range_provider, mark_text_node);
+  ComPtr<ITextRangeProvider> list_item_text_range_provider;
+  GetTextRangeProviderFromTextNode(list_item_text_range_provider,
+                                   list_item_text_node);
+  ComPtr<ITextRangeProvider> list_item2_text_range_provider;
+  GetTextRangeProviderFromTextNode(list_item2_text_range_provider,
+                                   list_item2_text_node);
 
   base::win::ScopedVariant expected_mixed_variant;
   {
@@ -1640,6 +1693,17 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
                               UIA_BackgroundColorAttributeId, expected_variant);
   EXPECT_UIA_TEXTATTRIBUTE_EQ(document_range_provider,
                               UIA_BackgroundColorAttributeId, expected_variant);
+  expected_variant.Reset();
+
+  expected_variant.Set(static_cast<int32_t>(BulletStyle::BulletStyle_None));
+  EXPECT_UIA_TEXTATTRIBUTE_EQ(list_item_text_range_provider,
+                              UIA_BulletStyleAttributeId, expected_variant);
+  expected_variant.Reset();
+
+  expected_variant.Set(
+      static_cast<int32_t>(BulletStyle::BulletStyle_FilledRoundBullet));
+  EXPECT_UIA_TEXTATTRIBUTE_EQ(list_item2_text_range_provider,
+                              UIA_BulletStyleAttributeId, expected_variant);
   expected_variant.Reset();
 
   {
@@ -1711,6 +1775,16 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   expected_variant.Set(SysAllocString(style_name.c_str()));
   EXPECT_UIA_TEXTATTRIBUTE_EQ(mark_text_range_provider,
                               UIA_StyleNameAttributeId, expected_variant);
+  expected_variant.Reset();
+
+  expected_variant.Set(static_cast<int32_t>(StyleId_NumberedList));
+  EXPECT_UIA_TEXTATTRIBUTE_EQ(list_item_text_range_provider,
+                              UIA_StyleIdAttributeId, expected_variant);
+  expected_variant.Reset();
+
+  expected_variant.Set(static_cast<int32_t>(StyleId_BulletedList));
+  EXPECT_UIA_TEXTATTRIBUTE_EQ(list_item2_text_range_provider,
+                              UIA_StyleIdAttributeId, expected_variant);
   expected_variant.Reset();
 
   expected_variant.Set(

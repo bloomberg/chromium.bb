@@ -4038,6 +4038,10 @@ HRESULT AXPlatformNodeWin::GetTextAttributeValue(TEXTATTRIBUTEID attribute_id,
       V_I4(result) =
           GetIntAttributeAsCOLORREF(ax::mojom::IntAttribute::kBackgroundColor);
       break;
+    case UIA_BulletStyleAttributeId:
+      V_VT(result) = VT_I4;
+      V_I4(result) = ComputeUIABulletStyle();
+      break;
     case UIA_CultureAttributeId:
       return GetCultureAttributeAsVariant(result);
     case UIA_FontNameAttributeId:
@@ -4107,6 +4111,38 @@ COLORREF AXPlatformNodeWin::GetIntAttributeAsCOLORREF(
   return skia::SkColorToCOLORREF(color);
 }
 
+BulletStyle AXPlatformNodeWin::ComputeUIABulletStyle() const {
+  // UIA expects the list style of a non-list-item to be none however the
+  // default list style cascaded is disc not none. Therefore we must ensure that
+  // this node is contained within a list-item to distinguish non-list-items and
+  // disc styled list items.
+  const AXPlatformNodeBase* current_node = this;
+  while (current_node &&
+         current_node->GetData().role != ax::mojom::Role::kListItem) {
+    current_node = FromNativeViewAccessible(current_node->GetParent());
+  }
+
+  const ax::mojom::ListStyle list_style =
+      current_node ? current_node->GetData().GetListStyle()
+                   : ax::mojom::ListStyle::kNone;
+
+  switch (list_style) {
+    case ax::mojom::ListStyle::kNone:
+      return BulletStyle::BulletStyle_None;
+    case ax::mojom::ListStyle::kCircle:
+      return BulletStyle::BulletStyle_HollowRoundBullet;
+    case ax::mojom::ListStyle::kDisc:
+      return BulletStyle::BulletStyle_FilledRoundBullet;
+    case ax::mojom::ListStyle::kImage:
+      return BulletStyle::BulletStyle_Other;
+    case ax::mojom::ListStyle::kNumeric:
+    case ax::mojom::ListStyle::kOther:
+      return BulletStyle::BulletStyle_None;
+    case ax::mojom::ListStyle::kSquare:
+      return BulletStyle::BulletStyle_FilledSquareBullet;
+  }
+}
+
 LONG AXPlatformNodeWin::ComputeUIAStyleId() const {
   const AXPlatformNodeBase* current_node = this;
   do {
@@ -4115,10 +4151,7 @@ LONG AXPlatformNodeWin::ComputeUIAStyleId() const {
         return AXHierarchicalLevelToUIAStyleId(current_node->GetIntAttribute(
             ax::mojom::IntAttribute::kHierarchicalLevel));
       case ax::mojom::Role::kListItem:
-        // TODO: In a following change, introduce enum ax::mojom::ListStyle,
-        // then return either |StyleId_NumberedList| or |StyleId_BulletedList|.
-        // The enum will also be used to implement UIA_BulletStyleAttributeId.
-        break;
+        return AXListStyleToUIAStyleId(current_node->GetData().GetListStyle());
       case ax::mojom::Role::kMark:
         return StyleId_Custom;
       case ax::mojom::Role::kBlockquote:
@@ -4158,6 +4191,23 @@ LONG AXPlatformNodeWin::AXHierarchicalLevelToUIAStyleId(
       return StyleId_Heading9;
     default:
       return StyleId_Custom;
+  }
+}
+
+// static
+LONG AXPlatformNodeWin::AXListStyleToUIAStyleId(
+    ax::mojom::ListStyle list_style) {
+  switch (list_style) {
+    case ax::mojom::ListStyle::kNone:
+      return StyleId_Normal;
+    case ax::mojom::ListStyle::kCircle:
+    case ax::mojom::ListStyle::kDisc:
+    case ax::mojom::ListStyle::kImage:
+    case ax::mojom::ListStyle::kSquare:
+      return StyleId_BulletedList;
+    case ax::mojom::ListStyle::kNumeric:
+    case ax::mojom::ListStyle::kOther:
+      return StyleId_NumberedList;
   }
 }
 

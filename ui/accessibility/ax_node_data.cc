@@ -144,6 +144,7 @@ bool IsNodeIdIntAttribute(ax::mojom::IntAttribute attr) {
     case ax::mojom::IntAttribute::kInvalidState:
     case ax::mojom::IntAttribute::kCheckedState:
     case ax::mojom::IntAttribute::kRestriction:
+    case ax::mojom::IntAttribute::kListStyle:
     case ax::mojom::IntAttribute::kTextDirection:
     case ax::mojom::IntAttribute::kTextPosition:
     case ax::mojom::IntAttribute::kTextStyle:
@@ -804,6 +805,20 @@ void AXNodeData::SetRestriction(ax::mojom::Restriction restriction) {
   }
 }
 
+ax::mojom::ListStyle AXNodeData::GetListStyle() const {
+  return static_cast<ax::mojom::ListStyle>(
+      GetIntAttribute(ax::mojom::IntAttribute::kListStyle));
+}
+
+void AXNodeData::SetListStyle(ax::mojom::ListStyle list_style) {
+  if (HasIntAttribute(ax::mojom::IntAttribute::kListStyle))
+    RemoveIntAttribute(ax::mojom::IntAttribute::kListStyle);
+  if (list_style != ax::mojom::ListStyle::kNone) {
+    AddIntAttribute(ax::mojom::IntAttribute::kListStyle,
+                    static_cast<int32_t>(list_style));
+  }
+}
+
 ax::mojom::TextDirection AXNodeData::GetTextDirection() const {
   return static_cast<ax::mojom::TextDirection>(
       GetIntAttribute(ax::mojom::IntAttribute::kTextDirection));
@@ -1017,6 +1032,30 @@ std::string AXNodeData::ToString() const {
         break;
       case ax::mojom::IntAttribute::kColor:
         result += base::StringPrintf(" color=&%X", int_attribute.second);
+        break;
+      case ax::mojom::IntAttribute::kListStyle:
+        switch (static_cast<ax::mojom::ListStyle>(int_attribute.second)) {
+          case ax::mojom::ListStyle::kCircle:
+            result += " list_style=circle";
+            break;
+          case ax::mojom::ListStyle::kDisc:
+            result += " list_style=disc";
+            break;
+          case ax::mojom::ListStyle::kImage:
+            result += " list_style=image";
+            break;
+          case ax::mojom::ListStyle::kNumeric:
+            result += " list_style=numeric";
+            break;
+          case ax::mojom::ListStyle::kOther:
+            result += " list_style=other";
+            break;
+          case ax::mojom::ListStyle::kSquare:
+            result += " list_style=square";
+            break;
+          default:
+            break;
+        }
         break;
       case ax::mojom::IntAttribute::kTextDirection:
         switch (static_cast<ax::mojom::TextDirection>(int_attribute.second)) {

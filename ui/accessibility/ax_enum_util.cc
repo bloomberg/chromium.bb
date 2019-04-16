@@ -1497,6 +1497,8 @@ const char* ToString(ax::mojom::IntAttribute int_attribute) {
       return "invalidState";
     case ax::mojom::IntAttribute::kCheckedState:
       return "checkedState";
+    case ax::mojom::IntAttribute::kListStyle:
+      return "listStyle";
     case ax::mojom::IntAttribute::kTextDirection:
       return "textDirection";
     case ax::mojom::IntAttribute::kTextPosition:
@@ -1613,6 +1615,8 @@ ax::mojom::IntAttribute ParseIntAttribute(const char* int_attribute) {
     return ax::mojom::IntAttribute::kInvalidState;
   if (0 == strcmp(int_attribute, "checkedState"))
     return ax::mojom::IntAttribute::kCheckedState;
+  if (0 == strcmp(int_attribute, "listStyle"))
+    return ax::mojom::IntAttribute::kListStyle;
   if (0 == strcmp(int_attribute, "textDirection"))
     return ax::mojom::IntAttribute::kTextDirection;
   if (0 == strcmp(int_attribute, "textPosition"))
@@ -1830,6 +1834,45 @@ ax::mojom::StringListAttribute ParseStringListAttribute(
   if (0 == strcmp(string_list_attribute, "customActionDescriptions"))
     return ax::mojom::StringListAttribute::kCustomActionDescriptions;
   return ax::mojom::StringListAttribute::kNone;
+}
+
+const char* ToString(ax::mojom::ListStyle list_style) {
+  switch (list_style) {
+    case ax::mojom::ListStyle::kNone:
+      return "none";
+    case ax::mojom::ListStyle::kCircle:
+      return "circle";
+    case ax::mojom::ListStyle::kDisc:
+      return "disc";
+    case ax::mojom::ListStyle::kImage:
+      return "image";
+    case ax::mojom::ListStyle::kNumeric:
+      return "numeric";
+    case ax::mojom::ListStyle::kOther:
+      return "other";
+    case ax::mojom::ListStyle::kSquare:
+      return "square";
+  }
+
+  return "";
+}
+
+ax::mojom::ListStyle ParseListStyle(const char* list_style) {
+  if (0 == strcmp(list_style, "none"))
+    return ax::mojom::ListStyle::kNone;
+  if (0 == strcmp(list_style, "circle"))
+    return ax::mojom::ListStyle::kCircle;
+  if (0 == strcmp(list_style, "disc"))
+    return ax::mojom::ListStyle::kDisc;
+  if (0 == strcmp(list_style, "image"))
+    return ax::mojom::ListStyle::kImage;
+  if (0 == strcmp(list_style, "numeric"))
+    return ax::mojom::ListStyle::kNumeric;
+  if (0 == strcmp(list_style, "other"))
+    return ax::mojom::ListStyle::kOther;
+  if (0 == strcmp(list_style, "square"))
+    return ax::mojom::ListStyle::kSquare;
+  return ax::mojom::ListStyle::kNone;
 }
 
 const char* ToString(ax::mojom::MarkerType marker_type) {

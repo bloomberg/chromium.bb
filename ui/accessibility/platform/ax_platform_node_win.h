@@ -1204,10 +1204,14 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   HRESULT GetCultureAttributeAsVariant(VARIANT* result) const;
   // Converts an int attribute to a COLORREF
   COLORREF GetIntAttributeAsCOLORREF(ax::mojom::IntAttribute attribute) const;
+  // Converts the ListStyle to UIA BulletStyle
+  BulletStyle ComputeUIABulletStyle() const;
   // Helper to get the UIA StyleId enumeration for this node
   LONG ComputeUIAStyleId() const;
   // Converts IntAttribute::kHierarchicalLevel to UIA StyleId enumeration
   static LONG AXHierarchicalLevelToUIAStyleId(int32_t hierarchical_level);
+  // Converts a ListStyle to UIA StyleId enumeration
+  static LONG AXListStyleToUIAStyleId(ax::mojom::ListStyle list_style);
   // Convert mojom TextDirection to UIA FlowDirections enumeration
   static FlowDirections TextDirectionToFlowDirections(ax::mojom::TextDirection);
 

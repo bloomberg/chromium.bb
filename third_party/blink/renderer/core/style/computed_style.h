@@ -887,7 +887,7 @@ class ComputedStyle : public ComputedStyleBase,
 
   // List style properties.
   // list-style-image
-  StyleImage* ListStyleImage() const;
+  CORE_EXPORT StyleImage* ListStyleImage() const;
   void SetListStyleImage(StyleImage*);
 
   // quotes

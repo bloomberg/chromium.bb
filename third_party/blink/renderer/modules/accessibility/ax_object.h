@@ -686,6 +686,9 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   }
   virtual AXObject* InPageLinkTarget() const { return nullptr; }
   virtual AccessibilityOrientation Orientation() const;
+  virtual ax::mojom::ListStyle GetListStyle() const {
+    return ax::mojom::ListStyle::kNone;
+  }
   virtual String GetText() const { return String(); }
   virtual ax::mojom::TextDirection GetTextDirection() const {
     return ax::mojom::TextDirection::kLtr;
