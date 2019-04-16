@@ -2282,23 +2282,6 @@ const char kPartnerBookmarkMappings[] = "partnerbookmarks.mappings";
 // rules, or an implicit fallback to DIRECT connections).
 const char kQuickCheckEnabled[] = "proxy.quick_check_enabled";
 
-// Whether PAC scripts are given a stripped https:// URL (enabled), or
-// the full URL for https:// (disabled).
-//
-// This is a security feature which is on by default, and prevents PAC
-// scripts (which may have been sourced in an untrusted manner) from
-// having access to data that is ordinarily protected by a TLS channel
-// (i.e. the path and query components of an https:// URL).
-//
-// This preference is not exposed in the UI, but is overridable using
-// a commandline flag --unsafe-pac-url.
-//
-// The ability to turn off this security feature is not intended to be
-// a long-lived feature, but rather an escape-hatch for enterprises
-// while rolling out the change to PAC.
-const char kPacHttpsUrlStrippingEnabled[] =
-    "proxy.pac_https_url_stripping_enabled";
-
 // Whether Guest Mode is enabled within the browser.
 const char kBrowserGuestModeEnabled[] = "profile.browser_guest_enabled";
 

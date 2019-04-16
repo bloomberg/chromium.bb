@@ -2378,34 +2378,6 @@ TEST_F(NetworkContextTest, PacQuickCheck) {
                    ->quick_check_enabled_for_testing());
 }
 
-TEST_F(NetworkContextTest, DangerouslyAllowPacAccessToSecureURLs) {
-  // Check the default value.
-  std::unique_ptr<NetworkContext> network_context =
-      CreateContextWithParams(CreateContextParams());
-  EXPECT_EQ(net::ProxyResolutionService::SanitizeUrlPolicy::SAFE,
-            network_context->url_request_context()
-                ->proxy_resolution_service()
-                ->sanitize_url_policy_for_testing());
-
-  // Explicitly disable.
-  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
-  context_params->dangerously_allow_pac_access_to_secure_urls = false;
-  network_context = CreateContextWithParams(std::move(context_params));
-  EXPECT_EQ(net::ProxyResolutionService::SanitizeUrlPolicy::SAFE,
-            network_context->url_request_context()
-                ->proxy_resolution_service()
-                ->sanitize_url_policy_for_testing());
-
-  // Explicitly enable.
-  context_params = CreateContextParams();
-  context_params->dangerously_allow_pac_access_to_secure_urls = true;
-  network_context = CreateContextWithParams(std::move(context_params));
-  EXPECT_EQ(net::ProxyResolutionService::SanitizeUrlPolicy::UNSAFE,
-            network_context->url_request_context()
-                ->proxy_resolution_service()
-                ->sanitize_url_policy_for_testing());
-}
-
 net::IPEndPoint GetLocalHostWithAnyPort() {
   return net::IPEndPoint(net::IPAddress(127, 0, 0, 1), 0);
 }

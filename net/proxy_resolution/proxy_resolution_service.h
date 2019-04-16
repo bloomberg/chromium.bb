@@ -54,25 +54,6 @@ class NET_EXPORT ProxyResolutionService
       public NetworkChangeNotifier::DNSObserver,
       public ProxyConfigService::Observer {
  public:
-  // Enumerates the policy to use when sanitizing URLs for proxy resolution
-  // (before passing them off to PAC scripts).
-  enum class SanitizeUrlPolicy {
-    // Do a basic level of sanitization for URLs:
-    //   - strip embedded identities (ex: "username:password@")
-    //   - strip the fragment (ex: "#blah")
-    //
-    // This is considered "unsafe" because it does not do any additional
-    // stripping for https:// URLs.
-    UNSAFE,
-
-    // SAFE does the same sanitization as UNSAFE, but additionally strips
-    // everything but the (scheme,host,port) from cryptographic URL schemes
-    // (https:// and wss://).
-    //
-    // In other words, it strips the path and query portion of https:// URLs.
-    SAFE,
-  };
-
   // This interface defines the set of policies for when to poll the PAC
   // script for changes.
   //
@@ -306,13 +287,6 @@ class NET_EXPORT ProxyResolutionService
   }
   bool quick_check_enabled_for_testing() const { return quick_check_enabled_; }
 
-  void set_sanitize_url_policy(SanitizeUrlPolicy policy) {
-    sanitize_url_policy_ = policy;
-  }
-  SanitizeUrlPolicy sanitize_url_policy_for_testing() const {
-    return sanitize_url_policy_;
-  }
-
  private:
   FRIEND_TEST_ALL_PREFIXES(ProxyResolutionServiceTest,
                            UpdateConfigAfterFailedAutodetect);
@@ -469,9 +443,6 @@ class NET_EXPORT ProxyResolutionService
 
   // Whether child PacFileDeciders should use QuickCheck
   bool quick_check_enabled_;
-
-  // The method to use for sanitizing URLs seen by the proxy resolver.
-  SanitizeUrlPolicy sanitize_url_policy_;
 
   THREAD_CHECKER(thread_checker_);
 

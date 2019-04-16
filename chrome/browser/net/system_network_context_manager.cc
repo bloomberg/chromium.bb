@@ -502,7 +502,6 @@ void SystemNetworkContextManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kEnableReferrers, true);
 
   registry->RegisterBooleanPref(prefs::kQuickCheckEnabled, true);
-  registry->RegisterBooleanPref(prefs::kPacHttpsUrlStrippingEnabled, true);
 }
 
 void SystemNetworkContextManager::OnNetworkServiceCreated(
@@ -629,8 +628,6 @@ SystemNetworkContextManager::CreateDefaultNetworkContextParams() {
 
   network_context_params->pac_quick_check_enabled =
       local_state_->GetBoolean(prefs::kQuickCheckEnabled);
-  network_context_params->dangerously_allow_pac_access_to_secure_urls =
-      !local_state_->GetBoolean(prefs::kPacHttpsUrlStrippingEnabled);
 
   // Use the SystemNetworkContextManager to populate and update SSL
   // configuration. The SystemNetworkContextManager is owned by the

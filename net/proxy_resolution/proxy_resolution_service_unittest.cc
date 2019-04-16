@@ -3691,10 +3691,8 @@ TEST_F(ProxyResolutionServiceTest, PACScriptRefetchAfterActivity) {
   EXPECT_TRUE(info3.is_direct());
 }
 
-// Helper class to exercise URL sanitization using the different policies. This
-// works by submitted URLs to the ProxyResolutionService. In turn the
-// ProxyResolutionService sanitizes the URL and then passes it along to the
-// ProxyResolver. This helper returns the URL seen by the ProxyResolver.
+// Helper class to exercise URL sanitization by submitting URLs to the
+// ProxyResolutionService and returning the URL passed to the ProxyResolver.
 class SanitizeUrlHelper {
  public:
   SanitizeUrlHelper() {
@@ -3733,12 +3731,6 @@ class SanitizeUrlHelper {
     EXPECT_TRUE(info.is_direct());
   }
 
-  // Changes the URL sanitization policy for the underlying
-  // ProxyResolutionService. This will affect subsequent calls to SanitizeUrl.
-  void SetSanitizeUrlPolicy(ProxyResolutionService::SanitizeUrlPolicy policy) {
-    service_->set_sanitize_url_policy(policy);
-  }
-
   // Makes a proxy resolution request through the ProxyResolutionService, and
   // returns the URL that was submitted to the Proxy Resolver.
   GURL SanitizeUrl(const GURL& raw_url) {
@@ -3764,44 +3756,68 @@ class SanitizeUrlHelper {
     return sanitized_url;
   }
 
-  // Changes the ProxyResolutionService's URL sanitization policy and then
-  // sanitizes |raw_url|.
-  GURL SanitizeUrl(const GURL& raw_url,
-                   ProxyResolutionService::SanitizeUrlPolicy policy) {
-    service_->set_sanitize_url_policy(policy);
-    return SanitizeUrl(raw_url);
-  }
-
  private:
   MockAsyncProxyResolver resolver;
   MockAsyncProxyResolverFactory* factory;
   std::unique_ptr<ProxyResolutionService> service_;
 };
 
-TEST_F(ProxyResolutionServiceTest, SanitizeUrlDefaultsToSafe) {
-  SanitizeUrlHelper helper;
-
-  // Without changing the URL sanitization policy, the default should be to
-  // strip https:// URLs.
-  EXPECT_EQ(GURL("https://example.com/"),
-            helper.SanitizeUrl(
-                GURL("https://foo:bar@example.com/foo/bar/baz?hello#sigh")));
-}
-
-// Tests URL sanitization with input URLs that have a // non-cryptographic
-// scheme (i.e. http://). The sanitized result is consistent regardless of the
-// stripping mode selected.
-TEST_F(ProxyResolutionServiceTest, SanitizeUrlForPacScriptNonCryptographic) {
+// Tests that input URLs to proxy resolution are sanitized before being passed
+// on to the ProxyResolver (i.e. PAC script evaluator). For instance PAC
+// scripts should not be able to see the path for https:// URLs.
+TEST_F(ProxyResolutionServiceTest, SanitizeUrlForPacScript) {
   const struct {
     const char* raw_url;
     const char* sanitized_url;
   } kTests[] = {
+      // ---------------------------------
+      // Sanitize cryptographic URLs.
+      // ---------------------------------
+
       // Embedded identity is stripped.
       {
-          "http://foo:bar@example.com/", "http://example.com/",
+          "https://foo:bar@example.com/",
+          "https://example.com/",
+      },
+      // Fragments and path are stripped.
+      {
+          "https://example.com/blah#hello",
+          "https://example.com/",
+      },
+      // Query is stripped.
+      {
+          "https://example.com/?hello",
+          "https://example.com/",
+      },
+      // The embedded identity and fragment are stripped.
+      {
+          "https://foo:bar@example.com/foo/bar/baz?hello#sigh",
+          "https://example.com/",
+      },
+      // The URL's port should not be stripped.
+      {
+          "https://example.com:88/hi",
+          "https://example.com:88/",
+      },
+      // Try a wss:// URL, to make sure it is treated as a cryptographic schemed
+      // URL.
+      {
+          "wss://example.com:88/hi",
+          "wss://example.com:88/",
+      },
+
+      // ---------------------------------
+      // Sanitize non-cryptographic URLs.
+      // ---------------------------------
+
+      // Embedded identity is stripped.
+      {
+          "http://foo:bar@example.com/",
+          "http://example.com/",
       },
       {
-          "ftp://foo:bar@example.com/", "ftp://example.com/",
+          "ftp://foo:bar@example.com/",
+          "ftp://example.com/",
       },
       {
           "ftp://example.com/some/path/here",
@@ -3809,7 +3825,8 @@ TEST_F(ProxyResolutionServiceTest, SanitizeUrlForPacScriptNonCryptographic) {
       },
       // Reference fragment is stripped.
       {
-          "http://example.com/blah#hello", "http://example.com/blah",
+          "http://example.com/blah#hello",
+          "http://example.com/blah",
       },
       // Query parameters are NOT stripped.
       {
@@ -3823,76 +3840,8 @@ TEST_F(ProxyResolutionServiceTest, SanitizeUrlForPacScriptNonCryptographic) {
       },
       // Port numbers are not affected.
       {
-          "http://example.com:88/hi", "http://example.com:88/hi",
-      },
-  };
-
-  SanitizeUrlHelper helper;
-
-  for (const auto& test : kTests) {
-    // The result of SanitizeUrlForPacScript() is the same regardless of the
-    // second parameter (sanitization mode), since the input URLs do not use a
-    // cryptographic scheme.
-    GURL raw_url(test.raw_url);
-    ASSERT_TRUE(raw_url.is_valid());
-    EXPECT_FALSE(raw_url.SchemeIsCryptographic());
-
-    EXPECT_EQ(GURL(test.sanitized_url),
-              helper.SanitizeUrl(
-                  raw_url, ProxyResolutionService::SanitizeUrlPolicy::UNSAFE));
-
-    EXPECT_EQ(GURL(test.sanitized_url),
-              helper.SanitizeUrl(
-                  raw_url, ProxyResolutionService::SanitizeUrlPolicy::SAFE));
-  }
-}
-
-// Tests URL sanitization using input URLs that have a cryptographic schemes
-// (i.e. https://). The sanitized result differs depending on the sanitization
-// mode chosen.
-TEST_F(ProxyResolutionServiceTest, SanitizeUrlForPacScriptCryptographic) {
-  const struct {
-    // Input URL.
-    const char* raw_url;
-
-    // Output URL when stripping of cryptographic URLs is disabled.
-    const char* sanitized_url_unstripped;
-
-    // Output URL when stripping of cryptographic URLs is enabled.
-    const char* sanitized_url;
-  } kTests[] = {
-      // Embedded identity is always stripped.
-      {
-          "https://foo:bar@example.com/", "https://example.com/",
-          "https://example.com/",
-      },
-      // Fragments are always stripped, but stripping path is conditional on the
-      // mode.
-      {
-          "https://example.com/blah#hello", "https://example.com/blah",
-          "https://example.com/",
-      },
-      // Stripping the query is conditional on the mode.
-      {
-          "https://example.com/?hello", "https://example.com/?hello",
-          "https://example.com/",
-      },
-      // The embedded identity and fragment is always stripped, however path and
-      // query are conditional on the stripping mode.
-      {
-          "https://foo:bar@example.com/foo/bar/baz?hello#sigh",
-          "https://example.com/foo/bar/baz?hello", "https://example.com/",
-      },
-      // The URL's port should not be stripped.
-      {
-          "https://example.com:88/hi", "https://example.com:88/hi",
-          "https://example.com:88/",
-      },
-      // Try a wss:// URL, to make sure it also strips (is is also a
-      // cryptographic URL).
-      {
-          "wss://example.com:88/hi", "wss://example.com:88/hi",
-          "wss://example.com:88/",
+          "http://example.com:88/hi",
+          "http://example.com:88/hi",
       },
   };
 
@@ -3901,15 +3850,8 @@ TEST_F(ProxyResolutionServiceTest, SanitizeUrlForPacScriptCryptographic) {
   for (const auto& test : kTests) {
     GURL raw_url(test.raw_url);
     ASSERT_TRUE(raw_url.is_valid());
-    EXPECT_TRUE(raw_url.SchemeIsCryptographic());
 
-    EXPECT_EQ(GURL(test.sanitized_url_unstripped),
-              helper.SanitizeUrl(
-                  raw_url, ProxyResolutionService::SanitizeUrlPolicy::UNSAFE));
-
-    EXPECT_EQ(GURL(test.sanitized_url),
-              helper.SanitizeUrl(
-                  raw_url, ProxyResolutionService::SanitizeUrlPolicy::SAFE));
+    EXPECT_EQ(GURL(test.sanitized_url), helper.SanitizeUrl(raw_url));
   }
 }
 
