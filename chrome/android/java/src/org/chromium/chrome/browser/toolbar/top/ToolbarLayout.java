@@ -23,6 +23,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 
+import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ThemeColorProvider;
@@ -42,6 +43,7 @@ import org.chromium.chrome.browser.toolbar.MenuButton;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarTabController;
+import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator.UrlExpansionObserver;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.ToolbarProgressBar;
@@ -57,6 +59,8 @@ public abstract class ToolbarLayout
         extends FrameLayout implements TintObserver, ThemeColorObserver {
     private Invalidator mInvalidator;
 
+    protected final ObserverList<UrlExpansionObserver> mUrlExpansionObservers =
+            new ObserverList<>();
     private final int[] mTempPosition = new int[2];
 
     /**
@@ -68,6 +72,7 @@ public abstract class ToolbarLayout
 
     private ToolbarDataProvider mToolbarDataProvider;
     private ToolbarTabController mToolbarTabController;
+
     @Nullable
     protected ToolbarProgressBar mProgressBar;
 
@@ -132,6 +137,20 @@ public abstract class ToolbarLayout
             mThemeColorProvider.removeThemeColorObserver(this);
             mThemeColorProvider = null;
         }
+    }
+
+    /**
+     * @param urlExpansionObserver The observer that observes URL expansion percentage change.
+     */
+    void addUrlExpansionObserver(UrlExpansionObserver urlExpansionObserver) {
+        mUrlExpansionObservers.addObserver(urlExpansionObserver);
+    }
+
+    /**
+     * @param urlExpansionObserver The observer that observes URL expansion percentage change.
+     */
+    void removeUrlExpansionObserver(UrlExpansionObserver urlExpansionObserver) {
+        mUrlExpansionObservers.removeObserver(urlExpansionObserver);
     }
 
     /**
