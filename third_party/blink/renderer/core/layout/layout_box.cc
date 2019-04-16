@@ -3638,12 +3638,12 @@ bool LayoutBox::SkipContainingBlockForPercentHeightCalculation(
 
   // For quirks mode, we skip most auto-height containing blocks when computing
   // percentages.
+  auto* layout_custom = DynamicTo<LayoutCustom>(containing_block);
   return containing_block->GetDocument().InQuirksMode() &&
          containing_block->StyleRef().LogicalHeight().IsAuto() &&
          !containing_block->IsTableCell() &&
          !containing_block->IsOutOfFlowPositioned() &&
-         !(containing_block->IsLayoutCustom() &&
-           ToLayoutCustom(containing_block)->IsLoaded()) &&
+         !(layout_custom && layout_custom->IsLoaded()) &&
          !containing_block->HasOverridePercentageResolutionBlockSize() &&
          !containing_block->IsLayoutGrid() &&
          !containing_block->IsFlexibleBoxIncludingDeprecatedAndNG();
@@ -5390,15 +5390,16 @@ void LayoutBox::UnmarkOrthogonalWritingModeRoot() {
 // Children of LayoutCustom object's are only considered "items" when it has a
 // loaded algorithm.
 bool LayoutBox::IsCustomItem() const {
-  return Parent() && Parent()->IsLayoutCustom() &&
-         ToLayoutCustom(Parent())->State() == LayoutCustomState::kBlock;
+  auto* parent_layout_box = DynamicTo<LayoutCustom>(Parent());
+  return parent_layout_box &&
+         parent_layout_box->State() == LayoutCustomState::kBlock;
 }
 
 // LayoutCustom items are only shrink-to-fit during the web-developer defined
 // layout phase (not during fallback).
 bool LayoutBox::IsCustomItemShrinkToFit() const {
   DCHECK(IsCustomItem());
-  return ToLayoutCustom(Parent())->Phase() == LayoutCustomPhase::kCustom;
+  return To<LayoutCustom>(Parent())->Phase() == LayoutCustomPhase::kCustom;
 }
 
 void LayoutBox::AddVisualEffectOverflow() {
