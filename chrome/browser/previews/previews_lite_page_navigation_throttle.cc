@@ -116,26 +116,27 @@ class PreviewsWebContentsLifetimeHelper
     // restart. Note: This could be a navigation to the litepages server, or to
     // the original URL.
     if (restarted_navigation_url_ == handle->GetURL()) {
-      // Get a new page id.
-      PreviewsService* previews_service = PreviewsServiceFactory::GetForProfile(
-          Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
-      PreviewsLitePageNavigationThrottleManager* manager =
-          previews_service->previews_lite_page_decider();
-      uint64_t page_id = manager->GeneratePageID();
+      if (!info_) {
+        // Create a new info_ if needed. This will use the previous page_id,
+        // which is desired.
+        PreviewsService* previews_service =
+            PreviewsServiceFactory::GetForProfile(Profile::FromBrowserContext(
+                web_contents()->GetBrowserContext()));
+        PreviewsLitePageNavigationThrottleManager* manager =
+            previews_service->previews_lite_page_decider();
+
+        info_ =
+            PreviewsLitePageNavigationThrottle::GetOrCreateServerLitePageInfo(
+                handle, manager)
+                ->Clone();
+      }
 
       // Create a new PreviewsUserData if needed.
       PreviewsUITabHelper* ui_tab_helper =
           PreviewsUITabHelper::FromWebContents(web_contents());
       previews::PreviewsUserData* previews_data =
-          ui_tab_helper->CreatePreviewsUserDataForNavigationHandle(handle,
-                                                                   page_id);
-
-      // Set the lite page state on the user data.
-      if (!info_) {
-        info_ =
-            std::make_unique<previews::PreviewsUserData::ServerLitePageInfo>();
-        info_->original_navigation_start = handle->NavigationStart();
-      }
+          ui_tab_helper->CreatePreviewsUserDataForNavigationHandle(
+              handle, info_->page_id);
       previews_data->set_server_lite_page_info(std::move(info_));
 
       // Reset member state.
