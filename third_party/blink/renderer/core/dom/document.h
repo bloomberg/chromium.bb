@@ -1054,6 +1054,9 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void UpdateFocusAppearanceAfterLayout();
   void CancelFocusAppearanceUpdate();
+  // Return true after UpdateFocusAppearanceAfterLayout() call and before
+  // updating focus appearance.
+  bool WillUpdateFocusAppearance() const;
 
   bool IsDNSPrefetchEnabled() const { return is_dns_prefetch_enabled_; }
   void ParseDNSPrefetchControlHeader(const String&);

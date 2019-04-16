@@ -414,6 +414,11 @@ unsigned TextControlElement::IndexForPosition(HTMLElement* inner_editor,
   return index;
 }
 
+bool TextControlElement::ShouldApplySelectionCache() const {
+  const auto& doc = GetDocument();
+  return doc.FocusedElement() != this || doc.WillUpdateFocusAppearance();
+}
+
 bool TextControlElement::SetSelectionRange(
     unsigned start,
     unsigned end,
@@ -431,7 +436,7 @@ bool TextControlElement::SetSelectionRange(
 
   // TODO(crbug.com/927646): The focused element should always be connected, but
   // we fail to ensure so in some cases. Fix it.
-  if (GetDocument().FocusedElement() != this || !isConnected())
+  if (ShouldApplySelectionCache() || !isConnected())
     return did_change;
 
   HTMLElement* inner_editor = InnerEditorElement();
@@ -510,7 +515,7 @@ int TextControlElement::IndexForVisiblePosition(
 unsigned TextControlElement::selectionStart() const {
   if (!IsTextControl())
     return 0;
-  if (GetDocument().FocusedElement() != this)
+  if (ShouldApplySelectionCache())
     return cached_selection_start_;
 
   return ComputeSelectionStart();
@@ -536,7 +541,7 @@ unsigned TextControlElement::ComputeSelectionStart() const {
 unsigned TextControlElement::selectionEnd() const {
   if (!IsTextControl())
     return 0;
-  if (GetDocument().FocusedElement() != this)
+  if (ShouldApplySelectionCache())
     return cached_selection_end_;
   return ComputeSelectionEnd();
 }
@@ -579,7 +584,7 @@ static const AtomicString& DirectionString(
 const AtomicString& TextControlElement::selectionDirection() const {
   // Ensured by HTMLInputElement::selectionDirectionForBinding().
   DCHECK(IsTextControl());
-  if (GetDocument().FocusedElement() != this)
+  if (ShouldApplySelectionCache())
     return DirectionString(cached_selection_direction_);
   return DirectionString(ComputeSelectionDirection());
 }
