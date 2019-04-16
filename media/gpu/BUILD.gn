@@ -136,8 +136,6 @@ component("gpu") {
       "android/promotion_hint_aggregator.h",
       "android/promotion_hint_aggregator_impl.cc",
       "android/promotion_hint_aggregator_impl.h",
-      "android/shared_image_pool.cc",
-      "android/shared_image_pool.h",
       "android/shared_image_video.cc",
       "android/shared_image_video.h",
       "android/surface_chooser_helper.cc",

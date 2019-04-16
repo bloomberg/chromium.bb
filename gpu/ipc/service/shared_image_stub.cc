@@ -28,7 +28,8 @@ SharedImageStub::SharedImageStub(GpuChannel* channel, int32_t route_id)
               CommandBufferNamespace::GPU_IO,
               CommandBufferIdFromChannelAndRoute(channel->client_id(),
                                                  route_id),
-              sequence_)) {
+              sequence_)),
+      weak_factory_(this) {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "gpu::SharedImageStub", channel_->task_runner());
 }
@@ -361,6 +362,31 @@ bool SharedImageStub::OnMemoryDump(
   }
 
   return factory_->OnMemoryDump(args, pmd, ClientId(), ClientTracingId());
+}
+
+SharedImageStub::SharedImageDestructionCallback
+SharedImageStub::GetSharedImageDestructionCallback(const Mailbox& mailbox) {
+  return base::BindOnce(&SharedImageStub::DestroySharedImage,
+                        weak_factory_.GetWeakPtr(), mailbox);
+}
+
+void SharedImageStub::DestroySharedImage(const Mailbox& mailbox,
+                                         const SyncToken& sync_token) {
+  // If there is no sync token, we don't need to wait.
+  if (!sync_token.HasData()) {
+    OnSyncTokenReleased(mailbox);
+    return;
+  }
+
+  auto done_cb = base::BindOnce(&SharedImageStub::OnSyncTokenReleased,
+                                weak_factory_.GetWeakPtr(), mailbox);
+  channel_->scheduler()->ScheduleTask(
+      gpu::Scheduler::Task(sequence_, std::move(done_cb),
+                           std::vector<gpu::SyncToken>({sync_token})));
+}
+
+void SharedImageStub::OnSyncTokenReleased(const Mailbox& mailbox) {
+  factory_->DestroySharedImage(mailbox);
 }
 
 }  // namespace gpu
