@@ -424,7 +424,6 @@ TEST_F('PrintPreviewPreviewGenerationTest', 'SelectionOnly', function() {
 });
 
 TEST_F('PrintPreviewPreviewGenerationTest', 'PagesPerSheet', function() {
-  loadTimeData.overrideValues({pagesPerSheetEnabled: true});
   this.runMochaTest(preview_generation_test.TestNames.PagesPerSheet);
 });
 
@@ -445,7 +444,6 @@ TEST_F('PrintPreviewPreviewGenerationTest', 'Destination', function() {
 TEST_F(
     'PrintPreviewPreviewGenerationTest', 'ChangeMarginsByPagesPerSheet',
     function() {
-      loadTimeData.overrideValues({pagesPerSheetEnabled: true});
       this.runMochaTest(
           preview_generation_test.TestNames.ChangeMarginsByPagesPerSheet);
     });
@@ -573,7 +571,6 @@ TEST_F(
 TEST_F(
     'PrintPreviewInvalidSettingsBrowserTest', 'InvalidCertificateError',
     function() {
-      loadTimeData.overrideValues({isEnterpriseManaged: false});
       this.runMochaTest(
           invalid_settings_browsertest.TestNames.InvalidCertificateError);
     });
@@ -581,7 +578,6 @@ TEST_F(
 TEST_F(
     'PrintPreviewInvalidSettingsBrowserTest',
     'InvalidCertificateErrorReselectDestination', function() {
-      loadTimeData.overrideValues({isEnterpriseManaged: false});
       this.runMochaTest(invalid_settings_browsertest.TestNames
                             .InvalidCertificateErrorReselectDestination);
     });
@@ -641,7 +637,6 @@ GEN('#if !defined(OS_CHROMEOS)');
 TEST_F(
     'PrintPreviewDestinationSelectTest', 'SystemDefaultPrinterPolicy',
     function() {
-      loadTimeData.overrideValues({useSystemDefaultPrinter: true});
       this.runMochaTest(
           destination_select_test.TestNames.SystemDefaultPrinterPolicy);
     });
@@ -1048,7 +1043,6 @@ TEST_F('PrintPreviewDestinationItemTest', 'Offline', function() {
 });
 
 TEST_F('PrintPreviewDestinationItemTest', 'BadCertificate', function() {
-  loadTimeData.overrideValues({isEnterpriseManaged: false});
   this.runMochaTest(destination_item_test.TestNames.BadCertificate);
 });
 

@@ -242,6 +242,9 @@ cr.define('destination_select_test', function() {
      * destinations.
      */
     test(assert(TestNames.SystemDefaultPrinterPolicy), function() {
+      // Set the policy in loadTimeData.
+      loadTimeData.overrideValues({useSystemDefaultPrinter: true});
+
       // Setup some recent destinations to ensure they are not selected.
       const recentDestinations = [];
       destinations.slice(0, 3).forEach(destination => {
