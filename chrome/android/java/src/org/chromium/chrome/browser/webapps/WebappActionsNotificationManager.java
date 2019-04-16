@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.webapps;
 
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -16,14 +17,9 @@ import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.chrome.browser.notifications.ChromeNotification;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
-import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
-import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
-import org.chromium.chrome.browser.notifications.NotificationMetadata;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
-import org.chromium.chrome.browser.notifications.PendingIntentProvider;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -59,34 +55,28 @@ class WebappActionsNotificationManager {
         }
 
         Context appContext = ContextUtils.getApplicationContext();
-        ChromeNotification notification = createNotification(appContext, tab, webappInfo);
-        NotificationManagerProxy nm = new NotificationManagerProxyImpl(appContext);
-        nm.notify(notification);
+        Notification notification = createNotification(appContext, tab, webappInfo);
+        NotificationManager nm =
+                (NotificationManager) appContext.getSystemService(Context.NOTIFICATION_SERVICE);
+        nm.notify(NotificationConstants.NOTIFICATION_ID_WEBAPP_ACTIONS, notification);
 
         NotificationUmaTracker.getInstance().onNotificationShown(
-                NotificationUmaTracker.SystemNotificationType.WEBAPP_ACTIONS,
-                notification.getNotification());
+                NotificationUmaTracker.SystemNotificationType.WEBAPP_ACTIONS, notification);
     }
 
-    private static ChromeNotification createNotification(
+    private static Notification createNotification(
             Context appContext, Tab tab, WebappInfo webappInfo) {
         // The pending intents target an activity (instead of a service or a broadcast receiver) so
         // that the notification tray closes when a user taps the one of the notification action
         // links.
-        PendingIntentProvider focusIntent =
-                createPendingIntentWithAction(appContext, tab, ACTION_FOCUS);
-        PendingIntentProvider openInChromeIntent =
+        PendingIntent focusIntent = createPendingIntentWithAction(appContext, tab, ACTION_FOCUS);
+        PendingIntent openInChromeIntent =
                 createPendingIntentWithAction(appContext, tab, ACTION_OPEN_IN_CHROME);
-        PendingIntentProvider shareIntent =
-                createPendingIntentWithAction(appContext, tab, ACTION_SHARE);
+        PendingIntent shareIntent = createPendingIntentWithAction(appContext, tab, ACTION_SHARE);
 
-        NotificationMetadata metadata = new NotificationMetadata(
-                NotificationUmaTracker.SystemNotificationType.WEBAPP_ACTIONS,
-                null /* notificationTag */, NotificationConstants.NOTIFICATION_ID_WEBAPP_ACTIONS);
         return NotificationBuilderFactory
-                .createChromeNotificationBuilder(true /* prefer compat */,
-                        ChannelDefinitions.ChannelId.WEBAPP_ACTIONS,
-                        null /* remoteAppPackageName */, metadata)
+                .createChromeNotificationBuilder(
+                        true /* prefer compat */, ChannelDefinitions.ChannelId.WEBAPP_ACTIONS)
                 .setSmallIcon(R.drawable.ic_chrome)
                 .setContentTitle(webappInfo.shortName())
                 .setContentText(appContext.getString(R.string.webapp_tap_to_copy_url))
@@ -96,23 +86,21 @@ class WebappActionsNotificationManager {
                 .setPriorityBeforeO(NotificationCompat.PRIORITY_MIN)
                 .setContentIntent(focusIntent)
                 .addAction(R.drawable.ic_share_white_24dp,
-                        appContext.getResources().getString(R.string.share), shareIntent,
-                        NotificationUmaTracker.ActionType.WEB_APP_ACTION_SHARE)
+                        appContext.getResources().getString(R.string.share), shareIntent)
                 .addAction(R.drawable.ic_exit_to_app_white_24dp,
                         appContext.getResources().getString(R.string.menu_open_in_chrome),
-                        openInChromeIntent,
-                        NotificationUmaTracker.ActionType.WEB_APP_ACTION_OPEN_IN_CHROME)
-                .buildChromeNotification();
+                        openInChromeIntent)
+                .build();
     }
 
     /** Creates an intent which targets {@link WebappLauncherActivity} with the passed-in action. */
-    private static PendingIntentProvider createPendingIntentWithAction(
+    private static PendingIntent createPendingIntentWithAction(
             Context context, Tab tab, String action) {
         Intent intent = new Intent(action);
         intent.setClass(context, WebappLauncherActivity.class);
         intent.putExtra(IntentHandler.EXTRA_TAB_ID, tab.getId());
         IntentHandler.addTrustedIntentExtras(intent);
-        return PendingIntentProvider.getActivity(context, 0, intent,
+        return PendingIntent.getActivity(context, 0, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_ONE_SHOT);
     }
 
