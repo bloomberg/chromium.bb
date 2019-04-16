@@ -6,10 +6,17 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/notifications/scheduler/impression_history_tracker.h"
 #include "chrome/browser/notifications/scheduler/test/test_utils.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using testing::_;
+using ::testing::Invoke;
+using StoreEntries = std::vector<std::unique_ptr<notifications::ClientState>>;
 
 namespace notifications {
 namespace {
@@ -42,10 +49,30 @@ void VerifyClientStates(
   }
 }
 
+class MockImpressionStore : public CollectionStore<ClientState> {
+ public:
+  MockImpressionStore() {}
+
+  MOCK_METHOD1(InitAndLoad, void(CollectionStore<ClientState>::LoadCallback));
+  MOCK_METHOD3(Add,
+               void(const std::string&,
+                    const ClientState&,
+                    base::OnceCallback<void(bool)>));
+  MOCK_METHOD3(Update,
+               void(const std::string&,
+                    const ClientState&,
+                    base::OnceCallback<void(bool)>));
+  MOCK_METHOD2(Delete,
+               void(const std::string&, base::OnceCallback<void(bool)>));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockImpressionStore);
+};
+
 // TODO(xingliu): Add more test cases following the test doc.
 class ImpressionHistoryTrackerTest : public testing::Test {
  public:
-  ImpressionHistoryTrackerTest() = default;
+  ImpressionHistoryTrackerTest() : store_(nullptr) {}
   ~ImpressionHistoryTrackerTest() override = default;
 
   void SetUp() override {
@@ -56,30 +83,48 @@ class ImpressionHistoryTrackerTest : public testing::Test {
  protected:
   void RunTestCase(TestCase test_case) {
     // Prepare test input data.
-    ImpressionHistoryTracker::ClientStates input_states;
+    StoreEntries input_states;
     test::AddImpressionTestData(test_case.input, &input_states);
 
     // Do stuff.
-    CreateTracker(std::move(input_states));
-    tracker()->AnalyzeImpressionHistory();
+    InitTrackerWithData(std::move(input_states));
+    impression_trakcer_->AnalyzeImpressionHistory();
 
     // Verify output data.
-    VerifyClientStates(test_case.expected, tracker()->GetClientStates());
+    VerifyClientStates(test_case.expected,
+                       impression_trakcer_->GetClientStates());
   }
 
-  // Create the test target and push in data.
-  void CreateTracker(ImpressionHistoryTracker::ClientStates states) {
+  // Creates the tracker and push in data.
+  void InitTrackerWithData(StoreEntries entries) {
+    auto store = std::make_unique<MockImpressionStore>();
+    store_ = store.get();
     impression_trakcer_ = std::make_unique<ImpressionHistoryTrackerImpl>(
-        config_, std::move(states));
+        config_, std::move(store));
+
+    // Initialize the store and call the callback.
+    EXPECT_CALL(*store_, InitAndLoad(_))
+        .WillOnce(
+            Invoke([&entries](base::OnceCallback<void(bool, StoreEntries)> cb) {
+              std::move(cb).Run(true, std::move(entries));
+            }));
+    base::RunLoop loop;
+    impression_trakcer_->Init(base::BindOnce(
+        [](base::RepeatingClosure closure, bool success) {
+          EXPECT_TRUE(success);
+          std::move(closure).Run();
+        },
+        loop.QuitClosure()));
+    loop.Run();
   }
 
   const SchedulerConfig& config() const { return config_; }
-  ImpressionHistoryTracker* tracker() { return impression_trakcer_.get(); }
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   SchedulerConfig config_;
   std::unique_ptr<ImpressionHistoryTracker> impression_trakcer_;
+  MockImpressionStore* store_;
 
   DISALLOW_COPY_AND_ASSIGN(ImpressionHistoryTrackerTest);
 };
@@ -96,9 +141,11 @@ TEST_F(ImpressionHistoryTrackerTest, DeleteExpiredImpression) {
   Impression not_expired{not_expired_time, UserFeedback::kNoFeedback,
                          ImpressionResult::kInvalid, false /* integrated */};
 
+  // The impressions in the input should be sorted by creation time when gets
+  // loaded to memory.
   test_case.input = {{SchedulerClientType::kTest1,
                       2 /* current_max_daily_show */,
-                      {expired, expired, not_expired},
+                      {expired, not_expired, expired},
                       base::nullopt /* suppression_info */}};
 
   // Expired impression created in |expired_create_time| should be deleted.

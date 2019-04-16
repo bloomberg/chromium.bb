@@ -44,5 +44,16 @@ void AddImpressionTestData(
   }
 }
 
+void AddImpressionTestData(
+    const std::vector<ImpressionTestData>& test_data,
+    std::vector<std::unique_ptr<ClientState>>* client_states) {
+  DCHECK(client_states);
+  for (const auto& test_data : test_data) {
+    auto client_state = std::make_unique<ClientState>();
+    AddImpressionTestData(test_data, client_state.get());
+    client_states->emplace_back(std::move(client_state));
+  }
+}
+
 }  // namespace test
 }  // namespace notifications

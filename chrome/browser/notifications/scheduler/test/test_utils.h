@@ -37,6 +37,11 @@ void AddImpressionTestData(
     const std::vector<ImpressionTestData>& test_data,
     ImpressionHistoryTracker::ClientStates* client_states);
 
+// Adds impression test data into client states container.
+void AddImpressionTestData(
+    const std::vector<ImpressionTestData>& test_data,
+    std::vector<std::unique_ptr<ClientState>>* client_states);
+
 }  // namespace test
 }  // namespace notifications
 
