@@ -12,6 +12,7 @@ namespace blink {
 
 struct PaintInfo;
 class CellSpan;
+class LayoutPoint;
 class LayoutTableRow;
 
 class TableRowPainter {

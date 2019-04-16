@@ -1504,7 +1504,7 @@ bool LayoutObject::GetLowerRightCorner(ExpandScrollMargin expand,
         point = runner->LocalToAbsolute(point, kUseTransforms);
       } else {
         const LayoutBox* box = ToLayoutBox(runner);
-        point.MoveBy(box->FrameRect().MaxXMaxYCorner());
+        point.MoveBy(FloatPoint(box->FrameRect().MaxXMaxYCorner()));
         point = runner->Container()->LocalToAbsolute(point, kUseTransforms);
         if (expand == ExpandScrollMargin::kExpand)
           MovePointByScrollMargin(box, MarginCorner::kBottomRight, point);

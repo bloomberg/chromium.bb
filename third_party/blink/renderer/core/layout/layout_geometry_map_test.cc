@@ -152,7 +152,7 @@ class LayoutGeometryMapTest : public testing::Test {
         static_cast<WebViewImpl*>(web_view)->MainFrameImpl()->GetFrame();
     LayoutView* layout_view = frame->GetDocument()->GetLayoutView();
     if (layout_view->HasOverflowClip())
-      result.Move(layout_view->ScrolledContentOffset());
+      result.Move(FloatSize(layout_view->ScrolledContentOffset()));
     return result;
   }
 

@@ -169,7 +169,7 @@ PositionWithAffinity LayoutSVGInlineText::PositionForPoint(
   // Map local point to absolute point, as the character origins stored in the
   // text fragments use absolute coordinates.
   FloatPoint absolute_point(point);
-  absolute_point.MoveBy(containing_block->Location());
+  absolute_point.MoveBy(FloatPoint(containing_block->Location()));
 
   float closest_distance = std::numeric_limits<float>::max();
   float position_in_fragment = 0;

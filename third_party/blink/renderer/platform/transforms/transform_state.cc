@@ -176,8 +176,9 @@ FloatPoint TransformState::MappedPoint(bool* was_clamped) const {
     *was_clamped = false;
 
   FloatPoint point = last_planar_point_;
-  point.Move((direction_ == kApplyTransformDirection) ? accumulated_offset_
-                                                      : -accumulated_offset_);
+  point.Move(FloatSize(direction_ == kApplyTransformDirection
+                           ? accumulated_offset_
+                           : -accumulated_offset_));
   if (!accumulated_transform_)
     return point;
 
