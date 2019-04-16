@@ -4,19 +4,34 @@
 
 #include "chrome/browser/notifications/scheduler/impression_history_tracker.h"
 
+#include <algorithm>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/numerics/ranges.h"
-#include "base/optional.h"
 
 namespace notifications {
 
+// Comparator used to sort notification entries based on creation time.
+bool CreateTimeCompare(const Impression& lhs, const Impression& rhs) {
+  return lhs.create_time <= rhs.create_time;
+}
+
 ImpressionHistoryTrackerImpl::ImpressionHistoryTrackerImpl(
     const SchedulerConfig& config,
-    ClientStates client_states)
-    : client_states_(std::move(client_states)), config_(config) {}
+    std::unique_ptr<CollectionStore<ClientState>> store)
+    : store_(std::move(store)),
+      config_(config),
+      initialized_(false),
+      weak_ptr_factory_(this) {}
 
 ImpressionHistoryTrackerImpl::~ImpressionHistoryTrackerImpl() = default;
+
+void ImpressionHistoryTrackerImpl::Init(InitCallback callback) {
+  store_->InitAndLoad(
+      base::BindOnce(&ImpressionHistoryTrackerImpl::OnStoreInitialized,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
 
 void ImpressionHistoryTrackerImpl::AnalyzeImpressionHistory() {
   for (auto& client_state : client_states_)
@@ -26,6 +41,29 @@ void ImpressionHistoryTrackerImpl::AnalyzeImpressionHistory() {
 const ImpressionHistoryTracker::ClientStates&
 ImpressionHistoryTrackerImpl::GetClientStates() const {
   return client_states_;
+}
+
+void ImpressionHistoryTrackerImpl::OnStoreInitialized(
+    InitCallback callback,
+    bool success,
+    CollectionStore<ClientState>::Entries entries) {
+  if (!success) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  initialized_ = true;
+
+  // Load the data to memory, and sort the impression list.
+  for (auto it = entries.begin(); it != entries.end(); ++it) {
+    auto& entry = (*it);
+    auto type = entry->type;
+    std::sort(entry->impressions.begin(), entry->impressions.end(),
+              &CreateTimeCompare);
+    client_states_.emplace(type, std::move(*it));
+  }
+
+  std::move(callback).Run(true);
 }
 
 void ImpressionHistoryTrackerImpl::AnalyzeImpressionHistory(
