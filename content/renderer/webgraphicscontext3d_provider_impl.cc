@@ -43,11 +43,6 @@ GrContext* WebGraphicsContext3DProviderImpl::GetGrContext() {
   return provider_->GrContext();
 }
 
-gpu::SharedImageInterface*
-WebGraphicsContext3DProviderImpl::GetSharedImageInterface() const {
-  return provider_->SharedImageInterface();
-}
-
 const gpu::Capabilities& WebGraphicsContext3DProviderImpl::GetCapabilities()
     const {
   return provider_->ContextCapabilities();
