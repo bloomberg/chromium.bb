@@ -59,7 +59,7 @@ TaskQueue::QueueEnabledVoter::~QueueEnabledVoter() {
   task_queue_->RemoveQueueEnabledVoter(enabled_);
 }
 
-void TaskQueue::QueueEnabledVoter::SetQueueEnabled(bool enabled) {
+void TaskQueue::QueueEnabledVoter::SetVoteToEnable(bool enabled) {
   if (enabled == enabled_)
     return;
   enabled_ = enabled;

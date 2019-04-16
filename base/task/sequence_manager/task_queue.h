@@ -206,7 +206,7 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
     // are no voters.
     // NOTE this must be called on the thread the associated TaskQueue was
     // created on.
-    void SetQueueEnabled(bool enabled);
+    void SetVoteToEnable(bool enabled);
 
    private:
     friend class TaskQueue;
