@@ -38,11 +38,15 @@ QuicIpAddressImpl QuicIpAddressImpl::Any6() {
 QuicIpAddressImpl::QuicIpAddressImpl(const net::IPAddress& addr)
     : ip_address_(addr) {}
 
+static_assert(sizeof(in_addr) == 32 / 8, "in_addr must be 32-bit long");
 QuicIpAddressImpl::QuicIpAddressImpl(const in_addr& ipv4_address)
-    : ip_address_() {}
+    : ip_address_(reinterpret_cast<const uint8_t*>(&ipv4_address),
+                  sizeof(in_addr)) {}
 
+static_assert(sizeof(in6_addr) == 128 / 8, "in6_addr must be 128-bit long");
 QuicIpAddressImpl::QuicIpAddressImpl(const in6_addr& ipv6_address)
-    : ip_address_() {}
+    : ip_address_(reinterpret_cast<const uint8_t*>(&ipv6_address),
+                  sizeof(in6_addr)) {}
 
 bool operator==(QuicIpAddressImpl lhs, QuicIpAddressImpl rhs) {
   return lhs.ip_address_ == rhs.ip_address_;
