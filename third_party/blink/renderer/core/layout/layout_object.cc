@@ -927,26 +927,33 @@ static inline bool ObjectIsRelayoutBoundary(const LayoutObject* object) {
   return true;
 }
 
-// NGInlineNode::ColectInlines() collects inline children into NGInlineItem.
-// This function marks NeedsCollectInlines() to let it re-collect.
-void LayoutObject::MarkContainerNeedsCollectInlines() {
+// Mark this object needing to re-run |CollectInlines()|.
+//
+// The flag is propagated to its container so that NGInlineNode that contains
+// |this| is marked too. When |this| is a container, the propagation stops at
+// |this|. When invalidating on inline blocks, floats, or OOF, caller need to
+// pay attention whether it should mark its inner context or outer.
+void LayoutObject::SetNeedsCollectInlines() {
   if (!RuntimeEnabledFeatures::LayoutNGEnabled())
     return;
 
-  // Mark only if this is a LayoutObject collected by CollectInlines().
-  if (!IsInline() && !IsFloatingOrOutOfFlowPositioned()) {
-    // If this is the container box of inline children, mark it.
-    if (IsLayoutBlockFlow())
-      SetNeedsCollectInlines(true);
+  if (UNLIKELY(IsSVGChild()))
     return;
-  }
 
-  for (LayoutObject* object = this; !object->NeedsCollectInlines();) {
-    object->SetNeedsCollectInlines(true);
-    object = object->Parent();
-    if (!object || object->IsLayoutBlockFlow())
+  LayoutObject* object = this;
+  do {
+    // Should not stop at |LayoutFlowThread| as |CollectInlines()| skips them.
+    if (UNLIKELY(object->IsLayoutFlowThread())) {
+      object = object->Parent();
+      continue;
+    }
+    if (object->NeedsCollectInlines())
       break;
-  }
+    object->SetNeedsCollectInlines(true);
+    if (object->IsLayoutBlockFlow())
+      break;
+    object = object->Parent();
+  } while (object);
 }
 
 void LayoutObject::MarkContainerChainForLayout(bool schedule_relayout,
@@ -967,12 +974,6 @@ void LayoutObject::MarkContainerChainForLayout(bool schedule_relayout,
   bool simplified_normal_flow_layout = NeedsSimplifiedNormalFlowLayout() &&
                                        !SelfNeedsLayout() &&
                                        !NormalChildNeedsLayout();
-
-  // We need to set NeedsCollectInlines() only if LayoutNGEnabled, but setting a
-  // flag in non-LayoutNG is harmless.
-  // When we set a flag, setting another flag should be zero-cost.
-  if (object)
-    object->SetNeedsCollectInlines(true);
 
   while (object) {
     if (object->SelfNeedsLayout())
@@ -996,18 +997,15 @@ void LayoutObject::MarkContainerChainForLayout(bool schedule_relayout,
         return;
       container = object->Container();
       object->SetPosChildNeedsLayout(true);
-      object->SetNeedsCollectInlines(true);
       simplified_normal_flow_layout = true;
     } else if (simplified_normal_flow_layout) {
       if (object->NeedsSimplifiedNormalFlowLayout())
         return;
       object->SetNeedsSimplifiedNormalFlowLayout(true);
-      object->SetNeedsCollectInlines(true);
     } else {
       if (object->NormalChildNeedsLayout())
         return;
       object->SetNormalChildNeedsLayout(true);
-      object->SetNeedsCollectInlines(true);
     }
 #if DCHECK_IS_ON()
     DCHECK(!object->IsSetNeedsLayoutForbidden());
@@ -1065,7 +1063,7 @@ void LayoutObject::MarkParentForOutOfFlowPositionedChange() {
   // As OOF-positioned objects are represented as an object replacement
   // character in the inline items list. We need to ensure we collect the
   // inline items again to either collect or drop the OOF-positioned object.
-  object->MarkContainerNeedsCollectInlines();
+  object->SetNeedsCollectInlines();
 
   while (object && !object->IsLayoutBlock())
     object = object->Parent();
@@ -2502,8 +2500,11 @@ void LayoutObject::StyleDidChange(StyleDifference diff,
   if (diff.NeedsFullLayout()) {
     // If the in-flow state of an element is changed, disable scroll
     // anchoring on the containing scroller.
-    if (old_style->HasOutOfFlowPosition() != style_->HasOutOfFlowPosition())
+    if (old_style->HasOutOfFlowPosition() != style_->HasOutOfFlowPosition()) {
       SetScrollAnchorDisablingStyleChangedOnAncestor();
+      if (RuntimeEnabledFeatures::LayoutNGEnabled())
+        MarkParentForOutOfFlowPositionedChange();
+    }
 
     // If the object already needs layout, then setNeedsLayout won't do
     // any work. But if the containing block has changed, then we may need
@@ -2512,8 +2513,6 @@ void LayoutObject::StyleDidChange(StyleDifference diff,
     // the position style.
     if (NeedsLayout() && old_style->GetPosition() != style_->GetPosition()) {
       MarkContainerChainForLayout();
-      if (RuntimeEnabledFeatures::LayoutNGEnabled())
-        MarkParentForOutOfFlowPositionedChange();
     }
 
     SetNeedsLayoutAndPrefWidthsRecalc(layout_invalidation_reason::kStyleChange);
@@ -2594,8 +2593,11 @@ void LayoutObject::ApplyFirstLineChanges(const ComputedStyle* old_style) {
       first_line_container->SetShouldDoFullPaintInvalidationForFirstLine();
   }
 
-  if (diff.NeedsLayout())
+  if (diff.NeedsLayout()) {
+    if (diff.NeedsFullLayout())
+      SetNeedsCollectInlines();
     SetNeedsLayoutAndPrefWidthsRecalc(layout_invalidation_reason::kStyleChange);
+  }
 }
 
 void LayoutObject::PropagateStyleToAnonymousChildren() {

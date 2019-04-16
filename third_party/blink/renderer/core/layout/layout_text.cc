@@ -200,9 +200,12 @@ void LayoutText::StyleDidChange(StyleDifference diff,
   if (!old_style && text_autosizer)
     text_autosizer->Record(this);
 
-  // TODO(layout-dev): This is only really needed for style changes that affect
-  // how text is rendered. Font, text-decoration, etc.
-  valid_ng_items_ = false;
+  // |NeedsFullLayout| includes changes in fonts, which require reshape.
+  // TODO(kojii): Not all |NeedsFullLayout| properties require re-shape.
+  if (diff.NeedsFullLayout()) {
+    valid_ng_items_ = false;
+    SetNeedsCollectInlines();
+  }
 }
 
 void LayoutText::RemoveAndDestroyTextBoxes() {
@@ -1897,6 +1900,7 @@ void LayoutText::SetText(scoped_refptr<StringImpl> text,
     text_autosizer->Record(this);
 
   valid_ng_items_ = false;
+  SetNeedsCollectInlines();
 }
 
 void LayoutText::DirtyOrDeleteLineBoxesIfNeeded(bool full_layout) {

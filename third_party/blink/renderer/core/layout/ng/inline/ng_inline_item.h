@@ -66,7 +66,6 @@ class CORE_EXPORT NGInlineItem {
   NGInlineItem(NGInlineItemType type,
                unsigned start,
                unsigned end,
-               const ComputedStyle* style = nullptr,
                LayoutObject* layout_object = nullptr);
   ~NGInlineItem();
 
@@ -115,7 +114,6 @@ class CORE_EXPORT NGInlineItem {
     return Type() != NGInlineItem::kListMarker ? BidiLevel() : 0;
   }
 
-  const ComputedStyle* Style() const { return style_.get(); }
   LayoutObject* GetLayoutObject() const { return layout_object_; }
 
   void SetOffset(unsigned start, unsigned end) {
@@ -149,6 +147,16 @@ class CORE_EXPORT NGInlineItem {
   }
   NGStyleVariant StyleVariant() const {
     return static_cast<NGStyleVariant>(style_variant_);
+  }
+  const ComputedStyle* Style() const {
+    // Use the |ComputedStyle| in |LayoutObject|, because not all style changes
+    // re-run |CollectInlines()|.
+    DCHECK(layout_object_);
+    NGStyleVariant variant = StyleVariant();
+    if (variant == NGStyleVariant::kStandard)
+      return layout_object_->Style();
+    DCHECK_EQ(variant, NGStyleVariant::kFirstLine);
+    return layout_object_->FirstLineStyle();
   }
 
   // Get or set the whitespace collapse type at the end of this item.
@@ -223,7 +231,6 @@ class CORE_EXPORT NGInlineItem {
   unsigned start_offset_;
   unsigned end_offset_;
   scoped_refptr<const ShapeResult> shape_result_;
-  scoped_refptr<const ComputedStyle> style_;
   LayoutObject* layout_object_;
 
   NGInlineItemType type_;

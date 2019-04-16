@@ -115,6 +115,10 @@ LayoutObject* LayoutObjectChildList::RemoveChildNode(
                ToLayoutBox(old_child)->IsOrthogonalWritingModeRoot()) {
       ToLayoutBox(old_child)->UnmarkOrthogonalWritingModeRoot();
     }
+
+    if (old_child->IsInLayoutNGInlineFormattingContext()) {
+      owner->SetNeedsCollectInlines();
+    }
   }
 
   // WARNING: There should be no code running between willBeRemovedFromTree and
@@ -198,6 +202,11 @@ void LayoutObjectChildList::InsertChildNode(LayoutObject* owner,
       // when moving.
       InvalidateInlineItems(new_child);
     }
+
+    if (owner->IsInLayoutNGInlineFormattingContext() ||
+        (owner->EverHadLayout() && owner->ChildrenInline())) {
+      owner->SetNeedsCollectInlines();
+    }
   }
 
   // Propagate the need to notify ancestors down into any
@@ -217,10 +226,6 @@ void LayoutObjectChildList::InsertChildNode(LayoutObject* owner,
     // actually happens.
   }
 
-  // Clear NeedsCollectInlines to ensure the marking doesn't stop on
-  // |new_child|.
-  new_child->ClearNeedsCollectInlines();
-
   new_child->SetNeedsLayoutAndPrefWidthsRecalc(
       layout_invalidation_reason::kAddedToLayout);
   if (new_child->IsOutOfFlowPositioned() &&
@@ -235,8 +240,6 @@ void LayoutObjectChildList::InsertChildNode(LayoutObject* owner,
   if (!owner->NormalChildNeedsLayout()) {
     owner->SetChildNeedsLayout();  // We may supply the static position for an
                                    // absolute positioned child.
-  } else {
-    owner->MarkContainerNeedsCollectInlines();
   }
 
   if (!owner->DocumentBeingDestroyed())

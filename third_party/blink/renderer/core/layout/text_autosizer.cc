@@ -679,6 +679,7 @@ void TextAutosizer::SetAllTextNeedsLayout(LayoutBlock* container) {
       if (object->IsText()) {
         object->SetNeedsLayoutAndFullPaintInvalidation(
             layout_invalidation_reason::kTextAutosizing);
+        object->SetNeedsCollectInlines();
       }
       object = object->NextInPreOrder(container);
     }
@@ -1204,7 +1205,6 @@ void TextAutosizer::ApplyMultiplier(LayoutObject* layout_object,
       layout_object->SetNeedsLayoutAndFullPaintInvalidation(
           layout_invalidation_reason::kTextAutosizing, kMarkContainerChain,
           layouter);
-      layout_object->MarkContainerNeedsCollectInlines();
       break;
 
     case kLayoutNeeded:

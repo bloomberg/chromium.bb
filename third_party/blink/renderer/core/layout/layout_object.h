@@ -1216,7 +1216,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   Element* OffsetParent(const Element* = nullptr) const;
 
-  void MarkContainerNeedsCollectInlines();
+  // Mark this object needing to re-run |CollectInlines()|. Ancestors may be
+  // marked too if needed.
+  void SetNeedsCollectInlines();
   void ClearNeedsCollectInlines() { SetNeedsCollectInlines(false); }
 
   void MarkContainerChainForLayout(bool schedule_relayout = true,
@@ -3088,7 +3090,6 @@ inline void LayoutObject::SetNeedsLayout(
                                bitfields_.SelfNeedsLayoutForAvailableSpace();
   SetSelfNeedsLayoutForStyle(true);
   SetNeedsOverflowRecalc();
-  MarkContainerNeedsCollectInlines();
   if (!already_needed_layout) {
     TRACE_EVENT_INSTANT1(
         TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),
@@ -3137,7 +3138,6 @@ inline void LayoutObject::SetChildNeedsLayout(MarkingBehavior mark_parents,
   bool already_needed_layout = NormalChildNeedsLayout();
   SetNeedsOverflowRecalc();
   SetNormalChildNeedsLayout(true);
-  MarkContainerNeedsCollectInlines();
   // FIXME: Replace MarkOnlyThis with the SubtreeLayoutScope code path and
   // remove the MarkingBehavior argument entirely.
   if (!already_needed_layout && mark_parents == kMarkContainerChain &&
