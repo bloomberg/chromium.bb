@@ -376,7 +376,7 @@ void CupsPrintersHandler::HandleGetCupsPrintersList(
   CHECK(args->GetString(0, &callback_id));
 
   std::vector<Printer> printers =
-      printers_manager_->GetPrinters(CupsPrintersManager::kConfigured);
+      printers_manager_->GetPrinters(CupsPrintersManager::kSaved);
 
   auto response = BuildCupsPrintersList(printers);
   ResolveJavascriptCallback(base::Value(callback_id), response);
@@ -422,7 +422,7 @@ void CupsPrintersHandler::HandleRemoveCupsPrinter(const base::ListValue* args) {
 
   Printer::PrinterProtocol protocol = printer->GetProtocol();
   // Printer is deleted here.  Do not access after this line.
-  printers_manager_->RemoveConfiguredPrinter(printer_id);
+  printers_manager_->RemoveSavedPrinter(printer_id);
 
   DebugDaemonClient* client = DBusThreadManager::Get()->GetDebugDaemonClient();
   client->CupsRemovePrinter(printer_id,
@@ -724,7 +724,7 @@ void CupsPrintersHandler::OnAddedOrEditedPrinterCommon(
       return;
     case PrinterSetupResult::kEditSuccess:
       PRINTER_LOG(USER) << "Printer updated";
-      printers_manager_->UpdateConfiguredPrinter(printer);
+      printers_manager_->UpdateSavedPrinter(printer);
       return;
     case PrinterSetupResult::kPpdNotFound:
       PRINTER_LOG(ERROR) << "Could not locate requested PPD";
@@ -972,7 +972,7 @@ void CupsPrintersHandler::OnPrintersChanged(
       discovered_printers_ = printers;
       UpdateDiscoveredPrinters();
       break;
-    case CupsPrintersManager::kConfigured: {
+    case CupsPrintersManager::kSaved: {
       auto printers_list = BuildCupsPrintersList(printers);
       FireWebUIListener("on-printers-changed", printers_list);
       break;

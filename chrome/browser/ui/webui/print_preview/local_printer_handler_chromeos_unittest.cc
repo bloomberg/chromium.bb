@@ -76,8 +76,8 @@ class FakeCupsPrintersManager : public CupsPrintersManager {
   }
 
   void RemoveUnavailablePrinters(std::vector<Printer>*) const override {}
-  void UpdateConfiguredPrinter(const Printer& printer) override {}
-  void RemoveConfiguredPrinter(const std::string& printer_id) override {}
+  void UpdateSavedPrinter(const Printer& printer) override {}
+  void RemoveSavedPrinter(const std::string& printer_id) override {}
   void AddObserver(CupsPrintersManager::Observer* observer) override {}
   void RemoveObserver(CupsPrintersManager::Observer* observer) override {}
   void PrinterInstalled(const Printer& printer, bool is_automatic) override {}
@@ -164,13 +164,12 @@ TEST_F(LocalPrinterHandlerChromeosTest, GetPrinters) {
   std::unique_ptr<base::ListValue> printers;
   bool is_done = false;
 
-  Printer configured_printer = CreateTestPrinter("printer1", "configured");
+  Printer saved_printer = CreateTestPrinter("printer1", "saved");
   Printer enterprise_printer =
       CreateEnterprisePrinter("printer2", "enterprise");
   Printer automatic_printer = CreateTestPrinter("printer3", "automatic");
 
-  printers_manager_.AddPrinter(configured_printer,
-                               CupsPrintersManager::kConfigured);
+  printers_manager_.AddPrinter(saved_printer, CupsPrintersManager::kSaved);
   printers_manager_.AddPrinter(enterprise_printer,
                                CupsPrintersManager::kEnterprise);
   printers_manager_.AddPrinter(automatic_printer,
@@ -190,7 +189,7 @@ TEST_F(LocalPrinterHandlerChromeosTest, GetPrinters) {
         "cupsEnterprisePrinter": false,
         "deviceName": "printer1",
         "printerDescription": "",
-        "printerName": "configured",
+        "printerName": "saved",
         "printerOptions": {
           "cupsEnterprisePrinter": "false",
           "system_driverinfo": ""
@@ -228,9 +227,8 @@ TEST_F(LocalPrinterHandlerChromeosTest, GetPrinters) {
 // Tests that fetching capabilities for an existing installed printer is
 // successful.
 TEST_F(LocalPrinterHandlerChromeosTest, StartGetCapabilityValidPrinter) {
-  Printer configured_printer = CreateTestPrinter("printer1", "configured");
-  printers_manager_.AddPrinter(configured_printer,
-                               CupsPrintersManager::kConfigured);
+  Printer saved_printer = CreateTestPrinter("printer1", "saved");
+  printers_manager_.AddPrinter(saved_printer, CupsPrintersManager::kSaved);
   printers_manager_.InstallPrinter("printer1");
 
   // Add printer capabilities to |test_backend_|.

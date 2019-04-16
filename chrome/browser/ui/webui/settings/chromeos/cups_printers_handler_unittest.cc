@@ -61,8 +61,8 @@ class FakeCupsPrintersManager : public CupsPrintersManager {
   }
 
   void RemoveUnavailablePrinters(std::vector<Printer>*) const override {}
-  void UpdateConfiguredPrinter(const Printer& printer) override {}
-  void RemoveConfiguredPrinter(const std::string& printer_id) override {}
+  void UpdateSavedPrinter(const Printer& printer) override {}
+  void RemoveSavedPrinter(const std::string& printer_id) override {}
   void AddObserver(CupsPrintersManager::Observer* observer) override {}
   void RemoveObserver(CupsPrintersManager::Observer* observer) override {}
   void PrinterInstalled(const Printer& printer, bool is_automatic) override {}

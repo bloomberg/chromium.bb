@@ -72,8 +72,8 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
         event_tracker_(event_tracker),
         printers_(kNumPrinterClasses),
         weak_ptr_factory_(this) {
-    // Prime the printer cache with the configured and enterprise printers.
-    printers_[kConfigured] = synced_printers_manager_->GetSavedPrinters();
+    // Prime the printer cache with the saved and enterprise printers.
+    printers_[kSaved] = synced_printers_manager_->GetSavedPrinters();
     RebuildConfiguredPrintersIndex();
     synced_printers_manager_observer_.Add(synced_printers_manager_);
     enterprise_printers_are_ready_ =
@@ -133,22 +133,22 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   }
 
   // Public API function.
-  void UpdateConfiguredPrinter(const Printer& printer) override {
+  void UpdateSavedPrinter(const Printer& printer) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     if (!native_printers_allowed_.GetValue()) {
-      LOG(WARNING) << "UpdateConfiguredPrinter() called when "
+      LOG(WARNING) << "UpdateSavedPrinter() called when "
                       "UserNativePrintersAllowed is set to false";
       return;
     }
     // If this is an 'add' instead of just an update, record the event.
-    MaybeRecordInstallation(printer, false);
+    MaybeRecordInstallation(printer, false /* is_automatic_installation */);
     synced_printers_manager_->UpdateSavedPrinter(printer);
     // Note that we will rebuild our lists when we get the observer
     // callback from |synced_printers_manager_|.
   }
 
   // Public API function.
-  void RemoveConfiguredPrinter(const std::string& printer_id) override {
+  void RemoveSavedPrinter(const std::string& printer_id) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     auto existing = synced_printers_manager_->GetPrinter(printer_id);
     if (existing) {
@@ -217,10 +217,10 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   // SyncedPrintersManager::Observer implementation
   void OnSavedPrintersChanged() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
-    printers_[kConfigured] = synced_printers_manager_->GetSavedPrinters();
+    printers_[kSaved] = synced_printers_manager_->GetSavedPrinters();
     RebuildConfiguredPrintersIndex();
     RebuildDetectedLists();
-    NotifyObservers({kConfigured});
+    NotifyObservers({kSaved});
   }
 
   // SyncedPrintersManager::Observer implementation
@@ -275,11 +275,13 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   }
 
   // Rebuild the index from printer id to index for configured printers.
+  // TODO(baileyberro): Update ConfiguredPrintersIndex to support saved and
+  // unsaved printers, since either could need an updated URI.
   void RebuildConfiguredPrintersIndex() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     configured_printers_index_.clear();
-    for (size_t i = 0; i < printers_[kConfigured].size(); ++i) {
-      configured_printers_index_[printers_[kConfigured][i].id()] = i;
+    for (size_t i = 0; i < printers_[kSaved].size(); ++i) {
+      configured_printers_index_[printers_[kSaved][i].id()] = i;
     }
   }
 
@@ -506,7 +508,7 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   // reference, but have not yet gotten a response.
   std::unordered_set<std::string> inflight_ppd_reference_resolutions_;
 
-  // Map from printer id to printers_[kConfigured] index for configured
+  // Map from printer id to printers_[kSaved] index for configured
   // printers.
   std::unordered_map<std::string, int> configured_printers_index_;
 
