@@ -7,12 +7,12 @@
 
 #include <memory>
 
-#include "third_party/blink/renderer/core/geometry/dom_point_init.h"
-#include "third_party/blink/renderer/core/geometry/dom_point_read_only.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
-#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 
 namespace blink {
+
+class DOMPointReadOnly;
+class TransformationMatrix;
 
 DOMFloat32Array* transformationMatrixToDOMFloat32Array(
     const TransformationMatrix&);
