@@ -12,6 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/login/quick_unlock/auth_token.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -237,9 +238,9 @@ void FingerprintHandler::HandleStartEnroll(const base::ListValue* args) {
   // Silently fail if auth token is incorrect.
   quick_unlock::QuickUnlockStorage* quick_unlock_storage =
       quick_unlock::QuickUnlockFactory::GetForProfile(profile_);
-  if (quick_unlock_storage->GetAuthTokenExpired())
+  if (!quick_unlock_storage->GetAuthToken())
     return;
-  if (auth_token != quick_unlock_storage->GetAuthToken())
+  if (auth_token != quick_unlock_storage->GetAuthToken()->Identifier())
     return;
 
   // Determines what the newly added fingerprint's name should be.

@@ -7,6 +7,9 @@
 #include <memory>
 
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/login/quick_unlock/auth_token.h"
+#include "chrome/browser/chromeos/login/quick_unlock/fingerprint_storage.h"
+#include "chrome/browser/chromeos/login/quick_unlock/pin_storage_prefs.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -74,18 +77,15 @@ std::string QuickUnlockStorage::CreateAuthToken(
   return *auth_token_->Identifier();
 }
 
-bool QuickUnlockStorage::GetAuthTokenExpired() {
-  return !auth_token_ || !auth_token_->Identifier().has_value();
+AuthToken* QuickUnlockStorage::GetAuthToken() {
+  if (!auth_token_ || !auth_token_->Identifier().has_value())
+    return nullptr;
+  return auth_token_.get();
 }
 
-std::string QuickUnlockStorage::GetAuthToken() {
-  if (GetAuthTokenExpired())
-    return "";
-  return *auth_token_->Identifier();
-}
-
-UserContext* QuickUnlockStorage::GetUserContext(const std::string& auth_token) {
-  if (GetAuthToken() != auth_token)
+const UserContext* QuickUnlockStorage::GetUserContext(
+    const std::string& auth_token) {
+  if (GetAuthToken() && GetAuthToken()->Identifier() != auth_token)
     return nullptr;
   return auth_token_->user_context();
 }

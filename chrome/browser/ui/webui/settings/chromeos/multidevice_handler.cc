@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_pairing_state_tracker_impl.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_urls.h"
+#include "chrome/browser/chromeos/login/quick_unlock/auth_token.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
 #include "chrome/browser/profiles/profile.h"
@@ -410,8 +411,8 @@ bool MultideviceHandler::IsAuthTokenValid(const std::string& auth_token) {
   Profile* profile = Profile::FromWebUI(web_ui());
   quick_unlock::QuickUnlockStorage* quick_unlock_storage =
       chromeos::quick_unlock::QuickUnlockFactory::GetForProfile(profile);
-  return !quick_unlock_storage->GetAuthTokenExpired() &&
-         auth_token == quick_unlock_storage->GetAuthToken();
+  return quick_unlock_storage->GetAuthToken() &&
+         auth_token == quick_unlock_storage->GetAuthToken()->Identifier();
 }
 
 multidevice_setup::MultiDeviceSetupClient::HostStatusWithDevice
