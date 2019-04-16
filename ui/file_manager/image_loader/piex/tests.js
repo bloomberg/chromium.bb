@@ -108,7 +108,7 @@ const puppeteer = require('puppeteer');
 
   for (let i = 0; i < images.length; ++i) {
     await page.evaluate((image) => {
-      window.runTest(image);
+      return window.runTest(image);
     }, images[i]);
 
     await page.mainFrame().waitForFunction('document.title == "DONE"');

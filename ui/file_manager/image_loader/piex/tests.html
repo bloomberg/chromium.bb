@@ -264,7 +264,7 @@ piex wasm raw image preview / thumbnail test page
     console.log('test: fetch time', elapsed.toFixed(3));
 
     // Extract the preview|thumbnail images, render them.
-    new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       imageBuffer.process(resolve, reject);
     }).then((result) => {
       let preview = imageBuffer.preview();
