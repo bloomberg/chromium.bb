@@ -10,6 +10,8 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/gpu/macros.h"
 #include "third_party/libyuv/include/libyuv/convert.h"
+#include "third_party/libyuv/include/libyuv/convert_from.h"
+#include "third_party/libyuv/include/libyuv/convert_from_argb.h"
 
 namespace media {
 
@@ -28,6 +30,7 @@ SupportResult IsFormatSupported(VideoPixelFormat input_format,
     VideoPixelFormat output;
     bool need_pivot;
   } kSupportFormatConversionArray[] = {
+      {PIXEL_FORMAT_ARGB, PIXEL_FORMAT_NV12, false},
       {PIXEL_FORMAT_I420, PIXEL_FORMAT_NV12, false},
       {PIXEL_FORMAT_YV12, PIXEL_FORMAT_NV12, false},
       {PIXEL_FORMAT_ABGR, PIXEL_FORMAT_NV12, true},
@@ -237,6 +240,8 @@ int LibYUVImageProcessor::DoConversion(const VideoFrame* const input,
 
       // RGB conversions. NOTE: Libyuv functions called here are named in
       // little-endian manner.
+      case PIXEL_FORMAT_ARGB:
+        return LIBYUV_FUNC(ARGBToNV12, RGB_DATA(input), Y_UV_DATA(output));
       case PIXEL_FORMAT_XBGR:
       case PIXEL_FORMAT_ABGR:
         // There is no libyuv function to convert to RGBA to NV12. Therefore, we

@@ -32,6 +32,8 @@ constexpr const base::FilePath::CharType* kNV12Image =
     FILE_PATH_LITERAL("bear_320x192.nv12.yuv");
 constexpr const base::FilePath::CharType* kRGBAImage =
     FILE_PATH_LITERAL("bear_320x192.rgba");
+constexpr const base::FilePath::CharType* kBGRAImage =
+    FILE_PATH_LITERAL("bear_320x192.bgra");
 constexpr const base::FilePath::CharType* kYV12Image =
     FILE_PATH_LITERAL("bear_320x192.yv12.yuv");
 
@@ -95,13 +97,15 @@ TEST_P(ImageProcessorSimpleParamTest, ConvertOneTimeFromMemToMem) {
   EXPECT_TRUE(ip_client->WaitForFrameProcessors());
 }
 
+// BGRA->NV12
 // I420->NV12
-// YV12->NV12
 // RGBA->NV12
+// YV12->NV12
 INSTANTIATE_TEST_SUITE_P(
     ConvertToNV12,
     ImageProcessorSimpleParamTest,
-    ::testing::Values(std::make_tuple(kI420Image, kNV12Image),
+    ::testing::Values(std::make_tuple(kBGRAImage, kNV12Image),
+                      std::make_tuple(kI420Image, kNV12Image),
                       std::make_tuple(kRGBAImage, kNV12Image),
                       std::make_tuple(kYV12Image, kNV12Image)));
 
