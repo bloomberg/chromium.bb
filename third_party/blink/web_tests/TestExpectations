@@ -3166,7 +3166,6 @@ crbug.com/626703 external/wpt/svg/text/reftests/text-text-anchor-202.svg [ Failu
 crbug.com/626703 external/wpt/svg/text/reftests/text-text-anchor-102.svg [ Failure ]
 crbug.com/626703 external/wpt/svg/text/reftests/text-text-anchor-002.svg [ Failure ]
 crbug.com/626703 external/wpt/svg/text/reftests/text-text-anchor-203.svg [ Failure ]
-crbug.com/626703 [ Retina ] external/wpt/speech-api/idlharness.window.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/svg/text/reftests/text-text-anchor-003.svg [ Failure ]
 crbug.com/626703 [ Retina ] virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStreamTrack-id.https.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/layout_ng/external/wpt/css/CSS2/abspos/abspos-containing-block-initial-009e.xht [ Timeout ]
@@ -6325,3 +6324,7 @@ crbug.com/945893 external/wpt/FileAPI/blob/Blob-array-buffer.any.html [ Skip ]
 crbug.com/945893 external/wpt/FileAPI/blob/Blob-array-buffer.any.worker.html [ Skip ]
 crbug.com/945893 external/wpt/FileAPI/blob/Blob-text.any.html [ Skip ]
 crbug.com/945893 external/wpt/FileAPI/blob/Blob-text.any.worker.html [ Skip ]
+
+# Sheriff 2019-04-16
+crbug.com/953153 virtual/speech-with-unified-autoplay/external/wpt/speech-api/idlharness.window.html [ Pass Failure ]
+crbug.com/953153 external/wpt/speech-api/idlharness.window.html [ Pass Failure ]
