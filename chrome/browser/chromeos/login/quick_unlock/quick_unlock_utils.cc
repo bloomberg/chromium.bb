@@ -9,6 +9,7 @@
 
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_split.h"
 #include "base/system/sys_info.h"
