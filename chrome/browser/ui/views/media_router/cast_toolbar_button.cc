@@ -156,7 +156,16 @@ void CastToolbarButton::ButtonPressed(views::Button* sender,
   }
 }
 
+void CastToolbarButton::AddedToWidget() {
+  ToolbarButton::AddedToWidget();
+  UpdateIcon();
+}
+
 void CastToolbarButton::UpdateIcon() {
+  // If widget isn't set, the button doesn't have access to the theme provider
+  // to set colors. Defer updating until AddedToWidget()
+  if (!GetWidget())
+    return;
   const gfx::VectorIcon& icon = GetCurrentIcon();
   SetImage(views::Button::STATE_NORMAL,
            gfx::CreateVectorIcon(icon, GetIconColor(&icon)));
