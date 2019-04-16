@@ -14,6 +14,7 @@
 #include "ash/app_list/views/apps_grid_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -396,6 +397,12 @@ void AppListItemView::SetAsAttemptedFolderTarget(bool is_target_folder) {
     SetUIState(UI_STATE_NORMAL);
 }
 
+void AppListItemView::SilentlyRequestFocus() {
+  DCHECK(!focus_silently_);
+  base::AutoReset<bool> auto_reset(&focus_silently_, true);
+  RequestFocus();
+}
+
 void AppListItemView::SetItemName(const base::string16& display_name,
                                   const base::string16& full_name) {
   const base::string16 folder_name_placeholder =
@@ -641,6 +648,8 @@ bool AppListItemView::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
 }
 
 void AppListItemView::OnFocus() {
+  if (focus_silently_)
+    return;
   apps_grid_view_->SetSelectedView(this);
 }
 

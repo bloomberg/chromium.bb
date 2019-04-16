@@ -797,11 +797,19 @@ void AppListFolderView::HideViewImmediately() {
 }
 
 void AppListFolderView::CloseFolderPage() {
-  GiveBackFocusToSearchBox();
   if (items_grid_view()->dragging())
     items_grid_view()->EndDrag(true);
+  // When a folder is closed focus |activated_folder_item_view_| but only show
+  // the selection highlight if there is already one showing.
+  const bool should_show_focus_ring_on_hide =
+      items_grid_view()->has_selected_view();
   items_grid_view()->ClearAnySelectedView();
   container_view_->ShowApps(folder_item_);
+  if (should_show_focus_ring_on_hide) {
+    GetActivatedFolderItemView()->RequestFocus();
+  } else {
+    GetActivatedFolderItemView()->SilentlyRequestFocus();
+  }
 }
 
 bool AppListFolderView::IsOEMFolder() const {
