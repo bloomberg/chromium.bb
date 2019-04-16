@@ -86,31 +86,9 @@ IsolateHolder::IsolateHolder(
 
   isolate_memory_dump_provider_.reset(
       new V8IsolateMemoryDumpProvider(this, task_runner));
-#if defined(OS_WIN)
-  {
-    void* code_range;
-    size_t size;
-    isolate_->GetCodeRange(&code_range, &size);
-    Debug::CodeRangeCreatedCallback callback =
-        DebugImpl::GetCodeRangeCreatedCallback();
-    if (code_range && size && callback)
-      callback(code_range, size);
-  }
-#endif
 }
 
 IsolateHolder::~IsolateHolder() {
-#if defined(OS_WIN)
-  {
-    void* code_range;
-    size_t size;
-    isolate_->GetCodeRange(&code_range, &size);
-    Debug::CodeRangeDeletedCallback callback =
-        DebugImpl::GetCodeRangeDeletedCallback();
-    if (code_range && callback)
-      callback(code_range);
-  }
-#endif
   isolate_memory_dump_provider_.reset();
   isolate_data_.reset();
   isolate_->Dispose();

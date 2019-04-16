@@ -17,10 +17,6 @@ EXPORTS
   RequestSingleCrashUpload_ExportThunk
   SetUploadConsent_ExportThunk
 
-  ; X64-only exports
-  RegisterNonABICompliantCodeRange_ExportThunk
-  UnregisterNonABICompliantCodeRange_ExportThunk
-
   ; From chrome_elf/crash/crash_helper.cc
   SetMetricsClientId
 
