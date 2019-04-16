@@ -54,9 +54,9 @@ class GPU_GLES2_EXPORT SharedImageRepresentation {
   bool has_context() const { return has_context_; }
 
  private:
-  SharedImageManager* manager_;
-  SharedImageBacking* backing_;
-  MemoryTypeTracker* tracker_;
+  SharedImageManager* const manager_;
+  SharedImageBacking* const backing_;
+  MemoryTypeTracker* const tracker_;
   bool has_context_ = true;
 };
 

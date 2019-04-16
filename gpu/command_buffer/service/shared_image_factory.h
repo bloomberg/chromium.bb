@@ -126,7 +126,7 @@ class GPU_GLES2_EXPORT SharedImageRepresentationFactory {
       DawnDevice device);
 
  private:
-  SharedImageManager* manager_;
+  SharedImageManager* const manager_;
   std::unique_ptr<MemoryTypeTracker> tracker_;
 };
 
