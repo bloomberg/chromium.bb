@@ -24,6 +24,7 @@
 #include "net/log/net_log_with_source.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_with_scoped_task_environment.h"
+#include "net/url_request/url_request_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -64,18 +65,22 @@ class ContextHostResolverTest : public TestWithScopedTaskEnvironment {
 };
 
 TEST_F(ContextHostResolverTest, Resolve) {
+  URLRequestContext context;
+
   MockDnsClientRuleList rules;
   rules.emplace_back("example.com", dns_protocol::kTypeA,
                      SecureDnsMode::AUTOMATIC,
                      MockDnsClientRule::Result(BuildTestDnsResponse(
                          "example.com", kEndpoint.address())),
-                     false /* delay */);
-  rules.emplace_back(
-      "example.com", dns_protocol::kTypeAAAA, SecureDnsMode::AUTOMATIC,
-      MockDnsClientRule::Result(MockDnsClientRule::EMPTY), false /* delay */);
+                     false /* delay */, &context);
+  rules.emplace_back("example.com", dns_protocol::kTypeAAAA,
+                     SecureDnsMode::AUTOMATIC,
+                     MockDnsClientRule::Result(MockDnsClientRule::EMPTY),
+                     false /* delay */, &context);
   SetMockDnsRules(std::move(rules));
 
   auto resolver = std::make_unique<ContextHostResolver>(manager_.get());
+  resolver->SetRequestContext(&context);
   std::unique_ptr<HostResolver::ResolveHostRequest> request =
       resolver->CreateRequest(HostPortPair("example.com", 100),
                               NetLogWithSource(), base::nullopt);
