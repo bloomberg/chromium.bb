@@ -43,6 +43,13 @@ struct ActionInfo {
                                           const base::DictionaryValue* dict,
                                           base::string16* error);
 
+  // Returns any action associated with the extension, whether it's specified
+  // under the "page_action", "browser_action", or "action" key (note this does
+  // *not* check system indicator).
+  // TODO(devlin): This is a crutch while moving away from the distinct action
+  // types. Remove it when that's done.
+  static const ActionInfo* GetAnyActionInfo(const Extension* extension);
+
   // Returns the action specified under the "action" key, if any.
   static const ActionInfo* GetExtensionActionInfo(const Extension* extension);
 
