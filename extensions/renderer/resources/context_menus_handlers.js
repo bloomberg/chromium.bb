@@ -105,7 +105,7 @@ function createContextMenusHandlers(isWebview) {
     };
     var name = isWebview ?
         'chromeWebViewInternal.contextMenusCreate' : 'contextMenus.create';
-    bindingUtil.sendRequest(name, $Array.from(arguments), undefined, optArgs);
+    bindingUtil.sendRequest(name, $Array.from(arguments), optArgs);
     return id;
   };
 
@@ -123,7 +123,7 @@ function createContextMenusHandlers(isWebview) {
     };
     var name = isWebview ?
         'chromeWebViewInternal.contextMenusRemove' : 'contextMenus.remove';
-    bindingUtil.sendRequest(name, $Array.from(arguments), undefined, optArgs);
+    bindingUtil.sendRequest(name, $Array.from(arguments), optArgs);
   };
 
   function updateCallback(instanceId, id, onclick) {
@@ -150,7 +150,7 @@ function createContextMenusHandlers(isWebview) {
     var name = isWebview ?
         'chromeWebViewInternal.contextMenusUpdate' :
         'contextMenus.update';
-    bindingUtil.sendRequest(name, $Array.from(arguments), undefined, optArgs);
+    bindingUtil.sendRequest(name, $Array.from(arguments), optArgs);
   };
 
   function removeAllCallback(instanceId) {
@@ -168,7 +168,7 @@ function createContextMenusHandlers(isWebview) {
     var name = isWebview ?
         'chromeWebViewInternal.contextMenusRemoveAll' :
         'contextMenus.removeAll';
-    bindingUtil.sendRequest(name, $Array.from(arguments), undefined, optArgs);
+    bindingUtil.sendRequest(name, $Array.from(arguments), optArgs);
   };
 
   return {

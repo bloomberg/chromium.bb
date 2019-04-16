@@ -115,7 +115,7 @@ function genHandle(name, failure_function) {
     replaceNotificationOptionURLs(notification_details, function(success) {
       if (success) {
         bindingUtil.sendRequest(
-            name, [id, notification_details, callback], undefined, undefined);
+            name, [id, notification_details, callback], undefined);
         return;
       }
       bindingUtil.runCallbackWithLastError(

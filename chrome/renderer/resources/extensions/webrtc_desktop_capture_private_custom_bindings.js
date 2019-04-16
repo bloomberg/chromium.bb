@@ -26,7 +26,7 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
     bindingUtil.sendRequest(
         'webrtcDesktopCapturePrivate.chooseDesktopMedia',
         [id, sources, request, $Function.bind(onRequestResult, null, id)],
-        undefined, undefined);
+        undefined);
     return id;
   });
 
@@ -35,7 +35,7 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
       delete pendingRequests[id];
       bindingUtil.sendRequest(
           'webrtcDesktopCapturePrivate.cancelChooseDesktopMedia', [id],
-          undefined, undefined);
+          undefined);
     }
   });
 });

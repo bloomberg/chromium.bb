@@ -14,7 +14,7 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
   apiFunctions.setHandleRequest('setIcon', function(details, callback) {
     setIcon(details, $Function.bind(function(args) {
       bindingUtil.sendRequest('systemIndicator.setIcon', [args, callback],
-                              undefined, undefined);
+                              undefined);
     }, this));
   });
 });

@@ -62,7 +62,6 @@ void APIBindingJSUtil::SendRequest(
     gin::Arguments* arguments,
     const std::string& name,
     const std::vector<v8::Local<v8::Value>>& request_args,
-    v8::Local<v8::Value> schemas_unused,
     v8::Local<v8::Value> options) {
   v8::Isolate* isolate = arguments->isolate();
   v8::HandleScope handle_scope(isolate);

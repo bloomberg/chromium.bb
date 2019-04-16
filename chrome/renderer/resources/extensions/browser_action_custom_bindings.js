@@ -13,7 +13,7 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
   apiFunctions.setHandleRequest('setIcon', function(details, callback) {
     setIcon(details, function(args) {
       bindingUtil.sendRequest(
-          'browserAction.setIcon', [args, callback], undefined, undefined);
+          'browserAction.setIcon', [args, callback], undefined);
     }.bind(this));
   });
 

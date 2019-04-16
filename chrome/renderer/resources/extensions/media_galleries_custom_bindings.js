@@ -101,6 +101,6 @@ apiBridge.registerCustomHook(function(bindingsAPI, extensionId) {
 
     bindingUtil.sendRequest(
         'mediaGalleries.getMetadata', [blobUuid, options, callback],
-        undefined, optArgs);
+        optArgs);
   });
 });

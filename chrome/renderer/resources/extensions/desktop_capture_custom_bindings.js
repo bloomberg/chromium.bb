@@ -31,7 +31,7 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
     bindingUtil.sendRequest('desktopCapture.chooseDesktopMedia',
                             [id, sources, target_tab,
                             $Function.bind(onRequestResult, null, id)],
-                            undefined, undefined);
+                            undefined);
     return id;
   });
 
