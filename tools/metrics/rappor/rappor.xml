@@ -277,6 +277,9 @@ components/rappor/rappor_parameters.h.
 </rappor-metric>
 
 <rappor-metric name="BackgroundSync.Register.Origin" type="UMA_RAPPOR_TYPE">
+  <obsolete>
+    No longer being logged.
+  </obsolete>
   <owner>jkarlin@chromium.org</owner>
   <summary>
     The eTLD+1 of a URL which registered a Background Sync event.

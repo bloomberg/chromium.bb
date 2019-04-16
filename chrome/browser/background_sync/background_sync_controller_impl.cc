@@ -12,8 +12,6 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/history/core/browser/history_service.h"
-#include "components/rappor/public/rappor_utils.h"
-#include "components/rappor/rappor_service_impl.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/background_sync_parameters.h"
 #include "url/gurl.h"
@@ -129,13 +127,6 @@ void BackgroundSyncControllerImpl::NotifyBackgroundSyncRegistered(
     bool is_reregistered) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (profile_->IsOffTheRecord())
-    return;
-
-  rappor::SampleDomainAndRegistryFromGURL(GetRapporServiceImpl(),
-                                          "BackgroundSync.Register.Origin",
-                                          origin.GetURL());
-
   background_sync_metrics_.MaybeRecordRegistrationEvent(origin, can_fire,
                                                         is_reregistered);
 }
@@ -217,9 +208,4 @@ base::TimeDelta BackgroundSyncControllerImpl::GetNextEventDelay(
   DCHECK_LT(num_attempts, parameters->max_sync_attempts);
   return parameters->initial_retry_delay *
          pow(parameters->retry_delay_factor, num_attempts - 1);
-}
-
-rappor::RapporServiceImpl*
-BackgroundSyncControllerImpl::GetRapporServiceImpl() {
-  return g_browser_process->rappor_service();
 }

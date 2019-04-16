@@ -20,10 +20,6 @@ namespace content {
 struct BackgroundSyncParameters;
 }  // namespace content
 
-namespace rappor {
-class RapporServiceImpl;
-}  // namespace rappor
-
 namespace url {
 class Origin;
 }  // namespace url
@@ -69,10 +65,6 @@ class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
       int num_attempts,
       blink::mojom::BackgroundSyncType sync_type,
       content::BackgroundSyncParameters* parameters) const override;
-
- protected:
-  // Virtual for testing.
-  virtual rappor::RapporServiceImpl* GetRapporServiceImpl();
 
  private:
   // Gets the site engagement penalty for |url|, which is inversely proportional
