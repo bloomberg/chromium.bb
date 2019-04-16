@@ -156,6 +156,33 @@ bool CheckTypeThenUseCount(const Event& event,
   UseCounter::Count(*document, feature);
   return true;
 }
+void RegisterWithScheduler(ExecutionContext* execution_context,
+                           const AtomicString& event_type) {
+  if (!execution_context)
+    return;
+  // TODO(altimin): Ideally we would also support tracking unregistration of
+  // event listeners, but we don't do this for performance reasons.
+  base::Optional<SchedulingPolicy::Feature> feature_for_scheduler;
+  if (event_type == event_type_names::kPageshow) {
+    feature_for_scheduler = SchedulingPolicy::Feature::kPageShowEventListener;
+  } else if (event_type == event_type_names::kPagehide) {
+    feature_for_scheduler = SchedulingPolicy::Feature::kPageHideEventListener;
+  } else if (event_type == event_type_names::kBeforeunload) {
+    feature_for_scheduler =
+        SchedulingPolicy::Feature::kBeforeUnloadEventListener;
+  } else if (event_type == event_type_names::kUnload) {
+    feature_for_scheduler = SchedulingPolicy::Feature::kUnloadEventListener;
+  } else if (event_type == event_type_names::kFreeze) {
+    feature_for_scheduler = SchedulingPolicy::Feature::kFreezeEventListener;
+  } else if (event_type == event_type_names::kResume) {
+    feature_for_scheduler = SchedulingPolicy::Feature::kResumeEventListener;
+  }
+  if (feature_for_scheduler) {
+    execution_context->GetScheduler()->RegisterStickyFeature(
+        feature_for_scheduler.value(),
+        {SchedulingPolicy::DisableBackForwardCache()});
+  }
+}
 
 }  // namespace
 
@@ -454,28 +481,7 @@ void EventTarget::AddedEventListener(
     }
   }
 
-  // TODO(altimin): Ideally we would also support tracking unregistration of
-  // event listeners, but we don't do this for performance reasons.
-  base::Optional<SchedulingPolicy::Feature> feature_for_scheduler;
-  if (event_type == event_type_names::kPageshow) {
-    feature_for_scheduler = SchedulingPolicy::Feature::kPageShowEventListener;
-  } else if (event_type == event_type_names::kPagehide) {
-    feature_for_scheduler = SchedulingPolicy::Feature::kPageHideEventListener;
-  } else if (event_type == event_type_names::kBeforeunload) {
-    feature_for_scheduler =
-        SchedulingPolicy::Feature::kBeforeUnloadEventListener;
-  } else if (event_type == event_type_names::kUnload) {
-    feature_for_scheduler = SchedulingPolicy::Feature::kUnloadEventListener;
-  } else if (event_type == event_type_names::kFreeze) {
-    feature_for_scheduler = SchedulingPolicy::Feature::kFreezeEventListener;
-  } else if (event_type == event_type_names::kResume) {
-    feature_for_scheduler = SchedulingPolicy::Feature::kResumeEventListener;
-  }
-  if (feature_for_scheduler) {
-    GetExecutionContext()->GetScheduler()->RegisterStickyFeature(
-        feature_for_scheduler.value(),
-        {SchedulingPolicy::DisableBackForwardCache()});
-  }
+  RegisterWithScheduler(GetExecutionContext(), event_type);
 
   if (event_util::IsDOMMutationEventType(event_type)) {
     if (ExecutionContext* context = GetExecutionContext()) {
