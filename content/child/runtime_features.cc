@@ -128,10 +128,6 @@ void SetIndividualRuntimeFeatures(
       !command_line.HasSwitch(switches::kDisable2dCanvasImageChromium) &&
       !command_line.HasSwitch(switches::kDisableGpu) &&
       base::FeatureList::IsEnabled(features::kCanvas2DImageChromium);
-#elif defined(OS_CHROMEOS)
-  const bool enable_canvas_2d_image_chromium =
-      !command_line.HasSwitch(switches::kDisable2dCanvasImageChromium) &&
-      !command_line.HasSwitch(switches::kDisableGpu);
 #else
   constexpr bool enable_canvas_2d_image_chromium = false;
 #endif
