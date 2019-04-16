@@ -226,26 +226,6 @@ void PerformVerificationCheck(content::BrowserContext* context) {
     InstallVerifier::Get(context)->VerifyAllExtensions();
 }
 
-std::unique_ptr<developer::ProfileInfo> CreateProfileInfo(Profile* profile) {
-  std::unique_ptr<developer::ProfileInfo> info(new developer::ProfileInfo());
-  info->is_supervised = profile->IsSupervised();
-  PrefService* prefs = profile->GetPrefs();
-  const PrefService::Preference* pref =
-      prefs->FindPreference(prefs::kExtensionsUIDeveloperMode);
-  info->is_incognito_available =
-      IncognitoModePrefs::GetAvailability(prefs) !=
-          IncognitoModePrefs::DISABLED;
-  info->is_developer_mode_controlled_by_policy = pref->IsManaged();
-  info->in_developer_mode =
-      !info->is_supervised &&
-      prefs->GetBoolean(prefs::kExtensionsUIDeveloperMode);
-  info->app_info_dialog_enabled = CanShowAppInfoDialog();
-  info->can_load_unpacked =
-      ExtensionManagementFactory::GetForBrowserContext(profile)
-          ->HasWhitelistedExtension();
-  return info;
-}
-
 // Creates a developer::LoadError from the provided data.
 developer::LoadError CreateLoadError(
     const base::FilePath& file_path,
@@ -329,6 +309,27 @@ DeveloperPrivateAPI::WebContentsData::WebContentsData(WebContentsData&& other) =
 BrowserContextKeyedAPIFactory<DeveloperPrivateAPI>*
 DeveloperPrivateAPI::GetFactoryInstance() {
   return g_developer_private_api_factory.Pointer();
+}
+
+// static
+std::unique_ptr<developer::ProfileInfo> DeveloperPrivateAPI::CreateProfileInfo(
+    Profile* profile) {
+  std::unique_ptr<developer::ProfileInfo> info(new developer::ProfileInfo());
+  info->is_supervised = profile->IsSupervised();
+  PrefService* prefs = profile->GetPrefs();
+  const PrefService::Preference* pref =
+      prefs->FindPreference(prefs::kExtensionsUIDeveloperMode);
+  info->is_incognito_available = IncognitoModePrefs::GetAvailability(prefs) !=
+                                 IncognitoModePrefs::DISABLED;
+  info->is_developer_mode_controlled_by_policy = pref->IsManaged();
+  info->in_developer_mode =
+      !info->is_supervised &&
+      prefs->GetBoolean(prefs::kExtensionsUIDeveloperMode);
+  info->app_info_dialog_enabled = CanShowAppInfoDialog();
+  info->can_load_unpacked =
+      ExtensionManagementFactory::GetForBrowserContext(profile)
+          ->HasWhitelistedExtension();
+  return info;
 }
 
 template <>
@@ -502,7 +503,8 @@ void DeveloperPrivateEventRouter::OnExtensionRuntimePermissionsChanged(
 
 void DeveloperPrivateEventRouter::OnExtensionManagementSettingsChanged() {
   std::unique_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(CreateProfileInfo(profile_)->ToValue());
+  args->Append(DeveloperPrivateAPI::CreateProfileInfo(profile_)->ToValue());
+
   std::unique_ptr<Event> event(
       new Event(events::DEVELOPER_PRIVATE_ON_PROFILE_STATE_CHANGED,
                 developer::OnProfileStateChanged::kEventName, std::move(args)));
@@ -529,7 +531,7 @@ void DeveloperPrivateEventRouter::Observe(
 
 void DeveloperPrivateEventRouter::OnProfilePrefChanged() {
   std::unique_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(CreateProfileInfo(profile_)->ToValue());
+  args->Append(DeveloperPrivateAPI::CreateProfileInfo(profile_)->ToValue());
   std::unique_ptr<Event> event(
       new Event(events::DEVELOPER_PRIVATE_ON_PROFILE_STATE_CHANGED,
                 developer::OnProfileStateChanged::kEventName, std::move(args)));
@@ -852,7 +854,8 @@ DeveloperPrivateGetProfileConfigurationFunction::
 ExtensionFunction::ResponseAction
 DeveloperPrivateGetProfileConfigurationFunction::Run() {
   std::unique_ptr<developer::ProfileInfo> info =
-      CreateProfileInfo(Profile::FromBrowserContext(browser_context()));
+      DeveloperPrivateAPI::CreateProfileInfo(
+          Profile::FromBrowserContext(browser_context()));
 
   // If this is called from the chrome://extensions page, we use this as a
   // heuristic that it's a good time to verify installs. We do this on startup,
