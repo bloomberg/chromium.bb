@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
+import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -92,7 +93,10 @@ public class TrustedWebActivityTest {
 
     private boolean isTrustedWebActivity() {
         // A key part of the Trusted Web Activity UI is the lack of browser controls.
-        return !mCustomTabActivityTestRule.getActivity().getActivityTab().canShowBrowserControls();
+        return !TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> TabBrowserControlsState
+                        .get(mCustomTabActivityTestRule.getActivity().getActivityTab())
+                        .canShow());
     }
 
     @After

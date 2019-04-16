@@ -47,6 +47,7 @@ import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabState;
@@ -622,7 +623,8 @@ public class WebappActivity extends SingleTabActivity {
                 if (navigation.hasCommitted() && navigation.isInMainFrame()) {
                     // Notify the renderer to permanently hide the top controls since they do
                     // not apply to fullscreen content views.
-                    tab.updateBrowserControlsState(tab.getBrowserControlsStateConstraints(), true);
+                    TabBrowserControlsState browserControls = TabBrowserControlsState.get(tab);
+                    browserControls.update(browserControls.getConstraints(), true);
 
                     RecordHistogram.recordBooleanHistogram(
                             HISTOGRAM_NAVIGATION_STATUS, !navigation.isErrorPage());

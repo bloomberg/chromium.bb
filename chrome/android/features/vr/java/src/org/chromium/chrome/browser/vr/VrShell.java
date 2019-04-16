@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAssociatedApp;
+import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
@@ -475,7 +476,7 @@ public class VrShell extends GvrLayout
         if (mTab != null) {
             initializeTabForVR();
             mTab.addObserver(mTabObserver);
-            mTab.updateBrowserControlsState(BrowserControlsState.HIDDEN, false);
+            TabBrowserControlsState.get(mTab).update(BrowserControlsState.HIDDEN, false);
         }
         mTabObserver.onContentChanged(mTab);
     }
@@ -793,7 +794,7 @@ public class VrShell extends GvrLayout
                 View parent = mTab.getContentView();
                 mTab.getWebContents().setSize(parent.getWidth(), parent.getHeight());
             }
-            mTab.updateBrowserControlsState(BrowserControlsState.SHOWN, false);
+            TabBrowserControlsState.get(mTab).update(BrowserControlsState.SHOWN, false);
         }
 
         mContentVirtualDisplay.destroy();

@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAssociatedApp;
+import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 import org.chromium.chrome.browser.tab.TabContextMenuItemDelegate;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabStateBrowserControlsVisibilityDelegate;
@@ -249,7 +250,7 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
     }
 
     @Override
-    public BrowserControlsVisibilityDelegate createBrowserControlsVisibilityDelegate(Tab tab) {
+    public void createBrowserControlsState(Tab tab) {
         TabStateBrowserControlsVisibilityDelegate tabDelegate =
                 new TabStateBrowserControlsVisibilityDelegate(tab) {
                     @Override
@@ -258,9 +259,11 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
                     }
                 };
 
-        if (mBrowserStateVisibilityDelegate == null) return tabDelegate;
-        return new ComposedBrowserControlsVisibilityDelegate(
-                tabDelegate, mBrowserStateVisibilityDelegate);
+        TabBrowserControlsState.create(tab,
+                mBrowserStateVisibilityDelegate == null
+                        ? tabDelegate
+                        : new ComposedBrowserControlsVisibilityDelegate(
+                                tabDelegate, mBrowserStateVisibilityDelegate));
     }
 
     @Override

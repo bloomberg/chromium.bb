@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.chrome.browser.native_page.NativePageHost;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.top.ActionModeController.ActionBarDelegate;
@@ -986,7 +987,7 @@ public class BottomSheet
         // Make sure the toolbar is visible before expanding the sheet.
         Tab tab = getActiveTab();
         if (isToolbarAndroidViewHidden() && tab != null) {
-            tab.updateBrowserControlsState(BrowserControlsState.SHOWN, false);
+            TabBrowserControlsState.get(tab).update(BrowserControlsState.SHOWN, false);
         }
 
         mBottomSheetContentContainer.setVisibility(View.VISIBLE);

@@ -502,34 +502,6 @@ void TabAndroid::CreateHistoricalTab(JNIEnv* env,
   TabAndroid::CreateHistoricalTabFromContents(web_contents());
 }
 
-void TabAndroid::UpdateBrowserControlsState(JNIEnv* env,
-                                            const JavaParamRef<jobject>& obj,
-                                            jint constraints,
-                                            jint current,
-                                            jboolean animate) {
-  content::BrowserControlsState constraints_state =
-      static_cast<content::BrowserControlsState>(constraints);
-  content::BrowserControlsState current_state =
-      static_cast<content::BrowserControlsState>(current);
-
-  chrome::mojom::ChromeRenderFrameAssociatedPtr renderer;
-  web_contents()->GetMainFrame()->GetRemoteAssociatedInterfaces()->GetInterface(
-      &renderer);
-  renderer->UpdateBrowserControlsState(constraints_state, current_state,
-                                       animate);
-
-  if (web_contents()->ShowingInterstitialPage()) {
-    chrome::mojom::ChromeRenderFrameAssociatedPtr interstitial_renderer;
-    web_contents()
-        ->GetInterstitialPage()
-        ->GetMainFrame()
-        ->GetRemoteAssociatedInterfaces()
-        ->GetInterface(&interstitial_renderer);
-    interstitial_renderer->UpdateBrowserControlsState(constraints_state,
-                                                      current_state, animate);
-  }
-}
-
 void TabAndroid::LoadOriginalImage(JNIEnv* env,
                                    const JavaParamRef<jobject>& obj) {
   content::RenderFrameHost* render_frame_host =

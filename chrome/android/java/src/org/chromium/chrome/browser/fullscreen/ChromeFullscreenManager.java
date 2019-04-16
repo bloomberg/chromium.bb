@@ -26,6 +26,8 @@ import org.chromium.chrome.browser.fullscreen.FullscreenHtmlApiHandler.Fullscree
 import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBrowserControlsOffsetHelper;
+import org.chromium.chrome.browser.tab.TabBrowserControlsState;
+import org.chromium.chrome.browser.tab.TabFullscreenHandler;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
@@ -171,7 +173,7 @@ public class ChromeFullscreenManager
                     @Override
                     public void run() {
                         if (getTab() != null) {
-                            getTab().updateFullscreenEnabledState();
+                            TabFullscreenHandler.updateEnabledState(getTab());
                         } else if (!mBrowserVisibilityDelegate.canAutoHideBrowserControls()) {
                             setPositionsForTabToNonFullscreen();
                         }
@@ -299,7 +301,7 @@ public class ChromeFullscreenManager
                     // We should hide browser controls first.
                     mPendingFullscreenOptions = options;
                     mIsEnteringPersistentModeState = true;
-                    tab.updateFullscreenEnabledState();
+                    TabFullscreenHandler.updateEnabledState(tab);
                 }
             }
 
@@ -315,7 +317,7 @@ public class ChromeFullscreenManager
             public void onFullscreenExited(Tab tab) {
                 // At this point, browser controls are hidden. Show browser controls only if it's
                 // permitted.
-                tab.updateBrowserControlsState(BrowserControlsState.SHOWN, true);
+                TabBrowserControlsState.get(tab).update(BrowserControlsState.SHOWN, true);
             }
 
             @Override
@@ -648,7 +650,7 @@ public class ChromeFullscreenManager
     @Override
     public void setPositionsForTabToNonFullscreen() {
         Tab tab = getTab();
-        if (tab == null || tab.canShowBrowserControls()) {
+        if (tab == null || TabBrowserControlsState.get(tab).canShow()) {
             setPositionsForTab(0, 0, getTopControlsHeight());
         } else {
             setPositionsForTab(-getTopControlsHeight(), getBottomControlsHeight(), 0);
