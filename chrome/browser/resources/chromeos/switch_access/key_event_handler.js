@@ -5,7 +5,7 @@
 /**
  * Class to handle keyboard input.
  */
-class KeyboardHandler {
+class KeyEventHandler {
   /**
    * @param {!SwitchAccessInterface} switchAccess
    */
@@ -66,7 +66,6 @@ class KeyboardHandler {
 
   /**
    * Run the command associated with the passed keyboard event.
-   *
    * @param {!Event} event
    * @private
    */

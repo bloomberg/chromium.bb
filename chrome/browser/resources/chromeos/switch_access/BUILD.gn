@@ -47,7 +47,7 @@ run_jsbundler("switch_access_copied_files") {
     "icons/scrollUpOrBackward.svg",
     "icons/select.svg",
     "icons/showContextMenu.svg",
-    "keyboard_handler.js",
+    "key_event_handler.js",
     "menu_manager.js",
     "menu_panel.css",
     "menu_panel.html",
@@ -160,7 +160,7 @@ js_type_check("closure_compile") {
     ":back_button_manager",
     ":background",
     ":commands",
-    ":keyboard_handler",
+    ":key_event_handler",
     ":menu_manager",
     ":menu_panel_interface",
     ":navigation_manager",
@@ -223,7 +223,7 @@ js_library("commands") {
   ]
 }
 
-js_library("keyboard_handler") {
+js_library("key_event_handler") {
   deps = [
     ":switch_access_interface",
   ]
@@ -259,7 +259,7 @@ js_library("switch_access") {
   deps = [
     ":auto_scan_manager",
     ":commands",
-    ":keyboard_handler",
+    ":key_event_handler",
     ":menu_panel_interface",
     ":navigation_manager",
     ":preferences",
