@@ -11,10 +11,12 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_profile_comparator.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/common/autofill_clock.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -29,7 +31,39 @@ using testing::ResultOf;
 
 namespace {
 const std::string TEST_APP_LOCALE = "en-US";
+
+template <typename T>
+bool CompareElements(T* a, T* b) {
+  return a->Compare(*b) < 0;
 }
+
+template <typename T>
+bool ElementsEqual(T* a, T* b) {
+  return a->Compare(*b) == 0;
+}
+
+// Verifies that two vectors have the same elements (according to T::Compare)
+// while ignoring order. This is useful because multiple profiles or credit
+// cards that are added to the SQLite DB within the same second will be returned
+// in GUID (aka random) order.
+template <typename T>
+void ExpectSameElements(const std::vector<T*>& expectations,
+                        const std::vector<T*>& results) {
+  ASSERT_EQ(expectations.size(), results.size());
+
+  std::vector<T*> expectations_copy = expectations;
+  std::sort(expectations_copy.begin(), expectations_copy.end(),
+            CompareElements<T>);
+  std::vector<T*> results_copy = results;
+  std::sort(results_copy.begin(), results_copy.end(), CompareElements<T>);
+
+  EXPECT_EQ(std::mismatch(results_copy.begin(), results_copy.end(),
+                          expectations_copy.begin(), ElementsEqual<T>)
+                .first,
+            results_copy.end());
+}
+
+}  // anonymous namespace
 
 class SuggestionSelectionTest : public testing::Test {
  public:
@@ -148,6 +182,52 @@ TEST_F(SuggestionSelectionTest, GetPrefixMatchedSuggestions_LimitProfiles) {
                     return profile_ptr->GetRawInfo(NAME_FIRST);
                   },
                   Not(base::ASCIIToUTF16("Marie")))));
+}
+
+TEST_F(SuggestionSelectionTest, GetPrefixMatchedSuggestions_SkipInvalid) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{features::kAutofillProfileServerValidation,
+                            features::kAutofillProfileClientValidation},
+      /*disabled_features=*/{});
+
+  const std::unique_ptr<AutofillProfile> profile_server_invalid =
+      CreateProfileUniquePtr("Marion");
+  const std::unique_ptr<AutofillProfile> profile_client_invalid =
+      CreateProfileUniquePtr("Bob");
+  const std::unique_ptr<AutofillProfile> profile_valid =
+      CreateProfileUniquePtr("Rose");
+  const std::unique_ptr<AutofillProfile> profile_client_invalid_country_empty =
+      CreateProfileUniquePtr("Lost");
+
+  profile_server_invalid->SetValidityState(
+      ADDRESS_HOME_STATE, AutofillProfile::INVALID, AutofillProfile::SERVER);
+  profile_client_invalid->SetValidityState(
+      ADDRESS_HOME_STATE, AutofillProfile::INVALID, AutofillProfile::CLIENT);
+  profile_client_invalid_country_empty->SetValidityState(
+      ADDRESS_HOME_STATE, AutofillProfile::INVALID, AutofillProfile::CLIENT);
+  profile_client_invalid_country_empty->SetRawInfo(ADDRESS_HOME_COUNTRY,
+                                                   base::ASCIIToUTF16(""));
+
+  const std::vector<AutofillProfile*> profiles_data = {
+      profile_server_invalid.get(), profile_client_invalid.get(),
+      profile_valid.get(), profile_client_invalid_country_empty.get()};
+
+  std::vector<AutofillProfile*> matched_profiles;
+  auto suggestions = GetPrefixMatchedSuggestions(
+      AutofillType(ADDRESS_HOME_STATE), GetCanonicalUtf16Content("C"),
+      comparator_, profiles_data, &matched_profiles);
+
+  ASSERT_EQ(2U, suggestions.size());
+  ASSERT_EQ(2U, matched_profiles.size());
+  EXPECT_THAT(suggestions,
+              ElementsAre(Field(&Suggestion::value, base::ASCIIToUTF16("CA")),
+                          Field(&Suggestion::value, base::ASCIIToUTF16("CA"))));
+
+  std::vector<AutofillProfile*> expected_result;
+  expected_result.push_back(profile_valid.get());
+  expected_result.push_back(profile_client_invalid_country_empty.get());
+  ExpectSameElements(matched_profiles, expected_result);
 }
 
 TEST_F(SuggestionSelectionTest, GetUniqueSuggestions_SingleDedupe) {

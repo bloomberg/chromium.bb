@@ -86,4 +86,9 @@ AutofillDataModel::ValidityState AutofillDataModel::GetValidityState(
   return AutofillDataModel::UNSUPPORTED;
 }
 
+bool AutofillDataModel::ShouldSkipFillingOrSuggesting(
+    ServerFieldType type) const {
+  return false;
+}
+
 }  // namespace autofill
