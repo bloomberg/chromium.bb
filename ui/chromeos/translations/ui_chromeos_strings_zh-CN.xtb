@@ -284,6 +284,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> 文件</translation>
 <translation id="457386861538956877">更多...</translation>
 <translation id="4582497162516204941">通过 Linux（测试版）安装</translation>
+<translation id="4584780943629874245">与插件虚拟机共享</translation>
 <translation id="4631887759990505102">艺术家</translation>
 <translation id="4656293982926141856">此计算机</translation>
 <translation id="4669606053856530811">“<ph name="SOURCE_NAME" />”的成员将不再能够访问这些内容（除非与他们共享了这些内容）。</translation>
@@ -519,6 +520,7 @@
 <translation id="7339898014177206373">打开新的窗口</translation>
 <translation id="7348749398828259943">美式 Workman 国际键盘</translation>
 <translation id="7359359531237882347">正在复制 <ph name="NUMBER_OF_ITEMS" /> 项内容…</translation>
+<translation id="7379734276381389090">与插件虚拟机共享了 <ph name="NUMBER_OF_ITEMS" /> 个文件夹</translation>
 <translation id="7389722738210761877">泰语键盘(TIS 820-2531)</translation>
 <translation id="7396038720194014279">印地语键盘（注音）</translation>
 <translation id="7417453074306512035">埃塞俄比亚语键盘</translation>
@@ -581,6 +583,7 @@
 <translation id="7969525169268594403">斯洛维尼亚语</translation>
 <translation id="7982283708762922719">高度</translation>
 <translation id="7987485481246785146">索拉尼库尔德语（阿拉伯语字母）键盘</translation>
+<translation id="7990715602172183602">与插件虚拟机共享了 1 个文件夹</translation>
 <translation id="799547531016638432">删除快捷方式</translation>
 <translation id="799923393800005025">可以查看</translation>
 <translation id="8008366997883261463">杰克罗素梗犬</translation>
@@ -621,6 +624,7 @@
 <translation id="8342318071240498787">已存在具有相同名称的文件或目录。</translation>
 <translation id="8391950649760071442">音译(emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">尺寸</translation>
+<translation id="8400874747056634633">管理与插件虚拟机的共享</translation>
 <translation id="8412586565681117057">速成输入法</translation>
 <translation id="8418113698656761985">罗马尼亚语键盘</translation>
 <translation id="8432745813735585631">英语（美国）Colemak 键盘</translation>

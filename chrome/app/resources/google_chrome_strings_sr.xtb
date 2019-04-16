@@ -42,6 +42,7 @@
 <translation id="1773601347087397504">Пронађи помоћ за коришћење Chrome ОС-а</translation>
 <translation id="1795405610103747296">Инсталирајте Chrome на телефону. Послаћемо вам SMS на телефон: <ph name="PHONE_NUMBER" /></translation>
 <translation id="1812689907177901597">Када то укључите, можете да се пријављујете на Google сајтове, као што је Gmail, али се не пријављујете у Chrome</translation>
+<translation id="1815759068706561639">Датотека <ph name="FILE_NAME" /> је опасна, па ју је Chrome блокирао. Штити вас напредна заштита.</translation>
 <translation id="1860536484129686729">Chrome тражи дозволу да приступи камери за овај сајт</translation>
 <translation id="1873233029667955273">Google Chrome није подразумевани прегледач</translation>
 <translation id="1874309113135274312">Google Chrome бета (mDNS-In)</translation>
@@ -60,7 +61,6 @@
 <translation id="2290014774651636340">Недостају шифре за Google API. Неке функције Google Chrome-а ће бити онемогућене.</translation>
 <translation id="2290095356545025170">Да ли стварно желите да деинсталирате Google Chrome?</translation>
 <translation id="2309047409763057870">Ово је секундарна инсталација Google Chrome-а па не можете да га подесите као подразумевани прегледач.</translation>
-<translation id="2334084861041072223">Ауторска права <ph name="YEAR" />. Google Inc. Сва права задржана.</translation>
 <translation id="2346876346033403680">Неко се претходно пријавио у Chrome на овом рачунару као <ph name="ACCOUNT_EMAIL_LAST" />. Ако то није ваш налог, направите новог Chrome корисника да би информације биле раздвојене.
 
 Ако се ипак пријавите, Chrome информације као што су обележивачи, историја и друга подешавања ће бити обједињене на <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
@@ -68,6 +68,7 @@
 <translation id="2429317896000329049">Google Chrome не може да синхронизује податке јер Синхронизација није доступна за домен.</translation>
 <translation id="2467438592969358367">Google Chrome жели да извезе лозинке. Унесите лозинку за Windows да бисте то омогућили.</translation>
 <translation id="2485422356828889247">Деинсталирај</translation>
+<translation id="2521856951867783208">Ова датотека може да буде опасна, па ју је Chrome блокирао. Штити вас напредна заштита.</translation>
 <translation id="2534507159460261402">Google Pay (копирано у Chrome)</translation>
 <translation id="2535429035253759792">Администратор тражи да поново покренете Chrome да бисте применили ово ажурирање</translation>
 <translation id="2580411288591421699">Није могуће инсталирати верзију Google Chrome прегледача која је иста као тренутно покренута верзија. Затворите Google Chrome и покушајте поново.</translation>
@@ -104,6 +105,7 @@
 <translation id="3451115285585441894">Додавање у Chrome...</translation>
 <translation id="345171907106878721">Додајте себе у Chrome</translation>
 <translation id="3479552764303398839">Не сада</translation>
+<translation id="3481286511616257896">Датотека <ph name="FILE_NAME" /> је можда опасна, па ју је Chrome блокирао. Штити вас напредна заштита.</translation>
 <translation id="34857402635545079">Обриши податке и из Chrome-а (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome тражи приступ вашој локацији да бисте је делили са овим сајтом</translation>
 <translation id="3576528680708590453">Администратор система је конфигурисао Chrome да отвара алтернативни прегледач за приступ URL-у <ph name="TARGET_URL_HOSTNAME" />.</translation>
@@ -116,7 +118,6 @@
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Уклони из Chrome-а...</translation>
 <translation id="386202838227397562">Затворите све прозоре Google Chrome прегледача и покушајте поново.</translation>
-<translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3873044882194371212">Отвори линк у Chrome прозору без архи&amp;вирања</translation>
 <translation id="3889417619312448367">Деинсталирај Google Chrome</translation>
 <translation id="3898493977366060150">Веб-прегледање помоћу паметних Google функција</translation>
@@ -229,12 +230,14 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="7459554271817304652">Подесите Синхронизацију како бисте сачували персонализоване функције прегледача на Веб и приступали им из Google Chrome-а на било ком рачунару.</translation>
 <translation id="7473136999113284234">Chrome се аутоматски ажурира, па увек имате најновију верзију.</translation>
 <translation id="7486227612705979895">Chrome ће приступати Диску да би приказивао предлоге на траци за адресу</translation>
+<translation id="748945194546522577">Ова датотека је опасна, па ју је Chrome блокирао. Штити вас напредна заштита.</translation>
 <translation id="7535429826459677826">Програмерска верзија Google Chrome-а</translation>
 <translation id="7552219221109926349">Приказуј Chrome ОС на овом језику</translation>
 <translation id="7561940363513215021">{0,plural, =1{Поново ћемо покренути Chrome за 1 минут}one{Поново ћемо покренути Chrome за # минут}few{Поново ћемо покренути Chrome за # минута}other{Поново ћемо покренути Chrome за # минута}}</translation>
 <translation id="7589360514048265910">Овај рачунар више неће добијати ажурирања за Google Chrome зато што Mac OS X 10.9 више није подржан.</translation>
 <translation id="7592736734348559088">Google Chrome не може да синхронизује податке зато што су подаци за пријављивање на налог застарели.</translation>
 <translation id="7626032353295482388">Добро дошли у Chrome</translation>
+<translation id="7636297873481318396">Ова датотека је опасна, па ју је Chrome блокирао. Штити вас напредна заштита.</translation>
 <translation id="7641148173327520642">Администратор система је конфигурисао Google Chrome да отвара прегледач <ph name="ALTERNATIVE_BROWSER_NAME" /> да би приступао <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7651907282515937834">Chrome Enterprise логотип</translation>
 <translation id="7747138024166251722">Програм за инсталацију није могао да направи привремени директоријум. Проверите да ли имате слободног простора на диску, као и дозволу да инсталирате софтвер.</translation>
@@ -283,6 +286,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="8669527147644353129">Google Chrome помоћник</translation>
 <translation id="8679801911857917785">Контролише и страницу која се приказује када покренете Chrome.</translation>
 <translation id="870251953148363156">Ажурирај &amp;Google Chrome</translation>
+<translation id="8704255848199359374">Користи исту проверу правописа као Google претрага. Текст који унесете у прегледач се шаље Google-у. То увек можете да промените у подешавањима.</translation>
 <translation id="873133009373065397">Google Chrome не може да одреди ни да подеси подразумевани прегледач</translation>
 <translation id="8736674169840206667">Администратор захтева да поново покренете Chrome да бисте применили ажурирање</translation>
 <translation id="8788264404293392165">Овај језик се користи за приказивање корисничког интерфејса Chrome ОС-а</translation>

@@ -30,6 +30,7 @@
 <translation id="1929939181775079593">Chromium no responde. ¿Quieres reiniciarlo ahora?</translation>
 <translation id="1966382378801805537">Chromium no puede determinar ni establecer el navegador predeterminado</translation>
 <translation id="2008474315282236005">Esta acción borrará 1 elemento de este dispositivo. Si más adelante deseas recuperar los datos, accede a tu cuenta en Chromium como <ph name="USER_EMAIL" />.</translation>
+<translation id="2037988709973327241">Chromium bloqueó <ph name="FILE_NAME" /> porque es un archivo peligroso. La "Protección avanzada" se encarga de tu seguridad.</translation>
 <translation id="2117378023188580026">Tu administrador te solicita que reinicies Chromium para aplicar esta actualización</translation>
 <translation id="2119636228670142020">Acerca de &amp;Chromium OS</translation>
 <translation id="2178765360243863853">Debes reiniciar Chromium ahora</translation>
@@ -61,6 +62,7 @@
 <translation id="3068515742935458733">Envía a Google informes de fallos y <ph name="UMA_LINK" /> para ayudar a mejorar Chromium.</translation>
 <translation id="3103660991484857065">El instalador no pudo descomprimir el archivo. Descarga Chromium nuevamente.</translation>
 <translation id="3130323860337406239">Chromium está usando tu micrófono.</translation>
+<translation id="3154325651427862069">Chromium bloqueó <ph name="FILE_NAME" /> porque podría ser un archivo peligroso. La "Protección avanzada" se encarga de tu seguridad.</translation>
 <translation id="3155163173539279776">Reiniciar Chromium</translation>
 <translation id="3179665906251668410">Abrir vínculo en una ventana de navegación de incó&amp;gnito de Chromium</translation>
 <translation id="3190315855212034486">¡Vaya! Se ha producido un bloqueo en Chromium. ¿Quieres reiniciar el navegador ahora?</translation>
@@ -86,6 +88,7 @@
 <translation id="388648406173476553">Personaliza y controla Chromium. Una alerta necesita tu atención. Haz clic para ver los detalles.</translation>
 <translation id="3889543394854987837">Haz clic en tu nombre para abrir Chromium y empezar a navegar.</translation>
 <translation id="3898493977366060150">Navegación en Internet con las funciones inteligentes de Google</translation>
+<translation id="3931244652999881512">Chromium bloqueó este archivo porque es peligroso. La "Protección avanzada" se encarga de tu seguridad.</translation>
 <translation id="3965668104013180445">{0,plural, =1{El SO Chromium se reiniciará en una hora}other{El SO Chromium se reiniciará en # horas}}</translation>
 <translation id="4036079820698952681">Informa tu <ph name="BEGIN_LINK" />configuración actual<ph name="END_LINK" /> para ayudarnos a mejorar Chromium</translation>
 <translation id="4050175100176540509">La última versión proporciona importantes mejoras de seguridad y nuevas funciones.</translation>
@@ -136,6 +139,7 @@
 <translation id="5680901439334282664">acceder a Chromium</translation>
 <translation id="5698481217667032250">Mostrar Chromium en este idioma</translation>
 <translation id="5712253116097046984">Tu administrador te solicita que reinicies el SO Chromium para aplicar esta actualización</translation>
+<translation id="5726979195371243087">Chromium bloqueó este archivo porque podría ser peligroso. La "Protección avanzada" se encarga de tu seguridad.</translation>
 <translation id="5756484659843248772">Este idioma se usa para mostrar la IU del Sistema operativo Chromium</translation>
 <translation id="5768914737813585044">Mostrar el SO Chromium en este idioma</translation>
 <translation id="5796460469508169315">Chromium está casi listo.</translation>
@@ -246,6 +250,7 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="8667808506758191620">Tu <ph name="DEVICE_TYPE" /> está actualizado.</translation>
 <translation id="8697124171261953979">También controla qué página se muestra al iniciar Chromium o al realizar búsquedas desde el cuadro multifunción.</translation>
 <translation id="8704119203788522458">Este es tu Chromium</translation>
+<translation id="8704255848199359374">Se usará el mismo corrector ortográfico que se emplea en la Búsqueda de Google. El texto que escribas en el navegador se enviará a Google. Puedes modificar este comportamiento en la configuración en cualquier momento.</translation>
 <translation id="8796602469536043152">Chromium necesita permiso para acceder a tu cámara y micrófono para este sitio</translation>
 <translation id="8803635938069941624">Condiciones del Sistema operativo Chromium</translation>
 <translation id="8821041990367117597">Chromium no pudo sincronizar los datos porque los datos de acceso de la cuenta están obsoletos.</translation>

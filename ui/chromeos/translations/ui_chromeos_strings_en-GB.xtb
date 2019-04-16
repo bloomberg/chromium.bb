@@ -284,6 +284,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> file</translation>
 <translation id="457386861538956877">More...</translation>
 <translation id="4582497162516204941">Install with Linux (Beta)</translation>
+<translation id="4584780943629874245">Share with Plugin VM</translation>
 <translation id="4631887759990505102">Artist</translation>
 <translation id="4656293982926141856">This computer</translation>
 <translation id="4669606053856530811">Members of '<ph name="SOURCE_NAME" />' will lose access unless these items are shared with them.</translation>
@@ -524,6 +525,7 @@
 <translation id="7339898014177206373">New window</translation>
 <translation id="7348749398828259943">US Workman international keyboard</translation>
 <translation id="7359359531237882347">Copying <ph name="NUMBER_OF_ITEMS" /> items…</translation>
+<translation id="7379734276381389090"><ph name="NUMBER_OF_ITEMS" /> folders shared with Plugin VM</translation>
 <translation id="7389722738210761877">Thai keyboard (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Hindi keyboard (Phonetic)</translation>
 <translation id="7417453074306512035">Ethiopic keyboard</translation>
@@ -586,6 +588,7 @@
 <translation id="7969525169268594403">Slovenian</translation>
 <translation id="7982283708762922719">Height</translation>
 <translation id="7987485481246785146">Sorani Kurdish Arabic-based keyboard</translation>
+<translation id="7990715602172183602">One folder shared with Plugin VM</translation>
 <translation id="799547531016638432">Remove shortcut</translation>
 <translation id="799923393800005025">Can view</translation>
 <translation id="8008366997883261463">Jack Russell Terrier</translation>
@@ -626,6 +629,7 @@
 <translation id="8342318071240498787">A file or a directory with the same name already exists.</translation>
 <translation id="8391950649760071442">Transliteration (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Dimensions</translation>
+<translation id="8400874747056634633">Manage Plugin VM sharing</translation>
 <translation id="8412586565681117057">Quick input method</translation>
 <translation id="8418113698656761985">Romanian keyboard</translation>
 <translation id="8432745813735585631">US Colemak keyboard</translation>

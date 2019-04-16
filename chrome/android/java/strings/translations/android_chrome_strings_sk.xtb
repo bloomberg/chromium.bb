@@ -117,9 +117,9 @@
 <translation id="1883903952484604915">Moje súbory</translation>
 <translation id="1887786770086287077">Prístup k polohe je v tomto zariadení vypnutý. Zapnite ho v <ph name="BEGIN_LINK" />Nastaveniach Androidu<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" /> sa otvorí v Chrome. Pokračovaním vyjadrujete súhlas so <ph name="BEGIN_LINK1" />zmluvnými podmienkami<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />upozornením o ochrane súkromia<ph name="END_LINK2" /> Chromu.</translation>
-<translation id="189172778771606813">Zavrieť navigačný vysúvací panel</translation>
 <translation id="1919345977826869612">Reklamy</translation>
 <translation id="1919950603503897840">Výber kontaktov</translation>
+<translation id="1922076542920281912">Ak chcete povoliť Chromu používať vašu polohu, zapnite ju aj v <ph name="BEGIN_LINK" />Nastaveniach Androidu<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="19288952978244135">Znova otvorte Chrome.</translation>
 <translation id="1933845786846280168">Vybratá karta</translation>
@@ -145,6 +145,7 @@
 <translation id="2018707881002649255">Kontakty, ktoré vyberiete nižšie, sa budú zdieľať s webom <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="2021896219286479412">Ovládanie webu na celú obrazovku</translation>
 <translation id="2038563949887743358">Zapnutie žiadosti o verziu stránok pre počítače</translation>
+<translation id="2041019821020695769">Ak chcete povoliť Chromu odosielať vám upozornenia, zapnite ich aj v <ph name="BEGIN_LINK" />Nastaveniach Androidu<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529">V Chrome má údaje aj aplikácia <ph name="APP_NAME" />.</translation>
 <translation id="2045104531052923016">Ďalšie aplikácie: <ph name="GIGABYTES" /> GB</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -267,7 +268,6 @@
 <translation id="2923908459366352541">Názov je neplatný</translation>
 <translation id="2932150158123903946">Úložisko Google <ph name="APP_NAME" /></translation>
 <translation id="2956410042958133412">Tento účet je spravovaný používateľmi <ph name="PARENT_NAME_1" /> a <ph name="PARENT_NAME_2" />.</translation>
-<translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Všetky práva vyhradené.</translation>
 <translation id="2962095958535813455">Prepnuté na karty inkognito</translation>
 <translation id="2968755619301702150">Zobrazovač certifikátov</translation>
 <translation id="2979025552038692506">Vybratá karta inkognito</translation>
@@ -361,6 +361,7 @@
 <translation id="3712575778697986964">Resetovať Šetrič dát?</translation>
 <translation id="3714981814255182093">Otvorenie Panela vyhľadávania</translation>
 <translation id="3716182511346448902">Táto stránka využíva príliš veľa pamäte, a preto ju Chrome pozastavil.</translation>
+<translation id="3730075448226062617">Ak chcete povoliť Chromu používať mikrofón, zapnite ho aj v <ph name="BEGIN_LINK" />Nastaveniach Androidu<ph name="END_LINK" />.</translation>
 <translation id="3739899004075612870">Pridané do záložiek <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534">Ďalšie aplikácie: <ph name="MEGABYTES" /> MB</translation>
 <translation id="3744111561329211289">Synchronizácia na pozadí</translation>
@@ -555,7 +556,6 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5087580092889165836">Pridať kartu</translation>
 <translation id="5100237604440890931">Zbalená (rozbalíte ju kliknutím)</translation>
 <translation id="510275257476243843">Zostáva: 1 h</translation>
-<translation id="51149521070059886">Zapnúť tmavý motív, keď je v zariadení zapnutý šetrič energie</translation>
 <translation id="5123685120097942451">Karta inkognito</translation>
 <translation id="5127805178023152808">Synchronizácia je vypnutá.</translation>
 <translation id="5129038482087801250">Inštalovať webovú aplikáciu</translation>
@@ -565,7 +565,6 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5152843274749979095">Nie sú nainštalované žiadne podporované aplikácie</translation>
 <translation id="5161254044473106830">Musíte zadať názov</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{Nepodarilo sa stiahnuť 1 položku.}few{Nepodarilo sa stiahnuť # položky.}many{# downloads failed.}other{Nepodarilo sa stiahnuť # položiek.}}</translation>
-<translation id="5168917394043976756">Otvoriť navigačný vysúvací panel</translation>
 <translation id="5184329579814168207">Otvoriť v prehliadači Chrome</translation>
 <translation id="5199929503336119739">Pracovný profil</translation>
 <translation id="5210286577605176222">Prechod na predchádzajúcu kartu</translation>
@@ -676,6 +675,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5937580074298050696">Ušetrené: <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Resetovať</translation>
 <translation id="5942872142862698679">Na vyhľadávanie sa používa Google</translation>
+<translation id="5944669582486359588">V zjednodušenom režime načítava Chrome stránky rýchlejšie a využíva až o 60 percent menej dát. Navštevované stránky optimalizuje cloudová technológia Googlu.</translation>
 <translation id="5952764234151283551">Odošle Googlu webovú adresu stránky, na ktorú sa pokúšate prejsť</translation>
 <translation id="5956665950594638604">Otvorenie Centra pomoci prehliadača Chrome na novej karte</translation>
 <translation id="5958275228015807058">Nájdite stiahnuté súbory a stránky</translation>
@@ -706,6 +706,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="618993374665929060">Ďalšie podobné návrhy boli otvorené na celú výšku</translation>
 <translation id="6192333916571137726">Sťahovanie súboru</translation>
 <translation id="6192792657125177640">Výnimky</translation>
+<translation id="6194112207524046168">Ak chcete povoliť Chromu používať fotoaparát, zapnite ho aj v <ph name="BEGIN_LINK" />Nastaveniach Androidu<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Blokovať súbory cookie tretích strán</translation>
 <translation id="6206551242102657620">Spojenie je zabezpečené. Informácie o webe</translation>
 <translation id="6210748933810148297">Nie som <ph name="EMAIL" /></translation>

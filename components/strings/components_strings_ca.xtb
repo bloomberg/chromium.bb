@@ -205,7 +205,6 @@
 <translation id="2053111141626950936">Les pàgines en <ph name="LANGUAGE" /> no es traduiran.</translation>
 <translation id="2053553514270667976">Codi postal</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 suggeriment}other{# suggeriments}}</translation>
-<translation id="2068124040035837596">El compte està gestionat per <ph name="ENROLLMENT_DOMAIN" />. Això vol dir que l'administrador pot configurar el compte de manera remota.</translation>
 <translation id="2068663545051464999">S'ha penjat l'identificador <ph name="CRASH_ID" /> de l'informe d'error (context local: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="2079545284768500474">Desfés</translation>
 <translation id="20817612488360358">S'ha definit la configuració del servidor intermediari del sistema perquè es pugui utilitzar, però també s'ha especificat una configuració del servidor intermediari explícita.</translation>
@@ -271,7 +270,6 @@
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">El servidor no ha pogut comprovar que sigui <ph name="DOMAIN" /> perquè és possible que el seu certificat de seguretat s'hagi revocat. Això pot ser a causa d'una configuració incorrecta o d'un atacant que intercepta la vostra connexió.</translation>
 <translation id="2418081434543109369">El servidor de destinació, <ph name="ORIGIN" />, ha sol·licitat que s'apliqui una política de seguretat a totes les sol·licituds que rebi. Però no ha proporcionat cap política, de manera que el navegador no pot completar la sol·licitud que has fet per a <ph name="SITE" />.</translation>
-<translation id="244665789865330679">El dispositiu i el compte estan gestionats per <ph name="ENROLLMENT_DOMAIN" />. Això vol dir que l'administrador pot configurar el dispositiu i el compte de manera remota.</translation>
 <translation id="2463193859425327265">Canvia la pàgina d'inici</translation>
 <translation id="2463739503403862330">Emplena</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -473,11 +471,11 @@
 <translation id="358285529439630156">S'accepten targetes de crèdit i de prepagament.</translation>
 <translation id="3582930987043644930">Afegeix el nom</translation>
 <translation id="3583757800736429874">&amp;Refés el moviment</translation>
-<translation id="35866233670761917">Els administradors no veuen el contingut dels llocs web que visites</translation>
 <translation id="3586931643579894722">Oculta els detalls</translation>
 <translation id="3592413004129370115">Italian (sobre)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3614103345592970299">Mida 2</translation>
+<translation id="361438452008624280">Entrada "<ph name="LANGUAGE_ID" />" de la llista: l'idioma és desconegut o no s'admet.</translation>
 <translation id="3615877443314183785">Introdueix una data de caducitat vàlida</translation>
 <translation id="36224234498066874">Esborra dades de navegació</translation>
 <translation id="362276910939193118">Mostra l'historial complet</translation>
@@ -740,7 +738,6 @@
 <translation id="5095208057601539847">Província</translation>
 <translation id="5097099694988056070">Estadístiques del dispositiu, com ara l'ús de CPU o RAM</translation>
 <translation id="5097501891273180634">A2</translation>
-<translation id="5098222253617183465">El dispositiu està gestionat per <ph name="ENROLLMENT_DOMAIN" /> i el compte, per <ph name="ACCOUNT_DOMAIN" />. Això vol dir que els administradors poden configurar tant el dispositiu com el compte de manera remota.</translation>
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64 bits)</translation>
@@ -896,7 +893,6 @@
 <translation id="5967592137238574583">Edita la informació de contacte</translation>
 <translation id="5967867314010545767">Elimina de l'historial</translation>
 <translation id="5975083100439434680">Redueix</translation>
-<translation id="5977489021191000276">El dispositiu no està gestionat per cap administrador.</translation>
 <translation id="5977976211062815271">En aquest dispositiu</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">No es pot obrir l'aplicació de pagament</translation>
@@ -1042,7 +1038,6 @@
 <translation id="6903319715792422884">Per ajudar a millorar Navegació segura, envia a Google <ph name="BEGIN_WHITEPAPER_LINK" />algunes dades del sistema i contingut de les pàgines<ph name="END_WHITEPAPER_LINK" />. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">Usuari:</translation>
 <translation id="6934672428414710184">Aquest nom prové del teu Compte de Google</translation>
-<translation id="6939583532829045966">El dispositiu està gestionat per <ph name="ENROLLMENT_DOMAIN" />. Això vol dir que l'administrador pot configurar el dispositiu de manera remota.</translation>
 <translation id="6944692733090228304">Has introduït la contrasenya en un lloc web que no està gestionat per <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />. Per protegir el teu compte, no facis servir la mateixa contrasenya en altres aplicacions ni llocs web.</translation>
 <translation id="6945221475159498467">Selecciona</translation>
 <translation id="6948701128805548767">Per veure els mètodes i els requisits de recollida, selecciona una adreça</translation>
@@ -1052,7 +1047,6 @@
 <translation id="6957887021205513506">Sembla que el certificat del servidor és una falsificació.</translation>
 <translation id="6964255747740675745">No s'ha pogut analitzar la configuració de la xarxa (JSON no vàlid).</translation>
 <translation id="6965382102122355670">D'acord</translation>
-<translation id="6965456981923010628"><ph name="LEFT_PART" /> • <ph name="RIGHT_PART" /></translation>
 <translation id="6965978654500191972">Dispositiu</translation>
 <translation id="6970216967273061347">Districte</translation>
 <translation id="6973656660372572881">S'especifiquen tant els servidors intermediaris fixos com un URL d'script .pac.</translation>
@@ -1200,6 +1194,7 @@ Detalls addicionals:
 <translation id="7668654391829183341">Dispositiu desconegut</translation>
 <translation id="7669271284792375604">És possible que els atacants d'aquest lloc intentin enganyar-te perquè instal·lis programes que perjudiquen la teva navegació (per exemple, et poden canviar la pàgina d'inici o mostrar anuncis addicionals als llocs que visites).</translation>
 <translation id="7676643023259824263">Cerca el text (<ph name="TEXT" />) del porta-retalls</translation>
+<translation id="7679176406634891508">Plataforma i núvol</translation>
 <translation id="7681101578153515023">Canvia el motor de cerca</translation>
 <translation id="7682287625158474539">Enviament</translation>
 <translation id="7687186412095877299">Emplena els formularis amb les formes de pagament desades</translation>
@@ -1385,6 +1380,7 @@ Detalls addicionals:
 <translation id="8790007591277257123">&amp;Refés la supressió</translation>
 <translation id="8792621596287649091">Podries perdre l'accés al compte de <ph name="ORG_NAME" /> o tenir problemes de suplantació d'identitat. Chromium et recomana que canviïs la contrasenya ara.</translation>
 <translation id="8800988563907321413">Els suggeriments més propers es mostren aquí</translation>
+<translation id="8805819170075074995">Entrada "<ph name="LANGUAGE_ID" />" de la llista: l'entrada s'ha ignorat perquè també s'inclou a la política SpellcheckLanguage.</translation>
 <translation id="8820817407110198400">Adreces d'interès</translation>
 <translation id="883848425547221593">Altres adreces d'interès</translation>
 <translation id="884264119367021077">Adreça d’enviament</translation>
@@ -1402,12 +1398,12 @@ Detalls addicionals:
 <translation id="8932102934695377596">El rellotge està endarrerit</translation>
 <translation id="893332455753468063">Afegeix un nom</translation>
 <translation id="8938939909778640821">Targetes de crèdit i de prepagament acceptades</translation>
-<translation id="894185898663964645">L'administrador ha configurat certificats arrel personalitzats, que li poden permetre veure el contingut dels llocs web que visites.</translation>
 <translation id="8943282376843390568">Verd llima</translation>
 <translation id="8957210676456822347">Autorització de portals captius</translation>
 <translation id="8968766641738584599">Desa la targeta</translation>
 <translation id="8971063699422889582">El certificat del servidor ha caducat.</translation>
 <translation id="8975012916872825179">Inclou informació com ara números de telèfon, adreces electròniques i adreces d'enviament</translation>
+<translation id="8975263830901772334">Noms de fitxers que imprimeixes</translation>
 <translation id="8978053250194585037">Navegació segura de Google ha <ph name="BEGIN_LINK" />detectat recentment activitat de pesca de credencials<ph name="END_LINK" /> a <ph name="SITE" />. Els llocs web de pesca de credencials es fan passar per altres llocs web per enganyar-te.</translation>
 <translation id="8983003182662520383">Formes de pagament i adreces que fan servir Google Pay</translation>
 <translation id="8987927404178983737">Mes</translation>
@@ -1415,6 +1411,7 @@ Detalls addicionals:
 <translation id="8996941253935762404">Aquest lloc web conté programes perjudicials</translation>
 <translation id="8997023839087525404">El servidor ha presentat un certificat que no s'ha divulgat públicament mitjançant la política Transparència de certificats. Això és un requisit d'alguns certificats per garantir que són de confiança i una mesura de protecció contra els atacants.</translation>
 <translation id="9001074447101275817">El servidor intermediari del domini <ph name="DOMAIN" /> requereix un nom d'usuari i una contrasenya.</translation>
+<translation id="9004367719664099443">Hi ha una sessió de realitat virtual en curs</translation>
 <translation id="9005998258318286617">No es pot carregar el document PDF.</translation>
 <translation id="9008201768610948239">Ignora</translation>
 <translation id="9011424611726486705">Obre la configuració del lloc web</translation>

@@ -30,6 +30,7 @@
 <translation id="1929939181775079593">Chromium ne reagira. Ponovo pokrenuti sada?</translation>
 <translation id="1966382378801805537">Chromium ne može utvrditi niti postaviti zadani preglednik</translation>
 <translation id="2008474315282236005">Time će se izbrisati jedna stavka s uređaja. Da biste kasnije dohvatili svoje podatke, prijavite se na Chromium kao <ph name="USER_EMAIL" />.</translation>
+<translation id="2037988709973327241">Datoteka <ph name="FILE_NAME" /> opasna je, pa ju je Chromium blokirao. Štiti vas Napredna zaštita.</translation>
 <translation id="2117378023188580026">Vaš administrator traži da ponovo pokrenete Chromium radi primjene tog ažuriranja</translation>
 <translation id="2119636228670142020">O OS-u &amp;Chromium</translation>
 <translation id="2178765360243863853">Sada trebate ponovo pokrenuti Chromium</translation>
@@ -61,6 +62,7 @@
 <translation id="3068515742935458733">Pomognite nam poboljšati Chromium šaljući izvješća o rušenju programa i <ph name="UMA_LINK" /> Googleu</translation>
 <translation id="3103660991484857065">Program za instalaciju nije dekomprimirao arhivu. Ponovo preuzmite Chromium.</translation>
 <translation id="3130323860337406239">Chromium upotrebljava vaš mikrofon.</translation>
+<translation id="3154325651427862069">Datoteka <ph name="FILE_NAME" /> mogla bi biti opasna, pa ju je Chromium blokirao. Štiti vas Napredna zaštita.</translation>
 <translation id="3155163173539279776">Ponovo pokreni Chromium</translation>
 <translation id="3179665906251668410">Otvori vezu u ano&amp;nimnom prozoru Chromiuma</translation>
 <translation id="3190315855212034486">Hopa! Chromium je pao. Pokrenuti ponovo sada?</translation>
@@ -88,6 +90,7 @@
 <translation id="388648406173476553">Prilagodite Chromium i upravljajte njime. Trebate obratiti pozornost na nešto – kliknite za pojedinosti.</translation>
 <translation id="3889543394854987837">Kliknite svoje ime da biste otvorili Chromium i počeli s pregledavanjem.</translation>
 <translation id="3898493977366060150">Pregledavanje weba uz pametne Googleove značajke</translation>
+<translation id="3931244652999881512">Datoteka je opasna, pa ju je Chromium blokirao. Štiti vas Napredna zaštita.</translation>
 <translation id="3965668104013180445">{0,plural, =1{OS Chromium ponovo će se pokrenuti za sat vremena}one{OS Chromium ponovo će se pokrenuti za # sat}few{OS Chromium ponovo će se pokrenuti za # sata}other{OS Chromium ponovo će se pokrenuti za # sati}}</translation>
 <translation id="4036079820698952681">Pomognite poboljšati Chromium tako što ćete prijaviti <ph name="BEGIN_LINK" />trenutačne postavke<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">Najnovija verzija sadrži važna sigurnosna poboljšanja i nove značajke.</translation>
@@ -138,6 +141,7 @@
 <translation id="5680901439334282664">prijavite se na Chromium</translation>
 <translation id="5698481217667032250">Prikaži Chromium na tom jeziku</translation>
 <translation id="5712253116097046984">Vaš administrator traži da ponovo pokrenete OS Chromium radi primjene tog ažuriranja</translation>
+<translation id="5726979195371243087">Datoteka je možda opasna, pa ju je Chromium blokirao. Štiti vas Napredna zaštita.</translation>
 <translation id="5756484659843248772">Taj se jezik koristi za prikaz korisničkog sučelja OS-a Chromium</translation>
 <translation id="5768914737813585044">Prikaži OS Chromium na tom jeziku</translation>
 <translation id="5796460469508169315">Chromium će uskoro biti spreman.</translation>
@@ -252,6 +256,7 @@ Daljnje upute poslali smo vam na e-adresu <ph name="ACCOUNT_EMAIL" />.</translat
 <translation id="8667808506758191620"><ph name="DEVICE_TYPE" /> je ažuriran.</translation>
 <translation id="8697124171261953979">Upravlja i time koja se stranica prikazuje prilikom pokretanja Chromiuma ili pretraživanja putem višenamjenskog okvira.</translation>
 <translation id="8704119203788522458">To je vaš Chromium</translation>
+<translation id="8704255848199359374">Upotrebljava istu provjeru pravopisa koja se upotrebljava na Google pretraživanju. Tekst koji unesete u preglednik šalje se Googleu. To ponašanje možete promijeniti u postavkama kad god želite.</translation>
 <translation id="8796602469536043152">Chromium treba dopuštenje za pristup kameri i mikrofonu za ovu web-lokaciju</translation>
 <translation id="8803635938069941624">Uvjeti OS-a Chromium</translation>
 <translation id="8821041990367117597">Chromium nije mogao sinkronizirati podatke vašeg računa jer su pojedinosti prijave na račun zastarjele.</translation>

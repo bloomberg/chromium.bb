@@ -117,9 +117,9 @@
 <translation id="1883903952484604915">הקבצים שלי</translation>
 <translation id="1887786770086287077">‏הגישה למיקום כבויה בשביל המכשיר הזה. יש להפעיל אותה ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886">‏האפליקציה <ph name="APP_NAME" /> תיפתח ב-Chrome. המשך השימוש מבטא את הסכמתך ל<ph name="BEGIN_LINK1" />תנאים ולהגבלות<ph name="END_LINK1" /> ול<ph name="BEGIN_LINK2" />הודעת הפרטיות<ph name="END_LINK2" /> של Chrome.</translation>
-<translation id="189172778771606813">סגור את חלונית ההזזה לניווט</translation>
 <translation id="1919345977826869612">מודעות</translation>
 <translation id="1919950603503897840">בחירת אנשי קשר</translation>
+<translation id="1922076542920281912">‏כדי לאפשר ל-Chrome לגשת אל המיקום, צריך להפעיל את האפשרות הזו גם ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="19288952978244135">‏יש לפתוח מחדש את Chrome.</translation>
 <translation id="1933845786846280168">הכרטיסייה שנבחרה</translation>
@@ -145,6 +145,7 @@
 <translation id="2018707881002649255">אנשי הקשר שייבחרו למטה ישותפו עם האתר <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="2021896219286479412">פקדי אתר במסך מלא</translation>
 <translation id="2038563949887743358">הפעל את 'בקש אתר עבור מחשב שולחני'</translation>
+<translation id="2041019821020695769">‏כדי לאפשר ל-Chrome לשלוח לך התראות, צריך להפעיל אותן גם ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529">‏ל-<ph name="APP_NAME" /> יש נתונים גם ב-Chrome</translation>
 <translation id="2045104531052923016">‏‎<ph name="GIGABYTES" /> GB ליישומים אחרים</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -267,7 +268,6 @@
 <translation id="2923908459366352541">השם לא חוקי</translation>
 <translation id="2932150158123903946">‏נפח אחסון של <ph name="APP_NAME" />‏ Google</translation>
 <translation id="2956410042958133412">החשבון הזה מנוהל על ידי <ph name="PARENT_NAME_1" /> ו-<ph name="PARENT_NAME_2" />.</translation>
-<translation id="2960796085439532066">‏זכויות יוצרים <ph name="YEAR" /> Google Inc. כל הזכויות שמורות.</translation>
 <translation id="2962095958535813455">הוחלף לכרטיסיות גלישה בסתר</translation>
 <translation id="2968755619301702150">מציג האישורים</translation>
 <translation id="2979025552038692506">כרטיסיית הגלישה בסתר שנבחרה</translation>
@@ -361,6 +361,7 @@
 <translation id="3712575778697986964">‏לאפס את Data Saver?</translation>
 <translation id="3714981814255182093">פתח את סרגל החיפוש</translation>
 <translation id="3716182511346448902">‏הדף הזה מנצל יותר מדי זיכרון, כך שהוא הושהה על-ידי Chrome.</translation>
+<translation id="3730075448226062617">‏כדי לאפשר ל-Chrome לגשת אל המיקרופון, צריך להפעיל אותו גם ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
 <translation id="3739899004075612870">נוסף לסימניות ב-<ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534">‏‎<ph name="MEGABYTES" /> MB ליישומים אחרים</translation>
 <translation id="3744111561329211289">סינכרון ברקע</translation>
@@ -555,7 +556,6 @@
 <translation id="5087580092889165836">הוסף כרטיס</translation>
 <translation id="5100237604440890931">מכווץ - לחץ כדי להרחיב.</translation>
 <translation id="510275257476243843">נותרה שעה אחת</translation>
-<translation id="51149521070059886">עיצוב כהה מופעל כשהמכשיר עובר לחיסכון בחשמל</translation>
 <translation id="5123685120097942451">כרטיסיית גלישה בסתר</translation>
 <translation id="5127805178023152808">סנכרון כבוי</translation>
 <translation id="5129038482087801250">התקן אפליקציית אינטרנט</translation>
@@ -565,7 +565,6 @@
 <translation id="5152843274749979095">לא מותקנות אפליקציות נתמכות</translation>
 <translation id="5161254044473106830">יש להזין כותרת</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{הורדה אחת נכשלה.}two{# הורדות נכשלו.}many{# הורדות נכשלו.}other{# הורדות נכשלו.}}</translation>
-<translation id="5168917394043976756">פתח את חלונית ההזזה לניווט</translation>
 <translation id="5184329579814168207">‏פתח ב-Chrome</translation>
 <translation id="5199929503336119739">פרופיל עבודה</translation>
 <translation id="5210286577605176222">חזרה לכרטיסייה הקודמת</translation>
@@ -676,6 +675,7 @@
 <translation id="5937580074298050696"><ph name="AMOUNT" /> נחסכו</translation>
 <translation id="5939518447894949180">אפס</translation>
 <translation id="5942872142862698679">‏שימוש ב-Google לחיפוש</translation>
+<translation id="5944669582486359588">‏במצב טעינה מהירה, Chrome טוען דפים מהר יותר ומפחית את השימוש בנתונים בשיעור של עד 60 אחוזים. טכנולוגיית הענן של Google מבצעת אופטימיזציה של הדפים שנכנסים אליהם.</translation>
 <translation id="5952764234151283551">‏שליחת כתובת האתר של הדף שאליו ניסית להגיע אל Google</translation>
 <translation id="5956665950594638604">‏פתיחת מרכז העזרה של Chrome בכרטיסייה חדשה</translation>
 <translation id="5958275228015807058">הקבצים והדפים שלך נמצאים ב'הורדות'</translation>
@@ -706,6 +706,7 @@
 <translation id="618993374665929060">'עוד דברים כאלה' נפתח בגובה מלא</translation>
 <translation id="6192333916571137726">קובץ הורדה</translation>
 <translation id="6192792657125177640">יוצאי דופן</translation>
+<translation id="6194112207524046168">‏כדי לאפשר ל-Chrome לגשת אל המצלמה, צריך להפעיל אותה גם ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">‏חסום קובצי Cookie של צד שלישי</translation>
 <translation id="6206551242102657620">החיבור מאובטח. פרטי האתר</translation>
 <translation id="6210748933810148297">אינך <ph name="EMAIL" />?</translation>

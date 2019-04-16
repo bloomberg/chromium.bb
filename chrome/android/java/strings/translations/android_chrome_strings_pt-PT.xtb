@@ -117,9 +117,9 @@
 <translation id="1883903952484604915">Os meus ficheiros</translation>
 <translation id="1887786770086287077">O acesso à localização está desativado para este dispositivo. Ative-o nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886">A aplicação <ph name="APP_NAME" /> será aberta no Chrome. Ao continuar, aceita os <ph name="BEGIN_LINK1" />Termos de Utilização<ph name="END_LINK1" /> e o <ph name="BEGIN_LINK2" />Aviso de Privacidade<ph name="END_LINK2" /> do Chrome.</translation>
-<translation id="189172778771606813">Fechar a gaveta de navegação</translation>
 <translation id="1919345977826869612">Anúncios</translation>
 <translation id="1919950603503897840">Selecionar contactos</translation>
+<translation id="1922076542920281912">Para permitir que o Chrome aceda à sua localização, ative também a localização nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="19288952978244135">Reabra o Chrome.</translation>
 <translation id="1933845786846280168">Separador selecionado</translation>
@@ -145,6 +145,7 @@
 <translation id="2018707881002649255">Os contactos que selecionar abaixo serão partilhados com o Website <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="2021896219286479412">Controlos de site em ecrã int.</translation>
 <translation id="2038563949887743358">Ativar Pedir site para computador</translation>
+<translation id="2041019821020695769">Para permitir que o Chrome lhe envie notificações, ative também as notificações nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529">A aplicação <ph name="APP_NAME" /> também tem dados no Chrome</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB de outras aplicações</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -267,7 +268,6 @@
 <translation id="2923908459366352541">O nome é inválido</translation>
 <translation id="2932150158123903946">Armazenamento do Google <ph name="APP_NAME" /></translation>
 <translation id="2956410042958133412">Esta conta é gerida por <ph name="PARENT_NAME_1" /> e por <ph name="PARENT_NAME_2" />.</translation>
-<translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Todos os direitos reservados.</translation>
 <translation id="2962095958535813455">Mudado para separadores de navegação anónima</translation>
 <translation id="2968755619301702150">Visualizador de certificados</translation>
 <translation id="2979025552038692506">Separador de navegação anónima selecionado</translation>
@@ -361,6 +361,7 @@
 <translation id="3712575778697986964">Pretende repor a Poupança de dados?</translation>
 <translation id="3714981814255182093">Abrir a barra Localizar</translation>
 <translation id="3716182511346448902">Esta página utiliza demasiada memória, pelo que o Chrome a colocou em pausa.</translation>
+<translation id="3730075448226062617">Para permitir que o Chrome aceda ao microfone, ative também o microfone nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
 <translation id="3739899004075612870">Adicionado aos marcadores no <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB de outras aplicações</translation>
 <translation id="3744111561329211289">Sincronização em segundo plano</translation>
@@ -555,7 +556,6 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5087580092889165836">Adicionar cartão</translation>
 <translation id="5100237604440890931">Reduzido. Clique para expandir.</translation>
 <translation id="510275257476243843">Falta 1 hora</translation>
-<translation id="51149521070059886">Ativar o tema escuro quando a Poupança de energia do dispositivo estiver ativada</translation>
 <translation id="5123685120097942451">Separador de navegação anónima</translation>
 <translation id="5127805178023152808">A sincronização está desativada</translation>
 <translation id="5129038482087801250">Instalar aplicação Web</translation>
@@ -565,7 +565,6 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5152843274749979095">Nenhuma aplicação compatível instalada</translation>
 <translation id="5161254044473106830">Título obrigatório</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 transferência com falha.}other{# transferências com falha.}}</translation>
-<translation id="5168917394043976756">Abrir a gaveta de navegação</translation>
 <translation id="5184329579814168207">Abrir no Chrome</translation>
 <translation id="5199929503336119739">Perfil de trabalho</translation>
 <translation id="5210286577605176222">Ir para o separador anterior</translation>
@@ -676,6 +675,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5937580074298050696"><ph name="AMOUNT" /> poupado(s)</translation>
 <translation id="5939518447894949180">Repor</translation>
 <translation id="5942872142862698679">A utilizar o Google para pesquisa</translation>
+<translation id="5944669582486359588">No Modo Lite, o Chrome carrega páginas mais rapidamente e utiliza até menos 60 por cento de dados. A tecnologia na nuvem da Google otimiza as páginas visitadas.</translation>
 <translation id="5952764234151283551">Envia para a Google o URL de uma página à qual esteja a tentar aceder.</translation>
 <translation id="5956665950594638604">Abrir Centro de Ajuda do Chrome num novo separador</translation>
 <translation id="5958275228015807058">Encontre os seus ficheiros e páginas nas Transferências.</translation>
@@ -706,6 +706,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="618993374665929060">Mais deste género aberta à altura total</translation>
 <translation id="6192333916571137726">Transferir ficheiro</translation>
 <translation id="6192792657125177640">Excepções</translation>
+<translation id="6194112207524046168">Para permitir que o Chrome aceda à câmara, ative também a câmara nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Bloquear cookies de terceiros</translation>
 <translation id="6206551242102657620">A ligação é segura. Informações do site</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> não é o seu email?</translation>

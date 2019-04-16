@@ -290,6 +290,7 @@ Still reading?
   </issue>
   <issue id="StringFormatCount" severity="Error">
     <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values-cs/android_chrome_strings.xml"/>
+    <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values-fr/android_chrome_strings.xml"/>
     <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values-pl/android_chrome_strings.xml"/>
     <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values/android_chrome_strings.xml"/>
   </issue>

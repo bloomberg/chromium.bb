@@ -99,6 +99,7 @@
 <translation id="1616111909442424068">위트</translation>
 <translation id="1618597272655350600">현재 위치에 대한 자세한 설명을 들려줍니다.</translation>
 <translation id="1627222324347828322">고스트 화이트</translation>
+<translation id="1630688379087270943">기울임꼴 표시:</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{큼 부호}other{큼 부호 #개}}</translation>
 <translation id="1653266918374749391">이전 수준 3 제목</translation>
 <translation id="1657616855184033958">이벤트 스트림 필터 표시</translation>
@@ -320,6 +321,7 @@
 <translation id="3286390186030710347">슬라이더</translation>
 <translation id="3299925995433437805">다음 방문한 링크가 없습니다.</translation>
 <translation id="3300348286427369683">서식 있는 텍스트가 지원됩니다. 이제 ChromeVox에서 이동 명령어, 점자 커서 라우팅, 선택 등의 서식 있는 텍스트 입력란이 지원됩니다.</translation>
+<translation id="3304756947457041303">서식 있는 텍스트 표시 맞춤설정</translation>
 <translation id="3307886118343381874">표의 마지막으로 이동</translation>
 <translation id="3311969765485641742">알림을 검토하려면 Alt+Shift+A를 누릅니다.</translation>
 <translation id="3312997241656799641">다음 방문한 링크</translation>
@@ -406,6 +408,7 @@
 <translation id="3930498801443296724">인용문</translation>
 <translation id="3936394396199829062">라벤더 블러시</translation>
 <translation id="3941269780691800708">마우스 커서를 올린 텍스트를 음성으로 알려줍니다.</translation>
+<translation id="394953087167197343">맞춤법 오류 표시:</translation>
 <translation id="3962990492275676168">현재 위치부터 읽기 시작</translation>
 <translation id="3970951409746498040">샌디 브라운</translation>
 <translation id="3989324057180830702">tgl btn</translation>
@@ -452,6 +455,7 @@
 <translation id="42164919740161077">카데트 블루</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{대시}other{대시 #개}}</translation>
 <translation id="421884353938374759">color picker</translation>
+<translation id="4221071177874897997">굵게 표시:</translation>
 <translation id="4229646983878045487">date time</translation>
 <translation id="4230834257931120629">라이트 슬레이트 그레이</translation>
 <translation id="4231102694147661229">개발자 옵션 사용</translation>
@@ -754,6 +758,7 @@
 <translation id="6348869651006731065">딤 그레이</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{글머리 기호}other{글머리 기호 #개}}</translation>
 <translation id="6355910664415701303">이전 목록 항목이 없습니다.</translation>
+<translation id="6360318852623800555">서식 있는 텍스트 속성</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">이전 제목</translation>
 <translation id="6376999910001533545">마룬</translation>
@@ -929,6 +934,7 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="762020119231868829">현재 재생 중인 미디어 위젯 모두 일시중지</translation>
 <translation id="7625690649919402823">다음 표</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" />(<ph name="VARIANT" />), <ph name="GRADE" />등급</translation>
+<translation id="763535765081585392">밑줄 표시:</translation>
 <translation id="7639968568612851608">짙은 회색</translation>
 <translation id="7641134354185483015">이전 수준 3 제목이 없습니다.</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, 입력란</translation>
@@ -1164,6 +1170,7 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="8943175951035496220">오른쪽에 셀이 없습니다.</translation>
 <translation id="8943282376843390568">라임색</translation>
 <translation id="8946628535652548639"><ph name="TABLECELLROWINDEX" />행 <ph name="TABLECELLCOLUMNINDEX" />열</translation>
+<translation id="8957142051395645063">알림</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">저장 안함</translation>
 <translation id="900114243503212879">file</translation>

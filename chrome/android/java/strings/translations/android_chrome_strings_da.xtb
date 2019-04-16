@@ -117,9 +117,9 @@
 <translation id="1883903952484604915">Mine filer</translation>
 <translation id="1887786770086287077">Placeringsadgang er deaktiveret for denne enhed. Aktivér det under <ph name="BEGIN_LINK" />indstillinger for Android<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" /> åbnes i Chrome. Når du fortsætter, accepterer du Chromes <ph name="BEGIN_LINK1" />servicevilkår<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />erklæring om privatliv<ph name="END_LINK2" />.</translation>
-<translation id="189172778771606813">Luk sidemenuen</translation>
 <translation id="1919345977826869612">Annoncer</translation>
 <translation id="1919950603503897840">Vælg kontakter</translation>
+<translation id="1922076542920281912">Aktivér også placering i <ph name="BEGIN_LINK" />Android-indstillingerne<ph name="END_LINK" /> for at give Chrome adgang til din placering.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="19288952978244135">Åbn Chrome igen.</translation>
 <translation id="1933845786846280168">Valgt fane</translation>
@@ -145,6 +145,7 @@
 <translation id="2018707881002649255">De kontakter, du vælger nedenfor, deles med websitet <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="2021896219286479412">Kontrolelementer på website i fuld skærm</translation>
 <translation id="2038563949887743358">Slå computerversionen af websitet til</translation>
+<translation id="2041019821020695769">Aktivér også notifikationer i <ph name="BEGIN_LINK" />Android-indstillingerne<ph name="END_LINK" /> for at give Chrome tilladelse til at sende dig notifikationer.</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> har også data i Chrome</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB af andre apps</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -209,7 +210,7 @@
 <translation id="2501278716633472235">Gå tilbage</translation>
 <translation id="2513403576141822879">Du kan finde flere indstillinger vedrørende privatliv, sikkerhed og dataindsamling ved at gå til <ph name="BEGIN_LINK" />Synkronisering og Google-tjenester<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">Sender webadresser på de sider, du besøger, til Google</translation>
-<translation id="2526148617758225454">Datasparefunktionen er slået til. Du kan administrere den under Indstillinger.</translation>
+<translation id="2526148617758225454">Datasparefunktionen er aktiveret. Du kan administrere den i Indstillinger.</translation>
 <translation id="2532336938189706096">Webvisning</translation>
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> elementer blev slettet</translation>
 <translation id="2536728043171574184">Du ser en offlinekopi af denne side</translation>
@@ -267,7 +268,6 @@
 <translation id="2923908459366352541">Navnet er ugyldigt</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" />-lagerplads</translation>
 <translation id="2956410042958133412">Denne konto administreres af <ph name="PARENT_NAME_1" /> og <ph name="PARENT_NAME_2" />.</translation>
-<translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Alle rettigheder forbeholdes.</translation>
 <translation id="2962095958535813455">Skiftet til inkognitofaner</translation>
 <translation id="2968755619301702150">Certifikatfremviser</translation>
 <translation id="2979025552038692506">Valgt inkognitofane</translation>
@@ -361,6 +361,7 @@
 <translation id="3712575778697986964">Vil du nulstille Datasparefunktion?</translation>
 <translation id="3714981814255182093">Åbn søgefeltet</translation>
 <translation id="3716182511346448902">Denne side anvender for meget hukommelse, så Chrome har sat den på pause.</translation>
+<translation id="3730075448226062617">Aktivér også din mikrofon i <ph name="BEGIN_LINK" />Android-indstillingerne<ph name="END_LINK" /> for at give Chrome adgang til mikrofonen.</translation>
 <translation id="3739899004075612870">Tilføjet som bogmærke i <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB af andre apps</translation>
 <translation id="3744111561329211289">Synkronisering i baggrunden</translation>
@@ -503,7 +504,7 @@ Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og
 <translation id="4751476147751820511">Bevægelses- eller lyssensorer</translation>
 <translation id="4759238208242260848">Downloads</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 download er fuldført.}one{# download er fuldført.}other{# downloads er fuldført.}}</translation>
-<translation id="4766369052440583386">Datasparefunktionen er slået til</translation>
+<translation id="4766369052440583386">Datasparefunktionen er aktiveret</translation>
 <translation id="4797039098279997504">Tryk for at gå tilbage til <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">Kryptering med adgangssætning omfatter ikke betalingsmetoder og adresser fra Google Pay.
 
@@ -555,7 +556,6 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5087580092889165836">Tilføj kort</translation>
 <translation id="5100237604440890931">Skjult – klik for at udvide.</translation>
 <translation id="510275257476243843">1 time tilbage</translation>
-<translation id="51149521070059886">Aktivér mørkt tema, når enhedens strømsparefunktion er slået til</translation>
 <translation id="5123685120097942451">Inkognitofane</translation>
 <translation id="5127805178023152808">Synkronisering er slået fra</translation>
 <translation id="5129038482087801250">Installer webapp</translation>
@@ -565,7 +565,6 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5152843274749979095">Der er ikke installeret nogen understøttede apps</translation>
 <translation id="5161254044473106830">Der skal angives en titel</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 download mislykkedes.}one{# download mislykkedes.}other{# downloads mislykkedes.}}</translation>
-<translation id="5168917394043976756">Åbn sidemenuen</translation>
 <translation id="5184329579814168207">Åbn i Chrome</translation>
 <translation id="5199929503336119739">Arbejdsprofil</translation>
 <translation id="5210286577605176222">Gå til den forrige fane</translation>
@@ -676,6 +675,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5937580074298050696">Du har sparet <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Nulstil</translation>
 <translation id="5942872142862698679">Søgning via Google</translation>
+<translation id="5944669582486359588">Chrome indlæser sider hurtigere og bruger op til 60 procent mindre data i Lite-tilstand. Googles skyteknologi optimerer de sider, du besøger.</translation>
 <translation id="5952764234151283551">Sender webadressen på en side, du forsøger at åbne, til Google</translation>
 <translation id="5956665950594638604">Åbn Hjælp til Chrome i en ny fane</translation>
 <translation id="5958275228015807058">Find dine filer og sider i Downloads</translation>
@@ -706,6 +706,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="618993374665929060">"Se lignende indhold" er åbnet i fuld højde</translation>
 <translation id="6192333916571137726">Download fil</translation>
 <translation id="6192792657125177640">Undtagelser</translation>
+<translation id="6194112207524046168">Aktivér også dit kamera i <ph name="BEGIN_LINK" />Android-indstillingerne<ph name="END_LINK" /> for at give Chrome adgang til kameraet.</translation>
 <translation id="6196640612572343990">Bloker cookies fra tredjeparter</translation>
 <translation id="6206551242102657620">Forbindelsen er sikker. Websiteoplysninger</translation>
 <translation id="6210748933810148297">Ikke <ph name="EMAIL" />?</translation>

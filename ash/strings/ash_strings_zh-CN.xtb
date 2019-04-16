@@ -26,8 +26,10 @@
 <translation id="1290331692326790741">信号较弱</translation>
 <translation id="1293264513303784526">USB-C 设备（左侧端口）</translation>
 <translation id="1294929383540927798">更改锁定屏幕通知设置</translation>
+<translation id="1301069673413256657">GSM</translation>
 <translation id="1302880136325416935">显示蓝牙设置。<ph name="STATE_TEXT" /></translation>
 <translation id="1316069254387866896">一律显示任务栏</translation>
+<translation id="1341651618736211726">溢出</translation>
 <translation id="1346748346194534595">向右</translation>
 <translation id="1351937230027495976">收起菜单</translation>
 <translation id="1383876407941801731">搜索</translation>
@@ -206,6 +208,7 @@
 <translation id="4181841719683918333">语言</translation>
 <translation id="4195877955194704651">“自动点击”按钮</translation>
 <translation id="4217571870635786043">语音输入</translation>
+<translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">显示通知设置。通知已关闭</translation>
 <translation id="4269883910223712419">此设备的管理员能够：</translation>
 <translation id="4279490309300973883">正在镜像</translation>
@@ -276,6 +279,7 @@
 <translation id="544691375626129091">所有可参加的用户均已添加到此会话中。</translation>
 <translation id="5465662442746197494">需要帮助？</translation>
 <translation id="5496819745535887422">您的管理员正在回滚您的设备。设备重启后，所有数据都会被删除。</translation>
+<translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">退出会话</translation>
 <translation id="5537725057119320332">投射</translation>
 <translation id="5548285847212963613">扩展程序“<ph name="EXTENSION_NAME" />”可帮助连接到此网络。</translation>
@@ -283,6 +287,7 @@
 <translation id="5571066253365925590">蓝牙已启用</translation>
 <translation id="5597451508971090205"><ph name="DATE" /><ph name="SHORT_WEEKDAY" /></translation>
 <translation id="5600837773213129531">按 Ctrl + Alt + Z 即可停用语音反馈。</translation>
+<translation id="5625955975703555628">LTE+</translation>
 <translation id="5648021990716966815">麦克风耳机插孔</translation>
 <translation id="5669267381087807207">正在激活</translation>
 <translation id="5673434351075758678">当系统同步完您的设置后，“<ph name="FROM_LOCALE" />”即会改为“<ph name="TO_LOCALE" />”。</translation>
@@ -320,6 +325,7 @@
 <translation id="615957422585914272">显示屏幕键盘</translation>
 <translation id="6164005077879661055">删除该受监管用户后，与其相关联的所有文件和本地数据都会被永久删除，但管理员仍可以在 <ph name="MANAGEMENT_URL" /> 上查看该用户的设置和访问过的网站。</translation>
 <translation id="6165508094623778733">了解详情</translation>
+<translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">已锁定为横向</translation>
 <translation id="6259254695169772643">请使用您的触控笔进行选择</translation>
 <translation id="6267036997247669271"><ph name="NAME" />：正在激活…</translation>
@@ -356,7 +362,6 @@
 <translation id="6700713906295497288">IME 菜单按钮</translation>
 <translation id="6713285437468012787">蓝牙设备“<ph name="DEVICE_NAME" />”已配对，现可供所有用户使用。您可以通过“设置”取消此配对。</translation>
 <translation id="6715542151869432661">找不到任何移动设备。</translation>
-<translation id="671928215901716392">锁定屏幕</translation>
 <translation id="6723839937902243910">电源</translation>
 <translation id="6751826523481687655">已启用性能跟踪</translation>
 <translation id="6785414152754474415">电池电量为<ph name="PERCENTAGE" />%（正在充电）。</translation>
@@ -387,6 +392,7 @@
 <translation id="7256634071279256947">后置麦克风</translation>
 <translation id="726276584504105859">拖到此处即可使用分屏模式</translation>
 <translation id="7303365578352795231">正在通过另一设备答复。</translation>
+<translation id="7305884605064981971">EDGE</translation>
 <translation id="7348093485538360975">屏幕键盘</translation>
 <translation id="735745346212279324">VPN 连接已断开</translation>
 <translation id="7377169924702866686">大写锁定已打开。</translation>
@@ -491,9 +497,11 @@
 <translation id="8877788021141246043">设置提醒</translation>
 <translation id="8878886163241303700">正在扩展屏幕</translation>
 <translation id="890616557918890486">更改来源</translation>
+<translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google 助理不支持此语言。</translation>
 <translation id="8938800817013097409">USB-C 设备（背面右侧端口）</translation>
 <translation id="8940956008527784070">电池电量不足 (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">目前使用的是“<ph name="IME_NAME" />”</translation>
 <translation id="899350903320462459">以 <ph name="LOGIN_ID" /> 身份解锁设备即可执行通知操作</translation>
 <translation id="8995603266996330174">由 <ph name="DOMAIN" /> 管理</translation>

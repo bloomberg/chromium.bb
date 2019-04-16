@@ -29,6 +29,7 @@
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1302880136325416935">Zobraziť nastavenia Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1316069254387866896">Vždy zobrazovať poličku</translation>
+<translation id="1341651618736211726">Rozšírené</translation>
 <translation id="1346748346194534595">Doprava</translation>
 <translation id="1351937230027495976">Zbaliť ponuku</translation>
 <translation id="1383876407941801731">Vyhľadávanie</translation>
@@ -360,7 +361,6 @@
 <translation id="6700713906295497288">Tlačidlo ponuky IME</translation>
 <translation id="6713285437468012787">Zariadenie Bluetooth s názvom <ph name="DEVICE_NAME" /> bolo spárované a je k dispozícii pre všetkých používateľov. Párovanie môžete zrušiť pomocou ponuky Nastavenia.</translation>
 <translation id="6715542151869432661">Nenašli sa žiadne mobilné zariadenia.</translation>
-<translation id="671928215901716392">Uzamknúť obrazovku</translation>
 <translation id="6723839937902243910">Napájanie</translation>
 <translation id="6751826523481687655">Trasovanie výkonnosti je zapnuté</translation>
 <translation id="6785414152754474415">Batéria je nabitá na <ph name="PERCENTAGE" /> % a nabíja sa.</translation>

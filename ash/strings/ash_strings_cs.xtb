@@ -29,6 +29,7 @@
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1302880136325416935">Zobrazit nastavení Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1316069254387866896">Vždy zobrazovat poličku</translation>
+<translation id="1341651618736211726">Přetečení</translation>
 <translation id="1346748346194534595">Doprava</translation>
 <translation id="1351937230027495976">Sbalit nabídku</translation>
 <translation id="1383876407941801731">Vyhledávání</translation>
@@ -330,7 +331,7 @@
 <translation id="6284232397434400372">Rozlišení se změnilo</translation>
 <translation id="6297287540776456956">Vyberte pomocí dotykového pera oblast.</translation>
 <translation id="6310121235600822547">Displej <ph name="DISPLAY_NAME" /> byl otočen o <ph name="ROTATION" /></translation>
-<translation id="6344698853700675736">Zapnout nebo vypnout Noční režim</translation>
+<translation id="6344698853700675736">Zapnout nebo vypnout noční režim</translation>
 <translation id="6376931439017688372">Rozhraní Bluetooth je zapnuté</translation>
 <translation id="639644700271529076">CAPS LOCK je vypnutý</translation>
 <translation id="6406704438230478924">altgr</translation>
@@ -360,7 +361,6 @@
 <translation id="6700713906295497288">Tlačítko nabídky IME</translation>
 <translation id="6713285437468012787">Zařízení Bluetooth „<ph name="DEVICE_NAME" />“ bylo spárováno a je teď k dispozici všem uživatelům. Toto párování můžete odebrat pomocí Nastavení.</translation>
 <translation id="6715542151869432661">Nebyla nalezena žádná mobilní zařízení.</translation>
-<translation id="671928215901716392">Zamknout obrazovku</translation>
 <translation id="6723839937902243910">Napájení</translation>
 <translation id="6751826523481687655">Trasování výkonu je zapnuté</translation>
 <translation id="6785414152754474415">Baterie je nabita na <ph name="PERCENTAGE" /> % a nabíjí se.</translation>
@@ -381,7 +381,7 @@
 <translation id="7068360136237591149">Otevřít soubory</translation>
 <translation id="7076293881109082629">Přihlášení</translation>
 <translation id="7088960765736518739">Přístup pomocí přepínačů</translation>
-<translation id="7092922358121866860">Zobrazit nastavení Nočního režimu</translation>
+<translation id="7092922358121866860">Zobrazit nastavení nočního režimu</translation>
 <translation id="7098389117866926363">Zařízení USB Type-C (levý zadní port)</translation>
 <translation id="7131634465328662194">Budete automaticky odhlášeni.</translation>
 <translation id="7143207342074048698">Připojování</translation>

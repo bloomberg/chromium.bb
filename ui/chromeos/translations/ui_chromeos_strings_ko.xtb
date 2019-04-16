@@ -284,6 +284,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> 파일</translation>
 <translation id="457386861538956877">더보기...</translation>
 <translation id="4582497162516204941">Linux(베타)로 설치</translation>
+<translation id="4584780943629874245">플러그인 VM으로 공유</translation>
 <translation id="4631887759990505102">아티스트</translation>
 <translation id="4656293982926141856">이 컴퓨터</translation>
 <translation id="4669606053856530811">이 항목을 '<ph name="SOURCE_NAME" />'의 멤버와 공유하지 않으면 이 팀의 멤버가 항목에 더 이상 액세스할 수 없게 됩니다.</translation>
@@ -524,6 +525,7 @@
 <translation id="7339898014177206373">새 창</translation>
 <translation id="7348749398828259943">미국 워크맨(국제) 키보드</translation>
 <translation id="7359359531237882347">항목 <ph name="NUMBER_OF_ITEMS" />개 복사 중...</translation>
+<translation id="7379734276381389090">플러그인 VM으로 폴더 <ph name="NUMBER_OF_ITEMS" />개가 공유되었습니다.</translation>
 <translation id="7389722738210761877">태국어 키보드(TIS 820-2531)</translation>
 <translation id="7396038720194014279">힌디어 키보드(음역 방식)</translation>
 <translation id="7417453074306512035">에티오피아어 키보드</translation>
@@ -586,6 +588,7 @@
 <translation id="7969525169268594403">슬로베니아어</translation>
 <translation id="7982283708762922719">높이</translation>
 <translation id="7987485481246785146">소라니 쿠르드어 아랍어 기반 키보드</translation>
+<translation id="7990715602172183602">플러그인 VM으로 폴더 1개가 공유되었습니다.</translation>
 <translation id="799547531016638432">바로가기 삭제</translation>
 <translation id="799923393800005025">보기 가능</translation>
 <translation id="8008366997883261463">개</translation>
@@ -626,6 +629,7 @@
 <translation id="8342318071240498787">같은 이름을 가진 파일 또는 디렉토리가 이미 존재합니다.</translation>
 <translation id="8391950649760071442">음역(emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">크기</translation>
+<translation id="8400874747056634633">플러그인 VM 공유 관리</translation>
 <translation id="8412586565681117057">빠른 입력 방법</translation>
 <translation id="8418113698656761985">루마니아어 키보드</translation>
 <translation id="8432745813735585631">영어(미국식) 콜맥 키보드</translation>

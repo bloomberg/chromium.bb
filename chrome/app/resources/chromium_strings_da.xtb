@@ -30,6 +30,7 @@
 <translation id="1929939181775079593">Chromium svarer ikke. Vil du genstarte nu?</translation>
 <translation id="1966382378801805537">Chromium kan ikke fastlægge eller angive standardbrowseren</translation>
 <translation id="2008474315282236005">Denne handling sletter ét element på denne enhed. Hvis du senere vil hente dine data igen, skal du logge ind på Chromium som <ph name="USER_EMAIL" />.</translation>
+<translation id="2037988709973327241"><ph name="FILE_NAME" /> er skadelig, så Chromium har blokeret den. Du beskyttes af Avanceret beskyttelse.</translation>
 <translation id="2117378023188580026">Din administrator anmoder om, at du genstarter Chromium for at anvende denne opdatering</translation>
 <translation id="2119636228670142020">Om &amp;Chromium OS</translation>
 <translation id="2178765360243863853">Genstart Chromium nu</translation>
@@ -61,6 +62,7 @@
 <translation id="3068515742935458733">Hjælp med at gøre Chromium bedre ved at sende fejlrapporter og <ph name="UMA_LINK" /> til Google</translation>
 <translation id="3103660991484857065">Installationsprogrammet kunne ikke pakke arkivet ud. Download Chromium igen.</translation>
 <translation id="3130323860337406239">Chromium bruger din mikrofon.</translation>
+<translation id="3154325651427862069"><ph name="FILE_NAME" /> kan være skadelig, så Chromium har blokeret den. Du beskyttes af Avanceret beskyttelse.</translation>
 <translation id="3155163173539279776">Genstart Chromium</translation>
 <translation id="3179665906251668410">Åbn linket i et Chromium-inko&amp;gnitovindue</translation>
 <translation id="3190315855212034486">Hov! Chromium er gået ned. Vil du genstarte nu?</translation>
@@ -88,6 +90,7 @@
 <translation id="388648406173476553">Tilpas og administrer Chromium. Noget kræver din opmærksomhed – klik for at få oplysninger.</translation>
 <translation id="3889543394854987837">Klik på dit navn for at åbne Chromium og gå i gang med at browse.</translation>
 <translation id="3898493977366060150">Webbrowsing med Googles smarte funktioner</translation>
+<translation id="3931244652999881512">Denne fil er skadelig, så Chromium har blokeret den. Du beskyttes af Avanceret beskyttelse.</translation>
 <translation id="3965668104013180445">{0,plural, =1{Chromium OS genstarter om en time}one{Chromium OS genstarter om # time}other{Chromium OS genstarter om # timer}}</translation>
 <translation id="4036079820698952681">Hjælp med at gøre Chromium bedre ved at rapportere de <ph name="BEGIN_LINK" />aktuelle indstillinger<ph name="END_LINK" />.</translation>
 <translation id="4050175100176540509">Vigtige sikkerhedsforbedringer og nye funktioner er tilgængelige i den seneste version.</translation>
@@ -138,6 +141,7 @@
 <translation id="5680901439334282664">log ind på Chromium</translation>
 <translation id="5698481217667032250">Vis Chromium på dette sprog</translation>
 <translation id="5712253116097046984">Din administrator anmoder om, at du genstarter Chromium OS for at anvende denne opdatering</translation>
+<translation id="5726979195371243087">Denne fil kan være skadelig, så Chromium har blokeret den. Du beskyttes af Avanceret beskyttelse.</translation>
 <translation id="5756484659843248772">Dette sprog bruges til at vise Chromium OS-brugerfladen</translation>
 <translation id="5768914737813585044">Vis Chromium OS på dette sprog</translation>
 <translation id="5796460469508169315">Chromium er næsten klar.</translation>
@@ -252,6 +256,7 @@ Gå til din mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejlednin
 <translation id="8667808506758191620">Din <ph name="DEVICE_TYPE" /> er opdateret.</translation>
 <translation id="8697124171261953979">Den styrer også, hvilken side der vises, når du åbner Chromium eller søger via omnifeltet.</translation>
 <translation id="8704119203788522458">Dette er din Chromium-browser</translation>
+<translation id="8704255848199359374">Dette anvender den samme stavekontrol, som anvendes i Google Søgning. Tekst, som du angiver i browseren, sendes til Google. Du kan altid ændre dette i indstillingerne.</translation>
 <translation id="8796602469536043152">Chromium skal have tilladelse til at bruge dit kamera og din mikrofon på dette website</translation>
 <translation id="8803635938069941624">Vilkår for Chromium OS</translation>
 <translation id="8821041990367117597">Chromium kunne ikke synkronisere dine data, fordi loginoplysningerne for din konto er forældede.</translation>

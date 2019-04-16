@@ -8,7 +8,6 @@
 <translation id="1984705450038014246">Синхронизујте Chrome податке</translation>
 <translation id="2147651015520127414">Chrome је потврдио да је <ph name="ISSUER" /> издао сертификат овог веб-сајта.</translation>
 <translation id="2199719347983604670">Подаци из Chrome синхронизације</translation>
-<translation id="2334084861041072223">Ауторска права <ph name="YEAR" />. Google Inc. Сва права задржана.</translation>
 <translation id="2342981853652716282">Пријавите се у Chrome да би вам обележивачи, лозинке и други садржај били доступни на свим уређајима.</translation>
 <translation id="2347208864470321755">Када је ова функција укључена, Chrome ће нудити да преведе странице написане на другим језицима помоћу Google преводиоца. <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">Да бисте сачували слике, додирните Подешавања да бисте омогућили Chrome-у да користи слике</translation>
@@ -22,7 +21,6 @@
 <translation id="3282568296779691940">Пријављивање у Chrome</translation>
 <translation id="3345341804167540816">Користите Chrome свуда</translation>
 <translation id="384394811301901750">Google Chrome тренутно не може да користи камеру</translation>
-<translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3980220367029651214">Мењате налог за синхронизацију из <ph name="USER_EMAIL1" /> у <ph name="USER_EMAIL2" />. Постојећим Chrome подацима управља <ph name="DOMAIN" />. Промена ће избрисати податке са овог уређаја, али ће подаци остати на <ph name="USER_EMAIL1" />.</translation>
 <translation id="3988789688219830639">Google Chrome не може да приступа сликама или видео снимцима. Омогућите приступ у iOS Settings (Подешавања iOS-а) &gt; Privacy (Приватност) &gt; Photos (Слике).</translation>
 <translation id="4099578267706723511">Побољшајте Chrome слањем статистике коришћења и извештаја о отказивању Google-у.</translation>

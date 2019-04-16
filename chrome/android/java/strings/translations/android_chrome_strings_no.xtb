@@ -117,9 +117,9 @@
 <translation id="1883903952484604915">Mine filer</translation>
 <translation id="1887786770086287077">Posisjonstilgang er slått av for denne enheten. Slå den på i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" /> åpnes i Chrome. Ved å fortsette godtar du <ph name="BEGIN_LINK1" />vilkårene for bruk<ph name="END_LINK1" /> av Chrome og <ph name="BEGIN_LINK2" />merknaden om personvern<ph name="END_LINK2" />.</translation>
-<translation id="189172778771606813">Lukk uttrekksmenyen</translation>
 <translation id="1919345977826869612">Annonser</translation>
 <translation id="1919950603503897840">Velg kontakter</translation>
+<translation id="1922076542920281912">For å gi Chrome tilgang til posisjonen din må du også slå på posisjon i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="19288952978244135">Åpne Chrome på nytt.</translation>
 <translation id="1933845786846280168">Valgt fane</translation>
@@ -145,10 +145,11 @@
 <translation id="2018707881002649255">Kontaktene du velger nedenfor, deles med nettstedet <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="2021896219286479412">Navigering i full skjerm</translation>
 <translation id="2038563949887743358">Slå på Bruk skrivebordsversjon</translation>
+<translation id="2041019821020695769">For at Chrome skal kunne sende deg varsler må du også slå på varsler i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> har også data i Chrome</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB andre apper</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
-<translation id="2049961518639794558">Endring av filetternavnet kan føre til uventet atferd og være skadelig for enheten din.</translation>
+<translation id="2049961518639794558">Endring av filetternavnet kan føre til uventede konsekvenser og være skadelig for enheten din.</translation>
 <translation id="2056878612599315956">Nettstedet er satt på pause</translation>
 <translation id="2063713494490388661">Trykk for å søke</translation>
 <translation id="2079545284768500474">Angre</translation>
@@ -267,7 +268,6 @@
 <translation id="2923908459366352541">Navnet er ugyldig</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" />-lagring</translation>
 <translation id="2956410042958133412">Denne kontoen er administrert av <ph name="PARENT_NAME_1" /> og <ph name="PARENT_NAME_2" />.</translation>
-<translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Med enerett.</translation>
 <translation id="2962095958535813455">Byttet til inkognitofaner</translation>
 <translation id="2968755619301702150">Visningsprogram for sertifikater</translation>
 <translation id="2979025552038692506">Valgt inkognitofane</translation>
@@ -361,6 +361,7 @@
 <translation id="3712575778697986964">Vil du tilbakestille Datasparing?</translation>
 <translation id="3714981814255182093">Åpne søkeraden</translation>
 <translation id="3716182511346448902">Denne siden bruker for mye minne, så Chrome har satt den på pause.</translation>
+<translation id="3730075448226062617">For å gi Chrome tilgang til mikrofonen må du også slå på mikrofonen i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
 <translation id="3739899004075612870">Satt som bokmerke i <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB andre apper</translation>
 <translation id="3744111561329211289">Bakgrunnssynkronisering</translation>
@@ -555,7 +556,6 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5087580092889165836">Legg til et kort</translation>
 <translation id="5100237604440890931">Minimert – klikk for å utvide</translation>
 <translation id="510275257476243843">1 time igjen</translation>
-<translation id="51149521070059886">Slå på mørkt tema når strømsparing er påslått på enheten</translation>
 <translation id="5123685120097942451">Inkognitofane</translation>
 <translation id="5127805178023152808">Synkronisering er slått av</translation>
 <translation id="5129038482087801250">Installer nettprogram</translation>
@@ -565,7 +565,6 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5152843274749979095">Ingen støttede apper er installert</translation>
 <translation id="5161254044473106830">Du må oppgi en tittel</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 nedlasting mislyktes.}other{# nedlastinger mislyktes.}}</translation>
-<translation id="5168917394043976756">Åpne uttrekksmenyen</translation>
 <translation id="5184329579814168207">Åpne i Chrome</translation>
 <translation id="5199929503336119739">Jobbprofil</translation>
 <translation id="5210286577605176222">Gå til den forrige fanen</translation>
@@ -676,6 +675,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5937580074298050696"><ph name="AMOUNT" /> spart</translation>
 <translation id="5939518447894949180">Tilbakestill</translation>
 <translation id="5942872142862698679">Bruker Google til å søke</translation>
+<translation id="5944669582486359588">I forenklet modus laster Chrome inn sider raskere og bruker opptil 60 prosent mindre data. Googles skyteknologi optimaliserer sidene du besøker.</translation>
 <translation id="5952764234151283551">Sender Google nettadressen til siden du prøver å åpne</translation>
 <translation id="5956665950594638604">Åpne brukerstøtten for Chrome i en ny fane</translation>
 <translation id="5958275228015807058">Du finner filene og sidene dine under Nedlastinger</translation>
@@ -706,6 +706,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="618993374665929060">Mer av dette ble åpnet i full høyde</translation>
 <translation id="6192333916571137726">Last ned filen</translation>
 <translation id="6192792657125177640">Unntak</translation>
+<translation id="6194112207524046168">For å gi Chrome tilgang til kameraet må du også slå på kameraet i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Blokkér informasjonskapsler fra tredjeparter</translation>
 <translation id="6206551242102657620">Tilkoblingen er sikker. Informasjon om nettstedet</translation>
 <translation id="6210748933810148297">Ikke <ph name="EMAIL" />?</translation>

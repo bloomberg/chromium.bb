@@ -117,9 +117,9 @@
 <translation id="1883903952484604915">Saját fájlok</translation>
 <translation id="1887786770086287077">A helyhozzáférés ki van kapcsolva ennél az eszköznél. A funkciót az <ph name="BEGIN_LINK" />Android-beállításokban<ph name="END_LINK" /> tudja bekapcsolni.</translation>
 <translation id="1891331835972267886">A(z) <ph name="APP_NAME" /> a Chrome-ban nyílik meg. A folytatással elfogadja a Chrome <ph name="BEGIN_LINK1" />Általános Szerződési Feltételeit<ph name="END_LINK1" /> és <ph name="BEGIN_LINK2" />Adatvédelmi közleményét<ph name="END_LINK2" />.</translation>
-<translation id="189172778771606813">Navigációs fiók bezárása</translation>
 <translation id="1919345977826869612">Hirdetések</translation>
 <translation id="1919950603503897840">Névjegyek kiválasztása</translation>
+<translation id="1922076542920281912">Ahhoz, hogy a Chrome hozzáférhessen a helyadatokhoz, a helyadatokat az <ph name="BEGIN_LINK" />Android-beállítások<ph name="END_LINK" /> között is be kell kapcsolni.</translation>
 <translation id="1923695749281512248"><ph name="FILE_SIZE_WITH_UNITS" /> / <ph name="BYTES_DOWNLOADED_WITH_UNITS" /></translation>
 <translation id="19288952978244135">Nyissa meg újra a Chrome-ot.</translation>
 <translation id="1933845786846280168">Kiválasztott lap</translation>
@@ -145,6 +145,7 @@
 <translation id="2018707881002649255">Az alább kiválasztott névjegyeket megosztjuk a következő webhellyel: <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="2021896219286479412">Teljes képernyős oldal vezérlői</translation>
 <translation id="2038563949887743358">Kapcsolja be az Asztali webhely kérése funkciót</translation>
+<translation id="2041019821020695769">Ahhoz, hogy a Chrome értesítéseket küldhessen, az értesítéseket az <ph name="BEGIN_LINK" />Android-beállítások<ph name="END_LINK" /> között is be kell kapcsolni.</translation>
 <translation id="204321170514947529">A(z) <ph name="APP_NAME" /> a Chrome-ban is rendelkezik adatokkal</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB más alkalmazások által</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -267,7 +268,6 @@
 <translation id="2923908459366352541">A név érvénytelen</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" />-tárhely</translation>
 <translation id="2956410042958133412">A fiók kezelői: <ph name="PARENT_NAME_1" /> és <ph name="PARENT_NAME_2" />.</translation>
-<translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Minden jog fenntartva.</translation>
 <translation id="2962095958535813455">Átváltva az inkognitómódban használt lapokra</translation>
 <translation id="2968755619301702150">Tanúsítványmegtekintő</translation>
 <translation id="2979025552038692506">Kiválasztott inkognitólap</translation>
@@ -361,6 +361,7 @@
 <translation id="3712575778697986964">Alaphelyzetbe állítja az Adatforgalom-csökkentőt?</translation>
 <translation id="3714981814255182093">A keresősáv megnyitása</translation>
 <translation id="3716182511346448902">Ez az oldal túl sok memóriát használ, ezért a Chrome szünetelteti.</translation>
+<translation id="3730075448226062617">Ahhoz, hogy a Chrome hozzáférhessen a mikrofonhoz, a mikrofont az <ph name="BEGIN_LINK" />Android-beállítások<ph name="END_LINK" /> között is be kell kapcsolni.</translation>
 <translation id="3739899004075612870">Felvéve a(z) <ph name="PRODUCT_NAME" /> könyvjelzői közé</translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB más alkalmazások által</translation>
 <translation id="3744111561329211289">Szinkronizálás a háttérben</translation>
@@ -555,7 +556,6 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5087580092889165836">Kártya hozzáadása</translation>
 <translation id="5100237604440890931">Összecsukva – kattintson a kibontáshoz.</translation>
 <translation id="510275257476243843">1 óra van hátra</translation>
-<translation id="51149521070059886">Sötét téma bekapcsolása, amikor az eszköz Akkumulátorkímélő módja be van kapcsolva</translation>
 <translation id="5123685120097942451">Inkognitólap</translation>
 <translation id="5127805178023152808">Szinkronizálás kikapcsolva</translation>
 <translation id="5129038482087801250">Webes alkalmazás telepítése</translation>
@@ -565,7 +565,6 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5152843274749979095">Nincs telepítve támogatott alkalmazás</translation>
 <translation id="5161254044473106830">Cím megadása kötelező</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 letöltés nem sikerült.}other{# letöltés nem sikerült.}}</translation>
-<translation id="5168917394043976756">Navigációs fiók megnyitása</translation>
 <translation id="5184329579814168207">Megnyitás Chrome-ban</translation>
 <translation id="5199929503336119739">Munkaprofil</translation>
 <translation id="5210286577605176222">Ugrás az előző lapra</translation>
@@ -676,6 +675,7 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5937580074298050696"><ph name="AMOUNT" /> megtakarított adatmennyiség</translation>
 <translation id="5939518447894949180">Visszaállítás</translation>
 <translation id="5942872142862698679">A Google használata a kereséshez</translation>
+<translation id="5944669582486359588">Egyszerűsített módban a Chrome gyorsabban betölti az oldalakat, és akár 60 százalékkal kisebb adatforgalmat generál. A Google felhőtechnológiája optimalizálja a felkeresett oldalakat.</translation>
 <translation id="5952764234151283551">Az elérni kívánt oldal URL-címének elküldése a Google-nak</translation>
 <translation id="5956665950594638604">A Chrome súgójának megnyitása új lapon</translation>
 <translation id="5958275228015807058">A fájlokat és oldalakat a Letöltések között találja meg</translation>
@@ -706,6 +706,7 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="618993374665929060">További hasonlók megnyitva teljes magasságban</translation>
 <translation id="6192333916571137726">Fájl letöltése</translation>
 <translation id="6192792657125177640">Kivételek</translation>
+<translation id="6194112207524046168">Ahhoz, hogy a Chrome hozzáférhessen a kamerához, a kamerát az <ph name="BEGIN_LINK" />Android-beállítások<ph name="END_LINK" /> között is be kell kapcsolni.</translation>
 <translation id="6196640612572343990">Harmadik féltől származó cookie-k letiltása</translation>
 <translation id="6206551242102657620">A kapcsolat biztonságos. Webhelyadatok</translation>
 <translation id="6210748933810148297">Nem <ph name="EMAIL" />?</translation>

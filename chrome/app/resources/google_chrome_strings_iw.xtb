@@ -38,6 +38,7 @@
 <translation id="1773601347087397504">‏עזרה לשימוש ב-Chrome OS</translation>
 <translation id="1795405610103747296">‏יש להתקין את Chrome בטלפון שלך, ולאחר מכן נשלח הודעת SMS למספר: <ph name="PHONE_NUMBER" /></translation>
 <translation id="1812689907177901597">‏כיבוי הגדרה זו יאפשר לך להיכנס לאתרי Google, כמו Gmail, בלי להיכנס אל Chrome</translation>
+<translation id="1815759068706561639">‏<ph name="FILE_NAME" /> מסוכן, ולכן Chrome חסם אותו. ההגנה המתקדמת שומרת עליך.</translation>
 <translation id="1860536484129686729">‏Chrome זקוק להרשאת גישה למצלמה בשביל האתר הזה</translation>
 <translation id="1873233029667955273">‏Google Chrome‏ אינו דפדפן ברירת המחדל שלך</translation>
 <translation id="1874309113135274312">‏גרסת הביטא של Google Chrome‏ (mDNS-In)</translation>
@@ -56,7 +57,6 @@
 <translation id="2290014774651636340">‏המפתחות של Google API חסרים. פונקציונליות מסוימת של Google Chrome תהיה מושבתת.</translation>
 <translation id="2290095356545025170">‏האם אתה בטוח שאתה רוצה להסיר את Google Chrome?</translation>
 <translation id="2309047409763057870">‏זוהי התקנה משנית של Google Chrome, ולא ניתן להפוך אותו לדפדפן ברירת המחדל שלך.</translation>
-<translation id="2334084861041072223">‏Copyright <ph name="YEAR" /> Google Inc.‎. כל הזכויות שמורות.</translation>
 <translation id="2346876346033403680">‏מישהו נכנס בעבר ל-Chrome מהמחשב הזה כ-<ph name="ACCOUNT_EMAIL_LAST" />. אם זה לא החשבון שלך, צור משתמש חדש ל-Chrome כדי לשמור על ההפרדה של המידע שלך.
 
 אם תמשיך ותיכנס, המידע ב-Chrome, כמו סימניות, היסטוריה והגדרות אחרות, ימוזג עם <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
@@ -64,6 +64,7 @@
 <translation id="2429317896000329049">‏Google Chrome לא הצליח לסנכרן את הנתונים שלך מפני שהסנכרון אינו זמין עבור הדומיין שלך.</translation>
 <translation id="2467438592969358367">‏Google Chrome רוצה לייצא את הסיסמאות שלך. יש להקליד את הסיסמה שלך ל-Windows כדי לאפשר זאת.</translation>
 <translation id="2485422356828889247">הסר התקנה</translation>
+<translation id="2521856951867783208">‏Chrome‏ חסם את הקובץ הזה כי הוא עלול להיות מסוכן. ההגנה המתקדמת שומרת עליך.</translation>
 <translation id="2534507159460261402">‏Google Pay (‏הועתק ל-Chrome)</translation>
 <translation id="2535429035253759792">‏לפי בקשת מנהל המערכת, יש להפעיל מחדש את Chrome כדי להחיל את העדכון הזה</translation>
 <translation id="2580411288591421699">‏אין אפשרות להתקין את אותה גרסת Google Chrome הפועלת כעת. סגור את Google Chrome ונסה שוב.</translation>
@@ -100,6 +101,7 @@
 <translation id="3451115285585441894">‏הוספה ל-‏Chrome...</translation>
 <translation id="345171907106878721">‏הוסף את עצמך ל-Chrome</translation>
 <translation id="3479552764303398839">לא עכשיו</translation>
+<translation id="3481286511616257896">‏Chrome חסם את הקובץ <ph name="FILE_NAME" /> כי הוא עלול להיות מסוכן. ההגנה המתקדמת שומרת עליך.</translation>
 <translation id="34857402635545079">‏ניקוי נתונים גם מ-Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">‏Chrome זקוק לגישה למיקום שלך כדי לשתף אותו עם האתר הזה</translation>
 <translation id="3576528680708590453">‏לפי הגדרת מנהל המערכת, Google Chrome יפתח דפדפן חלופי כדי לגשת אל <ph name="TARGET_URL_HOSTNAME" />.</translation>
@@ -112,7 +114,6 @@
 <translation id="3780814664026482060">‏Chrome - ‏<ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">‏הסר מ-Chrome...</translation>
 <translation id="386202838227397562">‏סגור את כל החלונות של Google Chrome ונסה שוב.</translation>
-<translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3873044882194371212">‏פתח את הקישור בחלון &amp;גלישה בסתר של Chrome</translation>
 <translation id="3889417619312448367">‏הסר את Google Chrome</translation>
 <translation id="3898493977366060150">‏גלישה באינטרנט עם Google Smarts</translation>
@@ -221,12 +222,14 @@
 <translation id="7459554271817304652">‏הגדר סנכרון כדי לשמור את תכונות הדפדפן המותאמות אישית שלך באינטרנט ולגשת אליהן מ-Google Chrome בכל מחשב.</translation>
 <translation id="7473136999113284234">‏Chrome מתעדכן באופן אוטומטי, כך שתמיד נמצאת ברשותך הגרסה העדכנית ביותר.</translation>
 <translation id="7486227612705979895">‏Chrome ייגש ל-Drive שלך כדי להציג הצעות בשורת כתובת האתר</translation>
+<translation id="748945194546522577">‏Chrome‏ חסם את הקובץ הזה כי הוא מסוכן. ההגנה המתקדמת שומרת עליך.</translation>
 <translation id="7535429826459677826">‏גרסת הפיתוח של Google Chrome</translation>
 <translation id="7552219221109926349">‏הצג את מערכת ההפעלה של Chrome בשפה זו</translation>
 <translation id="7561940363513215021">{0,plural, =1{‏Chrome יופעל מחדש בעוד דקה}two{‏Chrome יופעל מחדש בעוד שתי דקות}many{‏Chrome יופעל מחדש בעוד # דקות}other{‏Chrome יופעל מחדש בעוד # דקות}}</translation>
 <translation id="7589360514048265910">‏המחשב הזה יפסיק לקבל עדכונים של Google Chrome כי כבר אין תמיכה בגירסה 10.9 של Mac OS X.</translation>
 <translation id="7592736734348559088">‏Google Chrome לא הצליח לסנכרן את הנתונים שלך מפני שפרטי הכניסה של חשבונך אינם מעודכנים.</translation>
 <translation id="7626032353295482388">‏ברוכים הבאים ל-Chrome</translation>
+<translation id="7636297873481318396">‏Chrome‏ חסם את הקובץ הזה כי הוא מסוכן. ההגנה המתקדמת שומרת עליך.</translation>
 <translation id="7641148173327520642">‏לפי הגדרת מנהל המערכת, Google Chrome יפתח את <ph name="ALTERNATIVE_BROWSER_NAME" /> כדי לגשת אל <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7651907282515937834">‏לוגו של Chrome Enterprise</translation>
 <translation id="7747138024166251722">המתקין לא הצליח ליצור ספריה זמנית. בדוק את המקום הפנוי בדיסק ואת האישור להתקנת תוכנה.</translation>
@@ -275,6 +278,7 @@
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">‏הגדרה זו גם קובעת איזה דף מוצג כשאתה מפעיל את Chrome.</translation>
 <translation id="870251953148363156">‏עדכן את Google Chrome&amp;</translation>
+<translation id="8704255848199359374">‏התכונה משתמשת בבדיקת האיות שבה נעשה שימוש בחיפוש Google. הטקסט המוקלד בדפדפן נשלח אל Google. אפשר לשנות תמיד את ההתנהגות הזאת בהגדרות.</translation>
 <translation id="873133009373065397">‏Google Chrome אינו יכול לקבוע או להגדיר את דפדפן ברירת המחדל</translation>
 <translation id="8736674169840206667">‏לפי דרישת מנהל המערכת, יש להפעיל מחדש את Chrome כדי להחיל עדכון</translation>
 <translation id="8788264404293392165">‏זו השפה שבה מוצג ממשק המשתמש של Chrome OS</translation>

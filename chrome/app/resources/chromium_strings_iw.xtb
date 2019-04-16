@@ -30,6 +30,7 @@
 <translation id="1929939181775079593">‏Chromium אינו מגיב. להפעיל מחדש עכשיו?</translation>
 <translation id="1966382378801805537">‏ב-Chromium לא ניתן לקבוע או להגדיר את דפדפן ברירת המחדל</translation>
 <translation id="2008474315282236005">‏הפעולה הזו תמחק פריט אחד מהמכשיר. כדי לשחזר את הנתונים מאוחר יותר, היכנס אל Chromium עם <ph name="USER_EMAIL" />.</translation>
+<translation id="2037988709973327241">‏<ph name="FILE_NAME" /> מסוכן, ולכן Chromium חסם אותו. ההגנה המתקדמת שומרת עליך.</translation>
 <translation id="2117378023188580026">‏לפי בקשת מנהל המערכת, יש להפעיל מחדש את Chromium כדי להחיל את העדכון הזה</translation>
 <translation id="2119636228670142020">‏מידע על &amp;מערכת ההפעלה של Chromium‏</translation>
 <translation id="2178765360243863853">‏עליך להפעיל מחדש את Chromium עכשיו</translation>
@@ -61,6 +62,7 @@
 <translation id="3068515742935458733">‏עזור לשפר את Chromium על ידי שליחת דוחות קריסה ו-<ph name="UMA_LINK" /> אל Google</translation>
 <translation id="3103660991484857065">‏המתקין לא הצליח לבטל את דחיסת הארכיון. הורד שוב את Chromium.</translation>
 <translation id="3130323860337406239">‏Chromium משתמש במיקרופון שלך.</translation>
+<translation id="3154325651427862069">‏Chromium‏ חסם את הקובץ <ph name="FILE_NAME" /> כי הוא עלול להיות מסוכן. ההגנה המתקדמת שומרת עליך.</translation>
 <translation id="3155163173539279776">‏הפעל מחדש את Chromium</translation>
 <translation id="3179665906251668410">‏פתח את הקישור בחלון &amp;גלישה בסתר של Chromium</translation>
 <translation id="3190315855212034486">‏וואו! Chromium קרס. להפעיל מחדש עכשיו?</translation>
@@ -86,6 +88,7 @@
 <translation id="388648406173476553">‏התאמה אישית וניהול של Chromium נחוצה פעולה שלך - יש ללחוץ לקבלת פרטים נוספים.</translation>
 <translation id="3889543394854987837">‏לחץ על השם שלך כדי לפתוח את Chromium ולהתחיל לגלוש.</translation>
 <translation id="3898493977366060150">‏גלישה באינטרנט עם Google Smarts</translation>
+<translation id="3931244652999881512">‏Chromium‏ חסם את הקובץ הזה כי הוא מסוכן. ההגנה המתקדמת שומרת עליך.</translation>
 <translation id="3965668104013180445">{0,plural, =1{‏Chromium OS תופעל מחדש בעוד שעה אחת}two{‏Chromium OS תופעל מחדש בעוד שעתיים}many{‏Chromium OS תופעל מחדש בעוד # שעות}other{‏Chromium OS תופעל מחדש בעוד # שעות}}</translation>
 <translation id="4036079820698952681">‏דיווח על <ph name="BEGIN_LINK" />ההגדרות הנוכחיות<ph name="END_LINK" /> יעזור לשפר את Chromium</translation>
 <translation id="4050175100176540509">הגרסה החדשה כוללת שיפורי בטיחות חשובים ותכונות חדשות.</translation>
@@ -136,6 +139,7 @@
 <translation id="5680901439334282664">‏היכנס אל Chromium</translation>
 <translation id="5698481217667032250">‏הצג את Chromium בשפה זו</translation>
 <translation id="5712253116097046984">‏לפי הבקשה של מנהל המערכת, צריך להפעיל מחדש את Chromium OS כדי להחיל את העדכון</translation>
+<translation id="5726979195371243087">‏Chromium‏ חסם את הקובץ הזה כי הוא עלול להיות מסוכן. ההגנה המתקדמת שומרת עליך.</translation>
 <translation id="5756484659843248772">‏זו השפה שבה מוצג ממשק המשתמש של Chromium OS</translation>
 <translation id="5768914737813585044">‏הצג את Chromium OS בשפה זו</translation>
 <translation id="5796460469508169315">‏Chromium כמעט מוכן.</translation>
@@ -250,6 +254,7 @@ Chromium לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="8667808506758191620">ה-<ph name="DEVICE_TYPE" /> שלך מעודכן.</translation>
 <translation id="8697124171261953979">‏הגדרה זו גם קובעת איזה דף מוצג כשאתה מפעיל את Chromium או מבצע חיפוש מסרגל הכתובות.</translation>
 <translation id="8704119203788522458">‏זהו ה-Chromium שלך</translation>
+<translation id="8704255848199359374">‏התכונה משתמשת בבדיקת האיות שבה נעשה שימוש בחיפוש Google. הטקסט המוקלד בדפדפן נשלח אל Google. אפשר לשנות תמיד את ההתנהגות הזאת בהגדרות.</translation>
 <translation id="8796602469536043152">‏Chromium זקוק להרשאת גישה אל המצלמה והמיקרופון בשביל האתר הזה</translation>
 <translation id="8803635938069941624">‏תנאים עבור מערכת ההפעלה של Chromium</translation>
 <translation id="8821041990367117597">‏Chromium לא הצליח לסנכרן את הנתונים שלך מפני שפרטי הכניסה של חשבונך אינם מעודכנים.</translation>

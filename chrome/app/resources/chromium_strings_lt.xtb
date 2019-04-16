@@ -32,6 +32,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="1929939181775079593">„Chromium“ neatsako. Paleisti iš naujo dabar?</translation>
 <translation id="1966382378801805537">„Chromium“ nepavyko aptikti arba nustatyti numatytosios naršyklės</translation>
 <translation id="2008474315282236005">Atlikus šį veiksmą iš šio įrenginio bus ištrintas 1 elementas. Jei vėliau norėsite gauti duomenis, prisijunkite prie „Chromium“ kaip <ph name="USER_EMAIL" />.</translation>
+<translation id="2037988709973327241">Failas „<ph name="FILE_NAME" />“ pavojingas, todėl „Chromium“ jį užblokavo. Jus saugo Papildomos apsaugos programa.</translation>
 <translation id="2117378023188580026">Administratorius prašo paleisti iš naujo „Chromium“, kad galėtų pritaikyti šį naujinį</translation>
 <translation id="2119636228670142020">Apie &amp;„Chromium“ OS</translation>
 <translation id="2178765360243863853">Dabar turėtumėte paleisti „Chromium“ iš naujo</translation>
@@ -63,6 +64,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="3068515742935458733">Padėkite tobulinti „Chromium“ siųsdami „Google“ strigčių ataskaitas ir <ph name="UMA_LINK" /></translation>
 <translation id="3103660991484857065">Diegimo programai nepavyko išpakuoti archyvo. Atsisiųskite „Chromium“ dar kartą.</translation>
 <translation id="3130323860337406239">„Chromium“ naudoja jūsų mikrofoną.</translation>
+<translation id="3154325651427862069">Failas „<ph name="FILE_NAME" />“ gali būti pavojingas, todėl „Chromium“ jį užblokavo. Jus saugo Papildomos apsaugos programa.</translation>
 <translation id="3155163173539279776">Iš naujo paleisti „Chromium“</translation>
 <translation id="3179665906251668410">Atidaryti nuorodą „Chromium“ inko&amp;gnito lange</translation>
 <translation id="3190315855212034486">Oi! „Chromium“ užstrigo. Paleisti iš naujo dabar?</translation>
@@ -90,6 +92,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="388648406173476553">Tinkinkite ir valdykite „Chromium“. Reikia atkreipti dėmesį – spustelėkite ir peržiūrėkite išsamią informaciją.</translation>
 <translation id="3889543394854987837">Spustelėkite savo vardą, kad atidarytumėte „Chromium“ ir pradėtumėte naršyti.</translation>
 <translation id="3898493977366060150">Žiniatinklio naršymas naudojant „Google“ išmaniąsias funkcijas</translation>
+<translation id="3931244652999881512">Šis failas pavojingas, todėl „Chromium“ jį užblokavo. Jus saugo Papildomos apsaugos programa.</translation>
 <translation id="3965668104013180445">{0,plural, =1{„Chromium“ OS bus paleista iš naujo po valandos}one{„Chromium“ OS bus paleista iš naujo # valandos}few{„Chromium“ OS bus paleista iš naujo # valandų}many{„Chromium“ OS bus paleista iš naujo # valandos}other{„Chromium“ OS bus paleista iš naujo # valandų}}</translation>
 <translation id="4036079820698952681">Padėkite tobulinti „Chromium“ pateikę ataskaitą apie <ph name="BEGIN_LINK" />dabartinius nustatymus<ph name="END_LINK" />.</translation>
 <translation id="4050175100176540509">Naujausios versijos programoje įdiegti svarbūs saugos patobulinimai ir pasiekiamos naujos funkcijos.</translation>
@@ -140,6 +143,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="5680901439334282664">prisijunkite prie „Chromium“</translation>
 <translation id="5698481217667032250">Pateikti „Chromium“ šia kalba</translation>
 <translation id="5712253116097046984">Administratorius prašo paleisti „Chromium“ OS iš naujo, kad galėtų pritaikyti šį naujinį</translation>
+<translation id="5726979195371243087">Šis failas gali būti pavojingas, todėl „Chromium“ jį užblokavo. Jus saugo Papildomos apsaugos programa.</translation>
 <translation id="5756484659843248772">Ši kalba vartojama „Chromium“ OS NS pateikti</translation>
 <translation id="5768914737813585044">Pateikti „Chromium“ OS šia kalba</translation>
 <translation id="5796460469508169315">„Chromium“ beveik paruošta.</translation>
@@ -254,6 +258,7 @@ Patikrinkite el. pašto adresu <ph name="ACCOUNT_EMAIL" /> išsiųstą laišką,
 <translation id="8667808506758191620">Jūsų „<ph name="DEVICE_TYPE" />“ atnaujintas.</translation>
 <translation id="8697124171261953979">Ji taip pat kontroliuoja, koks puslapis rodomas, kai paleidžiate „Chromium“ arba ieškote „Omnibox“.</translation>
 <translation id="8704119203788522458">Tai jūsų „Chromium“</translation>
+<translation id="8704255848199359374">Naudojamas tas pats rašybos tikrinimas kaip ir „Google“ paieškoje. Tekstas, kurį įvedate naršyklėje, nusiunčiamas „Google“. Šį veikimą visada galite pakeisti nustatymuose.</translation>
 <translation id="8796602469536043152">„Chromium“ reikia leidimo, kad galėtų naudoti fotoaparatą ir mikrofoną šioje svetainėje</translation>
 <translation id="8803635938069941624">„Chromium“ OS sąlygos</translation>
 <translation id="8821041990367117597">„Chromium“ negali sinchronizuoti jūsų duomenų, nes paskyros išsami prisijungimo informacija yra pasenusi.</translation>

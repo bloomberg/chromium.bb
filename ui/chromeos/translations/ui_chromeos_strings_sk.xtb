@@ -284,6 +284,7 @@
 <translation id="4572815280350369984">Súbor <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Viac...</translation>
 <translation id="4582497162516204941">Nainštalovať pomocou systému Linux (beta)</translation>
+<translation id="4584780943629874245">Zdieľať doplnkom Plugin VM</translation>
 <translation id="4631887759990505102">Interpret</translation>
 <translation id="4656293982926141856">Tento počítač</translation>
 <translation id="4669606053856530811">Členovia zdroja <ph name="SOURCE_NAME" /> stratia prístup, pokiaľ s nimi tieto položky nezačnete zdieľať.</translation>
@@ -524,6 +525,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="7339898014177206373">Nové okno</translation>
 <translation id="7348749398828259943">Medzinárodná klávesnica US Workman</translation>
 <translation id="7359359531237882347">Kopíruje sa viacero položiek (<ph name="NUMBER_OF_ITEMS" />)…</translation>
+<translation id="7379734276381389090">Doplnkom Plugin VM zdieľate tento počet priečinkov: <ph name="NUMBER_OF_ITEMS" /></translation>
 <translation id="7389722738210761877">Thajská klávesnica (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Hindská klávesnica (fonetický prepis)</translation>
 <translation id="7417453074306512035">Etiópska klávesnica</translation>
@@ -586,6 +588,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="7969525169268594403">Slovinčina</translation>
 <translation id="7982283708762922719">Výška</translation>
 <translation id="7987485481246785146">Kurdská klávesnica (sorání) s arabským rozložením</translation>
+<translation id="7990715602172183602">1 priečinok sa zdieľa doplnkom Plugin VM</translation>
 <translation id="799547531016638432">Odstrániť skratku</translation>
 <translation id="799923393800005025">Môže zobraziť</translation>
 <translation id="8008366997883261463">Jack Russell teriér</translation>
@@ -626,6 +629,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="8342318071240498787">Súbor alebo priečinok s daným názvom už existuje.</translation>
 <translation id="8391950649760071442">Prepis (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Rozmery</translation>
+<translation id="8400874747056634633">Spravovať zdieľanie doplnkom Plugin VM</translation>
 <translation id="8412586565681117057">Rýchla metóda vstupu</translation>
 <translation id="8418113698656761985">rumunská klávesnica</translation>
 <translation id="8432745813735585631">americká klávesnica s rozložením klávesov Colemak</translation>

@@ -117,9 +117,9 @@
 <translation id="1883903952484604915">Minu failid</translation>
 <translation id="1887786770086287077">Juurdepääs asukohale on selle seadme puhul välja lülitatud. Lülitage see sisse <ph name="BEGIN_LINK" />Androidi seadetes<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" /> avaneb Chrome'is. Jätkates nõustute Chrome'i <ph name="BEGIN_LINK1" />teenusetingimuste<ph name="END_LINK1" /> ja <ph name="BEGIN_LINK2" />privaatsusteatised<ph name="END_LINK2" />.</translation>
-<translation id="189172778771606813">Sule navigeerimissahtel</translation>
 <translation id="1919345977826869612">Reklaamid</translation>
 <translation id="1919950603503897840">Kontaktide valimine</translation>
+<translation id="1922076542920281912">Selleks et anda Chrome'ile juurdepääs teie asukohale, lülitage funktsioon Asukoht sisse ka <ph name="BEGIN_LINK" />Androidi seadetes<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="19288952978244135">Avage Chrome uuesti.</translation>
 <translation id="1933845786846280168">Valitud vaheleht</translation>
@@ -145,6 +145,7 @@
 <translation id="2018707881002649255">Allpool valitud kontakte jagatakse veebisaidiga <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="2021896219286479412">Saidi juhtelemendid täisekraanil</translation>
 <translation id="2038563949887743358">Valiku Taotle arvutisaiti sisselülitamine</translation>
+<translation id="2041019821020695769">Selleks et lubada Chrome'il teile märguandeid saata, lülitage märguanded <ph name="BEGIN_LINK" />Androidi seadetes<ph name="END_LINK" /> ka sisse.</translation>
 <translation id="204321170514947529">Rakendusel <ph name="APP_NAME" /> on samuti Chrome’i andmeid</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB – muud rakendused</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -267,7 +268,6 @@
 <translation id="2923908459366352541">Nimi on sobimatu</translation>
 <translation id="2932150158123903946">Rakenduse Google <ph name="APP_NAME" /> salvestusruum</translation>
 <translation id="2956410042958133412">Seda kontot haldavad <ph name="PARENT_NAME_1" /> ja <ph name="PARENT_NAME_2" />.</translation>
-<translation id="2960796085439532066">Autoriõigus <ph name="YEAR" /> Google Inc. Kõik õigused on kaitstud.</translation>
 <translation id="2962095958535813455">Inkognito režiimi vahelehed on aktiveeritud</translation>
 <translation id="2968755619301702150">Sertifikaadikuvaja</translation>
 <translation id="2979025552038692506">Valitud inkognito vaheleht</translation>
@@ -361,6 +361,7 @@
 <translation id="3712575778697986964">Kas lähtestada andmemahu säästja?</translation>
 <translation id="3714981814255182093">Leiuriba avamine</translation>
 <translation id="3716182511346448902">Chrome peatas selle lehe, kuna see kasutab liiga palju mälu.</translation>
+<translation id="3730075448226062617">Selleks et anda Chrome'ile juurdepääs teie mikrofonile, lülitage mikrofon sisse ka <ph name="BEGIN_LINK" />Androidi seadetes<ph name="END_LINK" />.</translation>
 <translation id="3739899004075612870">Teenuses <ph name="PRODUCT_NAME" /> järjehoidj. lisatud</translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB – muud rakendused</translation>
 <translation id="3744111561329211289">Taustal sünkroonimine</translation>
@@ -555,7 +556,6 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="5087580092889165836">Lisa kaart</translation>
 <translation id="5100237604440890931">Ahendatud – laiendamiseks klõpsake.</translation>
 <translation id="510275257476243843">Jäänud on 1 tund</translation>
-<translation id="51149521070059886">Aktiveeri tume teema, kui seadme energiasäästja on sisse lülitatud</translation>
 <translation id="5123685120097942451">Inkognito vaheleht</translation>
 <translation id="5127805178023152808">Sünkroonimine on välja lülitatud</translation>
 <translation id="5129038482087801250">Veebirakenduse installimine</translation>
@@ -565,7 +565,6 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="5152843274749979095">Toetatud rakendusi pole installitud</translation>
 <translation id="5161254044473106830">Pealkiri on kohustuslik</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 allalaadimine ebaõnnestus.}other{# allalaadimist ebaõnnestus.}}</translation>
-<translation id="5168917394043976756">Ava navigeerimissahtel</translation>
 <translation id="5184329579814168207">Ava Chrome'is</translation>
 <translation id="5199929503336119739">Tööprofiil</translation>
 <translation id="5210286577605176222">Eelmisele vahelehele liikumine</translation>
@@ -676,6 +675,7 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="5937580074298050696"><ph name="AMOUNT" /> on säästetud</translation>
 <translation id="5939518447894949180">Lähtesta</translation>
 <translation id="5942872142862698679">Otsimiseks kasutatakse Google'it</translation>
+<translation id="5944669582486359588">Lihtsustatud režiimis laadib Chrome lehti kiiremini ja kasutab kuni 60% vähem andmemahtu. Google'i pilvetehnoloogia optimeerib külastatavaid lehti.</translation>
 <translation id="5952764234151283551">Saadab Google'ile teie soovitud lehe URL-i</translation>
 <translation id="5956665950594638604">Chrome'i abikeskuse avamine uuel vahelehel</translation>
 <translation id="5958275228015807058">Leidke oma failid ja lehed jaotisest Allalaadimised</translation>
@@ -706,6 +706,7 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="618993374665929060">Jaotis Rohkem sarnaseid avatud täiskõrgusele</translation>
 <translation id="6192333916571137726">Faili allalaadimine</translation>
 <translation id="6192792657125177640">Erandid</translation>
+<translation id="6194112207524046168">Selleks et anda Chrome'ile juurdepääs teie kaamerale, lülitage kaamera sisse ka <ph name="BEGIN_LINK" />Androidi seadetes<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Blokeeri kolmanda osapoole küpsisefailid</translation>
 <translation id="6206551242102657620">Ühendus on turvaline. Saidi teave</translation>
 <translation id="6210748933810148297">Kas pole <ph name="EMAIL" />?</translation>

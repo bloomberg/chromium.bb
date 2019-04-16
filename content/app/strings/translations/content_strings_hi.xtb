@@ -56,7 +56,7 @@
 <translation id="2723001399770238859">ऑडियो</translation>
 <translation id="2746543609216772311">मान <ph name="MINIMUM_DATE_OR_TIME" /> या बाद का होना चाहिए.</translation>
 <translation id="2759744352195237655">पॉप अप बटन</translation>
-<translation id="2761667185364618470">यदि आप आगे बढ़ना चाहते हैं तो इस बॉक्‍स को चेक करें.</translation>
+<translation id="2761667185364618470">अगर आप आगे बढ़ना चाहते हैं तो इस बॉक्‍स को चेक करें.</translation>
 <translation id="2896972712917208084">रेडियो समूह</translation>
 <translation id="2908441821576996758">कृपया ईमेल पतों की अल्पविराम द्वारा विभाजित सूची दर्ज करें.</translation>
 <translation id="2940813599313844715">ऑब्जेक्ट</translation>
@@ -177,6 +177,7 @@
 <translation id="6981594929165378967">डालना</translation>
 <translation id="6989848892321993519">कृपया इस लेख को <ph name="MIN_CHARACTERS" /> या उससे ज़्यादा वर्णों तक बढ़ाएं (आप इस समय 1 वर्ण का उपयोग कर रहे हैं).</translation>
 <translation id="709897737746224366">कृपया अनुरोधित प्रारूप का मिलान करें.</translation>
+<translation id="7118469954320184356">कोई जानकारी मौजूद नहीं है.</translation>
 <translation id="7139483182332611405">आमुख</translation>
 <translation id="7263440858009898357">कृपया सूची में किसी आइटम को चुनें.</translation>
 <translation id="727747134524199931">स्तंभ शीर्षलेख</translation>

@@ -117,9 +117,9 @@
 <translation id="1883903952484604915">Els meus fitxers</translation>
 <translation id="1887786770086287077">L'accés a la ubicació està desactivat en aquest dispositiu. Activa'l a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" /> s'obrirà a Chrome. En continuar, acceptes les <ph name="BEGIN_LINK1" />condicions del servei<ph name="END_LINK1" /> i l'<ph name="BEGIN_LINK2" />avís de privadesa<ph name="END_LINK2" /> de Chrome.</translation>
-<translation id="189172778771606813">Tanca el tauler de navegació</translation>
 <translation id="1919345977826869612">Anuncis</translation>
 <translation id="1919950603503897840">Selecciona contactes</translation>
+<translation id="1922076542920281912">Perquè Chrome pugui accedir a la teva ubicació, també l'has d'activar a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="19288952978244135">Torna a obrir Chrome.</translation>
 <translation id="1933845786846280168">Pestanya seleccionada</translation>
@@ -145,6 +145,7 @@
 <translation id="2018707881002649255">Els contactes que seleccionis a continuació es compartiran amb el lloc web <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="2021896219286479412">Controls de pantalla completa</translation>
 <translation id="2038563949887743358">Activa Mostra com a ordinador</translation>
+<translation id="2041019821020695769">Perquè Chrome et pugui enviar notificacions, també has d'activar les notificacions a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> també té dades a Chrome</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB en altres aplicacions</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -267,7 +268,6 @@
 <translation id="2923908459366352541">El nom no és vàlid</translation>
 <translation id="2932150158123903946">Emmagatzematge de Google <ph name="APP_NAME" /></translation>
 <translation id="2956410042958133412"><ph name="PARENT_NAME_1" /> i <ph name="PARENT_NAME_2" /> gestionen aquest compte.</translation>
-<translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Tots els drets reservats.</translation>
 <translation id="2962095958535813455">S'ha canviat a les pestanyes d'incògnit</translation>
 <translation id="2968755619301702150">Lector de certificats</translation>
 <translation id="2979025552038692506">Pestanya d'incògnit seleccionada</translation>
@@ -361,6 +361,7 @@
 <translation id="3712575778697986964">Vols restablir l'Economitzador de dades?</translation>
 <translation id="3714981814255182093">Obre la Barra de cerca</translation>
 <translation id="3716182511346448902">Com que aquesta pàgina fa servir massa memòria, Chrome l'ha posat en pausa.</translation>
+<translation id="3730075448226062617">Perquè Chrome pugui accedir al micròfon, també has d'activar el micròfon a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
 <translation id="3739899004075612870">Afegit a les adreces de: <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB en altres aplicacions</translation>
 <translation id="3744111561329211289">Sincronització en segon pla</translation>
@@ -555,7 +556,6 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="5087580092889165836">Afegeix una targeta</translation>
 <translation id="5100237604440890931">Vista replegada (feu clic per desplegar-la)</translation>
 <translation id="510275257476243843">Queda 1 hora</translation>
-<translation id="51149521070059886">Activa el tema fosc quan l'estalvi d'energia del dispositiu estigui activat</translation>
 <translation id="5123685120097942451">Pestanya d'incògnit</translation>
 <translation id="5127805178023152808">Sincronització desactivada</translation>
 <translation id="5129038482087801250">Instal·la l'aplicació web</translation>
@@ -565,7 +565,6 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="5152843274749979095">No hi ha cap aplicació admesa instal·lada</translation>
 <translation id="5161254044473106830">Cal indicar un títol</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{No s'ha pogut completar 1 baixada.}other{No s'han pogut completar # baixades.}}</translation>
-<translation id="5168917394043976756">Obre el tauler de navegació</translation>
 <translation id="5184329579814168207">Obre a Chrome</translation>
 <translation id="5199929503336119739">Perfil professional</translation>
 <translation id="5210286577605176222">Ves a la pestanya anterior</translation>
@@ -676,6 +675,7 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="5937580074298050696">Dades estalviades: <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Restableix</translation>
 <translation id="5942872142862698679">S'utilitza Google per a la cerca</translation>
+<translation id="5944669582486359588">En el mode bàsic, Chrome carrega les pàgines més ràpidament i utilitza un 60% menys de dades. La tecnologia en núvol de Google optimitza les pàgines que visites.</translation>
 <translation id="5952764234151283551">Envia a Google l'URL d'una pàgina que estàs provant de visitar</translation>
 <translation id="5956665950594638604">Obre Centre d'ajuda de Chrome en una pestanya nova</translation>
 <translation id="5958275228015807058">Trobaràs els teus fitxers i les teves pàgines a Baixades</translation>
@@ -706,6 +706,7 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="618993374665929060">El full Més contingut com aquest ocupa tota la pantalla</translation>
 <translation id="6192333916571137726">Baixa el fitxer</translation>
 <translation id="6192792657125177640">Excepcions</translation>
+<translation id="6194112207524046168">Perquè Chrome pugui accedir a la càmera, també has d'activar-la a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Bloqueja les galetes de tercers</translation>
 <translation id="6206551242102657620">La connexió és segura. Informació del lloc web</translation>
 <translation id="6210748933810148297">No ets <ph name="EMAIL" />?</translation>
@@ -876,7 +877,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7413229368719586778">Data d'inici: <ph name="DATE" /></translation>
 <translation id="7423098979219808738">Pregunta-m'ho abans</translation>
 <translation id="7423538860840206698">L'accés de lectura al porta-retalls està bloquejat</translation>
-<translation id="7431991332293347422">Controla com s'utilitza l'historial de navegació per personalitzar la Cerca i molt més</translation>
+<translation id="7431991332293347422">Controla com s'utilitza l'historial de navegació per personalitzar la Cerca i més</translation>
 <translation id="7437998757836447326">Tanca la sessió de Chrome</translation>
 <translation id="7438641746574390233">Quan el mode bàsic estigui activat, Chrome utilitzarà els servidors de Google perquè les pàgines es carreguin més de pressa. El mode bàsic reescriu les pàgines molt lentes per carregar només el contingut essencial. El mode bàsic no s'aplica a les pestanyes d'incògnit.</translation>
 <translation id="7444811645081526538">Més categories</translation>
@@ -890,6 +891,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7475688122056506577">La targeta SD no s'ha trobat. Pot ser que faltin alguns fitxers.</translation>
 <translation id="7479104141328977413">Gestió de pestanyes</translation>
 <translation id="7481312909269577407">Endavant</translation>
+<translation id="7482697587265222445">La pestanya s'ha enviat als dispositius</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (última actualització: <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">Mostra les contrasenyes</translation>
 <translation id="7494974237137038751">dades estalviades</translation>

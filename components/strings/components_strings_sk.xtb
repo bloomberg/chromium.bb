@@ -205,7 +205,6 @@
 <translation id="2053111141626950936">Stránky v jazyku <ph name="LANGUAGE" /> nebudú prekladané.</translation>
 <translation id="2053553514270667976">PSČ</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 návrh}few{# návrhy}many{# návrhu}other{# návrhov}}</translation>
-<translation id="2068124040035837596">Váš účet spravuje doména <ph name="ENROLLMENT_DOMAIN" />. Znamená to, že správca môže vzdialene nakonfigurovať váš účet.</translation>
 <translation id="2068663545051464999">Identifikátor nahranej správy o zlyhaní <ph name="CRASH_ID" /> (Miestny kontext: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="2079545284768500474">Späť</translation>
 <translation id="20817612488360358">Používanie systémových nastavení servera proxy je nastavené, avšak je určená aj explicitná konfigurácia servera proxy.</translation>
@@ -271,7 +270,6 @@
 <translation id="2410754574180102685">Vládny právny dokument</translation>
 <translation id="2413528052993050574">Server nedokáže overiť, či ide o doménu <ph name="DOMAIN" />, jej bezpečnostný certifikát bol zrejme zrušený. Môže to byť spôsobené nesprávnou konfiguráciou alebo tým, že vaše pripojenie zachytil útočník.</translation>
 <translation id="2418081434543109369">Server <ph name="ORIGIN" />, na ktorý prechádzate, požiadal, aby sa na všetky naň odoslané žiadosti vzťahovalo pravidlo zabezpečenia. Neposkytol však pravidlo, ktoré bráni prehliadaču splniť vašu žiadosť týkajúcu sa webu <ph name="SITE" />.</translation>
-<translation id="244665789865330679">Zariadenie spravuje doména <ph name="ENROLLMENT_DOMAIN" />. Znamená to, že správca môže vzdialene nakonfigurovať vaše zariadenie aj účet.</translation>
 <translation id="2463193859425327265">Zmeniť domovskú stránku</translation>
 <translation id="2463739503403862330">Vyplniť</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -470,7 +468,6 @@
 <translation id="358285529439630156">Kreditné a predplatené karty sú akceptované.</translation>
 <translation id="3582930987043644930">Pridajte meno</translation>
 <translation id="3583757800736429874">&amp;Znova presunúť</translation>
-<translation id="35866233670761917">Vaši správcovia neuvidia obsah webov, ktoré navštívite</translation>
 <translation id="3586931643579894722">Skryť podrobnosti</translation>
 <translation id="3592413004129370115">Italian (obálka)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
@@ -737,7 +734,6 @@
 <translation id="5095208057601539847">Provincia</translation>
 <translation id="5097099694988056070">Štatistiky zariadenia, ako napríklad využitie procesora alebo pamäte RAM</translation>
 <translation id="5097501891273180634">A2</translation>
-<translation id="5098222253617183465">Zariadenie spravuje doména <ph name="ENROLLMENT_DOMAIN" /> a váš účet spravuje <ph name="ACCOUNT_DOMAIN" />. Znamená to, že správcovia môžu vzdialene nakonfigurovať vaše zariadenie aj účet.</translation>
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64-bitová verzia)</translation>
@@ -893,7 +889,6 @@
 <translation id="5967592137238574583">Úprava kontaktných informácií</translation>
 <translation id="5967867314010545767">Odstrániť z histórie</translation>
 <translation id="5975083100439434680">Oddialiť</translation>
-<translation id="5977489021191000276">Vaše zariadenie neovláda žiadny správca.</translation>
 <translation id="5977976211062815271">V tomto zariadení</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">Nie je možné otvoriť platobnú aplikáciu</translation>
@@ -1038,7 +1033,6 @@
 <translation id="6903319715792422884">Pomáhať zlepšovať Bezpečné prehliadanie tak, že sa budú do Googlu odosielať niektoré <ph name="BEGIN_WHITEPAPER_LINK" />informácie o systéme a obsah stránok<ph name="END_WHITEPAPER_LINK" />. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">Používateľ:</translation>
 <translation id="6934672428414710184">Meno pochádza z vášho účtu Google</translation>
-<translation id="6939583532829045966">Zariadenie spravuje doména <ph name="ENROLLMENT_DOMAIN" />. Znamená to, že správca môže vzdialene nakonfigurovať vaše zariadenie.</translation>
 <translation id="6944692733090228304">Zadali ste heslo na webe, ktorý nie je spravovaný organizáciou <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />. Ak chcete, aby bol váš účet chránený, nepoužívajte jeho heslo pre iné aplikácie a weby.</translation>
 <translation id="6945221475159498467">Vybrať</translation>
 <translation id="6948701128805548767">Ak chcete zobraziť spôsoby a požiadavky vyzdvihnutia, vyberte adresu</translation>
@@ -1048,7 +1042,6 @@
 <translation id="6957887021205513506">Zdá sa, že certifikát servera je falošný.</translation>
 <translation id="6964255747740675745">Konfiguráciu siete sa nepodarilo analyzovať (neplatný súbor JSON).</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="6965456981923010628"><ph name="LEFT_PART" /> • <ph name="RIGHT_PART" /></translation>
 <translation id="6965978654500191972">Zariadenie</translation>
 <translation id="6970216967273061347">Okres</translation>
 <translation id="6973656660372572881">Určené sú pevne dané servery proxy aj skript PAC webovej adresy.</translation>
@@ -1196,6 +1189,7 @@
 <translation id="7668654391829183341">Neznáme zariadenie</translation>
 <translation id="7669271284792375604">Útočníci na tomto webe sa vás môžu pokúsiť podvodom presvedčiť, aby ste si nainštalovali programy poškodzujúce vaše prostredie prehliadania (napríklad zmenou domovskej stránky alebo zobrazovaním ďalších reklám na weboch, ktoré navštevujete).</translation>
 <translation id="7676643023259824263">Vyhľadať v schránke text <ph name="TEXT" /></translation>
+<translation id="7679176406634891508">Platforma a cloud</translation>
 <translation id="7681101578153515023">Zmeniť vyhľadávač</translation>
 <translation id="7682287625158474539">Dodacia</translation>
 <translation id="7687186412095877299">Doplní do platobných formulárov vaše uložené spôsoby platby</translation>
@@ -1400,7 +1394,6 @@
 <translation id="8932102934695377596">Vaše hodiny idú pozadu</translation>
 <translation id="893332455753468063">Pridanie mena</translation>
 <translation id="8938939909778640821">Akceptované kreditné a predplatené karty</translation>
-<translation id="894185898663964645">Váš správca nakonfiguroval vlastné koreňové certifikáty, ktoré mu môžu umožniť zobrazovať obsah vami navštevovaných webov.</translation>
 <translation id="8943282376843390568">Limetková</translation>
 <translation id="8957210676456822347">Autorizácia portálu na prihlásenie do siete</translation>
 <translation id="8968766641738584599">Uložiť kartu</translation>
@@ -1414,6 +1407,7 @@
 <translation id="8996941253935762404">Webové stránky, ktoré sa chystáte navštíviť, obsahujú škodlivé programy</translation>
 <translation id="8997023839087525404">Server prezentoval certifikát, ktorý nebol zverejnený pomocou pravidla transparentnosti certifikátov. V prípade niektorých certifikátov sa táto podmienka vyžaduje s cieľom zaistiť ich dôveryhodnosť a ochranu proti útočníkom.</translation>
 <translation id="9001074447101275817">Proxy server <ph name="DOMAIN" /> vyžaduje používateľské meno a heslo.</translation>
+<translation id="9004367719664099443">Prebieha relácia VR</translation>
 <translation id="9005998258318286617">Dokument PDF sa nepodarilo načítať.</translation>
 <translation id="9008201768610948239">Ignorovať</translation>
 <translation id="9011424611726486705">Otvoriť nastavenia webu</translation>

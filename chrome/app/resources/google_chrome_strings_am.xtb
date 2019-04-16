@@ -42,6 +42,7 @@
 <translation id="1773601347087397504">Chrome ስርዓተ ክወናን መጠቀም ላይ እገዛን ያግኙ</translation>
 <translation id="1795405610103747296">Chromeን በእርስዎ ስልክ ላይ ይጫኑት። አንድ ኤስኤምኤስ ወደ ስልክዎ እንልካለን። <ph name="PHONE_NUMBER" /></translation>
 <translation id="1812689907177901597">ይህንን በማጥፋት፣ እንደ Gmail ወደ መሰሉ የGoogle ጣቢያዎች ወደ Chrome በመለያ ሳይገቡ መግባት ይችላሉ</translation>
+<translation id="1815759068706561639"><ph name="FILE_NAME" /> አደገኛ ነው፣ ስለዚህ Chrome አግዶታል። በላቀ ጥበቃ አማካይነት ጥበቃ ተደርጎሎታል።</translation>
 <translation id="1860536484129686729">Chrome ለዚህ ጣቢያ የእርስዎን ካሜራ ለመድረስ ፈቃድ ያስፈልገዋል</translation>
 <translation id="1873233029667955273">Google Chrome ነባሪ አሳሽዎ አይደለም</translation>
 <translation id="1874309113135274312">Google Chrome ቅድመ-ይሁነታ (mDNS-In)</translation>
@@ -60,7 +61,6 @@
 <translation id="2290014774651636340">የGoogle ኤ ፒ አይ ቁልፎች ይጎድላሉ። አንዳንድ የGoogle Chrome ተግባራት ይሰናከላሉ።</translation>
 <translation id="2290095356545025170">እርግጠኛ ነዎት Google Chromeን ማራገፍ ይፈልጋሉ?</translation>
 <translation id="2309047409763057870">ይሄ ሁለተኛ የGoogle Chrome ጭነት ነው፣ እና ነባሪ አሳሽዎ ማድረግ አይቻልም።</translation>
-<translation id="2334084861041072223">የቅጂ መብት <ph name="YEAR" /> Google Inc.። ሁሉም መብቶች የተጠበቁ ናቸው።</translation>
 <translation id="2346876346033403680">የሆነ ሰው ከዚህ ቀደም በዚህ ኮምፒውተር ላይ እንደ <ph name="ACCOUNT_EMAIL_LAST" /> ሆኖ ወደ Chrome ገብቶ ነበር። ያ መለያዎ ካልሆነ መረጃዎን ለይተው ለማስቀመጥ አዲስ የChromium ተጠቃሚ ይፍጠሩ።
 
 ዝም ብሎ መግባት እንደ ዕልባቶች፣ ታሪክ እና ሌሎች ቅንብሮች ያሉ የChrome መረጃዎችን ከ<ph name="ACCOUNT_EMAIL_NEW" /> ጋር ያዋህዳቸዋል።</translation>
@@ -68,6 +68,7 @@
 <translation id="2429317896000329049">ማመሳሰል ለጎራዎ ስለማይገኝ Google Chrome ውሂብዎን ማመሳሰል አልቻለም።</translation>
 <translation id="2467438592969358367">Google Chrome የእርስዎን የይለፍ ቃላት ወደ ውጭ መላክ ይፈልጋል። ይህንን ለመፍቀድ የWindows የይለፍ ቃልዎን ይተይቡ።</translation>
 <translation id="2485422356828889247">አራግፍ</translation>
+<translation id="2521856951867783208">ይህ ፋይል አደገኛ ሊሆን ስለሚችል Chrome አግዶታል። በላቀ ጥበቃ አማካይነት ጥበቃ ተደርጎሎታል።</translation>
 <translation id="2534507159460261402">Google Pay (ወደ Chrome ተቀድቷል)</translation>
 <translation id="2535429035253759792">ይህን ዝማኔ ለመተግበር አስተዳዳሪዎ Chromeን ዳግም እንዲያስጀምሩ ይጠይቀዎታል</translation>
 <translation id="2580411288591421699">አሁን እየሰራ ካለው Google Chrome ጋር አንድ አይነት የሆነ ስሪት መጫን አይቻልም። እባክዎ Google Chrome ይዝጉና እንደገና ይሞክሩ።</translation>
@@ -104,6 +105,7 @@
 <translation id="3451115285585441894">ወድ Chrome በማከል ላይ...</translation>
 <translation id="345171907106878721">እራስዎን ወደ Chrome ያክሉ</translation>
 <translation id="3479552764303398839">አሁን አይደለም</translation>
+<translation id="3481286511616257896"><ph name="FILE_NAME" /> አደገኛ ሊሆን ስለሚችል Chrome አግዶታል። በላቀ ጥበቃ አማካይነት ጥበቃ ተደርጎሎታል።</translation>
 <translation id="34857402635545079">በተጨማሪ ከ Chrome (<ph name="URL" />) ውሂብን አጽዳ</translation>
 <translation id="3503306920980160878">Chrome አካባቢዎን ለዚህ ጣቢያ ለማጋራት የአካባቢዎ መዳረሻ ያስፈልገዋል</translation>
 <translation id="3576528680708590453">የእርስዎ የስርዓት አስተዳዳሪ <ph name="TARGET_URL_HOSTNAME" />ን ለመድረስ Google Chrome ተለዋጭ አሳሽ እንዲከፍት አዋቅሮታል።</translation>
@@ -116,7 +118,6 @@
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">ከChrome አስወግድ</translation>
 <translation id="386202838227397562">እባክዎ ሁሉንም የChrome መስኮቶች ይዝጉና እንደገና ይሞክሩ።</translation>
-<translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3873044882194371212">አገናኝ በChrome ማንነት የ&amp;ማያሳውቅ መስኮት ውስጥ ክፈት</translation>
 <translation id="3889417619312448367">Google Chromeን አራግፍ</translation>
 <translation id="3898493977366060150">የድር አሰሳ በGoogle ዘመናዊ ይሆናል</translation>
@@ -229,12 +230,14 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="7459554271817304652">ግላዊነት የተላበሰው የአሳሽ ባህሪዎችዎ ድር ላይ ለማስቀመጥና ከዚያ Google Chrome ካለው ማንኛውም ኮምፒውተር ለመድረስ አመሳስልን ያዋቅሩ።</translation>
 <translation id="7473136999113284234">Chrome በራስ-ሰር ይዘመናል፣ ስለዚህ ሁልጊዜ አዲሱ ስሪት ይኖርዎታል።</translation>
 <translation id="7486227612705979895">Chrome የእርስዎን Drive በአድራሻ አሞሌ ውስጥ ጥቆማ ሐሳቦችን ይደርሳል</translation>
+<translation id="748945194546522577">ይህ ፋይል አደገኛ ስለሆነ Chrome አግዶታል። በላቀ ጥበቃ አማካይነት ጥበቃ ተደርጎሎታል።</translation>
 <translation id="7535429826459677826">Google Chrome ገንቢ</translation>
 <translation id="7552219221109926349">Chrome OSን በዚህ ቋንቋ አሳይ</translation>
 <translation id="7561940363513215021">{0,plural, =1{Chrome በ1 ደቂቃ ውስጥ ዳግም ይጀመራል}one{Chrome በ# ደቂቃዎች ውስጥ ዳግም ይጀመራል}other{Chrome በ# ደቂቃዎች ውስጥ ዳግም ይጀመራል}}</translation>
 <translation id="7589360514048265910">Mac OS X 10.9 ከእንግዲህ ስለማይደገፍ ይህ ኮምፒውተር ከእንግዲህ የGoogle Chrome ዝማኔዎችን አይቀበልም።</translation>
 <translation id="7592736734348559088">የመለያዎ መግቢያ ዝርዝሮች ጊዜያቸው ያለፈባቸው ስለሆኑ Google Chrome ውሂብዎን ማመሳሰል አልቻለም።</translation>
 <translation id="7626032353295482388">ወደ Chrome እንኳን ደህና መጡ</translation>
+<translation id="7636297873481318396">ይህ ፋይል አደገኛ ስለሆነ Chrome አግዶታል። በላቀ ጥበቃ አማካይነት ጥበቃ ተደርጎሎታል።</translation>
 <translation id="7641148173327520642">የስርዓት አስተዳዳሪዎ Google Chrome <ph name="TARGET_URL_HOSTNAME" /> ለመድረስ <ph name="ALTERNATIVE_BROWSER_NAME" />ን እንዲከፍት አዋቅሮታል።</translation>
 <translation id="7651907282515937834">Chrome Enterprise አርማ</translation>
 <translation id="7747138024166251722">ጫኝው ጊዜያዊ ማውጫ መፍጠር አልቻለም። እባክዎ ነፃ የዲስክ ቦታ እና ሶፍትዌር የመጫን ፍቃድ እንዳለ ይፈትሹ።</translation>
@@ -283,6 +286,7 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="8669527147644353129">Google Chrome አጋዥ</translation>
 <translation id="8679801911857917785">እንዲሁም Chromeን ሲጀምሩት የሚታየውን ገጽ ይቆጣጠራል።</translation>
 <translation id="870251953148363156">&amp;Google Chromeን አዘምን</translation>
+<translation id="8704255848199359374">ይህ በ Google ፍለጋ ውስጥ ጥቅም ላይ ጋር ተመሳሳይ የፊደል አራሚ ይጠቀማል። በአሳሽ ውስጥ የሚተይቡት ጽሑፍ ወደ Google ይላካል። ይህን ባህሪ ሁልጊዜ በቅንብሮች ውስጥ መለወጥ ይችላሉ።</translation>
 <translation id="873133009373065397">Google Chrome ነባሪ አሳሹን ማወቅ ወይም ማቀናበር አልቻለም</translation>
 <translation id="8736674169840206667">አንድ ዝማኔ ለመተግበር አስተዳዳሪዎ Chromeን ዳግም እንዲያስጀምሩት ይፈልግብዎታል</translation>
 <translation id="8788264404293392165">ይህ ቋንቋ የChrome OS ዩአይን ለማሳየት ስራ ላይ ይውላል</translation>

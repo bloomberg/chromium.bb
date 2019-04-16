@@ -202,7 +202,6 @@
       Kliendisertifikaate kasutatavatele eri hostidele edastatavad liitmistaotlused võivad põhjustada turva- ja privaatsusprobleeme, kuna üldine sertifitseerimisorgan edastatakse kõigile taotlustele, isegi kui kasutaja seda ei volitanud. Reegel on ajutine ja see eemaldatakse tulevases versioonis. Vt https://crbug.com/855690.
 
       Kui reegel jäetakse määramata, kasutatakse vaikekäitumist, mille puhul ei lubata HTTP/2 ühenduse liitmist kliendisertifikaatidel põhinevate ühenduste korral.</translation>
-<translation id="1353966721814789986">Käivitamisel avatavad lehed</translation>
 <translation id="1354424209129232709">Maksimum:</translation>
 <translation id="1354452738176731363">Kui reegel seatakse väärtusele Väär, ei saa seadmest heli väljastada, kui kasutaja on sisse logitud.
 
@@ -226,7 +225,6 @@
       Kui see reegel on määramata, võib võrgustiku kood käivituda väljaspool brauseri protsesse, olenevalt teenuse NetworkService katsejärgust.</translation>
 <translation id="1384459581748403878">Viide: <ph name="REFERENCE_URL" /></translation>
 <translation id="1384653327213929024">Kasutajatel installitud sertifikaatide haldamise lubamine.</translation>
-<translation id="1387596372902085462">Määrab, kas usaldada Symantec Corporationi PKI pärandtaristut</translation>
 <translation id="1393485621820363363">Ettevõtte seadmete jaoks lubatud printerid</translation>
 <translation id="1397855852561539316">Vaikeotsingupakkuja soovitatud URL</translation>
 <translation id="1404043648050567997">Kui kasutajad satuvad navigeerides saitidele, mis on märgistatud kui potentsiaalselt pahatahtlikud, siis kuvab teenus Google'i ohutu sirvimine hoiatuslehe. Selle seade lubamine takistab kasutajatel hoiatuslehelt pahatahtlikule saidile edasi liikuda.
@@ -414,7 +412,6 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
 
       Reegel on saadaval ainult Windowsi eksemplarides, mis on liidetud domeeniga <ph name="MS_AD_NAME" />, ja Windows 10 Pro või Enterprise'i eksemplaridega, mis on registreeritud seadmehalduse teenuses.</translation>
 <translation id="172374442286684480">Luba kõikidel saitidel kohalike andmete määramine</translation>
-<translation id="1734716591049455502">Kaugjuurdepääsu valikute seadistamine</translation>
 <translation id="1736269219679256369">SSL-i hoiatuslehelt jätkamise lubamine</translation>
 <translation id="1745780278307622857">Määrake, kas <ph name="PRODUCT_NAME" /> võib sisu usaldusväärsest allikast alla laadida, ilma et Google'i ohutu sirvimine seda kontrolliks.
 
@@ -552,7 +549,6 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
       Selle seade keelamisel ei anna automaattäite funktsioon soovitusi ega sisesta aadressiteavet. Samuti ei salvesta see aadressi lisateavet, mille kasutaja võib veebi sirvimisel esitada.
 
       Selle seade lubamisel või määramata jätmisel saab kasutaja kasutajaliideses aadresside automaattäite funktsiooni juhtida.</translation>
-<translation id="1960840544413786116">Kas lubada kohalike usaldusvõtmete väljastatud sertifikaadid, millel puudub laiend subjectAlternativeName?</translation>
 <translation id="1962273523772270623">Google'i teenustest WebRTC sündmuselogide kogumise lubamine</translation>
 <translation id="1964634611280150550">Inkognito režiim on keelatud</translation>
 <translation id="1964802606569741174">See reegel ei mõjuta Androidi YouTube'i rakendust. Kui ohutusrežiim on sisse lülitatud, tuleks YouTube jõustada ja Androidi YouTube'i rakenduse installimine keelata.</translation>
@@ -756,7 +752,6 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
       Active Directory hallatavate seadmete puhul toetab see reegel seadme <ph name="MACHINE_NAME_VARIABLE" /> laiendamist Active Directory seadme nimele või selle alamstringile. Näiteks kui seadme nimi on <ph name="MACHINE_NAME_EXAMPLE" />, siis asendatakse <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> nelja tähemärgiga, mis algab pärast kuuendat märki (nt <ph name="MACHINE_NAME_PART_EXAMPLE" />). Pange tähele, et loendamist alustatakse nullist.
       </translation>
 <translation id="2294382669900758280">Video esitamist Androidi rakendustes ei arvestata, isegi kui reegli väärtuseks on määratud <ph name="TRUE" />.</translation>
-<translation id="2298647742290373702">Seadistab uue vaikevahelehe teenuses <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Lubatud pistikprogrammide loendi määramine</translation>
 <translation id="2303795211377219696">Automaattäite lubamine krediitkaartide puhul</translation>
 <translation id="2309390639296060546">Geograafilise asukoha vaikeseade</translation>
@@ -963,11 +958,6 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
           Vaadake reegli võimalike seadete ja struktuuri täielikku kirjeldust: https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           </translation>
 <translation id="2753637905605932878">WebRTC kasutatavate kohalike UDP-portide vahemiku piiramine</translation>
-<translation id="2755385841634849932">See reegel juhib Androidi varundamise ja taastamise saadavalolekut.
-
-      Kui reegel on seadistamata või seatud väärtusele <ph name="BR_DISABLED" />, on Androidi varundamine ja taastamine keelatud ning kasutaja ei saa seda lubada.
-
-      Kui reegel on määratud väärtusele <ph name="BR_UNDER_USER_CONTROL" />, palutakse kasutajal valida, kas ta soovib Androidi varundus- ja taasteteenust kasutada. Kui kasutaja lubab varundamise ja taastamise, laaditakse ühilduvate Androidi rakenduste andmed üles Androidi varundusserveritesse ja need taastatakse rakenduste uuesti installimisel.</translation>
 <translation id="2757054304033424106">Laienduste/rakenduste tüübid, mille installimine on lubatud</translation>
 <translation id="2758084448533744848">Määrab jõustatud ajavööndi, mida seadmes kasutada. Kui see reegel on määratud, ei saa seadme kasutajad määratud ajavööndit alistada. Kui esitatakse kehtetu väärtus, siis aktiveeritakse reegel selle asemel siiski väärtusega „GMT”. Kui esitatakse tühi string, siis reeglit eiratakse.
 
@@ -1113,7 +1103,6 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
 <translation id="2959898425599642200">Puhverserveri möödumisreeglid</translation>
 <translation id="2960128438010718932">Kontrollimise ajakava uue värskenduse rakendamiseks</translation>
 <translation id="2960691910306063964">Kaugjuurdepääsu hostide PIN-koodita autentimise lubamine või keelamine</translation>
-<translation id="2972261849442778817">Võimaldab kasutajalt küsida, kas ta soovib üle minna või üleviimise vahele jätta ja ARC keelata.</translation>
 <translation id="2976002782221275500">Määrab aja, pärast mida hämardatakse akutoitega töötamisel ekraan, kui kasutaja pole midagi sisestanud.
 
           Kui selle reegli väärtuseks määratakse arv, mis on suurem kui null, määrab see aja, mille jooksul peab kasutaja olema tegevusetu, enne kui <ph name="PRODUCT_OS_NAME" /> ekraani hämardab.
@@ -1255,15 +1244,6 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
       Kui seade on lubatud või seadistamata, saavad kasutajad lubada pilvprintimise puhverserveri Google'i kontoga autentides.
 
       Kui seade on keelatud, ei saa kasutajad puhverserverit lubada ja seadmel ei ole lubatud jagada printereid teenusega <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="3307746730474515290">Määrab, millist tüüpi rakendusi/laiendusi tohib installida, ja piirab käitusaja juurdepääsu.
-
-          Seade loob lubatute loendi kõikidest laiendustest/rakendustest, mille tohib teenusesse <ph name="PRODUCT_NAME" /> installida, ja määrab, milliste hostidega need saavad suhelda. Väärtus on stringide loend, millest igaüks peab olema üks järgmistest: „extension”, „theme”, „user_script”, „hosted_app”, „legacy_packaged_app” või „platform_app”. Nende tüüpide kohta lisateabe saamiseks vaadake teenuse <ph name="PRODUCT_NAME" /> laienduste dokumente.
-
-          Pange tähele, et reegel mõjutab ka atribuudi ExtensionInstallForcelist kaudu sundinstallitud laiendusi ja rakendusi.
-
-          Kui seade on seadistatud, siis ei installita laiendusi/rakendusi, mille tüüp loendist puudub.
-
-          Kui jätate seade seadistamata, ei rakendata kohaldatavatele laienduste/rakenduste tüüpidele piiranguid.</translation>
 <translation id="3322771899429619102">Võimaldab määrata URL-i mustrite loendi, mis määrab saidid, millel on lubatud kasutada võtmete loomist. Kui URL-i muster on loendis „KeygenBlockedForUrls”, alistab see need erandid.
 
           Kui jätate reegli määramata, kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultKeygenSetting”, kui see on määratud, või kasutaja isiklikku seadistust.</translation>
@@ -1376,7 +1356,6 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
 
           Reeglit järgitakse ainult siis, kui lubatud on reegel „DefaultSearchProviderEnabled”.</translation>
 <translation id="350797926066071931">Luba Tõlge</translation>
-<translation id="3512226956150568738">Kui kliendi seadme mudel toetas ARC-d juba enne seda, kui üleminek ext4-le oli ARC käitamiseks vajalik, ja kui reegli ArcEnabled väärtuseks on määratud Tõene, siis toimib see valik sarnaselt väärtusega AskUser (väärtus 3). Kõigil muudel juhtudel (kui seadme mudel varem ARC-d ei toetanud või kui reegli ArcEnabled väärtuseks on määratud Väär) on see väärtus võrdne väärtusega DisallowArc (väärtus 0).</translation>
 <translation id="3513655665999652754">Quirks Server pakub riistvarapõhiseid konfiguratsioonifaile, nagu
       ICC ekraaniprofiilid, et saaksite monitori kalibreerimist kohandada.
 
@@ -1567,7 +1546,6 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
       Reegli keelamisel on SPDY kasutamine lubatud.
 
       Kui jätate selle reegli määramata, on SPDY saadaval.</translation>
-<translation id="3890999316834333174">Kiiravamise reeglid</translation>
 <translation id="3891357445869647828">Luba JavaScript</translation>
 <translation id="3895557476567727016">Seadistab vaikekataloogi, mida brauser <ph name="PRODUCT_NAME" /> kasutab failide allalaadimiseks.
 
@@ -1642,13 +1620,6 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
 
           Tavaliselt on see andmepüügi eest kaitsmiseks keelatud. Kui see reegel ei ole määratud, siis see keelatakse ja kolmanda osapoole alamsisu ei saa HTTP Basic Authi hüpikdialoogina avaneda.</translation>
 <translation id="4056910949759281379">Keela SPDY-protokoll</translation>
-<translation id="4059515172917655545">See reegel juhib Google'i asukohateenuste kättesaadavust.
-
-      Kui reegel on seadistamata või seatud väärtusele <ph name="GLS_DISABLED" />, on Google'i asukohateenused keelatud ja kasutaja ei saa neid lubada.
-
-      Kui reegel on seatud väärtusele <ph name="GLS_UNDER_USER_CONTROL" />, palutakse kasutajal valida, kas ta soovib Google'i asukohateenuseid kaustada. See võimaldab Androidi rakendustel kasutada teenuseid seadme asukoha päringu esitamiseks, samuti lubatakse anonüümsete asukohaandmete saatmine Google'ile.
-
-      Pange tähele, et reeglit eiratakse ja asukohateenused on alati keelatud, kui reegel <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> on seatud väärtusele <ph name="BLOCK_GEOLOCATION_SETTING" />.</translation>
 <translation id="408029843066770167">Google'i kellaajateenuses päringute lubamine</translation>
 <translation id="408076456549153854">Brauserisse sisselogimise lubamine</translation>
 <translation id="4088589230932595924">Inkognito režiim on jõustatud</translation>
@@ -1803,11 +1774,10 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
       Pange tähele, et reegel, mis sisaldab rakenduse ID-d, ei tähenda alati seda, et kasutaja saab rakenduse lubada lukustuskuval märkmete tegemise rakendusena. Näiteks Chrome'i versioonis 61 on saadaolevate rakenduste kogumi täiendavalt piiranud ka platvorm.
 
       Kui reegel jäetakse määramata, puuduvad piirangud rakenduste kogumile, mille kasutaja saab lukustuskuval reegliga lubada.</translation>
-<translation id="4309640770189628899">Näitab, kas DHE šifreerimiskomplektid on TLS-is lubatud</translation>
 <translation id="4322842393287974810">Luba automaatselt käivitatud viivituseta kioskirakendusel juhtida operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> versiooni</translation>
 <translation id="4325690621216251241">Lisa väljalogimisnupp süsteemisalve</translation>
 <translation id="4332177773549877617">Androidi rakenduse installimiste logisündmused</translation>
-<translation id="4335292026668105285">Määrab aja, pärast mida kuvatakse vahelduvvoolutoite kasutamisel hoiatusdialoog, kui kasutaja pole midagi sisestanud.
+<translation id="4335292026668105285">Määrab aja, mille möödumisel kuvatakse vahelduvvoolutoite kasutamisel hoiatusdialoog, kui kasutaja pole midagi sisestanud.
 
           Kui see reegel on määratud, määrab see aja, mille jooksul peab kasutaja olema tegevusetu, enne kui operatsioonisüsteem <ph name="PRODUCT_OS_NAME" /> kuvab hoiatusdialoogi, teavitades kasutajat tegevusetu oleku peatsest toimingust.
 
@@ -1933,17 +1903,6 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
 <translation id="4613508646038788144">Kui reegel on määratud väärtusele Väär, on kolmanda osapoole tarkvaral lubatud sisestada Chrome'i protsessidesse täitmiskoodi. Kui reegel on määramata või seatud väärtusele Tõene, on kolmandal osapoolel keelatud täitmiskoodi Chrome'i protsessidesse sisestada.</translation>
 <translation id="4617338332148204752">Metasildi kontrollimise vahelejätmine teenuses <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Installimiseks lubatud laienduste loendi seadistamine</translation>
-<translation id="463224920692183755">Määrab toimingu, mis tehakse juhul, kui kasutaja juurkataloog loodi ecryptfs-krüpteerimisega ja see tuleb üle viia ext4-krüpteerimisele.
-
-      Kui määrate reegli väärtuseks „DisallowArc”, on Androidi rakendused kasutaja jaoks keelatud ning üleminekut ecryptfs-krüpteerimiselt ext4-krüpteerimisele ei toimu. Androidi rakenduste käitamist ei takistata, kui juurkataloog kasutab juba ext4-krüpteerimist.
-
-      Kui määrate reegli väärtuseks „Migrate”, viiakse ecryptfs-krüpteerimisel põhinevad juurkataloogid sisselogimisel automaatselt üle ext4-krüpteerimisele ja seejuures ei küsita kasutaja nõusolekut.
-
-      Kui määrate reegli väärtuseks „Wipe”, kustutatakse ecryptfs-krüpteerimisel põhinevad juurkataloogid sisselogimisel ja nende asemel luuakse uued ext4-krüpteeritud juurkataloogid. Hoiatus. See eemaldab kasutaja kohalikud andmed.
-
-      Kui määrate reegli väärtuseks „AskUser”, pakutakse ecryptfs-krüpteeritud juurkataloogiga kasutajatele üleviimise valikut.
-
-      Reegel ei kehti kioski kasutajatele. Kui reegel on määramata, käitub seade samamoodi kui seade „DisallowArc” valimisel.</translation>
 <translation id="4632343302005518762">Pistikprogrammil <ph name="PRODUCT_FRAME_NAME" /> loetletud sisutüüpide töötlemise lubamine</translation>
 <translation id="4632566332417930481">Ettevõtte reegli alusel installitud laiendustes arendaja tööriistade kasutamise keelamine, arendaja tööriistade kasutamise lubamine muus kontekstis</translation>
 <translation id="4633786464238689684">Asendab klaviatuuri ülemise rea klahvide vaiketoimingud funktsiooniklahvide toimingutega.
@@ -2054,7 +2013,6 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
 <translation id="4983201894483989687">Luba vananenud pistikprogrammide käitamine</translation>
 <translation id="4986560318567565414">Chrome'i tee alternatiivselt brauserilt üleminemiseks.</translation>
 <translation id="4988291787868618635">Tehtav toiming, kui möödub jõudeoleku viiteaeg</translation>
-<translation id="4995548127349206948">Kas NTLMv2 autentimine on lubatud või mitte.</translation>
 <translation id="5030889661505907084">
       Kui reegel on seatud väärtusele Tõene, alistavad pilvereeglid konflikti puhul platvormireeglid.
       Kui reegli väärtuseks on määratud Väär või see jäetakse määramata, alistavad platvormireeglid konflikti puhul pilvereeglid.
@@ -2149,7 +2107,6 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
 
       Erinevalt reeglist <ph name="URL_LIST_POLICY_NAME" /> kehtivad reeglid mõlemas suunas. See tähendab, et kui Internet Exploreri pistikprogramm on olemas ja lubatud, juhib see ka seda, kas<ph name="IE_PRODUCT_NAME" /> peaks avama URL-id rakenduses <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5124368997194894978">Vahelduvvooluga käivitamise lubamine</translation>
-<translation id="5130288486815037971">Kas RC4 šifreerimiskomplektid TLS-is on lubatud?</translation>
 <translation id="5141670636904227950">Lubage ekraaniluubi vaiketüüp sisselogimisekraanil</translation>
 <translation id="5142301680741828703">Renderda alati rakenduses <ph name="PRODUCT_FRAME_NAME" /> järgmiste URL-ide mustrid</translation>
 <translation id="5148753489738115745">Võimaldab teil määrata täiendavad parameetrid, mida kasutatakse siis, kui <ph name="PRODUCT_FRAME_NAME" /> käivitab rakenduse <ph name="PRODUCT_NAME" />.
@@ -2828,7 +2785,6 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli IsolateOr
           See reegel on valikuline. Kui see pole määratud, siis saadetakse soovituse otsingu taotlus GET-meetodiga.
 
           Reeglit järgitakse ainult siis, kui lubatud on reegel „DefaultSearchProviderEnabled”.</translation>
-<translation id="6367755442345892511">Määramine, kas kasutajal on võimalik versiooni kanalit seadistada</translation>
 <translation id="6368011194414932347">Avalehe URL-i seadistamine</translation>
 <translation id="6368403635025849609">Luba JavaScript nendel saitidel</translation>
 <translation id="6376659517206731212">Võib olla kohustuslik</translation>
@@ -3134,6 +3090,7 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli IsolateOr
       Kui ekraani hämardamine algab, uurib nutikas hämardamismudel, kas ekraani hämardamine tuleks edasi lükata. Kui nutikas hämardamismudel lükkab ekraani hämardamise edasi, pikendatakse sisuliselt aega, mille möödudes ekraan hämardatakse. Sel juhul reguleeritakse ka ekraani väljalülitamise, lukustamise ja tegevusetuse viiteaegu, et järgida algselt seadistatud hämardamisviivitust.
       Kui reegel on määramata või seatud väärtusele Tõene, lubatakse nutikas hämardamismudel ja ekraani hämardamiseni kuluva aja pikendamine. Kui reegel on seatud väärtusele Väär, ei mõjuta nutikas hämardamismudel ekraani hämardamist.</translation>
 <translation id="6972540544240464302">Tegumite ajakava koostaja seadistuse valimine</translation>
+<translation id="6979158407327259162">Google Drive</translation>
 <translation id="6994082778848658360">Määrab, kuidas kasutada sisseehitatud turvalist elementi kahe teguriga autentimise funktsiooni pakkumiseks, kui element ühildub selle funktsiooniga. Kasutaja füüsilise kohaloleku tuvastamiseks kasutatakse seadme toitenuppu.
 
       Kui valite väärtuse „Keelatud”, ei pakuta kahe teguriga autentimist.
@@ -3141,7 +3098,6 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli IsolateOr
       Kui valite väärtuse „U2F”, käitub integreeritud teine tegur FIDO U2F-i spetsifikatsiooni kohaselt.
 
       Kui valite väärtuse „U2F_EXTENDED”, pakub sisseehitatud teine tegur U2F-i funktsioone ja ka teatud laiendusi individuaalse atesteerimise jaoks.</translation>
-<translation id="6997592395211691850">Kas OCSP/CRL-i onlain-kontroll on vajalikud kohalike usaldusvõtmete puhul või mitte</translation>
 <translation id="7003334574344702284">Reegli lubamisel imporditakse salvestatud paroolid eelmisest vaikebrauserist. Lubamisel mõjutab reegel ka importimisdialoogi.
 
       Reegli keelamisel salvestatud paroole ei impordita.
@@ -3398,10 +3354,6 @@ Kui jätate selle reegli määramata, ei ole kasutajate sisselogimine piiratud. 
 <translation id="7458437477941640506">Ära minge tagasi sihtversioonile, kui operatsioonisüsteemi versioon on uuem kui sihtversioon. Värskendused on samuti keelatud.</translation>
 <translation id="7464991223784276288">Vastavatelt URL-idelt pärit küpsisefailide seansipõhine piiramine</translation>
 <translation id="7469554574977894907">Luba otsingusoovitused</translation>
-<translation id="7474249562477552702">Kas kohalike usaldusvõtmete väljastatud SHA-1 allkirjastatud sertifikaadid on lubatud?</translation>
-<translation id="747851715060942420">Võimaldab seadistada käivitamisel laaditavad lehed.
-
-      Reeglit „Käivitamisel avatavad URL-id” eiratakse, kui te ei vali jaotises „Toiming käivitamisel” käsku „Ava URL-ide loend”.</translation>
 <translation id="7485481791539008776">Vaikeprinteri valimise reeglid</translation>
 <translation id="7485730741952775732">Kui reegel on määratud, kasutab kaugjuurdepääsu host seda URL-i kaugjuurdepääsu klientide autentimismärkide valideerimiseks, et ühendusi vastu võtta. Reeglit tuleb kasutada koos reegliga RemoteAccessHostTokenUrl.
 
@@ -3419,7 +3371,7 @@ Kui jätate selle reegli määramata, ei ole kasutajate sisselogimine piiratud. 
 
           Kui see reegel on määramata või selle väärtuseks määratakse Lubatud, aktsepteerib Google Chrome allkirjastatud HTTP-andmevahetusena esitatud veebisisu.
 
-          Kui reegli väärtuseks määratakse Väär, siis ei saa allkirjastatud HTTP-andmevahetusi laadida.</translation>
+          Kui reegli väärtuseks määratakse Keelatud, siis ei saa allkirjastatud HTTP-andmevahetusi laadida.</translation>
 <translation id="7511361072385293666">Kui reegli väärtuseks määratakse Tõene või seda ei määrata, on QUIC-protokolli kasutamine teenuses <ph name="PRODUCT_NAME" /> lubatud.
       Kui reegli väärtuseks määratakse Väär, on QUIC-protokolli kasutamine keelatud.</translation>
 <translation id="7517845714620372896">Määrab ekraani ereduse protsendi.
@@ -3566,7 +3518,7 @@ Kui jätate selle reegli määramata, ei ole kasutajate sisselogimine piiratud. 
       Tunnustatud ühendustüübi identifikaatorid on „ethernet”, „wifi”, „wimax”, „bluetooth” ja „cellular”.</translation>
 <translation id="7763614521440615342">Kuva uuel vahelehel sisu soovitused</translation>
 <translation id="7765879851993224640">Smart Locki kaudu sisselogimise lubamine.</translation>
-<translation id="7772346342637974431">Määrab aja, pärast mida kuvatakse akutoite kasutamisel hoiatusdialoog, kui kasutaja pole midagi sisestanud.
+<translation id="7772346342637974431">Määrab aja, mille möödumisel kuvatakse akutoite kasutamisel hoiatusdialoog, kui kasutaja pole midagi sisestanud.
 
           Kui see reegel on määratud, määrab see aja, mille jooksul peab kasutaja olema tegevusetu, enne kui operatsioonisüsteem <ph name="PRODUCT_OS_NAME" /> kuvab hoiatusdialoogi, teavitades kasutajat tegevusetu oleku peatsest toimingust.
 
@@ -3577,7 +3529,6 @@ Kui jätate selle reegli määramata, ei ole kasutajate sisselogimine piiratud. 
           Hoiatussõnum kuvatakse ainult siis, kui tegevusetuse toiming on väljalogimine või väljalülitamine.</translation>
 <translation id="7774768074957326919">Kasuta süsteemi puhverserveri seadeid</translation>
 <translation id="7777535871204167559">Väliste salvestusseadmete kirjutuskaitstuna kohtlemine</translation>
-<translation id="7781069478569868053">Uus vaheleht</translation>
 <translation id="7788511847830146438">Profiilipõhine</translation>
 <translation id="780603170519840350">Keelab sertifikaadi läbipaistvuse nõuete jõustamise loendisse lisatud atribuudi subjectPublicKeyInfo räside jaoks.
 
@@ -3605,7 +3556,6 @@ Kui jätate selle reegli määramata, ei ole kasutajate sisselogimine piiratud. 
 
       Kui jätate reegli määramata, siis kasutab toode <ph name="PRODUCT_NAME" /> vaikeväärtust 5000 millisekundit.</translation>
 <translation id="7841880500990419427">Minimaalne TLS-i versioon, millele tagasi minna</translation>
-<translation id="7842869978353666042">Google Drive'i valikute seadistamine</translation>
 <translation id="7858404742201086014">Kui lubate selle seade, kasutatakse vananenud pistikprogramme tavapärasel moel.
 
       Kui keelate seade, ei kasutata vananenud pistikprogramme ja kasutajatelt ei küsita luba nende kasutamiseks.
@@ -3629,6 +3579,7 @@ Kui jätate selle reegli määramata, ei ole kasutajate sisselogimine piiratud. 
 <translation id="793134539373873765">Määrab, kas OS-i värskendamise lastide jaoks kasutatakse p2p-võrgustikku. Kui väärtuseks on seatud Tõene, siis seade jagab ja proovib tarbida värskendamise laste LAN-is, vähendades potentsiaalselt Interneti-ribalaiuse kasutamist ja ummistumist. Kui värskendamise last pole LAN-is saadaval, naaseb seade allalaadimise juurde värskendusserverist. Kui väärtuseks on seatud Vale või see pole määratud, siis p2p-võrgustikku ei kasutata.</translation>
 <translation id="7933141401888114454">Järelevalvega kasutajate loomise lubamine</translation>
 <translation id="793473937901685727">Sertifikaatide saadavuse määramine ARC-rakenduste jaoks</translation>
+<translation id="7937491150792971922">Laienduste installimise loendi reeglite liitmine mitmest allikast</translation>
 <translation id="7937766917976512374">Video jäädvustamise lubamine või keelamine</translation>
 <translation id="7941975817681987555">Ära ennusta võrgutoiminguid ühegi võrguühenduse puhul</translation>
 <translation id="7952958573604504839">Reegli tugi on versioonis M48 katkestatud ja asendatud reegliga <ph name="NETWORK_PREDICTION_OPTIONS_POLICY_NAME" /> ning versioonist M54 on reegel eemaldatud.
@@ -3872,7 +3823,6 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 
       Lisateave Internet Exploreri reegli <ph name="IEEM_SITELIST_POLICY" /> kohta: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="8402079500086185021">Ava PDF-failid alati väliselt</translation>
-<translation id="8412312801707973447">Kontrolli võrgus OCSP-d/CRL-i</translation>
 <translation id="8417305981081876834">Lukustuskuva PIN-koodi maksimumpikkuse määramine</translation>
 <translation id="841977920223099909">Paroolikaitse hoiatuse käivitaja</translation>
 <translation id="8424255554404582727">Määratakse ekraani vaikepöördenurk, mis rakendatakse uuesti igal taaskäivitamisel</translation>
@@ -4061,7 +4011,6 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 <translation id="8818768076343557335">Ennustage võrgutegevus kõigis võrkudes peale mobiilsidevõrgu.
           (Iganenud alates versioonist 50, eemaldatud alates versioonist 52. Kui hilisemas kui 52. versioonis määratakse väärtus 1, tõlgendatakse seda kui väärtust 0 – võrgutegevuste ennustamine mis tahes võrguühenduse puhul.)</translation>
 <translation id="8825782996899863372">Paroolikaitse hoiatuse käivitab parooli uuesti kasutamine andmepüügilehel</translation>
-<translation id="8828766846428537606">Seadistage rakenduse <ph name="PRODUCT_NAME" /> vaikeavaleht ja takistage kasutajaid seda muutmast. Kasutaja avalehe seaded on täielikult lukustatud vaid juhul, kui valite avaleheks uue vahelehe või seate selle URL-iks ja määrate avalehel URL-i. Kui te ei määra avalehe URL-i, saab kasutaja määrata avaleheks uue vahelehe käsuga chrome://newtab.</translation>
 <translation id="8833109046074170275">GAIA vaikevoo kaudu autentimine</translation>
 <translation id="8838303810937202360">Operatsioonisüsteem <ph name="PRODUCT_OS_NAME" /> lisab rakendused ja laiendused mitme kasutaja jaoks installimiseks seadme vahemällu, et vältida iga kasutaja puhul uuesti allalaadimist.
       Kui see reegel on seadistamata või väärtus on väiksem kui 1 MB, kasutab operatsioonisüsteem <ph name="PRODUCT_OS_NAME" /> vaikimisi vahemälu mahtu.</translation>
@@ -4097,7 +4046,6 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
       Kui selle seade lubate või keelate, ei saa kasutajad seda brauseris <ph name="PRODUCT_NAME" /> muuta ega alistada.
 
       Kui see seade jäetakse seadistamata, saab kasutaja otsustada, kas funktsiooni kasutada või mitte.</translation>
-<translation id="8870318296973696995">Avaleht</translation>
 <translation id="8876188741456358123">Alistab printimisel vaikimisi kasutatava dupleksrežiimi. Reeglit eiratakse, kui režiim ei ole saadaval.</translation>
 <translation id="8882006618241293596">Blokeeri nendel saitidel pistikprogramm <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="8906768759089290519">Luba külastajarežiim</translation>
@@ -4210,7 +4158,7 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 <translation id="9035964157729712237">Mustast nimekirjast välistatud laienduste ID-d</translation>
 <translation id="9038058011835642205">Määrab loendi veebisaitidest, mis installitakse märkamatult, ilma et kasutaja peaks sekkuma, ning mida kasutaja ei saa desinstallida ega keelata.
 
-      Reegli iga loendiüksus on kohustusliku liikmega objekt: „url” ja kaks valikulist liiget: „default_launch_container” ja „create_desktop_shortcut”. Väärtus „url” peab olema installitava veebirakenduse URL ja „launch_container” peab olema „window” või „tab”, mis näitab, kuidas veebirakendus pärast installimist avatakse. Reegel „create_desktop_shortcut” peab olema tõene, kui töölaua otsetee tuleb luua Linuxis ja Windowsis. Kui reegel „default_launch_container" jäetakse tühjaks, avaneb rakendus vaikimisi vahelehel. Olenemata reegli „default_launch_container” väärtusest saavad kasutajad muuta, millises konteineris rakendus avaneb. Kui reegel „create_desktop_shortcuts” jäetakse tühjaks, siis töölaua otseteid ei looda.</translation>
+      Reegli iga loendiüksus on kohustusliku liikmega objekt: „url” ja kaks valikulist liiget: „default_launch_container” ja „create_desktop_shortcut”. Väärtus „url” peab olema installitava veebirakenduse URL ja „launch_container” peab olema „window” või „tab”, mis näitab, kuidas veebirakendus pärast installimist avatakse. Reegel „create_desktop_shortcut” peab olema tõene, kui töölaua otsetee tuleb luua Linuxis ja Windowsis. Kui reegel „default_launch_container" jäetakse tühjaks, avaneb rakendus vaikimisi vahelehel. Olenemata reegli „default_launch_container” väärtusest, saavad kasutajad muuta, millises konteineris rakendus avaneb. Kui reegel „create_desktop_shortcuts” jäetakse tühjaks, siis töölaua otseteid ei looda.</translation>
 <translation id="9038839118379817310">WiFi lubamine</translation>
 <translation id="9039822628127365650">Kui reegel on seadistatud, määrab see ajavahemiku, mille möödudes logitakse kasutaja automaatselt välja ja seanss lõpetatakse. Süsteemisalves olev taimer näitab kasutajale järelejäänud aega.
 
@@ -4253,7 +4201,6 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 <translation id="9094064873808699479">Võimaldab naasta ja jääda sihtversioonile, kui operatsioonisüsteemi versioon on sihtversioonist uuem. Proovige võimaluse korral seadme tasemel seadistus (sh võrgumandaat) tagasiminekuprotsessi kaudu üle viia, ent tehke seejuures täielik Powerwash, isegi kui andmete taastamine ei ole võimalik (kuna sihtversioon ei toeta andmete taastamist või muudatus ei ole tagasiühilduv).
           Seda toetatakse alates operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> 70. versioonist. Vanemate klientide puhul tähendab väärtus, et tagasiminek on keelatud.</translation>
 <translation id="9096086085182305205">Autentimisserveri lubatud nimekiri</translation>
-<translation id="9098553063150791878">HTTP autentimise reeglid</translation>
 <translation id="9105265795073104888">Androidi rakendustele muudetakse kättesaadavaks ainult puhverserveri seadistuse valikute alamkomplekt. Androidi rakenduste jaoks on puhverserveri kasutamine vabatahtlik. Te ei saa puhverserveri kasutamist sundida.</translation>
 <translation id="9106865192244721694">Reegli WebUSB lubamine nendel saitidel</translation>
 <translation id="9112727953998243860">Ettevõtte printerite konfiguratsioonifail</translation>

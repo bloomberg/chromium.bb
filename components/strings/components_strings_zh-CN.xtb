@@ -205,7 +205,6 @@
 <translation id="2053111141626950936">系统不会翻译<ph name="LANGUAGE" />网页。</translation>
 <translation id="2053553514270667976">邮编</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 条建议}other{# 条建议}}</translation>
-<translation id="2068124040035837596">您的帐号由 <ph name="ENROLLMENT_DOMAIN" /> 管理。这意味着，您的管理员可能会远程配置您的帐号。</translation>
 <translation id="2068663545051464999">已上传的崩溃报告的 ID：<ph name="CRASH_ID" />（本地上下文：<ph name="CRASH_LOCAL_ID" />）</translation>
 <translation id="2079545284768500474">撤消</translation>
 <translation id="20817612488360358">已设置为使用系统代理设置，但同时指定了一个明确的代理配置。</translation>
@@ -271,7 +270,6 @@
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">此服务器无法证明它是<ph name="DOMAIN" />；其安全证书可能已被撤消。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="2418081434543109369">您要访问的服务器 <ph name="ORIGIN" /> 已请求将一项安全政策应用于向其发出的所有请求。但该服务器现在未能提供任何政策，这会阻止浏览器满足您对 <ph name="SITE" /> 的访问请求。</translation>
-<translation id="244665789865330679">您的设备和帐号由 <ph name="ENROLLMENT_DOMAIN" /> 管理。这意味着，您的管理员可能会远程配置您的设备和帐号。</translation>
 <translation id="2463193859425327265">更改主页</translation>
 <translation id="2463739503403862330">填充</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -470,7 +468,6 @@
 <translation id="358285529439630156">接受信用卡和预付卡。</translation>
 <translation id="3582930987043644930">添加名称</translation>
 <translation id="3583757800736429874">恢复移动(&amp;R)</translation>
-<translation id="35866233670761917">您的管理员看不到您访问的网站的内容</translation>
 <translation id="3586931643579894722">隐藏详细信息</translation>
 <translation id="3592413004129370115">Italian (Envelope)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />，<ph name="DOMAIN" />，<ph name="TIME" /></translation>
@@ -737,7 +734,6 @@
 <translation id="5095208057601539847">省</translation>
 <translation id="5097099694988056070">设备统计信息（例如 CPU/RAM 使用情况）</translation>
 <translation id="5097501891273180634">A2</translation>
-<translation id="5098222253617183465">您的设备由 <ph name="ENROLLMENT_DOMAIN" /> 管理，而您的帐号由 <ph name="ACCOUNT_DOMAIN" /> 管理。这意味着，您的管理员可能会远程配置您的设备和帐号。</translation>
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">（64 位）</translation>
@@ -893,7 +889,6 @@
 <translation id="5967592137238574583">修改联系信息</translation>
 <translation id="5967867314010545767">从历史记录中移除</translation>
 <translation id="5975083100439434680">缩小</translation>
-<translation id="5977489021191000276">您的设备不受管理员管理。</translation>
 <translation id="5977976211062815271">在这部设备上</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">无法打开付款应用</translation>
@@ -1038,7 +1033,6 @@
 <translation id="6903319715792422884">您可以选择向 Google 发送一些<ph name="BEGIN_WHITEPAPER_LINK" />系统信息和网页内容<ph name="END_WHITEPAPER_LINK" />，以帮助我们改进安全浏览功能。<ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">用户：</translation>
 <translation id="6934672428414710184">此名称来自您的 Google 帐号</translation>
-<translation id="6939583532829045966">您的设备由 <ph name="ENROLLMENT_DOMAIN" /> 管理。这意味着，您的管理员可能会远程配置您的设备。</translation>
 <translation id="6944692733090228304">您在一个不受 <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> 管理的网站上输入了您的密码。为了保护您的帐号，请不要在其他应用和网站上重复使用您的密码。</translation>
 <translation id="6945221475159498467">选择</translation>
 <translation id="6948701128805548767">要查看取货方式和要求，请选择相应地址</translation>
@@ -1048,7 +1042,6 @@
 <translation id="6957887021205513506">该服务器的证书似乎是伪造的。</translation>
 <translation id="6964255747740675745">未能解析网络配置（JSON 无效）。</translation>
 <translation id="6965382102122355670">确定</translation>
-<translation id="6965456981923010628"><ph name="LEFT_PART" /> • <ph name="RIGHT_PART" /></translation>
 <translation id="6965978654500191972">设备</translation>
 <translation id="6970216967273061347">区</translation>
 <translation id="6973656660372572881">固定代理服务器和 .pac 脚本网址均已指定。</translation>
@@ -1196,6 +1189,7 @@
 <translation id="7668654391829183341">未知设备</translation>
 <translation id="7669271284792375604">此网站上的攻击者可能会试图诱骗您安装有损浏览体验的程序（例如：通过更改您的主页或在您访问的网站上显示额外的广告）。</translation>
 <translation id="7676643023259824263">搜索剪贴板上的文字：<ph name="TEXT" /></translation>
+<translation id="7679176406634891508">平台和云端</translation>
 <translation id="7681101578153515023">更改搜索引擎</translation>
 <translation id="7682287625158474539">送货地址</translation>
 <translation id="7687186412095877299">在付款表单中填入已保存的付款方式</translation>
@@ -1400,7 +1394,6 @@
 <translation id="8932102934695377596">您的时钟慢了</translation>
 <translation id="893332455753468063">添加名称</translation>
 <translation id="8938939909778640821">接受的信用卡和预付卡</translation>
-<translation id="894185898663964645">您的管理员配置了自定义根证书，这些证书可能会允许管理员查看您所访问的网站的内容。</translation>
 <translation id="8943282376843390568">绿黄色</translation>
 <translation id="8957210676456822347">强制门户授权</translation>
 <translation id="8968766641738584599">保存卡片</translation>
@@ -1414,6 +1407,7 @@
 <translation id="8996941253935762404">您要访问的网站包含有害程序</translation>
 <translation id="8997023839087525404">该服务器提供了一个未通过证书透明度政策公开披露的证书。某些证书必须通过证书透明度政策进行公开披露，以确保它们值得信任且能保护用户免遭攻击。</translation>
 <translation id="9001074447101275817">代理 (<ph name="DOMAIN" />) 要求提供用户名和密码。</translation>
+<translation id="9004367719664099443">VR 会话正在进行中</translation>
 <translation id="9005998258318286617">未能加载 PDF 文档。</translation>
 <translation id="9008201768610948239">忽略</translation>
 <translation id="9011424611726486705">打开网站设置</translation>

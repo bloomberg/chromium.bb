@@ -210,7 +210,6 @@
 <translation id="2053111141626950936">Strony w tym języku (<ph name="LANGUAGE" />) nie będą tłumaczone.</translation>
 <translation id="2053553514270667976">Kod pocztowy</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 podpowiedź}few{# podpowiedzi}many{# podpowiedzi}other{# podpowiedzi}}</translation>
-<translation id="2068124040035837596">Twoim kontem zarządza <ph name="ENROLLMENT_DOMAIN" />. Oznacza to, że administrator może zdalnie konfigurować Twoje konto.</translation>
 <translation id="2068663545051464999">Przesłano raport o awarii – identyfikator: <ph name="CRASH_ID" /> (kontekst lokalny: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="2079545284768500474">Cofnij</translation>
 <translation id="20817612488360358">Skonfigurowano używanie systemowych ustawień proxy, ale podano też jawną konfigurację proxy.</translation>
@@ -279,7 +278,6 @@
     zasady bezpieczeństwa do wszystkich swoich żądań. Jednak nie dostarczył zasad,
     co uniemożliwia przeglądarce zrealizowanie
     Twojego żądania dotyczącego strony <ph name="SITE" />.</translation>
-<translation id="244665789865330679">Twoim urządzeniem i kontem zarządza <ph name="ENROLLMENT_DOMAIN" />. Oznacza to, że administrator może zdalnie konfigurować Twoje urządzenie i konto.</translation>
 <translation id="2463193859425327265">Zmień stronę główną</translation>
 <translation id="2463739503403862330">Wpisz</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -481,7 +479,6 @@
 <translation id="358285529439630156">Karty kredytowe i przedpłacone są akceptowane.</translation>
 <translation id="3582930987043644930">Dodaj nazwę</translation>
 <translation id="3583757800736429874">&amp;Ponów przeniesienie</translation>
-<translation id="35866233670761917">Treść otwieranych stron internetowych nie jest widoczna dla administratorów</translation>
 <translation id="3586931643579894722">Ukryj szczegóły</translation>
 <translation id="3592413004129370115">Italian (koperta)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
@@ -749,7 +746,6 @@
 <translation id="5095208057601539847">Prowincja</translation>
 <translation id="5097099694988056070">Statystyki na temat sprzętu, np. użycie procesora czy pamięci RAM</translation>
 <translation id="5097501891273180634">A2</translation>
-<translation id="5098222253617183465">Twoim urządzeniem zarządza <ph name="ENROLLMENT_DOMAIN" />, a Twoim kontem – <ph name="ACCOUNT_DOMAIN" />. Oznacza to, że administrator może zdalnie konfigurować Twoje urządzenie i konto.</translation>
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64-bitowa)</translation>
@@ -781,7 +777,7 @@
 <translation id="5252000469029418751">C7 (koperta)</translation>
 <translation id="5254958791078852567">E1</translation>
 <translation id="5283044957620376778">B1</translation>
-<translation id="528468243742722775">End</translation>
+<translation id="528468243742722775">Zakończ</translation>
 <translation id="5284909709419567258">Adresy sieciowe</translation>
 <translation id="5285570108065881030">Pokaż wszystkie zapisane hasła</translation>
 <translation id="5287240709317226393">Pokaż pliki cookie</translation>
@@ -905,7 +901,6 @@
 <translation id="5967592137238574583">Edytuj dane kontaktowe</translation>
 <translation id="5967867314010545767">Usuń z historii</translation>
 <translation id="5975083100439434680">Pomniejsz</translation>
-<translation id="5977489021191000276">Twoim urządzeniem nie zarządza administrator.</translation>
 <translation id="5977976211062815271">Na tym urządzeniu</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">Nie można otworzyć aplikacji do płatności</translation>
@@ -1051,7 +1046,6 @@
 <translation id="6903319715792422884">Pomóż w ulepszaniu Bezpiecznego przeglądania, wysyłając do Google pewne <ph name="BEGIN_WHITEPAPER_LINK" />informacje o systemie i część zawartości stron<ph name="END_WHITEPAPER_LINK" />. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">Użytkownik:</translation>
 <translation id="6934672428414710184">To imię i nazwisko pochodzi z Twojego konta Google</translation>
-<translation id="6939583532829045966">Twoim urządzeniem zarządza <ph name="ENROLLMENT_DOMAIN" />. Oznacza to, że administrator może zdalnie konfigurować Twoje urządzenie.</translation>
 <translation id="6944692733090228304">Wpisałeś swoje hasło na stronie, którą nie zarządza <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />. Aby chronić konto, nie używaj swojego hasła w innych aplikacjach ani witrynach.</translation>
 <translation id="6945221475159498467">Wybierz</translation>
 <translation id="6948701128805548767">Aby zobaczyć metody odbioru oraz wymagania, wybierz adres</translation>
@@ -1061,7 +1055,6 @@
 <translation id="6957887021205513506">Certyfikat serwera wydaje się sfałszowany.</translation>
 <translation id="6964255747740675745">Nie udało się przeanalizować konfiguracji sieci (nieprawidłowy plik JSON).</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="6965456981923010628"><ph name="LEFT_PART" /> • <ph name="RIGHT_PART" /></translation>
 <translation id="6965978654500191972">Urządzenie</translation>
 <translation id="6970216967273061347">Okręg</translation>
 <translation id="6973656660372572881">Określono zarówno stałe serwery proxy, jak i URL skryptu PAC.</translation>
@@ -1212,6 +1205,7 @@ Dodatkowe informacje:
 <translation id="7668654391829183341">Nieznane urządzenie</translation>
 <translation id="7669271284792375604">Osoby atakujące tę stronę mogą podstępem próbować nakłonić Cię do zainstalowania programów utrudniających przeglądanie internetu (np. zmieniających stronę główną lub wyświetlających dodatkowe reklamy na stronach, na które wchodzisz).</translation>
 <translation id="7676643023259824263">Wyszukaj tekst ze schowka, <ph name="TEXT" /></translation>
+<translation id="7679176406634891508">Platforma i chmura</translation>
 <translation id="7681101578153515023">Zmień wyszukiwarkę</translation>
 <translation id="7682287625158474539">Adres wysyłkowy</translation>
 <translation id="7687186412095877299">Wypełniaj formularze płatności, używając zapisanych form płatności</translation>
@@ -1415,7 +1409,6 @@ Dodatkowe informacje:
 <translation id="8932102934695377596">Twój zegar się spóźnia</translation>
 <translation id="893332455753468063">Dodaj imię i nazwisko lub nazwę firmy</translation>
 <translation id="8938939909778640821">Akceptowane karty kredytowe i przedpłacone</translation>
-<translation id="894185898663964645">Administrator skonfigurował niestandardowe certyfikaty główne, które mogą umożliwiać mu wgląd w treści stron, które otwierasz.</translation>
 <translation id="8943282376843390568">Limonkowy</translation>
 <translation id="8957210676456822347">Autoryzacja portalu przechwytującego</translation>
 <translation id="8968766641738584599">Zapisz kartę</translation>
@@ -1429,6 +1422,7 @@ Dodatkowe informacje:
 <translation id="8996941253935762404">Na następnej stronie znajdują się szkodliwe programy</translation>
 <translation id="8997023839087525404">Certyfikat przesłany przez serwer nie został publicznie ujawniony przez protokół Certificate Transparency. Jest to wymagane w przypadku niektórych certyfikatów jako potwierdzenie, że są one zaufane i zabezpieczone przed atakami.</translation>
 <translation id="9001074447101275817">Serwer proxy <ph name="DOMAIN" /> wymaga nazwy użytkownika i hasła.</translation>
+<translation id="9004367719664099443">Trwa sesja VR</translation>
 <translation id="9005998258318286617">Nie udało się wczytać dokumentu PDF.</translation>
 <translation id="9008201768610948239">Ignoruj</translation>
 <translation id="9011424611726486705">Otwórz ustawienia witryny</translation>

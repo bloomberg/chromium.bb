@@ -38,6 +38,7 @@
 <translation id="1773601347087397504">รับความช่วยเหลือเกี่ยวกับการใช้ Chrome OS</translation>
 <translation id="1795405610103747296">ติดตั้ง Chrome ในโทรศัพท์ เราจะส่ง SMS ไปยังโทรศัพท์ของคุณ: <ph name="PHONE_NUMBER" /></translation>
 <translation id="1812689907177901597">เมื่อปิดการตั้งค่านี้ คุณจะลงชื่อเข้าใช้เว็บไซต์ของ Google อย่างเช่น Gmail ได้โดยไม่ต้องลงชื่อเข้าใช้ Chrome</translation>
+<translation id="1815759068706561639"><ph name="FILE_NAME" /> เป็นอันตราย Chrome จึงบล็อกไว้ คุณได้รับการปกป้องโดยการปกป้องขั้นสูงแล้ว</translation>
 <translation id="1860536484129686729">Chrome ต้องการสิทธิ์เข้าถึงกล้องถ่ายรูปของคุณสำหรับเว็บไซต์นี้</translation>
 <translation id="1873233029667955273">Google Chrome ไม่ใช่เบราว์เซอร์เริ่มต้น</translation>
 <translation id="1874309113135274312">Google Chrome เบต้า (mDNS-In)</translation>
@@ -56,7 +57,6 @@
 <translation id="2290014774651636340">คีย์ API ของ Google หายไป การทำงานบางอย่างของ Google Chrome จะถูกปิดใช้งาน</translation>
 <translation id="2290095356545025170">คุณแน่ใจหรือไม่ว่าต้องการยกเลิกการติดตั้ง Google Chrome</translation>
 <translation id="2309047409763057870">นี่เป็นการติดตั้ง Google Chrome แบบสำรอง และไม่สามารถใช้เป็นเบราว์เซอร์เริ่มต้นของคุณ</translation>
-<translation id="2334084861041072223">ลิขสิทธิ์ <ph name="YEAR" /> Google Inc. สงวนลิขสิทธิ์</translation>
 <translation id="2346876346033403680">ก่อนหน้านี้มีผู้ลงชื่อเข้าใช้ Chrome บนคอมพิวเตอร์นี้ในชื่อ <ph name="ACCOUNT_EMAIL_LAST" /> หากนั่นไม่ใช่บัญชีของคุณ ให้สร้างผู้ใช้ Chrome ใหม่เพื่อเก็บข้อมูลแยก
 
 การลงชื่อเข้าใช้ต่อไปจะรวมข้อมูล Chrome เช่น บุ๊กมาร์ก ประวัติการเข้าชม และการตั้งค่าอื่นๆ เข้ากับ <ph name="ACCOUNT_EMAIL_NEW" /></translation>
@@ -64,6 +64,7 @@
 <translation id="2429317896000329049">Google Chrome ไม่สามารถซิงค์ข้อมูลของคุณเนื่องจากไม่สามารถใช้การซิงค์กับโดเมนของคุณ</translation>
 <translation id="2467438592969358367">Google Chrome ต้องการส่งออกรหัสผ่านของคุณ พิมพ์รหัสผ่าน Windows เพื่ออนุญาตให้ดำเนินการ</translation>
 <translation id="2485422356828889247">ถอนการติดตั้ง</translation>
+<translation id="2521856951867783208">ไฟล์นี้อาจเป็นอันตราย Chrome จึงบล็อกไว้ คุณได้รับการปกป้องโดยการปกป้องขั้นสูงแล้ว</translation>
 <translation id="2534507159460261402">Google Pay (คัดลอกไปยัง Chrome)</translation>
 <translation id="2535429035253759792">ผู้ดูแลระบบขอให้คุณเปิด Chrome ขึ้นมาใหม่เพื่อใช้การอัปเดตนี้</translation>
 <translation id="2580411288591421699">ไม่สามารถติดตั้ง Google Chrome รุ่นเดียวกับที่กำลังเรียกใช้อยู่ได้ โปรดปิด Google Chrome แล้วลองใหม่อีกครั้ง</translation>
@@ -100,6 +101,7 @@
 <translation id="3451115285585441894">กำลังเพิ่มลงใน Chrome...</translation>
 <translation id="345171907106878721">เพิ่มตัวคุณเองใน Chrome</translation>
 <translation id="3479552764303398839">ไม่ใช่ตอนนี้</translation>
+<translation id="3481286511616257896"><ph name="FILE_NAME" /> อาจเป็นอันตราย Chrome จึงบล็อกไว้ คุณได้รับการปกป้องโดยการปกป้องขั้นสูงแล้ว</translation>
 <translation id="34857402635545079">ล้างข้อมูลจาก Chrome (<ph name="URL" />) ด้วย</translation>
 <translation id="3503306920980160878">Chrome ต้องการสิทธิ์เข้าถึงตำแหน่งของคุณเพื่อแชร์ตำแหน่งกับเว็บไซต์นี้</translation>
 <translation id="3576528680708590453">ผู้ดูแลระบบของคุณกำหนดค่าให้ Google Chrome เปิดเบราว์เซอร์สำรองเพื่อเข้าถึง <ph name="TARGET_URL_HOSTNAME" /></translation>
@@ -112,7 +114,6 @@
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">นำออกจาก Chrome...</translation>
 <translation id="386202838227397562">โปรดปิดหน้าต่าง Google Chrome ทั้งหมดและลองใหม่อีกครั้ง</translation>
-<translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3873044882194371212">เปิดลิงก์ในหน้าต่างที่ไม่ระบุตัวตนของ Chrome</translation>
 <translation id="3889417619312448367">ยกเลิกการติดตั้ง Google Chrome</translation>
 <translation id="3898493977366060150">การท่องเว็บพร้อมฟีเจอร์เจ๋งๆ จาก Google</translation>
@@ -222,12 +223,14 @@
 <translation id="7459554271817304652">ตั้งค่าการซิงค์เพื่อบัน​​ทึกฟีเจอร์เบราว์เซอร์ในแบบของคุณไปยังเว็บและเข้าถึงได้จาก Google Chrome บนคอมพิวเตอร์เครื่องใดก็ได้</translation>
 <translation id="7473136999113284234">Chrome จะอัปเดตโดยอัตโนมัติเพื่อให้คุณได้ใช้เวอร์ชันใหม่ล่าสุดอยู่เสมอ</translation>
 <translation id="7486227612705979895">Chrome จะเข้าถึงไดรฟ์ของคุณเพื่อแสดงคำแนะนำในแถบที่อยู่</translation>
+<translation id="748945194546522577">ไฟล์นี้อันตราย Chrome จึงบล็อกไว้ คุณได้รับการปกป้องโดยการปกป้องขั้นสูงแล้ว</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">แสดง Chrome OS ในภาษานี้</translation>
 <translation id="7561940363513215021">{0,plural, =1{Chrome จะเปิดขึ้นมาใหม่ใน 1 นาที}other{Chrome จะเปิดขึ้นมาใหม่ใน # นาที}}</translation>
 <translation id="7589360514048265910">คอมพิวเตอร์เครื่องนี้จะไม่ได้รับการอัปเดตจาก Google Chrome อีก เนื่องจากระบบไม่รองรับ Mac OS X 10.9 แล้ว</translation>
 <translation id="7592736734348559088">Google Chrome ไม่สามารถซิงค์ข้อมูลของคุณเนื่องจากรายละเอียดการลงชื่อเข้าใช้บัญชีของคุณล้าสมัย</translation>
 <translation id="7626032353295482388">ยินดีต้อนรับสู่ Chrome</translation>
+<translation id="7636297873481318396">ไฟล์นี้อันตราย Chrome จึงบล็อกไว้ คุณได้รับการปกป้องโดยการปกป้องขั้นสูงแล้ว</translation>
 <translation id="7641148173327520642">ผู้ดูแลระบบได้กำหนดค่าให้ Google Chrome เปิด <ph name="ALTERNATIVE_BROWSER_NAME" /> เพื่อเข้าถึง <ph name="TARGET_URL_HOSTNAME" /></translation>
 <translation id="7651907282515937834">โลโก้ Chrome Enterprise</translation>
 <translation id="7747138024166251722">โปรแกรมติดตั้งสร้างไดเรกทอรีชั่วคราวไม่ได้ โปรดตรวจสอบพื้นที่ดิสก์ว่างและการอนุญาตให้ติดตั้งซอฟต์แวร์</translation>
@@ -276,6 +279,7 @@
 <translation id="8669527147644353129">ตัวช่วยเหลือของ Google Chrome</translation>
 <translation id="8679801911857917785">อีกทั้งยังควบคุมหน้าที่จะแสดงเมื่อคุณเปิด Chrome ด้วย</translation>
 <translation id="870251953148363156">อัปเดต &amp;Google Chrome</translation>
+<translation id="8704255848199359374">การดำเนินการนี้จะใช้โปรแกรมตรวจตัวสะกดแบบเดียวกับ Google Search ข้อความที่คุณพิมพ์ในเบราว์เซอร์จะส่งไปยัง Google คุณปรับเปลี่ยนลักษณะการทำงานนี้ได้ทุกเมื่อในการตั้งค่า</translation>
 <translation id="873133009373065397">Google Chrome ไม่สามารถกำหนดหรือตั้งค่าเบราว์เซอร์เริ่มต้น</translation>
 <translation id="8736674169840206667">ผู้ดูแลระบบต้องการให้คุณเปิด Chrome ขึ้นมาใหม่เพื่อใช้การอัปเดต</translation>
 <translation id="8788264404293392165">นี่เป็นภาษาที่ใช้ในการแสดง UI ของ Chrome OS</translation>

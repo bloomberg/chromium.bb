@@ -54,8 +54,9 @@
 <translation id="1319608975892113573">कोई पिछला ब्‍लॉककोट नहीं.</translation>
 <translation id="1321576897702511272">ChromeVox सहायता छिपाएं</translation>
 <translation id="1325946044405407859">हल्का भूरा रंग</translation>
+<translation id="1331634987653814322">ब्रेल की सेटिंग</translation>
 <translation id="1331702245475014624"><ph name="TOTAL" /> में से <ph name="INDEX" /></translation>
-<translation id="1334095593597963605">वर्ण तथा शब्द इको</translation>
+<translation id="1334095593597963605">वर्ण और शब्द इको</translation>
 <translation id="1334570596456017464">सबस्क्रिप्ट</translation>
 <translation id="1339428534620983148">पिछला तालिका कॉलम</translation>
 <translation id="1342835525016946179">लेख</translation>
@@ -500,7 +501,7 @@
 <translation id="4547556996012970016">अगले स्तर 5 का शीर्षक</translation>
 <translation id="4562381607973973258">शीर्षलेख</translation>
 <translation id="4569941707103739422">नेविगेट करने के लिए ऊपर या नीचे वाला तीर; चालू करने के लिए enter दबाएं.</translation>
-<translation id="4570424871453628777">गलत वर्तनी समाप्त</translation>
+<translation id="4570424871453628777">गलत वर्तनी खत्म</translation>
 <translation id="4591507479202817876">, चयनित</translation>
 <translation id="4597532268155981612">फ़ॉर्म</translation>
 <translation id="4597896406374528575">अप्रैल</translation>
@@ -552,6 +553,7 @@
 <translation id="489907760999452556">आंतरिक लिंक</translation>
 <translation id="4915087353619183190">'सीखने वाला मोड' शुरू किया जा रहा है. इसके फ़ंक्शन के बारे में जानने के लिए कोई क्वर्टी कुंजी, रीफ्रेश की जा सकने वाली ब्रेल कुंजी या हाथ का जेस्चर (छूना) दबाएं. बाहर निकलने के लिए control और w या escape कुंजी दबाएं.</translation>
 <translation id="492295894462528572">भूमिका</translation>
+<translation id="4943781537993885772">डिसप्ले का प्रकार</translation>
 <translation id="495170559598752135">क्रियाएं</translation>
 <translation id="4953585991029886728">लेख संपादित करें</translation>
 <translation id="4954534434583049121">पिछला ब्‍लॉक क्वोट</translation>
@@ -603,7 +605,7 @@
 <translation id="520883772648104506">कोई अगला रेडियो बटन नहीं.</translation>
 <translation id="5263034204789987535">सुनहरा</translation>
 <translation id="5263344797180442561">h2</translation>
-<translation id="528468243742722775">समाप्त</translation>
+<translation id="528468243742722775">खत्म</translation>
 <translation id="5291783959063340370">ऑब्जेक्ट</translation>
 <translation id="5302089807023311274">संदर्भ सूची का संदर्भ</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />, टैब</translation>
@@ -655,7 +657,7 @@
 <translation id="5597933780944041114">कोई अगला शीर्षक नहीं.</translation>
 <translation id="5598905979683743333"><ph name="NAME" />, रेडियो बटन अचयनित</translation>
 <translation id="5601172225407283979">डिफ़ॉल्ट सेटिंग चलाएं</translation>
-<translation id="5608798115546226984">स्वतः पूर्णता इनलाइन</translation>
+<translation id="5608798115546226984">अपने आप पूर्णता इनलाइन</translation>
 <translation id="561939826962581046">समय</translation>
 <translation id="5623778242535476823">rbtn</translation>
 <translation id="5623842676595125836">लॉग</translation>
@@ -718,6 +720,7 @@
 <translation id="6006050241733874051">फ़ॉर्म</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{बैकस्लैश}one{# बैकस्लैश}other{# बैकस्लैश}}</translation>
 <translation id="6017514345406065928">हरा</translation>
+<translation id="6021969570711251331">इंटरलीव</translation>
 <translation id="6034000775414344507">हल्का भूरा</translation>
 <translation id="6037602951055904232">आगे की ओर पैन करें</translation>
 <translation id="6042826534790431634">चालू करने के लिए Search+Space दबाएं.</translation>
@@ -769,6 +772,7 @@
 <translation id="6438968337250688271"><ph name="NAME" />, मेनू</translation>
 <translation id="6444046323172968959">सूचना डॉयलॉग</translation>
 <translation id="6452403590345320472">विषय सूची</translation>
+<translation id="6454456397828627257">साथ-साथ</translation>
 <translation id="6459511626086141404">फ़्लैट कीमैप</translation>
 <translation id="6468049171101508116">अगला बटन</translation>
 <translation id="646954774886932461">इंडेक्स</translation>
@@ -838,7 +842,7 @@
 <translation id="7031651751836475482">lstitm</translation>
 <translation id="7037042857287298941">पिछली सूची</translation>
 <translation id="7039555289296502784">हल्का जैतूनी</translation>
-<translation id="7041173719775863268">चयन समाप्त करें</translation>
+<translation id="7041173719775863268">चयन खत्म करें</translation>
 <translation id="7043850226734279132">गहरा खाकी</translation>
 <translation id="7048792632163898198">अगले कुछ शॉर्टकट ChromeVox निर्देश नहीं हैं लेकिन Chrome का ज़्यादा से ज़्यादा फ़ायदा उठाने के लिए वे बहुत उपयोगी हैं.
 बटन और लिंक जैसे कार्रवाई आइटम से आगे जाने के लिए, Tab बटन दबाएं. पीछे जाने के लिए, Shift+Tab दबाएं.
@@ -863,7 +867,7 @@
 <translation id="7143207342074048698">कनेक्‍ट हो रहा है</translation>
 <translation id="7153618581592392745">हल्का बैंगनी</translation>
 <translation id="7157306005867877619">एब्सट्रैक्ट</translation>
-<translation id="7161425887892204659">लेख मिलान समाप्त</translation>
+<translation id="7161425887892204659">लेख मिलान खत्म</translation>
 <translation id="7161771961008409533">पॉप-अप बटन</translation>
 <translation id="7165714724802225287">वर्तमान प्रदर्शन शैली इंटरलीव है.</translation>
 <translation id="7167657087543110">वर्ण इको</translation>
@@ -1112,7 +1116,7 @@
 <translation id="8476408756881832830">जब ChromeVox बोल रहा हो, तब प्लेबैक रोकें</translation>
 <translation id="8476508772960940536">विंडो अवलोकन</translation>
 <translation id="8503360654911991865">मार्गदर्शक विवरण का स्तर घटाएं</translation>
-<translation id="8504695234784218301">व्याकरण गड़बड़ी समाप्त</translation>
+<translation id="8504695234784218301">व्याकरण गड़बड़ी खत्म</translation>
 <translation id="8520472399088452386">स्पिन बटन</translation>
 <translation id="8538744478902126321">वर्तमान सेल के पंक्ति शीर्षलेख पर कोई अनुमान लगाएं</translation>
 <translation id="8540054775867439484">शीर्ष पर लपेटा गया</translation>
@@ -1202,7 +1206,7 @@
 <translation id="9220679313820249046">नारंगी लाल रंग</translation>
 <translation id="9223032053830369045">गहरा लाल</translation>
 <translation id="923331726185079994">ChromeVox अपडेट किया गया</translation>
-<translation id="930275611743429116">चयन प्रारंभ या समाप्त करें.</translation>
+<translation id="930275611743429116">चयन प्रारंभ या खत्म करें.</translation>
 <translation id="93384979447910801">गहरा समुद्री हरा</translation>
 <translation id="948171205378458592">बोली की दर घटाएं</translation>
 <translation id="958854023026327378">एक उंगली से नीचे स्वाइप करें</translation>

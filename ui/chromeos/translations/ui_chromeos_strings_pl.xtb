@@ -284,6 +284,7 @@
 <translation id="4572815280350369984">Plik <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Więcej</translation>
 <translation id="4582497162516204941">Zainstaluj za pomocą Linuksa (Beta)</translation>
+<translation id="4584780943629874245">Udostępniaj oprogramowaniu Plugin VM</translation>
 <translation id="4631887759990505102">Wykonawca</translation>
 <translation id="4656293982926141856">Ten komputer</translation>
 <translation id="4669606053856530811">Osoby z uprawnieniami do: „<ph name="SOURCE_NAME" />” utracą dostęp do tych elementów, chyba że zostaną one im udostępnione.</translation>
@@ -524,6 +525,7 @@
 <translation id="7339898014177206373">Nowe okno</translation>
 <translation id="7348749398828259943">Amerykańska klawiatura międzynarodowa Workman</translation>
 <translation id="7359359531237882347">Kopiuję elementy (<ph name="NUMBER_OF_ITEMS" />)...</translation>
+<translation id="7379734276381389090">Udostępniono foldery (<ph name="NUMBER_OF_ITEMS" />) oprogramowaniu Plugin VM</translation>
 <translation id="7389722738210761877">Klawiatura tajska (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Klawiatura hindi (fonetyczna)</translation>
 <translation id="7417453074306512035">Klawiatura etiopska</translation>
@@ -586,6 +588,7 @@
 <translation id="7969525169268594403">Słoweński</translation>
 <translation id="7982283708762922719">Wysokość</translation>
 <translation id="7987485481246785146">Klawiatura dla języka sorani oparta na arabskiej</translation>
+<translation id="7990715602172183602">Udostępniono jeden folder oprogramowaniu Plugin VM</translation>
 <translation id="799547531016638432">Usuń skrót</translation>
 <translation id="799923393800005025">Może wyświetlać</translation>
 <translation id="8008366997883261463">Pies</translation>
@@ -626,6 +629,7 @@
 <translation id="8342318071240498787">Plik lub katalog o tej nazwie już istnieje.</translation>
 <translation id="8391950649760071442">Transliteracja (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Wymiary</translation>
+<translation id="8400874747056634633">Zarządzaj udostępnianiem oprogramowaniu Plugin VM</translation>
 <translation id="8412586565681117057">Szybka metoda wprowadzania</translation>
 <translation id="8418113698656761985">Klawiatura rumuńska</translation>
 <translation id="8432745813735585631">Klawiatura amerykańska (Colemak)</translation>

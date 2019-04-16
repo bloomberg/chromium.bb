@@ -284,6 +284,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> ফাইল</translation>
 <translation id="457386861538956877">আরও...</translation>
 <translation id="4582497162516204941">Linux (বিটা) ব্যবহার করে ইনস্টল করুন</translation>
+<translation id="4584780943629874245">প্লাগ-ইন VM-এর মাধ্যমে শেয়ার করুন</translation>
 <translation id="4631887759990505102">শিল্পী</translation>
 <translation id="4656293982926141856">এই কম্পিউটার</translation>
 <translation id="4669606053856530811">এই আইটেমগুলি '<ph name="SOURCE_NAME" />' এর সদস্যদের সাথে শেয়ার না করলে তারা সেগুলি অ্যাক্সেস করতে পারবে না।</translation>
@@ -523,6 +524,7 @@
 <translation id="7339898014177206373">নতুন উইন্ডো</translation>
 <translation id="7348749398828259943">মার্কিন ওয়ার্কম্যান আন্তর্জাতিক কীবোর্ড</translation>
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" />টি আইটেম কপি করা হচ্ছে…</translation>
+<translation id="7379734276381389090"><ph name="NUMBER_OF_ITEMS" />টি ফোল্ডার প্লাগ-ইন VM-এর সাথে শেয়ার করা হয়েছে</translation>
 <translation id="7389722738210761877">থাই কীবোর্ড (TIS 820-2531)</translation>
 <translation id="7396038720194014279">হিন্দি কীবোর্ড (ফোনেটিক)</translation>
 <translation id="7417453074306512035">ইথিওপিক কীবোর্ড</translation>
@@ -585,6 +587,7 @@
 <translation id="7969525169268594403">স্লোভেনিয়ান</translation>
 <translation id="7982283708762922719">উচ্চতা</translation>
 <translation id="7987485481246785146">সোরানি কুর্দিশ আরবী-নির্ভর কীবোর্ড</translation>
+<translation id="7990715602172183602">১টি ফোল্ডার প্লাগ-ইন VM-এর সাথে শেয়ার করা হয়েছে</translation>
 <translation id="799547531016638432">ডেস্কটপ সরান</translation>
 <translation id="799923393800005025">দেখতে পারবেন</translation>
 <translation id="8008366997883261463">জ্যাক রাসেল ক্ষুদ্রকায় কুকুর</translation>
@@ -625,6 +628,7 @@
 <translation id="8342318071240498787">একই নাম সহ ফাইল অথবা একটি নির্দেশিকা ইতিমধ্যেই বিদ্যমান আছে৷</translation>
 <translation id="8391950649760071442">লিপ্যন্তরকরণ (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">আয়তন</translation>
+<translation id="8400874747056634633">প্লাগ-ইন VM শেয়ার করা মার্জ করুন</translation>
 <translation id="8412586565681117057">দ্রুত ইনপুট পদ্ধতি</translation>
 <translation id="8418113698656761985">রোমানিয় কীবোর্ড</translation>
 <translation id="8432745813735585631">ইউএস কোলেম্যাক কীবোর্ড</translation>

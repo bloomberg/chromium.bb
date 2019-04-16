@@ -101,6 +101,7 @@
 <translation id="4730374152663651037">よく使用するアプリ</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{残り 1 か月}other{残り # か月}}</translation>
 <translation id="4841881773802181781">挿入</translation>
+<translation id="4881695831933465202">開く</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 秒}other{# 秒}}</translation>
 <translation id="4971687151119236543">メディアの前のトラック</translation>
 <translation id="5046499563572181734">ここをタップしてください</translation>
@@ -108,6 +109,7 @@
 <translation id="5137751499640340777">Google アシスタントを起動</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">三角形の展開ボタン</translation>
+<translation id="5278860589123563674">送信できませんでした</translation>
 <translation id="528468243742722775">End</translation>
 <translation id="5329858601952122676">削除(&amp;D)</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" />を<ph name="IN_PLACE_APP" />の上にドラッグしました。指を離すとフォルダが作成されます。</translation>

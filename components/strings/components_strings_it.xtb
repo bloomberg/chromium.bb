@@ -210,7 +210,6 @@
 <translation id="2053111141626950936">Le pagine in <ph name="LANGUAGE" /> non verranno tradotte.</translation>
 <translation id="2053553514270667976">ZIP</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 suggerimento}other{# suggerimenti}}</translation>
-<translation id="2068124040035837596">Il tuo account è gestito da <ph name="ENROLLMENT_DOMAIN" />. L'amministratore può configurare da remoto l'account.</translation>
 <translation id="2068663545051464999">ID rapporto sugli arresti anomali caricato <ph name="CRASH_ID" /> (Contesto locale: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="2079545284768500474">Annulla</translation>
 <translation id="20817612488360358">Devono essere utilizzate le impostazioni del proxy di sistema ma è stata specificata anche una configurazione proxy esplicita.</translation>
@@ -279,7 +278,6 @@
     l'applicazione di una norma di sicurezza per tutte le richieste. Ma adesso non
     è riuscito a pubblicare una norma e ciò impedisce al browser
     di soddisfare la tua richiesta per il sito <ph name="SITE" />.</translation>
-<translation id="244665789865330679">Il tuo dispositivo e il tuo account sono gestiti da <ph name="ENROLLMENT_DOMAIN" />. L'amministratore può configurare da remoto il dispositivo e l'account.</translation>
 <translation id="2463193859425327265">Cambia la pagina iniziale</translation>
 <translation id="2463739503403862330">Compila</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -478,7 +476,6 @@
 <translation id="358285529439630156">Le carte di credito e prepagate sono accettate.</translation>
 <translation id="3582930987043644930">Aggiungi nome</translation>
 <translation id="3583757800736429874">&amp;Ripeti spostamento</translation>
-<translation id="35866233670761917">I contenuti dei siti web visitati non sono visti dagli amministratori</translation>
 <translation id="3586931643579894722">Nascondi dettagli</translation>
 <translation id="3592413004129370115">Italian (Envelope)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
@@ -746,7 +743,6 @@
 <translation id="5095208057601539847">Provincia</translation>
 <translation id="5097099694988056070">Statistiche del dispositivo quali l'utilizzo di CPU/RAM</translation>
 <translation id="5097501891273180634">A2</translation>
-<translation id="5098222253617183465">Il tuo dispositivo è gestito da <ph name="ENROLLMENT_DOMAIN" />, il tuo account da <ph name="ACCOUNT_DOMAIN" />. Gli amministratori possono configurare da remoto il dispositivo e l'account.</translation>
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(a 64 bit)</translation>
@@ -902,7 +898,6 @@
 <translation id="5967592137238574583">Modifica informazioni di contatto</translation>
 <translation id="5967867314010545767">Rimuovi da cronologia</translation>
 <translation id="5975083100439434680">Diminuisci lo zoom</translation>
-<translation id="5977489021191000276">Il tuo dispositivo non è gestito da un amministratore.</translation>
 <translation id="5977976211062815271">Su questo dispositivo</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">Impossibile aprire l'app per i pagamenti</translation>
@@ -1047,7 +1042,6 @@
 <translation id="6903319715792422884">Contribuisci a migliorare la Navigazione sicura inviando a Google <ph name="BEGIN_WHITEPAPER_LINK" />informazioni di sistema e contenuti delle pagine<ph name="END_WHITEPAPER_LINK" />. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">Utente:</translation>
 <translation id="6934672428414710184">Questo nome proviene dal tuo Account Google</translation>
-<translation id="6939583532829045966">Il tuo dispositivo è gestito da <ph name="ENROLLMENT_DOMAIN" />. L'amministratore può configurare da remoto il dispositivo.</translation>
 <translation id="6944692733090228304">Hai inserito la password in un sito non gestito da <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />. Per proteggere il tuo account, non riutilizzare la password con altri siti e app.</translation>
 <translation id="6945221475159498467">Seleziona</translation>
 <translation id="6948701128805548767">Seleziona un indirizzo per conoscere i requisiti e i metodi di ritiro</translation>
@@ -1057,7 +1051,6 @@
 <translation id="6957887021205513506">Il certificato del server risulta essere un falso.</translation>
 <translation id="6964255747740675745">Analisi della configurazione di rete non riuscita (JSON non valido).</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="6965456981923010628"><ph name="LEFT_PART" /> • <ph name="RIGHT_PART" /></translation>
 <translation id="6965978654500191972">Dispositivo</translation>
 <translation id="6970216967273061347">District</translation>
 <translation id="6973656660372572881">Sono stati specificati sia i server proxy fissi che un URL script .pac.</translation>
@@ -1208,6 +1201,7 @@ Ulteriori dettagli:
 <translation id="7668654391829183341">Dispositivo sconosciuto</translation>
 <translation id="7669271284792375604">I malintenzionati su questo sito potrebbero cercare di indurti con l'inganno a installare programmi che danneggiano la tua navigazione (ad esempio cambiando la tua pagina iniziale o mostrando annunci extra sui siti che visiti).</translation>
 <translation id="7676643023259824263">Cerca testo negli appunti, <ph name="TEXT" /></translation>
+<translation id="7679176406634891508">Piattaforma e cloud</translation>
 <translation id="7681101578153515023">Cambia motore di ricerca</translation>
 <translation id="7682287625158474539">Spedizione</translation>
 <translation id="7687186412095877299">Compila i moduli di pagamento con i metodi di pagamento salvati</translation>
@@ -1411,7 +1405,6 @@ Ulteriori dettagli:
 <translation id="8932102934695377596">L'orologio è indietro</translation>
 <translation id="893332455753468063">Aggiungi nome</translation>
 <translation id="8938939909778640821">Carte di credito e prepagate accettate</translation>
-<translation id="894185898663964645">L'amministratore ha configurato certificati radice personalizzati, che potrebbero consentirgli di vedere i contenuti dei siti web che visiti.</translation>
 <translation id="8943282376843390568">Giallo-verde</translation>
 <translation id="8957210676456822347">Autorizzazione Captive Portal</translation>
 <translation id="8968766641738584599">Salva carta</translation>
@@ -1425,6 +1418,7 @@ Ulteriori dettagli:
 <translation id="8996941253935762404">Il sito che stai per visitare contiene programmi dannosi</translation>
 <translation id="8997023839087525404">Il server ha presentato un certificato che non è stato reso pubblico tramite le norme di Certificate Transparency, la cui applicazione costituisce un requisito di alcuni certificati al fine di garantire la loro attendibilità nonché la sicurezza nei confronti dei malintenzionati.</translation>
 <translation id="9001074447101275817">Il proxy <ph name="DOMAIN" /> richiede un nome utente e una password.</translation>
+<translation id="9004367719664099443">Sessione VR in corso</translation>
 <translation id="9005998258318286617">Impossibile caricare il documento PDF.</translation>
 <translation id="9008201768610948239">Ignora</translation>
 <translation id="9011424611726486705">Apri le impostazioni del sito</translation>

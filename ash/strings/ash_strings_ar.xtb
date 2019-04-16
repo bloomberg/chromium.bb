@@ -29,6 +29,7 @@
 <translation id="1301069673413256657">‏بروتوكول GSM</translation>
 <translation id="1302880136325416935">عرض إعدادات البلوتوث. <ph name="STATE_TEXT" /></translation>
 <translation id="1316069254387866896">عرض الرف دائمًا</translation>
+<translation id="1341651618736211726">القائمة الكاملة</translation>
 <translation id="1346748346194534595">يمين</translation>
 <translation id="1351937230027495976">تصغير القائمة</translation>
 <translation id="1383876407941801731">البحث</translation>
@@ -361,7 +362,6 @@
 <translation id="6700713906295497288">‏زر قائمة أداة تحرير أسلوب الإدخال (IME)</translation>
 <translation id="6713285437468012787">تم إقران جهاز بلوتوث "<ph name="DEVICE_NAME" />" وهو الآن متاح لجميع المستخدمين. يمكنك إزالة هذا الإقران باستخدام الإعدادات.</translation>
 <translation id="6715542151869432661">لم يتم العثور على أي أجهزة جوّال.</translation>
-<translation id="671928215901716392">قفل الشاشة</translation>
 <translation id="6723839937902243910">الطاقة</translation>
 <translation id="6751826523481687655">تتبّع الأداء قيْد التفعيل</translation>
 <translation id="6785414152754474415">اكتمل شحن <ph name="PERCENTAGE" />% من البطارية ويجري شحنها.</translation>

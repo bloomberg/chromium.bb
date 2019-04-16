@@ -210,7 +210,6 @@
 <translation id="2053111141626950936">系統不會翻譯<ph name="LANGUAGE" />網頁。</translation>
 <translation id="2053553514270667976">郵遞區號</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 個建議項目}other{# 個建議項目}}</translation>
-<translation id="2068124040035837596">你的帳戶是由 <ph name="ENROLLMENT_DOMAIN" /> 管理，這表示你的系統管理員可以從遠端設定你的帳戶。</translation>
 <translation id="2068663545051464999">已上傳的當機報告 ID <ph name="CRASH_ID" /> (本機當機 ID：<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="2079545284768500474">復原</translation>
 <translation id="20817612488360358">雖然系統 Proxy 設定已設為使用，不過也指定了明確 Proxy 設定。</translation>
@@ -279,7 +278,6 @@
     套用安全性政策。不過，由於該伺服器
     目前並未提供政策，因此瀏覽器無法完成你向
     「<ph name="SITE" />」提出的要求。</translation>
-<translation id="244665789865330679">你的裝置和帳戶是由 <ph name="ENROLLMENT_DOMAIN" /> 管理，這表示你的系統管理員可以從遠端設定你的裝置和帳戶。</translation>
 <translation id="2463193859425327265">變更首頁</translation>
 <translation id="2463739503403862330">填入</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -481,7 +479,6 @@
 <translation id="358285529439630156">接受信用卡和預付卡。</translation>
 <translation id="3582930987043644930">新增名稱</translation>
 <translation id="3583757800736429874">重做移動(&amp;R)</translation>
-<translation id="35866233670761917">你的系統管理員未查看你造訪的網站內容</translation>
 <translation id="3586931643579894722">隱藏詳細資訊</translation>
 <translation id="3592413004129370115">Italian (信封)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />，<ph name="DOMAIN" />，<ph name="TIME" /></translation>
@@ -749,7 +746,6 @@
 <translation id="5095208057601539847">州/省</translation>
 <translation id="5097099694988056070">CPU/RAM 使用量等裝置統計資料</translation>
 <translation id="5097501891273180634">A2</translation>
-<translation id="5098222253617183465">你的裝置是由 <ph name="ENROLLMENT_DOMAIN" /> 管理，而你的帳戶是由 <ph name="ACCOUNT_DOMAIN" /> 管理；這表示你的系統管理員可以從遠端設定你的裝置和帳戶。</translation>
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64 位元)</translation>
@@ -905,7 +901,6 @@
 <translation id="5967592137238574583">編輯聯絡資訊</translation>
 <translation id="5967867314010545767">從記錄中移除</translation>
 <translation id="5975083100439434680">縮小</translation>
-<translation id="5977489021191000276">你的裝置並非由系統管理員管理。</translation>
 <translation id="5977976211062815271">在這部裝置上</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">無法開啟付款應用程式</translation>
@@ -1051,7 +1046,6 @@
 <translation id="6903319715792422884">將部分<ph name="BEGIN_WHITEPAPER_LINK" />系統資訊和網頁內容<ph name="END_WHITEPAPER_LINK" />傳送給 Google，協助我們改善安全瀏覽功能。<ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">使用者：</translation>
 <translation id="6934672428414710184">這是你在 Google 帳戶中設定的名稱</translation>
-<translation id="6939583532829045966">你的裝置是由 <ph name="ENROLLMENT_DOMAIN" /> 管理，這表示你的系統管理員可以從遠端設定你的裝置。</translation>
 <translation id="6944692733090228304">你在不是由 <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> 管理的網站上輸入了你的密碼。為確保帳戶安全，請勿在其他應用程式和網站上重複使用你的密碼。</translation>
 <translation id="6945221475159498467">選取</translation>
 <translation id="6948701128805548767">如要查看取件方式和相關規定，請選取一個地址</translation>
@@ -1061,7 +1055,6 @@
 <translation id="6957887021205513506">伺服器憑證疑似偽造。</translation>
 <translation id="6964255747740675745">無法剖析網路設定 (無效的 JSON)。</translation>
 <translation id="6965382102122355670">確定</translation>
-<translation id="6965456981923010628"><ph name="LEFT_PART" /> • <ph name="RIGHT_PART" /></translation>
 <translation id="6965978654500191972">裝置</translation>
 <translation id="6970216967273061347">District</translation>
 <translation id="6973656660372572881">已指定固定的 Proxy 伺服器和 .pac 指令碼網址。</translation>
@@ -1212,6 +1205,7 @@
 <translation id="7668654391829183341">不明的裝置</translation>
 <translation id="7669271284792375604">攻擊者可能會試圖透過這個網站誘使你安裝對瀏覽體驗有害 (例如變更你的首頁，或是在你造訪的網站上顯示多餘的廣告) 的程式。</translation>
 <translation id="7676643023259824263">搜尋剪貼簿文字：<ph name="TEXT" /></translation>
+<translation id="7679176406634891508">平台和雲端</translation>
 <translation id="7681101578153515023">變更搜尋引擎</translation>
 <translation id="7682287625158474539">寄送地址</translation>
 <translation id="7687186412095877299">在付款表單中填入已儲存的付款方式</translation>
@@ -1415,7 +1409,6 @@
 <translation id="8932102934695377596">你的時鐘時間過慢</translation>
 <translation id="893332455753468063">新增名稱</translation>
 <translation id="8938939909778640821">接受的信用卡和預付卡</translation>
-<translation id="894185898663964645">你的系統管理員已設定自訂根憑證，這項設定將能允許系統管理員查看你所造訪網站的內容。</translation>
 <translation id="8943282376843390568">萊姆綠</translation>
 <translation id="8957210676456822347">監控式入口網站授權</translation>
 <translation id="8968766641738584599">儲存卡片</translation>
@@ -1429,6 +1422,7 @@
 <translation id="8996941253935762404">你要瀏覽的網站含有有害程式</translation>
 <translation id="8997023839087525404">該伺服器的憑證並未根據憑證透明化政策對外公開。部分憑證必須符合這項規定，以確保憑證值得信任，不會讓使用者遭到攻擊。</translation>
 <translation id="9001074447101275817"><ph name="DOMAIN" /> Proxy 要求提供使用者名稱和密碼。</translation>
+<translation id="9004367719664099443">正在執行 VR 工作階段</translation>
 <translation id="9005998258318286617">無法載入 PDF 文件。</translation>
 <translation id="9008201768610948239">略過</translation>
 <translation id="9011424611726486705">開啟網站設定</translation>

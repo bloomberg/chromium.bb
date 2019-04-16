@@ -284,6 +284,7 @@
 <translation id="4572815280350369984">Fitxer <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Més...</translation>
 <translation id="4582497162516204941">Instal·la amb Linux (versió beta)</translation>
+<translation id="4584780943629874245">Comparteix amb Plugin VM</translation>
 <translation id="4631887759990505102">Artista</translation>
 <translation id="4656293982926141856">Aquest ordinador</translation>
 <translation id="4669606053856530811">Els membres de l'equip <ph name="SOURCE_NAME" /> ja no podran accedir a aquests elements, tret que es comparteixin amb ells.</translation>
@@ -524,6 +525,7 @@
 <translation id="7339898014177206373">Finestra nova</translation>
 <translation id="7348749398828259943">Teclat Workman nord-americà internacional</translation>
 <translation id="7359359531237882347">S'estan copiant <ph name="NUMBER_OF_ITEMS" /> elements...</translation>
+<translation id="7379734276381389090"><ph name="NUMBER_OF_ITEMS" /> carpetes compartides amb Plugin VM</translation>
 <translation id="7389722738210761877">Teclat tailandès (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Teclat hindi (fonètic)</translation>
 <translation id="7417453074306512035">Teclat etíop</translation>
@@ -575,6 +577,7 @@
 <translation id="7864662577698025113">Afegeix un servei nou</translation>
 <translation id="7873831373602885875">No es pot desar a <ph name="FOLDER_NAME" />. Tots els canvis es desaran a <ph name="DOWNLOADS_FOLDER" />, a la carpeta Baixades.</translation>
 <translation id="7881969471599061635">Desactiva els subtítols</translation>
+<translation id="78946041517601018">Unitats compartides</translation>
 <translation id="7896906914454843592">Teclat nord-americà ampliat</translation>
 <translation id="7898607018410277265">Teclat gujarati (fonètic nou)</translation>
 <translation id="7917972308273378936">Teclat lituà</translation>
@@ -585,6 +588,7 @@
 <translation id="7969525169268594403">Eslovè</translation>
 <translation id="7982283708762922719">Alçada</translation>
 <translation id="7987485481246785146">Teclat de kurd sorani basat en l'àrab</translation>
+<translation id="7990715602172183602">S'ha compartit una carpeta amb Plugin VM</translation>
 <translation id="799547531016638432">Suprimeix la drecera</translation>
 <translation id="799923393800005025">Pot consultar</translation>
 <translation id="8008366997883261463">Gos</translation>
@@ -625,6 +629,7 @@
 <translation id="8342318071240498787">Ja existeix un fitxer o un directori amb aquest nom.</translation>
 <translation id="8391950649760071442">Transliteració (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Dimensions</translation>
+<translation id="8400874747056634633">Gestiona l'ús compartit de Plugin VM</translation>
 <translation id="8412586565681117057">Mètode d'introducció ràpida</translation>
 <translation id="8418113698656761985">Teclat romanès</translation>
 <translation id="8432745813735585631">Teclat Colemak nord-americà</translation>

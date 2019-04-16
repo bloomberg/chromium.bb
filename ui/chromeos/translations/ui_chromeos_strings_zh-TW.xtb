@@ -284,6 +284,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> 檔案</translation>
 <translation id="457386861538956877">更多…</translation>
 <translation id="4582497162516204941">透過 Linux (測試版) 執行安裝程序</translation>
+<translation id="4584780943629874245">與外掛程式 VM 共用</translation>
 <translation id="4631887759990505102">演出者</translation>
 <translation id="4656293982926141856">這台電腦</translation>
 <translation id="4669606053856530811">「<ph name="SOURCE_NAME" />」的成員將失去存取權，除非有人與他們共用這些項目。</translation>
@@ -524,6 +525,7 @@
 <translation id="7339898014177206373">新視窗</translation>
 <translation id="7348749398828259943">美式 Workman 國際鍵盤</translation>
 <translation id="7359359531237882347">正在複製 <ph name="NUMBER_OF_ITEMS" /> 個項目...</translation>
+<translation id="7379734276381389090">已與外掛程式 VM 共用 <ph name="NUMBER_OF_ITEMS" /> 個資料夾</translation>
 <translation id="7389722738210761877">泰文鍵盤 (TIS 820-2531)</translation>
 <translation id="7396038720194014279">北印度文鍵盤 (拼音)</translation>
 <translation id="7417453074306512035">衣索比亞文鍵盤</translation>
@@ -586,6 +588,7 @@
 <translation id="7969525169268594403">斯洛維尼亞文</translation>
 <translation id="7982283708762922719">高度</translation>
 <translation id="7987485481246785146">索拉尼庫爾德式阿拉伯文鍵盤</translation>
+<translation id="7990715602172183602">已與外掛程式 VM 共用 1 個資料夾</translation>
 <translation id="799547531016638432">移除捷徑</translation>
 <translation id="799923393800005025">可以檢視</translation>
 <translation id="8008366997883261463">傑克羅素梗</translation>
@@ -626,6 +629,7 @@
 <translation id="8342318071240498787">已存在名稱相同的檔案或目錄。</translation>
 <translation id="8391950649760071442">音譯 (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">尺寸</translation>
+<translation id="8400874747056634633">管理外掛程式 VM 共用功能</translation>
 <translation id="8412586565681117057">簡易/速成輸入法</translation>
 <translation id="8418113698656761985">羅馬尼亞文鍵盤</translation>
 <translation id="8432745813735585631">美式 Colemak 鍵盤</translation>

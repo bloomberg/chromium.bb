@@ -38,6 +38,7 @@
 <translation id="1773601347087397504">Dapatkan bantuan tentang penggunaan Chrome OS</translation>
 <translation id="1795405610103747296">Instal Chrome di ponsel. Kami akan mengirimkan SMS ke ponsel Anda: <ph name="PHONE_NUMBER" /></translation>
 <translation id="1812689907177901597">Dengan menonaktifkan ini, Anda dapat login ke situs Google seperti Gmail tanpa harus login ke Chrome</translation>
+<translation id="1815759068706561639"><ph name="FILE_NAME" /> berbahaya, sehingga Chrome memblokirnya. Anda dilindungi oleh Perlindungan Lanjutan.</translation>
 <translation id="1860536484129686729">Chrome memerlukan izin akses ke kamera untuk situs ini</translation>
 <translation id="1873233029667955273">Google Chrome bukan browser default</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
@@ -56,7 +57,6 @@
 <translation id="2290014774651636340">Kunci API Google tidak ada. Beberapa fungsi Google Chrome tidak akan berfungsi.</translation>
 <translation id="2290095356545025170">Apakah Anda yakin ingin mencopot penginstalan Google Chrome?</translation>
 <translation id="2309047409763057870">Ini adalah pemasangan Google Chrome sekunder, dan tidak dapat digunakan sebagai browser default.</translation>
-<translation id="2334084861041072223">Hak cipta <ph name="YEAR" /> Google Inc. Semua hak dilindungi undang-undang.</translation>
 <translation id="2346876346033403680">Sebelumnya ada seseorang yang masuk ke Chrome di komputer ini sebagai <ph name="ACCOUNT_EMAIL_LAST" />. Jika itu bukan akun Anda, buatlah pengguna Chrome baru untuk menjaga informasi Anda tetap terpisah.
 
 Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, histori, dan setelan lain ke <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
@@ -64,6 +64,7 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, histori, dan s
 <translation id="2429317896000329049">Google Chrome tidak dapat menyinkronkan data Anda karena Sinkronisasi tidak tersedia untuk domain Anda.</translation>
 <translation id="2467438592969358367">Google Chrome ingin mengekspor sandi. Ketik sandi Windows Anda untuk mengizinkannya.</translation>
 <translation id="2485422356828889247">Uninstal</translation>
+<translation id="2521856951867783208">File ini mungkin berbahaya, sehingga Chrome telah memblokirnya. Anda dilindungi oleh Perlindungan Lanjutan.</translation>
 <translation id="2534507159460261402">Google Pay (disalin ke Chrome)</translation>
 <translation id="2535429035253759792">Administrator meminta Anda meluncurkan ulang Chrome untuk menerapkan update ini</translation>
 <translation id="2580411288591421699">Tak dapat memasang Google Chrome dengan versi yang sama dengan yang sedang aktif. Tutup dulu, baru coba lagi.</translation>
@@ -100,6 +101,7 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="3451115285585441894">Menambahkan ke Chrome...</translation>
 <translation id="345171907106878721">Tambahkan diri Anda ke Chrome</translation>
 <translation id="3479552764303398839">Jangan sekarang</translation>
+<translation id="3481286511616257896"><ph name="FILE_NAME" /> mungkin berbahaya, sehingga Chrome memblokirnya. Anda dilindungi oleh Perlindungan Lanjutan.</translation>
 <translation id="34857402635545079">Hapus juga data dari Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome memerlukan akses ke lokasi Anda untuk berbagi lokasi dengan situs ini</translation>
 <translation id="3576528680708590453">Administrator sistem Anda telah mengonfigurasi Google Chrome untuk membuka browser alternatif guna mengakses <ph name="TARGET_URL_HOSTNAME" />.</translation>
@@ -112,7 +114,6 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Hapus Dari Chrome...</translation>
 <translation id="386202838227397562">Tutup semua jendela Google Chrome, lalu coba lagi.</translation>
-<translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3873044882194371212">Buka link di jendela sa&amp;maran Chrome</translation>
 <translation id="3889417619312448367">Hapus Penginstalan Google Chrome</translation>
 <translation id="3898493977366060150">Browsing web dengan fitur smart dari Google</translation>
@@ -221,12 +222,14 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="7459554271817304652">Siapkan Sinkronisasi untuk menyimpan fitur browser hasil personalisasi Anda ke web dan mengaksesnya dari Google Chrome di komputer mana pun.</translation>
 <translation id="7473136999113284234">Chrome otomatis diperbarui sehingga Anda selalu memiliki versi terbaru.</translation>
 <translation id="7486227612705979895">Chrome akan mengakses Drive Anda untuk membuat saran di kolom URL</translation>
+<translation id="748945194546522577">File ini berbahaya, sehingga Chrome memblokirnya. Anda dilindungi oleh Perlindungan Lanjutan.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Tampilkan Chrome OS dalam bahasa ini</translation>
 <translation id="7561940363513215021">{0,plural, =1{Chrome akan diluncurkan ulang dalam 1 menit}other{Chrome akan diluncurkan ulang dalam # menit}}</translation>
 <translation id="7589360514048265910">Komputer ini tidak akan menerima update Google Chrome lagi karena Mac OS X 10.9 sudah tidak didukung.</translation>
 <translation id="7592736734348559088">Google Chrome tidak dapat menyinkronkan data karena detail ID masuk akun Anda belum diperbarui.</translation>
 <translation id="7626032353295482388">Selamat Datang di Chrome</translation>
+<translation id="7636297873481318396">File ini berbahaya, sehingga Chrome memblokirnya. Anda dilindungi oleh Perlindungan Lanjutan.</translation>
 <translation id="7641148173327520642">Administrator sistem Anda telah mengonfigurasi Google Chrome untuk membuka <ph name="ALTERNATIVE_BROWSER_NAME" /> guna mengakses <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7651907282515937834">Logo Chrome Enterprise</translation>
 <translation id="7747138024166251722">Pemasang tidak dapat membuat direktori sementara. Periksa kapasitas kosong pada disk dan izin untuk memasang software.</translation>
@@ -275,6 +278,7 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="8669527147644353129">Pembantu Google Chrome</translation>
 <translation id="8679801911857917785">Juga mengontrol halaman apa yang ditampilkan saat Anda memulai Chrome.</translation>
 <translation id="870251953148363156">Pembaruan &amp;Google Chrome</translation>
+<translation id="8704255848199359374">Tindakan ini akan menggunakan pemeriksaan ejaan yang sama dengan yang digunakan di penelusuran Google. Teks yang Anda ketikkan di browser dikirim ke Google. Anda dapat mengubah perilaku ini di setelan.</translation>
 <translation id="873133009373065397">Google Chrome tidak dapat menentukan atau menyetel browser default</translation>
 <translation id="8736674169840206667">Administrator mengharuskan Anda meluncurkan ulang Chrome untuk menerapkan update</translation>
 <translation id="8788264404293392165">Bahasa ini digunakan untuk menampilkan UI Chrome OS</translation>

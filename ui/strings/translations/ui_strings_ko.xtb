@@ -101,6 +101,7 @@
 <translation id="4730374152663651037">자주 사용하는 앱</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1개월 남음}other{#개월 남음}}</translation>
 <translation id="4841881773802181781">삽입</translation>
+<translation id="4881695831933465202">열기</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1초}other{#초}}</translation>
 <translation id="4971687151119236543">미디어 이전 트랙</translation>
 <translation id="5046499563572181734">여기를 탭하세요.</translation>
@@ -108,6 +109,7 @@
 <translation id="5137751499640340777">Google 어시스턴트 시작</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" />PB</translation>
 <translation id="5266161281976477809">펼치기/접기 삼각형</translation>
+<translation id="5278860589123563674">전송 실패</translation>
 <translation id="528468243742722775">End</translation>
 <translation id="5329858601952122676">삭제(&amp;D)</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" />을(를) <ph name="IN_PLACE_APP" /> 위로 드래그해서 놓으면 폴더가 만들어집니다.</translation>

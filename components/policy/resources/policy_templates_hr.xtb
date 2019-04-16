@@ -187,7 +187,6 @@
       Zahtjevi za spajanje na različite hostove preko veza koje upotrebljavaju certifikate klijenta mogu dovesti do problema sa sigurnošću i privatnošću jer će okolno tijelo biti preneseno svim zahtjevima, čak i ako korisnik to nije izričito odobrio. Ovo je pravilo privremeno i bit će uklonjeno u budućem izdanju. Pogledajte https://crbug.com/855690.
 
       Ako se ovo pravilo ne postavi, upotrebljavat će se zadano ponašanje u kojemu se nijednoj HTTP/2 vezi ne dopušta spajanje s vezama koje upotrebljavaju certifikate klijenta.</translation>
-<translation id="1353966721814789986">Početne stranice</translation>
 <translation id="1354424209129232709">Maksimalno:</translation>
 <translation id="1354452738176731363">Kad se to pravilo postavi na false, audioizlaz neće biti dostupan na uređaju dok je korisnik prijavljen.
 
@@ -211,7 +210,6 @@
       Ako se pravilo ne postavi, kôd za umrežavanje može ostati bez procesa preglednika ovisno o radnim verzijama eksperimenta NetworkService.</translation>
 <translation id="1384459581748403878">Referenca: <ph name="REFERENCE_URL" /></translation>
 <translation id="1384653327213929024">Omogući korisnicima upravljanje instaliranim certifikatima.</translation>
-<translation id="1387596372902085462">Odlučivanje o pouzdanosti naslijeđene infrastrukture javnog ključa tvrtke Symantec Corporation</translation>
 <translation id="1393485621820363363">Omogućeni pisači za uređaje tvrtke</translation>
 <translation id="1397855852561539316">Predloženi URL zadanog davatelja usluge pretraživanja</translation>
 <translation id="1404043648050567997">Usluga Sigurno pregledavanje prikazuje stranicu upozorenja kada korisnici dođu do web-lokacija koje su označene kao potencijalno zlonamjerne. Omogućavanje te postavke sprječava korisnike da ipak krenu dalje sa stranice upozorenja do zlonamjerne web-lokacije.
@@ -396,7 +394,6 @@
 
       Pravilo je dostupno samo na instancama Windowsa koje su pridružene domeni <ph name="MS_AD_NAME" /> ili instancama Windowsa 10 Pro ili Enterprise prijavljenim za upravljanje uređajima.</translation>
 <translation id="172374442286684480">Dopusti svim web-lokacijama postavljanje lokalnih podataka</translation>
-<translation id="1734716591049455502">Konfiguriraj opcije daljinskog pristupa</translation>
 <translation id="1736269219679256369">Dopušta se nastavljanje dalje sa stranice s upozorenjem SSL-a</translation>
 <translation id="1745780278307622857">Prepoznaje može li <ph name="PRODUCT_NAME" /> dopustiti preuzimanje bez provjera Sigurnog pregledavanja kada je izvor pouzdan.
 
@@ -528,7 +525,6 @@
       Ako se ta postavka onemogući, Automatsko popunjavanje nikad neće predlagati niti unositi podatke o adresi niti će spremati dodatne podatke o adresi koje korisnik može unijeti tijekom pregledavanja weba.
 
       Ako se ta postavka omogući ili nema vrijednost, korisnik će moći kontrolirati Automatsko popunjavanje za adrese na korisničkom sučelju.</translation>
-<translation id="1960840544413786116">Jesu li dopušteni certifikati koje izdaju lokalna pouzdana sidra, a kojima nedostaje proširenje subjectAlternativeName</translation>
 <translation id="1962273523772270623">Dopusti zbirku zapisnika događaja WebRTC s Googleovih usluga</translation>
 <translation id="1964634611280150550">Onemogućen je anoniman način rada</translation>
 <translation id="1964802606569741174">To pravilo nema utjecaja na Android aplikaciju YouTube. Ako se treba primijeniti sigurnosni način na YouTubeu, instaliranje Android aplikacije YouTube ne može biti dopušteno.</translation>
@@ -730,7 +726,6 @@
       Za uređaje kojima upravlja Active Directory to pravilo podržava proširivanje naziva uređaja <ph name="MACHINE_NAME_VARIABLE" /> na naziv uređaja Active Directoryja ili njegov podniz. Na primjer, ako naziv uređaja glasi <ph name="MACHINE_NAME_EXAMPLE" />, onda će se <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> zamijenjen s četiri znaka počevši od šestog položaja, tj. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Položaj je utemeljen na nuli.
       </translation>
 <translation id="2294382669900758280">Reprodukcija videozapisa u Android aplikacijama ne uzima se u obzir, čak i ako se to pravilo postavi na <ph name="TRUE" />.</translation>
-<translation id="2298647742290373702">Konfigurira zadanu stranicu nove kartice u pregledniku <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Odredi popis omogućenih dodataka</translation>
 <translation id="2303795211377219696">Omogući Automatsko popunjavanje za kreditne kartice</translation>
 <translation id="2309390639296060546">Zadana postavka zemljopisnog položaja</translation>
@@ -923,11 +918,6 @@
           Potpuni opis mogućih postavki i strukture tog pravila potražite na stranici https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           </translation>
 <translation id="2753637905605932878">Ograniči raspon lokalnih UDP priključaka kojima se koristi WebRTC</translation>
-<translation id="2755385841634849932">Ovo pravilo kontrolira dostupnost sigurnosnog kopiranja i vraćanja Androida.
-
-      Kada to pravilo nije konfigurirano niti postavljeno na <ph name="BR_DISABLED" />, sigurnosno kopiranje i vraćanje Androida onemogućeno je i korisnik ga ne može omogućiti.
-
-      Kada je to pravilo postavljeno na <ph name="BR_UNDER_USER_CONTROL" />, od korisnika se traži da odluči hoće li upotrebljavati sigurnosno kopiranje i vraćanje Androida. Ako korisnik omogući sigurnosno kopiranje i vraćanje, podaci Android aplikacija prenose se na Androidove poslužitelje za sigurnosne kopije i vraćaju s njih nakon ponovnog instaliranja kompatibilnih aplikacija.</translation>
 <translation id="2757054304033424106">Vrste proširenja/aplikacija koje se smiju instalirati</translation>
 <translation id="2758084448533744848">Određuje zadanu vremensku zonu koja će se upotrebljavati za uređaj. Ako se to pravilo postavi, korisnici uređaja ne mogu nadjačati navedenu vremensku zonu. Ako se navede nevažeća vrijednost, pravilo je još uvijek aktivirano i umjesto nje upotrebljava se "GMT". Ako se navede prazan niz, pravilo se zanemaruje.
 
@@ -1073,7 +1063,6 @@
 <translation id="2959898425599642200">Pravila zaobilaženja proxyja</translation>
 <translation id="2960128438010718932">Raspored postupnog uvođenja za primjenu novog ažuriranja</translation>
 <translation id="2960691910306063964">Omogući ili onemogući autentifikaciju bez PIN-a za hostove daljinskog pristupa</translation>
-<translation id="2972261849442778817">Korisniku se postavlja upit želi li premjestiti podatke ili preskočiti premještanje i onemogućiti ARC.</translation>
 <translation id="2976002782221275500">Određuje koliko vremena treba proteći bez aktivnosti korisnika da bi se zaslon zatamnio tijekom rada s baterijskim napajanjem.
 
           Kada je postavljeno na vrijednost veću od nule, ovo pravilo određuje koliko vremena treba proteći u neaktivnosti prije nego što <ph name="PRODUCT_OS_NAME" /> zatamni zaslon.
@@ -1209,15 +1198,6 @@
 <translation id="3284094172359247914">Upravljanje upotrebom API-ja WebUSB</translation>
 <translation id="3288595667065905535">Kanal izdanja</translation>
 <translation id="3292147213643666827">Omogućuje da se proizvod <ph name="PRODUCT_NAME" /> ponaša kao proxy između pisača iz oblaka <ph name="CLOUD_PRINT_NAME" /> i pisača iz starog sustava povezanih s računalom. Ako je ova postavka onemogućena ili nije konfigurirana, korisnici mogu omogućiti proxy ispisivanja na oblaku autentifikacijom putem svojih Google računa. Ako je ova postavka onemogućena, korisnici ne mogu omogućiti proxy, a računalu neće biti dopušteno dijeljenje pisača s oblakom <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="3307746730474515290">Kontrolira koje se vrste aplikacija/proširenja smiju instalirati i ograničava pristup za vrijeme izvođenja.
-
-          Ova postavka sadrži popis dopuštenih vrsta proširenja/aplikacija koje se mogu instalirati u proizvodu <ph name="PRODUCT_NAME" /> i hostova s kojima mogu stupiti u interakciju. Vrijednost je popis nizova, od kojih svaki treba biti jedan od sljedećih: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Više informacija o tim vrstama potražite u dokumentaciji o proširenjima proizvoda <ph name="PRODUCT_NAME" />.
-
-          Imajte na umu da to pravilo također utječe na proširenja i aplikacije čija se instalacija mora nametnuti popisom ExtensionInstallForcelist.
-
-          Ako je ta postavka konfigurirana, proširenja/aplikacije vrste koja nije na popisu neće se instalirati.
-
-          Ako ta postavka ostane nekonfigurirana, neće se primijeniti ograničenja o prihvatljivim vrstama proširenja/aplikacija.</translation>
 <translation id="3322771899429619102">Omogućuje postavljanje popisa uzoraka URL-ova koji određuju web-lokacije koje smiju upotrebljavati generiranje ključeva. Ako je uzorak URL-ova u pravilu "KeygenBlockedForUrls", to nadjačava ove iznimke.
 
           Ako se to pravilo ne postavi, globalna zadana vrijednost upotrebljavat će se za sve web-lokacije iz pravila "DefaultKeygenSetting" ako je postavljeno, a u suprotnom iz korisnikove osobne konfiguracije.</translation>
@@ -1332,7 +1312,6 @@
 
           To se pravilo poštuje samo ako je omogućeno pravilo "DefaultSearchProviderEnabled".</translation>
 <translation id="350797926066071931">Omogući Prevoditelj</translation>
-<translation id="3512226956150568738">Ako je klijentov model uređaja već podržavao ARC prije nego što je premještanje na ext4 bilo obavezno za izvođenje ARC-a i ako je pravilo ArcEnabled postavljeno na true, ta će se opcija ponašati kao AskUser (vrijednost 3). U svim ostalim slučajevima (ako model uređaja nije podržavao ARC ili ako je pravilo ArcEnabled postavljeno na false), ta je vrijednost ekvivalentna pravilu DisallowArc (vrijednost 0).</translation>
 <translation id="3513655665999652754">Quirks Server pruža konfiguracijske datoteke za hardver, primjerice
       profile ICC zaslona za kalibriranje monitora.
 
@@ -1521,7 +1500,6 @@
       Onemogućivanjem tog pravila dopustit će se upotreba protokola SPDY.
 
       Ako se to pravilo ne postavi, SPDY će biti dostupan.</translation>
-<translation id="3890999316834333174">Pravila o brzom otključavanju</translation>
 <translation id="3891357445869647828">Omogući JavaScript</translation>
 <translation id="3895557476567727016">Konfigurira zadani direktorij koji će <ph name="PRODUCT_NAME" /> upotrebljavati za preuzimanje datoteka.
 
@@ -1594,13 +1572,6 @@
 <translation id="4027608872760987929">Omogući zadanog davatelja usluge pretraživanja</translation>
 <translation id="4039085364173654945">Nadzire smije li podsadržaj treće strane na stranici prikazivati skočni dijaloški okvir HTTP Basic Auth. Obično je to onemogućeno radi obrane od krađe identiteta. Ako ovo pravilo nije postavljeno, to je onemogućeno i podsadržajima treće strane neće biti dopušteno prikazivanje skočnog dijaloškog okvira HTTP Basic Auth.</translation>
 <translation id="4056910949759281379">Onemogući SPDY protokol</translation>
-<translation id="4059515172917655545">Ovo pravilo kontrolira dostupnost Googleovih usluga lokacije.
-
-      Kada to pravilo nije konfigurirano ili je postavljeno na <ph name="GLS_DISABLED" />, Googleove su usluge lokacije onemogućene i korisnik ih ne može omogućiti.
-
-      Kada je to pravilo postavljeno na <ph name="GLS_UNDER_USER_CONTROL" />, od korisnika se traži da odabere hoće li upotrebljavati Googleove usluge lokacije. To će omogućiti Android aplikacijama da upotrebljavaju usluge za slanje upita za lokaciju uređaja te će također omogućiti slanje anonimnih podataka o lokaciji Googleu.
-
-      Napominjemo da se to pravilo zanemaruje i da su Googleove usluge lokacije uvijek onemogućene kada je pravilo <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> postavljeno na <ph name="BLOCK_GEOLOCATION_SETTING" />.</translation>
 <translation id="408029843066770167">Dopusti upute Googleovoj usluzi za vrijeme</translation>
 <translation id="408076456549153854">Omogući prijavu putem preglednika</translation>
 <translation id="4088589230932595924">Anoniman način rada prisilno je uključen</translation>
@@ -1657,14 +1628,14 @@
           Postoje četiri vrste radnji:
           * Zaslon će se zatamniti ako korisnik ostane neaktivan u razdoblju koje navodi |ScreenDim|.
           * Zaslon će se isključiti ako korisnik ostane neaktivan u razdoblju koje navodi |ScreenOff|.
-          * Ako korisnik ostane neaktivan u razdoblju koje navodi |IdleWarning|, prikazat će se dijaloški okvir koji će upozoriti korisnika da će se poduzeti radnja mirovanja. Poruka upozorenja prikazuje se samo ako je radnja neaktivnosti odjava ili isključivanje.
+          * Ako korisnik ostane neaktivan u razdoblju koje navodi |IdleWarning|, prikazat će se dijaloški okvir koji će upozoriti korisnika da će se poduzeti radnja u slučaju neaktivnosti. Poruka upozorenja prikazuje se samo ako je radnja u slučaju neaktivnosti odjava ili isključivanje.
           * Radnja koju navodi |IdleAction| poduzet će se ako korisnik ostane neaktivan u razdoblju koje navodi |Idle|.
 
-          Za svaku od prethodno navedenih radnji vrijeme do ulaska u stanje mirovanja treba navesti u milisekundama i postaviti na vrijednost veću od nule da bi se pokrenula odgovarajuća radnja. Ako se vrijeme do ulaska u stanje mirovanja postavi na nulu, <ph name="PRODUCT_OS_NAME" /> neće poduzeti odgovarajuću radnju.
+          Za svaku od prethodno navedenih radnji vrijeme odgode do radnje u slučaju neaktivnosti treba navesti u milisekundama i postaviti na vrijednost veću od nule da bi se pokrenula odgovarajuća radnja. Ako se vrijeme odgode do radnje u slučaju neaktivnosti postavi na nulu, <ph name="PRODUCT_OS_NAME" /> neće poduzeti odgovarajuću radnju.
 
-          Kada se vrijeme ne postavi, za svako od prethodno navedenih vremena do ulaska u stanje mirovanja upotrebljava se zadana vrijednost.
+          Kada se vrijeme ne postavi, za svako od prethodno navedenih vremena odgode upotrebljava se zadana vrijednost.
 
-          Napominjemo da će se vrijednosti za |ScreenDim| ograničiti kako bi bile manje od vrijednosti za |ScreenOff| ili jednake toj vrijednosti, te da će se vrijednosti za |ScreenOff| i |IdleWarning| ograničiti kako bi bile manje od vrijednosti za |Idle| ili jednake toj vrijednosti.
+          Napominjemo da vrijednosti za |ScreenDim| moraju biti manje od vrijednosti za |ScreenOff| ili jednake toj vrijednosti te da vrijednosti za |ScreenOff| i |IdleWarning| moraju biti manje od vrijednosti za |Idle| ili jednake toj vrijednosti.
 
           |IdleAction| može biti jedna od četiri moguće radnje:
           * |Suspend|
@@ -1756,19 +1727,18 @@
       Napominjemo da prisutnost ID-a aplikacije u pravilima ne mora značiti da će korisnik moći omogućiti aplikaciju kao aplikaciju za izradu bilježaka na zaključanom zaslonu, na primjer na Chromeu 61 skup dostupnih aplikacija dodatno je ograničen platformom.
 
       Ako se to pravilo ne postavi, pravila neće nametati ograničenja za skup aplikacija koje korisnik može omogućiti na zaključanom zaslonu.</translation>
-<translation id="4309640770189628899">Omogući DHE pakete šifri u TLS-u</translation>
 <translation id="4322842393287974810">Dopusti kiosk aplikaciji pokrenutoj automatski bez odgode da upravlja verzijom proizvoda <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Dodaj gumb za odjavu na programsku traku</translation>
 <translation id="4332177773549877617">Zabilježite događaje za instalacije aplikacije za Android</translation>
-<translation id="4335292026668105285">Određuje koliko vremena treba proći od zadnjeg korisničkog unosa nakon kojeg se prikazuje dijaloški okvir upozorenja dok je uređaj priključen na struju.
+<translation id="4335292026668105285">Određuje koliko vremena treba proći od zadnjeg korisničkog unosa nakon kojeg se prikazuje dijaloški okvir upozorenja dok je uređaj priključen u struju.
 
-          Ako se postavi, to pravilo određuje koliko dugo korisnik treba biti neaktivan prije nego što <ph name="PRODUCT_OS_NAME" /> prikaže dijaloški okvir upozorenja koji obavještava korisnika da će se poduzeti radnja neaktivnosti.
+          Ako se postavi, to pravilo određuje koliko dugo korisnik treba biti neaktivan prije nego što <ph name="PRODUCT_OS_NAME" /> prikaže dijaloški okvir upozorenja kojim se korisnika obavještava da će se poduzeti radnja u slučaju neaktivnosti.
 
           Ako se pravilo ne postavi, ne prikazuje se dijaloški okvir upozorenja.
 
-          Vrijednost pravila treba se navesti u milisekundama. Vrijednosti su ograničene na vrijeme kraće od odgode neaktivnosti ili jednako tom vremenu.
+          Vrijednost pravila treba se navesti u milisekundama. Vrijednosti moraju biti kraće od vremena odgode do radnje u slučaju neaktivnosti ili jednake tom vremenu.
 
-          Poruka upozorenja prikazuje se samo ako je radnja neaktivnosti odjava ili isključivanje.</translation>
+          Poruka upozorenja prikazuje se samo ako je radnja u slučaju neaktivnosti odjava ili isključivanje.</translation>
 <translation id="4346674324214534449">Omogućuje vam da postavite hoće li se oglasi blokirati na web-lokacijama s ometajućim oglasima.
 
      Ako se to pravilo postavi na 2, oglasi će se blokirati na web-lokacijama s ometajućim oglasima.
@@ -1878,17 +1848,6 @@
 <translation id="4613508646038788144">Ako je pravilo postavljeno na False, softver treće strane moći će ubaciti izvršni kôd u Chromeove procese. Ako pravilo nije postavljeno ili je postavljeno na True, softver treće strane neće moći ubaciti izvršni kôd u Chromeove procese.</translation>
 <translation id="4617338332148204752">Preskoči provjeru metaoznaka u okviru <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Konfiguriraj bijelu listu instalacije proširenja</translation>
-<translation id="463224920692183755">Određuje radnju koja se treba poduzeti kada je početni direktorij korisnika izrađen pomoću enkripcije eCryptfs i treba prijeći na enkripciju ext4.
-
-      Ako to pravilo postavite na "DisallowArc", Android aplikacije bit će onemogućene za korisnika i neće se izvršiti premještanje s enkripcije eCryptfs na ext4. Android aplikacijama neće se spriječiti pokretanje ako početni direktorij već ima enkripciju ext4.
-
-      Ako to pravilo postavite na "Migrate", početni direktoriji s enkripcijom eCryptfs automatski će prijeći na enkripciju ext4 prilikom prijave bez traženja korisnikova pristanka.
-
-      Ako to pravilo postavite na "Wipe", početni direktoriji s enkripcijom eCryptfs izbrisat će se prilikom prijave i umjesto njih izradit će se novi početni direktoriji s enkripcijom ext4. Upozorenje: time će se ukloniti svi lokalni podaci korisnika.
-
-      Ako to pravilo postavite na "AskUser", korisnicima s početnim direktorijima s enkripcijom eCryptfs ponudit će se premještanje.
-
-      To se pravilo ne primjenjuje na korisnike kioska. Ako se pravilo ne postavi, uređaj će se ponašati kao da je odabrana opcija "DisallowArc".</translation>
 <translation id="4632343302005518762">Dopusti proizvodu <ph name="PRODUCT_FRAME_NAME" /> rukovanje navedenim vrstama sadržaja</translation>
 <translation id="4632566332417930481">Onemogući upotrebu Alata za razvojne programere na proširenjima instaliranim prema pravilima organizacije, dopusti upotrebu Alata za razvojne programere u drugim kontekstima</translation>
 <translation id="4633786464238689684">Mijenja se zadano ponašanje tipki u skroz gornjem redu u funkcijske tipke.
@@ -1999,7 +1958,6 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 <translation id="4983201894483989687">Dopusti pokretanje dodataka koji su zastarjeli</translation>
 <translation id="4986560318567565414">Put do Chromea za prebacivanje iz zamjenskog preglednika.</translation>
 <translation id="4988291787868618635">Radnja koja će se izvršiti kada nastupi odgoda neaktivnosti</translation>
-<translation id="4995548127349206948">Je li NTLMv2 autentifikacija omogućena.</translation>
 <translation id="5030889661505907084">
       Ako se pravilo postavi na true, pravilo oblaka imat će prednost u slučaju sukoba s pravilom platforme.
       Ako se pravilo postavi na false ili se ne konfigurira, pravilo platforme imat će prednost ako je u sukobu pravilom oblaka.
@@ -2090,7 +2048,6 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 
       Za razliku od pravila <ph name="URL_LIST_POLICY_NAME" />, pravila se primjenjuju u oba smjera. To znači da kada je prisutan i omogućen dodatak Internet Explorera, ono također određuje treba li <ph name="IE_PRODUCT_NAME" /> otvoriti te URL-ove u pregledniku <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5124368997194894978">Omogući pokretanje na izmjeničnom napajanju</translation>
-<translation id="5130288486815037971">Omogućivanje RC4 paketa šifri u TLS-u</translation>
 <translation id="5141670636904227950">Postavljanje zadane vrste povećala na "omogućeno" na zaslonu za prijavu</translation>
 <translation id="5142301680741828703">Uvijek prikaži sljedeće URL obrasce u okviru <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="5148753489738115745">Omogućuje vam da odredite dodatne parametre koji se upotrebljavaju kada <ph name="PRODUCT_FRAME_NAME" /> pokreće uslugu <ph name="PRODUCT_NAME" />.
@@ -2741,7 +2698,6 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
           To je pravilo izborno. Ako nije postavljeno, poslat će se zahtjev za pretraživanje pomoću GET metode.
 
           To se pravilo poštuje samo ako je omogućeno pravilo "DefaultSearchProviderEnabled".</translation>
-<translation id="6367755442345892511">Treba li korisnik imati mogućnost za konfiguriranje kanala izdanja</translation>
 <translation id="6368011194414932347">Konfiguriraj URL početne stranice</translation>
 <translation id="6368403635025849609">Omogući JavaScript na ovim web-lokacijama</translation>
 <translation id="6376659517206731212">Može biti obavezno</translation>
@@ -3043,6 +2999,7 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
       Prije nego što se zaslon zatamni, model pametnog zatamnjenja procjenjuje treba li odgoditi zatamnjenje zaslona. Ako model pametnog zatamnjenja odgodi zatamnjenje zaslona, on učinkovito produljuje vrijeme dok zaslon ne bude zatamnjen. U tom se slučaju isključivanje zaslona, zaključavanje zaslona i odgode  mirovanja prilagođavaju kako bi zadržale jednaku udaljenost od odgode zatamnjenja zaslona kako je izvorno konfigurirano.
       Ako je ovo pravilo postavljeno na True ili nije postavljeno, bit će omogućen model pametnog zatamnjenja te će biti dopušteno produljiti vrijeme dok zaslon ne bude zatamnjen. Ako je ovo pravilo postavljeno na False, model pametnog zatamnjenja neće utjecati na zatamnjenje zaslona.</translation>
 <translation id="6972540544240464302">Odaberite konfiguraciju alata za zakazivanje zadataka</translation>
+<translation id="6979158407327259162">Google disk</translation>
 <translation id="6994082778848658360">Određuje način na koji se hardver s ugrađenim sigurnosnim elementom može upotrebljavati za pružanje dvostruke autentifikacije ako je kompatibilan s ovom značajkom. Tipka za uključivanje/isključivanje uređaja upotrebljava se za otkrivanje korisnikove fizičke prisutnosti.
 
       Ako se odabere "Onemogućeno", dvostruka se autentifikacija ne upotrebljava.
@@ -3050,7 +3007,6 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
       Ako se odabere "U2F", integrirana dvostruka autentifikacija ponašat će se u skladu sa specifikacijom za FIDO U2F.
 
       Ako se odabere "U2F_EXTENDED", integrirana dvostruka autentifikacija pružat će funkcije U2F i neka proširenja za pojedinačno atestiranje.</translation>
-<translation id="6997592395211691850">Jesu li potrebne mrežne OCSP/CRL provjere za lokalna pouzdana sidra</translation>
 <translation id="7003334574344702284">Ako je omogućeno, ovo pravilo prisilno uvozi spremljene zaporke iz prethodno zadanog preglednika. Ako je omogućeno, ovo pravilo također utječe na dijaloški okvir za uvoz. Ako je onemogućeno, spremljene se zaporke ne uvoze. Ako nije postavljeno, korisniku može biti postavljen upit želi li uvesti zaporke ili do uvoza može doći automatski.</translation>
 <translation id="7003746348783715221">Postavke za <ph name="PRODUCT_NAME" /></translation>
 <translation id="7006788746334555276">Postavke sadržaja</translation>
@@ -3290,10 +3246,6 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 <translation id="7458437477941640506">Nemoj se vratiti na ciljnu verziju ako je verzija OS-a novija od ciljne. Ažuriranja su također onemogućena.</translation>
 <translation id="7464991223784276288">Ograničavanje kolačića iz podudarnih URL-ova na trenutačnu sesiju</translation>
 <translation id="7469554574977894907">Omogući prijedloge pretraživanja</translation>
-<translation id="7474249562477552702">Jesu li dopušteni certifikati s SHA-1 potpisom koje izdaju lokalna pouzdana sidra</translation>
-<translation id="747851715060942420">Omogućuje vam da konfigurirate stranice koje se učitavaju prilikom pokretanja.
-
-      Pravilo "URL-ovi za otvaranje prilikom pokretanja" zanemaruje se ako ne odaberete "Otvori popis URL-ova" u odjeljku "Radnje prilikom pokretanja".</translation>
 <translation id="7485481791539008776">Zadana pravila za odabir pisača</translation>
 <translation id="7485730741952775732">Ako se to pravilo postavi, host daljinskog pristupa taj će URL koristiti za provjeru autentifikacijskih tokena od klijenata daljinskog pristupa radi prihvaćanja povezivanja. Mora se upotrebljavati zajedno s pravilom RemoteAccessHostTokenUrl.
 
@@ -3452,18 +3404,17 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
       Prepoznati identifikatori vrste veze jesu "ethernet", "wifi", "wimax", "bluetooth" i "mobilna".</translation>
 <translation id="7763614521440615342">Prikaz prijedloga sadržaja na web-stranici nove kartice</translation>
 <translation id="7765879851993224640">Dopusti upotrebu Smart Locka za prijavu.</translation>
-<translation id="7772346342637974431">Određuje koliko vremena treba proći od zadnjeg korisničkog unosa nakon kojeg se prikazuje dijaloški okvir upozorenja kada uređaj nije priključen na struju.
+<translation id="7772346342637974431">Određuje koliko vremena treba proći od zadnjeg korisničkog unosa nakon kojeg se prikazuje dijaloški okvir upozorenja kada uređaj nije priključen u struju.
 
-          Ako se postavi, to pravilo određuje koliko dugo korisnik treba biti neaktivan prije nego što <ph name="PRODUCT_OS_NAME" /> prikaže dijaloški okvir upozorenja koji obavještava korisnika da će se poduzeti radnja neaktivnosti.
+          Ako se postavi, to pravilo određuje koliko dugo korisnik treba biti neaktivan prije nego što <ph name="PRODUCT_OS_NAME" /> prikaže dijaloški okvir upozorenja kojim se korisnika obavještava da će se poduzeti radnja u slučaju neaktivnosti.
 
           Ako se pravilo ne postavi, ne prikazuje se dijaloški okvir upozorenja.
 
-          Vrijednost pravila treba se navesti u milisekundama. Vrijednosti su ograničene na vrijeme kraće od odgode neaktivnosti ili jednako tom vremenu.
+          Vrijednost pravila treba se navesti u milisekundama. Vrijednosti moraju biti kraće od vremena odgode do radnje u slučaju neaktivnosti ili jednake tom vremenu.
 
-          Poruka upozorenja prikazuje se samo ako je radnja neaktivnosti odjava ili isključivanje.</translation>
+          Poruka upozorenja prikazuje se samo ako je radnja u slučaju neaktivnosti odjava ili isključivanje.</translation>
 <translation id="7774768074957326919">Upotrijebi proxy postavke sustava</translation>
 <translation id="7777535871204167559">Postupaj s vanjskim uređajima za pohranu kao da su samo za čitanje</translation>
-<translation id="7781069478569868053">Web-stranica nove kartice</translation>
 <translation id="7788511847830146438">Po profilu</translation>
 <translation id="780603170519840350">Onemogućuje provedbu zahtjeva Transparentnosti certifikata za popis hashiranja za subjectPublicKeyInfo.
 
@@ -3491,7 +3442,6 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 
       Ako se to pravilo ne postavi, <ph name="PRODUCT_NAME" /> upotrebljavat će zadanu vrijednost od 5000 milisekundi.</translation>
 <translation id="7841880500990419427">Minimalna verzija TLS-a za pričuvnu upotrebu</translation>
-<translation id="7842869978353666042">Konfiguracija opcije Google diska</translation>
 <translation id="7858404742201086014">Ako omogućite tu postavku, zastarjeli se dodaci upotrebljavaju kao uobičajeni dodaci.
 
       Ako omogućite tu postavku, zastarjeli dodaci neće se upotrebljavati i od korisnika se neće tražiti dopuštenje za njihovo pokretanje.
@@ -3515,6 +3465,7 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 <translation id="793134539373873765">Određuje hoće li se p2p upotrebljavati za podatke ažuriranja OS-a. Ako je postavljeno na Točno, uređaji će dijeliti i pokušati konzumirati podatke ažuriranja na LAN-u potencijalno smanjujući potrošnju internetske propusnosti i zagušenje. Ako podaci ažuriranja nisu dostupni na LAN-u, uređaj će prijeći na preuzimanje s poslužitelja ažuriranja. Ako je postavljeno na Netočno ili nije konfigurirano, p2p se neće upotrebljavati.</translation>
 <translation id="7933141401888114454">Omogući izradu nadziranih korisnika</translation>
 <translation id="793473937901685727">Postavi dostupnost certifikata za ARC aplikacije</translation>
+<translation id="7937491150792971922">Spoji pravila za popise za instaliranje proširenja iz više izvora</translation>
 <translation id="7937766917976512374">Omogući ili onemogući snimanje videozapisa</translation>
 <translation id="7941975817681987555">Ne predviđaj mrežne radnje ni na jednoj mrežnoj vezi</translation>
 <translation id="7952958573604504839">To je pravilo obustavljeno u verziji M48 u korist pravila <ph name="NETWORK_PREDICTION_OPTIONS_POLICY_NAME" />, a uklonjeno je u verziji M54.
@@ -3755,7 +3706,6 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
 
       Više informacija o pravilu <ph name="IEEM_SITELIST_POLICY" /> Internet Explorera dostupno je na https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="8402079500086185021">Uvijek otvaraj PDF datoteke vanjski</translation>
-<translation id="8412312801707973447">Izvršavaju li se mrežne provjere OCSP/CRL</translation>
 <translation id="8417305981081876834">Postavi maksimalnu dužinu PIN-a za zaključan zaslon</translation>
 <translation id="841977920223099909">Okidač upozorenja o zaštiti zaporkom</translation>
 <translation id="8424255554404582727">Postavi zadano zakretanje zaslona koje će se primjenjivati nakon svakog ponovnog pokretanja</translation>
@@ -3936,11 +3886,6 @@ za preglednike imaju isti raspored.
 <translation id="8818768076343557335">Predviđaj mrežne radnje na svim mrežama osim mobilnim.
           (Zastarjelo u verziji 50, uklonjeno u verziji 52. Ako se u verzijama nakon 52. postavi vrijednost 1, njome će se postupati kao da je 0 – predviđanje mrežnih radnji na svim mrežnim vezama.)</translation>
 <translation id="8825782996899863372">Upozorenje o zaštiti zaporkom aktivira se ponovnom upotrebom zaporke na stranici za krađu identiteta</translation>
-<translation id="8828766846428537606">Konfigurirajte zadanu početnu stranicu u proizvodu <ph name="PRODUCT_NAME" /> i spriječite korisnike da je promijene.
-
-      Korisničke postavke početne stranice bit će potpuno zaključane ako odaberete početnu stranicu kao web-stranicu nove kartice ili je postavite kao URL i navedete URL početne stranice.
-
-      Ako ne navedete URL početne stranice, korisnik će svejedno moći postaviti početnu stranicu na web-stranicu nove kartice tako da navede "chrome://newtab".</translation>
 <translation id="8833109046074170275">Autentifikacija zadanim GAIA-inim tijekom</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> predmemorira aplikacije i proširenja kako bi ih moglo instalirati više korisnika jednog uređaja radi izbjegavanja ponovnog preuzimanja za svakog korisnika.
       Ako se to pravilo ne konfigurira ili je vrijednost niža od 1 MB, <ph name="PRODUCT_OS_NAME" /> upotrebljava zadanu veličinu predmemoriranja.</translation>
@@ -3976,7 +3921,6 @@ za preglednike imaju isti raspored.
       Ako omogućite ili onemogućite tu postavku, korisnici je ne mogu mijenjati niti poništiti u proizvodu <ph name="PRODUCT_NAME" />.
 
       Ako ta postavka nije postavljena, korisnik može odlučiti hoće li upotrebljavati tu funkciju.</translation>
-<translation id="8870318296973696995">Početna stranica</translation>
 <translation id="8876188741456358123">Nadjačava dvostruki način zadanog ispisa. Pravilo se zanemaruje ako način nije dostupan.</translation>
 <translation id="8882006618241293596">Blokiraj dodatak <ph name="FLASH_PLUGIN_NAME" /> na ovim web-lokacijama</translation>
 <translation id="8906768759089290519">Omogući način gosta</translation>
@@ -4076,7 +4020,7 @@ za preglednike imaju isti raspored.
 <translation id="9035964157729712237">ID-jevi proširenja za izuzimanje s crne liste</translation>
 <translation id="9038058011835642205">Određuje popis web-lokacija koje se instaliraju u pozadini bez interakcije korisnika i koje korisnik ne može deinstalirati ni onemogućiti.
 
-      Svaka stavka na popisu pravila objekt je s obaveznim članom: "url" i dva izborna člana: "default_launch_container" i "create_desktop_shortcut". "url" bi trebao biti URL web-aplikacije koju je potrebno instalirati, "launch_container" bi trebao biti "window" ili "tab" kako bi se naznačilo hoće li se web-aplikacija nakon instalacije otvarati u prozoru ili na kartici, a "create_desktop_shortcut" bi trebao biti true ako je potrebno izraditi prečac na radnoj površini na Linuxu i Windowsima. Ako se izostavi "default_launch_container", aplikacija će se prema zadanim postavkama otvarati u kartici. Neovisno o vrijednosti člana "default_launch_container", korisnici mogu promijeniti spremnik u kojem će se aplikacija otvarati. Ako se "create_desktop_shortcuts" izostavi, prečac na radnoj površini neće se izraditi.</translation>
+      Svaka stavka na popisu pravila objekt je s obaveznim članom: "url" i dva izborna člana: "default_launch_container" i "create_desktop_shortcut". "url" je URL web-aplikacije koja će se instalirati, za "launch_container" je potrebno odabrati postavku "window" ili "tab" kako bi se naznačilo hoće li se web-aplikacija nakon instalacije otvarati u prozoru ili na kartici, a "create_desktop_shortcut" treba biti postavljen na true ako je potrebno izraditi prečac na radnoj površini na Linuxu i Windowsima. Ako se izostavi "default_launch_container", aplikacija će se prema zadanim postavkama otvarati u kartici. Neovisno o vrijednosti parametra "default_launch_container", korisnici mogu promijeniti spremnik u kojem će se aplikacija otvarati. Ako se "create_desktop_shortcuts" izostavi, prečac na radnoj površini neće se izraditi.</translation>
 <translation id="9038839118379817310">Omogući Wi-Fi</translation>
 <translation id="9039822628127365650">Ako se postavi, to pravilo određuje vremensko razdoblje nakon kojeg se korisnik automatski odjavljuje, a sesija prekida. Korisnik može vidjeti preostalo vrijeme na tajmeru za odbrojavanje prikazanom na traci sustava.
 
@@ -4115,7 +4059,6 @@ za preglednike imaju isti raspored.
 <translation id="9094064873808699479">Vraća uređaj na ciljnu verziju i ostaje na njoj ako je verzija OS-a novija od ciljne. Pokušajte prenijeti konfiguraciju uređaja (uključujući mrežne vjerodajnice) ako je moguće, ali vraćanje izvršite uz potpuni powerwash čak i ako oporavak podataka nije moguć (zato što ciljna verzija ne podržava oporavak podataka ili zbog promjene koja nije kompatibilna sa starijim verzijama).
           Podržano u sustavu <ph name="PRODUCT_OS_NAME" /> verzije 70 i novijima. Za starije klijente ta vrijednost znači da vraćanje nije omogućeno.</translation>
 <translation id="9096086085182305205">Bijela lista poslužitelja za autentifikaciju</translation>
-<translation id="9098553063150791878">Pravila za HTTP autentifikaciju</translation>
 <translation id="9105265795073104888">Android aplikacijama dostupan je samo podskup opcija za konfiguraciju proxyja. Android aplikacije taj proxy mogu upotrebljavati dobrovoljno. Upotrebu proxyja ne možete im nametnuti.</translation>
 <translation id="9106865192244721694">Dopusti WebUSB na ovim web-lokacijama</translation>
 <translation id="9112727953998243860">Datoteka za konfiguraciju pisača tvrtke</translation>

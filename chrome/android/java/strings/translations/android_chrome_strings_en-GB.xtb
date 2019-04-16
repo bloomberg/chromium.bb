@@ -117,9 +117,9 @@
 <translation id="1883903952484604915">My files</translation>
 <translation id="1887786770086287077">Location access is off for this device. Turn it on in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" /> will open in Chrome. By continuing, you agree to Chrome’s <ph name="BEGIN_LINK1" />Terms of Service<ph name="END_LINK1" /> and <ph name="BEGIN_LINK2" />Privacy Notice<ph name="END_LINK2" />.</translation>
-<translation id="189172778771606813">Close navigation drawer</translation>
 <translation id="1919345977826869612">Ads</translation>
 <translation id="1919950603503897840">Select contacts</translation>
+<translation id="1922076542920281912">To let Chrome access your location, also turn on location in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="19288952978244135">Reopen Chrome.</translation>
 <translation id="1933845786846280168">Selected Tab</translation>
@@ -145,6 +145,7 @@
 <translation id="2018707881002649255">The contacts that you select below will be shared with the website <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="2021896219286479412">Full screen site controls</translation>
 <translation id="2038563949887743358">Turn on Request desktop site</translation>
+<translation id="2041019821020695769">To let Chrome send you notifications, also turn on notifications in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> also has data in Chrome</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB other apps</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -267,7 +268,6 @@
 <translation id="2923908459366352541">Name is invalid</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> storage</translation>
 <translation id="2956410042958133412">This account is managed by <ph name="PARENT_NAME_1" /> and <ph name="PARENT_NAME_2" />.</translation>
-<translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. All rights reserved.</translation>
 <translation id="2962095958535813455">Switched to incognito tabs</translation>
 <translation id="2968755619301702150">Certificate viewer</translation>
 <translation id="2979025552038692506">Selected Incognito Tab</translation>
@@ -361,6 +361,7 @@
 <translation id="3712575778697986964">Reset Data Saver?</translation>
 <translation id="3714981814255182093">Open the Find Bar</translation>
 <translation id="3716182511346448902">This page uses too much memory, so Chrome paused it.</translation>
+<translation id="3730075448226062617">To let Chrome access your microphone, also turn on microphone in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
 <translation id="3739899004075612870">Bookmarked in <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB other apps</translation>
 <translation id="3744111561329211289">Background sync</translation>
@@ -555,7 +556,6 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5087580092889165836">Add card</translation>
 <translation id="5100237604440890931">Collapsed – click to expand.</translation>
 <translation id="510275257476243843">1 hour left</translation>
-<translation id="51149521070059886">Turn on dark theme when your device's Power Saver is on</translation>
 <translation id="5123685120097942451">Incognito tab</translation>
 <translation id="5127805178023152808">Sync is off</translation>
 <translation id="5129038482087801250">Install web app</translation>
@@ -565,7 +565,6 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5152843274749979095">No supported apps installed</translation>
 <translation id="5161254044473106830">Title required</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 download failed.}other{# downloads failed.}}</translation>
-<translation id="5168917394043976756">Open navigation drawer</translation>
 <translation id="5184329579814168207">Open in Chrome</translation>
 <translation id="5199929503336119739">Work profile</translation>
 <translation id="5210286577605176222">Jump to the previous tab</translation>
@@ -676,6 +675,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5937580074298050696"><ph name="AMOUNT" /> saved</translation>
 <translation id="5939518447894949180">Reset</translation>
 <translation id="5942872142862698679">Using Google for search</translation>
+<translation id="5944669582486359588">In Lite mode, Chrome loads pages faster and uses up to 60 per cent less data. Google's cloud technology optimises the pages that you visit.</translation>
 <translation id="5952764234151283551">Sends the URL of a page that you're trying to reach to Google</translation>
 <translation id="5956665950594638604">Open the Chrome Help Centre in a new tab</translation>
 <translation id="5958275228015807058">Find your files and pages in Downloads</translation>
@@ -706,6 +706,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="618993374665929060">More like this opened at full height</translation>
 <translation id="6192333916571137726">Download File</translation>
 <translation id="6192792657125177640">Exceptions</translation>
+<translation id="6194112207524046168">To let Chrome access your camera, also turn on camera in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Block third-party cookies</translation>
 <translation id="6206551242102657620">Connection is secure. Site information</translation>
 <translation id="6210748933810148297">Not <ph name="EMAIL" />?</translation>

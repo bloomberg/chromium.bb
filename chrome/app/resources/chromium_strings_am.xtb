@@ -32,6 +32,7 @@
 <translation id="1929939181775079593">Chromium መልስ አይሰጥም። አሁን ዳግም ይጀምር?</translation>
 <translation id="1966382378801805537">Chromium ነባሪ አሳሹን ማወቅ ወይም ማቀናበር አልቻለም</translation>
 <translation id="2008474315282236005">ይሄ 1 ንጥል ከዚህ መሣሪያ ይሰርዛል። ውሂብዎን በኋላ ላይ ሰርስረው ለማውጣት እንደ <ph name="USER_EMAIL" /> ሆነው ወደ Chromium ይግቡ።</translation>
+<translation id="2037988709973327241"><ph name="FILE_NAME" /> አደገኛ ነው፣ ስለዚህ Chromium አግዶታል። በላቀ ጥበቃ አማካይነት ጥበቃ ተደርጎሎታል።</translation>
 <translation id="2117378023188580026">ይህን ዝማኔ ለመተግበር አስተዳዳሪዎ Chromiumን ዳግም እንዲያስጀምሩ ይጠይቀዎታል</translation>
 <translation id="2119636228670142020">&amp;ስለChromium ስርዓተ ክወና</translation>
 <translation id="2178765360243863853">አሁን Chromiumን ዳግም ማስጀመር አለብዎት</translation>
@@ -63,6 +64,7 @@
 <translation id="3068515742935458733">የብልሽት ሪፖርቶችን እና <ph name="UMA_LINK" /> ወደ Google በመላክ Chromiumን የተሻለ ለማድረግ እገዛ ያድርጉ</translation>
 <translation id="3103660991484857065">ጫኚው መዝገቡን መበተን አልቻለም። እባክዎ Chromiumን እንደገና ያውርዱት።</translation>
 <translation id="3130323860337406239">Chromium ማይክሮፎንዎን እየተጠቀመ ነው።</translation>
+<translation id="3154325651427862069"><ph name="FILE_NAME" /> አደገኛ ሊሆን ስለሚችል Chromium አግዶታል። በላቀ ጥበቃ አማካይነት ጥበቃ ተደርጎሎታል።</translation>
 <translation id="3155163173539279776">Chromiumን ዳግም አስጀምር</translation>
 <translation id="3179665906251668410">አገናኙን በChromium ማን&amp;ነትን በማያሳውቅ መስኮት ውስጥ ክፈት</translation>
 <translation id="3190315855212034486">ኧረ ገዳይ! Chromium ብልሽት አጋጥሞታል። አሁን ዳግም ይጀምር?</translation>
@@ -90,6 +92,7 @@
 <translation id="388648406173476553">Chromiumን ያብጁ እና ይቆጣጠሩ። የሆነ ነገር ትኩረትዎ ያስፈልገዋል - ለዝርዝሮች ጠቅ ያድርጉ።</translation>
 <translation id="3889543394854987837">Chromiumን ለመክፈት እና ማሰስ ለመጀመር ስምዎን ጠቅ ያድርጉት።</translation>
 <translation id="3898493977366060150">የድር አሰሳ በGoogle ዘመናዊ ይሆናል</translation>
+<translation id="3931244652999881512">ይህ ፋይል አደገኛ ስለሆነ Chromium አግዶታል። በላቀ ጥበቃ አማካይነት ጥበቃ ተደርጎሎታል።</translation>
 <translation id="3965668104013180445">{0,plural, =1{Chromium OS በ1 ሰዓት ውስጥ ዳግም ይጀምራል}one{Chromium OS በ# ሰዓቶች ውስጥ ዳግም ይጀምራል}other{Chromium OS በ# ሰዓቶች ውስጥ ዳግም ይጀምራል}}</translation>
 <translation id="4036079820698952681"><ph name="BEGIN_LINK" />የአሁኖቹን ቅንብሮች<ph name="END_LINK" /> ሪፖርት በማድረግ Chromium የተሻለ እንዲሆን ያግዙ</translation>
 <translation id="4050175100176540509">አስፈላጊ የደህንነት ማሻሻያዎች እና አዲስ ባህሪያት በቅርብ ጊዜው ስሪቱ ላይ ይገኛሉ።</translation>
@@ -140,6 +143,7 @@
 <translation id="5680901439334282664">ወደ Chromium ይግቡ</translation>
 <translation id="5698481217667032250">Chromiumን በዚህ ቋንቋ አሳይ</translation>
 <translation id="5712253116097046984">ይህን ዝማኔ ለመተግበር አስተዳዳሪዎ Chromium OSን ዳግም እንዲያስጀምሩ ይጠይቀዎታል</translation>
+<translation id="5726979195371243087">ይህ ፋይል አደገኛ ሊሆን ስለሚችል Chromium አግዶታል። በላቀ ጥበቃ አማካይነት ጥበቃ ተደርጎሎታል።</translation>
 <translation id="5756484659843248772">ይህ ቋንቋ የChromium OS ዩአይን ለማሳየት ስራ ላይ ይውላል</translation>
 <translation id="5768914737813585044">Chromium OS በዚህ ቋንቋ አሳይ</translation>
 <translation id="5796460469508169315">Chromium ዝግጁ ሊሆን ትንሽ ቀርቶታል።</translation>
@@ -254,6 +258,7 @@ Chromium ቅንብሮችዎን ማስመለስ አልቻለም።</translation>
 <translation id="8667808506758191620">የእርስዎ <ph name="DEVICE_TYPE" /> የተዘመነ ነው።</translation>
 <translation id="8697124171261953979">እንዲሁም Chromiumን ሲጀምሩት ወይም ከኦምኒቦክሱ ሆነው ሲፈልጉ የሚታየውን ገጽ ይቆጣጠራል።</translation>
 <translation id="8704119203788522458">ይሄ የእርስዎ Chromium ነው</translation>
+<translation id="8704255848199359374">ይህ በ Google ፍለጋ ውስጥ ጥቅም ላይ ጋር ተመሳሳይ የፊደል አራሚ ይጠቀማል። በአሳሽ ውስጥ የሚተይቡት ጽሑፍ ወደ Google ይላካል። ይህን ባህሪ ሁልጊዜ በቅንብሮች ውስጥ መለወጥ ይችላሉ።</translation>
 <translation id="8796602469536043152">Chromium ለዚህ ጣቢያ የእርስዎን ካሜራ እና ማይክሮፎን ለመድረስ ፈቃድ ያስፈልገዋል</translation>
 <translation id="8803635938069941624">የChromium OS ውል</translation>
 <translation id="8821041990367117597">የመለያ መግቢያ ዝርዝሮችዎ ጊዜ ያለፈባቸው ስለሆኑ Chromium ውሂብዎን ማመሳሰል አልቻለም።</translation>

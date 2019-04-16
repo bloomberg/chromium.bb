@@ -210,7 +210,6 @@
 <translation id="2053111141626950936">Strani v jeziku <ph name="LANGUAGE" /> ne bodo prevedene.</translation>
 <translation id="2053553514270667976">Poštna številka</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 predlog}one{# predlog}two{# predloga}few{# predlogi}other{# predlogov}}</translation>
-<translation id="2068124040035837596">Vaš račun upravlja domena <ph name="ENROLLMENT_DOMAIN" />. To pomeni, da lahko skrbnik na daljavo konfigurira vaš račun.</translation>
 <translation id="2068663545051464999">ID naloženega poročila o zrušitvah <ph name="CRASH_ID" /> (lokalni kontekst: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="2079545284768500474">Razveljavi</translation>
 <translation id="20817612488360358">Za uporabo so nastavljene sistemske nastavitve strežnika proxy, vendar je navedena tudi izrecna konfiguracija proxyja.</translation>
@@ -279,7 +278,6 @@
     za vse zahteve, ki so mu poslane, uporabi varnostni pravilnik. Vendar pa zdaj
     ni zagotovil pravilnika, kar brskalniku preprečuje,
     da bi izpolnil vašo zahtevo za <ph name="SITE" />.</translation>
-<translation id="244665789865330679">Vašo napravo in račun upravlja domena <ph name="ENROLLMENT_DOMAIN" />. To pomeni, da lahko skrbnik na daljavo konfigurira vašo napravo in račun.</translation>
 <translation id="2463193859425327265">Spremeni domačo stran</translation>
 <translation id="2463739503403862330">Izpolni</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -481,7 +479,6 @@
 <translation id="358285529439630156">Sprejema kreditne in predplačniške kartice.</translation>
 <translation id="3582930987043644930">Dodajte ime</translation>
 <translation id="3583757800736429874">&amp;Uveljavi premik</translation>
-<translation id="35866233670761917">Vsebina spletnih mest, ki jih obiščete, vašim skrbnikom ni vidna</translation>
 <translation id="3586931643579894722">Skrij podrobnosti</translation>
 <translation id="3592413004129370115">Italian (Envelope)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
@@ -749,7 +746,6 @@
 <translation id="5095208057601539847">Provinca</translation>
 <translation id="5097099694988056070">Statistični podatki naprave, kot je uporaba CPE-ja/RAM-a</translation>
 <translation id="5097501891273180634">A2</translation>
-<translation id="5098222253617183465">Vašo napravo upravlja <ph name="ENROLLMENT_DOMAIN" /> in vaš račun upravlja <ph name="ACCOUNT_DOMAIN" />. To pomeni, da lahko skrbnika na daljavo konfigurirata napravo in račun.</translation>
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64-bitno)</translation>
@@ -905,7 +901,6 @@
 <translation id="5967592137238574583">Urejanje podatkov o stiku</translation>
 <translation id="5967867314010545767">Odstrani iz zgodovine</translation>
 <translation id="5975083100439434680">Pomanjšaj</translation>
-<translation id="5977489021191000276">Vaše naprave ne upravlja skrbnik.</translation>
 <translation id="5977976211062815271">V tej napravi</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">Plačilne aplikacije ni mogoče odpreti</translation>
@@ -1051,7 +1046,6 @@
 <translation id="6903319715792422884">S pošiljanjem nekaterih <ph name="BEGIN_WHITEPAPER_LINK" />informacij o sistemu in vsebine strani<ph name="END_WHITEPAPER_LINK" /> Googlu lahko pomagate izboljšati Varno brskanje. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">Uporabnik:</translation>
 <translation id="6934672428414710184">To ime je iz vašega računa za Google</translation>
-<translation id="6939583532829045966">Vašo napravo upravlja domena <ph name="ENROLLMENT_DOMAIN" />. To pomeni, da lahko skrbnik na daljavo konfigurira vašo napravo.</translation>
 <translation id="6944692733090228304">Vnesli ste geslo na spletnem mestu, ki ga ne upravlja: <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />. Zaradi zaščite računa gesla ne uporabljajte za druge aplikacije in spletna mesta.</translation>
 <translation id="6945221475159498467">Izberi</translation>
 <translation id="6948701128805548767">Če si želite ogledati načine prevzema in zahteve, izberite naslov</translation>
@@ -1061,7 +1055,6 @@
 <translation id="6957887021205513506">Potrdilo strežnika je očitno ponaredek.</translation>
 <translation id="6964255747740675745">Omrežne konfiguracije ni bilo mogoče razčleniti (neveljaven JSON).</translation>
 <translation id="6965382102122355670">V redu</translation>
-<translation id="6965456981923010628"><ph name="LEFT_PART" /> • <ph name="RIGHT_PART" /></translation>
 <translation id="6965978654500191972">Naprava</translation>
 <translation id="6970216967273061347">Okrožje</translation>
 <translation id="6973656660372572881">Določeni so stalni strežniki proxy in URL skripta .pac.</translation>
@@ -1212,6 +1205,7 @@ Dodatne podrobnosti:
 <translation id="7668654391829183341">Neznana naprava</translation>
 <translation id="7669271284792375604">Napadalci na tem spletnem mestu vas bodo morda poskusili zavesti, da bi namestili programe, ki škodljivo vplivajo na brskanje (na primer tako, da spremenijo vašo domačo stran ali na spletnih mestih, ki jih obiščete, prikazujejo dodatne oglase).</translation>
 <translation id="7676643023259824263">Iskanje besedila v odložišču, <ph name="TEXT" /></translation>
+<translation id="7679176406634891508">Okolje in oblak</translation>
 <translation id="7681101578153515023">Zamenjaj iskalnik</translation>
 <translation id="7682287625158474539">Pošiljanje</translation>
 <translation id="7687186412095877299">Izpolni obrazce za plačilo s shranjenimi podatki o plačilnih sredstvih</translation>
@@ -1415,7 +1409,6 @@ Dodatne podrobnosti:
 <translation id="8932102934695377596">Ura zaostaja</translation>
 <translation id="893332455753468063">Dodajanje imena</translation>
 <translation id="8938939909778640821">Sprejete kreditne in predplačniške kartice</translation>
-<translation id="894185898663964645">Skrbnik je konfiguriral korenska potrdila po meri, ki skrbniku morda omogočajo ogled vsebine spletnih mest, ki jih obiščete.</translation>
 <translation id="8943282376843390568">Rumenozelena</translation>
 <translation id="8957210676456822347">Odobritev prestreznega portala</translation>
 <translation id="8968766641738584599">Shrani kartico</translation>
@@ -1429,6 +1422,7 @@ Dodatne podrobnosti:
 <translation id="8996941253935762404">Pozor: Spletno mesto vsebuje škodljive programe.</translation>
 <translation id="8997023839087525404">Strežnik je posredoval potrdilo, ki ni bilo javno razkrito na podlagi pravilnika o preglednosti potrdila. To je obvezno za nekatera potrdila zaradi zagotavljanja, da so zaupanja vredna in ščitijo pred napadalci.</translation>
 <translation id="9001074447101275817">Strežnik proxy <ph name="DOMAIN" /> zahteva uporabniško ime in geslo.</translation>
+<translation id="9004367719664099443">Seja VR je v teku</translation>
 <translation id="9005998258318286617">Dokumenta PDF ni bilo mogoče naložiti.</translation>
 <translation id="9008201768610948239">Prezri</translation>
 <translation id="9011424611726486705">Odpiranje nastavitev spletnega mesta</translation>

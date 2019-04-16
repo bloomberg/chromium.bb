@@ -40,6 +40,7 @@
 <translation id="1773601347087397504">Nhận trợ giúp về cách sử dụng Chrome OS</translation>
 <translation id="1795405610103747296">Cài đặt Chrome trên điện thoại của bạn. Chúng tôi sẽ gửi SMS tới điện thoại của bạn: <ph name="PHONE_NUMBER" /></translation>
 <translation id="1812689907177901597">Bằng việc tắt tính năng này, bạn có thể đăng nhập vào các trang web của Google, chẳng hạn như Gmail mà không cần đăng nhập vào Chrome</translation>
+<translation id="1815759068706561639"><ph name="FILE_NAME" /> nguy hiểm nên đã bị Chrome chặn. Tính năng Bảo vệ nâng cao giữ an toàn cho bạn.</translation>
 <translation id="1860536484129686729">Chrome cần có quyền truy cập vào máy ảnh của bạn cho trang web này</translation>
 <translation id="1873233029667955273">Google Chrome không phải là trình duyệt mặc định của bạn</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
@@ -58,7 +59,6 @@
 <translation id="2290014774651636340">Khóa API của Google bị thiếu. Một số chức năng của Google Chrome sẽ bị tắt.</translation>
 <translation id="2290095356545025170">Bạn có chắc chắn muốn gỡ cài đặt Google Chrome không?</translation>
 <translation id="2309047409763057870">Đây là cài đặt thứ cấp của Google Chrome và không thể trở thành trình duyệt mặc định của bạn.</translation>
-<translation id="2334084861041072223">Bản quyền <ph name="YEAR" /> Google Inc. Mọi quyền được bảo lưu.</translation>
 <translation id="2346876346033403680">Ai đó trước đây đã đăng nhập vào Chrome trên máy tính này là <ph name="ACCOUNT_EMAIL_LAST" />. Nếu đó không phải là tài khoản của bạn, hãy tạo người dùng Chrome mới để giữ riêng biệt thông tin của bạn.
 
 Đăng nhập bằng mọi cách sẽ kết hợp thông tin Chrome như dấu trang, lịch sử và các cài đặt khác vào <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
@@ -66,6 +66,7 @@
 <translation id="2429317896000329049">Google Chrome không thể đồng bộ hóa dữ liệu của bạn vì Đồng bộ hóa không khả dụng cho miền của bạn.</translation>
 <translation id="2467438592969358367">Google Chrome muốn xuất các mật khẩu của bạn. Hãy nhập mật khẩu Windows để cho phép thực hiện việc này.</translation>
 <translation id="2485422356828889247">Gỡ cài đặt</translation>
+<translation id="2521856951867783208">Tệp này có thể nguy hiểm nên đã bị Chrome chặn. Tính năng Bảo vệ nâng cao giữ an toàn cho bạn.</translation>
 <translation id="2534507159460261402">Google Pay (đã sao chép vào Chrome)</translation>
 <translation id="2535429035253759792">Quản trị viên của bạn yêu cầu bạn chạy lại Chrome để áp dụng bản cập nhật này</translation>
 <translation id="2580411288591421699">Không thể cài đặt phiên bản Google Chrome giống với phiên bản hiện đang chạy. Vui lòng đóng Google Chrome và thử lại.</translation>
@@ -102,6 +103,7 @@ Vui lòng xem email của bạn tại <ph name="ACCOUNT_EMAIL" /> để biết t
 <translation id="3451115285585441894">Đang thêm vào Chrome...</translation>
 <translation id="345171907106878721">Thêm chính bạn vào Chrome</translation>
 <translation id="3479552764303398839">Không phải bây giờ</translation>
+<translation id="3481286511616257896"><ph name="FILE_NAME" /> có thể nguy hiểm nên đã bị Chrome chặn. Tính năng Bảo vệ nâng cao giữ an toàn cho bạn.</translation>
 <translation id="34857402635545079">Đồng thời xóa dữ liệu khỏi Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome cần quyền truy cập vào vị trí của bạn để chia sẻ thông tin vị trí với trang web này</translation>
 <translation id="3576528680708590453">Quản trị viên hệ thống của bạn đã định cấu hình Google Chrome để mở một trình duyệt thay thế khi truy cập vào <ph name="TARGET_URL_HOSTNAME" />.</translation>
@@ -114,7 +116,6 @@ Vui lòng xem email của bạn tại <ph name="ACCOUNT_EMAIL" /> để biết t
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Xóa khỏi Chrome...</translation>
 <translation id="386202838227397562">Vui lòng đóng tất cả cửa sổ của Google Chrome và thử lại.</translation>
-<translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3873044882194371212">Mở liên kết trong cửa sổ ẩn &amp;danh của Chrome</translation>
 <translation id="3889417619312448367">Gỡ cài đặt Google Chrome</translation>
 <translation id="3898493977366060150">Duyệt web bằng Google smarts</translation>
@@ -226,12 +227,14 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="7459554271817304652">Thiết lập đồng bộ hóa để lưu các tính năng trình duyệt được cá nhân hóa của bạn vào web và truy cập chúng từ Google Chrome trên bất kỳ máy tính nào.</translation>
 <translation id="7473136999113284234">Chrome tự động cập nhật nên bạn luôn có phiên bản mới nhất.</translation>
 <translation id="7486227612705979895">Chrome sẽ truy cập vào Drive của bạn để đưa ra đề xuất trên thanh địa chỉ</translation>
+<translation id="748945194546522577">Tệp này nguy hiểm nên đã bị Chrome chặn. Tính năng Bảo vệ nâng cao giữ an toàn cho bạn.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Hiển thị Chrome OS bằng ngôn ngữ này</translation>
 <translation id="7561940363513215021">{0,plural, =1{Chrome sẽ chạy lại sau 1 phút}other{Chrome sẽ chạy lại sau # phút}}</translation>
 <translation id="7589360514048265910">Máy tính này sẽ không còn nhận được bản cập nhật của Google Chrome do hệ điều hành Mac OS X 10.9 không được hỗ trợ nữa.</translation>
 <translation id="7592736734348559088">Google Chrome không thể đồng bộ hóa dữ liệu của bạn vì chi tiết đăng nhập tài khoản của bạn đã cũ.</translation>
 <translation id="7626032353295482388">Chào mừng bạn đến với Chrome</translation>
+<translation id="7636297873481318396">Tệp này nguy hiểm nên đã bị Chrome chặn. Tính năng Bảo vệ nâng cao giữ an toàn cho bạn.</translation>
 <translation id="7641148173327520642">Quản trị viên hệ thống đã định cấu hình Google Chrome để mở <ph name="ALTERNATIVE_BROWSER_NAME" /> khi truy cập vào <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7651907282515937834">Biểu trưng Chrome Enterprise</translation>
 <translation id="7747138024166251722">Trình cài đặt không thể tạo thư mục tạm thời. Vui lòng kiểm tra dung lượng ổ đĩa còn trống và quyền cài đặt phần mềm.</translation>
@@ -280,6 +283,7 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="8669527147644353129">Trình trợ giúp của Google Chrome</translation>
 <translation id="8679801911857917785">Tiện ích này cũng điều khiển trang nào được hiển thị khi bạn khởi động Chrome.</translation>
 <translation id="870251953148363156">Cập nhật &amp;Google Chrome</translation>
+<translation id="8704255848199359374">Dịch vụ này sử dụng cùng một trình kiểm tra lỗi chính tả dùng trong Google Tìm kiếm. Chrome gửi cho Google văn bản mà bạn nhập vào trình duyệt. Bạn luôn có thể thay đổi hành động này trong các tùy chọn cài đặt.</translation>
 <translation id="873133009373065397">Google Chrome không thể xác định hoặc đặt trình duyệt mặc định</translation>
 <translation id="8736674169840206667">Quản trị viên của bạn yêu cầu bạn chạy lại Chrome để áp dụng bản cập nhật</translation>
 <translation id="8788264404293392165">Ngôn ngữ này dùng để hiển thị giao diện người dùng của Chrome OS</translation>

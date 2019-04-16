@@ -31,6 +31,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="1929939181775079593">Chromium ne répond pas. Voulez-vous le relancer maintenant ?</translation>
 <translation id="1966382378801805537">Impossible d'identifier ou de définir le navigateur par défaut avec Chromium</translation>
 <translation id="2008474315282236005">Cette action aura pour effet de supprimer 1 élément de cet appareil. Pour récupérer vos données ultérieurement, connectez-vous à Chromium en tant que <ph name="USER_EMAIL" />.</translation>
+<translation id="2037988709973327241">Chromium a bloqué le fichier <ph name="FILE_NAME" />, car ce dernier est dangereux. Vous êtes protégé par le Programme Protection Avancée.</translation>
 <translation id="2117378023188580026">Votre administrateur vous demande de relancer Chromium pour installer cette mise à jour</translation>
 <translation id="2119636228670142020">À propos de &amp;Chromium OS</translation>
 <translation id="2178765360243863853">Redémarrez Chromium maintenant</translation>
@@ -62,6 +63,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="3068515742935458733">Aidez-nous à améliorer Chromium en nous envoyant des rapports d'erreur et des <ph name="UMA_LINK" />.</translation>
 <translation id="3103660991484857065">Échec de la décompression de l'archive par le programme d'installation. Veuillez télécharger Chromium à nouveau.</translation>
 <translation id="3130323860337406239">Votre micro est en cours d'utilisation dans Chromium.</translation>
+<translation id="3154325651427862069">Chromium a bloqué le fichier <ph name="FILE_NAME" />, car ce dernier peut être dangereux. Vous êtes protégé par le Programme Protection Avancée.</translation>
 <translation id="3155163173539279776">Relancer Chromium</translation>
 <translation id="3179665906251668410">Ouvrir le lien dans la fenêtre de navi&amp;gation privée Chromium</translation>
 <translation id="3190315855212034486">Chromium est bloqué. Voulez-vous le relancer maintenant ?</translation>
@@ -89,6 +91,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="388648406173476553">Personnalisez et contrôlez Chromium. Une action de votre part est requise. Cliquez pour en savoir plus.</translation>
 <translation id="3889543394854987837">Cliquez sur votre nom pour ouvrir Chromium et commencer à naviguer.</translation>
 <translation id="3898493977366060150">Navigation sur le Web avec les fonctionnalités intelligentes de Google</translation>
+<translation id="3931244652999881512">Chromium a bloqué ce fichier, car ce dernier est dangereux. Vous êtes protégé par le Programme Protection Avancée.</translation>
 <translation id="3965668104013180445">{0,plural, =1{Chromium OS va redémarrer dans une heure}one{Chromium OS va redémarrer dans # heure}other{Chromium OS va redémarrer dans # heures}}</translation>
 <translation id="4036079820698952681">Aidez-nous à améliorer Chromium en nous signalant vos <ph name="BEGIN_LINK" />paramètres actuels<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">La dernière version propose d'importantes améliorations de la sécurité ainsi que de nouvelles fonctionnalités.</translation>
@@ -139,6 +142,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="5680901439334282664">connectez-vous à Chromium</translation>
 <translation id="5698481217667032250">Afficher Chromium dans cette langue</translation>
 <translation id="5712253116097046984">Votre administrateur vous demande de redémarrer Chromium OS pour installer cette mise à jour</translation>
+<translation id="5726979195371243087">Chromium a bloqué ce fichier, car ce dernier peut être dangereux. Vous êtes protégé par le Programme Protection Avancée.</translation>
 <translation id="5756484659843248772">Cette langue est utilisée pour l'UI de Chromium OS</translation>
 <translation id="5768914737813585044">Afficher Chromium OS dans cette langue</translation>
 <translation id="5796460469508169315">Chromium est presque prêt</translation>
@@ -253,6 +257,7 @@ Pour obtenir plus d'informations, veuillez consulter votre compte de messagerie 
 <translation id="8667808506758191620">Votre <ph name="DEVICE_TYPE" /> est à jour.</translation>
 <translation id="8697124171261953979">Elle contrôle également la page qui s'affiche au démarrage de Chromium ou lorsque vous effectuez une recherche dans l'omnibox.</translation>
 <translation id="8704119203788522458">Voici votre Chromium</translation>
+<translation id="8704255848199359374">Le correcteur orthographique utilisé est le même que celui employé dans la recherche Google. Le texte que vous saisissez dans le navigateur est envoyé à Google. Vous pouvez toujours modifier ce comportement dans les paramètres.</translation>
 <translation id="8796602469536043152">Chromium a besoin de votre autorisation pour accéder à votre appareil photo et à votre micro pour ce site</translation>
 <translation id="8803635938069941624">Conditions d'utilisation de Chromium OS</translation>
 <translation id="8821041990367117597">Impossible de synchroniser vos données dans Chromium, car les informations de connexion de votre compte ne sont plus à jour.</translation>

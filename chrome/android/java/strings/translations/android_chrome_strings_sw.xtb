@@ -117,9 +117,9 @@
 <translation id="1883903952484604915">Faili Zangu</translation>
 <translation id="1887786770086287077">Kipengele cha mahali kimezimwa kwenye kifaa hiki. Kiwashe katika <ph name="BEGIN_LINK" />Mipangilio ya Android<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886">Itafungua <ph name="APP_NAME" /> katika Chrome. Kwa kuendelea, unakubali <ph name="BEGIN_LINK1" />Sheria na Masharti<ph name="END_LINK1" /> na <ph name="BEGIN_LINK2" />Ilani ya Faragha<ph name="END_LINK2" /> ya Chrome.</translation>
-<translation id="189172778771606813">Funga droo ya kusogeza</translation>
 <translation id="1919345977826869612">Matangazo</translation>
 <translation id="1919950603503897840">Chagua anwani</translation>
+<translation id="1922076542920281912">Ili uruhusu Chrome kufikia mahali ulipo, washa pia huduma ya mahali katika <ph name="BEGIN_LINK" />Mipangilio ya Android<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="19288952978244135">Fungua Chrome Upya.</translation>
 <translation id="1933845786846280168">Kichupo Kilichochaguliwa</translation>
@@ -145,6 +145,7 @@
 <translation id="2018707881002649255">Anwani unazochagua hapa chini zitashirikiwa na tovuti ya <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="2021896219286479412">Vidhibiti vya tovuti vya skrini nzima</translation>
 <translation id="2038563949887743358">Washa Omba Tovuti ya Eneo-kazi</translation>
+<translation id="2041019821020695769">Ili uruhusu Chrome ikutumie arifa, washa arifa pia katika<ph name="BEGIN_LINK" />Mipangilio ya Android<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> pia ina data katika Chrome</translation>
 <translation id="2045104531052923016">Programu nyingine za GB <ph name="GIGABYTES" /></translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -267,7 +268,6 @@
 <translation id="2923908459366352541">Jina si sahihi</translation>
 <translation id="2932150158123903946">Hifadhi ya Google <ph name="APP_NAME" /></translation>
 <translation id="2956410042958133412">Akaunti hii inadhibitiwa na <ph name="PARENT_NAME_1" /> na <ph name="PARENT_NAME_2" />.</translation>
-<translation id="2960796085439532066">Hakimiliki <ph name="YEAR" /> Google Inc. Haki zote zimehifadhiwa.</translation>
 <translation id="2962095958535813455">Inabadilisha kwenda vichupo fiche</translation>
 <translation id="2968755619301702150">Kitazamaji vyeti</translation>
 <translation id="2979025552038692506">Kichupo Fiche Kilichochaguliwa</translation>
@@ -361,6 +361,7 @@
 <translation id="3712575778697986964">Ungependa kuweka upya takwimu za Kiokoa Data?</translation>
 <translation id="3714981814255182093">Fungua Upau wa Kutafuta</translation>
 <translation id="3716182511346448902">Ukurasa huu unatumia hifadhi kubwa zaidi, kwa hivyo Chrome imeusitisha.</translation>
+<translation id="3730075448226062617">Ili uruhusu Chrome ifikie maikrofoni yako, washa maikrofoni pia katika <ph name="BEGIN_LINK" />Mipangilio ya Android<ph name="END_LINK" />.</translation>
 <translation id="3739899004075612870">Imealamishwa katika <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534">Programu nyingine za MB <ph name="MEGABYTES" /></translation>
 <translation id="3744111561329211289">Usawazishaji wa chini chini</translation>
@@ -555,7 +556,6 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="5087580092889165836">Ongeza kadi</translation>
 <translation id="5100237604440890931">Imekunjwa - bofya ili upanue.</translation>
 <translation id="510275257476243843">Imesalia saa 1</translation>
-<translation id="51149521070059886">Washa mandhari meusi wakati Kiokoa Betri cha kifaa kimewashwa</translation>
 <translation id="5123685120097942451">Kichupo fiche</translation>
 <translation id="5127805178023152808">Usawazishaji umezimwa</translation>
 <translation id="5129038482087801250">Sakinisha programu ya wavuti</translation>
@@ -565,7 +565,6 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="5152843274749979095">Hakuna programu zinazotumika zimesakinishwa</translation>
 <translation id="5161254044473106830">Kichwa kinahitajika</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{Imeshindwa kupakua 1.}other{Imeshindwa kupakua faili #.}}</translation>
-<translation id="5168917394043976756">Fungua droo ya kusogeza</translation>
 <translation id="5184329579814168207">Fungulia katika Chrome</translation>
 <translation id="5199929503336119739">Wasifu wa kazini</translation>
 <translation id="5210286577605176222">Rudi kwenye kichupo cha awali</translation>
@@ -676,6 +675,7 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="5937580074298050696">Imeokoa <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Weka upya</translation>
 <translation id="5942872142862698679">Unatumia Google kutafuta</translation>
+<translation id="5944669582486359588">Katika Hali nyepesi, Chrome hupakia kurasa haraka zaidi na huokoa hadi asilimia 60 ya data. Teknolojia ya Wingu la Google huboresha kurasa unazotembelea.</translation>
 <translation id="5952764234151283551">Hutuma URL ya ukurasa unaojaribu kufikia kwa Google</translation>
 <translation id="5956665950594638604">Fungua Kituo cha Usaidizi cha Chrome katika kichupo kipya</translation>
 <translation id="5958275228015807058">Tafuta faili na kurasa zako katika Vipakuliwa</translation>
@@ -706,6 +706,7 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="618993374665929060">Mengine kama hili yalifunguliwa kikamilifu</translation>
 <translation id="6192333916571137726">Pakua faili</translation>
 <translation id="6192792657125177640">Vighairi</translation>
+<translation id="6194112207524046168">Ili uruhusu Chrome ifikie kamera yako, washa kamera pia katika <ph name="BEGIN_LINK" />Mipangilio ya Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Zuia vidakuzi vya tovuti nyingine</translation>
 <translation id="6206551242102657620">Muunganisho ni salama. Maelezo ya tovuti</translation>
 <translation id="6210748933810148297">Wewe si <ph name="EMAIL" />?</translation>

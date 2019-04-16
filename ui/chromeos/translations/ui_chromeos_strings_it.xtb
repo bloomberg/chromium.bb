@@ -284,6 +284,7 @@
 <translation id="4572815280350369984">File <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Altro...</translation>
 <translation id="4582497162516204941">Installa con Linux (beta)</translation>
+<translation id="4584780943629874245">Condividi con Plugin VM</translation>
 <translation id="4631887759990505102">Artista</translation>
 <translation id="4656293982926141856">Questo computer</translation>
 <translation id="4669606053856530811">I membri di "<ph name="SOURCE_NAME" />" non avranno più accesso, a meno che questi elementi vengano condivisi con loro.</translation>
@@ -523,6 +524,7 @@
 <translation id="7339898014177206373">Nuova finestra</translation>
 <translation id="7348749398828259943">Tastiera internazionale Workman USA</translation>
 <translation id="7359359531237882347">Copia di <ph name="NUMBER_OF_ITEMS" /> elementi...</translation>
+<translation id="7379734276381389090"><ph name="NUMBER_OF_ITEMS" /> cartelle condivise con Plugin VM</translation>
 <translation id="7389722738210761877">Tastiera Thailandese (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Tastiera Hindi (fonetica)</translation>
 <translation id="7417453074306512035">Tastiera Etiope</translation>
@@ -585,6 +587,7 @@
 <translation id="7969525169268594403">Sloveno</translation>
 <translation id="7982283708762922719">Altezza</translation>
 <translation id="7987485481246785146">Tastiera basata su arabo curdo sorani</translation>
+<translation id="7990715602172183602">1 cartella condivisa con Plugin VM</translation>
 <translation id="799547531016638432">Rimuovi scorciatoia</translation>
 <translation id="799923393800005025">Può visualizzare</translation>
 <translation id="8008366997883261463">Cane</translation>
@@ -625,6 +628,7 @@
 <translation id="8342318071240498787">Esiste già un file o una directory con lo stesso nome.</translation>
 <translation id="8391950649760071442">Traslitterazione (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Dimensioni</translation>
+<translation id="8400874747056634633">Gestisci la condivisione con Plugin VM</translation>
 <translation id="8412586565681117057">Metodo di immissione rapido</translation>
 <translation id="8418113698656761985">Tastiera rumena</translation>
 <translation id="8432745813735585631">Tastiera Colemak USA</translation>

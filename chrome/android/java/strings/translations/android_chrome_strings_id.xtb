@@ -117,9 +117,9 @@
 <translation id="1883903952484604915">File Saya</translation>
 <translation id="1887786770086287077">Akses lokasi dinonaktifkan untuk perangkat ini. Aktifkan di <ph name="BEGIN_LINK" />Setelan Android<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" /> akan terbuka di Chrome. Dengan melanjutkan, Anda menyetujui <ph name="BEGIN_LINK1" />Persyaratan Layanan<ph name="END_LINK1" /> dan <ph name="BEGIN_LINK2" />Pemberitahuan Privasi<ph name="END_LINK2" /> Chrome.</translation>
-<translation id="189172778771606813">Tutup panel samping navigasi</translation>
 <translation id="1919345977826869612">Iklan</translation>
 <translation id="1919950603503897840">Pilih kontak</translation>
+<translation id="1922076542920281912">Untuk mengizinkan Chrome mengakses lokasi Anda, aktifkan juga lokasi di <ph name="BEGIN_LINK" />Setelan Android<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="19288952978244135">Buka Chrome lagi.</translation>
 <translation id="1933845786846280168">Tab yang Dipilih</translation>
@@ -145,6 +145,7 @@
 <translation id="2018707881002649255">Kontak yang Anda pilih di bawah akan dibagikan dengan situs <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="2021896219286479412">Kontrol situs layar penuh</translation>
 <translation id="2038563949887743358">Aktifkan Ubah situs desktop</translation>
+<translation id="2041019821020695769">Untuk mengizinkan Chrome mengirimkan notifikasi, aktifkan juga notifikasi di <ph name="BEGIN_LINK" />Setelan Android<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> juga memiliki data di Chrome</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB aplikasi lain</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -267,7 +268,6 @@
 <translation id="2923908459366352541">Nama tidak valid</translation>
 <translation id="2932150158123903946">Penyimpanan Google <ph name="APP_NAME" /></translation>
 <translation id="2956410042958133412">Akun ini dikelola oleh <ph name="PARENT_NAME_1" /> dan <ph name="PARENT_NAME_2" />.</translation>
-<translation id="2960796085439532066">Hak cipta <ph name="YEAR" /> Google Inc. Semua hak dilindungi undang-undang.</translation>
 <translation id="2962095958535813455">Beralih ke tab penyamaran</translation>
 <translation id="2968755619301702150">Penampil sertifikat</translation>
 <translation id="2979025552038692506">Tab Penyamaran yang Dipilih</translation>
@@ -361,6 +361,7 @@
 <translation id="3712575778697986964">Setel ulang Penghemat Kuota Internet?</translation>
 <translation id="3714981814255182093">Membuka Bilah Cari</translation>
 <translation id="3716182511346448902">Halaman ini menggunakan terlalu banyak memori, sehingga Chrome menjedanya.</translation>
+<translation id="3730075448226062617">Untuk mengizinkan Chrome mengakses mikrofon Anda, aktifkan juga mikrofon di <ph name="BEGIN_LINK" />Setelan Android<ph name="END_LINK" />.</translation>
 <translation id="3739899004075612870">Dibookmark di <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB aplikasi lain</translation>
 <translation id="3744111561329211289">Sinkronisasi latar belakang</translation>
@@ -555,7 +556,6 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="5087580092889165836">Tambahkan kartu</translation>
 <translation id="5100237604440890931">Diciutkan - klik untuk memperluas.</translation>
 <translation id="510275257476243843">1 jam lagi</translation>
-<translation id="51149521070059886">Aktifkan tema gelap saat Penghemat Daya di perangkat diaktifkan</translation>
 <translation id="5123685120097942451">Tab penyamaran</translation>
 <translation id="5127805178023152808">Sinkronisasi nonaktif</translation>
 <translation id="5129038482087801250">Instal aplikasi web</translation>
@@ -565,7 +565,6 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="5152843274749979095">Aplikasi yang didukung tidak terinstal</translation>
 <translation id="5161254044473106830">Perlu judul</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 download gagal.}other{# download gagal.}}</translation>
-<translation id="5168917394043976756">Buka panel samping navigasi</translation>
 <translation id="5184329579814168207">Buka di Chrome</translation>
 <translation id="5199929503336119739">Profil kerja</translation>
 <translation id="5210286577605176222">Beralih ke tab sebelumnya</translation>
@@ -676,6 +675,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="5937580074298050696"><ph name="AMOUNT" /> dihemat</translation>
 <translation id="5939518447894949180">Setel ulang</translation>
 <translation id="5942872142862698679">Menggunakan Google untuk penelusuran</translation>
+<translation id="5944669582486359588">Dalam mode Ringan, Chrome memuat halaman lebih cepat dan menghemat data hingga 60 persen. Teknologi cloud Google mengoptimalkan halaman yang Anda buka.</translation>
 <translation id="5952764234151283551">Mengirimkan URL halaman yang ingin Anda buka ke Google</translation>
 <translation id="5956665950594638604">Membuka Pusat Bantuan Chrome di tab baru</translation>
 <translation id="5958275228015807058">Temukan file dan halaman di Download</translation>
@@ -706,6 +706,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="618993374665929060">Lainnya, yang seperti ini dibuka dalam layar penuh</translation>
 <translation id="6192333916571137726">Download file</translation>
 <translation id="6192792657125177640">Pengecualian</translation>
+<translation id="6194112207524046168">Untuk mengizinkan Chrome mengakses kamera Anda, aktifkan juga kamera di <ph name="BEGIN_LINK" />Setelan Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Blokir cookie pihak ketiga</translation>
 <translation id="6206551242102657620">Sambungan aman. Informasi situs</translation>
 <translation id="6210748933810148297">Bukan <ph name="EMAIL" />?</translation>

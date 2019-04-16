@@ -8,7 +8,6 @@
 <translation id="1984705450038014246">ซิงค์ข้อมูล Chrome</translation>
 <translation id="2147651015520127414">Chrome ยืนยันว่า <ph name="ISSUER" /> ได้ออกใบรับรองของเว็บไซต์นี้</translation>
 <translation id="2199719347983604670">ข้อมูลจากการซิงค์ของ Chrome</translation>
-<translation id="2334084861041072223">ลิขสิทธิ์ <ph name="YEAR" /> Google Inc. สงวนลิขสิทธิ์</translation>
 <translation id="2342981853652716282">ลงชื่อเข้าใช้ Chrome เพื่อรับบุ๊กมาร์ก รหัสผ่าน และข้อมูลอื่นๆ ในอุปกรณ์ทุกเครื่องของคุณ</translation>
 <translation id="2347208864470321755">เมื่อเปิดฟีเจอร์นี้ Chrome จะเสนอให้แปลหน้าต่างๆ ที่เขียนด้วยภาษาอื่นโดยใช้ Google แปลภาษา <ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">ในการบันทึกรูปภาพ ให้แตะการตั้งค่าเพื่ออนุญาตให้ Chrome ใช้รูปภาพ</translation>
@@ -22,7 +21,6 @@
 <translation id="3282568296779691940">ลงชื่อเข้าใช้ Chrome</translation>
 <translation id="3345341804167540816">ใช้ Chrome ในทุกที่</translation>
 <translation id="384394811301901750">Google Chrome ไม่สามารถใช้กล้องถ่ายรูปได้ในขณะนี้</translation>
-<translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3980220367029651214">คุณกำลังเปลี่ยนบัญชีในการซิงค์จาก <ph name="USER_EMAIL1" /> เป็น <ph name="USER_EMAIL2" /> ข้อมูล Chrome ที่มีอยู่ของคุณจัดการโดย <ph name="DOMAIN" /> การเปลี่ยนบัญชีจะลบข้อมูลจากอุปกรณ์นี้ แต่ข้อมูลจะยังคงอยู่ใน <ph name="USER_EMAIL1" /></translation>
 <translation id="3988789688219830639">Google Chrome ไม่มีสิทธิ์เข้าถึงรูปภาพหรือวิดีโอของคุณ เปิดการเข้าถึงได้ในการตั้งค่า iOS &gt; ความเป็นส่วนตัว &gt; รูปภาพ</translation>
 <translation id="4099578267706723511">ช่วยให้ Chrome ทำงานได้ดีขึ้นโดยส่งสถิติการใช้งานและรายงานข้อขัดข้องให้กับ Google</translation>

@@ -117,9 +117,9 @@
 <translation id="1883903952484604915">내 파일</translation>
 <translation id="1887786770086287077">이 기기의 위치 액세스가 사용 중지되었습니다. <ph name="BEGIN_LINK" />Android 설정<ph name="END_LINK" />에서 사용 설정하세요.</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" />이(가) Chrome에서 열립니다. 계속하면 Chrome의 <ph name="BEGIN_LINK1" />서비스 약관<ph name="END_LINK1" /> 및 <ph name="BEGIN_LINK2" />개인정보처리방침<ph name="END_LINK2" />에 동의하는 것으로 간주됩니다.</translation>
-<translation id="189172778771606813">탐색 창 닫기</translation>
 <translation id="1919345977826869612">광고</translation>
 <translation id="1919950603503897840">연락처 선택</translation>
+<translation id="1922076542920281912">Chrome에서 위치 정보에 액세스하도록 허용하려면 <ph name="BEGIN_LINK" />Android 설정<ph name="END_LINK" />에서도 위치를 사용 설정하세요.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="19288952978244135">Chrome을 다시 여세요.</translation>
 <translation id="1933845786846280168">선택된 탭</translation>
@@ -145,9 +145,11 @@
 <translation id="2018707881002649255">아래에서 선택한 연락처가 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 웹사이트와 공유됩니다.</translation>
 <translation id="2021896219286479412">전체화면 사이트 컨트롤</translation>
 <translation id="2038563949887743358">데스크톱 버전으로 보기 사용 설정</translation>
+<translation id="2041019821020695769">Chrome에서 알림을 전송하도록 허용하려면 <ph name="BEGIN_LINK" />Android 설정<ph name="END_LINK" />에서도 알림을 사용 설정하세요.</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" />도 Chrome에서 데이터를 보유하고 있습니다</translation>
 <translation id="2045104531052923016">기타 앱 <ph name="GIGABYTES" />GB</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
+<translation id="2049961518639794558">파일 확장자를 변경하면 예기치 못한 동작이 발생하거나 기기가 손상될 수 있습니다.</translation>
 <translation id="2056878612599315956">사이트 일시중지됨</translation>
 <translation id="2063713494490388661">탭하여 검색</translation>
 <translation id="2079545284768500474">실행취소</translation>
@@ -248,6 +250,7 @@
 <translation id="2810645512293415242">페이지가 간소화되어 데이터가 절약되고 로드 속도가 빨라졌습니다.</translation>
 <translation id="281504910091592009"><ph name="BEGIN_LINK" />Google 계정<ph name="END_LINK" />에서 저장된 비밀번호 보기 및 관리</translation>
 <translation id="2818669890320396765">어느 기기에서나 내 북마크를 사용하려면 로그인하고 동기화를 사용 설정하세요.</translation>
+<translation id="2822354292072154809"><ph name="CHOSEN_OBJECT_NAME" />의 모든 사이트 권한을 재설정하시겠습니까?</translation>
 <translation id="2836148919159985482">전체화면을 종료하려면 뒤로 버튼을 터치하세요.</translation>
 <translation id="2842985007712546952">상위 폴더</translation>
 <translation id="2845873210977809562">열린 탭이 닫힘</translation>
@@ -265,7 +268,6 @@
 <translation id="2923908459366352541">잘못된 이름</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> 저장공간</translation>
 <translation id="2956410042958133412"><ph name="PARENT_NAME_1" />님과 <ph name="PARENT_NAME_2" />님이 관리하는 계정입니다.</translation>
-<translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. All rights reserved.</translation>
 <translation id="2962095958535813455">시크릿 탭으로 전환됨</translation>
 <translation id="2968755619301702150">인증서 뷰어</translation>
 <translation id="2979025552038692506">선택된 시크릿 탭</translation>
@@ -359,6 +361,7 @@
 <translation id="3712575778697986964">데이터 절약 모드를 초기화하시겠습니까?</translation>
 <translation id="3714981814255182093">찾기 창 열기</translation>
 <translation id="3716182511346448902">페이지에서 너무 많은 메모리를 사용하므로 Chrome에서 페이지를 일시중지했습니다.</translation>
+<translation id="3730075448226062617">Chrome에서 마이크에 액세스하도록 허용하려면 <ph name="BEGIN_LINK" />Android 설정<ph name="END_LINK" />에서도 마이크를 사용 설정하세요.</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> 북마크에 추가됨</translation>
 <translation id="3744111309925758534">기타 앱 <ph name="MEGABYTES" />MB</translation>
 <translation id="3744111561329211289">백그라운드 동기화</translation>
@@ -481,6 +484,7 @@
 <translation id="4634124774493850572">비밀번호 사용</translation>
 <translation id="4645575059429386691">부모님이 관리합니다.</translation>
 <translation id="4648718555153979859">탭은 여기에서 그룹화됩니다.</translation>
+<translation id="4650364565596261010">시스템 기본값</translation>
 <translation id="4660011489602794167">키보드 표시</translation>
 <translation id="4663756553811254707">북마크 <ph name="NUMBER_OF_BOOKMARKS" />개 삭제됨</translation>
 <translation id="4665282149850138822"><ph name="NAME" />이(가) 홈 화면에 추가됨</translation>
@@ -520,6 +524,7 @@
 <translation id="488187801263602086">파일 이름 변경</translation>
 <translation id="4882831918239250449">검색, 광고 등을 맞춤설정하는 데 인터넷 방문 기록이 사용되는 방식 관리</translation>
 <translation id="4883379392681899581">비공개 모드에서 나가기</translation>
+<translation id="4883854917563148705">관리 설정은 재설정할 수 없습니다.</translation>
 <translation id="4885273946141277891">지원되지 않는 Chrome 인스턴스 수입니다.</translation>
 <translation id="4910889077668685004">결제 앱</translation>
 <translation id="4913161338056004800">통계 재설정</translation>
@@ -531,6 +536,7 @@
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" />에서 내 화면을 공유하는 중입니다.</translation>
 <translation id="4961107849584082341">이 페이지를 원하는 언어로 번역하세요.</translation>
 <translation id="4961700429721424617"><ph name="MANAGED_DOMAIN" />에서 관리하는 계정에서 로그아웃합니다. 이렇게 하면 내 Chrome 데이터가 이 기기에서 삭제되지만 Google 계정에는 그대로 유지됩니다.</translation>
+<translation id="4962975101802056554">기기에서 모든 권한을 취소합니다.</translation>
 <translation id="4970824347203572753">현재 위치에서 사용할 수 없습니다.</translation>
 <translation id="497421865427891073">앞으로 이동</translation>
 <translation id="4988210275050210843">파일 다운로드 중(<ph name="MEGABYTES" />MB)</translation>
@@ -559,7 +565,6 @@
 <translation id="5152843274749979095">지원되는 앱이 설치되어 있지 않음</translation>
 <translation id="5161254044473106830">제목이 필요합니다.</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{다운로드 1개 실패}other{다운로드 #개 실패}}</translation>
-<translation id="5168917394043976756">탐색 창 열기</translation>
 <translation id="5184329579814168207">Chrome에서 열기</translation>
 <translation id="5199929503336119739">직장용 프로필</translation>
 <translation id="5210286577605176222">이전 탭으로 이동</translation>
@@ -670,6 +675,7 @@
 <translation id="5937580074298050696"><ph name="AMOUNT" /> 저장됨</translation>
 <translation id="5939518447894949180">초기화</translation>
 <translation id="5942872142862698679">검색할 때 Google 사용</translation>
+<translation id="5944669582486359588">Chrome의 라이트 모드를 사용하면 페이지가 더 빠르게 로드되고 데이터가 최대 60퍼센트 절약됩니다. Google의 클라우드 기술이 내가 방문하는 페이지를 최적화해 줍니다.</translation>
 <translation id="5952764234151283551">접속하려는 페이지의 URL을 Google에 전송</translation>
 <translation id="5956665950594638604">새 탭에서 Chrome 고객센터 열기</translation>
 <translation id="5958275228015807058">다운로드에서 파일 및 페이지를 찾아보세요.</translation>
@@ -700,6 +706,7 @@
 <translation id="618993374665929060">전체 높이로 '비슷한 항목 더보기'가 열렸습니다.</translation>
 <translation id="6192333916571137726">다운로드 파일</translation>
 <translation id="6192792657125177640">예외</translation>
+<translation id="6194112207524046168">Chrome에서 카메라에 액세스하도록 허용하려면 <ph name="BEGIN_LINK" />Android 설정<ph name="END_LINK" />에서도 카메라를 사용 설정하세요.</translation>
 <translation id="6196640612572343990">타사 쿠키 차단</translation>
 <translation id="6206551242102657620">이 사이트와의 연결은 안전합니다. 사이트 정보</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" />이(가) 아닌가요?</translation>
@@ -925,6 +932,7 @@
 <translation id="7765158879357617694">이동</translation>
 <translation id="7769602470925380267">동의 및 로그아웃</translation>
 <translation id="7772032839648071052">암호 확인</translation>
+<translation id="7772375229873196092"><ph name="APP_NAME" /> 닫기</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" /> 외 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />개}other{<ph name="PAYMENT_METHOD_PREVIEW" /> 외 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />개}}</translation>
 <translation id="7781829728241885113">어제</translation>
 <translation id="7791543448312431591">추가</translation>
@@ -932,6 +940,7 @@
 <translation id="7810647596859435254">연결 프로그램...</translation>
 <translation id="7821588508402923572">절약한 데이터 양이 여기에 표시됩니다</translation>
 <translation id="7837721118676387834">특정 사이트에서 음소거된 동영상이 자동재생되도록 허용합니다.</translation>
+<translation id="7838340937077326045">파일 확장자를 변경하시겠습니까?</translation>
 <translation id="7846076177841592234">선택 취소</translation>
 <translation id="784934925303690534">기간</translation>
 <translation id="7851858861565204677">다른 기기</translation>

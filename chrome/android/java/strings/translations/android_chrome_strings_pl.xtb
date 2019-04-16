@@ -117,9 +117,9 @@
 <translation id="1883903952484604915">Moje pliki</translation>
 <translation id="1887786770086287077">Dostęp do lokalizacji jest wyłączony na tym urządzeniu. Włącz go w <ph name="BEGIN_LINK" />Ustawieniach Androida<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" /> otworzy się w Chrome. Przechodząc dalej, akceptujesz <ph name="BEGIN_LINK1" />Warunki korzystania z usługi<ph name="END_LINK1" /> Chrome i <ph name="BEGIN_LINK2" />Informacje na temat ochrony prywatności<ph name="END_LINK2" />.</translation>
-<translation id="189172778771606813">Zamknij panel nawigacji</translation>
 <translation id="1919345977826869612">Reklamy</translation>
 <translation id="1919950603503897840">Wybierz kontakty</translation>
+<translation id="1922076542920281912">Aby zezwolić Chrome na dostęp do lokalizacji, musisz ją też włączyć w <ph name="BEGIN_LINK" />Ustawieniach Androida<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="19288952978244135">Uruchom ponownie Chrome.</translation>
 <translation id="1933845786846280168">Wybrana karta</translation>
@@ -145,6 +145,7 @@
 <translation id="2018707881002649255">Kontakty, które wybierzesz poniżej, zostaną udostępnione stronie <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="2021896219286479412">Elementy sterowania stroną na pełnym ekranie</translation>
 <translation id="2038563949887743358">Włącz opcję „Wersja na komputer”</translation>
+<translation id="2041019821020695769">Aby zezwolić Chrome na wysyłanie Ci powiadomień, musisz je też włączyć w <ph name="BEGIN_LINK" />Ustawieniach Androida<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529">Dane aplikacji <ph name="APP_NAME" /> znajdują się też w Chrome</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB innych aplikacji</translation>
 <translation id="2049574241039454490"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE_OF_TOTAL" /></translation>
@@ -267,7 +268,6 @@
 <translation id="2923908459366352541">Nazwa jest nieprawidłowa.</translation>
 <translation id="2932150158123903946">Dane aplikacji Google <ph name="APP_NAME" /></translation>
 <translation id="2956410042958133412">Tym kontem zarządzają <ph name="PARENT_NAME_1" /> i <ph name="PARENT_NAME_2" />.</translation>
-<translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Wszelkie prawa zastrzeżone.</translation>
 <translation id="2962095958535813455">Przełączono na karty incognito</translation>
 <translation id="2968755619301702150">Przeglądarka certyfikatów</translation>
 <translation id="2979025552038692506">Wybrana karta incognito</translation>
@@ -361,6 +361,7 @@
 <translation id="3712575778697986964">Zresetować Oszczędzanie danych?</translation>
 <translation id="3714981814255182093">Otwórz pasek wyszukiwania</translation>
 <translation id="3716182511346448902">Ta strona używa zbyt dużo pamięci, dlatego została wstrzymana w Chrome.</translation>
+<translation id="3730075448226062617">Aby zezwolić Chrome na dostęp do mikrofonu, musisz też włączyć mikrofon w <ph name="BEGIN_LINK" />Ustawieniach Androida<ph name="END_LINK" />.</translation>
 <translation id="3739899004075612870">Utworzono zakładkę w: <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB innych aplikacji</translation>
 <translation id="3744111561329211289">Synchronizacja w tle</translation>
@@ -555,7 +556,6 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5087580092889165836">Dodaj kartę</translation>
 <translation id="5100237604440890931">Zwinięty – kliknij, by rozwinąć.</translation>
 <translation id="510275257476243843">Pozostała godzina</translation>
-<translation id="51149521070059886">Włącz ciemny motyw, gdy na urządzeniu jest aktywne oszczędzanie energii</translation>
 <translation id="5123685120097942451">Karta incognito</translation>
 <translation id="5127805178023152808">Synchronizacja jest wyłączona</translation>
 <translation id="5129038482087801250">Zainstaluj aplikację internetową</translation>
@@ -565,7 +565,6 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5152843274749979095">Nie zainstalowano obsługiwanych aplikacji</translation>
 <translation id="5161254044473106830">Tytuł jest wymagany</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{Nie udało się pobrać 1 pliku.}few{Nie udało się pobrać # plików.}many{Nie udało się pobrać # plików.}other{Nie udało się pobrać # pliku.}}</translation>
-<translation id="5168917394043976756">Otwórz panel nawigacji</translation>
 <translation id="5184329579814168207">Otwórz w Chrome</translation>
 <translation id="5199929503336119739">Profil służbowy</translation>
 <translation id="5210286577605176222">Przejdź do poprzedniej karty</translation>
@@ -676,6 +675,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5937580074298050696">Zaoszczędzono <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Resetuj</translation>
 <translation id="5942872142862698679">Korzystam z wyszukiwarki Google</translation>
+<translation id="5944669582486359588">W wersji uproszczonej Chrome szybciej ładuje strony, używając nawet o 60% mniej danych. Technologia chmurowa Google optymalizuje odwiedzane strony.</translation>
 <translation id="5952764234151283551">Adres URL strony, którą próbujesz otworzyć, zostanie wysłany do Google</translation>
 <translation id="5956665950594638604">Otwórz Centrum pomocy Chrome w nowej karcie</translation>
 <translation id="5958275228015807058">Znajdź pliki i strony w Pobranych plikach</translation>
@@ -706,6 +706,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="618993374665929060">Karta Więcej podobnych otwarta na całą wysokość</translation>
 <translation id="6192333916571137726">Pobranie pliku</translation>
 <translation id="6192792657125177640">Wyjątki</translation>
+<translation id="6194112207524046168">Aby zezwolić Chrome na dostęp do aparatu, musisz też włączyć aparat w <ph name="BEGIN_LINK" />Ustawieniach Androida<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Blokuj pliki cookie innych firm</translation>
 <translation id="6206551242102657620">Połączenie jest bezpieczne. Informacje o witrynie</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> to nie Ty?</translation>

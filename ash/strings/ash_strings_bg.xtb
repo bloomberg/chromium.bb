@@ -29,6 +29,7 @@
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1302880136325416935">Показване на настройките за Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1316069254387866896">Лавицата да се показва винаги</translation>
+<translation id="1341651618736211726">Препълване</translation>
 <translation id="1346748346194534595">Надясно</translation>
 <translation id="1351937230027495976">Свиване на менюто</translation>
 <translation id="1383876407941801731">Търсене</translation>
@@ -360,7 +361,6 @@
 <translation id="6700713906295497288">Бутон за меню на редактора за метод на въвеждане</translation>
 <translation id="6713285437468012787">Устройството с Bluetooth „<ph name="DEVICE_NAME" />“ е сдвоено и сега е налице за всички потребители. Може да премахнете това сдвояване посредством „Настройки“.</translation>
 <translation id="6715542151869432661">Няма намерени мобилни устройства.</translation>
-<translation id="671928215901716392">Заключване на екрана</translation>
 <translation id="6723839937902243910">Захранване</translation>
 <translation id="6751826523481687655">Проследяването на ефективността е включено</translation>
 <translation id="6785414152754474415">Батерията е <ph name="PERCENTAGE" />% пълна и се зарежда.</translation>

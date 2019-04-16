@@ -205,7 +205,6 @@
 <translation id="2053111141626950936">Pages in <ph name="LANGUAGE" /> will not be translated.</translation>
 <translation id="2053553514270667976">ZIP code</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 suggestion}other{# suggestions}}</translation>
-<translation id="2068124040035837596">Your account is managed by <ph name="ENROLLMENT_DOMAIN" />. This means that your administrator may remotely configure your account.</translation>
 <translation id="2068663545051464999">Uploaded Crash Report ID <ph name="CRASH_ID" /> (Local Context: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="2079545284768500474">Undo</translation>
 <translation id="20817612488360358">System proxy settings are set to be used but an explicit proxy configuration is also specified.</translation>
@@ -271,7 +270,6 @@
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">This server could not prove that it is <ph name="DOMAIN" />; its security certificate might be revoked. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
 <translation id="2418081434543109369">The server that you are going to, <ph name="ORIGIN" />, has requested that a security policy will be applied to all requests to it. But it has now failed to deliver a policy, which prevents the browser from fulfilling your request for <ph name="SITE" />.</translation>
-<translation id="244665789865330679">Your device and account is managed by <ph name="ENROLLMENT_DOMAIN" />. This means that your administrator may remotely configure your device and account.</translation>
 <translation id="2463193859425327265">Change home page</translation>
 <translation id="2463739503403862330">Fill in</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -473,7 +471,6 @@
 <translation id="358285529439630156">Credit and prepaid cards are accepted.</translation>
 <translation id="3582930987043644930">Add name</translation>
 <translation id="3583757800736429874">&amp;Redo Move</translation>
-<translation id="35866233670761917">The contents of websites that you visit is not seen by your administrators</translation>
 <translation id="3586931643579894722">Hide details</translation>
 <translation id="3592413004129370115">Italian (Envelope)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
@@ -741,7 +738,6 @@
 <translation id="5095208057601539847">Province</translation>
 <translation id="5097099694988056070">Device statistics such as CPU/RAM usage</translation>
 <translation id="5097501891273180634">A2</translation>
-<translation id="5098222253617183465">Your device is managed by <ph name="ENROLLMENT_DOMAIN" /> and your account is managed by <ph name="ACCOUNT_DOMAIN" />. This means that your administrators may remotely configure your device and account.</translation>
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64-bit)</translation>
@@ -897,7 +893,6 @@
 <translation id="5967592137238574583">Edit Contact Info</translation>
 <translation id="5967867314010545767">Remove from history</translation>
 <translation id="5975083100439434680">Zoom out</translation>
-<translation id="5977489021191000276">Your device is not managed by an administrator.</translation>
 <translation id="5977976211062815271">On this device</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">Can’t open payment app</translation>
@@ -1043,7 +1038,6 @@
 <translation id="6903319715792422884">Help improve Safe Browsing by sending some <ph name="BEGIN_WHITEPAPER_LINK" />system information and page content<ph name="END_WHITEPAPER_LINK" /> to Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">User:</translation>
 <translation id="6934672428414710184">This name is from your Google Account</translation>
-<translation id="6939583532829045966">Your device is managed by <ph name="ENROLLMENT_DOMAIN" />. This means that your administrator may remotely configure your device.</translation>
 <translation id="6944692733090228304">You entered your password on a site that’s not managed by <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />. To protect your account, don’t reuse your password on other apps and sites.</translation>
 <translation id="6945221475159498467">Select</translation>
 <translation id="6948701128805548767">To see pickup methods and requirements, select an address</translation>
@@ -1053,7 +1047,6 @@
 <translation id="6957887021205513506">The server's certificate appears to be a forgery.</translation>
 <translation id="6964255747740675745">Network configuration failed to be parsed (invalid JSON).</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="6965456981923010628"><ph name="LEFT_PART" /> • <ph name="RIGHT_PART" /></translation>
 <translation id="6965978654500191972">Device</translation>
 <translation id="6970216967273061347">District</translation>
 <translation id="6973656660372572881">Both fixed proxy servers and a .pac script URL are specified.</translation>
@@ -1201,6 +1194,7 @@ Additional details:
 <translation id="7668654391829183341">Unknown device</translation>
 <translation id="7669271284792375604">Attackers on this site might try to trick you into installing programs that harm your browsing experience (for example, by changing your homepage or showing extra ads on sites that you visit).</translation>
 <translation id="7676643023259824263">Search for clipboard text, <ph name="TEXT" /></translation>
+<translation id="7679176406634891508">Platform and Cloud</translation>
 <translation id="7681101578153515023">Change search engine</translation>
 <translation id="7682287625158474539">Shipping</translation>
 <translation id="7687186412095877299">Fills in payment forms with your saved payment methods</translation>
@@ -1404,7 +1398,6 @@ Additional details:
 <translation id="8932102934695377596">Your clock is behind</translation>
 <translation id="893332455753468063">Add Name</translation>
 <translation id="8938939909778640821">Accepted credit and prepaid cards</translation>
-<translation id="894185898663964645">Your administrator has configured custom root certificates, which may allow the administrator to see the contents of websites that you visit.</translation>
 <translation id="8943282376843390568">Lime</translation>
 <translation id="8957210676456822347">Captive Portal Authorisation</translation>
 <translation id="8968766641738584599">Save card</translation>
@@ -1418,6 +1411,7 @@ Additional details:
 <translation id="8996941253935762404">The site ahead contains harmful programs</translation>
 <translation id="8997023839087525404">The server presented a certificate that was not publicly disclosed using the Certificate Transparency policy. This is a requirement for some certificates, to ensure that they are trustworthy and protect against attackers.</translation>
 <translation id="9001074447101275817">The proxy <ph name="DOMAIN" /> requires a username and password.</translation>
+<translation id="9004367719664099443">VR session in progress</translation>
 <translation id="9005998258318286617">Failed to load PDF document.</translation>
 <translation id="9008201768610948239">Ignore</translation>
 <translation id="9011424611726486705">Open site settings</translation>

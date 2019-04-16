@@ -117,9 +117,9 @@
 <translation id="1883903952484604915">Fail Saya</translation>
 <translation id="1887786770086287077">Akses lokasi dimatikan untuk peranti ini. Hidupkannya dalam <ph name="BEGIN_LINK" />Tetapan Android<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" /> akan dibuka dalam Chrome. Dengan meneruskan penggunaan, anda bersetuju menerima <ph name="BEGIN_LINK1" />Terma Perkhidmatan<ph name="END_LINK1" /> dan <ph name="BEGIN_LINK2" />Notis Privasi<ph name="END_LINK2" /> Chrome.</translation>
-<translation id="189172778771606813">Tutup laci navigasi</translation>
 <translation id="1919345977826869612">Iklan</translation>
 <translation id="1919950603503897840">Pilih kenalan</translation>
+<translation id="1922076542920281912">Untuk membenarkan Chrome mengakses lokasi anda, hidupkan lokasi dalam <ph name="BEGIN_LINK" />Tetapan Android<ph name="END_LINK" /> juga.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="19288952978244135">Buka semula Chrome.</translation>
 <translation id="1933845786846280168">Tab yang Dipilih</translation>
@@ -145,6 +145,7 @@
 <translation id="2018707881002649255">Butiran kenalan yang anda pilih di bawah akan dikongsi dengan tapak web <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="2021896219286479412">Kawalan tapak skrin penuh</translation>
 <translation id="2038563949887743358">Hidupkan Minta tapak desktop</translation>
+<translation id="2041019821020695769">Untuk membenarkan Chrome menghantar pemberitahuan kepada anda, hidupkan pemberitahuan dalam <ph name="BEGIN_LINK" />Tetapan Android<ph name="END_LINK" /> juga.</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> juga mempunyai data dalam Chrome</translation>
 <translation id="2045104531052923016">Apl lain <ph name="GIGABYTES" /> GB</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -267,7 +268,6 @@
 <translation id="2923908459366352541">Nama tidak sah</translation>
 <translation id="2932150158123903946">Storan Google <ph name="APP_NAME" /></translation>
 <translation id="2956410042958133412">Akaun ini diurus oleh <ph name="PARENT_NAME_1" /> dan <ph name="PARENT_NAME_2" />.</translation>
-<translation id="2960796085439532066">Hak Cipta <ph name="YEAR" /> Google Inc. Hak cipta terpelihara.</translation>
 <translation id="2962095958535813455">Beralih ke tab inkognito</translation>
 <translation id="2968755619301702150">Pemapar sijil</translation>
 <translation id="2979025552038692506">Tab Inkognito yang Dipilih</translation>
@@ -361,6 +361,7 @@
 <translation id="3712575778697986964">Tetapkan semula Penjimat Data?</translation>
 <translation id="3714981814255182093">Buka Bar Cari</translation>
 <translation id="3716182511346448902">Halaman ini menggunakan terlalu banyak memori, jadi Chrome menjeda halaman ini.</translation>
+<translation id="3730075448226062617">Untuk membenarkan Chrome mengakses mikrofon anda, hidupkan mikrofon dalam <ph name="BEGIN_LINK" />Tetapan Android<ph name="END_LINK" /> juga.</translation>
 <translation id="3739899004075612870">Ditandai halaman dalam <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534">Apl lain <ph name="MEGABYTES" /> MB</translation>
 <translation id="3744111561329211289">Penyegerakan latar belakang</translation>
@@ -555,7 +556,6 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5087580092889165836">Tambah kad</translation>
 <translation id="5100237604440890931">Diruntuhkan - klik untuk mengembangkan.</translation>
 <translation id="510275257476243843">1 jam lagi</translation>
-<translation id="51149521070059886">Hidupkan tema gelap apabila Penjimat Kuasa peranti anda dihidupkan</translation>
 <translation id="5123685120097942451">Tab Inkognito</translation>
 <translation id="5127805178023152808">Penyegerakan dimatikan</translation>
 <translation id="5129038482087801250">Pasang apl web</translation>
@@ -565,7 +565,6 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5152843274749979095">Tiada apl yang disokong dipasang</translation>
 <translation id="5161254044473106830">Tajuk diperlukan</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 muat turun gagal.}other{# muat turun gagal.}}</translation>
-<translation id="5168917394043976756">Buka laci navigasi</translation>
 <translation id="5184329579814168207">Buka dalam Chrome</translation>
 <translation id="5199929503336119739">Profil kerja</translation>
 <translation id="5210286577605176222">Lompat ke halaman sebelumnya</translation>
@@ -676,6 +675,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5937580074298050696"><ph name="AMOUNT" /> disimpan</translation>
 <translation id="5939518447894949180">Tetapkan semula</translation>
 <translation id="5942872142862698679">Menggunakan Google untuk carian</translation>
+<translation id="5944669582486359588">Dalam mod Ringkas, Chrome memuatkan halaman lebih pantas dan mengurangkan penggunaan data sehingga 60 peratus. Teknologi Awan Google mengoptimumkan halaman yang anda lawati.</translation>
 <translation id="5952764234151283551">Menghantar URL halaman yang cuba anda capai kepada Google</translation>
 <translation id="5956665950594638604">Buka Pusat Bantuan Chrome dalam tab baharu</translation>
 <translation id="5958275228015807058">Cari fail dan halaman anda dalam Muat Turun</translation>
@@ -706,6 +706,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="618993374665929060">Lagi seperti ini dibuka pada ketinggian penuh</translation>
 <translation id="6192333916571137726">Muat turun fail</translation>
 <translation id="6192792657125177640">Pengecualian</translation>
+<translation id="6194112207524046168">Untuk membenarkan Chrome mengakses kamera anda, hidupkan kamera dalam <ph name="BEGIN_LINK" />Tetapan Android<ph name="END_LINK" /> juga.</translation>
 <translation id="6196640612572343990">Sekat kuki pihak ketiga</translation>
 <translation id="6206551242102657620">Sambungan selamat. Maklumat tapak</translation>
 <translation id="6210748933810148297">Bukan <ph name="EMAIL" />?</translation>

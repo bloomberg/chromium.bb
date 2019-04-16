@@ -184,7 +184,6 @@ Není-li tato zásada nastavena, výchozí frekvence je 3 hodiny. Minimální po
       Slučování požadavků pro různé hostitele přes připojení, která používají certifikáty klientů, může vést k problémům se zabezpečením a ochranou soukromí, protože bude u všech požadavků použita ambientní autorita i v případě, že to uživatel výslovně nepovolil. Tato zásada je dočasná a v budoucím vydání bude odstraněna. Viz https://crbug.com/855690.
 
       Je-li tato zásada ponechána nenastavená, použije se výchozí chování, při němž slučování připojení HTTP/2, která používají certifikáty klienta, není povoleno.</translation>
-<translation id="1353966721814789986">Stránky otevírané při spuštění</translation>
 <translation id="1354424209129232709">Maximum:</translation>
 <translation id="1354452738176731363">Pokud je tato zásada nastavena na hodnotu false, nebude po dobu přihlášení uživatele zvukový výstup v zařízení k dispozici.
 
@@ -208,7 +207,6 @@ Pokud je tato zásada nastavena na hodnotu False, <ph name="PRODUCT_NAME" /> vyt
       Pokud tato zásada není nastavená, kód pro sítě se může spouštět mimo proces prohlížeče v závislosti na zkouškách experimentu NetworkService.</translation>
 <translation id="1384459581748403878">Reference: <ph name="REFERENCE_URL" /></translation>
 <translation id="1384653327213929024">Povolit uživatelům spravovat nainstalované certifikáty.</translation>
-<translation id="1387596372902085462">Zda důvěřovat starší infrastruktuře PKI od společnosti Symantec</translation>
 <translation id="1393485621820363363">Povolené podnikové tiskárny pro zařízení</translation>
 <translation id="1397855852561539316">URL výchozího vyhledávače pro návrhy</translation>
 <translation id="1404043648050567997">Když uživatel přejde na web, který je označen jako potenciálně škodlivý, zobrazí služba Bezpečné prohlížení stránku s upozorněním. Aktivace tohoto nastavení zabrání uživatelům pokračovat ze stránky s upozorněním na škodlivý web.
@@ -379,7 +377,6 @@ Pokud je toto nastavení zakázáno nebo není nakonfigurováno, firemní uživa
 
       Tato zásada je k dispozici jen v instancích systému Windows, které jsou připojené k doméně <ph name="MS_AD_NAME" />, nebo v instancích systému Windows 10 Pro nebo Enterprise, které jsou zaregistrované ke správě zařízení.</translation>
 <translation id="172374442286684480">Umožnit nastavení místních dat všem webům</translation>
-<translation id="1734716591049455502">Konfigurace možností vzdáleného přístupu</translation>
 <translation id="1736269219679256369">Povolit pokračování ze stránky s upozorněním protokolu SSL</translation>
 <translation id="1745780278307622857">Určuje, zda prohlížeč <ph name="PRODUCT_NAME" /> u souborů z důvěryhodných zdrojů může povolit stažení bez kontrol Bezpečného prohlížení.
 
@@ -517,7 +514,6 @@ Pokud tato zásada není nastavena, nebude mít zařízení žádné tiskárny a
       Pokud je toto nastavení vypnuto, automatické vyplňování nebude navrhovat ani vyplňovat adresní údaje a nebude ani ukládat další informace o adresách, které uživatel při prohlížení webu odešle.
 
       Pokud je toto nastavení zapnuto nebo nemá žádnou hodnotu, uživatel bude moci automatické vyplňování adres ovládat v uživatelském rozhraní.</translation>
-<translation id="1960840544413786116">Udává, zda mají být povoleny certifikáty vydané místními kotvami vztahu důvěryhodnosti bez rozšíření subjectAlternativeName.</translation>
 <translation id="1962273523772270623">Povolit shromažďování protokolů událostí WebRTC ze služeb Google</translation>
 <translation id="1964634611280150550">Anonymní režim zakázán</translation>
 <translation id="1964802606569741174">Tato zásada nemá vliv na aplikaci YouTube pro Android. Chcete-li na YouTube vynutit bezpečný režim, měli byste instalaci aplikace YouTube pro Android zakázat.</translation>
@@ -711,7 +707,6 @@ Tato zásada nemá vliv na to, zda uživatelé mohou konfigurovat tiskárny na j
 U zařízení spravovaných pomocí služby Active Directory tato zásada podporuje rozšíření <ph name="MACHINE_NAME_VARIABLE" /> na název počítače ve službě Active Directory nebo jeho podřetězec. V případě názvu počítače <ph name="MACHINE_NAME_EXAMPLE" /> by byl řetězec <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> nahrazen čtyřmi znaky po šesté pozici, tj. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Pozice se počítají od nuly.
       </translation>
 <translation id="2294382669900758280">Přehrávání videí v aplikacích Android není bráno v potaz ani v případě, že je tato zásada nastavena na hodnotu <ph name="TRUE" />.</translation>
-<translation id="2298647742290373702">Konfiguruje výchozí stránku Nová karta v prohlížeči <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Zadat seznam aktivovaných pluginů</translation>
 <translation id="2303795211377219696">Povolit automatické vyplňování pro platební karty</translation>
 <translation id="2309390639296060546">Výchozí nastavení geolokace</translation>
@@ -915,11 +910,6 @@ Pokud je zásada nastavena na hodnotu False nebo nastavena není, budou ikony vi
           Úplný popis možných nastavení a struktury této zásady najdete na stránce https://www.chromium.org/administrators/policy-list-3/extension-settings-full.
           </translation>
 <translation id="2753637905605932878">Omezit rozsah místních portů UDP používaných rozhraním WebRTC</translation>
-<translation id="2755385841634849932">Tato zásada ovládá dostupnost zálohování a obnovení Android.
-
-      Když tato zásada není nakonfigurována nebo je nastavena na možnost <ph name="BR_DISABLED" />, je zálohování a obnovení systému Android deaktivováno a uživatel ho nemůže aktivovat.
-
-      Když je tato zásada nastavena na možnost <ph name="BR_UNDER_USER_CONTROL" />, bude uživatel dotázán, zda chce zálohování a obnovení systému Android používat. Pokud uživatel zálohování a obnovení zapne, budou se data aplikací Android nahrávat na zálohovací servery Android a při opětovné instalaci se z nich obnoví.</translation>
 <translation id="2757054304033424106">Typy rozšíření nebo aplikací, které mohou být nainstalovány</translation>
 <translation id="2758084448533744848">Udává časové pásmo, jehož použití se má v zařízení vynutit. Když je tato zásada nastavená, uživatelé na zařízení zadané časové pásmo nemohou přepsat. Pokud zadáte neplatnou hodnotu, bude zásada aktivována s použitím hodnoty „GMT“. Pokud zadáte prázdný řetězec, bude tato zásada ignorována.
 
@@ -1065,7 +1055,6 @@ Platné jsou tyto specifikace vzorů adres URL:
 <translation id="2959898425599642200">Pravidla vynechání proxy serveru</translation>
 <translation id="2960128438010718932">Plán zavádění nové aktualizace po etapách</translation>
 <translation id="2960691910306063964">Aktivovat nebo deaktivovat ověřování bez kódu PIN u hostitelů vzdáleného přístupu</translation>
-<translation id="2972261849442778817">Zeptat se uživatele, zda chtějí provést migraci, nebo ji přeskočit a zakázat ARC.</translation>
 <translation id="2976002782221275500">Udává dobu nečinnosti uživatele, po které bude při napájení z baterie snížen jas obrazovky.
 
           Pokud je tato zásada nastavena hodnotu větší než nula, jedná se o dobu, po kterou musí uživatel zůstat v nečinnosti, než systém <ph name="PRODUCT_OS_NAME" /> sníží jas obrazovku.
@@ -1208,15 +1197,6 @@ Pokud je tato zásada zakázána nebo není nakonfigurována, funkce WebDriver n
       Pokud je toto nastavení aktivované nebo není nakonfigurované, mohou uživatelé proxy server pro tisk z cloudu aktivovat ověřením pomocí účtu Google.
 
       Pokud je toto nastavení deaktivováno, uživatelé proxy server nebudou moci aktivovat a počítač nebude moci sdílet připojené tiskárny se službou <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="3307746730474515290">Určuje, jaké typy aplikací nebo rozšíření lze instalovat, a omezuje přístup k běhovému prostředí.
-
-          Toto nastavení uvádí seznam povolených rozšíření nebo aplikací, které lze nainstalovat do prohlížeče <ph name="PRODUCT_NAME" />, a hostitelů, se kterými mohou komunikovat. Hodnota představuje seznam řetězců. Musí se jednat o řetězce z následujícího výčtu: extension, theme, user_script, hosted_app, legacy_packaged_app, platform_app. Další informace o těchto typech naleznete v dokumentaci k rozšířením prohlížeče <ph name="PRODUCT_NAME" />.
-
-          Tato zásada se vztahuje i na rozšíření a aplikace, jejichž instalace je vynucena prostřednictvím zásady ExtensionInstallForcelist.
-
-          Pokud je toto nastavení nakonfigurováno, typy rozšíření a aplikací, které nejsou na seznamu uvedeny, nebudou nainstalovány.
-
-          Pokud je toto nastavení ponecháno nenakonfigurované, žádná omezení týkající se přijatelných typů rozšíření a aplikací vynucována nebudou.</translation>
 <translation id="3322771899429619102">Umožňuje nastavit seznam vzorů adres URL webových stránek, které mají povoleno generovat klíče. Vzory adres URL uvedené v zásadě KeygenBlockedForUrls tyto výjimky přepíšou.
 
 Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultKeygenSetting (pokud je nastavena), nebo z osobního nastavení uživatele.</translation>
@@ -1327,7 +1307,6 @@ Tuto zásadu lze nastavit pouze jako doporučenou. Zásada slouží k přesunut
 
           Tato zásada je respektována pouze v případě, že je aktivována zásada DefaultSearchProviderEnabled.</translation>
 <translation id="350797926066071931">Aktivovat Překladač</translation>
-<translation id="3512226956150568738">Pokud model zařízení klienta podporoval ARC již předtím, než kvůli spuštění ARC bylo potřeba migrovat na ext4, a zásada ArcEnabled je nastavena na hodnotu true, bude se tato možnost chovat jako AskUser (hodnota 3). Ve všech ostatních případech (model zařízení dříve ARC nepodporoval nebo je zásada ArcEnabled nastavena na hodnotu false) se tato možnost bude chovat jako DisallowArc (hodnota 0).</translation>
 <translation id="3513655665999652754">Server Quirks poskytuje konfigurační soubory pro konkrétní hardware, například profily ICC displejů pro úpravu kalibrace monitoru.
 
       Pokud tuto zásadu nastavíte na hodnotu false, zařízení se nepokusí kontaktovat server Quirks za účelem stažení konfiguračních souborů.
@@ -1513,7 +1492,6 @@ Tuto zásadu lze nastavit pouze jako doporučenou. Zásada slouží k přesunut
       Pokud tuto zásadu deaktivujete, povolíte tím využívání protokolu SPDY.
 
       Pokud tuto zásadu ponecháte nenastavenou, bude protokol SPDY k dispozici.</translation>
-<translation id="3890999316834333174">Zásady související s rychlým odemknutím</translation>
 <translation id="3891357445869647828">Povolit JavaScript</translation>
 <translation id="3895557476567727016">Konfiguruje výchozí adresář, do kterého bude <ph name="PRODUCT_NAME" /> stahovat soubory.
 
@@ -1588,13 +1566,6 @@ Existující nepřihlášené profily po zapnutí této zásady budou uzamčeny 
 
           Tato možnost je obvykle vypnuta jako ochrana proti phishingu. Pokud zásada není nastavena, je tato možnost vypnuta a u obsahu třetích stran nebude povoleno vyskakování dialogového okna HTTP Basic Auth.</translation>
 <translation id="4056910949759281379">Deaktivovat protokol SPDY</translation>
-<translation id="4059515172917655545">Tato zásada ovládá dostupnost služeb určování polohy Google.
-
-      Když tato zásada není nakonfigurována nebo je nastavena na hodnotu <ph name="GLS_DISABLED" />, jsou služby určování polohy Google deaktivovány a uživatel je nemůže zapnout.
-
-      Když je tato zásada nastavena na hodnotu <ph name="GLS_UNDER_USER_CONTROL" />, bude uživatel dotázán, zda se služby určování služeb Google mají používat. Aplikace pro Android tak pomocí těchto služeb budou moci zjistit polohu zařízení a také bude možné odesílat do Googlu anonymní údaje o poloze.
-
-      Upozorňujeme, že když je zásada <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> nastavena na hodnotu <ph name="BLOCK_GEOLOCATION_SETTING" />, jsou služby určování polohy Google vždy zakázány a tato zásada je ignorována.</translation>
 <translation id="408029843066770167">Povolit dotazy na časovou službu Google</translation>
 <translation id="408076456549153854">Povolit přihlášení do prohlížeče</translation>
 <translation id="4088589230932595924">Anonymní režim je povinný.</translation>
@@ -1749,7 +1720,6 @@ Je-li tato zásada použita, bude mít uživatel k dispozici pouze tiskárny, j
       Upozorňujeme, že zásada obsahující ID aplikace nutně neznamená, že uživatel bude moci určitou aplikaci povolit jako aplikaci k přidávání poznámek na obrazovku uzamčení. Například v Chromu verze 61 jsou dostupné aplikace navíc omezeny ze strany platformy.
 
       Pokud zásada nebude nastavena, nebudou na základě zásady uplatňována žádná omezení ohledně sady aplikací, které uživatel může na obrazovce uzamčení povolit.</translation>
-<translation id="4309640770189628899">Zda jsou v protokolu TLS povoleny šifrovací sady DHE</translation>
 <translation id="4322842393287974810">Povolit automaticky spouštěné terminálové aplikaci s nulovým zpožděním ovládat verzi systému <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Přidat na hlavní panel systému tlačítko pro odhlášení</translation>
 <translation id="4332177773549877617">Protokolovat události při instalaci aplikací pro Android</translation>
@@ -1757,7 +1727,7 @@ Je-li tato zásada použita, bude mít uživatel k dispozici pouze tiskárny, j
 
           Pokud je tato zásada nastavená, udává, jak dlouho musí být uživatel neaktivní, než systém <ph name="PRODUCT_OS_NAME" /> zobrazí dialogové okno s upozorněním, že brzy bude provedena akce nastavená pro nečinnost.
 
-          Když tato zásada není nastavená, dialogové okno s upozorněním se nezobrazuje.
+          Když tato zásada není nastavená, dialogové okno s upozorněním se nezobrazí.
 
           Hodnota této zásady se zadává v milisekundách. Hodnota se v případě potřeby sníží, aby nepřesahovala prodlevu pro akci při nečinnosti.
 
@@ -1879,17 +1849,6 @@ Samotná zásada je na výše uvedených platformách podporována. Funkce, kter
 <translation id="4613508646038788144">Je-li tato zásada nastavena na hodnotu false, bude software třetích stran moci vkládat spustitelný kód do procesů prohlížeče Chrome. Pokud tato zásada není nastavena nebo je nastavena na hodnotu true, bude mít software třetích stran vkládání spustitelného kódu do procesů prohlížeče Chrome zakázáno.</translation>
 <translation id="4617338332148204752">Přeskočení kontroly metaznaček ve službě <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Konfigurovat seznam povolených pro instalaci rozšíření</translation>
-<translation id="463224920692183755">Určuje akci, která se má podniknout v případě, že byl domovský adresář uživatele vytvořen se šifrováním ecryptfs a je třeba jej převést na šifrování ext4.
-
-      Pokud tuto zásadu nastavíte na hodnotu „DisallowArc“, uživatel nebude moci používat aplikace pro Android a žádná migrace ze šifrování ecryptfs na šifrování ext4 se neprovede. Pokud domovský adresář šifrování ext4 již používá, spouštění aplikací pro Android zakázáno nebude.
-
-      Pokud tuto zásadu nastavíte na hodnotu „Migrate“, domovské adresáře se šifrováním ecryptfs se při přihlášení automaticky převedou na šifrování ext4, aniž by byl uživatel požádán o souhlas.
-
-      Pokud tuto zásadu nastavíte na hodnotu „Wipe“, domovské adresáře se šifrováním ecryptfs se při přihlášení smažou a namísto nich se vytvoří nové domovské adresáře se šifrováním ext4. Upozornění: Při této operaci budou odstraněna místní data uživatele.
-
-      Pokud tuto zásadu nastavíte na hodnotu „AskUser“, uživatelům s domovskými adresáři se šifrováním ecryptfs bude nabídnuta možnost migrace.
-
-      Tato zásada se nevztahuje na uživatele veřejných terminálů. Pokud tuto zásadu ponecháte nenastavenou, bude se zařízení chovat, jako kdyby byla vybrána hodnota DisallowArc.</translation>
 <translation id="4632343302005518762">Umožnit pluginu <ph name="PRODUCT_FRAME_NAME" /> zpracovávat uvedené typy obsahu</translation>
 <translation id="4632566332417930481">Umožňuje zakázat používání Nástrojů pro vývojáře v rozšířeních nainstalovaných pomocí podnikových zásad, ale povolit jejich používání v jiných kontextech</translation>
 <translation id="4633786464238689684">Změní výchozí chování horní řady kláves tak, aby tyto klávesy fungovaly jako funkční.
@@ -1998,7 +1957,6 @@ Pokud ji ponecháte nenastavenou, velký kurzor bude ve výchozím nastavení de
 <translation id="4983201894483989687">Povolit spouštění zastaralých pluginů</translation>
 <translation id="4986560318567565414">Cesta k Chromu pro přepínání z alternativního prohlížeče.</translation>
 <translation id="4988291787868618635">Akce prováděná po určité době nečinnosti</translation>
-<translation id="4995548127349206948">Povolení nebo zakázání ověření NTLMv2.</translation>
 <translation id="5030889661505907084">
       Je-li tato zásada nastavená na hodnotu true, mají cloudové zásady v případě konfliktu přednost před zásadami platformy.
       Pokud je tato zásada nastavená na hodnotu false nebo není nakonfigurovaná, mají v případě konfliktu zásady platformy přednost před cloudovými zásadami.
@@ -2090,7 +2048,6 @@ Pokud tuto zásadu nenastavíte, bude aktivován výchozí poskytovatel vyhledá
 
       Na rozdíl od zásady <ph name="URL_LIST_POLICY_NAME" /> fungují pravidla oběma směry, tj. když je přítomen a zapnut doplněk prohlížeče Internet Explorer, tato zásada také určuje, zda má <ph name="IE_PRODUCT_NAME" /> tyto adresy URL otevírat v prohlížeči <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5124368997194894978">Zapnout spuštění při připojení k napájení ze sítě</translation>
-<translation id="5130288486815037971">Zda jsou v protokolu TLS povoleny šifrovací sady RC4</translation>
 <translation id="5141670636904227950">Nastavení výchozího typu lupy, který je aktivován na přihlašovací obrazovce</translation>
 <translation id="5142301680741828703">Následující vzory adres URL vykreslovat vždy v pluginu <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="5148753489738115745">Umožňuje nastavit dodatečné parametry, které plugin <ph name="PRODUCT_FRAME_NAME" /> při spouštění aplikace <ph name="PRODUCT_NAME" /> použije.
@@ -2749,7 +2706,6 @@ Nastavením této zásady na hodnotu False přeskočení stránky s upozorněn�
           Tato zásada je nepovinná. Pokud není nastavena, požadavek na vyhledávání bude odeslán pomocí metody GET.
 
           Tato zásada je respektována pouze v případě, že je aktivována zásada DefaultSearchProviderEnabled.</translation>
-<translation id="6367755442345892511">Zda má být kanál verzí nastavitelný uživatelem</translation>
 <translation id="6368011194414932347">Konfigurace adresy URL domovské stránky</translation>
 <translation id="6368403635025849609">Povolit JavaScript na těchto stránkách</translation>
 <translation id="6376659517206731212">Může být povinné</translation>
@@ -3048,6 +3004,7 @@ Tato zásada se používá pouze v případě, že jsou povoleny aplikace pro L
       Když se má obrazovka ztmavit, chytrý model ztmavování posoudí, zda by se ztmavení obrazovky nemělo odložit. Pokud chytrý model ztmavování ztmavení obrazovky odloží, prodlouží se tím doba do ztmavení obrazovky. Prodlevy vypnutí obrazovky, uzamčení obrazovky a nečinnosti se v tomto případě upraví tak, aby mezi nimi a prodlevou ztmavení zůstala původně nakonfigurovaná doba.
       Pokud je tato zásada nastavená na hodnotu True nebo není nastavená, bude chytrý model ztmavování zapnut a bude mít povoleno prodloužit dobu do ztmavení obrazovky. Pokud je tato zásada nastavená na hodnotu False, chytrý model ztmavování na ztmavení obrazovky nebude mít vliv.</translation>
 <translation id="6972540544240464302">Vybrat konfiguraci plánovače úloh</translation>
+<translation id="6979158407327259162">Disk Google</translation>
 <translation id="6994082778848658360">Udává, jak lze integrovaný bezpečnostní hardwarový prvek používat k dvoufaktorovému ověření, pokud je s touto funkcí kompatibilní. Ke zjištění fyzické přítomnosti uživatele se používá vypínač počítače.
 
       Pokud je vybrána možnost Deaktivováno, druhý faktor není k dispozici.
@@ -3055,7 +3012,6 @@ Tato zásada se používá pouze v případě, že jsou povoleny aplikace pro L
       Pokud je vybrána možnost U2F, bude se integrovaný druhý faktor chovat podle specifikace FIDO U2F.
 
       Pokud je vybrána možnost U2F_EXTENDED, bude integrovaný druhý faktor poskytovat funkce U2F plus rozšíření pro individuální atestaci.</translation>
-<translation id="6997592395211691850">Určuje, zda jsou online kontroly OCSP/CRL vyžadovány pro místní kotvy důvěryhodnosti.</translation>
 <translation id="7003334574344702284">Je-li tato zásada aktivovaná, vynucuje import uložených hesel z předchozího výchozího prohlížeče. Aktivace této zásady má také vliv na dialogové okno importu.
 
      Je-li deaktivovaná, k importu hesel nedojde. 
@@ -3308,10 +3264,6 @@ Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, optimaliz
 <translation id="7458437477941640506">Pokud je verze operačního systému novější než cílová verze, nevracet se k cílové verzi. Jsou zakázány i aktualizace.</translation>
 <translation id="7464991223784276288">Omezit soubory cookie z odpovídajících adres URL na aktuální relaci</translation>
 <translation id="7469554574977894907">Aktivovat návrhy pro vyhledávání</translation>
-<translation id="7474249562477552702">Udává, zda jsou povoleny certifikáty podepsané algoritmem SHA-1 vydané místními kotvami důvěryhodnosti</translation>
-<translation id="747851715060942420">Umožňuje konfigurovat stránky, které se načtou při spuštění.
-
-      Zásada „Adresy URL otevírané při spuštění“ se projeví pouze v případě, že v části „Akce při spuštění“ zvolíte „Otevřít seznam adres URL“.</translation>
 <translation id="7485481791539008776">Pravidla výběru výchozí tiskárny</translation>
 <translation id="7485730741952775732">Pokud je tato zásada nastavená, hostitel vzdáleného přístupu použije při připojování tuto adresu URL ke kontrole ověřovacích tokenů od klientů vzdáleného přístupu. Tuto zásadu je třeba používat v kombinaci se zásadou RemoteAccessHostTokenUrl.
 
@@ -3478,14 +3430,13 @@ Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_
 
           Pokud je tato zásada nastavená, udává, jak dlouho musí být uživatel neaktivní, než systém <ph name="PRODUCT_OS_NAME" /> zobrazí dialogové okno s upozorněním, že brzy bude provedena akce nastavená pro nečinnost.
 
-          Když tato zásada není nastavená, dialogové okno s upozorněním se nezobrazuje.
+          Když tato zásada není nastavená, dialogové okno s upozorněním se nezobrazí.
 
           Hodnota této zásady se zadává v milisekundách. Hodnota se v případě potřeby sníží, aby nepřesahovala prodlevu pro akci při nečinnosti.
 
           Upozornění se zobrazí jen v případě, že je akce při nečinnosti nastavená na odhlášení nebo vypnutí.</translation>
 <translation id="7774768074957326919">Použít systémová nastavení proxy serveru</translation>
 <translation id="7777535871204167559">Zacházet s externími úložnými zařízeními, jako by byla pouze pro čtení</translation>
-<translation id="7781069478569868053">Stránka Nová karta</translation>
 <translation id="7788511847830146438">Podle profilu</translation>
 <translation id="780603170519840350">Deaktivuje vynucování požadavků Certificate Transparency pro seznam hodnot hash údaje subjectPublicKeyInfo.
 
@@ -3512,7 +3463,6 @@ Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_
 
       Pokud tato zásada nebude nastavena, prohlížeč <ph name="PRODUCT_NAME" /> použije výchozí hodnotu 5000 ms.</translation>
 <translation id="7841880500990419427">Nejnižší verze zálohy TLS</translation>
-<translation id="7842869978353666042">Konfigurace možností Disku Google</translation>
 <translation id="7858404742201086014">Pokud toto nastavení aktivujete, budou se zastaralé pluginy používat jako normální pluginy.
 
       Pokud toto nastavení deaktivujete, zastaralé pluginy nebude možné použít a uživatelům se nezobrazí ani žádost o povolení jejich spuštění.
@@ -3534,6 +3484,7 @@ Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_
 <translation id="793134539373873765">Určuje, zda má být pro datové části aktualizací operačního systému použita síť p2p. Pokud zásadu nastavíte na hodnotu True, zařízení budou sdílet pokus o využití datových částí aktualizace v síti LAN, což může vést ke snížení zahlcení a míry využití připojení k internetu. Pokud datová část aktualizace není v síti LAN k dispozici, zařízení přepne zpět na stahování ze serveru aktualizace. Pokud tuto zásadu nenakonfigurujete nebo ji nastavíte na hodnotu False, síť p2p nebude použita.</translation>
 <translation id="7933141401888114454">Povolit vytváření dozorovaných uživatelů</translation>
 <translation id="793473937901685727">Nastavení dostupnosti certifikátů pro aplikace ARC</translation>
+<translation id="7937491150792971922">Sloučit zásady se seznamy pro instalaci rozšíření z několika zdrojů</translation>
 <translation id="7937766917976512374">Povolit nebo zakázat záznam videa</translation>
 <translation id="7941975817681987555">Nepředvídat síťové akce u žádných síťových připojení</translation>
 <translation id="7952958573604504839">Ve verzi M48 byla podpora této zásady ukončena a byla nahrazena zásadou <ph name="NETWORK_PREDICTION_OPTIONS_POLICY_NAME" />, ve verzi M54 tato zásada byla odstraněna.
@@ -3770,7 +3721,6 @@ Pokud tuto zásadu nenastavíte, použije se zásada BlockKeygen a uživatel ji
 
       Další informace o zásadě <ph name="IEEM_SITELIST_POLICY" /> prohlížeče Internet Explorer: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="8402079500086185021">Soubory PDF otevírat vždy externě</translation>
-<translation id="8412312801707973447">Zda se budou provádět online kontroly OCSP/CRL</translation>
 <translation id="8417305981081876834">Nastavit maximální délku kódu PIN pro odemknutí obrazovky</translation>
 <translation id="841977920223099909">Ochrana hesla – spouštěč upozornění</translation>
 <translation id="8424255554404582727">Nastavit výchozí otočení displeje, které se použije při každém restartu</translation>
@@ -3942,9 +3892,6 @@ Pokud zásada zůstane nenastavena, pokusí se <ph name="PRODUCT_NAME" /> zjisti
 <translation id="8818768076343557335">Předvídat síťové akce u všech nemobilních sítí.
           (Od verze 50 ukončena podpora, od verze 52 odstraněno. Od verze 52 platí, že pokud je nastavena hodnota 1, bude se zásada chovat stejně, jako by byla nastavena hodnota 0 – síťové akce se budou předvídat u všech síťových připojení.)</translation>
 <translation id="8825782996899863372">Ochrana hesla – upozornění je spouštěno opětovným použitím hesla na phishingové stránce</translation>
-<translation id="8828766846428537606">Slouží ke konfiguraci výchozí domovské stránky v prohlížeči <ph name="PRODUCT_NAME" /> a brání uživatelům, aby nastavenou domovskou stránku měnili.
-
-      Nastavení domovské stránky uživatele jsou zcela uzamčena pouze v případě, že jako domovskou stránku nastavíte buď stránku Nová karta, nebo adresu URL, kterou zadáte. Pokud adresu URL domovské stránky nezadáte, uživatel bude moci domovskou stránku změnit na stránku Nová karta, a to tím, že zadá řetězec „chrome://newtab“.</translation>
 <translation id="8833109046074170275">Ověření prostřednictvím výchozího procesu GAIA</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> 
 Pokud tato zásada není nakonfigurována nebo je hodnota nižší než 1 MB, <ph name="PRODUCT_OS_NAME" /> použije výchozí velikost mezipaměti.</translation>
@@ -3980,7 +3927,6 @@ Pokud tato zásada není nakonfigurována nebo je hodnota nižší než 1 MB, <p
       Pokud toto nastavení aktivujete nebo deaktivujete, uživatelé jej v prohlížeči <ph name="PRODUCT_NAME" /> nebudou moci změnit ani přepsat.
 
       Pokud toto nastavení ponecháte nenastavené, uživatelé se budou moci rozhodnout, zda tuto funkci chtějí používat.</translation>
-<translation id="8870318296973696995">Domovská stránka</translation>
 <translation id="8876188741456358123">Přepíše výchozí režim oboustranného tisku. Pokud režim není k dispozici, zásada bude ignorována.</translation>
 <translation id="8882006618241293596">Blokovat plugin <ph name="FLASH_PLUGIN_NAME" /> na těchto webech</translation>
 <translation id="8906768759089290519">Aktivovat režim hosta</translation>
@@ -4077,7 +4023,7 @@ POZNÁMKA: Až do verze 45 byla tato zásada podporována pouze v režimu veře
 <translation id="9035964157729712237">ID rozšíření, která mají být vyňata ze seznamu zakázaných</translation>
 <translation id="9038058011835642205">Určuje seznam webových stránek, které se instalují na pozadí bez zásahu uživatele a které uživatel nemůže odinstalovat ani deaktivovat.
 
-      Každá položka v seznamu zásady je objekt s jedním povinným členem: „url“ a dvěma volitelnými členy: „default_launch_container“ a „create_desktop_shortcut“. „url“ by měla být adresa URL webové aplikace, která se má nainstalovat. „launch_container“ určuje, jak se webová aplikace po nainstalování otevře, a může mít buď hodnotu „window“, nebo „tab“. „create_desktop_shortcut“ nastavte na hodnotu true v případě, že v systému Linux nebo Windows chcete vytvořit zástupce na ploše. Pokud údaj „default_launch_container“ vynecháte, bude se aplikace ve výchozím nastavení otevírat na kartě. Kontejner, ve kterém se aplikace bude otevírat, mohou uživatelé změnit bez ohledu na hodnotu „default_launch_container“. Pokud vynecháte člen „create_desktop_shortcuts“, zástupci na ploše se nevytvoří.</translation>
+      Každá položka v seznamu zásady je objekt s jedním povinným členem: „url“ a dvěma volitelnými členy: „default_launch_container“ a „create_desktop_shortcut“. „url“ by měla být adresa URL webové aplikace, která se má nainstalovat. „launch_container“ určuje, jak se webová aplikace po nainstalování otevře, a může mít buď hodnotu „window“, nebo „tab“. Člen „create_desktop_shortcut“ nastavte na hodnotu true v případě, že v systému Linux nebo Windows chcete vytvořit zástupce na ploše. Pokud člen „default_launch_container“ vynecháte, bude se aplikace ve výchozím nastavení otevírat na kartě. Kontejner, ve kterém se aplikace bude otevírat, mohou uživatelé změnit bez ohledu na hodnotu „default_launch_container“. Pokud vynecháte člen „create_desktop_shortcuts“, zástupci na ploše se nevytvoří.</translation>
 <translation id="9038839118379817310">Zapnout Wi-Fi</translation>
 <translation id="9039822628127365650">Když je tato zásada nastavená, udává dobu, po jejímž uplynutí bude uživatel automaticky odhlášen a relace ukončena. O zbývajícím čase uživatele informuje odpočítávání na hlavním panelu systému.
 
@@ -4116,7 +4062,6 @@ POZNÁMKA: Až do verze 45 byla tato zásada podporována pouze v režimu veře
 <translation id="9094064873808699479">Vraťte se a zůstaňte u cílové verze, pokud je verze operačního systému novější než cílová. Pokuste se při vrácení přenést konfiguraci na úrovni zařízení (včetně přihlašovacích údajů k síti). Pokud obnovení dat není možné, proveďte vrácení a Powerwash (protože cílová verze nepodporuje obnovení dat nebo protože se jedná o změnu, která není zpětně kompatibilní).
           Podporováno u systému <ph name="PRODUCT_OS_NAME" /> verze 70 a vyšší. U starších klientů tato hodnota znamená, že vrácení zpět je zakázáno.</translation>
 <translation id="9096086085182305205">Seznam povolených serverů pro ověřování</translation>
-<translation id="9098553063150791878">Zásady pro ověření v protokolu HTTP</translation>
 <translation id="9105265795073104888">Aplikace Android obdrží pouze část možností konfigurace proxy serveru. Aplikace Android se mohou samy rozhodnout, zda proxy server použijí. Použití proxy serveru u nich nelze vynutit.</translation>
 <translation id="9106865192244721694">Povolit rozhraní WebUSB na těchto webech</translation>
 <translation id="9112727953998243860">Konfigurační soubor podnikových tiskáren</translation>

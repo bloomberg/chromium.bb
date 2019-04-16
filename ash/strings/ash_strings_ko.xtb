@@ -26,8 +26,10 @@
 <translation id="1290331692326790741">신호 약함</translation>
 <translation id="1293264513303784526">USB-C 기기(왼쪽 포트)</translation>
 <translation id="1294929383540927798">잠금 화면 알림 설정을 변경합니다.</translation>
+<translation id="1301069673413256657">GSM</translation>
 <translation id="1302880136325416935">블루투스 설정을 표시합니다. <ph name="STATE_TEXT" /></translation>
 <translation id="1316069254387866896">항상 실행기 표시</translation>
+<translation id="1341651618736211726">더보기</translation>
 <translation id="1346748346194534595">오른쪽</translation>
 <translation id="1351937230027495976">메뉴 접기</translation>
 <translation id="1383876407941801731">검색</translation>
@@ -206,6 +208,7 @@
 <translation id="4181841719683918333">언어</translation>
 <translation id="4195877955194704651">자동 클릭 버튼</translation>
 <translation id="4217571870635786043">음성기록</translation>
+<translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">알림 설정을 표시합니다. 알림이 사용 중지되어 있습니다.</translation>
 <translation id="4269883910223712419">이 기기의 관리자는 다음과 같은 작업을 할 수 있습니다.</translation>
 <translation id="4279490309300973883">미러링</translation>
@@ -275,6 +278,7 @@
 <translation id="544691375626129091">사용 가능한 모든 사용자가 이미 이 세션에 추가되었습니다.</translation>
 <translation id="5465662442746197494">도움이 필요하신가요?</translation>
 <translation id="5496819745535887422">관리자가 내 기기를 롤백하고 있습니다. 기기가 다시 시작되면 모든 데이터가 삭제됩니다.</translation>
+<translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">세션 종료</translation>
 <translation id="5537725057119320332">전송</translation>
 <translation id="5548285847212963613">확장 프로그램('<ph name="EXTENSION_NAME" />')을 사용하여 이 네트워크에 연결할 수 있습니다.</translation>
@@ -282,6 +286,7 @@
 <translation id="5571066253365925590">블루투스를 사용함</translation>
 <translation id="5597451508971090205"><ph name="DATE" /> <ph name="SHORT_WEEKDAY" /></translation>
 <translation id="5600837773213129531">음성 피드백을 사용 중지하려면 Ctrl + Alt + Z를 누르세요.</translation>
+<translation id="5625955975703555628">LTE+</translation>
 <translation id="5648021990716966815">마이크 잭</translation>
 <translation id="5669267381087807207">활성화 중</translation>
 <translation id="5673434351075758678">설정 동기화 후 ‘<ph name="FROM_LOCALE" />’에서 ‘<ph name="TO_LOCALE" />’(으)로 변경합니다.</translation>
@@ -319,6 +324,7 @@
 <translation id="615957422585914272">터치 키보드 표시</translation>
 <translation id="6164005077879661055">관리 대상 사용자를 제거하면 해당 관리 대상 사용자와 연결되어 있는 모든 파일 및 로컬 데이터가 영구적으로 삭제됩니다. 하지만 관리자는 관리 대상 사용자의 방문한 웹사이트 및 설정을 <ph name="MANAGEMENT_URL" /> 페이지에서 계속 볼 수 있습니다.</translation>
 <translation id="6165508094623778733">자세히 알아보기</translation>
+<translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">가로로 잠김</translation>
 <translation id="6259254695169772643">스타일러스로 선택하세요.</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: 활성화 중...</translation>
@@ -355,7 +361,6 @@
 <translation id="6700713906295497288">IME 메뉴 버튼</translation>
 <translation id="6713285437468012787">블루투스 기기 '<ph name="DEVICE_NAME" />'이(가) 페어링되어 이제 모든 사용자가 사용할 수 있습니다. 설정에서 이 페어링을 삭제할 수 있습니다.</translation>
 <translation id="6715542151869432661">휴대기기를 찾을 수 없습니다.</translation>
-<translation id="671928215901716392">화면 잠금</translation>
 <translation id="6723839937902243910">전원</translation>
 <translation id="6751826523481687655">성능 추적이 사용 설정되어 있습니다.</translation>
 <translation id="6785414152754474415">배터리가 <ph name="PERCENTAGE" />% 충전되었으며 충전 중입니다.</translation>
@@ -386,6 +391,7 @@
 <translation id="7256634071279256947">후면 마이크</translation>
 <translation id="726276584504105859">화면 분할을 사용하려면 여기를 드래그하세요.</translation>
 <translation id="7303365578352795231">다른 기기에서 응답 중입니다.</translation>
+<translation id="7305884605064981971">EDGE</translation>
 <translation id="7348093485538360975">터치 키보드</translation>
 <translation id="735745346212279324">VPN 연결 끊김</translation>
 <translation id="7377169924702866686">Caps Lock이 켜져 있습니다.</translation>
@@ -490,9 +496,11 @@
 <translation id="8877788021141246043">알림을 설정해 줘</translation>
 <translation id="8878886163241303700">화면 확대</translation>
 <translation id="890616557918890486">소스 변경</translation>
+<translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google 어시스턴트가 이 언어를 지원하지 않음</translation>
 <translation id="8938800817013097409">USB-C 기기(우측 후면 포트)</translation>
 <translation id="8940956008527784070">배터리 부족(<ph name="PERCENTAGE" />%)</translation>
+<translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> 사용 중</translation>
 <translation id="899350903320462459">알림 작업을 실행하려면 <ph name="LOGIN_ID" />(으)로 기기의 잠금을 해제하세요.</translation>
 <translation id="8995603266996330174">관리자: <ph name="DOMAIN" /></translation>

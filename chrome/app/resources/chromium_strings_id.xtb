@@ -30,6 +30,7 @@
 <translation id="1929939181775079593">Chromium tidak merespons. Luncurkan ulang sekarang?</translation>
 <translation id="1966382378801805537">Chromium tidak dapat menentukan atau menyetel browser default</translation>
 <translation id="2008474315282236005">Tindakan ini akan menghapus 1 item dari perangkat. Untuk mengambil data nanti, login ke Chromium sebagai <ph name="USER_EMAIL" />.</translation>
+<translation id="2037988709973327241"><ph name="FILE_NAME" /> berbahaya, sehingga Chromium memblokirnya. Anda dilindungi oleh Perlindungan Lanjutan.</translation>
 <translation id="2117378023188580026">Administrator meminta Anda meluncurkan ulang Chromium untuk menerapkan update ini</translation>
 <translation id="2119636228670142020">Tentang &amp;Chromium OS</translation>
 <translation id="2178765360243863853">Mulai ulang Chromium sekarang</translation>
@@ -61,6 +62,7 @@
 <translation id="3068515742935458733">Bantu Chromium menjadi lebih baik dengan mengirim laporan kerusakan dan <ph name="UMA_LINK" /> ke Google</translation>
 <translation id="3103660991484857065">Pemasang gagal membatalkan kompresi arsip. Download Chromium lagi.</translation>
 <translation id="3130323860337406239">Chromium menggunakan mikrofon Anda.</translation>
+<translation id="3154325651427862069"><ph name="FILE_NAME" /> mungkin berbahaya, sehingga Chromium memblokirnya. Anda dilindungi oleh Perlindungan Lanjutan.</translation>
 <translation id="3155163173539279776">Luncurkan ulang Chromium</translation>
 <translation id="3179665906251668410">Buka Link di Jendela Sa&amp;maran Chromium</translation>
 <translation id="3190315855212034486">Aduh! Chromium ngadat. Luncurkan ulang sekarang?</translation>
@@ -88,6 +90,7 @@
 <translation id="388648406173476553">Sesuaikan dan kontrol Chromium. Ada sesuatu yang memerlukan perhatian Anda - klik untuk melihat detailnya.</translation>
 <translation id="3889543394854987837">Klik nama Anda untuk membuka Chromium dan mulai menjelajah.</translation>
 <translation id="3898493977366060150">Browsing web dengan fitur smart dari Google</translation>
+<translation id="3931244652999881512">File ini berbahaya, sehingga Chromium memblokirnya. Anda dilindungi oleh Perlindungan Lanjutan.</translation>
 <translation id="3965668104013180445">{0,plural, =1{Chromium OS akan dimulai ulang dalam 1 jam}other{Chromium OS akan dimulai ulang dalam # jam}}</translation>
 <translation id="4036079820698952681">Bantu Chromium jadi lebih baik dengan melaporkan <ph name="BEGIN_LINK" />setelan saat ini<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">Peningkatan keamanan dan fitur baru yang penting tersedia di versi terbaru.</translation>
@@ -138,6 +141,7 @@
 <translation id="5680901439334282664">masuk ke Chromium</translation>
 <translation id="5698481217667032250">Tampilkan Chromium dalam bahasa ini</translation>
 <translation id="5712253116097046984">Administrator meminta Anda memulai ulang Chromium OS untuk menerapkan update ini</translation>
+<translation id="5726979195371243087">File ini mungkin berbahaya, sehingga Chromium memblokirnya. Anda dilindungi oleh Perlindungan Lanjutan.</translation>
 <translation id="5756484659843248772">Bahasa ini digunakan untuk menampilkan UI Chromium OS</translation>
 <translation id="5768914737813585044">Tampilkan Chromium OS dalam bahasa ini</translation>
 <translation id="5796460469508169315">Chromium hampir siap.</translation>
@@ -252,6 +256,7 @@ Lihat email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</tr
 <translation id="8667808506758191620"><ph name="DEVICE_TYPE" /> Anda sudah diperbarui.</translation>
 <translation id="8697124171261953979">Juga mengontrol halaman apa yang ditampilkan saat Anda memulai Chromium atau menelusuri dari Omnibox.</translation>
 <translation id="8704119203788522458">Ini Chromium Anda</translation>
+<translation id="8704255848199359374">Tindakan ini akan menggunakan pemeriksaan ejaan yang sama dengan yang digunakan di penelusuran Google. Teks yang Anda ketikkan di browser dikirim ke Google. Anda dapat mengubah perilaku ini di setelan.</translation>
 <translation id="8796602469536043152">Chromium memerlukan izin akses ke kamera dan mikrofon untuk situs ini</translation>
 <translation id="8803635938069941624">Persyaratan Chromium OS</translation>
 <translation id="8821041990367117597">Chromium tidak dapat menyinkronkan data karena detail proses masuk Anda sebelum diperbarui.</translation>

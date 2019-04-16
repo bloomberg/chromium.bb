@@ -210,7 +210,6 @@
 <translation id="2053111141626950936">Puslapiai, parašyti <ph name="LANGUAGE" />, verčiami nebus.</translation>
 <translation id="2053553514270667976">Pašto kodas</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 pasiūlymas}one{# pasiūlymas}few{# pasiūlymai}many{# pasiūlymo}other{# pasiūlymų}}</translation>
-<translation id="2068124040035837596">Jūsų paskyrą tvarko <ph name="ENROLLMENT_DOMAIN" />. Tai reiškia, kad administratorius gali nuotoliniu būdu ją konfigūruoti.</translation>
 <translation id="2068663545051464999">Įkeltos strigčių ataskaitos ID <ph name="CRASH_ID" /> (vietinis kontekstas: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="2079545284768500474">Anuliuoti</translation>
 <translation id="20817612488360358">Sistemos įgaliotojo serverio nustatymai nustatyti kaip naudotini, bet taip pat nurodyta tiksli įgaliotojo serverio konfigūracija.</translation>
@@ -279,7 +278,6 @@
     taikyti saugos politiką visoms jam teikiamoms užklausoms. Bet dabar jam
     nepavyko pateikti politikos, neleidžiančios naršyklei vykdyti
     svetainės <ph name="SITE" /> užklausos.</translation>
-<translation id="244665789865330679">Jūsų įrenginį ir paskyrą tvarko <ph name="ENROLLMENT_DOMAIN" />. Tai reiškia, kad administratorius gali nuotoliniu būdu juos konfigūruoti.</translation>
 <translation id="2463193859425327265">Keisti pagrindinį puslapį</translation>
 <translation id="2463739503403862330">Užpildyti</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -482,7 +480,6 @@
 <translation id="358285529439630156">Kredito ir išankstinio mokėjimo kortelės tinkamos.</translation>
 <translation id="3582930987043644930">Pridėti vardą</translation>
 <translation id="3583757800736429874">&amp;Perkelti dar kartą</translation>
-<translation id="35866233670761917">Administratoriai nemato svetainių, kuriose lankotės, turinio</translation>
 <translation id="3586931643579894722">Slėpti išsamią informaciją</translation>
 <translation id="3592413004129370115">„Italian“ (vokas)</translation>
 <translation id="3600246354004376029">„<ph name="TITLE" />“, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
@@ -750,7 +747,6 @@
 <translation id="5095208057601539847">Provincija</translation>
 <translation id="5097099694988056070">Įrenginio statistika, pvz., centrinio procesoriaus / laisvosios prieigos atminties naudojimas</translation>
 <translation id="5097501891273180634">A2</translation>
-<translation id="5098222253617183465">Jūsų įrenginį tvarko <ph name="ENROLLMENT_DOMAIN" />, o jūsų paskyrą tvarko <ph name="ACCOUNT_DOMAIN" />. Tai reiškia, kad administratoriai gali nuotoliniu būdu sukonfigūruoti įrenginį ir paskyrą.</translation>
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64 bitų)</translation>
@@ -906,7 +902,6 @@
 <translation id="5967592137238574583">Kontaktinės informacijos redagavimas</translation>
 <translation id="5967867314010545767">Pašalinti iš istorijos</translation>
 <translation id="5975083100439434680">Tolinti</translation>
-<translation id="5977489021191000276">Jūsų įrenginio netvarko administratorius.</translation>
 <translation id="5977976211062815271">Šiame įrenginyje</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">Nepavyksta atidaryti mokėjimo programos</translation>
@@ -1052,7 +1047,6 @@
 <translation id="6903319715792422884">Padėkite tobulinti Saugų naršymą siųsdami tam tikrą <ph name="BEGIN_WHITEPAPER_LINK" />sistemos informaciją ir puslapių turinį<ph name="END_WHITEPAPER_LINK" /> „Google“. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">Naudotojas:</translation>
 <translation id="6934672428414710184">Šis vardas yra iš jūsų „Google“ paskyros</translation>
-<translation id="6939583532829045966">Jūsų įrenginį tvarko <ph name="ENROLLMENT_DOMAIN" />. Tai reiškia, kad administratorius gali nuotoliniu būdu jį konfigūruoti.</translation>
 <translation id="6944692733090228304">Įvedėte slaptažodį svetainėje, kurios netvarko organizacija <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />. Kad apsaugotumėte paskyrą, nenaudokite to paties slaptažodžio kitose programose ir svetainėse.</translation>
 <translation id="6945221475159498467">Pasirinkti</translation>
 <translation id="6948701128805548767">Jei norite peržiūrėti paėmimo metodus ir reikalavimus, pasirinkite adresą</translation>
@@ -1062,7 +1056,6 @@
 <translation id="6957887021205513506">Panašu, kad serverio sertifikatas yra suklastotas.</translation>
 <translation id="6964255747740675745">Analizuojant tinklo konfigūraciją įvyko klaida (netinkamas JSON).</translation>
 <translation id="6965382102122355670">Gerai</translation>
-<translation id="6965456981923010628"><ph name="LEFT_PART" /> • <ph name="RIGHT_PART" /></translation>
 <translation id="6965978654500191972">Įrenginys</translation>
 <translation id="6970216967273061347">Rajonas</translation>
 <translation id="6973656660372572881">Nurodyti fiksuoti įgaliotieji serveriai ir .pac scenarijaus URL.</translation>
@@ -1213,6 +1206,7 @@ Papildoma išsami informacija:
 <translation id="7668654391829183341">Nežinomas įrenginys</translation>
 <translation id="7669271284792375604">Šios svetainės užgrobėjai gali bandyti apgaule priversti jus įdiegti naršymo funkcijas trikdančių programų (pvz., pakeitę pagrindinį puslapį ar rodydami papildomų skelbimų svetainėse, kuriose lankotės).</translation>
 <translation id="7676643023259824263">Ieškoti iškarpinės teksto „<ph name="TEXT" />“</translation>
+<translation id="7679176406634891508">Platforma ir debesis</translation>
 <translation id="7681101578153515023">Keisti paieškos variklį</translation>
 <translation id="7682287625158474539">Pristatymas</translation>
 <translation id="7687186412095877299">Užpildomos mokėjimo formos naudojant išsaugotus mokėjimo metodus</translation>
@@ -1417,7 +1411,6 @@ Papildoma išsami informacija:
 <translation id="8932102934695377596">Jūsų laikrodis atsilieka</translation>
 <translation id="893332455753468063">Vardo ir pavardės pridėjimas</translation>
 <translation id="8938939909778640821">Tinkamos kredito ir išankstinio mokėjimo kortelės</translation>
-<translation id="894185898663964645">Administratorius sukonfigūravo tinkintus šakninius sertifikatus, kurie gali leisti jam peržiūrėti svetainių, kuriose lankotės, turinį.</translation>
 <translation id="8943282376843390568">Žaliųjų citrinų spalva</translation>
 <translation id="8957210676456822347">Fiksuotojo portalo autorizavimas</translation>
 <translation id="8968766641738584599">Išsaugoti kortelę</translation>
@@ -1431,6 +1424,7 @@ Papildoma išsami informacija:
 <translation id="8996941253935762404">Pateiktoje svetainėje yra kenkėjiškų programų</translation>
 <translation id="8997023839087525404">Serveris pateikė sertifikatą, kuris nebuvo viešai atskleistas naudojant sertifikato skaidrumo politiką. Tai yra tam tikriems sertifikatams taikomas reikalavimas, siekiant užtikrinti, jog jie patikimi ir apsaugo nuo įsilaužėlių.</translation>
 <translation id="9001074447101275817">Tarpiniame serveryje <ph name="DOMAIN" /> būtina įvesti naudotojo vardą ir slaptažodį.</translation>
+<translation id="9004367719664099443">Vyksta VR sesija</translation>
 <translation id="9005998258318286617">PDF dokumento įkelti nepavyko.</translation>
 <translation id="9008201768610948239">Nepaisyti</translation>
 <translation id="9011424611726486705">Atidaryti svetainės nustatymus</translation>
