@@ -9298,14 +9298,6 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
   EXPECT_FALSE(root->HasBeenActivated());
   EXPECT_FALSE(root->HasTransientUserActivation());
 
-  // Simulate user gesture in the main frame. Cross origin subframes creating
-  // entries without user gesture will still lead to the last committed entry
-  // being marked as skippable.
-  root->UpdateUserActivationState(
-      blink::UserActivationUpdateType::kNotifyActivation);
-  EXPECT_TRUE(root->HasBeenActivated());
-  EXPECT_TRUE(root->HasTransientUserActivation());
-
   // Invoke pushstate from a subframe.
   std::string script = "history.pushState({}, 'page 1', 'simple_page_1.html')";
   EXPECT_TRUE(ExecuteScriptWithoutUserGesture(root->child_at(0), script));
@@ -9338,10 +9330,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
   controller.GoToIndex(2);
   load_observer.Wait();
 
-  // A user gesture even in the main frame now will lead to all same document
-  // entries to be marked as non-skippable. This is an inconsistency but the
-  // other option of tracking which entries to reset based on which frame was
-  // activated seems unnecessarily complex.
+  // A user gesture in the main frame now will lead to all same document
+  // entries to be marked as non-skippable.
   root->UpdateUserActivationState(
       blink::UserActivationUpdateType::kNotifyActivation);
   EXPECT_TRUE(root->HasBeenActivated());
@@ -9349,6 +9339,53 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
   EXPECT_FALSE(controller.GetEntryAtIndex(0)->should_skip_on_back_forward_ui());
   EXPECT_FALSE(controller.GetEntryAtIndex(1)->should_skip_on_back_forward_ui());
   EXPECT_FALSE(controller.GetEntryAtIndex(2)->should_skip_on_back_forward_ui());
+}
+
+// Tests that the navigation entry is not marked as skippable on back/forward
+// button if a subframe does a push state without ever getting a user
+// activation on itself but there was a user gesture on the main frame.
+IN_PROC_BROWSER_TEST_F(
+    NavigationControllerHistoryInterventionBrowserTest,
+    UserActivationMainFrameDoNotSetSkipOnBackForwardSubframe) {
+  base::HistogramTester histograms;
+
+  GURL non_skippable_url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), non_skippable_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  GURL url_with_frames(
+      embedded_test_server()->GetURL("/frame_tree/page_with_one_frame.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url_with_frames));
+
+  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasTransientUserActivation());
+
+  // Simulate user gesture in the main frame. Subframes creating entries without
+  // user gesture will not lead to the last committed entry being marked as
+  // skippable.
+  root->UpdateUserActivationState(
+      blink::UserActivationUpdateType::kNotifyActivation);
+  EXPECT_TRUE(root->HasBeenActivated());
+  EXPECT_TRUE(root->HasTransientUserActivation());
+
+  // Invoke pushstate from a subframe.
+  std::string script = "history.pushState({}, 'page 1', 'simple_page_1.html')";
+  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(root->child_at(0), script));
+
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+  EXPECT_EQ(2, controller.GetCurrentEntryIndex());
+  EXPECT_EQ(2, controller.GetLastCommittedEntryIndex());
+
+  EXPECT_FALSE(controller.GetEntryAtIndex(0)->should_skip_on_back_forward_ui());
+  EXPECT_FALSE(controller.GetEntryAtIndex(1)->should_skip_on_back_forward_ui());
+  EXPECT_FALSE(controller.GetEntryAtIndex(2)->should_skip_on_back_forward_ui());
+  histograms.ExpectBucketCount(
+      "Navigation.BackForward.SetShouldSkipOnBackForwardUI", true, 0);
 }
 
 // Tests that a same document navigation followed by a client redirect

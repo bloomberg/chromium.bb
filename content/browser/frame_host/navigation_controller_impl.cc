@@ -3447,9 +3447,9 @@ void NavigationControllerImpl::SetShouldSkipOnBackForwardUIIfNeeded(
     bool replace_entry,
     bool previous_document_was_activated,
     bool is_renderer_initiated) {
-  // Note that for a subframe navigation, previous_document_was_activated is
-  // false if there has been any user gesture on an ancestor frame but not on
-  // the subframe doing the navigation.
+  // Note that for a subframe, previous_document_was_activated is true if the
+  // gesture happened in any subframe (propagated to main frame) or in the main
+  // frame itself.
   if (replace_entry || previous_document_was_activated ||
       !is_renderer_initiated) {
     if (last_committed_entry_index_ != -1) {
