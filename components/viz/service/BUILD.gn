@@ -472,7 +472,10 @@ viz_source_set("unit_tests") {
   }
 
   if (enable_vulkan) {
-    deps += [ "//gpu/vulkan/init" ]
+    deps += [
+      "//gpu/vulkan:test_support",
+      "//gpu/vulkan/init",
+    ]
   }
 }
 
