@@ -386,12 +386,6 @@ void WebFrameWidgetImpl::UpdateLifecycle(LifecycleUpdate requested_update,
                                       requested_update, reason);
 }
 
-void WebFrameWidgetImpl::PaintContent(cc::PaintCanvas* canvas,
-                                      const WebRect& rect) {
-  // Out-of-process iframes require compositing.
-  NOTREACHED();
-}
-
 void WebFrameWidgetImpl::ThemeChanged() {
   LocalFrameView* view = LocalRootImpl()->GetFrameView();
 

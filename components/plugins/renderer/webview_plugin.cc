@@ -118,7 +118,8 @@ bool WebViewPlugin::Initialize(WebPluginContainer* container) {
 
   old_title_ = container_->GetElement().GetAttribute("title");
 
-  // Propagate device scale and zoom level to inner webview.
+  // Propagate device scale and zoom level to inner webview to load the correct
+  // resources when images have a "srcset" attribute.
   web_view()->SetDeviceScaleFactor(container_->DeviceScaleFactor());
   web_view()->SetZoomLevel(
       blink::WebView::ZoomFactorToZoomLevel(container_->PageZoomFactor()));
@@ -168,15 +169,7 @@ void WebViewPlugin::Paint(cc::PaintCanvas* canvas, const WebRect& rect) {
 
   canvas->save();
   canvas->translate(SkIntToScalar(rect_.x()), SkIntToScalar(rect_.y()));
-
-  // Apply inverse device scale factor, as the outer webview has already
-  // applied it, and the inner webview will apply it again.
-  SkScalar inverse_scale =
-      SkFloatToScalar(1.0 / container_->DeviceScaleFactor());
-  canvas->scale(inverse_scale, inverse_scale);
-
-  web_view()->MainFrameWidget()->PaintContent(canvas, paint_rect);
-
+  web_view()->PaintContent(canvas, paint_rect);
   canvas->restore();
 }
 

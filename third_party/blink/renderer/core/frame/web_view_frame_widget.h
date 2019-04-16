@@ -61,7 +61,6 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override;
   void UpdateLifecycle(LifecycleUpdate requested_update,
                        LifecycleUpdateReason reason) override;
-  void PaintContent(cc::PaintCanvas*, const WebRect& view_port) override;
   void ThemeChanged() override;
   WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) override;
   WebInputEventResult DispatchBufferedTouchEvents() override;

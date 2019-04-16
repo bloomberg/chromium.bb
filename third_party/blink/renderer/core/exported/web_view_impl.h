@@ -200,6 +200,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void SetBaseBackgroundColorOverride(SkColor) override;
   void ClearBaseBackgroundColorOverride() override;
   void SetInsidePortal(bool inside_portal) override;
+  void PaintContent(cc::PaintCanvas*, const gfx::Rect&) override;
 
   void DidUpdateFullscreenSize();
 
@@ -449,7 +450,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override;
   void UpdateLifecycle(LifecycleUpdate requested_update,
                        LifecycleUpdateReason reason) override;
-  void PaintContent(cc::PaintCanvas*, const WebRect&) override;
   void ThemeChanged() override;
   WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) override;
   WebInputEventResult DispatchBufferedTouchEvents() override;

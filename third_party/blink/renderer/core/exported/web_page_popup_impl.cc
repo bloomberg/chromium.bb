@@ -386,12 +386,6 @@ void WebPagePopupImpl::UpdateLifecycle(LifecycleUpdate requested_update,
                                       WebWidget::LifecycleUpdateReason::kOther);
 }
 
-void WebPagePopupImpl::PaintContent(cc::PaintCanvas* canvas,
-                                    const WebRect& rect) {
-  if (!closing_)
-    PageWidgetDelegate::PaintContent(canvas, rect, MainFrame());
-}
-
 void WebPagePopupImpl::Resize(const WebSize& new_size_in_viewport) {
   WebRect new_size(0, 0, new_size_in_viewport.width,
                    new_size_in_viewport.height);

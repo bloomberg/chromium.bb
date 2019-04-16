@@ -149,6 +149,8 @@
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/drawing_buffer.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
+#include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -160,6 +162,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
+#include "ui/gfx/skia_util.h"
 
 #if defined(WTF_USE_DEFAULT_RENDER_THEME)
 #include "third_party/blink/renderer/core/layout/layout_theme_default.h"
@@ -1621,12 +1624,29 @@ void WebViewImpl::UpdateLifecycle(LifecycleUpdate requested_update,
   }
 }
 
-void WebViewImpl::PaintContent(cc::PaintCanvas* canvas, const WebRect& rect) {
+void WebViewImpl::PaintContent(cc::PaintCanvas* canvas, const gfx::Rect& rect) {
   // This should only be used when compositing is not being used for this
   // WebView, and it is painting into the recording of its parent.
   DCHECK(!IsAcceleratedCompositingActive());
-  PageWidgetDelegate::PaintContent(canvas, rect,
-                                   *AsView().page->DeprecatedLocalMainFrame());
+  // Non-composited WebViews always have a local main frame.
+  DCHECK(MainFrameImpl());
+
+  if (rect.IsEmpty())
+    return;
+
+  LocalFrameView& main_view = *MainFrameImpl()->GetFrame()->View();
+  DCHECK(main_view.GetLayoutView()->GetDocument().Lifecycle().GetState() ==
+         DocumentLifecycle::kPaintClean);
+
+  PaintRecordBuilder builder;
+  main_view.PaintOutsideOfLifecycle(builder.Context(), kGlobalPaintNormalPhase,
+                                    CullRect(IntRect(rect)));
+  // Don't bother to save/restore here as the caller is expecting the canvas
+  // to be modified and take care of it.
+  canvas->clipRect(gfx::RectToSkRect(rect));
+  builder.EndRecording(
+      *canvas,
+      main_view.GetLayoutView()->FirstFragment().LocalBorderBoxProperties());
 }
 
 void WebViewImpl::ThemeChanged() {
@@ -3052,7 +3072,7 @@ void WebViewImpl::ResizeAfterLayout() {
     }
   }
 
-  if (GetPageScaleConstraintsSet().ConstraintsDirty())
+  if (does_composite_ && GetPageScaleConstraintsSet().ConstraintsDirty())
     RefreshPageScaleFactor();
 
   resize_viewport_anchor_->ResizeFrameView(MainFrameSize());
