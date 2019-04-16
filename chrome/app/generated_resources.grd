@@ -6662,6 +6662,10 @@ the Bookmarks menu.">
         desc="Used to indicate that there was an error starting the microphone to record speech input.">
         Please check your microphone.
       </message>
+      <message name="IDS_NEW_TAB_VOICE_CLOSE_TOOLTIP"
+        desc="Tooltip text for the voice search dialog close button.">
+        Close
+      </message>
       <message name="IDS_NEW_TAB_VOICE_DETAILS"
         desc="Used as text for a link to a help web page, in case microphone permission has not been granted by the user.">
         Details
