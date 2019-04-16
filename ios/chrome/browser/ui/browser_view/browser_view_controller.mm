@@ -1483,13 +1483,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (_voiceSearchController && _voiceSearchController->IsVisible())
     return NO;
 
-  // If there is no first responder, try to make the webview the first
-  // responder.
-  if (!GetFirstResponder()) {
-    if (self.currentWebState)
-      [self.currentWebState->GetWebViewProxy() becomeFirstResponder];
-  }
-
   return YES;
 }
 
@@ -3525,6 +3518,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
         self.view.window.traitCollection.horizontalSizeClass;
     [SizeClassRecorder pageLoadedWithHorizontalSizeClass:sizeClass];
   }
+
+  // If there is no first responder, try to make the webview the first
+  // responder to have it answer keyboard commands (e.g. space bar to scroll).
+  if (!GetFirstResponder() && self.currentWebState)
+    [self.currentWebState->GetWebViewProxy() becomeFirstResponder];
 }
 
 #pragma mark - OmniboxPopupPresenterDelegate methods.
