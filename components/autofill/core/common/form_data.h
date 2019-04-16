@@ -67,7 +67,7 @@ struct FormData {
   // Titles of form's buttons.
   ButtonTitleList button_titles;
   // The URL (minus query parameters) containing the form.
-  GURL origin;
+  GURL url;
   // The action target of the form.
   GURL action;
   // The URL of main frame containing this form.

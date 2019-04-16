@@ -99,8 +99,8 @@ PasswordStore::FormDigest::FormDigest(const PasswordForm& form)
 
 PasswordStore::FormDigest::FormDigest(const autofill::FormData& form)
     : scheme(PasswordForm::SCHEME_HTML),
-      signon_realm(form.origin.GetOrigin().spec()),
-      origin(form.origin) {}
+      signon_realm(form.url.GetOrigin().spec()),
+      origin(form.url) {}
 
 PasswordStore::FormDigest::FormDigest(const FormDigest& other) = default;
 

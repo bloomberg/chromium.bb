@@ -469,7 +469,7 @@ FormStructure::FormStructure(const FormData& form)
       form_name_(form.name),
       button_titles_(form.button_titles),
       submission_event_(SubmissionIndicatorEvent::NONE),
-      source_url_(form.origin),
+      source_url_(form.url),
       target_url_(form.action),
       main_frame_origin_(form.main_frame_origin),
       autofill_count_(0),
@@ -776,7 +776,7 @@ std::vector<FormDataPredictions> FormStructure::GetFieldTypePredictions(
   for (const FormStructure* form_structure : form_structures) {
     FormDataPredictions form;
     form.data.name = form_structure->form_name_;
-    form.data.origin = form_structure->source_url_;
+    form.data.url = form_structure->source_url_;
     form.data.action = form_structure->target_url_;
     form.data.main_frame_origin = form_structure->main_frame_origin_;
     form.data.is_form_tag = form_structure->is_form_tag_;
@@ -1256,7 +1256,7 @@ size_t FormStructure::active_field_count() const {
 FormData FormStructure::ToFormData() const {
   FormData data;
   data.name = form_name_;
-  data.origin = source_url_;
+  data.url = source_url_;
   data.action = target_url_;
   data.main_frame_origin = main_frame_origin_;
 
@@ -1269,7 +1269,7 @@ FormData FormStructure::ToFormData() const {
 
 bool FormStructure::operator==(const FormData& form) const {
   // TODO(jhawkins): Is this enough to differentiate a form?
-  if (form_name_ == form.name && source_url_ == form.origin &&
+  if (form_name_ == form.name && source_url_ == form.url &&
       target_url_ == form.action) {
     return true;
   }

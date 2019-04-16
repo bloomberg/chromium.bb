@@ -919,9 +919,9 @@ NewPasswordFormManager* PasswordManager::ProvisionallySaveForm(
     logger.reset(
         new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
   }
-  if (!client_->IsSavingAndFillingEnabled(submitted_form.origin)) {
+  if (!client_->IsSavingAndFillingEnabled(submitted_form.url)) {
     RecordProvisionalSaveFailure(
-        PasswordManagerMetricsRecorder::SAVING_DISABLED, submitted_form.origin,
+        PasswordManagerMetricsRecorder::SAVING_DISABLED, submitted_form.url,
         logger.get());
     return nullptr;
   }
@@ -933,7 +933,7 @@ NewPasswordFormManager* PasswordManager::ProvisionallySaveForm(
   // PasswordToSave in NewPasswordFormManager DCHECKs that the password is never
   // empty.
 
-  const GURL& origin = submitted_form.origin;
+  const GURL& origin = submitted_form.url;
   bool should_block =
       ShouldBlockPasswordForSameOriginButDifferentScheme(origin);
   metrics_util::LogShouldBlockPasswordForSameOriginButDifferentScheme(
@@ -958,7 +958,7 @@ NewPasswordFormManager* PasswordManager::ProvisionallySaveForm(
 
   if (!matched_manager) {
     RecordProvisionalSaveFailure(
-        PasswordManagerMetricsRecorder::NO_MATCHING_FORM, submitted_form.origin,
+        PasswordManagerMetricsRecorder::NO_MATCHING_FORM, submitted_form.url,
         logger.get());
     matched_manager = CreateFormManager(driver, submitted_form);
   }

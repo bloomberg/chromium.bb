@@ -101,7 +101,7 @@ class AutofillAssistantTest : public testing::Test {
   // Returns a valid credit card form.
   FormData CreateValidCreditCardFormData() {
     FormData form;
-    form.origin = GURL("https://myform.com");
+    form.url = GURL("https://myform.com");
     form.action = GURL("https://myform.com/submit");
 
     FormFieldData field;
@@ -202,7 +202,7 @@ TEST_F(AutofillAssistantTest, CanShowCreditCardAssist_FeatureOn_NotSecure) {
 
   // Cannot be shown if the context is not secure.
   FormData form = CreateValidCreditCardFormData();
-  form.origin = GURL("http://myform.com");
+  form.url = GURL("http://myform.com");
   form.action = GURL("http://myform.com/submit");
   auto form_structure = std::make_unique<FormStructure>(form);
   form_structure->DetermineHeuristicTypes();

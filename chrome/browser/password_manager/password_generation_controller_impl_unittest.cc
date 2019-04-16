@@ -80,7 +80,7 @@ PasswordGenerationUIData GetTestGenerationUIData1() {
   PasswordForm& form = data.password_form;
   form.form_data = autofill::FormData();
   form.form_data.action = GURL("http://www.example1.com/accounts/Login");
-  form.form_data.origin = GURL("http://www.example1.com/accounts/LoginAuth");
+  form.form_data.url = GURL("http://www.example1.com/accounts/LoginAuth");
 
   data.generation_element = ASCIIToUTF16("testelement1");
   data.max_length = 10;
@@ -94,7 +94,7 @@ PasswordGenerationUIData GetTestGenerationUIData2() {
   PasswordForm& form = data.password_form;
   form.form_data = autofill::FormData();
   form.form_data.action = GURL("http://www.example2.com/accounts/Login");
-  form.form_data.origin = GURL("http://www.example2.com/accounts/LoginAuth");
+  form.form_data.url = GURL("http://www.example2.com/accounts/LoginAuth");
 
   data.generation_element = ASCIIToUTF16("testelement2");
   data.max_length = 10;

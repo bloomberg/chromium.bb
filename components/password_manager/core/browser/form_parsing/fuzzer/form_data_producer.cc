@@ -111,7 +111,7 @@ autofill::FormData GenerateWithDataAccessor(
   // Now go back and determine the string-based values of the form itself.
   result.name = accessor->ConsumeString16(name_length);
   result.action = GURL(accessor->ConsumeString(action_length));
-  result.origin = GURL(accessor->ConsumeString(origin_length));
+  result.url = GURL(accessor->ConsumeString(origin_length));
   result.main_frame_origin = url::Origin::Create(
       GURL(accessor->ConsumeString(main_frame_origin_length)));
 

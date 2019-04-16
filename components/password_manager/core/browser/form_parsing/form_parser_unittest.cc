@@ -170,7 +170,7 @@ FormData GetFormDataAndExpectation(const FormParsingTestCase& test_case,
                                    ParseResultIds* save_result) {
   FormData form_data;
   form_data.action = GURL("http://example1.com");
-  form_data.origin = GURL("http://example2.com");
+  form_data.url = GURL("http://example2.com");
   form_data.submission_event = test_case.submission_event;
   for (const FieldDataDescription& field_description : test_case.fields) {
     FormFieldData field;

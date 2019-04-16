@@ -208,7 +208,7 @@ FormFetcher* NewPasswordFormManager::GetFormFetcher() {
 }
 
 const GURL& NewPasswordFormManager::GetOrigin() const {
-  return observed_form_.origin;
+  return observed_form_.url;
 }
 
 const std::map<base::string16, const PasswordForm*>&
@@ -393,8 +393,8 @@ void NewPasswordFormManager::PermanentlyBlacklist() {
 
   if (!new_blacklisted_) {
     new_blacklisted_ = std::make_unique<PasswordForm>();
-    new_blacklisted_->origin = observed_form_.origin;
-    new_blacklisted_->signon_realm = GetSignonRealm(observed_form_.origin);
+    new_blacklisted_->origin = observed_form_.url;
+    new_blacklisted_->signon_realm = GetSignonRealm(observed_form_.url);
     blacklisted_matches_.push_back(new_blacklisted_.get());
   }
   form_saver_->PermanentlyBlacklist(new_blacklisted_.get());
@@ -1021,8 +1021,8 @@ void NewPasswordFormManager::PresaveGeneratedPasswordInternal(
   if (!parsed_form) {
     // Create a password form with a minimum data.
     parsed_form.reset(new PasswordForm());
-    parsed_form->origin = form.origin;
-    parsed_form->signon_realm = GetSignonRealm(form.origin);
+    parsed_form->origin = form.url;
+    parsed_form->signon_realm = GetSignonRealm(form.url);
   }
   parsed_form->date_created = base::Time::Now();
 

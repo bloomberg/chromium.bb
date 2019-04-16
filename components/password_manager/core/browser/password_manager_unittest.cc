@@ -290,7 +290,7 @@ class PasswordManagerTest : public testing::Test {
     form.signon_realm = "http://www.google.com/";
 
     // Fill |form.form_data|.
-    form.form_data.origin = form.origin;
+    form.form_data.url = form.origin;
     form.form_data.action = form.action;
     form.form_data.name = ASCIIToUTF16("the-form-name");
     form.form_data.unique_renderer_id = 10;
@@ -399,7 +399,7 @@ class PasswordManagerTest : public testing::Test {
     form.password_element = ASCIIToUTF16("cvc");
     form.username_value = ASCIIToUTF16("1234567");
     form.password_value = ASCIIToUTF16("123");
-    form.form_data.origin = form.origin;
+    form.form_data.url = form.origin;
 
     FormFieldData field;
     field.name = form.username_element;
@@ -1624,7 +1624,7 @@ TEST_F(PasswordManagerTest, FillPasswordOnManyFrames_SameId) {
 
   // Two unrelated forms...
   FormData form_data;
-  form_data.origin = GURL("http://www.google.com/a/LoginAuth");
+  form_data.url = GURL("http://www.google.com/a/LoginAuth");
   form_data.action = GURL("http://www.google.com/a/Login");
   form_data.fields.resize(2);
   form_data.fields[0].name = ASCIIToUTF16("Email");
@@ -1638,7 +1638,7 @@ TEST_F(PasswordManagerTest, FillPasswordOnManyFrames_SameId) {
   PasswordForm first_form;
   first_form.form_data = form_data;
 
-  form_data.origin = GURL("http://www.example.com/");
+  form_data.url = GURL("http://www.example.com/");
   form_data.action = GURL("http://www.example.com/");
   form_data.fields[0].name = ASCIIToUTF16("User");
   form_data.fields[0].value = ASCIIToUTF16("exampleuser");
@@ -2713,7 +2713,7 @@ TEST_F(PasswordManagerTest, ManualFallbackForSaving_GeneratedPassword) {
 TEST_F(PasswordManagerTest, ProcessAutofillPredictions) {
   // Create FormData form with two fields.
   autofill::FormData form;
-  form.origin = GURL("http://foo.com");
+  form.url = GURL("http://foo.com");
   autofill::FormFieldData field;
   field.form_control_type = "text";
 

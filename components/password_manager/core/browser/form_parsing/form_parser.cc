@@ -896,8 +896,8 @@ std::unique_ptr<PasswordForm> AssemblePasswordForm(
 
   // Create the PasswordForm and set data not related to specific fields.
   auto result = std::make_unique<PasswordForm>();
-  result->origin = form_data.origin;
-  result->signon_realm = GetSignonRealm(form_data.origin);
+  result->origin = form_data.url;
+  result->signon_realm = GetSignonRealm(form_data.url);
   result->action = form_data.action;
   result->form_data = form_data;
   result->all_possible_passwords = std::move(all_possible_passwords);

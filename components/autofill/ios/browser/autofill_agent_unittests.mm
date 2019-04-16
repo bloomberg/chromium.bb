@@ -111,7 +111,7 @@ TEST_F(AutofillAgentTests, OnFormDataFilledTestWithFrameMessaging) {
       autofill::AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
 
   autofill::FormData form;
-  form.origin = GURL("https://myform.com");
+  form.url = GURL("https://myform.com");
   form.action = GURL("https://myform.com/submit");
   form.name = base::ASCIIToUTF16("CC form");
 
@@ -170,7 +170,7 @@ TEST_F(AutofillAgentTests,
       autofill::AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
 
   autofill::FormData form;
-  form.origin = GURL("https://myform.com");
+  form.url = GURL("https://myform.com");
   form.action = GURL("https://myform.com/submit");
 
   autofill::FormFieldData field;
