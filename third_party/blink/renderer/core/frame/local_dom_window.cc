@@ -1480,6 +1480,8 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
   FrameLoadRequest frame_request(active_document,
                                  ResourceRequest(completed_url),
                                  target.IsEmpty() ? "_blank" : target);
+  frame_request.SetNavigationPolicy(
+      NavigationPolicyForCreateWindow(window_features));
   frame_request.SetFeaturesForWindowOpen(window_features);
 
   // Normally, FrameLoader would take care of setting the referrer for a
@@ -1502,28 +1504,50 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
   if (const WebInputEvent* input_event = CurrentInputEvent::Get())
     frame_request.SetInputStartTime(input_event->TimeStamp());
 
-  FrameTree::FindResult result =
-      GetFrame()->Tree().FindOrCreateFrameForNavigation(frame_request);
-  if (!result.frame)
-    return nullptr;
-
-  if (!result.new_window) {
-    Page* target_page = result.frame->GetPage();
-    if (target_page == GetFrame()->GetPage())
-      target_page->GetFocusController().SetFocusedFrame(result.frame);
+  // Get the target frame for the special cases of _top and _parent.
+  // In those cases, we schedule a location change right now and return early.
+  Frame* target_frame = nullptr;
+  if (EqualIgnoringASCIICase(target, "_top")) {
+    target_frame = &GetFrame()->Tree().Top();
+  } else if (EqualIgnoringASCIICase(target, "_self")) {
+    target_frame = GetFrame();
+  } else if (EqualIgnoringASCIICase(target, "_parent")) {
+    if (Frame* parent = GetFrame()->Tree().Parent())
+      target_frame = parent;
     else
-      target_page->GetChromeClient().Focus(GetFrame());
-    // Focusing can fire onblur, so check for detach.
-    if (!result.frame->GetPage())
-      return nullptr;
+      target_frame = GetFrame();
+  } else if (!target.IsEmpty() && !window_features.noopener) {
+    target_frame = GetFrame()->FindFrameForNavigation(
+        target, *active_document->GetFrame(), completed_url);
+    if (target_frame) {
+      Page* target_page = target_frame->GetPage();
+      if (target_page == GetFrame()->GetPage())
+        target_page->GetFocusController().SetFocusedFrame(target_frame);
+      else
+        target_page->GetChromeClient().Focus(GetFrame());
+      // Focusing can fire onblur, so check for detach.
+      if (!target_frame->GetPage())
+        return nullptr;
+    }
   }
 
-  if ((!completed_url.IsEmpty() || result.new_window) &&
-      !result.frame->DomWindow()->IsInsecureScriptAccess(*incumbent_window,
+  bool created = false;
+  if (!target_frame)
+    target_frame = CreateNewWindow(*GetFrame(), frame_request, created);
+  if (!target_frame)
+    return nullptr;
+
+  if (!active_document->GetFrame() ||
+      !active_document->GetFrame()->CanNavigate(*target_frame)) {
+    return nullptr;
+  }
+
+  if ((!completed_url.IsEmpty() || created) &&
+      !target_frame->DomWindow()->IsInsecureScriptAccess(*incumbent_window,
                                                          completed_url)) {
     frame_request.SetFrameName("_self");
     frame_request.SetNavigationPolicy(kNavigationPolicyCurrentTab);
-    result.frame->Navigate(frame_request, WebFrameLoadType::kStandard);
+    target_frame->Navigate(frame_request, WebFrameLoadType::kStandard);
   }
 
   // TODO(japhet): window-open-noopener.html?_top and several tests in
@@ -1534,14 +1558,14 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
   if (EqualIgnoringASCIICase(target, "_top") ||
       EqualIgnoringASCIICase(target, "_parent") ||
       EqualIgnoringASCIICase(target, "_self")) {
-    return result.frame->DomWindow();
+    return target_frame->DomWindow();
   }
 
   if (window_features.noopener)
     return nullptr;
-  if (!result.new_window)
-    result.frame->Client()->SetOpener(GetFrame());
-  return result.frame->DomWindow();
+  if (!created)
+    target_frame->Client()->SetOpener(GetFrame());
+  return target_frame->DomWindow();
 }
 
 void LocalDOMWindow::Trace(blink::Visitor* visitor) {
