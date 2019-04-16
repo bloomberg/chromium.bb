@@ -15,6 +15,7 @@ import android.support.annotation.WorkerThread;
 
 import org.chromium.base.Log;
 import org.chromium.base.task.PostTask;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.browserservices.BrowserServicesMetrics;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityClient;
@@ -91,6 +92,22 @@ public class NotificationPermissionUpdater {
         if (!couldConnect) {
             mPermissionManager.unregister(origin);
         }
+    }
+
+    /**
+     * To be called when a notification is delegated to a client and we notice that the client has
+     * notifications disabled.
+     */
+    @WorkerThread
+    public static void onDelegatedNotificationDisabled(Origin origin, ComponentName app) {
+        // This method is called from TrustedWebActivityClient, which this class requires, so
+        // we can't inject this class into TrustedWebActivityClient and we can't set this class as
+        // an observer of TrustedWebActivityClient since we aren't guaranteed to be created before
+        // TrustedWebActivityClient#notifyNotification is called. So grab an instance of this class
+        // out of Dagger.
+        // TODO(peconn): Make the lifetimes/dependencies here less ugly.
+        ChromeApplication.getComponent().resolveTwaPermissionUpdater()
+                .updatePermission(origin, app, false);
     }
 
     @WorkerThread

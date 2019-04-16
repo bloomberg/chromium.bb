@@ -27,6 +27,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder.DelegatedNotificationSmallIconFallback;
+import org.chromium.chrome.browser.browserservices.permissiondelegation.NotificationPermissionUpdater;
 import org.chromium.chrome.browser.notifications.NotificationBuilderBase;
 import org.chromium.chrome.browser.notifications.NotificationMetadata;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
@@ -98,8 +99,18 @@ public class TrustedWebActivityClient {
             NotificationBuilderBase builder, NotificationUmaTracker notificationUmaTracker) {
         Resources res = ContextUtils.getApplicationContext().getResources();
         String channelDisplayName = res.getString(R.string.notification_category_group_general);
+        Origin origin = new Origin(scope);
 
-        mConnection.execute(scope, new Origin(scope).toString(), service -> {
+        mConnection.execute(scope, origin.toString(), service -> {
+            if (!service.areNotificationsEnabled(channelDisplayName)) {
+                NotificationPermissionUpdater.onDelegatedNotificationDisabled(origin,
+                        service.getComponentName());
+
+                // Attempting to notify when notifications are disabled won't have any effect, but
+                // returning here just saves us from doing unnecessary work.
+                return;
+            }
+
             fallbackToIconFromServiceIfNecessary(builder, service);
 
             NotificationMetadata metadata = new NotificationMetadata(
