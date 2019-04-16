@@ -728,8 +728,24 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
       TransformPaintPropertyNode::AnimationState animation_state;
       animation_state.is_running_animation_on_compositor =
           style.IsRunningTransformAnimationOnCompositor();
-      OnUpdate(properties_->UpdateTransform(*context_.current.transform,
-                                            std::move(state), animation_state));
+      auto effective_change_type = properties_->UpdateTransform(
+          *context_.current.transform, std::move(state), animation_state);
+      // TODO(crbug.com/953322): We need to fix this to work with CAP as well.
+      if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
+          effective_change_type ==
+              PaintPropertyChangeType::kChangedOnlySimpleValues) {
+        if (auto* paint_artifact_compositor =
+                object_.GetFrameView()->GetPaintArtifactCompositor()) {
+          bool updated = paint_artifact_compositor->DirectlyUpdateTransform(
+              *properties_->Transform());
+          if (updated) {
+            effective_change_type =
+                PaintPropertyChangeType::kChangedOnlyCompositedValues;
+            properties_->Transform()->CompositorSimpleValuesUpdated();
+          }
+        }
+      }
+      OnUpdate(effective_change_type);
     } else {
       OnClear(properties_->ClearTransform());
     }
@@ -1017,8 +1033,10 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
       // If we have simple value change, which means opacity, we should try to
       // directly update it on the PaintArtifactCompositor in order to avoid
       // doing a full rebuild.
-      if (effective_change_type ==
-          PaintPropertyChangeType::kChangedOnlySimpleValues) {
+      // TODO(crbug.com/953322): We need to fix this to work with CAP as well.
+      if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
+          effective_change_type ==
+              PaintPropertyChangeType::kChangedOnlySimpleValues) {
         if (auto* paint_artifact_compositor =
                 object_.GetFrameView()->GetPaintArtifactCompositor()) {
           bool updated =
@@ -1874,8 +1892,10 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
       state.scroll = properties_->Scroll();
       auto effective_change_type = properties_->UpdateScrollTranslation(
           *context_.current.transform, std::move(state));
-      if (effective_change_type ==
-          PaintPropertyChangeType::kChangedOnlySimpleValues) {
+      // TODO(crbug.com/953322): We need to fix this to work with CAP as well.
+      if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
+          effective_change_type ==
+              PaintPropertyChangeType::kChangedOnlySimpleValues) {
         if (auto* paint_artifact_compositor =
                 object_.GetFrameView()->GetPaintArtifactCompositor()) {
           bool updated =

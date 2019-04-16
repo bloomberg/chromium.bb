@@ -85,7 +85,7 @@ bool PropertyTreeManager::DirectlyUpdateCompositedOpacityValue(
   if (it == effect_node_map_.end())
     return false;
   auto* cc_effect = property_trees->effect_tree.Node(it->value);
-  if (!cc_effect)
+  if (!cc_effect || cc_effect->is_currently_animating_opacity)
     return false;
 
   cc_effect->opacity = effect.Opacity();
@@ -112,7 +112,7 @@ bool PropertyTreeManager::DirectlyUpdateScrollOffsetTransform(
     return false;
   auto* cc_transform = property_trees->transform_tree.Node(transform_it->value);
 
-  if (!cc_scroll_node || !cc_transform)
+  if (!cc_scroll_node || !cc_transform || cc_transform->is_currently_animating)
     return false;
 
   UpdateCcTransformLocalMatrix(*cc_transform, transform);
@@ -123,6 +123,27 @@ bool PropertyTreeManager::DirectlyUpdateScrollOffsetTransform(
   cc_transform->transform_changed = true;
   property_trees->transform_tree.set_needs_update(true);
   property_trees->scroll_tree.set_needs_update(true);
+  return true;
+}
+
+bool PropertyTreeManager::DirectlyUpdateTransform(
+    cc::PropertyTrees* property_trees,
+    const TransformPaintPropertyNode& transform) {
+  // If we have a ScrollNode, we should be using
+  // DirectlyUpdateScrollOffsetTransform().
+  DCHECK(!transform.ScrollNode());
+
+  auto transform_it = transform_node_map_.find(&transform);
+  if (transform_it == transform_node_map_.end())
+    return false;
+  auto* cc_transform = property_trees->transform_tree.Node(transform_it->value);
+  if (!cc_transform || cc_transform->is_currently_animating)
+    return false;
+
+  UpdateCcTransformLocalMatrix(*cc_transform, transform);
+
+  cc_transform->transform_changed = true;
+  property_trees->transform_tree.set_needs_update(true);
   return true;
 }
 
