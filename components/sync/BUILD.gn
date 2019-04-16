@@ -107,6 +107,13 @@ jumbo_static_library("base") {
     "//third_party/zlib",
   ]
 
+  if (is_mac) {
+    libs = [
+      "CoreFoundation.framework",
+      "SystemConfiguration.framework",  # Required by get_session_name_mac.mm.
+    ]
+  }
+
   if (is_chromeos) {
     # Required by get_session_name.cc on Chrome OS.
     deps += [ "//chromeos/constants" ]
@@ -509,13 +516,6 @@ jumbo_static_library("rest_of_sync") {
   if (is_android) {
     deps += [ "//components/sync/android:jni_headers" ]
     sources += [ "android/model_type_helper.cc" ]
-  }
-
-  if (is_mac) {
-    libs = [
-      "CoreFoundation.framework",
-      "SystemConfiguration.framework",  # Required by get_session_name_mac.mm.
-    ]
   }
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
