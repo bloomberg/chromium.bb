@@ -506,8 +506,11 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
   EXPECT_TRUE(local_address_0.EqualsForSyncPurposes(*local_addresses_1[0]));
 }
 
+// TODO(crbug.com/953152): Flaky on multiple builders and recently regressed on
+// Mac, apparently with
+// https://chromium-review.googlesource.com/c/chromium/src/+/1566296.
 IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
-                       DeleteServerCardMetadataWhenDataGetsRemoved) {
+                       DISABLED_DeleteServerCardMetadataWhenDataGetsRemoved) {
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
                             kDefaultBillingAddressID),
