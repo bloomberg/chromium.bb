@@ -2390,22 +2390,40 @@ CSSValue* ConsumeBasicShape(CSSParserTokenRange& range,
   return shape;
 }
 
+// none | [ underline || overline || line-through || blink ]
 CSSValue* ConsumeTextDecorationLine(CSSParserTokenRange& range) {
   CSSValueID id = range.Peek().Id();
   if (id == CSSValueID::kNone)
     return css_property_parser_helpers::ConsumeIdent(range);
 
-  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  CSSIdentifierValue* underline = nullptr;
+  CSSIdentifierValue* overline = nullptr;
+  CSSIdentifierValue* line_through = nullptr;
+  CSSIdentifierValue* blink = nullptr;
+
   while (true) {
-    CSSIdentifierValue* ident = css_property_parser_helpers::ConsumeIdent<
-        CSSValueID::kBlink, CSSValueID::kUnderline, CSSValueID::kOverline,
-        CSSValueID::kLineThrough>(range);
-    if (!ident)
+    id = range.Peek().Id();
+    if (id == CSSValueID::kUnderline && !underline)
+      underline = css_property_parser_helpers::ConsumeIdent(range);
+    else if (id == CSSValueID::kOverline && !overline)
+      overline = css_property_parser_helpers::ConsumeIdent(range);
+    else if (id == CSSValueID::kLineThrough && !line_through)
+      line_through = css_property_parser_helpers::ConsumeIdent(range);
+    else if (id == CSSValueID::kBlink && !blink)
+      blink = css_property_parser_helpers::ConsumeIdent(range);
+    else
       break;
-    if (list->HasValue(*ident))
-      return nullptr;
-    list->Append(*ident);
   }
+
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  if (underline)
+    list->Append(*underline);
+  if (overline)
+    list->Append(*overline);
+  if (line_through)
+    list->Append(*line_through);
+  if (blink)
+    list->Append(*blink);
 
   if (!list->length())
     return nullptr;
