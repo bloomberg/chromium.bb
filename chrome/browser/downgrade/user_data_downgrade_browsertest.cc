@@ -12,16 +12,34 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/version.h"
 #include "base/win/registry.h"
+#include "chrome/browser/chrome_browser_main.h"
+#include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_utils.h"
 
 namespace downgrade {
 
 class UserDataDowngradeBrowserTestBase : public InProcessBrowserTest {
  protected:
+  // DeleteMovedUserDataSoon() is called after the test is run, and will post a
+  // task to perform the actual deletion. Make sure this task gets a chance to
+  // run, so that the check in TearDownInProcessBrowserTestFixture() works.
+  class RunAllPendingTasksPostMainMessageLoopRunExtraParts
+      : public ChromeBrowserMainExtraParts {
+   public:
+    void PostMainMessageLoopRun() override { content::RunAllTasksUntilIdle(); }
+  };
+
+  void CreatedBrowserMainParts(content::BrowserMainParts* parts) override {
+    InProcessBrowserTest::CreatedBrowserMainParts(parts);
+    static_cast<ChromeBrowserMainParts*>(parts)->AddParts(
+        new RunAllPendingTasksPostMainMessageLoopRunExtraParts());
+  }
+
   // content::BrowserTestBase:
   void SetUpInProcessBrowserTestFixture() override {
     HKEY root = HKEY_CURRENT_USER;
