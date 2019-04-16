@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include "chrome/common/url_constants.cc"
+#include "chrome/common/url_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
