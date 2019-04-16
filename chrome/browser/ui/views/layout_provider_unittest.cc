@@ -311,7 +311,8 @@ TEST_F(LayoutProviderTest, TypographyLineHeight) {
 // Ensure that line heights reported in a default bot configuration match the
 // Harmony spec. This test will only run if it detects that the current machine
 // has the default OS configuration.
-TEST_F(LayoutProviderTest, ExplicitTypographyLineHeight) {
+// Flaky. http://crbug.com/759870
+TEST_F(LayoutProviderTest, DISABLED_ExplicitTypographyLineHeight) {
   std::unique_ptr<views::LayoutProvider> layout_provider =
       ChromeLayoutProvider::CreateLayoutProvider();
 
