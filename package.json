@@ -21,7 +21,7 @@
     "@babel/plugin-syntax-dynamic-import": "^7.2.0",
     "@babel/preset-typescript": "^7.3.3",
     "@types/node": "^10.14.4",
-    "@webgpu/shaderc": "0.0.3",
+    "@webgpu/shaderc": "0.0.4",
     "@webgpu/types": "0.0.3",
     "babel-plugin-module-resolver": "^3.2.0",
     "babel-plugin-transform-commonjs-es2015-modules": "^4.0.1",

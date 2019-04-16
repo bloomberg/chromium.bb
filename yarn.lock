@@ -189,10 +189,10 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-10.14.4.tgz#1c586b991457cbb58fef51bc4e0cfcfa347714b5"
   integrity sha512-DT25xX/YgyPKiHFOpNuANIQIVvYEwCWXgK2jYYwqgaMrYE6+tq+DtmMwlD3drl6DJbUwtlIDnn0d7tIn/EbXBg==
 
-"@webgpu/shaderc@0.0.3":
-  version "0.0.3"
-  resolved "https://registry.yarnpkg.com/@webgpu/shaderc/-/shaderc-0.0.3.tgz#fd07fb581733ac0d036adbf90d8043fae35e03c3"
-  integrity sha512-7bFX2hQtKeDBHNNyXoBLsLR7nH5L/dNHYbcuo+F0H5dwNibcEcpDRx/Ln5SeNPMdXY659ez2AHtQLWXlu0kdoQ==
+"@webgpu/shaderc@0.0.4":
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/@webgpu/shaderc/-/shaderc-0.0.4.tgz#613c6ddc368785d950d911c09910dc71bd875b5e"
+  integrity sha512-Fou7QBnazByzCaiPLfwVQc8f6QA6RRM7258Z9oP3i6sBVNbnX270i2iI7lMXwSG0yggtl4B+a2nwfuME0pu3Og==
 
 "@webgpu/types@0.0.3":
   version "0.0.3"
