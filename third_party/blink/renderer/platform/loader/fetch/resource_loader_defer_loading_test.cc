@@ -174,7 +174,7 @@ TEST_F(ResourceLoaderDefersLoadingTest, CodeCacheFetchCheckDefers) {
   auto* fetcher = CreateFetcher();
 
   ResourceRequest request;
-  request.SetURL(test_url_);
+  request.SetUrl(test_url_);
   request.SetRequestContext(mojom::RequestContextType::FETCH);
   FetchParameters fetch_parameters(request);
 
@@ -198,7 +198,7 @@ TEST_F(ResourceLoaderDefersLoadingTest, CodeCacheFetchSyncReturn) {
   auto* fetcher = CreateFetcher();
 
   ResourceRequest request;
-  request.SetURL(test_url_);
+  request.SetUrl(test_url_);
   request.SetRequestContext(mojom::RequestContextType::FETCH);
   FetchParameters fetch_parameters(request);
 
@@ -212,7 +212,7 @@ TEST_F(ResourceLoaderDefersLoadingTest, ChangeDefersToFalse) {
   auto* fetcher = CreateFetcher();
 
   ResourceRequest request;
-  request.SetURL(test_url_);
+  request.SetUrl(test_url_);
   request.SetRequestContext(mojom::RequestContextType::FETCH);
   FetchParameters fetch_parameters(request);
 
@@ -230,7 +230,7 @@ TEST_F(ResourceLoaderDefersLoadingTest, ChangeDefersToTrue) {
   auto* fetcher = CreateFetcher();
 
   ResourceRequest request;
-  request.SetURL(test_url_);
+  request.SetUrl(test_url_);
   request.SetRequestContext(mojom::RequestContextType::FETCH);
   FetchParameters fetch_parameters(request);
 
@@ -252,7 +252,7 @@ TEST_F(ResourceLoaderDefersLoadingTest, ChangeDefersMultipleTimes) {
   auto* fetcher = CreateFetcher();
 
   ResourceRequest request;
-  request.SetURL(test_url_);
+  request.SetUrl(test_url_);
   request.SetRequestContext(mojom::RequestContextType::FETCH);
 
   FetchParameters fetch_parameters(request);

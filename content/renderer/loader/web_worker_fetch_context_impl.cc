@@ -383,7 +383,7 @@ void WebWorkerFetchContextImpl::WillSendRequest(blink::WebURLRequest& request) {
   request.SetAppCacheHostID(appcache_host_id_);
 
   if (g_rewrite_url)
-    request.SetURL(g_rewrite_url(request.Url().GetString().Utf8(), false));
+    request.SetUrl(g_rewrite_url(request.Url().GetString().Utf8(), false));
 
   if (!renderer_preferences_.enable_referrers) {
     request.SetHttpReferrer(blink::WebString(),

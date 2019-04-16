@@ -72,7 +72,7 @@ WebURLRequest::WebURLRequest(const WebURLRequest& r)
       resource_request_(&owned_resource_request_->resource_request) {}
 
 WebURLRequest::WebURLRequest(const WebURL& url) : WebURLRequest() {
-  SetURL(url);
+  SetUrl(url);
 }
 
 WebURLRequest& WebURLRequest::operator=(const WebURLRequest& r) {
@@ -93,8 +93,8 @@ WebURL WebURLRequest::Url() const {
   return resource_request_->Url();
 }
 
-void WebURLRequest::SetURL(const WebURL& url) {
-  resource_request_->SetURL(url);
+void WebURLRequest::SetUrl(const WebURL& url) {
+  resource_request_->SetUrl(url);
 }
 
 WebURL WebURLRequest::SiteForCookies() const {
@@ -428,7 +428,7 @@ void WebURLRequest::SetFetchWindowId(const base::UnguessableToken& id) {
   resource_request_->SetFetchWindowId(id);
 }
 
-int WebURLRequest::GetLoadFlagsForWebURLRequest() const {
+int WebURLRequest::GetLoadFlagsForWebUrlRequest() const {
   int load_flags = net::LOAD_NORMAL;
 
   switch (resource_request_->GetCacheMode()) {

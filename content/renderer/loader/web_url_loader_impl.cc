@@ -739,7 +739,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
     resource_request->do_not_prompt_for_login = true;
   }
 
-  resource_request->load_flags = request.GetLoadFlagsForWebURLRequest();
+  resource_request->load_flags = request.GetLoadFlagsForWebUrlRequest();
 
   // |plugin_child_id| only needs to be non-zero if the request originates
   // outside the render process, so we can use requestorProcessID even

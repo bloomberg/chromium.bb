@@ -439,7 +439,7 @@ TEST_F(RenderFrameImplTest, DownloadUrlLimit) {
   render_thread_->sink().ClearMessages();
 
   WebURLRequest request;
-  request.SetURL(GURL("http://test/test.pdf"));
+  request.SetUrl(GURL("http://test/test.pdf"));
   request.SetRequestorOrigin(
       blink::WebSecurityOrigin::Create(GURL("http://test")));
 
@@ -597,7 +597,7 @@ TEST_F(RenderFrameImplTest, PreviewsStateAfterWillSendRequest) {
     SetPreviewsState(frame(), test.frame_previews_state);
 
     WebURLRequest request;
-    request.SetURL(GURL("http://example.com"));
+    request.SetUrl(GURL("http://example.com"));
     request.SetPreviewsState(test.initial_request_previews_state);
 
     frame()->WillSendRequest(request);
@@ -686,7 +686,7 @@ TEST_F(RenderFrameImplTest, FileUrlPathAlias) {
 
   for (const auto& test_case : kTestCases) {
     WebURLRequest request;
-    request.SetURL(GURL(test_case.original));
+    request.SetUrl(GURL(test_case.original));
     GetMainRenderFrame()->WillSendRequest(request);
     EXPECT_EQ(test_case.transformed, request.Url().GetString().Utf8());
   }

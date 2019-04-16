@@ -141,7 +141,7 @@ const KURL& ResourceRequest::Url() const {
   return url_;
 }
 
-void ResourceRequest::SetURL(const KURL& url) {
+void ResourceRequest::SetUrl(const KURL& url) {
   url_ = url;
 }
 

@@ -953,7 +953,7 @@ void ApplyFilePathAlias(blink::WebURLRequest* request) {
 
   base::ReplaceFirstSubstringAfterOffset(&path, 0, alias_mapping[0],
                                          alias_mapping[1]);
-  request->SetURL(blink::WebURL(GURL(path)));
+  request->SetUrl(blink::WebURL(GURL(path)));
 }
 
 // Packs all navigation timings sent by the browser to a blink understandable
@@ -5272,7 +5272,7 @@ void RenderFrameImpl::WillSendRequestInternal(blink::WebURLRequest& request,
       base::OptionalOrNullptr(initiator_origin), &new_url,
       &attach_same_site_cookies);
   if (!new_url.is_empty())
-    request.SetURL(WebURL(new_url));
+    request.SetUrl(WebURL(new_url));
 
   if (internal_data->is_cache_policy_override_set())
     request.SetCacheMode(internal_data->cache_policy_override());
@@ -7127,7 +7127,7 @@ void RenderFrameImpl::BeginNavigationInternal(
   blink::mojom::BlobURLTokenPtr blob_url_token(
       CloneBlobURLToken(info->blob_url_token.get()));
 
-  int load_flags = info->url_request.GetLoadFlagsForWebURLRequest();
+  int load_flags = info->url_request.GetLoadFlagsForWebUrlRequest();
   std::unique_ptr<base::DictionaryValue> initiator =
       GetDevToolsInitiator(info->devtools_initiator_info);
   mojom::BeginNavigationParamsPtr begin_navigation_params =

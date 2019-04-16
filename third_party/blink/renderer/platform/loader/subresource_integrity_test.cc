@@ -225,7 +225,7 @@ class SubresourceIntegrityTest : public testing::Test {
         url, SecurityOrigin::CreateUniqueOpaque(), ResourceType::kRaw);
 
     ResourceRequest request;
-    request.SetURL(url);
+    request.SetUrl(url);
     request.SetFetchRequestMode(request_mode);
 
     ResourceResponse response(url);

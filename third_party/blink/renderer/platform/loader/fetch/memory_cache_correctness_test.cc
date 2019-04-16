@@ -73,7 +73,7 @@ class MemoryCacheCorrectnessTest : public testing::Test {
   }
   MockResource* ResourceFromResourceRequest(ResourceRequest request) {
     if (request.Url().IsNull())
-      request.SetURL(KURL(kResourceURL));
+      request.SetUrl(KURL(kResourceURL));
     auto* resource = MakeGarbageCollected<MockResource>(request);
     ResourceResponse response(KURL{kResourceURL});
     response.SetMimeType("text/html");

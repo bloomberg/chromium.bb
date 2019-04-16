@@ -179,7 +179,7 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT bool IsNull() const;
 
   BLINK_PLATFORM_EXPORT WebURL Url() const;
-  BLINK_PLATFORM_EXPORT void SetURL(const WebURL&);
+  BLINK_PLATFORM_EXPORT void SetUrl(const WebURL&);
 
   // Used to implement third-party cookie blocking.
   BLINK_PLATFORM_EXPORT WebURL SiteForCookies() const;
@@ -376,7 +376,7 @@ class WebURLRequest {
 
   BLINK_PLATFORM_EXPORT base::Optional<WebString> GetDevToolsId() const;
 
-  BLINK_PLATFORM_EXPORT int GetLoadFlagsForWebURLRequest() const;
+  BLINK_PLATFORM_EXPORT int GetLoadFlagsForWebUrlRequest() const;
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT ResourceRequest& ToMutableResourceRequest();

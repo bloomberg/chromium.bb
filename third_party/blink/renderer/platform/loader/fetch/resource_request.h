@@ -93,7 +93,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool IsNull() const;
 
   const KURL& Url() const;
-  void SetURL(const KURL&);
+  void SetUrl(const KURL&);
 
   // ThreadableLoader sometimes breaks redirect chains into separate Resource
   // and ResourceRequests. The ResourceTiming API needs the initial URL for the
