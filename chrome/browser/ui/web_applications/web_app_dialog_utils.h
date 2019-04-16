@@ -35,11 +35,9 @@ using WebAppInstalledCallback =
 // Starts install of a WebApp for a given |web_contents|, initiated from
 // a promotional banner or omnibox install icon.
 // Returns false if WebApps are disabled for the profile behind |web_contents|.
-// TODO(https://crbug.com/907351): Rename this to describe its behaviour instead
-// of its callers.
-bool CreateWebAppFromBanner(content::WebContents* web_contents,
-                            WebappInstallSource install_source,
-                            WebAppInstalledCallback installed_callback);
+bool CreateWebAppFromManifest(content::WebContents* web_contents,
+                              WebappInstallSource install_source,
+                              WebAppInstalledCallback installed_callback);
 
 void SetInstalledCallbackForTesting(WebAppInstalledCallback callback);
 

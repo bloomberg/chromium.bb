@@ -49,21 +49,22 @@ class InstallManager {
   // Returns true if a web app can be installed for a given |web_contents|.
   virtual bool CanInstallWebApp(content::WebContents* web_contents) = 0;
 
-  // Starts a web app installation process for a given |web_contents|.
-  // |force_shortcut_app| forces the creation of a shortcut app instead of a PWA
-  // even if installation is available.
-  // TODO(loyso): Rename InstallWebApp to InstallWebAppFromManifestWithFallback.
-  virtual void InstallWebApp(content::WebContents* web_contents,
-                             bool force_shortcut_app,
-                             WebappInstallSource install_source,
-                             WebAppInstallDialogCallback dialog_callback,
-                             OnceInstallCallback callback) = 0;
-
-  // Starts a web app installation process for a given |web_contents|, initiated
-  // by WebApp script. Bypasses the GetWebApplicationInfo from renderer step.
-  // TODO(loyso): Rename InstallWebAppFromBanner to InstallWebAppFromManifest.
-  virtual void InstallWebAppFromBanner(
+  // Checks a WebApp installability, retrieves manifest and icons and
+  // than performs the actual installation.
+  virtual void InstallWebAppFromManifest(
       content::WebContents* web_contents,
+      WebappInstallSource install_source,
+      WebAppInstallDialogCallback dialog_callback,
+      OnceInstallCallback callback) = 0;
+
+  // Infers WebApp info from the blink renderer process and then retrieves a
+  // manifest in a way similar to |InstallWebAppFromManifest|. If the manifest
+  // is incomplete or missing, the inferred info is used. |force_shortcut_app|
+  // forces the creation of a shortcut app instead of a PWA even if installation
+  // is available.
+  virtual void InstallWebAppFromManifestWithFallback(
+      content::WebContents* web_contents,
+      bool force_shortcut_app,
       WebappInstallSource install_source,
       WebAppInstallDialogCallback dialog_callback,
       OnceInstallCallback callback) = 0;

@@ -94,21 +94,21 @@ void CreateWebAppFromCurrentWebContents(Browser* browser,
 
   WebAppInstalledCallback installed_callback = base::DoNothing();
 
-  provider->install_manager().InstallWebApp(
+  provider->install_manager().InstallWebAppFromManifestWithFallback(
       web_contents, force_shortcut_app,
       InstallableMetrics::GetInstallSource(web_contents, InstallTrigger::MENU),
       base::BindOnce(WebAppInstallDialogCallback),
       base::BindOnce(OnWebAppInstalled, std::move(installed_callback)));
 }
 
-bool CreateWebAppFromBanner(content::WebContents* web_contents,
-                            WebappInstallSource install_source,
-                            WebAppInstalledCallback installed_callback) {
+bool CreateWebAppFromManifest(content::WebContents* web_contents,
+                              WebappInstallSource install_source,
+                              WebAppInstalledCallback installed_callback) {
   auto* provider = WebAppProvider::GetForWebContents(web_contents);
   if (!provider)
     return false;
 
-  provider->install_manager().InstallWebAppFromBanner(
+  provider->install_manager().InstallWebAppFromManifest(
       web_contents, install_source, base::BindOnce(WebAppInstallDialogCallback),
       base::BindOnce(OnWebAppInstalled, std::move(installed_callback)));
   return true;

@@ -32,7 +32,21 @@ bool WebAppInstallManager::CanInstallWebApp(
          IsValidWebAppUrl(web_contents->GetLastCommittedURL());
 }
 
-void WebAppInstallManager::InstallWebApp(
+void WebAppInstallManager::InstallWebAppFromManifest(
+    content::WebContents* contents,
+    WebappInstallSource install_source,
+    WebAppInstallDialogCallback dialog_callback,
+    OnceInstallCallback callback) {
+  auto task = std::make_unique<WebAppInstallTask>(profile_, install_finalizer_);
+  task->InstallWebAppFromManifest(
+      contents, install_source, std::move(dialog_callback),
+      base::BindOnce(&WebAppInstallManager::OnTaskCompleted,
+                     base::Unretained(this), task.get(), std::move(callback)));
+
+  tasks_.insert(std::move(task));
+}
+
+void WebAppInstallManager::InstallWebAppFromManifestWithFallback(
     content::WebContents* contents,
     bool force_shortcut_app,
     WebappInstallSource install_source,
@@ -43,20 +57,6 @@ void WebAppInstallManager::InstallWebApp(
   auto task = std::make_unique<WebAppInstallTask>(profile_, install_finalizer_);
   task->InstallWebAppFromManifestWithFallback(
       contents, force_shortcut_app, install_source, std::move(dialog_callback),
-      base::BindOnce(&WebAppInstallManager::OnTaskCompleted,
-                     base::Unretained(this), task.get(), std::move(callback)));
-
-  tasks_.insert(std::move(task));
-}
-
-void WebAppInstallManager::InstallWebAppFromBanner(
-    content::WebContents* contents,
-    WebappInstallSource install_source,
-    WebAppInstallDialogCallback dialog_callback,
-    OnceInstallCallback callback) {
-  auto task = std::make_unique<WebAppInstallTask>(profile_, install_finalizer_);
-  task->InstallWebAppFromManifest(
-      contents, install_source, std::move(dialog_callback),
       base::BindOnce(&WebAppInstallManager::OnTaskCompleted,
                      base::Unretained(this), task.get(), std::move(callback)));
 

@@ -52,7 +52,7 @@ void AppBannerManagerDesktop::CreateWebApp(WebappInstallSource install_source) {
   DCHECK(contents);
 
   // TODO(loyso): Take appropriate action if WebApps disabled for profile.
-  web_app::CreateWebAppFromBanner(
+  web_app::CreateWebAppFromManifest(
       contents, install_source,
       base::BindOnce(&AppBannerManager::DidFinishCreatingWebApp, GetWeakPtr()));
 }

@@ -274,7 +274,7 @@ bool BookmarkAppInstallManager::CanInstallWebApp(
       ->CanCreateBookmarkApp();
 }
 
-void BookmarkAppInstallManager::InstallWebApp(
+void BookmarkAppInstallManager::InstallWebAppFromManifestWithFallback(
     content::WebContents* web_contents,
     bool force_shortcut_app,
     WebappInstallSource install_source,
@@ -297,7 +297,7 @@ void BookmarkAppInstallManager::InstallWebApp(
               std::move(callback)));
 }
 
-void BookmarkAppInstallManager::InstallWebAppFromBanner(
+void BookmarkAppInstallManager::InstallWebAppFromManifest(
     content::WebContents* web_contents,
     WebappInstallSource install_source,
     WebAppInstallDialogCallback dialog_callback,

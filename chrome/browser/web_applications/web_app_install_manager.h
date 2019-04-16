@@ -28,15 +28,16 @@ class WebAppInstallManager final : public InstallManager {
 
   // InstallManager:
   bool CanInstallWebApp(content::WebContents* web_contents) override;
-  void InstallWebApp(content::WebContents* contents,
-                     bool force_shortcut_app,
-                     WebappInstallSource install_source,
-                     WebAppInstallDialogCallback dialog_callback,
-                     OnceInstallCallback callback) override;
-  void InstallWebAppFromBanner(content::WebContents* contents,
-                               WebappInstallSource install_source,
-                               WebAppInstallDialogCallback dialog_callback,
-                               OnceInstallCallback callback) override;
+  void InstallWebAppFromManifest(content::WebContents* contents,
+                                 WebappInstallSource install_source,
+                                 WebAppInstallDialogCallback dialog_callback,
+                                 OnceInstallCallback callback) override;
+  void InstallWebAppFromManifestWithFallback(
+      content::WebContents* contents,
+      bool force_shortcut_app,
+      WebappInstallSource install_source,
+      WebAppInstallDialogCallback dialog_callback,
+      OnceInstallCallback callback) override;
   void InstallWebAppFromInfo(
       std::unique_ptr<WebApplicationInfo> web_application_info,
       bool no_network_install,
