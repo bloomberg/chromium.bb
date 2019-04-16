@@ -302,7 +302,7 @@ FrameLoadRequest FormSubmission::CreateFrameLoadRequest(
     }
   }
 
-  frame_request.GetResourceRequest().SetURL(RequestURL());
+  frame_request.GetResourceRequest().SetUrl(RequestURL());
 
   frame_request.SetForm(form_);
 

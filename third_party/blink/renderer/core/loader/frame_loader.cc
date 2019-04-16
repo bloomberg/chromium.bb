@@ -1739,7 +1739,7 @@ void FrameLoader::UpgradeInsecureRequest(
     url.SetProtocol("https");
     if (url.Port() == 80)
       url.SetPort(443);
-    resource_request.SetURL(url);
+    resource_request.SetUrl(url);
   }
 }
 

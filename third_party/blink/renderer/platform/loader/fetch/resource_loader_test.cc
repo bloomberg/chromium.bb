@@ -183,7 +183,7 @@ TEST_F(ResourceLoaderTest, ResponseType) {
         ResourceFetcherInit(*properties, context, CreateTaskRunner(),
                             MakeGarbageCollected<NoopLoaderFactory>()));
     ResourceRequest request;
-    request.SetURL(test.url);
+    request.SetUrl(test.url);
     request.SetFetchRequestMode(test.request_mode);
     request.SetRequestContext(mojom::RequestContextType::FETCH);
 
@@ -563,7 +563,7 @@ class ResourceLoaderIsolatedCodeCacheTest : public ResourceLoaderTest {
         ResourceFetcherInit(*properties, context, CreateTaskRunner(),
                             MakeGarbageCollected<NoopLoaderFactory>()));
     ResourceRequest request;
-    request.SetURL(foo_url_);
+    request.SetUrl(foo_url_);
     request.SetRequestContext(mojom::RequestContextType::FETCH);
 
     FetchParameters fetch_parameters(request);

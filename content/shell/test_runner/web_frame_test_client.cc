@@ -76,7 +76,7 @@ void PrintResponseDescription(WebTestDelegate* delegate,
 }
 
 void BlockRequest(blink::WebURLRequest& request) {
-  request.SetURL(GURL("255.255.255.255"));
+  request.SetUrl(GURL("255.255.255.255"));
 }
 
 bool IsLocalHost(const std::string& host) {
@@ -459,7 +459,7 @@ void WebFrameTestClient::WillSendRequest(blink::WebURLRequest& request) {
   }
 
   // Set the new substituted URL.
-  request.SetURL(delegate_->RewriteWebTestsURL(
+  request.SetUrl(delegate_->RewriteWebTestsURL(
       request.Url().GetString().Utf8(),
       test_runner()->is_web_platform_tests_mode()));
 }
@@ -581,7 +581,7 @@ bool WebFrameTestClient::ShouldContinueNavigation(
           blink::WebString::FromUTF8(header));
     }
   }
-  info->url_request.SetURL(delegate_->RewriteWebTestsURL(
+  info->url_request.SetUrl(delegate_->RewriteWebTestsURL(
       info->url_request.Url().GetString().Utf8(),
       test_runner()->is_web_platform_tests_mode()));
   return should_continue;
