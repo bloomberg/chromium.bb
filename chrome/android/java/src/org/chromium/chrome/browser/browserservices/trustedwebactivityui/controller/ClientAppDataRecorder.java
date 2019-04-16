@@ -71,7 +71,7 @@ public class ClientAppDataRecorder {
             String appLabel = mPackageManager.getApplicationLabel(ai).toString();
 
             if (TextUtils.isEmpty(appLabel) || ai.uid == -1) {
-                Log.e(TAG, "Invalid details for client package %s: %d, %d",
+                Log.e(TAG, "Invalid details for client package %s: %d, %s",
                         packageName, ai.uid, appLabel);
                 return;
             }

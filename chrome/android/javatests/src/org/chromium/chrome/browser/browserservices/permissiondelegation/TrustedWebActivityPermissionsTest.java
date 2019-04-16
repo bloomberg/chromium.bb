@@ -44,6 +44,7 @@ public class TrustedWebActivityPermissionsTest {
     private EmbeddedTestServer mTestServer;
     private String mTestPage;
     private Origin mOrigin;
+    private String mPackage;
     private TrustedWebActivityPermissionManager mPermissionManager;
 
     @Before
@@ -57,6 +58,7 @@ public class TrustedWebActivityPermissionsTest {
                 ServerCertificate.CERT_OK);
         mTestPage = mTestServer.getURL(TEST_PAGE);
         mOrigin = new Origin(mTestPage);
+        mPackage = InstrumentationRegistry.getTargetContext().getPackageName();
 
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
                 CustomTabsTestUtils.createMinimalCustomTabIntent(
@@ -76,21 +78,21 @@ public class TrustedWebActivityPermissionsTest {
     @Test
     @MediumTest
     public void allowNotifications() throws TimeoutException, InterruptedException {
-        mPermissionManager.register(mOrigin, true);
+        mPermissionManager.register(mOrigin, mPackage, true);
         assertEquals("\"granted\"", getNotificationPermission());
     }
 
     @Test
     @MediumTest
     public void blockNotifications() throws TimeoutException, InterruptedException {
-        mPermissionManager.register(mOrigin, false);
+        mPermissionManager.register(mOrigin, mPackage, false);
         assertEquals("\"denied\"", getNotificationPermission());
     }
 
     @Test
     @MediumTest
     public void unregisterTwa() throws TimeoutException, InterruptedException {
-        mPermissionManager.register(mOrigin, true);
+        mPermissionManager.register(mOrigin, mPackage, true);
         assertEquals("\"granted\"", getNotificationPermission());
 
         mPermissionManager.unregister(mOrigin);

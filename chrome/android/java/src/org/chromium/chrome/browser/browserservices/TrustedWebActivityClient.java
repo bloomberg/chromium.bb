@@ -22,7 +22,6 @@ import android.support.customtabs.trusted.TrustedWebActivityServiceConnectionMan
 import android.support.customtabs.trusted.TrustedWebActivityServiceWrapper;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -45,6 +44,12 @@ import javax.inject.Singleton;
 public class TrustedWebActivityClient {
     private final TrustedWebActivityServiceConnectionManager mConnection;
     private final TrustedWebActivityUmaRecorder mRecorder;
+
+    /** Interface for callbacks to {@link #checkNotificationPermission}. */
+    public interface NotificationPermissionCheckCallback {
+        /** May be called as a result of {@link #checkNotificationPermission}. */
+        void onPermissionCheck(ComponentName answeringApp, boolean enabled);
+    }
 
     /**
      * Creates a TrustedWebActivityService.
@@ -69,14 +74,15 @@ public class TrustedWebActivityClient {
     /**
      * Checks whether the TWA of the given origin has the notification permission granted.
      * @param callback Will be called on a background thread with whether the permission is granted.
-     * @return {@code false} if no such TWA exists.
+     * @return {@code false} if no such TWA exists (in which case the callback will not be called).
      */
-    public boolean checkNotificationPermission(Origin origin, Callback<Boolean> callback) {
+    public boolean checkNotificationPermission(Origin origin,
+            NotificationPermissionCheckCallback callback) {
         Resources res = ContextUtils.getApplicationContext().getResources();
         String channelDisplayName = res.getString(R.string.notification_category_group_general);
-        return mConnection.execute(origin.uri(), origin.toString(), service -> {
-            callback.onResult(service.areNotificationsEnabled(channelDisplayName));
-        });
+        return mConnection.execute(origin.uri(), origin.toString(), service ->
+                callback.onPermissionCheck(service.getComponentName(),
+                        service.areNotificationsEnabled(channelDisplayName)));
     }
 
     /**
